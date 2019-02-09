@@ -1,0 +1,62 @@
+# Go
+# Build your Go project.
+# Add steps that test, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/go
+
+trigger:
+- master
+- ci
+
+pr: none
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+variables:
+  GOBIN:   '$(GOPATH)/bin' # Go binaries path
+  GOROOT:  '/usr/local/go1.11' # Go installation path
+  GOPATH:  '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+  GO111MODULE: 'on'
+  modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
+
+steps:
+  - script: |
+      mkdir -p '$(GOBIN)'
+      mkdir -p '$(GOPATH)/pkg'
+      mkdir -p '$(modulePath)'
+      shopt -s extglob
+      shopt -s dotglob
+      mv !(gopath) '$(modulePath)'
+      echo '##vso[task.prependpath]$(GOBIN)'
+      echo '##vso[task.prependpath]$(GOROOT)/bin'
+    displayName: 'Set up the Go workspace'
+
+  - script: sudo apt-get install -y mingw-w64 gcc-mingw-w64
+    displayName: 'apt-get'
+
+  - script: |
+      yarn install
+      ./node_modules/@angular/cli/bin/ng build --prod
+    workingDirectory: '$(modulePath)/ui/v1'
+    displayName: 'Build UI'
+
+  - script: |
+      go version
+      go get -u github.com/gobuffalo/packr/v2/packr2
+    workingDirectory: '$(modulePath)'
+    displayName: 'Get GO dependencies'
+
+  - script: |
+      CGO_ENABLED=1 packr2 build -o '$(Build.ArtifactStagingDirectory)/stash-linux' -v -mod=vendor
+    workingDirectory: '$(modulePath)'
+    displayName: 'Build - Linux'
+
+  - script: |
+      CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ GOOS=windows GOARCH=amd64 packr2 build -o '$(Build.ArtifactStagingDirectory)/stash-win.exe' -v -mod=vendor -ldflags "-extldflags '-static'" -tags extended
+    workingDirectory: '$(modulePath)'
+    displayName: 'Build - Windows'
+
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'dist'
+      targetPath: $(Build.ArtifactStagingDirectory)
