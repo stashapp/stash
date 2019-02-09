@@ -1,0 +1,5 @@
+fragment SlimPerformerData on Performer {
+  id
+  name
+  image_path
+}

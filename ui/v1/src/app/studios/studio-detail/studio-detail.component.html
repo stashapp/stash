@@ -1,0 +1,51 @@
+<div class="ui three column grid" style="position: fixed; filter: blur(4px); z-index: -1; transform: translateZ(0); left: calc(-50vw + 50.7%); width: 100vw;">
+  <div *ngFor="let scene of sceneListState.data | shuffle | slice:0:3" class="column" style="background-size: cover; background-position: center center; height: 300px;" [style.background-image]="'url(' + scene.paths.screenshot + ')'">
+  </div>
+</div>
+
+<div style="background-color: rgba(255, 255, 255, 0.7); margin-top: -1.8em;">
+  <div class="ui basic segment">
+    <div class="ui two column divided middle aligned very relaxed stackable grid" style="position: relative;">
+      <div class="column">
+        <img *ngIf="!!studio" [src]="studio?.image_path" class="ui centered image" />
+      </div>
+      <div class="center aligned column">
+        <div class="ui huge very relaxed list items">
+          <div class="item">
+            <div class="content">
+              <div class="header">
+                {{studio?.name}}
+                <button (click)="onClickEdit()" class="ui right floated button">Edit</button>
+              </div>
+            </div>
+          </div>
+          <div class="item">
+            <div class="content">
+              <div class="header">Details</div>
+              <div class="description">
+                No Details
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ui fluid container" style="
+    left: 0;
+    right: 0;
+    position: absolute;
+    background-color: #000;
+    padding: 2rem;
+    box-shadow: 0px 0px 5px 0px rgba(34, 36, 38, 0.40);
+">
+  <div class="ui container">
+    <h1 class="header">
+      {{studio?.name}}'s Scenes
+    </h1>
+
+    <app-list [state]="sceneListState"></app-list>
+  </div>
+</div>

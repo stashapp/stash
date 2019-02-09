@@ -1,0 +1,38 @@
+<div class="wall-overlay" [ngClass]="isHovering ? 'visible' : 'hidden'"></div>
+<div
+  [class.double-scale]="isHovering"
+  class="scene-wall-item-container"
+  (transitionend)="transitionEnd($event)">
+  <a
+    [routerLink]="['/scenes', sceneMarker.scene.id]"
+    [queryParams]="{t: sceneMarker.seconds}">
+    <video *ngIf="isHovering" [src]="videoPath" style="top: 0; height: unset;" #videoTag></video>
+    <img class="wall item" [src]="imagePath" />
+  </a>
+  <div class="scene-wall-item-text-container" [hidden]="isHovering" style="height: unset; padding: 5px; font-weight: 900;">
+  <!-- <div style="background-color: white; padding: 15px 10px;"> -->
+    <!-- <div class="scene-wall-item-blur"></div> -->
+    <div style="line-height: 1;">{{sceneMarker.title}} - {{sceneMarker.seconds | seconds}}</div>
+    <div *ngIf="sceneMarker.tags.length != 0" class="ui mini horizontal list">
+      <!-- TODO these links aren't working -->
+      <a
+        class="item"
+        [routerLink]=""
+        [queryParams]="{values: [sceneMarker.primary_tag.id]}"
+        queryParamsHandling="merge">{{sceneMarker.primary_tag.name}}</a>
+      <a
+        *ngFor="let tag of sceneMarker.tags"
+        class="item"
+        [routerLink]=""
+        [queryParams]="{values: [tag.id]}"
+        queryParamsHandling="merge">
+        {{tag.name}}
+      </a>
+    </div>
+    <!-- <div *ngIf="sceneMarker.tags.length != 0" class="ui tiny labels">
+      <a *ngFor="let tag of sceneMarker.tags" class="ui label">
+        {{tag.name}}
+      </a>
+    </div> -->
+  </div>
+</div>

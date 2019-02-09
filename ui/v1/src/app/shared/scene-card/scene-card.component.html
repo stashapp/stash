@@ -1,0 +1,89 @@
+<a [routerLink]="['/scenes', scene.id]" class="image previewable">
+  <video class="preview" loop [poster]="this.scene.paths.screenshot" #videoTag>
+    <source *ngIf="previewPath" [src]="previewPath" />
+  </video>
+  <!--<div class="glass">
+    <h3 style="margin: 10px;">{{scene.title || scene.path}}</h3>
+  </div>-->
+</a>
+<div class="content">
+  <div class="header">{{scene.title || scene.path | filename}}</div>
+  <div *ngIf="!!scene.rating || !!scene.date" class="meta">
+    <span *ngIf="scene?.date" class="date">{{scene.date}}</span>
+    <sui-rating *ngIf="scene?.rating" class="ui tiny rating" [(ngModel)]="scene.rating" [maximum]="5" [isReadonly]="true"></sui-rating>
+  </div>
+  <div *ngIf="scene.details; else descriptionEmptyBlock" class="description">
+    {{scene.details | truncate : 100 : '... (continued)'}}
+  </div>
+  <ng-template #descriptionEmptyBlock>No details</ng-template>
+</div>
+<div class="extra content">
+  <ng-template let-tags #tagsTemplate>
+    <div class="ui labels">
+      <a *ngFor="let tag of scene.tags"
+        [routerLink]="['/tags', tag.id]"
+        class="ui label">
+          {{tag.name}}
+        </a>
+      <span *ngIf="!scene.tags || scene.tags.length == 0">No Tags</span>
+    </div>
+  </ng-template>
+  <ng-template let-performers #performersTemplate>
+    <div class="ui labels">
+      <a *ngFor="let performer of scene.performers"
+        [routerLink]="['/performers', performer.id]"
+        class="ui label"
+        [class.red]="performer.favorite">
+          <i *ngIf="performer.favorite" class="heart icon"></i>
+          {{performer.name}}
+        </a>
+      <span *ngIf="!scene.performers || scene.performers.length == 0">No Performers</span>
+    </div>
+  </ng-template>
+  <ng-template let-markers #markersTemplate>
+    <div class="ui labels">
+      <a *ngFor="let marker of scene.scene_markers"
+        class="ui label">
+          {{marker.title}} - {{marker.seconds | seconds}}
+        </a>
+      <span *ngIf="!scene.scene_markers || scene.scene_markers.length == 0">No Markers</span>
+    </div>
+  </ng-template>
+
+  <button
+    *ngIf="!!scene.tags && scene.tags.length > 0"
+    class="ui inverted mini basic icon button"
+    suiPopup
+    [popupTemplate]="tagsTemplate"
+    popupTrigger="outsideClick">
+    <i class="tag icon"></i> {{scene.tags.length}}
+  </button>
+  <button
+    *ngIf="!!scene.performers && scene.performers.length > 0"
+    class="ui inverted mini basic icon button"
+    [class.red]="hasFavoritePerformer()"
+    suiPopup
+    [popupTemplate]="performersTemplate"
+    popupTrigger="outsideClick">
+    <i class="user icon"></i> {{scene.performers.length}}
+  </button>
+  <button
+    *ngIf="!!scene.scene_markers && scene.scene_markers.length > 0"
+    class="ui inverted mini basic icon button"
+    suiPopup
+    [popupTemplate]="markersTemplate"
+    popupTrigger="outsideClick">
+    <i class="marker icon"></i> {{scene.scene_markers.length}}
+  </button>
+  <div style="display: inline-block">
+    <span>{{scene?.file.size | fileSize}} | {{scene?.file.duration | seconds}} | {{scene.file.width}} x {{scene.file.height}}</span>
+  </div>
+</div>
+<div class="extra content" style="background-color: rgba(0,0,0,0.1);">
+  <a *ngIf="scene.studio"
+    [routerLink]="['/studios', scene.studio.id]"
+    [style.background-image]="'url(' + this.scene.studio.image_path + ')'"
+    style="width: 100%; height: 50px; line-height: 5; background-size: contain; display: inline-block; background-position: center; background-repeat: no-repeat;">
+  </a>
+  <span *ngIf="!scene.studio">No Studio</span>
+</div>

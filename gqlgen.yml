@@ -1,0 +1,32 @@
+# .gqlgen.yml example
+#
+# Refer to https://gqlgen.com/config/
+# for detailed .gqlgen.yml documentation.
+
+schema:
+  - schema/schema.graphql
+exec:
+  filename: internal/models/generated_exec.go
+model:
+  filename: internal/models/generated_models.go
+resolver:
+  filename: internal/api/resolver.go
+  type: Resolver
+
+struct_tag: gqlgen
+
+models:
+  Gallery:
+    model: github.com/stashapp/stash/internal/models.Gallery
+  Performer:
+    model: github.com/stashapp/stash/internal/models.Performer
+  Scene:
+    model: github.com/stashapp/stash/internal/models.Scene
+  SceneMarker:
+    model: github.com/stashapp/stash/internal/models.SceneMarker
+  ScrapedItem:
+    model: github.com/stashapp/stash/internal/models.ScrapedItem
+  Studio:
+    model: github.com/stashapp/stash/internal/models.Studio
+  Tag:
+    model: github.com/stashapp/stash/internal/models.Tag

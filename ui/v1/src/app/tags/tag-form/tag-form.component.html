@@ -1,0 +1,13 @@
+<div [class.loading]="loading" class="ui inverted form">
+  <h4 class="ui inverted dividing header">Tag Information</h4>
+  <div class="field">
+    <div class="equal width fields">
+      <div class="field">
+        <label>Tag Name</label>
+        <input [(ngModel)]="name" type="text" placeholder="Tag Name" />
+      </div>
+    </div>
+  </div>
+  <button (click)="onSubmit()" class="ui primary submit button">Submit</button>
+  <button *ngIf="!!hasId()" (click)="onDestroy()" class="ui right floated negative button">Destroy</button>
+</div>

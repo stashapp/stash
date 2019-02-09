@@ -1,0 +1,98 @@
+<div [class.loading]="loading" class="ui inverted form">
+  <h4 class="ui inverted dividing header">Scene Information</h4>
+  <div class="field">
+    <div class="equal width fields">
+      <div class="field">
+        <label>Title</label>
+        <input [(ngModel)]="title" type="text" placeholder="Title" />
+      </div>
+      <div class="field">
+        <label>URL</label>
+        <input [(ngModel)]="url" type="url" placeholder="URL" />
+      </div>
+      <div class="field">
+        <label>Date (YYYY-MM-DD)</label>
+        <input [(ngModel)]="date" type="text" placeholder="Date (YYYY-MM-DD)" />
+      </div>
+      <div class="field">
+        <label>Rating</label>
+        <sui-rating class="ui massive rating" [(ngModel)]="rating" [maximum]="5"></sui-rating>
+      </div>
+    </div>
+    <div class="field">
+      <label>Gallery</label>
+      <sui-select
+        class="selection"
+        [(ngModel)]="gallery_id"
+        [options]="galleries"
+        labelField="path"
+        valueField="id"
+        [isSearchable]="true"
+        placeholder="Gallery"
+        #gallerySelect>
+        <sui-select-option [value]="{id: 0, path: 'None'}"></sui-select-option>
+        <sui-select-option *ngFor="let option of gallerySelect.availableOptions" [value]="option"></sui-select-option>
+      </sui-select>
+    </div>
+    <div class="field">
+      <label>Studio</label>
+      <sui-select
+        class="selection"
+        [(ngModel)]="studio_id"
+        [options]="studios"
+        labelField="name"
+        valueField="id"
+        [isSearchable]="true"
+        placeholder="Studio"
+        #studioSelect>
+        <sui-select-option *ngFor="let option of studioSelect.availableOptions" [value]="option"></sui-select-option>
+      </sui-select>
+    </div>
+
+    <ng-template let-option #performerOptionTemplate>
+      <img [lazyLoad]="option.image_path" height="80"/>&nbsp;{{ option.name }}
+    </ng-template>
+
+    <div class="field">
+      <label>Performers</label>
+      <sui-multi-select
+        class="selection"
+        [(ngModel)]="performer_ids"
+        [options]="performers"
+        labelField="name"
+        valueField="id"
+        [isSearchable]="true"
+        [optionTemplate]="performerOptionTemplate"
+        placeholder="Performers"
+        #performerSelect>
+        <sui-select-option *ngFor="let option of performerSelect.availableOptions" [value]="option"></sui-select-option>
+      </sui-multi-select>
+    </div>
+    <div class="field">
+      <label>Tags</label>
+      <div class="fields">
+        <div class="fourteen wide field">
+          <sui-multi-select
+            class="selection"
+            [(ngModel)]="tag_ids"
+            [options]="tags"
+            labelField="name"
+            valueField="id"
+            [isSearchable]="true"
+            placeholder="Tags"
+            #tagSelect>
+            <sui-select-option *ngFor="let option of tagSelect.availableOptions" [value]="option"></sui-select-option>
+          </sui-multi-select>
+        </div>
+        <div class="two wide field">
+          <%= link_to 'Add Tag', new_tag_path, class: 'ui fluid button' %>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Details</label>
+      <textarea [(ngModel)]="details" placeholder="Details"></textarea>
+    </div>
+  </div>
+  <button (click)="onSubmit()" class="ui primary submit button">Submit</button>
+</div>

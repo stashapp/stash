@@ -1,0 +1,122 @@
+<div class="ui three column grid" style="position: fixed; filter: blur(4px); z-index: -1; transform: translateZ(0); left: calc(-50vw + 50.7%); width: 100vw;">
+  <div *ngFor="let scene of sceneListState.data | shuffle | slice:0:6" class="column" style="background-size: cover; background-position: center center; height: 100vh;" [style.background-image]="'url(' + scene.paths.screenshot + ')'">
+  </div>
+</div>
+
+<div style="background-color: rgba(255, 255, 255, 0.7); margin-top: -1.8em;">
+  <div class="ui basic segment">
+    <div class="ui two column divided middle aligned very relaxed stackable grid" style="position: relative;">
+      <div class="column">
+        <img *ngIf="!!performer" [src]="performer?.image_path" class="ui fluid bordered image" />
+      </div>
+      <div class="center aligned column">
+        <div class="ui huge very relaxed list items">
+          <div class="item">
+            <div class="content">
+              <div class="header">
+                {{performer?.name}}
+                <button (click)="onClickEdit()" class="ui right floated button">Edit</button>
+              </div>
+              <div *ngIf="!!performer?.aliases" class="meta">{{performer.aliases}}</div>
+              <div *ngIf="!!performer?.birthdate" class="extra">
+                {{performer?.birthdate | date:"MM/dd/yy"}} - Age {{performer?.birthdate | age}}
+              </div>
+            </div>
+          </div>
+          <div class="item">
+            <div class="content">
+              <div class="header">Details</div>
+              <div class="description">
+                <div class="ui mini list">
+                  <div *ngIf="!!performer?.career_length" class="item">
+                    <span class="bold">Career Length</span>
+                    {{performer.career_length}}
+                  </div>
+                  <div *ngIf="!!performer?.country" class="item">
+                    <span class="bold">Country</span>
+                    {{performer.country}}
+                  </div>
+                  <div *ngIf="!!performer?.ethnicity" class="item">
+                    <span class="bold">Ethnicity</span>
+                    {{performer.ethnicity?.toUpperCase()}}
+                  </div>
+                  <div *ngIf="!!performer?.eye_color" class="item">
+                    <span class="bold">Eye Color</span>
+                    {{performer.eye_color}}
+                  </div>
+                  <div *ngIf="!!performer?.height" class="item">
+                    <span class="bold">Height (cm)</span>
+                    {{performer.height}}
+                  </div>
+                  <div *ngIf="!!performer?.measurements" class="item">
+                    <span class="bold">Measurements</span>
+                    {{performer.measurements}}
+                  </div>
+                  <div *ngIf="!!performer?.fake_tits" class="item">
+                    <span class="bold">Fake Tits</span>
+                    {{performer.fake_tits}}
+                  </div>
+                  <div *ngIf="!!performer?.tattoos" class="item">
+                    <span class="bold">Tattoos</span>
+                    {{performer.tattoos}}
+                  </div>
+                  <div *ngIf="!!performer?.piercings" class="item">
+                    <span class="bold">Piercings</span>
+                    {{performer.piercings}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="performer?.twitter?.length > 0 || performer?.instagram?.length > 0" class="ui basic segment">
+    <h3>Social</h3>
+    <div class="ui horizontal list">
+      <div *ngIf="!!performer?.twitter && performer?.twitter?.length > 0" class="item">
+        <i class="big twitter icon"></i>
+        <div class="content">
+          <a [href]="twitterLink()">{{performer.twitter}}</a>
+        </div>
+      </div>
+      <div *ngIf="!!performer?.instagram && performer?.instagram?.length > 0" class="item">
+        <i class="big instagram icon"></i>
+        <div class="content">
+          <a [href]="instagramLink()">{{performer.instagram}}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ui basic segment">
+    <div class="ui list">
+      <a *ngIf="!!performer?.url" [href]="performer?.url" class="item" title="More information">
+        <i class="linkify icon"></i>
+        <div class="content">
+          <div class="header">URL</div>
+          <div class="description">{{performer?.url}}</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="ui fluid container" style="
+    left: 0;
+    right: 0;
+    position: absolute;
+    background-color: #000;
+    padding: 2rem;
+    box-shadow: 0px 0px 5px 0px rgba(34, 36, 38, 0.40);
+">
+  <div class="ui container">
+    <h1 class="header">
+      {{performer?.name || 'Performer'}}'s Scenes
+    </h1>
+
+    <app-list [state]="sceneListState"></app-list>
+  </div>
+</div>

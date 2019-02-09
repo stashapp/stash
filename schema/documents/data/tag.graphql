@@ -1,0 +1,6 @@
+fragment TagData on Tag {
+  id
+  name
+  scene_count
+  scene_marker_count
+}

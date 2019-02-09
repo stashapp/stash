@@ -1,0 +1,11 @@
+fragment GalleryData on Gallery {
+  id
+  checksum
+  path
+  title
+  files {
+    index
+    name
+    path
+  }
+}

@@ -1,0 +1,22 @@
+<div
+  *ngIf="!!displayedImage"
+  (window:keydown)="onKey($event)"
+  id="gallery-modal-container">
+  <div id="gallery-modal-background"></div>
+  <div *ngIf="!!displayedImage.path" id="gallery-modal-image-wrapper">
+    <img id="gallery-modal-image" [src]="displayedImage.path" />
+  </div>
+</div>
+
+<div class="ui text menu">
+  <h3 class="header item">{{gallery?.title || 'No Title'}} - {{gallery?.files.length}} files</h3>
+  <div class="right menu">
+    <button (click)="onClickEdit()" class="ui button">Edit</button>
+  </div>
+</div>
+
+<app-gallery-preview
+  [gallery]="gallery"
+  [type]="'full'"
+  (clicked)="onClickCard($event)">
+</app-gallery-preview>

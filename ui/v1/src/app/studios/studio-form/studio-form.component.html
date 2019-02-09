@@ -1,0 +1,38 @@
+<div [class.loading]="loading" class="ui inverted form">
+  <h4 class="ui inverted dividing header">Studio Information</h4>
+  <div class="field">
+    <div class="fields">
+      <div class="seven wide field">
+        <label>Name</label>
+        <input [(ngModel)]="name" type="text" placeholder="Name" />
+      </div>
+      <div class="seven wide field">
+        <label>URL</label>
+        <input [(ngModel)]="url" type="url" placeholder="URL" />
+      </div>
+      <div class="two wide field">
+        <!--<label>Favorite</label>
+        <div (click)="onFavoriteChange()" class="ui massive heart rating">
+          <i class="icon" [class.active]="performer.favorite"></i>
+        </div>-->
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Image</label>
+      <div class="fields">
+        <div class="fourteen wide field">
+          <input #imageInput type="file" (change)="onImageChange($event)" placeholder="Upload file" accept=".jpg,.jpeg,.png">
+        </div>
+        <div class="two wide field">
+          <div class="ui small image">
+            <img [src]="imagePreview" />
+          </div>
+          <button class="ui button" (click)="onResetImage(imageInput)">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <button (click)="onSubmit()" class="ui primary submit button">Submit</button>
+</div>

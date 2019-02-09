@@ -1,0 +1,52 @@
+fragment SceneData on Scene {
+  id
+  checksum
+  title
+  details
+  url
+  date
+  rating
+  path
+
+  file {
+    size
+    duration
+    video_codec
+    audio_codec
+    width
+    height
+    framerate
+    bitrate
+  }
+
+  paths {
+    screenshot
+    preview
+    stream
+    webp
+    vtt
+    chapters_vtt
+  }
+
+  scene_markers {
+    ...SceneMarkerData
+  }
+
+  is_streamable
+
+  gallery {
+    ...GalleryData
+  }
+
+  studio {
+    ...StudioData
+  }
+
+  tags {
+    ...TagData
+  }
+
+  performers {
+    ...PerformerData
+  }
+}

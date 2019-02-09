@@ -1,0 +1,35 @@
+<div class="ui text menu">
+  <div class="right menu">
+    <button (click)="onClickNew()" class="ui button">New</button>
+  </div>
+</div>
+
+<div class="ui middle aligned relaxed divided list">
+  <div *ngFor="let tag of tags" class="item">
+    <div class="right floated content">
+      <a class="ui button" [routerLink]="['/scenes/markers']" [queryParams]="{c: makeJSONQueryString(tag)}">Markers</a>
+      <a class="ui button" [routerLink]="['/scenes']" [queryParams]="{c: makeJSONQueryString(tag)}">Scenes</a>
+    </div>
+    <div class="content">
+      <div class="ui big horizontal label"
+        [class.red]="tagCount(tag) <= 5"
+        [class.orange]="tagCount(tag) > 5 && tagCount(tag) <= 50"
+        [class.yellow]="tagCount(tag) > 50 && tagCount(tag) <= 100"
+        [class.olive]="tagCount(tag) > 100 && tagCount(tag) <= 200"
+        [class.green]="tagCount(tag) > 200">
+        <a [routerLink]="['/tags', tag.id]">
+          {{tag.name}}
+        </a>
+        <div class="detail">
+          Scenes: {{tag.scene_count}}
+        </div>
+        <div class="detail">
+          Markers: {{tag.scene_marker_count}}
+        </div>
+        <div class="detail">
+          Total: {{tag.scene_count + tag.scene_marker_count}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

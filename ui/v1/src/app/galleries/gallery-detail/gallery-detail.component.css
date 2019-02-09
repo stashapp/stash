@@ -1,0 +1,40 @@
+#gallery-modal-container {
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  z-index: 1500;
+  position: fixed;
+}
+
+#gallery-modal-background {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background:rgba(0,0,0,0.5);
+}
+
+#gallery-modal-image-wrapper {
+  position: absolute;
+  transform-origin: left top;
+  transition: transform 333ms cubic-bezier(.4,0,.22,1);
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: inline-grid;
+  justify-content: center;
+  align-content: center;
+}
+
+#gallery-modal-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 20px;
+  background: rgba(17, 17, 17, 0.5);
+  z-index: 1;
+}

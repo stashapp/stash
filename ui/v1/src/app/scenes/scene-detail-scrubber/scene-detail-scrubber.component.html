@@ -1,0 +1,30 @@
+<div class="scrubber-wrapper">
+  <a class="scrubber-button" id="scrubber-back" (click)="goBack()"><</a>
+  <div class="scrubber-content">
+    <div class="scrubber-tags-background"></div>
+    <div #positionIndicator id="scrubber-position-indicator"></div>
+    <div id="scrubber-current-position"></div>
+    <div class="scrubber-viewport">
+      <div #scrubberSlider class="scrubber-slider">
+        <div class="scrubber-tags">
+          <div
+            *ngFor="let marker of scene?.scene_markers; let i = index"
+            #tag
+            class="scrubber-tag"
+            [attr.data-marker-id]="i"
+            [ngStyle]="getTagStyle(tag, i)">
+            {{marker.title}}
+          </div>
+        </div>
+        <div
+          *ngFor="let spriteItem of spriteItems; let i = index"
+          class="scrubber-item"
+          [attr.data-sprite-item-id]="i"
+          [ngStyle]="getStyleForSprite(i)">
+          <span>{{spriteItem.start | seconds}} - {{spriteItem.end | seconds}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <a class="scrubber-button" id="scrubber-forward" (click)="goForward()">></a>
+</div>

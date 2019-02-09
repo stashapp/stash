@@ -1,0 +1,38 @@
+<div class="ui inverted top fixed menu">
+  <div class="ui container">
+    <div class="header item">
+      <a routerLink="/">Stash</a>
+    </div>
+    <a routerLink="/scenes" routerLinkActive #rla="routerLinkActive" [class.active]="isScenesActiveHack(rla)" class="item">
+      <i class="video play icon"></i>Scenes
+    </a>
+    <a routerLink="/scenes/markers" routerLinkActive="active" class="item">
+      <i class="marker icon"></i>
+      Markers
+    </a>
+    <a routerLink="/galleries" routerLinkActive="active" class="item">
+      <i class="image icon"></i>
+      Galleries
+    </a>
+    <a routerLink="/performers" routerLinkActive="active" class="item">
+      <i class="user icon"></i>
+      Performers
+    </a>
+    <a routerLink="/studios" routerLinkActive="active" class="item">
+      <i class="record icon"></i>
+      Studios
+    </a>
+    <a routerLink="/tags" routerLinkActive="active" class="item">
+      <i class="tags icon"></i>
+      Tags
+    </a>
+    <a routerLink="/scenes/wall" routerLinkActive="active" class="item">
+      <i class="film icon"></i>
+      Scene Wall
+    </a>
+    <a routerLink="/settings" routerLinkActive="active" class="item">
+      <i class="settings icon"></i>
+      Settings
+    </a>
+  </div>
+</div>

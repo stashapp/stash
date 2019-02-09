@@ -1,0 +1,21 @@
+fragment SceneMarkerData on SceneMarker {
+  id
+  title
+  seconds
+  stream
+  preview
+
+  scene {
+    id
+  }
+
+  primary_tag {
+    id
+    name
+  }
+
+  tags {
+    id
+    name
+  }
+}

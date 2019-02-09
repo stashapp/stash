@@ -1,0 +1,60 @@
+fragment SlimSceneData on Scene {
+  id
+  checksum
+  title
+  details
+  url
+  date
+  rating
+  path
+
+  file {
+    size
+    duration
+    video_codec
+    audio_codec
+    width
+    height
+    framerate
+    bitrate
+  }
+
+  paths {
+    screenshot
+    preview
+    stream
+    webp
+    vtt
+    chapters_vtt
+  }
+
+  scene_markers {
+    id
+    title
+    seconds
+  }
+
+  gallery {
+    id
+    path
+    title
+  }
+
+  studio {
+    id
+    name
+    image_path
+  }
+
+  tags {
+    id
+    name
+  }
+
+  performers {
+    id
+    name
+    favorite
+    image_path
+  }
+}

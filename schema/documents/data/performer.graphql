@@ -1,0 +1,22 @@
+fragment PerformerData on Performer {
+  id
+  checksum
+  name
+  url
+  twitter
+  instagram
+  birthdate
+  ethnicity
+  country
+  eye_color
+  height
+  measurements
+  fake_tits
+  career_length
+  tattoos
+  piercings
+  aliases
+  favorite
+  image_path
+  scene_count
+}

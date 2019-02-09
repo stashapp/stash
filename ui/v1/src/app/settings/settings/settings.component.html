@@ -1,0 +1,20 @@
+<div class="ui text menu">
+  <div class="left menu">
+    <button (click)="onClickImport()" class="ui button">Import (Click {{3 - importClickCount}} times)</button>
+    <button (click)="onClickExport()" class="ui button">Export</button>
+  </div>
+  <div class="right menu">
+    <button (click)="onClickScan()" class="ui button">Scan</button>
+    <button (click)="onClickGenerate()" class="ui button">Generate</button>
+    <button (click)="onClickClean()" class="ui button">Clean</button>
+  </div>
+</div>
+<sui-progress class="indicating" [value]="progress">{{message}}</sui-progress>
+
+<div class="ui divider"></div>
+
+<div class="ui list">
+  <div *ngFor="let log of logs" class="item">
+    <strong>{{log.type}}</strong> - {{log.message}}
+  </div>
+</div>
