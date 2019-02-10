@@ -34,7 +34,7 @@ Example:
   "stash": "/Volumes/Drobo/videos",
   "metadata": "/Volumes/Drobo/stash/metadata",
   "cache": "/Volumes/Drobo/stash/cache",
-  "downloads": "/Volumes/Drobo/stash/downloads",
+  "downloads": "/Volumes/Drobo/stash/downloads"
 }
 ```
 
@@ -44,7 +44,7 @@ Example:
   "stash": "C:\\Videos",
   "metadata": "C:\\stash\\metadata",
   "cache": "C:\\stash\\cache",
-  "downloads": "C:\\stash\\downloads",
+  "downloads": "C:\\stash\\downloads"
 }
 ```
 
