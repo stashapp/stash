@@ -30,8 +30,8 @@ func Start() {
 	//	port = defaultPort
 	//}
 
-	certsBox = packr.New("Cert Box", "../../certs")
-	uiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
+	certsBox = packr.New("Cert Box", "../certs")
+	uiBox = packr.New("UI Box", "../ui/v1/dist/stash-frontend")
 
 	r := chi.NewRouter()
 
