@@ -1,0 +1,34 @@
+language: go
+go:
+- 1.11.x
+services:
+- docker
+before_install:
+- echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
+- cd ui/v1
+- yarn install
+- ./node_modules/@angular/cli/bin/ng build --prod
+- cd ../..
+script: go test
+before_deploy:
+- docker pull bepsays/ci-goreleaser
+- go get -u github.com/gobuffalo/packr/v2/packr2
+- sh ./scripts/cross-compile.sh
+- git tag -f v0.0.0-alpha
+- git push -f --tags
+deploy:
+  provider: releases
+  api_key:
+    secure: tGJ2q62CfPdayid2qEtW2aGRhMgCl3lBXYYQqp3eH0vFgIIf6cs7IDX7YC/x3XKMEQ/iMLZmtCXZvSTqNrD6Sk7MSnt30GIs+4uxIZDnnd8mV5X3K4n4gjD+NAORc4DrQBvUGrYMKJsR5gtkH0nu6diWb1o1If7OiJEuCPRhrmQYcza7NUdABnA9Z2wn2RNUV9Ga33WUCqLMEU5GtNBlfQPiP/khCQrqn/ocR6wUjYut3J6YagzqH4wsfJi3glHyWtowcNIw1LZi5zFxHD/bRBT4Tln7yypkjWNq9eQILA6i6kRUGf7ggyTx26/k8n4tnu+QD0vVh4EcjlThpU/LGyUXzKrrxjRwaDZnM0oYxg5AfHcBuAiAdo0eWnV3lEWRfTJMIVb9MPf4qDmzR4RREfB5OXOxwq3ODeCcJE8sTIMD/wBPZrlqS/QrRpND2gn2X4snkVukN9t9F4CMTFMtVSzFV7TDJW5E5Lq6VEExulteQhs6kcK9NRPNAaLgRQAw7X9kVWfDtiGUP+fE2i8F9Bo8bm7sOT5O5VPMPykx3EgeNg1IqIgMTCsMlhMJT4xBJoQUgmd2wWyf3Ryw+P+sFgdb5Sd7+lFgJBjMUUoOxMxAOiEgdFvCXcr+/Udyz2RdtetU1/6VzXzLPcKOw0wubZeBkISqu7o9gpfdMP9Eq00=
+  file:
+  - dist/stash-osx
+  - dist/stash-win.exe
+  - dist/stash-linux
+  skip_cleanup: true
+  overwrite: true
+  on:
+    repo: stashapp/stash
+    branch: master
+branches:
+  except:
+    - /^v\d+\.\d\.\d.*/ # don't build tags

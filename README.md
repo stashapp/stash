@@ -78,3 +78,5 @@ TODO
 #### Notes for the dev
 
 https://blog.filippo.io/easy-windows-and-linux-cross-compilers-for-macos/
+
+`docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t bepsays/ci-goreleaser:1.11-2 /bin/bash`
