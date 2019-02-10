@@ -109,9 +109,8 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 			wg.Add(delta)
 
 			if sprites {
-				go func() {
-					wg.Done() // TODO
-				}()
+				task := GenerateSpriteTask{Scene: scene}
+				go task.Start(&wg)
 			}
 
 			if previews {

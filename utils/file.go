@@ -42,7 +42,6 @@ func RemoveDir(path string) error {
 	return os.RemoveAll(path)
 }
 
-// TODO test
 func EmptyDir(path string) error {
 	d, err := os.Open(path)
 	if err != nil {
