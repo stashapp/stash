@@ -1,5 +1,7 @@
 # Stash
 
+[![Build Status](https://travis-ci.org/stashapp/stash.svg?branch=master)](https://travis-ci.org/stashapp/stash)
+
 **Stash is a rails app which organizes and serves your porn.**
 
 See a demo [here](https://vimeo.com/275537038) (password is stashapp).

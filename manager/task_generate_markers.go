@@ -6,7 +6,7 @@ import (
 	"github.com/stashapp/stash/models"
 	"github.com/stashapp/stash/utils"
 	"os"
-	"path"
+	"path/filepath"
 	"strconv"
 	"sync"
 )
@@ -32,7 +32,7 @@ func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
 	}
 
 	// Make the folder for the scenes markers
-	markersFolder := path.Join(instance.Paths.Generated.Markers, t.Scene.Checksum)
+	markersFolder := filepath.Join(instance.Paths.Generated.Markers, t.Scene.Checksum)
 	_ = utils.EnsureDir(markersFolder)
 
 	encoder := ffmpeg.NewEncoder(instance.Paths.FixedPaths.FFMPEG)

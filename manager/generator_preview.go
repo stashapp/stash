@@ -7,7 +7,7 @@ import (
 	"github.com/stashapp/stash/logger"
 	"github.com/stashapp/stash/utils"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 type PreviewGenerator struct {
@@ -74,7 +74,7 @@ func (g *PreviewGenerator) generateConcatFile() error {
 }
 
 func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder) error {
-	outputPath := path.Join(g.OutputDirectory, g.VideoFilename)
+	outputPath := filepath.Join(g.OutputDirectory, g.VideoFilename)
 	outputExists, _ := utils.FileExists(outputPath)
 	if outputExists {
 		return nil
@@ -95,20 +95,20 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder) error {
 		encoder.ScenePreviewVideoChunk(g.Info.VideoFile, options)
 	}
 
-	videoOutputPath := path.Join(g.OutputDirectory, g.VideoFilename)
+	videoOutputPath := filepath.Join(g.OutputDirectory, g.VideoFilename)
 	encoder.ScenePreviewVideoChunkCombine(g.Info.VideoFile, g.getConcatFilePath(), videoOutputPath)
 	logger.Debug("created video preview: ", videoOutputPath)
 	return nil
 }
 
 func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
-	outputPath := path.Join(g.OutputDirectory, g.ImageFilename)
+	outputPath := filepath.Join(g.OutputDirectory, g.ImageFilename)
 	outputExists, _ := utils.FileExists(outputPath)
 	if outputExists {
 		return nil
 	}
 
-	videoPreviewPath := path.Join(g.OutputDirectory, g.VideoFilename)
+	videoPreviewPath := filepath.Join(g.OutputDirectory, g.VideoFilename)
 	tmpOutputPath := instance.Paths.Generated.GetTmpPath(g.ImageFilename)
 	if err := encoder.ScenePreviewVideoToImage(g.Info.VideoFile, 640, videoPreviewPath, tmpOutputPath); err != nil {
 		return err
