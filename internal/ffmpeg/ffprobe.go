@@ -46,7 +46,8 @@ func NewFFProbe(ffprobePath string) ffprobeExecutable {
 // Execute exec command and bind result to struct.
 func (ffp *ffprobeExecutable) ProbeVideo(filePath string) (*FFProbeResult, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", filePath}
-	if runtime.GOOS == "windows" {
+	// Extremely slow on windows for some reason
+	if runtime.GOOS != "windows" {
 		args = append(args, "-count_frames")
 	}
 	out, err := exec.Command(ffp.Path, args...).Output()
