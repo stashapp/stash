@@ -16,5 +16,4 @@ require (
 	github.com/spf13/afero v1.2.0 // indirect
 	github.com/vektah/gqlparser v1.1.0
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2 // indirect
-	golang.org/x/net v0.0.0-20190108225652-1e06a53dbb7e
 )

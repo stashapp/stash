@@ -67,7 +67,6 @@ This is also known as a DSN string. (Data Source Name).
 
 Options are append after the filename of the SQLite database.
 The database filename and options are seperated by an `?` (Question Mark).
-Options should be URL-encoded (see [url.QueryEscape](https://golang.org/pkg/net/url/#QueryEscape)).
 
 This also applies when using an in-memory database instead of a file.
 
@@ -199,7 +198,7 @@ Additional information:
 
 # Google Cloud Platform
 
-Building on GCP is not possible because Google Cloud Platform does not allow `gcc` to be executed.
+Building on GCP is not possible because `Google Cloud Platform does not allow `gcc` to be executed.
 
 Please work only with compiled final binaries.
 
@@ -291,7 +290,7 @@ For example the TDM-GCC Toolchain can be found [here](ttps://sourceforge.net/pro
     When receiving a compile time error referencing recompile with `-FPIC` then you
     are probably using a hardend system.
 
-    You can compile the library on a hardend system with the following command.
+    You can copile the library on a hardend system with the following command.
 
     ```bash
     go build -ldflags '-extldflags=-fno-PIC'
@@ -474,7 +473,7 @@ For an example see [shaxbee/go-spatialite](https://github.com/shaxbee/go-spatial
 
     For more information see [#289](https://github.com/mattn/go-sqlite3/issues/289)
 
-- Trying to execute a `.` (dot) command throws an error.
+- Trying to execure a `.` (dot) command throws an error.
 
     Error: `Error: near ".": syntax error`
     Dot command are part of SQLite3 CLI not of this library.

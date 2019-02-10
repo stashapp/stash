@@ -1,5 +1,23 @@
+# github.com/99designs/gqlgen v0.4.5-0.20190127090136-055fb4bc9a6a
+github.com/99designs/gqlgen/handler
+github.com/99designs/gqlgen/graphql
+github.com/99designs/gqlgen/graphql/introspection
+github.com/99designs/gqlgen/complexity
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
+# github.com/PuerkitoBio/goquery v1.5.0
+github.com/PuerkitoBio/goquery
+# github.com/agnivade/levenshtein v1.0.1
+github.com/agnivade/levenshtein
+# github.com/andybalholm/cascadia v1.0.0
+github.com/andybalholm/cascadia
+# github.com/bmatcuk/doublestar v1.1.1
+github.com/bmatcuk/doublestar
+# github.com/disintegration/imaging v1.6.0
+github.com/disintegration/imaging
+# github.com/go-chi/chi v4.0.1+incompatible
+github.com/go-chi/chi
+github.com/go-chi/chi/middleware
 # github.com/gobuffalo/buffalo-plugins v1.11.0
 github.com/gobuffalo/buffalo-plugins/plugins
 github.com/gobuffalo/buffalo-plugins/plugins/plugdeps
@@ -36,10 +54,22 @@ github.com/gobuffalo/syncx
 github.com/golang-migrate/migrate/v4/database/sqlite3
 github.com/golang-migrate/migrate/v4/source/file
 github.com/golang-migrate/migrate/v4
-github.com/golang-migrate/migrate/v4/database
 github.com/golang-migrate/migrate/v4/source
+github.com/golang-migrate/migrate/v4/database
+# github.com/gorilla/websocket v1.2.0
+github.com/gorilla/websocket
+# github.com/h2non/filetype v1.0.6
+github.com/h2non/filetype
+github.com/h2non/filetype/types
+github.com/h2non/filetype/matchers
+# github.com/hashicorp/golang-lru v0.5.0
+github.com/hashicorp/golang-lru
+github.com/hashicorp/golang-lru/simplelru
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/jmoiron/sqlx v1.2.0
+github.com/jmoiron/sqlx
+github.com/jmoiron/sqlx/reflectx
 # github.com/joho/godotenv v1.3.0
 github.com/joho/godotenv
 # github.com/karrick/godirwalk v1.7.8
@@ -50,7 +80,7 @@ github.com/konsorten/go-windows-terminal-sequences
 github.com/markbates/oncer
 # github.com/markbates/safe v1.0.1
 github.com/markbates/safe
-# github.com/mattn/go-sqlite3 v1.10.0
+# github.com/mattn/go-sqlite3 v1.9.0
 github.com/mattn/go-sqlite3
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
@@ -58,22 +88,40 @@ github.com/pkg/errors
 github.com/rogpeppe/go-internal/modfile
 github.com/rogpeppe/go-internal/module
 github.com/rogpeppe/go-internal/semver
+# github.com/rs/cors v1.6.0
+github.com/rs/cors
 # github.com/sirupsen/logrus v1.3.0
 github.com/sirupsen/logrus
 # github.com/spf13/cobra v0.0.3
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.3
 github.com/spf13/pflag
+# github.com/vektah/gqlparser v1.1.0
+github.com/vektah/gqlparser
+github.com/vektah/gqlparser/ast
+github.com/vektah/gqlparser/gqlerror
+github.com/vektah/gqlparser/parser
+github.com/vektah/gqlparser/validator
+github.com/vektah/gqlparser/validator/rules
+github.com/vektah/gqlparser/lexer
 # golang.org/x/crypto v0.0.0-20190103213133-ff983b9c42bc
 golang.org/x/crypto/ssh/terminal
+# golang.org/x/image v0.0.0-20190118043309-183bebdce1b2
+golang.org/x/image/bmp
+golang.org/x/image/tiff
+golang.org/x/image/tiff/lzw
+# golang.org/x/net v0.0.0-20190108225652-1e06a53dbb7e
+golang.org/x/net/html
+golang.org/x/net/html/atom
 # golang.org/x/sys v0.0.0-20190116161447-11f53e031339
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/tools v0.0.0-20190118193359-16909d206f00
+# golang.org/x/tools v0.0.0-20190125232054-d66bd3c5d5a6
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/imports
 golang.org/x/tools/go/packages
 golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/module
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/cgo
 golang.org/x/tools/go/internal/packagesdriver
