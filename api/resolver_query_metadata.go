@@ -21,7 +21,8 @@ func (r *queryResolver) MetadataExport(ctx context.Context) (string, error) {
 }
 
 func (r *queryResolver) MetadataGenerate(ctx context.Context) (string, error) {
-	panic("not implemented")
+	manager.GetInstance().Generate(true, true, true, true)
+	return "todo", nil
 }
 
 func (r *queryResolver) MetadataClean(ctx context.Context) (string, error) {

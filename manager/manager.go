@@ -4,6 +4,7 @@ import (
 	"github.com/bmatcuk/doublestar"
 	"github.com/stashapp/stash/logger"
 	"github.com/stashapp/stash/manager/paths"
+	"github.com/stashapp/stash/models"
 	"path/filepath"
 	"sync"
 )
@@ -85,10 +86,70 @@ func (s *singleton) Export() {
 	}()
 }
 
+func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcodes bool) {
+	if s.Status != Idle { return }
+	s.Status = Generate
+
+	qb := models.NewSceneQueryBuilder()
+	//this.job.total = await ObjectionUtils.getCount(Scene);
+	instance.Paths.Generated.EnsureTmpDir()
+
+	go func() {
+		defer s.returnToIdleState()
+
+		scenes, err := qb.All()
+		if err != nil {
+			logger.Errorf("failed to get scenes for generate")
+			return
+		}
+
+		delta := btoi(sprites) + btoi(previews) + btoi(markers) + btoi(transcodes)
+		var wg sync.WaitGroup
+		for _, scene := range scenes {
+			wg.Add(delta)
+
+			if sprites {
+				go func() {
+					wg.Done() // TODO
+				}()
+			}
+
+			if previews {
+				task := GeneratePreviewTask{Scene: scene}
+				go task.Start(&wg)
+			}
+
+			if markers {
+				go func() {
+					wg.Done() // TODO
+				}()
+			}
+
+			if transcodes {
+				go func() {
+					wg.Done() // TODO
+				}()
+			}
+
+			wg.Wait()
+		}
+	}()
+}
+
 func (s *singleton) returnToIdleState() {
 	if r := recover(); r!= nil {
 		logger.Info("recovered from ", r)
 	}
 
+	if s.Status == Generate {
+		instance.Paths.Generated.RemoveTmpDir()
+	}
 	s.Status = Idle
+}
+
+func btoi(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
 }

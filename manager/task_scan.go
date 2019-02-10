@@ -70,8 +70,7 @@ func (t *ScanTask) scanGallery() {
 }
 
 func (t *ScanTask) scanScene() {
-	ffprobe := ffmpeg.NewFFProbe(instance.Paths.FixedPaths.FFProbe)
-	ffprobeResult, err := ffprobe.ProbeVideo(t.FilePath)
+	videoFile, err := ffmpeg.NewVideoFile(instance.Paths.FixedPaths.FFProbe, t.FilePath)
 	if err != nil {
 		logger.Error(err.Error())
 		return
@@ -90,7 +89,7 @@ func (t *ScanTask) scanScene() {
 		return
 	}
 
-	t.makeScreenshots(*ffprobeResult, checksum)
+	t.makeScreenshots(*videoFile, checksum)
 
 	scene, _ = qb.FindByChecksum(checksum)
 	ctx := context.TODO()
@@ -105,14 +104,14 @@ func (t *ScanTask) scanScene() {
 		newScene := models.Scene{
 			Checksum: checksum,
 			Path: t.FilePath,
-			Duration: sql.NullFloat64{Float64: ffprobeResult.Duration, Valid: true },
-			VideoCodec: sql.NullString{ String: ffprobeResult.VideoCodec, Valid: true},
-			AudioCodec: sql.NullString{ String: ffprobeResult.AudioCodec, Valid: true},
-			Width: sql.NullInt64{ Int64: int64(ffprobeResult.Width), Valid: true },
-			Height: sql.NullInt64{ Int64: int64(ffprobeResult.Height), Valid: true },
-			Framerate: sql.NullFloat64{ Float64: ffprobeResult.FrameRate, Valid: true },
-			Bitrate: sql.NullInt64{ Int64: ffprobeResult.Bitrate, Valid: true },
-			Size: sql.NullString{ String: strconv.Itoa(int(ffprobeResult.Size)), Valid: true },
+			Duration: sql.NullFloat64{Float64: videoFile.Duration, Valid: true },
+			VideoCodec: sql.NullString{ String: videoFile.VideoCodec, Valid: true},
+			AudioCodec: sql.NullString{ String: videoFile.AudioCodec, Valid: true},
+			Width: sql.NullInt64{ Int64: int64(videoFile.Width), Valid: true },
+			Height: sql.NullInt64{ Int64: int64(videoFile.Height), Valid: true },
+			Framerate: sql.NullFloat64{ Float64: videoFile.FrameRate, Valid: true },
+			Bitrate: sql.NullInt64{ Int64: videoFile.Bitrate, Valid: true },
+			Size: sql.NullString{ String: strconv.Itoa(int(videoFile.Size)), Valid: true },
 			CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
 			UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
 		}
@@ -127,7 +126,7 @@ func (t *ScanTask) scanScene() {
 	}
 }
 
-func (t *ScanTask) makeScreenshots(probeResult ffmpeg.FFProbeResult, checksum string) {
+func (t *ScanTask) makeScreenshots(probeResult ffmpeg.VideoFile, checksum string) {
 	thumbPath := instance.Paths.Scene.GetThumbnailScreenshotPath(checksum)
 	normalPath := instance.Paths.Scene.GetScreenshotPath(checksum)
 
@@ -142,7 +141,7 @@ func (t *ScanTask) makeScreenshots(probeResult ffmpeg.FFProbeResult, checksum st
 	t.makeScreenshot(probeResult, normalPath, 2, probeResult.Width)
 }
 
-func (t *ScanTask) makeScreenshot(probeResult ffmpeg.FFProbeResult, outputPath string, quality int, width int) {
+func (t *ScanTask) makeScreenshot(probeResult ffmpeg.VideoFile, outputPath string, quality int, width int) {
 	encoder := ffmpeg.NewEncoder(instance.Paths.FixedPaths.FFMPEG)
 	options := ffmpeg.ScreenshotOptions{
 		OutputPath: outputPath,

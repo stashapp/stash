@@ -1,0 +1,127 @@
+package manager
+
+import (
+	"bufio"
+	"fmt"
+	"github.com/stashapp/stash/ffmpeg"
+	"github.com/stashapp/stash/logger"
+	"github.com/stashapp/stash/utils"
+	"os"
+	"path"
+)
+
+type PreviewGenerator struct {
+	generator *Generator
+
+	VideoFilename string
+	ImageFilename string
+	OutputDirectory string
+}
+
+func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, imageFilename string, outputDirectory string) (*PreviewGenerator, error) {
+	exists, err := utils.FileExists(videoFile.Path)
+	if !exists {
+		return nil, err
+	}
+	generator, err := newGenerator(videoFile)
+	if err != nil {
+		return nil, err
+	}
+	generator.ChunkCount = 12 // 12 segments to the preview
+	if err := generator.configure(); err != nil {
+		return nil, err
+	}
+
+	return &PreviewGenerator{
+		generator: generator,
+		VideoFilename: videoFilename,
+		ImageFilename: imageFilename,
+		OutputDirectory: outputDirectory,
+	}, nil
+}
+
+func (g *PreviewGenerator) Generate() error {
+	instance.Paths.Generated.EmptyTmpDir()
+	logger.Infof("[generator] generating scene preview for %s", g.generator.VideoFile.Path)
+	encoder := ffmpeg.NewEncoder(instance.Paths.FixedPaths.FFMPEG)
+
+	if err := g.generateConcatFile(); err != nil {
+		return err
+	}
+	if err := g.generateVideo(&encoder); err != nil {
+		return err
+	}
+	if err := g.generateImage(&encoder); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *PreviewGenerator) generateConcatFile() error {
+	f, err := os.Create(g.getConcatFilePath())
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	w := bufio.NewWriter(f)
+	for i := 0; i < g.generator.ChunkCount; i++ {
+		num := fmt.Sprintf("%.3d", i)
+		filename := "preview"+num+".mp4"
+		_, _ = w.WriteString(fmt.Sprintf("file '%s'\n", filename))
+	}
+	return w.Flush()
+}
+
+func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder) error {
+	outputPath := path.Join(g.OutputDirectory, g.VideoFilename)
+	outputExists, _ := utils.FileExists(outputPath)
+	if outputExists {
+		return nil
+	}
+
+	stepSize := int(g.generator.VideoFile.Duration / float64(g.generator.ChunkCount))
+	for i := 0; i < g.generator.ChunkCount; i++ {
+		time := i * stepSize
+		num := fmt.Sprintf("%.3d", i)
+		filename := "preview"+num+".mp4"
+		chunkOutputPath := instance.Paths.Generated.GetTmpPath(filename)
+
+		options := ffmpeg.ScenePreviewChunkOptions{
+			Time: time,
+			Width: 640,
+			OutputPath: chunkOutputPath,
+		}
+		encoder.ScenePreviewVideoChunk(g.generator.VideoFile, options)
+	}
+
+	videoOutputPath := path.Join(g.OutputDirectory, g.VideoFilename)
+	encoder.ScenePreviewVideoChunkCombine(g.generator.VideoFile, g.getConcatFilePath(), videoOutputPath)
+	logger.Debug("created video preview: ", videoOutputPath)
+	return nil
+}
+
+func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
+	outputPath := path.Join(g.OutputDirectory, g.ImageFilename)
+	outputExists, _ := utils.FileExists(outputPath)
+	if outputExists {
+		return nil
+	}
+
+	videoPreviewPath := path.Join(g.OutputDirectory, g.VideoFilename)
+	tmpOutputPath := instance.Paths.Generated.GetTmpPath(g.ImageFilename)
+	if err := encoder.ScenePreviewVideoToImage(g.generator.VideoFile, 640, videoPreviewPath, tmpOutputPath); err != nil {
+		return err
+	} else {
+		if err := os.Rename(tmpOutputPath, outputPath); err != nil {
+			return err
+		}
+		logger.Debug("created video preview image: ", outputPath)
+	}
+
+	return nil
+}
+
+func (g *PreviewGenerator) getConcatFilePath() string {
+	return instance.Paths.Generated.GetTmpPath("files.txt")
+}
