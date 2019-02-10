@@ -13,15 +13,15 @@ type GenerateSpriteTask struct {
 }
 
 func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	if t.doesSpriteExist(t.Scene.Checksum) {
-		wg.Done()
 		return
 	}
 
 	videoFile, err := ffmpeg.NewVideoFile(instance.Paths.FixedPaths.FFProbe, t.Scene.Path)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
-		wg.Done()
 		return
 	}
 
@@ -30,17 +30,13 @@ func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 	generator, err := NewSpriteGenerator(*videoFile, imagePath, vttPath, 9, 9)
 	if err != nil {
 		logger.Errorf("error creating sprite generator: %s", err.Error())
-		wg.Done()
 		return
 	}
 
 	if err := generator.Generate(); err != nil {
 		logger.Errorf("error generating sprite: %s", err.Error())
-		wg.Done()
 		return
 	}
-
-	wg.Done()
 }
 
 func (t *GenerateSpriteTask) doesSpriteExist(sceneChecksum string) bool {

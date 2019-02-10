@@ -37,7 +37,6 @@ func EnsureDir(path string) error {
 	return err
 }
 
-// TODO test
 func RemoveDir(path string) error {
 	return os.RemoveAll(path)
 }

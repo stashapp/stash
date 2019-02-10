@@ -16,18 +16,18 @@ type GenerateMarkersTask struct {
 }
 
 func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	instance.Paths.Generated.EmptyTmpDir()
 	qb := models.NewSceneMarkerQueryBuilder()
 	sceneMarkers, _ := qb.FindBySceneID(t.Scene.ID, nil)
 	if len(sceneMarkers) == 0 {
-		wg.Done()
 		return
 	}
 
 	videoFile, err := ffmpeg.NewVideoFile(instance.Paths.FixedPaths.FFProbe, t.Scene.Path)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
-		wg.Done()
 		return
 	}
 
@@ -74,6 +74,4 @@ func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
 			}
 		}
 	}
-
-	wg.Done()
 }

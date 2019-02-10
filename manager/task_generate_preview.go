@@ -13,39 +13,35 @@ type GeneratePreviewTask struct {
 }
 
 func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	videoFilename := t.videoFilename()
 	imageFilename := t.imageFilename()
-	if t.doesPreviewExist(videoFilename, imageFilename) {
-		wg.Done()
+	if t.doesPreviewExist(t.Scene.Checksum) {
 		return
 	}
 
 	videoFile, err := ffmpeg.NewVideoFile(instance.Paths.FixedPaths.FFProbe, t.Scene.Path)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
-		wg.Done()
 		return
 	}
 
 	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots)
 	if err != nil {
 		logger.Errorf("error creating preview generator: %s", err.Error())
-		wg.Done()
 		return
 	}
 
 	if err := generator.Generate(); err != nil {
 		logger.Errorf("error generating preview: %s", err.Error())
-		wg.Done()
 		return
 	}
-
-	wg.Done()
 }
 
-func (t *GeneratePreviewTask) doesPreviewExist(videoFilename string, imageFilename string) bool {
-	videoExists, _ := utils.FileExists(instance.Paths.Scene.GetStreamPreviewPath(videoFilename))
-	imageExists, _ := utils.FileExists(instance.Paths.Scene.GetStreamPreviewImagePath(imageFilename))
+func (t *GeneratePreviewTask) doesPreviewExist(sceneChecksum string) bool {
+	videoExists, _ := utils.FileExists(instance.Paths.Scene.GetStreamPreviewPath(sceneChecksum))
+	imageExists, _ := utils.FileExists(instance.Paths.Scene.GetStreamPreviewImagePath(sceneChecksum))
 	return videoExists && imageExists
 }
 

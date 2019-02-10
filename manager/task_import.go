@@ -20,9 +20,12 @@ type ImportTask struct {
 }
 
 func (t *ImportTask) Start(wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	t.Mappings, _ = instance.JSON.getMappings()
 	if t.Mappings == nil {
-		panic("missing mappings json")
+		logger.Error("missing mappings json")
+		return
 	}
 	scraped, _ := instance.JSON.getScraped()
 	if scraped == nil {
@@ -41,8 +44,6 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 
 	t.ImportScrapedItems(ctx)
 	t.ImportScenes(ctx)
-
-	wg.Done()
 }
 
 func (t *ImportTask) ImportPerformers(ctx context.Context) {
@@ -231,6 +232,7 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 	for i, mappingJSON := range t.Mappings.Scenes {
 		index := i + 1
 		if mappingJSON.Checksum == "" || mappingJSON.Path == "" {
+			_ = tx.Rollback()
 			logger.Warn("[tags] scene mapping without checksum or path: ", mappingJSON)
 			return
 		}
@@ -350,6 +352,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 	for i, mappingJSON := range t.Mappings.Scenes {
 		index := i + 1
 		if mappingJSON.Checksum == "" || mappingJSON.Path == "" {
+			_ = tx.Rollback()
 			logger.Warn("[scenes] scene mapping without checksum or path: ", mappingJSON)
 			return
 		}

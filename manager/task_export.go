@@ -19,6 +19,7 @@ type ExportTask struct {
 }
 
 func (t *ExportTask) Start(wg *sync.WaitGroup) {
+	defer wg.Done()
 	// @manager.total = Scene.count + Gallery.count + Performer.count + Studio.count
 
 	t.Mappings = &jsonschema.Mappings{}
@@ -36,8 +37,6 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	}
 
 	t.ExportScrapedItems(ctx)
-
-	wg.Done()
 }
 
 func (t *ExportTask) ExportScenes(ctx context.Context) {
