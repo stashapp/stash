@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-type Generator struct {
+type GeneratorInfo struct {
 	ChunkCount     int
 	FrameRate      float64
 	NumberOfFrames int
@@ -18,18 +18,18 @@ type Generator struct {
 	VideoFile ffmpeg.VideoFile
 }
 
-func newGenerator(videoFile ffmpeg.VideoFile) (*Generator, error) {
+func newGeneratorInfo(videoFile ffmpeg.VideoFile) (*GeneratorInfo, error) {
 	exists, err := utils.FileExists(videoFile.Path)
 	if !exists {
 		logger.Errorf("video file not found")
 		return nil, err
 	}
 
-	generator := &Generator{VideoFile: videoFile}
+	generator := &GeneratorInfo{VideoFile: videoFile}
 	return generator, nil
 }
 
-func (g *Generator) configure() error {
+func (g *GeneratorInfo) configure() error {
 	videoStream := g.VideoFile.VideoStream
 	if videoStream == nil {
 		return fmt.Errorf("missing video stream")

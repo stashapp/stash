@@ -120,9 +120,8 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 			}
 
 			if markers {
-				go func() {
-					wg.Done() // TODO
-				}()
+				task := GenerateMarkersTask{Scene: scene}
+				go task.Start(&wg)
 			}
 
 			if transcodes {
