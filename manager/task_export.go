@@ -41,6 +41,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 
 func (t *ExportTask) ExportScenes(ctx context.Context) {
 	tx := database.DB.MustBeginTx(ctx, nil)
+	defer tx.Commit()
 	qb := models.NewSceneQueryBuilder()
 	studioQB := models.NewStudioQueryBuilder()
 	galleryQB := models.NewGalleryQueryBuilder()
@@ -321,6 +322,7 @@ func (t *ExportTask) ExportStudios(ctx context.Context) {
 
 func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
 	tx := database.DB.MustBeginTx(ctx, nil)
+	defer tx.Commit()
 	qb := models.NewScrapedItemQueryBuilder()
 	sqb := models.NewStudioQueryBuilder()
 	scrapedItems, err := qb.All()

@@ -9,6 +9,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stash/logger"
 	"github.com/stashapp/stash/utils"
+	"os"
 )
 
 var DB *sqlx.DB
@@ -19,7 +20,8 @@ func Initialize(databasePath string) {
 
 	// https://github.com/mattn/go-sqlite3
 	conn, err := sqlx.Open("sqlite3", "file:"+databasePath+"?_fk=true")
-	conn.SetMaxOpenConns(10)
+	conn.SetMaxOpenConns(25)
+	conn.SetMaxIdleConns(4)
 	if err != nil {
 		logger.Fatalf("db.Open(): %q\n", err)
 	}
@@ -27,12 +29,9 @@ func Initialize(databasePath string) {
 }
 
 func Reset(databasePath string) {
-	_, _ = DB.Exec("PRAGMA writable_schema = 1;")
-	_, _ = DB.Exec("delete from sqlite_master where type in ('table', 'index', 'trigger');")
-	_, _ = DB.Exec("PRAGMA writable_schema = 0;")
-	_, _ = DB.Exec("VACUUM;")
-	_, _ = DB.Exec("PRAGMA INTEGRITY_CHECK;")
-	runMigrations(databasePath)
+	_ = DB.Close()
+	_ = os.Remove(databasePath)
+	Initialize(databasePath)
 }
 
 // Migrate the database
