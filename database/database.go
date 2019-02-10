@@ -8,8 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stash/logger"
-	"runtime"
-	"strings"
+	"github.com/stashapp/stash/utils"
 )
 
 var DB *sqlx.DB
@@ -44,10 +43,7 @@ func runMigrations(databasePath string) {
 		Migrations: source.NewMigrations(),
 	}
 
-	// Golang migrate has an issue where the \ isn't recognized as a valid on windows
-	if runtime.GOOS == "windows" {
-		databasePath = strings.Replace(databasePath, "\\", "/", -1)
-	}
+	databasePath = utils.FixWindowsPath(databasePath)
 	s, _ := WithInstance(packrSource)
 	m, err := migrate.NewWithSourceInstance(
 		"packr2",
