@@ -52,4 +52,7 @@ The error was: %s
 			logger.Fatalf(msg, instance.StaticPaths.ConfigDirectory, err)
 		}
 	}
+
+	instance.StaticPaths.FFMPEG = ffmpegPath
+	instance.StaticPaths.FFProbe = ffprobePath
 }
