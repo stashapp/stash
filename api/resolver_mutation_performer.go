@@ -72,6 +72,8 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	}
 	if input.Favorite != nil {
 		newPerformer.Favorite = sql.NullBool{ Bool: *input.Favorite, Valid: true }
+	} else {
+		newPerformer.Favorite = sql.NullBool{ Bool: false, Valid: true }
 	}
 
 	// Start the transaction and save the performer
@@ -153,6 +155,8 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	}
 	if input.Favorite != nil {
 		updatedPerformer.Favorite = sql.NullBool{ Bool: *input.Favorite, Valid: true }
+	} else {
+		updatedPerformer.Favorite = sql.NullBool{ Bool: false, Valid: true }
 	}
 
 	// Start the transaction and save the performer
