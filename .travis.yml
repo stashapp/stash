@@ -30,5 +30,6 @@ deploy:
     repo: stashapp/stash
     branch: master
 branches:
-  except:
-    - /^v\d+\.\d\.\d.*/ # don't build tags
+  only:
+    - master
+    - develop
