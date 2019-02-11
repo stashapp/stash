@@ -1,5 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 
+/* TODO */
+.ui.progress .bar {
+  display: none !important;
+}
+
 body {
   background-color: #000000;
 }
@@ -420,4 +425,8 @@ sui-select.ui.dropdown {
 .ui.dark.card > .extra {
   border-top: 1px solid #555 !important;
   color: inherit;
+}
+
+sui-progress .label {
+  color: white !important;
 }

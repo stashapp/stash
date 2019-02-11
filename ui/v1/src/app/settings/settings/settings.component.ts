@@ -17,13 +17,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
   constructor(private stashService: StashService) {}
 
   ngOnInit() {
-    // this.statusObservable = this.stashService.metadataUpdate().subscribe(response => {
-    //   const result = JSON.parse(response.data.metadataUpdate);
+    this.statusObservable = this.stashService.metadataUpdate().subscribe(response => {
+      const result = JSON.parse(response.data.metadataUpdate);
 
-    //   this.progress = result.progress;
-    //   this.message = result.message;
-    //   this.logs = result.logs;
-    // });
+      this.progress = result.progress;
+      this.message = result.message;
+      this.logs = result.logs;
+    });
   }
 
   ngOnDestroy() {

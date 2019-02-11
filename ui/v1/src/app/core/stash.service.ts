@@ -10,10 +10,8 @@ import { onError } from 'apollo-link-error';
 import { ApolloLink } from 'apollo-link';
 import { getMainDefinition } from 'apollo-utilities';
 
-import * as ActionCable from 'actioncable';
-import * as ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink';
-
 import * as GQL from './graphql-generated';
+import {WebSocketLink} from "apollo-link-ws";
 
 @Injectable()
 export class StashService {
@@ -53,6 +51,7 @@ export class StashService {
   private metadataScanGQL = new GQL.MetadataScanGQL(this.apollo);
   private metadataGenerateGQL = new GQL.MetadataGenerateGQL(this.apollo);
   private metadataCleanGQL = new GQL.MetadataCleanGQL(this.apollo);
+  private metadataUpdateGQL = new GQL.MetadataUpdateGQL(this.apollo);
 
   constructor(private apollo: Apollo, private platformLocation: PlatformLocation, private httpLink: HttpLink) {
     const platform: any = platformLocation;
@@ -60,9 +59,12 @@ export class StashService {
     platformUrl.port = platformUrl.protocol === 'https:' ? '9999' : '9998';
     const url = platformUrl.toString().slice(0, -1);
 
-    // http://graphql-ruby.org/javascript_client/apollo_subscriptions
-    const cable = ActionCable.createConsumer(`ws://${platform.location.hostname}:3000/subscriptions`);
-    const actionCableLink = new ActionCableLink({cable});
+    const wsLink = new WebSocketLink({
+      uri: `ws://${platform.location.hostname}:${platformUrl.port}/graphql`,
+      options: {
+        reconnect: true
+      }
+    });
 
     const errorLink = onError(({ graphQLErrors, networkError }) => {
       if (graphQLErrors) {
@@ -86,7 +88,7 @@ export class StashService {
         const definition = getMainDefinition(query);
         return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
       },
-      actionCableLink,
+      wsLink,
       httpLinkHandler
     );
 
@@ -499,9 +501,7 @@ export class StashService {
   }
 
   metadataUpdate() {
-    // return this.apollo.subscribe({
-    //   query: METADATA_UPDATE_SUBSCRIPTION
-    // });
+    return this.metadataUpdateGQL.subscribe()
   }
 
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/gobuffalo/packr/v2"
+	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/logger"
 	"github.com/stashapp/stash/manager"
@@ -61,7 +62,12 @@ func Start() {
 		//api.GetRequestContext(ctx).Variables[]
 		return next(ctx)
 	})
-	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}), recoverFunc, requestMiddleware)
+	websocketUpgrader := handler.WebsocketUpgrader(websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	})
+	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}), recoverFunc, requestMiddleware, websocketUpgrader)
 
 	// https://stash.server:9999/certs/server.crt
 	r.Handle("/certs/*", http.FileServer(certsBox))

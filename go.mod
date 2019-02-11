@@ -8,6 +8,7 @@ require (
 	github.com/go-chi/chi v4.0.1+incompatible
 	github.com/gobuffalo/packr/v2 v2.0.0-rc.15
 	github.com/golang-migrate/migrate/v4 v4.2.2
+	github.com/gorilla/websocket v1.2.0
 	github.com/h2non/filetype v1.0.6
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/mattn/go-sqlite3 v1.9.0
