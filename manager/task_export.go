@@ -162,9 +162,8 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 
 		sceneJSON, err := instance.JSON.getScene(scene.Checksum)
 		if err != nil {
-			logger.Errorf("[scenes] error reading scene json: %s", err.Error())
-		}
-		if jsonschema.CompareJSON(*sceneJSON, newSceneJSON) {
+			logger.Debugf("[scenes] error reading scene json: %s", err.Error())
+		} else if jsonschema.CompareJSON(*sceneJSON, newSceneJSON) {
 			continue
 		}
 
@@ -264,9 +263,8 @@ func (t *ExportTask) ExportPerformers(ctx context.Context) {
 
 		performerJSON, err := instance.JSON.getPerformer(performer.Checksum)
 		if err != nil {
-			logger.Errorf("[performers] error reading performer json: %s", err.Error())
-		}
-		if jsonschema.CompareJSON(*performerJSON, newPerformerJSON) {
+			logger.Debugf("[performers] error reading performer json: %s", err.Error())
+		} else if jsonschema.CompareJSON(*performerJSON, newPerformerJSON) {
 			continue
 		}
 
@@ -306,9 +304,8 @@ func (t *ExportTask) ExportStudios(ctx context.Context) {
 
 		studioJSON, err := instance.JSON.getStudio(studio.Checksum)
 		if err != nil {
-			logger.Errorf("[studios] error reading studio json: %s", err.Error())
-		}
-		if jsonschema.CompareJSON(*studioJSON, newStudioJSON) {
+			logger.Debugf("[studios] error reading studio json: %s", err.Error())
+		} else if jsonschema.CompareJSON(*studioJSON, newStudioJSON) {
 			continue
 		}
 
@@ -392,7 +389,7 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
 
 	scrapedJSON, err := instance.JSON.getScraped()
 	if err != nil {
-		logger.Errorf("[scraped sites] error reading json: %s", err.Error())
+		logger.Debugf("[scraped sites] error reading json: %s", err.Error())
 	}
 	if !jsonschema.CompareJSON(scrapedJSON, t.Scraped) {
 		if err := instance.JSON.saveScaped(t.Scraped); err != nil {
