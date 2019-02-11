@@ -3,7 +3,9 @@ package manager
 import (
 	"github.com/stashapp/stash/ffmpeg"
 	"github.com/stashapp/stash/logger"
+	"github.com/stashapp/stash/manager/jsonschema"
 	"github.com/stashapp/stash/manager/paths"
+	"github.com/stashapp/stash/utils"
 	"sync"
 )
 
@@ -24,12 +26,15 @@ func GetInstance() *singleton {
 
 func Initialize() *singleton {
 	once.Do(func() {
+		configFile := jsonschema.LoadConfigFile(paths.StaticPaths.ConfigFile)
 		instance = &singleton{
 			Status:      Idle,
-			Paths:       paths.RefreshPaths(),
+			Paths:       paths.NewPaths(configFile),
 			StaticPaths: &paths.StaticPaths,
 			JSON:        &jsonUtils{},
 		}
+
+		instance.refreshConfig(configFile)
 
 		initFFMPEG()
 	})
@@ -55,4 +60,42 @@ The error was: %s
 
 	instance.StaticPaths.FFMPEG = ffmpegPath
 	instance.StaticPaths.FFProbe = ffprobePath
+}
+
+func HasValidConfig() bool {
+	configFileExists, _ := utils.FileExists(instance.StaticPaths.ConfigFile) // TODO: Verify JSON is correct
+	if configFileExists && instance.Paths.Config != nil {
+		return true
+	}
+	return false
+}
+
+func (s *singleton) SaveConfig(config *jsonschema.Config) error {
+	if err := jsonschema.SaveConfigFile(s.StaticPaths.ConfigFile, config); err != nil {
+		return err
+	}
+
+	// Reload the config
+	s.refreshConfig(config)
+
+	return nil
+}
+
+func (s *singleton) refreshConfig(config *jsonschema.Config) {
+	if config == nil {
+		config = jsonschema.LoadConfigFile(s.StaticPaths.ConfigFile)
+	}
+	s.Paths = paths.NewPaths(config)
+
+	if HasValidConfig() {
+		_ = utils.EnsureDir(s.Paths.Generated.Screenshots)
+		_ = utils.EnsureDir(s.Paths.Generated.Vtt)
+		_ = utils.EnsureDir(s.Paths.Generated.Markers)
+		_ = utils.EnsureDir(s.Paths.Generated.Transcodes)
+
+		_ = utils.EnsureDir(s.Paths.JSON.Performers)
+		_ = utils.EnsureDir(s.Paths.JSON.Scenes)
+		_ = utils.EnsureDir(s.Paths.JSON.Galleries)
+		_ = utils.EnsureDir(s.Paths.JSON.Studios)
+	}
 }

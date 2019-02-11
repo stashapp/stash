@@ -1,7 +1,6 @@
 package paths
 
 import (
-	"github.com/stashapp/stash/utils"
 	"path/filepath"
 )
 
@@ -23,11 +22,6 @@ func newJSONPaths(p Paths) *jsonPaths {
 	jp.Scenes = filepath.Join(p.Config.Metadata, "scenes")
 	jp.Galleries = filepath.Join(p.Config.Metadata, "galleries")
 	jp.Studios = filepath.Join(p.Config.Metadata, "studios")
-
-	_ = utils.EnsureDir(jp.Performers)
-	_ = utils.EnsureDir(jp.Scenes)
-	_ = utils.EnsureDir(jp.Galleries)
-	_ = utils.EnsureDir(jp.Studios)
 	return &jp
 }
 

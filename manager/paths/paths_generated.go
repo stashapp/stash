@@ -20,11 +20,6 @@ func newGeneratedPaths(p Paths) *generatedPaths {
 	gp.Markers = filepath.Join(p.Config.Metadata, "markers")
 	gp.Transcodes = filepath.Join(p.Config.Metadata, "transcodes")
 	gp.Tmp = filepath.Join(p.Config.Metadata, "tmp")
-
-	_ = utils.EnsureDir(gp.Screenshots)
-	_ = utils.EnsureDir(gp.Vtt)
-	_ = utils.EnsureDir(gp.Markers)
-	_ = utils.EnsureDir(gp.Transcodes)
 	return &gp
 }
 

@@ -6,23 +6,15 @@
 
 See a demo [here](https://vimeo.com/275537038) (password is stashapp).
 
-TODO: This is not match the features of the Rails project quite yet.  Consider using that until this project is complete.
+TODO: This does not match the features of the Rails project quite yet and is still a little buggy.  Fall back to the Rails project if you run into issues as an existing user.
 
-## Setup
+# Install
 
-TODO: This is not final.  There is more work to be done to ease this process.
+Stash supports macOS, Windows, and Linux.  Download the [latest release here](https://github.com/stashapp/stash/releases).
 
-### OSX / Linux
+Simply run the executable and navigate to either https://localhost:9999 or http://localhost:9998 to get started.
 
-1. `mkdir ~/.stash` && `cd ~/.stash`
-2. Create a `config.json` file (see below).
-3. Run stash with `./stash` and visit `http://localhost:9998` or `https://localhost:9999`
-
-### Windows
-
-1. Create a new folder at `C:\Users\YourUsername\.stash`
-2. Create a `config.json` file (see below)
-3. Run stash with `./stash` and visit `http://localhost:9998` or `https://localhost:9999`
+*Note for Windows users:* Running the app might present a security prompt since the binary isn't signed yet.  Just click more info and then the run anyway button.
 
 #### FFMPEG
 
@@ -34,29 +26,11 @@ If stash is unable to find or download FFMPEG then download it yourself from the
 
 The `ffmpeg(.exe)` and `ffprobe(.exe)` files should be placed in `~/.stash` on macOS / Linux or `C:\Users\YourUsername\.stash` on Windows.
 
-#### Config.json
+# FAQ
 
-Example:
+> Does stash support multiple folders?
 
-*OSX / Linux*
-```
-{
-  "stash": "/Volumes/Drobo/videos",
-  "metadata": "/Volumes/Drobo/stash/metadata",
-  "cache": "/Volumes/Drobo/stash/cache",
-  "downloads": "/Volumes/Drobo/stash/downloads"
-}
-```
-
-*Windows*
-```
-{
-  "stash": "C:\\Videos",
-  "metadata": "C:\\stash\\metadata",
-  "cache": "C:\\stash\\cache",
-  "downloads": "C:\\stash\\downloads"
-}
-```
+Not yet, but this will come in the future.
 
 # Development
 

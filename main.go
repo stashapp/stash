@@ -12,6 +12,10 @@ import (
 func main() {
 	managerInstance := manager.Initialize()
 	database.Initialize(managerInstance.StaticPaths.DatabaseFile)
-
 	api.Start()
+	blockForever()
+}
+
+func blockForever() {
+	select {}
 }
