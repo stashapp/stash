@@ -85,6 +85,10 @@ func (qb *performerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]Per
 	return qb.queryPerformers(query, args, tx)
 }
 
+func (qb *performerQueryBuilder) Count() (int, error) {
+	return runCountQuery(buildCountQuery("SELECT performers.id FROM performers"), nil)
+}
+
 func (qb *performerQueryBuilder) All() ([]Performer, error) {
 	return qb.queryPerformers(selectAll("performers") + qb.getPerformerSort(nil), nil, nil)
 }

@@ -109,6 +109,10 @@ func (qb *sceneQueryBuilder) FindByStudioID(studioID int) ([]Scene, error) {
 	return qb.queryScenes(scenesForStudioQuery, args, nil)
 }
 
+func (qb *sceneQueryBuilder) Count() (int, error) {
+	return runCountQuery(buildCountQuery("SELECT scenes.id FROM scenes"), nil)
+}
+
 func (qb *sceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
 	args := []interface{}{studioID}
 	return runCountQuery(buildCountQuery(scenesForStudioQuery), args)

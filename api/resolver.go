@@ -85,19 +85,23 @@ func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *st
 }
 
 func (r *queryResolver) Stats(ctx context.Context) (models.StatsResultType, error) {
-	//scenesCount, _ := runCountQuery(buildCountQuery(selectAll("scenes")), nil)
-	//galleryCount, _ := runCountQuery(buildCountQuery(selectAll("galleries")), nil)
-	//performersCount, _ := runCountQuery(buildCountQuery(selectAll("performers")), nil)
-	//studiosCount, _ := runCountQuery(buildCountQuery(selectAll("studios")), nil)
-	//tagsCount, _ := runCountQuery(buildCountQuery(selectAll("tags")), nil)
-	//return StatsResultType{
-	//	SceneCount: scenesCount,
-	//	GalleryCount: galleryCount,
-	//	PerformerCount: performersCount,
-	//	StudioCount: studiosCount,
-	//	TagCount: tagsCount,
-	//}, nil
-	return models.StatsResultType{}, nil // TODO
+	scenesQB := models.NewSceneQueryBuilder()
+	scenesCount, _ := scenesQB.Count()
+	galleryQB := models.NewGalleryQueryBuilder()
+	galleryCount, _ := galleryQB.Count()
+	performersQB := models.NewPerformerQueryBuilder()
+	performersCount, _ := performersQB.Count()
+	studiosQB := models.NewStudioQueryBuilder()
+	studiosCount, _ := studiosQB.Count()
+	tagsQB := models.NewTagQueryBuilder()
+	tagsCount, _ := tagsQB.Count()
+	return models.StatsResultType{
+		SceneCount: scenesCount,
+		GalleryCount: galleryCount,
+		PerformerCount: performersCount,
+		StudioCount: studiosCount,
+		TagCount: tagsCount,
+	}, nil
 }
 
 // Get scene marker tags which show up under the video.

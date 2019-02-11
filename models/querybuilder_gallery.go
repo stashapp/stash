@@ -80,6 +80,10 @@ func (qb *galleryQueryBuilder) ValidGalleriesForScenePath(scenePath string) ([]G
 	return qb.queryGalleries(query, nil, nil)
 }
 
+func (qb *galleryQueryBuilder) Count() (int, error) {
+	return runCountQuery(buildCountQuery("SELECT galleries.id FROM galleries"), nil)
+}
+
 func (qb *galleryQueryBuilder) All() ([]Gallery, error) {
 	return qb.queryGalleries(selectAll("galleries") + qb.getGallerySort(nil), nil, nil)
 }

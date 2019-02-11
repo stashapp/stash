@@ -102,6 +102,10 @@ func (qb *tagQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]Tag, erro
 	return qb.queryTags(query, args, tx)
 }
 
+func (qb *tagQueryBuilder) Count() (int, error) {
+	return runCountQuery(buildCountQuery("SELECT tags.id FROM tags"), nil)
+}
+
 func (qb *tagQueryBuilder) All() ([]Tag, error) {
 	return qb.queryTags(selectAll("tags") + qb.getTagSort(nil), nil, nil)
 }

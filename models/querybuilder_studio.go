@@ -68,6 +68,10 @@ func (qb *studioQueryBuilder) FindByName(name string, tx *sqlx.Tx) (*Studio, err
 	return qb.queryStudio(query, args, tx)
 }
 
+func (qb *studioQueryBuilder) Count() (int, error) {
+	return runCountQuery(buildCountQuery("SELECT studios.id FROM studios"), nil)
+}
+
 func (qb *studioQueryBuilder) All() ([]Studio, error) {
 	return qb.queryStudios(selectAll("studios") + qb.getStudioSort(nil), nil, nil)
 }
