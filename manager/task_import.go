@@ -33,7 +33,7 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 	}
 	t.Scraped = scraped
 
-	database.Reset(instance.Paths.FixedPaths.DatabaseFile)
+	database.Reset(instance.StaticPaths.DatabaseFile)
 
 	ctx := context.TODO()
 

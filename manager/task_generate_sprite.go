@@ -19,7 +19,7 @@ func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.Paths.FixedPaths.FFProbe, t.Scene.Path)
+	videoFile, err := ffmpeg.NewVideoFile(instance.StaticPaths.FFProbe, t.Scene.Path)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return

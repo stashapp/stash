@@ -18,7 +18,7 @@ func main() {
 	//fmt.Println("hello world")
 
 	managerInstance := manager.Initialize()
-	database.Initialize(managerInstance.Paths.FixedPaths.DatabaseFile)
+	database.Initialize(managerInstance.StaticPaths.DatabaseFile)
 
 	api.Start()
 }

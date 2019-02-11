@@ -43,7 +43,7 @@ func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, image
 func (g *PreviewGenerator) Generate() error {
 	instance.Paths.Generated.EmptyTmpDir()
 	logger.Infof("[generator] generating scene preview for %s", g.Info.VideoFile.Path)
-	encoder := ffmpeg.NewEncoder(instance.Paths.FixedPaths.FFMPEG)
+	encoder := ffmpeg.NewEncoder(instance.StaticPaths.FFMPEG)
 
 	if err := g.generateConcatFile(); err != nil {
 		return err

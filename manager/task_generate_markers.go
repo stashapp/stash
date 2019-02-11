@@ -25,7 +25,7 @@ func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.Paths.FixedPaths.FFProbe, t.Scene.Path)
+	videoFile, err := ffmpeg.NewVideoFile(instance.StaticPaths.FFProbe, t.Scene.Path)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return
@@ -35,7 +35,7 @@ func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
 	markersFolder := filepath.Join(instance.Paths.Generated.Markers, t.Scene.Checksum)
 	_ = utils.EnsureDir(markersFolder)
 
-	encoder := ffmpeg.NewEncoder(instance.Paths.FixedPaths.FFMPEG)
+	encoder := ffmpeg.NewEncoder(instance.StaticPaths.FFMPEG)
 	for i, sceneMarker := range sceneMarkers {
 		index := i + 1
 		logger.Progressf("[generator] <%s> scene marker %d of %d", t.Scene.Checksum, index, len(sceneMarkers))
