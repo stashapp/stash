@@ -1,17 +1,32 @@
 package manager
 
-import "github.com/stashapp/stash/utils"
+import (
+	"fmt"
+	"github.com/stashapp/stash/models"
+	"github.com/stashapp/stash/utils"
+)
 
-func IsStreamable(videoPath string, checksum string) (bool, error) {
-	fileType, err := utils.FileType(videoPath)
+func IsStreamable(scene *models.Scene) (bool, error) {
+	if scene == nil {
+		return false, fmt.Errorf("nil scene")
+	}
+ 	fileType, err := utils.FileType(scene.Path)
 	if err != nil {
 		return false, err
 	}
 
-	if fileType.MIME.Value == "video/quicktime" || fileType.MIME.Value == "video/mp4" || fileType.MIME.Value == "video/webm" || fileType.MIME.Value == "video/x-m4v" {
+	switch fileType.MIME.Value {
+	case "video/quicktime", "video/mp4", "video/webm", "video/x-m4v":
 		return true, nil
-	} else {
-		transcodePath := instance.Paths.Scene.GetTranscodePath(checksum)
-		return utils.FileExists(transcodePath)
+	default:
+		return HasTranscode(scene)
 	}
+}
+
+func HasTranscode(scene *models.Scene) (bool, error) {
+	if scene == nil {
+		return false, fmt.Errorf("nil scene")
+	}
+	transcodePath := instance.Paths.Scene.GetTranscodePath(scene.Checksum)
+	return utils.FileExists(transcodePath)
 }

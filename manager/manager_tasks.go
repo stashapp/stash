@@ -98,9 +98,8 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 			}
 
 			if transcodes {
-				go func() {
-					wg.Done() // TODO
-				}()
+				task := GenerateTranscodeTask{Scene: scene}
+				go task.Start(&wg)
 			}
 
 			wg.Wait()
