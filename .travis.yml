@@ -3,13 +3,20 @@ go:
 - 1.11.x
 services:
 - docker
+env:
+  global:
+  - GO111MODULE=on
 before_install:
 - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
 - cd ui/v1
 - yarn install
 - ./node_modules/@angular/cli/bin/ng build --prod
 - cd ../..
-script: go test
+- go get -v golang.org/x/lint/golint
+script:
+- make lint
+- make vet
+- go test
 before_deploy:
 - docker pull bepsays/ci-goreleaser
 - go get -u github.com/gobuffalo/packr/v2/packr2
