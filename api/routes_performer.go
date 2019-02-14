@@ -22,7 +22,7 @@ func (rs performerRoutes) Routes() chi.Router {
 }
 
 func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
-	performer := r.Context().Value("performer").(*models.Performer)
+	performer := r.Context().Value(performerKey).(*models.Performer)
 	_, _ = w.Write(performer.Image)
 }
 
@@ -41,7 +41,7 @@ func PerformerCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "performer", performer)
+		ctx := context.WithValue(r.Context(), performerKey, performer)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

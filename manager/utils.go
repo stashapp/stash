@@ -10,7 +10,7 @@ func IsStreamable(scene *models.Scene) (bool, error) {
 	if scene == nil {
 		return false, fmt.Errorf("nil scene")
 	}
- 	fileType, err := utils.FileType(scene.Path)
+	fileType, err := utils.FileType(scene.Path)
 	if err != nil {
 		return false, err
 	}

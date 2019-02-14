@@ -16,7 +16,7 @@ func (r *queryResolver) FindGalleries(ctx context.Context, filter *models.FindFi
 	qb := models.NewGalleryQueryBuilder()
 	galleries, total := qb.Query(filter)
 	return models.FindGalleriesResultType{
-		Count: total,
+		Count:     total,
 		Galleries: galleries,
 	}, nil
 }

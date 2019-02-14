@@ -6,13 +6,13 @@ import (
 	"github.com/stashapp/stash/database"
 )
 
-type performerQueryBuilder struct {}
+type PerformerQueryBuilder struct{}
 
-func NewPerformerQueryBuilder() performerQueryBuilder {
-	return performerQueryBuilder{}
+func NewPerformerQueryBuilder() PerformerQueryBuilder {
+	return PerformerQueryBuilder{}
 }
 
-func (qb *performerQueryBuilder) Create(newPerformer Performer, tx *sqlx.Tx) (*Performer, error) {
+func (qb *PerformerQueryBuilder) Create(newPerformer Performer, tx *sqlx.Tx) (*Performer, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO performers (image, checksum, name, url, twitter, instagram, birthdate, ethnicity, country,
@@ -38,10 +38,10 @@ func (qb *performerQueryBuilder) Create(newPerformer Performer, tx *sqlx.Tx) (*P
 	return &newPerformer, nil
 }
 
-func (qb *performerQueryBuilder) Update(updatedPerformer Performer, tx *sqlx.Tx) (*Performer, error) {
+func (qb *PerformerQueryBuilder) Update(updatedPerformer Performer, tx *sqlx.Tx) (*Performer, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE performers SET `+SqlGenKeys(updatedPerformer)+` WHERE performers.id = :id`,
+		`UPDATE performers SET `+SQLGenKeys(updatedPerformer)+` WHERE performers.id = :id`,
 		updatedPerformer,
 	)
 	if err != nil {
@@ -54,7 +54,7 @@ func (qb *performerQueryBuilder) Update(updatedPerformer Performer, tx *sqlx.Tx)
 	return &updatedPerformer, nil
 }
 
-func (qb *performerQueryBuilder) Find(id int) (*Performer, error) {
+func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
 	query := "SELECT * FROM performers WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	results, err := qb.queryPerformers(query, args, nil)
@@ -64,7 +64,7 @@ func (qb *performerQueryBuilder) Find(id int) (*Performer, error) {
 	return &results[0], nil
 }
 
-func (qb *performerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Performer, error) {
+func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Performer, error) {
 	query := `
 		SELECT performers.* FROM performers
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
@@ -76,7 +76,7 @@ func (qb *performerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Perf
 	return qb.queryPerformers(query, args, tx)
 }
 
-func (qb *performerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]Performer, error) {
+func (qb *PerformerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]Performer, error) {
 	query := "SELECT * FROM performers WHERE name IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
@@ -85,15 +85,15 @@ func (qb *performerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]Per
 	return qb.queryPerformers(query, args, tx)
 }
 
-func (qb *performerQueryBuilder) Count() (int, error) {
+func (qb *PerformerQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
-func (qb *performerQueryBuilder) All() ([]Performer, error) {
-	return qb.queryPerformers(selectAll("performers") + qb.getPerformerSort(nil), nil, nil)
+func (qb *PerformerQueryBuilder) All() ([]Performer, error) {
+	return qb.queryPerformers(selectAll("performers")+qb.getPerformerSort(nil), nil, nil)
 }
 
-func (qb *performerQueryBuilder) Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]Performer, int) {
+func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]Performer, int) {
 	if performerFilter == nil {
 		performerFilter = &PerformerFilterType{}
 	}
@@ -135,7 +135,7 @@ func (qb *performerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	return performers, countResult
 }
 
-func (qb *performerQueryBuilder) getPerformerSort(findFilter *FindFilterType) string {
+func (qb *PerformerQueryBuilder) getPerformerSort(findFilter *FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -148,7 +148,7 @@ func (qb *performerQueryBuilder) getPerformerSort(findFilter *FindFilterType) st
 	return getSort(sort, direction, "performers")
 }
 
-func (qb *performerQueryBuilder) queryPerformers(query string, args []interface{}, tx *sqlx.Tx) ([]Performer, error) {
+func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{}, tx *sqlx.Tx) ([]Performer, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {

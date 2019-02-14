@@ -9,7 +9,7 @@ type Performer struct {
 	Image        []byte          `db:"image" json:"image"`
 	Checksum     string          `db:"checksum" json:"checksum"`
 	Name         sql.NullString  `db:"name" json:"name"`
-	Url          sql.NullString  `db:"url" json:"url"`
+	URL          sql.NullString  `db:"url" json:"url"`
 	Twitter      sql.NullString  `db:"twitter" json:"twitter"`
 	Instagram    sql.NullString  `db:"instagram" json:"instagram"`
 	Birthdate    sql.NullString  `db:"birthdate" json:"birthdate"` // TODO dates?

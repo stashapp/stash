@@ -10,7 +10,7 @@ type Scene struct {
 	Path       string          `db:"path" json:"path"`
 	Title      sql.NullString  `db:"title" json:"title"`
 	Details    sql.NullString  `db:"details" json:"details"`
-	Url        sql.NullString  `db:"url" json:"url"`
+	URL        sql.NullString  `db:"url" json:"url"`
 	Date       sql.NullString  `db:"date" json:"date"` // TODO dates?
 	Rating     sql.NullInt64   `db:"rating" json:"rating"`
 	Size       sql.NullString  `db:"size" json:"size"`

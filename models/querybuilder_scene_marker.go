@@ -15,13 +15,13 @@ WHERE tags.id = ?
 GROUP BY scene_markers.id
 `
 
-type sceneMarkerQueryBuilder struct {}
+type SceneMarkerQueryBuilder struct{}
 
-func NewSceneMarkerQueryBuilder() sceneMarkerQueryBuilder {
-	return sceneMarkerQueryBuilder{}
+func NewSceneMarkerQueryBuilder() SceneMarkerQueryBuilder {
+	return SceneMarkerQueryBuilder{}
 }
 
-func (qb *sceneMarkerQueryBuilder) Create(newSceneMarker SceneMarker, tx *sqlx.Tx) (*SceneMarker, error) {
+func (qb *SceneMarkerQueryBuilder) Create(newSceneMarker SceneMarker, tx *sqlx.Tx) (*SceneMarker, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scene_markers (title, seconds, primary_tag_id, scene_id, created_at, updated_at)
@@ -43,10 +43,10 @@ func (qb *sceneMarkerQueryBuilder) Create(newSceneMarker SceneMarker, tx *sqlx.T
 	return &newSceneMarker, nil
 }
 
-func (qb *sceneMarkerQueryBuilder) Update(updatedSceneMarker SceneMarker, tx *sqlx.Tx) (*SceneMarker, error) {
+func (qb *SceneMarkerQueryBuilder) Update(updatedSceneMarker SceneMarker, tx *sqlx.Tx) (*SceneMarker, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE scene_markers SET `+SqlGenKeys(updatedSceneMarker)+` WHERE scene_markers.id = :id`,
+		`UPDATE scene_markers SET `+SQLGenKeys(updatedSceneMarker)+` WHERE scene_markers.id = :id`,
 		updatedSceneMarker,
 	)
 	if err != nil {
@@ -59,11 +59,11 @@ func (qb *sceneMarkerQueryBuilder) Update(updatedSceneMarker SceneMarker, tx *sq
 	return &updatedSceneMarker, nil
 }
 
-func (qb *sceneMarkerQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
+func (qb *SceneMarkerQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	return executeDeleteQuery("scene_markers", id, tx)
 }
 
-func (qb *sceneMarkerQueryBuilder) Find(id int) (*SceneMarker, error) {
+func (qb *SceneMarkerQueryBuilder) Find(id int) (*SceneMarker, error) {
 	query := "SELECT * FROM scene_markers WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	results, err := qb.querySceneMarkers(query, args, nil)
@@ -73,7 +73,7 @@ func (qb *sceneMarkerQueryBuilder) Find(id int) (*SceneMarker, error) {
 	return &results[0], nil
 }
 
-func (qb *sceneMarkerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]SceneMarker, error) {
+func (qb *SceneMarkerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]SceneMarker, error) {
 	query := `
 		SELECT scene_markers.* FROM scene_markers
 		JOIN scenes ON scenes.id = scene_markers.scene_id
@@ -85,12 +85,12 @@ func (qb *sceneMarkerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Sc
 	return qb.querySceneMarkers(query, args, tx)
 }
 
-func (qb *sceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
+func (qb *SceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
 	args := []interface{}{tagID}
 	return runCountQuery(buildCountQuery(sceneMarkersForTagQuery), args)
 }
 
-func (qb *sceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]*MarkerStringsResultType, error) {
+func (qb *SceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]*MarkerStringsResultType, error) {
 	query := "SELECT count(*) as `count`, scene_markers.id as id, scene_markers.title as title FROM scene_markers"
 	if q != nil {
 		query = query + " WHERE title LIKE '%" + *q + "%'"
@@ -105,7 +105,7 @@ func (qb *sceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]
 	return qb.queryMarkerStringsResultType(query, args)
 }
 
-func (qb *sceneMarkerQueryBuilder) Wall(q *string) ([]SceneMarker, error) {
+func (qb *SceneMarkerQueryBuilder) Wall(q *string) ([]SceneMarker, error) {
 	s := ""
 	if q != nil {
 		s = *q
@@ -114,7 +114,7 @@ func (qb *sceneMarkerQueryBuilder) Wall(q *string) ([]SceneMarker, error) {
 	return qb.querySceneMarkers(query, nil, nil)
 }
 
-func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterType, findFilter *FindFilterType) ([]SceneMarker, int) {
+func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterType, findFilter *FindFilterType) ([]SceneMarker, int) {
 	if sceneMarkerFilter == nil {
 		sceneMarkerFilter = &SceneMarkerFilterType{}
 	}
@@ -147,7 +147,7 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 		length := len(tagIDs)
 		body += " LEFT JOIN tags AS ptj ON ptj.id = scene_markers.primary_tag_id AND ptj.id IN " + getInBinding(length)
 		body += " LEFT JOIN scene_markers_tags AS tj ON tj.scene_marker_id = scene_markers.id AND tj.tag_id IN " + getInBinding(length)
-		havingClauses = append(havingClauses, "((COUNT(DISTINCT ptj.id) + COUNT(DISTINCT tj.tag_id)) = " + strconv.Itoa(length) +")")
+		havingClauses = append(havingClauses, "((COUNT(DISTINCT ptj.id) + COUNT(DISTINCT tj.tag_id)) = "+strconv.Itoa(length)+")")
 		for _, tagID := range tagIDs {
 			args = append(args, tagID)
 		}
@@ -159,7 +159,7 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 	if sceneTagIDs := sceneMarkerFilter.SceneTags; sceneTagIDs != nil {
 		length := len(sceneTagIDs)
 		body += " LEFT JOIN scenes_tags AS scene_tags_join ON scene_tags_join.scene_id = scene.id AND scene_tags_join.tag_id IN " + getInBinding(length)
-		havingClauses = append(havingClauses, "COUNT(DISTINCT scene_tags_join.tag_id) = " + strconv.Itoa(length))
+		havingClauses = append(havingClauses, "COUNT(DISTINCT scene_tags_join.tag_id) = "+strconv.Itoa(length))
 		for _, tagID := range sceneTagIDs {
 			args = append(args, tagID)
 		}
@@ -168,7 +168,7 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 	if performerIDs := sceneMarkerFilter.Performers; performerIDs != nil {
 		length := len(performerIDs)
 		body += " LEFT JOIN performers_scenes as scene_performers ON scene.id = scene_performers.scene_id"
-		whereClauses = append(whereClauses, "scene_performers.performer_id IN " + getInBinding(length))
+		whereClauses = append(whereClauses, "scene_performers.performer_id IN "+getInBinding(length))
 		for _, performerID := range performerIDs {
 			args = append(args, performerID)
 		}
@@ -195,13 +195,13 @@ func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 	return sceneMarkers, countResult
 }
 
-func (qb *sceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *FindFilterType) string {
+func (qb *SceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *FindFilterType) string {
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
 	return getSort(sort, direction, "scene_markers")
 }
 
-func (qb *sceneMarkerQueryBuilder) querySceneMarkers(query string, args []interface{}, tx *sqlx.Tx) ([]SceneMarker, error) {
+func (qb *SceneMarkerQueryBuilder) querySceneMarkers(query string, args []interface{}, tx *sqlx.Tx) ([]SceneMarker, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {
@@ -231,7 +231,7 @@ func (qb *sceneMarkerQueryBuilder) querySceneMarkers(query string, args []interf
 	return sceneMarkers, nil
 }
 
-func (qb *sceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, args []interface{}) ([]*MarkerStringsResultType, error) {
+func (qb *SceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, args []interface{}) ([]*MarkerStringsResultType, error) {
 	rows, err := database.DB.Queryx(query, args...)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err

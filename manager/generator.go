@@ -45,7 +45,7 @@ func (g *GeneratorInfo) configure() error {
 
 	numberOfFrames, _ := strconv.Atoi(videoStream.NbFrames)
 	if numberOfFrames == 0 {
-		command := `ffmpeg -nostats -i `+g.VideoFile.Path+` -vcodec copy -f rawvideo -y /dev/null 2>&1 | \
+		command := `ffmpeg -nostats -i ` + g.VideoFile.Path + ` -vcodec copy -f rawvideo -y /dev/null 2>&1 | \
                        grep frame | \
                        awk '{split($0,a,"fps")}END{print a[1]}' | \
                        sed 's/.*= *//'`

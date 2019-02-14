@@ -9,16 +9,16 @@ import (
 type ScrapedItem struct {
 	Title           string    `json:"title,omitempty"`
 	Description     string    `json:"description,omitempty"`
-	Url             string    `json:"url,omitempty"`
+	URL             string    `json:"url,omitempty"`
 	Date            string    `json:"date,omitempty"`
 	Rating          string    `json:"rating,omitempty"`
 	Tags            string    `json:"tags,omitempty"`
 	Models          string    `json:"models,omitempty"`
 	Episode         int       `json:"episode,omitempty"`
 	GalleryFilename string    `json:"gallery_filename,omitempty"`
-	GalleryUrl      string    `json:"gallery_url,omitempty"`
+	GalleryURL      string    `json:"gallery_url,omitempty"`
 	VideoFilename   string    `json:"video_filename,omitempty"`
-	VideoUrl        string    `json:"video_url,omitempty"`
+	VideoURL        string    `json:"video_url,omitempty"`
 	Studio          string    `json:"studio,omitempty"`
 	UpdatedAt       RailsTime `json:"updated_at,omitempty"`
 }

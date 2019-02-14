@@ -4,10 +4,10 @@ import "fmt"
 
 type ScreenshotOptions struct {
 	OutputPath string
-	Quality int
-	Time float64
-	Width int
-	Verbosity string
+	Quality    int
+	Time       float64
+	Width      int
+	Verbosity  string
 }
 
 func (e *Encoder) Screenshot(probeResult VideoFile, options ScreenshotOptions) {

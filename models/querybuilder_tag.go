@@ -6,13 +6,13 @@ import (
 	"github.com/stashapp/stash/database"
 )
 
-type tagQueryBuilder struct {}
+type TagQueryBuilder struct{}
 
-func NewTagQueryBuilder() tagQueryBuilder {
-	return tagQueryBuilder{}
+func NewTagQueryBuilder() TagQueryBuilder {
+	return TagQueryBuilder{}
 }
 
-func (qb *tagQueryBuilder) Create(newTag Tag, tx *sqlx.Tx) (*Tag, error) {
+func (qb *TagQueryBuilder) Create(newTag Tag, tx *sqlx.Tx) (*Tag, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO tags (name, created_at, updated_at)
@@ -34,9 +34,9 @@ func (qb *tagQueryBuilder) Create(newTag Tag, tx *sqlx.Tx) (*Tag, error) {
 	return &newTag, nil
 }
 
-func (qb *tagQueryBuilder) Update(updatedTag Tag, tx *sqlx.Tx) (*Tag, error) {
+func (qb *TagQueryBuilder) Update(updatedTag Tag, tx *sqlx.Tx) (*Tag, error) {
 	ensureTx(tx)
-	query := `UPDATE tags SET `+SqlGenKeys(updatedTag)+` WHERE tags.id = :id`
+	query := `UPDATE tags SET ` + SQLGenKeys(updatedTag) + ` WHERE tags.id = :id`
 	_, err := tx.NamedExec(
 		query,
 		updatedTag,
@@ -51,17 +51,17 @@ func (qb *tagQueryBuilder) Update(updatedTag Tag, tx *sqlx.Tx) (*Tag, error) {
 	return &updatedTag, nil
 }
 
-func (qb *tagQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
+func (qb *TagQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	return executeDeleteQuery("tags", id, tx)
 }
 
-func (qb *tagQueryBuilder) Find(id int, tx *sqlx.Tx) (*Tag, error) {
+func (qb *TagQueryBuilder) Find(id int, tx *sqlx.Tx) (*Tag, error) {
 	query := "SELECT * FROM tags WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryTag(query, args, tx)
 }
 
-func (qb *tagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Tag, error) {
+func (qb *TagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scenes_tags as scenes_join on scenes_join.tag_id = tags.id
@@ -74,7 +74,7 @@ func (qb *tagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Tag, error
 	return qb.queryTags(query, args, tx)
 }
 
-func (qb *tagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int, tx *sqlx.Tx) ([]Tag, error) {
+func (qb *TagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int, tx *sqlx.Tx) ([]Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scene_markers_tags as scene_markers_join on scene_markers_join.tag_id = tags.id
@@ -87,13 +87,13 @@ func (qb *tagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int, tx *sqlx.Tx) (
 	return qb.queryTags(query, args, tx)
 }
 
-func (qb *tagQueryBuilder) FindByName(name string, tx *sqlx.Tx) (*Tag, error) {
+func (qb *TagQueryBuilder) FindByName(name string, tx *sqlx.Tx) (*Tag, error) {
 	query := "SELECT * FROM tags WHERE name = ? LIMIT 1"
 	args := []interface{}{name}
 	return qb.queryTag(query, args, tx)
 }
 
-func (qb *tagQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]Tag, error) {
+func (qb *TagQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]Tag, error) {
 	query := "SELECT * FROM tags WHERE name IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
@@ -102,15 +102,15 @@ func (qb *tagQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]Tag, erro
 	return qb.queryTags(query, args, tx)
 }
 
-func (qb *tagQueryBuilder) Count() (int, error) {
+func (qb *TagQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
 
-func (qb *tagQueryBuilder) All() ([]Tag, error) {
-	return qb.queryTags(selectAll("tags") + qb.getTagSort(nil), nil, nil)
+func (qb *TagQueryBuilder) All() ([]Tag, error) {
+	return qb.queryTags(selectAll("tags")+qb.getTagSort(nil), nil, nil)
 }
 
-func (qb *tagQueryBuilder) getTagSort(findFilter *FindFilterType) string {
+func (qb *TagQueryBuilder) getTagSort(findFilter *FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -123,7 +123,7 @@ func (qb *tagQueryBuilder) getTagSort(findFilter *FindFilterType) string {
 	return getSort(sort, direction, "tags")
 }
 
-func (qb *tagQueryBuilder) queryTag(query string, args []interface{}, tx *sqlx.Tx) (*Tag, error) {
+func (qb *TagQueryBuilder) queryTag(query string, args []interface{}, tx *sqlx.Tx) (*Tag, error) {
 	results, err := qb.queryTags(query, args, tx)
 	if err != nil || len(results) < 1 {
 		return nil, err
@@ -131,7 +131,7 @@ func (qb *tagQueryBuilder) queryTag(query string, args []interface{}, tx *sqlx.T
 	return &results[0], nil
 }
 
-func (qb *tagQueryBuilder) queryTags(query string, args []interface{}, tx *sqlx.Tx) ([]Tag, error) {
+func (qb *TagQueryBuilder) queryTags(query string, args []interface{}, tx *sqlx.Tx) ([]Tag, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {

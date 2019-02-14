@@ -19,15 +19,15 @@ func (r *studioResolver) Name(ctx context.Context, obj *models.Studio) (string, 
 }
 
 func (r *studioResolver) URL(ctx context.Context, obj *models.Studio) (*string, error) {
-	if obj.Url.Valid {
-		return &obj.Url.String, nil
+	if obj.URL.Valid {
+		return &obj.URL.String, nil
 	}
 	return nil, nil
 }
 
 func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	imagePath := urlbuilders.NewStudioURLBuilder(baseURL, obj.ID).GetStudioImageUrl()
+	imagePath := urlbuilders.NewStudioURLBuilder(baseURL, obj.ID).GetStudioImageURL()
 	return &imagePath, nil
 }
 

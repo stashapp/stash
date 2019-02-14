@@ -25,7 +25,7 @@ type FFProbeJSON struct {
 		} `json:"tags"`
 	} `json:"format"`
 	Streams []FFProbeStream `json:"streams"`
-	Error struct {
+	Error   struct {
 		Code   int    `json:"code"`
 		String string `json:"string"`
 	} `json:"error"`
@@ -59,27 +59,27 @@ type FFProbeStream struct {
 		TimedThumbnails int `json:"timed_thumbnails"`
 		VisualImpaired  int `json:"visual_impaired"`
 	} `json:"disposition"`
-	Duration          string  `json:"duration"`
-	DurationTs        int     `json:"duration_ts"`
-	HasBFrames        int     `json:"has_b_frames,omitempty"`
-	Height            int     `json:"height,omitempty"`
-	Index             int     `json:"index"`
-	IsAvc             string  `json:"is_avc,omitempty"`
-	Level             int     `json:"level,omitempty"`
-	NalLengthSize     string  `json:"nal_length_size,omitempty"`
-	NbFrames          string  `json:"nb_frames"`
-	PixFmt            string  `json:"pix_fmt,omitempty"`
-	Profile           string  `json:"profile"`
-	RFrameRate        string  `json:"r_frame_rate"`
-	Refs              int     `json:"refs,omitempty"`
-	SampleAspectRatio string  `json:"sample_aspect_ratio,omitempty"`
-	StartPts          int     `json:"start_pts"`
-	StartTime         string  `json:"start_time"`
+	Duration          string `json:"duration"`
+	DurationTs        int    `json:"duration_ts"`
+	HasBFrames        int    `json:"has_b_frames,omitempty"`
+	Height            int    `json:"height,omitempty"`
+	Index             int    `json:"index"`
+	IsAvc             string `json:"is_avc,omitempty"`
+	Level             int    `json:"level,omitempty"`
+	NalLengthSize     string `json:"nal_length_size,omitempty"`
+	NbFrames          string `json:"nb_frames"`
+	PixFmt            string `json:"pix_fmt,omitempty"`
+	Profile           string `json:"profile"`
+	RFrameRate        string `json:"r_frame_rate"`
+	Refs              int    `json:"refs,omitempty"`
+	SampleAspectRatio string `json:"sample_aspect_ratio,omitempty"`
+	StartPts          int    `json:"start_pts"`
+	StartTime         string `json:"start_time"`
 	Tags              struct {
 		CreationTime time.Time `json:"creation_time"`
 		HandlerName  string    `json:"handler_name"`
 		Language     string    `json:"language"`
-		Rotate		 string    `json:"rotate"`
+		Rotate       string    `json:"rotate"`
 	} `json:"tags"`
 	TimeBase      string `json:"time_base"`
 	Width         int    `json:"width,omitempty"`

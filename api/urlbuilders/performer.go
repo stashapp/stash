@@ -2,18 +2,18 @@ package urlbuilders
 
 import "strconv"
 
-type performerURLBuilder struct {
-	BaseURL string
+type PerformerURLBuilder struct {
+	BaseURL     string
 	PerformerID string
 }
 
-func NewPerformerURLBuilder(baseURL string, performerID int) performerURLBuilder {
-	return performerURLBuilder{
-		BaseURL: baseURL,
+func NewPerformerURLBuilder(baseURL string, performerID int) PerformerURLBuilder {
+	return PerformerURLBuilder{
+		BaseURL:     baseURL,
 		PerformerID: strconv.Itoa(performerID),
 	}
 }
 
-func (b performerURLBuilder) GetPerformerImageUrl() string {
+func (b PerformerURLBuilder) GetPerformerImageURL() string {
 	return b.BaseURL + "/performer/" + b.PerformerID + "/image"
 }

@@ -5,12 +5,12 @@ import (
 )
 
 type Paths struct {
-	Config     *jsonschema.Config
-	Generated  *generatedPaths
-	JSON       *jsonPaths
+	Config    *jsonschema.Config
+	Generated *generatedPaths
+	JSON      *jsonPaths
 
-	Gallery *galleryPaths
-	Scene      *scenePaths
+	Gallery      *galleryPaths
+	Scene        *scenePaths
 	SceneMarkers *sceneMarkerPaths
 }
 

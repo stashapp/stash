@@ -8,7 +8,7 @@ import (
 
 type Performer struct {
 	Name         string `json:"name,omitempty"`
-	Url          string `json:"url,omitempty"`
+	URL          string `json:"url,omitempty"`
 	Twitter      string `json:"twitter,omitempty"`
 	Instagram    string `json:"instagram,omitempty"`
 	Birthdate    string `json:"birthdate,omitempty"`

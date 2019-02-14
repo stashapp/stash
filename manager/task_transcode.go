@@ -32,7 +32,7 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	outputPath := instance.Paths.Generated.GetTmpPath(t.Scene.Checksum+".mp4")
+	outputPath := instance.Paths.Generated.GetTmpPath(t.Scene.Checksum + ".mp4")
 	options := ffmpeg.TranscodeOptions{
 		OutputPath: outputPath,
 	}
@@ -42,6 +42,6 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 		logger.Errorf("[transcode] error generating transcode: %s", err.Error())
 		return
 	}
-	logger.Debug("[transcode] <%s> created transcode: ", t.Scene.Checksum)
+	logger.Debugf("[transcode] <%s> created transcode: %s", t.Scene.Checksum, outputPath)
 	return
 }

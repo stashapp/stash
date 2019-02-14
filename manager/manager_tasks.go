@@ -10,7 +10,9 @@ import (
 )
 
 func (s *singleton) Scan() {
-	if s.Status != Idle { return }
+	if s.Status != Idle {
+		return
+	}
 	s.Status = Scan
 
 	go func() {
@@ -31,7 +33,9 @@ func (s *singleton) Scan() {
 }
 
 func (s *singleton) Import() {
-	if s.Status != Idle { return }
+	if s.Status != Idle {
+		return
+	}
 	s.Status = Import
 
 	go func() {
@@ -46,7 +50,9 @@ func (s *singleton) Import() {
 }
 
 func (s *singleton) Export() {
-	if s.Status != Idle { return }
+	if s.Status != Idle {
+		return
+	}
 	s.Status = Export
 
 	go func() {
@@ -61,7 +67,9 @@ func (s *singleton) Export() {
 }
 
 func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcodes bool) {
-	if s.Status != Idle { return }
+	if s.Status != Idle {
+		return
+	}
 	s.Status = Generate
 
 	qb := models.NewSceneQueryBuilder()
@@ -108,7 +116,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 }
 
 func (s *singleton) returnToIdleState() {
-	if r := recover(); r!= nil {
+	if r := recover(); r != nil {
 		logger.Info("recovered from ", r)
 	}
 

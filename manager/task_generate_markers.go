@@ -51,8 +51,8 @@ func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
 
 		options := ffmpeg.SceneMarkerOptions{
 			ScenePath: t.Scene.Path,
-			Seconds: seconds,
-			Width: 640,
+			Seconds:   seconds,
+			Width:     640,
 		}
 		if !videoExists {
 			options.OutputPath = instance.Paths.Generated.GetTmpPath(videoFilename) // tmp output in case the process ends abruptly

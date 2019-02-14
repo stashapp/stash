@@ -32,9 +32,8 @@ func (sp *scenePaths) GetStreamPath(scenePath string, checksum string) string {
 	transcodeExists, _ := utils.FileExists(transcodePath)
 	if transcodeExists {
 		return transcodePath
-	} else {
-		return scenePath
 	}
+	return scenePath
 }
 
 func (sp *scenePaths) GetStreamPreviewPath(checksum string) string {

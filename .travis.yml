@@ -12,7 +12,7 @@ before_install:
 - yarn install
 - ./node_modules/@angular/cli/bin/ng build --prod
 - cd ../..
-- go get -v golang.org/x/lint/golint
+- go get -v github.com/mgechev/revive
 script:
 - make lint
 - make vet

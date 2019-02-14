@@ -22,4 +22,4 @@ vet:
 
 .PHONY: lint
 lint:
-	go list ./... | grep -v vendor | xargs golint -set_exit_status
+	revive -config revive.toml -exclude ./vendor/...  ./...

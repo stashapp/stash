@@ -12,7 +12,7 @@ import (
 )
 
 type Packr2Source struct {
-	Box  *packr.Box
+	Box        *packr.Box
 	Migrations *source.Migrations
 }
 

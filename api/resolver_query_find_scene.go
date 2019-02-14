@@ -23,7 +23,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, scene_filter *models.Sce
 	qb := models.NewSceneQueryBuilder()
 	scenes, total := qb.Query(scene_filter, filter)
 	return models.FindScenesResultType{
-		Count: total,
+		Count:  total,
 		Scenes: scenes,
 	}, nil
 }

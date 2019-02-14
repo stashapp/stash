@@ -18,9 +18,9 @@ type StaticPathsType struct {
 
 var StaticPaths = StaticPathsType{
 	ExecutionDirectory: getExecutionDirectory(),
-	ConfigDirectory: getConfigDirectory(),
-	ConfigFile: filepath.Join(getConfigDirectory(), "config.json"),
-	DatabaseFile: filepath.Join(getConfigDirectory(), "stash-go.sqlite"),
+	ConfigDirectory:    getConfigDirectory(),
+	ConfigFile:         filepath.Join(getConfigDirectory(), "config.json"),
+	DatabaseFile:       filepath.Join(getConfigDirectory(), "stash-go.sqlite"),
 }
 
 func getExecutionDirectory() string {

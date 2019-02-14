@@ -16,7 +16,7 @@ func (r *queryResolver) FindStudios(ctx context.Context, filter *models.FindFilt
 	qb := models.NewStudioQueryBuilder()
 	studios, total := qb.Query(filter)
 	return models.FindStudiosResultType{
-		Count: total,
+		Count:   total,
 		Studios: studios,
 	}, nil
 }

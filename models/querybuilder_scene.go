@@ -31,13 +31,13 @@ WHERE tags.id = ?
 GROUP BY scenes.id
 `
 
-type sceneQueryBuilder struct{}
+type SceneQueryBuilder struct{}
 
-func NewSceneQueryBuilder() sceneQueryBuilder {
-	return sceneQueryBuilder{}
+func NewSceneQueryBuilder() SceneQueryBuilder {
+	return SceneQueryBuilder{}
 }
 
-func (qb *sceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error) {
+func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scenes (checksum, path, title, details, url, date, rating, size, duration, video_codec,
@@ -60,10 +60,10 @@ func (qb *sceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error)
 	return &newScene, nil
 }
 
-func (qb *sceneQueryBuilder) Update(updatedScene Scene, tx *sqlx.Tx) (*Scene, error) {
+func (qb *SceneQueryBuilder) Update(updatedScene Scene, tx *sqlx.Tx) (*Scene, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE scenes SET `+SqlGenKeys(updatedScene)+` WHERE scenes.id = :id`,
+		`UPDATE scenes SET `+SQLGenKeys(updatedScene)+` WHERE scenes.id = :id`,
 		updatedScene,
 	)
 	if err != nil {
@@ -76,54 +76,54 @@ func (qb *sceneQueryBuilder) Update(updatedScene Scene, tx *sqlx.Tx) (*Scene, er
 	return &updatedScene, nil
 }
 
-func (qb *sceneQueryBuilder) Find(id int) (*Scene, error) {
+func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
 	query := "SELECT * FROM scenes WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryScene(query, args, nil)
 }
 
-func (qb *sceneQueryBuilder) FindByChecksum(checksum string) (*Scene, error) {
+func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*Scene, error) {
 	query := "SELECT * FROM scenes WHERE checksum = ? LIMIT 1"
 	args := []interface{}{checksum}
 	return qb.queryScene(query, args, nil)
 }
 
-func (qb *sceneQueryBuilder) FindByPath(path string) (*Scene, error) {
+func (qb *SceneQueryBuilder) FindByPath(path string) (*Scene, error) {
 	query := "SELECT * FROM scenes WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
 	return qb.queryScene(query, args, nil)
 }
 
-func (qb *sceneQueryBuilder) FindByPerformerID(performerID int) ([]Scene, error) {
+func (qb *SceneQueryBuilder) FindByPerformerID(performerID int) ([]Scene, error) {
 	args := []interface{}{performerID}
 	return qb.queryScenes(scenesForPerformerQuery, args, nil)
 }
 
-func (qb *sceneQueryBuilder) CountByPerformerID(performerID int) (int, error) {
+func (qb *SceneQueryBuilder) CountByPerformerID(performerID int) (int, error) {
 	args := []interface{}{performerID}
 	return runCountQuery(buildCountQuery(scenesForPerformerQuery), args)
 }
 
-func (qb *sceneQueryBuilder) FindByStudioID(studioID int) ([]Scene, error) {
+func (qb *SceneQueryBuilder) FindByStudioID(studioID int) ([]Scene, error) {
 	args := []interface{}{studioID}
 	return qb.queryScenes(scenesForStudioQuery, args, nil)
 }
 
-func (qb *sceneQueryBuilder) Count() (int, error) {
+func (qb *SceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *sceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
+func (qb *SceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
 	args := []interface{}{studioID}
 	return runCountQuery(buildCountQuery(scenesForStudioQuery), args)
 }
 
-func (qb *sceneQueryBuilder) CountByTagID(tagID int) (int, error) {
+func (qb *SceneQueryBuilder) CountByTagID(tagID int) (int, error) {
 	args := []interface{}{tagID}
 	return runCountQuery(buildCountQuery(scenesForTagQuery), args)
 }
 
-func (qb *sceneQueryBuilder) Wall(q *string) ([]Scene, error) {
+func (qb *SceneQueryBuilder) Wall(q *string) ([]Scene, error) {
 	s := ""
 	if q != nil {
 		s = *q
@@ -132,11 +132,11 @@ func (qb *sceneQueryBuilder) Wall(q *string) ([]Scene, error) {
 	return qb.queryScenes(query, nil, nil)
 }
 
-func (qb *sceneQueryBuilder) All() ([]Scene, error) {
-	return qb.queryScenes(selectAll("scenes") + qb.getSceneSort(nil), nil, nil)
+func (qb *SceneQueryBuilder) All() ([]Scene, error) {
+	return qb.queryScenes(selectAll("scenes")+qb.getSceneSort(nil), nil, nil)
 }
 
-func (qb *sceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]Scene, int) {
+func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]Scene, int) {
 	if sceneFilter == nil {
 		sceneFilter = &SceneFilterType{}
 	}
@@ -209,8 +209,8 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	}
 
 	if tagsFilter := sceneFilter.Tags; len(tagsFilter) > 0 {
-		for _, tagId := range tagsFilter {
-			args = append(args, tagId)
+		for _, tagID := range tagsFilter {
+			args = append(args, tagID)
 		}
 
 		whereClauses = append(whereClauses, "tags.id IN "+getInBinding(len(tagsFilter)))
@@ -239,17 +239,16 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	return scenes, countResult
 }
 
-func (qb *sceneQueryBuilder) getSceneSort(findFilter *FindFilterType) string {
+func (qb *SceneQueryBuilder) getSceneSort(findFilter *FindFilterType) string {
 	if findFilter == nil {
 		return " ORDER BY scenes.path, scenes.date ASC "
-	} else {
-		sort := findFilter.GetSort("title")
-		direction := findFilter.GetDirection()
-		return getSort(sort, direction, "scenes")
 	}
+	sort := findFilter.GetSort("title")
+	direction := findFilter.GetDirection()
+	return getSort(sort, direction, "scenes")
 }
 
-func (qb *sceneQueryBuilder) queryScene(query string, args []interface{}, tx *sqlx.Tx) (*Scene, error) {
+func (qb *SceneQueryBuilder) queryScene(query string, args []interface{}, tx *sqlx.Tx) (*Scene, error) {
 	results, err := qb.queryScenes(query, args, tx)
 	if err != nil || len(results) < 1 {
 		return nil, err
@@ -257,7 +256,7 @@ func (qb *sceneQueryBuilder) queryScene(query string, args []interface{}, tx *sq
 	return &results[0], nil
 }
 
-func (qb *sceneQueryBuilder) queryScenes(query string, args []interface{}, tx *sqlx.Tx) ([]Scene, error) {
+func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *sqlx.Tx) ([]Scene, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {

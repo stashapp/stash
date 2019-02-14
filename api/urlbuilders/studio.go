@@ -2,18 +2,18 @@ package urlbuilders
 
 import "strconv"
 
-type studioURLBuilder struct {
-	BaseURL string
+type StudioURLBuilder struct {
+	BaseURL  string
 	StudioID string
 }
 
-func NewStudioURLBuilder(baseURL string, studioID int) studioURLBuilder {
-	return studioURLBuilder{
-		BaseURL: baseURL,
+func NewStudioURLBuilder(baseURL string, studioID int) StudioURLBuilder {
+	return StudioURLBuilder{
+		BaseURL:  baseURL,
 		StudioID: strconv.Itoa(studioID),
 	}
 }
 
-func (b studioURLBuilder) GetStudioImageUrl() string {
+func (b StudioURLBuilder) GetStudioImageURL() string {
 	return b.BaseURL + "/studio/" + b.StudioID + "/image"
 }

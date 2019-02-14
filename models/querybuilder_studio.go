@@ -6,13 +6,13 @@ import (
 	"github.com/stashapp/stash/database"
 )
 
-type studioQueryBuilder struct {}
+type StudioQueryBuilder struct{}
 
-func NewStudioQueryBuilder() studioQueryBuilder {
-	return studioQueryBuilder{}
+func NewStudioQueryBuilder() StudioQueryBuilder {
+	return StudioQueryBuilder{}
 }
 
-func (qb *studioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO studios (image, checksum, name, url, created_at, updated_at)
@@ -34,10 +34,10 @@ func (qb *studioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, er
 	return &newStudio, nil
 }
 
-func (qb *studioQueryBuilder) Update(updatedStudio Studio, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) Update(updatedStudio Studio, tx *sqlx.Tx) (*Studio, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE studios SET `+SqlGenKeys(updatedStudio)+` WHERE studios.id = :id`,
+		`UPDATE studios SET `+SQLGenKeys(updatedStudio)+` WHERE studios.id = :id`,
 		updatedStudio,
 	)
 	if err != nil {
@@ -50,33 +50,33 @@ func (qb *studioQueryBuilder) Update(updatedStudio Studio, tx *sqlx.Tx) (*Studio
 	return &updatedStudio, nil
 }
 
-func (qb *studioQueryBuilder) Find(id int, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*Studio, error) {
 	query := "SELECT * FROM studios WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryStudio(query, args, tx)
 }
 
-func (qb *studioQueryBuilder) FindBySceneID(sceneID int) (*Studio, error) {
+func (qb *StudioQueryBuilder) FindBySceneID(sceneID int) (*Studio, error) {
 	query := "SELECT studios.* FROM studios JOIN scenes ON studios.id = scenes.studio_id WHERE scenes.id = ? LIMIT 1"
 	args := []interface{}{sceneID}
 	return qb.queryStudio(query, args, nil)
 }
 
-func (qb *studioQueryBuilder) FindByName(name string, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) FindByName(name string, tx *sqlx.Tx) (*Studio, error) {
 	query := "SELECT * FROM studios WHERE name = ? LIMIT 1"
 	args := []interface{}{name}
 	return qb.queryStudio(query, args, tx)
 }
 
-func (qb *studioQueryBuilder) Count() (int, error) {
+func (qb *StudioQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
-func (qb *studioQueryBuilder) All() ([]Studio, error) {
-	return qb.queryStudios(selectAll("studios") + qb.getStudioSort(nil), nil, nil)
+func (qb *StudioQueryBuilder) All() ([]Studio, error) {
+	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil, nil)
 }
 
-func (qb *studioQueryBuilder) Query(findFilter *FindFilterType) ([]Studio, int) {
+func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]Studio, int) {
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
 	}
@@ -103,7 +103,7 @@ func (qb *studioQueryBuilder) Query(findFilter *FindFilterType) ([]Studio, int) 
 	return studios, countResult
 }
 
-func (qb *studioQueryBuilder) getStudioSort(findFilter *FindFilterType) string {
+func (qb *StudioQueryBuilder) getStudioSort(findFilter *FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -116,7 +116,7 @@ func (qb *studioQueryBuilder) getStudioSort(findFilter *FindFilterType) string {
 	return getSort(sort, direction, "studios")
 }
 
-func (qb *studioQueryBuilder) queryStudio(query string, args []interface{}, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) queryStudio(query string, args []interface{}, tx *sqlx.Tx) (*Studio, error) {
 	results, err := qb.queryStudios(query, args, tx)
 	if err != nil || len(results) < 1 {
 		return nil, err
@@ -124,7 +124,7 @@ func (qb *studioQueryBuilder) queryStudio(query string, args []interface{}, tx *
 	return &results[0], nil
 }
 
-func (qb *studioQueryBuilder) queryStudios(query string, args []interface{}, tx *sqlx.Tx) ([]Studio, error) {
+func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}, tx *sqlx.Tx) ([]Studio, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {

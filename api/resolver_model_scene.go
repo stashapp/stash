@@ -28,8 +28,8 @@ func (r *sceneResolver) Details(ctx context.Context, obj *models.Scene) (*string
 }
 
 func (r *sceneResolver) URL(ctx context.Context, obj *models.Scene) (*string, error) {
-	if obj.Url.Valid {
-		return &obj.Url.String, nil
+	if obj.URL.Valid {
+		return &obj.URL.String, nil
 	}
 	return nil, nil
 }
@@ -55,34 +55,33 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (models.Sce
 	height := int(obj.Height.Int64)
 	bitrate := int(obj.Bitrate.Int64)
 	return models.SceneFileType{
-		Size: &obj.Size.String,
-		Duration: &obj.Duration.Float64,
+		Size:       &obj.Size.String,
+		Duration:   &obj.Duration.Float64,
 		VideoCodec: &obj.VideoCodec.String,
 		AudioCodec: &obj.AudioCodec.String,
-		Width: &width,
-		Height: &height,
-		Framerate: &obj.Framerate.Float64,
-		Bitrate: &bitrate,
+		Width:      &width,
+		Height:     &height,
+		Framerate:  &obj.Framerate.Float64,
+		Bitrate:    &bitrate,
 	}, nil
 }
 
 func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (models.ScenePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
-	screenshotPath := builder.GetScreenshotUrl()
-	previewPath := builder.GetStreamPreviewUrl()
-	streamPath := builder.GetStreamUrl()
-	webpPath := builder.GetStreamPreviewImageUrl()
-	vttPath := builder.GetSpriteVttUrl()
-	chaptersVttPath := builder.GetChaptersVttUrl()
+	screenshotPath := builder.GetScreenshotURL()
+	previewPath := builder.GetStreamPreviewURL()
+	streamPath := builder.GetStreamURL()
+	webpPath := builder.GetStreamPreviewImageURL()
+	vttPath := builder.GetSpriteVTTURL()
+	chaptersVttPath := builder.GetChaptersVTTURL()
 	return models.ScenePathsType{
-		Screenshot: &screenshotPath,
-		Preview: &previewPath,
-		Stream: &streamPath,
-		Webp: &webpPath,
-		Vtt: &vttPath,
+		Screenshot:  &screenshotPath,
+		Preview:     &previewPath,
+		Stream:      &streamPath,
+		Webp:        &webpPath,
+		Vtt:         &vttPath,
 		ChaptersVtt: &chaptersVttPath,
-
 	}, nil
 }
 

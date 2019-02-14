@@ -7,13 +7,13 @@ import (
 	"path/filepath"
 )
 
-type galleryQueryBuilder struct {}
+type GalleryQueryBuilder struct{}
 
-func NewGalleryQueryBuilder() galleryQueryBuilder {
-	return galleryQueryBuilder{}
+func NewGalleryQueryBuilder() GalleryQueryBuilder {
+	return GalleryQueryBuilder{}
 }
 
-func (qb *galleryQueryBuilder) Create(newGallery Gallery, tx *sqlx.Tx) (*Gallery, error) {
+func (qb *GalleryQueryBuilder) Create(newGallery Gallery, tx *sqlx.Tx) (*Gallery, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO galleries (path, checksum, scene_id, created_at, updated_at)
@@ -34,10 +34,10 @@ func (qb *galleryQueryBuilder) Create(newGallery Gallery, tx *sqlx.Tx) (*Gallery
 	return &newGallery, nil
 }
 
-func (qb *galleryQueryBuilder) Update(updatedGallery Gallery, tx *sqlx.Tx) (*Gallery, error) {
+func (qb *GalleryQueryBuilder) Update(updatedGallery Gallery, tx *sqlx.Tx) (*Gallery, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE galleries SET `+SqlGenKeys(updatedGallery)+` WHERE galleries.id = :id`,
+		`UPDATE galleries SET `+SQLGenKeys(updatedGallery)+` WHERE galleries.id = :id`,
 		updatedGallery,
 	)
 	if err != nil {
@@ -50,45 +50,45 @@ func (qb *galleryQueryBuilder) Update(updatedGallery Gallery, tx *sqlx.Tx) (*Gal
 	return &updatedGallery, nil
 }
 
-func (qb *galleryQueryBuilder) Find(id int) (*Gallery, error) {
+func (qb *GalleryQueryBuilder) Find(id int) (*Gallery, error) {
 	query := "SELECT * FROM galleries WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryGallery(query, args, nil)
 }
 
-func (qb *galleryQueryBuilder) FindByChecksum(checksum string, tx *sqlx.Tx) (*Gallery, error) {
+func (qb *GalleryQueryBuilder) FindByChecksum(checksum string, tx *sqlx.Tx) (*Gallery, error) {
 	query := "SELECT * FROM galleries WHERE checksum = ? LIMIT 1"
 	args := []interface{}{checksum}
 	return qb.queryGallery(query, args, tx)
 }
 
-func (qb *galleryQueryBuilder) FindByPath(path string) (*Gallery, error) {
+func (qb *GalleryQueryBuilder) FindByPath(path string) (*Gallery, error) {
 	query := "SELECT * FROM galleries WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
 	return qb.queryGallery(query, args, nil)
 }
 
-func (qb *galleryQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) (*Gallery, error) {
+func (qb *GalleryQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) (*Gallery, error) {
 	query := "SELECT galleries.* FROM galleries JOIN scenes ON scenes.id = galleries.scene_id WHERE scenes.id = ? LIMIT 1"
 	args := []interface{}{sceneID}
 	return qb.queryGallery(query, args, tx)
 }
 
-func (qb *galleryQueryBuilder) ValidGalleriesForScenePath(scenePath string) ([]Gallery, error) {
+func (qb *GalleryQueryBuilder) ValidGalleriesForScenePath(scenePath string) ([]Gallery, error) {
 	sceneDirPath := filepath.Dir(scenePath)
 	query := "SELECT galleries.* FROM galleries WHERE galleries.scene_id IS NULL AND galleries.path LIKE '" + sceneDirPath + "%' ORDER BY path ASC"
 	return qb.queryGalleries(query, nil, nil)
 }
 
-func (qb *galleryQueryBuilder) Count() (int, error) {
+func (qb *GalleryQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT galleries.id FROM galleries"), nil)
 }
 
-func (qb *galleryQueryBuilder) All() ([]Gallery, error) {
-	return qb.queryGalleries(selectAll("galleries") + qb.getGallerySort(nil), nil, nil)
+func (qb *GalleryQueryBuilder) All() ([]Gallery, error) {
+	return qb.queryGalleries(selectAll("galleries")+qb.getGallerySort(nil), nil, nil)
 }
 
-func (qb *galleryQueryBuilder) Query(findFilter *FindFilterType) ([]Gallery, int) {
+func (qb *GalleryQueryBuilder) Query(findFilter *FindFilterType) ([]Gallery, int) {
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
 	}
@@ -115,12 +115,12 @@ func (qb *galleryQueryBuilder) Query(findFilter *FindFilterType) ([]Gallery, int
 	return galleries, countResult
 }
 
-func (qb *galleryQueryBuilder) getGallerySort(findFilter *FindFilterType) string {
+func (qb *GalleryQueryBuilder) getGallerySort(findFilter *FindFilterType) string {
 	var sort string
 	var direction string
 	//if findFilter == nil { // TODO temp until title is removed from schema and UI
-		sort = "path"
-		direction = "ASC"
+	sort = "path"
+	direction = "ASC"
 	//} else {
 	//	sort = findFilter.getSort("path")
 	//	direction = findFilter.getDirection()
@@ -128,7 +128,7 @@ func (qb *galleryQueryBuilder) getGallerySort(findFilter *FindFilterType) string
 	return getSort(sort, direction, "galleries")
 }
 
-func (qb *galleryQueryBuilder) queryGallery(query string, args []interface{}, tx *sqlx.Tx) (*Gallery, error) {
+func (qb *GalleryQueryBuilder) queryGallery(query string, args []interface{}, tx *sqlx.Tx) (*Gallery, error) {
 	results, err := qb.queryGalleries(query, args, tx)
 	if err != nil || len(results) < 1 {
 		return nil, err
@@ -136,7 +136,7 @@ func (qb *galleryQueryBuilder) queryGallery(query string, args []interface{}, tx
 	return &results[0], nil
 }
 
-func (qb *galleryQueryBuilder) queryGalleries(query string, args []interface{}, tx *sqlx.Tx) ([]Gallery, error) {
+func (qb *GalleryQueryBuilder) queryGalleries(query string, args []interface{}, tx *sqlx.Tx) ([]Gallery, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {

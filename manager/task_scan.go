@@ -53,10 +53,10 @@ func (t *ScanTask) scanGallery() {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
 		newGallery := models.Gallery{
-			Checksum: checksum,
-			Path: t.FilePath,
-			CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
-			UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
+			Checksum:  checksum,
+			Path:      t.FilePath,
+			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
 		_, err = qb.Create(newGallery, tx)
 	}
@@ -102,18 +102,18 @@ func (t *ScanTask) scanScene() {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
 		newScene := models.Scene{
-			Checksum: checksum,
-			Path: t.FilePath,
-			Duration: sql.NullFloat64{Float64: videoFile.Duration, Valid: true },
-			VideoCodec: sql.NullString{ String: videoFile.VideoCodec, Valid: true},
-			AudioCodec: sql.NullString{ String: videoFile.AudioCodec, Valid: true},
-			Width: sql.NullInt64{ Int64: int64(videoFile.Width), Valid: true },
-			Height: sql.NullInt64{ Int64: int64(videoFile.Height), Valid: true },
-			Framerate: sql.NullFloat64{ Float64: videoFile.FrameRate, Valid: true },
-			Bitrate: sql.NullInt64{ Int64: videoFile.Bitrate, Valid: true },
-			Size: sql.NullString{ String: strconv.Itoa(int(videoFile.Size)), Valid: true },
-			CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
-			UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
+			Checksum:   checksum,
+			Path:       t.FilePath,
+			Duration:   sql.NullFloat64{Float64: videoFile.Duration, Valid: true},
+			VideoCodec: sql.NullString{String: videoFile.VideoCodec, Valid: true},
+			AudioCodec: sql.NullString{String: videoFile.AudioCodec, Valid: true},
+			Width:      sql.NullInt64{Int64: int64(videoFile.Width), Valid: true},
+			Height:     sql.NullInt64{Int64: int64(videoFile.Height), Valid: true},
+			Framerate:  sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true},
+			Bitrate:    sql.NullInt64{Int64: videoFile.Bitrate, Valid: true},
+			Size:       sql.NullString{String: strconv.Itoa(int(videoFile.Size)), Valid: true},
+			CreatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
 		}
 		_, err = qb.Create(newScene, tx)
 	}
@@ -145,9 +145,9 @@ func (t *ScanTask) makeScreenshot(probeResult ffmpeg.VideoFile, outputPath strin
 	encoder := ffmpeg.NewEncoder(instance.StaticPaths.FFMPEG)
 	options := ffmpeg.ScreenshotOptions{
 		OutputPath: outputPath,
-		Quality: quality,
-		Time: float64(probeResult.Duration) * 0.2,
-		Width: width,
+		Quality:    quality,
+		Time:       float64(probeResult.Duration) * 0.2,
+		Width:      width,
 	}
 	encoder.Screenshot(probeResult, options)
 }

@@ -96,11 +96,11 @@ func (r *queryResolver) Stats(ctx context.Context) (models.StatsResultType, erro
 	tagsQB := models.NewTagQueryBuilder()
 	tagsCount, _ := tagsQB.Count()
 	return models.StatsResultType{
-		SceneCount: scenesCount,
-		GalleryCount: galleryCount,
+		SceneCount:     scenesCount,
+		GalleryCount:   galleryCount,
 		PerformerCount: performersCount,
-		StudioCount: studiosCount,
-		TagCount: tagsCount,
+		StudioCount:    studiosCount,
+		TagCount:       tagsCount,
 	}, nil
 }
 
@@ -127,7 +127,7 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 		_, hasKey := tags[markerPrimaryTag.ID]
 		var sceneMarkerTag *models.SceneMarkerTag
 		if !hasKey {
-			sceneMarkerTag = &models.SceneMarkerTag{ Tag: *markerPrimaryTag }
+			sceneMarkerTag = &models.SceneMarkerTag{Tag: *markerPrimaryTag}
 			tags[markerPrimaryTag.ID] = sceneMarkerTag
 			keys = append(keys, markerPrimaryTag.ID)
 		} else {

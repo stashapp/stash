@@ -14,7 +14,7 @@ import (
 
 func GetPerformerNames(q string) ([]string, error) {
 	// Request the HTML page.
-	queryURL := "https://www.freeones.com/suggestions.php?q="+url.PathEscape(q)+"&t=1"
+	queryURL := "https://www.freeones.com/suggestions.php?q=" + url.PathEscape(q) + "&t=1"
 	res, err := http.Get(queryURL)
 	if err != nil {
 		logger.Fatal(err)
@@ -41,7 +41,7 @@ func GetPerformerNames(q string) ([]string, error) {
 }
 
 func GetPerformer(performerName string) (*models.ScrapedPerformer, error) {
-	queryURL := "https://www.freeones.com/search/?t=1&q="+url.PathEscape(performerName)+"&view=thumbs"
+	queryURL := "https://www.freeones.com/search/?t=1&q=" + url.PathEscape(performerName) + "&view=thumbs"
 	res, err := http.Get(queryURL)
 	if err != nil {
 		return nil, err
@@ -151,16 +151,16 @@ func GetPerformer(performerName string) (*models.ScrapedPerformer, error) {
 	twitterElement := bioDoc.Find(".twitter a")
 	twitterHref, _ := twitterElement.Attr("href")
 	if twitterHref != "" {
-		twitterUrl, _ := url.Parse(twitterHref)
-		twitterHandle := strings.Replace(twitterUrl.Path, "/", "", -1)
+		twitterURL, _ := url.Parse(twitterHref)
+		twitterHandle := strings.Replace(twitterURL.Path, "/", "", -1)
 		result.Twitter = &twitterHandle
 	}
 
 	instaElement := bioDoc.Find(".instagram a")
 	instaHref, _ := instaElement.Attr("href")
 	if instaHref != "" {
-		instaUrl, _ := url.Parse(instaHref)
-		instaHandle := strings.Replace(instaUrl.Path, "/", "", -1)
+		instaURL, _ := url.Parse(instaHref)
+		instaHandle := strings.Replace(instaURL.Path, "/", "", -1)
 		result.Instagram = &instaHandle
 	}
 
@@ -204,10 +204,14 @@ func getIndexes(doc *goquery.Document) map[string]int {
 
 func getEthnicity(ethnicity string) string {
 	switch ethnicity {
-	case "Caucasian": return "white"
-	case "Black": return "black"
-	case "Latin": return "hispanic"
-	case "Asian": return "asian"
+	case "Caucasian":
+		return "white"
+	case "Black":
+		return "black"
+	case "Latin":
+		return "hispanic"
+	case "Asian":
+		return "asian"
 	default:
 		panic("unknown ethnicity")
 	}
@@ -217,15 +221,14 @@ func paramValue(params *goquery.Selection, paramIndex int) string {
 	i := paramIndex - 1
 	if paramIndex == 0 {
 		return ""
-	} else {
-		node := params.Get(i).FirstChild
-		content := trim(node.Data)
-		if content != "" {
-			return content
-		}
-		node = node.NextSibling
-		return trim(node.FirstChild.Data)
 	}
+	node := params.Get(i).FirstChild
+	content := trim(node.Data)
+	if content != "" {
+		return content
+	}
+	node = node.NextSibling
+	return trim(node.FirstChild.Data)
 }
 
 // https://stackoverflow.com/questions/20305966/why-does-strip-not-remove-the-leading-whitespace

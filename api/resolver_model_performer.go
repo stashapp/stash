@@ -19,8 +19,8 @@ func (r *performerResolver) Name(ctx context.Context, obj *models.Performer) (*s
 }
 
 func (r *performerResolver) URL(ctx context.Context, obj *models.Performer) (*string, error) {
-	if obj.Url.Valid {
-		return &obj.Url.String, nil
+	if obj.URL.Valid {
+		return &obj.URL.String, nil
 	}
 	return nil, nil
 }
@@ -125,7 +125,7 @@ func (r *performerResolver) Favorite(ctx context.Context, obj *models.Performer)
 
 func (r *performerResolver) ImagePath(ctx context.Context, obj *models.Performer) (*string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	imagePath := urlbuilders.NewPerformerURLBuilder(baseURL, obj.ID).GetPerformerImageUrl()
+	imagePath := urlbuilders.NewPerformerURLBuilder(baseURL, obj.ID).GetPerformerImageURL()
 	return &imagePath, nil
 }
 

@@ -49,7 +49,7 @@ func Download(configDirectory string) error {
 	archivePath := filepath.Join(configDirectory, "ffmpeg"+urlExt)
 	_ = os.Remove(archivePath) // remove archive if it already exists
 	out, err := os.Create(archivePath)
-	if err != nil  {
+	if err != nil {
 		return err
 	}
 	defer out.Close()
@@ -68,7 +68,7 @@ func Download(configDirectory string) error {
 
 	// Write the response to the archive file location
 	_, err = io.Copy(out, resp.Body)
-	if err != nil  {
+	if err != nil {
 		return err
 	}
 
@@ -77,7 +77,7 @@ func Download(configDirectory string) error {
 			return err
 		}
 	} else {
-		return fmt.Errorf("FFMPeg was downloaded to %s.  ")
+		return fmt.Errorf("ffmpeg was downloaded to %s", archivePath)
 	}
 
 	return nil
@@ -101,17 +101,15 @@ func getFFMPEGURL() string {
 func getFFMPEGFilename() string {
 	if runtime.GOOS == "windows" {
 		return "ffmpeg.exe"
-	} else {
-		return "ffmpeg"
 	}
+	return "ffmpeg"
 }
 
 func getFFProbeFilename() string {
 	if runtime.GOOS == "windows" {
 		return "ffprobe.exe"
-	} else {
-		return "ffprobe"
 	}
+	return "ffprobe"
 }
 
 // Checks if FFMPEG in the path has the correct flags
@@ -150,7 +148,7 @@ func unzip(src, configDirectory string) error {
 
 		unzippedPath := filepath.Join(configDirectory, filename)
 		unzippedOutput, err := os.Create(unzippedPath)
-		if err != nil  {
+		if err != nil {
 			return err
 		}
 

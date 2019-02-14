@@ -9,7 +9,7 @@ func (r *queryResolver) FindSceneMarkers(ctx context.Context, scene_marker_filte
 	qb := models.NewSceneMarkerQueryBuilder()
 	sceneMarkers, total := qb.Query(scene_marker_filter, filter)
 	return models.FindSceneMarkersResultType{
-		Count: total,
+		Count:        total,
 		SceneMarkers: sceneMarkers,
 	}, nil
 }

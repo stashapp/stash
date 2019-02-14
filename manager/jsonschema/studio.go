@@ -8,7 +8,7 @@ import (
 
 type Studio struct {
 	Name  string `json:"name,omitempty"`
-	Url   string `json:"url,omitempty"`
+	URL   string `json:"url,omitempty"`
 	Image string `json:"image,omitempty"`
 }
 

@@ -12,9 +12,9 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 	// Populate a new tag from the input
 	currentTime := time.Now()
 	newTag := models.Tag{
-		Name: input.Name,
-		CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
-		UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
+		Name:      input.Name,
+		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
 	// Start the transaction and save the studio
@@ -38,9 +38,9 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	// Populate tag from the input
 	tagID, _ := strconv.Atoi(input.ID)
 	updatedTag := models.Tag{
-		ID: tagID,
-		Name: input.Name,
-		UpdatedAt: models.SQLiteTimestamp{ Timestamp: time.Now() },
+		ID:        tagID,
+		Name:      input.Name,
+		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 
 	// Start the transaction and save the tag

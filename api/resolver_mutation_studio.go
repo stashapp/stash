@@ -20,14 +20,14 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	// Populate a new studio from the input
 	currentTime := time.Now()
 	newStudio := models.Studio{
-		Image: imageData,
-		Checksum: checksum,
-		Name: sql.NullString{ String: input.Name, Valid: true },
-		CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
-		UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
+		Image:     imageData,
+		Checksum:  checksum,
+		Name:      sql.NullString{String: input.Name, Valid: true},
+		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 	if input.URL != nil {
-		newStudio.Url = sql.NullString{ String: *input.URL, Valid: true }
+		newStudio.URL = sql.NullString{String: *input.URL, Valid: true}
 	}
 
 	// Start the transaction and save the studio
@@ -51,8 +51,8 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	// Populate studio from the input
 	studioID, _ := strconv.Atoi(input.ID)
 	updatedStudio := models.Studio{
-		ID: studioID,
-		UpdatedAt: models.SQLiteTimestamp{ Timestamp: time.Now() },
+		ID:        studioID,
+		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 	if input.Image != nil {
 		checksum, imageData, err := utils.ProcessBase64Image(*input.Image)
@@ -63,10 +63,10 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		updatedStudio.Checksum = checksum
 	}
 	if input.Name != nil {
-		updatedStudio.Name = sql.NullString{ String: *input.Name, Valid: true }
+		updatedStudio.Name = sql.NullString{String: *input.Name, Valid: true}
 	}
 	if input.URL != nil {
-		updatedStudio.Url = sql.NullString{ String: *input.URL, Valid: true }
+		updatedStudio.URL = sql.NullString{String: *input.URL, Valid: true}
 	}
 
 	// Start the transaction and save the studio

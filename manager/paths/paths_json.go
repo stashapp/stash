@@ -26,13 +26,13 @@ func newJSONPaths(p Paths) *jsonPaths {
 }
 
 func (jp *jsonPaths) PerformerJSONPath(checksum string) string {
-	return filepath.Join(jp.Performers, checksum + ".json")
+	return filepath.Join(jp.Performers, checksum+".json")
 }
 
 func (jp *jsonPaths) SceneJSONPath(checksum string) string {
-	return filepath.Join(jp.Scenes, checksum + ".json")
+	return filepath.Join(jp.Scenes, checksum+".json")
 }
 
 func (jp *jsonPaths) StudioJSONPath(checksum string) string {
-	return filepath.Join(jp.Studios, checksum + ".json")
+	return filepath.Join(jp.Studios, checksum+".json")
 }

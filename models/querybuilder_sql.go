@@ -162,7 +162,7 @@ func executeDeleteQuery(tableName string, id string, tx *sqlx.Tx) error {
 	}
 	idColumnName := getColumn(tableName, "id")
 	_, err := tx.Exec(
-		`DELETE FROM ` + tableName + ` WHERE ` + idColumnName + ` = ?`,
+		`DELETE FROM `+tableName+` WHERE `+idColumnName+` = ?`,
 		id,
 	)
 	return err
@@ -178,7 +178,7 @@ func ensureTx(tx *sqlx.Tx) {
 // sqlGenKeys is used for passing a struct and returning a string
 // of keys for non empty key:values. These keys are formated
 // keyname=:keyname with a comma seperating them
-func SqlGenKeys(i interface{}) string {
+func SQLGenKeys(i interface{}) string {
 	var query []string
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {

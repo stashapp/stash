@@ -97,7 +97,7 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 	montage := imaging.New(canvasWidth, canvasHeight, color.NRGBA{})
 	for index := 0; index < len(images); index++ {
 		x := width * (index % g.Columns)
-		y := height * int(math.Floor(float64(index) / float64(g.Rows)))
+		y := height * int(math.Floor(float64(index)/float64(g.Rows)))
 		img := images[index]
 		montage = imaging.Paste(montage, img, image.Pt(x, y))
 	}
@@ -121,11 +121,11 @@ func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
 	vttLines := []string{"WEBVTT", ""}
 	for index := 0; index < g.Info.ChunkCount; index++ {
 		x := width * (index % g.Columns)
-		y := height * int(math.Floor(float64(index) / float64(g.Rows)))
+		y := height * int(math.Floor(float64(index)/float64(g.Rows)))
 		startTime := utils.GetVTTTime(float64(index) * stepSize)
-		endTime := utils.GetVTTTime(float64(index + 1) * stepSize)
+		endTime := utils.GetVTTTime(float64(index+1) * stepSize)
 
-		vttLines = append(vttLines, startTime + " --> " + endTime)
+		vttLines = append(vttLines, startTime+" --> "+endTime)
 		vttLines = append(vttLines, fmt.Sprintf("%s#xywh=%d,%d,%d,%d", spriteImageName, x, y, width, height))
 		vttLines = append(vttLines, "")
 	}

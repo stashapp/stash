@@ -16,7 +16,7 @@ import (
 
 type ImportTask struct {
 	Mappings *jsonschema.Mappings
-	Scraped []jsonschema.ScrapedItem
+	Scraped  []jsonschema.ScrapedItem
 }
 
 func (t *ImportTask) Start(wg *sync.WaitGroup) {
@@ -57,7 +57,9 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 			logger.Errorf("[performers] failed to read json: %s", err.Error())
 			continue
 		}
-		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || performerJSON == nil { return }
+		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || performerJSON == nil {
+			return
+		}
 
 		logger.Progressf("[performers] %d of %d", index, len(t.Mappings.Performers))
 
@@ -72,57 +74,57 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 		// Populate a new performer from the input
 		currentTime := time.Now()
 		newPerformer := models.Performer{
-			Image: imageData,
-			Checksum: checksum,
-			Favorite: sql.NullBool{ Bool: performerJSON.Favorite, Valid: true },
-			CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
-			UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
+			Image:     imageData,
+			Checksum:  checksum,
+			Favorite:  sql.NullBool{Bool: performerJSON.Favorite, Valid: true},
+			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
 
 		if performerJSON.Name != "" {
-			newPerformer.Name = sql.NullString{ String: performerJSON.Name, Valid: true }
+			newPerformer.Name = sql.NullString{String: performerJSON.Name, Valid: true}
 		}
-		if performerJSON.Url != "" {
-			newPerformer.Url = sql.NullString{ String: performerJSON.Url, Valid: true }
+		if performerJSON.URL != "" {
+			newPerformer.URL = sql.NullString{String: performerJSON.URL, Valid: true}
 		}
 		if performerJSON.Birthdate != "" {
-			newPerformer.Birthdate = sql.NullString{ String: performerJSON.Birthdate, Valid: true }
+			newPerformer.Birthdate = sql.NullString{String: performerJSON.Birthdate, Valid: true}
 		}
 		if performerJSON.Ethnicity != "" {
-			newPerformer.Ethnicity = sql.NullString{ String: performerJSON.Ethnicity, Valid: true }
+			newPerformer.Ethnicity = sql.NullString{String: performerJSON.Ethnicity, Valid: true}
 		}
 		if performerJSON.Country != "" {
-			newPerformer.Country = sql.NullString{ String: performerJSON.Country, Valid: true }
+			newPerformer.Country = sql.NullString{String: performerJSON.Country, Valid: true}
 		}
 		if performerJSON.EyeColor != "" {
-			newPerformer.EyeColor = sql.NullString{ String: performerJSON.EyeColor, Valid: true }
+			newPerformer.EyeColor = sql.NullString{String: performerJSON.EyeColor, Valid: true}
 		}
 		if performerJSON.Height != "" {
-			newPerformer.Height = sql.NullString{ String: performerJSON.Height, Valid: true }
+			newPerformer.Height = sql.NullString{String: performerJSON.Height, Valid: true}
 		}
 		if performerJSON.Measurements != "" {
-			newPerformer.Measurements = sql.NullString{ String: performerJSON.Measurements, Valid: true }
+			newPerformer.Measurements = sql.NullString{String: performerJSON.Measurements, Valid: true}
 		}
 		if performerJSON.FakeTits != "" {
-			newPerformer.FakeTits = sql.NullString{ String: performerJSON.FakeTits, Valid: true }
+			newPerformer.FakeTits = sql.NullString{String: performerJSON.FakeTits, Valid: true}
 		}
 		if performerJSON.CareerLength != "" {
-			newPerformer.CareerLength = sql.NullString{ String: performerJSON.CareerLength, Valid: true }
+			newPerformer.CareerLength = sql.NullString{String: performerJSON.CareerLength, Valid: true}
 		}
 		if performerJSON.Tattoos != "" {
-			newPerformer.Tattoos = sql.NullString{ String: performerJSON.Tattoos, Valid: true }
+			newPerformer.Tattoos = sql.NullString{String: performerJSON.Tattoos, Valid: true}
 		}
 		if performerJSON.Piercings != "" {
-			newPerformer.Piercings = sql.NullString{ String: performerJSON.Piercings, Valid: true }
+			newPerformer.Piercings = sql.NullString{String: performerJSON.Piercings, Valid: true}
 		}
 		if performerJSON.Aliases != "" {
-			newPerformer.Aliases = sql.NullString{ String: performerJSON.Aliases, Valid: true }
+			newPerformer.Aliases = sql.NullString{String: performerJSON.Aliases, Valid: true}
 		}
 		if performerJSON.Twitter != "" {
-			newPerformer.Twitter = sql.NullString{ String: performerJSON.Twitter, Valid: true }
+			newPerformer.Twitter = sql.NullString{String: performerJSON.Twitter, Valid: true}
 		}
 		if performerJSON.Instagram != "" {
-			newPerformer.Instagram = sql.NullString{ String: performerJSON.Instagram, Valid: true }
+			newPerformer.Instagram = sql.NullString{String: performerJSON.Instagram, Valid: true}
 		}
 
 		_, err = qb.Create(newPerformer, tx)
@@ -151,7 +153,9 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 			logger.Errorf("[studios] failed to read json: %s", err.Error())
 			continue
 		}
-		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || studioJSON == nil { return }
+		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || studioJSON == nil {
+			return
+		}
 
 		logger.Progressf("[studios] %d of %d", index, len(t.Mappings.Studios))
 
@@ -166,12 +170,12 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 		// Populate a new studio from the input
 		currentTime := time.Now()
 		newStudio := models.Studio{
-			Image: imageData,
-			Checksum: checksum,
-			Name: sql.NullString{ String: studioJSON.Name, Valid: true },
-			Url: sql.NullString{ String: studioJSON.Url, Valid: true },
-			CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
-			UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
+			Image:     imageData,
+			Checksum:  checksum,
+			Name:      sql.NullString{String: studioJSON.Name, Valid: true},
+			URL:       sql.NullString{String: studioJSON.URL, Valid: true},
+			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
 
 		_, err = qb.Create(newStudio, tx)
@@ -195,17 +199,19 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 
 	for i, mappingJSON := range t.Mappings.Galleries {
 		index := i + 1
-		if mappingJSON.Checksum == "" || mappingJSON.Path == "" { return }
+		if mappingJSON.Checksum == "" || mappingJSON.Path == "" {
+			return
+		}
 
 		logger.Progressf("[galleries] %d of %d", index, len(t.Mappings.Galleries))
 
 		// Populate a new gallery from the input
 		currentTime := time.Now()
 		newGallery := models.Gallery{
-			Checksum: mappingJSON.Checksum,
-			Path: mappingJSON.Path,
-			CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
-			UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
+			Checksum:  mappingJSON.Checksum,
+			Path:      mappingJSON.Path,
+			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
 
 		_, err := qb.Create(newGallery, tx)
@@ -254,7 +260,9 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 		}
 
 		// Get the tags from the markers if we have marker json
-		if len(sceneJSON.Markers) == 0 { continue }
+		if len(sceneJSON.Markers) == 0 {
+			continue
+		}
 		for _, markerJSON := range sceneJSON.Markers {
 			if markerJSON.PrimaryTag != "" {
 				tagNames = append(tagNames, markerJSON.PrimaryTag)
@@ -269,9 +277,9 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 	for _, tagName := range uniqueTagNames {
 		currentTime := time.Now()
 		newTag := models.Tag{
-			Name: tagName,
-			CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
-			UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
+			Name:      tagName,
+			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
 
 		_, err := qb.Create(newTag, tx)
@@ -306,20 +314,20 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 			updatedAt = mappingJSON.UpdatedAt.Time
 		}
 		newScrapedItem := models.ScrapedItem{
-			Title: sql.NullString{String: mappingJSON.Title, Valid: true},
-			Description: sql.NullString{String: mappingJSON.Description, Valid: true},
-			Url: sql.NullString{String: mappingJSON.Url, Valid: true},
-			Date: sql.NullString{String: mappingJSON.Date, Valid: true},
-			Rating: sql.NullString{String: mappingJSON.Rating, Valid: true},
-			Tags: sql.NullString{String: mappingJSON.Tags, Valid: true},
-			Models: sql.NullString{String: mappingJSON.Models, Valid: true},
-			Episode: sql.NullInt64{Int64: int64(mappingJSON.Episode), Valid: true},
+			Title:           sql.NullString{String: mappingJSON.Title, Valid: true},
+			Description:     sql.NullString{String: mappingJSON.Description, Valid: true},
+			URL:             sql.NullString{String: mappingJSON.URL, Valid: true},
+			Date:            sql.NullString{String: mappingJSON.Date, Valid: true},
+			Rating:          sql.NullString{String: mappingJSON.Rating, Valid: true},
+			Tags:            sql.NullString{String: mappingJSON.Tags, Valid: true},
+			Models:          sql.NullString{String: mappingJSON.Models, Valid: true},
+			Episode:         sql.NullInt64{Int64: int64(mappingJSON.Episode), Valid: true},
 			GalleryFilename: sql.NullString{String: mappingJSON.GalleryFilename, Valid: true},
-			GalleryUrl: sql.NullString{String: mappingJSON.GalleryUrl, Valid: true},
-			VideoFilename: sql.NullString{String: mappingJSON.VideoFilename, Valid: true},
-			VideoUrl: sql.NullString{String: mappingJSON.VideoUrl, Valid: true},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: updatedAt},
+			GalleryURL:      sql.NullString{String: mappingJSON.GalleryURL, Valid: true},
+			VideoFilename:   sql.NullString{String: mappingJSON.VideoFilename, Valid: true},
+			VideoURL:        sql.NullString{String: mappingJSON.VideoURL, Valid: true},
+			CreatedAt:       models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt:       models.SQLiteTimestamp{Timestamp: updatedAt},
 		}
 
 		studio, err := sqb.FindByName(mappingJSON.Studio, tx)
@@ -332,7 +340,7 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 
 		_, err = qb.Create(newScrapedItem, tx)
 		if err != nil {
-			logger.Errorf("[scraped sites] <%s> failed to create: %s", newScrapedItem.Title, err.Error())
+			logger.Errorf("[scraped sites] <%s> failed to create: %s", newScrapedItem.Title.String, err.Error())
 		}
 	}
 
@@ -360,10 +368,10 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		logger.Progressf("[scenes] %d of %d", index, len(t.Mappings.Scenes))
 
 		newScene := models.Scene{
-			Checksum: mappingJSON.Checksum,
-			Path: mappingJSON.Path,
-			CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
-			UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
+			Checksum:  mappingJSON.Checksum,
+			Path:      mappingJSON.Path,
+			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
 
 		sceneJSON, err := instance.JSON.getScene(mappingJSON.Checksum)
@@ -380,8 +388,8 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			if sceneJSON.Details != "" {
 				newScene.Details = sql.NullString{String: sceneJSON.Details, Valid: true}
 			}
-			if sceneJSON.Url != "" {
-				newScene.Url = sql.NullString{String: sceneJSON.Url, Valid: true}
+			if sceneJSON.URL != "" {
+				newScene.URL = sql.NullString{String: sceneJSON.URL, Valid: true}
 			}
 			if sceneJSON.Date != "" {
 				newScene.Date = sql.NullString{String: sceneJSON.Date, Valid: true}
@@ -427,9 +435,9 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			sqb := models.NewStudioQueryBuilder()
 			studio, err := sqb.FindByName(sceneJSON.Studio, tx)
 			if err != nil {
-				logger.Warn("[scenes] studio <%s> does not exist: %s", sceneJSON.Studio, err)
+				logger.Warnf("[scenes] studio <%s> does not exist: %s", sceneJSON.Studio, err.Error())
 			} else {
-				newScene.StudioID = sql.NullInt64{ Int64: int64(studio.ID), Valid: true }
+				newScene.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
 			}
 		}
 
@@ -451,9 +459,9 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			gqb := models.NewGalleryQueryBuilder()
 			gallery, err := gqb.FindByChecksum(sceneJSON.Gallery, tx)
 			if err != nil {
-				logger.Warn("[scenes] gallery <%s> does not exist: %s", sceneJSON.Gallery, err)
+				logger.Warnf("[scenes] gallery <%s> does not exist: %s", sceneJSON.Gallery, err.Error())
 			} else {
-				gallery.SceneID = sql.NullInt64{ Int64: int64(scene.ID), Valid: true }
+				gallery.SceneID = sql.NullInt64{Int64: int64(scene.ID), Valid: true}
 				_, err := gqb.Update(*gallery, tx)
 				if err != nil {
 					logger.Errorf("[scenes] <%s> failed to update gallery: %s", scene.Checksum, err.Error())
@@ -465,13 +473,13 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		if len(sceneJSON.Performers) > 0 {
 			performers, err := t.getPerformers(sceneJSON.Performers, tx)
 			if err != nil {
-				logger.Warn("[scenes] <%s> failed to fetch performers: %s", scene.Checksum, err)
+				logger.Warnf("[scenes] <%s> failed to fetch performers: %s", scene.Checksum, err.Error())
 			} else {
 				var performerJoins []models.PerformersScenes
 				for _, performer := range performers {
 					join := models.PerformersScenes{
 						PerformerID: performer.ID,
-						SceneID: scene.ID,
+						SceneID:     scene.ID,
 					}
 					performerJoins = append(performerJoins, join)
 				}
@@ -485,13 +493,13 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		if len(sceneJSON.Tags) > 0 {
 			tags, err := t.getTags(scene.Checksum, sceneJSON.Tags, tx)
 			if err != nil {
-				logger.Warn("[scenes] <%s> failed to fetch tags: %s", scene.Checksum, err)
+				logger.Warnf("[scenes] <%s> failed to fetch tags: %s", scene.Checksum, err.Error())
 			} else {
 				var tagJoins []models.ScenesTags
 				for _, tag := range tags {
 					join := models.ScenesTags{
 						SceneID: scene.ID,
-						TagID: tag.ID,
+						TagID:   tag.ID,
 					}
 					tagJoins = append(tagJoins, join)
 				}
@@ -508,11 +516,11 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			for _, marker := range sceneJSON.Markers {
 				seconds, _ := strconv.ParseFloat(marker.Seconds, 64)
 				newSceneMarker := models.SceneMarker{
-					Title: marker.Title,
-					Seconds: seconds,
-					SceneID: sql.NullInt64{Int64: int64(scene.ID), Valid: true},
-					CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
-					UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
+					Title:     marker.Title,
+					Seconds:   seconds,
+					SceneID:   sql.NullInt64{Int64: int64(scene.ID), Valid: true},
+					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+					UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 				}
 
 				primaryTag, err := tqb.FindByName(marker.PrimaryTag, tx)
@@ -536,13 +544,13 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				// Get the scene marker tags and create the joins
 				tags, err := t.getTags(scene.Checksum, marker.Tags, tx)
 				if err != nil {
-					logger.Warn("[scenes] <%s> failed to fetch scene marker tags: %s", scene.Checksum, err)
+					logger.Warnf("[scenes] <%s> failed to fetch scene marker tags: %s", scene.Checksum, err.Error())
 				} else {
 					var tagJoins []models.SceneMarkersTags
 					for _, tag := range tags {
 						join := models.SceneMarkersTags{
 							SceneMarkerID: sceneMarker.ID,
-							TagID: tag.ID,
+							TagID:         tag.ID,
 						}
 						tagJoins = append(tagJoins, join)
 					}

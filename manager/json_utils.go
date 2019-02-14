@@ -4,7 +4,7 @@ import (
 	"github.com/stashapp/stash/manager/jsonschema"
 )
 
-type jsonUtils struct {}
+type jsonUtils struct{}
 
 func (jp *jsonUtils) getMappings() (*jsonschema.Mappings, error) {
 	return jsonschema.LoadMappingsFile(instance.Paths.JSON.MappingsFile)

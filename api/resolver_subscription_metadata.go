@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"github.com/stashapp/stash/logger"
 	"github.com/stashapp/stash/manager"
 	"time"
 )
@@ -15,8 +14,7 @@ func (r *subscriptionResolver) MetadataUpdate(ctx context.Context) (<-chan strin
 	go func() {
 		for {
 			select {
-			case t := <-ticker.C:
-				logger.Trace("metadata subscription tick at %s", t)
+			case _ = <-ticker.C:
 				manager.GetInstance().HandleMetadataUpdateSubscriptionTick(msg)
 			case <-ctx.Done():
 				ticker.Stop()

@@ -2,13 +2,13 @@ package models
 
 import "github.com/jmoiron/sqlx"
 
-type joinsQueryBuilder struct {}
+type JoinsQueryBuilder struct{}
 
-func NewJoinsQueryBuilder() joinsQueryBuilder {
-	return joinsQueryBuilder{}
+func NewJoinsQueryBuilder() JoinsQueryBuilder {
+	return JoinsQueryBuilder{}
 }
 
-func (qb *joinsQueryBuilder) CreatePerformersScenes(newJoins []PerformersScenes, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreatePerformersScenes(newJoins []PerformersScenes, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -22,7 +22,7 @@ func (qb *joinsQueryBuilder) CreatePerformersScenes(newJoins []PerformersScenes,
 	return nil
 }
 
-func (qb *joinsQueryBuilder) UpdatePerformersScenes(sceneID int, updatedJoins []PerformersScenes, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdatePerformersScenes(sceneID int, updatedJoins []PerformersScenes, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -33,7 +33,7 @@ func (qb *joinsQueryBuilder) UpdatePerformersScenes(sceneID int, updatedJoins []
 	return qb.CreatePerformersScenes(updatedJoins, tx)
 }
 
-func (qb *joinsQueryBuilder) CreateScenesTags(newJoins []ScenesTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreateScenesTags(newJoins []ScenesTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -47,7 +47,7 @@ func (qb *joinsQueryBuilder) CreateScenesTags(newJoins []ScenesTags, tx *sqlx.Tx
 	return nil
 }
 
-func (qb *joinsQueryBuilder) UpdateScenesTags(sceneID int, updatedJoins []ScenesTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int, updatedJoins []ScenesTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -58,7 +58,7 @@ func (qb *joinsQueryBuilder) UpdateScenesTags(sceneID int, updatedJoins []Scenes
 	return qb.CreateScenesTags(updatedJoins, tx)
 }
 
-func (qb *joinsQueryBuilder) CreateSceneMarkersTags(newJoins []SceneMarkersTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreateSceneMarkersTags(newJoins []SceneMarkersTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -72,7 +72,7 @@ func (qb *joinsQueryBuilder) CreateSceneMarkersTags(newJoins []SceneMarkersTags,
 	return nil
 }
 
-func (qb *joinsQueryBuilder) UpdateSceneMarkersTags(sceneMarkerID int, updatedJoins []SceneMarkersTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateSceneMarkersTags(sceneMarkerID int, updatedJoins []SceneMarkersTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones

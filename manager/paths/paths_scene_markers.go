@@ -16,9 +16,9 @@ func newSceneMarkerPaths(p Paths) *sceneMarkerPaths {
 }
 
 func (sp *sceneMarkerPaths) GetStreamPath(checksum string, seconds int) string {
-	return filepath.Join(sp.generated.Markers, checksum, strconv.Itoa(seconds) + ".mp4")
+	return filepath.Join(sp.generated.Markers, checksum, strconv.Itoa(seconds)+".mp4")
 }
 
 func (sp *sceneMarkerPaths) GetStreamPreviewImagePath(checksum string, seconds int) string {
-	return filepath.Join(sp.generated.Markers, checksum, strconv.Itoa(seconds) + ".webp")
+	return filepath.Join(sp.generated.Markers, checksum, strconv.Itoa(seconds)+".webp")
 }

@@ -13,8 +13,8 @@ import (
 type PreviewGenerator struct {
 	Info *GeneratorInfo
 
-	VideoFilename string
-	ImageFilename string
+	VideoFilename   string
+	ImageFilename   string
 	OutputDirectory string
 }
 
@@ -67,7 +67,7 @@ func (g *PreviewGenerator) generateConcatFile() error {
 	w := bufio.NewWriter(f)
 	for i := 0; i < g.Info.ChunkCount; i++ {
 		num := fmt.Sprintf("%.3d", i)
-		filename := "preview"+num+".mp4"
+		filename := "preview" + num + ".mp4"
 		_, _ = w.WriteString(fmt.Sprintf("file '%s'\n", filename))
 	}
 	return w.Flush()
@@ -84,12 +84,12 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder) error {
 	for i := 0; i < g.Info.ChunkCount; i++ {
 		time := i * stepSize
 		num := fmt.Sprintf("%.3d", i)
-		filename := "preview"+num+".mp4"
+		filename := "preview" + num + ".mp4"
 		chunkOutputPath := instance.Paths.Generated.GetTmpPath(filename)
 
 		options := ffmpeg.ScenePreviewChunkOptions{
-			Time: time,
-			Width: 640,
+			Time:       time,
+			Width:      640,
 			OutputPath: chunkOutputPath,
 		}
 		encoder.ScenePreviewVideoChunk(g.Info.VideoFile, options)
@@ -112,12 +112,11 @@ func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
 	tmpOutputPath := instance.Paths.Generated.GetTmpPath(g.ImageFilename)
 	if err := encoder.ScenePreviewVideoToImage(g.Info.VideoFile, 640, videoPreviewPath, tmpOutputPath); err != nil {
 		return err
-	} else {
-		if err := os.Rename(tmpOutputPath, outputPath); err != nil {
-			return err
-		}
-		logger.Debug("created video preview image: ", outputPath)
 	}
+	if err := os.Rename(tmpOutputPath, outputPath); err != nil {
+		return err
+	}
+	logger.Debug("created video preview image: ", outputPath)
 
 	return nil
 }

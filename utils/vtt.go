@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// GetVTTTime returns a timestamp appropriate for VTT files (hh:mm:ss)
 func GetVTTTime(totalSeconds float64) (s string) {
 	totalSecondsString := strconv.FormatFloat(totalSeconds, 'f', -1, 64)
 	secondsDuration, _ := time.ParseDuration(totalSecondsString + "s")

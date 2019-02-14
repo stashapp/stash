@@ -38,11 +38,11 @@ func (r *sceneMarkerResolver) Tags(ctx context.Context, obj *models.SceneMarker)
 func (r *sceneMarkerResolver) Stream(ctx context.Context, obj *models.SceneMarker) (string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	sceneID := int(obj.SceneID.Int64)
-	return urlbuilders.NewSceneURLBuilder(baseURL, sceneID).GetSceneMarkerStreamUrl(obj.ID), nil
+	return urlbuilders.NewSceneURLBuilder(baseURL, sceneID).GetSceneMarkerStreamURL(obj.ID), nil
 }
 
 func (r *sceneMarkerResolver) Preview(ctx context.Context, obj *models.SceneMarker) (string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	sceneID := int(obj.SceneID.Int64)
-	return urlbuilders.NewSceneURLBuilder(baseURL, sceneID).GetSceneMarkerStreamPreviewUrl(obj.ID), nil
+	return urlbuilders.NewSceneURLBuilder(baseURL, sceneID).GetSceneMarkerStreamPreviewURL(obj.ID), nil
 }

@@ -38,31 +38,31 @@ func (rs sceneRoutes) Routes() chi.Router {
 // region Handlers
 
 func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value("scene").(*models.Scene)
+	scene := r.Context().Value(sceneKey).(*models.Scene)
 	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.Checksum)
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value("scene").(*models.Scene)
+	scene := r.Context().Value(sceneKey).(*models.Scene)
 	filepath := manager.GetInstance().Paths.Scene.GetScreenshotPath(scene.Checksum)
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) Preview(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value("scene").(*models.Scene)
+	scene := r.Context().Value(sceneKey).(*models.Scene)
 	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewPath(scene.Checksum)
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value("scene").(*models.Scene)
+	scene := r.Context().Value(sceneKey).(*models.Scene)
 	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewImagePath(scene.Checksum)
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value("scene").(*models.Scene)
+	scene := r.Context().Value(sceneKey).(*models.Scene)
 	qb := models.NewSceneMarkerQueryBuilder()
 	sceneMarkers, err := qb.FindBySceneID(scene.ID, nil)
 	if err != nil {
@@ -72,7 +72,7 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 	vttLines := []string{"WEBVTT", ""}
 	for _, marker := range sceneMarkers {
 		time := utils.GetVTTTime(marker.Seconds)
-		vttLines = append(vttLines, time + " --> " + time)
+		vttLines = append(vttLines, time+" --> "+time)
 		vttLines = append(vttLines, marker.Title)
 		vttLines = append(vttLines, "")
 	}
@@ -83,21 +83,21 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value("scene").(*models.Scene)
+	scene := r.Context().Value(sceneKey).(*models.Scene)
 	w.Header().Set("Content-Type", "text/vtt")
 	filepath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.Checksum)
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) VttSprite(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value("scene").(*models.Scene)
+	scene := r.Context().Value(sceneKey).(*models.Scene)
 	w.Header().Set("Content-Type", "image/jpeg")
 	filepath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.Checksum)
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value("scene").(*models.Scene)
+	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	qb := models.NewSceneMarkerQueryBuilder()
 	sceneMarker, err := qb.Find(sceneMarkerID)
@@ -111,7 +111,7 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 }
 
 func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request) {
-	scene := r.Context().Value("scene").(*models.Scene)
+	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	qb := models.NewSceneMarkerQueryBuilder()
 	sceneMarker, err := qb.Find(sceneMarkerID)
@@ -145,7 +145,7 @@ func SceneCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "scene", scene)
+		ctx := context.WithValue(r.Context(), sceneKey, scene)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

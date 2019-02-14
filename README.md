@@ -34,6 +34,10 @@ Not yet, but this will come in the future.
 
 # Development
 
+## Install
+
+* [Revive](https://github.com/mgechev/revive) - Configurable linter `go get github.com/mgechev/revive`
+
 ## Environment
 
 ### macOS
@@ -53,14 +57,18 @@ TODO
 
 * `make build` - Builds the binary
 * `make gqlgen` - Regenerate Go GraphQL files
+* `make vet` - Run `go vet`
+* `make lint` - Run the linter
 
 ## Building a release
 
-1. cd into the UI directory and run `ng build --prod`
-2. cd back to the root directory and run `make build` to build the executable
+1. cd into the UI directory and run `ng build --prod` to compile the frontend
+2. cd back to the root directory and run `make build` to build the executable for your current platform
 
-#### Notes for the dev
+## Cross compiling
 
-https://blog.filippo.io/easy-windows-and-linux-cross-compilers-for-macos/
+This project makes use of [this](https://github.com/bep/dockerfiles/tree/master/ci-goreleaser) docker container to create an environment
+where the app can be cross compiled.  This process is kicked off by CI via the `scripts/cross-compile.sh` script.  Run the following
+command to open a bash shell to the container to poke around:
 
 `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t bepsays/ci-goreleaser:1.11-2 /bin/bash`

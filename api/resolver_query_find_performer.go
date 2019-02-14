@@ -16,7 +16,7 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performer_filter *mo
 	qb := models.NewPerformerQueryBuilder()
 	performers, total := qb.Query(performer_filter, filter)
 	return models.FindPerformersResultType{
-		Count: total,
+		Count:      total,
 		Performers: performers,
 	}, nil
 }

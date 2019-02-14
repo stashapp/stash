@@ -6,13 +6,13 @@ import (
 	"github.com/stashapp/stash/database"
 )
 
-type scrapedItemQueryBuilder struct{}
+type ScrapedItemQueryBuilder struct{}
 
-func NewScrapedItemQueryBuilder() scrapedItemQueryBuilder {
-	return scrapedItemQueryBuilder{}
+func NewScrapedItemQueryBuilder() ScrapedItemQueryBuilder {
+	return ScrapedItemQueryBuilder{}
 }
 
-func (qb *scrapedItemQueryBuilder) Create(newScrapedItem ScrapedItem, tx *sqlx.Tx) (*ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) Create(newScrapedItem ScrapedItem, tx *sqlx.Tx) (*ScrapedItem, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scraped_items (title, description, url, date, rating, tags, models, episode, gallery_filename,
@@ -35,10 +35,10 @@ func (qb *scrapedItemQueryBuilder) Create(newScrapedItem ScrapedItem, tx *sqlx.T
 	return &newScrapedItem, nil
 }
 
-func (qb *scrapedItemQueryBuilder) Update(updatedScrapedItem ScrapedItem, tx *sqlx.Tx) (*ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) Update(updatedScrapedItem ScrapedItem, tx *sqlx.Tx) (*ScrapedItem, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE scraped_items SET `+SqlGenKeys(updatedScrapedItem)+` WHERE scraped_items.id = :id`,
+		`UPDATE scraped_items SET `+SQLGenKeys(updatedScrapedItem)+` WHERE scraped_items.id = :id`,
 		updatedScrapedItem,
 	)
 	if err != nil {
@@ -51,17 +51,17 @@ func (qb *scrapedItemQueryBuilder) Update(updatedScrapedItem ScrapedItem, tx *sq
 	return &updatedScrapedItem, nil
 }
 
-func (qb *scrapedItemQueryBuilder) Find(id int) (*ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) Find(id int) (*ScrapedItem, error) {
 	query := "SELECT * FROM scraped_items WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryScrapedItem(query, args, nil)
 }
 
-func (qb *scrapedItemQueryBuilder) All() ([]ScrapedItem, error) {
-	return qb.queryScrapedItems(selectAll("scraped_items") + qb.getScrapedItemsSort(nil), nil, nil)
+func (qb *ScrapedItemQueryBuilder) All() ([]ScrapedItem, error) {
+	return qb.queryScrapedItems(selectAll("scraped_items")+qb.getScrapedItemsSort(nil), nil, nil)
 }
 
-func (qb *scrapedItemQueryBuilder) getScrapedItemsSort(findFilter *FindFilterType) string {
+func (qb *ScrapedItemQueryBuilder) getScrapedItemsSort(findFilter *FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -74,7 +74,7 @@ func (qb *scrapedItemQueryBuilder) getScrapedItemsSort(findFilter *FindFilterTyp
 	return getSort(sort, direction, "scraped_items")
 }
 
-func (qb *scrapedItemQueryBuilder) queryScrapedItem(query string, args []interface{}, tx *sqlx.Tx) (*ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) queryScrapedItem(query string, args []interface{}, tx *sqlx.Tx) (*ScrapedItem, error) {
 	results, err := qb.queryScrapedItems(query, args, tx)
 	if err != nil || len(results) < 1 {
 		return nil, err
@@ -82,7 +82,7 @@ func (qb *scrapedItemQueryBuilder) queryScrapedItem(query string, args []interfa
 	return &results[0], nil
 }
 
-func (qb *scrapedItemQueryBuilder) queryScrapedItems(query string, args []interface{}, tx *sqlx.Tx) ([]ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) queryScrapedItems(query string, args []interface{}, tx *sqlx.Tx) ([]ScrapedItem, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {

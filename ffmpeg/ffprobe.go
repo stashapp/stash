@@ -23,7 +23,7 @@ func IsValidCodec(codecName string) bool {
 }
 
 type VideoFile struct {
-	JSON FFProbeJSON
+	JSON        FFProbeJSON
 	AudioStream *FFProbeStream
 	VideoStream *FFProbeStream
 
@@ -86,7 +86,7 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 	result.Bitrate, _ = strconv.ParseInt(probeJSON.Format.BitRate, 10, 64)
 	result.Container = probeJSON.Format.FormatName
 	duration, _ := strconv.ParseFloat(probeJSON.Format.Duration, 64)
-	result.Duration = math.Round(duration*100)/100
+	result.Duration = math.Round(duration*100) / 100
 	fileStat, _ := os.Stat(filePath)
 	result.Size = fileStat.Size()
 	result.StartTime, _ = strconv.ParseFloat(probeJSON.Format.StartTime, 64)
@@ -112,7 +112,7 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 		} else {
 			framerate, _ = strconv.ParseFloat(videoStream.AvgFrameRate, 64)
 		}
-		result.FrameRate = math.Round(framerate*100)/100
+		result.FrameRate = math.Round(framerate*100) / 100
 		if rotate, err := strconv.ParseInt(videoStream.Tags.Rotate, 10, 64); err == nil && rotate != 180 {
 			result.Width = videoStream.Height
 			result.Height = videoStream.Width
@@ -141,8 +141,8 @@ func (v *VideoFile) GetVideoStream() *FFProbeStream {
 	return nil
 }
 
-func (v *VideoFile) getStreamIndex(fileType string, probeJson FFProbeJSON) int {
-	for i, stream := range probeJson.Streams {
+func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
+	for i, stream := range probeJSON.Streams {
 		if stream.CodecType == fileType {
 			return i
 		}

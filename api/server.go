@@ -83,7 +83,7 @@ func Start() {
 	// Serve the setup UI
 	r.HandleFunc("/setup*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
-		if ext == ".html" || ext == ""  {
+		if ext == ".html" || ext == "" {
 			data := setupUIBox.Bytes("index.html")
 			_, _ = w.Write(data)
 		} else {
@@ -126,9 +126,9 @@ func Start() {
 		_ = os.Mkdir(downloads, 0755)
 
 		config := &jsonschema.Config{
-			Stash: stash,
-			Metadata: metadata,
-			Cache: cache,
+			Stash:     stash,
+			Metadata:  metadata,
+			Cache:     cache,
 			Downloads: downloads,
 		}
 		if err := manager.GetInstance().SaveConfig(config); err != nil {
@@ -142,7 +142,7 @@ func Start() {
 	// Serve the angular app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
-		if ext == ".html" || ext == ""  {
+		if ext == ".html" || ext == "" {
 			data := uiBox.Bytes("index.html")
 			_, _ = w.Write(data)
 		} else {
@@ -151,12 +151,12 @@ func Start() {
 	})
 
 	httpsServer := &http.Server{
-		Addr: ":"+httpsPort,
-		Handler: r,
+		Addr:      ":" + httpsPort,
+		Handler:   r,
 		TLSConfig: makeTLSConfig(),
 	}
 	server := &http.Server{
-		Addr: ":"+httpPort,
+		Addr:    ":" + httpPort,
 		Handler: r,
 	}
 
@@ -187,13 +187,14 @@ func makeTLSConfig() *tls.Config {
 	return tlsConfig
 }
 
-
 type contextKey struct {
 	name string
 }
+
 var (
 	BaseURLCtxKey = &contextKey{"BaseURL"}
 )
+
 func BaseURLMiddleware(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()

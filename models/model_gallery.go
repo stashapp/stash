@@ -25,7 +25,7 @@ type Gallery struct {
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
-func (g *Gallery) GetFiles(baseUrl string) []GalleryFilesType {
+func (g *Gallery) GetFiles(baseURL string) []GalleryFilesType {
 	var galleryFiles []GalleryFilesType
 	filteredFiles, readCloser, err := g.listZipContents()
 	if err != nil {
@@ -33,9 +33,9 @@ func (g *Gallery) GetFiles(baseUrl string) []GalleryFilesType {
 	}
 	defer readCloser.Close()
 
-	builder := urlbuilders.NewGalleryURLBuilder(baseUrl, g.ID)
+	builder := urlbuilders.NewGalleryURLBuilder(baseURL, g.ID)
 	for i, file := range filteredFiles {
-		galleryURL := builder.GetGalleryImageUrl(i)
+		galleryURL := builder.GetGalleryImageURL(i)
 		galleryFile := GalleryFilesType{
 			Index: i,
 			Name:  &file.Name,

@@ -22,7 +22,7 @@ func (rs studioRoutes) Routes() chi.Router {
 }
 
 func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
-	studio := r.Context().Value("studio").(*models.Studio)
+	studio := r.Context().Value(studioKey).(*models.Studio)
 	_, _ = w.Write(studio.Image)
 }
 
@@ -41,7 +41,7 @@ func StudioCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "studio", studio)
+		ctx := context.WithValue(r.Context(), studioKey, studio)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

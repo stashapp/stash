@@ -15,7 +15,7 @@ import (
 
 type ExportTask struct {
 	Mappings *jsonschema.Mappings
-	Scraped []jsonschema.ScrapedItem
+	Scraped  []jsonschema.ScrapedItem
 }
 
 func (t *ExportTask) Start(wg *sync.WaitGroup) {
@@ -59,7 +59,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		index := i + 1
 		logger.Progressf("[scenes] %d of %d", index, len(scenes))
 
-		t.Mappings.Scenes = append(t.Mappings.Scenes, jsonschema.PathMapping{ Path: scene.Path, Checksum: scene.Checksum })
+		t.Mappings.Scenes = append(t.Mappings.Scenes, jsonschema.PathMapping{Path: scene.Path, Checksum: scene.Checksum})
 		newSceneJSON := jsonschema.Scene{}
 
 		var studioName string
@@ -86,8 +86,8 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		if studioName != "" {
 			newSceneJSON.Studio = studioName
 		}
-		if scene.Url.Valid {
-			newSceneJSON.Url = scene.Url.String
+		if scene.URL.Valid {
+			newSceneJSON.URL = scene.URL.String
 		}
 		if scene.Date.Valid {
 			newSceneJSON.Date = utils.GetYMDFromDatabaseDate(scene.Date.String)
@@ -120,15 +120,15 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 				logger.Errorf("[scenes] <%s> invalid tags for scene marker: %s", scene.Checksum, err.Error())
 				continue
 			}
-			if sceneMarker.Title == "" || sceneMarker.Seconds == 0 || primaryTag.Name == ""  {
+			if sceneMarker.Title == "" || sceneMarker.Seconds == 0 || primaryTag.Name == "" {
 				logger.Errorf("[scenes] invalid scene marker: %v", sceneMarker)
 			}
 
 			sceneMarkerJSON := jsonschema.SceneMarker{
-				Title: sceneMarker.Title,
-				Seconds: t.getDecimalString(sceneMarker.Seconds),
+				Title:      sceneMarker.Title,
+				Seconds:    t.getDecimalString(sceneMarker.Seconds),
 				PrimaryTag: primaryTag.Name,
-				Tags: t.getTagNames(sceneMarkerTags),
+				Tags:       t.getTagNames(sceneMarkerTags),
 			}
 
 			newSceneJSON.Markers = append(newSceneJSON.Markers, sceneMarkerJSON)
@@ -187,7 +187,7 @@ func (t *ExportTask) ExportGalleries(ctx context.Context) {
 	for i, gallery := range galleries {
 		index := i + 1
 		logger.Progressf("[galleries] %d of %d", index, len(galleries))
-		t.Mappings.Galleries = append(t.Mappings.Galleries, jsonschema.PathMapping{ Path: gallery.Path, Checksum: gallery.Checksum })
+		t.Mappings.Galleries = append(t.Mappings.Galleries, jsonschema.PathMapping{Path: gallery.Path, Checksum: gallery.Checksum})
 	}
 
 	logger.Infof("[galleries] export complete")
@@ -206,15 +206,15 @@ func (t *ExportTask) ExportPerformers(ctx context.Context) {
 		index := i + 1
 		logger.Progressf("[performers] %d of %d", index, len(performers))
 
-		t.Mappings.Performers = append(t.Mappings.Performers, jsonschema.NameMapping{ Name: performer.Name.String, Checksum: performer.Checksum })
+		t.Mappings.Performers = append(t.Mappings.Performers, jsonschema.NameMapping{Name: performer.Name.String, Checksum: performer.Checksum})
 
 		newPerformerJSON := jsonschema.Performer{}
 
 		if performer.Name.Valid {
 			newPerformerJSON.Name = performer.Name.String
 		}
-		if performer.Url.Valid {
-			newPerformerJSON.Url = performer.Url.String
+		if performer.URL.Valid {
+			newPerformerJSON.URL = performer.URL.String
 		}
 		if performer.Birthdate.Valid {
 			newPerformerJSON.Birthdate = utils.GetYMDFromDatabaseDate(performer.Birthdate.String)
@@ -289,15 +289,15 @@ func (t *ExportTask) ExportStudios(ctx context.Context) {
 		index := i + 1
 		logger.Progressf("[studios] %d of %d", index, len(studios))
 
-		t.Mappings.Studios = append(t.Mappings.Studios, jsonschema.NameMapping{ Name: studio.Name.String, Checksum: studio.Checksum })
+		t.Mappings.Studios = append(t.Mappings.Studios, jsonschema.NameMapping{Name: studio.Name.String, Checksum: studio.Checksum})
 
 		newStudioJSON := jsonschema.Studio{}
 
 		if studio.Name.Valid {
 			newStudioJSON.Name = studio.Name.String
 		}
-		if studio.Url.Valid {
-			newStudioJSON.Url = studio.Url.String
+		if studio.URL.Valid {
+			newStudioJSON.URL = studio.URL.String
 		}
 
 		newStudioJSON.Image = utils.GetBase64StringFromData(studio.Image)
@@ -349,8 +349,8 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
 		if scrapedItem.Description.Valid {
 			newScrapedItemJSON.Description = scrapedItem.Description.String
 		}
-		if scrapedItem.Url.Valid {
-			newScrapedItemJSON.Url = scrapedItem.Url.String
+		if scrapedItem.URL.Valid {
+			newScrapedItemJSON.URL = scrapedItem.URL.String
 		}
 		if scrapedItem.Date.Valid {
 			newScrapedItemJSON.Date = utils.GetYMDFromDatabaseDate(scrapedItem.Date.String)
@@ -370,18 +370,18 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
 		if scrapedItem.GalleryFilename.Valid {
 			newScrapedItemJSON.GalleryFilename = scrapedItem.GalleryFilename.String
 		}
-		if scrapedItem.GalleryUrl.Valid {
-			newScrapedItemJSON.GalleryUrl = scrapedItem.GalleryUrl.String
+		if scrapedItem.GalleryURL.Valid {
+			newScrapedItemJSON.GalleryURL = scrapedItem.GalleryURL.String
 		}
 		if scrapedItem.VideoFilename.Valid {
 			newScrapedItemJSON.VideoFilename = scrapedItem.VideoFilename.String
 		}
-		if scrapedItem.VideoUrl.Valid {
-			newScrapedItemJSON.VideoUrl = scrapedItem.VideoUrl.String
+		if scrapedItem.VideoURL.Valid {
+			newScrapedItemJSON.VideoURL = scrapedItem.VideoURL.String
 		}
 
 		newScrapedItemJSON.Studio = studioName
-		updatedAt := jsonschema.RailsTime{ Time: scrapedItem.UpdatedAt.Timestamp } // TODO keeping ruby format
+		updatedAt := jsonschema.RailsTime{Time: scrapedItem.UpdatedAt.Timestamp} // TODO keeping ruby format
 		newScrapedItemJSON.UpdatedAt = updatedAt
 
 		t.Scraped = append(t.Scraped, newScrapedItemJSON)
@@ -449,9 +449,9 @@ func getPrecision(num float64) int {
 
 	e := 1.0
 	p := 0
-	for (math.Round(num * e) / e) != num {
+	for (math.Round(num*e) / e) != num {
 		e *= 10
-		p += 1
+		p++
 	}
 	return p
 }

@@ -6,8 +6,8 @@ import (
 )
 
 type SceneMarkerOptions struct {
-	ScenePath string
-	Seconds       int
+	ScenePath  string
+	Seconds    int
 	Width      int
 	OutputPath string
 }

@@ -14,27 +14,27 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	sceneID, _ := strconv.Atoi(input.ID)
 	updatedTime := time.Now()
 	updatedScene := models.Scene{
-		ID: sceneID,
-		UpdatedAt: models.SQLiteTimestamp{ Timestamp: updatedTime },
+		ID:        sceneID,
+		UpdatedAt: models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
 	if input.Title != nil {
-		updatedScene.Title = sql.NullString{ String: *input.Title, Valid: true }
+		updatedScene.Title = sql.NullString{String: *input.Title, Valid: true}
 	}
 	if input.Details != nil {
-		updatedScene.Details = sql.NullString{ String: *input.Details, Valid: true }
+		updatedScene.Details = sql.NullString{String: *input.Details, Valid: true}
 	}
 	if input.URL != nil {
-		updatedScene.Url = sql.NullString{ String: *input.URL, Valid: true }
+		updatedScene.URL = sql.NullString{String: *input.URL, Valid: true}
 	}
 	if input.Date != nil {
-		updatedScene.Date = sql.NullString{ String: *input.Date, Valid: true }
+		updatedScene.Date = sql.NullString{String: *input.Date, Valid: true}
 	}
 	if input.Rating != nil {
-		updatedScene.Rating = sql.NullInt64{ Int64: int64(*input.Rating), Valid: true }
+		updatedScene.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
 	}
 	if input.StudioID != nil {
 		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-		updatedScene.StudioID = sql.NullInt64{ Int64: studioID, Valid: true }
+		updatedScene.StudioID = sql.NullInt64{Int64: studioID, Valid: true}
 	}
 
 	// Start the transaction and save the scene marker
@@ -51,8 +51,8 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		// Save the gallery
 		galleryID, _ := strconv.Atoi(*input.GalleryID)
 		updatedGallery := models.Gallery{
-			ID: galleryID,
-			SceneID: sql.NullInt64{ Int64: int64(sceneID), Valid: true },
+			ID:        galleryID,
+			SceneID:   sql.NullInt64{Int64: int64(sceneID), Valid: true},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: updatedTime},
 		}
 		gqb := models.NewGalleryQueryBuilder()
@@ -69,7 +69,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		performerID, _ := strconv.Atoi(pid)
 		performerJoin := models.PerformersScenes{
 			PerformerID: performerID,
-			SceneID: sceneID,
+			SceneID:     sceneID,
 		}
 		performerJoins = append(performerJoins, performerJoin)
 	}
@@ -84,7 +84,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		tagID, _ := strconv.Atoi(tid)
 		tagJoin := models.ScenesTags{
 			SceneID: sceneID,
-			TagID: tagID,
+			TagID:   tagID,
 		}
 		tagJoins = append(tagJoins, tagJoin)
 	}
@@ -106,12 +106,12 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.S
 	sceneID, _ := strconv.Atoi(input.SceneID)
 	currentTime := time.Now()
 	newSceneMarker := models.SceneMarker{
-		Title: input.Title,
-		Seconds: input.Seconds,
-		PrimaryTagID: sql.NullInt64{ Int64: int64(primaryTagID), Valid: primaryTagID != 0 },
-		SceneID: sql.NullInt64{ Int64: int64(sceneID), Valid: sceneID != 0 },
-		CreatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
-		UpdatedAt: models.SQLiteTimestamp{ Timestamp: currentTime },
+		Title:        input.Title,
+		Seconds:      input.Seconds,
+		PrimaryTagID: sql.NullInt64{Int64: int64(primaryTagID), Valid: primaryTagID != 0},
+		SceneID:      sql.NullInt64{Int64: int64(sceneID), Valid: sceneID != 0},
+		CreatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
+		UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
 	// Start the transaction and save the scene marker
@@ -130,7 +130,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.S
 		tagID, _ := strconv.Atoi(tid)
 		markerTag := models.SceneMarkersTags{
 			SceneMarkerID: sceneMarker.ID,
-			TagID: tagID,
+			TagID:         tagID,
 		}
 		markerTagJoins = append(markerTagJoins, markerTag)
 	}
@@ -153,12 +153,12 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 	sceneID, _ := strconv.Atoi(input.SceneID)
 	primaryTagID, _ := strconv.Atoi(input.PrimaryTagID)
 	updatedSceneMarker := models.SceneMarker{
-		ID: sceneMarkerID,
-		Title: input.Title,
-		Seconds: input.Seconds,
-		SceneID: sql.NullInt64{ Int64: int64(sceneID), Valid: sceneID != 0 },
-		PrimaryTagID: sql.NullInt64{ Int64: int64(primaryTagID), Valid: primaryTagID != 0 },
-		UpdatedAt: models.SQLiteTimestamp{ Timestamp: time.Now() },
+		ID:           sceneMarkerID,
+		Title:        input.Title,
+		Seconds:      input.Seconds,
+		SceneID:      sql.NullInt64{Int64: int64(sceneID), Valid: sceneID != 0},
+		PrimaryTagID: sql.NullInt64{Int64: int64(primaryTagID), Valid: primaryTagID != 0},
+		UpdatedAt:    models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 
 	// Start the transaction and save the scene marker
@@ -177,7 +177,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 		tagID, _ := strconv.Atoi(tid)
 		markerTag := models.SceneMarkersTags{
 			SceneMarkerID: sceneMarkerID,
-			TagID: tagID,
+			TagID:         tagID,
 		}
 		markerTagJoins = append(markerTagJoins, markerTag)
 	}
