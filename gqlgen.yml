@@ -6,27 +6,27 @@
 schema:
   - schema/schema.graphql
 exec:
-  filename: models/generated_exec.go
+  filename: pkg/models/generated_exec.go
 model:
-  filename: models/generated_models.go
+  filename: pkg/models/generated_models.go
 resolver:
-  filename: api/resolver.go
+  filename: pkg/api/resolver.go
   type: Resolver
 
 struct_tag: gqlgen
 
 models:
   Gallery:
-    model: github.com/stashapp/stash/models.Gallery
+    model: github.com/stashapp/stash/pkg/models.Gallery
   Performer:
-    model: github.com/stashapp/stash/models.Performer
+    model: github.com/stashapp/stash/pkg/models.Performer
   Scene:
-    model: github.com/stashapp/stash/models.Scene
+    model: github.com/stashapp/stash/pkg/models.Scene
   SceneMarker:
-    model: github.com/stashapp/stash/models.SceneMarker
+    model: github.com/stashapp/stash/pkg/models.SceneMarker
   ScrapedItem:
-    model: github.com/stashapp/stash/models.ScrapedItem
+    model: github.com/stashapp/stash/pkg/models.ScrapedItem
   Studio:
-    model: github.com/stashapp/stash/models.Studio
+    model: github.com/stashapp/stash/pkg/models.Studio
   Tag:
-    model: github.com/stashapp/stash/models.Tag
+    model: github.com/stashapp/stash/pkg/models.Tag
