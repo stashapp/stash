@@ -1,0 +1,179 @@
+@import "~normalize.css";
+
+@import "~@blueprintjs/core/lib/css/blueprint.css";
+@import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
+@import "~@blueprintjs/core/lib/scss/variables";
+
+@import "~bulma/sass/utilities/all";
+@import "~bulma/sass/grid/all";
+@import "~bulma/sass/layout/all";
+@import "~bulma/sass/components/level";
+
+@import "styles/form/grid";
+
+@import "styles/shared/details";
+
+@import "styles/blueprint-overrides";
+@import "styles/scrollbars";
+
+body {
+  margin: 0;
+  padding: $pt-navbar-height 0 0 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+  background: $dark-gray2;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.grid {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  margin: $pt-grid-size $pt-grid-size 0 0;
+  padding: 0 calc(10%);
+
+  &.wall {
+    padding: 0;
+    margin: 0;
+  }
+}
+
+.grid-item {
+  // flex: auto;
+  width: calc(25% - 1.5em);
+  margin: 0px 0 $pt-grid-size $pt-grid-size;
+  overflow: hidden;
+
+  &.wall {
+    width: calc(20%);
+    margin: 0;
+  }
+}
+
+.previewable {
+  display: block;
+  line-height: 0;
+  overflow: hidden;
+  width: calc(100% + 40px);
+  margin: -20px 0 0 -20px;
+  position: relative;
+}
+
+video.preview {
+  // height: 225px; // slows down the page
+  width: 100%;
+  // width: calc(100% + 40px);
+  // margin: -20px 0 0 -20px;
+  object-fit: cover;
+}
+
+.filter-item {
+  margin: 0 10px;
+}
+
+.tag-item {
+  margin: 5px;
+}
+
+.filter-container {
+  display: flex;
+  justify-content: center;
+  margin: 10px auto;
+}
+
+.card-section {
+  padding: 10px 0 0 0;
+  &.centered {
+    display: flex;
+    justify-content: center;
+    flex-flow: wrap;
+  }
+}
+
+.rating-5 { background: #FF2F39; }
+.rating-4 { background: $red1; }
+.rating-3 { background: $orange1; }
+.rating-2 { background: $sepia1; }
+.rating-1 { background: $dark-gray5; }
+
+.rating-banner {
+  transform: rotate(-36deg);
+  display: block;
+  padding: 6px 45px;
+  font-weight: 400;
+  top: 14px;
+  position: absolute;
+  left: -46px;
+  color: #fff;
+  letter-spacing: 1px;
+  text-size-adjust: none;
+  font-size: .85714em;
+  line-height: 1.6em;
+  text-align: center;
+}
+
+#jwplayer-container {
+  margin: 10px auto;
+  width: 75%;
+}
+
+#details-container {
+  margin: 10px auto;
+  width: 75%;
+}
+
+.pre {
+  white-space: pre-line;
+}
+
+span.block {
+  display: block;
+}
+
+.performer.image {
+  height: 50vh;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.studio.image {
+  height: 100px;
+  background-size: contain !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.no-spacing {
+  padding: 0;
+  margin: 0;
+}
+
+.react-photo-gallery--gallery {
+  & img {
+    object-fit: contain;
+  }
+}
+
+#tag-list-container {
+  width: 50vw;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+
+  & .tag-list-row {
+    margin: 10px;
+
+    & .bp3-button {
+      margin: 0 10px;
+    }
+  }
+}

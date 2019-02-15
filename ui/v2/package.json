@@ -1,0 +1,62 @@
+{
+  "name": "stash",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@blueprintjs/core": "3.13.0",
+    "@blueprintjs/select": "3.6.1",
+    "@types/jest": "24.0.5",
+    "@types/lodash": "4.14.121",
+    "@types/node": "11.9.4",
+    "@types/query-string": "6.2.0",
+    "@types/react": "16.8.3",
+    "@types/react-dom": "16.8.1",
+    "@types/react-router-dom": "4.3.1",
+    "apollo-boost": "0.1.28",
+    "axios": "0.18.0",
+    "bulma": "0.7.4",
+    "formik": "1.5.1",
+    "graphql": "14.1.1",
+    "lodash": "4.17.11",
+    "node-sass": "4.11.0",
+    "query-string": "6.2.0",
+    "react": "16.8.3",
+    "react-apollo": "2.4.1",
+    "react-apollo-hooks": "0.4.1",
+    "react-dom": "16.8.3",
+    "react-images": "0.5.19",
+    "react-jw-player": "1.19.0",
+    "react-photo-gallery": "6.3.2",
+    "react-router-dom": "4.3.1",
+    "react-scripts": "2.1.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "tslint -c ./tslint.json 'src/**/*.{ts,tsx}'",
+    "lint:fix": "tslint --fix -c ./tslint.json 'src/**/*.{ts,tsx}'",
+    "gqlgen": "gql-gen --config codegen.yml"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "devDependencies": {
+    "graphql-code-generator": "0.18.0",
+    "graphql-codegen-add": "0.18.0",
+    "graphql-codegen-typescript-client": "0.18.0",
+    "graphql-codegen-typescript-common": "0.18.0",
+    "graphql-codegen-typescript-react-apollo": "0.18.0",
+    "graphql-codegen-time": "0.18.0",
+    "tslint": "5.13.0",
+    "tslint-react": "3.6.0",
+    "typescript": "3.3.3"
+  }
+}

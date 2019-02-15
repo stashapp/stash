@@ -1,0 +1,17 @@
+overwrite: true
+schema: "../../schema/schema.graphql"
+documents: "../../schema/documents/**/*.graphql"
+generates:
+  src/core/generated-graphql.tsx:
+    config:
+      noNamespaces: true
+      optionalType: "undefined"
+      noHOC: true
+      noComponents: true
+      withHooks: true
+    plugins:
+      - add: "/* tslint:disable */"
+      - time
+      - "typescript-common"
+      - "typescript-client"
+      - "typescript-react-apollo"

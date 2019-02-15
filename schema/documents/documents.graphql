@@ -25,34 +25,6 @@ query FindScene($id: ID!, $checksum: String) {
   }
 }
 
-query FindSceneForEditing($id: ID) {
-  findScene(id: $id) {
-    ...SceneData
-  }
-
-  allPerformers {
-    id
-    name
-    birthdate
-    image_path
-  }
-
-  allTags {
-    id
-    name
-  }
-
-  allStudios {
-    id
-    name
-  }
-
-  validGalleriesForScene(scene_id: $id) {
-    id
-    path
-  }
-}
-
 query FindSceneMarkers($filter: FindFilterType, $scene_marker_filter: SceneMarkerFilterType) {
   findSceneMarkers(filter: $filter, scene_marker_filter: $scene_marker_filter) {
     count
@@ -169,10 +141,23 @@ query AllPerformersForFilter {
   }
 }
 
+query AllStudiosForFilter {
+  allStudios {
+    ...SlimStudioData
+  }
+}
+
 query AllTagsForFilter {
   allTags {
     id
     name
+  }
+}
+
+query ValidGalleriesForScene($scene_id: ID!) {
+  validGalleriesForScene(scene_id: $scene_id) {
+    id
+    path
   }
 }
 

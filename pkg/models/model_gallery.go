@@ -58,7 +58,7 @@ func (g *Gallery) GetThumbnail(index int) []byte {
 	if err != nil {
 		return data
 	}
-	resizedImage := imaging.Resize(srcImage, 512, 0, imaging.Lanczos)
+	resizedImage := imaging.Resize(srcImage, 100, 0, imaging.NearestNeighbor)
 	buf := new(bytes.Buffer)
 	err = jpeg.Encode(buf, resizedImage, nil)
 	if err != nil {

@@ -1,0 +1,5 @@
+fragment SlimStudioData on Studio {
+  id
+  name
+  image_path
+}
