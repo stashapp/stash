@@ -1,12 +1,11 @@
 # Stash
 
 [![Build Status](https://travis-ci.org/stashapp/stash.svg?branch=master)](https://travis-ci.org/stashapp/stash)
+[![Go Report Card](https://goreportcard.com/badge/github.com/stashapp/stash)](https://goreportcard.com/report/github.com/stashapp/stash)
 
 **Stash is a Go app which organizes and serves your porn.**
 
 See a demo [here](https://vimeo.com/275537038) (password is stashapp).
-
-TODO: This does not match the features of the Rails project quite yet and is still a little buggy.  Fall back to the Rails project if you run into issues as an existing user.
 
 # Install
 
