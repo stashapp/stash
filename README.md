@@ -11,7 +11,7 @@ See a demo [here](https://vimeo.com/275537038) (password is stashapp).
 
 Stash supports macOS, Windows, and Linux.  Download the [latest release here](https://github.com/stashapp/stash/releases).
 
-Simply run the executable and navigate to either https://localhost:9999 or http://localhost:9998 to get started.
+Simply run the executable (double click the exe on windows or run `./stash-osx` / `./stash-linux` from the terminal on macOS / Linux) and navigate to either https://localhost:9999 or http://localhost:9998 to get started.
 
 *Note for Windows users:* Running the app might present a security prompt since the binary isn't signed yet.  Just click more info and then the run anyway button.
 
