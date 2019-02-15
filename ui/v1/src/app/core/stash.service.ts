@@ -58,9 +58,10 @@ export class StashService {
     const platformUrl = new URL(platform.location.origin);
     platformUrl.port = platformUrl.protocol === 'https:' ? '9999' : '9998';
     const url = platformUrl.toString().slice(0, -1);
+    const webSocketScheme = platformUrl.protocol === 'https:' ? 'wss' : 'ws';
 
     const wsLink = new WebSocketLink({
-      uri: `ws://${platform.location.hostname}:${platformUrl.port}/graphql`,
+      uri: `${webSocketScheme}://${platform.location.hostname}:${platformUrl.port}/graphql`,
       options: {
         reconnect: true
       }
