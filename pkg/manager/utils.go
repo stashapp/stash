@@ -19,7 +19,8 @@ func IsStreamable(scene *models.Scene) (bool, error) {
 	case "video/quicktime", "video/mp4", "video/webm", "video/x-m4v":
 		return true, nil
 	default:
-		return HasTranscode(scene)
+		hasTranscode, _ := HasTranscode(scene)
+		return hasTranscode, nil
 	}
 }
 
