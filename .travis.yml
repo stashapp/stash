@@ -19,7 +19,6 @@ script:
 - go test
 before_deploy:
 - docker pull bepsays/ci-goreleaser
-- go get -u github.com/gobuffalo/packr/v2/packr2
 - sh ./scripts/cross-compile.sh
 - git tag -f v0.0.0-alpha
 - git push -f --tags
