@@ -25,7 +25,7 @@ func LoadConfigFile(file string) *Config {
 	jsonParser := json.NewDecoder(configFile)
 	parseError := jsonParser.Decode(&config)
 	if parseError != nil {
-		logger.Errorf("config file parse error: %s", parseError)
+		logger.Errorf("config file parse error (ignore on first launch): %s", parseError)
 	}
 	return &config
 }

@@ -26,6 +26,7 @@ func GetInstance() *singleton {
 
 func Initialize() *singleton {
 	once.Do(func() {
+		_ = utils.EnsureDir(paths.StaticPaths.ConfigDirectory)
 		configFile := jsonschema.LoadConfigFile(paths.StaticPaths.ConfigFile)
 		instance = &singleton{
 			Status:      Idle,
