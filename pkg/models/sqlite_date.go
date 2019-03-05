@@ -22,8 +22,10 @@ func (t *SQLiteDate) Scan(value interface{}) error {
 	}
 
 	t.String = dateTime.Format("2006-01-02")
-	if t.String != "" {
+	if t.String != "" && t.String != "0001-01-01" {
 		t.Valid = true
+	} else {
+		t.Valid = false
 	}
 	return nil
 }
