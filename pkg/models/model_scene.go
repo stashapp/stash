@@ -11,7 +11,7 @@ type Scene struct {
 	Title      sql.NullString  `db:"title" json:"title"`
 	Details    sql.NullString  `db:"details" json:"details"`
 	URL        sql.NullString  `db:"url" json:"url"`
-	Date       sql.NullString  `db:"date" json:"date"` // TODO dates?
+	Date       SQLiteDate      `db:"date" json:"date"`
 	Rating     sql.NullInt64   `db:"rating" json:"rating"`
 	Size       sql.NullString  `db:"size" json:"size"`
 	Duration   sql.NullFloat64 `db:"duration" json:"duration"`

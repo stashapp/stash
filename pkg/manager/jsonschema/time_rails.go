@@ -2,6 +2,7 @@ package jsonschema
 
 import (
 	"fmt"
+	"github.com/stashapp/stash/pkg/utils"
 	"strings"
 	"time"
 )
@@ -10,17 +11,15 @@ type RailsTime struct {
 	time.Time
 }
 
-const railsTimeLayout = "2006-01-02 15:04:05 MST"
-
 func (ct *RailsTime) UnmarshalJSON(b []byte) (err error) {
 	s := strings.Trim(string(b), "\"")
 	if s == "null" {
 		ct.Time = time.Time{}
 		return
 	}
-	ct.Time, err = time.Parse(railsTimeLayout, s)
-	if err != nil {
-		ct.Time, err = time.Parse(time.RFC3339, s)
+	t, err := utils.ParseDateStringAsTime(s)
+	if t != nil {
+		ct.Time = *t
 	}
 	return
 }

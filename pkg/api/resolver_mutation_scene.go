@@ -27,7 +27,7 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		updatedScene.URL = sql.NullString{String: *input.URL, Valid: true}
 	}
 	if input.Date != nil {
-		updatedScene.Date = sql.NullString{String: *input.Date, Valid: true}
+		updatedScene.Date = models.SQLiteDate{String: *input.Date, Valid: true}
 	}
 	if input.Rating != nil {
 		updatedScene.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}

@@ -9,7 +9,7 @@ type ScrapedItem struct {
 	Title           sql.NullString  `db:"title" json:"title"`
 	Description     sql.NullString  `db:"description" json:"description"`
 	URL             sql.NullString  `db:"url" json:"url"`
-	Date            sql.NullString  `db:"date" json:"date"` // TODO dates?
+	Date            SQLiteDate      `db:"date" json:"date"`
 	Rating          sql.NullString  `db:"rating" json:"rating"`
 	Tags            sql.NullString  `db:"tags" json:"tags"`
 	Models          sql.NullString  `db:"models" json:"models"`

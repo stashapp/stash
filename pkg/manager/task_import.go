@@ -88,7 +88,7 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 			newPerformer.URL = sql.NullString{String: performerJSON.URL, Valid: true}
 		}
 		if performerJSON.Birthdate != "" {
-			newPerformer.Birthdate = sql.NullString{String: performerJSON.Birthdate, Valid: true}
+			newPerformer.Birthdate = models.SQLiteDate{String: performerJSON.Birthdate, Valid: true}
 		}
 		if performerJSON.Ethnicity != "" {
 			newPerformer.Ethnicity = sql.NullString{String: performerJSON.Ethnicity, Valid: true}
@@ -317,7 +317,7 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 			Title:           sql.NullString{String: mappingJSON.Title, Valid: true},
 			Description:     sql.NullString{String: mappingJSON.Description, Valid: true},
 			URL:             sql.NullString{String: mappingJSON.URL, Valid: true},
-			Date:            sql.NullString{String: mappingJSON.Date, Valid: true},
+			Date:            models.SQLiteDate{String: mappingJSON.Date, Valid: true},
 			Rating:          sql.NullString{String: mappingJSON.Rating, Valid: true},
 			Tags:            sql.NullString{String: mappingJSON.Tags, Valid: true},
 			Models:          sql.NullString{String: mappingJSON.Models, Valid: true},
@@ -392,7 +392,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				newScene.URL = sql.NullString{String: sceneJSON.URL, Valid: true}
 			}
 			if sceneJSON.Date != "" {
-				newScene.Date = sql.NullString{String: sceneJSON.Date, Valid: true}
+				newScene.Date = models.SQLiteDate{String: sceneJSON.Date, Valid: true}
 			}
 			if sceneJSON.Rating != 0 {
 				newScene.Rating = sql.NullInt64{Int64: int64(sceneJSON.Rating), Valid: true}
