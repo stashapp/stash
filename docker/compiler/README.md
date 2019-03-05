@@ -1,0 +1,1 @@
+Modified from https://github.com/bep/dockerfiles/tree/master/ci-goreleaser

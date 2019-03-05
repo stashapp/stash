@@ -12,13 +12,13 @@ before_install:
 - yarn install
 - ./node_modules/@angular/cli/bin/ng build --prod
 - cd ../..
-- go get -v github.com/mgechev/revive
+#- go get -v github.com/mgechev/revive
 script:
-- make lint
-- make vet
+#- make lint
+#- make vet
 - go test
 before_deploy:
-- docker pull bepsays/ci-goreleaser
+- docker pull stashappdev/compiler
 - sh ./scripts/cross-compile.sh
 - git tag -f v0.0.0-alpha
 - git push -f --tags

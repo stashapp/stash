@@ -70,4 +70,4 @@ This project makes use of [this](https://github.com/bep/dockerfiles/tree/master/
 where the app can be cross compiled.  This process is kicked off by CI via the `scripts/cross-compile.sh` script.  Run the following
 command to open a bash shell to the container to poke around:
 
-`docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t bepsays/ci-goreleaser:1.11-2 /bin/bash`
+`docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t stashappdev/compiler:latest /bin/bash`
