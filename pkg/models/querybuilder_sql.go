@@ -205,6 +205,10 @@ func SQLGenKeys(i interface{}) string {
 			if !t.Timestamp.IsZero() {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
+		case SQLiteDate:
+			if t.Valid {
+				query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			}
 		case sql.NullString:
 			if t.Valid {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
