@@ -90,7 +90,7 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 	fileStat, _ := os.Stat(filePath)
 	result.Size = fileStat.Size()
 	result.StartTime, _ = strconv.ParseFloat(probeJSON.Format.StartTime, 64)
-	result.CreationTime = probeJSON.Format.Tags.CreationTime
+	result.CreationTime = probeJSON.Format.Tags.CreationTime.Time
 
 	audioStream := result.GetAudioStream()
 	if audioStream != nil {

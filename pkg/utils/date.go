@@ -14,34 +14,34 @@ func GetYMDFromDatabaseDate(dateString string) string {
 
 func ParseDateStringAsFormat(dateString string, format string) (string, error) {
 	t, e := ParseDateStringAsTime(dateString)
-	if t != nil {
+	if e == nil {
 		return t.Format(format), e
 	}
 	return "", fmt.Errorf("ParseDateStringAsFormat failed: dateString <%s>, format <%s>", dateString, format)
 }
 
-func ParseDateStringAsTime(dateString string) (*time.Time, error) {
+func ParseDateStringAsTime(dateString string) (time.Time, error) {
 	// https://stackoverflow.com/a/20234207 WTF?
 
 	t, e := time.Parse(time.RFC3339, dateString)
 	if e == nil {
-		return &t, nil
+		return t, nil
 	}
 
 	t, e = time.Parse("2006-01-02", dateString)
 	if e == nil {
-		return &t, nil
+		return t, nil
 	}
 
 	t, e = time.Parse("2006-01-02 15:04:05", dateString)
 	if e == nil {
-		return &t, nil
+		return t, nil
 	}
 
 	t, e = time.Parse(railsTimeLayout, dateString)
 	if e == nil {
-		return &t, nil
+		return t, nil
 	}
 
-	return nil, fmt.Errorf("ParseDateStringAsTime failed: dateString <%s>", dateString)
+	return time.Time{}, fmt.Errorf("ParseDateStringAsTime failed: dateString <%s>", dateString)
 }

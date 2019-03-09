@@ -1,7 +1,7 @@
 package ffmpeg
 
 import (
-	"time"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type FFProbeJSON struct {
@@ -17,11 +17,11 @@ type FFProbeJSON struct {
 		Size           string `json:"size"`
 		StartTime      string `json:"start_time"`
 		Tags           struct {
-			CompatibleBrands string    `json:"compatible_brands"`
-			CreationTime     time.Time `json:"creation_time"`
-			Encoder          string    `json:"encoder"`
-			MajorBrand       string    `json:"major_brand"`
-			MinorVersion     string    `json:"minor_version"`
+			CompatibleBrands string          `json:"compatible_brands"`
+			CreationTime     models.JSONTime `json:"creation_time"`
+			Encoder          string          `json:"encoder"`
+			MajorBrand       string          `json:"major_brand"`
+			MinorVersion     string          `json:"minor_version"`
 		} `json:"tags"`
 	} `json:"format"`
 	Streams []FFProbeStream `json:"streams"`
@@ -76,10 +76,10 @@ type FFProbeStream struct {
 	StartPts          int    `json:"start_pts"`
 	StartTime         string `json:"start_time"`
 	Tags              struct {
-		CreationTime time.Time `json:"creation_time"`
-		HandlerName  string    `json:"handler_name"`
-		Language     string    `json:"language"`
-		Rotate       string    `json:"rotate"`
+		CreationTime models.JSONTime `json:"creation_time"`
+		HandlerName  string          `json:"handler_name"`
+		Language     string          `json:"language"`
+		Rotate       string          `json:"rotate"`
 	} `json:"tags"`
 	TimeBase      string `json:"time_base"`
 	Width         int    `json:"width,omitempty"`

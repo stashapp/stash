@@ -381,7 +381,7 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
 		}
 
 		newScrapedItemJSON.Studio = studioName
-		updatedAt := jsonschema.RailsTime{Time: scrapedItem.UpdatedAt.Timestamp} // TODO keeping ruby format
+		updatedAt := models.JSONTime{Time: scrapedItem.UpdatedAt.Timestamp} // TODO keeping ruby format
 		newScrapedItemJSON.UpdatedAt = updatedAt
 
 		t.Scraped = append(t.Scraped, newScrapedItemJSON)
