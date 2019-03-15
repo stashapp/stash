@@ -29,6 +29,7 @@ const httpsPort = "9999"
 
 var certsBox *packr.Box
 var uiBox *packr.Box
+//var legacyUiBox *packr.Box
 var setupUIBox *packr.Box
 
 func Start() {
@@ -38,7 +39,8 @@ func Start() {
 	//}
 
 	certsBox = packr.New("Cert Box", "../../certs")
-	uiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
+	uiBox = packr.New("UI Box", "../../ui/v2/build")
+	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
 
 	r := chi.NewRouter()
