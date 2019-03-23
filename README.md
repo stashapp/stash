@@ -15,10 +15,6 @@ Simply run the executable (double click the exe on windows or run `./stash-osx` 
 
 *Note for Windows users:* Running the app might present a security prompt since the binary isn't signed yet.  Just click more info and then the run anyway button.
 
-## Slack
-
-I created a Slack channel to discuss the project.  [Click here to join.](https://join.slack.com/stash-project/shared_invite/MTc2Nzg0NjAyNzg4LTE0OTM1ODU4MTgtNDcwODRiMGIwYQ)
-
 #### FFMPEG
 
 If stash is unable to find or download FFMPEG then download it yourself from the link for your platform:
@@ -29,6 +25,10 @@ If stash is unable to find or download FFMPEG then download it yourself from the
 
 The `ffmpeg(.exe)` and `ffprobe(.exe)` files should be placed in `~/.stash` on macOS / Linux or `C:\Users\YourUsername\.stash` on Windows.
 
+## Slack
+
+I created a Slack channel to discuss the project.  [Click here to join.](https://join.slack.com/stash-project/shared_invite/MTc2Nzg0NjAyNzg4LTE0OTM1ODU4MTgtNDcwODRiMGIwYQ)
+
 # FAQ
 
 TODO
@@ -38,6 +38,7 @@ TODO
 ## Install
 
 * [Revive](https://github.com/mgechev/revive) - Configurable linter `go get github.com/mgechev/revive`
+* [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
 
 ## Environment
 
@@ -63,7 +64,7 @@ TODO
 
 ## Building a release
 
-1. cd into the UI directory and run `ng build --prod` to compile the frontend
+1. cd into the `ui/v2` directory and run `yarn build` to compile the frontend
 2. cd back to the root directory and run `make build` to build the executable for your current platform
 
 ## Cross compiling
