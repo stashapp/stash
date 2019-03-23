@@ -8,7 +8,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func (r *queryResolver) ConfigureGeneral(ctx context.Context, input *models.ConfigGeneralInput) (models.ConfigGeneralResult, error) {
+func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input *models.ConfigGeneralInput) (models.ConfigGeneralResult, error) {
 	if input == nil {
 		return makeConfigGeneralResult(), fmt.Errorf("nil input")
 	}
@@ -28,10 +28,4 @@ func (r *queryResolver) ConfigureGeneral(ctx context.Context, input *models.Conf
 	}
 
 	return makeConfigGeneralResult(), nil
-}
-
-func makeConfigGeneralResult() models.ConfigGeneralResult {
-	return models.ConfigGeneralResult{
-		Stashes: config.GetStashPaths(),
-	}
 }

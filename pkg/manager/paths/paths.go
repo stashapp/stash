@@ -1,7 +1,7 @@
 package paths
 
 import (
-	"os/user"
+	"github.com/stashapp/stash/pkg/utils"
 	"path/filepath"
 )
 
@@ -25,16 +25,8 @@ func NewPaths() *Paths {
 	return &p
 }
 
-func GetHomeDirectory() string {
-	currentUser, err := user.Current()
-	if err != nil {
-		panic(err)
-	}
-	return currentUser.HomeDir
-}
-
 func GetConfigDirectory() string {
-	return filepath.Join(GetHomeDirectory(), ".stash")
+	return filepath.Join(utils.GetHomeDirectory(), ".stash")
 }
 
 func GetDefaultDatabaseFilePath() string {

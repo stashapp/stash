@@ -1,0 +1,5 @@
+mutation ConfigureGeneral($input: ConfigGeneralInput!) {
+  configureGeneral(input: $input) {
+    ...ConfigGeneralData
+  }
+}

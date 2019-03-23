@@ -118,6 +118,9 @@ export class StashService {
   }
   public static useStats() { return GQL.useStats(); }
 
+  public static useConfiguration() { return GQL.useConfiguration(); }
+  public static useDirectories(path?: string) { return GQL.useDirectories({ variables: { path }}); }
+
   public static usePerformerCreate(input: GQL.PerformerCreateInput) {
     return GQL.usePerformerCreate({ variables: input });
   }
@@ -141,6 +144,10 @@ export class StashService {
   }
   public static useTagUpdate(input: GQL.TagUpdateInput) {
     return GQL.useTagUpdate({ variables: input, refetchQueries: ["AllTags"] });
+  }
+
+  public static useConfigureGeneral(input: GQL.ConfigGeneralInput) {
+    return GQL.useConfigureGeneral({ variables: { input }, refetchQueries: ["Configuration"] });
   }
 
   public static queryScrapeFreeones(performerName: string) {

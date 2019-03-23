@@ -386,6 +386,11 @@ type ConfigGeneralResult {
   stashes: [String!]
 }
 
+"""All configuration settings"""
+type ConfigResult {
+  general: ConfigGeneralResult!
+}
+
 #############
 # Root Schema
 #############
@@ -437,7 +442,10 @@ type Query {
   scrapeFreeonesPerformerList(query: String!): [String!]!
 
   # Config
-  configureGeneral(input: ConfigGeneralInput): ConfigGeneralResult!
+  """Returns the current, complete configuration"""
+  configuration: ConfigResult!
+  """Returns an array of paths for the given path"""
+  directories(path: String): [String!]!
 
   # Metadata
 
@@ -475,10 +483,13 @@ type Mutation {
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!
+
+  """Change general configuration options"""
+  configureGeneral(input: ConfigGeneralInput): ConfigGeneralResult!
 }
 
 type Subscription {
-  """Update from the meatadata manager"""
+  """Update from the metadata manager"""
   metadataUpdate: String!
 }
 

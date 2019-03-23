@@ -51,6 +51,10 @@ type ComplexityRoot struct {
 		Stashes func(childComplexity int) int
 	}
 
+	ConfigResult struct {
+		General func(childComplexity int) int
+	}
+
 	FindGalleriesResultType struct {
 		Count     func(childComplexity int) int
 		Galleries func(childComplexity int) int
@@ -108,6 +112,7 @@ type ComplexityRoot struct {
 		TagCreate          func(childComplexity int, input TagCreateInput) int
 		TagUpdate          func(childComplexity int, input TagUpdateInput) int
 		TagDestroy         func(childComplexity int, input TagDestroyInput) int
+		ConfigureGeneral   func(childComplexity int, input *ConfigGeneralInput) int
 	}
 
 	Performer struct {
@@ -153,7 +158,8 @@ type ComplexityRoot struct {
 		SceneMarkerTags             func(childComplexity int, scene_id string) int
 		ScrapeFreeones              func(childComplexity int, performer_name string) int
 		ScrapeFreeonesPerformerList func(childComplexity int, query string) int
-		ConfigureGeneral            func(childComplexity int, input *ConfigGeneralInput) int
+		Configuration               func(childComplexity int) int
+		Directories                 func(childComplexity int, path *string) int
 		MetadataImport              func(childComplexity int) int
 		MetadataExport              func(childComplexity int) int
 		MetadataScan                func(childComplexity int) int
@@ -284,6 +290,7 @@ type MutationResolver interface {
 	TagCreate(ctx context.Context, input TagCreateInput) (*Tag, error)
 	TagUpdate(ctx context.Context, input TagUpdateInput) (*Tag, error)
 	TagDestroy(ctx context.Context, input TagDestroyInput) (bool, error)
+	ConfigureGeneral(ctx context.Context, input *ConfigGeneralInput) (ConfigGeneralResult, error)
 }
 type PerformerResolver interface {
 	ID(ctx context.Context, obj *Performer) (string, error)
@@ -327,7 +334,8 @@ type QueryResolver interface {
 	SceneMarkerTags(ctx context.Context, scene_id string) ([]SceneMarkerTag, error)
 	ScrapeFreeones(ctx context.Context, performer_name string) (*ScrapedPerformer, error)
 	ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error)
-	ConfigureGeneral(ctx context.Context, input *ConfigGeneralInput) (ConfigGeneralResult, error)
+	Configuration(ctx context.Context) (ConfigResult, error)
+	Directories(ctx context.Context, path *string) ([]string, error)
 	MetadataImport(ctx context.Context) (string, error)
 	MetadataExport(ctx context.Context) (string, error)
 	MetadataScan(ctx context.Context) (string, error)
@@ -601,6 +609,34 @@ func (e *executableSchema) field_Mutation_tagDestroy_args(ctx context.Context, r
 			return nil, err
 		}
 		arg0 = *mTagDestroyInput1
+	}
+	args["input"] = arg0
+	return args, nil
+
+}
+
+func (e *executableSchema) field_Mutation_configureGeneral_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	args := map[string]interface{}{}
+	var arg0 *ConfigGeneralInput
+	if tmp, ok := rawArgs["input"]; ok {
+		var err error
+		var ptr1 ConfigGeneralInput
+		if tmp != nil {
+			ptr1, err = UnmarshalConfigGeneralInput(tmp)
+			arg0 = &ptr1
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		if arg0 != nil {
+			var err error
+			arg0, err = e.ConfigGeneralInputMiddleware(ctx, arg0)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 	args["input"] = arg0
 	return args, nil
@@ -1066,30 +1102,22 @@ func (e *executableSchema) field_Query_scrapeFreeonesPerformerList_args(ctx cont
 
 }
 
-func (e *executableSchema) field_Query_configureGeneral_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (e *executableSchema) field_Query_directories_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	args := map[string]interface{}{}
-	var arg0 *ConfigGeneralInput
-	if tmp, ok := rawArgs["input"]; ok {
+	var arg0 *string
+	if tmp, ok := rawArgs["path"]; ok {
 		var err error
-		var ptr1 ConfigGeneralInput
+		var ptr1 string
 		if tmp != nil {
-			ptr1, err = UnmarshalConfigGeneralInput(tmp)
+			ptr1, err = graphql.UnmarshalString(tmp)
 			arg0 = &ptr1
 		}
 
 		if err != nil {
 			return nil, err
 		}
-
-		if arg0 != nil {
-			var err error
-			arg0, err = e.ConfigGeneralInputMiddleware(ctx, arg0)
-			if err != nil {
-				return nil, err
-			}
-		}
 	}
-	args["input"] = arg0
+	args["path"] = arg0
 	return args, nil
 
 }
@@ -1158,6 +1186,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ConfigGeneralResult.Stashes(childComplexity), true
+
+	case "ConfigResult.general":
+		if e.complexity.ConfigResult.General == nil {
+			break
+		}
+
+		return e.complexity.ConfigResult.General(childComplexity), true
 
 	case "FindGalleriesResultType.count":
 		if e.complexity.FindGalleriesResultType.Count == nil {
@@ -1437,6 +1472,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.TagDestroy(childComplexity, args["input"].(TagDestroyInput)), true
+
+	case "Mutation.configureGeneral":
+		if e.complexity.Mutation.ConfigureGeneral == nil {
+			break
+		}
+
+		args, err := e.field_Mutation_configureGeneral_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ConfigureGeneral(childComplexity, args["input"].(*ConfigGeneralInput)), true
 
 	case "Performer.id":
 		if e.complexity.Performer.Id == nil {
@@ -1796,17 +1843,24 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.ScrapeFreeonesPerformerList(childComplexity, args["query"].(string)), true
 
-	case "Query.configureGeneral":
-		if e.complexity.Query.ConfigureGeneral == nil {
+	case "Query.configuration":
+		if e.complexity.Query.Configuration == nil {
 			break
 		}
 
-		args, err := e.field_Query_configureGeneral_args(context.TODO(), rawArgs)
+		return e.complexity.Query.Configuration(childComplexity), true
+
+	case "Query.directories":
+		if e.complexity.Query.Directories == nil {
+			break
+		}
+
+		args, err := e.field_Query_directories_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.ConfigureGeneral(childComplexity, args["input"].(*ConfigGeneralInput)), true
+		return e.complexity.Query.Directories(childComplexity, args["path"].(*string)), true
 
 	case "Query.metadataImport":
 		if e.complexity.Query.MetadataImport == nil {
@@ -2492,6 +2546,62 @@ func (ec *executionContext) _ConfigGeneralResult_stashes(ctx context.Context, fi
 	}
 
 	return arr1
+}
+
+var configResultImplementors = []string{"ConfigResult"}
+
+// nolint: gocyclo, errcheck, gas, goconst
+func (ec *executionContext) _ConfigResult(ctx context.Context, sel ast.SelectionSet, obj *ConfigResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ctx, sel, configResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	invalid := false
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ConfigResult")
+		case "general":
+			out.Values[i] = ec._ConfigResult_general(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalid {
+		return graphql.Null
+	}
+	return out
+}
+
+// nolint: vetshadow
+func (ec *executionContext) _ConfigResult_general(ctx context.Context, field graphql.CollectedField, obj *ConfigResult) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object: "ConfigResult",
+		Field:  field,
+		Args:   nil,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.General, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ConfigGeneralResult)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+
+	return ec._ConfigGeneralResult(ctx, field.Selections, &res)
 }
 
 var findGalleriesResultTypeImplementors = []string{"FindGalleriesResultType"}
@@ -3598,6 +3708,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalid = true
 			}
+		case "configureGeneral":
+			out.Values[i] = ec._Mutation_configureGeneral(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3999,6 +4114,41 @@ func (ec *executionContext) _Mutation_tagDestroy(ctx context.Context, field grap
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return graphql.MarshalBoolean(res)
+}
+
+// nolint: vetshadow
+func (ec *executionContext) _Mutation_configureGeneral(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object: "Mutation",
+		Field:  field,
+		Args:   nil,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_configureGeneral_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ConfigureGeneral(rctx, args["input"].(*ConfigGeneralInput))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ConfigGeneralResult)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+
+	return ec._ConfigGeneralResult(ctx, field.Selections, &res)
 }
 
 var performerImplementors = []string{"Performer"}
@@ -4935,10 +5085,19 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
-		case "configureGeneral":
+		case "configuration":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
-				res = ec._Query_configureGeneral(ctx, field)
+				res = ec._Query_configuration(ctx, field)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
+		case "directories":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				res = ec._Query_directories(ctx, field)
 				if res == graphql.Null {
 					invalid = true
 				}
@@ -5833,7 +5992,35 @@ func (ec *executionContext) _Query_scrapeFreeonesPerformerList(ctx context.Conte
 }
 
 // nolint: vetshadow
-func (ec *executionContext) _Query_configureGeneral(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+func (ec *executionContext) _Query_configuration(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object: "Query",
+		Field:  field,
+		Args:   nil,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Configuration(rctx)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ConfigResult)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+
+	return ec._ConfigResult(ctx, field.Selections, &res)
+}
+
+// nolint: vetshadow
+func (ec *executionContext) _Query_directories(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
 	rctx := &graphql.ResolverContext{
@@ -5843,7 +6030,7 @@ func (ec *executionContext) _Query_configureGeneral(ctx context.Context, field g
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_configureGeneral_args(ctx, rawArgs)
+	args, err := ec.field_Query_directories_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -5852,7 +6039,7 @@ func (ec *executionContext) _Query_configureGeneral(ctx context.Context, field g
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().ConfigureGeneral(rctx, args["input"].(*ConfigGeneralInput))
+		return ec.resolvers.Query().Directories(rctx, args["path"].(*string))
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -5860,11 +6047,19 @@ func (ec *executionContext) _Query_configureGeneral(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(ConfigGeneralResult)
+	res := resTmp.([]string)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 
-	return ec._ConfigGeneralResult(ctx, field.Selections, &res)
+	arr1 := make(graphql.Array, len(res))
+
+	for idx1 := range res {
+		arr1[idx1] = func() graphql.Marshaler {
+			return graphql.MarshalString(res[idx1])
+		}()
+	}
+
+	return arr1
 }
 
 // nolint: vetshadow
@@ -11960,6 +12155,11 @@ type ConfigGeneralResult {
   stashes: [String!]
 }
 
+"""All configuration settings"""
+type ConfigResult {
+  general: ConfigGeneralResult!
+}
+
 #############
 # Root Schema
 #############
@@ -12011,7 +12211,10 @@ type Query {
   scrapeFreeonesPerformerList(query: String!): [String!]!
 
   # Config
-  configureGeneral(input: ConfigGeneralInput): ConfigGeneralResult!
+  """Returns the current, complete configuration"""
+  configuration: ConfigResult!
+  """Returns an array of paths for the given path"""
+  directories(path: String): [String!]!
 
   # Metadata
 
@@ -12049,10 +12252,13 @@ type Mutation {
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!
+
+  """Change general configuration options"""
+  configureGeneral(input: ConfigGeneralInput): ConfigGeneralResult!
 }
 
 type Subscription {
-  """Update from the meatadata manager"""
+  """Update from the metadata manager"""
   metadataUpdate: String!
 }
 

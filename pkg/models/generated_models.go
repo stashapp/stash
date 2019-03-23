@@ -18,6 +18,11 @@ type ConfigGeneralResult struct {
 	Stashes []string `json:"stashes"`
 }
 
+// All configuration settings
+type ConfigResult struct {
+	General ConfigGeneralResult `json:"general"`
+}
+
 type FindFilterType struct {
 	Q         *string            `json:"q"`
 	Page      *int               `json:"page"`

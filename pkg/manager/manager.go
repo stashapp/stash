@@ -54,13 +54,6 @@ func initConfig() {
 	viper.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
 	viper.AddConfigPath(".")            // Look for config in the working directory
 
-	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
-
-	// Set generated to the metadata path for backwards compat
-	if !viper.IsSet(config.Generated) {
-		viper.SetDefault(config.Generated, viper.GetString(config.Metadata))
-	}
-
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {             // Handle errors reading the config file
 		_ = utils.Touch(paths.GetDefaultConfigFilePath())
@@ -68,6 +61,11 @@ func initConfig() {
 			panic(err)
 		}
 	}
+
+	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
+
+	// Set generated to the metadata path for backwards compat
+	viper.SetDefault(config.Generated, viper.GetString(config.Metadata))
 
 	// Watch for changes
 	viper.WatchConfig()

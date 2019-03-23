@@ -1,3 +1,0 @@
-query ConfigureGeneral($input: ConfigGeneralInput!) {
-  configureGeneral(input: $input)
-}
