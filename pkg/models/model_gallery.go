@@ -98,7 +98,7 @@ func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 			continue
 		}
 		ext := filepath.Ext(file.Name)
-		if ext != ".jpg" && ext != ".png" && ext != ".gif" {
+		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif" {
 			continue
 		}
 		if strings.Contains(file.Name, "__MACOSX") {
