@@ -122,6 +122,7 @@ export class ListFilterModel {
         break;
     }
     if (!!this.displayMode === false) { this.displayMode = this.displayModeOptions[0]; }
+    this.sortByOptions = [...this.sortByOptions, "created_at", "updated_at"];
   }
 
   public configureFromQueryParameters(rawParms: any) {
