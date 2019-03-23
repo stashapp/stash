@@ -198,7 +198,12 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 func (qb *SceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *FindFilterType) string {
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
-	return getSort(sort, direction, "scene_markers")
+	tableName := "scene_markers"
+	if sort == "scenes_updated_at" {
+		sort = "updated_at"
+		tableName = "scene"
+	}
+	return getSort(sort, direction, tableName)
 }
 
 func (qb *SceneMarkerQueryBuilder) querySceneMarkers(query string, args []interface{}, tx *sqlx.Tx) ([]SceneMarker, error) {
