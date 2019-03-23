@@ -47,6 +47,10 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	ConfigGeneralResult struct {
+		Stashes func(childComplexity int) int
+	}
+
 	FindGalleriesResultType struct {
 		Count     func(childComplexity int) int
 		Galleries func(childComplexity int) int
@@ -149,6 +153,7 @@ type ComplexityRoot struct {
 		SceneMarkerTags             func(childComplexity int, scene_id string) int
 		ScrapeFreeones              func(childComplexity int, performer_name string) int
 		ScrapeFreeonesPerformerList func(childComplexity int, query string) int
+		ConfigureGeneral            func(childComplexity int, input *ConfigGeneralInput) int
 		MetadataImport              func(childComplexity int) int
 		MetadataExport              func(childComplexity int) int
 		MetadataScan                func(childComplexity int) int
@@ -322,6 +327,7 @@ type QueryResolver interface {
 	SceneMarkerTags(ctx context.Context, scene_id string) ([]SceneMarkerTag, error)
 	ScrapeFreeones(ctx context.Context, performer_name string) (*ScrapedPerformer, error)
 	ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error)
+	ConfigureGeneral(ctx context.Context, input *ConfigGeneralInput) (ConfigGeneralResult, error)
 	MetadataImport(ctx context.Context) (string, error)
 	MetadataExport(ctx context.Context) (string, error)
 	MetadataScan(ctx context.Context) (string, error)
@@ -1060,6 +1066,34 @@ func (e *executableSchema) field_Query_scrapeFreeonesPerformerList_args(ctx cont
 
 }
 
+func (e *executableSchema) field_Query_configureGeneral_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	args := map[string]interface{}{}
+	var arg0 *ConfigGeneralInput
+	if tmp, ok := rawArgs["input"]; ok {
+		var err error
+		var ptr1 ConfigGeneralInput
+		if tmp != nil {
+			ptr1, err = UnmarshalConfigGeneralInput(tmp)
+			arg0 = &ptr1
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		if arg0 != nil {
+			var err error
+			arg0, err = e.ConfigGeneralInputMiddleware(ctx, arg0)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+
+}
+
 func (e *executableSchema) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1117,6 +1151,13 @@ func (e *executableSchema) Schema() *ast.Schema {
 
 func (e *executableSchema) Complexity(typeName, field string, childComplexity int, rawArgs map[string]interface{}) (int, bool) {
 	switch typeName + "." + field {
+
+	case "ConfigGeneralResult.stashes":
+		if e.complexity.ConfigGeneralResult.Stashes == nil {
+			break
+		}
+
+		return e.complexity.ConfigGeneralResult.Stashes(childComplexity), true
 
 	case "FindGalleriesResultType.count":
 		if e.complexity.FindGalleriesResultType.Count == nil {
@@ -1755,6 +1796,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.ScrapeFreeonesPerformerList(childComplexity, args["query"].(string)), true
 
+	case "Query.configureGeneral":
+		if e.complexity.Query.ConfigureGeneral == nil {
+			break
+		}
+
+		args, err := e.field_Query_configureGeneral_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ConfigureGeneral(childComplexity, args["input"].(*ConfigGeneralInput)), true
+
 	case "Query.metadataImport":
 		if e.complexity.Query.MetadataImport == nil {
 			break
@@ -2381,6 +2434,64 @@ func (e *executableSchema) Subscription(ctx context.Context, op *ast.OperationDe
 type executionContext struct {
 	*graphql.RequestContext
 	*executableSchema
+}
+
+var configGeneralResultImplementors = []string{"ConfigGeneralResult"}
+
+// nolint: gocyclo, errcheck, gas, goconst
+func (ec *executionContext) _ConfigGeneralResult(ctx context.Context, sel ast.SelectionSet, obj *ConfigGeneralResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ctx, sel, configGeneralResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	invalid := false
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ConfigGeneralResult")
+		case "stashes":
+			out.Values[i] = ec._ConfigGeneralResult_stashes(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalid {
+		return graphql.Null
+	}
+	return out
+}
+
+// nolint: vetshadow
+func (ec *executionContext) _ConfigGeneralResult_stashes(ctx context.Context, field graphql.CollectedField, obj *ConfigGeneralResult) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object: "ConfigGeneralResult",
+		Field:  field,
+		Args:   nil,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Stashes, nil
+	})
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+
+	arr1 := make(graphql.Array, len(res))
+
+	for idx1 := range res {
+		arr1[idx1] = func() graphql.Marshaler {
+			return graphql.MarshalString(res[idx1])
+		}()
+	}
+
+	return arr1
 }
 
 var findGalleriesResultTypeImplementors = []string{"FindGalleriesResultType"}
@@ -4824,6 +4935,15 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "configureGeneral":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				res = ec._Query_configureGeneral(ctx, field)
+				if res == graphql.Null {
+					invalid = true
+				}
+				return res
+			})
 		case "metadataImport":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -5710,6 +5830,41 @@ func (ec *executionContext) _Query_scrapeFreeonesPerformerList(ctx context.Conte
 	}
 
 	return arr1
+}
+
+// nolint: vetshadow
+func (ec *executionContext) _Query_configureGeneral(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object: "Query",
+		Field:  field,
+		Args:   nil,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_configureGeneral_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ConfigureGeneral(rctx, args["input"].(*ConfigGeneralInput))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(ConfigGeneralResult)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+
+	return ec._ConfigGeneralResult(ctx, field.Selections, &res)
 }
 
 // nolint: vetshadow
@@ -10227,6 +10382,40 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 	return ec.___Type(ctx, field.Selections, res)
 }
 
+func UnmarshalConfigGeneralInput(v interface{}) (ConfigGeneralInput, error) {
+	var it ConfigGeneralInput
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "stashes":
+			var err error
+			var rawIf1 []interface{}
+			if v != nil {
+				if tmp1, ok := v.([]interface{}); ok {
+					rawIf1 = tmp1
+				} else {
+					rawIf1 = []interface{}{v}
+				}
+			}
+			it.Stashes = make([]string, len(rawIf1))
+			for idx1 := range rawIf1 {
+				it.Stashes[idx1], err = graphql.UnmarshalString(rawIf1[idx1])
+			}
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (e *executableSchema) ConfigGeneralInputMiddleware(ctx context.Context, obj *ConfigGeneralInput) (*ConfigGeneralInput, error) {
+
+	return obj, nil
+}
+
 func UnmarshalFindFilterType(v interface{}) (FindFilterType, error) {
 	var it FindFilterType
 	var asMap = v.(map[string]interface{})
@@ -11757,6 +11946,20 @@ input SceneFilterType {
   performer_id: ID
 }
 
+#######################################
+# Config
+#######################################
+
+input ConfigGeneralInput {
+  """Array of file paths to content"""
+  stashes: [String!]
+}
+
+type ConfigGeneralResult {
+  """Array of file paths to content"""
+  stashes: [String!]
+}
+
 #############
 # Root Schema
 #############
@@ -11806,6 +12009,9 @@ type Query {
   scrapeFreeones(performer_name: String!): ScrapedPerformer
   """Scrape a list of performers from a query"""
   scrapeFreeonesPerformerList(query: String!): [String!]!
+
+  # Config
+  configureGeneral(input: ConfigGeneralInput): ConfigGeneralResult!
 
   # Metadata
 

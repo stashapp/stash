@@ -16,7 +16,10 @@
             <label for="stash">Where is your porn located (mp4, wmv, zip, etc)?</label>
             <input name="stash" type="text" placeholder="EX: C:\videos (Windows) or /User/StashApp/Videos (macOS / Linux)" />
 
-            <label for="metadata">Where would you like to save metadata?  Metadata includes generated videos / images and backup JSON files.</label>
+            <label for="generated">In order to provide previews Stash generates images and videos.  This also includes transcodes for unsupported file formats.  Where would you like to save generated files?</label>
+            <input name="generated" type="text" placeholder="EX: C:\stash\generated (Windows) or /User/StashApp/stash/generated (macOS / Linux)" />
+
+            <label for="metadata">Where would you like to save metadata?  Metadata is stored as JSON files and can be created using the export button in settings.</label>
             <input name="metadata" type="text" placeholder="EX: C:\stash\metadata (Windows) or /User/StashApp/stash/metadata (macOS / Linux)" />
 
             <label for="cache">Where do you want to Stash to save cache / temporary files it might need to create?</label>

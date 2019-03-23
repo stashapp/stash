@@ -1,11 +1,11 @@
 package paths
 
 import (
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
+	"os/user"
+	"path/filepath"
 )
 
 type Paths struct {
-	Config    *jsonschema.Config
 	Generated *generatedPaths
 	JSON      *jsonPaths
 
@@ -14,14 +14,33 @@ type Paths struct {
 	SceneMarkers *sceneMarkerPaths
 }
 
-func NewPaths(config *jsonschema.Config) *Paths {
+func NewPaths() *Paths {
 	p := Paths{}
-	p.Config = config
-	p.Generated = newGeneratedPaths(p)
-	p.JSON = newJSONPaths(p)
+	p.Generated = newGeneratedPaths()
+	p.JSON = newJSONPaths()
 
-	p.Gallery = newGalleryPaths(p.Config)
+	p.Gallery = newGalleryPaths()
 	p.Scene = newScenePaths(p)
 	p.SceneMarkers = newSceneMarkerPaths(p)
 	return &p
+}
+
+func GetHomeDirectory() string {
+	currentUser, err := user.Current()
+	if err != nil {
+		panic(err)
+	}
+	return currentUser.HomeDir
+}
+
+func GetConfigDirectory() string {
+	return filepath.Join(GetHomeDirectory(), ".stash")
+}
+
+func GetDefaultDatabaseFilePath() string {
+	return filepath.Join(GetConfigDirectory(), "stash-go.sqlite")
+}
+
+func GetDefaultConfigFilePath() string {
+	return filepath.Join(GetConfigDirectory(), "config.yml")
 }

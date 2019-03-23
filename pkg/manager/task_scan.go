@@ -70,7 +70,7 @@ func (t *ScanTask) scanGallery() {
 }
 
 func (t *ScanTask) scanScene() {
-	videoFile, err := ffmpeg.NewVideoFile(instance.StaticPaths.FFProbe, t.FilePath)
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
 	if err != nil {
 		logger.Error(err.Error())
 		return
@@ -142,7 +142,7 @@ func (t *ScanTask) makeScreenshots(probeResult ffmpeg.VideoFile, checksum string
 }
 
 func (t *ScanTask) makeScreenshot(probeResult ffmpeg.VideoFile, outputPath string, quality int, width int) {
-	encoder := ffmpeg.NewEncoder(instance.StaticPaths.FFMPEG)
+	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
 	options := ffmpeg.ScreenshotOptions{
 		OutputPath: outputPath,
 		Quality:    quality,

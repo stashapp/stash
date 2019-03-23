@@ -372,6 +372,20 @@ input SceneFilterType {
   performer_id: ID
 }
 
+#######################################
+# Config
+#######################################
+
+input ConfigGeneralInput {
+  """Array of file paths to content"""
+  stashes: [String!]
+}
+
+type ConfigGeneralResult {
+  """Array of file paths to content"""
+  stashes: [String!]
+}
+
 #############
 # Root Schema
 #############
@@ -421,6 +435,9 @@ type Query {
   scrapeFreeones(performer_name: String!): ScrapedPerformer
   """Scrape a list of performers from a query"""
   scrapeFreeonesPerformerList(query: String!): [String!]!
+
+  # Config
+  configureGeneral(input: ConfigGeneralInput): ConfigGeneralResult!
 
   # Metadata
 

@@ -12,8 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager"
-	"github.com/stashapp/stash/pkg/manager/jsonschema"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 	"net/http"
@@ -29,6 +28,7 @@ const httpsPort = "9999"
 
 var certsBox *packr.Box
 var uiBox *packr.Box
+
 //var legacyUiBox *packr.Box
 var setupUIBox *packr.Box
 
@@ -99,41 +99,44 @@ func Start() {
 			http.Error(w, fmt.Sprintf("error: %s", err), 500)
 		}
 		stash := filepath.Clean(r.Form.Get("stash"))
+		generated := filepath.Clean(r.Form.Get("generated"))
 		metadata := filepath.Clean(r.Form.Get("metadata"))
 		cache := filepath.Clean(r.Form.Get("cache"))
 		//downloads := filepath.Clean(r.Form.Get("downloads")) // TODO
 		downloads := filepath.Join(metadata, "downloads")
 
-		exists, _ := utils.FileExists(stash)
-		fileInfo, _ := os.Stat(stash)
-		if !exists || !fileInfo.IsDir() {
+		exists, _ := utils.DirExists(stash)
+		if !exists || stash == "." {
 			http.Error(w, fmt.Sprintf("the stash path either doesn't exist, or is not a directory <%s>.  Go back and try again.", stash), 500)
 			return
 		}
 
-		exists, _ = utils.FileExists(metadata)
-		fileInfo, _ = os.Stat(metadata)
-		if !exists || !fileInfo.IsDir() {
+		exists, _ = utils.DirExists(generated)
+		if !exists || generated == "." {
+			http.Error(w, fmt.Sprintf("the generated path either doesn't exist, or is not a directory <%s>.  Go back and try again.", generated), 500)
+			return
+		}
+
+		exists, _ = utils.DirExists(metadata)
+		if !exists || metadata == "." {
 			http.Error(w, fmt.Sprintf("the metadata path either doesn't exist, or is not a directory <%s>  Go back and try again.", metadata), 500)
 			return
 		}
 
-		exists, _ = utils.FileExists(cache)
-		fileInfo, _ = os.Stat(cache)
-		if !exists || !fileInfo.IsDir() {
+		exists, _ = utils.DirExists(cache)
+		if !exists || cache == "." {
 			http.Error(w, fmt.Sprintf("the cache path either doesn't exist, or is not a directory <%s>  Go back and try again.", cache), 500)
 			return
 		}
 
 		_ = os.Mkdir(downloads, 0755)
 
-		config := &jsonschema.Config{
-			Stash:     stash,
-			Metadata:  metadata,
-			Cache:     cache,
-			Downloads: downloads,
-		}
-		if err := manager.GetInstance().SaveConfig(config); err != nil {
+		config.Set(config.Stash, stash)
+		config.Set(config.Generated, generated)
+		config.Set(config.Metadata, metadata)
+		config.Set(config.Cache, cache)
+		config.Set(config.Downloads, downloads)
+		if err := config.Write(); err != nil {
 			http.Error(w, fmt.Sprintf("there was an error saving the config file: %s", err), 500)
 			return
 		}
@@ -220,7 +223,7 @@ func ConfigCheckMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		shouldRedirect := ext == "" && r.Method == "GET" && r.URL.Path != "/init"
-		if !manager.HasValidConfig() && shouldRedirect {
+		if !config.IsValid() && shouldRedirect {
 			if !strings.HasPrefix(r.URL.Path, "/setup") {
 				http.Redirect(w, r, "/setup", 301)
 				return

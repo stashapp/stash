@@ -1,0 +1,24 @@
+query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene_ids: [Int!]) {
+  findScenes(filter: $filter, scene_filter: $scene_filter, scene_ids: $scene_ids) {
+    count
+    scenes {
+      ...SlimSceneData
+    }
+  }
+}
+
+query FindScene($id: ID!, $checksum: String) {
+  findScene(id: $id, checksum: $checksum) {
+    ...SceneData
+  }
+
+  sceneMarkerTags(scene_id: $id) {
+    tag {
+      id
+      name
+    }
+    scene_markers {
+      ...SceneMarkerData
+    }
+  }
+}

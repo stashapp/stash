@@ -5,6 +5,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/bmatcuk/doublestar v1.1.1
 	github.com/disintegration/imaging v1.6.0
+	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-chi/chi v4.0.1+incompatible
 	github.com/gobuffalo/packr/v2 v2.0.0-rc.15
 	github.com/golang-migrate/migrate/v4 v4.2.2
@@ -15,6 +16,7 @@ require (
 	github.com/rs/cors v1.6.0
 	github.com/sirupsen/logrus v1.3.0
 	github.com/spf13/afero v1.2.0 // indirect
+	github.com/spf13/viper v1.3.2
 	github.com/vektah/gqlparser v1.1.0
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2 // indirect
 )

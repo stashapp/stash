@@ -1,0 +1,15 @@
+mutation TagCreate($name: String!) {
+  tagCreate(input: { name: $name }) {
+    ...TagData
+  }
+}
+
+mutation TagDestroy($id: ID!) {
+  tagDestroy(input: { id: $id })
+}
+
+mutation TagUpdate($id: ID!, $name: String!) {
+  tagUpdate(input: { id: $id, name: $name }) {
+    ...TagData
+  }
+}

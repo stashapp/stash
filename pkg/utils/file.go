@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"github.com/h2non/filetype"
 	"github.com/h2non/filetype/types"
 	"os"
@@ -26,6 +27,27 @@ func FileExists(path string) (bool, error) {
 	} else {
 		panic(err)
 	}
+}
+
+func DirExists(path string) (bool, error) {
+	exists, _ := FileExists(path)
+	fileInfo, _ := os.Stat(path)
+	if !exists || !fileInfo.IsDir() {
+		return false, fmt.Errorf("path either doesn't exist, or is not a directory <%s>", path)
+	}
+	return true, nil
+}
+
+func Touch(path string) error {
+	var _, err = os.Stat(path)
+	if os.IsNotExist(err) {
+		var file, err = os.Create(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+	}
+	return nil
 }
 
 func EnsureDir(path string) error {

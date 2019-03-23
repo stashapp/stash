@@ -1,0 +1,27 @@
+mutation SceneUpdate(
+  $id: ID!,
+  $title: String,
+  $details: String,
+  $url: String,
+  $date: String,
+  $rating: Int,
+  $studio_id: ID,
+  $gallery_id: ID,
+  $performer_ids: [ID!] = [],
+  $tag_ids: [ID!] = []) {
+
+  sceneUpdate(input: {
+                        id: $id,
+                        title: $title,
+                        details: $details,
+                        url: $url,
+                        date: $date,
+                        rating: $rating,
+                        studio_id: $studio_id,
+                        gallery_id: $gallery_id,
+                        performer_ids: $performer_ids,
+                        tag_ids: $tag_ids
+                      }) {
+      ...SceneData
+  }
+}

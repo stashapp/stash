@@ -1,0 +1,19 @@
+query MetadataImport {
+  metadataImport
+}
+
+query MetadataExport {
+  metadataExport
+}
+
+query MetadataScan {
+  metadataScan
+}
+
+query MetadataGenerate {
+  metadataGenerate
+}
+
+query MetadataClean {
+  metadataClean
+}

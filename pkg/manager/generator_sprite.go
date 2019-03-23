@@ -49,7 +49,7 @@ func NewSpriteGenerator(videoFile ffmpeg.VideoFile, imageOutputPath string, vttO
 
 func (g *SpriteGenerator) Generate() error {
 	instance.Paths.Generated.EmptyTmpDir()
-	encoder := ffmpeg.NewEncoder(instance.StaticPaths.FFMPEG)
+	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
 
 	if err := g.generateSpriteImage(&encoder); err != nil {
 		return err
