@@ -1,0 +1,85 @@
+mutation PerformerCreate(
+  $name: String,
+  $url: String,
+  $birthdate: String,
+  $ethnicity: String,
+  $country: String,
+  $eye_color: String,
+  $height: String,
+  $measurements: String,
+  $fake_tits: String,
+  $career_length: String,
+  $tattoos: String,
+  $piercings: String,
+  $aliases: String,
+  $twitter: String,
+  $instagram: String,
+  $favorite: Boolean,
+  $image: String!) {
+
+  performerCreate(input: {
+                            name: $name,
+                            url: $url,
+                            birthdate: $birthdate,
+                            ethnicity: $ethnicity,
+                            country: $country,
+                            eye_color: $eye_color,
+                            height: $height,
+                            measurements: $measurements,
+                            fake_tits: $fake_tits,
+                            career_length: $career_length,
+                            tattoos: $tattoos,
+                            piercings: $piercings,
+                            aliases: $aliases,
+                            twitter: $twitter,
+                            instagram: $instagram,
+                            favorite: $favorite,
+                            image: $image
+                          }) {
+      ...PerformerData
+  }
+}
+
+mutation PerformerUpdate(
+  $id: ID!,
+  $name: String,
+  $url: String,
+  $birthdate: String,
+  $ethnicity: String,
+  $country: String,
+  $eye_color: String,
+  $height: String,
+  $measurements: String,
+  $fake_tits: String,
+  $career_length: String,
+  $tattoos: String,
+  $piercings: String,
+  $aliases: String,
+  $twitter: String,
+  $instagram: String,
+  $favorite: Boolean,
+  $image: String) {
+
+  performerUpdate(input: {
+                            id: $id,
+                            name: $name,
+                            url: $url,
+                            birthdate: $birthdate,
+                            ethnicity: $ethnicity,
+                            country: $country,
+                            eye_color: $eye_color,
+                            height: $height,
+                            measurements: $measurements,
+                            fake_tits: $fake_tits,
+                            career_length: $career_length,
+                            tattoos: $tattoos,
+                            piercings: $piercings,
+                            aliases: $aliases,
+                            twitter: $twitter,
+                            instagram: $instagram,
+                            favorite: $favorite,
+                            image: $image
+                          }) {
+    ...PerformerData
+  }
+}

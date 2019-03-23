@@ -1,6 +1,7 @@
 package paths
 
 import (
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/utils"
 	"path/filepath"
 )
@@ -13,13 +14,13 @@ type generatedPaths struct {
 	Tmp         string
 }
 
-func newGeneratedPaths(p Paths) *generatedPaths {
+func newGeneratedPaths() *generatedPaths {
 	gp := generatedPaths{}
-	gp.Screenshots = filepath.Join(p.Config.Metadata, "screenshots")
-	gp.Vtt = filepath.Join(p.Config.Metadata, "vtt")
-	gp.Markers = filepath.Join(p.Config.Metadata, "markers")
-	gp.Transcodes = filepath.Join(p.Config.Metadata, "transcodes")
-	gp.Tmp = filepath.Join(p.Config.Metadata, "tmp")
+	gp.Screenshots = filepath.Join(config.GetGeneratedPath(), "screenshots")
+	gp.Vtt = filepath.Join(config.GetGeneratedPath(), "vtt")
+	gp.Markers = filepath.Join(config.GetGeneratedPath(), "markers")
+	gp.Transcodes = filepath.Join(config.GetGeneratedPath(), "transcodes")
+	gp.Tmp = filepath.Join(config.GetGeneratedPath(), "tmp")
 	return &gp
 }
 

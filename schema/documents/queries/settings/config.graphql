@@ -1,0 +1,9 @@
+query Configuration {
+  configuration {
+    ...ConfigData
+  }
+}
+
+query Directories($path: String) {
+  directories(path: $path)
+}

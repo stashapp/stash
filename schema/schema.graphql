@@ -372,6 +372,25 @@ input SceneFilterType {
   performer_id: ID
 }
 
+#######################################
+# Config
+#######################################
+
+input ConfigGeneralInput {
+  """Array of file paths to content"""
+  stashes: [String!]
+}
+
+type ConfigGeneralResult {
+  """Array of file paths to content"""
+  stashes: [String!]
+}
+
+"""All configuration settings"""
+type ConfigResult {
+  general: ConfigGeneralResult!
+}
+
 #############
 # Root Schema
 #############
@@ -422,6 +441,12 @@ type Query {
   """Scrape a list of performers from a query"""
   scrapeFreeonesPerformerList(query: String!): [String!]!
 
+  # Config
+  """Returns the current, complete configuration"""
+  configuration: ConfigResult!
+  """Returns an array of paths for the given path"""
+  directories(path: String): [String!]!
+
   # Metadata
 
   """Start an import. Returns the job ID"""
@@ -458,10 +483,13 @@ type Mutation {
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!
+
+  """Change general configuration options"""
+  configureGeneral(input: ConfigGeneralInput): ConfigGeneralResult!
 }
 
 type Subscription {
-  """Update from the meatadata manager"""
+  """Update from the metadata manager"""
   metadataUpdate: String!
 }
 

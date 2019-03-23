@@ -1,0 +1,11 @@
+query SceneWall($q: String) {
+  sceneWall(q: $q) {
+    ...SceneData
+  }
+}
+
+query MarkerWall($q: String) {
+  markerWall(q: $q) {
+    ...SceneMarkerData
+  }
+}

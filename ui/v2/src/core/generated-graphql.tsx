@@ -1,5 +1,5 @@
 /* tslint:disable */
-// Generated in 2019-03-14T15:27:20-07:00
+// Generated in 2019-03-23T12:23:40-07:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {
@@ -203,6 +203,11 @@ export interface TagDestroyInput {
   id: string;
 }
 
+export interface ConfigGeneralInput {
+  /** Array of file paths to content */
+  stashes?: Maybe<string[]>;
+}
+
 export enum ResolutionEnum {
   Low = "LOW",
   Standard = "STANDARD",
@@ -220,170 +225,202 @@ export enum SortDirectionEnum {
 // Documents
 // ====================================================
 
-export type FindScenesVariables = {
-  filter?: Maybe<FindFilterType>;
-  scene_filter?: Maybe<SceneFilterType>;
-  scene_ids?: Maybe<number[]>;
+export type ConfigureGeneralVariables = {
+  input: ConfigGeneralInput;
 };
 
-export type FindScenesQuery = {
-  __typename?: "Query";
+export type ConfigureGeneralMutation = {
+  __typename?: "Mutation";
 
-  findScenes: FindScenesFindScenes;
+  configureGeneral: ConfigureGeneralConfigureGeneral;
 };
 
-export type FindScenesFindScenes = {
-  __typename?: "FindScenesResultType";
+export type ConfigureGeneralConfigureGeneral = ConfigGeneralDataFragment;
 
-  count: number;
-
-  scenes: FindScenesScenes[];
+export type PerformerCreateVariables = {
+  name?: Maybe<string>;
+  url?: Maybe<string>;
+  birthdate?: Maybe<string>;
+  ethnicity?: Maybe<string>;
+  country?: Maybe<string>;
+  eye_color?: Maybe<string>;
+  height?: Maybe<string>;
+  measurements?: Maybe<string>;
+  fake_tits?: Maybe<string>;
+  career_length?: Maybe<string>;
+  tattoos?: Maybe<string>;
+  piercings?: Maybe<string>;
+  aliases?: Maybe<string>;
+  twitter?: Maybe<string>;
+  instagram?: Maybe<string>;
+  favorite?: Maybe<boolean>;
+  image: string;
 };
 
-export type FindScenesScenes = SlimSceneDataFragment;
+export type PerformerCreateMutation = {
+  __typename?: "Mutation";
 
-export type FindSceneVariables = {
+  performerCreate: Maybe<PerformerCreatePerformerCreate>;
+};
+
+export type PerformerCreatePerformerCreate = PerformerDataFragment;
+
+export type PerformerUpdateVariables = {
   id: string;
-  checksum?: Maybe<string>;
+  name?: Maybe<string>;
+  url?: Maybe<string>;
+  birthdate?: Maybe<string>;
+  ethnicity?: Maybe<string>;
+  country?: Maybe<string>;
+  eye_color?: Maybe<string>;
+  height?: Maybe<string>;
+  measurements?: Maybe<string>;
+  fake_tits?: Maybe<string>;
+  career_length?: Maybe<string>;
+  tattoos?: Maybe<string>;
+  piercings?: Maybe<string>;
+  aliases?: Maybe<string>;
+  twitter?: Maybe<string>;
+  instagram?: Maybe<string>;
+  favorite?: Maybe<boolean>;
+  image?: Maybe<string>;
 };
 
-export type FindSceneQuery = {
-  __typename?: "Query";
+export type PerformerUpdateMutation = {
+  __typename?: "Mutation";
 
-  findScene: Maybe<FindSceneFindScene>;
-
-  sceneMarkerTags: FindSceneSceneMarkerTags[];
+  performerUpdate: Maybe<PerformerUpdatePerformerUpdate>;
 };
 
-export type FindSceneFindScene = SceneDataFragment;
+export type PerformerUpdatePerformerUpdate = PerformerDataFragment;
 
-export type FindSceneSceneMarkerTags = {
-  __typename?: "SceneMarkerTag";
-
-  tag: FindSceneTag;
-
-  scene_markers: FindSceneSceneMarkers[];
+export type SceneMarkerCreateVariables = {
+  title: string;
+  seconds: number;
+  scene_id: string;
+  primary_tag_id: string;
+  tag_ids?: Maybe<string[]>;
 };
 
-export type FindSceneTag = {
-  __typename?: "Tag";
+export type SceneMarkerCreateMutation = {
+  __typename?: "Mutation";
 
+  sceneMarkerCreate: Maybe<SceneMarkerCreateSceneMarkerCreate>;
+};
+
+export type SceneMarkerCreateSceneMarkerCreate = SceneMarkerDataFragment;
+
+export type SceneMarkerUpdateVariables = {
   id: string;
+  title: string;
+  seconds: number;
+  scene_id: string;
+  primary_tag_id: string;
+  tag_ids?: Maybe<string[]>;
+};
 
+export type SceneMarkerUpdateMutation = {
+  __typename?: "Mutation";
+
+  sceneMarkerUpdate: Maybe<SceneMarkerUpdateSceneMarkerUpdate>;
+};
+
+export type SceneMarkerUpdateSceneMarkerUpdate = SceneMarkerDataFragment;
+
+export type SceneMarkerDestroyVariables = {
+  id: string;
+};
+
+export type SceneMarkerDestroyMutation = {
+  __typename?: "Mutation";
+
+  sceneMarkerDestroy: boolean;
+};
+
+export type SceneUpdateVariables = {
+  id: string;
+  title?: Maybe<string>;
+  details?: Maybe<string>;
+  url?: Maybe<string>;
+  date?: Maybe<string>;
+  rating?: Maybe<number>;
+  studio_id?: Maybe<string>;
+  gallery_id?: Maybe<string>;
+  performer_ids?: Maybe<string[]>;
+  tag_ids?: Maybe<string[]>;
+};
+
+export type SceneUpdateMutation = {
+  __typename?: "Mutation";
+
+  sceneUpdate: Maybe<SceneUpdateSceneUpdate>;
+};
+
+export type SceneUpdateSceneUpdate = SceneDataFragment;
+
+export type StudioCreateVariables = {
+  name: string;
+  url?: Maybe<string>;
+  image: string;
+};
+
+export type StudioCreateMutation = {
+  __typename?: "Mutation";
+
+  studioCreate: Maybe<StudioCreateStudioCreate>;
+};
+
+export type StudioCreateStudioCreate = StudioDataFragment;
+
+export type StudioUpdateVariables = {
+  id: string;
+  name?: Maybe<string>;
+  url?: Maybe<string>;
+  image?: Maybe<string>;
+};
+
+export type StudioUpdateMutation = {
+  __typename?: "Mutation";
+
+  studioUpdate: Maybe<StudioUpdateStudioUpdate>;
+};
+
+export type StudioUpdateStudioUpdate = StudioDataFragment;
+
+export type TagCreateVariables = {
   name: string;
 };
 
-export type FindSceneSceneMarkers = SceneMarkerDataFragment;
+export type TagCreateMutation = {
+  __typename?: "Mutation";
 
-export type FindSceneMarkersVariables = {
-  filter?: Maybe<FindFilterType>;
-  scene_marker_filter?: Maybe<SceneMarkerFilterType>;
+  tagCreate: Maybe<TagCreateTagCreate>;
 };
 
-export type FindSceneMarkersQuery = {
-  __typename?: "Query";
+export type TagCreateTagCreate = TagDataFragment;
 
-  findSceneMarkers: FindSceneMarkersFindSceneMarkers;
-};
-
-export type FindSceneMarkersFindSceneMarkers = {
-  __typename?: "FindSceneMarkersResultType";
-
-  count: number;
-
-  scene_markers: FindSceneMarkersSceneMarkers[];
-};
-
-export type FindSceneMarkersSceneMarkers = SceneMarkerDataFragment;
-
-export type SceneWallVariables = {
-  q?: Maybe<string>;
-};
-
-export type SceneWallQuery = {
-  __typename?: "Query";
-
-  sceneWall: SceneWallSceneWall[];
-};
-
-export type SceneWallSceneWall = SceneDataFragment;
-
-export type MarkerWallVariables = {
-  q?: Maybe<string>;
-};
-
-export type MarkerWallQuery = {
-  __typename?: "Query";
-
-  markerWall: MarkerWallMarkerWall[];
-};
-
-export type MarkerWallMarkerWall = SceneMarkerDataFragment;
-
-export type FindPerformersVariables = {
-  filter?: Maybe<FindFilterType>;
-  performer_filter?: Maybe<PerformerFilterType>;
-};
-
-export type FindPerformersQuery = {
-  __typename?: "Query";
-
-  findPerformers: FindPerformersFindPerformers;
-};
-
-export type FindPerformersFindPerformers = {
-  __typename?: "FindPerformersResultType";
-
-  count: number;
-
-  performers: FindPerformersPerformers[];
-};
-
-export type FindPerformersPerformers = PerformerDataFragment;
-
-export type FindPerformerVariables = {
+export type TagDestroyVariables = {
   id: string;
 };
 
-export type FindPerformerQuery = {
-  __typename?: "Query";
+export type TagDestroyMutation = {
+  __typename?: "Mutation";
 
-  findPerformer: Maybe<FindPerformerFindPerformer>;
+  tagDestroy: boolean;
 };
 
-export type FindPerformerFindPerformer = PerformerDataFragment;
-
-export type FindStudiosVariables = {
-  filter?: Maybe<FindFilterType>;
-};
-
-export type FindStudiosQuery = {
-  __typename?: "Query";
-
-  findStudios: FindStudiosFindStudios;
-};
-
-export type FindStudiosFindStudios = {
-  __typename?: "FindStudiosResultType";
-
-  count: number;
-
-  studios: FindStudiosStudios[];
-};
-
-export type FindStudiosStudios = StudioDataFragment;
-
-export type FindStudioVariables = {
+export type TagUpdateVariables = {
   id: string;
+  name: string;
 };
 
-export type FindStudioQuery = {
-  __typename?: "Query";
+export type TagUpdateMutation = {
+  __typename?: "Mutation";
 
-  findStudio: Maybe<FindStudioFindStudio>;
+  tagUpdate: Maybe<TagUpdateTagUpdate>;
 };
 
-export type FindStudioFindStudio = StudioDataFragment;
+export type TagUpdateTagUpdate = TagDataFragment;
 
 export type FindGalleriesVariables = {
   filter?: Maybe<FindFilterType>;
@@ -417,6 +454,30 @@ export type FindGalleryQuery = {
 
 export type FindGalleryFindGallery = GalleryDataFragment;
 
+export type SceneWallVariables = {
+  q?: Maybe<string>;
+};
+
+export type SceneWallQuery = {
+  __typename?: "Query";
+
+  sceneWall: SceneWallSceneWall[];
+};
+
+export type SceneWallSceneWall = SceneDataFragment;
+
+export type MarkerWallVariables = {
+  q?: Maybe<string>;
+};
+
+export type MarkerWallQuery = {
+  __typename?: "Query";
+
+  markerWall: MarkerWallMarkerWall[];
+};
+
+export type MarkerWallMarkerWall = SceneMarkerDataFragment;
+
 export type FindTagVariables = {
   id: string;
 };
@@ -448,60 +509,6 @@ export type MarkerStringsMarkerStrings = {
   count: number;
 
   title: string;
-};
-
-export type ScrapeFreeonesVariables = {
-  performer_name: string;
-};
-
-export type ScrapeFreeonesQuery = {
-  __typename?: "Query";
-
-  scrapeFreeones: Maybe<ScrapeFreeonesScrapeFreeones>;
-};
-
-export type ScrapeFreeonesScrapeFreeones = {
-  __typename?: "ScrapedPerformer";
-
-  name: Maybe<string>;
-
-  url: Maybe<string>;
-
-  twitter: Maybe<string>;
-
-  instagram: Maybe<string>;
-
-  birthdate: Maybe<string>;
-
-  ethnicity: Maybe<string>;
-
-  country: Maybe<string>;
-
-  eye_color: Maybe<string>;
-
-  height: Maybe<string>;
-
-  measurements: Maybe<string>;
-
-  fake_tits: Maybe<string>;
-
-  career_length: Maybe<string>;
-
-  tattoos: Maybe<string>;
-
-  piercings: Maybe<string>;
-
-  aliases: Maybe<string>;
-};
-
-export type ScrapeFreeonesPerformersVariables = {
-  q: string;
-};
-
-export type ScrapeFreeonesPerformersQuery = {
-  __typename?: "Query";
-
-  scrapeFreeonesPerformerList: string[];
 };
 
 export type AllTagsVariables = {};
@@ -590,189 +597,187 @@ export type StatsStats = {
   tag_count: number;
 };
 
-export type SceneUpdateVariables = {
+export type FindPerformersVariables = {
+  filter?: Maybe<FindFilterType>;
+  performer_filter?: Maybe<PerformerFilterType>;
+};
+
+export type FindPerformersQuery = {
+  __typename?: "Query";
+
+  findPerformers: FindPerformersFindPerformers;
+};
+
+export type FindPerformersFindPerformers = {
+  __typename?: "FindPerformersResultType";
+
+  count: number;
+
+  performers: FindPerformersPerformers[];
+};
+
+export type FindPerformersPerformers = PerformerDataFragment;
+
+export type FindPerformerVariables = {
   id: string;
-  title?: Maybe<string>;
-  details?: Maybe<string>;
-  url?: Maybe<string>;
-  date?: Maybe<string>;
-  rating?: Maybe<number>;
-  studio_id?: Maybe<string>;
-  gallery_id?: Maybe<string>;
-  performer_ids?: Maybe<string[]>;
-  tag_ids?: Maybe<string[]>;
 };
 
-export type SceneUpdateMutation = {
-  __typename?: "Mutation";
+export type FindPerformerQuery = {
+  __typename?: "Query";
 
-  sceneUpdate: Maybe<SceneUpdateSceneUpdate>;
+  findPerformer: Maybe<FindPerformerFindPerformer>;
 };
 
-export type SceneUpdateSceneUpdate = SceneDataFragment;
+export type FindPerformerFindPerformer = PerformerDataFragment;
 
-export type PerformerCreateVariables = {
-  name?: Maybe<string>;
-  url?: Maybe<string>;
-  birthdate?: Maybe<string>;
-  ethnicity?: Maybe<string>;
-  country?: Maybe<string>;
-  eye_color?: Maybe<string>;
-  height?: Maybe<string>;
-  measurements?: Maybe<string>;
-  fake_tits?: Maybe<string>;
-  career_length?: Maybe<string>;
-  tattoos?: Maybe<string>;
-  piercings?: Maybe<string>;
-  aliases?: Maybe<string>;
-  twitter?: Maybe<string>;
-  instagram?: Maybe<string>;
-  favorite?: Maybe<boolean>;
-  image: string;
+export type FindSceneMarkersVariables = {
+  filter?: Maybe<FindFilterType>;
+  scene_marker_filter?: Maybe<SceneMarkerFilterType>;
 };
 
-export type PerformerCreateMutation = {
-  __typename?: "Mutation";
+export type FindSceneMarkersQuery = {
+  __typename?: "Query";
 
-  performerCreate: Maybe<PerformerCreatePerformerCreate>;
+  findSceneMarkers: FindSceneMarkersFindSceneMarkers;
 };
 
-export type PerformerCreatePerformerCreate = PerformerDataFragment;
+export type FindSceneMarkersFindSceneMarkers = {
+  __typename?: "FindSceneMarkersResultType";
 
-export type PerformerUpdateVariables = {
+  count: number;
+
+  scene_markers: FindSceneMarkersSceneMarkers[];
+};
+
+export type FindSceneMarkersSceneMarkers = SceneMarkerDataFragment;
+
+export type FindScenesVariables = {
+  filter?: Maybe<FindFilterType>;
+  scene_filter?: Maybe<SceneFilterType>;
+  scene_ids?: Maybe<number[]>;
+};
+
+export type FindScenesQuery = {
+  __typename?: "Query";
+
+  findScenes: FindScenesFindScenes;
+};
+
+export type FindScenesFindScenes = {
+  __typename?: "FindScenesResultType";
+
+  count: number;
+
+  scenes: FindScenesScenes[];
+};
+
+export type FindScenesScenes = SlimSceneDataFragment;
+
+export type FindSceneVariables = {
   id: string;
-  name?: Maybe<string>;
-  url?: Maybe<string>;
-  birthdate?: Maybe<string>;
-  ethnicity?: Maybe<string>;
-  country?: Maybe<string>;
-  eye_color?: Maybe<string>;
-  height?: Maybe<string>;
-  measurements?: Maybe<string>;
-  fake_tits?: Maybe<string>;
-  career_length?: Maybe<string>;
-  tattoos?: Maybe<string>;
-  piercings?: Maybe<string>;
-  aliases?: Maybe<string>;
-  twitter?: Maybe<string>;
-  instagram?: Maybe<string>;
-  favorite?: Maybe<boolean>;
-  image?: Maybe<string>;
+  checksum?: Maybe<string>;
 };
 
-export type PerformerUpdateMutation = {
-  __typename?: "Mutation";
+export type FindSceneQuery = {
+  __typename?: "Query";
 
-  performerUpdate: Maybe<PerformerUpdatePerformerUpdate>;
+  findScene: Maybe<FindSceneFindScene>;
+
+  sceneMarkerTags: FindSceneSceneMarkerTags[];
 };
 
-export type PerformerUpdatePerformerUpdate = PerformerDataFragment;
+export type FindSceneFindScene = SceneDataFragment;
 
-export type StudioCreateVariables = {
-  name: string;
-  url?: Maybe<string>;
-  image: string;
+export type FindSceneSceneMarkerTags = {
+  __typename?: "SceneMarkerTag";
+
+  tag: FindSceneTag;
+
+  scene_markers: FindSceneSceneMarkers[];
 };
 
-export type StudioCreateMutation = {
-  __typename?: "Mutation";
+export type FindSceneTag = {
+  __typename?: "Tag";
 
-  studioCreate: Maybe<StudioCreateStudioCreate>;
-};
-
-export type StudioCreateStudioCreate = StudioDataFragment;
-
-export type StudioUpdateVariables = {
   id: string;
-  name?: Maybe<string>;
-  url?: Maybe<string>;
-  image?: Maybe<string>;
-};
 
-export type StudioUpdateMutation = {
-  __typename?: "Mutation";
-
-  studioUpdate: Maybe<StudioUpdateStudioUpdate>;
-};
-
-export type StudioUpdateStudioUpdate = StudioDataFragment;
-
-export type TagCreateVariables = {
   name: string;
 };
 
-export type TagCreateMutation = {
-  __typename?: "Mutation";
+export type FindSceneSceneMarkers = SceneMarkerDataFragment;
 
-  tagCreate: Maybe<TagCreateTagCreate>;
+export type ScrapeFreeonesVariables = {
+  performer_name: string;
 };
 
-export type TagCreateTagCreate = TagDataFragment;
+export type ScrapeFreeonesQuery = {
+  __typename?: "Query";
 
-export type TagDestroyVariables = {
-  id: string;
+  scrapeFreeones: Maybe<ScrapeFreeonesScrapeFreeones>;
 };
 
-export type TagDestroyMutation = {
-  __typename?: "Mutation";
+export type ScrapeFreeonesScrapeFreeones = {
+  __typename?: "ScrapedPerformer";
 
-  tagDestroy: boolean;
+  name: Maybe<string>;
+
+  url: Maybe<string>;
+
+  twitter: Maybe<string>;
+
+  instagram: Maybe<string>;
+
+  birthdate: Maybe<string>;
+
+  ethnicity: Maybe<string>;
+
+  country: Maybe<string>;
+
+  eye_color: Maybe<string>;
+
+  height: Maybe<string>;
+
+  measurements: Maybe<string>;
+
+  fake_tits: Maybe<string>;
+
+  career_length: Maybe<string>;
+
+  tattoos: Maybe<string>;
+
+  piercings: Maybe<string>;
+
+  aliases: Maybe<string>;
 };
 
-export type TagUpdateVariables = {
-  id: string;
-  name: string;
+export type ScrapeFreeonesPerformersVariables = {
+  q: string;
 };
 
-export type TagUpdateMutation = {
-  __typename?: "Mutation";
+export type ScrapeFreeonesPerformersQuery = {
+  __typename?: "Query";
 
-  tagUpdate: Maybe<TagUpdateTagUpdate>;
+  scrapeFreeonesPerformerList: string[];
 };
 
-export type TagUpdateTagUpdate = TagDataFragment;
+export type ConfigurationVariables = {};
 
-export type SceneMarkerCreateVariables = {
-  title: string;
-  seconds: number;
-  scene_id: string;
-  primary_tag_id: string;
-  tag_ids?: Maybe<string[]>;
+export type ConfigurationQuery = {
+  __typename?: "Query";
+
+  configuration: ConfigurationConfiguration;
 };
 
-export type SceneMarkerCreateMutation = {
-  __typename?: "Mutation";
+export type ConfigurationConfiguration = ConfigDataFragment;
 
-  sceneMarkerCreate: Maybe<SceneMarkerCreateSceneMarkerCreate>;
+export type DirectoriesVariables = {
+  path?: Maybe<string>;
 };
 
-export type SceneMarkerCreateSceneMarkerCreate = SceneMarkerDataFragment;
+export type DirectoriesQuery = {
+  __typename?: "Query";
 
-export type SceneMarkerUpdateVariables = {
-  id: string;
-  title: string;
-  seconds: number;
-  scene_id: string;
-  primary_tag_id: string;
-  tag_ids?: Maybe<string[]>;
-};
-
-export type SceneMarkerUpdateMutation = {
-  __typename?: "Mutation";
-
-  sceneMarkerUpdate: Maybe<SceneMarkerUpdateSceneMarkerUpdate>;
-};
-
-export type SceneMarkerUpdateSceneMarkerUpdate = SceneMarkerDataFragment;
-
-export type SceneMarkerDestroyVariables = {
-  id: string;
-};
-
-export type SceneMarkerDestroyMutation = {
-  __typename?: "Mutation";
-
-  sceneMarkerDestroy: boolean;
+  directories: string[];
 };
 
 export type MetadataImportVariables = {};
@@ -815,6 +820,38 @@ export type MetadataCleanQuery = {
   metadataClean: string;
 };
 
+export type FindStudiosVariables = {
+  filter?: Maybe<FindFilterType>;
+};
+
+export type FindStudiosQuery = {
+  __typename?: "Query";
+
+  findStudios: FindStudiosFindStudios;
+};
+
+export type FindStudiosFindStudios = {
+  __typename?: "FindStudiosResultType";
+
+  count: number;
+
+  studios: FindStudiosStudios[];
+};
+
+export type FindStudiosStudios = StudioDataFragment;
+
+export type FindStudioVariables = {
+  id: string;
+};
+
+export type FindStudioQuery = {
+  __typename?: "Query";
+
+  findStudio: Maybe<FindStudioFindStudio>;
+};
+
+export type FindStudioFindStudio = StudioDataFragment;
+
 export type MetadataUpdateVariables = {};
 
 export type MetadataUpdateSubscription = {
@@ -822,6 +859,20 @@ export type MetadataUpdateSubscription = {
 
   metadataUpdate: string;
 };
+
+export type ConfigGeneralDataFragment = {
+  __typename?: "ConfigGeneralResult";
+
+  stashes: Maybe<string[]>;
+};
+
+export type ConfigDataFragment = {
+  __typename?: "ConfigResult";
+
+  general: ConfigDataGeneral;
+};
+
+export type ConfigDataGeneral = ConfigGeneralDataFragment;
 
 export type GalleryDataFragment = {
   __typename?: "Gallery";
@@ -1190,6 +1241,22 @@ import * as ReactApolloHooks from "react-apollo-hooks";
 // Fragments
 // ====================================================
 
+export const ConfigGeneralDataFragmentDoc = gql`
+  fragment ConfigGeneralData on ConfigGeneralResult {
+    stashes
+  }
+`;
+
+export const ConfigDataFragmentDoc = gql`
+  fragment ConfigData on ConfigResult {
+    general {
+      ...ConfigGeneralData
+    }
+  }
+
+  ${ConfigGeneralDataFragmentDoc}
+`;
+
 export const SlimPerformerDataFragmentDoc = gql`
   fragment SlimPerformerData on Performer {
     id
@@ -1399,462 +1466,25 @@ export const SlimStudioDataFragmentDoc = gql`
 // Components
 // ====================================================
 
-export const FindScenesDocument = gql`
-  query FindScenes(
-    $filter: FindFilterType
-    $scene_filter: SceneFilterType
-    $scene_ids: [Int!]
-  ) {
-    findScenes(
-      filter: $filter
-      scene_filter: $scene_filter
-      scene_ids: $scene_ids
-    ) {
-      count
-      scenes {
-        ...SlimSceneData
-      }
+export const ConfigureGeneralDocument = gql`
+  mutation ConfigureGeneral($input: ConfigGeneralInput!) {
+    configureGeneral(input: $input) {
+      ...ConfigGeneralData
     }
   }
 
-  ${SlimSceneDataFragmentDoc}
+  ${ConfigGeneralDataFragmentDoc}
 `;
-export function useFindScenes(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<FindScenesVariables>
-) {
-  return ReactApolloHooks.useQuery<FindScenesQuery, FindScenesVariables>(
-    FindScenesDocument,
-    baseOptions
-  );
-}
-export const FindSceneDocument = gql`
-  query FindScene($id: ID!, $checksum: String) {
-    findScene(id: $id, checksum: $checksum) {
-      ...SceneData
-    }
-    sceneMarkerTags(scene_id: $id) {
-      tag {
-        id
-        name
-      }
-      scene_markers {
-        ...SceneMarkerData
-      }
-    }
-  }
-
-  ${SceneDataFragmentDoc}
-  ${SceneMarkerDataFragmentDoc}
-`;
-export function useFindScene(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<FindSceneVariables>
-) {
-  return ReactApolloHooks.useQuery<FindSceneQuery, FindSceneVariables>(
-    FindSceneDocument,
-    baseOptions
-  );
-}
-export const FindSceneMarkersDocument = gql`
-  query FindSceneMarkers(
-    $filter: FindFilterType
-    $scene_marker_filter: SceneMarkerFilterType
-  ) {
-    findSceneMarkers(
-      filter: $filter
-      scene_marker_filter: $scene_marker_filter
-    ) {
-      count
-      scene_markers {
-        ...SceneMarkerData
-      }
-    }
-  }
-
-  ${SceneMarkerDataFragmentDoc}
-`;
-export function useFindSceneMarkers(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<FindSceneMarkersVariables>
-) {
-  return ReactApolloHooks.useQuery<
-    FindSceneMarkersQuery,
-    FindSceneMarkersVariables
-  >(FindSceneMarkersDocument, baseOptions);
-}
-export const SceneWallDocument = gql`
-  query SceneWall($q: String) {
-    sceneWall(q: $q) {
-      ...SceneData
-    }
-  }
-
-  ${SceneDataFragmentDoc}
-`;
-export function useSceneWall(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<SceneWallVariables>
-) {
-  return ReactApolloHooks.useQuery<SceneWallQuery, SceneWallVariables>(
-    SceneWallDocument,
-    baseOptions
-  );
-}
-export const MarkerWallDocument = gql`
-  query MarkerWall($q: String) {
-    markerWall(q: $q) {
-      ...SceneMarkerData
-    }
-  }
-
-  ${SceneMarkerDataFragmentDoc}
-`;
-export function useMarkerWall(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<MarkerWallVariables>
-) {
-  return ReactApolloHooks.useQuery<MarkerWallQuery, MarkerWallVariables>(
-    MarkerWallDocument,
-    baseOptions
-  );
-}
-export const FindPerformersDocument = gql`
-  query FindPerformers(
-    $filter: FindFilterType
-    $performer_filter: PerformerFilterType
-  ) {
-    findPerformers(filter: $filter, performer_filter: $performer_filter) {
-      count
-      performers {
-        ...PerformerData
-      }
-    }
-  }
-
-  ${PerformerDataFragmentDoc}
-`;
-export function useFindPerformers(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<FindPerformersVariables>
-) {
-  return ReactApolloHooks.useQuery<
-    FindPerformersQuery,
-    FindPerformersVariables
-  >(FindPerformersDocument, baseOptions);
-}
-export const FindPerformerDocument = gql`
-  query FindPerformer($id: ID!) {
-    findPerformer(id: $id) {
-      ...PerformerData
-    }
-  }
-
-  ${PerformerDataFragmentDoc}
-`;
-export function useFindPerformer(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<FindPerformerVariables>
-) {
-  return ReactApolloHooks.useQuery<FindPerformerQuery, FindPerformerVariables>(
-    FindPerformerDocument,
-    baseOptions
-  );
-}
-export const FindStudiosDocument = gql`
-  query FindStudios($filter: FindFilterType) {
-    findStudios(filter: $filter) {
-      count
-      studios {
-        ...StudioData
-      }
-    }
-  }
-
-  ${StudioDataFragmentDoc}
-`;
-export function useFindStudios(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<FindStudiosVariables>
-) {
-  return ReactApolloHooks.useQuery<FindStudiosQuery, FindStudiosVariables>(
-    FindStudiosDocument,
-    baseOptions
-  );
-}
-export const FindStudioDocument = gql`
-  query FindStudio($id: ID!) {
-    findStudio(id: $id) {
-      ...StudioData
-    }
-  }
-
-  ${StudioDataFragmentDoc}
-`;
-export function useFindStudio(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<FindStudioVariables>
-) {
-  return ReactApolloHooks.useQuery<FindStudioQuery, FindStudioVariables>(
-    FindStudioDocument,
-    baseOptions
-  );
-}
-export const FindGalleriesDocument = gql`
-  query FindGalleries($filter: FindFilterType) {
-    findGalleries(filter: $filter) {
-      count
-      galleries {
-        ...GalleryData
-      }
-    }
-  }
-
-  ${GalleryDataFragmentDoc}
-`;
-export function useFindGalleries(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<FindGalleriesVariables>
-) {
-  return ReactApolloHooks.useQuery<FindGalleriesQuery, FindGalleriesVariables>(
-    FindGalleriesDocument,
-    baseOptions
-  );
-}
-export const FindGalleryDocument = gql`
-  query FindGallery($id: ID!) {
-    findGallery(id: $id) {
-      ...GalleryData
-    }
-  }
-
-  ${GalleryDataFragmentDoc}
-`;
-export function useFindGallery(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<FindGalleryVariables>
-) {
-  return ReactApolloHooks.useQuery<FindGalleryQuery, FindGalleryVariables>(
-    FindGalleryDocument,
-    baseOptions
-  );
-}
-export const FindTagDocument = gql`
-  query FindTag($id: ID!) {
-    findTag(id: $id) {
-      ...TagData
-    }
-  }
-
-  ${TagDataFragmentDoc}
-`;
-export function useFindTag(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<FindTagVariables>
-) {
-  return ReactApolloHooks.useQuery<FindTagQuery, FindTagVariables>(
-    FindTagDocument,
-    baseOptions
-  );
-}
-export const MarkerStringsDocument = gql`
-  query MarkerStrings($q: String, $sort: String) {
-    markerStrings(q: $q, sort: $sort) {
-      id
-      count
-      title
-    }
-  }
-`;
-export function useMarkerStrings(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<MarkerStringsVariables>
-) {
-  return ReactApolloHooks.useQuery<MarkerStringsQuery, MarkerStringsVariables>(
-    MarkerStringsDocument,
-    baseOptions
-  );
-}
-export const ScrapeFreeonesDocument = gql`
-  query ScrapeFreeones($performer_name: String!) {
-    scrapeFreeones(performer_name: $performer_name) {
-      name
-      url
-      twitter
-      instagram
-      birthdate
-      ethnicity
-      country
-      eye_color
-      height
-      measurements
-      fake_tits
-      career_length
-      tattoos
-      piercings
-      aliases
-    }
-  }
-`;
-export function useScrapeFreeones(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<ScrapeFreeonesVariables>
-) {
-  return ReactApolloHooks.useQuery<
-    ScrapeFreeonesQuery,
-    ScrapeFreeonesVariables
-  >(ScrapeFreeonesDocument, baseOptions);
-}
-export const ScrapeFreeonesPerformersDocument = gql`
-  query ScrapeFreeonesPerformers($q: String!) {
-    scrapeFreeonesPerformerList(query: $q)
-  }
-`;
-export function useScrapeFreeonesPerformers(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<
-    ScrapeFreeonesPerformersVariables
-  >
-) {
-  return ReactApolloHooks.useQuery<
-    ScrapeFreeonesPerformersQuery,
-    ScrapeFreeonesPerformersVariables
-  >(ScrapeFreeonesPerformersDocument, baseOptions);
-}
-export const AllTagsDocument = gql`
-  query AllTags {
-    allTags {
-      ...TagData
-    }
-  }
-
-  ${TagDataFragmentDoc}
-`;
-export function useAllTags(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<AllTagsVariables>
-) {
-  return ReactApolloHooks.useQuery<AllTagsQuery, AllTagsVariables>(
-    AllTagsDocument,
-    baseOptions
-  );
-}
-export const AllPerformersForFilterDocument = gql`
-  query AllPerformersForFilter {
-    allPerformers {
-      ...SlimPerformerData
-    }
-  }
-
-  ${SlimPerformerDataFragmentDoc}
-`;
-export function useAllPerformersForFilter(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<
-    AllPerformersForFilterVariables
-  >
-) {
-  return ReactApolloHooks.useQuery<
-    AllPerformersForFilterQuery,
-    AllPerformersForFilterVariables
-  >(AllPerformersForFilterDocument, baseOptions);
-}
-export const AllStudiosForFilterDocument = gql`
-  query AllStudiosForFilter {
-    allStudios {
-      ...SlimStudioData
-    }
-  }
-
-  ${SlimStudioDataFragmentDoc}
-`;
-export function useAllStudiosForFilter(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<AllStudiosForFilterVariables>
-) {
-  return ReactApolloHooks.useQuery<
-    AllStudiosForFilterQuery,
-    AllStudiosForFilterVariables
-  >(AllStudiosForFilterDocument, baseOptions);
-}
-export const AllTagsForFilterDocument = gql`
-  query AllTagsForFilter {
-    allTags {
-      id
-      name
-    }
-  }
-`;
-export function useAllTagsForFilter(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<AllTagsForFilterVariables>
-) {
-  return ReactApolloHooks.useQuery<
-    AllTagsForFilterQuery,
-    AllTagsForFilterVariables
-  >(AllTagsForFilterDocument, baseOptions);
-}
-export const ValidGalleriesForSceneDocument = gql`
-  query ValidGalleriesForScene($scene_id: ID!) {
-    validGalleriesForScene(scene_id: $scene_id) {
-      id
-      path
-    }
-  }
-`;
-export function useValidGalleriesForScene(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<
-    ValidGalleriesForSceneVariables
-  >
-) {
-  return ReactApolloHooks.useQuery<
-    ValidGalleriesForSceneQuery,
-    ValidGalleriesForSceneVariables
-  >(ValidGalleriesForSceneDocument, baseOptions);
-}
-export const StatsDocument = gql`
-  query Stats {
-    stats {
-      scene_count
-      gallery_count
-      performer_count
-      studio_count
-      tag_count
-    }
-  }
-`;
-export function useStats(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<StatsVariables>
-) {
-  return ReactApolloHooks.useQuery<StatsQuery, StatsVariables>(
-    StatsDocument,
-    baseOptions
-  );
-}
-export const SceneUpdateDocument = gql`
-  mutation SceneUpdate(
-    $id: ID!
-    $title: String
-    $details: String
-    $url: String
-    $date: String
-    $rating: Int
-    $studio_id: ID
-    $gallery_id: ID
-    $performer_ids: [ID!] = []
-    $tag_ids: [ID!] = []
-  ) {
-    sceneUpdate(
-      input: {
-        id: $id
-        title: $title
-        details: $details
-        url: $url
-        date: $date
-        rating: $rating
-        studio_id: $studio_id
-        gallery_id: $gallery_id
-        performer_ids: $performer_ids
-        tag_ids: $tag_ids
-      }
-    ) {
-      ...SceneData
-    }
-  }
-
-  ${SceneDataFragmentDoc}
-`;
-export function useSceneUpdate(
+export function useConfigureGeneral(
   baseOptions?: ReactApolloHooks.MutationHookOptions<
-    SceneUpdateMutation,
-    SceneUpdateVariables
+    ConfigureGeneralMutation,
+    ConfigureGeneralVariables
   >
 ) {
   return ReactApolloHooks.useMutation<
-    SceneUpdateMutation,
-    SceneUpdateVariables
-  >(SceneUpdateDocument, baseOptions);
+    ConfigureGeneralMutation,
+    ConfigureGeneralVariables
+  >(ConfigureGeneralDocument, baseOptions);
 }
 export const PerformerCreateDocument = gql`
   mutation PerformerCreate(
@@ -1974,6 +1604,136 @@ export function usePerformerUpdate(
     PerformerUpdateVariables
   >(PerformerUpdateDocument, baseOptions);
 }
+export const SceneMarkerCreateDocument = gql`
+  mutation SceneMarkerCreate(
+    $title: String!
+    $seconds: Float!
+    $scene_id: ID!
+    $primary_tag_id: ID!
+    $tag_ids: [ID!] = []
+  ) {
+    sceneMarkerCreate(
+      input: {
+        title: $title
+        seconds: $seconds
+        scene_id: $scene_id
+        primary_tag_id: $primary_tag_id
+        tag_ids: $tag_ids
+      }
+    ) {
+      ...SceneMarkerData
+    }
+  }
+
+  ${SceneMarkerDataFragmentDoc}
+`;
+export function useSceneMarkerCreate(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    SceneMarkerCreateMutation,
+    SceneMarkerCreateVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    SceneMarkerCreateMutation,
+    SceneMarkerCreateVariables
+  >(SceneMarkerCreateDocument, baseOptions);
+}
+export const SceneMarkerUpdateDocument = gql`
+  mutation SceneMarkerUpdate(
+    $id: ID!
+    $title: String!
+    $seconds: Float!
+    $scene_id: ID!
+    $primary_tag_id: ID!
+    $tag_ids: [ID!] = []
+  ) {
+    sceneMarkerUpdate(
+      input: {
+        id: $id
+        title: $title
+        seconds: $seconds
+        scene_id: $scene_id
+        primary_tag_id: $primary_tag_id
+        tag_ids: $tag_ids
+      }
+    ) {
+      ...SceneMarkerData
+    }
+  }
+
+  ${SceneMarkerDataFragmentDoc}
+`;
+export function useSceneMarkerUpdate(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    SceneMarkerUpdateMutation,
+    SceneMarkerUpdateVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    SceneMarkerUpdateMutation,
+    SceneMarkerUpdateVariables
+  >(SceneMarkerUpdateDocument, baseOptions);
+}
+export const SceneMarkerDestroyDocument = gql`
+  mutation SceneMarkerDestroy($id: ID!) {
+    sceneMarkerDestroy(id: $id)
+  }
+`;
+export function useSceneMarkerDestroy(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    SceneMarkerDestroyMutation,
+    SceneMarkerDestroyVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    SceneMarkerDestroyMutation,
+    SceneMarkerDestroyVariables
+  >(SceneMarkerDestroyDocument, baseOptions);
+}
+export const SceneUpdateDocument = gql`
+  mutation SceneUpdate(
+    $id: ID!
+    $title: String
+    $details: String
+    $url: String
+    $date: String
+    $rating: Int
+    $studio_id: ID
+    $gallery_id: ID
+    $performer_ids: [ID!] = []
+    $tag_ids: [ID!] = []
+  ) {
+    sceneUpdate(
+      input: {
+        id: $id
+        title: $title
+        details: $details
+        url: $url
+        date: $date
+        rating: $rating
+        studio_id: $studio_id
+        gallery_id: $gallery_id
+        performer_ids: $performer_ids
+        tag_ids: $tag_ids
+      }
+    ) {
+      ...SceneData
+    }
+  }
+
+  ${SceneDataFragmentDoc}
+`;
+export function useSceneUpdate(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    SceneUpdateMutation,
+    SceneUpdateVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    SceneUpdateMutation,
+    SceneUpdateVariables
+  >(SceneUpdateDocument, baseOptions);
+}
 export const StudioCreateDocument = gql`
   mutation StudioCreate($name: String!, $url: String, $image: String!) {
     studioCreate(input: { name: $name, url: $url, image: $image }) {
@@ -2070,91 +1830,411 @@ export function useTagUpdate(
     baseOptions
   );
 }
-export const SceneMarkerCreateDocument = gql`
-  mutation SceneMarkerCreate(
-    $title: String!
-    $seconds: Float!
-    $scene_id: ID!
-    $primary_tag_id: ID!
-    $tag_ids: [ID!] = []
-  ) {
-    sceneMarkerCreate(
-      input: {
-        title: $title
-        seconds: $seconds
-        scene_id: $scene_id
-        primary_tag_id: $primary_tag_id
-        tag_ids: $tag_ids
+export const FindGalleriesDocument = gql`
+  query FindGalleries($filter: FindFilterType) {
+    findGalleries(filter: $filter) {
+      count
+      galleries {
+        ...GalleryData
       }
-    ) {
+    }
+  }
+
+  ${GalleryDataFragmentDoc}
+`;
+export function useFindGalleries(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<FindGalleriesVariables>
+) {
+  return ReactApolloHooks.useQuery<FindGalleriesQuery, FindGalleriesVariables>(
+    FindGalleriesDocument,
+    baseOptions
+  );
+}
+export const FindGalleryDocument = gql`
+  query FindGallery($id: ID!) {
+    findGallery(id: $id) {
+      ...GalleryData
+    }
+  }
+
+  ${GalleryDataFragmentDoc}
+`;
+export function useFindGallery(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<FindGalleryVariables>
+) {
+  return ReactApolloHooks.useQuery<FindGalleryQuery, FindGalleryVariables>(
+    FindGalleryDocument,
+    baseOptions
+  );
+}
+export const SceneWallDocument = gql`
+  query SceneWall($q: String) {
+    sceneWall(q: $q) {
+      ...SceneData
+    }
+  }
+
+  ${SceneDataFragmentDoc}
+`;
+export function useSceneWall(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<SceneWallVariables>
+) {
+  return ReactApolloHooks.useQuery<SceneWallQuery, SceneWallVariables>(
+    SceneWallDocument,
+    baseOptions
+  );
+}
+export const MarkerWallDocument = gql`
+  query MarkerWall($q: String) {
+    markerWall(q: $q) {
       ...SceneMarkerData
     }
   }
 
   ${SceneMarkerDataFragmentDoc}
 `;
-export function useSceneMarkerCreate(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
-    SceneMarkerCreateMutation,
-    SceneMarkerCreateVariables
+export function useMarkerWall(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<MarkerWallVariables>
+) {
+  return ReactApolloHooks.useQuery<MarkerWallQuery, MarkerWallVariables>(
+    MarkerWallDocument,
+    baseOptions
+  );
+}
+export const FindTagDocument = gql`
+  query FindTag($id: ID!) {
+    findTag(id: $id) {
+      ...TagData
+    }
+  }
+
+  ${TagDataFragmentDoc}
+`;
+export function useFindTag(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<FindTagVariables>
+) {
+  return ReactApolloHooks.useQuery<FindTagQuery, FindTagVariables>(
+    FindTagDocument,
+    baseOptions
+  );
+}
+export const MarkerStringsDocument = gql`
+  query MarkerStrings($q: String, $sort: String) {
+    markerStrings(q: $q, sort: $sort) {
+      id
+      count
+      title
+    }
+  }
+`;
+export function useMarkerStrings(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<MarkerStringsVariables>
+) {
+  return ReactApolloHooks.useQuery<MarkerStringsQuery, MarkerStringsVariables>(
+    MarkerStringsDocument,
+    baseOptions
+  );
+}
+export const AllTagsDocument = gql`
+  query AllTags {
+    allTags {
+      ...TagData
+    }
+  }
+
+  ${TagDataFragmentDoc}
+`;
+export function useAllTags(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<AllTagsVariables>
+) {
+  return ReactApolloHooks.useQuery<AllTagsQuery, AllTagsVariables>(
+    AllTagsDocument,
+    baseOptions
+  );
+}
+export const AllPerformersForFilterDocument = gql`
+  query AllPerformersForFilter {
+    allPerformers {
+      ...SlimPerformerData
+    }
+  }
+
+  ${SlimPerformerDataFragmentDoc}
+`;
+export function useAllPerformersForFilter(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    AllPerformersForFilterVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<
-    SceneMarkerCreateMutation,
-    SceneMarkerCreateVariables
-  >(SceneMarkerCreateDocument, baseOptions);
+  return ReactApolloHooks.useQuery<
+    AllPerformersForFilterQuery,
+    AllPerformersForFilterVariables
+  >(AllPerformersForFilterDocument, baseOptions);
 }
-export const SceneMarkerUpdateDocument = gql`
-  mutation SceneMarkerUpdate(
-    $id: ID!
-    $title: String!
-    $seconds: Float!
-    $scene_id: ID!
-    $primary_tag_id: ID!
-    $tag_ids: [ID!] = []
+export const AllStudiosForFilterDocument = gql`
+  query AllStudiosForFilter {
+    allStudios {
+      ...SlimStudioData
+    }
+  }
+
+  ${SlimStudioDataFragmentDoc}
+`;
+export function useAllStudiosForFilter(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<AllStudiosForFilterVariables>
+) {
+  return ReactApolloHooks.useQuery<
+    AllStudiosForFilterQuery,
+    AllStudiosForFilterVariables
+  >(AllStudiosForFilterDocument, baseOptions);
+}
+export const AllTagsForFilterDocument = gql`
+  query AllTagsForFilter {
+    allTags {
+      id
+      name
+    }
+  }
+`;
+export function useAllTagsForFilter(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<AllTagsForFilterVariables>
+) {
+  return ReactApolloHooks.useQuery<
+    AllTagsForFilterQuery,
+    AllTagsForFilterVariables
+  >(AllTagsForFilterDocument, baseOptions);
+}
+export const ValidGalleriesForSceneDocument = gql`
+  query ValidGalleriesForScene($scene_id: ID!) {
+    validGalleriesForScene(scene_id: $scene_id) {
+      id
+      path
+    }
+  }
+`;
+export function useValidGalleriesForScene(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    ValidGalleriesForSceneVariables
+  >
+) {
+  return ReactApolloHooks.useQuery<
+    ValidGalleriesForSceneQuery,
+    ValidGalleriesForSceneVariables
+  >(ValidGalleriesForSceneDocument, baseOptions);
+}
+export const StatsDocument = gql`
+  query Stats {
+    stats {
+      scene_count
+      gallery_count
+      performer_count
+      studio_count
+      tag_count
+    }
+  }
+`;
+export function useStats(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<StatsVariables>
+) {
+  return ReactApolloHooks.useQuery<StatsQuery, StatsVariables>(
+    StatsDocument,
+    baseOptions
+  );
+}
+export const FindPerformersDocument = gql`
+  query FindPerformers(
+    $filter: FindFilterType
+    $performer_filter: PerformerFilterType
   ) {
-    sceneMarkerUpdate(
-      input: {
-        id: $id
-        title: $title
-        seconds: $seconds
-        scene_id: $scene_id
-        primary_tag_id: $primary_tag_id
-        tag_ids: $tag_ids
+    findPerformers(filter: $filter, performer_filter: $performer_filter) {
+      count
+      performers {
+        ...PerformerData
       }
+    }
+  }
+
+  ${PerformerDataFragmentDoc}
+`;
+export function useFindPerformers(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<FindPerformersVariables>
+) {
+  return ReactApolloHooks.useQuery<
+    FindPerformersQuery,
+    FindPerformersVariables
+  >(FindPerformersDocument, baseOptions);
+}
+export const FindPerformerDocument = gql`
+  query FindPerformer($id: ID!) {
+    findPerformer(id: $id) {
+      ...PerformerData
+    }
+  }
+
+  ${PerformerDataFragmentDoc}
+`;
+export function useFindPerformer(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<FindPerformerVariables>
+) {
+  return ReactApolloHooks.useQuery<FindPerformerQuery, FindPerformerVariables>(
+    FindPerformerDocument,
+    baseOptions
+  );
+}
+export const FindSceneMarkersDocument = gql`
+  query FindSceneMarkers(
+    $filter: FindFilterType
+    $scene_marker_filter: SceneMarkerFilterType
+  ) {
+    findSceneMarkers(
+      filter: $filter
+      scene_marker_filter: $scene_marker_filter
     ) {
-      ...SceneMarkerData
+      count
+      scene_markers {
+        ...SceneMarkerData
+      }
     }
   }
 
   ${SceneMarkerDataFragmentDoc}
 `;
-export function useSceneMarkerUpdate(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
-    SceneMarkerUpdateMutation,
-    SceneMarkerUpdateVariables
-  >
+export function useFindSceneMarkers(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<FindSceneMarkersVariables>
 ) {
-  return ReactApolloHooks.useMutation<
-    SceneMarkerUpdateMutation,
-    SceneMarkerUpdateVariables
-  >(SceneMarkerUpdateDocument, baseOptions);
+  return ReactApolloHooks.useQuery<
+    FindSceneMarkersQuery,
+    FindSceneMarkersVariables
+  >(FindSceneMarkersDocument, baseOptions);
 }
-export const SceneMarkerDestroyDocument = gql`
-  mutation SceneMarkerDestroy($id: ID!) {
-    sceneMarkerDestroy(id: $id)
+export const FindScenesDocument = gql`
+  query FindScenes(
+    $filter: FindFilterType
+    $scene_filter: SceneFilterType
+    $scene_ids: [Int!]
+  ) {
+    findScenes(
+      filter: $filter
+      scene_filter: $scene_filter
+      scene_ids: $scene_ids
+    ) {
+      count
+      scenes {
+        ...SlimSceneData
+      }
+    }
+  }
+
+  ${SlimSceneDataFragmentDoc}
+`;
+export function useFindScenes(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<FindScenesVariables>
+) {
+  return ReactApolloHooks.useQuery<FindScenesQuery, FindScenesVariables>(
+    FindScenesDocument,
+    baseOptions
+  );
+}
+export const FindSceneDocument = gql`
+  query FindScene($id: ID!, $checksum: String) {
+    findScene(id: $id, checksum: $checksum) {
+      ...SceneData
+    }
+    sceneMarkerTags(scene_id: $id) {
+      tag {
+        id
+        name
+      }
+      scene_markers {
+        ...SceneMarkerData
+      }
+    }
+  }
+
+  ${SceneDataFragmentDoc}
+  ${SceneMarkerDataFragmentDoc}
+`;
+export function useFindScene(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<FindSceneVariables>
+) {
+  return ReactApolloHooks.useQuery<FindSceneQuery, FindSceneVariables>(
+    FindSceneDocument,
+    baseOptions
+  );
+}
+export const ScrapeFreeonesDocument = gql`
+  query ScrapeFreeones($performer_name: String!) {
+    scrapeFreeones(performer_name: $performer_name) {
+      name
+      url
+      twitter
+      instagram
+      birthdate
+      ethnicity
+      country
+      eye_color
+      height
+      measurements
+      fake_tits
+      career_length
+      tattoos
+      piercings
+      aliases
+    }
   }
 `;
-export function useSceneMarkerDestroy(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
-    SceneMarkerDestroyMutation,
-    SceneMarkerDestroyVariables
+export function useScrapeFreeones(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<ScrapeFreeonesVariables>
+) {
+  return ReactApolloHooks.useQuery<
+    ScrapeFreeonesQuery,
+    ScrapeFreeonesVariables
+  >(ScrapeFreeonesDocument, baseOptions);
+}
+export const ScrapeFreeonesPerformersDocument = gql`
+  query ScrapeFreeonesPerformers($q: String!) {
+    scrapeFreeonesPerformerList(query: $q)
+  }
+`;
+export function useScrapeFreeonesPerformers(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    ScrapeFreeonesPerformersVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<
-    SceneMarkerDestroyMutation,
-    SceneMarkerDestroyVariables
-  >(SceneMarkerDestroyDocument, baseOptions);
+  return ReactApolloHooks.useQuery<
+    ScrapeFreeonesPerformersQuery,
+    ScrapeFreeonesPerformersVariables
+  >(ScrapeFreeonesPerformersDocument, baseOptions);
+}
+export const ConfigurationDocument = gql`
+  query Configuration {
+    configuration {
+      ...ConfigData
+    }
+  }
+
+  ${ConfigDataFragmentDoc}
+`;
+export function useConfiguration(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<ConfigurationVariables>
+) {
+  return ReactApolloHooks.useQuery<ConfigurationQuery, ConfigurationVariables>(
+    ConfigurationDocument,
+    baseOptions
+  );
+}
+export const DirectoriesDocument = gql`
+  query Directories($path: String) {
+    directories(path: $path)
+  }
+`;
+export function useDirectories(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<DirectoriesVariables>
+) {
+  return ReactApolloHooks.useQuery<DirectoriesQuery, DirectoriesVariables>(
+    DirectoriesDocument,
+    baseOptions
+  );
 }
 export const MetadataImportDocument = gql`
   query MetadataImport {
@@ -2218,6 +2298,43 @@ export function useMetadataClean(
 ) {
   return ReactApolloHooks.useQuery<MetadataCleanQuery, MetadataCleanVariables>(
     MetadataCleanDocument,
+    baseOptions
+  );
+}
+export const FindStudiosDocument = gql`
+  query FindStudios($filter: FindFilterType) {
+    findStudios(filter: $filter) {
+      count
+      studios {
+        ...StudioData
+      }
+    }
+  }
+
+  ${StudioDataFragmentDoc}
+`;
+export function useFindStudios(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<FindStudiosVariables>
+) {
+  return ReactApolloHooks.useQuery<FindStudiosQuery, FindStudiosVariables>(
+    FindStudiosDocument,
+    baseOptions
+  );
+}
+export const FindStudioDocument = gql`
+  query FindStudio($id: ID!) {
+    findStudio(id: $id) {
+      ...StudioData
+    }
+  }
+
+  ${StudioDataFragmentDoc}
+`;
+export function useFindStudio(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<FindStudioVariables>
+) {
+  return ReactApolloHooks.useQuery<FindStudioQuery, FindStudioVariables>(
+    FindStudioDocument,
     baseOptions
   );
 }

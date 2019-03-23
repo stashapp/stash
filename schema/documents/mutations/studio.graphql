@@ -1,0 +1,20 @@
+mutation StudioCreate(
+  $name: String!,
+  $url: String,
+  $image: String!) {
+
+  studioCreate(input: { name: $name, url: $url, image: $image }) {
+    ...StudioData
+  }
+}
+
+mutation StudioUpdate(
+  $id: ID!
+  $name: String,
+  $url: String,
+  $image: String) {
+
+  studioUpdate(input: { id: $id, name: $name, url: $url, image: $image }) {
+    ...StudioData
+  }
+}

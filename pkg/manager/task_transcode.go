@@ -26,7 +26,7 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 
 	logger.Infof("[transcode] <%s> scene has codec %s", t.Scene.Checksum, t.Scene.VideoCodec.String)
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.StaticPaths.FFProbe, t.Scene.Path)
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path)
 	if err != nil {
 		logger.Errorf("[transcode] error reading video file: %s", err.Error())
 		return
@@ -36,7 +36,7 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 	options := ffmpeg.TranscodeOptions{
 		OutputPath: outputPath,
 	}
-	encoder := ffmpeg.NewEncoder(instance.StaticPaths.FFMPEG)
+	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
 	encoder.Transcode(*videoFile, options)
 	if err := os.Rename(outputPath, instance.Paths.Scene.GetTranscodePath(t.Scene.Checksum)); err != nil {
 		logger.Errorf("[transcode] error generating transcode: %s", err.Error())

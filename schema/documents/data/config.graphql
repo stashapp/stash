@@ -1,0 +1,9 @@
+fragment ConfigGeneralData on ConfigGeneralResult {
+  stashes
+}
+
+fragment ConfigData on ConfigResult {
+  general {
+    ...ConfigGeneralData
+  }
+}

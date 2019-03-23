@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -33,7 +34,7 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 	}
 	t.Scraped = scraped
 
-	database.Reset(instance.StaticPaths.DatabaseFile)
+	database.Reset(config.GetDatabasePath())
 
 	ctx := context.TODO()
 

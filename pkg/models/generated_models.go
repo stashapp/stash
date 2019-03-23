@@ -8,6 +8,21 @@ import (
 	"strconv"
 )
 
+type ConfigGeneralInput struct {
+	// Array of file paths to content
+	Stashes []string `json:"stashes"`
+}
+
+type ConfigGeneralResult struct {
+	// Array of file paths to content
+	Stashes []string `json:"stashes"`
+}
+
+// All configuration settings
+type ConfigResult struct {
+	General ConfigGeneralResult `json:"general"`
+}
+
 type FindFilterType struct {
 	Q         *string            `json:"q"`
 	Page      *int               `json:"page"`

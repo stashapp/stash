@@ -15,6 +15,10 @@ Simply run the executable (double click the exe on windows or run `./stash-osx` 
 
 *Note for Windows users:* Running the app might present a security prompt since the binary isn't signed yet.  Just click more info and then the run anyway button.
 
+## Slack
+
+I created a Slack channel to discuss the project.  [Click here to join.](https://join.slack.com/stash-project/shared_invite/MTc2Nzg0NjAyNzg4LTE0OTM1ODU4MTgtNDcwODRiMGIwYQ)
+
 #### FFMPEG
 
 If stash is unable to find or download FFMPEG then download it yourself from the link for your platform:
@@ -27,9 +31,7 @@ The `ffmpeg(.exe)` and `ffprobe(.exe)` files should be placed in `~/.stash` on m
 
 # FAQ
 
-> Does stash support multiple folders?
-
-Not yet, but this will come in the future.
+TODO
 
 # Development
 
@@ -66,7 +68,7 @@ TODO
 
 ## Cross compiling
 
-This project makes use of [this](https://github.com/bep/dockerfiles/tree/master/ci-goreleaser) docker container to create an environment
+This project uses a modification of [this](https://github.com/bep/dockerfiles/tree/master/ci-goreleaser) docker container to create an environment
 where the app can be cross compiled.  This process is kicked off by CI via the `scripts/cross-compile.sh` script.  Run the following
 command to open a bash shell to the container to poke around:
 

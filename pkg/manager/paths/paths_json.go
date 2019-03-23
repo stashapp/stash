@@ -1,6 +1,7 @@
 package paths
 
 import (
+	"github.com/stashapp/stash/pkg/manager/config"
 	"path/filepath"
 )
 
@@ -14,14 +15,14 @@ type jsonPaths struct {
 	Studios    string
 }
 
-func newJSONPaths(p Paths) *jsonPaths {
+func newJSONPaths() *jsonPaths {
 	jp := jsonPaths{}
-	jp.MappingsFile = filepath.Join(p.Config.Metadata, "mappings.json")
-	jp.ScrapedFile = filepath.Join(p.Config.Metadata, "scraped.json")
-	jp.Performers = filepath.Join(p.Config.Metadata, "performers")
-	jp.Scenes = filepath.Join(p.Config.Metadata, "scenes")
-	jp.Galleries = filepath.Join(p.Config.Metadata, "galleries")
-	jp.Studios = filepath.Join(p.Config.Metadata, "studios")
+	jp.MappingsFile = filepath.Join(config.GetMetadataPath(), "mappings.json")
+	jp.ScrapedFile = filepath.Join(config.GetMetadataPath(), "scraped.json")
+	jp.Performers = filepath.Join(config.GetMetadataPath(), "performers")
+	jp.Scenes = filepath.Join(config.GetMetadataPath(), "scenes")
+	jp.Galleries = filepath.Join(config.GetMetadataPath(), "galleries")
+	jp.Studios = filepath.Join(config.GetMetadataPath(), "studios")
 	return &jp
 }
 

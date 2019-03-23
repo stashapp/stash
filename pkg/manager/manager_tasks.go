@@ -3,6 +3,7 @@ package manager
 import (
 	"github.com/bmatcuk/doublestar"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 	"path/filepath"
@@ -18,12 +19,16 @@ func (s *singleton) Scan() {
 	go func() {
 		defer s.returnToIdleState()
 
-		globPath := filepath.Join(s.Paths.Config.Stash, "**/*.{zip,m4v,mp4,mov,wmv}")
-		globResults, _ := doublestar.Glob(globPath)
-		logger.Infof("Starting scan of %d files", len(globResults))
+		var results []string
+		for _, path := range config.GetStashPaths() {
+			globPath := filepath.Join(path, "**/*.{zip,m4v,mp4,mov,wmv}")
+			globResults, _ := doublestar.Glob(globPath)
+			results = append(results, globResults...)
+		}
+		logger.Infof("Starting scan of %d files", len(results))
 
 		var wg sync.WaitGroup
-		for _, path := range globResults {
+		for _, path := range results {
 			wg.Add(1)
 			task := ScanTask{FilePath: path}
 			go task.Start(&wg)
