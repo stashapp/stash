@@ -10858,6 +10858,35 @@ func (e *executableSchema) GenerateMetadataInputMiddleware(ctx context.Context, 
 	return obj, nil
 }
 
+func UnmarshalIntCriterionInput(v interface{}) (IntCriterionInput, error) {
+	var it IntCriterionInput
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "value":
+			var err error
+			it.Value, err = graphql.UnmarshalInt(v)
+			if err != nil {
+				return it, err
+			}
+		case "modifier":
+			var err error
+			err = (&it.Modifier).UnmarshalGQL(v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (e *executableSchema) IntCriterionInputMiddleware(ctx context.Context, obj *IntCriterionInput) (*IntCriterionInput, error) {
+
+	return obj, nil
+}
+
 func UnmarshalPerformerCreateInput(v interface{}) (PerformerCreateInput, error) {
 	var it PerformerCreateInput
 	var asMap = v.(map[string]interface{})
@@ -11303,9 +11332,9 @@ func UnmarshalSceneFilterType(v interface{}) (SceneFilterType, error) {
 		switch k {
 		case "rating":
 			var err error
-			var ptr1 int
+			var ptr1 IntCriterionInput
 			if v != nil {
-				ptr1, err = graphql.UnmarshalInt(v)
+				ptr1, err = UnmarshalIntCriterionInput(v)
 				it.Rating = &ptr1
 			}
 
@@ -11391,6 +11420,14 @@ func UnmarshalSceneFilterType(v interface{}) (SceneFilterType, error) {
 }
 
 func (e *executableSchema) SceneFilterTypeMiddleware(ctx context.Context, obj *SceneFilterType) (*SceneFilterType, error) {
+
+	if obj.Rating != nil {
+		var err error
+		obj.Rating, err = e.IntCriterionInputMiddleware(ctx, obj.Rating)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return obj, nil
 }
@@ -12301,7 +12338,7 @@ input SceneMarkerFilterType {
 
 input SceneFilterType {
   """Filter by rating"""
-  rating: Int
+  rating: IntCriterionInput
   """Filter by resolution"""
   resolution: ResolutionEnum
   """Filter to only include scenes which have markers. ` + "`" + `true` + "`" + ` or ` + "`" + `false` + "`" + `"""
@@ -12314,6 +12351,28 @@ input SceneFilterType {
   tags: [ID!]
   """Filter to only include scenes with this performer"""
   performer_id: ID
+}
+
+enum CriterionModifier {
+  """="""
+  EQUALS,
+  """!="""
+  NOT_EQUALS,
+  """>"""
+  GREATER_THAN,
+  """<"""
+  LESS_THAN,
+  """IS NULL"""
+  IS_NULL,
+  """IS NOT NULL"""
+  NOT_NULL,
+  INCLUDES,
+  EXCLUDES,
+}
+
+input IntCriterionInput {
+  value: Int!
+  modifier: CriterionModifier!
 }
 
 #######################################

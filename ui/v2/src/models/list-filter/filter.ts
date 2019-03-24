@@ -157,6 +157,7 @@ export class ListFilterModel {
         const encodedCriterion = JSON.parse(jsonString);
         const criterion = makeCriteria(encodedCriterion.type);
         criterion.value = encodedCriterion.value;
+        criterion.modifier = encodedCriterion.modifier;
         this.criteria.push(criterion);
       }
     }
@@ -168,6 +169,7 @@ export class ListFilterModel {
       const encodedCriterion: any = {};
       encodedCriterion.type = criterion.type;
       encodedCriterion.value = criterion.value;
+      encodedCriterion.modifier = criterion.modifier;
       const jsonCriterion = JSON.stringify(encodedCriterion);
       encodedCriteria.push(jsonCriterion);
     });
@@ -200,7 +202,8 @@ export class ListFilterModel {
     this.criteria.forEach((criterion) => {
       switch (criterion.type) {
         case "rating":
-          result.rating = (criterion as RatingCriterion).value;
+          const crit = criterion as RatingCriterion;
+          result.rating = { value: crit.value, modifier: crit.modifier };
           break;
         case "resolution": {
           switch ((criterion as ResolutionCriterion).value) {

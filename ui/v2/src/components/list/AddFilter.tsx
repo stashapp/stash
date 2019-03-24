@@ -8,6 +8,7 @@ import {
 import _ from "lodash";
 import React, { FunctionComponent, useEffect, useRef, useState } from "react";
 import { isArray } from "util";
+import { CriterionModifier } from "../../core/generated-graphql";
 import { Criterion, CriterionType } from "../../models/list-filter/criteria/criterion";
 import { NoneCriterion } from "../../models/list-filter/criteria/none";
 import { PerformersCriterion } from "../../models/list-filter/criteria/performers";
@@ -18,7 +19,7 @@ import { ListFilterModel } from "../../models/list-filter/filter";
 import { FilterMultiSelect } from "../select/FilterMultiSelect";
 
 interface IAddFilterProps {
-  onAddCriterion: (criterion: Criterion) => void;
+  onAddCriterion: (criterion: Criterion, oldId?: string) => void;
   onCancel: () => void;
   filter: ListFilterModel;
   editingCriterion?: Criterion;
@@ -43,6 +44,12 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
     setCriterion(newCriterion);
   }
 
+  function onChangedModifierSelect(event: React.ChangeEvent<HTMLSelectElement>) {
+    const newCriterion = _.cloneDeep(criterion);
+    newCriterion.modifier = event.target.value as any;
+    setCriterion(newCriterion);
+  }
+
   function onChangedSingleSelect(event: React.ChangeEvent<HTMLSelectElement>) {
     const newCriterion = _.cloneDeep(criterion);
     newCriterion.value = event.target.value;
@@ -54,7 +61,8 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
       const value = singleValueSelect.current.props.defaultValue;
       if (value === undefined || value === "" || typeof value === "number") { criterion.value = criterion.options[0]; }
     }
-    props.onAddCriterion(criterion);
+    const oldId = !!props.editingCriterion ? props.editingCriterion.getId() : undefined;
+    props.onAddCriterion(criterion, oldId);
     onToggle();
   }
 
@@ -69,7 +77,25 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
   const maybeRenderFilterPopoverContents = () => {
     if (criterion.type === "none") { return; }
 
+    function renderModifier() {
+      if (criterion.modifierOptions.length === 0) { return; }
+      return (
+        <div>
+          <HTMLSelect
+            options={criterion.modifierOptions}
+            onChange={onChangedModifierSelect}
+            defaultValue={criterion.modifier}
+          />
+        </div>
+      );
+    }
+
     function renderSelect() {
+      // Hide the value select if the modifier is "IsNull" or "NotNull"
+      if (criterion.modifier === CriterionModifier.IsNull || criterion.modifier === CriterionModifier.NotNull) {
+        return;
+      }
+
       if (isArray(criterion.value)) {
         let type: "performers" | "studios" | "tags" | "" = "";
         if (criterion instanceof PerformersCriterion) {
@@ -103,7 +129,12 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
         );
       }
     }
-    return <FormGroup>{renderSelect()}</FormGroup>;
+    return (
+      <FormGroup>
+        {renderModifier()}
+        {renderSelect()}
+      </FormGroup>
+    );
   };
 
   function maybeRenderFilterSelect() {

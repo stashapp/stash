@@ -77,6 +77,11 @@ type GenerateMetadataInput struct {
 	Transcodes bool `json:"transcodes"`
 }
 
+type IntCriterionInput struct {
+	Value    int               `json:"value"`
+	Modifier CriterionModifier `json:"modifier"`
+}
+
 type MarkerStringsResultType struct {
 	Count int    `json:"count"`
 	ID    string `json:"id"`
@@ -144,7 +149,7 @@ type SceneFileType struct {
 
 type SceneFilterType struct {
 	// Filter by rating
-	Rating *int `json:"rating"`
+	Rating *IntCriterionInput `json:"rating"`
 	// Filter by resolution
 	Resolution *ResolutionEnum `json:"resolution"`
 	// Filter to only include scenes which have markers. `true` or `false`
@@ -268,6 +273,65 @@ type TagDestroyInput struct {
 type TagUpdateInput struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type CriterionModifier string
+
+const (
+	// =
+	CriterionModifierEquals CriterionModifier = "EQUALS"
+	// !=
+	CriterionModifierNotEquals CriterionModifier = "NOT_EQUALS"
+	// >
+	CriterionModifierGreaterThan CriterionModifier = "GREATER_THAN"
+	// <
+	CriterionModifierLessThan CriterionModifier = "LESS_THAN"
+	// IS NULL
+	CriterionModifierIsNull CriterionModifier = "IS_NULL"
+	// IS NOT NULL
+	CriterionModifierNotNull  CriterionModifier = "NOT_NULL"
+	CriterionModifierIncludes CriterionModifier = "INCLUDES"
+	CriterionModifierExcludes CriterionModifier = "EXCLUDES"
+)
+
+var AllCriterionModifier = []CriterionModifier{
+	CriterionModifierEquals,
+	CriterionModifierNotEquals,
+	CriterionModifierGreaterThan,
+	CriterionModifierLessThan,
+	CriterionModifierIsNull,
+	CriterionModifierNotNull,
+	CriterionModifierIncludes,
+	CriterionModifierExcludes,
+}
+
+func (e CriterionModifier) IsValid() bool {
+	switch e {
+	case CriterionModifierEquals, CriterionModifierNotEquals, CriterionModifierGreaterThan, CriterionModifierLessThan, CriterionModifierIsNull, CriterionModifierNotNull, CriterionModifierIncludes, CriterionModifierExcludes:
+		return true
+	}
+	return false
+}
+
+func (e CriterionModifier) String() string {
+	return string(e)
+}
+
+func (e *CriterionModifier) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = CriterionModifier(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid CriterionModifier", str)
+	}
+	return nil
+}
+
+func (e CriterionModifier) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
 type ResolutionEnum string

@@ -1,8 +1,8 @@
 import * as GQL from "../../../core/generated-graphql";
+import { CriterionModifier } from "../../../core/generated-graphql";
 import { ILabeledId } from "../types";
 import {
   Criterion,
-  CriterionModifier,
   CriterionType,
   ICriterionOption,
 } from "./criterion";
@@ -11,6 +11,7 @@ export class TagsCriterion extends Criterion<GQL.AllTagsForFilterAllTags, ILabel
   public type: CriterionType;
   public parameterName: string;
   public modifier = CriterionModifier.Equals;
+  public modifierOptions = [];
   public options: GQL.AllTagsForFilterAllTags[] = [];
   public value: ILabeledId[] = [];
 

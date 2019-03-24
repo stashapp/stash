@@ -117,14 +117,26 @@ export class ListHook {
       setFilter(newFilter);
     }
 
-    function onAddCriterion(criterion: Criterion) {
+    function onAddCriterion(criterion: Criterion, oldId?: string) {
       const newFilter = _.cloneDeep(filter);
-      const existingIndex = newFilter.criteria.findIndex((c) => c.getId() === criterion.getId());
+
+      // Find if we are editing an existing criteria, then modify that.  Or create a new one.
+      const existingIndex = newFilter.criteria.findIndex((c) => {
+        // If we modified an existing criterion, then look for the old id.
+        const id = !!oldId ? oldId : criterion.getId();
+        return c.getId() === id;
+      });
       if (existingIndex === -1) {
         newFilter.criteria.push(criterion);
       } else {
         newFilter.criteria[existingIndex] = criterion;
       }
+
+      // Remove duplicate modifiers
+      newFilter.criteria = newFilter.criteria.filter((obj, pos, arr) => {
+        return arr.map((mapObj: any) => mapObj.getId()).indexOf(obj.getId()) === pos;
+      });
+
       newFilter.currentPage = 1;
       setFilter(newFilter);
     }

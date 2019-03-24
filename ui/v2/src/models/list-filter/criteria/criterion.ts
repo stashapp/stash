@@ -1,5 +1,6 @@
 import { isArray } from "util";
-import { ILabeledId } from "../types";
+import { CriterionModifier } from "../../../core/generated-graphql";
+import { ILabeledId, ILabeledValue } from "../types";
 
 export type CriterionType =
   "none" |
@@ -12,15 +13,6 @@ export type CriterionType =
   "sceneTags" |
   "performers" |
   "studios";
-
-export enum CriterionModifier {
-  Equals,
-  NotEquals,
-  GreaterThan,
-  LessThan,
-  Inclusive,
-  Exclusive,
-}
 
 export abstract class Criterion<Option = any, Value = any> {
   public static getLabel(type: CriterionType = "none"): string {
@@ -38,9 +30,23 @@ export abstract class Criterion<Option = any, Value = any> {
     }
   }
 
+  public static getModifierOption(modifier: CriterionModifier = CriterionModifier.Equals): ILabeledValue {
+    switch (modifier) {
+      case CriterionModifier.Equals: return {value: CriterionModifier.Equals, label: "Equals"};
+      case CriterionModifier.NotEquals: return {value: CriterionModifier.NotEquals, label: "Not Equals"};
+      case CriterionModifier.GreaterThan: return {value: CriterionModifier.GreaterThan, label: "Greater Than"};
+      case CriterionModifier.LessThan: return {value: CriterionModifier.LessThan, label: "Less Than"};
+      case CriterionModifier.IsNull: return {value: CriterionModifier.IsNull, label: "Is NULL"};
+      case CriterionModifier.NotNull: return {value: CriterionModifier.NotNull, label: "Not NULL"};
+      case CriterionModifier.Includes: return {value: CriterionModifier.Includes, label: "Includes"};
+      case CriterionModifier.Excludes: return {value: CriterionModifier.Excludes, label: "Excludes"};
+    }
+  }
+
   public abstract type: CriterionType;
   public abstract parameterName: string;
   public abstract modifier: CriterionModifier;
+  public abstract modifierOptions: ILabeledValue[];
   public abstract options: Option[];
   public abstract value: Value;
 
@@ -51,13 +57,17 @@ export abstract class Criterion<Option = any, Value = any> {
       case CriterionModifier.NotEquals: modifierString = "is not"; break;
       case CriterionModifier.GreaterThan: modifierString = "is greater than"; break;
       case CriterionModifier.LessThan: modifierString = "is less than"; break;
-      case CriterionModifier.Inclusive: modifierString = "includes"; break;
-      case CriterionModifier.Exclusive: modifierString = "exculdes"; break;
+      case CriterionModifier.IsNull: modifierString = "is null"; break;
+      case CriterionModifier.NotNull: modifierString = "is not null"; break;
+      case CriterionModifier.Includes: modifierString = "includes"; break;
+      case CriterionModifier.Excludes: modifierString = "exculdes"; break;
       default: modifierString = "";
     }
 
     let valueString: string;
-    if (isArray(this.value) && this.value.length > 0) {
+    if (this.modifier === CriterionModifier.IsNull || this.modifier === CriterionModifier.NotNull) {
+      valueString = "";
+    } else if (isArray(this.value) && this.value.length > 0) {
       let items = this.value;
       if ((this.value as ILabeledId[])[0].label) {
         items = this.value.map((item) => item.label) as any;

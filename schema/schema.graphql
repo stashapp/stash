@@ -357,7 +357,7 @@ input SceneMarkerFilterType {
 
 input SceneFilterType {
   """Filter by rating"""
-  rating: Int
+  rating: IntCriterionInput
   """Filter by resolution"""
   resolution: ResolutionEnum
   """Filter to only include scenes which have markers. `true` or `false`"""
@@ -370,6 +370,28 @@ input SceneFilterType {
   tags: [ID!]
   """Filter to only include scenes with this performer"""
   performer_id: ID
+}
+
+enum CriterionModifier {
+  """="""
+  EQUALS,
+  """!="""
+  NOT_EQUALS,
+  """>"""
+  GREATER_THAN,
+  """<"""
+  LESS_THAN,
+  """IS NULL"""
+  IS_NULL,
+  """IS NOT NULL"""
+  NOT_NULL,
+  INCLUDES,
+  EXCLUDES,
+}
+
+input IntCriterionInput {
+  value: Int!
+  modifier: CriterionModifier!
 }
 
 #######################################
