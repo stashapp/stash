@@ -16,3 +16,8 @@ export interface ILabeledId {
   id: string;
   label: string;
 }
+
+export interface ILabeledValue {
+  label: string;
+  value: string;
+}

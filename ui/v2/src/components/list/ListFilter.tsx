@@ -23,7 +23,7 @@ interface IListFilterProps {
   onChangeSortDirection: (sortDirection: "asc" | "desc") => void;
   onChangeSortBy: (sortBy: string) => void;
   onChangeDisplayMode: (displayMode: DisplayMode) => void;
-  onAddCriterion: (criterion: Criterion) => void;
+  onAddCriterion: (criterion: Criterion, oldId?: string) => void;
   onRemoveCriterion: (criterion: Criterion) => void;
   filter: ListFilterModel;
 }
@@ -67,8 +67,8 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
     props.onChangeDisplayMode(displayMode);
   }
 
-  function onAddCriterion(criterion: Criterion) {
-    props.onAddCriterion(criterion);
+  function onAddCriterion(criterion: Criterion, oldId?: string) {
+    props.onAddCriterion(criterion, oldId);
   }
 
   function onCancelAddCriterion() {
@@ -122,7 +122,7 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
   function renderFilterTags() {
     return props.filter.criteria.map((criterion) => (
       <Tag
-        key={criterion.type}
+        key={criterion.getId()}
         className="tag-item"
         itemID={criterion.getId()}
         interactive={true}

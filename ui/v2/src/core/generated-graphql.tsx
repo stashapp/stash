@@ -1,10 +1,10 @@
 /* tslint:disable */
-// Generated in 2019-03-24T09:16:39-07:00
+// Generated in 2019-03-24T13:29:34-07:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {
   /** Filter by rating */
-  rating?: Maybe<number>;
+  rating?: Maybe<IntCriterionInput>;
   /** Filter by resolution */
   resolution?: Maybe<ResolutionEnum>;
   /** Filter to only include scenes which have markers. `true` or `false` */
@@ -17,6 +17,12 @@ export interface SceneFilterType {
   tags?: Maybe<string[]>;
   /** Filter to only include scenes with this performer */
   performer_id?: Maybe<string>;
+}
+
+export interface IntCriterionInput {
+  value: number;
+
+  modifier: CriterionModifier;
 }
 
 export interface FindFilterType {
@@ -220,6 +226,17 @@ export interface ConfigGeneralInput {
   databasePath?: Maybe<string>;
   /** Path to generated files */
   generatedPath?: Maybe<string>;
+}
+
+export enum CriterionModifier {
+  Equals = "EQUALS",
+  NotEquals = "NOT_EQUALS",
+  GreaterThan = "GREATER_THAN",
+  LessThan = "LESS_THAN",
+  IsNull = "IS_NULL",
+  NotNull = "NOT_NULL",
+  Includes = "INCLUDES",
+  Excludes = "EXCLUDES"
 }
 
 export enum ResolutionEnum {

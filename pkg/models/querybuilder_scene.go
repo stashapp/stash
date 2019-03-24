@@ -164,8 +164,11 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	}
 
 	if rating := sceneFilter.Rating; rating != nil {
-		whereClauses = append(whereClauses, "rating = ?")
-		args = append(args, *sceneFilter.Rating)
+		clause, count := getIntCriterionWhereClause("rating", *sceneFilter.Rating)
+		whereClauses = append(whereClauses, clause)
+		if count == 1 {
+			args = append(args, sceneFilter.Rating.Value)
+		}
 	}
 
 	if resolutionFilter := sceneFilter.Resolution; resolutionFilter != nil {

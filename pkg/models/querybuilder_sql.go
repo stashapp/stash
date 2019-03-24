@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/logger"
 	"reflect"
 	"strconv"
 	"strings"
@@ -102,6 +103,48 @@ func getInBinding(length int) string {
 	bindings := strings.Repeat("?, ", length)
 	bindings = strings.TrimRight(bindings, ", ")
 	return "(" + bindings + ")"
+}
+
+func getCriterionModifierBinding(criterionModifier CriterionModifier, value interface{}) (string, int) {
+	var length int
+	switch x := value.(type) {
+	case []string:
+		length = len(x)
+	case []int:
+		length = len(x)
+	default:
+		length = 1
+		logger.Debugf("unsupported type: %T\n", x)
+	}
+	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
+		switch modifier {
+		case "EQUALS":
+			return "= ?", 1
+		case "NOT_EQUALS":
+			return "!= ?", 1
+		case "GREATER_THAN":
+			return "> ?", 1
+		case "LESS_THAN":
+			return "< ?", 1
+		case "IS_NULL":
+			return "IS NULL", 0
+		case "NOT_NULL":
+			return "IS NOT NULL", 0
+		case "INCLUDES":
+			return "IN "+getInBinding(length), length // TODO?
+		case "EXCLUDES":
+			return "NOT IN "+getInBinding(length), length // TODO?
+		default:
+			logger.Errorf("todo")
+			return "= ?", 1 // TODO
+		}
+	}
+	return "= ?", 1 // TODO
+}
+
+func getIntCriterionWhereClause(column string, input IntCriterionInput) (string, int) {
+	binding, count := getCriterionModifierBinding(input.Modifier, input.Value)
+	return column+" "+binding, count
 }
 
 func runIdsQuery(query string, args []interface{}) ([]int, error) {
