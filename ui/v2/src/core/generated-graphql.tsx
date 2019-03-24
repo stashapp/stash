@@ -1,5 +1,5 @@
 /* tslint:disable */
-// Generated in 2019-03-23T12:23:40-07:00
+// Generated in 2019-03-24T09:16:39-07:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {
@@ -45,6 +45,16 @@ export interface SceneMarkerFilterType {
 export interface PerformerFilterType {
   /** Filter by favorite */
   filter_favorites?: Maybe<boolean>;
+}
+
+export interface GenerateMetadataInput {
+  sprites: boolean;
+
+  previews: boolean;
+
+  markers: boolean;
+
+  transcodes: boolean;
 }
 
 export interface SceneUpdateInput {
@@ -206,6 +216,10 @@ export interface TagDestroyInput {
 export interface ConfigGeneralInput {
   /** Array of file paths to content */
   stashes?: Maybe<string[]>;
+  /** Path to the SQLite database */
+  databasePath?: Maybe<string>;
+  /** Path to generated files */
+  generatedPath?: Maybe<string>;
 }
 
 export enum ResolutionEnum {
@@ -804,7 +818,9 @@ export type MetadataScanQuery = {
   metadataScan: string;
 };
 
-export type MetadataGenerateVariables = {};
+export type MetadataGenerateVariables = {
+  input: GenerateMetadataInput;
+};
 
 export type MetadataGenerateQuery = {
   __typename?: "Query";
@@ -863,7 +879,11 @@ export type MetadataUpdateSubscription = {
 export type ConfigGeneralDataFragment = {
   __typename?: "ConfigGeneralResult";
 
-  stashes: Maybe<string[]>;
+  stashes: string[];
+
+  databasePath: string;
+
+  generatedPath: string;
 };
 
 export type ConfigDataFragment = {
@@ -1244,6 +1264,8 @@ import * as ReactApolloHooks from "react-apollo-hooks";
 export const ConfigGeneralDataFragmentDoc = gql`
   fragment ConfigGeneralData on ConfigGeneralResult {
     stashes
+    databasePath
+    generatedPath
   }
 `;
 
@@ -2276,8 +2298,8 @@ export function useMetadataScan(
   );
 }
 export const MetadataGenerateDocument = gql`
-  query MetadataGenerate {
-    metadataGenerate
+  query MetadataGenerate($input: GenerateMetadataInput!) {
+    metadataGenerate(input: $input)
   }
 `;
 export function useMetadataGenerate(

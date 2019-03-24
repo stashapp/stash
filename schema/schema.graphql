@@ -379,16 +379,35 @@ input SceneFilterType {
 input ConfigGeneralInput {
   """Array of file paths to content"""
   stashes: [String!]
+  """Path to the SQLite database"""
+  databasePath: String
+  """Path to generated files"""
+  generatedPath: String
 }
 
 type ConfigGeneralResult {
   """Array of file paths to content"""
-  stashes: [String!]
+  stashes: [String!]!
+  """Path to the SQLite database"""
+  databasePath: String!
+  """Path to generated files"""
+  generatedPath: String!
 }
 
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
+}
+
+#######################################
+# Metadata
+#######################################
+
+input GenerateMetadataInput {
+  sprites: Boolean!
+  previews: Boolean!
+  markers: Boolean!
+  transcodes: Boolean!
 }
 
 #############
@@ -456,7 +475,7 @@ type Query {
   """Start a scan. Returns the job ID"""
   metadataScan: String!
   """Start generating content. Returns the job ID"""
-  metadataGenerate: String!
+  metadataGenerate(input: GenerateMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
   metadataClean: String!
 
@@ -485,7 +504,7 @@ type Mutation {
   tagDestroy(input: TagDestroyInput!): Boolean!
 
   """Change general configuration options"""
-  configureGeneral(input: ConfigGeneralInput): ConfigGeneralResult!
+  configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
 }
 
 type Subscription {

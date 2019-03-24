@@ -74,7 +74,7 @@ export const FolderSelect: FunctionComponent<IProps> = (props: IProps) => {
 
   return (
     <>
-      {!!error ? error : undefined}
+      {!!error ? <h1>{error.message}</h1> : undefined}
       {renderDialog()}
       {selectedDirectories.map((path) => {
         return <div key={path}>{path} <a onClick={() => onRemoveDirectory(path)}>Remove</a></div>;

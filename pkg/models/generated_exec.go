@@ -48,7 +48,9 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	ConfigGeneralResult struct {
-		Stashes func(childComplexity int) int
+		Stashes       func(childComplexity int) int
+		DatabasePath  func(childComplexity int) int
+		GeneratedPath func(childComplexity int) int
 	}
 
 	ConfigResult struct {
@@ -112,7 +114,7 @@ type ComplexityRoot struct {
 		TagCreate          func(childComplexity int, input TagCreateInput) int
 		TagUpdate          func(childComplexity int, input TagUpdateInput) int
 		TagDestroy         func(childComplexity int, input TagDestroyInput) int
-		ConfigureGeneral   func(childComplexity int, input *ConfigGeneralInput) int
+		ConfigureGeneral   func(childComplexity int, input ConfigGeneralInput) int
 	}
 
 	Performer struct {
@@ -163,7 +165,7 @@ type ComplexityRoot struct {
 		MetadataImport              func(childComplexity int) int
 		MetadataExport              func(childComplexity int) int
 		MetadataScan                func(childComplexity int) int
-		MetadataGenerate            func(childComplexity int) int
+		MetadataGenerate            func(childComplexity int, input GenerateMetadataInput) int
 		MetadataClean               func(childComplexity int) int
 		AllPerformers               func(childComplexity int) int
 		AllStudios                  func(childComplexity int) int
@@ -290,7 +292,7 @@ type MutationResolver interface {
 	TagCreate(ctx context.Context, input TagCreateInput) (*Tag, error)
 	TagUpdate(ctx context.Context, input TagUpdateInput) (*Tag, error)
 	TagDestroy(ctx context.Context, input TagDestroyInput) (bool, error)
-	ConfigureGeneral(ctx context.Context, input *ConfigGeneralInput) (ConfigGeneralResult, error)
+	ConfigureGeneral(ctx context.Context, input ConfigGeneralInput) (ConfigGeneralResult, error)
 }
 type PerformerResolver interface {
 	ID(ctx context.Context, obj *Performer) (string, error)
@@ -339,7 +341,7 @@ type QueryResolver interface {
 	MetadataImport(ctx context.Context) (string, error)
 	MetadataExport(ctx context.Context) (string, error)
 	MetadataScan(ctx context.Context) (string, error)
-	MetadataGenerate(ctx context.Context) (string, error)
+	MetadataGenerate(ctx context.Context, input GenerateMetadataInput) (string, error)
 	MetadataClean(ctx context.Context) (string, error)
 	AllPerformers(ctx context.Context) ([]Performer, error)
 	AllStudios(ctx context.Context) ([]Studio, error)
@@ -617,26 +619,19 @@ func (e *executableSchema) field_Mutation_tagDestroy_args(ctx context.Context, r
 
 func (e *executableSchema) field_Mutation_configureGeneral_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	args := map[string]interface{}{}
-	var arg0 *ConfigGeneralInput
+	var arg0 ConfigGeneralInput
 	if tmp, ok := rawArgs["input"]; ok {
 		var err error
-		var ptr1 ConfigGeneralInput
-		if tmp != nil {
-			ptr1, err = UnmarshalConfigGeneralInput(tmp)
-			arg0 = &ptr1
-		}
-
+		arg0, err = UnmarshalConfigGeneralInput(tmp)
 		if err != nil {
 			return nil, err
 		}
 
-		if arg0 != nil {
-			var err error
-			arg0, err = e.ConfigGeneralInputMiddleware(ctx, arg0)
-			if err != nil {
-				return nil, err
-			}
+		mConfigGeneralInput1, err := e.ConfigGeneralInputMiddleware(ctx, &arg0)
+		if err != nil {
+			return nil, err
 		}
+		arg0 = *mConfigGeneralInput1
 	}
 	args["input"] = arg0
 	return args, nil
@@ -1122,6 +1117,27 @@ func (e *executableSchema) field_Query_directories_args(ctx context.Context, raw
 
 }
 
+func (e *executableSchema) field_Query_metadataGenerate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	args := map[string]interface{}{}
+	var arg0 GenerateMetadataInput
+	if tmp, ok := rawArgs["input"]; ok {
+		var err error
+		arg0, err = UnmarshalGenerateMetadataInput(tmp)
+		if err != nil {
+			return nil, err
+		}
+
+		mGenerateMetadataInput1, err := e.GenerateMetadataInputMiddleware(ctx, &arg0)
+		if err != nil {
+			return nil, err
+		}
+		arg0 = *mGenerateMetadataInput1
+	}
+	args["input"] = arg0
+	return args, nil
+
+}
+
 func (e *executableSchema) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1186,6 +1202,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ConfigGeneralResult.Stashes(childComplexity), true
+
+	case "ConfigGeneralResult.databasePath":
+		if e.complexity.ConfigGeneralResult.DatabasePath == nil {
+			break
+		}
+
+		return e.complexity.ConfigGeneralResult.DatabasePath(childComplexity), true
+
+	case "ConfigGeneralResult.generatedPath":
+		if e.complexity.ConfigGeneralResult.GeneratedPath == nil {
+			break
+		}
+
+		return e.complexity.ConfigGeneralResult.GeneratedPath(childComplexity), true
 
 	case "ConfigResult.general":
 		if e.complexity.ConfigResult.General == nil {
@@ -1483,7 +1513,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ConfigureGeneral(childComplexity, args["input"].(*ConfigGeneralInput)), true
+		return e.complexity.Mutation.ConfigureGeneral(childComplexity, args["input"].(ConfigGeneralInput)), true
 
 	case "Performer.id":
 		if e.complexity.Performer.Id == nil {
@@ -1888,7 +1918,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.MetadataGenerate(childComplexity), true
+		args, err := e.field_Query_metadataGenerate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.MetadataGenerate(childComplexity, args["input"].(GenerateMetadataInput)), true
 
 	case "Query.metadataClean":
 		if e.complexity.Query.MetadataClean == nil {
@@ -2504,6 +2539,19 @@ func (ec *executionContext) _ConfigGeneralResult(ctx context.Context, sel ast.Se
 			out.Values[i] = graphql.MarshalString("ConfigGeneralResult")
 		case "stashes":
 			out.Values[i] = ec._ConfigGeneralResult_stashes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		case "databasePath":
+			out.Values[i] = ec._ConfigGeneralResult_databasePath(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
+		case "generatedPath":
+			out.Values[i] = ec._ConfigGeneralResult_generatedPath(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalid = true
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2531,6 +2579,9 @@ func (ec *executionContext) _ConfigGeneralResult_stashes(ctx context.Context, fi
 		return obj.Stashes, nil
 	})
 	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.([]string)
@@ -2546,6 +2597,60 @@ func (ec *executionContext) _ConfigGeneralResult_stashes(ctx context.Context, fi
 	}
 
 	return arr1
+}
+
+// nolint: vetshadow
+func (ec *executionContext) _ConfigGeneralResult_databasePath(ctx context.Context, field graphql.CollectedField, obj *ConfigGeneralResult) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object: "ConfigGeneralResult",
+		Field:  field,
+		Args:   nil,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DatabasePath, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return graphql.MarshalString(res)
+}
+
+// nolint: vetshadow
+func (ec *executionContext) _ConfigGeneralResult_generatedPath(ctx context.Context, field graphql.CollectedField, obj *ConfigGeneralResult) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object: "ConfigGeneralResult",
+		Field:  field,
+		Args:   nil,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GeneratedPath, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return graphql.MarshalString(res)
 }
 
 var configResultImplementors = []string{"ConfigResult"}
@@ -4136,7 +4241,7 @@ func (ec *executionContext) _Mutation_configureGeneral(ctx context.Context, fiel
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ConfigureGeneral(rctx, args["input"].(*ConfigGeneralInput))
+		return ec.resolvers.Mutation().ConfigureGeneral(rctx, args["input"].(ConfigGeneralInput))
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -6153,10 +6258,17 @@ func (ec *executionContext) _Query_metadataGenerate(ctx context.Context, field g
 		Args:   nil,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_metadataGenerate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().MetadataGenerate(rctx)
+		return ec.resolvers.Query().MetadataGenerate(rctx, args["input"].(GenerateMetadataInput))
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -10600,6 +10712,28 @@ func UnmarshalConfigGeneralInput(v interface{}) (ConfigGeneralInput, error) {
 			if err != nil {
 				return it, err
 			}
+		case "databasePath":
+			var err error
+			var ptr1 string
+			if v != nil {
+				ptr1, err = graphql.UnmarshalString(v)
+				it.DatabasePath = &ptr1
+			}
+
+			if err != nil {
+				return it, err
+			}
+		case "generatedPath":
+			var err error
+			var ptr1 string
+			if v != nil {
+				ptr1, err = graphql.UnmarshalString(v)
+				it.GeneratedPath = &ptr1
+			}
+
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -10679,6 +10813,47 @@ func UnmarshalFindFilterType(v interface{}) (FindFilterType, error) {
 }
 
 func (e *executableSchema) FindFilterTypeMiddleware(ctx context.Context, obj *FindFilterType) (*FindFilterType, error) {
+
+	return obj, nil
+}
+
+func UnmarshalGenerateMetadataInput(v interface{}) (GenerateMetadataInput, error) {
+	var it GenerateMetadataInput
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "sprites":
+			var err error
+			it.Sprites, err = graphql.UnmarshalBoolean(v)
+			if err != nil {
+				return it, err
+			}
+		case "previews":
+			var err error
+			it.Previews, err = graphql.UnmarshalBoolean(v)
+			if err != nil {
+				return it, err
+			}
+		case "markers":
+			var err error
+			it.Markers, err = graphql.UnmarshalBoolean(v)
+			if err != nil {
+				return it, err
+			}
+		case "transcodes":
+			var err error
+			it.Transcodes, err = graphql.UnmarshalBoolean(v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (e *executableSchema) GenerateMetadataInputMiddleware(ctx context.Context, obj *GenerateMetadataInput) (*GenerateMetadataInput, error) {
 
 	return obj, nil
 }
@@ -12148,16 +12323,35 @@ input SceneFilterType {
 input ConfigGeneralInput {
   """Array of file paths to content"""
   stashes: [String!]
+  """Path to the SQLite database"""
+  databasePath: String
+  """Path to generated files"""
+  generatedPath: String
 }
 
 type ConfigGeneralResult {
   """Array of file paths to content"""
-  stashes: [String!]
+  stashes: [String!]!
+  """Path to the SQLite database"""
+  databasePath: String!
+  """Path to generated files"""
+  generatedPath: String!
 }
 
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
+}
+
+#######################################
+# Metadata
+#######################################
+
+input GenerateMetadataInput {
+  sprites: Boolean!
+  previews: Boolean!
+  markers: Boolean!
+  transcodes: Boolean!
 }
 
 #############
@@ -12225,7 +12419,7 @@ type Query {
   """Start a scan. Returns the job ID"""
   metadataScan: String!
   """Start generating content. Returns the job ID"""
-  metadataGenerate: String!
+  metadataGenerate(input: GenerateMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
   metadataClean: String!
 
@@ -12254,7 +12448,7 @@ type Mutation {
   tagDestroy(input: TagDestroyInput!): Boolean!
 
   """Change general configuration options"""
-  configureGeneral(input: ConfigGeneralInput): ConfigGeneralResult!
+  configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
 }
 
 type Subscription {

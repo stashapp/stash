@@ -11,11 +11,19 @@ import (
 type ConfigGeneralInput struct {
 	// Array of file paths to content
 	Stashes []string `json:"stashes"`
+	// Path to the SQLite database
+	DatabasePath *string `json:"databasePath"`
+	// Path to generated files
+	GeneratedPath *string `json:"generatedPath"`
 }
 
 type ConfigGeneralResult struct {
 	// Array of file paths to content
 	Stashes []string `json:"stashes"`
+	// Path to the SQLite database
+	DatabasePath string `json:"databasePath"`
+	// Path to generated files
+	GeneratedPath string `json:"generatedPath"`
 }
 
 // All configuration settings
@@ -60,6 +68,13 @@ type GalleryFilesType struct {
 	Index int     `json:"index"`
 	Name  *string `json:"name"`
 	Path  *string `json:"path"`
+}
+
+type GenerateMetadataInput struct {
+	Sprites    bool `json:"sprites"`
+	Previews   bool `json:"previews"`
+	Markers    bool `json:"markers"`
+	Transcodes bool `json:"transcodes"`
 }
 
 type MarkerStringsResultType struct {

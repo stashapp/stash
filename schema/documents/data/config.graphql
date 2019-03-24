@@ -1,5 +1,7 @@
 fragment ConfigGeneralData on ConfigGeneralResult {
   stashes
+  databasePath
+  generatedPath
 }
 
 fragment ConfigData on ConfigResult {

@@ -10,8 +10,8 @@ query MetadataScan {
   metadataScan
 }
 
-query MetadataGenerate {
-  metadataGenerate
+query MetadataGenerate($input: GenerateMetadataInput!) {
+  metadataGenerate(input: $input)
 }
 
 query MetadataClean {

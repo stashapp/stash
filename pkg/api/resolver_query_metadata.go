@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *queryResolver) MetadataScan(ctx context.Context) (string, error) {
@@ -20,8 +21,8 @@ func (r *queryResolver) MetadataExport(ctx context.Context) (string, error) {
 	return "todo", nil
 }
 
-func (r *queryResolver) MetadataGenerate(ctx context.Context) (string, error) {
-	manager.GetInstance().Generate(true, true, true, true)
+func (r *queryResolver) MetadataGenerate(ctx context.Context, input models.GenerateMetadataInput) (string, error) {
+	manager.GetInstance().Generate(input.Sprites, input.Previews, input.Markers, input.Transcodes)
 	return "todo", nil
 }
 
