@@ -10,9 +10,12 @@ import {
   Tag,
 } from "@blueprintjs/core";
 import React, { FunctionComponent, useState } from "react";
-import * as GQL from "../../core/generated-graphql";
-import { StashService } from "../../core/StashService";
-import { TextUtils } from "../../utils/text";
+import * as GQL from "../../../core/generated-graphql";
+import { StashService } from "../../../core/StashService";
+import { TextUtils } from "../../../utils/text";
+import { GenerateButton } from "./GenerateButton";
+import { ToastUtils } from "../../../utils/toasts";
+import { ErrorUtils } from "../../../utils/errors";
 
 interface IProps {}
 
@@ -43,6 +46,15 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
     );
   }
 
+  async function onScan() {
+    try {
+      await StashService.queryMetadataScan();
+      ToastUtils.success("Started scan");
+    } catch (e) {
+      ErrorUtils.handle(e);
+    }
+  }
+
   return (
     <>
       {renderImportAlert()}
@@ -53,18 +65,12 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         labelFor="scan"
         inline={true}
       >
-        <Button id="scan" text="Scan" onClick={() => StashService.queryMetadataScan()} />
+        <Button id="scan" text="Scan" onClick={() => onScan()} />
       </FormGroup>
       <Divider />
 
       <H4>Generated Content</H4>
-      <FormGroup
-        helperText="Generate supporting image, sprite, video, vtt and other files."
-        labelFor="generate"
-        inline={true}
-      >
-        <Button id="generate" text="Generate" onClick={() => StashService.queryMetadataGenerate()} />
-      </FormGroup>
+      <GenerateButton />
       <FormGroup
         helperText="TODO"
         labelFor="clean"

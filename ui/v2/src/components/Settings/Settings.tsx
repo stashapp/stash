@@ -9,7 +9,7 @@ import { IBaseProps } from "../../models";
 import { SettingsAboutPanel } from "./SettingsAboutPanel";
 import { SettingsConfigurationPanel } from "./SettingsConfigurationPanel";
 import { SettingsLogsPanel } from "./SettingsLogsPanel";
-import { SettingsTasksPanel } from "./SettingsTasksPanel";
+import { SettingsTasksPanel } from "./SettingsTasksPanel/SettingsTasksPanel";
 
 interface IProps extends IBaseProps {}
 

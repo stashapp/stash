@@ -27,6 +27,8 @@ func makeConfigResult() models.ConfigResult {
 
 func makeConfigGeneralResult() models.ConfigGeneralResult {
 	return models.ConfigGeneralResult{
-		Stashes: config.GetStashPaths(),
+		Stashes:       config.GetStashPaths(),
+		DatabasePath:  config.GetDatabasePath(),
+		GeneratedPath: config.GetGeneratedPath(),
 	}
 }

@@ -166,9 +166,10 @@ export class StashService {
     });
   }
 
-  public static queryMetadataGenerate() {
+  public static queryMetadataGenerate(input: GQL.GenerateMetadataInput) {
     return StashService.client.query<GQL.MetadataGenerateQuery>({
       query: GQL.MetadataGenerateDocument,
+      variables: { input },
       fetchPolicy: "network-only",
     });
   }
