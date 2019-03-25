@@ -11,7 +11,8 @@ const sceneMarkersForTagQuery = `
 SELECT scene_markers.* FROM scene_markers
 LEFT JOIN scene_markers_tags as tags_join on tags_join.scene_marker_id = scene_markers.id
 LEFT JOIN tags on tags_join.tag_id = tags.id
-WHERE tags.id = ?
+LEFT JOIN tags AS ptj ON ptj.id = scene_markers.primary_tag_id
+WHERE tags.id = ? OR ptj.id = ?
 GROUP BY scene_markers.id
 `
 
@@ -86,7 +87,7 @@ func (qb *SceneMarkerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Sc
 }
 
 func (qb *SceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
-	args := []interface{}{tagID}
+	args := []interface{}{tagID, tagID}
 	return runCountQuery(buildCountQuery(sceneMarkersForTagQuery), args)
 }
 
