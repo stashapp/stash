@@ -23,6 +23,7 @@ before_deploy:
 - sh ./scripts/cross-compile.sh
 - git tag -f v0.0.0-alpha
 - git push -f --tags
+- export RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')
 deploy:
   provider: releases
   api_key:
@@ -33,6 +34,7 @@ deploy:
   - dist/stash-linux
   skip_cleanup: true
   overwrite: true
+  body: ${RELEASE_DATE}
   on:
     repo: stashapp/stash
     branch: master
