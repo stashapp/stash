@@ -84,7 +84,7 @@ func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *st
 	return validGalleries, nil
 }
 
-func (r *queryResolver) Stats(ctx context.Context) (models.StatsResultType, error) {
+func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, error) {
 	scenesQB := models.NewSceneQueryBuilder()
 	scenesCount, _ := scenesQB.Count()
 	galleryQB := models.NewGalleryQueryBuilder()
@@ -95,7 +95,7 @@ func (r *queryResolver) Stats(ctx context.Context) (models.StatsResultType, erro
 	studiosCount, _ := studiosQB.Count()
 	tagsQB := models.NewTagQueryBuilder()
 	tagsCount, _ := tagsQB.Count()
-	return models.StatsResultType{
+	return &models.StatsResultType{
 		SceneCount:     scenesCount,
 		GalleryCount:   galleryCount,
 		PerformerCount: performersCount,

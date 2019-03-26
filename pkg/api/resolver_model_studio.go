@@ -4,12 +4,7 @@ import (
 	"context"
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
-	"strconv"
 )
-
-func (r *studioResolver) ID(ctx context.Context, obj *models.Studio) (string, error) {
-	return strconv.Itoa(obj.ID), nil
-}
 
 func (r *studioResolver) Name(ctx context.Context, obj *models.Studio) (string, error) {
 	if obj.Name.Valid {

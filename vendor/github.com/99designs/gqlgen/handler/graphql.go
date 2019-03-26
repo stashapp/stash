@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/99designs/gqlgen/complexity"
 	"github.com/99designs/gqlgen/graphql"
@@ -25,15 +26,17 @@ type params struct {
 }
 
 type Config struct {
-	cacheSize            int
-	upgrader             websocket.Upgrader
-	recover              graphql.RecoverFunc
-	errorPresenter       graphql.ErrorPresenterFunc
-	resolverHook         graphql.FieldMiddleware
-	requestHook          graphql.RequestMiddleware
-	tracer               graphql.Tracer
-	complexityLimit      int
-	disableIntrospection bool
+	cacheSize                       int
+	upgrader                        websocket.Upgrader
+	recover                         graphql.RecoverFunc
+	errorPresenter                  graphql.ErrorPresenterFunc
+	resolverHook                    graphql.FieldMiddleware
+	requestHook                     graphql.RequestMiddleware
+	tracer                          graphql.Tracer
+	complexityLimit                 int
+	complexityLimitFunc             graphql.ComplexityLimitFunc
+	disableIntrospection            bool
+	connectionKeepAlivePingInterval time.Duration
 }
 
 func (c *Config) newRequestContext(es graphql.ExecutableSchema, doc *ast.QueryDocument, op *ast.OperationDefinition, query string, variables map[string]interface{}) *graphql.RequestContext {
@@ -60,7 +63,7 @@ func (c *Config) newRequestContext(es graphql.ExecutableSchema, doc *ast.QueryDo
 		reqCtx.Tracer = hook
 	}
 
-	if c.complexityLimit > 0 {
+	if c.complexityLimit > 0 || c.complexityLimitFunc != nil {
 		reqCtx.ComplexityLimit = c.complexityLimit
 		operationComplexity := complexity.Calculate(es, op, variables)
 		reqCtx.OperationComplexity = operationComplexity
@@ -105,6 +108,15 @@ func IntrospectionEnabled(enabled bool) Option {
 func ComplexityLimit(limit int) Option {
 	return func(cfg *Config) {
 		cfg.complexityLimit = limit
+	}
+}
+
+// ComplexityLimitFunc allows you to define a function to dynamically set the maximum query complexity that is allowed
+// to be executed.
+// If a query is submitted that exceeds the limit, a 422 status code will be returned.
+func ComplexityLimitFunc(complexityLimitFunc graphql.ComplexityLimitFunc) Option {
+	return func(cfg *Config) {
+		cfg.complexityLimitFunc = complexityLimitFunc
 	}
 }
 
@@ -239,11 +251,23 @@ func CacheSize(size int) Option {
 	}
 }
 
+// WebsocketKeepAliveDuration allows you to reconfigure the keepalive behavior.
+// By default, keepalive is enabled with a DefaultConnectionKeepAlivePingInterval
+// duration. Set handler.connectionKeepAlivePingInterval = 0 to disable keepalive
+// altogether.
+func WebsocketKeepAliveDuration(duration time.Duration) Option {
+	return func(cfg *Config) {
+		cfg.connectionKeepAlivePingInterval = duration
+	}
+}
+
 const DefaultCacheSize = 1000
+const DefaultConnectionKeepAlivePingInterval = 25 * time.Second
 
 func GraphQL(exec graphql.ExecutableSchema, options ...Option) http.HandlerFunc {
 	cfg := &Config{
-		cacheSize: DefaultCacheSize,
+		cacheSize:                       DefaultCacheSize,
+		connectionKeepAlivePingInterval: DefaultConnectionKeepAlivePingInterval,
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -297,6 +321,7 @@ func (gh *graphqlHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	var reqParams params
 	switch r.Method {
 	case http.MethodGet:
@@ -318,7 +343,6 @@ func (gh *graphqlHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
 
 	ctx := r.Context()
 
@@ -366,6 +390,10 @@ func (gh *graphqlHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			sendErrorf(w, http.StatusUnprocessableEntity, userErr.Error())
 		}
 	}()
+
+	if gh.cfg.complexityLimitFunc != nil {
+		reqCtx.ComplexityLimit = gh.cfg.complexityLimitFunc(ctx)
+	}
 
 	if reqCtx.ComplexityLimit > 0 && reqCtx.OperationComplexity > reqCtx.ComplexityLimit {
 		sendErrorf(w, http.StatusUnprocessableEntity, "operation has complexity %d, which exceeds the limit of %d", reqCtx.OperationComplexity, reqCtx.ComplexityLimit)

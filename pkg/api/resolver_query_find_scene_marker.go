@@ -5,10 +5,10 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *queryResolver) FindSceneMarkers(ctx context.Context, scene_marker_filter *models.SceneMarkerFilterType, filter *models.FindFilterType) (models.FindSceneMarkersResultType, error) {
+func (r *queryResolver) FindSceneMarkers(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, filter *models.FindFilterType) (*models.FindSceneMarkersResultType, error) {
 	qb := models.NewSceneMarkerQueryBuilder()
-	sceneMarkers, total := qb.Query(scene_marker_filter, filter)
-	return models.FindSceneMarkersResultType{
+	sceneMarkers, total := qb.Query(sceneMarkerFilter, filter)
+	return &models.FindSceneMarkersResultType{
 		Count:        total,
 		SceneMarkers: sceneMarkers,
 	}, nil

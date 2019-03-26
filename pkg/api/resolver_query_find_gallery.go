@@ -12,10 +12,10 @@ func (r *queryResolver) FindGallery(ctx context.Context, id string) (*models.Gal
 	return qb.Find(idInt)
 }
 
-func (r *queryResolver) FindGalleries(ctx context.Context, filter *models.FindFilterType) (models.FindGalleriesResultType, error) {
+func (r *queryResolver) FindGalleries(ctx context.Context, filter *models.FindFilterType) (*models.FindGalleriesResultType, error) {
 	qb := models.NewGalleryQueryBuilder()
 	galleries, total := qb.Query(filter)
-	return models.FindGalleriesResultType{
+	return &models.FindGalleriesResultType{
 		Count:     total,
 		Galleries: galleries,
 	}, nil

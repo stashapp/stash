@@ -6,6 +6,8 @@ git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999/go.mod h1:fPE2ZNJGy
 git.apache.org/thrift.git v0.0.0-20180924222215-a9235805469b/go.mod h1:fPE2ZNJGynbRyZ4dJvy6G277gSllfV2HJqblrnkyeyg=
 github.com/99designs/gqlgen v0.4.5-0.20190127090136-055fb4bc9a6a h1:oTsAt8YXjEk1fo7uZR7gya1jrH48oPulx5oF6zWTHRw=
 github.com/99designs/gqlgen v0.4.5-0.20190127090136-055fb4bc9a6a/go.mod h1:st7qHA6ssU3uRZkmv+wzrzgX4srvIqEIdE5iuRW8GhE=
+github.com/99designs/gqlgen v0.8.2 h1:xOkDPWn/MZjkQ32pu6Axx15mNah0NAq9WalFqT+RavA=
+github.com/99designs/gqlgen v0.8.2/go.mod h1:aLyJw9xUgdJxZ8EqNQxo2pGFhXXJ/hq8t7J4yn8TgI4=
 github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78/go.mod h1:LmzpDX56iTiv29bbRTIsUNlaFfuhWRQBWjQdVyAevI8=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
@@ -439,6 +441,8 @@ github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijb
 github.com/vektah/dataloaden v0.2.0/go.mod h1:vxM6NuRlgiR0M6wbVTJeKp9vQIs81ZMfCYO+4yq/jbE=
 github.com/vektah/gqlparser v1.1.0 h1:3668p2gUlO+PiS81x957Rpr3/FPRWG6cxgCXAvTS1hw=
 github.com/vektah/gqlparser v1.1.0/go.mod h1:1ycwN7Ij5njmMkPPAOaRFY4rET2Enx7IkVv3vaXspKw=
+github.com/vektah/gqlparser v1.1.2 h1:ZsyLGn7/7jDNI+y4SEhI4yAxRChlv15pUHMjijT+e68=
+github.com/vektah/gqlparser v1.1.2/go.mod h1:1ycwN7Ij5njmMkPPAOaRFY4rET2Enx7IkVv3vaXspKw=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v1.0.0/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=

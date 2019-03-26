@@ -19,10 +19,10 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 	return scene, err
 }
 
-func (r *queryResolver) FindScenes(ctx context.Context, scene_filter *models.SceneFilterType, scene_ids []int, filter *models.FindFilterType) (models.FindScenesResultType, error) {
+func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIds []int, filter *models.FindFilterType) (*models.FindScenesResultType, error) {
 	qb := models.NewSceneQueryBuilder()
-	scenes, total := qb.Query(scene_filter, filter)
-	return models.FindScenesResultType{
+	scenes, total := qb.Query(sceneFilter, filter)
+	return &models.FindScenesResultType{
 		Count:  total,
 		Scenes: scenes,
 	}, nil

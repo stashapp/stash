@@ -1,0 +1,6 @@
+input GenerateMetadataInput {
+  sprites: Boolean!
+  previews: Boolean!
+  markers: Boolean!
+  transcodes: Boolean!
+}

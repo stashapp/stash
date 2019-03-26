@@ -1,0 +1,29 @@
+type Studio {
+  id: ID!
+  checksum: String!
+  name: String!
+  url: String
+
+  image_path: String # Resolver
+  scene_count: Int # Resolver
+}
+
+input StudioCreateInput {
+  name: String!
+  url: String
+  """This should be base64 encoded"""
+  image: String!
+}
+
+input StudioUpdateInput {
+  id: ID!
+  name: String
+  url: String
+  """This should be base64 encoded"""
+  image: String
+}
+
+type FindStudiosResultType {
+  count: Int!
+  studios: [Studio!]!
+}

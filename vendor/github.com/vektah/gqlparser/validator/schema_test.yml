@@ -89,6 +89,18 @@ object types:
       message: 'Name "__bar" must not begin with "__", which is reserved by GraphQL introspection.'
       locations: [{line: 2, column: 7}]
 
+  - name: must not allow input object as field type 
+    input: |
+      input Input {
+        id: ID
+      }
+      type Query {
+        input: Input!
+      }
+    error:
+      message: 'OBJECT field must be one of SCALAR, OBJECT, INTERFACE, UNION, ENUM.'
+      locations: [{line: 5, column: 3}]
+
 interfaces:
   - name: must exist
     input: |
@@ -148,6 +160,121 @@ interfaces:
       message: 'Name "__FooBar" must not begin with "__", which is reserved by GraphQL introspection.'
       locations: [{line: 1, column: 11}]
 
+  - name: must not allow input object as field type 
+    input: |
+      input Input {
+        id: ID
+      }
+      type Query {
+        foo: Foo!
+      }
+      interface Foo {
+        input: Input!
+      }
+    error:
+      message: 'INTERFACE field must be one of SCALAR, OBJECT, INTERFACE, UNION, ENUM.'
+      locations: [{line: 8, column: 3}]
+
+  - name: must have all fields from interface
+    input: |
+      type Bar implements BarInterface {
+          someField: Int!
+      }
+
+      interface BarInterface {
+          id: ID!
+      }
+    error:
+      message: 'For Bar to implement BarInterface it must have a field called id.'
+      locations: [{line: 1, column: 6}]
+
+  - name: must have same type of fields
+    input: |
+      type Bar implements BarInterface {
+          id: Int!
+      }
+
+      interface BarInterface {
+          id: ID!
+      }
+    error:
+      message: 'For Bar to implement BarInterface the field id must have type ID!.'
+      locations: [{line: 2, column: 5}]
+
+  - name: must have all required arguments
+    input: |
+      type Bar implements BarInterface {
+          id: ID!
+      }
+
+      interface BarInterface {
+          id(ff: Int!): ID!
+      }
+    error:
+      message: 'For Bar to implement BarInterface the field id must have the same arguments but it is missing ff.'
+      locations: [{line: 2, column: 5}]
+
+  - name: must have same argument types
+    input: |
+      type Bar implements BarInterface {
+          id(ff: ID!): ID!
+      }
+
+      interface BarInterface {
+          id(ff: Int!): ID!
+      }
+    error:
+      message: 'For Bar to implement BarInterface the field id must have the same arguments but ff has the wrong type.'
+      locations: [{line: 2, column: 8}]
+
+  - name: may defined additional nullable arguments
+    input: |
+      type Bar implements BarInterface {
+          id(opt: Int): ID!
+      }
+
+      interface BarInterface {
+          id: ID!
+      }
+
+  - name: may defined additional required arguments with defaults
+    input: |
+      type Bar implements BarInterface {
+          id(opt: Int! = 1): ID!
+      }
+
+      interface BarInterface {
+          id: ID!
+      }
+
+  - name: must not define additional required arguments without defaults
+    input: |
+      type Bar implements BarInterface {
+          id(opt: Int!): ID!
+      }
+
+      interface BarInterface {
+          id: ID!
+      }
+    error:
+      message: 'For Bar to implement BarInterface any additional arguments on id must be optional or have a default value but opt is required.'
+      locations: [{line: 2, column: 8}]
+
+  - name: can have covariant argument types
+    input: |
+      union U = A|B
+
+      type A { name: String }
+      type B { name: String }
+
+      type Bar implements BarInterface {
+          f: A!
+      }
+
+      interface BarInterface {
+          f: U!
+      }
+
 inputs:
   - name: must define one or more input fields
     input: |
@@ -176,6 +303,70 @@ inputs:
     error:
       message: 'Name "__FooBar" must not begin with "__", which is reserved by GraphQL introspection.'
       locations: [{line: 1, column: 7}]
+
+  - name: fields cannot be Objects
+    input: |
+      type Object { id: ID }
+      input Foo { a: Object! }
+    error:
+      message: INPUT_OBJECT field must be one of SCALAR, ENUM, INPUT_OBJECT.
+      locations: [{line: 2, column: 13}]
+
+  - name: fields cannot be Interfaces
+    input: |
+      interface Interface { id: ID! }
+      input Foo { a: Interface! }
+    error:
+      message: INPUT_OBJECT field must be one of SCALAR, ENUM, INPUT_OBJECT.
+      locations: [{line: 2, column: 13}]
+
+  - name: fields cannot be Unions
+    input: |
+      type Object { id: ID }
+      union Union = Object
+      input Foo { a: Union! }
+    error:
+      message: INPUT_OBJECT field must be one of SCALAR, ENUM, INPUT_OBJECT.
+      locations: [{line: 3, column: 13}]
+
+args:
+  - name: Valid arg types
+    input: |
+        input Input { id: ID }
+        enum Enum { A }
+        scalar Scalar
+
+        type Query {
+          f(a: Input, b: Scalar, c: Enum): Boolean!
+        }
+
+  - name: Objects not allowed
+    input: |
+      type Object { id: ID }
+      type Query { f(a: Object): Boolean! }
+
+    error:
+      message: 'cannot use Object as argument a because OBJECT is not a valid input type'
+      locations: [{line: 2, column: 16}]
+
+  - name: Union not allowed
+    input: |
+      type Object { id: ID }
+      union Union = Object
+      type Query { f(a: Union): Boolean! }
+
+    error:
+      message: 'cannot use Union as argument a because UNION is not a valid input type'
+      locations: [{line: 3, column: 16}]
+
+  - name: Interface not allowed
+    input: |
+      interface Interface { id: ID }
+      type Query { f(a: Interface): Boolean! }
+
+    error:
+      message: 'cannot use Interface as argument a because INTERFACE is not a valid input type'
+      locations: [{line: 2, column: 16}]
 
 enums:
   - name: must define one or more unique enum values
@@ -206,6 +397,26 @@ enums:
     error:
       message: 'Name "__FooBar" must not begin with "__", which is reserved by GraphQL introspection.'
       locations: [{line: 1, column: 6}]
+
+unions:
+  - name: union types must be defined
+    input: |
+      union Foo = Bar | Baz
+      type Bar {
+        id: ID
+      }
+    error:
+      message: "Undefined type \"Baz\"."
+      locations: [{line: 1, column: 7}]
+  - name: union types must be objects
+    input: |
+      union Foo = Baz
+      interface Baz {
+        id: ID
+      }
+    error:
+      message: "UNION type \"Baz\" must be OBJECT."
+      locations: [{line: 1, column: 7}]
 
 type extensions:
   - name: cannot extend non existant types
@@ -257,6 +468,42 @@ directives:
     error:
       message: 'Name "__A" must not begin with "__", which is reserved by GraphQL introspection.'
       locations: [{line: 1, column: 12}]
+
+  - name: Valid arg types
+    input: |
+      input Input { id: ID }
+      enum Enum { A }
+      scalar Scalar
+
+      directive @A(a: Input, b: Scalar, c: Enum) on FIELD_DEFINITION
+
+  - name: Objects not allowed
+    input: |
+      type Object { id: ID }
+      directive @A(a: Object) on FIELD_DEFINITION
+
+    error:
+      message: 'cannot use Object as argument a because OBJECT is not a valid input type'
+      locations: [{line: 2, column: 14}]
+
+  - name: Union not allowed
+    input: |
+      type Object { id: ID }
+      union Union = Object
+      directive @A(a: Union) on FIELD_DEFINITION
+
+    error:
+      message: 'cannot use Union as argument a because UNION is not a valid input type'
+      locations: [{line: 3, column: 14}]
+
+  - name: Interface not allowed
+    input: |
+      interface Interface { id: ID }
+      directive @A(a: Interface) on FIELD_DEFINITION
+
+    error:
+      message: 'cannot use Interface as argument a because INTERFACE is not a valid input type'
+      locations: [{line: 2, column: 14}]
 
 entry points:
   - name: multiple schema entry points

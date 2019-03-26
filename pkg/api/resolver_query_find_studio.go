@@ -12,10 +12,10 @@ func (r *queryResolver) FindStudio(ctx context.Context, id string) (*models.Stud
 	return qb.Find(idInt, nil)
 }
 
-func (r *queryResolver) FindStudios(ctx context.Context, filter *models.FindFilterType) (models.FindStudiosResultType, error) {
+func (r *queryResolver) FindStudios(ctx context.Context, filter *models.FindFilterType) (*models.FindStudiosResultType, error) {
 	qb := models.NewStudioQueryBuilder()
 	studios, total := qb.Query(filter)
-	return models.FindStudiosResultType{
+	return &models.FindStudiosResultType{
 		Count:   total,
 		Studios: studios,
 	}, nil

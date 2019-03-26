@@ -1,0 +1,72 @@
+type Performer {
+  id: ID!
+  checksum: String!
+  name: String
+  url: String
+  twitter: String
+  instagram: String
+  birthdate: String
+  ethnicity: String
+  country: String
+  eye_color: String
+  height: String
+  measurements: String
+  fake_tits: String
+  career_length: String
+  tattoos: String
+  piercings: String
+  aliases: String
+  favorite: Boolean!
+
+  image_path: String # Resolver
+  scene_count: Int # Resolver
+  scenes: [Scene!]!
+}
+
+input PerformerCreateInput {
+  name: String
+  url: String
+  birthdate: String
+  ethnicity: String
+  country: String
+  eye_color: String
+  height: String
+  measurements: String
+  fake_tits: String
+  career_length: String
+  tattoos: String
+  piercings: String
+  aliases: String
+  twitter: String
+  instagram: String
+  favorite: Boolean
+  """This should be base64 encoded"""
+  image: String!
+}
+
+input PerformerUpdateInput {
+  id: ID!
+  name: String
+  url: String
+  birthdate: String
+  ethnicity: String
+  country: String
+  eye_color: String
+  height: String
+  measurements: String
+  fake_tits: String
+  career_length: String
+  tattoos: String
+  piercings: String
+  aliases: String
+  twitter: String
+  instagram: String
+  favorite: Boolean
+  """This should be base64 encoded"""
+  image: String
+}
+
+type FindPerformersResultType {
+  count: Int!
+  performers: [Performer!]!
+}

@@ -1,0 +1,7 @@
+type StatsResultType {
+  scene_count: Int!
+  gallery_count: Int!
+  performer_count: Int!
+  studio_count: Int!
+  tag_count: Int!
+}

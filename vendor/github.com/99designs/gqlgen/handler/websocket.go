@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/gorilla/websocket"
@@ -28,7 +29,7 @@ const (
 	dataMsg                = "data"                 // Server -> Client
 	errorMsg               = "error"                // Server -> Client
 	completeMsg            = "complete"             // Server -> Client
-	//connectionKeepAliveMsg = "ka"                 // Server -> Client  TODO: keepalives
+	connectionKeepAliveMsg = "ka"                   // Server -> Client
 )
 
 type operationMessage struct {
@@ -38,13 +39,14 @@ type operationMessage struct {
 }
 
 type wsConnection struct {
-	ctx    context.Context
-	conn   *websocket.Conn
-	exec   graphql.ExecutableSchema
-	active map[string]context.CancelFunc
-	mu     sync.Mutex
-	cfg    *Config
-	cache  *lru.Cache
+	ctx             context.Context
+	conn            *websocket.Conn
+	exec            graphql.ExecutableSchema
+	active          map[string]context.CancelFunc
+	mu              sync.Mutex
+	cfg             *Config
+	cache           *lru.Cache
+	keepAliveTicker *time.Ticker
 
 	initPayload InitPayload
 }
@@ -112,6 +114,20 @@ func (c *wsConnection) write(msg *operationMessage) {
 }
 
 func (c *wsConnection) run() {
+	// We create a cancellation that will shutdown the keep-alive when we leave
+	// this function.
+	ctx, cancel := context.WithCancel(c.ctx)
+	defer cancel()
+
+	// Create a timer that will fire every interval to keep the connection alive.
+	if c.cfg.connectionKeepAlivePingInterval != 0 {
+		c.mu.Lock()
+		c.keepAliveTicker = time.NewTicker(c.cfg.connectionKeepAlivePingInterval)
+		c.mu.Unlock()
+
+		go c.keepAlive(ctx)
+	}
+
 	for {
 		message := c.readOp()
 		if message == nil {
@@ -140,6 +156,18 @@ func (c *wsConnection) run() {
 			c.sendConnectionError("unexpected message %s", message.Type)
 			c.close(websocket.CloseProtocolError, "unexpected message")
 			return
+		}
+	}
+}
+
+func (c *wsConnection) keepAlive(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			c.keepAliveTicker.Stop()
+			return
+		case <-c.keepAliveTicker.C:
+			c.write(&operationMessage{Type: connectionKeepAliveMsg})
 		}
 	}
 }

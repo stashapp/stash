@@ -1,0 +1,59 @@
+type SceneFileType {
+  size: String
+  duration: Float
+  video_codec: String
+  audio_codec: String
+  width: Int
+  height: Int
+  framerate: Float
+  bitrate: Int
+}
+
+type ScenePathsType {
+  screenshot: String # Resolver
+  preview: String # Resolver
+  stream: String # Resolver
+  webp: String # Resolver
+  vtt: String # Resolver
+  chapters_vtt: String # Resolver
+}
+
+type Scene {
+  id: ID!
+  checksum: String!
+  title: String
+  details: String
+  url: String
+  date: String
+  rating: Int
+  path: String!
+
+  file: SceneFileType! # Resolver
+  paths: ScenePathsType! # Resolver
+  is_streamable: Boolean! # Resolver
+
+  scene_markers: [SceneMarker!]!
+  gallery: Gallery
+  studio: Studio
+  tags: [Tag!]!
+  performers: [Performer!]!
+}
+
+input SceneUpdateInput {
+  clientMutationId: String
+  id: ID!
+  title: String
+  details: String
+  url: String
+  date: String
+  rating: Int
+  studio_id: ID
+  gallery_id: ID
+  performer_ids: [ID!]
+  tag_ids: [ID!]
+}
+
+type FindScenesResultType {
+  count: Int!
+  scenes: [Scene!]!
+}

@@ -7,7 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func (r *queryResolver) Configuration(ctx context.Context) (models.ConfigResult, error) {
+func (r *queryResolver) Configuration(ctx context.Context) (*models.ConfigResult, error) {
 	return makeConfigResult(), nil
 }
 
@@ -19,14 +19,14 @@ func (r *queryResolver) Directories(ctx context.Context, path *string) ([]string
 	return utils.ListDir(dirPath), nil
 }
 
-func makeConfigResult() models.ConfigResult {
-	return models.ConfigResult{
-		General: makeConfigGeneralResult(),
+func makeConfigResult() *models.ConfigResult {
+	return &models.ConfigResult{
+		General: *makeConfigGeneralResult(),
 	}
 }
 
-func makeConfigGeneralResult() models.ConfigGeneralResult {
-	return models.ConfigGeneralResult{
+func makeConfigGeneralResult() *models.ConfigGeneralResult {
+	return &models.ConfigGeneralResult{
 		Stashes:       config.GetStashPaths(),
 		DatabasePath:  config.GetDatabasePath(),
 		GeneratedPath: config.GetGeneratedPath(),

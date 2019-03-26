@@ -1,0 +1,41 @@
+type SceneMarker {
+  id: ID!
+  scene: Scene!
+  title: String!
+  seconds: Float!
+  primary_tag: Tag!
+  tags: [Tag!]!
+
+  """The path to stream this marker"""
+  stream: String! # Resolver
+  """The path to the preview image for this marker"""
+  preview: String! # Resolver
+}
+
+input SceneMarkerCreateInput {
+  title: String!
+  seconds: Float!
+  scene_id: ID!
+  primary_tag_id: ID!
+  tag_ids: [ID!]
+}
+
+input SceneMarkerUpdateInput {
+  id: ID!
+  title: String!
+  seconds: Float!
+  scene_id: ID!
+  primary_tag_id: ID!
+  tag_ids: [ID!]
+}
+
+type FindSceneMarkersResultType {
+  count: Int!
+  scene_markers: [SceneMarker!]!
+}
+
+type MarkerStringsResultType {
+  count: Int!
+  id: ID!
+  title: String!
+}
