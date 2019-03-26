@@ -11,9 +11,12 @@ var page = template.Must(template.New("graphiql").Parse(`<!DOCTYPE html>
 	<meta charset=utf-8/>
 	<meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
 	<link rel="shortcut icon" href="https://graphcool-playground.netlify.com/favicon.png">
-	<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/graphql-playground-react@{{ .version }}/build/static/css/index.css"/>
-	<link rel="shortcut icon" href="//cdn.jsdelivr.net/npm/graphql-playground-react@{{ .version }}/build/favicon.png"/>
-	<script src="//cdn.jsdelivr.net/npm/graphql-playground-react@{{ .version }}/build/static/js/middleware.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/graphql-playground-react@{{ .version }}/build/static/css/index.css" 
+		integrity="{{ .cssSRI }}" crossorigin="anonymous"/>
+	<link rel="shortcut icon" href="https://cdn.jsdelivr.net/npm/graphql-playground-react@{{ .version }}/build/favicon.png"
+		integrity="{{ .faviconSRI }}" crossorigin="anonymous"/>
+	<script src="https://cdn.jsdelivr.net/npm/graphql-playground-react@{{ .version }}/build/static/js/middleware.js"
+		integrity="{{ .jsSRI }}" crossorigin="anonymous"></script>
 	<title>{{.title}}</title>
 </head>
 <body>
@@ -42,10 +45,14 @@ var page = template.Must(template.New("graphiql").Parse(`<!DOCTYPE html>
 
 func Playground(title string, endpoint string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "text/html")
 		err := page.Execute(w, map[string]string{
-			"title":    title,
-			"endpoint": endpoint,
-			"version":  "1.7.8",
+			"title":      title,
+			"endpoint":   endpoint,
+			"version":    "1.7.20",
+			"cssSRI":     "sha256-cS9Vc2OBt9eUf4sykRWukeFYaInL29+myBmFDSa7F/U=",
+			"faviconSRI": "sha256-GhTyE+McTU79R4+pRO6ih+4TfsTOrpPwD8ReKFzb3PM=",
+			"jsSRI":      "sha256-4QG1Uza2GgGdlBL3RCBCGtGeZB6bDbsw8OltCMGeJsA=",
 		})
 		if err != nil {
 			panic(err)

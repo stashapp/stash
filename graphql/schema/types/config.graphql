@@ -1,0 +1,22 @@
+input ConfigGeneralInput {
+  """Array of file paths to content"""
+  stashes: [String!]
+  """Path to the SQLite database"""
+  databasePath: String
+  """Path to generated files"""
+  generatedPath: String
+}
+
+type ConfigGeneralResult {
+  """Array of file paths to content"""
+  stashes: [String!]!
+  """Path to the SQLite database"""
+  databasePath: String!
+  """Path to generated files"""
+  generatedPath: String!
+}
+
+"""All configuration settings"""
+type ConfigResult {
+  general: ConfigGeneralResult!
+}

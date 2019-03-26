@@ -3,12 +3,7 @@ package api
 import (
 	"context"
 	"github.com/stashapp/stash/pkg/models"
-	"strconv"
 )
-
-func (r *tagResolver) ID(ctx context.Context, obj *models.Tag) (string, error) {
-	return strconv.Itoa(obj.ID), nil
-}
 
 func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (*int, error) {
 	qb := models.NewSceneQueryBuilder()

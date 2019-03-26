@@ -1,7 +1,7 @@
 module github.com/stashapp/stash
 
 require (
-	github.com/99designs/gqlgen v0.4.5-0.20190127090136-055fb4bc9a6a
+	github.com/99designs/gqlgen v0.8.2
 	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/bmatcuk/doublestar v1.1.1
 	github.com/disintegration/imaging v1.6.0
@@ -17,6 +17,6 @@ require (
 	github.com/sirupsen/logrus v1.3.0
 	github.com/spf13/afero v1.2.0 // indirect
 	github.com/spf13/viper v1.3.2
-	github.com/vektah/gqlparser v1.1.0
+	github.com/vektah/gqlparser v1.1.2
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2 // indirect
 )

@@ -14,7 +14,9 @@ type ExtendedError interface {
 
 func DefaultErrorPresenter(ctx context.Context, err error) *gqlerror.Error {
 	if gqlerr, ok := err.(*gqlerror.Error); ok {
-		gqlerr.Path = GetResolverContext(ctx).Path()
+		if gqlerr.Path == nil {
+			gqlerr.Path = GetResolverContext(ctx).Path()
+		}
 		return gqlerr
 	}
 

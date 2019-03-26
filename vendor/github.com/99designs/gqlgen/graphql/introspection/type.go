@@ -62,9 +62,9 @@ func (t *Type) Description() string {
 
 func (t *Type) Fields(includeDeprecated bool) []Field {
 	if t.def == nil || (t.def.Kind != ast.Object && t.def.Kind != ast.Interface) {
-		return nil
+		return []Field{}
 	}
-	var fields []Field
+	fields := []Field{}
 	for _, f := range t.def.Fields {
 		if strings.HasPrefix(f.Name, "__") {
 			continue
@@ -93,10 +93,10 @@ func (t *Type) Fields(includeDeprecated bool) []Field {
 
 func (t *Type) InputFields() []InputValue {
 	if t.def == nil || t.def.Kind != ast.InputObject {
-		return nil
+		return []InputValue{}
 	}
 
-	var res []InputValue
+	res := []InputValue{}
 	for _, f := range t.def.Fields {
 		res = append(res, InputValue{
 			Name:         f.Name,
@@ -118,10 +118,10 @@ func defaultValue(value *ast.Value) *string {
 
 func (t *Type) Interfaces() []Type {
 	if t.def == nil || t.def.Kind != ast.Object {
-		return nil
+		return []Type{}
 	}
 
-	var res []Type
+	res := []Type{}
 	for _, intf := range t.def.Interfaces {
 		res = append(res, *WrapTypeFromDef(t.schema, t.schema.Types[intf]))
 	}
@@ -131,10 +131,10 @@ func (t *Type) Interfaces() []Type {
 
 func (t *Type) PossibleTypes() []Type {
 	if t.def == nil || (t.def.Kind != ast.Interface && t.def.Kind != ast.Union) {
-		return nil
+		return []Type{}
 	}
 
-	var res []Type
+	res := []Type{}
 	for _, pt := range t.schema.GetPossibleTypes(t.def) {
 		res = append(res, *WrapTypeFromDef(t.schema, pt))
 	}
@@ -143,10 +143,10 @@ func (t *Type) PossibleTypes() []Type {
 
 func (t *Type) EnumValues(includeDeprecated bool) []EnumValue {
 	if t.def == nil || t.def.Kind != ast.Enum {
-		return nil
+		return []EnumValue{}
 	}
 
-	var res []EnumValue
+	res := []EnumValue{}
 	for _, val := range t.def.EnumValues {
 		res = append(res, EnumValue{
 			Name:        val.Name,

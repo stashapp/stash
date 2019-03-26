@@ -3,12 +3,7 @@ package api
 import (
 	"context"
 	"github.com/stashapp/stash/pkg/models"
-	"strconv"
 )
-
-func (r *galleryResolver) ID(ctx context.Context, obj *models.Gallery) (string, error) {
-	return strconv.Itoa(obj.ID), nil
-}
 
 func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*string, error) {
 	return nil, nil // TODO remove this from schema

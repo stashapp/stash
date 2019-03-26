@@ -1,0 +1,103 @@
+"""The query root for this schema"""
+type Query {
+  """Find a scene by ID or Checksum"""
+  findScene(id: ID, checksum: String): Scene
+  """A function which queries Scene objects"""
+  findScenes(scene_filter: SceneFilterType, scene_ids: [Int!], filter: FindFilterType): FindScenesResultType!
+
+  """A function which queries SceneMarker objects"""
+  findSceneMarkers(scene_marker_filter: SceneMarkerFilterType filter: FindFilterType): FindSceneMarkersResultType!
+
+  """Find a performer by ID"""
+  findPerformer(id: ID!): Performer
+  """A function which queries Performer objects"""
+  findPerformers(performer_filter: PerformerFilterType, filter: FindFilterType): FindPerformersResultType!
+
+  """Find a studio by ID"""
+  findStudio(id: ID!): Studio
+  """A function which queries Studio objects"""
+  findStudios(filter: FindFilterType): FindStudiosResultType!
+
+  findGallery(id: ID!): Gallery
+  findGalleries(filter: FindFilterType): FindGalleriesResultType!
+
+  findTag(id: ID!): Tag
+
+  """Retrieve random scene markers for the wall"""
+  markerWall(q: String): [SceneMarker!]!
+  """Retrieve random scenes for the wall"""
+  sceneWall(q: String): [Scene!]!
+
+  """Get marker strings"""
+  markerStrings(q: String, sort: String): [MarkerStringsResultType]!
+  """Get the list of valid galleries for a given scene ID"""
+  validGalleriesForScene(scene_id: ID): [Gallery!]!
+  """Get stats"""
+  stats: StatsResultType!
+  """Organize scene markers by tag for a given scene ID"""
+  sceneMarkerTags(scene_id: ID!): [SceneMarkerTag!]!
+
+  # Scrapers
+
+  """Scrape a performer using Freeones"""
+  scrapeFreeones(performer_name: String!): ScrapedPerformer
+  """Scrape a list of performers from a query"""
+  scrapeFreeonesPerformerList(query: String!): [String!]!
+
+  # Config
+  """Returns the current, complete configuration"""
+  configuration: ConfigResult!
+  """Returns an array of paths for the given path"""
+  directories(path: String): [String!]!
+
+  # Metadata
+
+  """Start an import. Returns the job ID"""
+  metadataImport: String!
+  """Start an export. Returns the job ID"""
+  metadataExport: String!
+  """Start a scan. Returns the job ID"""
+  metadataScan: String!
+  """Start generating content. Returns the job ID"""
+  metadataGenerate(input: GenerateMetadataInput!): String!
+  """Clean metadata. Returns the job ID"""
+  metadataClean: String!
+
+  # Get everything
+
+  allPerformers: [Performer!]!
+  allStudios: [Studio!]!
+  allTags: [Tag!]!
+}
+
+type Mutation {
+  sceneUpdate(input: SceneUpdateInput!): Scene
+
+  sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
+  sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
+  sceneMarkerDestroy(id: ID!): Boolean!
+
+  performerCreate(input: PerformerCreateInput!): Performer
+  performerUpdate(input: PerformerUpdateInput!): Performer
+
+  studioCreate(input: StudioCreateInput!): Studio
+  studioUpdate(input: StudioUpdateInput!): Studio
+
+  tagCreate(input: TagCreateInput!): Tag
+  tagUpdate(input: TagUpdateInput!): Tag
+  tagDestroy(input: TagDestroyInput!): Boolean!
+
+  """Change general configuration options"""
+  configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
+}
+
+type Subscription {
+  """Update from the metadata manager"""
+  metadataUpdate: String!
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}

@@ -4,12 +4,7 @@ import (
 	"context"
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
-	"strconv"
 )
-
-func (r *performerResolver) ID(ctx context.Context, obj *models.Performer) (string, error) {
-	return strconv.Itoa(obj.ID), nil
-}
 
 func (r *performerResolver) Name(ctx context.Context, obj *models.Performer) (*string, error) {
 	if obj.Name.Valid {

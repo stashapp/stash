@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 )
 
-func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.ConfigGeneralInput) (models.ConfigGeneralResult, error) {
+func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.ConfigGeneralInput) (*models.ConfigGeneralResult, error) {
 	if len(input.Stashes) > 0 {
 		for _, stashPath := range input.Stashes {
 			exists, err := utils.DirExists(stashPath)

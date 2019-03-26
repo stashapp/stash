@@ -1,0 +1,20 @@
+type Tag {
+  id: ID!
+  name: String!
+
+  scene_count: Int # Resolver
+  scene_marker_count: Int # Resolver
+}
+
+input TagCreateInput {
+  name: String!
+}
+
+input TagUpdateInput {
+  id: ID!
+  name: String!
+}
+
+input TagDestroyInput {
+  id: ID!
+}

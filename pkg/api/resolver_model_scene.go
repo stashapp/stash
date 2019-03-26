@@ -6,12 +6,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"strconv"
 )
-
-func (r *sceneResolver) ID(ctx context.Context, obj *models.Scene) (string, error) {
-	return strconv.Itoa(obj.ID), nil
-}
 
 func (r *sceneResolver) Title(ctx context.Context, obj *models.Scene) (*string, error) {
 	if obj.Title.Valid {
@@ -50,11 +45,11 @@ func (r *sceneResolver) Rating(ctx context.Context, obj *models.Scene) (*int, er
 	return nil, nil
 }
 
-func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (models.SceneFileType, error) {
+func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.SceneFileType, error) {
 	width := int(obj.Width.Int64)
 	height := int(obj.Height.Int64)
 	bitrate := int(obj.Bitrate.Int64)
-	return models.SceneFileType{
+	return &models.SceneFileType{
 		Size:       &obj.Size.String,
 		Duration:   &obj.Duration.Float64,
 		VideoCodec: &obj.VideoCodec.String,
@@ -66,7 +61,7 @@ func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (models.Sce
 	}, nil
 }
 
-func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (models.ScenePathsType, error) {
+func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.ScenePathsType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
 	screenshotPath := builder.GetScreenshotURL()
@@ -75,7 +70,7 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (models.Sc
 	webpPath := builder.GetStreamPreviewImageURL()
 	vttPath := builder.GetSpriteVTTURL()
 	chaptersVttPath := builder.GetChaptersVTTURL()
-	return models.ScenePathsType{
+	return &models.ScenePathsType{
 		Screenshot:  &screenshotPath,
 		Preview:     &previewPath,
 		Stream:      &streamPath,

@@ -1,0 +1,21 @@
+"""Gallery type"""
+type Gallery {
+  id: ID!
+  checksum: String!
+  path: String!
+  title: String
+
+  """The files in the gallery"""
+  files: [GalleryFilesType!]! # Resolver
+}
+
+type GalleryFilesType {
+  index: Int!
+  name: String
+  path: String
+}
+
+type FindGalleriesResultType {
+  count: Int!
+  galleries: [Gallery!]!
+}

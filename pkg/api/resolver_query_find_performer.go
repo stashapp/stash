@@ -12,10 +12,10 @@ func (r *queryResolver) FindPerformer(ctx context.Context, id string) (*models.P
 	return qb.Find(idInt)
 }
 
-func (r *queryResolver) FindPerformers(ctx context.Context, performer_filter *models.PerformerFilterType, filter *models.FindFilterType) (models.FindPerformersResultType, error) {
+func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *models.PerformerFilterType, filter *models.FindFilterType) (*models.FindPerformersResultType, error) {
 	qb := models.NewPerformerQueryBuilder()
-	performers, total := qb.Query(performer_filter, filter)
-	return models.FindPerformersResultType{
+	performers, total := qb.Query(performerFilter, filter)
+	return &models.FindPerformersResultType{
 		Count:      total,
 		Performers: performers,
 	}, nil
