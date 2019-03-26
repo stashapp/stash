@@ -90,6 +90,9 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 		images = append(images, img)
 	}
 
+	if len(images) == 0 {
+		return fmt.Errorf("images slice is empty, failed to generate sprite images for %s", g.Info.VideoFile.Path)
+	}
 	width := images[0].Bounds().Size().X
 	height := images[0].Bounds().Size().Y
 	canvasWidth := width * g.Columns
