@@ -3,27 +3,30 @@ package jsonschema
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stashapp/stash/pkg/models"
 	"os"
 )
 
 type Performer struct {
-	Name         string `json:"name,omitempty"`
-	URL          string `json:"url,omitempty"`
-	Twitter      string `json:"twitter,omitempty"`
-	Instagram    string `json:"instagram,omitempty"`
-	Birthdate    string `json:"birthdate,omitempty"`
-	Ethnicity    string `json:"ethnicity,omitempty"`
-	Country      string `json:"country,omitempty"`
-	EyeColor     string `json:"eye_color,omitempty"`
-	Height       string `json:"height,omitempty"`
-	Measurements string `json:"measurements,omitempty"`
-	FakeTits     string `json:"fake_tits,omitempty"`
-	CareerLength string `json:"career_length,omitempty"`
-	Tattoos      string `json:"tattoos,omitempty"`
-	Piercings    string `json:"piercings,omitempty"`
-	Aliases      string `json:"aliases,omitempty"`
-	Favorite     bool   `json:"favorite,omitempty"`
-	Image        string `json:"image,omitempty"`
+	Name         string          `json:"name,omitempty"`
+	URL          string          `json:"url,omitempty"`
+	Twitter      string          `json:"twitter,omitempty"`
+	Instagram    string          `json:"instagram,omitempty"`
+	Birthdate    string          `json:"birthdate,omitempty"`
+	Ethnicity    string          `json:"ethnicity,omitempty"`
+	Country      string          `json:"country,omitempty"`
+	EyeColor     string          `json:"eye_color,omitempty"`
+	Height       string          `json:"height,omitempty"`
+	Measurements string          `json:"measurements,omitempty"`
+	FakeTits     string          `json:"fake_tits,omitempty"`
+	CareerLength string          `json:"career_length,omitempty"`
+	Tattoos      string          `json:"tattoos,omitempty"`
+	Piercings    string          `json:"piercings,omitempty"`
+	Aliases      string          `json:"aliases,omitempty"`
+	Favorite     bool            `json:"favorite,omitempty"`
+	Image        string          `json:"image,omitempty"`
+	CreatedAt    models.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt    models.JSONTime `json:"updated_at,omitempty"`
 }
 
 func LoadPerformerFile(filePath string) (*Performer, error) {

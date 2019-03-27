@@ -60,7 +60,10 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		logger.Progressf("[scenes] %d of %d", index, len(scenes))
 
 		t.Mappings.Scenes = append(t.Mappings.Scenes, jsonschema.PathMapping{Path: scene.Path, Checksum: scene.Checksum})
-		newSceneJSON := jsonschema.Scene{}
+		newSceneJSON := jsonschema.Scene{
+			CreatedAt: models.JSONTime{Time: scene.CreatedAt.Timestamp},
+			UpdatedAt: models.JSONTime{Time: scene.UpdatedAt.Timestamp},
+		}
 
 		var studioName string
 		if scene.StudioID.Valid {
@@ -129,6 +132,8 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 				Seconds:    t.getDecimalString(sceneMarker.Seconds),
 				PrimaryTag: primaryTag.Name,
 				Tags:       t.getTagNames(sceneMarkerTags),
+				CreatedAt:  models.JSONTime{Time: sceneMarker.CreatedAt.Timestamp},
+				UpdatedAt:  models.JSONTime{Time: sceneMarker.UpdatedAt.Timestamp},
 			}
 
 			newSceneJSON.Markers = append(newSceneJSON.Markers, sceneMarkerJSON)
@@ -208,7 +213,10 @@ func (t *ExportTask) ExportPerformers(ctx context.Context) {
 
 		t.Mappings.Performers = append(t.Mappings.Performers, jsonschema.NameMapping{Name: performer.Name.String, Checksum: performer.Checksum})
 
-		newPerformerJSON := jsonschema.Performer{}
+		newPerformerJSON := jsonschema.Performer{
+			CreatedAt: models.JSONTime{Time: performer.CreatedAt.Timestamp},
+			UpdatedAt: models.JSONTime{Time: performer.UpdatedAt.Timestamp},
+		}
 
 		if performer.Name.Valid {
 			newPerformerJSON.Name = performer.Name.String
@@ -291,7 +299,10 @@ func (t *ExportTask) ExportStudios(ctx context.Context) {
 
 		t.Mappings.Studios = append(t.Mappings.Studios, jsonschema.NameMapping{Name: studio.Name.String, Checksum: studio.Checksum})
 
-		newStudioJSON := jsonschema.Studio{}
+		newStudioJSON := jsonschema.Studio{
+			CreatedAt: models.JSONTime{Time: studio.CreatedAt.Timestamp},
+			UpdatedAt: models.JSONTime{Time: studio.UpdatedAt.Timestamp},
+		}
 
 		if studio.Name.Valid {
 			newStudioJSON.Name = studio.Name.String

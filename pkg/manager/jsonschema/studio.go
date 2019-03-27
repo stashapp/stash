@@ -3,13 +3,16 @@ package jsonschema
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stashapp/stash/pkg/models"
 	"os"
 )
 
 type Studio struct {
-	Name  string `json:"name,omitempty"`
-	URL   string `json:"url,omitempty"`
-	Image string `json:"image,omitempty"`
+	Name      string          `json:"name,omitempty"`
+	URL       string          `json:"url,omitempty"`
+	Image     string          `json:"image,omitempty"`
+	CreatedAt models.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt models.JSONTime `json:"updated_at,omitempty"`
 }
 
 func LoadStudioFile(filePath string) (*Studio, error) {

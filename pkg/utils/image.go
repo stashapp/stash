@@ -6,6 +6,8 @@ import (
 	"regexp"
 )
 
+// ProcessBase64Image transforms a base64 encoded string from a form post and returns the MD5 hash of the data and the
+// image itself as a byte slice.
 func ProcessBase64Image(imageString string) (string, []byte, error) {
 	if imageString == "" {
 		return "", nil, fmt.Errorf("empty image string")
@@ -27,10 +29,12 @@ func ProcessBase64Image(imageString string) (string, []byte, error) {
 	return MD5FromBytes(imageData), imageData, nil
 }
 
+// GetDataFromBase64String returns the given base64 encoded string as a byte slice
 func GetDataFromBase64String(encodedString string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(encodedString)
 }
 
+// GetBase64StringFromData returns the given byte slice as a base64 encoded string
 func GetBase64StringFromData(data []byte) string {
 	return base64.StdEncoding.EncodeToString(data)
 
