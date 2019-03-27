@@ -21,7 +21,7 @@ func (s *singleton) Scan() {
 
 		var results []string
 		for _, path := range config.GetStashPaths() {
-			globPath := filepath.Join(path, "**/*.{zip,m4v,mp4,mov,wmv,avi}")
+			globPath := filepath.Join(path, "**/*.{zip,m4v,mp4,mov,wmv,avi,mpg,mpeg,rmvb,rm,flv,asf,mkv,webm}") // TODO: Make this configurable
 			globResults, _ := doublestar.Glob(globPath)
 			results = append(results, globResults...)
 		}

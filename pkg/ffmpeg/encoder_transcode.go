@@ -14,6 +14,7 @@ func (e *Encoder) Transcode(probeResult VideoFile, options TranscodeOptions) {
 		"-crf", "23",
 		"-vf", "scale=iw:-2",
 		"-c:a", "aac",
+		"-strict", "-2",
 		options.OutputPath,
 	}
 	_, _ = e.run(probeResult, args)

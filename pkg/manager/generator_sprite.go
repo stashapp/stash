@@ -81,6 +81,7 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 	// Combine all of the thumbnails into a sprite image
 	globPath := filepath.Join(instance.Paths.Generated.Tmp, "thumbnail*.jpg")
 	imagePaths, _ := doublestar.Glob(globPath)
+	utils.NaturalSort(imagePaths)
 	var images []image.Image
 	for _, imagePath := range imagePaths {
 		img, err := imaging.Open(imagePath)
