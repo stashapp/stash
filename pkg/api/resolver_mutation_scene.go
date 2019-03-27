@@ -114,37 +114,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.S
 		UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
-	// Start the transaction and save the scene marker
-	tx := database.DB.MustBeginTx(ctx, nil)
-	smqb := models.NewSceneMarkerQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
-	sceneMarker, err := smqb.Create(newSceneMarker, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Save the marker tags
-	var markerTagJoins []models.SceneMarkersTags
-	for _, tid := range input.TagIds {
-		tagID, _ := strconv.Atoi(tid)
-		markerTag := models.SceneMarkersTags{
-			SceneMarkerID: sceneMarker.ID,
-			TagID:         tagID,
-		}
-		markerTagJoins = append(markerTagJoins, markerTag)
-	}
-	if err := jqb.CreateSceneMarkersTags(markerTagJoins, tx); err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
-		return nil, err
-	}
-
-	return sceneMarker, nil
+	return changeMarker(ctx, create, newSceneMarker, input.TagIds)
 }
 
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.SceneMarkerUpdateInput) (*models.SceneMarker, error) {
@@ -161,37 +131,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 		UpdatedAt:    models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 
-	// Start the transaction and save the scene marker
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneMarkerQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
-	sceneMarker, err := qb.Update(updatedSceneMarker, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Save the marker tags
-	var markerTagJoins []models.SceneMarkersTags
-	for _, tid := range input.TagIds {
-		tagID, _ := strconv.Atoi(tid)
-		markerTag := models.SceneMarkersTags{
-			SceneMarkerID: sceneMarkerID,
-			TagID:         tagID,
-		}
-		markerTagJoins = append(markerTagJoins, markerTag)
-	}
-	if err := jqb.UpdateSceneMarkersTags(sceneMarkerID, markerTagJoins, tx); err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
-		return nil, err
-	}
-
-	return sceneMarker, nil
+	return changeMarker(ctx, update, updatedSceneMarker, input.TagIds)
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
@@ -205,4 +145,57 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 		return false, err
 	}
 	return true, nil
+}
+
+func changeMarker(ctx context.Context, changeType int, changedMarker models.SceneMarker, tagIds []string) (*models.SceneMarker, error) {
+	// Start the transaction and save the scene marker
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewSceneMarkerQueryBuilder()
+	jqb := models.NewJoinsQueryBuilder()
+
+	var sceneMarker *models.SceneMarker
+	var err error
+	switch changeType {
+	case create:
+		sceneMarker, err = qb.Create(changedMarker, tx)
+	case update:
+		sceneMarker, err = qb.Update(changedMarker, tx)
+	}
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+
+	// Save the marker tags
+	var markerTagJoins []models.SceneMarkersTags
+	for _, tid := range tagIds {
+		tagID, _ := strconv.Atoi(tid)
+		if int64(tagID) == changedMarker.PrimaryTagID.Int64 {
+			continue // If this tag is the primary tag, then let's not add it.
+		}
+		markerTag := models.SceneMarkersTags{
+			SceneMarkerID: sceneMarker.ID,
+			TagID:         tagID,
+		}
+		markerTagJoins = append(markerTagJoins, markerTag)
+	}
+	switch changeType {
+	case create:
+		if err := jqb.CreateSceneMarkersTags(markerTagJoins, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	case update:
+		if err := jqb.UpdateSceneMarkersTags(changedMarker.ID, markerTagJoins, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return sceneMarker, nil
 }
