@@ -28,6 +28,7 @@ func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePre
 		"-vf", fmt.Sprintf("scale=%v:-2", options.Width),
 		"-c:a", "aac",
 		"-b:a", "128k",
+		"-strict", "-2",
 		options.OutputPath,
 	}
 	_, _ = e.run(probeResult, args)
