@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 )
 
+// FileType uses the filetype package to determine the given file path's type
 func FileType(filePath string) (types.Type, error) {
 	file, _ := os.Open(filePath)
 
@@ -20,6 +21,7 @@ func FileType(filePath string) (types.Type, error) {
 	return filetype.Match(head)
 }
 
+// FileExists returns true if the given path exists
 func FileExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -31,6 +33,7 @@ func FileExists(path string) (bool, error) {
 	}
 }
 
+// DirExists returns true if the given path exists and is a directory
 func DirExists(path string) (bool, error) {
 	exists, _ := FileExists(path)
 	fileInfo, _ := os.Stat(path)
@@ -40,6 +43,7 @@ func DirExists(path string) (bool, error) {
 	return true, nil
 }
 
+// Touch creates an empty file at the given path if it doesn't already exist
 func Touch(path string) error {
 	var _, err = os.Stat(path)
 	if os.IsNotExist(err) {
@@ -52,6 +56,7 @@ func Touch(path string) error {
 	return nil
 }
 
+// EnsureDir will create a directory at the given path if it doesn't already exist
 func EnsureDir(path string) error {
 	exists, err := FileExists(path)
 	if !exists {
@@ -61,10 +66,12 @@ func EnsureDir(path string) error {
 	return err
 }
 
+// RemoveDir removes the given file path along with all of its contents
 func RemoveDir(path string) error {
 	return os.RemoveAll(path)
 }
 
+// EmptyDir will recursively remove the contents of a directory at the given path
 func EmptyDir(path string) error {
 	d, err := os.Open(path)
 	if err != nil {
@@ -87,6 +94,7 @@ func EmptyDir(path string) error {
 	return nil
 }
 
+// ListDir will return the contents of a given directory path as a string slice
 func ListDir(path string) []string {
 	if path == "" {
 		path = GetHomeDirectory()
@@ -117,6 +125,7 @@ func ListDir(path string) []string {
 	return dirPaths
 }
 
+// GetHomeDirectory returns the path of the user's home directory.  ~ on Unix and C:\Users\UserName on Windows
 func GetHomeDirectory() string {
 	currentUser, err := user.Current()
 	if err != nil {

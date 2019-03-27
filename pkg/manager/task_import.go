@@ -73,13 +73,12 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 		}
 
 		// Populate a new performer from the input
-		currentTime := time.Now()
 		newPerformer := models.Performer{
 			Image:     imageData,
 			Checksum:  checksum,
 			Favorite:  sql.NullBool{Bool: performerJSON.Favorite, Valid: true},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(performerJSON.CreatedAt)},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(performerJSON.UpdatedAt)},
 		}
 
 		if performerJSON.Name != "" {
@@ -169,14 +168,13 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 		}
 
 		// Populate a new studio from the input
-		currentTime := time.Now()
 		newStudio := models.Studio{
 			Image:     imageData,
 			Checksum:  checksum,
 			Name:      sql.NullString{String: studioJSON.Name, Valid: true},
 			URL:       sql.NullString{String: studioJSON.URL, Valid: true},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(studioJSON.CreatedAt)},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(studioJSON.UpdatedAt)},
 		}
 
 		_, err = qb.Create(newStudio, tx)
@@ -308,12 +306,6 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 		index := i + 1
 		logger.Progressf("[scraped sites] %d of %d", index, len(t.Mappings.Scenes))
 
-		var updatedAt time.Time
-		if currentTime.Location() != nil {
-			updatedAt = mappingJSON.UpdatedAt.Time.In(currentTime.Location())
-		} else {
-			updatedAt = mappingJSON.UpdatedAt.Time
-		}
 		newScrapedItem := models.ScrapedItem{
 			Title:           sql.NullString{String: mappingJSON.Title, Valid: true},
 			Description:     sql.NullString{String: mappingJSON.Description, Valid: true},
@@ -328,7 +320,7 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 			VideoFilename:   sql.NullString{String: mappingJSON.VideoFilename, Valid: true},
 			VideoURL:        sql.NullString{String: mappingJSON.VideoURL, Valid: true},
 			CreatedAt:       models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt:       models.SQLiteTimestamp{Timestamp: updatedAt},
+			UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
 		}
 
 		studio, err := sqb.FindByName(mappingJSON.Studio, tx)
@@ -356,7 +348,6 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewSceneQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
-	currentTime := time.Now()
 
 	for i, mappingJSON := range t.Mappings.Scenes {
 		index := i + 1
@@ -369,10 +360,8 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		logger.Progressf("[scenes] %d of %d", index, len(t.Mappings.Scenes))
 
 		newScene := models.Scene{
-			Checksum:  mappingJSON.Checksum,
-			Path:      mappingJSON.Path,
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			Checksum: mappingJSON.Checksum,
+			Path:     mappingJSON.Path,
 		}
 
 		sceneJSON, err := instance.JSON.getScene(mappingJSON.Checksum)
@@ -398,6 +387,8 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			if sceneJSON.Rating != 0 {
 				newScene.Rating = sql.NullInt64{Int64: int64(sceneJSON.Rating), Valid: true}
 			}
+			newScene.CreatedAt = models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(sceneJSON.CreatedAt)}
+			newScene.UpdatedAt = models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(sceneJSON.UpdatedAt)}
 
 			if sceneJSON.File != nil {
 				if sceneJSON.File.Size != "" {
@@ -520,8 +511,8 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 					Title:     marker.Title,
 					Seconds:   seconds,
 					SceneID:   sql.NullInt64{Int64: int64(scene.ID), Valid: true},
-					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-					UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+					CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(marker.CreatedAt)},
+					UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(marker.UpdatedAt)},
 				}
 
 				primaryTag, err := tqb.FindByName(marker.PrimaryTag, tx)
@@ -635,4 +626,22 @@ func (t *ImportTask) getUnique(s []string) []string {
 		j++
 	}
 	return s[:j]
+}
+
+var currentLocation = time.Now().Location()
+
+func (t *ImportTask) getTimeFromJSONTime(jsonTime models.JSONTime) time.Time {
+	if currentLocation != nil {
+		if jsonTime.IsZero() {
+			return time.Now().In(currentLocation)
+		} else {
+			return jsonTime.Time.In(currentLocation)
+		}
+	} else {
+		if jsonTime.IsZero() {
+			return time.Now()
+		} else {
+			return jsonTime.Time
+		}
+	}
 }

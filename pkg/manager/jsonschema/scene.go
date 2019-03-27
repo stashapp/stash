@@ -3,14 +3,17 @@ package jsonschema
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/stashapp/stash/pkg/models"
 	"os"
 )
 
 type SceneMarker struct {
-	Title      string   `json:"title,omitempty"`
-	Seconds    string   `json:"seconds,omitempty"`
-	PrimaryTag string   `json:"primary_tag,omitempty"`
-	Tags       []string `json:"tags,omitempty"`
+	Title      string          `json:"title,omitempty"`
+	Seconds    string          `json:"seconds,omitempty"`
+	PrimaryTag string          `json:"primary_tag,omitempty"`
+	Tags       []string        `json:"tags,omitempty"`
+	CreatedAt  models.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt  models.JSONTime `json:"updated_at,omitempty"`
 }
 
 type SceneFile struct {
@@ -25,17 +28,19 @@ type SceneFile struct {
 }
 
 type Scene struct {
-	Title      string        `json:"title,omitempty"`
-	Studio     string        `json:"studio,omitempty"`
-	URL        string        `json:"url,omitempty"`
-	Date       string        `json:"date,omitempty"`
-	Rating     int           `json:"rating,omitempty"`
-	Details    string        `json:"details,omitempty"`
-	Gallery    string        `json:"gallery,omitempty"`
-	Performers []string      `json:"performers,omitempty"`
-	Tags       []string      `json:"tags,omitempty"`
-	Markers    []SceneMarker `json:"markers,omitempty"`
-	File       *SceneFile    `json:"file,omitempty"`
+	Title      string          `json:"title,omitempty"`
+	Studio     string          `json:"studio,omitempty"`
+	URL        string          `json:"url,omitempty"`
+	Date       string          `json:"date,omitempty"`
+	Rating     int             `json:"rating,omitempty"`
+	Details    string          `json:"details,omitempty"`
+	Gallery    string          `json:"gallery,omitempty"`
+	Performers []string        `json:"performers,omitempty"`
+	Tags       []string        `json:"tags,omitempty"`
+	Markers    []SceneMarker   `json:"markers,omitempty"`
+	File       *SceneFile      `json:"file,omitempty"`
+	CreatedAt  models.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt  models.JSONTime `json:"updated_at,omitempty"`
 }
 
 func LoadSceneFile(filePath string) (*Scene, error) {
