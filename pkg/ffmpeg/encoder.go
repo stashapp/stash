@@ -4,11 +4,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"io/ioutil"
 	"os/exec"
-	"regexp"
-	"strconv"
 )
-
-var progressRegex = regexp.MustCompile(`time=(\d+):(\d+):(\d+.\d+)`)
 
 type Encoder struct {
 	Path string
@@ -42,15 +38,8 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 		n, err := stderr.Read(buf)
 		if n > 0 {
 			data := string(buf[0:n])
-			regexResult := progressRegex.FindStringSubmatch(data)
-			if len(regexResult) == 4 && probeResult.Duration > 0 {
-				h, _ := strconv.ParseFloat(regexResult[1], 64)
-				m, _ := strconv.ParseFloat(regexResult[2], 64)
-				s, _ := strconv.ParseFloat(regexResult[3], 64)
-				hours := h * 3600
-				mins := m * 60
-				secs := s
-				time := hours + mins + secs
+			time := GetTimeFromRegex(data)
+			if time > 0 && probeResult.Duration > 0 {
 				progress := time / probeResult.Duration
 				logger.Infof("Progress %.2f", progress)
 			}

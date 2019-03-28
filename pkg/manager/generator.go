@@ -6,8 +6,8 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
+	"math"
 	"os/exec"
-	"regexp"
 	"runtime"
 	"strconv"
 )
@@ -44,10 +44,15 @@ func (g *GeneratorInfo) configure() error {
 	} else {
 		framerate = g.VideoFile.FrameRate
 	}
-	g.FrameRate = framerate
 
 	numberOfFrames, _ := strconv.Atoi(videoStream.NbFrames)
-	if numberOfFrames == 0 {
+
+	if numberOfFrames == 0 && framerate > 0 && g.VideoFile.Duration > 0 { // TODO: test
+		numberOfFrames = int(framerate * g.VideoFile.Duration)
+	}
+
+	// If we are missing the frame count or frame rate then seek through the file and extract the info with regex
+	if numberOfFrames == 0 || framerate == 0 {
 		args := []string{
 			"-nostats",
 			"-i", g.VideoFile.Path,
@@ -65,25 +70,28 @@ func (g *GeneratorInfo) configure() error {
 		var stdErrBuffer bytes.Buffer
 		command.Stderr = &stdErrBuffer // Frames go to stderr rather than stdout
 		if err := command.Run(); err == nil {
-			re := regexp.MustCompile(`frame[=] ([0-9]+)`)
-			frames := re.FindStringSubmatch(stdErrBuffer.String())
-			if frames != nil && len(frames) > 1 {
-				numberOfFrames, _ = strconv.Atoi(frames[1])
+			stdErrString := stdErrBuffer.String()
+			if numberOfFrames == 0 {
+				numberOfFrames = ffmpeg.GetFrameFromRegex(stdErrString)
+			}
+			if framerate == 0 {
+				time := ffmpeg.GetTimeFromRegex(stdErrString)
+				framerate = math.Round((float64(numberOfFrames)/time)*100) / 100
 			}
 		}
 	}
-	if numberOfFrames == 0 { // TODO: test
-		numberOfFrames = int(framerate * g.VideoFile.Duration)
-	}
-	if numberOfFrames == 0 {
+
+	// Something seriously wrong with this file
+	if numberOfFrames == 0 || framerate == 0 {
 		logger.Errorf(
-			"number of frames is 0.  nb_frames <%s> framerate <%s> duration <%s>",
+			"number of frames or framerate is 0.  nb_frames <%s> framerate <%s> duration <%s>",
 			videoStream.NbFrames,
 			framerate,
 			g.VideoFile.Duration,
-			)
+		)
 	}
 
+	g.FrameRate = framerate
 	g.NumberOfFrames = numberOfFrames
 	g.NthFrame = g.NumberOfFrames / g.ChunkCount
 
