@@ -4,6 +4,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"io/ioutil"
 	"os/exec"
+	"strings"
 )
 
 type Encoder struct {
@@ -53,6 +54,7 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 	stdoutString := string(stdoutData)
 
 	if err := cmd.Wait(); err != nil {
+		logger.Errorf("ffmpeg error when running command <%s>", strings.Join(cmd.Args, " "))
 		return stdoutString, err
 	}
 
