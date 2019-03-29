@@ -20,6 +20,7 @@ func (e *Encoder) SceneMarkerVideo(probeResult VideoFile, options SceneMarkerOpt
 		"-i", probeResult.Path,
 		"-max_muxing_queue_size", "1024", // https://trac.ffmpeg.org/ticket/6375
 		"-c:v", "libx264",
+		"-pix_fmt", "yuv420p",
 		"-profile:v", "high",
 		"-level", "4.2",
 		"-preset", "veryslow",

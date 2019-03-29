@@ -8,6 +8,7 @@ func (e *Encoder) Transcode(probeResult VideoFile, options TranscodeOptions) {
 	args := []string{
 		"-i", probeResult.Path,
 		"-c:v", "libx264",
+		"-pix_fmt", "yuv420p",
 		"-profile:v", "high",
 		"-level", "4.2",
 		"-preset", "superfast",
