@@ -74,7 +74,7 @@ func (g *GeneratorInfo) configure() error {
 			if numberOfFrames == 0 {
 				numberOfFrames = ffmpeg.GetFrameFromRegex(stdErrString)
 			}
-			if framerate == 0 {
+			if utils.IsValidFloat64(framerate) {
 				time := ffmpeg.GetTimeFromRegex(stdErrString)
 				framerate = math.Round((float64(numberOfFrames)/time)*100) / 100
 			}
