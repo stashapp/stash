@@ -20,6 +20,7 @@ func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePre
 		"-i", probeResult.Path,
 		"-y",
 		"-c:v", "libx264",
+		"-pix_fmt", "yuv420p",
 		"-profile:v", "high",
 		"-level", "4.2",
 		"-preset", "veryslow",
