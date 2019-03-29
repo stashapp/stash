@@ -47,12 +47,12 @@ func (g *GeneratorInfo) configure() error {
 
 	numberOfFrames, _ := strconv.Atoi(videoStream.NbFrames)
 
-	if numberOfFrames == 0 && framerate > 0 && g.VideoFile.Duration > 0 { // TODO: test
+	if numberOfFrames == 0 && utils.IsValidFloat64(framerate) && g.VideoFile.Duration > 0 { // TODO: test
 		numberOfFrames = int(framerate * g.VideoFile.Duration)
 	}
 
 	// If we are missing the frame count or frame rate then seek through the file and extract the info with regex
-	if numberOfFrames == 0 || framerate == 0 {
+	if numberOfFrames == 0 || !utils.IsValidFloat64(framerate) {
 		args := []string{
 			"-nostats",
 			"-i", g.VideoFile.Path,
@@ -82,7 +82,7 @@ func (g *GeneratorInfo) configure() error {
 	}
 
 	// Something seriously wrong with this file
-	if numberOfFrames == 0 || framerate == 0 {
+	if numberOfFrames == 0 || !utils.IsValidFloat64(framerate) {
 		logger.Errorf(
 			"number of frames or framerate is 0.  nb_frames <%s> framerate <%s> duration <%s>",
 			videoStream.NbFrames,
