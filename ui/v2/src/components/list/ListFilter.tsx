@@ -36,7 +36,7 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
   const [editingCriterion, setEditingCriterion] = useState<Criterion | undefined>(undefined);
 
   useEffect(() => {
-    searchCallback = debounce((event) => {
+    searchCallback = debounce((event: any) => {
       props.onChangeQuery(event.target.value);
     }, 500);
   });
