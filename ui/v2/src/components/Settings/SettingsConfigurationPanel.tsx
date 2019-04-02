@@ -5,9 +5,9 @@ import {
   H1,
   H4,
   H6,
+  InputGroup,
   Spinner,
   Tag,
-  InputGroup,
 } from "@blueprintjs/core";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import * as GQL from "../../core/generated-graphql";

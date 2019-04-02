@@ -1,6 +1,6 @@
-import { HTMLTable, Spinner, Tag, EditableText, Button, Dialog, Classes, FormGroup, InputGroup } from "@blueprintjs/core";
+import { Button, Classes, Dialog, EditableText, FormGroup, HTMLTable, InputGroup, Spinner, Tag } from "@blueprintjs/core";
 import _ from "lodash";
-import React, { FunctionComponent, useState, useEffect } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { QueryHookResult } from "react-apollo-hooks";
 import { Link } from "react-router-dom";
 import { FindGalleriesQuery, FindGalleriesVariables } from "../../core/generated-graphql";
@@ -11,8 +11,8 @@ import { IBaseProps } from "../../models/base-props";
 import { ListFilterModel } from "../../models/list-filter/filter";
 import { DisplayMode, FilterMode } from "../../models/list-filter/types";
 import { ErrorUtils } from "../../utils/errors";
-import { ToastUtils } from "../../utils/toasts";
 import { NavigationUtils } from "../../utils/navigation";
+import { ToastUtils } from "../../utils/toasts";
 
 interface IProps extends IBaseProps {}
 

@@ -114,7 +114,7 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
               type={type}
               onUpdate={(items) => criterion.value = items.map((i) => ({id: i.id, label: i.name!}))}
               openOnKeyDown={true}
-              initialIds={criterion.value.map((labeled) => labeled.id)}
+              initialIds={criterion.value.map((labeled: any) => labeled.id)}
             />
           );
         }
