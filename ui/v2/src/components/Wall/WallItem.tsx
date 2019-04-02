@@ -5,6 +5,7 @@ import * as GQL from "../../core/generated-graphql";
 import { useInterfaceLocalForage } from "../../hooks/LocalForage";
 import { VideoHoverHook } from "../../hooks/VideoHover";
 import { TextUtils } from "../../utils/text";
+import { NavigationUtils } from "../../utils/navigation";
 
 interface IWallItemProps {
   scene?: GQL.SlimSceneDataFragment;
@@ -54,7 +55,7 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
     if (props.scene !== undefined) {
       linkSrc = `/scenes/${props.scene.id}`;
     } else if (props.sceneMarker !== undefined) {
-      linkSrc = `/scenes/${props.sceneMarker.scene.id}?t=${props.sceneMarker.seconds}`;
+      linkSrc = NavigationUtils.makeSceneMarkerUrl(props.sceneMarker);
     }
   }
 

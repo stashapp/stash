@@ -4,26 +4,35 @@ import {
   NavbarGroup,
   NavbarHeading,
 } from "@blueprintjs/core";
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
+import useLocation from "react-use/lib/useLocation";
 
-interface IMainNavbarProps {}
+interface IProps {}
 
-export const MainNavbar: FunctionComponent<IMainNavbarProps> = (props) => {
-  let newButtonPath: string | undefined;
-  let newButtonElement: JSX.Element | undefined;
-  switch (window.location.pathname) {
-    case "/performers": {
-      newButtonPath = "/performers/new";
-      break;
+export const MainNavbar: FunctionComponent<IProps> = (props) => {
+  const [newButtonPath, setNewButtonPath] = useState<string | undefined>(undefined);
+  const locationState = useLocation();
+
+  useEffect(() => {
+    switch (window.location.pathname) {
+      case "/performers": {
+        setNewButtonPath("/performers/new");
+        break;
+      }
+      case "/studios": {
+        setNewButtonPath("/studios/new");
+        break;
+      }
+      default: {
+        setNewButtonPath(undefined);
+      }
     }
-    case "/studios": {
-      newButtonPath = "/studios/new";
-      break;
-    }
-  }
-  if (!!newButtonPath) {
-    newButtonElement = (
+  }, [locationState.pathname]);
+
+  function renderNewButton() {
+    if (!newButtonPath) { return; }
+    return (
       <>
         <NavLink
           to={newButtonPath}
@@ -98,7 +107,7 @@ export const MainNavbar: FunctionComponent<IMainNavbarProps> = (props) => {
           </NavLink>
         </NavbarGroup>
         <NavbarGroup align="right">
-          {newButtonElement}
+          {renderNewButton()}
           <NavLink
             exact={true}
             to="/settings"

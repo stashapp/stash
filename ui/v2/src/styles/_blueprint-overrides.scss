@@ -24,3 +24,7 @@
 .filter-container .bp3-portal {
   position: relative;
 }
+
+.card-section.centered .bp3-popover-wrapper {
+  flex: unset !important;
+}
