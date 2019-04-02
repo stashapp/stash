@@ -30,8 +30,12 @@ export class ListHook {
     // Update the filter when the query parameters change
     useEffect(() => {
       const queryParams = queryString.parse(options.props.location.search);
+      const newFilter = _.cloneDeep(filter);
+      newFilter.configureFromQueryParameters(queryParams);
+      setFilter(newFilter);
+
+      // TODO: Need this side effect to update the query params properly
       filter.configureFromQueryParameters(queryParams);
-      setFilter(filter);
     }, [options.props.location.search]);
 
     let result: QueryHookResult<any, any>;

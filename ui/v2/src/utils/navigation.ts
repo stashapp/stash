@@ -41,4 +41,9 @@ export class NavigationUtils {
     filter.criteria.push(criterion);
     return `/scenes/markers?${filter.makeQueryParameters()}`;
   }
+
+  public static makeSceneMarkerUrl(sceneMarker: Partial<GQL.SceneMarkerDataFragment>): string {
+    if (sceneMarker.id === undefined || sceneMarker.scene === undefined) { return "#"; }
+    return `/scenes/${sceneMarker.scene.id}?t=${sceneMarker.seconds}`;
+  }
 }

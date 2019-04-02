@@ -14,6 +14,7 @@ import * as GQL from "../../core/generated-graphql";
 import { VideoHoverHook } from "../../hooks/VideoHover";
 import { ColorUtils } from "../../utils/color";
 import { TextUtils } from "../../utils/text";
+import { TagLink } from "../Shared/TagLink";
 import { SceneHelpers } from "./helpers";
 
 interface ISceneCardProps {
@@ -37,7 +38,7 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
     if (props.scene.tags.length <= 0) { return; }
 
     const tags = props.scene.tags.map((tag) => (
-      <Tag key={tag.id} className="tag-item">{tag.name}</Tag>
+      <TagLink key={tag.id} tag={tag} />
     ));
     return (
       <Popover interactionKind={"hover"} position="bottom">
@@ -54,7 +55,7 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
     if (props.scene.performers.length <= 0) { return; }
 
     const performers = props.scene.performers.map((performer) => (
-      <Tag key={performer.id} className="tag-item">{performer.name}</Tag>
+      <TagLink key={performer.id} performer={performer} />
     ));
     return (
       <Popover interactionKind={"hover"} position="bottom">
@@ -70,9 +71,11 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
   function maybeRenderSceneMarkerPopoverButton() {
     if (props.scene.scene_markers.length <= 0) { return; }
 
-    const sceneMarkers = props.scene.scene_markers.map((marker) => (
-      <Tag key={marker.id} className="tag-item">{marker.title} - {TextUtils.secondsToTimestamp(marker.seconds)}</Tag>
-    ));
+    const sceneMarkers = props.scene.scene_markers.map((marker) => {
+      (marker as any).scene = {};
+      (marker as any).scene.id = props.scene.id;
+      return <TagLink key={marker.id} marker={marker} />;
+    });
     return (
       <Popover interactionKind={"hover"} position="bottom">
         <Button
