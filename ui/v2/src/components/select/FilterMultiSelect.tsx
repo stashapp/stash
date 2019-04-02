@@ -100,7 +100,6 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
       tagInputProps={{ onRemove: onItemRemove }}
       onItemSelect={onItemSelect}
       resetOnSelect={true}
-      activeItem={null}
       popoverProps={{position: "bottom"}}
       {...props}
     />

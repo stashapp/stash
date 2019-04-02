@@ -253,6 +253,7 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
       whiteSpace: "nowrap",
       display: "flex",
       flexWrap: "nowrap",
+      marginBottom: "20px",
     };
     return (
       <>
