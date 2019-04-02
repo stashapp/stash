@@ -5,8 +5,11 @@ import {
   Tag,
 } from "@blueprintjs/core";
 import React, { FunctionComponent } from "react";
+import { Link } from "react-router-dom";
 import * as GQL from "../../../core/generated-graphql";
+import { NavigationUtils } from "../../../utils/navigation";
 import { TextUtils } from "../../../utils/text";
+import { TagLink } from "../../Shared/TagLink";
 import { SceneHelpers } from "../helpers";
 
 interface ISceneDetailProps {
@@ -27,7 +30,7 @@ export const SceneDetailPanel: FunctionComponent<ISceneDetailProps> = (props: IS
   function renderTags() {
     if (props.scene.tags.length === 0) { return; }
     const tags = props.scene.tags.map((tag) => (
-      <Tag key={tag.id} className="tag-item">{tag.name}</Tag>
+      <TagLink key={tag.id} tag={tag} />
     ));
     return (
       <>
@@ -43,7 +46,9 @@ export const SceneDetailPanel: FunctionComponent<ISceneDetailProps> = (props: IS
       <H1 className="bp3-heading">
         {!!props.scene.title ? props.scene.title : TextUtils.fileNameFromPath(props.scene.path)}
       </H1>
-      {!!props.scene.date ? <H4>{props.scene.date}</H4> : ""}
+      {!!props.scene.date ? <H4>{props.scene.date}</H4> : undefined}
+      {!!props.scene.rating ? <H6>Rating: {props.scene.rating}</H6> : undefined}
+      {!!props.scene.file.height ? <H6>Resolution: {TextUtils.resolution(props.scene.file.height)}</H6> : undefined}
       {renderDetails()}
       {renderTags()}
     </>

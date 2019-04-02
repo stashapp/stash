@@ -49,6 +49,7 @@ code {
 .grid-item {
   // flex: auto;
   width: calc(25% - 1.5em);
+  min-width: 185px;
   margin: 0px 0 $pt-grid-size $pt-grid-size;
   overflow: hidden;
 
@@ -81,6 +82,15 @@ video.preview {
 
 .tag-item {
   margin: 5px;
+
+  a {
+    color: unset;
+
+    &:hover {
+      text-decoration: none;
+      color: unset;
+    }
+  }
 }
 
 .filter-container {
@@ -140,6 +150,7 @@ span.block {
 
 .performer.image {
   height: 50vh;
+  min-height: 400px;
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;

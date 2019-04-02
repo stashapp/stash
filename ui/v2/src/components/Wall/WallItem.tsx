@@ -2,6 +2,7 @@ import _ from "lodash";
 import React, { FunctionComponent, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "../../core/generated-graphql";
+import { useInterfaceLocalForage } from "../../hooks/LocalForage";
 import { VideoHoverHook } from "../../hooks/VideoHover";
 import { TextUtils } from "../../utils/text";
 
@@ -16,6 +17,8 @@ interface IWallItemProps {
 export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProps) => {
   const [videoPath, setVideoPath] = useState<string | undefined>(undefined);
   const videoHoverHook = VideoHoverHook.useVideoHover({resetOnMouseLeave: true});
+  const interfaceSettings = useInterfaceLocalForage();
+  const showTextContainer = !!interfaceSettings.data ? interfaceSettings.data.wall.textContainerEnabled : true;
 
   function onMouseEnter() {
     VideoHoverHook.onMouseEnter(videoHoverHook);
@@ -101,12 +104,14 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
             ref={videoHoverHook.videoEl}
           />
           <img src={previewSrc} />
-          <div className="scene-wall-item-text-container">
-            <div style={{lineHeight: 1}}>
-              {title}
-            </div>
-            {tags}
-          </div>
+          {showTextContainer ?
+            <div className="scene-wall-item-text-container">
+              <div style={{lineHeight: 1}}>
+                {title}
+              </div>
+              {tags}
+            </div> : undefined
+          }
         </Link>
       </div>
     </div>

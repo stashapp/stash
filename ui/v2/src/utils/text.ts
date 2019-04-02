@@ -46,6 +46,22 @@ export class TextUtils {
     return `${megabits.toFixed(2)} megabits per second`;
   }
 
+  public static resolution(height: number) {
+    if (height >= 240 && height < 480) {
+      return "240p";
+    } else if (height >= 480 && height < 720) {
+      return "480p";
+    } else if (height >= 720 && height < 1080) {
+      return "720p";
+    } else if (height >= 1080 && height < 2160) {
+      return "1080p";
+    } else if (height >= 2160) {
+      return "4K";
+    } else {
+      return undefined;
+    }
+  }
+
   private static units = [
     "bytes",
     "kB",

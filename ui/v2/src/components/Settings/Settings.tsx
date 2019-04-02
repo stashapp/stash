@@ -8,6 +8,7 @@ import React, { FunctionComponent, useEffect, useState } from "react";
 import { IBaseProps } from "../../models";
 import { SettingsAboutPanel } from "./SettingsAboutPanel";
 import { SettingsConfigurationPanel } from "./SettingsConfigurationPanel";
+import { SettingsInterfacePanel } from "./SettingsInterfacePanel";
 import { SettingsLogsPanel } from "./SettingsLogsPanel";
 import { SettingsTasksPanel } from "./SettingsTasksPanel/SettingsTasksPanel";
 
@@ -39,6 +40,7 @@ export const Settings: FunctionComponent<IProps> = (props: IProps) => {
         defaultSelectedTabId={getTabId()}
       >
         <Tab id="configuration" title="Configuration" panel={<SettingsConfigurationPanel />} />
+        <Tab id="interface" title="Interface Configuration" panel={<SettingsInterfacePanel />} />
         <Tab id="tasks" title="Tasks" panel={<SettingsTasksPanel />} />
         <Tab id="logs" title="Logs" panel={<SettingsLogsPanel />} />
         <Tab id="about" title="About" panel={<SettingsAboutPanel />} />
