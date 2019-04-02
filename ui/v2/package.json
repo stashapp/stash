@@ -17,6 +17,7 @@
     "bulma": "0.7.4",
     "formik": "1.5.1",
     "graphql": "14.1.1",
+    "localforage": "1.7.3",
     "lodash": "4.17.11",
     "node-sass": "4.11.0",
     "query-string": "6.2.0",

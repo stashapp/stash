@@ -39,8 +39,8 @@
 .scene-wall-item-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  overflow: hidden;
+  // align-items: center;
+  // overflow: hidden; // Commented out since it shows gaps in the wall
   position: relative;
   width: 100%;
   height: 100%;

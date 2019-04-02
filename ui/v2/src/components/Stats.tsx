@@ -55,8 +55,6 @@ export const Stats: FunctionComponent = () => {
         This is still an early version, some things are still a work in progress.
 
         * Filters for performers and studios only supports one item, even though it's a multi select.
-        * All of the task buttons in settings do work, but provide no feedback in the UI currently.
-        * The tasks tab is the only tab with content in the settings menu.
 
         TODO:
         * List view for scenes / performers
