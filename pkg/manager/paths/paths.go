@@ -36,3 +36,11 @@ func GetDefaultDatabaseFilePath() string {
 func GetDefaultConfigFilePath() string {
 	return filepath.Join(GetConfigDirectory(), "config.yml")
 }
+
+func GetSSLKey() string {
+	return filepath.Join(GetConfigDirectory(), "stash.key")
+}
+
+func GetSSLCert() string {
+	return filepath.Join(GetConfigDirectory(), "stash.crt")
+}

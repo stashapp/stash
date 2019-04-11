@@ -12,7 +12,9 @@ func GetTimeFromRegex(str string) float64 {
 	regexResult := TimeRegex.FindStringSubmatch(str)
 
 	// Bail early if we don't have the results we expect
-	if len(regexResult) != 4 { return 0 }
+	if len(regexResult) != 4 {
+		return 0
+	}
 
 	h, _ := strconv.ParseFloat(regexResult[1], 64)
 	m, _ := strconv.ParseFloat(regexResult[2], 64)
@@ -27,7 +29,9 @@ func GetFrameFromRegex(str string) int {
 	regexResult := FrameRegex.FindStringSubmatch(str)
 
 	// Bail early if we don't have the results we expect
-	if len(regexResult) < 2 { return 0 }
+	if len(regexResult) < 2 {
+		return 0
+	}
 
 	result, _ := strconv.Atoi(regexResult[1])
 	return result

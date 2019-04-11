@@ -3,12 +3,14 @@ package manager
 import (
 	"fmt"
 	"github.com/fsnotify/fsnotify"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/utils"
+	"net"
 	"sync"
 )
 
@@ -33,6 +35,7 @@ func Initialize() *singleton {
 	once.Do(func() {
 		_ = utils.EnsureDir(paths.GetConfigDirectory())
 		initConfig()
+		initFlags()
 		instance = &singleton{
 			Status: Idle,
 			Paths:  paths.NewPaths(),
@@ -76,6 +79,16 @@ func initConfig() {
 
 	//viper.Set("stash", []string{"/", "/stuff"})
 	//viper.WriteConfig()
+}
+
+func initFlags() {
+	pflag.IP("host", net.IPv4(0, 0, 0, 0), "ip address for the host")
+	pflag.Int("port", 9999, "port to serve from")
+
+	pflag.Parse()
+	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
+		logger.Infof("failed to bind flags: %s", err.Error())
+	}
 }
 
 func initFFMPEG() {
