@@ -131,9 +131,9 @@ func getCriterionModifierBinding(criterionModifier CriterionModifier, value inte
 		case "NOT_NULL":
 			return "IS NOT NULL", 0
 		case "INCLUDES":
-			return "IN "+getInBinding(length), length // TODO?
+			return "IN " + getInBinding(length), length // TODO?
 		case "EXCLUDES":
-			return "NOT IN "+getInBinding(length), length // TODO?
+			return "NOT IN " + getInBinding(length), length // TODO?
 		default:
 			logger.Errorf("todo")
 			return "= ?", 1 // TODO
@@ -144,7 +144,7 @@ func getCriterionModifierBinding(criterionModifier CriterionModifier, value inte
 
 func getIntCriterionWhereClause(column string, input IntCriterionInput) (string, int) {
 	binding, count := getCriterionModifierBinding(input.Modifier, input.Value)
-	return column+" "+binding, count
+	return column + " " + binding, count
 }
 
 func runIdsQuery(query string, args []interface{}) ([]int, error) {

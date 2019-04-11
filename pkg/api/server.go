@@ -13,55 +13,27 @@ import (
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime/debug"
+	"strconv"
 	"strings"
 	"github.com/spf13/viper"
 )
 
-const httpPort = "9998"
-const httpsPort = "9999"
 
-var serverAddress = ":"
-var serverHttpPort = httpPort
-var serverHttpsPort = httpsPort
-
-var serverConfig = viper.New()
-
-func serverInitConfig() {
-	// The config file is called config.  Leave off the file extension.
-	serverConfig.SetConfigName("config")
-
-	serverConfig.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
-	serverConfig.AddConfigPath(".")            // Look for config in the working directory
-
-	err := serverConfig.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-
-		if err = serverConfig.ReadInConfig(); err != nil {
-			panic(err)
-		}
-	}
-}
-
-var certsBox *packr.Box
 var uiBox *packr.Box
 
 //var legacyUiBox *packr.Box
 var setupUIBox *packr.Box
 
 func Start() {
-	//port := os.Getenv("PORT")
-	//if port == "" {
-	//	port = defaultPort
-	//}
-
-	certsBox = packr.New("Cert Box", "../../certs")
 	uiBox = packr.New("UI Box", "../../ui/v2/build")
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
@@ -93,9 +65,6 @@ func Start() {
 		},
 	})
 	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}), recoverFunc, requestMiddleware, websocketUpgrader)
-
-	// https://stash.server:9999/certs/server.crt
-	r.Handle("/certs/*", http.FileServer(certsBox))
 
 	r.Handle("/graphql", gqlHandler)
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
@@ -167,7 +136,7 @@ func Start() {
 		http.Redirect(w, r, "/", 301)
 	})
 
-	// Serve the angular app
+	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
@@ -178,55 +147,47 @@ func Start() {
 		}
 	})
 
-	serverInitConfig() //TODO if needed validate address,port,httpsport
-										// for now we assume that ListenAndServe will output the errors
+	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
+	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
+		httpsServer := &http.Server{
+			Addr:      address,
+			Handler:   r,
+			TLSConfig: tlsConfig,
+		}
 
-	if serverConfig.IsSet("address")  {
-	serverAddress=serverConfig.GetString("address")+":"
-	}	else	{
-	serverAddress=":"
+		go func() {
+			logger.Infof("stash is running on HTTPS at https://" + address + "/")
+			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
+		}()
+	} else {
+		server := &http.Server{
+			Addr:    address,
+			Handler: r,
+		}
+
+		go func() {
+			logger.Infof("stash is running on HTTP at http://" + address + "/")
+			logger.Fatal(server.ListenAndServe())
+		}()
 	}
 
-	if serverConfig.IsSet("port")  {
-	serverHttpPort=serverConfig.GetString("port")
-	}	else	{
-	serverHttpPort=httpPort
-	}
-
-	if serverConfig.IsSet("httpsport")  {
-	serverHttpsPort=serverConfig.GetString("httpsport")
-	}	else	{
-	serverHttpsPort=httpsPort
-	}
-	httpsServer := &http.Server{
-		Addr:      serverAddress + serverHttpsPort,
-		Handler:   r,
-		TLSConfig: makeTLSConfig(),
-	}
-	server := &http.Server{
-		Addr:    serverAddress + serverHttpPort,
-		Handler: r,
-	}
-
-	go func() {
-		logger.Infof("stash is running on HTTP at http://"+serverAddress+serverHttpPort+"/")
-		logger.Fatal(server.ListenAndServe())
-	}()
-
-	go func() {
-		logger.Infof("stash is running on HTTPS at https://"+serverAddress+serverHttpsPort+"/")
-		logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
-	}()
 }
 
 func makeTLSConfig() *tls.Config {
-	cert, err := certsBox.Find("server.crt")
-	key, err := certsBox.Find("server.key")
+	cert, err := ioutil.ReadFile(paths.GetSSLCert())
+	if err != nil {
+		return nil
+	}
+
+	key, err := ioutil.ReadFile(paths.GetSSLKey())
+	if err != nil {
+		return nil
+	}
 
 	certs := make([]tls.Certificate, 1)
 	certs[0], err = tls.X509KeyPair(cert, key)
 	if err != nil {
-		panic(err)
+		return nil
 	}
 	tlsConfig := &tls.Config{
 		Certificates: certs,

@@ -12,6 +12,9 @@ const Downloads = "downloads"
 
 const Database = "database"
 
+const Host = "host"
+const Port = "port"
+
 func Set(key string, value interface{}) {
 	viper.Set(key, value)
 }
@@ -38,6 +41,14 @@ func GetMetadataPath() string {
 
 func GetDatabasePath() string {
 	return viper.GetString(Database)
+}
+
+func GetHost() string {
+	return viper.GetString(Host)
+}
+
+func GetPort() int {
+	return viper.GetInt(Port)
 }
 
 func IsValid() bool {

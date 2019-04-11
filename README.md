@@ -26,6 +26,24 @@ If stash is unable to find or download FFMPEG then download it yourself from the
 
 The `ffmpeg(.exe)` and `ffprobe(.exe)` files should be placed in `~/.stash` on macOS / Linux or `C:\Users\YourUsername\.stash` on Windows.
 
+# Usage
+
+## CLI
+
+Stash provides some command line options.  See what is currently available by running `stash --help`.
+
+For example, to run stash locally on port 80 run it like this (OSX / Linux) `stash --host 127.0.0.1 --port 80`
+
+## SSL (HTTPS)
+
+Stash supports HTTPS with some additional work.  First you must generate a SSL certificate and key combo.  Here is an example using openssl:
+
+`openssl req -x509 -newkey rsa:4096 -sha256 -days 7300 -nodes -keyout stash.key -out stash.crt -extensions san -config <(echo "[req]"; echo distinguished_name=req; echo "[san]"; echo subjectAltName=DNS:stash.server,IP:127.0.0.1) -subj /CN=stash.server`
+
+This command would need to be customized for your environment.  [This link](https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl) might be useful.
+
+Once you have a certificate and key file name them `stash.crt` and `stash.key` and place them in the `~/.stash` directory.  Stash will detect these and start up using HTTPS rather than HTTP.
+
 # FAQ
 
 > I have a question not answered here.
