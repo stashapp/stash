@@ -228,7 +228,9 @@ func paramValue(params *goquery.Selection, paramIndex int) string {
 		return content
 	}
 	node = node.NextSibling
-	if (node == nil) {return ""}
+	if (node == nil) {
+		return ""
+	}
 	return trim(node.FirstChild.Data)
 }
 
