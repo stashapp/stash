@@ -24,9 +24,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
-	"github.com/spf13/viper"
 )
-
 
 var uiBox *packr.Box
 
@@ -170,7 +168,6 @@ func Start() {
 			logger.Fatal(server.ListenAndServe())
 		}()
 	}
-
 }
 
 func makeTLSConfig() *tls.Config {
