@@ -21,10 +21,33 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"strings"
+	"github.com/spf13/viper"
 )
 
 const httpPort = "9998"
 const httpsPort = "9999"
+
+var serverAddress = ":"
+var serverHttpPort = httpPort
+var serverHttpsPort = httpsPort
+
+var serverConfig = viper.New()
+
+func serverInitConfig() {
+	// The config file is called config.  Leave off the file extension.
+	serverConfig.SetConfigName("config")
+
+	serverConfig.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
+	serverConfig.AddConfigPath(".")            // Look for config in the working directory
+
+	err := serverConfig.ReadInConfig() // Find and read the config file
+	if err != nil {             // Handle errors reading the config file
+
+		if err = serverConfig.ReadInConfig(); err != nil {
+			panic(err)
+		}
+	}
+}
 
 var certsBox *packr.Box
 var uiBox *packr.Box
@@ -155,23 +178,43 @@ func Start() {
 		}
 	})
 
+	serverInitConfig() //TODO if needed validate address,port,httpsport
+										// for now we assume that ListenAndServe will output the errors
+
+	if serverConfig.IsSet("address")  {
+	serverAddress=serverConfig.GetString("address")+":"
+	}	else	{
+	serverAddress=":"
+	}
+
+	if serverConfig.IsSet("port")  {
+	serverHttpPort=serverConfig.GetString("port")
+	}	else	{
+	serverHttpPort=httpPort
+	}
+
+	if serverConfig.IsSet("httpsport")  {
+	serverHttpsPort=serverConfig.GetString("httpsport")
+	}	else	{
+	serverHttpsPort=httpsPort
+	}
 	httpsServer := &http.Server{
-		Addr:      ":" + httpsPort,
+		Addr:      serverAddress + serverHttpsPort,
 		Handler:   r,
 		TLSConfig: makeTLSConfig(),
 	}
 	server := &http.Server{
-		Addr:    ":" + httpPort,
+		Addr:    serverAddress + serverHttpPort,
 		Handler: r,
 	}
 
 	go func() {
-		logger.Infof("stash is running on HTTP at http://localhost:9998/")
+		logger.Infof("stash is running on HTTP at http://"+serverAddress+serverHttpPort+"/")
 		logger.Fatal(server.ListenAndServe())
 	}()
 
 	go func() {
-		logger.Infof("stash is running on HTTPS at https://localhost:9999/")
+		logger.Infof("stash is running on HTTPS at https://"+serverAddress+serverHttpsPort+"/")
 		logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
 	}()
 }
