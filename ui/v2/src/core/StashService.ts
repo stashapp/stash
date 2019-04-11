@@ -8,7 +8,13 @@ export class StashService {
 
   public static initialize() {
     const platformUrl = new URL(window.location.origin);
-    platformUrl.port = platformUrl.protocol === "https:" ? "9999" : "9998";
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+      platformUrl.port = "9999"; // TODO: Hack. Development expects port 9999
+
+      if (process.env.REACT_APP_HTTPS === "true") {
+        platformUrl.protocol = "https:";
+      }
+    }
     const url = platformUrl.toString().slice(0, -1);
 
     StashService.client = new ApolloClient({

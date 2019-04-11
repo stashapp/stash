@@ -13,32 +13,25 @@ import (
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime/debug"
+	"strconv"
 	"strings"
 )
 
-const httpPort = "9998"
-const httpsPort = "9999"
-
-var certsBox *packr.Box
 var uiBox *packr.Box
 
 //var legacyUiBox *packr.Box
 var setupUIBox *packr.Box
 
 func Start() {
-	//port := os.Getenv("PORT")
-	//if port == "" {
-	//	port = defaultPort
-	//}
-
-	certsBox = packr.New("Cert Box", "../../certs")
 	uiBox = packr.New("UI Box", "../../ui/v2/build")
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
@@ -70,9 +63,6 @@ func Start() {
 		},
 	})
 	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}), recoverFunc, requestMiddleware, websocketUpgrader)
-
-	// https://stash.server:9999/certs/server.crt
-	r.Handle("/certs/*", http.FileServer(certsBox))
 
 	r.Handle("/graphql", gqlHandler)
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
@@ -144,7 +134,7 @@ func Start() {
 		http.Redirect(w, r, "/", 301)
 	})
 
-	// Serve the angular app
+	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
@@ -155,35 +145,46 @@ func Start() {
 		}
 	})
 
-	httpsServer := &http.Server{
-		Addr:      ":" + httpsPort,
-		Handler:   r,
-		TLSConfig: makeTLSConfig(),
-	}
-	server := &http.Server{
-		Addr:    ":" + httpPort,
-		Handler: r,
-	}
+	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
+	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
+		httpsServer := &http.Server{
+			Addr:      address,
+			Handler:   r,
+			TLSConfig: tlsConfig,
+		}
 
-	go func() {
-		logger.Infof("stash is running on HTTP at http://localhost:9998/")
-		logger.Fatal(server.ListenAndServe())
-	}()
+		go func() {
+			logger.Infof("stash is running on HTTPS at https://" + address + "/")
+			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
+		}()
+	} else {
+		server := &http.Server{
+			Addr:    address,
+			Handler: r,
+		}
 
-	go func() {
-		logger.Infof("stash is running on HTTPS at https://localhost:9999/")
-		logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
-	}()
+		go func() {
+			logger.Infof("stash is running on HTTP at http://" + address + "/")
+			logger.Fatal(server.ListenAndServe())
+		}()
+	}
 }
 
 func makeTLSConfig() *tls.Config {
-	cert, err := certsBox.Find("server.crt")
-	key, err := certsBox.Find("server.key")
+	cert, err := ioutil.ReadFile(paths.GetSSLCert())
+	if err != nil {
+		return nil
+	}
+
+	key, err := ioutil.ReadFile(paths.GetSSLKey())
+	if err != nil {
+		return nil
+	}
 
 	certs := make([]tls.Certificate, 1)
 	certs[0], err = tls.X509KeyPair(cert, key)
 	if err != nil {
-		panic(err)
+		return nil
 	}
 	tlsConfig := &tls.Config{
 		Certificates: certs,
