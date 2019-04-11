@@ -74,7 +74,7 @@ func GetPerformer(performerName string) (*models.ScrapedPerformer, error) {
 	matches := regex.FindStringSubmatch(href)
 	href = strings.Replace(href, matches[1], "bio_"+matches[1]+".php", -1)
 	href = "https://www.freeones.com" + href
-
+	
 	bioRes, err := http.Get(href)
 	if err != nil {
 		return nil, err
@@ -228,6 +228,9 @@ func paramValue(params *goquery.Selection, paramIndex int) string {
 		return content
 	}
 	node = node.NextSibling
+	if (node == nil) {
+		return ""
+	}
 	return trim(node.FirstChild.Data)
 }
 
