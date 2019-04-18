@@ -1,0 +1,35 @@
+# APPNICENAME=Stash
+# APPDESCRIPTION=An organizer for your porn, written in Go
+services:
+  emby:
+    hostname: ${DOCKERHOSTNAME}
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-file: ${DOCKERLOGGING_MAXFILE}
+        max-size: ${DOCKERLOGGING_MAXSIZE}
+    environment:
+      - GID=${PGID}
+      - GIDLIST=${PGID}
+      - TZ=${TZ}
+      - UID=${PUID}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKERCONFDIR}/stash:/config
+      # - ${DOCKERSHAREDDIR}:/shared
+      # - ${MEDIADIR_MOVIES}:/data/movies
+      # - ${MEDIADIR_MOVIES}:/movies
+      # - ${MEDIADIR_MUSIC}:/data/music
+      # - ${MEDIADIR_MUSIC}:/music
+      # - ${MEDIADIR_TV}:/data/tv
+      # - ${MEDIADIR_TV}:/tv
+      - ${MEDIADIR_STASH}:/stash
+# services:
+#   emby:
+    ports:
+      - "${EMBY_PORT_8096}:8096"
+      - "${EMBY_PORT_8920}:8920"
+# services:
+#   emby:
+    image: stashapp/stash:latest
