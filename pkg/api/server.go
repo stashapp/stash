@@ -165,6 +165,10 @@ func Start() {
 
 		go func() {
 			logger.Infof("stash is running on HTTP at http://" + address + "/")
+			fmt.Println("Stash path ",config.GetStashPaths())
+			fmt.Println("Stash cache path ",config.GetCachePath())
+			fmt.Println("Stash generated path ",config.GetGeneratedPath())
+			fmt.Println("Stash metadata path ",config.GetMetadataPath())
 			logger.Fatal(server.ListenAndServe())
 		}()
 	}

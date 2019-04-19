@@ -36,6 +36,7 @@ func Initialize() *singleton {
 		_ = utils.EnsureDir(paths.GetConfigDirectory())
 		initConfig()
 		initFlags()
+		initEnvs()
 		instance = &singleton{
 			Status: Idle,
 			Paths:  paths.NewPaths(),
@@ -90,6 +91,15 @@ func initFlags() {
 		logger.Infof("failed to bind flags: %s", err.Error())
 	}
 }
+
+func initEnvs()	{
+	viper.SetEnvPrefix("stash") //will be uppercased automatically
+	viper.BindEnv("host")// STASH_HOST
+	viper.BindEnv("port")//STASH_PORT
+	viper.BindEnv("stash")//STASH_STASH
+	viper.BindEnv("generated")//STASH_GENERATED
+	viper.BindEnv("metadata")//STASH_METADATA
+	}	
 
 func initFFMPEG() {
 	configDirectory := paths.GetConfigDirectory()
