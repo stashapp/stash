@@ -99,6 +99,7 @@ func initEnvs()	{
 	viper.BindEnv("stash")//STASH_STASH
 	viper.BindEnv("generated")//STASH_GENERATED
 	viper.BindEnv("metadata")//STASH_METADATA
+	viper.BindEnv("cache")//STASH_CACHE
 	}	
 
 func initFFMPEG() {
