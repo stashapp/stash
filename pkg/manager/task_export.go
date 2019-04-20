@@ -109,11 +109,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		newSceneJSON.Tags = t.getTagNames(tags)
 
 		for _, sceneMarker := range sceneMarkers {
-			var primaryTagID int
-			if sceneMarker.PrimaryTagID.Valid {
-				primaryTagID = int(sceneMarker.PrimaryTagID.Int64)
-			}
-			primaryTag, err := tagQB.Find(primaryTagID, tx)
+			primaryTag, err := tagQB.Find(sceneMarker.PrimaryTagID, tx)
 			if err != nil {
 				logger.Errorf("[scenes] <%s> invalid primary tag for scene marker: %s", scene.Checksum, err.Error())
 				continue

@@ -18,10 +18,7 @@ func (r *sceneMarkerResolver) Scene(ctx context.Context, obj *models.SceneMarker
 
 func (r *sceneMarkerResolver) PrimaryTag(ctx context.Context, obj *models.SceneMarker) (*models.Tag, error) {
 	qb := models.NewTagQueryBuilder()
-	if !obj.PrimaryTagID.Valid {
-		panic("TODO no primary tag id")
-	}
-	tag, err := qb.Find(int(obj.PrimaryTagID.Int64), nil) // TODO make primary tag id not null in DB
+	tag, err := qb.Find(obj.PrimaryTagID, nil)
 	return tag, err
 }
 

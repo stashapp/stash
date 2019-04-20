@@ -108,7 +108,7 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.S
 	newSceneMarker := models.SceneMarker{
 		Title:        input.Title,
 		Seconds:      input.Seconds,
-		PrimaryTagID: sql.NullInt64{Int64: int64(primaryTagID), Valid: primaryTagID != 0},
+		PrimaryTagID: primaryTagID,
 		SceneID:      sql.NullInt64{Int64: int64(sceneID), Valid: sceneID != 0},
 		CreatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
@@ -127,7 +127,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 		Title:        input.Title,
 		Seconds:      input.Seconds,
 		SceneID:      sql.NullInt64{Int64: int64(sceneID), Valid: sceneID != 0},
-		PrimaryTagID: sql.NullInt64{Int64: int64(primaryTagID), Valid: primaryTagID != 0},
+		PrimaryTagID: primaryTagID,
 		UpdatedAt:    models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 
@@ -170,7 +170,7 @@ func changeMarker(ctx context.Context, changeType int, changedMarker models.Scen
 	var markerTagJoins []models.SceneMarkersTags
 	for _, tid := range tagIds {
 		tagID, _ := strconv.Atoi(tid)
-		if int64(tagID) == changedMarker.PrimaryTagID.Int64 {
+		if tagID == changedMarker.PrimaryTagID {
 			continue // If this tag is the primary tag, then let's not add it.
 		}
 		markerTag := models.SceneMarkersTags{

@@ -70,7 +70,7 @@ CREATE TABLE `scene_markers` (
   `id` integer not null primary key autoincrement,
   `title` varchar(255) not null,
   `seconds` float not null,
-  `primary_tag_id` integer,
+  `primary_tag_id` integer not null,
   `scene_id` integer,
   `created_at` datetime not null,
   `updated_at` datetime not null,

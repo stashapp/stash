@@ -519,7 +519,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				if err != nil {
 					logger.Errorf("[scenes] <%s> failed to find primary tag for marker: %s", scene.Checksum, err.Error())
 				} else {
-					newSceneMarker.PrimaryTagID = sql.NullInt64{Int64: int64(primaryTag.ID), Valid: true}
+					newSceneMarker.PrimaryTagID = primaryTag.ID
 				}
 
 				// Create the scene marker in the DB

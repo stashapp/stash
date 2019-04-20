@@ -46,6 +46,10 @@ Once you have a certificate and key file name them `stash.crt` and `stash.key` a
 
 # FAQ
 
+> I'm unable to run the app on OSX or Linux
+
+Try running `chmod u+x stash-osx` or `chmod u+x stash-linux` to make the file executable.
+
 > I have a question not answered here.
 
 Join the [Discord server](https://discord.gg/2TsNFKt).
