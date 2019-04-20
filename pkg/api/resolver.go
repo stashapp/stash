@@ -117,10 +117,7 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 	var keys []int
 	tqb := models.NewTagQueryBuilder()
 	for _, sceneMarker := range sceneMarkers {
-		if !sceneMarker.PrimaryTagID.Valid {
-			panic("missing primary tag id")
-		}
-		markerPrimaryTag, err := tqb.Find(int(sceneMarker.PrimaryTagID.Int64), nil)
+		markerPrimaryTag, err := tqb.Find(sceneMarker.PrimaryTagID, nil)
 		if err != nil {
 			return nil, err
 		}

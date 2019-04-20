@@ -18,6 +18,7 @@ import { FilterSelect } from "../../select/FilterSelect";
 import { MarkerTitleSuggest } from "../../select/MarkerTitleSuggest";
 import { WallPanel } from "../../Wall/WallPanel";
 import { SceneHelpers } from "../helpers";
+import { ErrorUtils } from "../../../utils/errors";
 
 interface ISceneMarkersPanelProps {
   scene: GQL.SceneDataFragment;
@@ -113,17 +114,17 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
       };
       if (!isEditing) {
         sceneMarkerCreate({ variables }).then((response) => {
-          console.log(response);
-        }).catch((err) => console.error(err));
+          setIsEditorOpen(false);
+          setEditingMarker(null);
+        }).catch((err) => ErrorUtils.handleApolloError(err));
       } else {
         const updateVariables = variables as GQL.SceneMarkerUpdateVariables;
         updateVariables.id = editingMarker!.id;
         sceneMarkerUpdate({ variables: updateVariables }).then((response) => {
-          console.log(response);
-        }).catch((err) => console.error(err));
+          setIsEditorOpen(false);
+          setEditingMarker(null);
+        }).catch((err) => ErrorUtils.handleApolloError(err));
       }
-      setIsEditorOpen(false);
-      setEditingMarker(null);
     }
     function onDelete() {
       if (!editingMarker) { return; }
