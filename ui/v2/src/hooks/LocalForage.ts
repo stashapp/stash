@@ -4,6 +4,7 @@ import React from "react";
 
 interface IInterfaceWallConfig {
   textContainerEnabled: boolean;
+  soundEnabled: boolean;
 }
 export interface IInterfaceConfig {
   wall: IInterfaceWallConfig;
@@ -25,6 +26,7 @@ export function useInterfaceLocalForage(): ILocalForage<IInterfaceConfig | undef
       result.setData({
         wall: {
           textContainerEnabled: true,
+          soundEnabled: true,
         },
       });
     }

@@ -29,6 +29,16 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
             setData(newSettings);
           }}
         />
+        <Checkbox
+          checked={!!data ? data.wall.soundEnabled : true}
+          label="Enable sound"
+          onChange={() => {
+            if (!data) { return; }
+            const newSettings = _.cloneDeep(data);
+            newSettings.wall.soundEnabled = !data.wall.soundEnabled;
+            setData(newSettings);
+          }}
+        />
       </FormGroup>
     </>
   );
