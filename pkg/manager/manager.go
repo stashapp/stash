@@ -93,14 +93,14 @@ func initFlags() {
 }
 
 func initEnvs()	{
-	viper.SetEnvPrefix("stash") //will be uppercased automatically
-	viper.BindEnv("host")// STASH_HOST
-	viper.BindEnv("port")//STASH_PORT
-	viper.BindEnv("stash")//STASH_STASH
-	viper.BindEnv("generated")//STASH_GENERATED
-	viper.BindEnv("metadata")//STASH_METADATA
-	viper.BindEnv("cache")//STASH_CACHE
-	}	
+	viper.SetEnvPrefix("stash") // will be uppercased automatically
+	viper.BindEnv("host") // STASH_HOST
+	viper.BindEnv("port") // STASH_PORT
+	viper.BindEnv("stash") // STASH_STASH
+	viper.BindEnv("generated") // STASH_GENERATED
+	viper.BindEnv("metadata") // STASH_METADATA
+	viper.BindEnv("cache") // STASH_CACHE
+}	
 
 func initFFMPEG() {
 	configDirectory := paths.GetConfigDirectory()
