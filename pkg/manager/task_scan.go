@@ -70,16 +70,16 @@ func (t *ScanTask) scanGallery() {
 }
 
 func (t *ScanTask) scanScene() {
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
 	qb := models.NewSceneQueryBuilder()
 	scene, _ := qb.FindByPath(t.FilePath)
 	if scene != nil {
 		// We already have this item in the database, keep going
+		return
+	}
+
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
+	if err != nil {
+		logger.Error(err.Error())
 		return
 	}
 
