@@ -9,8 +9,8 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-file: 10
-        max-size: 200k
+        max-file: "10"
+        max-size: "200k"
     environment:
       - STASH_STASH=/data/
       - STASH_GENERATED=/generated/
