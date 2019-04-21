@@ -2,7 +2,7 @@
 # APPDESCRIPTION=An organizer for your porn, written in Go
 services:
   stash:
-    image: stashapp/stash:latest
+    image: stashapp/stash:x86_64
     restart: unless-stopped
     ports:
       - "9999:9999"
