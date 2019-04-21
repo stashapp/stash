@@ -73,7 +73,13 @@ func getSort(sort string, direction string, tableName string) string {
 		return " ORDER BY RANDOM() "
 	} else {
 		colName := getColumn(tableName, sort)
-		return " ORDER BY " + colName + " " + direction
+		var additional string
+		if tableName == "scenes" {
+			additional = ", bitrate DESC, framerate DESC, rating DESC, duration DESC"
+		} else if tableName == "scene_markers" {
+			additional = ", scene_id ASC, seconds ASC"
+		}
+		return " ORDER BY " + colName + " " + direction + additional
 	}
 }
 

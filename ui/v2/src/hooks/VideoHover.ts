@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useInterfaceLocalForage } from "./LocalForage";
 
 export interface IVideoHoverHookData {
   videoEl: React.RefObject<HTMLVideoElement>;
@@ -12,21 +13,17 @@ export interface IVideoHoverHookOptions {
 }
 
 export class VideoHoverHook {
-  public static useVideoHover(options?: IVideoHoverHookOptions): IVideoHoverHookData {
-    if (options === undefined) {
-      options = {
-        resetOnMouseLeave: false,
-      };
-    }
-
+  public static useVideoHover(options: IVideoHoverHookOptions): IVideoHoverHookData {
     const videoEl = useRef<HTMLVideoElement>(null);
     const isPlaying = useRef<boolean>(false);
     const isHovering = useRef<boolean>(false);
 
+    const interfaceSettings = useInterfaceLocalForage();
+    const soundEnabled = !!interfaceSettings.data ? interfaceSettings.data.wall.soundEnabled : true;
+
     useEffect(() => {
       const videoTag = videoEl.current;
       if (!videoTag) { return; }
-      videoTag.volume = 0.05;
       videoTag.onplaying = () => {
         if (isHovering.current === true) {
           isPlaying.current = true;
@@ -36,6 +33,12 @@ export class VideoHoverHook {
       };
       videoTag.onpause = () => isPlaying.current = false;
     }, [videoEl]);
+
+    useEffect(() => {
+      const videoTag = videoEl.current;
+      if (!videoTag) { return; }
+      videoTag.volume = soundEnabled ? 0.05 : 0;
+    }, [soundEnabled]);
 
     return {videoEl, isPlaying, isHovering, options};
   }

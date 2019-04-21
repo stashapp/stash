@@ -23,7 +23,7 @@ interface ISceneCardProps {
 
 export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardProps) => {
   const [previewPath, setPreviewPath] = useState<string | undefined>(undefined);
-  const videoHoverHook = VideoHoverHook.useVideoHover();
+  const videoHoverHook = VideoHoverHook.useVideoHover({resetOnMouseLeave: false});
 
   function maybeRenderRatingBanner() {
     if (!props.scene.rating) { return; }
