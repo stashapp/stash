@@ -12,7 +12,7 @@ services:
         max-file: 10
         max-size: 200k
     environment:
-      - STASH_STASH=/stash/
+      - STASH_STASH=/data/
       - STASH_GENERATED=/generated/
       - STASH_METADATA=/metadata/
       - STASH_CACHE=/cache/
