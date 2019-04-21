@@ -18,17 +18,17 @@ type ScanTask struct {
 	FilePath string
 }
 
-func (t *ScanTask) Start(wg *sync.WaitGroup) {
+func (t *ScanTask) Start(wg *sync.WaitGroup,scanCh chan<- struct{}) {
 	if filepath.Ext(t.FilePath) == ".zip" {
-		t.scanGallery()
+		t.scanGallery(scanCh)
 	} else {
-		t.scanScene()
+		t.scanScene(scanCh)
 	}
 
 	wg.Done()
 }
 
-func (t *ScanTask) scanGallery() {
+func (t *ScanTask) scanGallery(scanCh chan<- struct{}) {
 	qb := models.NewGalleryQueryBuilder()
 	gallery, _ := qb.FindByPath(t.FilePath)
 	if gallery != nil {
@@ -65,11 +65,12 @@ func (t *ScanTask) scanGallery() {
 		logger.Error(err.Error())
 		_ = tx.Rollback()
 	} else if err := tx.Commit(); err != nil {
-		logger.Error(err.Error())
+				logger.Error(err.Error())
+				scanCh <- struct{}{} // since we got here that means we scanned a new gallery
 	}
 }
 
-func (t *ScanTask) scanScene() {
+func (t *ScanTask) scanScene(scanCh chan<- struct{}) {
 	qb := models.NewSceneQueryBuilder()
 	scene, _ := qb.FindByPath(t.FilePath)
 	if scene != nil {
@@ -124,6 +125,7 @@ func (t *ScanTask) scanScene() {
 	} else if err := tx.Commit(); err != nil {
 		logger.Error(err.Error())
 	}
+	scanCh <- struct{}{} // since we got here that means we scanned a new scene
 }
 
 func (t *ScanTask) makeScreenshots(probeResult ffmpeg.VideoFile, checksum string) {
@@ -160,4 +162,24 @@ func (t *ScanTask) calculateChecksum() (string, error) {
 	}
 	logger.Debugf("Checksum calculated: %s", checksum)
 	return checksum, nil
+}
+
+
+
+func (t *ScanTask) doesPathExist() bool {
+	if filepath.Ext(t.FilePath) == ".zip" {
+		qb := models.NewGalleryQueryBuilder()
+		gallery, _ := qb.FindByPath(t.FilePath)
+	
+		if gallery != nil {
+		return true
+		}	
+	} else {
+		qb := models.NewSceneQueryBuilder()
+		scene, _ := qb.FindByPath(t.FilePath)
+		if scene != nil {
+			return true
+		}
+	}
+return false
 }

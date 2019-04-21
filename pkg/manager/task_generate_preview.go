@@ -12,7 +12,7 @@ type GeneratePreviewTask struct {
 	Scene models.Scene
 }
 
-func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
+func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup,previewsCh chan<- struct{}) {
 	defer wg.Done()
 
 	videoFilename := t.videoFilename()
@@ -37,6 +37,7 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 		logger.Errorf("error generating preview: %s", err.Error())
 		return
 	}
+	previewsCh <- struct{}{} // since we got here that means we generated a new preview
 }
 
 func (t *GeneratePreviewTask) doesPreviewExist(sceneChecksum string) bool {

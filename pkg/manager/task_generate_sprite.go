@@ -12,7 +12,7 @@ type GenerateSpriteTask struct {
 	Scene models.Scene
 }
 
-func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
+func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup,spritesCh chan<- struct{}) {
 	defer wg.Done()
 
 	if t.doesSpriteExist(t.Scene.Checksum) {
@@ -37,6 +37,7 @@ func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 		logger.Errorf("error generating sprite: %s", err.Error())
 		return
 	}
+	spritesCh <- struct{}{} // since we got here that means we generated a new sprite
 }
 
 func (t *GenerateSpriteTask) doesSpriteExist(sceneChecksum string) bool {
