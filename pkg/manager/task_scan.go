@@ -170,7 +170,6 @@ func (t *ScanTask) doesPathExist() bool {
 	if filepath.Ext(t.FilePath) == ".zip" {
 		qb := models.NewGalleryQueryBuilder()
 		gallery, _ := qb.FindByPath(t.FilePath)
-	
 		if gallery != nil {
 		return true
 		}	

@@ -27,13 +27,13 @@ func (s *singleton) Scan() {
 			results = append(results, globResults...)
 		}
 		logger.Infof("Starting scan of %d files", len(results))
+
 		scanTimeStart := time.Now()
-		
 		var scansNeeded int64 = 0
 		var scansDone int64 = 0
 		var scanCh = make ( chan struct {} )
 
-		for _, path := range results {
+		for _, path := range results {//quick scan to find number of new files
 			task := ScanTask{FilePath: path}
 			if !task.doesPathExist(){
 					scansNeeded++
@@ -51,10 +51,9 @@ func (s *singleton) Scan() {
 											}
 								scansDone++
 								logger.Infof("Scan is running for %s.New files scanned %d of %d",time.Since(scanTimeStart),scansDone,scansNeeded)
-							
 									}
 						}
-			logger.Infof("Scan took %s.Gone through %d file/s.Scanned %d of  %d new file/s.",time.Since(scanTimeStart),len(results),scansDone,scansNeeded)
+						logger.Infof("Scan took %s.Gone through %d file/s.Scanned %d of %d new file/s.",time.Since(scanTimeStart),len(results),scansDone,scansNeeded)
 			}()
 
 
@@ -168,13 +167,13 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 									break generateloop// channel was closed, we are done
 										}
 							previewsDone++
-							logger.Infof("Generate is running for %s.Previews generated %d of %d",time.Since(generateTimeStart),previewsDone,previewsNeeded)
+							logger.Infof("Generate is running for %s.Previews generated: %d of %d",time.Since(generateTimeStart),previewsDone,previewsNeeded)
 						case _, okNew :=  <-spritesCh :
 							if !okNew	{
 									break generateloop// channel was closed, we are done
 								}
 							spritesDone++
-							logger.Infof("Generate is running for %s.Sprites generated %d of %d",time.Since(generateTimeStart),spritesDone,spritesNeeded)
+							logger.Infof("Generate is running for %s.Sprites generated: %d of %d",time.Since(generateTimeStart),spritesDone,spritesNeeded)
 					}
 				}
 			logger.Infof("Generate took %s.Generated %d preview/s and %d sprite/s.",time.Since(generateTimeStart),previewsDone,spritesDone)
