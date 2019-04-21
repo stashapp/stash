@@ -1,5 +1,6 @@
 # APPNICENAME=Stash
 # APPDESCRIPTION=An organizer for your porn, written in Go
+version: '3.4'
 services:
   stash:
     image: stashapp/stash:x86_64
