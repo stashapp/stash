@@ -20,7 +20,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       ## Keep configs here.
-      - ./config:~/.stash
+      - ./config:/root/.stash
       ## Point this at your collection.
       - ./data:/data
       ## This is where pre-generated transcodes live.
