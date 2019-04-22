@@ -66,10 +66,13 @@ func (t *ScanTask) scanGallery(scanCh chan<- struct{},errorCh chan<- struct{}) {
 		logger.Error(err.Error())
 		_ = tx.Rollback()
 		errorCh <- struct{}{}
+		return
 	} else if err := tx.Commit(); err != nil {
 				logger.Error(err.Error())
-				scanCh <- struct{}{} // since we got here that means we scanned a new gallery
+				errorCh <- struct{}{}
+				return
 	}
+	scanCh <- struct{}{} // since we got here that means we scanned a new gallery
 }
 
 func (t *ScanTask) scanScene(scanCh chan<- struct{},errorCh chan<- struct{}) {
@@ -127,9 +130,11 @@ func (t *ScanTask) scanScene(scanCh chan<- struct{},errorCh chan<- struct{}) {
 		logger.Error(err.Error())
 		_ = tx.Rollback()
 		errorCh <- struct{}{}
+		return
 	} else if err := tx.Commit(); err != nil {
 		logger.Error(err.Error())
 		errorCh <- struct{}{}
+		return
 	}
 	scanCh <- struct{}{} // since we got here that means we scanned a new scene
 }
