@@ -18,17 +18,17 @@ type ScanTask struct {
 	FilePath string
 }
 
-func (t *ScanTask) Start(wg *sync.WaitGroup,scanCh chan<- struct{}) {
+func (t *ScanTask) Start(wg *sync.WaitGroup,scanCh chan<- struct{},errorCh chan<- struct{} ) {
 	if filepath.Ext(t.FilePath) == ".zip" {
-		t.scanGallery(scanCh)
+		t.scanGallery(scanCh,errorCh)
 	} else {
-		t.scanScene(scanCh)
+		t.scanScene(scanCh,errorCh)
 	}
 
 	wg.Done()
 }
 
-func (t *ScanTask) scanGallery(scanCh chan<- struct{}) {
+func (t *ScanTask) scanGallery(scanCh chan<- struct{},errorCh chan<- struct{}) {
 	qb := models.NewGalleryQueryBuilder()
 	gallery, _ := qb.FindByPath(t.FilePath)
 	if gallery != nil {
@@ -39,6 +39,7 @@ func (t *ScanTask) scanGallery(scanCh chan<- struct{}) {
 	checksum, err := t.calculateChecksum()
 	if err != nil {
 		logger.Error(err.Error())
+		errorCh <- struct{}{}
 		return
 	}
 
@@ -64,13 +65,14 @@ func (t *ScanTask) scanGallery(scanCh chan<- struct{}) {
 	if err != nil {
 		logger.Error(err.Error())
 		_ = tx.Rollback()
+		errorCh <- struct{}{}
 	} else if err := tx.Commit(); err != nil {
 				logger.Error(err.Error())
 				scanCh <- struct{}{} // since we got here that means we scanned a new gallery
 	}
 }
 
-func (t *ScanTask) scanScene(scanCh chan<- struct{}) {
+func (t *ScanTask) scanScene(scanCh chan<- struct{},errorCh chan<- struct{}) {
 	qb := models.NewSceneQueryBuilder()
 	scene, _ := qb.FindByPath(t.FilePath)
 	if scene != nil {
@@ -81,12 +83,14 @@ func (t *ScanTask) scanScene(scanCh chan<- struct{}) {
 	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
 	if err != nil {
 		logger.Error(err.Error())
+		errorCh <- struct{}{}
 		return
 	}
 
 	checksum, err := t.calculateChecksum()
 	if err != nil {
 		logger.Error(err.Error())
+		errorCh <- struct{}{}
 		return
 	}
 
@@ -122,8 +126,10 @@ func (t *ScanTask) scanScene(scanCh chan<- struct{}) {
 	if err != nil {
 		logger.Error(err.Error())
 		_ = tx.Rollback()
+		errorCh <- struct{}{}
 	} else if err := tx.Commit(); err != nil {
 		logger.Error(err.Error())
+		errorCh <- struct{}{}
 	}
 	scanCh <- struct{}{} // since we got here that means we scanned a new scene
 }

@@ -31,7 +31,9 @@ func (s *singleton) Scan() {
 		scanTimeStart := time.Now()
 		var scansNeeded int64 = 0
 		var scansDone int64 = 0
+		var errorsScan int64 = 0
 		var scanCh = make ( chan struct {} )
+		var scanerrorCh = make ( chan struct {} )
 
 		for _, path := range results {//quick scan to find number of new files
 			task := ScanTask{FilePath: path}
@@ -50,10 +52,22 @@ func (s *singleton) Scan() {
 										break scanloop// channel was closed, we are done
 											}
 								scansDone++
+								durationScan := time.Since(scanTimeStart)
+								estimatedTime := float64(durationScan) * ( float64(scansNeeded) / float64( scansDone+errorsScan) )
 								logger.Infof("Scan is running for %s.New files scanned %d of %d",time.Since(scanTimeStart),scansDone,scansNeeded)
+								logger.Infof("Estimated time remaining for scan %s", time.Duration(estimatedTime)-durationScan)
+							case _, okError := <-scanerrorCh :
+								if !okError {
+									break scanloop
+								}
+							errorsScan++
 									}
 						}
 						logger.Infof("Scan took %s.Gone through %d file/s.Scanned %d of %d new file/s.",time.Since(scanTimeStart),len(results),scansDone,scansNeeded)
+						if errorsScan > 0 {
+							logger.Infof("Scan encountered %d error/s ",errorsScan)
+						}
+
 			}()
 
 
@@ -61,11 +75,12 @@ func (s *singleton) Scan() {
 		for _, path := range results {
 			wg.Add(1)
 			task := ScanTask{FilePath: path}
-			go task.Start(&wg,scanCh)
+			go task.Start(&wg,scanCh,scanerrorCh)
 			wg.Wait()
 			
 		}
 		close(scanCh)
+		close(scanerrorCh)
 	}()
 }
 
@@ -127,9 +142,11 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		var spritesNeeded int64 = 0
 		var previewsDone int64 = 0
 		var spritesDone int64 = 0
+		var errorsGenerate int64 =0
 
 		var previewsCh = make ( chan struct {} )
 		var spritesCh = make ( chan struct {} )
+		var errorCh = make ( chan struct {} )
 
 
 		for _, scene := range scenes {	//quick scan to gather number of needed sprites,previews 
@@ -159,6 +176,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		logger.Infof("Generate starting.Generating %d preview/s and %d sprite/s.",previewsNeeded,spritesNeeded)		
 
 		go func() { // Generate Progress reporting function
+		
 				generateloop:
 				for {
 					select {
@@ -167,16 +185,30 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 									break generateloop// channel was closed, we are done
 										}
 							previewsDone++
-							logger.Infof("Generate is running for %s.Previews generated: %d of %d",time.Since(generateTimeStart),previewsDone,previewsNeeded)
+							durationGenerate := time.Since(generateTimeStart)
+							estimatedTime := float64(durationGenerate) * ( float64(previewsNeeded+spritesNeeded) / float64( previewsDone+spritesDone+errorsGenerate) ) 
+							logger.Infof("Generate is running for %s.Previews generated: %d of %d",durationGenerate,previewsDone,previewsNeeded)
+							logger.Infof("Estimated time remaining for previews,sprites %s", time.Duration(estimatedTime)-durationGenerate) 
 						case _, okNew :=  <-spritesCh :
 							if !okNew	{
 									break generateloop// channel was closed, we are done
 								}
 							spritesDone++
-							logger.Infof("Generate is running for %s.Sprites generated: %d of %d",time.Since(generateTimeStart),spritesDone,spritesNeeded)
+							durationGenerate := time.Since(generateTimeStart)
+							estimatedTime := float64(durationGenerate) * ( float64(previewsNeeded+spritesNeeded) / float64( previewsDone+spritesDone+errorsGenerate) )  
+							logger.Infof("Generate is running for %s.Sprites generated: %d of %d",durationGenerate,spritesDone,spritesNeeded)
+							logger.Infof("Estimated time remaining for previews,sprites %s", time.Duration(estimatedTime)-durationGenerate)
+						case _, okError := <-errorCh :
+							if !okError {
+									break generateloop//
+								}
+							errorsGenerate++
 					}
 				}
-			logger.Infof("Generate took %s.Generated %d preview/s and %d sprite/s.",time.Since(generateTimeStart),previewsDone,spritesDone)
+			logger.Infof("Generate previews,sprites took %s.Generated %d preview/s and %d sprite/s.",time.Since(generateTimeStart),previewsDone,spritesDone)
+			if errorsGenerate > 0 {
+			logger.Infof("Generate previews,sprites encountered %d error/s ",errorsGenerate)
+			}
 			}()
 
 		
@@ -188,12 +220,12 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 
 			if sprites {
 				task := GenerateSpriteTask{Scene: scene}
-				go task.Start(&wg,spritesCh)
+				go task.Start(&wg,spritesCh,errorCh)
 			}
 
 			if previews {
 				task := GeneratePreviewTask{Scene: scene}
-				go task.Start(&wg,previewsCh)
+				go task.Start(&wg,previewsCh,errorCh)
 			}
 
 			if markers {
@@ -210,7 +242,8 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		}
 		close(previewsCh)		//close channels so that progress reporting function ends
 		close(spritesCh)
-	}()
+		close(errorCh)
+		}()
 }
 
 func (s *singleton) returnToIdleState() {
