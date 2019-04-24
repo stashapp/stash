@@ -12,7 +12,7 @@ type GeneratePreviewTask struct {
 	Scene models.Scene
 }
 
-func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup,previewsCh chan<- struct{},errorCh chan<- struct{}) {
+func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup, previewsCh chan<- struct{}, errorCh chan<- struct{}) {
 	defer wg.Done()
 
 	videoFilename := t.videoFilename()

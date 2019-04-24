@@ -12,7 +12,7 @@ type GenerateSpriteTask struct {
 	Scene models.Scene
 }
 
-func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup,spritesCh chan<- struct{},errorCh chan<- struct{}) {
+func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup, spritesCh chan<- struct{}, errorCh chan<- struct{}) {
 	defer wg.Done()
 
 	if t.doesSpriteExist(t.Scene.Checksum) {
