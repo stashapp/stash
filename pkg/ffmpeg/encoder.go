@@ -35,6 +35,7 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 	}
 
 	buf := make([]byte, 80)
+	last := 0
 	for {
 		n, err := stderr.Read(buf)
 		if n > 0 {
@@ -42,7 +43,14 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 			time := GetTimeFromRegex(data)
 			if time > 0 && probeResult.Duration > 0 {
 				progress := time / probeResult.Duration
-				logger.Infof("Progress %.2f", progress)
+				current := int(progress * 100)
+				if (current % 10) == 0 { // print progress every 10%
+					if current != last {
+						logger.Infof("Progress %d%%", current)
+						last = current
+					}
+				}
+
 			}
 		}
 		if err != nil {

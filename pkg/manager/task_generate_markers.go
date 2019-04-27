@@ -75,3 +75,27 @@ func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
 		}
 	}
 }
+
+func (t *GenerateMarkersTask) isMarkerNeeded() int {
+
+	markers := 0
+	qb := models.NewSceneMarkerQueryBuilder()
+	sceneMarkers, _ := qb.FindBySceneID(t.Scene.ID, nil)
+	if len(sceneMarkers) == 0 {
+		return 0
+	}
+
+	for _, sceneMarker := range sceneMarkers {
+		seconds := int(sceneMarker.Seconds)
+		videoPath := instance.Paths.SceneMarkers.GetStreamPath(t.Scene.Checksum, seconds)
+		imagePath := instance.Paths.SceneMarkers.GetStreamPreviewImagePath(t.Scene.Checksum, seconds)
+		videoExists, _ := utils.FileExists(videoPath)
+		imageExists, _ := utils.FileExists(imagePath)
+
+		if (!videoExists) || (!imageExists) {
+			markers++
+		}
+
+	}
+	return markers
+}
