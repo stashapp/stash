@@ -44,9 +44,10 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 			if time > 0 && probeResult.Duration > 0 {
 				progress := time / probeResult.Duration
 				current := int(progress * 100)
-				if (current % 10) == 0 { // print progress every 10%
+				if (current % 5) == 0 { // print progress every 5%
 					if current != last {
-						logger.Infof("Progress %d%%", current)
+						//logger.Infof("Progress %d%%", current)
+						logger.Progressf("Progress %d%%", current)
 						last = current
 					}
 				}

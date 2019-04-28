@@ -145,18 +145,22 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		var transcodesNeeded int64 = 0
 		var transcodesDone int64 = 0
 		var markersNeeded int64 = 0
+		var markersDone int64 = 0
 
 		var errorsPr int64 = 0
 		var errorsSp int64 = 0
 		var errorsTr int64 = 0
+		var errorsMa int64 = 0
 
 		var previewsCh = make(chan struct{})
 		var spritesCh = make(chan struct{})
 		var transcodesCh = make(chan struct{})
+		var markersCh = make(chan struct{})
 
 		var errorPrCh = make(chan struct{})
 		var errorSpCh = make(chan struct{})
 		var errorTrCh = make(chan struct{})
+		var errorMaCh = make(chan struct{})
 
 		for _, scene := range scenes { //quick scan to gather number of needed sprites,previews,markers and file transcodes
 			if sprites {
@@ -221,6 +225,15 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 					estimatedTrTime := float64(durationGenerate) * (float64(transcodesNeeded) / float64(transcodesDone+errorsTr))
 					logger.Infof("Generate is running for %s.Transcodes done: %d of %d", durationGenerate, transcodesDone, transcodesNeeded)
 					logger.Infof("Estimated time remaining for transcodes %s", time.Duration(estimatedTrTime)-durationGenerate)
+				case _, okMark := <-markersCh:
+					if !okMark {
+						break generateloop // channel was closed, we are done
+					}
+					markersDone++
+					durationGenerate := time.Since(generateTimeStart)
+					estimatedMaTime := float64(durationGenerate) * (float64(markersNeeded) / float64(markersDone+errorsMa))
+					logger.Infof("Generate is running for %s.Markers done: %d of %d", durationGenerate, markersDone, markersNeeded)
+					logger.Infof("Estimated time remaining for markers %s", time.Duration(estimatedMaTime)-durationGenerate)
 				case _, okPrError := <-errorPrCh:
 					if !okPrError {
 						break generateloop
@@ -236,11 +249,16 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 						break generateloop
 					}
 					errorsTr++
+				case _, okMaError := <-errorMaCh:
+					if !okMaError {
+						break generateloop
+					}
+					errorsMa++
 				}
 			}
-			logger.Infof("Generate took %s.Generated %d/%d preview/s %d/%d sprite/s.Transcoded %d/%d file/s.", time.Since(generateTimeStart), previewsDone, previewsNeeded, spritesDone, spritesNeeded, transcodesDone, transcodesNeeded)
+			logger.Infof("Generate took %s.Generated %d/%d preview/s %d/%d sprite/s %d/%d markers.Transcoded %d/%d file/s.", time.Since(generateTimeStart), previewsDone, previewsNeeded, spritesDone, spritesNeeded, markersDone, markersNeeded, transcodesDone, transcodesNeeded)
 			if (errorsTr + errorsPr + errorsSp) > 0 {
-				logger.Infof("Generate encountered %d error/s ", errorsTr+errorsPr+errorsSp)
+				logger.Infof("Generate encountered %d error/s ", errorsTr+errorsPr+errorsSp+errorsMa)
 			}
 		}()
 
@@ -261,7 +279,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 
 			if markers {
 				task := GenerateMarkersTask{Scene: scene}
-				go task.Start(&wg)
+				go task.Start(&wg, markersCh, errorMaCh)
 			}
 
 			if transcodes {
@@ -274,9 +292,11 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		close(previewsCh) //close channels so that progress reporting function ends
 		close(spritesCh)
 		close(transcodesCh)
+		close(markersCh)
 		close(errorPrCh)
 		close(errorTrCh)
 		close(errorSpCh)
+		close(errorMaCh)
 	}()
 }
 

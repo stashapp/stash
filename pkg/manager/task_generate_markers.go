@@ -15,7 +15,7 @@ type GenerateMarkersTask struct {
 	Scene models.Scene
 }
 
-func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
+func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup, markersCh chan<- struct{}, errorCh chan<- struct{}) {
 	defer wg.Done()
 
 	instance.Paths.Generated.EmptyTmpDir()
@@ -36,10 +36,10 @@ func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
 	_ = utils.EnsureDir(markersFolder)
 
 	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
-	for i, sceneMarker := range sceneMarkers {
-		index := i + 1
-		logger.Progressf("[generator] <%s> scene marker %d of %d", t.Scene.Checksum, index, len(sceneMarkers))
 
+	for _, sceneMarker := range sceneMarkers {
+		createMarker := false
+		errorMarker := false
 		seconds := int(sceneMarker.Seconds)
 		baseFilename := strconv.Itoa(seconds)
 		videoFilename := baseFilename + ".mp4"
@@ -55,23 +55,34 @@ func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
 			Width:     640,
 		}
 		if !videoExists {
+			logger.Infof("[generator] generating scene video markers for %s", t.Scene.Path)
 			options.OutputPath = instance.Paths.Generated.GetTmpPath(videoFilename) // tmp output in case the process ends abruptly
 			if err := encoder.SceneMarkerVideo(*videoFile, options); err != nil {
 				logger.Errorf("[generator] failed to generate marker video: %s", err)
+				errorMarker = true
 			} else {
 				_ = os.Rename(options.OutputPath, videoPath)
 				logger.Debug("created marker video: ", videoPath)
+				createMarker = true
 			}
 		}
 
 		if !imageExists {
+			logger.Infof("[generator] generating scene image markers for %s", t.Scene.Path)
 			options.OutputPath = instance.Paths.Generated.GetTmpPath(imageFilename) // tmp output in case the process ends abruptly
 			if err := encoder.SceneMarkerImage(*videoFile, options); err != nil {
 				logger.Errorf("[generator] failed to generate marker image: %s", err)
+				errorMarker = true
 			} else {
 				_ = os.Rename(options.OutputPath, imagePath)
 				logger.Debug("created marker image: ", videoPath)
+				createMarker = true
 			}
+		}
+		if createMarker { // marker created either image or video
+			markersCh <- struct{}{}
+		} else if errorMarker { // marker creation failed , error found
+			errorCh <- struct{}{}
 		}
 	}
 }
