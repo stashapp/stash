@@ -257,7 +257,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 				}
 			}
 			logger.Infof("Generate took %s.Generated %d/%d preview/s %d/%d sprite/s %d/%d markers.Transcoded %d/%d file/s.", time.Since(generateTimeStart), previewsDone, previewsNeeded, spritesDone, spritesNeeded, markersDone, markersNeeded, transcodesDone, transcodesNeeded)
-			if (errorsTr + errorsPr + errorsSp) > 0 {
+			if (errorsTr + errorsPr + errorsSp + errorsMa) > 0 {
 				logger.Infof("Generate encountered %d error/s ", errorsTr+errorsPr+errorsSp+errorsMa)
 			}
 		}()
