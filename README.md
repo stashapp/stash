@@ -8,13 +8,17 @@
 
 See a demo [here](https://vimeo.com/275537038) (password is stashapp).
 
-# Install
+# Docker install
+
+Follow [this README.md in the docker directory.](docker/production/README.md)
+
+# Bare-metal Install
 
 Stash supports macOS, Windows, and Linux.  Download the [latest release here](https://github.com/stashapp/stash/releases).
 
-Simply run the executable (double click the exe on windows or run `./stash-osx` / `./stash-linux` from the terminal on macOS / Linux) and navigate to either https://localhost:9999 or http://localhost:9998 to get started.
+Run the executable (double click the exe on windows or run `./stash-osx` / `./stash-linux` from the terminal on macOS / Linux) and navigate to either https://localhost:9999 or http://localhost:9998 to get started.
 
-*Note for Windows users:* Running the app might present a security prompt since the binary isn't signed yet.  Just click more info and then the run anyway button.
+*Note for Windows users:* Running the app might present a security prompt since the binary isn't signed yet.  Just click more info and then the "run anyway" button.
 
 #### FFMPEG
 
@@ -40,9 +44,9 @@ Stash supports HTTPS with some additional work.  First you must generate a SSL c
 
 `openssl req -x509 -newkey rsa:4096 -sha256 -days 7300 -nodes -keyout stash.key -out stash.crt -extensions san -config <(echo "[req]"; echo distinguished_name=req; echo "[san]"; echo subjectAltName=DNS:stash.server,IP:127.0.0.1) -subj /CN=stash.server`
 
-This command would need to be customized for your environment.  [This link](https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl) might be useful.
+This command would need customizing for your environment.  [This link](https://stackoverflow.com/questions/10175812/how-to-create-a-self-signed-certificate-with-openssl) might be useful.
 
-Once you have a certificate and key file name them `stash.crt` and `stash.key` and place them in the `~/.stash` directory.  Stash will detect these and start up using HTTPS rather than HTTP.
+Once you have a certificate and key file name them `stash.crt` and `stash.key` and place them in the `~/.stash` directory.  Stash detects these and starts up using HTTPS rather than HTTP.
 
 # FAQ
 
@@ -72,9 +76,9 @@ TODO
 1. Download and install [Go for Windows](https://golang.org/dl/)
 2. Download and install [MingW](https://sourceforge.net/projects/mingw-w64/)
 3. Search for "advanced system settings" and open the system properties dialog.
-	1. Click the `Environment Variables` button
-	2. Add `GO111MODULE=on`
-	3. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
+    1. Click the `Environment Variables` button
+    2. Add `GO111MODULE=on`
+    3. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
 
 ## Commands
 
@@ -91,7 +95,7 @@ TODO
 ## Cross compiling
 
 This project uses a modification of [this](https://github.com/bep/dockerfiles/tree/master/ci-goreleaser) docker container to create an environment
-where the app can be cross compiled.  This process is kicked off by CI via the `scripts/cross-compile.sh` script.  Run the following
+where the app can be cross-compiled.  This process is kicked off by CI via the `scripts/cross-compile.sh` script.  Run the following
 command to open a bash shell to the container to poke around:
 
 `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t stashappdev/compiler:latest /bin/bash`
