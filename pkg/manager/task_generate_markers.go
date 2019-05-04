@@ -18,7 +18,6 @@ type GenerateMarkersTask struct {
 func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup, markersCh chan<- struct{}, errorCh chan<- struct{}) {
 	defer wg.Done()
 
-	instance.Paths.Generated.EmptyTmpDir()
 	qb := models.NewSceneMarkerQueryBuilder()
 	sceneMarkers, _ := qb.FindBySceneID(t.Scene.ID, nil)
 	if len(sceneMarkers) == 0 {
