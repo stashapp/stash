@@ -95,6 +95,11 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		for _, scene := range scenes {
 			wg.Add(delta)
 
+			// Clear the tmp directory for each scene
+			if sprites || previews || markers {
+				instance.Paths.Generated.EmptyTmpDir()
+			}
+
 			if sprites {
 				task := GenerateSpriteTask{Scene: scene}
 				go task.Start(&wg)
