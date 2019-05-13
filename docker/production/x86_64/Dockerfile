@@ -17,5 +17,5 @@ RUN curl -L -o /stash $(curl -s https://api.github.com/repos/stashapp/stash/rele
 FROM ubuntu:18.04 as app
 RUN adduser stash --gecos GECOS --shell /bin/bash --disabled-password --home /home/stash
 COPY --from=prep /stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
-EXPOSE 9998
+EXPOSE 9999
 CMD ["stash"]
