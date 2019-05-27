@@ -164,26 +164,26 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 
 		for _, scene := range scenes { //quick scan to gather number of needed sprites,previews,markers and file transcodes
 			if sprites {
-				task := GenerateSpriteTask{Scene: scene}
+				task := GenerateSpriteTask{Scene: *scene}
 				if !task.doesSpriteExist(task.Scene.Checksum) {
 					spritesNeeded++
 				}
 			}
 
 			if previews {
-				task := GeneratePreviewTask{Scene: scene}
+				task := GeneratePreviewTask{Scene: *scene}
 				if !task.doesPreviewExist(task.Scene.Checksum) {
 					previewsNeeded++
 				}
 			}
 
 			if markers {
-				task := GenerateMarkersTask{Scene: scene}
+				task := GenerateMarkersTask{Scene: *scene}
 				markersNeeded += int64(task.isMarkerNeeded())
 
 			}
 			if transcodes {
-				task := GenerateTranscodeTask{Scene: scene}
+				task := GenerateTranscodeTask{Scene: *scene}
 				if task.isTranscodeNeeded() {
 					transcodesNeeded++
 				}
