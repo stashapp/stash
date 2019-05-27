@@ -1,4 +1,26 @@
 
+v1.0.8 / 2019-02-10
+===================
+
+  * refactor(images): heic -> heif
+  * feat(docs): add heif format
+  * Merge pull request #60 from rikonor/master
+  * add heif/heic support
+  * fix(docs): dicom -> dcm
+  * feat: add dicom type
+  * Merge pull request #58 from Fentonz/master
+  * Merge pull request #59 from kmanley/master
+  * fix example; related to h2non/filetype#43
+  * Added DICOM type to archive
+
+
+v1.0.7 / 2019-02-09
+===================
+
+  * Merge pull request #56 from akupila/wasm
+  * add wasm to readme
+  * detect wasm file type
+
 v1.0.6 / 2019-01-22
 ===================
 

@@ -49,12 +49,12 @@ type sceneMarkerResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
 
-func (r *queryResolver) MarkerWall(ctx context.Context, q *string) ([]models.SceneMarker, error) {
+func (r *queryResolver) MarkerWall(ctx context.Context, q *string) ([]*models.SceneMarker, error) {
 	qb := models.NewSceneMarkerQueryBuilder()
 	return qb.Wall(q)
 }
 
-func (r *queryResolver) SceneWall(ctx context.Context, q *string) ([]models.Scene, error) {
+func (r *queryResolver) SceneWall(ctx context.Context, q *string) ([]*models.Scene, error) {
 	qb := models.NewSceneQueryBuilder()
 	return qb.Wall(q)
 }
@@ -64,7 +64,7 @@ func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *stri
 	return qb.GetMarkerStrings(q, sort)
 }
 
-func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *string) ([]models.Gallery, error) {
+func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *string) ([]*models.Gallery, error) {
 	if scene_id == nil {
 		panic("nil scene id") // TODO make scene_id mandatory
 	}
@@ -79,7 +79,7 @@ func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *st
 	validGalleries, err := qb.ValidGalleriesForScenePath(scene.Path)
 	sceneGallery, _ := qb.FindBySceneID(sceneID, nil)
 	if sceneGallery != nil {
-		validGalleries = append(validGalleries, *sceneGallery)
+		validGalleries = append(validGalleries, sceneGallery)
 	}
 	return validGalleries, nil
 }
@@ -105,7 +105,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 }
 
 // Get scene marker tags which show up under the video.
-func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([]models.SceneMarkerTag, error) {
+func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([]*models.SceneMarkerTag, error) {
 	sceneID, _ := strconv.Atoi(scene_id)
 	sqb := models.NewSceneMarkerQueryBuilder()
 	sceneMarkers, err := sqb.FindBySceneID(sceneID, nil)
@@ -124,7 +124,7 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 		_, hasKey := tags[markerPrimaryTag.ID]
 		var sceneMarkerTag *models.SceneMarkerTag
 		if !hasKey {
-			sceneMarkerTag = &models.SceneMarkerTag{Tag: *markerPrimaryTag}
+			sceneMarkerTag = &models.SceneMarkerTag{Tag: markerPrimaryTag}
 			tags[markerPrimaryTag.ID] = sceneMarkerTag
 			keys = append(keys, markerPrimaryTag.ID)
 		} else {
@@ -140,9 +140,9 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 		return a.SceneMarkers[0].Seconds < b.SceneMarkers[0].Seconds
 	})
 
-	var result []models.SceneMarkerTag
+	var result []*models.SceneMarkerTag
 	for _, key := range keys {
-		result = append(result, *tags[key])
+		result = append(result, tags[key])
 	}
 
 	return result, nil

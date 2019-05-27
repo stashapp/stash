@@ -12,7 +12,7 @@ func (r *queryResolver) FindTag(ctx context.Context, id string) (*models.Tag, er
 	return qb.Find(idInt, nil)
 }
 
-func (r *queryResolver) AllTags(ctx context.Context) ([]models.Tag, error) {
+func (r *queryResolver) AllTags(ctx context.Context) ([]*models.Tag, error) {
 	qb := models.NewTagQueryBuilder()
 	return qb.All()
 }

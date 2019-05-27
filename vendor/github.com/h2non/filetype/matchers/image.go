@@ -1,5 +1,7 @@
 package matchers
 
+import "github.com/h2non/filetype/matchers/isobmff"
+
 var (
 	TypeJpeg     = newType("jpg", "image/jpeg")
 	TypeJpeg2000 = newType("jp2", "image/jp2")
@@ -12,6 +14,7 @@ var (
 	TypeJxr      = newType("jxr", "image/vnd.ms-photo")
 	TypePsd      = newType("psd", "image/vnd.adobe.photoshop")
 	TypeIco      = newType("ico", "image/x-icon")
+	TypeHeif     = newType("heif", "image/heif")
 )
 
 var Image = Map{
@@ -26,6 +29,7 @@ var Image = Map{
 	TypeJxr:      Jxr,
 	TypePsd:      Psd,
 	TypeIco:      Ico,
+	TypeHeif:     Heif,
 }
 
 func Jpeg(buf []byte) bool {
@@ -105,4 +109,25 @@ func Ico(buf []byte) bool {
 	return len(buf) > 3 &&
 		buf[0] == 0x00 && buf[1] == 0x00 &&
 		buf[2] == 0x01 && buf[3] == 0x00
+}
+
+func Heif(buf []byte) bool {
+	if !isobmff.IsISOBMFF(buf) {
+		return false
+	}
+
+	majorBrand, _, compatibleBrands := isobmff.GetFtyp(buf)
+	if majorBrand == "heic" {
+		return true
+	}
+
+	if majorBrand == "mif1" || majorBrand == "msf1" {
+		for _, compatibleBrand := range compatibleBrands {
+			if compatibleBrand == "heic" {
+				return true
+			}
+		}
+	}
+
+	return false
 }

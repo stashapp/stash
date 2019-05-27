@@ -9,6 +9,7 @@ import (
 	"io"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -278,7 +279,7 @@ type ComplexityRoot struct {
 
 type GalleryResolver interface {
 	Title(ctx context.Context, obj *Gallery) (*string, error)
-	Files(ctx context.Context, obj *Gallery) ([]GalleryFilesType, error)
+	Files(ctx context.Context, obj *Gallery) ([]*GalleryFilesType, error)
 }
 type MutationResolver interface {
 	SceneUpdate(ctx context.Context, input SceneUpdateInput) (*Scene, error)
@@ -313,7 +314,7 @@ type PerformerResolver interface {
 	Favorite(ctx context.Context, obj *Performer) (bool, error)
 	ImagePath(ctx context.Context, obj *Performer) (*string, error)
 	SceneCount(ctx context.Context, obj *Performer) (*int, error)
-	Scenes(ctx context.Context, obj *Performer) ([]Scene, error)
+	Scenes(ctx context.Context, obj *Performer) ([]*Scene, error)
 }
 type QueryResolver interface {
 	FindScene(ctx context.Context, id *string, checksum *string) (*Scene, error)
@@ -326,12 +327,12 @@ type QueryResolver interface {
 	FindGallery(ctx context.Context, id string) (*Gallery, error)
 	FindGalleries(ctx context.Context, filter *FindFilterType) (*FindGalleriesResultType, error)
 	FindTag(ctx context.Context, id string) (*Tag, error)
-	MarkerWall(ctx context.Context, q *string) ([]SceneMarker, error)
-	SceneWall(ctx context.Context, q *string) ([]Scene, error)
+	MarkerWall(ctx context.Context, q *string) ([]*SceneMarker, error)
+	SceneWall(ctx context.Context, q *string) ([]*Scene, error)
 	MarkerStrings(ctx context.Context, q *string, sort *string) ([]*MarkerStringsResultType, error)
-	ValidGalleriesForScene(ctx context.Context, sceneID *string) ([]Gallery, error)
+	ValidGalleriesForScene(ctx context.Context, sceneID *string) ([]*Gallery, error)
 	Stats(ctx context.Context) (*StatsResultType, error)
-	SceneMarkerTags(ctx context.Context, sceneID string) ([]SceneMarkerTag, error)
+	SceneMarkerTags(ctx context.Context, sceneID string) ([]*SceneMarkerTag, error)
 	ScrapeFreeones(ctx context.Context, performerName string) (*ScrapedPerformer, error)
 	ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error)
 	Configuration(ctx context.Context) (*ConfigResult, error)
@@ -341,9 +342,9 @@ type QueryResolver interface {
 	MetadataScan(ctx context.Context) (string, error)
 	MetadataGenerate(ctx context.Context, input GenerateMetadataInput) (string, error)
 	MetadataClean(ctx context.Context) (string, error)
-	AllPerformers(ctx context.Context) ([]Performer, error)
-	AllStudios(ctx context.Context) ([]Studio, error)
-	AllTags(ctx context.Context) ([]Tag, error)
+	AllPerformers(ctx context.Context) ([]*Performer, error)
+	AllStudios(ctx context.Context) ([]*Studio, error)
+	AllTags(ctx context.Context) ([]*Tag, error)
 }
 type SceneResolver interface {
 	Title(ctx context.Context, obj *Scene) (*string, error)
@@ -355,17 +356,17 @@ type SceneResolver interface {
 	File(ctx context.Context, obj *Scene) (*SceneFileType, error)
 	Paths(ctx context.Context, obj *Scene) (*ScenePathsType, error)
 	IsStreamable(ctx context.Context, obj *Scene) (bool, error)
-	SceneMarkers(ctx context.Context, obj *Scene) ([]SceneMarker, error)
+	SceneMarkers(ctx context.Context, obj *Scene) ([]*SceneMarker, error)
 	Gallery(ctx context.Context, obj *Scene) (*Gallery, error)
 	Studio(ctx context.Context, obj *Scene) (*Studio, error)
-	Tags(ctx context.Context, obj *Scene) ([]Tag, error)
-	Performers(ctx context.Context, obj *Scene) ([]Performer, error)
+	Tags(ctx context.Context, obj *Scene) ([]*Tag, error)
+	Performers(ctx context.Context, obj *Scene) ([]*Performer, error)
 }
 type SceneMarkerResolver interface {
 	Scene(ctx context.Context, obj *SceneMarker) (*Scene, error)
 
 	PrimaryTag(ctx context.Context, obj *SceneMarker) (*Tag, error)
-	Tags(ctx context.Context, obj *SceneMarker) ([]Tag, error)
+	Tags(ctx context.Context, obj *SceneMarker) ([]*Tag, error)
 	Stream(ctx context.Context, obj *SceneMarker) (string, error)
 	Preview(ctx context.Context, obj *SceneMarker) (string, error)
 }
@@ -398,182 +399,182 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "ConfigGeneralResult.DatabasePath":
+	case "ConfigGeneralResult.databasePath":
 		if e.complexity.ConfigGeneralResult.DatabasePath == nil {
 			break
 		}
 
 		return e.complexity.ConfigGeneralResult.DatabasePath(childComplexity), true
 
-	case "ConfigGeneralResult.GeneratedPath":
+	case "ConfigGeneralResult.generatedPath":
 		if e.complexity.ConfigGeneralResult.GeneratedPath == nil {
 			break
 		}
 
 		return e.complexity.ConfigGeneralResult.GeneratedPath(childComplexity), true
 
-	case "ConfigGeneralResult.Stashes":
+	case "ConfigGeneralResult.stashes":
 		if e.complexity.ConfigGeneralResult.Stashes == nil {
 			break
 		}
 
 		return e.complexity.ConfigGeneralResult.Stashes(childComplexity), true
 
-	case "ConfigResult.General":
+	case "ConfigResult.general":
 		if e.complexity.ConfigResult.General == nil {
 			break
 		}
 
 		return e.complexity.ConfigResult.General(childComplexity), true
 
-	case "FindGalleriesResultType.Count":
+	case "FindGalleriesResultType.count":
 		if e.complexity.FindGalleriesResultType.Count == nil {
 			break
 		}
 
 		return e.complexity.FindGalleriesResultType.Count(childComplexity), true
 
-	case "FindGalleriesResultType.Galleries":
+	case "FindGalleriesResultType.galleries":
 		if e.complexity.FindGalleriesResultType.Galleries == nil {
 			break
 		}
 
 		return e.complexity.FindGalleriesResultType.Galleries(childComplexity), true
 
-	case "FindPerformersResultType.Count":
+	case "FindPerformersResultType.count":
 		if e.complexity.FindPerformersResultType.Count == nil {
 			break
 		}
 
 		return e.complexity.FindPerformersResultType.Count(childComplexity), true
 
-	case "FindPerformersResultType.Performers":
+	case "FindPerformersResultType.performers":
 		if e.complexity.FindPerformersResultType.Performers == nil {
 			break
 		}
 
 		return e.complexity.FindPerformersResultType.Performers(childComplexity), true
 
-	case "FindSceneMarkersResultType.Count":
+	case "FindSceneMarkersResultType.count":
 		if e.complexity.FindSceneMarkersResultType.Count == nil {
 			break
 		}
 
 		return e.complexity.FindSceneMarkersResultType.Count(childComplexity), true
 
-	case "FindSceneMarkersResultType.SceneMarkers":
+	case "FindSceneMarkersResultType.scene_markers":
 		if e.complexity.FindSceneMarkersResultType.SceneMarkers == nil {
 			break
 		}
 
 		return e.complexity.FindSceneMarkersResultType.SceneMarkers(childComplexity), true
 
-	case "FindScenesResultType.Count":
+	case "FindScenesResultType.count":
 		if e.complexity.FindScenesResultType.Count == nil {
 			break
 		}
 
 		return e.complexity.FindScenesResultType.Count(childComplexity), true
 
-	case "FindScenesResultType.Scenes":
+	case "FindScenesResultType.scenes":
 		if e.complexity.FindScenesResultType.Scenes == nil {
 			break
 		}
 
 		return e.complexity.FindScenesResultType.Scenes(childComplexity), true
 
-	case "FindStudiosResultType.Count":
+	case "FindStudiosResultType.count":
 		if e.complexity.FindStudiosResultType.Count == nil {
 			break
 		}
 
 		return e.complexity.FindStudiosResultType.Count(childComplexity), true
 
-	case "FindStudiosResultType.Studios":
+	case "FindStudiosResultType.studios":
 		if e.complexity.FindStudiosResultType.Studios == nil {
 			break
 		}
 
 		return e.complexity.FindStudiosResultType.Studios(childComplexity), true
 
-	case "Gallery.Checksum":
+	case "Gallery.checksum":
 		if e.complexity.Gallery.Checksum == nil {
 			break
 		}
 
 		return e.complexity.Gallery.Checksum(childComplexity), true
 
-	case "Gallery.Files":
+	case "Gallery.files":
 		if e.complexity.Gallery.Files == nil {
 			break
 		}
 
 		return e.complexity.Gallery.Files(childComplexity), true
 
-	case "Gallery.ID":
+	case "Gallery.id":
 		if e.complexity.Gallery.ID == nil {
 			break
 		}
 
 		return e.complexity.Gallery.ID(childComplexity), true
 
-	case "Gallery.Path":
+	case "Gallery.path":
 		if e.complexity.Gallery.Path == nil {
 			break
 		}
 
 		return e.complexity.Gallery.Path(childComplexity), true
 
-	case "Gallery.Title":
+	case "Gallery.title":
 		if e.complexity.Gallery.Title == nil {
 			break
 		}
 
 		return e.complexity.Gallery.Title(childComplexity), true
 
-	case "GalleryFilesType.Index":
+	case "GalleryFilesType.index":
 		if e.complexity.GalleryFilesType.Index == nil {
 			break
 		}
 
 		return e.complexity.GalleryFilesType.Index(childComplexity), true
 
-	case "GalleryFilesType.Name":
+	case "GalleryFilesType.name":
 		if e.complexity.GalleryFilesType.Name == nil {
 			break
 		}
 
 		return e.complexity.GalleryFilesType.Name(childComplexity), true
 
-	case "GalleryFilesType.Path":
+	case "GalleryFilesType.path":
 		if e.complexity.GalleryFilesType.Path == nil {
 			break
 		}
 
 		return e.complexity.GalleryFilesType.Path(childComplexity), true
 
-	case "MarkerStringsResultType.Count":
+	case "MarkerStringsResultType.count":
 		if e.complexity.MarkerStringsResultType.Count == nil {
 			break
 		}
 
 		return e.complexity.MarkerStringsResultType.Count(childComplexity), true
 
-	case "MarkerStringsResultType.ID":
+	case "MarkerStringsResultType.id":
 		if e.complexity.MarkerStringsResultType.ID == nil {
 			break
 		}
 
 		return e.complexity.MarkerStringsResultType.ID(childComplexity), true
 
-	case "MarkerStringsResultType.Title":
+	case "MarkerStringsResultType.title":
 		if e.complexity.MarkerStringsResultType.Title == nil {
 			break
 		}
 
 		return e.complexity.MarkerStringsResultType.Title(childComplexity), true
 
-	case "Mutation.ConfigureGeneral":
+	case "Mutation.configureGeneral":
 		if e.complexity.Mutation.ConfigureGeneral == nil {
 			break
 		}
@@ -585,7 +586,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.ConfigureGeneral(childComplexity, args["input"].(ConfigGeneralInput)), true
 
-	case "Mutation.PerformerCreate":
+	case "Mutation.performerCreate":
 		if e.complexity.Mutation.PerformerCreate == nil {
 			break
 		}
@@ -597,7 +598,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.PerformerCreate(childComplexity, args["input"].(PerformerCreateInput)), true
 
-	case "Mutation.PerformerUpdate":
+	case "Mutation.performerUpdate":
 		if e.complexity.Mutation.PerformerUpdate == nil {
 			break
 		}
@@ -609,7 +610,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.PerformerUpdate(childComplexity, args["input"].(PerformerUpdateInput)), true
 
-	case "Mutation.SceneMarkerCreate":
+	case "Mutation.sceneMarkerCreate":
 		if e.complexity.Mutation.SceneMarkerCreate == nil {
 			break
 		}
@@ -621,7 +622,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SceneMarkerCreate(childComplexity, args["input"].(SceneMarkerCreateInput)), true
 
-	case "Mutation.SceneMarkerDestroy":
+	case "Mutation.sceneMarkerDestroy":
 		if e.complexity.Mutation.SceneMarkerDestroy == nil {
 			break
 		}
@@ -633,7 +634,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SceneMarkerDestroy(childComplexity, args["id"].(string)), true
 
-	case "Mutation.SceneMarkerUpdate":
+	case "Mutation.sceneMarkerUpdate":
 		if e.complexity.Mutation.SceneMarkerUpdate == nil {
 			break
 		}
@@ -645,7 +646,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SceneMarkerUpdate(childComplexity, args["input"].(SceneMarkerUpdateInput)), true
 
-	case "Mutation.SceneUpdate":
+	case "Mutation.sceneUpdate":
 		if e.complexity.Mutation.SceneUpdate == nil {
 			break
 		}
@@ -657,7 +658,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SceneUpdate(childComplexity, args["input"].(SceneUpdateInput)), true
 
-	case "Mutation.StudioCreate":
+	case "Mutation.studioCreate":
 		if e.complexity.Mutation.StudioCreate == nil {
 			break
 		}
@@ -669,7 +670,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.StudioCreate(childComplexity, args["input"].(StudioCreateInput)), true
 
-	case "Mutation.StudioUpdate":
+	case "Mutation.studioUpdate":
 		if e.complexity.Mutation.StudioUpdate == nil {
 			break
 		}
@@ -681,7 +682,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.StudioUpdate(childComplexity, args["input"].(StudioUpdateInput)), true
 
-	case "Mutation.TagCreate":
+	case "Mutation.tagCreate":
 		if e.complexity.Mutation.TagCreate == nil {
 			break
 		}
@@ -693,7 +694,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.TagCreate(childComplexity, args["input"].(TagCreateInput)), true
 
-	case "Mutation.TagDestroy":
+	case "Mutation.tagDestroy":
 		if e.complexity.Mutation.TagDestroy == nil {
 			break
 		}
@@ -705,7 +706,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.TagDestroy(childComplexity, args["input"].(TagDestroyInput)), true
 
-	case "Mutation.TagUpdate":
+	case "Mutation.tagUpdate":
 		if e.complexity.Mutation.TagUpdate == nil {
 			break
 		}
@@ -717,182 +718,182 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.TagUpdate(childComplexity, args["input"].(TagUpdateInput)), true
 
-	case "Performer.Aliases":
+	case "Performer.aliases":
 		if e.complexity.Performer.Aliases == nil {
 			break
 		}
 
 		return e.complexity.Performer.Aliases(childComplexity), true
 
-	case "Performer.Birthdate":
+	case "Performer.birthdate":
 		if e.complexity.Performer.Birthdate == nil {
 			break
 		}
 
 		return e.complexity.Performer.Birthdate(childComplexity), true
 
-	case "Performer.CareerLength":
+	case "Performer.career_length":
 		if e.complexity.Performer.CareerLength == nil {
 			break
 		}
 
 		return e.complexity.Performer.CareerLength(childComplexity), true
 
-	case "Performer.Checksum":
+	case "Performer.checksum":
 		if e.complexity.Performer.Checksum == nil {
 			break
 		}
 
 		return e.complexity.Performer.Checksum(childComplexity), true
 
-	case "Performer.Country":
+	case "Performer.country":
 		if e.complexity.Performer.Country == nil {
 			break
 		}
 
 		return e.complexity.Performer.Country(childComplexity), true
 
-	case "Performer.Ethnicity":
+	case "Performer.ethnicity":
 		if e.complexity.Performer.Ethnicity == nil {
 			break
 		}
 
 		return e.complexity.Performer.Ethnicity(childComplexity), true
 
-	case "Performer.EyeColor":
+	case "Performer.eye_color":
 		if e.complexity.Performer.EyeColor == nil {
 			break
 		}
 
 		return e.complexity.Performer.EyeColor(childComplexity), true
 
-	case "Performer.FakeTits":
+	case "Performer.fake_tits":
 		if e.complexity.Performer.FakeTits == nil {
 			break
 		}
 
 		return e.complexity.Performer.FakeTits(childComplexity), true
 
-	case "Performer.Favorite":
+	case "Performer.favorite":
 		if e.complexity.Performer.Favorite == nil {
 			break
 		}
 
 		return e.complexity.Performer.Favorite(childComplexity), true
 
-	case "Performer.Height":
+	case "Performer.height":
 		if e.complexity.Performer.Height == nil {
 			break
 		}
 
 		return e.complexity.Performer.Height(childComplexity), true
 
-	case "Performer.ID":
+	case "Performer.id":
 		if e.complexity.Performer.ID == nil {
 			break
 		}
 
 		return e.complexity.Performer.ID(childComplexity), true
 
-	case "Performer.ImagePath":
+	case "Performer.image_path":
 		if e.complexity.Performer.ImagePath == nil {
 			break
 		}
 
 		return e.complexity.Performer.ImagePath(childComplexity), true
 
-	case "Performer.Instagram":
+	case "Performer.instagram":
 		if e.complexity.Performer.Instagram == nil {
 			break
 		}
 
 		return e.complexity.Performer.Instagram(childComplexity), true
 
-	case "Performer.Measurements":
+	case "Performer.measurements":
 		if e.complexity.Performer.Measurements == nil {
 			break
 		}
 
 		return e.complexity.Performer.Measurements(childComplexity), true
 
-	case "Performer.Name":
+	case "Performer.name":
 		if e.complexity.Performer.Name == nil {
 			break
 		}
 
 		return e.complexity.Performer.Name(childComplexity), true
 
-	case "Performer.Piercings":
+	case "Performer.piercings":
 		if e.complexity.Performer.Piercings == nil {
 			break
 		}
 
 		return e.complexity.Performer.Piercings(childComplexity), true
 
-	case "Performer.SceneCount":
+	case "Performer.scene_count":
 		if e.complexity.Performer.SceneCount == nil {
 			break
 		}
 
 		return e.complexity.Performer.SceneCount(childComplexity), true
 
-	case "Performer.Scenes":
+	case "Performer.scenes":
 		if e.complexity.Performer.Scenes == nil {
 			break
 		}
 
 		return e.complexity.Performer.Scenes(childComplexity), true
 
-	case "Performer.Tattoos":
+	case "Performer.tattoos":
 		if e.complexity.Performer.Tattoos == nil {
 			break
 		}
 
 		return e.complexity.Performer.Tattoos(childComplexity), true
 
-	case "Performer.Twitter":
+	case "Performer.twitter":
 		if e.complexity.Performer.Twitter == nil {
 			break
 		}
 
 		return e.complexity.Performer.Twitter(childComplexity), true
 
-	case "Performer.URL":
+	case "Performer.url":
 		if e.complexity.Performer.URL == nil {
 			break
 		}
 
 		return e.complexity.Performer.URL(childComplexity), true
 
-	case "Query.AllPerformers":
+	case "Query.allPerformers":
 		if e.complexity.Query.AllPerformers == nil {
 			break
 		}
 
 		return e.complexity.Query.AllPerformers(childComplexity), true
 
-	case "Query.AllStudios":
+	case "Query.allStudios":
 		if e.complexity.Query.AllStudios == nil {
 			break
 		}
 
 		return e.complexity.Query.AllStudios(childComplexity), true
 
-	case "Query.AllTags":
+	case "Query.allTags":
 		if e.complexity.Query.AllTags == nil {
 			break
 		}
 
 		return e.complexity.Query.AllTags(childComplexity), true
 
-	case "Query.Configuration":
+	case "Query.configuration":
 		if e.complexity.Query.Configuration == nil {
 			break
 		}
 
 		return e.complexity.Query.Configuration(childComplexity), true
 
-	case "Query.Directories":
+	case "Query.directories":
 		if e.complexity.Query.Directories == nil {
 			break
 		}
@@ -904,7 +905,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Directories(childComplexity, args["path"].(*string)), true
 
-	case "Query.FindGalleries":
+	case "Query.findGalleries":
 		if e.complexity.Query.FindGalleries == nil {
 			break
 		}
@@ -916,7 +917,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindGalleries(childComplexity, args["filter"].(*FindFilterType)), true
 
-	case "Query.FindGallery":
+	case "Query.findGallery":
 		if e.complexity.Query.FindGallery == nil {
 			break
 		}
@@ -928,7 +929,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindGallery(childComplexity, args["id"].(string)), true
 
-	case "Query.FindPerformer":
+	case "Query.findPerformer":
 		if e.complexity.Query.FindPerformer == nil {
 			break
 		}
@@ -940,7 +941,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindPerformer(childComplexity, args["id"].(string)), true
 
-	case "Query.FindPerformers":
+	case "Query.findPerformers":
 		if e.complexity.Query.FindPerformers == nil {
 			break
 		}
@@ -952,7 +953,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindPerformers(childComplexity, args["performer_filter"].(*PerformerFilterType), args["filter"].(*FindFilterType)), true
 
-	case "Query.FindScene":
+	case "Query.findScene":
 		if e.complexity.Query.FindScene == nil {
 			break
 		}
@@ -964,7 +965,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindScene(childComplexity, args["id"].(*string), args["checksum"].(*string)), true
 
-	case "Query.FindSceneMarkers":
+	case "Query.findSceneMarkers":
 		if e.complexity.Query.FindSceneMarkers == nil {
 			break
 		}
@@ -976,7 +977,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindSceneMarkers(childComplexity, args["scene_marker_filter"].(*SceneMarkerFilterType), args["filter"].(*FindFilterType)), true
 
-	case "Query.FindScenes":
+	case "Query.findScenes":
 		if e.complexity.Query.FindScenes == nil {
 			break
 		}
@@ -988,7 +989,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindScenes(childComplexity, args["scene_filter"].(*SceneFilterType), args["scene_ids"].([]int), args["filter"].(*FindFilterType)), true
 
-	case "Query.FindStudio":
+	case "Query.findStudio":
 		if e.complexity.Query.FindStudio == nil {
 			break
 		}
@@ -1000,7 +1001,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindStudio(childComplexity, args["id"].(string)), true
 
-	case "Query.FindStudios":
+	case "Query.findStudios":
 		if e.complexity.Query.FindStudios == nil {
 			break
 		}
@@ -1012,7 +1013,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindStudios(childComplexity, args["filter"].(*FindFilterType)), true
 
-	case "Query.FindTag":
+	case "Query.findTag":
 		if e.complexity.Query.FindTag == nil {
 			break
 		}
@@ -1024,7 +1025,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.FindTag(childComplexity, args["id"].(string)), true
 
-	case "Query.MarkerStrings":
+	case "Query.markerStrings":
 		if e.complexity.Query.MarkerStrings == nil {
 			break
 		}
@@ -1036,7 +1037,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.MarkerStrings(childComplexity, args["q"].(*string), args["sort"].(*string)), true
 
-	case "Query.MarkerWall":
+	case "Query.markerWall":
 		if e.complexity.Query.MarkerWall == nil {
 			break
 		}
@@ -1048,21 +1049,21 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.MarkerWall(childComplexity, args["q"].(*string)), true
 
-	case "Query.MetadataClean":
+	case "Query.metadataClean":
 		if e.complexity.Query.MetadataClean == nil {
 			break
 		}
 
 		return e.complexity.Query.MetadataClean(childComplexity), true
 
-	case "Query.MetadataExport":
+	case "Query.metadataExport":
 		if e.complexity.Query.MetadataExport == nil {
 			break
 		}
 
 		return e.complexity.Query.MetadataExport(childComplexity), true
 
-	case "Query.MetadataGenerate":
+	case "Query.metadataGenerate":
 		if e.complexity.Query.MetadataGenerate == nil {
 			break
 		}
@@ -1074,21 +1075,21 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.MetadataGenerate(childComplexity, args["input"].(GenerateMetadataInput)), true
 
-	case "Query.MetadataImport":
+	case "Query.metadataImport":
 		if e.complexity.Query.MetadataImport == nil {
 			break
 		}
 
 		return e.complexity.Query.MetadataImport(childComplexity), true
 
-	case "Query.MetadataScan":
+	case "Query.metadataScan":
 		if e.complexity.Query.MetadataScan == nil {
 			break
 		}
 
 		return e.complexity.Query.MetadataScan(childComplexity), true
 
-	case "Query.SceneMarkerTags":
+	case "Query.sceneMarkerTags":
 		if e.complexity.Query.SceneMarkerTags == nil {
 			break
 		}
@@ -1100,7 +1101,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.SceneMarkerTags(childComplexity, args["scene_id"].(string)), true
 
-	case "Query.SceneWall":
+	case "Query.sceneWall":
 		if e.complexity.Query.SceneWall == nil {
 			break
 		}
@@ -1112,7 +1113,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.SceneWall(childComplexity, args["q"].(*string)), true
 
-	case "Query.ScrapeFreeones":
+	case "Query.scrapeFreeones":
 		if e.complexity.Query.ScrapeFreeones == nil {
 			break
 		}
@@ -1124,7 +1125,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.ScrapeFreeones(childComplexity, args["performer_name"].(string)), true
 
-	case "Query.ScrapeFreeonesPerformerList":
+	case "Query.scrapeFreeonesPerformerList":
 		if e.complexity.Query.ScrapeFreeonesPerformerList == nil {
 			break
 		}
@@ -1136,14 +1137,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.ScrapeFreeonesPerformerList(childComplexity, args["query"].(string)), true
 
-	case "Query.Stats":
+	case "Query.stats":
 		if e.complexity.Query.Stats == nil {
 			break
 		}
 
 		return e.complexity.Query.Stats(childComplexity), true
 
-	case "Query.ValidGalleriesForScene":
+	case "Query.validGalleriesForScene":
 		if e.complexity.Query.ValidGalleriesForScene == nil {
 			break
 		}
@@ -1155,497 +1156,497 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.ValidGalleriesForScene(childComplexity, args["scene_id"].(*string)), true
 
-	case "Scene.Checksum":
+	case "Scene.checksum":
 		if e.complexity.Scene.Checksum == nil {
 			break
 		}
 
 		return e.complexity.Scene.Checksum(childComplexity), true
 
-	case "Scene.Date":
+	case "Scene.date":
 		if e.complexity.Scene.Date == nil {
 			break
 		}
 
 		return e.complexity.Scene.Date(childComplexity), true
 
-	case "Scene.Details":
+	case "Scene.details":
 		if e.complexity.Scene.Details == nil {
 			break
 		}
 
 		return e.complexity.Scene.Details(childComplexity), true
 
-	case "Scene.File":
+	case "Scene.file":
 		if e.complexity.Scene.File == nil {
 			break
 		}
 
 		return e.complexity.Scene.File(childComplexity), true
 
-	case "Scene.Gallery":
+	case "Scene.gallery":
 		if e.complexity.Scene.Gallery == nil {
 			break
 		}
 
 		return e.complexity.Scene.Gallery(childComplexity), true
 
-	case "Scene.ID":
+	case "Scene.id":
 		if e.complexity.Scene.ID == nil {
 			break
 		}
 
 		return e.complexity.Scene.ID(childComplexity), true
 
-	case "Scene.IsStreamable":
+	case "Scene.is_streamable":
 		if e.complexity.Scene.IsStreamable == nil {
 			break
 		}
 
 		return e.complexity.Scene.IsStreamable(childComplexity), true
 
-	case "Scene.Path":
+	case "Scene.path":
 		if e.complexity.Scene.Path == nil {
 			break
 		}
 
 		return e.complexity.Scene.Path(childComplexity), true
 
-	case "Scene.Paths":
+	case "Scene.paths":
 		if e.complexity.Scene.Paths == nil {
 			break
 		}
 
 		return e.complexity.Scene.Paths(childComplexity), true
 
-	case "Scene.Performers":
+	case "Scene.performers":
 		if e.complexity.Scene.Performers == nil {
 			break
 		}
 
 		return e.complexity.Scene.Performers(childComplexity), true
 
-	case "Scene.Rating":
+	case "Scene.rating":
 		if e.complexity.Scene.Rating == nil {
 			break
 		}
 
 		return e.complexity.Scene.Rating(childComplexity), true
 
-	case "Scene.SceneMarkers":
+	case "Scene.scene_markers":
 		if e.complexity.Scene.SceneMarkers == nil {
 			break
 		}
 
 		return e.complexity.Scene.SceneMarkers(childComplexity), true
 
-	case "Scene.Studio":
+	case "Scene.studio":
 		if e.complexity.Scene.Studio == nil {
 			break
 		}
 
 		return e.complexity.Scene.Studio(childComplexity), true
 
-	case "Scene.Tags":
+	case "Scene.tags":
 		if e.complexity.Scene.Tags == nil {
 			break
 		}
 
 		return e.complexity.Scene.Tags(childComplexity), true
 
-	case "Scene.Title":
+	case "Scene.title":
 		if e.complexity.Scene.Title == nil {
 			break
 		}
 
 		return e.complexity.Scene.Title(childComplexity), true
 
-	case "Scene.URL":
+	case "Scene.url":
 		if e.complexity.Scene.URL == nil {
 			break
 		}
 
 		return e.complexity.Scene.URL(childComplexity), true
 
-	case "SceneFileType.AudioCodec":
+	case "SceneFileType.audio_codec":
 		if e.complexity.SceneFileType.AudioCodec == nil {
 			break
 		}
 
 		return e.complexity.SceneFileType.AudioCodec(childComplexity), true
 
-	case "SceneFileType.Bitrate":
+	case "SceneFileType.bitrate":
 		if e.complexity.SceneFileType.Bitrate == nil {
 			break
 		}
 
 		return e.complexity.SceneFileType.Bitrate(childComplexity), true
 
-	case "SceneFileType.Duration":
+	case "SceneFileType.duration":
 		if e.complexity.SceneFileType.Duration == nil {
 			break
 		}
 
 		return e.complexity.SceneFileType.Duration(childComplexity), true
 
-	case "SceneFileType.Framerate":
+	case "SceneFileType.framerate":
 		if e.complexity.SceneFileType.Framerate == nil {
 			break
 		}
 
 		return e.complexity.SceneFileType.Framerate(childComplexity), true
 
-	case "SceneFileType.Height":
+	case "SceneFileType.height":
 		if e.complexity.SceneFileType.Height == nil {
 			break
 		}
 
 		return e.complexity.SceneFileType.Height(childComplexity), true
 
-	case "SceneFileType.Size":
+	case "SceneFileType.size":
 		if e.complexity.SceneFileType.Size == nil {
 			break
 		}
 
 		return e.complexity.SceneFileType.Size(childComplexity), true
 
-	case "SceneFileType.VideoCodec":
+	case "SceneFileType.video_codec":
 		if e.complexity.SceneFileType.VideoCodec == nil {
 			break
 		}
 
 		return e.complexity.SceneFileType.VideoCodec(childComplexity), true
 
-	case "SceneFileType.Width":
+	case "SceneFileType.width":
 		if e.complexity.SceneFileType.Width == nil {
 			break
 		}
 
 		return e.complexity.SceneFileType.Width(childComplexity), true
 
-	case "SceneMarker.ID":
+	case "SceneMarker.id":
 		if e.complexity.SceneMarker.ID == nil {
 			break
 		}
 
 		return e.complexity.SceneMarker.ID(childComplexity), true
 
-	case "SceneMarker.Preview":
+	case "SceneMarker.preview":
 		if e.complexity.SceneMarker.Preview == nil {
 			break
 		}
 
 		return e.complexity.SceneMarker.Preview(childComplexity), true
 
-	case "SceneMarker.PrimaryTag":
+	case "SceneMarker.primary_tag":
 		if e.complexity.SceneMarker.PrimaryTag == nil {
 			break
 		}
 
 		return e.complexity.SceneMarker.PrimaryTag(childComplexity), true
 
-	case "SceneMarker.Scene":
+	case "SceneMarker.scene":
 		if e.complexity.SceneMarker.Scene == nil {
 			break
 		}
 
 		return e.complexity.SceneMarker.Scene(childComplexity), true
 
-	case "SceneMarker.Seconds":
+	case "SceneMarker.seconds":
 		if e.complexity.SceneMarker.Seconds == nil {
 			break
 		}
 
 		return e.complexity.SceneMarker.Seconds(childComplexity), true
 
-	case "SceneMarker.Stream":
+	case "SceneMarker.stream":
 		if e.complexity.SceneMarker.Stream == nil {
 			break
 		}
 
 		return e.complexity.SceneMarker.Stream(childComplexity), true
 
-	case "SceneMarker.Tags":
+	case "SceneMarker.tags":
 		if e.complexity.SceneMarker.Tags == nil {
 			break
 		}
 
 		return e.complexity.SceneMarker.Tags(childComplexity), true
 
-	case "SceneMarker.Title":
+	case "SceneMarker.title":
 		if e.complexity.SceneMarker.Title == nil {
 			break
 		}
 
 		return e.complexity.SceneMarker.Title(childComplexity), true
 
-	case "SceneMarkerTag.SceneMarkers":
+	case "SceneMarkerTag.scene_markers":
 		if e.complexity.SceneMarkerTag.SceneMarkers == nil {
 			break
 		}
 
 		return e.complexity.SceneMarkerTag.SceneMarkers(childComplexity), true
 
-	case "SceneMarkerTag.Tag":
+	case "SceneMarkerTag.tag":
 		if e.complexity.SceneMarkerTag.Tag == nil {
 			break
 		}
 
 		return e.complexity.SceneMarkerTag.Tag(childComplexity), true
 
-	case "ScenePathsType.ChaptersVtt":
+	case "ScenePathsType.chapters_vtt":
 		if e.complexity.ScenePathsType.ChaptersVtt == nil {
 			break
 		}
 
 		return e.complexity.ScenePathsType.ChaptersVtt(childComplexity), true
 
-	case "ScenePathsType.Preview":
+	case "ScenePathsType.preview":
 		if e.complexity.ScenePathsType.Preview == nil {
 			break
 		}
 
 		return e.complexity.ScenePathsType.Preview(childComplexity), true
 
-	case "ScenePathsType.Screenshot":
+	case "ScenePathsType.screenshot":
 		if e.complexity.ScenePathsType.Screenshot == nil {
 			break
 		}
 
 		return e.complexity.ScenePathsType.Screenshot(childComplexity), true
 
-	case "ScenePathsType.Stream":
+	case "ScenePathsType.stream":
 		if e.complexity.ScenePathsType.Stream == nil {
 			break
 		}
 
 		return e.complexity.ScenePathsType.Stream(childComplexity), true
 
-	case "ScenePathsType.Vtt":
+	case "ScenePathsType.vtt":
 		if e.complexity.ScenePathsType.Vtt == nil {
 			break
 		}
 
 		return e.complexity.ScenePathsType.Vtt(childComplexity), true
 
-	case "ScenePathsType.Webp":
+	case "ScenePathsType.webp":
 		if e.complexity.ScenePathsType.Webp == nil {
 			break
 		}
 
 		return e.complexity.ScenePathsType.Webp(childComplexity), true
 
-	case "ScrapedPerformer.Aliases":
+	case "ScrapedPerformer.aliases":
 		if e.complexity.ScrapedPerformer.Aliases == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.Aliases(childComplexity), true
 
-	case "ScrapedPerformer.Birthdate":
+	case "ScrapedPerformer.birthdate":
 		if e.complexity.ScrapedPerformer.Birthdate == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.Birthdate(childComplexity), true
 
-	case "ScrapedPerformer.CareerLength":
+	case "ScrapedPerformer.career_length":
 		if e.complexity.ScrapedPerformer.CareerLength == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.CareerLength(childComplexity), true
 
-	case "ScrapedPerformer.Country":
+	case "ScrapedPerformer.country":
 		if e.complexity.ScrapedPerformer.Country == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.Country(childComplexity), true
 
-	case "ScrapedPerformer.Ethnicity":
+	case "ScrapedPerformer.ethnicity":
 		if e.complexity.ScrapedPerformer.Ethnicity == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.Ethnicity(childComplexity), true
 
-	case "ScrapedPerformer.EyeColor":
+	case "ScrapedPerformer.eye_color":
 		if e.complexity.ScrapedPerformer.EyeColor == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.EyeColor(childComplexity), true
 
-	case "ScrapedPerformer.FakeTits":
+	case "ScrapedPerformer.fake_tits":
 		if e.complexity.ScrapedPerformer.FakeTits == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.FakeTits(childComplexity), true
 
-	case "ScrapedPerformer.Height":
+	case "ScrapedPerformer.height":
 		if e.complexity.ScrapedPerformer.Height == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.Height(childComplexity), true
 
-	case "ScrapedPerformer.Instagram":
+	case "ScrapedPerformer.instagram":
 		if e.complexity.ScrapedPerformer.Instagram == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.Instagram(childComplexity), true
 
-	case "ScrapedPerformer.Measurements":
+	case "ScrapedPerformer.measurements":
 		if e.complexity.ScrapedPerformer.Measurements == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.Measurements(childComplexity), true
 
-	case "ScrapedPerformer.Name":
+	case "ScrapedPerformer.name":
 		if e.complexity.ScrapedPerformer.Name == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.Name(childComplexity), true
 
-	case "ScrapedPerformer.Piercings":
+	case "ScrapedPerformer.piercings":
 		if e.complexity.ScrapedPerformer.Piercings == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.Piercings(childComplexity), true
 
-	case "ScrapedPerformer.Tattoos":
+	case "ScrapedPerformer.tattoos":
 		if e.complexity.ScrapedPerformer.Tattoos == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.Tattoos(childComplexity), true
 
-	case "ScrapedPerformer.Twitter":
+	case "ScrapedPerformer.twitter":
 		if e.complexity.ScrapedPerformer.Twitter == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.Twitter(childComplexity), true
 
-	case "ScrapedPerformer.URL":
+	case "ScrapedPerformer.url":
 		if e.complexity.ScrapedPerformer.URL == nil {
 			break
 		}
 
 		return e.complexity.ScrapedPerformer.URL(childComplexity), true
 
-	case "StatsResultType.GalleryCount":
+	case "StatsResultType.gallery_count":
 		if e.complexity.StatsResultType.GalleryCount == nil {
 			break
 		}
 
 		return e.complexity.StatsResultType.GalleryCount(childComplexity), true
 
-	case "StatsResultType.PerformerCount":
+	case "StatsResultType.performer_count":
 		if e.complexity.StatsResultType.PerformerCount == nil {
 			break
 		}
 
 		return e.complexity.StatsResultType.PerformerCount(childComplexity), true
 
-	case "StatsResultType.SceneCount":
+	case "StatsResultType.scene_count":
 		if e.complexity.StatsResultType.SceneCount == nil {
 			break
 		}
 
 		return e.complexity.StatsResultType.SceneCount(childComplexity), true
 
-	case "StatsResultType.StudioCount":
+	case "StatsResultType.studio_count":
 		if e.complexity.StatsResultType.StudioCount == nil {
 			break
 		}
 
 		return e.complexity.StatsResultType.StudioCount(childComplexity), true
 
-	case "StatsResultType.TagCount":
+	case "StatsResultType.tag_count":
 		if e.complexity.StatsResultType.TagCount == nil {
 			break
 		}
 
 		return e.complexity.StatsResultType.TagCount(childComplexity), true
 
-	case "Studio.Checksum":
+	case "Studio.checksum":
 		if e.complexity.Studio.Checksum == nil {
 			break
 		}
 
 		return e.complexity.Studio.Checksum(childComplexity), true
 
-	case "Studio.ID":
+	case "Studio.id":
 		if e.complexity.Studio.ID == nil {
 			break
 		}
 
 		return e.complexity.Studio.ID(childComplexity), true
 
-	case "Studio.ImagePath":
+	case "Studio.image_path":
 		if e.complexity.Studio.ImagePath == nil {
 			break
 		}
 
 		return e.complexity.Studio.ImagePath(childComplexity), true
 
-	case "Studio.Name":
+	case "Studio.name":
 		if e.complexity.Studio.Name == nil {
 			break
 		}
 
 		return e.complexity.Studio.Name(childComplexity), true
 
-	case "Studio.SceneCount":
+	case "Studio.scene_count":
 		if e.complexity.Studio.SceneCount == nil {
 			break
 		}
 
 		return e.complexity.Studio.SceneCount(childComplexity), true
 
-	case "Studio.URL":
+	case "Studio.url":
 		if e.complexity.Studio.URL == nil {
 			break
 		}
 
 		return e.complexity.Studio.URL(childComplexity), true
 
-	case "Subscription.MetadataUpdate":
+	case "Subscription.metadataUpdate":
 		if e.complexity.Subscription.MetadataUpdate == nil {
 			break
 		}
 
 		return e.complexity.Subscription.MetadataUpdate(childComplexity), true
 
-	case "Tag.ID":
+	case "Tag.id":
 		if e.complexity.Tag.ID == nil {
 			break
 		}
 
 		return e.complexity.Tag.ID(childComplexity), true
 
-	case "Tag.Name":
+	case "Tag.name":
 		if e.complexity.Tag.Name == nil {
 			break
 		}
 
 		return e.complexity.Tag.Name(childComplexity), true
 
-	case "Tag.SceneCount":
+	case "Tag.scene_count":
 		if e.complexity.Tag.SceneCount == nil {
 			break
 		}
 
 		return e.complexity.Tag.SceneCount(childComplexity), true
 
-	case "Tag.SceneMarkerCount":
+	case "Tag.scene_marker_count":
 		if e.complexity.Tag.SceneMarkerCount == nil {
 			break
 		}
@@ -2871,10 +2872,10 @@ func (ec *executionContext) _ConfigResult_general(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(ConfigGeneralResult)
+	res := resTmp.(*ConfigGeneralResult)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNConfigGeneralResult2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigGeneralResult(ctx, field.Selections, res)
+	return ec.marshalNConfigGeneralResult2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigGeneralResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FindGalleriesResultType_count(ctx context.Context, field graphql.CollectedField, obj *FindGalleriesResultType) graphql.Marshaler {
@@ -2925,10 +2926,10 @@ func (ec *executionContext) _FindGalleriesResultType_galleries(ctx context.Conte
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Gallery)
+	res := resTmp.([]*Gallery)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNGallery2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGallery(ctx, field.Selections, res)
+	return ec.marshalNGallery2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGallery(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FindPerformersResultType_count(ctx context.Context, field graphql.CollectedField, obj *FindPerformersResultType) graphql.Marshaler {
@@ -2979,10 +2980,10 @@ func (ec *executionContext) _FindPerformersResultType_performers(ctx context.Con
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Performer)
+	res := resTmp.([]*Performer)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx, field.Selections, res)
+	return ec.marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FindSceneMarkersResultType_count(ctx context.Context, field graphql.CollectedField, obj *FindSceneMarkersResultType) graphql.Marshaler {
@@ -3033,10 +3034,10 @@ func (ec *executionContext) _FindSceneMarkersResultType_scene_markers(ctx contex
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]SceneMarker)
+	res := resTmp.([]*SceneMarker)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNSceneMarker2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx, field.Selections, res)
+	return ec.marshalNSceneMarker2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FindScenesResultType_count(ctx context.Context, field graphql.CollectedField, obj *FindScenesResultType) graphql.Marshaler {
@@ -3087,10 +3088,10 @@ func (ec *executionContext) _FindScenesResultType_scenes(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Scene)
+	res := resTmp.([]*Scene)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FindStudiosResultType_count(ctx context.Context, field graphql.CollectedField, obj *FindStudiosResultType) graphql.Marshaler {
@@ -3141,10 +3142,10 @@ func (ec *executionContext) _FindStudiosResultType_studios(ctx context.Context, 
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Studio)
+	res := resTmp.([]*Studio)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNStudio2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudio(ctx, field.Selections, res)
+	return ec.marshalNStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudio(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Gallery_id(ctx context.Context, field graphql.CollectedField, obj *Gallery) graphql.Marshaler {
@@ -3273,10 +3274,10 @@ func (ec *executionContext) _Gallery_files(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]GalleryFilesType)
+	res := resTmp.([]*GalleryFilesType)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNGalleryFilesType2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGalleryFilesType(ctx, field.Selections, res)
+	return ec.marshalNGalleryFilesType2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGalleryFilesType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _GalleryFilesType_index(ctx context.Context, field graphql.CollectedField, obj *GalleryFilesType) graphql.Marshaler {
@@ -4326,10 +4327,10 @@ func (ec *executionContext) _Performer_scenes(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Scene)
+	res := resTmp.([]*Scene)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_findScene(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -4685,10 +4686,10 @@ func (ec *executionContext) _Query_markerWall(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]SceneMarker)
+	res := resTmp.([]*SceneMarker)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNSceneMarker2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx, field.Selections, res)
+	return ec.marshalNSceneMarker2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_sceneWall(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -4719,10 +4720,10 @@ func (ec *executionContext) _Query_sceneWall(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Scene)
+	res := resTmp.([]*Scene)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx, field.Selections, res)
+	return ec.marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_markerStrings(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -4787,10 +4788,10 @@ func (ec *executionContext) _Query_validGalleriesForScene(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Gallery)
+	res := resTmp.([]*Gallery)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNGallery2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGallery(ctx, field.Selections, res)
+	return ec.marshalNGallery2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGallery(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_stats(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -4848,10 +4849,10 @@ func (ec *executionContext) _Query_sceneMarkerTags(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]SceneMarkerTag)
+	res := resTmp.([]*SceneMarkerTag)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNSceneMarkerTag2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarkerTag(ctx, field.Selections, res)
+	return ec.marshalNSceneMarkerTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarkerTag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_scrapeFreeones(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -5143,10 +5144,10 @@ func (ec *executionContext) _Query_allPerformers(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Performer)
+	res := resTmp.([]*Performer)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx, field.Selections, res)
+	return ec.marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_allStudios(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -5170,10 +5171,10 @@ func (ec *executionContext) _Query_allStudios(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Studio)
+	res := resTmp.([]*Studio)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNStudio2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudio(ctx, field.Selections, res)
+	return ec.marshalNStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudio(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_allTags(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -5197,10 +5198,10 @@ func (ec *executionContext) _Query_allTags(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Tag)
+	res := resTmp.([]*Tag)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -5561,10 +5562,10 @@ func (ec *executionContext) _Scene_scene_markers(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]SceneMarker)
+	res := resTmp.([]*SceneMarker)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNSceneMarker2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx, field.Selections, res)
+	return ec.marshalNSceneMarker2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Scene_gallery(ctx context.Context, field graphql.CollectedField, obj *Scene) graphql.Marshaler {
@@ -5636,10 +5637,10 @@ func (ec *executionContext) _Scene_tags(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Tag)
+	res := resTmp.([]*Tag)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Scene_performers(ctx context.Context, field graphql.CollectedField, obj *Scene) graphql.Marshaler {
@@ -5663,10 +5664,10 @@ func (ec *executionContext) _Scene_performers(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Performer)
+	res := resTmp.([]*Performer)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx, field.Selections, res)
+	return ec.marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SceneFileType_size(ctx context.Context, field graphql.CollectedField, obj *SceneFileType) graphql.Marshaler {
@@ -6017,10 +6018,10 @@ func (ec *executionContext) _SceneMarker_tags(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]Tag)
+	res := resTmp.([]*Tag)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SceneMarker_stream(ctx context.Context, field graphql.CollectedField, obj *SceneMarker) graphql.Marshaler {
@@ -6098,10 +6099,10 @@ func (ec *executionContext) _SceneMarkerTag_tag(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(Tag)
+	res := resTmp.(*Tag)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNTag2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _SceneMarkerTag_scene_markers(ctx context.Context, field graphql.CollectedField, obj *SceneMarkerTag) graphql.Marshaler {
@@ -6125,10 +6126,10 @@ func (ec *executionContext) _SceneMarkerTag_scene_markers(ctx context.Context, f
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]SceneMarker)
+	res := resTmp.([]*SceneMarker)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalNSceneMarker2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx, field.Selections, res)
+	return ec.marshalNSceneMarker2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _ScenePathsType_screenshot(ctx context.Context, field graphql.CollectedField, obj *ScenePathsType) graphql.Marshaler {
@@ -8663,10 +8664,10 @@ func (ec *executionContext) unmarshalInputTagUpdateInput(ctx context.Context, v 
 var configGeneralResultImplementors = []string{"ConfigGeneralResult"}
 
 func (ec *executionContext) _ConfigGeneralResult(ctx context.Context, sel ast.SelectionSet, obj *ConfigGeneralResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, configGeneralResultImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, configGeneralResultImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -8674,24 +8675,24 @@ func (ec *executionContext) _ConfigGeneralResult(ctx context.Context, sel ast.Se
 		case "stashes":
 			out.Values[i] = ec._ConfigGeneralResult_stashes(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "databasePath":
 			out.Values[i] = ec._ConfigGeneralResult_databasePath(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "generatedPath":
 			out.Values[i] = ec._ConfigGeneralResult_generatedPath(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -8700,10 +8701,10 @@ func (ec *executionContext) _ConfigGeneralResult(ctx context.Context, sel ast.Se
 var configResultImplementors = []string{"ConfigResult"}
 
 func (ec *executionContext) _ConfigResult(ctx context.Context, sel ast.SelectionSet, obj *ConfigResult) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, configResultImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, configResultImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -8711,14 +8712,14 @@ func (ec *executionContext) _ConfigResult(ctx context.Context, sel ast.Selection
 		case "general":
 			out.Values[i] = ec._ConfigResult_general(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -8727,10 +8728,10 @@ func (ec *executionContext) _ConfigResult(ctx context.Context, sel ast.Selection
 var findGalleriesResultTypeImplementors = []string{"FindGalleriesResultType"}
 
 func (ec *executionContext) _FindGalleriesResultType(ctx context.Context, sel ast.SelectionSet, obj *FindGalleriesResultType) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, findGalleriesResultTypeImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, findGalleriesResultTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -8738,19 +8739,19 @@ func (ec *executionContext) _FindGalleriesResultType(ctx context.Context, sel as
 		case "count":
 			out.Values[i] = ec._FindGalleriesResultType_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "galleries":
 			out.Values[i] = ec._FindGalleriesResultType_galleries(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -8759,10 +8760,10 @@ func (ec *executionContext) _FindGalleriesResultType(ctx context.Context, sel as
 var findPerformersResultTypeImplementors = []string{"FindPerformersResultType"}
 
 func (ec *executionContext) _FindPerformersResultType(ctx context.Context, sel ast.SelectionSet, obj *FindPerformersResultType) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, findPerformersResultTypeImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, findPerformersResultTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -8770,19 +8771,19 @@ func (ec *executionContext) _FindPerformersResultType(ctx context.Context, sel a
 		case "count":
 			out.Values[i] = ec._FindPerformersResultType_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "performers":
 			out.Values[i] = ec._FindPerformersResultType_performers(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -8791,10 +8792,10 @@ func (ec *executionContext) _FindPerformersResultType(ctx context.Context, sel a
 var findSceneMarkersResultTypeImplementors = []string{"FindSceneMarkersResultType"}
 
 func (ec *executionContext) _FindSceneMarkersResultType(ctx context.Context, sel ast.SelectionSet, obj *FindSceneMarkersResultType) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, findSceneMarkersResultTypeImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, findSceneMarkersResultTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -8802,19 +8803,19 @@ func (ec *executionContext) _FindSceneMarkersResultType(ctx context.Context, sel
 		case "count":
 			out.Values[i] = ec._FindSceneMarkersResultType_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "scene_markers":
 			out.Values[i] = ec._FindSceneMarkersResultType_scene_markers(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -8823,10 +8824,10 @@ func (ec *executionContext) _FindSceneMarkersResultType(ctx context.Context, sel
 var findScenesResultTypeImplementors = []string{"FindScenesResultType"}
 
 func (ec *executionContext) _FindScenesResultType(ctx context.Context, sel ast.SelectionSet, obj *FindScenesResultType) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, findScenesResultTypeImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, findScenesResultTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -8834,19 +8835,19 @@ func (ec *executionContext) _FindScenesResultType(ctx context.Context, sel ast.S
 		case "count":
 			out.Values[i] = ec._FindScenesResultType_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "scenes":
 			out.Values[i] = ec._FindScenesResultType_scenes(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -8855,10 +8856,10 @@ func (ec *executionContext) _FindScenesResultType(ctx context.Context, sel ast.S
 var findStudiosResultTypeImplementors = []string{"FindStudiosResultType"}
 
 func (ec *executionContext) _FindStudiosResultType(ctx context.Context, sel ast.SelectionSet, obj *FindStudiosResultType) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, findStudiosResultTypeImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, findStudiosResultTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -8866,19 +8867,19 @@ func (ec *executionContext) _FindStudiosResultType(ctx context.Context, sel ast.
 		case "count":
 			out.Values[i] = ec._FindStudiosResultType_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "studios":
 			out.Values[i] = ec._FindStudiosResultType_studios(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -8887,10 +8888,10 @@ func (ec *executionContext) _FindStudiosResultType(ctx context.Context, sel ast.
 var galleryImplementors = []string{"Gallery"}
 
 func (ec *executionContext) _Gallery(ctx context.Context, sel ast.SelectionSet, obj *Gallery) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, galleryImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, galleryImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -8898,17 +8899,17 @@ func (ec *executionContext) _Gallery(ctx context.Context, sel ast.SelectionSet, 
 		case "id":
 			out.Values[i] = ec._Gallery_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "checksum":
 			out.Values[i] = ec._Gallery_checksum(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "path":
 			out.Values[i] = ec._Gallery_path(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "title":
 			field := field
@@ -8931,7 +8932,7 @@ func (ec *executionContext) _Gallery(ctx context.Context, sel ast.SelectionSet, 
 				}()
 				res = ec._Gallery_files(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -8940,7 +8941,7 @@ func (ec *executionContext) _Gallery(ctx context.Context, sel ast.SelectionSet, 
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -8949,10 +8950,10 @@ func (ec *executionContext) _Gallery(ctx context.Context, sel ast.SelectionSet, 
 var galleryFilesTypeImplementors = []string{"GalleryFilesType"}
 
 func (ec *executionContext) _GalleryFilesType(ctx context.Context, sel ast.SelectionSet, obj *GalleryFilesType) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, galleryFilesTypeImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, galleryFilesTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -8960,7 +8961,7 @@ func (ec *executionContext) _GalleryFilesType(ctx context.Context, sel ast.Selec
 		case "index":
 			out.Values[i] = ec._GalleryFilesType_index(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "name":
 			out.Values[i] = ec._GalleryFilesType_name(ctx, field, obj)
@@ -8971,7 +8972,7 @@ func (ec *executionContext) _GalleryFilesType(ctx context.Context, sel ast.Selec
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -8980,10 +8981,10 @@ func (ec *executionContext) _GalleryFilesType(ctx context.Context, sel ast.Selec
 var markerStringsResultTypeImplementors = []string{"MarkerStringsResultType"}
 
 func (ec *executionContext) _MarkerStringsResultType(ctx context.Context, sel ast.SelectionSet, obj *MarkerStringsResultType) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, markerStringsResultTypeImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, markerStringsResultTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -8991,24 +8992,24 @@ func (ec *executionContext) _MarkerStringsResultType(ctx context.Context, sel as
 		case "count":
 			out.Values[i] = ec._MarkerStringsResultType_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "id":
 			out.Values[i] = ec._MarkerStringsResultType_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "title":
 			out.Values[i] = ec._MarkerStringsResultType_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -9017,14 +9018,14 @@ func (ec *executionContext) _MarkerStringsResultType(ctx context.Context, sel as
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, mutationImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, mutationImplementors)
 
 	ctx = graphql.WithResolverContext(ctx, &graphql.ResolverContext{
 		Object: "Mutation",
 	})
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -9038,7 +9039,7 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "sceneMarkerDestroy":
 			out.Values[i] = ec._Mutation_sceneMarkerDestroy(ctx, field)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "performerCreate":
 			out.Values[i] = ec._Mutation_performerCreate(ctx, field)
@@ -9055,19 +9056,19 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "tagDestroy":
 			out.Values[i] = ec._Mutation_tagDestroy(ctx, field)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "configureGeneral":
 			out.Values[i] = ec._Mutation_configureGeneral(ctx, field)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -9076,10 +9077,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 var performerImplementors = []string{"Performer"}
 
 func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet, obj *Performer) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, performerImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, performerImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -9087,12 +9088,12 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 		case "id":
 			out.Values[i] = ec._Performer_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "checksum":
 			out.Values[i] = ec._Performer_checksum(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			field := field
@@ -9269,7 +9270,7 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 				}()
 				res = ec._Performer_favorite(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9305,7 +9306,7 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 				}()
 				res = ec._Performer_scenes(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9314,7 +9315,7 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -9323,14 +9324,14 @@ func (ec *executionContext) _Performer(ctx context.Context, sel ast.SelectionSet
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, queryImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, queryImplementors)
 
 	ctx = graphql.WithResolverContext(ctx, &graphql.ResolverContext{
 		Object: "Query",
 	})
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -9356,7 +9357,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_findScenes(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9370,7 +9371,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_findSceneMarkers(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9395,7 +9396,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_findPerformers(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9420,7 +9421,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_findStudios(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9445,7 +9446,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_findGalleries(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9470,7 +9471,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_markerWall(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9484,7 +9485,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_sceneWall(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9498,7 +9499,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_markerStrings(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9512,7 +9513,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_validGalleriesForScene(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9526,7 +9527,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_stats(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9540,7 +9541,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_sceneMarkerTags(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9565,7 +9566,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_scrapeFreeonesPerformerList(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9579,7 +9580,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_configuration(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9593,7 +9594,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_directories(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9607,7 +9608,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_metadataImport(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9621,7 +9622,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_metadataExport(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9635,7 +9636,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_metadataScan(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9649,7 +9650,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_metadataGenerate(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9663,7 +9664,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_metadataClean(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9677,7 +9678,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_allPerformers(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9691,7 +9692,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_allStudios(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9705,7 +9706,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_allTags(ctx, field)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9718,7 +9719,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -9727,10 +9728,10 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 var sceneImplementors = []string{"Scene"}
 
 func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, obj *Scene) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, sceneImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, sceneImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -9738,12 +9739,12 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 		case "id":
 			out.Values[i] = ec._Scene_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "checksum":
 			out.Values[i] = ec._Scene_checksum(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "title":
 			field := field
@@ -9803,7 +9804,7 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 		case "path":
 			out.Values[i] = ec._Scene_path(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "file":
 			field := field
@@ -9815,7 +9816,7 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				}()
 				res = ec._Scene_file(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9829,7 +9830,7 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				}()
 				res = ec._Scene_paths(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9843,7 +9844,7 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				}()
 				res = ec._Scene_is_streamable(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9857,7 +9858,7 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				}()
 				res = ec._Scene_scene_markers(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9893,7 +9894,7 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				}()
 				res = ec._Scene_tags(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9907,7 +9908,7 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 				}()
 				res = ec._Scene_performers(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -9916,7 +9917,7 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -9925,10 +9926,10 @@ func (ec *executionContext) _Scene(ctx context.Context, sel ast.SelectionSet, ob
 var sceneFileTypeImplementors = []string{"SceneFileType"}
 
 func (ec *executionContext) _SceneFileType(ctx context.Context, sel ast.SelectionSet, obj *SceneFileType) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, sceneFileTypeImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, sceneFileTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -9954,7 +9955,7 @@ func (ec *executionContext) _SceneFileType(ctx context.Context, sel ast.Selectio
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -9963,10 +9964,10 @@ func (ec *executionContext) _SceneFileType(ctx context.Context, sel ast.Selectio
 var sceneMarkerImplementors = []string{"SceneMarker"}
 
 func (ec *executionContext) _SceneMarker(ctx context.Context, sel ast.SelectionSet, obj *SceneMarker) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, sceneMarkerImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, sceneMarkerImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -9974,7 +9975,7 @@ func (ec *executionContext) _SceneMarker(ctx context.Context, sel ast.SelectionS
 		case "id":
 			out.Values[i] = ec._SceneMarker_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "scene":
 			field := field
@@ -9986,19 +9987,19 @@ func (ec *executionContext) _SceneMarker(ctx context.Context, sel ast.SelectionS
 				}()
 				res = ec._SceneMarker_scene(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
 		case "title":
 			out.Values[i] = ec._SceneMarker_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "seconds":
 			out.Values[i] = ec._SceneMarker_seconds(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "primary_tag":
 			field := field
@@ -10010,7 +10011,7 @@ func (ec *executionContext) _SceneMarker(ctx context.Context, sel ast.SelectionS
 				}()
 				res = ec._SceneMarker_primary_tag(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -10024,7 +10025,7 @@ func (ec *executionContext) _SceneMarker(ctx context.Context, sel ast.SelectionS
 				}()
 				res = ec._SceneMarker_tags(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -10038,7 +10039,7 @@ func (ec *executionContext) _SceneMarker(ctx context.Context, sel ast.SelectionS
 				}()
 				res = ec._SceneMarker_stream(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -10052,7 +10053,7 @@ func (ec *executionContext) _SceneMarker(ctx context.Context, sel ast.SelectionS
 				}()
 				res = ec._SceneMarker_preview(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -10061,7 +10062,7 @@ func (ec *executionContext) _SceneMarker(ctx context.Context, sel ast.SelectionS
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10070,10 +10071,10 @@ func (ec *executionContext) _SceneMarker(ctx context.Context, sel ast.SelectionS
 var sceneMarkerTagImplementors = []string{"SceneMarkerTag"}
 
 func (ec *executionContext) _SceneMarkerTag(ctx context.Context, sel ast.SelectionSet, obj *SceneMarkerTag) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, sceneMarkerTagImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, sceneMarkerTagImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10081,19 +10082,19 @@ func (ec *executionContext) _SceneMarkerTag(ctx context.Context, sel ast.Selecti
 		case "tag":
 			out.Values[i] = ec._SceneMarkerTag_tag(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "scene_markers":
 			out.Values[i] = ec._SceneMarkerTag_scene_markers(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10102,10 +10103,10 @@ func (ec *executionContext) _SceneMarkerTag(ctx context.Context, sel ast.Selecti
 var scenePathsTypeImplementors = []string{"ScenePathsType"}
 
 func (ec *executionContext) _ScenePathsType(ctx context.Context, sel ast.SelectionSet, obj *ScenePathsType) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, scenePathsTypeImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, scenePathsTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10127,7 +10128,7 @@ func (ec *executionContext) _ScenePathsType(ctx context.Context, sel ast.Selecti
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10136,10 +10137,10 @@ func (ec *executionContext) _ScenePathsType(ctx context.Context, sel ast.Selecti
 var scrapedPerformerImplementors = []string{"ScrapedPerformer"}
 
 func (ec *executionContext) _ScrapedPerformer(ctx context.Context, sel ast.SelectionSet, obj *ScrapedPerformer) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, scrapedPerformerImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, scrapedPerformerImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10179,7 +10180,7 @@ func (ec *executionContext) _ScrapedPerformer(ctx context.Context, sel ast.Selec
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10188,10 +10189,10 @@ func (ec *executionContext) _ScrapedPerformer(ctx context.Context, sel ast.Selec
 var statsResultTypeImplementors = []string{"StatsResultType"}
 
 func (ec *executionContext) _StatsResultType(ctx context.Context, sel ast.SelectionSet, obj *StatsResultType) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, statsResultTypeImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, statsResultTypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10199,34 +10200,34 @@ func (ec *executionContext) _StatsResultType(ctx context.Context, sel ast.Select
 		case "scene_count":
 			out.Values[i] = ec._StatsResultType_scene_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "gallery_count":
 			out.Values[i] = ec._StatsResultType_gallery_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "performer_count":
 			out.Values[i] = ec._StatsResultType_performer_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "studio_count":
 			out.Values[i] = ec._StatsResultType_studio_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "tag_count":
 			out.Values[i] = ec._StatsResultType_tag_count(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10235,10 +10236,10 @@ func (ec *executionContext) _StatsResultType(ctx context.Context, sel ast.Select
 var studioImplementors = []string{"Studio"}
 
 func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, obj *Studio) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, studioImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, studioImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10246,12 +10247,12 @@ func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, o
 		case "id":
 			out.Values[i] = ec._Studio_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "checksum":
 			out.Values[i] = ec._Studio_checksum(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			field := field
@@ -10263,7 +10264,7 @@ func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, o
 				}()
 				res = ec._Studio_name(ctx, field, obj)
 				if res == graphql.Null {
-					invalid = true
+					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
@@ -10305,7 +10306,7 @@ func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, o
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10314,7 +10315,7 @@ func (ec *executionContext) _Studio(ctx context.Context, sel ast.SelectionSet, o
 var subscriptionImplementors = []string{"Subscription"}
 
 func (ec *executionContext) _Subscription(ctx context.Context, sel ast.SelectionSet) func() graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, subscriptionImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, subscriptionImplementors)
 	ctx = graphql.WithResolverContext(ctx, &graphql.ResolverContext{
 		Object: "Subscription",
 	})
@@ -10334,10 +10335,10 @@ func (ec *executionContext) _Subscription(ctx context.Context, sel ast.Selection
 var tagImplementors = []string{"Tag"}
 
 func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj *Tag) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, tagImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, tagImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10345,12 +10346,12 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 		case "id":
 			out.Values[i] = ec._Tag_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 			out.Values[i] = ec._Tag_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "scene_count":
 			field := field
@@ -10379,7 +10380,7 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10388,10 +10389,10 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 var __DirectiveImplementors = []string{"__Directive"}
 
 func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionSet, obj *introspection.Directive) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, __DirectiveImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, __DirectiveImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10399,26 +10400,26 @@ func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionS
 		case "name":
 			out.Values[i] = ec.___Directive_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "description":
 			out.Values[i] = ec.___Directive_description(ctx, field, obj)
 		case "locations":
 			out.Values[i] = ec.___Directive_locations(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "args":
 			out.Values[i] = ec.___Directive_args(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10427,10 +10428,10 @@ func (ec *executionContext) ___Directive(ctx context.Context, sel ast.SelectionS
 var __EnumValueImplementors = []string{"__EnumValue"}
 
 func (ec *executionContext) ___EnumValue(ctx context.Context, sel ast.SelectionSet, obj *introspection.EnumValue) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, __EnumValueImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, __EnumValueImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10438,14 +10439,14 @@ func (ec *executionContext) ___EnumValue(ctx context.Context, sel ast.SelectionS
 		case "name":
 			out.Values[i] = ec.___EnumValue_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "description":
 			out.Values[i] = ec.___EnumValue_description(ctx, field, obj)
 		case "isDeprecated":
 			out.Values[i] = ec.___EnumValue_isDeprecated(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "deprecationReason":
 			out.Values[i] = ec.___EnumValue_deprecationReason(ctx, field, obj)
@@ -10454,7 +10455,7 @@ func (ec *executionContext) ___EnumValue(ctx context.Context, sel ast.SelectionS
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10463,10 +10464,10 @@ func (ec *executionContext) ___EnumValue(ctx context.Context, sel ast.SelectionS
 var __FieldImplementors = []string{"__Field"}
 
 func (ec *executionContext) ___Field(ctx context.Context, sel ast.SelectionSet, obj *introspection.Field) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, __FieldImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, __FieldImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10474,24 +10475,24 @@ func (ec *executionContext) ___Field(ctx context.Context, sel ast.SelectionSet, 
 		case "name":
 			out.Values[i] = ec.___Field_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "description":
 			out.Values[i] = ec.___Field_description(ctx, field, obj)
 		case "args":
 			out.Values[i] = ec.___Field_args(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "type":
 			out.Values[i] = ec.___Field_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "isDeprecated":
 			out.Values[i] = ec.___Field_isDeprecated(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "deprecationReason":
 			out.Values[i] = ec.___Field_deprecationReason(ctx, field, obj)
@@ -10500,7 +10501,7 @@ func (ec *executionContext) ___Field(ctx context.Context, sel ast.SelectionSet, 
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10509,10 +10510,10 @@ func (ec *executionContext) ___Field(ctx context.Context, sel ast.SelectionSet, 
 var __InputValueImplementors = []string{"__InputValue"}
 
 func (ec *executionContext) ___InputValue(ctx context.Context, sel ast.SelectionSet, obj *introspection.InputValue) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, __InputValueImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, __InputValueImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10520,14 +10521,14 @@ func (ec *executionContext) ___InputValue(ctx context.Context, sel ast.Selection
 		case "name":
 			out.Values[i] = ec.___InputValue_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "description":
 			out.Values[i] = ec.___InputValue_description(ctx, field, obj)
 		case "type":
 			out.Values[i] = ec.___InputValue_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "defaultValue":
 			out.Values[i] = ec.___InputValue_defaultValue(ctx, field, obj)
@@ -10536,7 +10537,7 @@ func (ec *executionContext) ___InputValue(ctx context.Context, sel ast.Selection
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10545,10 +10546,10 @@ func (ec *executionContext) ___InputValue(ctx context.Context, sel ast.Selection
 var __SchemaImplementors = []string{"__Schema"}
 
 func (ec *executionContext) ___Schema(ctx context.Context, sel ast.SelectionSet, obj *introspection.Schema) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, __SchemaImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, __SchemaImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10556,12 +10557,12 @@ func (ec *executionContext) ___Schema(ctx context.Context, sel ast.SelectionSet,
 		case "types":
 			out.Values[i] = ec.___Schema_types(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "queryType":
 			out.Values[i] = ec.___Schema_queryType(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "mutationType":
 			out.Values[i] = ec.___Schema_mutationType(ctx, field, obj)
@@ -10570,14 +10571,14 @@ func (ec *executionContext) ___Schema(ctx context.Context, sel ast.SelectionSet,
 		case "directives":
 			out.Values[i] = ec.___Schema_directives(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10586,10 +10587,10 @@ func (ec *executionContext) ___Schema(ctx context.Context, sel ast.SelectionSet,
 var __TypeImplementors = []string{"__Type"}
 
 func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, obj *introspection.Type) graphql.Marshaler {
-	fields := graphql.CollectFields(ctx, sel, __TypeImplementors)
+	fields := graphql.CollectFields(ec.RequestContext, sel, __TypeImplementors)
 
 	out := graphql.NewFieldSet(fields)
-	invalid := false
+	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
@@ -10597,7 +10598,7 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 		case "kind":
 			out.Values[i] = ec.___Type_kind(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalid = true
+				invalids++
 			}
 		case "name":
 			out.Values[i] = ec.___Type_name(ctx, field, obj)
@@ -10620,7 +10621,7 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 		}
 	}
 	out.Dispatch()
-	if invalid {
+	if invalids > 0 {
 		return graphql.Null
 	}
 	return out
@@ -10635,7 +10636,13 @@ func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interf
 }
 
 func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.SelectionSet, v bool) graphql.Marshaler {
-	return graphql.MarshalBoolean(v)
+	res := graphql.MarshalBoolean(v)
+	if res == graphql.Null {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNConfigGeneralInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigGeneralInput(ctx context.Context, v interface{}) (ConfigGeneralInput, error) {
@@ -10754,14 +10761,20 @@ func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v inter
 }
 
 func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
-	return graphql.MarshalFloat(v)
+	res := graphql.MarshalFloat(v)
+	if res == graphql.Null {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) marshalNGallery2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGallery(ctx context.Context, sel ast.SelectionSet, v Gallery) graphql.Marshaler {
 	return ec._Gallery(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNGallery2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGallery(ctx context.Context, sel ast.SelectionSet, v []Gallery) graphql.Marshaler {
+func (ec *executionContext) marshalNGallery2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGallery(ctx context.Context, sel ast.SelectionSet, v []*Gallery) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -10785,7 +10798,7 @@ func (ec *executionContext) marshalNGallery2ᚕgithubᚗcomᚋstashappᚋstash�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNGallery2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGallery(ctx, sel, v[i])
+			ret[i] = ec.marshalNGallery2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGallery(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -10796,13 +10809,23 @@ func (ec *executionContext) marshalNGallery2ᚕgithubᚗcomᚋstashappᚋstash�
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNGallery2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGallery(ctx context.Context, sel ast.SelectionSet, v *Gallery) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Gallery(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNGalleryFilesType2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGalleryFilesType(ctx context.Context, sel ast.SelectionSet, v GalleryFilesType) graphql.Marshaler {
 	return ec._GalleryFilesType(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNGalleryFilesType2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGalleryFilesType(ctx context.Context, sel ast.SelectionSet, v []GalleryFilesType) graphql.Marshaler {
+func (ec *executionContext) marshalNGalleryFilesType2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGalleryFilesType(ctx context.Context, sel ast.SelectionSet, v []*GalleryFilesType) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -10826,7 +10849,7 @@ func (ec *executionContext) marshalNGalleryFilesType2ᚕgithubᚗcomᚋstashapp�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNGalleryFilesType2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGalleryFilesType(ctx, sel, v[i])
+			ret[i] = ec.marshalNGalleryFilesType2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGalleryFilesType(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -10837,6 +10860,16 @@ func (ec *executionContext) marshalNGalleryFilesType2ᚕgithubᚗcomᚋstashapp�
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNGalleryFilesType2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGalleryFilesType(ctx context.Context, sel ast.SelectionSet, v *GalleryFilesType) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._GalleryFilesType(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNGenerateMetadataInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGenerateMetadataInput(ctx context.Context, v interface{}) (GenerateMetadataInput, error) {
@@ -10848,7 +10881,13 @@ func (ec *executionContext) unmarshalNID2int(ctx context.Context, v interface{})
 }
 
 func (ec *executionContext) marshalNID2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	return graphql.MarshalIntID(v)
+	res := graphql.MarshalIntID(v)
+	if res == graphql.Null {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
@@ -10856,7 +10895,13 @@ func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface
 }
 
 func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	return graphql.MarshalID(v)
+	res := graphql.MarshalID(v)
+	if res == graphql.Null {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
@@ -10864,7 +10909,13 @@ func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}
 }
 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	return graphql.MarshalInt(v)
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) marshalNMarkerStringsResultType2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐMarkerStringsResultType(ctx context.Context, sel ast.SelectionSet, v []*MarkerStringsResultType) graphql.Marshaler {
@@ -10908,7 +10959,7 @@ func (ec *executionContext) marshalNPerformer2githubᚗcomᚋstashappᚋstashᚋ
 	return ec._Performer(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx context.Context, sel ast.SelectionSet, v []Performer) graphql.Marshaler {
+func (ec *executionContext) marshalNPerformer2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx context.Context, sel ast.SelectionSet, v []*Performer) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -10932,7 +10983,7 @@ func (ec *executionContext) marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstash
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPerformer2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx, sel, v[i])
+			ret[i] = ec.marshalNPerformer2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -10943,6 +10994,16 @@ func (ec *executionContext) marshalNPerformer2ᚕgithubᚗcomᚋstashappᚋstash
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNPerformer2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx context.Context, sel ast.SelectionSet, v *Performer) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Performer(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNPerformerCreateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformerCreateInput(ctx context.Context, v interface{}) (PerformerCreateInput, error) {
@@ -10957,7 +11018,7 @@ func (ec *executionContext) marshalNScene2githubᚗcomᚋstashappᚋstashᚋpkg�
 	return ec._Scene(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx context.Context, sel ast.SelectionSet, v []Scene) graphql.Marshaler {
+func (ec *executionContext) marshalNScene2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx context.Context, sel ast.SelectionSet, v []*Scene) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -10981,7 +11042,7 @@ func (ec *executionContext) marshalNScene2ᚕgithubᚗcomᚋstashappᚋstashᚋp
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNScene2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx, sel, v[i])
+			ret[i] = ec.marshalNScene2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11022,7 +11083,7 @@ func (ec *executionContext) marshalNSceneMarker2githubᚗcomᚋstashappᚋstash�
 	return ec._SceneMarker(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSceneMarker2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx context.Context, sel ast.SelectionSet, v []SceneMarker) graphql.Marshaler {
+func (ec *executionContext) marshalNSceneMarker2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx context.Context, sel ast.SelectionSet, v []*SceneMarker) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11046,7 +11107,7 @@ func (ec *executionContext) marshalNSceneMarker2ᚕgithubᚗcomᚋstashappᚋsta
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNSceneMarker2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx, sel, v[i])
+			ret[i] = ec.marshalNSceneMarker2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11057,6 +11118,16 @@ func (ec *executionContext) marshalNSceneMarker2ᚕgithubᚗcomᚋstashappᚋsta
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNSceneMarker2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarker(ctx context.Context, sel ast.SelectionSet, v *SceneMarker) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._SceneMarker(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNSceneMarkerCreateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarkerCreateInput(ctx context.Context, v interface{}) (SceneMarkerCreateInput, error) {
@@ -11067,7 +11138,7 @@ func (ec *executionContext) marshalNSceneMarkerTag2githubᚗcomᚋstashappᚋsta
 	return ec._SceneMarkerTag(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNSceneMarkerTag2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarkerTag(ctx context.Context, sel ast.SelectionSet, v []SceneMarkerTag) graphql.Marshaler {
+func (ec *executionContext) marshalNSceneMarkerTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarkerTag(ctx context.Context, sel ast.SelectionSet, v []*SceneMarkerTag) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11091,7 +11162,7 @@ func (ec *executionContext) marshalNSceneMarkerTag2ᚕgithubᚗcomᚋstashappᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNSceneMarkerTag2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarkerTag(ctx, sel, v[i])
+			ret[i] = ec.marshalNSceneMarkerTag2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarkerTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11102,6 +11173,16 @@ func (ec *executionContext) marshalNSceneMarkerTag2ᚕgithubᚗcomᚋstashappᚋ
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNSceneMarkerTag2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarkerTag(ctx context.Context, sel ast.SelectionSet, v *SceneMarkerTag) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._SceneMarkerTag(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNSceneMarkerUpdateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneMarkerUpdateInput(ctx context.Context, v interface{}) (SceneMarkerUpdateInput, error) {
@@ -11145,7 +11226,13 @@ func (ec *executionContext) unmarshalNString2string(ctx context.Context, v inter
 }
 
 func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	return graphql.MarshalString(v)
+	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNString2ᚕstring(ctx context.Context, v interface{}) ([]string, error) {
@@ -11181,7 +11268,7 @@ func (ec *executionContext) marshalNStudio2githubᚗcomᚋstashappᚋstashᚋpkg
 	return ec._Studio(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNStudio2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudio(ctx context.Context, sel ast.SelectionSet, v []Studio) graphql.Marshaler {
+func (ec *executionContext) marshalNStudio2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudio(ctx context.Context, sel ast.SelectionSet, v []*Studio) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11205,7 +11292,7 @@ func (ec *executionContext) marshalNStudio2ᚕgithubᚗcomᚋstashappᚋstashᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNStudio2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudio(ctx, sel, v[i])
+			ret[i] = ec.marshalNStudio2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudio(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11216,6 +11303,16 @@ func (ec *executionContext) marshalNStudio2ᚕgithubᚗcomᚋstashappᚋstashᚋ
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNStudio2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudio(ctx context.Context, sel ast.SelectionSet, v *Studio) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Studio(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNStudioCreateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudioCreateInput(ctx context.Context, v interface{}) (StudioCreateInput, error) {
@@ -11230,7 +11327,7 @@ func (ec *executionContext) marshalNTag2githubᚗcomᚋstashappᚋstashᚋpkgᚋ
 	return ec._Tag(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx context.Context, sel ast.SelectionSet, v []Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx context.Context, sel ast.SelectionSet, v []*Tag) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -11254,7 +11351,7 @@ func (ec *executionContext) marshalNTag2ᚕgithubᚗcomᚋstashappᚋstashᚋpkg
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTag2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx, sel, v[i])
+			ret[i] = ec.marshalNTag2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -11335,7 +11432,13 @@ func (ec *executionContext) unmarshalN__DirectiveLocation2string(ctx context.Con
 }
 
 func (ec *executionContext) marshalN__DirectiveLocation2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	return graphql.MarshalString(v)
+	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalN__DirectiveLocation2ᚕstring(ctx context.Context, v interface{}) ([]string, error) {
@@ -11500,7 +11603,13 @@ func (ec *executionContext) unmarshalN__TypeKind2string(ctx context.Context, v i
 }
 
 func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	return graphql.MarshalString(v)
+	res := graphql.MarshalString(v)
+	if res == graphql.Null {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

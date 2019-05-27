@@ -21,7 +21,7 @@ func (r *queryResolver) FindPerformers(ctx context.Context, performerFilter *mod
 	}, nil
 }
 
-func (r *queryResolver) AllPerformers(ctx context.Context) ([]models.Performer, error) {
+func (r *queryResolver) AllPerformers(ctx context.Context) ([]*models.Performer, error) {
 	qb := models.NewPerformerQueryBuilder()
 	return qb.All()
 }

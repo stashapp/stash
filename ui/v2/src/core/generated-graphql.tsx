@@ -1,5 +1,6 @@
 /* tslint:disable */
-// Generated in 2019-03-24T13:29:34-07:00
+/* eslint-disable */
+// Generated in 2019-05-27T11:23:10-07:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {

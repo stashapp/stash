@@ -10,6 +10,9 @@ import (
 // the original listener wrapped in a new listener
 // that filters incoming events by the Kind
 func Filter(s string, fn Listener) Listener {
+	if s == "" || s == "*" {
+		return fn
+	}
 	rx := regexp.MustCompile(s)
 	return func(e Event) {
 		if rx.MatchString(e.Kind) {

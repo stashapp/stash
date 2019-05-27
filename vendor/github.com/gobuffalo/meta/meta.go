@@ -16,7 +16,7 @@ import (
 
 func Named(name string, root string) App {
 	pwd, _ := os.Getwd()
-	pwd = strings.TrimPrefix(root, "/private")
+	root = strings.TrimPrefix(root, "/private")
 	if root == "." {
 		root = pwd
 	}
@@ -39,7 +39,7 @@ func Named(name string, root string) App {
 	}()
 
 	// Gather meta data
-	if len(name) == 0 {
+	if len(name) == 0 || name == "." {
 		name = filepath.Base(root)
 	}
 	pp := resolvePackageName(name, pwd)
@@ -76,7 +76,7 @@ func Named(name string, root string) App {
 
 // New App based on the details found at the provided root path
 func New(root string) App {
-	return Named("", root)
+	return Named(filepath.Base(root), root)
 }
 
 func oldSchool(app App) App {

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/gobuffalo/genny"
-	"github.com/gobuffalo/genny/movinglater/gotools"
+	"github.com/gobuffalo/gogen"
 	"github.com/pkg/errors"
 )
 
@@ -30,7 +30,7 @@ func NewVisitor(f *File) *Visitor {
 
 func (v *Visitor) Run() (Boxes, error) {
 	var boxes Boxes
-	pf, err := gotools.ParseFile(v.File)
+	pf, err := gogen.ParseFile(v.File)
 	if err != nil {
 		return boxes, errors.Wrap(err, v.File.Name())
 	}

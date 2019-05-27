@@ -74,7 +74,7 @@ func (qb *GalleryQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) (*Gallery
 	return qb.queryGallery(query, args, tx)
 }
 
-func (qb *GalleryQueryBuilder) ValidGalleriesForScenePath(scenePath string) ([]Gallery, error) {
+func (qb *GalleryQueryBuilder) ValidGalleriesForScenePath(scenePath string) ([]*Gallery, error) {
 	sceneDirPath := filepath.Dir(scenePath)
 	query := "SELECT galleries.* FROM galleries WHERE galleries.scene_id IS NULL AND galleries.path LIKE '" + sceneDirPath + "%' ORDER BY path ASC"
 	return qb.queryGalleries(query, nil, nil)
@@ -84,18 +84,18 @@ func (qb *GalleryQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT galleries.id FROM galleries"), nil)
 }
 
-func (qb *GalleryQueryBuilder) All() ([]Gallery, error) {
+func (qb *GalleryQueryBuilder) All() ([]*Gallery, error) {
 	return qb.queryGalleries(selectAll("galleries")+qb.getGallerySort(nil), nil, nil)
 }
 
-func (qb *GalleryQueryBuilder) Query(findFilter *FindFilterType) ([]Gallery, int) {
+func (qb *GalleryQueryBuilder) Query(findFilter *FindFilterType) ([]*Gallery, int) {
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
 	}
 
-	whereClauses := []string{}
-	havingClauses := []string{}
-	args := []interface{}{}
+	var whereClauses []string
+	var havingClauses []string
+	var args []interface{}
 	body := selectDistinctIDs("galleries")
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -106,10 +106,10 @@ func (qb *GalleryQueryBuilder) Query(findFilter *FindFilterType) ([]Gallery, int
 	sortAndPagination := qb.getGallerySort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := executeFindQuery("galleries", body, args, sortAndPagination, whereClauses, havingClauses)
 
-	var galleries []Gallery
+	var galleries []*Gallery
 	for _, id := range idsResult {
 		gallery, _ := qb.Find(id)
-		galleries = append(galleries, *gallery)
+		galleries = append(galleries, gallery)
 	}
 
 	return galleries, countResult
@@ -133,10 +133,10 @@ func (qb *GalleryQueryBuilder) queryGallery(query string, args []interface{}, tx
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
-	return &results[0], nil
+	return results[0], nil
 }
 
-func (qb *GalleryQueryBuilder) queryGalleries(query string, args []interface{}, tx *sqlx.Tx) ([]Gallery, error) {
+func (qb *GalleryQueryBuilder) queryGalleries(query string, args []interface{}, tx *sqlx.Tx) ([]*Gallery, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {
@@ -150,13 +150,13 @@ func (qb *GalleryQueryBuilder) queryGalleries(query string, args []interface{}, 
 	}
 	defer rows.Close()
 
-	galleries := make([]Gallery, 0)
-	gallery := Gallery{}
+	galleries := make([]*Gallery, 0)
 	for rows.Next() {
+		gallery := Gallery{}
 		if err := rows.StructScan(&gallery); err != nil {
 			return nil, err
 		}
-		galleries = append(galleries, gallery)
+		galleries = append(galleries, &gallery)
 	}
 
 	if err := rows.Err(); err != nil {

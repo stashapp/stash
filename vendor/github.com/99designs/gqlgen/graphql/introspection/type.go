@@ -70,6 +70,10 @@ func (t *Type) Fields(includeDeprecated bool) []Field {
 			continue
 		}
 
+		if !includeDeprecated && f.Directives.ForName("deprecated") != nil {
+			continue
+		}
+
 		var args []InputValue
 		for _, arg := range f.Arguments {
 			args = append(args, InputValue{

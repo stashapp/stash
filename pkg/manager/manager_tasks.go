@@ -265,6 +265,11 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		delta := utils.Btoi(sprites) + utils.Btoi(previews) + utils.Btoi(markers) + utils.Btoi(transcodes)
 		var wg sync.WaitGroup
 		for _, scene := range scenes {
+			if scene == nil {
+				logger.Errorf("nil scene, skipping generate")
+				continue
+			}
+
 			wg.Add(delta)
 
 			// Clear the tmp directory for each scene
@@ -273,22 +278,22 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 			}
 
 			if sprites {
-				task := GenerateSpriteTask{Scene: scene}
+				task := GenerateSpriteTask{Scene: *scene}
 				go task.Start(&wg, spritesCh, errorSpCh)
 			}
 
 			if previews {
-				task := GeneratePreviewTask{Scene: scene}
+				task := GeneratePreviewTask{Scene: *scene}
 				go task.Start(&wg, previewsCh, errorPrCh)
 			}
 
 			if markers {
-				task := GenerateMarkersTask{Scene: scene}
+				task := GenerateMarkersTask{Scene: *scene}
 				go task.Start(&wg, markersCh, errorMaCh)
 			}
 
 			if transcodes {
-				task := GenerateTranscodeTask{Scene: scene}
+				task := GenerateTranscodeTask{Scene: *scene}
 				go task.Start(&wg, transcodesCh, errorTrCh)
 			}
 

@@ -2,7 +2,6 @@ package flect
 
 import (
 	"encoding"
-	"regexp"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -28,8 +27,6 @@ func New(s string) Ident {
 
 	return i
 }
-
-var splitRx = regexp.MustCompile("[^\\p{L}]")
 
 func toParts(s string) []string {
 	parts := []string{}

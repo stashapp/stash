@@ -49,8 +49,10 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
     }
   }
 
+  /* eslint-disable react-hooks/rules-of-hooks */
   const [selectedItems, setSelectedItems] = React.useState<ValidTypes[]>([]);
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
+  /* eslint-enable */
 
   if (!!props.initialIds && selectedItems.length === 0 && !isInitialized) {
     const initialItems = items.filter((item) => props.initialIds!.includes(item.id));

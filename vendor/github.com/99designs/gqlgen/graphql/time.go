@@ -8,6 +8,10 @@ import (
 )
 
 func MarshalTime(t time.Time) Marshaler {
+	if t.IsZero() {
+		return Null
+	}
+
 	return WriterFunc(func(w io.Writer) {
 		io.WriteString(w, strconv.Quote(t.Format(time.RFC3339)))
 	})

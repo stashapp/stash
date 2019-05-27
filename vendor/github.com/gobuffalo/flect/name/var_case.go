@@ -31,3 +31,19 @@ func VarCasePlural(s string) string {
 func (i Ident) VarCasePlural() Ident {
 	return Ident{i.Group().Pluralize().Camelize()}
 }
+
+// VarCase version of a name.
+//	foo_bar = fooBar
+//	admin/widget = adminWidget
+//	Users = users
+func (i Ident) VarCase() Ident {
+	return Ident{i.Camelize()}
+}
+
+// VarCase version of a name.
+//	foo_bar = fooBar
+//	admin/widget = adminWidget
+//	Users = users
+func VarCase(s string) string {
+	return New(s).VarCase().String()
+}

@@ -22,7 +22,7 @@ func (r *sceneMarkerResolver) PrimaryTag(ctx context.Context, obj *models.SceneM
 	return tag, err
 }
 
-func (r *sceneMarkerResolver) Tags(ctx context.Context, obj *models.SceneMarker) ([]models.Tag, error) {
+func (r *sceneMarkerResolver) Tags(ctx context.Context, obj *models.SceneMarker) ([]*models.Tag, error) {
 	qb := models.NewTagQueryBuilder()
 	return qb.FindBySceneMarkerID(obj.ID, nil)
 }

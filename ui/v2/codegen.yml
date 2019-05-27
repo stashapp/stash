@@ -11,6 +11,7 @@ generates:
       withHooks: true
     plugins:
       - add: "/* tslint:disable */"
+      - add: "/* eslint-disable */"
       - time
       - "typescript-common"
       - "typescript-client"
