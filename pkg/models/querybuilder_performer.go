@@ -61,10 +61,10 @@ func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
-	return &results[0], nil
+	return results[0], nil
 }
 
-func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Performer, error) {
+func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {
 	query := `
 		SELECT performers.* FROM performers
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
@@ -76,7 +76,7 @@ func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Perf
 	return qb.queryPerformers(query, args, tx)
 }
 
-func (qb *PerformerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]Performer, error) {
+func (qb *PerformerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]*Performer, error) {
 	query := "SELECT * FROM performers WHERE name IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
@@ -89,11 +89,11 @@ func (qb *PerformerQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
-func (qb *PerformerQueryBuilder) All() ([]Performer, error) {
+func (qb *PerformerQueryBuilder) All() ([]*Performer, error) {
 	return qb.queryPerformers(selectAll("performers")+qb.getPerformerSort(nil), nil, nil)
 }
 
-func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]Performer, int) {
+func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int) {
 	if performerFilter == nil {
 		performerFilter = &PerformerFilterType{}
 	}
@@ -101,9 +101,9 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		findFilter = &FindFilterType{}
 	}
 
-	whereClauses := []string{}
-	havingClauses := []string{}
-	args := []interface{}{}
+	var whereClauses []string
+	var havingClauses []string
+	var args []interface{}
 	body := selectDistinctIDs("performers")
 	body += `
 		left join performers_scenes as scenes_join on scenes_join.performer_id = performers.id
@@ -126,10 +126,10 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	sortAndPagination := qb.getPerformerSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := executeFindQuery("performers", body, args, sortAndPagination, whereClauses, havingClauses)
 
-	var performers []Performer
+	var performers []*Performer
 	for _, id := range idsResult {
 		performer, _ := qb.Find(id)
-		performers = append(performers, *performer)
+		performers = append(performers, performer)
 	}
 
 	return performers, countResult
@@ -148,7 +148,7 @@ func (qb *PerformerQueryBuilder) getPerformerSort(findFilter *FindFilterType) st
 	return getSort(sort, direction, "performers")
 }
 
-func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{}, tx *sqlx.Tx) ([]Performer, error) {
+func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{}, tx *sqlx.Tx) ([]*Performer, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {
@@ -162,13 +162,13 @@ func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{
 	}
 	defer rows.Close()
 
-	performers := make([]Performer, 0)
-	performer := Performer{}
+	performers := make([]*Performer, 0)
 	for rows.Next() {
+		performer := Performer{}
 		if err := rows.StructScan(&performer); err != nil {
 			return nil, err
 		}
-		performers = append(performers, performer)
+		performers = append(performers, &performer)
 	}
 
 	if err := rows.Err(); err != nil {

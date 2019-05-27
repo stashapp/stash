@@ -13,6 +13,8 @@ type Command struct {
 	Aliases     []string `json:"aliases,omitempty"`
 	Binary      string   `json:"-"`
 	Flags       []string `json:"flags,omitempty"`
+	// Filters events to listen to ("" or "*") is all events
+	ListenFor string `json:"listen_for,omitempty"`
 }
 
 // Commands is a slice of Command

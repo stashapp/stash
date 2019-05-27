@@ -3,16 +3,21 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"mime"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/99designs/gqlgen/complexity"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/gorilla/websocket"
-	"github.com/hashicorp/golang-lru"
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/vektah/gqlparser/ast"
 	"github.com/vektah/gqlparser/gqlerror"
 	"github.com/vektah/gqlparser/parser"
@@ -37,6 +42,8 @@ type Config struct {
 	complexityLimitFunc             graphql.ComplexityLimitFunc
 	disableIntrospection            bool
 	connectionKeepAlivePingInterval time.Duration
+	uploadMaxMemory                 int64
+	uploadMaxSize                   int64
 }
 
 func (c *Config) newRequestContext(es graphql.ExecutableSchema, doc *ast.QueryDocument, op *ast.OperationDefinition, query string, variables map[string]interface{}) *graphql.RequestContext {
@@ -251,6 +258,23 @@ func CacheSize(size int) Option {
 	}
 }
 
+// UploadMaxSize sets the maximum number of bytes used to parse a request body
+// as multipart/form-data.
+func UploadMaxSize(size int64) Option {
+	return func(cfg *Config) {
+		cfg.uploadMaxSize = size
+	}
+}
+
+// UploadMaxMemory sets the maximum number of bytes used to parse a request body
+// as multipart/form-data in memory, with the remainder stored on disk in
+// temporary files.
+func UploadMaxMemory(size int64) Option {
+	return func(cfg *Config) {
+		cfg.uploadMaxMemory = size
+	}
+}
+
 // WebsocketKeepAliveDuration allows you to reconfigure the keepalive behavior.
 // By default, keepalive is enabled with a DefaultConnectionKeepAlivePingInterval
 // duration. Set handler.connectionKeepAlivePingInterval = 0 to disable keepalive
@@ -264,9 +288,20 @@ func WebsocketKeepAliveDuration(duration time.Duration) Option {
 const DefaultCacheSize = 1000
 const DefaultConnectionKeepAlivePingInterval = 25 * time.Second
 
+// DefaultUploadMaxMemory is the maximum number of bytes used to parse a request body
+// as multipart/form-data in memory, with the remainder stored on disk in
+// temporary files.
+const DefaultUploadMaxMemory = 32 << 20
+
+// DefaultUploadMaxSize is maximum number of bytes used to parse a request body
+// as multipart/form-data.
+const DefaultUploadMaxSize = 32 << 20
+
 func GraphQL(exec graphql.ExecutableSchema, options ...Option) http.HandlerFunc {
 	cfg := &Config{
 		cacheSize:                       DefaultCacheSize,
+		uploadMaxMemory:                 DefaultUploadMaxMemory,
+		uploadMaxSize:                   DefaultUploadMaxSize,
 		connectionKeepAlivePingInterval: DefaultConnectionKeepAlivePingInterval,
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
@@ -335,8 +370,36 @@ func (gh *graphqlHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	case http.MethodPost:
-		if err := jsonDecode(r.Body, &reqParams); err != nil {
-			sendErrorf(w, http.StatusBadRequest, "json body could not be decoded: "+err.Error())
+		mediaType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+		if err != nil {
+			sendErrorf(w, http.StatusBadRequest, "error parsing request Content-Type")
+			return
+		}
+
+		switch mediaType {
+		case "application/json":
+			if err := jsonDecode(r.Body, &reqParams); err != nil {
+				sendErrorf(w, http.StatusBadRequest, "json body could not be decoded: "+err.Error())
+				return
+			}
+
+		case "multipart/form-data":
+			var closers []io.Closer
+			var tmpFiles []string
+			defer func() {
+				for i := len(closers) - 1; 0 <= i; i-- {
+					_ = closers[i].Close()
+				}
+				for _, tmpFile := range tmpFiles {
+					_ = os.Remove(tmpFile)
+				}
+			}()
+			if err := processMultipart(w, r, &reqParams, &closers, &tmpFiles, gh.cfg.uploadMaxSize, gh.cfg.uploadMaxMemory); err != nil {
+				sendErrorf(w, http.StatusBadRequest, "multipart body could not be decoded: "+err.Error())
+				return
+			}
+		default:
+			sendErrorf(w, http.StatusBadRequest, "unsupported Content-Type: "+mediaType)
 			return
 		}
 	default:
@@ -492,4 +555,155 @@ func sendError(w http.ResponseWriter, code int, errors ...*gqlerror.Error) {
 
 func sendErrorf(w http.ResponseWriter, code int, format string, args ...interface{}) {
 	sendError(w, code, &gqlerror.Error{Message: fmt.Sprintf(format, args...)})
+}
+
+type bytesReader struct {
+	s        *[]byte
+	i        int64 // current reading index
+	prevRune int   // index of previous rune; or < 0
+}
+
+func (r *bytesReader) Read(b []byte) (n int, err error) {
+	if r.s == nil {
+		return 0, errors.New("byte slice pointer is nil")
+	}
+	if r.i >= int64(len(*r.s)) {
+		return 0, io.EOF
+	}
+	r.prevRune = -1
+	n = copy(b, (*r.s)[r.i:])
+	r.i += int64(n)
+	return
+}
+
+func processMultipart(w http.ResponseWriter, r *http.Request, request *params, closers *[]io.Closer, tmpFiles *[]string, uploadMaxSize, uploadMaxMemory int64) error {
+	var err error
+	if r.ContentLength > uploadMaxSize {
+		return errors.New("failed to parse multipart form, request body too large")
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, uploadMaxSize)
+	if err = r.ParseMultipartForm(uploadMaxMemory); err != nil {
+		if strings.Contains(err.Error(), "request body too large") {
+			return errors.New("failed to parse multipart form, request body too large")
+		}
+		return errors.New("failed to parse multipart form")
+	}
+	*closers = append(*closers, r.Body)
+
+	if err = jsonDecode(strings.NewReader(r.Form.Get("operations")), &request); err != nil {
+		return errors.New("operations form field could not be decoded")
+	}
+
+	var uploadsMap = map[string][]string{}
+	if err = json.Unmarshal([]byte(r.Form.Get("map")), &uploadsMap); err != nil {
+		return errors.New("map form field could not be decoded")
+	}
+
+	var upload graphql.Upload
+	for key, paths := range uploadsMap {
+		if len(paths) == 0 {
+			return fmt.Errorf("invalid empty operations paths list for key %s", key)
+		}
+		file, header, err := r.FormFile(key)
+		if err != nil {
+			return fmt.Errorf("failed to get key %s from form", key)
+		}
+		*closers = append(*closers, file)
+
+		if len(paths) == 1 {
+			upload = graphql.Upload{
+				File:     file,
+				Size:     header.Size,
+				Filename: header.Filename,
+			}
+			err = addUploadToOperations(request, upload, key, paths[0])
+			if err != nil {
+				return err
+			}
+		} else {
+			if r.ContentLength < uploadMaxMemory {
+				fileBytes, err := ioutil.ReadAll(file)
+				if err != nil {
+					return fmt.Errorf("failed to read file for key %s", key)
+				}
+				for _, path := range paths {
+					upload = graphql.Upload{
+						File:     &bytesReader{s: &fileBytes, i: 0, prevRune: -1},
+						Size:     header.Size,
+						Filename: header.Filename,
+					}
+					err = addUploadToOperations(request, upload, key, path)
+					if err != nil {
+						return err
+					}
+				}
+			} else {
+				tmpFile, err := ioutil.TempFile(os.TempDir(), "gqlgen-")
+				if err != nil {
+					return fmt.Errorf("failed to create temp file for key %s", key)
+				}
+				tmpName := tmpFile.Name()
+				*tmpFiles = append(*tmpFiles, tmpName)
+				_, err = io.Copy(tmpFile, file)
+				if err != nil {
+					if err := tmpFile.Close(); err != nil {
+						return fmt.Errorf("failed to copy to temp file and close temp file for key %s", key)
+					}
+					return fmt.Errorf("failed to copy to temp file for key %s", key)
+				}
+				if err := tmpFile.Close(); err != nil {
+					return fmt.Errorf("failed to close temp file for key %s", key)
+				}
+				for _, path := range paths {
+					pathTmpFile, err := os.Open(tmpName)
+					if err != nil {
+						return fmt.Errorf("failed to open temp file for key %s", key)
+					}
+					*closers = append(*closers, pathTmpFile)
+					upload = graphql.Upload{
+						File:     pathTmpFile,
+						Size:     header.Size,
+						Filename: header.Filename,
+					}
+					err = addUploadToOperations(request, upload, key, path)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func addUploadToOperations(request *params, upload graphql.Upload, key, path string) error {
+	if !strings.HasPrefix(path, "variables.") {
+		return fmt.Errorf("invalid operations paths for key %s", key)
+	}
+
+	var ptr interface{} = request.Variables
+	parts := strings.Split(path, ".")
+
+	// skip the first part (variables) because we started there
+	for i, p := range parts[1:] {
+		last := i == len(parts)-2
+		if ptr == nil {
+			return fmt.Errorf("path is missing \"variables.\" prefix, key: %s, path: %s", key, path)
+		}
+		if index, parseNbrErr := strconv.Atoi(p); parseNbrErr == nil {
+			if last {
+				ptr.([]interface{})[index] = upload
+			} else {
+				ptr = ptr.([]interface{})[index]
+			}
+		} else {
+			if last {
+				ptr.(map[string]interface{})[p] = upload
+			} else {
+				ptr = ptr.(map[string]interface{})[p]
+			}
+		}
+	}
+
+	return nil
 }

@@ -21,7 +21,7 @@ func (r *queryResolver) FindStudios(ctx context.Context, filter *models.FindFilt
 	}, nil
 }
 
-func (r *queryResolver) AllStudios(ctx context.Context) ([]models.Studio, error) {
+func (r *queryResolver) AllStudios(ctx context.Context) ([]*models.Studio, error) {
 	qb := models.NewStudioQueryBuilder()
 	return qb.All()
 }

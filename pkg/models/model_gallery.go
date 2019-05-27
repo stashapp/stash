@@ -25,8 +25,8 @@ type Gallery struct {
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
-func (g *Gallery) GetFiles(baseURL string) []GalleryFilesType {
-	var galleryFiles []GalleryFilesType
+func (g *Gallery) GetFiles(baseURL string) []*GalleryFilesType {
+	var galleryFiles []*GalleryFilesType
 	filteredFiles, readCloser, err := g.listZipContents()
 	if err != nil {
 		return nil
@@ -41,7 +41,7 @@ func (g *Gallery) GetFiles(baseURL string) []GalleryFilesType {
 			Name:  &file.Name,
 			Path:  &galleryURL,
 		}
-		galleryFiles = append(galleryFiles, galleryFile)
+		galleryFiles = append(galleryFiles, &galleryFile)
 	}
 
 	return galleryFiles

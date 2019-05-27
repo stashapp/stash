@@ -49,8 +49,10 @@ export const FilterSelect: React.FunctionComponent<IProps> = (props: IProps) => 
     }
   }
 
+  /* eslint-disable react-hooks/rules-of-hooks */
   const [selectedItem, setSelectedItem] = React.useState<ValidTypes | null>(null);
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
+  /* eslint-enable */
 
   if (!!props.initialId && !selectedItem && !isInitialized) {
     const initialItem = items.find((item) => props.initialId === item.id);

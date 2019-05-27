@@ -407,7 +407,7 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
 	logger.Infof("[scraped sites] export complete")
 }
 
-func (t *ExportTask) getPerformerNames(performers []models.Performer) []string {
+func (t *ExportTask) getPerformerNames(performers []*models.Performer) []string {
 	if len(performers) == 0 {
 		return nil
 	}
@@ -422,7 +422,7 @@ func (t *ExportTask) getPerformerNames(performers []models.Performer) []string {
 	return results
 }
 
-func (t *ExportTask) getTagNames(tags []models.Tag) []string {
+func (t *ExportTask) getTagNames(tags []*models.Tag) []string {
 	if len(tags) == 0 {
 		return nil
 	}

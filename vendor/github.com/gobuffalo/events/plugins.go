@@ -35,7 +35,7 @@ func LoadPlugins() error {
 				err := func(c plugins.Command) error {
 					return safe.RunE(func() error {
 						n := fmt.Sprintf("[PLUGIN] %s %s", c.Binary, c.Name)
-						_, err := NamedListen(n, func(e Event) {
+						fn := func(e Event) {
 							b, err := json.Marshal(e)
 							if err != nil {
 								fmt.Println("error trying to marshal event", e, err)
@@ -48,7 +48,8 @@ func LoadPlugins() error {
 							if err := cmd.Run(); err != nil {
 								fmt.Println("error trying to send event", strings.Join(cmd.Args, " "), err)
 							}
-						})
+						}
+						_, err := NamedListen(n, Filter(c.ListenFor, fn))
 						if err != nil {
 							return errors.WithStack(err)
 						}
