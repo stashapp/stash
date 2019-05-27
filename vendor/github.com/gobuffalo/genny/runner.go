@@ -142,6 +142,15 @@ func (r *Runner) FindStep(name string) (*Step, error) {
 	return s, nil
 }
 
+func (r *Runner) ReplaceStep(name string, s *Step) error {
+	os, err := r.FindStep(name)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	s.index = os.index
+	return r.WithStep(name, s)
+}
+
 func (r *Runner) Run() error {
 	if f, ok := r.Logger.(io.Closer); ok {
 		defer f.Close()

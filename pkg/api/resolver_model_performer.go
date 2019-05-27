@@ -130,7 +130,7 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 	return &res, err
 }
 
-func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) ([]models.Scene, error) {
+func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) ([]*models.Scene, error) {
 	qb := models.NewSceneQueryBuilder()
 	return qb.FindByPerformerID(obj.ID)
 }

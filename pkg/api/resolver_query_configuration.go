@@ -21,7 +21,7 @@ func (r *queryResolver) Directories(ctx context.Context, path *string) ([]string
 
 func makeConfigResult() *models.ConfigResult {
 	return &models.ConfigResult{
-		General: *makeConfigGeneralResult(),
+		General: makeConfigGeneralResult(),
 	}
 }
 

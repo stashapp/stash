@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var alphanum = regexp.MustCompile("[^a-zA-Z0-9_\\-\\/]+")
+var alphanum = regexp.MustCompile(`[^a-zA-Z0-9_\-\/]+`)
 
 // Folder creates a suitable folder name
 //	admin/widget = admin/widget

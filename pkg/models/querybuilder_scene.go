@@ -94,7 +94,7 @@ func (qb *SceneQueryBuilder) FindByPath(path string) (*Scene, error) {
 	return qb.queryScene(query, args, nil)
 }
 
-func (qb *SceneQueryBuilder) FindByPerformerID(performerID int) ([]Scene, error) {
+func (qb *SceneQueryBuilder) FindByPerformerID(performerID int) ([]*Scene, error) {
 	args := []interface{}{performerID}
 	return qb.queryScenes(scenesForPerformerQuery, args, nil)
 }
@@ -104,7 +104,7 @@ func (qb *SceneQueryBuilder) CountByPerformerID(performerID int) (int, error) {
 	return runCountQuery(buildCountQuery(scenesForPerformerQuery), args)
 }
 
-func (qb *SceneQueryBuilder) FindByStudioID(studioID int) ([]Scene, error) {
+func (qb *SceneQueryBuilder) FindByStudioID(studioID int) ([]*Scene, error) {
 	args := []interface{}{studioID}
 	return qb.queryScenes(scenesForStudioQuery, args, nil)
 }
@@ -123,7 +123,7 @@ func (qb *SceneQueryBuilder) CountByTagID(tagID int) (int, error) {
 	return runCountQuery(buildCountQuery(scenesForTagQuery), args)
 }
 
-func (qb *SceneQueryBuilder) Wall(q *string) ([]Scene, error) {
+func (qb *SceneQueryBuilder) Wall(q *string) ([]*Scene, error) {
 	s := ""
 	if q != nil {
 		s = *q
@@ -132,11 +132,11 @@ func (qb *SceneQueryBuilder) Wall(q *string) ([]Scene, error) {
 	return qb.queryScenes(query, nil, nil)
 }
 
-func (qb *SceneQueryBuilder) All() ([]Scene, error) {
+func (qb *SceneQueryBuilder) All() ([]*Scene, error) {
 	return qb.queryScenes(selectAll("scenes")+qb.getSceneSort(nil), nil, nil)
 }
 
-func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]Scene, int) {
+func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]*Scene, int) {
 	if sceneFilter == nil {
 		sceneFilter = &SceneFilterType{}
 	}
@@ -144,9 +144,9 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		findFilter = &FindFilterType{}
 	}
 
-	whereClauses := []string{}
-	havingClauses := []string{}
-	args := []interface{}{}
+	var whereClauses []string
+	var havingClauses []string
+	var args []interface{}
 	body := selectDistinctIDs("scenes")
 	body = body + `
 		left join scene_markers on scene_markers.scene_id = scenes.id
@@ -233,10 +233,10 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := executeFindQuery("scenes", body, args, sortAndPagination, whereClauses, havingClauses)
 
-	var scenes []Scene
+	var scenes []*Scene
 	for _, id := range idsResult {
 		scene, _ := qb.Find(id)
-		scenes = append(scenes, *scene)
+		scenes = append(scenes, scene)
 	}
 
 	return scenes, countResult
@@ -256,10 +256,10 @@ func (qb *SceneQueryBuilder) queryScene(query string, args []interface{}, tx *sq
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
-	return &results[0], nil
+	return results[0], nil
 }
 
-func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *sqlx.Tx) ([]Scene, error) {
+func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *sqlx.Tx) ([]*Scene, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {
@@ -273,13 +273,13 @@ func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *s
 	}
 	defer rows.Close()
 
-	scenes := make([]Scene, 0)
-	scene := Scene{}
+	scenes := make([]*Scene, 0)
 	for rows.Next() {
+		scene := Scene{}
 		if err := rows.StructScan(&scene); err != nil {
 			return nil, err
 		}
-		scenes = append(scenes, scene)
+		scenes = append(scenes, &scene)
 	}
 
 	if err := rows.Err(); err != nil {

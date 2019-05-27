@@ -28,7 +28,7 @@ type ConfigGeneralResult struct {
 
 // All configuration settings
 type ConfigResult struct {
-	General ConfigGeneralResult `json:"general"`
+	General *ConfigGeneralResult `json:"general"`
 }
 
 type FindFilterType struct {
@@ -40,28 +40,28 @@ type FindFilterType struct {
 }
 
 type FindGalleriesResultType struct {
-	Count     int       `json:"count"`
-	Galleries []Gallery `json:"galleries"`
+	Count     int        `json:"count"`
+	Galleries []*Gallery `json:"galleries"`
 }
 
 type FindPerformersResultType struct {
-	Count      int         `json:"count"`
-	Performers []Performer `json:"performers"`
+	Count      int          `json:"count"`
+	Performers []*Performer `json:"performers"`
 }
 
 type FindSceneMarkersResultType struct {
-	Count        int           `json:"count"`
-	SceneMarkers []SceneMarker `json:"scene_markers"`
+	Count        int            `json:"count"`
+	SceneMarkers []*SceneMarker `json:"scene_markers"`
 }
 
 type FindScenesResultType struct {
-	Count  int     `json:"count"`
-	Scenes []Scene `json:"scenes"`
+	Count  int      `json:"count"`
+	Scenes []*Scene `json:"scenes"`
 }
 
 type FindStudiosResultType struct {
-	Count   int      `json:"count"`
-	Studios []Studio `json:"studios"`
+	Count   int       `json:"count"`
+	Studios []*Studio `json:"studios"`
 }
 
 type GalleryFilesType struct {
@@ -184,8 +184,8 @@ type SceneMarkerFilterType struct {
 }
 
 type SceneMarkerTag struct {
-	Tag          Tag           `json:"tag"`
-	SceneMarkers []SceneMarker `json:"scene_markers"`
+	Tag          *Tag           `json:"tag"`
+	SceneMarkers []*SceneMarker `json:"scene_markers"`
 }
 
 type SceneMarkerUpdateInput struct {

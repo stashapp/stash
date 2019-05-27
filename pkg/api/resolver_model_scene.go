@@ -84,7 +84,7 @@ func (r *sceneResolver) IsStreamable(ctx context.Context, obj *models.Scene) (bo
 	return manager.IsStreamable(obj)
 }
 
-func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) ([]models.SceneMarker, error) {
+func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) ([]*models.SceneMarker, error) {
 	qb := models.NewSceneMarkerQueryBuilder()
 	return qb.FindBySceneID(obj.ID, nil)
 }
@@ -99,12 +99,12 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.
 	return qb.FindBySceneID(obj.ID)
 }
 
-func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]models.Tag, error) {
+func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {
 	qb := models.NewTagQueryBuilder()
 	return qb.FindBySceneID(obj.ID, nil)
 }
 
-func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]models.Performer, error) {
+func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.Performer, error) {
 	qb := models.NewPerformerQueryBuilder()
 	return qb.FindBySceneID(obj.ID, nil)
 }

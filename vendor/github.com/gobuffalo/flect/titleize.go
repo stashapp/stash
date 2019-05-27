@@ -20,8 +20,7 @@ func Titleize(s string) string {
 func (i Ident) Titleize() Ident {
 	var parts []string
 	for _, part := range i.Parts {
-		var x string
-		x = string(unicode.ToTitle(rune(part[0])))
+		x := string(unicode.ToTitle(rune(part[0])))
 		if len(part) > 1 {
 			x += part[1:]
 		}

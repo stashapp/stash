@@ -47,5 +47,5 @@ func register(matchers ...Map) {
 func init() {
 	// Arguments order is intentional
 	// Archive files will be checked last due to prepend above in func NewMatcher
-	register(Archive, Document, Font, Audio, Video, Image)
+	register(Archive, Document, Font, Audio, Video, Image, Application)
 }

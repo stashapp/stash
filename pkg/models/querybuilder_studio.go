@@ -72,18 +72,18 @@ func (qb *StudioQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
-func (qb *StudioQueryBuilder) All() ([]Studio, error) {
+func (qb *StudioQueryBuilder) All() ([]*Studio, error) {
 	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil, nil)
 }
 
-func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]Studio, int) {
+func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]*Studio, int) {
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
 	}
 
-	whereClauses := []string{}
-	havingClauses := []string{}
-	args := []interface{}{}
+	var whereClauses []string
+	var havingClauses []string
+	var args []interface{}
 	body := selectDistinctIDs("studios")
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -94,10 +94,10 @@ func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]Studio, int) 
 	sortAndPagination := qb.getStudioSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := executeFindQuery("studios", body, args, sortAndPagination, whereClauses, havingClauses)
 
-	var studios []Studio
+	var studios []*Studio
 	for _, id := range idsResult {
 		studio, _ := qb.Find(id, nil)
-		studios = append(studios, *studio)
+		studios = append(studios, studio)
 	}
 
 	return studios, countResult
@@ -121,10 +121,10 @@ func (qb *StudioQueryBuilder) queryStudio(query string, args []interface{}, tx *
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
-	return &results[0], nil
+	return results[0], nil
 }
 
-func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}, tx *sqlx.Tx) ([]Studio, error) {
+func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}, tx *sqlx.Tx) ([]*Studio, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {
@@ -138,13 +138,13 @@ func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}, tx 
 	}
 	defer rows.Close()
 
-	studios := make([]Studio, 0)
-	studio := Studio{}
+	studios := make([]*Studio, 0)
 	for rows.Next() {
+		studio := Studio{}
 		if err := rows.StructScan(&studio); err != nil {
 			return nil, err
 		}
-		studios = append(studios, studio)
+		studios = append(studios, &studio)
 	}
 
 	if err := rows.Err(); err != nil {

@@ -9,7 +9,7 @@ func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*stri
 	return nil, nil // TODO remove this from schema
 }
 
-func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]models.GalleryFilesType, error) {
+func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*models.GalleryFilesType, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	return obj.GetFiles(baseURL), nil
 }

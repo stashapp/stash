@@ -57,7 +57,7 @@ func (qb *ScrapedItemQueryBuilder) Find(id int) (*ScrapedItem, error) {
 	return qb.queryScrapedItem(query, args, nil)
 }
 
-func (qb *ScrapedItemQueryBuilder) All() ([]ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) All() ([]*ScrapedItem, error) {
 	return qb.queryScrapedItems(selectAll("scraped_items")+qb.getScrapedItemsSort(nil), nil, nil)
 }
 
@@ -79,10 +79,10 @@ func (qb *ScrapedItemQueryBuilder) queryScrapedItem(query string, args []interfa
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
-	return &results[0], nil
+	return results[0], nil
 }
 
-func (qb *ScrapedItemQueryBuilder) queryScrapedItems(query string, args []interface{}, tx *sqlx.Tx) ([]ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) queryScrapedItems(query string, args []interface{}, tx *sqlx.Tx) ([]*ScrapedItem, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {
@@ -96,13 +96,13 @@ func (qb *ScrapedItemQueryBuilder) queryScrapedItems(query string, args []interf
 	}
 	defer rows.Close()
 
-	scrapedItems := make([]ScrapedItem, 0)
-	scrapedItem := ScrapedItem{}
+	scrapedItems := make([]*ScrapedItem, 0)
 	for rows.Next() {
+		scrapedItem := ScrapedItem{}
 		if err := rows.StructScan(&scrapedItem); err != nil {
 			return nil, err
 		}
-		scrapedItems = append(scrapedItems, scrapedItem)
+		scrapedItems = append(scrapedItems, &scrapedItem)
 	}
 
 	if err := rows.Err(); err != nil {

@@ -61,7 +61,7 @@ func (qb *TagQueryBuilder) Find(id int, tx *sqlx.Tx) (*Tag, error) {
 	return qb.queryTag(query, args, tx)
 }
 
-func (qb *TagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Tag, error) {
+func (qb *TagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scenes_tags as scenes_join on scenes_join.tag_id = tags.id
@@ -74,7 +74,7 @@ func (qb *TagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]Tag, error
 	return qb.queryTags(query, args, tx)
 }
 
-func (qb *TagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int, tx *sqlx.Tx) ([]Tag, error) {
+func (qb *TagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int, tx *sqlx.Tx) ([]*Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scene_markers_tags as scene_markers_join on scene_markers_join.tag_id = tags.id
@@ -93,7 +93,7 @@ func (qb *TagQueryBuilder) FindByName(name string, tx *sqlx.Tx) (*Tag, error) {
 	return qb.queryTag(query, args, tx)
 }
 
-func (qb *TagQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]Tag, error) {
+func (qb *TagQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]*Tag, error) {
 	query := "SELECT * FROM tags WHERE name IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
@@ -106,7 +106,7 @@ func (qb *TagQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
 
-func (qb *TagQueryBuilder) All() ([]Tag, error) {
+func (qb *TagQueryBuilder) All() ([]*Tag, error) {
 	return qb.queryTags(selectAll("tags")+qb.getTagSort(nil), nil, nil)
 }
 
@@ -128,10 +128,10 @@ func (qb *TagQueryBuilder) queryTag(query string, args []interface{}, tx *sqlx.T
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
-	return &results[0], nil
+	return results[0], nil
 }
 
-func (qb *TagQueryBuilder) queryTags(query string, args []interface{}, tx *sqlx.Tx) ([]Tag, error) {
+func (qb *TagQueryBuilder) queryTags(query string, args []interface{}, tx *sqlx.Tx) ([]*Tag, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {
@@ -145,13 +145,13 @@ func (qb *TagQueryBuilder) queryTags(query string, args []interface{}, tx *sqlx.
 	}
 	defer rows.Close()
 
-	tags := make([]Tag, 0)
-	tag := Tag{}
+	tags := make([]*Tag, 0)
 	for rows.Next() {
+		tag := Tag{}
 		if err := rows.StructScan(&tag); err != nil {
 			return nil, err
 		}
-		tags = append(tags, tag)
+		tags = append(tags, &tag)
 	}
 
 	if err := rows.Err(); err != nil {

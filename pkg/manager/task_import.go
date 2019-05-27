@@ -561,7 +561,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 	logger.Info("[scenes] import complete")
 }
 
-func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]models.Performer, error) {
+func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Performer, error) {
 	pqb := models.NewPerformerQueryBuilder()
 	performers, err := pqb.FindByNames(names, tx)
 	if err != nil {
@@ -587,7 +587,7 @@ func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]models.Perfor
 	return performers, nil
 }
 
-func (t *ImportTask) getTags(sceneChecksum string, names []string, tx *sqlx.Tx) ([]models.Tag, error) {
+func (t *ImportTask) getTags(sceneChecksum string, names []string, tx *sqlx.Tx) ([]*models.Tag, error) {
 	tqb := models.NewTagQueryBuilder()
 	tags, err := tqb.FindByNames(names, tx)
 	if err != nil {
