@@ -85,6 +85,9 @@ func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]*Studio, int)
 	var havingClauses []string
 	var args []interface{}
 	body := selectDistinctIDs("studios")
+	body += `
+		join scenes on studios.id = scenes.studio_id		
+	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
