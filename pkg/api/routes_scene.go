@@ -121,6 +121,16 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.Checksum, int(sceneMarker.Seconds))
+
+	// If the image doesn't exist, send the placeholder
+	exists, _ := utils.FileExists(filepath)
+	if !exists {
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Cache-Control", "no-store")
+		_, _ = w.Write(utils.PendingGenerateResource)
+		return
+	}
+
 	http.ServeFile(w, r, filepath)
 }
 
