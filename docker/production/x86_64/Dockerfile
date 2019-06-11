@@ -2,7 +2,8 @@ FROM ubuntu:18.04 as prep
 LABEL MAINTAINER="leopere [at] nixc [dot] us"
 
 RUN apt-get update && \
-    apt-get -y install curl xz-utils && \
+    apt-get -y install curl xz-utils ca-certificates -y && \
+    update-ca-certificates && \
     apt-get autoclean -y && \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /
