@@ -16,6 +16,7 @@ func (s *singleton) Scan() {
 		return
 	}
 	s.Status = Scan
+	var verbose_level int = config.GetVerbose()
 
 	go func() {
 		defer s.returnToIdleState()
@@ -54,8 +55,12 @@ func (s *singleton) Scan() {
 					scansDone++
 					durationScan := time.Since(scanTimeStart)
 					estimatedTime := float64(durationScan) * (float64(scansNeeded) / float64(scansDone+errorsScan))
-					logger.Infof("Scan is running for %s.New files scanned %d of %d", time.Since(scanTimeStart), scansDone, scansNeeded)
-					logger.Infof("Estimated time remaining for scan %s", time.Duration(estimatedTime)-durationScan)
+					if verbose_level >= config.VerboseLevel1 {
+						logger.Infof("Scan is running for %s.New files scanned %d of %d", time.Since(scanTimeStart), scansDone, scansNeeded)
+					}
+					if verbose_level >= config.VerboseLevel2 {
+						logger.Infof("Estimated time remaining for scan %s", time.Duration(estimatedTime)-durationScan)
+					}
 				case _, okError := <-scanerrorCh:
 					if !okError {
 						break scanloop
@@ -126,7 +131,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 	qb := models.NewSceneQueryBuilder()
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
-
+	var verbose_level int = config.GetVerbose()
 	go func() {
 		defer s.returnToIdleState()
 
@@ -205,8 +210,12 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 					previewsDone++
 					durationGenerate := time.Since(generateTimeStart)
 					estimatedPrTime := float64(durationGenerate) * (float64(previewsNeeded) / float64(previewsDone+errorsPr))
-					logger.Infof("Generate is running for %s.Previews generated: %d of %d", durationGenerate, previewsDone, previewsNeeded)
-					logger.Infof("Estimated time remaining for previews %s", time.Duration(estimatedPrTime)-durationGenerate)
+					if verbose_level >= config.VerboseLevel1 {
+						logger.Infof("Generate is running for %s.Previews generated: %d of %d", durationGenerate, previewsDone, previewsNeeded)
+					}
+					if verbose_level >= config.VerboseLevel2 {
+						logger.Infof("Estimated time remaining for previews %s", time.Duration(estimatedPrTime)-durationGenerate)
+					}
 				case _, okNew := <-spritesCh:
 					if !okNew {
 						break generateloop // channel was closed, we are done
@@ -214,8 +223,12 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 					spritesDone++
 					durationGenerate := time.Since(generateTimeStart)
 					estimatedSpTime := float64(durationGenerate) * (float64(spritesNeeded) / float64(spritesDone+errorsSp))
-					logger.Infof("Generate is running for %s.Sprites generated: %d of %d", durationGenerate, spritesDone, spritesNeeded)
-					logger.Infof("Estimated time remaining for sprites %s", time.Duration(estimatedSpTime)-durationGenerate)
+					if verbose_level >= config.VerboseLevel1 {
+						logger.Infof("Generate is running for %s.Sprites generated: %d of %d", durationGenerate, spritesDone, spritesNeeded)
+					}
+					if verbose_level >= config.VerboseLevel2 {
+						logger.Infof("Estimated time remaining for sprites %s", time.Duration(estimatedSpTime)-durationGenerate)
+					}
 				case _, okTrans := <-transcodesCh:
 					if !okTrans {
 						break generateloop // channel was closed, we are done
@@ -223,8 +236,12 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 					transcodesDone++
 					durationGenerate := time.Since(generateTimeStart)
 					estimatedTrTime := float64(durationGenerate) * (float64(transcodesNeeded) / float64(transcodesDone+errorsTr))
-					logger.Infof("Generate is running for %s.Transcodes done: %d of %d", durationGenerate, transcodesDone, transcodesNeeded)
-					logger.Infof("Estimated time remaining for transcodes %s", time.Duration(estimatedTrTime)-durationGenerate)
+					if verbose_level >= config.VerboseLevel1 {
+						logger.Infof("Generate is running for %s.Transcodes done: %d of %d", durationGenerate, transcodesDone, transcodesNeeded)
+					}
+					if verbose_level >= config.VerboseLevel2 {
+						logger.Infof("Estimated time remaining for transcodes %s", time.Duration(estimatedTrTime)-durationGenerate)
+					}
 				case _, okMark := <-markersCh:
 					if !okMark {
 						break generateloop // channel was closed, we are done
@@ -232,8 +249,12 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 					markersDone++
 					durationGenerate := time.Since(generateTimeStart)
 					estimatedMaTime := float64(durationGenerate) * (float64(markersNeeded) / float64(markersDone+errorsMa))
-					logger.Infof("Generate is running for %s.Markers done: %d of %d", durationGenerate, markersDone, markersNeeded)
-					logger.Infof("Estimated time remaining for markers %s", time.Duration(estimatedMaTime)-durationGenerate)
+					if verbose_level >= config.VerboseLevel1 {
+						logger.Infof("Generate is running for %s.Markers done: %d of %d", durationGenerate, markersDone, markersNeeded)
+					}
+					if verbose_level >= config.VerboseLevel2 {
+						logger.Infof("Estimated time remaining for markers %s", time.Duration(estimatedMaTime)-durationGenerate)
+					}
 				case _, okPrError := <-errorPrCh:
 					if !okPrError {
 						break generateloop

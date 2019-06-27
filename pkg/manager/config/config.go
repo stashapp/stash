@@ -15,6 +15,10 @@ const Database = "database"
 const Host = "host"
 const Port = "port"
 
+const Verbose = "verbose"
+const VerboseLevel1 = 1
+const VerboseLevel2 = 2
+
 func Set(key string, value interface{}) {
 	viper.Set(key, value)
 }
@@ -49,6 +53,10 @@ func GetHost() string {
 
 func GetPort() int {
 	return viper.GetInt(Port)
+}
+
+func GetVerbose() int {
+	return viper.GetInt(Verbose)
 }
 
 func IsValid() bool {

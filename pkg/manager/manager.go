@@ -85,22 +85,22 @@ func initConfig() {
 func initFlags() {
 	pflag.IP("host", net.IPv4(0, 0, 0, 0), "ip address for the host")
 	pflag.Int("port", 9999, "port to serve from")
-
+	pflag.Int("verbose", 0, "verbosity level")
 	pflag.Parse()
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
 		logger.Infof("failed to bind flags: %s", err.Error())
 	}
 }
 
-func initEnvs()	{
+func initEnvs() {
 	viper.SetEnvPrefix("stash") // will be uppercased automatically
-	viper.BindEnv("host") // STASH_HOST
-	viper.BindEnv("port") // STASH_PORT
-	viper.BindEnv("stash") // STASH_STASH
-	viper.BindEnv("generated") // STASH_GENERATED
-	viper.BindEnv("metadata") // STASH_METADATA
-	viper.BindEnv("cache") // STASH_CACHE
-}	
+	viper.BindEnv("host")       // STASH_HOST
+	viper.BindEnv("port")       // STASH_PORT
+	viper.BindEnv("stash")      // STASH_STASH
+	viper.BindEnv("generated")  // STASH_GENERATED
+	viper.BindEnv("metadata")   // STASH_METADATA
+	viper.BindEnv("cache")      // STASH_CACHE
+}
 
 func initFFMPEG() {
 	configDirectory := paths.GetConfigDirectory()
