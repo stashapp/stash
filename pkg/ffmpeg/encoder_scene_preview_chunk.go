@@ -18,6 +18,7 @@ func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePre
 		"-ss", strconv.Itoa(options.Time),
 		"-t", "0.75",
 		"-i", probeResult.Path,
+		"-max_muxing_queue_size", "1024", // https://trac.ffmpeg.org/ticket/6375
 		"-y",
 		"-c:v", "libx264",
 		"-pix_fmt", "yuv420p",
