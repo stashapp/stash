@@ -18,6 +18,10 @@
 # Packr2 artifacts
 **/*-packr.go
 
+# GraphQL generated output
+pkg/models/generated_*.go
+ui/v2/src/core/generated-*.tsx
+
 ####
 # Jetbrains
 ####
