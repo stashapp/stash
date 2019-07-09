@@ -60,6 +60,9 @@ func (g *SpriteGenerator) Generate() error {
 }
 
 func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
+	if g.imageExists() {
+		return nil
+	}
 	logger.Infof("[generator] generating sprite image for %s", g.Info.VideoFile.Path)
 
 	// Create `this.chunkCount` thumbnails in the tmp directory
@@ -109,6 +112,9 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 }
 
 func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
+	if g.vttExists() {
+		return nil
+	}
 	logger.Infof("[generator] generating sprite vtt for %s", g.Info.VideoFile.Path)
 
 	spriteImage, err := imaging.Open(g.ImageOutputPath)
@@ -134,5 +140,15 @@ func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
 	}
 	vtt := strings.Join(vttLines, "\n")
 
-	return ioutil.WriteFile(g.VTTOutputPath, []byte(vtt), 0755)
+	return ioutil.WriteFile(g.VTTOutputPath, []byte(vtt), 0644)
+}
+
+func (g *SpriteGenerator) imageExists() bool {
+	exists, _ := utils.FileExists(g.ImageOutputPath)
+	return exists
+}
+
+func (g *SpriteGenerator) vttExists() bool {
+	exists, _ := utils.FileExists(g.VTTOutputPath)
+	return exists
 }
