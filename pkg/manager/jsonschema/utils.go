@@ -20,7 +20,7 @@ func marshalToFile(filePath string, j interface{}) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filePath, data, 0755)
+	return ioutil.WriteFile(filePath, data, 0644)
 }
 
 func encode(j interface{}) ([]byte, error) {
