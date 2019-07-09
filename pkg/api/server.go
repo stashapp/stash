@@ -119,7 +119,7 @@ func Start() {
 			return
 		}
 
-		_ = os.Mkdir(downloads, 0644)
+		_ = os.Mkdir(downloads, 0755)
 
 		config.Set(config.Stash, stash)
 		config.Set(config.Generated, generated)

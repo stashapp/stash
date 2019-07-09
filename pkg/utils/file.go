@@ -60,7 +60,7 @@ func Touch(path string) error {
 func EnsureDir(path string) error {
 	exists, err := FileExists(path)
 	if !exists {
-		err = os.Mkdir(path, 0644)
+		err = os.Mkdir(path, 0755)
 		return err
 	}
 	return err
