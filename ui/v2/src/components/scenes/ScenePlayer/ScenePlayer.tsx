@@ -43,7 +43,7 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
         <div id="jwplayer-container">
           <ReactJWPlayer
             playerId={SceneHelpers.getJWPlayerId()}
-            playerScript="https://content.jwplatform.com/libraries/QRX6Y71b.js"
+            playerScript="/jwplayer/jwplayer.js"
             customProps={config}
             onReady={this.onReady}
             onSeeked={this.onSeeked}
@@ -113,6 +113,12 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
           kind: "chapters",
         },
       ],
+      aspectratio: "16:9",
+      width: "100%",
+      floating: {
+        dismissible: true,
+      },
+      cast: {},
       primary: "html5",
       autostart: false,
       playbackRateControls: true,
