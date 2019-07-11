@@ -1,3 +1,5 @@
+//go:generate go run github.com/99designs/gqlgen
+//go:generate packr2
 package main
 
 import (
