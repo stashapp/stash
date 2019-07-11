@@ -22,6 +22,9 @@
 pkg/models/generated_*.go
 ui/v2/src/core/generated-*.tsx
 
+# packr generated files
+*-packr.go
+
 ####
 # Jetbrains
 ####
