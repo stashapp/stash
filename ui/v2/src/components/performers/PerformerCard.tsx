@@ -7,6 +7,7 @@ import React, { FunctionComponent } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "../../core/generated-graphql";
 import { TextUtils } from "../../utils/text";
+import { NavigationUtils } from "../../utils/navigation";
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
