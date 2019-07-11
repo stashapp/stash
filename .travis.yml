@@ -17,7 +17,7 @@ before_install:
 script:
 #- make lint
 #- make vet
-- make gqlgen
+- make generate
 - go test
 before_deploy:
 - docker pull stashappdev/compiler

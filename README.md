@@ -88,8 +88,8 @@ TODO
 
 ## Commands
 
+* `make generate` - Regenerate Go GraphQL and packr2 files
 * `make build` - Builds the binary (make sure to build the UI as well... see below)
-* `make gqlgen` - Regenerate Go GraphQL files
 * `make vet` - Run `go vet`
 * `make lint` - Run the linter
 
