@@ -23,7 +23,16 @@ export const SceneFileInfoPanel: FunctionComponent<ISceneFileInfoPanelProps> = (
     return (
       <tr>
         <td>Path</td>
-        <td>{props.scene.path}</td>
+        <td><a href={"file://"+props.scene.path}>{"file://"+props.scene.path}</a> </td>
+      </tr>
+    );
+  }
+  
+  function renderStream() {
+    return (
+      <tr>
+        <td>Stream</td>
+        <td><a href={props.scene.paths.stream}>{props.scene.paths.stream}</a> </td>
       </tr>
     );
   }
@@ -114,6 +123,7 @@ export const SceneFileInfoPanel: FunctionComponent<ISceneFileInfoPanelProps> = (
         <tbody>
           {renderChecksum()}
           {renderPath()}
+          {renderStream()}
           {renderFileSize()}
           {renderDuration()}
           {renderDimensions()}

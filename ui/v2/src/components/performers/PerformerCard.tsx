@@ -7,6 +7,7 @@ import React, { FunctionComponent } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "../../core/generated-graphql";
 import { TextUtils } from "../../utils/text";
+import { NavigationUtils } from "../../utils/navigation";
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
@@ -43,7 +44,8 @@ export const PerformerCard: FunctionComponent<IPerformerCardProps> = (props: IPe
           {props.performer.name}
         </H4>
         {age !== 0 ? <span className="bp3-text-muted block">{ageString}</span> : undefined}
-        <span className="bp3-text-muted block">Stars in {props.performer.scene_count} scenes.</span>
+        <span className="bp3-text-muted block">Stars in {props.performer.scene_count} <Link to={NavigationUtils.makePerformerScenesUrl(props.performer)}>scenes</Link>.
+        </span>
       </div>
     </Card>
   );
