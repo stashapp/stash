@@ -44,8 +44,7 @@ export const PerformerCard: FunctionComponent<IPerformerCardProps> = (props: IPe
           {props.performer.name}
         </H4>
         {age !== 0 ? <span className="bp3-text-muted block">{ageString}</span> : undefined}
-        <span className="bp3-text-muted block">Stars in {props.performer.scene_count}
-          <Link to={NavigationUtils.makePerformerScenesUrl(props.performer)}>scenes</Link>.
+        <span className="bp3-text-muted block">Stars in {props.performer.scene_count} <Link to={NavigationUtils.makePerformerScenesUrl(props.performer)}>scenes</Link>.
         </span>
       </div>
     </Card>
