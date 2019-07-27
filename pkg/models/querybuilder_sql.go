@@ -6,10 +6,13 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
+	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
 )
+
+var randomSortFloat = rand.Float64()
 
 func selectAll(tableName string) string {
 	idColumn := getColumn(tableName, "*")
@@ -70,7 +73,11 @@ func getSort(sort string, direction string, tableName string) string {
 		colName := getColumn(tableName, "size")
 		return " ORDER BY cast(" + colName + " as integer) " + direction
 	} else if strings.Compare(sort, "random") == 0 {
-		return " ORDER BY RANDOM() "
+		// https://stackoverflow.com/a/24511461
+		// TODO seed as a parameter from the UI
+		colName := getColumn(tableName, "id")
+		randomSortString := strconv.FormatFloat(randomSortFloat, 'f', 16, 32)
+		return " ORDER BY " + "(substr(" + colName + " * " + randomSortString + ", length(" + colName + ") + 2))" + " " + direction
 	} else {
 		colName := getColumn(tableName, sort)
 		var additional string
