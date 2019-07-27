@@ -1,12 +1,14 @@
 package api
 
 import (
+	"io"
 	"context"
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"net/http"
 	"strconv"
 	"strings"
@@ -39,8 +41,49 @@ func (rs sceneRoutes) Routes() chi.Router {
 
 func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	
+	// detect if not a streamable file and try to transcode it instead
 	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.Checksum)
-	http.ServeFile(w, r, filepath)
+
+	videoCodec := scene.VideoCodec.String
+	hasTranscode, _ := manager.HasTranscode(scene)
+	if ffmpeg.IsValidCodec(videoCodec) || hasTranscode {
+		http.ServeFile(w, r, filepath)
+		return
+	}
+
+	// needs to be transcoded
+	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path)
+	if err != nil {
+		logger.Errorf("[stream] error reading video file: %s", err.Error())
+		return
+	}
+	
+	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
+
+	stream, process, err := encoder.StreamTranscode(*videoFile)
+	if err != nil {
+		logger.Errorf("[stream] error transcoding video file: %s", err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "video/webm")
+
+	logger.Info("[stream] transcoding video file")
+
+	// handle if client closes the connection
+	notify := r.Context().Done()
+	go func() {
+		<-notify
+		logger.Info("[stream] client closed the connection. Killing stream process.")
+		process.Kill()
+	}()
+
+	_, err = io.Copy(w, stream)
+	if err != nil {
+		logger.Errorf("[stream] error serving transcoded video file: %s", err.Error())
+	}
 }
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
