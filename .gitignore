@@ -15,6 +15,9 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Packr2 artifacts
+**/*-packr.go
+
 ####
 # Jetbrains
 ####
