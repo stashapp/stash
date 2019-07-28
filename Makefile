@@ -1,5 +1,10 @@
+ifeq ($(OS),Windows_NT)
+  SEPARATOR := &&
+  SET := set
+endif
+
 build:
-	CGO_ENABLED=1 packr2 build -mod=vendor -v
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) packr2 build -mod=vendor -v
 
 install:
 	packr2 install
@@ -26,3 +31,7 @@ vet:
 .PHONY: lint
 lint:
 	revive -config revive.toml -exclude ./vendor/...  ./...
+
+.PHONY: ui
+ui:
+	cd ui/v2 && yarn build
