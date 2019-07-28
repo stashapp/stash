@@ -1,6 +1,8 @@
 package config
 
 import (
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/spf13/viper"
 )
 
@@ -9,6 +11,8 @@ const Cache = "cache"
 const Generated = "generated"
 const Metadata = "metadata"
 const Downloads = "downloads"
+const Username = "username"
+const Password = "password"
 
 const Database = "database"
 
@@ -17,6 +21,10 @@ const Port = "port"
 
 func Set(key string, value interface{}) {
 	viper.Set(key, value)
+}
+
+func SetPassword(value string) {
+	Set(Password, hashPassword(value))
 }
 
 func Write() error {
@@ -51,8 +59,48 @@ func GetPort() int {
 	return viper.GetInt(Port)
 }
 
+func GetUsername() string {
+	return viper.GetString(Username)
+}
+
+func GetPasswordHash() string {
+	return viper.GetString(Password)
+}
+
+func GetCredentials() (string, string) {
+	if HasCredentials() {
+		return viper.GetString(Username), viper.GetString(Password)
+	}
+
+	return "", ""
+}
+
+func HasCredentials() bool {
+	return viper.IsSet(Username) && viper.IsSet(Password)
+}
+
+func hashPassword(password string) string {
+	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+
+	return string(hash)
+}
+
+func ValidateCredentials(username string, password string) bool {
+	if !HasCredentials() {
+		// don't need to authenticate if no credentials saved
+		return true
+	}
+
+	authUser, authPWHash := GetCredentials()
+
+	err := bcrypt.CompareHashAndPassword([]byte(authPWHash), []byte(password))
+
+	return username == authUser && err == nil
+}
+
 func IsValid() bool {
 	setPaths := viper.IsSet(Stash) && viper.IsSet(Cache) && viper.IsSet(Generated) && viper.IsSet(Metadata)
+
 	// TODO: check valid paths
 	return setPaths
 }

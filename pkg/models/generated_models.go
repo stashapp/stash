@@ -15,6 +15,10 @@ type ConfigGeneralInput struct {
 	DatabasePath *string `json:"databasePath"`
 	// Path to generated files
 	GeneratedPath *string `json:"generatedPath"`
+	// Username
+	Username *string `json:"username"`
+	// Password
+	Password *string `json:"password"`
 }
 
 type ConfigGeneralResult struct {
@@ -24,6 +28,10 @@ type ConfigGeneralResult struct {
 	DatabasePath string `json:"databasePath"`
 	// Path to generated files
 	GeneratedPath string `json:"generatedPath"`
+	// Username
+	Username string `json:"username"`
+	// Password
+	Password string `json:"password"`
 }
 
 // All configuration settings

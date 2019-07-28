@@ -53,7 +53,9 @@ type ComplexityRoot struct {
 	ConfigGeneralResult struct {
 		DatabasePath  func(childComplexity int) int
 		GeneratedPath func(childComplexity int) int
+		Password      func(childComplexity int) int
 		Stashes       func(childComplexity int) int
+		Username      func(childComplexity int) int
 	}
 
 	ConfigResult struct {
@@ -413,12 +415,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ConfigGeneralResult.GeneratedPath(childComplexity), true
 
+	case "ConfigGeneralResult.password":
+		if e.complexity.ConfigGeneralResult.Password == nil {
+			break
+		}
+
+		return e.complexity.ConfigGeneralResult.Password(childComplexity), true
+
 	case "ConfigGeneralResult.stashes":
 		if e.complexity.ConfigGeneralResult.Stashes == nil {
 			break
 		}
 
 		return e.complexity.ConfigGeneralResult.Stashes(childComplexity), true
+
+	case "ConfigGeneralResult.username":
+		if e.complexity.ConfigGeneralResult.Username == nil {
+			break
+		}
+
+		return e.complexity.ConfigGeneralResult.Username(childComplexity), true
 
 	case "ConfigResult.general":
 		if e.complexity.ConfigResult.General == nil {
@@ -1869,6 +1885,10 @@ schema {
   databasePath: String
   """Path to generated files"""
   generatedPath: String
+  """Username"""
+  username: String
+  """Password"""
+  password: String
 }
 
 type ConfigGeneralResult {
@@ -1878,6 +1898,10 @@ type ConfigGeneralResult {
   databasePath: String!
   """Path to generated files"""
   generatedPath: String!
+  """Username"""
+  username: String!
+  """Password"""
+  password: String!
 }
 
 """All configuration settings"""
@@ -2838,6 +2862,60 @@ func (ec *executionContext) _ConfigGeneralResult_generatedPath(ctx context.Conte
 	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.GeneratedPath, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ConfigGeneralResult_username(ctx context.Context, field graphql.CollectedField, obj *ConfigGeneralResult) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "ConfigGeneralResult",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Username, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ConfigGeneralResult_password(ctx context.Context, field graphql.CollectedField, obj *ConfigGeneralResult) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "ConfigGeneralResult",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Password, nil
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -7909,6 +7987,18 @@ func (ec *executionContext) unmarshalInputConfigGeneralInput(ctx context.Context
 			if err != nil {
 				return it, err
 			}
+		case "username":
+			var err error
+			it.Username, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "password":
+			var err error
+			it.Password, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -8684,6 +8774,16 @@ func (ec *executionContext) _ConfigGeneralResult(ctx context.Context, sel ast.Se
 			}
 		case "generatedPath":
 			out.Values[i] = ec._ConfigGeneralResult_generatedPath(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "username":
+			out.Values[i] = ec._ConfigGeneralResult_username(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "password":
+			out.Values[i] = ec._ConfigGeneralResult_password(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

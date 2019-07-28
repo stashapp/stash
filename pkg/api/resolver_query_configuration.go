@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -30,5 +31,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		Stashes:       config.GetStashPaths(),
 		DatabasePath:  config.GetDatabasePath(),
 		GeneratedPath: config.GetGeneratedPath(),
+		Username:      config.GetUsername(),
+		Password:      config.GetPasswordHash(),
 	}
 }
