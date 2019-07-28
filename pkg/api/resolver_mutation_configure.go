@@ -3,10 +3,11 @@ package api
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"path/filepath"
 )
 
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.ConfigGeneralInput) (*models.ConfigGeneralResult, error) {
@@ -33,6 +34,20 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 			return makeConfigGeneralResult(), err
 		}
 		config.Set(config.Generated, input.GeneratedPath)
+	}
+
+	if input.Username != nil {
+		config.Set(config.Username, input.Username)
+	}
+
+	if input.Password != nil {
+		// bit of a hack - check if the passed in password is the same as the stored hash
+		// and only set if they are different
+		currentPWHash := config.GetPasswordHash()
+
+		if *input.Password != currentPWHash {
+			config.SetPassword(*input.Password)
+		}
 	}
 
 	if err := config.Write(); err != nil {

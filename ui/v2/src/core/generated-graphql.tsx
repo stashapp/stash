@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated in 2019-05-27T11:23:10-07:00
+// Generated in 2019-07-28T17:42:59+10:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {
@@ -227,6 +227,10 @@ export interface ConfigGeneralInput {
   databasePath?: Maybe<string>;
   /** Path to generated files */
   generatedPath?: Maybe<string>;
+  /** Username */
+  username?: Maybe<string>;
+  /** Password */
+  password?: Maybe<string>;
 }
 
 export enum CriterionModifier {
@@ -902,6 +906,10 @@ export type ConfigGeneralDataFragment = {
   databasePath: string;
 
   generatedPath: string;
+
+  username: string;
+
+  password: string;
 };
 
 export type ConfigDataFragment = {
@@ -1284,6 +1292,8 @@ export const ConfigGeneralDataFragmentDoc = gql`
     stashes
     databasePath
     generatedPath
+    username
+    password
   }
 `;
 

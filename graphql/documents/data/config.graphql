@@ -2,6 +2,8 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   stashes
   databasePath
   generatedPath
+  username
+  password
 }
 
 fragment ConfigData on ConfigResult {

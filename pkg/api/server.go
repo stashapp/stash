@@ -5,6 +5,15 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path"
+	"path/filepath"
+	"runtime/debug"
+	"strconv"
+	"strings"
+
 	"github.com/99designs/gqlgen/handler"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -16,20 +25,38 @@ import (
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path"
-	"path/filepath"
-	"runtime/debug"
-	"strconv"
-	"strings"
 )
 
 var uiBox *packr.Box
 
 //var legacyUiBox *packr.Box
 var setupUIBox *packr.Box
+
+func authenticateHandler() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// only do this if credentials have been configured
+			if !config.HasCredentials() {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			authUser, authPW, ok := r.BasicAuth()
+
+			if !ok || !config.ValidateCredentials(authUser, authPW) {
+				unauthorized(w)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func unauthorized(w http.ResponseWriter) {
+	w.Header().Add("WWW-Authenticate", `Basic realm=\"Stash\"`)
+	w.WriteHeader(http.StatusUnauthorized)
+}
 
 func Start() {
 	uiBox = packr.New("UI Box", "../../ui/v2/build")
@@ -38,6 +65,7 @@ func Start() {
 
 	r := chi.NewRouter()
 
+	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
 	r.Use(middleware.DefaultCompress)
