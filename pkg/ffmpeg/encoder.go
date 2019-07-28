@@ -1,10 +1,13 @@
 package ffmpeg
 
 import (
-	"github.com/stashapp/stash/pkg/logger"
+	"io"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 type Encoder struct {
@@ -68,4 +71,19 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 	}
 
 	return stdoutString, nil
+}
+
+func (e *Encoder) stream(probeResult VideoFile, args []string) (io.ReadCloser, *os.Process, error) {
+	cmd := exec.Command(e.Path, args...)
+
+	stdout, err := cmd.StdoutPipe()
+	if nil != err {
+		logger.Error("FFMPEG stdout not available: " + err.Error())
+	}
+
+	if err = cmd.Start(); err != nil {
+		return nil, nil, err
+	}
+
+	return stdout, cmd.Process, nil
 }

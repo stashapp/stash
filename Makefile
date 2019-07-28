@@ -4,6 +4,9 @@ build:
 install:
 	packr2 install
 
+clean:
+	packr2 clean
+
 # Regenerates GraphQL files
 .PHONY: gqlgen
 gqlgen:
