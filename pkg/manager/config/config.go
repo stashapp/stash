@@ -24,7 +24,12 @@ func Set(key string, value interface{}) {
 }
 
 func SetPassword(value string) {
-	Set(Password, hashPassword(value))
+	// if blank, don't bother hashing; we want it to be blank
+	if value == "" {
+		Set(Password, "")
+	} else {
+		Set(Password, hashPassword(value))
+	}
 }
 
 func Write() error {
@@ -76,7 +81,14 @@ func GetCredentials() (string, string) {
 }
 
 func HasCredentials() bool {
-	return viper.IsSet(Username) && viper.IsSet(Password)
+	if !viper.IsSet(Username) || !viper.IsSet(Password) {
+		return false
+	}
+
+	username := GetUsername()
+	pwHash := GetPasswordHash()
+
+	return username != "" && pwHash != ""
 }
 
 func hashPassword(password string) string {
