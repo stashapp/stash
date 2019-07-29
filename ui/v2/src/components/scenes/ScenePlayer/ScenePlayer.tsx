@@ -4,13 +4,93 @@ import ReactJWPlayer from "react-jw-player";
 import * as GQL from "../../../core/generated-graphql";
 import { SceneHelpers } from "../helpers";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
+import videojs from "video.js";
+import "video.js/dist/video-js.css";
 
 interface IScenePlayerProps {
   scene: GQL.SceneDataFragment;
   timestamp: number;
+  onReady?: any;
+  onSeeked?: any;
+  onTime?: any;
 }
 interface IScenePlayerState {
   scrubberPosition: number;
+}
+
+export class VideoJSPlayer extends React.Component<IScenePlayerProps> {
+  private player: any;
+  private videoNode: any;
+
+  constructor(props: IScenePlayerProps) {
+    super(props);
+  }
+
+  componentDidMount() {
+    this.player = videojs(this.videoNode);
+
+    this.player.src(this.props.scene.paths.stream);
+
+    // hack duration
+    this.player.duration = () => { return this.props.scene.file.duration; };
+    this.player.start = 0;
+    this.player.oldCurrentTime = this.player.currentTime;
+    this.player.currentTime = (time: any) => { 
+      if( time == undefined )
+      {
+          return this.player.oldCurrentTime() + this.player.start;
+      }
+      this.player.start = time;
+      this.player.oldCurrentTime(0);
+      this.player.src(this.props.scene.paths.stream + "?start=" + time);
+      this.player.play();
+
+      return this;
+    };
+
+    this.player.ready(() => {
+      // dirty hack - make this player look like JWPlayer
+      this.player.seek = this.player.currentTime;
+      this.player.getPosition = this.player.currentTime;
+
+      // hook it into the window function 
+      (window as any).jwplayer = () => {
+        return this.player;
+      }
+
+      this.player.on("timeupdate", () => {
+        this.props.onTime();
+      });
+
+      this.player.on("seeked", () => {
+        this.props.onSeeked();
+      });
+
+      this.props.onReady();
+    });
+  }
+
+  componentWillUnmount() {
+    if (this.player) {
+      this.player.dispose();
+    }
+  }
+
+  render() {
+    return (
+      <div>
+        <div className="vjs-player" data-vjs-player>
+          <video 
+              ref={ node => this.videoNode = node } 
+              className="video-js vjs-default-skin vjs-big-play-centered" 
+              poster={this.props.scene.paths.screenshot}
+              controls 
+              preload="auto">
+          </video>
+        </div>
+      </div>
+    );
+  }
 }
 
 @HotkeysTarget
@@ -36,12 +116,11 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
     }
   }
 
-  public render() {
-    const config = this.makeConfig(this.props.scene);
-    return (
-      <>
-        <div id="jwplayer-container">
-          <ReactJWPlayer
+  renderPlayer() {
+    if (this.props.scene.is_streamable) {
+      const config = this.makeConfig(this.props.scene);
+      return (
+        <ReactJWPlayer
             playerId={SceneHelpers.getJWPlayerId()}
             playerScript="/jwplayer/jwplayer.js"
             customProps={config}
@@ -49,6 +128,25 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
             onSeeked={this.onSeeked}
             onTime={this.onTime}
           />
+      );
+    } else {
+      return (
+        <VideoJSPlayer 
+            scene={this.props.scene}
+            timestamp={this.props.timestamp}
+            onReady={this.onReady}
+            onSeeked={this.onSeeked}
+            onTime={this.onTime}>
+        </VideoJSPlayer>
+      )
+    }
+  }
+
+  public render() {
+    return (
+      <>
+        <div id="jwplayer-container">
+          {this.renderPlayer()}
           <ScenePlayerScrubber
             scene={this.props.scene}
             position={this.state.scrubberPosition}
