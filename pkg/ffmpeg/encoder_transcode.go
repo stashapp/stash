@@ -26,8 +26,14 @@ func (e *Encoder) Transcode(probeResult VideoFile, options TranscodeOptions) {
 	_, _ = e.run(probeResult, args)
 }
 
-func (e *Encoder) StreamTranscode(probeResult VideoFile) (io.ReadCloser, *os.Process, error) {
-	args := []string{
+func (e *Encoder) StreamTranscode(probeResult VideoFile, startTime string) (io.ReadCloser, *os.Process, error) {
+	args := []string{}
+
+	if startTime != "" {
+		args = append(args, "-ss", startTime)
+	}
+
+	args = append(args,
 		"-i", probeResult.Path,
 		"-c:v", "libvpx-vp9",
 		"-vf", "scale=iw:-2",
@@ -37,6 +43,7 @@ func (e *Encoder) StreamTranscode(probeResult VideoFile) (io.ReadCloser, *os.Pro
 		"-b:v", "0",
 		"-f", "webm",
 		"pipe:",
-	}
+	)
+
 	return e.stream(probeResult, args)
 }
