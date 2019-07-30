@@ -81,25 +81,25 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
         label="Database Path"
         helperText="File location for the SQLite database (requires restart)"
       >
-        <InputGroup defaultValue={databasePath} onChange={(e: any) => setDatabasePath(e.target.value)} />
+        <InputGroup value={databasePath} onChange={(e: any) => setDatabasePath(e.target.value)} />
       </FormGroup>
       <FormGroup
         label="Generated Path"
         helperText="Directory location for the generated files (scene markers, scene previews, sprites, etc)"
       >
-        <InputGroup defaultValue={generatedPath} onChange={(e: any) => setGeneratedPath(e.target.value)} />
+        <InputGroup value={generatedPath} onChange={(e: any) => setGeneratedPath(e.target.value)} />
       </FormGroup>
       <FormGroup
         label="Username"
         helperText="Username to access Stash. Leave blank to disable user authentication"
       >
-        <InputGroup defaultValue={username} onChange={(e: any) => setUsername(e.target.value)} />
+        <InputGroup value={username} onChange={(e: any) => setUsername(e.target.value)} />
       </FormGroup>
       <FormGroup
         label="Password"
         helperText="Password to access Stash. Leave blank to disable user authentication"
       >
-        <InputGroup type="password" defaultValue={password} onChange={(e: any) => setPassword(e.target.value)} />
+        <InputGroup type="password" value={password} onChange={(e: any) => setPassword(e.target.value)} />
       </FormGroup>
       <Divider />
       <Button intent="primary" onClick={() => onSave()}>Save</Button>
