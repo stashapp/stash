@@ -39,6 +39,7 @@ func (e *Encoder) StreamTranscode(probeResult VideoFile, startTime string) (io.R
 		"-vf", "scale=iw:-2",
 		"-deadline", "realtime",
 		"-cpu-used", "5",
+		"-row-mt", "1",
 		"-crf", "30",
 		"-b:v", "0",
 		"-f", "webm",
