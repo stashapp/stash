@@ -16,6 +16,7 @@ clean:
 .PHONY: gqlgen
 gqlgen:
 	go run scripts/gqlgen.go
+	cd ui/v2 && yarn run gqlgen
 
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 .PHONY: fmt
