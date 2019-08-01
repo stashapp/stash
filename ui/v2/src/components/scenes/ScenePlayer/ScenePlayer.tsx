@@ -29,6 +29,12 @@ export class VideoJSPlayer extends React.Component<IScenePlayerProps> {
   componentDidMount() {
     this.player = videojs(this.videoNode);
 
+    // dirty hack - make this player look like JWPlayer
+    this.player.seek = this.player.currentTime;
+    this.player.getPosition = this.player.currentTime;
+    
+    SceneHelpers.registerJSPlayer(this.player);
+
     this.player.src(this.props.scene.paths.stream);
 
     // hack duration
@@ -49,15 +55,6 @@ export class VideoJSPlayer extends React.Component<IScenePlayerProps> {
     };
 
     this.player.ready(() => {
-      // dirty hack - make this player look like JWPlayer
-      this.player.seek = this.player.currentTime;
-      this.player.getPosition = this.player.currentTime;
-
-      // hook it into the window function 
-      (window as any).jwplayer = () => {
-        return this.player;
-      }
-
       this.player.on("timeupdate", () => {
         this.props.onTime();
       });
@@ -73,6 +70,7 @@ export class VideoJSPlayer extends React.Component<IScenePlayerProps> {
   componentWillUnmount() {
     if (this.player) {
       this.player.dispose();
+      SceneHelpers.deregisterJSPlayer();
     }
   }
 
@@ -225,7 +223,7 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
   }
 
   private onReady() {
-    this.player = SceneHelpers.getJWPlayer();
+    this.player = SceneHelpers.getPlayer();
     if (this.props.timestamp > 0) {
       this.player.seek(this.props.timestamp);
     }
