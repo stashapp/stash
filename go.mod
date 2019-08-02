@@ -3,7 +3,7 @@ module github.com/stashapp/stash
 require (
 	github.com/99designs/gqlgen v0.9.0
 	github.com/PuerkitoBio/goquery v1.5.0
-	github.com/bmatcuk/doublestar v1.1.1
+	github.com/bmatcuk/doublestar v1.1.5
 	github.com/disintegration/imaging v1.6.0
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-chi/chi v4.0.2+incompatible
