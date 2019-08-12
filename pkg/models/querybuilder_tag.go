@@ -52,6 +52,19 @@ func (qb *TagQueryBuilder) Update(updatedTag Tag, tx *sqlx.Tx) (*Tag, error) {
 }
 
 func (qb *TagQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
+	// delete tag from scenes and markers first
+	_, err := tx.Exec("DELETE FROM scenes_tags WHERE tag_id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec("DELETE FROM scene_markers_tags WHERE tag_id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	// does not unset primary_tag_id in scene_markers because it is not nullable
+
 	return executeDeleteQuery("tags", id, tx)
 }
 
