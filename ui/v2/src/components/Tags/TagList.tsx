@@ -1,4 +1,4 @@
-import { Button, Classes, Dialog, EditableText, FormGroup, HTMLTable, InputGroup, Spinner, Tag } from "@blueprintjs/core";
+import { Alert, Button, Classes, Dialog, EditableText, FormGroup, HTMLTable, InputGroup, Spinner, Tag } from "@blueprintjs/core";
 import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import { QueryHookResult } from "react-apollo-hooks";
@@ -22,11 +22,15 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
 
   // Editing / New state
   const [editingTag, setEditingTag] = useState<Partial<GQL.TagDataFragment> | undefined>(undefined);
+  const [deletingTag, setDeletingTag] = useState<Partial<GQL.TagDataFragment> | undefined>(undefined);
   const [name, setName] = useState<string>("");
 
   const { data, error, loading } = StashService.useAllTags();
   const updateTag = StashService.useTagUpdate(getTagInput() as GQL.TagUpdateInput);
   const createTag = StashService.useTagCreate(getTagInput() as GQL.TagCreateInput);
+  const deleteTag = StashService.useTagDestroy(getDeleteTagInput() as GQL.TagDestroyInput);
+
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   useEffect(() => {
     setIsLoading(loading);
@@ -42,9 +46,19 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
     }
   }, [editingTag]);
 
+  useEffect(() => {
+    setIsDeleteAlertOpen(!!deletingTag);
+  }, [deletingTag]);
+
   function getTagInput() {
     const tagInput: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = { name };
     if (!!editingTag) { (tagInput as Partial<GQL.TagUpdateInput>).id = editingTag.id; }
+    return tagInput;
+  }
+
+  function getDeleteTagInput() {
+    const tagInput: Partial<GQL.TagDestroyInput> = {};
+    if (!!deletingTag) { tagInput.id = deletingTag.id; }
     return tagInput;
   }
 
@@ -63,11 +77,41 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
     }
   }
 
+  async function onDelete() {
+    try {
+      await deleteTag();
+      ToastUtils.success("Deleted tag");
+      setDeletingTag(undefined);
+    } catch (e) {
+      ErrorUtils.handle(e);
+    }
+  }
+
+  function renderDeleteAlert() {
+    return (
+      <Alert
+        cancelButtonText="Cancel"
+        confirmButtonText="Delete"
+        icon="trash"
+        intent="danger"
+        isOpen={isDeleteAlertOpen}
+        onCancel={() => setDeletingTag(undefined)}
+        onConfirm={() => onDelete()}
+      >
+        <p>
+          Are you sure you want to delete {deletingTag && deletingTag.name}?
+        </p>
+      </Alert>
+    );
+  }
+
   if (!data || !data.allTags || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
   if (!!error) { return <>{error.message}</>; }
 
   const tagElements = tags.map((tag) => {
     return (
+      <>
+      {renderDeleteAlert()}
       <div key={tag.id} className="tag-list-row">
         <span onClick={() => setEditingTag(tag)}>{tag.name}</span>
         <div style={{float: "right"}}>
@@ -76,8 +120,10 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
             Markers: {tag.scene_marker_count}
           </Link>
           <span>Total: {(tag.scene_count || 0) + (tag.scene_marker_count || 0)}</span>
+          <Button intent="danger" icon="trash" onClick={() => setDeletingTag(tag)}></Button>
         </div>
       </div>
+      </>
     );
   });
   return (
