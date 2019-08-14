@@ -108,12 +108,14 @@ type ComplexityRoot struct {
 	Mutation struct {
 		ConfigureGeneral   func(childComplexity int, input ConfigGeneralInput) int
 		PerformerCreate    func(childComplexity int, input PerformerCreateInput) int
+		PerformerDestroy   func(childComplexity int, input PerformerDestroyInput) int
 		PerformerUpdate    func(childComplexity int, input PerformerUpdateInput) int
 		SceneMarkerCreate  func(childComplexity int, input SceneMarkerCreateInput) int
 		SceneMarkerDestroy func(childComplexity int, id string) int
 		SceneMarkerUpdate  func(childComplexity int, input SceneMarkerUpdateInput) int
 		SceneUpdate        func(childComplexity int, input SceneUpdateInput) int
 		StudioCreate       func(childComplexity int, input StudioCreateInput) int
+		StudioDestroy      func(childComplexity int, input StudioDestroyInput) int
 		StudioUpdate       func(childComplexity int, input StudioUpdateInput) int
 		TagCreate          func(childComplexity int, input TagCreateInput) int
 		TagDestroy         func(childComplexity int, input TagDestroyInput) int
@@ -288,8 +290,10 @@ type MutationResolver interface {
 	SceneMarkerDestroy(ctx context.Context, id string) (bool, error)
 	PerformerCreate(ctx context.Context, input PerformerCreateInput) (*Performer, error)
 	PerformerUpdate(ctx context.Context, input PerformerUpdateInput) (*Performer, error)
+	PerformerDestroy(ctx context.Context, input PerformerDestroyInput) (bool, error)
 	StudioCreate(ctx context.Context, input StudioCreateInput) (*Studio, error)
 	StudioUpdate(ctx context.Context, input StudioUpdateInput) (*Studio, error)
+	StudioDestroy(ctx context.Context, input StudioDestroyInput) (bool, error)
 	TagCreate(ctx context.Context, input TagCreateInput) (*Tag, error)
 	TagUpdate(ctx context.Context, input TagUpdateInput) (*Tag, error)
 	TagDestroy(ctx context.Context, input TagDestroyInput) (bool, error)
@@ -598,6 +602,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.PerformerCreate(childComplexity, args["input"].(PerformerCreateInput)), true
 
+	case "Mutation.performerDestroy":
+		if e.complexity.Mutation.PerformerDestroy == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_performerDestroy_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.PerformerDestroy(childComplexity, args["input"].(PerformerDestroyInput)), true
+
 	case "Mutation.performerUpdate":
 		if e.complexity.Mutation.PerformerUpdate == nil {
 			break
@@ -669,6 +685,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.StudioCreate(childComplexity, args["input"].(StudioCreateInput)), true
+
+	case "Mutation.studioDestroy":
+		if e.complexity.Mutation.StudioDestroy == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_studioDestroy_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.StudioDestroy(childComplexity, args["input"].(StudioDestroyInput)), true
 
 	case "Mutation.studioUpdate":
 		if e.complexity.Mutation.StudioUpdate == nil {
@@ -1840,9 +1868,11 @@ type Mutation {
 
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer
+  performerDestroy(input: PerformerDestroyInput!): Boolean!
 
   studioCreate(input: StudioCreateInput!): Studio
   studioUpdate(input: StudioUpdateInput!): Studio
+  studioDestroy(input: StudioDestroyInput!): Boolean!
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
@@ -2054,6 +2084,10 @@ input PerformerUpdateInput {
   image: String
 }
 
+input PerformerDestroyInput {
+  id: ID!
+}
+
 type FindPerformersResultType {
   count: Int!
   performers: [Performer!]!
@@ -2212,6 +2246,10 @@ input StudioUpdateInput {
   image: String
 }
 
+input StudioDestroyInput {
+  id: ID!
+}
+
 type FindStudiosResultType {
   count: Int!
   studios: [Studio!]!
@@ -2262,6 +2300,20 @@ func (ec *executionContext) field_Mutation_performerCreate_args(ctx context.Cont
 	var arg0 PerformerCreateInput
 	if tmp, ok := rawArgs["input"]; ok {
 		arg0, err = ec.unmarshalNPerformerCreateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformerCreateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_performerDestroy_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 PerformerDestroyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNPerformerDestroyInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformerDestroyInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2346,6 +2398,20 @@ func (ec *executionContext) field_Mutation_studioCreate_args(ctx context.Context
 	var arg0 StudioCreateInput
 	if tmp, ok := rawArgs["input"]; ok {
 		arg0, err = ec.unmarshalNStudioCreateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudioCreateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_studioDestroy_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 StudioDestroyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNStudioDestroyInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudioDestroyInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3625,6 +3691,40 @@ func (ec *executionContext) _Mutation_performerUpdate(ctx context.Context, field
 	return ec.marshalOPerformer2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformer(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_performerDestroy(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_performerDestroy_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().PerformerDestroy(rctx, args["input"].(PerformerDestroyInput))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Mutation_studioCreate(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -3685,6 +3785,40 @@ func (ec *executionContext) _Mutation_studioUpdate(ctx context.Context, field gr
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOStudio2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudio(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_studioDestroy(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_studioDestroy_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().StudioDestroy(rctx, args["input"].(StudioDestroyInput))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_tagCreate(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -8131,6 +8265,24 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPerformerDestroyInput(ctx context.Context, v interface{}) (PerformerDestroyInput, error) {
+	var it PerformerDestroyInput
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPerformerFilterType(ctx context.Context, v interface{}) (PerformerFilterType, error) {
 	var it PerformerFilterType
 	var asMap = v.(map[string]interface{})
@@ -8548,6 +8700,24 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 		case "image":
 			var err error
 			it.Image, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputStudioDestroyInput(ctx context.Context, v interface{}) (StudioDestroyInput, error) {
+	var it StudioDestroyInput
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9045,10 +9215,20 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_performerCreate(ctx, field)
 		case "performerUpdate":
 			out.Values[i] = ec._Mutation_performerUpdate(ctx, field)
+		case "performerDestroy":
+			out.Values[i] = ec._Mutation_performerDestroy(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "studioCreate":
 			out.Values[i] = ec._Mutation_studioCreate(ctx, field)
 		case "studioUpdate":
 			out.Values[i] = ec._Mutation_studioUpdate(ctx, field)
+		case "studioDestroy":
+			out.Values[i] = ec._Mutation_studioDestroy(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "tagCreate":
 			out.Values[i] = ec._Mutation_tagCreate(ctx, field)
 		case "tagUpdate":
@@ -11010,6 +11190,10 @@ func (ec *executionContext) unmarshalNPerformerCreateInput2githubᚗcomᚋstasha
 	return ec.unmarshalInputPerformerCreateInput(ctx, v)
 }
 
+func (ec *executionContext) unmarshalNPerformerDestroyInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformerDestroyInput(ctx context.Context, v interface{}) (PerformerDestroyInput, error) {
+	return ec.unmarshalInputPerformerDestroyInput(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNPerformerUpdateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformerUpdateInput(ctx context.Context, v interface{}) (PerformerUpdateInput, error) {
 	return ec.unmarshalInputPerformerUpdateInput(ctx, v)
 }
@@ -11317,6 +11501,10 @@ func (ec *executionContext) marshalNStudio2ᚖgithubᚗcomᚋstashappᚋstashᚋ
 
 func (ec *executionContext) unmarshalNStudioCreateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudioCreateInput(ctx context.Context, v interface{}) (StudioCreateInput, error) {
 	return ec.unmarshalInputStudioCreateInput(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNStudioDestroyInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudioDestroyInput(ctx context.Context, v interface{}) (StudioDestroyInput, error) {
+	return ec.unmarshalInputStudioDestroyInput(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNStudioUpdateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐStudioUpdateInput(ctx context.Context, v interface{}) (StudioUpdateInput, error) {

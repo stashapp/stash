@@ -20,6 +20,7 @@ interface IProps {
   isEditing: boolean;
   onToggleEdit: () => void;
   onSave: () => void;
+  onDelete: () => void;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
 
   // TODO: only for performers.  make generic
@@ -41,6 +42,11 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
   function renderSaveButton() {
     if (!props.isEditing) { return; }
     return <Button intent="success" text="Save" onClick={() => props.onSave()} />;
+  }
+
+  function renderDeleteButton() {
+    if (props.isNew || props.isEditing) { return; }
+    return <Button intent="danger" text="Delete" onClick={() => props.onDelete()} />;
   }
 
   function renderImageInput() {
@@ -91,6 +97,7 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
         {renderSaveButton()}
 
         {renderScenesButton()}
+        {renderDeleteButton()}
       </Navbar.Group>
     </Navbar>
   );

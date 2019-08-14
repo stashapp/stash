@@ -133,6 +133,9 @@ export class StashService {
   public static usePerformerUpdate(input: GQL.PerformerUpdateInput) {
     return GQL.usePerformerUpdate({ variables: input });
   }
+  public static usePerformerDestroy(input: GQL.PerformerDestroyInput) {
+    return GQL.usePerformerDestroy({ variables: input });
+  }
 
   public static useSceneUpdate(input: GQL.SceneUpdateInput) {
     return GQL.useSceneUpdate({ variables: input });
@@ -143,6 +146,9 @@ export class StashService {
   }
   public static useStudioUpdate(input: GQL.StudioUpdateInput) {
     return GQL.useStudioUpdate({ variables: input });
+  }
+  public static useStudioDestroy(input: GQL.StudioDestroyInput) {
+    return GQL.useStudioDestroy({ variables: input });
   }
 
   public static useTagCreate(input: GQL.TagCreateInput) {
