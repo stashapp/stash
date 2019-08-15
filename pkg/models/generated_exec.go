@@ -2176,6 +2176,7 @@ input SceneUpdateInput {
 input SceneDestroyInput {
   id: ID!
   delete_file: Boolean
+  delete_generated: Boolean
 }
 
 type FindScenesResultType {
@@ -8352,6 +8353,12 @@ func (ec *executionContext) unmarshalInputSceneDestroyInput(ctx context.Context,
 		case "delete_file":
 			var err error
 			it.DeleteFile, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "delete_generated":
+			var err error
+			it.DeleteGenerated, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}

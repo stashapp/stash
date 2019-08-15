@@ -1,6 +1,8 @@
 import {
-  Alert,
   Button,
+  Classes,
+  Checkbox,
+  Dialog,
   FormGroup,
   HTMLSelect,
   InputGroup,
@@ -37,6 +39,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [deleteFile, setDeleteFile] = useState<boolean>(false);
+  const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -98,7 +101,8 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   function getSceneDeleteInput(): GQL.SceneDestroyInput {
     return {
       id: props.scene.id,
-      delete_file: deleteFile
+      delete_file: deleteFile,
+      delete_generated: deleteGenerated
     };
   }
 
@@ -134,19 +138,31 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
 
   function renderDeleteAlert() {
     return (
-      <Alert
-        cancelButtonText="Cancel"
-        confirmButtonText="Delete"
+      <>
+      <Dialog
+        canOutsideClickClose={false}
+        canEscapeKeyClose={false}
         icon="trash"
-        intent="danger"
+        isCloseButtonShown={false}
         isOpen={isDeleteAlertOpen}
-        onCancel={() => setIsDeleteAlertOpen(false)}
-        onConfirm={() => onDelete()}
+        title="Delete Scene?"
       >
-        <p>
-          Are you sure you want to delete this scene? Unless the file is also deleted, this scene will be re-added when scan is performed.
-        </p>
-      </Alert>
+        <div className={Classes.DIALOG_BODY}>
+          <p>
+            Are you sure you want to delete this scene? Unless the file is also deleted, this scene will be re-added when scan is performed.
+          </p>
+          <Checkbox checked={deleteFile} label="Delete file" onChange={() => setDeleteFile(!deleteFile)} />
+          <Checkbox checked={deleteGenerated} label="Delete generated supporting files" onChange={() => setDeleteGenerated(!deleteGenerated)} />
+        </div>
+
+        <div className={Classes.DIALOG_FOOTER}>
+          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
+            <Button intent="danger" onClick={() => onDelete()}>Delete</Button>
+            <Button onClick={() => setIsDeleteAlertOpen(false)}>Cancel</Button>
+          </div>
+        </div>
+      </Dialog>
+      </>
     );
   }
 

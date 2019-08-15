@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated in 2019-08-15T13:55:54+10:00
+// Generated in 2019-08-15T18:05:18+10:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {
@@ -92,6 +92,8 @@ export interface SceneDestroyInput {
   id: string;
 
   delete_file?: Maybe<boolean>;
+
+  delete_generated?: Maybe<boolean>;
 }
 
 export interface SceneMarkerCreateInput {
@@ -399,6 +401,7 @@ export type SceneUpdateSceneUpdate = SceneDataFragment;
 export type SceneDestroyVariables = {
   id: string;
   delete_file?: Maybe<boolean>;
+  delete_generated?: Maybe<boolean>;
 };
 
 export type SceneDestroyMutation = {
@@ -1792,8 +1795,18 @@ export function useSceneUpdate(
   >(SceneUpdateDocument, baseOptions);
 }
 export const SceneDestroyDocument = gql`
-  mutation SceneDestroy($id: ID!, $delete_file: Boolean) {
-    sceneDestroy(input: { id: $id, delete_file: $delete_file })
+  mutation SceneDestroy(
+    $id: ID!
+    $delete_file: Boolean
+    $delete_generated: Boolean
+  ) {
+    sceneDestroy(
+      input: {
+        id: $id
+        delete_file: $delete_file
+        delete_generated: $delete_generated
+      }
+    )
   }
 `;
 export function useSceneDestroy(
