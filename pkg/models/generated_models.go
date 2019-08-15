@@ -137,8 +137,9 @@ type PerformerUpdateInput struct {
 }
 
 type SceneDestroyInput struct {
-	ID         string `json:"id"`
-	DeleteFile *bool  `json:"delete_file"`
+	ID              string `json:"id"`
+	DeleteFile      *bool  `json:"delete_file"`
+	DeleteGenerated *bool  `json:"delete_generated"`
 }
 
 type SceneFileType struct {

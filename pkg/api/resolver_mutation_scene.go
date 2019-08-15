@@ -4,12 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
@@ -145,6 +148,12 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 		return false, err
 	}
 
+	// if delete generated is true, then delete the generated files
+	// for the scene
+	if input.DeleteGenerated != nil && *input.DeleteGenerated {
+		deleteGeneratedSceneFiles(scene)
+	}
+
 	// if delete file is true, then delete the file as well
 	// if it fails, just log a message
 	if input.DeleteFile != nil && *input.DeleteFile {
@@ -155,6 +164,81 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	}
 
 	return true, nil
+}
+
+func deleteGeneratedSceneFiles(scene *models.Scene) {
+	markersFolder := filepath.Join(manager.GetInstance().Paths.Generated.Markers, scene.Checksum)
+
+	exists, _ := utils.FileExists(markersFolder)
+	if exists {
+		err := os.RemoveAll(markersFolder)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", scene.Path, err.Error())
+		}
+	}
+
+	thumbPath := manager.GetInstance().Paths.Scene.GetThumbnailScreenshotPath(scene.Checksum)
+	exists, _ = utils.FileExists(thumbPath)
+	if exists {
+		err := os.Remove(thumbPath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", thumbPath, err.Error())
+		}
+	}
+
+	normalPath := manager.GetInstance().Paths.Scene.GetScreenshotPath(scene.Checksum)
+	exists, _ = utils.FileExists(normalPath)
+	if exists {
+		err := os.Remove(normalPath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", normalPath, err.Error())
+		}
+	}
+
+	streamPreviewPath := manager.GetInstance().Paths.Scene.GetStreamPreviewPath(scene.Checksum)
+	exists, _ = utils.FileExists(streamPreviewPath)
+	if exists {
+		err := os.Remove(streamPreviewPath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", streamPreviewPath, err.Error())
+		}
+	}
+
+	streamPreviewImagePath := manager.GetInstance().Paths.Scene.GetStreamPreviewImagePath(scene.Checksum)
+	exists, _ = utils.FileExists(streamPreviewImagePath)
+	if exists {
+		err := os.Remove(streamPreviewImagePath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", streamPreviewImagePath, err.Error())
+		}
+	}
+
+	transcodePath := manager.GetInstance().Paths.Scene.GetTranscodePath(scene.Checksum)
+	exists, _ = utils.FileExists(transcodePath)
+	if exists {
+		err := os.Remove(transcodePath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", transcodePath, err.Error())
+		}
+	}
+
+	spritePath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.Checksum)
+	exists, _ = utils.FileExists(spritePath)
+	if exists {
+		err := os.Remove(spritePath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", spritePath, err.Error())
+		}
+	}
+
+	vttPath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.Checksum)
+	exists, _ = utils.FileExists(vttPath)
+	if exists {
+		err := os.Remove(vttPath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", vttPath, err.Error())
+		}
+	}
 }
 
 func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.SceneMarkerCreateInput) (*models.SceneMarker, error) {
