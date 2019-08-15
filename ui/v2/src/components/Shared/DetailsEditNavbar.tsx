@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   FileInput,
   Menu,
@@ -8,7 +9,7 @@ import {
   Popover,
 } from "@blueprintjs/core";
 import _ from "lodash";
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "../../core/generated-graphql";
 import { NavigationUtils } from "../../utils/navigation";
@@ -28,6 +29,8 @@ interface IProps {
 }
 
 export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+
   function renderEditButton() {
     if (props.isNew) { return; }
     return (
@@ -46,7 +49,7 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
 
   function renderDeleteButton() {
     if (props.isNew || props.isEditing) { return; }
-    return <Button intent="danger" text="Delete" onClick={() => props.onDelete()} />;
+    return <Button intent="danger" text="Delete" onClick={() => setIsDeleteAlertOpen(true)} />;
   }
 
   function renderImageInput() {
@@ -87,7 +90,37 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
     );
   }
 
+  function renderDeleteAlert() {
+    var name;
+
+    if (props.performer) {
+      name = props.performer.name;
+    }
+    if (props.studio) {
+      name = props.studio.name;
+    }
+
+    return (
+      <Alert
+        cancelButtonText="Cancel"
+        confirmButtonText="Delete"
+        icon="trash"
+        intent="danger"
+        isOpen={isDeleteAlertOpen}
+        onCancel={() => setIsDeleteAlertOpen(false)}
+        onConfirm={() => props.onDelete()}
+      >
+        <p>
+          Are you sure you want to delete {name}?
+        </p>
+      </Alert>
+    );
+  }
+
+
   return (
+    <>
+    {renderDeleteAlert()}
     <Navbar>
       <Navbar.Group>
         {renderEditButton()}
@@ -100,5 +133,6 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
         {renderDeleteButton()}
       </Navbar.Group>
     </Navbar>
+    </>
   );
 };
