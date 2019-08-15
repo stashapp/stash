@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   FormGroup,
   HTMLSelect,
@@ -19,6 +20,7 @@ import { ValidGalleriesSelect } from "../../select/ValidGalleriesSelect";
 interface IProps {
   scene: GQL.SceneDataFragment;
   onUpdate: (scene: GQL.SceneDataFragment) => void;
+  onDelete: () => void;
 }
 
 export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
@@ -33,10 +35,14 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
 
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [deleteFile, setDeleteFile] = useState<boolean>(false);
+
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
   const updateScene = StashService.useSceneUpdate(getSceneInput());
+  const deleteScene = StashService.useSceneDestroy(getSceneDeleteInput());
 
   function updateSceneEditState(state: Partial<GQL.SceneDataFragment>) {
     const perfIds = !!state.performers ? state.performers.map((performer) => performer.id) : undefined;
@@ -89,6 +95,27 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     setIsLoading(false);
   }
 
+  function getSceneDeleteInput(): GQL.SceneDestroyInput {
+    return {
+      id: props.scene.id,
+      delete_file: deleteFile
+    };
+  }
+
+  async function onDelete() {
+    setIsDeleteAlertOpen(false);
+    setIsLoading(true);
+    try {
+      await deleteScene();
+      ToastUtils.success("Deleted scene");
+    } catch (e) {
+      ErrorUtils.handle(e);
+    }
+    setIsLoading(false);
+
+    props.onDelete();
+  }
+
   function renderMultiSelect(type: "performers" | "tags", initialIds: string[] | undefined) {
     return (
       <FilterMultiSelect
@@ -105,8 +132,27 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     );
   }
 
+  function renderDeleteAlert() {
+    return (
+      <Alert
+        cancelButtonText="Cancel"
+        confirmButtonText="Delete"
+        icon="trash"
+        intent="danger"
+        isOpen={isDeleteAlertOpen}
+        onCancel={() => setIsDeleteAlertOpen(false)}
+        onConfirm={() => onDelete()}
+      >
+        <p>
+          Are you sure you want to delete this scene? Unless the file is also deleted, this scene will be re-added when scan is performed.
+        </p>
+      </Alert>
+    );
+  }
+
   return (
     <>
+      {renderDeleteAlert()}
       {isLoading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
       <div className="form-container " style={{width: "50%"}}>
         <FormGroup label="Title">
@@ -171,6 +217,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
         </FormGroup>
       </div>
       <Button text="Save" intent="primary" onClick={() => onSave()}/>
+      <Button text="Delete" intent="danger" onClick={() => setIsDeleteAlertOpen(true)}/>
     </>
   );
 };

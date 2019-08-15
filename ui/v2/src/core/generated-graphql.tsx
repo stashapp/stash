@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated in 2019-05-27T11:23:10-07:00
+// Generated in 2019-08-15T13:55:54+10:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {
@@ -86,6 +86,12 @@ export interface SceneUpdateInput {
   performer_ids?: Maybe<string[]>;
 
   tag_ids?: Maybe<string[]>;
+}
+
+export interface SceneDestroyInput {
+  id: string;
+
+  delete_file?: Maybe<boolean>;
 }
 
 export interface SceneMarkerCreateInput {
@@ -389,6 +395,17 @@ export type SceneUpdateMutation = {
 };
 
 export type SceneUpdateSceneUpdate = SceneDataFragment;
+
+export type SceneDestroyVariables = {
+  id: string;
+  delete_file?: Maybe<boolean>;
+};
+
+export type SceneDestroyMutation = {
+  __typename?: "Mutation";
+
+  sceneDestroy: boolean;
+};
 
 export type StudioCreateVariables = {
   name: string;
@@ -1773,6 +1790,22 @@ export function useSceneUpdate(
     SceneUpdateMutation,
     SceneUpdateVariables
   >(SceneUpdateDocument, baseOptions);
+}
+export const SceneDestroyDocument = gql`
+  mutation SceneDestroy($id: ID!, $delete_file: Boolean) {
+    sceneDestroy(input: { id: $id, delete_file: $delete_file })
+  }
+`;
+export function useSceneDestroy(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    SceneDestroyMutation,
+    SceneDestroyVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    SceneDestroyMutation,
+    SceneDestroyVariables
+  >(SceneDestroyDocument, baseOptions);
 }
 export const StudioCreateDocument = gql`
   mutation StudioCreate($name: String!, $url: String, $image: String!) {

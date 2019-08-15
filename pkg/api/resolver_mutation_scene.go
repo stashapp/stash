@@ -3,10 +3,13 @@ package api
 import (
 	"context"
 	"database/sql"
-	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/models"
+	"os"
 	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
@@ -99,6 +102,59 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	return scene, nil
+}
+
+func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {
+	qb := models.NewSceneQueryBuilder()
+	jqb := models.NewJoinsQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	sceneID, _ := strconv.Atoi(input.ID)
+
+	scene, err := qb.Find(sceneID)
+	if err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
+
+	if err := jqb.DestroyScenesTags(sceneID, tx); err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
+
+	if err := jqb.DestroyPerformersScenes(sceneID, tx); err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
+
+	if err := jqb.DestroyScenesMarkers(sceneID, tx); err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
+
+	if err := jqb.DestroyScenesGalleries(sceneID, tx); err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
+
+	if err := qb.Destroy(input.ID, tx); err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
+	if err := tx.Commit(); err != nil {
+		return false, err
+	}
+
+	// if delete file is true, then delete the file as well
+	// if it fails, just log a message
+	if input.DeleteFile != nil && *input.DeleteFile {
+		err = os.Remove(scene.Path)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", scene.Path, err.Error())
+		}
+	}
+
+	return true, nil
 }
 
 func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.SceneMarkerCreateInput) (*models.SceneMarker, error) {

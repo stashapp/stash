@@ -136,6 +136,11 @@ type PerformerUpdateInput struct {
 	Image *string `json:"image"`
 }
 
+type SceneDestroyInput struct {
+	ID         string `json:"id"`
+	DeleteFile *bool  `json:"delete_file"`
+}
+
 type SceneFileType struct {
 	Size       *string  `json:"size"`
 	Duration   *float64 `json:"duration"`
