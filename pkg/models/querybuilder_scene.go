@@ -2,10 +2,11 @@ package models
 
 import (
 	"database/sql"
-	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"strconv"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/database"
 )
 
 const scenesForPerformerQuery = `
@@ -76,6 +77,9 @@ func (qb *SceneQueryBuilder) Update(updatedScene Scene, tx *sqlx.Tx) (*Scene, er
 	return &updatedScene, nil
 }
 
+func (qb *SceneQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
+	return executeDeleteQuery("scenes", id, tx)
+}
 func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
 	query := "SELECT * FROM scenes WHERE id = ? LIMIT 1"
 	args := []interface{}{id}

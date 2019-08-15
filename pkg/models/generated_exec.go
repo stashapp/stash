@@ -109,6 +109,7 @@ type ComplexityRoot struct {
 		ConfigureGeneral   func(childComplexity int, input ConfigGeneralInput) int
 		PerformerCreate    func(childComplexity int, input PerformerCreateInput) int
 		PerformerUpdate    func(childComplexity int, input PerformerUpdateInput) int
+		SceneDestroy       func(childComplexity int, input SceneDestroyInput) int
 		SceneMarkerCreate  func(childComplexity int, input SceneMarkerCreateInput) int
 		SceneMarkerDestroy func(childComplexity int, id string) int
 		SceneMarkerUpdate  func(childComplexity int, input SceneMarkerUpdateInput) int
@@ -283,6 +284,7 @@ type GalleryResolver interface {
 }
 type MutationResolver interface {
 	SceneUpdate(ctx context.Context, input SceneUpdateInput) (*Scene, error)
+	SceneDestroy(ctx context.Context, input SceneDestroyInput) (bool, error)
 	SceneMarkerCreate(ctx context.Context, input SceneMarkerCreateInput) (*SceneMarker, error)
 	SceneMarkerUpdate(ctx context.Context, input SceneMarkerUpdateInput) (*SceneMarker, error)
 	SceneMarkerDestroy(ctx context.Context, id string) (bool, error)
@@ -609,6 +611,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.PerformerUpdate(childComplexity, args["input"].(PerformerUpdateInput)), true
+
+	case "Mutation.sceneDestroy":
+		if e.complexity.Mutation.SceneDestroy == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sceneDestroy_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SceneDestroy(childComplexity, args["input"].(SceneDestroyInput)), true
 
 	case "Mutation.sceneMarkerCreate":
 		if e.complexity.Mutation.SceneMarkerCreate == nil {
@@ -1833,6 +1847,7 @@ type Query {
 
 type Mutation {
   sceneUpdate(input: SceneUpdateInput!): Scene
+  sceneDestroy(input: SceneDestroyInput!): Boolean!
 
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
@@ -2158,6 +2173,11 @@ input SceneUpdateInput {
   tag_ids: [ID!]
 }
 
+input SceneDestroyInput {
+  id: ID!
+  delete_file: Boolean
+}
+
 type FindScenesResultType {
   count: Int!
   scenes: [Scene!]!
@@ -2276,6 +2296,20 @@ func (ec *executionContext) field_Mutation_performerUpdate_args(ctx context.Cont
 	var arg0 PerformerUpdateInput
 	if tmp, ok := rawArgs["input"]; ok {
 		arg0, err = ec.unmarshalNPerformerUpdateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformerUpdateInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_sceneDestroy_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 SceneDestroyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNSceneDestroyInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneDestroyInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3465,6 +3499,40 @@ func (ec *executionContext) _Mutation_sceneUpdate(ctx context.Context, field gra
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOScene2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_sceneDestroy(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_sceneDestroy_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SceneDestroy(rctx, args["input"].(SceneDestroyInput))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_sceneMarkerCreate(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -8269,6 +8337,30 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSceneDestroyInput(ctx context.Context, v interface{}) (SceneDestroyInput, error) {
+	var it SceneDestroyInput
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+			it.ID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "delete_file":
+			var err error
+			it.DeleteFile, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputSceneFilterType(ctx context.Context, v interface{}) (SceneFilterType, error) {
 	var it SceneFilterType
 	var asMap = v.(map[string]interface{})
@@ -9032,6 +9124,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = graphql.MarshalString("Mutation")
 		case "sceneUpdate":
 			out.Values[i] = ec._Mutation_sceneUpdate(ctx, field)
+		case "sceneDestroy":
+			out.Values[i] = ec._Mutation_sceneDestroy(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "sceneMarkerCreate":
 			out.Values[i] = ec._Mutation_sceneMarkerCreate(ctx, field)
 		case "sceneMarkerUpdate":
@@ -11063,6 +11160,10 @@ func (ec *executionContext) marshalNScene2ᚖgithubᚗcomᚋstashappᚋstashᚋp
 		return graphql.Null
 	}
 	return ec._Scene(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSceneDestroyInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneDestroyInput(ctx context.Context, v interface{}) (SceneDestroyInput, error) {
+	return ec.unmarshalInputSceneDestroyInput(ctx, v)
 }
 
 func (ec *executionContext) marshalNSceneFileType2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐSceneFileType(ctx context.Context, sel ast.SelectionSet, v SceneFileType) graphql.Marshaler {
