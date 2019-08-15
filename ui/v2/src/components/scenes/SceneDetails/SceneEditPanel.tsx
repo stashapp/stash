@@ -232,8 +232,8 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
           {renderMultiSelect("tags", tagIds)}
         </FormGroup>
       </div>
-      <Button text="Save" intent="primary" onClick={() => onSave()}/>
-      <Button text="Delete" intent="danger" onClick={() => setIsDeleteAlertOpen(true)}/>
+      <Button className="edit-button" text="Save" intent="primary" onClick={() => onSave()}/>
+      <Button className="edit-button" text="Delete" intent="danger" onClick={() => setIsDeleteAlertOpen(true)}/>
     </>
   );
 };
