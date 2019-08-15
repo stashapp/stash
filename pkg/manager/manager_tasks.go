@@ -1,13 +1,14 @@
 package manager
 
 import (
+	"path/filepath"
+	"sync"
+
 	"github.com/bmatcuk/doublestar"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"path/filepath"
-	"sync"
 )
 
 func (s *singleton) Scan() {
@@ -34,6 +35,8 @@ func (s *singleton) Scan() {
 			go task.Start(&wg)
 			wg.Wait()
 		}
+
+		logger.Info("Finished scan")
 	}()
 }
 
