@@ -66,6 +66,10 @@ input PerformerUpdateInput {
   image: String
 }
 
+input PerformerDestroyInput {
+  id: ID!
+}
+
 type FindPerformersResultType {
   count: Int!
   performers: [Performer!]!

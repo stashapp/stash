@@ -175,3 +175,17 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 
 	return performer, nil
 }
+
+func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
+	qb := models.NewPerformerQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+	if err := qb.Destroy(input.ID, tx); err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
+	if err := tx.Commit(); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+

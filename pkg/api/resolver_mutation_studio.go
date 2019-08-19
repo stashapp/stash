@@ -3,11 +3,12 @@ package api
 import (
 	"context"
 	"database/sql"
+	"strconv"
+	"time"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"strconv"
-	"time"
 )
 
 func (r *mutationResolver) StudioCreate(ctx context.Context, input models.StudioCreateInput) (*models.Studio, error) {
@@ -84,4 +85,17 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	}
 
 	return studio, nil
+}
+
+func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {
+	qb := models.NewStudioQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+	if err := qb.Destroy(input.ID, tx); err != nil {
+		_ = tx.Rollback()
+		return false, err
+	}
+	if err := tx.Commit(); err != nil {
+		return false, err
+	}
+	return true, nil
 }
