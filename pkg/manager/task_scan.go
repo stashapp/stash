@@ -46,9 +46,15 @@ func (t *ScanTask) scanGallery() {
 	tx := database.DB.MustBeginTx(ctx, nil)
 	gallery, _ = qb.FindByChecksum(checksum, tx)
 	if gallery != nil {
-		logger.Infof("%s already exists.  Updating path...", t.FilePath)
-		gallery.Path = t.FilePath
-		_, err = qb.Update(*gallery, tx)
+		exists, _ := utils.FileExists(t.FilePath)
+		if exists {
+			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, gallery.Path)
+		} else {
+
+			logger.Infof("%s already exists.  Updating path...", t.FilePath)
+			gallery.Path = t.FilePath
+			_, err = qb.Update(*gallery, tx)
+		}
 	} else {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
@@ -95,9 +101,14 @@ func (t *ScanTask) scanScene() {
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
 	if scene != nil {
-		logger.Infof("%s already exists.  Updating path...", t.FilePath)
-		scene.Path = t.FilePath
-		_, err = qb.Update(*scene, tx)
+		exists, _ := utils.FileExists(t.FilePath)
+		if exists {
+			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, scene.Path)
+		} else {
+			logger.Infof("%s already exists.  Updating path...", t.FilePath)
+			scene.Path = t.FilePath
+			_, err = qb.Update(*scene, tx)
+		}
 	} else {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
