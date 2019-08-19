@@ -79,9 +79,11 @@ type Mutation {
 
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer
+  performerDestroy(input: PerformerDestroyInput!): Boolean!
 
   studioCreate(input: StudioCreateInput!): Studio
   studioUpdate(input: StudioUpdateInput!): Studio
+  studioDestroy(input: StudioDestroyInput!): Boolean!
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
