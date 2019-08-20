@@ -3,15 +3,16 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"path/filepath"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"path/filepath"
-	"strconv"
-	"sync"
-	"time"
 )
 
 type ScanTask struct {
@@ -47,9 +48,15 @@ func (t *ScanTask) scanGallery(scanCh chan<- struct{}, errorCh chan<- struct{}) 
 	tx := database.DB.MustBeginTx(ctx, nil)
 	gallery, _ = qb.FindByChecksum(checksum, tx)
 	if gallery != nil {
-		logger.Infof("%s already exists.  Updating path...", t.FilePath)
-		gallery.Path = t.FilePath
-		_, err = qb.Update(*gallery, tx)
+		exists, _ := utils.FileExists(t.FilePath)
+		if exists {
+			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, gallery.Path)
+		} else {
+
+			logger.Infof("%s already exists.  Updating path...", t.FilePath)
+			gallery.Path = t.FilePath
+			_, err = qb.Update(*gallery, tx)
+		}
 	} else {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
@@ -103,15 +110,23 @@ func (t *ScanTask) scanScene(scanCh chan<- struct{}, errorCh chan<- struct{}) {
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
 	if scene != nil {
-		logger.Infof("%s already exists.  Updating path...", t.FilePath)
-		scene.Path = t.FilePath
-		_, err = qb.Update(*scene, tx)
+		exists, _ := utils.FileExists(t.FilePath)
+		if exists {
+			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, scene.Path)
+		} else {
+			logger.Infof("%s already exists.  Updating path...", t.FilePath)
+			scene.Path = t.FilePath
+			_, err = qb.Update(*scene, tx)
+		}
 	} else {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
 		newScene := models.Scene{
 			Checksum:   checksum,
 			Path:       t.FilePath,
+			Title:      sql.NullString{String: videoFile.Title, Valid: true},
+			Details:    sql.NullString{String: videoFile.Comment, Valid: true},
+			Date:       models.SQLiteDate{String: videoFile.CreationTime.Format("2006-01-02")},
 			Duration:   sql.NullFloat64{Float64: videoFile.Duration, Valid: true},
 			VideoCodec: sql.NullString{String: videoFile.VideoCodec, Valid: true},
 			AudioCodec: sql.NullString{String: videoFile.AudioCodec, Valid: true},

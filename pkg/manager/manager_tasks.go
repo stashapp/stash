@@ -85,6 +85,8 @@ func (s *singleton) Scan() {
 		}
 		close(scanCh)
 		close(scanerrorCh)
+
+		logger.Info("Finished scan")
 	}()
 }
 
