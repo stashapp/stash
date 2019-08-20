@@ -48,7 +48,7 @@ func (t *ScanTask) scanGallery(scanCh chan<- struct{}, errorCh chan<- struct{}) 
 	tx := database.DB.MustBeginTx(ctx, nil)
 	gallery, _ = qb.FindByChecksum(checksum, tx)
 	if gallery != nil {
-		exists, _ := utils.FileExists(t.FilePath)
+		exists, _ := utils.FileExists(gallery.Path)
 		if exists {
 			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, gallery.Path)
 		} else {
@@ -110,7 +110,7 @@ func (t *ScanTask) scanScene(scanCh chan<- struct{}, errorCh chan<- struct{}) {
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
 	if scene != nil {
-		exists, _ := utils.FileExists(t.FilePath)
+		exists, _ := utils.FileExists(scene.Path)
 		if exists {
 			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, scene.Path)
 		} else {
