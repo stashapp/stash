@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 )
@@ -50,6 +51,22 @@ func (qb *StudioQueryBuilder) Update(updatedStudio Studio, tx *sqlx.Tx) (*Studio
 	return &updatedStudio, nil
 }
 
+func (qb *StudioQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
+	// remove studio from scenes
+	_, err := tx.Exec("UPDATE scenes SET studio_id = null WHERE studio_id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	// remove studio from scraped items
+	_, err = tx.Exec("UPDATE scraped_items SET studio_id = null WHERE studio_id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	return executeDeleteQuery("studios", id, tx)
+}
+
 func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*Studio, error) {
 	query := "SELECT * FROM studios WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
@@ -86,7 +103,7 @@ func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]*Studio, int)
 	var args []interface{}
 	body := selectDistinctIDs("studios")
 	body += `
-		join scenes on studios.id = scenes.studio_id		
+		left join scenes on studios.id = scenes.studio_id		
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {

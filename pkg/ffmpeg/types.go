@@ -22,6 +22,8 @@ type FFProbeJSON struct {
 			Encoder          string          `json:"encoder"`
 			MajorBrand       string          `json:"major_brand"`
 			MinorVersion     string          `json:"minor_version"`
+			Title            string          `json:"title"`
+			Comment          string          `json:"comment"`
 		} `json:"tags"`
 	} `json:"format"`
 	Streams []FFProbeStream `json:"streams"`

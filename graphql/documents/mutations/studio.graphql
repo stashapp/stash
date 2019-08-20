@@ -18,3 +18,7 @@ mutation StudioUpdate(
     ...StudioData
   }
 }
+
+mutation StudioDestroy($id: ID!) {
+  studioDestroy(input: { id: $id })
+}

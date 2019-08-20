@@ -109,6 +109,10 @@ type PerformerCreateInput struct {
 	Image string `json:"image"`
 }
 
+type PerformerDestroyInput struct {
+	ID string `json:"id"`
+}
+
 type PerformerFilterType struct {
 	// Filter by favorite
 	FilterFavorites *bool `json:"filter_favorites"`
@@ -258,6 +262,10 @@ type StudioCreateInput struct {
 	URL  *string `json:"url"`
 	// This should be base64 encoded
 	Image string `json:"image"`
+}
+
+type StudioDestroyInput struct {
+	ID string `json:"id"`
 }
 
 type StudioUpdateInput struct {
