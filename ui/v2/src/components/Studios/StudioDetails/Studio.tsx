@@ -39,6 +39,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
   const { data, error, loading } = StashService.useFindStudio(props.match.params.id);
   const updateStudio = StashService.useStudioUpdate(getStudioInput() as GQL.StudioUpdateInput);
   const createStudio = StashService.useStudioCreate(getStudioInput() as GQL.StudioCreateInput);
+  const deleteStudio = StashService.useStudioDestroy(getStudioInput() as GQL.StudioDestroyInput);
 
   function updateStudioEditState(state: Partial<GQL.StudioDataFragment>) {
     setName(state.name);
@@ -95,6 +96,19 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     setIsLoading(false);
   }
 
+  async function onDelete() {
+    setIsLoading(true);
+    try {
+      const result = await deleteStudio();
+    } catch (e) {
+      ErrorUtils.handle(e);
+    }
+    setIsLoading(false);
+    
+    // redirect to studios page
+    props.history.push(`/studios`);
+  }
+
   function onImageChange(event: React.FormEvent<HTMLInputElement>) {
     const file: File = (event.target as any).files[0];
     const reader: FileReader = new FileReader();
@@ -120,6 +134,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
             isEditing={isEditing}
             onToggleEdit={() => { setIsEditing(!isEditing); updateStudioEditState(studio); }}
             onSave={onSave}
+            onDelete={onDelete}
             onImageChange={onImageChange}
           />
           <h1 className="bp3-heading">

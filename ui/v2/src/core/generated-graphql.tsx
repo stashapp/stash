@@ -196,6 +196,10 @@ export interface PerformerUpdateInput {
   image?: Maybe<string>;
 }
 
+export interface PerformerDestroyInput {
+  id: string;
+}
+
 export interface StudioCreateInput {
   name: string;
 
@@ -212,6 +216,10 @@ export interface StudioUpdateInput {
   url?: Maybe<string>;
   /** This should be base64 encoded */
   image?: Maybe<string>;
+}
+
+export interface StudioDestroyInput {
+  id: string;
 }
 
 export interface TagCreateInput {
@@ -334,6 +342,16 @@ export type PerformerUpdateMutation = {
 
 export type PerformerUpdatePerformerUpdate = PerformerDataFragment;
 
+export type PerformerDestroyVariables = {
+  id: string;
+};
+
+export type PerformerDestroyMutation = {
+  __typename?: "Mutation";
+
+  performerDestroy: boolean;
+};
+
 export type SceneMarkerCreateVariables = {
   title: string;
   seconds: number;
@@ -438,6 +456,16 @@ export type StudioUpdateMutation = {
 };
 
 export type StudioUpdateStudioUpdate = StudioDataFragment;
+
+export type StudioDestroyVariables = {
+  id: string;
+};
+
+export type StudioDestroyMutation = {
+  __typename?: "Mutation";
+
+  studioDestroy: boolean;
+};
 
 export type TagCreateVariables = {
   name: string;
@@ -1664,6 +1692,22 @@ export function usePerformerUpdate(
     PerformerUpdateVariables
   >(PerformerUpdateDocument, baseOptions);
 }
+export const PerformerDestroyDocument = gql`
+  mutation PerformerDestroy($id: ID!) {
+    performerDestroy(input: { id: $id })
+  }
+`;
+export function usePerformerDestroy(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    PerformerDestroyMutation,
+    PerformerDestroyVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    PerformerDestroyMutation,
+    PerformerDestroyVariables
+  >(PerformerDestroyDocument, baseOptions);
+}
 export const SceneMarkerCreateDocument = gql`
   mutation SceneMarkerCreate(
     $title: String!
@@ -1859,6 +1903,22 @@ export function useStudioUpdate(
     StudioUpdateMutation,
     StudioUpdateVariables
   >(StudioUpdateDocument, baseOptions);
+}
+export const StudioDestroyDocument = gql`
+  mutation StudioDestroy($id: ID!) {
+    studioDestroy(input: { id: $id })
+  }
+`;
+export function useStudioDestroy(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    StudioDestroyMutation,
+    StudioDestroyVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    StudioDestroyMutation,
+    StudioDestroyVariables
+  >(StudioDestroyDocument, baseOptions);
 }
 export const TagCreateDocument = gql`
   mutation TagCreate($name: String!) {

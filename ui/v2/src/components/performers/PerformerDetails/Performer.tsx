@@ -55,6 +55,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
   const { data, error, loading } = StashService.useFindPerformer(props.match.params.id);
   const updatePerformer = StashService.usePerformerUpdate(getPerformerInput() as GQL.PerformerUpdateInput);
   const createPerformer = StashService.usePerformerCreate(getPerformerInput() as GQL.PerformerCreateInput);
+  const deletePerformer = StashService.usePerformerDestroy(getPerformerInput() as GQL.PerformerDestroyInput);
 
   function updatePerformerEditState(state: Partial<GQL.PerformerDataFragment | GQL.ScrapeFreeonesScrapeFreeones>) {
     if ((state as GQL.PerformerDataFragment).favorite !== undefined) {
@@ -141,6 +142,19 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     setIsLoading(false);
   }
 
+  async function onDelete() {
+    setIsLoading(true);
+    try {
+      const result = await deletePerformer();
+    } catch (e) {
+      ErrorUtils.handle(e);
+    }
+    setIsLoading(false);
+    
+    // redirect to performers page
+    props.history.push(`/performers`);
+  }
+
   function onImageChange(event: React.FormEvent<HTMLInputElement>) {
     const file: File = (event.target as any).files[0];
     const reader: FileReader = new FileReader();
@@ -218,6 +232,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
             isEditing={isEditing}
             onToggleEdit={() => { setIsEditing(!isEditing); updatePerformerEditState(performer); }}
             onSave={onSave}
+            onDelete={onDelete}
             onImageChange={onImageChange}
             onDisplayFreeOnesDialog={onDisplayFreeOnesDialog}
           />

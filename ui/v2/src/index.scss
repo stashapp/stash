@@ -186,10 +186,14 @@ span.block {
 
   & .tag-list-row {
     margin: 10px;
+    cursor: pointer;
 
     & .bp3-button {
       margin: 0 10px;
     }
   }
-}
 
+  & .tag-list-row:hover {
+    text-decoration: underline;
+  }
+}
