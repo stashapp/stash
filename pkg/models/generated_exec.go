@@ -2059,7 +2059,7 @@ input PerformerCreateInput {
   instagram: String
   favorite: Boolean
   """This should be base64 encoded"""
-  image: String!
+  image: String
 }
 
 input PerformerUpdateInput {
@@ -8255,7 +8255,7 @@ func (ec *executionContext) unmarshalInputPerformerCreateInput(ctx context.Conte
 			}
 		case "image":
 			var err error
-			it.Image, err = ec.unmarshalNString2string(ctx, v)
+			it.Image, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}

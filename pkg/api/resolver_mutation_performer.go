@@ -3,16 +3,26 @@ package api
 import (
 	"context"
 	"database/sql"
+	"strconv"
+	"time"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"strconv"
-	"time"
 )
 
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
-	// Process the base 64 encoded image string
-	checksum, imageData, err := utils.ProcessBase64Image(input.Image)
+	// generate checksum from performer name rather than image
+	checksum := utils.MD5FromString(*input.Name)
+
+	var imageData []byte
+	var err error
+
+	if input.Image == nil {
+		input.Image = &models.DefaultPerformerImage
+	}
+
+	_, imageData, err = utils.ProcessBase64Image(*input.Image)
 	if err != nil {
 		return nil, err
 	}
@@ -188,4 +198,3 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 	}
 	return true, nil
 }
-
