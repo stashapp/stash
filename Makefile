@@ -4,7 +4,9 @@ ifeq ($(OS),Windows_NT)
 endif
 
 build:
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) packr2 build -mod=vendor -v
+	$(eval DATE := $(shell go run scripts/getDate.go))
+	$(eval GITHASH := $(shell git rev-parse HEAD))
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -mod=vendor -v -ldflags "-X 'github.com/stashapp/stash/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)'"
 
 install:
 	packr2 install
@@ -35,3 +37,4 @@ lint:
 .PHONY: ui
 ui:
 	cd ui/v2 && yarn build
+	packr2

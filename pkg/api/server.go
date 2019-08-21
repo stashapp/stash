@@ -5,6 +5,15 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path"
+	"path/filepath"
+	"runtime/debug"
+	"strconv"
+	"strings"
+
 	"github.com/99designs/gqlgen/handler"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -16,15 +25,10 @@ import (
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path"
-	"path/filepath"
-	"runtime/debug"
-	"strconv"
-	"strings"
 )
+
+var buildstamp string = ""
+var githash string = ""
 
 var uiBox *packr.Box
 
@@ -154,6 +158,7 @@ func Start() {
 		}
 
 		go func() {
+			printVersion()
 			logger.Infof("stash is running on HTTPS at https://" + address + "/")
 			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
 		}()
@@ -164,10 +169,15 @@ func Start() {
 		}
 
 		go func() {
+			printVersion()
 			logger.Infof("stash is running on HTTP at http://" + address + "/")
 			logger.Fatal(server.ListenAndServe())
 		}()
 	}
+}
+
+func printVersion() {
+	fmt.Printf("stash version: %s (%s)\n", githash, buildstamp)
 }
 
 func makeTLSConfig() *tls.Config {
