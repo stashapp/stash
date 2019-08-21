@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated in 2019-08-20T18:32:35+10:00
+// Generated in 2019-08-21T15:05:29+10:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {
@@ -197,7 +197,7 @@ export interface StudioCreateInput {
 
   url?: Maybe<string>;
   /** This should be base64 encoded */
-  image: string;
+  image?: Maybe<string>;
 }
 
 export interface StudioUpdateInput {
@@ -411,7 +411,7 @@ export type SceneUpdateSceneUpdate = SceneDataFragment;
 export type StudioCreateVariables = {
   name: string;
   url?: Maybe<string>;
-  image: string;
+  image?: Maybe<string>;
 };
 
 export type StudioCreateMutation = {
@@ -1819,7 +1819,7 @@ export function useSceneUpdate(
   >(SceneUpdateDocument, baseOptions);
 }
 export const StudioCreateDocument = gql`
-  mutation StudioCreate($name: String!, $url: String, $image: String!) {
+  mutation StudioCreate($name: String!, $url: String, $image: String) {
     studioCreate(input: { name: $name, url: $url, image: $image }) {
       ...StudioData
     }
