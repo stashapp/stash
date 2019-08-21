@@ -1,7 +1,7 @@
 mutation StudioCreate(
   $name: String!,
   $url: String,
-  $image: String!) {
+  $image: String) {
 
   studioCreate(input: { name: $name, url: $url, image: $image }) {
     ...StudioData

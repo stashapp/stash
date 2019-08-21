@@ -12,8 +12,18 @@ import (
 )
 
 func (r *mutationResolver) StudioCreate(ctx context.Context, input models.StudioCreateInput) (*models.Studio, error) {
+	// generate checksum from studio name rather than image
+	checksum := utils.MD5FromString(input.Name)
+
+	var imageData []byte
+	var err error
+
+	if input.Image == nil {
+		input.Image = &models.DefaultStudioImage
+	}
+
 	// Process the base 64 encoded image string
-	checksum, imageData, err := utils.ProcessBase64Image(input.Image)
+	_, imageData, err = utils.ProcessBase64Image(*input.Image)
 	if err != nil {
 		return nil, err
 	}

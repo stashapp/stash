@@ -2235,7 +2235,7 @@ input StudioCreateInput {
   name: String!
   url: String
   """This should be base64 encoded"""
-  image: String!
+  image: String
 }
 
 input StudioUpdateInput {
@@ -8699,7 +8699,7 @@ func (ec *executionContext) unmarshalInputStudioCreateInput(ctx context.Context,
 			}
 		case "image":
 			var err error
-			it.Image, err = ec.unmarshalNString2string(ctx, v)
+			it.Image, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
