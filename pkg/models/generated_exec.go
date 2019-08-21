@@ -175,6 +175,7 @@ type ComplexityRoot struct {
 		ScrapeFreeonesPerformerList func(childComplexity int, query string) int
 		Stats                       func(childComplexity int) int
 		ValidGalleriesForScene      func(childComplexity int, sceneID *string) int
+		Version                     func(childComplexity int) int
 	}
 
 	Scene struct {
@@ -277,6 +278,11 @@ type ComplexityRoot struct {
 		SceneCount       func(childComplexity int) int
 		SceneMarkerCount func(childComplexity int) int
 	}
+
+	Version struct {
+		BuildTime func(childComplexity int) int
+		Hash      func(childComplexity int) int
+	}
 }
 
 type GalleryResolver interface {
@@ -349,6 +355,7 @@ type QueryResolver interface {
 	AllPerformers(ctx context.Context) ([]*Performer, error)
 	AllStudios(ctx context.Context) ([]*Studio, error)
 	AllTags(ctx context.Context) ([]*Tag, error)
+	Version(ctx context.Context) (*Version, error)
 }
 type SceneResolver interface {
 	Title(ctx context.Context, obj *Scene) (*string, error)
@@ -1184,6 +1191,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.ValidGalleriesForScene(childComplexity, args["scene_id"].(*string)), true
 
+	case "Query.version":
+		if e.complexity.Query.Version == nil {
+			break
+		}
+
+		return e.complexity.Query.Version(childComplexity), true
+
 	case "Scene.checksum":
 		if e.complexity.Scene.Checksum == nil {
 			break
@@ -1681,6 +1695,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tag.SceneMarkerCount(childComplexity), true
 
+	case "Version.build_time":
+		if e.complexity.Version.BuildTime == nil {
+			break
+		}
+
+		return e.complexity.Version.BuildTime(childComplexity), true
+
+	case "Version.hash":
+		if e.complexity.Version.Hash == nil {
+			break
+		}
+
+		return e.complexity.Version.Hash(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -1857,6 +1885,9 @@ type Query {
   allPerformers: [Performer!]!
   allStudios: [Studio!]!
   allTags: [Tag!]!
+
+  # Version
+  version: Version!
 }
 
 type Mutation {
@@ -2273,6 +2304,10 @@ input TagUpdateInput {
 
 input TagDestroyInput {
   id: ID!
+}`},
+	&ast.Source{Name: "graphql/schema/types/version.graphql", Input: `type Version {
+  hash: String!
+  build_time: String!
 }`},
 )
 
@@ -5338,6 +5373,33 @@ func (ec *executionContext) _Query_allTags(ctx context.Context, field graphql.Co
 	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTag(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_version(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Version(rctx)
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*Version)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNVersion2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐVersion(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -7186,6 +7248,60 @@ func (ec *executionContext) _Tag_scene_marker_count(ctx context.Context, field g
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Version_hash(ctx context.Context, field graphql.CollectedField, obj *Version) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Version",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Hash, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Version_build_time(ctx context.Context, field graphql.CollectedField, obj *Version) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Version",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.BuildTime, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) graphql.Marshaler {
@@ -9890,6 +10006,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "version":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_version(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -10555,6 +10685,38 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 				res = ec._Tag_scene_marker_count(ctx, field, obj)
 				return res
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var versionImplementors = []string{"Version"}
+
+func (ec *executionContext) _Version(ctx context.Context, sel ast.SelectionSet, obj *Version) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, versionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Version")
+		case "hash":
+			out.Values[i] = ec._Version_hash(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "build_time":
+			out.Values[i] = ec._Version_build_time(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11572,6 +11734,20 @@ func (ec *executionContext) unmarshalNTagDestroyInput2githubᚗcomᚋstashappᚋ
 
 func (ec *executionContext) unmarshalNTagUpdateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐTagUpdateInput(ctx context.Context, v interface{}) (TagUpdateInput, error) {
 	return ec.unmarshalInputTagUpdateInput(ctx, v)
+}
+
+func (ec *executionContext) marshalNVersion2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐVersion(ctx context.Context, sel ast.SelectionSet, v Version) graphql.Marshaler {
+	return ec._Version(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNVersion2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐVersion(ctx context.Context, sel ast.SelectionSet, v *Version) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Version(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

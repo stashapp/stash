@@ -283,6 +283,11 @@ type TagUpdateInput struct {
 	Name string `json:"name"`
 }
 
+type Version struct {
+	Hash      string `json:"hash"`
+	BuildTime string `json:"build_time"`
+}
+
 type CriterionModifier string
 
 const (
