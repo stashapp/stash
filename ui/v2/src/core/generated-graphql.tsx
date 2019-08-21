@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated in 2019-08-14T07:29:27+10:00
+// Generated in 2019-08-20T18:32:35+10:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {
@@ -147,7 +147,7 @@ export interface PerformerCreateInput {
 
   favorite?: Maybe<boolean>;
   /** This should be base64 encoded */
-  image: string;
+  image?: Maybe<string>;
 }
 
 export interface PerformerUpdateInput {
@@ -294,7 +294,7 @@ export type PerformerCreateVariables = {
   twitter?: Maybe<string>;
   instagram?: Maybe<string>;
   favorite?: Maybe<boolean>;
-  image: string;
+  image?: Maybe<string>;
 };
 
 export type PerformerCreateMutation = {
@@ -1572,7 +1572,7 @@ export const PerformerCreateDocument = gql`
     $twitter: String
     $instagram: String
     $favorite: Boolean
-    $image: String!
+    $image: String
   ) {
     performerCreate(
       input: {
