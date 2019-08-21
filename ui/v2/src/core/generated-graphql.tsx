@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated in 2019-08-14T07:29:27+10:00
+// Generated in 2019-08-21T14:16:45+10:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {
@@ -655,6 +655,22 @@ export type StatsStats = {
   studio_count: number;
 
   tag_count: number;
+};
+
+export type VersionVariables = {};
+
+export type VersionQuery = {
+  __typename?: "Query";
+
+  version: VersionVersion;
+};
+
+export type VersionVersion = {
+  __typename?: "Version";
+
+  hash: string;
+
+  build_time: string;
 };
 
 export type FindPerformersVariables = {
@@ -2138,6 +2154,22 @@ export function useStats(
 ) {
   return ReactApolloHooks.useQuery<StatsQuery, StatsVariables>(
     StatsDocument,
+    baseOptions
+  );
+}
+export const VersionDocument = gql`
+  query Version {
+    version {
+      hash
+      build_time
+    }
+  }
+`;
+export function useVersion(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<VersionVariables>
+) {
+  return ReactApolloHooks.useQuery<VersionQuery, VersionVariables>(
+    VersionDocument,
     baseOptions
   );
 }

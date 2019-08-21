@@ -180,6 +180,10 @@ func printVersion() {
 	fmt.Printf("stash version: %s (%s)\n", githash, buildstamp)
 }
 
+func GetVersion() (string, string) {
+	return githash, buildstamp
+}
+
 func makeTLSConfig() *tls.Config {
 	cert, err := ioutil.ReadFile(paths.GetSSLCert())
 	if err != nil {

@@ -123,6 +123,7 @@ export class StashService {
     return GQL.useValidGalleriesForScene({variables: {scene_id: sceneId}});
   }
   public static useStats() { return GQL.useStats(); }
+  public static useVersion() { return GQL.useVersion(); }
 
   public static useConfiguration() { return GQL.useConfiguration(); }
   public static useDirectories(path?: string) { return GQL.useDirectories({ variables: { path }}); }
