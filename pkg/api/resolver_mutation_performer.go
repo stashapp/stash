@@ -111,15 +111,18 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 	if input.Image != nil {
-		checksum, imageData, err := utils.ProcessBase64Image(*input.Image)
+		_, imageData, err := utils.ProcessBase64Image(*input.Image)
 		if err != nil {
 			return nil, err
 		}
 		updatedPerformer.Image = imageData
-		updatedPerformer.Checksum = checksum
 	}
 	if input.Name != nil {
+		// generate checksum from performer name rather than image
+		checksum := utils.MD5FromString(*input.Name)
+
 		updatedPerformer.Name = sql.NullString{String: *input.Name, Valid: true}
+		updatedPerformer.Checksum = checksum
 	}
 	if input.URL != nil {
 		updatedPerformer.URL = sql.NullString{String: *input.URL, Valid: true}
