@@ -1,8 +1,9 @@
 package manager
 
 import (
-	"fmt"
-	"github.com/fsnotify/fsnotify"
+	"net"
+	"sync"
+
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -10,8 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/utils"
-	"net"
-	"sync"
 )
 
 type singleton struct {
@@ -71,12 +70,15 @@ func initConfig() {
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(config.Generated, viper.GetString(config.Metadata))
 
+	// Disabling config watching due to race condition issue
+	// See: https://github.com/spf13/viper/issues/174
+	// Changes to the config outside the system will require a restart
 	// Watch for changes
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		fmt.Println("Config file changed:", e.Name)
-		instance.refreshConfig()
-	})
+	// viper.WatchConfig()
+	// viper.OnConfigChange(func(e fsnotify.Event) {
+	// 	fmt.Println("Config file changed:", e.Name)
+	// 	instance.refreshConfig()
+	// })
 
 	//viper.Set("stash", []string{"/", "/stuff"})
 	//viper.WriteConfig()
@@ -92,15 +94,15 @@ func initFlags() {
 	}
 }
 
-func initEnvs()	{
+func initEnvs() {
 	viper.SetEnvPrefix("stash") // will be uppercased automatically
-	viper.BindEnv("host") // STASH_HOST
-	viper.BindEnv("port") // STASH_PORT
-	viper.BindEnv("stash") // STASH_STASH
-	viper.BindEnv("generated") // STASH_GENERATED
-	viper.BindEnv("metadata") // STASH_METADATA
-	viper.BindEnv("cache") // STASH_CACHE
-}	
+	viper.BindEnv("host")       // STASH_HOST
+	viper.BindEnv("port")       // STASH_PORT
+	viper.BindEnv("stash")      // STASH_STASH
+	viper.BindEnv("generated")  // STASH_GENERATED
+	viper.BindEnv("metadata")   // STASH_METADATA
+	viper.BindEnv("cache")      // STASH_CACHE
+}
 
 func initFFMPEG() {
 	configDirectory := paths.GetConfigDirectory()
