@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -21,7 +22,8 @@ func (r *queryResolver) Directories(ctx context.Context, path *string) ([]string
 
 func makeConfigResult() *models.ConfigResult {
 	return &models.ConfigResult{
-		General: makeConfigGeneralResult(),
+		General:   makeConfigGeneralResult(),
+		Interface: makeConfigInterfaceResult(),
 	}
 }
 
@@ -30,5 +32,14 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		Stashes:       config.GetStashPaths(),
 		DatabasePath:  config.GetDatabasePath(),
 		GeneratedPath: config.GetGeneratedPath(),
+	}
+}
+
+func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
+	css := config.GetCSS()
+	cssEnabled := config.GetCSSEnabled()
+	return &models.ConfigInterfaceResult{
+		CSS:        &css,
+		CSSEnabled: &cssEnabled,
 	}
 }
