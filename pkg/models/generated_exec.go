@@ -56,8 +56,14 @@ type ComplexityRoot struct {
 		Stashes       func(childComplexity int) int
 	}
 
+	ConfigInterfaceResult struct {
+		CSS        func(childComplexity int) int
+		CSSEnabled func(childComplexity int) int
+	}
+
 	ConfigResult struct {
-		General func(childComplexity int) int
+		General   func(childComplexity int) int
+		Interface func(childComplexity int) int
 	}
 
 	FindGalleriesResultType struct {
@@ -107,6 +113,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		ConfigureGeneral   func(childComplexity int, input ConfigGeneralInput) int
+		ConfigureInterface func(childComplexity int, input ConfigInterfaceInput) int
 		PerformerCreate    func(childComplexity int, input PerformerCreateInput) int
 		PerformerDestroy   func(childComplexity int, input PerformerDestroyInput) int
 		PerformerUpdate    func(childComplexity int, input PerformerUpdateInput) int
@@ -300,6 +307,7 @@ type MutationResolver interface {
 	TagUpdate(ctx context.Context, input TagUpdateInput) (*Tag, error)
 	TagDestroy(ctx context.Context, input TagDestroyInput) (bool, error)
 	ConfigureGeneral(ctx context.Context, input ConfigGeneralInput) (*ConfigGeneralResult, error)
+	ConfigureInterface(ctx context.Context, input ConfigInterfaceInput) (*ConfigInterfaceResult, error)
 }
 type PerformerResolver interface {
 	Name(ctx context.Context, obj *Performer) (*string, error)
@@ -426,12 +434,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ConfigGeneralResult.Stashes(childComplexity), true
 
+	case "ConfigInterfaceResult.css":
+		if e.complexity.ConfigInterfaceResult.CSS == nil {
+			break
+		}
+
+		return e.complexity.ConfigInterfaceResult.CSS(childComplexity), true
+
+	case "ConfigInterfaceResult.cssEnabled":
+		if e.complexity.ConfigInterfaceResult.CSSEnabled == nil {
+			break
+		}
+
+		return e.complexity.ConfigInterfaceResult.CSSEnabled(childComplexity), true
+
 	case "ConfigResult.general":
 		if e.complexity.ConfigResult.General == nil {
 			break
 		}
 
 		return e.complexity.ConfigResult.General(childComplexity), true
+
+	case "ConfigResult.interface":
+		if e.complexity.ConfigResult.Interface == nil {
+			break
+		}
+
+		return e.complexity.ConfigResult.Interface(childComplexity), true
 
 	case "FindGalleriesResultType.count":
 		if e.complexity.FindGalleriesResultType.Count == nil {
@@ -591,6 +620,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.ConfigureGeneral(childComplexity, args["input"].(ConfigGeneralInput)), true
+
+	case "Mutation.configureInterface":
+		if e.complexity.Mutation.ConfigureInterface == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_configureInterface_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ConfigureInterface(childComplexity, args["input"].(ConfigInterfaceInput)), true
 
 	case "Mutation.performerCreate":
 		if e.complexity.Mutation.PerformerCreate == nil {
@@ -1895,6 +1936,7 @@ type Mutation {
 
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
+  configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
 }
 
 type Subscription {
@@ -1925,9 +1967,22 @@ type ConfigGeneralResult {
   generatedPath: String!
 }
 
+input ConfigInterfaceInput {
+  """Custom CSS"""
+  css: String
+  cssEnabled: Boolean
+}
+
+type ConfigInterfaceResult {
+  """Custom CSS"""
+  css: String
+  cssEnabled: Boolean
+}
+
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
+  interface: ConfigInterfaceResult!
 }`},
 	&ast.Source{Name: "graphql/schema/types/filters.graphql", Input: `enum SortDirectionEnum {
   ASC
@@ -2307,6 +2362,20 @@ func (ec *executionContext) field_Mutation_configureGeneral_args(ctx context.Con
 	var arg0 ConfigGeneralInput
 	if tmp, ok := rawArgs["input"]; ok {
 		arg0, err = ec.unmarshalNConfigGeneralInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigGeneralInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_configureInterface_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ConfigInterfaceInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNConfigInterfaceInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigInterfaceInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2952,6 +3021,54 @@ func (ec *executionContext) _ConfigGeneralResult_generatedPath(ctx context.Conte
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _ConfigInterfaceResult_css(ctx context.Context, field graphql.CollectedField, obj *ConfigInterfaceResult) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "ConfigInterfaceResult",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CSS, nil
+	})
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ConfigInterfaceResult_cssEnabled(ctx context.Context, field graphql.CollectedField, obj *ConfigInterfaceResult) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "ConfigInterfaceResult",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CSSEnabled, nil
+	})
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _ConfigResult_general(ctx context.Context, field graphql.CollectedField, obj *ConfigResult) graphql.Marshaler {
 	ctx = ec.Tracer.StartFieldExecution(ctx, field)
 	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
@@ -2977,6 +3094,33 @@ func (ec *executionContext) _ConfigResult_general(ctx context.Context, field gra
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNConfigGeneralResult2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigGeneralResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _ConfigResult_interface(ctx context.Context, field graphql.CollectedField, obj *ConfigResult) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "ConfigResult",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Interface, nil
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ConfigInterfaceResult)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNConfigInterfaceResult2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigInterfaceResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _FindGalleriesResultType_count(ctx context.Context, field graphql.CollectedField, obj *FindGalleriesResultType) graphql.Marshaler {
@@ -4018,6 +4162,40 @@ func (ec *executionContext) _Mutation_configureGeneral(ctx context.Context, fiel
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalNConfigGeneralResult2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigGeneralResult(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_configureInterface(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_configureInterface_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ConfigureInterface(rctx, args["input"].(ConfigInterfaceInput))
+	})
+	if resTmp == nil {
+		if !ec.HasError(rctx) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ConfigInterfaceResult)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalNConfigInterfaceResult2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigInterfaceResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Performer_id(ctx context.Context, field graphql.CollectedField, obj *Performer) graphql.Marshaler {
@@ -8118,6 +8296,30 @@ func (ec *executionContext) unmarshalInputConfigGeneralInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputConfigInterfaceInput(ctx context.Context, v interface{}) (ConfigInterfaceInput, error) {
+	var it ConfigInterfaceInput
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "css":
+			var err error
+			it.CSS, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "cssEnabled":
+			var err error
+			it.CSSEnabled, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputFindFilterType(ctx context.Context, v interface{}) (FindFilterType, error) {
 	var it FindFilterType
 	var asMap = v.(map[string]interface{})
@@ -8967,6 +9169,32 @@ func (ec *executionContext) _ConfigGeneralResult(ctx context.Context, sel ast.Se
 	return out
 }
 
+var configInterfaceResultImplementors = []string{"ConfigInterfaceResult"}
+
+func (ec *executionContext) _ConfigInterfaceResult(ctx context.Context, sel ast.SelectionSet, obj *ConfigInterfaceResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.RequestContext, sel, configInterfaceResultImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ConfigInterfaceResult")
+		case "css":
+			out.Values[i] = ec._ConfigInterfaceResult_css(ctx, field, obj)
+		case "cssEnabled":
+			out.Values[i] = ec._ConfigInterfaceResult_cssEnabled(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var configResultImplementors = []string{"ConfigResult"}
 
 func (ec *executionContext) _ConfigResult(ctx context.Context, sel ast.SelectionSet, obj *ConfigResult) graphql.Marshaler {
@@ -8980,6 +9208,11 @@ func (ec *executionContext) _ConfigResult(ctx context.Context, sel ast.Selection
 			out.Values[i] = graphql.MarshalString("ConfigResult")
 		case "general":
 			out.Values[i] = ec._ConfigResult_general(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "interface":
+			out.Values[i] = ec._ConfigResult_interface(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -9344,6 +9577,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "configureGeneral":
 			out.Values[i] = ec._Mutation_configureGeneral(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "configureInterface":
+			out.Values[i] = ec._Mutation_configureInterface(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -10945,6 +11183,24 @@ func (ec *executionContext) marshalNConfigGeneralResult2ᚖgithubᚗcomᚋstasha
 		return graphql.Null
 	}
 	return ec._ConfigGeneralResult(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNConfigInterfaceInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigInterfaceInput(ctx context.Context, v interface{}) (ConfigInterfaceInput, error) {
+	return ec.unmarshalInputConfigInterfaceInput(ctx, v)
+}
+
+func (ec *executionContext) marshalNConfigInterfaceResult2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigInterfaceResult(ctx context.Context, sel ast.SelectionSet, v ConfigInterfaceResult) graphql.Marshaler {
+	return ec._ConfigInterfaceResult(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNConfigInterfaceResult2ᚖgithubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigInterfaceResult(ctx context.Context, sel ast.SelectionSet, v *ConfigInterfaceResult) graphql.Marshaler {
+	if v == nil {
+		if !ec.HasError(graphql.GetResolverContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._ConfigInterfaceResult(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNConfigResult2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐConfigResult(ctx context.Context, sel ast.SelectionSet, v ConfigResult) graphql.Marshaler {
