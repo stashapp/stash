@@ -16,7 +16,20 @@ type ConfigGeneralResult {
   generatedPath: String!
 }
 
+input ConfigInterfaceInput {
+  """Custom CSS"""
+  css: String
+  cssEnabled: Boolean
+}
+
+type ConfigInterfaceResult {
+  """Custom CSS"""
+  css: String
+  cssEnabled: Boolean
+}
+
 """All configuration settings"""
 type ConfigResult {
   general: ConfigGeneralResult!
+  interface: ConfigInterfaceResult!
 }

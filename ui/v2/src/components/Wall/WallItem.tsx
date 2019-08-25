@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React, { FunctionComponent, useRef, useState } from "react";
+import React, { FunctionComponent, useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "../../core/generated-graphql";
 import { useInterfaceLocalForage } from "../../hooks/LocalForage";
@@ -17,6 +17,10 @@ interface IWallItemProps {
 
 export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProps) => {
   const [videoPath, setVideoPath] = useState<string | undefined>(undefined);
+  const [previewPath, setPreviewPath] = useState<string>("");
+  const [screenshotPath, setScreenshotPath] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+  const [tags, setTags] = useState<JSX.Element[]>([]);
   const videoHoverHook = VideoHoverHook.useVideoHover({resetOnMouseLeave: true});
   const interfaceSettings = useInterfaceLocalForage();
   const showTextContainer = !!interfaceSettings.data ? interfaceSettings.data.wall.textContainerEnabled : true;
@@ -68,18 +72,25 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
     }
   }
 
-  let previewSrc: string = "";
-  let title: string = "";
-  let tags: JSX.Element[] = [];
-  if (!!props.sceneMarker) {
-    previewSrc = props.sceneMarker.preview;
-    title = `${props.sceneMarker!.title} - ${TextUtils.secondsToTimestamp(props.sceneMarker.seconds)}`;
-    tags = props.sceneMarker.tags.map((tag) => (<span key={tag.id}>{tag.name}</span>));
-    tags.unshift(<span key={props.sceneMarker.primary_tag.id}>{props.sceneMarker.primary_tag.name}</span>);
-  } else if (!!props.scene) {
-    previewSrc = props.scene.paths.webp || "";
-    title = props.scene.title || "";
-    // tags = props.scene.tags.map((tag) => (<span key={tag.id}>{tag.name}</span>));
+  useEffect(() => {
+    if (!!props.sceneMarker) {
+      setPreviewPath(props.sceneMarker.preview);
+      setTitle(`${props.sceneMarker!.title} - ${TextUtils.secondsToTimestamp(props.sceneMarker.seconds)}`);
+      const thisTags = props.sceneMarker.tags.map((tag) => (<span key={tag.id}>{tag.name}</span>));
+      thisTags.unshift(<span key={props.sceneMarker.primary_tag.id}>{props.sceneMarker.primary_tag.name}</span>);
+      setTags(thisTags);
+    } else if (!!props.scene) {
+      setPreviewPath(props.scene.paths.webp || "");
+      setScreenshotPath(props.scene.paths.screenshot || "");
+      setTitle(props.scene.title || "");
+      // tags = props.scene.tags.map((tag) => (<span key={tag.id}>{tag.name}</span>));
+    }
+  }, [props.sceneMarker, props.scene]);
+
+  function previewNotFound() {
+    if (previewPath !== screenshotPath) {
+      setPreviewPath(screenshotPath);
+    }
   }
 
   const className = ["scene-wall-item-container"];
@@ -99,12 +110,13 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
         <Link onClick={() => onClick()} to={linkSrc}>
           <video
             src={videoPath}
+            poster={screenshotPath}
             style={videoHoverHook.isHovering.current ? {} : {display: "none"}}
             autoPlay={true}
             loop={true}
             ref={videoHoverHook.videoEl}
           />
-          <img src={previewSrc} />
+          <img src={previewPath || screenshotPath} onError={() => previewNotFound()} />
           {showTextContainer ?
             <div className="scene-wall-item-text-container">
               <div style={{lineHeight: 1}}>

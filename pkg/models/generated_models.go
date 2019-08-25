@@ -26,9 +26,22 @@ type ConfigGeneralResult struct {
 	GeneratedPath string `json:"generatedPath"`
 }
 
+type ConfigInterfaceInput struct {
+	// Custom CSS
+	CSS        *string `json:"css"`
+	CSSEnabled *bool   `json:"cssEnabled"`
+}
+
+type ConfigInterfaceResult struct {
+	// Custom CSS
+	CSS        *string `json:"css"`
+	CSSEnabled *bool   `json:"cssEnabled"`
+}
+
 // All configuration settings
 type ConfigResult struct {
-	General *ConfigGeneralResult `json:"general"`
+	General   *ConfigGeneralResult   `json:"general"`
+	Interface *ConfigInterfaceResult `json:"interface"`
 }
 
 type FindFilterType struct {

@@ -4,8 +4,16 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   generatedPath
 }
 
+fragment ConfigInterfaceData on ConfigInterfaceResult {
+  css
+  cssEnabled
+}
+
 fragment ConfigData on ConfigResult {
   general {
     ...ConfigGeneralData
+  }
+  interface {
+    ...ConfigInterfaceData
   }
 }
