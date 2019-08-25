@@ -1,7 +1,10 @@
 package config
 
 import (
+	"io/ioutil"
 	"github.com/spf13/viper"
+
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const Stash = "stash"
@@ -14,6 +17,8 @@ const Database = "database"
 
 const Host = "host"
 const Port = "port"
+
+const CSSEnabled = "cssEnabled"
 
 func Set(key string, value interface{}) {
 	viper.Set(key, value)
@@ -49,6 +54,46 @@ func GetHost() string {
 
 func GetPort() int {
 	return viper.GetInt(Port)
+}
+
+func GetCSSPath() string {
+	// search for custom.css in current directory, then $HOME/.stash
+	fn := "custom.css"
+	exists, _ := utils.FileExists(fn)
+	if !exists {
+		fn = "$HOME/.stash/" + fn
+	}
+
+	return fn
+}
+
+func GetCSS() string {
+	fn := GetCSSPath()
+
+	exists, _ := utils.FileExists(fn)
+	if !exists {
+		return ""
+	}
+
+	buf, err := ioutil.ReadFile(fn)
+
+	if err != nil {
+		return ""
+	}
+
+	return string(buf)
+}
+
+func SetCSS(css string) {
+	fn := GetCSSPath()
+
+	buf := []byte(css)
+
+	ioutil.WriteFile(fn, buf, 0777)
+}
+
+func GetCSSEnabled() bool {
+	return viper.GetBool(CSSEnabled)
 }
 
 func IsValid() bool {

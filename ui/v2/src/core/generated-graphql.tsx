@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated in 2019-08-15T18:05:18+10:00
+// Generated in 2019-08-23T07:28:41+10:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {
@@ -245,6 +245,13 @@ export interface ConfigGeneralInput {
   generatedPath?: Maybe<string>;
 }
 
+export interface ConfigInterfaceInput {
+  /** Custom CSS */
+  css?: Maybe<string>;
+
+  cssEnabled?: Maybe<boolean>;
+}
+
 export enum CriterionModifier {
   Equals = "EQUALS",
   NotEquals = "NOT_EQUALS",
@@ -284,6 +291,18 @@ export type ConfigureGeneralMutation = {
 };
 
 export type ConfigureGeneralConfigureGeneral = ConfigGeneralDataFragment;
+
+export type ConfigureInterfaceVariables = {
+  input: ConfigInterfaceInput;
+};
+
+export type ConfigureInterfaceMutation = {
+  __typename?: "Mutation";
+
+  configureInterface: ConfigureInterfaceConfigureInterface;
+};
+
+export type ConfigureInterfaceConfigureInterface = ConfigInterfaceDataFragment;
 
 export type PerformerCreateVariables = {
   name?: Maybe<string>;
@@ -952,13 +971,25 @@ export type ConfigGeneralDataFragment = {
   generatedPath: string;
 };
 
+export type ConfigInterfaceDataFragment = {
+  __typename?: "ConfigInterfaceResult";
+
+  css: Maybe<string>;
+
+  cssEnabled: Maybe<boolean>;
+};
+
 export type ConfigDataFragment = {
   __typename?: "ConfigResult";
 
   general: ConfigDataGeneral;
+
+  interface: ConfigDataInterface;
 };
 
 export type ConfigDataGeneral = ConfigGeneralDataFragment;
+
+export type ConfigDataInterface = ConfigInterfaceDataFragment;
 
 export type GalleryDataFragment = {
   __typename?: "Gallery";
@@ -1335,14 +1366,25 @@ export const ConfigGeneralDataFragmentDoc = gql`
   }
 `;
 
+export const ConfigInterfaceDataFragmentDoc = gql`
+  fragment ConfigInterfaceData on ConfigInterfaceResult {
+    css
+    cssEnabled
+  }
+`;
+
 export const ConfigDataFragmentDoc = gql`
   fragment ConfigData on ConfigResult {
     general {
       ...ConfigGeneralData
     }
+    interface {
+      ...ConfigInterfaceData
+    }
   }
 
   ${ConfigGeneralDataFragmentDoc}
+  ${ConfigInterfaceDataFragmentDoc}
 `;
 
 export const SlimPerformerDataFragmentDoc = gql`
@@ -1573,6 +1615,26 @@ export function useConfigureGeneral(
     ConfigureGeneralMutation,
     ConfigureGeneralVariables
   >(ConfigureGeneralDocument, baseOptions);
+}
+export const ConfigureInterfaceDocument = gql`
+  mutation ConfigureInterface($input: ConfigInterfaceInput!) {
+    configureInterface(input: $input) {
+      ...ConfigInterfaceData
+    }
+  }
+
+  ${ConfigInterfaceDataFragmentDoc}
+`;
+export function useConfigureInterface(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    ConfigureInterfaceMutation,
+    ConfigureInterfaceVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    ConfigureInterfaceMutation,
+    ConfigureInterfaceVariables
+  >(ConfigureInterfaceDocument, baseOptions);
 }
 export const PerformerCreateDocument = gql`
   mutation PerformerCreate(
