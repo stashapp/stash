@@ -61,6 +61,7 @@ func GetPort() int {
 
 func GetVerbose() int {
 	return viper.GetInt(Verbose)
+}
 
 func GetCSSPath() string {
 	// search for custom.css in current directory, then $HOME/.stash
