@@ -94,6 +94,7 @@ type Mutation {
 
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
+  configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
 }
 
 type Subscription {

@@ -76,6 +76,21 @@ func Start() {
 	r.Mount("/scene", sceneRoutes{}.Routes())
 	r.Mount("/studio", studioRoutes{}.Routes())
 
+	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
+		if !config.GetCSSEnabled() {
+			return
+		}
+		
+		// search for custom.css in current directory, then $HOME/.stash
+		fn := config.GetCSSPath()
+		exists, _ := utils.FileExists(fn)
+		if !exists {
+			return
+		}
+
+		http.ServeFile(w, r, fn)
+	})
+
 	// Serve the setup UI
 	r.HandleFunc("/setup*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
