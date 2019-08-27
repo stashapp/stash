@@ -31,6 +31,33 @@ WHERE tags.id = ?
 GROUP BY scenes.id
 `
 
+const scenesWithSimilarTagsQuery = `
+SELECT Scenes.*, matching_tags
+FROM (
+  SELECT scene_id, tag_id, count(scene_id) as matching_tags
+  FROM scenes_tags
+  WHERE tag_id IN (SELECT tag_id FROM scenes_tags WHERE scene_id=?)
+  GROUP BY scene_id
+  ORDER BY matching_tags DESC
+  LIMIT 10
+) Tags
+LEFT JOIN Scenes ON Scenes.id=Tags.scene_id;
+`
+
+const scenesWithSimilarActorsQuery = `
+SELECT scenes.*, matching_actors
+FROM (
+  SELECT scene_id, performer_id, count(performer_id) as matching_actors
+  FROM performers_scenes
+  WHERE performer_id IN (SELECT performer_id FROM performers_scenes WHERE scene_id=?)
+  GROUP BY scene_id
+  ORDER BY matching_actors DESC
+  LIMIT 10
+) Performers
+LEFT JOIN scenes ON scenes.id=Performers.scene_id
+ORDER BY scenes.rating DESC;
+`
+
 type SceneQueryBuilder struct{}
 
 func NewSceneQueryBuilder() SceneQueryBuilder {
