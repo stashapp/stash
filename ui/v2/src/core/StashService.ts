@@ -162,6 +162,10 @@ export class StashService {
     return GQL.useConfigureGeneral({ variables: { input }, refetchQueries: ["Configuration"] });
   }
 
+  public static useConfigureInterface(input: GQL.ConfigInterfaceInput) {
+    return GQL.useConfigureInterface({ variables: { input }, refetchQueries: ["Configuration"] });
+  }
+
   public static queryScrapeFreeones(performerName: string) {
     return StashService.client.query<GQL.ScrapeFreeonesQuery>({
       query: GQL.ScrapeFreeonesDocument,
