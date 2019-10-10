@@ -9,15 +9,13 @@ env:
   - GO111MODULE=on
 before_install:
 - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
-- cd ui/v2
-- yarn install
-- CI=false yarn build # TODO: Fix warnings
-- cd ../..
+- yarn --cwd ui/v2 install
+- make generate
+- CI=false yarn --cwd ui/v2 build # TODO: Fix warnings
 #- go get -v github.com/mgechev/revive
 script:
 #- make lint
 #- make vet
-- make generate
 - go test
 before_deploy:
 - docker pull stashappdev/compiler
