@@ -222,7 +222,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		ctx := r.Context()
 
 		var scheme string
-		if strings.Compare("https", r.URL.Scheme) == 0 || r.Proto == "HTTP/2.0" {
+		if strings.Compare("https", r.URL.Scheme) == 0 || r.Proto == "HTTP/2.0" || r.Header.Get("X-Forwarded-Proto") == "https" {
 			scheme = "https"
 		} else {
 			scheme = "http"
