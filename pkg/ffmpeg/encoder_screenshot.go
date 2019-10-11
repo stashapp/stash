@@ -21,7 +21,7 @@ func (e *Encoder) Screenshot(probeResult VideoFile, options ScreenshotOptions) {
 		"-v", options.Verbosity,
 		"-ss", fmt.Sprintf("%v", options.Time),
 		"-y",
-		"-i", `"` + probeResult.Path + `"`,
+		"-i", probeResult.Path, // TODO: Wrap in quotes?
 		"-vframes", "1",
 		"-q:v", fmt.Sprintf("%v", options.Quality),
 		"-vf", fmt.Sprintf("scale=%v:-1", options.Width),
