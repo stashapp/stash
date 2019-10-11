@@ -22,3 +22,5 @@ require (
 	github.com/vektah/gqlparser v1.1.2
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2 // indirect
 )
+
+replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
