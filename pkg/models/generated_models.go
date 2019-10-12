@@ -153,6 +153,10 @@ type PerformerUpdateInput struct {
 	Image *string `json:"image"`
 }
 
+type ScanMetadataInput struct {
+	NameFromMetadata bool `json:"nameFromMetadata"`
+}
+
 type SceneFileType struct {
 	Size       *string  `json:"size"`
 	Duration   *float64 `json:"duration"`
