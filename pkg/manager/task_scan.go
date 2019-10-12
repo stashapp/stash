@@ -16,7 +16,8 @@ import (
 )
 
 type ScanTask struct {
-	FilePath string
+	FilePath         string
+	NameFromMetadata bool
 }
 
 func (t *ScanTask) Start(wg *sync.WaitGroup) {
@@ -88,6 +89,11 @@ func (t *ScanTask) scanScene() {
 	if err != nil {
 		logger.Error(err.Error())
 		return
+	}
+
+	// Override title to be filename if nameFromMetadata is false
+	if !t.NameFromMetadata {
+		videoFile.SetTitleFromPath()
 	}
 
 	checksum, err := t.calculateChecksum()
