@@ -3,13 +3,14 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/logger"
 	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 var randomSortFloat = rand.Float64()
@@ -266,21 +267,17 @@ func SQLGenKeys(i interface{}) string {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
 		case sql.NullString:
-			if t.Valid {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			// should be nullable
+			query = append(query, fmt.Sprintf("%s=:%s", key, key))
 		case sql.NullBool:
-			if t.Valid {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			// should be nullable
+			query = append(query, fmt.Sprintf("%s=:%s", key, key))
 		case sql.NullInt64:
-			if t.Valid {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			// should be nullable
+			query = append(query, fmt.Sprintf("%s=:%s", key, key))
 		case sql.NullFloat64:
-			if t.Valid {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			// should be nullable
+			query = append(query, fmt.Sprintf("%s=:%s", key, key))
 		default:
 			reflectValue := reflect.ValueOf(t)
 			kind := reflectValue.Kind()

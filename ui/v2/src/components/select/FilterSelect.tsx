@@ -18,7 +18,12 @@ type ValidTypes =
 interface IProps extends HTMLInputProps {
   type: "performers" | "studios" | "tags";
   initialId?: string;
-  onSelectItem: (item: ValidTypes) => void;
+  onSelectItem: (item: ValidTypes | undefined) => void;
+}
+
+function addNoneOption(items: ValidTypes[]) {
+  // Add a none option to clear the gallery
+  if (!items.find((item) => item.id === "0")) { items.unshift({id: "0", name: "None"}); }
 }
 
 export const FilterSelect: React.FunctionComponent<IProps> = (props: IProps) => {
@@ -28,12 +33,14 @@ export const FilterSelect: React.FunctionComponent<IProps> = (props: IProps) => 
     case "performers": {
       const { data } = StashService.useAllPerformersForFilter();
       items = !!data && !!data.allPerformers ? data.allPerformers : [];
+      addNoneOption(items);
       InternalSelect = InternalPerformerSelect;
       break;
     }
     case "studios": {
       const { data } = StashService.useAllStudiosForFilter();
       items = !!data && !!data.allStudios ? data.allStudios : [];
+      addNoneOption(items);
       InternalSelect = InternalStudioSelect;
       break;
     }
@@ -50,7 +57,7 @@ export const FilterSelect: React.FunctionComponent<IProps> = (props: IProps) => 
   }
 
   /* eslint-disable react-hooks/rules-of-hooks */
-  const [selectedItem, setSelectedItem] = React.useState<ValidTypes | null>(null);
+  const [selectedItem, setSelectedItem] = React.useState<ValidTypes | undefined>(undefined);
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
   /* eslint-enable */
 
@@ -80,7 +87,11 @@ export const FilterSelect: React.FunctionComponent<IProps> = (props: IProps) => 
     return item.name!.toLowerCase().indexOf(query.toLowerCase()) >= 0;
   };
 
-  function onItemSelect(item: ValidTypes) {
+  function onItemSelect(item: ValidTypes | undefined) {
+    if (item && item.id == "0") {
+      item = undefined;
+    }
+
     props.onSelectItem(item);
     setSelectedItem(item);
   }
