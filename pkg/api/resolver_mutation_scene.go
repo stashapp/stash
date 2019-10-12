@@ -3,10 +3,11 @@ package api
 import (
 	"context"
 	"database/sql"
-	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/models"
 	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
@@ -29,12 +30,20 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	if input.Date != nil {
 		updatedScene.Date = models.SQLiteDate{String: *input.Date, Valid: true}
 	}
+
 	if input.Rating != nil {
 		updatedScene.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
+	} else {
+		// rating must be nullable
+		updatedScene.Rating = sql.NullInt64{Valid: false}
 	}
+
 	if input.StudioID != nil {
 		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
 		updatedScene.StudioID = sql.NullInt64{Int64: studioID, Valid: true}
+	} else {
+		// studio must be nullable
+		updatedScene.StudioID = sql.NullInt64{Valid: false}
 	}
 
 	// Start the transaction and save the scene marker
@@ -42,6 +51,14 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	qb := models.NewSceneQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
 	scene, err := qb.Update(updatedScene, tx)
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+
+	// Clear the existing gallery value
+	gqb := models.NewGalleryQueryBuilder()
+	err = gqb.ClearGalleryId(sceneID, tx)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
