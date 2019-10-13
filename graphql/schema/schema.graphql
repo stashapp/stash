@@ -57,7 +57,7 @@ type Query {
   """Start an export. Returns the job ID"""
   metadataExport: String!
   """Start a scan. Returns the job ID"""
-  metadataScan: String!
+  metadataScan(input: ScanMetadataInput!): String!
   """Start generating content. Returns the job ID"""
   metadataGenerate(input: GenerateMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
