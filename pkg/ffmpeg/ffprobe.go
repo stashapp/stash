@@ -89,7 +89,7 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 
 	if result.Title == "" {
 		// default title to filename
-		result.Title = filepath.Base(result.Path)
+		result.SetTitleFromPath()
 	}
 
 	result.Comment = probeJSON.Format.Tags.Comment
@@ -160,4 +160,8 @@ func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
 	}
 
 	return -1
+}
+
+func (v *VideoFile) SetTitleFromPath() {
+	v.Title = filepath.Base(v.Path)
 }

@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated in 2019-08-23T07:28:41+10:00
+// Generated in 2019-10-12T18:20:41+11:00
 export type Maybe<T> = T | undefined;
 
 export interface SceneFilterType {
@@ -52,6 +52,10 @@ export interface SceneMarkerFilterType {
 export interface PerformerFilterType {
   /** Filter by favorite */
   filter_favorites?: Maybe<boolean>;
+}
+
+export interface ScanMetadataInput {
+  nameFromMetadata: boolean;
 }
 
 export interface GenerateMetadataInput {
@@ -875,7 +879,9 @@ export type MetadataExportQuery = {
   metadataExport: string;
 };
 
-export type MetadataScanVariables = {};
+export type MetadataScanVariables = {
+  input: ScanMetadataInput;
+};
 
 export type MetadataScanQuery = {
   __typename?: "Query";
@@ -2425,8 +2431,8 @@ export function useMetadataExport(
   >(MetadataExportDocument, baseOptions);
 }
 export const MetadataScanDocument = gql`
-  query MetadataScan {
-    metadataScan
+  query MetadataScan($input: ScanMetadataInput!) {
+    metadataScan(input: $input)
   }
 `;
 export function useMetadataScan(

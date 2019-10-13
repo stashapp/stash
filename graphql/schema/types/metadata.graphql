@@ -4,3 +4,7 @@ input GenerateMetadataInput {
   markers: Boolean!
   transcodes: Boolean!
 }
+
+input ScanMetadataInput {
+  nameFromMetadata: Boolean!
+}
