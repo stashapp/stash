@@ -2,12 +2,13 @@ package api
 
 import (
 	"context"
+
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *queryResolver) MetadataScan(ctx context.Context) (string, error) {
-	manager.GetInstance().Scan()
+func (r *queryResolver) MetadataScan(ctx context.Context, input models.ScanMetadataInput) (string, error) {
+	manager.GetInstance().Scan(input.NameFromMetadata)
 	return "todo", nil
 }
 
