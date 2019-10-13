@@ -175,7 +175,7 @@ type ComplexityRoot struct {
 		MetadataExport              func(childComplexity int) int
 		MetadataGenerate            func(childComplexity int, input GenerateMetadataInput) int
 		MetadataImport              func(childComplexity int) int
-		MetadataScan                func(childComplexity int) int
+		MetadataScan                func(childComplexity int, input ScanMetadataInput) int
 		SceneMarkerTags             func(childComplexity int, sceneID string) int
 		SceneWall                   func(childComplexity int, q *string) int
 		ScrapeFreeones              func(childComplexity int, performerName string) int
@@ -351,7 +351,7 @@ type QueryResolver interface {
 	Directories(ctx context.Context, path *string) ([]string, error)
 	MetadataImport(ctx context.Context) (string, error)
 	MetadataExport(ctx context.Context) (string, error)
-	MetadataScan(ctx context.Context) (string, error)
+	MetadataScan(ctx context.Context, input ScanMetadataInput) (string, error)
 	MetadataGenerate(ctx context.Context, input GenerateMetadataInput) (string, error)
 	MetadataClean(ctx context.Context) (string, error)
 	AllPerformers(ctx context.Context) ([]*Performer, error)
@@ -1156,7 +1156,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.MetadataScan(childComplexity), true
+		args, err := ec.field_Query_metadataScan_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.MetadataScan(childComplexity, args["input"].(ScanMetadataInput)), true
 
 	case "Query.sceneMarkerTags":
 		if e.complexity.Query.SceneMarkerTags == nil {
@@ -1887,7 +1892,7 @@ type Query {
   """Start an export. Returns the job ID"""
   metadataExport: String!
   """Start a scan. Returns the job ID"""
-  metadataScan: String!
+  metadataScan(input: ScanMetadataInput!): String!
   """Start generating content. Returns the job ID"""
   metadataGenerate(input: GenerateMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
@@ -2070,6 +2075,10 @@ type FindGalleriesResultType {
   previews: Boolean!
   markers: Boolean!
   transcodes: Boolean!
+}
+
+input ScanMetadataInput {
+  nameFromMetadata: Boolean!
 }`},
 	&ast.Source{Name: "graphql/schema/types/performer.graphql", Input: `type Performer {
   id: ID!
@@ -2795,6 +2804,20 @@ func (ec *executionContext) field_Query_metadataGenerate_args(ctx context.Contex
 	var arg0 GenerateMetadataInput
 	if tmp, ok := rawArgs["input"]; ok {
 		arg0, err = ec.unmarshalNGenerateMetadataInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐGenerateMetadataInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_metadataScan_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ScanMetadataInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNScanMetadataInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScanMetadataInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -5357,10 +5380,17 @@ func (ec *executionContext) _Query_metadataScan(ctx context.Context, field graph
 		IsMethod: true,
 	}
 	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_metadataScan_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
 	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
 	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().MetadataScan(rctx)
+		return ec.resolvers.Query().MetadataScan(rctx, args["input"].(ScanMetadataInput))
 	})
 	if resTmp == nil {
 		if !ec.HasError(rctx) {
@@ -8623,6 +8653,24 @@ func (ec *executionContext) unmarshalInputPerformerUpdateInput(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputScanMetadataInput(ctx context.Context, v interface{}) (ScanMetadataInput, error) {
+	var it ScanMetadataInput
+	var asMap = v.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "nameFromMetadata":
+			var err error
+			it.NameFromMetadata, err = ec.unmarshalNBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputSceneFilterType(ctx context.Context, v interface{}) (SceneFilterType, error) {
 	var it SceneFilterType
 	var asMap = v.(map[string]interface{})
@@ -11452,6 +11500,10 @@ func (ec *executionContext) unmarshalNPerformerDestroyInput2githubᚗcomᚋstash
 
 func (ec *executionContext) unmarshalNPerformerUpdateInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐPerformerUpdateInput(ctx context.Context, v interface{}) (PerformerUpdateInput, error) {
 	return ec.unmarshalInputPerformerUpdateInput(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNScanMetadataInput2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScanMetadataInput(ctx context.Context, v interface{}) (ScanMetadataInput, error) {
+	return ec.unmarshalInputScanMetadataInput(ctx, v)
 }
 
 func (ec *executionContext) marshalNScene2githubᚗcomᚋstashappᚋstashᚋpkgᚋmodelsᚐScene(ctx context.Context, sel ast.SelectionSet, v Scene) graphql.Marshaler {
