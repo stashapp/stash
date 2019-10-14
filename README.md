@@ -88,15 +88,16 @@ TODO
 
 ## Commands
 
-* `make generate` - Regenerate Go GraphQL and packr2 files
+* `make generate` - Generate Go GraphQL and packr2 files
 * `make build` - Builds the binary (make sure to build the UI as well... see below)
 * `make vet` - Run `go vet`
 * `make lint` - Run the linter
 
 ## Building a release
 
-1. cd into the `ui/v2` directory and run `yarn build` to compile the frontend
-2. cd back to the root directory and run `make build` to build the executable for your current platform
+1. Run `make generate` to create generated files 
+2. cd into the `ui/v2` directory and run `yarn build` to compile the frontend
+3. cd back to the root directory and run `make build` to build the executable for your current platform
 
 ## Cross compiling
 
