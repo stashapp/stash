@@ -107,8 +107,11 @@ func (t *ScanTask) scanScene() {
 			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, scene.Path)
 		} else {
 			logger.Infof("%s already exists.  Updating path...", t.FilePath)
-			scene.Path = t.FilePath
-			_, err = qb.Update(*scene, tx)
+			scenePartial := models.ScenePartial{
+				ID:   scene.ID,
+				Path: &t.FilePath,
+			}
+			_, err = qb.Update(scenePartial, tx)
 		}
 	} else {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)

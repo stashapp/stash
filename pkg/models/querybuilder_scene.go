@@ -2,10 +2,11 @@ package models
 
 import (
 	"database/sql"
-	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"strconv"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/database"
 )
 
 const scenesForPerformerQuery = `
@@ -60,20 +61,17 @@ func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error)
 	return &newScene, nil
 }
 
-func (qb *SceneQueryBuilder) Update(updatedScene Scene, tx *sqlx.Tx) (*Scene, error) {
+func (qb *SceneQueryBuilder) Update(updatedScene ScenePartial, tx *sqlx.Tx) (*Scene, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE scenes SET `+SQLGenKeys(updatedScene)+` WHERE scenes.id = :id`,
+		`UPDATE scenes SET `+SQLGenKeysPartial(updatedScene)+` WHERE scenes.id = :id`,
 		updatedScene,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := tx.Get(&updatedScene, `SELECT * FROM scenes WHERE id = ? LIMIT 1`, updatedScene.ID); err != nil {
-		return nil, err
-	}
-	return &updatedScene, nil
+	return qb.Find(updatedScene.ID)
 }
 
 func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
