@@ -236,6 +236,17 @@ func ensureTx(tx *sqlx.Tx) {
 // of keys for non empty key:values. These keys are formated
 // keyname=:keyname with a comma seperating them
 func SQLGenKeys(i interface{}) string {
+	return sqlGenKeys(i, false)
+}
+
+// support a partial interface. When a partial interface is provided,
+// keys will always be included if the value is not null. The partial
+// interface must therefore consist of pointers
+func SQLGenKeysPartial(i interface{}) string {
+	return sqlGenKeys(i, true)
+}
+
+func sqlGenKeys(i interface{}, partial bool) string {
 	var query []string
 	v := reflect.ValueOf(i)
 	for i := 0; i < v.NumField(); i++ {
@@ -247,42 +258,46 @@ func SQLGenKeys(i interface{}) string {
 		}
 		switch t := v.Field(i).Interface().(type) {
 		case string:
-			if t != "" {
+			if partial || t != "" {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
 		case int:
-			if t != 0 {
+			if partial || t != 0 {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
 		case float64:
-			if t != 0 {
+			if partial || t != 0 {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
 		case SQLiteTimestamp:
-			if !t.Timestamp.IsZero() {
+			if partial || !t.Timestamp.IsZero() {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
 		case SQLiteDate:
-			if t.Valid {
+			if partial || t.Valid {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
 		case sql.NullString:
-			// should be nullable
-			query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			if partial || t.Valid {
+				query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			}
 		case sql.NullBool:
-			// should be nullable
-			query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			if partial || t.Valid {
+				query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			}
 		case sql.NullInt64:
-			// should be nullable
-			query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			if partial || t.Valid {
+				query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			}
 		case sql.NullFloat64:
-			// should be nullable
-			query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			if partial || t.Valid {
+				query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			}
 		default:
 			reflectValue := reflect.ValueOf(t)
 			kind := reflectValue.Kind()
 			isNil := reflectValue.IsNil()
-			if kind != reflect.Ptr && !isNil {
+			if kind != reflect.Ptr || !isNil {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
 		}

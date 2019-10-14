@@ -14,36 +14,36 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	// Populate scene from the input
 	sceneID, _ := strconv.Atoi(input.ID)
 	updatedTime := time.Now()
-	updatedScene := models.Scene{
+	updatedScene := models.ScenePartial{
 		ID:        sceneID,
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: updatedTime},
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
 	if input.Title != nil {
-		updatedScene.Title = sql.NullString{String: *input.Title, Valid: true}
+		updatedScene.Title = &sql.NullString{String: *input.Title, Valid: true}
 	}
 	if input.Details != nil {
-		updatedScene.Details = sql.NullString{String: *input.Details, Valid: true}
+		updatedScene.Details = &sql.NullString{String: *input.Details, Valid: true}
 	}
 	if input.URL != nil {
-		updatedScene.URL = sql.NullString{String: *input.URL, Valid: true}
+		updatedScene.URL = &sql.NullString{String: *input.URL, Valid: true}
 	}
 	if input.Date != nil {
-		updatedScene.Date = models.SQLiteDate{String: *input.Date, Valid: true}
+		updatedScene.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
 	}
 
 	if input.Rating != nil {
-		updatedScene.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
+		updatedScene.Rating = &sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
 	} else {
 		// rating must be nullable
-		updatedScene.Rating = sql.NullInt64{Valid: false}
+		updatedScene.Rating = &sql.NullInt64{Valid: false}
 	}
 
 	if input.StudioID != nil {
 		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-		updatedScene.StudioID = sql.NullInt64{Int64: studioID, Valid: true}
+		updatedScene.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
 	} else {
 		// studio must be nullable
-		updatedScene.StudioID = sql.NullInt64{Valid: false}
+		updatedScene.StudioID = &sql.NullInt64{Valid: false}
 	}
 
 	// Start the transaction and save the scene marker
