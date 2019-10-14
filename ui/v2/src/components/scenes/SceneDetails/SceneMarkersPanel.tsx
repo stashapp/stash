@@ -40,7 +40,7 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
   const sceneMarkerUpdate = StashService.useSceneMarkerUpdate();
   const sceneMarkerDestroy = StashService.useSceneMarkerDestroy();
 
-  const jwplayer = SceneHelpers.getJWPlayer();
+  const jwplayer = SceneHelpers.getPlayer();
 
   function onOpenEditor(marker: GQL.SceneMarkerDataFragment | null = null) {
     setIsEditorOpen(true);

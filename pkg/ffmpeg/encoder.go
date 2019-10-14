@@ -66,7 +66,7 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 	stdoutString := string(stdoutData)
 
 	if err := cmd.Wait(); err != nil {
-		logger.Errorf("ffmpeg error when running command <%s>", strings.Join(cmd.Args, " "))
+		logger.Errorf("ffmpeg error when running command <%s>: %s", strings.Join(cmd.Args, " "), stdoutString)
 		return stdoutString, err
 	}
 
