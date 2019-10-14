@@ -71,13 +71,17 @@ func (qb *SceneQueryBuilder) Update(updatedScene ScenePartial, tx *sqlx.Tx) (*Sc
 		return nil, err
 	}
 
-	return qb.Find(updatedScene.ID)
+	return qb.find(updatedScene.ID, tx)
 }
 
 func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
+	return qb.find(id, nil)
+}
+
+func (qb *SceneQueryBuilder) find(id int, tx *sqlx.Tx) (*Scene, error) {
 	query := "SELECT * FROM scenes WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
-	return qb.queryScene(query, args, nil)
+	return qb.queryScene(query, args, tx)
 }
 
 func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*Scene, error) {
