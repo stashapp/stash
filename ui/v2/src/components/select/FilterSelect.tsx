@@ -58,16 +58,18 @@ export const FilterSelect: React.FunctionComponent<IProps> = (props: IProps) => 
 
   /* eslint-disable react-hooks/rules-of-hooks */
   const [selectedItem, setSelectedItem] = React.useState<ValidTypes | undefined>(undefined);
-  const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
-  /* eslint-enable */
 
-  if (!!props.initialId && !selectedItem && !isInitialized) {
-    const initialItem = items.find((item) => props.initialId === item.id);
-    if (!!initialItem) {
-      setSelectedItem(initialItem);
-      setIsInitialized(true);
+  React.useEffect(() => {
+    if (!!items) {
+      const initialItem = items.find((item) => props.initialId === item.id);
+      if (!!initialItem) {
+        setSelectedItem(initialItem);
+      } else {
+        setSelectedItem(undefined);
+      }
     }
-  }
+  }, [props.initialId, items]);
+  /* eslint-enable */
 
   const renderItem: ItemRenderer<ValidTypes> = (item, itemProps) => {
     if (!itemProps.modifiers.matchesPredicate) { return null; }
