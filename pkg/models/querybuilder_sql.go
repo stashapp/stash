@@ -295,9 +295,8 @@ func sqlGenKeys(i interface{}, partial bool) string {
 			}
 		default:
 			reflectValue := reflect.ValueOf(t)
-			kind := reflectValue.Kind()
 			isNil := reflectValue.IsNil()
-			if kind != reflect.Ptr || !isNil {
+			if !isNil {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
 		}
