@@ -3,38 +3,47 @@ package api
 import (
 	"context"
 	"database/sql"
-	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/models"
 	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
 	// Populate scene from the input
 	sceneID, _ := strconv.Atoi(input.ID)
 	updatedTime := time.Now()
-	updatedScene := models.Scene{
+	updatedScene := models.ScenePartial{
 		ID:        sceneID,
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: updatedTime},
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
 	if input.Title != nil {
-		updatedScene.Title = sql.NullString{String: *input.Title, Valid: true}
+		updatedScene.Title = &sql.NullString{String: *input.Title, Valid: true}
 	}
 	if input.Details != nil {
-		updatedScene.Details = sql.NullString{String: *input.Details, Valid: true}
+		updatedScene.Details = &sql.NullString{String: *input.Details, Valid: true}
 	}
 	if input.URL != nil {
-		updatedScene.URL = sql.NullString{String: *input.URL, Valid: true}
+		updatedScene.URL = &sql.NullString{String: *input.URL, Valid: true}
 	}
 	if input.Date != nil {
-		updatedScene.Date = models.SQLiteDate{String: *input.Date, Valid: true}
+		updatedScene.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
 	}
+
 	if input.Rating != nil {
-		updatedScene.Rating = sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
+		updatedScene.Rating = &sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
+	} else {
+		// rating must be nullable
+		updatedScene.Rating = &sql.NullInt64{Valid: false}
 	}
+
 	if input.StudioID != nil {
 		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-		updatedScene.StudioID = sql.NullInt64{Int64: studioID, Valid: true}
+		updatedScene.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
+	} else {
+		// studio must be nullable
+		updatedScene.StudioID = &sql.NullInt64{Valid: false}
 	}
 
 	// Start the transaction and save the scene marker
@@ -42,6 +51,14 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	qb := models.NewSceneQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
 	scene, err := qb.Update(updatedScene, tx)
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+
+	// Clear the existing gallery value
+	gqb := models.NewGalleryQueryBuilder()
+	err = gqb.ClearGalleryId(sceneID, tx)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
