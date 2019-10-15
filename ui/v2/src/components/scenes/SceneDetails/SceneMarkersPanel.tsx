@@ -163,7 +163,7 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
       return (
         <FilterSelect
           type="tags"
-          onSelectItem={(tag) => fieldProps.form.setFieldValue("primaryTagId", tag.id)}
+          onSelectItem={(tag) => fieldProps.form.setFieldValue("primaryTagId", tag ? tag.id : undefined)}
           initialId={!!editingMarker ? editingMarker.primary_tag.id : undefined}
         />
       );

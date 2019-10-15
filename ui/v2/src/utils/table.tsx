@@ -124,7 +124,7 @@ export class TableUtils {
     title: string,
     type: "performers" | "studios" | "tags",
     initialId: string | undefined,
-    onChange: ((id: string) => void),
+    onChange: ((id: string | undefined) => void),
   }) {
     return (
       <tr>
@@ -132,7 +132,7 @@ export class TableUtils {
         <td>
           <FilterSelect
             type={options.type}
-            onSelectItem={(item) => options.onChange(item.id)}
+            onSelectItem={(item) => options.onChange(item ? item.id : undefined)}
             initialId={options.initialId}
           />
         </td>
