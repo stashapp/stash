@@ -8,6 +8,7 @@ import { ListFilterModel } from "../../models/list-filter/filter";
 import { DisplayMode, FilterMode } from "../../models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
+import { SceneListTable } from "./SceneListTable";
 
 interface ISceneListProps extends IBaseProps {}
 
@@ -27,7 +28,7 @@ export const SceneList: FunctionComponent<ISceneListProps> = (props: ISceneListP
         </div>
       );
     } else if (filter.displayMode === DisplayMode.List) {
-      return <h1>TODO</h1>;
+      return <SceneListTable scenes={result.data.findScenes.scenes}/>;
     } else if (filter.displayMode === DisplayMode.Wall) {
       return <WallPanel scenes={result.data.findScenes.scenes} />;
     }
