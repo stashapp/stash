@@ -11,7 +11,7 @@ const InternalSelect = Select.ofType<GQL.ValidGalleriesForSceneValidGalleriesFor
 interface IProps extends HTMLInputProps {
   initialId?: string;
   sceneId: string;
-  onSelectItem: (item: GQL.ValidGalleriesForSceneValidGalleriesForScene) => void;
+  onSelectItem: (item: GQL.ValidGalleriesForSceneValidGalleriesForScene | undefined) => void;
 }
 
 export const ValidGalleriesSelect: React.FunctionComponent<IProps> = (props: IProps) => {
@@ -20,7 +20,7 @@ export const ValidGalleriesSelect: React.FunctionComponent<IProps> = (props: IPr
   // Add a none option to clear the gallery
   if (!items.find((item) => item.id === "0")) { items.unshift({id: "0", path: "None"}); }
 
-  const [selectedItem, setSelectedItem] = React.useState<GQL.ValidGalleriesForSceneValidGalleriesForScene | null>(null);
+  const [selectedItem, setSelectedItem] = React.useState<GQL.ValidGalleriesForSceneValidGalleriesForScene | undefined>(undefined);
   const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
 
   if (!!props.initialId && !selectedItem && !isInitialized) {
@@ -49,7 +49,11 @@ export const ValidGalleriesSelect: React.FunctionComponent<IProps> = (props: IPr
     return item.path!.toLowerCase().indexOf(query.toLowerCase()) >= 0;
   };
 
-  function onItemSelect(item: GQL.ValidGalleriesForSceneValidGalleriesForScene) {
+  function onItemSelect(item: GQL.ValidGalleriesForSceneValidGalleriesForScene | undefined) {
+    if (item && item.id == "0") {
+      item = undefined;
+    }
+
     props.onSelectItem(item);
     setSelectedItem(item);
   }
