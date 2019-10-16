@@ -1,13 +1,10 @@
 import {
   Alert,
   Button,
+  Checkbox,
   Divider,
   FormGroup,
-  H1,
   H4,
-  H6,
-  InputGroup,
-  Tag,
 } from "@blueprintjs/core";
 import React, { FunctionComponent, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
@@ -21,6 +18,7 @@ interface IProps {}
 
 export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => {
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
+  const [nameFromMetadata, setNameFromMetadata] = useState<boolean>(true);
 
   function onImport() {
     setIsImportAlertOpen(false);
@@ -48,7 +46,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
 
   async function onScan() {
     try {
-      await StashService.queryMetadataScan();
+      await StashService.queryMetadataScan({nameFromMetadata});
       ToastUtils.success("Started scan");
     } catch (e) {
       ErrorUtils.handle(e);
@@ -65,6 +63,11 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         labelFor="scan"
         inline={true}
       >
+        <Checkbox
+          checked={nameFromMetadata}
+          label="Set name from metadata (if present)"
+          onChange={() => setNameFromMetadata(!nameFromMetadata)}
+        />
         <Button id="scan" text="Scan" onClick={() => onScan()} />
       </FormGroup>
       <Divider />

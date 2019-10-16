@@ -65,6 +65,10 @@ func GetPerformer(performerName string) (*models.ScrapedPerformer, error) {
 		if strings.ToLower(s.Text()) == strings.ToLower(performerName) {
 			return true
 		}
+		alias := s.ParentsFiltered(".babeNameBlock").Find(".babeAlias").First();
+		if strings.EqualFold(alias.Text(), "aka " + performerName) {
+			return true
+		}
 		return false
 	})
 
