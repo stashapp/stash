@@ -6,6 +6,7 @@ import (
 	"math"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -28,6 +29,8 @@ type VideoFile struct {
 	VideoStream *FFProbeStream
 
 	Path         string
+	Title        string
+	Comment      string
 	Container    string
 	Duration     float64
 	StartTime    float64
@@ -82,6 +85,14 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 	//} // TODO nil_or_unsupported.(video_stream) && nil_or_unsupported.(audio_stream)
 
 	result.Path = filePath
+	result.Title = probeJSON.Format.Tags.Title
+
+	if result.Title == "" {
+		// default title to filename
+		result.SetTitleFromPath()
+	}
+
+	result.Comment = probeJSON.Format.Tags.Comment
 
 	result.Bitrate, _ = strconv.ParseInt(probeJSON.Format.BitRate, 10, 64)
 	result.Container = probeJSON.Format.FormatName
@@ -149,4 +160,8 @@ func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
 	}
 
 	return -1
+}
+
+func (v *VideoFile) SetTitleFromPath() {
+	v.Title = filepath.Base(v.Path)
 }

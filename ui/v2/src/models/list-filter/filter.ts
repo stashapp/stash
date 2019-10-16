@@ -51,7 +51,7 @@ export class ListFilterModel {
     switch (filterMode) {
       case FilterMode.Scenes:
         if (!!this.sortBy === false) { this.sortBy = "date"; }
-        this.sortByOptions = ["title", "rating", "date", "filesize", "duration", "framerate", "bitrate", "random"];
+        this.sortByOptions = ["title", "path", "rating", "date", "filesize", "duration", "framerate", "bitrate", "random"];
         this.displayModeOptions = [
           DisplayMode.Grid,
           DisplayMode.List,

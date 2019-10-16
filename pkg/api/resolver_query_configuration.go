@@ -22,7 +22,8 @@ func (r *queryResolver) Directories(ctx context.Context, path *string) ([]string
 
 func makeConfigResult() *models.ConfigResult {
 	return &models.ConfigResult{
-		General: makeConfigGeneralResult(),
+		General:   makeConfigGeneralResult(),
+		Interface: makeConfigInterfaceResult(),
 	}
 }
 
@@ -33,5 +34,14 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		GeneratedPath: config.GetGeneratedPath(),
 		Username:      config.GetUsername(),
 		Password:      config.GetPasswordHash(),
+	}
+}
+
+func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
+	css := config.GetCSS()
+	cssEnabled := config.GetCSSEnabled()
+	return &models.ConfigInterfaceResult{
+		CSS:        &css,
+		CSSEnabled: &cssEnabled,
 	}
 }

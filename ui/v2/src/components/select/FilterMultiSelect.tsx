@@ -5,6 +5,8 @@ import { IMultiSelectProps, ItemPredicate, ItemRenderer, MultiSelect } from "@bl
 import * as GQL from "../../core/generated-graphql";
 import { StashService } from "../../core/StashService";
 import { HTMLInputProps } from "../../models";
+import { ErrorUtils } from "../../utils/errors";
+import { ToastUtils } from "../../utils/toasts";
 
 const InternalPerformerMultiSelect = MultiSelect.ofType<GQL.AllPerformersForFilterAllPerformers>();
 const InternalTagMultiSelect = MultiSelect.ofType<GQL.AllTagsForFilterAllTags>();
@@ -24,6 +26,56 @@ interface IProps extends HTMLInputProps, Partial<IMultiSelectProps<ValidTypes>> 
 export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps) => {
   let items: ValidTypes[];
   let InternalMultiSelect: new (props: IMultiSelectProps<any>) => MultiSelect<any>;
+  var createNewFunc = undefined;
+  
+  const [newTagName, setNewTagName] = React.useState<string>("");
+  const createTag = StashService.useTagCreate(getTagInput() as GQL.TagCreateInput);
+
+  function getTagInput() {
+    const tagInput: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = { name: newTagName };
+    return tagInput;
+  }
+
+  async function onCreateNewObject(item: ValidTypes) {
+    var created : any;
+    if (props.type === "tags") {
+      try {
+        created = await createTag();
+        
+        addSelectedItem(created.data.tagCreate);
+
+        ToastUtils.success("Created tag");
+      } catch (e) {
+        ErrorUtils.handle(e);
+      }
+    }
+  }
+
+  function createNewTag(query : string) {
+    setNewTagName(query);
+    return {
+      name : query
+    };
+  }
+
+  function createNewRenderer(query: string, active: boolean, handleClick: React.MouseEventHandler<HTMLElement>) {
+    // if tag already exists with that name, then don't return anything
+    if (items.find((item) => {
+      return item.name === query;
+    })) {
+      return undefined;
+    }
+
+    return (
+      <MenuItem
+        icon="add"
+        text={`Create "${query}"`}
+        active={active}
+        onClick={handleClick}
+      />
+    );
+  }
+
   switch (props.type) {
     case "performers": {
       const { data } = StashService.useAllPerformersForFilter();
@@ -41,6 +93,7 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
       const { data } = StashService.useAllTagsForFilter();
       items = !!data && !!data.allTags ? data.allTags : [];
       InternalMultiSelect = InternalTagMultiSelect;
+      createNewFunc = createNewTag;
       break;
     }
     default: {
@@ -80,10 +133,19 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
     return item.name!.toLowerCase().indexOf(query.toLowerCase()) >= 0;
   };
 
-  function onItemSelect(item: ValidTypes) {
+  function addSelectedItem(item: ValidTypes) {
     selectedItems.push(item);
     setSelectedItems(selectedItems);
     props.onUpdate(selectedItems);
+  }
+
+  function onItemSelect(item: ValidTypes) {
+    if (item.id === undefined) {
+      // create the new item, if applicable
+      onCreateNewObject(item);
+    } else {
+      addSelectedItem(item);
+    }
   }
 
   function onItemRemove(value: string, index: number) {
@@ -103,6 +165,8 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
       onItemSelect={onItemSelect}
       resetOnSelect={true}
       popoverProps={{position: "bottom"}}
+      createNewItemFromQuery={createNewFunc}
+      createNewItemRenderer={createNewRenderer}
       {...props}
     />
   );

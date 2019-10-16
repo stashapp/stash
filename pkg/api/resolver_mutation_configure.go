@@ -56,3 +56,23 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	return makeConfigGeneralResult(), nil
 }
+
+func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.ConfigInterfaceInput) (*models.ConfigInterfaceResult, error) {
+	css := ""
+
+	if input.CSS != nil {
+		css = *input.CSS
+	}
+
+	config.SetCSS(css)
+
+	if input.CSSEnabled != nil {
+		config.Set(config.CSSEnabled, *input.CSSEnabled)
+	}
+
+	if err := config.Write(); err != nil {
+		return makeConfigInterfaceResult(), err
+	}
+
+	return makeConfigInterfaceResult(), nil
+}

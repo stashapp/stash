@@ -8,11 +8,14 @@ import "./index.scss";
 import * as serviceWorker from "./serviceWorker";
 
 ReactDOM.render((
+  <>
+  <link rel="stylesheet" type="text/css" href="/css"/>
   <BrowserRouter>
     <ApolloProvider client={StashService.initialize()!}>
       <App />
     </ApolloProvider>
   </BrowserRouter>
+  </>
 ), document.getElementById("root"));
 
 // If you want your app to work offline and load faster, you can change

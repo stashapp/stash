@@ -11,7 +11,7 @@ github.com/PuerkitoBio/goquery
 github.com/agnivade/levenshtein
 # github.com/andybalholm/cascadia v1.0.0
 github.com/andybalholm/cascadia
-# github.com/bmatcuk/doublestar v1.1.1
+# github.com/bmatcuk/doublestar v1.1.5
 github.com/bmatcuk/doublestar
 # github.com/disintegration/imaging v1.6.0
 github.com/disintegration/imaging

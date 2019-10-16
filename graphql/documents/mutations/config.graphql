@@ -3,3 +3,9 @@ mutation ConfigureGeneral($input: ConfigGeneralInput!) {
     ...ConfigGeneralData
   }
 }
+
+mutation ConfigureInterface($input: ConfigInterfaceInput!) {
+  configureInterface(input: $input) {
+    ...ConfigInterfaceData
+  }
+}

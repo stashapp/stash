@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 )
@@ -52,6 +53,15 @@ func (qb *PerformerQueryBuilder) Update(updatedPerformer Performer, tx *sqlx.Tx)
 		return nil, err
 	}
 	return &updatedPerformer, nil
+}
+
+func (qb *PerformerQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
+	_, err := tx.Exec("DELETE FROM performers_scenes WHERE performer_id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	return executeDeleteQuery("performers", id, tx)
 }
 
 func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {

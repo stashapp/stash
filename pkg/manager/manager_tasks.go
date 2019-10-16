@@ -1,16 +1,17 @@
 package manager
 
 import (
+	"path/filepath"
+	"sync"
+
 	"github.com/bmatcuk/doublestar"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"path/filepath"
-	"sync"
 )
 
-func (s *singleton) Scan() {
+func (s *singleton) Scan(nameFromMetadata bool) {
 	if s.Status != Idle {
 		return
 	}
@@ -30,10 +31,12 @@ func (s *singleton) Scan() {
 		var wg sync.WaitGroup
 		for _, path := range results {
 			wg.Add(1)
-			task := ScanTask{FilePath: path}
+			task := ScanTask{FilePath: path, NameFromMetadata: nameFromMetadata}
 			go task.Start(&wg)
 			wg.Wait()
 		}
+
+		logger.Info("Finished scan")
 	}()
 }
 
