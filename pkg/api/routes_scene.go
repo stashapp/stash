@@ -1,17 +1,18 @@
 package api
 
 import (
-	"io"
 	"context"
+	"io"
+	"net/http"
+	"strconv"
+	"strings"
+
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"github.com/stashapp/stash/pkg/ffmpeg"
-	"net/http"
-	"strconv"
-	"strings"
 )
 
 type sceneRoutes struct{}
@@ -41,7 +42,7 @@ func (rs sceneRoutes) Routes() chi.Router {
 
 func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	
+
 	// detect if not a streamable file and try to transcode it instead
 	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.Checksum)
 
@@ -58,10 +59,14 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 		logger.Errorf("[stream] error reading video file: %s", err.Error())
 		return
 	}
-	
+
+	// start stream based on query param, if provided
+	r.ParseForm()
+	startTime := r.Form.Get("start")
+
 	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
 
-	stream, process, err := encoder.StreamTranscode(*videoFile)
+	stream, process, err := encoder.StreamTranscode(*videoFile, startTime)
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %s", err.Error())
 		return

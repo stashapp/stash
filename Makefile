@@ -15,9 +15,9 @@ clean:
 	packr2 clean
 
 # Regenerates GraphQL files
-.PHONY: gqlgen
-gqlgen:
-	go run scripts/gqlgen.go
+.PHONY: generate
+generate:
+	go generate
 	cd ui/v2 && yarn run gqlgen
 
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
