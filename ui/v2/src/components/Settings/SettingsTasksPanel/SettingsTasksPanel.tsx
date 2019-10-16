@@ -75,11 +75,15 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
       <H4>Generated Content</H4>
       <GenerateButton />
       <FormGroup
-        helperText="TODO"
+        helperText="Check for missing files and remove them from the database. This is a destructive action"
         labelFor="clean"
         inline={true}
       >
-        <Button id="clean" text="Clean" onClick={() => StashService.queryMetadataClean()} />
+        <Button
+          id="clean"
+          text="Clean"
+          onClick={() => StashService.queryMetadataClean()}
+        />
       </FormGroup>
       <Divider />
 
