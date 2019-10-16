@@ -12,6 +12,7 @@
     "@types/react": "16.8.18",
     "@types/react-dom": "16.8.4",
     "@types/react-router-dom": "4.3.3",
+    "@types/video.js": "^7.2.11",
     "apollo-boost": "0.4.0",
     "axios": "0.18.0",
     "bulma": "0.7.5",
@@ -30,7 +31,8 @@
     "react-photo-gallery": "7.0.2",
     "react-router-dom": "5.0.0",
     "react-scripts": "3.0.1",
-    "react-use": "9.1.2"
+    "react-use": "9.1.2",
+    "video.js": "^7.6.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -53,10 +55,10 @@
   "devDependencies": {
     "graphql-code-generator": "0.18.2",
     "graphql-codegen-add": "0.18.2",
+    "graphql-codegen-time": "0.18.2",
     "graphql-codegen-typescript-client": "0.18.2",
     "graphql-codegen-typescript-common": "0.18.2",
     "graphql-codegen-typescript-react-apollo": "0.18.2",
-    "graphql-codegen-time": "0.18.2",
     "tslint": "5.16.0",
     "tslint-react": "4.0.0",
     "typescript": "3.4.5"

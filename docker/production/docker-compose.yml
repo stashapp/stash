@@ -3,7 +3,7 @@
 version: '3.4'
 services:
   stash:
-    image: stashapp/stash:x86_64
+    image: stashapp/stash:latest
     restart: unless-stopped
     ports:
       - "9999:9999"

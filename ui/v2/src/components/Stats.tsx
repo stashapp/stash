@@ -57,7 +57,6 @@ export const Stats: FunctionComponent = () => {
         * Filters for performers and studios only supports one item, even though it's a multi select.
 
         TODO:
-        * List view for scenes / performers
         * Websocket connection to display logs in the UI
         `}
       </pre>

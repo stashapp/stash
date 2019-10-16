@@ -46,7 +46,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     setDetails(state.details);
     setUrl(state.url);
     setDate(state.date);
-    setRating(state.rating);
+    setRating(state.rating == null ? NaN : state.rating);
     setGalleryId(state.gallery ? state.gallery.id : undefined);
     setStudioId(state.studio ? state.studio.id : undefined);
     setPerformerIds(perfIds);
@@ -150,14 +150,14 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
           <ValidGalleriesSelect
             sceneId={props.scene.id}
             initialId={galleryId}
-            onSelectItem={(item) => setGalleryId(item.id)}
+            onSelectItem={(item) => setGalleryId(item ? item.id : undefined)}
           />
         </FormGroup>
 
         <FormGroup label="Studio">
           <FilterSelect
             type="studios"
-            onSelectItem={(item) => setStudioId(item.id)}
+            onSelectItem={(item) => setStudioId(item ? item.id : undefined)}
             initialId={studioId}
           />
         </FormGroup>
