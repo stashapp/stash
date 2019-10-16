@@ -7,6 +7,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 const scenesForPerformerQuery = `
@@ -291,4 +292,20 @@ func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *s
 	}
 
 	return scenes, nil
+}
+
+func (qb *SceneQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
+
+	_, err := tx.Exec("DELETE FROM performers_scenes WHERE scene_id = ?", id)
+	if err != nil {
+		logger.Debugf("error deleting performers_scenes for scene_id: %s", err)
+		return err
+	}
+	_, err = tx.Exec("DELETE FROM scenes_tags WHERE scene_id = ?", id)
+	if err != nil {
+		logger.Debugf("error deleting scenes_tags for scene_id: %s", err)
+		return err
+	}
+
+	return executeDeleteQuery("scenes", id, tx)
 }
