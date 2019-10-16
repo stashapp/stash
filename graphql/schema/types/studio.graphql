@@ -23,6 +23,10 @@ input StudioUpdateInput {
   image: String
 }
 
+input StudioDestroyInput {
+  id: ID!
+}
+
 type FindStudiosResultType {
   count: Int!
   studios: [Studio!]!

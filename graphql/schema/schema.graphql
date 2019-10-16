@@ -57,7 +57,7 @@ type Query {
   """Start an export. Returns the job ID"""
   metadataExport: String!
   """Start a scan. Returns the job ID"""
-  metadataScan: String!
+  metadataScan(input: ScanMetadataInput!): String!
   """Start generating content. Returns the job ID"""
   metadataGenerate(input: GenerateMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
@@ -79,9 +79,11 @@ type Mutation {
 
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer
+  performerDestroy(input: PerformerDestroyInput!): Boolean!
 
   studioCreate(input: StudioCreateInput!): Studio
   studioUpdate(input: StudioUpdateInput!): Studio
+  studioDestroy(input: StudioDestroyInput!): Boolean!
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
@@ -89,6 +91,7 @@ type Mutation {
 
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
+  configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
 }
 
 type Subscription {

@@ -44,6 +44,25 @@ code {
     padding: 0;
     margin: 0;
   }
+
+  & .bp3-button.favorite .bp3-icon {
+    color: #ff7373 !important
+  }
+
+  & .performer-list-thumbnail {
+    min-width: 50px;
+    height: 100px;
+  }
+
+  & .scene-list-thumbnail {
+    width: 150px;
+    min-height: 50px;
+  }
+
+  & table td {
+    text-align: center;
+    vertical-align: middle;
+  }
 }
 
 .grid-item {
@@ -135,6 +154,11 @@ video.preview {
   width: 75%;
 }
 
+.video-js {
+  width: 100%;
+  height: 90vh;
+}
+
 #details-container {
   margin: 10px auto;
   width: 75%;
@@ -182,9 +206,14 @@ span.block {
 
   & .tag-list-row {
     margin: 10px;
+    cursor: pointer;
 
     & .bp3-button {
       margin: 0 10px;
     }
+  }
+
+  & .tag-list-row:hover {
+    text-decoration: underline;
   }
 }

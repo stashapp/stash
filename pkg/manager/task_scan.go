@@ -3,19 +3,21 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"path/filepath"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"path/filepath"
-	"strconv"
-	"sync"
-	"time"
 )
 
 type ScanTask struct {
-	FilePath string
+	FilePath         string
+	NameFromMetadata bool
 }
 
 func (t *ScanTask) Start(wg *sync.WaitGroup) {
@@ -46,9 +48,15 @@ func (t *ScanTask) scanGallery() {
 	tx := database.DB.MustBeginTx(ctx, nil)
 	gallery, _ = qb.FindByChecksum(checksum, tx)
 	if gallery != nil {
-		logger.Infof("%s already exists.  Updating path...", t.FilePath)
-		gallery.Path = t.FilePath
-		_, err = qb.Update(*gallery, tx)
+		exists, _ := utils.FileExists(gallery.Path)
+		if exists {
+			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, gallery.Path)
+		} else {
+
+			logger.Infof("%s already exists.  Updating path...", t.FilePath)
+			gallery.Path = t.FilePath
+			_, err = qb.Update(*gallery, tx)
+		}
 	} else {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
@@ -83,6 +91,11 @@ func (t *ScanTask) scanScene() {
 		return
 	}
 
+	// Override title to be filename if nameFromMetadata is false
+	if !t.NameFromMetadata {
+		videoFile.SetTitleFromPath()
+	}
+
 	checksum, err := t.calculateChecksum()
 	if err != nil {
 		logger.Error(err.Error())
@@ -95,15 +108,26 @@ func (t *ScanTask) scanScene() {
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
 	if scene != nil {
-		logger.Infof("%s already exists.  Updating path...", t.FilePath)
-		scene.Path = t.FilePath
-		_, err = qb.Update(*scene, tx)
+		exists, _ := utils.FileExists(scene.Path)
+		if exists {
+			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, scene.Path)
+		} else {
+			logger.Infof("%s already exists.  Updating path...", t.FilePath)
+			scenePartial := models.ScenePartial{
+				ID:   scene.ID,
+				Path: &t.FilePath,
+			}
+			_, err = qb.Update(scenePartial, tx)
+		}
 	} else {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
 		newScene := models.Scene{
 			Checksum:   checksum,
 			Path:       t.FilePath,
+			Title:      sql.NullString{String: videoFile.Title, Valid: true},
+			Details:    sql.NullString{String: videoFile.Comment, Valid: true},
+			Date:       models.SQLiteDate{String: videoFile.CreationTime.Format("2006-01-02")},
 			Duration:   sql.NullFloat64{Float64: videoFile.Duration, Valid: true},
 			VideoCodec: sql.NullString{String: videoFile.VideoCodec, Valid: true},
 			AudioCodec: sql.NullString{String: videoFile.AudioCodec, Valid: true},

@@ -100,6 +100,21 @@ func Start() {
 	r.Mount("/scene", sceneRoutes{}.Routes())
 	r.Mount("/studio", studioRoutes{}.Routes())
 
+	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
+		if !config.GetCSSEnabled() {
+			return
+		}
+		
+		// search for custom.css in current directory, then $HOME/.stash
+		fn := config.GetCSSPath()
+		exists, _ := utils.FileExists(fn)
+		if !exists {
+			return
+		}
+
+		http.ServeFile(w, r, fn)
+	})
+
 	// Serve the setup UI
 	r.HandleFunc("/setup*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
@@ -234,7 +249,7 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		ctx := r.Context()
 
 		var scheme string
-		if strings.Compare("https", r.URL.Scheme) == 0 || r.Proto == "HTTP/2.0" {
+		if strings.Compare("https", r.URL.Scheme) == 0 || r.Proto == "HTTP/2.0" || r.Header.Get("X-Forwarded-Proto") == "https" {
 			scheme = "https"
 		} else {
 			scheme = "http"

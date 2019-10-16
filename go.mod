@@ -3,7 +3,7 @@ module github.com/stashapp/stash
 require (
 	github.com/99designs/gqlgen v0.9.0
 	github.com/PuerkitoBio/goquery v1.5.0
-	github.com/bmatcuk/doublestar v1.1.1
+	github.com/bmatcuk/doublestar v1.1.5
 	github.com/disintegration/imaging v1.6.0
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-chi/chi v4.0.2+incompatible
@@ -23,3 +23,5 @@ require (
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2 // indirect
 )
+
+replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999

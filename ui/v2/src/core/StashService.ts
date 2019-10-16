@@ -133,6 +133,9 @@ export class StashService {
   public static usePerformerUpdate(input: GQL.PerformerUpdateInput) {
     return GQL.usePerformerUpdate({ variables: input });
   }
+  public static usePerformerDestroy(input: GQL.PerformerDestroyInput) {
+    return GQL.usePerformerDestroy({ variables: input });
+  }
 
   public static useSceneUpdate(input: GQL.SceneUpdateInput) {
     return GQL.useSceneUpdate({ variables: input });
@@ -143,6 +146,9 @@ export class StashService {
   }
   public static useStudioUpdate(input: GQL.StudioUpdateInput) {
     return GQL.useStudioUpdate({ variables: input });
+  }
+  public static useStudioDestroy(input: GQL.StudioDestroyInput) {
+    return GQL.useStudioDestroy({ variables: input });
   }
 
   public static useTagCreate(input: GQL.TagCreateInput) {
@@ -156,6 +162,10 @@ export class StashService {
     return GQL.useConfigureGeneral({ variables: { input }, refetchQueries: ["Configuration"] });
   }
 
+  public static useConfigureInterface(input: GQL.ConfigInterfaceInput) {
+    return GQL.useConfigureInterface({ variables: { input }, refetchQueries: ["Configuration"] });
+  }
+
   public static queryScrapeFreeones(performerName: string) {
     return StashService.client.query<GQL.ScrapeFreeonesQuery>({
       query: GQL.ScrapeFreeonesDocument,
@@ -165,9 +175,10 @@ export class StashService {
     });
   }
 
-  public static queryMetadataScan() {
+  public static queryMetadataScan(input: GQL.ScanMetadataInput) {
     return StashService.client.query<GQL.MetadataScanQuery>({
       query: GQL.MetadataScanDocument,
+      variables: { input },
       fetchPolicy: "network-only",
     });
   }
