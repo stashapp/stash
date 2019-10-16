@@ -2,8 +2,7 @@ FROM ubuntu:18.04 as prep
 LABEL MAINTAINER="leopere [at] nixc [dot] us"
 
 RUN apt-get update && \
-    apt-get -y install curl xz-utils ca-certificates -y && \
-    update-ca-certificates && \
+    apt-get -y install curl xz-utils && \
     apt-get autoclean -y && \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /
@@ -16,7 +15,9 @@ RUN curl -L -o /stash $(curl -s https://api.github.com/repos/stashapp/stash/rele
     mv /ffmpeg*/ /ffmpeg/
 
 FROM ubuntu:18.04 as app
-RUN adduser stash --gecos GECOS --shell /bin/bash --disabled-password --home /home/stash
+RUN apt-get update && \
+    apt-get -y install ca-certificates && \
+    adduser stash --gecos GECOS --shell /bin/bash --disabled-password --home /home/stash
 COPY --from=prep /stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
 EXPOSE 9999
 CMD ["stash"]

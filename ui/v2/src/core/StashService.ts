@@ -176,9 +176,10 @@ export class StashService {
     });
   }
 
-  public static queryMetadataScan() {
+  public static queryMetadataScan(input: GQL.ScanMetadataInput) {
     return StashService.client.query<GQL.MetadataScanQuery>({
       query: GQL.MetadataScanDocument,
+      variables: { input },
       fetchPolicy: "network-only",
     });
   }
