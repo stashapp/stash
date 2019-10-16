@@ -82,30 +82,7 @@ func (t *ScanTask) scanScene() {
 	scene, _ := qb.FindByPath(t.FilePath)
 	if scene != nil {
 		// We already have this item in the database, check for thumbnails,screenshots
-
-		thumbPath := instance.Paths.Scene.GetThumbnailScreenshotPath(scene.Checksum)
-		normalPath := instance.Paths.Scene.GetScreenshotPath(scene.Checksum)
-
-		thumbExists, _ := utils.FileExists(thumbPath)
-		normalExists, _ := utils.FileExists(normalPath)
-
-		if !thumbExists || !normalExists {
-			checkvideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
-
-			if err != nil {
-				logger.Error(err.Error())
-				return
-			}
-			if !thumbExists {
-				logger.Infof("Recreating thumbnail for %s", t.FilePath)
-				t.makeScreenshot(*checkvideoFile, thumbPath, 5, 320)
-			}
-
-			if !normalExists {
-				logger.Infof("Recreating screeenshot for %s", t.FilePath)
-				t.makeScreenshot(*checkvideoFile, normalPath, 2, checkvideoFile.Width)
-			}
-		}
+		t.checkScreenshots(scene.Checksum)
 		return
 	}
 
@@ -208,4 +185,34 @@ func (t *ScanTask) calculateChecksum() (string, error) {
 	}
 	logger.Debugf("Checksum calculated: %s", checksum)
 	return checksum, nil
+}
+
+func (t *ScanTask) checkScreenshots(checksum string) {
+	//check for existance of screenshot or thumbnail and create them if needed
+
+	thumbPath := instance.Paths.Scene.GetThumbnailScreenshotPath(checksum)
+	normalPath := instance.Paths.Scene.GetScreenshotPath(checksum)
+
+	thumbExists, _ := utils.FileExists(thumbPath)
+	normalExists, _ := utils.FileExists(normalPath)
+
+	if !thumbExists || !normalExists {
+		checkvideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
+
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+		if !thumbExists {
+			logger.Infof("Recreating thumbnail for %s", t.FilePath)
+			t.makeScreenshot(*checkvideoFile, thumbPath, 5, 320)
+		}
+
+		if !normalExists {
+			logger.Infof("Recreating screenshot for %s", t.FilePath)
+			t.makeScreenshot(*checkvideoFile, normalPath, 2, checkvideoFile.Width)
+		}
+	}
+	return
+
 }
