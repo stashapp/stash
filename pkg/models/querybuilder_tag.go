@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"database/sql"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -63,7 +64,17 @@ func (qb *TagQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 		return err
 	}
 
-	// does not unset primary_tag_id in scene_markers because it is not nullable
+	// cannot unset primary_tag_id in scene_markers because it is not nullable
+	countQuery := "SELECT COUNT(*) as count FROM scene_markers where primary_tag_id = ?"
+	args := []interface{}{id}
+	primaryMarkers, err := runCountQuery(countQuery, args)
+	if err != nil {
+		return err
+	}
+
+	if primaryMarkers > 0 {
+		return errors.New("Cannot delete tag used as a primary tag in scene markers")
+	}
 
 	return executeDeleteQuery("tags", id, tx)
 }
