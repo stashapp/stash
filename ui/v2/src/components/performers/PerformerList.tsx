@@ -7,6 +7,7 @@ import { IBaseProps } from "../../models/base-props";
 import { ListFilterModel } from "../../models/list-filter/filter";
 import { DisplayMode, FilterMode } from "../../models/list-filter/types";
 import { PerformerCard } from "./PerformerCard";
+import { PerformerListTable } from "./PerformerListTable";
 
 interface IPerformerListProps extends IBaseProps {}
 
@@ -27,7 +28,7 @@ export const PerformerList: FunctionComponent<IPerformerListProps> = (props: IPe
         </div>
       );
     } else if (filter.displayMode === DisplayMode.List) {
-      return <h1>TODO</h1>;
+      return <PerformerListTable performers={result.data.findPerformers.performers}/>;
     } else if (filter.displayMode === DisplayMode.Wall) {
       return;
     }

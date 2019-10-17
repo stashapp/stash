@@ -62,9 +62,13 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// start stream based on query param, if provided
+	r.ParseForm()
+	startTime := r.Form.Get("start")
+
 	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
 
-	stream, process, err := encoder.StreamTranscode(*videoFile)
+	stream, process, err := encoder.StreamTranscode(*videoFile, startTime)
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %s", err.Error())
 		return

@@ -2,9 +2,10 @@ package models
 
 import (
 	"database/sql"
+	"path/filepath"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
-	"path/filepath"
 )
 
 type GalleryQueryBuilder struct{}
@@ -48,6 +49,24 @@ func (qb *GalleryQueryBuilder) Update(updatedGallery Gallery, tx *sqlx.Tx) (*Gal
 		return nil, err
 	}
 	return &updatedGallery, nil
+}
+
+type GalleryNullSceneID struct {
+	SceneID sql.NullInt64
+}
+
+func (qb *GalleryQueryBuilder) ClearGalleryId(sceneID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.NamedExec(
+		`UPDATE galleries SET scene_id = null WHERE scene_id = :sceneid`,
+		GalleryNullSceneID{
+			SceneID: sql.NullInt64{
+				Int64: int64(sceneID),
+				Valid: true,
+			},
+		},
+	)
+	return err
 }
 
 func (qb *GalleryQueryBuilder) Find(id int) (*Gallery, error) {
