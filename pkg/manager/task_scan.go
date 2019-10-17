@@ -82,7 +82,7 @@ func (t *ScanTask) scanScene() {
 	scene, _ := qb.FindByPath(t.FilePath)
 	if scene != nil {
 		// We already have this item in the database, check for thumbnails,screenshots
-		t.checkScreenshots(scene.Checksum)
+		t.makeScreenshots(nil, scene.Checksum)
 		return
 	}
 
@@ -103,7 +103,7 @@ func (t *ScanTask) scanScene() {
 		return
 	}
 
-	t.makeScreenshots(*videoFile, checksum)
+	t.makeScreenshots(videoFile, checksum)
 
 	scene, _ = qb.FindByChecksum(checksum)
 	ctx := context.TODO()
@@ -151,19 +151,43 @@ func (t *ScanTask) scanScene() {
 	}
 }
 
-func (t *ScanTask) makeScreenshots(probeResult ffmpeg.VideoFile, checksum string) {
+func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum string) {
 	thumbPath := instance.Paths.Scene.GetThumbnailScreenshotPath(checksum)
 	normalPath := instance.Paths.Scene.GetScreenshotPath(checksum)
 
 	thumbExists, _ := utils.FileExists(thumbPath)
 	normalExists, _ := utils.FileExists(normalPath)
+
 	if thumbExists && normalExists {
 		logger.Debug("Screenshots already exist for this path... skipping")
 		return
 	}
 
-	t.makeScreenshot(probeResult, thumbPath, 5, 320)
-	t.makeScreenshot(probeResult, normalPath, 2, probeResult.Width)
+	if probeResult != nil {
+		// makescreenshots is called for a new file
+		t.makeScreenshot(*probeResult, thumbPath, 5, 320)
+		t.makeScreenshot(*probeResult, normalPath, 2, probeResult.Width)
+	} else {
+		// makescreenshots is called for an already existing file
+		if !thumbExists || !normalExists {
+			checkvideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
+
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+			if !thumbExists {
+				logger.Infof("Recreating thumbnail for %s", t.FilePath)
+				t.makeScreenshot(*checkvideoFile, thumbPath, 5, 320)
+			}
+
+			if !normalExists {
+				logger.Infof("Recreating screenshot for %s", t.FilePath)
+				t.makeScreenshot(*checkvideoFile, normalPath, 2, checkvideoFile.Width)
+			}
+		}
+	}
+
 }
 
 func (t *ScanTask) makeScreenshot(probeResult ffmpeg.VideoFile, outputPath string, quality int, width int) {
@@ -185,34 +209,4 @@ func (t *ScanTask) calculateChecksum() (string, error) {
 	}
 	logger.Debugf("Checksum calculated: %s", checksum)
 	return checksum, nil
-}
-
-func (t *ScanTask) checkScreenshots(checksum string) {
-	//check for existance of screenshot or thumbnail and create them if needed
-
-	thumbPath := instance.Paths.Scene.GetThumbnailScreenshotPath(checksum)
-	normalPath := instance.Paths.Scene.GetScreenshotPath(checksum)
-
-	thumbExists, _ := utils.FileExists(thumbPath)
-	normalExists, _ := utils.FileExists(normalPath)
-
-	if !thumbExists || !normalExists {
-		checkvideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
-
-		if err != nil {
-			logger.Error(err.Error())
-			return
-		}
-		if !thumbExists {
-			logger.Infof("Recreating thumbnail for %s", t.FilePath)
-			t.makeScreenshot(*checkvideoFile, thumbPath, 5, 320)
-		}
-
-		if !normalExists {
-			logger.Infof("Recreating screenshot for %s", t.FilePath)
-			t.makeScreenshot(*checkvideoFile, normalPath, 2, checkvideoFile.Width)
-		}
-	}
-	return
-
 }
