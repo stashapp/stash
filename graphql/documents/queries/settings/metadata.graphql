@@ -6,8 +6,8 @@ query MetadataExport {
   metadataExport
 }
 
-query MetadataScan {
-  metadataScan
+query MetadataScan($input: ScanMetadataInput!) {
+  metadataScan(input: $input)
 }
 
 query MetadataGenerate($input: GenerateMetadataInput!) {

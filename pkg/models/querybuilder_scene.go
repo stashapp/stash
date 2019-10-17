@@ -61,29 +61,30 @@ func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error)
 	return &newScene, nil
 }
 
-func (qb *SceneQueryBuilder) Update(updatedScene Scene, tx *sqlx.Tx) (*Scene, error) {
+func (qb *SceneQueryBuilder) Update(updatedScene ScenePartial, tx *sqlx.Tx) (*Scene, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE scenes SET `+SQLGenKeys(updatedScene)+` WHERE scenes.id = :id`,
+		`UPDATE scenes SET `+SQLGenKeysPartial(updatedScene)+` WHERE scenes.id = :id`,
 		updatedScene,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := tx.Get(&updatedScene, `SELECT * FROM scenes WHERE id = ? LIMIT 1`, updatedScene.ID); err != nil {
-		return nil, err
-	}
-	return &updatedScene, nil
+	return qb.find(updatedScene.ID, tx)
 }
 
 func (qb *SceneQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	return executeDeleteQuery("scenes", id, tx)
 }
 func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
+	return qb.find(id, nil)
+}
+
+func (qb *SceneQueryBuilder) find(id int, tx *sqlx.Tx) (*Scene, error) {
 	query := "SELECT * FROM scenes WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
-	return qb.queryScene(query, args, nil)
+	return qb.queryScene(query, args, tx)
 }
 
 func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*Scene, error) {
@@ -210,6 +211,8 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 			whereClauses = append(whereClauses, "scenes.studio_id IS NULL")
 		case "performers":
 			whereClauses = append(whereClauses, "performers_join.scene_id IS NULL")
+		case "date":
+			whereClauses = append(whereClauses, "scenes.date IS \"\" OR scenes.date IS \"0001-01-01\"")
 		default:
 			whereClauses = append(whereClauses, "scenes."+*isMissingFilter+" IS NULL")
 		}

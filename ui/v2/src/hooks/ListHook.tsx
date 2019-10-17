@@ -112,6 +112,7 @@ export class ListHook {
     function onChangeSortBy(sortBy: string) {
       const newFilter = _.cloneDeep(filter);
       newFilter.sortBy = sortBy;
+      newFilter.currentPage = 1;
       setFilter(newFilter);
     }
 

@@ -11,7 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func (s *singleton) Scan() {
+func (s *singleton) Scan(nameFromMetadata bool) {
 	if s.Status != Idle {
 		return
 	}
@@ -31,7 +31,7 @@ func (s *singleton) Scan() {
 		var wg sync.WaitGroup
 		for _, path := range results {
 			wg.Add(1)
-			task := ScanTask{FilePath: path}
+			task := ScanTask{FilePath: path, NameFromMetadata: nameFromMetadata}
 			go task.Start(&wg)
 			wg.Wait()
 		}

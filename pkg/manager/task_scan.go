@@ -16,7 +16,8 @@ import (
 )
 
 type ScanTask struct {
-	FilePath string
+	FilePath         string
+	NameFromMetadata bool
 }
 
 func (t *ScanTask) Start(wg *sync.WaitGroup) {
@@ -90,6 +91,11 @@ func (t *ScanTask) scanScene() {
 		return
 	}
 
+	// Override title to be filename if nameFromMetadata is false
+	if !t.NameFromMetadata {
+		videoFile.SetTitleFromPath()
+	}
+
 	checksum, err := t.calculateChecksum()
 	if err != nil {
 		logger.Error(err.Error())
@@ -107,8 +113,11 @@ func (t *ScanTask) scanScene() {
 			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, scene.Path)
 		} else {
 			logger.Infof("%s already exists.  Updating path...", t.FilePath)
-			scene.Path = t.FilePath
-			_, err = qb.Update(*scene, tx)
+			scenePartial := models.ScenePartial{
+				ID:   scene.ID,
+				Path: &t.FilePath,
+			}
+			_, err = qb.Update(scenePartial, tx)
 		}
 	} else {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
