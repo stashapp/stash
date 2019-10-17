@@ -1,11 +1,13 @@
 package ffmpeg
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 )
@@ -14,9 +16,60 @@ type Encoder struct {
 	Path string
 }
 
+var runningEncoders map[string][]*os.Process = make(map[string][]*os.Process)
+
 func NewEncoder(ffmpegPath string) Encoder {
 	return Encoder{
 		Path: ffmpegPath,
+	}
+}
+
+func registerRunningEncoder(path string, process *os.Process) {
+	processes := runningEncoders[path]
+
+	runningEncoders[path] = append(processes, process)
+}
+
+func deregisterRunningEncoder(path string, process *os.Process) {
+	processes := runningEncoders[path]
+
+	for i, v := range processes {
+		if v == process {
+			runningEncoders[path] = append(processes[:i], processes[i+1:]...)
+			return
+		}
+	}
+}
+
+func waitAndDeregister(path string, cmd *exec.Cmd) error {
+	err := cmd.Wait()
+	deregisterRunningEncoder(path, cmd.Process)
+
+	return err
+}
+
+func KillRunningEncoders(path string) {
+	processes := runningEncoders[path]
+
+	for _, process := range processes {
+		// assume it worked, don't check for error
+		fmt.Printf("Killing encoder process for file: %s", path)
+		process.Kill()
+
+		// wait for the process to die before returning
+		// don't wait more than a few seconds
+		done := make(chan error)
+		go func() { 
+			_, err := process.Wait() 
+			done <- err
+		}()
+
+		select {
+		case <-done:
+			return
+		case <-time.After(5 * time.Second):
+			return
+		}
 	}
 }
 
@@ -56,7 +109,10 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 	stdoutData, _ := ioutil.ReadAll(stdout)
 	stdoutString := string(stdoutData)
 
-	if err := cmd.Wait(); err != nil {
+	registerRunningEncoder(probeResult.Path, cmd.Process)
+	err = waitAndDeregister(probeResult.Path, cmd)
+
+	if err != nil {
 		logger.Errorf("ffmpeg error when running command <%s>", strings.Join(cmd.Args, " "))
 		return stdoutString, err
 	}
@@ -75,6 +131,9 @@ func (e *Encoder) stream(probeResult VideoFile, args []string) (io.ReadCloser, *
 	if err = cmd.Start(); err != nil {
 		return nil, nil, err
 	}
+
+	registerRunningEncoder(probeResult.Path, cmd.Process)
+	go waitAndDeregister(probeResult.Path, cmd)
 
 	return stdout, cmd.Process, nil
 }
