@@ -157,6 +157,9 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	// if delete file is true, then delete the file as well
 	// if it fails, just log a message
 	if input.DeleteFile != nil && *input.DeleteFile {
+		// kill any running encoders
+		manager.KillRunningStreams(scene.Path)
+
 		err = os.Remove(scene.Path)
 		if err != nil {
 			logger.Warnf("Could not delete file %s: %s", scene.Path, err.Error())
@@ -216,6 +219,9 @@ func deleteGeneratedSceneFiles(scene *models.Scene) {
 	transcodePath := manager.GetInstance().Paths.Scene.GetTranscodePath(scene.Checksum)
 	exists, _ = utils.FileExists(transcodePath)
 	if exists {
+		// kill any running streams
+		manager.KillRunningStreams(transcodePath)
+
 		err := os.Remove(transcodePath)
 		if err != nil {
 			logger.Warnf("Could not delete file %s: %s", transcodePath, err.Error())
