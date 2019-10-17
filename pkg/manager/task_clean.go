@@ -85,12 +85,12 @@ func (t *CleanTask)  deleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	normalPath := instance.Paths.Scene.GetScreenshotPath(scene.Checksum)
-	exists, _ = utils.FileExists(normalPath)
+	screenshotPath := instance.Paths.Scene.GetScreenshotPath(scene.Checksum)
+	exists, _ = utils.FileExists(screenshotPath)
 	if exists {
-		err := os.Remove(normalPath)
+		err := os.Remove(screenshotPath)
 		if err != nil {
-			logger.Warnf("Could not delete file %s: %s", normalPath, err.Error())
+			logger.Warnf("Could not delete file %s: %s", screenshotPath, err.Error())
 		}
 	}
 
