@@ -63,7 +63,8 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
       >
         <p>
           Are you sure you want to Clean?
-          This will delete metadata and generated files for all files that can't be found.
+          This will delete db information and generated content
+          for all scenes that are no longer found in the filesystem.
         </p>
       </Alert>
     );
