@@ -20,9 +20,9 @@ func (t *CleanTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	if t.fileExists(t.Scene.Path) {
-		logger.Debugf("Found: %s", t.Scene.Path)
+		logger.Debugf("File Found: %s", t.Scene.Path)
 	} else {
-		logger.Debugf("Deleting missing file: %s", t.Scene.Path)
+		logger.Infof("File not found. Cleaning: %s", t.Scene.Path)
 		t.deleteScene(t.Scene.ID)
 	}
 }
