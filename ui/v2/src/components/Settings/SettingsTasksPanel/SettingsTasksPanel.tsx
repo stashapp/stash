@@ -106,7 +106,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         labelFor="clean"
         inline={true}
       >
-        <Button id="clean" text="Clean" icon="warning-sign" intent="danger" onClick={() => setIsCleanAlertOpen(true)} />
+        <Button id="clean" text="Clean" intent="danger" onClick={() => setIsCleanAlertOpen(true)} />
       </FormGroup>
       <Divider />
 
@@ -124,7 +124,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         labelFor="import"
         inline={true}
       >
-        <Button id="import" text="Import" icon="warning-sign" intent="danger" onClick={() => setIsImportAlertOpen(true)} />
+        <Button id="import" text="Import" intent="danger" onClick={() => setIsImportAlertOpen(true)} />
       </FormGroup>
     </>
   );
