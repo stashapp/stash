@@ -79,11 +79,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         labelFor="clean"
         inline={true}
       >
-        <Button
-          id="clean"
-          text="Clean"
-          onClick={() => StashService.queryMetadataClean()}
-        />
+        <Button id="clean" text="Clean" onClick={() => StashService.queryMetadataClean()} />
       </FormGroup>
       <Divider />
 
