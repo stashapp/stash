@@ -164,13 +164,14 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 	}
 
 	if probeResult == nil {
-		var err  error 
+		var err error
 		probeResult, err = ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
 
 		if err != nil {
 			logger.Error(err.Error())
 			return
 		}
+		logger.Infof("Regenerating images for %s", t.FilePath)
 	}
 
 	if !thumbExists {
