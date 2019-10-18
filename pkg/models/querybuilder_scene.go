@@ -74,6 +74,10 @@ func (qb *SceneQueryBuilder) Update(updatedScene ScenePartial, tx *sqlx.Tx) (*Sc
 	return qb.find(updatedScene.ID, tx)
 }
 
+func (qb *SceneQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
+	return executeDeleteQuery("scenes", id, tx)
+}
+
 func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
 	return qb.find(id, nil)
 }
@@ -292,3 +296,4 @@ func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *s
 
 	return scenes, nil
 }
+
