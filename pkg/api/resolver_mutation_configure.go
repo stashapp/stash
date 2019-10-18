@@ -36,6 +36,20 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		config.Set(config.Generated, input.GeneratedPath)
 	}
 
+	if input.Username != nil {
+		config.Set(config.Username, input.Username)
+	}
+
+	if input.Password != nil {
+		// bit of a hack - check if the passed in password is the same as the stored hash
+		// and only set if they are different
+		currentPWHash := config.GetPasswordHash()
+
+		if *input.Password != currentPWHash {
+			config.SetPassword(*input.Password)
+		}
+	}
+
 	if err := config.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}
