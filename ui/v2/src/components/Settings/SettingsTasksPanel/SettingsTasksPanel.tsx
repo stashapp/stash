@@ -21,6 +21,8 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [nameFromMetadata, setNameFromMetadata] = useState<boolean>(true);
 
+  const metadataUpdateResult = StashService.useMetadataUpdate();
+
   function onImport() {
     setIsImportAlertOpen(false);
     StashService.queryMetadataImport();
@@ -90,6 +92,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         labelFor="scan"
         inline={true}
       >
+        {metadataUpdateResult.data ? metadataUpdateResult.data.metadataUpdate : ""}
         <Checkbox
           checked={nameFromMetadata}
           label="Set name from metadata (if present)"

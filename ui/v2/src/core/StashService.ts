@@ -1,24 +1,58 @@
-import ApolloClient from "apollo-boost";
+import ApolloClient from "apollo-client";
+import { WebSocketLink } from 'apollo-link-ws';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { HttpLink, split } from "apollo-boost";
 import _ from "lodash";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
+import { SubscriptionHookOptions } from "react-apollo-hooks";
+import { getMainDefinition } from "apollo-utilities";
+import { platform } from "os";
 
 export class StashService {
   public static client: ApolloClient<any>;
 
   public static initialize() {
     const platformUrl = new URL(window.location.origin);
+    const wsPlatformUrl = new URL(window.location.origin);
+    wsPlatformUrl.protocol = "ws:";
+
     if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
       platformUrl.port = "9999"; // TODO: Hack. Development expects port 9999
+      wsPlatformUrl.port = "9999";
 
       if (process.env.REACT_APP_HTTPS === "true") {
         platformUrl.protocol = "https:";
+        wsPlatformUrl.protocol = "wss:";
       }
     }
-    const url = platformUrl.toString().slice(0, -1);
+    const url = platformUrl.toString().slice(0, -1) + "/graphql";
+    const wsUrl = wsPlatformUrl.toString().slice(0, -1) + "/graphql";
 
+    const httpLink = new HttpLink({
+      uri: url,
+    });
+
+    const wsLink = new WebSocketLink({
+      uri: wsUrl,
+      options: {
+        reconnect: true
+      },
+    });
+    
+    const link = split(
+      ({ query }) => {
+        const { kind, operation } = getMainDefinition(query);
+        return kind === 'OperationDefinition' && operation === 'subscription';
+      },
+      wsLink,
+      httpLink,
+    );
+
+    const cache = new InMemoryCache();
     StashService.client = new ApolloClient({
-      uri: `${url}/graphql`,
+      link: link,
+      cache: cache
     });
 
     (window as any).StashService = StashService;
@@ -172,6 +206,10 @@ export class StashService {
 
   public static useConfigureInterface(input: GQL.ConfigInterfaceInput) {
     return GQL.useConfigureInterface({ variables: { input }, refetchQueries: ["Configuration"] });
+  }
+
+  public static useMetadataUpdate() {
+    return GQL.useMetadataUpdate();
   }
 
   public static queryScrapeFreeones(performerName: string) {
