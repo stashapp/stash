@@ -53,7 +53,10 @@ export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
 
     // append data to the logEntries
     var convertedData = data.loggingSubscribe.map(convertLogEntry);
-    var newLogEntries = logEntries.concat(convertedData);
+
+    // put newest entries at the top
+    convertedData.reverse();
+    var newLogEntries = convertedData.concat(logEntries);
 
     setLogEntries(newLogEntries);
   }, [data]);
@@ -88,8 +91,8 @@ export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
     <>
       <H4>Logs</H4>
       <div className="logs">
-        {existingLogEntries.map(renderLogEntry)}
         {logEntries.map(renderLogEntry)}
+        {existingLogEntries.map(renderLogEntry)}
       </div>
     </>
   );
