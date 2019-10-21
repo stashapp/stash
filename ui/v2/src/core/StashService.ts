@@ -212,6 +212,16 @@ export class StashService {
     return GQL.useMetadataUpdate();
   }
 
+  public static useLoggingSubscribe() {
+    return GQL.useLoggingSubscribe();
+  }
+
+  public static useLogs() {
+    return GQL.useLogs({
+      fetchPolicy: 'no-cache'
+    });
+  }
+
   public static queryScrapeFreeones(performerName: string) {
     return StashService.client.query<GQL.ScrapeFreeonesQuery>({
       query: GQL.ScrapeFreeonesDocument,

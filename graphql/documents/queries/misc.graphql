@@ -54,6 +54,11 @@ query Stats {
   }
 }
 
+query Logs {
+  logs {
+    ...LogEntryData
+  }
+}
 query Version {
   version {
     hash,

@@ -7,10 +7,8 @@ import {
   H4,
 } from "@blueprintjs/core";
 import React, { FunctionComponent, useState } from "react";
-import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
 import { ErrorUtils } from "../../../utils/errors";
-import { TextUtils } from "../../../utils/text";
 import { ToastUtils } from "../../../utils/toasts";
 import { GenerateButton } from "./GenerateButton";
 
@@ -20,8 +18,6 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [nameFromMetadata, setNameFromMetadata] = useState<boolean>(true);
-
-  const metadataUpdateResult = StashService.useMetadataUpdate();
 
   function onImport() {
     setIsImportAlertOpen(false);
@@ -92,7 +88,6 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         labelFor="scan"
         inline={true}
       >
-        {metadataUpdateResult.data ? metadataUpdateResult.data.metadataUpdate : ""}
         <Checkbox
           checked={nameFromMetadata}
           label="Set name from metadata (if present)"

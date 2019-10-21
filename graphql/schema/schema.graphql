@@ -37,6 +37,8 @@ type Query {
   """Organize scene markers by tag for a given scene ID"""
   sceneMarkerTags(scene_id: ID!): [SceneMarkerTag!]!
 
+  logs: [LogEntry!]!
+
   # Scrapers
 
   """Scrape a performer using Freeones"""
@@ -101,6 +103,8 @@ type Mutation {
 type Subscription {
   """Update from the metadata manager"""
   metadataUpdate: String!
+
+  loggingSubscribe: [LogEntry!]!
 }
 
 schema {
