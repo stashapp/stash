@@ -2,6 +2,8 @@ package logger
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"sync"
 	"time"
 
@@ -23,6 +25,50 @@ var logSubs []chan []LogItem
 var waiting = false
 var lastBroadcast = time.Now()
 var logBuffer []LogItem
+
+// Init initialises the logger based on a logging configuration
+func Init(logFile string, logOut bool, logLevel string, logFormat string) {
+	var file *os.File
+
+	if logFile != "" {
+		var err error
+		file, err = os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+
+		if err != nil {
+			fmt.Printf("Could not open '%s' for log output due to error: %s\n", logFile, err.Error())
+			logFile = ""
+		}
+	}
+
+	if file != nil && logOut {
+		mw := io.MultiWriter(os.Stderr, file)
+		logger.Out = mw
+	} else if file != nil {
+		logger.Out = file
+	}
+
+	// otherwise, output to StdErr
+
+	logger.Level = logLevelFromString(logLevel)
+
+	if logFormat == "text" {
+		logger.Formatter = new(logrus.TextFormatter)
+	}
+}
+
+func logLevelFromString(level string) logrus.Level {
+	ret := logrus.InfoLevel
+
+	if level == "Debug" {
+		ret = logrus.DebugLevel
+	} else if level == "Warning" {
+		ret = logrus.WarnLevel
+	} else if level == "Error" {
+		ret = logrus.ErrorLevel
+	}
+
+	return ret
+}
 
 func addLogItem(l *LogItem) {
 	mutex.Lock()
