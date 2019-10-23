@@ -29,7 +29,6 @@ const CSSEnabled = "cssEnabled"
 const LogFile = "logFile"
 const LogOut = "logOut"
 const LogLevel = "logLevel"
-const LogFormat = "logFormat"
 const LogAccess = "logAccess"
 
 func Set(key string, value interface{}) {
@@ -192,18 +191,6 @@ func GetLogLevel() string {
 	}
 
 	return value
-}
-
-// GetLogFormat returns the log formatter to use.
-// Must be one of "json" or "text".
-// Defaults to "json".
-func GetLogFormat() string {
-	ret := viper.GetString(LogFormat)
-	if ret != "json" && ret != "text" {
-		ret = "json"
-	}
-
-	return ret
 }
 
 // GetLogAccess returns true if http requests should be logged to the terminal.

@@ -8,12 +8,13 @@ import {
   InputGroup,
   Spinner,
   Tag,
+  Checkbox,
+  HTMLSelect,
 } from "@blueprintjs/core";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import * as GQL from "../../core/generated-graphql";
 import { StashService } from "../../core/StashService";
 import { ErrorUtils } from "../../utils/errors";
-import { TextUtils } from "../../utils/text";
 import { ToastUtils } from "../../utils/toasts";
 import { FolderSelect } from "../Shared/FolderSelect/FolderSelect";
 
@@ -26,6 +27,10 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
   const [generatedPath, setGeneratedPath] = useState<string | undefined>(undefined);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
+  const [logFile, setLogFile] = useState<string | undefined>();
+  const [logOut, setLogOut] = useState<boolean>(true);
+  const [logLevel, setLogLevel] = useState<string>("Info");
+  const [logAccess, setLogAccess] = useState<boolean>(true);
 
   const { data, error, loading } = StashService.useConfiguration();
 
@@ -35,6 +40,10 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
     generatedPath,
     username,
     password,
+    logFile,
+    logOut,
+    logLevel,
+    logAccess,
   });
 
   useEffect(() => {
@@ -46,6 +55,10 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       setGeneratedPath(conf.general.generatedPath);
       setUsername(conf.general.username);
       setPassword(conf.general.password);
+      setLogFile(conf.general.logFile);
+      setLogOut(conf.general.logOut);
+      setLogLevel(conf.general.logLevel);
+      setLogAccess(conf.general.logAccess);
     }
   }, [data]);
 
@@ -89,6 +102,9 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       >
         <InputGroup value={generatedPath} onChange={(e: any) => setGeneratedPath(e.target.value)} />
       </FormGroup>
+
+      <Divider />
+      <H4>Authentication</H4>
       <FormGroup
         label="Username"
         helperText="Username to access Stash. Leave blank to disable user authentication"
@@ -101,6 +117,44 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       >
         <InputGroup type="password" value={password} onChange={(e: any) => setPassword(e.target.value)} />
       </FormGroup>
+
+      <Divider />
+      <H4>Logging</H4>
+      <FormGroup
+        label="Log file"
+        helperText="Path to the file to output logging to. Blank to disable file logging. Requires restart."
+      >
+        <InputGroup value={logFile} onChange={(e: any) => setLogFile(e.target.value)} />
+      </FormGroup>
+
+      <FormGroup
+        helperText="Logs to the terminal in addition to a file. Always true if file logging is disabled. Requires restart."
+      >
+        <Checkbox
+          checked={logOut}
+          label="Log to terminal"
+          onChange={(e: any) => setLogOut(e.target.value)}
+        />
+      </FormGroup>
+
+      <FormGroup inline={true} label="Log Level">
+        <HTMLSelect
+          options={["Debug", "Info", "Warning", "Error"]}
+          onChange={(event) => setLogLevel(event.target.value)}
+          value={logLevel}
+        />
+      </FormGroup>
+
+      <FormGroup
+        helperText="Logs http access to the terminal. Requires restart."
+      >
+        <Checkbox
+          checked={logAccess}
+          label="Log http access"
+          onChange={(e: any) => setLogAccess(e.target.value)}
+        />
+      </FormGroup>
+
       <Divider />
       <Button intent="primary" onClick={() => onSave()}>Save</Button>
     </>

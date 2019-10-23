@@ -27,7 +27,7 @@ var lastBroadcast = time.Now()
 var logBuffer []LogItem
 
 // Init initialises the logger based on a logging configuration
-func Init(logFile string, logOut bool, logLevel string, logFormat string) {
+func Init(logFile string, logOut bool, logLevel string) {
 	var file *os.File
 
 	if logFile != "" {
@@ -49,11 +49,11 @@ func Init(logFile string, logOut bool, logLevel string, logFormat string) {
 
 	// otherwise, output to StdErr
 
-	logger.Level = logLevelFromString(logLevel)
+	SetLogLevel(logLevel)
+}
 
-	if logFormat == "text" {
-		logger.Formatter = new(logrus.TextFormatter)
-	}
+func SetLogLevel(level string) {
+	logger.Level = logLevelFromString(level)
 }
 
 func logLevelFromString(level string) logrus.Level {

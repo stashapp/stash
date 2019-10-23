@@ -128,7 +128,7 @@ The error was: %s
 }
 
 func initLog() {
-	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel(), config.GetLogFormat())
+	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
 }
 
 func (s *singleton) refreshConfig() {
