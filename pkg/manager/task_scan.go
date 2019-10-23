@@ -81,7 +81,8 @@ func (t *ScanTask) scanScene() {
 	qb := models.NewSceneQueryBuilder()
 	scene, _ := qb.FindByPath(t.FilePath)
 	if scene != nil {
-		// We already have this item in the database, keep going
+		// We already have this item in the database, check for thumbnails,screenshots
+		t.makeScreenshots(nil, scene.Checksum)
 		return
 	}
 
@@ -102,7 +103,7 @@ func (t *ScanTask) scanScene() {
 		return
 	}
 
-	t.makeScreenshots(*videoFile, checksum)
+	t.makeScreenshots(videoFile, checksum)
 
 	scene, _ = qb.FindByChecksum(checksum)
 	ctx := context.TODO()
@@ -150,19 +151,38 @@ func (t *ScanTask) scanScene() {
 	}
 }
 
-func (t *ScanTask) makeScreenshots(probeResult ffmpeg.VideoFile, checksum string) {
+func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum string) {
 	thumbPath := instance.Paths.Scene.GetThumbnailScreenshotPath(checksum)
 	normalPath := instance.Paths.Scene.GetScreenshotPath(checksum)
 
 	thumbExists, _ := utils.FileExists(thumbPath)
 	normalExists, _ := utils.FileExists(normalPath)
+
 	if thumbExists && normalExists {
 		logger.Debug("Screenshots already exist for this path... skipping")
 		return
 	}
 
-	t.makeScreenshot(probeResult, thumbPath, 5, 320)
-	t.makeScreenshot(probeResult, normalPath, 2, probeResult.Width)
+	if probeResult == nil {
+		var err error
+		probeResult, err = ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
+
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+		logger.Infof("Regenerating images for %s", t.FilePath)
+	}
+
+	if !thumbExists {
+		logger.Debugf("Creating thumbnail for %s", t.FilePath)
+		t.makeScreenshot(*probeResult, thumbPath, 5, 320)
+	}
+
+	if !normalExists {
+		logger.Debugf("Creating screenshot for %s", t.FilePath)
+		t.makeScreenshot(*probeResult, normalPath, 2, probeResult.Width)
+	}
 }
 
 func (t *ScanTask) makeScreenshot(probeResult ffmpeg.VideoFile, outputPath string, quality int, width int) {

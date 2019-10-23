@@ -5,6 +5,10 @@ input ConfigGeneralInput {
   databasePath: String
   """Path to generated files"""
   generatedPath: String
+  """Username"""
+  username: String
+  """Password"""
+  password: String
 }
 
 type ConfigGeneralResult {
@@ -14,6 +18,10 @@ type ConfigGeneralResult {
   databasePath: String!
   """Path to generated files"""
   generatedPath: String!
+  """Username"""
+  username: String!
+  """Password"""
+  password: String!
 }
 
 input ConfigInterfaceInput {

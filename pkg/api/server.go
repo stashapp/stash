@@ -35,6 +35,32 @@ var uiBox *packr.Box
 //var legacyUiBox *packr.Box
 var setupUIBox *packr.Box
 
+func authenticateHandler() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// only do this if credentials have been configured
+			if !config.HasCredentials() {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			authUser, authPW, ok := r.BasicAuth()
+
+			if !ok || !config.ValidateCredentials(authUser, authPW) {
+				unauthorized(w)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func unauthorized(w http.ResponseWriter) {
+	w.Header().Add("WWW-Authenticate", `Basic realm=\"Stash\"`)
+	w.WriteHeader(http.StatusUnauthorized)
+}
+
 func Start() {
 	uiBox = packr.New("UI Box", "../../ui/v2/build")
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
@@ -42,6 +68,7 @@ func Start() {
 
 	r := chi.NewRouter()
 
+	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Logger)
 	r.Use(middleware.DefaultCompress)

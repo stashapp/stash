@@ -133,6 +133,41 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 	}()
 }
 
+func (s *singleton) Clean() {
+	if s.Status != Idle {
+		return
+	}
+	s.Status = Clean
+
+	qb := models.NewSceneQueryBuilder()
+	go func() {
+		defer s.returnToIdleState()
+
+		logger.Infof("Starting cleaning of tracked files")
+		scenes, err := qb.All()
+		if err != nil {
+			logger.Errorf("failed to fetch list of scenes for cleaning")
+			return
+		}
+
+		var wg sync.WaitGroup
+		for _, scene := range scenes {
+			if scene == nil {
+				logger.Errorf("nil scene, skipping generate")
+				continue
+			}
+
+			wg.Add(1)
+
+			task := CleanTask{Scene: *scene}
+			go task.Start(&wg)
+			wg.Wait()
+		}
+
+		logger.Info("Finished Cleaning")
+	}()
+}
+
 func (s *singleton) returnToIdleState() {
 	if r := recover(); r != nil {
 		logger.Info("recovered from ", r)

@@ -66,7 +66,7 @@ func GetPerformer(performerName string) (*models.ScrapedPerformer, error) {
 			return true
 		}
 		alias := s.ParentsFiltered(".babeNameBlock").Find(".babeAlias").First();
-		if strings.EqualFold(alias.Text(), "aka " + performerName) {
+		if strings.Contains( strings.ToLower(alias.Text()), strings.ToLower(performerName) ) {
 			return true
 		}
 		return false
@@ -76,6 +76,10 @@ func GetPerformer(performerName string) (*models.ScrapedPerformer, error) {
 	href = strings.TrimSuffix(href, "/")
 	regex := regexp.MustCompile(`.+_links\/(.+)`)
 	matches := regex.FindStringSubmatch(href)
+	if len(matches) < 2 {
+		return nil, fmt.Errorf("No matches found in %s",href)
+	}
+
 	href = strings.Replace(href, matches[1], "bio_"+matches[1]+".php", -1)
 	href = "https://www.freeones.com" + href
 	
@@ -223,7 +227,7 @@ func getEthnicity(ethnicity string) string {
 
 func paramValue(params *goquery.Selection, paramIndex int) string {
 	i := paramIndex - 1
-	if paramIndex == 0 {
+	if paramIndex <= 0 {
 		return ""
 	}
 	node := params.Get(i).FirstChild
