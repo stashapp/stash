@@ -1,7 +1,7 @@
 import {
   H4, FormGroup, HTMLSelect,
 } from "@blueprintjs/core";
-import React, { FunctionComponent, useState, useEffect } from "react";
+import React, { FunctionComponent, useState, useEffect, useRef } from "react";
 import * as GQL from "../../core/generated-graphql";
 import { StashService } from "../../core/StashService";
 
@@ -48,46 +48,89 @@ export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
   const { data, error } = StashService.useLoggingSubscribe();
   const { data: existingData } = StashService.useLogs();
   
-  const [existingLogEntries, setExistingLogEntries] = useState<LogEntry[]>([]);
-  const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
+  const logEntries = useRef<LogEntry[]>([]);
   const [logLevel, setLogLevel] = useState<string>("Info");
   const [filteredLogEntries, setFilteredLogEntries] = useState<LogEntry[]>([]);
+  const lastUpdate = useRef<number>(0);
+  const updateTimeout = useRef<NodeJS.Timeout>();
+
+  // maximum number of log entries to display. Subsequent entries will truncate 
+  // the list, dropping off the oldest entries first.
+  const MAX_LOG_ENTRIES = 200;
+
+  // throttle updates to occur at least 500ms apart
+  const MIN_TIME_BETWEEN_UPDATES = 500;
+
+  function truncateLogEntries(entries : LogEntry[]) {
+    entries.length = Math.min(entries.length, MAX_LOG_ENTRIES);
+  }
+
+  function prependLogEntries(toPrepend : LogEntry[]) {
+    var newLogEntries = toPrepend.concat(logEntries.current);
+    truncateLogEntries(newLogEntries);
+    logEntries.current = newLogEntries;
+  }
+
+  function appendLogEntries(toAppend : LogEntry[]) {
+    var newLogEntries = logEntries.current.concat(toAppend);
+    truncateLogEntries(newLogEntries);
+    logEntries.current = newLogEntries;
+  }
 
   useEffect(() => {
     if (!data) { return; }
 
     // append data to the logEntries
     var convertedData = data.loggingSubscribe.map(convertLogEntry);
-
+    
     // put newest entries at the top
     convertedData.reverse();
-    var newLogEntries = convertedData.concat(logEntries);
+    prependLogEntries(convertedData);
 
-    setLogEntries(newLogEntries);
+    throttleUpdateFilteredEntries();
   }, [data]);
 
   useEffect(() => {
     if (!existingData || !existingData.logs) { return; }
 
     var convertedData = existingData.logs.map(convertLogEntry);
-    setExistingLogEntries(convertedData);
+    appendLogEntries(convertedData);
+
+    throttleUpdateFilteredEntries();
   }, [existingData]);
 
-  useEffect(() => {
-    // concatenate and filter the log entries
-    
-    var filteredEntries : LogEntry[] = [];
-    
-    if (logEntries) {
-      filteredEntries = filteredEntries.concat(logEntries.filter(filterByLogLevel));
+  function updateFilteredEntries() {
+    if (!updateTimeout.current) {
+      console.log("Updating after timeout");
+    }
+    updateTimeout.current = undefined;
+
+    var filteredEntries = logEntries.current.filter(filterByLogLevel);
+    setFilteredLogEntries(filteredEntries);
+
+    lastUpdate.current = new Date().getTime();
+  }
+
+  function throttleUpdateFilteredEntries() {
+    if (updateTimeout.current) {
+      // wait for the existing timeout to call
+      console.log("waiting for existing timeout");
+      return;
     }
 
-    if (existingLogEntries) {
-      filteredEntries = filteredEntries.concat(existingLogEntries.filter(filterByLogLevel));
+    var now = new Date().getTime();
+    if (lastUpdate.current + MIN_TIME_BETWEEN_UPDATES > now) {
+      var waitFor = lastUpdate.current + MIN_TIME_BETWEEN_UPDATES - now;
+      console.log("setting timeout for " + waitFor + "ms");
+      updateTimeout.current = setTimeout(updateFilteredEntries, waitFor);
+    } else {
+      updateFilteredEntries();
     }
-    
-    setFilteredLogEntries(filteredEntries);
-  }, [logLevel, logEntries, existingLogEntries]);
+  }
+
+  useEffect(() => {
+    throttleUpdateFilteredEntries();
+  }, [logLevel]);
 
   function convertLogEntry(logEntry : GQL.LogEntryDataFragment) {
     return new LogEntry(logEntry);
