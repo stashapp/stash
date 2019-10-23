@@ -32,6 +32,8 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		Stashes:       config.GetStashPaths(),
 		DatabasePath:  config.GetDatabasePath(),
 		GeneratedPath: config.GetGeneratedPath(),
+		Username:      config.GetUsername(),
+		Password:      config.GetPasswordHash(),
 	}
 }
 
