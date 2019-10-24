@@ -68,6 +68,9 @@ type Query {
   allPerformers: [Performer!]!
   allStudios: [Studio!]!
   allTags: [Tag!]!
+
+  # Version
+  version: Version!
 }
 
 type Mutation {
