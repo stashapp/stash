@@ -3,16 +3,27 @@ package api
 import (
 	"context"
 	"database/sql"
+	"strconv"
+	"time"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"strconv"
-	"time"
 )
 
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
-	// Process the base 64 encoded image string
-	checksum, imageData, err := utils.ProcessBase64Image(input.Image)
+	// generate checksum from performer name rather than image
+	checksum := utils.MD5FromString(*input.Name)
+
+	var imageData []byte
+	var err error
+
+	if input.Image == nil {
+		imageData, err = getRandomPerformerImage()
+	} else {
+		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -101,15 +112,18 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 	if input.Image != nil {
-		checksum, imageData, err := utils.ProcessBase64Image(*input.Image)
+		_, imageData, err := utils.ProcessBase64Image(*input.Image)
 		if err != nil {
 			return nil, err
 		}
 		updatedPerformer.Image = imageData
-		updatedPerformer.Checksum = checksum
 	}
 	if input.Name != nil {
+		// generate checksum from performer name rather than image
+		checksum := utils.MD5FromString(*input.Name)
+
 		updatedPerformer.Name = sql.NullString{String: *input.Name, Valid: true}
+		updatedPerformer.Checksum = checksum
 	}
 	if input.URL != nil {
 		updatedPerformer.URL = sql.NullString{String: *input.URL, Valid: true}
@@ -188,4 +202,3 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 	}
 	return true, nil
 }
-

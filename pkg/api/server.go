@@ -66,6 +66,8 @@ func Start() {
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
 
+	initialiseImages()
+	
 	r := chi.NewRouter()
 
 	r.Use(authenticateHandler())
