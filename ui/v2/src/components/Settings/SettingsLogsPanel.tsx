@@ -79,6 +79,10 @@ export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
 
     // append data to the logEntries
     var convertedData = data.loggingSubscribe.map(convertLogEntry);
+
+    // filter subscribed data as it comes in, otherwise we'll end up
+    // truncating stuff that wasn't filtered out
+    convertedData = convertedData.filter(filterByLogLevel)
     
     // put newest entries at the top
     convertedData.reverse();
