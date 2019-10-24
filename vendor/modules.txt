@@ -138,7 +138,9 @@ github.com/vektah/gqlparser/parser
 github.com/vektah/gqlparser/validator
 github.com/vektah/gqlparser/validator/rules
 github.com/vektah/gqlparser/lexer
-# golang.org/x/crypto v0.0.0-20190426145343-a29dc8fdc734
+# golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
+golang.org/x/crypto/bcrypt
+golang.org/x/crypto/blowfish
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/image v0.0.0-20190118043309-183bebdce1b2
 golang.org/x/image/bmp

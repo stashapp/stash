@@ -18,6 +18,7 @@ interface IProps {}
 
 export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => {
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
+  const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [nameFromMetadata, setNameFromMetadata] = useState<boolean>(true);
 
   function onImport() {
@@ -44,6 +45,31 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
     );
   }
 
+  function onClean() {
+    setIsCleanAlertOpen(false);
+    StashService.queryMetadataClean();
+  }
+
+  function renderCleanAlert() {
+    return (
+      <Alert
+        cancelButtonText="Cancel"
+        confirmButtonText="Clean"
+        icon="trash"
+        intent="danger"
+        isOpen={isCleanAlertOpen}
+        onCancel={() => setIsCleanAlertOpen(false)}
+        onConfirm={() => onClean()}
+      >
+        <p>
+          Are you sure you want to Clean?
+          This will delete db information and generated content
+          for all scenes that are no longer found in the filesystem.
+        </p>
+      </Alert>
+    );
+  }
+
   async function onScan() {
     try {
       await StashService.queryMetadataScan({nameFromMetadata});
@@ -56,6 +82,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
   return (
     <>
       {renderImportAlert()}
+      {renderCleanAlert()}
 
       <H4>Library</H4>
       <FormGroup
@@ -75,11 +102,11 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
       <H4>Generated Content</H4>
       <GenerateButton />
       <FormGroup
-        helperText="TODO"
+        helperText="Check for missing files and remove them from the database. This is a destructive action."
         labelFor="clean"
         inline={true}
       >
-        <Button id="clean" text="Clean" onClick={() => StashService.queryMetadataClean()} />
+        <Button id="clean" text="Clean" intent="danger" onClick={() => setIsCleanAlertOpen(true)} />
       </FormGroup>
       <Divider />
 

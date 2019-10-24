@@ -28,5 +28,6 @@ func (r *queryResolver) MetadataGenerate(ctx context.Context, input models.Gener
 }
 
 func (r *queryResolver) MetadataClean(ctx context.Context) (string, error) {
-	panic("not implemented")
+	manager.GetInstance().Clean()
+	return "todo", nil
 }
