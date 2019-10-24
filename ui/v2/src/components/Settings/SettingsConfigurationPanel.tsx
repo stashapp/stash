@@ -133,7 +133,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
         <Checkbox
           checked={logOut}
           label="Log to terminal"
-          onChange={(e: any) => setLogOut(e.target.value)}
+          onChange={() => setLogOut(!logOut)}
         />
       </FormGroup>
 
@@ -151,7 +151,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
         <Checkbox
           checked={logAccess}
           label="Log http access"
-          onChange={(e: any) => setLogAccess(e.target.value)}
+          onChange={() => setLogAccess(!logAccess)}
         />
       </FormGroup>
 
