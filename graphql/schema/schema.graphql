@@ -75,6 +75,7 @@ type Query {
 
 type Mutation {
   sceneUpdate(input: SceneUpdateInput!): Scene
+  sceneDestroy(input: SceneDestroyInput!): Boolean!
 
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker

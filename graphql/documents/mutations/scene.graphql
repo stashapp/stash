@@ -25,3 +25,7 @@ mutation SceneUpdate(
       ...SceneData
   }
 }
+
+mutation SceneDestroy($id: ID!, $delete_file: Boolean, $delete_generated : Boolean) {
+  sceneDestroy(input: {id: $id, delete_file: $delete_file, delete_generated: $delete_generated})
+}

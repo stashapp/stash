@@ -53,6 +53,12 @@ input SceneUpdateInput {
   tag_ids: [ID!]
 }
 
+input SceneDestroyInput {
+  id: ID!
+  delete_file: Boolean
+  delete_generated: Boolean
+}
+
 type FindScenesResultType {
   count: Int!
   scenes: [Scene!]!
