@@ -1,3 +1,9 @@
 subscription MetadataUpdate {
   metadataUpdate
 }
+
+subscription LoggingSubscribe {
+  loggingSubscribe {
+    ...LogEntryData
+  }
+}
