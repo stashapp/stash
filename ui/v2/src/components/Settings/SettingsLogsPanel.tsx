@@ -58,9 +58,6 @@ export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
   // the list, dropping off the oldest entries first.
   const MAX_LOG_ENTRIES = 200;
 
-  // throttle updates to occur at least 500ms apart
-  const MIN_TIME_BETWEEN_UPDATES = 500;
-
   function truncateLogEntries(entries : LogEntry[]) {
     entries.length = Math.min(entries.length, MAX_LOG_ENTRIES);
   }
@@ -87,7 +84,7 @@ export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
     convertedData.reverse();
     prependLogEntries(convertedData);
 
-    throttleUpdateFilteredEntries();
+    updateFilteredEntries();
   }, [data]);
 
   useEffect(() => {
@@ -96,7 +93,7 @@ export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
     var convertedData = existingData.logs.map(convertLogEntry);
     appendLogEntries(convertedData);
 
-    throttleUpdateFilteredEntries();
+    updateFilteredEntries();
   }, [existingData]);
 
   function updateFilteredEntries() {
@@ -111,25 +108,8 @@ export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
     lastUpdate.current = new Date().getTime();
   }
 
-  function throttleUpdateFilteredEntries() {
-    if (updateTimeout.current) {
-      // wait for the existing timeout to call
-      console.log("waiting for existing timeout");
-      return;
-    }
-
-    var now = new Date().getTime();
-    if (lastUpdate.current + MIN_TIME_BETWEEN_UPDATES > now) {
-      var waitFor = lastUpdate.current + MIN_TIME_BETWEEN_UPDATES - now;
-      console.log("setting timeout for " + waitFor + "ms");
-      updateTimeout.current = setTimeout(updateFilteredEntries, waitFor);
-    } else {
-      updateFilteredEntries();
-    }
-  }
-
   useEffect(() => {
-    throttleUpdateFilteredEntries();
+    updateFilteredEntries();
   }, [logLevel]);
 
   function convertLogEntry(logEntry : GQL.LogEntryDataFragment) {
