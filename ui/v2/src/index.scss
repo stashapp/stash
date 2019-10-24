@@ -173,12 +173,14 @@ video.preview {
 }
 
 .logs {
-  white-space: pre;
+  white-space: pre-wrap;
+  word-break: break-all;
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
   font-size: smaller;
   padding-right: 10px;
   overflow-y: auto;
   max-height: 100vh;
+  width: 120ch;
 
   .debug {
     color: lightgreen;
