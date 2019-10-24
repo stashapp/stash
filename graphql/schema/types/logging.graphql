@@ -1,0 +1,16 @@
+"""Log entries"""
+scalar Time
+
+enum LogLevel {
+    Debug
+    Info
+    Progress
+    Warning
+    Error
+}
+
+type LogEntry {
+  time: Time!
+  level: LogLevel!
+  message: String!
+}
