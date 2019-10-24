@@ -202,8 +202,8 @@ export class ListFilterModel {
     this.criteria.forEach((criterion) => {
       switch (criterion.type) {
         case "rating":
-          const crit = criterion as RatingCriterion;
-          result.rating = { value: crit.value, modifier: crit.modifier };
+          const ratingCrit = criterion as RatingCriterion;
+          result.rating = { value: ratingCrit.value, modifier: ratingCrit.modifier };
           break;
         case "resolution": {
           switch ((criterion as ResolutionCriterion).value) {
@@ -222,13 +222,16 @@ export class ListFilterModel {
           result.is_missing = (criterion as IsMissingCriterion).value;
           break;
         case "tags":
-          result.tags = (criterion as TagsCriterion).value.map((tag) => tag.id);
+          const tagsCrit = criterion as TagsCriterion;
+          result.tags = { value: tagsCrit.value.map((tag) => tag.id), modifier: tagsCrit.modifier };
           break;
         case "performers":
-          result.performer_id = (criterion as PerformersCriterion).value[0].id; // TODO: Allow multiple
+          const perfCrit = criterion as PerformersCriterion;
+          result.performers = { value: perfCrit.value.map((perf) => perf.id), modifier: perfCrit.modifier };
           break;
         case "studios":
-          result.studio_id = (criterion as StudiosCriterion).value[0].id; // TODO: Allow multiple
+          const studCrit = criterion as StudiosCriterion;
+          result.studios = { value: studCrit.value.map((studio) => studio.id), modifier: studCrit.modifier };
           break;
       }
     });

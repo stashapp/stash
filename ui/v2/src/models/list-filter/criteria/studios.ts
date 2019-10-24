@@ -15,8 +15,11 @@ interface IOptionType {
 export class StudiosCriterion extends Criterion<IOptionType, ILabeledId[]> {
   public type: CriterionType = "studios";
   public parameterName: string = "studios";
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [];
+  public modifier = CriterionModifier.Includes;
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.Includes),
+    Criterion.getModifierOption(CriterionModifier.Excludes),
+  ];
   public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
 }
