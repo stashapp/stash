@@ -53,3 +53,10 @@ query Stats {
     tag_count
   }
 }
+
+query Version {
+  version {
+    hash,
+    build_time
+  }
+}
