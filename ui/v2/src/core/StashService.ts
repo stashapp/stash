@@ -161,6 +161,9 @@ export class StashService {
   public static useTagUpdate(input: GQL.TagUpdateInput) {
     return GQL.useTagUpdate({ variables: input, refetchQueries: ["AllTags"] });
   }
+  public static useTagDestroy(input: GQL.TagDestroyInput) {
+    return GQL.useTagDestroy({ variables: input, refetchQueries: ["AllTags"] });
+  }
 
   public static useConfigureGeneral(input: GQL.ConfigGeneralInput) {
     return GQL.useConfigureGeneral({ variables: { input }, refetchQueries: ["Configuration"] });

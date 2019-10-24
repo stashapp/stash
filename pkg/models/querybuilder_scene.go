@@ -295,3 +295,4 @@ func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *s
 
 	return scenes, nil
 }
+
