@@ -142,6 +142,10 @@ export class StashService {
     return GQL.useSceneUpdate({ variables: input });
   }
 
+  public static useSceneDestroy(input: GQL.SceneDestroyInput) {
+    return GQL.useSceneDestroy({ variables: input });
+  }
+
   public static useStudioCreate(input: GQL.StudioCreateInput) {
     return GQL.useStudioCreate({ variables: input });
   }

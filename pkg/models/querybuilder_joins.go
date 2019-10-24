@@ -55,16 +55,6 @@ func (qb *JoinsQueryBuilder) CreateScenesTags(newJoins []ScenesTags, tx *sqlx.Tx
 	return nil
 }
 
-func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID int, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
-	// Delete the existing joins
-	_, err := tx.Exec("DELETE FROM scenes_tags WHERE scene_id = ?", sceneID)
-
-	return err
-}
-
-
 func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int, updatedJoins []ScenesTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
@@ -74,6 +64,15 @@ func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int, updatedJoins []Scenes
 		return err
 	}
 	return qb.CreateScenesTags(updatedJoins, tx)
+}
+
+func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins
+	_, err := tx.Exec("DELETE FROM scenes_tags WHERE scene_id = ?", sceneID)
+
+	return err
 }
 
 func (qb *JoinsQueryBuilder) CreateSceneMarkersTags(newJoins []SceneMarkersTags, tx *sqlx.Tx) error {

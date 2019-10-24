@@ -82,7 +82,12 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
             <Tab
               id="scene-edit-panel"
               title="Edit"
-              panel={<SceneEditPanel scene={modifiedScene} onUpdate={(newScene) => setScene(newScene)} />}
+              panel={
+                <SceneEditPanel 
+                  scene={modifiedScene} 
+                  onUpdate={(newScene) => setScene(newScene)} 
+                  onDelete={() => props.history.push("/scenes")}
+                />}
             />
         </Tabs>
       </Card>

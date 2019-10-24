@@ -77,7 +77,6 @@ func (qb *SceneQueryBuilder) Update(updatedScene ScenePartial, tx *sqlx.Tx) (*Sc
 func (qb *SceneQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	return executeDeleteQuery("scenes", id, tx)
 }
-
 func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
 	return qb.find(id, nil)
 }
