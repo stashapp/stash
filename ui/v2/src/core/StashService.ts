@@ -123,6 +123,7 @@ export class StashService {
     return GQL.useValidGalleriesForScene({variables: {scene_id: sceneId}});
   }
   public static useStats() { return GQL.useStats(); }
+  public static useVersion() { return GQL.useVersion(); }
 
   public static useConfiguration() { return GQL.useConfiguration(); }
   public static useDirectories(path?: string) { return GQL.useDirectories({ variables: { path }}); }
@@ -139,6 +140,10 @@ export class StashService {
 
   public static useSceneUpdate(input: GQL.SceneUpdateInput) {
     return GQL.useSceneUpdate({ variables: input });
+  }
+
+  public static useSceneDestroy(input: GQL.SceneDestroyInput) {
+    return GQL.useSceneDestroy({ variables: input });
   }
 
   public static useStudioCreate(input: GQL.StudioCreateInput) {

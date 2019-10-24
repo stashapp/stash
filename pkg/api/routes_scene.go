@@ -45,11 +45,13 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 
 	// detect if not a streamable file and try to transcode it instead
 	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.Checksum)
-
 	videoCodec := scene.VideoCodec.String
 	hasTranscode, _ := manager.HasTranscode(scene)
 	if ffmpeg.IsValidCodec(videoCodec) || hasTranscode {
+		manager.RegisterStream(filepath, &w)
 		http.ServeFile(w, r, filepath)
+		manager.WaitAndDeregisterStream(filepath, &w, r)
+
 		return
 	}
 

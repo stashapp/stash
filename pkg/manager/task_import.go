@@ -64,8 +64,11 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 
 		logger.Progressf("[performers] %d of %d", index, len(t.Mappings.Performers))
 
+		// generate checksum from performer name rather than image
+		checksum := utils.MD5FromString(performerJSON.Name)
+
 		// Process the base 64 encoded image string
-		checksum, imageData, err := utils.ProcessBase64Image(performerJSON.Image)
+		_, imageData, err := utils.ProcessBase64Image(performerJSON.Image)
 		if err != nil {
 			_ = tx.Rollback()
 			logger.Errorf("[performers] <%s> invalid image: %s", mappingJSON.Checksum, err.Error())
@@ -159,8 +162,11 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 
 		logger.Progressf("[studios] %d of %d", index, len(t.Mappings.Studios))
 
+		// generate checksum from studio name rather than image
+		checksum := utils.MD5FromString(studioJSON.Name)
+
 		// Process the base 64 encoded image string
-		checksum, imageData, err := utils.ProcessBase64Image(studioJSON.Image)
+		_, imageData, err := utils.ProcessBase64Image(studioJSON.Image)
 		if err != nil {
 			_ = tx.Rollback()
 			logger.Errorf("[studios] <%s> invalid image: %s", mappingJSON.Checksum, err.Error())

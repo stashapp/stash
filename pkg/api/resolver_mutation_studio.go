@@ -12,8 +12,18 @@ import (
 )
 
 func (r *mutationResolver) StudioCreate(ctx context.Context, input models.StudioCreateInput) (*models.Studio, error) {
+	// generate checksum from studio name rather than image
+	checksum := utils.MD5FromString(input.Name)
+
+	var imageData []byte
+	var err error
+
+	if input.Image == nil {
+		input.Image = &models.DefaultStudioImage
+	}
+
 	// Process the base 64 encoded image string
-	checksum, imageData, err := utils.ProcessBase64Image(input.Image)
+	_, imageData, err = utils.ProcessBase64Image(*input.Image)
 	if err != nil {
 		return nil, err
 	}
@@ -56,15 +66,17 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 	if input.Image != nil {
-		checksum, imageData, err := utils.ProcessBase64Image(*input.Image)
+		_, imageData, err := utils.ProcessBase64Image(*input.Image)
 		if err != nil {
 			return nil, err
 		}
 		updatedStudio.Image = imageData
-		updatedStudio.Checksum = checksum
 	}
 	if input.Name != nil {
+		// generate checksum from studio name rather than image
+		checksum := utils.MD5FromString(*input.Name)
 		updatedStudio.Name = sql.NullString{String: *input.Name, Valid: true}
+		updatedStudio.Checksum = checksum
 	}
 	if input.URL != nil {
 		updatedStudio.URL = sql.NullString{String: *input.URL, Valid: true}

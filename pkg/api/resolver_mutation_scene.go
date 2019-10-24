@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -116,6 +117,38 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	}
 
 	return scene, nil
+}
+
+func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {
+	qb := models.NewSceneQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	sceneID, _ := strconv.Atoi(input.ID)
+	scene, err := qb.Find(sceneID)
+	err = manager.DestroyScene(sceneID, tx)
+
+	if err != nil {
+		tx.Rollback()
+		return false, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return false, err
+	}
+	
+	// if delete generated is true, then delete the generated files
+	// for the scene
+	if input.DeleteGenerated != nil && *input.DeleteGenerated {
+		manager.DeleteGeneratedSceneFiles(scene)
+	}
+
+	// if delete file is true, then delete the file as well
+	// if it fails, just log a message
+	if input.DeleteFile != nil && *input.DeleteFile {
+		manager.DeleteSceneFile(scene)
+	}
+
+	return true, nil
 }
 
 func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.SceneMarkerCreateInput) (*models.SceneMarker, error) {

@@ -41,7 +41,7 @@ input PerformerCreateInput {
   instagram: String
   favorite: Boolean
   """This should be base64 encoded"""
-  image: String!
+  image: String
 }
 
 input PerformerUpdateInput {

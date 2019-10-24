@@ -12,7 +12,7 @@ input StudioCreateInput {
   name: String!
   url: String
   """This should be base64 encoded"""
-  image: String!
+  image: String
 }
 
 input StudioUpdateInput {

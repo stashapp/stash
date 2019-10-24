@@ -27,6 +27,9 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+var buildstamp string = ""
+var githash string = ""
+
 var uiBox *packr.Box
 
 //var legacyUiBox *packr.Box
@@ -63,6 +66,8 @@ func Start() {
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
 
+	initialiseImages()
+	
 	r := chi.NewRouter()
 
 	r.Use(authenticateHandler())
@@ -197,6 +202,7 @@ func Start() {
 		}
 
 		go func() {
+			printVersion()
 			logger.Infof("stash is running on HTTPS at https://" + address + "/")
 			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
 		}()
@@ -207,10 +213,19 @@ func Start() {
 		}
 
 		go func() {
+			printVersion()
 			logger.Infof("stash is running on HTTP at http://" + address + "/")
 			logger.Fatal(server.ListenAndServe())
 		}()
 	}
+}
+
+func printVersion() {
+	fmt.Printf("stash version: %s (%s)\n", githash, buildstamp)
+}
+
+func GetVersion() (string, string) {
+	return githash, buildstamp
 }
 
 func makeTLSConfig() *tls.Config {

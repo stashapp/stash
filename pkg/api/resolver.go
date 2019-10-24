@@ -2,10 +2,11 @@ package api
 
 import (
 	"context"
-	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scraper"
 	"sort"
 	"strconv"
+
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scraper"
 )
 
 type Resolver struct{}
@@ -101,6 +102,15 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 		PerformerCount: performersCount,
 		StudioCount:    studiosCount,
 		TagCount:       tagsCount,
+	}, nil
+}
+
+func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
+	hash, buildtime := GetVersion()
+
+	return &models.Version{
+		Hash:      hash,
+		BuildTime: buildtime,
 	}, nil
 }
 

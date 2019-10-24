@@ -68,10 +68,14 @@ type Query {
   allPerformers: [Performer!]!
   allStudios: [Studio!]!
   allTags: [Tag!]!
+
+  # Version
+  version: Version!
 }
 
 type Mutation {
   sceneUpdate(input: SceneUpdateInput!): Scene
+  sceneDestroy(input: SceneDestroyInput!): Boolean!
 
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker

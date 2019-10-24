@@ -12,6 +12,11 @@ func MD5FromBytes(data []byte) string {
 	return fmt.Sprintf("%x", result)
 }
 
+func MD5FromString(str string) string {
+	data := []byte(str)
+	return MD5FromBytes(data)
+}
+
 func MD5FromFilePath(filePath string) (string, error) {
 	f, err := os.Open(filePath)
 	if err != nil {

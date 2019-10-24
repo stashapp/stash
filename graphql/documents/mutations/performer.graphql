@@ -15,7 +15,7 @@ mutation PerformerCreate(
   $twitter: String,
   $instagram: String,
   $favorite: Boolean,
-  $image: String!) {
+  $image: String) {
 
   performerCreate(input: {
                             name: $name,
