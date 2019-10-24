@@ -85,6 +85,7 @@ func doBroadcastLogItems() {
 
 	logBuffer = nil
 	waiting = false
+	lastBroadcast = time.Now()
 }
 
 func broadcastLogItem(l *LogItem) {
