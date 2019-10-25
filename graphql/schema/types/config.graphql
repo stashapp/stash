@@ -9,6 +9,14 @@ input ConfigGeneralInput {
   username: String
   """Password"""
   password: String
+  """Name of the log file"""
+  logFile: String
+  """Whether to also output to stderr"""
+  logOut: Boolean!
+  """Minimum log level"""
+  logLevel: String!
+  """Whether to log http access"""
+  logAccess: Boolean!
 }
 
 type ConfigGeneralResult {
@@ -22,6 +30,14 @@ type ConfigGeneralResult {
   username: String!
   """Password"""
   password: String!
+  """Name of the log file"""
+  logFile: String
+  """Whether to also output to stderr"""
+  logOut: Boolean!
+  """Minimum log level"""
+  logLevel: String!
+  """Whether to log http access"""
+  logAccess: Boolean!
 }
 
 input ConfigInterfaceInput {

@@ -7,10 +7,8 @@ import {
   H4,
 } from "@blueprintjs/core";
 import React, { FunctionComponent, useState } from "react";
-import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
 import { ErrorUtils } from "../../../utils/errors";
-import { TextUtils } from "../../../utils/text";
 import { ToastUtils } from "../../../utils/toasts";
 import { GenerateButton } from "./GenerateButton";
 

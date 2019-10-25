@@ -4,6 +4,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"io/ioutil"
+
 	"github.com/spf13/viper"
 
 	"github.com/stashapp/stash/pkg/utils"
@@ -23,6 +24,12 @@ const Host = "host"
 const Port = "port"
 
 const CSSEnabled = "cssEnabled"
+
+// Logging options
+const LogFile = "logFile"
+const LogOut = "logOut"
+const LogLevel = "logLevel"
+const LogAccess = "logAccess"
 
 func Set(key string, value interface{}) {
 	viper.Set(key, value)
@@ -153,6 +160,48 @@ func SetCSS(css string) {
 
 func GetCSSEnabled() bool {
 	return viper.GetBool(CSSEnabled)
+}
+
+// GetLogFile returns the filename of the file to output logs to.
+// An empty string means that file logging will be disabled.
+func GetLogFile() string {
+	return viper.GetString(LogFile)
+}
+
+// GetLogOut returns true if logging should be output to the terminal
+// in addition to writing to a log file. Logging will be output to the
+// terminal if file logging is disabled. Defaults to true.
+func GetLogOut() bool {
+	ret := true
+	if viper.IsSet(LogOut) {
+		ret = viper.GetBool(LogOut)
+	}
+
+	return ret
+}
+
+// GetLogLevel returns the lowest log level to write to the log.
+// Should be one of "Debug", "Info", "Warning", "Error"
+func GetLogLevel() string {
+	const defaultValue = "Info"
+
+	value := viper.GetString(LogLevel)
+	if value != "Debug" && value != "Info" && value != "Warning" && value != "Error" {
+		value = defaultValue
+	}
+
+	return value
+}
+
+// GetLogAccess returns true if http requests should be logged to the terminal.
+// HTTP requests are not logged to the log file. Defaults to true.
+func GetLogAccess() bool {
+	ret := true
+	if viper.IsSet(LogAccess) {
+		ret = viper.GetBool(LogAccess)
+	}
+
+	return ret
 }
 
 func IsValid() bool {

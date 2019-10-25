@@ -172,6 +172,37 @@ video.preview {
   white-space: pre-line;
 }
 
+.logs {
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: smaller;
+  padding-right: 10px;
+  overflow-y: auto;
+  max-height: 100vh;
+  width: 120ch;
+
+  .debug {
+    color: lightgreen;
+    font-weight: bold;
+  }
+
+  .info {
+    color: white;
+    font-weight: bold;
+  }
+
+  .warning {
+    color: orange;
+    font-weight: bold;
+  }
+
+  .error {
+    color: red;
+    font-weight: bold;
+  }
+}
+
 span.block {
   display: block;
 }
