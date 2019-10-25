@@ -72,7 +72,10 @@ func Start() {
 
 	r.Use(authenticateHandler())
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.Logger)
+
+	if config.GetLogAccess() {
+		r.Use(middleware.Logger)
+	}
 	r.Use(middleware.DefaultCompress)
 	r.Use(middleware.StripSlashes)
 	r.Use(cors.AllowAll().Handler)

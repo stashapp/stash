@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -48,6 +49,18 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		if *input.Password != currentPWHash {
 			config.SetPassword(*input.Password)
 		}
+	}
+
+	if input.LogFile != nil {
+		config.Set(config.LogFile, input.LogFile)
+	}
+
+	config.Set(config.LogOut, input.LogOut)
+	config.Set(config.LogAccess, input.LogAccess)
+
+	if input.LogLevel != config.GetLogLevel() {
+		config.Set(config.LogLevel, input.LogLevel)
+		logger.SetLogLevel(input.LogLevel)
 	}
 
 	if err := config.Write(); err != nil {

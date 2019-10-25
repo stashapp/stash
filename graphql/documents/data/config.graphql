@@ -4,6 +4,10 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   generatedPath
   username
   password
+  logFile
+  logOut
+  logLevel
+  logAccess
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {

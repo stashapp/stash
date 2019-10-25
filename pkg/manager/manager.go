@@ -34,6 +34,7 @@ func Initialize() *singleton {
 	once.Do(func() {
 		_ = utils.EnsureDir(paths.GetConfigDirectory())
 		initConfig()
+		initLog()
 		initFlags()
 		initEnvs()
 		instance = &singleton{
@@ -124,6 +125,10 @@ The error was: %s
 	// TODO: is this valid after download?
 	instance.FFMPEGPath = ffmpegPath
 	instance.FFProbePath = ffprobePath
+}
+
+func initLog() {
+	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
 }
 
 func (s *singleton) refreshConfig() {
