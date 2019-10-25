@@ -119,6 +119,117 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	return scene, nil
 }
 
+func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.BulkSceneUpdateInput) ([]*models.Scene, error) {
+	// Populate scene from the input
+	updatedTime := time.Now()
+
+	// Start the transaction and save the scene marker
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewSceneQueryBuilder()
+	jqb := models.NewJoinsQueryBuilder()
+
+	updatedScene := models.ScenePartial{
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+	}
+	if input.Title != nil {
+		updatedScene.Title = &sql.NullString{String: *input.Title, Valid: true}
+	}
+	if input.Details != nil {
+		updatedScene.Details = &sql.NullString{String: *input.Details, Valid: true}
+	}
+	if input.URL != nil {
+		updatedScene.URL = &sql.NullString{String: *input.URL, Valid: true}
+	}
+	if input.Date != nil {
+		updatedScene.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
+	}
+	if input.Rating != nil {
+		// a rating of 0 means unset the rating
+		if *input.Rating == 0 {
+			updatedScene.Rating = &sql.NullInt64{Int64: 0, Valid: false}
+		} else {
+			updatedScene.Rating = &sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
+		}
+	}
+	if input.StudioID != nil {
+		// empty string means unset the studio
+		if *input.StudioID == "" {
+			updatedScene.StudioID = &sql.NullInt64{Int64: 0, Valid: false}
+		} else {
+			studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
+			updatedScene.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
+		}
+	}
+
+	ret := []*models.Scene{}
+
+	for _, sceneIDStr := range input.Ids {
+		sceneID, _ := strconv.Atoi(sceneIDStr)
+		updatedScene.ID = sceneID
+
+		scene, err := qb.Update(updatedScene, tx)
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+
+		ret = append(ret, scene)
+
+		if input.GalleryID != nil {
+			// Save the gallery
+			galleryID, _ := strconv.Atoi(*input.GalleryID)
+			updatedGallery := models.Gallery{
+				ID:        galleryID,
+				SceneID:   sql.NullInt64{Int64: int64(sceneID), Valid: true},
+				UpdatedAt: models.SQLiteTimestamp{Timestamp: updatedTime},
+			}
+			gqb := models.NewGalleryQueryBuilder()
+			_, err := gqb.Update(updatedGallery, tx)
+			if err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
+		}
+
+		// Save the performers
+		var performerJoins []models.PerformersScenes
+		for _, pid := range input.PerformerIds {
+			performerID, _ := strconv.Atoi(pid)
+			performerJoin := models.PerformersScenes{
+				PerformerID: performerID,
+				SceneID:     sceneID,
+			}
+			performerJoins = append(performerJoins, performerJoin)
+		}
+		if err := jqb.UpdatePerformersScenes(sceneID, performerJoins, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+
+		// Save the tags
+		var tagJoins []models.ScenesTags
+		for _, tid := range input.TagIds {
+			tagID, _ := strconv.Atoi(tid)
+			tagJoin := models.ScenesTags{
+				SceneID: sceneID,
+				TagID:   tagID,
+			}
+			tagJoins = append(tagJoins, tagJoin)
+		}
+		if err := jqb.UpdateScenesTags(sceneID, tagJoins, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {
 	qb := models.NewSceneQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)

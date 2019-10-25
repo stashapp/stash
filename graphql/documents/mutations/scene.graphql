@@ -26,6 +26,34 @@ mutation SceneUpdate(
   }
 }
 
+mutation BulkSceneUpdate(
+  $ids: [ID!] = [],
+  $title: String,
+  $details: String,
+  $url: String,
+  $date: String,
+  $rating: Int,
+  $studio_id: ID,
+  $gallery_id: ID,
+  $performer_ids: [ID!] = [],
+  $tag_ids: [ID!] = []) {
+
+  bulkSceneUpdate(input: {
+                        ids: $ids,
+                        title: $title,
+                        details: $details,
+                        url: $url,
+                        date: $date,
+                        rating: $rating,
+                        studio_id: $studio_id,
+                        gallery_id: $gallery_id,
+                        performer_ids: $performer_ids,
+                        tag_ids: $tag_ids
+                      }) {
+      ...SceneData
+  }
+}
+
 mutation SceneDestroy($id: ID!, $delete_file: Boolean, $delete_generated : Boolean) {
   sceneDestroy(input: {id: $id, delete_file: $delete_file, delete_generated: $delete_generated})
 }

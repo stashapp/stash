@@ -25,6 +25,8 @@ interface IListFilterProps {
   onChangeDisplayMode: (displayMode: DisplayMode) => void;
   onAddCriterion: (criterion: Criterion, oldId?: string) => void;
   onRemoveCriterion: (criterion: Criterion) => void;
+  onSelectAll?: () => void;
+  onSelectNone?: () => void;
   filter: ListFilterModel;
 }
 
@@ -134,6 +136,39 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
     ));
   }
 
+  function onSelectAll() {
+    if (props.onSelectAll) {
+      props.onSelectAll();
+    }
+  }
+
+  function onSelectNone() {
+    if (props.onSelectNone) {
+      props.onSelectNone();
+    }
+  }
+
+  function renderSelectAll() {
+    if (props.onSelectAll) {
+      return <Button onClick={() => onSelectAll()} text="Select All"/>;
+    }
+  }
+
+  function renderSelectNone() {
+    if (props.onSelectNone) {
+      return <Button onClick={() => onSelectNone()} text="Select None"/>;
+    }
+  }
+
+  function renderSelectAllNone() {
+    return (
+      <>
+      {renderSelectAll()}
+      {renderSelectNone()}
+      </>
+    );
+  }
+
   function render() {
     return (
       <>
@@ -175,6 +210,10 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
 
           <ButtonGroup className="filter-item">
             {renderDisplayModeOptions()}
+          </ButtonGroup>
+
+          <ButtonGroup className="filter-item">
+            {renderSelectAllNone()}
           </ButtonGroup>
         </div>
         <div style={{display: "flex", justifyContent: "center", margin: "10px auto"}}>
