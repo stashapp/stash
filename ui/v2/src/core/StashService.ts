@@ -23,8 +23,11 @@ export class StashService {
 
       if (process.env.REACT_APP_HTTPS === "true") {
         platformUrl.protocol = "https:";
-        wsPlatformUrl.protocol = "wss:";
       }
+    }
+
+    if (platformUrl.protocol === "https:") {
+      wsPlatformUrl.protocol = "wss:";
     }
     const url = platformUrl.toString().slice(0, -1) + "/graphql";
     const wsUrl = wsPlatformUrl.toString().slice(0, -1) + "/graphql";
