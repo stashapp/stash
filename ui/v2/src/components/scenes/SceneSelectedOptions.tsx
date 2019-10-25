@@ -100,6 +100,19 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
       sceneInput.tag_ids = tagIds;
     }
 
+    // The Go implementation of graphql doesn't seem to be
+    // able to distinguish between an empty passed array and
+    // an undefined array (both umarshal to empty slice)
+
+    // we'll send an array containing undefined to signify
+    // unsetting of the applicable fields
+    if (sceneInput.performer_ids && sceneInput.performer_ids.length == 0) {
+      sceneInput.performer_ids = [undefined];
+    }
+    if (sceneInput.tag_ids && sceneInput.tag_ids.length == 0) {
+      sceneInput.tag_ids = [undefined];
+    }
+
     return sceneInput;
   }
 
@@ -142,7 +155,8 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
         ret = scene.studio ? scene.studio.id : undefined;
         first = false;
       } else {
-        if (scene.studio && ret != scene.studio.id) {
+        var studioId = scene.studio ? scene.studio.id : undefined;
+        if (ret != studioId) {
           ret = undefined;
         }
       }
@@ -166,7 +180,7 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
       } else {
         const perfIds = !!scene.performers ? scene.performers.map(toId).sort() : [];
         
-        if (!_.isEqual(performerIds, perfIds)) {
+        if (!_.isEqual(ret, perfIds)) {
           ret = [];
         }
       }

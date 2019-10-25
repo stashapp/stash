@@ -192,33 +192,46 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 		}
 
 		// Save the performers
-		var performerJoins []models.PerformersScenes
-		for _, pid := range input.PerformerIds {
-			performerID, _ := strconv.Atoi(pid)
-			performerJoin := models.PerformersScenes{
-				PerformerID: performerID,
-				SceneID:     sceneID,
+		// There's no way to distinguish between a slice that wasn't sent through
+		// and an empty slice. Workaround is to interpret input as follows:
+		// - empty slice means ignore
+		// - slice with a single nil element means unset
+		if len(input.PerformerIds) > 0 {
+			var performerJoins []models.PerformersScenes
+			for _, pid := range input.PerformerIds {
+				// ignore nil ids
+				if pid != nil {
+					performerID, _ := strconv.Atoi(*pid)
+					performerJoin := models.PerformersScenes{
+						PerformerID: performerID,
+						SceneID:     sceneID,
+					}
+					performerJoins = append(performerJoins, performerJoin)
+				}
 			}
-			performerJoins = append(performerJoins, performerJoin)
-		}
-		if err := jqb.UpdatePerformersScenes(sceneID, performerJoins, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
+			if err := jqb.UpdatePerformersScenes(sceneID, performerJoins, tx); err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
 		}
 
 		// Save the tags
-		var tagJoins []models.ScenesTags
-		for _, tid := range input.TagIds {
-			tagID, _ := strconv.Atoi(tid)
-			tagJoin := models.ScenesTags{
-				SceneID: sceneID,
-				TagID:   tagID,
+		if len(input.PerformerIds) > 0 {
+			var tagJoins []models.ScenesTags
+			for _, tid := range input.TagIds {
+				if tid != nil {
+					tagID, _ := strconv.Atoi(*tid)
+					tagJoin := models.ScenesTags{
+						SceneID: sceneID,
+						TagID:   tagID,
+					}
+					tagJoins = append(tagJoins, tagJoin)
+				}
 			}
-			tagJoins = append(tagJoins, tagJoin)
-		}
-		if err := jqb.UpdateScenesTags(sceneID, tagJoins, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
+			if err := jqb.UpdateScenesTags(sceneID, tagJoins, tx); err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
 		}
 	}
 
