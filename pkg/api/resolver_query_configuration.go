@@ -28,12 +28,17 @@ func makeConfigResult() *models.ConfigResult {
 }
 
 func makeConfigGeneralResult() *models.ConfigGeneralResult {
+	logFile := config.GetLogFile()
 	return &models.ConfigGeneralResult{
 		Stashes:       config.GetStashPaths(),
 		DatabasePath:  config.GetDatabasePath(),
 		GeneratedPath: config.GetGeneratedPath(),
 		Username:      config.GetUsername(),
 		Password:      config.GetPasswordHash(),
+		LogFile:       &logFile,
+		LogOut:        config.GetLogOut(),
+		LogLevel:      config.GetLogLevel(),
+		LogAccess:     config.GetLogAccess(),
 	}
 }
 
