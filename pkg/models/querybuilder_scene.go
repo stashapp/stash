@@ -7,7 +7,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/logger"
 )
 
 const scenesForPerformerQuery = `
@@ -248,8 +247,6 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		whereClauses = appendClause(whereClauses, whereClause)
 		havingClauses = appendClause(havingClauses, havingClause)
 	}
-
-	logger.Infof("where %v", whereClauses)
 
 	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := executeFindQuery("scenes", body, args, sortAndPagination, whereClauses, havingClauses)
