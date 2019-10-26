@@ -9,7 +9,7 @@ import {
   Checkbox,
   H5,
 } from "@blueprintjs/core";
-import React, { FunctionComponent, useEffect, useState, useRef } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { IBaseProps } from "../../models";
 import { StashService } from "../../core/StashService";
 import * as GQL from "../../core/generated-graphql";
@@ -105,7 +105,7 @@ import { ErrorUtils } from "../../utils/errors";
         parserResult.set = true;
       }
     }
-
+  
     private static setInput(object: any, key: string, parserResult : ParserResult<any>) {
       if (parserResult.set) {
         object[key] = parserResult.value;
@@ -199,32 +199,40 @@ import { ErrorUtils } from "../../utils/errors";
     }
   }
 
+  interface IParserInput {
+    pattern: string,
+    ignoreWords: string[],
+    whitespaceCharacters: string,
+    capitalizeTitle: boolean
+  }
+
   // Outstanding issues:
-  // - cannot modify filenames without losing focus due to re-creation of elements
   // - need to add select all/none for fields
 
   // TODO:
   // Add {d} for delimiter characters (._-)
   // Add mappings for tags, performers, studio
-  // Add implementation to apply stuff
   // Add drop-down button to add {fields}
 
   export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) => {
-    const [pattern, setPattern] = useState<string>("{title}.{ext}");
-    const [ignoreWords, setIgnoreWords] = useState<string>("");
-    const [whitespaceCharacters, setWhitespaceCharacters] = useState<string>("._");
-    const [capitaliseTitle, setCapitaliseTitle] = useState<boolean>(true);
-    const [sceneResults, setSceneResults] = useState<SlimSceneDataFragment[]>([]);
     const [parserResult, setParserResult] = useState<SceneParserResult[]>([]);
-
-    const [ignoreWordsStage, setIgnoreWordsStage] = useState<string>("");
+    const [parserInput, setParserInput] = useState<IParserInput>(initialParserInput())
 
     // Network state
     const [isLoading, setIsLoading] = useState(false);
 
     const updateScenes = StashService.useScenesUpdate(getScenesUpdateData());
 
-    function getQueryPattern() {
+    function initialParserInput() {
+      return {
+        pattern: "{title}.{ext}",
+        ignoreWords: [],
+        whitespaceCharacters: "._",
+        capitalizeTitle: true
+      };
+    }
+
+    function getQueryPattern(pattern : string) {
       // {title}
       var queryPattern = pattern;
 
@@ -234,13 +242,16 @@ import { ErrorUtils } from "../../utils/errors";
       return queryPattern;
     }
 
-    async function onFind() {
-      setIgnoreWords(ignoreWordsStage);
+    async function onFind(input : IParserInput) {
       setIsLoading(true);
-      const result = await StashService.querySceneByPath(getQueryPattern());
+      setParserInput(input);
+      setParserResult([]);
+
+      const result = await StashService.querySceneByPath(getQueryPattern(input.pattern));
       
-      if (!!result.data.findScenesByFilename) {
-        setSceneResults(result.data.findScenesByFilename.scenes);
+      let scenes = result.data.findScenesByFilename ? result.data.findScenesByFilename.scenes : undefined;
+      if (!!scenes) {
+        parseResults(scenes, input);
       }
 
       setIsLoading(false);
@@ -263,12 +274,11 @@ import { ErrorUtils } from "../../utils/errors";
       setIsLoading(false);
     }
 
-    useEffect(() => {
-      if (sceneResults) {
+    function parseResults(scenes : GQL.SlimSceneDataFragment[], input: IParserInput) {
+      if (scenes) {
+        var parser = new ParseMapper(input.pattern, input.ignoreWords);
 
-        var parser = new ParseMapper(pattern, ignoreWords.split(" "));
-
-        var result = sceneResults.map((scene) => {
+        var result = scenes.map((scene) => {
           var parserResult = new SceneParserResult(scene);
           if(!parser.parse(parserResult)) {
             return undefined;
@@ -276,13 +286,13 @@ import { ErrorUtils } from "../../utils/errors";
 
           // post-process
           if (parserResult.title && !!parserResult.title.value) {
-            if (whitespaceCharacters) {
-              var wsRegExp = whitespaceCharacters.replace(/([\-\.\(\)\[\]])/g, "\\$1");
+            if (input.whitespaceCharacters) {
+              var wsRegExp = input.whitespaceCharacters.replace(/([\-\.\(\)\[\]])/g, "\\$1");
               wsRegExp = "[" + wsRegExp + "]";
               parserResult.title.value = parserResult.title.value.replace(new RegExp(wsRegExp, "g"), " ");
             }
 
-            if (capitaliseTitle) {
+            if (input.capitalizeTitle) {
               parserResult.title.value = parserResult.title.value.replace(/(?:^| )\w/g, function (chr) {
                 return chr.toUpperCase();
               });
@@ -290,11 +300,77 @@ import { ErrorUtils } from "../../utils/errors";
           }
           
           return parserResult;
-        }).filter((r) => !!r);
+        }).filter((r) => !!r) as SceneParserResult[];
 
-        setParserResult(result as SceneParserResult[]);
+        setParserResult(result);
       }
-    }, [sceneResults, whitespaceCharacters, ignoreWords]);
+    }
+
+    interface IParserInputProps {
+      input: IParserInput,
+      onFind: (input : IParserInput) => void
+    }
+
+    function ParserInput(props : IParserInputProps) {
+      const [pattern, setPattern] = useState<string>(props.input.pattern);
+      const [ignoreWords, setIgnoreWords] = useState<string>(props.input.ignoreWords.join(" "));
+      const [whitespaceCharacters, setWhitespaceCharacters] = useState<string>(props.input.whitespaceCharacters);
+      const [capitalizeTitle, setCapitalizeTitle] = useState<boolean>(props.input.capitalizeTitle);
+
+      function onFind() {
+        props.onFind({
+          pattern: pattern,
+          ignoreWords: ignoreWords.split(" "),
+          whitespaceCharacters: whitespaceCharacters,
+          capitalizeTitle: capitalizeTitle
+        });
+      }
+
+      return (
+        <>
+          <FormGroup className="inputs">
+            <FormGroup label="Filename pattern:" inline={true}>
+              <InputGroup
+                onChange={(newValue: any) => setPattern(newValue.target.value)}
+                value={pattern}
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <FormGroup label="Ignored words:" inline={true} helperText="Matches with {i}">
+                <InputGroup
+                  onChange={(newValue: any) => setIgnoreWords(newValue.target.value)}
+                  value={ignoreWords}
+                />
+              </FormGroup>
+            </FormGroup>
+            
+            <FormGroup>
+              <H5>Title</H5>
+              <FormGroup label="Whitespace characters:" 
+              inline={true}
+              helperText="These characters will be replaced with whitespace in the title">
+                <InputGroup
+                  onChange={(newValue: any) => setWhitespaceCharacters(newValue.target.value)}
+                  value={whitespaceCharacters}
+                />
+              </FormGroup>
+              <Checkbox
+                label="Capitalize title"
+                checked={capitalizeTitle}
+                onChange={() => setCapitalizeTitle(!capitalizeTitle)}
+                inline={true}
+              />
+            </FormGroup>
+            
+            {/* TODO - mapping stuff will go here */}
+            <FormGroup>
+                <Button text="Find" onClick={() => onFind()} />
+            </FormGroup>
+          </FormGroup>
+        </>
+      );
+    }
 
     interface ISceneParserFieldProps {
       parserResult : ParserResult<any>
@@ -304,6 +380,19 @@ import { ErrorUtils } from "../../utils/errors";
     }
   
     function SceneParserField(props : ISceneParserFieldProps) {
+
+      const [value, setValue] = useState<string>(props.parserResult.value);
+
+      function maybeValueChanged() {
+        if (value !== props.parserResult.value) {
+          props.onValueChanged(value);
+        }
+      }
+
+      useEffect(() => {
+        setValue(props.parserResult.value);
+      }, [props.parserResult.value]);
+
       return (
         <>
           <td>
@@ -315,21 +404,22 @@ import { ErrorUtils } from "../../utils/errors";
           </td>
           <td>
             <FormGroup>
-            <InputGroup
-              key="originalValue"
-              className={props.className}
-              small={true}
-              disabled={true}
-              value={props.parserResult.originalValue || ""}
-            />
-            <InputGroup
-              key="newValue"
-              className={props.className}
-              small={true}
-              onChange={(event : any) => {props.onValueChanged(event.target.value)}}
-              disabled={true /* TODO - make editable !props.parserResult.set*/}
-              value={props.parserResult.value || ""}
-            />
+              <InputGroup
+                key="originalValue"
+                className={props.className}
+                small={true}
+                disabled={true}
+                value={props.parserResult.originalValue || ""}
+              />
+              <InputGroup
+                key="newValue"
+                className={props.className}
+                small={true}
+                onChange={(event : any) => {setValue(event.target.value)}}
+                onBlur={() => maybeValueChanged()}
+                disabled={!props.parserResult.set}
+                value={value}
+              />
             </FormGroup>
           </td>
         </>
@@ -450,47 +540,10 @@ import { ErrorUtils } from "../../utils/errors";
     return (
       <Card id="parser-container">
         <H4>Scene Filename Parser</H4>
-
-        <FormGroup className="inputs">
-          <FormGroup label="Filename pattern:" inline={true}>
-            <InputGroup
-              onChange={(newValue: any) => setPattern(newValue.target.value)}
-              value={pattern}
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <FormGroup label="Ignored words:" inline={true} helperText="Matches with {i}">
-              <InputGroup
-                onChange={(newValue: any) => setIgnoreWordsStage(newValue.target.value)}
-                value={ignoreWordsStage}
-              />
-            </FormGroup>
-          </FormGroup>
-          
-          <FormGroup>
-            <H5>Title</H5>
-            <FormGroup label="Whitespace characters:" 
-            inline={true}
-            helperText="These characters will be replaced with whitespace in the title">
-              <InputGroup
-                onChange={(newValue: any) => setWhitespaceCharacters(newValue.target.value)}
-                value={whitespaceCharacters}
-              />
-            </FormGroup>
-            <Checkbox
-              label="Capitalize title"
-              checked={capitaliseTitle}
-              onChange={() => setCapitaliseTitle(!capitaliseTitle)}
-              inline={true}
-            />
-          </FormGroup>
-          
-          {/* TODO - mapping stuff will go here */}
-          <FormGroup>
-              <Button text="Find" onClick={() => onFind()} />
-          </FormGroup>
-        </FormGroup>
+        <ParserInput
+          input={parserInput}
+          onFind={(input) => onFind(input)}
+        />
 
         {isLoading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
         {renderTable()}
