@@ -27,3 +27,12 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 		Scenes: scenes,
 	}, nil
 }
+
+func (r *queryResolver) FindScenesByFilename(ctx context.Context, filter *models.FindFilterType) (*models.FindScenesResultType, error) {
+	qb := models.NewSceneQueryBuilder()
+	scenes, total := qb.QueryByFilename(filter)
+	return &models.FindScenesResultType{
+		Count:  total,
+		Scenes: scenes,
+	}, nil
+}

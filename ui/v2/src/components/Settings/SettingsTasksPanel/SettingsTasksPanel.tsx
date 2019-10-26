@@ -5,6 +5,7 @@ import {
   Divider,
   FormGroup,
   H4,
+  AnchorButton,
 } from "@blueprintjs/core";
 import React, { FunctionComponent, useState } from "react";
 import { StashService } from "../../../core/StashService";
@@ -94,6 +95,13 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
           onChange={() => setNameFromMetadata(!nameFromMetadata)}
         />
         <Button id="scan" text="Scan" onClick={() => onScan()} />
+      </FormGroup>
+        <AnchorButton
+          href="/sceneFilenameParser"
+          text={"Scene Filename Parser"}
+        />
+      <FormGroup>
+
       </FormGroup>
       <Divider />
 

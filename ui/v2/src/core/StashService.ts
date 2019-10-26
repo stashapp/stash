@@ -275,6 +275,14 @@ export class StashService {
     });
   }
 
+  public static querySceneByPath(pattern : string) {
+    // TODO - we need to specifically find by path
+    return StashService.client.query<GQL.FindScenesByFilenameQuery>({
+      query: GQL.FindScenesByFilenameDocument,
+      variables: {filter: {q: pattern}},
+    });
+  }
+
   public static nullToUndefined(value: any): any {
     if (_.isPlainObject(value)) {
       return _.mapValues(value, StashService.nullToUndefined);

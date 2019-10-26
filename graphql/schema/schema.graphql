@@ -5,6 +5,8 @@ type Query {
   """A function which queries Scene objects"""
   findScenes(scene_filter: SceneFilterType, scene_ids: [Int!], filter: FindFilterType): FindScenesResultType!
 
+  findScenesByFilename(filter: FindFilterType): FindScenesResultType!
+
   """A function which queries SceneMarker objects"""
   findSceneMarkers(scene_marker_filter: SceneMarkerFilterType filter: FindFilterType): FindSceneMarkersResultType!
 
