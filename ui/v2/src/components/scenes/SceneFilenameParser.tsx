@@ -18,6 +18,7 @@ import { TextUtils } from "../../utils/text";
 import _ from "lodash";
 import { ToastUtils } from "../../utils/toasts";
 import { ErrorUtils } from "../../utils/errors";
+import { Pagination } from "../list/Pagination";
   
   interface IProps extends IBaseProps {}
 
@@ -57,6 +58,37 @@ import { ErrorUtils } from "../../utils/errors";
       this.scene = scene;
     }
 
+    private setDate(format: string, value: string) {
+      var yearIndex = 0;
+      var yearLength = format.split("y").length - 1;
+      var dateIndex = 0;
+      var monthIndex = 0;
+
+      switch (format) {
+        case "yyyymmdd":
+        case "yymmdd":
+          monthIndex = yearLength;
+          dateIndex = monthIndex + 2;
+          break;
+        case "ddmmyyyy":
+        case "ddmmyy":
+          monthIndex = 2;
+          yearIndex = monthIndex + 2;
+          break;
+        case "mmddyyyy":
+        case "mmddyy":
+          dateIndex = monthIndex + 2;
+          yearIndex = dateIndex + 2;
+          break;
+      }
+
+      var yearValue = value.substring(yearIndex, yearIndex + yearLength);
+      var monthValue = value.substring(monthIndex, monthIndex + 2);
+      var dateValue = value.substring(dateIndex, dateIndex + 2);
+      this.date.value = yearValue + "-" + monthValue + "-" + dateValue;
+      this.date.set = true;
+    }
+
     public setField(field: string, value: any) {
       var parserResult : ParserResult<any> | undefined = undefined;
       switch (field) {
@@ -80,23 +112,13 @@ import { ErrorUtils } from "../../utils/errors";
           parserResult = this.dd;
           break;
         case "yyyymmdd":
-          // TODO - special case - set date
-          break;
         case "yymmdd":
-          // TODO - special case - set date
-          break;
         case "ddmmyyyy":
-          // TODO - special case - set date
-          break;
         case "ddmmyy":
-          // TODO - special case - set date
-          break;
         case "mmddyyyy":
-          // TODO - special case - set date
-          break;
         case "mmddyy":
-          // TODO - special case - set date
-          break;
+          this.setDate(field, value);
+          return;
       }
       // TODO - other fields
 
@@ -143,8 +165,17 @@ import { ErrorUtils } from "../../utils/errors";
       // escape control characters
       this.regex = pattern.replace(/([\-\.\(\)\[\]])/g, "\\$1");
 
+      // replace {} with wildcard
+      this.regex = this.regex.replace(/\{\}/g, ".*");
+      
+      // TODO - ensure there are no unsupported {fields}
+
       // replace date fields with applicable regexes
       this.regex = this.regex.replace(/\{yyyy\}/g, "(\\d{4})");
+      this.regex = this.regex.replace(/\{(?:dd|mm|yy)\}/g, "(\\d{2})");
+      this.regex = this.regex.replace(/\{date\}/g, "(\\d{4}-\\d{2}-\\d{2})");
+      this.regex = this.regex.replace(/\{(?:yyyymmdd|ddmmyyyy|mmddyyyy)\}/g, "(\\d{8})");
+      this.regex = this.regex.replace(/\{(?:yymmdd|ddmmyy|mmddyy)\}/g, "(\\d{6})");
 
       // replace {i} with ignored fields
       ignoreFields = ignoreFields.map((s) => s.replace(/([\-\.\(\)\[\]])/g, "\\$1").trim());
@@ -206,17 +237,22 @@ import { ErrorUtils } from "../../utils/errors";
     capitalizeTitle: boolean
   }
 
-  // Outstanding issues:
-  // - need to add select all/none for fields
-
   // TODO:
   // Add {d} for delimiter characters (._-)
   // Add mappings for tags, performers, studio
   // Add drop-down button to add {fields}
 
   export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) => {
+    const [parser, setParser] = useState<ParseMapper | undefined>();
     const [parserResult, setParserResult] = useState<SceneParserResult[]>([]);
-    const [parserInput, setParserInput] = useState<IParserInput>(initialParserInput())
+    const [parserInput, setParserInput] = useState<IParserInput>(initialParserInput());
+
+    const [allTitleSet, setAllTitleSet] = useState<boolean>(false);
+    const [allDateSet, setAllDateSet] = useState<boolean>(false);
+    
+    const [page, setPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(20);
+    const [totalItems, setTotalItems] = useState<number>(0);
 
     // Network state
     const [isLoading, setIsLoading] = useState(false);
@@ -232,29 +268,44 @@ import { ErrorUtils } from "../../utils/errors";
       };
     }
 
-    function getQueryPattern(pattern : string) {
-      // {title}
-      var queryPattern = pattern;
-
-      // replace {..} with wildcard
-      queryPattern = queryPattern.replace(/\{.*?\}/g, "*");
-      
-      return queryPattern;
+    function getQueryFilter(regex : string, page: number, perPage: number) : GQL.FindFilterType {
+      return {
+        q: regex,
+        page: page,
+        per_page: perPage
+      };
     }
 
-    async function onFind(input : IParserInput) {
-      setIsLoading(true);
-      setParserInput(input);
+    async function onFind() {
       setParserResult([]);
 
-      const result = await StashService.querySceneByPath(getQueryPattern(input.pattern));
+      if (!parser) {
+        return;
+      }
       
-      let scenes = result.data.findScenesByFilename ? result.data.findScenesByFilename.scenes : undefined;
-      if (!!scenes) {
-        parseResults(scenes, input);
+      setIsLoading(true);
+      
+      const response = await StashService.querySceneByPathRegex(getQueryFilter(parser.regex, page, pageSize));
+      
+      let result = response.data.findScenesByPathRegex;
+      if (!!result) {
+        parseResults(result.scenes);
+        setTotalItems(result.count);
       }
 
       setIsLoading(false);
+    }
+
+    useEffect(() => {
+      onFind();
+    }, [page, parser, parserInput]);
+
+    function onFindClicked(input : IParserInput) {
+      var parser = new ParseMapper(input.pattern, input.ignoreWords);
+      setParser(parser);
+      setParserInput(input);
+      setPage(1);
+      setTotalItems(0);
     }
 
     function getScenesUpdateData() {
@@ -274,10 +325,8 @@ import { ErrorUtils } from "../../utils/errors";
       setIsLoading(false);
     }
 
-    function parseResults(scenes : GQL.SlimSceneDataFragment[], input: IParserInput) {
-      if (scenes) {
-        var parser = new ParseMapper(input.pattern, input.ignoreWords);
-
+    function parseResults(scenes : GQL.SlimSceneDataFragment[]) {
+      if (scenes && parser) {
         var result = scenes.map((scene) => {
           var parserResult = new SceneParserResult(scene);
           if(!parser.parse(parserResult)) {
@@ -286,13 +335,13 @@ import { ErrorUtils } from "../../utils/errors";
 
           // post-process
           if (parserResult.title && !!parserResult.title.value) {
-            if (input.whitespaceCharacters) {
-              var wsRegExp = input.whitespaceCharacters.replace(/([\-\.\(\)\[\]])/g, "\\$1");
+            if (parserInput.whitespaceCharacters) {
+              var wsRegExp = parserInput.whitespaceCharacters.replace(/([\-\.\(\)\[\]])/g, "\\$1");
               wsRegExp = "[" + wsRegExp + "]";
               parserResult.title.value = parserResult.title.value.replace(new RegExp(wsRegExp, "g"), " ");
             }
 
-            if (input.capitalizeTitle) {
+            if (parserInput.capitalizeTitle) {
               parserResult.title.value = parserResult.title.value.replace(/(?:^| )\w/g, function (chr) {
                 return chr.toUpperCase();
               });
@@ -304,6 +353,44 @@ import { ErrorUtils } from "../../utils/errors";
 
         setParserResult(result);
       }
+    }
+
+    useEffect(() => {
+      var newAllTitleSet = !parserResult.some((r) => {
+        return !r.title.set;
+      });
+      var newAllDateSet = !parserResult.some((r) => {
+        return !r.date.set;
+      });
+
+      if (newAllTitleSet != allTitleSet) {
+        setAllTitleSet(newAllTitleSet);
+      }
+      if (newAllDateSet != allDateSet) {
+        setAllDateSet(newAllDateSet);
+      }
+    }, [parserResult]);
+
+    function onSelectAllTitleSet(selected : boolean) {
+      var newResult = [...parserResult];
+
+      newResult.forEach((r) => {
+        r.title.set = selected;
+      });
+
+      setParserResult(newResult);
+      setAllTitleSet(selected);
+    }
+
+    function onSelectAllDateSet(selected : boolean) {
+      var newResult = [...parserResult];
+
+      newResult.forEach((r) => {
+        r.date.set = selected;
+      });
+
+      setParserResult(newResult);
+      setAllDateSet(selected);
     }
 
     interface IParserInputProps {
@@ -418,7 +505,8 @@ import { ErrorUtils } from "../../utils/errors";
                 onChange={(event : any) => {setValue(event.target.value)}}
                 onBlur={() => maybeValueChanged()}
                 disabled={!props.parserResult.set}
-                value={value}
+                value={value || ""}
+                autoComplete={"new-password" /* required to prevent Chrome autofilling */}
               />
             </FormGroup>
           </td>
@@ -468,8 +556,8 @@ import { ErrorUtils } from "../../utils/errors";
           <SceneParserField 
             key="date"
             parserResult={props.scene.date}
-            onSetChanged={(set) => onDateChanged(set, props.scene.title.value)}
-            onValueChanged={(value) => onDateChanged(props.scene.title.set, value)}
+            onSetChanged={(set) => onDateChanged(set, props.scene.date.value)}
+            onValueChanged={(value) => onDateChanged(props.scene.date.set, value)}
             />
           {/*<td>
           </td>
@@ -496,43 +584,51 @@ import { ErrorUtils } from "../../utils/errors";
 
       return (
         <>
-        <div className="grid">
-          <HTMLTable condensed={true}>
-            <thead>
-              <tr className="scene-parser-row">
-                <th>Filename</th>
-                <td>
+        <form autoComplete="off">
+          <div className="grid">
+            <HTMLTable condensed={true}>
+              <thead>
+                <tr className="scene-parser-row">
+                  <th>Filename</th>
+                  <td>
+                    <Checkbox
+                      checked={allTitleSet}
+                      inline={true}
+                      onChange={() => {onSelectAllTitleSet(!allTitleSet)}}
+                    />
+                  </td>
+                  <th>Title</th>
+                  <td>
                   <Checkbox
-                    checked={true /*allTitleSet*/}
-                    inline={true}
-                    onChange={undefined /*() => {props.onSetChanged(!props.parserResult.set)}*/}
-                  />
-                </td>
-                <th>Title</th>
-                <td>
-                <Checkbox
-                    checked={true /*allDateSet*/}
-                    inline={true}
-                    onChange={undefined /*() => {props.onSetChanged(!props.parserResult.set)}*/}
-                  />
-                </td>
-                <th>Date</th>
-                {/* TODO <th>Tags</th>
-                <th>Performers</th>
-                <th>Studio</th>*/}
-              </tr>
-            </thead>
-            <tbody>
-              {parserResult.map((scene) => 
-                <SceneParserRow 
-                  scene={scene} 
-                  key={scene.id}
-                  onChange={(changedScene) => onChange(scene, changedScene)}/>
-              )}
-            </tbody>
-          </HTMLTable>
-        </div>
-        <Button text="Apply" onClick={() => onApply()}></Button>
+                      checked={allDateSet}
+                      inline={true}
+                      onChange={() => {onSelectAllDateSet(!allDateSet)}}
+                    />
+                  </td>
+                  <th>Date</th>
+                  {/* TODO <th>Tags</th>
+                  <th>Performers</th>
+                  <th>Studio</th>*/}
+                </tr>
+              </thead>
+              <tbody>
+                {parserResult.map((scene) => 
+                  <SceneParserRow 
+                    scene={scene} 
+                    key={scene.id}
+                    onChange={(changedScene) => onChange(scene, changedScene)}/>
+                )}
+              </tbody>
+            </HTMLTable>
+          </div>
+          <Pagination
+            currentPage={page}
+            itemsPerPage={pageSize}
+            totalItems={totalItems}
+            onChangePage={(page) => setPage(page)}
+          />
+          <Button text="Apply" onClick={() => onApply()}></Button>
+        </form>
       </>
       )
     }
@@ -542,7 +638,7 @@ import { ErrorUtils } from "../../utils/errors";
         <H4>Scene Filename Parser</H4>
         <ParserInput
           input={parserInput}
-          onFind={(input) => onFind(input)}
+          onFind={(input) => onFindClicked(input)}
         />
 
         {isLoading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}

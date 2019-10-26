@@ -279,11 +279,10 @@ export class StashService {
     });
   }
 
-  public static querySceneByPath(pattern : string) {
-    // TODO - we need to specifically find by path
-    return StashService.client.query<GQL.FindScenesByFilenameQuery>({
-      query: GQL.FindScenesByFilenameDocument,
-      variables: {filter: {q: pattern}},
+  public static querySceneByPathRegex(filter: GQL.FindFilterType) {
+    return StashService.client.query<GQL.FindScenesByPathRegexQuery>({
+      query: GQL.FindScenesByPathRegexDocument,
+      variables: {filter: filter},
     });
   }
 

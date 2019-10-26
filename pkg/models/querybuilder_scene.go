@@ -7,7 +7,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/logger"
 )
 
 const scenesForPerformerQuery = `
@@ -292,7 +291,7 @@ func getMultiCriterionClause(table string, joinTable string, joinTableField stri
 	return whereClause, havingClause
 }
 
-func (qb *SceneQueryBuilder) QueryByFilename(findFilter *FindFilterType) ([]*Scene, int) {
+func (qb *SceneQueryBuilder) QueryByPathRegex(findFilter *FindFilterType) ([]*Scene, int) {
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
 	}
@@ -303,17 +302,8 @@ func (qb *SceneQueryBuilder) QueryByFilename(findFilter *FindFilterType) ([]*Sce
 	body := selectDistinctIDs("scenes")
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		// search only by path
-		queryParam := *q
-
-		// replace path wildcard * with %
-		queryParam = strings.ReplaceAll(queryParam, "*", "%")
-
-		whereClauses = append(whereClauses, "scenes.path like '" + queryParam + "'")
+		whereClauses = append(whereClauses, "scenes.path regexp '" + *q + "'")
 	}
-
-	// TODO - remove this
-	logger.Infof("Where: %v", whereClauses)
 
 	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := executeFindQuery("scenes", body, args, sortAndPagination, whereClauses, havingClauses)
