@@ -12,9 +12,12 @@ import {
 import React, { FunctionComponent, useEffect, useState, useRef } from "react";
 import { IBaseProps } from "../../models";
 import { StashService } from "../../core/StashService";
+import * as GQL from "../../core/generated-graphql";
 import { SlimSceneDataFragment, Maybe } from "../../core/generated-graphql";
 import { TextUtils } from "../../utils/text";
 import _ from "lodash";
+import { ToastUtils } from "../../utils/toasts";
+import { ErrorUtils } from "../../utils/errors";
   
   interface IProps extends IBaseProps {}
 
@@ -43,11 +46,15 @@ import _ from "lodash";
     public tags: ParserResult<string[]> = new ParserResult();
     public performerIds: ParserResult<string[]> = new ParserResult();
 
+    public scene : SlimSceneDataFragment;
+
     constructor(scene : SlimSceneDataFragment) {
       this.id = scene.id;
       this.filename = TextUtils.fileNameFromPath(scene.path);
       this.title.setOriginalValue(scene.title);
       this.date.setOriginalValue(scene.date);
+
+      this.scene = scene;
     }
 
     public setField(field: string, value: any) {
@@ -98,6 +105,33 @@ import _ from "lodash";
         parserResult.set = true;
       }
     }
+
+    private static setInput(object: any, key: string, parserResult : ParserResult<any>) {
+      if (parserResult.set) {
+        object[key] = parserResult.value;
+      }
+    }
+
+    public toSceneUpdateInput() {
+      var ret = {
+        id: this.id,
+        title: this.scene.title,
+        details: this.scene.details,
+        url: this.scene.url,
+        date: this.scene.date,
+        rating: this.scene.rating,
+        gallery_id: this.scene.gallery ? this.scene.gallery.id : undefined,
+        studio_id: this.scene.studio ? this.scene.studio.id : undefined,
+        performer_ids: this.scene.performers.map((performer) => performer.id),
+        tag_ids: this.scene.tags.map((tag) => tag.id)
+      };
+
+      SceneParserResult.setInput(ret, "title", this.title);
+      SceneParserResult.setInput(ret, "date", this.date);
+      // TODO - other fields as added
+
+      return ret;
+    }
   };
 
   class ParseMapper {
@@ -119,15 +153,15 @@ import _ from "lodash";
       this.regex = this.regex.replace(/\{i\}/g, ignoreClause);
       
       // replace remaining fields
-      this.regex = this.regex.replace(/\{\w+\}/g, "(.*)");
+      this.regex = this.regex.replace(/\{[A-Za-z]+\}/g, "(.*)");
 
-      var regex = new RegExp(/\{(\w+)\}/);
-      var result = pattern.match(regex);
+      var fieldExtractor = new RegExp(/\{([A-Za-z]+)\}/);
+      var result = pattern.match(fieldExtractor);
       
       while(!!result && result.index !== undefined) {
         this.fields.push(result[1]);
         pattern = pattern.substring(result.index + result[0].length);
-        result = pattern.match(regex);
+        result = pattern.match(fieldExtractor);
       } 
     }
 
@@ -188,6 +222,8 @@ import _ from "lodash";
     // Network state
     const [isLoading, setIsLoading] = useState(false);
 
+    const updateScenes = StashService.useScenesUpdate(getScenesUpdateData());
+
     function getQueryPattern() {
       // {title}
       var queryPattern = pattern;
@@ -205,6 +241,23 @@ import _ from "lodash";
       
       if (!!result.data.findScenesByFilename) {
         setSceneResults(result.data.findScenesByFilename.scenes);
+      }
+
+      setIsLoading(false);
+    }
+
+    function getScenesUpdateData() {
+      return parserResult.map((result) => result.toSceneUpdateInput());
+    }
+
+    async function onApply() {
+      setIsLoading(true);
+
+      try {
+        await updateScenes();
+        ToastUtils.success("Updated scenes");
+      } catch (e) {
+        ErrorUtils.handle(e);
       }
 
       setIsLoading(false);
@@ -389,7 +442,7 @@ import _ from "lodash";
             </tbody>
           </HTMLTable>
         </div>
-        <Button text="Apply"></Button>
+        <Button text="Apply" onClick={() => onApply()}></Button>
       </>
       )
     }

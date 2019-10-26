@@ -183,6 +183,10 @@ export class StashService {
     return GQL.useBulkSceneUpdate({ variables: input, refetchQueries: ["FindScenes"] });
   }
   
+  public static useScenesUpdate(input: GQL.SceneUpdateInput[]) {
+    return GQL.useScenesUpdate({ variables: { input : input }});
+  }
+
   public static useSceneDestroy(input: GQL.SceneDestroyInput) {
     return GQL.useSceneDestroy({ variables: input });
   }
