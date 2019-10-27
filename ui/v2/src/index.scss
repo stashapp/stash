@@ -87,6 +87,14 @@ code {
   position: relative;
 }
 
+.grid-item label.card-select {
+  position: absolute;
+  padding-left: 15px;
+  margin-top: -12px;
+  z-index: 10;
+  opacity: 0.5;
+}
+
 video.preview {
   // height: 225px; // slows down the page
   width: 100%;
@@ -95,7 +103,7 @@ video.preview {
   object-fit: cover;
 }
 
-.filter-item {
+.filter-item, .operation-item {
   margin: 0 10px;
 }
 
@@ -116,7 +124,7 @@ video.preview {
   }
 }
 
-.filter-container {
+.filter-container, .operation-container {
   display: flex;
   justify-content: center;
   margin: 10px auto;
