@@ -15,8 +15,12 @@ interface IOptionType {
 export class PerformersCriterion extends Criterion<IOptionType, ILabeledId[]> {
   public type: CriterionType = "performers";
   public parameterName: string = "performers";
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [];
+  public modifier = CriterionModifier.IncludesAll;
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.IncludesAll),
+    Criterion.getModifierOption(CriterionModifier.Includes),
+    Criterion.getModifierOption(CriterionModifier.Excludes),
+  ];
   public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
 }

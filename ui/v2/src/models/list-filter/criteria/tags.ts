@@ -10,8 +10,12 @@ import {
 export class TagsCriterion extends Criterion<GQL.AllTagsForFilterAllTags, ILabeledId[]> {
   public type: CriterionType;
   public parameterName: string;
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [];
+  public modifier = CriterionModifier.IncludesAll;
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.IncludesAll),
+    Criterion.getModifierOption(CriterionModifier.Includes),
+    Criterion.getModifierOption(CriterionModifier.Excludes),
+  ];
   public options: GQL.AllTagsForFilterAllTags[] = [];
   public value: ILabeledId[] = [];
 

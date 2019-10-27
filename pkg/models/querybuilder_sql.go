@@ -85,7 +85,7 @@ func getSort(sort string, direction string, tableName string) string {
 		if tableName == "scenes" {
 			additional = ", bitrate DESC, framerate DESC, rating DESC, duration DESC"
 		} else if tableName == "scene_markers" {
-			additional = ", scene_id ASC, seconds ASC"
+			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
 		return " ORDER BY " + colName + " " + direction + additional
 	}
@@ -204,9 +204,11 @@ func executeFindQuery(tableName string, body string, args []interface{}, sortAnd
 	idsResult, idsErr := runIdsQuery(idsQuery, args)
 
 	if countErr != nil {
+		logger.Errorf("Error executing count query with SQL: %s, args: %v, error: %s", countQuery, args, countErr.Error())
 		panic(countErr)
 	}
 	if idsErr != nil {
+		logger.Errorf("Error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
 		panic(idsErr)
 	}
 

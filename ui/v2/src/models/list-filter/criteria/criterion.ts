@@ -38,6 +38,7 @@ export abstract class Criterion<Option = any, Value = any> {
       case CriterionModifier.LessThan: return {value: CriterionModifier.LessThan, label: "Less Than"};
       case CriterionModifier.IsNull: return {value: CriterionModifier.IsNull, label: "Is NULL"};
       case CriterionModifier.NotNull: return {value: CriterionModifier.NotNull, label: "Not NULL"};
+      case CriterionModifier.IncludesAll: return {value: CriterionModifier.IncludesAll, label: "Includes All"};
       case CriterionModifier.Includes: return {value: CriterionModifier.Includes, label: "Includes"};
       case CriterionModifier.Excludes: return {value: CriterionModifier.Excludes, label: "Excludes"};
     }
@@ -60,7 +61,8 @@ export abstract class Criterion<Option = any, Value = any> {
       case CriterionModifier.IsNull: modifierString = "is null"; break;
       case CriterionModifier.NotNull: modifierString = "is not null"; break;
       case CriterionModifier.Includes: modifierString = "includes"; break;
-      case CriterionModifier.Excludes: modifierString = "exculdes"; break;
+      case CriterionModifier.IncludesAll: modifierString = "includes all"; break;
+      case CriterionModifier.Excludes: modifierString = "excludes"; break;
       default: modifierString = "";
     }
 

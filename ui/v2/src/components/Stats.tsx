@@ -53,9 +53,6 @@ export const Stats: FunctionComponent = () => {
       <pre>
         {`
         This is still an early version, some things are still a work in progress.
-
-        * Filters for performers and studios only supports one item, even though it's a multi select.
-
         `}
       </pre>
     </div>
