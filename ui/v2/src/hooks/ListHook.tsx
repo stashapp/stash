@@ -15,17 +15,22 @@ export interface IListHookData {
   filter: ListFilterModel;
   template: JSX.Element;
   options: IListHookOptions;
+  onSelectChange: (id: string, selected : boolean, shiftKey: boolean) => void;
 }
 
 export interface IListHookOptions {
   filterMode: FilterMode;
   props: IBaseProps;
-  renderContent: (result: QueryHookResult<any, any>, filter: ListFilterModel) => JSX.Element | undefined;
+  renderContent: (result: QueryHookResult<any, any>, filter: ListFilterModel, selectedIds: Set<string>) => JSX.Element | undefined;
+  renderSelectedOptions?: (result: QueryHookResult<any, any>, selectedIds: Set<string>) => JSX.Element | undefined;
 }
 
 export class ListHook {
   public static useList(options: IListHookOptions): IListHookData {
     const [filter, setFilter] = useState<ListFilterModel>(new ListFilterModel(options.filterMode));
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [lastClickedId, setLastClickedId] = useState<string | undefined>(undefined);
+    const [totalCount, setTotalCount] = useState<number>(0);
 
     // Update the filter when the query parameters change
     useEffect(() => {
@@ -39,41 +44,60 @@ export class ListHook {
     }, [options.props.location.search]);
 
     let result: QueryHookResult<any, any>;
-    let totalCount: number;
+
+    let getData: (filter : ListFilterModel) => QueryHookResult<any, any>;
+    let getItems: () => any[];
+    let getCount: () => number;
 
     switch (options.filterMode) {
       case FilterMode.Scenes: {
-        result = StashService.useFindScenes(filter);
-        totalCount = !!result.data && !!result.data.findScenes ? result.data.findScenes.count : 0;
+        getData = (filter : ListFilterModel) => { return StashService.useFindScenes(filter); }
+        getItems = () => { return !!result.data && !!result.data.findScenes ? result.data.findScenes.scenes : []; }
+        getCount = () => { return !!result.data && !!result.data.findScenes ? result.data.findScenes.count : 0; }
         break;
       }
       case FilterMode.SceneMarkers: {
-        result = StashService.useFindSceneMarkers(filter);
-        totalCount = !!result.data && !!result.data.findSceneMarkers ? result.data.findSceneMarkers.count : 0;
+        getData = (filter : ListFilterModel) => { return StashService.useFindSceneMarkers(filter); }
+        getItems = () => { return !!result.data && !!result.data.findSceneMarkers ? result.data.findSceneMarkers.scene_markers : []; }
+        getCount = () => { return !!result.data && !!result.data.findSceneMarkers ? result.data.findSceneMarkers.count : 0; }
         break;
       }
       case FilterMode.Galleries: {
-        result = StashService.useFindGalleries(filter);
-        totalCount = !!result.data && !!result.data.findGalleries ? result.data.findGalleries.count : 0;
+        getData = (filter : ListFilterModel) => { return StashService.useFindGalleries(filter); }
+        getItems = () => { return !!result.data && !!result.data.findGalleries ? result.data.findGalleries.galleries : []; }
+        getCount = () => { return !!result.data && !!result.data.findGalleries ? result.data.findGalleries.count : 0; }
         break;
       }
       case FilterMode.Studios: {
-        result = StashService.useFindStudios(filter);
-        totalCount = !!result.data && !!result.data.findStudios ? result.data.findStudios.count : 0;
+        getData = (filter : ListFilterModel) => { return StashService.useFindStudios(filter); }
+        getItems = () => { return !!result.data && !!result.data.findStudios ? result.data.findStudios.studios : []; }
+        getCount = () => { return !!result.data && !!result.data.findStudios ? result.data.findStudios.count : 0; }
         break;
       }
       case FilterMode.Performers: {
-        result = StashService.useFindPerformers(filter);
-        totalCount = !!result.data && !!result.data.findPerformers ? result.data.findPerformers.count : 0;
+        getData = (filter : ListFilterModel) => { return StashService.useFindPerformers(filter); }
+        getItems = () => { return !!result.data && !!result.data.findPerformers ? result.data.findPerformers.performers : []; }
+        getCount = () => { return !!result.data && !!result.data.findPerformers ? result.data.findPerformers.count : 0; }
         break;
       }
       default: {
         console.error("REMOVE DEFAULT IN LIST HOOK");
-        result = StashService.useFindScenes(filter);
-        totalCount = !!result.data && !!result.data.findScenes ? result.data.findScenes.count : 0;
+        getData = (filter : ListFilterModel) => { return StashService.useFindScenes(filter); }
+        getItems = () => { return !!result.data && !!result.data.findScenes ? result.data.findScenes.scenes : []; }
+        getCount = () => { return !!result.data && !!result.data.findScenes ? result.data.findScenes.count : 0; }
         break;
       }
     }
+
+    result = getData(filter);
+
+    useEffect(() => {
+      setTotalCount(getCount());
+
+      // select none when data changes
+      onSelectNone();
+      setLastClickedId(undefined);
+    }, [result.data])
 
     // Update the query parameters when the data changes
     useEffect(() => {
@@ -159,6 +183,77 @@ export class ListHook {
       setFilter(newFilter);
     }
 
+    function onSelectChange(id: string, selected : boolean, shiftKey: boolean) {
+      if (shiftKey) {
+        multiSelect(id, selected);
+      } else {
+        singleSelect(id, selected);
+      }
+    }
+
+    function singleSelect(id: string, selected: boolean) {
+      setLastClickedId(id);
+      
+      const newSelectedIds = _.clone(selectedIds);
+      if (selected) {
+        newSelectedIds.add(id);
+      } else {
+        newSelectedIds.delete(id);
+      }
+
+      setSelectedIds(newSelectedIds);
+    }
+
+    function multiSelect(id: string, selected : boolean) {
+      let startIndex = 0;
+      let thisIndex = -1;
+  
+      if (!!lastClickedId) {
+        startIndex = getItems().findIndex((item) => {
+          return item.id === lastClickedId;
+        });
+      }
+
+      thisIndex = getItems().findIndex((item) => {
+        return item.id === id;
+      });
+
+      selectRange(startIndex, thisIndex);
+    }
+  
+    function selectRange(startIndex : number, endIndex : number) {
+      if (startIndex > endIndex) {
+        let tmp = startIndex;
+        startIndex = endIndex;
+        endIndex = tmp;
+      }
+  
+      const subset = getItems().slice(startIndex, endIndex + 1);
+      const newSelectedIds : Set<string> = new Set();
+
+      subset.forEach((item) => {
+        newSelectedIds.add(item.id);
+      });
+
+      setSelectedIds(newSelectedIds);
+    }
+
+    function onSelectAll() {
+      const newSelectedIds : Set<string> = new Set();
+      getItems().forEach((item) => {
+        newSelectedIds.add(item.id);
+      });
+
+      setSelectedIds(newSelectedIds);
+      setLastClickedId(undefined);
+    }
+
+    function onSelectNone() {
+      const newSelectedIds : Set<string> = new Set();
+      setSelectedIds(newSelectedIds);
+      setLastClickedId(undefined);
+    }
+
     const template = (
       <div>
         <ListFilter
@@ -169,11 +264,14 @@ export class ListHook {
           onChangeDisplayMode={onChangeDisplayMode}
           onAddCriterion={onAddCriterion}
           onRemoveCriterion={onRemoveCriterion}
+          onSelectAll={onSelectAll}
+          onSelectNone={onSelectNone}
           filter={filter}
         />
+        {options.renderSelectedOptions && selectedIds.size > 0 ? options.renderSelectedOptions(result, selectedIds) : undefined}
         {result.loading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
         {result.error ? <h1>{result.error.message}</h1> : undefined}
-        {options.renderContent(result, filter)}
+        {options.renderContent(result, filter, selectedIds)}
         <Pagination
           itemsPerPage={filter.itemsPerPage}
           currentPage={filter.currentPage}
@@ -183,6 +281,6 @@ export class ListHook {
       </div>
     );
 
-    return { filter, template, options };
+    return { filter, template, options, onSelectChange };
   }
 }

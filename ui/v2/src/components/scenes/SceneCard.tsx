@@ -2,6 +2,7 @@ import {
   Button,
   ButtonGroup,
   Card,
+  Checkbox,
   Divider,
   Elevation,
   H4,
@@ -19,11 +20,14 @@ import { SceneHelpers } from "./helpers";
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
+  selected: boolean | undefined;
+  onSelectedChanged: (selected : boolean, shiftKey : boolean) => void;
 }
 
 export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardProps) => {
   const [previewPath, setPreviewPath] = useState<string | undefined>(undefined);
   const videoHoverHook = VideoHoverHook.useVideoHover({resetOnMouseLeave: false});
+  
 
   function maybeRenderRatingBanner() {
     if (!props.scene.rating) { return; }
@@ -115,6 +119,8 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
     setPreviewPath("");
   }
 
+  var shiftKey = false;
+
   return (
     <Card
       className="grid-item"
@@ -122,6 +128,12 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
+      <Checkbox
+        className="card-select"
+        checked={props.selected}
+        onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
+        onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => { shiftKey = event.shiftKey; event.stopPropagation(); } }
+      />
       <Link to={`/scenes/${props.scene.id}`} className="image previewable">
         {maybeRenderRatingBanner()}
         <video className="preview" loop={true} poster={props.scene.paths.screenshot || ""} ref={videoHoverHook.videoEl}>
