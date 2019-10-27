@@ -28,11 +28,11 @@ input SceneMarkerFilterType {
   """Filter to only include scene markers with this tag"""
   tag_id: ID
   """Filter to only include scene markers with these tags"""
-  tags: [ID!]
+  tags: MultiCriterionInput
   """Filter to only include scene markers attached to a scene with these tags"""
-  scene_tags: [ID!]
+  scene_tags: MultiCriterionInput
   """Filter to only include scene markers with these performers"""
-  performers: [ID!]
+  performers: MultiCriterionInput
 }
 
 input SceneFilterType {

@@ -134,7 +134,7 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 		left join tags on tags_join.tag_id = tags.id
 	`
 
-	if tagIDs := sceneMarkerFilter.Tags; tagIDs != nil {
+	if tagsFilter := sceneMarkerFilter.Tags; tagsFilter != nil && len(tagsFilter.Value) > 0 {
 		//select `scene_markers`.* from `scene_markers`
 		//left join `tags` as `primary_tags_join`
 		//  on `primary_tags_join`.`id` = `scene_markers`.`primary_tag_id`
@@ -145,32 +145,82 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 		//group by `scene_markers`.`id`
 		//having ((count(distinct `primary_tags_join`.`id`) + count(distinct `tags_join`.`tag_id`)) = 4)
 
-		length := len(tagIDs)
-		body += " LEFT JOIN tags AS ptj ON ptj.id = scene_markers.primary_tag_id AND ptj.id IN " + getInBinding(length)
-		body += " LEFT JOIN scene_markers_tags AS tj ON tj.scene_marker_id = scene_markers.id AND tj.tag_id IN " + getInBinding(length)
-		havingClauses = append(havingClauses, "((COUNT(DISTINCT ptj.id) + COUNT(DISTINCT tj.tag_id)) = "+strconv.Itoa(length)+")")
-		for _, tagID := range tagIDs {
+		length := len(tagsFilter.Value)
+
+		if tagsFilter.Modifier == CriterionModifierIncludes || tagsFilter.Modifier == CriterionModifierIncludesAll {
+			body += " LEFT JOIN tags AS ptj ON ptj.id = scene_markers.primary_tag_id AND ptj.id IN " + getInBinding(length)
+			body += " LEFT JOIN scene_markers_tags AS tj ON tj.scene_marker_id = scene_markers.id AND tj.tag_id IN " + getInBinding(length)
+
+			// only one required for include any
+			requiredCount := 1
+
+			// all required for include all
+			if tagsFilter.Modifier == CriterionModifierIncludesAll {
+				requiredCount = length
+			}
+
+			havingClauses = append(havingClauses, "((COUNT(DISTINCT ptj.id) + COUNT(DISTINCT tj.tag_id)) >= "+strconv.Itoa(requiredCount)+")")
+		} else if tagsFilter.Modifier == CriterionModifierExcludes {
+			// excludes all of the provided ids
+			whereClauses = append(whereClauses, "scene_markers.primary_tag_id not in " + getInBinding(length))
+			whereClauses = append(whereClauses, "not exists (select smt.scene_marker_id from scene_markers_tags as smt where smt.scene_marker_id = scene_markers.id and smt.tag_id in " + getInBinding(length) + ")")
+		}
+
+		for _, tagID := range tagsFilter.Value {
 			args = append(args, tagID)
 		}
-		for _, tagID := range tagIDs {
+		for _, tagID := range tagsFilter.Value {
 			args = append(args, tagID)
 		}
 	}
 
-	if sceneTagIDs := sceneMarkerFilter.SceneTags; sceneTagIDs != nil {
-		length := len(sceneTagIDs)
-		body += " LEFT JOIN scenes_tags AS scene_tags_join ON scene_tags_join.scene_id = scene.id AND scene_tags_join.tag_id IN " + getInBinding(length)
-		havingClauses = append(havingClauses, "COUNT(DISTINCT scene_tags_join.tag_id) = "+strconv.Itoa(length))
-		for _, tagID := range sceneTagIDs {
+	if sceneTagsFilter := sceneMarkerFilter.SceneTags; sceneTagsFilter != nil && len(sceneTagsFilter.Value) > 0 {
+		length := len(sceneTagsFilter.Value)
+		
+		if sceneTagsFilter.Modifier == CriterionModifierIncludes || sceneTagsFilter.Modifier == CriterionModifierIncludesAll {
+			body += " LEFT JOIN scenes_tags AS scene_tags_join ON scene_tags_join.scene_id = scene.id AND scene_tags_join.tag_id IN " + getInBinding(length)
+
+			// only one required for include any
+			requiredCount := 1
+
+			// all required for include all
+			if sceneTagsFilter.Modifier == CriterionModifierIncludesAll {
+				requiredCount = length
+			}
+
+			havingClauses = append(havingClauses, "COUNT(DISTINCT scene_tags_join.tag_id) >= "+strconv.Itoa(requiredCount))
+		} else if sceneTagsFilter.Modifier == CriterionModifierExcludes {
+			// excludes all of the provided ids
+			whereClauses = append(whereClauses, "not exists (select st.scene_id from scenes_tags as st where st.scene_id = scene.id AND st.tag_id IN " + getInBinding(length) + ")")
+		}
+		
+		for _, tagID := range sceneTagsFilter.Value {
 			args = append(args, tagID)
 		}
 	}
 
-	if performerIDs := sceneMarkerFilter.Performers; performerIDs != nil {
-		length := len(performerIDs)
-		body += " LEFT JOIN performers_scenes as scene_performers ON scene.id = scene_performers.scene_id"
-		whereClauses = append(whereClauses, "scene_performers.performer_id IN "+getInBinding(length))
-		for _, performerID := range performerIDs {
+	if performersFilter := sceneMarkerFilter.Performers; performersFilter != nil && len(performersFilter.Value) > 0 {
+		length := len(performersFilter.Value)
+
+		if performersFilter.Modifier == CriterionModifierIncludes || performersFilter.Modifier == CriterionModifierIncludesAll {
+			body += " LEFT JOIN performers_scenes as scene_performers ON scene.id = scene_performers.scene_id"
+			whereClauses = append(whereClauses, "scene_performers.performer_id IN "+getInBinding(length))
+
+			// only one required for include any
+			requiredCount := 1
+
+			// all required for include all
+			if performersFilter.Modifier == CriterionModifierIncludesAll {
+				requiredCount = length
+			}
+			
+			havingClauses = append(havingClauses, "COUNT(DISTINCT scene_performers.performer_id) >= "+strconv.Itoa(requiredCount))
+		} else if performersFilter.Modifier == CriterionModifierExcludes {
+			// excludes all of the provided ids
+			whereClauses = append(whereClauses, "not exists (select sp.scene_id from performers_scenes as sp where sp.scene_id = scene.id AND sp.performer_id IN " + getInBinding(length) + ")")
+		}
+			
+		for _, performerID := range performersFilter.Value {
 			args = append(args, performerID)
 		}
 	}

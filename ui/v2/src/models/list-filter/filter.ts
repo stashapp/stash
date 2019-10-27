@@ -255,13 +255,16 @@ export class ListFilterModel {
     this.criteria.forEach((criterion) => {
       switch (criterion.type) {
         case "tags":
-          result.tags = (criterion as TagsCriterion).value.map((tag) => tag.id);
+          const tagsCrit = criterion as TagsCriterion;
+          result.tags = { value: tagsCrit.value.map((tag) => tag.id), modifier: tagsCrit.modifier };
           break;
         case "sceneTags":
-          result.scene_tags = (criterion as TagsCriterion).value.map((tag) => tag.id);
+          const sceneTagsCrit = criterion as TagsCriterion;
+          result.scene_tags = { value: sceneTagsCrit.value.map((tag) => tag.id), modifier: sceneTagsCrit.modifier };
           break;
         case "performers":
-          result.performers = (criterion as PerformersCriterion).value.map((performer) => performer.id);
+          const performersCrit = criterion as PerformersCriterion;
+          result.performers = { value: performersCrit.value.map((performer) => performer.id), modifier: performersCrit.modifier };
           break;
       }
     });
