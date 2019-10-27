@@ -24,13 +24,21 @@ interface IProps extends HTMLInputProps, Partial<IMultiSelectProps<ValidTypes>> 
 }
 
 export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps) => {
-  let items: ValidTypes[];
-  let InternalMultiSelect: new (props: IMultiSelectProps<any>) => MultiSelect<any>;
-  var createNewFunc = undefined;
+  let MultiSelectImpl = getMultiSelectImpl();
+  let InternalMultiSelect = MultiSelectImpl.getInternalMultiSelect();
+  const data = MultiSelectImpl.getData();
   
+  const [selectedItems, setSelectedItems] = React.useState<ValidTypes[]>([]);
+  const [items, setItems] = React.useState<ValidTypes[]>([]);
   const [newTagName, setNewTagName] = React.useState<string>("");
   const createTag = StashService.useTagCreate(getTagInput() as GQL.TagCreateInput);
 
+  React.useEffect(() => {
+    if (!!data) {
+      MultiSelectImpl.translateData();
+    }
+  }, [data]);
+      
   function getTagInput() {
     const tagInput: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = { name: newTagName };
     return tagInput;
@@ -42,8 +50,10 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
       try {
         created = await createTag();
         
+        items.push(created.data.tagCreate);
+        setItems(items.slice());
         addSelectedItem(created.data.tagCreate);
-
+        
         ToastUtils.success("Created tag");
       } catch (e) {
         ErrorUtils.handle(e);
@@ -76,43 +86,50 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
     );
   }
 
-  switch (props.type) {
-    case "performers": {
-      const { data } = StashService.useAllPerformersForFilter();
-      items = !!data && !!data.allPerformers ? data.allPerformers : [];
-      InternalMultiSelect = InternalPerformerMultiSelect;
-      break;
-    }
-    case "studios": {
-      const { data } = StashService.useAllStudiosForFilter();
-      items = !!data && !!data.allStudios ? data.allStudios : [];
-      InternalMultiSelect = InternalStudioMultiSelect;
-      break;
-    }
-    case "tags": {
-      const { data } = StashService.useAllTagsForFilter();
-      items = !!data && !!data.allTags ? data.allTags : [];
-      InternalMultiSelect = InternalTagMultiSelect;
-      createNewFunc = createNewTag;
-      break;
-    }
-    default: {
-      console.error("Unhandled case in FilterMultiSelect");
-      return <>Unhandled case in FilterMultiSelect</>;
-    }
-  }
-
-  /* eslint-disable react-hooks/rules-of-hooks */
-  const [selectedItems, setSelectedItems] = React.useState<ValidTypes[]>([]);
-  const [isInitialized, setIsInitialized] = React.useState<boolean>(false);
-  /* eslint-enable */
-
-  if (!!props.initialIds && selectedItems.length === 0 && !isInitialized) {
-    const initialItems = items.filter((item) => props.initialIds!.includes(item.id));
-    if (initialItems.length > 0) {
+  React.useEffect(() => {
+    if (!!props.initialIds && !!items) {
+      const initialItems = items.filter((item) => props.initialIds!.includes(item.id));
       setSelectedItems(initialItems);
-      setIsInitialized(true);
     }
+  }, [props.initialIds, items]);
+
+  function getMultiSelectImpl() {
+    let getInternalMultiSelect: () => new (props: IMultiSelectProps<any>) => MultiSelect<any>;
+    let getData: () => GQL.AllPerformersForFilterQuery | GQL.AllStudiosForFilterQuery | GQL.AllTagsForFilterQuery | undefined;
+    let translateData: () => void;
+    let createNewObject: ((query : string) => void) | undefined = undefined; 
+
+    switch (props.type) {
+      case "performers": {
+        getInternalMultiSelect = () => { return InternalPerformerMultiSelect; };
+        getData = () => { const { data } = StashService.useAllPerformersForFilter(); return data; }
+        translateData = () => { let perfData = data as GQL.AllPerformersForFilterQuery; setItems(!!perfData && !!perfData.allPerformers ? perfData.allPerformers : []); };
+        break;
+      }
+      case "studios": {
+        getInternalMultiSelect = () => { return InternalStudioMultiSelect; };
+        getData = () => { const { data } = StashService.useAllStudiosForFilter(); return data; }
+        translateData = () => { let studioData = data as GQL.AllStudiosForFilterQuery; setItems(!!studioData && !!studioData.allStudios ? studioData.allStudios : []); };
+        break;
+      }
+      case "tags": {
+        getInternalMultiSelect = () => { return InternalTagMultiSelect; };
+        getData = () => { const { data } = StashService.useAllTagsForFilter(); return data; }
+        translateData = () => { let tagData = data as GQL.AllTagsForFilterQuery; setItems(!!tagData && !!tagData.allTags ? tagData.allTags : []); };
+        createNewObject = createNewTag;
+        break;
+      }
+      default: {
+        throw "Unhandled case in FilterMultiSelect";
+      }
+    }
+
+    return {
+      getInternalMultiSelect: getInternalMultiSelect,
+      getData: getData,
+      translateData: translateData,
+      createNewObject: createNewObject
+    };
   }
 
   const renderItem: ItemRenderer<ValidTypes> = (item, itemProps) => {
@@ -165,7 +182,7 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
       onItemSelect={onItemSelect}
       resetOnSelect={true}
       popoverProps={{position: "bottom"}}
-      createNewItemFromQuery={createNewFunc}
+      createNewItemFromQuery={MultiSelectImpl.createNewObject}
       createNewItemRenderer={createNewRenderer}
       {...props}
     />
