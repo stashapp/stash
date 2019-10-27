@@ -130,10 +130,14 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
       }
     }
     return (
-      <FormGroup>
-        {renderModifier()}
-        {renderSelect()}
-      </FormGroup>
+      <>
+        <FormGroup>
+          {renderModifier()}
+        </FormGroup>
+        <FormGroup>
+          {renderSelect()}
+        </FormGroup>
+      </>
     );
   };
 

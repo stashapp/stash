@@ -218,23 +218,34 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		}
 	}
 
-	if tagsFilter := sceneFilter.Tags; len(tagsFilter) > 0 {
-		for _, tagID := range tagsFilter {
+	if tagsFilter := sceneFilter.Tags; tagsFilter != nil && len(tagsFilter.Value) > 0 {
+		for _, tagID := range tagsFilter.Value {
 			args = append(args, tagID)
 		}
 
-		whereClauses = append(whereClauses, "tags.id IN "+getInBinding(len(tagsFilter)))
-		havingClauses = append(havingClauses, "count(distinct tags.id) IS "+strconv.Itoa(len(tagsFilter)))
+		whereClause, havingClause := getMultiCriterionClause("tags", "scenes_tags", "tag_id", tagsFilter)
+		whereClauses = appendClause(whereClauses, whereClause)
+		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
-	if performerID := sceneFilter.PerformerID; performerID != nil {
-		whereClauses = append(whereClauses, "performers.id = ?")
-		args = append(args, *performerID)
+	if performersFilter := sceneFilter.Performers; performersFilter != nil && len(performersFilter.Value) > 0 {
+		for _, performerID := range performersFilter.Value {
+			args = append(args, performerID)
+		}
+
+		whereClause, havingClause := getMultiCriterionClause("performers", "performers_scenes", "performer_id", performersFilter)
+		whereClauses = appendClause(whereClauses, whereClause)
+		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
-	if studioID := sceneFilter.StudioID; studioID != nil {
-		whereClauses = append(whereClauses, "studio.id = ?")
-		args = append(args, *studioID)
+	if studiosFilter := sceneFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
+		for _, studioID := range studiosFilter.Value {
+			args = append(args, studioID)
+		}
+		
+		whereClause, havingClause := getMultiCriterionClause("studio", "", "studio_id", studiosFilter)
+		whereClauses = appendClause(whereClauses, whereClause)
+		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
 	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
@@ -247,6 +258,37 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	}
 
 	return scenes, countResult
+}
+
+func appendClause(clauses []string, clause string) []string {
+	if clause != "" {
+		return append(clauses, clause)
+	}
+
+	return clauses
+}
+
+// returns where clause and having clause
+func getMultiCriterionClause(table string, joinTable string, joinTableField string, criterion *MultiCriterionInput) (string, string) {
+	whereClause := ""
+	havingClause := ""
+	if criterion.Modifier == CriterionModifierIncludes {
+		// includes any of the provided ids
+		whereClause = table + ".id IN "+ getInBinding(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierIncludesAll {
+		// includes all of the provided ids
+		whereClause = table + ".id IN "+ getInBinding(len(criterion.Value))
+		havingClause = "count(distinct " + table + ".id) IS " + strconv.Itoa(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierExcludes {
+		// excludes all of the provided ids
+		if (joinTable != "") {
+			whereClause = "not exists (select " + joinTable + ".scene_id from " + joinTable + " where " + joinTable + ".scene_id = scenes.id and " + joinTable + "." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
+		} else {
+			whereClause = "not exists (select s.id from scenes as s where s.id = scenes.id and s." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
+		}
+	}
+
+	return whereClause, havingClause
 }
 
 func (qb *SceneQueryBuilder) getSceneSort(findFilter *FindFilterType) string {
