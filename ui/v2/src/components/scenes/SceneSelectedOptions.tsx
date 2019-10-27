@@ -100,19 +100,6 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
       sceneInput.tag_ids = tagIds;
     }
 
-    // The Go implementation of graphql doesn't seem to be
-    // able to distinguish between an empty passed array and
-    // an undefined array (both umarshal to empty slice)
-
-    // we'll send an array containing undefined to signify
-    // unsetting of the applicable fields
-    if (sceneInput.performer_ids && sceneInput.performer_ids.length == 0) {
-      sceneInput.performer_ids = [undefined];
-    }
-    if (sceneInput.tag_ids && sceneInput.tag_ids.length == 0) {
-      sceneInput.tag_ids = [undefined];
-    }
-
     return sceneInput;
   }
 

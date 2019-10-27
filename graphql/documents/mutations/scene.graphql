@@ -35,8 +35,8 @@ mutation BulkSceneUpdate(
   $rating: Int,
   $studio_id: ID,
   $gallery_id: ID,
-  $performer_ids: [ID],
-  $tag_ids: [ID]) {
+  $performer_ids: [ID!],
+  $tag_ids: [ID!]) {
 
   bulkSceneUpdate(input: {
                         ids: $ids,

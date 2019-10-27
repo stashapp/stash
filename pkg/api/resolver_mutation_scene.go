@@ -192,22 +192,15 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 		}
 
 		// Save the performers
-		// There's no way to distinguish between a slice that wasn't sent through
-		// and an empty slice. Workaround is to interpret input as follows:
-		// - empty slice means ignore
-		// - slice with a single nil element means unset
-		if len(input.PerformerIds) > 0 {
+		if wasFieldIncluded(ctx, "performer_ids") {
 			var performerJoins []models.PerformersScenes
 			for _, pid := range input.PerformerIds {
-				// ignore nil ids
-				if pid != nil {
-					performerID, _ := strconv.Atoi(*pid)
-					performerJoin := models.PerformersScenes{
-						PerformerID: performerID,
-						SceneID:     sceneID,
-					}
-					performerJoins = append(performerJoins, performerJoin)
+				performerID, _ := strconv.Atoi(pid)
+				performerJoin := models.PerformersScenes{
+					PerformerID: performerID,
+					SceneID:     sceneID,
 				}
+				performerJoins = append(performerJoins, performerJoin)
 			}
 			if err := jqb.UpdatePerformersScenes(sceneID, performerJoins, tx); err != nil {
 				_ = tx.Rollback()
@@ -216,17 +209,15 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 		}
 
 		// Save the tags
-		if len(input.PerformerIds) > 0 {
+		if wasFieldIncluded(ctx, "tag_ids") {
 			var tagJoins []models.ScenesTags
 			for _, tid := range input.TagIds {
-				if tid != nil {
-					tagID, _ := strconv.Atoi(*tid)
-					tagJoin := models.ScenesTags{
-						SceneID: sceneID,
-						TagID:   tagID,
-					}
-					tagJoins = append(tagJoins, tagJoin)
+				tagID, _ := strconv.Atoi(tid)
+				tagJoin := models.ScenesTags{
+					SceneID: sceneID,
+					TagID:   tagID,
 				}
+				tagJoins = append(tagJoins, tagJoin)
 			}
 			if err := jqb.UpdateScenesTags(sceneID, tagJoins, tx); err != nil {
 				_ = tx.Rollback()
