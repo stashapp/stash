@@ -12,6 +12,7 @@ import { StashService } from "../../../core/StashService";
 import { ErrorUtils } from "../../../utils/errors";
 import { ToastUtils } from "../../../utils/toasts";
 import { GenerateButton } from "./GenerateButton";
+import { Link } from "react-router-dom";
 
 interface IProps {}
 
@@ -96,10 +97,9 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         />
         <Button id="scan" text="Scan" onClick={() => onScan()} />
       </FormGroup>
-        <AnchorButton
-          href="/sceneFilenameParser"
-          text={"Scene Filename Parser"}
-        />
+        <Link className="bp3-button" to={"/sceneFilenameParser"}>
+          Scene Filename Parser
+        </Link>
       <FormGroup>
 
       </FormGroup>
