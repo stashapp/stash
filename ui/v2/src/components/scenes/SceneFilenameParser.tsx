@@ -279,6 +279,11 @@ class SceneParserResult {
     }
   }
 
+  // returns true if any of its fields have set == true
+  public isChanged() {
+    return this.title.set || this.date.set;
+  }
+
   public toSceneUpdateInput() {
     var ret = {
       id: this.id,
@@ -479,7 +484,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
   }
 
   function getScenesUpdateData() {
-    return parserResult.map((result) => result.toSceneUpdateInput());
+    return parserResult.filter((result) => result.isChanged()).map((result) => result.toSceneUpdateInput());
   }
 
   async function onApply() {
