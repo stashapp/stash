@@ -38,12 +38,6 @@ class ParserResult<T> {
   }
 }
 
-interface IParserField {
-  field : string;
-  fieldRegex: RegExp;
-  regex : string;
-}
-
 class ParserField {
   public field : string;
   public fieldRegex: RegExp;
@@ -172,6 +166,37 @@ class SceneParserResult {
     this.scene = scene;
   }
 
+  public static validateDate(dateStr: string) {
+    var splits = dateStr.split("-");
+    if (splits.length != 3) {
+      return false;
+    }
+    
+    var year = parseInt(splits[0]);
+    var month = parseInt(splits[1]);
+    var d = parseInt(splits[2]);
+
+    var date = new Date();
+    date.setMonth(month - 1);
+    date.setDate(d);
+
+    // assume year must be between 1900 and 2100
+    if (year < 1900 || year > 2100) {
+      return false;
+    }
+
+    if (month < 1 || month > 12) {
+      return false;
+    }
+
+    // not checking individual months to ensure date is in the correct range
+    if (d < 1 || d > 31) {
+      return false;
+    }
+
+    return true;
+  }
+
   private setDate(field: ParserField, value: string) {
     var yearIndex = 0;
     var yearLength = field.field.split("y").length - 1;
@@ -199,8 +224,14 @@ class SceneParserResult {
     var yearValue = value.substring(yearIndex, yearIndex + yearLength);
     var monthValue = value.substring(monthIndex, monthIndex + 2);
     var dateValue = value.substring(dateIndex, dateIndex + 2);
-    this.date.value = yearValue + "-" + monthValue + "-" + dateValue;
-    this.date.set = true;
+
+    var fullDate = yearValue + "-" + monthValue + "-" + dateValue;
+
+    // ensure the date is valid
+    if (SceneParserResult.validateDate(fullDate)) {
+      this.date.value = fullDate
+      this.date.set = true;
+    }
   }
 
   public setField(field: ParserField, value: any) {
@@ -314,7 +345,10 @@ class ParseMapper {
   private postParse(scene: SceneParserResult) {
     // set the date if the components are set
     if (scene.yyyy.set && scene.mm.set && scene.dd.set) {
-      scene.setField(ParserField.Date, scene.yyyy.value + "-" + scene.mm.value + "-" + scene.dd.value);
+      var fullDate = scene.yyyy.value + "-" + scene.mm.value + "-" + scene.dd.value;
+      if (SceneParserResult.validateDate(fullDate)) {
+        scene.setField(ParserField.Date, scene.yyyy.value + "-" + scene.mm.value + "-" + scene.dd.value);
+      }
     }
   }
 
