@@ -241,10 +241,19 @@ export class StashService {
     });
   }
 
+  // remove findScenes for bulk scene update so that we don't lose
+  // existing results
+  private static sceneBulkMutationImpactedQueries = [
+    "findPerformers",
+    "findSceneMarkers",
+    "findStudios",
+    "allTags"
+  ];
+
   public static useBulkSceneUpdate(input: GQL.BulkSceneUpdateInput) {
     return GQL.useBulkSceneUpdate({ 
       variables: input, 
-      update: () => StashService.invalidateQueries(StashService.sceneMutationImpactedQueries)
+      update: () => StashService.invalidateQueries(StashService.sceneBulkMutationImpactedQueries)
     });
   }
   
