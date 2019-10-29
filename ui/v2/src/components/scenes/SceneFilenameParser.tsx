@@ -228,9 +228,10 @@ class SceneParserResult {
     var fullDate = yearValue + "-" + monthValue + "-" + dateValue;
 
     // ensure the date is valid
-    if (SceneParserResult.validateDate(fullDate)) {
-      this.date.value = fullDate
+    // only set if new value is different from the old
+    if (SceneParserResult.validateDate(fullDate) && this.date.originalValue !== fullDate) {
       this.date.set = true;
+      this.date.value = fullDate
     }
   }
 
@@ -265,9 +266,10 @@ class SceneParserResult {
     }
     // TODO - other fields
 
-    if (!!parserResult) {
-      parserResult.value = value;
+    // only set if different from original value
+    if (!!parserResult && parserResult.originalValue !== value) {
       parserResult.set = true;
+      parserResult.value = value;
     }
   }
 
