@@ -27,3 +27,13 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 		Scenes: scenes,
 	}, nil
 }
+
+func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *models.FindFilterType) (*models.FindScenesResultType, error) {
+	qb := models.NewSceneQueryBuilder()
+
+	scenes, total := qb.QueryByPathRegex(filter)
+	return &models.FindScenesResultType{
+		Count:  total,
+		Scenes: scenes,
+	}, nil
+}

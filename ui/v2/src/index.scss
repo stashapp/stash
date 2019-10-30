@@ -260,3 +260,36 @@ span.block {
     text-decoration: underline;
   }
 }
+
+#parser-container {
+  margin: 10px auto;
+  width: 75%;
+}
+
+#parser-container .inputs label {
+  width: 12em;
+}
+
+#parser-container .inputs .bp3-input-group {
+  width: 80ch;
+}
+
+.scene-parser-row .bp3-checkbox {
+  margin: 0px -20px 0px 0px;
+}
+
+.scene-parser-row .title input {
+  width: 50ch;
+}
+
+.scene-parser-row input {
+  min-width: 10ch;
+}
+
+.scene-parser-row .bp3-form-group {
+  margin-bottom: 0px;
+}
+
+.scene-parser-row div:first-child > input {
+  margin-bottom: 5px;
+}

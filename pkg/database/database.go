@@ -1,12 +1,14 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
+	"regexp"
 	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/source"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
+	sqlite3 "github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 	"os"
@@ -15,11 +17,16 @@ import (
 var DB *sqlx.DB
 var appSchemaVersion uint = 1
 
+const sqlite3Driver = "sqlite3_regexp"
+
 func Initialize(databasePath string) {
 	runMigrations(databasePath)
 
+	// register custom driver with regexp function
+	registerRegexpFunc()
+
 	// https://github.com/mattn/go-sqlite3
-	conn, err := sqlx.Open("sqlite3", "file:"+databasePath+"?_fk=true")
+	conn, err := sqlx.Open(sqlite3Driver, "file:"+databasePath+"?_fk=true")
 	conn.SetMaxOpenConns(25)
 	conn.SetMaxIdleConns(4)
 	if err != nil {
@@ -61,4 +68,17 @@ func runMigrations(databasePath string) {
 			panic(err.Error())
 		}
 	}
+}
+
+func registerRegexpFunc() {
+	regexFn := func(re, s string) (bool, error) {
+		return regexp.MatchString(re, s)
+	}
+
+	sql.Register(sqlite3Driver,
+		&sqlite3.SQLiteDriver{
+			ConnectHook: func(conn *sqlite3.SQLiteConn) error {
+				return conn.RegisterFunc("regexp", regexFn, true)
+			},
+		})
 }

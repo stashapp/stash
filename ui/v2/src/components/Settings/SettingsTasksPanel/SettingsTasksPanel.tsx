@@ -5,12 +5,14 @@ import {
   Divider,
   FormGroup,
   H4,
+  AnchorButton,
 } from "@blueprintjs/core";
 import React, { FunctionComponent, useState } from "react";
 import { StashService } from "../../../core/StashService";
 import { ErrorUtils } from "../../../utils/errors";
 import { ToastUtils } from "../../../utils/toasts";
 import { GenerateButton } from "./GenerateButton";
+import { Link } from "react-router-dom";
 
 interface IProps {}
 
@@ -94,6 +96,12 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
           onChange={() => setNameFromMetadata(!nameFromMetadata)}
         />
         <Button id="scan" text="Scan" onClick={() => onScan()} />
+      </FormGroup>
+        <Link className="bp3-button" to={"/sceneFilenameParser"}>
+          Scene Filename Parser
+        </Link>
+      <FormGroup>
+
       </FormGroup>
       <Divider />
 

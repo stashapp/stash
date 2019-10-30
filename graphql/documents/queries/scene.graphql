@@ -7,6 +7,15 @@ query FindScenes($filter: FindFilterType, $scene_filter: SceneFilterType, $scene
   }
 }
 
+query FindScenesByPathRegex($filter: FindFilterType) {
+  findScenesByPathRegex(filter: $filter) {
+    count
+    scenes {
+      ...SlimSceneData
+    }
+  }
+}
+
 query FindScene($id: ID!, $checksum: String) {
   findScene(id: $id, checksum: $checksum) {
     ...SceneData
