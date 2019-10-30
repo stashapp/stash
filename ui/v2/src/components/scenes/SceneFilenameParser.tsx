@@ -358,7 +358,7 @@ class ParseMapper {
   }
 
   public parse(scene : SceneParserResult) {
-    var regex = new RegExp(this.regex);
+    var regex = new RegExp(this.regex, "i");
 
     var result = scene.filename.match(regex);
 
