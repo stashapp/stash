@@ -15,7 +15,7 @@
     "@types/video.js": "^7.2.11",
     "apollo-boost": "0.4.0",
     "apollo-link-ws": "^1.0.19",
-    "axios": "0.18.0",
+    "axios": "0.18.1",
     "bulma": "0.7.5",
     "formik": "1.5.7",
     "graphql": "14.3.1",
