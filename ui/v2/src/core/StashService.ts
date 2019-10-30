@@ -183,6 +183,10 @@ export class StashService {
     return GQL.useBulkSceneUpdate({ variables: input, refetchQueries: ["FindScenes"] });
   }
   
+  public static useScenesUpdate(input: GQL.SceneUpdateInput[]) {
+    return GQL.useScenesUpdate({ variables: { input : input }});
+  }
+
   public static useSceneDestroy(input: GQL.SceneDestroyInput) {
     return GQL.useSceneDestroy({ variables: input });
   }
@@ -272,6 +276,13 @@ export class StashService {
     return StashService.client.query<GQL.MetadataImportQuery>({
       query: GQL.MetadataImportDocument,
       fetchPolicy: "network-only",
+    });
+  }
+
+  public static querySceneByPathRegex(filter: GQL.FindFilterType) {
+    return StashService.client.query<GQL.FindScenesByPathRegexQuery>({
+      query: GQL.FindScenesByPathRegexDocument,
+      variables: {filter: filter},
     });
   }
 

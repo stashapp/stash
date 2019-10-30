@@ -6,12 +6,57 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
+	// Start the transaction and save the scene
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	ret, err := r.sceneUpdate(input, tx)
+
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.SceneUpdateInput) ([]*models.Scene, error) {
+	// Start the transaction and save the scene
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	var ret []*models.Scene
+
+	for _, scene := range input {
+		thisScene, err := r.sceneUpdate(*scene, tx)
+		ret = append(ret, thisScene)
+
+		if err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.Tx) (*models.Scene, error) {
 	// Populate scene from the input
 	sceneID, _ := strconv.Atoi(input.ID)
 	updatedTime := time.Now()
@@ -47,13 +92,10 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		updatedScene.StudioID = &sql.NullInt64{Valid: false}
 	}
 
-	// Start the transaction and save the scene marker
-	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewSceneQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
 	scene, err := qb.Update(updatedScene, tx)
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
@@ -61,7 +103,6 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 	gqb := models.NewGalleryQueryBuilder()
 	err = gqb.ClearGalleryId(sceneID, tx)
 	if err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
@@ -76,7 +117,6 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		gqb := models.NewGalleryQueryBuilder()
 		_, err := gqb.Update(updatedGallery, tx)
 		if err != nil {
-			_ = tx.Rollback()
 			return nil, err
 		}
 	}
@@ -92,7 +132,6 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		performerJoins = append(performerJoins, performerJoin)
 	}
 	if err := jqb.UpdatePerformersScenes(sceneID, performerJoins, tx); err != nil {
-		_ = tx.Rollback()
 		return nil, err
 	}
 
@@ -107,12 +146,6 @@ func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUp
 		tagJoins = append(tagJoins, tagJoin)
 	}
 	if err := jqb.UpdateScenesTags(sceneID, tagJoins, tx); err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
