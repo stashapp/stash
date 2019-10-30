@@ -9,8 +9,6 @@ import {
   Checkbox,
   H5,
   MenuItem,
-  Tooltip,
-  Popover,
   HTMLSelect,
 } from "@blueprintjs/core";
 import React, { FunctionComponent, useEffect, useState } from "react";
@@ -396,10 +394,57 @@ interface IParserInput {
   capitalizeTitle: boolean
 }
 
+interface IParserRecipe extends IParserInput {
+  description: string
+}
+
+const builtInRecipes = [
+  {
+    pattern: "{title}",
+    ignoreWords: [],
+    whitespaceCharacters: "",
+    capitalizeTitle: false,
+    description: "Filename"
+  },
+  {
+    pattern: "{title}.{ext}",
+    ignoreWords: [],
+    whitespaceCharacters: "",
+    capitalizeTitle: false,
+    description: "Without extension"
+  },
+  {
+    pattern: "{}.{yy}.{mm}.{dd}.{title}.XXX.{}.{ext}",
+    ignoreWords: [],
+    whitespaceCharacters: ".",
+    capitalizeTitle: true,
+    description: ""
+  },
+  {
+    pattern: "{}.{yy}.{mm}.{dd}.{title}.{ext}",
+    ignoreWords: [],
+    whitespaceCharacters: ".",
+    capitalizeTitle: true,
+    description: ""
+  },
+  {
+    pattern: "{title}.XXX.{}.{ext}",
+    ignoreWords: [],
+    whitespaceCharacters: ".",
+    capitalizeTitle: true,
+    description: ""
+  },
+  {
+    pattern: "{}.{yy}.{mm}.{dd}.{title}.{i}.{ext}",
+    ignoreWords: ["cz", "fr"],
+    whitespaceCharacters: ".",
+    capitalizeTitle: true,
+    description: "Foreign language"
+  }
+];
+
 // TODO:
-// Add {d} for delimiter characters (._-)
 // Add mappings for tags, performers, studio
-// Add drop-down button to add {fields}
 
 export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) => {
   const [parser, setParser] = useState<ParseMapper | undefined>();
@@ -588,6 +633,33 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       });
     }
 
+    const ParserRecipeSelect = Select.ofType<IParserRecipe>();
+
+    const renderParserRecipe: ItemRenderer<IParserRecipe> = (input, { handleClick, modifiers }) => {
+      if (!modifiers.matchesPredicate) {
+        return null;
+      }
+      return (
+        <MenuItem
+            key={input.pattern}
+            onClick={handleClick}
+            text={input.pattern || "{}"}
+            label={input.description}
+        />
+      );
+    };
+
+    const parserRecipePredicate: ItemPredicate<IParserRecipe> = (query, item) => {
+      return item.pattern.includes(query);
+    };
+
+    function setParserRecipe(recipe: IParserInput) {
+      setPattern(recipe.pattern);
+      setIgnoreWords(recipe.ignoreWords.join(" "));
+      setWhitespaceCharacters(recipe.whitespaceCharacters);
+      setCapitalizeTitle(recipe.capitalizeTitle);
+    }
+  
     const ParserFieldSelect = Select.ofType<ParserField>();
 
     const renderParserField: ItemRenderer<ParserField> = (field, { handleClick, modifiers }) => {
@@ -673,6 +745,20 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           </FormGroup>
           
           {/* TODO - mapping stuff will go here */}
+
+          <FormGroup>
+            <ParserRecipeSelect
+              items={builtInRecipes}
+              onItemSelect={(item) => setParserRecipe(item)}
+              itemRenderer={renderParserRecipe}
+              itemPredicate={parserRecipePredicate}
+            >
+              <Button 
+                text="Select Parser Recipe" 
+                rightIcon="caret-down" 
+              />
+            </ParserRecipeSelect>
+          </FormGroup>
 
           <FormGroup>
               <Button text="Find" onClick={() => onFind()} />
