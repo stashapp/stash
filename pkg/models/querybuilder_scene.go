@@ -242,7 +242,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		for _, studioID := range studiosFilter.Value {
 			args = append(args, studioID)
 		}
-		
+
 		whereClause, havingClause := getMultiCriterionClause("studio", "", "studio_id", studiosFilter)
 		whereClauses = appendClause(whereClauses, whereClause)
 		havingClauses = appendClause(havingClauses, havingClause)
@@ -274,14 +274,14 @@ func getMultiCriterionClause(table string, joinTable string, joinTableField stri
 	havingClause := ""
 	if criterion.Modifier == CriterionModifierIncludes {
 		// includes any of the provided ids
-		whereClause = table + ".id IN "+ getInBinding(len(criterion.Value))
+		whereClause = table + ".id IN " + getInBinding(len(criterion.Value))
 	} else if criterion.Modifier == CriterionModifierIncludesAll {
 		// includes all of the provided ids
-		whereClause = table + ".id IN "+ getInBinding(len(criterion.Value))
+		whereClause = table + ".id IN " + getInBinding(len(criterion.Value))
 		havingClause = "count(distinct " + table + ".id) IS " + strconv.Itoa(len(criterion.Value))
 	} else if criterion.Modifier == CriterionModifierExcludes {
 		// excludes all of the provided ids
-		if (joinTable != "") {
+		if joinTable != "" {
 			whereClause = "not exists (select " + joinTable + ".scene_id from " + joinTable + " where " + joinTable + ".scene_id = scenes.id and " + joinTable + "." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
 		} else {
 			whereClause = "not exists (select s.id from scenes as s where s.id = scenes.id and s." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
@@ -302,7 +302,7 @@ func (qb *SceneQueryBuilder) QueryByPathRegex(findFilter *FindFilterType) ([]*Sc
 	body := selectDistinctIDs("scenes")
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		whereClauses = append(whereClauses, "scenes.path regexp '" + *q + "'")
+		whereClauses = append(whereClauses, "scenes.path regexp '(?i)"+*q+"'")
 	}
 
 	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
@@ -363,4 +363,3 @@ func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *s
 
 	return scenes, nil
 }
-
