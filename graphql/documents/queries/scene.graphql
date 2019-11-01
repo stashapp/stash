@@ -31,3 +31,17 @@ query FindScene($id: ID!, $checksum: String) {
     }
   }
 }
+
+query ParseSceneFilenames($filter: FindFilterType!, $config: SceneParserInput!) {
+  parseSceneFilenames(filter: $filter, config: $config) {
+    count
+    results {
+      scene {
+        ...SlimSceneData
+      }
+      parserResult {
+        ...SlimSceneData
+      }
+    }
+  }
+}

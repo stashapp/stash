@@ -7,6 +7,8 @@ type Query {
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
 
+  parseSceneFilenames(filter: FindFilterType, config: SceneParserInput!): SceneParserResultType!
+
   """A function which queries SceneMarker objects"""
   findSceneMarkers(scene_marker_filter: SceneMarkerFilterType filter: FindFilterType): FindSceneMarkersResultType!
 
