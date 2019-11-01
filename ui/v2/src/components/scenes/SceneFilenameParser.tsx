@@ -22,6 +22,7 @@ import { ToastUtils } from "../../utils/toasts";
 import { ErrorUtils } from "../../utils/errors";
 import { Pagination } from "../list/Pagination";
 import { Select, ItemRenderer, ItemPredicate } from "@blueprintjs/select";
+import { FilterMultiSelect } from "../select/FilterMultiSelect";
   
 interface IProps extends IBaseProps {}
 
@@ -77,6 +78,10 @@ class ParserField {
   static I = new ParserField("i", undefined, "Matches any ignored word", false);
   static D = new ParserField("d", "(?:\\.|-|_)", "Matches any delimiter (.-_)", false);
 
+  static Performer = new ParserField("performer");
+  static Studio = new ParserField("studio");
+  static Tag = new ParserField("tag");
+
   // date fields
   static Date = new ParserField("date", "\\d{4}-\\d{2}-\\d{2}", "YYYY-MM-DD");
   static YYYY = new ParserField("yyyy", "\\d{4}", "Year");
@@ -95,6 +100,9 @@ class ParserField {
     ParserField.Ext,
     ParserField.D,
     ParserField.I,
+    ParserField.Performer,
+    ParserField.Studio,
+    ParserField.Tag,
     ParserField.Date,
     ParserField.YYYY,
     ParserField.YY,
@@ -139,6 +147,11 @@ class ParserField {
   }
 }
 
+interface IPerformerQueryMap {
+  query: string,
+  results: GQL.SlimPerformerDataFragment[]
+}
+
 class SceneParserResult {
   public id: string;
   public filename: string;
@@ -150,8 +163,12 @@ class SceneParserResult {
   public dd : ParserResult<string> = new ParserResult();
 
   public studioId: ParserResult<string> = new ParserResult();
-  public tags: ParserResult<string[]> = new ParserResult();
+  public tagIds: ParserResult<string[]> = new ParserResult();
   public performerIds: ParserResult<string[]> = new ParserResult();
+
+  public studio : string = "";
+  public performers : string[] = [];
+  public tags : string[] = [];
 
   public scene : SlimSceneDataFragment;
 
@@ -504,6 +521,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     setIsLoading(false);
   }
 
+
   useEffect(() => {
     onFind();
   }, [page, parser, parserInput]);
@@ -780,21 +798,17 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     className? : string
     onSetChanged : (set : boolean) => void
     onValueChanged : (value : any) => void
+    renderOriginalInputField: (props : ISceneParserFieldProps) => JSX.Element
+    renderNewInputField: (props : ISceneParserFieldProps, onChange : (event : any) => void) => JSX.Element
   }
 
   function SceneParserField(props : ISceneParserFieldProps) {
 
-    const [value, setValue] = useState<string>(props.parserResult.value);
-
-    function maybeValueChanged() {
+    function maybeValueChanged(value : any) {
       if (value !== props.parserResult.value) {
         props.onValueChanged(value);
       }
     }
-
-    useEffect(() => {
-      setValue(props.parserResult.value);
-    }, [props.parserResult.value]);
 
     return (
       <>
@@ -807,26 +821,84 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
         </td>
         <td>
           <FormGroup>
-            <InputGroup
-              key="originalValue"
-              className={props.className}
-              small={true}
-              disabled={true}
-              value={props.parserResult.originalValue || ""}
-            />
-            <InputGroup
-              key="newValue"
-              className={props.className}
-              small={true}
-              onChange={(event : any) => {setValue(event.target.value)}}
-              onBlur={() => maybeValueChanged()}
-              disabled={!props.parserResult.set}
-              value={value || ""}
-              autoComplete={"new-password" /* required to prevent Chrome autofilling */}
-            />
+            {props.renderOriginalInputField(props)}
+            {props.renderNewInputField(props, (value) => maybeValueChanged(value))}
           </FormGroup>
         </td>
       </>
+    );
+  }
+
+  function renderOriginalInputGroup(props : ISceneParserFieldProps) {
+    return (
+      <InputGroup
+        key="originalValue"
+        className={props.className}
+        small={true}
+        disabled={true}
+        value={props.parserResult.originalValue || ""}
+      />
+    );
+  }
+
+  interface IInputGroupWrapperProps {
+    parserResult: ParserResult<any>
+    onChange : (event : any) => void
+    className? : string
+  }
+
+  function InputGroupWrapper(props : IInputGroupWrapperProps) {
+    const [value, setValue] = useState<string>(props.parserResult.value);
+
+    useEffect(() => {
+      setValue(props.parserResult.value);
+    }, [props.parserResult.value]);
+
+    return (
+      <InputGroup
+        key="newValue"
+        className={props.className}
+        small={true}
+        onChange={(event : any) => {setValue(event.target.value)}}
+        onBlur={() => props.onChange(value)}
+        disabled={!props.parserResult.set}
+        value={value || ""}
+        autoComplete={"new-password" /* required to prevent Chrome autofilling */}
+      />
+    );
+  }
+  
+  function renderNewInputGroup(props : ISceneParserFieldProps, onChange : (value : any) => void) {
+    return (
+      <InputGroupWrapper
+        className={props.className}
+        onChange={(value : any) => {onChange(value)}}
+        parserResult={props.parserResult}
+      />
+    );
+  }
+
+  function renderOriginalPerformerSelect(props : ISceneParserFieldProps) {
+    return (
+      <FilterMultiSelect
+        type="performers"
+        onUpdate={() => {}}
+        disabled={true}
+        initialIds={props.parserResult.originalValue}
+      />
+    );
+  }
+
+  function renderNewPerformerSelect(props : ISceneParserFieldProps, onChange : (value : any) => void) {
+    return (
+      <FilterMultiSelect
+        type="performers"
+        onUpdate={(items) => {
+          const ids = items.map((i) => i.id);
+          onChange(ids);
+        }}
+        initialIds={props.parserResult.value}
+      />
     );
   }
 
@@ -856,6 +928,12 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       props.onChange(newResult);
     }
 
+    function onPerformerIdsChanged(set : boolean, value: string[] | undefined) {
+      var newResult = _.clone(props.scene);
+      newResult.performerIds = changeParser(newResult.date, set, value);
+      props.onChange(newResult);
+    }
+
     return (
       <>
       <tr className="scene-parser-row">
@@ -868,15 +946,26 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           parserResult={props.scene.title}
           onSetChanged={(set) => onTitleChanged(set, props.scene.title.value)}
           onValueChanged={(value) => onTitleChanged(props.scene.title.set, value)}
+          renderOriginalInputField={renderOriginalInputGroup}
+          renderNewInputField={renderNewInputGroup}
         />
         <SceneParserField 
           key="date"
           parserResult={props.scene.date}
           onSetChanged={(set) => onDateChanged(set, props.scene.date.value)}
           onValueChanged={(value) => onDateChanged(props.scene.date.set, value)}
-          />
-        {/*<td>
-        </td>
+          renderOriginalInputField={renderOriginalInputGroup}
+          renderNewInputField={renderNewInputGroup}
+        />
+        <SceneParserField 
+          key="performers"
+          parserResult={props.scene.performerIds}
+          onSetChanged={(set) => onPerformerIdsChanged(set, props.scene.performerIds.value)}
+          onValueChanged={(value) => onPerformerIdsChanged(props.scene.performerIds.set, value)}
+          renderOriginalInputField={renderOriginalPerformerSelect}
+          renderNewInputField={renderNewPerformerSelect}
+        />
+        {/*
         <td>
         </td>
         <td>
@@ -922,8 +1011,9 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
                   />
                 </td>
                 <th>Date</th>
-                {/* TODO <th>Tags</th>
                 <th>Performers</th>
+                {/* TODO <th>Tags</th>
+                
                 <th>Studio</th>*/}
               </tr>
             </thead>
