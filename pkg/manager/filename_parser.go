@@ -3,6 +3,7 @@ package manager
 import (
 	"database/sql"
 	"errors"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -15,12 +16,14 @@ type parserField struct {
 	fieldRegex      *regexp.Regexp
 	regex           string
 	isFullDateField bool
+	isCaptured      bool
 }
 
 func newParserField(field string, regex string, captured bool) parserField {
 	ret := parserField{
 		field:           field,
 		isFullDateField: false,
+		isCaptured:      captured,
 	}
 
 	ret.fieldRegex, _ = regexp.Compile(`\{` + ret.field + `\}`)
@@ -42,7 +45,7 @@ func newFullDateParserField(field string, regex string) parserField {
 }
 
 func (f parserField) replaceInPattern(pattern string) string {
-	return string(f.fieldRegex.ReplaceAll([]byte(pattern), []byte(f.regex)))
+	return string(f.fieldRegex.ReplaceAllString(pattern, f.regex))
 }
 
 func (f parserField) getFieldPattern() string {
@@ -50,6 +53,20 @@ func (f parserField) getFieldPattern() string {
 }
 
 var validFields map[string]parserField
+var escapeCharRE *regexp.Regexp
+var capitalizeTitleRE *regexp.Regexp
+var multiWSRE *regexp.Regexp
+
+func compileREs() {
+	const escapeCharPattern = `([\-\.\(\)\[\]])`
+	escapeCharRE = regexp.MustCompile(escapeCharPattern)
+
+	const capitaliseTitlePattern = `(?:^| )\w`
+	capitalizeTitleRE = regexp.MustCompile(capitaliseTitlePattern)
+
+	const multiWSPattern = ` {2,}`
+	multiWSRE = regexp.MustCompile(multiWSPattern)
+}
 
 func initParserFields() {
 	if validFields != nil {
@@ -99,8 +116,9 @@ func replacePatternWithRegex(pattern string, ignoreWords []string) string {
 }
 
 type parseMapper struct {
-	fields []string
-	regex  *regexp.Regexp
+	fields      []string
+	regexString string
+	regex       *regexp.Regexp
 }
 
 func getIgnoreClause(ignoreFields []string) string {
@@ -110,9 +128,8 @@ func getIgnoreClause(ignoreFields []string) string {
 
 	var ignoreClauses []string
 
-	regex := regexp.MustCompile(`([\-\.\(\)\[\]])`)
 	for _, v := range ignoreFields {
-		newVal := string(regex.ReplaceAllString(v, "$$1"))
+		newVal := string(escapeCharRE.ReplaceAllString(v, `\$1`))
 		newVal = strings.TrimSpace(newVal)
 		newVal = "(?:" + newVal + ")"
 		ignoreClauses = append(ignoreClauses, newVal)
@@ -125,8 +142,7 @@ func newParseMapper(pattern string, ignoreFields []string) (*parseMapper, error)
 	ret := &parseMapper{}
 
 	// escape control characters
-	escapeCharRE := regexp.MustCompile(`([\-\.\(\)\[\]])`)
-	regex := escapeCharRE.ReplaceAllString(pattern, `$$1`)
+	regex := escapeCharRE.ReplaceAllString(pattern, `\$1`)
 
 	// replace {} with wildcard
 	braceRE := regexp.MustCompile(`\{\}`)
@@ -134,6 +150,8 @@ func newParseMapper(pattern string, ignoreFields []string) (*parseMapper, error)
 
 	// replace all known fields with applicable regexes
 	regex = replacePatternWithRegex(regex, ignoreFields)
+
+	ret.regexString = regex
 
 	// make case insensitive
 	regex = "(?i)" + regex
@@ -160,7 +178,12 @@ func newParseMapper(pattern string, ignoreFields []string) (*parseMapper, error)
 	var fields []string
 	for _, v := range result {
 		field := v[1]
-		fields = append(fields, field)
+
+		// only add to fields if it is captured
+		parserField, found := validFields[field]
+		if found && parserField.isCaptured {
+			fields = append(fields, field)
+		}
 	}
 
 	ret.fields = fields
@@ -224,26 +247,20 @@ func (h *sceneHolder) setDate(field *parserField, value string) {
 	monthIndex := 0
 
 	switch field.field {
-	case "yyyymmdd":
-	case "yymmdd":
+	case "yyyymmdd", "yymmdd":
 		monthIndex = yearLength
 		dateIndex = monthIndex + 2
-		break
-	case "ddmmyyyy":
-	case "ddmmyy":
+	case "ddmmyyyy", "ddmmyy":
 		monthIndex = 2
 		yearIndex = monthIndex + 2
-		break
-	case "mmddyyyy":
-	case "mmddyy":
+	case "mmddyyyy", "mmddyy":
 		dateIndex = monthIndex + 2
 		yearIndex = dateIndex + 2
-		break
 	}
 
-	yearValue := value[yearIndex : yearIndex+yearLength-1]
-	monthValue := value[monthIndex : monthIndex+1]
-	dateValue := value[dateIndex : dateIndex+1]
+	yearValue := value[yearIndex : yearIndex+yearLength]
+	monthValue := value[monthIndex : monthIndex+2]
+	dateValue := value[dateIndex : dateIndex+2]
 
 	fullDate := yearValue + "-" + monthValue + "-" + dateValue
 
@@ -313,8 +330,12 @@ func (h *sceneHolder) postParse() {
 	}
 }
 
-func (m parseMapper) parse(scene *models.Scene) *models.SceneParserResult {
-	result := m.regex.FindString(scene.Path)
+func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
+	// perform matching on basename
+	// TODO - may want to handle full path at some point
+	filename := filepath.Base(scene.Path)
+
+	result := m.regex.FindStringSubmatch(filename)
 
 	if len(result) == 0 {
 		return nil
@@ -339,19 +360,33 @@ func (m parseMapper) parse(scene *models.Scene) *models.SceneParserResult {
 
 	sceneHolder.postParse()
 
-	return &models.SceneParserResult{
-		Scene:        scene,
-		ParserResult: sceneHolder.result,
-	}
+	return sceneHolder
 }
 
 type SceneFilenameParser struct {
-	Pattern     string
-	ParserInput models.SceneParserInput
-	Filter      *models.FindFilterType
+	Pattern      string
+	ParserInput  models.SceneParserInput
+	Filter       *models.FindFilterType
+	whitespaceRE *regexp.Regexp
+}
+
+func (p *SceneFilenameParser) initWhiteSpaceRegex() {
+	wsChars := ""
+	if p.ParserInput.WhitespaceCharacters != nil {
+		wsChars = *p.ParserInput.WhitespaceCharacters
+		wsChars = strings.TrimSpace(wsChars)
+	}
+
+	if len(wsChars) > 0 {
+		wsRegExp := escapeCharRE.ReplaceAllString(wsChars, `\$1`)
+		wsRegExp = "[" + wsRegExp + "]"
+		p.whitespaceRE = regexp.MustCompile(wsRegExp)
+	}
 }
 
 func (p *SceneFilenameParser) Parse() ([]*models.SceneParserResult, int, error) {
+	compileREs()
+
 	// perform the query to find the scenes
 	mapper, err := newParseMapper(p.Pattern, p.ParserInput.IgnoreWords)
 
@@ -359,19 +394,59 @@ func (p *SceneFilenameParser) Parse() ([]*models.SceneParserResult, int, error) 
 		return nil, 0, err
 	}
 
-	p.Filter.Q = &p.Pattern
+	p.initWhiteSpaceRegex()
+
+	p.Filter.Q = &mapper.regexString
 
 	qb := models.NewSceneQueryBuilder()
 	scenes, total := qb.QueryByPathRegex(p.Filter)
 
 	var ret []*models.SceneParserResult
 	for _, scene := range scenes {
-		r := mapper.parse(scene)
+		sceneHolder := mapper.parse(scene)
 
-		if r != nil {
-			ret = append(ret, r)
+		if sceneHolder != nil {
+			r := &models.SceneParserResult{
+				Scene: scene,
+			}
+			p.setParserResult(*sceneHolder, r)
+
+			if r != nil {
+				ret = append(ret, r)
+			}
 		}
 	}
 
+	// TODO - whitespace and capitalise
+
 	return ret, total, nil
+}
+
+func (p SceneFilenameParser) replaceWhitespaceCharacters(value string) string {
+	if p.whitespaceRE != nil {
+		value = p.whitespaceRE.ReplaceAllString(value, " ")
+		// remove consecutive spaces
+		value = multiWSRE.ReplaceAllString(value, " ")
+	}
+
+	return value
+}
+
+func (p SceneFilenameParser) setParserResult(h sceneHolder, result *models.SceneParserResult) {
+	if h.result.Title.Valid {
+		title := h.result.Title.String
+		title = p.replaceWhitespaceCharacters(title)
+
+		if p.ParserInput.CapitalizeTitle != nil && *p.ParserInput.CapitalizeTitle {
+			title = capitalizeTitleRE.ReplaceAllStringFunc(title, strings.ToUpper)
+		}
+
+		result.Title = &title
+	}
+
+	if h.result.Date.Valid {
+		result.Date = &h.result.Date.String
+	}
+
+	// TODO - set performers and other stuff
 }

@@ -399,6 +399,14 @@ export class StashService {
     });
   }
 
+  public static queryParseSceneFilenames(filter: GQL.FindFilterType, config: GQL.SceneParserInput) {
+    return StashService.client.query<GQL.ParseSceneFilenamesQuery>({
+      query: GQL.ParseSceneFilenamesDocument,
+      variables: {filter: filter, config: config},
+      fetchPolicy: "network-only",
+    });
+  }
+
   public static nullToUndefined(value: any): any {
     if (_.isPlainObject(value)) {
       return _.mapValues(value, StashService.nullToUndefined);

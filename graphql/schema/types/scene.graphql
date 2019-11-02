@@ -85,8 +85,16 @@ input SceneParserInput {
 }
 
 type SceneParserResult {
-  scene: Scene!,
-  parserResult: Scene!
+  scene: Scene!
+  title: String
+  details: String
+  url: String
+  date: String
+  rating: Int
+  studio_id: ID
+  gallery_id: ID
+  performer_ids: [ID!]
+  tag_ids: [ID!]
 }
 
 type SceneParserResultType {
