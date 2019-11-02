@@ -56,6 +56,7 @@ var validFields map[string]parserField
 var escapeCharRE *regexp.Regexp
 var capitalizeTitleRE *regexp.Regexp
 var multiWSRE *regexp.Regexp
+var delimiterRE *regexp.Regexp
 
 func compileREs() {
 	const escapeCharPattern = `([\-\.\(\)\[\]])`
@@ -66,6 +67,9 @@ func compileREs() {
 
 	const multiWSPattern = ` {2,}`
 	multiWSRE = regexp.MustCompile(multiWSPattern)
+
+	const delimiterPattern = `(?:\.|-|_)`
+	delimiterRE = regexp.MustCompile(delimiterPattern)
 }
 
 func initParserFields() {
@@ -192,11 +196,14 @@ func newParseMapper(pattern string, ignoreFields []string) (*parseMapper, error)
 }
 
 type sceneHolder struct {
-	scene  *models.Scene
-	result *models.Scene
-	yyyy   string
-	mm     string
-	dd     string
+	scene      *models.Scene
+	result     *models.Scene
+	yyyy       string
+	mm         string
+	dd         string
+	performers []string
+	studio     string
+	tags       []string
 }
 
 func newSceneHolder(scene *models.Scene) *sceneHolder {
@@ -286,7 +293,6 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 			String: value.(string),
 			Valid:  true,
 		}
-		break
 	case "date":
 		if validateDate(value.(string)) {
 			h.result.Date = models.SQLiteDate{
@@ -294,16 +300,13 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 				Valid:  true,
 			}
 		}
-		break
 	case "performer":
-		// TODO
-		break
+		// add performer to list
+		h.performers = append(h.performers, value.(string))
 	case "studio":
-		// TODO
-		break
+		h.studio = value.(string)
 	case "tag":
-		// TODO
-		break
+		h.tags = append(h.tags, value.(string))
 	case "yyyy":
 		h.yyyy = value.(string)
 		break
@@ -319,7 +322,6 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 		h.dd = value.(string)
 		break
 	}
-	// TODO - other fields
 }
 
 func (h *sceneHolder) postParse() {
@@ -364,10 +366,13 @@ func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
 }
 
 type SceneFilenameParser struct {
-	Pattern      string
-	ParserInput  models.SceneParserInput
-	Filter       *models.FindFilterType
-	whitespaceRE *regexp.Regexp
+	Pattern        string
+	ParserInput    models.SceneParserInput
+	Filter         *models.FindFilterType
+	whitespaceRE   *regexp.Regexp
+	performerCache map[string]*models.Performer
+	studioCache    map[string]*models.Studio
+	tagCache       map[string]*models.Tag
 }
 
 func (p *SceneFilenameParser) initWhiteSpaceRegex() {
@@ -384,6 +389,14 @@ func (p *SceneFilenameParser) initWhiteSpaceRegex() {
 	}
 }
 
+func (p *SceneFilenameParser) init() {
+	p.performerCache = make(map[string]*models.Performer)
+	p.studioCache = make(map[string]*models.Studio)
+	p.tagCache = make(map[string]*models.Tag)
+
+	p.initWhiteSpaceRegex()
+}
+
 func (p *SceneFilenameParser) Parse() ([]*models.SceneParserResult, int, error) {
 	compileREs()
 
@@ -394,7 +407,7 @@ func (p *SceneFilenameParser) Parse() ([]*models.SceneParserResult, int, error) 
 		return nil, 0, err
 	}
 
-	p.initWhiteSpaceRegex()
+	p.init()
 
 	p.Filter.Q = &mapper.regexString
 
@@ -417,8 +430,6 @@ func (p *SceneFilenameParser) Parse() ([]*models.SceneParserResult, int, error) 
 		}
 	}
 
-	// TODO - whitespace and capitalise
-
 	return ret, total, nil
 }
 
@@ -432,7 +443,157 @@ func (p SceneFilenameParser) replaceWhitespaceCharacters(value string) string {
 	return value
 }
 
-func (p SceneFilenameParser) setParserResult(h sceneHolder, result *models.SceneParserResult) {
+func (p *SceneFilenameParser) queryPerformer(performerName string) *models.Performer {
+	// massage the performer name
+	performerName = delimiterRE.ReplaceAllString(performerName, " ")
+
+	// check cache first
+	if ret, found := p.performerCache[performerName]; found {
+		return ret
+	}
+
+	// limit to getting the first 10
+	limit := 10
+	filter := models.FindFilterType{
+		Q:       &performerName,
+		PerPage: &limit,
+	}
+	qb := models.NewPerformerQueryBuilder()
+	performers, _ := qb.Query(nil, &filter)
+
+	// try to match performer name exactly, otherwise just grab the first
+	var ret *models.Performer
+	if len(performers) > 0 {
+		ret = performers[0]
+	}
+
+	for _, performer := range performers {
+		if strings.ToLower(performer.Name.String) == strings.ToLower(performerName) {
+			ret = performer
+			break
+		}
+	}
+
+	// add result to cache
+	p.performerCache[performerName] = ret
+
+	return ret
+}
+
+func (p *SceneFilenameParser) queryStudio(studioName string) *models.Studio {
+	// massage the performer name
+	studioName = delimiterRE.ReplaceAllString(studioName, " ")
+
+	// check cache first
+	if ret, found := p.studioCache[studioName]; found {
+		return ret
+	}
+
+	// limit to getting the first 10
+	limit := 10
+	filter := models.FindFilterType{
+		Q:       &studioName,
+		PerPage: &limit,
+	}
+	qb := models.NewStudioQueryBuilder()
+	studios, _ := qb.Query(&filter)
+
+	// try to match studio name exactly, otherwise just grab the first
+	var ret *models.Studio
+	if len(studios) > 0 {
+		ret = studios[0]
+	}
+
+	for _, studio := range studios {
+		if strings.ToLower(studio.Name.String) == strings.ToLower(studioName) {
+			ret = studio
+			break
+		}
+	}
+
+	// add result to cache
+	p.studioCache[studioName] = ret
+
+	return ret
+}
+
+func (p *SceneFilenameParser) queryTag(tagName string) *models.Tag {
+	// massage the performer name
+	tagName = delimiterRE.ReplaceAllString(tagName, " ")
+
+	// check cache first
+	if ret, found := p.tagCache[tagName]; found {
+		return ret
+	}
+
+	// limit to getting the first 10
+	limit := 10
+	filter := models.FindFilterType{
+		Q:       &tagName,
+		PerPage: &limit,
+	}
+	qb := models.NewTagQueryBuilder()
+	tags, _ := qb.Query(&filter)
+
+	// try to match tag name exactly, otherwise just grab the first
+	var ret *models.Tag
+	if len(tags) > 0 {
+		ret = tags[0]
+	}
+
+	for _, tag := range tags {
+		if strings.ToLower(tag.Name) == strings.ToLower(tagName) {
+			ret = tag
+			break
+		}
+	}
+
+	// add result to cache
+	p.tagCache[tagName] = ret
+
+	return ret
+}
+
+func (p *SceneFilenameParser) setPerformers(h sceneHolder, result *models.SceneParserResult) {
+	// query for each performer
+	performersSet := make(map[int]bool)
+	for _, performerName := range h.performers {
+		performer := p.queryPerformer(performerName)
+		if performer != nil {
+			if _, found := performersSet[performer.ID]; !found {
+				result.PerformerIds = append(result.PerformerIds, strconv.Itoa(performer.ID))
+				performersSet[performer.ID] = true
+			}
+		}
+	}
+}
+
+func (p *SceneFilenameParser) setTags(h sceneHolder, result *models.SceneParserResult) {
+	// query for each performer
+	tagsSet := make(map[int]bool)
+	for _, tagName := range h.tags {
+		tag := p.queryTag(tagName)
+		if tag != nil {
+			if _, found := tagsSet[tag.ID]; !found {
+				result.TagIds = append(result.TagIds, strconv.Itoa(tag.ID))
+				tagsSet[tag.ID] = true
+			}
+		}
+	}
+}
+
+func (p *SceneFilenameParser) setStudio(h sceneHolder, result *models.SceneParserResult) {
+	// query for each performer
+	if h.studio != "" {
+		studio := p.queryStudio(h.studio)
+		if studio != nil {
+			studioId := strconv.Itoa(studio.ID)
+			result.StudioID = &studioId
+		}
+	}
+}
+
+func (p *SceneFilenameParser) setParserResult(h sceneHolder, result *models.SceneParserResult) {
 	if h.result.Title.Valid {
 		title := h.result.Title.String
 		title = p.replaceWhitespaceCharacters(title)
@@ -448,5 +609,11 @@ func (p SceneFilenameParser) setParserResult(h sceneHolder, result *models.Scene
 		result.Date = &h.result.Date.String
 	}
 
-	// TODO - set performers and other stuff
+	if len(h.performers) > 0 {
+		p.setPerformers(h, result)
+	}
+	if len(h.tags) > 0 {
+		p.setTags(h, result)
+	}
+	p.setStudio(h, result)
 }

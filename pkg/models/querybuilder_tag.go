@@ -1,8 +1,9 @@
 package models
 
 import (
-	"errors"
 	"database/sql"
+	"errors"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 )
@@ -132,6 +133,33 @@ func (qb *TagQueryBuilder) Count() (int, error) {
 
 func (qb *TagQueryBuilder) All() ([]*Tag, error) {
 	return qb.queryTags(selectAll("tags")+qb.getTagSort(nil), nil, nil)
+}
+
+func (qb *TagQueryBuilder) Query(findFilter *FindFilterType) ([]*Tag, int) {
+	if findFilter == nil {
+		findFilter = &FindFilterType{}
+	}
+
+	var whereClauses []string
+	var havingClauses []string
+	var args []interface{}
+	body := selectDistinctIDs("tags")
+
+	if q := findFilter.Q; q != nil && *q != "" {
+		searchColumns := []string{"tags.name"}
+		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+	}
+
+	sortAndPagination := qb.getTagSort(findFilter) + getPagination(findFilter)
+	idsResult, countResult := executeFindQuery("tags", body, args, sortAndPagination, whereClauses, havingClauses)
+
+	var tags []*Tag
+	for _, id := range idsResult {
+		tag, _ := qb.Find(id, nil)
+		tags = append(tags, tag)
+	}
+
+	return tags, countResult
 }
 
 func (qb *TagQueryBuilder) getTagSort(findFilter *FindFilterType) string {
