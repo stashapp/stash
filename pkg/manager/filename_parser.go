@@ -558,11 +558,13 @@ func (p *SceneFilenameParser) setPerformers(h sceneHolder, result *models.SceneP
 	// query for each performer
 	performersSet := make(map[int]bool)
 	for _, performerName := range h.performers {
-		performer := p.queryPerformer(performerName)
-		if performer != nil {
-			if _, found := performersSet[performer.ID]; !found {
-				result.PerformerIds = append(result.PerformerIds, strconv.Itoa(performer.ID))
-				performersSet[performer.ID] = true
+		if performerName != "" {
+			performer := p.queryPerformer(performerName)
+			if performer != nil {
+				if _, found := performersSet[performer.ID]; !found {
+					result.PerformerIds = append(result.PerformerIds, strconv.Itoa(performer.ID))
+					performersSet[performer.ID] = true
+				}
 			}
 		}
 	}
@@ -572,11 +574,13 @@ func (p *SceneFilenameParser) setTags(h sceneHolder, result *models.SceneParserR
 	// query for each performer
 	tagsSet := make(map[int]bool)
 	for _, tagName := range h.tags {
-		tag := p.queryTag(tagName)
-		if tag != nil {
-			if _, found := tagsSet[tag.ID]; !found {
-				result.TagIds = append(result.TagIds, strconv.Itoa(tag.ID))
-				tagsSet[tag.ID] = true
+		if tagName != "" {
+			tag := p.queryTag(tagName)
+			if tag != nil {
+				if _, found := tagsSet[tag.ID]; !found {
+					result.TagIds = append(result.TagIds, strconv.Itoa(tag.ID))
+					tagsSet[tag.ID] = true
+				}
 			}
 		}
 	}
