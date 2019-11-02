@@ -11,6 +11,8 @@ import {
   MenuItem,
   HTMLSelect,
   TagInput,
+  Tree,
+  ITreeNode,
 } from "@blueprintjs/core";
 import React, { FunctionComponent, useEffect, useState, useRef } from "react";
 import { IBaseProps } from "../../models";
@@ -284,6 +286,8 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
   const [allPerformerSet, setAllPerformerSet] = useState<boolean>(false);
   const [allTagSet, setAllTagSet] = useState<boolean>(false);
   const [allStudioSet, setAllStudioSet] = useState<boolean>(false);
+
+  const [showFields, setShowFields] = useState<Map<string, boolean>>(initialShowFieldsState());
   
   const [totalItems, setTotalItems] = useState<number>(0);
 
@@ -302,6 +306,16 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       pageSize: 20,
       findClicked: false
     };
+  }
+
+  function initialShowFieldsState() {
+    return new Map<string, boolean>([
+      ["Title", true],
+      ["Date", true],
+      ["Performers", true],
+      ["Tags", true],
+      ["Studio", true]
+    ]);
   }
 
   function getParserFilter() {
@@ -394,7 +408,29 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       }).filter((r) => !!r) as SceneParserResult[];
 
       setParserResult(result);
+      determineFieldsToHide();
     }
+  }
+
+  function determineFieldsToHide() {
+    var pattern = parserInput.pattern;
+    var titleSet = pattern.includes("{title}");
+    var dateSet = pattern.includes("{date}") || 
+      pattern.includes("{dd}") || // don't worry about other partial date fields since this should be implied
+      ParserField.fullDateFields.some((f) => {
+        return pattern.includes("{" + f.field + "}");
+      });
+    var performerSet = pattern.includes("{performer}");
+    var tagSet = pattern.includes("{tag}");
+    var studioSet = pattern.includes("{studio}");
+
+    var showFieldsCopy = _.clone(showFields);
+    showFieldsCopy.set("Title", titleSet);
+    showFieldsCopy.set("Date", dateSet);
+    showFieldsCopy.set("Performers", performerSet);
+    showFieldsCopy.set("Tags", tagSet);
+    showFieldsCopy.set("Studio", studioSet);
+    setShowFields(showFieldsCopy);
   }
 
   useEffect(() => {
@@ -484,6 +520,81 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
 
     setParserResult(newResult);
     setAllStudioSet(selected);
+  }
+
+  interface IShowFieldsTreeProps {
+    showFields: Map<string, boolean>
+    onShowFieldsChanged: (fields : Map<string, boolean>) => void
+  }
+
+  function ShowFieldsTree(props : IShowFieldsTreeProps) {
+    const [displayFieldsExpanded, setDisplayFieldsExpanded] = useState<boolean>();
+
+    const treeState: ITreeNode[] = [
+      {
+        id: 0,
+        hasCaret: true,
+        label: "Display fields",
+        childNodes: [
+          {
+            id: 1,
+            label: "Title",
+          },
+          {
+            id: 2,
+            label: "Date",
+          },
+          {
+            id: 3,
+            label: "Performers",
+          },
+          {
+            id: 4,
+            label: "Tags",
+          },
+          {
+            id: 5,
+            label: "Studio",
+          }
+        ]
+      }
+    ];
+
+    function setNodeState() {
+      if (!!treeState[0].childNodes) {
+        treeState[0].childNodes.forEach((n) => {
+          n.icon = props.showFields.get(n.label as string) ? "tick" : "cross";
+        });
+      }
+
+      treeState[0].isExpanded = displayFieldsExpanded;
+    }
+
+    setNodeState();
+
+    function expandNode() {
+      setDisplayFieldsExpanded(true);
+    }
+
+    function collapseNode() {
+      setDisplayFieldsExpanded(false);
+    }
+
+    function handleClick(nodeData: ITreeNode) {
+      var field = nodeData.label as string;
+      var fieldsCopy = _.clone(props.showFields);
+      fieldsCopy.set(field, !fieldsCopy.get(field));
+      props.onShowFieldsChanged(fieldsCopy);
+    }
+
+    return (
+      <Tree
+        contents={treeState}
+        onNodeClick={handleClick}
+        onNodeCollapse={collapseNode}
+        onNodeExpand={expandNode}
+      />
+    );
   }
 
   interface IParserInputProps {
@@ -637,6 +748,14 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           </FormGroup>
 
           <FormGroup>
+            <ShowFieldsTree
+              key="showFields"
+              showFields={showFields}
+              onShowFieldsChanged={(fields) => setShowFields(fields)}
+            />
+          </FormGroup>
+
+          <FormGroup>
               <Button text="Find" onClick={() => onFind()} />
               <HTMLSelect
                 style={{flexBasis: "min-content"}}
@@ -654,6 +773,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
   interface ISceneParserFieldProps {
     parserResult : ParserResult<any>
     className? : string
+    fieldName : string
     onSetChanged : (set : boolean) => void
     onValueChanged : (value : any) => void
     originalParserResult? : ParserResult<any>
@@ -667,6 +787,10 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       if (value !== props.parserResult.value) {
         props.onValueChanged(value);
       }
+    }
+
+    if (!showFields.get(props.fieldName)) {
+      return null;
     }
 
     return (
@@ -769,6 +893,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     return (
       <>
       <TagInput
+        className={props.className}
         values={elements}
         disabled={true}
       />
@@ -779,6 +904,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
   function renderNewMultiSelect(type: "performers" | "tags", props : ISceneParserFieldProps, onChange : (value : any) => void) {
     return (
       <FilterMultiSelect
+        className={props.className}
         type={type}
         onUpdate={(items) => {
           const ids = items.map((i) => i.id);
@@ -801,6 +927,8 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     return (
       <FilterSelect
         type="studios"
+        noSelectionString=""
+        className={props.className}
         onSelectItem={(item) => onChange(item ? item.id : undefined)}
         initialId={props.parserResult.value}
       />
@@ -859,7 +987,8 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
         </td>
         <SceneParserField 
           key="title"
-          className="title" 
+          fieldName="Title"
+          className="parser-field-title" 
           parserResult={props.scene.title}
           onSetChanged={(set) => onTitleChanged(set, props.scene.title.value)}
           onValueChanged={(value) => onTitleChanged(props.scene.title.set, value)}
@@ -868,6 +997,8 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
         />
         <SceneParserField 
           key="date"
+          fieldName="Date"
+          className="parser-field-date"
           parserResult={props.scene.date}
           onSetChanged={(set) => onDateChanged(set, props.scene.date.value)}
           onValueChanged={(value) => onDateChanged(props.scene.date.set, value)}
@@ -876,6 +1007,8 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
         />
         <SceneParserField 
           key="performers"
+          fieldName="Performers"
+          className="parser-field-performers"
           parserResult={props.scene.performerIds}
           originalParserResult={props.scene.performers}
           onSetChanged={(set) => onPerformerIdsChanged(set, props.scene.performerIds.value)}
@@ -885,6 +1018,8 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
         />
         <SceneParserField 
           key="tags"
+          fieldName="Tags"
+          className="parser-field-tags"
           parserResult={props.scene.tagIds}
           originalParserResult={props.scene.tags}
           onSetChanged={(set) => onTagIdsChanged(set, props.scene.tagIds.value)}
@@ -894,6 +1029,8 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
         />
         <SceneParserField 
           key="studio"
+          fieldName="Studio"
+          className="parser-field-studio"
           parserResult={props.scene.studioId}
           originalParserResult={props.scene.studio}
           onSetChanged={(set) => onStudioIdChanged(set, props.scene.studioId.value)}
@@ -915,57 +1052,41 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     setParserResult(newResult);
   }
 
+  function renderHeader(fieldName: string, allSet: boolean, onAllSet: (set: boolean) => void) {
+    if (!showFields.get(fieldName)) {
+      return null;
+    }
+
+    return (
+      <>
+      <td>
+        <Checkbox
+          checked={allSet}
+          inline={true}
+          onChange={() => {onAllSet(!allSet)}}
+        />
+      </td>
+      <th>{fieldName}</th>
+      </>
+    )
+  }
+
   function renderTable() {
     if (parserResult.length == 0) { return undefined; }
 
     return (
       <>
       <form autoComplete="off">
-        <div className="grid">
+        <div className="grid scene-parser-results">
           <HTMLTable condensed={true}>
             <thead>
               <tr className="scene-parser-row">
                 <th>Filename</th>
-                <td>
-                  <Checkbox
-                    checked={allTitleSet}
-                    inline={true}
-                    onChange={() => {onSelectAllTitleSet(!allTitleSet)}}
-                  />
-                </td>
-                <th>Title</th>
-                <td>
-                  <Checkbox
-                    checked={allDateSet}
-                    inline={true}
-                    onChange={() => {onSelectAllDateSet(!allDateSet)}}
-                  />
-                </td>
-                <th>Date</th>
-                <td>
-                  <Checkbox
-                    checked={allPerformerSet}
-                    inline={true}
-                    onChange={() => {onSelectAllPerformerSet(!allPerformerSet)}}
-                  />
-                </td>
-                <th>Performers</th>
-                <td>
-                  <Checkbox
-                    checked={allTagSet}
-                    inline={true}
-                    onChange={() => {onSelectAllTagSet(!allTagSet)}}
-                  />
-                </td>
-                <th>Tags</th>
-                <td>
-                  <Checkbox
-                    checked={allStudioSet}
-                    inline={true}
-                    onChange={() => {onSelectAllStudioSet(!allStudioSet)}}
-                  />
-                </td>
-                <th>Studio</th>
+                {renderHeader("Title", allTitleSet, onSelectAllTitleSet)}
+                {renderHeader("Date", allDateSet, onSelectAllDateSet)}
+                {renderHeader("Performers", allPerformerSet, onSelectAllPerformerSet)}
+                {renderHeader("Tags", allTagSet, onSelectAllTagSet)}
+                {renderHeader("Studio", allStudioSet, onSelectAllStudioSet)}
               </tr>
             </thead>
             <tbody>
