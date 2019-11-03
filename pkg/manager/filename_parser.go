@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type parserField struct {
@@ -365,6 +367,22 @@ func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
 	return sceneHolder
 }
 
+type performerQueryer interface {
+	FindByNames(names []string, tx *sqlx.Tx) ([]*models.Performer, error)
+}
+
+type sceneQueryer interface {
+	QueryByPathRegex(findFilter *models.FindFilterType) ([]*models.Scene, int)
+}
+
+type tagQueryer interface {
+	FindByName(name string, tx *sqlx.Tx) (*models.Tag, error)
+}
+
+type studioQueryer interface {
+	FindByName(name string, tx *sqlx.Tx) (*models.Studio, error)
+}
+
 type SceneFilenameParser struct {
 	Pattern        string
 	ParserInput    models.SceneParserInput
@@ -373,6 +391,39 @@ type SceneFilenameParser struct {
 	performerCache map[string]*models.Performer
 	studioCache    map[string]*models.Studio
 	tagCache       map[string]*models.Tag
+
+	performerQuery performerQueryer
+	sceneQuery     sceneQueryer
+	tagQuery       tagQueryer
+	studioQuery    studioQueryer
+}
+
+func NewSceneFilenameParser(filter *models.FindFilterType, config models.SceneParserInput) *SceneFilenameParser {
+	p := &SceneFilenameParser{
+		Pattern:     *filter.Q,
+		ParserInput: config,
+		Filter:      filter,
+	}
+
+	p.performerCache = make(map[string]*models.Performer)
+	p.studioCache = make(map[string]*models.Studio)
+	p.tagCache = make(map[string]*models.Tag)
+
+	p.initWhiteSpaceRegex()
+
+	performerQuery := models.NewPerformerQueryBuilder()
+	p.performerQuery = &performerQuery
+
+	sceneQuery := models.NewSceneQueryBuilder()
+	p.sceneQuery = &sceneQuery
+
+	tagQuery := models.NewTagQueryBuilder()
+	p.tagQuery = &tagQuery
+
+	studioQuery := models.NewStudioQueryBuilder()
+	p.studioQuery = &studioQuery
+
+	return p
 }
 
 func (p *SceneFilenameParser) initWhiteSpaceRegex() {
@@ -389,14 +440,6 @@ func (p *SceneFilenameParser) initWhiteSpaceRegex() {
 	}
 }
 
-func (p *SceneFilenameParser) init() {
-	p.performerCache = make(map[string]*models.Performer)
-	p.studioCache = make(map[string]*models.Studio)
-	p.tagCache = make(map[string]*models.Tag)
-
-	p.initWhiteSpaceRegex()
-}
-
 func (p *SceneFilenameParser) Parse() ([]*models.SceneParserResult, int, error) {
 	compileREs()
 
@@ -407,13 +450,16 @@ func (p *SceneFilenameParser) Parse() ([]*models.SceneParserResult, int, error) 
 		return nil, 0, err
 	}
 
-	p.init()
-
 	p.Filter.Q = &mapper.regexString
 
-	qb := models.NewSceneQueryBuilder()
-	scenes, total := qb.QueryByPathRegex(p.Filter)
+	scenes, total := p.sceneQuery.QueryByPathRegex(p.Filter)
 
+	ret := p.parseScenes(scenes, mapper)
+
+	return ret, total, nil
+}
+
+func (p *SceneFilenameParser) parseScenes(scenes []*models.Scene, mapper *parseMapper) []*models.SceneParserResult {
 	var ret []*models.SceneParserResult
 	for _, scene := range scenes {
 		sceneHolder := mapper.parse(scene)
@@ -430,7 +476,7 @@ func (p *SceneFilenameParser) Parse() ([]*models.SceneParserResult, int, error) 
 		}
 	}
 
-	return ret, total, nil
+	return ret
 }
 
 func (p SceneFilenameParser) replaceWhitespaceCharacters(value string) string {
@@ -452,26 +498,12 @@ func (p *SceneFilenameParser) queryPerformer(performerName string) *models.Perfo
 		return ret
 	}
 
-	// limit to getting the first 10
-	limit := 10
-	filter := models.FindFilterType{
-		Q:       &performerName,
-		PerPage: &limit,
-	}
-	qb := models.NewPerformerQueryBuilder()
-	performers, _ := qb.Query(nil, &filter)
+	// perform an exact match and grab the first
+	performers, _ := p.performerQuery.FindByNames([]string{performerName}, nil)
 
-	// try to match performer name exactly, otherwise just grab the first
 	var ret *models.Performer
 	if len(performers) > 0 {
 		ret = performers[0]
-	}
-
-	for _, performer := range performers {
-		if strings.ToLower(performer.Name.String) == strings.ToLower(performerName) {
-			ret = performer
-			break
-		}
 	}
 
 	// add result to cache
@@ -489,27 +521,7 @@ func (p *SceneFilenameParser) queryStudio(studioName string) *models.Studio {
 		return ret
 	}
 
-	// limit to getting the first 10
-	limit := 10
-	filter := models.FindFilterType{
-		Q:       &studioName,
-		PerPage: &limit,
-	}
-	qb := models.NewStudioQueryBuilder()
-	studios, _ := qb.Query(&filter)
-
-	// try to match studio name exactly, otherwise just grab the first
-	var ret *models.Studio
-	if len(studios) > 0 {
-		ret = studios[0]
-	}
-
-	for _, studio := range studios {
-		if strings.ToLower(studio.Name.String) == strings.ToLower(studioName) {
-			ret = studio
-			break
-		}
-	}
+	ret, _ := p.studioQuery.FindByName(studioName, nil)
 
 	// add result to cache
 	p.studioCache[studioName] = ret
@@ -526,27 +538,8 @@ func (p *SceneFilenameParser) queryTag(tagName string) *models.Tag {
 		return ret
 	}
 
-	// limit to getting the first 10
-	limit := 10
-	filter := models.FindFilterType{
-		Q:       &tagName,
-		PerPage: &limit,
-	}
-	qb := models.NewTagQueryBuilder()
-	tags, _ := qb.Query(&filter)
-
-	// try to match tag name exactly, otherwise just grab the first
-	var ret *models.Tag
-	if len(tags) > 0 {
-		ret = tags[0]
-	}
-
-	for _, tag := range tags {
-		if strings.ToLower(tag.Name) == strings.ToLower(tagName) {
-			ret = tag
-			break
-		}
-	}
+	// match tag name exactly
+	ret, _ := p.tagQuery.FindByName(tagName, nil)
 
 	// add result to cache
 	p.tagCache[tagName] = ret

@@ -41,11 +41,7 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 }
 
 func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config models.SceneParserInput) (*models.SceneParserResultType, error) {
-	parser := manager.SceneFilenameParser{
-		Pattern:     *filter.Q,
-		ParserInput: config,
-		Filter:      filter,
-	}
+	parser := manager.NewSceneFilenameParser(filter, config)
 
 	result, count, err := parser.Parse()
 
