@@ -59,8 +59,8 @@ func KillRunningEncoders(path string) {
 		// wait for the process to die before returning
 		// don't wait more than a few seconds
 		done := make(chan error)
-		go func() { 
-			_, err := process.Wait() 
+		go func() {
+			_, err := process.Wait()
 			done <- err
 		}()
 
@@ -91,6 +91,7 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 	}
 
 	buf := make([]byte, 80)
+	var errBuilder strings.Builder
 	for {
 		n, err := stderr.Read(buf)
 		if n > 0 {
@@ -100,6 +101,8 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 				progress := time / probeResult.Duration
 				logger.Infof("Progress %.2f", progress)
 			}
+
+			errBuilder.WriteString(data)
 		}
 		if err != nil {
 			break
@@ -113,7 +116,8 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 	err = waitAndDeregister(probeResult.Path, cmd)
 
 	if err != nil {
-		logger.Errorf("ffmpeg error when running command <%s>: %s", strings.Join(cmd.Args, " "), stdoutString)
+		// error message should be in the stderr stream
+		logger.Errorf("ffmpeg error when running command <%s>: %s", strings.Join(cmd.Args, " "), errBuilder.String())
 		return stdoutString, err
 	}
 
