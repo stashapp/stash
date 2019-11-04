@@ -22,6 +22,30 @@ enum ResolutionEnum {
 input PerformerFilterType {
   """Filter by favorite"""
   filter_favorites: Boolean
+  """Filter by birth year"""
+  birth_year: IntCriterionInput
+  """Filter by age"""
+  age: IntCriterionInput
+  """Filter by ethnicity"""
+  ethnicity: String
+  """Filter by country"""
+  country: String
+  """Filter by eye color"""
+  eye_color: String
+  """Filter by height"""
+  height: String
+  """Filter by measurements"""
+  measurements: String
+  """Filter by fake tits value"""
+  fake_tits: String
+  """Filter by career length"""  
+  career_length: String
+  """Filter by tattoos"""
+  tattoos: String
+  """Filter by piercings"""
+  piercings: String
+  """Filter by aliases"""
+  aliases: String
 }
 
 input SceneMarkerFilterType {

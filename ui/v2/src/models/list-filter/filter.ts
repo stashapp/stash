@@ -7,7 +7,7 @@ import {
   SceneMarkerFilterType,
   SortDirectionEnum,
 } from "../../core/generated-graphql";
-import { Criterion, ICriterionOption } from "./criteria/criterion";
+import { Criterion, ICriterionOption, CriterionType, CriterionOption } from "./criteria/criterion";
 import { FavoriteCriterion, FavoriteCriterionOption } from "./criteria/favorite";
 import { HasMarkersCriterion, HasMarkersCriterionOption } from "./criteria/has-markers";
 import { IsMissingCriterion, IsMissingCriterionOption } from "./criteria/is-missing";
@@ -75,10 +75,29 @@ export class ListFilterModel {
           DisplayMode.Grid,
           DisplayMode.List,
         ];
+
+        var numberCriteria : CriterionType[] = ["birth_year", "age"];
+        var stringCriteria : CriterionType[] = [
+          "ethnicity",
+          "country",
+          "eye_color",
+          "height",
+          "measurements",
+          "fake_tits",
+          "career_length",
+          "tattoos",
+          "piercings",
+          "aliases"
+        ];
+
         this.criterionOptions = [
           new NoneCriterionOption(),
-          new FavoriteCriterionOption(),
+          new FavoriteCriterionOption()
         ];
+
+        this.criterionOptions = this.criterionOptions.concat(numberCriteria.concat(stringCriteria).map((c) => {
+          return new CriterionOption(Criterion.getLabel(c), c);
+        }));
         break;
       case FilterMode.Studios:
         if (!!this.sortBy === false) { this.sortBy = "name"; }
@@ -244,6 +263,42 @@ export class ListFilterModel {
       switch (criterion.type) {
         case "favorite":
           result.filter_favorites = (criterion as FavoriteCriterion).value === "true";
+          break;
+        case "birth_year":
+          result.birth_year = criterion.value;
+          break;
+        case "age":
+          result.age = criterion.value;
+          break;
+        case "ethnicity":
+          result.ethnicity = criterion.value;
+          break;
+        case "country":
+          result.country = criterion.value;
+          break;
+        case "eye_color":
+          result.eye_color = criterion.value;
+          break;
+        case "height":
+          result.height = criterion.value;
+          break;
+        case "measurements":
+          result.measurements = criterion.value;
+          break;
+        case "fake_tits":
+          result.fake_tits = criterion.value;
+          break;
+        case "career_length":
+          result.career_length = criterion.value;
+          break;
+        case "tattoos":
+          result.tattoos = criterion.value;
+          break;
+        case "piercings":
+          result.piercings = criterion.value;
+          break;
+        case "aliases":
+          result.aliases = criterion.value;
           break;
       }
     });

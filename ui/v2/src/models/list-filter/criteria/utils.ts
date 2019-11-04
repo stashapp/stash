@@ -6,7 +6,7 @@ import {
   AllTagsForFilterVariables,
 } from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
-import { Criterion, CriterionType } from "./criterion";
+import { Criterion, CriterionType, StringCriterion, NumberCriterion } from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
 import { IsMissingCriterion } from "./is-missing";
@@ -29,5 +29,21 @@ export function makeCriteria(type: CriterionType = "none") {
     case "sceneTags": return new TagsCriterion("sceneTags");
     case "performers": return new PerformersCriterion();
     case "studios": return new StudiosCriterion();
+    
+    case "birth_year":
+    case "age":
+        return new NumberCriterion(type, type)
+    
+    case "ethnicity": 
+    case "country":
+    case "eye_color":
+    case "height":
+    case "measurements":
+    case "fake_tits":
+    case "career_length":
+    case "tattoos":
+    case "piercings":
+    case "aliases":
+      return new StringCriterion(type, type);
   }
 }
