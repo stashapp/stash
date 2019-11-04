@@ -4,6 +4,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"io/ioutil"
+	"path/filepath"
 
 	"github.com/spf13/viper"
 
@@ -123,12 +124,11 @@ func ValidateCredentials(username string, password string) bool {
 }
 
 func GetCSSPath() string {
-	// search for custom.css in current directory, then $HOME/.stash
-	fn := "custom.css"
-	exists, _ := utils.FileExists(fn)
-	if !exists {
-		fn = "$HOME/.stash/" + fn
-	}
+	// use custom.css in the same directory as the config file
+	configFileUsed := viper.ConfigFileUsed()
+	configDir := filepath.Dir(configFileUsed)
+
+	fn := filepath.Join(configDir, "custom.css")
 
 	return fn
 }
