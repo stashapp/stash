@@ -14,7 +14,7 @@ type SceneMarkerOptions struct {
 
 func (e *Encoder) SceneMarkerVideo(probeResult VideoFile, options SceneMarkerOptions) error {
 	args := []string{
-		"-v", "quiet",
+		"-v", "error",
 		"-ss", strconv.Itoa(options.Seconds),
 		"-t", "20",
 		"-i", probeResult.Path,
@@ -40,7 +40,7 @@ func (e *Encoder) SceneMarkerVideo(probeResult VideoFile, options SceneMarkerOpt
 
 func (e *Encoder) SceneMarkerImage(probeResult VideoFile, options SceneMarkerOptions) error {
 	args := []string{
-		"-v", "quiet",
+		"-v", "error",
 		"-ss", strconv.Itoa(options.Seconds),
 		"-t", "5",
 		"-i", probeResult.Path,

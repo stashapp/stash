@@ -12,7 +12,7 @@ type ScreenshotOptions struct {
 
 func (e *Encoder) Screenshot(probeResult VideoFile, options ScreenshotOptions) {
 	if options.Verbosity == "" {
-		options.Verbosity = "quiet"
+		options.Verbosity = "error"
 	}
 	if options.Quality == 0 {
 		options.Quality = 1
