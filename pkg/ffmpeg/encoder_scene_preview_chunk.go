@@ -2,8 +2,9 @@ package ffmpeg
 
 import (
 	"fmt"
-	"github.com/stashapp/stash/pkg/utils"
 	"strconv"
+
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ScenePreviewChunkOptions struct {
@@ -14,7 +15,7 @@ type ScenePreviewChunkOptions struct {
 
 func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePreviewChunkOptions) {
 	args := []string{
-		"-v", "quiet",
+		"-v", "error",
 		"-ss", strconv.Itoa(options.Time),
 		"-t", "0.75",
 		"-i", probeResult.Path,
@@ -38,7 +39,7 @@ func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePre
 
 func (e *Encoder) ScenePreviewVideoChunkCombine(probeResult VideoFile, concatFilePath string, outputPath string) {
 	args := []string{
-		"-v", "quiet",
+		"-v", "error",
 		"-f", "concat",
 		"-i", utils.FixWindowsPath(concatFilePath),
 		"-y",
@@ -50,7 +51,7 @@ func (e *Encoder) ScenePreviewVideoChunkCombine(probeResult VideoFile, concatFil
 
 func (e *Encoder) ScenePreviewVideoToImage(probeResult VideoFile, width int, videoPreviewPath string, outputPath string) error {
 	args := []string{
-		"-v", "quiet",
+		"-v", "error",
 		"-i", videoPreviewPath,
 		"-y",
 		"-c:v", "libwebp",
