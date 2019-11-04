@@ -43,7 +43,7 @@ class ParserResult<T> {
   public setValue(v : Maybe<T>) {
     if (!!v) {
       this.value = v;
-      this.set = this.value !== this.originalValue;
+      this.set = !_.isEqual(this.value, this.originalValue);
     }
   }
 }
@@ -1076,8 +1076,8 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
 
     return (
       <>
-      <form autoComplete="off">
-        <div className="grid scene-parser-results">
+      <div>
+        <div className="scene-parser-results">
           <HTMLTable condensed={true}>
             <thead>
               <tr className="scene-parser-row">
@@ -1106,7 +1106,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           onChangePage={(page) => onPageChanged(page)}
         />
         <Button intent="primary" text="Apply" onClick={() => onApply()}></Button>
-      </form>
+      </div>
     </>
     )
   }
