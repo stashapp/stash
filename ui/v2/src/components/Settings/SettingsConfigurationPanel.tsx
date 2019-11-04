@@ -25,6 +25,8 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
   const [stashes, setStashes] = useState<string[]>([]);
   const [databasePath, setDatabasePath] = useState<string | undefined>(undefined);
   const [generatedPath, setGeneratedPath] = useState<string | undefined>(undefined);
+  const [maxTranscodeSize, setMaxTranscodeSize] = useState<GQL.StreamingResolutionEnum | undefined>(undefined);
+  const [maxStreamingTranscodeSize, setMaxStreamingTranscodeSize] = useState<GQL.StreamingResolutionEnum | undefined>(undefined);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [logFile, setLogFile] = useState<string | undefined>();
@@ -38,6 +40,8 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
     stashes,
     databasePath,
     generatedPath,
+    maxTranscodeSize,
+    maxStreamingTranscodeSize,
     username,
     password,
     logFile,
@@ -53,6 +57,8 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       setStashes(conf.general.stashes || []);
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
+      setMaxTranscodeSize(conf.general.maxTranscodeSize);
+      setMaxStreamingTranscodeSize(conf.general.maxStreamingTranscodeSize);
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setLogFile(conf.general.logFile);
@@ -76,46 +82,114 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
     }
   }
 
+  const transcodeQualities = [
+    GQL.StreamingResolutionEnum.Low,
+    GQL.StreamingResolutionEnum.Standard,
+    GQL.StreamingResolutionEnum.StandardHd,
+    GQL.StreamingResolutionEnum.FullHd,
+    GQL.StreamingResolutionEnum.FourK,
+    GQL.StreamingResolutionEnum.Original
+  ].map(resolutionToString);
+
+  function resolutionToString(r : GQL.StreamingResolutionEnum | undefined) {
+    switch (r) {
+      case GQL.StreamingResolutionEnum.Low: return "240p";
+      case GQL.StreamingResolutionEnum.Standard: return "480p";
+      case GQL.StreamingResolutionEnum.StandardHd: return "720p";
+      case GQL.StreamingResolutionEnum.FullHd: return "1080p";
+      case GQL.StreamingResolutionEnum.FourK: return "4k";
+      case GQL.StreamingResolutionEnum.Original: return "Original";
+    }
+
+    return "Original";
+  }
+
+  function translateQuality(quality : string) {
+    switch (quality) {
+      case "240p": return GQL.StreamingResolutionEnum.Low;
+      case "480p": return GQL.StreamingResolutionEnum.Standard;
+      case "720p": return GQL.StreamingResolutionEnum.StandardHd;
+      case "1080p": return GQL.StreamingResolutionEnum.FullHd;
+      case "4k": return GQL.StreamingResolutionEnum.FourK;
+      case "Original": return GQL.StreamingResolutionEnum.Original;
+    }
+
+    return GQL.StreamingResolutionEnum.Original;
+  }
+
   return (
     <>
       {!!error ? <h1>{error.message}</h1> : undefined}
       {(!data || !data.configuration || loading) ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
       <H4>Library</H4>
-      <FormGroup
-        label="Stashes"
-        helperText="Directory locations to your content"
-      >
-        <FolderSelect
-          directories={stashes}
-          onDirectoriesChanged={onStashesChanged}
-        />
-      </FormGroup>
-      <FormGroup
-        label="Database Path"
-        helperText="File location for the SQLite database (requires restart)"
-      >
-        <InputGroup value={databasePath} onChange={(e: any) => setDatabasePath(e.target.value)} />
-      </FormGroup>
-      <FormGroup
-        label="Generated Path"
-        helperText="Directory location for the generated files (scene markers, scene previews, sprites, etc)"
-      >
-        <InputGroup value={generatedPath} onChange={(e: any) => setGeneratedPath(e.target.value)} />
-      </FormGroup>
+      <FormGroup>
+        <FormGroup>
+          <FormGroup
+            label="Stashes"
+            helperText="Directory locations to your content"
+          >
+            <FolderSelect
+              directories={stashes}
+              onDirectoriesChanged={onStashesChanged}
+            />
+          </FormGroup>
+        </FormGroup>
+        
+        <FormGroup
+          label="Database Path"
+          helperText="File location for the SQLite database (requires restart)"
+        >
+          <InputGroup value={databasePath} onChange={(e: any) => setDatabasePath(e.target.value)} />
+        </FormGroup>
 
-      <Divider />
-      <H4>Authentication</H4>
-      <FormGroup
-        label="Username"
-        helperText="Username to access Stash. Leave blank to disable user authentication"
-      >
-        <InputGroup value={username} onChange={(e: any) => setUsername(e.target.value)} />
+        <FormGroup
+          label="Generated Path"
+          helperText="Directory location for the generated files (scene markers, scene previews, sprites, etc)"
+        >
+          <InputGroup value={generatedPath} onChange={(e: any) => setGeneratedPath(e.target.value)} />
+        </FormGroup>
       </FormGroup>
-      <FormGroup
-        label="Password"
-        helperText="Password to access Stash. Leave blank to disable user authentication"
-      >
-        <InputGroup type="password" value={password} onChange={(e: any) => setPassword(e.target.value)} />
+      
+      <Divider />
+        <FormGroup>
+          <H4>Video</H4>
+          <FormGroup 
+            label="Maximum transcode size"
+            helperText="Maximum size for generated transcodes"
+          >
+            <HTMLSelect
+              options={transcodeQualities}
+              onChange={(event) => setMaxTranscodeSize(translateQuality(event.target.value))}
+              value={resolutionToString(maxTranscodeSize)}
+            />
+          </FormGroup>
+          <FormGroup 
+            label="Maximum streaming transcode size"
+            helperText="Maximum size for transcoded streams"
+          >
+            <HTMLSelect
+              options={transcodeQualities}
+              onChange={(event) => setMaxStreamingTranscodeSize(translateQuality(event.target.value))}
+              value={resolutionToString(maxStreamingTranscodeSize)}
+            />
+          </FormGroup>
+        </FormGroup>
+      <Divider />
+
+      <FormGroup>
+        <H4>Authentication</H4>
+        <FormGroup
+          label="Username"
+          helperText="Username to access Stash. Leave blank to disable user authentication"
+        >
+          <InputGroup value={username} onChange={(e: any) => setUsername(e.target.value)} />
+        </FormGroup>
+        <FormGroup
+          label="Password"
+          helperText="Password to access Stash. Leave blank to disable user authentication"
+        >
+          <InputGroup type="password" value={password} onChange={(e: any) => setPassword(e.target.value)} />
+        </FormGroup>
       </FormGroup>
 
       <Divider />
