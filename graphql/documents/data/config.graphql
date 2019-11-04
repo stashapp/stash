@@ -2,6 +2,8 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   stashes
   databasePath
   generatedPath
+  maxTranscodeSize
+  maxStreamingTranscodeSize
   username
   password
   logFile

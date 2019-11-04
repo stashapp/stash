@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -68,7 +69,7 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 
 	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
 
-	stream, process, err := encoder.StreamTranscode(*videoFile, startTime)
+	stream, process, err := encoder.StreamTranscode(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %s", err.Error())
 		return

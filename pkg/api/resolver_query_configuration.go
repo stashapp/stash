@@ -29,16 +29,22 @@ func makeConfigResult() *models.ConfigResult {
 
 func makeConfigGeneralResult() *models.ConfigGeneralResult {
 	logFile := config.GetLogFile()
+
+	maxTranscodeSize := config.GetMaxTranscodeSize()
+	maxStreamingTranscodeSize := config.GetMaxStreamingTranscodeSize()
+
 	return &models.ConfigGeneralResult{
-		Stashes:       config.GetStashPaths(),
-		DatabasePath:  config.GetDatabasePath(),
-		GeneratedPath: config.GetGeneratedPath(),
-		Username:      config.GetUsername(),
-		Password:      config.GetPasswordHash(),
-		LogFile:       &logFile,
-		LogOut:        config.GetLogOut(),
-		LogLevel:      config.GetLogLevel(),
-		LogAccess:     config.GetLogAccess(),
+		Stashes:                   config.GetStashPaths(),
+		DatabasePath:              config.GetDatabasePath(),
+		GeneratedPath:             config.GetGeneratedPath(),
+		MaxTranscodeSize:          &maxTranscodeSize,
+		MaxStreamingTranscodeSize: &maxStreamingTranscodeSize,
+		Username:                  config.GetUsername(),
+		Password:                  config.GetPasswordHash(),
+		LogFile:                   &logFile,
+		LogOut:                    config.GetLogOut(),
+		LogLevel:                  config.GetLogLevel(),
+		LogAccess:                 config.GetLogAccess(),
 	}
 }
 
