@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -20,6 +21,9 @@ const Username = "username"
 const Password = "password"
 
 const Database = "database"
+
+const MaxTranscodeSize = "max_transcode_size"
+const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
 const Host = "host"
 const Port = "port"
@@ -75,6 +79,28 @@ func GetHost() string {
 
 func GetPort() int {
 	return viper.GetInt(Port)
+}
+
+func GetMaxTranscodeSize() models.StreamingResolutionEnum {
+	ret := viper.GetString(MaxTranscodeSize)
+
+	// default to original
+	if ret == "" {
+		return models.StreamingResolutionEnumOriginal
+	}
+
+	return models.StreamingResolutionEnum(ret)
+}
+
+func GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
+	ret := viper.GetString(MaxStreamingTranscodeSize)
+
+	// default to original
+	if ret == "" {
+		return models.StreamingResolutionEnumOriginal
+	}
+
+	return models.StreamingResolutionEnum(ret)
 }
 
 func GetUsername() string {

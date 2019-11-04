@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -35,6 +35,14 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 			return makeConfigGeneralResult(), err
 		}
 		config.Set(config.Generated, input.GeneratedPath)
+	}
+
+	if input.MaxTranscodeSize != nil {
+		config.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
+	}
+
+	if input.MaxStreamingTranscodeSize != nil {
+		config.Set(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
 	}
 
 	if input.Username != nil {

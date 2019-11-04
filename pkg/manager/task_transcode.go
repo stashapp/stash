@@ -1,11 +1,13 @@
 package manager
 
 import (
-	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 	"os"
 	"sync"
+
+	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type GenerateTranscodeTask struct {
@@ -33,8 +35,10 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 	}
 
 	outputPath := instance.Paths.Generated.GetTmpPath(t.Scene.Checksum + ".mp4")
+	transcodeSize := config.GetMaxTranscodeSize()
 	options := ffmpeg.TranscodeOptions{
-		OutputPath: outputPath,
+		OutputPath:       outputPath,
+		MaxTranscodeSize: transcodeSize,
 	}
 	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
 	encoder.Transcode(*videoFile, options)

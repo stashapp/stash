@@ -4,6 +4,7 @@ import {
   Dialog,
   InputGroup,
   Spinner,
+  FormGroup,
 } from "@blueprintjs/core";
 import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
@@ -76,9 +77,12 @@ export const FolderSelect: FunctionComponent<IProps> = (props: IProps) => {
     <>
       {!!error ? <h1>{error.message}</h1> : undefined}
       {renderDialog()}
-      {selectedDirectories.map((path) => {
-        return <div key={path}>{path} <a onClick={() => onRemoveDirectory(path)}>Remove</a></div>;
-      })}
+      <FormGroup>
+        {selectedDirectories.map((path) => {
+          return <div key={path}>{path} <a onClick={() => onRemoveDirectory(path)}>Remove</a></div>;
+        })}
+      </FormGroup>
+      
       <Button small={true} onClick={() => setIsDisplayingDialog(true)}>Add Directory</Button>
     </>
   );
