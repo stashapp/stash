@@ -427,6 +427,8 @@ func NewSceneFilenameParser(filter *models.FindFilterType, config models.ScenePa
 }
 
 func (p *SceneFilenameParser) initWhiteSpaceRegex() {
+	compileREs()
+
 	wsChars := ""
 	if p.ParserInput.WhitespaceCharacters != nil {
 		wsChars = *p.ParserInput.WhitespaceCharacters
@@ -441,8 +443,6 @@ func (p *SceneFilenameParser) initWhiteSpaceRegex() {
 }
 
 func (p *SceneFilenameParser) Parse() ([]*models.SceneParserResult, int, error) {
-	compileREs()
-
 	// perform the query to find the scenes
 	mapper, err := newParseMapper(p.Pattern, p.ParserInput.IgnoreWords)
 
