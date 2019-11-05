@@ -2,20 +2,27 @@ package api
 
 import (
 	"context"
-	"github.com/stashapp/stash/pkg/manager"
 	"time"
+
+	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/models"
 )
 
-func (r *subscriptionResolver) MetadataUpdate(ctx context.Context) (<-chan string, error) {
-	msg := make(chan string, 1)
+func (r *subscriptionResolver) MetadataUpdate(ctx context.Context) (<-chan *models.MetadataUpdateStatus, error) {
+	msg := make(chan *models.MetadataUpdateStatus, 1)
 
 	ticker := time.NewTicker(5 * time.Second)
 
 	go func() {
+		lastStatus := models.MetadataUpdateStatus{}
 		for {
 			select {
 			case _ = <-ticker.C:
-				manager.GetInstance().HandleMetadataUpdateSubscriptionTick(msg)
+				thisStatus := manager.GetInstance().GetMetadataUpdateStatus()
+				if thisStatus != lastStatus {
+					msg <- &thisStatus
+				}
+				lastStatus = thisStatus
 			case <-ctx.Done():
 				ticker.Stop()
 				close(msg)

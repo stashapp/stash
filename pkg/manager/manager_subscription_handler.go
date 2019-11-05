@@ -1,36 +1,14 @@
 package manager
 
 import (
-	"encoding/json"
-	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
-type metadataUpdatePayload struct {
-	Progress float64          `json:"progress"`
-	Message  string           `json:"message"`
-	Logs     []logger.LogItem `json:"logs"`
-}
-
-func (s *singleton) HandleMetadataUpdateSubscriptionTick(msg chan string) {
-	var statusMessage string
-	switch instance.Status {
-	case Idle:
-		statusMessage = "Idle"
-	case Import:
-		statusMessage = "Import"
-	case Export:
-		statusMessage = "Export"
-	case Scan:
-		statusMessage = "Scan"
-	case Generate:
-		statusMessage = "Generate"
+func (s *singleton) GetMetadataUpdateStatus() models.MetadataUpdateStatus {
+	ret := models.MetadataUpdateStatus{
+		Progress: -1,
+		Status:   instance.Status.String(),
+		Message:  "",
 	}
-	payload := &metadataUpdatePayload{
-		Progress: 0, // TODO
-		Message:  statusMessage,
-		Logs:     logger.LogCache,
-	}
-	payloadJSON, _ := json.Marshal(payload)
-
-	msg <- string(payloadJSON)
+	return ret
 }

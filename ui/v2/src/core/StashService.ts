@@ -346,6 +346,12 @@ export class StashService {
     });
   }
 
+  public static useJobStatus() {
+    return GQL.useJobStatus({
+      fetchPolicy: 'no-cache'
+    });
+  }
+
   public static queryScrapeFreeones(performerName: string) {
     return StashService.client.query<GQL.ScrapeFreeonesQuery>({
       query: GQL.ScrapeFreeonesDocument,
