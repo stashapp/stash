@@ -13,6 +13,33 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
+type queryBuilder struct {
+	tableName string
+	body      string
+
+	whereClauses  []string
+	havingClauses []string
+	args          []interface{}
+
+	sortAndPagination string
+}
+
+func (qb queryBuilder) executeFind() ([]int, int) {
+	return executeFindQuery(qb.tableName, qb.body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
+}
+
+func (qb *queryBuilder) addWhere(clauses ...string) {
+	qb.whereClauses = append(qb.whereClauses, clauses...)
+}
+
+func (qb *queryBuilder) addHaving(clauses ...string) {
+	qb.havingClauses = append(qb.havingClauses, clauses...)
+}
+
+func (qb *queryBuilder) addArg(args ...interface{}) {
+	qb.args = append(qb.args, args...)
+}
+
 var randomSortFloat = rand.Float64()
 
 func selectAll(tableName string) string {
@@ -92,6 +119,7 @@ func getSort(sort string, direction string, tableName string) string {
 }
 
 func getSearch(columns []string, q string) string {
+	// TODO - susceptible to SQL injection
 	var likeClauses []string
 	queryWords := strings.Split(q, " ")
 	trimmedQuery := strings.Trim(q, "\"")
@@ -113,6 +141,39 @@ func getSearch(columns []string, q string) string {
 	return "(" + likes + ")"
 }
 
+func getSearchBinding(columns []string, q string, not bool) (string, []interface{}) {
+	var likeClauses []string
+	var args []interface{}
+
+	notStr := ""
+	binaryType := " OR "
+	if not {
+		notStr = " NOT "
+		binaryType = " AND "
+	}
+
+	queryWords := strings.Split(q, " ")
+	trimmedQuery := strings.Trim(q, "\"")
+	if trimmedQuery == q {
+		// Search for any word
+		for _, word := range queryWords {
+			for _, column := range columns {
+				likeClauses = append(likeClauses, column+notStr+" LIKE ?")
+				args = append(args, "%"+word+"%")
+			}
+		}
+	} else {
+		// Search the exact query
+		for _, column := range columns {
+			likeClauses = append(likeClauses, column+notStr+" LIKE ?")
+			args = append(args, "%"+trimmedQuery+"%")
+		}
+	}
+	likes := strings.Join(likeClauses, binaryType)
+
+	return "(" + likes + ")", args
+}
+
 func getInBinding(length int) string {
 	bindings := strings.Repeat("?, ", length)
 	bindings = strings.TrimRight(bindings, ", ")
@@ -128,22 +189,11 @@ func getCriterionModifierBinding(criterionModifier CriterionModifier, value inte
 		length = len(x)
 	default:
 		length = 1
-		logger.Debugf("unsupported type: %T\n", x)
 	}
 	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
 		switch modifier {
-		case "EQUALS":
-			return "= ?", 1
-		case "NOT_EQUALS":
-			return "!= ?", 1
-		case "GREATER_THAN":
-			return "> ?", 1
-		case "LESS_THAN":
-			return "< ?", 1
-		case "IS_NULL":
-			return "IS NULL", 0
-		case "NOT_NULL":
-			return "IS NOT NULL", 0
+		case "EQUALS", "NOT_EQUALS", "GREATER_THAN", "LESS_THAN", "IS_NULL", "NOT_NULL":
+			return getSimpleCriterionClause(criterionModifier, "?")
 		case "INCLUDES":
 			return "IN " + getInBinding(length), length // TODO?
 		case "EXCLUDES":
@@ -153,6 +203,30 @@ func getCriterionModifierBinding(criterionModifier CriterionModifier, value inte
 			return "= ?", 1 // TODO
 		}
 	}
+	return "= ?", 1 // TODO
+}
+
+func getSimpleCriterionClause(criterionModifier CriterionModifier, rhs string) (string, int) {
+	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
+		switch modifier {
+		case "EQUALS":
+			return "= " + rhs, 1
+		case "NOT_EQUALS":
+			return "!= " + rhs, 1
+		case "GREATER_THAN":
+			return "> " + rhs, 1
+		case "LESS_THAN":
+			return "< " + rhs, 1
+		case "IS_NULL":
+			return "IS NULL", 0
+		case "NOT_NULL":
+			return "IS NOT NULL", 0
+		default:
+			logger.Errorf("todo")
+			return "= ?", 1 // TODO
+		}
+	}
+
 	return "= ?", 1 // TODO
 }
 

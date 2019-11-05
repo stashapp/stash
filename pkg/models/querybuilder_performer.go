@@ -2,6 +2,8 @@ package models
 
 import (
 	"database/sql"
+	"strconv"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -111,30 +113,60 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		findFilter = &FindFilterType{}
 	}
 
-	var whereClauses []string
-	var havingClauses []string
-	var args []interface{}
-	body := selectDistinctIDs("performers")
-	body += `
+	query := queryBuilder{
+		tableName: "performers",
+	}
+
+	query.body = selectDistinctIDs("performers")
+	query.body += `
 		left join performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		left join scenes on scenes_join.scene_id = scenes.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"performers.name", "performers.checksum", "performers.birthdate", "performers.ethnicity"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		query.addWhere(clause)
+		query.addArg(thisArgs...)
 	}
 
 	if favoritesFilter := performerFilter.FilterFavorites; favoritesFilter != nil {
+		var favStr string
 		if *favoritesFilter == true {
-			whereClauses = append(whereClauses, "performers.favorite = 1")
+			favStr = "1"
 		} else {
-			whereClauses = append(whereClauses, "performers.favorite = 0")
+			favStr = "0"
 		}
+		query.addWhere("performers.favorite = " + favStr)
 	}
 
-	sortAndPagination := qb.getPerformerSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := executeFindQuery("performers", body, args, sortAndPagination, whereClauses, havingClauses)
+	if birthYear := performerFilter.BirthYear; birthYear != nil {
+		clauses, thisArgs := getBirthYearFilterClause(birthYear.Modifier, birthYear.Value)
+		query.addWhere(clauses...)
+		query.addArg(thisArgs...)
+	}
+
+	if age := performerFilter.Age; age != nil {
+		clauses, thisArgs := getAgeFilterClause(age.Modifier, age.Value)
+		query.addWhere(clauses...)
+		query.addArg(thisArgs...)
+	}
+
+	handleStringCriterion("ethnicity", performerFilter.Ethnicity, &query)
+	handleStringCriterion("country", performerFilter.Country, &query)
+	handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
+	handleStringCriterion("height", performerFilter.Height, &query)
+	handleStringCriterion("measurements", performerFilter.Measurements, &query)
+	handleStringCriterion("fake_tits", performerFilter.FakeTits, &query)
+	handleStringCriterion("career_length", performerFilter.CareerLength, &query)
+	handleStringCriterion("tattoos", performerFilter.Tattoos, &query)
+	handleStringCriterion("piercings", performerFilter.Piercings, &query)
+
+	// TODO - need better handling of aliases
+	handleStringCriterion("aliases", performerFilter.Aliases, &query)
+
+	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
+	idsResult, countResult := query.executeFind()
 
 	var performers []*Performer
 	for _, id := range idsResult {
@@ -143,6 +175,98 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	}
 
 	return performers, countResult
+}
+
+func handleStringCriterion(column string, value *StringCriterionInput, query *queryBuilder) {
+	if value != nil {
+		if modifier := value.Modifier.String(); value.Modifier.IsValid() {
+			switch modifier {
+			case "EQUALS":
+				clause, thisArgs := getSearchBinding([]string{column}, value.Value, false)
+				query.addWhere(clause)
+				query.addArg(thisArgs...)
+			case "NOT_EQUALS":
+				clause, thisArgs := getSearchBinding([]string{column}, value.Value, true)
+				query.addWhere(clause)
+				query.addArg(thisArgs...)
+			case "IS_NULL":
+				query.addWhere(column + " IS NULL")
+			case "NOT_NULL":
+				query.addWhere(column + " IS NOT NULL")
+			}
+		}
+	}
+}
+
+func getBirthYearFilterClause(criterionModifier CriterionModifier, value int) ([]string, []interface{}) {
+	var clauses []string
+	var args []interface{}
+
+	yearStr := strconv.Itoa(value)
+	startOfYear := yearStr + "-01-01"
+	endOfYear := yearStr + "-12-31"
+
+	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
+		switch modifier {
+		case "EQUALS":
+			// between yyyy-01-01 and yyyy-12-31
+			clauses = append(clauses, "performers.birthdate >= ?")
+			clauses = append(clauses, "performers.birthdate <= ?")
+			args = append(args, startOfYear)
+			args = append(args, endOfYear)
+		case "NOT_EQUALS":
+			// outside of yyyy-01-01 to yyyy-12-31
+			clauses = append(clauses, "performers.birthdate < ? OR performers.birthdate > ?")
+			args = append(args, startOfYear)
+			args = append(args, endOfYear)
+		case "GREATER_THAN":
+			// > yyyy-12-31
+			clauses = append(clauses, "performers.birthdate > ?")
+			args = append(args, endOfYear)
+		case "LESS_THAN":
+			// < yyyy-01-01
+			clauses = append(clauses, "performers.birthdate < ?")
+			args = append(args, startOfYear)
+		}
+	}
+
+	return clauses, args
+}
+
+func getAgeFilterClause(criterionModifier CriterionModifier, value int) ([]string, []interface{}) {
+	var clauses []string
+	var args []interface{}
+
+	// get the date at which performer would turn the age specified
+	dt := time.Now()
+	birthDate := dt.AddDate(-value-1, 0, 0)
+	yearAfter := birthDate.AddDate(1, 0, 0)
+
+	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
+		switch modifier {
+		case "EQUALS":
+			// between birthDate and yearAfter
+			clauses = append(clauses, "performers.birthdate >= ?")
+			clauses = append(clauses, "performers.birthdate < ?")
+			args = append(args, birthDate)
+			args = append(args, yearAfter)
+		case "NOT_EQUALS":
+			// outside of birthDate and yearAfter
+			clauses = append(clauses, "performers.birthdate < ? OR performers.birthdate >= ?")
+			args = append(args, birthDate)
+			args = append(args, yearAfter)
+		case "GREATER_THAN":
+			// < birthDate
+			clauses = append(clauses, "performers.birthdate < ?")
+			args = append(args, birthDate)
+		case "LESS_THAN":
+			// > yearAfter
+			clauses = append(clauses, "performers.birthdate >= ?")
+			args = append(args, yearAfter)
+		}
+	}
+
+	return clauses, args
 }
 
 func (qb *PerformerQueryBuilder) getPerformerSort(findFilter *FindFilterType) string {

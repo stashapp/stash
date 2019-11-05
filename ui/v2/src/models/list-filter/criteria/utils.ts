@@ -1,11 +1,6 @@
-import { QueryHookResult } from "react-apollo-hooks";
 import {
-  AllPerformersForFilterQuery,
-  AllPerformersForFilterVariables,
-  AllTagsForFilterQuery,
-  AllTagsForFilterVariables,
+  CriterionModifier,
 } from "../../../core/generated-graphql";
-import { StashService } from "../../../core/StashService";
 import { Criterion, CriterionType, StringCriterion, NumberCriterion } from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
@@ -32,8 +27,15 @@ export function makeCriteria(type: CriterionType = "none") {
     
     case "birth_year":
     case "age":
-        return new NumberCriterion(type, type)
-    
+        var ret = new NumberCriterion(type, type);
+        // null/not null doesn't make sense for these criteria
+        ret.modifierOptions = [
+          Criterion.getModifierOption(CriterionModifier.Equals),
+          Criterion.getModifierOption(CriterionModifier.NotEquals),
+          Criterion.getModifierOption(CriterionModifier.GreaterThan),
+          Criterion.getModifierOption(CriterionModifier.LessThan)
+        ];
+        return ret;
     case "ethnicity": 
     case "country":
     case "eye_color":
