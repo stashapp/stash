@@ -14,7 +14,7 @@ import (
 )
 
 type singleton struct {
-	Status JobStatus
+	Status TaskStatus
 	Paths  *paths.Paths
 	JSON   *jsonUtils
 
@@ -38,7 +38,7 @@ func Initialize() *singleton {
 		initFlags()
 		initEnvs()
 		instance = &singleton{
-			Status: Idle,
+			Status: TaskStatus{Status: Idle, Progress: -1},
 			Paths:  paths.NewPaths(),
 			JSON:   &jsonUtils{},
 		}

@@ -118,14 +118,14 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
   }
 
   function maybeRenderStop() {
-    if (status === "Idle") {
+    if (!status || status === "Idle") {
       return undefined;
     }
 
     return (
       <>
       <FormGroup>
-        <Button id="stop" text="Stop" intent="danger" onClick={() => {}} />
+        <Button id="stop" text="Stop" intent="danger" onClick={() => StashService.queryStopJob().then(() => jobStatus.refetch())} />
       </FormGroup>
       </>
     );
@@ -136,9 +136,9 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
       <>
       <FormGroup>
         <H5>Status: {status}</H5>
-        {status !== "Idle" ? <ProgressBar/> : undefined}
+        {!!status && status !== "Idle" ? <ProgressBar/> : undefined}
       </FormGroup>
-      {/* TODO maybeRenderStop() */}
+      {maybeRenderStop()}
       </>
     );
   }

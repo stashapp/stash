@@ -352,6 +352,13 @@ export class StashService {
     });
   }
 
+  public static queryStopJob() {
+    return StashService.client.query<GQL.StopJobQuery>({
+      query: GQL.StopJobDocument,
+      fetchPolicy: "network-only",
+    });
+  }
+
   public static queryScrapeFreeones(performerName: string) {
     return StashService.client.query<GQL.ScrapeFreeonesQuery>({
       query: GQL.ScrapeFreeonesDocument,

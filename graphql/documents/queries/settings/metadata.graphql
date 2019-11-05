@@ -23,3 +23,7 @@ query JobStatus {
     status
   }
 }
+
+query StopJob {
+  stopJob
+}

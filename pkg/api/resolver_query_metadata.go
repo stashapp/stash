@@ -34,8 +34,12 @@ func (r *queryResolver) MetadataClean(ctx context.Context) (string, error) {
 
 func (r *queryResolver) JobStatus(ctx context.Context) (*models.JobStatus, error) {
 	ret := models.JobStatus{
-		Status: manager.GetInstance().Status.String(),
+		Status: manager.GetInstance().Status.Status.String(),
 	}
 	// TODO - add progress
 	return &ret, nil
+}
+
+func (r *queryResolver) StopJob(ctx context.Context) (bool, error) {
+	return manager.GetInstance().Status.Stop(), nil
 }

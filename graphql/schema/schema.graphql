@@ -68,6 +68,7 @@ type Query {
   metadataClean: String!
 
   jobStatus: JobStatus!
+  stopJob: Boolean!
 
   # Get everything
 

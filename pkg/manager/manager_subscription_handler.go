@@ -6,8 +6,8 @@ import (
 
 func (s *singleton) GetMetadataUpdateStatus() models.MetadataUpdateStatus {
 	ret := models.MetadataUpdateStatus{
-		Progress: -1,
-		Status:   instance.Status.String(),
+		Progress: instance.Status.Progress,
+		Status:   instance.Status.Status.String(),
 		Message:  "",
 	}
 	return ret
