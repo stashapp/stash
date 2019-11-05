@@ -9,10 +9,6 @@ input ScanMetadataInput {
   nameFromMetadata: Boolean!
 }
 
-type JobStatus {
-  status: String!
-}
-
 type MetadataUpdateStatus {
   progress: Float!
 	status: String!

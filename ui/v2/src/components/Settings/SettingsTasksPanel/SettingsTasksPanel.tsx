@@ -23,6 +23,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [nameFromMetadata, setNameFromMetadata] = useState<boolean>(true);
   const [status, setStatus] = useState<string>("");
+  const [progress, setProgress] = useState<number | undefined>(undefined);
 
   const jobStatus = StashService.useJobStatus();
   const metadataUpdate = StashService.useMetadataUpdate();
@@ -49,12 +50,24 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
   useEffect(() => {
     if (!!jobStatus.data && !!jobStatus.data.jobStatus) {
       setStatus(statusToText(jobStatus.data.jobStatus.status));
+      var newProgress = jobStatus.data.jobStatus.progress;
+      if (newProgress < 0) {
+        setProgress(undefined);
+      } else {
+        setProgress(newProgress);
+      }
     }
   }, [jobStatus.data]);
 
   useEffect(() => {
     if (!!metadataUpdate.data && !!metadataUpdate.data.metadataUpdate) {
       setStatus(statusToText(metadataUpdate.data.metadataUpdate.status));
+      var newProgress = metadataUpdate.data.metadataUpdate.progress;
+      if (newProgress < 0) {
+        setProgress(undefined);
+      } else {
+        setProgress(newProgress);
+      }
     }
   }, [metadataUpdate.data]);
 
@@ -136,7 +149,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
       <>
       <FormGroup>
         <H5>Status: {status}</H5>
-        {!!status && status !== "Idle" ? <ProgressBar/> : undefined}
+        {!!status && status !== "Idle" ? <ProgressBar value={progress}/> : undefined}
       </FormGroup>
       {maybeRenderStop()}
       </>

@@ -3,6 +3,7 @@ package manager
 import (
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/bmatcuk/doublestar"
 	"github.com/stashapp/stash/pkg/logger"
@@ -12,14 +13,21 @@ import (
 )
 
 type TaskStatus struct {
-	Status   JobStatus
-	Progress float64
-	stopping bool
+	Status     JobStatus
+	Progress   float64
+	LastUpdate time.Time
+	stopping   bool
 }
 
 func (t *TaskStatus) Stop() bool {
 	t.stopping = true
+	t.updated()
 	return true
+}
+
+func (t *TaskStatus) SetStatus(s JobStatus) {
+	t.Status = s
+	t.updated()
 }
 
 func (t *TaskStatus) setProgress(upTo int, total int) {
@@ -27,14 +35,24 @@ func (t *TaskStatus) setProgress(upTo int, total int) {
 		t.Progress = 1
 	}
 	t.Progress = float64(upTo) / float64(total)
+	t.updated()
+}
+
+func (t *TaskStatus) indefiniteProgress() {
+	t.Progress = -1
+	t.updated()
+}
+
+func (t *TaskStatus) updated() {
+	t.LastUpdate = time.Now()
 }
 
 func (s *singleton) Scan(nameFromMetadata bool) {
 	if s.Status.Status != Idle {
 		return
 	}
-	s.Status.Status = Scan
-	s.Status.Progress = -1
+	s.Status.SetStatus(Scan)
+	s.Status.indefiniteProgress()
 
 	go func() {
 		defer s.returnToIdleState()
@@ -76,8 +94,8 @@ func (s *singleton) Import() {
 	if s.Status.Status != Idle {
 		return
 	}
-	s.Status.Status = Import
-	s.Status.Progress = -1
+	s.Status.SetStatus(Import)
+	s.Status.indefiniteProgress()
 
 	go func() {
 		defer s.returnToIdleState()
@@ -94,8 +112,8 @@ func (s *singleton) Export() {
 	if s.Status.Status != Idle {
 		return
 	}
-	s.Status.Status = Export
-	s.Status.Progress = -1
+	s.Status.SetStatus(Export)
+	s.Status.indefiniteProgress()
 
 	go func() {
 		defer s.returnToIdleState()
@@ -112,8 +130,8 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 	if s.Status.Status != Idle {
 		return
 	}
-	s.Status.Status = Generate
-	s.Status.Progress = -1
+	s.Status.SetStatus(Generate)
+	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
 	//this.job.total = await ObjectionUtils.getCount(Scene);
@@ -186,8 +204,8 @@ func (s *singleton) Clean() {
 	if s.Status.Status != Idle {
 		return
 	}
-	s.Status.Status = Clean
-	s.Status.Progress = -1
+	s.Status.SetStatus(Clean)
+	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
 	go func() {
@@ -239,7 +257,7 @@ func (s *singleton) returnToIdleState() {
 	if s.Status.Status == Generate {
 		instance.Paths.Generated.RemoveTmpDir()
 	}
-	s.Status.Status = Idle
-	s.Status.Progress = -1
+	s.Status.SetStatus(Idle)
+	s.Status.indefiniteProgress()
 	s.Status.stopping = false
 }

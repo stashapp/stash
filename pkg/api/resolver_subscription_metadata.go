@@ -14,13 +14,18 @@ func (r *subscriptionResolver) MetadataUpdate(ctx context.Context) (<-chan *mode
 	ticker := time.NewTicker(5 * time.Second)
 
 	go func() {
-		lastStatus := models.MetadataUpdateStatus{}
+		lastStatus := manager.TaskStatus{}
 		for {
 			select {
 			case _ = <-ticker.C:
-				thisStatus := manager.GetInstance().GetMetadataUpdateStatus()
+				thisStatus := manager.GetInstance().Status
 				if thisStatus != lastStatus {
-					msg <- &thisStatus
+					ret := models.MetadataUpdateStatus{
+						Progress: thisStatus.Progress,
+						Status:   thisStatus.Status.String(),
+						Message:  "",
+					}
+					msg <- &ret
 				}
 				lastStatus = thisStatus
 			case <-ctx.Done():
