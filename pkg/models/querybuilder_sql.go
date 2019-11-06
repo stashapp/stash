@@ -87,6 +87,10 @@ func getSort(sort string, direction string, tableName string) string {
 		} else if tableName == "scene_markers" {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
+		if strings.Compare(sort, "name") == 0 {
+			return " ORDER BY " + colName + " COLLATE NOCASE " + direction + additional
+		}
+
 		return " ORDER BY " + colName + " " + direction + additional
 	}
 }
