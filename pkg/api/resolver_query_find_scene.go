@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
-	"github.com/stashapp/stash/pkg/models"
 	"strconv"
+
+	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *string) (*models.Scene, error) {
@@ -35,5 +37,20 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 	return &models.FindScenesResultType{
 		Count:  total,
 		Scenes: scenes,
+	}, nil
+}
+
+func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config models.SceneParserInput) (*models.SceneParserResultType, error) {
+	parser := manager.NewSceneFilenameParser(filter, config)
+
+	result, count, err := parser.Parse()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &models.SceneParserResultType{
+		Count:   count,
+		Results: result,
 	}, nil
 }

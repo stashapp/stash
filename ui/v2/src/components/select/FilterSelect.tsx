@@ -18,6 +18,7 @@ type ValidTypes =
 interface IProps extends HTMLInputProps {
   type: "performers" | "studios" | "tags";
   initialId?: string;
+  noSelectionString?: string;
   onSelectItem: (item: ValidTypes | undefined) => void;
 }
 
@@ -98,7 +99,8 @@ export const FilterSelect: React.FunctionComponent<IProps> = (props: IProps) => 
     setSelectedItem(item);
   }
 
-  const buttonText = selectedItem ? selectedItem.name : "(No selection)";
+  const noSelection = props.noSelectionString !== undefined ? props.noSelectionString : "(No selection)"
+  const buttonText = selectedItem ? selectedItem.name : noSelection;
   return (
     <InternalSelect
       items={items}
