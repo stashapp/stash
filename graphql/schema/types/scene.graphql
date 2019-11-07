@@ -77,3 +77,27 @@ type FindScenesResultType {
   count: Int!
   scenes: [Scene!]!
 }
+
+input SceneParserInput {
+  ignoreWords: [String!],
+  whitespaceCharacters: String,
+  capitalizeTitle: Boolean
+}
+
+type SceneParserResult {
+  scene: Scene!
+  title: String
+  details: String
+  url: String
+  date: String
+  rating: Int
+  studio_id: ID
+  gallery_id: ID
+  performer_ids: [ID!]
+  tag_ids: [ID!]
+}
+
+type SceneParserResultType {
+  count: Int!
+  results: [SceneParserResult!]!
+}

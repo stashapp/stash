@@ -10,8 +10,11 @@ import {
   H5,
   MenuItem,
   HTMLSelect,
+  TagInput,
+  Tree,
+  ITreeNode,
 } from "@blueprintjs/core";
-import React, { FunctionComponent, useEffect, useState } from "react";
+import React, { FunctionComponent, useEffect, useState, useRef } from "react";
 import { IBaseProps } from "../../models";
 import { StashService } from "../../core/StashService";
 import * as GQL from "../../core/generated-graphql";
@@ -22,6 +25,8 @@ import { ToastUtils } from "../../utils/toasts";
 import { ErrorUtils } from "../../utils/errors";
 import { Pagination } from "../list/Pagination";
 import { Select, ItemRenderer, ItemPredicate } from "@blueprintjs/select";
+import { FilterMultiSelect } from "../select/FilterMultiSelect";
+import { FilterSelect } from "../select/FilterSelect";
   
 interface IProps extends IBaseProps {}
 
@@ -34,37 +39,22 @@ class ParserResult<T> {
     this.originalValue = v;
     this.value = v;
   }
+
+  public setValue(v : Maybe<T>) {
+    if (!!v) {
+      this.value = v;
+      this.set = !_.isEqual(this.value, this.originalValue);
+    }
+  }
 }
 
 class ParserField {
   public field : string;
-  public fieldRegex: RegExp;
-  public regex : string;
   public helperText? : string;
 
-  constructor(field: string, regex?: string, helperText?: string, captured?: boolean) {
-    if (regex === undefined) {
-      regex = ".*";
-    }
-
-    if (captured === undefined) {
-      captured = true;
-    }
-
+  constructor(field: string, helperText?: string) {
     this.field = field;
     this.helperText = helperText;
-
-    this.fieldRegex = new RegExp("\\{" + this.field + "\\}", "g");
-
-    var regexStr = regex;
-    if (captured) {
-      regexStr = "(" + regexStr + ")";
-    }
-    this.regex = regexStr;
-  }
-
-  public replaceInPattern(pattern : string) {
-    return pattern.replace(this.fieldRegex, this.regex);
   }
 
   public getFieldPattern() {
@@ -72,29 +62,36 @@ class ParserField {
   }
 
   static Title = new ParserField("title");
-  static Ext = new ParserField("ext", ".*$", "File extension", false);
+  static Ext = new ParserField("ext", "File extension");
 
-  static I = new ParserField("i", undefined, "Matches any ignored word", false);
-  static D = new ParserField("d", "(?:\\.|-|_)", "Matches any delimiter (.-_)", false);
+  static I = new ParserField("i", "Matches any ignored word");
+  static D = new ParserField("d", "Matches any delimiter (.-_)");
+
+  static Performer = new ParserField("performer");
+  static Studio = new ParserField("studio");
+  static Tag = new ParserField("tag");
 
   // date fields
-  static Date = new ParserField("date", "\\d{4}-\\d{2}-\\d{2}", "YYYY-MM-DD");
-  static YYYY = new ParserField("yyyy", "\\d{4}", "Year");
-  static YY = new ParserField("yy", "\\d{2}", "Year (20YY)");
-  static MM = new ParserField("mm", "\\d{2}", "Two digit month");
-  static DD = new ParserField("dd", "\\d{2}", "Two digit date");
-  static YYYYMMDD = new ParserField("yyyymmdd", "\\d{8}");
-  static YYMMDD = new ParserField("yymmdd", "\\d{6}");
-  static DDMMYYYY = new ParserField("ddmmyyyy", "\\d{8}");
-  static DDMMYY = new ParserField("ddmmyy", "\\d{6}");
-  static MMDDYYYY = new ParserField("mmddyyyy", "\\d{8}");
-  static MMDDYY = new ParserField("mmddyy", "\\d{6}");
+  static Date = new ParserField("date", "YYYY-MM-DD");
+  static YYYY = new ParserField("yyyy", "Year");
+  static YY = new ParserField("yy", "Year (20YY)");
+  static MM = new ParserField("mm", "Two digit month");
+  static DD = new ParserField("dd", "Two digit date");
+  static YYYYMMDD = new ParserField("yyyymmdd");
+  static YYMMDD = new ParserField("yymmdd");
+  static DDMMYYYY = new ParserField("ddmmyyyy");
+  static DDMMYY = new ParserField("ddmmyy");
+  static MMDDYYYY = new ParserField("mmddyyyy");
+  static MMDDYY = new ParserField("mmddyy");
 
   static validFields = [
     ParserField.Title,
     ParserField.Ext,
     ParserField.D,
     ParserField.I,
+    ParserField.Performer,
+    ParserField.Studio,
+    ParserField.Tag,
     ParserField.Date,
     ParserField.YYYY,
     ParserField.YY,
@@ -116,158 +113,68 @@ class ParserField {
     ParserField.MMDDYYYY,
     ParserField.MMDDYY
   ];
-
-  public static getParserField(field: string) {
-    return ParserField.validFields.find((f) => {
-      return f.field === field;
-    });
-  }
-
-  public static isValidField(field : string) {
-    return !!ParserField.getParserField(field);
-  }
-
-  public static isFullDateField(field : ParserField) {
-    return ParserField.fullDateFields.includes(field);
-  }
-
-  public static replacePatternWithRegex(pattern: string) {
-    ParserField.validFields.forEach((field) => {
-      pattern = field.replaceInPattern(pattern);
-    });
-    return pattern;
-  }
 }
-
 class SceneParserResult {
   public id: string;
   public filename: string;
   public title: ParserResult<string> = new ParserResult();
   public date: ParserResult<string> = new ParserResult();
 
-  public yyyy : ParserResult<string> = new ParserResult();
-  public mm : ParserResult<string> = new ParserResult();
-  public dd : ParserResult<string> = new ParserResult();
-
+  public studio: ParserResult<GQL.SlimSceneDataStudio> = new ParserResult();
   public studioId: ParserResult<string> = new ParserResult();
-  public tags: ParserResult<string[]> = new ParserResult();
+  public tags: ParserResult<GQL.SlimSceneDataTags[]> = new ParserResult();
+  public tagIds: ParserResult<string[]> = new ParserResult();
+  public performers: ParserResult<GQL.SlimSceneDataPerformers[]> = new ParserResult();
   public performerIds: ParserResult<string[]> = new ParserResult();
 
   public scene : SlimSceneDataFragment;
 
-  constructor(scene : SlimSceneDataFragment) {
-    this.id = scene.id;
-    this.filename = TextUtils.fileNameFromPath(scene.path);
-    this.title.setOriginalValue(scene.title);
-    this.date.setOriginalValue(scene.date);
+  constructor(result : GQL.ParseSceneFilenamesResults) {
+    this.scene = result.scene;
 
-    this.scene = scene;
-  }
+    this.id = this.scene.id;
+    this.filename = TextUtils.fileNameFromPath(this.scene.path);
+    this.title.setOriginalValue(this.scene.title);
+    this.date.setOriginalValue(this.scene.date);
+    this.performerIds.setOriginalValue(this.scene.performers.map((p) => p.id));
+    this.performers.setOriginalValue(this.scene.performers);
+    this.tagIds.setOriginalValue(this.scene.tags.map((t) => t.id));
+    this.tags.setOriginalValue(this.scene.tags);
+    this.studioId.setOriginalValue(this.scene.studio ? this.scene.studio.id : undefined);
+    this.studio.setOriginalValue(this.scene.studio);
 
-  public static validateDate(dateStr: string) {
-    var splits = dateStr.split("-");
-    if (splits.length != 3) {
-      return false;
-    }
-    
-    var year = parseInt(splits[0]);
-    var month = parseInt(splits[1]);
-    var d = parseInt(splits[2]);
+    this.title.setValue(result.title);
+    this.date.setValue(result.date);
+    this.performerIds.setValue(result.performer_ids);
+    this.tagIds.setValue(result.tag_ids);
+    this.studioId.setValue(result.studio_id);
 
-    var date = new Date();
-    date.setMonth(month - 1);
-    date.setDate(d);
-
-    // assume year must be between 1900 and 2100
-    if (year < 1900 || year > 2100) {
-      return false;
-    }
-
-    if (month < 1 || month > 12) {
-      return false;
-    }
-
-    // not checking individual months to ensure date is in the correct range
-    if (d < 1 || d > 31) {
-      return false;
+    if (result.performer_ids) {
+      this.performers.setValue(result.performer_ids.map((p) => {
+        return {
+          id: p,
+          name: "",
+          favorite: false,
+          image_path: ""
+        };
+      }));
     }
 
-    return true;
-  }
-
-  private setDate(field: ParserField, value: string) {
-    var yearIndex = 0;
-    var yearLength = field.field.split("y").length - 1;
-    var dateIndex = 0;
-    var monthIndex = 0;
-
-    switch (field) {
-      case ParserField.YYYYMMDD:
-      case ParserField.YYMMDD:
-        monthIndex = yearLength;
-        dateIndex = monthIndex + 2;
-        break;
-      case ParserField.DDMMYYYY:
-      case ParserField.DDMMYY:
-        monthIndex = 2;
-        yearIndex = monthIndex + 2;
-        break;
-      case ParserField.MMDDYYYY:
-      case ParserField.MMDDYY:
-        dateIndex = monthIndex + 2;
-        yearIndex = dateIndex + 2;
-        break;
+    if (result.tag_ids) {
+      this.tags.setValue(result.tag_ids.map((t) => {
+        return {
+          id: t,
+          name: "",
+        };
+      }));
     }
 
-    var yearValue = value.substring(yearIndex, yearIndex + yearLength);
-    var monthValue = value.substring(monthIndex, monthIndex + 2);
-    var dateValue = value.substring(dateIndex, dateIndex + 2);
-
-    var fullDate = yearValue + "-" + monthValue + "-" + dateValue;
-
-    // ensure the date is valid
-    // only set if new value is different from the old
-    if (SceneParserResult.validateDate(fullDate) && this.date.originalValue !== fullDate) {
-      this.date.set = true;
-      this.date.value = fullDate
-    }
-  }
-
-  public setField(field: ParserField, value: any) {
-    var parserResult : ParserResult<any> | undefined = undefined;
-
-    if (ParserField.isFullDateField(field)) {
-      this.setDate(field, value);
-      return;
-    }
-
-    switch (field) {
-      case ParserField.Title:
-        parserResult = this.title;
-        break;
-      case ParserField.Date:
-        parserResult = this.date;
-        break;
-      case ParserField.YYYY:
-        parserResult = this.yyyy;
-        break;
-      case ParserField.YY:
-        parserResult = this.yyyy;
-        value = "20" + value;
-        break;
-      case ParserField.MM:
-        parserResult = this.mm;
-        break;
-      case ParserField.DD:
-        parserResult = this.dd;
-        break;
-    }
-    // TODO - other fields
-
-    // only set if different from original value
-    if (!!parserResult && parserResult.originalValue !== value) {
-      parserResult.set = true;
-      parserResult.value = value;
+    if (result.studio_id) {
+      this.studio.setValue({
+        id: result.studio_id,
+        name: "",
+        image_path: ""
+      });
     }
   }
 
@@ -304,97 +211,21 @@ class SceneParserResult {
   }
 };
 
-class ParseMapper {
-  public fields : string[] = [];
-  public regex : string = "";
-  public matched : boolean = true;
-
-  constructor(pattern : string, ignoreFields : string[]) {
-    // escape control characters
-    this.regex = pattern.replace(/([\-\.\(\)\[\]])/g, "\\$1");
-
-    // replace {} with wildcard
-    this.regex = this.regex.replace(/\{\}/g, ".*");
-
-    // set ignore fields
-    ignoreFields = ignoreFields.map((s) => s.replace(/([\-\.\(\)\[\]])/g, "\\$1").trim());
-    var ignoreClause = ignoreFields.map((s) => "(?:" + s + ")").join("|");
-    ignoreClause = "(?:" + ignoreClause + ")";
-
-    ParserField.I.regex = ignoreClause;
-
-    // replace all known fields with applicable regexes
-    this.regex = ParserField.replacePatternWithRegex(this.regex);
-    
-    var ignoreField = new ParserField("i", ignoreClause, undefined, false);
-    this.regex = ignoreField.replaceInPattern(this.regex);
-
-    // find invalid fields
-    var foundInvalid = this.regex.match(/\{[A-Za-z]+\}/g);
-    if (foundInvalid) {
-      throw new Error("Invalid fields: " + foundInvalid.join(", "));
-    }
-
-    var fieldExtractor = new RegExp(/\{([A-Za-z]+)\}/);
-    var result = pattern.match(fieldExtractor);
-
-    while(!!result && result.index !== undefined) {
-      var field = result[1];
-
-      this.fields.push(field);
-      pattern = pattern.substring(result.index + result[0].length);
-      result = pattern.match(fieldExtractor);
-    } 
-  }
-
-  private postParse(scene: SceneParserResult) {
-    // set the date if the components are set
-    if (scene.yyyy.set && scene.mm.set && scene.dd.set) {
-      var fullDate = scene.yyyy.value + "-" + scene.mm.value + "-" + scene.dd.value;
-      if (SceneParserResult.validateDate(fullDate)) {
-        scene.setField(ParserField.Date, scene.yyyy.value + "-" + scene.mm.value + "-" + scene.dd.value);
-      }
-    }
-  }
-
-  public parse(scene : SceneParserResult) {
-    var regex = new RegExp(this.regex, "i");
-
-    var result = scene.filename.match(regex);
-
-    if(!result) {
-      return false;
-    }
-
-    var mapper = this;
-
-    result.forEach((match, index) => {
-      if (index === 0) {
-        // skip entire match
-        return;
-      }
-
-      var field = mapper.fields[index - 1];
-      var parserField = ParserField.getParserField(field);
-      if (!!parserField) {
-        scene.setField(parserField, match);
-      }
-    });
-
-    this.postParse(scene);
-
-    return true;
-  }
-}
-
 interface IParserInput {
   pattern: string,
   ignoreWords: string[],
   whitespaceCharacters: string,
-  capitalizeTitle: boolean
+  capitalizeTitle: boolean,
+  page: number,
+  pageSize: number,
+  findClicked: boolean
 }
 
-interface IParserRecipe extends IParserInput {
+interface IParserRecipe {
+  pattern: string,
+  ignoreWords: string[],
+  whitespaceCharacters: string,
+  capitalizeTitle: boolean,
   description: string
 }
 
@@ -447,15 +278,17 @@ const builtInRecipes = [
 // Add mappings for tags, performers, studio
 
 export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) => {
-  const [parser, setParser] = useState<ParseMapper | undefined>();
   const [parserResult, setParserResult] = useState<SceneParserResult[]>([]);
   const [parserInput, setParserInput] = useState<IParserInput>(initialParserInput());
 
   const [allTitleSet, setAllTitleSet] = useState<boolean>(false);
   const [allDateSet, setAllDateSet] = useState<boolean>(false);
+  const [allPerformerSet, setAllPerformerSet] = useState<boolean>(false);
+  const [allTagSet, setAllTagSet] = useState<boolean>(false);
+  const [allStudioSet, setAllStudioSet] = useState<boolean>(false);
+
+  const [showFields, setShowFields] = useState<Map<string, boolean>>(initialShowFieldsState());
   
-  const [page, setPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(20);
   const [totalItems, setTotalItems] = useState<number>(0);
 
   // Network state
@@ -468,33 +301,52 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       pattern: "{title}.{ext}",
       ignoreWords: [],
       whitespaceCharacters: "._",
-      capitalizeTitle: true
+      capitalizeTitle: true,
+      page: 1,
+      pageSize: 20,
+      findClicked: false
     };
   }
 
-  function getQueryFilter(regex : string, page: number, perPage: number) : GQL.FindFilterType {
+  function initialShowFieldsState() {
+    return new Map<string, boolean>([
+      ["Title", true],
+      ["Date", true],
+      ["Performers", true],
+      ["Tags", true],
+      ["Studio", true]
+    ]);
+  }
+
+  function getParserFilter() {
     return {
-      q: regex,
-      page: page,
-      per_page: perPage
+      q: parserInput.pattern,
+      page: parserInput.page,
+      per_page: parserInput.pageSize,
+      sort: "path",
+      direction: GQL.SortDirectionEnum.Asc,
+    };
+  }
+
+  function getParserInput() {
+    return {
+      ignoreWords: parserInput.ignoreWords,
+      whitespaceCharacters: parserInput.whitespaceCharacters,
+      capitalizeTitle: parserInput.capitalizeTitle
     };
   }
 
   async function onFind() {
     setParserResult([]);
 
-    if (!parser) {
-      return;
-    }
-    
     setIsLoading(true);
     
     try {
-      const response = await StashService.querySceneByPathRegex(getQueryFilter(parser.regex, page, pageSize));
+      const response = await StashService.queryParseSceneFilenames(getParserFilter(), getParserInput());
 
-      let result = response.data.findScenesByPathRegex;
+      let result = response.data.parseSceneFilenames;
       if (!!result) {
-        parseResults(result.scenes);
+        parseResults(result.results);
         setTotalItems(result.count);
       }
     } catch (err) {
@@ -505,26 +357,30 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
   }
 
   useEffect(() => {
-    onFind();
-  }, [page, parser, parserInput]);
+    if(parserInput.findClicked) {
+      onFind();
+    }
+  }, [parserInput]);
 
-  useEffect(() => {
-    setPage(1);
-    onFind();
-  }, [pageSize])
+  function onPageSizeChanged(newSize : number) {
+    var newInput = _.clone(parserInput);
+    newInput.page = 1;
+    newInput.pageSize = newSize;
+    setParserInput(newInput);
+  }
+
+  function onPageChanged(newPage : number) {
+    if (newPage !== parserInput.page) {
+      var newInput = _.clone(parserInput);
+      newInput.page = newPage;
+      setParserInput(newInput);
+    }
+  }
 
   function onFindClicked(input : IParserInput) {
-    var parser;
-    try {
-      parser = new ParseMapper(input.pattern, input.ignoreWords);
-    } catch(err) {
-      ErrorUtils.handle(err);
-      return;
-    }
-
-    setParser(parser);
+    input.page = 1;
+    input.findClicked = true;
     setParserInput(input);
-    setPage(1);
     setTotalItems(0);
   }
 
@@ -545,34 +401,36 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     setIsLoading(false);
   }
 
-  function parseResults(scenes : GQL.SlimSceneDataFragment[]) {
-    if (scenes && parser) {
-      var result = scenes.map((scene) => {
-        var parserResult = new SceneParserResult(scene);
-        if(!parser.parse(parserResult)) {
-          return undefined;
-        }
-
-        // post-process
-        if (parserResult.title && !!parserResult.title.value) {
-          if (parserInput.whitespaceCharacters) {
-            var wsRegExp = parserInput.whitespaceCharacters.replace(/([\-\.\(\)\[\]])/g, "\\$1");
-            wsRegExp = "[" + wsRegExp + "]";
-            parserResult.title.value = parserResult.title.value.replace(new RegExp(wsRegExp, "g"), " ");
-          }
-
-          if (parserInput.capitalizeTitle) {
-            parserResult.title.value = parserResult.title.value.replace(/(?:^| )\w/g, function (chr) {
-              return chr.toUpperCase();
-            });
-          }
-        }
-        
-        return parserResult;
+  function parseResults(results : GQL.ParseSceneFilenamesResults[]) {
+    if (results) {
+      var result = results.map((r) => {
+        return new SceneParserResult(r);
       }).filter((r) => !!r) as SceneParserResult[];
 
       setParserResult(result);
+      determineFieldsToHide();
     }
+  }
+
+  function determineFieldsToHide() {
+    var pattern = parserInput.pattern;
+    var titleSet = pattern.includes("{title}");
+    var dateSet = pattern.includes("{date}") || 
+      pattern.includes("{dd}") || // don't worry about other partial date fields since this should be implied
+      ParserField.fullDateFields.some((f) => {
+        return pattern.includes("{" + f.field + "}");
+      });
+    var performerSet = pattern.includes("{performer}");
+    var tagSet = pattern.includes("{tag}");
+    var studioSet = pattern.includes("{studio}");
+
+    var showFieldsCopy = _.clone(showFields);
+    showFieldsCopy.set("Title", titleSet);
+    showFieldsCopy.set("Date", dateSet);
+    showFieldsCopy.set("Performers", performerSet);
+    showFieldsCopy.set("Tags", tagSet);
+    showFieldsCopy.set("Studio", studioSet);
+    setShowFields(showFieldsCopy);
   }
 
   useEffect(() => {
@@ -582,12 +440,30 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     var newAllDateSet = !parserResult.some((r) => {
       return !r.date.set;
     });
+    var newAllPerformerSet = !parserResult.some((r) => {
+      return !r.performerIds.set;
+    });
+    var newAllTagSet = !parserResult.some((r) => {
+      return !r.tagIds.set;
+    });
+    var newAllStudioSet = !parserResult.some((r) => {
+      return !r.studioId.set;
+    });
 
     if (newAllTitleSet != allTitleSet) {
       setAllTitleSet(newAllTitleSet);
     }
     if (newAllDateSet != allDateSet) {
       setAllDateSet(newAllDateSet);
+    }
+    if (newAllPerformerSet != allPerformerSet) {
+      setAllTagSet(newAllPerformerSet);
+    }
+    if (newAllTagSet != allTagSet) {
+      setAllTagSet(newAllTagSet);
+    }
+    if (newAllStudioSet != allStudioSet) {
+      setAllStudioSet(newAllStudioSet);
     }
   }, [parserResult]);
 
@@ -613,6 +489,114 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     setAllDateSet(selected);
   }
 
+  function onSelectAllPerformerSet(selected : boolean) {
+    var newResult = [...parserResult];
+
+    newResult.forEach((r) => {
+      r.performerIds.set = selected;
+    });
+
+    setParserResult(newResult);
+    setAllPerformerSet(selected);
+  }
+
+  function onSelectAllTagSet(selected : boolean) {
+    var newResult = [...parserResult];
+
+    newResult.forEach((r) => {
+      r.tagIds.set = selected;
+    });
+
+    setParserResult(newResult);
+    setAllTagSet(selected);
+  }
+
+  function onSelectAllStudioSet(selected : boolean) {
+    var newResult = [...parserResult];
+
+    newResult.forEach((r) => {
+      r.studioId.set = selected;
+    });
+
+    setParserResult(newResult);
+    setAllStudioSet(selected);
+  }
+
+  interface IShowFieldsTreeProps {
+    showFields: Map<string, boolean>
+    onShowFieldsChanged: (fields : Map<string, boolean>) => void
+  }
+
+  function ShowFieldsTree(props : IShowFieldsTreeProps) {
+    const [displayFieldsExpanded, setDisplayFieldsExpanded] = useState<boolean>();
+
+    const treeState: ITreeNode[] = [
+      {
+        id: 0,
+        hasCaret: true,
+        label: "Display fields",
+        childNodes: [
+          {
+            id: 1,
+            label: "Title",
+          },
+          {
+            id: 2,
+            label: "Date",
+          },
+          {
+            id: 3,
+            label: "Performers",
+          },
+          {
+            id: 4,
+            label: "Tags",
+          },
+          {
+            id: 5,
+            label: "Studio",
+          }
+        ]
+      }
+    ];
+
+    function setNodeState() {
+      if (!!treeState[0].childNodes) {
+        treeState[0].childNodes.forEach((n) => {
+          n.icon = props.showFields.get(n.label as string) ? "tick" : "cross";
+        });
+      }
+
+      treeState[0].isExpanded = displayFieldsExpanded;
+    }
+
+    setNodeState();
+
+    function expandNode() {
+      setDisplayFieldsExpanded(true);
+    }
+
+    function collapseNode() {
+      setDisplayFieldsExpanded(false);
+    }
+
+    function handleClick(nodeData: ITreeNode) {
+      var field = nodeData.label as string;
+      var fieldsCopy = _.clone(props.showFields);
+      fieldsCopy.set(field, !fieldsCopy.get(field));
+      props.onShowFieldsChanged(fieldsCopy);
+    }
+
+    return (
+      <Tree
+        contents={treeState}
+        onNodeClick={handleClick}
+        onNodeCollapse={collapseNode}
+        onNodeExpand={expandNode}
+      />
+    );
+  }
+
   interface IParserInputProps {
     input: IParserInput,
     onFind: (input : IParserInput) => void
@@ -629,7 +613,10 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
         pattern: pattern,
         ignoreWords: ignoreWords.split(" "),
         whitespaceCharacters: whitespaceCharacters,
-        capitalizeTitle: capitalizeTitle
+        capitalizeTitle: capitalizeTitle,
+        page: 1,
+        pageSize: props.input.pageSize,
+        findClicked: props.input.findClicked
       });
     }
 
@@ -653,7 +640,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       return item.pattern.includes(query);
     };
 
-    function setParserRecipe(recipe: IParserInput) {
+    function setParserRecipe(recipe: IParserRecipe) {
       setPattern(recipe.pattern);
       setIgnoreWords(recipe.ignoreWords.join(" "));
       setWhitespaceCharacters(recipe.whitespaceCharacters);
@@ -680,7 +667,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       return item.field.includes(query);
     };
 
-    const validFields = [new ParserField("", undefined, "Wildcard")].concat(ParserField.validFields);
+    const validFields = [new ParserField("", "Wildcard")].concat(ParserField.validFields);
     
     function addParserField(field: ParserField) {
       setPattern(pattern + field.getFieldPattern());
@@ -761,12 +748,20 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           </FormGroup>
 
           <FormGroup>
+            <ShowFieldsTree
+              key="showFields"
+              showFields={showFields}
+              onShowFieldsChanged={(fields) => setShowFields(fields)}
+            />
+          </FormGroup>
+
+          <FormGroup>
               <Button text="Find" onClick={() => onFind()} />
               <HTMLSelect
                 style={{flexBasis: "min-content"}}
                 options={PAGE_SIZE_OPTIONS}
-                onChange={(event) => setPageSize(parseInt(event.target.value))}
-                value={pageSize}
+                onChange={(event) => onPageSizeChanged(parseInt(event.target.value))}
+                value={props.input.pageSize}
                 className="filter-item"
               />
           </FormGroup>
@@ -778,23 +773,25 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
   interface ISceneParserFieldProps {
     parserResult : ParserResult<any>
     className? : string
+    fieldName : string
     onSetChanged : (set : boolean) => void
     onValueChanged : (value : any) => void
+    originalParserResult? : ParserResult<any>
+    renderOriginalInputField: (props : ISceneParserFieldProps) => JSX.Element
+    renderNewInputField: (props : ISceneParserFieldProps, onChange : (event : any) => void) => JSX.Element
   }
 
   function SceneParserField(props : ISceneParserFieldProps) {
 
-    const [value, setValue] = useState<string>(props.parserResult.value);
-
-    function maybeValueChanged() {
+    function maybeValueChanged(value : any) {
       if (value !== props.parserResult.value) {
         props.onValueChanged(value);
       }
     }
 
-    useEffect(() => {
-      setValue(props.parserResult.value);
-    }, [props.parserResult.value]);
+    if (!showFields.get(props.fieldName)) {
+      return null;
+    }
 
     return (
       <>
@@ -807,26 +804,134 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
         </td>
         <td>
           <FormGroup>
-            <InputGroup
-              key="originalValue"
-              className={props.className}
-              small={true}
-              disabled={true}
-              value={props.parserResult.originalValue || ""}
-            />
-            <InputGroup
-              key="newValue"
-              className={props.className}
-              small={true}
-              onChange={(event : any) => {setValue(event.target.value)}}
-              onBlur={() => maybeValueChanged()}
-              disabled={!props.parserResult.set}
-              value={value || ""}
-              autoComplete={"new-password" /* required to prevent Chrome autofilling */}
-            />
+            {props.renderOriginalInputField(props)}
+            {props.renderNewInputField(props, (value) => maybeValueChanged(value))}
           </FormGroup>
         </td>
       </>
+    );
+  }
+
+  function renderOriginalInputGroup(props : ISceneParserFieldProps) {
+    var parserResult = props.parserResult;
+
+    if (!!props.originalParserResult) {
+      parserResult = props.originalParserResult;
+    }
+
+    return (
+      <InputGroup
+        key="originalValue"
+        className={props.className}
+        small={true}
+        disabled={true}
+        value={parserResult.originalValue || ""}
+      />
+    );
+  }
+
+  interface IInputGroupWrapperProps {
+    parserResult: ParserResult<any>
+    onChange : (event : any) => void
+    className? : string
+  }
+
+  function InputGroupWrapper(props : IInputGroupWrapperProps) {
+    const [value, setValue] = useState<string>(props.parserResult.value);
+
+    useEffect(() => {
+      setValue(props.parserResult.value);
+    }, [props.parserResult.value]);
+
+    return (
+      <InputGroup
+        key="newValue"
+        className={props.className}
+        small={true}
+        onChange={(event : any) => {setValue(event.target.value)}}
+        onBlur={() => props.onChange(value)}
+        disabled={!props.parserResult.set}
+        value={value || ""}
+        autoComplete={"new-password" /* required to prevent Chrome autofilling */}
+      />
+    );
+  }
+  
+  function renderNewInputGroup(props : ISceneParserFieldProps, onChange : (value : any) => void) {
+    return (
+      <InputGroupWrapper
+        className={props.className}
+        onChange={(value : any) => {onChange(value)}}
+        parserResult={props.parserResult}
+      />
+    );
+  }
+
+  interface HasName {
+    name: string
+  }
+
+  function renderOriginalSelect(props : ISceneParserFieldProps) {
+    var parserResult = props.parserResult;
+
+    if (!!props.originalParserResult) {
+      parserResult = props.originalParserResult;
+    }
+
+    var elements = [];
+    
+    if (parserResult.originalValue) {
+      if (parserResult.originalValue.map) {
+        elements = parserResult.originalValue.map((element : HasName) => (
+          element.name
+        ));
+      } else {
+        elements = [parserResult.originalValue.name];
+      }
+    }
+
+    return (
+      <>
+      <TagInput
+        className={props.className}
+        values={elements}
+        disabled={true}
+      />
+      </>
+    )
+  }
+
+  function renderNewMultiSelect(type: "performers" | "tags", props : ISceneParserFieldProps, onChange : (value : any) => void) {
+    return (
+      <FilterMultiSelect
+        className={props.className}
+        type={type}
+        onUpdate={(items) => {
+          const ids = items.map((i) => i.id);
+          onChange(ids);
+        }}
+        initialIds={props.parserResult.value}
+      />
+    );
+  }
+
+  function renderNewPerformerSelect(props : ISceneParserFieldProps, onChange : (value : any) => void) {
+    return renderNewMultiSelect("performers", props, onChange);
+  }
+
+  function renderNewTagSelect(props : ISceneParserFieldProps, onChange : (value : any) => void) {
+    return renderNewMultiSelect("tags", props, onChange);
+  }
+
+  function renderNewStudioSelect(props : ISceneParserFieldProps, onChange : (value : any) => void) {
+    return (
+      <FilterSelect
+        type="studios"
+        noSelectionString=""
+        className={props.className}
+        onSelectItem={(item) => onChange(item ? item.id : undefined)}
+        initialId={props.parserResult.value}
+      />
     );
   }
 
@@ -856,6 +961,24 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       props.onChange(newResult);
     }
 
+    function onPerformerIdsChanged(set : boolean, value: string[] | undefined) {
+      var newResult = _.clone(props.scene);
+      newResult.performerIds = changeParser(newResult.performerIds, set, value);
+      props.onChange(newResult);
+    }
+
+    function onTagIdsChanged(set : boolean, value: string[] | undefined) {
+      var newResult = _.clone(props.scene);
+      newResult.tagIds = changeParser(newResult.tagIds, set, value);
+      props.onChange(newResult);
+    }
+
+    function onStudioIdChanged(set : boolean, value: string | undefined) {
+      var newResult = _.clone(props.scene);
+      newResult.studioId = changeParser(newResult.studioId, set, value);
+      props.onChange(newResult);
+    }
+
     return (
       <>
       <tr className="scene-parser-row">
@@ -864,23 +987,57 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
         </td>
         <SceneParserField 
           key="title"
-          className="title" 
+          fieldName="Title"
+          className="parser-field-title" 
           parserResult={props.scene.title}
           onSetChanged={(set) => onTitleChanged(set, props.scene.title.value)}
           onValueChanged={(value) => onTitleChanged(props.scene.title.set, value)}
+          renderOriginalInputField={renderOriginalInputGroup}
+          renderNewInputField={renderNewInputGroup}
         />
         <SceneParserField 
           key="date"
+          fieldName="Date"
+          className="parser-field-date"
           parserResult={props.scene.date}
           onSetChanged={(set) => onDateChanged(set, props.scene.date.value)}
           onValueChanged={(value) => onDateChanged(props.scene.date.set, value)}
-          />
-        {/*<td>
-        </td>
-        <td>
-        </td>
-        <td>
-        </td>*/}
+          renderOriginalInputField={renderOriginalInputGroup}
+          renderNewInputField={renderNewInputGroup}
+        />
+        <SceneParserField 
+          key="performers"
+          fieldName="Performers"
+          className="parser-field-performers"
+          parserResult={props.scene.performerIds}
+          originalParserResult={props.scene.performers}
+          onSetChanged={(set) => onPerformerIdsChanged(set, props.scene.performerIds.value)}
+          onValueChanged={(value) => onPerformerIdsChanged(props.scene.performerIds.set, value)}
+          renderOriginalInputField={renderOriginalSelect}
+          renderNewInputField={renderNewPerformerSelect}
+        />
+        <SceneParserField 
+          key="tags"
+          fieldName="Tags"
+          className="parser-field-tags"
+          parserResult={props.scene.tagIds}
+          originalParserResult={props.scene.tags}
+          onSetChanged={(set) => onTagIdsChanged(set, props.scene.tagIds.value)}
+          onValueChanged={(value) => onTagIdsChanged(props.scene.tagIds.set, value)}
+          renderOriginalInputField={renderOriginalSelect}
+          renderNewInputField={renderNewTagSelect}
+        />
+        <SceneParserField 
+          key="studio"
+          fieldName="Studio"
+          className="parser-field-studio"
+          parserResult={props.scene.studioId}
+          originalParserResult={props.scene.studio}
+          onSetChanged={(set) => onStudioIdChanged(set, props.scene.studioId.value)}
+          onValueChanged={(value) => onStudioIdChanged(props.scene.studioId.set, value)}
+          renderOriginalInputField={renderOriginalSelect}
+          renderNewInputField={renderNewStudioSelect}
+        />
       </tr>
       </>
     )
@@ -895,36 +1052,41 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     setParserResult(newResult);
   }
 
+  function renderHeader(fieldName: string, allSet: boolean, onAllSet: (set: boolean) => void) {
+    if (!showFields.get(fieldName)) {
+      return null;
+    }
+
+    return (
+      <>
+      <td>
+        <Checkbox
+          checked={allSet}
+          inline={true}
+          onChange={() => {onAllSet(!allSet)}}
+        />
+      </td>
+      <th>{fieldName}</th>
+      </>
+    )
+  }
+
   function renderTable() {
     if (parserResult.length == 0) { return undefined; }
 
     return (
       <>
-      <form autoComplete="off">
-        <div className="grid">
+      <div>
+        <div className="scene-parser-results">
           <HTMLTable condensed={true}>
             <thead>
               <tr className="scene-parser-row">
                 <th>Filename</th>
-                <td>
-                  <Checkbox
-                    checked={allTitleSet}
-                    inline={true}
-                    onChange={() => {onSelectAllTitleSet(!allTitleSet)}}
-                  />
-                </td>
-                <th>Title</th>
-                <td>
-                <Checkbox
-                    checked={allDateSet}
-                    inline={true}
-                    onChange={() => {onSelectAllDateSet(!allDateSet)}}
-                  />
-                </td>
-                <th>Date</th>
-                {/* TODO <th>Tags</th>
-                <th>Performers</th>
-                <th>Studio</th>*/}
+                {renderHeader("Title", allTitleSet, onSelectAllTitleSet)}
+                {renderHeader("Date", allDateSet, onSelectAllDateSet)}
+                {renderHeader("Performers", allPerformerSet, onSelectAllPerformerSet)}
+                {renderHeader("Tags", allTagSet, onSelectAllTagSet)}
+                {renderHeader("Studio", allStudioSet, onSelectAllStudioSet)}
               </tr>
             </thead>
             <tbody>
@@ -938,13 +1100,13 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           </HTMLTable>
         </div>
         <Pagination
-          currentPage={page}
-          itemsPerPage={pageSize}
+          currentPage={parserInput.page}
+          itemsPerPage={parserInput.pageSize}
           totalItems={totalItems}
-          onChangePage={(page) => setPage(page)}
+          onChangePage={(page) => onPageChanged(page)}
         />
         <Button intent="primary" text="Apply" onClick={() => onApply()}></Button>
-      </form>
+      </div>
     </>
     )
   }
