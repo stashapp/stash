@@ -7,7 +7,7 @@ import {
   SceneMarkerFilterType,
   SortDirectionEnum,
 } from "../../core/generated-graphql";
-import { Criterion, ICriterionOption } from "./criteria/criterion";
+import { Criterion, ICriterionOption, CriterionType, CriterionOption, NumberCriterion, StringCriterion } from "./criteria/criterion";
 import { FavoriteCriterion, FavoriteCriterionOption } from "./criteria/favorite";
 import { HasMarkersCriterion, HasMarkersCriterionOption } from "./criteria/has-markers";
 import { IsMissingCriterion, IsMissingCriterionOption } from "./criteria/is-missing";
@@ -75,10 +75,29 @@ export class ListFilterModel {
           DisplayMode.Grid,
           DisplayMode.List,
         ];
+
+        var numberCriteria : CriterionType[] = ["birth_year", "age"];
+        var stringCriteria : CriterionType[] = [
+          "ethnicity",
+          "country",
+          "eye_color",
+          "height",
+          "measurements",
+          "fake_tits",
+          "career_length",
+          "tattoos",
+          "piercings",
+          "aliases"
+        ];
+
         this.criterionOptions = [
           new NoneCriterionOption(),
-          new FavoriteCriterionOption(),
+          new FavoriteCriterionOption()
         ];
+
+        this.criterionOptions = this.criterionOptions.concat(numberCriteria.concat(stringCriteria).map((c) => {
+          return new CriterionOption(Criterion.getLabel(c), c);
+        }));
         break;
       case FilterMode.Studios:
         if (!!this.sortBy === false) { this.sortBy = "name"; }
@@ -244,6 +263,54 @@ export class ListFilterModel {
       switch (criterion.type) {
         case "favorite":
           result.filter_favorites = (criterion as FavoriteCriterion).value === "true";
+          break;
+        case "birth_year":
+          const byCrit = criterion as NumberCriterion;
+          result.birth_year = { value: byCrit.value, modifier: byCrit.modifier };
+          break;
+        case "age":
+          const ageCrit = criterion as NumberCriterion;
+          result.age = { value: ageCrit.value, modifier: ageCrit.modifier };
+          break;
+        case "ethnicity":
+          const ethCrit = criterion as StringCriterion;
+          result.ethnicity = { value: ethCrit.value, modifier: ethCrit.modifier };
+          break;
+        case "country":
+          const cntryCrit = criterion as StringCriterion;
+          result.country = { value: cntryCrit.value, modifier: cntryCrit.modifier };
+          break;
+        case "eye_color":
+          const ecCrit = criterion as StringCriterion;
+          result.eye_color = { value: ecCrit.value, modifier: ecCrit.modifier };
+          break;
+        case "height":
+          const hCrit = criterion as StringCriterion;
+          result.height = { value: hCrit.value, modifier: hCrit.modifier };
+          break;
+        case "measurements":
+          const mCrit = criterion as StringCriterion;
+          result.measurements = { value: mCrit.value, modifier: mCrit.modifier };
+          break;
+        case "fake_tits":
+          const ftCrit = criterion as StringCriterion;
+          result.fake_tits = { value: ftCrit.value, modifier: ftCrit.modifier };
+          break;
+        case "career_length":
+          const clCrit = criterion as StringCriterion;
+          result.career_length = { value: clCrit.value, modifier: clCrit.modifier };
+          break;
+        case "tattoos":
+          const tCrit = criterion as StringCriterion;
+          result.tattoos = { value: tCrit.value, modifier: tCrit.modifier };
+          break;
+        case "piercings":
+          const pCrit = criterion as StringCriterion;
+          result.piercings = { value: pCrit.value, modifier: pCrit.modifier };
+          break;
+        case "aliases":
+          const aCrit = criterion as StringCriterion;
+          result.aliases = { value: aCrit.value, modifier: aCrit.modifier };
           break;
       }
     });

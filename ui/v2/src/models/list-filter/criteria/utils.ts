@@ -1,12 +1,7 @@
-import { QueryHookResult } from "react-apollo-hooks";
 import {
-  AllPerformersForFilterQuery,
-  AllPerformersForFilterVariables,
-  AllTagsForFilterQuery,
-  AllTagsForFilterVariables,
+  CriterionModifier,
 } from "../../../core/generated-graphql";
-import { StashService } from "../../../core/StashService";
-import { Criterion, CriterionType } from "./criterion";
+import { Criterion, CriterionType, StringCriterion, NumberCriterion } from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
 import { IsMissingCriterion } from "./is-missing";
@@ -29,5 +24,28 @@ export function makeCriteria(type: CriterionType = "none") {
     case "sceneTags": return new TagsCriterion("sceneTags");
     case "performers": return new PerformersCriterion();
     case "studios": return new StudiosCriterion();
+    
+    case "birth_year":
+    case "age":
+        var ret = new NumberCriterion(type, type);
+        // null/not null doesn't make sense for these criteria
+        ret.modifierOptions = [
+          Criterion.getModifierOption(CriterionModifier.Equals),
+          Criterion.getModifierOption(CriterionModifier.NotEquals),
+          Criterion.getModifierOption(CriterionModifier.GreaterThan),
+          Criterion.getModifierOption(CriterionModifier.LessThan)
+        ];
+        return ret;
+    case "ethnicity": 
+    case "country":
+    case "eye_color":
+    case "height":
+    case "measurements":
+    case "fake_tits":
+    case "career_length":
+    case "tattoos":
+    case "piercings":
+    case "aliases":
+      return new StringCriterion(type, type);
   }
 }
