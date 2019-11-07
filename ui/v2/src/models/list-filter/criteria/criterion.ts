@@ -12,7 +12,19 @@ export type CriterionType =
   "tags" |
   "sceneTags" |
   "performers" |
-  "studios";
+  "studios" |
+  "birth_year" |
+  "age" |
+  "ethnicity" |
+  "country" |
+  "eye_color" |
+  "height" |
+  "measurements" |
+  "fake_tits" |
+  "career_length" |
+  "tattoos" |
+  "piercings" |
+  "aliases";
 
 export abstract class Criterion<Option = any, Value = any> {
   public static getLabel(type: CriterionType = "none"): string {
@@ -27,6 +39,18 @@ export abstract class Criterion<Option = any, Value = any> {
       case "sceneTags": return "Scene Tags";
       case "performers": return "Performers";
       case "studios": return "Studios";
+      case "birth_year": return "Birth Year";
+      case "age": return "Age";
+      case "ethnicity": return "Ethnicity";
+      case "country": return "Country";
+      case "eye_color": return "Eye Color";
+      case "height": return "Height";
+      case "measurements": return "Measurements";
+      case "fake_tits": return "Fake Tits";
+      case "career_length": return "Career Length";
+      case "tattoos": return "Tattoos";
+      case "piercings": return "Piercings";
+      case "aliases": return "Aliases";
     }
   }
 
@@ -48,8 +72,9 @@ export abstract class Criterion<Option = any, Value = any> {
   public abstract parameterName: string;
   public abstract modifier: CriterionModifier;
   public abstract modifierOptions: ILabeledValue[];
-  public abstract options: Option[];
+  public abstract options: Option[] | undefined;
   public abstract value: Value;
+  public inputType: "number" | "text" | undefined;
 
   public getLabel(): string {
     let modifierString: string;
@@ -101,4 +126,72 @@ export abstract class Criterion<Option = any, Value = any> {
 export interface ICriterionOption {
   label: string;
   value: CriterionType;
+}
+
+export class CriterionOption implements ICriterionOption {
+  public label: string;
+  public value: CriterionType;
+
+  constructor(label : string, value : CriterionType) {
+    this.label = label;
+    this.value = value;
+  }
+}
+
+export class StringCriterion extends Criterion<string, string> {
+  public type: CriterionType;
+  public parameterName: string;
+  public modifier = CriterionModifier.Equals;
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.Equals),
+    Criterion.getModifierOption(CriterionModifier.NotEquals),
+    Criterion.getModifierOption(CriterionModifier.IsNull),
+    Criterion.getModifierOption(CriterionModifier.NotNull),
+  ];
+  public options: string[] | undefined;
+  public value: string = "";
+
+  constructor(type : CriterionType, parameterName?: string, options? : string[]) {
+    super();
+
+    this.type = type;
+    this.options = options;
+    this.inputType = "text";
+
+    if (!!parameterName) {
+      this.parameterName = parameterName;
+    } else {
+      this.parameterName = type;
+    }
+  }
+}
+
+export class NumberCriterion extends Criterion<number, number> {
+  public type: CriterionType;
+  public parameterName: string;
+  public modifier = CriterionModifier.Equals;
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.Equals),
+    Criterion.getModifierOption(CriterionModifier.NotEquals),
+    Criterion.getModifierOption(CriterionModifier.GreaterThan),
+    Criterion.getModifierOption(CriterionModifier.LessThan),
+    Criterion.getModifierOption(CriterionModifier.IsNull),
+    Criterion.getModifierOption(CriterionModifier.NotNull),
+  ];
+  public options: number[] | undefined;
+  public value: number = 0;
+
+  constructor(type : CriterionType, parameterName?: string, options? : number[]) {
+    super();
+
+    this.type = type;
+    this.options = options;
+    this.inputType = "number";
+
+    if (!!parameterName) {
+      this.parameterName = parameterName;
+    } else {
+      this.parameterName = type;
+    }
+  }
 }

@@ -4,6 +4,7 @@ import {
   Dialog,
   FormGroup,
   HTMLSelect,
+  InputGroup,
 } from "@blueprintjs/core";
 import _ from "lodash";
 import React, { FunctionComponent, useEffect, useRef, useState } from "react";
@@ -31,6 +32,8 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
   const [isOpen, setIsOpen] = useState(false);
   const [criterion, setCriterion] = useState<Criterion<any, any>>(new NoneCriterion());
 
+  const valueStage = useRef<any>(criterion.value);
+
   // Configure if we are editing an existing criterion
   useEffect(() => {
     if (!props.editingCriterion) { return; }
@@ -56,10 +59,26 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
     setCriterion(newCriterion);
   }
 
+  function onChangedInput(event: React.ChangeEvent<HTMLInputElement>) {
+    valueStage.current = event.target.value;
+  }
+
+  function onBlurInput() {
+    const newCriterion = _.cloneDeep(criterion);
+    newCriterion.value = valueStage.current;
+    setCriterion(newCriterion);
+  }
+
   function onAddFilter() {
     if (!isArray(criterion.value) && !!singleValueSelect.current) {
       const value = singleValueSelect.current.props.defaultValue;
-      if (value === undefined || value === "" || typeof value === "number") { criterion.value = criterion.options[0]; }
+      if (criterion.options && (value === undefined || value === "" || typeof value === "number")) { 
+        criterion.value = criterion.options[0]; 
+      } else if (typeof value === "number" && value === undefined) {
+        criterion.value = 0;
+      } else if (value === undefined) {
+        criterion.value = "";
+      }
     }
     const oldId = !!props.editingCriterion ? props.editingCriterion.getId() : undefined;
     props.onAddCriterion(criterion, oldId);
@@ -119,14 +138,25 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
           );
         }
       } else {
-        return (
-          <HTMLSelect
-            ref={singleValueSelect}
-            options={criterion.options}
-            onChange={onChangedSingleSelect}
-            defaultValue={criterion.value}
-          />
-        );
+        if (criterion.options) {
+          return (
+            <HTMLSelect
+              ref={singleValueSelect}
+              options={criterion.options}
+              onChange={onChangedSingleSelect}
+              defaultValue={criterion.value}
+            />
+          );
+        } else {
+          return (
+            <InputGroup
+              type={criterion.inputType}
+              onChange={onChangedInput}
+              onBlur={onBlurInput}
+              defaultValue={criterion.value ? criterion.value : ""}
+            />
+          )
+        }
       }
     }
     return (
