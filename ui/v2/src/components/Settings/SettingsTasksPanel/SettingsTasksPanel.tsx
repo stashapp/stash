@@ -6,8 +6,10 @@ import {
   FormGroup,
   H4,
   AnchorButton,
+  ProgressBar,
+  H5,
 } from "@blueprintjs/core";
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useEffect } from "react";
 import { StashService } from "../../../core/StashService";
 import { ErrorUtils } from "../../../utils/errors";
 import { ToastUtils } from "../../../utils/toasts";
@@ -20,10 +22,58 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [nameFromMetadata, setNameFromMetadata] = useState<boolean>(true);
+  const [status, setStatus] = useState<string>("");
+  const [progress, setProgress] = useState<number | undefined>(undefined);
+
+  const jobStatus = StashService.useJobStatus();
+  const metadataUpdate = StashService.useMetadataUpdate();
+
+  function statusToText(status : string) {
+    switch(status) {
+      case "Idle":
+        return "Idle";
+      case "Scan":
+        return "Scanning for new content";
+      case "Generate":
+        return "Generating supporting files";
+      case "Clean":
+        return "Cleaning the database";
+      case "Export":
+        return "Exporting to JSON";
+      case "Import":
+        return "Importing from JSON";
+    }
+
+    return "Idle";
+  }
+
+  useEffect(() => {
+    if (!!jobStatus.data && !!jobStatus.data.jobStatus) {
+      setStatus(statusToText(jobStatus.data.jobStatus.status));
+      var newProgress = jobStatus.data.jobStatus.progress;
+      if (newProgress < 0) {
+        setProgress(undefined);
+      } else {
+        setProgress(newProgress);
+      }
+    }
+  }, [jobStatus.data]);
+
+  useEffect(() => {
+    if (!!metadataUpdate.data && !!metadataUpdate.data.metadataUpdate) {
+      setStatus(statusToText(metadataUpdate.data.metadataUpdate.status));
+      var newProgress = metadataUpdate.data.metadataUpdate.progress;
+      if (newProgress < 0) {
+        setProgress(undefined);
+      } else {
+        setProgress(newProgress);
+      }
+    }
+  }, [metadataUpdate.data]);
 
   function onImport() {
     setIsImportAlertOpen(false);
-    StashService.queryMetadataImport();
+    StashService.queryMetadataImport().then(() => { jobStatus.refetch()});
   }
 
   function renderImportAlert() {
@@ -47,7 +97,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
 
   function onClean() {
     setIsCleanAlertOpen(false);
-    StashService.queryMetadataClean();
+    StashService.queryMetadataClean().then(() => { jobStatus.refetch()});
   }
 
   function renderCleanAlert() {
@@ -74,15 +124,48 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
     try {
       await StashService.queryMetadataScan({nameFromMetadata});
       ToastUtils.success("Started scan");
+      jobStatus.refetch();
     } catch (e) {
       ErrorUtils.handle(e);
     }
+  }
+
+  function maybeRenderStop() {
+    if (!status || status === "Idle") {
+      return undefined;
+    }
+
+    return (
+      <>
+      <FormGroup>
+        <Button id="stop" text="Stop" intent="danger" onClick={() => StashService.queryStopJob().then(() => jobStatus.refetch())} />
+      </FormGroup>
+      </>
+    );
+  }
+
+  function renderJobStatus() {
+    return (
+      <>
+      <FormGroup>
+        <H5>Status: {status}</H5>
+        {!!status && status !== "Idle" ? <ProgressBar value={progress}/> : undefined}
+      </FormGroup>
+      {maybeRenderStop()}
+      </>
+    );
   }
 
   return (
     <>
       {renderImportAlert()}
       {renderCleanAlert()}
+
+      <H4>Running Jobs</H4>
+
+      {renderJobStatus()}
+
+      <Divider/>
 
       <H4>Library</H4>
       <FormGroup
@@ -122,7 +205,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         labelFor="export"
         inline={true}
       >
-        <Button id="export" text="Export" onClick={() => StashService.queryMetadataExport()} />
+        <Button id="export" text="Export" onClick={() => StashService.queryMetadataExport().then(() => { jobStatus.refetch()})} />
       </FormGroup>
 
       <FormGroup

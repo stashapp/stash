@@ -1,5 +1,9 @@
 subscription MetadataUpdate {
-  metadataUpdate
+  metadataUpdate {
+    progress
+    status
+    message
+  }
 }
 
 subscription LoggingSubscribe {
