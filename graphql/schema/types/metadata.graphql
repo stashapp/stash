@@ -8,3 +8,9 @@ input GenerateMetadataInput {
 input ScanMetadataInput {
   nameFromMetadata: Boolean!
 }
+
+type MetadataUpdateStatus {
+  progress: Float!
+	status: String!
+  message: String!
+}

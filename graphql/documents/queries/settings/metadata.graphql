@@ -17,3 +17,15 @@ query MetadataGenerate($input: GenerateMetadataInput!) {
 query MetadataClean {
   metadataClean
 }
+
+query JobStatus {
+  jobStatus {
+    progress
+    status
+    message
+  }
+}
+
+query StopJob {
+  stopJob
+}

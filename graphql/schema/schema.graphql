@@ -67,6 +67,9 @@ type Query {
   """Clean metadata. Returns the job ID"""
   metadataClean: String!
 
+  jobStatus: MetadataUpdateStatus!
+  stopJob: Boolean!
+
   # Get everything
 
   allPerformers: [Performer!]!
@@ -106,7 +109,7 @@ type Mutation {
 
 type Subscription {
   """Update from the metadata manager"""
-  metadataUpdate: String!
+  metadataUpdate: MetadataUpdateStatus!
 
   loggingSubscribe: [LogEntry!]!
 }

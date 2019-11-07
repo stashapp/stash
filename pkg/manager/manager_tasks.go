@@ -3,6 +3,7 @@ package manager
 import (
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/bmatcuk/doublestar"
 	"github.com/stashapp/stash/pkg/logger"
@@ -11,11 +12,47 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type TaskStatus struct {
+	Status     JobStatus
+	Progress   float64
+	LastUpdate time.Time
+	stopping   bool
+}
+
+func (t *TaskStatus) Stop() bool {
+	t.stopping = true
+	t.updated()
+	return true
+}
+
+func (t *TaskStatus) SetStatus(s JobStatus) {
+	t.Status = s
+	t.updated()
+}
+
+func (t *TaskStatus) setProgress(upTo int, total int) {
+	if total == 0 {
+		t.Progress = 1
+	}
+	t.Progress = float64(upTo) / float64(total)
+	t.updated()
+}
+
+func (t *TaskStatus) indefiniteProgress() {
+	t.Progress = -1
+	t.updated()
+}
+
+func (t *TaskStatus) updated() {
+	t.LastUpdate = time.Now()
+}
+
 func (s *singleton) Scan(nameFromMetadata bool) {
-	if s.Status != Idle {
+	if s.Status.Status != Idle {
 		return
 	}
-	s.Status = Scan
+	s.Status.SetStatus(Scan)
+	s.Status.indefiniteProgress()
 
 	go func() {
 		defer s.returnToIdleState()
@@ -26,10 +63,23 @@ func (s *singleton) Scan(nameFromMetadata bool) {
 			globResults, _ := doublestar.Glob(globPath)
 			results = append(results, globResults...)
 		}
-		logger.Infof("Starting scan of %d files", len(results))
+
+		if s.Status.stopping {
+			logger.Info("Stopping due to user request")
+			return
+		}
+
+		total := len(results)
+		logger.Infof("Starting scan of %d files", total)
 
 		var wg sync.WaitGroup
-		for _, path := range results {
+		s.Status.Progress = 0
+		for i, path := range results {
+			s.Status.setProgress(i, total)
+			if s.Status.stopping {
+				logger.Info("Stopping due to user request")
+				return
+			}
 			wg.Add(1)
 			task := ScanTask{FilePath: path, NameFromMetadata: nameFromMetadata}
 			go task.Start(&wg)
@@ -41,10 +91,11 @@ func (s *singleton) Scan(nameFromMetadata bool) {
 }
 
 func (s *singleton) Import() {
-	if s.Status != Idle {
+	if s.Status.Status != Idle {
 		return
 	}
-	s.Status = Import
+	s.Status.SetStatus(Import)
+	s.Status.indefiniteProgress()
 
 	go func() {
 		defer s.returnToIdleState()
@@ -58,10 +109,11 @@ func (s *singleton) Import() {
 }
 
 func (s *singleton) Export() {
-	if s.Status != Idle {
+	if s.Status.Status != Idle {
 		return
 	}
-	s.Status = Export
+	s.Status.SetStatus(Export)
+	s.Status.indefiniteProgress()
 
 	go func() {
 		defer s.returnToIdleState()
@@ -75,10 +127,11 @@ func (s *singleton) Export() {
 }
 
 func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcodes bool) {
-	if s.Status != Idle {
+	if s.Status.Status != Idle {
 		return
 	}
-	s.Status = Generate
+	s.Status.SetStatus(Generate)
+	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
 	//this.job.total = await ObjectionUtils.getCount(Scene);
@@ -95,7 +148,21 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 
 		delta := utils.Btoi(sprites) + utils.Btoi(previews) + utils.Btoi(markers) + utils.Btoi(transcodes)
 		var wg sync.WaitGroup
-		for _, scene := range scenes {
+		s.Status.Progress = 0
+		total := len(scenes)
+
+		if s.Status.stopping {
+			logger.Info("Stopping due to user request")
+			return
+		}
+
+		for i, scene := range scenes {
+			s.Status.setProgress(i, total)
+			if s.Status.stopping {
+				logger.Info("Stopping due to user request")
+				return
+			}
+
 			if scene == nil {
 				logger.Errorf("nil scene, skipping generate")
 				continue
@@ -134,10 +201,11 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 }
 
 func (s *singleton) Clean() {
-	if s.Status != Idle {
+	if s.Status.Status != Idle {
 		return
 	}
-	s.Status = Clean
+	s.Status.SetStatus(Clean)
+	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
 	go func() {
@@ -150,8 +218,21 @@ func (s *singleton) Clean() {
 			return
 		}
 
+		if s.Status.stopping {
+			logger.Info("Stopping due to user request")
+			return
+		}
+
 		var wg sync.WaitGroup
-		for _, scene := range scenes {
+		s.Status.Progress = 0
+		total := len(scenes)
+		for i, scene := range scenes {
+			s.Status.setProgress(i, total)
+			if s.Status.stopping {
+				logger.Info("Stopping due to user request")
+				return
+			}
+
 			if scene == nil {
 				logger.Errorf("nil scene, skipping generate")
 				continue
@@ -173,8 +254,10 @@ func (s *singleton) returnToIdleState() {
 		logger.Info("recovered from ", r)
 	}
 
-	if s.Status == Generate {
+	if s.Status.Status == Generate {
 		instance.Paths.Generated.RemoveTmpDir()
 	}
-	s.Status = Idle
+	s.Status.SetStatus(Idle)
+	s.Status.indefiniteProgress()
+	s.Status.stopping = false
 }
