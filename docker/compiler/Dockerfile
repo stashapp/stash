@@ -24,18 +24,21 @@ RUN apt-get update && \
 
 # Cross compile setup
 ENV OSX_SDK_VERSION 	10.11
+ENV OSX_SDK_DOWNLOAD_FILE=MacOSX${OSX_SDK_VERSION}.sdk.tar.xz
+ENV OSX_SDK_DOWNLOAD_URL=https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/${OSX_SDK_DOWNLOAD_FILE}
+ENV OSX_SDK_SHA=89aa34dfe5bcbc7d53d3c55a84b35ac810ecfbcdd16a64c9667992b0c36c60c4
 ENV OSX_SDK     		MacOSX$OSX_SDK_VERSION.sdk
 ENV OSX_NDK_X86 		/usr/local/osx-ndk-x86
-ENV OSX_SDK_PATH 		/$OSX_SDK.tar.gz
 
-COPY $OSX_SDK.tar.gz /go
-
-RUN git clone https://github.com/tpoechtrager/osxcross.git && \
-    git -C osxcross checkout c47ff0aeed1a7d0e1f884812fc170e415f05be5a || exit 1; \
-    mv $OSX_SDK.tar.gz osxcross/tarballs/ && \
-    UNATTENDED=yes SDK_VERSION=${OSX_SDK_VERSION} OSX_VERSION_MIN=10.9 osxcross/build.sh || exit 1; \
-    mv osxcross/target $OSX_NDK_X86; \
-    rm -rf osxcross;
+COPY ${OSX_SDK_DOWNLOAD_FILE} /go
+RUN  wget ${OSX_SDK_DOWNLOAD_URL}; \
+     echo "$OSX_SDK_SHA $OSX_SDK_DOWNLOAD_FILE" | sha256sum -c - || exit 1; \
+     git clone https://github.com/tpoechtrager/osxcross.git && \
+     git -C osxcross checkout c47ff0aeed1a7d0e1f884812fc170e415f05be5a || exit 1; \
+     mv $OSX_SDK_DOWNLOAD_FILE osxcross/tarballs/ && \
+     UNATTENDED=yes SDK_VERSION=${OSX_SDK_VERSION} OSX_VERSION_MIN=10.9 osxcross/build.sh || exit 1; \
+     mv osxcross/target $OSX_NDK_X86; \
+     rm -rf osxcross;
 
 ENV PATH $OSX_NDK_X86/bin:$PATH
 
