@@ -9,13 +9,14 @@ import { HTMLInputProps } from "../../models";
 const InternalSuggest = Suggest.ofType<string>();
 
 interface IProps extends HTMLInputProps {
+  scraperId: string;
   onQueryChange: (query: string) => void;
 }
 
 export const FreeOnesPerformerSuggest: React.FunctionComponent<IProps> = (props: IProps) => {
   const [query, setQuery] = React.useState<string>("");
-  const { data } = StashService.useScrapeFreeonesPerformers(query);
-  const performerNames = !!data && !!data.scrapeFreeonesPerformerList ? data.scrapeFreeonesPerformerList : [];
+  const { data } = StashService.useScrapePerformerList(props.scraperId, query);
+  const performerNames = !!data && !!data.scrapePerformerList ? data.scrapePerformerList : [];
 
   const renderInputValue = (performerName: string) => performerName;
 

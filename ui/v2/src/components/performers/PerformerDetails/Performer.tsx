@@ -23,7 +23,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
-  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<"freeones" | undefined>(undefined);
+  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<GQL.ListScrapersListScrapers | undefined>(undefined);
   const [scrapePerformerName, setScrapePerformerName] = useState<string>("");
 
   // Editing performer state
@@ -51,6 +51,8 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
+
+  const Scrapers = StashService.useListScrapers();
 
   const { data, error, loading } = StashService.useFindPerformer(props.match.params.id);
   const updatePerformer = StashService.usePerformerUpdate(getPerformerInput() as GQL.PerformerUpdateInput);
@@ -166,17 +168,17 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     reader.readAsDataURL(file);
   }
 
-  function onDisplayFreeOnesDialog() {
-    setIsDisplayingScraperDialog("freeones");
+  function onDisplayFreeOnesDialog(scraper: GQL.ListScrapersListScrapers) {
+    setIsDisplayingScraperDialog(scraper);
   }
 
   async function onScrapeFreeOnes() {
     setIsLoading(true);
     try {
-      if (!scrapePerformerName) { return; }
-      const result = await StashService.queryScrapeFreeones(scrapePerformerName);
-      if (!result.data || !result.data.scrapeFreeones) { return; }
-      updatePerformerEditState(result.data.scrapeFreeones);
+      if (!scrapePerformerName || !isDisplayingScraperDialog) { return; }
+      const result = await StashService.queryScrapePerformer(isDisplayingScraperDialog.id, scrapePerformerName);
+      if (!result.data || !result.data.scrapePerformer) { return; }
+      updatePerformerEditState(result.data.scrapePerformer);
     } catch (e) {
       ErrorUtils.handle(e);
     } finally {
@@ -206,6 +208,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
           <FreeOnesPerformerSuggest
             placeholder="Performer name"
             style={{width: "100%"}}
+            scraperId={isDisplayingScraperDialog ? isDisplayingScraperDialog.id : ""}
             onQueryChange={(query) => setScrapePerformerName(query)}
           />
         </div>
@@ -234,7 +237,8 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
             onSave={onSave}
             onDelete={onDelete}
             onImageChange={onImageChange}
-            onDisplayFreeOnesDialog={onDisplayFreeOnesDialog}
+            scrapers={Scrapers.data ? Scrapers.data.listScrapers : undefined}
+            onDisplayScraperDialog={onDisplayFreeOnesDialog}
           />
           <h1 className="bp3-heading">
             <EditableText

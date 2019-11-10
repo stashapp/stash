@@ -45,6 +45,12 @@ type Query {
 
   # Scrapers
 
+  """List available scrapers"""
+  listScrapers(scraper_type: ScraperType!): [Scraper!]!
+  """Scrape a list of performers based on name"""
+  scrapePerformerList(scraper_id: ID!, query: String!): [String!]!
+  scrapePerformer(scraper_id: ID!, performer_name: String!): ScrapedPerformer
+
   """Scrape a performer using Freeones"""
   scrapeFreeones(performer_name: String!): ScrapedPerformer
   """Scrape a list of performers from a query"""

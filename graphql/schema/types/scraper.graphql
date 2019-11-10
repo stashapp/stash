@@ -1,0 +1,9 @@
+enum ScraperType {
+    PERFORMER
+}
+
+type Scraper {
+    id: ID!
+    name: String!
+    type: ScraperType!
+}

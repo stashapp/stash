@@ -1,0 +1,31 @@
+query ListScrapers($scraper_type: ScraperType!) {
+  listScrapers(scraper_type: $scraper_type) {
+    id
+    name
+    type
+  }
+}
+
+query ScrapePerformerList($scraper_id: ID!, $query: String!) {
+  scrapePerformerList(scraper_id: $scraper_id, query: $query)
+}
+
+query ScrapePerformer($scraper_id: ID!, $performer_name: String!) {
+  scrapePerformer(scraper_id: $scraper_id, performer_name: $performer_name) {
+    name
+    url
+    twitter
+    instagram
+    birthdate
+    ethnicity
+    country
+    eye_color
+    height
+    measurements
+    fake_tits
+    career_length
+    tattoos
+    piercings
+    aliases
+  }
+}
