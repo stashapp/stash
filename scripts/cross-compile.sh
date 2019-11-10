@@ -12,4 +12,4 @@ RASPPI="GOOS=linux GOARCH=arm GOARM=5 packr2 build -o dist/stash-pi -ldflags \"$
 
 COMMAND="$SETUP $WINDOWS $DARWIN $LINUX $RASPPI"
 
-docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash stashappdev/compiler:1 /bin/bash -c "$COMMAND"
+docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash stashappdev/compiler:2 /bin/bash -c "$COMMAND"

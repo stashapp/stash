@@ -18,7 +18,8 @@ RUN apt-get update && \
     apt-get install -y automake autogen \
     libtool libxml2-dev uuid-dev libssl-dev bash \
     patch make tar xz-utils bzip2 gzip sed cpio \
-	gcc-multilib g++-multilib gcc-mingw-w64 g++-mingw-w64 clang llvm-dev --no-install-recommends || exit 1; \
+	gcc-mingw-w64 g++-mingw-w64 clang llvm-dev \
+        gcc-arm-linux-gnueabi --no-install-recommends || exit 1; \
 	rm -rf /var/lib/apt/lists/*;
 
 # Cross compile setup
