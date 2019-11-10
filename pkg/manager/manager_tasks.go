@@ -70,7 +70,7 @@ func (s *singleton) Scan(nameFromMetadata bool) {
 		}
 
 		total := len(results)
-		logger.Infof("Starting scan of %d files.%d New files found", total, s.neededScan(results))
+		logger.Infof("Starting scan of %d files. %d New files found", total, s.neededScan(results))
 
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
@@ -156,7 +156,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 			return
 		}
 		totalsNeeded := s.neededGenerate(scenes, sprites, previews, markers, transcodes)
-		logger.Infof("Generate Starting.Generating %d sprites %d previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.markers, totalsNeeded.transcodes)
+		logger.Infof("Generating %d sprites %d previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.markers, totalsNeeded.transcodes)
 
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
