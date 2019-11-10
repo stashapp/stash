@@ -31,6 +31,7 @@ deploy:
   - dist/stash-osx
   - dist/stash-win.exe
   - dist/stash-linux
+  - dist/stash-pi
   skip_cleanup: true
   overwrite: true
   body: ${RELEASE_DATE}
