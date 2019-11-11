@@ -2,11 +2,11 @@ FROM golang:1.11.5
 
 LABEL maintainer="stashappdev@gmail.com"
 
-ENV GORELEASER_VERSION=0.95.0
-ENV GORELEASER_SHA=4f3b9fc978a3677806ebd959096a1f976a7c7bb5fbdf7a9a1d01554c8c5c31c5
+#ENV GORELEASER_VERSION=0.95.0
+#ENV GORELEASER_SHA=4f3b9fc978a3677806ebd959096a1f976a7c7bb5fbdf7a9a1d01554c8c5c31c5
 
-ENV GORELEASER_DOWNLOAD_FILE=goreleaser_Linux_x86_64.tar.gz
-ENV GORELEASER_DOWNLOAD_URL=https://github.com/goreleaser/goreleaser/releases/download/v${GORELEASER_VERSION}/${GORELEASER_DOWNLOAD_FILE}
+#ENV GORELEASER_DOWNLOAD_FILE=goreleaser_Linux_x86_64.tar.gz
+#ENV GORELEASER_DOWNLOAD_URL=https://github.com/goreleaser/goreleaser/releases/download/v${GORELEASER_VERSION}/${GORELEASER_DOWNLOAD_FILE}
 
 ENV PACKR2_VERSION=2.0.2
 ENV PACKR2_SHA=f95ff4c96d7a28813220df030ad91700b8464fe292ab3e1dc9582305c2a338d2
@@ -14,25 +14,34 @@ ENV PACKR2_DOWNLOAD_FILE=packr_${PACKR2_VERSION}_linux_amd64.tar.gz
 ENV PACKR2_DOWNLOAD_URL=https://github.com/gobuffalo/packr/releases/download/v${PACKR2_VERSION}/${PACKR2_DOWNLOAD_FILE}
 
 # Install tools
+RUN apt-get update && apt-get install -y apt-transport-https
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+
+
 RUN apt-get update && \
     apt-get install -y automake autogen \
     libtool libxml2-dev uuid-dev libssl-dev bash \
     patch make tar xz-utils bzip2 gzip sed cpio \
 	gcc-mingw-w64 g++-mingw-w64 clang llvm-dev \
-        gcc-arm-linux-gnueabi --no-install-recommends || exit 1; \
+        gcc-arm-linux-gnueabi nodejs yarn --no-install-recommends || exit 1; \
 	rm -rf /var/lib/apt/lists/*;
 
 # Cross compile setup
 ENV OSX_SDK_VERSION 	10.11
 ENV OSX_SDK_DOWNLOAD_FILE=MacOSX${OSX_SDK_VERSION}.sdk.tar.xz
-ENV OSX_SDK_DOWNLOAD_URL=https://github.com/phracker/MacOSX-SDKs/releases/download/10.13/${OSX_SDK_DOWNLOAD_FILE}
-ENV OSX_SDK_SHA=89aa34dfe5bcbc7d53d3c55a84b35ac810ecfbcdd16a64c9667992b0c36c60c4
+ENV OSX_SDK_DOWNLOAD_URL=https://s3.dockerproject.org/darwin/v2/${OSX_SDK_DOWNLOAD_FILE}
+ENV OSX_SDK_SHA=694a66095a3514328e970b14978dc78c0f4d170e590fa7b2c3d3674b75f0b713
 ENV OSX_SDK     		MacOSX$OSX_SDK_VERSION.sdk
 ENV OSX_NDK_X86 		/usr/local/osx-ndk-x86
 
+RUN  echo "testing"
+RUN  wget ${OSX_SDK_DOWNLOAD_URL}
 COPY ${OSX_SDK_DOWNLOAD_FILE} /go
-RUN  wget ${OSX_SDK_DOWNLOAD_URL}; \
-     echo "$OSX_SDK_SHA $OSX_SDK_DOWNLOAD_FILE" | sha256sum -c - || exit 1; \
+RUN  echo $OSX_SDK_SHA
+RUN  sha256sum $OSX_SDK_DOWNLOAD_FILE
+RUN  echo "$OSX_SDK_SHA $OSX_SDK_DOWNLOAD_FILE" | sha256sum -c - || exit 1; \
      git clone https://github.com/tpoechtrager/osxcross.git && \
      git -C osxcross checkout c47ff0aeed1a7d0e1f884812fc170e415f05be5a || exit 1; \
      mv $OSX_SDK_DOWNLOAD_FILE osxcross/tarballs/ && \
@@ -46,17 +55,17 @@ RUN mkdir -p /root/.ssh; \
     chmod 0700 /root/.ssh; \
     ssh-keyscan github.com > /root/.ssh/known_hosts;
 
-RUN  wget ${GORELEASER_DOWNLOAD_URL}; \
-			echo "$GORELEASER_SHA $GORELEASER_DOWNLOAD_FILE" | sha256sum -c - || exit 1; \
-			tar -xzf $GORELEASER_DOWNLOAD_FILE -C /usr/bin/ goreleaser; \
-			rm $GORELEASER_DOWNLOAD_FILE;
+#RUN  wget ${GORELEASER_DOWNLOAD_URL}; \
+#			echo "$GORELEASER_SHA $GORELEASER_DOWNLOAD_FILE" | sha256sum -c - || exit 1; \
+#			tar -xzf $GORELEASER_DOWNLOAD_FILE -C /usr/bin/ goreleaser; \
+#			rm $GORELEASER_DOWNLOAD_FILE;
 
 RUN  wget ${PACKR2_DOWNLOAD_URL}; \
 			echo "$PACKR2_SHA $PACKR2_DOWNLOAD_FILE" | sha256sum -c - || exit 1; \
 			tar -xzf $PACKR2_DOWNLOAD_FILE -C /usr/bin/ packr2; \
 			rm $PACKR2_DOWNLOAD_FILE;
 
-CMD ["goreleaser", "-v"]
+#CMD ["goreleaser", "-v"]
 CMD ["packr2", "version"]
 
 
