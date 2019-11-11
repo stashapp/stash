@@ -185,7 +185,13 @@ export class StashService {
     return GQL.useSceneMarkerDestroy(); 
   }
 
-  public static useListScrapers() { return GQL.useListScrapers(); }
+  public static useListScrapers(scraperType: GQL.ScraperType) { 
+    return GQL.useListScrapers({
+      variables: {
+        scraper_type: scraperType
+      }
+    }); 
+  }
   public static useScrapePerformerList(scraperId: string, q : string) { 
     return GQL.useScrapePerformerList({ variables: { scraper_id: scraperId, query: q }}); 
   }

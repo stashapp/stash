@@ -52,7 +52,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const Scrapers = StashService.useListScrapers();
+  const Scrapers = StashService.useListScrapers(GQL.ScraperType.Performer);
 
   const { data, error, loading } = StashService.useFindPerformer(props.match.params.id);
   const updatePerformer = StashService.usePerformerUpdate(getPerformerInput() as GQL.PerformerUpdateInput);
