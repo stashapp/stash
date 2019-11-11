@@ -16,13 +16,13 @@ func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query s
 }
 
 func (r *queryResolver) ListScrapers(ctx context.Context, scraperType models.ScraperType) ([]*models.Scraper, error) {
-	return nil, nil
+	return scraper.ListScrapers(scraperType)
 }
 
 func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]string, error) {
-	return nil, nil
+	return scraper.ScrapePerformerList(scraperID, query)
 }
 
 func (r *queryResolver) ScrapePerformer(ctx context.Context, scraperID string, performerName string) (*models.ScrapedPerformer, error) {
-	return nil, nil
+	return scraper.ScrapePerformer(scraperID, performerName)
 }
