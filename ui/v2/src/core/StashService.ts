@@ -231,13 +231,15 @@ export class StashService {
     "findScenes",
     "findSceneMarkers",
     "findStudios",
+    "allTags"
     // TODO - add "findTags" when it is implemented
   ];
 
   public static useSceneUpdate(input: GQL.SceneUpdateInput) {
     return GQL.useSceneUpdate({ 
       variables: input,
-      update: () => StashService.invalidateQueries(StashService.sceneMutationImpactedQueries)
+      update: () => StashService.invalidateQueries(StashService.sceneMutationImpactedQueries),
+      refetchQueries: ["AllTagsForFilter"]
     });
   }
 
