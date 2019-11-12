@@ -173,7 +173,7 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
         <FilterMultiSelect
           type="tags"
           onUpdate={(tags) => fieldProps.form.setFieldValue("tagIds", tags.map((tag) => tag.id))}
-          initialIds={!!editingMarker ? editingMarker.tags.map((tag) => tag.id) : undefined}
+          initialIds={!!editingMarker ? fieldProps.form.values.tagIds : undefined}
         />
       );
     }
