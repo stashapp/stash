@@ -231,7 +231,7 @@ export class StashService {
     "findScenes",
     "findSceneMarkers",
     "findStudios",
-    "allTags"
+    // TODO - add "findTags" when it is implemented
   ];
 
   public static useSceneUpdate(input: GQL.SceneUpdateInput) {
