@@ -176,13 +176,13 @@ export class StashService {
   ];
 
   public static useSceneMarkerCreate() {
-    return GQL.useSceneMarkerCreate(); 
+    return GQL.useSceneMarkerCreate({ refetchQueries: ["FindScene"] }); 
   }
   public static useSceneMarkerUpdate() { 
-    return GQL.useSceneMarkerUpdate(); 
+    return GQL.useSceneMarkerUpdate({ refetchQueries: ["FindScene"] }); 
   }
   public static useSceneMarkerDestroy() {
-    return GQL.useSceneMarkerDestroy(); 
+    return GQL.useSceneMarkerDestroy({ refetchQueries: ["FindScene"] }); 
   }
 
   public static useScrapeFreeonesPerformers(q: string) { return GQL.useScrapeFreeonesPerformers({ variables: { q } }); }
