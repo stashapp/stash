@@ -176,13 +176,13 @@ export class StashService {
   ];
 
   public static useSceneMarkerCreate() {
-    return GQL.useSceneMarkerCreate(); 
+    return GQL.useSceneMarkerCreate({ refetchQueries: ["FindScene"] }); 
   }
   public static useSceneMarkerUpdate() { 
-    return GQL.useSceneMarkerUpdate(); 
+    return GQL.useSceneMarkerUpdate({ refetchQueries: ["FindScene"] }); 
   }
   public static useSceneMarkerDestroy() {
-    return GQL.useSceneMarkerDestroy(); 
+    return GQL.useSceneMarkerDestroy({ refetchQueries: ["FindScene"] }); 
   }
 
   public static useScrapeFreeonesPerformers(q: string) { return GQL.useScrapeFreeonesPerformers({ variables: { q } }); }
@@ -232,12 +232,14 @@ export class StashService {
     "findSceneMarkers",
     "findStudios",
     "allTags"
+    // TODO - add "findTags" when it is implemented
   ];
 
   public static useSceneUpdate(input: GQL.SceneUpdateInput) {
     return GQL.useSceneUpdate({ 
       variables: input,
-      update: () => StashService.invalidateQueries(StashService.sceneMutationImpactedQueries)
+      update: () => StashService.invalidateQueries(StashService.sceneMutationImpactedQueries),
+      refetchQueries: ["AllTagsForFilter"]
     });
   }
 
