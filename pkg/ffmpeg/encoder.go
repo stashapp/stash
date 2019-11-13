@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -16,7 +17,10 @@ type Encoder struct {
 	Path string
 }
 
-var runningEncoders map[string][]*os.Process = make(map[string][]*os.Process)
+var (
+	runningEncoders      map[string][]*os.Process = make(map[string][]*os.Process)
+	runningEncodersMutex                          = sync.RWMutex{}
+)
 
 func NewEncoder(ffmpegPath string) Encoder {
 	return Encoder{
@@ -25,12 +29,16 @@ func NewEncoder(ffmpegPath string) Encoder {
 }
 
 func registerRunningEncoder(path string, process *os.Process) {
+	runningEncodersMutex.Lock()
 	processes := runningEncoders[path]
 
 	runningEncoders[path] = append(processes, process)
+	runningEncodersMutex.Unlock()
 }
 
 func deregisterRunningEncoder(path string, process *os.Process) {
+	runningEncodersMutex.Lock()
+	defer runningEncodersMutex.Unlock()
 	processes := runningEncoders[path]
 
 	for i, v := range processes {
@@ -49,7 +57,9 @@ func waitAndDeregister(path string, cmd *exec.Cmd) error {
 }
 
 func KillRunningEncoders(path string) {
+	runningEncodersMutex.RLock()
 	processes := runningEncoders[path]
+	runningEncodersMutex.RUnlock()
 
 	for _, process := range processes {
 		// assume it worked, don't check for error
