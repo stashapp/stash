@@ -18,7 +18,8 @@ import (
 type ScraperMethod string
 
 const (
-	ScraperMethodScript ScraperMethod = "SCRIPT"
+	ScraperMethodScript  ScraperMethod = "SCRIPT"
+	ScraperMethodBuiltin ScraperMethod = "BUILTIN"
 )
 
 var AllScraperMethod = []ScraperMethod{
@@ -40,6 +41,9 @@ type scraperConfig struct {
 	Method            ScraperMethod      `json:"method"`
 	GetPerformerNames []string           `json:"get_performer_names"`
 	GetPerformer      []string           `json:"get_performer"`
+
+	scrapePerformerNamesFunc func(c scraperConfig, name string) ([]*models.ScrapedPerformer, error)
+	scrapePerformerFunc      func(c scraperConfig, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error)
 }
 
 func (c scraperConfig) toScraper() *models.Scraper {
@@ -52,20 +56,19 @@ func (c scraperConfig) toScraper() *models.Scraper {
 	return &ret
 }
 
-func (c scraperConfig) scrapePerformerNames(name string) ([]string, error) {
+func (c *scraperConfig) postDecode() {
 	if c.Method == ScraperMethodScript {
-		return c.scrapePerformerNamesScript(name)
+		c.scrapePerformerNamesFunc = scrapePerformerNamesScript
+		c.scrapePerformerFunc = scrapePerformerScript
 	}
-
-	return nil, nil
 }
 
-func (c scraperConfig) scrapePerformer(name string) (*models.ScrapedPerformer, error) {
-	if c.Method == ScraperMethodScript {
-		return c.scrapePerformerScript(name)
-	}
+func (c scraperConfig) ScrapePerformerNames(name string) ([]*models.ScrapedPerformer, error) {
+	return c.scrapePerformerNamesFunc(c, name)
+}
 
-	return nil, nil
+func (c scraperConfig) ScrapePerformer(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+	return c.scrapePerformerFunc(c, scrapedPerformer)
 }
 
 func runScraperScript(command []string, inString string, out interface{}) error {
@@ -80,7 +83,6 @@ func runScraperScript(command []string, inString string, out interface{}) error 
 	go func() {
 		defer stdin.Close()
 
-		// TODO - encode search query in proper json
 		io.WriteString(stdin, inString)
 	}()
 
@@ -117,24 +119,34 @@ func runScraperScript(command []string, inString string, out interface{}) error 
 	return nil
 }
 
-func (c scraperConfig) scrapePerformerNamesScript(name string) ([]string, error) {
-	// TODO - encode search query in proper json
+func scrapePerformerNamesScript(c scraperConfig, name string) ([]*models.ScrapedPerformer, error) {
 	inString := `{"name": "` + name + `"}`
 
-	var ret []string
+	var performers []models.ScrapedPerformer
 
-	err := runScraperScript(c.GetPerformerNames, inString, &ret)
+	err := runScraperScript(c.GetPerformerNames, inString, &performers)
+
+	// convert to pointers
+	var ret []*models.ScrapedPerformer
+	if err == nil {
+		for i := 0; i < len(performers); i++ {
+			ret = append(ret, &performers[i])
+		}
+	}
 
 	return ret, err
 }
 
-func (c scraperConfig) scrapePerformerScript(name string) (*models.ScrapedPerformer, error) {
-	// TODO - encode search query in proper json
-	inString := `{"name": "` + name + `"}`
+func scrapePerformerScript(c scraperConfig, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+	inString, err := json.Marshal(scrapedPerformer)
+
+	if err != nil {
+		return nil, err
+	}
 
 	var ret models.ScrapedPerformer
 
-	err := runScraperScript(c.GetPerformer, inString, &ret)
+	err = runScraperScript(c.GetPerformer, string(inString), &ret)
 
 	return &ret, err
 }
@@ -158,6 +170,7 @@ func loadScraper(path string) (*scraperConfig, error) {
 	id := filepath.Base(path)
 	id = id[:strings.LastIndex(id, ".")]
 	scraper.ID = id
+	scraper.postDecode()
 
 	return &scraper, nil
 }
@@ -177,6 +190,9 @@ func loadScrapers() ([]scraperConfig, error) {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
 		return nil, err
 	}
+
+	// add built-in freeones scraper
+	scrapers = append(scrapers, GetFreeonesScraper())
 
 	for _, file := range scraperFiles {
 		scraper, err := loadScraper(file)
@@ -222,21 +238,21 @@ func findPerformerScraper(scraperID string) *scraperConfig {
 	return nil
 }
 
-func ScrapePerformerList(scraperID string, query string) ([]string, error) {
+func ScrapePerformerList(scraperID string, query string) ([]*models.ScrapedPerformer, error) {
 	// find scraper with the provided id
 	s := findPerformerScraper(scraperID)
 	if s != nil {
-		return s.scrapePerformerNames(query)
+		return s.ScrapePerformerNames(query)
 	}
 
 	return nil, errors.New("Scraper with ID " + scraperID + " not found")
 }
 
-func ScrapePerformer(scraperID string, performerName string) (*models.ScrapedPerformer, error) {
+func ScrapePerformer(scraperID string, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
 	// find scraper with the provided id
 	s := findPerformerScraper(scraperID)
 	if s != nil {
-		return s.scrapePerformer(performerName)
+		return s.ScrapePerformer(scrapedPerformer)
 	}
 
 	return nil, errors.New("Scraper with ID " + scraperID + " not found")

@@ -13,7 +13,7 @@ import { StashService } from "../../../core/StashService";
 import { IBaseProps } from "../../../models";
 import { ErrorUtils } from "../../../utils/errors";
 import { TableUtils } from "../../../utils/table";
-import { FreeOnesPerformerSuggest } from "../../select/FreeOnesPerformerSuggest";
+import { ScrapePerformerSuggest } from "../../select/ScrapePerformerSuggest";
 import { DetailsEditNavbar } from "../../Shared/DetailsEditNavbar";
 
 interface IPerformerProps extends IBaseProps {}
@@ -24,7 +24,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
   const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<GQL.ListScrapersListScrapers | undefined>(undefined);
-  const [scrapePerformerName, setScrapePerformerName] = useState<string>("");
+  const [scrapePerformerDetails, setScrapePerformerDetails] = useState<GQL.ScrapePerformerListScrapePerformerList | undefined>(undefined);
 
   // Editing performer state
   const [image, setImage] = useState<string | undefined>(undefined);
@@ -95,10 +95,10 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     }
   }, [performer]);
 
-  if (!isNew && !isEditing) {
-    if (!data || !data.findPerformer || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
-    if (!!error) { return <>error...</>; }
+  if ((!isNew && !isEditing && (!data || !data.findPerformer)) || isLoading) {
+    return <Spinner size={Spinner.SIZE_LARGE} />; 
   }
+  if (!!error) { return <>error...</>; }
 
   function getPerformerInput() {
     const performerInput: Partial<GQL.PerformerCreateInput | GQL.PerformerUpdateInput> = {
@@ -172,17 +172,26 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     setIsDisplayingScraperDialog(scraper);
   }
 
-  async function onScrapeFreeOnes() {
+  function getQueryScraperPerformerInput() {
+    if (!scrapePerformerDetails) {
+      return {};
+    }
+
+    let ret = _.clone(scrapePerformerDetails);
+    delete ret.__typename;
+    return ret as GQL.ScrapedPerformerInput;
+  }
+
+  async function onScrapePerformer() {
+    setIsDisplayingScraperDialog(undefined);
     setIsLoading(true);
     try {
-      if (!scrapePerformerName || !isDisplayingScraperDialog) { return; }
-      const result = await StashService.queryScrapePerformer(isDisplayingScraperDialog.id, scrapePerformerName);
+      if (!scrapePerformerDetails || !isDisplayingScraperDialog) { return; }
+      const result = await StashService.queryScrapePerformer(isDisplayingScraperDialog.id, getQueryScraperPerformerInput());
       if (!result.data || !result.data.scrapePerformer) { return; }
       updatePerformerEditState(result.data.scrapePerformer);
     } catch (e) {
       ErrorUtils.handle(e);
-    } finally {
-      setIsDisplayingScraperDialog(undefined);
     }
     setIsLoading(false);
   }
@@ -205,16 +214,16 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
         title="Scrape"
       >
         <div className="dialog-content">
-          <FreeOnesPerformerSuggest
+          <ScrapePerformerSuggest
             placeholder="Performer name"
             style={{width: "100%"}}
             scraperId={isDisplayingScraperDialog ? isDisplayingScraperDialog.id : ""}
-            onQueryChange={(query) => setScrapePerformerName(query)}
+            onSelectPerformer={(query) => setScrapePerformerDetails(query)}
           />
         </div>
         <div className={Classes.DIALOG_FOOTER}>
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <Button onClick={() => onScrapeFreeOnes()}>Scrape</Button>
+            <Button onClick={() => onScrapePerformer()}>Scrape</Button>
           </div>
         </div>
       </Dialog>

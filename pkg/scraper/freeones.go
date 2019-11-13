@@ -2,17 +2,31 @@ package scraper
 
 import (
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
-func GetPerformerNames(q string) ([]string, error) {
+const freeonesScraperID = "builtin_freeones"
+
+func GetFreeonesScraper() scraperConfig {
+	return scraperConfig{
+		ID:                       freeonesScraperID,
+		Name:                     "Freeones",
+		Type:                     models.ScraperTypePerformer,
+		Method:                   ScraperMethodBuiltin,
+		scrapePerformerNamesFunc: GetPerformerNames,
+		scrapePerformerFunc:      GetPerformer,
+	}
+}
+
+func GetPerformerNames(c scraperConfig, q string) ([]*models.ScrapedPerformer, error) {
 	// Request the HTML page.
 	queryURL := "https://www.freeones.com/suggestions.php?q=" + url.PathEscape(q) + "&t=1"
 	res, err := http.Get(queryURL)
@@ -31,16 +45,24 @@ func GetPerformerNames(q string) ([]string, error) {
 	}
 
 	// Find the performers
-	var performerNames []string
+	var performers []*models.ScrapedPerformer
 	doc.Find(".suggestion").Each(func(i int, s *goquery.Selection) {
 		name := strings.Trim(s.Text(), " ")
-		performerNames = append(performerNames, name)
+		p := models.ScrapedPerformer{
+			Name: &name,
+		}
+		performers = append(performers, &p)
 	})
 
-	return performerNames, nil
+	return performers, nil
 }
 
-func GetPerformer(performerName string) (*models.ScrapedPerformer, error) {
+func GetPerformer(c scraperConfig, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+	if scrapedPerformer.Name == nil {
+		return nil, nil
+	}
+
+	performerName := *scrapedPerformer.Name
 	queryURL := "https://www.freeones.com/search/?t=1&q=" + url.PathEscape(performerName) + "&view=thumbs"
 	res, err := http.Get(queryURL)
 	if err != nil {
@@ -65,8 +87,8 @@ func GetPerformer(performerName string) (*models.ScrapedPerformer, error) {
 		if strings.ToLower(s.Text()) == strings.ToLower(performerName) {
 			return true
 		}
-		alias := s.ParentsFiltered(".babeNameBlock").Find(".babeAlias").First();
-		if strings.Contains( strings.ToLower(alias.Text()), strings.ToLower(performerName) ) {
+		alias := s.ParentsFiltered(".babeNameBlock").Find(".babeAlias").First()
+		if strings.Contains(strings.ToLower(alias.Text()), strings.ToLower(performerName)) {
 			return true
 		}
 		return false
@@ -77,12 +99,12 @@ func GetPerformer(performerName string) (*models.ScrapedPerformer, error) {
 	regex := regexp.MustCompile(`.+_links\/(.+)`)
 	matches := regex.FindStringSubmatch(href)
 	if len(matches) < 2 {
-		return nil, fmt.Errorf("No matches found in %s",href)
+		return nil, fmt.Errorf("No matches found in %s", href)
 	}
 
 	href = strings.Replace(href, matches[1], "bio_"+matches[1]+".php", -1)
 	href = "https://www.freeones.com" + href
-	
+
 	bioRes, err := http.Get(href)
 	if err != nil {
 		return nil, err
@@ -236,7 +258,7 @@ func paramValue(params *goquery.Selection, paramIndex int) string {
 		return content
 	}
 	node = node.NextSibling
-	if (node == nil) {
+	if node == nil {
 		return ""
 	}
 	return trim(node.FirstChild.Data)

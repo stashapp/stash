@@ -7,11 +7,25 @@ query ListScrapers($scraper_type: ScraperType!) {
 }
 
 query ScrapePerformerList($scraper_id: ID!, $query: String!) {
-  scrapePerformerList(scraper_id: $scraper_id, query: $query)
+  scrapePerformerList(scraper_id: $scraper_id, query: $query) {
+    name
+    url
+    birthdate
+    ethnicity
+    country
+    eye_color
+    height
+    measurements
+    fake_tits
+    career_length
+    tattoos
+    piercings
+    aliases
+  }
 }
 
-query ScrapePerformer($scraper_id: ID!, $performer_name: String!) {
-  scrapePerformer(scraper_id: $scraper_id, performer_name: $performer_name) {
+query ScrapePerformer($scraper_id: ID!, $scraped_performer: ScrapedPerformerInput!) {
+  scrapePerformer(scraper_id: $scraper_id, scraped_performer: $scraped_performer) {
     name
     url
     twitter

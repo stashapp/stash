@@ -195,8 +195,8 @@ export class StashService {
   public static useScrapePerformerList(scraperId: string, q : string) { 
     return GQL.useScrapePerformerList({ variables: { scraper_id: scraperId, query: q }}); 
   }
-  public static useScrapePerformer(scraperId: string, performerName : string) {
-     return GQL.useScrapePerformer({ variables: { scraper_id: scraperId, performer_name: performerName }});
+  public static useScrapePerformer(scraperId: string, scrapedPerformer : GQL.ScrapedPerformerInput) {
+     return GQL.useScrapePerformer({ variables: { scraper_id: scraperId, scraped_performer: scrapedPerformer }});
   }
 
   public static useScrapeFreeonesPerformers(q: string) { return GQL.useScrapeFreeonesPerformers({ variables: { q } }); }
@@ -382,12 +382,12 @@ export class StashService {
     });
   }
 
-  public static queryScrapePerformer(scraperId: string, performerName: string) {
+  public static queryScrapePerformer(scraperId: string, scrapedPerformer: GQL.ScrapedPerformerInput) {
     return StashService.client.query<GQL.ScrapePerformerQuery>({
       query: GQL.ScrapePerformerDocument,
       variables: {
         scraper_id: scraperId,
-        performer_name: performerName,
+        scraped_performer: scrapedPerformer,
       },
     });
   }

@@ -7,22 +7,43 @@ import (
 	"github.com/stashapp/stash/pkg/scraper"
 )
 
+// deprecated
 func (r *queryResolver) ScrapeFreeones(ctx context.Context, performer_name string) (*models.ScrapedPerformer, error) {
-	return scraper.GetPerformer(performer_name)
+	scrapedPerformer := models.ScrapedPerformerInput{
+		Name: &performer_name,
+	}
+	return scraper.GetFreeonesScraper().ScrapePerformer(scrapedPerformer)
 }
 
+// deprecated
 func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error) {
-	return scraper.GetPerformerNames(query)
+	scrapedPerformers, err := scraper.GetFreeonesScraper().ScrapePerformerNames(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []string
+	for _, v := range scrapedPerformers {
+		name := v.Name
+		ret = append(ret, *name)
+	}
+
+	return ret, nil
 }
 
 func (r *queryResolver) ListScrapers(ctx context.Context, scraperType models.ScraperType) ([]*models.Scraper, error) {
 	return scraper.ListScrapers(scraperType)
 }
 
-func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]string, error) {
+func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]*models.ScrapedPerformer, error) {
+	if query == "" {
+		return nil, nil
+	}
+
 	return scraper.ScrapePerformerList(scraperID, query)
 }
 
-func (r *queryResolver) ScrapePerformer(ctx context.Context, scraperID string, performerName string) (*models.ScrapedPerformer, error) {
-	return scraper.ScrapePerformer(scraperID, performerName)
+func (r *queryResolver) ScrapePerformer(ctx context.Context, scraperID string, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+	return scraper.ScrapePerformer(scraperID, scrapedPerformer)
 }
