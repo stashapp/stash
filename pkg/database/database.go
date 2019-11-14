@@ -3,7 +3,9 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"regexp"
+
 	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/source"
@@ -11,7 +13,6 @@ import (
 	sqlite3 "github.com/mattn/go-sqlite3"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
-	"os"
 )
 
 var DB *sqlx.DB
@@ -19,11 +20,13 @@ var appSchemaVersion uint = 1
 
 const sqlite3Driver = "sqlite3_regexp"
 
-func Initialize(databasePath string) {
-	runMigrations(databasePath)
-
+func init() {
 	// register custom driver with regexp function
 	registerRegexpFunc()
+}
+
+func Initialize(databasePath string) {
+	runMigrations(databasePath)
 
 	// https://github.com/mattn/go-sqlite3
 	conn, err := sqlx.Open(sqlite3Driver, "file:"+databasePath+"?_fk=true")
