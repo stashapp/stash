@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DATE=`go run scripts/getDate.go`
+DATE=`go run -mod=vendor scripts/getDate.go`
 GITHASH=`git rev-parse --short HEAD`
 VERSION_FLAGS="-X 'github.com/stashapp/stash/pkg/api.buildstamp=$DATE' -X 'github.com/stashapp/stash/pkg/api.githash=$GITHASH'"
 
