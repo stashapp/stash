@@ -17,7 +17,7 @@ export const ScrapePerformerSuggest: React.FunctionComponent<IProps> = (props: I
   const [query, setQuery] = React.useState<string>("");
   const [selectedItem, setSelectedItem] = React.useState<GQL.ScrapePerformerListScrapePerformerList | undefined>();
   const [debouncedQuery, setDebouncedQuery] = React.useState<string>("");
-  const { data } = StashService.useScrapePerformerList(props.scraperId, debouncedQuery);
+  const { data, error, loading } = StashService.useScrapePerformerList(props.scraperId, debouncedQuery);
 
   React.useEffect(() => {
     const handler = setTimeout(() => {
@@ -46,6 +46,18 @@ export const ScrapePerformerSuggest: React.FunctionComponent<IProps> = (props: I
     );
   };
 
+  function renderLoadingError() {
+    if (error) {
+      return (<MenuItem disabled={true} text={error.toString()} />);
+    }
+    if (loading) {
+      return (<MenuItem disabled={true} text="Loading..." />);
+    }
+    if (debouncedQuery && data && !!data.scrapePerformerList && data.scrapePerformerList.length === 0) {
+      return (<MenuItem disabled={true} text="No results" />);
+    }
+  }
+
   return (
     <InternalSuggest
       inputValueRenderer={renderInputValue}
@@ -55,6 +67,7 @@ export const ScrapePerformerSuggest: React.FunctionComponent<IProps> = (props: I
       onQueryChange={(newQuery) => { setQuery(newQuery); }}
       activeItem={null}
       selectedItem={selectedItem}
+      noResults={renderLoadingError()}
       popoverProps={{position: "bottom"}}
     />
   );

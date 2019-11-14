@@ -64,6 +64,7 @@ func (c *scraperConfig) postDecode() {
 	if c.Method == ScraperMethodScript {
 		c.scrapePerformerNamesFunc = scrapePerformerNamesScript
 		c.scrapePerformerFunc = scrapePerformerScript
+		c.scrapePerformerURLFunc = scrapePerformerURLScript
 	}
 }
 
@@ -105,13 +106,11 @@ func runScraperScript(command []string, inString string, out interface{}) error 
 	}
 
 	if err = cmd.Start(); err != nil {
-		return err
+		return errors.New("Error running scraper script")
 	}
 
 	// TODO - add a timeout here
-	if err := json.NewDecoder(stdout).Decode(out); err != nil {
-		return err
-	}
+	decodeErr := json.NewDecoder(stdout).Decode(out)
 
 	stderrData, _ := ioutil.ReadAll(stderr)
 	stderrString := string(stderrData)
@@ -121,7 +120,12 @@ func runScraperScript(command []string, inString string, out interface{}) error 
 	if err != nil {
 		// error message should be in the stderr stream
 		logger.Errorf("scraper error when running command <%s>: %s", strings.Join(cmd.Args, " "), stderrString)
-		return err
+		return errors.New("Error running scraper script")
+	}
+
+	if decodeErr != nil {
+		logger.Errorf("error decoding performer from scraper data: %s", err.Error())
+		return errors.New("Error decoding performer from scraper script")
 	}
 
 	return nil
@@ -261,8 +265,8 @@ func findPerformerScraperURL(url string) *scraperConfig {
 	loadScrapers()
 
 	for _, s := range scrapers {
-		for _, url := range s.URLs {
-			if strings.Contains(url, url) {
+		for _, thisURL := range s.URLs {
+			if strings.Contains(url, thisURL) {
 				return &s
 			}
 		}
