@@ -205,7 +205,7 @@ func loadScrapers() ([]scraperConfig, error) {
 	path := config.GetScrapersPath()
 	scrapers = make([]scraperConfig, 0)
 
-	logger.Infof("Reading scraper configs from %s", path)
+	logger.Debugf("Reading scraper configs from %s", path)
 	scraperFiles, err := filepath.Glob(filepath.Join(path, "*.json"))
 
 	if err != nil {
