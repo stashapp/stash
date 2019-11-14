@@ -57,13 +57,25 @@ func (c scraperConfig) toScraper() *models.Scraper {
 		Urls: c.URLs,
 	}
 
+	// determine supported actions
+	if len(c.URLs) > 0 {
+		ret.SupportedScrapes = append(ret.SupportedScrapes, models.ScrapeTypeURL)
+	}
+
+	if c.scrapePerformerNamesFunc != nil && c.scrapePerformerFunc != nil {
+		ret.SupportedScrapes = append(ret.SupportedScrapes, models.ScrapeTypeQuery)
+	}
+
 	return &ret
 }
 
 func (c *scraperConfig) postDecode() {
 	if c.Method == ScraperMethodScript {
-		c.scrapePerformerNamesFunc = scrapePerformerNamesScript
-		c.scrapePerformerFunc = scrapePerformerScript
+		// only set scrape performer names/performer if the applicable field is set
+		if len(c.GetPerformer) > 0 && len(c.GetPerformerNames) > 0 {
+			c.scrapePerformerNamesFunc = scrapePerformerNamesScript
+			c.scrapePerformerFunc = scrapePerformerScript
+		}
 		c.scrapePerformerURLFunc = scrapePerformerURLScript
 	}
 }

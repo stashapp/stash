@@ -4,6 +4,7 @@ query ListScrapers($scraper_type: ScraperType!) {
     name
     type
     urls
+    supported_scrapes
   }
 }
 

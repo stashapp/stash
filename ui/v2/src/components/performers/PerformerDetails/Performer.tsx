@@ -53,6 +53,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
   const [isLoading, setIsLoading] = useState(false);
 
   const Scrapers = StashService.useListScrapers(GQL.ScraperType.Performer);
+  const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListScrapersListScrapers[]>([]);
 
   const { data, error, loading } = StashService.useFindPerformer(props.match.params.id);
   const updatePerformer = StashService.usePerformerUpdate(getPerformerInput() as GQL.PerformerUpdateInput);
@@ -94,6 +95,19 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
       setIsEditing(false);
     }
   }, [performer]);
+
+  useEffect(() => {
+    var newQueryableScrapers : GQL.ListScrapersListScrapers[] = [];
+
+    if (!!Scrapers.data && Scrapers.data.listScrapers) {
+      newQueryableScrapers = Scrapers.data.listScrapers.filter((s) => {
+        return s.supported_scrapes.includes(GQL.ScrapeType.Query);
+      });
+    }
+
+    setQueryableScrapers(newQueryableScrapers);
+
+  }, [Scrapers.data])
 
   if ((!isNew && !isEditing && (!data || !data.findPerformer)) || isLoading) {
     return <Spinner size={Spinner.SIZE_LARGE} />; 
@@ -299,7 +313,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
             onSave={onSave}
             onDelete={onDelete}
             onImageChange={onImageChange}
-            scrapers={Scrapers.data ? Scrapers.data.listScrapers : undefined}
+            scrapers={queryableScrapers}
             onDisplayScraperDialog={onDisplayFreeOnesDialog}
           />
           <h1 className="bp3-heading">
