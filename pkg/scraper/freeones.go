@@ -14,6 +14,11 @@ import (
 )
 
 const freeonesScraperID = "builtin_freeones"
+const freeonesName = "Freeones"
+
+var freeonesURLs = []string{
+	"freeones.com",
+}
 
 func GetFreeonesScraper() scraperConfig {
 	return scraperConfig{
@@ -21,8 +26,10 @@ func GetFreeonesScraper() scraperConfig {
 		Name:                     "Freeones",
 		Type:                     models.ScraperTypePerformer,
 		Method:                   ScraperMethodBuiltin,
+		URLs:                     freeonesURLs,
 		scrapePerformerNamesFunc: GetPerformerNames,
 		scrapePerformerFunc:      GetPerformer,
+		scrapePerformerURLFunc:   GetPerformerURL,
 	}
 }
 
@@ -57,61 +64,30 @@ func GetPerformerNames(c scraperConfig, q string) ([]*models.ScrapedPerformer, e
 	return performers, nil
 }
 
-func GetPerformer(c scraperConfig, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
-	if scrapedPerformer.Name == nil {
-		return nil, nil
+func GetPerformerURL(c scraperConfig, href string) (*models.ScrapedPerformer, error) {
+	// if we're already in the bio page, just scrape it
+	if regexp.MustCompile(`\/bio_.*\.php$`).MatchString(href) {
+		return getPerformerBio(c, href)
 	}
 
-	performerName := *scrapedPerformer.Name
-	queryURL := "https://www.freeones.com/search/?t=1&q=" + url.PathEscape(performerName) + "&view=thumbs"
-	res, err := http.Get(queryURL)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("status code error: %d %s", res.StatusCode, res.Status)
+	// otherwise try to get the bio page from the url
+	profileRE := regexp.MustCompile(`_links\/(.*?)\/$`)
+	if profileRE.MatchString(href) {
+		href = profileRE.ReplaceAllString(href, "_links/bio_$1.php")
+		return getPerformerBio(c, href)
 	}
 
-	// Load the HTML document
-	doc, err := goquery.NewDocumentFromReader(res.Body)
-	if err != nil {
-		return nil, err
-	}
+	return nil, nil
+}
 
-	performerLink := doc.Find("div.Block3 a").FilterFunction(func(i int, s *goquery.Selection) bool {
-		href, _ := s.Attr("href")
-		if href == "/html/j_links/Jenna_Leigh_c/" || href == "/html/a_links/Alexa_Grace_c/" {
-			return false
-		}
-		if strings.ToLower(s.Text()) == strings.ToLower(performerName) {
-			return true
-		}
-		alias := s.ParentsFiltered(".babeNameBlock").Find(".babeAlias").First()
-		if strings.Contains(strings.ToLower(alias.Text()), strings.ToLower(performerName)) {
-			return true
-		}
-		return false
-	})
-
-	href, _ := performerLink.Attr("href")
-	href = strings.TrimSuffix(href, "/")
-	regex := regexp.MustCompile(`.+_links\/(.+)`)
-	matches := regex.FindStringSubmatch(href)
-	if len(matches) < 2 {
-		return nil, fmt.Errorf("No matches found in %s", href)
-	}
-
-	href = strings.Replace(href, matches[1], "bio_"+matches[1]+".php", -1)
-	href = "https://www.freeones.com" + href
-
+func getPerformerBio(c scraperConfig, href string) (*models.ScrapedPerformer, error) {
 	bioRes, err := http.Get(href)
 	if err != nil {
 		return nil, err
 	}
 	defer bioRes.Body.Close()
-	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("status code error: %d %s", res.StatusCode, res.Status)
+	if bioRes.StatusCode != 200 {
+		return nil, fmt.Errorf("status code error: %d %s", bioRes.StatusCode, bioRes.Status)
 	}
 
 	// Load the HTML document
@@ -195,6 +171,57 @@ func GetPerformer(c scraperConfig, scrapedPerformer models.ScrapedPerformerInput
 	}
 
 	return &result, nil
+}
+
+func GetPerformer(c scraperConfig, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+	if scrapedPerformer.Name == nil {
+		return nil, nil
+	}
+
+	performerName := *scrapedPerformer.Name
+	queryURL := "https://www.freeones.com/search/?t=1&q=" + url.PathEscape(performerName) + "&view=thumbs"
+	res, err := http.Get(queryURL)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("status code error: %d %s", res.StatusCode, res.Status)
+	}
+
+	// Load the HTML document
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	performerLink := doc.Find("div.Block3 a").FilterFunction(func(i int, s *goquery.Selection) bool {
+		href, _ := s.Attr("href")
+		if href == "/html/j_links/Jenna_Leigh_c/" || href == "/html/a_links/Alexa_Grace_c/" {
+			return false
+		}
+		if strings.ToLower(s.Text()) == strings.ToLower(performerName) {
+			return true
+		}
+		alias := s.ParentsFiltered(".babeNameBlock").Find(".babeAlias").First()
+		if strings.Contains(strings.ToLower(alias.Text()), strings.ToLower(performerName)) {
+			return true
+		}
+		return false
+	})
+
+	href, _ := performerLink.Attr("href")
+	href = strings.TrimSuffix(href, "/")
+	regex := regexp.MustCompile(`.+_links\/(.+)`)
+	matches := regex.FindStringSubmatch(href)
+	if len(matches) < 2 {
+		return nil, fmt.Errorf("No matches found in %s", href)
+	}
+
+	href = strings.Replace(href, matches[1], "bio_"+matches[1]+".php", -1)
+	href = "https://www.freeones.com" + href
+
+	return getPerformerBio(c, href)
 }
 
 func getIndexes(doc *goquery.Document) map[string]int {

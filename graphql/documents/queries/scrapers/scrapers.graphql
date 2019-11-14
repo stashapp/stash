@@ -3,6 +3,7 @@ query ListScrapers($scraper_type: ScraperType!) {
     id
     name
     type
+    urls
   }
 }
 
@@ -26,6 +27,26 @@ query ScrapePerformerList($scraper_id: ID!, $query: String!) {
 
 query ScrapePerformer($scraper_id: ID!, $scraped_performer: ScrapedPerformerInput!) {
   scrapePerformer(scraper_id: $scraper_id, scraped_performer: $scraped_performer) {
+    name
+    url
+    twitter
+    instagram
+    birthdate
+    ethnicity
+    country
+    eye_color
+    height
+    measurements
+    fake_tits
+    career_length
+    tattoos
+    piercings
+    aliases
+  }
+}
+
+query ScrapePerformerURL($url: String!) {
+  scrapePerformerURL(url: $url) {
     name
     url
     twitter

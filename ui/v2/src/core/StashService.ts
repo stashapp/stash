@@ -392,6 +392,15 @@ export class StashService {
     });
   }
 
+  public static queryScrapePerformerURL(url: string) {
+    return StashService.client.query<GQL.ScrapePerformerUrlQuery>({
+      query: GQL.ScrapePerformerUrlDocument,
+      variables: {
+        url: url,
+      },
+    });
+  }
+
   public static queryMetadataScan(input: GQL.ScanMetadataInput) {
     return StashService.client.query<GQL.MetadataScanQuery>({
       query: GQL.MetadataScanDocument,

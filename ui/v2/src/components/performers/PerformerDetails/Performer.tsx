@@ -196,6 +196,20 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     setIsLoading(false);
   }
 
+  async function onScrapePerformerURL() {
+    if (!url) { return; }
+    setIsLoading(true);
+    try {
+      const result = await StashService.queryScrapePerformerURL(url);
+      if (!result.data || !result.data.scrapePerformerURL) { return; }
+      updatePerformerEditState(result.data.scrapePerformerURL);
+    } catch (e) {
+      ErrorUtils.handle(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   function renderEthnicity() {
     return TableUtils.renderHtmlSelect({
       title: "Ethnicity",
@@ -227,6 +241,45 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
           </div>
         </div>
       </Dialog>
+    );
+  }
+
+  function urlScrapable(url: string) : boolean {
+    return !!url && !!Scrapers.data && Scrapers.data.listScrapers && Scrapers.data.listScrapers.some((s) => {
+      return !!s.urls && s.urls.some((u) => { return url.includes(u); });
+    });
+  }
+
+  function maybeRenderScrapeButton() {
+    if (!url || !urlScrapable(url)) {
+      return undefined;
+    }
+    return (
+      <Button 
+        minimal={true} 
+        icon="import" 
+        id="scrape-url-button"
+        onClick={() => onScrapePerformerURL()}/>
+    )
+  }
+
+  function renderURLField() {
+    return (
+      <tr>
+        <td id="url-field">
+          URL 
+          {maybeRenderScrapeButton()}
+        </td>
+        <td>
+          <EditableText
+            disabled={!isEditing}
+            value={url}
+            placeholder="URL"
+            multiline={true}
+            onChange={(newValue) => setUrl(newValue)}
+          />
+        </td>
+      </tr>
     );
   }
 
@@ -277,7 +330,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
             />
           </div>
 
-          <HTMLTable style={{width: "100%"}}>
+          <HTMLTable id="performer-details" style={{width: "100%"}}>
             <tbody>
               {TableUtils.renderEditableTextTableRow(
                 {title: "Birthdate (YYYY-MM-DD)", value: birthdate, isEditing, onChange: setBirthdate})}
@@ -298,8 +351,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
                 {title: "Tattoos", value: tattoos, isEditing, onChange: setTattoos})}
               {TableUtils.renderEditableTextTableRow(
                 {title: "Piercings", value: piercings, isEditing, onChange: setPiercings})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "URL", value: url, isEditing, onChange: setUrl})}
+              {renderURLField()}
               {TableUtils.renderEditableTextTableRow(
                 {title: "Twitter", value: twitter, isEditing, onChange: setTwitter})}
               {TableUtils.renderEditableTextTableRow(

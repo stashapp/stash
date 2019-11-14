@@ -47,3 +47,7 @@ func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID strin
 func (r *queryResolver) ScrapePerformer(ctx context.Context, scraperID string, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
 	return scraper.ScrapePerformer(scraperID, scrapedPerformer)
 }
+
+func (r *queryResolver) ScrapePerformerURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
+	return scraper.ScrapePerformerURL(url)
+}

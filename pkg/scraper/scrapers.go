@@ -39,11 +39,14 @@ type scraperConfig struct {
 	Name              string             `json:"name"`
 	Type              models.ScraperType `json:"type"`
 	Method            ScraperMethod      `json:"method"`
+	URLs              []string           `json:"urls"`
 	GetPerformerNames []string           `json:"get_performer_names"`
 	GetPerformer      []string           `json:"get_performer"`
+	GetPerformerURL   []string           `json:"get_performer_url"`
 
 	scrapePerformerNamesFunc func(c scraperConfig, name string) ([]*models.ScrapedPerformer, error)
 	scrapePerformerFunc      func(c scraperConfig, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error)
+	scrapePerformerURLFunc   func(c scraperConfig, url string) (*models.ScrapedPerformer, error)
 }
 
 func (c scraperConfig) toScraper() *models.Scraper {
@@ -51,6 +54,7 @@ func (c scraperConfig) toScraper() *models.Scraper {
 		ID:   c.ID,
 		Name: c.Name,
 		Type: c.Type,
+		Urls: c.URLs,
 	}
 
 	return &ret
@@ -69,6 +73,10 @@ func (c scraperConfig) ScrapePerformerNames(name string) ([]*models.ScrapedPerfo
 
 func (c scraperConfig) ScrapePerformer(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
 	return c.scrapePerformerFunc(c, scrapedPerformer)
+}
+
+func (c scraperConfig) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
+	return c.scrapePerformerURLFunc(c, url)
 }
 
 func runScraperScript(command []string, inString string, out interface{}) error {
@@ -147,6 +155,16 @@ func scrapePerformerScript(c scraperConfig, scrapedPerformer models.ScrapedPerfo
 	var ret models.ScrapedPerformer
 
 	err = runScraperScript(c.GetPerformer, string(inString), &ret)
+
+	return &ret, err
+}
+
+func scrapePerformerURLScript(c scraperConfig, url string) (*models.ScrapedPerformer, error) {
+	inString := `{"url": "` + url + `"}`
+
+	var ret models.ScrapedPerformer
+
+	err := runScraperScript(c.GetPerformerURL, string(inString), &ret)
 
 	return &ret, err
 }
@@ -238,6 +256,21 @@ func findPerformerScraper(scraperID string) *scraperConfig {
 	return nil
 }
 
+func findPerformerScraperURL(url string) *scraperConfig {
+	// read scraper config files from the directory and cache
+	loadScrapers()
+
+	for _, s := range scrapers {
+		for _, url := range s.URLs {
+			if strings.Contains(url, url) {
+				return &s
+			}
+		}
+	}
+
+	return nil
+}
+
 func ScrapePerformerList(scraperID string, query string) ([]*models.ScrapedPerformer, error) {
 	// find scraper with the provided id
 	s := findPerformerScraper(scraperID)
@@ -256,4 +289,14 @@ func ScrapePerformer(scraperID string, scrapedPerformer models.ScrapedPerformerI
 	}
 
 	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+}
+
+func ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
+	// find scraper that matches the url given
+	s := findPerformerScraperURL(url)
+	if s != nil {
+		return s.ScrapePerformerURL(url)
+	}
+
+	return nil, nil
 }

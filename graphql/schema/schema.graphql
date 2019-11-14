@@ -51,6 +51,8 @@ type Query {
   scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
   """Scrapes a complete performer record based on a scrapePerformerList result"""
   scrapePerformer(scraper_id: ID!, scraped_performer: ScrapedPerformerInput!): ScrapedPerformer
+  """Scrapes a complete performer record based on a URL"""
+  scrapePerformerURL(url: String!): ScrapedPerformer
 
   """Scrape a performer using Freeones"""
   scrapeFreeones(performer_name: String!): ScrapedPerformer

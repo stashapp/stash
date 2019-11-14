@@ -6,4 +6,5 @@ type Scraper {
     id: ID!
     name: String!
     type: ScraperType!
+    urls: [String!]
 }
