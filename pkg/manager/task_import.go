@@ -443,7 +443,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		scene, err := qb.Create(newScene, tx)
 		if err != nil {
 			_ = tx.Rollback()
-			logger.Errorf("[scenes] <%s> failed to create: %s", scene.Checksum, err.Error())
+			logger.Errorf("[scenes] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
 			return
 		}
 		if scene.ID == 0 {
