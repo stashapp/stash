@@ -70,7 +70,7 @@ func (s *singleton) Scan(nameFromMetadata bool) {
 		}
 
 		total := len(results)
-		logger.Infof("Starting scan of %d files", total)
+		logger.Infof("Starting scan of %d files. %d New files found", total, s.neededScan(results))
 
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
@@ -155,6 +155,8 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 			logger.Info("Stopping due to user request")
 			return
 		}
+		totalsNeeded := s.neededGenerate(scenes, sprites, previews, markers, transcodes)
+		logger.Infof("Generating %d sprites %d previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.markers, totalsNeeded.transcodes)
 
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
@@ -260,4 +262,58 @@ func (s *singleton) returnToIdleState() {
 	s.Status.SetStatus(Idle)
 	s.Status.indefiniteProgress()
 	s.Status.stopping = false
+}
+
+func (s *singleton) neededScan(paths []string) int64 {
+	var neededScans int64 = 0
+
+	for _, path := range paths {
+		task := ScanTask{FilePath: path}
+		if !task.doesPathExist() {
+			neededScans++
+		}
+	}
+	return neededScans
+}
+
+type totalsGenerate struct {
+	sprites    int64
+	previews   int64
+	markers    int64
+	transcodes int64
+}
+
+func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, markers, transcodes bool) *totalsGenerate {
+
+	var totals totalsGenerate
+	for _, scene := range scenes {
+		if scene != nil {
+			if sprites {
+				task := GenerateSpriteTask{Scene: *scene}
+				if !task.doesSpriteExist(task.Scene.Checksum) {
+					totals.sprites++
+				}
+			}
+
+			if previews {
+				task := GeneratePreviewTask{Scene: *scene}
+				if !task.doesPreviewExist(task.Scene.Checksum) {
+					totals.previews++
+				}
+			}
+
+			if markers {
+				task := GenerateMarkersTask{Scene: *scene}
+				totals.markers += int64(task.isMarkerNeeded())
+
+			}
+			if transcodes {
+				task := GenerateTranscodeTask{Scene: *scene}
+				if task.isTranscodeNeeded() {
+					totals.transcodes++
+				}
+			}
+		}
+	}
+	return &totals
 }
