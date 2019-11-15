@@ -49,3 +49,18 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 	logger.Debugf("[transcode] <%s> created transcode: %s", t.Scene.Checksum, outputPath)
 	return
 }
+
+func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
+
+	videoCodec := t.Scene.VideoCodec.String
+	hasTranscode, _ := HasTranscode(&t.Scene)
+
+	if ffmpeg.IsValidCodec(videoCodec) {
+		return false
+	}
+
+	if hasTranscode {
+		return false
+	}
+	return true
+}
