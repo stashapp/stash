@@ -77,6 +77,18 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
     }
   }
 
+  async function onAutoTag(tag : GQL.TagDataFragment) {
+    if (!tag) {
+      return;
+    }
+    try {
+      await StashService.queryMetadataAutoTag({ tags: [tag.id]});
+      ToastUtils.success("Started auto tagging");
+    } catch (e) {
+      ErrorUtils.handle(e);
+    }
+  }
+
   async function onDelete() {
     try {
       await deleteTag();
@@ -115,6 +127,7 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
       <div key={tag.id} className="tag-list-row">
         <span onClick={() => setEditingTag(tag)}>{tag.name}</span>
         <div style={{float: "right"}}>
+          <Button text="Auto Tag" onClick={() => onAutoTag(tag)}></Button>
           <Link className="bp3-button" to={NavigationUtils.makeTagScenesUrl(tag)}>Scenes: {tag.scene_count}</Link>
           <Link className="bp3-button" to={NavigationUtils.makeTagSceneMarkersUrl(tag)}>
             Markers: {tag.scene_marker_count}

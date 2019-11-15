@@ -1,11 +1,51 @@
 package models
 
-import "github.com/jmoiron/sqlx"
+import (
+	"database/sql"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/stashapp/stash/pkg/database"
+)
 
 type JoinsQueryBuilder struct{}
 
 func NewJoinsQueryBuilder() JoinsQueryBuilder {
 	return JoinsQueryBuilder{}
+}
+
+func (qb *JoinsQueryBuilder) GetScenePerformers(sceneID int, tx *sqlx.Tx) ([]PerformersScenes, error) {
+	ensureTx(tx)
+
+	// Delete the existing joins and then create new ones
+	query := `SELECT * from performers_scenes WHERE scene_id = ?`
+
+	var rows *sqlx.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.Queryx(query, sceneID)
+	} else {
+		rows, err = database.DB.Queryx(query, sceneID)
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	performerScenes := make([]PerformersScenes, 0)
+	for rows.Next() {
+		performerScene := PerformersScenes{}
+		if err := rows.StructScan(&performerScene); err != nil {
+			return nil, err
+		}
+		performerScenes = append(performerScenes, performerScene)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return performerScenes, nil
 }
 
 func (qb *JoinsQueryBuilder) CreatePerformersScenes(newJoins []PerformersScenes, tx *sqlx.Tx) error {
@@ -20,6 +60,31 @@ func (qb *JoinsQueryBuilder) CreatePerformersScenes(newJoins []PerformersScenes,
 		}
 	}
 	return nil
+}
+
+func (qb *JoinsQueryBuilder) AddPerformerScene(sceneID int, performerID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	existingPerformers, err := qb.GetScenePerformers(sceneID, tx)
+
+	if err != nil {
+		return err
+	}
+
+	// ensure not already present
+	for _, p := range existingPerformers {
+		if p.PerformerID == performerID && p.SceneID == sceneID {
+			return nil
+		}
+	}
+
+	performerJoin := PerformersScenes{
+		PerformerID: performerID,
+		SceneID:     sceneID,
+	}
+	performerJoins := append(existingPerformers, performerJoin)
+
+	return qb.UpdatePerformersScenes(sceneID, performerJoins, tx)
 }
 
 func (qb *JoinsQueryBuilder) UpdatePerformersScenes(sceneID int, updatedJoins []PerformersScenes, tx *sqlx.Tx) error {
@@ -39,6 +104,41 @@ func (qb *JoinsQueryBuilder) DestroyPerformersScenes(sceneID int, tx *sqlx.Tx) e
 	// Delete the existing joins
 	_, err := tx.Exec("DELETE FROM performers_scenes WHERE scene_id = ?", sceneID)
 	return err
+}
+
+func (qb *JoinsQueryBuilder) GetSceneTags(sceneID int, tx *sqlx.Tx) ([]ScenesTags, error) {
+	ensureTx(tx)
+
+	// Delete the existing joins and then create new ones
+	query := `SELECT * from scenes_tags WHERE scene_id = ?`
+
+	var rows *sqlx.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.Queryx(query, sceneID)
+	} else {
+		rows, err = database.DB.Queryx(query, sceneID)
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	sceneTags := make([]ScenesTags, 0)
+	for rows.Next() {
+		sceneTag := ScenesTags{}
+		if err := rows.StructScan(&sceneTag); err != nil {
+			return nil, err
+		}
+		sceneTags = append(sceneTags, sceneTag)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return sceneTags, nil
 }
 
 func (qb *JoinsQueryBuilder) CreateScenesTags(newJoins []ScenesTags, tx *sqlx.Tx) error {
@@ -64,6 +164,31 @@ func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int, updatedJoins []Scenes
 		return err
 	}
 	return qb.CreateScenesTags(updatedJoins, tx)
+}
+
+func (qb *JoinsQueryBuilder) AddSceneTag(sceneID int, tagID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	existingTags, err := qb.GetSceneTags(sceneID, tx)
+
+	if err != nil {
+		return err
+	}
+
+	// ensure not already present
+	for _, p := range existingTags {
+		if p.TagID == tagID && p.SceneID == sceneID {
+			return nil
+		}
+	}
+
+	tagJoin := ScenesTags{
+		TagID:   tagID,
+		SceneID: sceneID,
+	}
+	tagJoins := append(existingTags, tagJoin)
+
+	return qb.UpdateScenesTags(sceneID, tagJoins, tx)
 }
 
 func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID int, tx *sqlx.Tx) error {
