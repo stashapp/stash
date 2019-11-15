@@ -40,7 +40,7 @@ func (t *AutoTagPerformerTask) autoTagPerformer() {
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	for _, scene := range scenes {
-		logger.Infof("Adding performer '%s' to scene '%s'", t.performer.Name.String, scene.Title.String)
+		logger.Infof("Adding performer '%s' to scene '%s'", t.performer.Name.String, scene.GetTitle())
 		err := jqb.AddPerformerScene(scene.ID, t.performer.ID, tx)
 
 		if err != nil {
@@ -80,7 +80,7 @@ func (t *AutoTagStudioTask) autoTagStudio() {
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	for _, scene := range scenes {
-		logger.Infof("Adding studio '%s' to scene '%s'", t.studio.Name.String, scene.Title.String)
+		logger.Infof("Adding studio '%s' to scene '%s'", t.studio.Name.String, scene.GetTitle())
 
 		// set the studio id
 		studioID := sql.NullInt64{Int64: int64(t.studio.ID), Valid: true}
@@ -129,7 +129,7 @@ func (t *AutoTagTagTask) autoTagTag() {
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	for _, scene := range scenes {
-		logger.Infof("Adding tag '%s' to scene '%s'", t.tag.Name, scene.Title.String)
+		logger.Infof("Adding tag '%s' to scene '%s'", t.tag.Name, scene.GetTitle())
 
 		err := jqb.AddSceneTag(scene.ID, t.tag.ID, tx)
 
