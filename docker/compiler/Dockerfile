@@ -2,39 +2,43 @@ FROM golang:1.11.5
 
 LABEL maintainer="stashappdev@gmail.com"
 
-ENV GORELEASER_VERSION=0.95.0
-ENV GORELEASER_SHA=4f3b9fc978a3677806ebd959096a1f976a7c7bb5fbdf7a9a1d01554c8c5c31c5
-
-ENV GORELEASER_DOWNLOAD_FILE=goreleaser_Linux_x86_64.tar.gz
-ENV GORELEASER_DOWNLOAD_URL=https://github.com/goreleaser/goreleaser/releases/download/v${GORELEASER_VERSION}/${GORELEASER_DOWNLOAD_FILE}
-
 ENV PACKR2_VERSION=2.0.2
 ENV PACKR2_SHA=f95ff4c96d7a28813220df030ad91700b8464fe292ab3e1dc9582305c2a338d2
 ENV PACKR2_DOWNLOAD_FILE=packr_${PACKR2_VERSION}_linux_amd64.tar.gz
 ENV PACKR2_DOWNLOAD_URL=https://github.com/gobuffalo/packr/releases/download/v${PACKR2_VERSION}/${PACKR2_DOWNLOAD_FILE}
 
 # Install tools
+RUN apt-get update && apt-get install -y apt-transport-https
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+
+
 RUN apt-get update && \
     apt-get install -y automake autogen \
     libtool libxml2-dev uuid-dev libssl-dev bash \
     patch make tar xz-utils bzip2 gzip sed cpio \
-	gcc-multilib g++-multilib gcc-mingw-w64 g++-mingw-w64 clang llvm-dev --no-install-recommends || exit 1; \
+	gcc-6-multilib g++-6-multilib gcc-mingw-w64 g++-mingw-w64 clang llvm-dev \
+	gcc-arm-linux-gnueabi libc-dev-armel-cross linux-libc-dev-armel-cross \
+	nodejs yarn --no-install-recommends || exit 1; \
 	rm -rf /var/lib/apt/lists/*;
 
 # Cross compile setup
 ENV OSX_SDK_VERSION 	10.11
+ENV OSX_SDK_DOWNLOAD_FILE=MacOSX${OSX_SDK_VERSION}.sdk.tar.xz
+ENV OSX_SDK_DOWNLOAD_URL=https://github.com/ndeloof/golang-cross/raw/113fix/${OSX_SDK_DOWNLOAD_FILE}
+ENV OSX_SDK_SHA=98cdd56e0f6c1f9e1af25e11dd93d2e7d306a4aa50430a2bc6bc083ac67efbb8
 ENV OSX_SDK     		MacOSX$OSX_SDK_VERSION.sdk
 ENV OSX_NDK_X86 		/usr/local/osx-ndk-x86
-ENV OSX_SDK_PATH 		/$OSX_SDK.tar.gz
 
-COPY $OSX_SDK.tar.gz /go
-
-RUN git clone https://github.com/tpoechtrager/osxcross.git && \
-    git -C osxcross checkout c47ff0aeed1a7d0e1f884812fc170e415f05be5a || exit 1; \
-    mv $OSX_SDK.tar.gz osxcross/tarballs/ && \
-    UNATTENDED=yes SDK_VERSION=${OSX_SDK_VERSION} OSX_VERSION_MIN=10.9 osxcross/build.sh || exit 1; \
-    mv osxcross/target $OSX_NDK_X86; \
-    rm -rf osxcross;
+RUN  wget ${OSX_SDK_DOWNLOAD_URL}
+RUN  echo "$OSX_SDK_SHA $OSX_SDK_DOWNLOAD_FILE" | sha256sum -c - || exit 1; \
+     git clone https://github.com/tpoechtrager/osxcross.git && \
+     git -C osxcross checkout a9317c18a3a457ca0a657f08cc4d0d43c6cf8953 || exit 1; \
+     mv $OSX_SDK_DOWNLOAD_FILE osxcross/tarballs/ && \
+     UNATTENDED=yes SDK_VERSION=${OSX_SDK_VERSION} OSX_VERSION_MIN=10.9 osxcross/build.sh || exit 1; \
+     mv osxcross/target $OSX_NDK_X86; \
+     rm -rf osxcross;
 
 ENV PATH $OSX_NDK_X86/bin:$PATH
 
@@ -42,17 +46,11 @@ RUN mkdir -p /root/.ssh; \
     chmod 0700 /root/.ssh; \
     ssh-keyscan github.com > /root/.ssh/known_hosts;
 
-RUN  wget ${GORELEASER_DOWNLOAD_URL}; \
-			echo "$GORELEASER_SHA $GORELEASER_DOWNLOAD_FILE" | sha256sum -c - || exit 1; \
-			tar -xzf $GORELEASER_DOWNLOAD_FILE -C /usr/bin/ goreleaser; \
-			rm $GORELEASER_DOWNLOAD_FILE;
-
 RUN  wget ${PACKR2_DOWNLOAD_URL}; \
 			echo "$PACKR2_SHA $PACKR2_DOWNLOAD_FILE" | sha256sum -c - || exit 1; \
 			tar -xzf $PACKR2_DOWNLOAD_FILE -C /usr/bin/ packr2; \
 			rm $PACKR2_DOWNLOAD_FILE;
 
-CMD ["goreleaser", "-v"]
 CMD ["packr2", "version"]
 
 
