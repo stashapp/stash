@@ -22,7 +22,7 @@ func (t *AutoTagPerformerTask) Start(wg *sync.WaitGroup) {
 }
 
 func getQueryRegex(name string) string {
-	return strings.ReplaceAll(name, " ", `(?: |\.|-|_)?`)
+	return strings.Replace(name, " ", `(?: |\.|-|_)?`, -1)
 }
 
 func (t *AutoTagPerformerTask) autoTagPerformer() {
