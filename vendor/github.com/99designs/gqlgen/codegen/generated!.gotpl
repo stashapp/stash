@@ -1,0 +1,256 @@
+{{ reserveImport "context"  }}
+{{ reserveImport "fmt"  }}
+{{ reserveImport "io"  }}
+{{ reserveImport "strconv"  }}
+{{ reserveImport "time"  }}
+{{ reserveImport "sync"  }}
+{{ reserveImport "sync/atomic" }}
+{{ reserveImport "errors"  }}
+{{ reserveImport "bytes"  }}
+
+{{ reserveImport "github.com/vektah/gqlparser" }}
+{{ reserveImport "github.com/vektah/gqlparser/ast" }}
+{{ reserveImport "github.com/99designs/gqlgen/graphql" }}
+{{ reserveImport "github.com/99designs/gqlgen/graphql/introspection" }}
+
+
+// NewExecutableSchema creates an ExecutableSchema from the ResolverRoot interface.
+func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
+	return &executableSchema{
+		resolvers: cfg.Resolvers,
+		directives: cfg.Directives,
+		complexity: cfg.Complexity,
+	}
+}
+
+type Config struct {
+	Resolvers  ResolverRoot
+	Directives DirectiveRoot
+	Complexity ComplexityRoot
+}
+
+type ResolverRoot interface {
+{{- range $object := .Objects -}}
+	{{ if $object.HasResolvers -}}
+		{{$object.Name}}() {{$object.Name}}Resolver
+	{{ end }}
+{{- end }}
+}
+
+type DirectiveRoot struct {
+{{ range $directive := .Directives }}
+	{{ $directive.Declaration }}
+{{ end }}
+}
+
+type ComplexityRoot struct {
+{{ range $object := .Objects }}
+	{{ if not $object.IsReserved -}}
+		{{ $object.Name|go }} struct {
+		{{ range $_, $fields := $object.UniqueFields }}
+			{{- $field := index $fields 0 -}}
+			{{ if not $field.IsReserved -}}
+				{{ $field.GoFieldName }} {{ $field.ComplexitySignature }}
+			{{ end }}
+		{{- end }}
+		}
+	{{- end }}
+{{ end }}
+}
+
+{{ range $object := .Objects -}}
+	{{ if $object.HasResolvers }}
+		type {{$object.Name}}Resolver interface {
+		{{ range $field := $object.Fields -}}
+			{{- if $field.IsResolver }}
+				{{- $field.GoFieldName}}{{ $field.ShortResolverDeclaration }}
+			{{- end }}
+		{{ end }}
+		}
+	{{- end }}
+{{- end }}
+
+type executableSchema struct {
+	resolvers  ResolverRoot
+	directives DirectiveRoot
+	complexity ComplexityRoot
+}
+
+func (e *executableSchema) Schema() *ast.Schema {
+	return parsedSchema
+}
+
+func (e *executableSchema) Complexity(typeName, field string, childComplexity int, rawArgs map[string]interface{}) (int, bool) {
+	ec := executionContext{nil, e}
+	_ = ec
+	switch typeName + "." + field {
+	{{ range $object := .Objects }}
+		{{ if not $object.IsReserved }}
+			{{ range $_, $fields := $object.UniqueFields }}
+				{{- $len := len $fields }}
+				{{- range $i, $field := $fields }}
+					{{- $last := eq (add $i 1) $len }}
+					{{- if not $field.IsReserved }}
+						{{- if eq $i 0 }}case {{ end }}"{{$object.Name}}.{{$field.Name}}"{{ if not $last }},{{ else }}:
+							if e.complexity.{{$object.Name|go}}.{{$field.GoFieldName}} == nil {
+								break
+							}
+							{{ if $field.Args }}
+								args, err := ec.{{ $field.ArgsFunc }}(context.TODO(),rawArgs)
+								if err != nil {
+									return 0, false
+								}
+							{{ end }}
+							return e.complexity.{{$object.Name|go}}.{{$field.GoFieldName}}(childComplexity{{if $field.Args}}, {{$field.ComplexityArgs}} {{ end }}), true
+						{{ end }}
+					{{- end }}
+				{{- end }}
+			{{ end }}
+		{{ end }}
+	{{ end }}
+	}
+	return 0, false
+}
+
+func (e *executableSchema) Query(ctx context.Context, op *ast.OperationDefinition) *graphql.Response {
+	{{- if .QueryRoot }}
+		ec := executionContext{graphql.GetRequestContext(ctx), e}
+
+		buf := ec.RequestMiddleware(ctx, func(ctx context.Context) []byte {
+			data := ec._{{.QueryRoot.Name}}(ctx, op.SelectionSet)
+			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+			return buf.Bytes()
+		})
+
+		return &graphql.Response{
+			Data:       buf,
+			Errors:     ec.Errors,
+			Extensions: ec.Extensions,
+		}
+	{{- else }}
+		return graphql.ErrorResponse(ctx, "queries are not supported")
+	{{- end }}
+}
+
+func (e *executableSchema) Mutation(ctx context.Context, op *ast.OperationDefinition) *graphql.Response {
+	{{- if .MutationRoot }}
+		ec := executionContext{graphql.GetRequestContext(ctx), e}
+
+		buf := ec.RequestMiddleware(ctx, func(ctx context.Context) []byte {
+			data := ec._{{.MutationRoot.Name}}(ctx, op.SelectionSet)
+			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+			return buf.Bytes()
+		})
+
+		return &graphql.Response{
+			Data:       buf,
+			Errors:     ec.Errors,
+			Extensions: ec.Extensions,
+		}
+	{{- else }}
+		return graphql.ErrorResponse(ctx, "mutations are not supported")
+	{{- end }}
+}
+
+func (e *executableSchema) Subscription(ctx context.Context, op *ast.OperationDefinition) func() *graphql.Response {
+	{{- if .SubscriptionRoot }}
+		ec := executionContext{graphql.GetRequestContext(ctx), e}
+
+		next := ec._{{.SubscriptionRoot.Name}}(ctx, op.SelectionSet)
+		if ec.Errors != nil {
+			return graphql.OneShot(&graphql.Response{Data: []byte("null"), Errors: ec.Errors})
+		}
+
+		var buf bytes.Buffer
+		return func() *graphql.Response {
+			buf := ec.RequestMiddleware(ctx, func(ctx context.Context) []byte {
+				buf.Reset()
+				data := next()
+
+				if data == nil {
+					return nil
+				}
+				data.MarshalGQL(&buf)
+				return buf.Bytes()
+			})
+
+			if buf == nil {
+				return nil
+			}
+
+			return &graphql.Response{
+				Data:       buf,
+				Errors:     ec.Errors,
+				Extensions: ec.Extensions,
+			}
+		}
+	{{- else }}
+		return graphql.OneShot(graphql.ErrorResponse(ctx, "subscriptions are not supported"))
+	{{- end }}
+}
+
+type executionContext struct {
+	*graphql.RequestContext
+	*executableSchema
+}
+
+func (ec *executionContext) FieldMiddleware(ctx context.Context, obj interface{}, next graphql.Resolver) (ret interface{}) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	{{- if .Directives }}
+	rctx := graphql.GetResolverContext(ctx)
+	for _, d := range rctx.Field.Definition.Directives {
+		switch d.Name {
+		{{- range $directive := .Directives }}
+		case "{{$directive.Name}}":
+			if ec.directives.{{$directive.Name|ucFirst}} != nil {
+				{{- if $directive.Args }}
+					rawArgs := d.ArgumentMap(ec.Variables)
+					args, err := ec.{{ $directive.ArgsFunc }}(ctx,rawArgs)
+					if err != nil {
+						ec.Error(ctx, err)
+						return nil
+					}
+				{{- end }}
+				n := next
+				next = func(ctx context.Context) (interface{}, error) {
+					return ec.directives.{{$directive.Name|ucFirst}}({{$directive.CallArgs}})
+				}
+			}
+		{{- end }}
+		}
+	}
+	{{- end }}
+	res, err := ec.ResolverMiddleware(ctx, next)
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	return res
+}
+
+func (ec *executionContext) introspectSchema() (*introspection.Schema, error) {
+	if ec.DisableIntrospection {
+		return nil, errors.New("introspection disabled")
+	}
+	return introspection.WrapSchema(parsedSchema), nil
+}
+
+func (ec *executionContext) introspectType(name string) (*introspection.Type, error) {
+	if ec.DisableIntrospection {
+		return nil, errors.New("introspection disabled")
+	}
+	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
+}
+
+var parsedSchema = gqlparser.MustLoadSchema(
+	{{- range $filename, $schema := .SchemaStr }}
+		&ast.Source{Name: {{$filename|quote}}, Input: {{$schema|rawQuote}}},
+	{{- end }}
+)

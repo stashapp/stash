@@ -17,7 +17,7 @@ clean:
 # Regenerates GraphQL files
 .PHONY: generate
 generate:
-	go generate
+	go generate -mod=vendor
 	cd ui/v2 && yarn run gqlgen
 
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
@@ -28,7 +28,7 @@ fmt:
 # Runs go vet on the project's source code.
 .PHONY: vet
 vet:
-	go vet ./...
+	go vet -mod=vendor ./...
 
 .PHONY: lint
 lint:
