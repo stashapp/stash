@@ -22,7 +22,10 @@ func (t *AutoTagPerformerTask) Start(wg *sync.WaitGroup) {
 }
 
 func getQueryRegex(name string) string {
-	return strings.Replace(name, " ", `(?: |\.|-|_)?`, -1)
+	const separator = `[.\-_ ]`
+	ret := strings.Replace(name, " ", separator+"*", -1)
+	ret = "(?:^|" + separator + "+)" + ret + "(?:$|" + separator + "+)"
+	return ret
 }
 
 func (t *AutoTagPerformerTask) autoTagPerformer() {
@@ -34,19 +37,23 @@ func (t *AutoTagPerformerTask) autoTagPerformer() {
 		Q: &regex,
 	}
 
+	logger.Infof("Using regex '%s' to search for scenes", regex)
 	scenes, _ := qb.QueryByPathRegex(&filter)
 
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	for _, scene := range scenes {
-		logger.Infof("Adding performer '%s' to scene '%s'", t.performer.Name.String, scene.GetTitle())
-		err := jqb.AddPerformerScene(scene.ID, t.performer.ID, tx)
+		added, err := jqb.AddPerformerScene(scene.ID, t.performer.ID, tx)
 
 		if err != nil {
-			logger.Infof("Error adding performer to scene: %s", err.Error())
+			logger.Infof("Error adding performer '%s' to scene '%s': %s", t.performer.Name.String, scene.GetTitle(), err.Error())
 			tx.Rollback()
 			return
+		}
+
+		if added {
+			logger.Infof("Added performer '%s' to scene '%s'", t.performer.Name.String, scene.GetTitle())
 		}
 	}
 
@@ -80,6 +87,11 @@ func (t *AutoTagStudioTask) autoTagStudio() {
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	for _, scene := range scenes {
+		if scene.StudioID.Int64 == int64(t.studio.ID) {
+			// don't modify
+			continue
+		}
+
 		logger.Infof("Adding studio '%s' to scene '%s'", t.studio.Name.String, scene.GetTitle())
 
 		// set the studio id
@@ -129,14 +141,16 @@ func (t *AutoTagTagTask) autoTagTag() {
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	for _, scene := range scenes {
-		logger.Infof("Adding tag '%s' to scene '%s'", t.tag.Name, scene.GetTitle())
-
-		err := jqb.AddSceneTag(scene.ID, t.tag.ID, tx)
+		added, err := jqb.AddSceneTag(scene.ID, t.tag.ID, tx)
 
 		if err != nil {
-			logger.Infof("Error adding tag to scene: %s", err.Error())
+			logger.Infof("Error adding tag '%s' to scene '%s': %s", t.tag.Name, scene.GetTitle(), err.Error())
 			tx.Rollback()
 			return
+		}
+
+		if added {
+			logger.Infof("Added tag '%s' to scene '%s'", t.tag.Name, scene.GetTitle())
 		}
 	}
 

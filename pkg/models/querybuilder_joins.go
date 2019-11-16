@@ -62,19 +62,22 @@ func (qb *JoinsQueryBuilder) CreatePerformersScenes(newJoins []PerformersScenes,
 	return nil
 }
 
-func (qb *JoinsQueryBuilder) AddPerformerScene(sceneID int, performerID int, tx *sqlx.Tx) error {
+// AddPerformerScene adds a performer to a scene. It does not make any change
+// if the performer already exists on the scene. It returns true if scene
+// performer was added.
+func (qb *JoinsQueryBuilder) AddPerformerScene(sceneID int, performerID int, tx *sqlx.Tx) (bool, error) {
 	ensureTx(tx)
 
 	existingPerformers, err := qb.GetScenePerformers(sceneID, tx)
 
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	// ensure not already present
 	for _, p := range existingPerformers {
 		if p.PerformerID == performerID && p.SceneID == sceneID {
-			return nil
+			return false, nil
 		}
 	}
 
@@ -84,7 +87,9 @@ func (qb *JoinsQueryBuilder) AddPerformerScene(sceneID int, performerID int, tx 
 	}
 	performerJoins := append(existingPerformers, performerJoin)
 
-	return qb.UpdatePerformersScenes(sceneID, performerJoins, tx)
+	err = qb.UpdatePerformersScenes(sceneID, performerJoins, tx)
+
+	return err == nil, err
 }
 
 func (qb *JoinsQueryBuilder) UpdatePerformersScenes(sceneID int, updatedJoins []PerformersScenes, tx *sqlx.Tx) error {
@@ -166,19 +171,21 @@ func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int, updatedJoins []Scenes
 	return qb.CreateScenesTags(updatedJoins, tx)
 }
 
-func (qb *JoinsQueryBuilder) AddSceneTag(sceneID int, tagID int, tx *sqlx.Tx) error {
+// AddSceneTag adds a tag to a scene. It does not make any change if the tag
+// already exists on the scene. It returns true if scene tag was added.
+func (qb *JoinsQueryBuilder) AddSceneTag(sceneID int, tagID int, tx *sqlx.Tx) (bool, error) {
 	ensureTx(tx)
 
 	existingTags, err := qb.GetSceneTags(sceneID, tx)
 
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	// ensure not already present
 	for _, p := range existingTags {
 		if p.TagID == tagID && p.SceneID == sceneID {
-			return nil
+			return false, nil
 		}
 	}
 
@@ -188,7 +195,9 @@ func (qb *JoinsQueryBuilder) AddSceneTag(sceneID int, tagID int, tx *sqlx.Tx) er
 	}
 	tagJoins := append(existingTags, tagJoin)
 
-	return qb.UpdateScenesTags(sceneID, tagJoins, tx)
+	err = qb.UpdateScenesTags(sceneID, tagJoins, tx)
+
+	return err == nil, err
 }
 
 func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID int, tx *sqlx.Tx) error {
