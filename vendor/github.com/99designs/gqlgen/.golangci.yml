@@ -1,3 +1,0 @@
-linters-settings:
-  errcheck:
-    ignore: fmt:.*,[rR]ead|[wW]rite|[cC]lose,io:Copy

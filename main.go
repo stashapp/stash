@@ -1,4 +1,4 @@
-//go:generate go run -mod=vendor github.com/99designs/gqlgen
+//go:generate go run github.com/99designs/gqlgen
 package main
 
 import (

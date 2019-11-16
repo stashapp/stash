@@ -16,7 +16,7 @@ before_install:
 script:
 #- make lint
 #- make vet
-- go test -mod=vendor
+- go test
 before_deploy:
 - docker pull stashappdev/compiler
 - sh ./scripts/cross-compile.sh
