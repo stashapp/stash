@@ -1,8 +1,20 @@
 # github.com/99designs/gqlgen v0.9.0
-github.com/99designs/gqlgen/handler
+github.com/99designs/gqlgen
 github.com/99designs/gqlgen/graphql
+github.com/99designs/gqlgen/handler
 github.com/99designs/gqlgen/graphql/introspection
+github.com/99designs/gqlgen/cmd
 github.com/99designs/gqlgen/complexity
+github.com/99designs/gqlgen/api
+github.com/99designs/gqlgen/codegen/config
+github.com/99designs/gqlgen/plugin/servergen
+github.com/99designs/gqlgen/codegen
+github.com/99designs/gqlgen/plugin
+github.com/99designs/gqlgen/plugin/modelgen
+github.com/99designs/gqlgen/plugin/resolvergen
+github.com/99designs/gqlgen/codegen/templates
+github.com/99designs/gqlgen/internal/code
+github.com/99designs/gqlgen/internal/imports
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
 # github.com/PuerkitoBio/goquery v1.5.0
@@ -46,8 +58,8 @@ github.com/gobuffalo/meta
 github.com/gobuffalo/packd
 # github.com/gobuffalo/packr/v2 v2.0.2
 github.com/gobuffalo/packr/v2
-github.com/gobuffalo/packr/v2/file/resolver
 github.com/gobuffalo/packr/v2/file
+github.com/gobuffalo/packr/v2/file/resolver
 github.com/gobuffalo/packr/v2/jam/parser
 github.com/gobuffalo/packr/v2/plog
 github.com/gobuffalo/packr/v2/file/resolver/encoding/hex
@@ -130,6 +142,11 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.4.0
 github.com/spf13/viper
+# github.com/urfave/cli v1.20.0
+github.com/urfave/cli
+# github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e
+github.com/vektah/dataloaden
+github.com/vektah/dataloaden/pkg/generator
 # github.com/vektah/gqlparser v1.1.2
 github.com/vektah/gqlparser
 github.com/vektah/gqlparser/ast
@@ -156,15 +173,15 @@ golang.org/x/sys/windows
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
 # golang.org/x/tools v0.0.0-20190515012406-7d7faa4812bd
-golang.org/x/tools/go/ast/astutil
-golang.org/x/tools/imports
 golang.org/x/tools/go/packages
-golang.org/x/tools/internal/gopathwalk
-golang.org/x/tools/internal/module
+golang.org/x/tools/imports
+golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/semver
-golang.org/x/tools/internal/fastwalk
+golang.org/x/tools/internal/module
 golang.org/x/tools/go/internal/gcimporter
+golang.org/x/tools/internal/fastwalk
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2

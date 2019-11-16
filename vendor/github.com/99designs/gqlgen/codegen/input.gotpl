@@ -1,0 +1,56 @@
+{{- range $input := .Inputs }}
+	{{- if not .HasUnmarshal }}
+	func (ec *executionContext) unmarshalInput{{ .Name }}(ctx context.Context, v interface{}) ({{.Type | ref}}, error) {
+		var it {{.Type | ref}}
+		var asMap = v.(map[string]interface{})
+		{{ range $field := .Fields}}
+			{{- if $field.Default}}
+				if _, present := asMap[{{$field.Name|quote}}] ; !present {
+					asMap[{{$field.Name|quote}}] = {{ $field.Default | dump }}
+				}
+			{{- end}}
+		{{- end }}
+
+		for k, v := range asMap {
+			switch k {
+			{{- range $field := .Fields }}
+			case {{$field.Name|quote}}:
+				var err error
+				{{- if $field.Directives }}
+					getField0 := func(ctx context.Context) (interface{}, error) { return ec.{{ $field.TypeReference.UnmarshalFunc }}(ctx, v) }
+
+					{{- range $i, $directive := $field.Directives }}
+						getField{{add $i 1}} := func(ctx context.Context) (res interface{}, err error) {
+							{{- range $dArg := $directive.Args }}
+								{{- if and $dArg.TypeReference.IsPtr ( notNil "Value" $dArg ) }}
+									{{ $dArg.VarName }} := {{ $dArg.Value | dump }}
+								{{- end }}
+							{{- end }}
+							n := getField{{$i}}
+							return ec.directives.{{$directive.Name|ucFirst}}({{$directive.ResolveArgs "it" "n" }})
+						}
+					{{- end }}
+
+					tmp, err := getField{{$field.Directives|len}}(ctx)
+					if err != nil {
+						return it, err
+					}
+					if data, ok := tmp.({{ $field.TypeReference.GO | ref }}) ; ok {
+						it.{{$field.GoFieldName}} = data
+					} else {
+						return it, fmt.Errorf(`unexpected type %T from directive, should be {{ $field.TypeReference.GO }}`, tmp)
+					}
+				{{- else }}
+					it.{{$field.GoFieldName}}, err = ec.{{ $field.TypeReference.UnmarshalFunc }}(ctx, v)
+					if err != nil {
+						return it, err
+					}
+				{{- end }}
+			{{- end }}
+			}
+		}
+
+		return it, nil
+	}
+	{{- end }}
+{{ end }}

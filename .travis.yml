@@ -9,14 +9,14 @@ env:
   - GO111MODULE=on
 before_install:
 - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
-- yarn --cwd ui/v2 install
+- travis_retry yarn --cwd ui/v2 install
 - make generate
 - CI=false yarn --cwd ui/v2 build # TODO: Fix warnings
 #- go get -v github.com/mgechev/revive
 script:
 #- make lint
 #- make vet
-- go test
+- go test -mod=vendor
 before_deploy:
 - docker pull stashappdev/compiler
 - sh ./scripts/cross-compile.sh

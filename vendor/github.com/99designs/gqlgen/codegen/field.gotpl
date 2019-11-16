@@ -1,0 +1,100 @@
+{{- range $object := .Objects }}{{- range $field := $object.Fields }}
+
+{{- if $object.Stream }}
+	func (ec *executionContext) _{{$object.Name}}_{{$field.Name}}(ctx context.Context, field graphql.CollectedField) func() graphql.Marshaler {
+		ctx = graphql.WithResolverContext(ctx, &graphql.ResolverContext{
+			Field: field,
+			Args:  nil,
+		})
+		{{- if $field.Args }}
+			rawArgs := field.ArgumentMap(ec.Variables)
+			args, err := ec.{{ $field.ArgsFunc }}(ctx,rawArgs)
+			if err != nil {
+				ec.Error(ctx, err)
+				return nil
+			}
+		{{- end }}
+		// FIXME: subscriptions are missing request middleware stack https://github.com/99designs/gqlgen/issues/259
+		//          and Tracer stack
+		rctx := ctx
+		results, err := ec.resolvers.{{ $field.ShortInvocation }}
+		if err != nil {
+			ec.Error(ctx, err)
+			return nil
+		}
+		return func() graphql.Marshaler {
+			res, ok := <-results
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.{{ $field.TypeReference.MarshalFunc }}(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		}
+	}
+{{ else }}
+	func (ec *executionContext) _{{$object.Name}}_{{$field.Name}}(ctx context.Context, field graphql.CollectedField{{ if not $object.Root }}, obj {{$object.Reference | ref}}{{end}}) graphql.Marshaler {
+		ctx = ec.Tracer.StartFieldExecution(ctx, field)
+		defer func () { ec.Tracer.EndFieldExecution(ctx) }()
+		rctx := &graphql.ResolverContext{
+			Object: {{$object.Name|quote}},
+			Field: field,
+			Args:  nil,
+			IsMethod: {{or $field.IsMethod $field.IsResolver}},
+		}
+		ctx = graphql.WithResolverContext(ctx, rctx)
+		{{- if $field.Args }}
+			rawArgs := field.ArgumentMap(ec.Variables)
+			args, err := ec.{{ $field.ArgsFunc }}(ctx,rawArgs)
+			if err != nil {
+				ec.Error(ctx, err)
+				return graphql.Null
+			}
+			rctx.Args = args
+		{{- end }}
+		ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+		resTmp := ec.FieldMiddleware(ctx, {{if $object.Root}}nil{{else}}obj{{end}}, func(rctx context.Context) (interface{}, error) {
+			ctx = rctx  // use context from middleware stack in children
+			{{- if $field.IsResolver }}
+				return ec.resolvers.{{ $field.ShortInvocation }}
+			{{- else if $field.IsMap }}
+				switch v := {{$field.GoReceiverName}}[{{$field.Name|quote}}].(type) {
+				case {{$field.TypeReference.GO | ref}}:
+					return v, nil
+				case {{$field.TypeReference.Elem.GO | ref}}:
+					return &v, nil
+				case nil:
+					return ({{$field.TypeReference.GO | ref}})(nil), nil
+				default:
+					return nil, fmt.Errorf("unexpected type %T for field %s", v, {{ $field.Name | quote}})
+				}
+			{{- else if $field.IsMethod }}
+				{{- if $field.NoErr }}
+					return {{$field.GoReceiverName}}.{{$field.GoFieldName}}({{ $field.CallArgs }}), nil
+				{{- else }}
+					return {{$field.GoReceiverName}}.{{$field.GoFieldName}}({{ $field.CallArgs }})
+				{{- end }}
+			{{- else if $field.IsVariable }}
+				return {{$field.GoReceiverName}}.{{$field.GoFieldName}}, nil
+			{{- end }}
+		})
+		if resTmp == nil {
+			{{- if $field.TypeReference.GQL.NonNull }}
+				if !ec.HasError(rctx) {
+					ec.Errorf(ctx, "must not be null")
+				}
+			{{- end }}
+			return graphql.Null
+		}
+		res := resTmp.({{$field.TypeReference.GO | ref}})
+		rctx.Result = res
+		ctx = ec.Tracer.StartFieldChildExecution(ctx)
+		return ec.{{ $field.TypeReference.MarshalFunc }}(ctx, field.Selections, res)
+	}
+{{ end }}
+
+{{- end }}{{- end}}
