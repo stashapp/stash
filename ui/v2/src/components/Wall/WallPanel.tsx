@@ -1,8 +1,9 @@
 import _ from "lodash";
-import React, { FunctionComponent, useState } from "react";
+import React, { FunctionComponent, useState, useEffect } from "react";
 import * as GQL from "../../core/generated-graphql";
 import "./Wall.scss";
-import { WallItem } from "./WallItem";
+import { WallItem, IWallItemPosition } from "./WallItem";
+import justifiedLayout from "justified-layout";
 
 interface IWallPanelProps {
   scenes?: GQL.SlimSceneDataFragment[];
@@ -12,6 +13,36 @@ interface IWallPanelProps {
 
 export const WallPanel: FunctionComponent<IWallPanelProps> = (props: IWallPanelProps) => {
   const [showOverlay, setShowOverlay] = useState<boolean>(false);
+  const [wallItemPositions, setWallItemPositions] = useState<IWallItemPosition[]>([]);
+
+  useEffect(() => {
+    if (!props.scenes) {
+      setWallItemPositions([]);
+    } else {
+      // need to get all of the aspect ratios
+      var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      w = w * 0.8;
+
+      let newSceneAspectRatios = props.scenes.map((scene) => {
+        const defaultAspectRatio = 4 / 3;
+        if (!scene.file.width || !scene.file.height) {
+          return defaultAspectRatio;
+        }
+        return scene.file.width / scene.file.height;
+      });
+
+      const rowHeight = 290;
+      const heightTolerance = 0.1;
+      let layoutGeo = justifiedLayout(newSceneAspectRatios, {
+        containerWidth: w, 
+        targetRowHeight: rowHeight, 
+        targetRowHeightTolerance: heightTolerance,
+        boxSpacing: { horizontal: 0, vertical: 0 }
+      });
+
+      setWallItemPositions(layoutGeo.boxes as IWallItemPosition[]);
+    }
+  }, [props.scenes]);
 
   function onOverlay(show: boolean) {
     setShowOverlay(show);
@@ -51,6 +82,7 @@ export const WallPanel: FunctionComponent<IWallPanelProps> = (props: IWallPanelP
           onOverlay={onOverlay}
           clickHandler={props.clickHandler}
           origin={origin}
+          position={wallItemPositions[index]}
         />
       );
     });

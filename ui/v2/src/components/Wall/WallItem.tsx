@@ -11,8 +11,16 @@ interface IWallItemProps {
   scene?: GQL.SlimSceneDataFragment;
   sceneMarker?: GQL.SceneMarkerDataFragment;
   origin?: string;
+  position?: IWallItemPosition;
   onOverlay: (show: boolean) => void;
   clickHandler?: (item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment) => void;
+}
+
+export interface IWallItemPosition {
+  top: number,
+  width: number,
+  height: number,
+  left: number
 }
 
 export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProps) => {
@@ -96,12 +104,20 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
   const className = ["scene-wall-item-container"];
   if (videoHoverHook.isHovering.current) { className.push("double-scale"); }
   const style: React.CSSProperties = {};
+
+  if (!!props.position) {
+    let position = props.position;
+    style.width = position.width;
+    style.height = position.height;
+    style.left = position.left;
+    style.top = position.top;
+  }
+
   if (!!props.origin) { style.transformOrigin = props.origin; }
   return (
-    <div className="wall grid-item">
+    <div style={style} className="wall grid-item">
       <div
         className={className.join(" ")}
-        style={style}
         onTransitionEnd={onTransitionEnd}
         onMouseEnter={() => debouncedOnMouseEnter.current()}
         onMouseMove={() => debouncedOnMouseEnter.current()}
