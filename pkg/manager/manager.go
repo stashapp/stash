@@ -43,7 +43,7 @@ func Initialize() *singleton {
 			JSON:   &jsonUtils{},
 		}
 
-		instance.refreshConfig()
+		instance.RefreshConfig()
 
 		initFFMPEG()
 	})
@@ -131,7 +131,7 @@ func initLog() {
 	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
 }
 
-func (s *singleton) refreshConfig() {
+func (s *singleton) RefreshConfig() {
 	s.Paths = paths.NewPaths()
 	if config.IsValid() {
 		_ = utils.EnsureDir(s.Paths.Generated.Screenshots)
