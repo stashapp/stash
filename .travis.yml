@@ -18,9 +18,11 @@ script:
 #- make vet
 - go test -mod=vendor
 before_deploy:
+- if [ "$TRAVIS_BRANCH" = "develop"]; then export TAG_SUFFIX="_dev; fi
+- export STASH_VERSION="v0.0.0-alpha${TAG_SUFFIX}""
 - docker pull stashappdev/compiler
 - sh ./scripts/cross-compile.sh
-- git tag -f v0.0.0-alpha
+- git tag -f ${STASH_VERSION}
 - git push -f --tags
 - export RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')
 deploy:
@@ -37,7 +39,8 @@ deploy:
   body: ${RELEASE_DATE}
   on:
     repo: stashapp/stash
-    branch: master
+    all_branches: true
+    condition: $TRAVIS_BRANCH =~ ^(master|develop)$
 branches:
   only:
     - master

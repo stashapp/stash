@@ -27,6 +27,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+var version string = ""
 var buildstamp string = ""
 var githash string = ""
 
@@ -67,7 +68,7 @@ func Start() {
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
 
 	initialiseImages()
-	
+
 	r := chi.NewRouter()
 
 	r.Use(authenticateHandler())
@@ -112,7 +113,7 @@ func Start() {
 		if !config.GetCSSEnabled() {
 			return
 		}
-		
+
 		// search for custom.css in current directory, then $HOME/.stash
 		fn := config.GetCSSPath()
 		exists, _ := utils.FileExists(fn)
@@ -224,11 +225,15 @@ func Start() {
 }
 
 func printVersion() {
-	fmt.Printf("stash version: %s (%s)\n", githash, buildstamp)
+	versionString := githash
+	if version != "" {
+		versionString = version + " (" + versionString + ")"
+	}
+	fmt.Printf("stash version: %s - %s\n", versionString, buildstamp)
 }
 
-func GetVersion() (string, string) {
-	return githash, buildstamp
+func GetVersion() (string, string, string) {
+	return version, githash, buildstamp
 }
 
 func makeTLSConfig() *tls.Config {

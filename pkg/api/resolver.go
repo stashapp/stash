@@ -108,9 +108,10 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 }
 
 func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
-	hash, buildtime := GetVersion()
+	version, hash, buildtime := GetVersion()
 
 	return &models.Version{
+		Version:   &version,
 		Hash:      hash,
 		BuildTime: buildtime,
 	}, nil
@@ -173,7 +174,7 @@ func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query s
 // method determines if it was omitted altogether.
 func wasFieldIncluded(ctx context.Context, field string) bool {
 	rctx := graphql.GetRequestContext(ctx)
-	
+
 	_, ret := rctx.Variables[field]
 	return ret
 }
