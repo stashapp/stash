@@ -43,6 +43,7 @@ code {
   &.wall {
     padding: 0;
     margin: 0;
+    position: relative;
   }
 
   & .bp3-button.favorite .bp3-icon {
@@ -75,6 +76,7 @@ code {
   &.wall {
     width: calc(20%);
     margin: 0;
+    position: static;
   }
 }
 
