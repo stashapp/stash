@@ -21,6 +21,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
@@ -67,7 +68,7 @@ func Start() {
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
 
 	initialiseImages()
-	
+
 	r := chi.NewRouter()
 
 	r.Use(authenticateHandler())
@@ -112,7 +113,7 @@ func Start() {
 		if !config.GetCSSEnabled() {
 			return
 		}
-		
+
 		// search for custom.css in current directory, then $HOME/.stash
 		fn := config.GetCSSPath()
 		exists, _ := utils.FileExists(fn)
@@ -181,6 +182,8 @@ func Start() {
 			http.Error(w, fmt.Sprintf("there was an error saving the config file: %s", err), 500)
 			return
 		}
+
+		manager.GetInstance().RefreshConfig()
 
 		http.Redirect(w, r, "/", 301)
 	})
