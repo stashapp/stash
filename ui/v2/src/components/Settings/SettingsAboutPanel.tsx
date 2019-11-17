@@ -16,12 +16,23 @@ interface IProps {}
 export const SettingsAboutPanel: FunctionComponent<IProps> = (props: IProps) => {
   const { data, error, loading } = StashService.useVersion();
 
+  function maybeRenderTag() {
+    if (!data || !data.version || !data.version.version) { return; }
+    return (
+      <tr>
+        <td>Version:</td>
+        <td>{data.version.version}</td>
+      </tr>
+    );
+  }
+
   function renderVersion() {
     if (!data || !data.version) { return; }
     return (
       <>
       <HTMLTable>
         <tbody>
+          {maybeRenderTag()}
           <tr>
             <td>Build hash:</td>
             <td>{data.version.hash}</td>
