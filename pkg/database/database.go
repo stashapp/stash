@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -38,10 +39,20 @@ func Initialize(databasePath string) {
 	DB = conn
 }
 
-func Reset(databasePath string) {
-	_ = DB.Close()
-	_ = os.Remove(databasePath)
+func Reset(databasePath string) error {
+	err := DB.Close()
+
+	if err != nil {
+		return errors.New("Error closing database: " + err.Error())
+	}
+
+	err = os.Remove(databasePath)
+	if err != nil {
+		return errors.New("Error removing database: " + err.Error())
+	}
+
 	Initialize(databasePath)
+	return nil
 }
 
 // Migrate the database
@@ -71,6 +82,7 @@ func runMigrations(databasePath string) {
 			panic(err.Error())
 		}
 	}
+	m.Close()
 }
 
 func registerRegexpFunc() {

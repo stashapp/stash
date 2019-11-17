@@ -3,6 +3,10 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
@@ -10,9 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"strconv"
-	"sync"
-	"time"
 )
 
 type ImportTask struct {
@@ -34,7 +35,12 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 	}
 	t.Scraped = scraped
 
-	database.Reset(config.GetDatabasePath())
+	err := database.Reset(config.GetDatabasePath())
+
+	if err != nil {
+		logger.Errorf("Error resetting database: %s", err.Error())
+		return
+	}
 
 	ctx := context.TODO()
 
