@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -74,6 +75,8 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	if err := config.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}
+
+	manager.GetInstance().RefreshConfig()
 
 	return makeConfigGeneralResult(), nil
 }
