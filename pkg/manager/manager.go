@@ -71,6 +71,9 @@ func initConfig() {
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(config.Generated, viper.GetString(config.Metadata))
 
+	// Set default scrapers path
+	viper.SetDefault(config.ScrapersPath, config.GetDefaultScrapersPath())
+
 	// Disabling config watching due to race condition issue
 	// See: https://github.com/spf13/viper/issues/174
 	// Changes to the config outside the system will require a restart

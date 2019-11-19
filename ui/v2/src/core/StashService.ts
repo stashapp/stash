@@ -185,6 +185,20 @@ export class StashService {
     return GQL.useSceneMarkerDestroy({ refetchQueries: ["FindScene"] }); 
   }
 
+  public static useListScrapers(scraperType: GQL.ScraperType) { 
+    return GQL.useListScrapers({
+      variables: {
+        scraper_type: scraperType
+      }
+    }); 
+  }
+  public static useScrapePerformerList(scraperId: string, q : string) { 
+    return GQL.useScrapePerformerList({ variables: { scraper_id: scraperId, query: q }}); 
+  }
+  public static useScrapePerformer(scraperId: string, scrapedPerformer : GQL.ScrapedPerformerInput) {
+     return GQL.useScrapePerformer({ variables: { scraper_id: scraperId, scraped_performer: scrapedPerformer }});
+  }
+
   public static useScrapeFreeonesPerformers(q: string) { return GQL.useScrapeFreeonesPerformers({ variables: { q } }); }
   public static useMarkerStrings() { return GQL.useMarkerStrings(); }
   public static useAllTags() { return GQL.useAllTags(); }
@@ -366,6 +380,25 @@ export class StashService {
       query: GQL.ScrapeFreeonesDocument,
       variables: {
         performer_name: performerName,
+      },
+    });
+  }
+
+  public static queryScrapePerformer(scraperId: string, scrapedPerformer: GQL.ScrapedPerformerInput) {
+    return StashService.client.query<GQL.ScrapePerformerQuery>({
+      query: GQL.ScrapePerformerDocument,
+      variables: {
+        scraper_id: scraperId,
+        scraped_performer: scrapedPerformer,
+      },
+    });
+  }
+
+  public static queryScrapePerformerURL(url: string) {
+    return StashService.client.query<GQL.ScrapePerformerUrlQuery>({
+      query: GQL.ScrapePerformerUrlDocument,
+      variables: {
+        url: url,
       },
     });
   }
