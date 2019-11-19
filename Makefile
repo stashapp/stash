@@ -34,6 +34,14 @@ vet:
 lint:
 	revive -config revive.toml -exclude ./vendor/...  ./...
 
+.PHONY: test
+test: 
+	go test -mod=vendor ./...
+
+.PHONY: it
+it:
+	go test -mod=vendor -tags=integration ./...
+
 .PHONY: ui
 ui:
 	cd ui/v2 && yarn build
