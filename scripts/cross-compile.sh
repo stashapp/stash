@@ -13,4 +13,4 @@ RASPPI="GOOS=linux GOARCH=arm GOARM=5 CC=arm-linux-gnueabi-gcc packr2 build -o d
 
 COMMAND="$SETUP $WINDOWS $DARWIN $LINUX $RASPPI"
 
-docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash stashapp/stash:compiler /bin/bash -c "$COMMAND"
+docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash stashapp/compiler:develop /bin/bash -c "$COMMAND"
