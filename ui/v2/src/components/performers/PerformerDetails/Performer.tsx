@@ -13,7 +13,7 @@ import { StashService } from "../../../core/StashService";
 import { IBaseProps } from "../../../models";
 import { ErrorUtils } from "../../../utils/errors";
 import { TableUtils } from "../../../utils/table";
-import { FreeOnesPerformerSuggest } from "../../select/FreeOnesPerformerSuggest";
+import { ScrapePerformerSuggest } from "../../select/ScrapePerformerSuggest";
 import { DetailsEditNavbar } from "../../Shared/DetailsEditNavbar";
 
 interface IPerformerProps extends IBaseProps {}
@@ -23,8 +23,8 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
-  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<"freeones" | undefined>(undefined);
-  const [scrapePerformerName, setScrapePerformerName] = useState<string>("");
+  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<GQL.ListScrapersListScrapers | undefined>(undefined);
+  const [scrapePerformerDetails, setScrapePerformerDetails] = useState<GQL.ScrapePerformerListScrapePerformerList | undefined>(undefined);
 
   // Editing performer state
   const [image, setImage] = useState<string | undefined>(undefined);
@@ -51,6 +51,9 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
+
+  const Scrapers = StashService.useListScrapers(GQL.ScraperType.Performer);
+  const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListScrapersListScrapers[]>([]);
 
   const { data, error, loading } = StashService.useFindPerformer(props.match.params.id);
   const updatePerformer = StashService.usePerformerUpdate(getPerformerInput() as GQL.PerformerUpdateInput);
@@ -93,10 +96,23 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     }
   }, [performer]);
 
-  if (!isNew && !isEditing) {
-    if (!data || !data.findPerformer || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
-    if (!!error) { return <>error...</>; }
+  useEffect(() => {
+    var newQueryableScrapers : GQL.ListScrapersListScrapers[] = [];
+
+    if (!!Scrapers.data && Scrapers.data.listScrapers) {
+      newQueryableScrapers = Scrapers.data.listScrapers.filter((s) => {
+        return s.supported_scrapes.includes(GQL.ScrapeType.Query);
+      });
+    }
+
+    setQueryableScrapers(newQueryableScrapers);
+
+  }, [Scrapers.data])
+
+  if ((!isNew && !isEditing && (!data || !data.findPerformer)) || isLoading) {
+    return <Spinner size={Spinner.SIZE_LARGE} />; 
   }
+  if (!!error) { return <>error...</>; }
 
   function getPerformerInput() {
     const performerInput: Partial<GQL.PerformerCreateInput | GQL.PerformerUpdateInput> = {
@@ -166,23 +182,46 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     reader.readAsDataURL(file);
   }
 
-  function onDisplayFreeOnesDialog() {
-    setIsDisplayingScraperDialog("freeones");
+  function onDisplayFreeOnesDialog(scraper: GQL.ListScrapersListScrapers) {
+    setIsDisplayingScraperDialog(scraper);
   }
 
-  async function onScrapeFreeOnes() {
+  function getQueryScraperPerformerInput() {
+    if (!scrapePerformerDetails) {
+      return {};
+    }
+
+    let ret = _.clone(scrapePerformerDetails);
+    delete ret.__typename;
+    return ret as GQL.ScrapedPerformerInput;
+  }
+
+  async function onScrapePerformer() {
+    setIsDisplayingScraperDialog(undefined);
     setIsLoading(true);
     try {
-      if (!scrapePerformerName) { return; }
-      const result = await StashService.queryScrapeFreeones(scrapePerformerName);
-      if (!result.data || !result.data.scrapeFreeones) { return; }
-      updatePerformerEditState(result.data.scrapeFreeones);
+      if (!scrapePerformerDetails || !isDisplayingScraperDialog) { return; }
+      const result = await StashService.queryScrapePerformer(isDisplayingScraperDialog.id, getQueryScraperPerformerInput());
+      if (!result.data || !result.data.scrapePerformer) { return; }
+      updatePerformerEditState(result.data.scrapePerformer);
+    } catch (e) {
+      ErrorUtils.handle(e);
+    }
+    setIsLoading(false);
+  }
+
+  async function onScrapePerformerURL() {
+    if (!url) { return; }
+    setIsLoading(true);
+    try {
+      const result = await StashService.queryScrapePerformerURL(url);
+      if (!result.data || !result.data.scrapePerformerURL) { return; }
+      updatePerformerEditState(result.data.scrapePerformerURL);
     } catch (e) {
       ErrorUtils.handle(e);
     } finally {
-      setIsDisplayingScraperDialog(undefined);
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }
 
   function renderEthnicity() {
@@ -203,18 +242,58 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
         title="Scrape"
       >
         <div className="dialog-content">
-          <FreeOnesPerformerSuggest
+          <ScrapePerformerSuggest
             placeholder="Performer name"
             style={{width: "100%"}}
-            onQueryChange={(query) => setScrapePerformerName(query)}
+            scraperId={isDisplayingScraperDialog ? isDisplayingScraperDialog.id : ""}
+            onSelectPerformer={(query) => setScrapePerformerDetails(query)}
           />
         </div>
         <div className={Classes.DIALOG_FOOTER}>
           <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <Button onClick={() => onScrapeFreeOnes()}>Scrape</Button>
+            <Button onClick={() => onScrapePerformer()}>Scrape</Button>
           </div>
         </div>
       </Dialog>
+    );
+  }
+
+  function urlScrapable(url: string) : boolean {
+    return !!url && !!Scrapers.data && Scrapers.data.listScrapers && Scrapers.data.listScrapers.some((s) => {
+      return !!s.urls && s.urls.some((u) => { return url.includes(u); });
+    });
+  }
+
+  function maybeRenderScrapeButton() {
+    if (!url || !urlScrapable(url)) {
+      return undefined;
+    }
+    return (
+      <Button 
+        minimal={true} 
+        icon="import" 
+        id="scrape-url-button"
+        onClick={() => onScrapePerformerURL()}/>
+    )
+  }
+
+  function renderURLField() {
+    return (
+      <tr>
+        <td id="url-field">
+          URL 
+          {maybeRenderScrapeButton()}
+        </td>
+        <td>
+          <EditableText
+            disabled={!isEditing}
+            value={url}
+            placeholder="URL"
+            multiline={true}
+            onChange={(newValue) => setUrl(newValue)}
+          />
+        </td>
+      </tr>
     );
   }
 
@@ -234,7 +313,8 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
             onSave={onSave}
             onDelete={onDelete}
             onImageChange={onImageChange}
-            onDisplayFreeOnesDialog={onDisplayFreeOnesDialog}
+            scrapers={queryableScrapers}
+            onDisplayScraperDialog={onDisplayFreeOnesDialog}
           />
           <h1 className="bp3-heading">
             <EditableText
@@ -264,7 +344,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
             />
           </div>
 
-          <HTMLTable style={{width: "100%"}}>
+          <HTMLTable id="performer-details" style={{width: "100%"}}>
             <tbody>
               {TableUtils.renderEditableTextTableRow(
                 {title: "Birthdate (YYYY-MM-DD)", value: birthdate, isEditing, onChange: setBirthdate})}
@@ -285,8 +365,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
                 {title: "Tattoos", value: tattoos, isEditing, onChange: setTattoos})}
               {TableUtils.renderEditableTextTableRow(
                 {title: "Piercings", value: piercings, isEditing, onChange: setPiercings})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "URL", value: url, isEditing, onChange: setUrl})}
+              {renderURLField()}
               {TableUtils.renderEditableTextTableRow(
                 {title: "Twitter", value: twitter, isEditing, onChange: setTwitter})}
               {TableUtils.renderEditableTextTableRow(

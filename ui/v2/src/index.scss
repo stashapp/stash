@@ -314,5 +314,23 @@ span.block {
   & .scene-parser-row div:first-child > input {
     margin-bottom: 5px;
   }
+}
 
+#performer-details {
+  & td {
+    vertical-align: middle;
+  }
+
+  & td:first-child {
+    width: 30ch;
+  }
+
+  & #url-field {
+    line-height: 30px;
+  }
+
+  & #scrape-url-button {
+    float: right;
+    height: 30px;
+  }
 }

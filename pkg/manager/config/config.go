@@ -22,6 +22,8 @@ const Password = "password"
 
 const Database = "database"
 
+const ScrapersPath = "scrapers_path"
+
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
@@ -71,6 +73,20 @@ func GetMetadataPath() string {
 
 func GetDatabasePath() string {
 	return viper.GetString(Database)
+}
+
+func GetDefaultScrapersPath() string {
+	// default to the same directory as the config file
+	configFileUsed := viper.ConfigFileUsed()
+	configDir := filepath.Dir(configFileUsed)
+
+	fn := filepath.Join(configDir, "scrapers")
+
+	return fn
+}
+
+func GetScrapersPath() string {
+	return viper.GetString(ScrapersPath)
 }
 
 func GetHost() string {

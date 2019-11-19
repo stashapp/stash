@@ -1,0 +1,16 @@
+enum ScraperType {
+    PERFORMER
+}
+
+enum ScrapeType {
+    QUERY
+    URL
+}
+
+type Scraper {
+    id: ID!
+    name: String!
+    type: ScraperType!
+    urls: [String!]
+    supported_scrapes: [ScrapeType!]!
+}

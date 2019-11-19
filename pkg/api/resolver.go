@@ -8,7 +8,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scraper"
 )
 
 type Resolver struct{}
@@ -159,14 +158,6 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 	}
 
 	return result, nil
-}
-
-func (r *queryResolver) ScrapeFreeones(ctx context.Context, performer_name string) (*models.ScrapedPerformer, error) {
-	return scraper.GetPerformer(performer_name)
-}
-
-func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error) {
-	return scraper.GetPerformerNames(query)
 }
 
 // wasFieldIncluded returns true if the given field was included in the request.

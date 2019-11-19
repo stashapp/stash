@@ -25,7 +25,8 @@ interface IProps {
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
 
   // TODO: only for performers.  make generic
-  onDisplayFreeOnesDialog?: () => void;
+  scrapers?: GQL.ListScrapersListScrapers[];
+  onDisplayScraperDialog?: (scraper: GQL.ListScrapersListScrapers) => void;
 }
 
 export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
@@ -57,15 +58,21 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
     return <FileInput text="Choose image..." onInputChange={props.onImageChange} inputProps={{accept: ".jpg,.jpeg"}} />;
   }
 
+  function renderScraperMenuItem(scraper : GQL.ListScrapersListScrapers) {
+    return (
+      <MenuItem
+        text={scraper.name}
+        onClick={() => { if (props.onDisplayScraperDialog) { props.onDisplayScraperDialog(scraper); }}}
+      />
+    );
+  }
+
   function renderScraperMenu() {
     if (!props.performer) { return; }
     if (!props.isEditing) { return; }
     const scraperMenu = (
       <Menu>
-        <MenuItem
-          text="FreeOnes"
-          onClick={() => { if (props.onDisplayFreeOnesDialog) { props.onDisplayFreeOnesDialog(); }}}
-        />
+        {props.scrapers ? props.scrapers.map((s) => renderScraperMenuItem(s)) : undefined}
       </Menu>
     );
     return (
