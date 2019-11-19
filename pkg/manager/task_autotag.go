@@ -33,12 +33,13 @@ func (t *AutoTagPerformerTask) autoTagPerformer() {
 	jqb := models.NewJoinsQueryBuilder()
 
 	regex := getQueryRegex(t.performer.Name.String)
-	filter := models.FindFilterType{
-		Q: &regex,
-	}
 
-	logger.Infof("Using regex '%s' to search for scenes", regex)
-	scenes, _ := qb.QueryByPathRegex(&filter)
+	scenes, err := qb.QueryAllByPathRegex(regex)
+
+	if err != nil {
+		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
+		return
+	}
 
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
@@ -77,11 +78,13 @@ func (t *AutoTagStudioTask) autoTagStudio() {
 	qb := models.NewSceneQueryBuilder()
 
 	regex := getQueryRegex(t.studio.Name.String)
-	filter := models.FindFilterType{
-		Q: &regex,
-	}
 
-	scenes, _ := qb.QueryByPathRegex(&filter)
+	scenes, err := qb.QueryAllByPathRegex(regex)
+
+	if err != nil {
+		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
+		return
+	}
 
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
@@ -131,11 +134,13 @@ func (t *AutoTagTagTask) autoTagTag() {
 	jqb := models.NewJoinsQueryBuilder()
 
 	regex := getQueryRegex(t.tag.Name)
-	filter := models.FindFilterType{
-		Q: &regex,
-	}
 
-	scenes, _ := qb.QueryByPathRegex(&filter)
+	scenes, err := qb.QueryAllByPathRegex(regex)
+
+	if err != nil {
+		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
+		return
+	}
 
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
