@@ -16,7 +16,6 @@ before_install:
 script:
 #- make lint
 #- make vet
-- make test
 - make it
 before_deploy:
 - if [ "$TRAVIS_BRANCH" = "develop" ]; then export TAG_SUFFIX="_dev"; fi
