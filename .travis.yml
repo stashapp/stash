@@ -16,7 +16,7 @@ before_install:
 script:
 #- make lint
 #- make vet
-- go test -mod=vendor
+- make it
 before_deploy:
 - if [ "$TRAVIS_BRANCH" = "develop" ]; then export TAG_SUFFIX="_dev"; fi
 - export STASH_VERSION="v0.0.0-alpha${TAG_SUFFIX}"

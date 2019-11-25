@@ -34,6 +34,16 @@ vet:
 lint:
 	revive -config revive.toml -exclude ./vendor/...  ./...
 
+# runs unit tests - excluding integration tests
+.PHONY: test
+test: 
+	go test -mod=vendor ./...
+
+# runs all tests - including integration tests
+.PHONY: it
+it:
+	go test -mod=vendor -tags=integration ./...
+
 .PHONY: ui
 ui:
 	cd ui/v2 && yarn build
