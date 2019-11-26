@@ -25,6 +25,11 @@ type singleton struct {
 var instance *singleton
 var once sync.Once
 
+type flagStruct struct {
+	configFilePath string
+}
+var flags = flagStruct{}
+
 func GetInstance() *singleton {
 	Initialize()
 	return instance
@@ -33,9 +38,9 @@ func GetInstance() *singleton {
 func Initialize() *singleton {
 	once.Do(func() {
 		_ = utils.EnsureDir(paths.GetConfigDirectory())
+		initFlags()
 		initConfig()
 		initLog()
-		initFlags()
 		initEnvs()
 		instance = &singleton{
 			Status: TaskStatus{Status: Idle, Progress: -1},
@@ -55,8 +60,11 @@ func initConfig() {
 	// The config file is called config.  Leave off the file extension.
 	viper.SetConfigName("config")
 
-	viper.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
+	if flagConfigFileExists, _ := utils.FileExists(flags.configFilePath); flagConfigFileExists {
+		viper.SetConfigFile(flags.configFilePath)
+	}
 	viper.AddConfigPath(".")            // Look for config in the working directory
+	viper.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
 
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {             // Handle errors reading the config file
@@ -65,6 +73,7 @@ func initConfig() {
 			panic(err)
 		}
 	}
+	logger.Infof("using config file: %s", viper.ConfigFileUsed())
 
 	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
 
@@ -91,6 +100,7 @@ func initConfig() {
 func initFlags() {
 	pflag.IP("host", net.IPv4(0, 0, 0, 0), "ip address for the host")
 	pflag.Int("port", 9999, "port to serve from")
+	pflag.StringVarP(&flags.configFilePath, "config", "c", "", "config file to use")
 
 	pflag.Parse()
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
