@@ -22,7 +22,7 @@ after_success:
 - export STASH_VERSION="v0.0.0-alpha${TAG_SUFFIX}"
 - docker pull stashapp/compiler:develop
 - sh ./scripts/cross-compile.sh ${STASH_VERSION}
-- 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then sh ./scripts/upload-pull-request; fi'
+- 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then sh ./scripts/upload-pull-request.sh; fi'
 before_deploy:
 - if [ "$TRAVIS_BRANCH" = "develop" ]; then export TAG_SUFFIX="_dev"; fi
 - git tag -f ${STASH_VERSION}
