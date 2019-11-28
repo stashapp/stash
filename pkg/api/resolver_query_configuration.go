@@ -49,10 +49,19 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 }
 
 func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
+	soundOnPreview := config.GetSoundOnPreview()
+	wallShowTitle := config.GetWallShowTitle()
+	maximumLoopDuration := config.GetMaximumLoopDuration()
+	autostartVideo := config.GetAutostartVideo()
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
+
 	return &models.ConfigInterfaceResult{
-		CSS:        &css,
-		CSSEnabled: &cssEnabled,
+		SoundOnPreview:      &soundOnPreview,
+		WallShowTitle:       &wallShowTitle,
+		MaximumLoopDuration: &maximumLoopDuration,
+		AutostartVideo:      &autostartVideo,
+		CSS:                 &css,
+		CSSEnabled:          &cssEnabled,
 	}
 }

@@ -13,6 +13,10 @@ fragment ConfigGeneralData on ConfigGeneralResult {
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
+  soundOnPreview
+  wallShowTitle
+  maximumLoopDuration
+  autostartVideo
   css
   cssEnabled
 }

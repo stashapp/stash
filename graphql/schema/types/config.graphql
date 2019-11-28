@@ -58,12 +58,28 @@ type ConfigGeneralResult {
 }
 
 input ConfigInterfaceInput {
+  """Enable sound on mouseover previews"""
+  soundOnPreview: Boolean
+  """Show title and tags in wall view"""
+  wallShowTitle: Boolean
+  """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
+  maximumLoopDuration: Int
+  """If true, video will autostart on load in the scene player"""
+  autostartVideo: Boolean
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
 }
 
 type ConfigInterfaceResult {
+  """Enable sound on mouseover previews"""
+  soundOnPreview: Boolean
+  """Show title and tags in wall view"""
+  wallShowTitle: Boolean
+  """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
+  maximumLoopDuration: Int
+  """If true, video will autostart on load in the scene player"""
+  autostartVideo: Boolean
   """Custom CSS"""
   css: String
   cssEnabled: Boolean

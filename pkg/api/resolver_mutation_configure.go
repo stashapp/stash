@@ -82,6 +82,22 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 }
 
 func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.ConfigInterfaceInput) (*models.ConfigInterfaceResult, error) {
+	if input.SoundOnPreview != nil {
+		config.Set(config.SoundOnPreview, *input.SoundOnPreview)
+	}
+
+	if input.WallShowTitle != nil {
+		config.Set(config.WallShowTitle, *input.WallShowTitle)
+	}
+
+	if input.MaximumLoopDuration != nil {
+		config.Set(config.MaximumLoopDuration, *input.MaximumLoopDuration)
+	}
+
+	if input.AutostartVideo != nil {
+		config.Set(config.AutostartVideo, *input.AutostartVideo)
+	}
+
 	css := ""
 
 	if input.CSS != nil {

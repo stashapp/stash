@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useInterfaceLocalForage } from "./LocalForage";
+import { StashService } from "../core/StashService";
 
 export interface IVideoHoverHookData {
   videoEl: React.RefObject<HTMLVideoElement>;
@@ -18,8 +18,8 @@ export class VideoHoverHook {
     const isPlaying = useRef<boolean>(false);
     const isHovering = useRef<boolean>(false);
 
-    const interfaceSettings = useInterfaceLocalForage();
-    const soundEnabled = !!interfaceSettings.data ? interfaceSettings.data.wall.soundEnabled : true;
+    const config = StashService.useConfiguration();
+    const soundEnabled = !!config.data && !!config.data.configuration ? config.data.configuration.interface.soundOnPreview : true;
 
     useEffect(() => {
       const videoTag = videoEl.current;
