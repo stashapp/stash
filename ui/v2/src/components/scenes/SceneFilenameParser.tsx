@@ -186,7 +186,7 @@ class SceneParserResult {
 
   // returns true if any of its fields have set == true
   public isChanged() {
-    return this.title.set || this.date.set;
+    return this.title.set || this.date.set || this.performerIds.set || this.studioId.set || this.tagIds.set;
   }
 
   public toSceneUpdateInput() {
@@ -205,7 +205,9 @@ class SceneParserResult {
 
     SceneParserResult.setInput(ret, "title", this.title);
     SceneParserResult.setInput(ret, "date", this.date);
-    // TODO - other fields as added
+    SceneParserResult.setInput(ret, "performer_ids", this.performerIds);
+    SceneParserResult.setInput(ret, "studio_id", this.studioId);
+    SceneParserResult.setInput(ret, "tag_ids", this.tagIds);
 
     return ret;
   }
@@ -273,9 +275,6 @@ const builtInRecipes = [
     description: "Foreign language"
   }
 ];
-
-// TODO:
-// Add mappings for tags, performers, studio
 
 export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) => {
   const [parserResult, setParserResult] = useState<SceneParserResult[]>([]);
