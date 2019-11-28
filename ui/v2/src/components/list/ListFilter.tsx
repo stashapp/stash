@@ -9,6 +9,7 @@ import {
   MenuItem,
   Popover,
   Tag,
+  Tooltip,
 } from "@blueprintjs/core";
 import { debounce } from "lodash";
 import React, { FunctionComponent, SyntheticEvent, useEffect, useRef, useState } from "react";
@@ -111,13 +112,15 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
       }
     }
     return props.filter.displayModeOptions.map((option) => (
-      <Button
-        key={option}
-        active={props.filter.displayMode === option}
-        onClick={() => onChangeDisplayMode(option)}
-        icon={getIcon(option)}
-        text={getLabel(option)}
-      />
+      <Tooltip content={getLabel(option)} hoverOpenDelay={200}>
+        <Button
+          key={option}
+          active={props.filter.displayMode === option}
+          onClick={() => onChangeDisplayMode(option)}
+          icon={getIcon(option)}
+          minimal={true}
+        />
+      </Tooltip>
     ));
   }
 
@@ -150,13 +153,30 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
 
   function renderSelectAll() {
     if (props.onSelectAll) {
-      return <Button onClick={() => onSelectAll()} text="Select All"/>;
+      return (
+        <Tooltip
+          content="Select All"
+          hoverOpenDelay={200}
+        >
+          <Button 
+            onClick={() => onSelectAll()} 
+            icon="tick"
+          />
+        </Tooltip>
+      );
     }
   }
 
   function renderSelectNone() {
     if (props.onSelectNone) {
-      return <Button onClick={() => onSelectNone()} text="Select None"/>;
+      return (
+        <Tooltip
+          content="Select None"
+          hoverOpenDelay={200}
+        >
+          <Button onClick={() => onSelectNone()} icon="square"/>
+        </Tooltip>
+      );
     }
   }
 
@@ -188,18 +208,23 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
             value={props.filter.itemsPerPage}
             className="filter-item"
           />
-          <ControlGroup className="filter-item">
-            <AnchorButton
-              rightIcon={props.filter.sortDirection === "asc" ? "caret-up" : "caret-down"}
-              onClick={onChangeSortDirection}
-            >
-              {props.filter.sortDirection === "asc" ? "Ascending" : "Descending"}
-            </AnchorButton>
+          <ButtonGroup className="filter-item">
             <Popover position="bottom">
               <Button large={true}>{props.filter.sortBy}</Button>
               <Menu>{renderSortByOptions()}</Menu>
             </Popover>
-          </ControlGroup>
+            
+            <Tooltip 
+              content={props.filter.sortDirection === "asc" ? "Ascending" : "Descending"}
+              hoverOpenDelay={200}
+            >
+              <Button
+                rightIcon={props.filter.sortDirection === "asc" ? "caret-up" : "caret-down"}
+                onClick={onChangeSortDirection}
+              />
+            </Tooltip>
+            
+          </ButtonGroup>
 
           <AddFilter
             filter={props.filter}
