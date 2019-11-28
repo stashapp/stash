@@ -36,6 +36,12 @@ func generateNamePatterns(name string, separator string) []string {
 	ret = append(ret, fmt.Sprintf("%s%saaa"+testExtension, name, separator))
 	ret = append(ret, fmt.Sprintf("aaa%s%s"+testExtension, separator, name))
 	ret = append(ret, fmt.Sprintf("aaa%s%s%sbbb"+testExtension, separator, name, separator))
+	ret = append(ret, fmt.Sprintf("dir/%s%saaa"+testExtension, name, separator))
+	ret = append(ret, fmt.Sprintf("dir\\%s%saaa"+testExtension, name, separator))
+	ret = append(ret, fmt.Sprintf("%s%saaa/dir/bbb"+testExtension, name, separator))
+	ret = append(ret, fmt.Sprintf("%s%saaa\\dir\\bbb"+testExtension, name, separator))
+	ret = append(ret, fmt.Sprintf("dir/%s%s/aaa"+testExtension, name, separator))
+	ret = append(ret, fmt.Sprintf("dir\\%s%s\\aaa"+testExtension, name, separator))
 
 	return ret
 }
