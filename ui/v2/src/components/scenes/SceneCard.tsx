@@ -47,6 +47,25 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
     );
   }
 
+  function maybeRenderSceneStudioOverlay() {
+    if (!props.scene.studio) {
+      return;
+    }
+
+    const style: React.CSSProperties = {
+      backgroundImage: `url('${props.scene.studio.image_path}')`,
+    };
+
+    return (
+      <div className={`scene-studio-overlay`}>
+        <Link
+          to={`/studios/${props.scene.studio.id}`}
+          style={style}
+        />
+      </div>
+    );
+  }
+
   function maybeRenderTagPopoverButton() {
     if (props.scene.tags.length <= 0) { return; }
 
@@ -171,6 +190,7 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
         <div className="video-container">
           {maybeRenderRatingBanner()}
           {maybeRenderSceneSpecsOverlay()}
+          {maybeRenderSceneStudioOverlay()}
           <video className={getVideoClassName()} loop={true} poster={props.scene.paths.screenshot || ""} ref={videoHoverHook.videoEl}>
             {!!previewPath ? <source src={previewPath} /> : ""}
           </video>
@@ -185,8 +205,6 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
       </div>
 
       {maybeRenderPopoverButtonGroup()}
-
-      {SceneHelpers.maybeRenderStudio(props.scene, 50, true)}
     </Card>
   );
 };
