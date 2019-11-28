@@ -67,9 +67,20 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
   function maybeRenderPerformerPopoverButton() {
     if (props.scene.performers.length <= 0) { return; }
 
-    const performers = props.scene.performers.map((performer) => (
-      <TagLink key={performer.id} performer={performer} />
-    ));
+    const performers = props.scene.performers.map((performer) => {
+      return (
+        <>
+        <div className="performer-tag-container">
+          <Link
+            to={`/performers/${performer.id}`}
+            className="performer-tag previewable image"
+            style={{backgroundImage: `url(${performer.image_path})`}}
+          ></Link>
+          <TagLink key={performer.id} performer={performer} />
+        </div>
+        </>
+      );
+    });
     return (
       <Popover interactionKind={"hover"} position="bottom">
         <Button
