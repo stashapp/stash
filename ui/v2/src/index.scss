@@ -186,6 +186,27 @@ video.preview.portrait {
   text-shadow: 0 0 3px #000;
 }
 
+.scene-studio-overlay {
+  display: block;
+  position: absolute;
+  top: .7em;
+  right: .7em;
+  font-weight: 400;
+  width: 40%;
+  height: 20%;
+  opacity: 75%;
+  z-index: 9;
+}
+
+.scene-studio-overlay a {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  display: inline-block;
+  background-position: right top;
+  background-repeat: no-repeat;
+}
+
 .overlay-resolution {
   font-weight: 900;
   text-transform: uppercase;
