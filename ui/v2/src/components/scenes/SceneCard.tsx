@@ -38,6 +38,15 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
     );
   }
 
+  function maybeRenderSceneSpecsOverlay() {
+    return (
+      <div className={`scene-specs-overlay`}>
+        {!!props.scene.file.height ? <span className={`overlay-resolution`}> {TextUtils.resolution(props.scene.file.height)}</span> : undefined}
+        {props.scene.file.duration !== undefined && props.scene.file.duration >= 1 ? TextUtils.secondsToTimestamp(props.scene.file.duration) : ""}
+      </div>
+    );
+  }
+
   function maybeRenderTagPopoverButton() {
     if (props.scene.tags.length <= 0) { return; }
 
@@ -136,6 +145,7 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
       />
       <Link to={`/scenes/${props.scene.id}`} className="image previewable">
         {maybeRenderRatingBanner()}
+        {maybeRenderSceneSpecsOverlay()}
         <video className="preview" loop={true} poster={props.scene.paths.screenshot || ""} ref={videoHoverHook.videoEl}>
           {!!previewPath ? <source src={previewPath} /> : ""}
         </video>
@@ -150,14 +160,6 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
 
       {maybeRenderPopoverButtonGroup()}
 
-      <Divider />
-      <span className="card-section centered">
-        {props.scene.file.size !== undefined ? TextUtils.fileSize(parseInt(props.scene.file.size, 10)) : ""}
-        &nbsp;|&nbsp;
-        {props.scene.file.duration !== undefined ? TextUtils.secondsToTimestamp(props.scene.file.duration) : ""}
-        &nbsp;|&nbsp;
-        {props.scene.file.width} x {props.scene.file.height}
-      </span>
       {SceneHelpers.maybeRenderStudio(props.scene, 50, true)}
     </Card>
   );

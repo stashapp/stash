@@ -161,6 +161,23 @@ video.preview {
   text-align: center;
 }
 
+.scene-specs-overlay {
+  display: block;
+  position: absolute;
+  bottom: 1em;
+  right: .7em;
+  font-weight: 400;
+  color: #f5f8fa;
+  letter-spacing: -.03em;
+  text-shadow: 0 0 3px #000;
+}
+
+.overlay-resolution {
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-right:.3em;
+}
+
 #jwplayer-container {
   margin: 10px auto;
   width: 75%;
