@@ -175,7 +175,7 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
 
   return (
     <Card
-      className="grid-item"
+      className="grid-item scene-card"
       elevation={Elevation.ONE}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
