@@ -85,6 +85,8 @@ code {
   width: calc(100% + 40px);
   margin: -20px 0 0 -20px;
   position: relative;
+  height: 240px;
+  max-height: 80vh;
 }
 
 .grid-item label.card-select {
@@ -95,12 +97,24 @@ code {
   opacity: 0.5;
 }
 
+.video-container {
+  width: 100%;
+  height: 100%;
+}
+
 video.preview {
   // height: 225px; // slows down the page
   width: 100%;
   // width: calc(100% + 40px);
   // margin: -20px 0 0 -20px;
   object-fit: cover;
+  margin: 0 auto;
+  display: block;
+}
+
+video.preview.portrait {
+  height: 100%;
+  width: auto;
 }
 
 .filter-item, .operation-item {

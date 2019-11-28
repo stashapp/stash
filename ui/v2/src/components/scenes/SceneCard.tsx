@@ -128,6 +128,19 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
     setPreviewPath("");
   }
 
+
+  function getVideoClassName() {
+    let ret = "preview";
+    let file = props.scene.file;
+    let width = file.width ? file.width : 0;
+    let height = file.height ? file.height : 0;
+    if (height > width) {
+      ret += " portrait";
+    }
+
+    return ret;
+  }
+
   var shiftKey = false;
 
   return (
@@ -144,11 +157,13 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
         onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => { shiftKey = event.shiftKey; event.stopPropagation(); } }
       />
       <Link to={`/scenes/${props.scene.id}`} className="image previewable">
-        {maybeRenderRatingBanner()}
-        {maybeRenderSceneSpecsOverlay()}
-        <video className="preview" loop={true} poster={props.scene.paths.screenshot || ""} ref={videoHoverHook.videoEl}>
-          {!!previewPath ? <source src={previewPath} /> : ""}
-        </video>
+        <div className="video-container">
+          {maybeRenderRatingBanner()}
+          {maybeRenderSceneSpecsOverlay()}
+          <video className={getVideoClassName()} loop={true} poster={props.scene.paths.screenshot || ""} ref={videoHoverHook.videoEl}>
+            {!!previewPath ? <source src={previewPath} /> : ""}
+          </video>
+        </div>
       </Link>
       <div className="card-section">
         <H4 style={{textOverflow: "ellipsis", overflow: "hidden"}}>
