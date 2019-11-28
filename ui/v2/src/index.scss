@@ -213,6 +213,19 @@ video.preview.portrait {
   margin-right:.3em;
 }
 
+.scene-card {
+  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay {
+    transition: opacity 0.5s;
+  }
+}
+
+.scene-card:hover {
+  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay {
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+}
+
 #jwplayer-container {
   margin: 10px auto;
   width: 75%;
