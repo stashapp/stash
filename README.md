@@ -62,12 +62,14 @@ Join the [Discord server](https://discord.gg/2TsNFKt).
 
 ## Install
 
+* [Go](https://golang.org/dl/)
 * [Revive](https://github.com/mgechev/revive) - Configurable linter
     * Go Install: `go get github.com/mgechev/revive`
 * [Packr2](https://github.com/gobuffalo/packr/tree/v2.0.2/v2) - Static asset bundler
     * Go Install: `go get github.com/gobuffalo/packr/v2/packr2@v2.0.2`
     * [Binary Download](https://github.com/gobuffalo/packr/releases)
 * [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
+    * Run `yarn install` in the `stash/ui/v2` folder (before running make generate for first time).
 
 NOTE: You may need to run the `go get` commands outside the project directory to avoid modifying the projects module file.
 
@@ -85,6 +87,8 @@ TODO
     1. Click the `Environment Variables` button
     2. Add `GO111MODULE=on`
     3. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
+
+NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 
 ## Commands
 
