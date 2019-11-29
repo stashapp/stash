@@ -85,8 +85,11 @@ code {
   width: calc(100% + 40px);
   margin: -20px 0 0 -20px;
   position: relative;
+  max-height: 240px;
+}
+
+.previewable.portrait {
   height: 240px;
-  max-height: 80vh;
 }
 
 .grid-item label.card-select {

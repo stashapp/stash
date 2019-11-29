@@ -158,13 +158,27 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
     setPreviewPath("");
   }
 
-
-  function getVideoClassName() {
-    let ret = "preview";
+  function isPortrait() {
     let file = props.scene.file;
     let width = file.width ? file.width : 0;
     let height = file.height ? file.height : 0;
-    if (height > width) {
+    return height > width;
+  }
+
+  function getLinkClassName() {
+    let ret = "image previewable";
+    
+    if (isPortrait()) {
+      ret += " portrait";
+    }
+
+    return ret;
+  }
+
+  function getVideoClassName() {
+    let ret = "preview";
+    
+    if (isPortrait()) {
       ret += " portrait";
     }
 
@@ -186,7 +200,7 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
         onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
         onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => { shiftKey = event.shiftKey; event.stopPropagation(); } }
       />
-      <Link to={`/scenes/${props.scene.id}`} className="image previewable">
+      <Link to={`/scenes/${props.scene.id}`} className={getLinkClassName()}>
         <div className="video-container">
           {maybeRenderRatingBanner()}
           {maybeRenderSceneSpecsOverlay()}
