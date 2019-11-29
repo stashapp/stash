@@ -51,3 +51,11 @@ func (r *queryResolver) ScrapePerformer(ctx context.Context, scraperID string, s
 func (r *queryResolver) ScrapePerformerURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
 	return scraper.ScrapePerformerURL(url)
 }
+
+func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+	return scraper.ScrapeScene(scraperID, scene)
+}
+
+func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
+	return scraper.ScrapeSceneURL(url)
+}

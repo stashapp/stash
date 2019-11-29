@@ -54,6 +54,10 @@ type Query {
   scrapePerformer(scraper_id: ID!, scraped_performer: ScrapedPerformerInput!): ScrapedPerformer
   """Scrapes a complete performer record based on a URL"""
   scrapePerformerURL(url: String!): ScrapedPerformer
+  """Scrapes a complete scene record based on an existing scene"""
+  scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
+  """Scrapes a complete performer record based on a URL"""
+  scrapeSceneURL(url: String!): ScrapedScene
 
   """Scrape a performer using Freeones"""
   scrapeFreeones(performer_name: String!): ScrapedPerformer

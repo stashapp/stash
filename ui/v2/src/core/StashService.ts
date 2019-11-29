@@ -425,6 +425,25 @@ export class StashService {
     });
   }
 
+  public static queryScrapeSceneURL(url: string) {
+    return StashService.client.query<GQL.ScrapeSceneUrlQuery>({
+      query: GQL.ScrapeSceneUrlDocument,
+      variables: {
+        url: url,
+      },
+    });
+  }
+
+  public static queryScrapeScene(scraperId: string, scene: GQL.SceneUpdateInput) {
+    return StashService.client.query<GQL.ScrapeSceneQuery>({
+      query: GQL.ScrapeSceneDocument,
+      variables: {
+        scraper_id: scraperId,
+        scene: scene,
+      },
+    });
+  }
+
   public static queryMetadataScan(input: GQL.ScanMetadataInput) {
     return StashService.client.query<GQL.MetadataScanQuery>({
       query: GQL.MetadataScanDocument,
