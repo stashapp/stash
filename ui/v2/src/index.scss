@@ -38,7 +38,7 @@ code {
   flex-flow: row wrap;
   justify-content: center;
   margin: $pt-grid-size $pt-grid-size 0 0;
-  padding: 0 calc(10%);
+  padding: 0 100px;
 
   &.wall {
     padding: 0;
@@ -67,7 +67,7 @@ code {
 
 .grid-item {
   // flex: auto;
-  width: calc(25% - 1.5em);
+  width: 320px;
   min-width: 185px;
   margin: 0px 0 $pt-grid-size $pt-grid-size;
   overflow: hidden;
