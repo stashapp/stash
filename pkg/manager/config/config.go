@@ -30,6 +30,11 @@ const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 const Host = "host"
 const Port = "port"
 
+// Interface options
+const SoundOnPreview = "sound_on_preview"
+const WallShowTitle = "wall_show_title"
+const MaximumLoopDuration = "maximum_loop_duration"
+const AutostartVideo = "autostart_video"
 const CSSEnabled = "cssEnabled"
 
 // Logging options
@@ -163,6 +168,27 @@ func ValidateCredentials(username string, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(authPWHash), []byte(password))
 
 	return username == authUser && err == nil
+}
+
+// Interface options
+func GetSoundOnPreview() bool {
+	viper.SetDefault(SoundOnPreview, true)
+	return viper.GetBool(SoundOnPreview)
+}
+
+func GetWallShowTitle() bool {
+	viper.SetDefault(WallShowTitle, true)
+	return viper.GetBool(WallShowTitle)
+}
+
+func GetMaximumLoopDuration() int {
+	viper.SetDefault(MaximumLoopDuration, 0)
+	return viper.GetInt(MaximumLoopDuration)
+}
+
+func GetAutostartVideo() bool {
+	viper.SetDefault(AutostartVideo, false)
+	return viper.GetBool(AutostartVideo)
 }
 
 func GetCSSPath() string {
