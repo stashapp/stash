@@ -1,11 +1,12 @@
 import { Hotkey, Hotkeys, HotkeysTarget } from "@blueprintjs/core";
-import React from "react";
+import React, { Component, FunctionComponent } from "react";
 import ReactJWPlayer from "react-jw-player";
 import * as GQL from "../../../core/generated-graphql";
 import { SceneHelpers } from "../helpers";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
+import { StashService } from "../../../core/StashService";
 
 interface IScenePlayerProps {
   scene: GQL.SceneDataFragment;
@@ -13,21 +14,26 @@ interface IScenePlayerProps {
   onReady?: any;
   onSeeked?: any;
   onTime?: any;
+  config?: GQL.ConfigInterfaceDataFragment;
 }
 interface IScenePlayerState {
   scrubberPosition: number;
 }
 
-export class VideoJSPlayer extends React.Component<IScenePlayerProps> {
+interface IVideoJSPlayerProps extends IScenePlayerProps {
+  videoJSOptions: videojs.PlayerOptions
+}
+
+export class VideoJSPlayer extends React.Component<IVideoJSPlayerProps> {
   private player: any;
   private videoNode: any;
 
-  constructor(props: IScenePlayerProps) {
+  constructor(props: IVideoJSPlayerProps) {
     super(props);
   }
 
   componentDidMount() {
-    this.player = videojs(this.videoNode);
+    this.player = videojs(this.videoNode, this.props.videoJSOptions);
 
     // dirty hack - make this player look like JWPlayer
     this.player.seek = this.player.currentTime;
@@ -92,7 +98,7 @@ export class VideoJSPlayer extends React.Component<IScenePlayerProps> {
 }
 
 @HotkeysTarget
-export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayerState> {
+export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePlayerState> {
   private player: any;
   private lastTime = 0;
 
@@ -116,7 +122,7 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
 
   renderPlayer() {
     if (this.props.scene.is_streamable) {
-      const config = this.makeConfig(this.props.scene);
+      const config = this.makeJWPlayerConfig(this.props.scene);
       return (
         <ReactJWPlayer
             playerId={SceneHelpers.getJWPlayerId()}
@@ -128,15 +134,20 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
           />
       );
     } else {
-      return (
-        <VideoJSPlayer 
-            scene={this.props.scene}
-            timestamp={this.props.timestamp}
-            onReady={this.onReady}
-            onSeeked={this.onSeeked}
-            onTime={this.onTime}>
-        </VideoJSPlayer>
-      )
+      // don't render videoJS until config is loaded
+      if (this.props.config) {
+        const config = this.makeVideoJSConfig(this.props.scene);
+        return (
+          <VideoJSPlayer 
+              videoJSOptions={config}
+              scene={this.props.scene}
+              timestamp={this.props.timestamp}
+              onReady={this.onReady}
+              onSeeked={this.onSeeked}
+              onTime={this.onTime}>
+          </VideoJSPlayer>
+        )
+      }
     }
   }
 
@@ -194,8 +205,16 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
     );
   }
 
-  private makeConfig(scene: GQL.SceneDataFragment) {
+  private shouldRepeat(scene: GQL.SceneDataFragment) {
+    let maxLoopDuration = this.props.config ? this.props.config.maximumLoopDuration : 0;
+    return !!scene.file.duration && !!maxLoopDuration && scene.file.duration < maxLoopDuration;
+  }
+
+  private makeJWPlayerConfig(scene: GQL.SceneDataFragment) {
     if (!scene.paths.stream) { return {}; }
+
+    let repeat = this.shouldRepeat(scene);
+
     return {
       file: scene.paths.stream,
       image: scene.paths.screenshot,
@@ -216,11 +235,23 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
       },
       cast: {},
       primary: "html5",
-      autostart: false,
+      autostart: this.props.config ? this.props.config.autostartVideo : false,
+      repeat: repeat,
       playbackRateControls: true,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
     };
   }
+
+  private makeVideoJSConfig(scene: GQL.SceneDataFragment) {
+    if (!scene.paths.stream) { return {}; }
+
+    let repeat = this.shouldRepeat(scene);
+
+    return {
+      autoplay: this.props.config ? this.props.config.autostartVideo : false,
+      loop: repeat,
+    };
+  } 
 
   private onReady() {
     this.player = SceneHelpers.getPlayer();
@@ -251,4 +282,10 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
   private onScrubberScrolled() {
     this.player.pause();
   }
+}
+
+export const ScenePlayer: FunctionComponent<IScenePlayerProps> = (props: IScenePlayerProps) => {
+    const config = StashService.useConfiguration();
+
+    return <ScenePlayerImpl {...props} config={config.data && config.data.configuration ? config.data.configuration.interface : undefined}/>
 }
