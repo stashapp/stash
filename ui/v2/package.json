@@ -19,7 +19,6 @@
     "bulma": "0.7.5",
     "formik": "1.5.7",
     "graphql": "14.3.1",
-    "justified-layout": "^3.0.0",
     "localforage": "1.7.3",
     "lodash": "4.17.13",
     "node-sass": "4.12.0",
