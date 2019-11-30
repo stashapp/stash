@@ -31,7 +31,7 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
   const [tags, setTags] = useState<JSX.Element[]>([]);
   const config = StashService.useConfiguration();
   const videoHoverHook = VideoHoverHook.useVideoHover({resetOnMouseLeave: true});
-  const showTextContainer = !!config.data ? config.data.configuration.interface.wallShowTitle : true;
+  const showTextContainer = !!config.data && !!config.data.configuration ? config.data.configuration.interface.wallShowTitle : true;
 
   function onMouseEnter() {
     VideoHoverHook.onMouseEnter(videoHoverHook);
