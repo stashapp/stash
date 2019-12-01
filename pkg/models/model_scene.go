@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"path/filepath"
 )
 
 type Scene struct {
@@ -27,7 +28,7 @@ type Scene struct {
 }
 
 type ScenePartial struct {
-	ID         int             `db:"id" json:"id"`
+	ID         int              `db:"id" json:"id"`
 	Checksum   *string          `db:"checksum" json:"checksum"`
 	Path       *string          `db:"path" json:"path"`
 	Title      *sql.NullString  `db:"title" json:"title"`
@@ -46,4 +47,12 @@ type ScenePartial struct {
 	StudioID   *sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
 	CreatedAt  *SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt  *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+}
+
+func (s Scene) GetTitle() string {
+	if s.Title.String != "" {
+		return s.Title.String
+	}
+
+	return filepath.Base(s.Path)
 }

@@ -15,6 +15,7 @@ import { ErrorUtils } from "../../../utils/errors";
 import { TableUtils } from "../../../utils/table";
 import { ScrapePerformerSuggest } from "../../select/ScrapePerformerSuggest";
 import { DetailsEditNavbar } from "../../Shared/DetailsEditNavbar";
+import { ToastUtils } from "../../../utils/toasts";
 
 interface IPerformerProps extends IBaseProps {}
 
@@ -171,6 +172,18 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     props.history.push(`/performers`);
   }
 
+  async function onAutoTag() {
+    if (!performer || !performer.id) {
+      return;
+    }
+    try {
+      await StashService.queryMetadataAutoTag({ performers: [performer.id]});
+      ToastUtils.success("Started auto tagging");
+    } catch (e) {
+      ErrorUtils.handle(e);
+    }
+  }
+
   function onImageChange(event: React.FormEvent<HTMLInputElement>) {
     const file: File = (event.target as any).files[0];
     const reader: FileReader = new FileReader();
@@ -315,6 +328,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
             onImageChange={onImageChange}
             scrapers={queryableScrapers}
             onDisplayScraperDialog={onDisplayFreeOnesDialog}
+            onAutoTag={onAutoTag}
           />
           <h1 className="bp3-heading">
             <EditableText

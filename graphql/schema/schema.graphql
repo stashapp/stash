@@ -75,6 +75,8 @@ type Query {
   metadataScan(input: ScanMetadataInput!): String!
   """Start generating content. Returns the job ID"""
   metadataGenerate(input: GenerateMetadataInput!): String!
+  """Start auto-tagging. Returns the job ID"""
+  metadataAutoTag(input: AutoTagMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
   metadataClean: String!
 
