@@ -25,6 +25,10 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
   const [status, setStatus] = useState<string>("");
   const [progress, setProgress] = useState<number | undefined>(undefined);
 
+  const [autoTagPerformers, setAutoTagPerformers] = useState<boolean>(true);
+  const [autoTagStudios, setAutoTagStudios] = useState<boolean>(true);
+  const [autoTagTags, setAutoTagTags] = useState<boolean>(true);
+
   const jobStatus = StashService.useJobStatus();
   const metadataUpdate = StashService.useMetadataUpdate();
 
@@ -42,6 +46,8 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         return "Exporting to JSON";
       case "Import":
         return "Importing from JSON";
+      case "Auto Tag":
+        return "Auto tagging scenes";
     }
 
     return "Idle";
@@ -130,6 +136,25 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
     }
   }
 
+  function getAutoTagInput() {
+    var wildcard = ["*"];
+    return {
+      performers: autoTagPerformers ? wildcard : [],
+      studios: autoTagStudios ? wildcard : [],
+      tags: autoTagTags ? wildcard : []
+    }
+  }
+
+  async function onAutoTag() {
+    try {
+      await StashService.queryMetadataAutoTag(getAutoTagInput());
+      ToastUtils.success("Started auto tagging");
+      jobStatus.refetch();
+    } catch (e) {
+      ErrorUtils.handle(e);
+    }
+  }
+
   function maybeRenderStop() {
     if (!status || status === "Idle") {
       return undefined;
@@ -180,11 +205,38 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         />
         <Button id="scan" text="Scan" onClick={() => onScan()} />
       </FormGroup>
+
+      <Divider />
+
+      <H4>Auto Tagging</H4>
+
+      <FormGroup
+        helperText="Auto-tag content based on filenames."
+        labelFor="autoTag"
+        inline={true}
+      >
+        <Checkbox
+          checked={autoTagPerformers}
+          label="Performers"
+          onChange={() => setAutoTagPerformers(!autoTagPerformers)}
+        />
+        <Checkbox
+          checked={autoTagStudios}
+          label="Studios"
+          onChange={() => setAutoTagStudios(!autoTagStudios)}
+        />
+        <Checkbox
+          checked={autoTagTags}
+          label="Tags"
+          onChange={() => setAutoTagTags(!autoTagTags)}
+        />
+        <Button id="autoTag" text="Auto Tag" onClick={() => onAutoTag()} />
+      </FormGroup>
+
+      <FormGroup>
         <Link className="bp3-button" to={"/sceneFilenameParser"}>
           Scene Filename Parser
         </Link>
-      <FormGroup>
-
       </FormGroup>
       <Divider />
 

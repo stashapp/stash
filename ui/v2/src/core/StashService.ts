@@ -411,6 +411,14 @@ export class StashService {
     });
   }
 
+  public static queryMetadataAutoTag(input: GQL.AutoTagMetadataInput) {
+    return StashService.client.query<GQL.MetadataAutoTagQuery>({
+      query: GQL.MetadataAutoTagDocument,
+      variables: { input },
+      fetchPolicy: "network-only",
+    });
+  }
+
   public static queryMetadataGenerate(input: GQL.GenerateMetadataInput) {
     return StashService.client.query<GQL.MetadataGenerateQuery>({
       query: GQL.MetadataGenerateDocument,

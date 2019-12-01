@@ -9,6 +9,15 @@ input ScanMetadataInput {
   nameFromMetadata: Boolean!
 }
 
+input AutoTagMetadataInput {
+  """IDs of performers to tag files with, or "*" for all"""
+  performers: [String!]
+  """IDs of studios to tag files with, or "*" for all"""
+  studios: [String!]
+  """IDs of tags to tag files with, or "*" for all"""
+  tags: [String!]
+}
+
 type MetadataUpdateStatus {
   progress: Float!
 	status: String!

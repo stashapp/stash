@@ -27,6 +27,11 @@ func (r *queryResolver) MetadataGenerate(ctx context.Context, input models.Gener
 	return "todo", nil
 }
 
+func (r *queryResolver) MetadataAutoTag(ctx context.Context, input models.AutoTagMetadataInput) (string, error) {
+	manager.GetInstance().AutoTag(input.Performers, input.Studios, input.Tags)
+	return "todo", nil
+}
+
 func (r *queryResolver) MetadataClean(ctx context.Context) (string, error) {
 	manager.GetInstance().Clean()
 	return "todo", nil

@@ -22,6 +22,7 @@ interface IProps {
   onToggleEdit: () => void;
   onSave: () => void;
   onDelete: () => void;
+  onAutoTag?: () => void;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
 
   // TODO: only for performers.  make generic
@@ -82,6 +83,15 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
     );
   }
 
+  function renderAutoTagButton() {
+    if (props.isNew || props.isEditing) { return; }
+    if (!!props.onAutoTag) {
+      return (<Button text="Auto Tag" onClick={() => {
+        if (props.onAutoTag) { props.onAutoTag() }
+      }}></Button>)
+    }
+  }
+
   function renderScenesButton() {
     if (props.isEditing) { return; }
     let linkSrc: string = "#";
@@ -136,6 +146,7 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
         {renderImageInput()}
         {renderSaveButton()}
 
+        {renderAutoTagButton()}
         {renderScenesButton()}
         {renderDeleteButton()}
       </Navbar.Group>

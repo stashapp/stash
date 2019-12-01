@@ -2,6 +2,7 @@ package manager
 
 import (
 	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -17,6 +18,8 @@ type TaskStatus struct {
 	Progress   float64
 	LastUpdate time.Time
 	stopping   bool
+	upTo       int
+	total      int
 }
 
 func (t *TaskStatus) Stop() bool {
@@ -34,8 +37,14 @@ func (t *TaskStatus) setProgress(upTo int, total int) {
 	if total == 0 {
 		t.Progress = 1
 	}
+	t.upTo = upTo
+	t.total = total
 	t.Progress = float64(upTo) / float64(total)
 	t.updated()
+}
+
+func (t *TaskStatus) incrementProgress() {
+	t.setProgress(t.upTo+1, t.total)
 }
 
 func (t *TaskStatus) indefiniteProgress() {
@@ -200,6 +209,172 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 			wg.Wait()
 		}
 	}()
+}
+
+func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []string) {
+	if s.Status.Status != Idle {
+		return
+	}
+	s.Status.SetStatus(AutoTag)
+	s.Status.indefiniteProgress()
+
+	go func() {
+		defer s.returnToIdleState()
+
+		// calculate work load
+		performerCount := len(performerIds)
+		studioCount := len(studioIds)
+		tagCount := len(tagIds)
+
+		performerQuery := models.NewPerformerQueryBuilder()
+		studioQuery := models.NewTagQueryBuilder()
+		tagQuery := models.NewTagQueryBuilder()
+
+		const wildcard = "*"
+		var err error
+		if performerCount == 1 && performerIds[0] == wildcard {
+			performerCount, err = performerQuery.Count()
+			if err != nil {
+				logger.Errorf("Error getting performer count: %s", err.Error())
+			}
+		}
+		if studioCount == 1 && studioIds[0] == wildcard {
+			studioCount, err = studioQuery.Count()
+			if err != nil {
+				logger.Errorf("Error getting studio count: %s", err.Error())
+			}
+		}
+		if tagCount == 1 && tagIds[0] == wildcard {
+			tagCount, err = tagQuery.Count()
+			if err != nil {
+				logger.Errorf("Error getting tag count: %s", err.Error())
+			}
+		}
+
+		total := performerCount + studioCount + tagCount
+		s.Status.setProgress(0, total)
+
+		s.autoTagPerformers(performerIds)
+		s.autoTagStudios(studioIds)
+		s.autoTagTags(tagIds)
+	}()
+}
+
+func (s *singleton) autoTagPerformers(performerIds []string) {
+	performerQuery := models.NewPerformerQueryBuilder()
+
+	var wg sync.WaitGroup
+	for _, performerId := range performerIds {
+		var performers []*models.Performer
+		if performerId == "*" {
+			var err error
+			performers, err = performerQuery.All()
+			if err != nil {
+				logger.Errorf("Error querying performers: %s", err.Error())
+				continue
+			}
+		} else {
+			performerIdInt, err := strconv.Atoi(performerId)
+			if err != nil {
+				logger.Errorf("Error parsing performer id %s: %s", performerId, err.Error())
+				continue
+			}
+
+			performer, err := performerQuery.Find(performerIdInt)
+			if err != nil {
+				logger.Errorf("Error finding performer id %s: %s", performerId, err.Error())
+				continue
+			}
+			performers = append(performers, performer)
+		}
+
+		for _, performer := range performers {
+			wg.Add(1)
+			task := AutoTagPerformerTask{performer: performer}
+			go task.Start(&wg)
+			wg.Wait()
+
+			s.Status.incrementProgress()
+		}
+	}
+}
+
+func (s *singleton) autoTagStudios(studioIds []string) {
+	studioQuery := models.NewStudioQueryBuilder()
+
+	var wg sync.WaitGroup
+	for _, studioId := range studioIds {
+		var studios []*models.Studio
+		if studioId == "*" {
+			var err error
+			studios, err = studioQuery.All()
+			if err != nil {
+				logger.Errorf("Error querying studios: %s", err.Error())
+				continue
+			}
+		} else {
+			studioIdInt, err := strconv.Atoi(studioId)
+			if err != nil {
+				logger.Errorf("Error parsing studio id %s: %s", studioId, err.Error())
+				continue
+			}
+
+			studio, err := studioQuery.Find(studioIdInt, nil)
+			if err != nil {
+				logger.Errorf("Error finding studio id %s: %s", studioId, err.Error())
+				continue
+			}
+			studios = append(studios, studio)
+		}
+
+		for _, studio := range studios {
+			wg.Add(1)
+			task := AutoTagStudioTask{studio: studio}
+			go task.Start(&wg)
+			wg.Wait()
+
+			s.Status.incrementProgress()
+		}
+	}
+}
+
+func (s *singleton) autoTagTags(tagIds []string) {
+	tagQuery := models.NewTagQueryBuilder()
+
+	var wg sync.WaitGroup
+	for _, tagId := range tagIds {
+		var tags []*models.Tag
+		if tagId == "*" {
+			var err error
+			tags, err = tagQuery.All()
+			if err != nil {
+				logger.Errorf("Error querying tags: %s", err.Error())
+				continue
+			}
+		} else {
+			tagIdInt, err := strconv.Atoi(tagId)
+			if err != nil {
+				logger.Errorf("Error parsing tag id %s: %s", tagId, err.Error())
+				continue
+			}
+
+			tag, err := tagQuery.Find(tagIdInt, nil)
+			if err != nil {
+				logger.Errorf("Error finding tag id %s: %s", tagId, err.Error())
+				continue
+			}
+			tags = append(tags, tag)
+		}
+
+		for _, tag := range tags {
+			wg.Add(1)
+			task := AutoTagTagTask{tag: tag}
+			go task.Start(&wg)
+			wg.Wait()
+
+			s.Status.incrementProgress()
+		}
+	}
 }
 
 func (s *singleton) Clean() {
