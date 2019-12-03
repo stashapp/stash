@@ -227,6 +227,11 @@ video.preview.portrait {
     opacity: 0;
     transition: opacity 0.5s;
   }
+
+  .scene-studio-overlay:hover {
+    opacity: 0.75;
+    transition: opacity 0.5s;
+  }
 }
 
 #jwplayer-container {
