@@ -118,7 +118,6 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
           active={props.filter.displayMode === option}
           onClick={() => onChangeDisplayMode(option)}
           icon={getIcon(option)}
-          minimal={true}
         />
       </Tooltip>
     ));
