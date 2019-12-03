@@ -50,7 +50,12 @@ export const DurationInput: FunctionComponent<HTMLInputProps & IProps> = (props:
         return 0;
       }
 
-      seconds += factor * parseInt(thisSplit, 10);
+      let thisInt = parseInt(thisSplit, 10);
+      if (isNaN(thisInt)) {
+        return 0;
+      }
+
+      seconds += factor * thisInt;
       factor *= 60;
     }
 
