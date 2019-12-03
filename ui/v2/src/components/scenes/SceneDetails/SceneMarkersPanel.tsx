@@ -151,6 +151,7 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
       return (
         <DurationInput
           onValueChange={(s) => fieldProps.form.setFieldValue("seconds", s)}
+          onReset={() => fieldProps.form.setFieldValue("seconds", Math.round(jwplayer.getPosition()))}
           numericValue={fieldProps.field.value}
         />
       );
@@ -224,11 +225,11 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
     }
     return (
       <Collapse isOpen={isEditorOpen}>
-        <Formik
+        {isEditorOpen ? <Formik
           initialValues={initialValues}
           onSubmit={onSubmit}
           render={renderFormFields}
-        />
+        /> : undefined}
       </Collapse>
     );
   }

@@ -7,6 +7,7 @@ interface IProps {
   disabled?: boolean
   numericValue: number
   onValueChange(valueAsNumber: number): void
+  onReset?(): void
 }
 
 export const DurationInput: FunctionComponent<HTMLInputProps & IProps> = (props: IProps) => {
@@ -88,6 +89,23 @@ export const DurationInput: FunctionComponent<HTMLInputProps & IProps> = (props:
     )
   }
 
+  function onReset() {
+    if (props.onReset) {
+      props.onReset();
+    }
+  }
+
+  function maybeRenderReset() {
+    if (props.onReset) {
+      return (
+        <Button
+          icon="time"
+          onClick={() => onReset()}
+        />
+      )
+    }
+  }
+
   return (
     <ControlGroup className={NUMERIC_INPUT}>
       <InputGroup
@@ -96,6 +114,7 @@ export const DurationInput: FunctionComponent<HTMLInputProps & IProps> = (props:
         onChange={(e : any) => setValue(e.target.value)}
         onBlur={() => props.onValueChange(stringToSeconds(value))}
         placeholder="hh:mm:ss"
+        rightElement={maybeRenderReset()}
       />
       {renderButtons()}
     </ControlGroup>
