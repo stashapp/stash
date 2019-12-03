@@ -10,6 +10,7 @@ import {
   Popover,
   Tag,
   Tooltip,
+  Slider,
 } from "@blueprintjs/core";
 import { debounce } from "lodash";
 import React, { FunctionComponent, SyntheticEvent, useEffect, useRef, useState } from "react";
@@ -26,6 +27,8 @@ interface IListFilterProps {
   onChangeDisplayMode: (displayMode: DisplayMode) => void;
   onAddCriterion: (criterion: Criterion, oldId?: string) => void;
   onRemoveCriterion: (criterion: Criterion) => void;
+  zoomIndex?: number;
+  onChangeZoom?: (zoomIndex: number) => void;
   onSelectAll?: () => void;
   onSelectNone?: () => void;
   filter: ListFilterModel;
@@ -188,6 +191,29 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
     );
   }
 
+  function onChangeZoom(v : number) {
+    if (props.onChangeZoom) {
+      props.onChangeZoom(v);
+    }
+  } 
+
+  function maybeRenderZoom() {
+    if (props.onChangeZoom) {
+      return (
+        <span className="zoom-slider">
+          <Slider 
+            min={0}
+            value={props.zoomIndex}
+            initialValue={props.zoomIndex}
+            max={3}
+            labelRenderer={false}
+            onChange={(v) => onChangeZoom(v)}
+          />
+      </span>
+      );
+    }
+  }
+
   function render() {
     return (
       <>
@@ -235,6 +261,8 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
           <ButtonGroup className="filter-item">
             {renderDisplayModeOptions()}
           </ButtonGroup>
+
+          {maybeRenderZoom()}
 
           <ButtonGroup className="filter-item">
             {renderSelectAllNone()}
