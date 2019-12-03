@@ -35,10 +35,6 @@ export class VideoJSPlayer extends React.Component<IVideoJSPlayerProps> {
   componentDidMount() {
     this.player = videojs(this.videoNode, this.props.videoJSOptions);
 
-    // dirty hack - make this player look like JWPlayer
-    this.player.seek = this.player.currentTime;
-    this.player.getPosition = this.player.currentTime;
-    
     SceneHelpers.registerJSPlayer(this.player);
 
     this.player.src(this.props.scene.paths.stream);
@@ -50,7 +46,7 @@ export class VideoJSPlayer extends React.Component<IVideoJSPlayerProps> {
     this.player.currentTime = (time: any) => { 
       if( time == undefined )
       {
-          return this.player.oldCurrentTime() + this.player.start;
+        return this.player.oldCurrentTime() + this.player.start;
       }
       this.player.start = time;
       this.player.oldCurrentTime(0);
@@ -59,6 +55,10 @@ export class VideoJSPlayer extends React.Component<IVideoJSPlayerProps> {
 
       return this;
     };
+
+    // dirty hack - make this player look like JWPlayer
+    this.player.seek = this.player.currentTime;
+    this.player.getPosition = this.player.currentTime;
 
     this.player.ready(() => {
       this.player.on("timeupdate", () => {
