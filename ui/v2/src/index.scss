@@ -292,19 +292,15 @@ span.block {
 }
 
 .performer-tag-container {
-  max-width: 100%;
-  height: 100%;
-  display: inline-block;
-  text-align: center;
   margin: 5px;
 }
 
 .performer-tag.image {
-  max-height: 150px;
-  max-width: 100%;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
+  height: 150px;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   margin: 0 auto;
 }
 
