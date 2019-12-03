@@ -21,7 +21,8 @@ export interface IListHookData {
 export interface IListHookOptions {
   filterMode: FilterMode;
   props: IBaseProps;
-  renderContent: (result: QueryHookResult<any, any>, filter: ListFilterModel, selectedIds: Set<string>) => JSX.Element | undefined;
+  zoomable?: boolean
+  renderContent: (result: QueryHookResult<any, any>, filter: ListFilterModel, selectedIds: Set<string>, zoomIndex: number) => JSX.Element | undefined;
   renderSelectedOptions?: (result: QueryHookResult<any, any>, selectedIds: Set<string>) => JSX.Element | undefined;
 }
 
@@ -31,6 +32,7 @@ export class ListHook {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [lastClickedId, setLastClickedId] = useState<string | undefined>(undefined);
     const [totalCount, setTotalCount] = useState<number>(0);
+    const [zoomIndex, setZoomIndex] = useState<number>(1);
 
     // Update the filter when the query parameters change
     useEffect(() => {
@@ -254,6 +256,10 @@ export class ListHook {
       setLastClickedId(undefined);
     }
 
+    function onChangeZoom(newZoomIndex : number) {
+      setZoomIndex(newZoomIndex);
+    }
+
     const template = (
       <div>
         <ListFilter
@@ -266,12 +272,14 @@ export class ListHook {
           onRemoveCriterion={onRemoveCriterion}
           onSelectAll={onSelectAll}
           onSelectNone={onSelectNone}
+          zoomIndex={options.zoomable ? zoomIndex : undefined}
+          onChangeZoom={options.zoomable ? onChangeZoom : undefined}
           filter={filter}
         />
         {options.renderSelectedOptions && selectedIds.size > 0 ? options.renderSelectedOptions(result, selectedIds) : undefined}
         {result.loading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
         {result.error ? <h1>{result.error.message}</h1> : undefined}
-        {options.renderContent(result, filter, selectedIds)}
+        {options.renderContent(result, filter, selectedIds, zoomIndex)}
         <Pagination
           itemsPerPage={filter.itemsPerPage}
           currentPage={filter.currentPage}

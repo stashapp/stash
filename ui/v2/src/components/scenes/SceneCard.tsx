@@ -17,10 +17,12 @@ import { ColorUtils } from "../../utils/color";
 import { TextUtils } from "../../utils/text";
 import { TagLink } from "../Shared/TagLink";
 import { SceneHelpers } from "./helpers";
+import { ZoomUtils } from "../../utils/zoom";
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
   selected: boolean | undefined;
+  zoomIndex: number;
   onSelectedChanged: (selected : boolean, shiftKey : boolean) => void;
 }
 
@@ -189,7 +191,7 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
 
   return (
     <Card
-      className="grid-item scene-card"
+      className={"grid-item scene-card " + ZoomUtils.classForZoom(props.zoomIndex)}
       elevation={Elevation.ONE}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

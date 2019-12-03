@@ -76,6 +76,47 @@ code {
     width: calc(20%);
     margin: 0;
   }
+
+  &.zoom-0 {
+    width: 240px;
+
+    & .previewable {
+      max-height: 180px;
+    }
+    & .previewable.portrait {
+      height: 180px;
+    }
+  }
+  &.zoom-1 {
+    width: 320px;
+
+    & .previewable {
+      max-height: 240px;
+    }
+    & .previewable.portrait {
+      height: 240px;
+    }
+  }
+  &.zoom-2 {
+    width: 480px;
+
+    & .previewable {
+      max-height: 360px;
+    }
+    & .previewable.portrait {
+      height: 360px;
+    }
+  }
+  &.zoom-3 {
+    width: 640px;
+
+    & .previewable {
+      max-height: 480px;
+    }
+    & .previewable.portrait {
+      height: 480px;
+    }
+  }
 }
 
 .previewable {
@@ -416,5 +457,14 @@ span.block {
   & #scrape-url-button {
     float: right;
     height: 30px;
+  }
+}
+
+.zoom-slider {
+  margin: auto 5px;
+  width: 100px;
+
+  & .bp3-slider {
+    min-width: 100%;
   }
 }
