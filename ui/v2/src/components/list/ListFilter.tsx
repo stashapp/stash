@@ -176,13 +176,13 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
 
   function renderSelectAll() {
     if (props.onSelectAll) {
-      return <MenuItem onClick={() => onSelectAll()} text="Select All" />;
+      return <MenuItem key="Select All" onClick={() => onSelectAll()} text="Select All" />;
     }
   }
 
   function renderSelectNone() {
     if (props.onSelectNone) {
-      return <MenuItem onClick={() => onSelectNone()} text="Select None" />;
+      return <MenuItem key="Select None" onClick={() => onSelectNone()} text="Select None" />;
     }
   }
 
