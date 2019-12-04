@@ -18,6 +18,7 @@ import { TextUtils } from "../../utils/text";
 import { TagLink } from "../Shared/TagLink";
 import { SceneHelpers } from "./helpers";
 import { ZoomUtils } from "../../utils/zoom";
+import { StashService } from "../../core/StashService";
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
@@ -30,6 +31,8 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
   const [previewPath, setPreviewPath] = useState<string | undefined>(undefined);
   const videoHoverHook = VideoHoverHook.useVideoHover({resetOnMouseLeave: false});
   
+  const config = StashService.useConfiguration();
+  const showStudioAsText = !!config.data && !!config.data.configuration ? config.data.configuration.interface.showStudioAsText : false;
 
   function maybeRenderRatingBanner() {
     if (!props.scene.rating) { return; }
@@ -54,16 +57,25 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
       return;
     }
 
-    const style: React.CSSProperties = {
+    let style: React.CSSProperties = {
       backgroundImage: `url('${props.scene.studio.image_path}')`,
     };
+
+    let text = "";
+
+    if (showStudioAsText) {
+      style = {};
+      text = props.scene.studio.name;
+    }
 
     return (
       <div className={`scene-studio-overlay`}>
         <Link
           to={`/studios/${props.scene.studio.id}`}
           style={style}
-        />
+        >
+          {text}
+        </Link>
       </div>
     );
   }

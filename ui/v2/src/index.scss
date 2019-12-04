@@ -235,7 +235,7 @@ video.preview.portrait {
   position: absolute;
   top: .7em;
   right: .7em;
-  font-weight: 400;
+  font-weight: 900;
   width: 40%;
   height: 20%;
   opacity: 0.75;
@@ -249,6 +249,11 @@ video.preview.portrait {
   display: inline-block;
   background-position: right top;
   background-repeat: no-repeat;
+  letter-spacing: -.03em;
+  text-shadow: 0 0 3px #000;
+  text-align: right;
+  text-decoration: none;
+  color: #f5f8fa;
 }
 
 .overlay-resolution {

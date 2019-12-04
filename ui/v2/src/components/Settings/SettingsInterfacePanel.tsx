@@ -22,6 +22,7 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
   const [wallShowTitle, setWallShowTitle] = useState<boolean>();
   const [maximumLoopDuration, setMaximumLoopDuration] = useState<number>(0);
   const [autostartVideo, setAutostartVideo] = useState<boolean>();
+  const [showStudioAsText, setShowStudioAsText] = useState<boolean>();
   const [css, setCSS] = useState<string>();
   const [cssEnabled, setCSSEnabled] = useState<boolean>();
 
@@ -30,6 +31,7 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
     wallShowTitle,
     maximumLoopDuration,
     autostartVideo,
+    showStudioAsText,
     css,
     cssEnabled
   });
@@ -42,6 +44,7 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
       setWallShowTitle(iCfg.wallShowTitle !== undefined ? iCfg.wallShowTitle : true);
       setMaximumLoopDuration(iCfg.maximumLoopDuration || 0);
       setAutostartVideo(iCfg.autostartVideo !== undefined ? iCfg.autostartVideo : false);
+      setShowStudioAsText(iCfg.showStudioAsText !== undefined ? iCfg.showStudioAsText : false);
       setCSS(config.data.configuration.interface.css || "");
       setCSSEnabled(config.data.configuration.interface.cssEnabled || false);
     }
@@ -78,6 +81,18 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
         />
       </FormGroup>
 
+      <FormGroup
+        label="Scene List"
+      >
+        <Checkbox
+          checked={showStudioAsText}
+          label="Show Studios as text"
+          onChange={() => {
+            setShowStudioAsText(!showStudioAsText)
+          }}
+        />
+      </FormGroup>
+      
       <FormGroup
         label="Scene Player"
       >

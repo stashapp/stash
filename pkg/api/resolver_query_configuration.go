@@ -53,6 +53,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	wallShowTitle := config.GetWallShowTitle()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
 	autostartVideo := config.GetAutostartVideo()
+	showStudioAsText := config.GetShowStudioAsText()
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
 
@@ -61,6 +62,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		WallShowTitle:       &wallShowTitle,
 		MaximumLoopDuration: &maximumLoopDuration,
 		AutostartVideo:      &autostartVideo,
+		ShowStudioAsText:    &showStudioAsText,
 		CSS:                 &css,
 		CSSEnabled:          &cssEnabled,
 	}

@@ -66,6 +66,8 @@ input ConfigInterfaceInput {
   maximumLoopDuration: Int
   """If true, video will autostart on load in the scene player"""
   autostartVideo: Boolean
+  """If true, studio overlays will be shown as text instead of logo images"""
+  showStudioAsText: Boolean
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
@@ -80,6 +82,8 @@ type ConfigInterfaceResult {
   maximumLoopDuration: Int
   """If true, video will autostart on load in the scene player"""
   autostartVideo: Boolean
+   """If true, studio overlays will be shown as text instead of logo images"""
+  showStudioAsText: Boolean
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
