@@ -197,7 +197,6 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
           icon="filter"
           onClick={() => onToggle()} 
           active={isOpen} 
-          large={true}
         >
         </Button>
       </Tooltip>

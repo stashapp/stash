@@ -11,6 +11,9 @@ import {
   Tag,
   Tooltip,
   Slider,
+  Navbar,
+  NavbarGroup,
+  Alignment,
 } from "@blueprintjs/core";
 import { debounce } from "lodash";
 import React, { FunctionComponent, SyntheticEvent, useEffect, useRef, useState } from "react";
@@ -18,6 +21,7 @@ import { Criterion } from "../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "../../models/list-filter/filter";
 import { DisplayMode } from "../../models/list-filter/types";
 import { AddFilter } from "./AddFilter";
+import { optionalCallExpression } from "@babel/types";
 
 interface IListFilterProps {
   onChangePageSize: (pageSize: number) => void;
@@ -99,7 +103,7 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
     ));
   }
 
-  function renderDisplayModeOptions() {
+  function renderDisplayModeButton() {
     function getIcon(option: DisplayMode) {
       switch (option) {
         case DisplayMode.Grid: return "grid-view";
@@ -114,16 +118,33 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
         case DisplayMode.Wall: return "Wall";
       }
     }
-    return props.filter.displayModeOptions.map((option) => (
-      <Tooltip content={getLabel(option)} hoverOpenDelay={200}>
-        <Button
-          key={option}
-          active={props.filter.displayMode === option}
-          onClick={() => onChangeDisplayMode(option)}
+
+    function renderDisplayModeOptions() {
+      return props.filter.displayModeOptions.map((option) => (
+        <MenuItem 
+          onClick={() => onChangeDisplayMode(option)} 
+          text={getLabel(option)} 
+          key={option} 
           icon={getIcon(option)}
         />
-      </Tooltip>
-    ));
+      ));
+    }
+
+    if (props.filter.displayModeOptions.length < 2) {
+      return;
+    }
+
+    return (
+      <Popover position="bottom">
+        <Tooltip content={getLabel(props.filter.displayMode)} hoverOpenDelay={200}>
+          <Button
+            icon={getIcon(props.filter.displayMode)}
+            rightIcon={"double-caret-vertical"}
+          />
+        </Tooltip>
+        <Menu>{renderDisplayModeOptions()}</Menu>
+      </Popover>
+    );
   }
 
   function renderFilterTags() {
@@ -155,40 +176,40 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
 
   function renderSelectAll() {
     if (props.onSelectAll) {
-      return (
-        <Tooltip
-          content="Select All"
-          hoverOpenDelay={200}
-        >
-          <Button 
-            onClick={() => onSelectAll()} 
-            icon="tick"
-          />
-        </Tooltip>
-      );
+      return <MenuItem onClick={() => onSelectAll()} text="Select All" />;
     }
   }
 
   function renderSelectNone() {
     if (props.onSelectNone) {
-      return (
-        <Tooltip
-          content="Select None"
-          hoverOpenDelay={200}
-        >
-          <Button onClick={() => onSelectNone()} icon="square"/>
-        </Tooltip>
-      );
+      return <MenuItem onClick={() => onSelectNone()} text="Select None" />;
     }
   }
 
-  function renderSelectAllNone() {
-    return (
-      <>
-      {renderSelectAll()}
-      {renderSelectNone()}
-      </>
-    );
+  function renderMore() {
+    let options = [];
+    options.push(renderSelectAll());
+    options.push(renderSelectNone());
+    options = options.filter((o) => !!o);
+
+    let menuItems = options as JSX.Element[];
+
+    function renderMoreOptions() {
+      return (
+        <>
+        {menuItems}
+        </>
+      )
+    }
+
+    if (menuItems.length > 0) {
+      return (
+        <Popover position="bottom">
+          <Button icon="more"/>
+          <Menu>{renderMoreOptions()}</Menu>
+        </Popover>
+      );
+    }
   }
 
   function onChangeZoom(v : number) {
@@ -217,57 +238,57 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
   function render() {
     return (
       <>
-        <div className="filter-container">
-          <InputGroup
-            large={true}
-            placeholder="Search..."
-            defaultValue={props.filter.searchTerm}
-            onChange={onChangeQuery}
-            className="filter-item"
-          />
-          <HTMLSelect
-            large={true}
-            style={{flexBasis: "min-content"}}
-            options={PAGE_SIZE_OPTIONS}
-            onChange={onChangePageSize}
-            value={props.filter.itemsPerPage}
-            className="filter-item"
-          />
-          <ButtonGroup className="filter-item">
-            <Popover position="bottom">
-              <Button large={true}>{props.filter.sortBy}</Button>
-              <Menu>{renderSortByOptions()}</Menu>
-            </Popover>
+        <Navbar className="filter-container">
+          <NavbarGroup align={Alignment.LEFT}>
+            <InputGroup
+              placeholder="Search..."
+              defaultValue={props.filter.searchTerm}
+              onChange={onChangeQuery}
+              className="filter-item"
+            />
+            <HTMLSelect
+              style={{flexBasis: "min-content"}}
+              options={PAGE_SIZE_OPTIONS}
+              onChange={onChangePageSize}
+              value={props.filter.itemsPerPage}
+              className="filter-item"
+            />
+            <ButtonGroup className="filter-item">
+              <Popover position="bottom">
+                <Button>{props.filter.sortBy}</Button>
+                <Menu>{renderSortByOptions()}</Menu>
+              </Popover>
+              
+              <Tooltip 
+                content={props.filter.sortDirection === "asc" ? "Ascending" : "Descending"}
+                hoverOpenDelay={200}
+              >
+                <Button
+                  rightIcon={props.filter.sortDirection === "asc" ? "caret-up" : "caret-down"}
+                  onClick={onChangeSortDirection}
+                />
+              </Tooltip>
+              
+            </ButtonGroup>
+
+            <AddFilter
+              filter={props.filter}
+              onAddCriterion={onAddCriterion}
+              onCancel={onCancelAddCriterion}
+              editingCriterion={editingCriterion}
+            />
+          </NavbarGroup>
+          
+          <NavbarGroup align={Alignment.RIGHT}>
+            <ButtonGroup className="filter-item">
+              {renderMore()}
+            </ButtonGroup>            
+
+            {maybeRenderZoom()}
             
-            <Tooltip 
-              content={props.filter.sortDirection === "asc" ? "Ascending" : "Descending"}
-              hoverOpenDelay={200}
-            >
-              <Button
-                rightIcon={props.filter.sortDirection === "asc" ? "caret-up" : "caret-down"}
-                onClick={onChangeSortDirection}
-              />
-            </Tooltip>
-            
-          </ButtonGroup>
-
-          <AddFilter
-            filter={props.filter}
-            onAddCriterion={onAddCriterion}
-            onCancel={onCancelAddCriterion}
-            editingCriterion={editingCriterion}
-          />
-
-          <ButtonGroup className="filter-item">
-            {renderDisplayModeOptions()}
-          </ButtonGroup>
-
-          {maybeRenderZoom()}
-
-          <ButtonGroup className="filter-item">
-            {renderSelectAllNone()}
-          </ButtonGroup>
-        </div>
+            {renderDisplayModeButton()}
+          </NavbarGroup>
+        </Navbar>
         <div style={{display: "flex", justifyContent: "center", margin: "10px auto"}}>
           {renderFilterTags()}
         </div>

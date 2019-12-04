@@ -182,10 +182,15 @@ video.preview.portrait {
   }
 }
 
-.filter-container, .operation-container {
+.operation-container {
   display: flex;
   justify-content: center;
   margin: 10px auto;
+}
+
+.bp3-navbar.filter-container {
+  background-color: $dark-gray2;
+  z-index: 9;
 }
 
 .card-section {
@@ -466,5 +471,12 @@ span.block {
 
   & .bp3-slider {
     min-width: 100%;
+  }
+}
+
+// don't show zoom-slider when under 768px
+@media only screen and (max-width: 768px) {
+  .zoom-slider {
+    display: none;
   }
 }

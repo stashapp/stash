@@ -21,7 +21,8 @@ export interface IListHookData {
 export interface IListHookOptions {
   filterMode: FilterMode;
   props: IBaseProps;
-  zoomable?: boolean
+  zoomable?: boolean;
+  selectable?: boolean;
   renderContent: (result: QueryHookResult<any, any>, filter: ListFilterModel, selectedIds: Set<string>, zoomIndex: number) => JSX.Element | undefined;
   renderSelectedOptions?: (result: QueryHookResult<any, any>, selectedIds: Set<string>) => JSX.Element | undefined;
 }
@@ -270,8 +271,8 @@ export class ListHook {
           onChangeDisplayMode={onChangeDisplayMode}
           onAddCriterion={onAddCriterion}
           onRemoveCriterion={onRemoveCriterion}
-          onSelectAll={onSelectAll}
-          onSelectNone={onSelectNone}
+          onSelectAll={options.selectable ? onSelectAll : undefined}
+          onSelectNone={options.selectable ? onSelectNone : undefined}
           zoomIndex={options.zoomable ? zoomIndex : undefined}
           onChangeZoom={options.zoomable ? onChangeZoom : undefined}
           filter={filter}

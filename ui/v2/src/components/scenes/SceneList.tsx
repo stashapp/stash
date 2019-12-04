@@ -18,6 +18,7 @@ export const SceneList: FunctionComponent<ISceneListProps> = (props: ISceneListP
     filterMode: FilterMode.Scenes,
     props,
     zoomable: true,
+    selectable: true,
     renderContent,
     renderSelectedOptions
   });
