@@ -36,25 +36,25 @@ export class Pagination extends React.Component<IPaginationProps, IPaginationSta
     if (!this.state || !this.state.pages || this.state.pages.length <= 1) { return null; }
 
     return (
-      <ButtonGroup large={true} className="filter-container">
+      <ButtonGroup large={true} className="operation-container">
         <Button
-          text="First"
+          icon="double-chevron-left"
           disabled={this.props.currentPage === 1}
           onClick={() => this.setPage(1)}
         />
         <Button
-          text="Previous"
+          icon="chevron-left"
           disabled={this.props.currentPage === 1}
           onClick={() => this.setPage(this.props.currentPage - 1)}
         />
         {this.renderPageButtons()}
         <Button
-          text="Next"
+          icon="chevron-right"
           disabled={this.props.currentPage === this.state.totalPages}
           onClick={() => this.setPage(this.props.currentPage + 1)}
         />
         <Button
-          text="Last"
+          icon="double-chevron-right"
           disabled={this.props.currentPage === this.state.totalPages}
           onClick={() => this.setPage(this.state.totalPages)}
         />
@@ -86,25 +86,31 @@ export class Pagination extends React.Component<IPaginationProps, IPaginationSta
   }
 
   private getPagerState(totalItems: number, currentPage: number, pageSize: number) {
+    let pagesToDisplay = 10;
+
+    if (window.innerWidth < 600) {
+      pagesToDisplay = 4;
+    }
+
     const totalPages = Math.ceil(totalItems / pageSize);
 
     let startPage: number;
     let endPage: number;
-    if (totalPages <= 10) {
+    if (totalPages <= pagesToDisplay) {
       // less than 10 total pages so show all
       startPage = 1;
       endPage = totalPages;
     } else {
       // more than 10 total pages so calculate start and end pages
-      if (currentPage <= 6) {
+      if (currentPage <= pagesToDisplay / 2 + 1) {
         startPage = 1;
-        endPage = 10;
-      } else if (currentPage + 4 >= totalPages) {
-        startPage = totalPages - 9;
+        endPage = pagesToDisplay;
+      } else if (currentPage + pagesToDisplay / 2 - 1 >= totalPages) {
+        startPage = totalPages - pagesToDisplay + 1;
         endPage = totalPages;
       } else {
-        startPage = currentPage - 5;
-        endPage = currentPage + 4;
+        startPage = currentPage - pagesToDisplay / 2;
+        endPage = currentPage + pagesToDisplay / 2 - 1;
       }
     }
 

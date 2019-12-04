@@ -65,56 +65,73 @@ code {
   }
 }
 
-.grid-item {
-  // flex: auto;
-  width: 320px;
-  min-width: 185px;
-  margin: 0px 0 $pt-grid-size $pt-grid-size;
-  overflow: hidden;
-
-  &.wall {
-    width: calc(20%);
-    margin: 0;
-  }
-
-  &.zoom-0 {
-    width: 240px;
-
-    & .previewable {
-      max-height: 180px;
-    }
-    & .previewable.portrait {
-      height: 180px;
-    }
-  }
-  &.zoom-1 {
+@media only screen and (min-width: 768px) {
+  .grid-item {
+    // flex: auto;
     width: 320px;
+    min-width: 185px;
+    margin: 0px 0 $pt-grid-size $pt-grid-size;
+    overflow: hidden;
 
-    & .previewable {
-      max-height: 240px;
+    &.wall {
+      width: calc(20%);
+      margin: 0;
+      position: static;
     }
-    & .previewable.portrait {
-      height: 240px;
+
+    &.zoom-0 {
+      width: 240px;
+
+      & .previewable {
+        max-height: 180px;
+      }
+      & .previewable.portrait {
+        height: 180px;
+      }
+    }
+    &.zoom-1 {
+      width: 320px;
+
+      & .previewable {
+        max-height: 240px;
+      }
+      & .previewable.portrait {
+        height: 240px;
+      }
+    }
+    &.zoom-2 {
+      width: 480px;
+
+      & .previewable {
+        max-height: 360px;
+      }
+      & .previewable.portrait {
+        height: 360px;
+      }
+    }
+    &.zoom-3 {
+      width: 640px;
+
+      & .previewable {
+        max-height: 480px;
+      }
+      & .previewable.portrait {
+        height: 480px;
+      }
     }
   }
-  &.zoom-2 {
-    width: 480px;
+}
 
-    & .previewable {
-      max-height: 360px;
-    }
-    & .previewable.portrait {
-      height: 360px;
-    }
-  }
-  &.zoom-3 {
-    width: 640px;
+@media only screen and (max-width: 768px) {
+  .grid-item {
+    width: 90%;
+    margin: 0px 0 $pt-grid-size $pt-grid-size;
+    overflow: hidden;
 
-    & .previewable {
-      max-height: 480px;
-    }
-    & .previewable.portrait {
-      height: 480px;
+    &.wall {
+      width: calc(20%);
+      margin: 0;
+      position: static;
     }
   }
 }
@@ -501,6 +518,13 @@ span.block {
 .sidebar.sidebar-closed {
   left: -200px;
   transition: left 0.5s;
+}
+
+@media only screen and (max-width: 600px) {
+  .grid {
+    width: 100%;
+    padding: 0;
+  }
 }
 
 // overlay menu on smaller devices
