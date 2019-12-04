@@ -155,40 +155,40 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
 
   function renderSelectAll() {
     if (props.onSelectAll) {
-      return (
-        <Tooltip
-          content="Select All"
-          hoverOpenDelay={200}
-        >
-          <Button 
-            onClick={() => onSelectAll()} 
-            icon="tick"
-          />
-        </Tooltip>
-      );
+      return <MenuItem onClick={() => onSelectAll()} text="Select All" />;
     }
   }
 
   function renderSelectNone() {
     if (props.onSelectNone) {
-      return (
-        <Tooltip
-          content="Select None"
-          hoverOpenDelay={200}
-        >
-          <Button onClick={() => onSelectNone()} icon="square"/>
-        </Tooltip>
-      );
+      return <MenuItem onClick={() => onSelectNone()} text="Select None" />;
     }
   }
 
-  function renderSelectAllNone() {
-    return (
-      <>
-      {renderSelectAll()}
-      {renderSelectNone()}
-      </>
-    );
+  function renderMore() {
+    let options = [];
+    options.push(renderSelectAll());
+    options.push(renderSelectNone());
+    options = options.filter((o) => !!o);
+
+    let menuItems = options as JSX.Element[];
+
+    function renderMoreOptions() {
+      return (
+        <>
+        {menuItems}
+        </>
+      )
+    }
+
+    if (menuItems.length > 0) {
+      return (
+        <Popover position="bottom">
+          <Button icon="more"/>
+          <Menu>{renderMoreOptions()}</Menu>
+        </Popover>
+      );
+    }
   }
 
   function onChangeZoom(v : number) {
@@ -265,7 +265,7 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
           {maybeRenderZoom()}
 
           <ButtonGroup className="filter-item">
-            {renderSelectAllNone()}
+            {renderMore()}
           </ButtonGroup>
         </div>
         <div style={{display: "flex", justifyContent: "center", margin: "10px auto"}}>
