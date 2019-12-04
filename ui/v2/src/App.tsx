@@ -16,11 +16,7 @@ import { Sidebar } from "./components/Sidebar";
 interface IProps {}
 
 export const App: FunctionComponent<IProps> = (props: IProps) => {
-  const [menuOpen, setMenuOpen] = useState<boolean>(getInitialMenuState());
-
-  function getInitialMenuState() {
-    return window.innerWidth > 768;
-  }
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
   function getSidebarClosedClass() {
     if (!menuOpen) {

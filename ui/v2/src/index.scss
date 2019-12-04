@@ -474,9 +474,14 @@ span.block {
   }
 }
 
-// don't show zoom-slider when under 768px
 @media only screen and (max-width: 768px) {
+  // don't show zoom-slider when under 768px
   .zoom-slider {
+    display: none;
+  }
+
+  // collapse menu items into sidemenu
+  .collapsible-navlink {
     display: none;
   }
 }
@@ -500,6 +505,11 @@ span.block {
 
 // overlay menu on smaller devices
 @media only screen and (min-width: 768px) {
+  // hide menu button on larger devices
+  .menu-button {
+    display: none;
+  }
+
   .main {
     margin-left: 200px;
     transition: margin-left 0.5s;

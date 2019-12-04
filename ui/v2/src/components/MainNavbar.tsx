@@ -53,14 +53,14 @@ export const MainNavbar: FunctionComponent<IProps> = (props) => {
       <Navbar fixedToTop={true}>
         <div>
           <NavbarGroup align="left">
-            <Button icon="menu" onClick={() => props.onMenuToggle()}/>
+            <Button className="menu-button" icon="menu" onClick={() => props.onMenuToggle()}/>
             <NavbarHeading><Link to="/" className="bp3-button bp3-minimal">Stash</Link></NavbarHeading>
             <NavbarDivider />
 
-            {/* <NavLink
+            <NavLink
               exact={true}
               to="/scenes"
-              className="bp3-button bp3-minimal bp3-icon-video"
+              className="bp3-button bp3-minimal bp3-icon-video collapsible-navlink"
               activeClassName="bp3-active"
             >
               Scenes
@@ -69,7 +69,7 @@ export const MainNavbar: FunctionComponent<IProps> = (props) => {
             <NavLink
               exact={true}
               to="/scenes/markers"
-              className="bp3-button bp3-minimal bp3-icon-map-marker"
+              className="bp3-button bp3-minimal bp3-icon-map-marker collapsible-navlink"
               activeClassName="bp3-active"
             >
               Markers
@@ -78,7 +78,7 @@ export const MainNavbar: FunctionComponent<IProps> = (props) => {
             <NavLink
               exact={true}
               to="/galleries"
-              className="bp3-button bp3-minimal bp3-icon-media"
+              className="bp3-button bp3-minimal bp3-icon-media collapsible-navlink"
               activeClassName="bp3-active"
             >
               Galleries
@@ -87,7 +87,7 @@ export const MainNavbar: FunctionComponent<IProps> = (props) => {
             <NavLink
               exact={true}
               to="/performers"
-              className="bp3-button bp3-minimal bp3-icon-person"
+              className="bp3-button bp3-minimal bp3-icon-person collapsible-navlink"
               activeClassName="bp3-active"
             >
               Performers
@@ -96,7 +96,7 @@ export const MainNavbar: FunctionComponent<IProps> = (props) => {
             <NavLink
               exact={true}
               to="/studios"
-              className="bp3-button bp3-minimal bp3-icon-mobile-video"
+              className="bp3-button bp3-minimal bp3-icon-mobile-video collapsible-navlink"
               activeClassName="bp3-active"
             >
               Studios
@@ -105,11 +105,11 @@ export const MainNavbar: FunctionComponent<IProps> = (props) => {
             <NavLink
               exact={true}
               to="/tags"
-              className="bp3-button bp3-minimal bp3-icon-tag"
+              className="bp3-button bp3-minimal bp3-icon-tag collapsible-navlink"
               activeClassName="bp3-active"
             >
               Tags
-            </NavLink> */}
+            </NavLink>
           </NavbarGroup>
           <NavbarGroup align="right">
             {renderNewButton()}
