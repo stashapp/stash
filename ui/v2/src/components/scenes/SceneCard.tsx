@@ -17,10 +17,13 @@ import { ColorUtils } from "../../utils/color";
 import { TextUtils } from "../../utils/text";
 import { TagLink } from "../Shared/TagLink";
 import { SceneHelpers } from "./helpers";
+import { ZoomUtils } from "../../utils/zoom";
+import { StashService } from "../../core/StashService";
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
   selected: boolean | undefined;
+  zoomIndex: number;
   onSelectedChanged: (selected : boolean, shiftKey : boolean) => void;
 }
 
@@ -28,12 +31,51 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
   const [previewPath, setPreviewPath] = useState<string | undefined>(undefined);
   const videoHoverHook = VideoHoverHook.useVideoHover({resetOnMouseLeave: false});
   
+  const config = StashService.useConfiguration();
+  const showStudioAsText = !!config.data && !!config.data.configuration ? config.data.configuration.interface.showStudioAsText : false;
 
   function maybeRenderRatingBanner() {
     if (!props.scene.rating) { return; }
     return (
       <div className={`rating-banner ${ColorUtils.classForRating(props.scene.rating)}`}>
         RATING: {props.scene.rating}
+      </div>
+    );
+  }
+
+  function maybeRenderSceneSpecsOverlay() {
+    return (
+      <div className={`scene-specs-overlay`}>
+        {!!props.scene.file.height ? <span className={`overlay-resolution`}> {TextUtils.resolution(props.scene.file.height)}</span> : undefined}
+        {props.scene.file.duration !== undefined && props.scene.file.duration >= 1 ? TextUtils.secondsToTimestamp(props.scene.file.duration) : ""}
+      </div>
+    );
+  }
+
+  function maybeRenderSceneStudioOverlay() {
+    if (!props.scene.studio) {
+      return;
+    }
+
+    let style: React.CSSProperties = {
+      backgroundImage: `url('${props.scene.studio.image_path}')`,
+    };
+
+    let text = "";
+
+    if (showStudioAsText) {
+      style = {};
+      text = props.scene.studio.name;
+    }
+
+    return (
+      <div className={`scene-studio-overlay`}>
+        <Link
+          to={`/studios/${props.scene.studio.id}`}
+          style={style}
+        >
+          {text}
+        </Link>
       </div>
     );
   }
@@ -58,9 +100,20 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
   function maybeRenderPerformerPopoverButton() {
     if (props.scene.performers.length <= 0) { return; }
 
-    const performers = props.scene.performers.map((performer) => (
-      <TagLink key={performer.id} performer={performer} />
-    ));
+    const performers = props.scene.performers.map((performer) => {
+      return (
+        <>
+        <div className="performer-tag-container">
+          <Link
+            to={`/performers/${performer.id}`}
+            className="performer-tag previewable image"
+            style={{backgroundImage: `url(${performer.image_path})`}}
+          ></Link>
+          <TagLink key={performer.id} performer={performer} />
+        </div>
+        </>
+      );
+    });
     return (
       <Popover interactionKind={"hover"} position="bottom">
         <Button
@@ -119,11 +172,38 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
     setPreviewPath("");
   }
 
+  function isPortrait() {
+    let file = props.scene.file;
+    let width = file.width ? file.width : 0;
+    let height = file.height ? file.height : 0;
+    return height > width;
+  }
+
+  function getLinkClassName() {
+    let ret = "image previewable";
+    
+    if (isPortrait()) {
+      ret += " portrait";
+    }
+
+    return ret;
+  }
+
+  function getVideoClassName() {
+    let ret = "preview";
+    
+    if (isPortrait()) {
+      ret += " portrait";
+    }
+
+    return ret;
+  }
+
   var shiftKey = false;
 
   return (
     <Card
-      className="grid-item"
+      className={"grid-item scene-card " + ZoomUtils.classForZoom(props.zoomIndex)}
       elevation={Elevation.ONE}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -134,11 +214,15 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
         onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
         onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => { shiftKey = event.shiftKey; event.stopPropagation(); } }
       />
-      <Link to={`/scenes/${props.scene.id}`} className="image previewable">
-        {maybeRenderRatingBanner()}
-        <video className="preview" loop={true} poster={props.scene.paths.screenshot || ""} ref={videoHoverHook.videoEl}>
-          {!!previewPath ? <source src={previewPath} /> : ""}
-        </video>
+      <Link to={`/scenes/${props.scene.id}`} className={getLinkClassName()}>
+        <div className="video-container">
+          {maybeRenderRatingBanner()}
+          {maybeRenderSceneSpecsOverlay()}
+          {maybeRenderSceneStudioOverlay()}
+          <video className={getVideoClassName()} loop={true} poster={props.scene.paths.screenshot || ""} ref={videoHoverHook.videoEl}>
+            {!!previewPath ? <source src={previewPath} /> : ""}
+          </video>
+        </div>
       </Link>
       <div className="card-section">
         <H4 style={{textOverflow: "ellipsis", overflow: "hidden"}}>
@@ -149,16 +233,6 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
       </div>
 
       {maybeRenderPopoverButtonGroup()}
-
-      <Divider />
-      <span className="card-section centered">
-        {props.scene.file.size !== undefined ? TextUtils.fileSize(parseInt(props.scene.file.size, 10)) : ""}
-        &nbsp;|&nbsp;
-        {props.scene.file.duration !== undefined ? TextUtils.secondsToTimestamp(props.scene.file.duration) : ""}
-        &nbsp;|&nbsp;
-        {props.scene.file.width} x {props.scene.file.height}
-      </span>
-      {SceneHelpers.maybeRenderStudio(props.scene, 50, true)}
     </Card>
   );
 };

@@ -35,6 +35,7 @@ const SoundOnPreview = "sound_on_preview"
 const WallShowTitle = "wall_show_title"
 const MaximumLoopDuration = "maximum_loop_duration"
 const AutostartVideo = "autostart_video"
+const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
 
 // Logging options
@@ -189,6 +190,11 @@ func GetMaximumLoopDuration() int {
 func GetAutostartVideo() bool {
 	viper.SetDefault(AutostartVideo, false)
 	return viper.GetBool(AutostartVideo)
+}
+
+func GetShowStudioAsText() bool {
+	viper.SetDefault(ShowStudioAsText, false)
+	return viper.GetBool(ShowStudioAsText)
 }
 
 func GetCSSPath() string {

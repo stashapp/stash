@@ -17,6 +17,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   wallShowTitle
   maximumLoopDuration
   autostartVideo
+  showStudioAsText
   css
   cssEnabled
 }

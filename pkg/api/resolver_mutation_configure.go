@@ -98,6 +98,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		config.Set(config.AutostartVideo, *input.AutostartVideo)
 	}
 
+	if input.ShowStudioAsText != nil {
+		config.Set(config.ShowStudioAsText, *input.ShowStudioAsText)
+	}
+
 	css := ""
 
 	if input.CSS != nil {
