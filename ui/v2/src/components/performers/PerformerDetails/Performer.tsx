@@ -97,6 +97,27 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     }
   }, [performer]);
 
+  function pasteImage(e : any) {
+    if (e.clipboardData.files.length == 0) {
+      return;
+    }
+    
+    const file: File = e.clipboardData.files[0];
+    const reader: FileReader = new FileReader();
+    
+    reader.onloadend = (e) => {
+      setImagePreview(reader.result as string);
+      setImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  useEffect(() => {
+    window.addEventListener("paste", pasteImage);
+  
+    return () => window.removeEventListener("paste", pasteImage);
+  });
+
   useEffect(() => {
     var newQueryableScrapers : GQL.ListScrapersListScrapers[] = [];
 
@@ -108,7 +129,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
 
     setQueryableScrapers(newQueryableScrapers);
 
-  }, [Scrapers.data])
+  }, [Scrapers.data]);
 
   if ((!isNew && !isEditing && (!data || !data.findPerformer)) || isLoading) {
     return <Spinner size={Spinner.SIZE_LARGE} />; 
