@@ -62,6 +62,27 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     }
   }, [studio]);
 
+  function pasteImage(e : any) {
+    if (e.clipboardData.files.length == 0) {
+      return;
+    }
+    
+    const file: File = e.clipboardData.files[0];
+    const reader: FileReader = new FileReader();
+    
+    reader.onloadend = (e) => {
+      setImagePreview(reader.result as string);
+      setImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  useEffect(() => {
+    window.addEventListener("paste", pasteImage);
+  
+    return () => window.removeEventListener("paste", pasteImage);
+  });
+
   if (!isNew && !isEditing) {
     if (!data || !data.findStudio || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
     if (!!error) { return <>error...</>; }
