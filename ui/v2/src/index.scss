@@ -38,7 +38,7 @@ code {
   flex-flow: row wrap;
   justify-content: center;
   margin: $pt-grid-size $pt-grid-size 0 0;
-  padding: 0 calc(10%);
+  padding: 0 100px;
 
   &.wall {
     padding: 0;
@@ -67,7 +67,7 @@ code {
 
 .grid-item {
   // flex: auto;
-  width: calc(25% - 1.5em);
+  width: 320px;
   min-width: 185px;
   margin: 0px 0 $pt-grid-size $pt-grid-size;
   overflow: hidden;
@@ -75,6 +75,47 @@ code {
   &.wall {
     width: calc(20%);
     margin: 0;
+  }
+
+  &.zoom-0 {
+    width: 240px;
+
+    & .previewable {
+      max-height: 180px;
+    }
+    & .previewable.portrait {
+      height: 180px;
+    }
+  }
+  &.zoom-1 {
+    width: 320px;
+
+    & .previewable {
+      max-height: 240px;
+    }
+    & .previewable.portrait {
+      height: 240px;
+    }
+  }
+  &.zoom-2 {
+    width: 480px;
+
+    & .previewable {
+      max-height: 360px;
+    }
+    & .previewable.portrait {
+      height: 360px;
+    }
+  }
+  &.zoom-3 {
+    width: 640px;
+
+    & .previewable {
+      max-height: 480px;
+    }
+    & .previewable.portrait {
+      height: 480px;
+    }
   }
 }
 
@@ -85,6 +126,11 @@ code {
   width: calc(100% + 40px);
   margin: -20px 0 0 -20px;
   position: relative;
+  max-height: 240px;
+}
+
+.previewable.portrait {
+  height: 240px;
 }
 
 .grid-item label.card-select {
@@ -95,12 +141,24 @@ code {
   opacity: 0.5;
 }
 
+.video-container {
+  width: 100%;
+  height: 100%;
+}
+
 video.preview {
   // height: 225px; // slows down the page
   width: 100%;
   // width: calc(100% + 40px);
   // margin: -20px 0 0 -20px;
   object-fit: cover;
+  margin: 0 auto;
+  display: block;
+}
+
+video.preview.portrait {
+  height: 100%;
+  width: auto;
 }
 
 .filter-item, .operation-item {
@@ -159,6 +217,67 @@ video.preview {
   font-size: .85714em;
   line-height: 1.6em;
   text-align: center;
+}
+
+.scene-specs-overlay {
+  display: block;
+  position: absolute;
+  bottom: 1em;
+  right: .7em;
+  font-weight: 400;
+  color: #f5f8fa;
+  letter-spacing: -.03em;
+  text-shadow: 0 0 3px #000;
+}
+
+.scene-studio-overlay {
+  display: block;
+  position: absolute;
+  top: .7em;
+  right: .7em;
+  font-weight: 900;
+  width: 40%;
+  height: 20%;
+  opacity: 0.75;
+  z-index: 9;
+}
+
+.scene-studio-overlay a {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  display: inline-block;
+  background-position: right top;
+  background-repeat: no-repeat;
+  letter-spacing: -.03em;
+  text-shadow: 0 0 3px #000;
+  text-align: right;
+  text-decoration: none;
+  color: #f5f8fa;
+}
+
+.overlay-resolution {
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-right:.3em;
+}
+
+.scene-card {
+  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay {
+    transition: opacity 0.5s;
+  }
+}
+
+.scene-card:hover {
+  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay {
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  .scene-studio-overlay:hover {
+    opacity: 0.75;
+    transition: opacity 0.5s;
+  }
 }
 
 #jwplayer-container {
@@ -221,6 +340,19 @@ span.block {
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
+}
+
+.performer-tag-container {
+  margin: 5px;
+}
+
+.performer-tag.image {
+  height: 150px;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: 0 auto;
 }
 
 .studio.image {
@@ -330,5 +462,14 @@ span.block {
   & #scrape-url-button {
     float: right;
     height: 30px;
+  }
+}
+
+.zoom-slider {
+  margin: auto 5px;
+  width: 100px;
+
+  & .bp3-slider {
+    min-width: 100%;
   }
 }

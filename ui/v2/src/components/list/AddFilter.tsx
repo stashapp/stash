@@ -5,6 +5,7 @@ import {
   FormGroup,
   HTMLSelect,
   InputGroup,
+  Tooltip,
 } from "@blueprintjs/core";
 import _ from "lodash";
 import React, { FunctionComponent, useEffect, useRef, useState } from "react";
@@ -188,7 +189,19 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
   const title = !props.editingCriterion ? "Add Filter" : "Update Filter";
   return (
     <>
-      <Button onClick={() => onToggle()} active={isOpen} large={true}>Filter</Button>
+      <Tooltip
+        hoverOpenDelay={200}
+        content="Filter"
+      >
+        <Button 
+          icon="filter"
+          onClick={() => onToggle()} 
+          active={isOpen} 
+          large={true}
+        >
+        </Button>
+      </Tooltip>
+      
       <Dialog isOpen={isOpen} onClose={() => onToggle()} title={title}>
         <div className="dialog-content">
           {maybeRenderFilterSelect()}

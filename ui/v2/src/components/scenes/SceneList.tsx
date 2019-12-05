@@ -17,6 +17,7 @@ export const SceneList: FunctionComponent<ISceneListProps> = (props: ISceneListP
   const listData = ListHook.useList({
     filterMode: FilterMode.Scenes,
     props,
+    zoomable: true,
     renderContent,
     renderSelectedOptions
   });
@@ -45,23 +46,24 @@ export const SceneList: FunctionComponent<ISceneListProps> = (props: ISceneListP
     );
   }
 
-  function renderSceneCard(scene : SlimSceneDataFragment, selectedIds: Set<string>) {
+  function renderSceneCard(scene : SlimSceneDataFragment, selectedIds: Set<string>, zoomIndex: number) {
     return (
       <SceneCard 
         key={scene.id} 
         scene={scene} 
+        zoomIndex={zoomIndex}
         selected={selectedIds.has(scene.id)}
         onSelectedChanged={(selected: boolean, shiftKey: boolean) => listData.onSelectChange(scene.id, selected, shiftKey)}
       />
     )
   }
 
-  function renderContent(result: QueryHookResult<FindScenesQuery, FindScenesVariables>, filter: ListFilterModel, selectedIds: Set<string>) {
+  function renderContent(result: QueryHookResult<FindScenesQuery, FindScenesVariables>, filter: ListFilterModel, selectedIds: Set<string>, zoomIndex: number) {
     if (!result.data || !result.data.findScenes) { return; }
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <div className="grid">
-          {result.data.findScenes.scenes.map((scene) => renderSceneCard(scene, selectedIds))}
+          {result.data.findScenes.scenes.map((scene) => renderSceneCard(scene, selectedIds, zoomIndex))}
         </div>
       );
     } else if (filter.displayMode === DisplayMode.List) {
