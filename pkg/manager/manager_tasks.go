@@ -2,7 +2,9 @@ package manager
 
 import (
 	"path/filepath"
+	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -78,6 +80,7 @@ func (s *singleton) Scan(nameFromMetadata bool) {
 			return
 		}
 
+		results, _ = excludeFiles(results, config.GetExcludes())
 		total := len(results)
 		logger.Infof("Starting scan of %d files. %d New files found", total, s.neededScan(results))
 
@@ -491,4 +494,47 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, ma
 		}
 	}
 	return &totals
+}
+
+func excludeFiles(files []string, patterns []string) ([]string, int) {
+	if patterns == nil {
+		logger.Infof("No excludes in config.")
+		return files, 0
+	} else {
+		var results []string
+		var exclCount int
+		var fileRegexps []*regexp.Regexp
+
+		for _, pattern := range patterns {
+			reg, err := regexp.Compile(strings.ToLower(pattern))
+			if err != nil {
+				logger.Errorf("Aborting Exclude:%v", err)
+				return files, 0
+			}
+			fileRegexps = append(fileRegexps, reg)
+		}
+
+		if len(fileRegexps) == 0 {
+			return files, 0
+		}
+
+		for i := 0; i < len(files); i++ {
+			match := false
+			for _, regPattern := range fileRegexps {
+				//if pattern matches remove file from list
+				if regPattern.Match([]byte(strings.ToLower(files[i]))) {
+					logger.Infof("File %s excluded from scan ", files[i])
+					match = true
+					exclCount++
+					break
+				}
+
+			}
+			if !match {
+				results = append(results, files[i])
+			}
+		}
+		logger.Infof("Excluded %d file(s) from scan ", exclCount)
+		return results, exclCount
+	}
 }
