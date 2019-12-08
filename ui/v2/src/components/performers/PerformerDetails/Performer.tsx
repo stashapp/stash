@@ -5,6 +5,7 @@ import {
   EditableText,
   HTMLTable,
   Spinner,
+  FormGroup,
 } from "@blueprintjs/core";
 import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
@@ -16,6 +17,7 @@ import { TableUtils } from "../../../utils/table";
 import { ScrapePerformerSuggest } from "../../select/ScrapePerformerSuggest";
 import { DetailsEditNavbar } from "../../Shared/DetailsEditNavbar";
 import { ToastUtils } from "../../../utils/toasts";
+import { EditableTextUtils } from "../../../utils/editabletext";
 
 interface IPerformerProps extends IBaseProps {}
 
@@ -299,7 +301,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
   }
 
   function maybeRenderScrapeButton() {
-    if (!url || !urlScrapable(url)) {
+    if (!url || !isEditing || !urlScrapable(url)) {
       return undefined;
     }
     return (
@@ -319,13 +321,9 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
           {maybeRenderScrapeButton()}
         </td>
         <td>
-          <EditableText
-            disabled={!isEditing}
-            value={url}
-            placeholder="URL"
-            multiline={true}
-            onChange={(newValue) => setUrl(newValue)}
-          />
+          {EditableTextUtils.renderInputGroup({
+            value: url, isEditing, onChange: setUrl, placeholder: "URL"
+          })}
         </td>
       </tr>
     );
@@ -360,13 +358,11 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
             />
           </h1>
           <h6 className="bp3-heading">
-            <span style={{fontWeight: 300}}>Aliases: </span>
-            <EditableText
-              disabled={!isEditing}
-              value={aliases}
-              placeholder="Aliases"
-              onChange={(value) => setAliases(value)}
-            />
+            <FormGroup className="aliases-field" inline={true} label="Aliases:">
+              {EditableTextUtils.renderInputGroup({
+                value: aliases, isEditing: isEditing, placeholder: "Aliases", onChange: setAliases
+              })}
+            </FormGroup>
           </h6>
           <div>
             <span style={{fontWeight: 300}}>Favorite:</span>
@@ -381,29 +377,29 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
 
           <HTMLTable id="performer-details" style={{width: "100%"}}>
             <tbody>
-              {TableUtils.renderEditableTextTableRow(
+              {TableUtils.renderInputGroup(
                 {title: "Birthdate (YYYY-MM-DD)", value: birthdate, isEditing, onChange: setBirthdate})}
               {renderEthnicity()}
-              {TableUtils.renderEditableTextTableRow(
+              {TableUtils.renderInputGroup(
                 {title: "Eye Color", value: eyeColor, isEditing, onChange: setEyeColor})}
-              {TableUtils.renderEditableTextTableRow(
+              {TableUtils.renderInputGroup(
                 {title: "Country", value: country, isEditing, onChange: setCountry})}
-              {TableUtils.renderEditableTextTableRow(
+              {TableUtils.renderInputGroup(
                 {title: "Height (CM)", value: height, isEditing, onChange: setHeight})}
-              {TableUtils.renderEditableTextTableRow(
+              {TableUtils.renderInputGroup(
                 {title: "Measurements", value: measurements, isEditing, onChange: setMeasurements})}
-              {TableUtils.renderEditableTextTableRow(
+              {TableUtils.renderInputGroup(
                 {title: "Fake Tits", value: fakeTits, isEditing, onChange: setFakeTits})}
-              {TableUtils.renderEditableTextTableRow(
+              {TableUtils.renderInputGroup(
                 {title: "Career Length", value: careerLength, isEditing, onChange: setCareerLength})}
-              {TableUtils.renderEditableTextTableRow(
+              {TableUtils.renderInputGroup(
                 {title: "Tattoos", value: tattoos, isEditing, onChange: setTattoos})}
-              {TableUtils.renderEditableTextTableRow(
+              {TableUtils.renderInputGroup(
                 {title: "Piercings", value: piercings, isEditing, onChange: setPiercings})}
               {renderURLField()}
-              {TableUtils.renderEditableTextTableRow(
+              {TableUtils.renderInputGroup(
                 {title: "Twitter", value: twitter, isEditing, onChange: setTwitter})}
-              {TableUtils.renderEditableTextTableRow(
+              {TableUtils.renderInputGroup(
                 {title: "Instagram", value: instagram, isEditing, onChange: setInstagram})}
             </tbody>
           </HTMLTable>

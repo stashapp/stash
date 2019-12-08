@@ -183,7 +183,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
 
           <HTMLTable style={{width: "100%"}}>
             <tbody>
-              {TableUtils.renderEditableTextTableRow({title: "URL", value: url, isEditing, onChange: setUrl})}
+              {TableUtils.renderInputGroup({title: "URL", value: url, isEditing, onChange: setUrl})}
             </tbody>
           </HTMLTable>
         </div>
