@@ -18,10 +18,16 @@ export interface IListHookData {
   onSelectChange: (id: string, selected : boolean, shiftKey: boolean) => void;
 }
 
+interface IListHookOperation {
+  text: string;
+  onClick: (result: QueryHookResult<any, any>, filter: ListFilterModel, selectedIds: Set<string>) => void;
+}
+
 export interface IListHookOptions {
   filterMode: FilterMode;
   props: IBaseProps;
-  zoomable?: boolean
+  zoomable?: boolean;
+  otherOperations?: IListHookOperation[];
   renderContent: (result: QueryHookResult<any, any>, filter: ListFilterModel, selectedIds: Set<string>, zoomIndex: number) => JSX.Element | undefined;
   renderSelectedOptions?: (result: QueryHookResult<any, any>, selectedIds: Set<string>) => JSX.Element | undefined;
 }
@@ -260,6 +266,15 @@ export class ListHook {
       setZoomIndex(newZoomIndex);
     }
 
+    const otherOperations = options.otherOperations ? options.otherOperations.map((o) => {
+      return {
+        text: o.text,
+        onClick: () => {
+          o.onClick(result, filter, selectedIds);
+        }
+      }
+    }) : undefined;
+
     const template = (
       <div>
         <ListFilter
@@ -274,6 +289,7 @@ export class ListHook {
           onSelectNone={onSelectNone}
           zoomIndex={options.zoomable ? zoomIndex : undefined}
           onChangeZoom={options.zoomable ? onChangeZoom : undefined}
+          otherOperations={otherOperations}
           filter={filter}
         />
         {options.renderSelectedOptions && selectedIds.size > 0 ? options.renderSelectedOptions(result, selectedIds) : undefined}

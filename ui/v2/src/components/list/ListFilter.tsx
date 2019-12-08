@@ -1,8 +1,6 @@
 import {
-  AnchorButton,
   Button,
   ButtonGroup,
-  ControlGroup,
   HTMLSelect,
   InputGroup,
   Menu,
@@ -13,11 +11,16 @@ import {
   Slider,
 } from "@blueprintjs/core";
 import { debounce } from "lodash";
-import React, { FunctionComponent, SyntheticEvent, useEffect, useRef, useState } from "react";
+import React, { FunctionComponent, SyntheticEvent, useEffect, useState } from "react";
 import { Criterion } from "../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "../../models/list-filter/filter";
 import { DisplayMode } from "../../models/list-filter/types";
 import { AddFilter } from "./AddFilter";
+
+interface IListFilterOperation {
+  text: string;
+  onClick: () => void;
+}
 
 interface IListFilterProps {
   onChangePageSize: (pageSize: number) => void;
@@ -31,6 +34,7 @@ interface IListFilterProps {
   onChangeZoom?: (zoomIndex: number) => void;
   onSelectAll?: () => void;
   onSelectNone?: () => void;
+  otherOperations?: IListFilterOperation[];
   filter: ListFilterModel;
 }
 
@@ -169,6 +173,13 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
     let options = [];
     options.push(renderSelectAll());
     options.push(renderSelectNone());
+
+    if (props.otherOperations) {
+      props.otherOperations.forEach((o) => {
+        options.push(<MenuItem onClick={o.onClick} text={o.text} />);
+      });
+    }
+
     options = options.filter((o) => !!o);
 
     let menuItems = options as JSX.Element[];
