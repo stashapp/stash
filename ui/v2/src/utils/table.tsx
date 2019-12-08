@@ -1,7 +1,9 @@
 import { EditableText, HTMLSelect, InputGroup, IOptionProps, TextArea } from "@blueprintjs/core";
 import React from "react";
+import { EditableTextUtils } from "./editabletext";
 import { FilterMultiSelect } from "../components/select/FilterMultiSelect";
 import { FilterSelect } from "../components/select/FilterSelect";
+import _ from "lodash";
 
 export class TableUtils {
   public static renderEditableTextTableRow(options: {
@@ -36,23 +38,12 @@ export class TableUtils {
     isEditing: boolean,
     onChange: ((value: string) => void),
   }) {
-    let element: JSX.Element;
-    if (options.isEditing) {
-      element = (
-        <TextArea
-          fill={true}
-          onChange={(newValue) => options.onChange(newValue.target.value)}
-          value={options.value}
-        />
-      );
-    } else {
-      element = <p className="pre">{options.value}</p>;
-    }
+    
     return (
       <tr>
         <td>{options.title}</td>
         <td>
-          {element}
+          {EditableTextUtils.renderTextArea(options)}
         </td>
       </tr>
     );
@@ -60,26 +51,18 @@ export class TableUtils {
 
   public static renderInputGroup(options: {
     title: string,
+    placeholder?: string,
     value: string | undefined,
     isEditing: boolean,
     onChange: ((value: string) => void),
   }) {
-    let element: JSX.Element;
-    if (options.isEditing) {
-      element = (
-        <InputGroup
-          onChange={(newValue: any) => options.onChange(newValue.target.value)}
-          value={options.value}
-        />
-      );
-    } else {
-      element = <span>{options.value}</span>;
-    }
+    let optionsCopy = _.clone(options);
+    optionsCopy.placeholder = options.placeholder || options.title;
     return (
       <tr>
         <td>{options.title}</td>
         <td>
-          {element}
+          {EditableTextUtils.renderInputGroup(optionsCopy)}
         </td>
       </tr>
     );
@@ -92,28 +75,11 @@ export class TableUtils {
     onChange: ((value: string) => void),
     selectOptions: Array<string | number | IOptionProps>,
   }) {
-    let stringValue = options.value;
-    if (typeof stringValue === "number") {
-      stringValue = stringValue.toString();
-    }
-
-    let element: JSX.Element;
-    if (options.isEditing) {
-      element = (
-        <HTMLSelect
-          options={options.selectOptions}
-          onChange={(event) => options.onChange(event.target.value)}
-          value={stringValue}
-        />
-      );
-    } else {
-      element = <span>{options.value}</span>;
-    }
     return (
       <tr>
         <td>{options.title}</td>
         <td>
-          {element}
+          {EditableTextUtils.renderHtmlSelect(options)}
         </td>
       </tr>
     );
