@@ -10,17 +10,44 @@ import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
 import { SceneSelectedOptions } from "./SceneSelectedOptions";
+import { StashService } from "../../core/StashService";
 
 interface ISceneListProps extends IBaseProps {}
 
 export const SceneList: FunctionComponent<ISceneListProps> = (props: ISceneListProps) => {
+  const otherOperations = [
+    {
+      text: "Play Random",
+      onClick: playRandom,
+    }
+  ];
+  
   const listData = ListHook.useList({
     filterMode: FilterMode.Scenes,
     props,
     zoomable: true,
+    otherOperations: otherOperations,
     renderContent,
     renderSelectedOptions
   });
+
+  async function playRandom(result: QueryHookResult<FindScenesQuery, FindScenesVariables>, filter: ListFilterModel, selectedIds: Set<string>) {
+    // query for a random scene
+    if (result.data && result.data.findScenes) {
+      let count = result.data.findScenes.count;
+
+      let index = Math.floor(Math.random() * count);
+      let filterCopy = _.cloneDeep(filter);
+      filterCopy.itemsPerPage = 1;
+      filterCopy.currentPage = index + 1;
+      const singleResult = await StashService.queryFindScenes(filterCopy);
+      if (singleResult && singleResult.data && singleResult.data.findScenes && singleResult.data.findScenes.scenes.length === 1) {
+        let id = singleResult!.data!.findScenes!.scenes[0].id;
+        // navigate to the scene player page
+        props.history.push("/scenes/" + id + "?autoplay=true");
+      }
+    }
+  }
 
   function renderSelectedOptions(result: QueryHookResult<FindScenesQuery, FindScenesVariables>, selectedIds: Set<string>) {
     // find the selected items from the ids

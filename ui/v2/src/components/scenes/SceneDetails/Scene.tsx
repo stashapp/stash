@@ -21,6 +21,7 @@ interface ISceneProps extends IBaseProps {}
 
 export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
   const [timestamp, setTimestamp] = useState<number>(0);
+  const [autoplay, setAutoplay] = useState<boolean>(false);
   const [scene, setScene] = useState<Partial<GQL.SceneDataFragment>>({});
   const [isLoading, setIsLoading] = useState(false);
   const { data, error, loading } = StashService.useFindScene(props.match.params.id);
@@ -37,6 +38,9 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
       const newTimestamp = parseInt(queryParams.t, 10);
       setTimestamp(newTimestamp);
     }
+    if (queryParams.autoplay && typeof queryParams.autoplay === "string") {
+      setAutoplay(queryParams.autoplay === "true");
+    }
   });
 
   function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
@@ -52,7 +56,7 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
 
   return (
     <>
-      <ScenePlayer scene={modifiedScene} timestamp={timestamp} />
+      <ScenePlayer scene={modifiedScene} timestamp={timestamp} autoplay={autoplay}/>
       <Card id="details-container">
         <Tabs
           renderActiveTabPanelOnly={true}
