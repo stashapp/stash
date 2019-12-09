@@ -142,6 +142,19 @@ export class StashService {
     });
   }
 
+  public static queryFindSceneMarkers(filter: ListFilterModel) {
+    let sceneMarkerFilter = {};
+    sceneMarkerFilter = filter.makeSceneMarkerFilter();
+
+    return StashService.client.query<GQL.FindSceneMarkersQuery>({
+      query: GQL.FindSceneMarkersDocument,
+      variables: {
+        filter: filter.makeFindFilter(),
+        scene_marker_filter: sceneMarkerFilter,
+      }
+    });
+  }
+
   public static useFindStudios(filter: ListFilterModel) {
     return GQL.useFindStudios({
       variables: {
