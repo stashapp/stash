@@ -11,6 +11,7 @@ import { StashService } from "../../../core/StashService";
 interface IScenePlayerProps {
   scene: GQL.SceneDataFragment;
   timestamp: number;
+  autoplay?: boolean;
   onReady?: any;
   onSeeked?: any;
   onTime?: any;
@@ -235,7 +236,7 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
       },
       cast: {},
       primary: "html5",
-      autostart: this.props.config ? this.props.config.autostartVideo : false,
+      autostart: this.props.autoplay || (this.props.config ? this.props.config.autostartVideo : false),
       repeat: repeat,
       playbackRateControls: true,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
@@ -248,7 +249,7 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
     let repeat = this.shouldRepeat(scene);
 
     return {
-      autoplay: this.props.config ? this.props.config.autostartVideo : false,
+      autoplay: this.props.autoplay || (this.props.config ? this.props.config.autostartVideo : false),
       loop: repeat,
     };
   } 
