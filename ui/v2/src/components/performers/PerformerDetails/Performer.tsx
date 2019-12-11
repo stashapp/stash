@@ -26,7 +26,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
-  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<GQL.ListScrapersListScrapers | undefined>(undefined);
+  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<GQL.ListPerformerScrapersListPerformerScrapers | undefined>(undefined);
   const [scrapePerformerDetails, setScrapePerformerDetails] = useState<GQL.ScrapePerformerListScrapePerformerList | undefined>(undefined);
 
   // Editing performer state
@@ -55,8 +55,8 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const Scrapers = StashService.useListScrapers(GQL.ScraperType.Performer);
-  const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListScrapersListScrapers[]>([]);
+  const Scrapers = StashService.useListPerformerScrapers();
+  const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListPerformerScrapersListPerformerScrapers[]>([]);
 
   const { data, error, loading } = StashService.useFindPerformer(props.match.params.id);
   const updatePerformer = StashService.usePerformerUpdate(getPerformerInput() as GQL.PerformerUpdateInput);
@@ -121,11 +121,11 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
   });
 
   useEffect(() => {
-    var newQueryableScrapers : GQL.ListScrapersListScrapers[] = [];
+    var newQueryableScrapers : GQL.ListPerformerScrapersListPerformerScrapers[] = [];
 
-    if (!!Scrapers.data && Scrapers.data.listScrapers) {
-      newQueryableScrapers = Scrapers.data.listScrapers.filter((s) => {
-        return s.supported_scrapes.includes(GQL.ScrapeType.Query);
+    if (!!Scrapers.data && Scrapers.data.listPerformerScrapers) {
+      newQueryableScrapers = Scrapers.data.listPerformerScrapers.filter((s) => {
+        return s.performer && s.performer.supported_scrapes.includes(GQL.ScrapeType.Name);
       });
     }
 
@@ -218,7 +218,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     reader.readAsDataURL(file);
   }
 
-  function onDisplayFreeOnesDialog(scraper: GQL.ListScrapersListScrapers) {
+  function onDisplayFreeOnesDialog(scraper: GQL.ListPerformerScrapersListPerformerScrapers) {
     setIsDisplayingScraperDialog(scraper);
   }
 
@@ -295,8 +295,8 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
   }
 
   function urlScrapable(url: string) : boolean {
-    return !!url && !!Scrapers.data && Scrapers.data.listScrapers && Scrapers.data.listScrapers.some((s) => {
-      return !!s.urls && s.urls.some((u) => { return url.includes(u); });
+    return !!url && !!Scrapers.data && Scrapers.data.listPerformerScrapers && Scrapers.data.listPerformerScrapers.some((s) => {
+      return !!s.performer && !!s.performer.urls && s.performer.urls.some((u) => { return url.includes(u); });
     });
   }
 

@@ -211,12 +211,8 @@ export class StashService {
     return GQL.useSceneMarkerDestroy({ refetchQueries: ["FindScene"] }); 
   }
 
-  public static useListScrapers(scraperType: GQL.ScraperType) { 
-    return GQL.useListScrapers({
-      variables: {
-        scraper_type: scraperType
-      }
-    }); 
+  public static useListPerformerScrapers() { 
+    return GQL.useListPerformerScrapers(); 
   }
   public static useScrapePerformerList(scraperId: string, q : string) { 
     return GQL.useScrapePerformerList({ variables: { scraper_id: scraperId, query: q }}); 

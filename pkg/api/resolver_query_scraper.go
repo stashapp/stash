@@ -32,8 +32,8 @@ func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query s
 	return ret, nil
 }
 
-func (r *queryResolver) ListScrapers(ctx context.Context, scraperType models.ScraperType) ([]*models.Scraper, error) {
-	return scraper.ListScrapers(scraperType)
+func (r *queryResolver) ListPerformerScrapers(ctx context.Context) ([]*models.Scraper, error) {
+	return scraper.ListPerformerScrapers()
 }
 
 func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]*models.ScrapedPerformer, error) {
