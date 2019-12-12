@@ -21,7 +21,7 @@ interface IProps {}
 export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => {
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
-  const [nameFromMetadata, setNameFromMetadata] = useState<boolean>(true);
+  const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
   const [status, setStatus] = useState<string>("");
   const [progress, setProgress] = useState<number | undefined>(undefined);
 
@@ -128,7 +128,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
 
   async function onScan() {
     try {
-      await StashService.queryMetadataScan({nameFromMetadata});
+      await StashService.queryMetadataScan({useFileMetadata: useFileMetadata});
       ToastUtils.success("Started scan");
       jobStatus.refetch();
     } catch (e) {
@@ -199,9 +199,9 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         inline={true}
       >
         <Checkbox
-          checked={nameFromMetadata}
-          label="Set name from metadata (if present)"
-          onChange={() => setNameFromMetadata(!nameFromMetadata)}
+          checked={useFileMetadata}
+          label="Set name, date, details from metadata (if present)"
+          onChange={() => setUseFileMetadata(!useFileMetadata)}
         />
         <Button id="scan" text="Scan" onClick={() => onScan()} />
       </FormGroup>

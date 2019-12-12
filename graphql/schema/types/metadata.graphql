@@ -6,7 +6,7 @@ input GenerateMetadataInput {
 }
 
 input ScanMetadataInput {
-  nameFromMetadata: Boolean!
+  useFileMetadata: Boolean!
 }
 
 input AutoTagMetadataInput {
