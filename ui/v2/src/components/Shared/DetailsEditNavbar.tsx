@@ -26,8 +26,8 @@ interface IProps {
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
 
   // TODO: only for performers.  make generic
-  scrapers?: GQL.ListScrapersListScrapers[];
-  onDisplayScraperDialog?: (scraper: GQL.ListScrapersListScrapers) => void;
+  scrapers?: GQL.ListPerformerScrapersListPerformerScrapers[];
+  onDisplayScraperDialog?: (scraper: GQL.ListPerformerScrapersListPerformerScrapers) => void;
 }
 
 export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
@@ -59,7 +59,7 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
     return <FileInput text="Choose image..." onInputChange={props.onImageChange} inputProps={{accept: ".jpg,.jpeg"}} />;
   }
 
-  function renderScraperMenuItem(scraper : GQL.ListScrapersListScrapers) {
+  function renderScraperMenuItem(scraper : GQL.ListPerformerScrapersListPerformerScrapers) {
     return (
       <MenuItem
         text={scraper.name}

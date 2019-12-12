@@ -21,6 +21,7 @@ require (
 	github.com/vektah/gqlparser v1.1.2
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2 // indirect
+	gopkg.in/yaml.v2 v2.2.2
 )
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999

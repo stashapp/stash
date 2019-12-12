@@ -1,16 +1,21 @@
-enum ScraperType {
-    PERFORMER
+enum ScrapeType {
+    NAME
+    FRAGMENT
+    URL
 }
 
-enum ScrapeType {
-    QUERY
-    URL
+type ScraperSpec {
+    """URLs matching these can be scraped with"""
+    urls: [String!]
+    supported_scrapes: [ScrapeType!]!
 }
 
 type Scraper {
     id: ID!
     name: String!
-    type: ScraperType!
-    urls: [String!]
-    supported_scrapes: [ScrapeType!]!
+    """Details for performer scraper"""
+    performer: ScraperSpec
+    # TODO
+    # """Details for scene scraper"""
+    # scene: ScraperSpec
 }
