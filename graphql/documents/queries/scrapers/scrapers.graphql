@@ -1,12 +1,24 @@
-query ListScrapers($scraper_type: ScraperType!) {
-  listScrapers(scraper_type: $scraper_type) {
+query ListPerformerScrapers {
+  listPerformerScrapers {
     id
     name
-    type
-    urls
-    supported_scrapes
+    performer {
+      urls
+      supported_scrapes
+    }
   }
 }
+
+# query ListSceneScrapers {
+#   listSceneScrapers {
+#     id
+#     name
+#     scene {
+#       urls
+#       supported_scrapes
+#     }
+#   }
+# }
 
 query ScrapePerformerList($scraper_id: ID!, $query: String!) {
   scrapePerformerList(scraper_id: $scraper_id, query: $query) {

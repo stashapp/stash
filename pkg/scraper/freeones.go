@@ -22,18 +22,24 @@ var freeonesURLs = []string{
 
 func GetFreeonesScraper() scraperConfig {
 	return scraperConfig{
-		ID:                       freeonesScraperID,
-		Name:                     "Freeones",
-		Type:                     models.ScraperTypePerformer,
-		Method:                   ScraperMethodBuiltin,
-		URLs:                     freeonesURLs,
-		scrapePerformerNamesFunc: GetPerformerNames,
-		scrapePerformerFunc:      GetPerformer,
-		scrapePerformerURLFunc:   GetPerformerURL,
+		ID:   freeonesScraperID,
+		Name: "Freeones",
+		PerformerByName: &performerByNameConfig{
+			performScrape: GetPerformerNames,
+		},
+		PerformerByFragment: &performerByFragmentConfig{
+			performScrape: GetPerformer,
+		},
+		PerformerByURL: []*scraperByURLConfig{
+			&scraperByURLConfig{
+				performScrape: GetPerformerURL,
+				URL:           freeonesURLs,
+			},
+		},
 	}
 }
 
-func GetPerformerNames(c scraperConfig, q string) ([]*models.ScrapedPerformer, error) {
+func GetPerformerNames(c scraperTypeConfig, q string) ([]*models.ScrapedPerformer, error) {
 	// Request the HTML page.
 	queryURL := "https://www.freeones.com/suggestions.php?q=" + url.PathEscape(q) + "&t=1"
 	res, err := http.Get(queryURL)
@@ -64,7 +70,7 @@ func GetPerformerNames(c scraperConfig, q string) ([]*models.ScrapedPerformer, e
 	return performers, nil
 }
 
-func GetPerformerURL(c scraperConfig, href string) (*models.ScrapedPerformer, error) {
+func GetPerformerURL(c scraperTypeConfig, href string) (*models.ScrapedPerformer, error) {
 	// if we're already in the bio page, just scrape it
 	if regexp.MustCompile(`\/bio_.*\.php$`).MatchString(href) {
 		return getPerformerBio(c, href)
@@ -80,7 +86,7 @@ func GetPerformerURL(c scraperConfig, href string) (*models.ScrapedPerformer, er
 	return nil, nil
 }
 
-func getPerformerBio(c scraperConfig, href string) (*models.ScrapedPerformer, error) {
+func getPerformerBio(c scraperTypeConfig, href string) (*models.ScrapedPerformer, error) {
 	bioRes, err := http.Get(href)
 	if err != nil {
 		return nil, err
@@ -173,7 +179,7 @@ func getPerformerBio(c scraperConfig, href string) (*models.ScrapedPerformer, er
 	return &result, nil
 }
 
-func GetPerformer(c scraperConfig, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+func GetPerformer(c scraperTypeConfig, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
 	if scrapedPerformer.Name == nil {
 		return nil, nil
 	}
