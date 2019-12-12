@@ -18,9 +18,8 @@ type Scraper {
     name: String!
     """Details for performer scraper"""
     performer: ScraperSpec
-    # TODO
-    # """Details for scene scraper"""
-    # scene: ScraperSpec
+    """Details for scene scraper"""
+    scene: ScraperSpec
 }
 
 

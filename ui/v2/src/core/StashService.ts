@@ -221,6 +221,10 @@ export class StashService {
      return GQL.useScrapePerformer({ variables: { scraper_id: scraperId, scraped_performer: scrapedPerformer }});
   }
 
+  public static useListSceneScrapers() { 
+    return GQL.useListSceneScrapers(); 
+  }
+
   public static useScrapeFreeonesPerformers(q: string) { return GQL.useScrapeFreeonesPerformers({ variables: { q } }); }
   public static useMarkerStrings() { return GQL.useMarkerStrings(); }
   public static useAllTags() { return GQL.useAllTags(); }

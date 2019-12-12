@@ -3,6 +3,7 @@ package scraper
 import (
 	"errors"
 	"path/filepath"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -61,6 +62,25 @@ func ListPerformerScrapers() ([]*models.Scraper, error) {
 	return ret, nil
 }
 
+func ListSceneScrapers() ([]*models.Scraper, error) {
+	// read scraper config files from the directory and cache
+	scrapers, err := loadScrapers()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*models.Scraper
+	for _, s := range scrapers {
+		// filter on type
+		if s.supportsScenes() {
+			ret = append(ret, s.toScraper())
+		}
+	}
+
+	return ret, nil
+}
+
 func findScraper(scraperID string) *scraperConfig {
 	// read scraper config files from the directory and cache
 	loadScrapers()
@@ -102,16 +122,6 @@ func ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
 	}
 
 	return nil, nil
-}
-
-func ScrapeScene(scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
-	// find scraper with the provided id
-	s := findScraper(scraperID)
-	if s != nil {
-		return s.ScrapeScene(scene)
-	}
-
-	return nil, errors.New("Scraper with ID " + scraperID + " not found")
 }
 
 func matchPerformer(p *models.ScrapedScenePerformer) error {
@@ -171,38 +181,68 @@ func matchTag(s *models.ScrapedSceneTag) error {
 	return nil
 }
 
-func ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
-	// find scraper that matches the url given
-	s := findScraperURL(url, models.ScraperTypeScene)
+func postScrapeScene(ret *models.ScrapedScene) error {
+	for _, p := range ret.Performers {
+		err := matchPerformer(p)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, t := range ret.Tags {
+		err := matchTag(t)
+		if err != nil {
+			return err
+		}
+	}
+
+	if ret.Studio != nil {
+		err := matchStudio(ret.Studio)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func ScrapeScene(scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+	// find scraper with the provided id
+	s := findScraper(scraperID)
 	if s != nil {
-		ret, err := s.ScrapeSceneURL(url)
+		ret, err := s.ScrapeScene(scene)
 
 		if err != nil {
 			return nil, err
 		}
 
-		for _, p := range ret.Performers {
-			err = matchPerformer(p)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		for _, t := range ret.Tags {
-			err = matchTag(t)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		if ret.Studio != nil {
-			err = matchStudio(ret.Studio)
-			if err != nil {
-				return nil, err
-			}
+		err = postScrapeScene(ret)
+		if err != nil {
+			return nil, err
 		}
 
 		return ret, nil
+	}
+
+	return nil, errors.New("Scraper with ID " + scraperID + " not found")
+}
+
+func ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
+	for _, s := range scrapers {
+		if s.matchesSceneURL(url) {
+			ret, err := s.ScrapeSceneURL(url)
+
+			if err != nil {
+				return nil, err
+			}
+
+			err = postScrapeScene(ret)
+			if err != nil {
+				return nil, err
+			}
+
+			return ret, nil
+		}
 	}
 
 	return nil, nil

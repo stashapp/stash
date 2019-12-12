@@ -45,8 +45,8 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
   const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
 
-  const Scrapers = StashService.useListScrapers(GQL.ScraperType.Scene);
-  const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListScrapersListScrapers[]>([]);
+  const Scrapers = StashService.useListSceneScrapers();
+  const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListSceneScrapersListSceneScrapers[]>([]);
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [deleteFile, setDeleteFile] = useState<boolean>(false);
@@ -62,11 +62,11 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   const deleteScene = StashService.useSceneDestroy(getSceneDeleteInput());
 
   useEffect(() => {
-    var newQueryableScrapers : GQL.ListScrapersListScrapers[] = [];
+    var newQueryableScrapers : GQL.ListSceneScrapersListSceneScrapers[] = [];
 
-    if (!!Scrapers.data && Scrapers.data.listScrapers) {
-      newQueryableScrapers = Scrapers.data.listScrapers.filter((s) => {
-        return s.supported_scrapes.includes(GQL.ScrapeType.Object);
+    if (!!Scrapers.data && Scrapers.data.listSceneScrapers) {
+      newQueryableScrapers = Scrapers.data.listSceneScrapers.filter((s) => {
+        return s.scene && s.scene.supported_scrapes.includes(GQL.ScrapeType.Fragment);
       });
     }
 
@@ -206,7 +206,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     ImageUtils.onImageChange(event, onImageLoad);
   }
   
-  async function onScrapeClicked(scraper : GQL.ListScrapersListScrapers) {
+  async function onScrapeClicked(scraper : GQL.ListSceneScrapersListSceneScrapers) {
     setIsLoading(true);
     try {
       const result = await StashService.queryScrapeScene(scraper.id, getSceneInput());
@@ -219,7 +219,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     }
   }
 
-  function renderScraperMenuItem(scraper : GQL.ListScrapersListScrapers) {
+  function renderScraperMenuItem(scraper : GQL.ListSceneScrapersListSceneScrapers) {
     return (
       <MenuItem
         text={scraper.name}
@@ -246,8 +246,8 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   }
 
   function urlScrapable(url: string) : boolean {
-    return !!url && !!Scrapers.data && Scrapers.data.listScrapers && Scrapers.data.listScrapers.some((s) => {
-      return !!s.urls && s.urls.some((u) => { return url.includes(u); });
+    return !!url && !!Scrapers.data && Scrapers.data.listSceneScrapers && Scrapers.data.listSceneScrapers.some((s) => {
+      return !!s.scene && !!s.scene.urls && s.scene.urls.some((u) => { return url.includes(u); });
     });
   }
 
@@ -270,7 +270,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
 
     if ((!performerIds || performerIds.length == 0) && scene.performers && scene.performers.length > 0) {
       let idPerfs = scene.performers.filter((p) => {
-        return p.id !== undefined;
+        return p.id !== undefined && p.id !== null;
       });
 
       if (idPerfs.length > 0) {
@@ -281,7 +281,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
 
     if ((!tagIds || tagIds.length == 0) && scene.tags && scene.tags.length > 0) {
       let idTags = scene.tags.filter((p) => {
-        return p.id !== undefined;
+        return p.id !== undefined && p.id !== null;
       });
 
       if (idTags.length > 0) {

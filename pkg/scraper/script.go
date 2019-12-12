@@ -107,7 +107,7 @@ func scrapePerformerURLScript(c scraperTypeConfig, url string) (*models.ScrapedP
 	return &ret, err
 }
 
-func scrapeSceneScript(c scraperTypeConfig, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+func scrapeSceneFragmentScript(c scraperTypeConfig, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	inString, err := json.Marshal(scene)
 
 	if err != nil {

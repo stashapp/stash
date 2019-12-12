@@ -9,16 +9,16 @@ query ListPerformerScrapers {
   }
 }
 
-# query ListSceneScrapers {
-#   listSceneScrapers {
-#     id
-#     name
-#     scene {
-#       urls
-#       supported_scrapes
-#     }
-#   }
-# }
+query ListSceneScrapers {
+  listSceneScrapers {
+    id
+    name
+    scene {
+      urls
+      supported_scrapes
+    }
+  }
+}
 
 query ScrapePerformerList($scraper_id: ID!, $query: String!) {
   scrapePerformerList(scraper_id: $scraper_id, query: $query) {
