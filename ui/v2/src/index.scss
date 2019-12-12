@@ -477,3 +477,49 @@ span.block {
 .aliases-field > label{
   font-weight: 300;
 }
+
+@media only screen and (max-width: 768px) {
+  // collapse menu items into sidemenu
+  .collapsible-navlink {
+    display: none;
+  }
+}
+
+
+.sidebar {
+  position: fixed;
+  top: 50px;
+  bottom: 0;
+  left: 0;
+  width: 200px;
+  background-color: #394b59;
+  transition: left 0.5s;
+  z-index: 11;
+}
+
+.sidebar.sidebar-closed {
+  left: -200px;
+  transition: left 0.5s;
+}
+
+// overlay menu on smaller devices
+@media only screen and (min-width: 768px) {
+  // hide menu button on larger devices
+  .menu-button {
+    display: none;
+  }
+
+  .main {
+    margin-left: 200px;
+    transition: margin-left 0.5s;
+  }
+
+  .sidebar {
+    left: -200px;
+  }
+  
+  .main.sidebar-closed {
+    margin-left: 0px;
+    transition: margin-left 0.5s;
+  }
+}
