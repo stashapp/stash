@@ -19,11 +19,14 @@ func TestExcludeFiles(t *testing.T) {
 		"/stash/videos/partial.file.001.webm",
 		"/stash/videos/partial.file.002.webm",
 		"/stash/videos/partial.file.003.webm",
-		"/stash/videos/sample file.mkv",
+		"/stash/videos/sample file sample.mkv",
 		"/stash/videos/.ckRVp1/.still_encoding.mp4",
 		"c:\\stash\\videos\\exclude\\filename  windows.mp4",
 		"c:\\stash\\videos\\filename  windows.mp4",
-		"c:\\stash\\videos\\filename  windows sample.mp4"}
+		"\\\\\\\\network\\\\videos\\\\filename  windows network.mp4",
+		"\\\\\\\\network\\\\share\\\\windows network wanted.mp4",
+		"\\\\\\\\network\\\\share\\\\windows network wanted sample.mp4",
+		"\\\\\\\\network\\\\private\\\\windows.network.skip.mp4"}
 
 	var excludeTests = []struct {
 		testPattern []string
@@ -35,6 +38,10 @@ func TestExcludeFiles(t *testing.T) {
 		{[]string{"/\\.[[:word:]]+/"}, 1},                              //linux hidden dirs (handbrake unraid issue?)
 		{[]string{"c:\\\\stash\\\\videos\\\\exclude"}, 1},              //windows
 		{[]string{"\\/[/invalid"}, 0},                                  //invalid pattern
+		{[]string{"\\/[/invalid", "sample\\.[[:alnum:]]+$"}, 3},        //invalid pattern but continue
+		{[]string{"^\\\\\\\\\\\\\\\\network"}, 4},                      //windows net share
+		{[]string{"\\\\\\\\private\\\\\\\\"}, 1},                       //windows net share
+		{[]string{"\\\\\\\\private\\\\\\\\", "sample\\.mp4"}, 3},       //windows net share
 	}
 	for _, test := range excludeTests {
 		err := runExclude(filenames, test.testPattern, test.expected)

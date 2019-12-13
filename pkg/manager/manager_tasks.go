@@ -508,10 +508,10 @@ func excludeFiles(files []string, patterns []string) ([]string, int) {
 		for _, pattern := range patterns {
 			reg, err := regexp.Compile(strings.ToLower(pattern))
 			if err != nil {
-				logger.Errorf("Aborting Exclude:%v", err)
-				return files, 0
+				logger.Errorf("Exclude :%v", err)
+			} else {
+				fileRegexps = append(fileRegexps, reg)
 			}
-			fileRegexps = append(fileRegexps, reg)
 		}
 
 		if len(fileRegexps) == 0 {
@@ -521,7 +521,6 @@ func excludeFiles(files []string, patterns []string) ([]string, int) {
 		for i := 0; i < len(files); i++ {
 			match := false
 			for _, regPattern := range fileRegexps {
-				//if pattern matches remove file from list
 				if regPattern.Match([]byte(strings.ToLower(files[i]))) {
 					logger.Infof("File %s excluded from scan ", files[i])
 					match = true
@@ -530,6 +529,7 @@ func excludeFiles(files []string, patterns []string) ([]string, int) {
 				}
 
 			}
+			//if pattern doesn't match add file to list
 			if !match {
 				results = append(results, files[i])
 			}

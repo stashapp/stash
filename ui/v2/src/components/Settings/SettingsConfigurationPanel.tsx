@@ -34,7 +34,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
   const [logLevel, setLogLevel] = useState<string>("Info");
   const [logAccess, setLogAccess] = useState<boolean>(true);
   const [excludes, setExcludes] = useState<(string)[]>([]);
-	
+
   const { data, error, loading } = StashService.useConfiguration();
 
   const updateGeneralConfig = StashService.useConfigureGeneral({
@@ -76,25 +76,25 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
     setStashes(directories);
   }
 
-  function excludeRegexChanged(idx: number,value: string) {
-	const newExcludes = excludes.map((regex,i)=> {  
-		const ret = ( idx !== i ) ? regex : value ;
-		return ret
-		})
- 	setExcludes(newExcludes);
+  function excludeRegexChanged(idx: number, value: string) {
+    const newExcludes = excludes.map((regex, i)=> {
+      const ret = ( idx !== i ) ? regex : value ;
+      return ret
+      })
+  setExcludes(newExcludes);
   }
 
   function excludeRemoveRegex(idx: number){
-	const newExcludes = excludes.filter((regex,i) => i!== idx );
-		
- 	setExcludes(newExcludes);
+  const newExcludes = excludes.filter((regex, i) => i!== idx );
+
+  setExcludes(newExcludes);
   }
 
   function excludeAddRegex(){
-	const demo = "sample\\.mp4$"
-	const newExcludes = excludes.concat(demo);
-		
- 	setExcludes(newExcludes);
+  const demo = "sample\\.mp4$"
+  const newExcludes = excludes.concat(demo);
+
+  setExcludes(newExcludes);
   }
 
 
@@ -174,24 +174,25 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
         >
           <InputGroup value={generatedPath} onChange={(e: any) => setGeneratedPath(e.target.value)} />
         </FormGroup>
-	  
-	<FormGroup
-          label="Excluded Patterns"
- 	  helperText="Regexps of files/paths to exclude from Scan"
-	>
-	
-	{  (excludes) ? excludes.map((regexp,i) => {
-		return	(
-			<InputGroup 
-			value={regexp} 
-			onChange={(e: any) => excludeRegexChanged(i,e.target.value)} 
-			rightElement={<Button icon="remove" onClick={(e: any) => excludeRemoveRegex(i)} />}
-			/>
-		);
-	})   : null
-	}
 
-	<Button icon="add"   onClick={(e: any) => excludeAddRegex()} />
+        <FormGroup
+          label="Excluded Patterns"
+          helperText="Regexps of files/paths to exclude from Scan"
+
+        >
+
+       { (excludes) ? excludes.map((regexp, i) => {
+                                            return(
+                                              <InputGroup
+                                              value={regexp}
+                                              onChange={(e: any) => excludeRegexChanged(i, e.target.value)}
+                                              rightElement={<Button icon="minus" intent="danger" onClick={(e: any) => excludeRemoveRegex(i)} />}
+                                              />
+                                              );
+                                            })   : null
+       }
+
+          <Button icon="plus" onClick={(e: any) => excludeAddRegex()} />
         </FormGroup>
       </FormGroup>
       
