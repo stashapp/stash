@@ -105,13 +105,8 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     setImage(this.result as string);
   }
 
-  useEffect(() => {
-    const pasteImage = (e: any) => { ImageUtils.pasteImage(e, onImageLoad) }
-    window.addEventListener("paste", pasteImage);
+  ImageUtils.addPasteImageHook(onImageLoad);
   
-    return () => window.removeEventListener("paste", pasteImage);
-  });
-
   useEffect(() => {
     var newQueryableScrapers : GQL.ListPerformerScrapersListPerformerScrapers[] = [];
 

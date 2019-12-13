@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 export class ImageUtils {
 
@@ -21,5 +21,14 @@ export class ImageUtils {
     
     const file: File = e.clipboardData.files[0];
     ImageUtils.readImage(file, onLoadEnd);
+  }
+
+  public static addPasteImageHook(onLoadEnd: (this: FileReader) => any) {
+    useEffect(() => {
+      const pasteImage = (e: any) => { ImageUtils.pasteImage(e, onLoadEnd) }
+      window.addEventListener("paste", pasteImage);
+    
+      return () => window.removeEventListener("paste", pasteImage);
+    });
   }
 }

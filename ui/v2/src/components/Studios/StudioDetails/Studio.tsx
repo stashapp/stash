@@ -68,12 +68,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     setImage(this.result as string);
   }
 
-  useEffect(() => {
-    const pasteImage = (e: any) => { ImageUtils.pasteImage(e, onImageLoad) }
-    window.addEventListener("paste", pasteImage);
-  
-    return () => window.removeEventListener("paste", pasteImage);
-  });
+  ImageUtils.addPasteImageHook(onImageLoad);
 
   if (!isNew && !isEditing) {
     if (!data || !data.findStudio || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
