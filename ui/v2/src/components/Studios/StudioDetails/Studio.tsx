@@ -16,6 +16,7 @@ import { ErrorUtils } from "../../../utils/errors";
 import { TableUtils } from "../../../utils/table";
 import { DetailsEditNavbar } from "../../Shared/DetailsEditNavbar";
 import { ToastUtils } from "../../../utils/toasts";
+import { ImageUtils } from "../../../utils/image";
 
 interface IProps extends IBaseProps {}
 
@@ -62,26 +63,12 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     }
   }, [studio]);
 
-  function pasteImage(e : any) {
-    if (e.clipboardData.files.length == 0) {
-      return;
-    }
-    
-    const file: File = e.clipboardData.files[0];
-    const reader: FileReader = new FileReader();
-    
-    reader.onloadend = (e) => {
-      setImagePreview(reader.result as string);
-      setImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+  function onImageLoad(this: FileReader) {
+    setImagePreview(this.result as string);
+    setImage(this.result as string);
   }
 
-  useEffect(() => {
-    window.addEventListener("paste", pasteImage);
-  
-    return () => window.removeEventListener("paste", pasteImage);
-  });
+  ImageUtils.addPasteImageHook(onImageLoad);
 
   if (!isNew && !isEditing) {
     if (!data || !data.findStudio || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
@@ -144,14 +131,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
   }
 
   function onImageChange(event: React.FormEvent<HTMLInputElement>) {
-    const file: File = (event.target as any).files[0];
-    const reader: FileReader = new FileReader();
-
-    reader.onloadend = (e) => {
-      setImagePreview(reader.result as string);
-      setImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    ImageUtils.onImageChange(event, onImageLoad);
   }
 
   // TODO: CSS class

@@ -8,6 +8,9 @@ import {
   InputGroup,
   Spinner,
   TextArea,
+  Collapse,
+  Icon,
+  FileInput,
 } from "@blueprintjs/core";
 import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
@@ -18,6 +21,7 @@ import { ToastUtils } from "../../../utils/toasts";
 import { FilterMultiSelect } from "../../select/FilterMultiSelect";
 import { FilterSelect } from "../../select/FilterSelect";
 import { ValidGalleriesSelect } from "../../select/ValidGalleriesSelect";
+import { ImageUtils } from "../../../utils/image";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -36,10 +40,14 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   const [studioId, setStudioId] = useState<string | undefined>(undefined);
   const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
+  const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [deleteFile, setDeleteFile] = useState<boolean>(false);
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
+
+  const [isCoverImageOpen, setIsCoverImageOpen] = useState<boolean>(false);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | undefined>(undefined);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -64,7 +72,10 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
 
   useEffect(() => {
     updateSceneEditState(props.scene);
+    setCoverImagePreview(props.scene.paths.screenshot);
   }, [props.scene]);
+
+  ImageUtils.addPasteImageHook(onImageLoad);
 
   // if (!isNew && !isEditing) {
   //   if (!data || !data.findPerformer || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
@@ -83,6 +94,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
       studio_id: studioId,
       performer_ids: performerIds,
       tag_ids: tagIds,
+      cover_image: coverImage,
     };
   }
 
@@ -166,6 +178,15 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     );
   }
 
+  function onImageLoad(this: FileReader) {
+    setCoverImagePreview(this.result as string);
+    setCoverImage(this.result as string);
+  }
+
+  function onCoverImageChange(event: React.FormEvent<HTMLInputElement>) {
+    ImageUtils.onImageChange(event, onImageLoad);
+  }
+
   return (
     <>
       {renderDeleteAlert()}
@@ -231,6 +252,18 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
         <FormGroup label="Tags">
           {renderMultiSelect("tags", tagIds)}
         </FormGroup>
+
+        <div className="bp3-form-group">
+          <label className="bp3-label collapsible-label" onClick={() => setIsCoverImageOpen(!isCoverImageOpen)}>
+            <Icon className="label-icon" icon={isCoverImageOpen ? "chevron-down" : "chevron-right"}/>
+            <span>Cover Image</span>
+          </label>
+          <Collapse isOpen={isCoverImageOpen}>
+            <img className="scene-cover" src={coverImagePreview} />
+            <FileInput text="Choose image..." onInputChange={onCoverImageChange} inputProps={{accept: ".jpg,.jpeg,.png"}} />
+          </Collapse>
+        </div>
+        
       </div>
       <Button className="edit-button" text="Save" intent="primary" onClick={() => onSave()}/>
       <Button className="edit-button" text="Delete" intent="danger" onClick={() => setIsDeleteAlertOpen(true)}/>
