@@ -8,7 +8,7 @@ import (
 )
 
 func (r *queryResolver) MetadataScan(ctx context.Context, input models.ScanMetadataInput) (string, error) {
-	manager.GetInstance().Scan(input.NameFromMetadata)
+	manager.GetInstance().Scan(input.UseFileMetadata)
 	return "todo", nil
 }
 
