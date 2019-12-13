@@ -112,6 +112,33 @@ func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, filepath)
 }
 
+func getChapterVttTitle(marker *models.SceneMarker) string {
+	if marker.Title != "" {
+		return marker.Title
+	}
+
+	qb := models.NewTagQueryBuilder()
+	primaryTag, err := qb.Find(marker.PrimaryTagID, nil)
+	if err != nil {
+		// should not happen
+		panic(err)
+	}
+
+	ret := primaryTag.Name
+
+	tags, err := qb.FindBySceneMarkerID(marker.ID, nil)
+	if err != nil {
+		// should not happen
+		panic(err)
+	}
+
+	for _, t := range tags {
+		ret += ", " + t.Name
+	}
+
+	return ret
+}
+
 func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	qb := models.NewSceneMarkerQueryBuilder()
@@ -121,10 +148,11 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vttLines := []string{"WEBVTT", ""}
-	for _, marker := range sceneMarkers {
+	for i, marker := range sceneMarkers {
+		vttLines = append(vttLines, strconv.Itoa(i+1))
 		time := utils.GetVTTTime(marker.Seconds)
 		vttLines = append(vttLines, time+" --> "+time)
-		vttLines = append(vttLines, marker.Title)
+		vttLines = append(vttLines, getChapterVttTitle(marker))
 		vttLines = append(vttLines, "")
 	}
 	vtt := strings.Join(vttLines, "\n")

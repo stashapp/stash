@@ -91,6 +91,7 @@ export class VideoJSPlayer extends React.Component<IVideoJSPlayerProps> {
               poster={this.props.scene.paths.screenshot}
               controls 
               preload="auto">
+            <track kind="chapters" label="Markers" src={this.props.scene.paths.chapters_vtt} default></track>
           </video>
         </div>
       </div>
