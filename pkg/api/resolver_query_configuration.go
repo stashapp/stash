@@ -45,6 +45,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		LogOut:                    config.GetLogOut(),
 		LogLevel:                  config.GetLogLevel(),
 		LogAccess:                 config.GetLogAccess(),
+		Excludes:                  config.GetExcludes(),
 	}
 }
 

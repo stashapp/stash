@@ -30,6 +30,8 @@ input ConfigGeneralInput {
   logLevel: String!
   """Whether to log http access"""
   logAccess: Boolean!
+  """Array of file regexp to exlude from scan"""
+  excludes: [String!]
 }
 
 type ConfigGeneralResult {
@@ -55,6 +57,8 @@ type ConfigGeneralResult {
   logLevel: String!
   """Whether to log http access"""
   logAccess: Boolean!
+  """Array of file regexp to exlude from scan"""
+  excludes: [String!]!
 }
 
 input ConfigInterfaceInput {
