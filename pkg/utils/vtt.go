@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// GetVTTTime returns a timestamp appropriate for VTT files (hh:mm:ss)
+// GetVTTTime returns a timestamp appropriate for VTT files (hh:mm:ss.mmm)
 func GetVTTTime(totalSeconds float64) (s string) {
 	totalSecondsString := strconv.FormatFloat(totalSeconds, 'f', -1, 64)
 	secondsDuration, _ := time.ParseDuration(totalSecondsString + "s")
@@ -33,6 +33,9 @@ func GetVTTTime(totalSeconds float64) (s string) {
 		s += "0"
 	}
 	s += strconv.Itoa(seconds)
+
+	// videojs requires milliseconds
+	s += ".000"
 
 	return
 }
