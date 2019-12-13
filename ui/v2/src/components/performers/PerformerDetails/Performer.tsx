@@ -18,6 +18,7 @@ import { ScrapePerformerSuggest } from "../../select/ScrapePerformerSuggest";
 import { DetailsEditNavbar } from "../../Shared/DetailsEditNavbar";
 import { ToastUtils } from "../../../utils/toasts";
 import { EditableTextUtils } from "../../../utils/editabletext";
+import { ImageUtils } from "../../../utils/image";
 
 interface IPerformerProps extends IBaseProps {}
 
@@ -99,22 +100,13 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     }
   }, [performer]);
 
-  function pasteImage(e : any) {
-    if (e.clipboardData.files.length == 0) {
-      return;
-    }
-    
-    const file: File = e.clipboardData.files[0];
-    const reader: FileReader = new FileReader();
-    
-    reader.onloadend = (e) => {
-      setImagePreview(reader.result as string);
-      setImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+  function onImageLoad(this: FileReader) {
+    setImagePreview(this.result as string);
+    setImage(this.result as string);
   }
 
   useEffect(() => {
+    const pasteImage = (e: any) => { ImageUtils.pasteImage(e, onImageLoad) }
     window.addEventListener("paste", pasteImage);
   
     return () => window.removeEventListener("paste", pasteImage);
@@ -208,14 +200,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
   }
 
   function onImageChange(event: React.FormEvent<HTMLInputElement>) {
-    const file: File = (event.target as any).files[0];
-    const reader: FileReader = new FileReader();
-
-    reader.onloadend = (e) => {
-      setImagePreview(reader.result as string);
-      setImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    ImageUtils.onImageChange(event, onImageLoad);
   }
 
   function onDisplayFreeOnesDialog(scraper: GQL.ListPerformerScrapersListPerformerScrapers) {
