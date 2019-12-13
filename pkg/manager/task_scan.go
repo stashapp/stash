@@ -16,8 +16,8 @@ import (
 )
 
 type ScanTask struct {
-	FilePath         string
-	NameFromMetadata bool
+	FilePath        string
+	UseFileMetadata bool
 }
 
 func (t *ScanTask) Start(wg *sync.WaitGroup) {
@@ -92,8 +92,8 @@ func (t *ScanTask) scanScene() {
 		return
 	}
 
-	// Override title to be filename if nameFromMetadata is false
-	if !t.NameFromMetadata {
+	// Override title to be filename if UseFileMetadata is false
+	if !t.UseFileMetadata {
 		videoFile.SetTitleFromPath()
 	}
 
@@ -127,8 +127,6 @@ func (t *ScanTask) scanScene() {
 			Checksum:   checksum,
 			Path:       t.FilePath,
 			Title:      sql.NullString{String: videoFile.Title, Valid: true},
-			Details:    sql.NullString{String: videoFile.Comment, Valid: true},
-			Date:       models.SQLiteDate{String: videoFile.CreationTime.Format("2006-01-02")},
 			Duration:   sql.NullFloat64{Float64: videoFile.Duration, Valid: true},
 			VideoCodec: sql.NullString{String: videoFile.VideoCodec, Valid: true},
 			AudioCodec: sql.NullString{String: videoFile.AudioCodec, Valid: true},
@@ -139,6 +137,11 @@ func (t *ScanTask) scanScene() {
 			Size:       sql.NullString{String: strconv.Itoa(int(videoFile.Size)), Valid: true},
 			CreatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
+		}
+
+		if t.UseFileMetadata {
+			newScene.Details = sql.NullString{String: videoFile.Comment, Valid: true}
+			newScene.Date = models.SQLiteDate{String: videoFile.CreationTime.Format("2006-01-02")}
 		}
 		_, err = qb.Create(newScene, tx)
 	}

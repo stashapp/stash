@@ -56,7 +56,7 @@ func (t *TaskStatus) updated() {
 	t.LastUpdate = time.Now()
 }
 
-func (s *singleton) Scan(nameFromMetadata bool) {
+func (s *singleton) Scan(useFileMetadata bool) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -90,7 +90,7 @@ func (s *singleton) Scan(nameFromMetadata bool) {
 				return
 			}
 			wg.Add(1)
-			task := ScanTask{FilePath: path, NameFromMetadata: nameFromMetadata}
+			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata}
 			go task.Start(&wg)
 			wg.Wait()
 		}
