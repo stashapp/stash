@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
@@ -149,6 +150,24 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 		return nil, err
 	}
 
+	// only update the cover image if provided and everything else was successful
+	if input.CoverImage != nil && *input.CoverImage != "" {
+		_, imageData, err := utils.ProcessBase64Image(*input.CoverImage)
+		if err != nil {
+			return nil, err
+		}
+
+		scene, err := qb.Find(sceneID)
+		if err != nil {
+			return nil, err
+		}
+
+		err = manager.SetSceneScreenshot(scene.Checksum, imageData)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return scene, nil
 }
 
@@ -283,7 +302,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	if err := tx.Commit(); err != nil {
 		return false, err
 	}
-	
+
 	// if delete generated is true, then delete the generated files
 	// for the scene
 	if input.DeleteGenerated != nil && *input.DeleteGenerated {

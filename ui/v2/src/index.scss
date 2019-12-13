@@ -478,6 +478,26 @@ span.block {
   font-weight: 300;
 }
 
+.scene-cover {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  max-width: 100%;
+}
+
+.collapsible-label {
+  cursor: pointer;
+}
+
+.label-icon {
+  margin-right: 0.3em;
+  vertical-align: middle;
+
+  & +span {
+    vertical-align: middle;
+  }
+}
+
 @media only screen and (max-width: 768px) {
   // collapse menu items into sidemenu
   .collapsible-navlink {
