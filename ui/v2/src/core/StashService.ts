@@ -121,7 +121,7 @@ export class StashService {
         scene_filter: sceneFilter,
       }
     });
-  }
+  }  
 
   public static useFindSceneMarkers(filter: ListFilterModel) {
     let sceneMarkerFilter = {};
@@ -179,6 +179,19 @@ export class StashService {
         filter: filter.makeFindFilter(),
         performer_filter: performerFilter,
       },
+    });
+  }
+
+  public static queryFindPerformers(filter: ListFilterModel) {
+    let performerFilter = {};
+    performerFilter = filter.makePerformerFilter();
+
+    return StashService.client.query<GQL.FindPerformersQuery>({
+      query: GQL.FindPerformersDocument,
+      variables: {
+        filter: filter.makeFindFilter(),
+        performer_filter: performerFilter,
+      }
     });
   }
 
