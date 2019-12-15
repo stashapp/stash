@@ -121,7 +121,7 @@ export class StashService {
         scene_filter: sceneFilter,
       }
     });
-  }  
+  }
 
   public static useFindSceneMarkers(filter: ListFilterModel) {
     let sceneMarkerFilter = {};
