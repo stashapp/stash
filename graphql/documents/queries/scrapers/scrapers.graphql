@@ -9,71 +9,43 @@ query ListPerformerScrapers {
   }
 }
 
-# query ListSceneScrapers {
-#   listSceneScrapers {
-#     id
-#     name
-#     scene {
-#       urls
-#       supported_scrapes
-#     }
-#   }
-# }
+query ListSceneScrapers {
+  listSceneScrapers {
+    id
+    name
+    scene {
+      urls
+      supported_scrapes
+    }
+  }
+}
 
 query ScrapePerformerList($scraper_id: ID!, $query: String!) {
   scrapePerformerList(scraper_id: $scraper_id, query: $query) {
-    name
-    url
-    birthdate
-    ethnicity
-    country
-    eye_color
-    height
-    measurements
-    fake_tits
-    career_length
-    tattoos
-    piercings
-    aliases
+    ...ScrapedPerformerData
   }
 }
 
 query ScrapePerformer($scraper_id: ID!, $scraped_performer: ScrapedPerformerInput!) {
   scrapePerformer(scraper_id: $scraper_id, scraped_performer: $scraped_performer) {
-    name
-    url
-    twitter
-    instagram
-    birthdate
-    ethnicity
-    country
-    eye_color
-    height
-    measurements
-    fake_tits
-    career_length
-    tattoos
-    piercings
-    aliases
+    ...ScrapedPerformerData
   }
 }
 
 query ScrapePerformerURL($url: String!) {
   scrapePerformerURL(url: $url) {
-    name
-    url
-    twitter
-    instagram
-    birthdate
-    ethnicity
-    country
-    eye_color
-    height
-    measurements
-    fake_tits
-    career_length
-    tattoos
-    piercings
-    aliases
+    ...ScrapedPerformerData
+  }
+}
+
+query ScrapeScene($scraper_id: ID!, $scene: SceneUpdateInput!) {
+  scrapeScene(scraper_id: $scraper_id, scene: $scene) {
+    ...ScrapedSceneData
+  }
+}
+
+query ScrapeSceneURL($url: String!) {
+  scrapeSceneURL(url: $url) {
+    ...ScrapedSceneData
   }
 }

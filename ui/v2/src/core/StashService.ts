@@ -221,6 +221,10 @@ export class StashService {
      return GQL.useScrapePerformer({ variables: { scraper_id: scraperId, scraped_performer: scrapedPerformer }});
   }
 
+  public static useListSceneScrapers() { 
+    return GQL.useListSceneScrapers(); 
+  }
+
   public static useScrapeFreeonesPerformers(q: string) { return GQL.useScrapeFreeonesPerformers({ variables: { q } }); }
   public static useMarkerStrings() { return GQL.useMarkerStrings(); }
   public static useAllTags() { return GQL.useAllTags(); }
@@ -421,6 +425,25 @@ export class StashService {
       query: GQL.ScrapePerformerUrlDocument,
       variables: {
         url: url,
+      },
+    });
+  }
+
+  public static queryScrapeSceneURL(url: string) {
+    return StashService.client.query<GQL.ScrapeSceneUrlQuery>({
+      query: GQL.ScrapeSceneUrlDocument,
+      variables: {
+        url: url,
+      },
+    });
+  }
+
+  public static queryScrapeScene(scraperId: string, scene: GQL.SceneUpdateInput) {
+    return StashService.client.query<GQL.ScrapeSceneQuery>({
+      query: GQL.ScrapeSceneDocument,
+      variables: {
+        scraper_id: scraperId,
+        scene: scene,
       },
     });
   }

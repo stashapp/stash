@@ -30,10 +30,12 @@ func GetFreeonesScraper() scraperConfig {
 		PerformerByFragment: &performerByFragmentConfig{
 			performScrape: GetPerformer,
 		},
-		PerformerByURL: []*scraperByURLConfig{
-			&scraperByURLConfig{
+		PerformerByURL: []*scrapePerformerByURLConfig{
+			&scrapePerformerByURLConfig{
+				scrapeByURLConfig: scrapeByURLConfig{
+					URL: freeonesURLs,
+				},
 				performScrape: GetPerformerURL,
-				URL:           freeonesURLs,
 			},
 		},
 	}
