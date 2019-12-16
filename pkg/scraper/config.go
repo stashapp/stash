@@ -59,22 +59,13 @@ func (c *performerByFragmentConfig) resolveFn() {
 	}
 }
 
-type scrapePerformerByURLFunc func(c scraperTypeConfig, url string) (*models.ScrapedPerformer, error)
-
-type scraperByURLConfig struct {
+type scrapeByURLConfig struct {
 	scraperTypeConfig `yaml:",inline"`
 	URL               []string `yaml:"url,flow"`
-	performScrape     scrapePerformerByURLFunc
 }
 
-func (c *scraperByURLConfig) resolveFn() {
-	if c.Action == scraperActionScript {
-		c.performScrape = scrapePerformerURLScript
-	}
-}
-
-func (s scraperByURLConfig) matchesURL(url string) bool {
-	for _, thisURL := range s.URL {
+func (c scrapeByURLConfig) matchesURL(url string) bool {
+	for _, thisURL := range c.URL {
 		if strings.Contains(url, thisURL) {
 			return true
 		}
@@ -83,12 +74,53 @@ func (s scraperByURLConfig) matchesURL(url string) bool {
 	return false
 }
 
+type scrapePerformerByURLFunc func(c scraperTypeConfig, url string) (*models.ScrapedPerformer, error)
+
+type scrapePerformerByURLConfig struct {
+	scrapeByURLConfig `yaml:",inline"`
+	performScrape     scrapePerformerByURLFunc
+}
+
+func (c *scrapePerformerByURLConfig) resolveFn() {
+	if c.Action == scraperActionScript {
+		c.performScrape = scrapePerformerURLScript
+	}
+}
+
+type scrapeSceneFragmentFunc func(c scraperTypeConfig, scene models.SceneUpdateInput) (*models.ScrapedScene, error)
+
+type sceneByFragmentConfig struct {
+	scraperTypeConfig `yaml:",inline"`
+	performScrape     scrapeSceneFragmentFunc
+}
+
+func (c *sceneByFragmentConfig) resolveFn() {
+	if c.Action == scraperActionScript {
+		c.performScrape = scrapeSceneFragmentScript
+	}
+}
+
+type scrapeSceneByURLFunc func(c scraperTypeConfig, url string) (*models.ScrapedScene, error)
+
+type scrapeSceneByURLConfig struct {
+	scrapeByURLConfig `yaml:",inline"`
+	performScrape     scrapeSceneByURLFunc
+}
+
+func (c *scrapeSceneByURLConfig) resolveFn() {
+	if c.Action == scraperActionScript {
+		c.performScrape = scrapeSceneURLScript
+	}
+}
+
 type scraperConfig struct {
 	ID                  string
-	Name                string                     `yaml:"name"`
-	PerformerByName     *performerByNameConfig     `yaml:"performerByName"`
-	PerformerByFragment *performerByFragmentConfig `yaml:"performerByFragment"`
-	PerformerByURL      []*scraperByURLConfig      `yaml:"performerByURL"`
+	Name                string                        `yaml:"name"`
+	PerformerByName     *performerByNameConfig        `yaml:"performerByName"`
+	PerformerByFragment *performerByFragmentConfig    `yaml:"performerByFragment"`
+	PerformerByURL      []*scrapePerformerByURLConfig `yaml:"performerByURL"`
+	SceneByFragment     *sceneByFragmentConfig        `yaml:"sceneByFragment"`
+	SceneByURL          []*scrapeSceneByURLConfig     `yaml:"sceneByURL"`
 }
 
 func loadScraperFromYAML(path string) (*scraperConfig, error) {
@@ -127,6 +159,13 @@ func (c *scraperConfig) initialiseConfigs() {
 	for _, s := range c.PerformerByURL {
 		s.resolveFn()
 	}
+
+	if c.SceneByFragment != nil {
+		c.SceneByFragment.resolveFn()
+	}
+	for _, s := range c.SceneByURL {
+		s.resolveFn()
+	}
 }
 
 func (c scraperConfig) toScraper() *models.Scraper {
@@ -151,6 +190,21 @@ func (c scraperConfig) toScraper() *models.Scraper {
 
 	if len(performer.SupportedScrapes) > 0 {
 		ret.Performer = &performer
+	}
+
+	scene := models.ScraperSpec{}
+	if c.SceneByFragment != nil {
+		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeFragment)
+	}
+	if len(c.SceneByURL) > 0 {
+		scene.SupportedScrapes = append(scene.SupportedScrapes, models.ScrapeTypeURL)
+		for _, v := range c.SceneByURL {
+			scene.Urls = append(scene.Urls, v.URL...)
+		}
+	}
+
+	if len(scene.SupportedScrapes) > 0 {
+		ret.Scene = &scene
 	}
 
 	return &ret
@@ -188,6 +242,45 @@ func (c scraperConfig) ScrapePerformer(scrapedPerformer models.ScrapedPerformerI
 
 func (c scraperConfig) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
 	for _, scraper := range c.PerformerByURL {
+		if scraper.matchesURL(url) && scraper.performScrape != nil {
+			ret, err := scraper.performScrape(scraper.scraperTypeConfig, url)
+			if err != nil {
+				return nil, err
+			}
+
+			if ret != nil {
+				return ret, nil
+			}
+		}
+	}
+
+	return nil, nil
+}
+
+func (c scraperConfig) supportsScenes() bool {
+	return c.SceneByFragment != nil || len(c.SceneByURL) > 0
+}
+
+func (c scraperConfig) matchesSceneURL(url string) bool {
+	for _, scraper := range c.SceneByURL {
+		if scraper.matchesURL(url) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (c scraperConfig) ScrapeScene(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+	if c.SceneByFragment != nil && c.SceneByFragment.performScrape != nil {
+		return c.SceneByFragment.performScrape(c.SceneByFragment.scraperTypeConfig, scene)
+	}
+
+	return nil, nil
+}
+
+func (c scraperConfig) ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
+	for _, scraper := range c.SceneByURL {
 		if scraper.matchesURL(url) && scraper.performScrape != nil {
 			ret, err := scraper.performScrape(scraper.scraperTypeConfig, url)
 			if err != nil {

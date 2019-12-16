@@ -36,6 +36,10 @@ func (r *queryResolver) ListPerformerScrapers(ctx context.Context) ([]*models.Sc
 	return scraper.ListPerformerScrapers()
 }
 
+func (r *queryResolver) ListSceneScrapers(ctx context.Context) ([]*models.Scraper, error) {
+	return scraper.ListSceneScrapers()
+}
+
 func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]*models.ScrapedPerformer, error) {
 	if query == "" {
 		return nil, nil
@@ -50,4 +54,12 @@ func (r *queryResolver) ScrapePerformer(ctx context.Context, scraperID string, s
 
 func (r *queryResolver) ScrapePerformerURL(ctx context.Context, url string) (*models.ScrapedPerformer, error) {
 	return scraper.ScrapePerformerURL(url)
+}
+
+func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+	return scraper.ScrapeScene(scraperID, scene)
+}
+
+func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
+	return scraper.ScrapeSceneURL(url)
 }

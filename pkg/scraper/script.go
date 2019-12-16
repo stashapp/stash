@@ -106,3 +106,27 @@ func scrapePerformerURLScript(c scraperTypeConfig, url string) (*models.ScrapedP
 
 	return &ret, err
 }
+
+func scrapeSceneFragmentScript(c scraperTypeConfig, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+	inString, err := json.Marshal(scene)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret models.ScrapedScene
+
+	err = runScraperScript(c.Script, string(inString), &ret)
+
+	return &ret, err
+}
+
+func scrapeSceneURLScript(c scraperTypeConfig, url string) (*models.ScrapedScene, error) {
+	inString := `{"url": "` + url + `"}`
+
+	var ret models.ScrapedScene
+
+	err := runScraperScript(c.Script, string(inString), &ret)
+
+	return &ret, err
+}
