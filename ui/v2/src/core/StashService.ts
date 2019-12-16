@@ -182,6 +182,19 @@ export class StashService {
     });
   }
 
+  public static queryFindPerformers(filter: ListFilterModel) {
+    let performerFilter = {};
+    performerFilter = filter.makePerformerFilter();
+
+    return StashService.client.query<GQL.FindPerformersQuery>({
+      query: GQL.FindPerformersDocument,
+      variables: {
+        filter: filter.makeFindFilter(),
+        performer_filter: performerFilter,
+      }
+    });
+  }
+
   public static useFindGallery(id: string) { return GQL.useFindGallery({variables: {id}}); }
   public static useFindScene(id: string) { return GQL.useFindScene({variables: {id}}); }
   public static useFindPerformer(id: string) {
