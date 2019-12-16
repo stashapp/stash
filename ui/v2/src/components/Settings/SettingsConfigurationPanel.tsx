@@ -81,20 +81,20 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       const ret = ( idx !== i ) ? regex : value ;
       return ret
       })
-  setExcludes(newExcludes);
+    setExcludes(newExcludes);
   }
 
-  function excludeRemoveRegex(idx: number){
-  const newExcludes = excludes.filter((regex, i) => i!== idx );
+  function excludeRemoveRegex(idx: number) {
+    const newExcludes = excludes.filter((regex, i) => i!== idx );
 
-  setExcludes(newExcludes);
+    setExcludes(newExcludes);
   }
 
-  function excludeAddRegex(){
-  const demo = "sample\\.mp4$"
-  const newExcludes = excludes.concat(demo);
+  function excludeAddRegex() {
+    const demo = "sample\\.mp4$"
+    const newExcludes = excludes.concat(demo);
 
-  setExcludes(newExcludes);
+    setExcludes(newExcludes);
   }
 
 
@@ -178,21 +178,20 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
         <FormGroup
           label="Excluded Patterns"
           helperText="Regexps of files/paths to exclude from Scan"
-
         >
 
        { (excludes) ? excludes.map((regexp, i) => {
-                                            return(
-                                              <InputGroup
-                                              value={regexp}
-                                              onChange={(e: any) => excludeRegexChanged(i, e.target.value)}
-                                              rightElement={<Button icon="minus" intent="danger" onClick={(e: any) => excludeRemoveRegex(i)} />}
-                                              />
-                                              );
-                                            })   : null
+                                                    return(
+                                                      <InputGroup
+                                                      value={regexp}
+                                                      onChange={(e: any) => excludeRegexChanged(i, e.target.value)}
+                                                      rightElement={<Button icon="minus" minimal={true} intent="danger" onClick={(e: any) => excludeRemoveRegex(i)} />}
+                                                      />
+                                                    );
+                                                  }) : null
        }
 
-          <Button icon="plus" onClick={(e: any) => excludeAddRegex()} />
+          <Button icon="plus" minimal={true} onClick={(e: any) => excludeAddRegex()} />
         </FormGroup>
       </FormGroup>
       
