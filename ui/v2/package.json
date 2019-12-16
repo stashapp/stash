@@ -33,8 +33,7 @@
     "react-router-dom": "5.0.0",
     "react-scripts": "3.3.0",
     "react-use": "9.1.2",
-    "subscriptions-transport-ws": "^0.9.16",
-    "video.js": "^7.6.0"
+    "subscriptions-transport-ws": "^0.9.16"
   },
   "scripts": {
     "start": "react-scripts start",

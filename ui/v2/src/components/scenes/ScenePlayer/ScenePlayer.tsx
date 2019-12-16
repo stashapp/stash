@@ -4,8 +4,6 @@ import ReactJWPlayer from "react-jw-player";
 import * as GQL from "../../../core/generated-graphql";
 import { SceneHelpers } from "../helpers";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
-import videojs from "video.js";
-import "video.js/dist/video-js.css";
 import { StashService } from "../../../core/StashService";
 
 interface IScenePlayerProps {
@@ -19,84 +17,6 @@ interface IScenePlayerProps {
 }
 interface IScenePlayerState {
   scrubberPosition: number;
-}
-
-interface IVideoJSPlayerProps extends IScenePlayerProps {
-  videoJSOptions: videojs.PlayerOptions
-}
-
-export class VideoJSPlayer extends React.Component<IVideoJSPlayerProps> {
-  private player: any;
-  private videoNode: any;
-
-  constructor(props: IVideoJSPlayerProps) {
-    super(props);
-  }
-
-  componentDidMount() {
-    this.player = videojs(this.videoNode, this.props.videoJSOptions);
-
-    SceneHelpers.registerJSPlayer(this.player);
-
-    this.player.src(this.props.scene.paths.stream);
-
-    // hack duration
-    this.player.duration = () => { return this.props.scene.file.duration; };
-    this.player.start = 0;
-    this.player.oldCurrentTime = this.player.currentTime;
-    this.player.currentTime = (time: any) => { 
-      if( time == undefined )
-      {
-        return this.player.oldCurrentTime() + this.player.start;
-      }
-      this.player.start = time;
-      this.player.oldCurrentTime(0);
-      this.player.src(this.props.scene.paths.stream + "?start=" + time);
-      this.player.play();
-
-      return this;
-    };
-
-    // dirty hack - make this player look like JWPlayer
-    this.player.seek = this.player.currentTime;
-    this.player.getPosition = this.player.currentTime;
-
-    this.player.ready(() => {
-      this.player.on("timeupdate", () => {
-        this.props.onTime();
-      });
-
-      this.player.on("seeked", () => {
-        this.props.onSeeked();
-      });
-
-      this.props.onReady();
-    });
-  }
-
-  componentWillUnmount() {
-    if (this.player) {
-      this.player.dispose();
-      SceneHelpers.deregisterJSPlayer();
-    }
-  }
-
-  render() {
-    return (
-      <div>
-        <div className="vjs-player" data-vjs-player>
-          <video 
-              ref={ node => this.videoNode = node } 
-              className="video-js vjs-default-skin vjs-big-play-centered" 
-              poster={this.props.scene.paths.screenshot}
-              controls 
-              preload="auto">
-            <track kind="chapters" label="Markers" src={this.props.scene.paths.chapters_vtt} default></track>
-          </video>
-        </div>
-      </div>
-    );
-  }
 }
 
 @HotkeysTarget
@@ -123,7 +43,6 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
   }
 
   renderPlayer() {
-    if (this.props.scene.is_streamable) {
       const config = this.makeJWPlayerConfig(this.props.scene);
       return (
         <ReactJWPlayer
@@ -135,22 +54,6 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
             onTime={this.onTime}
           />
       );
-    } else {
-      // don't render videoJS until config is loaded
-      if (this.props.config) {
-        const config = this.makeVideoJSConfig(this.props.scene);
-        return (
-          <VideoJSPlayer 
-              videoJSOptions={config}
-              scene={this.props.scene}
-              timestamp={this.props.timestamp}
-              onReady={this.onReady}
-              onSeeked={this.onSeeked}
-              onTime={this.onTime}>
-          </VideoJSPlayer>
-        )
-      }
-    }
   }
 
   public render() {
@@ -216,8 +119,27 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
     if (!scene.paths.stream) { return {}; }
 
     let repeat = this.shouldRepeat(scene);
+    let getDurationHook: (() => GQL.Maybe<number>) | undefined = undefined;
+    let seekHook: ((seekToPosition: number, _videoTag: any) => void) | undefined = undefined;
+    let getCurrentTimeHook: ((_videoTag: any) => number) | undefined = undefined;
 
-    return {
+    if (!this.props.scene.is_streamable) {
+      getDurationHook = () => { 
+        return this.props.scene.file.duration; 
+      };
+
+      seekHook = (seekToPosition: number, _videoTag: any) => {
+        _videoTag.start = seekToPosition;
+        _videoTag.src = (this.props.scene.paths.stream + "?start=" + seekToPosition);
+        _videoTag.play();
+      };
+
+      getCurrentTimeHook = (_videoTag: any) => {
+        return _videoTag.currentTime + _videoTag.start;
+      }
+    }
+
+    let ret = {
       file: scene.paths.stream,
       image: scene.paths.screenshot,
       tracks: [
@@ -241,19 +163,13 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
       repeat: repeat,
       playbackRateControls: true,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
+      getDurationHook: getDurationHook,
+      seekHook: seekHook,
+      getCurrentTimeHook: getCurrentTimeHook
     };
+
+    return ret;
   }
-
-  private makeVideoJSConfig(scene: GQL.SceneDataFragment) {
-    if (!scene.paths.stream) { return {}; }
-
-    let repeat = this.shouldRepeat(scene);
-
-    return {
-      autoplay: this.props.autoplay || (this.props.config ? this.props.config.autostartVideo : false),
-      loop: repeat,
-    };
-  } 
 
   private onReady() {
     this.player = SceneHelpers.getPlayer();

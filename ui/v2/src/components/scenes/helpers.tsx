@@ -36,21 +36,8 @@ export class SceneHelpers {
     );
   }
 
-  public static registerJSPlayer(player : videojs.Player) {
-    this.videoJSPlayer = player;
-  }
-
-  public static deregisterJSPlayer() {
-    this.videoJSPlayer = null;
-  }
-
   public static getJWPlayerId(): string { return "main-jwplayer"; }
   public static getPlayer(): any {
-    // return videoJSPlayer if it is set, otherwise use jwplayer()
-    if (this.videoJSPlayer) {
-      return this.videoJSPlayer;
-    }
-
     return (window as any).jwplayer("main-jwplayer");
   }
 }
