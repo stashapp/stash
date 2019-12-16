@@ -181,14 +181,14 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
         >
 
        { (excludes) ? excludes.map((regexp, i) => {
-                                                    return(
-                                                      <InputGroup
-                                                      value={regexp}
-                                                      onChange={(e: any) => excludeRegexChanged(i, e.target.value)}
-                                                      rightElement={<Button icon="minus" minimal={true} intent="danger" onClick={(e: any) => excludeRemoveRegex(i)} />}
-                                                      />
-                                                    );
-                                                  }) : null
+         return(
+           <InputGroup
+             value={regexp}
+             onChange={(e: any) => excludeRegexChanged(i, e.target.value)}
+             rightElement={<Button icon="minus" minimal={true} intent="danger" onClick={(e: any) => excludeRemoveRegex(i)} />}
+           />
+           );
+         }) : null
        }
 
           <Button icon="plus" minimal={true} onClick={(e: any) => excludeAddRegex()} />
