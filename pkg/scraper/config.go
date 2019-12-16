@@ -11,9 +11,7 @@ import (
 )
 
 type stashServer struct {
-	URL      string `yaml:"url"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
+	URL string `yaml:"url"`
 }
 
 type scraperAction string
