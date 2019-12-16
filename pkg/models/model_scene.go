@@ -56,3 +56,14 @@ func (s Scene) GetTitle() string {
 
 	return filepath.Base(s.Path)
 }
+
+type SceneFileType struct {
+	Size       *string  `graphql:"size" json:"size"`
+	Duration   *float64 `graphql:"duration" json:"duration"`
+	VideoCodec *string  `graphql:"video_codec" json:"video_codec"`
+	AudioCodec *string  `graphql:"audio_codec" json:"audio_codec"`
+	Width      *int     `graphql:"width" json:"width"`
+	Height     *int     `graphql:"height" json:"height"`
+	Framerate  *float64 `graphql:"framerate" json:"framerate"`
+	Bitrate    *int     `graphql:"bitrate" json:"bitrate"`
+}

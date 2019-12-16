@@ -28,3 +28,15 @@ models:
     model: github.com/stashapp/stash/pkg/models.Studio
   Tag:
     model: github.com/stashapp/stash/pkg/models.Tag
+  ScrapedPerformer:
+    model: github.com/stashapp/stash/pkg/models.ScrapedPerformer
+  ScrapedScene:
+    model: github.com/stashapp/stash/pkg/models.ScrapedScene
+  ScrapedScenePerformer:
+    model: github.com/stashapp/stash/pkg/models.ScrapedScenePerformer
+  ScrapedSceneStudio:
+    model: github.com/stashapp/stash/pkg/models.ScrapedSceneStudio
+  ScrapedSceneTag:
+    model: github.com/stashapp/stash/pkg/models.ScrapedSceneTag
+  SceneFileType:
+    model: github.com/stashapp/stash/pkg/models.SceneFileType

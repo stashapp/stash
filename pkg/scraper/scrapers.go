@@ -216,9 +216,11 @@ func ScrapeScene(scraperID string, scene models.SceneUpdateInput) (*models.Scrap
 			return nil, err
 		}
 
-		err = postScrapeScene(ret)
-		if err != nil {
-			return nil, err
+		if ret != nil {
+			err = postScrapeScene(ret)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		return ret, nil
