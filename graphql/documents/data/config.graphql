@@ -10,6 +10,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logOut
   logLevel
   logAccess
+  excludes
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
