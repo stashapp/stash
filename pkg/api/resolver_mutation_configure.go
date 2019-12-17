@@ -72,6 +72,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		logger.SetLogLevel(input.LogLevel)
 	}
 
+	if input.Excludes != nil {
+		config.Set(config.Exclude, input.Excludes)
+	}
+
 	if err := config.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}

@@ -23,6 +23,7 @@ const Password = "password"
 const Database = "database"
 
 const ScrapersPath = "scrapers_path"
+const Exclude = "exclude"
 
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
@@ -89,6 +90,10 @@ func GetDefaultScrapersPath() string {
 	fn := filepath.Join(configDir, "scrapers")
 
 	return fn
+}
+
+func GetExcludes() []string {
+	return viper.GetStringSlice(Exclude)
 }
 
 func GetScrapersPath() string {
