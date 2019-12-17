@@ -135,10 +135,7 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
       };
 
       getCurrentTimeHook = (_videoTag: any) => {
-        let start = _videoTag.start
-        if (!start) {
-          start = 0;
-        }
+        let start = _videoTag.start || 0;
         return _videoTag.currentTime + start;
       }
     }
