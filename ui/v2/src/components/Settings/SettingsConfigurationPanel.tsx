@@ -1,4 +1,5 @@
 import {
+  AnchorButton,
   Button,
   Divider,
   FormGroup,
@@ -177,7 +178,6 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
 
         <FormGroup
           label="Excluded Patterns"
-          helperText="Regexps of files/paths to exclude from Scan"
         >
 
        { (excludes) ? excludes.map((regexp, i) => {
@@ -192,6 +192,17 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
        }
 
           <Button icon="plus" minimal={true} onClick={(e: any) => excludeAddRegex()} />
+          <div>
+            <p>
+              <AnchorButton
+                href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
+                rightIcon="help"
+                text="Regexps of files/paths to exclude from Scan and add to Clean"
+                minimal={true}
+                target="_blank" 
+              />
+            </p>
+          </div>
         </FormGroup>
       </FormGroup>
       
