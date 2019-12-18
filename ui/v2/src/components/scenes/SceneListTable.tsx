@@ -28,7 +28,7 @@ export const SceneListTable: FunctionComponent<ISceneListTableProps> = (props: I
     return (
       <Link 
         className="scene-list-thumbnail"
-        to={`/performers/${scene.id}`}
+        to={`/scenes/${scene.id}`}
         style={style}/>
     )
   }
