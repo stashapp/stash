@@ -11,6 +11,7 @@ import { IBaseProps } from "../../../models";
 import { ErrorUtils } from "../../../utils/errors";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
+import { PerformerScenesPanel } from "./PerformerScenesPanel";
 
 interface IPerformerProps extends IBaseProps {}
 
@@ -102,6 +103,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
           >
             <Tab id="performer-details-panel" title="Details" panel={<PerformerDetailsPanel performer={performer} isEditing={false}/>} />
             <Tab id="performer-edit-panel" title="Edit" panel={renderEditPanel()} />
+            <Tab id="performer-scenes-panel" title="Scenes" panel={<PerformerScenesPanel performer={performer} base={props} />} />
             <Tab id="performer-operations-panel" title="Operations" panel={<PerformerOperationsPanel performer={performer} />} />
           </Tabs>
         </>

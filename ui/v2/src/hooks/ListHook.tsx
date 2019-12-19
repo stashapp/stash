@@ -25,6 +25,8 @@ interface IListHookOperation {
 
 export interface IListHookOptions {
   filterMode: FilterMode;
+  subComponent?: boolean;
+  criteria?: Array<Criterion<any, any>>;
   props: IBaseProps;
   zoomable?: boolean;
   otherOperations?: IListHookOperation[];
@@ -41,15 +43,29 @@ export class ListHook {
     const [zoomIndex, setZoomIndex] = useState<number>(1);
 
     // Update the filter when the query parameters change
-    useEffect(() => {
-      const queryParams = queryString.parse(options.props.location.search);
-      const newFilter = _.cloneDeep(filter);
-      newFilter.configureFromQueryParameters(queryParams);
-      setFilter(newFilter);
+    // don't use query parameters for sub-components
+    if (!options.subComponent) {
+      useEffect(() => {
+        const queryParams = queryString.parse(options.props!.location.search);
+        const newFilter = _.cloneDeep(filter);
+        newFilter.configureFromQueryParameters(queryParams);
+        setFilter(newFilter);
 
-      // TODO: Need this side effect to update the query params properly
-      filter.configureFromQueryParameters(queryParams);
-    }, [options.props.location.search]);
+        // TODO: Need this side effect to update the query params properly
+        filter.configureFromQueryParameters(queryParams);
+      }, [options.props.location.search]);
+    }
+
+    function getFilter() {
+      if (!options.criteria) {
+        return filter;
+      }
+
+      // make a copy of the filter and add the criteria
+      let newFilter = _.cloneDeep(filter);
+      newFilter.criteria = newFilter.criteria.concat(options.criteria);
+      return newFilter;
+    }
 
     let result: QueryHookResult<any, any>;
 
@@ -97,7 +113,7 @@ export class ListHook {
       }
     }
 
-    result = getData(filter);
+    result = getData(getFilter());
 
     useEffect(() => {
       setTotalCount(getCount());
@@ -108,11 +124,14 @@ export class ListHook {
     }, [result.data])
 
     // Update the query parameters when the data changes
-    useEffect(() => {
-      const location = Object.assign({}, options.props.history.location);
-      location.search = filter.makeQueryParameters();
-      options.props.history.replace(location);
-    }, [result.data, filter.displayMode]);
+    // don't use query parameters for sub-components
+    if (!options.subComponent) {
+      useEffect(() => {
+        const location = Object.assign({}, options.props.history.location);
+        location.search = filter.makeQueryParameters();
+        options.props.history.replace(location);
+      }, [result.data, filter.displayMode]);
+    }
 
     // Update the total count
     useEffect(() => {
