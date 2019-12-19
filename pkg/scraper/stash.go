@@ -11,7 +11,6 @@ import (
 
 func getStashClient(c scraperTypeConfig) *graphql.Client {
 	url := c.scraperConfig.StashServer.URL
-	// TODO - handle username/password
 	return graphql.NewClient(url+"/graphql", nil)
 }
 
@@ -112,6 +111,19 @@ func scrapeSceneFragmentStash(c scraperTypeConfig, scene models.SceneUpdateInput
 	err = client.Query(context.Background(), &q, vars)
 	if err != nil {
 		return nil, err
+	}
+
+	// the ids of the studio, performers and tags must be nilled
+	if q.FindScene.Studio != nil {
+		q.FindScene.Studio.ID = nil
+	}
+
+	for _, p := range q.FindScene.Performers {
+		p.ID = nil
+	}
+
+	for _, t := range q.FindScene.Tags {
+		t.ID = nil
 	}
 
 	return q.FindScene, nil
