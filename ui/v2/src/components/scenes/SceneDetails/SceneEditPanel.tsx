@@ -263,6 +263,10 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     if (!date && scene.date) {
       setDate(scene.date);
     }
+
+    if (!url && scene.url) {
+      setUrl(scene.url);
+    }
     
     if (!studioId && scene.studio && scene.studio.id) {
       setStudioId(scene.studio.id);
