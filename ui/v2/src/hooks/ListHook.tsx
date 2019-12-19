@@ -26,7 +26,7 @@ interface IListHookOperation {
 export interface IListHookOptions {
   filterMode: FilterMode;
   subComponent?: boolean;
-  criteria?: Array<Criterion<any, any>>;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
   props: IBaseProps;
   zoomable?: boolean;
   otherOperations?: IListHookOperation[];
@@ -57,14 +57,13 @@ export class ListHook {
     }
 
     function getFilter() {
-      if (!options.criteria) {
+      if (!options.filterHook) {
         return filter;
       }
 
-      // make a copy of the filter and add the criteria
+      // make a copy of the filter and call the hook
       let newFilter = _.cloneDeep(filter);
-      newFilter.criteria = newFilter.criteria.concat(options.criteria);
-      return newFilter;
+      return options.filterHook(newFilter);
     }
 
     let result: QueryHookResult<any, any>;

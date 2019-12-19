@@ -11,12 +11,11 @@ import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
 import { SceneSelectedOptions } from "./SceneSelectedOptions";
 import { StashService } from "../../core/StashService";
-import { Criterion } from "../../models/list-filter/criteria/criterion";
 
 interface ISceneListProps {
   base : IBaseProps
   subComponent?: boolean
-  criteria?: Array<Criterion<any, any>>;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
 export const SceneList: FunctionComponent<ISceneListProps> = (props: ISceneListProps) => {
@@ -31,7 +30,7 @@ export const SceneList: FunctionComponent<ISceneListProps> = (props: ISceneListP
     filterMode: FilterMode.Scenes,
     props: props.base,
     subComponent: props.subComponent,
-    criteria: props.criteria,
+    filterHook: props.filterHook,
     zoomable: true,
     otherOperations: otherOperations,
     renderContent,
