@@ -359,7 +359,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
       <h6 className="bp3-heading">
         <FormGroup className="aliases-field" inline={true} label="Aliases:">
           {EditableTextUtils.renderInputGroup({
-            value: aliases, isEditing: !!props.isEditing, placeholder: "Aliases", onChange: setAliases
+            value: aliases, isEditing: !!props.isEditing, placeholder: "Aliases", onChange: setAliases, asLabel: true
           })}
         </FormGroup>
       </h6>

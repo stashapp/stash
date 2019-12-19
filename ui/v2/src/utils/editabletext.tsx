@@ -26,6 +26,7 @@ export class EditableTextUtils {
     value: string | undefined,
     isEditing: boolean,
     placeholder?: string,
+    asLabel?: boolean,
     onChange: ((value: string) => void),
   }) {
     let element: JSX.Element;
@@ -38,7 +39,11 @@ export class EditableTextUtils {
         />
       );
     } else {
-      element = <Label>{options.value}</Label>;
+      if (options.asLabel) {
+        element = <Label>{options.value}</Label>;
+      } else {
+        element = <span>{options.value}</span>;
+      }
     }
     return element;
   }
