@@ -260,21 +260,18 @@ export class StashService {
     "allPerformers"
   ];
 
-  public static usePerformerCreate(input: GQL.PerformerCreateInput) {
+  public static usePerformerCreate() {
     return GQL.usePerformerCreate({ 
-      variables: input,
       update: () => StashService.invalidateQueries(StashService.performerMutationImpactedQueries)
     });
   }
-  public static usePerformerUpdate(input: GQL.PerformerUpdateInput) {
+  public static usePerformerUpdate() {
     return GQL.usePerformerUpdate({ 
-      variables: input,
       update: () => StashService.invalidateQueries(StashService.performerMutationImpactedQueries)
     });
   }
-  public static usePerformerDestroy(input: GQL.PerformerDestroyInput) {
+  public static usePerformerDestroy() {
     return GQL.usePerformerDestroy({
-      variables: input,
       update: () => StashService.invalidateQueries(StashService.performerMutationImpactedQueries)
     });
   }
