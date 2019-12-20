@@ -48,7 +48,7 @@ func matchFile(file string, patterns []string) bool {
 		}
 
 		for _, regPattern := range fileRegexps {
-			if regPattern.Match([]byte(strings.ToLower(file))) {
+			if regPattern.MatchString(strings.ToLower(file)) {
 				return true
 			}
 
@@ -81,7 +81,7 @@ func generateRegexps(patterns []string) []*regexp.Regexp {
 
 func matchFileSimple(file string, regExps []*regexp.Regexp) bool {
 	for _, regPattern := range regExps {
-		if regPattern.Match([]byte(strings.ToLower(file))) {
+		if regPattern.MatchString(strings.ToLower(file)) {
 			return true
 		}
 	}
