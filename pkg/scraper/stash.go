@@ -113,17 +113,19 @@ func scrapeSceneFragmentStash(c scraperTypeConfig, scene models.SceneUpdateInput
 		return nil, err
 	}
 
-	// the ids of the studio, performers and tags must be nilled
-	if q.FindScene.Studio != nil {
-		q.FindScene.Studio.ID = nil
-	}
+	if q.FindScene != nil {
+		// the ids of the studio, performers and tags must be nilled
+		if q.FindScene.Studio != nil {
+			q.FindScene.Studio.ID = nil
+		}
 
-	for _, p := range q.FindScene.Performers {
-		p.ID = nil
-	}
+		for _, p := range q.FindScene.Performers {
+			p.ID = nil
+		}
 
-	for _, t := range q.FindScene.Tags {
-		t.ID = nil
+		for _, t := range q.FindScene.Tags {
+			t.ID = nil
+		}
 	}
 
 	return q.FindScene, nil
