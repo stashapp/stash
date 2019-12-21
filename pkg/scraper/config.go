@@ -10,14 +10,20 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+type stashServer struct {
+	URL string `yaml:"url"`
+}
+
 type scraperAction string
 
 const (
 	scraperActionScript scraperAction = "script"
+	scraperActionStash  scraperAction = "stash"
 )
 
 var allScraperAction = []scraperAction{
 	scraperActionScript,
+	scraperActionStash,
 }
 
 func (e scraperAction) IsValid() bool {
@@ -31,6 +37,8 @@ func (e scraperAction) IsValid() bool {
 type scraperTypeConfig struct {
 	Action scraperAction `yaml:"action"`
 	Script []string      `yaml:"script,flow"`
+
+	scraperConfig *scraperConfig
 }
 
 type scrapePerformerNamesFunc func(c scraperTypeConfig, name string) ([]*models.ScrapedPerformer, error)
@@ -43,6 +51,8 @@ type performerByNameConfig struct {
 func (c *performerByNameConfig) resolveFn() {
 	if c.Action == scraperActionScript {
 		c.performScrape = scrapePerformerNamesScript
+	} else if c.Action == scraperActionStash {
+		c.performScrape = scrapePerformerNamesStash
 	}
 }
 
@@ -56,6 +66,8 @@ type performerByFragmentConfig struct {
 func (c *performerByFragmentConfig) resolveFn() {
 	if c.Action == scraperActionScript {
 		c.performScrape = scrapePerformerFragmentScript
+	} else if c.Action == scraperActionStash {
+		c.performScrape = scrapePerformerFragmentStash
 	}
 }
 
@@ -97,6 +109,8 @@ type sceneByFragmentConfig struct {
 func (c *sceneByFragmentConfig) resolveFn() {
 	if c.Action == scraperActionScript {
 		c.performScrape = scrapeSceneFragmentScript
+	} else if c.Action == scraperActionStash {
+		c.performScrape = scrapeSceneFragmentStash
 	}
 }
 
@@ -121,6 +135,7 @@ type scraperConfig struct {
 	PerformerByURL      []*scrapePerformerByURLConfig `yaml:"performerByURL"`
 	SceneByFragment     *sceneByFragmentConfig        `yaml:"sceneByFragment"`
 	SceneByURL          []*scrapeSceneByURLConfig     `yaml:"sceneByURL"`
+	StashServer         *stashServer                  `yaml:"stashServer"`
 }
 
 func loadScraperFromYAML(path string) (*scraperConfig, error) {
@@ -152,19 +167,24 @@ func loadScraperFromYAML(path string) (*scraperConfig, error) {
 func (c *scraperConfig) initialiseConfigs() {
 	if c.PerformerByName != nil {
 		c.PerformerByName.resolveFn()
+		c.PerformerByName.scraperConfig = c
 	}
 	if c.PerformerByFragment != nil {
 		c.PerformerByFragment.resolveFn()
+		c.PerformerByFragment.scraperConfig = c
 	}
 	for _, s := range c.PerformerByURL {
 		s.resolveFn()
+		s.scraperConfig = c
 	}
 
 	if c.SceneByFragment != nil {
 		c.SceneByFragment.resolveFn()
+		c.SceneByFragment.scraperConfig = c
 	}
 	for _, s := range c.SceneByURL {
 		s.resolveFn()
+		s.scraperConfig = c
 	}
 }
 

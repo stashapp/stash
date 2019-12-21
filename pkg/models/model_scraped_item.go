@@ -22,3 +22,65 @@ type ScrapedItem struct {
 	CreatedAt       SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt       SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
+
+type ScrapedPerformer struct {
+	Name         *string `graphql:"name" json:"name"`
+	URL          *string `graphql:"url" json:"url"`
+	Twitter      *string `graphql:"twitter" json:"twitter"`
+	Instagram    *string `graphql:"instagram" json:"instagram"`
+	Birthdate    *string `graphql:"birthdate" json:"birthdate"`
+	Ethnicity    *string `graphql:"ethnicity" json:"ethnicity"`
+	Country      *string `graphql:"country" json:"country"`
+	EyeColor     *string `graphql:"eye_color" json:"eye_color"`
+	Height       *string `graphql:"height" json:"height"`
+	Measurements *string `graphql:"measurements" json:"measurements"`
+	FakeTits     *string `graphql:"fake_tits" json:"fake_tits"`
+	CareerLength *string `graphql:"career_length" json:"career_length"`
+	Tattoos      *string `graphql:"tattoos" json:"tattoos"`
+	Piercings    *string `graphql:"piercings" json:"piercings"`
+	Aliases      *string `graphql:"aliases" json:"aliases"`
+}
+
+type ScrapedScene struct {
+	Title      *string                  `graphql:"title" json:"title"`
+	Details    *string                  `graphql:"details" json:"details"`
+	URL        *string                  `graphql:"url" json:"url"`
+	Date       *string                  `graphql:"date" json:"date"`
+	File       *SceneFileType           `graphql:"file" json:"file"`
+	Studio     *ScrapedSceneStudio      `graphql:"studio" json:"studio"`
+	Tags       []*ScrapedSceneTag       `graphql:"tags" json:"tags"`
+	Performers []*ScrapedScenePerformer `graphql:"performers" json:"performers"`
+}
+
+type ScrapedScenePerformer struct {
+	// Set if performer matched
+	ID           *string `graphql:"id" json:"id"`
+	Name         string  `graphql:"name" json:"name"`
+	URL          *string `graphql:"url" json:"url"`
+	Twitter      *string `graphql:"twitter" json:"twitter"`
+	Instagram    *string `graphql:"instagram" json:"instagram"`
+	Birthdate    *string `graphql:"birthdate" json:"birthdate"`
+	Ethnicity    *string `graphql:"ethnicity" json:"ethnicity"`
+	Country      *string `graphql:"country" json:"country"`
+	EyeColor     *string `graphql:"eye_color" json:"eye_color"`
+	Height       *string `graphql:"height" json:"height"`
+	Measurements *string `graphql:"measurements" json:"measurements"`
+	FakeTits     *string `graphql:"fake_tits" json:"fake_tits"`
+	CareerLength *string `graphql:"career_length" json:"career_length"`
+	Tattoos      *string `graphql:"tattoos" json:"tattoos"`
+	Piercings    *string `graphql:"piercings" json:"piercings"`
+	Aliases      *string `graphql:"aliases" json:"aliases"`
+}
+
+type ScrapedSceneStudio struct {
+	// Set if studio matched
+	ID   *string `graphql:"id" json:"id"`
+	Name string  `graphql:"name" json:"name"`
+	URL  *string `graphql:"url" json:"url"`
+}
+
+type ScrapedSceneTag struct {
+	// Set if tag matched
+	ID   *string `graphql:"id" json:"id"`
+	Name string  `graphql:"name" json:"name"`
+}

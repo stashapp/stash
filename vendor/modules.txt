@@ -58,8 +58,8 @@ github.com/gobuffalo/meta
 github.com/gobuffalo/packd
 # github.com/gobuffalo/packr/v2 v2.0.2
 github.com/gobuffalo/packr/v2
-github.com/gobuffalo/packr/v2/file
 github.com/gobuffalo/packr/v2/file/resolver
+github.com/gobuffalo/packr/v2/file
 github.com/gobuffalo/packr/v2/jam/parser
 github.com/gobuffalo/packr/v2/plog
 github.com/gobuffalo/packr/v2/file/resolver/encoding/hex
@@ -127,6 +127,10 @@ github.com/rogpeppe/go-internal/module
 github.com/rogpeppe/go-internal/semver
 # github.com/rs/cors v1.6.0
 github.com/rs/cors
+# github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
+github.com/shurcooL/graphql
+github.com/shurcooL/graphql/ident
+github.com/shurcooL/graphql/internal/jsonutil
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
 # github.com/spf13/afero v1.2.0
@@ -165,6 +169,7 @@ golang.org/x/image/tiff
 golang.org/x/image/tiff/lzw
 # golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 golang.org/x/net/html
+golang.org/x/net/context/ctxhttp
 golang.org/x/net/html/atom
 # golang.org/x/sys v0.0.0-20190426135247-a129542de9ae
 golang.org/x/sys/unix
