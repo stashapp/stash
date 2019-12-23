@@ -183,8 +183,8 @@ func makeCommonXPath(attr string) string {
 	return `//table[@id="biographyTable"]//tr/td[@class="paramname"]//b[text() = '` + attr + `']/ancestor::tr/td[@class="paramvalue"]`
 }
 
-func makeXPathConfig() map[interface{}]interface{} {
-	config := make(map[interface{}]interface{})
+func makeXPathConfig() xpathScraperConfig {
+	config := make(xpathScraperConfig)
 
 	config["Name"] = makeCommonXPath("Babe Name:") + `/a`
 	config["Ethnicity"] = makeCommonXPath("Ethnicity:")
@@ -226,8 +226,9 @@ func TestScrapePerformerXPath(t *testing.T) {
 
 	xpathConfig := makeXPathConfig()
 
-	scraper := make(xpathScraper)
-	scraper["performer"] = xpathConfig
+	scraper := xpathScraper{
+		Performer: xpathConfig,
+	}
 
 	performer, err := scraper.scrapePerformer(doc)
 
@@ -563,8 +564,13 @@ const sceneHTML = `
 </body>
 </html>`
 
-func makeSceneXPathConfig() map[interface{}]interface{} {
-	config := make(map[interface{}]interface{})
+func makeSceneXPathConfig() xpathScraper {
+	common := make(commonXPathConfig)
+
+	common["$performerElem"] = `//div[@class="pornstarsWrapper"]/a[@data-mxptype="Pornstar"]`
+	common["$studioElem"] = `//div[@data-type="channel"]/a`
+
+	config := make(xpathScraperConfig)
 
 	config["Title"] = `//meta[@property="og:title"]/@content`
 	// this needs post-processing
@@ -575,16 +581,21 @@ func makeSceneXPathConfig() map[interface{}]interface{} {
 	config["Tags"] = tagConfig
 
 	performerConfig := make(map[interface{}]interface{})
-	performerConfig["Name"] = `//div[@class="pornstarsWrapper"]/a[@data-mxptype="Pornstar"]/@data-mxptext`
-	performerConfig["URL"] = `//div[@class="pornstarsWrapper"]/a[@data-mxptype="Pornstar"]/@href`
+	performerConfig["Name"] = `$performerElem/@data-mxptext`
+	performerConfig["URL"] = `$performerElem/@href`
 	config["Performers"] = performerConfig
 
 	studioConfig := make(map[interface{}]interface{})
-	studioConfig["Name"] = `//div[@data-type="channel"]/a`
-	studioConfig["URL"] = `//div[@data-type="channel"]/a/@href`
+	studioConfig["Name"] = `$studioElem`
+	studioConfig["URL"] = `$studioElem/@href`
 	config["Studio"] = studioConfig
 
-	return config
+	scraper := xpathScraper{
+		Scene:  config,
+		Common: common,
+	}
+
+	return scraper
 }
 
 func verifyTags(t *testing.T, expectedTagNames []string, actualTags []*models.ScrapedSceneTag) {
@@ -649,11 +660,7 @@ func TestApplySceneXPathConfig(t *testing.T) {
 		return
 	}
 
-	xpathConfig := makeSceneXPathConfig()
-
-	scraper := make(xpathScraper)
-
-	scraper["scene"] = xpathConfig
+	scraper := makeSceneXPathConfig()
 
 	scene, err := scraper.scrapeScene(doc)
 
@@ -720,13 +727,6 @@ xPathScrapers:
 
 	if err != nil {
 		t.Errorf("Error loading yaml: %s", err.Error())
-		return
-	}
-
-	err = config.XPathScrapers.Validate()
-
-	if err != nil {
-		t.Errorf("XPathScrapers not valid: %s", err.Error())
 		return
 	}
 }

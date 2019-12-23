@@ -2,7 +2,6 @@ package scraper
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
@@ -14,79 +13,87 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+type commonXPathConfig map[string]string
+
+func (c commonXPathConfig) applyCommon(src string) string {
+	ret := src
+	for commonKey, commonVal := range c {
+		if strings.Contains(ret, commonKey) {
+			ret = strings.ReplaceAll(ret, commonKey, commonVal)
+		}
+	}
+
+	return ret
+}
+
+type xpathScraperConfig map[string]interface{}
+
+func createXPathScraperConfig(src map[interface{}]interface{}) xpathScraperConfig {
+	ret := make(xpathScraperConfig)
+
+	if src != nil {
+		for k, v := range src {
+			keyStr, isStr := k.(string)
+			if isStr {
+				ret[keyStr] = v
+			}
+		}
+	}
+
+	return ret
+}
+
+func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) []xPathResult {
+	var ret []xPathResult
+
+	for k, v := range s {
+		asStr, isStr := v.(string)
+
+		if isStr {
+			// apply common
+			if common != nil {
+				asStr = common.applyCommon(asStr)
+			}
+
+			found := htmlquery.Find(doc, asStr)
+			if len(found) > 0 {
+				for i, elem := range found {
+					if i >= len(ret) {
+						ret = append(ret, make(xPathResult))
+					}
+
+					ret[i][k] = elem
+				}
+			}
+		}
+		// TODO - handle map type
+	}
+
+	return ret
+}
+
+type xpathScrapers map[string]*xpathScraper
+
+type xpathScraper struct {
+	Common    commonXPathConfig  `yaml:"common"`
+	Scene     xpathScraperConfig `yaml:"scene"`
+	Performer xpathScraperConfig `yaml:"performer"`
+}
+
 const (
-	scraperKeyCommon    = "common"
-	scraperKeyPerformer = "performer"
-	scraperKeyScene     = "scene"
+	XPathScraperConfigSceneTags       = "Tags"
+	XPathScraperConfigScenePerformers = "Performers"
+	XPathScraperConfigSceneStudio     = "Studio"
 )
 
-type scraperKey string
-
-func (e scraperKey) IsValid() bool {
-	switch e {
-	case scraperKeyCommon, scraperKeyPerformer, scraperKeyScene:
-		return true
-	}
-	return false
-}
-
-type xpathScraper map[scraperKey]interface{}
-
-func (s xpathScraper) Validate() error {
-	for k, v := range s {
-		if !k.IsValid() {
-			return fmt.Errorf("%s is not a valid scraper key", string(k))
-		}
-
-		_, ok := v.(map[interface{}]interface{})
-
-		if !ok {
-			return fmt.Errorf("%s is of incorrect type: %T", string(k), v)
-		}
-
-		// TODO - ensure all keys are prefixed with $
-	}
-
-	return nil
-}
-
-func (s xpathScraper) GetCommon() map[string]string {
-	var ret map[string]string
-	v, ok := s[scraperKeyCommon]
-	if ok {
-		ret, _ = v.(map[string]string)
-	}
-
-	return ret
-}
-
-func (s xpathScraper) GetPerformer() map[interface{}]interface{} {
-	var ret map[interface{}]interface{}
-	v, ok := s[scraperKeyPerformer]
-	if ok {
-		ret, _ = v.(map[interface{}]interface{})
-	}
-
-	return ret
-}
-
-func (s xpathScraper) GetRawScene() map[interface{}]interface{} {
-	var ret map[interface{}]interface{}
-	v, ok := s[scraperKeyScene]
-	if ok {
-		ret, _ = v.(map[interface{}]interface{})
-	}
-
-	return ret
-}
-
-func (s xpathScraper) GetScene() map[interface{}]interface{} {
-	ret := make(map[interface{}]interface{})
-	mapped := s.GetRawScene()
+func (s xpathScraper) GetSceneSimple() xpathScraperConfig {
+	// exclude the complex sub-configs
+	ret := make(xpathScraperConfig)
+	mapped := s.Scene
 
 	if mapped != nil {
 		for k, v := range mapped {
-			if k != "Tags" && k != "Performers" && k != "Studio" {
+			if k != XPathScraperConfigSceneTags && k != XPathScraperConfigScenePerformers && k != XPathScraperConfigSceneStudio {
 				ret[k] = v
 			}
 		}
@@ -95,9 +102,9 @@ func (s xpathScraper) GetScene() map[interface{}]interface{} {
 	return ret
 }
 
-func (s xpathScraper) getMap(key string) map[interface{}]interface{} {
+func (s xpathScraper) getSceneSubMap(key string) xpathScraperConfig {
 	var ret map[interface{}]interface{}
-	mapped := s.GetRawScene()
+	mapped := s.Scene
 
 	if mapped != nil {
 		v, ok := mapped[key]
@@ -106,53 +113,34 @@ func (s xpathScraper) getMap(key string) map[interface{}]interface{} {
 		}
 	}
 
-	return ret
-}
-
-func (s xpathScraper) GetScenePerformers() map[interface{}]interface{} {
-	return s.getMap("Performers")
-}
-
-func (s xpathScraper) GetSceneTags() map[interface{}]interface{} {
-	return s.getMap("Tags")
-}
-
-func (s xpathScraper) GetSceneStudio() map[interface{}]interface{} {
-	return s.getMap("Studio")
-}
-
-func (s xpathScraper) GetCommonElements(doc *html.Node) map[string]interface{} {
-	ret := make(map[string]interface{})
-
-	common := s.GetCommon()
-	if common == nil {
-		return ret
+	if ret != nil {
+		return createXPathScraperConfig(ret)
 	}
 
-	for k, v := range common {
-		elements := htmlquery.Find(doc, v)
-		ret[k] = elements
-	}
+	return nil
+}
 
-	return ret
+func (s xpathScraper) GetScenePerformers() xpathScraperConfig {
+	return s.getSceneSubMap(XPathScraperConfigScenePerformers)
+}
+
+func (s xpathScraper) GetSceneTags() xpathScraperConfig {
+	return s.getSceneSubMap(XPathScraperConfigSceneTags)
+}
+
+func (s xpathScraper) GetSceneStudio() xpathScraperConfig {
+	return s.getSceneSubMap(XPathScraperConfigSceneStudio)
 }
 
 func (s xpathScraper) scrapePerformer(doc *html.Node) (*models.ScrapedPerformer, error) {
-	// parse common first
-	commonMap := s.GetCommon()
 	var ret models.ScrapedPerformer
 
-	performerMap := s.GetPerformer()
+	performerMap := s.Performer
 	if performerMap == nil {
 		return nil, nil
 	}
 
-	err := applyCommon(performerMap, commonMap)
-	if err != nil {
-		return nil, err
-	}
-
-	results := s.processXPathConfig(doc, performerMap)
+	results := performerMap.process(doc, s.Common)
 	if len(results) > 0 {
 		results[0].apply(&ret)
 	}
@@ -161,11 +149,9 @@ func (s xpathScraper) scrapePerformer(doc *html.Node) (*models.ScrapedPerformer,
 }
 
 func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) {
-	// parse common first
-	commonMap := s.GetCommon()
 	var ret models.ScrapedScene
 
-	sceneMap := s.GetScene()
+	sceneMap := s.GetSceneSimple()
 	if sceneMap == nil {
 		return nil, nil
 	}
@@ -174,18 +160,13 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 	sceneTagsMap := s.GetSceneTags()
 	sceneStudioMap := s.GetSceneStudio()
 
-	err := applyCommon(sceneMap, commonMap)
-	if err != nil {
-		return nil, err
-	}
-
-	results := s.processXPathConfig(doc, sceneMap)
+	results := sceneMap.process(doc, s.Common)
 	if len(results) > 0 {
 		results[0].apply(&ret)
 
 		// now apply the performers and tags
 		if scenePerformersMap != nil {
-			performerResults := s.processXPathConfig(doc, scenePerformersMap)
+			performerResults := scenePerformersMap.process(doc, s.Common)
 
 			for _, p := range performerResults {
 				performer := &models.ScrapedScenePerformer{}
@@ -195,7 +176,7 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 		}
 
 		if sceneTagsMap != nil {
-			tagResults := s.processXPathConfig(doc, sceneTagsMap)
+			tagResults := sceneTagsMap.process(doc, s.Common)
 
 			for _, p := range tagResults {
 				tag := &models.ScrapedSceneTag{}
@@ -205,7 +186,7 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 		}
 
 		if sceneStudioMap != nil {
-			studioResults := s.processXPathConfig(doc, sceneStudioMap)
+			studioResults := sceneStudioMap.process(doc, s.Common)
 
 			if len(studioResults) > 0 {
 				studio := &models.ScrapedSceneStudio{}
@@ -219,36 +200,6 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 }
 
 type xPathResult map[string]*html.Node
-
-func (s xpathScraper) processXPathConfig(doc *html.Node, config map[interface{}]interface{}) []xPathResult {
-	var ret []xPathResult
-
-	for k, v := range config {
-		key, keyIsStr := k.(string)
-		if !keyIsStr {
-			logger.Errorf("Key type not string: %T", k)
-			// this should be an error or something
-			continue
-		}
-
-		asStr, isStr := v.(string)
-		if isStr {
-			found := htmlquery.Find(doc, asStr)
-			if len(found) > 0 {
-				for i, elem := range found {
-					if i >= len(ret) {
-						ret = append(ret, make(xPathResult))
-					}
-
-					ret[i][key] = elem
-				}
-			}
-		}
-		// TODO - handle map type
-	}
-
-	return ret
-}
 
 func (r xPathResult) apply(dest interface{}) {
 	destVal := reflect.ValueOf(dest)
@@ -281,72 +232,6 @@ func (r xPathResult) apply(dest interface{}) {
 			logger.Errorf("Field %s does not exist in %T", key, dest)
 		}
 	}
-}
-
-func (s xpathScraper) applyXPathConfig(doc *html.Node, dest interface{}, config map[interface{}]interface{}) {
-	destVal := reflect.ValueOf(dest)
-
-	// dest should be a pointer
-	destVal = destVal.Elem()
-
-	for k, v := range config {
-		key, keyIsStr := k.(string)
-		if !keyIsStr {
-			logger.Errorf("Key type not string: %T", k)
-			// this should be an error or something
-			continue
-		}
-
-		asStr, isStr := v.(string)
-		if isStr {
-			found := htmlquery.FindOne(doc, asStr)
-			if found != nil {
-				field := destVal.FieldByName(key)
-
-				if field.IsValid() {
-					value := htmlquery.InnerText(found)
-					value = strings.TrimSpace(value)
-
-					reflectValue := reflect.ValueOf(&value)
-
-					field.Set(reflectValue)
-				} else {
-					logger.Errorf("Field %s does not exist in %T", key, dest)
-				}
-			}
-		}
-	}
-}
-
-type xpathScrapers map[string]*xpathScraper
-
-func (s xpathScrapers) Validate() error {
-	for _, v := range s {
-		err := v.Validate()
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func applyCommon(dest map[interface{}]interface{}, common map[string]string) error {
-	for commonKey, commonVal := range common {
-		for destKey, destVal := range dest {
-			valStr, ok := destVal.(string)
-			if ok {
-				if strings.Contains(valStr, commonKey) {
-					dest[destKey] = strings.ReplaceAll(valStr, commonKey, commonVal)
-				}
-			} else {
-				// hopefully this means it is a map
-				// TODO - handle this
-			}
-		}
-	}
-
-	return nil
 }
 
 func scrapePerformerURLXpath(c scraperTypeConfig, url string) (*models.ScrapedPerformer, error) {
