@@ -19,7 +19,7 @@ func (c commonXPathConfig) applyCommon(src string) string {
 	ret := src
 	for commonKey, commonVal := range c {
 		if strings.Contains(ret, commonKey) {
-			ret = strings.ReplaceAll(ret, commonKey, commonVal)
+			ret = strings.Replace(ret, commonKey, commonVal, -1)
 		}
 	}
 
