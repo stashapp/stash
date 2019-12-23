@@ -86,7 +86,7 @@ func (s xpathScraper) GetScene() map[interface{}]interface{} {
 
 	if mapped != nil {
 		for k, v := range mapped {
-			if k != "Tags" && k != "Performers" {
+			if k != "Tags" && k != "Performers" && k != "Studio" {
 				ret[k] = v
 			}
 		}
@@ -95,12 +95,12 @@ func (s xpathScraper) GetScene() map[interface{}]interface{} {
 	return ret
 }
 
-func (s xpathScraper) GetScenePerformers() map[interface{}]interface{} {
+func (s xpathScraper) getMap(key string) map[interface{}]interface{} {
 	var ret map[interface{}]interface{}
 	mapped := s.GetRawScene()
 
 	if mapped != nil {
-		v, ok := mapped["Performers"]
+		v, ok := mapped[key]
 		if ok {
 			ret, _ = v.(map[interface{}]interface{})
 		}
@@ -109,18 +109,16 @@ func (s xpathScraper) GetScenePerformers() map[interface{}]interface{} {
 	return ret
 }
 
+func (s xpathScraper) GetScenePerformers() map[interface{}]interface{} {
+	return s.getMap("Performers")
+}
+
 func (s xpathScraper) GetSceneTags() map[interface{}]interface{} {
-	var ret map[interface{}]interface{}
-	mapped := s.GetRawScene()
+	return s.getMap("Tags")
+}
 
-	if mapped != nil {
-		v, ok := mapped["Tags"]
-		if ok {
-			ret, _ = v.(map[interface{}]interface{})
-		}
-	}
-
-	return ret
+func (s xpathScraper) GetSceneStudio() map[interface{}]interface{} {
+	return s.getMap("Studio")
 }
 
 func (s xpathScraper) GetCommonElements(doc *html.Node) map[string]interface{} {
@@ -174,6 +172,7 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 
 	scenePerformersMap := s.GetScenePerformers()
 	sceneTagsMap := s.GetSceneTags()
+	sceneStudioMap := s.GetSceneStudio()
 
 	err := applyCommon(sceneMap, commonMap)
 	if err != nil {
@@ -202,6 +201,16 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 				tag := &models.ScrapedSceneTag{}
 				p.apply(tag)
 				ret.Tags = append(ret.Tags, tag)
+			}
+		}
+
+		if sceneStudioMap != nil {
+			studioResults := s.processXPathConfig(doc, sceneStudioMap)
+
+			if len(studioResults) > 0 {
+				studio := &models.ScrapedSceneStudio{}
+				studioResults[0].apply(studio)
+				ret.Studio = studio
 			}
 		}
 	}

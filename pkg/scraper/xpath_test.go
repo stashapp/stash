@@ -329,12 +329,12 @@ const sceneHTML = `
                                         <div class="video-info-row">
                                             From:&nbsp;
 
-                                            <div class="usernameWrap clearfix" data-type="user" data-userid="492538092"
+                                            <div class="usernameWrap clearfix" data-type="channel" data-userid="492538092"
                                                 data-liu-user="0"
                                                 data-json-url="/user/box?id=492538092&amp;token=MTU3NzA1NTkzNIqATol8v_WrhmNTXkeflvG09C2U7UUT_NyoZUFa7iKq0mlzBkmdgAH1aNHZkJmIOHbbwmho1BehHDoA63K5Wn4."
                                                 data-disable-popover="0">
 
-                                                <a rel="" href="/pornstar/mia-malkova" class="bolded">Mia Malkova</a>
+                                                <a rel="" href="/channels/sis-loves-me" class="bolded">Sis Loves Me</a>
                                                 <div class="avatarPosition"></div>
                                             </div>
 
@@ -579,6 +579,11 @@ func makeSceneXPathConfig() map[interface{}]interface{} {
 	performerConfig["URL"] = `//div[@class="pornstarsWrapper"]/a[@data-mxptype="Pornstar"]/@href`
 	config["Performers"] = performerConfig
 
+	studioConfig := make(map[interface{}]interface{})
+	studioConfig["Name"] = `//div[@data-type="channel"]/a`
+	studioConfig["URL"] = `//div[@data-type="channel"]/a/@href`
+	config["Studio"] = studioConfig
+
 	return config
 }
 
@@ -689,6 +694,12 @@ func TestApplySceneXPathConfig(t *testing.T) {
 	}
 
 	verifyPerformers(t, expectedPerformerNames, expectedPerformerURLs, scene.Performers)
+
+	const expectedStudioName = "Sis Loves Me"
+	const expectedStudioURL = "/channels/sis-loves-me"
+
+	verifyField(t, expectedStudioName, &scene.Studio.Name, "Studio.Name")
+	verifyField(t, expectedStudioURL, scene.Studio.URL, "Studio.URL")
 }
 
 func TestLoadXPathScraperFromYAML(t *testing.T) {
