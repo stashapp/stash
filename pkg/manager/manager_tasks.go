@@ -1,18 +1,15 @@
 package manager
 
 import (
-	"path/filepath"
-	"regexp"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
-
 	"github.com/bmatcuk/doublestar"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"path/filepath"
+	"strconv"
+	"sync"
+	"time"
 )
 
 type TaskStatus struct {
@@ -414,7 +411,7 @@ func (s *singleton) Clean() {
 			}
 
 			if scene == nil {
-				logger.Errorf("nil scene, skipping generate")
+				logger.Errorf("nil scene, skipping Clean")
 				continue
 			}
 
@@ -494,47 +491,4 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, ma
 		}
 	}
 	return &totals
-}
-
-func excludeFiles(files []string, patterns []string) ([]string, int) {
-	if patterns == nil {
-		logger.Infof("No excludes in config.")
-		return files, 0
-	} else {
-		var results []string
-		var exclCount int
-		var fileRegexps []*regexp.Regexp
-
-		for _, pattern := range patterns {
-			reg, err := regexp.Compile(strings.ToLower(pattern))
-			if err != nil {
-				logger.Errorf("Exclude :%v", err)
-			} else {
-				fileRegexps = append(fileRegexps, reg)
-			}
-		}
-
-		if len(fileRegexps) == 0 {
-			return files, 0
-		}
-
-		for i := 0; i < len(files); i++ {
-			match := false
-			for _, regPattern := range fileRegexps {
-				if regPattern.Match([]byte(strings.ToLower(files[i]))) {
-					logger.Infof("File %s excluded from scan ", files[i])
-					match = true
-					exclCount++
-					break
-				}
-
-			}
-			//if pattern doesn't match add file to list
-			if !match {
-				results = append(results, files[i])
-			}
-		}
-		logger.Infof("Excluded %d file(s) from scan ", exclCount)
-		return results, exclCount
-	}
 }

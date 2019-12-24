@@ -21,8 +21,12 @@ func (t *CleanTask) Start(wg *sync.WaitGroup) {
 
 	if t.fileExists(t.Scene.Path) && t.pathInStash() {
 		logger.Debugf("File Found: %s", t.Scene.Path)
+		if matchFile(t.Scene.Path, config.GetExcludes()) {
+			logger.Infof("File matched regex. Cleaning: \"%s\"", t.Scene.Path)
+			t.deleteScene(t.Scene.ID)
+		}
 	} else {
-		logger.Infof("File not found. Cleaning: %s", t.Scene.Path)
+		logger.Infof("File not found. Cleaning: \"%s\"", t.Scene.Path)
 		t.deleteScene(t.Scene.ID)
 	}
 }
