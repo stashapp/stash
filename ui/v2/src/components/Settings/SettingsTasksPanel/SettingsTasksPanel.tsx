@@ -103,7 +103,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
 
   function onClean() {
     setIsCleanAlertOpen(false);
-    StashService.queryMetadataClean().then(() => { jobStatus.refetch()});
+    StashService.queryMetadataClean().then(() => { autoRefreshUntilIdle() });
   }
 
   function renderCleanAlert() {
@@ -130,7 +130,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
     try {
       await StashService.queryMetadataScan({useFileMetadata: useFileMetadata});
       ToastUtils.success("Started scan");
-      jobStatus.refetch();
+      autoRefreshUntilIdle();
     } catch (e) {
       ErrorUtils.handle(e);
     }
@@ -149,7 +149,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
     try {
       await StashService.queryMetadataAutoTag(getAutoTagInput());
       ToastUtils.success("Started auto tagging");
-      jobStatus.refetch();
+      autoRefreshUntilIdle();
     } catch (e) {
       ErrorUtils.handle(e);
     }
@@ -179,6 +179,27 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
       {maybeRenderStop()}
       </>
     );
+  }
+
+  /**
+   * Refreshes the jobstatus every 2.5 seconds until it is idle again.
+   */
+  let isAutoRefreshAlreadyRunning = false;
+  function autoRefreshUntilIdle() {
+    if (isAutoRefreshAlreadyRunning) {
+      return
+    } else {
+      isAutoRefreshAlreadyRunning = true;
+    }
+
+    jobStatus.refetch();
+    const refresherToken = setInterval(() => {
+      jobStatus.refetch();
+      if (status === 'Idle') {
+        clearInterval(refresherToken);
+        isAutoRefreshAlreadyRunning = false;
+      }
+    }, 2500)
   }
 
   return (
