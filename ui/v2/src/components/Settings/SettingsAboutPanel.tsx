@@ -52,6 +52,9 @@ export const SettingsAboutPanel: FunctionComponent<IProps> = (props: IProps) => 
       {!data || loading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
       {!!error ? <span>error.message</span> : undefined}
       {renderVersion()}
+      <p>
+        New updates might be available on <a href="https://github.com/stashapp/stash/releases">GitHub</a>.
+      </p>
     </>
   );
 };
