@@ -3,6 +3,8 @@ ifeq ($(OS),Windows_NT)
   SET := set
 endif
 
+release: generate ui build
+
 build:
 	$(eval DATE := $(shell go run scripts/getDate.go))
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
