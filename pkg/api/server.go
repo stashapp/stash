@@ -129,7 +129,7 @@ func Start() {
 	r.HandleFunc("/setup*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			data := setupUIBox.Bytes("index.html")
+			data, _ := setupUIBox.Find("index.html")
 			_, _ = w.Write(data)
 		} else {
 			r.URL.Path = strings.Replace(r.URL.Path, "/setup", "", 1)
@@ -193,7 +193,7 @@ func Start() {
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			data := uiBox.Bytes("index.html")
+			data, _ := uiBox.Find("index.html")
 			_, _ = w.Write(data)
 		} else {
 			http.FileServer(uiBox).ServeHTTP(w, r)
