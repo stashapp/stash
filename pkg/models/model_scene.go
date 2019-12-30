@@ -14,6 +14,7 @@ type Scene struct {
 	URL        sql.NullString  `db:"url" json:"url"`
 	Date       SQLiteDate      `db:"date" json:"date"`
 	Rating     sql.NullInt64   `db:"rating" json:"rating"`
+	WatchCount sql.NullInt64   `db:"watch_count" json:"watch_count"`
 	Size       sql.NullString  `db:"size" json:"size"`
 	Duration   sql.NullFloat64 `db:"duration" json:"duration"`
 	VideoCodec sql.NullString  `db:"video_codec" json:"video_codec"`
@@ -36,6 +37,7 @@ type ScenePartial struct {
 	URL        *sql.NullString  `db:"url" json:"url"`
 	Date       *SQLiteDate      `db:"date" json:"date"`
 	Rating     *sql.NullInt64   `db:"rating" json:"rating"`
+	WatchCount *sql.NullInt64   `db:"watch_count" json:"watch_count"`
 	Size       *sql.NullString  `db:"size" json:"size"`
 	Duration   *sql.NullFloat64 `db:"duration" json:"duration"`
 	VideoCodec *sql.NullString  `db:"video_codec" json:"video_codec"`

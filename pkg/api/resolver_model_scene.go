@@ -46,6 +46,14 @@ func (r *sceneResolver) Rating(ctx context.Context, obj *models.Scene) (*int, er
 	return nil, nil
 }
 
+func (r *sceneResolver) WatchCount(ctx context.Context, obj *models.Scene) (*int, error) {
+	if obj.WatchCount.Valid {
+		watch_count := int(obj.WatchCount.Int64)
+		return &watch_count, nil
+	}
+	return nil, nil
+}
+
 func (r *sceneResolver) File(ctx context.Context, obj *models.Scene) (*models.SceneFileType, error) {
 	width := int(obj.Width.Int64)
 	height := int(obj.Height.Int64)

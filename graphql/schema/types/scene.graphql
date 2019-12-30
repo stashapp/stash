@@ -27,6 +27,7 @@ type Scene {
   date: String
   rating: Int
   path: String!
+  watch_count: Int
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver
@@ -37,6 +38,11 @@ type Scene {
   studio: Studio
   tags: [Tag!]!
   performers: [Performer!]!
+}
+
+input SceneWatchIncrementInput {
+  clientMutationId: String
+  id: ID!
 }
 
 input SceneUpdateInput {
@@ -51,6 +57,7 @@ input SceneUpdateInput {
   gallery_id: ID
   performer_ids: [ID!]
   tag_ids: [ID!]
+  watch_count: Int
   """This should be base64 encoded"""
   cover_image: String
 }

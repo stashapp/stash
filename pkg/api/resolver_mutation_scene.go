@@ -85,6 +85,12 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 		updatedScene.Rating = &sql.NullInt64{Valid: false}
 	}
 
+	if input.WatchCount != nil {
+		updatedScene.WatchCount = &sql.NullInt64{Int64: int64(*input.WatchCount), Valid: true}
+	} else {
+		updatedScene.WatchCount = &sql.NullInt64{Valid: false}
+	}
+
 	if input.StudioID != nil {
 		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
 		updatedScene.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}

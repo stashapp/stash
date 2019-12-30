@@ -25,6 +25,7 @@ import { FilterMultiSelect } from "../../select/FilterMultiSelect";
 import { FilterSelect } from "../../select/FilterSelect";
 import { ValidGalleriesSelect } from "../../select/ValidGalleriesSelect";
 import { ImageUtils } from "../../../utils/image";
+import { watch } from "fs";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -39,6 +40,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   const [url, setUrl] = useState<string | undefined>(undefined);
   const [date, setDate] = useState<string | undefined>(undefined);
   const [rating, setRating] = useState<number | undefined>(undefined);
+  const [watch_count, setWatchCount] = useState<number | undefined>(undefined);
   const [galleryId, setGalleryId] = useState<string | undefined>(undefined);
   const [studioId, setStudioId] = useState<string | undefined>(undefined);
   const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
@@ -83,6 +85,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     setUrl(state.url);
     setDate(state.date);
     setRating(state.rating == null ? NaN : state.rating);
+    setWatchCount(state.watch_count == null ? NaN : state.watch_count);
     setGalleryId(state.gallery ? state.gallery.id : undefined);
     setStudioId(state.studio ? state.studio.id : undefined);
     setPerformerIds(perfIds);
@@ -109,6 +112,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
       url,
       date,
       rating,
+      watch_count: watch_count,
       gallery_id: galleryId,
       studio_id: studioId,
       performer_ids: performerIds,
@@ -354,6 +358,13 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
           <InputGroup
             onChange={(newValue: any) => setDate(newValue.target.value)}
             value={date}
+          />
+        </FormGroup>
+
+        <FormGroup label="Watch Count">
+          <InputGroup
+            onChange={(newValue: any) => setWatchCount(parseInt(newValue.target.value, 10))}
+            value={watch_count ? watch_count.toString() : "0"}
           />
         </FormGroup>
 
