@@ -46,6 +46,7 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
   function maybeRenderSceneSpecsOverlay() {
     return (
       <div className={`scene-specs-overlay`}>
+        {!!props.scene.watch_count ? TextUtils.watchCount(props.scene.watch_count) : undefined}
         {!!props.scene.file.height ? <span className={`overlay-resolution`}> {TextUtils.resolution(props.scene.file.height)}</span> : undefined}
         {props.scene.file.duration !== undefined && props.scene.file.duration >= 1 ? TextUtils.secondsToTimestamp(props.scene.file.duration) : ""}
       </div>

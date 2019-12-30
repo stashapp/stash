@@ -56,6 +56,10 @@ export class TextUtils {
     return `${megabits.toFixed(2)} megabits per second`;
   }
 
+  public static watchCount(watch_count: number) {
+    return `${watch_count} 👁`;
+  }
+
   public static resolution(height: number) {
     if (height >= 240 && height < 480) {
       return "240p";
