@@ -200,6 +200,12 @@ func Start() {
 		}
 	})
 
+	displayHost := config.GetHost()
+	if displayHost == "0.0.0.0" {
+		displayHost = "localhost"
+	}
+	displayAddress := displayHost + ":" + strconv.Itoa(config.GetPort())
+
 	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
 		httpsServer := &http.Server{
@@ -210,7 +216,8 @@ func Start() {
 
 		go func() {
 			printVersion()
-			logger.Infof("stash is running on HTTPS at https://" + address + "/")
+			logger.Infof("stash is listening on" + address)
+			logger.Infof("stash is running on HTTPS at https://" + displayAddress + "/")
 			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
 		}()
 	} else {
@@ -221,7 +228,8 @@ func Start() {
 
 		go func() {
 			printVersion()
-			logger.Infof("stash is running on HTTP at http://" + address + "/")
+			logger.Infof("stash is listening on" + address)
+			logger.Infof("stash is running on HTTP at http://" + displayAddress + "/")
 			logger.Fatal(server.ListenAndServe())
 		}()
 	}
