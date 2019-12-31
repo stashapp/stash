@@ -161,6 +161,10 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 			newSceneJSON.File.Bitrate = int(scene.Bitrate.Int64)
 		}
 
+		if len(scene.Cover) > 0 {
+			newSceneJSON.Cover = utils.GetBase64StringFromData(scene.Cover)
+		}
+
 		sceneJSON, err := instance.JSON.getScene(scene.Checksum)
 		if err != nil {
 			logger.Debugf("[scenes] error reading scene json: %s", err.Error())
