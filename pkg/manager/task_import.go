@@ -382,6 +382,19 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			continue
 		}
 
+		// Process the base 64 encoded cover image string
+		if sceneJSON.Cover != "" {
+			_, coverImageData, err := utils.ProcessBase64Image(sceneJSON.Cover)
+			if err != nil {
+				logger.Warnf("[scenes] <%s> invalid cover image: %s", mappingJSON.Checksum, err.Error())
+			}
+			if len(coverImageData) > 0 {
+				if err = SetSceneScreenshot(mappingJSON.Checksum, coverImageData); err != nil {
+					logger.Warnf("[scenes] <%s> failed to create cover image: %s", mappingJSON.Checksum, err.Error())
+				}
+			}
+		}
+
 		// Populate scene fields
 		if sceneJSON != nil {
 			if sceneJSON.Title != "" {

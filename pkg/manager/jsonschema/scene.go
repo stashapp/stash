@@ -39,6 +39,7 @@ type Scene struct {
 	Tags       []string        `json:"tags,omitempty"`
 	Markers    []SceneMarker   `json:"markers,omitempty"`
 	File       *SceneFile      `json:"file,omitempty"`
+	Cover      string          `json:"cover,omitempty"`
 	CreatedAt  models.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt  models.JSONTime `json:"updated_at,omitempty"`
 }

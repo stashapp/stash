@@ -60,6 +60,9 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.Tx) (*models.Scene, error) {
 	// Populate scene from the input
 	sceneID, _ := strconv.Atoi(input.ID)
+
+	var coverImageData []byte
+
 	updatedTime := time.Now()
 	updatedScene := models.ScenePartial{
 		ID:        sceneID,
@@ -76,6 +79,14 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 	}
 	if input.Date != nil {
 		updatedScene.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
+	}
+	if input.CoverImage != nil && *input.CoverImage != "" {
+		var err error
+		_, coverImageData, err = utils.ProcessBase64Image(*input.CoverImage)
+		if err != nil {
+			return nil, err
+		}
+		updatedScene.Cover = &coverImageData
 	}
 
 	if input.Rating != nil {
@@ -151,18 +162,13 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 	}
 
 	// only update the cover image if provided and everything else was successful
-	if input.CoverImage != nil && *input.CoverImage != "" {
-		_, imageData, err := utils.ProcessBase64Image(*input.CoverImage)
-		if err != nil {
-			return nil, err
-		}
-
+	if coverImageData != nil {
 		scene, err := qb.Find(sceneID)
 		if err != nil {
 			return nil, err
 		}
 
-		err = manager.SetSceneScreenshot(scene.Checksum, imageData)
+		err = manager.SetSceneScreenshot(scene.Checksum, coverImageData)
 		if err != nil {
 			return nil, err
 		}
