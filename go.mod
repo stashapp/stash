@@ -3,6 +3,8 @@ module github.com/stashapp/stash
 require (
 	github.com/99designs/gqlgen v0.9.0
 	github.com/PuerkitoBio/goquery v1.5.0
+	github.com/antchfx/htmlquery v1.2.0
+	github.com/antchfx/xpath v1.1.2 // indirect
 	github.com/bmatcuk/doublestar v1.1.5
 	github.com/disintegration/imaging v1.6.0
 	github.com/go-chi/chi v4.0.2+incompatible
@@ -21,6 +23,7 @@ require (
 	github.com/vektah/gqlparser v1.1.2
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2 // indirect
+	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 	gopkg.in/yaml.v2 v2.2.2
 )
 

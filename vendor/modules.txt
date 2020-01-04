@@ -23,6 +23,10 @@ github.com/PuerkitoBio/goquery
 github.com/agnivade/levenshtein
 # github.com/andybalholm/cascadia v1.0.0
 github.com/andybalholm/cascadia
+# github.com/antchfx/htmlquery v1.2.0
+github.com/antchfx/htmlquery
+# github.com/antchfx/xpath v1.1.2
+github.com/antchfx/xpath
 # github.com/bmatcuk/doublestar v1.1.5
 github.com/bmatcuk/doublestar
 # github.com/disintegration/imaging v1.6.0
@@ -71,6 +75,8 @@ github.com/golang-migrate/migrate/v4/source/file
 github.com/golang-migrate/migrate/v4
 github.com/golang-migrate/migrate/v4/source
 github.com/golang-migrate/migrate/v4/database
+# github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef
+github.com/golang/groupcache/lru
 # github.com/gorilla/websocket v1.4.0
 github.com/gorilla/websocket
 # github.com/h2non/filetype v1.0.8
@@ -169,6 +175,7 @@ golang.org/x/image/tiff
 golang.org/x/image/tiff/lzw
 # golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 golang.org/x/net/html
+golang.org/x/net/html/charset
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html/atom
 # golang.org/x/sys v0.0.0-20190426135247-a129542de9ae
@@ -177,6 +184,22 @@ golang.org/x/sys/windows
 # golang.org/x/text v0.3.2
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
+golang.org/x/text/encoding
+golang.org/x/text/encoding/charmap
+golang.org/x/text/encoding/htmlindex
+golang.org/x/text/encoding/internal/identifier
+golang.org/x/text/encoding/internal
+golang.org/x/text/encoding/japanese
+golang.org/x/text/encoding/korean
+golang.org/x/text/encoding/simplifiedchinese
+golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/encoding/unicode
+golang.org/x/text/language
+golang.org/x/text/internal/utf8internal
+golang.org/x/text/runes
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/tag
 # golang.org/x/tools v0.0.0-20190515012406-7d7faa4812bd
 golang.org/x/tools/go/packages
 golang.org/x/tools/imports

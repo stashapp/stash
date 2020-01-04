@@ -232,6 +232,11 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     try {
       const result = await StashService.queryScrapePerformerURL(url);
       if (!result.data || !result.data.scrapePerformerURL) { return; }
+
+      // leave URL as is if not set explicitly
+      if (!result.data.scrapePerformerURL.url) {
+        result.data.scrapePerformerURL.url = url;
+      }
       updatePerformerEditState(result.data.scrapePerformerURL);
     } catch (e) {
       ErrorUtils.handle(e);
