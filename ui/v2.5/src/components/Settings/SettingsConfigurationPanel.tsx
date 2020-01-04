@@ -3,25 +3,19 @@ import {
   Button,
   Divider,
   FormGroup,
-  H1,
-  H4,
-  H6,
   InputGroup,
   Spinner,
-  Tag,
   Checkbox,
   HTMLSelect,
 } from "@blueprintjs/core";
-import React, { FunctionComponent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as GQL from "../../core/generated-graphql";
 import { StashService } from "../../core/StashService";
 import { ErrorUtils } from "../../utils/errors";
 import { ToastUtils } from "../../utils/toasts";
 import { FolderSelect } from "../Shared/FolderSelect/FolderSelect";
 
-interface IProps {}
-
-export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IProps) => {
+export const SettingsConfigurationPanel: React.FC = () => {
   // Editing config state
   const [stashes, setStashes] = useState<string[]>([]);
   const [databasePath, setDatabasePath] = useState<string | undefined>(undefined);
@@ -51,7 +45,6 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
     logLevel,
     logAccess,
     excludes,
-
   });
 
   useEffect(() => {
@@ -86,7 +79,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
   }
 
   function excludeRemoveRegex(idx: number) {
-    const newExcludes = excludes.filter((regex, i) => i!== idx );
+    const newExcludes = excludes.filter((_regex, i) => i !== idx );
 
     setExcludes(newExcludes);
   }
@@ -148,7 +141,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
     <>
       {!!error ? <h1>{error.message}</h1> : undefined}
       {(!data || !data.configuration || loading) ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
-      <H4>Library</H4>
+      <h4>Library</h4>
       <FormGroup>
         <FormGroup>
           <FormGroup
@@ -208,7 +201,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       
       <Divider />
         <FormGroup>
-          <H4>Video</H4>
+          <h4>Video</h4>
           <FormGroup 
             label="Maximum transcode size"
             helperText="Maximum size for generated transcodes"
@@ -233,7 +226,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       <Divider />
 
       <FormGroup>
-        <H4>Authentication</H4>
+        <h4>Authentication</h4>
         <FormGroup
           label="Username"
           helperText="Username to access Stash. Leave blank to disable user authentication"
@@ -249,7 +242,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       </FormGroup>
 
       <Divider />
-      <H4>Logging</H4>
+      <h4>Logging</h4>
       <FormGroup
         label="Log file"
         helperText="Path to the file to output logging to. Blank to disable file logging. Requires restart."

@@ -3,12 +3,10 @@ import {
   Checkbox,
   Divider,
   FormGroup,
-  H4,
   Spinner,
   TextArea,
   NumericInput
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import { StashService } from "../../core/StashService";
 import { ErrorUtils } from "../../utils/errors";
@@ -64,7 +62,7 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
     <>
       {!!config.error ? <h1>{config.error.message}</h1> : undefined}
       {(!config.data || !config.data.configuration || config.loading) ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
-      <H4>User Interface</H4>
+      <h4>User Interface</h4>
       <FormGroup
         label="Scene / Marker Wall"
         helperText="Configuration for wall items"

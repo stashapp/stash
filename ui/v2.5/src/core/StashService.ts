@@ -525,7 +525,7 @@ export class StashService {
     if (_.isPlainObject(value)) {
       return _.mapValues(value, StashService.nullToUndefined);
     }
-    if (_.isArray(value)) {
+    if (Array.isArray(value)) {
       return value.map(StashService.nullToUndefined);
     }
     if (value === null) {

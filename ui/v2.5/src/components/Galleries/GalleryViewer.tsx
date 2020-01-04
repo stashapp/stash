@@ -1,4 +1,3 @@
-import _ from "lodash";
 import React, { FunctionComponent, useState } from "react";
 import Lightbox from "react-images";
 import Gallery from "react-photo-gallery";

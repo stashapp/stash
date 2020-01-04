@@ -1,19 +1,8 @@
-import {
-  H1,
-  H4,
-  H6,
-  HTMLTable,
-  Spinner,
-  Tag,
-} from "@blueprintjs/core";
-import React, { FunctionComponent } from "react";
-import * as GQL from "../../core/generated-graphql";
-import { TextUtils } from "../../utils/text";
+import React from "react";
+import { Table, Spinner } from 'react-bootstrap';
 import { StashService } from "../../core/StashService";
 
-interface IProps {}
-
-export const SettingsAboutPanel: FunctionComponent<IProps> = (props: IProps) => {
+export const SettingsAboutPanel: React.FC = () => {
   const { data, error, loading } = StashService.useVersion();
 
   function maybeRenderTag() {
@@ -30,7 +19,7 @@ export const SettingsAboutPanel: FunctionComponent<IProps> = (props: IProps) => 
     if (!data || !data.version) { return; }
     return (
       <>
-      <HTMLTable>
+      <Table>
         <tbody>
           {maybeRenderTag()}
           <tr>
@@ -42,14 +31,14 @@ export const SettingsAboutPanel: FunctionComponent<IProps> = (props: IProps) => 
             <td>{data.version.build_time}</td>
           </tr>
         </tbody>  
-      </HTMLTable>
+      </Table>
       </>
     );
   }
   return (
     <>
-      <H4>About</H4>
-      {!data || loading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
+      <h4>About</h4>
+      {!data || loading ? <Spinner animation="border" variant="light" /> : undefined}
       {!!error ? <span>error.message</span> : undefined}
       {renderVersion()}
     </>

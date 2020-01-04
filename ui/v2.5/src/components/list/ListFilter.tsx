@@ -1,17 +1,8 @@
-import {
-  Button,
-  ButtonGroup,
-  HTMLSelect,
-  InputGroup,
-  Menu,
-  MenuItem,
-  Popover,
-  Tag,
-  Tooltip,
-  Slider,
-} from "@blueprintjs/core";
 import { debounce } from "lodash";
-import React, { FunctionComponent, SyntheticEvent, useEffect, useState } from "react";
+import React, { SyntheticEvent, useCallback, useState } from "react";
+import { Badge, Button, ButtonGroup, Dropdown, Form, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+
 import { Criterion } from "../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "../../models/list-filter/filter";
 import { DisplayMode } from "../../models/list-filter/types";
@@ -40,16 +31,14 @@ interface IListFilterProps {
 
 const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
 
-export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilterProps) => {
-  let searchCallback: any;
+export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) => {
+  const searchCallback = useCallback(
+    debounce((event: any) => {
+      props.onChangeQuery(event.target.value);
+    }, 500), [props.onChangeQuery]
+  );
 
   const [editingCriterion, setEditingCriterion] = useState<Criterion | undefined>(undefined);
-
-  useEffect(() => {
-    searchCallback = debounce((event: any) => {
-      props.onChangeQuery(event.target.value);
-    }, 500);
-  });
 
   function onChangePageSize(event: SyntheticEvent<HTMLSelectElement>) {
     const val = event!.currentTarget!.value;
@@ -99,16 +88,16 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
 
   function renderSortByOptions() {
     return props.filter.sortByOptions.map((option) => (
-      <MenuItem onClick={onChangeSortBy} text={option} key={option} />
+      <Dropdown.Item onClick={onChangeSortBy} key={option}>{option}</Dropdown.Item>
     ));
   }
 
   function renderDisplayModeOptions() {
     function getIcon(option: DisplayMode) {
       switch (option) {
-        case DisplayMode.Grid: return "grid-view";
+        case DisplayMode.Grid: return "th-large";
         case DisplayMode.List: return "list";
-        case DisplayMode.Wall: return "symbol-square";
+        case DisplayMode.Wall: return "square";
       }
     }
     function getLabel(option: DisplayMode) {
@@ -119,29 +108,30 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
       }
     }
     return props.filter.displayModeOptions.map((option) => (
-      <Tooltip content={getLabel(option)} hoverOpenDelay={200}>
+      <OverlayTrigger overlay={<Tooltip id="display-mode-tooltip">{getLabel(option)}</Tooltip>}>
         <Button
           key={option}
           active={props.filter.displayMode === option}
           onClick={() => onChangeDisplayMode(option)}
-          icon={getIcon(option)}
-        />
-      </Tooltip>
+        >
+          <FontAwesomeIcon icon={getIcon(option)} />
+        </Button>
+      </OverlayTrigger>
     ));
   }
 
   function renderFilterTags() {
     return props.filter.criteria.map((criterion) => (
-      <Tag
-        key={criterion.getId()}
+      <Badge
         className="tag-item"
-        itemID={criterion.getId()}
-        interactive={true}
-        onRemove={() => onRemoveCriterionTag(criterion)}
+        variant="secondary"
         onClick={() => onClickCriterionTag(criterion)}
       >
         {criterion.getLabel()}
-      </Tag>
+        <Button onClick={() => onRemoveCriterionTag(criterion)}>
+          <FontAwesomeIcon icon="times" />
+        </Button>
+      </Badge>
     ));
   }
 
@@ -159,45 +149,40 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
 
   function renderSelectAll() {
     if (props.onSelectAll) {
-      return <MenuItem onClick={() => onSelectAll()} text="Select All" />;
+      return <Dropdown.Item onClick={() => onSelectAll()}>Select All</Dropdown.Item>;
     }
   }
 
   function renderSelectNone() {
     if (props.onSelectNone) {
-      return <MenuItem onClick={() => onSelectNone()} text="Select None" />;
+      return <Dropdown.Item onClick={() => onSelectNone()}>Select None</Dropdown.Item>;
     }
   }
 
   function renderMore() {
-    let options = [];
-    options.push(renderSelectAll());
-    options.push(renderSelectNone());
+    let options = [
+      renderSelectAll(),
+      renderSelectNone()
+    ];
 
     if (props.otherOperations) {
       props.otherOperations.forEach((o) => {
-        options.push(<MenuItem onClick={o.onClick} text={o.text} />);
+        options.push(<Dropdown.Item onClick={o.onClick}>{o.text}</Dropdown.Item>);
       });
     }
 
-    options = options.filter((o) => !!o);
-
-    let menuItems = options as JSX.Element[];
-
-    function renderMoreOptions() {
+    if (options.length > 0) {
       return (
-        <>
-        {menuItems}
-        </>
-      )
-    }
-
-    if (menuItems.length > 0) {
-      return (
-        <Popover position="bottom">
-          <Button icon="more"/>
-          <Menu>{renderMoreOptions()}</Menu>
-        </Popover>
+        <Dropdown>
+          <Dropdown.Toggle variant="secondary" id="more-menu">
+            <Button>
+              <FontAwesomeIcon icon="ellipsis-h" />
+            </Button>
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            {options}
+          </Dropdown.Menu>
+        </Dropdown>
       );
     }
   }
@@ -212,13 +197,11 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
     if (props.onChangeZoom) {
       return (
         <span className="zoom-slider">
-          <Slider 
+          <Form.Control
+            type="range"
             min={0}
-            value={props.zoomIndex}
-            initialValue={props.zoomIndex}
             max={3}
-            labelRenderer={false}
-            onChange={(v) => onChangeZoom(v)}
+            onChange={(event: any) => onChangeZoom(Number.parseInt(event.target.value))}
           />
       </span>
       );
@@ -229,37 +212,37 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
     return (
       <>
         <div className="filter-container">
-          <InputGroup
-            large={true}
+          <Form.Control
             placeholder="Search..."
-            defaultValue={props.filter.searchTerm}
+            value={props.filter.searchTerm}
             onChange={onChangeQuery}
             className="filter-item"
           />
-          <HTMLSelect
-            large={true}
-            style={{flexBasis: "min-content"}}
-            options={PAGE_SIZE_OPTIONS}
+          <Form.Control
+            as="select"
             onChange={onChangePageSize}
-            value={props.filter.itemsPerPage}
+            value={props.filter.itemsPerPage.toString()}
             className="filter-item"
-          />
+          >
+            { PAGE_SIZE_OPTIONS.map(s => <option value={s}>{s}</option>) }
+          </Form.Control>
           <ButtonGroup className="filter-item">
-            <Popover position="bottom">
-              <Button large={true}>{props.filter.sortBy}</Button>
-              <Menu>{renderSortByOptions()}</Menu>
-            </Popover>
-            
-            <Tooltip 
-              content={props.filter.sortDirection === "asc" ? "Ascending" : "Descending"}
-              hoverOpenDelay={200}
-            >
-              <Button
-                rightIcon={props.filter.sortDirection === "asc" ? "caret-up" : "caret-down"}
-                onClick={onChangeSortDirection}
-              />
-            </Tooltip>
-            
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="more-menu">
+                <Button>{props.filter.sortBy}</Button>
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {renderSortByOptions()}
+              </Dropdown.Menu>
+            </Dropdown>
+
+            <OverlayTrigger overlay={
+              <Tooltip id="sort-direction-tooltip">{props.filter.sortDirection === "asc" ? "Ascending" : "Descending"}</Tooltip>
+            }>
+              <Button onClick={onChangeSortDirection}>
+                <FontAwesomeIcon icon={props.filter.sortDirection === "asc" ? "caret-up" : "caret-down"} />
+              </Button>
+            </OverlayTrigger>
           </ButtonGroup>
 
           <AddFilter

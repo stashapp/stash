@@ -1,4 +1,3 @@
-import { isArray } from "util";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { ILabeledId, ILabeledValue } from "../types";
 
@@ -94,7 +93,7 @@ export abstract class Criterion<Option = any, Value = any> {
     let valueString: string;
     if (this.modifier === CriterionModifier.IsNull || this.modifier === CriterionModifier.NotNull) {
       valueString = "";
-    } else if (isArray(this.value) && this.value.length > 0) {
+    } else if (Array.isArray(this.value) && this.value.length > 0) {
       let items = this.value;
       if ((this.value as ILabeledId[])[0].label) {
         items = this.value.map((item) => item.label) as any;
@@ -103,7 +102,7 @@ export abstract class Criterion<Option = any, Value = any> {
     } else if (typeof this.value === "string") {
       valueString = this.value;
     } else {
-      valueString = this.value.toString();
+      valueString = (this.value as any).toString();
     }
 
     return `${Criterion.getLabel(this.type)} ${modifierString} ${valueString}`;
@@ -115,7 +114,7 @@ export abstract class Criterion<Option = any, Value = any> {
 
   public set(modifier: CriterionModifier, value: Value) {
     this.modifier = modifier;
-    if (isArray(this.value)) {
+    if (Array.isArray(this.value)) {
       this.value.push(value);
     } else {
       this.value = value;

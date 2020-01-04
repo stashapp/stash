@@ -1,4 +1,3 @@
-import _ from "lodash";
 import React from "react";
 import { Table } from 'react-bootstrap';
 import { QueryHookResult } from "react-apollo-hooks";

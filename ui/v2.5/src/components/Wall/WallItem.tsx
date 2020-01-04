@@ -116,7 +116,7 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
             loop={true}
             ref={videoHoverHook.videoEl}
           />
-          <img src={previewPath || screenshotPath} onError={() => previewNotFound()} />
+          <img alt="Preview" src={previewPath || screenshotPath} onError={() => previewNotFound()} />
           {showTextContainer ?
             <div className="scene-wall-item-text-container">
               <div style={{lineHeight: 1}}>

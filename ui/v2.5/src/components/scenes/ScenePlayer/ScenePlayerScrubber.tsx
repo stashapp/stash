@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { CSSProperties, FunctionComponent, RefObject, useEffect, useRef, useState } from "react";
+import React, { CSSProperties, useEffect, useRef, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { TextUtils } from "../../../utils/text";
 import "./ScenePlayerScrubber.scss";
@@ -20,7 +20,7 @@ interface ISceneSpriteItem {
   h: number;
 }
 
-export const ScenePlayerScrubber: FunctionComponent<IScenePlayerScrubberProps> = (props: IScenePlayerScrubberProps) => {
+export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: IScenePlayerScrubberProps) => {
   const contentEl = useRef<HTMLDivElement>(null);
   const positionIndicatorEl = useRef<HTMLDivElement>(null);
   const scrubberSliderEl = useRef<HTMLDivElement>(null);

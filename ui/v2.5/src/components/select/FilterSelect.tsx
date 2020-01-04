@@ -1,6 +1,6 @@
 import * as React from "react";
+import { Button } from 'react-bootstrap';
 
-import { Button, MenuItem } from "@blueprintjs/core";
 import { ISelectProps, ItemPredicate, ItemRenderer, Select } from "@blueprintjs/select";
 import * as GQL from "../../core/generated-graphql";
 import { StashService } from "../../core/StashService";
@@ -91,7 +91,7 @@ export const FilterSelect: React.FunctionComponent<IProps> = (props: IProps) => 
   };
 
   function onItemSelect(item: ValidTypes | undefined) {
-    if (item && item.id == "0") {
+    if (item && item.id === "0") {
       item = undefined;
     }
 
@@ -111,7 +111,7 @@ export const FilterSelect: React.FunctionComponent<IProps> = (props: IProps) => 
       popoverProps={{position: "bottom"}}
       {...props}
     >
-      <Button fill={true} text={buttonText} />
+    <Button>{buttonText}</Button>
     </InternalSelect>
   );
 };
