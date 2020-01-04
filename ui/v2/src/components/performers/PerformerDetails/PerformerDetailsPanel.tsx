@@ -354,7 +354,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
   function maybeRenderAliases() {
     if (props.isEditing) {
       return TableUtils.renderInputGroup(
-        {title: "Aliases", value: aliases, isEditing: !!props.isEditing, placeholder: "Aliases", onChange: setName});
+        {title: "Aliases", value: aliases, isEditing: !!props.isEditing, placeholder: "Aliases", onChange: setAliases});
     }
   }
 
