@@ -19,24 +19,27 @@ type scraperAction string
 const (
 	scraperActionScript scraperAction = "script"
 	scraperActionStash  scraperAction = "stash"
+	scraperActionXPath  scraperAction = "scrapeXPath"
 )
 
 var allScraperAction = []scraperAction{
 	scraperActionScript,
 	scraperActionStash,
+	scraperActionXPath,
 }
 
 func (e scraperAction) IsValid() bool {
 	switch e {
-	case scraperActionScript:
+	case scraperActionScript, scraperActionStash, scraperActionXPath:
 		return true
 	}
 	return false
 }
 
 type scraperTypeConfig struct {
-	Action scraperAction `yaml:"action"`
-	Script []string      `yaml:"script,flow"`
+	Action  scraperAction `yaml:"action"`
+	Script  []string      `yaml:"script,flow"`
+	Scraper string        `yaml:"scraper"`
 
 	scraperConfig *scraperConfig
 }
@@ -96,6 +99,8 @@ type scrapePerformerByURLConfig struct {
 func (c *scrapePerformerByURLConfig) resolveFn() {
 	if c.Action == scraperActionScript {
 		c.performScrape = scrapePerformerURLScript
+	} else if c.Action == scraperActionXPath {
+		c.performScrape = scrapePerformerURLXpath
 	}
 }
 
@@ -124,6 +129,8 @@ type scrapeSceneByURLConfig struct {
 func (c *scrapeSceneByURLConfig) resolveFn() {
 	if c.Action == scraperActionScript {
 		c.performScrape = scrapeSceneURLScript
+	} else if c.Action == scraperActionXPath {
+		c.performScrape = scrapeSceneURLXPath
 	}
 }
 
@@ -135,7 +142,9 @@ type scraperConfig struct {
 	PerformerByURL      []*scrapePerformerByURLConfig `yaml:"performerByURL"`
 	SceneByFragment     *sceneByFragmentConfig        `yaml:"sceneByFragment"`
 	SceneByURL          []*scrapeSceneByURLConfig     `yaml:"sceneByURL"`
-	StashServer         *stashServer                  `yaml:"stashServer"`
+
+	StashServer   *stashServer  `yaml:"stashServer"`
+	XPathScrapers xpathScrapers `yaml:"xPathScrapers"`
 }
 
 func loadScraperFromYAML(path string) (*scraperConfig, error) {
