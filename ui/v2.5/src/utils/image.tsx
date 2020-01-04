@@ -15,7 +15,7 @@ export class ImageUtils {
   }
     
   public static pasteImage(e : any, onLoadEnd: (this: FileReader) => any) {
-    if (e.clipboardData.files.length == 0) {
+    if (e.clipboardData.files.length === 0) {
       return;
     }
     

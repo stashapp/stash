@@ -1,4 +1,3 @@
-import _ from "lodash";
 import React, { FunctionComponent, useState } from "react";
 import * as GQL from "../../core/generated-graphql";
 import "./Wall.scss";

@@ -4,21 +4,16 @@ import {
   Checkbox,
   Divider,
   FormGroup,
-  H4,
-  AnchorButton,
   ProgressBar,
-  H5,
 } from "@blueprintjs/core";
-import React, { FunctionComponent, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { StashService } from "../../../core/StashService";
 import { ErrorUtils } from "../../../utils/errors";
 import { ToastUtils } from "../../../utils/toasts";
 import { GenerateButton } from "./GenerateButton";
 import { Link } from "react-router-dom";
 
-interface IProps {}
-
-export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => {
+export const SettingsTasksPanel: React.FC = () => {
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
@@ -173,7 +168,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
     return (
       <>
       <FormGroup>
-        <H5>Status: {status}</H5>
+        <h5>Status: {status}</h5>
         {!!status && status !== "Idle" ? <ProgressBar value={progress}/> : undefined}
       </FormGroup>
       {maybeRenderStop()}
@@ -186,13 +181,13 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
       {renderImportAlert()}
       {renderCleanAlert()}
 
-      <H4>Running Jobs</H4>
+      <h4>Running Jobs</h4>
 
       {renderJobStatus()}
 
       <Divider/>
 
-      <H4>Library</H4>
+      <h4>Library</h4>
       <FormGroup
         helperText="Scan for new content and add it to the database."
         labelFor="scan"
@@ -208,7 +203,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
 
       <Divider />
 
-      <H4>Auto Tagging</H4>
+      <h4>Auto Tagging</h4>
 
       <FormGroup
         helperText="Auto-tag content based on filenames."
@@ -240,7 +235,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
       </FormGroup>
       <Divider />
 
-      <H4>Generated Content</H4>
+      <h4>Generated Content</h4>
       <GenerateButton />
       <FormGroup
         helperText="Check for missing files and remove them from the database. This is a destructive action."
@@ -251,7 +246,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
       </FormGroup>
       <Divider />
 
-      <H4>Metadata</H4>
+      <h4>Metadata</h4>
       <FormGroup
         helperText="Export the database content into JSON format"
         labelFor="export"

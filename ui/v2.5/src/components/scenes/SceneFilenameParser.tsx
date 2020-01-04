@@ -431,19 +431,19 @@ export const SceneFilenameParser: React.FC = () => {
       return !r.studioId.set;
     });
 
-    if (newAllTitleSet != allTitleSet) {
+    if (newAllTitleSet !== allTitleSet) {
       setAllTitleSet(newAllTitleSet);
     }
-    if (newAllDateSet != allDateSet) {
+    if (newAllDateSet !== allDateSet) {
       setAllDateSet(newAllDateSet);
     }
-    if (newAllPerformerSet != allPerformerSet) {
+    if (newAllPerformerSet !== allPerformerSet) {
       setAllTagSet(newAllPerformerSet);
     }
-    if (newAllTagSet != allTagSet) {
+    if (newAllTagSet !== allTagSet) {
       setAllTagSet(newAllTagSet);
     }
-    if (newAllStudioSet != allStudioSet) {
+    if (newAllStudioSet !== allStudioSet) {
       setAllStudioSet(newAllStudioSet);
     }
   }, [parserResult]);
@@ -927,7 +927,7 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   function renderTable() {
-    if (parserResult.length == 0) { return undefined; }
+    if (parserResult.length === 0) { return undefined; }
 
     return (
       <>

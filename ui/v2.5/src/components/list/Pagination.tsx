@@ -1,5 +1,5 @@
-import { Button, ButtonGroup } from "@blueprintjs/core";
 import React from "react";
+import { Button, ButtonGroup } from 'react-bootstrap';
 
 interface IPaginationProps {
   itemsPerPage: number;
@@ -36,28 +36,24 @@ export class Pagination extends React.Component<IPaginationProps, IPaginationSta
     if (!this.state || !this.state.pages || this.state.pages.length <= 1) { return null; }
 
     return (
-      <ButtonGroup large={true} className="filter-container">
+      <ButtonGroup className="filter-container">
         <Button
-          text="First"
           disabled={this.props.currentPage === 1}
           onClick={() => this.setPage(1)}
-        />
+        >First</Button>
         <Button
-          text="Previous"
           disabled={this.props.currentPage === 1}
           onClick={() => this.setPage(this.props.currentPage - 1)}
-        />
+        >Previous</Button>
         {this.renderPageButtons()}
         <Button
-          text="Next"
           disabled={this.props.currentPage === this.state.totalPages}
           onClick={() => this.setPage(this.props.currentPage + 1)}
-        />
+        >Next</Button>
         <Button
-          text="Last"
           disabled={this.props.currentPage === this.state.totalPages}
           onClick={() => this.setPage(this.state.totalPages)}
-        />
+        >Last</Button>
       </ButtonGroup>
     );
   }
@@ -66,10 +62,9 @@ export class Pagination extends React.Component<IPaginationProps, IPaginationSta
     return this.state.pages.map((page: number, index: number) => (
       <Button
         key={index}
-        text={page}
         active={this.props.currentPage === page}
         onClick={() => this.setPage(page)}
-      />
+      >{page}</Button>
     ));
   }
 

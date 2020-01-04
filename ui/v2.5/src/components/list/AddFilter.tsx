@@ -1,15 +1,7 @@
-import {
-  Button,
-  Classes,
-  Dialog,
-  FormGroup,
-  HTMLSelect,
-  InputGroup,
-  Tooltip,
-} from "@blueprintjs/core";
 import _ from "lodash";
-import React, { FunctionComponent, useEffect, useRef, useState } from "react";
-import { isArray } from "util";
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Form, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { CriterionModifier } from "../../core/generated-graphql";
 import { Criterion, CriterionType } from "../../models/list-filter/criteria/criterion";
 import { NoneCriterion } from "../../models/list-filter/criteria/none";
@@ -27,8 +19,8 @@ interface IAddFilterProps {
   editingCriterion?: Criterion;
 }
 
-export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterProps) => {
-  const singleValueSelect = useRef<HTMLSelect>(null);
+export const AddFilter: React.FC<IAddFilterProps> = (props: IAddFilterProps) => {
+  const defaultValue= useRef<string|number|undefined>();
 
   const [isOpen, setIsOpen] = useState(false);
   const [criterion, setCriterion] = useState<Criterion<any, any>>(new NoneCriterion());
@@ -71,8 +63,8 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
   }
 
   function onAddFilter() {
-    if (!isArray(criterion.value) && !!singleValueSelect.current) {
-      const value = singleValueSelect.current.props.defaultValue;
+    if (!Array.isArray(criterion.value) && defaultValue.current) {
+      const value = defaultValue.current;
       if (criterion.options && (value === undefined || value === "" || typeof value === "number")) { 
         criterion.value = criterion.options[0]; 
       } else if (typeof value === "number" && value === undefined) {
@@ -101,11 +93,15 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
       if (criterion.modifierOptions.length === 0) { return; }
       return (
         <div>
-          <HTMLSelect
-            options={criterion.modifierOptions}
+          <Form.Control
+            as="select"
             onChange={onChangedModifierSelect}
-            defaultValue={criterion.modifier}
-          />
+            value={criterion.modifier}
+          >
+            { criterion.modifierOptions.map(c => (
+                <option value={c.value}>{c.label}</option>
+            ))}
+          </Form.Control>
         </div>
       );
     }
@@ -116,7 +112,7 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
         return;
       }
 
-      if (isArray(criterion.value)) {
+      if (Array.isArray(criterion.value)) {
         let type: "performers" | "studios" | "tags" | "" = "";
         if (criterion instanceof PerformersCriterion) {
           type = "performers";
@@ -140,21 +136,25 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
         }
       } else {
         if (criterion.options) {
+          defaultValue.current = criterion.value;
           return (
-            <HTMLSelect
-              ref={singleValueSelect}
-              options={criterion.options}
+            <Form.Control
+              as="select"
               onChange={onChangedSingleSelect}
-              defaultValue={criterion.value}
-            />
+              value={criterion.value}
+            >
+              { criterion.options.map(c => (
+                  <option value={c}>{c}</option>
+              ))}
+            </Form.Control>
           );
         } else {
           return (
-            <InputGroup
+            <Form.Control
               type={criterion.inputType}
               onChange={onChangedInput}
               onBlur={onBlurInput}
-              defaultValue={criterion.value ? criterion.value : ""}
+              value={criterion.value || ""}
             />
           )
         }
@@ -162,57 +162,62 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
     }
     return (
       <>
-        <FormGroup>
+        <Form.Group>
           {renderModifier()}
-        </FormGroup>
-        <FormGroup>
+        </Form.Group>
+        <Form.Group>
           {renderSelect()}
-        </FormGroup>
+        </Form.Group>
       </>
     );
   };
 
   function maybeRenderFilterSelect() {
-    if (!!props.editingCriterion) { return; }
+    if (props.editingCriterion) { return; }
     return (
-      <FormGroup label="Filter">
-        <HTMLSelect
-          style={{flexBasis: "min-content"}}
-          options={props.filter.criterionOptions}
+      <Form.Group controlId="filter">
+        <Form.Label>Filter</Form.Label>
+        <Form.Control 
+          as="select"
           onChange={onChangedCriteriaType}
-          defaultValue={criterion.type}
-        />
-      </FormGroup>
+          value={criterion.type}>
+          { props.filter.criterionOptions.map(c => (
+              <option value={c.value}>{c.label}</option>
+          ))}
+        </Form.Control>
+      </Form.Group>
     );
   }
 
   const title = !props.editingCriterion ? "Add Filter" : "Update Filter";
   return (
     <>
-      <Tooltip
-        hoverOpenDelay={200}
-        content="Filter"
+      <OverlayTrigger
+        placement="top"
+        overlay={<Tooltip id="filter-tooltip">Filter</Tooltip>}
       >
         <Button 
-          icon="filter"
           onClick={() => onToggle()} 
           active={isOpen} 
-          large={true}
         >
+          <FontAwesomeIcon icon="filter" />
         </Button>
-      </Tooltip>
+      </OverlayTrigger>
       
-      <Dialog isOpen={isOpen} onClose={() => onToggle()} title={title}>
-        <div className="dialog-content">
-          {maybeRenderFilterSelect()}
-          {maybeRenderFilterPopoverContents()}
-        </div>
-        <div className={Classes.DIALOG_FOOTER}>
-          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <Button onClick={onAddFilter} disabled={criterion.type === "none"}>{title}</Button>
+      <Modal
+        show={isOpen}
+        onHide={() => onToggle()}>
+        <Modal.Header>{title}</Modal.Header>
+        <Modal.Body>
+          <div className="dialog-content">
+            {maybeRenderFilterSelect()}
+            {maybeRenderFilterPopoverContents()}
           </div>
-        </div>
-      </Dialog>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={onAddFilter} disabled={criterion.type === "none"}>{title}</Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };

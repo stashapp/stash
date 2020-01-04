@@ -1,4 +1,3 @@
-import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { Spinner } from 'react-bootstrap';
 import * as GQL from "../../core/generated-graphql";
