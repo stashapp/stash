@@ -295,7 +295,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
         </td>
         <td>
           {EditableTextUtils.renderInputGroup({
-            value: url, isEditing: !!props.isEditing, onChange: setUrl, placeholder: "URL"
+            value: url, asURL: true, isEditing: !!props.isEditing, onChange: setUrl, placeholder: "URL"
           })}
         </td>
       </tr>
@@ -344,38 +344,32 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
     );
   }
 
+  function maybeRenderName() {
+    if (props.isEditing) {
+      return TableUtils.renderInputGroup(
+        {title: "Name", value: name, isEditing: !!props.isEditing, placeholder: "Name", onChange: setName});
+    }
+  }
+
+  function maybeRenderAliases() {
+    if (props.isEditing) {
+      return TableUtils.renderInputGroup(
+        {title: "Aliases", value: aliases, isEditing: !!props.isEditing, placeholder: "Aliases", onChange: setName});
+    }
+  }
+
+  const twitterPrefix = "https://twitter.com/";
+  const instagramPrefix = "https://www.instagram.com/";
+
   return (
     <>
       {renderDeleteAlert()}
       {renderScraperDialog()}
-      <h1 className="bp3-heading">
-        <EditableText
-          disabled={!props.isEditing}
-          value={name}
-          placeholder="Name"
-          onChange={(value) => setName(value)}
-        />
-      </h1>
-      <h6 className="bp3-heading">
-        <FormGroup className="aliases-field" inline={true} label="Aliases:">
-          {EditableTextUtils.renderInputGroup({
-            value: aliases, isEditing: !!props.isEditing, placeholder: "Aliases", onChange: setAliases, asLabel: true
-          })}
-        </FormGroup>
-      </h6>
-      <div>
-        <span style={{fontWeight: 300}}>Favorite:</span>
-        <Button
-          icon="heart"
-          disabled={!props.isEditing}
-          className={favorite ? "favorite" : undefined}
-          onClick={() => setFavorite(!favorite)}
-          minimal={true}
-        />
-      </div>
-
+      
       <HTMLTable id="performer-details" style={{width: "100%"}}>
         <tbody>
+          {maybeRenderName()}
+          {maybeRenderAliases()}
           {TableUtils.renderInputGroup(
             {title: "Birthdate (YYYY-MM-DD)", value: birthdate, isEditing: !!props.isEditing, onChange: setBirthdate})}
           {renderEthnicity()}
@@ -397,9 +391,9 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
             {title: "Piercings", value: piercings, isEditing: !!props.isEditing, onChange: setPiercings})}
           {renderURLField()}
           {TableUtils.renderInputGroup(
-            {title: "Twitter", value: twitter, isEditing: !!props.isEditing, onChange: setTwitter})}
+            {title: "Twitter", value: twitter, asURL: true, urlPrefix: twitterPrefix, isEditing: !!props.isEditing, onChange: setTwitter})}
           {TableUtils.renderInputGroup(
-            {title: "Instagram", value: instagram, isEditing: !!props.isEditing, onChange: setInstagram})}
+            {title: "Instagram", value: instagram, asURL: true, urlPrefix: instagramPrefix, isEditing: !!props.isEditing, onChange: setInstagram})}
           {renderImageInput()}
         </tbody>
       </HTMLTable>

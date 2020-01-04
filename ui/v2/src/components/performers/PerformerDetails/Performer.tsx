@@ -2,6 +2,9 @@ import {
   Spinner,
   Tabs,
   Tab,
+  Button,
+  AnchorButton,
+  IconName,
 } from "@blueprintjs/core";
 import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
@@ -12,6 +15,7 @@ import { ErrorUtils } from "../../../utils/errors";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
+import { TextUtils } from "../../../utils/text";
 
 interface IPerformerProps extends IBaseProps {}
 
@@ -102,8 +106,8 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
             large={true}
           >
             <Tab id="performer-details-panel" title="Details" panel={<PerformerDetailsPanel performer={performer} isEditing={false}/>} />
-            <Tab id="performer-edit-panel" title="Edit" panel={renderEditPanel()} />
             <Tab id="performer-scenes-panel" title="Scenes" panel={<PerformerScenesPanel performer={performer} base={props} />} />
+            <Tab id="performer-edit-panel" title="Edit" panel={renderEditPanel()} />
             <Tab id="performer-operations-panel" title="Operations" panel={<PerformerOperationsPanel performer={performer} />} />
           </Tabs>
         </>
@@ -113,14 +117,110 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     }
   }
 
-  return (
-    <>
+  function maybeRenderAge() {
+    if (performer && performer.birthdate) {
+      // calculate the age from birthdate. In future, this should probably be
+      // provided by the server
+      return (
+        <>
+          <div>
+            <span className="age">{TextUtils.age(performer.birthdate)}</span>
+            <span className="age-tail"> years old</span>
+          </div>
+        </>
+      );
+    }
+  }
+
+  function maybeRenderAliases() {
+    if (performer && performer.aliases) {
+      return (
+        <>
+          <div>
+            <span className="alias-head">Also known as </span>
+            <span className="alias">{performer.aliases}</span>
+          </div>
+        </>
+      );
+    }
+  }
+
+  function setFavorite(v : boolean) {
+    performer.favorite = v;
+    onSave(performer);
+  }
+
+  function renderIcons() {
+    function maybeRenderURL(url?: string, icon?: IconName) {
+      if (performer.url) {
+        if (!icon) {
+          icon = "link";
+        }
+
+        return (
+          <>
+            <AnchorButton
+              icon={icon}
+              href={performer.url}
+              minimal={true}
+            />
+          </>
+        )
+      }
+    }
+
+    return (
+      <>
+        <span className="name-icons">
+          <Button
+            icon="heart"
+            className={performer.favorite ? "favorite" : "not-favorite"}
+            onClick={() => setFavorite(!performer.favorite)}
+            minimal={true}
+          />
+          {maybeRenderURL(performer.url)}
+          {/* TODO - render instagram and twitter links with icons */}
+        </span>
+      </>
+    );
+  }
+
+  function renderNewView() {
+    return (
       <div className="columns is-multiline no-spacing">
         <div className="column is-half details-image-container">
           <img className="performer" src={imagePreview} />
         </div>
         <div className="column is-half details-detail-container">
           {renderTabs()}
+        </div>
+      </div>
+    );
+  }
+
+  if (isNew) {
+    return renderNewView();
+  }
+
+  return (
+    <>
+      <div id="performer-page">
+        <div className="details-image-container">
+          <img className="performer" src={imagePreview} />
+        </div>
+        <div className="performer-head">
+          <h1 className="bp3-heading">
+            {performer.name}
+            {renderIcons()}
+          </h1>
+          {maybeRenderAliases()}
+          {maybeRenderAge()}
+        </div>
+        
+        <div className="performer-body">
+          <div className="details-detail-container">
+            {renderTabs()}
+          </div>
         </div>
       </div>
     </>

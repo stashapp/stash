@@ -27,8 +27,22 @@ export class EditableTextUtils {
     isEditing: boolean,
     placeholder?: string,
     asLabel?: boolean,
+    asURL?: boolean,
+    urlPrefix?: string,
     onChange: ((value: string) => void),
   }) {
+    function maybeRenderURL() {
+      if (options.asURL) {
+        let url = options.value;
+        if (options.urlPrefix) {
+          url = options.urlPrefix + url;
+        }
+        return <a href={url}>{options.value}</a>
+      } else {
+        return options.value;
+      }
+    }
+
     let element: JSX.Element;
     if (options.isEditing) {
       element = (
@@ -40,9 +54,9 @@ export class EditableTextUtils {
       );
     } else {
       if (options.asLabel) {
-        element = <Label>{options.value}</Label>;
+        element = <Label>{maybeRenderURL()}</Label>;
       } else {
-        element = <span>{options.value}</span>;
+        element = <span>{maybeRenderURL()}</span>;
       }
     }
     return element;

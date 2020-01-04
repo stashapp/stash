@@ -54,6 +54,8 @@ export class TableUtils {
     placeholder?: string,
     value: string | undefined,
     isEditing: boolean,
+    asURL?: boolean,
+    urlPrefix?: string,
     onChange: ((value: string) => void),
   }) {
     let optionsCopy = _.clone(options);
