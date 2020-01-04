@@ -16,6 +16,7 @@ import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 import { TextUtils } from "../../../utils/text";
+import Lightbox from "react-images";
 
 interface IPerformerProps extends IBaseProps {}
 
@@ -25,6 +26,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
   // Performer state
   const [performer, setPerformer] = useState<Partial<GQL.PerformerDataFragment>>({});
   const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
+  const [lightboxIsOpen, setLightboxIsOpen] = useState<boolean>(false);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -198,6 +200,16 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     );
   }
 
+  const photos = [{src: imagePreview || "", caption: "Image"}];
+
+  function openLightbox() {
+    setLightboxIsOpen(true);
+  }
+
+  function closeLightbox() {
+    setLightboxIsOpen(false);
+  }
+
   if (isNew) {
     return renderNewView();
   }
@@ -206,7 +218,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     <>
       <div id="performer-page">
         <div className="details-image-container">
-          <img className="performer" src={imagePreview} />
+          <img className="performer" src={imagePreview} onClick={openLightbox} />
         </div>
         <div className="performer-head">
           <h1 className="bp3-heading">
@@ -223,6 +235,14 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
           </div>
         </div>
       </div>
+      <Lightbox
+        images={photos}
+        onClose={closeLightbox}
+        currentImage={0}
+        isOpen={lightboxIsOpen}
+        onClickImage={() => window.open(imagePreview, "_blank")}
+        width={9999}
+      />
     </>
   );
 };
