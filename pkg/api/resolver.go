@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
-
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -114,6 +114,21 @@ func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
 		Hash:      hash,
 		BuildTime: buildtime,
 	}, nil
+}
+
+//Gets latest version (git shorthash commit for now)
+func (r *queryResolver) Latestversion(ctx context.Context) (*models.ShortVersion, error) {
+	ver, url, err := GetLatestVersion(true)
+	if err == nil {
+		logger.Infof("Retrieved latest hash: %s", ver)
+	} else {
+		logger.Errorf("Error while retrieving latest hash: %s", err)
+	}
+
+	return &models.ShortVersion{
+		Shorthash: ver,
+		URL:       url,
+	}, err
 }
 
 // Get scene marker tags which show up under the video.

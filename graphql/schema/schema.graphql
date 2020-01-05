@@ -96,6 +96,9 @@ type Query {
 
   # Version
   version: Version!
+  
+  # LatestVersion
+  latestversion: ShortVersion!
 }
 
 type Mutation {
