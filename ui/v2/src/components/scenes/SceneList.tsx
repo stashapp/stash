@@ -12,7 +12,11 @@ import { SceneListTable } from "./SceneListTable";
 import { SceneSelectedOptions } from "./SceneSelectedOptions";
 import { StashService } from "../../core/StashService";
 
-interface ISceneListProps extends IBaseProps {}
+interface ISceneListProps {
+  base : IBaseProps
+  subComponent?: boolean
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+}
 
 export const SceneList: FunctionComponent<ISceneListProps> = (props: ISceneListProps) => {
   const otherOperations = [
@@ -24,7 +28,9 @@ export const SceneList: FunctionComponent<ISceneListProps> = (props: ISceneListP
   
   const listData = ListHook.useList({
     filterMode: FilterMode.Scenes,
-    props,
+    props: props.base,
+    subComponent: props.subComponent,
+    filterHook: props.filterHook,
     zoomable: true,
     otherOperations: otherOperations,
     renderContent,
@@ -44,7 +50,7 @@ export const SceneList: FunctionComponent<ISceneListProps> = (props: ISceneListP
       if (singleResult && singleResult.data && singleResult.data.findScenes && singleResult.data.findScenes.scenes.length === 1) {
         let id = singleResult!.data!.findScenes!.scenes[0].id;
         // navigate to the scene player page
-        props.history.push("/scenes/" + id + "?autoplay=true");
+        props.base.history.push("/scenes/" + id + "?autoplay=true");
       }
     }
   }
