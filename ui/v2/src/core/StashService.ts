@@ -261,7 +261,6 @@ export class StashService {
     "allPerformers"
   ];
 
-  }
   
   public static usePerformerCreate() {
     return GQL.usePerformerCreate({ 
