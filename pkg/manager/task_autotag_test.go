@@ -21,7 +21,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-const testName = "Foo Bar"
+const testName = "Foo's Bar"
 const testExtension = ".mp4"
 
 var testSeparators = []string{
