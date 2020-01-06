@@ -42,9 +42,11 @@ func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error)
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scenes (checksum, path, title, details, url, date, rating, size, duration, video_codec,
-                    			    audio_codec, width, height, framerate, bitrate, studio_id, created_at, updated_at)
+                    			    audio_codec, width, height, framerate, bitrate, studio_id, cover,
+                    				created_at, updated_at)
 				VALUES (:checksum, :path, :title, :details, :url, :date, :rating, :size, :duration, :video_codec,
-				        :audio_codec, :width, :height, :framerate, :bitrate, :studio_id, :created_at, :updated_at)
+				        :audio_codec, :width, :height, :framerate, :bitrate, :studio_id, :cover,
+				        :created_at, :updated_at)
 		`,
 		newScene,
 	)

@@ -391,6 +391,8 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			if len(coverImageData) > 0 {
 				if err = SetSceneScreenshot(mappingJSON.Checksum, coverImageData); err != nil {
 					logger.Warnf("[scenes] <%s> failed to create cover image: %s", mappingJSON.Checksum, err.Error())
+				} else {
+					newScene.Cover = coverImageData
 				}
 			}
 		}
