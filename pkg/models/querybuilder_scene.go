@@ -293,7 +293,9 @@ func getMultiCriterionClause(table string, joinTable string, joinTableField stri
 
 func (qb *SceneQueryBuilder) QueryAllByPathRegex(regex string) ([]*Scene, error) {
 	var args []interface{}
-	body := selectDistinctIDs("scenes") + " WHERE scenes.path regexp '(?i)" + regex + "'"
+	body := selectDistinctIDs("scenes") + " WHERE scenes.path regexp ?"
+
+	args = append(args, "(?i)"+regex)
 
 	idsResult, err := runIdsQuery(body, args)
 
@@ -326,7 +328,8 @@ func (qb *SceneQueryBuilder) QueryByPathRegex(findFilter *FindFilterType) ([]*Sc
 	body := selectDistinctIDs("scenes")
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		whereClauses = append(whereClauses, "scenes.path regexp '(?i)"+*q+"'")
+		whereClauses = append(whereClauses, "scenes.path regexp ?")
+		args = append(args, "(?i)"+*q)
 	}
 
 	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
