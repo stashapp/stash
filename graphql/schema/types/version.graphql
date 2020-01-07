@@ -3,3 +3,8 @@ type Version {
   hash: String!
   build_time: String!
 }
+
+type ShortVersion {
+  shorthash: String!
+  url: String!
+}

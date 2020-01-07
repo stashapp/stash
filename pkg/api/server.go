@@ -216,6 +216,7 @@ func Start() {
 
 		go func() {
 			printVersion()
+			printLatestVersion()
 			logger.Infof("stash is listening on " + address)
 			logger.Infof("stash is running at https://" + displayAddress + "/")
 			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
@@ -228,6 +229,7 @@ func Start() {
 
 		go func() {
 			printVersion()
+			printLatestVersion()
 			logger.Infof("stash is listening on " + address)
 			logger.Infof("stash is running at http://" + displayAddress + "/")
 			logger.Fatal(server.ListenAndServe())
