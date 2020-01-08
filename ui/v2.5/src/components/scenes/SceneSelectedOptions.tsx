@@ -1,8 +1,7 @@
 import _ from "lodash";
 import { Button, ButtonGroup, Form, Spinner } from 'react-bootstrap';
 import React, { useEffect, useState } from "react";
-import { FilterSelect } from "../select/FilterSelect";
-import { FilterMultiSelect } from "../select/FilterMultiSelect";
+import { FilterSelect, StudioSelect } from "../select/FilterSelect";
 import { StashService } from "../../core/StashService";
 import * as GQL from "../../core/generated-graphql";
 import { ErrorUtils } from "../../utils/errors";
@@ -236,16 +235,17 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
 
   function renderMultiSelect(type: "performers" | "tags", initialIds: string[] | undefined) {
     return (
-      <FilterMultiSelect
+      <FilterSelect
         type={type}
-        onUpdate={(items) => {
+        isMulti={true}
+        onSelect={(items) => {
           const ids = items.map((i) => i.id);
           switch (type) {
             case "performers": setPerformerIds(ids); break;
             case "tags": setTagIds(ids); break;
           }
         }}
-        initialIds={initialIds}
+        initialIds={initialIds ?? []}
       />
     );
   }
@@ -268,10 +268,9 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
 
           <Form.Group controlId="studio" className="operation-item">
             <Form.Label>Studio</Form.Label>
-            <FilterSelect
-              type="studios"
-              onSelectItem={(item : any) => setStudioId(item ? item.id : undefined)}
-              initialId={studioId}
+            <StudioSelect
+              onSelect={(items) => setStudioId(items[0]?.id)}
+              initialIds={studioId ? [studioId] : []}
             />
           </Form.Group>
 

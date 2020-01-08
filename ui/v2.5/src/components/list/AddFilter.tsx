@@ -10,7 +10,7 @@ import { StudiosCriterion } from "../../models/list-filter/criteria/studios";
 import { TagsCriterion } from "../../models/list-filter/criteria/tags";
 import { makeCriteria } from "../../models/list-filter/criteria/utils";
 import { ListFilterModel } from "../../models/list-filter/filter";
-import { FilterMultiSelect } from "../select/FilterMultiSelect";
+import { FilterSelect } from "../select/FilterSelect";
 
 interface IAddFilterProps {
   onAddCriterion: (criterion: Criterion, oldId?: string) => void;
@@ -113,27 +113,24 @@ export const AddFilter: React.FC<IAddFilterProps> = (props: IAddFilterProps) => 
       }
 
       if (Array.isArray(criterion.value)) {
-        let type: "performers" | "studios" | "tags" | "" = "";
+        let type: "performers" | "studios" | "tags";
         if (criterion instanceof PerformersCriterion) {
           type = "performers";
         } else if (criterion instanceof StudiosCriterion) {
           type = "studios";
         } else if (criterion instanceof TagsCriterion) {
           type = "tags";
+        } else {
+          return;
         }
 
-        if (type === "") {
-          return (<>todo</>);
-        } else {
-          return (
-            <FilterMultiSelect
-              type={type}
-              onUpdate={(items) => criterion.value = items.map((i) => ({id: i.id, label: i.name!}))}
-              openOnKeyDown={true}
-              initialIds={criterion.value.map((labeled: any) => labeled.id)}
-            />
-          );
-        }
+        return (
+          <FilterSelect
+            type={type}
+            onSelect={(items) => criterion.value = items.map((i) => ({id: i.id, label: i.name!}))}
+            initialIds={criterion.value.map((labeled: any) => labeled.id)}
+          />
+        );
       } else {
         if (criterion.options) {
           defaultValue.current = criterion.value;

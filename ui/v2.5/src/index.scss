@@ -517,3 +517,15 @@ span.block {
     box-shadow: 0 0 0 1px rgba(16,22,26,.4), 0 0 0 rgba(16,22,26,0), 0 0 0 rgba(16,22,26,0);
     padding: 20px;
 }
+
+.toast-container {
+    z-index: 1031;
+    position: fixed;
+    top: 2rem;
+    left: 45%;
+    max-width: 350px;
+
+    .toast {
+        width: 350px;
+    }
+}
