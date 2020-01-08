@@ -9,8 +9,7 @@ import _ from "lodash";
 import { ToastUtils } from "../../utils/toasts";
 import { ErrorUtils } from "../../utils/errors";
 import { Pagination } from "../list/Pagination";
-import { FilterMultiSelect } from "../select/FilterMultiSelect";
-import { FilterSelect } from "../select/FilterSelect";
+import { FilterSelect, StudioSelect } from "../select/FilterSelect";
   
 class ParserResult<T> {
   public value: Maybe<T>;
@@ -760,10 +759,11 @@ export const SceneFilenameParser: React.FC = () => {
 
   function renderNewMultiSelect(type: "performers" | "tags", props : ISceneParserFieldProps, onChange : (value : any) => void) {
     return (
-      <FilterMultiSelect
+      <FilterSelect
         className={props.className}
         type={type}
-        onUpdate={(items) => {
+        isMulti={true}
+        onSelect={(items) => {
           const ids = items.map((i) => i.id);
           onChange(ids);
         }}
@@ -782,12 +782,11 @@ export const SceneFilenameParser: React.FC = () => {
 
   function renderNewStudioSelect(props : ISceneParserFieldProps, onChange : (value : any) => void) {
     return (
-      <FilterSelect
-        type="studios"
+      <StudioSelect
         noSelectionString=""
         className={props.className}
-        onSelectItem={(item) => onChange(item ? item.id : undefined)}
-        initialId={props.parserResult.value}
+        onSelect={(items) => onChange(items[0]?.id)}
+        initialIds={props.parserResult.value ? [props.parserResult.value] : []}
       />
     );
   }

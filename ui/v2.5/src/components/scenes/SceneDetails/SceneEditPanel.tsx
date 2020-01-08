@@ -3,8 +3,7 @@ import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
 import { ErrorUtils } from "../../../utils/errors";
 import { ToastUtils } from "../../../utils/toasts";
-import { FilterMultiSelect } from "../../select/FilterMultiSelect";
-import { FilterSelect } from "../../select/FilterSelect";
+import { FilterSelect, StudioSelect } from "../../select/FilterSelect";
 import { ValidGalleriesSelect } from "../../select/ValidGalleriesSelect";
 import { ImageUtils } from "../../../utils/image";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -129,11 +128,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     props.onDelete();
   }
 
-  function renderMultiSelect(type: "performers" | "tags", initialIds: string[] | undefined) {
+  function renderMultiSelect(type: "performers" | "tags", initialIds: string[] = []) {
     return (
-      <FilterMultiSelect
+      <FilterSelect
         type={type}
-        onUpdate={(items) => {
+        isMulti={true}
+        onSelect={(items) => {
           const ids = items.map((i) => i.id);
           switch (type) {
             case "performers": setPerformerIds(ids); break;
@@ -352,10 +352,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
         <Form.Group controlId="studio">
           <Form.Label>Studio</Form.Label>
-          <FilterSelect
-            type="studios"
-            onSelectItem={(item) => setStudioId(item ? item.id : undefined)}
-            initialId={studioId}
+          <StudioSelect
+            onSelect={(items) => items.length && setStudioId(items[0]?.id)}
+            initialIds={studioId ? [studioId] : []}
           />
         </Form.Group>
 

@@ -2,7 +2,6 @@ import { EditableText, IOptionProps } from "@blueprintjs/core";
 import { Form } from 'react-bootstrap';
 import React from "react";
 import { EditableTextUtils } from "./editabletext";
-import { FilterMultiSelect } from "../components/select/FilterMultiSelect";
 import { FilterSelect } from "../components/select/FilterSelect";
 import _ from "lodash";
 
@@ -106,8 +105,8 @@ export class TableUtils {
         <td>
           <FilterSelect
             type={options.type}
-            onSelectItem={(item) => options.onChange(item ? item.id : undefined)}
-            initialId={options.initialId}
+            onSelect={(items) => options.onChange(items[0]?.id)}
+            initialIds={options.initialId ? [options.initialId] : []}
           />
         </td>
       </tr>
@@ -125,11 +124,11 @@ export class TableUtils {
       <tr>
         <td>{options.title}</td>
         <td>
-          <FilterMultiSelect
+          <FilterSelect
             type={options.type}
-            onUpdate={(items) => options.onChange(items.map((i) => i.id))}
-            openOnKeyDown={true}
-            initialIds={options.initialIds}
+            isMulti={true}
+            onSelect={(items) => options.onChange(items.map((i) => i.id))}
+            initialIds={options.initialIds ?? []}
           />
         </td>
       </tr>

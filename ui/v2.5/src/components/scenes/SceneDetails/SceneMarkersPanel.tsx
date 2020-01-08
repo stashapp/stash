@@ -4,8 +4,7 @@ import React, { CSSProperties, FunctionComponent, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
 import { TextUtils } from "../../../utils/text";
-import { FilterMultiSelect } from "../../select/FilterMultiSelect";
-import { FilterSelect } from "../../select/FilterSelect";
+import { TagSelect } from "../../select/FilterSelect";
 import { MarkerTitleSuggest } from "../../select/MarkerTitleSuggest";
 import { WallPanel } from "../../Wall/WallPanel";
 import { SceneHelpers } from "../helpers";
@@ -149,19 +148,18 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
     }
     function renderPrimaryTagField(fieldProps: FieldProps<IFormFields>) {
       return (
-        <FilterSelect
-          type="tags"
-          onSelectItem={(tag) => fieldProps.form.setFieldValue("primaryTagId", tag ? tag.id : undefined)}
-          initialId={!!editingMarker ? editingMarker.primary_tag.id : undefined}
+        <TagSelect
+          onSelect={(tags) => fieldProps.form.setFieldValue("primaryTagId", tags[0]?.id)}
+          initialIds={editingMarker ? [editingMarker.primary_tag.id] : []}
         />
       );
     }
     function renderTagsField(fieldProps: FieldProps<IFormFields>) {
       return (
-        <FilterMultiSelect
-          type="tags"
-          onUpdate={(tags) => fieldProps.form.setFieldValue("tagIds", tags.map((tag) => tag.id))}
-          initialIds={!!editingMarker ? fieldProps.form.values.tagIds : undefined}
+        <TagSelect
+          isMulti={true}
+          onSelect={(tags) => fieldProps.form.setFieldValue("tagIds", tags.map((tag) => tag.id))}
+          initialIds={editingMarker ? fieldProps.form.values.tagIds : []}
         />
       );
     }

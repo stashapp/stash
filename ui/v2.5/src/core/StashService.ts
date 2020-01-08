@@ -360,21 +360,20 @@ export class StashService {
   public static useTagCreate(input: GQL.TagCreateInput) {
     return GQL.useTagCreate({ 
       variables: input, 
-      refetchQueries: ["AllTags"],
-      update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
+      refetchQueries: ["AllTags", "AllTagsForFilter"],
+      //update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
     });
   }
   public static useTagUpdate(input: GQL.TagUpdateInput) {
     return GQL.useTagUpdate({ 
       variables: input, 
-      refetchQueries: ["AllTags"],
-      update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
+      refetchQueries: ["AllTags", "AllTagsForFilter"],
     });
   }
   public static useTagDestroy(input: GQL.TagDestroyInput) {
     return GQL.useTagDestroy({ 
       variables: input, 
-      refetchQueries: ["AllTags"],
+      refetchQueries: ["AllTags", "AllTagsForFilter"],
       update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
     });
   }
