@@ -169,10 +169,18 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	}
 
 	if rating := sceneFilter.Rating; rating != nil {
-		clause, count := getIntCriterionWhereClause("rating", *sceneFilter.Rating)
+		clause, count := getIntCriterionWhereClause("scenes.rating", *sceneFilter.Rating)
 		whereClauses = append(whereClauses, clause)
 		if count == 1 {
 			args = append(args, sceneFilter.Rating.Value)
+		}
+	}
+
+	if durationFilter := sceneFilter.Duration; durationFilter != nil {
+		clause, count := getIntCriterionWhereClause("scenes.duration", *durationFilter)
+		whereClauses = append(whereClauses, clause)
+		if count == 1 {
+			args = append(args, durationFilter.Value)
 		}
 	}
 

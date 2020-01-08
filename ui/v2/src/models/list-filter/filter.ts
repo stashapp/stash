@@ -7,7 +7,7 @@ import {
   SceneMarkerFilterType,
   SortDirectionEnum,
 } from "../../core/generated-graphql";
-import { Criterion, ICriterionOption, CriterionType, CriterionOption, NumberCriterion, StringCriterion } from "./criteria/criterion";
+import { Criterion, ICriterionOption, CriterionType, CriterionOption, NumberCriterion, StringCriterion, DurationCriterion } from "./criteria/criterion";
 import { FavoriteCriterion, FavoriteCriterionOption } from "./criteria/favorite";
 import { HasMarkersCriterion, HasMarkersCriterionOption } from "./criteria/has-markers";
 import { IsMissingCriterion, IsMissingCriterionOption } from "./criteria/is-missing";
@@ -47,6 +47,10 @@ export class ListFilterModel {
   public criteria: Array<Criterion<any, any>> = [];
   public totalCount: number = 0;
 
+  private static createCriterionOption(criterion: CriterionType) {
+    return new CriterionOption(Criterion.getLabel(criterion), criterion);
+  }
+
   public constructor(filterMode: FilterMode) {
     switch (filterMode) {
       case FilterMode.Scenes:
@@ -61,6 +65,7 @@ export class ListFilterModel {
           new NoneCriterionOption(),
           new RatingCriterionOption(),
           new ResolutionCriterionOption(),
+          ListFilterModel.createCriterionOption("duration"),
           new HasMarkersCriterionOption(),
           new IsMissingCriterionOption(),
           new TagsCriterionOption(),
@@ -96,7 +101,7 @@ export class ListFilterModel {
         ];
 
         this.criterionOptions = this.criterionOptions.concat(numberCriteria.concat(stringCriteria).map((c) => {
-          return new CriterionOption(Criterion.getLabel(c), c);
+          return ListFilterModel.createCriterionOption(c);
         }));
         break;
       case FilterMode.Studios:
@@ -232,6 +237,11 @@ export class ListFilterModel {
             case "1080p": result.resolution = ResolutionEnum.FullHd; break;
             case "4k": result.resolution = ResolutionEnum.FourK; break;
           }
+          break;
+        }
+        case "duration": {
+          const durationCrit = criterion as DurationCriterion;
+          result.duration = { value: durationCrit.value, modifier: durationCrit.modifier }
           break;
         }
         case "hasMarkers":

@@ -1,11 +1,13 @@
 import { isArray } from "util";
 import { CriterionModifier } from "../../../core/generated-graphql";
 import { ILabeledId, ILabeledValue } from "../types";
+import { DurationUtils } from "../../../utils/duration";
 
 export type CriterionType =
   "none" |
   "rating" |
   "resolution" |
+  "duration" |
   "favorite" |
   "hasMarkers" |
   "isMissing" |
@@ -32,6 +34,7 @@ export abstract class Criterion<Option = any, Value = any> {
       case "none": return "None";
       case "rating": return "Rating";
       case "resolution": return "Resolution";
+      case "duration": return "Duration";
       case "favorite": return "Favorite";
       case "hasMarkers": return "Has Markers";
       case "isMissing": return "Is Missing";
@@ -91,10 +94,18 @@ export abstract class Criterion<Option = any, Value = any> {
       default: modifierString = "";
     }
 
+    let valueString = "";
+    
+    if (this.modifier !== CriterionModifier.IsNull && this.modifier !== CriterionModifier.NotNull) {
+      valueString = this.getLabelValue();
+    }
+
+    return `${Criterion.getLabel(this.type)} ${modifierString} ${valueString}`;
+  }
+
+  public getLabelValue() {
     let valueString: string;
-    if (this.modifier === CriterionModifier.IsNull || this.modifier === CriterionModifier.NotNull) {
-      valueString = "";
-    } else if (isArray(this.value) && this.value.length > 0) {
+    if (isArray(this.value) && this.value.length > 0) {
       let items = this.value;
       if ((this.value as ILabeledId[])[0].label) {
         items = this.value.map((item) => item.label) as any;
@@ -106,7 +117,7 @@ export abstract class Criterion<Option = any, Value = any> {
       valueString = this.value.toString();
     }
 
-    return `${Criterion.getLabel(this.type)} ${modifierString} ${valueString}`;
+    return valueString;
   }
 
   public getId(): string {
@@ -193,5 +204,36 @@ export class NumberCriterion extends Criterion<number, number> {
     } else {
       this.parameterName = type;
     }
+  }
+}
+
+export class DurationCriterion extends Criterion<number, number> {
+  public type: CriterionType;
+  public parameterName: string;
+  public modifier = CriterionModifier.Equals;
+  public modifierOptions = [
+    Criterion.getModifierOption(CriterionModifier.Equals),
+    Criterion.getModifierOption(CriterionModifier.NotEquals),
+    Criterion.getModifierOption(CriterionModifier.GreaterThan),
+    Criterion.getModifierOption(CriterionModifier.LessThan),
+  ];
+  public options: number[] | undefined;
+  public value: number = 0;
+
+  constructor(type : CriterionType, parameterName?: string, options? : number[]) {
+    super();
+
+    this.type = type;
+    this.options = options;
+
+    if (!!parameterName) {
+      this.parameterName = parameterName;
+    } else {
+      this.parameterName = type;
+    }
+  }
+
+  public getLabelValue() {
+    return DurationUtils.secondsToString(this.value);
   }
 }
