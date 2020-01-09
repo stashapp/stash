@@ -23,6 +23,10 @@ import (
 
 const testName = "Foo's Bar"
 const testExtension = ".mp4"
+const existingStudioName = "ExistingStudio"
+
+const existingStudioSceneName = testName + ".dontChangeStudio" + testExtension
+var existingStudioID int
 
 var testSeparators = []string{
 	".",
@@ -112,22 +116,17 @@ func createPerformer(tx *sqlx.Tx) error {
 	return nil
 }
 
-func createStudio(tx *sqlx.Tx) error {
+func createStudio(tx *sqlx.Tx, name string) (*models.Studio, error) {
 	// create the studio
 	qb := models.NewStudioQueryBuilder()
 
 	studio := models.Studio{
 		Image:    []byte{0, 1, 2},
-		Checksum: testName,
+		Checksum: name,
 		Name:     sql.NullString{Valid: true, String: testName},
 	}
 
-	_, err := qb.Create(studio, tx)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return qb.Create(studio, tx)
 }
 
 func createTag(tx *sqlx.Tx) error {
@@ -162,23 +161,31 @@ func createScenes(tx *sqlx.Tx) error {
 	}
 
 	for _, fn := range scenePatterns {
-		err := createScene(sqb, tx, fn, true)
+		err := createScene(sqb, tx, makeScene(fn, true))
 		if err != nil {
 			return err
 		}
 	}
 	for _, fn := range falseScenePatterns {
-		err := createScene(sqb, tx, fn, false)
+		err := createScene(sqb, tx, makeScene(fn, false))
 		if err != nil {
 			return err
 		}
 	}
 
+	// create scene with existing studio io
+	studioScene := makeScene(existingStudioSceneName, true)
+	studioScene.StudioID = sql.NullInt64{Valid: true, Int64: int64(existingStudioID)}
+	err := createScene(sqb, tx, studioScene)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func createScene(sqb models.SceneQueryBuilder, tx *sqlx.Tx, name string, expectedResult bool) error {
-	scene := models.Scene{
+func makeScene(name string, expectedResult bool) *models.Scene {
+	scene := &models.Scene{
 		Checksum: utils.MD5FromString(name),
 		Path:     name,
 	}
@@ -188,10 +195,14 @@ func createScene(sqb models.SceneQueryBuilder, tx *sqlx.Tx, name string, expecte
 		scene.Title = sql.NullString{Valid: true, String: name}
 	}
 
-	_, err := sqb.Create(scene, tx)
+	return scene
+}
+
+func createScene(sqb models.SceneQueryBuilder, tx *sqlx.Tx, scene *models.Scene) error {
+	_, err := sqb.Create(*scene, tx)
 
 	if err != nil {
-		return fmt.Errorf("Failed to create scene with name '%s': %s", name, err.Error())
+		return fmt.Errorf("Failed to create scene with name '%s': %s", scene.Path, err.Error())
 	}
 
 	return nil
@@ -206,10 +217,18 @@ func populateDB() error {
 		return err
 	}
 
-	err = createStudio(tx)
+	_, err = createStudio(tx, testName)
 	if err != nil {
 		return err
 	}
+
+	// create existing studio
+	existingStudio, err := createStudio(tx, existingStudioName)
+	if err != nil {
+		return err
+	}
+
+	existingStudioID = existingStudio.ID
 
 	err = createTag(tx)
 	if err != nil {
@@ -290,11 +309,18 @@ func TestParseStudios(t *testing.T) {
 	scenes, err := sqb.All()
 
 	for _, scene := range scenes {
-		// title is only set on scenes where we expect studio to be set
-		if scene.Title.String == scene.Path && scene.StudioID.Int64 != int64(studios[0].ID) {
-			t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
-		} else if scene.Title.String != scene.Path && scene.StudioID.Int64 == int64(studios[0].ID) {
-			t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
+		// check for existing studio id scene first
+		if scene.Path == existingStudioSceneName {
+			if scene.StudioID.Int64 != int64(existingStudioID) {
+				t.Error("Incorrectly overwrote studio ID for scene with existing studio ID")
+			}
+		} else {
+			// title is only set on scenes where we expect studio to be set
+			if scene.Title.String == scene.Path && scene.StudioID.Int64 != int64(studios[0].ID) {
+				t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
+			} else if scene.Title.String != scene.Path && scene.StudioID.Int64 == int64(studios[0].ID) {
+				t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
+			}
 		}
 	}
 }
