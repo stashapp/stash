@@ -95,7 +95,8 @@ func (t *AutoTagStudioTask) autoTagStudio() {
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	for _, scene := range scenes {
-		if scene.StudioID.Int64 == int64(t.studio.ID) {
+		// #306 - don't overwrite studio if already present
+		if scene.StudioID.Valid {
 			// don't modify
 			continue
 		}
