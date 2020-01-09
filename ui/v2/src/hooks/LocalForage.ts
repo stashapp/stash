@@ -6,6 +6,7 @@ interface IInterfaceWallConfig {
 }
 export interface IInterfaceConfig {
   wall: IInterfaceWallConfig;
+  queries: any;
 }
 
 type ValidTypes = IInterfaceConfig | undefined;
@@ -25,6 +26,7 @@ export function useInterfaceLocalForage(): ILocalForage<IInterfaceConfig | undef
         wall: {
           // nothing here currently
         },
+        queries: {}
       });
     }
   });

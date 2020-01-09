@@ -10,6 +10,7 @@ import { IBaseProps } from "../models";
 import { Criterion } from "../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "../models/list-filter/filter";
 import { DisplayMode, FilterMode } from "../models/list-filter/types";
+import { useInterfaceLocalForage } from "./LocalForage";
 
 export interface IListHookData {
   filter: ListFilterModel;
@@ -42,17 +43,49 @@ export class ListHook {
     const [totalCount, setTotalCount] = useState<number>(0);
     const [zoomIndex, setZoomIndex] = useState<number>(1);
 
+    const interfaceForage = useInterfaceLocalForage();
+
+    function updateFromLocalForage(queryData: any) {
+      const queryParams = queryString.parse(queryData.filter);
+      const newFilter = _.cloneDeep(filter);
+      newFilter.configureFromQueryParameters(queryParams);
+      newFilter.currentPage = queryData.currentPage;
+      newFilter.itemsPerPage = queryData.itemsPerPage;
+      setFilter(newFilter);
+
+      // TODO: Need this side effect to update the query params properly
+      filter.configureFromQueryParameters(queryParams);
+    }
+
+    function updateFromQueryString(queryStr: string) {
+      const queryParams = queryString.parse(queryStr);
+      const newFilter = _.cloneDeep(filter);
+      newFilter.configureFromQueryParameters(queryParams);
+      setFilter(newFilter);
+
+      // TODO: Need this side effect to update the query params properly
+      filter.configureFromQueryParameters(queryParams);
+    }
+
     // Update the filter when the query parameters change
     // don't use query parameters for sub-components
     if (!options.subComponent) {
       useEffect(() => {
-        const queryParams = queryString.parse(options.props!.location.search);
-        const newFilter = _.cloneDeep(filter);
-        newFilter.configureFromQueryParameters(queryParams);
-        setFilter(newFilter);
+        if (interfaceForage.data && interfaceForage.data.queries[options.filterMode]) {
+          let queryData = interfaceForage.data.queries[options.filterMode];
+          // we have some data, try to load it
+          updateFromLocalForage(queryData);
+        } else if (interfaceForage.data) {
+          // else fallback to query string
+          updateFromQueryString(options.props!.location.search);
+        }
+      }, [interfaceForage.data]);
 
-        // TODO: Need this side effect to update the query params properly
-        filter.configureFromQueryParameters(queryParams);
+      useEffect(() => {
+        // only load this if localForage has already loaded
+        if (interfaceForage.data) {
+          updateFromQueryString(options.props!.location.search);
+        }
       }, [options.props.location.search]);
     }
 
@@ -129,6 +162,16 @@ export class ListHook {
         const location = Object.assign({}, options.props.history.location);
         location.search = filter.makeQueryParameters();
         options.props.history.replace(location);
+
+        if (!!interfaceForage.data) {
+          const dataClone = _.cloneDeep(interfaceForage.data);
+          dataClone.queries[options.filterMode] = {
+            filter: location.search,
+            itemsPerPage: filter.itemsPerPage,
+            currentPage: filter.currentPage
+          };
+          interfaceForage.setData(dataClone);
+        }
       }, [result.data, filter.displayMode]);
     }
 
