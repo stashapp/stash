@@ -1,13 +1,13 @@
+import React from "react";
 import { Table } from 'react-bootstrap';
-import React, { FunctionComponent } from "react";
-import * as GQL from "../../../core/generated-graphql";
-import { TextUtils } from "../../../utils/text";
+import * as GQL from "src/core/generated-graphql";
+import { TextUtils } from "src/utils";
 
 interface ISceneFileInfoPanelProps {
   scene: GQL.SceneDataFragment;
 }
 
-export const SceneFileInfoPanel: FunctionComponent<ISceneFileInfoPanelProps> = (props: ISceneFileInfoPanelProps) => {
+export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (props: ISceneFileInfoPanelProps) => {
   function renderChecksum() {
     return (
       <tr>
@@ -25,7 +25,7 @@ export const SceneFileInfoPanel: FunctionComponent<ISceneFileInfoPanelProps> = (
       </tr>
     );
   }
-  
+
   function renderStream() {
     return (
       <tr>

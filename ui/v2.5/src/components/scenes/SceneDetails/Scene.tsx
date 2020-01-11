@@ -1,10 +1,10 @@
 import { Card, Spinner, Tab, Tabs } from 'react-bootstrap';
 import queryString from "query-string";
-import React, { FunctionComponent, useEffect, useState } from "react";
-import * as GQL from "../../../core/generated-graphql";
-import { StashService } from "../../../core/StashService";
-import { IBaseProps } from "../../../models";
-import { GalleryViewer } from "../../Galleries/GalleryViewer";
+import React, { useEffect, useState } from "react";
+import * as GQL from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { IBaseProps } from "src/models";
+import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { ScenePlayer } from "../ScenePlayer/ScenePlayer";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
@@ -14,18 +14,15 @@ import { ScenePerformerPanel } from "./ScenePerformerPanel";
 
 interface ISceneProps extends IBaseProps {}
 
-export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
+export const Scene: React.FC<ISceneProps> = (props: ISceneProps) => {
   const [timestamp, setTimestamp] = useState<number>(0);
   const [autoplay, setAutoplay] = useState<boolean>(false);
   const [scene, setScene] = useState<Partial<GQL.SceneDataFragment>>({});
-  const [isLoading, setIsLoading] = useState(false);
   const { data, error, loading } = StashService.useFindScene(props.match.params.id);
 
-  useEffect(() => {
-    setIsLoading(loading);
-    if (!data || !data.findScene || !!error) { return; }
-    setScene(StashService.nullToUndefined(data.findScene));
-  }, [data]);
+  useEffect(() => (
+    setScene(data?.findScene ?? {})
+  ), [data]);
 
   useEffect(() => {
     const queryParams = queryString.parse(props.location.search);
@@ -42,12 +39,15 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
     setTimestamp(marker.seconds);
   }
 
-  if (!data || !data.findScene || isLoading || Object.keys(scene).length === 0) {
+  if (!data?.findScene || loading || Object.keys(scene).length === 0) {
     return <Spinner animation="border"/>;
   }
+
+  if (error)
+    return <div>{error.message}</div>
+
   const modifiedScene =
     Object.assign({scene_marker_tags: data.sceneMarkerTags}, scene) as GQL.SceneDataFragment; // TODO Hack from angular
-  if (!!error) { return <>error...</>; }
 
   return (
     <>
@@ -82,9 +82,9 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
             <Tab
               eventKey="scene-edit-panel"
               title="Edit">
-              <SceneEditPanel 
-                scene={modifiedScene} 
-                onUpdate={(newScene) => setScene(newScene)} 
+              <SceneEditPanel
+                scene={modifiedScene}
+                onUpdate={(newScene) => setScene(newScene)}
                 onDelete={() => props.history.push("/scenes")}
               />
             </Tab>

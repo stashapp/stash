@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { Button, Form, Modal, Spinner } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Button, Form, Spinner } from 'react-bootstrap';
 import { Link } from "react-router-dom";
-import * as GQL from "../../core/generated-graphql";
-import { StashService } from "../../core/StashService";
-import { ErrorUtils } from "../../utils/errors";
-import { NavigationUtils } from "../../utils/navigation";
-import { ToastUtils } from "../../utils/toasts";
+import * as GQL from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { NavUtils } from "src/utils";
+import { Icon, Modal } from 'src/components/Shared';
+import { useToast } from 'src/hooks';
 
 export const TagList: React.FC = () => {
+  const Toast = useToast();
   // Editing / New state
   const [name, setName] = useState('');
   const [editingTag, setEditingTag] = useState<Partial<GQL.TagDataFragment> | null>(null);
@@ -21,7 +21,8 @@ export const TagList: React.FC = () => {
 
   function getTagInput() {
     const tagInput: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = { name };
-    if (!!editingTag) { (tagInput as Partial<GQL.TagUpdateInput>).id = editingTag.id; }
+    if (editingTag)
+      (tagInput as Partial<GQL.TagUpdateInput>).id = editingTag.id;
     return tagInput;
   }
 
@@ -37,59 +38,54 @@ export const TagList: React.FC = () => {
     try {
       if (editingTag && editingTag.id) {
         await updateTag();
-        ToastUtils.success("Updated tag");
+        Toast.success({ content: "Updated tag" });
       } else {
         await createTag();
-        ToastUtils.success("Created tag");
+        Toast.success({ content: "Created tag" });
       }
       setEditingTag(null);
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
   }
 
   async function onAutoTag(tag : GQL.TagDataFragment) {
-    if (!tag) {
+    if (!tag)
       return;
-    }
     try {
       await StashService.queryMetadataAutoTag({ tags: [tag.id]});
-      ToastUtils.success("Started auto tagging");
+      Toast.success({ content: "Started auto tagging" });
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
   }
 
   async function onDelete() {
     try {
       await deleteTag();
-      ToastUtils.success("Deleted tag");
+      Toast.success({ content: "Deleted tag" });
       setDeletingTag(null);
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
   }
 
   const deleteAlert = (
     <Modal
-        onHide={() => {}}
-        show={!!deletingTag}
+      onHide={() => {}}
+      show={!!deletingTag}
+      icon="trash-alt"
+      accept={{ onClick: onDelete, variant: 'danger', text: 'Delete' }}
+      cancel={{ onClick: () => setDeletingTag(null) }}
     >
-      <Modal.Body>
-        <FontAwesomeIcon icon="trash-alt" color="danger" />
-        <span>Are you sure you want to delete {deletingTag && deletingTag.name}?</span>
-      </Modal.Body>
-      <Modal.Footer>
-        <div>
-          <Button variant="danger" onClick={onDelete}>Delete</Button>
-          <Button onClick={() => setDeletingTag(null)}>Cancel</Button>
-        </div>
-      </Modal.Footer>
+      <span>Are you sure you want to delete {deletingTag && deletingTag.name}?</span>
     </Modal>
   );
 
-  if (!data || !data.allTags) { return <Spinner animation="border" variant="light" />; }
-  if (!!error) { return <>{error.message}</>; }
+  if (!data?.allTags)
+    return <Spinner animation="border" variant="light" />;
+  if (error)
+    return <div>{error.message}</div>;
 
   const tagElements = data.allTags.map((tag) => {
     return (
@@ -99,13 +95,13 @@ export const TagList: React.FC = () => {
         <span onClick={() => setEditingTag(tag)}>{tag.name}</span>
         <div style={{float: "right"}}>
           <Button onClick={() => onAutoTag(tag)}>Auto Tag</Button>
-          <Link to={NavigationUtils.makeTagScenesUrl(tag)}>Scenes: {tag.scene_count}</Link>
-          <Link to={NavigationUtils.makeTagSceneMarkersUrl(tag)}>
+          <Link to={NavUtils.makeTagScenesUrl(tag)}>Scenes: {tag.scene_count}</Link>
+          <Link to={NavUtils.makeTagSceneMarkersUrl(tag)}>
             Markers: {tag.scene_marker_count}
           </Link>
           <span>Total: {(tag.scene_count || 0) + (tag.scene_marker_count || 0)}</span>
           <Button variant="danger" onClick={() => setDeletingTag(tag)}>
-            <FontAwesomeIcon icon="trash-alt" color="danger" />
+            <Icon icon="trash-alt" color="danger" />
           </Button>
         </div>
       </div>
@@ -118,25 +114,20 @@ export const TagList: React.FC = () => {
       <Button variant="primary" style={{marginTop: "20px"}} onClick={() => setEditingTag({})}>New Tag</Button>
 
       <Modal
-          onHide={() => {setEditingTag(null)}}
-          show={!!editingTag}
+        show={!!editingTag}
+        header={editingTag && editingTag.id ? "Edit Tag" : "New Tag"}
+        onHide={() => setEditingTag(null)}
+        accept={{ onClick: onEdit, variant: 'danger', text: (editingTag?.id ? 'Update' : 'Create') }}
       >
-        <Modal.Header>
-          { editingTag && editingTag.id ? "Edit Tag" : "New Tag" }
-        </Modal.Header>
-        <Modal.Body>
-          <Form.Group controlId="tag-name">
-            <Form.Label>Name</Form.Label>
-            <Form.Control
-              onChange={(newValue: any) => setName(newValue.target.value)}
-              defaultValue={(editingTag && editingTag.name) || ''}
-            />
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={() => onEdit()}>{editingTag && editingTag.id ? "Update" : "Create"}</Button>
-        </Modal.Footer>
+        <Form.Group controlId="tag-name">
+          <Form.Label>Name</Form.Label>
+          <Form.Control
+            onChange={(newValue: any) => setName(newValue.target.value)}
+            defaultValue={(editingTag && editingTag.name) || ''}
+          />
+        </Form.Group>
       </Modal>
+
       {tagElements}
     </div>
   );

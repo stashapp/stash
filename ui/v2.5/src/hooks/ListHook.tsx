@@ -1,7 +1,7 @@
-import { Spinner } from "@blueprintjs/core";
 import _ from "lodash";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
+import { Spinner } from 'react-bootstrap';
 import { QueryHookResult } from "react-apollo-hooks";
 import { ListFilter } from "../components/list/ListFilter";
 import { Pagination } from "../components/list/Pagination";
@@ -201,7 +201,7 @@ export class ListHook {
 
     function singleSelect(id: string, selected: boolean) {
       setLastClickedId(id);
-      
+
       const newSelectedIds = _.clone(selectedIds);
       if (selected) {
         newSelectedIds.add(id);
@@ -215,7 +215,7 @@ export class ListHook {
     function multiSelect(id: string, selected : boolean) {
       let startIndex = 0;
       let thisIndex = -1;
-  
+
       if (!!lastClickedId) {
         startIndex = getItems().findIndex((item) => {
           return item.id === lastClickedId;
@@ -228,14 +228,14 @@ export class ListHook {
 
       selectRange(startIndex, thisIndex);
     }
-  
+
     function selectRange(startIndex : number, endIndex : number) {
       if (startIndex > endIndex) {
         let tmp = startIndex;
         startIndex = endIndex;
         endIndex = tmp;
       }
-  
+
       const subset = getItems().slice(startIndex, endIndex + 1);
       const newSelectedIds : Set<string> = new Set();
 
@@ -293,7 +293,7 @@ export class ListHook {
           filter={filter}
         />
         {options.renderSelectedOptions && selectedIds.size > 0 ? options.renderSelectedOptions(result, selectedIds) : undefined}
-        {result.loading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
+        {result.loading ? <Spinner animation="border" variant="light" /> : undefined}
         {result.error ? <h1>{result.error.message}</h1> : undefined}
         {options.renderContent(result, filter, selectedIds, zoomIndex)}
         <Pagination

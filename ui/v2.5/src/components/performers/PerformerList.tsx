@@ -1,25 +1,25 @@
 import _ from "lodash";
-import React, { FunctionComponent } from "react";
+import React from "react";
 import { QueryHookResult } from "react-apollo-hooks";
-import { FindPerformersQuery, FindPerformersVariables } from "../../core/generated-graphql";
-import { ListHook } from "../../hooks/ListHook";
-import { IBaseProps } from "../../models/base-props";
-import { ListFilterModel } from "../../models/list-filter/filter";
-import { DisplayMode, FilterMode } from "../../models/list-filter/types";
+import { FindPerformersQuery, FindPerformersVariables } from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { ListHook } from "src/hooks";
+import { IBaseProps } from "src/models/base-props";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { DisplayMode, FilterMode } from "src/models/list-filter/types";
 import { PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
-import { StashService } from "../../core/StashService";
 
 interface IPerformerListProps extends IBaseProps {}
 
-export const PerformerList: FunctionComponent<IPerformerListProps> = (props: IPerformerListProps) => {
+export const PerformerList: React.FC<IPerformerListProps> = (props: IPerformerListProps) => {
   const otherOperations = [
     {
       text: "Open Random",
       onClick: getRandom,
     }
   ];
-  
+
   const listData = ListHook.useList({
     filterMode: FilterMode.Performers,
     props,

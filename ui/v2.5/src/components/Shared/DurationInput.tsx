@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button, ButtonGroup, InputGroup, Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { TextUtils } from "../../utils/text";
+import { TextUtils } from "src/utils";
 
 interface IProps {
   disabled?: boolean
@@ -35,7 +35,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
     if (!v) {
       return 0;
     }
-    
+
     let splits = v.split(":");
 
     if (splits.length > 3) {
@@ -122,9 +122,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
           onChange={(e : any) => setValue(e.target.value)}
           onBlur={() => props.onValueChange(stringToSeconds(value))}
           placeholder="hh:mm:ss"
-        >
-          {renderButtons()}
-        </Form.Control>
+        />
         <InputGroup.Append>
           {maybeRenderReset()}
         </InputGroup.Append>

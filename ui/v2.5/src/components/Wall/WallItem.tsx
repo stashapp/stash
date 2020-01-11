@@ -1,11 +1,10 @@
 import _ from "lodash";
 import React, { FunctionComponent, useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import * as GQL from "../../core/generated-graphql";
-import { VideoHoverHook } from "../../hooks/VideoHover";
-import { TextUtils } from "../../utils/text";
-import { NavigationUtils } from "../../utils/navigation";
-import { StashService } from "../../core/StashService";
+import * as GQL from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { VideoHoverHook } from "src/hooks";
+import { TextUtils, NavUtils } from "src/utils";
 
 interface IWallItemProps {
   scene?: GQL.SlimSceneDataFragment;
@@ -55,31 +54,31 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
   }
 
   let linkSrc: string = "#";
-  if (props.clickHandler === undefined) {
-    if (props.scene !== undefined) {
+  if (props.clickHandler) {
+    if (props.scene) {
       linkSrc = `/scenes/${props.scene.id}`;
-    } else if (props.sceneMarker !== undefined) {
-      linkSrc = NavigationUtils.makeSceneMarkerUrl(props.sceneMarker);
+    } else if (props.sceneMarker) {
+      linkSrc = NavUtils.makeSceneMarkerUrl(props.sceneMarker);
     }
   }
 
   function onTransitionEnd(event: React.TransitionEvent<HTMLDivElement>) {
-    const target = (event.target as any);
-    if (target.classList.contains("double-scale")) {
-      target.parentElement.style.zIndex = 10;
-    } else {
-      target.parentElement.style.zIndex = null;
+    const target = event.currentTarget;
+    if (target.classList.contains("double-scale") && target.parentElement) {
+      target.parentElement.style.zIndex = '10';
+    } else if(target.parentElement) {
+      target.parentElement.style.zIndex = '';
     }
   }
 
   useEffect(() => {
-    if (!!props.sceneMarker) {
+    if (props.sceneMarker) {
       setPreviewPath(props.sceneMarker.preview);
       setTitle(`${props.sceneMarker!.title} - ${TextUtils.secondsToTimestamp(props.sceneMarker.seconds)}`);
       const thisTags = props.sceneMarker.tags.map((tag) => (<span key={tag.id}>{tag.name}</span>));
       thisTags.unshift(<span key={props.sceneMarker.primary_tag.id}>{props.sceneMarker.primary_tag.name}</span>);
       setTags(thisTags);
-    } else if (!!props.scene) {
+    } else if (props.scene) {
       setPreviewPath(props.scene.paths.webp || "");
       setScreenshotPath(props.scene.paths.screenshot || "");
       setTitle(props.scene.title || "");
@@ -123,7 +122,7 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
                 {title}
               </div>
               {tags}
-            </div> : undefined
+            </div> : ''
           }
         </Link>
       </div>

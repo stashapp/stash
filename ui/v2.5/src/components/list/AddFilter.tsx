@@ -1,16 +1,16 @@
 import _ from "lodash";
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Form, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { CriterionModifier } from "../../core/generated-graphql";
-import { Criterion, CriterionType } from "../../models/list-filter/criteria/criterion";
-import { NoneCriterion } from "../../models/list-filter/criteria/none";
-import { PerformersCriterion } from "../../models/list-filter/criteria/performers";
-import { StudiosCriterion } from "../../models/list-filter/criteria/studios";
-import { TagsCriterion } from "../../models/list-filter/criteria/tags";
-import { makeCriteria } from "../../models/list-filter/criteria/utils";
-import { ListFilterModel } from "../../models/list-filter/filter";
-import { FilterSelect } from "../select/FilterSelect";
+import { Icon } from 'src/components/Shared';
+import { CriterionModifier } from "src/core/generated-graphql";
+import { Criterion, CriterionType } from "src/models/list-filter/criteria/criterion";
+import { NoneCriterion } from "src/models/list-filter/criteria/none";
+import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
+import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import { TagsCriterion } from "src/models/list-filter/criteria/tags";
+import { makeCriteria } from "src/models/list-filter/criteria/utils";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { FilterSelect } from "src/components/Shared";
 
 interface IAddFilterProps {
   onAddCriterion: (criterion: Criterion, oldId?: string) => void;
@@ -65,8 +65,8 @@ export const AddFilter: React.FC<IAddFilterProps> = (props: IAddFilterProps) => 
   function onAddFilter() {
     if (!Array.isArray(criterion.value) && defaultValue.current) {
       const value = defaultValue.current;
-      if (criterion.options && (value === undefined || value === "" || typeof value === "number")) { 
-        criterion.value = criterion.options[0]; 
+      if (criterion.options && (value === undefined || value === "" || typeof value === "number")) {
+        criterion.value = criterion.options[0];
       } else if (typeof value === "number" && value === undefined) {
         criterion.value = 0;
       } else if (value === undefined) {
@@ -174,7 +174,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (props: IAddFilterProps) => 
     return (
       <Form.Group controlId="filter">
         <Form.Label>Filter</Form.Label>
-        <Form.Control 
+        <Form.Control
           as="select"
           onChange={onChangedCriteriaType}
           value={criterion.type}>
@@ -193,14 +193,14 @@ export const AddFilter: React.FC<IAddFilterProps> = (props: IAddFilterProps) => 
         placement="top"
         overlay={<Tooltip id="filter-tooltip">Filter</Tooltip>}
       >
-        <Button 
-          onClick={() => onToggle()} 
-          active={isOpen} 
+        <Button
+          onClick={() => onToggle()}
+          active={isOpen}
         >
-          <FontAwesomeIcon icon="filter" />
+          <Icon icon="filter" />
         </Button>
       </OverlayTrigger>
-      
+
       <Modal
         show={isOpen}
         onHide={() => onToggle()}>

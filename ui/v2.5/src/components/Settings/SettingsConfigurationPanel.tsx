@@ -1,21 +1,13 @@
-import {
-  AnchorButton,
-  Button,
-  Divider,
-  FormGroup,
-  InputGroup,
-  Spinner,
-  Checkbox,
-  HTMLSelect,
-} from "@blueprintjs/core";
 import React, { useEffect, useState } from "react";
-import * as GQL from "../../core/generated-graphql";
-import { StashService } from "../../core/StashService";
-import { ErrorUtils } from "../../utils/errors";
-import { ToastUtils } from "../../utils/toasts";
-import { FolderSelect } from "../Shared/FolderSelect/FolderSelect";
+import { Button, Form, InputGroup, Spinner } from 'react-bootstrap';
+import * as GQL from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { useToast } from 'src/hooks';
+import { Icon } from 'src/components/Shared';
+import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 
 export const SettingsConfigurationPanel: React.FC = () => {
+  const Toast = useToast();
   // Editing config state
   const [stashes, setStashes] = useState<string[]>([]);
   const [databasePath, setDatabasePath] = useState<string | undefined>(undefined);
@@ -48,10 +40,12 @@ export const SettingsConfigurationPanel: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!data || !data.configuration || !!error) { return; }
-    const conf = StashService.nullToUndefined(data.configuration) as GQL.ConfigDataFragment;
-    if (!!conf.general) {
-      setStashes(conf.general.stashes || []);
+    if (!data?.configuration || error)
+      return;
+
+    const conf = data.configuration;
+    if (conf.general) {
+      setStashes(conf.general.stashes ?? []);
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
       setMaxTranscodeSize(conf.general.maxTranscodeSize);
@@ -64,7 +58,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setLogAccess(conf.general.logAccess);
       setExcludes(conf.general.excludes);
     }
-  }, [data]);
+  }, [data, error]);
 
   function onStashesChanged(directories: string[]) {
     setStashes(directories);
@@ -96,9 +90,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
     try {
       const result = await updateGeneralConfig();
       console.log(result);
-      ToastUtils.success("Updated config");
+      Toast.success({ content: "Updated config" });
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
   }
 
@@ -137,149 +131,156 @@ export const SettingsConfigurationPanel: React.FC = () => {
     return GQL.StreamingResolutionEnum.Original;
   }
 
+  if(error)
+    return <h1>{error.message}</h1>;
+  if(!data?.configuration || loading)
+    return <Spinner animation="border" variant="light" />;
+
   return (
     <>
-      {!!error ? <h1>{error.message}</h1> : undefined}
-      {(!data || !data.configuration || loading) ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
       <h4>Library</h4>
-      <FormGroup>
-        <FormGroup>
-          <FormGroup
-            label="Stashes"
-            helperText="Directory locations to your content"
-          >
-            <FolderSelect
-              directories={stashes}
-              onDirectoriesChanged={onStashesChanged}
-            />
-          </FormGroup>
-        </FormGroup>
-        
-        <FormGroup
-          label="Database Path"
-          helperText="File location for the SQLite database (requires restart)"
-        >
-          <InputGroup value={databasePath} onChange={(e: any) => setDatabasePath(e.target.value)} />
-        </FormGroup>
+      <Form.Group>
+        <Form.Group id="stashes">
+          <Form.Label>Stashes</Form.Label>
+          <FolderSelect
+            directories={stashes}
+            onDirectoriesChanged={onStashesChanged}
+          />
+          <Form.Text className="text-muted">Directory locations to your content</Form.Text>
+        </Form.Group>
 
-        <FormGroup
-          label="Generated Path"
-          helperText="Directory location for the generated files (scene markers, scene previews, sprites, etc)"
-        >
-          <InputGroup value={generatedPath} onChange={(e: any) => setGeneratedPath(e.target.value)} />
-        </FormGroup>
+        <Form.Group id="database-path">
+          <Form.Label>Database Path</Form.Label>
+          <Form.Control defaultValue={databasePath} onChange={(e: any) => setDatabasePath(e.target.value)} />
+          <Form.Text className="text-muted">File location for the SQLite database (requires restart)</Form.Text>
+        </Form.Group>
 
-        <FormGroup
-          label="Excluded Patterns"
-        >
+        <Form.Group id="generated-path">
+          <Form.Label>Generated Path</Form.Label>
+          <Form.Control defaultValue={generatedPath} onChange={(e: any) => setGeneratedPath(e.target.value)} />
+          <Form.Text className="text-muted">Directory location for the generated files (scene markers, scene previews, sprites, etc)</Form.Text>
+        </Form.Group>
 
-       { (excludes) ? excludes.map((regexp, i) => {
-         return(
-           <InputGroup
-             value={regexp}
-             onChange={(e: any) => excludeRegexChanged(i, e.target.value)}
-             rightElement={<Button icon="minus" minimal={true} intent="danger" onClick={(e: any) => excludeRemoveRegex(i)} />}
-           />
-           );
-         }) : null
-       }
+        <Form.Group>
+          <Form.Label>Excluded Patterns</Form.Label>
+          { excludes ? excludes.map((regexp, i) => (
+            <InputGroup>
+              <Form.Control
+                value={regexp}
+                onChange={(e: any) => excludeRegexChanged(i, e.target.value)}
+              />
+              <InputGroup.Append>
+                <Button variant="danger" onClick={() => excludeRemoveRegex(i)}>
+                  <Icon icon="minus" />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+            )) : ''
+          }
 
-          <Button icon="plus" minimal={true} onClick={(e: any) => excludeAddRegex()} />
+          <Button variant="danger" onClick={() => excludeAddRegex()}>
+            <Icon icon="plus" />
+          </Button>
           <div>
             <p>
-              <AnchorButton
+              <a
                 href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
-                rightIcon="help"
-                text="Regexps of files/paths to exclude from Scan and add to Clean"
-                minimal={true}
-                target="_blank" 
-              />
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <span>Regexps of files/paths to exclude from Scan and add to Clean</span>
+                <Icon icon="question-circle" />
+              </a>
             </p>
           </div>
-        </FormGroup>
-      </FormGroup>
-      
-      <Divider />
-        <FormGroup>
-          <h4>Video</h4>
-          <FormGroup 
-            label="Maximum transcode size"
-            helperText="Maximum size for generated transcodes"
-          >
-            <HTMLSelect
-              options={transcodeQualities}
-              onChange={(event) => setMaxTranscodeSize(translateQuality(event.target.value))}
-              value={resolutionToString(maxTranscodeSize)}
-            />
-          </FormGroup>
-          <FormGroup 
-            label="Maximum streaming transcode size"
-            helperText="Maximum size for transcoded streams"
-          >
-            <HTMLSelect
-              options={transcodeQualities}
-              onChange={(event) => setMaxStreamingTranscodeSize(translateQuality(event.target.value))}
-              value={resolutionToString(maxStreamingTranscodeSize)}
-            />
-          </FormGroup>
-        </FormGroup>
-      <Divider />
+        </Form.Group>
+      </Form.Group>
 
-      <FormGroup>
+      <hr />
+
+      <Form.Group>
+        <h4>Video</h4>
+        <Form.Group id="transcode-size">
+          <Form.Label>Maximum transcode size</Form.Label>
+          <Form.Control
+            as="select">
+            onChange={(event:React.FormEvent<HTMLSelectElement>) => setMaxTranscodeSize(translateQuality(event.currentTarget.value))}
+            value={resolutionToString(maxTranscodeSize)}
+          >
+            { transcodeQualities.map(q => (<option key={q} value={q}>{q}</option>))}
+          </Form.Control>
+          <Form.Text className="text-muted">Maximum size for generated transcodes</Form.Text>
+        </Form.Group>
+        <Form.Group id="streaming-transcode-size">
+          <Form.Label>Maximum streaming transcode size</Form.Label>
+          <Form.Control
+            as="select"
+            onChange={(event:React.FormEvent<HTMLSelectElement>) => setMaxStreamingTranscodeSize(translateQuality(event.currentTarget.value))}
+            value={resolutionToString(maxStreamingTranscodeSize)}
+          >
+            { transcodeQualities.map(q => (<option key={q} value={q}>{q}</option>))}
+          </Form.Control>
+          <Form.Text className="text-muted">Maximum size for transcoded streams</Form.Text>
+        </Form.Group>
+      </Form.Group>
+
+      <hr />
+
+      <Form.Group>
         <h4>Authentication</h4>
-        <FormGroup
-          label="Username"
-          helperText="Username to access Stash. Leave blank to disable user authentication"
-        >
-          <InputGroup value={username} onChange={(e: any) => setUsername(e.target.value)} />
-        </FormGroup>
-        <FormGroup
-          label="Password"
-          helperText="Password to access Stash. Leave blank to disable user authentication"
-        >
-          <InputGroup type="password" value={password} onChange={(e: any) => setPassword(e.target.value)} />
-        </FormGroup>
-      </FormGroup>
+        <Form.Group id="username">
+          <Form.Label>Username</Form.Label>
+          <Form.Control defaultValue={username} onChange={(e: React.FormEvent<HTMLInputElement>) => setUsername(e.currentTarget.value)} />
+          <Form.Text className="text-muted">Username to access Stash. Leave blank to disable user authentication</Form.Text>
+        </Form.Group>
+        <Form.Group id="password">
+          <Form.Label>Password</Form.Label>
+          <Form.Control type="password" defaultValue={password} onChange={(e: React.FormEvent<HTMLInputElement>) => setPassword(e.currentTarget.value)} />
+          <Form.Text className="text-muted">Password to access Stash. Leave blank to disable user authentication</Form.Text>
+        </Form.Group>
+      </Form.Group>
 
-      <Divider />
+      <hr />
+
       <h4>Logging</h4>
-      <FormGroup
-        label="Log file"
-        helperText="Path to the file to output logging to. Blank to disable file logging. Requires restart."
-      >
-        <InputGroup value={logFile} onChange={(e: any) => setLogFile(e.target.value)} />
-      </FormGroup>
+      <Form.Group id="log-file">
+        <Form.Label>Log file</Form.Label>
+        <Form.Control defaultValue={logFile} onChange={(e: React.FormEvent<HTMLInputElement>) => setLogFile(e.currentTarget.value)} />
+        <Form.Text className="text-muted">Path to the file to output logging to. Blank to disable file logging. Requires restart.</Form.Text>
+      </Form.Group>
 
-      <FormGroup
-        helperText="Logs to the terminal in addition to a file. Always true if file logging is disabled. Requires restart."
-      >
-        <Checkbox
+      <Form.Group>
+        <Form.Check
           checked={logOut}
           label="Log to terminal"
           onChange={() => setLogOut(!logOut)}
         />
-      </FormGroup>
+        <Form.Text className="text-muted">Logs to the terminal in addition to a file. Always true if file logging is disabled. Requires restart.</Form.Text>
+      </Form.Group>
 
-      <FormGroup inline={true} label="Log Level">
-        <HTMLSelect
-          options={["Debug", "Info", "Warning", "Error"]}
-          onChange={(event) => setLogLevel(event.target.value)}
+      <Form.Group id="log-level">
+        <Form.Label>Log Level</Form.Label>
+        <Form.Control
+          as="select"
+          onChange={(event:React.FormEvent<HTMLSelectElement>) => setLogLevel(event.currentTarget.value)}
           value={logLevel}
-        />
-      </FormGroup>
+        >
+          { ["Debug", "Info", "Warning", "Error"].map(o => (<option key={o} value={o}>{o}</option>)) }
+        </Form.Control>
+      </Form.Group>
 
-      <FormGroup
-        helperText="Logs http access to the terminal. Requires restart."
-      >
-        <Checkbox
+      <Form.Group>
+        <Form.Check
           checked={logAccess}
           label="Log http access"
           onChange={() => setLogAccess(!logAccess)}
         />
-      </FormGroup>
+        <Form.Text className="text-muted">Logs http access to the terminal. Requires restart.</Form.Text>
+      </Form.Group>
 
-      <Divider />
-      <Button intent="primary" onClick={() => onSave()}>Save</Button>
+      <hr />
+
+      <Button variant="primary" onClick={() => onSave()}>Save</Button>
     </>
   );
 };

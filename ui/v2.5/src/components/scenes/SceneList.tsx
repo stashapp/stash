@@ -1,16 +1,16 @@
-import _ from "lodash";
 import React from "react";
+import _ from "lodash";
 import { QueryHookResult } from "react-apollo-hooks";
-import { FindScenesQuery, FindScenesVariables, SlimSceneDataFragment } from "../../core/generated-graphql";
-import { ListHook } from "../../hooks/ListHook";
-import { IBaseProps } from "../../models/base-props";
-import { ListFilterModel } from "../../models/list-filter/filter";
-import { DisplayMode, FilterMode } from "../../models/list-filter/types";
+import { FindScenesQuery, FindScenesVariables, SlimSceneDataFragment } from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { ListHook } from "src/hooks";
+import { IBaseProps } from "src/models/base-props";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { DisplayMode, FilterMode } from "src/models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
 import { SceneSelectedOptions } from "./SceneSelectedOptions";
-import { StashService } from "../../core/StashService";
 
 interface ISceneListProps extends IBaseProps {}
 
@@ -21,7 +21,7 @@ export const SceneList: React.FC<ISceneListProps> = (props: ISceneListProps) => 
       onClick: playRandom,
     }
   ];
-  
+
   const listData = ListHook.useList({
     filterMode: FilterMode.Scenes,
     props,
@@ -31,7 +31,7 @@ export const SceneList: React.FC<ISceneListProps> = (props: ISceneListProps) => 
     renderSelectedOptions
   });
 
-  async function playRandom(result: QueryHookResult<FindScenesQuery, FindScenesVariables>, filter: ListFilterModel, selectedIds: Set<string>) {
+  async function playRandom(result: QueryHookResult<FindScenesQuery, FindScenesVariables>, filter: ListFilterModel) {
     // query for a random scene
     if (result.data && result.data.findScenes) {
       let count = result.data.findScenes.count;
@@ -54,7 +54,7 @@ export const SceneList: React.FC<ISceneListProps> = (props: ISceneListProps) => 
     if (!result.data || !result.data.findScenes) { return undefined; }
 
     var scenes = result.data.findScenes.scenes;
-    
+
     var selectedScenes : SlimSceneDataFragment[] = [];
     selectedIds.forEach((id) => {
       var scene = scenes.find((scene) => {
@@ -75,9 +75,9 @@ export const SceneList: React.FC<ISceneListProps> = (props: ISceneListProps) => 
 
   function renderSceneCard(scene : SlimSceneDataFragment, selectedIds: Set<string>, zoomIndex: number) {
     return (
-      <SceneCard 
-        key={scene.id} 
-        scene={scene} 
+      <SceneCard
+        key={scene.id}
+        scene={scene}
         zoomIndex={zoomIndex}
         selected={selectedIds.has(scene.id)}
         onSelectedChanged={(selected: boolean, shiftKey: boolean) => listData.onSelectChange(scene.id, selected, shiftKey)}

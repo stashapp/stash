@@ -1,6 +1,6 @@
-import { Button, InputGroup, Form, Modal, Spinner } from 'react-bootstrap';
 import React, { useEffect, useState } from "react";
-import { StashService } from "../../../core/StashService";
+import { Button, InputGroup, Form, Modal, Spinner } from 'react-bootstrap';
+import { StashService } from "src/core/StashService";
 
 interface IProps {
   directories: string[];
@@ -17,7 +17,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
     setSelectedDirectories(props.directories);
   }, [props.directories]);
 
-  const selectableDirectories:string[] = data && data.directories && !error ? StashService.nullToUndefined(data.directories) : [];
+  const selectableDirectories:string[] = data?.directories ?? [];
 
   function onSelectDirectory() {
     selectedDirectories.push(currentDirectory);
@@ -55,7 +55,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
                 {(!data || !data.directories || loading) ? <Spinner animation="border" variant="light" /> : undefined}
               </InputGroup.Append>
             </InputGroup>
-              
+
             />
             {selectableDirectories.map((path) => {
               return <div key={path} onClick={() => setCurrentDirectory(path)}>{path}</div>;
@@ -71,14 +71,14 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
 
   return (
     <>
-      {!!error ? <h1>{error.message}</h1> : undefined}
+      {error ? <h1>{error.message}</h1> : ''}
       {renderDialog()}
       <Form.Group>
         {selectedDirectories.map((path) => {
           return <div key={path}>{path} <a onClick={() => onRemoveDirectory(path)}>Remove</a></div>;
         })}
       </Form.Group>
-      
+
       <Button onClick={() => setIsDisplayingDialog(true)}>Add Directory</Button>
     </>
   );

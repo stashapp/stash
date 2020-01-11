@@ -1,15 +1,13 @@
+import React, { CSSProperties, useState } from "react";
 import { Badge, Button, Card, Collapse, Form as BootstrapForm } from 'react-bootstrap';
-import { Field, FieldProps, Form, Formik, FormikActions, FormikProps } from "formik";
-import React, { CSSProperties, FunctionComponent, useState } from "react";
-import * as GQL from "../../../core/generated-graphql";
-import { StashService } from "../../../core/StashService";
-import { TextUtils } from "../../../utils/text";
-import { TagSelect } from "../../select/FilterSelect";
-import { MarkerTitleSuggest } from "../../select/MarkerTitleSuggest";
-import { WallPanel } from "../../Wall/WallPanel";
+import { Field, FieldProps, Form, Formik, FormikActions } from "formik";
+import * as GQL from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { TextUtils } from "src/utils";
+import { useToast } from 'src/hooks';
+import { DurationInput, TagSelect, MarkerTitleSuggest } from "src/components/Shared";
+import { WallPanel } from "src/components/Wall/WallPanel";
 import { SceneHelpers } from "../helpers";
-import { ErrorUtils } from "../../../utils/errors";
-import { DurationInput } from "../../Shared/DurationInput";
 
 interface ISceneMarkersPanelProps {
   scene: GQL.SceneDataFragment;
@@ -23,7 +21,8 @@ interface IFormFields {
   tagIds: string[];
 }
 
-export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (props: ISceneMarkersPanelProps) => {
+export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (props: ISceneMarkersPanelProps) => {
+  const Toast = useToast();
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
   const [editingMarker, setEditingMarker] = useState<GQL.SceneMarkerDataFragment | null>(null);
 
@@ -33,9 +32,9 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
 
   const jwplayer = SceneHelpers.getPlayer();
 
-  function onOpenEditor(marker: GQL.SceneMarkerDataFragment | null = null) {
+  function onOpenEditor(marker?: GQL.SceneMarkerDataFragment) {
     setIsEditorOpen(true);
-    setEditingMarker(marker);
+    setEditingMarker(marker ?? null);
   }
 
   function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
@@ -104,17 +103,17 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
         tag_ids: values.tagIds,
       };
       if (!isEditing) {
-        sceneMarkerCreate({ variables }).then((response) => {
+        sceneMarkerCreate({ variables }).then(() => {
           setIsEditorOpen(false);
           setEditingMarker(null);
-        }).catch((err) => ErrorUtils.handleApolloError(err));
+        }).catch((err) => Toast.error(err));
       } else {
         const updateVariables = variables as GQL.SceneMarkerUpdateVariables;
         updateVariables.id = editingMarker!.id;
-        sceneMarkerUpdate({ variables: updateVariables }).then((response) => {
+        sceneMarkerUpdate({ variables: updateVariables }).then(() => {
           setIsEditorOpen(false);
           setEditingMarker(null);
-        }).catch((err) => ErrorUtils.handleApolloError(err));
+        }).catch((err) => Toast.error(err));
       }
     }
     function onDelete() {
@@ -128,12 +127,8 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
     function renderTitleField(fieldProps: FieldProps<IFormFields>) {
       return (
         <MarkerTitleSuggest
-          initialMarkerString={!!editingMarker ? editingMarker.title : undefined}
-          placeholder="Title"
-          name={fieldProps.field.name}
-          onBlur={fieldProps.field.onBlur}
-          value={fieldProps.field.value}
-          onQueryChange={(query) => fieldProps.form.setFieldValue("title", query)}
+          initialMarkerTitle={editingMarker?.title}
+          onChange={(query:string) => fieldProps.form.setFieldValue("title", query)}
         />
       );
     }
@@ -163,9 +158,9 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
         />
       );
     }
-    function renderFormFields(formikProps: FormikProps<IFormFields>) {
+    function renderFormFields() {
       let deleteButton: JSX.Element | undefined;
-      if (!!editingMarker) {
+      if (editingMarker) {
         deleteButton = (
           <Button
             variant="danger"
@@ -205,7 +200,7 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
       );
     }
     let initialValues: any;
-    if (!!editingMarker) {
+    if (editingMarker) {
       initialValues = {
         title: editingMarker.title,
         seconds: editingMarker.seconds,

@@ -11,7 +11,7 @@ import { Stats } from "./components/Stats";
 import Studios from "./components/Studios/Studios";
 import Tags from "./components/Tags/Tags";
 import { SceneFilenameParser } from "./components/scenes/SceneFilenameParser";
-import { ToastProvider } from './components/Shared/Toast';
+import { ToastProvider } from 'src/hooks/Toast';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'

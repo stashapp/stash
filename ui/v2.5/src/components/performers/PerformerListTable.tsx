@@ -1,21 +1,21 @@
 import React from "react";
 import { Button, Table } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Link } from "react-router-dom";
-import * as GQL from "../../core/generated-graphql";
-import { NavigationUtils } from "../../utils/navigation";
-  
+import * as GQL from "src/core/generated-graphql";
+import { Icon } from 'src/components/Shared';
+import { NavUtils } from "src/utils";
+
 interface IPerformerListTableProps {
   performers: GQL.PerformerDataFragment[];
 }
-  
+
 export const PerformerListTable: React.FC<IPerformerListTableProps> = (props: IPerformerListTableProps) => {
-  
+
   function maybeRenderFavoriteHeart(performer : GQL.PerformerDataFragment) {
     if (!performer.favorite) { return; }
     return (
       <Button disabled className="favorite">
-        <FontAwesomeIcon icon="heart" />
+        <Icon icon="heart" />
       </Button>
     );
   }
@@ -31,7 +31,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (props: IP
     };
 
     return (
-      <Link 
+      <Link
         className="performer-list-thumbnail"
         to={`/performers/${performer.id}`}
         style={style}/>
@@ -59,7 +59,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (props: IP
           {maybeRenderFavoriteHeart(performer)}
         </td>
         <td>
-          <Link to={NavigationUtils.makePerformerScenesUrl(performer)}>
+          <Link to={NavUtils.makePerformerScenesUrl(performer)}>
             <h6>{performer.scene_count}</h6>
           </Link>
         </td>
@@ -97,4 +97,4 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (props: IP
     </>
   );
 };
-  
+

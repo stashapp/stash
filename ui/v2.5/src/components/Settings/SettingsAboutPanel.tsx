@@ -1,6 +1,6 @@
 import React from "react";
 import { Table, Spinner } from 'react-bootstrap';
-import { StashService } from "../../core/StashService";
+import { StashService } from "src/core/StashService";
 
 export const SettingsAboutPanel: React.FC = () => {
   const { data, error, loading } = StashService.useVersion();
@@ -30,7 +30,7 @@ export const SettingsAboutPanel: React.FC = () => {
             <td>Build time:</td>
             <td>{data.version.build_time}</td>
           </tr>
-        </tbody>  
+        </tbody>
       </Table>
       </>
     );
@@ -38,8 +38,8 @@ export const SettingsAboutPanel: React.FC = () => {
   return (
     <>
       <h4>About</h4>
-      {!data || loading ? <Spinner animation="border" variant="light" /> : undefined}
-      {!!error ? <span>error.message</span> : undefined}
+      {!data || loading ? <Spinner animation="border" variant="light" /> : ''}
+      {error ? <span>error.message</span> : ''}
       {renderVersion()}
     </>
   );

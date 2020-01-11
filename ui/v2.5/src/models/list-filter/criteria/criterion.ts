@@ -1,4 +1,4 @@
-import { CriterionModifier } from "../../../core/generated-graphql";
+import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId, ILabeledValue } from "../types";
 
 export type CriterionType =

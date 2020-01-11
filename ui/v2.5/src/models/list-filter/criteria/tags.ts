@@ -1,5 +1,5 @@
-import * as GQL from "../../../core/generated-graphql";
-import { CriterionModifier } from "../../../core/generated-graphql";
+import * as GQL from "src/core/generated-graphql";
+import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId } from "../types";
 import {
   Criterion,

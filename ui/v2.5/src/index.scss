@@ -4,7 +4,6 @@
 
 @import "styles/shared/details";
 
-@import "styles/blueprint-overrides";
 @import "styles/scrollbars";
 @import "styles/variables";
 
@@ -392,7 +391,7 @@ span.block {
   & .inputs label {
     width: 12em;
   }
-  
+
   & .inputs .bp3-input-group {
     width: 80ch;
   }
@@ -400,11 +399,11 @@ span.block {
   & .scene-parser-results {
     overflow-x: auto;
   }
-  
+
   & .scene-parser-row .bp3-checkbox {
     margin: 0px -20px 0px 0px;
   }
-  
+
   & .scene-parser-row .parser-field-title input {
     width: 50ch;
   }
@@ -424,15 +423,15 @@ span.block {
   & .scene-parser-row .parser-field-studio input {
     width: 15ch;
   }
-  
+
   & .scene-parser-row input {
     min-width: 10ch;
   }
-  
+
   & .scene-parser-row .bp3-form-group {
     margin-bottom: 0px;
   }
-  
+
   & .scene-parser-row div:first-child > input {
     margin-bottom: 5px;
   }

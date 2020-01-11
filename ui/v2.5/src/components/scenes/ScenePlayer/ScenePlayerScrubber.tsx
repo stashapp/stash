@@ -1,7 +1,7 @@
-import axios from "axios";
 import React, { CSSProperties, useEffect, useRef, useState } from "react";
-import * as GQL from "../../../core/generated-graphql";
-import { TextUtils } from "../../../utils/text";
+import axios from "axios";
+import * as GQL from "src/core/generated-graphql";
+import { TextUtils } from "src/utils";
 import "./ScenePlayerScrubber.scss";
 
 interface IScenePlayerScrubberProps {

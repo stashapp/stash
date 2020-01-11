@@ -1,22 +1,18 @@
-import _ from "lodash";
-import { Button, Form, Modal, Spinner, Table } from 'react-bootstrap';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
-import * as GQL from "../../../core/generated-graphql";
-import { StashService } from "../../../core/StashService";
-import { IBaseProps } from "../../../models";
-import { ErrorUtils } from "../../../utils/errors";
-import { TableUtils } from "../../../utils/table";
-import { ScrapePerformerSuggest } from "../../select/ScrapePerformerSuggest";
-import { DetailsEditNavbar } from "../../Shared/DetailsEditNavbar";
-import { ToastUtils } from "../../../utils/toasts";
-import { EditableTextUtils } from "../../../utils/editabletext";
-import { ImageUtils } from "../../../utils/image";
+import { Button, Form, Spinner, Table } from 'react-bootstrap';
+import _ from "lodash";
+import { useParams, useHistory } from 'react-router-dom';
+import * as GQL from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { DetailsEditNavbar, Icon, Modal, ScrapePerformerSuggest } from "src/components/Shared";
+import { ImageUtils, TableUtils } from 'src/utils'
+import { useToast } from 'src/hooks';
 
-interface IPerformerProps extends IBaseProps {}
-
-export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => {
-  const isNew = props.match.params.id === "new";
+export const Performer: React.FC = () => {
+  const Toast = useToast();
+  const history = useHistory();
+  const { id = 'new' } = useParams();
+  const isNew = id === "new";
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
@@ -52,7 +48,7 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
   const Scrapers = StashService.useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListPerformerScrapersListPerformerScrapers[]>([]);
 
-  const { data, error, loading } = StashService.useFindPerformer(props.match.params.id);
+  const { data, error, loading } = StashService.useFindPerformer(id);
   const updatePerformer = StashService.usePerformerUpdate(getPerformerInput() as GQL.PerformerUpdateInput);
   const createPerformer = StashService.usePerformerCreate(getPerformerInput() as GQL.PerformerCreateInput);
   const deletePerformer = StashService.usePerformerDestroy(getPerformerInput() as GQL.PerformerDestroyInput);
@@ -80,7 +76,8 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
 
   useEffect(() => {
     setIsLoading(loading);
-    if (!data || !data.findPerformer || !!error) { return; }
+    if (!data || !data.findPerformer || error)
+      return;
     setPerformer(data.findPerformer);
   }, [data]);
 
@@ -98,8 +95,8 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
     setImage(this.result as string);
   }
 
-  ImageUtils.addPasteImageHook(onImageLoad);
-  
+  ImageUtils.usePasteImage(onImageLoad);
+
   useEffect(() => {
     var newQueryableScrapers : GQL.ListPerformerScrapersListPerformerScrapers[] = [];
 
@@ -113,10 +110,10 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
 
   }, [Scrapers.data]);
 
-  if ((!isNew && !isEditing && (!data || !data.findPerformer)) || isLoading) {
-    return <Spinner animation="border" variant="light" />; 
-  }
-  if (!!error) { return <>error...</>; }
+  if ((!isNew && !isEditing && !data?.findPerformer) || isLoading)
+    return <Spinner animation="border" variant="light" />;
+  if (error)
+    return <div>{error.message}</div>;
 
   function getPerformerInput() {
     const performerInput: Partial<GQL.PerformerCreateInput | GQL.PerformerUpdateInput> = {
@@ -140,7 +137,7 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
     };
 
     if (!isNew) {
-      (performerInput as GQL.PerformerUpdateInput).id = props.match.params.id;
+      (performerInput as GQL.PerformerUpdateInput).id = id;
     }
     return performerInput;
   }
@@ -154,10 +151,10 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
       } else {
         const result = await createPerformer();
         setPerformer(result.data.performerCreate);
-        props.history.push(`/performers/${result.data.performerCreate.id}`);
+        history.push(`/performers/${result.data.performerCreate.id}`);
       }
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
     setIsLoading(false);
   }
@@ -167,12 +164,12 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
     try {
       await deletePerformer();
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
     setIsLoading(false);
-    
+
     // redirect to performers page
-    props.history.push(`/performers`);
+    history.push('/performers');
   }
 
   async function onAutoTag() {
@@ -181,13 +178,13 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
     }
     try {
       await StashService.queryMetadataAutoTag({ performers: [performer.id]});
-      ToastUtils.success("Started auto tagging");
+      Toast.success({ content: "Started auto tagging" });
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
   }
 
-  function onImageChange(event: React.FormEvent<HTMLInputElement>) {
+  function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
@@ -196,38 +193,39 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
   }
 
   function getQueryScraperPerformerInput() {
-    if (!scrapePerformerDetails) {
+    if (!scrapePerformerDetails)
       return {};
-    }
 
-    let ret = _.clone(scrapePerformerDetails);
-    delete ret.__typename;
-    return ret as GQL.ScrapedPerformerInput;
+    const { __typename, ...ret } = scrapePerformerDetails;
+    return ret;
   }
 
   async function onScrapePerformer() {
     setIsDisplayingScraperDialog(undefined);
     setIsLoading(true);
     try {
-      if (!scrapePerformerDetails || !isDisplayingScraperDialog) { return; }
+      if (!scrapePerformerDetails || !isDisplayingScraperDialog)
+        return;
       const result = await StashService.queryScrapePerformer(isDisplayingScraperDialog.id, getQueryScraperPerformerInput());
-      if (!result.data || !result.data.scrapePerformer) { return; }
+      if (!result?.data?.scrapePerformer)
+        return;
       updatePerformerEditState(result.data.scrapePerformer);
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
     setIsLoading(false);
   }
 
   async function onScrapePerformerURL() {
-    if (!url) { return; }
+    if (!url)
+      return;
     setIsLoading(true);
     try {
       const result = await StashService.queryScrapePerformerURL(url);
       if (!result.data || !result.data.scrapePerformerURL) { return; }
       updatePerformerEditState(result.data.scrapePerformerURL);
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -248,31 +246,24 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
       <Modal
         show={!!isDisplayingScraperDialog}
         onHide={() => setIsDisplayingScraperDialog(undefined)}
+        header="Scrape"
+        accept={{ onClick: onScrapePerformer, text: "Scrape" }}
       >
-        <Modal.Header>
-          Scrape
-        </Modal.Header>
-        <Modal.Body>
-          <div className="dialog-content">
-            <ScrapePerformerSuggest
-              placeholder="Performer name"
-              style={{width: "100%"}}
-              scraperId={isDisplayingScraperDialog ? isDisplayingScraperDialog.id : ""}
-              onSelectPerformer={(query) => setScrapePerformerDetails(query)}
-            />
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button onClick={() => onScrapePerformer()}>Scrape</Button>
-        </Modal.Footer>
+        <div className="dialog-content">
+          <ScrapePerformerSuggest
+            placeholder="Performer name"
+            scraperId={isDisplayingScraperDialog ? isDisplayingScraperDialog.id : ""}
+            onSelectPerformer={(query) => setScrapePerformerDetails(query)}
+          />
+        </div>
       </Modal>
     );
   }
 
-  function urlScrapable(url: string) : boolean {
-    return !!url && !!Scrapers.data && Scrapers.data.listPerformerScrapers && Scrapers.data.listPerformerScrapers.some((s) => {
-      return !!s.performer && !!s.performer.urls && s.performer.urls.some((u) => { return url.includes(u); });
-    });
+  function urlScrapable(url: string) {
+    return !!url && (Scrapers?.data?.listPerformerScrapers ?? []).some(s => (
+      (s?.performer?.urls ?? []).some(u => url.includes(u))
+    ));
   }
 
   function maybeRenderScrapeButton() {
@@ -280,10 +271,10 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
       return undefined;
     }
     return (
-      <Button 
+      <Button
         id="scrape-url-button"
         onClick={() => onScrapePerformerURL()}>
-        <FontAwesomeIcon icon="file-upload" />
+        <Icon icon="file-upload" />
       </Button>
     )
   }
@@ -292,13 +283,17 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
     return (
       <tr>
         <td id="url-field">
-          URL 
+          URL
           {maybeRenderScrapeButton()}
         </td>
         <td>
-          {EditableTextUtils.renderInputGroup({
-            value: url, isEditing, onChange: setUrl, placeholder: "URL"
-          })}
+          <Form.Control
+            value={url}
+            readOnly={!isEditing}
+            plaintext={!isEditing}
+            placeholder="URL"
+            onChange={(event: React.FormEvent<HTMLInputElement>) => setUrl(event.currentTarget.value) }
+          />
         </td>
       </tr>
     );
@@ -319,26 +314,31 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
             onToggleEdit={() => { setIsEditing(!isEditing); updatePerformerEditState(performer); }}
             onSave={onSave}
             onDelete={onDelete}
-            onImageChange={onImageChange}
+            onImageChange={onImageChangeHandler}
             scrapers={queryableScrapers}
             onDisplayScraperDialog={onDisplayFreeOnesDialog}
             onAutoTag={onAutoTag}
           />
           <h1>
-            { !isEditing
-                ? <span>{name}</span>
-                : <Form.Control
-                    defaultValue={name}
-                    placeholder="Name"
-                    onChange={(event: any) => setName(event.target.value)} />
+            { <Form.Control
+                readOnly={!isEditing}
+                plaintext={!isEditing}
+                defaultValue={name}
+                placeholder="Name"
+                onChange={(event: any) => setName(event.target.value)}
+              />
             }
           </h1>
           <h6>
             <Form.Group className="aliases-field" controlId="aliases">
               <Form.Label>Aliases:</Form.Label>
-              {EditableTextUtils.renderInputGroup({
-                value: aliases, isEditing: isEditing, placeholder: "Aliases", onChange: setAliases
-              })}
+              <Form.Control
+                value={aliases}
+                readOnly={!isEditing}
+                plaintext={!isEditing}
+                placeholder="Aliases"
+                onChange={(event: React.FormEvent<HTMLInputElement>) => setAliases(event.currentTarget.value) }
+              />
             </Form.Group>
           </h6>
           <div>
@@ -348,7 +348,7 @@ export const Performer: React.FC<IPerformerProps> = (props: IPerformerProps) => 
               className={favorite ? "favorite" : undefined}
               onClick={() => setFavorite(!favorite)}
             >
-              <FontAwesomeIcon icon="heart" />
+              <Icon icon="heart" />
             </Button>
           </div>
 
