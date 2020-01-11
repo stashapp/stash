@@ -1,11 +1,10 @@
-import _ from "lodash";
-import { Button, ButtonGroup, Form, Spinner } from 'react-bootstrap';
 import React, { useEffect, useState } from "react";
-import { FilterSelect, StudioSelect } from "../select/FilterSelect";
-import { StashService } from "../../core/StashService";
-import * as GQL from "../../core/generated-graphql";
-import { ErrorUtils } from "../../utils/errors";
-import { ToastUtils } from "../../utils/toasts";
+import { Button, ButtonGroup, Form, Spinner } from 'react-bootstrap';
+import _ from "lodash";
+import { StashService } from "src/core/StashService";
+import * as GQL from "src/core/generated-graphql";
+import { FilterSelect, StudioSelect } from "src/components/Shared";
+import { useToast } from "src/hooks";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[],
@@ -13,6 +12,7 @@ interface IListOperationProps {
 }
 
 export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IListOperationProps) => {
+  const Toast = useToast();
   const [rating, setRating] = useState<string>("");
   const [studioId, setStudioId] = useState<string | undefined>(undefined);
   const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
@@ -36,7 +36,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
       })
     };
 
-    // if rating is undefined 
+    // if rating is undefined
     if (rating === "") {
       // and all scenes have the same rating, then we are unsetting the rating.
       if(aggregateRating) {
@@ -48,8 +48,8 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
       // if rating is set, then we are setting the rating for all
       sceneInput.rating = Number.parseInt(rating);
     }
-    
-    // if studioId is undefined 
+
+    // if studioId is undefined
     if (studioId === undefined) {
       // and all scenes have the same studioId,
       // then unset the studioId, otherwise ignoring studioId
@@ -61,7 +61,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
       // if studioId is set, then we are setting it
       sceneInput.studio_id = studioId;
     }
-    
+
     // if performerIds are empty
     if (!performerIds || performerIds.length === 0) {
       // and all scenes have the same ids,
@@ -73,7 +73,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
       // if performerIds non-empty, then we are setting them
       sceneInput.performer_ids = performerIds;
     }
-    
+
     // if tagIds non-empty, then we are setting them
     if (!tagIds || tagIds.length === 0) {
       // and all scenes have the same ids,
@@ -93,9 +93,9 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
     setIsLoading(true);
     try {
       await updateScenes();
-      ToastUtils.success("Updated scenes");
+      Toast.success({ content: "Updated scenes" });
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
     setIsLoading(false);
     props.onScenesUpdated();
@@ -152,7 +152,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
         first = false;
       } else {
         const perfIds = !!scene.performers ? scene.performers.map(toId).sort() : [];
-        
+
         if (!_.isEqual(ret, perfIds)) {
           ret = [];
         }
@@ -172,7 +172,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
         first = false;
       } else {
         const tIds = !!scene.tags ? scene.tags.map(toId).sort() : [];
-        
+
         if (!_.isEqual(ret, tIds)) {
           ret = [];
         }
@@ -212,7 +212,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
         }
         const perfIds = !!scene.performers ? scene.performers.map(toId).sort() : [];
         const tIds = !!scene.tags ? scene.tags.map(toId).sort() : [];
-        
+
         if (!_.isEqual(performerIds, perfIds)) {
           performerIds = [];
         }
@@ -222,7 +222,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
         }
       }
     });
-    
+
     setRating(rating);
     setStudioId(studioId);
     setPerformerIds(performerIds);
@@ -249,7 +249,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
       />
     );
   }
-  
+
   function render() {
     return (
       <>
@@ -283,9 +283,9 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
             <Form.Label>Performers</Form.Label>
             {renderMultiSelect("tags", tagIds)}
           </Form.Group>
-          
+
           <ButtonGroup className="operation-item">
-            <Button 
+            <Button
               variant="primary"
               onClick={onSave}>
                 Apply

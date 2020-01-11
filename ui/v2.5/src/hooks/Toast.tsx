@@ -5,6 +5,7 @@ interface IToast {
   header?: string;
   content: JSX.Element|string;
   delay?: number;
+  variant?: 'success'|'danger'|'warning'|'info';
 }
 interface IActiveToast extends IToast {
   id: number;
@@ -21,7 +22,13 @@ export const ToastProvider: React.FC  = ({children}) => {
   );
 
   const toastItems = toasts.map(toast => (
-    <Toast key={toast.id} onClose={() => removeToast(toast.id)} autohide delay={toast.delay ?? 5000}>
+    <Toast
+      autohide
+      key={toast.id}
+      onClose={() => removeToast(toast.id)}
+      className={toast.variant ?? 'success'}
+      delay={toast.delay ?? 5000}
+    >
       <Toast.Header>
         <span className="mr-auto">
           { toast.header ?? 'Stash' }
@@ -30,7 +37,7 @@ export const ToastProvider: React.FC  = ({children}) => {
       <Toast.Body>{toast.content}</Toast.Body>
     </Toast>
   ));
-    
+
   const addToast = (toast:IToast) => (
     setToasts([...toasts, { ...toast, id: toastID++ }])
   );
@@ -47,7 +54,17 @@ export const ToastProvider: React.FC  = ({children}) => {
 
 const useToasts = () => {
   const setToast = useContext(ToastContext);
-  return setToast;
+  return {
+    success: setToast,
+    error: (error: Error) => {
+      console.error(error.message);
+      setToast({
+        variant: 'danger',
+        header: 'Error',
+        content: error.message ?? error.toString()
+      });
+    }
+  };
 }
 
 export default useToasts;

@@ -2,17 +2,16 @@ import { Form, Spinner, Table } from 'react-bootstrap';
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from 'react-router-dom';
 
-import * as GQL from "../../../core/generated-graphql";
-import { StashService } from "../../../core/StashService";
-import { ErrorUtils } from "../../../utils/errors";
-import { TableUtils } from "../../../utils/table";
-import { DetailsEditNavbar } from "../../Shared/DetailsEditNavbar";
-import { ToastUtils } from "../../../utils/toasts";
-import { ImageUtils } from "../../../utils/image";
+import * as GQL from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { ImageUtils, TableUtils } from "src/utils";
+import { DetailsEditNavbar } from "src/components/Shared";
+import { useToast} from "src/hooks";
 
 export const Studio: React.FC = () => {
-  const { id = '' } = useParams();
   const history = useHistory();
+  const Toast = useToast();
+  const { id = 'new' } = useParams();
   const isNew = id === "new";
 
   // Editing state
@@ -58,11 +57,13 @@ export const Studio: React.FC = () => {
     setImage(this.result as string);
   }
 
-  ImageUtils.addPasteImageHook(onImageLoad);
+  ImageUtils.usePasteImage(onImageLoad);
 
   if (!isNew && !isEditing) {
-    if (!data || !data.findStudio || loading) { return <Spinner animation="border" variant="light" />; }
-    if (!!error) { return <>error...</>; }
+    if (!data?.findStudio || loading)
+      return <Spinner animation="border" variant="light" />;
+    if (error)
+      return <div>{error.message}</div>;
   }
 
   function getStudioInput() {
@@ -89,7 +90,7 @@ export const Studio: React.FC = () => {
         history.push(`/studios/${result.data.studioCreate.id}`);
       }
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
   }
 
@@ -99,9 +100,9 @@ export const Studio: React.FC = () => {
     }
     try {
       await StashService.queryMetadataAutoTag({ studios: [studio.id]});
-      ToastUtils.success("Started auto tagging");
+      Toast.success({ content: "Started auto tagging" });
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
   }
 
@@ -109,14 +110,14 @@ export const Studio: React.FC = () => {
     try {
       await deleteStudio();
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
-    
+
     // redirect to studios page
     history.push(`/studios`);
   }
 
-  function onImageChange(event: React.FormEvent<HTMLInputElement>) {
+  function onImageChangeHandler(event: React.FormEvent<HTMLInputElement>) {
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
@@ -135,7 +136,7 @@ export const Studio: React.FC = () => {
             onSave={onSave}
             onDelete={onDelete}
             onAutoTag={onAutoTag}
-            onImageChange={onImageChange}
+            onImageChange={onImageChangeHandler}
           />
           <h1>
             { !isEditing

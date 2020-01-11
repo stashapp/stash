@@ -1,13 +1,9 @@
-import {
-  H4, FormGroup, HTMLSelect,
-} from "@blueprintjs/core";
-import React, { FunctionComponent, useState, useEffect, useRef } from "react";
-import * as GQL from "../../core/generated-graphql";
-import { StashService } from "../../core/StashService";
+import React, { useState, useEffect, useRef } from "react";
+import { Form, Col } from 'react-bootstrap';
+import * as GQL from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
 
-interface IProps {}
-
-function convertTime(logEntry : GQL.LogEntryDataFragment) {
+function convertTime(logEntry: GQL.LogEntryDataFragment) {
   function pad(val : number) {
     var ret = val.toString();
     if (val <= 9) {
@@ -44,17 +40,17 @@ class LogEntry {
   }
 }
 
-export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
+export const SettingsLogsPanel: React.FC = () => {
   const { data, error } = StashService.useLoggingSubscribe();
   const { data: existingData } = StashService.useLogs();
-  
+
   const logEntries = useRef<LogEntry[]>([]);
   const [logLevel, setLogLevel] = useState<string>("Info");
   const [filteredLogEntries, setFilteredLogEntries] = useState<LogEntry[]>([]);
   const lastUpdate = useRef<number>(0);
   const updateTimeout = useRef<NodeJS.Timeout>();
 
-  // maximum number of log entries to display. Subsequent entries will truncate 
+  // maximum number of log entries to display. Subsequent entries will truncate
   // the list, dropping off the oldest entries first.
   const MAX_LOG_ENTRIES = 200;
 
@@ -83,7 +79,7 @@ export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
     // filter subscribed data as it comes in, otherwise we'll end up
     // truncating stuff that wasn't filtered out
     convertedData = convertedData.filter(filterByLogLevel)
-    
+
     // put newest entries at the top
     convertedData.reverse();
     prependLogEntries(convertedData);
@@ -167,16 +163,21 @@ export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
 
   return (
     <>
-      <H4>Logs</H4>
-      <div>
-      <FormGroup inline={true} label="Log Level">
-        <HTMLSelect
-          options={logLevels}
-          onChange={(event) => setLogLevel(event.target.value)}
-          value={logLevel}
-        />
-        </FormGroup>
-      </div>
+      <h4>Logs</h4>
+      <Form.Row id="log-level">
+        <Col xs={1}>
+          <Form.Label>Log Level</Form.Label>
+        </Col>
+        <Col xs={2}>
+          <Form.Control
+            as="select"
+            defaultValue={logLevel}
+            onChange={(event) => setLogLevel(event.currentTarget.value)}
+          >
+              { logLevels.map(level => (<option key={level} value={level}>{level}</option>)) }
+          </Form.Control>
+        </Col>
+      </Form.Row>
       <div className="logs">
         {maybeRenderError()}
         {filteredLogEntries.map((logEntry) =>

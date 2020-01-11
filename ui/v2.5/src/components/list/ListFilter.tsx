@@ -1,11 +1,11 @@
 import { debounce } from "lodash";
 import React, { SyntheticEvent, useCallback, useState } from "react";
 import { Badge, Button, ButtonGroup, Dropdown, Form, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { Criterion } from "../../models/list-filter/criteria/criterion";
-import { ListFilterModel } from "../../models/list-filter/filter";
-import { DisplayMode } from "../../models/list-filter/types";
+import { Icon } from 'src/components/Shared';
+import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { DisplayMode } from "src/models/list-filter/types";
 import { AddFilter } from "./AddFilter";
 
 interface IListFilterOperation {
@@ -114,7 +114,7 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
           active={props.filter.displayMode === option}
           onClick={() => onChangeDisplayMode(option)}
         >
-          <FontAwesomeIcon icon={getIcon(option)} />
+          <Icon icon={getIcon(option)} />
         </Button>
       </OverlayTrigger>
     ));
@@ -129,7 +129,7 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
       >
         {criterion.getLabel()}
         <Button onClick={() => onRemoveCriterionTag(criterion)}>
-          <FontAwesomeIcon icon="times" />
+          <Icon icon="times" />
         </Button>
       </Badge>
     ));
@@ -176,7 +176,7 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
         <Dropdown>
           <Dropdown.Toggle variant="secondary" id="more-menu">
             <Button>
-              <FontAwesomeIcon icon="ellipsis-h" />
+              <Icon icon="ellipsis-h" />
             </Button>
           </Dropdown.Toggle>
           <Dropdown.Menu>
@@ -191,7 +191,7 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
     if (props.onChangeZoom) {
       props.onChangeZoom(v);
     }
-  } 
+  }
 
   function maybeRenderZoom() {
     if (props.onChangeZoom) {
@@ -240,7 +240,7 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
               <Tooltip id="sort-direction-tooltip">{props.filter.sortDirection === "asc" ? "Ascending" : "Descending"}</Tooltip>
             }>
               <Button onClick={onChangeSortDirection}>
-                <FontAwesomeIcon icon={props.filter.sortDirection === "asc" ? "caret-up" : "caret-down"} />
+                <Icon icon={props.filter.sortDirection === "asc" ? "caret-up" : "caret-down"} />
               </Button>
             </OverlayTrigger>
           </ButtonGroup>

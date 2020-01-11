@@ -1,24 +1,22 @@
 import _ from "lodash";
-import React, { FunctionComponent } from "react";
+import React from "react";
 import { QueryHookResult } from "react-apollo-hooks";
-import { FindSceneMarkersQuery, FindSceneMarkersVariables } from "../../core/generated-graphql";
-import { ListHook } from "../../hooks/ListHook";
-import { IBaseProps } from "../../models/base-props";
-import { ListFilterModel } from "../../models/list-filter/filter";
-import { DisplayMode, FilterMode } from "../../models/list-filter/types";
+import { FindSceneMarkersQuery, FindSceneMarkersVariables } from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { NavUtils } from "src/utils";
+import { ListHook } from "src/hooks";
+import { IBaseProps } from "src/models/base-props";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { DisplayMode, FilterMode } from "src/models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
-import { StashService } from "../../core/StashService";
-import { NavigationUtils } from "../../utils/navigation";
 
 interface IProps extends IBaseProps {}
 
-export const SceneMarkerList: FunctionComponent<IProps> = (props: IProps) => {
-  const otherOperations = [
-    {
-      text: "Play Random",
-      onClick: playRandom,
-    }
-  ];
+export const SceneMarkerList: React.FC<IProps> = (props: IProps) => {
+  const otherOperations = [{
+    text: "Play Random",
+    onClick: playRandom
+  }];
 
   const listData = ListHook.useList({
     filterMode: FilterMode.SceneMarkers,
@@ -27,7 +25,7 @@ export const SceneMarkerList: FunctionComponent<IProps> = (props: IProps) => {
     renderContent,
   });
 
-  async function playRandom(result: QueryHookResult<FindSceneMarkersQuery, FindSceneMarkersVariables>, filter: ListFilterModel, selectedIds: Set<string>) {
+  async function playRandom(result: QueryHookResult<FindSceneMarkersQuery, FindSceneMarkersVariables>, filter: ListFilterModel) {
     // query for a random scene
     if (result.data && result.data.findSceneMarkers) {
       let count = result.data.findSceneMarkers.count;
@@ -39,7 +37,7 @@ export const SceneMarkerList: FunctionComponent<IProps> = (props: IProps) => {
       const singleResult = await StashService.queryFindSceneMarkers(filterCopy);
       if (singleResult && singleResult.data && singleResult.data.findSceneMarkers && singleResult.data.findSceneMarkers.scene_markers.length === 1) {
         // navigate to the scene player page
-        let url = NavigationUtils.makeSceneMarkerUrl(singleResult!.data!.findSceneMarkers!.scene_markers[0])
+        let url = NavUtils.makeSceneMarkerUrl(singleResult.data.findSceneMarkers.scene_markers[0])
         props.history.push(url);
       }
     }
@@ -49,7 +47,8 @@ export const SceneMarkerList: FunctionComponent<IProps> = (props: IProps) => {
     result: QueryHookResult<FindSceneMarkersQuery, FindSceneMarkersVariables>,
     filter: ListFilterModel,
   ) {
-    if (!result.data || !result.data.findSceneMarkers) { return; }
+    if (!result?.data?.findSceneMarkers)
+      return;
     if (filter.displayMode === DisplayMode.Wall) {
       return <WallPanel sceneMarkers={result.data.findSceneMarkers.scene_markers} />;
     }

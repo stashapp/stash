@@ -1,9 +1,8 @@
 import React from "react";
 import { Card } from 'react-bootstrap';
 import { Link } from "react-router-dom";
-import * as GQL from "../../core/generated-graphql";
-import { TextUtils } from "../../utils/text";
-import { NavigationUtils } from "../../utils/navigation";
+import * as GQL from "src/core/generated-graphql";
+import { NavUtils, TextUtils } from "src/utils";
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
@@ -12,7 +11,7 @@ interface IPerformerCardProps {
 
 export const PerformerCard: React.FC<IPerformerCardProps> = (props: IPerformerCardProps) => {
   const age = TextUtils.age(props.performer.birthdate, props.ageFromDate);
-  const ageString = `${age} years old${!!props.ageFromDate ? " in this scene." : "."}`;
+  const ageString = `${age} years old${props.ageFromDate ? " in this scene." : "."}`;
 
   function maybeRenderFavoriteBanner() {
     if (props.performer.favorite === false) { return; }
@@ -37,7 +36,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (props: IPerformerCa
           {props.performer.name}
         </h4>
         {age !== 0 ? <div>{ageString}</div> : ''}
-        <span>Stars in {props.performer.scene_count} <Link to={NavigationUtils.makePerformerScenesUrl(props.performer)}>scenes</Link>.
+        <span>Stars in {props.performer.scene_count} <Link to={NavUtils.makePerformerScenesUrl(props.performer)}>scenes</Link>.
         </span>
       </div>
     </Card>

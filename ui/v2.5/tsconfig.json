@@ -18,11 +18,11 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "preserve",
-
     "downlevelIteration": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "baseUrl": "."
   },
   "include": [
-    "src"
+    "src/**/*"
   ]
 }

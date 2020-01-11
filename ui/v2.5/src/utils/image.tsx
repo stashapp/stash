@@ -1,34 +1,37 @@
 import React, { useEffect } from "react";
 
-export class ImageUtils {
-
-  private static readImage(file: File, onLoadEnd: (this: FileReader) => any) {
-    const reader: FileReader = new FileReader();
-    
-    reader.onloadend = onLoadEnd;
-    reader.readAsDataURL(file);
-  }
-
-  public static onImageChange(event: React.FormEvent<HTMLInputElement>, onLoadEnd: (this: FileReader) => any) {
-    const file: File = (event.target as any).files[0];
-    ImageUtils.readImage(file, onLoadEnd);
-  }
-    
-  public static pasteImage(e : any, onLoadEnd: (this: FileReader) => any) {
-    if (e.clipboardData.files.length === 0) {
-      return;
-    }
-    
-    const file: File = e.clipboardData.files[0];
-    ImageUtils.readImage(file, onLoadEnd);
-  }
-
-  public static addPasteImageHook(onLoadEnd: (this: FileReader) => any) {
-    useEffect(() => {
-      const pasteImage = (e: any) => { ImageUtils.pasteImage(e, onLoadEnd) }
-      window.addEventListener("paste", pasteImage);
-    
-      return () => window.removeEventListener("paste", pasteImage);
-    });
-  }
+const readImage = (file: File, onLoadEnd: (this: FileReader) => void) => {
+  const reader: FileReader = new FileReader();
+  reader.onloadend = onLoadEnd;
+  reader.readAsDataURL(file);
 }
+
+const pasteImage = (event: ClipboardEvent, onLoadEnd: (this: FileReader) => void) => {
+  const files = event?.clipboardData?.files;
+  if(!files?.length)
+    return;
+
+  const file = files[0];
+  readImage(file, onLoadEnd);
+}
+
+const onImageChange = (event: React.FormEvent<HTMLInputElement>, onLoadEnd: (this: FileReader) => void) => {
+  const file = event?.currentTarget?.files?.[0];
+  if(file)
+    readImage(file, onLoadEnd);
+}
+
+const usePasteImage = (onLoadEnd: (this: FileReader) => void) => {
+  useEffect(() => {
+    const paste = (event: ClipboardEvent) => ( pasteImage(event, onLoadEnd) );
+    document.addEventListener("paste", paste);
+
+    return () => document.removeEventListener("paste", paste);
+  });
+}
+
+const Image = {
+  onImageChange,
+  usePasteImage
+}
+export default Image;

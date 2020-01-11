@@ -1,8 +1,8 @@
 import { Button, Form, Modal, Nav, Navbar, OverlayTrigger, Popover } from 'react-bootstrap';
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import * as GQL from "../../core/generated-graphql";
-import { NavigationUtils } from "../../utils/navigation";
+import * as GQL from "src/core/generated-graphql";
+import { NavUtils } from "src/utils";
 
 interface IProps {
   performer?: Partial<GQL.PerformerDataFragment>;
@@ -92,10 +92,10 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   function renderScenesButton() {
     if (props.isEditing) { return; }
     let linkSrc: string = "#";
-    if (!!props.performer) {
-      linkSrc = NavigationUtils.makePerformerScenesUrl(props.performer);
-    } else if (!!props.studio) {
-      linkSrc = NavigationUtils.makeStudioScenesUrl(props.studio);
+    if (props.performer) {
+      linkSrc = NavUtils.makePerformerScenesUrl(props.performer);
+    } else if (props.studio) {
+      linkSrc = NavUtils.makeStudioScenesUrl(props.studio);
     }
     return (
       <Link to={linkSrc}>

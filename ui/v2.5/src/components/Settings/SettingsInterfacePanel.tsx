@@ -1,20 +1,10 @@
-import {
-  Button,
-  Checkbox,
-  Divider,
-  FormGroup,
-  Spinner,
-  TextArea,
-  NumericInput
-} from "@blueprintjs/core";
-import React, { FunctionComponent, useEffect, useState } from "react";
-import { StashService } from "../../core/StashService";
-import { ErrorUtils } from "../../utils/errors";
-import { ToastUtils } from "../../utils/toasts";
+import React, { useEffect, useState } from "react";
+import { Button, Form, Spinner } from 'react-bootstrap';
+import { StashService } from "src/core/StashService";
+import { useToast } from 'src/hooks';
 
-interface IProps {}
-
-export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
+export const SettingsInterfacePanel: React.FC = () => {
+  const Toast = useToast();
   const config = StashService.useConfiguration();
   const [soundOnPreview, setSoundOnPreview] = useState<boolean>();
   const [wallShowTitle, setWallShowTitle] = useState<boolean>();
@@ -35,66 +25,63 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
   });
 
   useEffect(() => {
-    if (!config.data || !config.data.configuration || !!config.error) { return; }
-    if (!!config.data.configuration.interface) {
-      let iCfg = config.data.configuration.interface;
-      setSoundOnPreview(iCfg.soundOnPreview !== undefined ? iCfg.soundOnPreview : true);
-      setWallShowTitle(iCfg.wallShowTitle !== undefined ? iCfg.wallShowTitle : true);
-      setMaximumLoopDuration(iCfg.maximumLoopDuration || 0);
-      setAutostartVideo(iCfg.autostartVideo !== undefined ? iCfg.autostartVideo : false);
-      setShowStudioAsText(iCfg.showStudioAsText !== undefined ? iCfg.showStudioAsText : false);
-      setCSS(config.data.configuration.interface.css || "");
-      setCSSEnabled(config.data.configuration.interface.cssEnabled || false);
-    }
-  }, [config.data]);
+    if (config.error)
+      return;
+
+    const iCfg = config?.data?.configuration?.interface;
+    setSoundOnPreview(iCfg?.soundOnPreview ?? true);
+    setWallShowTitle(iCfg?.wallShowTitle ?? true);
+    setMaximumLoopDuration(iCfg?.maximumLoopDuration ?? 0);
+    setAutostartVideo(iCfg?.autostartVideo ?? false);
+    setShowStudioAsText(iCfg?.showStudioAsText ?? false);
+    setCSS(iCfg?.css ?? "");
+    setCSSEnabled(iCfg?.cssEnabled ?? false);
+  }, [config]);
 
   async function onSave() {
     try {
       const result = await updateInterfaceConfig();
       console.log(result);
-      ToastUtils.success("Updated config");
+      Toast.success({ content: "Updated config" });
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
   }
 
   return (
     <>
-      {!!config.error ? <h1>{config.error.message}</h1> : undefined}
-      {(!config.data || !config.data.configuration || config.loading) ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
+      {config.error ? <h1>{config.error.message}</h1> : ''}
+      {(!config?.data?.configuration || config.loading) ? <Spinner animation="border" variant="light" /> : ''}
       <h4>User Interface</h4>
-      <FormGroup
-        label="Scene / Marker Wall"
-        helperText="Configuration for wall items"
-      >
-        <Checkbox
+      <Form.Group>
+        <Form.Label>Scene / Marker Wall</Form.Label>
+        <Form.Check
           checked={wallShowTitle}
           label="Display title and tags"
           onChange={() => setWallShowTitle(!wallShowTitle)}
         />
-        <Checkbox
+        <Form.Check
           checked={soundOnPreview}
           label="Enable sound"
           onChange={() => setSoundOnPreview(!soundOnPreview)}
         />
-      </FormGroup>
+        <Form.Text className="text-muted" >Configuration for wall items</Form.Text>
+      </Form.Group>
 
-      <FormGroup
-        label="Scene List"
-      >
-        <Checkbox
+      <Form.Group>
+        <Form.Label>Scene List</Form.Label>
+        <Form.Check
           checked={showStudioAsText}
           label="Show Studios as text"
           onChange={() => {
             setShowStudioAsText(!showStudioAsText)
           }}
         />
-      </FormGroup>
-      
-      <FormGroup
-        label="Scene Player"
-      >
-        <Checkbox
+      </Form.Group>
+
+    <Form.Group>
+        <Form.Label>Scene Player</Form.Label>
+        <Form.Check
           checked={autostartVideo}
           label="Auto-start video"
           onChange={() => {
@@ -102,25 +89,22 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
           }}
         />
 
-        <FormGroup
-          label="Maximum loop duration"
-          helperText="Maximum scene duration - in seconds - where scene player will loop the video - 0 to disable"
-        >
-          <NumericInput 
-            value={maximumLoopDuration} 
+          <Form.Group id="max-loop-duration">
+          <Form.Label>Maximum loop duration</Form.Label>
+          <Form.Control
             type="number"
-            onValueChange={(value: number) => setMaximumLoopDuration(value)}
+            defaultValue={maximumLoopDuration}
+            onChange={(event:React.FormEvent<HTMLInputElement>) => setMaximumLoopDuration(Number.parseInt(event.currentTarget.value) ?? 0)}
             min={0}
-            minorStepSize={1}
+            step={1}
           />
-        </FormGroup>
-      </FormGroup>
+          <Form.Text className="text-muted">Maximum scene duration - in seconds - where scene player will loop the video - 0 to disable</Form.Text>
+        </Form.Group>
+      </Form.Group>
 
-      <FormGroup
-        label="Custom CSS"
-        helperText="Page must be reloaded for changes to take effect."
-      >
-        <Checkbox
+      <Form.Group>
+        <Form.Label>Custom CSS</Form.Label>
+        <Form.Check
           checked={cssEnabled}
           label="Custom CSS enabled"
           onChange={() => {
@@ -128,16 +112,17 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
           }}
         />
 
-        <TextArea 
-          value={css} 
+        <Form.Control
+          as="textarea"
+          value={css}
           onChange={(e: any) => setCSS(e.target.value)}
-          fill={true}
           rows={16}>
-        </TextArea>
-      </FormGroup>
+        </Form.Control>
+        <Form.Text className="text-muted">Page must be reloaded for changes to take effect.</Form.Text>
+      </Form.Group>
 
-      <Divider />
-      <Button intent="primary" onClick={() => onSave()}>Save</Button>
+      <hr />
+      <Button variant="primary" onClick={() => onSave()}>Save</Button>
     </>
   );
 };

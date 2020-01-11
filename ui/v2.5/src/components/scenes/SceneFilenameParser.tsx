@@ -1,16 +1,14 @@
-import { Badge, Button, Card, Collapse, Dropdown, DropdownButton, Form, Table, Spinner } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useEffect, useState } from "react";
-import { StashService } from "../../core/StashService";
-import * as GQL from "../../core/generated-graphql";
-import { SlimSceneDataFragment, Maybe } from "../../core/generated-graphql";
-import { TextUtils } from "../../utils/text";
+import { Badge, Button, Card, Collapse, Dropdown, DropdownButton, Form, Table, Spinner } from 'react-bootstrap';
 import _ from "lodash";
-import { ToastUtils } from "../../utils/toasts";
-import { ErrorUtils } from "../../utils/errors";
+import { StashService } from "src/core/StashService";
+import * as GQL from "src/core/generated-graphql";
+import { SlimSceneDataFragment, Maybe } from "src/core/generated-graphql";
+import { FilterSelect, Icon, StudioSelect } from "src/components/Shared";
+import { TextUtils } from "src/utils";
+import { useToast } from "src/hooks";
 import { Pagination } from "../list/Pagination";
-import { FilterSelect, StudioSelect } from "../select/FilterSelect";
-  
+
 class ParserResult<T> {
   public value: Maybe<T>;
   public originalValue: Maybe<T>;
@@ -22,7 +20,7 @@ class ParserResult<T> {
   }
 
   public setValue(v : Maybe<T>) {
-    if (!!v) {
+    if (v) {
       this.value = v;
       this.set = !_.isEqual(this.value, this.originalValue);
     }
@@ -258,6 +256,7 @@ const builtInRecipes = [
 ];
 
 export const SceneFilenameParser: React.FC = () => {
+  const Toast = useToast();
   const [parserResult, setParserResult] = useState<SceneParserResult[]>([]);
   const [parserInput, setParserInput] = useState<IParserInput>(initialParserInput());
 
@@ -268,7 +267,7 @@ export const SceneFilenameParser: React.FC = () => {
   const [allStudioSet, setAllStudioSet] = useState<boolean>(false);
 
   const [showFields, setShowFields] = useState<Map<string, boolean>>(initialShowFieldsState());
-  
+
   const [totalItems, setTotalItems] = useState<number>(0);
 
   // Network state
@@ -320,17 +319,17 @@ export const SceneFilenameParser: React.FC = () => {
     setParserResult([]);
 
     setIsLoading(true);
-    
+
     try {
       const response = await StashService.queryParseSceneFilenames(getParserFilter(), getParserInput());
 
       let result = response.data.parseSceneFilenames;
-      if (!!result) {
+      if (result) {
         parseResults(result.results);
         setTotalItems(result.count);
       }
     } catch (err) {
-      ErrorUtils.handle(err);
+      Toast.error(err);
     }
 
     setIsLoading(false);
@@ -373,9 +372,9 @@ export const SceneFilenameParser: React.FC = () => {
 
     try {
       await updateScenes();
-      ToastUtils.success("Updated scenes");
+      Toast.success({ content: "Updated scenes" });
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
 
     setIsLoading(false);
@@ -395,7 +394,7 @@ export const SceneFilenameParser: React.FC = () => {
   function determineFieldsToHide() {
     var pattern = parserInput.pattern;
     var titleSet = pattern.includes("{title}");
-    var dateSet = pattern.includes("{date}") || 
+    var dateSet = pattern.includes("{date}") ||
       pattern.includes("{dd}") || // don't worry about other partial date fields since this should be implied
       ParserField.fullDateFields.some((f) => {
         return pattern.includes("{" + f.field + "}");
@@ -518,7 +517,7 @@ export const SceneFilenameParser: React.FC = () => {
 
     const fieldRows = [...props.fields.entries()].map(([label, enabled]) => (
       <div key={label} onClick={() => {handleClick(label)}}>
-        <FontAwesomeIcon icon={enabled ? "check" : "times" } />
+        <Icon icon={enabled ? "check" : "times" } />
         <span>{label}</span>
       </div>
     ));
@@ -526,7 +525,7 @@ export const SceneFilenameParser: React.FC = () => {
     return (
       <div>
         <div onClick={() => setOpen(!open)}>
-          <FontAwesomeIcon icon={open ? "chevron-down" : "chevron-right" } />
+          <Icon icon={open ? "chevron-down" : "chevron-right" } />
           <span>Display fields</span>
         </div>
         <Collapse in={open}>
@@ -567,9 +566,9 @@ export const SceneFilenameParser: React.FC = () => {
       setWhitespaceCharacters(recipe.whitespaceCharacters);
       setCapitalizeTitle(recipe.capitalizeTitle);
     }
-  
+
     const validFields = [new ParserField("", "Wildcard")].concat(ParserField.validFields);
-    
+
     function addParserField(field: ParserField) {
       setPattern(pattern + field.getFieldPattern());
     }
@@ -601,7 +600,7 @@ export const SceneFilenameParser: React.FC = () => {
         />
         <div>Matches with {"{i}"}</div>
       </Form.Group>
-      
+
       <Form.Group>
         <h5>Title</h5>
         <Form.Label>Whitespace characters:</Form.Label>
@@ -619,7 +618,7 @@ export const SceneFilenameParser: React.FC = () => {
         </Form.Group>
         <div>These characters will be replaced with whitespace in the title</div>
       </Form.Group>
-          
+
           {/* TODO - mapping stuff will go here */}
 
           <Form.Group>
@@ -726,7 +725,7 @@ export const SceneFilenameParser: React.FC = () => {
       />
     );
   }
-  
+
   function renderNewInputGroup(props : ISceneParserFieldProps, onChange : (value : any) => void) {
     return (
       <InputGroupWrapper
@@ -840,17 +839,17 @@ export const SceneFilenameParser: React.FC = () => {
         <td style={{textAlign: "left"}}>
           {props.scene.filename}
         </td>
-        <SceneParserField 
+        <SceneParserField
           key="title"
           fieldName="Title"
-          className="parser-field-title" 
+          className="parser-field-title"
           parserResult={props.scene.title}
           onSetChanged={(set) => onTitleChanged(set, props.scene.title.value)}
           onValueChanged={(value) => onTitleChanged(props.scene.title.set, value)}
           renderOriginalInputField={renderOriginalInputGroup}
           renderNewInputField={renderNewInputGroup}
         />
-        <SceneParserField 
+        <SceneParserField
           key="date"
           fieldName="Date"
           className="parser-field-date"
@@ -860,7 +859,7 @@ export const SceneFilenameParser: React.FC = () => {
           renderOriginalInputField={renderOriginalInputGroup}
           renderNewInputField={renderNewInputGroup}
         />
-        <SceneParserField 
+        <SceneParserField
           key="performers"
           fieldName="Performers"
           className="parser-field-performers"
@@ -871,7 +870,7 @@ export const SceneFilenameParser: React.FC = () => {
           renderOriginalInputField={renderOriginalSelect}
           renderNewInputField={renderNewPerformerSelect}
         />
-        <SceneParserField 
+        <SceneParserField
           key="tags"
           fieldName="Tags"
           className="parser-field-tags"
@@ -882,7 +881,7 @@ export const SceneFilenameParser: React.FC = () => {
           renderOriginalInputField={renderOriginalSelect}
           renderNewInputField={renderNewTagSelect}
         />
-        <SceneParserField 
+        <SceneParserField
           key="studio"
           fieldName="Studio"
           className="parser-field-studio"
@@ -944,9 +943,9 @@ export const SceneFilenameParser: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {parserResult.map((scene) => 
-                <SceneParserRow 
-                  scene={scene} 
+              {parserResult.map((scene) =>
+                <SceneParserRow
+                  scene={scene}
                   key={scene.id}
                   onChange={(changedScene) => onChange(scene, changedScene)}/>
               )}
@@ -978,4 +977,4 @@ export const SceneFilenameParser: React.FC = () => {
     </Card>
   );
 };
-  
+

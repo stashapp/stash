@@ -1,7 +1,7 @@
 import React from "react";
-import * as GQL from "../../../core/generated-graphql";
-import { TextUtils } from "../../../utils/text";
-import { TagLink } from "../../Shared/TagLink";
+import * as GQL from "src/core/generated-graphql";
+import { TextUtils } from "src/utils";
+import { TagLink } from "src/components/Shared";
 import { SceneHelpers } from "../helpers";
 
 interface ISceneDetailProps {
@@ -38,9 +38,9 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props: ISceneDetai
       <h1>
         {!!props.scene.title ? props.scene.title : TextUtils.fileNameFromPath(props.scene.path)}
       </h1>
-      {!!props.scene.date ? <h4>{props.scene.date}</h4> : undefined}
-      {!!props.scene.rating ? <h6>Rating: {props.scene.rating}</h6> : undefined}
-      {!!props.scene.file.height ? <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6> : undefined}
+      {props.scene.date ? <h4>{props.scene.date}</h4> : ''}
+      {props.scene.rating ? <h6>Rating: {props.scene.rating}</h6> : ''}
+      {props.scene.file.height ? <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6> : ''}
       {renderDetails()}
       {renderTags()}
     </>

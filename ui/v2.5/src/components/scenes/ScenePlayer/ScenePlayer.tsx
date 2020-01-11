@@ -1,10 +1,10 @@
 import React from "react";
 import ReactJWPlayer from "react-jw-player";
 import { HotKeys } from "react-hotkeys";
-import * as GQL from "../../../core/generated-graphql";
+import * as GQL from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
 import { SceneHelpers } from "../helpers";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
-import { StashService } from "../../../core/StashService";
 
 interface IScenePlayerProps {
   scene: GQL.SceneDataFragment;
@@ -110,8 +110,8 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
     let getCurrentTimeHook: ((_videoTag: any) => number) | undefined = undefined;
 
     if (!this.props.scene.is_streamable) {
-      getDurationHook = () => { 
-        return this.props.scene.file.duration; 
+      getDurationHook = () => {
+        return this.props.scene.file.duration;
       };
 
       seekHook = (seekToPosition: number, _videoTag: any) => {

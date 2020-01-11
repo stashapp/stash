@@ -71,6 +71,7 @@ export const MainNavbar: React.FC = () => {
             activeClassName="active"
             exact={true}
             to={i.href}
+            key={i.href}
           >
             <Button variant="secondary">
               <FontAwesomeIcon icon={i.icon} />
@@ -82,7 +83,7 @@ export const MainNavbar: React.FC = () => {
       <Nav>
         {newButton}
         <LinkContainer
-          exact={true} 
+          exact={true}
           to="/settings">
             <Button variant="secondary">
               <FontAwesomeIcon icon="cog" />

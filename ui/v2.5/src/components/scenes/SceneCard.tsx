@@ -1,14 +1,12 @@
-import { Button, ButtonGroup, Card, Form, Popover, OverlayTrigger } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useState } from "react";
+import { Button, ButtonGroup, Card, Form, Popover, OverlayTrigger } from 'react-bootstrap';
 import { Link } from "react-router-dom";
-import * as GQL from "../../core/generated-graphql";
-import { VideoHoverHook } from "../../hooks/VideoHover";
-import { ColorUtils } from "../../utils/color";
-import { TextUtils } from "../../utils/text";
-import { TagLink } from "../Shared/TagLink";
-import { ZoomUtils } from "../../utils/zoom";
-import { StashService } from "../../core/StashService";
+import cx from 'classnames';
+import * as GQL from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { VideoHoverHook } from "src/hooks";
+import { Icon, TagLink } from 'src/components/Shared';
+import { TextUtils } from "src/utils";
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
@@ -20,14 +18,14 @@ interface ISceneCardProps {
 export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => {
   const [previewPath, setPreviewPath] = useState<string | undefined>(undefined);
   const videoHoverHook = VideoHoverHook.useVideoHover({resetOnMouseLeave: false});
-  
+
   const config = StashService.useConfiguration();
   const showStudioAsText = !!config.data && !!config.data.configuration ? config.data.configuration.interface.showStudioAsText : false;
 
   function maybeRenderRatingBanner() {
     if (!props.scene.rating) { return; }
     return (
-      <div className={`rating-banner ${ColorUtils.classForRating(props.scene.rating)}`}>
+      <div className={`rating-banner ${props.scene.rating ? `rating-${props.scene.rating}` : '' }`}>
         RATING: {props.scene.rating}
       </div>
     );
@@ -36,23 +34,21 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
   function maybeRenderSceneSpecsOverlay() {
     return (
       <div className={`scene-specs-overlay`}>
-        {!!props.scene.file.height ? <span className={`overlay-resolution`}> {TextUtils.resolution(props.scene.file.height)}</span> : undefined}
-        {props.scene.file.duration !== undefined && props.scene.file.duration >= 1 ? TextUtils.secondsToTimestamp(props.scene.file.duration) : ""}
+        {props.scene.file.height ? <span className={`overlay-resolution`}> {TextUtils.resolution(props.scene.file.height)}</span> : ''}
+        {props.scene.file.duration !== undefined && props.scene.file.duration >= 1 ? TextUtils.secondsToTimestamp(props.scene.file.duration) : ''}
       </div>
     );
   }
 
   function maybeRenderSceneStudioOverlay() {
-    if (!props.scene.studio) {
+    if (!props.scene.studio)
       return;
-    }
 
     let style: React.CSSProperties = {
       backgroundImage: `url('${props.scene.studio.image_path}')`,
     };
 
     let text = "";
-
     if (showStudioAsText) {
       style = {};
       text = props.scene.studio.name;
@@ -71,7 +67,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
   }
 
   function maybeRenderTagPopoverButton() {
-    if (props.scene.tags.length <= 0) { return; }
+    if (props.scene.tags.length <= 0)
+      return;
 
     const popover = (
       <Popover id="tag-popover">
@@ -84,7 +81,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
     return (
       <OverlayTrigger trigger="hover" placement="bottom" overlay={popover}>
         <Button>
-          <FontAwesomeIcon icon="tag" />
+          <Icon icon="tag" />
           {props.scene.tags.length}
         </Button>
       </OverlayTrigger>
@@ -92,7 +89,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
   }
 
   function maybeRenderPerformerPopoverButton() {
-    if (props.scene.performers.length <= 0) { return; }
+    if (props.scene.performers.length <= 0)
+      return;
 
     const popover = (
       <Popover id="performer-popover">
@@ -116,7 +114,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
     return (
       <OverlayTrigger trigger="hover" placement="bottom" overlay={popover}>
         <Button>
-          <FontAwesomeIcon icon="user" />
+          <Icon icon="user" />
           {props.scene.performers.length}
         </Button>
       </OverlayTrigger>
@@ -140,7 +138,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
     return (
       <OverlayTrigger trigger="hover" placement="bottom" overlay={popover}>
         <Button>
-          <FontAwesomeIcon icon="tag" />
+          <Icon icon="tag" />
           {props.scene.scene_markers.length}
         </Button>
       </OverlayTrigger>
@@ -182,31 +180,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
     return height > width;
   }
 
-  function getLinkClassName() {
-    let ret = "image previewable";
-    
-    if (isPortrait()) {
-      ret += " portrait";
-    }
-
-    return ret;
-  }
-
-  function getVideoClassName() {
-    let ret = "preview";
-    
-    if (isPortrait()) {
-      ret += " portrait";
-    }
-
-    return ret;
-  }
-
   var shiftKey = false;
 
   return (
     <Card
-      className={"col-4 " + ZoomUtils.classForZoom(props.zoomIndex)}
+      className={`col-4 zoom-${props.zoomIndex}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -217,13 +195,18 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
         onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
         onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => { shiftKey = event.shiftKey; event.stopPropagation(); } }
       />
-      <Link to={`/scenes/${props.scene.id}`} className={getLinkClassName()}>
+      <Link to={`/scenes/${props.scene.id}`} className={cx('image', 'previewable', {portrait: isPortrait()})}>
         <div className="video-container">
           {maybeRenderRatingBanner()}
           {maybeRenderSceneSpecsOverlay()}
           {maybeRenderSceneStudioOverlay()}
-          <video className={getVideoClassName()} loop={true} poster={props.scene.paths.screenshot || ""} ref={videoHoverHook.videoEl}>
-            {!!previewPath ? <source src={previewPath} /> : ""}
+          <video
+            loop
+            className={cx('preview', {portrait: isPortrait()})}
+            poster={props.scene.paths.screenshot || ""}
+            ref={videoHoverHook.videoEl}
+          >
+            {previewPath ? <source src={previewPath} /> : ""}
           </video>
         </div>
       </Link>

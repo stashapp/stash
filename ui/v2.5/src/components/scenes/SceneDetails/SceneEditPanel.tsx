@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from "react";
-import * as GQL from "../../../core/generated-graphql";
-import { StashService } from "../../../core/StashService";
-import { ErrorUtils } from "../../../utils/errors";
-import { ToastUtils } from "../../../utils/toasts";
-import { FilterSelect, StudioSelect } from "../../select/FilterSelect";
-import { ValidGalleriesSelect } from "../../select/ValidGalleriesSelect";
-import { ImageUtils } from "../../../utils/image";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Collapse, Dropdown, DropdownButton, Form, Button, Modal, Spinner } from 'react-bootstrap';
+import { Collapse, Dropdown, DropdownButton, Form, Button, Spinner } from 'react-bootstrap';
+import * as GQL from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
+import { FilterSelect, StudioSelect, SceneGallerySelect, Modal, Icon } from "src/components/Shared";
+import { useToast } from 'src/hooks';
+import { ImageUtils } from 'src/utils';
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -16,6 +13,7 @@ interface IProps {
 }
 
 export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
+  const Toast = useToast();
   const [title, setTitle] = useState<string | undefined>(undefined);
   const [details, setDetails] = useState<string | undefined>(undefined);
   const [url, setUrl] = useState<string | undefined>(undefined);
@@ -76,7 +74,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setCoverImagePreview(props.scene.paths.screenshot);
   }, [props.scene]);
 
-  ImageUtils.addPasteImageHook(onImageLoad);
+  ImageUtils.usePasteImage(onImageLoad);
 
   function getSceneInput(): GQL.SceneUpdateInput {
     return {
@@ -99,9 +97,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     try {
       const result = await updateScene();
       props.onUpdate(result.data.sceneUpdate);
-      ToastUtils.success("Updated scene");
+      Toast.success({ content: "Updated scene" });
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
     setIsLoading(false);
   }
@@ -119,9 +117,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setIsLoading(true);
     try {
       await deleteScene();
-      ToastUtils.success("Deleted scene");
+      Toast.success({ content: "Deleted scene" });
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
     setIsLoading(false);
 
@@ -148,30 +146,19 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   function renderDeleteAlert() {
     return (
       <Modal
-        keyboard={false}
-        onHide={() => {}}
         show={isDeleteAlertOpen}
+        icon="trash-alt"
+        header="Delete Scene?"
+        accept={{ variant: 'danger', onClick: onDelete, text: "Delete" }}
+        cancel={{ onClick: () => setIsDeleteAlertOpen(false), text: "Cancel" }}
       >
-        <Modal.Header>
-            <FontAwesomeIcon icon="trash-alt" />
-            <span>Delete Scene?</span>
-        </Modal.Header>
-        <Modal.Body>
-          <p>
-            Are you sure you want to delete this scene? Unless the file is also deleted, this scene will be re-added when scan is performed.
-          </p>
-          <Form>
-            <Form.Check checked={deleteFile} label="Delete file" onChange={() => setDeleteFile(!deleteFile)} />
-            <Form.Check checked={deleteGenerated} label="Delete generated supporting files" onChange={() => setDeleteGenerated(!deleteGenerated)} />
+        <p>
+          Are you sure you want to delete this scene? Unless the file is also deleted, this scene will be re-added when scan is performed.
+        </p>
+        <Form>
+          <Form.Check checked={deleteFile} label="Delete file" onChange={() => setDeleteFile(!deleteFile)} />
+          <Form.Check checked={deleteGenerated} label="Delete generated supporting files" onChange={() => setDeleteGenerated(!deleteGenerated)} />
           </Form>
-        </Modal.Body>
-
-        <Modal.Footer>
-          <div>
-            <Button variant="danger" onClick={onDelete}>Delete</Button>
-            <Button onClick={() => setIsDeleteAlertOpen(false)}>Cancel</Button>
-          </div>
-        </Modal.Footer>
       </Modal>
     );
   }
@@ -184,7 +171,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   function onCoverImageChange(event: React.FormEvent<HTMLInputElement>) {
     ImageUtils.onImageChange(event, onImageLoad);
   }
-  
+
   async function onScrapeClicked(scraper : GQL.ListSceneScrapersListSceneScrapers) {
     setIsLoading(true);
     try {
@@ -192,7 +179,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       if (!result.data || !result.data.scrapeScene) { return; }
       updateSceneFromScrapedScene(result.data.scrapeScene);
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -227,7 +214,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     if (!details && scene.details) {
       setDetails(scene.details);
     }
-    
+
     if (!date && scene.date) {
       setDate(scene.date);
     }
@@ -235,7 +222,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     if (!url && scene.url) {
       setUrl(scene.url);
     }
-    
+
     if (!studioId && scene.studio && scene.studio.id) {
       setStudioId(scene.studio.id);
     }
@@ -271,7 +258,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       if (!result.data || !result.data.scrapeSceneURL) { return; }
       updateSceneFromScrapedScene(result.data.scrapeSceneURL);
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -282,10 +269,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       return undefined;
     }
     return (
-      <Button 
+      <Button
         id="scrape-url-button"
         onClick={onScrapeSceneURL}>
-        <FontAwesomeIcon icon="file-download" />
+        <Icon icon="file-download" />
       </Button>
     )
   }
@@ -343,10 +330,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
         <Form.Group controlId="gallery">
           <Form.Label>Gallery</Form.Label>
-          <ValidGalleriesSelect
+          <SceneGallerySelect
             sceneId={props.scene.id}
             initialId={galleryId}
-            onSelectItem={(item) => setGalleryId(item ? item.id : undefined)}
+            onSelect={(item) => setGalleryId(item ? item.id : undefined)}
           />
         </Form.Group>
 
@@ -370,7 +357,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
         <div>
           <label onClick={() => setIsCoverImageOpen(!isCoverImageOpen)}>
-            <FontAwesomeIcon icon={isCoverImageOpen ? "chevron-down" : "chevron-right"} />
+            <Icon icon={isCoverImageOpen ? "chevron-down" : "chevron-right"} />
             <span>Cover Image</span>
           </label>
           <Collapse in={isCoverImageOpen}>
@@ -382,7 +369,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             </div>
           </Collapse>
         </div>
-        
+
       </div>
       <Button className="edit-button" variant="primary" onClick={onSave}>Save</Button>
       <Button className="edit-button" variant="danger" onClick={() => setIsDeleteAlertOpen(true)}>Delete</Button>

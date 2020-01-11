@@ -2,10 +2,9 @@ import ApolloClient from "apollo-client";
 import { WebSocketLink } from 'apollo-link-ws';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink, split } from "apollo-boost";
-import _ from "lodash";
+import { getMainDefinition } from "apollo-utilities";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
-import { getMainDefinition } from "apollo-utilities";
 
 export class StashService {
   public static client: ApolloClient<any>;
@@ -41,7 +40,7 @@ export class StashService {
         reconnect: true
       },
     });
-    
+
     const link = split(
       ({ query }) => {
         const { kind, operation } = getMainDefinition(query);
@@ -215,27 +214,27 @@ export class StashService {
   ];
 
   public static useSceneMarkerCreate() {
-    return GQL.useSceneMarkerCreate({ refetchQueries: ["FindScene"] }); 
+    return GQL.useSceneMarkerCreate({ refetchQueries: ["FindScene"] });
   }
-  public static useSceneMarkerUpdate() { 
-    return GQL.useSceneMarkerUpdate({ refetchQueries: ["FindScene"] }); 
+  public static useSceneMarkerUpdate() {
+    return GQL.useSceneMarkerUpdate({ refetchQueries: ["FindScene"] });
   }
   public static useSceneMarkerDestroy() {
-    return GQL.useSceneMarkerDestroy({ refetchQueries: ["FindScene"] }); 
+    return GQL.useSceneMarkerDestroy({ refetchQueries: ["FindScene"] });
   }
 
-  public static useListPerformerScrapers() { 
-    return GQL.useListPerformerScrapers(); 
+  public static useListPerformerScrapers() {
+    return GQL.useListPerformerScrapers();
   }
-  public static useScrapePerformerList(scraperId: string, q : string) { 
-    return GQL.useScrapePerformerList({ variables: { scraper_id: scraperId, query: q }}); 
+  public static useScrapePerformerList(scraperId: string, q : string) {
+    return GQL.useScrapePerformerList({ variables: { scraper_id: scraperId, query: q }, skip: q === ''});
   }
   public static useScrapePerformer(scraperId: string, scrapedPerformer : GQL.ScrapedPerformerInput) {
      return GQL.useScrapePerformer({ variables: { scraper_id: scraperId, scraped_performer: scrapedPerformer }});
   }
 
-  public static useListSceneScrapers() { 
-    return GQL.useListSceneScrapers(); 
+  public static useListSceneScrapers() {
+    return GQL.useListSceneScrapers();
   }
 
   public static useScrapeFreeonesPerformers(q: string) { return GQL.useScrapeFreeonesPerformers({ variables: { q } }); }
@@ -261,13 +260,13 @@ export class StashService {
   ];
 
   public static usePerformerCreate(input: GQL.PerformerCreateInput) {
-    return GQL.usePerformerCreate({ 
+    return GQL.usePerformerCreate({
       variables: input,
       update: () => StashService.invalidateQueries(StashService.performerMutationImpactedQueries)
     });
   }
   public static usePerformerUpdate(input: GQL.PerformerUpdateInput) {
-    return GQL.usePerformerUpdate({ 
+    return GQL.usePerformerUpdate({
       variables: input,
       update: () => StashService.invalidateQueries(StashService.performerMutationImpactedQueries)
     });
@@ -289,7 +288,7 @@ export class StashService {
   ];
 
   public static useSceneUpdate(input: GQL.SceneUpdateInput) {
-    return GQL.useSceneUpdate({ 
+    return GQL.useSceneUpdate({
       variables: input,
       update: () => StashService.invalidateQueries(StashService.sceneMutationImpactedQueries),
       refetchQueries: ["AllTagsForFilter"]
@@ -306,18 +305,18 @@ export class StashService {
   ];
 
   public static useBulkSceneUpdate(input: GQL.BulkSceneUpdateInput) {
-    return GQL.useBulkSceneUpdate({ 
-      variables: input, 
+    return GQL.useBulkSceneUpdate({
+      variables: input,
       update: () => StashService.invalidateQueries(StashService.sceneBulkMutationImpactedQueries)
     });
   }
-  
+
   public static useScenesUpdate(input: GQL.SceneUpdateInput[]) {
     return GQL.useScenesUpdate({ variables: { input : input }});
   }
 
   public static useSceneDestroy(input: GQL.SceneDestroyInput) {
-    return GQL.useSceneDestroy({ 
+    return GQL.useSceneDestroy({
       variables: input,
       update: () => StashService.invalidateQueries(StashService.sceneMutationImpactedQueries)
     });
@@ -330,22 +329,22 @@ export class StashService {
   ];
 
   public static useStudioCreate(input: GQL.StudioCreateInput) {
-    return GQL.useStudioCreate({ 
+    return GQL.useStudioCreate({
       variables: input,
       update: () => StashService.invalidateQueries(StashService.studioMutationImpactedQueries)
     });
   }
 
   public static useStudioUpdate(input: GQL.StudioUpdateInput) {
-    return GQL.useStudioUpdate({ 
+    return GQL.useStudioUpdate({
       variables: input,
       update: () => StashService.invalidateQueries(StashService.studioMutationImpactedQueries)
     });
   }
 
   public static useStudioDestroy(input: GQL.StudioDestroyInput) {
-    return GQL.useStudioDestroy({ 
-      variables: input, 
+    return GQL.useStudioDestroy({
+      variables: input,
       update: () => StashService.invalidateQueries(StashService.studioMutationImpactedQueries)
     });
   }
@@ -358,21 +357,21 @@ export class StashService {
   ];
 
   public static useTagCreate(input: GQL.TagCreateInput) {
-    return GQL.useTagCreate({ 
-      variables: input, 
+    return GQL.useTagCreate({
+      variables: input,
       refetchQueries: ["AllTags", "AllTagsForFilter"],
       //update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
     });
   }
   public static useTagUpdate(input: GQL.TagUpdateInput) {
-    return GQL.useTagUpdate({ 
-      variables: input, 
+    return GQL.useTagUpdate({
+      variables: input,
       refetchQueries: ["AllTags", "AllTagsForFilter"],
     });
   }
   public static useTagDestroy(input: GQL.TagDestroyInput) {
-    return GQL.useTagDestroy({ 
-      variables: input, 
+    return GQL.useTagDestroy({
+      variables: input,
       refetchQueries: ["AllTags", "AllTagsForFilter"],
       update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
     });
@@ -518,19 +517,6 @@ export class StashService {
       variables: {filter: filter, config: config},
       fetchPolicy: "network-only",
     });
-  }
-
-  public static nullToUndefined(value: any): any {
-    if (_.isPlainObject(value)) {
-      return _.mapValues(value, StashService.nullToUndefined);
-    }
-    if (Array.isArray(value)) {
-      return value.map(StashService.nullToUndefined);
-    }
-    if (value === null) {
-      return undefined;
-    }
-    return value;
   }
 
   private constructor() {}

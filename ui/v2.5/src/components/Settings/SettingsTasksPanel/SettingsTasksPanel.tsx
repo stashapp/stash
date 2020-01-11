@@ -1,24 +1,18 @@
-import {
-  Alert,
-  Button,
-  Checkbox,
-  Divider,
-  FormGroup,
-  ProgressBar,
-} from "@blueprintjs/core";
 import React, { useState, useEffect } from "react";
-import { StashService } from "../../../core/StashService";
-import { ErrorUtils } from "../../../utils/errors";
-import { ToastUtils } from "../../../utils/toasts";
-import { GenerateButton } from "./GenerateButton";
+import { Button, Form, ProgressBar } from 'react-bootstrap';
 import { Link } from "react-router-dom";
+import { StashService } from "src/core/StashService";
+import { useToast } from 'src/hooks';
+import { Modal } from 'src/components/Shared';
+import { GenerateButton } from "./GenerateButton";
 
 export const SettingsTasksPanel: React.FC = () => {
+  const Toast = useToast();
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
   const [status, setStatus] = useState<string>("");
-  const [progress, setProgress] = useState<number | undefined>(undefined);
+  const [progress, setProgress] = useState<number>(0);
 
   const [autoTagPerformers, setAutoTagPerformers] = useState<boolean>(true);
   const [autoTagStudios, setAutoTagStudios] = useState<boolean>(true);
@@ -53,7 +47,7 @@ export const SettingsTasksPanel: React.FC = () => {
       setStatus(statusToText(jobStatus.data.jobStatus.status));
       var newProgress = jobStatus.data.jobStatus.progress;
       if (newProgress < 0) {
-        setProgress(undefined);
+        setProgress(0);
       } else {
         setProgress(newProgress);
       }
@@ -65,7 +59,7 @@ export const SettingsTasksPanel: React.FC = () => {
       setStatus(statusToText(metadataUpdate.data.metadataUpdate.status));
       var newProgress = metadataUpdate.data.metadataUpdate.progress;
       if (newProgress < 0) {
-        setProgress(undefined);
+        setProgress(0);
       } else {
         setProgress(newProgress);
       }
@@ -79,20 +73,17 @@ export const SettingsTasksPanel: React.FC = () => {
 
   function renderImportAlert() {
     return (
-      <Alert
-        cancelButtonText="Cancel"
-        confirmButtonText="Import"
-        icon="trash"
-        intent="danger"
-        isOpen={isImportAlertOpen}
-        onCancel={() => setIsImportAlertOpen(false)}
-        onConfirm={() => onImport()}
+      <Modal
+        show={isImportAlertOpen}
+        icon="trash-alt"
+        accept={{ text: 'Import', variant: 'danger', onClick: onImport }}
+        cancel={{ onClick: () => setIsImportAlertOpen(false) }}
       >
         <p>
           Are you sure you want to import?  This will delete the database and re-import from
           your exported metadata.
         </p>
-      </Alert>
+      </Modal>
     );
   }
 
@@ -103,31 +94,28 @@ export const SettingsTasksPanel: React.FC = () => {
 
   function renderCleanAlert() {
     return (
-      <Alert
-        cancelButtonText="Cancel"
-        confirmButtonText="Clean"
-        icon="trash"
-        intent="danger"
-        isOpen={isCleanAlertOpen}
-        onCancel={() => setIsCleanAlertOpen(false)}
-        onConfirm={() => onClean()}
+      <Modal
+        show={isCleanAlertOpen}
+        icon="trash-alt"
+        accept={{ text: 'Clean', variant: 'danger', onClick: onClean }}
+        cancel={{ onClick: () => setIsCleanAlertOpen(false) }}
       >
         <p>
           Are you sure you want to Clean?
           This will delete db information and generated content
           for all scenes that are no longer found in the filesystem.
         </p>
-      </Alert>
+      </Modal>
     );
   }
 
   async function onScan() {
     try {
       await StashService.queryMetadataScan({useFileMetadata: useFileMetadata});
-      ToastUtils.success("Started scan");
+      Toast.success({ content: "Started scan" });
       jobStatus.refetch();
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
   }
 
@@ -143,10 +131,10 @@ export const SettingsTasksPanel: React.FC = () => {
   async function onAutoTag() {
     try {
       await StashService.queryMetadataAutoTag(getAutoTagInput());
-      ToastUtils.success("Started auto tagging");
+      Toast.success({ content: "Started auto tagging" });
       jobStatus.refetch();
     } catch (e) {
-      ErrorUtils.handle(e);
+      Toast.error(e);
     }
   }
 
@@ -156,21 +144,19 @@ export const SettingsTasksPanel: React.FC = () => {
     }
 
     return (
-      <>
-      <FormGroup>
-        <Button id="stop" text="Stop" intent="danger" onClick={() => StashService.queryStopJob().then(() => jobStatus.refetch())} />
-      </FormGroup>
-      </>
+      <Form.Group>
+        <Button id="stop" variant="danger" onClick={() => StashService.queryStopJob().then(() => jobStatus.refetch())}>Stop</Button>
+      </Form.Group>
     );
   }
 
   function renderJobStatus() {
     return (
       <>
-      <FormGroup>
+      <Form.Group>
         <h5>Status: {status}</h5>
-        {!!status && status !== "Idle" ? <ProgressBar value={progress}/> : undefined}
-      </FormGroup>
+          { status !== "Idle" ? <ProgressBar now={progress} label={`${progress}%`} /> : '' }
+      </Form.Group>
       {maybeRenderStop()}
       </>
     );
@@ -185,83 +171,70 @@ export const SettingsTasksPanel: React.FC = () => {
 
       {renderJobStatus()}
 
-      <Divider/>
+      <hr />
 
       <h4>Library</h4>
-      <FormGroup
-        helperText="Scan for new content and add it to the database."
-        labelFor="scan"
-        inline={true}
-      >
-        <Checkbox
+      <Form.Group>
+        <Form.Check
           checked={useFileMetadata}
           label="Set name, date, details from metadata (if present)"
           onChange={() => setUseFileMetadata(!useFileMetadata)}
         />
-        <Button id="scan" text="Scan" onClick={() => onScan()} />
-      </FormGroup>
+        <Button id="scan" type="submit" onClick={() => onScan()}>Scan</Button>
+        <Form.Text className="text-muted">Scan for new content and add it to the database.</Form.Text>
+      </Form.Group>
 
-      <Divider />
+      <hr />
 
       <h4>Auto Tagging</h4>
 
-      <FormGroup
-        helperText="Auto-tag content based on filenames."
-        labelFor="autoTag"
-        inline={true}
-      >
-        <Checkbox
+      <Form.Group>
+        <Form.Check
           checked={autoTagPerformers}
           label="Performers"
           onChange={() => setAutoTagPerformers(!autoTagPerformers)}
         />
-        <Checkbox
+        <Form.Check
           checked={autoTagStudios}
           label="Studios"
           onChange={() => setAutoTagStudios(!autoTagStudios)}
         />
-        <Checkbox
+        <Form.Check
           checked={autoTagTags}
           label="Tags"
           onChange={() => setAutoTagTags(!autoTagTags)}
         />
-        <Button id="autoTag" text="Auto Tag" onClick={() => onAutoTag()} />
-      </FormGroup>
+        <Button id="autoTag" type="submit" onClick={() => onAutoTag()}>Auto Tag</Button>
+        <Form.Text className="text-muted">Auto-tag content based on filenames.</Form.Text>
+      </Form.Group>
 
-      <FormGroup>
-        <Link className="bp3-button" to={"/sceneFilenameParser"}>
-          Scene Filename Parser
-        </Link>
-      </FormGroup>
-      <Divider />
+      <Form.Group>
+        <Button>
+          <Link to={"/sceneFilenameParser"}>Scene Filename Parser</Link>
+        </Button>
+      </Form.Group>
+
+      <hr />
 
       <h4>Generated Content</h4>
       <GenerateButton />
-      <FormGroup
-        helperText="Check for missing files and remove them from the database. This is a destructive action."
-        labelFor="clean"
-        inline={true}
-      >
-        <Button id="clean" text="Clean" intent="danger" onClick={() => setIsCleanAlertOpen(true)} />
-      </FormGroup>
-      <Divider />
+      <Form.Group>
+        <Button id="clean" variant="danger" onClick={() => setIsCleanAlertOpen(true)}>Clean</Button>
+        <Form.Text className="text-muted">Check for missing files and remove them from the database. This is a destructive action.</Form.Text>
+      </Form.Group>
+
+      <hr />
 
       <h4>Metadata</h4>
-      <FormGroup
-        helperText="Export the database content into JSON format"
-        labelFor="export"
-        inline={true}
-      >
-        <Button id="export" text="Export" onClick={() => StashService.queryMetadataExport().then(() => { jobStatus.refetch()})} />
-      </FormGroup>
+      <Form.Group>
+        <Button id="export" type="submit"onClick={() => StashService.queryMetadataExport().then(() => { jobStatus.refetch()})}>Export</Button>
+        <Form.Text className="text-muted">Export the database content into JSON format.</Form.Text>
+      </Form.Group>
 
-      <FormGroup
-        helperText="Import from exported JSON.  This is a destructive action."
-        labelFor="import"
-        inline={true}
-      >
-        <Button id="import" text="Import" intent="danger" onClick={() => setIsImportAlertOpen(true)} />
-      </FormGroup>
+      <Form.Group>
+        <Button id="import" variant="danger" onClick={() => setIsImportAlertOpen(true)}>Import</Button>
+        <Form.Text className="text-muted">Import from exported JSON.  This is a destructive action.</Form.Text>
+      </Form.Group>
     </>
   );
 };

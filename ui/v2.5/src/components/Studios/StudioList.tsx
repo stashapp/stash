@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from "react";
 import { QueryHookResult } from "react-apollo-hooks";
-import { FindStudiosQuery, FindStudiosVariables } from "../../core/generated-graphql";
-import { ListHook } from "../../hooks/ListHook";
-import { IBaseProps } from "../../models/base-props";
-import { ListFilterModel } from "../../models/list-filter/filter";
-import { DisplayMode, FilterMode } from "../../models/list-filter/types";
+import { FindStudiosQuery, FindStudiosVariables } from "src/core/generated-graphql";
+import { ListHook } from "src/hooks";
+import { IBaseProps } from "src/models/base-props";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { DisplayMode, FilterMode } from "src/models/list-filter/types";
 import { StudioCard } from "./StudioCard";
 
 interface IProps extends IBaseProps {}

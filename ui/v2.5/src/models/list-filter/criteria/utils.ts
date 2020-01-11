@@ -1,6 +1,6 @@
 import {
   CriterionModifier,
-} from "../../../core/generated-graphql";
+} from "src/core/generated-graphql";
 import { Criterion, CriterionType, StringCriterion, NumberCriterion } from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
@@ -24,7 +24,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "sceneTags": return new TagsCriterion("sceneTags");
     case "performers": return new PerformersCriterion();
     case "studios": return new StudiosCriterion();
-    
+
     case "birth_year":
     case "age":
         var ret = new NumberCriterion(type, type);
@@ -36,7 +36,7 @@ export function makeCriteria(type: CriterionType = "none") {
           Criterion.getModifierOption(CriterionModifier.LessThan)
         ];
         return ret;
-    case "ethnicity": 
+    case "ethnicity":
     case "country":
     case "eye_color":
     case "height":

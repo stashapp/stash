@@ -1,17 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import * as GQL from "../../core/generated-graphql";
-import { TextUtils } from "../../utils/text";
-import { NavigationUtils } from "../../utils/navigation";
-
 import { Table } from 'react-bootstrap';
-  
+import { Link } from "react-router-dom";
+import * as GQL from "src/core/generated-graphql";
+import { NavUtils, TextUtils } from "src/utils";
+
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
 }
 
 export const SceneListTable: React.FC<ISceneListTableProps> = (props: ISceneListTableProps) => {
-  
+
   function renderSceneImage(scene : GQL.SlimSceneDataFragment) {
     const style: React.CSSProperties = {
       backgroundImage: `url('${scene.paths.screenshot}')`,
@@ -23,7 +21,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (props: ISceneList
     };
 
     return (
-      <Link 
+      <Link
         className="scene-list-thumbnail"
         to={`/scenes/${scene.id}`}
         style={style}/>
@@ -37,7 +35,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (props: ISceneList
 
   function renderTags(tags : GQL.SlimSceneDataTags[]) {
     return tags.map((tag) => (
-      <Link to={NavigationUtils.makeTagScenesUrl(tag)}>
+      <Link to={NavUtils.makeTagScenesUrl(tag)}>
         <h6>{tag.name}</h6>
       </Link>
     ));
@@ -45,16 +43,16 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (props: ISceneList
 
   function renderPerformers(performers : GQL.SlimSceneDataPerformers[]) {
     return performers.map((performer) => (
-      <Link to={NavigationUtils.makePerformerScenesUrl(performer)}>
+      <Link to={NavUtils.makePerformerScenesUrl(performer)}>
         <h6>{performer.name}</h6>
       </Link>
     ));
   }
 
   function renderStudio(studio : GQL.SlimSceneDataStudio | undefined) {
-    if (!!studio) {
+    if (studio) {
       return (
-        <Link to={NavigationUtils.makeStudioScenesUrl(studio)}>
+        <Link to={NavUtils.makeStudioScenesUrl(studio)}>
           <h6>{studio.name}</h6>
         </Link>
       );
@@ -63,7 +61,6 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (props: ISceneList
 
   function renderSceneRow(scene : GQL.SlimSceneDataFragment) {
     return (
-      <>
       <tr>
         <td>
           {renderSceneImage(scene)}
@@ -71,7 +68,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (props: ISceneList
         <td style={{textAlign: "left"}}>
           <Link to={`/scenes/${scene.id}`}>
             <h5 className="text-truncate">
-              {!!scene.title ? scene.title : TextUtils.fileNameFromPath(scene.path)}
+              {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
             </h5>
           </Link>
         </td>
@@ -91,12 +88,10 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (props: ISceneList
           {renderStudio(scene.studio)}
         </td>
       </tr>
-      </>
     )
   }
 
   return (
-    <>
     <div className="grid">
       <Table striped bordered>
         <thead>
@@ -115,7 +110,6 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (props: ISceneList
         </tbody>
       </Table>
     </div>
-    </>
   );
 };
-  
+

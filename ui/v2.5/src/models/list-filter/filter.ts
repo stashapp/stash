@@ -6,7 +6,7 @@ import {
   SceneFilterType,
   SceneMarkerFilterType,
   SortDirectionEnum,
-} from "../../core/generated-graphql";
+} from "src/core/generated-graphql";
 import { Criterion, ICriterionOption, CriterionType, CriterionOption, NumberCriterion, StringCriterion } from "./criteria/criterion";
 import { FavoriteCriterion, FavoriteCriterionOption } from "./criteria/favorite";
 import { HasMarkersCriterion, HasMarkersCriterionOption } from "./criteria/has-markers";

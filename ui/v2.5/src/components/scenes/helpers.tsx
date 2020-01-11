@@ -1,6 +1,6 @@
 import React, {  } from "react";
 import { Link } from "react-router-dom";
-import * as GQL from "../../core/generated-graphql";
+import * as GQL from "src/core/generated-graphql";
 
 export class SceneHelpers {
   public static maybeRenderStudio(
