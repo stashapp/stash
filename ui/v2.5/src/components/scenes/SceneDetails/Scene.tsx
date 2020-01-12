@@ -1,9 +1,9 @@
 import { Card, Spinner, Tab, Tabs } from 'react-bootstrap';
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
+import { useParams, useLocation, useHistory } from 'react-router-dom';
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import { IBaseProps } from "src/models";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { ScenePlayer } from "../ScenePlayer/ScenePlayer";
 import { SceneDetailPanel } from "./SceneDetailPanel";
@@ -12,28 +12,26 @@ import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { ScenePerformerPanel } from "./ScenePerformerPanel";
 
-interface ISceneProps extends IBaseProps {}
-
-export const Scene: React.FC<ISceneProps> = (props: ISceneProps) => {
-  const [timestamp, setTimestamp] = useState<number>(0);
-  const [autoplay, setAutoplay] = useState<boolean>(false);
+export const Scene: React.FC = () => {
+  const { id = 'new' } = useParams();
+  const location = useLocation();
+  const history = useHistory();
+  const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [scene, setScene] = useState<Partial<GQL.SceneDataFragment>>({});
-  const { data, error, loading } = StashService.useFindScene(props.match.params.id);
+  const { data, error, loading } = StashService.useFindScene(id);
+
+  const queryParams = queryString.parse(location.search);
+  const autoplay = queryParams?.autoplay === 'true';
 
   useEffect(() => (
     setScene(data?.findScene ?? {})
   ), [data]);
 
-  useEffect(() => {
-    const queryParams = queryString.parse(props.location.search);
-    if (!!queryParams.t && typeof queryParams.t === "string" && timestamp === 0) {
-      const newTimestamp = parseInt(queryParams.t, 10);
-      setTimestamp(newTimestamp);
-    }
-    if (queryParams.autoplay && typeof queryParams.autoplay === "string") {
-      setAutoplay(queryParams.autoplay === "true");
-    }
-  });
+  function getInitialTimestamp() {
+    const params = queryString.parse(location.search);
+    const timestamp = params?.t;
+    return Number.parseInt(Array.isArray(timestamp) ? timestamp[0] : timestamp ?? '0', 10);
+  }
 
   function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
     setTimestamp(marker.seconds);
@@ -85,7 +83,7 @@ export const Scene: React.FC<ISceneProps> = (props: ISceneProps) => {
               <SceneEditPanel
                 scene={modifiedScene}
                 onUpdate={(newScene) => setScene(newScene)}
-                onDelete={() => props.history.push("/scenes")}
+                onDelete={() => history.push("/scenes")}
               />
             </Tab>
         </Tabs>
