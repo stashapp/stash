@@ -1,10 +1,10 @@
-import { Nav, Navbar, Button } from "react-bootstrap";
-import { LinkContainer } from 'react-router-bootstrap';
 import React from "react";
+import { Nav, Navbar, Button } from "react-bootstrap";
+import { IconName } from '@fortawesome/fontawesome-svg-core';
+import { LinkContainer } from 'react-router-bootstrap';
 import { Link, useLocation } from "react-router-dom";
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { IconName } from '@fortawesome/fontawesome-svg-core';
+import { Icon } from 'src/components/Shared'
 
 interface IMenuItem {
     text: string;
@@ -74,7 +74,7 @@ export const MainNavbar: React.FC = () => {
             key={i.href}
           >
             <Button variant="secondary">
-              <FontAwesomeIcon icon={i.icon} />
+              <Icon icon={i.icon} />
               {i.text}
             </Button>
           </LinkContainer>
@@ -86,7 +86,7 @@ export const MainNavbar: React.FC = () => {
           exact={true}
           to="/settings">
             <Button variant="secondary">
-              <FontAwesomeIcon icon="cog" />
+              <Icon icon="cog" />
             </Button>
         </LinkContainer>
       </Nav>

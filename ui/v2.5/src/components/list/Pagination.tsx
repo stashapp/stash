@@ -6,6 +6,7 @@ interface IPaginationProps {
   currentPage: number;
   totalItems: number;
   onChangePage: (page: number) => void;
+  loading?: boolean;
 }
 
 interface IPaginationState {
@@ -27,6 +28,8 @@ export class Pagination extends React.Component<IPaginationProps, IPaginationSta
   }
 
   public componentDidUpdate(prevProps: IPaginationProps) {
+    if (this.props.loading)
+      return;
     if (this.props.totalItems !== prevProps.totalItems || this.props.itemsPerPage !== prevProps.itemsPerPage) {
       this.setPage(this.props.currentPage);
     }
@@ -81,7 +84,7 @@ export class Pagination extends React.Component<IPaginationProps, IPaginationSta
   }
 
   private getPagerState(totalItems: number, currentPage: number, pageSize: number) {
-    const totalPages = Math.ceil(totalItems / pageSize);
+    const totalPages = Math.max(Math.ceil(totalItems / pageSize), 1);
 
     let startPage: number;
     let endPage: number;

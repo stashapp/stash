@@ -1,27 +1,24 @@
 import _ from "lodash";
 import React from "react";
 import { QueryHookResult } from "react-apollo-hooks";
+import { useHistory } from 'react-router-dom';
 import { FindSceneMarkersQuery, FindSceneMarkersVariables } from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { NavUtils } from "src/utils";
-import { ListHook } from "src/hooks";
-import { IBaseProps } from "src/models/base-props";
+import { useSceneMarkersList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { DisplayMode, FilterMode } from "src/models/list-filter/types";
+import { DisplayMode } from "src/models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
 
-interface IProps extends IBaseProps {}
-
-export const SceneMarkerList: React.FC<IProps> = (props: IProps) => {
+export const SceneMarkerList: React.FC = () => {
+  const history = useHistory();
   const otherOperations = [{
     text: "Play Random",
     onClick: playRandom
   }];
 
-  const listData = ListHook.useList({
-    filterMode: FilterMode.SceneMarkers,
+  const listData = useSceneMarkersList({
     otherOperations: otherOperations,
-    props,
     renderContent,
   });
 
@@ -38,7 +35,7 @@ export const SceneMarkerList: React.FC<IProps> = (props: IProps) => {
       if (singleResult && singleResult.data && singleResult.data.findSceneMarkers && singleResult.data.findSceneMarkers.scene_markers.length === 1) {
         // navigate to the scene player page
         let url = NavUtils.makeSceneMarkerUrl(singleResult.data.findSceneMarkers.scene_markers[0])
-        props.history.push(url);
+        history.push(url);
       }
     }
   }

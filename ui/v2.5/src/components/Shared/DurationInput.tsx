@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, ButtonGroup, InputGroup, Form } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Icon } from 'src/components/Shared'
 import { TextUtils } from "src/utils";
 
 interface IProps {
@@ -83,13 +83,13 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
           disabled={props.disabled}
           onClick={() => increment()}
         >
-          <FontAwesomeIcon icon="chevron-up" />
+          <Icon icon="chevron-up" />
         </Button>
         <Button
           disabled={props.disabled}
           onClick={() => decrement()}
         >
-          <FontAwesomeIcon icon="chevron-down" />
+          <Icon icon="chevron-down" />
         </Button>
       </ButtonGroup>
     )
@@ -107,7 +107,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
         <Button
           onClick={() => onReset()}
         >
-          <FontAwesomeIcon icon="clock" />
+          <Icon icon="clock" />
         </Button>
       )
     }

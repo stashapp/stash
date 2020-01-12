@@ -3,17 +3,12 @@ import { Table } from 'react-bootstrap';
 import { QueryHookResult } from "react-apollo-hooks";
 import { Link } from "react-router-dom";
 import { FindGalleriesQuery, FindGalleriesVariables } from "src/core/generated-graphql";
-import { ListHook } from "src/hooks";
-import { IBaseProps } from "src/models/base-props";
+import { useGalleriesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { DisplayMode, FilterMode } from "src/models/list-filter/types";
+import { DisplayMode } from "src/models/list-filter/types";
 
-interface IProps extends IBaseProps {}
-
-export const GalleryList: React.FC<IProps> = (props: IProps) => {
-  const listData = ListHook.useList({
-    filterMode: FilterMode.Galleries,
-    props,
+export const GalleryList: React.FC = () => {
+  const listData = useGalleriesList({
     renderContent,
   });
 
