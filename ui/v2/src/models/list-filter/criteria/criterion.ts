@@ -13,6 +13,7 @@ export type CriterionType =
   "sceneTags" |
   "performers" |
   "studios" |
+  "dvds" |
   "birth_year" |
   "age" |
   "ethnicity" |
@@ -39,6 +40,7 @@ export abstract class Criterion<Option = any, Value = any> {
       case "sceneTags": return "Scene Tags";
       case "performers": return "Performers";
       case "studios": return "Studios";
+      case "dvds": return "Dvds";
       case "birth_year": return "Birth Year";
       case "age": return "Age";
       case "ethnicity": return "Ethnicity";

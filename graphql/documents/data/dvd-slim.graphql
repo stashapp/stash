@@ -1,0 +1,11 @@
+fragment SlimDvdData on Dvd {
+  id
+  name
+  aliases
+  durationdvd
+  year
+  director
+  synopsis
+  frontimage_path
+  backimage_path
+}

@@ -23,6 +23,12 @@ JOIN studios ON studios.id = scenes.studio_id
 WHERE studios.id = ?
 GROUP BY scenes.id
 `
+const scenesForDvdQuery = `
+SELECT scenes.* FROM scenes
+JOIN dvds ON dvds.id = scenes.dvd_id
+WHERE dvds.id = ?
+GROUP BY scenes.id
+`
 
 const scenesForTagQuery = `
 SELECT scenes.* FROM scenes
@@ -42,10 +48,10 @@ func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error)
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scenes (checksum, path, title, details, url, date, rating, size, duration, video_codec,
-                    			    audio_codec, width, height, framerate, bitrate, studio_id, cover,
+                    			    audio_codec, width, height, framerate, bitrate, studio_id, dvd_id, cover,
                     				created_at, updated_at)
 				VALUES (:checksum, :path, :title, :details, :url, :date, :rating, :size, :duration, :video_codec,
-				        :audio_codec, :width, :height, :framerate, :bitrate, :studio_id, :cover,
+				        :audio_codec, :width, :height, :framerate, :bitrate, :studio_id, :dvd_id, :cover,
 				        :created_at, :updated_at)
 		`,
 		newScene,
@@ -116,6 +122,11 @@ func (qb *SceneQueryBuilder) FindByStudioID(studioID int) ([]*Scene, error) {
 	return qb.queryScenes(scenesForStudioQuery, args, nil)
 }
 
+func (qb *SceneQueryBuilder) FindByDvdID(dvdID int) ([]*Scene, error) {
+	args := []interface{}{dvdID}
+	return qb.queryScenes(scenesForDvdQuery, args, nil)
+}
+
 func (qb *SceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
@@ -123,6 +134,11 @@ func (qb *SceneQueryBuilder) Count() (int, error) {
 func (qb *SceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
 	args := []interface{}{studioID}
 	return runCountQuery(buildCountQuery(scenesForStudioQuery), args)
+}
+
+func (qb *SceneQueryBuilder) CountByDvdID(dvdID int) (int, error) {
+	args := []interface{}{dvdID}
+	return runCountQuery(buildCountQuery(scenesForDvdQuery), args)
 }
 
 func (qb *SceneQueryBuilder) CountByTagID(tagID int) (int, error) {
@@ -160,6 +176,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		left join performers_scenes as performers_join on performers_join.scene_id = scenes.id
 		left join performers on performers_join.performer_id = performers.id
 		left join studios as studio on studio.id = scenes.studio_id
+		left join dvds as dvd on dvd.id = scenes.dvd_id
 		left join galleries as gallery on gallery.scene_id = scenes.id
 		left join scenes_tags as tags_join on tags_join.scene_id = scenes.id
 		left join tags on tags_join.tag_id = tags.id
@@ -211,6 +228,8 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 			whereClauses = append(whereClauses, "gallery.scene_id IS NULL")
 		case "studio":
 			whereClauses = append(whereClauses, "scenes.studio_id IS NULL")
+		case "dvd":
+			whereClauses = append(whereClauses, "scenes.dvd_id IS NULL")
 		case "performers":
 			whereClauses = append(whereClauses, "performers_join.scene_id IS NULL")
 		case "date":
@@ -246,6 +265,16 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		}
 
 		whereClause, havingClause := getMultiCriterionClause("studio", "", "studio_id", studiosFilter)
+		whereClauses = appendClause(whereClauses, whereClause)
+		havingClauses = appendClause(havingClauses, havingClause)
+	}
+
+	if dvdsFilter := sceneFilter.Dvds; dvdsFilter != nil && len(dvdsFilter.Value) > 0 {
+		for _, dvdID := range dvdsFilter.Value {
+			args = append(args, dvdID)
+		}
+
+		whereClause, havingClause := getMultiCriterionClause("dvd", "", "dvd_id", dvdsFilter)
 		whereClauses = appendClause(whereClauses, whereClause)
 		havingClauses = appendClause(havingClauses, havingClause)
 	}

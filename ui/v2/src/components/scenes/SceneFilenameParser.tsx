@@ -69,6 +69,7 @@ class ParserField {
 
   static Performer = new ParserField("performer");
   static Studio = new ParserField("studio");
+  static Dvd = new ParserField("dvd");
   static Tag = new ParserField("tag");
 
   // date fields
@@ -91,6 +92,7 @@ class ParserField {
     ParserField.I,
     ParserField.Performer,
     ParserField.Studio,
+    ParserField.Dvd,
     ParserField.Tag,
     ParserField.Date,
     ParserField.YYYY,
@@ -122,6 +124,8 @@ class SceneParserResult {
 
   public studio: ParserResult<GQL.SlimSceneDataStudio> = new ParserResult();
   public studioId: ParserResult<string> = new ParserResult();
+  public dvd: ParserResult<GQL.SlimSceneDataDvd> = new ParserResult();
+  public dvdId: ParserResult<string> = new ParserResult();
   public tags: ParserResult<GQL.SlimSceneDataTags[]> = new ParserResult();
   public tagIds: ParserResult<string[]> = new ParserResult();
   public performers: ParserResult<GQL.SlimSceneDataPerformers[]> = new ParserResult();
@@ -142,12 +146,15 @@ class SceneParserResult {
     this.tags.setOriginalValue(this.scene.tags);
     this.studioId.setOriginalValue(this.scene.studio ? this.scene.studio.id : undefined);
     this.studio.setOriginalValue(this.scene.studio);
+    this.dvdId.setOriginalValue(this.scene.dvd ? this.scene.dvd.id : undefined);
+    this.dvd.setOriginalValue(this.scene.dvd);
 
     this.title.setValue(result.title);
     this.date.setValue(result.date);
     this.performerIds.setValue(result.performer_ids);
     this.tagIds.setValue(result.tag_ids);
     this.studioId.setValue(result.studio_id);
+    this.dvdId.setValue(result.dvd_id);
 
     if (result.performer_ids) {
       this.performers.setValue(result.performer_ids.map((p) => {
@@ -176,6 +183,20 @@ class SceneParserResult {
         image_path: ""
       });
     }
+
+    if (result.dvd_id) {
+      this.dvd.setValue({
+        id: result.dvd_id,
+        name: "",
+        aliases: "",
+        year: "",
+        durationdvd: "",
+        director: "",
+        synopsis: "",
+        frontimage_path: "",
+        backimage_path: "",
+      });
+    }
   }
 
   private static setInput(object: any, key: string, parserResult : ParserResult<any>) {
@@ -186,7 +207,7 @@ class SceneParserResult {
 
   // returns true if any of its fields have set == true
   public isChanged() {
-    return this.title.set || this.date.set || this.performerIds.set || this.studioId.set || this.tagIds.set;
+    return this.title.set || this.date.set || this.performerIds.set || this.studioId.set || this.dvdId.set ||this.tagIds.set;
   }
 
   public toSceneUpdateInput() {
@@ -199,6 +220,7 @@ class SceneParserResult {
       rating: this.scene.rating,
       gallery_id: this.scene.gallery ? this.scene.gallery.id : undefined,
       studio_id: this.scene.studio ? this.scene.studio.id : undefined,
+      dvd_id: this.scene.dvd ? this.scene.dvd.id : undefined,
       performer_ids: this.scene.performers.map((performer) => performer.id),
       tag_ids: this.scene.tags.map((tag) => tag.id)
     };
@@ -207,6 +229,7 @@ class SceneParserResult {
     SceneParserResult.setInput(ret, "date", this.date);
     SceneParserResult.setInput(ret, "performer_ids", this.performerIds);
     SceneParserResult.setInput(ret, "studio_id", this.studioId);
+    SceneParserResult.setInput(ret, "dvd_id", this.dvdId);
     SceneParserResult.setInput(ret, "tag_ids", this.tagIds);
 
     return ret;
@@ -285,6 +308,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
   const [allPerformerSet, setAllPerformerSet] = useState<boolean>(false);
   const [allTagSet, setAllTagSet] = useState<boolean>(false);
   const [allStudioSet, setAllStudioSet] = useState<boolean>(false);
+  const [allDvdSet, setAllDvdSet] = useState<boolean>(false);
 
   const [showFields, setShowFields] = useState<Map<string, boolean>>(initialShowFieldsState());
   
@@ -313,7 +337,8 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       ["Date", true],
       ["Performers", true],
       ["Tags", true],
-      ["Studio", true]
+      ["Studio", true],
+      ["Dvd", true]
     ]);
   }
 
@@ -422,6 +447,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     var performerSet = pattern.includes("{performer}");
     var tagSet = pattern.includes("{tag}");
     var studioSet = pattern.includes("{studio}");
+    var dvdSet = pattern.includes("{dvd}");
 
     var showFieldsCopy = _.clone(showFields);
     showFieldsCopy.set("Title", titleSet);
@@ -429,6 +455,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     showFieldsCopy.set("Performers", performerSet);
     showFieldsCopy.set("Tags", tagSet);
     showFieldsCopy.set("Studio", studioSet);
+    showFieldsCopy.set("Dvd", dvdSet);
     setShowFields(showFieldsCopy);
   }
 
@@ -448,6 +475,10 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     var newAllStudioSet = !parserResult.some((r) => {
       return !r.studioId.set;
     });
+    var newAllDvdSet = !parserResult.some((r) => {
+      return !r.dvdId.set;
+    });
+
 
     if (newAllTitleSet != allTitleSet) {
       setAllTitleSet(newAllTitleSet);
@@ -464,6 +495,10 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     if (newAllStudioSet != allStudioSet) {
       setAllStudioSet(newAllStudioSet);
     }
+    if (newAllDvdSet != allDvdSet) {
+      setAllDvdSet(newAllDvdSet);
+    }
+
   }, [parserResult]);
 
   function onSelectAllTitleSet(selected : boolean) {
@@ -521,6 +556,17 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     setAllStudioSet(selected);
   }
 
+  function onSelectAllDvdSet(selected : boolean) {
+    var newResult = [...parserResult];
+
+    newResult.forEach((r) => {
+      r.dvdId.set = selected;
+    });
+
+    setParserResult(newResult);
+    setAllDvdSet(selected);
+  }
+
   interface IShowFieldsTreeProps {
     showFields: Map<string, boolean>
     onShowFieldsChanged: (fields : Map<string, boolean>) => void
@@ -554,7 +600,12 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           {
             id: 5,
             label: "Studio",
-          }
+          },
+          {
+            id: 6,
+            label: "Dvd",
+          },
+
         ]
       }
     ];
@@ -934,6 +985,18 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     );
   }
 
+  function renderNewDvdSelect(props : ISceneParserFieldProps, onChange : (value : any) => void) {
+    return (
+      <FilterSelect
+        type="dvds"
+        noSelectionString=""
+        className={props.className}
+        onSelectItem={(item) => onChange(item ? item.id : undefined)}
+        initialId={props.parserResult.value}
+      />
+    );
+  }
+
   interface ISceneParserRowProps {
     scene : SceneParserResult,
     onChange: (changedScene : SceneParserResult) => void
@@ -977,6 +1040,13 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       newResult.studioId = changeParser(newResult.studioId, set, value);
       props.onChange(newResult);
     }
+
+    function onDvdIdChanged(set : boolean, value: string | undefined) {
+      var newResult = _.clone(props.scene);
+      newResult.dvdId = changeParser(newResult.dvdId, set, value);
+      props.onChange(newResult);
+    }
+
 
     return (
       <>
@@ -1037,6 +1107,17 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           renderOriginalInputField={renderOriginalSelect}
           renderNewInputField={renderNewStudioSelect}
         />
+         <SceneParserField 
+          key="dvd"
+          fieldName="Dvd"
+          className="parser-field-dvd"
+          parserResult={props.scene.dvdId}
+          originalParserResult={props.scene.dvd}
+          onSetChanged={(set) => onDvdIdChanged(set, props.scene.dvdId.value)}
+          onValueChanged={(value) => onDvdIdChanged(props.scene.dvdId.set, value)}
+          renderOriginalInputField={renderOriginalSelect}
+          renderNewInputField={renderNewDvdSelect}
+        />
       </tr>
       </>
     )
@@ -1086,6 +1167,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
                 {renderHeader("Performers", allPerformerSet, onSelectAllPerformerSet)}
                 {renderHeader("Tags", allTagSet, onSelectAllTagSet)}
                 {renderHeader("Studio", allStudioSet, onSelectAllStudioSet)}
+                {renderHeader("Dvd", allDvdSet, onSelectAllDvdSet)}
               </tr>
             </thead>
             <tbody>

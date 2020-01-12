@@ -36,6 +36,60 @@ export class SceneHelpers {
     );
   }
 
+  public static maybeRenderFrontDvd(
+    scene: GQL.SceneDataFragment | GQL.SlimSceneDataFragment,
+    height: number,
+    showDivider: boolean,
+  ) {
+    if (!scene.dvd) { return; }
+    const style: React.CSSProperties = {
+      backgroundImage: `url('${scene.dvd.frontimage_path}')`,
+      width: "100%",
+      height: `${height}px`,
+      lineHeight: 5,
+      backgroundSize: "contain",
+      display: "inline-block",
+      backgroundPosition: "right",
+      backgroundRepeat: "no-repeat",
+    };
+    return (
+      <>
+        {showDivider ? <Divider /> : undefined}
+        <Link
+          to={`/dvds/${scene.dvd.id}`}
+          style={style}
+        />
+      </>
+    );
+  }
+  public static maybeRenderBackDvd(
+    scene: GQL.SceneDataFragment | GQL.SlimSceneDataFragment,
+    height: number,
+    showDivider: boolean,
+  ) {
+    if (!scene.dvd) { return; }
+    const style: React.CSSProperties = {
+      backgroundImage: `url('${scene.dvd.backimage_path}')`,
+      width: "100%",
+      height: `${height}px`,
+      lineHeight: 5,
+      backgroundSize: "contain",
+      display: "inline-block",
+      backgroundPosition: "left",
+      backgroundRepeat: "no-repeat",
+    };
+    return (
+      <>
+        {showDivider ? <Divider /> : undefined}
+        <Link
+          to={`/dvds/${scene.dvd.id}`}
+          style={style}
+        />
+      </>
+    );
+  }
+
+
   public static getJWPlayerId(): string { return "main-jwplayer"; }
   public static getPlayer(): any {
     return (window as any).jwplayer("main-jwplayer");

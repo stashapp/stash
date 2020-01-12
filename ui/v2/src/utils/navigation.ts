@@ -1,6 +1,7 @@
 import * as GQL from "../core/generated-graphql";
 import { PerformersCriterion } from "../models/list-filter/criteria/performers";
 import { StudiosCriterion } from "../models/list-filter/criteria/studios";
+import { DvdsCriterion } from "../models/list-filter/criteria/dvds";
 import { TagsCriterion } from "../models/list-filter/criteria/tags";
 import { ListFilterModel } from "../models/list-filter/filter";
 import { FilterMode } from "../models/list-filter/types";
@@ -20,6 +21,15 @@ export class NavigationUtils {
     const filter = new ListFilterModel(FilterMode.Scenes);
     const criterion = new StudiosCriterion();
     criterion.value = [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }];
+    filter.criteria.push(criterion);
+    return `/scenes?${filter.makeQueryParameters()}`;
+  }
+
+  public static makeDvdScenesUrl(dvd: Partial<GQL.DvdDataFragment>): string {
+    if (dvd.id === undefined) { return "#"; }
+    const filter = new ListFilterModel(FilterMode.Scenes);
+    const criterion = new DvdsCriterion();
+    criterion.value = [{ id: dvd.id, label: dvd.name || `Dvd ${dvd.id}` }];
     filter.criteria.push(criterion);
     return `/scenes?${filter.makeQueryParameters()}`;
   }

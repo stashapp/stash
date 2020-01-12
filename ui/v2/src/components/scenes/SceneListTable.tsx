@@ -64,6 +64,16 @@ export const SceneListTable: FunctionComponent<ISceneListTableProps> = (props: I
     }
   }
 
+  function renderDvd(dvd : GQL.SlimSceneDataDvd | undefined) {
+    if (!!dvd) {
+      return (
+        <Link to={NavigationUtils.makeDvdScenesUrl(dvd)}>
+          <H6>{dvd.name}</H6>
+        </Link>
+      );
+    }
+  }
+
   function renderSceneRow(scene : GQL.SlimSceneDataFragment) {
     return (
       <>
@@ -93,6 +103,9 @@ export const SceneListTable: FunctionComponent<ISceneListTableProps> = (props: I
         <td>
           {renderStudio(scene.studio)}
         </td>
+        <td>
+          {renderDvd(scene.dvd)}
+        </td>
       </tr>
       </>
     )
@@ -111,6 +124,7 @@ export const SceneListTable: FunctionComponent<ISceneListTableProps> = (props: I
             <th>Tags</th>
             <th>Performers</th>
             <th>Studio</th>
+            <th>Dvd</th>
           </tr>
         </thead>
         <tbody>

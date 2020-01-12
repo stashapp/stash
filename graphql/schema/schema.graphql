@@ -22,6 +22,11 @@ type Query {
   """A function which queries Studio objects"""
   findStudios(filter: FindFilterType): FindStudiosResultType!
 
+   """Find a dvd by ID"""
+  findDvd(id: ID!): Dvd
+  """A function which queries Dvd objects"""
+  findDvds(filter: FindFilterType): FindDvdsResultType!
+
   findGallery(id: ID!): Gallery
   findGalleries(filter: FindFilterType): FindGalleriesResultType!
 
@@ -92,6 +97,7 @@ type Query {
 
   allPerformers: [Performer!]!
   allStudios: [Studio!]!
+  allDvds: [Dvd!]!
   allTags: [Tag!]!
 
   # Version
@@ -118,6 +124,10 @@ type Mutation {
   studioCreate(input: StudioCreateInput!): Studio
   studioUpdate(input: StudioUpdateInput!): Studio
   studioDestroy(input: StudioDestroyInput!): Boolean!
+
+  dvdCreate(input: DvdCreateInput!): Dvd
+  dvdUpdate(input: DvdUpdateInput!): Dvd
+  dvdDestroy(input: DvdDestroyInput!): Boolean!
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag

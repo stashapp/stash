@@ -26,6 +26,8 @@ models:
     model: github.com/stashapp/stash/pkg/models.ScrapedItem
   Studio:
     model: github.com/stashapp/stash/pkg/models.Studio
+  Dvd:
+    model: github.com/stashapp/stash/pkg/models.Dvd
   Tag:
     model: github.com/stashapp/stash/pkg/models.Tag
   ScrapedPerformer:
@@ -36,6 +38,8 @@ models:
     model: github.com/stashapp/stash/pkg/models.ScrapedScenePerformer
   ScrapedSceneStudio:
     model: github.com/stashapp/stash/pkg/models.ScrapedSceneStudio
+  ScrapedSceneDvd:
+    model: github.com/stashapp/stash/pkg/models.ScrapedSceneDvd
   ScrapedSceneTag:
     model: github.com/stashapp/stash/pkg/models.ScrapedSceneTag
   SceneFileType:

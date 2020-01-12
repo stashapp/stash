@@ -35,6 +35,7 @@ type Scene {
   scene_markers: [SceneMarker!]!
   gallery: Gallery
   studio: Studio
+  dvd: Dvd
   tags: [Tag!]!
   performers: [Performer!]!
 }
@@ -48,6 +49,7 @@ input SceneUpdateInput {
   date: String
   rating: Int
   studio_id: ID
+  dvd_id: ID
   gallery_id: ID
   performer_ids: [ID!]
   tag_ids: [ID!]
@@ -64,6 +66,7 @@ input BulkSceneUpdateInput {
   date: String
   rating: Int
   studio_id: ID
+  dvd_id: ID
   gallery_id: ID
   performer_ids: [ID!]
   tag_ids: [ID!]
@@ -94,6 +97,7 @@ type SceneParserResult {
   date: String
   rating: Int
   studio_id: ID
+  dvd_id: ID
   gallery_id: ID
   performer_ids: [ID!]
   tag_ids: [ID!]

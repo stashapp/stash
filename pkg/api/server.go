@@ -109,6 +109,7 @@ func Start() {
 	r.Mount("/performer", performerRoutes{}.Routes())
 	r.Mount("/scene", sceneRoutes{}.Routes())
 	r.Mount("/studio", studioRoutes{}.Routes())
+	r.Mount("/dvd", dvdRoutes{}.Routes())
 
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
 		if !config.GetCSSEnabled() {

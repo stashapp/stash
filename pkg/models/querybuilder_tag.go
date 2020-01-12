@@ -33,7 +33,23 @@ func (qb *TagQueryBuilder) Create(newTag Tag, tx *sqlx.Tx) (*Tag, error) {
 	if err := tx.Get(&newTag, `SELECT * FROM tags WHERE id = ? LIMIT 1`, studioID); err != nil {
 		return nil, err
 	}
+
+	dvdID, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Get(&newTag, `SELECT * FROM tags WHERE id = ? LIMIT 1`, dvdID); err != nil {
+		return nil, err
+	}
+
+
 	return &newTag, nil
+
+
+
+
+	
 }
 
 func (qb *TagQueryBuilder) Update(updatedTag Tag, tx *sqlx.Tx) (*Tag, error) {

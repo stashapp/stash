@@ -161,6 +161,25 @@ func matchStudio(s *models.ScrapedSceneStudio) error {
 	s.ID = &id
 	return nil
 }
+func matchDvd(s *models.ScrapedSceneDvd) error {
+	qb := models.NewDvdQueryBuilder()
+
+	dvd, err := qb.FindByName(s.Name, nil)
+
+	if err != nil {
+		return err
+	}
+
+	if dvd == nil {
+		// ignore - cannot match
+		return nil
+	}
+
+	id := strconv.Itoa(dvd.ID)
+	s.ID = &id
+	return nil
+}
+
 
 func matchTag(s *models.ScrapedSceneTag) error {
 	qb := models.NewTagQueryBuilder()
@@ -198,6 +217,13 @@ func postScrapeScene(ret *models.ScrapedScene) error {
 
 	if ret.Studio != nil {
 		err := matchStudio(ret.Studio)
+		if err != nil {
+			return err
+		}
+	}
+
+	if ret.Dvd != nil {
+		err := matchDvd(ret.Dvd)
 		if err != nil {
 			return err
 		}

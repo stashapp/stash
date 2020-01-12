@@ -3,7 +3,10 @@ import {
   H4,
   H6,
   Tag,
-} from "@blueprintjs/core";
+  HTMLTable
+ } from "@blueprintjs/core";
+
+
 import React, { FunctionComponent } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "../../../core/generated-graphql";
@@ -43,6 +46,15 @@ export const SceneDetailPanel: FunctionComponent<ISceneDetailProps> = (props: IS
   return (
     <>
     {SceneHelpers.maybeRenderStudio(props.scene, 70, false)}
+    <HTMLTable style={{width: "100%"}}>
+      <tbody>
+      <tr>
+        <td>  {SceneHelpers.maybeRenderFrontDvd(props.scene, 200, false)}</td>
+        <td> {SceneHelpers.maybeRenderBackDvd(props.scene, 200, false)}</td>
+      </tr>
+      </tbody>
+    </HTMLTable>
+    
       <H1 className="bp3-heading">
         {!!props.scene.title ? props.scene.title : TextUtils.fileNameFromPath(props.scene.path)}
       </H1>

@@ -256,6 +256,32 @@ video.preview.portrait {
   color: #f5f8fa;
 }
 
+.scene-dvd-overlay {
+  display: block;
+  position: absolute;
+  top: .7em;
+  right: .7em;
+  font-weight: 900;
+  width: 40%;
+  height: 20%;
+  opacity: 0.75;
+  z-index: 9;
+}
+
+.scene-dvd-overlay a {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  display: inline-block;
+  background-position: right top;
+  background-repeat: no-repeat;
+  letter-spacing: -.03em;
+  text-shadow: 0 0 3px #000;
+  text-align: right;
+  text-decoration: none;
+  color: #f5f8fa;
+}
+
 .overlay-resolution {
   font-weight: 900;
   text-transform: uppercase;
@@ -263,13 +289,13 @@ video.preview.portrait {
 }
 
 .scene-card {
-  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay {
+  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay, .scene-dvd-overlay {
     transition: opacity 0.5s;
   }
 }
 
 .scene-card:hover {
-  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay {
+  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay, .scene-dvd-overlay {
     opacity: 0;
     transition: opacity 0.5s;
   }
@@ -278,6 +304,11 @@ video.preview.portrait {
     opacity: 0.75;
     transition: opacity 0.5s;
   }
+  .scene-dvd-overlay:hover {
+    opacity: 0.75;
+    transition: opacity 0.5s;
+  }
+
 }
 
 #jwplayer-container {
@@ -355,12 +386,34 @@ span.block {
   margin: 0 auto;
 }
 
+.dvd-tag-container {
+  margin: 5px;
+}
+
+.dvd-tag.image {
+  height: 150px;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: 0 auto;
+}
+
+
 .studio.image {
   height: 100px;
   background-size: contain !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
 }
+
+.dvd.image {
+  height: 300px;
+  background-size: contain !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
 
 .no-spacing {
   padding: 0;
@@ -433,6 +486,11 @@ span.block {
     width: 15ch;
   }
   
+  & .scene-parser-row .parser-field-dvd input {
+    width: 15ch;
+  }
+
+
   & .scene-parser-row input {
     min-width: 10ch;
   }

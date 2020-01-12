@@ -14,6 +14,8 @@ input AutoTagMetadataInput {
   performers: [String!]
   """IDs of studios to tag files with, or "*" for all"""
   studios: [String!]
+  """IDs of dvds to tag files with, or "*" for all"""
+  dvds: [String!]
   """IDs of tags to tag files with, or "*" for all"""
   tags: [String!]
 }

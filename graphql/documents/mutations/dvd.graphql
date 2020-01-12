@@ -1,0 +1,36 @@
+mutation DvdCreate(
+  $name: String!,
+  $aliases: String,
+  $durationdvd: String,
+  $year: String,
+  $director: String,
+  $synopsis: String,
+  $url: String,
+  $frontimage: String,
+  $backimage: String) {
+
+  dvdCreate(input: { name: $name, aliases: $aliases, durationdvd: $durationdvd, year: $year, director: $director, synopsis: $synopsis, url: $url, frontimage: $frontimage, backimage: $backimage }) {
+    ...DvdData
+  }
+}
+
+mutation DvdUpdate(
+  $id: ID!
+  $name: String,
+  $aliases: String,
+  $durationdvd: String,
+  $year: String,
+  $director: String,
+  $synopsis: String,
+  $url: String,
+  $frontimage: String,
+  $backimage: String) {
+
+  dvdUpdate(input: { id: $id, name: $name, aliases: $aliases, durationdvd: $durationdvd, year: $year, director: $director, synopsis: $synopsis, url: $url, frontimage: $frontimage, backimage: $backimage }) {
+    ...DvdData
+  }
+}
+
+mutation DvdDestroy($id: ID!) {
+  dvdDestroy(input: { id: $id })
+}

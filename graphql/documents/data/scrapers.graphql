@@ -39,6 +39,17 @@ fragment ScrapedSceneStudioData on ScrapedSceneStudio {
   url
 }
 
+fragment ScrapedSceneDvdData on ScrapedSceneDvd {
+  id
+  name
+  aliases
+  durationdvd
+  year
+  director
+  synopsis
+  url
+}
+
 fragment ScrapedSceneTagData on ScrapedSceneTag {
   id
   name
@@ -64,6 +75,10 @@ fragment ScrapedSceneData on ScrapedScene {
   studio {
     ...ScrapedSceneStudioData
   }
+  dvd {
+    ...ScrapedSceneDvdData
+  }
+
 
   tags {
     ...ScrapedSceneTagData

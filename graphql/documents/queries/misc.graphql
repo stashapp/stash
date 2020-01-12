@@ -29,6 +29,11 @@ query AllStudiosForFilter {
     ...SlimStudioData
   }
 }
+query AllDvdsForFilter {
+  allDvds {
+    ...SlimDvdData
+  }
+}
 
 query AllTagsForFilter {
   allTags {
@@ -50,6 +55,7 @@ query Stats {
     gallery_count,
     performer_count,
     studio_count,
+    dvd_count,
     tag_count
   }
 }

@@ -17,6 +17,7 @@ import { NavigationUtils } from "../../utils/navigation";
 interface IProps {
   performer?: Partial<GQL.PerformerDataFragment>;
   studio?: Partial<GQL.StudioDataFragment>;
+  dvd?: Partial<GQL.DvdDataFragment>;
   isNew: boolean;
   isEditing: boolean;
   onToggleEdit: () => void;
@@ -24,6 +25,7 @@ interface IProps {
   onDelete: () => void;
   onAutoTag?: () => void;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
+  onBackImageChange?: (event: React.FormEvent<HTMLInputElement>) => void;
 
   // TODO: only for performers.  make generic
   scrapers?: GQL.ListPerformerScrapersListPerformerScrapers[];
@@ -57,7 +59,15 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
   function renderImageInput() {
     if (!props.isEditing) { return; }
     return <FileInput text="Choose image..." onInputChange={props.onImageChange} inputProps={{accept: ".jpg,.jpeg"}} />;
+    }
+   
+   
+  function renderBackImageInput() {
+    if (!props.dvd) { return; }
+    if (!props.isEditing) { return; }
+    return <FileInput text="Choose back image..." onInputChange={props.onBackImageChange} inputProps={{accept: ".jpg,.jpeg"}} />;
   }
+
 
   function renderScraperMenuItem(scraper : GQL.ListPerformerScrapersListPerformerScrapers) {
     return (
@@ -99,7 +109,10 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
       linkSrc = NavigationUtils.makePerformerScenesUrl(props.performer);
     } else if (!!props.studio) {
       linkSrc = NavigationUtils.makeStudioScenesUrl(props.studio);
+    } else if (!!props.dvd) {
+      linkSrc = NavigationUtils.makeDvdScenesUrl(props.dvd);
     }
+
     return (
       <Link className="bp3-button" to={linkSrc}>
         Scenes
@@ -115,6 +128,9 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
     }
     if (props.studio) {
       name = props.studio.name;
+    }
+    if (props.dvd) {
+      name = props.dvd.name;
     }
 
     return (
@@ -144,6 +160,7 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
         {props.isEditing && !props.isNew ? <NavbarDivider /> : undefined}
         {renderScraperMenu()}
         {renderImageInput()}
+        {renderBackImageInput()} 
         {renderSaveButton()}
 
         {renderAutoTagButton()}

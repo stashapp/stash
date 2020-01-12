@@ -50,6 +50,18 @@ type ScrapedSceneStudio {
   url: String
 }
 
+type ScrapedSceneDvd {
+  """Set if dvd matched"""
+  id: ID
+  name: String!
+  aliases: String
+  durationdvd: String
+  year: String
+  director: String
+  synopsis: String
+  url: String
+}
+
 type ScrapedSceneTag {
   """Set if tag matched"""
   id: ID
@@ -65,6 +77,7 @@ type ScrapedScene {
   file: SceneFileType # Resolver
 
   studio: ScrapedSceneStudio
+  dvd: ScrapedSceneDvd
   tags: [ScrapedSceneTag!]
   performers: [ScrapedScenePerformer!]
 }

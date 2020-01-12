@@ -20,7 +20,7 @@ type ExportTask struct {
 
 func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
-	// @manager.total = Scene.count + Gallery.count + Performer.count + Studio.count
+	// @manager.total = Scene.count + Gallery.count + Performer.count + Studio.count + Dvd.count
 
 	t.Mappings = &jsonschema.Mappings{}
 	t.Scraped = []jsonschema.ScrapedItem{}
@@ -31,6 +31,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	t.ExportGalleries(ctx)
 	t.ExportPerformers(ctx)
 	t.ExportStudios(ctx)
+	t.ExportDvds(ctx)
 
 	if err := instance.JSON.saveMappings(t.Mappings); err != nil {
 		logger.Errorf("[mappings] failed to save json: %s", err.Error())
@@ -44,6 +45,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 	defer tx.Commit()
 	qb := models.NewSceneQueryBuilder()
 	studioQB := models.NewStudioQueryBuilder()
+	dvdQB := models.NewDvdQueryBuilder()
 	galleryQB := models.NewGalleryQueryBuilder()
 	performerQB := models.NewPerformerQueryBuilder()
 	tagQB := models.NewTagQueryBuilder()
@@ -73,6 +75,14 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 			}
 		}
 
+		var dvdName string
+		if scene.DvdID.Valid {
+			dvd, _ := dvdQB.Find(int(scene.DvdID.Int64), tx)
+			if dvd != nil {
+				dvdName = dvd.Name.String
+			}
+		}
+
 		var galleryChecksum string
 		gallery, _ := galleryQB.FindBySceneID(scene.ID, tx)
 		if gallery != nil {
@@ -89,6 +99,11 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		if studioName != "" {
 			newSceneJSON.Studio = studioName
 		}
+
+		if dvdName != "" {
+			newSceneJSON.Dvd = dvdName
+		}
+
 		if scene.URL.Valid {
 			newSceneJSON.URL = scene.URL.String
 		}
@@ -328,11 +343,74 @@ func (t *ExportTask) ExportStudios(ctx context.Context) {
 	logger.Infof("[studios] export complete")
 }
 
+func (t *ExportTask) ExportDvds(ctx context.Context) {
+	qb := models.NewDvdQueryBuilder()
+	dvds, err := qb.All()
+	if err != nil {
+		logger.Errorf("[dvds] failed to fetch all dvds: %s", err.Error())
+	}
+
+	logger.Info("[dvds] exporting")
+
+	for i, dvd := range dvds {
+		index := i + 1
+		logger.Progressf("[dvds] %d of %d", index, len(dvds))
+
+		t.Mappings.Dvds = append(t.Mappings.Dvds, jsonschema.NameMapping{Name: dvd.Name.String, Checksum: dvd.Checksum})
+
+		newDvdJSON := jsonschema.Dvd{
+			CreatedAt: models.JSONTime{Time: dvd.CreatedAt.Timestamp},
+			UpdatedAt: models.JSONTime{Time: dvd.UpdatedAt.Timestamp},
+		}
+
+		if dvd.Name.Valid {
+			newDvdJSON.Name = dvd.Name.String
+		}
+		if dvd.Aliases.Valid {
+			newDvdJSON.Aliases = dvd.Aliases.String
+		}
+		if dvd.Year.Valid {
+			newDvdJSON.Year = dvd.Year.String
+		}
+		if dvd.Durationdvd.Valid {
+			newDvdJSON.Durationdvd = dvd.Durationdvd.String
+		}
+		
+		if dvd.Director.Valid {
+			newDvdJSON.Director = dvd.Director.String
+		}
+		
+		if dvd.Synopsis.Valid {
+			newDvdJSON.Synopsis = dvd.Synopsis.String
+		}
+		
+		if dvd.URL.Valid {
+			newDvdJSON.URL = dvd.URL.String
+		}
+
+		newDvdJSON.FrontImage = utils.GetBase64StringFromData(dvd.FrontImage)
+		newDvdJSON.BackImage = utils.GetBase64StringFromData(dvd.BackImage)
+		dvdJSON, err := instance.JSON.getDvd(dvd.Checksum)
+		if err != nil {
+			logger.Debugf("[dvds] error reading dvd json: %s", err.Error())
+		} else if jsonschema.CompareJSON(*dvdJSON, newDvdJSON) {
+			continue
+		}
+
+		if err := instance.JSON.saveDvd(dvd.Checksum, &newDvdJSON); err != nil {
+			logger.Errorf("[dvds] <%s> failed to save json: %s", dvd.Checksum, err.Error())
+		}
+	}
+
+	logger.Infof("[dvds] export complete")
+}
+
 func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
 	tx := database.DB.MustBeginTx(ctx, nil)
 	defer tx.Commit()
 	qb := models.NewScrapedItemQueryBuilder()
 	sqb := models.NewStudioQueryBuilder()
+	dqb := models.NewDvdQueryBuilder()
 	scrapedItems, err := qb.All()
 	if err != nil {
 		logger.Errorf("[scraped sites] failed to fetch all items: %s", err.Error())
@@ -349,6 +427,13 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
 			studio, _ := sqb.Find(int(scrapedItem.StudioID.Int64), tx)
 			if studio != nil {
 				studioName = studio.Name.String
+			}
+		}
+		var dvdName string
+		if scrapedItem.DvdID.Valid {
+			dvd, _ := dqb.Find(int(scrapedItem.DvdID.Int64), tx)
+			if dvd != nil {
+				dvdName = dvd.Name.String
 			}
 		}
 
@@ -392,6 +477,7 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
 		}
 
 		newScrapedItemJSON.Studio = studioName
+		newScrapedItemJSON.Dvd = dvdName
 		updatedAt := models.JSONTime{Time: scrapedItem.UpdatedAt.Timestamp} // TODO keeping ruby format
 		newScrapedItemJSON.UpdatedAt = updatedAt
 

@@ -1,0 +1,14 @@
+fragment DvdData on Dvd {
+  id
+  checksum
+  name
+  aliases
+  durationdvd
+  year
+  director
+  synopsis
+  url
+  frontimage_path
+  backimage_path
+  scene_count
+}

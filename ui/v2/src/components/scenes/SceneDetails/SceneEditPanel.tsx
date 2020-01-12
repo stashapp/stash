@@ -41,6 +41,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   const [rating, setRating] = useState<number | undefined>(undefined);
   const [galleryId, setGalleryId] = useState<string | undefined>(undefined);
   const [studioId, setStudioId] = useState<string | undefined>(undefined);
+  const [dvdId, setDvdId] = useState<string | undefined>(undefined);
   const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
   const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
@@ -85,6 +86,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     setRating(state.rating == null ? NaN : state.rating);
     setGalleryId(state.gallery ? state.gallery.id : undefined);
     setStudioId(state.studio ? state.studio.id : undefined);
+    setDvdId(state.dvd ? state.dvd.id : undefined);
     setPerformerIds(perfIds);
     setTagIds(tIds);
   }
@@ -111,6 +113,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
       rating,
       gallery_id: galleryId,
       studio_id: studioId,
+      dvd_id: dvdId,
       performer_ids: performerIds,
       tag_ids: tagIds,
       cover_image: coverImage,
@@ -271,6 +274,10 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     if (!studioId && scene.studio && scene.studio.id) {
       setStudioId(scene.studio.id);
     }
+    if (!dvdId && scene.dvd && scene.dvd.id) {
+      setDvdId(scene.dvd.id);
+    }
+
 
     if ((!performerIds || performerIds.length == 0) && scene.performers && scene.performers.length > 0) {
       let idPerfs = scene.performers.filter((p) => {
@@ -380,6 +387,15 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
             initialId={studioId}
           />
         </FormGroup>
+        <FormGroup label="Dvd">
+          <FilterSelect
+            type="dvds"
+            onSelectItem={(item) => setDvdId(item ? item.id : undefined)}
+            initialId={dvdId}
+          />
+        </FormGroup>
+
+
 
         <FormGroup label="Performers">
           {renderMultiSelect("performers", performerIds)}

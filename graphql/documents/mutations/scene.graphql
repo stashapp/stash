@@ -6,6 +6,7 @@ mutation SceneUpdate(
   $date: String,
   $rating: Int,
   $studio_id: ID,
+  $dvd_id: ID,
   $gallery_id: ID,
   $performer_ids: [ID!] = [],
   $tag_ids: [ID!] = [],
@@ -19,6 +20,7 @@ mutation SceneUpdate(
                         date: $date,
                         rating: $rating,
                         studio_id: $studio_id,
+                        dvd_id: $dvd_id,
                         gallery_id: $gallery_id,
                         performer_ids: $performer_ids,
                         tag_ids: $tag_ids,
@@ -36,6 +38,7 @@ mutation BulkSceneUpdate(
   $date: String,
   $rating: Int,
   $studio_id: ID,
+  $dvd_id: ID,
   $gallery_id: ID,
   $performer_ids: [ID!],
   $tag_ids: [ID!]) {
@@ -48,6 +51,7 @@ mutation BulkSceneUpdate(
                         date: $date,
                         rating: $rating,
                         studio_id: $studio_id,
+                        dvd_id: $dvd_id,
                         gallery_id: $gallery_id,
                         performer_ids: $performer_ids,
                         tag_ids: $tag_ids

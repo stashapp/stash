@@ -163,6 +163,14 @@ export class StashService {
     });
   }
 
+  public static useFindDvds(filter: ListFilterModel) {
+    return GQL.useFindDvds({
+      variables: {
+        filter: filter.makeFindFilter(),
+      },
+    });
+  }
+
   public static useFindPerformers(filter: ListFilterModel) {
     let performerFilter = {};
     // if (!!filter && filter.criteriaFilterOpen) {
@@ -205,6 +213,10 @@ export class StashService {
     const skip = id === "new" ? true : false;
     return GQL.useFindStudio({ variables: { id }, skip });
   }
+  public static useFindDvd(id: string) {
+    const skip = id === "new" ? true : false;
+    return GQL.useFindDvd({ variables: { id }, skip });
+  }
 
   // TODO - scene marker manipulation functions are handled differently
   private static sceneMarkerMutationImpactedQueries = [
@@ -244,6 +256,7 @@ export class StashService {
   public static useAllTagsForFilter() { return GQL.useAllTagsForFilter(); }
   public static useAllPerformersForFilter() { return GQL.useAllPerformersForFilter(); }
   public static useAllStudiosForFilter() { return GQL.useAllStudiosForFilter(); }
+  public static useAllDvdsForFilter() { return GQL.useAllDvdsForFilter(); }
   public static useValidGalleriesForScene(sceneId: string) {
     return GQL.useValidGalleriesForScene({ variables: { scene_id: sceneId } });
   }
@@ -283,6 +296,7 @@ export class StashService {
     "findScenes",
     "findSceneMarkers",
     "findStudios",
+    "findDvds",
     "allTags"
     // TODO - add "findTags" when it is implemented
   ];
@@ -301,6 +315,7 @@ export class StashService {
     "findPerformers",
     "findSceneMarkers",
     "findStudios",
+    "findDvds",
     "allTags"
   ];
 
@@ -346,6 +361,34 @@ export class StashService {
     return GQL.useStudioDestroy({
       variables: input,
       update: () => StashService.invalidateQueries(StashService.studioMutationImpactedQueries)
+    });
+  }
+
+
+  private static dvdMutationImpactedQueries = [
+    "findDvds",
+    "findScenes",
+    "allDvds"
+  ];
+
+  public static useDvdCreate(input: GQL.DvdCreateInput) {
+    return GQL.useDvdCreate({
+      variables: input,
+      update: () => StashService.invalidateQueries(StashService.dvdMutationImpactedQueries)
+    });
+  }
+
+  public static useDvdUpdate(input: GQL.DvdUpdateInput) {
+    return GQL.useDvdUpdate({
+      variables: input,
+      update: () => StashService.invalidateQueries(StashService.dvdMutationImpactedQueries)
+    });
+  }
+
+  public static useDvdDestroy(input: GQL.DvdDestroyInput) {
+    return GQL.useDvdDestroy({
+      variables: input,
+      update: () => StashService.invalidateQueries(StashService.dvdMutationImpactedQueries)
     });
   }
 

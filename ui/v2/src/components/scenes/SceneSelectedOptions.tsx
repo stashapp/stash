@@ -29,6 +29,7 @@ interface IListOperationProps {
 export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (props: IListOperationProps) => {
   const [rating, setRating] = useState<string>("");
   const [studioId, setStudioId] = useState<string | undefined>(undefined);
+  const [dvdId, setDvdId] = useState<string | undefined>(undefined);
   const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
 
@@ -41,6 +42,7 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
     // need to determine what we are actually setting on each scene
     var aggregateRating = getRating(props.selected);
     var aggregateStudioId = getStudioId(props.selected);
+    var aggregateDvdId = getDvdId(props.selected);
     var aggregatePerformerIds = getPerformerIds(props.selected);
     var aggregateTagIds = getTagIds(props.selected);
 
@@ -75,7 +77,21 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
       // if studioId is set, then we are setting it
       sceneInput.studio_id = studioId;
     }
-    
+
+    // if dvdId is undefined 
+    if (dvdId === undefined) {
+      // and all scenes have the same dvdId,
+      // then unset the dvdId, otherwise ignoring dvdId
+      if (aggregateDvdId) {
+        // an undefined dvd_id is ignored in the server, so set it to empty string instead
+        sceneInput.dvd_id = "";
+      }
+    } else {
+      // if dvdId is set, then we are setting it
+      sceneInput.dvd_id = dvdId;
+    }
+
+
     // if performerIds are empty
     if (!performerIds || performerIds.length === 0) {
       // and all scenes have the same ids,
@@ -152,6 +168,26 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
     return ret;
   }
 
+  function getDvdId(state: GQL.SlimSceneDataFragment[]) {
+    var ret : string | undefined;
+    var first = true;
+
+    state.forEach((scene : GQL.SlimSceneDataFragment) => {
+      if (first) {
+        ret = scene.dvd ? scene.dvd.id : undefined;
+        first = false;
+      } else {
+        var dvdId = scene.dvd ? scene.dvd.id : undefined;
+        if (ret != dvdId) {
+          ret = undefined;
+        }
+      }
+    });
+
+    return ret;
+  }
+
+
   function toId(object : any) {
     return object.id;
   }
@@ -203,6 +239,7 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
 
     var rating : string = "";
     var studioId : string | undefined;
+    var dvdId : string | undefined;
     var performerIds : string[] = [];
     var tagIds : string[] = [];
     var first = true;
@@ -210,10 +247,12 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
     state.forEach((scene : GQL.SlimSceneDataFragment) => {
       var thisRating = scene.rating ? scene.rating.toString() : "";
       var thisStudio = scene.studio ? scene.studio.id : undefined;
+      var thisDvd = scene.dvd ? scene.dvd.id : undefined;
 
       if (first) {
         rating = thisRating;
         studioId = thisStudio;
+        dvdId = thisDvd;
         performerIds = !!scene.performers ? scene.performers.map(toId).sort() : [];
         tagIds = !!scene.tags ? scene.tags.map(toId).sort() : [];
         first = false;
@@ -224,6 +263,11 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
         if (studioId != thisStudio) {
           studioId = undefined;
         }
+
+        if (dvdId != thisDvd) {
+          dvdId = undefined;
+        }
+
         const perfIds = !!scene.performers ? scene.performers.map(toId).sort() : [];
         const tIds = !!scene.tags ? scene.tags.map(toId).sort() : [];
         
@@ -239,6 +283,7 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
     
     setRating(rating);
     setStudioId(studioId);
+    setDvdId(dvdId);
     setPerformerIds(performerIds);
     setTagIds(tagIds);
   }
@@ -281,6 +326,13 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
               type="studios"
               onSelectItem={(item : any) => setStudioId(item ? item.id : undefined)}
               initialId={studioId}
+            />
+          </FormGroup>
+          <FormGroup className="operation-item" label="Dvd">
+            <FilterSelect
+              type="dvds"
+              onSelectItem={(item : any) => setDvdId(item ? item.id : undefined)}
+              initialId={dvdId}
             />
           </FormGroup>
 

@@ -19,6 +19,7 @@ type ScrapedItem struct {
 	VideoFilename   sql.NullString  `db:"video_filename" json:"video_filename"`
 	VideoURL        sql.NullString  `db:"video_url" json:"video_url"`
 	StudioID        sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
+	DvdID           sql.NullInt64   `db:"dvd_id,omitempty" json:"dvd_id"`
 	CreatedAt       SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt       SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
@@ -48,6 +49,7 @@ type ScrapedScene struct {
 	Date       *string                  `graphql:"date" json:"date"`
 	File       *SceneFileType           `graphql:"file" json:"file"`
 	Studio     *ScrapedSceneStudio      `graphql:"studio" json:"studio"`
+	Dvd        *ScrapedSceneDvd         `graphql:"dvd" json:"dvd"`
 	Tags       []*ScrapedSceneTag       `graphql:"tags" json:"tags"`
 	Performers []*ScrapedScenePerformer `graphql:"performers" json:"performers"`
 }
@@ -77,6 +79,18 @@ type ScrapedSceneStudio struct {
 	ID   *string `graphql:"id" json:"id"`
 	Name string  `graphql:"name" json:"name"`
 	URL  *string `graphql:"url" json:"url"`
+}
+
+type ScrapedSceneDvd struct {
+	// Set if dvd matched
+	ID       *string `graphql:"id" json:"id"`
+	Name     string  `graphql:"name" json:"name"`
+	Aliases  string  `graphql:"aliases" json:"aliases"`
+	Durationdvd string  `graphql:"durationdvd" json:"durationdvd"`
+	Year     string  `graphql:"year" json:"year"`
+	Director string  `graphql:"director" json:"director"`
+	Synopsis string  `graphql:"synopsis" json:"synopsis"`
+	URL      *string `graphql:"url" json:"url"`
 }
 
 type ScrapedSceneTag struct {

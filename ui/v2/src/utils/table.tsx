@@ -90,7 +90,7 @@ export class TableUtils {
   // TODO: isediting
   public static renderFilterSelect(options: {
     title: string,
-    type: "performers" | "studios" | "tags",
+    type: "performers" | "studios" | "dvds" | "tags",
     initialId: string | undefined,
     onChange: ((id: string | undefined) => void),
   }) {
@@ -111,7 +111,7 @@ export class TableUtils {
   // TODO: isediting
   public static renderMultiSelect(options: {
     title: string,
-    type: "performers" | "studios" | "tags",
+    type: "performers" | "studios" | "dvds" | "tags",
     initialIds: string[] | undefined,
     onChange: ((ids: string[]) => void),
   }) {

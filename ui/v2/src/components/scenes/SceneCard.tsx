@@ -125,6 +125,28 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
     );
   }
 
+  function maybeRenderDvdPopoverButton() {
+    if (!props.scene.dvd) { return; }
+    const dvd = props.scene.dvd;
+     return (
+      <Popover interactionKind={"hover"} position="bottom">
+        <Button
+          icon="film"
+          text={1}
+        />
+        <div className="dvd-tag-container">
+          <Link
+            to={`/dvds/${props.scene.dvd.id}`}
+            className="dvd-tag previewable image"
+            style={{backgroundImage: `url(${props.scene.dvd.frontimage_path})`}}
+          ></Link>
+          <TagLink key={props.scene.dvd.id} dvd={dvd}/>
+        </div>
+      </Popover>
+    ); 
+ 
+  }
+  
   function maybeRenderSceneMarkerPopoverButton() {
     if (props.scene.scene_markers.length <= 0) { return; }
 
@@ -147,6 +169,7 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
   function maybeRenderPopoverButtonGroup() {
     if (props.scene.tags.length > 0 ||
         props.scene.performers.length > 0 ||
+        props.scene.dvd ||
         props.scene.scene_markers.length > 0) {
       return (
         <>
@@ -154,6 +177,7 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
           <ButtonGroup minimal={true} className="card-section centered">
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
+            {maybeRenderDvdPopoverButton()}
             {maybeRenderSceneMarkerPopoverButton()}
           </ButtonGroup>
         </>

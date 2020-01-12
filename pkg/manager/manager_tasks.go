@@ -211,7 +211,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 	}()
 }
 
-func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []string) {
+func (s *singleton) AutoTag(performerIds []string, studioIds []string, dvdIds []string, tagIds []string) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -224,10 +224,12 @@ func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []
 		// calculate work load
 		performerCount := len(performerIds)
 		studioCount := len(studioIds)
+		dvdCount := len(dvdIds)
 		tagCount := len(tagIds)
 
 		performerQuery := models.NewPerformerQueryBuilder()
 		studioQuery := models.NewTagQueryBuilder()
+		dvdQuery := models.NewTagQueryBuilder()
 		tagQuery := models.NewTagQueryBuilder()
 
 		const wildcard = "*"
@@ -244,6 +246,13 @@ func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []
 				logger.Errorf("Error getting studio count: %s", err.Error())
 			}
 		}
+		if dvdCount == 1 && dvdIds[0] == wildcard {
+			dvdCount, err = dvdQuery.Count()
+			if err != nil {
+				logger.Errorf("Error getting dvd count: %s", err.Error())
+			}
+		}
+
 		if tagCount == 1 && tagIds[0] == wildcard {
 			tagCount, err = tagQuery.Count()
 			if err != nil {
@@ -251,11 +260,12 @@ func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []
 			}
 		}
 
-		total := performerCount + studioCount + tagCount
+		total := performerCount + studioCount + dvdCount + tagCount
 		s.Status.setProgress(0, total)
 
 		s.autoTagPerformers(performerIds)
 		s.autoTagStudios(studioIds)
+		s.autoTagDvds(dvdIds)
 		s.autoTagTags(tagIds)
 	}()
 }
@@ -330,6 +340,45 @@ func (s *singleton) autoTagStudios(studioIds []string) {
 		for _, studio := range studios {
 			wg.Add(1)
 			task := AutoTagStudioTask{studio: studio}
+			go task.Start(&wg)
+			wg.Wait()
+
+			s.Status.incrementProgress()
+		}
+	}
+}
+
+func (s *singleton) autoTagDvds(dvdIds []string) {
+	dvdQuery := models.NewDvdQueryBuilder()
+
+	var wg sync.WaitGroup
+	for _, dvdId := range dvdIds {
+		var dvds []*models.Dvd
+		if dvdId == "*" {
+			var err error
+			dvds, err = dvdQuery.All()
+			if err != nil {
+				logger.Errorf("Error querying dvds: %s", err.Error())
+				continue
+			}
+		} else {
+			dvdIdInt, err := strconv.Atoi(dvdId)
+			if err != nil {
+				logger.Errorf("Error parsing dvd id %s: %s", dvdId, err.Error())
+				continue
+			}
+
+			dvd, err := dvdQuery.Find(dvdIdInt, nil)
+			if err != nil {
+				logger.Errorf("Error finding dvd id %s: %s", dvdId, err.Error())
+				continue
+			}
+			dvds = append(dvds, dvd)
+		}
+
+		for _, dvd := range dvds {
+			wg.Add(1)
+			task := AutoTagDvdTask{dvd: dvd}
 			go task.Start(&wg)
 			wg.Wait()
 

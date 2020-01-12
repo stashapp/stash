@@ -30,6 +30,7 @@ type SceneFile struct {
 type Scene struct {
 	Title      string          `json:"title,omitempty"`
 	Studio     string          `json:"studio,omitempty"`
+	Dvd	       string          `json:"dvd,omitempty"`
 	URL        string          `json:"url,omitempty"`
 	Date       string          `json:"date,omitempty"`
 	Rating     int             `json:"rating,omitempty"`

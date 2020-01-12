@@ -16,7 +16,7 @@ func getStashClient(c scraperTypeConfig) *graphql.Client {
 
 type stashFindPerformerNamePerformer struct {
 	ID   string `json:"id" graphql:"id"`
-	Name string `json:"id" graphql:"name"`
+	Name string `json:"name" graphql:"name"`
 }
 
 func (p stashFindPerformerNamePerformer) toPerformer() *models.ScrapedPerformer {

@@ -16,6 +16,7 @@ import { PerformersCriterion, PerformersCriterionOption } from "./criteria/perfo
 import { RatingCriterion, RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterion, ResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterion, StudiosCriterionOption } from "./criteria/studios";
+import { DvdsCriterion, DvdsCriterionOption } from "./criteria/dvds";
 import { SceneTagsCriterionOption, TagsCriterion, TagsCriterionOption } from "./criteria/tags";
 import { makeCriteria } from "./criteria/utils";
 import {
@@ -66,6 +67,7 @@ export class ListFilterModel {
           new TagsCriterionOption(),
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
+          new DvdsCriterionOption(),
         ];
         break;
       case FilterMode.Performers:
@@ -109,6 +111,19 @@ export class ListFilterModel {
           new NoneCriterionOption(),
         ];
         break;
+
+        case FilterMode.Dvds:
+          if (!!this.sortBy === false) { this.sortBy = "name"; }
+          this.sortByOptions = ["name", "scenes_count"];
+          this.displayModeOptions = [
+            DisplayMode.Grid,
+          ];
+          this.criterionOptions = [
+            new NoneCriterionOption(),
+          ];
+          break;
+
+
       case FilterMode.Galleries:
         if (!!this.sortBy === false) { this.sortBy = "path"; }
         this.sortByOptions = ["path"];
@@ -252,6 +267,11 @@ export class ListFilterModel {
           const studCrit = criterion as StudiosCriterion;
           result.studios = { value: studCrit.value.map((studio) => studio.id), modifier: studCrit.modifier };
           break;
+        case "dvds":
+            const dvdCrit = criterion as DvdsCriterion;
+            result.dvds = { value: dvdCrit.value.map((dvd) => dvd.id), modifier: dvdCrit.modifier };
+            break;
+
       }
     });
     return result;

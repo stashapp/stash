@@ -28,7 +28,7 @@ func (r *queryResolver) MetadataGenerate(ctx context.Context, input models.Gener
 }
 
 func (r *queryResolver) MetadataAutoTag(ctx context.Context, input models.AutoTagMetadataInput) (string, error) {
-	manager.GetInstance().AutoTag(input.Performers, input.Studios, input.Tags)
+	manager.GetInstance().AutoTag(input.Performers, input.Studios, input.Dvds, input.Tags)
 	return "todo", nil
 }
 

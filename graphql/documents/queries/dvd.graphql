@@ -1,0 +1,14 @@
+query FindDvds($filter: FindFilterType) {
+  findDvds(filter: $filter) {
+    count
+    dvds {
+      ...DvdData
+    }
+  }
+}
+
+query FindDvd($id: ID!) {
+  findDvd(id: $id) {
+    ...DvdData
+  }
+}

@@ -21,6 +21,7 @@ type ScrapedItem struct {
 	VideoFilename   string          `json:"video_filename,omitempty"`
 	VideoURL        string          `json:"video_url,omitempty"`
 	Studio          string          `json:"studio,omitempty"`
+	Dvd	            string          `json:"dvd,omitempty"`
 	UpdatedAt       models.JSONTime `json:"updated_at,omitempty"`
 }
 

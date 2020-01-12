@@ -15,6 +15,7 @@ import { Criterion, CriterionType } from "../../models/list-filter/criteria/crit
 import { NoneCriterion } from "../../models/list-filter/criteria/none";
 import { PerformersCriterion } from "../../models/list-filter/criteria/performers";
 import { StudiosCriterion } from "../../models/list-filter/criteria/studios";
+import { DvdsCriterion } from "../../models/list-filter/criteria/dvds";
 import { TagsCriterion } from "../../models/list-filter/criteria/tags";
 import { makeCriteria } from "../../models/list-filter/criteria/utils";
 import { ListFilterModel } from "../../models/list-filter/filter";
@@ -117,11 +118,13 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
       }
 
       if (isArray(criterion.value)) {
-        let type: "performers" | "studios" | "tags" | "" = "";
+        let type: "performers" | "studios" | "dvds" | "tags" | "" = "";
         if (criterion instanceof PerformersCriterion) {
           type = "performers";
         } else if (criterion instanceof StudiosCriterion) {
           type = "studios";
+        } else if (criterion instanceof DvdsCriterion) {
+          type = "dvds";
         } else if (criterion instanceof TagsCriterion) {
           type = "tags";
         }

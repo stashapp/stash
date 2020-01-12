@@ -16,9 +16,9 @@ func (qb *ScrapedItemQueryBuilder) Create(newScrapedItem ScrapedItem, tx *sqlx.T
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scraped_items (title, description, url, date, rating, tags, models, episode, gallery_filename,
-                    			    	   gallery_url, video_filename, video_url, studio_id, created_at, updated_at)
+                    			    	   gallery_url, video_filename, video_url, studio_id, dvd_id, created_at, updated_at)
 				VALUES (:title, :description, :url, :date, :rating, :tags, :models, :episode, :gallery_filename,
-                    	:gallery_url, :video_filename, :video_url, :studio_id, :created_at, :updated_at)
+                    	:gallery_url, :video_filename, :video_url, :studio_id, :dvd_id, :created_at, :updated_at)
 		`,
 		newScrapedItem,
 	)

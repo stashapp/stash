@@ -8,6 +8,7 @@ export enum FilterMode {
   Scenes,
   Performers,
   Studios,
+  Dvds,
   Galleries,
   SceneMarkers,
 }

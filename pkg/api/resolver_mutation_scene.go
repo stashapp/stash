@@ -104,6 +104,15 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 		updatedScene.StudioID = &sql.NullInt64{Valid: false}
 	}
 
+	if input.DvdID != nil {
+		dvdID, _ := strconv.ParseInt(*input.DvdID, 10, 64)
+		updatedScene.DvdID = &sql.NullInt64{Int64: dvdID, Valid: true}
+	} else {
+		// dvd must be nullable
+		updatedScene.DvdID = &sql.NullInt64{Valid: false}
+	}
+
+
 	qb := models.NewSceneQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
 	scene, err := qb.Update(updatedScene, tx)
@@ -216,6 +225,16 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 		} else {
 			studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
 			updatedScene.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
+		}
+	}
+
+	if input.DvdID != nil {
+		// empty string means unset the dvd
+		if *input.DvdID == "" {
+			updatedScene.DvdID = &sql.NullInt64{Int64: 0, Valid: false}
+		} else {
+			dvdID, _ := strconv.ParseInt(*input.DvdID, 10, 64)
+			updatedScene.DvdID = &sql.NullInt64{Int64: dvdID, Valid: true}
 		}
 	}
 

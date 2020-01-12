@@ -11,14 +11,15 @@ import { ToastUtils } from "../../utils/toasts";
 const InternalPerformerMultiSelect = MultiSelect.ofType<GQL.AllPerformersForFilterAllPerformers>();
 const InternalTagMultiSelect = MultiSelect.ofType<GQL.AllTagsForFilterAllTags>();
 const InternalStudioMultiSelect = MultiSelect.ofType<GQL.AllStudiosForFilterAllStudios>();
+const InternalDvdMultiSelect = MultiSelect.ofType<GQL.AllDvdsForFilterAllDvds>();
 
 type ValidTypes =
   GQL.AllPerformersForFilterAllPerformers |
   GQL.AllTagsForFilterAllTags |
-  GQL.AllStudiosForFilterAllStudios;
+  GQL.AllDvdsForFilterAllDvds;
 
 interface IProps extends HTMLInputProps, Partial<IMultiSelectProps<ValidTypes>> {
-  type: "performers" | "studios" | "tags";
+  type: "performers" | "studios" | "dvds" | "tags";
   initialIds?: string[];
   onUpdate: (items: ValidTypes[]) => void;
 }
@@ -95,7 +96,7 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
 
   function getMultiSelectImpl() {
     let getInternalMultiSelect: () => new (props: IMultiSelectProps<any>) => MultiSelect<any>;
-    let getData: () => GQL.AllPerformersForFilterQuery | GQL.AllStudiosForFilterQuery | GQL.AllTagsForFilterQuery | undefined;
+    let getData: () => GQL.AllPerformersForFilterQuery | GQL.AllStudiosForFilterQuery | GQL.AllDvdsForFilterQuery | GQL.AllTagsForFilterQuery | undefined;
     let translateData: () => void;
     let createNewObject: ((query : string) => void) | undefined = undefined; 
 
@@ -106,12 +107,19 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
         translateData = () => { let perfData = data as GQL.AllPerformersForFilterQuery; setItems(!!perfData && !!perfData.allPerformers ? perfData.allPerformers : []); };
         break;
       }
-      case "studios": {
+     /*  case "studios": {
         getInternalMultiSelect = () => { return InternalStudioMultiSelect; };
         getData = () => { const { data } = StashService.useAllStudiosForFilter(); return data; }
         translateData = () => { let studioData = data as GQL.AllStudiosForFilterQuery; setItems(!!studioData && !!studioData.allStudios ? studioData.allStudios : []); };
         break;
-      }
+      } */
+       case "dvds": {
+        getInternalMultiSelect = () => { return InternalDvdMultiSelect; };
+        getData = () => { const { data } = StashService.useAllDvdsForFilter(); return data; }
+        translateData = () => { let dvdData = data as GQL.AllDvdsForFilterQuery; setItems(!!dvdData && !!dvdData.allDvds ? dvdData.allDvds : []); };
+        break;
+      } 
+
       case "tags": {
         getInternalMultiSelect = () => { return InternalTagMultiSelect; };
         getData = () => { const { data } = StashService.useAllTagsForFilter(); return data; }

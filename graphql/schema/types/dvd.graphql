@@ -1,0 +1,51 @@
+type Dvd {
+  id: ID!
+  checksum: String!
+  name: String!
+  aliases: String
+  durationdvd: String
+  year: String
+  director: String
+  synopsis: String
+  url: String
+  frontimage_path: String # Resolver
+  backimage_path: String # Resolver
+  scene_count: Int # Resolver
+}
+
+input DvdCreateInput {
+  name: String!
+  aliases: String
+  durationdvd: String
+  year: String
+  director: String
+  synopsis: String
+  url: String
+  """This should be base64 encoded"""
+  frontimage: String
+  backimage: String
+}
+
+input DvdUpdateInput {
+  id: ID!
+  name: String
+  aliases: String
+  durationdvd: String
+  year: String
+  director: String
+  synopsis: String
+  url: String
+  """This should be base64 encoded"""
+  frontimage: String
+  backimage: String
+
+}
+
+input DvdDestroyInput {
+  id: ID!
+}
+
+type FindDvdsResultType {
+  count: Int!
+  dvds: [Dvd!]!
+}

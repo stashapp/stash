@@ -28,6 +28,7 @@ var once sync.Once
 type flagStruct struct {
 	configFilePath string
 }
+
 var flags = flagStruct{}
 
 func GetInstance() *singleton {
@@ -156,5 +157,6 @@ func (s *singleton) RefreshConfig() {
 		_ = utils.EnsureDir(s.Paths.JSON.Scenes)
 		_ = utils.EnsureDir(s.Paths.JSON.Galleries)
 		_ = utils.EnsureDir(s.Paths.JSON.Studios)
+		_ = utils.EnsureDir(s.Paths.JSON.Dvds)
 	}
 }

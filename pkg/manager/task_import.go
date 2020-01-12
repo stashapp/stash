@@ -46,6 +46,7 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 
 	t.ImportPerformers(ctx)
 	t.ImportStudios(ctx)
+	t.ImportDvds(ctx)
 	t.ImportGalleries(ctx)
 	t.ImportTags(ctx)
 
@@ -204,6 +205,72 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 	logger.Info("[studios] import complete")
 }
 
+func (t *ImportTask) ImportDvds(ctx context.Context) {
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewDvdQueryBuilder()
+
+	for i, mappingJSON := range t.Mappings.Dvds {
+		index := i + 1
+		dvdJSON, err := instance.JSON.getDvd(mappingJSON.Checksum)
+		if err != nil {
+			logger.Errorf("[dvds] failed to read json: %s", err.Error())
+			continue
+		}
+		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || dvdJSON == nil {
+			return
+		}
+
+		logger.Progressf("[dvds] %d of %d", index, len(t.Mappings.Dvds))
+
+		// generate checksum from dvd name rather than image
+		checksum := utils.MD5FromString(dvdJSON.Name)
+
+		// Process the base 64 encoded image string
+		_, frontimageData, err := utils.ProcessBase64Image(dvdJSON.FrontImage)
+		if err != nil {
+			_ = tx.Rollback()
+			logger.Errorf("[dvds] <%s> invalid frontimage: %s", mappingJSON.Checksum, err.Error())
+			return
+		}
+		_, backimageData, err := utils.ProcessBase64Image(dvdJSON.BackImage)
+		if err != nil {
+			_ = tx.Rollback()
+			logger.Errorf("[dvds] <%s> invalid backimage: %s", mappingJSON.Checksum, err.Error())
+			return
+		}
+		
+
+		// Populate a new dvd from the input
+		newDvd := models.Dvd{
+			FrontImage: frontimageData,
+			BackImage: backimageData,
+			Checksum:   checksum,
+			Name:       sql.NullString{String: dvdJSON.Name, Valid: true},
+			Aliases:    sql.NullString{String: dvdJSON.Aliases, Valid: true},
+			Year:       sql.NullString{String: dvdJSON.Year, Valid: true},
+			Durationdvd: sql.NullString{String: dvdJSON.Durationdvd, Valid: true},
+			Director:   sql.NullString{String: dvdJSON.Director, Valid: true},
+			Synopsis:   sql.NullString{String: dvdJSON.Synopsis, Valid: true},
+			URL:        sql.NullString{String: dvdJSON.URL, Valid: true},
+			CreatedAt:  models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(dvdJSON.CreatedAt)},
+			UpdatedAt:  models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(dvdJSON.UpdatedAt)},
+		}
+
+		_, err = qb.Create(newDvd, tx)
+		if err != nil {
+			_ = tx.Rollback()
+			logger.Errorf("[dvds] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
+			return
+		}
+	}
+
+	logger.Info("[dvds] importing")
+	if err := tx.Commit(); err != nil {
+		logger.Errorf("[dvds] import failed to commit: %s", err.Error())
+	}
+	logger.Info("[dvds] import complete")
+}
+
 func (t *ImportTask) ImportGalleries(ctx context.Context) {
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewGalleryQueryBuilder()
@@ -312,6 +379,7 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewScrapedItemQueryBuilder()
 	sqb := models.NewStudioQueryBuilder()
+	dqb := models.NewDvdQueryBuilder()
 	currentTime := time.Now()
 
 	for i, mappingJSON := range t.Scraped {
@@ -341,6 +409,14 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 		}
 		if studio != nil {
 			newScrapedItem.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+		}
+
+		dvd, err := dqb.FindByName(mappingJSON.Dvd, tx)
+		if err != nil {
+			logger.Errorf("[scraped sites] failed to fetch dvd: %s", err.Error())
+		}
+		if dvd != nil {
+			newScrapedItem.DvdID = sql.NullInt64{Int64: int64(dvd.ID), Valid: true}
 		}
 
 		_, err = qb.Create(newScrapedItem, tx)
@@ -457,6 +533,17 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				logger.Warnf("[scenes] studio <%s> does not exist: %s", sceneJSON.Studio, err.Error())
 			} else {
 				newScene.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			}
+		}
+
+		// Populate the dvd ID
+		if sceneJSON.Dvd != "" {
+			dqb := models.NewDvdQueryBuilder()
+			dvd, err := dqb.FindByName(sceneJSON.Dvd, tx)
+			if err != nil {
+				logger.Warnf("[scenes] dvd <%s> does not exist: %s", sceneJSON.Dvd, err.Error())
+			} else {
+				newScene.DvdID = sql.NullInt64{Int64: int64(dvd.ID), Valid: true}
 			}
 		}
 
