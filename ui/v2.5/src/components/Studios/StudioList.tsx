@@ -1,18 +1,13 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
 import { QueryHookResult } from "react-apollo-hooks";
 import { FindStudiosQuery, FindStudiosVariables } from "src/core/generated-graphql";
-import { ListHook } from "src/hooks";
-import { IBaseProps } from "src/models/base-props";
+import { useStudiosList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { DisplayMode, FilterMode } from "src/models/list-filter/types";
+import { DisplayMode } from "src/models/list-filter/types";
 import { StudioCard } from "./StudioCard";
 
-interface IProps extends IBaseProps {}
-
-export const StudioList: FunctionComponent<IProps> = (props: IProps) => {
-  const listData = ListHook.useList({
-    filterMode: FilterMode.Studios,
-    props,
+export const StudioList: React.FC = () => {
+  const listData = useStudiosList({
     renderContent,
   });
 

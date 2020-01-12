@@ -45,9 +45,8 @@ export class ListFilterModel {
   public displayModeOptions: DisplayMode[] = [];
   public criterionOptions: ICriterionOption[] = [];
   public criteria: Array<Criterion<any, any>> = [];
-  public totalCount: number = 0;
 
-  public constructor(filterMode: FilterMode) {
+  public constructor(filterMode: FilterMode, rawParms?: any) {
     switch (filterMode) {
       case FilterMode.Scenes:
         if (!!this.sortBy === false) { this.sortBy = "date"; }
@@ -142,6 +141,8 @@ export class ListFilterModel {
     }
     if (!!this.displayMode === false) { this.displayMode = this.displayModeOptions[0]; }
     this.sortByOptions = [...this.sortByOptions, "created_at", "updated_at"];
+    if(rawParms)
+      this.configureFromQueryParameters(rawParms);
   }
 
   public configureFromQueryParameters(rawParms: any) {

@@ -1,20 +1,19 @@
 import React from "react";
 import _ from "lodash";
 import { QueryHookResult } from "react-apollo-hooks";
+import { useHistory } from 'react-router-dom';
 import { FindScenesQuery, FindScenesVariables, SlimSceneDataFragment } from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import { ListHook } from "src/hooks";
-import { IBaseProps } from "src/models/base-props";
+import { useScenesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { DisplayMode, FilterMode } from "src/models/list-filter/types";
+import { DisplayMode } from "src/models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
 import { SceneSelectedOptions } from "./SceneSelectedOptions";
 
-interface ISceneListProps extends IBaseProps {}
-
-export const SceneList: React.FC<ISceneListProps> = (props: ISceneListProps) => {
+export const SceneList: React.FC = () => {
+  const history = useHistory();
   const otherOperations = [
     {
       text: "Play Random",
@@ -22,9 +21,7 @@ export const SceneList: React.FC<ISceneListProps> = (props: ISceneListProps) => 
     }
   ];
 
-  const listData = ListHook.useList({
-    filterMode: FilterMode.Scenes,
-    props,
+  const listData = useScenesList({
     zoomable: true,
     otherOperations: otherOperations,
     renderContent,
@@ -44,7 +41,7 @@ export const SceneList: React.FC<ISceneListProps> = (props: ISceneListProps) => 
       if (singleResult && singleResult.data && singleResult.data.findScenes && singleResult.data.findScenes.scenes.length === 1) {
         let id = singleResult!.data!.findScenes!.scenes[0].id;
         // navigate to the scene player page
-        props.history.push("/scenes/" + id + "?autoplay=true");
+        history.push("/scenes/" + id + "?autoplay=true");
       }
     }
   }

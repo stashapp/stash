@@ -1,18 +1,17 @@
 import _ from "lodash";
 import React from "react";
 import { QueryHookResult } from "react-apollo-hooks";
+import { useHistory } from 'react-router-dom';
 import { FindPerformersQuery, FindPerformersVariables } from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import { ListHook } from "src/hooks";
-import { IBaseProps } from "src/models/base-props";
+import { usePerformersList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { DisplayMode, FilterMode } from "src/models/list-filter/types";
+import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 
-interface IPerformerListProps extends IBaseProps {}
-
-export const PerformerList: React.FC<IPerformerListProps> = (props: IPerformerListProps) => {
+export const PerformerList: React.FC = () => {
+  const history = useHistory();
   const otherOperations = [
     {
       text: "Open Random",
@@ -20,9 +19,7 @@ export const PerformerList: React.FC<IPerformerListProps> = (props: IPerformerLi
     }
   ];
 
-  const listData = ListHook.useList({
-    filterMode: FilterMode.Performers,
-    props,
+  const listData = usePerformersList({
     otherOperations: otherOperations,
     renderContent,
   });
@@ -37,7 +34,7 @@ export const PerformerList: React.FC<IPerformerListProps> = (props: IPerformerLi
       const singleResult = await StashService.queryFindPerformers(filterCopy);
       if (singleResult && singleResult.data && singleResult.data.findPerformers && singleResult.data.findPerformers.performers.length === 1) {
         let id = singleResult!.data!.findPerformers!.performers[0]!.id;
-        props.history.push("/performers/" + id);
+        history.push("/performers/" + id);
       }
     }
   }

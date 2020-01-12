@@ -1559,6 +1559,13 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-images@^0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@types/react-images/-/react-images-0.5.1.tgz#e00ccce7221a03ed7b43072cefdc0e5a66fc5a08"
+  integrity sha512-n2guyR+kblfNEAr1TA3GnrpEdt0/2dHxMOFaFcCgI62NRQaQClaNdgidsim3JRVWLlUiWilDjzZnJUSR0kMncQ==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-router-bootstrap@^0.24.5":
   version "0.24.5"
   resolved "https://registry.yarnpkg.com/@types/react-router-bootstrap/-/react-router-bootstrap-0.24.5.tgz#9257ba3dfb01cda201aac9fa05cde3eb09ea5b27"
