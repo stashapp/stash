@@ -91,7 +91,7 @@ export const FilterSelect: React.FunctionComponent<IProps> = (props: IProps) => 
   };
 
   function onItemSelect(item: ValidTypes | undefined) {
-    if (item && item.id == "0") {
+    if (item && item.id === "0") {
       item = undefined;
     }
 

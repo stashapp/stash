@@ -228,7 +228,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   }
 
   function renderScraperMenu() {
-    if (!queryableScrapers || queryableScrapers.length == 0) {
+    if (!queryableScrapers || queryableScrapers.length === 0) {
       return;
     }
 
@@ -271,7 +271,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
       setStudioId(scene.studio.id);
     }
 
-    if ((!performerIds || performerIds.length == 0) && scene.performers && scene.performers.length > 0) {
+    if ((!performerIds || performerIds.length === 0) && scene.performers && scene.performers.length > 0) {
       let idPerfs = scene.performers.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
@@ -282,7 +282,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
       }
     }
 
-    if ((!tagIds || tagIds.length == 0) && scene.tags && scene.tags.length > 0) {
+    if ((!tagIds || tagIds.length === 0) && scene.tags && scene.tags.length > 0) {
       let idTags = scene.tags.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });

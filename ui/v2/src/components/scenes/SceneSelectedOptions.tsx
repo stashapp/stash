@@ -136,7 +136,7 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
         first = false;
       } else {
         var studioId = scene.studio ? scene.studio.id : undefined;
-        if (ret != studioId) {
+        if (ret !== studioId) {
           ret = undefined;
         }
       }
@@ -214,7 +214,7 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
         if (rating !== thisRating) {
           rating = "";
         }
-        if (studioId != thisStudio) {
+        if (studioId !== thisStudio) {
           studioId = undefined;
         }
         const perfIds = !!scene.performers ? scene.performers.map(toId).sort() : [];

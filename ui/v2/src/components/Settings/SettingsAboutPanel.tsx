@@ -88,7 +88,7 @@ export const SettingsAboutPanel: FunctionComponent<IProps> = (props: IProps) => 
       {!!error ? <span>{error.message}</span> : undefined}
       {!!errorLatest ? <span>{errorLatest.message}</span> : undefined}
       {renderVersion()}
-      {!dataLatest || loadingLatest || networkStatus == 4 ? <Spinner size={Spinner.SIZE_SMALL} /> : <>{renderLatestVersion()}</>}
+      {!dataLatest || loadingLatest || networkStatus === 4 ? <Spinner size={Spinner.SIZE_SMALL} /> : <>{renderLatestVersion()}</>}
 
     </>
   );
