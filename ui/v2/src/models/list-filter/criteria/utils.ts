@@ -1,7 +1,7 @@
 import {
   CriterionModifier,
 } from "../../../core/generated-graphql";
-import { Criterion, CriterionType, StringCriterion, NumberCriterion } from "./criterion";
+import { Criterion, CriterionType, StringCriterion, NumberCriterion, DurationCriterion } from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
 import { IsMissingCriterion } from "./is-missing";
@@ -17,6 +17,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "none": return new NoneCriterion();
     case "rating": return new RatingCriterion();
     case "resolution": return new ResolutionCriterion();
+    case "duration": return new DurationCriterion(type, type);
     case "favorite": return new FavoriteCriterion();
     case "hasMarkers": return new HasMarkersCriterion();
     case "isMissing": return new IsMissingCriterion();
@@ -25,7 +26,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "performers": return new PerformersCriterion();
     case "studios": return new StudiosCriterion();
     
-    case "birth_year":
+    case "birth_year": return new NumberCriterion(type, type);
     case "age":
         var ret = new NumberCriterion(type, type);
         // null/not null doesn't make sense for these criteria
