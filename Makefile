@@ -1,4 +1,3 @@
-
 ifeq ($(OS),Windows_NT)
   SEPARATOR := &&
   SET := set
