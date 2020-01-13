@@ -55,7 +55,6 @@ export const ScenePlayerScrubber: FunctionComponent<IScenePlayerScrubberProps> =
   }
 
   const [spriteItems, setSpriteItems] = useState<ISceneSpriteItem[]>([]);
-  const [delayedRender, setDelayedRender] = useState(false);
 
   useEffect(() => {
     if (!scrubberSliderEl.current) { return; }
@@ -209,10 +208,6 @@ export const ScenePlayerScrubber: FunctionComponent<IScenePlayerScrubberProps> =
     }
 
     setSpriteItems(newSpriteItems);
-    // TODO: Very hacky.  Need to wait for the scroll width to update from the image loading.
-    setTimeout(() => {
-      setDelayedRender(true);
-    }, 100);
   }
 
   function renderTags() {
