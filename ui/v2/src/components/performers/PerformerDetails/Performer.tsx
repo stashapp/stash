@@ -190,7 +190,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     return (
       <div className="columns is-multiline no-spacing">
         <div className="column is-half details-image-container">
-          <img className="performer" src={imagePreview} />
+          <img alt="Performer" className="performer" src={imagePreview} />
         </div>
         <div className="column is-half details-detail-container">
           {renderTabs()}

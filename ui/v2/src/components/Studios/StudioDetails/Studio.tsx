@@ -134,7 +134,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     <>
       <div className="columns is-multiline no-spacing">
         <div className="column is-half details-image-container">
-          <img className="studio" src={imagePreview} />
+          <img alt={name} className="studio" src={imagePreview} />
         </div>
         <div className="column is-half details-detail-container">
           <DetailsEditNavbar

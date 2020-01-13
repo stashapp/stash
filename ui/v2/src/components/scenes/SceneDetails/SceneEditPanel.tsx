@@ -394,7 +394,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
             <span>Cover Image</span>
           </label>
           <Collapse isOpen={isCoverImageOpen}>
-            <img className="scene-cover" src={coverImagePreview} />
+            <img alt="Scene cover" className="scene-cover" src={coverImagePreview} />
             <FileInput text="Choose image..." onInputChange={onCoverImageChange} inputProps={{accept: ".jpg,.jpeg,.png"}} />
           </Collapse>
         </div>
