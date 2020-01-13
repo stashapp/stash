@@ -217,7 +217,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     <>
       <div id="performer-page">
         <div className="details-image-container">
-          <img className="performer" src={imagePreview} onClick={openLightbox} />
+          <img alt={performer.name} className="performer" src={imagePreview} onClick={openLightbox} />
         </div>
         <div className="performer-head">
           <h1 className="bp3-heading">
