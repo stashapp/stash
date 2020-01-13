@@ -11,7 +11,7 @@ import {
   Slider,
 } from "@blueprintjs/core";
 import { debounce } from "lodash";
-import React, { FunctionComponent, SyntheticEvent, useEffect, useState } from "react";
+import React, { FunctionComponent, SyntheticEvent, useState } from "react";
 import { Criterion } from "../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "../../models/list-filter/filter";
 import { DisplayMode } from "../../models/list-filter/types";
@@ -41,15 +41,7 @@ interface IListFilterProps {
 const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
 
 export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilterProps) => {
-  let searchCallback: any;
-
   const [editingCriterion, setEditingCriterion] = useState<Criterion | undefined>(undefined);
-
-  useEffect(() => {
-    searchCallback = debounce((event: any) => {
-      props.onChangeQuery(event.target.value);
-    }, 500);
-  });
 
   function onChangePageSize(event: SyntheticEvent<HTMLSelectElement>) {
     const val = event!.currentTarget!.value;
@@ -57,6 +49,10 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
   }
 
   function onChangeQuery(event: SyntheticEvent<HTMLInputElement>) {
+    let searchCallback = debounce((event: any) => {
+      props.onChangeQuery(event.target.value);
+    }, 500);
+    
     event.persist();
     searchCallback(event);
   }
