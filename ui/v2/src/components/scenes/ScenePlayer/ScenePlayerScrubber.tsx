@@ -291,7 +291,7 @@ export const ScenePlayerScrubber: FunctionComponent<IScenePlayerScrubberProps> =
 
   return (
     <div className="scrubber-wrapper">
-      <a className="scrubber-button" id="scrubber-back" onClick={() => goBack()}>&lt;</a>
+      <button className="scrubber-button" id="scrubber-back" onClick={() => goBack()}>&lt;</button>
       <div ref={contentEl} className="scrubber-content">
         <div className="scrubber-tags-background" />
         <div ref={positionIndicatorEl} id="scrubber-position-indicator" />
@@ -305,7 +305,7 @@ export const ScenePlayerScrubber: FunctionComponent<IScenePlayerScrubberProps> =
           </div>
         </div>
       </div>
-      <a className="scrubber-button" id="scrubber-forward" onClick={() => goForward()}>&gt;</a>
+      <button className="scrubber-button" id="scrubber-forward" onClick={() => goForward()}>&gt;</button>
     </div>
   );
 };
