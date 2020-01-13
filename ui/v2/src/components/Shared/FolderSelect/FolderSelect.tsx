@@ -28,7 +28,7 @@ export const FolderSelect: FunctionComponent<IProps> = (props: IProps) => {
   useEffect(() => {
     if (!data || !data.directories || !!error) { return; }
     setSelectableDirectories(StashService.nullToUndefined(data.directories));
-  }, [data]);
+  }, [data, error]);
 
   function onSelectDirectory() {
     selectedDirectories.push(currentDirectory);

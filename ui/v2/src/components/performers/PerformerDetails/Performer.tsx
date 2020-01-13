@@ -39,7 +39,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     setIsLoading(loading);
     if (!data || !data.findPerformer || !!error) { return; }
     setPerformer(data.findPerformer);
-  }, [data]);
+  }, [data, error, loading]);
 
   useEffect(() => {
     setImagePreview(performer.image_path);
@@ -190,7 +190,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     return (
       <div className="columns is-multiline no-spacing">
         <div className="column is-half details-image-container">
-          <img alt="Performer" className="performer" src={imagePreview} />
+          {!imagePreview ? undefined : <img alt="Performer" className="performer" src={imagePreview} />}
         </div>
         <div className="column is-half details-detail-container">
           {renderTabs()}

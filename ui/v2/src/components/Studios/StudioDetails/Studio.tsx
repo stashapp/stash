@@ -47,7 +47,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     setIsLoading(loading);
     if (!data || !data.findStudio || !!error) { return; }
     setStudio(data.findStudio);
-  }, [data]);
+  }, [data, loading, error]);
 
   useEffect(() => {
     setImagePreview(studio.image_path);
@@ -56,7 +56,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     if (!isNew) {
       setIsEditing(false);
     }
-  }, [studio]);
+  }, [studio, isNew]);
 
   function onImageLoad(this: FileReader) {
     setImagePreview(this.result as string);

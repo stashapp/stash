@@ -30,7 +30,7 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
     setIsLoading(loading);
     if (!data || !data.allTags || !!error) { return; }
     setTags(data.allTags);
-  }, [data]);
+  }, [data, loading, error]);
 
   useEffect(() => {
     if (!!editingTag) {

@@ -19,7 +19,7 @@ export const Gallery: FunctionComponent<IProps> = (props: IProps) => {
     setIsLoading(loading);
     if (!data || !data.findGallery || !!error) { return; }
     setGallery(data.findGallery);
-  }, [data]);
+  }, [data, loading, error]);
 
   if (!data || !data.findGallery || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
   if (!!error) { return <>{error.message}</>; }

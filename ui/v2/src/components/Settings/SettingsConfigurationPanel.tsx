@@ -68,7 +68,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       setLogAccess(conf.general.logAccess);
       setExcludes(conf.general.excludes);
     }
-  }, [data]);
+  }, [data, error]);
 
   function onStashesChanged(directories: string[]) {
     setStashes(directories);
