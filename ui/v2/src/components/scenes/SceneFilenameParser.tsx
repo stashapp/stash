@@ -14,7 +14,7 @@ import {
   Tree,
   ITreeNode,
 } from "@blueprintjs/core";
-import React, { FunctionComponent, useEffect, useState, useRef } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { IBaseProps } from "../../models";
 import { StashService } from "../../core/StashService";
 import * as GQL from "../../core/generated-graphql";

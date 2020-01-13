@@ -1,5 +1,4 @@
 import { HTMLTable } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent } from "react";
 import { QueryHookResult } from "react-apollo-hooks";
 import { Link } from "react-router-dom";

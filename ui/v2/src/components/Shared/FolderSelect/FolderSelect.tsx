@@ -6,7 +6,6 @@ import {
   Spinner,
   FormGroup,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import { StashService } from "../../../core/StashService";
 

@@ -1,19 +1,12 @@
 import _ from "lodash";
 import {
-  AnchorButton,
   Button,
   ButtonGroup,
-  ControlGroup,
   FormGroup,
   HTMLSelect,
-  InputGroup,
-  Menu,
-  MenuItem,
-  Popover,
   Spinner,
-  Tag,
 } from "@blueprintjs/core";
-import React, { FunctionComponent, SyntheticEvent, useEffect, useRef, useState } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { FilterSelect } from "../select/FilterSelect";
 import { FilterMultiSelect } from "../select/FilterMultiSelect";
 import { StashService } from "../../core/StashService";
@@ -106,7 +99,7 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
   async function onSave() {
     setIsLoading(true);
     try {
-      const result = await updateScenes();
+      await updateScenes();
       ToastUtils.success("Updated scenes");
     } catch (e) {
       ErrorUtils.handle(e);

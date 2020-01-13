@@ -1,4 +1,3 @@
-import _ from "lodash";
 import React, { FunctionComponent } from "react";
 import { IBaseProps } from "../../models/base-props";
 import { SceneList } from "./SceneList";

@@ -2,12 +2,9 @@ import {
   H1,
   H4,
   H6,
-  Tag,
 } from "@blueprintjs/core";
 import React, { FunctionComponent } from "react";
-import { Link } from "react-router-dom";
 import * as GQL from "../../../core/generated-graphql";
-import { NavigationUtils } from "../../../utils/navigation";
 import { TextUtils } from "../../../utils/text";
 import { TagLink } from "../../Shared/TagLink";
 import { SceneHelpers } from "../helpers";

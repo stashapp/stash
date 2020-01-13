@@ -1,4 +1,3 @@
-import _ from "lodash";
 import React, { FunctionComponent } from "react";
 import { QueryHookResult } from "react-apollo-hooks";
 import { FindStudiosQuery, FindStudiosVariables } from "../../core/generated-graphql";

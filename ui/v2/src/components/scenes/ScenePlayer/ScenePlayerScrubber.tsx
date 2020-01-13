@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { CSSProperties, FunctionComponent, RefObject, useEffect, useRef, useState } from "react";
+import React, { CSSProperties, FunctionComponent, useEffect, useRef, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { TextUtils } from "../../../utils/text";
 import "./ScenePlayerScrubber.scss";

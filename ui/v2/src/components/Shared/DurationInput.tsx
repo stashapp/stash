@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState, useEffect } from "react";
-import { InputGroup, ButtonGroup, Button, IInputGroupProps, HTMLInputProps, ControlGroup } from "@blueprintjs/core";
+import { InputGroup, ButtonGroup, Button, HTMLInputProps, ControlGroup } from "@blueprintjs/core";
 import { DurationUtils } from "../../utils/duration";
 import { FIXED, NUMERIC_INPUT } from "@blueprintjs/core/lib/esm/common/classes";
 

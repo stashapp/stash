@@ -1,4 +1,3 @@
-import _ from "lodash";
 import React, { FunctionComponent } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { IBaseProps } from "../../../models";

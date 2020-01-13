@@ -1,13 +1,8 @@
 import {
-  Button,
-  Classes,
-  Dialog,
   EditableText,
-  HTMLSelect,
   HTMLTable,
   Spinner,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
@@ -120,7 +115,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
   async function onDelete() {
     setIsLoading(true);
     try {
-      const result = await deleteStudio();
+      await deleteStudio();
     } catch (e) {
       ErrorUtils.handle(e);
     }

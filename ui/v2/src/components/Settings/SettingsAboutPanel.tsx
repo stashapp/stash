@@ -1,15 +1,10 @@
 import {
   Button,
-  H1,
   H4,
-  H6,
   HTMLTable,
   Spinner,
-  Tag,
 } from "@blueprintjs/core";
 import React, { FunctionComponent } from "react";
-import * as GQL from "../../core/generated-graphql";
-import { TextUtils } from "../../utils/text";
 import { StashService } from "../../core/StashService";
 
 interface IProps { }

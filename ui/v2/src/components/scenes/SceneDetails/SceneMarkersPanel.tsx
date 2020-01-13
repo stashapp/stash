@@ -5,7 +5,6 @@ import {
   Divider,
   FormGroup,
   H3,
-  NumericInput,
   Tag,
 } from "@blueprintjs/core";
 import { Field, FieldProps, Form, Formik, FormikActions, FormikProps } from "formik";

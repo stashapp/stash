@@ -6,7 +6,6 @@ import {
   AnchorButton,
   IconName,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
