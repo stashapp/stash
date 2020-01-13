@@ -171,11 +171,17 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	}
 
 	if rating := sceneFilter.Rating; rating != nil {
-		clause, count := getIntCriterionWhereClause("rating", *sceneFilter.Rating)
+		clause, count := getIntCriterionWhereClause("scenes.rating", *sceneFilter.Rating)
 		whereClauses = append(whereClauses, clause)
 		if count == 1 {
 			args = append(args, sceneFilter.Rating.Value)
 		}
+	}
+
+	if durationFilter := sceneFilter.Duration; durationFilter != nil {
+		clause, thisArgs := getDurationWhereClause(*durationFilter)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	if resolutionFilter := sceneFilter.Resolution; resolutionFilter != nil {
@@ -268,6 +274,34 @@ func appendClause(clauses []string, clause string) []string {
 	}
 
 	return clauses
+}
+
+func getDurationWhereClause(durationFilter IntCriterionInput) (string, []interface{}) {
+	// special case for duration. We accept duration as seconds as int but the
+	// field is floating point. Change the equals filter to return a range
+	// between x and x + 1
+	// likewise, not equals needs to be duration < x OR duration >= x
+	var clause string
+	args := []interface{}{}
+
+	value := durationFilter.Value
+	if durationFilter.Modifier == CriterionModifierEquals {
+		clause = "scenes.duration >= ? AND scenes.duration < ?"
+		args = append(args, value)
+		args = append(args, value+1)
+	} else if durationFilter.Modifier == CriterionModifierNotEquals {
+		clause = "(scenes.duration < ? OR scenes.duration >= ?)"
+		args = append(args, value)
+		args = append(args, value+1)
+	} else {
+		var count int
+		clause, count = getIntCriterionWhereClause("scenes.duration", durationFilter)
+		if count == 1 {
+			args = append(args, value)
+		}
+	}
+
+	return clause, args
 }
 
 // returns where clause and having clause
