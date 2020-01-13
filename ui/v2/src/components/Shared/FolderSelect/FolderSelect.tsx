@@ -78,7 +78,7 @@ export const FolderSelect: FunctionComponent<IProps> = (props: IProps) => {
       {renderDialog()}
       <FormGroup>
         {selectedDirectories.map((path) => {
-          return <div key={path}>{path} <a onClick={() => onRemoveDirectory(path)}>Remove</a></div>;
+          return <div key={path}>{path} <button className="button-link" onClick={() => onRemoveDirectory(path)}>Remove</button></div>;
         })}
       </FormGroup>
       

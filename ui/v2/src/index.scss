@@ -280,6 +280,17 @@ video.preview.portrait {
   }
 }
 
+.button-link {
+  background-color: transparent;
+  color: #48aff0;
+  border-width: 0;
+  cursor: pointer;
+}
+
+.button-link:hover {
+  text-decoration: underline;
+}
+
 .scrubber-button {
   background-color: transparent;
   color: #48aff0;
