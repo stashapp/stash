@@ -84,12 +84,27 @@ export const SettingsAboutPanel: FunctionComponent<IProps> = (props: IProps) => 
   return (
     <>
       <H4>About</H4>
+      <HTMLTable>
+        <tbody>
+          <tr>
+            <td>Stash home at <a href="https://github.com/stashapp/stash">Github</a></td>
+          </tr>
+          <tr>
+            <td>Stash <a href="https://github.com/stashapp/stash/wiki">Wiki</a> page</td>
+          </tr>
+          <tr>
+            <td>Join our <a href="https://discord.gg/2TsNFKt">Discord</a> channel</td>
+          </tr>
+          <tr>
+            <td>Support us through <a href="https://opencollective.com/stashapp">Open Collective</a></td>
+          </tr>
+        </tbody>
+      </HTMLTable>
       {!data || loading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
       {!!error ? <span>{error.message}</span> : undefined}
       {!!errorLatest ? <span>{errorLatest.message}</span> : undefined}
       {renderVersion()}
       {!dataLatest || loadingLatest || networkStatus === 4 ? <Spinner size={Spinner.SIZE_SMALL} /> : <>{renderLatestVersion()}</>}
-
     </>
   );
 };
