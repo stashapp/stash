@@ -1,13 +1,8 @@
 import {
-  Button,
-  Classes,
-  Dialog,
   EditableText,
-  HTMLSelect,
   HTMLTable,
   Spinner,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
@@ -52,7 +47,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     setIsLoading(loading);
     if (!data || !data.findStudio || !!error) { return; }
     setStudio(data.findStudio);
-  }, [data]);
+  }, [data, loading, error]);
 
   useEffect(() => {
     setImagePreview(studio.image_path);
@@ -61,7 +56,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     if (!isNew) {
       setIsEditing(false);
     }
-  }, [studio]);
+  }, [studio, isNew]);
 
   function onImageLoad(this: FileReader) {
     setImagePreview(this.result as string);
@@ -120,7 +115,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
   async function onDelete() {
     setIsLoading(true);
     try {
-      const result = await deleteStudio();
+      await deleteStudio();
     } catch (e) {
       ErrorUtils.handle(e);
     }
@@ -139,7 +134,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     <>
       <div className="columns is-multiline no-spacing">
         <div className="column is-half details-image-container">
-          <img className="studio" src={imagePreview} />
+          <img alt={name} className="studio" src={imagePreview} />
         </div>
         <div className="column is-half details-detail-container">
           <DetailsEditNavbar

@@ -50,7 +50,7 @@ export const ValidGalleriesSelect: React.FunctionComponent<IProps> = (props: IPr
   };
 
   function onItemSelect(item: GQL.ValidGalleriesForSceneValidGalleriesForScene | undefined) {
-    if (item && item.id == "0") {
+    if (item && item.id === "0") {
       item = undefined;
     }
 

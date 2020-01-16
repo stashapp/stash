@@ -2,10 +2,8 @@ import {
   Button,
   Classes,
   Dialog,
-  EditableText,
   HTMLTable,
   Spinner,
-  FormGroup,
   Menu,
   MenuItem,
   Popover,
@@ -19,7 +17,6 @@ import { StashService } from "../../../core/StashService";
 import { ErrorUtils } from "../../../utils/errors";
 import { TableUtils } from "../../../utils/table";
 import { ScrapePerformerSuggest } from "../../select/ScrapePerformerSuggest";
-import { ToastUtils } from "../../../utils/toasts";
 import { EditableTextUtils } from "../../../utils/editabletext";
 import { ImageUtils } from "../../../utils/image";
 

@@ -1,4 +1,4 @@
-import { H1, Spinner } from "@blueprintjs/core";
+import { Spinner } from "@blueprintjs/core";
 import React, { FunctionComponent } from "react";
 import { StashService } from "../core/StashService";
 

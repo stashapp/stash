@@ -5,7 +5,6 @@ import {
   Divider,
   FormGroup,
   H3,
-  NumericInput,
   Tag,
 } from "@blueprintjs/core";
 import { Field, FieldProps, Form, Formik, FormikActions, FormikProps } from "formik";
@@ -63,8 +62,8 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
           <div key={marker.id}>
             <Divider />
             <div>
-              <a onClick={() => onClickMarker(marker)}>{marker.title}</a>
-              {!isEditorOpen ? <a style={{float: "right"}} onClick={() => onOpenEditor(marker)}>Edit</a> : undefined}
+              <button className="button-link" onClick={() => onClickMarker(marker)}>{marker.title}</button>
+              {!isEditorOpen ? <button className="button-link" style={{float: "right"}} onClick={() => onOpenEditor(marker)}>Edit</button> : undefined}
             </div>
             <div>
               {TextUtils.secondsToTimestamp(marker.seconds)}

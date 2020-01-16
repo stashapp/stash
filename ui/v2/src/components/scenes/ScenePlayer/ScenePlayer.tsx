@@ -1,5 +1,5 @@
 import { Hotkey, Hotkeys, HotkeysTarget } from "@blueprintjs/core";
-import React, { Component, FunctionComponent } from "react";
+import React, { FunctionComponent } from "react";
 import ReactJWPlayer from "react-jw-player";
 import * as GQL from "../../../core/generated-graphql";
 import { SceneHelpers } from "../helpers";

@@ -30,7 +30,7 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
     setIsLoading(loading);
     if (!data || !data.findScene || !!error) { return; }
     setScene(StashService.nullToUndefined(data.findScene));
-  }, [data]);
+  }, [data, loading, error]);
 
   useEffect(() => {
     const queryParams = queryString.parse(props.location.search);
@@ -41,7 +41,7 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
     if (queryParams.autoplay && typeof queryParams.autoplay === "string") {
       setAutoplay(queryParams.autoplay === "true");
     }
-  });
+  }, [props.location.search, timestamp]);
 
   function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
     setTimestamp(marker.seconds);

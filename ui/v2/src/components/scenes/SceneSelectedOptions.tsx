@@ -1,19 +1,12 @@
 import _ from "lodash";
 import {
-  AnchorButton,
   Button,
   ButtonGroup,
-  ControlGroup,
   FormGroup,
   HTMLSelect,
-  InputGroup,
-  Menu,
-  MenuItem,
-  Popover,
   Spinner,
-  Tag,
 } from "@blueprintjs/core";
-import React, { FunctionComponent, SyntheticEvent, useEffect, useRef, useState } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { FilterSelect } from "../select/FilterSelect";
 import { FilterMultiSelect } from "../select/FilterMultiSelect";
 import { StashService } from "../../core/StashService";
@@ -106,7 +99,7 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
   async function onSave() {
     setIsLoading(true);
     try {
-      const result = await updateScenes();
+      await updateScenes();
       ToastUtils.success("Updated scenes");
     } catch (e) {
       ErrorUtils.handle(e);
@@ -143,7 +136,7 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
         first = false;
       } else {
         var studioId = scene.studio ? scene.studio.id : undefined;
-        if (ret != studioId) {
+        if (ret !== studioId) {
           ret = undefined;
         }
       }
@@ -221,7 +214,7 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
         if (rating !== thisRating) {
           rating = "";
         }
-        if (studioId != thisStudio) {
+        if (studioId !== thisStudio) {
           studioId = undefined;
         }
         const perfIds = !!scene.performers ? scene.performers.map(toId).sort() : [];

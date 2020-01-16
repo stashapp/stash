@@ -8,7 +8,6 @@ import {
   TextArea,
   NumericInput
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import { StashService } from "../../core/StashService";
 import { ErrorUtils } from "../../utils/errors";
@@ -48,7 +47,7 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
       setCSS(config.data.configuration.interface.css || "");
       setCSSEnabled(config.data.configuration.interface.cssEnabled || false);
     }
-  }, [config.data]);
+  }, [config.data, config.error]);
 
   async function onSave() {
     try {

@@ -3,12 +3,9 @@ import {
   Button,
   Divider,
   FormGroup,
-  H1,
   H4,
-  H6,
   InputGroup,
   Spinner,
-  Tag,
   Checkbox,
   HTMLSelect,
 } from "@blueprintjs/core";
@@ -71,7 +68,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       setLogAccess(conf.general.logAccess);
       setExcludes(conf.general.excludes);
     }
-  }, [data]);
+  }, [data, error]);
 
   function onStashesChanged(directories: string[]) {
     setStashes(directories);
