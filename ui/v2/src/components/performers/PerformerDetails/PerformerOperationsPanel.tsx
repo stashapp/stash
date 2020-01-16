@@ -1,7 +1,6 @@
 import {
   Button,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";

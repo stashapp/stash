@@ -1,4 +1,4 @@
-import { EditableText, HTMLSelect, InputGroup, IOptionProps, TextArea } from "@blueprintjs/core";
+import { EditableText, IOptionProps } from "@blueprintjs/core";
 import React from "react";
 import { EditableTextUtils } from "./editabletext";
 import { FilterMultiSelect } from "../components/select/FilterMultiSelect";

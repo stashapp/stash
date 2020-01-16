@@ -33,7 +33,7 @@ export class TextUtils {
 
   public static fileNameFromPath(path: string): string {
     if (!!path === false) { return "No File Name"; }
-    return path.replace(/^.*[\\\/]/, "");
+    return path.replace(/^.*[\\/]/, "");
   }
 
   public static age(dateString?: string, fromDateString?: string): number {

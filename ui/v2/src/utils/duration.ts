@@ -30,7 +30,7 @@ export class DurationUtils {
     let factor = 1;
     while(splits.length > 0) {
       let thisSplit = splits.pop();
-      if (thisSplit == undefined) {
+      if (thisSplit === undefined) {
         return 0;
       }
 

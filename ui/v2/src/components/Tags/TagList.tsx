@@ -1,15 +1,9 @@
-import { Alert, Button, Classes, Dialog, EditableText, FormGroup, HTMLTable, InputGroup, Spinner, Tag } from "@blueprintjs/core";
-import _ from "lodash";
+import { Alert, Button, Classes, Dialog, FormGroup, InputGroup, Spinner } from "@blueprintjs/core";
 import React, { FunctionComponent, useEffect, useState } from "react";
-import { QueryHookResult } from "react-apollo-hooks";
 import { Link } from "react-router-dom";
-import { FindGalleriesQuery, FindGalleriesVariables } from "../../core/generated-graphql";
 import * as GQL from "../../core/generated-graphql";
 import { StashService } from "../../core/StashService";
-import { ListHook } from "../../hooks/ListHook";
 import { IBaseProps } from "../../models/base-props";
-import { ListFilterModel } from "../../models/list-filter/filter";
-import { DisplayMode, FilterMode } from "../../models/list-filter/types";
 import { ErrorUtils } from "../../utils/errors";
 import { NavigationUtils } from "../../utils/navigation";
 import { ToastUtils } from "../../utils/toasts";
@@ -36,7 +30,7 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
     setIsLoading(loading);
     if (!data || !data.allTags || !!error) { return; }
     setTags(data.allTags);
-  }, [data]);
+  }, [data, loading, error]);
 
   useEffect(() => {
     if (!!editingTag) {

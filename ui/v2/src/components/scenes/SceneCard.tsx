@@ -7,16 +7,14 @@ import {
   Elevation,
   H4,
   Popover,
-  Tag,
 } from "@blueprintjs/core";
-import React, { FunctionComponent, RefObject, useEffect, useRef, useState } from "react";
+import React, { FunctionComponent, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "../../core/generated-graphql";
 import { VideoHoverHook } from "../../hooks/VideoHover";
 import { ColorUtils } from "../../utils/color";
 import { TextUtils } from "../../utils/text";
 import { TagLink } from "../Shared/TagLink";
-import { SceneHelpers } from "./helpers";
 import { ZoomUtils } from "../../utils/zoom";
 import { StashService } from "../../core/StashService";
 

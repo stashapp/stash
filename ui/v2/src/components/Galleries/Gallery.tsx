@@ -1,7 +1,6 @@
 import {
   Spinner,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import * as GQL from "../../core/generated-graphql";
 import { StashService } from "../../core/StashService";
@@ -20,7 +19,7 @@ export const Gallery: FunctionComponent<IProps> = (props: IProps) => {
     setIsLoading(loading);
     if (!data || !data.findGallery || !!error) { return; }
     setGallery(data.findGallery);
-  }, [data]);
+  }, [data, loading, error]);
 
   if (!data || !data.findGallery || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
   if (!!error) { return <>{error.message}</>; }

@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { MenuItem } from "@blueprintjs/core";
-import { ItemPredicate, ItemRenderer, Suggest } from "@blueprintjs/select";
+import { ItemRenderer, Suggest } from "@blueprintjs/select";
 import * as GQL from "../../core/generated-graphql";
 import { StashService } from "../../core/StashService";
 import { HTMLInputProps } from "../../models";

@@ -23,7 +23,7 @@ export const Settings: FunctionComponent<IProps> = (props: IProps) => {
     const location = Object.assign({}, props.history.location);
     location.search = queryString.stringify({tab: tabId}, {encode: false});
     props.history.replace(location);
-  }, [tabId]);
+  }, [tabId, props.history]);
 
   function getTabId(): TabId {
     const queryParams = queryString.parse(props.location.search);

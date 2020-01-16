@@ -12,7 +12,6 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.3.1
 	github.com/gorilla/websocket v1.4.0
 	github.com/h2non/filetype v1.0.8
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/rs/cors v1.6.0
@@ -28,3 +27,5 @@ require (
 )
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
+
+go 1.11

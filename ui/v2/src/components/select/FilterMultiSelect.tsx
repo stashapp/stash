@@ -120,7 +120,7 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
         break;
       }
       default: {
-        throw "Unhandled case in FilterMultiSelect";
+        throw new Error("Unhandled case in FilterMultiSelect");
       }
     }
 

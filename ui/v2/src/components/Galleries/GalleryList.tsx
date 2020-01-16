@@ -1,5 +1,4 @@
 import { HTMLTable } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent } from "react";
 import { QueryHookResult } from "react-apollo-hooks";
 import { Link } from "react-router-dom";
@@ -36,7 +35,7 @@ export const GalleryList: FunctionComponent<IProps> = (props: IProps) => {
               <tr key={gallery.id}>
                 <td>
                   <Link to={`/galleries/${gallery.id}`}>
-                    {gallery.files.length > 0 ? <img src={`${gallery.files[0].path}?thumb=true`} /> : undefined}
+                    {gallery.files.length > 0 ? <img alt={gallery.title} src={`${gallery.files[0].path}?thumb=true`} /> : undefined}
                   </Link>
                 </td>
                 <td><Link to={`/galleries/${gallery.id}`}>{gallery.path}</Link></td>

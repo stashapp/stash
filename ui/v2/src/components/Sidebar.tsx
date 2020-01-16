@@ -1,7 +1,6 @@
 import {
   MenuItem,
   Menu,
-  IconName,
 } from "@blueprintjs/core";
 import React, { FunctionComponent } from "react";
 import { IMenuItem } from "../App";

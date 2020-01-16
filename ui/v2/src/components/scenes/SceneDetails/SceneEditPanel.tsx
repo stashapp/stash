@@ -15,7 +15,6 @@ import {
   Popover,
   MenuItem,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
@@ -229,7 +228,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   }
 
   function renderScraperMenu() {
-    if (!queryableScrapers || queryableScrapers.length == 0) {
+    if (!queryableScrapers || queryableScrapers.length === 0) {
       return;
     }
 
@@ -272,7 +271,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
       setStudioId(scene.studio.id);
     }
 
-    if ((!performerIds || performerIds.length == 0) && scene.performers && scene.performers.length > 0) {
+    if ((!performerIds || performerIds.length === 0) && scene.performers && scene.performers.length > 0) {
       let idPerfs = scene.performers.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
@@ -283,7 +282,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
       }
     }
 
-    if ((!tagIds || tagIds.length == 0) && scene.tags && scene.tags.length > 0) {
+    if ((!tagIds || tagIds.length === 0) && scene.tags && scene.tags.length > 0) {
       let idTags = scene.tags.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
@@ -395,7 +394,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
             <span>Cover Image</span>
           </label>
           <Collapse isOpen={isCoverImageOpen}>
-            <img className="scene-cover" src={coverImagePreview} />
+            <img alt="Scene cover" className="scene-cover" src={coverImagePreview} />
             <FileInput text="Choose image..." onInputChange={onCoverImageChange} inputProps={{accept: ".jpg,.jpeg,.png"}} />
           </Collapse>
         </div>
