@@ -70,8 +70,9 @@ export class ListHook {
     // Update the filter when the query parameters change
     // don't use query parameters for sub-components
     if (!options.subComponent) {
+      // we want to use the local forage only when the location search has not been set
       useEffect(() => {
-        if (interfaceForage.data && interfaceForage.data.queries[options.filterMode]) {
+        if (!options.props!.location.search && interfaceForage.data && interfaceForage.data.queries[options.filterMode]) {
           let queryData = interfaceForage.data.queries[options.filterMode];
           // we have some data, try to load it
           updateFromLocalForage(queryData);
@@ -83,7 +84,7 @@ export class ListHook {
 
       useEffect(() => {
         // only load this if localForage has already loaded
-        if (interfaceForage.data) {
+        if (interfaceForage.data || options.props!.location.search) {
           updateFromQueryString(options.props!.location.search);
         }
       }, [options.props.location.search]);
@@ -159,11 +160,12 @@ export class ListHook {
     // don't use query parameters for sub-components
     if (!options.subComponent) {
       useEffect(() => {
-        const location = Object.assign({}, options.props.history.location);
-        location.search = filter.makeQueryParameters();
-        options.props.history.replace(location);
-
+        // don't update this until local forage is loaded
         if (!!interfaceForage.data) {
+          const location = Object.assign({}, options.props.history.location);
+          location.search = filter.makeQueryParameters();
+          options.props.history.replace(location);
+
           const dataClone = _.cloneDeep(interfaceForage.data);
           dataClone.queries[options.filterMode] = {
             filter: location.search,
@@ -354,7 +356,7 @@ export class ListHook {
           filter={filter}
         />
         {options.renderSelectedOptions && selectedIds.size > 0 ? options.renderSelectedOptions(result, selectedIds) : undefined}
-        {result.loading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
+        {result.loading || !interfaceForage.data ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
         {result.error ? <h1>{result.error.message}</h1> : undefined}
         {options.renderContent(result, filter, selectedIds, zoomIndex)}
         <Pagination
