@@ -165,8 +165,11 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 			return
 		}
 		totalsNeeded := s.neededGenerate(scenes, sprites, previews, markers, transcodes)
-		logger.Infof("Generating %d sprites %d previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.markers, totalsNeeded.transcodes)
-
+		if totalsNeeded == nil {
+			logger.Infof("Generating content")
+		} else {
+			logger.Infof("Generating %d sprites %d previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.markers, totalsNeeded.transcodes)
+		}
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -208,6 +211,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 
 			wg.Wait()
 		}
+		logger.Infof("Generate finished")
 	}()
 }
 
@@ -461,6 +465,12 @@ type totalsGenerate struct {
 func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, markers, transcodes bool) *totalsGenerate {
 
 	var totals totalsGenerate
+	chTimeout := make(chan struct{})
+	go func() {
+		time.Sleep(90 * time.Second)
+		chTimeout <- struct{}{}
+	}()
+
 	for _, scene := range scenes {
 		if scene != nil {
 			if sprites {
@@ -489,6 +499,12 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, ma
 				}
 			}
 		}
+		select {
+		case <-chTimeout:
+			return nil
+		default:
+		}
+
 	}
 	return &totals
 }
