@@ -8,7 +8,7 @@ interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
 }
 
-export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props: ISceneDetailProps) => {
+export default SceneDetailPanel: React.FC<ISceneDetailProps> = (props: ISceneDetailProps) => {
   function renderDetails() {
     if (!props.scene.details || props.scene.details === "") { return; }
     return (
