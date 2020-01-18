@@ -1,8 +1,41 @@
 {
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
+  "plugins": ["@typescript-eslint"],
   "extends": [
-      "react-app"
+      "airbnb-typescript",
+      "prettier",
+      "prettier/react",
+      "prettier/@typescript-eslint"
   ],
   "rules": {
-      "jsx-a11y/anchor-is-valid": "off"
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "lines-between-class-members": "off",
+      "@typescript-eslint/interface-name-prefix": [
+        "warn",
+        { "prefixWithI": "always" }
+      ],
+      "import/named": "off",
+      "import/namespace": "off",
+      "import/default": "off",
+      "import/no-named-as-default-member": "off",
+      "import/no-named-as-default": "off",
+      "import/no-cycle": "off",
+      "import/no-unused-modules": "off",
+      "import/no-deprecated": "off",
+      "import/no-unresolved": "off",
+      "import/prefer-default-export": "off",
+      "import/no-extraneous-dependencies": "off",
+      "indent": "off",
+      "@typescript-eslint/indent": "off",
+      "react/prop-types": "off",
+      "react/destructuring-assignment": "off",
+      "react/jsx-props-no-spreading": "off",
+      "spaced-comment": ["error", "always", {
+          "markers": ["/"]
+      }],
+      "max-classes-per-file": "off"
   }
 }
