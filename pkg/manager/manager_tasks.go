@@ -166,6 +166,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		}
 		totalsNeeded := s.neededGenerate(scenes, sprites, previews, markers, transcodes)
 		if totalsNeeded == nil {
+			logger.Infof("Counting content timeout!")
 			logger.Infof("Generating content")
 		} else {
 			logger.Infof("Generating %d sprites %d previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.markers, totalsNeeded.transcodes)
@@ -465,12 +466,18 @@ type totalsGenerate struct {
 func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, markers, transcodes bool) *totalsGenerate {
 
 	var totals totalsGenerate
+	const timeoutSecs = 90 * time.Second
+
+	// create a control channel through which to signal the counting loop when the timeout is reached
 	chTimeout := make(chan struct{})
+
+	//run the timeout function in a separate thread
 	go func() {
-		time.Sleep(90 * time.Second)
+		time.Sleep(timeoutSecs)
 		chTimeout <- struct{}{}
 	}()
 
+	logger.Infof("Counting content to generate.Please wait ...")
 	for _, scene := range scenes {
 		if scene != nil {
 			if sprites {
@@ -499,6 +506,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, ma
 				}
 			}
 		}
+		//check for timeout
 		select {
 		case <-chTimeout:
 			return nil
