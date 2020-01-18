@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, Spinner, Table } from 'react-bootstrap';
-import _ from "lodash";
 import { useParams, useHistory } from 'react-router-dom';
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
@@ -48,7 +47,7 @@ export const Performer: React.FC = () => {
   const Scrapers = StashService.useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListPerformerScrapersListPerformerScrapers[]>([]);
 
-  const { data, error, loading } = StashService.useFindPerformer(id);
+  const { data, error } = StashService.useFindPerformer(id);
   const updatePerformer = StashService.usePerformerUpdate(getPerformerInput() as GQL.PerformerUpdateInput);
   const createPerformer = StashService.usePerformerCreate(getPerformerInput() as GQL.PerformerCreateInput);
   const deletePerformer = StashService.usePerformerDestroy(getPerformerInput() as GQL.PerformerDestroyInput);
@@ -75,19 +74,16 @@ export const Performer: React.FC = () => {
   }
 
   useEffect(() => {
-    setIsLoading(loading);
-    if (!data || !data.findPerformer || error)
-      return;
-    setPerformer(data.findPerformer);
+    setIsLoading(false);
+    if(data?.findPerformer)
+      setPerformer(data.findPerformer);
   }, [data]);
 
   useEffect(() => {
     setImagePreview(performer.image_path);
     setImage(undefined);
     updatePerformerEditState(performer);
-    if (!isNew) {
-      setIsEditing(false);
-    }
+    setIsEditing(false);
   }, [performer]);
 
   function onImageLoad(this: FileReader) {

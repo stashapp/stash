@@ -1,4 +1,4 @@
-import React, { useState, useContext, createContext } from 'react';
+import React, { useEffect, useState, useContext, createContext } from 'react';
 import { Toast } from 'react-bootstrap';
 
 interface IToast {
@@ -52,19 +52,28 @@ export const ToastProvider: React.FC  = ({children}) => {
   )
 }
 
-const useToasts = () => {
-  const setToast = useContext(ToastContext);
+function createHookObject(toastFunc: (toast:IToast) => void) {
   return {
-    success: setToast,
+    success: toastFunc,
     error: (error: Error) => {
       console.error(error.message);
-      setToast({
+      toastFunc({
         variant: 'danger',
         header: 'Error',
         content: error.message ?? error.toString()
       });
     }
-  };
+  }
+}
+
+const useToasts = () => {
+  const setToast = useContext(ToastContext);
+  const [hookObject, setHookObject] = useState(createHookObject(setToast));
+  useEffect(() => (
+    setHookObject(createHookObject(setToast))
+  ), [setToast]);
+
+  return hookObject;
 }
 
 export default useToasts;
