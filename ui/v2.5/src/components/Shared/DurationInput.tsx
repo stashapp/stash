@@ -118,13 +118,14 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
       <InputGroup>
         <Form.Control
           disabled={props.disabled}
-          defaultValue={value}
+          value={value}
           onChange={(e : any) => setValue(e.target.value)}
           onBlur={() => props.onValueChange(stringToSeconds(value))}
           placeholder="hh:mm:ss"
         />
         <InputGroup.Append>
-          {maybeRenderReset()}
+          { maybeRenderReset() }
+          { renderButtons() }
         </InputGroup.Append>
       </InputGroup>
     </Form.Group>

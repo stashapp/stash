@@ -52,7 +52,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
                 defaultValue={currentDirectory}
               />
               <InputGroup.Append>
-                {(!data || !data.directories || loading) ? <Spinner animation="border" variant="light" /> : undefined}
+                {(!data || !data.directories || loading) ? <Spinner animation="border" variant="light" /> : ''}
               </InputGroup.Append>
             </InputGroup>
 
@@ -75,7 +75,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
       {renderDialog()}
       <Form.Group>
         {selectedDirectories.map((path) => {
-          return <div key={path}>{path} <a onClick={() => onRemoveDirectory(path)}>Remove</a></div>;
+          return <div key={path}>{path} <Button variant="link" onClick={() => onRemoveDirectory(path)}>Remove</Button></div>;
         })}
       </Form.Group>
 

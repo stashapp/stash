@@ -52,8 +52,8 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (props: ISce
           <div key={marker.id}>
             <hr />
             <div>
-              <a onClick={() => onClickMarker(marker)}>{marker.title}</a>
-              {!isEditorOpen ? <a style={{float: "right"}} onClick={() => onOpenEditor(marker)}>Edit</a> : undefined}
+              <Button variant="link" onClick={() => onClickMarker(marker)}>{marker.title}</Button>
+              {!isEditorOpen ? <Button variant="link" style={{float: "right"}} onClick={() => onOpenEditor(marker)}>Edit</Button> : ''}
             </div>
             <div>
               {TextUtils.secondsToTimestamp(marker.seconds)}

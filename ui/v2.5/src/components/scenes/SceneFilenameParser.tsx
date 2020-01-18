@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Badge, Button, Card, Collapse, Dropdown, DropdownButton, Form, Table, Spinner } from 'react-bootstrap';
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
@@ -255,10 +255,28 @@ const builtInRecipes = [
   }
 ];
 
+const initialParserInput = {
+  pattern: "{title}.{ext}",
+  ignoreWords: [],
+  whitespaceCharacters: "._",
+  capitalizeTitle: true,
+  page: 1,
+  pageSize: 20,
+  findClicked: false
+};
+
+const initialShowFieldsState = new Map<string, boolean>([
+  ["Title", true],
+  ["Date", true],
+  ["Performers", true],
+  ["Tags", true],
+  ["Studio", true]
+]);
+
 export const SceneFilenameParser: React.FC = () => {
   const Toast = useToast();
   const [parserResult, setParserResult] = useState<SceneParserResult[]>([]);
-  const [parserInput, setParserInput] = useState<IParserInput>(initialParserInput());
+  const [parserInput, setParserInput] = useState<IParserInput>(initialParserInput);
 
   const [allTitleSet, setAllTitleSet] = useState<boolean>(false);
   const [allDateSet, setAllDateSet] = useState<boolean>(false);
@@ -266,7 +284,7 @@ export const SceneFilenameParser: React.FC = () => {
   const [allTagSet, setAllTagSet] = useState<boolean>(false);
   const [allStudioSet, setAllStudioSet] = useState<boolean>(false);
 
-  const [showFields, setShowFields] = useState<Map<string, boolean>>(initialShowFieldsState());
+  const [showFields, setShowFields] = useState<Map<string, boolean>>(initialShowFieldsState);
 
   const [totalItems, setTotalItems] = useState<number>(0);
 
@@ -275,71 +293,75 @@ export const SceneFilenameParser: React.FC = () => {
 
   const updateScenes = StashService.useScenesUpdate(getScenesUpdateData());
 
-  function initialParserInput() {
-    return {
-      pattern: "{title}.{ext}",
-      ignoreWords: [],
-      whitespaceCharacters: "._",
-      capitalizeTitle: true,
-      page: 1,
-      pageSize: 20,
-      findClicked: false
-    };
-  }
+  const determineFieldsToHide = useCallback(() => {
+    var pattern = parserInput.pattern;
+    var titleSet = pattern.includes("{title}");
+    var dateSet = pattern.includes("{date}") ||
+      pattern.includes("{dd}") || // don't worry about other partial date fields since this should be implied
+      ParserField.fullDateFields.some((f) => {
+        return pattern.includes("{" + f.field + "}");
+      });
+    var performerSet = pattern.includes("{performer}");
+    var tagSet = pattern.includes("{tag}");
+    var studioSet = pattern.includes("{studio}");
 
-  function initialShowFieldsState() {
-    return new Map<string, boolean>([
-      ["Title", true],
-      ["Date", true],
-      ["Performers", true],
-      ["Tags", true],
-      ["Studio", true]
+    const newShowFields = new Map<string, boolean>([
+      ["Title", titleSet],
+      ["Date", dateSet],
+      ["Performers", performerSet],
+      ["Tags", tagSet],
+      ["Studio", studioSet]
     ]);
-  }
 
-  function getParserFilter() {
-    return {
-      q: parserInput.pattern,
-      page: parserInput.page,
-      per_page: parserInput.pageSize,
-      sort: "path",
-      direction: GQL.SortDirectionEnum.Asc,
-    };
-  }
+    setShowFields(newShowFields);
+  }, [parserInput]);
 
-  function getParserInput() {
-    return {
-      ignoreWords: parserInput.ignoreWords,
-      whitespaceCharacters: parserInput.whitespaceCharacters,
-      capitalizeTitle: parserInput.capitalizeTitle
-    };
-  }
+  const parseResults = useCallback((results : GQL.ParseSceneFilenamesResults[]) => {
+    if (results) {
+      var result = results.map((r) => {
+        return new SceneParserResult(r);
+      }).filter((r) => !!r) as SceneParserResult[];
 
-  async function onFind() {
-    setParserResult([]);
-
-    setIsLoading(true);
-
-    try {
-      const response = await StashService.queryParseSceneFilenames(getParserFilter(), getParserInput());
-
-      let result = response.data.parseSceneFilenames;
-      if (result) {
-        parseResults(result.results);
-        setTotalItems(result.count);
-      }
-    } catch (err) {
-      Toast.error(err);
+      setParserResult(result);
+      determineFieldsToHide();
     }
-
-    setIsLoading(false);
-  }
+  }, [determineFieldsToHide]);
 
   useEffect(() => {
     if(parserInput.findClicked) {
-      onFind();
+      setParserResult([]);
+      setIsLoading(true);
+
+      const parserFilter = {
+        q: parserInput.pattern,
+        page: parserInput.page,
+        per_page: parserInput.pageSize,
+        sort: "path",
+        direction: GQL.SortDirectionEnum.Asc,
+      };
+
+      const parserInputData = {
+        ignoreWords: parserInput.ignoreWords,
+        whitespaceCharacters: parserInput.whitespaceCharacters,
+        capitalizeTitle: parserInput.capitalizeTitle
+      };
+
+      StashService.queryParseSceneFilenames(parserFilter, parserInputData)
+        .then((response) => {
+          let result = response.data.parseSceneFilenames;
+          if (result) {
+            parseResults(result.results);
+            setTotalItems(result.count);
+          }
+        })
+        .catch((err) => (
+          Toast.error(err)
+        ))
+        .finally(() => (
+          setIsLoading(false)
+        ));
     }
-  }, [parserInput]);
+  }, [parserInput, parseResults, Toast]);
 
   function onPageSizeChanged(newSize : number) {
     var newInput = _.clone(parserInput);
@@ -380,38 +402,6 @@ export const SceneFilenameParser: React.FC = () => {
     setIsLoading(false);
   }
 
-  function parseResults(results : GQL.ParseSceneFilenamesResults[]) {
-    if (results) {
-      var result = results.map((r) => {
-        return new SceneParserResult(r);
-      }).filter((r) => !!r) as SceneParserResult[];
-
-      setParserResult(result);
-      determineFieldsToHide();
-    }
-  }
-
-  function determineFieldsToHide() {
-    var pattern = parserInput.pattern;
-    var titleSet = pattern.includes("{title}");
-    var dateSet = pattern.includes("{date}") ||
-      pattern.includes("{dd}") || // don't worry about other partial date fields since this should be implied
-      ParserField.fullDateFields.some((f) => {
-        return pattern.includes("{" + f.field + "}");
-      });
-    var performerSet = pattern.includes("{performer}");
-    var tagSet = pattern.includes("{tag}");
-    var studioSet = pattern.includes("{studio}");
-
-    var showFieldsCopy = _.clone(showFields);
-    showFieldsCopy.set("Title", titleSet);
-    showFieldsCopy.set("Date", dateSet);
-    showFieldsCopy.set("Performers", performerSet);
-    showFieldsCopy.set("Tags", tagSet);
-    showFieldsCopy.set("Studio", studioSet);
-    setShowFields(showFieldsCopy);
-  }
-
   useEffect(() => {
     var newAllTitleSet = !parserResult.some((r) => {
       return !r.title.set;
@@ -429,21 +419,11 @@ export const SceneFilenameParser: React.FC = () => {
       return !r.studioId.set;
     });
 
-    if (newAllTitleSet !== allTitleSet) {
-      setAllTitleSet(newAllTitleSet);
-    }
-    if (newAllDateSet !== allDateSet) {
-      setAllDateSet(newAllDateSet);
-    }
-    if (newAllPerformerSet !== allPerformerSet) {
-      setAllTagSet(newAllPerformerSet);
-    }
-    if (newAllTagSet !== allTagSet) {
-      setAllTagSet(newAllTagSet);
-    }
-    if (newAllStudioSet !== allStudioSet) {
-      setAllStudioSet(newAllStudioSet);
-    }
+    setAllTitleSet(newAllTitleSet);
+    setAllDateSet(newAllDateSet);
+    setAllTagSet(newAllPerformerSet);
+    setAllTagSet(newAllTagSet);
+    setAllStudioSet(newAllStudioSet);
   }, [parserResult]);
 
   function onSelectAllTitleSet(selected : boolean) {
@@ -746,7 +726,7 @@ export const SceneFilenameParser: React.FC = () => {
     const elements = parserResult.originalValue
       ? Array.isArray(parserResult.originalValue)
         ? parserResult.originalValue.map((el:HasName) => el.name)
-        : parserResult.originalValue.name
+        : [parserResult.originalValue.name]
       : [];
 
     return (

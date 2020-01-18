@@ -1,4 +1,5 @@
-import React, { CSSProperties, useEffect, useRef, useState } from "react";
+import React, { CSSProperties, useEffect, useRef, useState, useCallback } from "react";
+import { Button } from 'react-bootstrap';
 import axios from "axios";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
@@ -20,6 +21,47 @@ interface ISceneSpriteItem {
   h: number;
 }
 
+
+async function fetchSpriteInfo(vttPath: string) {
+  const response = await axios.get<string>(vttPath, {responseType: "text"});
+  if (response.status !== 200) {
+    console.log(response.statusText);
+  }
+
+  // TODO: This is gnarly
+  const lines = response.data.split("\n");
+  if (lines.shift() !== "WEBVTT") { return; }
+  if (lines.shift() !== "") { return; }
+  let item: ISceneSpriteItem = {start: 0, end: 0, x: 0, y: 0, w: 0, h: 0};
+  const newSpriteItems: ISceneSpriteItem[] = [];
+  while (lines.length) {
+    const line = lines.shift();
+    if (line === undefined) { continue; }
+
+    if (line.includes("#") && line.includes("=") && line.includes(",")) {
+      const size = line.split("#")[1].split("=")[1].split(",");
+      item.x = Number(size[0]);
+      item.y = Number(size[1]);
+      item.w = Number(size[2]);
+      item.h = Number(size[3]);
+
+      newSpriteItems.push(item);
+      item = {start: 0, end: 0, x: 0, y: 0, w: 0, h: 0};
+    } else if (line.includes(" --> ")) {
+      const times = line.split(" --> ");
+
+      const start = times[0].split(":");
+      item.start = (+start[0]) * 60 * 60 + (+start[1]) * 60 + (+start[2]);
+
+      const end = times[1].split(":");
+      item.end = (+end[0]) * 60 * 60 + (+end[1]) * 60 + (+end[2]);
+    }
+  }
+
+  return newSpriteItems;
+}
+
+
 export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: IScenePlayerScrubberProps) => {
   const contentEl = useRef<HTMLDivElement>(null);
   const positionIndicatorEl = useRef<HTMLDivElement>(null);
@@ -30,8 +72,8 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
   const velocity = useRef(0);
 
   const _position = useRef(0);
-  function getPostion() { return _position.current; }
-  function setPosition(newPostion: number, shouldEmit: boolean = true) {
+  const getPosition = useCallback(() => _position.current, []);
+  const setPosition = useCallback((newPostion: number, shouldEmit: boolean = true) => {
     if (!scrubberSliderEl.current || !positionIndicatorEl.current) { return; }
     if (shouldEmit) { props.onScrolled(); }
 
@@ -52,10 +94,9 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
       (newPostion - midpointOffset) / (bounds - (midpointOffset * 2)) * scrubberSliderEl.current.clientWidth
     );
     positionIndicatorEl.current.style.transform = `translateX(${indicatorPosition}px)`;
-  }
+  }, [props]);
 
   const [spriteItems, setSpriteItems] = useState<ISceneSpriteItem[]>([]);
-  const [delayedRender, setDelayedRender] = useState(false);
 
   useEffect(() => {
     if (!scrubberSliderEl.current) { return; }
@@ -63,7 +104,12 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
   }, [scrubberSliderEl]);
 
   useEffect(() => {
-    fetchSpriteInfo();
+    if (!props.scene.paths.vtt)
+      return;
+    fetchSpriteInfo(props.scene.paths.vtt).then((sprites) => {
+      if(sprites)
+        setSpriteItems(sprites);
+    });
   }, [props.scene]);
 
   useEffect(() => {
@@ -74,7 +120,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
       (scrubberSliderEl.current.scrollWidth * percentage) - (scrubberSliderEl.current.clientWidth / 2)
       ) * -1;
     setPosition(position, false);
-  }, [props.position]);
+  }, [props.position, props.scene.file.duration, setPosition]);
 
   useEffect(() => {
     window.addEventListener("mouseup", onMouseUp, false);
@@ -85,19 +131,21 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
 
   useEffect(() => {
     if (!contentEl.current) { return; }
-    contentEl.current.addEventListener("mousedown", onMouseDown, false);
+    const el = contentEl.current;
+    el.addEventListener("mousedown", onMouseDown, false);
     return () => {
-      if (!contentEl.current) { return; }
-      contentEl.current.removeEventListener("mousedown", onMouseDown);
+      if (!el) { return; }
+      el.removeEventListener("mousedown", onMouseDown);
     };
   });
 
   useEffect(() => {
     if (!contentEl.current) { return; }
-    contentEl.current.addEventListener("mousemove", onMouseMove, false);
+    const el = contentEl.current;
+    el.addEventListener("mousemove", onMouseMove, false);
     return () => {
-      if (!contentEl.current) { return; }
-      contentEl.current.removeEventListener("mousemove", onMouseMove);
+      if (!el) { return; }
+      el.removeEventListener("mousemove", onMouseMove);
     };
   });
 
@@ -125,7 +173,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
 
       if (!!seekSeconds) { props.onSeek(seekSeconds); }
     } else if (Math.abs(velocity.current) > 25) {
-      const newPosition = getPostion() + (velocity.current * 10);
+      const newPosition = getPosition() + (velocity.current * 10);
       setPosition(newPosition);
       velocity.current = 0;
     }
@@ -148,7 +196,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
     const movement = event.movementX;
     velocity.current = movement;
 
-    const newPostion = getPostion() + delta;
+    const newPostion = getPosition() + delta;
     setPosition(newPostion);
     lastMouseEvent.current = event;
   }
@@ -160,59 +208,14 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
 
   function goBack() {
     if (!scrubberSliderEl.current) { return; }
-    const newPosition = getPostion() + scrubberSliderEl.current.clientWidth;
+    const newPosition = getPosition() + scrubberSliderEl.current.clientWidth;
     setPosition(newPosition);
   }
 
   function goForward() {
     if (!scrubberSliderEl.current) { return; }
-    const newPosition = getPostion() - scrubberSliderEl.current.clientWidth;
+    const newPosition = getPosition() - scrubberSliderEl.current.clientWidth;
     setPosition(newPosition);
-  }
-
-  async function fetchSpriteInfo() {
-    if (!props.scene || !props.scene.paths.vtt) { return; }
-
-    const response = await axios.get<string>(props.scene.paths.vtt, {responseType: "text"});
-    if (response.status !== 200) {
-      console.log(response.statusText);
-    }
-
-    // TODO: This is gnarly
-    const lines = response.data.split("\n");
-    if (lines.shift() !== "WEBVTT") { return; }
-    if (lines.shift() !== "") { return; }
-    let item: ISceneSpriteItem = {start: 0, end: 0, x: 0, y: 0, w: 0, h: 0};
-    const newSpriteItems: ISceneSpriteItem[] = [];
-    while (lines.length) {
-      const line = lines.shift();
-      if (line === undefined) { continue; }
-
-      if (line.includes("#") && line.includes("=") && line.includes(",")) {
-        const size = line.split("#")[1].split("=")[1].split(",");
-        item.x = Number(size[0]);
-        item.y = Number(size[1]);
-        item.w = Number(size[2]);
-        item.h = Number(size[3]);
-
-        newSpriteItems.push(item);
-        item = {start: 0, end: 0, x: 0, y: 0, w: 0, h: 0};
-      } else if (line.includes(" --> ")) {
-        const times = line.split(" --> ");
-
-        const start = times[0].split(":");
-        item.start = (+start[0]) * 60 * 60 + (+start[1]) * 60 + (+start[2]);
-
-        const end = times[1].split(":");
-        item.end = (+end[0]) * 60 * 60 + (+end[1]) * 60 + (+end[2]);
-      }
-    }
-
-    setSpriteItems(newSpriteItems);
-    // TODO: Very hacky.  Need to wait for the scroll width to update from the image loading.
-    setTimeout(() => {
-      setDelayedRender(true);
-    }, 100);
   }
 
   function renderTags() {
@@ -296,7 +299,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
 
   return (
     <div className="scrubber-wrapper">
-      <a className="scrubber-button" id="scrubber-back" onClick={() => goBack()}>&lt;</a>
+      <Button variant="link" className="scrubber-button" id="scrubber-back" onClick={() => goBack()}>&lt;</Button>
       <div ref={contentEl} className="scrubber-content">
         <div className="scrubber-tags-background" />
         <div ref={positionIndicatorEl} id="scrubber-position-indicator" />
@@ -310,7 +313,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
           </div>
         </div>
       </div>
-      <a className="scrubber-button" id="scrubber-forward" onClick={() => goForward()}>&gt;</a>
+      <Button className="scrubber-button" id="scrubber-forward" onClick={() => goForward()}>&gt;</Button>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { Form, Col } from 'react-bootstrap';
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
@@ -22,6 +22,29 @@ function convertTime(logEntry: GQL.LogEntryDataFragment) {
   return dateStr;
 }
 
+function levelClass(level : string) {
+  return level.toLowerCase().trim();
+}
+
+interface ILogElementProps {
+  logEntry : LogEntry
+}
+
+const LogElement: React.FC<ILogElementProps> = ({ logEntry }) =>  {
+  // pad to maximum length of level enum
+  var level = logEntry.level.padEnd(GQL.LogLevel.Progress.length);
+
+  return (
+    <>
+      <span>{logEntry.time}</span>&nbsp;
+      <span className={levelClass(logEntry.level)}>{level}</span>&nbsp;
+      <span>{logEntry.message}</span>
+      <br/>
+    </>
+  );
+}
+
+
 class LogEntry {
   public time: string;
   public level: string;
@@ -40,120 +63,29 @@ class LogEntry {
   }
 }
 
+// maximum number of log entries to display. Subsequent entries will truncate
+// the list, dropping off the oldest entries first.
+const MAX_LOG_ENTRIES = 200;
+const logLevels = ["Debug", "Info", "Warning", "Error"];
+
 export const SettingsLogsPanel: React.FC = () => {
   const { data, error } = StashService.useLoggingSubscribe();
   const { data: existingData } = StashService.useLogs();
-
-  const logEntries = useRef<LogEntry[]>([]);
   const [logLevel, setLogLevel] = useState<string>("Info");
-  const [filteredLogEntries, setFilteredLogEntries] = useState<LogEntry[]>([]);
-  const lastUpdate = useRef<number>(0);
-  const updateTimeout = useRef<NodeJS.Timeout>();
 
-  // maximum number of log entries to display. Subsequent entries will truncate
-  // the list, dropping off the oldest entries first.
-  const MAX_LOG_ENTRIES = 200;
+  const oldData = (existingData?.logs ?? []).map(e => new LogEntry(e));
+  const newData = (data?.loggingSubscribe ?? []).map(e => new LogEntry(e));
 
-  function truncateLogEntries(entries : LogEntry[]) {
-    entries.length = Math.min(entries.length, MAX_LOG_ENTRIES);
-  }
+  const filteredLogEntries = [...newData.reverse(), ...oldData]
+    .filter(filterByLogLevel).slice(0, MAX_LOG_ENTRIES);
 
-  function prependLogEntries(toPrepend : LogEntry[]) {
-    var newLogEntries = toPrepend.concat(logEntries.current);
-    truncateLogEntries(newLogEntries);
-    logEntries.current = newLogEntries;
-  }
-
-  function appendLogEntries(toAppend : LogEntry[]) {
-    var newLogEntries = logEntries.current.concat(toAppend);
-    truncateLogEntries(newLogEntries);
-    logEntries.current = newLogEntries;
-  }
-
-  useEffect(() => {
-    if (!data) { return; }
-
-    // append data to the logEntries
-    var convertedData = data.loggingSubscribe.map(convertLogEntry);
-
-    // filter subscribed data as it comes in, otherwise we'll end up
-    // truncating stuff that wasn't filtered out
-    convertedData = convertedData.filter(filterByLogLevel)
-
-    // put newest entries at the top
-    convertedData.reverse();
-    prependLogEntries(convertedData);
-
-    updateFilteredEntries();
-  }, [data]);
-
-  useEffect(() => {
-    if (!existingData || !existingData.logs) { return; }
-
-    var convertedData = existingData.logs.map(convertLogEntry);
-    appendLogEntries(convertedData);
-
-    updateFilteredEntries();
-  }, [existingData]);
-
-  function updateFilteredEntries() {
-    if (!updateTimeout.current) {
-      console.log("Updating after timeout");
-    }
-    updateTimeout.current = undefined;
-
-    var filteredEntries = logEntries.current.filter(filterByLogLevel);
-    setFilteredLogEntries(filteredEntries);
-
-    lastUpdate.current = new Date().getTime();
-  }
-
-  useEffect(() => {
-    updateFilteredEntries();
-  }, [logLevel]);
-
-  function convertLogEntry(logEntry : GQL.LogEntryDataFragment) {
-    return new LogEntry(logEntry);
-  }
-
-  function levelClass(level : string) {
-    return level.toLowerCase().trim();
-  }
-
-  interface ILogElementProps {
-    logEntry : LogEntry
-  }
-
-  function LogElement(props : ILogElementProps) {
-    // pad to maximum length of level enum
-    var level = props.logEntry.level.padEnd(GQL.LogLevel.Progress.length);
-
-    return (
-      <>
-        <span>{props.logEntry.time}</span>&nbsp;
-        <span className={levelClass(props.logEntry.level)}>{level}</span>&nbsp;
-        <span>{props.logEntry.message}</span>
-        <br/>
-      </>
-    );
-  }
-
-  function maybeRenderError() {
-    if (error) {
-      return (
-        <>
-        <span className={"error"}>Error connecting to log server: {error.message}</span><br/>
-        </>
-      );
-    }
-  }
-
-  const logLevels = ["Debug", "Info", "Warning", "Error"];
+  const maybeRenderError = error
+    ? <div className={"error"}>Error connecting to log server: {error.message}</div>
+    : '';
 
   function filterByLogLevel(logEntry : LogEntry) {
-    if (logLevel === "Debug") {
+    if (logLevel === "Debug")
       return true;
-    }
 
     var logLevelIndex = logLevels.indexOf(logLevel);
     var levelIndex = logLevels.indexOf(logEntry.level);
@@ -179,7 +111,7 @@ export const SettingsLogsPanel: React.FC = () => {
         </Col>
       </Form.Row>
       <div className="logs">
-        {maybeRenderError()}
+        {maybeRenderError}
         {filteredLogEntries.map((logEntry) =>
           <LogElement logEntry={logEntry} key={logEntry.id}/>
         )}
