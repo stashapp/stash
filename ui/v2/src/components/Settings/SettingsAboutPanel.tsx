@@ -87,16 +87,16 @@ export const SettingsAboutPanel: FunctionComponent<IProps> = (props: IProps) => 
       <HTMLTable>
         <tbody>
           <tr>
-            <td>Stash home at <a href="https://github.com/stashapp/stash">Github</a></td>
+            <td>Stash home at <a href="https://github.com/stashapp/stash" target="_blank">Github</a></td>
           </tr>
           <tr>
-            <td>Stash <a href="https://github.com/stashapp/stash/wiki">Wiki</a> page</td>
+            <td>Stash <a href="https://github.com/stashapp/stash/wiki" target="_blank">Wiki</a> page</td>
           </tr>
           <tr>
-            <td>Join our <a href="https://discord.gg/2TsNFKt">Discord</a> channel</td>
+            <td>Join our <a href="https://discord.gg/2TsNFKt" target="_blank">Discord</a> channel</td>
           </tr>
           <tr>
-            <td>Support us through <a href="https://opencollective.com/stashapp">Open Collective</a></td>
+            <td>Support us through <a href="https://opencollective.com/stashapp" target="_blank">Open Collective</a></td>
           </tr>
         </tbody>
       </HTMLTable>
