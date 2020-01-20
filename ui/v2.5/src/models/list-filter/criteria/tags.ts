@@ -1,5 +1,4 @@
 import * as GQL from "src/core/generated-graphql";
-import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId } from "../types";
 import {
   Criterion,
@@ -10,11 +9,11 @@ import {
 export class TagsCriterion extends Criterion<GQL.AllTagsForFilterAllTags, ILabeledId[]> {
   public type: CriterionType;
   public parameterName: string;
-  public modifier = CriterionModifier.IncludesAll;
+  public modifier = GQL.CriterionModifier.IncludesAll;
   public modifierOptions = [
-    Criterion.getModifierOption(CriterionModifier.IncludesAll),
-    Criterion.getModifierOption(CriterionModifier.Includes),
-    Criterion.getModifierOption(CriterionModifier.Excludes),
+    Criterion.getModifierOption(GQL.CriterionModifier.IncludesAll),
+    Criterion.getModifierOption(GQL.CriterionModifier.Includes),
+    Criterion.getModifierOption(GQL.CriterionModifier.Excludes),
   ];
   public options: GQL.AllTagsForFilterAllTags[] = [];
   public value: ILabeledId[] = [];

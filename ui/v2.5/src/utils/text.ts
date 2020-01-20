@@ -16,12 +16,13 @@ const truncate = (value?: string, limit: number = 100, tail: string = "...") => 
 }
 
 const fileSize = (bytes: number = 0, precision: number = 2) => {
-  if (Number.isNaN(parseFloat(String(bytes))) || !isFinite(bytes))
+  if (Number.isNaN(parseFloat(String(bytes))) || !Number.isFinite(bytes))
     return "?";
 
   let unit = 0;
-  while ( bytes >= 1024 ) {
-    bytes /= 1024;
+  let count = bytes;
+  while ( count >= 1024 ) {
+    count /= 1024;
     unit++;
   }
 
@@ -48,7 +49,7 @@ const fileNameFromPath = (path: string) => {
   return path.replace(/^.*[\\/]/, "");
 }
 
-const age = (dateString?: string, fromDateString?: string) => {
+const getAge = (dateString?: string, fromDateString?: string) => {
   if (!dateString)
     return 0;
 
@@ -72,16 +73,18 @@ const bitRate = (bitrate: number) => {
 const resolution = (height: number) => {
   if (height >= 240 && height < 480) {
     return "240p";
-  } else if (height >= 480 && height < 720) {
+  }
+  if (height >= 480 && height < 720) {
     return "480p";
-  } else if (height >= 720 && height < 1080) {
+  }
+  if (height >= 720 && height < 1080) {
     return "720p";
-  } else if (height >= 1080 && height < 2160) {
+  }
+  if (height >= 1080 && height < 2160) {
     return "1080p";
-  } else if (height >= 2160) {
+  }
+  if (height >= 2160) {
     return "4K";
-  } else {
-    return undefined;
   }
 }
 
@@ -90,7 +93,7 @@ const TextUtils = {
   fileSize,
   secondsToTimestamp,
   fileNameFromPath,
-  age,
+  age: getAge,
   bitRate,
   resolution
 }

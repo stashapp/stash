@@ -41,6 +41,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   async function onSave() {
     try {
       const result = await updateInterfaceConfig();
+      // eslint-disable-next-line no-console
       console.log(result);
       Toast.success({ content: "Updated config" });
     } catch (e) {
@@ -94,7 +95,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           <Form.Control
             type="number"
             defaultValue={maximumLoopDuration}
-            onChange={(event:React.FormEvent<HTMLInputElement>) => setMaximumLoopDuration(Number.parseInt(event.currentTarget.value) ?? 0)}
+            onChange={(event:React.FormEvent<HTMLInputElement>) => setMaximumLoopDuration(Number.parseInt(event.currentTarget.value, 10) ?? 0)}
             min={0}
             step={1}
           />

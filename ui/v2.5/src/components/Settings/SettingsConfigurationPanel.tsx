@@ -89,6 +89,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   async function onSave() {
     try {
       const result = await updateGeneralConfig();
+      // eslint-disable-next-line no-console
       console.log(result);
       Toast.success({ content: "Updated config" });
     } catch (e) {
@@ -203,7 +204,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="transcode-size">
           <Form.Label>Maximum transcode size</Form.Label>
           <Form.Control
-            as="select">
+            as="select"
             onChange={(event:React.FormEvent<HTMLSelectElement>) => setMaxTranscodeSize(translateQuality(event.currentTarget.value))}
             value={resolutionToString(maxTranscodeSize)}
           >

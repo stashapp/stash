@@ -36,6 +36,14 @@
       "spaced-comment": ["error", "always", {
           "markers": ["/"]
       }],
-      "max-classes-per-file": "off"
+      "max-classes-per-file": "off",
+      "no-plusplus": "off",
+      "prefer-destructuring": ["error", {"object": true, "array": false}],
+      "default-case": "off",
+      "consistent-return": "off",
+      "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": true }],
+      "no-underscore-dangle": "off",
+      "no-nested-ternary": "off",
+      "jsx-a11y/media-has-caption": "off"
   }
 }

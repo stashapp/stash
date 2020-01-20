@@ -1,3 +1,5 @@
+/* eslint-disable consistent-return */
+
 import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId, ILabeledValue } from "../types";
 
@@ -26,7 +28,7 @@ export type CriterionType =
   "aliases";
 
 export abstract class Criterion<Option = any, Value = any> {
-  public static getLabel(type: CriterionType = "none"): string {
+  public static getLabel(type: CriterionType = "none") {
     switch (type) {
       case "none": return "None";
       case "rating": return "Rating";
@@ -157,7 +159,7 @@ export class StringCriterion extends Criterion<string, string> {
     this.options = options;
     this.inputType = "text";
 
-    if (!!parameterName) {
+    if (parameterName) {
       this.parameterName = parameterName;
     } else {
       this.parameterName = type;
@@ -187,7 +189,7 @@ export class NumberCriterion extends Criterion<number, number> {
     this.options = options;
     this.inputType = "number";
 
-    if (!!parameterName) {
+    if (parameterName) {
       this.parameterName = parameterName;
     } else {
       this.parameterName = type;

@@ -8,7 +8,7 @@ interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
 }
 
-export default SceneDetailPanel: React.FC<ISceneDetailProps> = (props: ISceneDetailProps) => {
+export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   function renderDetails() {
     if (!props.scene.details || props.scene.details === "") { return; }
     return (
@@ -36,7 +36,7 @@ export default SceneDetailPanel: React.FC<ISceneDetailProps> = (props: ISceneDet
     <>
     {SceneHelpers.maybeRenderStudio(props.scene, 70)}
       <h1>
-        {!!props.scene.title ? props.scene.title : TextUtils.fileNameFromPath(props.scene.path)}
+        {props.scene.title ? props.scene.title : TextUtils.fileNameFromPath(props.scene.path)}
       </h1>
       {props.scene.date ? <h4>{props.scene.date}</h4> : ''}
       {props.scene.rating ? <h6>Rating: {props.scene.rating}</h6> : ''}

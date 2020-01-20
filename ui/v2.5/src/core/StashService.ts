@@ -27,8 +27,8 @@ export class StashService {
     if (platformUrl.protocol === "https:") {
       wsPlatformUrl.protocol = "wss:";
     }
-    const url = platformUrl.toString().slice(0, -1) + "/graphql";
-    const wsUrl = wsPlatformUrl.toString().slice(0, -1) + "/graphql";
+    const url = `${platformUrl.toString().slice(0, -1)  }/graphql`;
+    const wsUrl = `${wsPlatformUrl.toString().slice(0, -1)  }/graphql`;
 
     const httpLink = new HttpLink({
       uri: url,
@@ -52,7 +52,7 @@ export class StashService {
 
     StashService.cache = new InMemoryCache();
     StashService.client = new ApolloClient({
-      link: link,
+      link,
       cache: StashService.cache
     });
 
@@ -65,10 +65,10 @@ export class StashService {
   }
 
   private static invalidateQueries(queries : string[]) {
-    if (!!StashService.cache) {
+    if (StashService.cache) {
       const cache = StashService.cache as any;
       const keyMatchers = queries.map(query => {
-        return new RegExp("^" + query);
+        return new RegExp(`^${  query}`);
       });
 
       const rootQuery = cache.data.data.ROOT_QUERY;
@@ -197,11 +197,11 @@ export class StashService {
   public static useFindGallery(id: string) { return GQL.useFindGallery({variables: {id}}); }
   public static useFindScene(id: string) { return GQL.useFindScene({variables: {id}}); }
   public static useFindPerformer(id: string) {
-    const skip = id === "new" ? true : false;
+    const skip = id === "new";
     return GQL.useFindPerformer({variables: {id}, skip});
   }
   public static useFindStudio(id: string) {
-    const skip = id === "new" ? true : false;
+    const skip = id === "new";
     return GQL.useFindStudio({variables: {id}, skip});
   }
 
@@ -312,7 +312,7 @@ export class StashService {
   }
 
   public static useScenesUpdate(input: GQL.SceneUpdateInput[]) {
-    return GQL.useScenesUpdate({ variables: { input : input }});
+    return GQL.useScenesUpdate({ variables: { input }});
   }
 
   public static useSceneDestroy(input: GQL.SceneDestroyInput) {
@@ -360,7 +360,7 @@ export class StashService {
     return GQL.useTagCreate({
       variables: input,
       refetchQueries: ["AllTags", "AllTagsForFilter"],
-      //update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
+      // update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
     });
   }
   public static useTagUpdate(input: GQL.TagUpdateInput) {
@@ -435,7 +435,7 @@ export class StashService {
     return StashService.client.query<GQL.ScrapePerformerUrlQuery>({
       query: GQL.ScrapePerformerUrlDocument,
       variables: {
-        url: url,
+        url,
       },
     });
   }
@@ -444,7 +444,7 @@ export class StashService {
     return StashService.client.query<GQL.ScrapeSceneUrlQuery>({
       query: GQL.ScrapeSceneUrlDocument,
       variables: {
-        url: url,
+        url,
       },
     });
   }
@@ -454,7 +454,7 @@ export class StashService {
       query: GQL.ScrapeSceneDocument,
       variables: {
         scraper_id: scraperId,
-        scene: scene,
+        scene,
       },
     });
   }
@@ -507,17 +507,18 @@ export class StashService {
   public static querySceneByPathRegex(filter: GQL.FindFilterType) {
     return StashService.client.query<GQL.FindScenesByPathRegexQuery>({
       query: GQL.FindScenesByPathRegexDocument,
-      variables: {filter: filter},
+      variables: {filter},
     });
   }
 
   public static queryParseSceneFilenames(filter: GQL.FindFilterType, config: GQL.SceneParserInput) {
     return StashService.client.query<GQL.ParseSceneFilenamesQuery>({
       query: GQL.ParseSceneFilenamesDocument,
-      variables: {filter: filter, config: config},
+      variables: {filter, config},
       fetchPolicy: "network-only",
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 }

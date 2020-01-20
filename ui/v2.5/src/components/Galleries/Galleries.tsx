@@ -5,7 +5,7 @@ import { GalleryList } from "./GalleryList";
 
 const Galleries = () => (
   <Switch>
-    <Route exact={true} path="/galleries" component={GalleryList} />
+    <Route exact path="/galleries" component={GalleryList} />
     <Route path="/galleries/:id" component={Gallery} />
   </Switch>
 );

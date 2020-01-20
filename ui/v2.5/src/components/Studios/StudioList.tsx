@@ -19,9 +19,9 @@ export const StudioList: React.FC = () => {
           {result.data.findStudios.studios.map((studio) => (<StudioCard key={studio.id} studio={studio} />))}
         </div>
       );
-    } else if (filter.displayMode === DisplayMode.List) {
+    } if (filter.displayMode === DisplayMode.List) {
       return <h1>TODO</h1>;
-    } else if (filter.displayMode === DisplayMode.Wall) {
+    } if (filter.displayMode === DisplayMode.Wall) {
       return <h1>TODO</h1>;
     }
   }

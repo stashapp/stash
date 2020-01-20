@@ -114,7 +114,7 @@ const renderMultiSelect = (options: {
     <td>
       <FilterSelect
         type={options.type}
-        isMulti={true}
+        isMulti
         onSelect={(items) => options.onChange(items.map((i) => i.id))}
         initialIds={options.initialIds ?? []}
       />

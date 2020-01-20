@@ -23,7 +23,7 @@ export const SceneList: React.FC = () => {
 
   const listData = useScenesList({
     zoomable: true,
-    otherOperations: otherOperations,
+    otherOperations,
     renderContent,
     renderSelectedOptions
   });
@@ -31,17 +31,17 @@ export const SceneList: React.FC = () => {
   async function playRandom(result: QueryHookResult<FindScenesQuery, FindScenesVariables>, filter: ListFilterModel) {
     // query for a random scene
     if (result.data && result.data.findScenes) {
-      let count = result.data.findScenes.count;
+      const {count} = result.data.findScenes;
 
-      let index = Math.floor(Math.random() * count);
-      let filterCopy = _.cloneDeep(filter);
+      const index = Math.floor(Math.random() * count);
+      const filterCopy = _.cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await StashService.queryFindScenes(filterCopy);
       if (singleResult && singleResult.data && singleResult.data.findScenes && singleResult.data.findScenes.scenes.length === 1) {
-        let id = singleResult!.data!.findScenes!.scenes[0].id;
+        const {id} = singleResult!.data!.findScenes!.scenes[0];
         // navigate to the scene player page
-        history.push("/scenes/" + id + "?autoplay=true");
+        history.push(`/scenes/${  id  }?autoplay=true`);
       }
     }
   }
@@ -50,13 +50,11 @@ export const SceneList: React.FC = () => {
     // find the selected items from the ids
     if (!result.data || !result.data.findScenes) { return undefined; }
 
-    var scenes = result.data.findScenes.scenes;
+    const {scenes} = result.data.findScenes;
 
-    var selectedScenes : SlimSceneDataFragment[] = [];
+    const selectedScenes : SlimSceneDataFragment[] = [];
     selectedIds.forEach((id) => {
-      var scene = scenes.find((scene) => {
-        return scene.id === id;
-      });
+      const scene = scenes.find(s => s.id === id);
 
       if (scene) {
         selectedScenes.push(scene);
@@ -65,7 +63,7 @@ export const SceneList: React.FC = () => {
 
     return (
       <>
-      <SceneSelectedOptions selected={selectedScenes} onScenesUpdated={() => { return; }}/>
+      <SceneSelectedOptions selected={selectedScenes} onScenesUpdated={() => {  }}/>
       </>
     );
   }
@@ -90,9 +88,9 @@ export const SceneList: React.FC = () => {
           {result.data.findScenes.scenes.map((scene) => renderSceneCard(scene, selectedIds, zoomIndex))}
         </div>
       );
-    } else if (filter.displayMode === DisplayMode.List) {
+    } if (filter.displayMode === DisplayMode.List) {
       return <SceneListTable scenes={result.data.findScenes.scenes}/>;
-    } else if (filter.displayMode === DisplayMode.Wall) {
+    } if (filter.displayMode === DisplayMode.Wall) {
       return <WallPanel scenes={result.data.findScenes.scenes} />;
     }
   }

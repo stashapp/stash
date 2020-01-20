@@ -56,6 +56,7 @@ function createHookObject(toastFunc: (toast:IToast) => void) {
   return {
     success: toastFunc,
     error: (error: Error) => {
+      // eslint-disable-next-line no-console
       console.error(error.message);
       toastFunc({
         variant: 'danger',

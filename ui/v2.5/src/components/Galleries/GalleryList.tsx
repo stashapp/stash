@@ -16,7 +16,7 @@ export const GalleryList: React.FC = () => {
     if (!result.data || !result.data.findGalleries) { return; }
     if (filter.displayMode === DisplayMode.Grid) {
       return <h1>TODO</h1>;
-    } else if (filter.displayMode === DisplayMode.List) {
+    } if (filter.displayMode === DisplayMode.List) {
       return (
         <Table style={{margin: "0 auto"}}>
           <thead>
@@ -39,7 +39,7 @@ export const GalleryList: React.FC = () => {
           </tbody>
         </Table>
       );
-    } else if (filter.displayMode === DisplayMode.Wall) {
+    } if (filter.displayMode === DisplayMode.Wall) {
       return <h1>TODO</h1>;
     }
   }

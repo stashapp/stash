@@ -16,21 +16,6 @@ interface ILocalForage<T> {
   error: Error | null;
 }
 
-export function useInterfaceLocalForage(): ILocalForage<IInterfaceConfig | undefined> {
-  const result = useLocalForage("interface");
-  // Set defaults
-  React.useEffect(() => {
-    if (result.data === undefined) {
-      result.setData({
-        wall: {
-          // nothing here currently
-        },
-      });
-    }
-  });
-  return result;
-}
-
 function useLocalForage(item: string): ILocalForage<ValidTypes> {
   const [json, setJson] = React.useState<ValidTypes>(undefined);
 
@@ -63,4 +48,19 @@ function useLocalForage(item: string): ILocalForage<ValidTypes> {
   });
 
   return {data: json, setData: setJson, error: err};
+}
+
+export function useInterfaceLocalForage(): ILocalForage<IInterfaceConfig | undefined> {
+  const result = useLocalForage("interface");
+  // Set defaults
+  React.useEffect(() => {
+    if (result.data === undefined) {
+      result.setData({
+        wall: {
+          // nothing here currently
+        },
+      });
+    }
+  });
+  return result;
 }

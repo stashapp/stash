@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Button, ButtonGroup, Card, Form, Popover, OverlayTrigger } from 'react-bootstrap';
+import { Button, ButtonGroup, Card, Form } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import cx from 'classnames';
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { VideoHoverHook } from "src/hooks";
-import { Icon, TagLink } from 'src/components/Shared';
+import { Icon, TagLink, HoverPopover } from 'src/components/Shared';
 import { TextUtils } from "src/utils";
 
 interface ISceneCardProps {
@@ -33,8 +33,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
 
   function maybeRenderSceneSpecsOverlay() {
     return (
-      <div className={`scene-specs-overlay`}>
-        {props.scene.file.height ? <span className={`overlay-resolution`}> {TextUtils.resolution(props.scene.file.height)}</span> : ''}
+      <div className="scene-specs-overlay">
+        {props.scene.file.height ? <span className="overlay-resolution"> {TextUtils.resolution(props.scene.file.height)}</span> : ''}
         {props.scene.file.duration !== undefined && props.scene.file.duration >= 1 ? TextUtils.secondsToTimestamp(props.scene.file.duration) : ''}
       </div>
     );
@@ -55,7 +55,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
     }
 
     return (
-      <div className={`scene-studio-overlay`}>
+      <div className="scene-studio-overlay">
         <Link
           to={`/studios/${props.scene.studio.id}`}
           style={style}
@@ -70,21 +70,20 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
     if (props.scene.tags.length <= 0)
       return;
 
-    const popover = (
-      <Popover id="tag-popover">
-        {  props.scene.tags.map((tag) => (
-          <TagLink key={tag.id} tag={tag} />
-        )) }
-      </Popover>
-    );
+    const popoverContent = props.scene.tags.map((tag) => (
+      <TagLink key={tag.id} tag={tag} />
+    ));
 
     return (
-      <OverlayTrigger trigger="hover" placement="bottom" overlay={popover}>
+      <HoverPopover
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button>
           <Icon icon="tag" />
           {props.scene.tags.length}
         </Button>
-      </OverlayTrigger>
+      </HoverPopover>
     );
   }
 
@@ -92,56 +91,49 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
     if (props.scene.performers.length <= 0)
       return;
 
-    const popover = (
-      <Popover id="performer-popover">
-        {
-          props.scene.performers.map((performer) => {
-            return (
-              <div className="performer-tag-container">
-                <Link
-                  to={`/performers/${performer.id}`}
-                  className="performer-tag previewable image"
-                  style={{backgroundImage: `url(${performer.image_path})`}}
-                ></Link>
-                <TagLink key={performer.id} performer={performer} />
-              </div>
-            );
-          })
-        }
-      </Popover>
-    );
+    const popoverContent = props.scene.performers.map((performer) => (
+      <div className="performer-tag-container">
+        <Link
+          to={`/performers/${performer.id}`}
+          className="performer-tag previewable image"
+          style={{backgroundImage: `url(${performer.image_path})`}}
+         />
+        <TagLink key={performer.id} performer={performer} />
+      </div>
+    ));
 
     return (
-      <OverlayTrigger trigger="hover" placement="bottom" overlay={popover}>
+      <HoverPopover
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button>
           <Icon icon="user" />
           {props.scene.performers.length}
         </Button>
-      </OverlayTrigger>
+      </HoverPopover>
     );
   }
 
   function maybeRenderSceneMarkerPopoverButton() {
-      if (props.scene.scene_markers.length <= 0)
-          return;
+    if (props.scene.scene_markers.length <= 0)
+        return;
 
-    const popover = (
-      <Popover id="marker-popover">
-        {  props.scene.scene_markers.map((marker) => {
-          (marker as any).scene = {};
-          (marker as any).scene.id = props.scene.id;
-          return <TagLink key={marker.id} marker={marker} />;
-        }) }
-      </Popover>
-    );
+    const popoverContent = props.scene.scene_markers.map(marker => {
+      const markerPopover = { ...marker, scene: { id: props.scene.id } };
+      return <TagLink key={marker.id} marker={markerPopover} />;
+    });
 
     return (
-      <OverlayTrigger trigger="hover" placement="bottom" overlay={popover}>
+      <HoverPopover
+        placement="bottom"
+        content={popoverContent}
+      >
         <Button>
           <Icon icon="tag" />
           {props.scene.scene_markers.length}
         </Button>
-      </OverlayTrigger>
+      </HoverPopover>
     );
   }
 
@@ -174,13 +166,13 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
   }
 
   function isPortrait() {
-    let file = props.scene.file;
-    let width = file.width ? file.width : 0;
-    let height = file.height ? file.height : 0;
+    const {file} = props.scene;
+    const width = file.width ? file.width : 0;
+    const height = file.height ? file.height : 0;
     return height > width;
   }
 
-  var shiftKey = false;
+  let shiftKey = false;
 
   return (
     <Card
@@ -193,7 +185,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
         className="card-select"
         checked={props.selected}
         onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
-        onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => { shiftKey = event.shiftKey; event.stopPropagation(); } }
+        onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
+          // eslint-disable-next-line prefer-destructuring
+          shiftKey = event.shiftKey;
+          event.stopPropagation();
+        }}
       />
       <Link to={`/scenes/${props.scene.id}`} className={cx('image', 'previewable', {portrait: isPortrait()})}>
         <div className="video-container">
@@ -212,7 +208,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (props: ISceneCardProps) => 
       </Link>
       <div className="card-section">
         <h4 className="text-truncate">
-          {!!props.scene.title ? props.scene.title : TextUtils.fileNameFromPath(props.scene.path)}
+          {props.scene.title ? props.scene.title : TextUtils.fileNameFromPath(props.scene.path)}
         </h4>
         <span>{props.scene.date}</span>
         <p>{TextUtils.truncate(props.scene.details, 100, "... (continued)")}</p>

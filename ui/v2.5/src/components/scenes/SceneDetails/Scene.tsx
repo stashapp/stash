@@ -29,8 +29,8 @@ export const Scene: React.FC = () => {
 
   function getInitialTimestamp() {
     const params = queryString.parse(location.search);
-    const timestamp = params?.t;
-    return Number.parseInt(Array.isArray(timestamp) ? timestamp[0] : timestamp ?? '0', 10);
+    const initialTimestamp = params?.t ?? '0';
+    return Number.parseInt(Array.isArray(initialTimestamp) ? initialTimestamp[0] : initialTimestamp, 10);
   }
 
   function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
@@ -45,13 +45,13 @@ export const Scene: React.FC = () => {
     return <div>{error.message}</div>
 
   const modifiedScene =
-    Object.assign({scene_marker_tags: data.sceneMarkerTags}, scene) as GQL.SceneDataFragment; // TODO Hack from angular
+    ({scene_marker_tags: data.sceneMarkerTags, ...scene}) as GQL.SceneDataFragment; // TODO Hack from angular
 
   return (
     <>
       <ScenePlayer scene={modifiedScene} timestamp={timestamp} autoplay={autoplay}/>
       <Card id="details-container">
-        <Tabs id="scene-tabs" mountOnEnter={true}>
+        <Tabs id="scene-tabs" mountOnEnter>
             <Tab eventKey="scene-details-panel" title="Details">
               <SceneDetailPanel scene={modifiedScene} />
             </Tab>
@@ -67,7 +67,7 @@ export const Scene: React.FC = () => {
                 <ScenePerformerPanel scene={modifiedScene} />
               </Tab> : ''
             }
-            {!!modifiedScene.gallery ?
+            {modifiedScene.gallery ?
               <Tab
                 eventKey="scene-gallery-panel"
                 title="Gallery">

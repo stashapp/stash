@@ -36,7 +36,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
       return 0;
     }
 
-    let splits = v.split(":");
+    const splits = v.split(":");
 
     if (splits.length > 3) {
       return 0;
@@ -45,13 +45,13 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
     let seconds = 0;
     let factor = 1;
     while(splits.length > 0) {
-      let thisSplit = splits.pop();
+      const thisSplit = splits.pop();
       if (thisSplit === undefined) {
         return 0;
       }
 
-      let thisInt = parseInt(thisSplit, 10);
-      if (isNaN(thisInt)) {
+      const thisInt = parseInt(thisSplit, 10);
+      if (Number.isNaN(thisInt)) {
         return 0;
       }
 
@@ -77,7 +77,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
   function renderButtons() {
     return (
       <ButtonGroup
-       vertical={true}
+       vertical
       >
         <Button
           disabled={props.disabled}

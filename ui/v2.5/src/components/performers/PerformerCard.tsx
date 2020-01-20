@@ -16,7 +16,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (props: IPerformerCa
   function maybeRenderFavoriteBanner() {
     if (props.performer.favorite === false) { return; }
     return (
-      <div className={`rating-banner rating-5`}>
+      <div className="rating-banner rating-5">
         FAVORITE
       </div>
     );

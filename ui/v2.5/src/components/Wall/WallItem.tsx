@@ -27,9 +27,9 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
   function onMouseEnter() {
     VideoHoverHook.onMouseEnter(videoHoverHook);
     if (!videoPath || videoPath === "") {
-      if (!!props.sceneMarker) {
+      if (props.sceneMarker) {
         setVideoPath(props.sceneMarker.stream || "");
-      } else if (!!props.scene) {
+      } else if (props.scene) {
         setVideoPath(props.scene.paths.preview || "");
       }
     }
@@ -95,7 +95,7 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
   const className = ["scene-wall-item-container"];
   if (videoHoverHook.isHovering.current) { className.push("double-scale"); }
   const style: React.CSSProperties = {};
-  if (!!props.origin) { style.transformOrigin = props.origin; }
+  if (props.origin) { style.transformOrigin = props.origin; }
   return (
     <div className="wall grid-item">
       <div
@@ -111,8 +111,8 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
             src={videoPath}
             poster={screenshotPath}
             style={videoHoverHook.isHovering.current ? {} : {display: "none"}}
-            autoPlay={true}
-            loop={true}
+            autoPlay
+            loop
             ref={videoHoverHook.videoEl}
           />
           <img alt="Preview" src={previewPath || screenshotPath} onError={() => previewNotFound()} />

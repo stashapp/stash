@@ -56,17 +56,16 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   }
 
   function renderScraperMenu() {
-    if (!props.performer) { return; }
-    if (!props.isEditing) { return; }
+    if (!props.performer || !props.isEditing) { return; }
 
     const popover = (
       <Popover id="scraper-popover">
         <Popover.Content>
           <div>
             { props.scrapers ? props.scrapers.map((s) => (
-              <div onClick={() => props.onDisplayScraperDialog &&  props.onDisplayScraperDialog(s) }>
+              <Button variant="link" onClick={() => props.onDisplayScraperDialog &&  props.onDisplayScraperDialog(s) }>
                 {s.name}
-              </div>
+              </Button>
             )) : ''}
           </div>
         </Popover.Content>
@@ -82,7 +81,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
 
   function renderAutoTagButton() {
     if (props.isNew || props.isEditing) { return; }
-    if (!!props.onAutoTag) {
+    if (props.onAutoTag) {
       return (<Button onClick={() => {
         if (props.onAutoTag) { props.onAutoTag() }
       }}>Auto Tag</Button>)
@@ -105,14 +104,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   }
 
   function renderDeleteAlert() {
-    var name;
-
-    if (props.performer) {
-      name = props.performer.name;
-    }
-    if (props.studio) {
-      name = props.studio.name;
-    }
+    const name = props?.studio?.name ?? props?.performer?.name;
 
     return (
       <Modal

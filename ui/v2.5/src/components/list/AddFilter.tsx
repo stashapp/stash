@@ -1,7 +1,7 @@
 import _ from "lodash";
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Form, Modal, OverlayTrigger, Tooltip } from 'react-bootstrap'
-import { Icon } from 'src/components/Shared';
+import { Icon , FilterSelect } from 'src/components/Shared';
 import { CriterionModifier } from "src/core/generated-graphql";
 import { Criterion, CriterionType } from "src/models/list-filter/criteria/criterion";
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
@@ -10,7 +10,7 @@ import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import { makeCriteria } from "src/models/list-filter/criteria/utils";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilterSelect } from "src/components/Shared";
+
 
 interface IAddFilterProps {
   onAddCriterion: (criterion: Criterion, oldId?: string) => void;
@@ -73,7 +73,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (props: IAddFilterProps) => 
         criterion.value = "";
       }
     }
-    const oldId = !!props.editingCriterion ? props.editingCriterion.getId() : undefined;
+    const oldId = props.editingCriterion ? props.editingCriterion.getId() : undefined;
     props.onAddCriterion(criterion, oldId);
     onToggle();
   }
@@ -127,11 +127,13 @@ export const AddFilter: React.FC<IAddFilterProps> = (props: IAddFilterProps) => 
         return (
           <FilterSelect
             type={type}
-            onSelect={(items) => criterion.value = items.map((i) => ({id: i.id, label: i.name!}))}
+            onSelect={(items) => {
+              criterion.value = items.map(i => ({id: i.id, label: i.name!})) }
+            }
             initialIds={criterion.value.map((labeled: any) => labeled.id)}
           />
         );
-      } else {
+      }
         if (criterion.options) {
           defaultValue.current = criterion.value;
           return (
@@ -145,7 +147,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (props: IAddFilterProps) => 
               ))}
             </Form.Control>
           );
-        } else {
+        }
           return (
             <Form.Control
               type={criterion.inputType}
@@ -154,8 +156,8 @@ export const AddFilter: React.FC<IAddFilterProps> = (props: IAddFilterProps) => 
               value={criterion.value || ""}
             />
           )
-        }
-      }
+
+
     }
     return (
       <>

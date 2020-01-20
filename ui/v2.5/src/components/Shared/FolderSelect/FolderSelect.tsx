@@ -55,10 +55,8 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
                 {(!data || !data.directories || loading) ? <Spinner animation="border" variant="light" /> : ''}
               </InputGroup.Append>
             </InputGroup>
-
-            />
             {selectableDirectories.map((path) => {
-              return <div key={path} onClick={() => setCurrentDirectory(path)}>{path}</div>;
+              return <Button variant="link" key={path} onClick={() => setCurrentDirectory(path)}>{path}</Button>;
             })}
           </div>
         </Modal.Body>

@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/control-has-associated-label */
+
 import React from "react";
 import { Button, Table } from 'react-bootstrap';
 import { Link } from "react-router-dom";
@@ -80,7 +82,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (props: IP
       <Table bordered striped>
         <thead>
           <tr>
-            <th></th>
+            <th />
             <th>Name</th>
             <th>Aliases</th>
             <th>Favourite</th>

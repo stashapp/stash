@@ -96,8 +96,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (props: ISceneList
       <Table striped bordered>
         <thead>
           <tr>
-            <th></th>
-            <th>Title</th>
+            <th colSpan={2}>Title</th>
             <th>Rating</th>
             <th>Duration</th>
             <th>Tags</th>

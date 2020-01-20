@@ -42,6 +42,12 @@ interface ISceneGallerySelect {
   sceneId: string;
   onSelect: (item: GQL.ValidGalleriesForSceneValidGalleriesForScene | undefined) => void;
 }
+
+const getSelectedValues = (selectedItems:ValueType<Option>) => (
+  (Array.isArray(selectedItems) ? selectedItems : [selectedItems])
+    .map(item => item.value)
+);
+
 export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
   const { data, loading } = StashService.useValidGalleriesForScene(props.sceneId);
   const galleries = data?.validGalleriesForScene ?? [];
@@ -72,7 +78,6 @@ export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = (p
   );
 
   const performers = data?.scrapePerformerList ?? [];
-  console.log(`performers: ${performers}, loading: ${loading}, query: ${query}`);
   const items = performers.map(item => ({ label: item.name ?? '', value: item.name ?? '' }));
   return <SelectComponent onChange={onChange} onInputChange={onInputChange} isLoading={loading} items={items} initialIds={[]} placeholder={props.placeholder} />
 }
@@ -139,6 +144,8 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
   const placeholder = props.noSelectionString ?? "Select tags..."
 
   const tags = data?.allTags ?? [];
+  const selected = tags.filter(tag => selectedIds.indexOf(tag.id) !== -1).map(tag => ({value: tag.id, label: tag.name}));
+  const items:Option[] = tags.map(item => ({ value: item.id, label: item.name }));
 
   const onCreate = async (tagName: string) => {
     try {
@@ -158,15 +165,24 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
   };
 
   const onChange = (selectedItems:ValueType<Option>) => {
-    const selected = getSelectedValues(selectedItems);
-    setSelectedIds(selected);
-    props.onSelect(tags.filter(item => selected.indexOf(item.id) !== -1));
+    const selectedValues = getSelectedValues(selectedItems);
+    setSelectedIds(selectedValues);
+    props.onSelect(tags.filter(item => selectedValues.indexOf(item.id) !== -1));
   };
 
-  const selected = tags.filter(tag => selectedIds.indexOf(tag.id) !== -1).map(tag => ({value: tag.id, label: tag.name}));
-  const items:Option[] = tags.map(item => ({ value: item.id, label: item.name }));
-  return <SelectComponent {...props} onChange={onChange} creatable={true} type="tags" placeholder={placeholder}
-    isLoading={loading || dataLoading} items={items} onCreateOption={onCreate} selectedOptions={selected}  />
+  return (
+    <SelectComponent
+      {...props}
+      onChange={onChange}
+      creatable
+      type="tags"
+      placeholder={placeholder}
+      isLoading={loading || dataLoading}
+      items={items}
+      onCreateOption={onCreate}
+      selectedOptions={selected}
+    />
+  );
 }
 
 const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
@@ -186,14 +202,14 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   const defaultValue = items.filter(item => initialIds?.indexOf(item.value) !== -1) ?? null;
 
   const props = {
-    className: className,
+    className,
     options: items,
     value: selectedOptions,
-    onChange: onChange,
-    isMulti: isMulti,
-    defaultValue: defaultValue,
+    onChange,
+    isMulti,
+    defaultValue,
     noOptionsMessage: () => (type !== 'tags' ? 'None' : null),
-    placeholder: placeholder,
+    placeholder,
     onInputChange
   }
 
@@ -203,9 +219,3 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
       : <Select {...props} isLoading={isLoading} />
   );
 };
-
-
-const getSelectedValues = (selectedItems:ValueType<Option>) => (
-  (Array.isArray(selectedItems) ? selectedItems : [selectedItems])
-    .map(item => item.value)
-);

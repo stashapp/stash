@@ -67,7 +67,7 @@ export class ListFilterModel {
           new StudiosCriterionOption(),
         ];
         break;
-      case FilterMode.Performers:
+      case FilterMode.Performers: {
         if (!!this.sortBy === false) { this.sortBy = "name"; }
         this.sortByOptions = ["name", "height", "birthdate", "scenes_count"];
         this.displayModeOptions = [
@@ -75,8 +75,8 @@ export class ListFilterModel {
           DisplayMode.List,
         ];
 
-        var numberCriteria : CriterionType[] = ["birth_year", "age"];
-        var stringCriteria : CriterionType[] = [
+        const numberCriteria : CriterionType[] = ["birth_year", "age"];
+        const stringCriteria : CriterionType[] = [
           "ethnicity",
           "country",
           "eye_color",
@@ -98,6 +98,7 @@ export class ListFilterModel {
           return new CriterionOption(Criterion.getLabel(c), c);
         }));
         break;
+      }
       case FilterMode.Studios:
         if (!!this.sortBy === false) { this.sortBy = "name"; }
         this.sortByOptions = ["name", "scenes_count"];
@@ -173,13 +174,13 @@ export class ListFilterModel {
         jsonParameters = [params.c];
       }
 
-      for (const jsonString of jsonParameters) {
+      jsonParameters.forEach(jsonString => {
         const encodedCriterion = JSON.parse(jsonString);
         const criterion = makeCriteria(encodedCriterion.type);
         criterion.value = encodedCriterion.value;
         criterion.modifier = encodedCriterion.modifier;
         this.criteria.push(criterion);
-      }
+      });
     }
   }
 
@@ -221,10 +222,11 @@ export class ListFilterModel {
     const result: SceneFilterType = {};
     this.criteria.forEach((criterion) => {
       switch (criterion.type) {
-        case "rating":
+        case "rating": {
           const ratingCrit = criterion as RatingCriterion;
           result.rating = { value: ratingCrit.value, modifier: ratingCrit.modifier };
           break;
+        }
         case "resolution": {
           switch ((criterion as ResolutionCriterion).value) {
             case "240p": result.resolution = ResolutionEnum.Low; break;
@@ -232,6 +234,7 @@ export class ListFilterModel {
             case "720p": result.resolution = ResolutionEnum.StandardHd; break;
             case "1080p": result.resolution = ResolutionEnum.FullHd; break;
             case "4k": result.resolution = ResolutionEnum.FourK; break;
+            // no default
           }
           break;
         }
@@ -241,18 +244,22 @@ export class ListFilterModel {
         case "isMissing":
           result.is_missing = (criterion as IsMissingCriterion).value;
           break;
-        case "tags":
+        case "tags": {
           const tagsCrit = criterion as TagsCriterion;
           result.tags = { value: tagsCrit.value.map((tag) => tag.id), modifier: tagsCrit.modifier };
           break;
-        case "performers":
+        }
+        case "performers": {
           const perfCrit = criterion as PerformersCriterion;
           result.performers = { value: perfCrit.value.map((perf) => perf.id), modifier: perfCrit.modifier };
           break;
-        case "studios":
+        }
+        case "studios": {
           const studCrit = criterion as StudiosCriterion;
           result.studios = { value: studCrit.value.map((studio) => studio.id), modifier: studCrit.modifier };
           break;
+        }
+        // no default
       }
     });
     return result;
@@ -265,54 +272,67 @@ export class ListFilterModel {
         case "favorite":
           result.filter_favorites = (criterion as FavoriteCriterion).value === "true";
           break;
-        case "birth_year":
+        case "birth_year": {
           const byCrit = criterion as NumberCriterion;
           result.birth_year = { value: byCrit.value, modifier: byCrit.modifier };
           break;
-        case "age":
+        }
+        case "age": {
           const ageCrit = criterion as NumberCriterion;
           result.age = { value: ageCrit.value, modifier: ageCrit.modifier };
           break;
-        case "ethnicity":
+        }
+        case "ethnicity": {
           const ethCrit = criterion as StringCriterion;
           result.ethnicity = { value: ethCrit.value, modifier: ethCrit.modifier };
           break;
-        case "country":
+        }
+        case "country": {
           const cntryCrit = criterion as StringCriterion;
           result.country = { value: cntryCrit.value, modifier: cntryCrit.modifier };
           break;
-        case "eye_color":
+        }
+        case "eye_color": {
           const ecCrit = criterion as StringCriterion;
           result.eye_color = { value: ecCrit.value, modifier: ecCrit.modifier };
           break;
-        case "height":
+        }
+        case "height": {
           const hCrit = criterion as StringCriterion;
           result.height = { value: hCrit.value, modifier: hCrit.modifier };
           break;
-        case "measurements":
+        }
+        case "measurements": {
           const mCrit = criterion as StringCriterion;
           result.measurements = { value: mCrit.value, modifier: mCrit.modifier };
           break;
-        case "fake_tits":
+        }
+        case "fake_tits": {
           const ftCrit = criterion as StringCriterion;
           result.fake_tits = { value: ftCrit.value, modifier: ftCrit.modifier };
           break;
-        case "career_length":
+        }
+        case "career_length": {
           const clCrit = criterion as StringCriterion;
           result.career_length = { value: clCrit.value, modifier: clCrit.modifier };
           break;
-        case "tattoos":
+        }
+        case "tattoos": {
           const tCrit = criterion as StringCriterion;
           result.tattoos = { value: tCrit.value, modifier: tCrit.modifier };
           break;
-        case "piercings":
+        }
+        case "piercings": {
           const pCrit = criterion as StringCriterion;
           result.piercings = { value: pCrit.value, modifier: pCrit.modifier };
           break;
-        case "aliases":
+        }
+        case "aliases": {
           const aCrit = criterion as StringCriterion;
           result.aliases = { value: aCrit.value, modifier: aCrit.modifier };
           break;
+        }
+        // no default
       }
     });
     return result;
@@ -322,18 +342,22 @@ export class ListFilterModel {
     const result: SceneMarkerFilterType = {};
     this.criteria.forEach((criterion) => {
       switch (criterion.type) {
-        case "tags":
+        case "tags": {
           const tagsCrit = criterion as TagsCriterion;
           result.tags = { value: tagsCrit.value.map((tag) => tag.id), modifier: tagsCrit.modifier };
           break;
-        case "sceneTags":
+        }
+        case "sceneTags": {
           const sceneTagsCrit = criterion as TagsCriterion;
           result.scene_tags = { value: sceneTagsCrit.value.map((tag) => tag.id), modifier: sceneTagsCrit.modifier };
           break;
-        case "performers":
+        }
+        case "performers": {
           const performersCrit = criterion as PerformersCriterion;
           result.performers = { value: performersCrit.value.map((performer) => performer.id), modifier: performersCrit.modifier };
           break;
+        }
+        // no default
       }
     });
     return result;
