@@ -1,8 +1,16 @@
 import { debounce } from "lodash";
 import React, { SyntheticEvent, useCallback, useState } from "react";
-import { Badge, Button, ButtonGroup, Dropdown, Form, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import {
+  Badge,
+  Button,
+  ButtonGroup,
+  Dropdown,
+  Form,
+  OverlayTrigger,
+  Tooltip
+} from "react-bootstrap";
 
-import { Icon } from 'src/components/Shared';
+import { Icon } from "src/components/Shared";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -31,14 +39,19 @@ interface IListFilterProps {
 
 const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
 
-export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) => {
+export const ListFilter: React.FC<IListFilterProps> = (
+  props: IListFilterProps
+) => {
   const searchCallback = useCallback(
     debounce((event: any) => {
       props.onChangeQuery(event.target.value);
-    }, 500), [props.onChangeQuery]
+    }, 500),
+    [props.onChangeQuery]
   );
 
-  const [editingCriterion, setEditingCriterion] = useState<Criterion | undefined>(undefined);
+  const [editingCriterion, setEditingCriterion] = useState<
+    Criterion | undefined
+  >(undefined);
 
   function onChangePageSize(event: SyntheticEvent<HTMLSelectElement>) {
     const val = event!.currentTarget!.value;
@@ -76,39 +89,55 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
 
   let removedCriterionId = "";
   function onRemoveCriterionTag(criterion?: Criterion) {
-    if (!criterion) { return; }
+    if (!criterion) {
+      return;
+    }
     setEditingCriterion(undefined);
     removedCriterionId = criterion.getId();
     props.onRemoveCriterion(criterion);
   }
   function onClickCriterionTag(criterion?: Criterion) {
-    if (!criterion || removedCriterionId !== "") { return; }
+    if (!criterion || removedCriterionId !== "") {
+      return;
+    }
     setEditingCriterion(criterion);
   }
 
   function renderSortByOptions() {
-    return props.filter.sortByOptions.map((option) => (
-      <Dropdown.Item onClick={onChangeSortBy} key={option}>{option}</Dropdown.Item>
+    return props.filter.sortByOptions.map(option => (
+      <Dropdown.Item onClick={onChangeSortBy} key={option}>
+        {option}
+      </Dropdown.Item>
     ));
   }
 
   function renderDisplayModeOptions() {
     function getIcon(option: DisplayMode) {
       switch (option) {
-        case DisplayMode.Grid: return "th-large";
-        case DisplayMode.List: return "list";
-        case DisplayMode.Wall: return "square";
+        case DisplayMode.Grid:
+          return "th-large";
+        case DisplayMode.List:
+          return "list";
+        case DisplayMode.Wall:
+          return "square";
       }
     }
     function getLabel(option: DisplayMode) {
       switch (option) {
-        case DisplayMode.Grid: return "Grid";
-        case DisplayMode.List: return "List";
-        case DisplayMode.Wall: return "Wall";
+        case DisplayMode.Grid:
+          return "Grid";
+        case DisplayMode.List:
+          return "List";
+        case DisplayMode.Wall:
+          return "Wall";
       }
     }
-    return props.filter.displayModeOptions.map((option) => (
-      <OverlayTrigger overlay={<Tooltip id="display-mode-tooltip">{getLabel(option)}</Tooltip>}>
+    return props.filter.displayModeOptions.map(option => (
+      <OverlayTrigger
+        overlay={
+          <Tooltip id="display-mode-tooltip">{getLabel(option)}</Tooltip>
+        }
+      >
         <Button
           key={option}
           active={props.filter.displayMode === option}
@@ -121,7 +150,7 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
   }
 
   function renderFilterTags() {
-    return props.filter.criteria.map((criterion) => (
+    return props.filter.criteria.map(criterion => (
       <Badge
         className="tag-item"
         variant="secondary"
@@ -149,25 +178,30 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
 
   function renderSelectAll() {
     if (props.onSelectAll) {
-      return <Dropdown.Item onClick={() => onSelectAll()}>Select All</Dropdown.Item>;
+      return (
+        <Dropdown.Item onClick={() => onSelectAll()}>Select All</Dropdown.Item>
+      );
     }
   }
 
   function renderSelectNone() {
     if (props.onSelectNone) {
-      return <Dropdown.Item onClick={() => onSelectNone()}>Select None</Dropdown.Item>;
+      return (
+        <Dropdown.Item onClick={() => onSelectNone()}>
+          Select None
+        </Dropdown.Item>
+      );
     }
   }
 
   function renderMore() {
-    const options = [
-      renderSelectAll(),
-      renderSelectNone()
-    ];
+    const options = [renderSelectAll(), renderSelectNone()];
 
     if (props.otherOperations) {
-      props.otherOperations.forEach((o) => {
-        options.push(<Dropdown.Item onClick={o.onClick}>{o.text}</Dropdown.Item>);
+      props.otherOperations.forEach(o => {
+        options.push(
+          <Dropdown.Item onClick={o.onClick}>{o.text}</Dropdown.Item>
+        );
       });
     }
 
@@ -179,15 +213,13 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
               <Icon icon="ellipsis-h" />
             </Button>
           </Dropdown.Toggle>
-          <Dropdown.Menu>
-            {options}
-          </Dropdown.Menu>
+          <Dropdown.Menu>{options}</Dropdown.Menu>
         </Dropdown>
       );
     }
   }
 
-  function onChangeZoom(v : number) {
+  function onChangeZoom(v: number) {
     if (props.onChangeZoom) {
       props.onChangeZoom(v);
     }
@@ -201,9 +233,11 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
             type="range"
             min={0}
             max={3}
-            onChange={(event: any) => onChangeZoom(Number.parseInt(event.target.value, 10))}
+            onChange={(event: any) =>
+              onChangeZoom(Number.parseInt(event.target.value, 10))
+            }
           />
-      </span>
+        </span>
       );
     }
   }
@@ -224,23 +258,35 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
             value={props.filter.itemsPerPage.toString()}
             className="filter-item"
           >
-            { PAGE_SIZE_OPTIONS.map(s => <option value={s}>{s}</option>) }
+            {PAGE_SIZE_OPTIONS.map(s => (
+              <option value={s}>{s}</option>
+            ))}
           </Form.Control>
           <ButtonGroup className="filter-item">
             <Dropdown>
               <Dropdown.Toggle variant="secondary" id="more-menu">
                 <Button>{props.filter.sortBy}</Button>
               </Dropdown.Toggle>
-              <Dropdown.Menu>
-                {renderSortByOptions()}
-              </Dropdown.Menu>
+              <Dropdown.Menu>{renderSortByOptions()}</Dropdown.Menu>
             </Dropdown>
 
-            <OverlayTrigger overlay={
-              <Tooltip id="sort-direction-tooltip">{props.filter.sortDirection === "asc" ? "Ascending" : "Descending"}</Tooltip>
-            }>
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="sort-direction-tooltip">
+                  {props.filter.sortDirection === "asc"
+                    ? "Ascending"
+                    : "Descending"}
+                </Tooltip>
+              }
+            >
               <Button onClick={onChangeSortDirection}>
-                <Icon icon={props.filter.sortDirection === "asc" ? "caret-up" : "caret-down"} />
+                <Icon
+                  icon={
+                    props.filter.sortDirection === "asc"
+                      ? "caret-up"
+                      : "caret-down"
+                  }
+                />
               </Button>
             </OverlayTrigger>
           </ButtonGroup>
@@ -258,11 +304,15 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
 
           {maybeRenderZoom()}
 
-          <ButtonGroup className="filter-item">
-            {renderMore()}
-          </ButtonGroup>
+          <ButtonGroup className="filter-item">{renderMore()}</ButtonGroup>
         </div>
-        <div style={{display: "flex", justifyContent: "center", margin: "10px auto"}}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            margin: "10px auto"
+          }}
+        >
           {renderFilterTags()}
         </div>
       </>

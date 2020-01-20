@@ -1,8 +1,11 @@
 /* eslint-disable consistent-return, default-case */
+import { CriterionModifier } from "src/core/generated-graphql";
 import {
-  CriterionModifier,
-} from "src/core/generated-graphql";
-import { Criterion, CriterionType, StringCriterion, NumberCriterion } from "./criterion";
+  Criterion,
+  CriterionType,
+  StringCriterion,
+  NumberCriterion
+} from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
 import { IsMissingCriterion } from "./is-missing";
@@ -15,28 +18,38 @@ import { TagsCriterion } from "./tags";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
-    case "none": return new NoneCriterion();
-    case "rating": return new RatingCriterion();
-    case "resolution": return new ResolutionCriterion();
-    case "favorite": return new FavoriteCriterion();
-    case "hasMarkers": return new HasMarkersCriterion();
-    case "isMissing": return new IsMissingCriterion();
-    case "tags": return new TagsCriterion("tags");
-    case "sceneTags": return new TagsCriterion("sceneTags");
-    case "performers": return new PerformersCriterion();
-    case "studios": return new StudiosCriterion();
+    case "none":
+      return new NoneCriterion();
+    case "rating":
+      return new RatingCriterion();
+    case "resolution":
+      return new ResolutionCriterion();
+    case "favorite":
+      return new FavoriteCriterion();
+    case "hasMarkers":
+      return new HasMarkersCriterion();
+    case "isMissing":
+      return new IsMissingCriterion();
+    case "tags":
+      return new TagsCriterion("tags");
+    case "sceneTags":
+      return new TagsCriterion("sceneTags");
+    case "performers":
+      return new PerformersCriterion();
+    case "studios":
+      return new StudiosCriterion();
 
     case "birth_year":
     case "age": {
-        const ret = new NumberCriterion(type, type);
-        // null/not null doesn't make sense for these criteria
-        ret.modifierOptions = [
-          Criterion.getModifierOption(CriterionModifier.Equals),
-          Criterion.getModifierOption(CriterionModifier.NotEquals),
-          Criterion.getModifierOption(CriterionModifier.GreaterThan),
-          Criterion.getModifierOption(CriterionModifier.LessThan)
-        ];
-        return ret;
+      const ret = new NumberCriterion(type, type);
+      // null/not null doesn't make sense for these criteria
+      ret.modifierOptions = [
+        Criterion.getModifierOption(CriterionModifier.Equals),
+        Criterion.getModifierOption(CriterionModifier.NotEquals),
+        Criterion.getModifierOption(CriterionModifier.GreaterThan),
+        Criterion.getModifierOption(CriterionModifier.LessThan)
+      ];
+      return ret;
     }
     case "ethnicity":
     case "country":

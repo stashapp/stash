@@ -1,4 +1,12 @@
-import { Button, Form, Modal, Nav, Navbar, OverlayTrigger, Popover } from 'react-bootstrap';
+import {
+  Button,
+  Form,
+  Modal,
+  Nav,
+  Navbar,
+  OverlayTrigger,
+  Popover
+} from "react-bootstrap";
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -17,56 +25,85 @@ interface IProps {
 
   // TODO: only for performers.  make generic
   scrapers?: GQL.ListPerformerScrapersListPerformerScrapers[];
-  onDisplayScraperDialog?: (scraper: GQL.ListPerformerScrapersListPerformerScrapers) => void;
+  onDisplayScraperDialog?: (
+    scraper: GQL.ListPerformerScrapersListPerformerScrapers
+  ) => void;
 }
 
 export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   function renderEditButton() {
-    if (props.isNew) { return; }
+    if (props.isNew) {
+      return;
+    }
     return (
-      <Button
-        variant="primary"
-        onClick={() => props.onToggleEdit()}
-      >
-        { props.isEditing ? "Cancel" : "Edit"}
+      <Button variant="primary" onClick={() => props.onToggleEdit()}>
+        {props.isEditing ? "Cancel" : "Edit"}
       </Button>
     );
   }
 
   function renderSaveButton() {
-    if (!props.isEditing) { return; }
-    return <Button variant="success" onClick={() => props.onSave()}>Save</Button>;
+    if (!props.isEditing) {
+      return;
+    }
+    return (
+      <Button variant="success" onClick={() => props.onSave()}>
+        Save
+      </Button>
+    );
   }
 
   function renderDeleteButton() {
-    if (props.isNew || props.isEditing) { return; }
-    return <Button variant="danger" onClick={() => setIsDeleteAlertOpen(true)}>Delete</Button>;
+    if (props.isNew || props.isEditing) {
+      return;
+    }
+    return (
+      <Button variant="danger" onClick={() => setIsDeleteAlertOpen(true)}>
+        Delete
+      </Button>
+    );
   }
 
   function renderImageInput() {
-    if (!props.isEditing) { return; }
-      return (
-        <Form.Group controlId="cover-file">
-          <Form.Label>Choose image...</Form.Label>
-          <Form.Control type="file" accept=".jpg,.jpeg,.png" onChange={props.onImageChange} />
-        </Form.Group>
-      )
+    if (!props.isEditing) {
+      return;
+    }
+    return (
+      <Form.Group controlId="cover-file">
+        <Form.Label>Choose image...</Form.Label>
+        <Form.Control
+          type="file"
+          accept=".jpg,.jpeg,.png"
+          onChange={props.onImageChange}
+        />
+      </Form.Group>
+    );
   }
 
   function renderScraperMenu() {
-    if (!props.performer || !props.isEditing) { return; }
+    if (!props.performer || !props.isEditing) {
+      return;
+    }
 
     const popover = (
       <Popover id="scraper-popover">
         <Popover.Content>
           <div>
-            { props.scrapers ? props.scrapers.map((s) => (
-              <Button variant="link" onClick={() => props.onDisplayScraperDialog &&  props.onDisplayScraperDialog(s) }>
-                {s.name}
-              </Button>
-            )) : ''}
+            {props.scrapers
+              ? props.scrapers.map(s => (
+                  <Button
+                    variant="link"
+                    onClick={() =>
+                      props.onDisplayScraperDialog &&
+                      props.onDisplayScraperDialog(s)
+                    }
+                  >
+                    {s.name}
+                  </Button>
+                ))
+              : ""}
           </div>
         </Popover.Content>
       </Popover>
@@ -80,53 +117,63 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   }
 
   function renderAutoTagButton() {
-    if (props.isNew || props.isEditing) { return; }
+    if (props.isNew || props.isEditing) {
+      return;
+    }
     if (props.onAutoTag) {
-      return (<Button onClick={() => {
-        if (props.onAutoTag) { props.onAutoTag() }
-      }}>Auto Tag</Button>)
+      return (
+        <Button
+          onClick={() => {
+            if (props.onAutoTag) {
+              props.onAutoTag();
+            }
+          }}
+        >
+          Auto Tag
+        </Button>
+      );
     }
   }
 
   function renderScenesButton() {
-    if (props.isEditing) { return; }
+    if (props.isEditing) {
+      return;
+    }
     let linkSrc: string = "#";
     if (props.performer) {
       linkSrc = NavUtils.makePerformerScenesUrl(props.performer);
     } else if (props.studio) {
       linkSrc = NavUtils.makeStudioScenesUrl(props.studio);
     }
-    return (
-      <Link to={linkSrc}>
-        Scenes
-      </Link>
-    );
+    return <Link to={linkSrc}>Scenes</Link>;
   }
 
   function renderDeleteAlert() {
     const name = props?.studio?.name ?? props?.performer?.name;
 
     return (
-      <Modal
-        show={isDeleteAlertOpen}
-      >
-        <Modal.Body>
-          Are you sure you want to delete {name}?
-        </Modal.Body>
+      <Modal show={isDeleteAlertOpen}>
+        <Modal.Body>Are you sure you want to delete {name}?</Modal.Body>
         <Modal.Footer>
-          <Button variant="danger" onClick={props.onDelete}>Delete</Button>
-          <Button variant="secondary" onClick={() => setIsDeleteAlertOpen(false)}>Cancel</Button>
+          <Button variant="danger" onClick={props.onDelete}>
+            Delete
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => setIsDeleteAlertOpen(false)}
+          >
+            Cancel
+          </Button>
         </Modal.Footer>
       </Modal>
     );
   }
 
-
   return (
     <>
-    {renderDeleteAlert()}
-    <Navbar bg="dark">
-      <Nav className="mr-auto ml-auto">
+      {renderDeleteAlert()}
+      <Navbar bg="dark">
+        <Nav className="mr-auto ml-auto">
           {renderEditButton()}
           {renderScraperMenu()}
           {renderImageInput()}
@@ -135,8 +182,8 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
           {renderAutoTagButton()}
           {renderScenesButton()}
           {renderDeleteButton()}
-      </Nav>
-    </Navbar>
+        </Nav>
+      </Navbar>
     </>
   );
 };

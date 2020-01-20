@@ -1,8 +1,11 @@
 import _ from "lodash";
 import React from "react";
 import { QueryHookResult } from "react-apollo-hooks";
-import { useHistory } from 'react-router-dom';
-import { FindPerformersQuery, FindPerformersVariables } from "src/core/generated-graphql";
+import { useHistory } from "react-router-dom";
+import {
+  FindPerformersQuery,
+  FindPerformersVariables
+} from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { usePerformersList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -15,41 +18,60 @@ export const PerformerList: React.FC = () => {
   const otherOperations = [
     {
       text: "Open Random",
-      onClick: getRandom,
+      onClick: getRandom
     }
   ];
 
   const listData = usePerformersList({
     otherOperations,
-    renderContent,
+    renderContent
   });
 
-  async function getRandom(result: QueryHookResult<FindPerformersQuery, FindPerformersVariables>, filter: ListFilterModel) {
+  async function getRandom(
+    result: QueryHookResult<FindPerformersQuery, FindPerformersVariables>,
+    filter: ListFilterModel
+  ) {
     if (result.data && result.data.findPerformers) {
-      const {count} = result.data.findPerformers;
+      const { count } = result.data.findPerformers;
       const index = Math.floor(Math.random() * count);
       const filterCopy = _.cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await StashService.queryFindPerformers(filterCopy);
-      if (singleResult && singleResult.data && singleResult.data.findPerformers && singleResult.data.findPerformers.performers.length === 1) {
-        const {id} = singleResult!.data!.findPerformers!.performers[0]!;
-        history.push(`/performers/${  id}`);
+      if (
+        singleResult &&
+        singleResult.data &&
+        singleResult.data.findPerformers &&
+        singleResult.data.findPerformers.performers.length === 1
+      ) {
+        const { id } = singleResult!.data!.findPerformers!.performers[0]!;
+        history.push(`/performers/${id}`);
       }
     }
   }
 
   function renderContent(
-    result: QueryHookResult<FindPerformersQuery, FindPerformersVariables>, filter: ListFilterModel) {
-    if (!result.data || !result.data.findPerformers) { return; }
+    result: QueryHookResult<FindPerformersQuery, FindPerformersVariables>,
+    filter: ListFilterModel
+  ) {
+    if (!result.data || !result.data.findPerformers) {
+      return;
+    }
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <div className="grid">
-          {result.data.findPerformers.performers.map((p) => (<PerformerCard key={p.id} performer={p} />))}
+          {result.data.findPerformers.performers.map(p => (
+            <PerformerCard key={p.id} performer={p} />
+          ))}
         </div>
       );
-    } if (filter.displayMode === DisplayMode.List) {
-      return <PerformerListTable performers={result.data.findPerformers.performers}/>;
+    }
+    if (filter.displayMode === DisplayMode.List) {
+      return (
+        <PerformerListTable
+          performers={result.data.findPerformers.performers}
+        />
+      );
     }
   }
 

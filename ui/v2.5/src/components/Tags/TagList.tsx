@@ -1,23 +1,33 @@
 import React, { useState } from "react";
-import { Button, Form, Spinner } from 'react-bootstrap';
+import { Button, Form, Spinner } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { NavUtils } from "src/utils";
-import { Icon, Modal } from 'src/components/Shared';
-import { useToast } from 'src/hooks';
+import { Icon, Modal } from "src/components/Shared";
+import { useToast } from "src/hooks";
 
 export const TagList: React.FC = () => {
   const Toast = useToast();
   // Editing / New state
-  const [name, setName] = useState('');
-  const [editingTag, setEditingTag] = useState<Partial<GQL.TagDataFragment> | null>(null);
-  const [deletingTag, setDeletingTag] = useState<Partial<GQL.TagDataFragment> | null>(null);
+  const [name, setName] = useState("");
+  const [editingTag, setEditingTag] = useState<Partial<
+    GQL.TagDataFragment
+  > | null>(null);
+  const [deletingTag, setDeletingTag] = useState<Partial<
+    GQL.TagDataFragment
+  > | null>(null);
 
   const { data, error } = StashService.useAllTags();
-  const updateTag = StashService.useTagUpdate(getTagInput() as GQL.TagUpdateInput);
-  const createTag = StashService.useTagCreate(getTagInput() as GQL.TagCreateInput);
-  const deleteTag = StashService.useTagDestroy(getDeleteTagInput() as GQL.TagDestroyInput);
+  const updateTag = StashService.useTagUpdate(
+    getTagInput() as GQL.TagUpdateInput
+  );
+  const createTag = StashService.useTagCreate(
+    getTagInput() as GQL.TagCreateInput
+  );
+  const deleteTag = StashService.useTagDestroy(
+    getDeleteTagInput() as GQL.TagDestroyInput
+  );
 
   function getTagInput() {
     const tagInput: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = { name };
@@ -29,7 +39,7 @@ export const TagList: React.FC = () => {
   function getDeleteTagInput() {
     const tagInput: Partial<GQL.TagDestroyInput> = {};
     if (deletingTag) {
-        tagInput.id = deletingTag.id;
+      tagInput.id = deletingTag.id;
     }
     return tagInput;
   }
@@ -49,11 +59,10 @@ export const TagList: React.FC = () => {
     }
   }
 
-  async function onAutoTag(tag : GQL.TagDataFragment) {
-    if (!tag)
-      return;
+  async function onAutoTag(tag: GQL.TagDataFragment) {
+    if (!tag) return;
     try {
-      await StashService.queryMetadataAutoTag({ tags: [tag.id]});
+      await StashService.queryMetadataAutoTag({ tags: [tag.id] });
       Toast.success({ content: "Started auto tagging" });
     } catch (e) {
       Toast.error(e);
@@ -75,55 +84,71 @@ export const TagList: React.FC = () => {
       onHide={() => {}}
       show={!!deletingTag}
       icon="trash-alt"
-      accept={{ onClick: onDelete, variant: 'danger', text: 'Delete' }}
+      accept={{ onClick: onDelete, variant: "danger", text: "Delete" }}
       cancel={{ onClick: () => setDeletingTag(null) }}
     >
-      <span>Are you sure you want to delete {deletingTag && deletingTag.name}?</span>
+      <span>
+        Are you sure you want to delete {deletingTag && deletingTag.name}?
+      </span>
     </Modal>
   );
 
-  if (!data?.allTags)
-    return <Spinner animation="border" variant="light" />;
-  if (error)
-    return <div>{error.message}</div>;
+  if (!data?.allTags) return <Spinner animation="border" variant="light" />;
+  if (error) return <div>{error.message}</div>;
 
-  const tagElements = data.allTags.map((tag) => {
+  const tagElements = data.allTags.map(tag => {
     return (
       <>
-      {deleteAlert}
-      <div key={tag.id} className="tag-list-row">
-        <Button variant="link" onClick={() => setEditingTag(tag)}>{tag.name}</Button>
-        <div style={{float: "right"}}>
-          <Button onClick={() => onAutoTag(tag)}>Auto Tag</Button>
-          <Link to={NavUtils.makeTagScenesUrl(tag)}>Scenes: {tag.scene_count}</Link>
-          <Link to={NavUtils.makeTagSceneMarkersUrl(tag)}>
-            Markers: {tag.scene_marker_count}
-          </Link>
-          <span>Total: {(tag.scene_count || 0) + (tag.scene_marker_count || 0)}</span>
-          <Button variant="danger" onClick={() => setDeletingTag(tag)}>
-            <Icon icon="trash-alt" color="danger" />
+        {deleteAlert}
+        <div key={tag.id} className="tag-list-row">
+          <Button variant="link" onClick={() => setEditingTag(tag)}>
+            {tag.name}
           </Button>
+          <div style={{ float: "right" }}>
+            <Button onClick={() => onAutoTag(tag)}>Auto Tag</Button>
+            <Link to={NavUtils.makeTagScenesUrl(tag)}>
+              Scenes: {tag.scene_count}
+            </Link>
+            <Link to={NavUtils.makeTagSceneMarkersUrl(tag)}>
+              Markers: {tag.scene_marker_count}
+            </Link>
+            <span>
+              Total: {(tag.scene_count || 0) + (tag.scene_marker_count || 0)}
+            </span>
+            <Button variant="danger" onClick={() => setDeletingTag(tag)}>
+              <Icon icon="trash-alt" color="danger" />
+            </Button>
+          </div>
         </div>
-      </div>
       </>
     );
   });
 
   return (
     <div id="tag-list-container">
-      <Button variant="primary" style={{marginTop: "20px"}} onClick={() => setEditingTag({})}>New Tag</Button>
+      <Button
+        variant="primary"
+        style={{ marginTop: "20px" }}
+        onClick={() => setEditingTag({})}
+      >
+        New Tag
+      </Button>
 
       <Modal
         show={!!editingTag}
         header={editingTag && editingTag.id ? "Edit Tag" : "New Tag"}
         onHide={() => setEditingTag(null)}
-        accept={{ onClick: onEdit, variant: 'danger', text: (editingTag?.id ? 'Update' : 'Create') }}
+        accept={{
+          onClick: onEdit,
+          variant: "danger",
+          text: editingTag?.id ? "Update" : "Create"
+        }}
       >
         <Form.Group controlId="tag-name">
           <Form.Label>Name</Form.Label>
           <Form.Control
             onChange={(newValue: any) => setName(newValue.target.value)}
-            defaultValue={(editingTag && editingTag.name) || ''}
+            defaultValue={(editingTag && editingTag.name) || ""}
           />
         </Form.Group>
       </Modal>

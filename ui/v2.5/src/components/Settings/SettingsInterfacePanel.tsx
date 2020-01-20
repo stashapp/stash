@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Spinner } from 'react-bootstrap';
+import { Button, Form, Spinner } from "react-bootstrap";
 import { StashService } from "src/core/StashService";
-import { useToast } from 'src/hooks';
+import { useToast } from "src/hooks";
 
 export const SettingsInterfacePanel: React.FC = () => {
   const Toast = useToast();
@@ -25,8 +25,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   });
 
   useEffect(() => {
-    if (config.error)
-      return;
+    if (config.error) return;
 
     const iCfg = config?.data?.configuration?.interface;
     setSoundOnPreview(iCfg?.soundOnPreview ?? true);
@@ -51,8 +50,12 @@ export const SettingsInterfacePanel: React.FC = () => {
 
   return (
     <>
-      {config.error ? <h1>{config.error.message}</h1> : ''}
-      {(!config?.data?.configuration || config.loading) ? <Spinner animation="border" variant="light" /> : ''}
+      {config.error ? <h1>{config.error.message}</h1> : ""}
+      {!config?.data?.configuration || config.loading ? (
+        <Spinner animation="border" variant="light" />
+      ) : (
+        ""
+      )}
       <h4>User Interface</h4>
       <Form.Group>
         <Form.Label>Scene / Marker Wall</Form.Label>
@@ -66,7 +69,9 @@ export const SettingsInterfacePanel: React.FC = () => {
           label="Enable sound"
           onChange={() => setSoundOnPreview(!soundOnPreview)}
         />
-        <Form.Text className="text-muted" >Configuration for wall items</Form.Text>
+        <Form.Text className="text-muted">
+          Configuration for wall items
+        </Form.Text>
       </Form.Group>
 
       <Form.Group>
@@ -75,31 +80,38 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={showStudioAsText}
           label="Show Studios as text"
           onChange={() => {
-            setShowStudioAsText(!showStudioAsText)
+            setShowStudioAsText(!showStudioAsText);
           }}
         />
       </Form.Group>
 
-    <Form.Group>
+      <Form.Group>
         <Form.Label>Scene Player</Form.Label>
         <Form.Check
           checked={autostartVideo}
           label="Auto-start video"
           onChange={() => {
-            setAutostartVideo(!autostartVideo)
+            setAutostartVideo(!autostartVideo);
           }}
         />
 
-          <Form.Group id="max-loop-duration">
+        <Form.Group id="max-loop-duration">
           <Form.Label>Maximum loop duration</Form.Label>
           <Form.Control
             type="number"
             defaultValue={maximumLoopDuration}
-            onChange={(event:React.FormEvent<HTMLInputElement>) => setMaximumLoopDuration(Number.parseInt(event.currentTarget.value, 10) ?? 0)}
+            onChange={(event: React.FormEvent<HTMLInputElement>) =>
+              setMaximumLoopDuration(
+                Number.parseInt(event.currentTarget.value, 10) ?? 0
+              )
+            }
             min={0}
             step={1}
           />
-          <Form.Text className="text-muted">Maximum scene duration - in seconds - where scene player will loop the video - 0 to disable</Form.Text>
+          <Form.Text className="text-muted">
+            Maximum scene duration - in seconds - where scene player will loop
+            the video - 0 to disable
+          </Form.Text>
         </Form.Group>
       </Form.Group>
 
@@ -109,7 +121,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           checked={cssEnabled}
           label="Custom CSS enabled"
           onChange={() => {
-            setCSSEnabled(!cssEnabled)
+            setCSSEnabled(!cssEnabled);
           }}
         />
 
@@ -117,13 +129,17 @@ export const SettingsInterfacePanel: React.FC = () => {
           as="textarea"
           value={css}
           onChange={(e: any) => setCSS(e.target.value)}
-          rows={16}>
-        </Form.Control>
-        <Form.Text className="text-muted">Page must be reloaded for changes to take effect.</Form.Text>
+          rows={16}
+        ></Form.Control>
+        <Form.Text className="text-muted">
+          Page must be reloaded for changes to take effect.
+        </Form.Text>
       </Form.Group>
 
       <hr />
-      <Button variant="primary" onClick={() => onSave()}>Save</Button>
+      <Button variant="primary" onClick={() => onSave()}>
+        Save
+      </Button>
     </>
   );
 };

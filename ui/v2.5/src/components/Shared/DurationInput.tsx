@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { Button, ButtonGroup, InputGroup, Form } from 'react-bootstrap';
-import { Icon } from 'src/components/Shared'
+import { Button, ButtonGroup, InputGroup, Form } from "react-bootstrap";
+import { Icon } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 
 interface IProps {
-  disabled?: boolean
-  numericValue: number
-  onValueChange(valueAsNumber: number): void
-  onReset?(): void
+  disabled?: boolean;
+  numericValue: number;
+  onValueChange(valueAsNumber: number): void;
+  onReset?(): void;
 }
 
 export const DurationInput: React.FC<IProps> = (props: IProps) => {
-  const [value, setValue] = useState<string>(secondsToString(props.numericValue));
+  const [value, setValue] = useState<string>(
+    secondsToString(props.numericValue)
+  );
 
   useEffect(() => {
     setValue(secondsToString(props.numericValue));
   }, [props.numericValue]);
 
-  function secondsToString(seconds : number) {
+  function secondsToString(seconds: number) {
     let ret = TextUtils.secondsToTimestamp(seconds);
 
     if (ret.startsWith("00:")) {
@@ -31,7 +33,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
     return ret;
   }
 
-  function stringToSeconds(v : string) {
+  function stringToSeconds(v: string) {
     if (!v) {
       return 0;
     }
@@ -44,7 +46,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
 
     let seconds = 0;
     let factor = 1;
-    while(splits.length > 0) {
+    while (splits.length > 0) {
       const thisSplit = splits.pop();
       if (thisSplit === undefined) {
         return 0;
@@ -76,23 +78,15 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
 
   function renderButtons() {
     return (
-      <ButtonGroup
-       vertical
-      >
-        <Button
-          disabled={props.disabled}
-          onClick={() => increment()}
-        >
+      <ButtonGroup vertical>
+        <Button disabled={props.disabled} onClick={() => increment()}>
           <Icon icon="chevron-up" />
         </Button>
-        <Button
-          disabled={props.disabled}
-          onClick={() => decrement()}
-        >
+        <Button disabled={props.disabled} onClick={() => decrement()}>
           <Icon icon="chevron-down" />
         </Button>
       </ButtonGroup>
-    )
+    );
   }
 
   function onReset() {
@@ -104,12 +98,10 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
   function maybeRenderReset() {
     if (props.onReset) {
       return (
-        <Button
-          onClick={() => onReset()}
-        >
+        <Button onClick={() => onReset()}>
           <Icon icon="clock" />
         </Button>
-      )
+      );
     }
   }
 
@@ -119,15 +111,15 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
         <Form.Control
           disabled={props.disabled}
           value={value}
-          onChange={(e : any) => setValue(e.target.value)}
+          onChange={(e: any) => setValue(e.target.value)}
           onBlur={() => props.onValueChange(stringToSeconds(value))}
           placeholder="hh:mm:ss"
         />
         <InputGroup.Append>
-          { maybeRenderReset() }
-          { renderButtons() }
+          {maybeRenderReset()}
+          {renderButtons()}
         </InputGroup.Append>
       </InputGroup>
     </Form.Group>
-  )
+  );
 };

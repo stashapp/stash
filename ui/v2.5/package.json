@@ -41,6 +41,7 @@
     "eject": "react-scripts eject",
     "lint": "eslint --cache src/**/*.{ts,tsx}",
     "lint:fix": "eslint --fix src/**/*.{ts,tsx}",
+    "format": "prettier \"src/**/*.{js,jsx,ts,tsx}\"",
     "gqlgen": "gql-gen --config codegen.yml"
   },
   "browserslist": [
@@ -68,14 +69,13 @@
     "eslint-config-airbnb-typescript": "^6.3.1",
     "eslint-config-prettier": "^6.9.0",
     "eslint-plugin-jsx-a11y": "^6.2.3",
-    "eslint-plugin-prettier": "^3.1.2",
     "graphql-code-generator": "0.18.2",
     "graphql-codegen-add": "0.18.2",
     "graphql-codegen-time": "0.18.2",
     "graphql-codegen-typescript-client": "0.18.2",
     "graphql-codegen-typescript-common": "0.18.2",
     "graphql-codegen-typescript-react-apollo": "0.18.2",
-    "prettier": "^1.19.1",
+    "prettier": "1.19.1",
     "typescript": "~3.7.4"
   }
 }

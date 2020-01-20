@@ -15,17 +15,24 @@ export interface IVideoHoverHookOptions {
 }
 
 export class VideoHoverHook {
-  public static useVideoHover(options: IVideoHoverHookOptions): IVideoHoverHookData {
+  public static useVideoHover(
+    options: IVideoHoverHookOptions
+  ): IVideoHoverHookData {
     const videoEl = useRef<HTMLVideoElement>(null);
     const isPlaying = useRef<boolean>(false);
     const isHovering = useRef<boolean>(false);
 
     const config = StashService.useConfiguration();
-    const soundEnabled = !!config.data && !!config.data.configuration ? config.data.configuration.interface.soundOnPreview : true;
+    const soundEnabled =
+      !!config.data && !!config.data.configuration
+        ? config.data.configuration.interface.soundOnPreview
+        : true;
 
     useEffect(() => {
       const videoTag = videoEl.current;
-      if (!videoTag) { return; }
+      if (!videoTag) {
+        return;
+      }
       videoTag.onplaying = () => {
         if (isHovering.current === true) {
           isPlaying.current = true;
@@ -33,25 +40,31 @@ export class VideoHoverHook {
           videoTag.pause();
         }
       };
-      videoTag.onpause = () => { isPlaying.current = false };
+      videoTag.onpause = () => {
+        isPlaying.current = false;
+      };
     }, [videoEl]);
 
     useEffect(() => {
       const videoTag = videoEl.current;
-      if (!videoTag) { return; }
+      if (!videoTag) {
+        return;
+      }
       videoTag.volume = soundEnabled ? 0.05 : 0;
     }, [soundEnabled]);
 
-    return {videoEl, isPlaying, isHovering, options};
+    return { videoEl, isPlaying, isHovering, options };
   }
 
   public static onMouseEnter(data: IVideoHoverHookData) {
     data.isHovering.current = true;
 
     const videoTag = data.videoEl.current;
-    if (!videoTag) { return; }
+    if (!videoTag) {
+      return;
+    }
     if (videoTag.paused && !data.isPlaying.current) {
-      videoTag.play().catch((error) => {
+      videoTag.play().catch(error => {
         console.log(error.message);
       });
     }
@@ -61,7 +74,9 @@ export class VideoHoverHook {
     data.isHovering.current = false;
 
     const videoTag = data.videoEl.current;
-    if (!videoTag) { return; }
+    if (!videoTag) {
+      return;
+    }
     if (!videoTag.paused && data.isPlaying) {
       videoTag.pause();
       if (data.options.resetOnMouseLeave) {

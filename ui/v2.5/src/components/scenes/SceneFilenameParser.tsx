@@ -1,7 +1,17 @@
 /* eslint-disable no-param-reassign, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
 
 import React, { useEffect, useState, useCallback } from "react";
-import { Badge, Button, Card, Collapse, Dropdown, DropdownButton, Form, Table, Spinner } from 'react-bootstrap';
+import {
+  Badge,
+  Button,
+  Card,
+  Collapse,
+  Dropdown,
+  DropdownButton,
+  Form,
+  Table,
+  Spinner
+} from "react-bootstrap";
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
@@ -15,12 +25,12 @@ class ParserResult<T> {
   public originalValue: GQL.Maybe<T>;
   public set: boolean = false;
 
-  public setOriginalValue(v : GQL.Maybe<T>) {
+  public setOriginalValue(v: GQL.Maybe<T>) {
     this.originalValue = v;
     this.value = v;
   }
 
-  public setValue(v : GQL.Maybe<T>) {
+  public setValue(v: GQL.Maybe<T>) {
     if (v) {
       this.value = v;
       this.set = !_.isEqual(this.value, this.originalValue);
@@ -29,8 +39,8 @@ class ParserResult<T> {
 }
 
 class ParserField {
-  public field : string;
-  public helperText? : string;
+  public field: string;
+  public helperText?: string;
 
   constructor(field: string, helperText?: string) {
     this.field = field;
@@ -38,7 +48,7 @@ class ParserField {
   }
 
   public getFieldPattern() {
-    return `{${  this.field  }}`;
+    return `{${this.field}}`;
   }
 
   static Title = new ParserField("title");
@@ -83,7 +93,7 @@ class ParserField {
     ParserField.DDMMYY,
     ParserField.MMDDYYYY,
     ParserField.MMDDYY
-  ]
+  ];
 
   static fullDateFields = [
     ParserField.YYYYMMDD,
@@ -104,23 +114,27 @@ class SceneParserResult {
   public studioId: ParserResult<string> = new ParserResult();
   public tags: ParserResult<GQL.SlimSceneDataTags[]> = new ParserResult();
   public tagIds: ParserResult<string[]> = new ParserResult();
-  public performers: ParserResult<GQL.SlimSceneDataPerformers[]> = new ParserResult();
+  public performers: ParserResult<
+    GQL.SlimSceneDataPerformers[]
+  > = new ParserResult();
   public performerIds: ParserResult<string[]> = new ParserResult();
 
-  public scene : GQL.SlimSceneDataFragment;
+  public scene: GQL.SlimSceneDataFragment;
 
-  constructor(result : GQL.ParseSceneFilenamesResults) {
+  constructor(result: GQL.ParseSceneFilenamesResults) {
     this.scene = result.scene;
 
     this.id = this.scene.id;
     this.filename = TextUtils.fileNameFromPath(this.scene.path);
     this.title.setOriginalValue(this.scene.title);
     this.date.setOriginalValue(this.scene.date);
-    this.performerIds.setOriginalValue(this.scene.performers.map((p) => p.id));
+    this.performerIds.setOriginalValue(this.scene.performers.map(p => p.id));
     this.performers.setOriginalValue(this.scene.performers);
-    this.tagIds.setOriginalValue(this.scene.tags.map((t) => t.id));
+    this.tagIds.setOriginalValue(this.scene.tags.map(t => t.id));
     this.tags.setOriginalValue(this.scene.tags);
-    this.studioId.setOriginalValue(this.scene.studio ? this.scene.studio.id : undefined);
+    this.studioId.setOriginalValue(
+      this.scene.studio ? this.scene.studio.id : undefined
+    );
     this.studio.setOriginalValue(this.scene.studio);
 
     this.title.setValue(result.title);
@@ -130,23 +144,27 @@ class SceneParserResult {
     this.studioId.setValue(result.studio_id);
 
     if (result.performer_ids) {
-      this.performers.setValue(result.performer_ids.map((p) => {
-        return {
-          id: p,
-          name: "",
-          favorite: false,
-          image_path: ""
-        };
-      }));
+      this.performers.setValue(
+        result.performer_ids.map(p => {
+          return {
+            id: p,
+            name: "",
+            favorite: false,
+            image_path: ""
+          };
+        })
+      );
     }
 
     if (result.tag_ids) {
-      this.tags.setValue(result.tag_ids.map((t) => {
-        return {
-          id: t,
-          name: "",
-        };
-      }));
+      this.tags.setValue(
+        result.tag_ids.map(t => {
+          return {
+            id: t,
+            name: ""
+          };
+        })
+      );
     }
 
     if (result.studio_id) {
@@ -158,7 +176,11 @@ class SceneParserResult {
     }
   }
 
-  private static setInput(obj: any, key: string, parserResult : ParserResult<any>) {
+  private static setInput(
+    obj: any,
+    key: string,
+    parserResult: ParserResult<any>
+  ) {
     if (parserResult.set) {
       obj[key] = parserResult.value;
     }
@@ -166,7 +188,13 @@ class SceneParserResult {
 
   // returns true if any of its fields have set == true
   public isChanged() {
-    return this.title.set || this.date.set || this.performerIds.set || this.studioId.set || this.tagIds.set;
+    return (
+      this.title.set ||
+      this.date.set ||
+      this.performerIds.set ||
+      this.studioId.set ||
+      this.tagIds.set
+    );
   }
 
   public toSceneUpdateInput() {
@@ -179,8 +207,8 @@ class SceneParserResult {
       rating: this.scene.rating,
       gallery_id: this.scene.gallery ? this.scene.gallery.id : undefined,
       studio_id: this.scene.studio ? this.scene.studio.id : undefined,
-      performer_ids: this.scene.performers.map((performer) => performer.id),
-      tag_ids: this.scene.tags.map((tag) => tag.id)
+      performer_ids: this.scene.performers.map(performer => performer.id),
+      tag_ids: this.scene.tags.map(tag => tag.id)
     };
 
     SceneParserResult.setInput(ret, "title", this.title);
@@ -191,24 +219,24 @@ class SceneParserResult {
 
     return ret;
   }
-};
+}
 
 interface IParserInput {
-  pattern: string,
-  ignoreWords: string[],
-  whitespaceCharacters: string,
-  capitalizeTitle: boolean,
-  page: number,
-  pageSize: number,
-  findClicked: boolean
+  pattern: string;
+  ignoreWords: string[];
+  whitespaceCharacters: string;
+  capitalizeTitle: boolean;
+  page: number;
+  pageSize: number;
+  findClicked: boolean;
 }
 
 interface IParserRecipe {
-  pattern: string,
-  ignoreWords: string[],
-  whitespaceCharacters: string,
-  capitalizeTitle: boolean,
-  description: string
+  pattern: string;
+  ignoreWords: string[];
+  whitespaceCharacters: string;
+  capitalizeTitle: boolean;
+  description: string;
 }
 
 const builtInRecipes = [
@@ -277,7 +305,9 @@ const initialShowFieldsState = new Map<string, boolean>([
 export const SceneFilenameParser: React.FC = () => {
   const Toast = useToast();
   const [parserResult, setParserResult] = useState<SceneParserResult[]>([]);
-  const [parserInput, setParserInput] = useState<IParserInput>(initialParserInput);
+  const [parserInput, setParserInput] = useState<IParserInput>(
+    initialParserInput
+  );
 
   const [allTitleSet, setAllTitleSet] = useState<boolean>(false);
   const [allDateSet, setAllDateSet] = useState<boolean>(false);
@@ -285,7 +315,9 @@ export const SceneFilenameParser: React.FC = () => {
   const [allTagSet, setAllTagSet] = useState<boolean>(false);
   const [allStudioSet, setAllStudioSet] = useState<boolean>(false);
 
-  const [showFields, setShowFields] = useState<Map<string, boolean>>(initialShowFieldsState);
+  const [showFields, setShowFields] = useState<Map<string, boolean>>(
+    initialShowFieldsState
+  );
 
   const [totalItems, setTotalItems] = useState<number>(0);
 
@@ -295,12 +327,13 @@ export const SceneFilenameParser: React.FC = () => {
   const updateScenes = StashService.useScenesUpdate(getScenesUpdateData());
 
   const determineFieldsToHide = useCallback(() => {
-    const {pattern} = parserInput;
+    const { pattern } = parserInput;
     const titleSet = pattern.includes("{title}");
-    const dateSet = pattern.includes("{date}") ||
+    const dateSet =
+      pattern.includes("{date}") ||
       pattern.includes("{dd}") || // don't worry about other partial date fields since this should be implied
-      ParserField.fullDateFields.some((f) => {
-        return pattern.includes(`{${  f.field  }}`);
+      ParserField.fullDateFields.some(f => {
+        return pattern.includes(`{${f.field}}`);
       });
     const performerSet = pattern.includes("{performer}");
     const tagSet = pattern.includes("{tag}");
@@ -317,19 +350,24 @@ export const SceneFilenameParser: React.FC = () => {
     setShowFields(newShowFields);
   }, [parserInput]);
 
-  const parseResults = useCallback((results : GQL.ParseSceneFilenamesResults[]) => {
-    if (results) {
-      const result = results.map((r) => {
-        return new SceneParserResult(r);
-      }).filter((r) => !!r) as SceneParserResult[];
+  const parseResults = useCallback(
+    (results: GQL.ParseSceneFilenamesResults[]) => {
+      if (results) {
+        const result = results
+          .map(r => {
+            return new SceneParserResult(r);
+          })
+          .filter(r => !!r) as SceneParserResult[];
 
-      setParserResult(result);
-      determineFieldsToHide();
-    }
-  }, [determineFieldsToHide]);
+        setParserResult(result);
+        determineFieldsToHide();
+      }
+    },
+    [determineFieldsToHide]
+  );
 
   useEffect(() => {
-    if(parserInput.findClicked) {
+    if (parserInput.findClicked) {
       setParserResult([]);
       setIsLoading(true);
 
@@ -338,7 +376,7 @@ export const SceneFilenameParser: React.FC = () => {
         page: parserInput.page,
         per_page: parserInput.pageSize,
         sort: "path",
-        direction: GQL.SortDirectionEnum.Asc,
+        direction: GQL.SortDirectionEnum.Asc
       };
 
       const parserInputData = {
@@ -348,30 +386,26 @@ export const SceneFilenameParser: React.FC = () => {
       };
 
       StashService.queryParseSceneFilenames(parserFilter, parserInputData)
-        .then((response) => {
+        .then(response => {
           const result = response.data.parseSceneFilenames;
           if (result) {
             parseResults(result.results);
             setTotalItems(result.count);
           }
         })
-        .catch((err) => (
-          Toast.error(err)
-        ))
-        .finally(() => (
-          setIsLoading(false)
-        ));
+        .catch(err => Toast.error(err))
+        .finally(() => setIsLoading(false));
     }
   }, [parserInput, parseResults, Toast]);
 
-  function onPageSizeChanged(newSize : number) {
+  function onPageSizeChanged(newSize: number) {
     const newInput = _.clone(parserInput);
     newInput.page = 1;
     newInput.pageSize = newSize;
     setParserInput(newInput);
   }
 
-  function onPageChanged(newPage : number) {
+  function onPageChanged(newPage: number) {
     if (newPage !== parserInput.page) {
       const newInput = _.clone(parserInput);
       newInput.page = newPage;
@@ -379,7 +413,7 @@ export const SceneFilenameParser: React.FC = () => {
     }
   }
 
-  function onFindClicked(input : IParserInput) {
+  function onFindClicked(input: IParserInput) {
     input.page = 1;
     input.findClicked = true;
     setParserInput(input);
@@ -387,7 +421,9 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   function getScenesUpdateData() {
-    return parserResult.filter((result) => result.isChanged()).map((result) => result.toSceneUpdateInput());
+    return parserResult
+      .filter(result => result.isChanged())
+      .map(result => result.toSceneUpdateInput());
   }
 
   async function onApply() {
@@ -404,19 +440,19 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   useEffect(() => {
-    const newAllTitleSet = !parserResult.some((r) => {
+    const newAllTitleSet = !parserResult.some(r => {
       return !r.title.set;
     });
-    const newAllDateSet = !parserResult.some((r) => {
+    const newAllDateSet = !parserResult.some(r => {
       return !r.date.set;
     });
-    const newAllPerformerSet = !parserResult.some((r) => {
+    const newAllPerformerSet = !parserResult.some(r => {
       return !r.performerIds.set;
     });
-    const newAllTagSet = !parserResult.some((r) => {
+    const newAllTagSet = !parserResult.some(r => {
       return !r.tagIds.set;
     });
-    const newAllStudioSet = !parserResult.some((r) => {
+    const newAllStudioSet = !parserResult.some(r => {
       return !r.studioId.set;
     });
 
@@ -427,10 +463,10 @@ export const SceneFilenameParser: React.FC = () => {
     setAllStudioSet(newAllStudioSet);
   }, [parserResult]);
 
-  function onSelectAllTitleSet(selected : boolean) {
+  function onSelectAllTitleSet(selected: boolean) {
     const newResult = [...parserResult];
 
-    newResult.forEach((r) => {
+    newResult.forEach(r => {
       r.title.set = selected;
     });
 
@@ -438,10 +474,10 @@ export const SceneFilenameParser: React.FC = () => {
     setAllTitleSet(selected);
   }
 
-  function onSelectAllDateSet(selected : boolean) {
+  function onSelectAllDateSet(selected: boolean) {
     const newResult = [...parserResult];
 
-    newResult.forEach((r) => {
+    newResult.forEach(r => {
       r.date.set = selected;
     });
 
@@ -449,10 +485,10 @@ export const SceneFilenameParser: React.FC = () => {
     setAllDateSet(selected);
   }
 
-  function onSelectAllPerformerSet(selected : boolean) {
+  function onSelectAllPerformerSet(selected: boolean) {
     const newResult = [...parserResult];
 
-    newResult.forEach((r) => {
+    newResult.forEach(r => {
       r.performerIds.set = selected;
     });
 
@@ -460,10 +496,10 @@ export const SceneFilenameParser: React.FC = () => {
     setAllPerformerSet(selected);
   }
 
-  function onSelectAllTagSet(selected : boolean) {
+  function onSelectAllTagSet(selected: boolean) {
     const newResult = [...parserResult];
 
-    newResult.forEach((r) => {
+    newResult.forEach(r => {
       r.tagIds.set = selected;
     });
 
@@ -471,10 +507,10 @@ export const SceneFilenameParser: React.FC = () => {
     setAllTagSet(selected);
   }
 
-  function onSelectAllStudioSet(selected : boolean) {
+  function onSelectAllStudioSet(selected: boolean) {
     const newResult = [...parserResult];
 
-    newResult.forEach((r) => {
+    newResult.forEach(r => {
       r.studioId.set = selected;
     });
 
@@ -483,8 +519,8 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   interface IShowFieldsProps {
-    fields: Map<string, boolean>
-    onShowFieldsChanged: (fields : Map<string, boolean>) => void
+    fields: Map<string, boolean>;
+    onShowFieldsChanged: (fields: Map<string, boolean>) => void;
   }
 
   function ShowFields(props: IShowFieldsProps) {
@@ -497,8 +533,13 @@ export const SceneFilenameParser: React.FC = () => {
     }
 
     const fieldRows = [...props.fields.entries()].map(([label, enabled]) => (
-      <div key={label} onClick={() => {handleClick(label)}}>
-        <Icon icon={enabled ? "check" : "times" } />
+      <div
+        key={label}
+        onClick={() => {
+          handleClick(label);
+        }}
+      >
+        <Icon icon={enabled ? "check" : "times"} />
         <span>{label}</span>
       </div>
     ));
@@ -506,28 +547,32 @@ export const SceneFilenameParser: React.FC = () => {
     return (
       <div>
         <div onClick={() => setOpen(!open)}>
-          <Icon icon={open ? "chevron-down" : "chevron-right" } />
+          <Icon icon={open ? "chevron-down" : "chevron-right"} />
           <span>Display fields</span>
         </div>
         <Collapse in={open}>
-          <div>
-            {fieldRows}
-          </div>
+          <div>{fieldRows}</div>
         </Collapse>
       </div>
     );
   }
 
   interface IParserInputProps {
-    input: IParserInput,
-    onFind: (input : IParserInput) => void
+    input: IParserInput;
+    onFind: (input: IParserInput) => void;
   }
 
-  function ParserInput(props : IParserInputProps) {
+  function ParserInput(props: IParserInputProps) {
     const [pattern, setPattern] = useState<string>(props.input.pattern);
-    const [ignoreWords, setIgnoreWords] = useState<string>(props.input.ignoreWords.join(" "));
-    const [whitespaceCharacters, setWhitespaceCharacters] = useState<string>(props.input.whitespaceCharacters);
-    const [capitalizeTitle, setCapitalizeTitle] = useState<boolean>(props.input.capitalizeTitle);
+    const [ignoreWords, setIgnoreWords] = useState<string>(
+      props.input.ignoreWords.join(" ")
+    );
+    const [whitespaceCharacters, setWhitespaceCharacters] = useState<string>(
+      props.input.whitespaceCharacters
+    );
+    const [capitalizeTitle, setCapitalizeTitle] = useState<boolean>(
+      props.input.capitalizeTitle
+    );
 
     function onFind() {
       props.onFind({
@@ -548,7 +593,9 @@ export const SceneFilenameParser: React.FC = () => {
       setCapitalizeTitle(recipe.capitalizeTitle);
     }
 
-    const validFields = [new ParserField("", "Wildcard")].concat(ParserField.validFields);
+    const validFields = [new ParserField("", "Wildcard")].concat(
+      ParserField.validFields
+    );
 
     function addParserField(field: ParserField) {
       setPattern(pattern + field.getFieldPattern());
@@ -558,98 +605,110 @@ export const SceneFilenameParser: React.FC = () => {
 
     return (
       <Form.Group>
-      <Form.Group>
-        <Form.Control
-          onChange={(newValue: any) => setPattern(newValue.target.value)}
-          value={pattern}
-        />
-        <DropdownButton id="parser-field-select" title="Add Field">
-          { validFields.map(item => (
-            <Dropdown.Item onSelect={() => addParserField(item)}>
-              <span>{item.field}</span><span className="ml-auto">{item.helperText}</span>
-            </Dropdown.Item>
-          ))}
-        </DropdownButton>
-        <div>Use &apos;\\&apos; to escape literal {} characters</div>
-      </Form.Group>
-
-      <Form.Group>
-        <Form.Label>Ignored words::</Form.Label>
-        <Form.Control
-          onChange={(newValue: any) => setIgnoreWords(newValue.target.value)}
-          value={ignoreWords}
-        />
-        <div>Matches with {"{i}"}</div>
-      </Form.Group>
-
-      <Form.Group>
-        <h5>Title</h5>
-        <Form.Label>Whitespace characters:</Form.Label>
-        <Form.Control
-          onChange={(newValue: any) => setWhitespaceCharacters(newValue.target.value)}
-          value={whitespaceCharacters}
-        />
         <Form.Group>
-          <Form.Label>Capitalize title</Form.Label>
           <Form.Control
-            type="checkbox"
-            checked={capitalizeTitle}
-            onChange={() => setCapitalizeTitle(!capitalizeTitle)}
+            onChange={(newValue: any) => setPattern(newValue.target.value)}
+            value={pattern}
           />
+          <DropdownButton id="parser-field-select" title="Add Field">
+            {validFields.map(item => (
+              <Dropdown.Item onSelect={() => addParserField(item)}>
+                <span>{item.field}</span>
+                <span className="ml-auto">{item.helperText}</span>
+              </Dropdown.Item>
+            ))}
+          </DropdownButton>
+          <div>Use &apos;\\&apos; to escape literal {} characters</div>
         </Form.Group>
-        <div>These characters will be replaced with whitespace in the title</div>
-      </Form.Group>
 
-          {/* TODO - mapping stuff will go here */}
+        <Form.Group>
+          <Form.Label>Ignored words::</Form.Label>
+          <Form.Control
+            onChange={(newValue: any) => setIgnoreWords(newValue.target.value)}
+            value={ignoreWords}
+          />
+          <div>Matches with {"{i}"}</div>
+        </Form.Group>
 
+        <Form.Group>
+          <h5>Title</h5>
+          <Form.Label>Whitespace characters:</Form.Label>
+          <Form.Control
+            onChange={(newValue: any) =>
+              setWhitespaceCharacters(newValue.target.value)
+            }
+            value={whitespaceCharacters}
+          />
           <Form.Group>
-            <DropdownButton id="recipe-select" title="Select Parser Recipe">
-              { builtInRecipes.map(item => (
-                <Dropdown.Item onSelect={() => setParserRecipe(item)}>
-                  <span>{item.pattern}</span><span className="mr-auto">{item.description}</span>
-                </Dropdown.Item>
-              ))}
-            </DropdownButton>
-          </Form.Group>
-
-          <Form.Group>
-            <ShowFields
-              fields={showFields}
-              onShowFieldsChanged={(fields) => setShowFields(fields)}
+            <Form.Label>Capitalize title</Form.Label>
+            <Form.Control
+              type="checkbox"
+              checked={capitalizeTitle}
+              onChange={() => setCapitalizeTitle(!capitalizeTitle)}
             />
           </Form.Group>
-
-          <Form.Group>
-            <Button onClick={onFind}>Find</Button>
-            <Form.Control
-              as="select"
-              style={{flexBasis: "min-content"}}
-              options={PAGE_SIZE_OPTIONS}
-              onChange={(event: any) => onPageSizeChanged(parseInt(event.target.value, 10))}
-              defaultValue={props.input.pageSize}
-              className="filter-item"
-            >
-              { PAGE_SIZE_OPTIONS.map(val => <option value="val">{val}</option>) }
-            </Form.Control>
-          </Form.Group>
+          <div>
+            These characters will be replaced with whitespace in the title
+          </div>
         </Form.Group>
+
+        {/* TODO - mapping stuff will go here */}
+
+        <Form.Group>
+          <DropdownButton id="recipe-select" title="Select Parser Recipe">
+            {builtInRecipes.map(item => (
+              <Dropdown.Item onSelect={() => setParserRecipe(item)}>
+                <span>{item.pattern}</span>
+                <span className="mr-auto">{item.description}</span>
+              </Dropdown.Item>
+            ))}
+          </DropdownButton>
+        </Form.Group>
+
+        <Form.Group>
+          <ShowFields
+            fields={showFields}
+            onShowFieldsChanged={fields => setShowFields(fields)}
+          />
+        </Form.Group>
+
+        <Form.Group>
+          <Button onClick={onFind}>Find</Button>
+          <Form.Control
+            as="select"
+            style={{ flexBasis: "min-content" }}
+            options={PAGE_SIZE_OPTIONS}
+            onChange={(event: any) =>
+              onPageSizeChanged(parseInt(event.target.value, 10))
+            }
+            defaultValue={props.input.pageSize}
+            className="filter-item"
+          >
+            {PAGE_SIZE_OPTIONS.map(val => (
+              <option value="val">{val}</option>
+            ))}
+          </Form.Control>
+        </Form.Group>
+      </Form.Group>
     );
   }
 
   interface ISceneParserFieldProps {
-    parserResult : ParserResult<any>
-    className? : string
-    fieldName : string
-    onSetChanged : (set : boolean) => void
-    onValueChanged : (value : any) => void
-    originalParserResult? : ParserResult<any>
-    renderOriginalInputField: (props : ISceneParserFieldProps) => JSX.Element
-    renderNewInputField: (props : ISceneParserFieldProps, onChange : (event : any) => void) => JSX.Element
+    parserResult: ParserResult<any>;
+    className?: string;
+    fieldName: string;
+    onSetChanged: (set: boolean) => void;
+    onValueChanged: (value: any) => void;
+    originalParserResult?: ParserResult<any>;
+    renderOriginalInputField: (props: ISceneParserFieldProps) => JSX.Element;
+    renderNewInputField: (
+      props: ISceneParserFieldProps,
+      onChange: (event: any) => void
+    ) => JSX.Element;
   }
 
-  function SceneParserField(props : ISceneParserFieldProps) {
-
-    function maybeValueChanged(value : any) {
+  function SceneParserField(props: ISceneParserFieldProps) {
+    function maybeValueChanged(value: any) {
       if (value !== props.parserResult.value) {
         props.onValueChanged(value);
       }
@@ -665,13 +724,17 @@ export const SceneFilenameParser: React.FC = () => {
           <Form.Control
             type="checkbox"
             checked={props.parserResult.set}
-            onChange={() => {props.onSetChanged(!props.parserResult.set)}}
+            onChange={() => {
+              props.onSetChanged(!props.parserResult.set);
+            }}
           />
         </td>
         <td>
           <Form.Group>
             {props.renderOriginalInputField(props)}
-            {props.renderNewInputField(props, (value) => maybeValueChanged(value))}
+            {props.renderNewInputField(props, value =>
+              maybeValueChanged(value)
+            )}
           </Form.Group>
         </td>
       </>
@@ -691,9 +754,9 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   interface IInputGroupWrapperProps {
-    parserResult: ParserResult<any>
-    onChange : (event : any) => void
-    className? : string
+    parserResult: ParserResult<any>;
+    onChange: (event: any) => void;
+    className?: string;
   }
 
   function InputGroupWrapper(props: IInputGroupWrapperProps) {
@@ -707,44 +770,55 @@ export const SceneFilenameParser: React.FC = () => {
     );
   }
 
-  function renderNewInputGroup(props : ISceneParserFieldProps, onChangeHandler : (value : any) => void) {
+  function renderNewInputGroup(
+    props: ISceneParserFieldProps,
+    onChangeHandler: (value: any) => void
+  ) {
     return (
       <InputGroupWrapper
         className={props.className}
-        onChange={(value : any) => {onChangeHandler(value)}}
+        onChange={(value: any) => {
+          onChangeHandler(value);
+        }}
         parserResult={props.parserResult}
       />
     );
   }
 
   interface IHasName {
-    name: string
+    name: string;
   }
 
-  function renderOriginalSelect(props : ISceneParserFieldProps) {
+  function renderOriginalSelect(props: ISceneParserFieldProps) {
     const result = props.originalParserResult || props.parserResult;
 
     const elements = result.originalValue
       ? Array.isArray(result.originalValue)
-        ? result.originalValue.map((el:IHasName) => el.name)
+        ? result.originalValue.map((el: IHasName) => el.name)
         : [result.originalValue.name]
       : [];
 
     return (
       <div>
-        { elements.map((name:string) => <Badge variant="secondary">{name}</Badge>) }
+        {elements.map((name: string) => (
+          <Badge variant="secondary">{name}</Badge>
+        ))}
       </div>
     );
   }
 
-  function renderNewMultiSelect(type: "performers" | "tags", props : ISceneParserFieldProps, onChangeHandler : (value : any) => void) {
+  function renderNewMultiSelect(
+    type: "performers" | "tags",
+    props: ISceneParserFieldProps,
+    onChangeHandler: (value: any) => void
+  ) {
     return (
       <FilterSelect
         className={props.className}
         type={type}
         isMulti
-        onSelect={(items) => {
-          const ids = items.map((i) => i.id);
+        onSelect={items => {
+          const ids = items.map(i => i.id);
           onChangeHandler(ids);
         }}
         initialIds={props.parserResult.value}
@@ -752,64 +826,72 @@ export const SceneFilenameParser: React.FC = () => {
     );
   }
 
-  function renderNewPerformerSelect(props : ISceneParserFieldProps, onChangeHandler : (value : any) => void) {
+  function renderNewPerformerSelect(
+    props: ISceneParserFieldProps,
+    onChangeHandler: (value: any) => void
+  ) {
     return renderNewMultiSelect("performers", props, onChangeHandler);
   }
 
-  function renderNewTagSelect(props : ISceneParserFieldProps, onChangeHandler : (value : any) => void) {
+  function renderNewTagSelect(
+    props: ISceneParserFieldProps,
+    onChangeHandler: (value: any) => void
+  ) {
     return renderNewMultiSelect("tags", props, onChangeHandler);
   }
 
-  function renderNewStudioSelect(props : ISceneParserFieldProps, onChangeHandler : (value : any) => void) {
+  function renderNewStudioSelect(
+    props: ISceneParserFieldProps,
+    onChangeHandler: (value: any) => void
+  ) {
     return (
       <StudioSelect
         noSelectionString=""
         className={props.className}
-        onSelect={(items) => onChangeHandler(items[0]?.id)}
+        onSelect={items => onChangeHandler(items[0]?.id)}
         initialIds={props.parserResult.value ? [props.parserResult.value] : []}
       />
     );
   }
 
   interface ISceneParserRowProps {
-    scene : SceneParserResult,
-    onChange: (changedScene : SceneParserResult) => void
+    scene: SceneParserResult;
+    onChange: (changedScene: SceneParserResult) => void;
   }
 
-  function SceneParserRow(props : ISceneParserRowProps) {
-
-    function changeParser(result : ParserResult<any>, set : boolean, value : any) {
+  function SceneParserRow(props: ISceneParserRowProps) {
+    function changeParser(result: ParserResult<any>, set: boolean, value: any) {
       const newParser = _.clone(result);
       newParser.set = set;
       newParser.value = value;
       return newParser;
     }
 
-    function onTitleChanged(set : boolean, value: string | undefined) {
+    function onTitleChanged(set: boolean, value: string | undefined) {
       const newResult = _.clone(props.scene);
       newResult.title = changeParser(newResult.title, set, value);
       props.onChange(newResult);
     }
 
-    function onDateChanged(set : boolean, value: string | undefined) {
+    function onDateChanged(set: boolean, value: string | undefined) {
       const newResult = _.clone(props.scene);
       newResult.date = changeParser(newResult.date, set, value);
       props.onChange(newResult);
     }
 
-    function onPerformerIdsChanged(set : boolean, value: string[] | undefined) {
+    function onPerformerIdsChanged(set: boolean, value: string[] | undefined) {
       const newResult = _.clone(props.scene);
       newResult.performerIds = changeParser(newResult.performerIds, set, value);
       props.onChange(newResult);
     }
 
-    function onTagIdsChanged(set : boolean, value: string[] | undefined) {
+    function onTagIdsChanged(set: boolean, value: string[] | undefined) {
       const newResult = _.clone(props.scene);
       newResult.tagIds = changeParser(newResult.tagIds, set, value);
       props.onChange(newResult);
     }
 
-    function onStudioIdChanged(set : boolean, value: string | undefined) {
+    function onStudioIdChanged(set: boolean, value: string | undefined) {
       const newResult = _.clone(props.scene);
       newResult.studioId = changeParser(newResult.studioId, set, value);
       props.onChange(newResult);
@@ -817,16 +899,14 @@ export const SceneFilenameParser: React.FC = () => {
 
     return (
       <tr className="scene-parser-row">
-        <td style={{textAlign: "left"}}>
-          {props.scene.filename}
-        </td>
+        <td style={{ textAlign: "left" }}>{props.scene.filename}</td>
         <SceneParserField
           key="title"
           fieldName="Title"
           className="parser-field-title"
           parserResult={props.scene.title}
-          onSetChanged={(set) => onTitleChanged(set, props.scene.title.value)}
-          onValueChanged={(value) => onTitleChanged(props.scene.title.set, value)}
+          onSetChanged={set => onTitleChanged(set, props.scene.title.value)}
+          onValueChanged={value => onTitleChanged(props.scene.title.set, value)}
           renderOriginalInputField={renderOriginalInputGroup}
           renderNewInputField={renderNewInputGroup}
         />
@@ -835,8 +915,8 @@ export const SceneFilenameParser: React.FC = () => {
           fieldName="Date"
           className="parser-field-date"
           parserResult={props.scene.date}
-          onSetChanged={(set) => onDateChanged(set, props.scene.date.value)}
-          onValueChanged={(value) => onDateChanged(props.scene.date.set, value)}
+          onSetChanged={set => onDateChanged(set, props.scene.date.value)}
+          onValueChanged={value => onDateChanged(props.scene.date.set, value)}
           renderOriginalInputField={renderOriginalInputGroup}
           renderNewInputField={renderNewInputGroup}
         />
@@ -846,8 +926,12 @@ export const SceneFilenameParser: React.FC = () => {
           className="parser-field-performers"
           parserResult={props.scene.performerIds}
           originalParserResult={props.scene.performers}
-          onSetChanged={(set) => onPerformerIdsChanged(set, props.scene.performerIds.value)}
-          onValueChanged={(value) => onPerformerIdsChanged(props.scene.performerIds.set, value)}
+          onSetChanged={set =>
+            onPerformerIdsChanged(set, props.scene.performerIds.value)
+          }
+          onValueChanged={value =>
+            onPerformerIdsChanged(props.scene.performerIds.set, value)
+          }
           renderOriginalInputField={renderOriginalSelect}
           renderNewInputField={renderNewPerformerSelect}
         />
@@ -857,8 +941,10 @@ export const SceneFilenameParser: React.FC = () => {
           className="parser-field-tags"
           parserResult={props.scene.tagIds}
           originalParserResult={props.scene.tags}
-          onSetChanged={(set) => onTagIdsChanged(set, props.scene.tagIds.value)}
-          onValueChanged={(value) => onTagIdsChanged(props.scene.tagIds.set, value)}
+          onSetChanged={set => onTagIdsChanged(set, props.scene.tagIds.value)}
+          onValueChanged={value =>
+            onTagIdsChanged(props.scene.tagIds.set, value)
+          }
           renderOriginalInputField={renderOriginalSelect}
           renderNewInputField={renderNewTagSelect}
         />
@@ -868,16 +954,20 @@ export const SceneFilenameParser: React.FC = () => {
           className="parser-field-studio"
           parserResult={props.scene.studioId}
           originalParserResult={props.scene.studio}
-          onSetChanged={(set) => onStudioIdChanged(set, props.scene.studioId.value)}
-          onValueChanged={(value) => onStudioIdChanged(props.scene.studioId.set, value)}
+          onSetChanged={set =>
+            onStudioIdChanged(set, props.scene.studioId.value)
+          }
+          onValueChanged={value =>
+            onStudioIdChanged(props.scene.studioId.set, value)
+          }
           renderOriginalInputField={renderOriginalSelect}
           renderNewInputField={renderNewStudioSelect}
         />
       </tr>
-    )
+    );
   }
 
-  function onChange(scene : SceneParserResult, changedScene : SceneParserResult) {
+  function onChange(scene: SceneParserResult, changedScene: SceneParserResult) {
     const newResult = [...parserResult];
 
     const index = newResult.indexOf(scene);
@@ -886,76 +976,87 @@ export const SceneFilenameParser: React.FC = () => {
     setParserResult(newResult);
   }
 
-  function renderHeader(fieldName: string, allSet: boolean, onAllSet: (set: boolean) => void) {
+  function renderHeader(
+    fieldName: string,
+    allSet: boolean,
+    onAllSet: (set: boolean) => void
+  ) {
     if (!showFields.get(fieldName)) {
       return null;
     }
 
     return (
       <>
-      <td>
-        <Form.Control
-          type="checkbox"
-          checked={allSet}
-          onChange={() => {onAllSet(!allSet)}}
-        />
-      </td>
-      <th>{fieldName}</th>
+        <td>
+          <Form.Control
+            type="checkbox"
+            checked={allSet}
+            onChange={() => {
+              onAllSet(!allSet);
+            }}
+          />
+        </td>
+        <th>{fieldName}</th>
       </>
-    )
+    );
   }
 
   function renderTable() {
-    if (parserResult.length === 0) { return undefined; }
+    if (parserResult.length === 0) {
+      return undefined;
+    }
 
     return (
       <>
-      <div>
-        <div className="scene-parser-results">
-          <Table>
-            <thead>
-              <tr className="scene-parser-row">
-                <th>Filename</th>
-                {renderHeader("Title", allTitleSet, onSelectAllTitleSet)}
-                {renderHeader("Date", allDateSet, onSelectAllDateSet)}
-                {renderHeader("Performers", allPerformerSet, onSelectAllPerformerSet)}
-                {renderHeader("Tags", allTagSet, onSelectAllTagSet)}
-                {renderHeader("Studio", allStudioSet, onSelectAllStudioSet)}
-              </tr>
-            </thead>
-            <tbody>
-              {parserResult.map((scene) =>
-                <SceneParserRow
-                  scene={scene}
-                  key={scene.id}
-                  onChange={(changedScene) => onChange(scene, changedScene)}/>
-              )}
-            </tbody>
-          </Table>
+        <div>
+          <div className="scene-parser-results">
+            <Table>
+              <thead>
+                <tr className="scene-parser-row">
+                  <th>Filename</th>
+                  {renderHeader("Title", allTitleSet, onSelectAllTitleSet)}
+                  {renderHeader("Date", allDateSet, onSelectAllDateSet)}
+                  {renderHeader(
+                    "Performers",
+                    allPerformerSet,
+                    onSelectAllPerformerSet
+                  )}
+                  {renderHeader("Tags", allTagSet, onSelectAllTagSet)}
+                  {renderHeader("Studio", allStudioSet, onSelectAllStudioSet)}
+                </tr>
+              </thead>
+              <tbody>
+                {parserResult.map(scene => (
+                  <SceneParserRow
+                    scene={scene}
+                    key={scene.id}
+                    onChange={changedScene => onChange(scene, changedScene)}
+                  />
+                ))}
+              </tbody>
+            </Table>
+          </div>
+          <Pagination
+            currentPage={parserInput.page}
+            itemsPerPage={parserInput.pageSize}
+            totalItems={totalItems}
+            onChangePage={page => onPageChanged(page)}
+          />
+          <Button variant="primary" onClick={onApply}>
+            Apply
+          </Button>
         </div>
-        <Pagination
-          currentPage={parserInput.page}
-          itemsPerPage={parserInput.pageSize}
-          totalItems={totalItems}
-          onChangePage={(page) => onPageChanged(page)}
-        />
-        <Button variant="primary" onClick={onApply}>Apply</Button>
-      </div>
-    </>
-    )
+      </>
+    );
   }
 
   return (
     <Card id="parser-container">
       <h4>Scene Filename Parser</h4>
-      <ParserInput
-        input={parserInput}
-        onFind={(input) => onFindClicked(input)}
-      />
+      <ParserInput input={parserInput} onFind={input => onFindClicked(input)} />
 
       {isLoading ? <Spinner animation="border" variant="light" /> : undefined}
       {renderTable()}
     </Card>
   );
 };
-

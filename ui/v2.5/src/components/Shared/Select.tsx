@@ -1,20 +1,20 @@
 import React, { useState, useCallback } from "react";
-import Select, { ValueType } from 'react-select';
-import CreatableSelect from 'react-select/creatable';
-import { debounce } from 'lodash';
+import Select, { ValueType } from "react-select";
+import CreatableSelect from "react-select/creatable";
+import { debounce } from "lodash";
 
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import { useToast } from 'src/hooks';
+import { useToast } from "src/hooks";
 
 type ValidTypes =
-  GQL.AllPerformersForFilterAllPerformers |
-  GQL.AllTagsForFilterAllTags |
-  GQL.AllStudiosForFilterAllStudios;
-type Option = { value:string, label:string };
+  | GQL.AllPerformersForFilterAllPerformers
+  | GQL.AllTagsForFilterAllTags
+  | GQL.AllStudiosForFilterAllStudios;
+type Option = { value: string; label: string };
 
 interface ITypeProps {
-  type?: 'performers' | 'studios' | 'tags';
+  type?: "performers" | "studios" | "tags";
 }
 interface IFilterProps {
   initialIds: string[];
@@ -40,131 +40,221 @@ interface ISelectProps {
 interface ISceneGallerySelect {
   initialId?: string;
   sceneId: string;
-  onSelect: (item: GQL.ValidGalleriesForSceneValidGalleriesForScene | undefined) => void;
+  onSelect: (
+    item: GQL.ValidGalleriesForSceneValidGalleriesForScene | undefined
+  ) => void;
 }
 
-const getSelectedValues = (selectedItems:ValueType<Option>) => (
-  (Array.isArray(selectedItems) ? selectedItems : [selectedItems])
-    .map(item => item.value)
-);
+const getSelectedValues = (selectedItems: ValueType<Option>) =>
+  (Array.isArray(selectedItems) ? selectedItems : [selectedItems]).map(
+    item => item.value
+  );
 
-export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
-  const { data, loading } = StashService.useValidGalleriesForScene(props.sceneId);
+export const SceneGallerySelect: React.FC<ISceneGallerySelect> = props => {
+  const { data, loading } = StashService.useValidGalleriesForScene(
+    props.sceneId
+  );
   const galleries = data?.validGalleriesForScene ?? [];
-  const items =  (galleries.length > 0 ? [{ path: 'None', id: '0' }, ...galleries] : [])
-    .map(g => ({ label: g.path, value: g.id }));
+  const items = (galleries.length > 0
+    ? [{ path: "None", id: "0" }, ...galleries]
+    : []
+  ).map(g => ({ label: g.path, value: g.id }));
 
-  const onChange = (selectedItems:ValueType<Option>) => {
+  const onChange = (selectedItems: ValueType<Option>) => {
     const selectedItem = getSelectedValues(selectedItems)[0];
     props.onSelect(galleries.find(g => g.id === selectedItem.value));
   };
 
   const initialId = props.initialId ? [props.initialId] : [];
-  return <SelectComponent onChange={onChange} isLoading={loading} items={items} initialIds={initialId} />
+  return (
+    <SelectComponent
+      onChange={onChange}
+      isLoading={loading}
+      items={items}
+      initialIds={initialId}
+    />
+  );
 };
 
 interface IScrapePerformerSuggestProps {
   scraperId: string;
-  onSelectPerformer: (query: GQL.ScrapePerformerListScrapePerformerList) => void;
+  onSelectPerformer: (
+    query: GQL.ScrapePerformerListScrapePerformerList
+  ) => void;
   placeholder?: string;
 }
-export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = (props) => {
+export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = props => {
   const [query, setQuery] = React.useState<string>("");
-  const { data, loading } = StashService.useScrapePerformerList(props.scraperId, query);
-
-  const onInputChange = useCallback(debounce((input:string) => { setQuery(input)}, 500), []);
-  const onChange = (selectedItems:ValueType<Option>) => (
-    props.onSelectPerformer(getSelectedValues(selectedItems)[0])
+  const { data, loading } = StashService.useScrapePerformerList(
+    props.scraperId,
+    query
   );
 
+  const onInputChange = useCallback(
+    debounce((input: string) => {
+      setQuery(input);
+    }, 500),
+    []
+  );
+  const onChange = (selectedItems: ValueType<Option>) =>
+    props.onSelectPerformer(getSelectedValues(selectedItems)[0]);
+
   const performers = data?.scrapePerformerList ?? [];
-  const items = performers.map(item => ({ label: item.name ?? '', value: item.name ?? '' }));
-  return <SelectComponent onChange={onChange} onInputChange={onInputChange} isLoading={loading} items={items} initialIds={[]} placeholder={props.placeholder} />
-}
+  const items = performers.map(item => ({
+    label: item.name ?? "",
+    value: item.name ?? ""
+  }));
+  return (
+    <SelectComponent
+      onChange={onChange}
+      onInputChange={onInputChange}
+      isLoading={loading}
+      items={items}
+      initialIds={[]}
+      placeholder={props.placeholder}
+    />
+  );
+};
 
 interface IMarkerSuggestProps {
   initialMarkerTitle?: string;
-  onChange: (title:string) => void;
+  onChange: (title: string) => void;
 }
-export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = (props) => {
+export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = props => {
   const { data, loading } = StashService.useMarkerStrings();
   const suggestions = data?.markerStrings ?? [];
 
-  const onChange = (selectedItems:ValueType<Option>) => (
-    props.onChange(getSelectedValues(selectedItems)[0])
+  const onChange = (selectedItems: ValueType<Option>) =>
+    props.onChange(getSelectedValues(selectedItems)[0]);
+
+  const items = suggestions.map(item => ({
+    label: item?.title ?? "",
+    value: item?.title ?? ""
+  }));
+  const initialIds = props.initialMarkerTitle ? [props.initialMarkerTitle] : [];
+  return (
+    <SelectComponent
+      creatable
+      onChange={onChange}
+      isLoading={loading}
+      items={items}
+      initialIds={initialIds}
+    />
+  );
+};
+
+export const FilterSelect: React.FC<IFilterProps & ITypeProps> = props =>
+  props.type === "performers" ? (
+    <PerformerSelect {...(props as IFilterProps)} />
+  ) : props.type === "studios" ? (
+    <StudioSelect {...(props as IFilterProps)} />
+  ) : (
+    <TagSelect {...(props as IFilterProps)} />
   );
 
-  const items = suggestions.map(item => ({ label: item?.title ?? '', value: item?.title ?? '' }));
-  const initialIds = props.initialMarkerTitle ? [props.initialMarkerTitle] : [];
-  return <SelectComponent creatable onChange={onChange} isLoading={loading} items={items} initialIds={initialIds} />
-}
-
-export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) => (
-    props.type === 'performers' ? <PerformerSelect {...props as IFilterProps} />
-    : props.type === 'studios' ? <StudioSelect {...props as IFilterProps} />
-    : <TagSelect {...props as IFilterProps} />
-);
-
-export const PerformerSelect: React.FC<IFilterProps> = (props) => {
+export const PerformerSelect: React.FC<IFilterProps> = props => {
   const { data, loading } = StashService.useAllPerformersForFilter();
 
   const normalizedData = data?.allPerformers ?? [];
-  const items:Option[] = normalizedData.map(item => ({ value: item.id, label: item.name ?? '' }));
-  const placeholder = props.noSelectionString ?? "Select performer..."
+  const items: Option[] = normalizedData.map(item => ({
+    value: item.id,
+    label: item.name ?? ""
+  }));
+  const placeholder = props.noSelectionString ?? "Select performer...";
 
-  const onChange = (selectedItems:ValueType<Option>) => {
+  const onChange = (selectedItems: ValueType<Option>) => {
     const selectedIds = getSelectedValues(selectedItems);
-    props.onSelect(normalizedData.filter(item => selectedIds.indexOf(item.id) !== -1));
+    props.onSelect(
+      normalizedData.filter(item => selectedIds.indexOf(item.id) !== -1)
+    );
   };
 
-  return <SelectComponent {...props} onChange={onChange} type="performers" isLoading={loading} items={items} placeholder={placeholder} />
-}
+  return (
+    <SelectComponent
+      {...props}
+      onChange={onChange}
+      type="performers"
+      isLoading={loading}
+      items={items}
+      placeholder={placeholder}
+    />
+  );
+};
 
-export const StudioSelect: React.FC<IFilterProps> = (props) => {
+export const StudioSelect: React.FC<IFilterProps> = props => {
   const { data, loading } = StashService.useAllStudiosForFilter();
 
   const normalizedData = data?.allStudios ?? [];
-  const items:Option[] = normalizedData.map(item => ({ value: item.id, label: item.name }));
-  const placeholder = props.noSelectionString ?? "Select studio..."
+  const items: Option[] = normalizedData.map(item => ({
+    value: item.id,
+    label: item.name
+  }));
+  const placeholder = props.noSelectionString ?? "Select studio...";
 
-  const onChange = (selectedItems:ValueType<Option>) => {
+  const onChange = (selectedItems: ValueType<Option>) => {
     const selectedIds = getSelectedValues(selectedItems);
-    props.onSelect(normalizedData.filter(item => selectedIds.indexOf(item.id) !== -1));
+    props.onSelect(
+      normalizedData.filter(item => selectedIds.indexOf(item.id) !== -1)
+    );
   };
 
-  return <SelectComponent {...props} onChange={onChange} type="studios" isLoading={loading} items={items} placeholder={placeholder} />
-}
+  return (
+    <SelectComponent
+      {...props}
+      onChange={onChange}
+      type="studios"
+      isLoading={loading}
+      items={items}
+      placeholder={placeholder}
+    />
+  );
+};
 
-export const TagSelect: React.FC<IFilterProps> = (props) => {
+export const TagSelect: React.FC<IFilterProps> = props => {
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { data, loading: dataLoading } = StashService.useAllTagsForFilter();
-  const createTag = StashService.useTagCreate({name: ''});
+  const createTag = StashService.useTagCreate({ name: "" });
   const Toast = useToast();
-  const placeholder = props.noSelectionString ?? "Select tags..."
+  const placeholder = props.noSelectionString ?? "Select tags...";
 
   const tags = data?.allTags ?? [];
-  const selected = tags.filter(tag => selectedIds.indexOf(tag.id) !== -1).map(tag => ({value: tag.id, label: tag.name}));
-  const items:Option[] = tags.map(item => ({ value: item.id, label: item.name }));
+  const selected = tags
+    .filter(tag => selectedIds.indexOf(tag.id) !== -1)
+    .map(tag => ({ value: tag.id, label: tag.name }));
+  const items: Option[] = tags.map(item => ({
+    value: item.id,
+    label: item.name
+  }));
 
   const onCreate = async (tagName: string) => {
     try {
       setLoading(true);
       const result = await createTag({
-        variables: { name: tagName },
+        variables: { name: tagName }
       });
 
       setSelectedIds([...selectedIds, result.data.tagCreate.id]);
-      props.onSelect([...tags, result.data.tagCreate].filter(item => selected.indexOf(item.id) !== -1));
+      props.onSelect(
+        [...tags, result.data.tagCreate].filter(
+          item => selected.indexOf(item.id) !== -1
+        )
+      );
       setLoading(false);
 
-      Toast.success({ content: (<span>Created tag: <b>{tagName}</b></span>) });
+      Toast.success({
+        content: (
+          <span>
+            Created tag: <b>{tagName}</b>
+          </span>
+        )
+      });
     } catch (e) {
       Toast.error(e);
     }
   };
 
-  const onChange = (selectedItems:ValueType<Option>) => {
+  const onChange = (selectedItems: ValueType<Option>) => {
     const selectedValues = getSelectedValues(selectedItems);
     setSelectedIds(selectedValues);
     props.onSelect(tags.filter(item => selectedValues.indexOf(item.id) !== -1));
@@ -183,23 +273,24 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
       selectedOptions={selected}
     />
   );
-}
+};
 
 const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
-    type,
-    initialIds,
-    onChange,
-    className,
-    items,
-    selectedOptions,
-    isLoading,
-    onCreateOption,
-    creatable = false,
-    isMulti = false,
-    onInputChange,
-    placeholder
+  type,
+  initialIds,
+  onChange,
+  className,
+  items,
+  selectedOptions,
+  isLoading,
+  onCreateOption,
+  creatable = false,
+  isMulti = false,
+  onInputChange,
+  placeholder
 }) => {
-  const defaultValue = items.filter(item => initialIds?.indexOf(item.value) !== -1) ?? null;
+  const defaultValue =
+    items.filter(item => initialIds?.indexOf(item.value) !== -1) ?? null;
 
   const props = {
     className,
@@ -208,14 +299,19 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     onChange,
     isMulti,
     defaultValue,
-    noOptionsMessage: () => (type !== 'tags' ? 'None' : null),
+    noOptionsMessage: () => (type !== "tags" ? "None" : null),
     placeholder,
     onInputChange
-  }
+  };
 
-  return (
-    creatable
-      ? <CreatableSelect {...props} isLoading={isLoading} isDisabled={isLoading} onCreateOption={onCreateOption} />
-      : <Select {...props} isLoading={isLoading} />
+  return creatable ? (
+    <CreatableSelect
+      {...props}
+      isLoading={isLoading}
+      isDisabled={isLoading}
+      onCreateOption={onCreateOption}
+    />
+  ) : (
+    <Select {...props} isLoading={isLoading} />
   );
 };

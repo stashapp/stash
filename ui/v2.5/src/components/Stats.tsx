@@ -1,4 +1,4 @@
-import { Spinner } from 'react-bootstrap';
+import { Spinner } from "react-bootstrap";
 import React, { FunctionComponent } from "react";
 import { StashService } from "../core/StashService";
 
@@ -6,7 +6,9 @@ export const Stats: FunctionComponent = () => {
   const { data, error, loading } = StashService.useStats();
 
   function renderStats() {
-    if (!data || !data.stats) { return; }
+    if (!data || !data.stats) {
+      return;
+    }
     return (
       <nav id="details-container" className="level">
         <div className="level-item has-text-centered">
@@ -45,10 +47,13 @@ export const Stats: FunctionComponent = () => {
 
   return (
     <div id="details-container">
-        {!data || loading ? 
-          <Spinner animation="border" role="status" size="sm">
-            <span className="sr-only">Loading...</span>
-          </Spinner> : undefined}
+      {!data || loading ? (
+        <Spinner animation="border" role="status" size="sm">
+          <span className="sr-only">Loading...</span>
+        </Spinner>
+      ) : (
+        undefined
+      )}
       {error ? <span>error.message</span> : undefined}
       {renderStats()}
 

@@ -1,7 +1,7 @@
 export enum DisplayMode {
   Grid,
   List,
-  Wall,
+  Wall
 }
 
 export enum FilterMode {
@@ -9,7 +9,7 @@ export enum FilterMode {
   Performers,
   Studios,
   Galleries,
-  SceneMarkers,
+  SceneMarkers
 }
 
 export interface ILabeledId {

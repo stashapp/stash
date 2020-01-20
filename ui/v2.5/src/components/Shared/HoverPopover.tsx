@@ -1,15 +1,22 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { Overlay, Popover, OverlayProps } from 'react-bootstrap'
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { Overlay, Popover, OverlayProps } from "react-bootstrap";
 
 interface IHoverPopover {
-	enterDelay?: number;
-	leaveDelay?: number;
+  enterDelay?: number;
+  leaveDelay?: number;
   content: JSX.Element[] | JSX.Element | string;
   className?: string;
   placement?: OverlayProps["placement"];
 }
 
-export const HoverPopover: React.FC<IHoverPopover> = ({ enterDelay = 0, leaveDelay = 400, content, children, className, placement = 'top' }) => {
+export const HoverPopover: React.FC<IHoverPopover> = ({
+  enterDelay = 0,
+  leaveDelay = 400,
+  content,
+  children,
+  className,
+  placement = "top"
+}) => {
   const [show, setShow] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
   const enterTimer = useRef<number>();
@@ -25,33 +32,35 @@ export const HoverPopover: React.FC<IHoverPopover> = ({ enterDelay = 0, leaveDel
     leaveTimer.current = window.setTimeout(() => setShow(false), leaveDelay);
   }, [leaveDelay]);
 
-  useEffect(() => (
-    () =>  {
-      window.clearTimeout(enterTimer.current)
-      window.clearTimeout(leaveTimer.current)
-    }
-  ), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(enterTimer.current);
+      window.clearTimeout(leaveTimer.current);
+    },
+    []
+  );
 
   return (
     <>
-      <div className={className} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} ref={triggerRef}>
+      <div
+        className={className}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        ref={triggerRef}
+      >
         {children}
       </div>
-      { triggerRef.current &&
-        <Overlay
-          show={show}
-          placement={placement}
-          target={triggerRef.current}
-        >
+      {triggerRef.current && (
+        <Overlay show={show} placement={placement} target={triggerRef.current}>
           <Popover
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            id='popover'
+            id="popover"
           >
             {content}
           </Popover>
         </Overlay>
-      }
+      )}
     </>
   );
-}
+};

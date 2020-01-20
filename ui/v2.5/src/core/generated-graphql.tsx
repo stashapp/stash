@@ -634,7 +634,7 @@ export type ScenesUpdateVariables = {
 export type ScenesUpdateMutation = {
   __typename?: "Mutation";
 
-  scenesUpdate: Maybe<(Maybe<ScenesUpdateScenesUpdate>)[]>;
+  scenesUpdate: Maybe<Maybe<ScenesUpdateScenesUpdate>[]>;
 };
 
 export type ScenesUpdateScenesUpdate = SceneDataFragment;
@@ -801,7 +801,7 @@ export type MarkerStringsVariables = {
 export type MarkerStringsQuery = {
   __typename?: "Query";
 
-  markerStrings: (Maybe<MarkerStringsMarkerStrings>)[];
+  markerStrings: Maybe<MarkerStringsMarkerStrings>[];
 };
 
 export type MarkerStringsMarkerStrings = {

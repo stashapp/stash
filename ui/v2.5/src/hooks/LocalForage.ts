@@ -2,8 +2,7 @@ import localForage from "localforage";
 import _ from "lodash";
 import React from "react";
 
-interface IInterfaceWallConfig {
-}
+interface IInterfaceWallConfig {}
 export interface IInterfaceConfig {
   wall: IInterfaceWallConfig;
 }
@@ -47,10 +46,12 @@ function useLocalForage(item: string): ILocalForage<ValidTypes> {
     runAsync();
   });
 
-  return {data: json, setData: setJson, error: err};
+  return { data: json, setData: setJson, error: err };
 }
 
-export function useInterfaceLocalForage(): ILocalForage<IInterfaceConfig | undefined> {
+export function useInterfaceLocalForage(): ILocalForage<
+  IInterfaceConfig | undefined
+> {
   const result = useLocalForage("interface");
   // Set defaults
   React.useEffect(() => {
@@ -58,7 +59,7 @@ export function useInterfaceLocalForage(): ILocalForage<IInterfaceConfig | undef
       result.setData({
         wall: {
           // nothing here currently
-        },
+        }
       });
     }
   });

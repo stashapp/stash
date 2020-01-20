@@ -1,5 +1,5 @@
 import React from "react";
-import { Table } from 'react-bootstrap';
+import { Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 
@@ -7,7 +7,9 @@ interface ISceneFileInfoPanelProps {
   scene: GQL.SceneDataFragment;
 }
 
-export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (props: ISceneFileInfoPanelProps) => {
+export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
+  props: ISceneFileInfoPanelProps
+) => {
   function renderChecksum() {
     return (
       <tr>
@@ -18,11 +20,15 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (props: IS
   }
 
   function renderPath() {
-    const { scene: { path } } = props;
+    const {
+      scene: { path }
+    } = props;
     return (
       <tr>
         <td>Path</td>
-        <td><a href={`file://${path}`}>{`file://${props.scene.path}`}</a> </td>
+        <td>
+          <a href={`file://${path}`}>{`file://${props.scene.path}`}</a>{" "}
+        </td>
       </tr>
     );
   }
@@ -31,13 +37,17 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (props: IS
     return (
       <tr>
         <td>Stream</td>
-        <td><a href={props.scene.paths.stream}>{props.scene.paths.stream}</a> </td>
+        <td>
+          <a href={props.scene.paths.stream}>{props.scene.paths.stream}</a>{" "}
+        </td>
       </tr>
     );
   }
 
   function renderFileSize() {
-    if (props.scene.file.size === undefined) { return; }
+    if (props.scene.file.size === undefined) {
+      return;
+    }
     return (
       <tr>
         <td>File Size</td>
@@ -47,7 +57,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (props: IS
   }
 
   function renderDuration() {
-    if (props.scene.file.duration === undefined) { return; }
+    if (props.scene.file.duration === undefined) {
+      return;
+    }
     return (
       <tr>
         <td>Duration</td>
@@ -57,17 +69,23 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (props: IS
   }
 
   function renderDimensions() {
-    if (props.scene.file.duration === undefined) { return; }
+    if (props.scene.file.duration === undefined) {
+      return;
+    }
     return (
       <tr>
         <td>Dimensions</td>
-        <td>{props.scene.file.width} x {props.scene.file.height}</td>
+        <td>
+          {props.scene.file.width} x {props.scene.file.height}
+        </td>
       </tr>
     );
   }
 
   function renderFrameRate() {
-    if (props.scene.file.framerate === undefined) { return; }
+    if (props.scene.file.framerate === undefined) {
+      return;
+    }
     return (
       <tr>
         <td>Frame Rate</td>
@@ -77,7 +95,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (props: IS
   }
 
   function renderBitRate() {
-    if (props.scene.file.bitrate === undefined) { return; }
+    if (props.scene.file.bitrate === undefined) {
+      return;
+    }
     return (
       <tr>
         <td>Bit Rate</td>
@@ -87,7 +107,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (props: IS
   }
 
   function renderVideoCodec() {
-    if (props.scene.file.video_codec === undefined) { return; }
+    if (props.scene.file.video_codec === undefined) {
+      return;
+    }
     return (
       <tr>
         <td>Video Codec</td>
@@ -97,7 +119,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (props: IS
   }
 
   function renderAudioCodec() {
-    if (props.scene.file.audio_codec === undefined) { return; }
+    if (props.scene.file.audio_codec === undefined) {
+      return;
+    }
     return (
       <tr>
         <td>Audio Codec</td>
@@ -107,7 +131,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (props: IS
   }
 
   function renderUrl() {
-    if (!props.scene.url || props.scene.url === "") { return; }
+    if (!props.scene.url || props.scene.url === "") {
+      return;
+    }
     return (
       <tr>
         <td>Downloaded From</td>
