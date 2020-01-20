@@ -52,7 +52,7 @@ export const SettingsTasksPanel: React.FC = () => {
         setProgress(newProgress);
       }
     }
-  }, [jobStatus.data]);
+  }, [jobStatus]);
 
   useEffect(() => {
     if (metadataUpdate?.data?.metadataUpdate) {
@@ -64,7 +64,7 @@ export const SettingsTasksPanel: React.FC = () => {
         setProgress(newProgress);
       }
     }
-  }, [metadataUpdate.data]);
+  }, [metadataUpdate]);
 
   function onImport() {
     setIsImportAlertOpen(false);
