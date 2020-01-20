@@ -21,8 +21,8 @@ export const SettingsTasksPanel: React.FC = () => {
   const jobStatus = StashService.useJobStatus();
   const metadataUpdate = StashService.useMetadataUpdate();
 
-  function statusToText(status : string) {
-    switch(status) {
+  function statusToText(s: string) {
+    switch(s) {
       case "Idle":
         return "Idle";
       case "Scan":
@@ -37,15 +37,15 @@ export const SettingsTasksPanel: React.FC = () => {
         return "Importing from JSON";
       case "Auto Tag":
         return "Auto tagging scenes";
+      default:
+        return "Idle"
     }
-
-    return "Idle";
   }
 
   useEffect(() => {
-    if (!!jobStatus.data && !!jobStatus.data.jobStatus) {
+    if (jobStatus?.data?.jobStatus) {
       setStatus(statusToText(jobStatus.data.jobStatus.status));
-      var newProgress = jobStatus.data.jobStatus.progress;
+      const newProgress = jobStatus.data.jobStatus.progress;
       if (newProgress < 0) {
         setProgress(0);
       } else {
@@ -55,9 +55,9 @@ export const SettingsTasksPanel: React.FC = () => {
   }, [jobStatus.data]);
 
   useEffect(() => {
-    if (!!metadataUpdate.data && !!metadataUpdate.data.metadataUpdate) {
+    if (metadataUpdate?.data?.metadataUpdate) {
       setStatus(statusToText(metadataUpdate.data.metadataUpdate.status));
-      var newProgress = metadataUpdate.data.metadataUpdate.progress;
+      const newProgress = metadataUpdate.data.metadataUpdate.progress;
       if (newProgress < 0) {
         setProgress(0);
       } else {
@@ -111,7 +111,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   async function onScan() {
     try {
-      await StashService.queryMetadataScan({useFileMetadata: useFileMetadata});
+      await StashService.queryMetadataScan({useFileMetadata});
       Toast.success({ content: "Started scan" });
       jobStatus.refetch();
     } catch (e) {
@@ -120,7 +120,7 @@ export const SettingsTasksPanel: React.FC = () => {
   }
 
   function getAutoTagInput() {
-    var wildcard = ["*"];
+    const wildcard = ["*"];
     return {
       performers: autoTagPerformers ? wildcard : [],
       studios: autoTagStudios ? wildcard : [],
@@ -210,7 +210,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <Form.Group>
         <Button>
-          <Link to={"/sceneFilenameParser"}>Scene Filename Parser</Link>
+          <Link to="/sceneFilenameParser">Scene Filename Parser</Link>
         </Button>
       </Form.Group>
 

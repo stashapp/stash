@@ -1,3 +1,5 @@
+/* eslint-disable no-param-reassign, no-console */
+
 import { useEffect, useRef } from "react";
 import { StashService } from "../core/StashService";
 
@@ -31,7 +33,7 @@ export class VideoHoverHook {
           videoTag.pause();
         }
       };
-      videoTag.onpause = () => isPlaying.current = false;
+      videoTag.onpause = () => { isPlaying.current = false };
     }, [videoEl]);
 
     useEffect(() => {

@@ -20,21 +20,21 @@ export const PerformerList: React.FC = () => {
   ];
 
   const listData = usePerformersList({
-    otherOperations: otherOperations,
+    otherOperations,
     renderContent,
   });
 
   async function getRandom(result: QueryHookResult<FindPerformersQuery, FindPerformersVariables>, filter: ListFilterModel) {
     if (result.data && result.data.findPerformers) {
-      let count = result.data.findPerformers.count;
-      let index = Math.floor(Math.random() * count);
-      let filterCopy = _.cloneDeep(filter);
+      const {count} = result.data.findPerformers;
+      const index = Math.floor(Math.random() * count);
+      const filterCopy = _.cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await StashService.queryFindPerformers(filterCopy);
       if (singleResult && singleResult.data && singleResult.data.findPerformers && singleResult.data.findPerformers.performers.length === 1) {
-        let id = singleResult!.data!.findPerformers!.performers[0]!.id;
-        history.push("/performers/" + id);
+        const {id} = singleResult!.data!.findPerformers!.performers[0]!;
+        history.push(`/performers/${  id}`);
       }
     }
   }
@@ -48,10 +48,8 @@ export const PerformerList: React.FC = () => {
           {result.data.findPerformers.performers.map((p) => (<PerformerCard key={p.id} performer={p} />))}
         </div>
       );
-    } else if (filter.displayMode === DisplayMode.List) {
+    } if (filter.displayMode === DisplayMode.List) {
       return <PerformerListTable performers={result.data.findPerformers.performers}/>;
-    } else if (filter.displayMode === DisplayMode.Wall) {
-      return;
     }
   }
 

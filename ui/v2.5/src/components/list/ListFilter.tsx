@@ -50,7 +50,7 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
     searchCallback(event);
   }
 
-  function onChangeSortDirection(_: any) {
+  function onChangeSortDirection() {
     if (props.filter.sortDirection === "asc") {
       props.onChangeSortDirection("desc");
     } else {
@@ -160,7 +160,7 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
   }
 
   function renderMore() {
-    let options = [
+    const options = [
       renderSelectAll(),
       renderSelectNone()
     ];
@@ -201,7 +201,7 @@ export const ListFilter: React.FC<IListFilterProps> = (props: IListFilterProps) 
             type="range"
             min={0}
             max={3}
-            onChange={(event: any) => onChangeZoom(Number.parseInt(event.target.value))}
+            onChange={(event: any) => onChangeZoom(Number.parseInt(event.target.value, 10))}
           />
       </span>
       );

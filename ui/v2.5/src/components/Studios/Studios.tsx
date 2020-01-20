@@ -5,7 +5,7 @@ import { StudioList } from "./StudioList";
 
 const Studios = () => (
   <Switch>
-    <Route exact={true} path="/studios" component={StudioList} />
+    <Route exact path="/studios" component={StudioList} />
     <Route path="/studios/:id" component={Studio} />
   </Switch>
 );

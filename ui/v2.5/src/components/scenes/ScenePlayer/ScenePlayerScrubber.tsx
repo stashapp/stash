@@ -1,3 +1,5 @@
+/* eslint-disable react/no-array-index-key */
+
 import React, { CSSProperties, useEffect, useRef, useState, useCallback } from "react";
 import { Button } from 'react-bootstrap';
 import axios from "axios";
@@ -24,9 +26,6 @@ interface ISceneSpriteItem {
 
 async function fetchSpriteInfo(vttPath: string) {
   const response = await axios.get<string>(vttPath, {responseType: "text"});
-  if (response.status !== 200) {
-    console.log(response.statusText);
-  }
 
   // TODO: This is gnarly
   const lines = response.data.split("\n");
@@ -36,25 +35,25 @@ async function fetchSpriteInfo(vttPath: string) {
   const newSpriteItems: ISceneSpriteItem[] = [];
   while (lines.length) {
     const line = lines.shift();
-    if (line === undefined) { continue; }
+    if (line !== undefined) {
+      if (line.includes("#") && line.includes("=") && line.includes(",")) {
+        const size = line.split("#")[1].split("=")[1].split(",");
+        item.x = Number(size[0]);
+        item.y = Number(size[1]);
+        item.w = Number(size[2]);
+        item.h = Number(size[3]);
 
-    if (line.includes("#") && line.includes("=") && line.includes(",")) {
-      const size = line.split("#")[1].split("=")[1].split(",");
-      item.x = Number(size[0]);
-      item.y = Number(size[1]);
-      item.w = Number(size[2]);
-      item.h = Number(size[3]);
+        newSpriteItems.push(item);
+        item = {start: 0, end: 0, x: 0, y: 0, w: 0, h: 0};
+      } else if (line.includes(" --> ")) {
+        const times = line.split(" --> ");
 
-      newSpriteItems.push(item);
-      item = {start: 0, end: 0, x: 0, y: 0, w: 0, h: 0};
-    } else if (line.includes(" --> ")) {
-      const times = line.split(" --> ");
+        const start = times[0].split(":");
+        item.start = (+start[0]) * 60 * 60 + (+start[1]) * 60 + (+start[2]);
 
-      const start = times[0].split(":");
-      item.start = (+start[0]) * 60 * 60 + (+start[1]) * 60 + (+start[2]);
-
-      const end = times[1].split(":");
-      item.end = (+end[0]) * 60 * 60 + (+end[1]) * 60 + (+end[2]);
+        const end = times[1].split(":");
+        item.end = (+end[0]) * 60 * 60 + (+end[1]) * 60 + (+end[2]);
+      }
     }
   }
 
@@ -154,7 +153,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
     mouseDown.current = false;
     const delta = Math.abs(event.clientX - startMouseEvent.current.clientX);
     if (delta < 1 && event.target instanceof HTMLDivElement) {
-      const target: HTMLDivElement = event.target;
+      const {target} = event;
       let seekSeconds: number | undefined;
 
       const spriteIdString = target.getAttribute("data-sprite-item-id");
@@ -171,7 +170,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
         seekSeconds = marker.seconds;
       }
 
-      if (!!seekSeconds) { props.onSeek(seekSeconds); }
+      if (seekSeconds) { props.onSeek(seekSeconds); }
     } else if (Math.abs(velocity.current) > 25) {
       const newPosition = getPosition() + (velocity.current * 10);
       setPosition(newPosition);
@@ -274,7 +273,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (props: 
         width: `${sprite.w}px`,
         height: `${sprite.h}px`,
         margin: "0px auto",
-        backgroundPosition: -sprite.x + "px " + -sprite.y + "px",
+        backgroundPosition: `${-sprite.x  }px ${  -sprite.y  }px`,
         backgroundImage: `url(${path})`,
         left: `${left}px`,
       };

@@ -49,7 +49,7 @@ export const Stats: FunctionComponent = () => {
           <Spinner animation="border" role="status" size="sm">
             <span className="sr-only">Loading...</span>
           </Spinner> : undefined}
-      {!!error ? <span>error.message</span> : undefined}
+      {error ? <span>error.message</span> : undefined}
       {renderStats()}
 
       <h3>Notes</h3>

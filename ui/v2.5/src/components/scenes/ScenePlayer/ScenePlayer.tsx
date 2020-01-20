@@ -30,6 +30,13 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
   private player: any;
   private lastTime = 0;
 
+  private KeyHandlers = {
+    NUM0: () => {this.onReset()},
+    NUM1: () => {this.onDecrease()},
+    NUM2: () => {this.onIncrease()},
+    SPACE: () => {this.onPause()}
+  }
+
   constructor(props: IScenePlayerProps) {
     super(props);
     this.onReady = this.onReady.bind(this);
@@ -48,66 +55,65 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
     }
   }
 
-  renderPlayer() {
-      const config = this.makeJWPlayerConfig(this.props.scene);
-      return (
-        <ReactJWPlayer
-            playerId={SceneHelpers.getJWPlayerId()}
-            playerScript="/jwplayer/jwplayer.js"
-            customProps={config}
-            onReady={this.onReady}
-            onSeeked={this.onSeeked}
-            onTime={this.onTime}
-          />
-      );
-  }
-
   onIncrease() {
-    const currentPlaybackRate = !!this.player ? this.player.getPlaybackRate() : 1;
+    const currentPlaybackRate = this.player ? this.player.getPlaybackRate() : 1;
     this.player.setPlaybackRate(currentPlaybackRate + 0.5);
   };
   onDecrease() {
-    const currentPlaybackRate = !!this.player ? this.player.getPlaybackRate() : 1;
+    const currentPlaybackRate = this.player ? this.player.getPlaybackRate() : 1;
     this.player.setPlaybackRate(currentPlaybackRate - 0.5);
   };
-  onReset() { this.player.setPlaybackRate(1); };
-  onPause() { this.player.getState().paused ? this.player.play() : this.player.pause(); };
 
-  private KeyHandlers = {
-    NUM0: () => {this.onReset()},
-    NUM1: () => {this.onDecrease()},
-    NUM2: () => {this.onIncrease()},
-    SPACE: () => {this.onPause()}
+  onReset() { this.player.setPlaybackRate(1); };
+  onPause() {
+    if (this.player.getState().paused)
+      this.player.play();
+    else
+      this.player.pause();
+  };
+
+  private onReady() {
+    this.player = SceneHelpers.getPlayer();
+    if (this.props.timestamp > 0) {
+      this.player.seek(this.props.timestamp);
+    }
   }
 
-  public render() {
-    return (
-      <HotKeys keyMap={KeyMap} handlers={this.KeyHandlers}>
-        <div id="jwplayer-container">
-          {this.renderPlayer()}
-          <ScenePlayerScrubber
-            scene={this.props.scene}
-            position={this.state.scrubberPosition}
-            onSeek={this.onScrubberSeek}
-            onScrolled={this.onScrubberScrolled}
-          />
-        </div>
-      </HotKeys>
-    );
+  private onSeeked() {
+    const position = this.player.getPosition();
+    this.setState({scrubberPosition: position});
+    this.player.play();
+  }
+
+  private onTime() {
+    const position = this.player.getPosition();
+    const difference = Math.abs(position - this.lastTime);
+    if (difference > 1) {
+      this.lastTime = position;
+      this.setState({scrubberPosition: position});
+    }
+  }
+
+  private onScrubberSeek(seconds: number) {
+    this.player.seek(seconds);
+  }
+
+  private onScrubberScrolled() {
+    this.player.pause();
   }
 
   private shouldRepeat(scene: GQL.SceneDataFragment) {
-    let maxLoopDuration = this.props.config ? this.props.config.maximumLoopDuration : 0;
+    const maxLoopDuration = this.props.config ? this.props.config.maximumLoopDuration : 0;
     return !!scene.file.duration && !!maxLoopDuration && scene.file.duration < maxLoopDuration;
   }
 
   private makeJWPlayerConfig(scene: GQL.SceneDataFragment) {
     if (!scene.paths.stream) { return {}; }
 
-    let repeat = this.shouldRepeat(scene);
-    let getDurationHook: (() => GQL.Maybe<number>) | undefined = undefined;
-    let seekHook: ((seekToPosition: number, _videoTag: any) => void) | undefined = undefined;
-    let getCurrentTimeHook: ((_videoTag: any) => number) | undefined = undefined;
+    const repeat = this.shouldRepeat(scene);
+    let getDurationHook: (() => GQL.Maybe<number>) | undefined;
+    let seekHook: ((seekToPosition: number, _videoTag: any) => void) | undefined;
+    let getCurrentTimeHook: ((_videoTag: any) => number) | undefined;
 
     if (!this.props.scene.is_streamable) {
       getDurationHook = () => {
@@ -115,18 +121,20 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
       };
 
       seekHook = (seekToPosition: number, _videoTag: any) => {
+        // eslint-disable-next-line no-param-reassign
         _videoTag.start = seekToPosition;
-        _videoTag.src = (this.props.scene.paths.stream + "?start=" + seekToPosition);
+        // eslint-disable-next-line no-param-reassign
+        _videoTag.src = (`${this.props.scene.paths.stream  }?start=${  seekToPosition}`);
         _videoTag.play();
       };
 
       getCurrentTimeHook = (_videoTag: any) => {
-        let start = _videoTag.start || 0;
+        const start = _videoTag.start || 0;
         return _videoTag.currentTime + start;
       }
     }
 
-    let ret = {
+    const ret = {
       file: scene.paths.stream,
       image: scene.paths.screenshot,
       tracks: [
@@ -147,45 +155,45 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
       cast: {},
       primary: "html5",
       autostart: this.props.autoplay || (this.props.config ? this.props.config.autostartVideo : false),
-      repeat: repeat,
+      repeat,
       playbackRateControls: true,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
-      getDurationHook: getDurationHook,
-      seekHook: seekHook,
-      getCurrentTimeHook: getCurrentTimeHook
+      getDurationHook,
+      seekHook,
+      getCurrentTimeHook
     };
 
     return ret;
   }
 
-  private onReady() {
-    this.player = SceneHelpers.getPlayer();
-    if (this.props.timestamp > 0) {
-      this.player.seek(this.props.timestamp);
-    }
+  renderPlayer() {
+      const config = this.makeJWPlayerConfig(this.props.scene);
+      return (
+        <ReactJWPlayer
+            playerId={SceneHelpers.getJWPlayerId()}
+            playerScript="/jwplayer/jwplayer.js"
+            customProps={config}
+            onReady={this.onReady}
+            onSeeked={this.onSeeked}
+            onTime={this.onTime}
+          />
+      );
   }
 
-  private onSeeked() {
-    const position = this.player.getPosition();
-    this.setState({scrubberPosition: position});
-    this.player.play();
-  }
-
-  private onTime(data: any) {
-    const position = this.player.getPosition();
-    const difference = Math.abs(position - this.lastTime);
-    if (difference > 1) {
-      this.lastTime = position;
-      this.setState({scrubberPosition: position});
-    }
-  }
-
-  private onScrubberSeek(seconds: number) {
-    this.player.seek(seconds);
-  }
-
-  private onScrubberScrolled() {
-    this.player.pause();
+  public render() {
+    return (
+      <HotKeys keyMap={KeyMap} handlers={this.KeyHandlers}>
+        <div id="jwplayer-container">
+          {this.renderPlayer()}
+          <ScenePlayerScrubber
+            scene={this.props.scene}
+            position={this.state.scrubberPosition}
+            onSeek={this.onScrubberSeek}
+            onScrolled={this.onScrubberScrolled}
+          />
+        </div>
+      </HotKeys>
+    );
   }
 }
 

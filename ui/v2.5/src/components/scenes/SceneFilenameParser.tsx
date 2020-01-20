@@ -1,25 +1,26 @@
+/* eslint-disable no-param-reassign, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
+
 import React, { useEffect, useState, useCallback } from "react";
 import { Badge, Button, Card, Collapse, Dropdown, DropdownButton, Form, Table, Spinner } from 'react-bootstrap';
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { SlimSceneDataFragment, Maybe } from "src/core/generated-graphql";
 import { FilterSelect, Icon, StudioSelect } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useToast } from "src/hooks";
 import { Pagination } from "../list/Pagination";
 
 class ParserResult<T> {
-  public value: Maybe<T>;
-  public originalValue: Maybe<T>;
+  public value: GQL.Maybe<T>;
+  public originalValue: GQL.Maybe<T>;
   public set: boolean = false;
 
-  public setOriginalValue(v : Maybe<T>) {
+  public setOriginalValue(v : GQL.Maybe<T>) {
     this.originalValue = v;
     this.value = v;
   }
 
-  public setValue(v : Maybe<T>) {
+  public setValue(v : GQL.Maybe<T>) {
     if (v) {
       this.value = v;
       this.set = !_.isEqual(this.value, this.originalValue);
@@ -37,7 +38,7 @@ class ParserField {
   }
 
   public getFieldPattern() {
-    return "{" + this.field + "}";
+    return `{${  this.field  }}`;
   }
 
   static Title = new ParserField("title");
@@ -106,7 +107,7 @@ class SceneParserResult {
   public performers: ParserResult<GQL.SlimSceneDataPerformers[]> = new ParserResult();
   public performerIds: ParserResult<string[]> = new ParserResult();
 
-  public scene : SlimSceneDataFragment;
+  public scene : GQL.SlimSceneDataFragment;
 
   constructor(result : GQL.ParseSceneFilenamesResults) {
     this.scene = result.scene;
@@ -157,9 +158,9 @@ class SceneParserResult {
     }
   }
 
-  private static setInput(object: any, key: string, parserResult : ParserResult<any>) {
+  private static setInput(obj: any, key: string, parserResult : ParserResult<any>) {
     if (parserResult.set) {
-      object[key] = parserResult.value;
+      obj[key] = parserResult.value;
     }
   }
 
@@ -169,7 +170,7 @@ class SceneParserResult {
   }
 
   public toSceneUpdateInput() {
-    var ret = {
+    const ret = {
       id: this.id,
       title: this.scene.title,
       details: this.scene.details,
@@ -294,16 +295,16 @@ export const SceneFilenameParser: React.FC = () => {
   const updateScenes = StashService.useScenesUpdate(getScenesUpdateData());
 
   const determineFieldsToHide = useCallback(() => {
-    var pattern = parserInput.pattern;
-    var titleSet = pattern.includes("{title}");
-    var dateSet = pattern.includes("{date}") ||
+    const {pattern} = parserInput;
+    const titleSet = pattern.includes("{title}");
+    const dateSet = pattern.includes("{date}") ||
       pattern.includes("{dd}") || // don't worry about other partial date fields since this should be implied
       ParserField.fullDateFields.some((f) => {
-        return pattern.includes("{" + f.field + "}");
+        return pattern.includes(`{${  f.field  }}`);
       });
-    var performerSet = pattern.includes("{performer}");
-    var tagSet = pattern.includes("{tag}");
-    var studioSet = pattern.includes("{studio}");
+    const performerSet = pattern.includes("{performer}");
+    const tagSet = pattern.includes("{tag}");
+    const studioSet = pattern.includes("{studio}");
 
     const newShowFields = new Map<string, boolean>([
       ["Title", titleSet],
@@ -318,7 +319,7 @@ export const SceneFilenameParser: React.FC = () => {
 
   const parseResults = useCallback((results : GQL.ParseSceneFilenamesResults[]) => {
     if (results) {
-      var result = results.map((r) => {
+      const result = results.map((r) => {
         return new SceneParserResult(r);
       }).filter((r) => !!r) as SceneParserResult[];
 
@@ -348,7 +349,7 @@ export const SceneFilenameParser: React.FC = () => {
 
       StashService.queryParseSceneFilenames(parserFilter, parserInputData)
         .then((response) => {
-          let result = response.data.parseSceneFilenames;
+          const result = response.data.parseSceneFilenames;
           if (result) {
             parseResults(result.results);
             setTotalItems(result.count);
@@ -364,7 +365,7 @@ export const SceneFilenameParser: React.FC = () => {
   }, [parserInput, parseResults, Toast]);
 
   function onPageSizeChanged(newSize : number) {
-    var newInput = _.clone(parserInput);
+    const newInput = _.clone(parserInput);
     newInput.page = 1;
     newInput.pageSize = newSize;
     setParserInput(newInput);
@@ -372,7 +373,7 @@ export const SceneFilenameParser: React.FC = () => {
 
   function onPageChanged(newPage : number) {
     if (newPage !== parserInput.page) {
-      var newInput = _.clone(parserInput);
+      const newInput = _.clone(parserInput);
       newInput.page = newPage;
       setParserInput(newInput);
     }
@@ -403,19 +404,19 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   useEffect(() => {
-    var newAllTitleSet = !parserResult.some((r) => {
+    const newAllTitleSet = !parserResult.some((r) => {
       return !r.title.set;
     });
-    var newAllDateSet = !parserResult.some((r) => {
+    const newAllDateSet = !parserResult.some((r) => {
       return !r.date.set;
     });
-    var newAllPerformerSet = !parserResult.some((r) => {
+    const newAllPerformerSet = !parserResult.some((r) => {
       return !r.performerIds.set;
     });
-    var newAllTagSet = !parserResult.some((r) => {
+    const newAllTagSet = !parserResult.some((r) => {
       return !r.tagIds.set;
     });
-    var newAllStudioSet = !parserResult.some((r) => {
+    const newAllStudioSet = !parserResult.some((r) => {
       return !r.studioId.set;
     });
 
@@ -427,7 +428,7 @@ export const SceneFilenameParser: React.FC = () => {
   }, [parserResult]);
 
   function onSelectAllTitleSet(selected : boolean) {
-    var newResult = [...parserResult];
+    const newResult = [...parserResult];
 
     newResult.forEach((r) => {
       r.title.set = selected;
@@ -438,7 +439,7 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   function onSelectAllDateSet(selected : boolean) {
-    var newResult = [...parserResult];
+    const newResult = [...parserResult];
 
     newResult.forEach((r) => {
       r.date.set = selected;
@@ -449,7 +450,7 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   function onSelectAllPerformerSet(selected : boolean) {
-    var newResult = [...parserResult];
+    const newResult = [...parserResult];
 
     newResult.forEach((r) => {
       r.performerIds.set = selected;
@@ -460,7 +461,7 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   function onSelectAllTagSet(selected : boolean) {
-    var newResult = [...parserResult];
+    const newResult = [...parserResult];
 
     newResult.forEach((r) => {
       r.tagIds.set = selected;
@@ -471,7 +472,7 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   function onSelectAllStudioSet(selected : boolean) {
-    var newResult = [...parserResult];
+    const newResult = [...parserResult];
 
     newResult.forEach((r) => {
       r.studioId.set = selected;
@@ -530,10 +531,10 @@ export const SceneFilenameParser: React.FC = () => {
 
     function onFind() {
       props.onFind({
-        pattern: pattern,
+        pattern,
         ignoreWords: ignoreWords.split(" "),
-        whitespaceCharacters: whitespaceCharacters,
-        capitalizeTitle: capitalizeTitle,
+        whitespaceCharacters,
+        capitalizeTitle,
         page: 1,
         pageSize: props.input.pageSize,
         findClicked: props.input.findClicked
@@ -569,7 +570,7 @@ export const SceneFilenameParser: React.FC = () => {
             </Dropdown.Item>
           ))}
         </DropdownButton>
-        <div>Use '\\' to escape literal {} characters</div>
+        <div>Use &apos;\\&apos; to escape literal {} characters</div>
       </Form.Group>
 
       <Form.Group>
@@ -624,7 +625,7 @@ export const SceneFilenameParser: React.FC = () => {
               as="select"
               style={{flexBasis: "min-content"}}
               options={PAGE_SIZE_OPTIONS}
-              onChange={(event: any) => onPageSizeChanged(parseInt(event.target.value))}
+              onChange={(event: any) => onPageSizeChanged(parseInt(event.target.value, 10))}
               defaultValue={props.input.pageSize}
               className="filter-item"
             >
@@ -678,13 +679,13 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   function renderOriginalInputGroup(props: ISceneParserFieldProps) {
-    var parserResult = props.originalParserResult || props.parserResult;
+    const result = props.originalParserResult || props.parserResult;
 
     return (
       <Form.Control
         disabled
         className={props.className}
-        defaultValue={parserResult.originalValue || ""}
+        defaultValue={result.originalValue || ""}
       />
     );
   }
@@ -706,27 +707,27 @@ export const SceneFilenameParser: React.FC = () => {
     );
   }
 
-  function renderNewInputGroup(props : ISceneParserFieldProps, onChange : (value : any) => void) {
+  function renderNewInputGroup(props : ISceneParserFieldProps, onChangeHandler : (value : any) => void) {
     return (
       <InputGroupWrapper
         className={props.className}
-        onChange={(value : any) => {onChange(value)}}
+        onChange={(value : any) => {onChangeHandler(value)}}
         parserResult={props.parserResult}
       />
     );
   }
 
-  interface HasName {
+  interface IHasName {
     name: string
   }
 
   function renderOriginalSelect(props : ISceneParserFieldProps) {
-    const parserResult = props.originalParserResult || props.parserResult;
+    const result = props.originalParserResult || props.parserResult;
 
-    const elements = parserResult.originalValue
-      ? Array.isArray(parserResult.originalValue)
-        ? parserResult.originalValue.map((el:HasName) => el.name)
-        : [parserResult.originalValue.name]
+    const elements = result.originalValue
+      ? Array.isArray(result.originalValue)
+        ? result.originalValue.map((el:IHasName) => el.name)
+        : [result.originalValue.name]
       : [];
 
     return (
@@ -736,35 +737,35 @@ export const SceneFilenameParser: React.FC = () => {
     );
   }
 
-  function renderNewMultiSelect(type: "performers" | "tags", props : ISceneParserFieldProps, onChange : (value : any) => void) {
+  function renderNewMultiSelect(type: "performers" | "tags", props : ISceneParserFieldProps, onChangeHandler : (value : any) => void) {
     return (
       <FilterSelect
         className={props.className}
         type={type}
-        isMulti={true}
+        isMulti
         onSelect={(items) => {
           const ids = items.map((i) => i.id);
-          onChange(ids);
+          onChangeHandler(ids);
         }}
         initialIds={props.parserResult.value}
       />
     );
   }
 
-  function renderNewPerformerSelect(props : ISceneParserFieldProps, onChange : (value : any) => void) {
-    return renderNewMultiSelect("performers", props, onChange);
+  function renderNewPerformerSelect(props : ISceneParserFieldProps, onChangeHandler : (value : any) => void) {
+    return renderNewMultiSelect("performers", props, onChangeHandler);
   }
 
-  function renderNewTagSelect(props : ISceneParserFieldProps, onChange : (value : any) => void) {
-    return renderNewMultiSelect("tags", props, onChange);
+  function renderNewTagSelect(props : ISceneParserFieldProps, onChangeHandler : (value : any) => void) {
+    return renderNewMultiSelect("tags", props, onChangeHandler);
   }
 
-  function renderNewStudioSelect(props : ISceneParserFieldProps, onChange : (value : any) => void) {
+  function renderNewStudioSelect(props : ISceneParserFieldProps, onChangeHandler : (value : any) => void) {
     return (
       <StudioSelect
         noSelectionString=""
         className={props.className}
-        onSelect={(items) => onChange(items[0]?.id)}
+        onSelect={(items) => onChangeHandler(items[0]?.id)}
         initialIds={props.parserResult.value ? [props.parserResult.value] : []}
       />
     );
@@ -778,38 +779,38 @@ export const SceneFilenameParser: React.FC = () => {
   function SceneParserRow(props : ISceneParserRowProps) {
 
     function changeParser(result : ParserResult<any>, set : boolean, value : any) {
-      var newParser = _.clone(result);
+      const newParser = _.clone(result);
       newParser.set = set;
       newParser.value = value;
       return newParser;
     }
 
     function onTitleChanged(set : boolean, value: string | undefined) {
-      var newResult = _.clone(props.scene);
+      const newResult = _.clone(props.scene);
       newResult.title = changeParser(newResult.title, set, value);
       props.onChange(newResult);
     }
 
     function onDateChanged(set : boolean, value: string | undefined) {
-      var newResult = _.clone(props.scene);
+      const newResult = _.clone(props.scene);
       newResult.date = changeParser(newResult.date, set, value);
       props.onChange(newResult);
     }
 
     function onPerformerIdsChanged(set : boolean, value: string[] | undefined) {
-      var newResult = _.clone(props.scene);
+      const newResult = _.clone(props.scene);
       newResult.performerIds = changeParser(newResult.performerIds, set, value);
       props.onChange(newResult);
     }
 
     function onTagIdsChanged(set : boolean, value: string[] | undefined) {
-      var newResult = _.clone(props.scene);
+      const newResult = _.clone(props.scene);
       newResult.tagIds = changeParser(newResult.tagIds, set, value);
       props.onChange(newResult);
     }
 
     function onStudioIdChanged(set : boolean, value: string | undefined) {
-      var newResult = _.clone(props.scene);
+      const newResult = _.clone(props.scene);
       newResult.studioId = changeParser(newResult.studioId, set, value);
       props.onChange(newResult);
     }
@@ -877,9 +878,9 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   function onChange(scene : SceneParserResult, changedScene : SceneParserResult) {
-    var newResult = [...parserResult];
+    const newResult = [...parserResult];
 
-    var index = newResult.indexOf(scene);
+    const index = newResult.indexOf(scene);
     newResult[index] = changedScene;
 
     setParserResult(newResult);

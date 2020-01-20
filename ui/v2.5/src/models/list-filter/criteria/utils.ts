@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return, default-case */
 import {
   CriterionModifier,
 } from "src/core/generated-graphql";
@@ -26,8 +27,8 @@ export function makeCriteria(type: CriterionType = "none") {
     case "studios": return new StudiosCriterion();
 
     case "birth_year":
-    case "age":
-        var ret = new NumberCriterion(type, type);
+    case "age": {
+        const ret = new NumberCriterion(type, type);
         // null/not null doesn't make sense for these criteria
         ret.modifierOptions = [
           Criterion.getModifierOption(CriterionModifier.Equals),
@@ -36,6 +37,7 @@ export function makeCriteria(type: CriterionType = "none") {
           Criterion.getModifierOption(CriterionModifier.LessThan)
         ];
         return ret;
+    }
     case "ethnicity":
     case "country":
     case "eye_color":

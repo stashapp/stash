@@ -1,3 +1,5 @@
+/* eslint-disable react/no-this-in-sfc */
+
 import React, { useEffect, useState } from "react";
 import { Collapse, Dropdown, DropdownButton, Form, Button, Spinner } from 'react-bootstrap';
 import * as GQL from "src/core/generated-graphql";
@@ -42,7 +44,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const deleteScene = StashService.useSceneDestroy(getSceneDeleteInput());
 
   useEffect(() => {
-    var newQueryableScrapers : GQL.ListSceneScrapersListSceneScrapers[] = [];
+    let newQueryableScrapers : GQL.ListSceneScrapersListSceneScrapers[] = [];
 
     if (!!Scrapers.data && Scrapers.data.listSceneScrapers) {
       newQueryableScrapers = Scrapers.data.listSceneScrapers.filter((s) => {
@@ -55,8 +57,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   }, [Scrapers.data])
 
   function updateSceneEditState(state: Partial<GQL.SceneDataFragment>) {
-    const perfIds = !!state.performers ? state.performers.map((performer) => performer.id) : undefined;
-    const tIds = !!state.tags ? state.tags.map((tag) => tag.id) : undefined;
+    const perfIds = state.performers ? state.performers.map((performer) => performer.id) : undefined;
+    const tIds = state.tags ? state.tags.map((tag) => tag.id) : undefined;
 
     setTitle(state.title);
     setDetails(state.details);
@@ -130,7 +132,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     return (
       <FilterSelect
         type={type}
-        isMulti={true}
+        isMulti
         onSelect={(items) => {
           const ids = items.map((i) => i.id);
           switch (type) {
@@ -200,10 +202,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     );
   }
 
-  function urlScrapable(url: string) : boolean {
-    return !!url && !!Scrapers.data && Scrapers.data.listSceneScrapers && Scrapers.data.listSceneScrapers.some((s) => {
-      return !!s.scene && !!s.scene.urls && s.scene.urls.some((u) => { return url.includes(u); });
-    });
+  function urlScrapable(scrapedUrl: string) : boolean {
+    return (Scrapers?.data?.listSceneScrapers ?? []).some(s => (
+      (s?.scene?.urls ?? []).some(u => scrapedUrl.includes(u))
+    ));
   }
 
   function updateSceneFromScrapedScene(scene : GQL.ScrapedSceneDataFragment) {
@@ -228,23 +230,23 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
 
     if ((!performerIds || performerIds.length === 0) && scene.performers && scene.performers.length > 0) {
-      let idPerfs = scene.performers.filter((p) => {
+      const idPerfs = scene.performers.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
 
       if (idPerfs.length > 0) {
-        let newIds = idPerfs.map((p) => p.id);
+        const newIds = idPerfs.map((p) => p.id);
         setPerformerIds(newIds as string[]);
       }
     }
 
     if ((!tagIds || tagIds.length === 0) && scene.tags && scene.tags.length > 0) {
-      let idTags = scene.tags.filter((p) => {
+      const idTags = scene.tags.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
 
       if (idTags.length > 0) {
-        let newIds = idTags.map((p) => p.id);
+        const newIds = idTags.map((p) => p.id);
         setTagIds(newIds as string[]);
       }
     }
@@ -356,10 +358,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
         </Form.Group>
 
         <div>
-          <label onClick={() => setIsCoverImageOpen(!isCoverImageOpen)}>
+          <Button variant="link" onClick={() => setIsCoverImageOpen(!isCoverImageOpen)}>
             <Icon icon={isCoverImageOpen ? "chevron-down" : "chevron-right"} />
             <span>Cover Image</span>
-          </label>
+          </Button>
           <Collapse in={isCoverImageOpen}>
             <div>
               <img className="scene-cover" src={coverImagePreview} alt="" />

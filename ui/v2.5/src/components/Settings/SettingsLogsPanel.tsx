@@ -5,19 +5,19 @@ import { StashService } from "src/core/StashService";
 
 function convertTime(logEntry: GQL.LogEntryDataFragment) {
   function pad(val : number) {
-    var ret = val.toString();
+    let ret = val.toString();
     if (val <= 9) {
-      ret = "0" + ret;
+      ret = `0${  ret}`;
     }
 
     return ret;
   }
 
-  var date = new Date(logEntry.time);
-  var month = date.getMonth() + 1;
-  var day = date.getDate();
-  var dateStr = date.getFullYear() + "-" + pad(month) + "-" + pad(day);
-  dateStr += " " + pad(date.getHours()) + ":" + pad(date.getMinutes()) + ":" + pad(date.getSeconds());
+  const date = new Date(logEntry.time);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  let dateStr = `${date.getFullYear()  }-${  pad(month)  }-${  pad(day)}`;
+  dateStr += ` ${  pad(date.getHours())  }:${  pad(date.getMinutes())  }:${  pad(date.getSeconds())}`;
 
   return dateStr;
 }
@@ -32,7 +32,7 @@ interface ILogElementProps {
 
 const LogElement: React.FC<ILogElementProps> = ({ logEntry }) =>  {
   // pad to maximum length of level enum
-  var level = logEntry.level.padEnd(GQL.LogLevel.Progress.length);
+  const level = logEntry.level.padEnd(GQL.LogLevel.Progress.length);
 
   return (
     <>
@@ -58,7 +58,7 @@ class LogEntry {
     this.level = logEntry.level;
     this.message = logEntry.message;
 
-    var id = LogEntry.nextId++;
+    const id = LogEntry.nextId++;
     this.id = id.toString();
   }
 }
@@ -80,15 +80,15 @@ export const SettingsLogsPanel: React.FC = () => {
     .filter(filterByLogLevel).slice(0, MAX_LOG_ENTRIES);
 
   const maybeRenderError = error
-    ? <div className={"error"}>Error connecting to log server: {error.message}</div>
+    ? <div className="error">Error connecting to log server: {error.message}</div>
     : '';
 
   function filterByLogLevel(logEntry : LogEntry) {
     if (logLevel === "Debug")
       return true;
 
-    var logLevelIndex = logLevels.indexOf(logLevel);
-    var levelIndex = logLevels.indexOf(logEntry.level);
+    const logLevelIndex = logLevels.indexOf(logLevel);
+    const levelIndex = logLevels.indexOf(logEntry.level);
 
     return levelIndex >= logLevelIndex;
   }

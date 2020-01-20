@@ -69,7 +69,7 @@ export const MainNavbar: React.FC = () => {
         {menuItems.map((i) => (
           <LinkContainer
             activeClassName="active"
-            exact={true}
+            exact
             to={i.href}
             key={i.href}
           >
@@ -83,7 +83,7 @@ export const MainNavbar: React.FC = () => {
       <Nav>
         {newButton}
         <LinkContainer
-          exact={true}
+          exact
           to="/settings">
             <Button variant="secondary">
               <Icon icon="cog" />

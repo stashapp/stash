@@ -35,7 +35,7 @@ const ModalComponent: React.FC<IModal> = ({ children, show, icon, header, cancel
             ? <Button variant={cancel.variant ?? 'primary'} onClick={cancel.onClick}>{cancel.text ?? 'Cancel'}</Button>
             : ''
         }
-        { <Button variant={accept?.variant ?? 'primary'} onClick={accept?.onClick}>{accept?.text ?? 'Close'}</Button> }
+        <Button variant={accept?.variant ?? 'primary'} onClick={accept?.onClick}>{accept?.text ?? 'Close'}</Button>
       </div>
     </Modal.Footer>
   </Modal>

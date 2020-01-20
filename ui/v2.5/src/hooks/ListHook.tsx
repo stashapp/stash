@@ -62,61 +62,6 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
   getCount: (data: T) => number;
 }
 
-type ScenesQuery = QueryHookResult<FindScenesQuery, FindScenesVariables>;
-export const useScenesList = (props:IListHookOptions<ScenesQuery>) => (
-  useList<ScenesQuery, SlimSceneDataFragment>({
-    ...props,
-    filterMode: FilterMode.Scenes,
-    useData: StashService.useFindScenes,
-    getData: (result:ScenesQuery) => (result?.data?.findScenes?.scenes ?? []),
-    getCount: (result:ScenesQuery) => (result?.data?.findScenes?.count ?? 0)
-  })
-)
-
-type SceneMarkersQuery = QueryHookResult<FindSceneMarkersQuery, FindSceneMarkersVariables>;
-export const useSceneMarkersList = (props:IListHookOptions<SceneMarkersQuery>) => (
-  useList<SceneMarkersQuery, FindSceneMarkersSceneMarkers>({
-    ...props,
-    filterMode: FilterMode.SceneMarkers,
-    useData: StashService.useFindSceneMarkers,
-    getData: (result:SceneMarkersQuery) => (result?.data?.findSceneMarkers?.scene_markers?? []),
-    getCount: (result:SceneMarkersQuery) => (result?.data?.findSceneMarkers?.count ?? 0)
-  })
-)
-
-type GalleriesQuery = QueryHookResult<FindGalleriesQuery, FindGalleriesVariables>;
-export const useGalleriesList = (props:IListHookOptions<GalleriesQuery>) => (
-  useList<GalleriesQuery, GalleryDataFragment>({
-    ...props,
-    filterMode: FilterMode.Galleries,
-    useData: StashService.useFindGalleries,
-    getData: (result:GalleriesQuery) => (result?.data?.findGalleries?.galleries ?? []),
-    getCount: (result:GalleriesQuery) => (result?.data?.findGalleries?.count ?? 0)
-  })
-)
-
-type StudiosQuery = QueryHookResult<FindStudiosQuery, FindStudiosVariables>;
-export const useStudiosList = (props:IListHookOptions<StudiosQuery>) => (
-  useList<StudiosQuery, StudioDataFragment>({
-    ...props,
-    filterMode: FilterMode.Studios,
-    useData: StashService.useFindStudios,
-    getData: (result:StudiosQuery) => (result?.data?.findStudios?.studios ?? []),
-    getCount: (result:StudiosQuery) => (result?.data?.findStudios?.count ?? 0)
-  })
-)
-
-type PerformersQuery = QueryHookResult<FindPerformersQuery, FindPerformersVariables>;
-export const usePerformersList = (props:IListHookOptions<PerformersQuery>) => (
-  useList<PerformersQuery, PerformerDataFragment>({
-    ...props,
-    filterMode: FilterMode.Performers,
-    useData: StashService.useFindPerformers,
-    getData: (result:PerformersQuery) => (result?.data?.findPerformers?.performers ?? []),
-    getCount: (result:PerformersQuery) => (result?.data?.findPerformers?.count ?? 0)
-  })
-)
-
 const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   options: (IListHookOptions<QueryResult> & IQuery<QueryResult, QueryData>)
 ): IListHookData => {
@@ -130,9 +75,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const totalCount = options.getCount(result);
   const items = options.getData(result);
 
-  function updateQueryParams(filter:ListFilterModel) {
-    const newLocation = Object.assign({}, history.location);
-    newLocation.search = filter.makeQueryParameters();
+  function updateQueryParams(listfilter:ListFilterModel) {
+    const newLocation = { ...history.location};
+    newLocation.search = listfilter.makeQueryParameters();
     history.replace(newLocation);
   }
 
@@ -180,7 +125,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     // Find if we are editing an existing criteria, then modify that.  Or create a new one.
     const existingIndex = newFilter.criteria.findIndex((c) => {
       // If we modified an existing criterion, then look for the old id.
-      const id = !!oldId ? oldId : criterion.getId();
+      const id = oldId || criterion.getId();
       return c.getId() === id;
     });
     if (existingIndex === -1) {
@@ -214,14 +159,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     updateQueryParams(newFilter);
   }
 
-  function onSelectChange(id: string, selected : boolean, shiftKey: boolean) {
-    if (shiftKey) {
-      multiSelect(id);
-    } else {
-      singleSelect(id, selected);
-    }
-  }
-
   function singleSelect(id: string, selected: boolean) {
     setLastClickedId(id);
 
@@ -231,6 +168,25 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     } else {
       newSelectedIds.delete(id);
     }
+
+    setSelectedIds(newSelectedIds);
+  }
+
+  function selectRange(startIndex : number, endIndex : number) {
+    let start = startIndex;
+    let end = endIndex;
+    if (start > end) {
+      const tmp = start;
+      start = end;
+      end = tmp;
+    }
+
+    const subset = items.slice(start, end + 1);
+    const newSelectedIds : Set<string> = new Set();
+
+    subset.forEach((item) => {
+      newSelectedIds.add(item.id);
+    });
 
     setSelectedIds(newSelectedIds);
   }
@@ -252,21 +208,12 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     selectRange(startIndex, thisIndex);
   }
 
-  function selectRange(startIndex : number, endIndex : number) {
-    if (startIndex > endIndex) {
-      let tmp = startIndex;
-      startIndex = endIndex;
-      endIndex = tmp;
+  function onSelectChange(id: string, selected : boolean, shiftKey: boolean) {
+    if (shiftKey) {
+      multiSelect(id);
+    } else {
+      singleSelect(id, selected);
     }
-
-    const subset = items.slice(startIndex, endIndex + 1);
-    const newSelectedIds : Set<string> = new Set();
-
-    subset.forEach((item) => {
-      newSelectedIds.add(item.id);
-    });
-
-    setSelectedIds(newSelectedIds);
   }
 
   function onSelectAll() {
@@ -324,10 +271,66 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         currentPage={filter.currentPage}
         totalItems={totalCount}
         onChangePage={onChangePage}
-        loading={result.loading}
       />
     </div>
   );
 
   return { filter, template, onSelectChange };
 }
+
+type ScenesQuery = QueryHookResult<FindScenesQuery, FindScenesVariables>;
+export const useScenesList = (props:IListHookOptions<ScenesQuery>) => (
+  useList<ScenesQuery, SlimSceneDataFragment>({
+    ...props,
+    filterMode: FilterMode.Scenes,
+    useData: StashService.useFindScenes,
+    getData: (result:ScenesQuery) => (result?.data?.findScenes?.scenes ?? []),
+    getCount: (result:ScenesQuery) => (result?.data?.findScenes?.count ?? 0)
+  })
+)
+
+type SceneMarkersQuery = QueryHookResult<FindSceneMarkersQuery, FindSceneMarkersVariables>;
+export const useSceneMarkersList = (props:IListHookOptions<SceneMarkersQuery>) => (
+  useList<SceneMarkersQuery, FindSceneMarkersSceneMarkers>({
+    ...props,
+    filterMode: FilterMode.SceneMarkers,
+    useData: StashService.useFindSceneMarkers,
+    getData: (result:SceneMarkersQuery) => (result?.data?.findSceneMarkers?.scene_markers?? []),
+    getCount: (result:SceneMarkersQuery) => (result?.data?.findSceneMarkers?.count ?? 0)
+  })
+)
+
+type GalleriesQuery = QueryHookResult<FindGalleriesQuery, FindGalleriesVariables>;
+export const useGalleriesList = (props:IListHookOptions<GalleriesQuery>) => (
+  useList<GalleriesQuery, GalleryDataFragment>({
+    ...props,
+    filterMode: FilterMode.Galleries,
+    useData: StashService.useFindGalleries,
+    getData: (result:GalleriesQuery) => (result?.data?.findGalleries?.galleries ?? []),
+    getCount: (result:GalleriesQuery) => (result?.data?.findGalleries?.count ?? 0)
+  })
+)
+
+type StudiosQuery = QueryHookResult<FindStudiosQuery, FindStudiosVariables>;
+export const useStudiosList = (props:IListHookOptions<StudiosQuery>) => (
+  useList<StudiosQuery, StudioDataFragment>({
+    ...props,
+    filterMode: FilterMode.Studios,
+    useData: StashService.useFindStudios,
+    getData: (result:StudiosQuery) => (result?.data?.findStudios?.studios ?? []),
+    getCount: (result:StudiosQuery) => (result?.data?.findStudios?.count ?? 0)
+  })
+)
+
+type PerformersQuery = QueryHookResult<FindPerformersQuery, FindPerformersVariables>;
+export const usePerformersList = (props:IListHookOptions<PerformersQuery>) => (
+  useList<PerformersQuery, PerformerDataFragment>({
+    ...props,
+    filterMode: FilterMode.Performers,
+    useData: StashService.useFindPerformers,
+    getData: (result:PerformersQuery) => (result?.data?.findPerformers?.performers ?? []),
+    getCount: (result:PerformersQuery) => (result?.data?.findPerformers?.count ?? 0)
+  })
+)
+
+

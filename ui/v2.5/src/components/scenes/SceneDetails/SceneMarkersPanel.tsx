@@ -1,6 +1,6 @@
 import React, { CSSProperties, useState } from "react";
 import { Badge, Button, Card, Collapse, Form as BootstrapForm } from 'react-bootstrap';
-import { Field, FieldProps, Form, Formik, FormikActions } from "formik";
+import { Field, FieldProps, Form, Formik } from "formik";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { TextUtils } from "src/utils";
@@ -93,7 +93,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (props: ISce
   }
 
   function renderForm() {
-    function onSubmit(values: IFormFields, _: FormikActions<IFormFields>) {
+    function onSubmit(values: IFormFields) {
       const isEditing = !!editingMarker;
       const variables: GQL.SceneMarkerCreateVariables | GQL.SceneMarkerUpdateVariables = {
         title: values.title,
@@ -118,9 +118,9 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (props: ISce
     }
     function onDelete() {
       if (!editingMarker) { return; }
-      sceneMarkerDestroy({variables: {id: editingMarker.id}}).then((response) => {
-        console.log(response);
-      }).catch((err) => console.error(err));
+      sceneMarkerDestroy({variables: {id: editingMarker.id}})
+      // eslint-disable-next-line no-console
+        .catch(err => console.error(err));
       setIsEditorOpen(false);
       setEditingMarker(null);
     }
@@ -152,7 +152,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (props: ISce
     function renderTagsField(fieldProps: FieldProps<IFormFields>) {
       return (
         <TagSelect
-          isMulti={true}
+          isMulti
           onSelect={(tags) => fieldProps.form.setFieldValue("tagIds", tags.map((tag) => tag.id))}
           initialIds={editingMarker ? fieldProps.form.values.tagIds : []}
         />

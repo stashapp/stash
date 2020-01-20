@@ -13,3 +13,4 @@ export { default as Modal } from './Modal';
 export { DetailsEditNavbar } from './DetailsEditNavbar';
 export { DurationInput } from './DurationInput';
 export { TagLink } from './TagLink';
+export { HoverPopover } from './HoverPopover';

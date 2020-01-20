@@ -22,7 +22,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (props: IS
     return (
       <tr>
         <td>Path</td>
-        <td><a href={`file://${path}`}>{"file://"+props.scene.path}</a> </td>
+        <td><a href={`file://${path}`}>{`file://${props.scene.path}`}</a> </td>
       </tr>
     );
   }

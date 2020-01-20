@@ -92,7 +92,7 @@ export const TagList: React.FC = () => {
       <>
       {deleteAlert}
       <div key={tag.id} className="tag-list-row">
-        <span onClick={() => setEditingTag(tag)}>{tag.name}</span>
+        <Button variant="link" onClick={() => setEditingTag(tag)}>{tag.name}</Button>
         <div style={{float: "right"}}>
           <Button onClick={() => onAutoTag(tag)}>Auto Tag</Button>
           <Link to={NavUtils.makeTagScenesUrl(tag)}>Scenes: {tag.scene_count}</Link>

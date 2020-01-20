@@ -1,3 +1,5 @@
+/* eslint-disable react/no-this-in-sfc */
+
 import React, { useEffect, useState } from "react";
 import { Button, Form, Spinner, Table } from 'react-bootstrap';
 import { useParams, useHistory } from 'react-router-dom';
@@ -94,7 +96,7 @@ export const Performer: React.FC = () => {
   ImageUtils.usePasteImage(onImageLoad);
 
   useEffect(() => {
-    var newQueryableScrapers : GQL.ListPerformerScrapersListPerformerScrapers[] = [];
+    let newQueryableScrapers : GQL.ListPerformerScrapersListPerformerScrapers[] = [];
 
     if (!!Scrapers.data && Scrapers.data.listPerformerScrapers) {
       newQueryableScrapers = Scrapers.data.listPerformerScrapers.filter((s) => {
@@ -256,9 +258,9 @@ export const Performer: React.FC = () => {
     );
   }
 
-  function urlScrapable(url: string) {
-    return !!url && (Scrapers?.data?.listPerformerScrapers ?? []).some(s => (
-      (s?.performer?.urls ?? []).some(u => url.includes(u))
+  function urlScrapable(scrapedUrl: string) {
+    return !!scrapedUrl && (Scrapers?.data?.listPerformerScrapers ?? []).some(s => (
+      (s?.performer?.urls ?? []).some(u => scrapedUrl.includes(u))
     ));
   }
 
@@ -316,14 +318,13 @@ export const Performer: React.FC = () => {
             onAutoTag={onAutoTag}
           />
           <h1>
-            { <Form.Control
+            <Form.Control
                 readOnly={!isEditing}
                 plaintext={!isEditing}
                 defaultValue={name}
                 placeholder="Name"
                 onChange={(event: any) => setName(event.target.value)}
               />
-            }
           </h1>
           <h6>
             <Form.Group className="aliases-field" controlId="aliases">

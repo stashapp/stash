@@ -1,3 +1,5 @@
+/* eslint-disable react/no-this-in-sfc */
+
 import { Form, Spinner, Table } from 'react-bootstrap';
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from 'react-router-dom';
@@ -36,11 +38,11 @@ export const Studio: React.FC = () => {
     setUrl(state.url);
   }
 
-  function updateStudioData(studio:Partial<GQL.StudioDataFragment>) {
+  function updateStudioData(studioData: Partial<GQL.StudioDataFragment>) {
     setImage(undefined);
-    updateStudioEditState(studio);
-    setImagePreview(studio.image_path);
-    setStudio(studio);
+    updateStudioEditState(studioData);
+    setImagePreview(studioData.image_path);
+    setStudio(studioData);
   }
 
   useEffect(() => {
