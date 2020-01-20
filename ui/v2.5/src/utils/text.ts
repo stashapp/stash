@@ -1,19 +1,13 @@
-const Units = [
-  "bytes",
-  "kB",
-  "MB",
-  "GB",
-  "TB",
-  "PB",
-];
+const Units = ["bytes", "kB", "MB", "GB", "TB", "PB"];
 
-const truncate = (value?: string, limit: number = 100, tail: string = "...") => {
-  if (!value)
-    return "";
-  return value.length > limit
-    ? value.substring(0, limit) + tail
-    : value;
-}
+const truncate = (
+  value?: string,
+  limit: number = 100,
+  tail: string = "..."
+) => {
+  if (!value) return "";
+  return value.length > limit ? value.substring(0, limit) + tail : value;
+};
 
 const fileSize = (bytes: number = 0, precision: number = 2) => {
   if (Number.isNaN(parseFloat(String(bytes))) || !Number.isFinite(bytes))
@@ -21,13 +15,13 @@ const fileSize = (bytes: number = 0, precision: number = 2) => {
 
   let unit = 0;
   let count = bytes;
-  while ( count >= 1024 ) {
+  while (count >= 1024) {
     count /= 1024;
     unit++;
   }
 
   return `${bytes.toFixed(+precision)} ${Units[unit]}`;
-}
+};
 
 const secondsToTimestamp = (seconds: number) => {
   let ret = new Date(seconds * 1000).toISOString().substr(11, 8);
@@ -41,34 +35,35 @@ const secondsToTimestamp = (seconds: number) => {
     ret = ret.substr(1);
   }
   return ret;
-}
+};
 
 const fileNameFromPath = (path: string) => {
-  if (!!path === false)
-    return "No File Name";
+  if (!!path === false) return "No File Name";
   return path.replace(/^.*[\\/]/, "");
-}
+};
 
 const getAge = (dateString?: string, fromDateString?: string) => {
-  if (!dateString)
-    return 0;
+  if (!dateString) return 0;
 
   const birthdate = new Date(dateString);
   const fromDate = fromDateString ? new Date(fromDateString) : new Date();
 
   let age = fromDate.getFullYear() - birthdate.getFullYear();
-  if (birthdate.getMonth() > fromDate.getMonth() ||
-      (birthdate.getMonth() >= fromDate.getMonth() && birthdate.getDay() > fromDate.getDay())) {
+  if (
+    birthdate.getMonth() > fromDate.getMonth() ||
+    (birthdate.getMonth() >= fromDate.getMonth() &&
+      birthdate.getDay() > fromDate.getDay())
+  ) {
     age -= 1;
   }
 
   return age;
-}
+};
 
 const bitRate = (bitrate: number) => {
   const megabits = bitrate / 1000000;
   return `${megabits.toFixed(2)} megabits per second`;
-}
+};
 
 const resolution = (height: number) => {
   if (height >= 240 && height < 480) {
@@ -86,7 +81,7 @@ const resolution = (height: number) => {
   if (height >= 2160) {
     return "4K";
   }
-}
+};
 
 const TextUtils = {
   truncate,
@@ -96,6 +91,6 @@ const TextUtils = {
   age: getAge,
   bitRate,
   resolution
-}
+};
 
 export default TextUtils;

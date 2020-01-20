@@ -1,19 +1,18 @@
 import * as GQL from "src/core/generated-graphql";
 import { ILabeledId } from "../types";
-import {
-  Criterion,
-  CriterionType,
-  ICriterionOption,
-} from "./criterion";
+import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
-export class TagsCriterion extends Criterion<GQL.AllTagsForFilterAllTags, ILabeledId[]> {
+export class TagsCriterion extends Criterion<
+  GQL.AllTagsForFilterAllTags,
+  ILabeledId[]
+> {
   public type: CriterionType;
   public parameterName: string;
   public modifier = GQL.CriterionModifier.IncludesAll;
   public modifierOptions = [
     Criterion.getModifierOption(GQL.CriterionModifier.IncludesAll),
     Criterion.getModifierOption(GQL.CriterionModifier.Includes),
-    Criterion.getModifierOption(GQL.CriterionModifier.Excludes),
+    Criterion.getModifierOption(GQL.CriterionModifier.Excludes)
   ];
   public options: GQL.AllTagsForFilterAllTags[] = [];
   public value: ILabeledId[] = [];

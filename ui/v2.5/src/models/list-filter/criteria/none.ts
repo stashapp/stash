@@ -1,9 +1,5 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import {
-  Criterion,
-  CriterionType,
-  ICriterionOption,
-} from "./criterion";
+import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
 export class NoneCriterion extends Criterion<any, any> {
   public type: CriterionType = "none";

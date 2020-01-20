@@ -8,9 +8,11 @@ interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
 }
 
-export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
+export const SceneDetailPanel: React.FC<ISceneDetailProps> = props => {
   function renderDetails() {
-    if (!props.scene.details || props.scene.details === "") { return; }
+    if (!props.scene.details || props.scene.details === "") {
+      return;
+    }
     return (
       <>
         <h6>Details</h6>
@@ -20,8 +22,10 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   }
 
   function renderTags() {
-    if (props.scene.tags.length === 0) { return; }
-    const tags = props.scene.tags.map((tag) => (
+    if (props.scene.tags.length === 0) {
+      return;
+    }
+    const tags = props.scene.tags.map(tag => (
       <TagLink key={tag.id} tag={tag} />
     ));
     return (
@@ -34,13 +38,19 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
 
   return (
     <>
-    {SceneHelpers.maybeRenderStudio(props.scene, 70)}
+      {SceneHelpers.maybeRenderStudio(props.scene, 70)}
       <h1>
-        {props.scene.title ? props.scene.title : TextUtils.fileNameFromPath(props.scene.path)}
+        {props.scene.title
+          ? props.scene.title
+          : TextUtils.fileNameFromPath(props.scene.path)}
       </h1>
-      {props.scene.date ? <h4>{props.scene.date}</h4> : ''}
-      {props.scene.rating ? <h6>Rating: {props.scene.rating}</h6> : ''}
-      {props.scene.file.height ? <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6> : ''}
+      {props.scene.date ? <h4>{props.scene.date}</h4> : ""}
+      {props.scene.rating ? <h6>Rating: {props.scene.rating}</h6> : ""}
+      {props.scene.file.height ? (
+        <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6>
+      ) : (
+        ""
+      )}
       {renderDetails()}
       {renderTags()}
     </>

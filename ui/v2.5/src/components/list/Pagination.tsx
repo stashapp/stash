@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, ButtonGroup } from 'react-bootstrap';
+import { Button, ButtonGroup } from "react-bootstrap";
 
 interface IPaginationProps {
   itemsPerPage: number;
@@ -8,7 +8,12 @@ interface IPaginationProps {
   onChangePage: (page: number) => void;
 }
 
-export const Pagination: React.FC<IPaginationProps> = ({ itemsPerPage, currentPage, totalItems, onChangePage }) => {
+export const Pagination: React.FC<IPaginationProps> = ({
+  itemsPerPage,
+  currentPage,
+  totalItems,
+  onChangePage
+}) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   let startPage: number;
@@ -28,35 +33,44 @@ export const Pagination: React.FC<IPaginationProps> = ({ itemsPerPage, currentPa
     endPage = currentPage + 4;
   }
 
-  const pages = [...Array((endPage + 1) - startPage).keys()].map((i) => startPage + i);
+  const pages = [...Array(endPage + 1 - startPage).keys()].map(
+    i => startPage + i
+  );
 
   const pageButtons = pages.map((page: number) => (
     <Button
       key={page}
       active={currentPage === page}
       onClick={() => onChangePage(page)}
-    >{page}</Button>
+    >
+      {page}
+    </Button>
   ));
 
   return (
     <ButtonGroup className="filter-container">
-      <Button
-        disabled={currentPage === 1}
-        onClick={() => onChangePage(1)}
-      >First</Button>
+      <Button disabled={currentPage === 1} onClick={() => onChangePage(1)}>
+        First
+      </Button>
       <Button
         disabled={currentPage === 1}
         onClick={() => onChangePage(currentPage - 1)}
-      >Previous</Button>
+      >
+        Previous
+      </Button>
       {pageButtons}
       <Button
         disabled={currentPage === totalPages}
         onClick={() => onChangePage(currentPage + 1)}
-      >Next</Button>
+      >
+        Next
+      </Button>
       <Button
         disabled={currentPage === totalPages}
         onClick={() => onChangePage(totalPages)}
-      >Last</Button>
+      >
+        Last
+      </Button>
     </ButtonGroup>
   );
-}
+};

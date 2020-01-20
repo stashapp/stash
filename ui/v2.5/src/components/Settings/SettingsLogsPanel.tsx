@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { Form, Col } from 'react-bootstrap';
+import { Form, Col } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 
 function convertTime(logEntry: GQL.LogEntryDataFragment) {
-  function pad(val : number) {
+  function pad(val: number) {
     let ret = val.toString();
     if (val <= 9) {
-      ret = `0${  ret}`;
+      ret = `0${ret}`;
     }
 
     return ret;
@@ -16,21 +16,23 @@ function convertTime(logEntry: GQL.LogEntryDataFragment) {
   const date = new Date(logEntry.time);
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  let dateStr = `${date.getFullYear()  }-${  pad(month)  }-${  pad(day)}`;
-  dateStr += ` ${  pad(date.getHours())  }:${  pad(date.getMinutes())  }:${  pad(date.getSeconds())}`;
+  let dateStr = `${date.getFullYear()}-${pad(month)}-${pad(day)}`;
+  dateStr += ` ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+    date.getSeconds()
+  )}`;
 
   return dateStr;
 }
 
-function levelClass(level : string) {
+function levelClass(level: string) {
   return level.toLowerCase().trim();
 }
 
 interface ILogElementProps {
-  logEntry : LogEntry
+  logEntry: LogEntry;
 }
 
-const LogElement: React.FC<ILogElementProps> = ({ logEntry }) =>  {
+const LogElement: React.FC<ILogElementProps> = ({ logEntry }) => {
   // pad to maximum length of level enum
   const level = logEntry.level.padEnd(GQL.LogLevel.Progress.length);
 
@@ -39,11 +41,10 @@ const LogElement: React.FC<ILogElementProps> = ({ logEntry }) =>  {
       <span>{logEntry.time}</span>&nbsp;
       <span className={levelClass(logEntry.level)}>{level}</span>&nbsp;
       <span>{logEntry.message}</span>
-      <br/>
+      <br />
     </>
   );
-}
-
+};
 
 class LogEntry {
   public time: string;
@@ -77,15 +78,17 @@ export const SettingsLogsPanel: React.FC = () => {
   const newData = (data?.loggingSubscribe ?? []).map(e => new LogEntry(e));
 
   const filteredLogEntries = [...newData.reverse(), ...oldData]
-    .filter(filterByLogLevel).slice(0, MAX_LOG_ENTRIES);
+    .filter(filterByLogLevel)
+    .slice(0, MAX_LOG_ENTRIES);
 
-  const maybeRenderError = error
-    ? <div className="error">Error connecting to log server: {error.message}</div>
-    : '';
+  const maybeRenderError = error ? (
+    <div className="error">Error connecting to log server: {error.message}</div>
+  ) : (
+    ""
+  );
 
-  function filterByLogLevel(logEntry : LogEntry) {
-    if (logLevel === "Debug")
-      return true;
+  function filterByLogLevel(logEntry: LogEntry) {
+    if (logLevel === "Debug") return true;
 
     const logLevelIndex = logLevels.indexOf(logLevel);
     const levelIndex = logLevels.indexOf(logEntry.level);
@@ -104,17 +107,21 @@ export const SettingsLogsPanel: React.FC = () => {
           <Form.Control
             as="select"
             defaultValue={logLevel}
-            onChange={(event) => setLogLevel(event.currentTarget.value)}
+            onChange={event => setLogLevel(event.currentTarget.value)}
           >
-              { logLevels.map(level => (<option key={level} value={level}>{level}</option>)) }
+            {logLevels.map(level => (
+              <option key={level} value={level}>
+                {level}
+              </option>
+            ))}
           </Form.Control>
         </Col>
       </Form.Row>
       <div className="logs">
         {maybeRenderError}
-        {filteredLogEntries.map((logEntry) =>
-          <LogElement logEntry={logEntry} key={logEntry.id}/>
-        )}
+        {filteredLogEntries.map(logEntry => (
+          <LogElement logEntry={logEntry} key={logEntry.id} />
+        ))}
       </div>
     </>
   );

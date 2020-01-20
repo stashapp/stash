@@ -1,24 +1,33 @@
 import React from "react";
-import { Table } from 'react-bootstrap';
+import { Table } from "react-bootstrap";
 import { QueryHookResult } from "react-apollo-hooks";
 import { Link } from "react-router-dom";
-import { FindGalleriesQuery, FindGalleriesVariables } from "src/core/generated-graphql";
+import {
+  FindGalleriesQuery,
+  FindGalleriesVariables
+} from "src/core/generated-graphql";
 import { useGalleriesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 
 export const GalleryList: React.FC = () => {
   const listData = useGalleriesList({
-    renderContent,
+    renderContent
   });
 
-  function renderContent(result: QueryHookResult<FindGalleriesQuery, FindGalleriesVariables>, filter: ListFilterModel) {
-    if (!result.data || !result.data.findGalleries) { return; }
+  function renderContent(
+    result: QueryHookResult<FindGalleriesQuery, FindGalleriesVariables>,
+    filter: ListFilterModel
+  ) {
+    if (!result.data || !result.data.findGalleries) {
+      return;
+    }
     if (filter.displayMode === DisplayMode.Grid) {
       return <h1>TODO</h1>;
-    } if (filter.displayMode === DisplayMode.List) {
+    }
+    if (filter.displayMode === DisplayMode.List) {
       return (
-        <Table style={{margin: "0 auto"}}>
+        <Table style={{ margin: "0 auto" }}>
           <thead>
             <tr>
               <th>Preview</th>
@@ -26,20 +35,27 @@ export const GalleryList: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {result.data.findGalleries.galleries.map((gallery) => (
+            {result.data.findGalleries.galleries.map(gallery => (
               <tr key={gallery.id}>
                 <td>
                   <Link to={`/galleries/${gallery.id}`}>
-                    {gallery.files.length > 0 ? <img alt="" src={`${gallery.files[0].path}?thumb=true`} /> : undefined}
+                    {gallery.files.length > 0 ? (
+                      <img alt="" src={`${gallery.files[0].path}?thumb=true`} />
+                    ) : (
+                      undefined
+                    )}
                   </Link>
                 </td>
-                <td><Link to={`/galleries/${gallery.id}`}>{gallery.path}</Link></td>
+                <td>
+                  <Link to={`/galleries/${gallery.id}`}>{gallery.path}</Link>
+                </td>
               </tr>
             ))}
           </tbody>
         </Table>
       );
-    } if (filter.displayMode === DisplayMode.Wall) {
+    }
+    if (filter.displayMode === DisplayMode.Wall) {
       return <h1>TODO</h1>;
     }
   }

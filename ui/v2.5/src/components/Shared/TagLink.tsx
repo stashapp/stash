@@ -1,7 +1,11 @@
-import { Badge } from 'react-bootstrap';
+import { Badge } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
-import { PerformerDataFragment, SceneMarkerDataFragment, TagDataFragment } from "src/core/generated-graphql";
+import {
+  PerformerDataFragment,
+  SceneMarkerDataFragment,
+  TagDataFragment
+} from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 
 interface IProps {
@@ -21,13 +25,12 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     title = props.performer.name || "";
   } else if (props.marker) {
     link = NavUtils.makeSceneMarkerUrl(props.marker);
-    title = `${props.marker.title} - ${TextUtils.secondsToTimestamp(props.marker.seconds || 0)}`;
+    title = `${props.marker.title} - ${TextUtils.secondsToTimestamp(
+      props.marker.seconds || 0
+    )}`;
   }
   return (
-    <Badge
-      className="tag-item"
-      variant="secondary"
-    >
+    <Badge className="tag-item" variant="secondary">
       <Link to={link}>{title}</Link>
     </Badge>
   );

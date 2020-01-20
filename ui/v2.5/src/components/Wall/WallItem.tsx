@@ -11,18 +11,27 @@ interface IWallItemProps {
   sceneMarker?: GQL.SceneMarkerDataFragment;
   origin?: string;
   onOverlay: (show: boolean) => void;
-  clickHandler?: (item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment) => void;
+  clickHandler?: (
+    item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment
+  ) => void;
 }
 
-export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProps) => {
+export const WallItem: FunctionComponent<IWallItemProps> = (
+  props: IWallItemProps
+) => {
   const [videoPath, setVideoPath] = useState<string | undefined>(undefined);
   const [previewPath, setPreviewPath] = useState<string>("");
   const [screenshotPath, setScreenshotPath] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [tags, setTags] = useState<JSX.Element[]>([]);
   const config = StashService.useConfiguration();
-  const videoHoverHook = VideoHoverHook.useVideoHover({resetOnMouseLeave: true});
-  const showTextContainer = !!config.data && !!config.data.configuration ? config.data.configuration.interface.wallShowTitle : true;
+  const videoHoverHook = VideoHoverHook.useVideoHover({
+    resetOnMouseLeave: true
+  });
+  const showTextContainer =
+    !!config.data && !!config.data.configuration
+      ? config.data.configuration.interface.wallShowTitle
+      : true;
 
   function onMouseEnter() {
     VideoHoverHook.onMouseEnter(videoHoverHook);
@@ -45,7 +54,9 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
   }
 
   function onClick() {
-    if (props.clickHandler === undefined) { return; }
+    if (props.clickHandler === undefined) {
+      return;
+    }
     if (props.scene !== undefined) {
       props.clickHandler(props.scene);
     } else if (props.sceneMarker !== undefined) {
@@ -65,18 +76,28 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
   function onTransitionEnd(event: React.TransitionEvent<HTMLDivElement>) {
     const target = event.currentTarget;
     if (target.classList.contains("double-scale") && target.parentElement) {
-      target.parentElement.style.zIndex = '10';
-    } else if(target.parentElement) {
-      target.parentElement.style.zIndex = '';
+      target.parentElement.style.zIndex = "10";
+    } else if (target.parentElement) {
+      target.parentElement.style.zIndex = "";
     }
   }
 
   useEffect(() => {
     if (props.sceneMarker) {
       setPreviewPath(props.sceneMarker.preview);
-      setTitle(`${props.sceneMarker!.title} - ${TextUtils.secondsToTimestamp(props.sceneMarker.seconds)}`);
-      const thisTags = props.sceneMarker.tags.map((tag) => (<span key={tag.id}>{tag.name}</span>));
-      thisTags.unshift(<span key={props.sceneMarker.primary_tag.id}>{props.sceneMarker.primary_tag.name}</span>);
+      setTitle(
+        `${props.sceneMarker!.title} - ${TextUtils.secondsToTimestamp(
+          props.sceneMarker.seconds
+        )}`
+      );
+      const thisTags = props.sceneMarker.tags.map(tag => (
+        <span key={tag.id}>{tag.name}</span>
+      ));
+      thisTags.unshift(
+        <span key={props.sceneMarker.primary_tag.id}>
+          {props.sceneMarker.primary_tag.name}
+        </span>
+      );
       setTags(thisTags);
     } else if (props.scene) {
       setPreviewPath(props.scene.paths.webp || "");
@@ -93,9 +114,13 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
   }
 
   const className = ["scene-wall-item-container"];
-  if (videoHoverHook.isHovering.current) { className.push("double-scale"); }
+  if (videoHoverHook.isHovering.current) {
+    className.push("double-scale");
+  }
   const style: React.CSSProperties = {};
-  if (props.origin) { style.transformOrigin = props.origin; }
+  if (props.origin) {
+    style.transformOrigin = props.origin;
+  }
   return (
     <div className="wall grid-item">
       <div
@@ -110,20 +135,24 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
           <video
             src={videoPath}
             poster={screenshotPath}
-            style={videoHoverHook.isHovering.current ? {} : {display: "none"}}
+            style={videoHoverHook.isHovering.current ? {} : { display: "none" }}
             autoPlay
             loop
             ref={videoHoverHook.videoEl}
           />
-          <img alt="Preview" src={previewPath || screenshotPath} onError={() => previewNotFound()} />
-          {showTextContainer ?
+          <img
+            alt="Preview"
+            src={previewPath || screenshotPath}
+            onError={() => previewNotFound()}
+          />
+          {showTextContainer ? (
             <div className="scene-wall-item-text-container">
-              <div style={{lineHeight: 1}}>
-                {title}
-              </div>
+              <div style={{ lineHeight: 1 }}>{title}</div>
               {tags}
-            </div> : ''
-          }
+            </div>
+          ) : (
+            ""
+          )}
         </Link>
       </div>
     </div>

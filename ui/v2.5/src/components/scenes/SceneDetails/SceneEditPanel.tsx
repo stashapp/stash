@@ -1,12 +1,25 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
-import { Collapse, Dropdown, DropdownButton, Form, Button, Spinner } from 'react-bootstrap';
+import {
+  Collapse,
+  Dropdown,
+  DropdownButton,
+  Form,
+  Button,
+  Spinner
+} from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import { FilterSelect, StudioSelect, SceneGallerySelect, Modal, Icon } from "src/components/Shared";
-import { useToast } from 'src/hooks';
-import { ImageUtils } from 'src/utils';
+import {
+  FilterSelect,
+  StudioSelect,
+  SceneGallerySelect,
+  Modal,
+  Icon
+} from "src/components/Shared";
+import { useToast } from "src/hooks";
+import { ImageUtils } from "src/utils";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -23,19 +36,25 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [rating, setRating] = useState<number | undefined>(undefined);
   const [galleryId, setGalleryId] = useState<string | undefined>(undefined);
   const [studioId, setStudioId] = useState<string | undefined>(undefined);
-  const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
+  const [performerIds, setPerformerIds] = useState<string[] | undefined>(
+    undefined
+  );
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
   const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
 
   const Scrapers = StashService.useListSceneScrapers();
-  const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListSceneScrapersListSceneScrapers[]>([]);
+  const [queryableScrapers, setQueryableScrapers] = useState<
+    GQL.ListSceneScrapersListSceneScrapers[]
+  >([]);
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [deleteFile, setDeleteFile] = useState<boolean>(false);
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
 
   const [isCoverImageOpen, setIsCoverImageOpen] = useState<boolean>(false);
-  const [coverImagePreview, setCoverImagePreview] = useState<string | undefined>(undefined);
+  const [coverImagePreview, setCoverImagePreview] = useState<
+    string | undefined
+  >(undefined);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -44,21 +63,24 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const deleteScene = StashService.useSceneDestroy(getSceneDeleteInput());
 
   useEffect(() => {
-    let newQueryableScrapers : GQL.ListSceneScrapersListSceneScrapers[] = [];
+    let newQueryableScrapers: GQL.ListSceneScrapersListSceneScrapers[] = [];
 
     if (!!Scrapers.data && Scrapers.data.listSceneScrapers) {
-      newQueryableScrapers = Scrapers.data.listSceneScrapers.filter((s) => {
-        return s.scene && s.scene.supported_scrapes.includes(GQL.ScrapeType.Fragment);
+      newQueryableScrapers = Scrapers.data.listSceneScrapers.filter(s => {
+        return (
+          s.scene && s.scene.supported_scrapes.includes(GQL.ScrapeType.Fragment)
+        );
       });
     }
 
     setQueryableScrapers(newQueryableScrapers);
-
-  }, [Scrapers.data])
+  }, [Scrapers.data]);
 
   function updateSceneEditState(state: Partial<GQL.SceneDataFragment>) {
-    const perfIds = state.performers ? state.performers.map((performer) => performer.id) : undefined;
-    const tIds = state.tags ? state.tags.map((tag) => tag.id) : undefined;
+    const perfIds = state.performers
+      ? state.performers.map(performer => performer.id)
+      : undefined;
+    const tIds = state.tags ? state.tags.map(tag => tag.id) : undefined;
 
     setTitle(state.title);
     setDetails(state.details);
@@ -90,7 +112,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       studio_id: studioId,
       performer_ids: performerIds,
       tag_ids: tagIds,
-      cover_image: coverImage,
+      cover_image: coverImage
     };
   }
 
@@ -128,16 +150,23 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     props.onDelete();
   }
 
-  function renderMultiSelect(type: "performers" | "tags", initialIds: string[] = []) {
+  function renderMultiSelect(
+    type: "performers" | "tags",
+    initialIds: string[] = []
+  ) {
     return (
       <FilterSelect
         type={type}
         isMulti
-        onSelect={(items) => {
-          const ids = items.map((i) => i.id);
+        onSelect={items => {
+          const ids = items.map(i => i.id);
           switch (type) {
-            case "performers": setPerformerIds(ids); break;
-            case "tags": setTagIds(ids); break;
+            case "performers":
+              setPerformerIds(ids);
+              break;
+            case "tags":
+              setTagIds(ids);
+              break;
           }
         }}
         initialIds={initialIds}
@@ -151,16 +180,25 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
         show={isDeleteAlertOpen}
         icon="trash-alt"
         header="Delete Scene?"
-        accept={{ variant: 'danger', onClick: onDelete, text: "Delete" }}
+        accept={{ variant: "danger", onClick: onDelete, text: "Delete" }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false), text: "Cancel" }}
       >
         <p>
-          Are you sure you want to delete this scene? Unless the file is also deleted, this scene will be re-added when scan is performed.
+          Are you sure you want to delete this scene? Unless the file is also
+          deleted, this scene will be re-added when scan is performed.
         </p>
         <Form>
-          <Form.Check checked={deleteFile} label="Delete file" onChange={() => setDeleteFile(!deleteFile)} />
-          <Form.Check checked={deleteGenerated} label="Delete generated supporting files" onChange={() => setDeleteGenerated(!deleteGenerated)} />
-          </Form>
+          <Form.Check
+            checked={deleteFile}
+            label="Delete file"
+            onChange={() => setDeleteFile(!deleteFile)}
+          />
+          <Form.Check
+            checked={deleteGenerated}
+            label="Delete generated supporting files"
+            onChange={() => setDeleteGenerated(!deleteGenerated)}
+          />
+        </Form>
       </Modal>
     );
   }
@@ -174,11 +212,18 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  async function onScrapeClicked(scraper : GQL.ListSceneScrapersListSceneScrapers) {
+  async function onScrapeClicked(
+    scraper: GQL.ListSceneScrapersListSceneScrapers
+  ) {
     setIsLoading(true);
     try {
-      const result = await StashService.queryScrapeScene(scraper.id, getSceneInput());
-      if (!result.data || !result.data.scrapeScene) { return; }
+      const result = await StashService.queryScrapeScene(
+        scraper.id,
+        getSceneInput()
+      );
+      if (!result.data || !result.data.scrapeScene) {
+        return;
+      }
       updateSceneFromScrapedScene(result.data.scrapeScene);
     } catch (e) {
       Toast.error(e);
@@ -194,21 +239,22 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
     return (
       <DropdownButton id="scene-scrape" title="Scrape with...">
-        { queryableScrapers.map(s => (
-            <Dropdown.Item onClick={() => onScrapeClicked(s)}>{s.name}</Dropdown.Item>
-          ))
-        }
+        {queryableScrapers.map(s => (
+          <Dropdown.Item onClick={() => onScrapeClicked(s)}>
+            {s.name}
+          </Dropdown.Item>
+        ))}
       </DropdownButton>
     );
   }
 
-  function urlScrapable(scrapedUrl: string) : boolean {
-    return (Scrapers?.data?.listSceneScrapers ?? []).some(s => (
+  function urlScrapable(scrapedUrl: string): boolean {
+    return (Scrapers?.data?.listSceneScrapers ?? []).some(s =>
       (s?.scene?.urls ?? []).some(u => scrapedUrl.includes(u))
-    ));
+    );
   }
 
-  function updateSceneFromScrapedScene(scene : GQL.ScrapedSceneDataFragment) {
+  function updateSceneFromScrapedScene(scene: GQL.ScrapedSceneDataFragment) {
     if (!title && scene.title) {
       setTitle(scene.title);
     }
@@ -229,35 +275,47 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       setStudioId(scene.studio.id);
     }
 
-    if ((!performerIds || performerIds.length === 0) && scene.performers && scene.performers.length > 0) {
-      const idPerfs = scene.performers.filter((p) => {
+    if (
+      (!performerIds || performerIds.length === 0) &&
+      scene.performers &&
+      scene.performers.length > 0
+    ) {
+      const idPerfs = scene.performers.filter(p => {
         return p.id !== undefined && p.id !== null;
       });
 
       if (idPerfs.length > 0) {
-        const newIds = idPerfs.map((p) => p.id);
+        const newIds = idPerfs.map(p => p.id);
         setPerformerIds(newIds as string[]);
       }
     }
 
-    if ((!tagIds || tagIds.length === 0) && scene.tags && scene.tags.length > 0) {
-      const idTags = scene.tags.filter((p) => {
+    if (
+      (!tagIds || tagIds.length === 0) &&
+      scene.tags &&
+      scene.tags.length > 0
+    ) {
+      const idTags = scene.tags.filter(p => {
         return p.id !== undefined && p.id !== null;
       });
 
       if (idTags.length > 0) {
-        const newIds = idTags.map((p) => p.id);
+        const newIds = idTags.map(p => p.id);
         setTagIds(newIds as string[]);
       }
     }
   }
 
   async function onScrapeSceneURL() {
-    if (!url) { return; }
+    if (!url) {
+      return;
+    }
     setIsLoading(true);
     try {
       const result = await StashService.queryScrapeSceneURL(url);
-      if (!result.data || !result.data.scrapeSceneURL) { return; }
+      if (!result.data || !result.data.scrapeSceneURL) {
+        return;
+      }
       updateSceneFromScrapedScene(result.data.scrapeSceneURL);
     } catch (e) {
       Toast.error(e);
@@ -271,19 +329,17 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       return undefined;
     }
     return (
-      <Button
-        id="scrape-url-button"
-        onClick={onScrapeSceneURL}>
+      <Button id="scrape-url-button" onClick={onScrapeSceneURL}>
         <Icon icon="file-download" />
       </Button>
-    )
+    );
   }
 
   return (
     <>
       {renderDeleteAlert()}
       {isLoading ? <Spinner animation="border" variant="light" /> : undefined}
-      <div className="form-container " style={{width: "50%"}}>
+      <div className="form-container " style={{ width: "50%" }}>
         <Form.Group controlId="title">
           <Form.Label>Title</Form.Label>
           <Form.Control
@@ -294,7 +350,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
         <Form.Group controlId="details">
           <Form.Label>Details</Form.Label>
-            <Form.Control
+          <Form.Control
             as="textarea"
             onChange={(newValue: any) => setDetails(newValue.target.value)}
             value={details}
@@ -323,10 +379,15 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           <Form.Label>Rating</Form.Label>
           <Form.Control
             as="select"
-            onChange={(event: any) => setRating(parseInt(event.target.value, 10))}>
-              { ["", 1, 2, 3, 4, 5].map(opt => (
-                  <option selected={opt === rating} value={opt}>{opt}</option>
-              )) }
+            onChange={(event: any) =>
+              setRating(parseInt(event.target.value, 10))
+            }
+          >
+            {["", 1, 2, 3, 4, 5].map(opt => (
+              <option selected={opt === rating} value={opt}>
+                {opt}
+              </option>
+            ))}
           </Form.Control>
         </Form.Group>
 
@@ -335,14 +396,14 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           <SceneGallerySelect
             sceneId={props.scene.id}
             initialId={galleryId}
-            onSelect={(item) => setGalleryId(item ? item.id : undefined)}
+            onSelect={item => setGalleryId(item ? item.id : undefined)}
           />
         </Form.Group>
 
         <Form.Group controlId="studio">
           <Form.Label>Studio</Form.Label>
           <StudioSelect
-            onSelect={(items) => items.length && setStudioId(items[0]?.id)}
+            onSelect={items => items.length && setStudioId(items[0]?.id)}
             initialIds={studioId ? [studioId] : []}
           />
         </Form.Group>
@@ -358,7 +419,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
         </Form.Group>
 
         <div>
-          <Button variant="link" onClick={() => setIsCoverImageOpen(!isCoverImageOpen)}>
+          <Button
+            variant="link"
+            onClick={() => setIsCoverImageOpen(!isCoverImageOpen)}
+          >
             <Icon icon={isCoverImageOpen ? "chevron-down" : "chevron-right"} />
             <span>Cover Image</span>
           </Button>
@@ -366,15 +430,26 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             <div>
               <img className="scene-cover" src={coverImagePreview} alt="" />
               <Form.Group className="test" controlId="cover">
-                <Form.Control type="file" onChange={onCoverImageChange} accept=".jpg,.jpeg,.png" />
+                <Form.Control
+                  type="file"
+                  onChange={onCoverImageChange}
+                  accept=".jpg,.jpeg,.png"
+                />
               </Form.Group>
             </div>
           </Collapse>
         </div>
-
       </div>
-      <Button className="edit-button" variant="primary" onClick={onSave}>Save</Button>
-      <Button className="edit-button" variant="danger" onClick={() => setIsDeleteAlertOpen(true)}>Delete</Button>
+      <Button className="edit-button" variant="primary" onClick={onSave}>
+        Save
+      </Button>
+      <Button
+        className="edit-button"
+        variant="danger"
+        onClick={() => setIsDeleteAlertOpen(true)}
+      >
+        Delete
+      </Button>
       {renderScraperMenu()}
     </>
   );

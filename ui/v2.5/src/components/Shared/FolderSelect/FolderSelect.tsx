@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, InputGroup, Form, Modal, Spinner } from 'react-bootstrap';
+import { Button, InputGroup, Form, Modal, Spinner } from "react-bootstrap";
 import { StashService } from "src/core/StashService";
 
 interface IProps {
@@ -11,13 +11,15 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
   const [currentDirectory, setCurrentDirectory] = useState<string>("");
   const [isDisplayingDialog, setIsDisplayingDialog] = useState<boolean>(false);
   const [selectedDirectories, setSelectedDirectories] = useState<string[]>([]);
-  const { data, error, loading } = StashService.useDirectories(currentDirectory);
+  const { data, error, loading } = StashService.useDirectories(
+    currentDirectory
+  );
 
   useEffect(() => {
     setSelectedDirectories(props.directories);
   }, [props.directories]);
 
-  const selectableDirectories:string[] = data?.directories ?? [];
+  const selectableDirectories: string[] = data?.directories ?? [];
 
   function onSelectDirectory() {
     selectedDirectories.push(currentDirectory);
@@ -28,7 +30,9 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
   }
 
   function onRemoveDirectory(directory: string) {
-    const newSelectedDirectories = selectedDirectories.filter((dir) => dir !== directory);
+    const newSelectedDirectories = selectedDirectories.filter(
+      dir => dir !== directory
+    );
     setSelectedDirectories(newSelectedDirectories);
     props.onDirectoriesChanged(newSelectedDirectories);
   }
@@ -40,9 +44,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
         onHide={() => setIsDisplayingDialog(false)}
         title=""
       >
-        <Modal.Header>
-          Select Directory
-        </Modal.Header>
+        <Modal.Header>Select Directory</Modal.Header>
         <Modal.Body>
           <div className="dialog-content">
             <InputGroup>
@@ -52,11 +54,23 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
                 defaultValue={currentDirectory}
               />
               <InputGroup.Append>
-                {(!data || !data.directories || loading) ? <Spinner animation="border" variant="light" /> : ''}
+                {!data || !data.directories || loading ? (
+                  <Spinner animation="border" variant="light" />
+                ) : (
+                  ""
+                )}
               </InputGroup.Append>
             </InputGroup>
-            {selectableDirectories.map((path) => {
-              return <Button variant="link" key={path} onClick={() => setCurrentDirectory(path)}>{path}</Button>;
+            {selectableDirectories.map(path => {
+              return (
+                <Button
+                  variant="link"
+                  key={path}
+                  onClick={() => setCurrentDirectory(path)}
+                >
+                  {path}
+                </Button>
+              );
             })}
           </div>
         </Modal.Body>
@@ -69,11 +83,18 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
 
   return (
     <>
-      {error ? <h1>{error.message}</h1> : ''}
+      {error ? <h1>{error.message}</h1> : ""}
       {renderDialog()}
       <Form.Group>
-        {selectedDirectories.map((path) => {
-          return <div key={path}>{path} <Button variant="link" onClick={() => onRemoveDirectory(path)}>Remove</Button></div>;
+        {selectedDirectories.map(path => {
+          return (
+            <div key={path}>
+              {path}{" "}
+              <Button variant="link" onClick={() => onRemoveDirectory(path)}>
+                Remove
+              </Button>
+            </div>
+          );
         })}
       </Form.Group>
 

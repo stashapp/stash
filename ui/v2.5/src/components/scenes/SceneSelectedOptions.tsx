@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, ButtonGroup, Form, Spinner } from 'react-bootstrap';
+import { Button, ButtonGroup, Form, Spinner } from "react-bootstrap";
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
@@ -7,15 +7,19 @@ import { FilterSelect, StudioSelect } from "src/components/Shared";
 import { useToast } from "src/hooks";
 
 interface IListOperationProps {
-  selected: GQL.SlimSceneDataFragment[],
+  selected: GQL.SlimSceneDataFragment[];
   onScenesUpdated: () => void;
 }
 
-export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IListOperationProps) => {
+export const SceneSelectedOptions: React.FC<IListOperationProps> = (
+  props: IListOperationProps
+) => {
   const Toast = useToast();
   const [rating, setRating] = useState<string>("");
   const [studioId, setStudioId] = useState<string | undefined>(undefined);
-  const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
+  const [performerIds, setPerformerIds] = useState<string[] | undefined>(
+    undefined
+  );
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
 
   const updateScenes = StashService.useBulkSceneUpdate(getSceneInput());
@@ -23,15 +27,15 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  function getSceneInput() : GQL.BulkSceneUpdateInput {
+  function getSceneInput(): GQL.BulkSceneUpdateInput {
     // need to determine what we are actually setting on each scene
     const aggregateRating = getRating(props.selected);
     const aggregateStudioId = getStudioId(props.selected);
     const aggregatePerformerIds = getPerformerIds(props.selected);
     const aggregateTagIds = getTagIds(props.selected);
 
-    const sceneInput : GQL.BulkSceneUpdateInput = {
-      ids: props.selected.map((scene) => {
+    const sceneInput: GQL.BulkSceneUpdateInput = {
+      ids: props.selected.map(scene => {
         return scene.id;
       })
     };
@@ -39,7 +43,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
     // if rating is undefined
     if (rating === "") {
       // and all scenes have the same rating, then we are unsetting the rating.
-      if(aggregateRating) {
+      if (aggregateRating) {
         // an undefined rating is ignored in the server, so set it to 0 instead
         sceneInput.rating = 0;
       }
@@ -102,26 +106,26 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
   }
 
   function getRating(state: GQL.SlimSceneDataFragment[]) {
-    let ret : number | undefined;
+    let ret: number | undefined;
     let first = true;
 
-    state.forEach((scene : GQL.SlimSceneDataFragment) => {
+    state.forEach((scene: GQL.SlimSceneDataFragment) => {
       if (first) {
         ret = scene.rating;
         first = false;
       } else if (ret !== scene.rating) {
-          ret = undefined;
-        }
+        ret = undefined;
+      }
     });
 
     return ret;
   }
 
   function getStudioId(state: GQL.SlimSceneDataFragment[]) {
-    let ret : string | undefined;
+    let ret: string | undefined;
     let first = true;
 
-    state.forEach((scene : GQL.SlimSceneDataFragment) => {
+    state.forEach((scene: GQL.SlimSceneDataFragment) => {
       if (first) {
         ret = scene?.studio?.id;
         first = false;
@@ -137,15 +141,17 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
   }
 
   function getPerformerIds(state: GQL.SlimSceneDataFragment[]) {
-    let ret : string[] = [];
+    let ret: string[] = [];
     let first = true;
 
-    state.forEach((scene : GQL.SlimSceneDataFragment) => {
+    state.forEach((scene: GQL.SlimSceneDataFragment) => {
       if (first) {
         ret = scene.performers ? scene.performers.map(p => p.id).sort() : [];
         first = false;
       } else {
-        const perfIds = scene.performers ? scene.performers.map(p => p.id).sort() : [];
+        const perfIds = scene.performers
+          ? scene.performers.map(p => p.id).sort()
+          : [];
 
         if (!_.isEqual(ret, perfIds)) {
           ret = [];
@@ -157,10 +163,10 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
   }
 
   function getTagIds(state: GQL.SlimSceneDataFragment[]) {
-    let ret : string[] = [];
+    let ret: string[] = [];
     let first = true;
 
-    state.forEach((scene : GQL.SlimSceneDataFragment) => {
+    state.forEach((scene: GQL.SlimSceneDataFragment) => {
       if (first) {
         ret = scene.tags ? scene.tags.map(t => t.id).sort() : [];
         first = false;
@@ -178,19 +184,21 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
 
   function updateScenesEditState(state: GQL.SlimSceneDataFragment[]) {
     let updateRating = "";
-    let updateStudioId : string | undefined;
-    let updatePerformerIds : string[] = [];
-    let updateTagIds : string[] = [];
+    let updateStudioId: string | undefined;
+    let updatePerformerIds: string[] = [];
+    let updateTagIds: string[] = [];
     let first = true;
 
-    state.forEach((scene : GQL.SlimSceneDataFragment) => {
+    state.forEach((scene: GQL.SlimSceneDataFragment) => {
       const thisRating = scene.rating ? scene.rating.toString() : "";
       const thisStudio = scene.studio ? scene.studio.id : undefined;
 
       if (first) {
         updateRating = thisRating;
         updateStudioId = thisStudio;
-        updatePerformerIds = scene.performers ? scene.performers.map(p => p.id).sort() : [];
+        updatePerformerIds = scene.performers
+          ? scene.performers.map(p => p.id).sort()
+          : [];
         updateTagIds = scene.tags ? scene.tags.map(p => p.id).sort() : [];
         first = false;
       } else {
@@ -200,7 +208,9 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
         if (studioId !== thisStudio) {
           updateStudioId = undefined;
         }
-        const perfIds = scene.performers ? scene.performers.map(p => p.id).sort() : [];
+        const perfIds = scene.performers
+          ? scene.performers.map(p => p.id).sort()
+          : [];
         const tIds = scene.tags ? scene.tags.map(t => t.id).sort() : [];
 
         if (!_.isEqual(performerIds, perfIds)) {
@@ -223,16 +233,23 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
     updateScenesEditState(props.selected);
   }, [props.selected]);
 
-  function renderMultiSelect(type: "performers" | "tags", initialIds: string[] | undefined) {
+  function renderMultiSelect(
+    type: "performers" | "tags",
+    initialIds: string[] | undefined
+  ) {
     return (
       <FilterSelect
         type={type}
         isMulti
-        onSelect={(items) => {
-          const ids = items.map((i) => i.id);
+        onSelect={items => {
+          const ids = items.map(i => i.id);
           switch (type) {
-            case "performers": setPerformerIds(ids); break;
-            case "tags": setTagIds(ids); break;
+            case "performers":
+              setPerformerIds(ids);
+              break;
+            case "tags":
+              setTagIds(ids);
+              break;
           }
         }}
         initialIds={initialIds ?? []}
@@ -249,17 +266,20 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
             <Form.Label>Rating</Form.Label>
             <Form.Control
               as="select"
-              onChange={(event: any) => setRating(event.target.value)}>
-                { ["", 1, 2, 3, 4, 5].map(opt => (
-                    <option selected={opt === rating} value={opt}>{opt}</option>
-                )) }
+              onChange={(event: any) => setRating(event.target.value)}
+            >
+              {["", 1, 2, 3, 4, 5].map(opt => (
+                <option selected={opt === rating} value={opt}>
+                  {opt}
+                </option>
+              ))}
             </Form.Control>
           </Form.Group>
 
           <Form.Group controlId="studio" className="operation-item">
             <Form.Label>Studio</Form.Label>
             <StudioSelect
-              onSelect={(items) => setStudioId(items[0]?.id)}
+              onSelect={items => setStudioId(items[0]?.id)}
               initialIds={studioId ? [studioId] : []}
             />
           </Form.Group>
@@ -275,10 +295,8 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (props: IList
           </Form.Group>
 
           <ButtonGroup className="operation-item">
-            <Button
-              variant="primary"
-              onClick={onSave}>
-                Apply
+            <Button variant="primary" onClick={onSave}>
+              Apply
             </Button>
           </ButtonGroup>
         </div>

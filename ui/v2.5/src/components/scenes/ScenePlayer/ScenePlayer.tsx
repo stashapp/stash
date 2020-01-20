@@ -20,22 +20,33 @@ interface IScenePlayerState {
 }
 
 const KeyMap = {
-    NUM0: "0",
-    NUM1: "1",
-    NUM2: "2",
-    SPACE: " "
-}
+  NUM0: "0",
+  NUM1: "1",
+  NUM2: "2",
+  SPACE: " "
+};
 
-export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePlayerState> {
+export class ScenePlayerImpl extends React.Component<
+  IScenePlayerProps,
+  IScenePlayerState
+> {
   private player: any;
   private lastTime = 0;
 
   private KeyHandlers = {
-    NUM0: () => {this.onReset()},
-    NUM1: () => {this.onDecrease()},
-    NUM2: () => {this.onIncrease()},
-    SPACE: () => {this.onPause()}
-  }
+    NUM0: () => {
+      this.onReset();
+    },
+    NUM1: () => {
+      this.onDecrease();
+    },
+    NUM2: () => {
+      this.onIncrease();
+    },
+    SPACE: () => {
+      this.onPause();
+    }
+  };
 
   constructor(props: IScenePlayerProps) {
     super(props);
@@ -46,7 +57,7 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
     this.onScrubberSeek = this.onScrubberSeek.bind(this);
     this.onScrubberScrolled = this.onScrubberScrolled.bind(this);
 
-    this.state = {scrubberPosition: 0};
+    this.state = { scrubberPosition: 0 };
   }
 
   public componentDidUpdate(prevProps: IScenePlayerProps) {
@@ -58,19 +69,19 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
   onIncrease() {
     const currentPlaybackRate = this.player ? this.player.getPlaybackRate() : 1;
     this.player.setPlaybackRate(currentPlaybackRate + 0.5);
-  };
+  }
   onDecrease() {
     const currentPlaybackRate = this.player ? this.player.getPlaybackRate() : 1;
     this.player.setPlaybackRate(currentPlaybackRate - 0.5);
-  };
+  }
 
-  onReset() { this.player.setPlaybackRate(1); };
+  onReset() {
+    this.player.setPlaybackRate(1);
+  }
   onPause() {
-    if (this.player.getState().paused)
-      this.player.play();
-    else
-      this.player.pause();
-  };
+    if (this.player.getState().paused) this.player.play();
+    else this.player.pause();
+  }
 
   private onReady() {
     this.player = SceneHelpers.getPlayer();
@@ -81,7 +92,7 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
 
   private onSeeked() {
     const position = this.player.getPosition();
-    this.setState({scrubberPosition: position});
+    this.setState({ scrubberPosition: position });
     this.player.play();
   }
 
@@ -90,7 +101,7 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
     const difference = Math.abs(position - this.lastTime);
     if (difference > 1) {
       this.lastTime = position;
-      this.setState({scrubberPosition: position});
+      this.setState({ scrubberPosition: position });
     }
   }
 
@@ -103,16 +114,26 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
   }
 
   private shouldRepeat(scene: GQL.SceneDataFragment) {
-    const maxLoopDuration = this.props.config ? this.props.config.maximumLoopDuration : 0;
-    return !!scene.file.duration && !!maxLoopDuration && scene.file.duration < maxLoopDuration;
+    const maxLoopDuration = this.props.config
+      ? this.props.config.maximumLoopDuration
+      : 0;
+    return (
+      !!scene.file.duration &&
+      !!maxLoopDuration &&
+      scene.file.duration < maxLoopDuration
+    );
   }
 
   private makeJWPlayerConfig(scene: GQL.SceneDataFragment) {
-    if (!scene.paths.stream) { return {}; }
+    if (!scene.paths.stream) {
+      return {};
+    }
 
     const repeat = this.shouldRepeat(scene);
     let getDurationHook: (() => GQL.Maybe<number>) | undefined;
-    let seekHook: ((seekToPosition: number, _videoTag: any) => void) | undefined;
+    let seekHook:
+      | ((seekToPosition: number, _videoTag: any) => void)
+      | undefined;
     let getCurrentTimeHook: ((_videoTag: any) => number) | undefined;
 
     if (!this.props.scene.is_streamable) {
@@ -124,14 +145,14 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
         // eslint-disable-next-line no-param-reassign
         _videoTag.start = seekToPosition;
         // eslint-disable-next-line no-param-reassign
-        _videoTag.src = (`${this.props.scene.paths.stream  }?start=${  seekToPosition}`);
+        _videoTag.src = `${this.props.scene.paths.stream}?start=${seekToPosition}`;
         _videoTag.play();
       };
 
       getCurrentTimeHook = (_videoTag: any) => {
         const start = _videoTag.start || 0;
         return _videoTag.currentTime + start;
-      }
+      };
     }
 
     const ret = {
@@ -140,21 +161,23 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
       tracks: [
         {
           file: scene.paths.vtt,
-          kind: "thumbnails",
+          kind: "thumbnails"
         },
         {
           file: scene.paths.chapters_vtt,
-          kind: "chapters",
-        },
+          kind: "chapters"
+        }
       ],
       aspectratio: "16:9",
       width: "100%",
       floating: {
-        dismissible: true,
+        dismissible: true
       },
       cast: {},
       primary: "html5",
-      autostart: this.props.autoplay || (this.props.config ? this.props.config.autostartVideo : false),
+      autostart:
+        this.props.autoplay ||
+        (this.props.config ? this.props.config.autostartVideo : false),
       repeat,
       playbackRateControls: true,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
@@ -167,17 +190,17 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
   }
 
   renderPlayer() {
-      const config = this.makeJWPlayerConfig(this.props.scene);
-      return (
-        <ReactJWPlayer
-            playerId={SceneHelpers.getJWPlayerId()}
-            playerScript="/jwplayer/jwplayer.js"
-            customProps={config}
-            onReady={this.onReady}
-            onSeeked={this.onSeeked}
-            onTime={this.onTime}
-          />
-      );
+    const config = this.makeJWPlayerConfig(this.props.scene);
+    return (
+      <ReactJWPlayer
+        playerId={SceneHelpers.getJWPlayerId()}
+        playerScript="/jwplayer/jwplayer.js"
+        customProps={config}
+        onReady={this.onReady}
+        onSeeked={this.onSeeked}
+        onTime={this.onTime}
+      />
+    );
   }
 
   public render() {
@@ -197,8 +220,19 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
   }
 }
 
-export const ScenePlayer: React.FC<IScenePlayerProps> = (props: IScenePlayerProps) => {
-    const config = StashService.useConfiguration();
+export const ScenePlayer: React.FC<IScenePlayerProps> = (
+  props: IScenePlayerProps
+) => {
+  const config = StashService.useConfiguration();
 
-    return <ScenePlayerImpl {...props} config={config.data && config.data.configuration ? config.data.configuration.interface : undefined}/>
-}
+  return (
+    <ScenePlayerImpl
+      {...props}
+      config={
+        config.data && config.data.configuration
+          ? config.data.configuration.interface
+          : undefined
+      }
+    />
+  );
+};
