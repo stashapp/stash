@@ -4,15 +4,12 @@ documents: "../../graphql/documents/**/*.graphql"
 generates:
   src/core/generated-graphql.tsx:
     config:
-      noNamespaces: true
-      optionalType: "undefined"
-      noHOC: true
-      noComponents: true
       withHooks: true
+      withHOC: false
+      withComponents: false
     plugins:
-      - add: "/* tslint:disable */"
       - add: "/* eslint-disable */"
       - time
-      - "typescript-common"
-      - "typescript-client"
-      - "typescript-react-apollo"
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo

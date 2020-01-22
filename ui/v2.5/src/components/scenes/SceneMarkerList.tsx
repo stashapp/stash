@@ -1,10 +1,8 @@
 import _ from "lodash";
 import React from "react";
-import { QueryHookResult } from "react-apollo-hooks";
 import { useHistory } from "react-router-dom";
 import {
-  FindSceneMarkersQuery,
-  FindSceneMarkersVariables
+  FindSceneMarkersQueryResult
 } from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { NavUtils } from "src/utils";
@@ -28,7 +26,7 @@ export const SceneMarkerList: React.FC = () => {
   });
 
   async function playRandom(
-    result: QueryHookResult<FindSceneMarkersQuery, FindSceneMarkersVariables>,
+    result: FindSceneMarkersQueryResult,
     filter: ListFilterModel
   ) {
     // query for a random scene
@@ -56,7 +54,7 @@ export const SceneMarkerList: React.FC = () => {
   }
 
   function renderContent(
-    result: QueryHookResult<FindSceneMarkersQuery, FindSceneMarkersVariables>,
+    result: FindSceneMarkersQueryResult,
     filter: ListFilterModel
   ) {
     if (!result?.data?.findSceneMarkers) return;

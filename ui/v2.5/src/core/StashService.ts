@@ -1,7 +1,8 @@
 import ApolloClient from "apollo-client";
 import { WebSocketLink } from "apollo-link-ws";
 import { InMemoryCache } from "apollo-cache-inmemory";
-import { HttpLink, split } from "apollo-boost";
+import { HttpLink } from 'apollo-link-http';
+import { split } from 'apollo-link';
 import { getMainDefinition } from "apollo-utilities";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
@@ -43,8 +44,8 @@ export class StashService {
 
     const link = split(
       ({ query }) => {
-        const { kind, operation } = getMainDefinition(query);
-        return kind === "OperationDefinition" && operation === "subscription";
+        const definition = getMainDefinition(query);
+        return definition.kind === "OperationDefinition" && definition.operation === "subscription";
       },
       wsLink,
       httpLink
@@ -58,10 +59,6 @@ export class StashService {
 
     (window as any).StashService = StashService;
     return StashService.client;
-  }
-
-  private static invalidateCache() {
-    StashService.client.resetStore();
   }
 
   private static invalidateQueries(queries: string[]) {
@@ -85,7 +82,7 @@ export class StashService {
   }
 
   public static useFindGalleries(filter: ListFilterModel) {
-    return GQL.useFindGalleries({
+    return GQL.useFindGalleriesQuery({
       variables: {
         filter: filter.makeFindFilter()
       }
@@ -103,7 +100,7 @@ export class StashService {
     //   });
     // }
 
-    return GQL.useFindScenes({
+    return GQL.useFindScenesQuery({
       variables: {
         filter: filter.makeFindFilter(),
         scene_filter: sceneFilter
@@ -135,7 +132,7 @@ export class StashService {
     //   });
     // }
 
-    return GQL.useFindSceneMarkers({
+    return GQL.useFindSceneMarkersQuery({
       variables: {
         filter: filter.makeFindFilter(),
         scene_marker_filter: sceneMarkerFilter
@@ -157,7 +154,7 @@ export class StashService {
   }
 
   public static useFindStudios(filter: ListFilterModel) {
-    return GQL.useFindStudios({
+    return GQL.useFindStudiosQuery({
       variables: {
         filter: filter.makeFindFilter()
       }
@@ -175,7 +172,7 @@ export class StashService {
     //   });
     // }
 
-    return GQL.useFindPerformers({
+    return GQL.useFindPerformersQuery({
       variables: {
         filter: filter.makeFindFilter(),
         performer_filter: performerFilter
@@ -197,18 +194,18 @@ export class StashService {
   }
 
   public static useFindGallery(id: string) {
-    return GQL.useFindGallery({ variables: { id } });
+    return GQL.useFindGalleryQuery({ variables: { id } });
   }
   public static useFindScene(id: string) {
-    return GQL.useFindScene({ variables: { id } });
+    return GQL.useFindSceneQuery({ variables: { id } });
   }
   public static useFindPerformer(id: string) {
     const skip = id === "new";
-    return GQL.useFindPerformer({ variables: { id }, skip });
+    return GQL.useFindPerformerQuery({ variables: { id }, skip });
   }
   public static useFindStudio(id: string) {
     const skip = id === "new";
-    return GQL.useFindStudio({ variables: { id }, skip });
+    return GQL.useFindStudioQuery({ variables: { id }, skip });
   }
 
   // TODO - scene marker manipulation functions are handled differently
@@ -220,20 +217,20 @@ export class StashService {
   ];
 
   public static useSceneMarkerCreate() {
-    return GQL.useSceneMarkerCreate({ refetchQueries: ["FindScene"] });
+    return GQL.useSceneMarkerCreateMutation({ refetchQueries: ["FindScene"] });
   }
   public static useSceneMarkerUpdate() {
-    return GQL.useSceneMarkerUpdate({ refetchQueries: ["FindScene"] });
+    return GQL.useSceneMarkerUpdateMutation({ refetchQueries: ["FindScene"] });
   }
   public static useSceneMarkerDestroy() {
-    return GQL.useSceneMarkerDestroy({ refetchQueries: ["FindScene"] });
+    return GQL.useSceneMarkerDestroyMutation({ refetchQueries: ["FindScene"] });
   }
 
   public static useListPerformerScrapers() {
-    return GQL.useListPerformerScrapers();
+    return GQL.useListPerformerScrapersQuery();
   }
   public static useScrapePerformerList(scraperId: string, q: string) {
-    return GQL.useScrapePerformerList({
+    return GQL.useScrapePerformerListQuery({
       variables: { scraper_id: scraperId, query: q },
       skip: q === ""
     });
@@ -242,48 +239,48 @@ export class StashService {
     scraperId: string,
     scrapedPerformer: GQL.ScrapedPerformerInput
   ) {
-    return GQL.useScrapePerformer({
+    return GQL.useScrapePerformerQuery({
       variables: { scraper_id: scraperId, scraped_performer: scrapedPerformer }
     });
   }
 
   public static useListSceneScrapers() {
-    return GQL.useListSceneScrapers();
+    return GQL.useListSceneScrapersQuery();
   }
 
   public static useScrapeFreeonesPerformers(q: string) {
-    return GQL.useScrapeFreeonesPerformers({ variables: { q } });
+    return GQL.useScrapeFreeonesPerformersQuery({ variables: { q } });
   }
   public static useMarkerStrings() {
-    return GQL.useMarkerStrings();
+    return GQL.useMarkerStringsQuery();
   }
   public static useAllTags() {
-    return GQL.useAllTags();
+    return GQL.useAllTagsQuery();
   }
   public static useAllTagsForFilter() {
-    return GQL.useAllTagsForFilter();
+    return GQL.useAllTagsForFilterQuery();
   }
   public static useAllPerformersForFilter() {
-    return GQL.useAllPerformersForFilter();
+    return GQL.useAllPerformersForFilterQuery();
   }
   public static useAllStudiosForFilter() {
-    return GQL.useAllStudiosForFilter();
+    return GQL.useAllStudiosForFilterQuery();
   }
   public static useValidGalleriesForScene(sceneId: string) {
-    return GQL.useValidGalleriesForScene({ variables: { scene_id: sceneId } });
+    return GQL.useValidGalleriesForSceneQuery({ variables: { scene_id: sceneId } });
   }
   public static useStats() {
-    return GQL.useStats();
+    return GQL.useStatsQuery();
   }
   public static useVersion() {
-    return GQL.useVersion();
+    return GQL.useVersionQuery();
   }
 
   public static useConfiguration() {
-    return GQL.useConfiguration();
+    return GQL.useConfigurationQuery();
   }
   public static useDirectories(path?: string) {
-    return GQL.useDirectories({ variables: { path } });
+    return GQL.useDirectoriesQuery({ variables: { path } });
   }
 
   private static performerMutationImpactedQueries = [
@@ -294,7 +291,7 @@ export class StashService {
   ];
 
   public static usePerformerCreate(input: GQL.PerformerCreateInput) {
-    return GQL.usePerformerCreate({
+    return GQL.usePerformerCreateMutation({
       variables: input,
       update: () =>
         StashService.invalidateQueries(
@@ -303,7 +300,7 @@ export class StashService {
     });
   }
   public static usePerformerUpdate(input: GQL.PerformerUpdateInput) {
-    return GQL.usePerformerUpdate({
+    return GQL.usePerformerUpdateMutation({
       variables: input,
       update: () =>
         StashService.invalidateQueries(
@@ -312,7 +309,7 @@ export class StashService {
     });
   }
   public static usePerformerDestroy(input: GQL.PerformerDestroyInput) {
-    return GQL.usePerformerDestroy({
+    return GQL.usePerformerDestroyMutation({
       variables: input,
       update: () =>
         StashService.invalidateQueries(
@@ -331,7 +328,7 @@ export class StashService {
   ];
 
   public static useSceneUpdate(input: GQL.SceneUpdateInput) {
-    return GQL.useSceneUpdate({
+    return GQL.useSceneUpdateMutation({
       variables: input,
       update: () =>
         StashService.invalidateQueries(
@@ -351,7 +348,7 @@ export class StashService {
   ];
 
   public static useBulkSceneUpdate(input: GQL.BulkSceneUpdateInput) {
-    return GQL.useBulkSceneUpdate({
+    return GQL.useBulkSceneUpdateMutation({
       variables: input,
       update: () =>
         StashService.invalidateQueries(
@@ -361,11 +358,11 @@ export class StashService {
   }
 
   public static useScenesUpdate(input: GQL.SceneUpdateInput[]) {
-    return GQL.useScenesUpdate({ variables: { input } });
+    return GQL.useScenesUpdateMutation({ variables: { input } });
   }
 
   public static useSceneDestroy(input: GQL.SceneDestroyInput) {
-    return GQL.useSceneDestroy({
+    return GQL.useSceneDestroyMutation({
       variables: input,
       update: () =>
         StashService.invalidateQueries(
@@ -381,7 +378,7 @@ export class StashService {
   ];
 
   public static useStudioCreate(input: GQL.StudioCreateInput) {
-    return GQL.useStudioCreate({
+    return GQL.useStudioCreateMutation({
       variables: input,
       update: () =>
         StashService.invalidateQueries(
@@ -391,7 +388,7 @@ export class StashService {
   }
 
   public static useStudioUpdate(input: GQL.StudioUpdateInput) {
-    return GQL.useStudioUpdate({
+    return GQL.useStudioUpdateMutation({
       variables: input,
       update: () =>
         StashService.invalidateQueries(
@@ -401,7 +398,7 @@ export class StashService {
   }
 
   public static useStudioDestroy(input: GQL.StudioDestroyInput) {
-    return GQL.useStudioDestroy({
+    return GQL.useStudioDestroyMutation({
       variables: input,
       update: () =>
         StashService.invalidateQueries(
@@ -418,20 +415,20 @@ export class StashService {
   ];
 
   public static useTagCreate(input: GQL.TagCreateInput) {
-    return GQL.useTagCreate({
+    return GQL.useTagCreateMutation({
       variables: input,
       refetchQueries: ["AllTags", "AllTagsForFilter"]
       // update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
     });
   }
   public static useTagUpdate(input: GQL.TagUpdateInput) {
-    return GQL.useTagUpdate({
+    return GQL.useTagUpdateMutation({
       variables: input,
       refetchQueries: ["AllTags", "AllTagsForFilter"]
     });
   }
   public static useTagDestroy(input: GQL.TagDestroyInput) {
-    return GQL.useTagDestroy({
+    return GQL.useTagDestroyMutation({
       variables: input,
       refetchQueries: ["AllTags", "AllTagsForFilter"],
       update: () =>
@@ -440,35 +437,35 @@ export class StashService {
   }
 
   public static useConfigureGeneral(input: GQL.ConfigGeneralInput) {
-    return GQL.useConfigureGeneral({
+    return GQL.useConfigureGeneralMutation({
       variables: { input },
       refetchQueries: ["Configuration"]
     });
   }
 
   public static useConfigureInterface(input: GQL.ConfigInterfaceInput) {
-    return GQL.useConfigureInterface({
+    return GQL.useConfigureInterfaceMutation({
       variables: { input },
       refetchQueries: ["Configuration"]
     });
   }
 
   public static useMetadataUpdate() {
-    return GQL.useMetadataUpdate();
+    return GQL.useMetadataUpdateSubscription();
   }
 
   public static useLoggingSubscribe() {
-    return GQL.useLoggingSubscribe();
+    return GQL.useLoggingSubscribeSubscription();
   }
 
   public static useLogs() {
-    return GQL.useLogs({
+    return GQL.useLogsQuery({
       fetchPolicy: "no-cache"
     });
   }
 
   public static useJobStatus() {
-    return GQL.useJobStatus({
+    return GQL.useJobStatusQuery({
       fetchPolicy: "no-cache"
     });
   }

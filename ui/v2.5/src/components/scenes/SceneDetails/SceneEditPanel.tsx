@@ -29,52 +29,40 @@ interface IProps {
 
 export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const Toast = useToast();
-  const [title, setTitle] = useState<string | undefined>(undefined);
-  const [details, setDetails] = useState<string | undefined>(undefined);
-  const [url, setUrl] = useState<string | undefined>(undefined);
-  const [date, setDate] = useState<string | undefined>(undefined);
-  const [rating, setRating] = useState<number | undefined>(undefined);
-  const [galleryId, setGalleryId] = useState<string | undefined>(undefined);
-  const [studioId, setStudioId] = useState<string | undefined>(undefined);
-  const [performerIds, setPerformerIds] = useState<string[] | undefined>(
-    undefined
-  );
-  const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
-  const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
+  const [title, setTitle] = useState<string>();
+  const [details, setDetails] = useState<string>();
+  const [url, setUrl] = useState<string>();
+  const [date, setDate] = useState<string>();
+  const [rating, setRating] = useState<number>();
+  const [galleryId, setGalleryId] = useState<string>();
+  const [studioId, setStudioId] = useState<string>();
+  const [performerIds, setPerformerIds] = useState<string[]>();
+  const [tagIds, setTagIds] = useState<string[]>();
+  const [coverImage, setCoverImage] = useState<string>();
 
   const Scrapers = StashService.useListSceneScrapers();
-  const [queryableScrapers, setQueryableScrapers] = useState<
-    GQL.ListSceneScrapersListSceneScrapers[]
-  >([]);
+  const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [deleteFile, setDeleteFile] = useState<boolean>(false);
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
 
   const [isCoverImageOpen, setIsCoverImageOpen] = useState<boolean>(false);
-  const [coverImagePreview, setCoverImagePreview] = useState<
-    string | undefined
-  >(undefined);
+  const [coverImagePreview, setCoverImagePreview] = useState<string>();
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const updateScene = StashService.useSceneUpdate(getSceneInput());
-  const deleteScene = StashService.useSceneDestroy(getSceneDeleteInput());
+  const [updateScene] = StashService.useSceneUpdate(getSceneInput());
+  const [deleteScene] = StashService.useSceneDestroy(getSceneDeleteInput());
 
   useEffect(() => {
-    let newQueryableScrapers: GQL.ListSceneScrapersListSceneScrapers[] = [];
-
-    if (!!Scrapers.data && Scrapers.data.listSceneScrapers) {
-      newQueryableScrapers = Scrapers.data.listSceneScrapers.filter(s => {
-        return (
-          s.scene && s.scene.supported_scrapes.includes(GQL.ScrapeType.Fragment)
-        );
-      });
-    }
+    const newQueryableScrapers = (Scrapers?.data?.listSceneScrapers ?? []).filter(s => (
+        s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
+    ));
 
     setQueryableScrapers(newQueryableScrapers);
-  }, [Scrapers.data]);
+  }, [Scrapers]);
 
   function updateSceneEditState(state: Partial<GQL.SceneDataFragment>) {
     const perfIds = state.performers
@@ -82,20 +70,20 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       : undefined;
     const tIds = state.tags ? state.tags.map(tag => tag.id) : undefined;
 
-    setTitle(state.title);
-    setDetails(state.details);
-    setUrl(state.url);
-    setDate(state.date);
+    setTitle(state.title ?? undefined);
+    setDetails(state.details ?? undefined);
+    setUrl(state.url ?? undefined);
+    setDate(state.date ?? undefined);
     setRating(state.rating === null ? NaN : state.rating);
-    setGalleryId(state.gallery ? state.gallery.id : undefined);
-    setStudioId(state.studio ? state.studio.id : undefined);
+    setGalleryId(state?.gallery?.id ?? undefined);
+    setStudioId(state?.studio?.id ?? undefined);
     setPerformerIds(perfIds);
     setTagIds(tIds);
   }
 
   useEffect(() => {
     updateSceneEditState(props.scene);
-    setCoverImagePreview(props.scene.paths.screenshot);
+    setCoverImagePreview(props.scene?.paths?.screenshot ?? undefined);
   }, [props.scene]);
 
   ImageUtils.usePasteImage(onImageLoad);
@@ -120,8 +108,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setIsLoading(true);
     try {
       const result = await updateScene();
-      props.onUpdate(result.data.sceneUpdate);
-      Toast.success({ content: "Updated scene" });
+      if(result.data?.sceneUpdate) {
+        props.onUpdate(result.data.sceneUpdate);
+        Toast.success({ content: "Updated scene" });
+      }
     } catch (e) {
       Toast.error(e);
     }
@@ -213,7 +203,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   }
 
   async function onScrapeClicked(
-    scraper: GQL.ListSceneScrapersListSceneScrapers
+    scraper: GQL.Scraper
   ) {
     setIsLoading(true);
     try {

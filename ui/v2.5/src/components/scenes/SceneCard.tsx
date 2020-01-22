@@ -18,16 +18,13 @@ interface ISceneCardProps {
 export const SceneCard: React.FC<ISceneCardProps> = (
   props: ISceneCardProps
 ) => {
-  const [previewPath, setPreviewPath] = useState<string | undefined>(undefined);
+  const [previewPath, setPreviewPath] = useState<string>();
   const videoHoverHook = VideoHoverHook.useVideoHover({
     resetOnMouseLeave: false
   });
 
   const config = StashService.useConfiguration();
-  const showStudioAsText =
-    !!config.data && !!config.data.configuration
-      ? config.data.configuration.interface.showStudioAsText
-      : false;
+  const showStudioAsText = config?.data?.configuration.interface.showStudioAsText ?? false;
 
   function maybeRenderRatingBanner() {
     if (!props.scene.rating) {
@@ -55,9 +52,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         ) : (
           ""
         )}
-        {props.scene.file.duration !== undefined &&
-        props.scene.file.duration >= 1
-          ? TextUtils.secondsToTimestamp(props.scene.file.duration)
+        { (props.scene.file.duration ?? 0) >= 1
+          ? TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)
           : ""}
       </div>
     );
@@ -225,7 +221,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             : TextUtils.fileNameFromPath(props.scene.path)}
         </h4>
         <span>{props.scene.date}</span>
-        <p>{TextUtils.truncate(props.scene.details, 100, "... (continued)")}</p>
+        <p>{TextUtils.truncate(props.scene.details ?? "", 100, "... (continued)")}</p>
       </div>
 
       {maybeRenderPopoverButtonGroup()}

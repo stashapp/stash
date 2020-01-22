@@ -21,8 +21,8 @@ import { useToast } from "src/hooks";
 import { Pagination } from "../list/Pagination";
 
 class ParserResult<T> {
-  public value: GQL.Maybe<T>;
-  public originalValue: GQL.Maybe<T>;
+  public value: GQL.Maybe<T> = null;
+  public originalValue: GQL.Maybe<T> = null;
   public set: boolean = false;
 
   public setOriginalValue(v: GQL.Maybe<T>) {
@@ -110,60 +110,52 @@ class SceneParserResult {
   public title: ParserResult<string> = new ParserResult();
   public date: ParserResult<string> = new ParserResult();
 
-  public studio: ParserResult<GQL.SlimSceneDataStudio> = new ParserResult();
+  public studio: ParserResult<Partial<GQL.Studio>> = new ParserResult();
   public studioId: ParserResult<string> = new ParserResult();
-  public tags: ParserResult<GQL.SlimSceneDataTags[]> = new ParserResult();
+  public tags: ParserResult<GQL.Tag[]> = new ParserResult();
   public tagIds: ParserResult<string[]> = new ParserResult();
-  public performers: ParserResult<
-    GQL.SlimSceneDataPerformers[]
-  > = new ParserResult();
+  public performers: ParserResult<Partial<GQL.Performer>[]> = new ParserResult();
   public performerIds: ParserResult<string[]> = new ParserResult();
 
   public scene: GQL.SlimSceneDataFragment;
 
-  constructor(result: GQL.ParseSceneFilenamesResults) {
+  constructor(result: GQL.ParseSceneFilenamesQuery["parseSceneFilenames"]["results"][0]) {
     this.scene = result.scene;
 
     this.id = this.scene.id;
     this.filename = TextUtils.fileNameFromPath(this.scene.path);
-    this.title.setOriginalValue(this.scene.title);
-    this.date.setOriginalValue(this.scene.date);
+    this.title.setOriginalValue(this.scene.title ?? null);
+    this.date.setOriginalValue(this.scene.date ?? null);
     this.performerIds.setOriginalValue(this.scene.performers.map(p => p.id));
     this.performers.setOriginalValue(this.scene.performers);
     this.tagIds.setOriginalValue(this.scene.tags.map(t => t.id));
     this.tags.setOriginalValue(this.scene.tags);
-    this.studioId.setOriginalValue(
-      this.scene.studio ? this.scene.studio.id : undefined
-    );
-    this.studio.setOriginalValue(this.scene.studio);
+    this.studioId.setOriginalValue(this.scene.studio?.id ?? null);
+    this.studio.setOriginalValue(this.scene.studio ?? null);
 
-    this.title.setValue(result.title);
-    this.date.setValue(result.date);
-    this.performerIds.setValue(result.performer_ids);
-    this.tagIds.setValue(result.tag_ids);
-    this.studioId.setValue(result.studio_id);
+    this.title.setValue(result.title ?? null);
+    this.date.setValue(result.date ?? null);
+    this.performerIds.setValue(result.performer_ids ?? []);
+    this.tagIds.setValue(result.tag_ids ?? []);
+    this.studioId.setValue(result.studio_id ?? null);
 
     if (result.performer_ids) {
       this.performers.setValue(
-        result.performer_ids.map(p => {
-          return {
-            id: p,
-            name: "",
-            favorite: false,
-            image_path: ""
-          };
-        })
+        (result.performer_ids ?? []).map(p => ({
+          id: p,
+          name: "",
+          favorite: false,
+          image_path: ""
+        } as GQL.Performer))
       );
     }
 
     if (result.tag_ids) {
       this.tags.setValue(
-        result.tag_ids.map(t => {
-          return {
+        result.tag_ids.map(t => ({
             id: t,
             name: ""
-          };
-        })
+        }))
       );
     }
 
@@ -172,7 +164,7 @@ class SceneParserResult {
         id: result.studio_id,
         name: "",
         image_path: ""
-      });
+      } as GQL.Studio);
     }
   }
 
@@ -324,7 +316,7 @@ export const SceneFilenameParser: React.FC = () => {
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const updateScenes = StashService.useScenesUpdate(getScenesUpdateData());
+  const [updateScenes] = StashService.useScenesUpdate(getScenesUpdateData());
 
   const determineFieldsToHide = useCallback(() => {
     const { pattern } = parserInput;
@@ -351,7 +343,7 @@ export const SceneFilenameParser: React.FC = () => {
   }, [parserInput]);
 
   const parseResults = useCallback(
-    (results: GQL.ParseSceneFilenamesResults[]) => {
+    (results: GQL.ParseSceneFilenamesQuery["parseSceneFilenames"]["results"]) => {
       if (results) {
         const result = results
           .map(r => {
@@ -905,7 +897,7 @@ export const SceneFilenameParser: React.FC = () => {
           fieldName="Title"
           className="parser-field-title"
           parserResult={props.scene.title}
-          onSetChanged={set => onTitleChanged(set, props.scene.title.value)}
+          onSetChanged={set => onTitleChanged(set, props.scene.title.value ?? undefined)}
           onValueChanged={value => onTitleChanged(props.scene.title.set, value)}
           renderOriginalInputField={renderOriginalInputGroup}
           renderNewInputField={renderNewInputGroup}
@@ -915,7 +907,7 @@ export const SceneFilenameParser: React.FC = () => {
           fieldName="Date"
           className="parser-field-date"
           parserResult={props.scene.date}
-          onSetChanged={set => onDateChanged(set, props.scene.date.value)}
+          onSetChanged={set => onDateChanged(set, props.scene.date.value ?? undefined)}
           onValueChanged={value => onDateChanged(props.scene.date.set, value)}
           renderOriginalInputField={renderOriginalInputGroup}
           renderNewInputField={renderNewInputGroup}
@@ -927,7 +919,7 @@ export const SceneFilenameParser: React.FC = () => {
           parserResult={props.scene.performerIds}
           originalParserResult={props.scene.performers}
           onSetChanged={set =>
-            onPerformerIdsChanged(set, props.scene.performerIds.value)
+            onPerformerIdsChanged(set, props.scene.performerIds.value ?? undefined)
           }
           onValueChanged={value =>
             onPerformerIdsChanged(props.scene.performerIds.set, value)
@@ -941,7 +933,7 @@ export const SceneFilenameParser: React.FC = () => {
           className="parser-field-tags"
           parserResult={props.scene.tagIds}
           originalParserResult={props.scene.tags}
-          onSetChanged={set => onTagIdsChanged(set, props.scene.tagIds.value)}
+          onSetChanged={set => onTagIdsChanged(set, props.scene.tagIds.value ?? undefined)}
           onValueChanged={value =>
             onTagIdsChanged(props.scene.tagIds.set, value)
           }
@@ -955,7 +947,7 @@ export const SceneFilenameParser: React.FC = () => {
           parserResult={props.scene.studioId}
           originalParserResult={props.scene.studio}
           onSetChanged={set =>
-            onStudioIdChanged(set, props.scene.studioId.value)
+            onStudioIdChanged(set, props.scene.studioId.value ?? undefined)
           }
           onValueChanged={value =>
             onStudioIdChanged(props.scene.studioId.set, value)

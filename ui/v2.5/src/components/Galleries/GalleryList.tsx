@@ -1,10 +1,8 @@
 import React from "react";
 import { Table } from "react-bootstrap";
-import { QueryHookResult } from "react-apollo-hooks";
 import { Link } from "react-router-dom";
 import {
-  FindGalleriesQuery,
-  FindGalleriesVariables
+  FindGalleriesQueryResult,
 } from "src/core/generated-graphql";
 import { useGalleriesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -16,7 +14,7 @@ export const GalleryList: React.FC = () => {
   });
 
   function renderContent(
-    result: QueryHookResult<FindGalleriesQuery, FindGalleriesVariables>,
+    result: FindGalleriesQueryResult,
     filter: ListFilterModel
   ) {
     if (!result.data || !result.data.findGalleries) {

@@ -14,7 +14,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [css, setCSS] = useState<string>();
   const [cssEnabled, setCSSEnabled] = useState<boolean>();
 
-  const updateInterfaceConfig = StashService.useConfigureInterface({
+  const [updateInterfaceConfig] = StashService.useConfigureInterface({
     soundOnPreview,
     wallShowTitle,
     maximumLoopDuration,

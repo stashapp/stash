@@ -31,25 +31,25 @@ export const Studio: React.FC = () => {
   );
 
   const { data, error, loading } = StashService.useFindStudio(id);
-  const updateStudio = StashService.useStudioUpdate(
+  const [updateStudio] = StashService.useStudioUpdate(
     getStudioInput() as GQL.StudioUpdateInput
   );
-  const createStudio = StashService.useStudioCreate(
+  const [createStudio] = StashService.useStudioCreate(
     getStudioInput() as GQL.StudioCreateInput
   );
-  const deleteStudio = StashService.useStudioDestroy(
+  const [deleteStudio] = StashService.useStudioDestroy(
     getStudioInput() as GQL.StudioDestroyInput
   );
 
   function updateStudioEditState(state: Partial<GQL.StudioDataFragment>) {
     setName(state.name);
-    setUrl(state.url);
+    setUrl(state.url ?? undefined);
   }
 
   function updateStudioData(studioData: Partial<GQL.StudioDataFragment>) {
     setImage(undefined);
     updateStudioEditState(studioData);
-    setImagePreview(studioData.image_path);
+    setImagePreview(studioData.image_path ?? undefined);
     setStudio(studioData);
   }
 
@@ -57,7 +57,7 @@ export const Studio: React.FC = () => {
     if (data && data.findStudio) {
       setImage(undefined);
       updateStudioEditState(data.findStudio);
-      setImagePreview(data.findStudio.image_path);
+      setImagePreview(data.findStudio.image_path ?? undefined);
       setStudio(data.findStudio);
     }
   }, [data]);
@@ -92,11 +92,14 @@ export const Studio: React.FC = () => {
     try {
       if (!isNew) {
         const result = await updateStudio();
-        updateStudioData(result.data.studioUpdate);
-        setIsEditing(false);
+        if (result.data?.studioUpdate) {
+          updateStudioData(result.data.studioUpdate);
+          setIsEditing(false);
+        }
       } else {
         const result = await createStudio();
-        history.push(`/studios/${result.data.studioCreate.id}`);
+        if(result.data?.studioCreate?.id)
+          history.push(`/studios/${result.data.studioCreate.id}`);
       }
     } catch (e) {
       Toast.error(e);
@@ -169,7 +172,7 @@ export const Studio: React.FC = () => {
           <tbody>
             {TableUtils.renderInputGroup({
               title: "URL",
-              value: studio.url,
+              value: studio.url ?? undefined,
               isEditing,
               onChange: (val: string) => setUrl(val)
             })}

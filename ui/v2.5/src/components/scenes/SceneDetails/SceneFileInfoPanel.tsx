@@ -38,7 +38,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       <tr>
         <td>Stream</td>
         <td>
-          <a href={props.scene.paths.stream}>{props.scene.paths.stream}</a>{" "}
+          <a href={props.scene.paths.stream ?? ''}>{props.scene.paths.stream}</a>{" "}
         </td>
       </tr>
     );
@@ -51,7 +51,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <tr>
         <td>File Size</td>
-        <td>{TextUtils.fileSize(parseInt(props.scene.file.size, 10))}</td>
+        <td>{TextUtils.fileSize(parseInt(props.scene.file.size ?? '0', 10))}</td>
       </tr>
     );
   }
@@ -63,7 +63,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <tr>
         <td>Duration</td>
-        <td>{TextUtils.secondsToTimestamp(props.scene.file.duration)}</td>
+        <td>{TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)}</td>
       </tr>
     );
   }
@@ -101,7 +101,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <tr>
         <td>Bit Rate</td>
-        <td>{TextUtils.bitRate(props.scene.file.bitrate)}</td>
+        <td>{TextUtils.bitRate(props.scene.file.bitrate ?? 0)}</td>
       </tr>
     );
   }

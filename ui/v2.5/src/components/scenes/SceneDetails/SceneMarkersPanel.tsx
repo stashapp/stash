@@ -41,9 +41,9 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
     setEditingMarker
   ] = useState<GQL.SceneMarkerDataFragment | null>(null);
 
-  const sceneMarkerCreate = StashService.useSceneMarkerCreate();
-  const sceneMarkerUpdate = StashService.useSceneMarkerUpdate();
-  const sceneMarkerDestroy = StashService.useSceneMarkerDestroy();
+  const [sceneMarkerCreate] = StashService.useSceneMarkerCreate();
+  const [sceneMarkerUpdate] = StashService.useSceneMarkerUpdate();
+  const [sceneMarkerDestroy] = StashService.useSceneMarkerDestroy();
 
   const jwplayer = SceneHelpers.getPlayer();
 
@@ -57,7 +57,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
   }
 
   function renderTags() {
-    function renderMarkers(primaryTag: GQL.FindSceneSceneMarkerTags) {
+    function renderMarkers(primaryTag: GQL.SceneMarkerTag) {
       const markers = primaryTag.scene_markers.map(marker => {
         const markerTags = marker.tags.map(tag => (
           <Badge key={tag.id} variant="secondary" className="tag-item">
@@ -102,7 +102,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
       flex: "0 0 auto"
     };
     const tags = (props.scene as any).scene_marker_tags.map(
-      (primaryTag: GQL.FindSceneSceneMarkerTags) => {
+      (primaryTag: GQL.SceneMarkerTag) => {
         return (
           <div key={primaryTag.tag.id} style={{ padding: "1px" }}>
             <Card style={style}>
@@ -122,8 +122,8 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
     function onSubmit(values: IFormFields) {
       const isEditing = !!editingMarker;
       const variables:
-        | GQL.SceneMarkerCreateVariables
-        | GQL.SceneMarkerUpdateVariables = {
+        | GQL.SceneMarkerUpdateInput
+        | GQL.SceneMarkerCreateInput = {
         title: values.title,
         seconds: parseFloat(values.seconds),
         scene_id: props.scene.id,
@@ -138,7 +138,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
           })
           .catch(err => Toast.error(err));
       } else {
-        const updateVariables = variables as GQL.SceneMarkerUpdateVariables;
+        const updateVariables = variables as GQL.SceneMarkerUpdateInput;
         updateVariables.id = editingMarker!.id;
         sceneMarkerUpdate({ variables: updateVariables })
           .then(() => {
@@ -178,7 +178,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
               Math.round(jwplayer.getPosition())
             )
           }
-          numericValue={fieldProps.field.value}
+          numericValue={Number.parseInt(fieldProps.field.value.seconds, 10)}
         />
       );
     }

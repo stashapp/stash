@@ -1,8 +1,6 @@
 import React from "react";
-import { QueryHookResult } from "react-apollo-hooks";
 import {
-  FindStudiosQuery,
-  FindStudiosVariables
+  FindStudiosQueryResult
 } from "src/core/generated-graphql";
 import { useStudiosList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -15,7 +13,7 @@ export const StudioList: React.FC = () => {
   });
 
   function renderContent(
-    result: QueryHookResult<FindStudiosQuery, FindStudiosVariables>,
+    result: FindStudiosQueryResult,
     filter: ListFilterModel
   ) {
     if (!result.data || !result.data.findStudios) {

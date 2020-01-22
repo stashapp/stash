@@ -34,10 +34,10 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     if (scene.file.duration === undefined) {
       return;
     }
-    return TextUtils.secondsToTimestamp(scene.file.duration);
+    return TextUtils.secondsToTimestamp(scene.file.duration ?? 0);
   }
 
-  function renderTags(tags: GQL.SlimSceneDataTags[]) {
+  function renderTags(tags: GQL.Tag[]) {
     return tags.map(tag => (
       <Link to={NavUtils.makeTagScenesUrl(tag)}>
         <h6>{tag.name}</h6>
@@ -45,7 +45,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     ));
   }
 
-  function renderPerformers(performers: GQL.SlimSceneDataPerformers[]) {
+  function renderPerformers(performers: Partial<GQL.Performer>[]) {
     return performers.map(performer => (
       <Link to={NavUtils.makePerformerScenesUrl(performer)}>
         <h6>{performer.name}</h6>
@@ -53,7 +53,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
     ));
   }
 
-  function renderStudio(studio: GQL.SlimSceneDataStudio | undefined) {
+  function renderStudio(studio: Partial<GQL.Studio> | undefined) {
     if (studio) {
       return (
         <Link to={NavUtils.makeStudioScenesUrl(studio)}>
@@ -78,7 +78,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
         <td>{renderDuration(scene)}</td>
         <td>{renderTags(scene.tags)}</td>
         <td>{renderPerformers(scene.performers)}</td>
-        <td>{renderStudio(scene.studio)}</td>
+        <td>{renderStudio(scene.studio ?? undefined)}</td>
       </tr>
     );
   }

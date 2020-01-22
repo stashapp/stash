@@ -22,84 +22,70 @@ export const Performer: React.FC = () => {
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
-  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<
-    GQL.ListPerformerScrapersListPerformerScrapers | undefined
-  >(undefined);
-  const [scrapePerformerDetails, setScrapePerformerDetails] = useState<
-    GQL.ScrapePerformerListScrapePerformerList | undefined
-  >(undefined);
+  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<GQL.Scraper>();
+  const [scrapePerformerDetails, setScrapePerformerDetails] = useState<GQL.ScrapedPerformerDataFragment>();
 
   // Editing performer state
-  const [image, setImage] = useState<string | undefined>(undefined);
-  const [name, setName] = useState<string | undefined>(undefined);
-  const [aliases, setAliases] = useState<string | undefined>(undefined);
-  const [favorite, setFavorite] = useState<boolean | undefined>(undefined);
-  const [birthdate, setBirthdate] = useState<string | undefined>(undefined);
-  const [ethnicity, setEthnicity] = useState<string | undefined>(undefined);
-  const [country, setCountry] = useState<string | undefined>(undefined);
-  const [eyeColor, setEyeColor] = useState<string | undefined>(undefined);
-  const [height, setHeight] = useState<string | undefined>(undefined);
-  const [measurements, setMeasurements] = useState<string | undefined>(
-    undefined
-  );
-  const [fakeTits, setFakeTits] = useState<string | undefined>(undefined);
-  const [careerLength, setCareerLength] = useState<string | undefined>(
-    undefined
-  );
-  const [tattoos, setTattoos] = useState<string | undefined>(undefined);
-  const [piercings, setPiercings] = useState<string | undefined>(undefined);
-  const [url, setUrl] = useState<string | undefined>(undefined);
-  const [twitter, setTwitter] = useState<string | undefined>(undefined);
-  const [instagram, setInstagram] = useState<string | undefined>(undefined);
+  const [image, setImage] = useState<string>();
+  const [name, setName] = useState<string>();
+  const [aliases, setAliases] = useState<string>();
+  const [favorite, setFavorite] = useState<boolean>();
+  const [birthdate, setBirthdate] = useState<string>();
+  const [ethnicity, setEthnicity] = useState<string>();
+  const [country, setCountry] = useState<string>();
+  const [eyeColor, setEyeColor] = useState<string>();
+  const [height, setHeight] = useState<string>();
+  const [measurements, setMeasurements] = useState<string>();
+  const [fakeTits, setFakeTits] = useState<string>();
+  const [careerLength, setCareerLength] = useState<string>();
+  const [tattoos, setTattoos] = useState<string>();
+  const [piercings, setPiercings] = useState<string>();
+  const [url, setUrl] = useState<string>();
+  const [twitter, setTwitter] = useState<string>();
+  const [instagram, setInstagram] = useState<string>();
 
   // Performer state
-  const [performer, setPerformer] = useState<
-    Partial<GQL.PerformerDataFragment>
-  >({});
-  const [imagePreview, setImagePreview] = useState<string | undefined>(
-    undefined
-  );
+  const [performer, setPerformer] = useState<Partial<GQL.PerformerDataFragment>>({});
+  const [imagePreview, setImagePreview] = useState<string>();
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
   const Scrapers = StashService.useListPerformerScrapers();
-  const [queryableScrapers, setQueryableScrapers] = useState<
-    GQL.ListPerformerScrapersListPerformerScrapers[]
-  >([]);
+  const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
   const { data, error } = StashService.useFindPerformer(id);
-  const updatePerformer = StashService.usePerformerUpdate(
+  const [updatePerformer] = StashService.usePerformerUpdate(
     getPerformerInput() as GQL.PerformerUpdateInput
   );
-  const createPerformer = StashService.usePerformerCreate(
+  const [createPerformer] = StashService.usePerformerCreate(
     getPerformerInput() as GQL.PerformerCreateInput
   );
-  const deletePerformer = StashService.usePerformerDestroy(
+  const [deletePerformer] = StashService.usePerformerDestroy(
     getPerformerInput() as GQL.PerformerDestroyInput
   );
 
   function updatePerformerEditState(
-    state: Partial<GQL.PerformerDataFragment | GQL.ScrapeFreeonesScrapeFreeones>
+    state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformer>
   ) {
     if ((state as GQL.PerformerDataFragment).favorite !== undefined) {
       setFavorite((state as GQL.PerformerDataFragment).favorite);
     }
-    setName(state.name);
-    setAliases(state.aliases);
-    setBirthdate(state.birthdate);
-    setEthnicity(state.ethnicity);
-    setCountry(state.country);
-    setEyeColor(state.eye_color);
-    setHeight(state.height);
-    setMeasurements(state.measurements);
-    setFakeTits(state.fake_tits);
-    setCareerLength(state.career_length);
-    setTattoos(state.tattoos);
-    setPiercings(state.piercings);
-    setUrl(state.url);
-    setTwitter(state.twitter);
-    setInstagram(state.instagram);
+    setName(state.name ?? undefined);
+    setAliases(state.aliases ?? undefined);
+    setBirthdate(state.birthdate ?? undefined);
+    setEthnicity(state.ethnicity ?? undefined);
+    setCountry(state.country ?? undefined);
+    setEyeColor(state.eye_color ?? undefined);
+    setHeight(state.height ?? undefined);
+    setMeasurements(state.measurements ?? undefined);
+    setFakeTits(state.fake_tits ?? undefined);
+    setCareerLength(state.career_length ?? undefined);
+    setTattoos(state.tattoos ?? undefined);
+    setPiercings(state.piercings ?? undefined);
+    setUrl(state.url ?? undefined);
+    setTwitter(state.twitter ?? undefined);
+    setInstagram(state.instagram ?? undefined);
   }
 
   useEffect(() => {
@@ -108,10 +94,11 @@ export const Performer: React.FC = () => {
   }, [data]);
 
   useEffect(() => {
-    setImagePreview(performer.image_path);
+    setImagePreview(performer.image_path ?? undefined);
     setImage(undefined);
     updatePerformerEditState(performer);
-    setIsEditing(false);
+    if (!isNew)
+      setIsEditing(false);
   }, [performer]);
 
   function onImageLoad(this: FileReader) {
@@ -122,19 +109,12 @@ export const Performer: React.FC = () => {
   ImageUtils.usePasteImage(onImageLoad);
 
   useEffect(() => {
-    let newQueryableScrapers: GQL.ListPerformerScrapersListPerformerScrapers[] = [];
-
-    if (!!Scrapers.data && Scrapers.data.listPerformerScrapers) {
-      newQueryableScrapers = Scrapers.data.listPerformerScrapers.filter(s => {
-        return (
-          s.performer &&
-          s.performer.supported_scrapes.includes(GQL.ScrapeType.Name)
-        );
-      });
-    }
+    const newQueryableScrapers = (Scrapers?.data?.listPerformerScrapers ?? []).filter(s => (
+        s.performer?.supported_scrapes.includes(GQL.ScrapeType.Name)
+    ));
 
     setQueryableScrapers(newQueryableScrapers);
-  }, [Scrapers.data]);
+  }, [Scrapers]);
 
   if ((!isNew && !isEditing && !data?.findPerformer) || isLoading)
     return <Spinner animation="border" variant="light" />;
@@ -174,11 +154,14 @@ export const Performer: React.FC = () => {
     try {
       if (!isNew) {
         const result = await updatePerformer();
-        setPerformer(result.data.performerUpdate);
+        if(result.data?.performerUpdate)
+          setPerformer(result.data?.performerUpdate);
       } else {
         const result = await createPerformer();
-        setPerformer(result.data.performerCreate);
-        history.push(`/performers/${result.data.performerCreate.id}`);
+        if(result.data?.performerCreate) {
+          setPerformer(result.data.performerCreate);
+          history.push(`/performers/${result.data.performerCreate.id}`);
+        }
       }
     } catch (e) {
       Toast.error(e);
@@ -200,7 +183,7 @@ export const Performer: React.FC = () => {
   }
 
   async function onAutoTag() {
-    if (!performer || !performer.id) {
+    if (!performer.id) {
       return;
     }
     try {
@@ -216,7 +199,7 @@ export const Performer: React.FC = () => {
   }
 
   function onDisplayFreeOnesDialog(
-    scraper: GQL.ListPerformerScrapersListPerformerScrapers
+    scraper: GQL.Scraper
   ) {
     setIsDisplayingScraperDialog(scraper);
   }
@@ -225,6 +208,7 @@ export const Performer: React.FC = () => {
     if (!scrapePerformerDetails) return {};
 
     const { __typename, ...ret } = scrapePerformerDetails;
+    debugger;
     return ret;
   }
 

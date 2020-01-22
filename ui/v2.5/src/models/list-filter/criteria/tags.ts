@@ -3,7 +3,7 @@ import { ILabeledId } from "../types";
 import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
 export class TagsCriterion extends Criterion<
-  GQL.AllTagsForFilterAllTags,
+  GQL.Tag,
   ILabeledId[]
 > {
   public type: CriterionType;
@@ -14,7 +14,7 @@ export class TagsCriterion extends Criterion<
     Criterion.getModifierOption(GQL.CriterionModifier.Includes),
     Criterion.getModifierOption(GQL.CriterionModifier.Excludes)
   ];
-  public options: GQL.AllTagsForFilterAllTags[] = [];
+  public options: GQL.Tag[] = [];
   public value: ILabeledId[] = [];
 
   constructor(type: "tags" | "sceneTags") {
