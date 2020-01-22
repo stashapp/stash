@@ -18,7 +18,7 @@ interface ILocalForage<T> {
   loading: boolean;
 }
 
-export function useInterfaceLocalForage(): ILocalForage<IInterfaceConfig | undefined> {
+export function useInterfaceLocalForage(): [ILocalForage<IInterfaceConfig | undefined>, React.Dispatch<React.SetStateAction<IInterfaceConfig | undefined>>] {
   const result = useLocalForage("interface");
   // Set defaults
   React.useEffect(() => {
@@ -31,7 +31,7 @@ export function useInterfaceLocalForage(): ILocalForage<IInterfaceConfig | undef
       });
     }
   });
-  return result;
+  return [result, result.setData];
 }
 
 function useLocalForage(item: string): ILocalForage<ValidTypes> {

@@ -103,7 +103,7 @@ export class ListHook {
     const [totalCount, setTotalCount] = useState<number>(0);
     const [zoomIndex, setZoomIndex] = useState<number>(1);
 
-    const interfaceForage = useInterfaceLocalForage();
+    const [interfaceForage, setInterfaceForage] = useInterfaceLocalForage();
     const forageInitialised = useRef<boolean>(false);
 
     const filterListImpl = getFilterListImpl(options.filterMode);
@@ -181,7 +181,7 @@ export class ListHook {
           location.search = filter.makeQueryParameters();
           options.props.history.replace(location);
 
-          interfaceForage.setData((d) => {
+          setInterfaceForage((d) => {
             const dataClone = _.cloneDeep(d);
             dataClone!.queries[options.filterMode] = {
               filter: location.search,
@@ -192,7 +192,7 @@ export class ListHook {
           });
         }
       }
-    }, [result.data, filter, options.subComponent, options.filterMode, options.props.history, interfaceForage.setData]);
+    }, [result.data, filter, options.subComponent, options.filterMode, options.props.history, setInterfaceForage]);
 
     function onChangePageSize(pageSize: number) {
       const newFilter = _.cloneDeep(filter);
