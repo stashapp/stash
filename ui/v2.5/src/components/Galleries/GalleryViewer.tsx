@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from "react";
-import Lightbox from "react-images";
+import Lightbox from 'react-images';
 import Gallery from "react-photo-gallery";
 import * as GQL from "src/core/generated-graphql";
 
@@ -30,14 +30,15 @@ export const GalleryViewer: FunctionComponent<IProps> = ({ gallery }) => {
   }
 
   const photos = gallery.files.map(file => ({
-    src: file.path || "",
-    caption: file.name
+    src: file.path ?? '',
+    caption: file.name ?? ''
   }));
   const thumbs = gallery.files.map(file => ({
     src: `${file.path}?thumb=true` || "",
     width: 1,
     height: 1
   }));
+
   return (
     <div>
       <Gallery photos={thumbs} columns={15} onClick={openLightbox} />
@@ -47,8 +48,8 @@ export const GalleryViewer: FunctionComponent<IProps> = ({ gallery }) => {
         onClickPrev={gotoPrevious}
         onClickNext={gotoNext}
         currentImage={currentImage}
+        onClickImage={() => window.open(photos[currentImage].src ?? '', "_blank")}
         isOpen={lightboxIsOpen}
-        onClickImage={() => window.open(photos[currentImage].src, "_blank")}
         width={9999}
       />
     </div>

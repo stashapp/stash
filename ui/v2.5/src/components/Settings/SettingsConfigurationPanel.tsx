@@ -32,7 +32,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   const { data, error, loading } = StashService.useConfiguration();
 
-  const updateGeneralConfig = StashService.useConfigureGeneral({
+  const [updateGeneralConfig] = StashService.useConfigureGeneral({
     stashes,
     databasePath,
     generatedPath,
@@ -55,11 +55,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setStashes(conf.general.stashes ?? []);
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
-      setMaxTranscodeSize(conf.general.maxTranscodeSize);
-      setMaxStreamingTranscodeSize(conf.general.maxStreamingTranscodeSize);
+      setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
+      setMaxStreamingTranscodeSize(conf.general.maxStreamingTranscodeSize ?? undefined);
       setUsername(conf.general.username);
       setPassword(conf.general.password);
-      setLogFile(conf.general.logFile);
+      setLogFile(conf.general.logFile ?? undefined);
       setLogOut(conf.general.logOut);
       setLogLevel(conf.general.logLevel);
       setLogAccess(conf.general.logAccess);

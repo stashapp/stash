@@ -49,7 +49,7 @@ export const SettingsTasksPanel: React.FC = () => {
       if (newProgress < 0) {
         setProgress(0);
       } else {
-        setProgress(newProgress);
+        setProgress(newProgress * 100);
       }
     }
   }, [jobStatus]);
@@ -61,7 +61,7 @@ export const SettingsTasksPanel: React.FC = () => {
       if (newProgress < 0) {
         setProgress(0);
       } else {
-        setProgress(newProgress);
+        setProgress(newProgress * 100);
       }
     }
   }, [metadataUpdate]);

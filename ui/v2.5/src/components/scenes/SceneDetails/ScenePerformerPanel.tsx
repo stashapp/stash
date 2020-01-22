@@ -13,7 +13,7 @@ export const ScenePerformerPanel: FunctionComponent<IScenePerformerPanelProps> =
     <PerformerCard
       key={performer.id}
       performer={performer}
-      ageFromDate={props.scene.date}
+      ageFromDate={props.scene.date ?? undefined}
     />
   ));
 

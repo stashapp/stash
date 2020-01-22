@@ -42,7 +42,7 @@ const fileNameFromPath = (path: string) => {
   return path.replace(/^.*[\\/]/, "");
 };
 
-const getAge = (dateString?: string, fromDateString?: string) => {
+const getAge = (dateString?: string|null, fromDateString?: string) => {
   if (!dateString) return 0;
 
   const birthdate = new Date(dateString);

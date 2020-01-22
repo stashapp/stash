@@ -8,9 +8,9 @@ import { StashService } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
 type ValidTypes =
-  | GQL.AllPerformersForFilterAllPerformers
-  | GQL.AllTagsForFilterAllTags
-  | GQL.AllStudiosForFilterAllStudios;
+  | GQL.SlimPerformerDataFragment
+  | GQL.Tag
+  | GQL.SlimStudioDataFragment;
 type Option = { value: string; label: string };
 
 interface ITypeProps {
@@ -41,7 +41,7 @@ interface ISceneGallerySelect {
   initialId?: string;
   sceneId: string;
   onSelect: (
-    item: GQL.ValidGalleriesForSceneValidGalleriesForScene | undefined
+    item: GQL.ValidGalleriesForSceneQuery["validGalleriesForScene"][0] | undefined
   ) => void;
 }
 
@@ -79,7 +79,7 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = props => {
 interface IScrapePerformerSuggestProps {
   scraperId: string;
   onSelectPerformer: (
-    query: GQL.ScrapePerformerListScrapePerformerList
+    performer: GQL.ScrapedPerformerDataFragment
   ) => void;
   placeholder?: string;
 }
@@ -90,20 +90,25 @@ export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = pr
     query
   );
 
+  const performers = data?.scrapePerformerList ?? [];
+  const items = performers.map(item => ({
+    label: item.name ?? "",
+    value: item.name ?? ""
+  }));
+
   const onInputChange = useCallback(
     debounce((input: string) => {
       setQuery(input);
     }, 500),
     []
   );
-  const onChange = (selectedItems: ValueType<Option>) =>
-    props.onSelectPerformer(getSelectedValues(selectedItems)[0]);
+  const onChange = (selectedItems: ValueType<Option>) => {
+    const name = getSelectedValues(selectedItems)[0];
+    const performer = performers.find(p => p.name === name);
+    if(performer)
+      props.onSelectPerformer(performer)
+  };
 
-  const performers = data?.scrapePerformerList ?? [];
-  const items = performers.map(item => ({
-    label: item.name ?? "",
-    value: item.name ?? ""
-  }));
   return (
     <SelectComponent
       onChange={onChange}
@@ -214,7 +219,7 @@ export const TagSelect: React.FC<IFilterProps> = props => {
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { data, loading: dataLoading } = StashService.useAllTagsForFilter();
-  const createTag = StashService.useTagCreate({ name: "" });
+  const [createTag] = StashService.useTagCreate({ name: "" });
   const Toast = useToast();
   const placeholder = props.noSelectionString ?? "Select tags...";
 
@@ -234,21 +239,23 @@ export const TagSelect: React.FC<IFilterProps> = props => {
         variables: { name: tagName }
       });
 
-      setSelectedIds([...selectedIds, result.data.tagCreate.id]);
-      props.onSelect(
-        [...tags, result.data.tagCreate].filter(
-          item => selected.indexOf(item.id) !== -1
-        )
-      );
-      setLoading(false);
+      if(result?.data?.tagCreate) {
+        setSelectedIds([...selectedIds, result.data.tagCreate.id]);
+        props.onSelect(
+          [...tags, result.data.tagCreate].filter(
+            item => selectedIds.indexOf(item.id) !== -1
+          )
+        );
+        setLoading(false);
 
-      Toast.success({
-        content: (
-          <span>
-            Created tag: <b>{tagName}</b>
-          </span>
-        )
-      });
+        Toast.success({
+          content: (
+            <span>
+              Created tag: <b>{tagName}</b>
+            </span>
+          )
+        });
+      }
     } catch (e) {
       Toast.error(e);
     }

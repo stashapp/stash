@@ -19,13 +19,13 @@ export const TagList: React.FC = () => {
   > | null>(null);
 
   const { data, error } = StashService.useAllTags();
-  const updateTag = StashService.useTagUpdate(
+  const [updateTag] = StashService.useTagUpdate(
     getTagInput() as GQL.TagUpdateInput
   );
-  const createTag = StashService.useTagCreate(
+  const [createTag] = StashService.useTagCreate(
     getTagInput() as GQL.TagCreateInput
   );
-  const deleteTag = StashService.useTagDestroy(
+  const [deleteTag] = StashService.useTagDestroy(
     getDeleteTagInput() as GQL.TagDestroyInput
   );
 

@@ -138,7 +138,7 @@ export class ScenePlayerImpl extends React.Component<
 
     if (!this.props.scene.is_streamable) {
       getDurationHook = () => {
-        return this.props.scene.file.duration;
+        return this.props.scene.file.duration ?? null;
       };
 
       seekHook = (seekToPosition: number, _videoTag: any) => {

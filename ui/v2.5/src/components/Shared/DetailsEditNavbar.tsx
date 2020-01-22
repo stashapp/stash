@@ -24,9 +24,9 @@ interface IProps {
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
 
   // TODO: only for performers.  make generic
-  scrapers?: GQL.ListPerformerScrapersListPerformerScrapers[];
+  scrapers?: Pick<GQL.Scraper, 'id' | 'name'>[];
   onDisplayScraperDialog?: (
-    scraper: GQL.ListPerformerScrapersListPerformerScrapers
+    scraper: Pick<GQL.Scraper, 'id' | 'name'>
   ) => void;
 }
 
@@ -96,8 +96,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
                   <Button
                     variant="link"
                     onClick={() =>
-                      props.onDisplayScraperDialog &&
-                      props.onDisplayScraperDialog(s)
+                      props.onDisplayScraperDialog?.(s)
                     }
                   >
                     {s.name}

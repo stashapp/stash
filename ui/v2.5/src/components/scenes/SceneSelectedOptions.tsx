@@ -22,7 +22,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
   );
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
 
-  const updateScenes = StashService.useBulkSceneUpdate(getSceneInput());
+  const [updateScenes] = StashService.useBulkSceneUpdate(getSceneInput());
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -111,7 +111,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
 
     state.forEach((scene: GQL.SlimSceneDataFragment) => {
       if (first) {
-        ret = scene.rating;
+        ret = scene.rating ?? undefined;
         first = false;
       } else if (ret !== scene.rating) {
         ret = undefined;

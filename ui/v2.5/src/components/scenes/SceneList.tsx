@@ -1,10 +1,8 @@
 import React from "react";
 import _ from "lodash";
-import { QueryHookResult } from "react-apollo-hooks";
 import { useHistory } from "react-router-dom";
 import {
-  FindScenesQuery,
-  FindScenesVariables,
+  FindScenesQueryResult,
   SlimSceneDataFragment
 } from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
@@ -33,7 +31,7 @@ export const SceneList: React.FC = () => {
   });
 
   async function playRandom(
-    result: QueryHookResult<FindScenesQuery, FindScenesVariables>,
+    result: FindScenesQueryResult,
     filter: ListFilterModel
   ) {
     // query for a random scene
@@ -59,7 +57,7 @@ export const SceneList: React.FC = () => {
   }
 
   function renderSelectedOptions(
-    result: QueryHookResult<FindScenesQuery, FindScenesVariables>,
+    result: FindScenesQueryResult,
     selectedIds: Set<string>
   ) {
     // find the selected items from the ids
@@ -107,7 +105,7 @@ export const SceneList: React.FC = () => {
   }
 
   function renderContent(
-    result: QueryHookResult<FindScenesQuery, FindScenesVariables>,
+    result: FindScenesQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
     zoomIndex: number

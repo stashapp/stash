@@ -1,10 +1,8 @@
 import _ from "lodash";
 import React from "react";
-import { QueryHookResult } from "react-apollo-hooks";
 import { useHistory } from "react-router-dom";
 import {
-  FindPerformersQuery,
-  FindPerformersVariables
+  FindPerformersQueryResult,
 } from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { usePerformersList } from "src/hooks";
@@ -28,7 +26,7 @@ export const PerformerList: React.FC = () => {
   });
 
   async function getRandom(
-    result: QueryHookResult<FindPerformersQuery, FindPerformersVariables>,
+    result: FindPerformersQueryResult,
     filter: ListFilterModel
   ) {
     if (result.data && result.data.findPerformers) {
@@ -51,7 +49,7 @@ export const PerformerList: React.FC = () => {
   }
 
   function renderContent(
-    result: QueryHookResult<FindPerformersQuery, FindPerformersVariables>,
+    result: FindPerformersQueryResult,
     filter: ListFilterModel
   ) {
     if (!result.data || !result.data.findPerformers) {

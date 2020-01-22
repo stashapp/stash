@@ -2,25 +2,19 @@ import _ from "lodash";
 import queryString from "query-string";
 import React, { useState } from "react";
 import { Spinner } from "react-bootstrap";
-import { QueryHookResult } from "react-apollo-hooks";
 import { ApolloError } from "apollo-client";
 import { useHistory } from "react-router-dom";
 import {
-  FindScenesQuery,
-  FindScenesVariables,
   SlimSceneDataFragment,
-  FindSceneMarkersQuery,
-  FindSceneMarkersVariables,
-  FindSceneMarkersSceneMarkers,
-  FindGalleriesQuery,
-  FindGalleriesVariables,
+  SceneMarkerDataFragment,
   GalleryDataFragment,
-  FindStudiosQuery,
-  FindStudiosVariables,
   StudioDataFragment,
-  FindPerformersQuery,
-  FindPerformersVariables,
-  PerformerDataFragment
+  PerformerDataFragment,
+  FindScenesQueryResult,
+  FindSceneMarkersQueryResult,
+  FindGalleriesQueryResult,
+  FindStudiosQueryResult,
+  FindPerformersQueryResult
 } from "src/core/generated-graphql";
 import { ListFilter } from "../components/list/ListFilter";
 import { Pagination } from "../components/list/Pagination";
@@ -307,69 +301,55 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   return { filter, template, onSelectChange };
 };
 
-type ScenesQuery = QueryHookResult<FindScenesQuery, FindScenesVariables>;
-export const useScenesList = (props: IListHookOptions<ScenesQuery>) =>
-  useList<ScenesQuery, SlimSceneDataFragment>({
+export const useScenesList = (props: IListHookOptions<FindScenesQueryResult>) =>
+  useList<FindScenesQueryResult, SlimSceneDataFragment>({
     ...props,
     filterMode: FilterMode.Scenes,
     useData: StashService.useFindScenes,
-    getData: (result: ScenesQuery) => result?.data?.findScenes?.scenes ?? [],
-    getCount: (result: ScenesQuery) => result?.data?.findScenes?.count ?? 0
+    getData: (result: FindScenesQueryResult) => result?.data?.findScenes?.scenes ?? [],
+    getCount: (result: FindScenesQueryResult) => result?.data?.findScenes?.count ?? 0
   });
 
-type SceneMarkersQuery = QueryHookResult<
-  FindSceneMarkersQuery,
-  FindSceneMarkersVariables
->;
 export const useSceneMarkersList = (
-  props: IListHookOptions<SceneMarkersQuery>
+  props: IListHookOptions<FindSceneMarkersQueryResult>
 ) =>
-  useList<SceneMarkersQuery, FindSceneMarkersSceneMarkers>({
+  useList<FindSceneMarkersQueryResult, SceneMarkerDataFragment>({
     ...props,
     filterMode: FilterMode.SceneMarkers,
     useData: StashService.useFindSceneMarkers,
-    getData: (result: SceneMarkersQuery) =>
+    getData: (result: FindSceneMarkersQueryResult) =>
       result?.data?.findSceneMarkers?.scene_markers ?? [],
-    getCount: (result: SceneMarkersQuery) =>
+    getCount: (result: FindSceneMarkersQueryResult) =>
       result?.data?.findSceneMarkers?.count ?? 0
   });
 
-type GalleriesQuery = QueryHookResult<
-  FindGalleriesQuery,
-  FindGalleriesVariables
->;
-export const useGalleriesList = (props: IListHookOptions<GalleriesQuery>) =>
-  useList<GalleriesQuery, GalleryDataFragment>({
+export const useGalleriesList = (props: IListHookOptions<FindGalleriesQueryResult>) =>
+  useList<FindGalleriesQueryResult, GalleryDataFragment>({
     ...props,
     filterMode: FilterMode.Galleries,
     useData: StashService.useFindGalleries,
-    getData: (result: GalleriesQuery) =>
+    getData: (result: FindGalleriesQueryResult) =>
       result?.data?.findGalleries?.galleries ?? [],
-    getCount: (result: GalleriesQuery) =>
+    getCount: (result: FindGalleriesQueryResult) =>
       result?.data?.findGalleries?.count ?? 0
   });
 
-type StudiosQuery = QueryHookResult<FindStudiosQuery, FindStudiosVariables>;
-export const useStudiosList = (props: IListHookOptions<StudiosQuery>) =>
-  useList<StudiosQuery, StudioDataFragment>({
+export const useStudiosList = (props: IListHookOptions<FindStudiosQueryResult>) =>
+  useList<FindStudiosQueryResult, StudioDataFragment>({
     ...props,
     filterMode: FilterMode.Studios,
     useData: StashService.useFindStudios,
-    getData: (result: StudiosQuery) => result?.data?.findStudios?.studios ?? [],
-    getCount: (result: StudiosQuery) => result?.data?.findStudios?.count ?? 0
+    getData: (result: FindStudiosQueryResult) => result?.data?.findStudios?.studios ?? [],
+    getCount: (result: FindStudiosQueryResult) => result?.data?.findStudios?.count ?? 0
   });
 
-type PerformersQuery = QueryHookResult<
-  FindPerformersQuery,
-  FindPerformersVariables
->;
-export const usePerformersList = (props: IListHookOptions<PerformersQuery>) =>
-  useList<PerformersQuery, PerformerDataFragment>({
+export const usePerformersList = (props: IListHookOptions<FindPerformersQueryResult>) =>
+  useList<FindPerformersQueryResult, PerformerDataFragment>({
     ...props,
     filterMode: FilterMode.Performers,
     useData: StashService.useFindPerformers,
-    getData: (result: PerformersQuery) =>
+    getData: (result: FindPerformersQueryResult) =>
       result?.data?.findPerformers?.performers ?? [],
-    getCount: (result: PerformersQuery) =>
+    getCount: (result: FindPerformersQueryResult) =>
       result?.data?.findPerformers?.count ?? 0
   });
