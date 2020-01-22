@@ -1,6 +1,6 @@
 import localForage from "localforage";
 import _ from "lodash";
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 
 interface IInterfaceWallConfig {
 }
@@ -15,6 +15,7 @@ interface ILocalForage<T> {
   data: T;
   setData: React.Dispatch<React.SetStateAction<T>>;
   error: Error | null;
+  loading: boolean;
 }
 
 export function useInterfaceLocalForage(): ILocalForage<IInterfaceConfig | undefined> {
@@ -35,6 +36,8 @@ export function useInterfaceLocalForage(): ILocalForage<IInterfaceConfig | undef
 
 function useLocalForage(item: string): ILocalForage<ValidTypes> {
   const [json, setJson] = React.useState<ValidTypes>(undefined);
+  const [err, setErr] = React.useState(null);
+  const [loaded, setLoaded] = React.useState<boolean>(false);
 
   const prevJson = React.useRef<ValidTypes>(undefined);
   React.useEffect(() => {
@@ -47,7 +50,6 @@ function useLocalForage(item: string): ILocalForage<ValidTypes> {
     runAsync();
   });
 
-  const [err, setErr] = React.useState(null);
   React.useEffect(() => {
     async function runAsync() {
       try {
@@ -60,9 +62,10 @@ function useLocalForage(item: string): ILocalForage<ValidTypes> {
       } catch (error) {
         setErr(error);
       }
+      setLoaded(true);
     }
     runAsync();
   });
 
-  return {data: json, setData: setJson, error: err};
+  return {data: json, setData: setJson, error: err, loading: !loaded};
 }

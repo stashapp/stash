@@ -46,7 +46,6 @@ export class ListFilterModel {
   public displayModeOptions: DisplayMode[] = [];
   public criterionOptions: ICriterionOption[] = [];
   public criteria: Array<Criterion<any, any>> = [];
-  public totalCount: number = 0;
   public randomSeed: number = -1;
 
   private static createCriterionOption(criterion: CriterionType) {
