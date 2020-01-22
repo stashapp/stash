@@ -366,7 +366,7 @@ export class ListHook {
           filter={filter}
         />
         {options.renderSelectedOptions && selectedIds.size > 0 ? options.renderSelectedOptions(result, selectedIds) : undefined}
-        {result.loading || !forageInitialised.current ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
+        {result.loading || (!options.subComponent && !forageInitialised.current) ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
         {result.error ? <h1>{result.error.message}</h1> : undefined}
         {options.renderContent(result, filter, selectedIds, zoomIndex)}
         <Pagination
