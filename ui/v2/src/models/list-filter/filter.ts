@@ -46,6 +46,7 @@ export class ListFilterModel {
   public criterionOptions: ICriterionOption[] = [];
   public criteria: Array<Criterion<any, any>> = [];
   public totalCount: number = 0;
+  public randomSeed: number = -1;
 
   private static createCriterionOption(criterion: CriterionType) {
     return new CriterionOption(Criterion.getLabel(criterion), criterion);
@@ -153,6 +154,19 @@ export class ListFilterModel {
     const params = rawParms as IQueryParameters;
     if (params.sortby !== undefined) {
       this.sortBy = params.sortby;
+
+      // parse the random seed if provided
+      const randomPrefix = "random_";
+      if (this.sortBy && this.sortBy.startsWith(randomPrefix)) {
+        let seedStr = this.sortBy.substring(randomPrefix.length);
+
+        this.sortBy = "random";
+        try {
+          this.randomSeed = Number.parseInt(seedStr);
+        } catch (err) {
+          // ignore
+        }
+      }
     }
     if (params.sortdir === "asc" || params.sortdir === "desc") {
       this.sortDirection = params.sortdir;
@@ -187,6 +201,28 @@ export class ListFilterModel {
     }
   }
 
+  private setRandomSeed() {
+    if (this.sortBy == "random") {
+      // #321 - set the random seed if it is not set
+      if (this.randomSeed == -1) {
+        // generate 8-digit seed
+        this.randomSeed = Math.floor(Math.random() * Math.pow(10, 8));
+      }
+    } else {
+      this.randomSeed = -1;
+    }
+  }
+
+  private getSortBy(): string | undefined {
+    this.setRandomSeed();
+
+    if (this.sortBy == "random") {
+      return this.sortBy + "_" + this.randomSeed.toString();
+    }
+
+    return this.sortBy;
+  }
+
   public makeQueryParameters(): string {
     const encodedCriteria: string[] = [];
     this.criteria.forEach((criterion) => {
@@ -198,8 +234,9 @@ export class ListFilterModel {
       encodedCriteria.push(jsonCriterion);
     });
 
+    
     const result = {
-      sortby: this.sortBy,
+      sortby: this.getSortBy(),
       sortdir: this.sortDirection,
       disp: this.displayMode,
       q: this.searchTerm,
@@ -216,7 +253,7 @@ export class ListFilterModel {
       q: this.searchTerm,
       page: this.currentPage,
       per_page: this.itemsPerPage,
-      sort: this.sortBy,
+      sort: this.getSortBy(),
       direction: this.sortDirection === "asc" ? SortDirectionEnum.Asc : SortDirectionEnum.Desc,
     };
   }
