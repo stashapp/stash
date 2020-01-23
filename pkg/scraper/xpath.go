@@ -55,7 +55,12 @@ func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) []
 				asStr = common.applyCommon(asStr)
 			}
 
-			found := htmlquery.Find(doc, asStr)
+			found, err := htmlquery.QueryAll(doc, asStr)
+			if err != nil {
+				logger.Warnf("Error parsing xpath expression '%s': %s", asStr, err.Error())
+				continue
+			}
+
 			if len(found) > 0 {
 				for i, elem := range found {
 					if i >= len(ret) {
