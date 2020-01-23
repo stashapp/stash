@@ -4,7 +4,8 @@ import {
   Criterion,
   CriterionType,
   StringCriterion,
-  NumberCriterion
+  NumberCriterion,
+  DurationCriterion
 } from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
@@ -24,6 +25,7 @@ export function makeCriteria(type: CriterionType = "none") {
       return new RatingCriterion();
     case "resolution":
       return new ResolutionCriterion();
+    case "duration": return new DurationCriterion(type, type);
     case "favorite":
       return new FavoriteCriterion();
     case "hasMarkers":
@@ -39,7 +41,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "studios":
       return new StudiosCriterion();
 
-    case "birth_year":
+    case "birth_year": return new NumberCriterion(type, type);
     case "age": {
       const ret = new NumberCriterion(type, type);
       // null/not null doesn't make sense for these criteria

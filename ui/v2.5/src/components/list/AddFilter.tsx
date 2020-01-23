@@ -5,7 +5,8 @@ import { Icon, FilterSelect } from "src/components/Shared";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
   Criterion,
-  CriterionType
+  CriterionType,
+  DurationCriterion
 } from "src/models/list-filter/criteria/criterion";
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
@@ -13,6 +14,7 @@ import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import { makeCriteria } from "src/models/list-filter/criteria/utils";
 import { ListFilterModel } from "src/models/list-filter/filter";
+import { DurationInput } from "src/components/Shared";
 
 interface IAddFilterProps {
   onAddCriterion: (criterion: Criterion, oldId?: string) => void;
@@ -64,6 +66,11 @@ export const AddFilter: React.FC<IAddFilterProps> = (
 
   function onChangedInput(event: React.ChangeEvent<HTMLInputElement>) {
     valueStage.current = event.target.value;
+  }
+
+  function onChangedDuration(valueAsNumber: number) {
+    valueStage.current = valueAsNumber;
+    onBlurInput();
   }
 
   function onBlurInput() {
@@ -170,6 +177,15 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           </Form.Control>
         );
       }
+			if (criterion instanceof DurationCriterion) {
+				// render duration control
+				return (
+					<DurationInput
+						numericValue={criterion.value ? criterion.value : 0}
+						onValueChange={onChangedDuration}
+					/>
+				)
+			}
       return (
         <Form.Control
           type={criterion.inputType}

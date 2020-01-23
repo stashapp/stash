@@ -13,7 +13,8 @@ import {
   CriterionType,
   CriterionOption,
   NumberCriterion,
-  StringCriterion
+  StringCriterion,
+  DurationCriterion
 } from "./criteria/criterion";
 import {
   FavoriteCriterion,
@@ -69,6 +70,10 @@ export class ListFilterModel {
   public criterionOptions: ICriterionOption[] = [];
   public criteria: Array<Criterion<any, any>> = [];
 
+  private static createCriterionOption(criterion: CriterionType) {
+    return new CriterionOption(Criterion.getLabel(criterion), criterion);
+  }
+
   public constructor(filterMode: FilterMode, rawParms?: any) {
     switch (filterMode) {
       case FilterMode.Scenes:
@@ -95,6 +100,7 @@ export class ListFilterModel {
           new NoneCriterionOption(),
           new RatingCriterionOption(),
           new ResolutionCriterionOption(),
+          ListFilterModel.createCriterionOption("duration"),
           new HasMarkersCriterionOption(),
           new IsMissingCriterionOption(),
           new TagsCriterionOption(),
@@ -130,7 +136,7 @@ export class ListFilterModel {
 
         this.criterionOptions = this.criterionOptions.concat(
           numberCriteria.concat(stringCriteria).map(c => {
-            return new CriterionOption(Criterion.getLabel(c), c);
+            return ListFilterModel.createCriterionOption(c);
           })
         );
         break;
@@ -289,6 +295,11 @@ export class ListFilterModel {
               break;
             // no default
           }
+          break;
+        }
+        case "duration": {
+          const durationCrit = criterion as DurationCriterion;
+          result.duration = { value: durationCrit.value, modifier: durationCrit.modifier }
           break;
         }
         case "hasMarkers":
