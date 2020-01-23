@@ -275,6 +275,8 @@ export class StashService {
   public static useVersion() {
     return GQL.useVersionQuery();
   }
+  public static useLatestVersion() { return GQL.useLatestVersionQuery({ notifyOnNetworkStatusChange: true, errorPolicy: 'ignore' }); }
+
 
   public static useConfiguration() {
     return GQL.useConfigurationQuery();

@@ -7,7 +7,7 @@ import * as ApolloReactHooks from '@apollo/react-hooks';
 export type Maybe<T> = T | null;
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
-// Generated in 2020-01-21T19:57:40+01:00
+// Generated in 2020-01-23T14:20:33+01:00
 
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -548,6 +548,8 @@ export type Query = {
   allTags: Array<Tag>,
   /** Version */
   version: Version,
+  /** LatestVersion */
+  latestversion: ShortVersion,
 };
 
 
@@ -788,6 +790,8 @@ export type SceneFilterType = {
   rating?: Maybe<IntCriterionInput>,
   /** Filter by resolution */
   resolution?: Maybe<ResolutionEnum>,
+  /** Filter by duration (in seconds) */
+  duration?: Maybe<IntCriterionInput>,
   /** Filter to only include scenes which have markers. `true` or `false` */
   has_markers?: Maybe<Scalars['String']>,
   /** Filter to only include scenes missing this property */
@@ -1011,6 +1015,12 @@ export enum ScrapeType {
   /** From URL */
   Url = 'URL'
 }
+
+export type ShortVersion = {
+   __typename?: 'ShortVersion',
+  shorthash: Scalars['String'],
+  url: Scalars['String'],
+};
 
 export enum SortDirectionEnum {
   Asc = 'ASC',
@@ -1736,6 +1746,17 @@ export type VersionQuery = (
   & { version: (
     { __typename?: 'Version' }
     & Pick<Version, 'version' | 'hash' | 'build_time'>
+  ) }
+);
+
+export type LatestVersionQueryVariables = {};
+
+
+export type LatestVersionQuery = (
+  { __typename?: 'Query' }
+  & { latestversion: (
+    { __typename?: 'ShortVersion' }
+    & Pick<ShortVersion, 'shorthash' | 'url'>
   ) }
 );
 
@@ -3750,6 +3771,45 @@ export function useVersionLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHook
 export type VersionQueryHookResult = ReturnType<typeof useVersionQuery>;
 export type VersionLazyQueryHookResult = ReturnType<typeof useVersionLazyQuery>;
 export type VersionQueryResult = ApolloReactCommon.QueryResult<VersionQuery, VersionQueryVariables>;
+export const LatestVersionDocument = gql`
+    query LatestVersion {
+  latestversion {
+    shorthash
+    url
+  }
+}
+    `;
+export type LatestVersionComponentProps = Omit<ApolloReactComponents.QueryComponentOptions<LatestVersionQuery, LatestVersionQueryVariables>, 'query'>;
+
+    export const LatestVersionComponent = (props: LatestVersionComponentProps) => (
+      <ApolloReactComponents.Query<LatestVersionQuery, LatestVersionQueryVariables> query={LatestVersionDocument} {...props} />
+    );
+    
+
+/**
+ * __useLatestVersionQuery__
+ *
+ * To run a query within a React component, call `useLatestVersionQuery` and pass it any options that fit your needs.
+ * When your component renders, `useLatestVersionQuery` returns an object from Apollo Client that contains loading, error, and data properties 
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useLatestVersionQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useLatestVersionQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<LatestVersionQuery, LatestVersionQueryVariables>) {
+        return ApolloReactHooks.useQuery<LatestVersionQuery, LatestVersionQueryVariables>(LatestVersionDocument, baseOptions);
+      }
+export function useLatestVersionLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<LatestVersionQuery, LatestVersionQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<LatestVersionQuery, LatestVersionQueryVariables>(LatestVersionDocument, baseOptions);
+        }
+export type LatestVersionQueryHookResult = ReturnType<typeof useLatestVersionQuery>;
+export type LatestVersionLazyQueryHookResult = ReturnType<typeof useLatestVersionLazyQuery>;
+export type LatestVersionQueryResult = ApolloReactCommon.QueryResult<LatestVersionQuery, LatestVersionQueryVariables>;
 export const FindPerformersDocument = gql`
     query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilterType) {
   findPerformers(filter: $filter, performer_filter: $performer_filter) {
