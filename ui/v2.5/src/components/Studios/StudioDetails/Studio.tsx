@@ -137,7 +137,7 @@ export const Studio: React.FC = () => {
   return (
     <div className="columns is-multiline no-spacing">
       <div className="column is-half details-image-container">
-        <img className="studio" alt="" src={imagePreview} />
+        <img className="studio" alt={name} src={imagePreview} />
       </div>
       <div className="column is-half details-detail-container">
         <DetailsEditNavbar

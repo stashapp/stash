@@ -38,7 +38,7 @@ export const GalleryList: React.FC = () => {
                 <td>
                   <Link to={`/galleries/${gallery.id}`}>
                     {gallery.files.length > 0 ? (
-                      <img alt="" src={`${gallery.files[0].path}?thumb=true`} />
+                      <img alt={gallery.title ?? ''} src={`${gallery.files[0].path}?thumb=true`} />
                     ) : (
                       undefined
                     )}

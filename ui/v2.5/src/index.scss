@@ -561,3 +561,25 @@ span.block {
         width: 350px;
     }
 }
+
+.button-link {
+  background-color: transparent;
+  color: #48aff0;
+  border-width: 0;
+  cursor: pointer;
+  display: inline;
+  padding: 0;
+}
+
+.button-link:hover {
+  text-decoration: underline;
+}
+
+.scrubber-button {
+  background-color: transparent;
+  color: #48aff0;
+}
+
+.scrubber-button:hover {
+  text-decoration: underline;
+}
