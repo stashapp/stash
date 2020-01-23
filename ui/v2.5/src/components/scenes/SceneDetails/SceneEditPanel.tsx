@@ -418,7 +418,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           </Button>
           <Collapse in={isCoverImageOpen}>
             <div>
-              <img className="scene-cover" src={coverImagePreview} alt="" />
+              <img className="scene-cover" src={coverImagePreview} alt="Scene cover" />
               <Form.Group className="test" controlId="cover">
                 <Form.Control
                   type="file"

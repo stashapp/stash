@@ -188,7 +188,7 @@ export const Performer: React.FC = () => {
     return (
       <div className="columns is-multiline no-spacing">
         <div className="column is-half details-image-container">
-          <img className="performer" src={imagePreview} alt='' />
+          <img className="performer" src={imagePreview} alt='Performer' />
         </div>
         <div className="column is-half details-detail-container">
           {renderTabs()}
@@ -215,7 +215,9 @@ export const Performer: React.FC = () => {
     <>
       <div id="performer-page">
         <div className="details-image-container">
-          <img className="performer" src={imagePreview} onClick={openLightbox} alt='' />
+          <Button variant="link" onClick={openLightbox}>
+            <img className="performer" src={imagePreview} alt='Performer' />
+          </Button>
         </div>
         <div className="performer-head">
           <h1 className="bp3-heading">

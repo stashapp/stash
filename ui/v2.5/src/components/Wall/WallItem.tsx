@@ -141,7 +141,7 @@ export const WallItem: FunctionComponent<IWallItemProps> = (
             ref={videoHoverHook.videoEl}
           />
           <img
-            alt="Preview"
+            alt={title}
             src={previewPath || screenshotPath}
             onError={() => previewNotFound()}
           />
