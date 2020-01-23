@@ -55,6 +55,8 @@ const renderInputGroup = (options: {
   placeholder?: string;
   value: string | undefined;
   isEditing: boolean;
+  asURL?: boolean,
+  urlPrefix?: string,
   onChange: (value: string) => void;
 }) => (
   <tr>

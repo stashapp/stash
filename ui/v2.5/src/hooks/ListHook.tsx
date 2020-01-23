@@ -39,6 +39,8 @@ interface IListHookOperation<T> {
 }
 
 interface IListHookOptions<T> {
+  subComponent?: boolean;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
   otherOperations?: IListHookOperation<T>[];
   renderContent: (
@@ -75,16 +77,26 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const [filter, setFilter] = useState<ListFilterModel>(
     new ListFilterModel(
       options.filterMode,
-      queryString.parse(history.location.search)
+      options.subComponent ? '' : queryString.parse(history.location.search)
     )
   );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | undefined>();
   const [zoomIndex, setZoomIndex] = useState<number>(1);
 
-  const result = options.useData(filter);
+  const result = options.useData(getFilter());
   const totalCount = options.getCount(result);
   const items = options.getData(result);
+
+  function getFilter() {
+    if (!options.filterHook) {
+      return filter;
+    }
+
+    // make a copy of the filter and call the hook
+    let newFilter = _.cloneDeep(filter);
+    return options.filterHook(newFilter);
+  }
 
   function updateQueryParams(listfilter: ListFilterModel) {
     const newLocation = { ...history.location };

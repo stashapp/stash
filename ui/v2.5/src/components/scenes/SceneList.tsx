@@ -14,7 +14,12 @@ import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
 import { SceneSelectedOptions } from "./SceneSelectedOptions";
 
-export const SceneList: React.FC = () => {
+interface ISceneList {
+  subComponent?: boolean;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+}
+
+export const SceneList: React.FC<ISceneList> = ({ subComponent, filterHook }) => {
   const history = useHistory();
   const otherOperations = [
     {
@@ -27,7 +32,9 @@ export const SceneList: React.FC = () => {
     zoomable: true,
     otherOperations,
     renderContent,
-    renderSelectedOptions
+    renderSelectedOptions,
+    subComponent,
+    filterHook
   });
 
   async function playRandom(

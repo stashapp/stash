@@ -456,6 +456,39 @@ span.block {
   }
 }
 
+#performer-page {
+  margin: 10px auto;
+  width: 75%;
+
+  & .details-image-container {
+    max-height: 400px;
+    display: inline-block;
+    margin-right: 20px;
+  }
+
+  & .performer-head {
+    display: inline-block;
+    vertical-align: top;
+    font-size: 1.2em;
+
+    & .name-icons {
+      margin-left: 10px;
+
+      & .not-favorite .bp3-icon {
+        color: rgba(191, 204, 214, 0.5) !important;
+      }
+
+      & .favorite .bp3-icon {
+        color: #ff7373 !important;
+      }
+    }
+  }
+
+  & .alias {
+    font-weight: bold;
+  }
+}
+
 .zoom-slider {
   margin: auto 5px;
   width: 100px;
