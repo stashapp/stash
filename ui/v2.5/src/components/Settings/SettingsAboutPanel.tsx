@@ -81,9 +81,25 @@ export const SettingsAboutPanel: React.FC = () => {
   return (
     <>
       <h4>About</h4>
+      <Table>
+        <tbody>
+          <tr>
+            <td>Stash home at <a href="https://github.com/stashapp/stash" rel="noopener noreferrer" target="_blank">Github</a></td>
+          </tr>
+          <tr>
+            <td>Stash <a href="https://github.com/stashapp/stash/wiki" rel="noopener noreferrer" target="_blank">Wiki</a> page</td>
+          </tr>
+          <tr>
+            <td>Join our <a href="https://discord.gg/2TsNFKt" rel="noopener noreferrer" target="_blank">Discord</a> channel</td>
+          </tr>
+          <tr>
+            <td>Support us through <a href="https://opencollective.com/stashapp" rel="noopener noreferrer" target="_blank">Open Collective</a></td>
+          </tr>
+        </tbody>
+      </Table>
       {!data || loading ? <Spinner animation="border" variant="light" /> : ""}
-      {!!error ? <span>{error.message}</span> : undefined}
-      {!!errorLatest ? <span>{errorLatest.message}</span> : undefined}
+      {error && <span>{error.message}</span>}
+      {errorLatest && <span>{errorLatest.message}</span>}
       {renderVersion()}
       {!dataLatest || loadingLatest || networkStatus === 4 ? <Spinner animation="border" variant="light" /> : <>{renderLatestVersion()}</>}
     </>
