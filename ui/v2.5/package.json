@@ -12,7 +12,7 @@
     "lint": "yarn lint:css && yarn lint:js",
     "lint:js": "eslint --cache src/**/*.{ts,tsx}",
     "lint:css": "stylelint 'src/**/*.scss'",
-    "format": "prettier \"src/**/*.{js,jsx,ts,tsx}\"",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
     "gqlgen": "gql-gen --config codegen.yml"
   },
   "browserslist": [

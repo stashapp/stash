@@ -31,6 +31,8 @@ module.exports = merge(commonConfig, {
     compress: true,
     host: '0.0.0.0',
     hot: true, // enable HMR on the server host: '0.0.0.0',
+    transportMode: 'ws',
+    injectClient: false,
     port: process.env.PORT,
     historyApiFallback: true,
     stats: {

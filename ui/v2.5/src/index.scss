@@ -6,6 +6,8 @@
 @import "styles/scrollbars";
 @import "styles/variables";
 
+@import "./components/**/*.scss";
+
 body {
   margin: 0;
   padding: $pt-navbar-height 0 0 0;
