@@ -56,7 +56,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
       setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
-      setMaxStreamingTranscodeSize(conf.general.maxStreamingTranscodeSize ?? undefined);
+      setMaxStreamingTranscodeSize(
+        conf.general.maxStreamingTranscodeSize ?? undefined
+      );
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setLogFile(conf.general.logFile ?? undefined);

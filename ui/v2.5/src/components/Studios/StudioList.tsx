@@ -1,7 +1,5 @@
 import React from "react";
-import {
-  FindStudiosQueryResult
-} from "src/core/generated-graphql";
+import { FindStudiosQueryResult } from "src/core/generated-graphql";
 import { useStudiosList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";

@@ -41,7 +41,9 @@ interface ISceneGallerySelect {
   initialId?: string;
   sceneId: string;
   onSelect: (
-    item: GQL.ValidGalleriesForSceneQuery["validGalleriesForScene"][0] | undefined
+    item:
+      | GQL.ValidGalleriesForSceneQuery["validGalleriesForScene"][0]
+      | undefined
   ) => void;
 }
 
@@ -78,9 +80,7 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = props => {
 
 interface IScrapePerformerSuggestProps {
   scraperId: string;
-  onSelectPerformer: (
-    performer: GQL.ScrapedPerformerDataFragment
-  ) => void;
+  onSelectPerformer: (performer: GQL.ScrapedPerformerDataFragment) => void;
   placeholder?: string;
 }
 export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = props => {
@@ -105,8 +105,7 @@ export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = pr
   const onChange = (selectedItems: ValueType<Option>) => {
     const name = getSelectedValues(selectedItems)[0];
     const performer = performers.find(p => p.name === name);
-    if(performer)
-      props.onSelectPerformer(performer)
+    if (performer) props.onSelectPerformer(performer);
   };
 
   return (
@@ -239,7 +238,7 @@ export const TagSelect: React.FC<IFilterProps> = props => {
         variables: { name: tagName }
       });
 
-      if(result?.data?.tagCreate) {
+      if (result?.data?.tagCreate) {
         setSelectedIds([...selectedIds, result.data.tagCreate.id]);
         props.onSelect(
           [...tags, result.data.tagCreate].filter(

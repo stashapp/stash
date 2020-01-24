@@ -1,9 +1,7 @@
 import React from "react";
 import { Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import {
-  FindGalleriesQueryResult,
-} from "src/core/generated-graphql";
+import { FindGalleriesQueryResult } from "src/core/generated-graphql";
 import { useGalleriesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -38,7 +36,10 @@ export const GalleryList: React.FC = () => {
                 <td>
                   <Link to={`/galleries/${gallery.id}`}>
                     {gallery.files.length > 0 ? (
-                      <img alt={gallery.title ?? ''} src={`${gallery.files[0].path}?thumb=true`} />
+                      <img
+                        alt={gallery.title ?? ""}
+                        src={`${gallery.files[0].path}?thumb=true`}
+                      />
                     ) : (
                       undefined
                     )}

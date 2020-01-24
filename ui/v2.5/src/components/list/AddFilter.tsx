@@ -176,15 +176,15 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           </Form.Control>
         );
       }
-			if (criterion instanceof DurationCriterion) {
-				// render duration control
-				return (
-					<DurationInput
-						numericValue={criterion.value ? criterion.value : 0}
-						onValueChange={onChangedDuration}
-					/>
-				)
-			}
+      if (criterion instanceof DurationCriterion) {
+        // render duration control
+        return (
+          <DurationInput
+            numericValue={criterion.value ? criterion.value : 0}
+            onValueChange={onChangedDuration}
+          />
+        );
+      }
       return (
         <Form.Control
           type={criterion.inputType}

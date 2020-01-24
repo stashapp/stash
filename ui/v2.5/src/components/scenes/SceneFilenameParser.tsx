@@ -114,12 +114,16 @@ class SceneParserResult {
   public studioId: ParserResult<string> = new ParserResult();
   public tags: ParserResult<GQL.Tag[]> = new ParserResult();
   public tagIds: ParserResult<string[]> = new ParserResult();
-  public performers: ParserResult<Partial<GQL.Performer>[]> = new ParserResult();
+  public performers: ParserResult<
+    Partial<GQL.Performer>[]
+  > = new ParserResult();
   public performerIds: ParserResult<string[]> = new ParserResult();
 
   public scene: GQL.SlimSceneDataFragment;
 
-  constructor(result: GQL.ParseSceneFilenamesQuery["parseSceneFilenames"]["results"][0]) {
+  constructor(
+    result: GQL.ParseSceneFilenamesQuery["parseSceneFilenames"]["results"][0]
+  ) {
     this.scene = result.scene;
 
     this.id = this.scene.id;
@@ -141,20 +145,23 @@ class SceneParserResult {
 
     if (result.performer_ids) {
       this.performers.setValue(
-        (result.performer_ids ?? []).map(p => ({
-          id: p,
-          name: "",
-          favorite: false,
-          image_path: ""
-        } as GQL.Performer))
+        (result.performer_ids ?? []).map(
+          p =>
+            ({
+              id: p,
+              name: "",
+              favorite: false,
+              image_path: ""
+            } as GQL.Performer)
+        )
       );
     }
 
     if (result.tag_ids) {
       this.tags.setValue(
         result.tag_ids.map(t => ({
-            id: t,
-            name: ""
+          id: t,
+          name: ""
         }))
       );
     }
@@ -343,7 +350,9 @@ export const SceneFilenameParser: React.FC = () => {
   }, [parserInput]);
 
   const parseResults = useCallback(
-    (results: GQL.ParseSceneFilenamesQuery["parseSceneFilenames"]["results"]) => {
+    (
+      results: GQL.ParseSceneFilenamesQuery["parseSceneFilenames"]["results"]
+    ) => {
       if (results) {
         const result = results
           .map(r => {
@@ -897,7 +906,9 @@ export const SceneFilenameParser: React.FC = () => {
           fieldName="Title"
           className="parser-field-title"
           parserResult={props.scene.title}
-          onSetChanged={set => onTitleChanged(set, props.scene.title.value ?? undefined)}
+          onSetChanged={set =>
+            onTitleChanged(set, props.scene.title.value ?? undefined)
+          }
           onValueChanged={value => onTitleChanged(props.scene.title.set, value)}
           renderOriginalInputField={renderOriginalInputGroup}
           renderNewInputField={renderNewInputGroup}
@@ -907,7 +918,9 @@ export const SceneFilenameParser: React.FC = () => {
           fieldName="Date"
           className="parser-field-date"
           parserResult={props.scene.date}
-          onSetChanged={set => onDateChanged(set, props.scene.date.value ?? undefined)}
+          onSetChanged={set =>
+            onDateChanged(set, props.scene.date.value ?? undefined)
+          }
           onValueChanged={value => onDateChanged(props.scene.date.set, value)}
           renderOriginalInputField={renderOriginalInputGroup}
           renderNewInputField={renderNewInputGroup}
@@ -919,7 +932,10 @@ export const SceneFilenameParser: React.FC = () => {
           parserResult={props.scene.performerIds}
           originalParserResult={props.scene.performers}
           onSetChanged={set =>
-            onPerformerIdsChanged(set, props.scene.performerIds.value ?? undefined)
+            onPerformerIdsChanged(
+              set,
+              props.scene.performerIds.value ?? undefined
+            )
           }
           onValueChanged={value =>
             onPerformerIdsChanged(props.scene.performerIds.set, value)
@@ -933,7 +949,9 @@ export const SceneFilenameParser: React.FC = () => {
           className="parser-field-tags"
           parserResult={props.scene.tagIds}
           originalParserResult={props.scene.tags}
-          onSetChanged={set => onTagIdsChanged(set, props.scene.tagIds.value ?? undefined)}
+          onSetChanged={set =>
+            onTagIdsChanged(set, props.scene.tagIds.value ?? undefined)
+          }
           onValueChanged={value =>
             onTagIdsChanged(props.scene.tagIds.set, value)
           }

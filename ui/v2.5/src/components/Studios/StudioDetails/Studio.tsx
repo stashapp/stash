@@ -98,7 +98,7 @@ export const Studio: React.FC = () => {
         }
       } else {
         const result = await createStudio();
-        if(result.data?.studioCreate?.id)
+        if (result.data?.studioCreate?.id)
           history.push(`/studios/${result.data.studioCreate.id}`);
       }
     } catch (e) {

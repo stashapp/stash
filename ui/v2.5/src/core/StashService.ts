@@ -1,8 +1,8 @@
 import ApolloClient from "apollo-client";
 import { WebSocketLink } from "apollo-link-ws";
 import { InMemoryCache } from "apollo-cache-inmemory";
-import { HttpLink } from 'apollo-link-http';
-import { split } from 'apollo-link';
+import { HttpLink } from "apollo-link-http";
+import { split } from "apollo-link";
 import { getMainDefinition } from "apollo-utilities";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
@@ -45,7 +45,10 @@ export class StashService {
     const link = split(
       ({ query }) => {
         const definition = getMainDefinition(query);
-        return definition.kind === "OperationDefinition" && definition.operation === "subscription";
+        return (
+          definition.kind === "OperationDefinition" &&
+          definition.operation === "subscription"
+        );
       },
       wsLink,
       httpLink
@@ -267,7 +270,9 @@ export class StashService {
     return GQL.useAllStudiosForFilterQuery();
   }
   public static useValidGalleriesForScene(sceneId: string) {
-    return GQL.useValidGalleriesForSceneQuery({ variables: { scene_id: sceneId } });
+    return GQL.useValidGalleriesForSceneQuery({
+      variables: { scene_id: sceneId }
+    });
   }
   public static useStats() {
     return GQL.useStatsQuery();
@@ -275,8 +280,12 @@ export class StashService {
   public static useVersion() {
     return GQL.useVersionQuery();
   }
-  public static useLatestVersion() { return GQL.useLatestVersionQuery({ notifyOnNetworkStatusChange: true, errorPolicy: 'ignore' }); }
-
+  public static useLatestVersion() {
+    return GQL.useLatestVersionQuery({
+      notifyOnNetworkStatusChange: true,
+      errorPolicy: "ignore"
+    });
+  }
 
   public static useConfiguration() {
     return GQL.useConfigurationQuery();

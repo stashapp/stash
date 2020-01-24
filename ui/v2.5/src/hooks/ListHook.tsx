@@ -77,7 +77,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const [filter, setFilter] = useState<ListFilterModel>(
     new ListFilterModel(
       options.filterMode,
-      options.subComponent ? '' : queryString.parse(history.location.search)
+      options.subComponent ? "" : queryString.parse(history.location.search)
     )
   );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -318,8 +318,10 @@ export const useScenesList = (props: IListHookOptions<FindScenesQueryResult>) =>
     ...props,
     filterMode: FilterMode.Scenes,
     useData: StashService.useFindScenes,
-    getData: (result: FindScenesQueryResult) => result?.data?.findScenes?.scenes ?? [],
-    getCount: (result: FindScenesQueryResult) => result?.data?.findScenes?.count ?? 0
+    getData: (result: FindScenesQueryResult) =>
+      result?.data?.findScenes?.scenes ?? [],
+    getCount: (result: FindScenesQueryResult) =>
+      result?.data?.findScenes?.count ?? 0
   });
 
 export const useSceneMarkersList = (
@@ -335,7 +337,9 @@ export const useSceneMarkersList = (
       result?.data?.findSceneMarkers?.count ?? 0
   });
 
-export const useGalleriesList = (props: IListHookOptions<FindGalleriesQueryResult>) =>
+export const useGalleriesList = (
+  props: IListHookOptions<FindGalleriesQueryResult>
+) =>
   useList<FindGalleriesQueryResult, GalleryDataFragment>({
     ...props,
     filterMode: FilterMode.Galleries,
@@ -346,16 +350,22 @@ export const useGalleriesList = (props: IListHookOptions<FindGalleriesQueryResul
       result?.data?.findGalleries?.count ?? 0
   });
 
-export const useStudiosList = (props: IListHookOptions<FindStudiosQueryResult>) =>
+export const useStudiosList = (
+  props: IListHookOptions<FindStudiosQueryResult>
+) =>
   useList<FindStudiosQueryResult, StudioDataFragment>({
     ...props,
     filterMode: FilterMode.Studios,
     useData: StashService.useFindStudios,
-    getData: (result: FindStudiosQueryResult) => result?.data?.findStudios?.studios ?? [],
-    getCount: (result: FindStudiosQueryResult) => result?.data?.findStudios?.count ?? 0
+    getData: (result: FindStudiosQueryResult) =>
+      result?.data?.findStudios?.studios ?? [],
+    getCount: (result: FindStudiosQueryResult) =>
+      result?.data?.findStudios?.count ?? 0
   });
 
-export const usePerformersList = (props: IListHookOptions<FindPerformersQueryResult>) =>
+export const usePerformersList = (
+  props: IListHookOptions<FindPerformersQueryResult>
+) =>
   useList<FindPerformersQueryResult, PerformerDataFragment>({
     ...props,
     filterMode: FilterMode.Performers,

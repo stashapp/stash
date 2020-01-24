@@ -5,25 +5,30 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { SceneList } from "../../scenes/SceneList";
 
 interface IPerformerDetailsProps {
-  performer: Partial<GQL.PerformerDataFragment>
+  performer: Partial<GQL.PerformerDataFragment>;
 }
 
-export const PerformerScenesPanel: React.FC<IPerformerDetailsProps> = ({ performer }) => {
-
+export const PerformerScenesPanel: React.FC<IPerformerDetailsProps> = ({
+  performer
+}) => {
   function filterHook(filter: ListFilterModel) {
-    const performerValue = {id: performer.id!, label: performer.name!};
+    const performerValue = { id: performer.id!, label: performer.name! };
     // if performers is already present, then we modify it, otherwise add
-    let performerCriterion = filter.criteria.find((c) => {
+    let performerCriterion = filter.criteria.find(c => {
       return c.type === "performers";
     });
 
-    if (performerCriterion &&
-        (performerCriterion.modifier === GQL.CriterionModifier.IncludesAll ||
-         performerCriterion.modifier === GQL.CriterionModifier.Includes)) {
+    if (
+      performerCriterion &&
+      (performerCriterion.modifier === GQL.CriterionModifier.IncludesAll ||
+        performerCriterion.modifier === GQL.CriterionModifier.Includes)
+    ) {
       // add the performer if not present
-      if (!performerCriterion.value.find((p : any) => {
-        return p.id === performer.id;
-      })) {
+      if (
+        !performerCriterion.value.find((p: any) => {
+          return p.id === performer.id;
+        })
+      ) {
         performerCriterion.value.push(performerValue);
       }
 
@@ -38,10 +43,5 @@ export const PerformerScenesPanel: React.FC<IPerformerDetailsProps> = ({ perform
     return filter;
   }
 
-  return (
-    <SceneList
-      subComponent
-      filterHook={filterHook}
-    />
-  );
-}
+  return <SceneList subComponent filterHook={filterHook} />;
+};

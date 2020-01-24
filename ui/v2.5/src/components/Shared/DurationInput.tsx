@@ -11,12 +11,13 @@ interface IProps {
 }
 
 export const DurationInput: React.FC<IProps> = (props: IProps) => {
-  const [value, setValue] = useState<string>(DurationUtils.secondsToString(props.numericValue));
+  const [value, setValue] = useState<string>(
+    DurationUtils.secondsToString(props.numericValue)
+  );
 
   useEffect(() => {
     setValue(DurationUtils.secondsToString(props.numericValue));
   }, [props.numericValue]);
-
 
   function increment() {
     let seconds = DurationUtils.stringToSeconds(value);
@@ -66,7 +67,9 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
           disabled={props.disabled}
           value={value}
           onChange={(e: any) => setValue(e.target.value)}
-          onBlur={() => props.onValueChange(DurationUtils.stringToSeconds(value))}
+          onBlur={() =>
+            props.onValueChange(DurationUtils.stringToSeconds(value))
+          }
           placeholder="hh:mm:ss"
         />
         <InputGroup.Append>

@@ -5,11 +5,9 @@ import { LoadingIndicator } from "src/components/Shared";
 export const Stats: React.FC = () => {
   const { data, error, loading } = StashService.useStats();
 
-  if (loading || !data)
-    return <LoadingIndicator message="Loading..." />
+  if (loading || !data) return <LoadingIndicator message="Loading..." />;
 
-  if (error)
-    return <span>error.message</span> ;
+  if (error) return <span>error.message</span>;
 
   return (
     <div className="w-75 m-auto">

@@ -1,14 +1,17 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
-import { Button, Form, Popover, OverlayTrigger, Spinner, Table } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  Popover,
+  OverlayTrigger,
+  Spinner,
+  Table
+} from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import {
-  Icon,
-  Modal,
-  ScrapePerformerSuggest
-} from "src/components/Shared";
+import { Icon, Modal, ScrapePerformerSuggest } from "src/components/Shared";
 import { ImageUtils, TableUtils } from "src/utils";
 import { useToast } from "src/hooks";
 
@@ -16,19 +19,33 @@ interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isNew?: boolean;
   isEditing?: boolean;
-  onSave?: (performer: Partial<GQL.PerformerCreateInput> | Partial<GQL.PerformerUpdateInput>) => void;
+  onSave?: (
+    performer:
+      | Partial<GQL.PerformerCreateInput>
+      | Partial<GQL.PerformerUpdateInput>
+  ) => void;
   onDelete?: () => void;
   onImageChange?: (image: string) => void;
 }
 
-export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({ performer, isNew, isEditing, onSave, onDelete, onImageChange }) => {
+export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
+  performer,
+  isNew,
+  isEditing,
+  onSave,
+  onDelete,
+  onImageChange
+}) => {
   const Toast = useToast();
 
   // Editing state
-  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<GQL.Scraper>();
-  const [scrapePerformerDetails, setScrapePerformerDetails] = useState<GQL.ScrapedPerformerDataFragment>();
+  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<
+    GQL.Scraper
+  >();
+  const [scrapePerformerDetails, setScrapePerformerDetails] = useState<
+    GQL.ScrapedPerformerDataFragment
+  >();
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-
 
   // Editing performer state
   const [image, setImage] = useState<string>();
@@ -54,7 +71,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({ performer, 
 
   const Scrapers = StashService.useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
-
 
   function updatePerformerEditState(
     state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformer>
@@ -91,19 +107,17 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({ performer, 
     }
   }
 
-  if (isEditing)
-    ImageUtils.usePasteImage(onImageLoad);
+  if (isEditing) ImageUtils.usePasteImage(onImageLoad);
 
   useEffect(() => {
-    const newQueryableScrapers = (Scrapers?.data?.listPerformerScrapers ?? []).filter(s => (
-        s.performer?.supported_scrapes.includes(GQL.ScrapeType.Name)
-    ));
+    const newQueryableScrapers = (
+      Scrapers?.data?.listPerformerScrapers ?? []
+    ).filter(s => s.performer?.supported_scrapes.includes(GQL.ScrapeType.Name));
 
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers]);
 
-  if (isLoading)
-    return <Spinner animation="border" variant="light" />;
+  if (isLoading) return <Spinner animation="border" variant="light" />;
 
   function getPerformerInput() {
     const performerInput: Partial<
@@ -138,9 +152,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({ performer, 
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  function onDisplayFreeOnesDialog(
-    scraper: GQL.Scraper
-  ) {
+  function onDisplayFreeOnesDialog(scraper: GQL.Scraper) {
     setIsDisplayingScraperDialog(scraper);
   }
 
@@ -212,9 +224,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({ performer, 
               ? queryableScrapers.map(s => (
                   <Button
                     variant="link"
-                    onClick={() =>
-                      onDisplayFreeOnesDialog(s)
-                    }
+                    onClick={() => onDisplayFreeOnesDialog(s)}
                   >
                     {s.name}
                   </Button>
@@ -299,14 +309,29 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({ performer, 
     if (isEditing) {
       return (
         <>
-          <Button className="edit-button" variant="primary" onClick={() => onSave?.(getPerformerInput())}>Save</Button>
-          {!isNew ? <Button className="edit-button" variant="danger" onClick={() => setIsDeleteAlertOpen(true)}>Delete</Button> : ''}
+          <Button
+            className="edit-button"
+            variant="primary"
+            onClick={() => onSave?.(getPerformerInput())}
+          >
+            Save
+          </Button>
+          {!isNew ? (
+            <Button
+              className="edit-button"
+              variant="danger"
+              onClick={() => setIsDeleteAlertOpen(true)}
+            >
+              Delete
+            </Button>
+          ) : (
+            ""
+          )}
           {renderScraperMenu()}
         </>
       );
     }
   }
-
 
   function renderDeleteAlert() {
     return (
@@ -316,34 +341,50 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({ performer, 
         accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>
-          Are you sure you want to delete {name}?
-        </p>
+        <p>Are you sure you want to delete {name}?</p>
       </Modal>
     );
   }
 
   function renderImageInput() {
-    if (!isEditing) { return; }
+    if (!isEditing) {
+      return;
+    }
     return (
       <tr>
         <td>Image</td>
-        <td><Form.Control type="file" onChange={onImageChangeHandler} accept=".jpg,.jpeg" /></td>
+        <td>
+          <Form.Control
+            type="file"
+            onChange={onImageChangeHandler}
+            accept=".jpg,.jpeg"
+          />
+        </td>
       </tr>
-    )
+    );
   }
 
   function maybeRenderName() {
     if (isEditing) {
-      return TableUtils.renderInputGroup(
-        {title: "Name", value: name, isEditing: !!isEditing, placeholder: "Name", onChange: setName});
+      return TableUtils.renderInputGroup({
+        title: "Name",
+        value: name,
+        isEditing: !!isEditing,
+        placeholder: "Name",
+        onChange: setName
+      });
     }
   }
 
   function maybeRenderAliases() {
     if (isEditing) {
-      return TableUtils.renderInputGroup(
-        {title: "Aliases", value: aliases, isEditing: !!isEditing, placeholder: "Aliases", onChange: setAliases});
+      return TableUtils.renderInputGroup({
+        title: "Aliases",
+        value: aliases,
+        isEditing: !!isEditing,
+        placeholder: "Aliases",
+        onChange: setAliases
+      });
     }
   }
 
