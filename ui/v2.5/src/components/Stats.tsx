@@ -1,63 +1,52 @@
-import { Spinner } from "react-bootstrap";
-import React, { FunctionComponent } from "react";
-import { StashService } from "../core/StashService";
+import React from "react";
+import { StashService } from "src/core/StashService";
+import { LoadingIndicator } from "src/components/Shared";
 
-export const Stats: FunctionComponent = () => {
+export const Stats: React.FC = () => {
   const { data, error, loading } = StashService.useStats();
 
-  function renderStats() {
-    if (!data || !data.stats) {
-      return;
-    }
-    return (
-      <nav id="details-container" className="level">
-        <div className="level-item has-text-centered">
+  if (loading || !data)
+    return <LoadingIndicator message="Loading..." />
+
+  if (error)
+    return <span>error.message</span> ;
+
+  return (
+    <div className="w-75 m-auto">
+      <nav className="w-75 m-auto d-flex flex-row">
+        <div className="flex-grow-1">
           <div>
             <p className="heading">Scenes</p>
             <p className="title">{data.stats.scene_count}</p>
           </div>
         </div>
-        <div className="level-item has-text-centered">
+        <div className="flex-grow-1">
           <div>
             <p className="heading">Galleries</p>
             <p className="title">{data.stats.gallery_count}</p>
           </div>
         </div>
-        <div className="level-item has-text-centered">
+        <div className="flex-grow-1">
           <div>
             <p className="heading">Performers</p>
             <p className="title">{data.stats.performer_count}</p>
           </div>
         </div>
-        <div className="level-item has-text-centered">
+        <div className="flex-grow-1">
           <div>
             <p className="heading">Studios</p>
             <p className="title">{data.stats.studio_count}</p>
           </div>
         </div>
-        <div className="level-item has-text-centered">
+        <div className="flex-grow-1">
           <div>
             <p className="heading">Tags</p>
             <p className="title">{data.stats.tag_count}</p>
           </div>
         </div>
       </nav>
-    );
-  }
 
-  return (
-    <div id="details-container">
-      {!data || loading ? (
-        <Spinner animation="border" role="status" size="sm">
-          <span className="sr-only">Loading...</span>
-        </Spinner>
-      ) : (
-        undefined
-      )}
-      {error ? <span>error.message</span> : undefined}
-      {renderStats()}
-
-      <h3>Notes</h3>
+      <h5>Notes</h5>
       <pre>
         {`
         This is still an early version, some things are still a work in progress.
