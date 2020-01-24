@@ -183,6 +183,14 @@ func makeCommonXPath(attr string) string {
 	return `//table[@id="biographyTable"]//tr/td[@class="paramname"]//b[text() = '` + attr + `']/ancestor::tr/td[@class="paramvalue"]`
 }
 
+func makeReplaceRegex(regex string, with string) map[interface{}]interface{} {
+	ret := make(map[interface{}]interface{})
+
+	ret["regex"] = regex
+	ret["with"] = with
+	return ret
+}
+
 func makeXPathConfig() xpathScraperConfig {
 	config := make(xpathScraperConfig)
 
@@ -194,16 +202,30 @@ func makeXPathConfig() xpathScraperConfig {
 	config["Measurements"] = makeCommonXPath("Measurements:")
 	config["FakeTits"] = makeCommonXPath("Fake boobs:")
 	config["Height"] = makeCommonXPath("Height:")
-	// no colon in attribute header
-	config["CareerLength"] = makeCommonXPath("Career Start And End")
 	config["Tattoos"] = makeCommonXPath("Tattoos:")
 	config["Piercings"] = makeCommonXPath("Piercings:")
 
 	// special handling for birthdate
-	// birthdateAttrConfig := make(map[interface{}]interface{})
-	// birthdateAttrConfig["selector"] = makeCommonXPath("Date of Birth:")
-	// birthdateAttrConfig["parseDate"] = "January 2, 2006" // "July 1, 1992 (27 years old)&nbsp;"
-	// config["Birthdate"] = birthdateAttrConfig
+	birthdateAttrConfig := make(map[interface{}]interface{})
+	birthdateAttrConfig["selector"] = makeCommonXPath("Date of Birth:")
+
+	var birthdateReplace []interface{}
+	birthdateReplace = append(birthdateReplace, makeReplaceRegex(` \(.* years old\)`, ""))
+
+	birthdateAttrConfig["replace"] = birthdateReplace
+	birthdateAttrConfig["parseDate"] = "January 2, 2006" // "July 1, 1992 (27 years old)&nbsp;"
+	config["Birthdate"] = birthdateAttrConfig
+
+	// special handling for career length
+	careerLengthAttrConfig := make(map[interface{}]interface{})
+	// no colon in attribute header
+	careerLengthAttrConfig["selector"] = makeCommonXPath("Career Start And End")
+
+	var careerLengthReplace []interface{}
+	careerLengthReplace = append(careerLengthReplace, makeReplaceRegex(`\s+\(.*\)`, ""))
+	careerLengthAttrConfig["replace"] = careerLengthReplace
+
+	config["CareerLength"] = careerLengthAttrConfig
 
 	return config
 }
@@ -257,16 +279,14 @@ func TestScrapePerformerXPath(t *testing.T) {
 	verifyField(t, ethnicity, performer.Ethnicity, "Ethnicity")
 	verifyField(t, country, performer.Country, "Country")
 
-	// TODO - needs post-processing
-	//verifyField(t, birthdate, performer.Birthdate, "Birthdate")
+	verifyField(t, birthdate, performer.Birthdate, "Birthdate")
 
 	verifyField(t, aliases, performer.Aliases, "Aliases")
 	verifyField(t, eyeColor, performer.EyeColor, "EyeColor")
 	verifyField(t, measurements, performer.Measurements, "Measurements")
 	verifyField(t, fakeTits, performer.FakeTits, "FakeTits")
 
-	// TODO - this needs post-processing
-	//verifyField(t, careerLength, performer.CareerLength, "CareerLength")
+	verifyField(t, careerLength, performer.CareerLength, "CareerLength")
 
 	verifyField(t, tattoosPiercings, performer.Tattoos, "Tattoos")
 	verifyField(t, tattoosPiercings, performer.Piercings, "Piercings")

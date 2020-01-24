@@ -44,6 +44,45 @@ func createXPathScraperConfig(src map[interface{}]interface{}) xpathScraperConfi
 	return ret
 }
 
+type xpathRegexConfig map[interface{}]interface{}
+type xpathRegexConfigs []xpathRegexConfig
+
+func (c xpathRegexConfig) apply(value string) string {
+	regex := ""
+	with := ""
+
+	if regexI, _ := c["regex"]; regexI != nil {
+		regex, _ = regexI.(string)
+	}
+	if withI, _ := c["with"]; withI != nil {
+		with, _ = withI.(string)
+	}
+
+	if regex != "" {
+		re, err := regexp.Compile(regex)
+		if err != nil {
+			logger.Warnf("Error compiling regex '%s': %s", regex, err.Error())
+			return value
+		}
+
+		return re.ReplaceAllString(value, with)
+	}
+
+	return value
+}
+
+func (c xpathRegexConfigs) apply(value string) string {
+	// apply regex in order
+	for _, config := range c {
+		value = config.apply(value)
+	}
+
+	// remove whitespace again
+	value = commonPostProcess(value)
+
+	return value
+}
+
 type xpathScraperAttrConfig map[interface{}]interface{}
 
 func (c xpathScraperAttrConfig) getString(key string) string {
@@ -74,6 +113,25 @@ func (c xpathScraperAttrConfig) hasConcat() bool {
 func (c xpathScraperAttrConfig) getParseDate() string {
 	const parseDateKey = "parseDate"
 	return c.getString(parseDateKey)
+}
+
+func (c xpathScraperAttrConfig) getReplace() xpathRegexConfigs {
+	const replaceKey = "replace"
+	val, _ := c[replaceKey]
+
+	var ret xpathRegexConfigs
+	if val == nil {
+		return ret
+	}
+
+	asSlice, _ := val.([]interface{})
+
+	for _, v := range asSlice {
+		asMap, _ := v.(map[interface{}]interface{})
+		ret = append(ret, xpathRegexConfig(asMap))
+	}
+
+	return ret
 }
 
 func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
@@ -110,7 +168,14 @@ func (c xpathScraperAttrConfig) parseDate(value string) string {
 	return parsedValue.Format(internalDateFormat)
 }
 
+func (c xpathScraperAttrConfig) replaceRegex(value string) string {
+	replace := c.getReplace()
+	return replace.apply(value)
+}
+
 func (c xpathScraperAttrConfig) postProcess(value string) string {
+	// perform regex replacements first
+	value = c.replaceRegex(value)
 	value = c.parseDate(value)
 
 	return value
