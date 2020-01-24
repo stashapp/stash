@@ -15,8 +15,6 @@ import Studios from "./components/Studios/Studios";
 import Tags from "./components/Tags/Tags";
 import { SceneFilenameParser } from "./components/scenes/SceneFilenameParser";
 
-import "bootstrap/dist/css/bootstrap.min.css";
-
 library.add(fas);
 
 export const App: React.FC = () => (

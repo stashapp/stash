@@ -25,7 +25,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (
   }
 
   return (
-    <Card className="col-3">
+    <Card className="grid-item">
       <Link
         to={`/performers/${props.performer.id}`}
         className="performer previewable image"
@@ -34,15 +34,14 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (
         {maybeRenderFavoriteBanner()}
       </Link>
       <div className="card-section">
-        <h4 className="text-truncate">{props.performer.name}</h4>
-        {age !== 0 ? <div>{ageString}</div> : ""}
-        <span>
-          Stars in {props.performer.scene_count}{" "}
+        <h5 className="text-truncate">{props.performer.name}</h5>
+        {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
+        <div className="text-muted">Stars in {props.performer.scene_count}{" "}
           <Link to={NavUtils.makePerformerScenesUrl(props.performer)}>
             scenes
           </Link>
           .
-        </span>
+        </div>
       </div>
     </Card>
   );

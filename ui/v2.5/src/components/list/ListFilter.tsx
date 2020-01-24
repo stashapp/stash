@@ -209,9 +209,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
       return (
         <Dropdown>
           <Dropdown.Toggle variant="secondary" id="more-menu">
-            <Button>
-              <Icon icon="ellipsis-h" />
-            </Button>
+            <Icon icon="ellipsis-h" />
           </Dropdown.Toggle>
           <Dropdown.Menu>{options}</Dropdown.Menu>
         </Dropdown>
@@ -245,12 +243,13 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function render() {
     return (
       <>
-        <div className="filter-container">
+        <div className="d-flex justify-content-center m-auto">
           <Form.Control
             placeholder="Search..."
             value={props.filter.searchTerm}
             onChange={onChangeQuery}
             className="filter-item"
+            style={{ width: 'inherit' }}
           />
           <Form.Control
             as="select"
@@ -265,7 +264,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           <ButtonGroup className="filter-item">
             <Dropdown>
               <Dropdown.Toggle variant="secondary" id="more-menu">
-                <Button>{props.filter.sortBy}</Button>
+                {props.filter.sortBy}
               </Dropdown.Toggle>
               <Dropdown.Menu>{renderSortByOptions()}</Dropdown.Menu>
             </Dropdown>

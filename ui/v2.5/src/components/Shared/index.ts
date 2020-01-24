@@ -14,3 +14,4 @@ export { DetailsEditNavbar } from "./DetailsEditNavbar";
 export { DurationInput } from "./DurationInput";
 export { TagLink } from "./TagLink";
 export { HoverPopover } from "./HoverPopover";
+export { default as LoadingIndicator } from './LoadingIndicator';

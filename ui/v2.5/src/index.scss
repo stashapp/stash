@@ -1,5 +1,4 @@
-@import "~normalize.css";
-
+@import "styles/theme";
 @import "styles/form/grid";
 
 @import "styles/shared/details";
@@ -582,4 +581,9 @@ span.block {
 
 .scrubber-button:hover {
   text-decoration: underline;
+}
+
+/* BOOTSTRAP OVERRIDES */
+.form-control {
+  width: inherit;
 }
