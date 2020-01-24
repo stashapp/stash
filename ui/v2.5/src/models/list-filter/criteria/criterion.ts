@@ -1,8 +1,8 @@
 /* eslint-disable consistent-return */
 
 import { CriterionModifier } from "src/core/generated-graphql";
-import { ILabeledId, ILabeledValue } from "../types";
 import { DurationUtils } from 'src/utils';
+import { ILabeledId, ILabeledValue } from "../types";
 
 export type CriterionType =
   | "none"
@@ -278,12 +278,7 @@ export class DurationCriterion extends Criterion<number, number> {
 
     this.type = type;
     this.options = options;
-
-    if (!!parameterName) {
-      this.parameterName = parameterName;
-    } else {
-      this.parameterName = type;
-    }
+    this.parameterName = parameterName ?? type;
   }
 
   public getLabelValue() {

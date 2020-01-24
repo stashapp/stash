@@ -65,7 +65,7 @@ export const MainNavbar: React.FC = () => {
 
   return (
     <Navbar fixed="top" variant="dark" bg="dark">
-      <Navbar.Brand href="#home">
+      <Navbar.Brand as="div">
         <Link to="/">
           <Button variant="secondary">Stash</Button>
         </Link>

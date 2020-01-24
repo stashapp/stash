@@ -1,14 +1,14 @@
 import React from 'react';
 import { Spinner } from 'react-bootstrap';
 
-interface LoadingProps {
+interface ILoadingProps {
     message: string;
 }
 
 const CLASSNAME = 'LoadingIndicator';
 const CLASSNAME_MESSAGE = `${CLASSNAME}-message`;
 
-const LoadingIndicator: React.FC<LoadingProps> = ({ message }) => (
+const LoadingIndicator: React.FC<ILoadingProps> = ({ message }) => (
     <div className={CLASSNAME}>
         <Spinner animation="border" role="status">
             <span className="sr-only">Loading...</span>

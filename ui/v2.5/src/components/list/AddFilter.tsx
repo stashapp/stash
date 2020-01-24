@@ -1,7 +1,7 @@
 import _ from "lodash";
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Form, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { Icon, FilterSelect } from "src/components/Shared";
+import { Icon, FilterSelect, DurationInput } from "src/components/Shared";
 import { CriterionModifier } from "src/core/generated-graphql";
 import {
   Criterion,
@@ -14,7 +14,6 @@ import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import { makeCriteria } from "src/models/list-filter/criteria/utils";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { DurationInput } from "src/components/Shared";
 
 interface IAddFilterProps {
   onAddCriterion: (criterion: Criterion, oldId?: string) => void;
