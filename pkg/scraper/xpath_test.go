@@ -189,7 +189,6 @@ func makeXPathConfig() xpathScraperConfig {
 	config["Name"] = makeCommonXPath("Babe Name:") + `/a`
 	config["Ethnicity"] = makeCommonXPath("Ethnicity:")
 	config["Country"] = makeCommonXPath("Country of Origin:")
-	config["Birthdate"] = makeCommonXPath("Date of Birth:")
 	config["Aliases"] = makeCommonXPath("Aliases:")
 	config["EyeColor"] = makeCommonXPath("Eye Color:")
 	config["Measurements"] = makeCommonXPath("Measurements:")
@@ -199,6 +198,12 @@ func makeXPathConfig() xpathScraperConfig {
 	config["CareerLength"] = makeCommonXPath("Career Start And End")
 	config["Tattoos"] = makeCommonXPath("Tattoos:")
 	config["Piercings"] = makeCommonXPath("Piercings:")
+
+	// special handling for birthdate
+	// birthdateAttrConfig := make(map[interface{}]interface{})
+	// birthdateAttrConfig["selector"] = makeCommonXPath("Date of Birth:")
+	// birthdateAttrConfig["parseDate"] = "January 2, 2006" // "July 1, 1992 (27 years old)&nbsp;"
+	// config["Birthdate"] = birthdateAttrConfig
 
 	return config
 }
@@ -240,7 +245,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const performerName = "Mia Malkova"
 	const ethnicity = "Caucasian"
 	const country = "United States"
-	const birthdate = "July 1, 1992 (27 years old)"
+	const birthdate = "1992-07-01"
 	const aliases = "Mia Bliss, Madison Clover, Madison Swan, Mia Mountain, Jessica"
 	const eyeColor = "Hazel"
 	const measurements = "34C-26-36"
@@ -251,7 +256,10 @@ func TestScrapePerformerXPath(t *testing.T) {
 	verifyField(t, performerName, performer.Name, "Name")
 	verifyField(t, ethnicity, performer.Ethnicity, "Ethnicity")
 	verifyField(t, country, performer.Country, "Country")
-	verifyField(t, birthdate, performer.Birthdate, "Birthdate")
+
+	// TODO - needs post-processing
+	//verifyField(t, birthdate, performer.Birthdate, "Birthdate")
+
 	verifyField(t, aliases, performer.Aliases, "Aliases")
 	verifyField(t, eyeColor, performer.EyeColor, "EyeColor")
 	verifyField(t, measurements, performer.Measurements, "Measurements")

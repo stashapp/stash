@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
@@ -70,6 +71,11 @@ func (c xpathScraperAttrConfig) hasConcat() bool {
 	return c.getConcat() != ""
 }
 
+func (c xpathScraperAttrConfig) getParseDate() string {
+	const parseDateKey = "parseDate"
+	return c.getString(parseDateKey)
+}
+
 func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
 	separator := c.getConcat()
 	result := []string{}
@@ -84,7 +90,29 @@ func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
 	return strings.Join(result, separator)
 }
 
+func (c xpathScraperAttrConfig) parseDate(value string) string {
+	parseDate := c.getParseDate()
+
+	if parseDate == "" {
+		return value
+	}
+
+	// try to parse the date using the pattern
+	// if it fails, then just fall back to the original value
+	parsedValue, err := time.Parse(parseDate, value)
+	if err != nil {
+		logger.Warnf("Error parsing date string '%s' using format '%s': %s", value, parseDate, err.Error())
+		return value
+	}
+
+	// convert it into our date format
+	const internalDateFormat = "2006-01-02"
+	return parsedValue.Format(internalDateFormat)
+}
+
 func (c xpathScraperAttrConfig) postProcess(value string) string {
+	value = c.parseDate(value)
+
 	return value
 }
 
