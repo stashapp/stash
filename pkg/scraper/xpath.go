@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"errors"
+	"net/url"
 	"reflect"
 	"regexp"
 	"strings"
@@ -328,6 +329,24 @@ func (s xpathScraper) scrapePerformer(doc *html.Node) (*models.ScrapedPerformer,
 	return &ret, nil
 }
 
+func (s xpathScraper) scrapePerformers(doc *html.Node) ([]*models.ScrapedPerformer, error) {
+	var ret []*models.ScrapedPerformer
+
+	performerMap := s.Performer
+	if performerMap == nil {
+		return nil, nil
+	}
+
+	results := performerMap.process(doc, s.Common)
+	for _, r := range results {
+		var p models.ScrapedPerformer
+		r.apply(&p)
+		ret = append(ret, &p)
+	}
+
+	return ret, nil
+}
+
 func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) {
 	var ret models.ScrapedScene
 
@@ -448,4 +467,28 @@ func scrapeSceneURLXPath(c scraperTypeConfig, url string) (*models.ScrapedScene,
 	}
 
 	return scraper.scrapeScene(doc)
+}
+
+func scrapePerformerNamesXPath(c scraperTypeConfig, name string) ([]*models.ScrapedPerformer, error) {
+	scraper := c.scraperConfig.XPathScrapers[c.Scraper]
+
+	if scraper == nil {
+		return nil, errors.New("xpath scraper with name " + c.Scraper + " not found in config")
+	}
+
+	const placeholder = "{}"
+
+	// replace the placeholder string with the URL-escaped name
+	escapedName := url.QueryEscape(name)
+
+	u := c.QueryURL
+	u = strings.ReplaceAll(u, placeholder, escapedName)
+
+	doc, err := htmlquery.LoadURL(u)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return scraper.scrapePerformers(doc)
 }

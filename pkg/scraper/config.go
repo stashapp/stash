@@ -41,6 +41,9 @@ type scraperTypeConfig struct {
 	Script  []string      `yaml:"script,flow"`
 	Scraper string        `yaml:"scraper"`
 
+	// for xpath name scraper only
+	QueryURL string `yaml:"queryURL"`
+
 	scraperConfig *scraperConfig
 }
 
@@ -56,6 +59,8 @@ func (c *performerByNameConfig) resolveFn() {
 		c.performScrape = scrapePerformerNamesScript
 	} else if c.Action == scraperActionStash {
 		c.performScrape = scrapePerformerNamesStash
+	} else if c.Action == scraperActionXPath {
+		c.performScrape = scrapePerformerNamesXPath
 	}
 }
 
@@ -264,6 +269,11 @@ func (c scraperConfig) ScrapePerformerNames(name string) ([]*models.ScrapedPerfo
 func (c scraperConfig) ScrapePerformer(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
 	if c.PerformerByFragment != nil && c.PerformerByFragment.performScrape != nil {
 		return c.PerformerByFragment.performScrape(c.PerformerByFragment.scraperTypeConfig, scrapedPerformer)
+	}
+
+	// try to match against URL if present
+	if scrapedPerformer.URL != nil && *scrapedPerformer.URL != "" {
+		return c.ScrapePerformerURL(*scrapedPerformer.URL)
 	}
 
 	return nil, nil
