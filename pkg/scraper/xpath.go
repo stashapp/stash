@@ -482,7 +482,7 @@ func scrapePerformerNamesXPath(c scraperTypeConfig, name string) ([]*models.Scra
 	escapedName := url.QueryEscape(name)
 
 	u := c.QueryURL
-	u = strings.ReplaceAll(u, placeholder, escapedName)
+	u = strings.Replace(u, placeholder, escapedName, -1)
 
 	doc, err := htmlquery.LoadURL(u)
 
