@@ -264,6 +264,51 @@ func TestScrapePerformerXPath(t *testing.T) {
 	verifyField(t, tattoosPiercings, performer.Piercings, "Piercings")
 }
 
+func TestConcatXPath(t *testing.T) {
+	const firstName = "FirstName"
+	const lastName = "LastName"
+	const eyeColor = "EyeColor"
+	const separator = " "
+	const testDoc = `
+	<html>
+	<div>` + firstName + `</div>
+	<div>` + lastName + `</div>
+	<span>` + eyeColor + `</span>
+	</html>
+	`
+
+	reader := strings.NewReader(testDoc)
+	doc, err := htmlquery.Parse(reader)
+
+	if err != nil {
+		t.Errorf("Error loading document: %s", err.Error())
+		return
+	}
+
+	xpathConfig := make(xpathScraperConfig)
+	nameAttrConfig := make(map[interface{}]interface{})
+	nameAttrConfig["selector"] = "//div"
+	nameAttrConfig["concat"] = separator
+	xpathConfig["Name"] = nameAttrConfig
+	xpathConfig["EyeColor"] = "//span"
+
+	scraper := xpathScraper{
+		Performer: xpathConfig,
+	}
+
+	performer, err := scraper.scrapePerformer(doc)
+
+	if err != nil {
+		t.Errorf("Error scraping performer: %s", err.Error())
+		return
+	}
+
+	const performerName = firstName + separator + lastName
+
+	verifyField(t, performerName, performer.Name, "Name")
+	verifyField(t, eyeColor, performer.EyeColor, "EyeColor")
+}
+
 const sceneHTML = `
 <!DOCTYPE html>
 

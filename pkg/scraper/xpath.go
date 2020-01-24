@@ -43,35 +43,117 @@ func createXPathScraperConfig(src map[interface{}]interface{}) xpathScraperConfi
 	return ret
 }
 
-func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) []xPathResult {
-	var ret []xPathResult
+type xpathScraperAttrConfig map[interface{}]interface{}
 
-	for k, v := range s {
-		asStr, isStr := v.(string)
+func (c xpathScraperAttrConfig) getString(key string) string {
+	ret, _ := c[key]
 
-		if isStr {
-			// apply common
-			if common != nil {
-				asStr = common.applyCommon(asStr)
-			}
+	if ret == nil {
+		return ""
+	}
 
-			found, err := htmlquery.QueryAll(doc, asStr)
-			if err != nil {
-				logger.Warnf("Error parsing xpath expression '%s': %s", asStr, err.Error())
-				continue
-			}
+	asStr, _ := ret.(string)
+	return asStr
+}
+
+func (c xpathScraperAttrConfig) getSelector() string {
+	const selectorKey = "selector"
+	return c.getString(selectorKey)
+}
+
+func (c xpathScraperAttrConfig) getConcat() string {
+	const concatKey = "concat"
+	return c.getString(concatKey)
+}
+
+func (c xpathScraperAttrConfig) hasConcat() bool {
+	return c.getConcat() != ""
+}
+
+func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
+	separator := c.getConcat()
+	result := []string{}
+
+	for _, elem := range nodes {
+		text := htmlquery.InnerText(elem)
+		text = commonPostProcess(text)
+
+		result = append(result, text)
+	}
+
+	return strings.Join(result, separator)
+}
+
+func (c xpathScraperAttrConfig) postProcess(value string) string {
+	return value
+}
+
+func commonPostProcess(value string) string {
+	value = strings.TrimSpace(value)
+
+	// remove multiple whitespace and end lines
+	re := regexp.MustCompile("\n")
+	value = re.ReplaceAllString(value, "")
+	re = regexp.MustCompile("  +")
+	value = re.ReplaceAllString(value, " ")
+
+	return value
+}
+
+func runXPathQuery(doc *html.Node, xpath string, common commonXPathConfig) []*html.Node {
+	// apply common
+	if common != nil {
+		xpath = common.applyCommon(xpath)
+	}
+
+	found, err := htmlquery.QueryAll(doc, xpath)
+	if err != nil {
+		logger.Warnf("Error parsing xpath expression '%s': %s", xpath, err.Error())
+		return nil
+	}
+
+	return found
+}
+
+func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xPathResults {
+	var ret xPathResults
+
+	for k, value := range s {
+		switch v := value.(type) {
+		case string:
+			found := runXPathQuery(doc, v, common)
 
 			if len(found) > 0 {
 				for i, elem := range found {
-					if i >= len(ret) {
-						ret = append(ret, make(xPathResult))
-					}
+					text := htmlquery.InnerText(elem)
+					text = commonPostProcess(text)
 
-					ret[i][k] = elem
+					ret = ret.setKey(i, k, text)
+				}
+			}
+		case map[interface{}]interface{}:
+			attrConfig := xpathScraperAttrConfig(v)
+
+			found := runXPathQuery(doc, attrConfig.getSelector(), common)
+
+			if len(found) > 0 {
+				// check if we're concatenating the results into a single result
+				if attrConfig.hasConcat() {
+					result := attrConfig.concatenateResults(found)
+					result = attrConfig.postProcess(result)
+					const i = 0
+					ret = ret.setKey(i, k, result)
+				} else {
+					for i, elem := range found {
+						text := htmlquery.InnerText(elem)
+						text = commonPostProcess(text)
+						text = attrConfig.postProcess(text)
+
+						ret = ret.setKey(i, k, text)
+					}
 				}
 			}
 		}
-		// TODO - handle map type
 	}
 
 	return ret
@@ -204,7 +286,8 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 	return &ret, nil
 }
 
-type xPathResult map[string]*html.Node
+type xPathResult map[string]string
+type xPathResults []xPathResult
 
 func (r xPathResult) apply(dest interface{}) {
 	destVal := reflect.ValueOf(dest)
@@ -212,22 +295,16 @@ func (r xPathResult) apply(dest interface{}) {
 	// dest should be a pointer
 	destVal = destVal.Elem()
 
-	for key, v := range r {
+	for key, value := range r {
 		field := destVal.FieldByName(key)
 
 		if field.IsValid() {
-			value := htmlquery.InnerText(v)
-			value = strings.TrimSpace(value)
-
-			// remove multiple whitespace and end lines
-			re := regexp.MustCompile("\n")
-			value = re.ReplaceAllString(value, "")
-			re = regexp.MustCompile("  +")
-			value = re.ReplaceAllString(value, " ")
-
 			var reflectValue reflect.Value
 			if field.Kind() == reflect.Ptr {
-				reflectValue = reflect.ValueOf(&value)
+				// need to copy the value, otherwise everything is set to the
+				// same pointer
+				localValue := value
+				reflectValue = reflect.ValueOf(&localValue)
 			} else {
 				reflectValue = reflect.ValueOf(value)
 			}
@@ -237,6 +314,15 @@ func (r xPathResult) apply(dest interface{}) {
 			logger.Errorf("Field %s does not exist in %T", key, dest)
 		}
 	}
+}
+
+func (r xPathResults) setKey(index int, key string, value string) xPathResults {
+	if index >= len(r) {
+		r = append(r, make(xPathResult))
+	}
+
+	r[index][key] = value
+	return r
 }
 
 func scrapePerformerURLXpath(c scraperTypeConfig, url string) (*models.ScrapedPerformer, error) {
