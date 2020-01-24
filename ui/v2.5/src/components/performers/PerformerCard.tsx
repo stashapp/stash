@@ -36,7 +36,8 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (
       <div className="card-section">
         <h5 className="text-truncate">{props.performer.name}</h5>
         {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
-        <div className="text-muted">Stars in {props.performer.scene_count}{" "}
+        <div className="text-muted">
+          Stars in {props.performer.scene_count}{" "}
           <Link to={NavUtils.makePerformerScenesUrl(props.performer)}>
             scenes
           </Link>

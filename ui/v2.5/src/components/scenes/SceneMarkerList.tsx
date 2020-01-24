@@ -1,9 +1,7 @@
 import _ from "lodash";
 import React from "react";
 import { useHistory } from "react-router-dom";
-import {
-  FindSceneMarkersQueryResult
-} from "src/core/generated-graphql";
+import { FindSceneMarkersQueryResult } from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { NavUtils } from "src/utils";
 import { useSceneMarkersList } from "src/hooks";

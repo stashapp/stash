@@ -1,27 +1,27 @@
-import {
-  Button,
-} from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
 interface IPerformerOperationsProps {
-  performer: Partial<GQL.PerformerDataFragment>
+  performer: Partial<GQL.PerformerDataFragment>;
 }
 
-export const PerformerOperationsPanel: React.FC<IPerformerOperationsProps> = ({ performer }) => {
+export const PerformerOperationsPanel: React.FC<IPerformerOperationsProps> = ({
+  performer
+}) => {
   const Toast = useToast();
 
   async function onAutoTag() {
     if (!performer?.id) {
-        return;
+      return;
     }
     try {
-        await StashService.queryMetadataAutoTag({ performers: [performer.id]});
-        Toast.success({ content: "Started auto tagging" });
+      await StashService.queryMetadataAutoTag({ performers: [performer.id] });
+      Toast.success({ content: "Started auto tagging" });
     } catch (e) {
-        Toast.error(e);
+      Toast.error(e);
     }
   }
 

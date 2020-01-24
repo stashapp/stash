@@ -249,7 +249,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
             value={props.filter.searchTerm}
             onChange={onChangeQuery}
             className="filter-item"
-            style={{ width: 'inherit' }}
+            style={{ width: "inherit" }}
           />
           <Form.Control
             as="select"

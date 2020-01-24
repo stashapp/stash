@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 
 import { CriterionModifier } from "src/core/generated-graphql";
-import { DurationUtils } from 'src/utils';
+import { DurationUtils } from "src/utils";
 import { ILabeledId, ILabeledValue } from "../types";
 
 export type CriterionType =
@@ -38,7 +38,8 @@ export abstract class Criterion<Option = any, Value = any> {
         return "Rating";
       case "resolution":
         return "Resolution";
-      case "duration": return "Duration";
+      case "duration":
+        return "Duration";
       case "favorite":
         return "Favorite";
       case "hasMarkers":
@@ -149,7 +150,10 @@ export abstract class Criterion<Option = any, Value = any> {
 
     let valueString = "";
 
-    if (this.modifier !== CriterionModifier.IsNull && this.modifier !== CriterionModifier.NotNull) {
+    if (
+      this.modifier !== CriterionModifier.IsNull &&
+      this.modifier !== CriterionModifier.NotNull
+    ) {
       valueString = this.getLabelValue();
     }
 
@@ -170,7 +174,7 @@ export abstract class Criterion<Option = any, Value = any> {
       valueString = (this.value as any).toString();
     }
 
-		return valueString;
+    return valueString;
   }
 
   public getId(): string {
@@ -268,12 +272,12 @@ export class DurationCriterion extends Criterion<number, number> {
     Criterion.getModifierOption(CriterionModifier.Equals),
     Criterion.getModifierOption(CriterionModifier.NotEquals),
     Criterion.getModifierOption(CriterionModifier.GreaterThan),
-    Criterion.getModifierOption(CriterionModifier.LessThan),
+    Criterion.getModifierOption(CriterionModifier.LessThan)
   ];
   public options: number[] | undefined;
   public value: number = 0;
 
-  constructor(type : CriterionType, parameterName?: string, options? : number[]) {
+  constructor(type: CriterionType, parameterName?: string, options?: number[]) {
     super();
 
     this.type = type;

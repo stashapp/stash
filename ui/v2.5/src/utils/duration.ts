@@ -1,6 +1,6 @@
 import TextUtils from "./text";
 
-const secondsToString = (seconds : number) => {
+const secondsToString = (seconds: number) => {
   let ret = TextUtils.secondsToTimestamp(seconds);
 
   if (ret.startsWith("00:")) {
@@ -12,9 +12,9 @@ const secondsToString = (seconds : number) => {
   }
 
   return ret;
-}
+};
 
-const stringToSeconds = (v : string) => {
+const stringToSeconds = (v: string) => {
   if (!v) {
     return 0;
   }
@@ -27,7 +27,7 @@ const stringToSeconds = (v : string) => {
 
   let seconds = 0;
   let factor = 1;
-  while(splits.length > 0) {
+  while (splits.length > 0) {
     const thisSplit = splits.pop();
     if (thisSplit === undefined) {
       return 0;
@@ -43,7 +43,7 @@ const stringToSeconds = (v : string) => {
   }
 
   return seconds;
-}
+};
 
 export default {
   secondsToString,

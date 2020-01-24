@@ -5,16 +5,14 @@ import { Button, Spinner, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import {
-  Icon,
-} from "src/components/Shared";
-import { useToast } from 'src/hooks';
+import { Icon } from "src/components/Shared";
+import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
-import Lightbox from 'react-images';
+import Lightbox from "react-images";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
-import { PerformerDetailsPanel } from './PerformerDetailsPanel';
-import { PerformerOperationsPanel } from './PerformerOperationsPanel';
-import { PerformerScenesPanel } from './PerformerScenesPanel';
+import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
+import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
+import { PerformerScenesPanel } from "./PerformerScenesPanel";
 
 export const Performer: React.FC = () => {
   const Toast = useToast();
@@ -23,7 +21,9 @@ export const Performer: React.FC = () => {
   const isNew = id === "new";
 
   // Performer state
-  const [performer, setPerformer] = useState<Partial<GQL.PerformerDataFragment>>({});
+  const [performer, setPerformer] = useState<
+    Partial<GQL.PerformerDataFragment>
+  >({});
   const [imagePreview, setImagePreview] = useState<string>();
   const [lightboxIsOpen, setLightboxIsOpen] = useState(false);
 
@@ -34,7 +34,6 @@ export const Performer: React.FC = () => {
   const [updatePerformer] = StashService.usePerformerUpdate();
   const [createPerformer] = StashService.usePerformerCreate();
   const [deletePerformer] = StashService.usePerformerDestroy();
-
 
   useEffect(() => {
     setIsLoading(false);
@@ -54,16 +53,24 @@ export const Performer: React.FC = () => {
 
   if (error) return <div>{error.message}</div>;
 
-  async function onSave(performerInput: Partial<GQL.PerformerCreateInput> | Partial<GQL.PerformerUpdateInput>) {
+  async function onSave(
+    performerInput:
+      | Partial<GQL.PerformerCreateInput>
+      | Partial<GQL.PerformerUpdateInput>
+  ) {
     setIsLoading(true);
     try {
       if (!isNew) {
-        const result = await updatePerformer({variables: performerInput as GQL.PerformerUpdateInput});
-        if(result.data?.performerUpdate)
+        const result = await updatePerformer({
+          variables: performerInput as GQL.PerformerUpdateInput
+        });
+        if (result.data?.performerUpdate)
           setPerformer(result.data?.performerUpdate);
       } else {
-        const result = await createPerformer({variables: performerInput as GQL.PerformerCreateInput});
-        if(result.data?.performerCreate) {
+        const result = await createPerformer({
+          variables: performerInput as GQL.PerformerCreateInput
+        });
+        if (result.data?.performerCreate) {
           setPerformer(result.data.performerCreate);
           history.push(`/performers/${result.data.performerCreate.id}`);
         }
@@ -77,7 +84,7 @@ export const Performer: React.FC = () => {
   async function onDelete() {
     setIsLoading(true);
     try {
-      await deletePerformer({variables: { id }});
+      await deletePerformer({ variables: { id } });
     } catch (e) {
       Toast.error(e);
     }
@@ -112,7 +119,7 @@ export const Performer: React.FC = () => {
             <PerformerScenesPanel performer={performer} />
           </Tab>
           <Tab eventKey="edit" title="Edit">
-            { renderEditPanel() }
+            {renderEditPanel()}
           </Tab>
           <Tab eventKey="operations" title="Operations">
             <PerformerOperationsPanel performer={performer} />
@@ -151,7 +158,7 @@ export const Performer: React.FC = () => {
     }
   }
 
-  function setFavorite(v : boolean) {
+  function setFavorite(v: boolean) {
     performer.favorite = v;
     onSave(performer);
   }
@@ -165,9 +172,9 @@ export const Performer: React.FC = () => {
               <Icon icon={icon} />
             </a>
           </Button>
-        )
+        );
       }
-		}
+    }
 
     return (
       <>
@@ -175,7 +182,8 @@ export const Performer: React.FC = () => {
           <Button
             className={performer.favorite ? "favorite" : "not-favorite"}
             onClick={() => setFavorite(!performer.favorite)}
-          ><Icon icon="heart" />
+          >
+            <Icon icon="heart" />
           </Button>
           {maybeRenderURL(performer.url ?? undefined)}
           {/* TODO - render instagram and twitter links with icons */}
@@ -184,11 +192,11 @@ export const Performer: React.FC = () => {
     );
   }
 
-	function renderNewView() {
+  function renderNewView() {
     return (
       <div className="columns is-multiline no-spacing">
         <div className="column is-half details-image-container">
-          <img className="performer" src={imagePreview} alt='Performer' />
+          <img className="performer" src={imagePreview} alt="Performer" />
         </div>
         <div className="column is-half details-detail-container">
           {renderTabs()}
@@ -197,7 +205,7 @@ export const Performer: React.FC = () => {
     );
   }
 
-  const photos = [{src: imagePreview || "", caption: "Image"}];
+  const photos = [{ src: imagePreview || "", caption: "Image" }];
 
   function openLightbox() {
     setLightboxIsOpen(true);
@@ -216,7 +224,7 @@ export const Performer: React.FC = () => {
       <div id="performer-page">
         <div className="details-image-container">
           <Button variant="link" onClick={openLightbox}>
-            <img className="performer" src={imagePreview} alt='Performer' />
+            <img className="performer" src={imagePreview} alt="Performer" />
           </Button>
         </div>
         <div className="performer-head">
@@ -229,9 +237,7 @@ export const Performer: React.FC = () => {
         </div>
 
         <div className="performer-body">
-          <div className="details-detail-container">
-            {renderTabs()}
-          </div>
+          <div className="details-detail-container">{renderTabs()}</div>
         </div>
       </div>
       <Lightbox

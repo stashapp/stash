@@ -19,7 +19,10 @@ interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
-export const SceneList: React.FC<ISceneList> = ({ subComponent, filterHook }) => {
+export const SceneList: React.FC<ISceneList> = ({
+  subComponent,
+  filterHook
+}) => {
   const history = useHistory();
   const otherOperations = [
     {

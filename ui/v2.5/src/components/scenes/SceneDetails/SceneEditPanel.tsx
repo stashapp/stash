@@ -57,9 +57,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [deleteScene] = StashService.useSceneDestroy(getSceneDeleteInput());
 
   useEffect(() => {
-    const newQueryableScrapers = (Scrapers?.data?.listSceneScrapers ?? []).filter(s => (
-        s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
-    ));
+    const newQueryableScrapers = (
+      Scrapers?.data?.listSceneScrapers ?? []
+    ).filter(s => s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment));
 
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers]);
@@ -108,7 +108,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setIsLoading(true);
     try {
       const result = await updateScene();
-      if(result.data?.sceneUpdate) {
+      if (result.data?.sceneUpdate) {
         props.onUpdate(result.data.sceneUpdate);
         Toast.success({ content: "Updated scene" });
       }
@@ -202,9 +202,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  async function onScrapeClicked(
-    scraper: GQL.Scraper
-  ) {
+  async function onScrapeClicked(scraper: GQL.Scraper) {
     setIsLoading(true);
     try {
       const result = await StashService.queryScrapeScene(
@@ -418,7 +416,11 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           </Button>
           <Collapse in={isCoverImageOpen}>
             <div>
-              <img className="scene-cover" src={coverImagePreview} alt="Scene cover" />
+              <img
+                className="scene-cover"
+                src={coverImagePreview}
+                alt="Scene cover"
+              />
               <Form.Group className="test" controlId="cover">
                 <Form.Control
                   type="file"

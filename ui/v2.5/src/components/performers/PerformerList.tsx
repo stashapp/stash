@@ -1,9 +1,7 @@
 import _ from "lodash";
 import React from "react";
 import { useHistory } from "react-router-dom";
-import {
-  FindPerformersQueryResult,
-} from "src/core/generated-graphql";
+import { FindPerformersQueryResult } from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { usePerformersList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";

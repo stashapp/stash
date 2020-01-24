@@ -24,7 +24,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   });
 
   const config = StashService.useConfiguration();
-  const showStudioAsText = config?.data?.configuration.interface.showStudioAsText ?? false;
+  const showStudioAsText =
+    config?.data?.configuration.interface.showStudioAsText ?? false;
 
   function maybeRenderRatingBanner() {
     if (!props.scene.rating) {
@@ -52,7 +53,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         ) : (
           ""
         )}
-        { (props.scene.file.duration ?? 0) >= 1
+        {(props.scene.file.duration ?? 0) >= 1
           ? TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)
           : ""}
       </div>
@@ -221,7 +222,13 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             : TextUtils.fileNameFromPath(props.scene.path)}
         </h4>
         <span>{props.scene.date}</span>
-        <p>{TextUtils.truncate(props.scene.details ?? "", 100, "... (continued)")}</p>
+        <p>
+          {TextUtils.truncate(
+            props.scene.details ?? "",
+            100,
+            "... (continued)"
+          )}
+        </p>
       </div>
 
       {maybeRenderPopoverButtonGroup()}

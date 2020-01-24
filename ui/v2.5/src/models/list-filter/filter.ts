@@ -299,7 +299,10 @@ export class ListFilterModel {
         }
         case "duration": {
           const durationCrit = criterion as DurationCriterion;
-          result.duration = { value: durationCrit.value, modifier: durationCrit.modifier }
+          result.duration = {
+            value: durationCrit.value,
+            modifier: durationCrit.modifier
+          };
           break;
         }
         case "hasMarkers":

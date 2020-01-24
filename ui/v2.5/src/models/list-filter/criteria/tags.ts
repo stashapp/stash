@@ -2,10 +2,7 @@ import * as GQL from "src/core/generated-graphql";
 import { ILabeledId } from "../types";
 import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
-export class TagsCriterion extends Criterion<
-  GQL.Tag,
-  ILabeledId[]
-> {
+export class TagsCriterion extends Criterion<GQL.Tag, ILabeledId[]> {
   public type: CriterionType;
   public parameterName: string;
   public modifier = GQL.CriterionModifier.IncludesAll;
