@@ -40,7 +40,7 @@ export const SettingsAboutPanel: React.FC = () => {
   }
 
   function renderLatestVersion() {
-    if (!data || !data.version || !data.version.version) { return; } //if there is no "version" latest version check is obviously not supported
+    if (!data || !data.version || !data.version.version) { return; } // if there is no "version" latest version check is obviously not supported
     return (
       <Table>
         <tbody>

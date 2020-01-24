@@ -1,0 +1,18 @@
+{
+  "presets": [
+    ["@babel/preset-env", {
+        "modules": false,
+        "targets": {
+          "browsers": ["last 2 firefox versions", "last 2 chrome versions"]
+        }
+    }]
+  ],
+  "plugins": [
+    "react-hot-loader/babel"
+  ],
+  "env": {
+    "production": {
+      "presets": ["minify"]
+    },
+  }
+}

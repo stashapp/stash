@@ -94,7 +94,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     }
 
     // make a copy of the filter and call the hook
-    let newFilter = _.cloneDeep(filter);
+    const newFilter = _.cloneDeep(filter);
     return options.filterHook(newFilter);
   }
 
