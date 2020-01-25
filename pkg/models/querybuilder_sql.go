@@ -93,6 +93,8 @@ func getSort(sort string, direction string, tableName string) string {
 		direction = "ASC"
 	}
 
+	const randomSeedPrefix = "random_"
+
 	if strings.Contains(sort, "_count") {
 		var relationTableName = strings.Split(sort, "_")[0] // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
@@ -100,12 +102,18 @@ func getSort(sort string, direction string, tableName string) string {
 	} else if strings.Compare(sort, "filesize") == 0 {
 		colName := getColumn(tableName, "size")
 		return " ORDER BY cast(" + colName + " as integer) " + direction
+	} else if strings.HasPrefix(sort, randomSeedPrefix) {
+		// seed as a parameter from the UI
+		// turn the provided seed into a float
+		seedStr := "0." + sort[len(randomSeedPrefix):]
+		seed, err := strconv.ParseFloat(seedStr, 32)
+		if err != nil {
+			// fallback to default seed
+			seed = randomSortFloat
+		}
+		return getRandomSort(tableName, direction, seed)
 	} else if strings.Compare(sort, "random") == 0 {
-		// https://stackoverflow.com/a/24511461
-		// TODO seed as a parameter from the UI
-		colName := getColumn(tableName, "id")
-		randomSortString := strconv.FormatFloat(randomSortFloat, 'f', 16, 32)
-		return " ORDER BY " + "(substr(" + colName + " * " + randomSortString + ", length(" + colName + ") + 2))" + " " + direction
+		return getRandomSort(tableName, direction, randomSortFloat)
 	} else {
 		colName := getColumn(tableName, sort)
 		var additional string
@@ -120,6 +128,13 @@ func getSort(sort string, direction string, tableName string) string {
 
 		return " ORDER BY " + colName + " " + direction + additional
 	}
+}
+
+func getRandomSort(tableName string, direction string, seed float64) string {
+	// https://stackoverflow.com/a/24511461
+	colName := getColumn(tableName, "id")
+	randomSortString := strconv.FormatFloat(seed, 'f', 16, 32)
+	return " ORDER BY " + "(substr(" + colName + " * " + randomSortString + ", length(" + colName + ") + 2))" + " " + direction
 }
 
 func getSearch(columns []string, q string) string {
