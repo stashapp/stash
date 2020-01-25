@@ -730,3 +730,20 @@ xPathScrapers:
 		return
 	}
 }
+
+func TestLoadInvalidXPath(t *testing.T) {
+	config := make(xpathScraperConfig)
+
+	config["Name"] = `//a[id=']/span`
+
+	reader := strings.NewReader(htmlDoc1)
+	doc, err := htmlquery.Parse(reader)
+
+	if err != nil {
+		t.Errorf("Error loading document: %s", err.Error())
+		return
+	}
+
+	common := make(commonXPathConfig)
+	config.process(doc, common)
+}

@@ -1,6 +1,8 @@
 fragment ScrapedPerformerData on ScrapedPerformer {
   name
   url
+  twitter
+  instagram
   birthdate
   ethnicity
   country
