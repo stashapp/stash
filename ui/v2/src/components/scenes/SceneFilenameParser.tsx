@@ -694,7 +694,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           <FormGroup 
             label="Filename pattern:" 
             inline={true}
-            helperText="Use '\\' to escape literal {} characters"
+            helperText="Use '\' to escape literal {} characters"
           >
             <InputGroup
               onChange={(newValue: any) => setPattern(newValue.target.value)}
