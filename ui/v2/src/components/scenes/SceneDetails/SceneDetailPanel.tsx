@@ -8,9 +8,11 @@ import * as GQL from "../../../core/generated-graphql";
 import { TextUtils } from "../../../utils/text";
 import { TagLink } from "../../Shared/TagLink";
 import { SceneHelpers } from "../helpers";
+import { IOCounterButtonProps, OCounterButton } from "../OCounterButton";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
+  oCounter: IOCounterButtonProps;
 }
 
 export const SceneDetailPanel: FunctionComponent<ISceneDetailProps> = (props: ISceneDetailProps) => {
@@ -37,17 +39,34 @@ export const SceneDetailPanel: FunctionComponent<ISceneDetailProps> = (props: IS
     );
   }
 
+  function renderOCounter() {
+    return (
+      <OCounterButton 
+        {...props.oCounter}
+      />
+    )
+  }
+
   return (
     <>
+    {renderOCounter()}
     {SceneHelpers.maybeRenderStudio(props.scene, 70, false)}
       <H1 className="bp3-heading">
         {!!props.scene.title ? props.scene.title : TextUtils.fileNameFromPath(props.scene.path)}
+        <span className="name-icons">
+          {renderOCounter()}
+        </span>
       </H1>
+      
+      {renderOCounter()}
       {!!props.scene.date ? <H4>{props.scene.date}</H4> : undefined}
       {!!props.scene.rating ? <H6>Rating: {props.scene.rating}</H6> : undefined}
       {!!props.scene.file.height ? <H6>Resolution: {TextUtils.resolution(props.scene.file.height)}</H6> : undefined}
       {renderDetails()}
       {renderTags()}
+      <div>
+        {renderOCounter()}
+      </div>
     </>
   );
 };

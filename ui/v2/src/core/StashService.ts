@@ -315,6 +315,24 @@ export class StashService {
     return GQL.useScenesUpdate({ variables: { input: input } });
   }
 
+  public static useSceneIncrementO(id: string) {
+    return GQL.useSceneIncrementO({
+      variables: {id: id}
+    });
+  }
+
+  public static useSceneDecrementO(id: string) {
+    return GQL.useSceneDecrementO({
+      variables: {id: id}
+    });
+  }
+
+  public static useSceneResetO(id: string) {
+    return GQL.useSceneResetO({
+      variables: {id: id}
+    });
+  }
+
   public static useSceneDestroy(input: GQL.SceneDestroyInput) {
     return GQL.useSceneDestroy({
       variables: input,

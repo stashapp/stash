@@ -305,6 +305,25 @@ video.preview.portrait {
 #jwplayer-container {
   margin: 10px auto;
   width: 75%;
+  position: relative;
+
+  & #o-counter-container {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+
+  & #o-counter-container.menu-open {
+    opacity: 0.75;
+    transition: opacity 0.5s;
+  }
+}
+
+#jwplayer-container:hover #o-counter-container {
+  opacity: 0.75;
+  transition: opacity 0.5s;
 }
 
 .video-js {
@@ -484,8 +503,6 @@ span.block {
     font-size: 1.2em;
 
     & .name-icons {
-      margin-left: 10px;
-
       & .not-favorite .bp3-icon {
         color: rgba(191, 204, 214, 0.5) !important;
       }
@@ -499,6 +516,10 @@ span.block {
   & .alias {
     font-weight: bold;
   }
+}
+
+.name-icons {
+  margin-left: 10px;
 }
 
 #performer-details {
