@@ -10,8 +10,8 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-file: "10"
-        max-size: "200k"
+        max-file: "100"
+        max-size: "2000k"
     environment:
       - STASH_STASH=/data/
       - STASH_GENERATED=/generated/
@@ -20,12 +20,14 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       ## Keep configs here.
-      - ./config:/root/.stash
+      - /your/path/to/Stash/config:/root/.stash
       ## Point this at your collection.
-      - ./data:/data
+      - /your/path/to/your/files:/data
       ## This is where pre-generated transcodes live.
-      - ./transcodes:/transcodes
+      - /your/path/to/Stash/transcodes:/transcodes
       ## This is where your stash's metadata lives
-      - ./metadata:/metadata
+      - /your/path/to/Stash/metadata:/metadata
       ## Any other cache content.
-      - ./cache:/cache
+      - /your/path/to/Stash/cache:/cache
+      ## Generated
+      - /your/path/to/Stash/generated:/generated
