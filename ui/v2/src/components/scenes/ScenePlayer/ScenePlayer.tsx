@@ -5,7 +5,6 @@ import * as GQL from "../../../core/generated-graphql";
 import { SceneHelpers } from "../helpers";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import { StashService } from "../../../core/StashService";
-import { IOCounterButtonProps, OCounterButton } from "../OCounterButton";
 
 interface IScenePlayerProps {
   scene: GQL.SceneDataFragment;
@@ -15,11 +14,9 @@ interface IScenePlayerProps {
   onSeeked?: any;
   onTime?: any;
   config?: GQL.ConfigInterfaceDataFragment;
-  oCounter: IOCounterButtonProps;
 }
 interface IScenePlayerState {
   scrubberPosition: number;
-  oCounterMenuOpen: boolean;
 }
 
 @HotkeysTarget
@@ -36,10 +33,7 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
     this.onScrubberSeek = this.onScrubberSeek.bind(this);
     this.onScrubberScrolled = this.onScrubberScrolled.bind(this);
 
-    this.state = {
-      scrubberPosition: 0,
-      oCounterMenuOpen: false
-    };
+    this.state = {scrubberPosition: 0};
   }
 
   public componentDidUpdate(prevProps: IScenePlayerProps) {
@@ -73,13 +67,6 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
             onSeek={this.onScrubberSeek}
             onScrolled={this.onScrubberScrolled}
           />
-          <div id="o-counter-container" className={this.state.oCounterMenuOpen ? "menu-open" : undefined}>
-            <OCounterButton 
-              {...this.props.oCounter} 
-              onMenuOpened={() => this.setOCounterMenuOpen(true)}
-              onMenuClosed={() => this.setOCounterMenuOpen(false)}
-            />
-          </div>
         </div>
       </>
     );
@@ -192,18 +179,9 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
     }
   }
 
-  private setScrubberPosition(position: any) {
-    this.setState({scrubberPosition: position, oCounterMenuOpen: this.state.oCounterMenuOpen});
-  }
-
-  private setOCounterMenuOpen(value : boolean) {
-    console.log("Setting menu open to : " + value);
-    this.setState({scrubberPosition: this.state.scrubberPosition, oCounterMenuOpen: value});
-  }
-
   private onSeeked() {
     const position = this.player.getPosition();
-    this.setScrubberPosition(position);
+    this.setState({scrubberPosition: position});
     this.player.play();
   }
 
@@ -212,7 +190,7 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
     const difference = Math.abs(position - this.lastTime);
     if (difference > 1) {
       this.lastTime = position;
-      this.setScrubberPosition(position);
+      this.setState({scrubberPosition: position});
     }
   }
 
@@ -228,9 +206,5 @@ export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePl
 export const ScenePlayer: FunctionComponent<IScenePlayerProps> = (props: IScenePlayerProps) => {
     const config = StashService.useConfiguration();
 
-    return (
-      <>
-      <ScenePlayerImpl {...props} config={config.data && config.data.configuration ? config.data.configuration.interface : undefined}/>
-      </>
-    );
+    return <ScenePlayerImpl {...props} config={config.data && config.data.configuration ? config.data.configuration.interface : undefined}/>
 }

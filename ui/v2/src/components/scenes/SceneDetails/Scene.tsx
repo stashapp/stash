@@ -17,7 +17,7 @@ import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { ScenePerformerPanel } from "./ScenePerformerPanel";
 import { ErrorUtils } from "../../../utils/errors";
-import { IOCounterButtonProps } from "../OCounterButton";
+import { IOCounterButtonProps, OCounterButton } from "../OCounterButton";
 
 interface ISceneProps extends IBaseProps {}
 
@@ -114,13 +114,13 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
 
   return (
     <>
-      <ScenePlayer scene={modifiedScene} timestamp={timestamp} autoplay={autoplay} oCounter={oCounterProps}/>
+      <ScenePlayer scene={modifiedScene} timestamp={timestamp} autoplay={autoplay}/>
       <Card id="details-container">
         <Tabs
           renderActiveTabPanelOnly={true}
           large={true}
         >
-            <Tab id="scene-details-panel" title="Details" panel={<SceneDetailPanel scene={modifiedScene} oCounter={oCounterProps} />} />
+            <Tab id="scene-details-panel" title="Details" panel={<SceneDetailPanel scene={modifiedScene} />} />
             <Tab
               id="scene-markers-panel"
               title="Markers"
@@ -150,6 +150,11 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
                   onUpdate={(newScene) => setScene(newScene)} 
                   onDelete={() => props.history.push("/scenes")}
                 />}
+            />
+
+            <Tabs.Expander />
+            <OCounterButton
+              {...oCounterProps}
             />
         </Tabs>
       </Card>

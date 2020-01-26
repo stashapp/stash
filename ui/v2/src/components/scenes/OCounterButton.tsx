@@ -32,7 +32,7 @@ export const OCounterButton: FunctionComponent<IOCounterButtonProps> = (props: I
       <Popover 
         interactionKind={"hover"} 
         hoverOpenDelay={1000} 
-        position="top" 
+        position="bottom" 
         disabled={props.loading} 
         onOpening={props.onMenuOpened}
         onClosing={props.onMenuClosed}
