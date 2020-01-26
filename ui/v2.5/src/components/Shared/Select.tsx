@@ -17,11 +17,13 @@ interface ITypeProps {
   type?: "performers" | "studios" | "tags";
 }
 interface IFilterProps {
-  initialIds: string[];
+  ids?: string[];
+  initialIds?: string[];
   onSelect: (item: ValidTypes[]) => void;
   noSelectionString?: string;
   className?: string;
   isMulti?: boolean;
+  isClearable?: boolean;
 }
 interface ISelectProps {
   className?: string;
@@ -31,8 +33,9 @@ interface ISelectProps {
   onCreateOption?: (value: string) => void;
   isLoading: boolean;
   onChange: (item: ValueType<Option>) => void;
-  initialIds: string[];
+  initialIds?: string[];
   isMulti?: boolean;
+  isClearable?: boolean,
   onInputChange?: (input: string) => void;
   placeholder?: string;
 }
@@ -48,9 +51,10 @@ interface ISceneGallerySelect {
 }
 
 const getSelectedValues = (selectedItems: ValueType<Option>) =>
+  selectedItems ?
   (Array.isArray(selectedItems) ? selectedItems : [selectedItems]).map(
     item => item.value
-  );
+  ) : [];
 
 export const SceneGallerySelect: React.FC<ISceneGallerySelect> = props => {
   const { data, loading } = StashService.useValidGalleriesForScene(
@@ -165,6 +169,8 @@ export const PerformerSelect: React.FC<IFilterProps> = props => {
     label: item.name ?? ""
   }));
   const placeholder = props.noSelectionString ?? "Select performer...";
+  const selectedOptions:Option[] = props.ids ?
+    items.filter(item => props.ids?.indexOf(item.value) !== -1) : [];
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedIds = getSelectedValues(selectedItems);
@@ -176,6 +182,7 @@ export const PerformerSelect: React.FC<IFilterProps> = props => {
   return (
     <SelectComponent
       {...props}
+      selectedOptions={selectedOptions}
       onChange={onChange}
       type="performers"
       isLoading={loading}
@@ -194,6 +201,8 @@ export const StudioSelect: React.FC<IFilterProps> = props => {
     label: item.name
   }));
   const placeholder = props.noSelectionString ?? "Select studio...";
+  const selectedOptions:Option[] = props.ids ?
+    items.filter(item => props.ids?.indexOf(item.value) !== -1) : [];
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedIds = getSelectedValues(selectedItems);
@@ -210,13 +219,14 @@ export const StudioSelect: React.FC<IFilterProps> = props => {
       isLoading={loading}
       items={items}
       placeholder={placeholder}
+      selectedOptions={selectedOptions}
     />
   );
 };
 
 export const TagSelect: React.FC<IFilterProps> = props => {
   const [loading, setLoading] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(props.ids ?? []);
   const { data, loading: dataLoading } = StashService.useAllTagsForFilter();
   const [createTag] = StashService.useTagCreate({ name: "" });
   const Toast = useToast();
@@ -290,6 +300,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   selectedOptions,
   isLoading,
   onCreateOption,
+  isClearable = true,
   creatable = false,
   isMulti = false,
   onInputChange,
@@ -298,26 +309,58 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   const defaultValue =
     items.filter(item => initialIds?.indexOf(item.value) !== -1) ?? null;
 
+  const styles = {
+    control: (provided:any) => ({
+      ...provided,
+      background: '#394b59',
+      borderColor: 'rgba(16,22,26,.4)'
+    }),
+    singleValue: (provided:any) => ({
+      ...provided,
+      color: 'f5f8fa',
+    }),
+    placeholder: (provided:any) => ({
+      ...provided,
+      color: 'f5f8fa',
+    }),
+    menu: (provided:any) => ({
+      ...provided,
+      color: 'f5f8fa',
+      background: '#394b59',
+      borderColor: 'rgba(16,22,26,.4)',
+      zIndex: 3
+    }),
+    option: (provided:any, state:any ) => (
+      state.isFocused ? { ...provided, backgroundColor: '#137cbd' } : provided
+    ),
+    multiValueRemove: (provided:any, state:any) => (
+      { ...provided, color: 'black' }
+    )
+  };
+
   const props = {
-    className,
     options: items,
     value: selectedOptions,
+    styles,
+    className,
     onChange,
     isMulti,
+    isClearable,
     defaultValue,
     noOptionsMessage: () => (type !== "tags" ? "None" : null),
     placeholder,
-    onInputChange
+    onInputChange,
+    isLoading,
+    components: { IndicatorSeparator: () => null }
   };
 
   return creatable ? (
     <CreatableSelect
       {...props}
-      isLoading={isLoading}
       isDisabled={isLoading}
       onCreateOption={onCreateOption}
     />
   ) : (
-    <Select {...props} isLoading={isLoading} />
+    <Select {...props} />
   );
 };

@@ -1,9 +1,80 @@
 
 /* Blueprint dark theme */
+
+$secondary: #394b59;
+
+$theme-colors: (
+  primary: #137cbd,
+  secondary: $secondary,
+  success: #0f9960,
+  warning: #d9822b,
+  danger: #db3737,
+  dark: #394b59
+);
+
+$body-bg: #202b33;
 $text-muted: #bfccd6;
 $link-color: #48aff0;
 $link-hover-color: #48aff0;
-$text-color: f5f8fa;
+$text-color: #f5f8fa;
 $pre-color: $text-color;
+$navbar-dark-color: rgb(245, 248, 250);
+$input-bg: $secondary;
+$input-color: #f5f8fa;
+$popover-bg: $secondary;
 
 @import "node_modules/bootstrap/scss/bootstrap";
+
+.btn.active:not(.disabled),
+.btn.active.minimal:not(.disabled) {
+  background-color: rgba(138,155,168,.3);
+  color: #f5f8fa;
+}
+
+a.minimal,
+button.minimal {
+  background: none;
+  border: none;
+  color: $text-color;
+  transition: none;
+
+  &:hover {
+    background: rgba(138,155,168,.15);
+    color: $text-color;
+  }
+  &:active {
+    background: rgba(138,155,168,.3);
+    color: $text-color;
+  }
+}
+
+input.form-control {
+  background-color: rgba(16, 22, 26, 0.3);
+}
+.form-control {
+  border-color: rgba(16,22,26,.4);
+}
+
+.dropdown-toggle:after {
+  content: none;
+}
+
+nav .svg-inline--fa {
+  margin-right: 7px;
+}
+
+hr {
+  margin: 5px 0;
+}
+
+.table {
+  th {
+    border-top: none;
+  }
+
+  thead {
+    th {
+      border-bottom-width: 1px;
+    }
+  }
+}

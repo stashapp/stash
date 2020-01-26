@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { WallItem } from "./WallItem";
 import "./Wall.scss";
@@ -11,7 +11,7 @@ interface IWallPanelProps {
   ) => void;
 }
 
-export const WallPanel: FunctionComponent<IWallPanelProps> = (
+export const WallPanel: React.FC<IWallPanelProps> = (
   props: IWallPanelProps
 ) => {
   const [showOverlay, setShowOverlay] = useState<boolean>(false);

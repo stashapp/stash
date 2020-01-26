@@ -67,7 +67,7 @@ export const MainNavbar: React.FC = () => {
     <Navbar fixed="top" variant="dark" bg="dark">
       <Navbar.Brand as="div">
         <Link to="/">
-          <Button variant="secondary">Stash</Button>
+          <Button className="minimal">Stash</Button>
         </Link>
       </Navbar.Brand>
       <Nav className="mr-auto">
@@ -78,7 +78,7 @@ export const MainNavbar: React.FC = () => {
             to={i.href}
             key={i.href}
           >
-            <Button variant="secondary">
+            <Button className="minimal">
               <Icon icon={i.icon} />
               {i.text}
             </Button>
@@ -88,7 +88,7 @@ export const MainNavbar: React.FC = () => {
       <Nav>
         {newButton}
         <LinkContainer exact to="/settings">
-          <Button variant="secondary">
+          <Button className="minimal">
             <Icon icon="cog" />
           </Button>
         </LinkContainer>

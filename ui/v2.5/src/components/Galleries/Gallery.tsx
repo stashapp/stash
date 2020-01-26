@@ -1,7 +1,7 @@
 import React from "react";
-import { Spinner } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { StashService } from "src/core/StashService";
+import { LoadingIndicator } from 'src/components/Shared';
 import { GalleryViewer } from "./GalleryViewer";
 
 export const Gallery: React.FC = () => {
@@ -11,7 +11,7 @@ export const Gallery: React.FC = () => {
   const gallery = data?.findGallery;
 
   if (loading || !gallery)
-    return <Spinner animation="border" variant="light" />;
+    return <LoadingIndicator />;
   if (error) return <div>{error.message}</div>;
 
   return (

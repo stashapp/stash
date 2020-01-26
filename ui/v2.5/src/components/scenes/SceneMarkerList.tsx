@@ -28,7 +28,7 @@ export const SceneMarkerList: React.FC = () => {
     filter: ListFilterModel
   ) {
     // query for a random scene
-    if (result.data && result.data.findSceneMarkers) {
+    if (result.data?.findSceneMarkers) {
       const { count } = result.data.findSceneMarkers;
 
       const index = Math.floor(Math.random() * count);
@@ -37,10 +37,7 @@ export const SceneMarkerList: React.FC = () => {
       filterCopy.currentPage = index + 1;
       const singleResult = await StashService.queryFindSceneMarkers(filterCopy);
       if (
-        singleResult &&
-        singleResult.data &&
-        singleResult.data.findSceneMarkers &&
-        singleResult.data.findSceneMarkers.scene_markers.length === 1
+        singleResult?.data?.findSceneMarkers?.scene_markers?.length === 1
       ) {
         // navigate to the scene player page
         const url = NavUtils.makeSceneMarkerUrl(

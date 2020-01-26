@@ -91,7 +91,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
-        <Button>
+        <Button className="minimal">
           <Icon icon="tag" />
           {props.scene.tags.length}
         </Button>
@@ -115,7 +115,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
-        <Button>
+        <Button className="minimal">
           <Icon icon="user" />
           {props.scene.performers.length}
         </Button>
@@ -133,8 +133,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
-        <Button>
-          <Icon icon="tag" />
+        <Button className="minimal">
+          <Icon icon="map-marker-alt" />
           {props.scene.scene_markers.length}
         </Button>
       </HoverPopover>
@@ -150,7 +150,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       return (
         <>
           <hr />
-          <ButtonGroup className="mr-2">
+          <ButtonGroup className="scene-popovers">
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderSceneMarkerPopoverButton()}
@@ -182,7 +182,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
   return (
     <Card
-      className={`col-4 zoom-${props.zoomIndex}`}
+      className={`zoom-${props.zoomIndex}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -216,11 +216,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         </div>
       </Link>
       <div className="card-section">
-        <h4 className="text-truncate">
+        <h5 className="text-truncate">
           {props.scene.title
             ? props.scene.title
             : TextUtils.fileNameFromPath(props.scene.path)}
-        </h4>
+        </h5>
         <span>{props.scene.date}</span>
         <p>
           {TextUtils.truncate(

@@ -229,7 +229,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         placement="top"
         overlay={<Tooltip id="filter-tooltip">Filter</Tooltip>}
       >
-        <Button onClick={() => onToggle()} active={isOpen}>
+        <Button variant="secondary" onClick={() => onToggle()} active={isOpen}>
           <Icon icon="filter" />
         </Button>
       </OverlayTrigger>
