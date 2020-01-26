@@ -1,0 +1,28 @@
+.scene-popovers {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+
+  button {
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+
+  svg {
+    margin-right: 7px;
+  }
+}
+
+.operation-container {
+  .operation-item {
+    min-width: 200px;
+  }
+
+  .rating-operation {
+    min-width: 20px;
+  }
+
+  .apply-operation {
+    margin-top: 2rem;
+  }
+}

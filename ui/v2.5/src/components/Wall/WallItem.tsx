@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React, { FunctionComponent, useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
@@ -16,10 +16,10 @@ interface IWallItemProps {
   ) => void;
 }
 
-export const WallItem: FunctionComponent<IWallItemProps> = (
+export const WallItem: React.FC<IWallItemProps> = (
   props: IWallItemProps
 ) => {
-  const [videoPath, setVideoPath] = useState<string | undefined>(undefined);
+  const [videoPath, setVideoPath] = useState<string>();
   const [previewPath, setPreviewPath] = useState<string>("");
   const [screenshotPath, setScreenshotPath] = useState<string>("");
   const [title, setTitle] = useState<string>("");
@@ -28,10 +28,7 @@ export const WallItem: FunctionComponent<IWallItemProps> = (
   const videoHoverHook = VideoHoverHook.useVideoHover({
     resetOnMouseLeave: true
   });
-  const showTextContainer =
-    !!config.data && !!config.data.configuration
-      ? config.data.configuration.interface.wallShowTitle
-      : true;
+  const showTextContainer = config.data?.configuration.interface.wallShowTitle ?? true;
 
   function onMouseEnter() {
     VideoHoverHook.onMouseEnter(videoHoverHook);
@@ -122,7 +119,7 @@ export const WallItem: FunctionComponent<IWallItemProps> = (
     style.transformOrigin = props.origin;
   }
   return (
-    <div className="wall grid-item">
+    <div className="wall-item">
       <div
         className={className.join(" ")}
         style={style}

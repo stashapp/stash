@@ -139,6 +139,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
         }
       >
         <Button
+          variant="secondary"
           key={option}
           active={props.filter.displayMode === option}
           onClick={() => onChangeDisplayMode(option)}
@@ -157,7 +158,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
         onClick={() => onClickCriterionTag(criterion)}
       >
         {criterion.getLabel()}
-        <Button onClick={() => onRemoveCriterionTag(criterion)}>
+        <Button variant="secondary" onClick={() => onRemoveCriterionTag(criterion)}>
           <Icon icon="times" />
         </Button>
       </Badge>
@@ -226,16 +227,15 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function maybeRenderZoom() {
     if (props.onChangeZoom) {
       return (
-        <span className="zoom-slider">
-          <Form.Control
-            type="range"
-            min={0}
-            max={3}
-            onChange={(event: any) =>
-              onChangeZoom(Number.parseInt(event.target.value, 10))
-            }
-          />
-        </span>
+        <Form.Control
+          className="zoom-slider"
+          type="range"
+          min={0}
+          max={3}
+          onChange={(event: any) =>
+            onChangeZoom(Number.parseInt(event.target.value, 10))
+          }
+        />
       );
     }
   }
@@ -243,7 +243,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function render() {
     return (
       <>
-        <div className="d-flex justify-content-center m-auto">
+        <div className="filter-container">
           <Form.Control
             placeholder="Search..."
             value={props.filter.searchTerm}
@@ -262,32 +262,32 @@ export const ListFilter: React.FC<IListFilterProps> = (
             ))}
           </Form.Control>
           <ButtonGroup className="filter-item">
-            <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="more-menu">
+            <Dropdown as={ButtonGroup}>
+              <Dropdown.Toggle split variant="secondary" id="more-menu">
                 {props.filter.sortBy}
               </Dropdown.Toggle>
               <Dropdown.Menu>{renderSortByOptions()}</Dropdown.Menu>
+              <OverlayTrigger
+                overlay={
+                  <Tooltip id="sort-direction-tooltip">
+                    {props.filter.sortDirection === "asc"
+                      ? "Ascending"
+                      : "Descending"}
+                  </Tooltip>
+                }
+              >
+                <Button variant="secondary" onClick={onChangeSortDirection}>
+                  <Icon
+                    icon={
+                      props.filter.sortDirection === "asc"
+                        ? "caret-up"
+                        : "caret-down"
+                    }
+                  />
+                </Button>
+              </OverlayTrigger>
             </Dropdown>
 
-            <OverlayTrigger
-              overlay={
-                <Tooltip id="sort-direction-tooltip">
-                  {props.filter.sortDirection === "asc"
-                    ? "Ascending"
-                    : "Descending"}
-                </Tooltip>
-              }
-            >
-              <Button onClick={onChangeSortDirection}>
-                <Icon
-                  icon={
-                    props.filter.sortDirection === "asc"
-                      ? "caret-up"
-                      : "caret-down"
-                  }
-                />
-              </Button>
-            </OverlayTrigger>
           </ButtonGroup>
 
           <AddFilter

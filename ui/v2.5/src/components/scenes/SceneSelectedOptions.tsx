@@ -16,16 +16,14 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
 ) => {
   const Toast = useToast();
   const [rating, setRating] = useState<string>("");
-  const [studioId, setStudioId] = useState<string | undefined>(undefined);
-  const [performerIds, setPerformerIds] = useState<string[] | undefined>(
-    undefined
-  );
-  const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
+  const [studioId, setStudioId] = useState<string>();
+  const [performerIds, setPerformerIds] = useState<string[]>();
+  const [tagIds, setTagIds] = useState<string[]>();
 
   const [updateScenes] = StashService.useBulkSceneUpdate(getSceneInput());
 
   // Network state
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   function getSceneInput(): GQL.BulkSceneUpdateInput {
     // need to determine what we are actually setting on each scene
@@ -184,14 +182,14 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
 
   function updateScenesEditState(state: GQL.SlimSceneDataFragment[]) {
     let updateRating = "";
-    let updateStudioId: string | undefined;
+    let updateStudioId: string|undefined;
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
     let first = true;
 
     state.forEach((scene: GQL.SlimSceneDataFragment) => {
-      const thisRating = scene.rating ? scene.rating.toString() : "";
-      const thisStudio = scene.studio ? scene.studio.id : undefined;
+      const thisRating = scene.rating?.toString() ?? "";
+      const thisStudio = scene?.studio?.id;
 
       if (first) {
         updateRating = thisRating;
@@ -231,76 +229,76 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
 
   useEffect(() => {
     updateScenesEditState(props.selected);
+    setIsLoading(false);
   }, [props.selected]);
 
   function renderMultiSelect(
     type: "performers" | "tags",
-    initialIds: string[] | undefined
+    ids: string[] | undefined
   ) {
     return (
       <FilterSelect
         type={type}
         isMulti
+        isClearable={false}
         onSelect={items => {
-          const ids = items.map(i => i.id);
+          const itemIDs = items.map(i => i.id);
           switch (type) {
             case "performers":
-              setPerformerIds(ids);
+              setPerformerIds(itemIDS);
               break;
             case "tags":
-              setTagIds(ids);
+              setTagIds(itemIDs);
               break;
           }
         }}
-        initialIds={initialIds ?? []}
+        ids={ids ?? []}
       />
     );
   }
 
+  if(isLoading)
+    return <Spinner animation="border" variant="light" />;
+
   function render() {
     return (
-      <>
-        {isLoading ? <Spinner animation="border" variant="light" /> : undefined}
-        <div className="operation-container">
-          <Form.Group controlId="rating" className="operation-item">
-            <Form.Label>Rating</Form.Label>
-            <Form.Control
-              as="select"
-              onChange={(event: any) => setRating(event.target.value)}
-            >
-              {["", 1, 2, 3, 4, 5].map(opt => (
-                <option selected={opt === rating} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </Form.Control>
-          </Form.Group>
+      <div className="operation-container">
+        <Form.Group controlId="rating" className="operation-item rating-operation">
+          <Form.Label>Rating</Form.Label>
+          <Form.Control
+            as="select"
+            onChange={(event: any) => setRating(event.target.value)}
+          >
+            {["", '1', '2', '3', '4', '5'].map(opt => (
+              <option selected={opt === rating} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </Form.Control>
+        </Form.Group>
 
-          <Form.Group controlId="studio" className="operation-item">
-            <Form.Label>Studio</Form.Label>
-            <StudioSelect
-              onSelect={items => setStudioId(items[0]?.id)}
-              initialIds={studioId ? [studioId] : []}
-            />
-          </Form.Group>
+        <Form.Group controlId="studio" className="operation-item">
+          <Form.Label>Studio</Form.Label>
+          <StudioSelect
+            onSelect={items => setStudioId(items[0]?.id)}
+            ids={studioId ? [studioId] : []}
+          />
+        </Form.Group>
 
-          <Form.Group className="opeation-item" controlId="performers">
-            <Form.Label>Performers</Form.Label>
-            {renderMultiSelect("performers", performerIds)}
-          </Form.Group>
+        <Form.Group className="operation-item" controlId="performers">
+          <Form.Label>Performers</Form.Label>
+          {renderMultiSelect("performers", performerIds)}
+        </Form.Group>
 
-          <Form.Group className="operation-item" controlId="performers">
-            <Form.Label>Performers</Form.Label>
-            {renderMultiSelect("tags", tagIds)}
-          </Form.Group>
+        <Form.Group className="operation-item" controlId="performers">
+          <Form.Label>Tags</Form.Label>
+          {renderMultiSelect("tags", tagIds)}
+        </Form.Group>
 
-          <ButtonGroup className="operation-item">
-            <Button variant="primary" onClick={onSave}>
-              Apply
-            </Button>
-          </ButtonGroup>
-        </div>
-      </>
+        <Button variant="primary" onClick={onSave} className="apply-operation">
+          Apply
+        </Button>
+      </div>
     );
   }
 
