@@ -1,0 +1,28 @@
+
+#tag-list-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  width: 50vw;
+
+  a,
+  .btn {
+    color: $text-color;
+    text-decoration: none;
+  }
+
+  .tag-list-row {
+    cursor: pointer;
+    margin: 10px;
+
+    .btn {
+      margin: 0 10px;
+    }
+  }
+
+  .tag-list-row:hover {
+    text-decoration: underline;
+  }
+}
+
+

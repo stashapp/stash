@@ -89,10 +89,13 @@ const renderHtmlSelect = (options: {
         as="select"
         readOnly={!options.isEditing}
         plaintext={!options.isEditing}
+        value={options.value?.toString()}
         onChange={(event: React.FormEvent<HTMLSelectElement>) =>
           options.onChange(event.currentTarget.value)
         }
-      />
+      >
+        { options.selectOptions.map(opt => <option value={opt} key={opt}>{opt}</option>)}
+      </Form.Control>
     </td>
   </tr>
 );

@@ -1,29 +1,33 @@
-import { Card, Spinner, Tab, Tabs } from "react-bootstrap";
+import { Tab, Tabs } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
-import { ScenePlayer } from "../ScenePlayer/ScenePlayer";
-import { SceneDetailPanel } from "./SceneDetailPanel";
-import { SceneEditPanel } from "./SceneEditPanel";
-import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
-import { SceneMarkersPanel } from "./SceneMarkersPanel";
+import { LoadingIndicator } from 'src/components/Shared';
+import { ScenePlayer } from "src/components/scenes/ScenePlayer/ScenePlayer";
 import { ScenePerformerPanel } from "./ScenePerformerPanel";
+import { SceneMarkersPanel } from "./SceneMarkersPanel";
+import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
+import { SceneEditPanel } from "./SceneEditPanel";
+import { SceneDetailPanel } from "./SceneDetailPanel";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
   const location = useLocation();
   const history = useHistory();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
-  const [scene, setScene] = useState<Partial<GQL.SceneDataFragment>>({});
+  const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = StashService.useFindScene(id);
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
 
-  useEffect(() => setScene(data?.findScene ?? {}), [data]);
+  useEffect(() => {
+    if(data?.findScene)
+      setScene(data.findScene)
+  }, [data]);
 
   function getInitialTimestamp() {
     const params = queryString.parse(location.search);
@@ -38,61 +42,56 @@ export const Scene: React.FC = () => {
     setTimestamp(marker.seconds);
   }
 
-  if (!data?.findScene || loading || Object.keys(scene).length === 0) {
-    return <Spinner animation="border" />;
+  if (loading || !scene || !data?.findScene) {
+    return <LoadingIndicator />;
   }
 
   if (error) return <div>{error.message}</div>;
 
-  const modifiedScene = {
-    scene_marker_tags: data.sceneMarkerTags,
-    ...scene
-  } as GQL.SceneDataFragment; // TODO Hack from angular
-
   return (
     <>
       <ScenePlayer
-        scene={modifiedScene}
+        scene={scene}
         timestamp={timestamp}
         autoplay={autoplay}
       />
-      <Card id="details-container">
+      <div id="details-container">
         <Tabs id="scene-tabs" mountOnEnter>
           <Tab eventKey="scene-details-panel" title="Details">
-            <SceneDetailPanel scene={modifiedScene} />
+            <SceneDetailPanel scene={scene} />
           </Tab>
           <Tab eventKey="scene-markers-panel" title="Markers">
             <SceneMarkersPanel
-              scene={modifiedScene}
+              scene={scene}
               onClickMarker={onClickMarker}
             />
           </Tab>
-          {modifiedScene.performers.length > 0 ? (
+          {scene.performers.length > 0 ? (
             <Tab eventKey="scene-performer-panel" title="Performers">
-              <ScenePerformerPanel scene={modifiedScene} />
+              <ScenePerformerPanel scene={scene} />
             </Tab>
           ) : (
             ""
           )}
-          {modifiedScene.gallery ? (
+          {scene.gallery ? (
             <Tab eventKey="scene-gallery-panel" title="Gallery">
-              <GalleryViewer gallery={modifiedScene.gallery} />
+              <GalleryViewer gallery={scene.gallery} />
             </Tab>
           ) : (
             ""
           )}
-          <Tab eventKey="scene-file-info-panel" title="File Info">
-            <SceneFileInfoPanel scene={modifiedScene} />
+          <Tab className="file-info-panel" eventKey="scene-file-info-panel" title="File Info">
+            <SceneFileInfoPanel scene={scene} />
           </Tab>
           <Tab eventKey="scene-edit-panel" title="Edit">
             <SceneEditPanel
-              scene={modifiedScene}
+              scene={scene}
               onUpdate={newScene => setScene(newScene)}
               onDelete={() => history.push("/scenes")}
             />
           </Tab>
         </Tabs>
-      </Card>
+      </div>
     </>
   );
 };

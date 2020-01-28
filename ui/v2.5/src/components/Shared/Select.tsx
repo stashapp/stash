@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, CSSProperties } from "react";
 import Select, { ValueType } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { debounce } from "lodash";
@@ -38,6 +38,8 @@ interface ISelectProps {
   isClearable?: boolean,
   onInputChange?: (input: string) => void;
   placeholder?: string;
+  showDropdown?: boolean;
+  groupHeader?: string;
 }
 
 interface ISceneGallerySelect {
@@ -120,6 +122,8 @@ export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = pr
       items={items}
       initialIds={[]}
       placeholder={props.placeholder}
+      className="select-suggest"
+      showDropdown={false}
     />
   );
 };
@@ -147,10 +151,13 @@ export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = props => {
       isLoading={loading}
       items={items}
       initialIds={initialIds}
+      placeholder="Marker title..."
+      className="select-suggest"
+      showDropdown={false}
+      groupHeader="Previously used titles..."
     />
   );
 };
-
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = props =>
   props.type === "performers" ? (
     <PerformerSelect {...(props as IFilterProps)} />
@@ -304,44 +311,28 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   creatable = false,
   isMulti = false,
   onInputChange,
-  placeholder
+  placeholder,
+  showDropdown = true,
+  groupHeader
 }) => {
   const defaultValue =
     items.filter(item => initialIds?.indexOf(item.value) !== -1) ?? null;
 
+  const options = groupHeader ? [{
+    label: groupHeader,
+    options: items
+  }] : items;
+
   const styles = {
-    control: (provided:any) => ({
+    option: (provided:CSSProperties) => ({
       ...provided,
-      background: '#394b59',
-      borderColor: 'rgba(16,22,26,.4)'
-    }),
-    singleValue: (provided:any) => ({
-      ...provided,
-      color: 'f5f8fa',
-    }),
-    placeholder: (provided:any) => ({
-      ...provided,
-      color: 'f5f8fa',
-    }),
-    menu: (provided:any) => ({
-      ...provided,
-      color: 'f5f8fa',
-      background: '#394b59',
-      borderColor: 'rgba(16,22,26,.4)',
-      zIndex: 3
-    }),
-    option: (provided:any, state:any ) => (
-      state.isFocused ? { ...provided, backgroundColor: '#137cbd' } : provided
-    ),
-    multiValueRemove: (provided:any, state:any) => (
-      { ...provided, color: 'black' }
-    )
+      color: "#000"
+    })
   };
 
   const props = {
-    options: items,
+    options,
     value: selectedOptions,
-    styles,
     className,
     onChange,
     isMulti,
@@ -351,7 +342,11 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     placeholder,
     onInputChange,
     isLoading,
-    components: { IndicatorSeparator: () => null }
+    styles,
+    components: {
+      IndicatorSeparator: () => null,
+      ...(!showDropdown && { DropdownIndicator: () => null })
+    }
   };
 
   return creatable ? (

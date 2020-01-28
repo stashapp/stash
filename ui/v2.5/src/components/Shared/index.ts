@@ -15,3 +15,4 @@ export { DurationInput } from "./DurationInput";
 export { TagLink } from "./TagLink";
 export { HoverPopover } from "./HoverPopover";
 export { default as LoadingIndicator } from "./LoadingIndicator";
+export { ImageInput } from './ImageInput';

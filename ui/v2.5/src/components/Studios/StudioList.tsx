@@ -14,9 +14,9 @@ export const StudioList: React.FC = () => {
     result: FindStudiosQueryResult,
     filter: ListFilterModel
   ) {
-    if (!result.data || !result.data.findStudios) {
+    if (!result.data?.findStudios)
       return;
-    }
+
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <div className="grid">

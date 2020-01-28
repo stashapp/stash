@@ -1,5 +1,6 @@
 import React from "react";
-import { Button, Table, Spinner } from "react-bootstrap";
+import { Button, Table } from "react-bootstrap";
+import { LoadingIndicator } from 'src/components/Shared';
 import { StashService } from "src/core/StashService";
 
 export const SettingsAboutPanel: React.FC = () => {
@@ -26,10 +27,8 @@ export const SettingsAboutPanel: React.FC = () => {
 
   function maybeRenderLatestVersion() {
     if (
-      !dataLatest ||
-      !dataLatest.latestversion ||
-      !dataLatest.latestversion.shorthash ||
-      !dataLatest.latestversion.url
+      !dataLatest?.latestversion.shorthash ||
+      !dataLatest?.latestversion.url
     ) {
       return;
     }
@@ -149,12 +148,12 @@ export const SettingsAboutPanel: React.FC = () => {
           </tr>
         </tbody>
       </Table>
-      {!data || loading ? <Spinner animation="border" variant="light" /> : ""}
+      {!data || loading ? <LoadingIndicator inline /> : ""}
       {error && <span>{error.message}</span>}
       {errorLatest && <span>{errorLatest.message}</span>}
       {renderVersion()}
       {!dataLatest || loadingLatest || networkStatus === 4 ? (
-        <Spinner animation="border" variant="light" />
+        <LoadingIndicator inline />
       ) : (
         <>{renderLatestVersion()}</>
       )}

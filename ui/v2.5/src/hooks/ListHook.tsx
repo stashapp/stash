@@ -1,7 +1,6 @@
 import _ from "lodash";
 import queryString from "query-string";
 import React, { useState } from "react";
-import { Spinner } from "react-bootstrap";
 import { ApolloError } from "apollo-client";
 import { useHistory } from "react-router-dom";
 import {
@@ -16,12 +15,13 @@ import {
   FindStudiosQueryResult,
   FindPerformersQueryResult
 } from "src/core/generated-graphql";
-import { ListFilter } from "../components/list/ListFilter";
-import { Pagination } from "../components/list/Pagination";
-import { StashService } from "../core/StashService";
-import { Criterion } from "../models/list-filter/criteria/criterion";
-import { ListFilterModel } from "../models/list-filter/filter";
-import { DisplayMode, FilterMode } from "../models/list-filter/types";
+import { LoadingIndicator } from 'src/components/Shared';
+import { ListFilter } from "src/components/list/ListFilter";
+import { Pagination } from "src/components/list/Pagination";
+import { StashService } from "src/core/StashService";
+import { Criterion } from "src/models/list-filter/criteria/criterion";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { DisplayMode, FilterMode } from "src/models/list-filter/types";
 
 interface IListHookData {
   filter: ListFilterModel;
@@ -294,12 +294,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       {options.renderSelectedOptions && selectedIds.size > 0
         ? options.renderSelectedOptions(result, selectedIds)
         : undefined}
-      {result.loading ? (
-        <Spinner animation="border" variant="light" />
-      ) : (
-        undefined
-      )}
-      {result.error ? <h1>{result.error.message}</h1> : undefined}
+      {result.loading && <LoadingIndicator />}
+      {result.error && <h1>{result.error.message}</h1>}
       {options.renderContent(result, filter, selectedIds, zoomIndex)}
       <Pagination
         itemsPerPage={filter.itemsPerPage}

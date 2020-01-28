@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, InputGroup, Spinner } from "react-bootstrap";
+import { Button, Form, InputGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { Icon } from "src/components/Shared";
+import { Icon, LoadingIndicator } from "src/components/Shared";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 
 export const SettingsConfigurationPanel: React.FC = () => {
@@ -154,7 +154,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   if (error) return <h1>{error.message}</h1>;
   if (!data?.configuration || loading)
-    return <Spinner animation="border" variant="light" />;
+    return <LoadingIndicator />;
 
   return (
     <>

@@ -117,17 +117,15 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         return;
       }
       return (
-        <div>
-          <Form.Control
-            as="select"
-            onChange={onChangedModifierSelect}
-            value={criterion.modifier}
-          >
-            {criterion.modifierOptions.map(c => (
-              <option value={c.value}>{c.label}</option>
-            ))}
-          </Form.Control>
-        </div>
+        <Form.Control
+          as="select"
+          onChange={onChangedModifierSelect}
+          value={criterion.modifier}
+        >
+          {criterion.modifierOptions.map(c => (
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
+        </Form.Control>
       );
     }
 
@@ -155,10 +153,13 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         return (
           <FilterSelect
             type={type}
+            isMulti
             onSelect={items => {
-              criterion.value = items.map(i => ({ id: i.id, label: i.name! }));
+              const newCriterion = _.cloneDeep(criterion);
+              newCriterion.value = items.map(i => ({ id: i.id, label: i.name! }));
+              setCriterion(newCriterion);
             }}
-            initialIds={criterion.value.map((labeled: any) => labeled.id)}
+            ids={criterion.value.map((labeled: any) => labeled.id)}
           />
         );
       }
@@ -171,7 +172,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
             value={criterion.value}
           >
             {criterion.options.map(c => (
-              <option value={c}>{c}</option>
+              <option key={c} value={c}>{c}</option>
             ))}
           </Form.Control>
         );
@@ -215,7 +216,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           value={criterion.type}
         >
           {props.filter.criterionOptions.map(c => (
-            <option value={c.value}>{c.label}</option>
+            <option key={c.value} value={c.value}>{c.label}</option>
           ))}
         </Form.Control>
       </Form.Group>

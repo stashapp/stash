@@ -39,7 +39,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
   function renderTags(tags: GQL.Tag[]) {
     return tags.map(tag => (
-      <Link to={NavUtils.makeTagScenesUrl(tag)}>
+      <Link key={tag.id} to={NavUtils.makeTagScenesUrl(tag)}>
         <h6>{tag.name}</h6>
       </Link>
     ));
@@ -47,7 +47,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
   function renderPerformers(performers: Partial<GQL.Performer>[]) {
     return performers.map(performer => (
-      <Link to={NavUtils.makePerformerScenesUrl(performer)}>
+      <Link key={performer.id} to={NavUtils.makePerformerScenesUrl(performer)}>
         <h6>{performer.name}</h6>
       </Link>
     ));
@@ -65,7 +65,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
   function renderSceneRow(scene: GQL.SlimSceneDataFragment) {
     return (
-      <tr>
+      <tr key={scene.id}>
         <td>{renderSceneImage(scene)}</td>
         <td style={{ textAlign: "left" }}>
           <Link to={`/scenes/${scene.id}`}>

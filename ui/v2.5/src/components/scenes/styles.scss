@@ -4,8 +4,8 @@
   margin-bottom: 10px;
 
   button {
-    padding-top: 3px;
     padding-bottom: 3px;
+    padding-top: 3px;
   }
 
   svg {
@@ -13,9 +13,29 @@
   }
 }
 
+.grid {
+  .scene-card {
+    padding-bottom: 0;
+  }
+}
+
+.performer-tag-container {
+  display: inline-block;
+  margin: 5px;
+}
+
+.performer-tag.image {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 150px;
+  margin: 0 auto;
+  width: 100%;
+}
+
 .operation-container {
   .operation-item {
-    min-width: 200px;
+    min-width: 240px;
   }
 
   .rating-operation {
@@ -26,3 +46,62 @@
     margin-top: 2rem;
   }
 }
+
+.marker-container {
+  display: "flex";
+  flex-wrap: "nowrap";
+  margin-bottom: "20px";
+  overflow-x: "scroll";
+  overflow-y: "hidden";
+  white-space: "nowrap";
+}
+
+.studio-logo {
+  img {
+    margin-top: 1rem;
+    max-width: 100%;
+  }
+}
+
+.scene-header {
+  flex-basis: auto;
+}
+
+#details-container {
+  .tab-content {
+    min-height: 15rem;
+  }
+
+  .scene-description {
+    width: 100%;
+  }
+}
+
+.file-info-panel {
+  td {
+    padding: .4rem;
+  }
+}
+
+#scene-details {
+  input {
+    width: 100%;
+  }
+}
+#details {
+  min-height: 150px;
+}
+
+.edit-buttons {
+  padding-left: 2rem;
+}
+
+.primary-card {
+  margin: 1rem 0;
+
+  &-body {
+    max-height: 15rem;
+    overflow-y: auto;
+  }
+}
+

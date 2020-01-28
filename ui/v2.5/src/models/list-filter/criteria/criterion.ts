@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 
 import { CriterionModifier } from "src/core/generated-graphql";
-import { DurationUtils } from "src/utils";
+import DurationUtils from "src/utils/duration";
 import { ILabeledId, ILabeledValue } from "../types";
 
 export type CriterionType =

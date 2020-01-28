@@ -1,10 +1,10 @@
 .pagination {
   .btn {
+    border-left: 1px solid $body-bg;
+    border-right: 1px solid $body-bg;
     flex-grow: 0;
     padding-left: 15px;
     padding-right: 15px;
-    border-left: 1px solid $body-bg;
-    border-right: 1px solid $body-bg;
     transition: none;
   }
 }
