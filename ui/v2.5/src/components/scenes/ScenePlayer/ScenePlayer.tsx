@@ -3,7 +3,7 @@ import ReactJWPlayer from "react-jw-player";
 import { HotKeys } from "react-hotkeys";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import { SceneHelpers } from "../helpers";
+import { JWUtils } from 'src/utils';
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 
 interface IScenePlayerProps {
@@ -84,7 +84,7 @@ export class ScenePlayerImpl extends React.Component<
   }
 
   private onReady() {
-    this.player = SceneHelpers.getPlayer();
+    this.player = JWUtils.getPlayer();
     if (this.props.timestamp > 0) {
       this.player.seek(this.props.timestamp);
     }
@@ -193,8 +193,8 @@ export class ScenePlayerImpl extends React.Component<
     const config = this.makeJWPlayerConfig(this.props.scene);
     return (
       <ReactJWPlayer
-        playerId={SceneHelpers.getJWPlayerId()}
-        playerScript="/jwplayer/jwplayer.js"
+        playerId={JWUtils.playerID}
+        playerScript="http://192.168.1.65:9999/jwplayer/jwplayer.js"
         customProps={config}
         onReady={this.onReady}
         onSeeked={this.onSeeked}

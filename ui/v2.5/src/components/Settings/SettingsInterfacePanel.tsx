@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Spinner } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
+import { LoadingIndicator } from 'src/components/Shared';
 import { StashService } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
@@ -52,7 +53,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     <>
       {config.error ? <h1>{config.error.message}</h1> : ""}
       {!config?.data?.configuration || config.loading ? (
-        <Spinner animation="border" variant="light" />
+        <LoadingIndicator />
       ) : (
         ""
       )}

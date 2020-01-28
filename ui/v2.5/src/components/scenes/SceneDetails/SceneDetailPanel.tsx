@@ -1,8 +1,8 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TagLink } from "src/components/Shared";
-import { SceneHelpers } from "../helpers";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -10,9 +10,7 @@ interface ISceneDetailProps {
 
 export const SceneDetailPanel: React.FC<ISceneDetailProps> = props => {
   function renderDetails() {
-    if (!props.scene.details || props.scene.details === "") {
-      return;
-    }
+    if (!props.scene.details || props.scene.details === "")return;
     return (
       <>
         <h6>Details</h6>
@@ -22,9 +20,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = props => {
   }
 
   function renderTags() {
-    if (props.scene.tags.length === 0) {
-      return;
-    }
+    if (props.scene.tags.length === 0) return;
     const tags = props.scene.tags.map(tag => (
       <TagLink key={tag.id} tag={tag} />
     ));
@@ -37,22 +33,26 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = props => {
   }
 
   return (
-    <>
-      {SceneHelpers.maybeRenderStudio(props.scene, 70)}
-      <h1>
-        {props.scene.title
-          ? props.scene.title
-          : TextUtils.fileNameFromPath(props.scene.path)}
+    <div className="row">
+      <h1 className="col scene-header">
+        {props.scene.title ?? TextUtils.fileNameFromPath(props.scene.path)}
       </h1>
-      {props.scene.date ? <h4>{props.scene.date}</h4> : ""}
-      {props.scene.rating ? <h6>Rating: {props.scene.rating}</h6> : ""}
-      {props.scene.file.height ? (
-        <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6>
-      ) : (
-        ""
+      <div className="col-6 scene-details">
+        <h4>{props.scene.date ?? ''}</h4>
+        {props.scene.rating ? <h6>Rating: {props.scene.rating}</h6> : ""}
+        {props.scene.file.height && (
+          <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6>
+        )}
+        {renderDetails()}
+        {renderTags()}
+      </div>
+      <div className="col-4 offset-2">
+      { props.scene.studio && (
+        <Link className="studio-logo" to={`/studios/${props.scene.studio.id}`}>
+          <img src={props.scene.studio.image_path ?? ''} alt={`${props.scene.studio.name} logo`} />
+        </Link>
       )}
-      {renderDetails()}
-      {renderTags()}
-    </>
+      </div>
+    </div>
   );
 };

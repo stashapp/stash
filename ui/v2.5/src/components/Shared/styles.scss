@@ -1,17 +1,49 @@
 .LoadingIndicator {
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-    height: 70vh;
-    justify-content: center;
-    width: 100%;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 70vh;
+  justify-content: center;
+  width: 100%;
 
-    &-message {
-        margin-top: 1rem;
-    }
+  &-message {
+    margin-top: 1rem;
+  }
 
-    .spinner-border {
-        height: 3rem;
-        width: 3rem;
-    }
+  .spinner-border {
+    height: 3rem;
+    width: 3rem;
+  }
+
+  &.inline {
+    height: inherit;
+  }
+}
+
+.details-edit {
+  display: flex;
+  justify-content: left;
+
+  .btn {
+    margin-right: .5rem;
+  }
+
+  .delete,
+  .save {
+    margin-left: auto;
+  }
+}
+
+.select-suggest {
+  &:hover {
+    cursor: text;
+  }
+}
+
+.duration-button {
+  border-bottom-left-radius: 0;
+  border-top-left-radius: 0;
+  line-height: 10px;
+  margin-left: 0 !important;
+  padding: 1px 7px;
 }

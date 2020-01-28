@@ -103,7 +103,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (props.scene.performers.length <= 0) return;
 
     const popoverContent = props.scene.performers.map(performer => (
-      <div className="performer-tag-container">
+      <div className="performer-tag-container" key="performer">
         <Link
           to={`/performers/${performer.id}`}
           className="performer-tag previewable image"
@@ -182,7 +182,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
   return (
     <Card
-      className={`zoom-${props.zoomIndex}`}
+      className={`zoom-${props.zoomIndex} scene-card`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -197,6 +197,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
           event.stopPropagation();
         }}
       />
+      {maybeRenderSceneStudioOverlay()}
       <Link
         to={`/scenes/${props.scene.id}`}
         className={cx("image", "previewable", { portrait: isPortrait() })}
@@ -204,7 +205,6 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         <div className="video-container">
           {maybeRenderRatingBanner()}
           {maybeRenderSceneSpecsOverlay()}
-          {maybeRenderSceneStudioOverlay()}
           <video
             loop
             className={cx("preview", { portrait: isPortrait() })}

@@ -2,24 +2,26 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  Collapse,
+  Button,
   Dropdown,
   DropdownButton,
   Form,
-  Button,
-  Spinner
+  Table
 } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import {
-  FilterSelect,
+  PerformerSelect,
+  TagSelect,
   StudioSelect,
   SceneGallerySelect,
   Modal,
-  Icon
+  Icon,
+  LoadingIndicator,
+  ImageInput
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { ImageUtils } from "src/utils";
+import { ImageUtils, TableUtils } from "src/utils";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -47,11 +49,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [deleteFile, setDeleteFile] = useState<boolean>(false);
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
 
-  const [isCoverImageOpen, setIsCoverImageOpen] = useState<boolean>(false);
   const [coverImagePreview, setCoverImagePreview] = useState<string>();
 
   // Network state
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [updateScene] = StashService.useSceneUpdate(getSceneInput());
   const [deleteScene] = StashService.useSceneDestroy(getSceneDeleteInput());
@@ -65,9 +66,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   }, [Scrapers]);
 
   function updateSceneEditState(state: Partial<GQL.SceneDataFragment>) {
-    const perfIds = state.performers
-      ? state.performers.map(performer => performer.id)
-      : undefined;
+    const perfIds = state.performers?.map(performer => performer.id);
     const tIds = state.tags ? state.tags.map(tag => tag.id) : undefined;
 
     setTitle(state.title ?? undefined);
@@ -84,6 +83,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   useEffect(() => {
     updateSceneEditState(props.scene);
     setCoverImagePreview(props.scene?.paths?.screenshot ?? undefined);
+    setIsLoading(false);
   }, [props.scene]);
 
   ImageUtils.usePasteImage(onImageLoad);
@@ -136,32 +136,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       Toast.error(e);
     }
     setIsLoading(false);
-
     props.onDelete();
-  }
-
-  function renderMultiSelect(
-    type: "performers" | "tags",
-    initialIds: string[] = []
-  ) {
-    return (
-      <FilterSelect
-        type={type}
-        isMulti
-        onSelect={items => {
-          const ids = items.map(i => i.id);
-          switch (type) {
-            case "performers":
-              setPerformerIds(ids);
-              break;
-            case "tags":
-              setTagIds(ids);
-              break;
-          }
-        }}
-        initialIds={initialIds}
-      />
-    );
   }
 
   function renderDeleteAlert() {
@@ -278,11 +253,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       }
     }
 
-    if (
-      (!tagIds || tagIds.length === 0) &&
-      scene.tags &&
-      scene.tags.length > 0
-    ) {
+    if (!tagIds?.length && scene?.tags?.length) {
       const idTags = scene.tags.filter(p => {
         return p.id !== undefined && p.id !== null;
       });
@@ -323,126 +294,123 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     );
   }
 
-  return (
-    <>
-      {renderDeleteAlert()}
-      {isLoading ? <Spinner animation="border" variant="light" /> : undefined}
-      <div className="form-container " style={{ width: "50%" }}>
-        <Form.Group controlId="title">
-          <Form.Label>Title</Form.Label>
-          <Form.Control
-            onChange={(newValue: any) => setTitle(newValue.target.value)}
-            value={title}
-          />
-        </Form.Group>
+  if(isLoading)
+    return <LoadingIndicator />;
 
+  return (
+    <div className="form-container row">
+      <div className="col-6">
+        <Table id="scene-details">
+          <tbody>
+            {TableUtils.renderInputGroup({
+              title: "Title",
+              value: title,
+              onChange: setTitle,
+              isEditing: true
+            })}
+            <tr>
+              <td>URL</td>
+              <td>
+                <Form.Control
+                  onChange={(newValue: any) => setUrl(newValue.target.value)}
+                  value={url}
+                  placeholder="URL"
+                />
+                {maybeRenderScrapeButton()}
+              </td>
+            </tr>
+            {TableUtils.renderInputGroup({
+              title: "Date (YYYY-MM-DD)",
+              value: date,
+              isEditing: true,
+              onChange: setDate
+            })}
+            {TableUtils.renderHtmlSelect({
+              title: "Rating",
+              value: rating,
+              isEditing: true,
+              onChange: (value: string) => setRating(Number.parseInt(value, 10)),
+              selectOptions: ['', 1, 2, 3, 4, 5]
+            })}
+            <tr>
+              <td>Gallery</td>
+              <td>
+                <SceneGallerySelect
+                  sceneId={props.scene.id}
+                  initialId={galleryId}
+                  onSelect={item => setGalleryId(item ? item.id : undefined)}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>Studio</td>
+              <td>
+                <StudioSelect
+                  onSelect={items => items.length && setStudioId(items[0]?.id)}
+                  ids={studioId ? [studioId] : []}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>Performers</td>
+              <td>
+                <PerformerSelect
+                  isMulti
+                  onSelect={items => setPerformerIds(items.map(item => item.id))}
+                  ids={performerIds}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>Tags</td>
+              <td>
+                <TagSelect
+                  isMulti
+                  onSelect={items => setTagIds(items.map(item => item.id))}
+                  ids={tagIds}
+                />
+              </td>
+            </tr>
+          </tbody>
+        </Table>
+      </div>
+      <div className="col-5 offset-1">
         <Form.Group controlId="details">
           <Form.Label>Details</Form.Label>
           <Form.Control
             as="textarea"
+            className="scene-description"
             onChange={(newValue: any) => setDetails(newValue.target.value)}
             value={details}
           />
         </Form.Group>
 
-        <Form.Group controlId="url">
-          <Form.Label>URL</Form.Label>
-          <Form.Control
-            onChange={(newValue: any) => setUrl(newValue.target.value)}
-            value={url}
-          />
-          {maybeRenderScrapeButton()}
-        </Form.Group>
-
-        <Form.Group controlId="date">
-          <Form.Label>Date</Form.Label>
-          <Form.Control
-            onChange={(newValue: any) => setDate(newValue.target.value)}
-            value={date}
-          />
-          <div>YYYY-MM-DD</div>
-        </Form.Group>
-
-        <Form.Group controlId="rating">
-          <Form.Label>Rating</Form.Label>
-          <Form.Control
-            as="select"
-            onChange={(event: any) =>
-              setRating(parseInt(event.target.value, 10))
-            }
-          >
-            {["", 1, 2, 3, 4, 5].map(opt => (
-              <option selected={opt === rating} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </Form.Control>
-        </Form.Group>
-
-        <Form.Group controlId="gallery">
-          <Form.Label>Gallery</Form.Label>
-          <SceneGallerySelect
-            sceneId={props.scene.id}
-            initialId={galleryId}
-            onSelect={item => setGalleryId(item ? item.id : undefined)}
-          />
-        </Form.Group>
-
-        <Form.Group controlId="studio">
-          <Form.Label>Studio</Form.Label>
-          <StudioSelect
-            onSelect={items => items.length && setStudioId(items[0]?.id)}
-            initialIds={studioId ? [studioId] : []}
-          />
-        </Form.Group>
-
-        <Form.Group controlId="performers">
-          <Form.Label>Performers</Form.Label>
-          {renderMultiSelect("performers", performerIds)}
-        </Form.Group>
-
-        <Form.Group controlId="tags">
-          <Form.Label>Tags</Form.Label>
-          {renderMultiSelect("tags", tagIds)}
-        </Form.Group>
-
         <div>
-          <Button
-            variant="link"
-            onClick={() => setIsCoverImageOpen(!isCoverImageOpen)}
-          >
-            <Icon icon={isCoverImageOpen ? "chevron-down" : "chevron-right"} />
-            <span>Cover Image</span>
-          </Button>
-          <Collapse in={isCoverImageOpen}>
-            <div>
-              <img
-                className="scene-cover"
-                src={coverImagePreview}
-                alt="Scene cover"
-              />
-              <Form.Group className="test" controlId="cover">
-                <Form.Control
-                  type="file"
-                  onChange={onCoverImageChange}
-                  accept=".jpg,.jpeg,.png"
-                />
-              </Form.Group>
-            </div>
-          </Collapse>
+          <Form.Group className="test" controlId="cover">
+          <Form.Label>Cover Image</Form.Label>
+            <img
+              className="scene-cover"
+              src={coverImagePreview}
+              alt="Scene cover"
+            />
+            <ImageInput isEditing onImageChange={onCoverImageChange} />
+          </Form.Group>
         </div>
       </div>
-      <Button className="edit-button" variant="primary" onClick={onSave}>
-        Save
-      </Button>
-      <Button
-        className="edit-button"
-        variant="danger"
-        onClick={() => setIsDeleteAlertOpen(true)}
-      >
-        Delete
-      </Button>
+      <div className="col edit-buttons">
+        <Button className="edit-button" variant="primary" onClick={onSave}>
+          Save
+        </Button>
+        <Button
+          className="edit-button"
+          variant="danger"
+          onClick={() => setIsDeleteAlertOpen(true)}
+        >
+          Delete
+        </Button>
+      </div>
       {renderScraperMenu()}
-    </>
+      {renderDeleteAlert()}
+    </div>
   );
 };

@@ -1,15 +1,15 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
-import { Button, Spinner, Tabs, Tab } from "react-bootstrap";
+import { Button, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
+import cx from 'classnames'
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import { Icon } from "src/components/Shared";
+import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import Lightbox from "react-images";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
@@ -49,7 +49,7 @@ export const Performer: React.FC = () => {
   }
 
   if ((!isNew && (!data || !data.findPerformer)) || isLoading)
-    return <Spinner animation="border" variant="light" />;
+    return <LoadingIndicator />;
 
   if (error) return <div>{error.message}</div>;
 
@@ -163,42 +163,46 @@ export const Performer: React.FC = () => {
     onSave(performer);
   }
 
-  function renderIcons() {
-    function maybeRenderURL(url?: string, icon: IconName = "link") {
-      if (performer.url) {
-        return (
-          <Button>
-            <a href={performer.url}>
-              <Icon icon={icon} />
-            </a>
-          </Button>
-        );
-      }
-    }
-
-    return (
-      <>
-        <span className="name-icons">
-          <Button
-            className={performer.favorite ? "favorite" : "not-favorite"}
-            onClick={() => setFavorite(!performer.favorite)}
-          >
-            <Icon icon="heart" />
-          </Button>
-          {maybeRenderURL(performer.url ?? undefined)}
-          {/* TODO - render instagram and twitter links with icons */}
-        </span>
-      </>
-    );
-  }
+  const renderIcons = () => (
+    <span className="name-icons">
+      <Button
+        className={cx('minimal', performer.favorite ? "favorite" : "not-favorite")}
+        onClick={() => setFavorite(!performer.favorite)}
+      >
+        <Icon icon="heart" />
+      </Button>
+      { performer.url && (
+        <Button className="minimal">
+          <a href={performer.url} className="link" target="_blank" rel="noopener noreferrer">
+            <Icon icon="link" />
+          </a>
+        </Button>
+      )}
+      { performer.twitter && (
+        <Button className="minimal">
+          <a href={`https://www.twitter.com/${performer.twitter}`} className="twitter" target="_blank" rel="noopener noreferrer">
+            <Icon icon="dove" />
+          </a>
+        </Button>
+      )}
+      { performer.instagram && (
+        <Button className="minimal">
+          <a href={`https://www.instagram.com/${performer.instagram}`} className="instagram" target="_blank" rel="noopener noreferrer">
+            <Icon icon="camera" />
+          </a>
+        </Button>
+      )}
+    </span>
+  )
 
   function renderNewView() {
     return (
-      <div className="columns is-multiline no-spacing">
-        <div className="column is-half details-image-container">
-          <img className="performer" src={imagePreview} alt="Performer" />
+      <div className="row new-view">
+        <div className="col-4">
+          <img className="photo" src={imagePreview} alt="Performer" />
         </div>
-        <div className="column is-half details-detail-container">
+        <div className="col-6">
+          <h2>Create Performer</h2>
           {renderTabs()}
         </div>
       </div>
@@ -207,47 +211,38 @@ export const Performer: React.FC = () => {
 
   const photos = [{ src: imagePreview || "", caption: "Image" }];
 
-  function openLightbox() {
-    setLightboxIsOpen(true);
-  }
-
-  function closeLightbox() {
-    setLightboxIsOpen(false);
-  }
-
   if (isNew) {
     return renderNewView();
   }
 
   return (
-    <>
-      <div id="performer-page">
-        <div className="details-image-container">
-          <Button variant="link" onClick={openLightbox}>
-            <img className="performer" src={imagePreview} alt="Performer" />
-          </Button>
-        </div>
+    <div id="performer-page" className="row">
+      <div className="image-container col-4 offset-1">
+        <Button variant="link" onClick={() => setLightboxIsOpen(true)}>
+          <img className="performer" src={imagePreview} alt="Performer" />
+        </Button>
+      </div>
+      <div className="col-6">
         <div className="performer-head">
-          <h1 className="bp3-heading">
+          <h2>
             {performer.name}
             {renderIcons()}
-          </h1>
+          </h2>
           {maybeRenderAliases()}
           {maybeRenderAge()}
         </div>
-
         <div className="performer-body">
-          <div className="details-detail-container">{renderTabs()}</div>
+          <div className="performer-tabs">{renderTabs()}</div>
         </div>
       </div>
       <Lightbox
         images={photos}
-        onClose={closeLightbox}
+        onClose={() => setLightboxIsOpen(false)}
         currentImage={0}
         isOpen={lightboxIsOpen}
         onClickImage={() => window.open(imagePreview, "_blank")}
         width={9999}
       />
-    </>
+    </div>
   );
 };

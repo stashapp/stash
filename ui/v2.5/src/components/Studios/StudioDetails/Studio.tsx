@@ -1,14 +1,16 @@
 /* eslint-disable react/no-this-in-sfc */
 
-import { Form, Spinner, Table } from "react-bootstrap";
+import { Table } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
+import cx from 'classnames';
 
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { ImageUtils, TableUtils } from "src/utils";
-import { DetailsEditNavbar } from "src/components/Shared";
+import { DetailsEditNavbar, Modal, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import { StudioScenesPanel } from './StudioScenesPanel';
 
 export const Studio: React.FC = () => {
   const history = useHistory();
@@ -18,17 +20,16 @@ export const Studio: React.FC = () => {
 
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing studio state
-  const [image, setImage] = useState<string | undefined>(undefined);
-  const [name, setName] = useState<string | undefined>(undefined);
-  const [url, setUrl] = useState<string | undefined>(undefined);
+  const [image, setImage] = useState<string>();
+  const [name, setName] = useState<string>();
+  const [url, setUrl] = useState<string>();
 
   // Studio state
   const [studio, setStudio] = useState<Partial<GQL.StudioDataFragment>>({});
-  const [imagePreview, setImagePreview] = useState<string | undefined>(
-    undefined
-  );
+  const [imagePreview, setImagePreview] = useState<string>();
 
   const { data, error, loading } = StashService.useFindStudio(id);
   const [updateStudio] = StashService.useStudioUpdate(
@@ -71,7 +72,7 @@ export const Studio: React.FC = () => {
 
   if (!isNew && !isEditing) {
     if (!data?.findStudio || loading)
-      return <Spinner animation="border" variant="light" />;
+      return <LoadingIndicator />;
     if (error) return <div>{error.message}</div>;
   }
 
@@ -98,8 +99,10 @@ export const Studio: React.FC = () => {
         }
       } else {
         const result = await createStudio();
-        if (result.data?.studioCreate?.id)
+        if (result.data?.studioCreate?.id) {
           history.push(`/studios/${result.data.studioCreate.id}`);
+          setIsEditing(false);
+        }
       }
     } catch (e) {
       Toast.error(e);
@@ -107,9 +110,7 @@ export const Studio: React.FC = () => {
   }
 
   async function onAutoTag() {
-    if (!studio || !studio.id) {
-      return;
-    }
+    if (!studio.id) return;
     try {
       await StashService.queryMetadataAutoTag({ studios: [studio.id] });
       Toast.success({ content: "Started auto tagging" });
@@ -133,52 +134,57 @@ export const Studio: React.FC = () => {
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  // TODO: CSS class
+  function renderDeleteAlert() {
+    return (
+      <Modal
+        show={isDeleteAlertOpen}
+        icon="trash-alt"
+        accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
+        cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
+      >
+        <p>Are you sure you want to delete {studio.name ?? 'studio'}?</p>
+      </Modal>
+    );
+  }
+
   return (
-    <div className="columns is-multiline no-spacing">
-      <div className="column is-half details-image-container">
-        <img className="studio" alt={name} src={imagePreview} />
-      </div>
-      <div className="column is-half details-detail-container">
+    <div className="row">
+      <div className={cx('studio-details', { 'col-4': !isNew, 'col-8': isNew})}>
+        { isNew && <h2>Add Studio</h2> }
+        <img className="logo" alt={name} src={imagePreview} />
+        <Table id="performer-details" style={{ width: "100%" }}>
+          <tbody>
+            {TableUtils.renderInputGroup({
+              title: "Name",
+              value: studio.name ?? '',
+              isEditing: !!isEditing,
+              onChange: setName
+            })}
+            {TableUtils.renderInputGroup({
+              title: "URL",
+              value: url,
+              isEditing: !!isEditing,
+              onChange: setUrl
+            })}
+          </tbody>
+        </Table>
         <DetailsEditNavbar
           studio={studio}
           isNew={isNew}
           isEditing={isEditing}
-          onToggleEdit={() => {
-            setIsEditing(!isEditing);
-            updateStudioEditState(studio);
-          }}
+          onToggleEdit={() => setIsEditing(!isEditing)}
           onSave={onSave}
-          onDelete={onDelete}
-          onAutoTag={onAutoTag}
           onImageChange={onImageChangeHandler}
+          onAutoTag={onAutoTag}
+          onDelete={onDelete}
         />
-        <h1>
-          {!isEditing ? (
-            <span>{studio.name}</span>
-          ) : (
-            <Form.Group controlId="studio-name">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                defaultValue={studio.name || ""}
-                placeholder="Name"
-                onChange={(event: any) => setName(event.target.value)}
-              />
-            </Form.Group>
-          )}
-        </h1>
-
-        <Table style={{ width: "100%" }}>
-          <tbody>
-            {TableUtils.renderInputGroup({
-              title: "URL",
-              value: studio.url ?? undefined,
-              isEditing,
-              onChange: (val: string) => setUrl(val)
-            })}
-          </tbody>
-        </Table>
       </div>
+      { !isNew && (
+        <div className="col-8">
+          <StudioScenesPanel studio={studio} />
+        </div>
+      )}
+      {renderDeleteAlert()}
     </div>
   );
 };

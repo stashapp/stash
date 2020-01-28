@@ -62,7 +62,7 @@ export const WallItem: React.FC<IWallItemProps> = (
   }
 
   let linkSrc: string = "#";
-  if (props.clickHandler) {
+  if (!props.clickHandler) {
     if (props.scene) {
       linkSrc = `/scenes/${props.scene.id}`;
     } else if (props.sceneMarker) {
@@ -100,7 +100,6 @@ export const WallItem: React.FC<IWallItemProps> = (
       setPreviewPath(props.scene.paths.webp || "");
       setScreenshotPath(props.scene.paths.screenshot || "");
       setTitle(props.scene.title || "");
-      // tags = props.scene.tags.map((tag) => (<span key={tag.id}>{tag.name}</span>));
     }
   }, [props.sceneMarker, props.scene]);
 
@@ -128,7 +127,7 @@ export const WallItem: React.FC<IWallItemProps> = (
         onMouseMove={() => debouncedOnMouseEnter.current()}
         onMouseLeave={onMouseLeave}
       >
-        <Link onClick={() => onClick()} to={linkSrc}>
+        <Link onClick={onClick} to={linkSrc}>
           <video
             src={videoPath}
             poster={screenshotPath}

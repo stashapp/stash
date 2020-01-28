@@ -48,6 +48,9 @@ export const Pagination: React.FC<IPaginationProps> = ({
     </Button>
   ));
 
+  if(pages.length <= 1)
+    return <div />;
+
   return (
     <ButtonGroup className="filter-container pagination">
       <Button variant="secondary" disabled={currentPage === 1} onClick={() => onChangePage(1)}>

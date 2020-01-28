@@ -9,13 +9,12 @@ import {
   Dropdown,
   DropdownButton,
   Form,
-  Table,
-  Spinner
+  Table
 } from "react-bootstrap";
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { FilterSelect, Icon, StudioSelect } from "src/components/Shared";
+import { FilterSelect, Icon, StudioSelect, LoadingIndicator } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useToast } from "src/hooks";
 import { Pagination } from "../list/Pagination";
@@ -1065,7 +1064,7 @@ export const SceneFilenameParser: React.FC = () => {
       <h4>Scene Filename Parser</h4>
       <ParserInput input={parserInput} onFind={input => onFindClicked(input)} />
 
-      {isLoading ? <Spinner animation="border" variant="light" /> : undefined}
+      {isLoading && <LoadingIndicator />}
       {renderTable()}
     </Card>
   );

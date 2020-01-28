@@ -1,35 +1,38 @@
 .wall-overlay {
-  background-color: rgba(0,0,0,.8);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  background-color: rgba(0, 0, 0, .8);
   bottom: 0;
-  z-index: 1;
+  left: 0;
   pointer-events: none;
+  position: fixed;
+  right: 0;
+  top: 0;
   transition: transform .5s ease-in-out;
+  z-index: 1;
 }
+
 .visible {
   opacity: 1;
   transition: opacity .5s ease-in-out;
 }
+
 .hidden {
   opacity: 0;
   transition: opacity .5s ease-in-out;
 }
+
 .visible-unanimated {
   opacity: 1;
 }
+
 .hidden-unanimated {
   opacity: 0;
 }
 
-
 .double-scale {
-  position: absolute;
-  z-index: 2;
-  transform: scale(2);
   background-color: black;
+  position: absolute;
+  transform: scale(2);
+  z-index: 2;
 }
 
 .double-scale img {
@@ -38,60 +41,61 @@
 
 .scene-wall-item-container {
   display: flex;
-  justify-content: center;
-  position: relative;
-  width: 100%;
   height: 100%;
-  transition: transform .5s;
+  justify-content: center;
   max-height: 253px;
+  position: relative;
+  transition: transform .5s;
+  width: 100%;
 }
 
 .scene-wall-item-container video {
+  height: 100%;
   position: absolute;
   width: 100%;
-  height: 100%;
   z-index: -1;
 }
 
 .scene-wall-item-text-container {
-  position: absolute;
-  font-weight: 700;
-  color: #444;
-  padding: 5px;
-  width: 100%;
+  background: linear-gradient(rgba(255, 255, 255, .25), rgba(255, 255, 255, .65));
   bottom: 0;
+  color: #444;
+  font-weight: 700;
   left: 0;
-  background: linear-gradient(rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.65));
   overflow: hidden;
+  padding: 5px;
+  position: absolute;
   text-align: center;
+  width: 100%;
 
   & span {
-    line-height: 1;
-    font-weight: 400;
     font-size: 10px;
+    font-weight: 400;
+    line-height: 1;
     margin: 0 3px;
   }
 }
 
 .scene-wall-item-blur {
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
   bottom: -5px;
+  left: -5px;
+  position: absolute;
+  right: -5px;
+  top: -5px;
   z-index: -1;
 }
 
-.wall-item video, .wall-item img {
-  width: 100%;
+.wall-item video,
+.wall-item img {
   height: 100%;
   object-fit: contain;
+  width: 100%;
 }
 
 .wall-item {
-  width: 20%;
-  padding: 0 !important;
   line-height: 0;
   overflow: visible;
+  padding: 0 !important;
   position: relative;
+  width: 20%;
 }

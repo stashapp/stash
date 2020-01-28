@@ -12,7 +12,7 @@ import Scenes from "./components/scenes/scenes";
 import { Settings } from "./components/Settings/Settings";
 import { Stats } from "./components/Stats";
 import Studios from "./components/Studios/Studios";
-import Tags from "./components/Tags/Tags";
+import { TagList } from "./components/Tags/TagList";
 import { SceneFilenameParser } from "./components/scenes/SceneFilenameParser";
 
 library.add(fas);
@@ -20,8 +20,8 @@ library.add(fas);
 export const App: React.FC = () => (
   <div className="bp3-dark">
     <ErrorBoundary>
-      <MainNavbar />
       <ToastProvider>
+        <MainNavbar />
         <div className="main">
           <Switch>
             <Route exact path="/" component={Stats} />
@@ -29,7 +29,7 @@ export const App: React.FC = () => (
             {/* <Route path="/scenes/:id" component={Scene} /> */}
             <Route path="/galleries" component={Galleries} />
             <Route path="/performers" component={Performers} />
-            <Route path="/tags" component={Tags} />
+            <Route path="/tags" component={TagList} />
             <Route path="/studios" component={Studios} />
             <Route path="/settings" component={Settings} />
             <Route

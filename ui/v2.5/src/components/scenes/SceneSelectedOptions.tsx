@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Button, ButtonGroup, Form, Spinner } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { FilterSelect, StudioSelect } from "src/components/Shared";
+import { FilterSelect, StudioSelect, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 
 interface IListOperationProps {
@@ -245,7 +245,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
           const itemIDs = items.map(i => i.id);
           switch (type) {
             case "performers":
-              setPerformerIds(itemIDS);
+              setPerformerIds(itemIDs);
               break;
             case "tags":
               setTagIds(itemIDs);
@@ -258,7 +258,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
   }
 
   if(isLoading)
-    return <Spinner animation="border" variant="light" />;
+    return <LoadingIndicator />;
 
   function render() {
     return (

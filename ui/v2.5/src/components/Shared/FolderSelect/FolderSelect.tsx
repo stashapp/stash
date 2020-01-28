@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Button, InputGroup, Form, Modal, Spinner } from "react-bootstrap";
+import { Button, InputGroup, Form, Modal } from "react-bootstrap";
+import { LoadingIndicator } from 'src/components/Shared';
 import { StashService } from "src/core/StashService";
 
 interface IProps {
@@ -55,7 +56,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
               />
               <InputGroup.Append>
                 {!data || !data.directories || loading ? (
-                  <Spinner animation="border" variant="light" />
+                  <LoadingIndicator inline />
                 ) : (
                   ""
                 )}

@@ -134,13 +134,13 @@ export const ListFilter: React.FC<IListFilterProps> = (
     }
     return props.filter.displayModeOptions.map(option => (
       <OverlayTrigger
+        key={option}
         overlay={
           <Tooltip id="display-mode-tooltip">{getLabel(option)}</Tooltip>
         }
       >
         <Button
           variant="secondary"
-          key={option}
           active={props.filter.displayMode === option}
           onClick={() => onChangeDisplayMode(option)}
         >
@@ -180,7 +180,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function renderSelectAll() {
     if (props.onSelectAll) {
       return (
-        <Dropdown.Item onClick={() => onSelectAll()}>Select All</Dropdown.Item>
+        <Dropdown.Item key="select-all" onClick={() => onSelectAll()}>Select All</Dropdown.Item>
       );
     }
   }
@@ -188,7 +188,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function renderSelectNone() {
     if (props.onSelectNone) {
       return (
-        <Dropdown.Item onClick={() => onSelectNone()}>
+        <Dropdown.Item key="select-none" onClick={() => onSelectNone()}>
           Select None
         </Dropdown.Item>
       );
@@ -201,7 +201,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     if (props.otherOperations) {
       props.otherOperations.forEach(o => {
         options.push(
-          <Dropdown.Item onClick={o.onClick}>{o.text}</Dropdown.Item>
+          <Dropdown.Item key={o.text}  onClick={o.onClick}>{o.text}</Dropdown.Item>
         );
       });
     }
@@ -232,6 +232,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           type="range"
           min={0}
           max={3}
+          defaultValue={1}
           onChange={(event: any) =>
             onChangeZoom(Number.parseInt(event.target.value, 10))
           }
@@ -246,7 +247,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
         <div className="filter-container">
           <Form.Control
             placeholder="Search..."
-            value={props.filter.searchTerm}
+            defaultValue={props.filter.searchTerm}
             onChange={onChangeQuery}
             className="filter-item"
             style={{ width: "inherit" }}
@@ -258,7 +259,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
             className="filter-item"
           >
             {PAGE_SIZE_OPTIONS.map(s => (
-              <option value={s}>{s}</option>
+              <option value={s} key={s}>{s}</option>
             ))}
           </Form.Control>
           <ButtonGroup className="filter-item">

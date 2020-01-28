@@ -25,7 +25,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (
   }
 
   return (
-    <Card className="grid-item">
+    <Card className="performer-card">
       <Link
         to={`/performers/${props.performer.id}`}
         className="performer previewable image"

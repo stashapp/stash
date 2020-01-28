@@ -1,9 +1,9 @@
-import * as GQL from "../core/generated-graphql";
-import { PerformersCriterion } from "../models/list-filter/criteria/performers";
-import { StudiosCriterion } from "../models/list-filter/criteria/studios";
-import { TagsCriterion } from "../models/list-filter/criteria/tags";
-import { ListFilterModel } from "../models/list-filter/filter";
-import { FilterMode } from "../models/list-filter/types";
+import * as GQL from "src/core/generated-graphql";
+import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
+import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import { TagsCriterion } from "src/models/list-filter/criteria/tags";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { FilterMode } from "src/models/list-filter/types";
 
 const makePerformerScenesUrl = (
   performer: Partial<GQL.PerformerDataFragment>
@@ -54,11 +54,10 @@ const makeSceneMarkerUrl = (
   return `/scenes/${sceneMarker.scene.id}?t=${sceneMarker.seconds}`;
 };
 
-const Nav = {
+export default {
   makePerformerScenesUrl,
   makeStudioScenesUrl,
   makeTagSceneMarkersUrl,
   makeTagScenesUrl,
   makeSceneMarkerUrl
 };
-export default Nav;

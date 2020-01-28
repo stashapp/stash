@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Button, Form, Spinner } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { NavUtils } from "src/utils";
-import { Icon, Modal } from "src/components/Shared";
+import { Icon, Modal, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 
 export const TagList: React.FC = () => {
@@ -93,34 +93,36 @@ export const TagList: React.FC = () => {
     </Modal>
   );
 
-  if (!data?.allTags) return <Spinner animation="border" variant="light" />;
+  if (!data?.allTags)
+    return <LoadingIndicator />;
   if (error) return <div>{error.message}</div>;
 
   const tagElements = data.allTags.map(tag => {
     return (
-      <>
-        {deleteAlert}
-        <div key={tag.id} className="tag-list-row">
-          <Button variant="link" onClick={() => setEditingTag(tag)}>
-            {tag.name}
-          </Button>
-          <div style={{ float: "right" }}>
-            <Button onClick={() => onAutoTag(tag)}>Auto Tag</Button>
+      <div key={tag.id} className="tag-list-row">
+        <Button variant="link" onClick={() => setEditingTag(tag)}>
+          {tag.name}
+        </Button>
+        <div style={{ float: "right" }}>
+          <Button variant="secondary" onClick={() => onAutoTag(tag)}>Auto Tag</Button>
+          <Button variant="secondary">
             <Link to={NavUtils.makeTagScenesUrl(tag)}>
               Scenes: {tag.scene_count}
             </Link>
+          </Button>
+          <Button variant="secondary">
             <Link to={NavUtils.makeTagSceneMarkersUrl(tag)}>
               Markers: {tag.scene_marker_count}
             </Link>
-            <span>
-              Total: {(tag.scene_count || 0) + (tag.scene_marker_count || 0)}
-            </span>
-            <Button variant="danger" onClick={() => setDeletingTag(tag)}>
-              <Icon icon="trash-alt" color="danger" />
-            </Button>
-          </div>
+          </Button>
+          <span>
+            Total: {(tag.scene_count || 0) + (tag.scene_marker_count || 0)}
+          </span>
+          <Button variant="danger" onClick={() => setDeletingTag(tag)}>
+            <Icon icon="trash-alt" color="danger" />
+          </Button>
         </div>
-      </>
+      </div>
     );
   });
 
@@ -154,6 +156,7 @@ export const TagList: React.FC = () => {
       </Modal>
 
       {tagElements}
+      {deleteAlert}
     </div>
   );
 };

@@ -6,12 +6,11 @@ import {
   Form,
   Popover,
   OverlayTrigger,
-  Spinner,
   Table
 } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import { Icon, Modal, ScrapePerformerSuggest } from "src/components/Shared";
+import { Icon, Modal, ImageInput, ScrapePerformerSuggest, LoadingIndicator } from "src/components/Shared";
 import { ImageUtils, TableUtils } from "src/utils";
 import { useToast } from "src/hooks";
 
@@ -117,7 +116,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers]);
 
-  if (isLoading) return <Spinner animation="border" variant="light" />;
+  if (isLoading) return <LoadingIndicator />;
 
   function getPerformerInput() {
     const performerInput: Partial<
@@ -237,7 +236,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
     return (
       <OverlayTrigger trigger="click" placement="bottom" overlay={popover}>
-        <Button>Scrape with...</Button>
+        <Button variant="secondary">Scrape with...</Button>
       </OverlayTrigger>
     );
   }
@@ -277,7 +276,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       return undefined;
     }
     return (
-      <Button id="scrape-url-button" onClick={() => onScrapePerformerURL()}>
+      <Button className="minimal scrape-url-button" onClick={() => onScrapePerformerURL()}>
         <Icon icon="file-upload" />
       </Button>
     );
@@ -343,24 +342,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       >
         <p>Are you sure you want to delete {name}?</p>
       </Modal>
-    );
-  }
-
-  function renderImageInput() {
-    if (!isEditing) {
-      return;
-    }
-    return (
-      <tr>
-        <td>Image</td>
-        <td>
-          <Form.Control
-            type="file"
-            onChange={onImageChangeHandler}
-            accept=".jpg,.jpeg"
-          />
-        </td>
-      </tr>
     );
   }
 
@@ -465,7 +446,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             isEditing: !!isEditing,
             onChange: setInstagram
           })}
-          {renderImageInput()}
+          <ImageInput isEditing={!!isEditing} onImageChange={onImageChangeHandler} />
         </tbody>
       </Table>
 
