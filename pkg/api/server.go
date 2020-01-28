@@ -196,6 +196,10 @@ func Start() {
 			data, _ := uiBox.Find("index.html")
 			_, _ = w.Write(data)
 		} else {
+			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
+			if isStatic {
+				w.Header().Add("Cache-Control", "max-age=604800000")
+			}
 			http.FileServer(uiBox).ServeHTTP(w, r)
 		}
 	})
