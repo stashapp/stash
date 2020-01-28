@@ -26,6 +26,7 @@ const testExtension = ".mp4"
 const existingStudioName = "ExistingStudio"
 
 const existingStudioSceneName = testName + ".dontChangeStudio" + testExtension
+
 var existingStudioID int
 
 var testSeparators = []string{
