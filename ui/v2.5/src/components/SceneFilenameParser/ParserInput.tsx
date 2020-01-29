@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Button,
   Dropdown,
   DropdownButton,
   Form,
-  InputGroup,
-} from 'react-bootstrap';
-import { ParserField } from './ParserField';
-import { ShowFields } from './ShowFields';
+  InputGroup
+} from "react-bootstrap";
+import { ParserField } from "./ParserField";
+import { ShowFields } from "./ShowFields";
 
 const builtInRecipes = [
   {
@@ -80,7 +80,9 @@ interface IParserInputProps {
   setShowFields: (fields: Map<string, boolean>) => void;
 }
 
-export const ParserInput: React.FC<IParserInputProps> = (props: IParserInputProps) => {
+export const ParserInput: React.FC<IParserInputProps> = (
+  props: IParserInputProps
+) => {
   const [pattern, setPattern] = useState<string>(props.input.pattern);
   const [ignoreWords, setIgnoreWords] = useState<string>(
     props.input.ignoreWords.join(" ")
@@ -124,7 +126,9 @@ export const ParserInput: React.FC<IParserInputProps> = (props: IParserInputProp
   return (
     <Form.Group>
       <Form.Group className="row">
-        <Form.Label htmlFor="filename-pattern" className="col-2">Filename Pattern</Form.Label>
+        <Form.Label htmlFor="filename-pattern" className="col-2">
+          Filename Pattern
+        </Form.Label>
         <InputGroup className="col-8">
           <Form.Control
             id="filename-pattern"
@@ -134,7 +138,10 @@ export const ParserInput: React.FC<IParserInputProps> = (props: IParserInputProp
           <InputGroup.Append>
             <DropdownButton id="parser-field-select" title="Add Field">
               {validFields.map(item => (
-                <Dropdown.Item key={item.field} onSelect={() => addParserField(item)}>
+                <Dropdown.Item
+                  key={item.field}
+                  onSelect={() => addParserField(item)}
+                >
                   <span>{item.field}</span>
                   <span className="ml-auto">{item.helperText}</span>
                 </Dropdown.Item>
@@ -142,7 +149,9 @@ export const ParserInput: React.FC<IParserInputProps> = (props: IParserInputProp
             </DropdownButton>
           </InputGroup.Append>
         </InputGroup>
-        <Form.Text className="text-muted row col-10 offset-2">Use &apos;\\&apos; to escape literal {} characters</Form.Text>
+        <Form.Text className="text-muted row col-10 offset-2">
+          Use &apos;\\&apos; to escape literal {} characters
+        </Form.Text>
       </Form.Group>
 
       <Form.Group className="row" controlId="ignored-words">
@@ -152,12 +161,16 @@ export const ParserInput: React.FC<IParserInputProps> = (props: IParserInputProp
           onChange={(newValue: any) => setIgnoreWords(newValue.target.value)}
           value={ignoreWords}
         />
-        <Form.Text className="text-muted col-10 offset-2">Matches with {"{i}"}</Form.Text>
+        <Form.Text className="text-muted col-10 offset-2">
+          Matches with {"{i}"}
+        </Form.Text>
       </Form.Group>
 
       <h5>Title</h5>
       <Form.Group className="row">
-        <Form.Label htmlFor="whitespace-characters" className="col-2">Whitespace characters:</Form.Label>
+        <Form.Label htmlFor="whitespace-characters" className="col-2">
+          Whitespace characters:
+        </Form.Label>
         <Form.Control
           className="col-8"
           onChange={(newValue: any) =>
@@ -170,7 +183,9 @@ export const ParserInput: React.FC<IParserInputProps> = (props: IParserInputProp
         </Form.Text>
       </Form.Group>
       <Form.Group className="row">
-        <Form.Label htmlFor="capitalize-title" className="col-2">Capitalize title</Form.Label>
+        <Form.Label htmlFor="capitalize-title" className="col-2">
+          Capitalize title
+        </Form.Label>
         <Form.Control
           className="col-8"
           type="checkbox"
@@ -182,9 +197,16 @@ export const ParserInput: React.FC<IParserInputProps> = (props: IParserInputProp
       {/* TODO - mapping stuff will go here */}
 
       <Form.Group>
-        <DropdownButton variant="secondary" id="recipe-select" title="Select Parser Recipe">
+        <DropdownButton
+          variant="secondary"
+          id="recipe-select"
+          title="Select Parser Recipe"
+        >
           {builtInRecipes.map(item => (
-            <Dropdown.Item key={item.pattern} onSelect={() => setParserRecipe(item)}>
+            <Dropdown.Item
+              key={item.pattern}
+              onSelect={() => setParserRecipe(item)}
+            >
               <span>{item.pattern}</span>
               <span className="mr-auto">{item.description}</span>
             </Dropdown.Item>
@@ -200,7 +222,9 @@ export const ParserInput: React.FC<IParserInputProps> = (props: IParserInputProp
       </Form.Group>
 
       <Form.Group className="row">
-        <Button variant="secondary" className="col-1" onClick={onFind}>Find</Button>
+        <Button variant="secondary" className="col-1" onClick={onFind}>
+          Find
+        </Button>
         <Form.Control
           as="select"
           style={{ flexBasis: "min-content" }}
@@ -218,4 +242,4 @@ export const ParserInput: React.FC<IParserInputProps> = (props: IParserInputProp
       </Form.Group>
     </Form.Group>
   );
-}
+};

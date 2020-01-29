@@ -94,7 +94,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Frame Rate</span>
-        <span className="col-8 text-truncate">{props.scene.file.framerate} frames per second</span>
+        <span className="col-8 text-truncate">
+          {props.scene.file.framerate} frames per second
+        </span>
       </div>
     );
   }
@@ -106,7 +108,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Bit Rate</span>
-        <span className="col-8 text-truncate">{TextUtils.bitRate(props.scene.file.bitrate ?? 0)}</span>
+        <span className="col-8 text-truncate">
+          {TextUtils.bitRate(props.scene.file.bitrate ?? 0)}
+        </span>
       </div>
     );
   }
@@ -118,7 +122,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Video Codec</span>
-        <span className="col-8 text-truncate">{props.scene.file.video_codec}</span>
+        <span className="col-8 text-truncate">
+          {props.scene.file.video_codec}
+        </span>
       </div>
     );
   }
@@ -130,7 +136,9 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Audio Codec</span>
-        <span className="col-8 text-truncate">{props.scene.file.audio_codec}</span>
+        <span className="col-8 text-truncate">
+          {props.scene.file.audio_codec}
+        </span>
       </div>
     );
   }

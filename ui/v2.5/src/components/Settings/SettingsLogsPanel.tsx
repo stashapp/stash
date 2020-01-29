@@ -111,7 +111,7 @@ export const SettingsLogsPanel: React.FC = () => {
               {level}
             </option>
           ))}
-          </Form.Control>
+        </Form.Control>
       </Form.Row>
       <div className="logs">
         {maybeRenderError}

@@ -94,7 +94,11 @@ const renderHtmlSelect = (options: {
           options.onChange(event.currentTarget.value)
         }
       >
-        { options.selectOptions.map(opt => <option value={opt} key={opt}>{opt}</option>)}
+        {options.selectOptions.map(opt => (
+          <option value={opt} key={opt}>
+            {opt}
+          </option>
+        ))}
       </Form.Control>
     </td>
   </tr>

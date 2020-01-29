@@ -3,7 +3,11 @@ import { Button, Form } from "react-bootstrap";
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { FilterSelect, StudioSelect, LoadingIndicator } from "src/components/Shared";
+import {
+  FilterSelect,
+  StudioSelect,
+  LoadingIndicator
+} from "src/components/Shared";
 import { useToast } from "src/hooks";
 
 interface IListOperationProps {
@@ -183,7 +187,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
   useEffect(() => {
     const state = props.selected;
     let updateRating = "";
-    let updateStudioID: string|undefined;
+    let updateStudioID: string | undefined;
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
     let first = true;
@@ -223,7 +227,6 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     setIsLoading(false);
   }, [props.selected]);
 
-
   function renderMultiSelect(
     type: "performers" | "tags",
     ids: string[] | undefined
@@ -249,19 +252,21 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     );
   }
 
-  if(isLoading)
-    return <LoadingIndicator />;
+  if (isLoading) return <LoadingIndicator />;
 
   function render() {
     return (
       <div className="operation-container">
-        <Form.Group controlId="rating" className="operation-item rating-operation">
+        <Form.Group
+          controlId="rating"
+          className="operation-item rating-operation"
+        >
           <Form.Label>Rating</Form.Label>
           <Form.Control
             as="select"
             onChange={(event: any) => setRating(event.target.value)}
           >
-            {["", '1', '2', '3', '4', '5'].map(opt => (
+            {["", "1", "2", "3", "4", "5"].map(opt => (
               <option selected={opt === rating} value={opt}>
                 {opt}
               </option>

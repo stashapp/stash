@@ -37,15 +37,15 @@ export const Pagination: React.FC<IPaginationProps> = ({
     i => startPage + i
   );
 
-  const calculatePageClass = (buttonPage:number) => {
-    if(pages.length <= 4) return '';
+  const calculatePageClass = (buttonPage: number) => {
+    if (pages.length <= 4) return "";
 
-    if(currentPage === 1 && buttonPage <= 4) return '';
+    if (currentPage === 1 && buttonPage <= 4) return "";
     const maxPage = pages[pages.length - 1];
-    if(currentPage === maxPage && buttonPage > (maxPage - 3)) return '';
-    if(Math.abs(buttonPage - currentPage) <= 1) return '';
-    return 'd-none d-sm-block'
-  }
+    if (currentPage === maxPage && buttonPage > maxPage - 3) return "";
+    if (Math.abs(buttonPage - currentPage) <= 1) return "";
+    return "d-none d-sm-block";
+  };
 
   const pageButtons = pages.map((page: number) => (
     <Button
@@ -59,12 +59,15 @@ export const Pagination: React.FC<IPaginationProps> = ({
     </Button>
   ));
 
-  if(pages.length <= 1)
-    return <div />;
+  if (pages.length <= 1) return <div />;
 
   return (
     <ButtonGroup className="filter-container pagination">
-      <Button variant="secondary" disabled={currentPage === 1} onClick={() => onChangePage(1)}>
+      <Button
+        variant="secondary"
+        disabled={currentPage === 1}
+        onClick={() => onChangePage(1)}
+      >
         <span className="d-none d-sm-inline">First</span>
         <span className="d-inline d-sm-none">&#x300a;</span>
       </Button>

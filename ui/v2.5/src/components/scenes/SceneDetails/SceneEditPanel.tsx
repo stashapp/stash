@@ -1,13 +1,7 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Dropdown,
-  DropdownButton,
-  Form,
-  Table
-} from "react-bootstrap";
+import { Button, Dropdown, DropdownButton, Form, Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import {
@@ -294,8 +288,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     );
   }
 
-  if(isLoading)
-    return <LoadingIndicator />;
+  if (isLoading) return <LoadingIndicator />;
 
   return (
     <div className="form-container row">
@@ -329,8 +322,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               title: "Rating",
               value: rating,
               isEditing: true,
-              onChange: (value: string) => setRating(Number.parseInt(value, 10)),
-              selectOptions: ['', 1, 2, 3, 4, 5]
+              onChange: (value: string) =>
+                setRating(Number.parseInt(value, 10)),
+              selectOptions: ["", 1, 2, 3, 4, 5]
             })}
             <tr>
               <td>Gallery</td>
@@ -356,7 +350,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               <td>
                 <PerformerSelect
                   isMulti
-                  onSelect={items => setPerformerIds(items.map(item => item.id))}
+                  onSelect={items =>
+                    setPerformerIds(items.map(item => item.id))
+                  }
                   ids={performerIds}
                 />
               </td>
@@ -387,7 +383,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
         <div>
           <Form.Group className="test" controlId="cover">
-          <Form.Label>Cover Image</Form.Label>
+            <Form.Label>Cover Image</Form.Label>
             <img
               className="scene-cover"
               src={coverImagePreview}

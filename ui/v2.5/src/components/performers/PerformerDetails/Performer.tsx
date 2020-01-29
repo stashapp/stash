@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
-import cx from 'classnames'
+import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { Icon, LoadingIndicator } from "src/components/Shared";
@@ -166,34 +166,52 @@ export const Performer: React.FC = () => {
   const renderIcons = () => (
     <span className="name-icons d-block d-sm-inline">
       <Button
-        className={cx('minimal', performer.favorite ? "favorite" : "not-favorite")}
+        className={cx(
+          "minimal",
+          performer.favorite ? "favorite" : "not-favorite"
+        )}
         onClick={() => setFavorite(!performer.favorite)}
       >
         <Icon icon="heart" />
       </Button>
-      { performer.url && (
+      {performer.url && (
         <Button className="minimal">
-          <a href={performer.url} className="link" target="_blank" rel="noopener noreferrer">
+          <a
+            href={performer.url}
+            className="link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Icon icon="link" />
           </a>
         </Button>
       )}
-      { performer.twitter && (
+      {performer.twitter && (
         <Button className="minimal">
-          <a href={`https://www.twitter.com/${performer.twitter}`} className="twitter" target="_blank" rel="noopener noreferrer">
+          <a
+            href={`https://www.twitter.com/${performer.twitter}`}
+            className="twitter"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Icon icon="dove" />
           </a>
         </Button>
       )}
-      { performer.instagram && (
+      {performer.instagram && (
         <Button className="minimal">
-          <a href={`https://www.instagram.com/${performer.instagram}`} className="instagram" target="_blank" rel="noopener noreferrer">
+          <a
+            href={`https://www.instagram.com/${performer.instagram}`}
+            className="instagram"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Icon icon="camera" />
           </a>
         </Button>
       )}
     </span>
-  )
+  );
 
   function renderNewView() {
     return (

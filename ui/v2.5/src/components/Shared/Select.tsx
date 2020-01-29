@@ -35,7 +35,7 @@ interface ISelectProps {
   onChange: (item: ValueType<Option>) => void;
   initialIds?: string[];
   isMulti?: boolean;
-  isClearable?: boolean,
+  isClearable?: boolean;
   onInputChange?: (input: string) => void;
   placeholder?: string;
   showDropdown?: boolean;
@@ -53,10 +53,11 @@ interface ISceneGallerySelect {
 }
 
 const getSelectedValues = (selectedItems: ValueType<Option>) =>
-  selectedItems ?
-  (Array.isArray(selectedItems) ? selectedItems : [selectedItems]).map(
-    item => item.value
-  ) : [];
+  selectedItems
+    ? (Array.isArray(selectedItems) ? selectedItems : [selectedItems]).map(
+        item => item.value
+      )
+    : [];
 
 export const SceneGallerySelect: React.FC<ISceneGallerySelect> = props => {
   const { data, loading } = StashService.useValidGalleriesForScene(
@@ -176,8 +177,9 @@ export const PerformerSelect: React.FC<IFilterProps> = props => {
     label: item.name ?? ""
   }));
   const placeholder = props.noSelectionString ?? "Select performer...";
-  const selectedOptions:Option[] = props.ids ?
-    items.filter(item => props.ids?.indexOf(item.value) !== -1) : [];
+  const selectedOptions: Option[] = props.ids
+    ? items.filter(item => props.ids?.indexOf(item.value) !== -1)
+    : [];
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedIds = getSelectedValues(selectedItems);
@@ -208,8 +210,9 @@ export const StudioSelect: React.FC<IFilterProps> = props => {
     label: item.name
   }));
   const placeholder = props.noSelectionString ?? "Select studio...";
-  const selectedOptions:Option[] = props.ids ?
-    items.filter(item => props.ids?.indexOf(item.value) !== -1) : [];
+  const selectedOptions: Option[] = props.ids
+    ? items.filter(item => props.ids?.indexOf(item.value) !== -1)
+    : [];
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedIds = getSelectedValues(selectedItems);
@@ -320,17 +323,21 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   const defaultValue =
     items.filter(item => initialIds?.indexOf(item.value) !== -1) ?? null;
 
-  const options = groupHeader ? [{
-    label: groupHeader,
-    options: items
-  }] : items;
+  const options = groupHeader
+    ? [
+        {
+          label: groupHeader,
+          options: items
+        }
+      ]
+    : items;
 
   const styles = {
-    option: (base:CSSProperties) => ({
+    option: (base: CSSProperties) => ({
       ...base,
       color: "#000"
     }),
-    container: (base:CSSProperties, state:any) => ({
+    container: (base: CSSProperties, state: any) => ({
       ...base,
       zIndex: state.isFocused ? 10 : base.zIndex
     })

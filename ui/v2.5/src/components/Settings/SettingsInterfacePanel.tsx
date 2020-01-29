@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { DurationInput, LoadingIndicator } from 'src/components/Shared';
+import { DurationInput, LoadingIndicator } from "src/components/Shared";
 import { StashService } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
@@ -108,7 +108,8 @@ export const SettingsInterfacePanel: React.FC = () => {
             onValueChange={duration => setMaximumLoopDuration(duration)}
           />
           <Form.Text className="text-muted">
-            Maximum scene duration where scene player will loop the video - 0 to disable
+            Maximum scene duration where scene player will loop the video - 0 to
+            disable
           </Form.Text>
         </Form.Group>
       </Form.Group>

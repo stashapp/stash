@@ -5,7 +5,7 @@ import { useParams, useLocation, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
-import { LoadingIndicator } from 'src/components/Shared';
+import { LoadingIndicator } from "src/components/Shared";
 import { ScenePlayer } from "src/components/scenes/ScenePlayer/ScenePlayer";
 import { ScenePerformerPanel } from "./ScenePerformerPanel";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
@@ -25,8 +25,7 @@ export const Scene: React.FC = () => {
   const autoplay = queryParams?.autoplay === "true";
 
   useEffect(() => {
-    if(data?.findScene)
-      setScene(data.findScene)
+    if (data?.findScene) setScene(data.findScene);
   }, [data]);
 
   function getInitialTimestamp() {
@@ -50,21 +49,14 @@ export const Scene: React.FC = () => {
 
   return (
     <>
-      <ScenePlayer
-        scene={scene}
-        timestamp={timestamp}
-        autoplay={autoplay}
-      />
+      <ScenePlayer scene={scene} timestamp={timestamp} autoplay={autoplay} />
       <div id="details-container" className="col col-sm-9 m-sm-auto">
         <Tabs id="scene-tabs" mountOnEnter>
           <Tab eventKey="scene-details-panel" title="Details">
             <SceneDetailPanel scene={scene} />
           </Tab>
           <Tab eventKey="scene-markers-panel" title="Markers">
-            <SceneMarkersPanel
-              scene={scene}
-              onClickMarker={onClickMarker}
-            />
+            <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} />
           </Tab>
           {scene.performers.length > 0 ? (
             <Tab eventKey="scene-performer-panel" title="Performers">
@@ -80,10 +72,18 @@ export const Scene: React.FC = () => {
           ) : (
             ""
           )}
-          <Tab className="file-info-panel" eventKey="scene-file-info-panel" title="File Info">
+          <Tab
+            className="file-info-panel"
+            eventKey="scene-file-info-panel"
+            title="File Info"
+          >
             <SceneFileInfoPanel scene={scene} />
           </Tab>
-          <Tab eventKey="scene-edit-panel" title="Edit" tabClassName="d-none d-sm-block">
+          <Tab
+            eventKey="scene-edit-panel"
+            title="Edit"
+            tabClassName="d-none d-sm-block"
+          >
             <SceneEditPanel
               scene={scene}
               onUpdate={newScene => setScene(newScene)}

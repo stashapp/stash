@@ -3,14 +3,18 @@
 import { Table } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
-import cx from 'classnames';
+import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { ImageUtils, TableUtils } from "src/utils";
-import { DetailsEditNavbar, Modal, LoadingIndicator } from "src/components/Shared";
+import {
+  DetailsEditNavbar,
+  Modal,
+  LoadingIndicator
+} from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { StudioScenesPanel } from './StudioScenesPanel';
+import { StudioScenesPanel } from "./StudioScenesPanel";
 
 export const Studio: React.FC = () => {
   const history = useHistory();
@@ -71,8 +75,7 @@ export const Studio: React.FC = () => {
   ImageUtils.usePasteImage(onImageLoad);
 
   if (!isNew && !isEditing) {
-    if (!data?.findStudio || loading)
-      return <LoadingIndicator />;
+    if (!data?.findStudio || loading) return <LoadingIndicator />;
     if (error) return <div>{error.message}</div>;
   }
 
@@ -142,21 +145,26 @@ export const Studio: React.FC = () => {
         accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {studio.name ?? 'studio'}?</p>
+        <p>Are you sure you want to delete {studio.name ?? "studio"}?</p>
       </Modal>
     );
   }
 
   return (
     <div className="row">
-      <div className={cx('studio-details', { 'col ml-sm-5': !isNew, 'col-8': isNew})}>
-        { isNew && <h2>Add Studio</h2> }
+      <div
+        className={cx("studio-details", {
+          "col ml-sm-5": !isNew,
+          "col-8": isNew
+        })}
+      >
+        {isNew && <h2>Add Studio</h2>}
         <img className="logo" alt={name} src={imagePreview} />
         <Table id="performer-details" style={{ width: "100%" }}>
           <tbody>
             {TableUtils.renderInputGroup({
               title: "Name",
-              value: studio.name ?? '',
+              value: studio.name ?? "",
               isEditing: !!isEditing,
               onChange: setName
             })}
@@ -179,7 +187,7 @@ export const Studio: React.FC = () => {
           onDelete={onDelete}
         />
       </div>
-      { !isNew && (
+      {!isNew && (
         <div className="col-12 col-sm-8">
           <StudioScenesPanel studio={studio} />
         </div>

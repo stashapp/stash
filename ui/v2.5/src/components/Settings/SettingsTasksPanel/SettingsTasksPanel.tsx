@@ -242,9 +242,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <Form.Group>
         <Link to="/sceneFilenameParser">
-          <Button variant="secondary">
-            Scene Filename Parser
-          </Button>
+          <Button variant="secondary">Scene Filename Parser</Button>
         </Link>
       </Form.Group>
 

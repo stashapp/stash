@@ -15,7 +15,7 @@ import {
   FindStudiosQueryResult,
   FindPerformersQueryResult
 } from "src/core/generated-graphql";
-import { LoadingIndicator } from 'src/components/Shared';
+import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/list/ListFilter";
 import { Pagination } from "src/components/list/Pagination";
 import { StashService } from "src/core/StashService";

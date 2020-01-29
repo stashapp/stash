@@ -1,4 +1,3 @@
-
 export class ParserField {
   public field: string;
   public helperText?: string;

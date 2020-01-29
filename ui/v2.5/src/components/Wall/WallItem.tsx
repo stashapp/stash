@@ -16,9 +16,7 @@ interface IWallItemProps {
   ) => void;
 }
 
-export const WallItem: React.FC<IWallItemProps> = (
-  props: IWallItemProps
-) => {
+export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   const [videoPath, setVideoPath] = useState<string>();
   const [previewPath, setPreviewPath] = useState<string>("");
   const [screenshotPath, setScreenshotPath] = useState<string>("");
@@ -28,7 +26,8 @@ export const WallItem: React.FC<IWallItemProps> = (
   const videoHoverHook = VideoHoverHook.useVideoHover({
     resetOnMouseLeave: true
   });
-  const showTextContainer = config.data?.configuration.interface.wallShowTitle ?? true;
+  const showTextContainer =
+    config.data?.configuration.interface.wallShowTitle ?? true;
 
   function onMouseEnter() {
     VideoHoverHook.onMouseEnter(videoHoverHook);

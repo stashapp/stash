@@ -1,22 +1,20 @@
 /* eslint-disable no-param-reassign, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
 
 import React, { useEffect, useState, useCallback } from "react";
-import {
-  Badge,
-  Button,
-  Card,
-  Form,
-  Table
-} from "react-bootstrap";
+import { Badge, Button, Card, Form, Table } from "react-bootstrap";
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { FilterSelect, StudioSelect, LoadingIndicator } from "src/components/Shared";
+import {
+  FilterSelect,
+  StudioSelect,
+  LoadingIndicator
+} from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useToast } from "src/hooks";
 import { Pagination } from "../list/Pagination";
-import { IParserInput, ParserInput } from './ParserInput';
-import { ParserField } from './ParserField';
+import { IParserInput, ParserInput } from "./ParserInput";
+import { ParserField } from "./ParserField";
 
 class ParserResult<T> {
   public value: GQL.Maybe<T> = null;

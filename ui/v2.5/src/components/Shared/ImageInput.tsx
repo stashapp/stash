@@ -1,12 +1,15 @@
 import React from "react";
-import { Button, Form } from 'react-bootstrap';
+import { Button, Form } from "react-bootstrap";
 
 interface IImageInput {
   isEditing: boolean;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
 }
 
-export const ImageInput: React.FC<IImageInput> = ({ isEditing, onImageChange }) => {
+export const ImageInput: React.FC<IImageInput> = ({
+  isEditing,
+  onImageChange
+}) => {
   if (!isEditing) return <div />;
 
   return (
@@ -19,5 +22,4 @@ export const ImageInput: React.FC<IImageInput> = ({ isEditing, onImageChange }) 
       />
     </Form.Label>
   );
-}
-
+};

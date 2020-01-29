@@ -10,7 +10,7 @@ interface ISceneDetailProps {
 
 export const SceneDetailPanel: React.FC<ISceneDetailProps> = props => {
   function renderDetails() {
-    if (!props.scene.details || props.scene.details === "")return;
+    if (!props.scene.details || props.scene.details === "") return;
     return (
       <>
         <h6>Details</h6>
@@ -38,7 +38,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = props => {
         {props.scene.title ?? TextUtils.fileNameFromPath(props.scene.path)}
       </h3>
       <div className="col-6 scene-details">
-        <h4>{props.scene.date ?? ''}</h4>
+        <h4>{props.scene.date ?? ""}</h4>
         {props.scene.rating ? <h6>Rating: {props.scene.rating}</h6> : ""}
         {props.scene.file.height && (
           <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6>
@@ -47,11 +47,17 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = props => {
         {renderTags()}
       </div>
       <div className="col-4 offset-2">
-      { props.scene.studio && (
-        <Link className="studio-logo" to={`/studios/${props.scene.studio.id}`}>
-          <img src={props.scene.studio.image_path ?? ''} alt={`${props.scene.studio.name} logo`} />
-        </Link>
-      )}
+        {props.scene.studio && (
+          <Link
+            className="studio-logo"
+            to={`/studios/${props.scene.studio.id}`}
+          >
+            <img
+              src={props.scene.studio.image_path ?? ""}
+              alt={`${props.scene.studio.name} logo`}
+            />
+          </Link>
+        )}
       </div>
     </div>
   );

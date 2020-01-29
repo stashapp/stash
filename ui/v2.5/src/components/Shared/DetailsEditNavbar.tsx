@@ -1,10 +1,7 @@
-import {
-  Button,
-  Modal,
-} from "react-bootstrap";
+import { Button, Modal } from "react-bootstrap";
 import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { ImageInput } from 'src/components/Shared';
+import { ImageInput } from "src/components/Shared";
 
 interface IProps {
   performer?: Partial<GQL.PerformerDataFragment>;
@@ -24,7 +21,11 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   function renderEditButton() {
     if (props.isNew) return;
     return (
-      <Button variant="primary" className="edit"  onClick={() => props.onToggleEdit()}>
+      <Button
+        variant="primary"
+        className="edit"
+        onClick={() => props.onToggleEdit()}
+      >
         {props.isEditing ? "Cancel" : "Edit"}
       </Button>
     );
@@ -34,7 +35,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
     if (!props.isEditing) return;
 
     return (
-      <Button variant="success" className="save"  onClick={() => props.onSave()}>
+      <Button variant="success" className="save" onClick={() => props.onSave()}>
         Save
       </Button>
     );
@@ -43,7 +44,11 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   function renderDeleteButton() {
     if (props.isNew || props.isEditing) return;
     return (
-      <Button variant="danger" className="delete d-none d-sm-block" onClick={() => setIsDeleteAlertOpen(true)}>
+      <Button
+        variant="danger"
+        className="delete d-none d-sm-block"
+        onClick={() => setIsDeleteAlertOpen(true)}
+      >
         Delete
       </Button>
     );
@@ -92,7 +97,10 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   return (
     <div className="details-edit">
       {renderEditButton()}
-      <ImageInput isEditing={props.isEditing} onImageChange={props.onImageChange} />
+      <ImageInput
+        isEditing={props.isEditing}
+        onImageChange={props.onImageChange}
+      />
       {renderAutoTagButton()}
       {renderSaveButton()}
       {renderDeleteButton()}

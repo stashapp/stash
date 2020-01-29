@@ -3,7 +3,7 @@ import ReactJWPlayer from "react-jw-player";
 import { HotKeys } from "react-hotkeys";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import { JWUtils } from 'src/utils';
+import { JWUtils } from "src/utils";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 
 interface IScenePlayerProps {
@@ -206,7 +206,10 @@ export class ScenePlayerImpl extends React.Component<
   public render() {
     return (
       <HotKeys keyMap={KeyMap} handlers={this.KeyHandlers} className="row">
-        <div id="jwplayer-container" className="w-100 col-sm-9 m-sm-auto no-gutter" >
+        <div
+          id="jwplayer-container"
+          className="w-100 col-sm-9 m-sm-auto no-gutter"
+        >
           {this.renderPlayer()}
           <ScenePlayerScrubber
             scene={this.props.scene}
