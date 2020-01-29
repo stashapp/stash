@@ -228,7 +228,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     if (props.onChangeZoom) {
       return (
         <Form.Control
-          className="zoom-slider col-1"
+          className="zoom-slider col-1 d-none d-sm-block"
           type="range"
           min={0}
           max={3}
@@ -249,14 +249,14 @@ export const ListFilter: React.FC<IListFilterProps> = (
             placeholder="Search..."
             defaultValue={props.filter.searchTerm}
             onChange={onChangeQuery}
-            className="filter-item"
+            className="filter-item col-5 col-sm-2"
             style={{ width: "inherit" }}
           />
           <Form.Control
             as="select"
             onChange={onChangePageSize}
             value={props.filter.itemsPerPage.toString()}
-            className="filter-item col-1"
+            className="filter-item col-1 d-none d-sm-inline"
           >
             {PAGE_SIZE_OPTIONS.map(s => (
               <option value={s} key={s}>{s}</option>
@@ -298,13 +298,13 @@ export const ListFilter: React.FC<IListFilterProps> = (
             editingCriterion={editingCriterion}
           />
 
-          <ButtonGroup className="filter-item">
+          <ButtonGroup className="filter-item d-none d-sm-inline-flex">
             {renderDisplayModeOptions()}
           </ButtonGroup>
 
           {maybeRenderZoom()}
 
-          <ButtonGroup className="filter-item">{renderMore()}</ButtonGroup>
+          <ButtonGroup className="filter-item d-none d-sm-inline-flex">{renderMore()}</ButtonGroup>
         </div>
         <div
           style={{

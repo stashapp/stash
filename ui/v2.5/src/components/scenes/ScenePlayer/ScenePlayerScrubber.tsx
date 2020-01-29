@@ -357,7 +357,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
   }
 
   return (
-    <div className="scrubber-wrapper">
+    <div className="scrubber-wrapper d-none d-sm-block">
       <Button
         variant="link"
         className="scrubber-button"

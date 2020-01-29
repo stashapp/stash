@@ -55,7 +55,7 @@ export const Scene: React.FC = () => {
         timestamp={timestamp}
         autoplay={autoplay}
       />
-      <div id="details-container">
+      <div id="details-container" className="col col-sm-9 m-sm-auto">
         <Tabs id="scene-tabs" mountOnEnter>
           <Tab eventKey="scene-details-panel" title="Details">
             <SceneDetailPanel scene={scene} />
@@ -83,7 +83,7 @@ export const Scene: React.FC = () => {
           <Tab className="file-info-panel" eventKey="scene-file-info-panel" title="File Info">
             <SceneFileInfoPanel scene={scene} />
           </Tab>
-          <Tab eventKey="scene-edit-panel" title="Edit">
+          <Tab eventKey="scene-edit-panel" title="Edit" tabClassName="d-none d-sm-block">
             <SceneEditPanel
               scene={scene}
               onUpdate={newScene => setScene(newScene)}

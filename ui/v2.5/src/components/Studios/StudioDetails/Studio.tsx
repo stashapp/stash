@@ -149,7 +149,7 @@ export const Studio: React.FC = () => {
 
   return (
     <div className="row">
-      <div className={cx('studio-details', { 'col-4': !isNew, 'col-8': isNew})}>
+      <div className={cx('studio-details', { 'col ml-sm-5': !isNew, 'col-8': isNew})}>
         { isNew && <h2>Add Studio</h2> }
         <img className="logo" alt={name} src={imagePreview} />
         <Table id="performer-details" style={{ width: "100%" }}>
@@ -180,7 +180,7 @@ export const Studio: React.FC = () => {
         />
       </div>
       { !isNew && (
-        <div className="col-8">
+        <div className="col-12 col-sm-8">
           <StudioScenesPanel studio={studio} />
         </div>
       )}

@@ -65,7 +65,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
             <ul className="folder-list">
               {selectableDirectories.map(path => {
                 return (
-                  <li className="folder-item">
+                  <li key={path} className="folder-item">
                     <Button
                       variant="link"
                       key={path}

@@ -40,7 +40,7 @@ const LogElement: React.FC<ILogElementProps> = ({ logEntry }) => {
     <div className="row">
       <span className="log-time">{logEntry.time}</span>
       <span className={`${levelClass(logEntry.level)}`}>{level}</span>
-      <span className="col-9">{logEntry.message}</span>
+      <span className="col col-sm-9">{logEntry.message}</span>
     </div>
   );
 };
@@ -99,9 +99,9 @@ export const SettingsLogsPanel: React.FC = () => {
     <>
       <h4>Logs</h4>
       <Form.Row id="log-level">
-        <Form.Label className="col-2">Log Level</Form.Label>
+        <Form.Label className="col-6 col-sm-2">Log Level</Form.Label>
         <Form.Control
-          className="col-2"
+          className="col-6 col-sm-2"
           as="select"
           defaultValue={logLevel}
           onChange={event => setLogLevel(event.currentTarget.value)}

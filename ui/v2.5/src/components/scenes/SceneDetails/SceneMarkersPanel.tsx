@@ -51,11 +51,13 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
   return (
     <>
       <Button onClick={() => onOpenEditor()}>Create Marker</Button>
-      <PrimaryTags
-        sceneMarkers={props.scene.scene_markers ?? []}
-        onClickMarker={onClickMarker}
-        onEdit={onOpenEditor}
-      />
+        <div className="container">
+          <PrimaryTags
+            sceneMarkers={props.scene.scene_markers ?? []}
+            onClickMarker={onClickMarker}
+            onEdit={onOpenEditor}
+          />
+        </div>
       <div className="row">
         <WallPanel
           sceneMarkers={props.scene.scene_markers}

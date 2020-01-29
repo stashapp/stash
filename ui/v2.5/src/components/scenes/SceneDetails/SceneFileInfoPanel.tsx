@@ -1,5 +1,4 @@
 import React from "react";
-import { Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 
@@ -12,10 +11,10 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 ) => {
   function renderChecksum() {
     return (
-      <tr>
-        <td>Checksum</td>
-        <td>{props.scene.checksum}</td>
-      </tr>
+      <div className="row">
+        <span className="col-4">Checksum</span>
+        <span className="col-8 text-truncate">{props.scene.checksum}</span>
+      </div>
     );
   }
 
@@ -24,25 +23,25 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       scene: { path }
     } = props;
     return (
-      <tr>
-        <td>Path</td>
-        <td>
+      <div className="row">
+        <span className="col-4">Path</span>
+        <span className="col-8 text-truncate">
           <a href={`file://${path}`}>{`file://${props.scene.path}`}</a>{" "}
-        </td>
-      </tr>
+        </span>
+      </div>
     );
   }
 
   function renderStream() {
     return (
-      <tr>
-        <td>Stream</td>
-        <td>
+      <div className="row">
+        <span className="col-4">Stream</span>
+        <span className="col-8 text-truncate">
           <a href={props.scene.paths.stream ?? ""}>
             {props.scene.paths.stream}
           </a>{" "}
-        </td>
-      </tr>
+        </span>
+      </div>
     );
   }
 
@@ -51,12 +50,12 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return;
     }
     return (
-      <tr>
-        <td>File Size</td>
-        <td>
+      <div className="row">
+        <span className="col-4">File Size</span>
+        <span className="col-8 text-truncate">
           {TextUtils.fileSize(parseInt(props.scene.file.size ?? "0", 10))}
-        </td>
-      </tr>
+        </span>
+      </div>
     );
   }
 
@@ -65,10 +64,12 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return;
     }
     return (
-      <tr>
-        <td>Duration</td>
-        <td>{TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)}</td>
-      </tr>
+      <div className="row">
+        <span className="col-4">Duration</span>
+        <span className="col-8 text-truncate">
+          {TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)}
+        </span>
+      </div>
     );
   }
 
@@ -77,12 +78,12 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return;
     }
     return (
-      <tr>
-        <td>Dimensions</td>
-        <td>
+      <div className="row">
+        <span className="col-4">Dimensions</span>
+        <span className="col-8 text-truncate">
           {props.scene.file.width} x {props.scene.file.height}
-        </td>
-      </tr>
+        </span>
+      </div>
     );
   }
 
@@ -91,22 +92,22 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return;
     }
     return (
-      <tr>
-        <td>Frame Rate</td>
-        <td>{props.scene.file.framerate} frames per second</td>
-      </tr>
+      <div className="row">
+        <span className="col-4">Frame Rate</span>
+        <span className="col-8 text-truncate">{props.scene.file.framerate} frames per second</span>
+      </div>
     );
   }
 
-  function renderBitRate() {
+  function renderbitrate() {
     if (props.scene.file.bitrate === undefined) {
       return;
     }
     return (
-      <tr>
-        <td>Bit Rate</td>
-        <td>{TextUtils.bitRate(props.scene.file.bitrate ?? 0)}</td>
-      </tr>
+      <div className="row">
+        <span className="col-4">Bit Rate</span>
+        <span className="col-8 text-truncate">{TextUtils.bitRate(props.scene.file.bitrate ?? 0)}</span>
+      </div>
     );
   }
 
@@ -115,10 +116,10 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return;
     }
     return (
-      <tr>
-        <td>Video Codec</td>
-        <td>{props.scene.file.video_codec}</td>
-      </tr>
+      <div className="row">
+        <span className="col-4">Video Codec</span>
+        <span className="col-8 text-truncate">{props.scene.file.video_codec}</span>
+      </div>
     );
   }
 
@@ -127,10 +128,10 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return;
     }
     return (
-      <tr>
-        <td>Audio Codec</td>
-        <td>{props.scene.file.audio_codec}</td>
-      </tr>
+      <div className="row">
+        <span className="col-4">Audio Codec</span>
+        <span className="col-8 text-truncate">{props.scene.file.audio_codec}</span>
+      </div>
     );
   }
 
@@ -139,30 +140,26 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       return;
     }
     return (
-      <tr>
-        <td>Downloaded From</td>
-        <td>{props.scene.url}</td>
-      </tr>
+      <div className="row">
+        <span className="col-4">Downloaded From</span>
+        <span className="col-8 text-truncate">{props.scene.url}</span>
+      </div>
     );
   }
 
   return (
-    <>
-      <Table>
-        <tbody>
-          {renderChecksum()}
-          {renderPath()}
-          {renderStream()}
-          {renderFileSize()}
-          {renderDuration()}
-          {renderDimensions()}
-          {renderFrameRate()}
-          {renderBitRate()}
-          {renderVideoCodec()}
-          {renderAudioCodec()}
-          {renderUrl()}
-        </tbody>
-      </Table>
-    </>
+    <div className="container scene-file-info">
+      {renderChecksum()}
+      {renderPath()}
+      {renderStream()}
+      {renderFileSize()}
+      {renderDuration()}
+      {renderDimensions()}
+      {renderFrameRate()}
+      {renderbitrate()}
+      {renderVideoCodec()}
+      {renderAudioCodec()}
+      {renderUrl()}
+    </div>
   );
 };

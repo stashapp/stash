@@ -22,7 +22,7 @@ export const App: React.FC = () => (
     <ErrorBoundary>
       <ToastProvider>
         <MainNavbar />
-        <div className="main">
+        <div className="main container-fluid">
           <Switch>
             <Route exact path="/" component={Stats} />
             <Route path="/scenes" component={Scenes} />

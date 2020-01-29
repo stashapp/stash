@@ -93,6 +93,10 @@
     position: relative;
     width: 20%;
 
+    @media (max-width: 576px) {
+      width: 100%;
+    }
+
     video,
     img {
       height: 100%;

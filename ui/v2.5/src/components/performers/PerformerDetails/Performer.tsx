@@ -164,7 +164,7 @@ export const Performer: React.FC = () => {
   }
 
   const renderIcons = () => (
-    <span className="name-icons">
+    <span className="name-icons d-block d-sm-inline">
       <Button
         className={cx('minimal', performer.favorite ? "favorite" : "not-favorite")}
         onClick={() => setFavorite(!performer.favorite)}
@@ -217,19 +217,26 @@ export const Performer: React.FC = () => {
 
   return (
     <div id="performer-page" className="row">
-      <div className="image-container col-4 offset-1">
+      <div className="image-container col-sm-4 offset-sm-1 d-none d-sm-block">
         <Button variant="link" onClick={() => setLightboxIsOpen(true)}>
           <img className="performer" src={imagePreview} alt="Performer" />
         </Button>
       </div>
-      <div className="col-6">
-        <div className="performer-head">
-          <h2>
-            {performer.name}
-            {renderIcons()}
-          </h2>
-          {maybeRenderAliases()}
-          {maybeRenderAge()}
+      <div className="col col-sm-6">
+        <div className="row">
+          <div className="image-container col-6 d-block d-sm-none">
+            <Button variant="link" onClick={() => setLightboxIsOpen(true)}>
+              <img className="performer" src={imagePreview} alt="Performer" />
+            </Button>
+          </div>
+          <div className="performer-head col-6 col-sm-12">
+            <h2>
+              {performer.name}
+              {renderIcons()}
+            </h2>
+            {maybeRenderAliases()}
+            {maybeRenderAge()}
+          </div>
         </div>
         <div className="performer-body">
           <div className="performer-tabs">{renderTabs()}</div>

@@ -194,7 +194,7 @@ export class ScenePlayerImpl extends React.Component<
     return (
       <ReactJWPlayer
         playerId={JWUtils.playerID}
-        playerScript="http://localhost:9999/jwplayer/jwplayer.js"
+        playerScript="http://192.168.1.65:9999/jwplayer/jwplayer.js"
         customProps={config}
         onReady={this.onReady}
         onSeeked={this.onSeeked}
@@ -205,8 +205,8 @@ export class ScenePlayerImpl extends React.Component<
 
   public render() {
     return (
-      <HotKeys keyMap={KeyMap} handlers={this.KeyHandlers}>
-        <div id="jwplayer-container">
+      <HotKeys keyMap={KeyMap} handlers={this.KeyHandlers} className="row">
+        <div id="jwplayer-container" className="w-100 col-sm-9 m-sm-auto no-gutter" >
           {this.renderPlayer()}
           <ScenePlayerScrubber
             scene={this.props.scene}

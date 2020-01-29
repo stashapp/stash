@@ -64,13 +64,18 @@ export const MainNavbar: React.FC = () => {
     );
 
   return (
-    <Navbar fixed="top" variant="dark" bg="dark">
+    <Navbar fixed="top" variant="dark" bg="dark" className="top-nav">
       <Navbar.Brand as="div">
         <Link to="/">
-          <Button className="minimal">Stash</Button>
+          <Button className="minimal brand-link d-none d-sm-inline-block">
+            Stash
+          </Button>
+          <Button className="minimal brand-icon d-inline d-sm-none">
+            <img src="http://192.168.1.65:9999/favicon.ico" alt="" />
+          </Button>
         </Link>
       </Navbar.Brand>
-      <Nav className="mr-auto">
+      <Nav className="mr-md-auto">
         {menuItems.map(i => (
           <LinkContainer
             activeClassName="active"
@@ -80,13 +85,15 @@ export const MainNavbar: React.FC = () => {
           >
             <Button className="minimal">
               <Icon icon={i.icon} />
-              <span>{i.text}</span>
+              <span className="d-none d-sm-inline">{i.text}</span>
             </Button>
           </LinkContainer>
         ))}
       </Nav>
       <Nav>
-        {newButton}
+        <div className="d-none d-sm-block">
+          {newButton}
+        </div>
         <LinkContainer exact to="/settings">
           <Button className="minimal">
             <Icon icon="cog" />

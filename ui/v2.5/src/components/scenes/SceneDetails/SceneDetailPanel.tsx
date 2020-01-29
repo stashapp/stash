@@ -34,9 +34,9 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = props => {
 
   return (
     <div className="row">
-      <h1 className="col scene-header">
+      <h3 className="col scene-header text-truncate">
         {props.scene.title ?? TextUtils.fileNameFromPath(props.scene.path)}
-      </h1>
+      </h3>
       <div className="col-6 scene-details">
         <h4>{props.scene.date ?? ''}</h4>
         {props.scene.rating ? <h6>Rating: {props.scene.rating}</h6> : ""}

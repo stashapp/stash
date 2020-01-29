@@ -103,7 +103,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         <Form.Group id="max-loop-duration">
           <Form.Label>Maximum loop duration</Form.Label>
           <DurationInput
-            className="col-4"
+            className="col col-sm-4"
             numericValue={maximumLoopDuration}
             onValueChange={duration => setMaximumLoopDuration(duration)}
           />
@@ -129,7 +129,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={css}
           onChange={(e: any) => setCSS(e.target.value)}
           rows={16}
-          className="col-6"
+          className="col col-sm-6"
         ></Form.Control>
         <Form.Text className="text-muted">
           Page must be reloaded for changes to take effect.
