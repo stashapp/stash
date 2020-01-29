@@ -2,6 +2,7 @@
 /* Blueprint dark theme */
 
 $secondary: #394b59;
+$muted-gray: #bfccd6;
 
 $theme-colors: (
   primary: #137cbd,
@@ -13,7 +14,7 @@ $theme-colors: (
 );
 
 $body-bg: #202b33;
-$text-muted: #bfccd6;
+$text-muted: $muted-gray;
 $link-color: #48aff0;
 $link-hover-color: #48aff0;
 $text-color: #f5f8fa;
@@ -23,10 +24,19 @@ $popover-bg: $secondary;
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
+$red1: #a82a2a;
+$orange1: #a66321;
+$sepia1: #63411e;
+$dark-gray2: #202b33;
+$dark-gray5: #394b59;
+
+$pt-grid-size: 10px;
+$pt-navbar-height: 4rem;
+
 .btn.active:not(.disabled),
 .btn.active.minimal:not(.disabled) {
   background-color: rgba(138, 155, 168, .3);
-  color: #f5f8fa;
+  color: $text-color;
 }
 
 a.minimal,

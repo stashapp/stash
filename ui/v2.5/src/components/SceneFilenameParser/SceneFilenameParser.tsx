@@ -5,19 +5,18 @@ import {
   Badge,
   Button,
   Card,
-  Collapse,
-  Dropdown,
-  DropdownButton,
   Form,
   Table
 } from "react-bootstrap";
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { FilterSelect, Icon, StudioSelect, LoadingIndicator } from "src/components/Shared";
+import { FilterSelect, StudioSelect, LoadingIndicator } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useToast } from "src/hooks";
 import { Pagination } from "../list/Pagination";
+import { IParserInput, ParserInput } from './ParserInput';
+import { ParserField } from './ParserField';
 
 class ParserResult<T> {
   public value: GQL.Maybe<T> = null;
@@ -37,72 +36,6 @@ class ParserResult<T> {
   }
 }
 
-class ParserField {
-  public field: string;
-  public helperText?: string;
-
-  constructor(field: string, helperText?: string) {
-    this.field = field;
-    this.helperText = helperText;
-  }
-
-  public getFieldPattern() {
-    return `{${this.field}}`;
-  }
-
-  static Title = new ParserField("title");
-  static Ext = new ParserField("ext", "File extension");
-
-  static I = new ParserField("i", "Matches any ignored word");
-  static D = new ParserField("d", "Matches any delimiter (.-_)");
-
-  static Performer = new ParserField("performer");
-  static Studio = new ParserField("studio");
-  static Tag = new ParserField("tag");
-
-  // date fields
-  static Date = new ParserField("date", "YYYY-MM-DD");
-  static YYYY = new ParserField("yyyy", "Year");
-  static YY = new ParserField("yy", "Year (20YY)");
-  static MM = new ParserField("mm", "Two digit month");
-  static DD = new ParserField("dd", "Two digit date");
-  static YYYYMMDD = new ParserField("yyyymmdd");
-  static YYMMDD = new ParserField("yymmdd");
-  static DDMMYYYY = new ParserField("ddmmyyyy");
-  static DDMMYY = new ParserField("ddmmyy");
-  static MMDDYYYY = new ParserField("mmddyyyy");
-  static MMDDYY = new ParserField("mmddyy");
-
-  static validFields = [
-    ParserField.Title,
-    ParserField.Ext,
-    ParserField.D,
-    ParserField.I,
-    ParserField.Performer,
-    ParserField.Studio,
-    ParserField.Tag,
-    ParserField.Date,
-    ParserField.YYYY,
-    ParserField.YY,
-    ParserField.MM,
-    ParserField.DD,
-    ParserField.YYYYMMDD,
-    ParserField.YYMMDD,
-    ParserField.DDMMYYYY,
-    ParserField.DDMMYY,
-    ParserField.MMDDYYYY,
-    ParserField.MMDDYY
-  ];
-
-  static fullDateFields = [
-    ParserField.YYYYMMDD,
-    ParserField.YYMMDD,
-    ParserField.DDMMYYYY,
-    ParserField.DDMMYY,
-    ParserField.MMDDYYYY,
-    ParserField.MMDDYY
-  ];
-}
 class SceneParserResult {
   public id: string;
   public filename: string;
@@ -218,69 +151,6 @@ class SceneParserResult {
     return ret;
   }
 }
-
-interface IParserInput {
-  pattern: string;
-  ignoreWords: string[];
-  whitespaceCharacters: string;
-  capitalizeTitle: boolean;
-  page: number;
-  pageSize: number;
-  findClicked: boolean;
-}
-
-interface IParserRecipe {
-  pattern: string;
-  ignoreWords: string[];
-  whitespaceCharacters: string;
-  capitalizeTitle: boolean;
-  description: string;
-}
-
-const builtInRecipes = [
-  {
-    pattern: "{title}",
-    ignoreWords: [],
-    whitespaceCharacters: "",
-    capitalizeTitle: false,
-    description: "Filename"
-  },
-  {
-    pattern: "{title}.{ext}",
-    ignoreWords: [],
-    whitespaceCharacters: "",
-    capitalizeTitle: false,
-    description: "Without extension"
-  },
-  {
-    pattern: "{}.{yy}.{mm}.{dd}.{title}.XXX.{}.{ext}",
-    ignoreWords: [],
-    whitespaceCharacters: ".",
-    capitalizeTitle: true,
-    description: ""
-  },
-  {
-    pattern: "{}.{yy}.{mm}.{dd}.{title}.{ext}",
-    ignoreWords: [],
-    whitespaceCharacters: ".",
-    capitalizeTitle: true,
-    description: ""
-  },
-  {
-    pattern: "{title}.XXX.{}.{ext}",
-    ignoreWords: [],
-    whitespaceCharacters: ".",
-    capitalizeTitle: true,
-    description: ""
-  },
-  {
-    pattern: "{}.{yy}.{mm}.{dd}.{title}.{i}.{ext}",
-    ignoreWords: ["cz", "fr"],
-    whitespaceCharacters: ".",
-    capitalizeTitle: true,
-    description: "Foreign language"
-  }
-];
 
 const initialParserInput = {
   pattern: "{title}.{ext}",
@@ -516,181 +386,6 @@ export const SceneFilenameParser: React.FC = () => {
 
     setParserResult(newResult);
     setAllStudioSet(selected);
-  }
-
-  interface IShowFieldsProps {
-    fields: Map<string, boolean>;
-    onShowFieldsChanged: (fields: Map<string, boolean>) => void;
-  }
-
-  function ShowFields(props: IShowFieldsProps) {
-    const [open, setOpen] = useState(false);
-
-    function handleClick(label: string) {
-      const copy = new Map<string, boolean>(props.fields);
-      copy.set(label, !props.fields.get(label));
-      props.onShowFieldsChanged(copy);
-    }
-
-    const fieldRows = [...props.fields.entries()].map(([label, enabled]) => (
-      <div
-        key={label}
-        onClick={() => {
-          handleClick(label);
-        }}
-      >
-        <Icon icon={enabled ? "check" : "times"} />
-        <span>{label}</span>
-      </div>
-    ));
-
-    return (
-      <div>
-        <div onClick={() => setOpen(!open)}>
-          <Icon icon={open ? "chevron-down" : "chevron-right"} />
-          <span>Display fields</span>
-        </div>
-        <Collapse in={open}>
-          <div>{fieldRows}</div>
-        </Collapse>
-      </div>
-    );
-  }
-
-  interface IParserInputProps {
-    input: IParserInput;
-    onFind: (input: IParserInput) => void;
-  }
-
-  function ParserInput(props: IParserInputProps) {
-    const [pattern, setPattern] = useState<string>(props.input.pattern);
-    const [ignoreWords, setIgnoreWords] = useState<string>(
-      props.input.ignoreWords.join(" ")
-    );
-    const [whitespaceCharacters, setWhitespaceCharacters] = useState<string>(
-      props.input.whitespaceCharacters
-    );
-    const [capitalizeTitle, setCapitalizeTitle] = useState<boolean>(
-      props.input.capitalizeTitle
-    );
-
-    function onFind() {
-      props.onFind({
-        pattern,
-        ignoreWords: ignoreWords.split(" "),
-        whitespaceCharacters,
-        capitalizeTitle,
-        page: 1,
-        pageSize: props.input.pageSize,
-        findClicked: props.input.findClicked
-      });
-    }
-
-    function setParserRecipe(recipe: IParserRecipe) {
-      setPattern(recipe.pattern);
-      setIgnoreWords(recipe.ignoreWords.join(" "));
-      setWhitespaceCharacters(recipe.whitespaceCharacters);
-      setCapitalizeTitle(recipe.capitalizeTitle);
-    }
-
-    const validFields = [new ParserField("", "Wildcard")].concat(
-      ParserField.validFields
-    );
-
-    function addParserField(field: ParserField) {
-      setPattern(pattern + field.getFieldPattern());
-    }
-
-    const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
-
-    return (
-      <Form.Group>
-        <Form.Group>
-          <Form.Control
-            onChange={(newValue: any) => setPattern(newValue.target.value)}
-            value={pattern}
-          />
-          <DropdownButton id="parser-field-select" title="Add Field">
-            {validFields.map(item => (
-              <Dropdown.Item onSelect={() => addParserField(item)}>
-                <span>{item.field}</span>
-                <span className="ml-auto">{item.helperText}</span>
-              </Dropdown.Item>
-            ))}
-          </DropdownButton>
-          <div>Use &apos;\\&apos; to escape literal {} characters</div>
-        </Form.Group>
-
-        <Form.Group>
-          <Form.Label>Ignored words::</Form.Label>
-          <Form.Control
-            onChange={(newValue: any) => setIgnoreWords(newValue.target.value)}
-            value={ignoreWords}
-          />
-          <div>Matches with {"{i}"}</div>
-        </Form.Group>
-
-        <Form.Group>
-          <h5>Title</h5>
-          <Form.Label>Whitespace characters:</Form.Label>
-          <Form.Control
-            onChange={(newValue: any) =>
-              setWhitespaceCharacters(newValue.target.value)
-            }
-            value={whitespaceCharacters}
-          />
-          <Form.Group>
-            <Form.Label>Capitalize title</Form.Label>
-            <Form.Control
-              type="checkbox"
-              checked={capitalizeTitle}
-              onChange={() => setCapitalizeTitle(!capitalizeTitle)}
-            />
-          </Form.Group>
-          <div>
-            These characters will be replaced with whitespace in the title
-          </div>
-        </Form.Group>
-
-        {/* TODO - mapping stuff will go here */}
-
-        <Form.Group>
-          <DropdownButton id="recipe-select" title="Select Parser Recipe">
-            {builtInRecipes.map(item => (
-              <Dropdown.Item onSelect={() => setParserRecipe(item)}>
-                <span>{item.pattern}</span>
-                <span className="mr-auto">{item.description}</span>
-              </Dropdown.Item>
-            ))}
-          </DropdownButton>
-        </Form.Group>
-
-        <Form.Group>
-          <ShowFields
-            fields={showFields}
-            onShowFieldsChanged={fields => setShowFields(fields)}
-          />
-        </Form.Group>
-
-        <Form.Group>
-          <Button onClick={onFind}>Find</Button>
-          <Form.Control
-            as="select"
-            style={{ flexBasis: "min-content" }}
-            options={PAGE_SIZE_OPTIONS}
-            onChange={(event: any) =>
-              onPageSizeChanged(parseInt(event.target.value, 10))
-            }
-            defaultValue={props.input.pageSize}
-            className="filter-item"
-          >
-            {PAGE_SIZE_OPTIONS.map(val => (
-              <option value="val">{val}</option>
-            ))}
-          </Form.Control>
-        </Form.Group>
-      </Form.Group>
-    );
   }
 
   interface ISceneParserFieldProps {
@@ -1062,7 +757,13 @@ export const SceneFilenameParser: React.FC = () => {
   return (
     <Card id="parser-container">
       <h4>Scene Filename Parser</h4>
-      <ParserInput input={parserInput} onFind={input => onFindClicked(input)} />
+      <ParserInput
+        input={parserInput}
+        onFind={input => onFindClicked(input)}
+        onPageSizeChanged={onPageSizeChanged}
+        showFields={showFields}
+        setShowFields={setShowFields}
+      />
 
       {isLoading && <LoadingIndicator />}
       {renderTable()}

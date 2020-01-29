@@ -40,12 +40,21 @@
   }
 }
 
-.duration-button {
-  border-bottom-left-radius: 0;
-  border-top-left-radius: 0;
-  line-height: 10px;
-  margin-left: 0 !important;
-  padding: 1px 7px;
+.duration-input {
+  .duration-control {
+    min-width: 3rem;
+  }
+
+  .duration-button {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+    line-height: 10px;
+    padding: 1px 7px;
+  }
+
+  .btn + .btn {
+    margin-left: 0;
+  }
 }
 
 .folder-list {

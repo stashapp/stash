@@ -239,9 +239,11 @@ export const TagSelect: React.FC<IFilterProps> = props => {
   const Toast = useToast();
   const placeholder = props.noSelectionString ?? "Select tags...";
 
+  const selectedTags = props.ids ?? selectedIds;
+
   const tags = data?.allTags ?? [];
   const selected = tags
-    .filter(tag => selectedIds.indexOf(tag.id) !== -1)
+    .filter(tag => selectedTags.indexOf(tag.id) !== -1)
     .map(tag => ({ value: tag.id, label: tag.name }));
   const items: Option[] = tags.map(item => ({
     value: item.id,

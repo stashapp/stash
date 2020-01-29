@@ -93,7 +93,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       <HoverPopover placement="bottom" content={popoverContent}>
         <Button className="minimal">
           <Icon icon="tag" />
-          {props.scene.tags.length}
+          <span>{props.scene.tags.length}</span>
         </Button>
       </HoverPopover>
     );
@@ -117,7 +117,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       <HoverPopover placement="bottom" content={popoverContent}>
         <Button className="minimal">
           <Icon icon="user" />
-          {props.scene.performers.length}
+          <span>{props.scene.performers.length}</span>
         </Button>
       </HoverPopover>
     );
@@ -135,7 +135,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       <HoverPopover placement="bottom" content={popoverContent}>
         <Button className="minimal">
           <Icon icon="map-marker-alt" />
-          {props.scene.scene_markers.length}
+          <span>{props.scene.scene_markers.length}</span>
         </Button>
       </HoverPopover>
     );
