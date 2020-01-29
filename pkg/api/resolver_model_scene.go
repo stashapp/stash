@@ -100,6 +100,11 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.
 	return qb.FindBySceneID(obj.ID)
 }
 
+func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*models.Movie, error) {
+	qb := models.NewMovieQueryBuilder()
+	return qb.FindBySceneID(obj.ID, nil)
+}
+
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {
 	qb := models.NewTagQueryBuilder()
 	return qb.FindBySceneID(obj.ID, nil)

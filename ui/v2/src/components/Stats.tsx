@@ -17,6 +17,12 @@ export const Stats: FunctionComponent = () => {
         </div>
         <div className="level-item has-text-centered">
           <div>
+            <p className="heading">Movies</p>
+            <p className="title">{data.stats.movie_count}</p>
+          </div>
+        </div>
+        <div className="level-item has-text-centered">
+          <div>
             <p className="heading">Galleries</p>
             <p className="title">{data.stats.gallery_count}</p>
           </div>

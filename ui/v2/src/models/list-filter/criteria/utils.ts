@@ -10,6 +10,7 @@ import { PerformersCriterion } from "./performers";
 import { RatingCriterion } from "./rating";
 import { ResolutionCriterion } from "./resolution";
 import { StudiosCriterion } from "./studios";
+import { MoviesCriterion } from "./movies";
 import { TagsCriterion } from "./tags";
 
 export function makeCriteria(type: CriterionType = "none") {
@@ -25,6 +26,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "sceneTags": return new TagsCriterion("sceneTags");
     case "performers": return new PerformersCriterion();
     case "studios": return new StudiosCriterion();
+    case "movies": return new MoviesCriterion();
     
     case "birth_year": return new NumberCriterion(type, type);
     case "age":

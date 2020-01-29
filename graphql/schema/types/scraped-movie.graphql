@@ -1,0 +1,23 @@
+"""A movie from a scraping operation..."""
+type ScrapedMovie {
+  name: String
+  aliases: String
+  duration_movie: String
+  date_movie: String
+  rating_movie: String
+  director: String
+  url: String
+  synopsis: String
+  
+}
+
+input ScrapedMovieInput {
+  name: String
+  aliases: String
+  duration_movie: String
+  date_movie: String
+  rating_movie: String
+  director: String
+  url: String
+  synopsis: String
+}

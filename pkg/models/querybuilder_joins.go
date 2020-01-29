@@ -111,6 +111,106 @@ func (qb *JoinsQueryBuilder) DestroyPerformersScenes(sceneID int, tx *sqlx.Tx) e
 	return err
 }
 
+func (qb *JoinsQueryBuilder) GetSceneMovies(sceneID int, tx *sqlx.Tx) ([]MoviesScenes, error) {
+	ensureTx(tx)
+
+	// Delete the existing joins and then create new ones
+	query := `SELECT * from movies_scenes WHERE scene_id = ?`
+
+	var rows *sqlx.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.Queryx(query, sceneID)
+	} else {
+		rows, err = database.DB.Queryx(query, sceneID)
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	movieScenes := make([]MoviesScenes, 0)
+	for rows.Next() {
+		movieScene := MoviesScenes{}
+		if err := rows.StructScan(&movieScene); err != nil {
+			return nil, err
+		}
+		movieScenes = append(movieScenes, movieScene)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return movieScenes, nil
+}
+
+func (qb *JoinsQueryBuilder) CreateMoviesScenes(newJoins []MoviesScenes, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	for _, join := range newJoins {
+		_, err := tx.NamedExec(
+			`INSERT INTO movies_scenes (movie_id, scene_id, scene_index) VALUES (:movie_id, :scene_id, :scene_index)`,
+			join,
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// AddMovieScene adds a movie to a scene. It does not make any change
+// if the movie already exists on the scene. It returns true if scene
+// movie was added.
+
+func (qb *JoinsQueryBuilder) AddMoviesScene(sceneID int, movieID int, sceneIdx int, tx *sqlx.Tx) (bool, error) {
+	ensureTx(tx)
+
+	existingMovies, err := qb.GetSceneMovies(sceneID, tx)
+
+	if err != nil {
+		return false, err
+	}
+
+	// ensure not already present
+	for _, p := range existingMovies {
+		if p.MovieID == movieID && p.SceneID == sceneID {
+			return false, nil
+		}
+	}
+
+	movieJoin := MoviesScenes{
+		MovieID:  movieID,
+		SceneID:  sceneID,
+		SceneIdx: sceneIdx,
+	}
+	movieJoins := append(existingMovies, movieJoin)
+
+	err = qb.UpdateMoviesScenes(sceneID, movieJoins, tx)
+
+	return err == nil, err
+}
+
+func (qb *JoinsQueryBuilder) UpdateMoviesScenes(sceneID int, updatedJoins []MoviesScenes, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins and then create new ones
+	_, err := tx.Exec("DELETE FROM movies_scenes WHERE scene_id = ?", sceneID)
+	if err != nil {
+		return err
+	}
+	return qb.CreateMoviesScenes(updatedJoins, tx)
+}
+
+func (qb *JoinsQueryBuilder) DestroyMoviesScenes(sceneID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins
+	_, err := tx.Exec("DELETE FROM movies_scenes WHERE scene_id = ?", sceneID)
+	return err
+}
+
 func (qb *JoinsQueryBuilder) GetSceneTags(sceneID int, tx *sqlx.Tx) ([]ScenesTags, error) {
 	ensureTx(tx)
 

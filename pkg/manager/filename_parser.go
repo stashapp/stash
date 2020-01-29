@@ -89,6 +89,7 @@ func initParserFields() {
 	ret["d"] = newParserField("d", `(?:\.|-|_)`, false)
 	ret["performer"] = newParserField("performer", ".*", true)
 	ret["studio"] = newParserField("studio", ".*", true)
+	ret["movie"] = newParserField("movie", ".*", true)
 	ret["tag"] = newParserField("tag", ".*", true)
 
 	// date fields
@@ -204,6 +205,7 @@ type sceneHolder struct {
 	mm         string
 	dd         string
 	performers []string
+	movies	   []string
 	studio     string
 	tags       []string
 }
@@ -307,6 +309,8 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 		h.performers = append(h.performers, value.(string))
 	case "studio":
 		h.studio = value.(string)
+	case "movie":
+		h.movies = append(h.movies, value.(string))
 	case "tag":
 		h.tags = append(h.tags, value.(string))
 	case "yyyy":
@@ -389,6 +393,10 @@ type studioQueryer interface {
 	FindByName(name string, tx *sqlx.Tx) (*models.Studio, error)
 }
 
+type movieQueryer interface {
+	FindByName(name string, tx *sqlx.Tx) (*models.Movie, error)
+}
+
 type SceneFilenameParser struct {
 	Pattern        string
 	ParserInput    models.SceneParserInput
@@ -396,12 +404,14 @@ type SceneFilenameParser struct {
 	whitespaceRE   *regexp.Regexp
 	performerCache map[string]*models.Performer
 	studioCache    map[string]*models.Studio
+	movieCache     map[string]*models.Movie
 	tagCache       map[string]*models.Tag
 
 	performerQuery performerQueryer
 	sceneQuery     sceneQueryer
 	tagQuery       tagQueryer
 	studioQuery    studioQueryer
+	movieQuery     movieQueryer
 }
 
 func NewSceneFilenameParser(filter *models.FindFilterType, config models.SceneParserInput) *SceneFilenameParser {
@@ -413,6 +423,7 @@ func NewSceneFilenameParser(filter *models.FindFilterType, config models.ScenePa
 
 	p.performerCache = make(map[string]*models.Performer)
 	p.studioCache = make(map[string]*models.Studio)
+	p.movieCache = make(map[string]*models.Movie)
 	p.tagCache = make(map[string]*models.Tag)
 
 	p.initWhiteSpaceRegex()
@@ -428,6 +439,9 @@ func NewSceneFilenameParser(filter *models.FindFilterType, config models.ScenePa
 
 	studioQuery := models.NewStudioQueryBuilder()
 	p.studioQuery = &studioQuery
+
+	movieQuery := models.NewMovieQueryBuilder()
+	p.movieQuery = &movieQuery
 
 	return p
 }
@@ -535,6 +549,23 @@ func (p *SceneFilenameParser) queryStudio(studioName string) *models.Studio {
 	return ret
 }
 
+func (p *SceneFilenameParser) queryMovie(movieName string) *models.Movie {
+	// massage the movie name
+	movieName = delimiterRE.ReplaceAllString(movieName, " ")
+
+	// check cache first
+	if ret, found := p.movieCache[movieName]; found {
+		return ret
+	}
+
+	ret, _ := p.movieQuery.FindByName(movieName, nil)
+
+	// add result to cache
+	p.movieCache[movieName] = ret
+
+	return ret
+}
+
 func (p *SceneFilenameParser) queryTag(tagName string) *models.Tag {
 	// massage the performer name
 	tagName = delimiterRE.ReplaceAllString(tagName, " ")
@@ -596,6 +627,22 @@ func (p *SceneFilenameParser) setStudio(h sceneHolder, result *models.SceneParse
 	}
 }
 
+func (p *SceneFilenameParser) setMovies(h sceneHolder, result *models.SceneParserResult) {
+	// query for each movie
+	moviesSet := make(map[int]bool)
+	for _, movieName := range h.movies {
+		if movieName != "" {
+			movie := p.queryMovie(movieName)
+			if movie != nil {
+				if _, found := moviesSet[movie.ID]; !found {
+					result.MovieIds = append(result.MovieIds, strconv.Itoa(movie.ID))
+					moviesSet[movie.ID] = true
+				}
+			}
+		}
+	}
+}
+
 func (p *SceneFilenameParser) setParserResult(h sceneHolder, result *models.SceneParserResult) {
 	if h.result.Title.Valid {
 		title := h.result.Title.String
@@ -619,4 +666,9 @@ func (p *SceneFilenameParser) setParserResult(h sceneHolder, result *models.Scen
 		p.setTags(h, result)
 	}
 	p.setStudio(h, result)
+	
+	if len(h.movies) > 0 {
+		p.setMovies(h, result)
+	}
+	
 }

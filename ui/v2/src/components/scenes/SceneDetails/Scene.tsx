@@ -16,6 +16,7 @@ import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { ScenePerformerPanel } from "./ScenePerformerPanel";
+import { SceneMoviePanel } from "./SceneMoviePanel";
 
 interface ISceneProps extends IBaseProps {}
 
@@ -75,6 +76,14 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
                 panel={<ScenePerformerPanel scene={modifiedScene} />}
               /> : undefined
             }
+            {modifiedScene.movies.length > 0 ?
+              <Tab
+                id="scene-movie-panel"
+                title="Movies"
+                panel={<SceneMoviePanel scene={modifiedScene} />}
+              /> : undefined
+            }
+
             {!!modifiedScene.gallery ?
               <Tab
                 id="scene-gallery-panel"

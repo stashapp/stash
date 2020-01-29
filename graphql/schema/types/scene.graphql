@@ -35,6 +35,7 @@ type Scene {
   scene_markers: [SceneMarker!]!
   gallery: Gallery
   studio: Studio
+  movies: [Movie!]!
   tags: [Tag!]!
   performers: [Performer!]!
 }
@@ -50,6 +51,8 @@ input SceneUpdateInput {
   studio_id: ID
   gallery_id: ID
   performer_ids: [ID!]
+  movie_ids: [ID!]
+  scene_idx: [String]
   tag_ids: [ID!]
   """This should be base64 encoded"""
   cover_image: String
@@ -96,6 +99,8 @@ type SceneParserResult {
   studio_id: ID
   gallery_id: ID
   performer_ids: [ID!]
+  movie_ids: [ID!]
+  scene_idx: [String!]
   tag_ids: [ID!]
 }
 

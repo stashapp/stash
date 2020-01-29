@@ -19,6 +19,7 @@ type PathMapping struct {
 type Mappings struct {
 	Performers []NameMapping `json:"performers"`
 	Studios    []NameMapping `json:"studios"`
+	Movies     []NameMapping `json:"movies"`
 	Galleries  []PathMapping `json:"galleries"`
 	Scenes     []PathMapping `json:"scenes"`
 }

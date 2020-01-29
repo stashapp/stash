@@ -97,6 +97,13 @@ export class ListHook {
         getCount = () => { return !!result.data && !!result.data.findStudios ? result.data.findStudios.count : 0; }
         break;
       }
+      case FilterMode.Movies: {
+        getData = (filter : ListFilterModel) => { return StashService.useFindMovies(filter); }
+        getItems = () => { return !!result.data && !!result.data.findMovies ? result.data.findMovies.movies : []; }
+        getCount = () => { return !!result.data && !!result.data.findMovies ? result.data.findMovies.count : 0; }
+        break;
+      }
+
       case FilterMode.Performers: {
         getData = (filter : ListFilterModel) => { return StashService.useFindPerformers(filter); }
         getItems = () => { return !!result.data && !!result.data.findPerformers ? result.data.findPerformers.performers : []; }

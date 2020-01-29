@@ -11,14 +11,16 @@ import { ToastUtils } from "../../utils/toasts";
 const InternalPerformerMultiSelect = MultiSelect.ofType<GQL.AllPerformersForFilterAllPerformers>();
 const InternalTagMultiSelect = MultiSelect.ofType<GQL.AllTagsForFilterAllTags>();
 const InternalStudioMultiSelect = MultiSelect.ofType<GQL.AllStudiosForFilterAllStudios>();
+const InternalMovieMultiSelect = MultiSelect.ofType<GQL.AllMoviesForFilterAllMovies>();
 
 type ValidTypes =
   GQL.AllPerformersForFilterAllPerformers |
   GQL.AllTagsForFilterAllTags |
+  GQL.AllMoviesForFilterAllMovies | 
   GQL.AllStudiosForFilterAllStudios;
 
 interface IProps extends HTMLInputProps, Partial<IMultiSelectProps<ValidTypes>> {
-  type: "performers" | "studios" | "tags";
+  type: "performers" | "studios" | "movies" | "tags";
   initialIds?: string[];
   onUpdate: (items: ValidTypes[]) => void;
 }
@@ -95,7 +97,7 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
 
   function getMultiSelectImpl() {
     let getInternalMultiSelect: () => new (props: IMultiSelectProps<any>) => MultiSelect<any>;
-    let getData: () => GQL.AllPerformersForFilterQuery | GQL.AllStudiosForFilterQuery | GQL.AllTagsForFilterQuery | undefined;
+    let getData: () => GQL.AllPerformersForFilterQuery | GQL.AllStudiosForFilterQuery | GQL.AllMoviesForFilterQuery | GQL.AllTagsForFilterQuery | undefined;
     let translateData: () => void;
     let createNewObject: ((query : string) => void) | undefined = undefined; 
 
@@ -111,7 +113,14 @@ export const FilterMultiSelect: React.FunctionComponent<IProps> = (props: IProps
         getData = () => { const { data } = StashService.useAllStudiosForFilter(); return data; }
         translateData = () => { let studioData = data as GQL.AllStudiosForFilterQuery; setItems(!!studioData && !!studioData.allStudios ? studioData.allStudios : []); };
         break;
-      }
+      } 
+       case "movies": {
+        getInternalMultiSelect = () => { return InternalMovieMultiSelect; };
+        getData = () => { const { data } = StashService.useAllMoviesForFilter(); return data; }
+        translateData = () => { let moviData = data as GQL.AllMoviesForFilterQuery; setItems(!!moviData && !!moviData.allMovies ? moviData.allMovies : []); };
+        break;
+      } 
+
       case "tags": {
         getInternalMultiSelect = () => { return InternalTagMultiSelect; };
         getData = () => { const { data } = StashService.useAllTagsForFilter(); return data; }

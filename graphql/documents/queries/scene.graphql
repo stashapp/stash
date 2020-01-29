@@ -46,6 +46,7 @@ query ParseSceneFilenames($filter: FindFilterType!, $config: SceneParserInput!) 
       rating
       studio_id
       gallery_id
+      movie_ids
       performer_ids
       tag_ids
     }

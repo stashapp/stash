@@ -147,6 +147,28 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 		return nil, err
 	}
 
+	// Save the movies
+	var movieJoins []models.MoviesScenes
+	var idx int = 0
+
+	for _, pid := range input.MovieIds {
+		
+		movieID, _ := strconv.Atoi(pid)
+		sceneIdx, _ := strconv.Atoi(*input.SceneIdx[idx])
+		idx++
+
+		movieJoin := models.MoviesScenes{
+			MovieID: movieID,
+			SceneID: sceneID,
+			SceneIdx: sceneIdx,
+			
+		}
+		movieJoins = append(movieJoins, movieJoin)
+	}
+	if err := jqb.UpdateMoviesScenes(sceneID, movieJoins, tx); err != nil {
+		return nil, err
+	}
+
 	// Save the tags
 	var tagJoins []models.ScenesTags
 	for _, tid := range input.TagIds {
@@ -266,7 +288,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 			}
 		}
 
-		// Save the tags
+	    // Save the tags
 		if wasFieldIncluded(ctx, "tag_ids") {
 			var tagJoins []models.ScenesTags
 			for _, tid := range input.TagIds {

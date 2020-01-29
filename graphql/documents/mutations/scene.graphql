@@ -8,6 +8,8 @@ mutation SceneUpdate(
   $studio_id: ID,
   $gallery_id: ID,
   $performer_ids: [ID!] = [],
+  $movie_ids: [ID!] = [],
+  $scene_idx: [String] = [],
   $tag_ids: [ID!] = [],
   $cover_image: String) {
 
@@ -21,6 +23,8 @@ mutation SceneUpdate(
                         studio_id: $studio_id,
                         gallery_id: $gallery_id,
                         performer_ids: $performer_ids,
+                        movie_ids: $movie_ids,
+                        scene_idx: $scene_idx,
                         tag_ids: $tag_ids,
                         cover_image: $cover_image
                       }) {
