@@ -8,6 +8,7 @@ interface IProps {
   numericValue: number;
   onValueChange(valueAsNumber: number): void;
   onReset?(): void;
+  className?: string;
 }
 
 export const DurationInput: React.FC<IProps> = (props: IProps) => {
@@ -61,7 +62,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
   }
 
   return (
-    <Form.Group>
+    <Form.Group className={props.className}>
       <InputGroup>
         <Form.Control
           disabled={props.disabled}

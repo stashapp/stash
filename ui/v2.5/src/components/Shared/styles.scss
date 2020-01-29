@@ -47,3 +47,15 @@
   margin-left: 0 !important;
   padding: 1px 7px;
 }
+
+.folder-list {
+  margin-top: .5rem 0 0 0;
+  max-height: 30vw;
+  overflow-x: auto;
+}
+
+.folder-item {
+  button {
+    padding: 0;
+  }
+}

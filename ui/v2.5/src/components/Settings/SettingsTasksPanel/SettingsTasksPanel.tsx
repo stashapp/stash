@@ -183,20 +183,23 @@ export const SettingsTasksPanel: React.FC = () => {
       {renderImportAlert()}
       {renderCleanAlert()}
 
-      <h4>Running Jobs</h4>
+      <h5>Running Jobs</h5>
 
       {renderJobStatus()}
 
       <hr />
 
-      <h4>Library</h4>
+      <h5>Library</h5>
       <Form.Group>
         <Form.Check
+          id="use-file-metadata"
           checked={useFileMetadata}
           label="Set name, date, details from metadata (if present)"
           onChange={() => setUseFileMetadata(!useFileMetadata)}
         />
-        <Button id="scan" type="submit" onClick={() => onScan()}>
+      </Form.Group>
+      <Form.Group>
+        <Button variant="secondary" type="submit" onClick={() => onScan()}>
           Scan
         </Button>
         <Form.Text className="text-muted">
@@ -206,25 +209,30 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <hr />
 
-      <h4>Auto Tagging</h4>
+      <h5>Auto Tagging</h5>
 
       <Form.Group>
         <Form.Check
+          id="autotag-performers"
           checked={autoTagPerformers}
           label="Performers"
           onChange={() => setAutoTagPerformers(!autoTagPerformers)}
         />
         <Form.Check
+          id="autotag-studios"
           checked={autoTagStudios}
           label="Studios"
           onChange={() => setAutoTagStudios(!autoTagStudios)}
         />
         <Form.Check
+          id="autotag-tags"
           checked={autoTagTags}
           label="Tags"
           onChange={() => setAutoTagTags(!autoTagTags)}
         />
-        <Button id="autoTag" type="submit" onClick={() => onAutoTag()}>
+      </Form.Group>
+      <Form.Group>
+        <Button variant="secondary" type="submit" onClick={() => onAutoTag()}>
           Auto Tag
         </Button>
         <Form.Text className="text-muted">
@@ -233,14 +241,16 @@ export const SettingsTasksPanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group>
-        <Button>
-          <Link to="/sceneFilenameParser">Scene Filename Parser</Link>
-        </Button>
+        <Link to="/sceneFilenameParser">
+          <Button variant="secondary">
+            Scene Filename Parser
+          </Button>
+        </Link>
       </Form.Group>
 
       <hr />
 
-      <h4>Generated Content</h4>
+      <h5>Generated Content</h5>
       <GenerateButton />
       <Form.Group>
         <Button
@@ -258,10 +268,11 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <hr />
 
-      <h4>Metadata</h4>
+      <h5>Metadata</h5>
       <Form.Group>
         <Button
           id="export"
+          variant="secondary"
           type="submit"
           onClick={() =>
             StashService.queryMetadataExport().then(() => {

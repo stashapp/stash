@@ -332,37 +332,6 @@ video.preview.portrait {
   white-space: pre-line;
 }
 
-.logs {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
-  font-size: smaller;
-  max-height: 100vh;
-  overflow-y: auto;
-  padding-right: 10px;
-  white-space: pre-wrap;
-  width: 120ch;
-  word-break: break-all;
-
-  .debug {
-    color: lightgreen;
-    font-weight: bold;
-  }
-
-  .info {
-    color: white;
-    font-weight: bold;
-  }
-
-  .warning {
-    color: orange;
-    font-weight: bold;
-  }
-
-  .error {
-    color: red;
-    font-weight: bold;
-  }
-}
-
 .studio {
   .image {
     background-position: center !important;
@@ -507,8 +476,6 @@ video.preview.portrait {
 
 /* BOOTSTRAP OVERRIDES */
 .form-control {
-  width: inherit;
-
   &-plaintext {
     color: $text-color;
 
@@ -563,4 +530,14 @@ video.preview.portrait {
 
 .tab-content {
   padding-bottom: 2rem;
+}
+
+.svg-inline--fa {
+  margin: 0 .4rem;
+}
+
+.btn .svg-inline--fa {
+  &:last-child:first-child {
+    margin: 0;
+  }
 }

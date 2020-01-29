@@ -324,9 +324,13 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   }] : items;
 
   const styles = {
-    option: (provided:CSSProperties) => ({
-      ...provided,
+    option: (base:CSSProperties) => ({
+      ...base,
       color: "#000"
+    }),
+    container: (base:CSSProperties, state:any) => ({
+      ...base,
+      zIndex: state.isFocused ? 10 : base.zIndex
     })
   };
 
