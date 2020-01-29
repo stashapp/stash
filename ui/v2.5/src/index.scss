@@ -8,6 +8,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: $pt-navbar-height 0 0 0;
+
+  @media (min-width: 600px) {
+    min-width: 845px;
+  }
 }
 
 code {
@@ -20,6 +24,12 @@ code {
   justify-content: center;
   margin: $pt-grid-size $pt-grid-size 0 0;
   padding: 0;
+
+  .performer-card,
+  .studio-card {
+    min-width: 185px;
+    width: 320px;
+  }
 
   &.wall {
     margin: 0;
@@ -44,53 +54,54 @@ code {
   .card {
     margin: 0 0 10px 10px;
     overflow: hidden;
-    width: 20rem;
 
-    &.zoom-0 {
-      width: 15rem;
+    @media (min-width: 576px) {
+      &.zoom-0 {
+        width: 15rem;
 
-      .previewable {
-        max-height: 11.25rem;
+        .previewable {
+          max-height: 11.25rem;
+        }
+
+        .previewable.portrait {
+          max-height: 11.25rem;
+        }
       }
 
-      .previewable.portrait {
-        max-height: 11.25rem;
-      }
-    }
+      &.zoom-1 {
+        width: 20rem;
 
-    &.zoom-1 {
-      width: 20rem;
+        .previewable {
+          max-height: 15rem;
+        }
 
-      .previewable {
-        max-height: 15rem;
-      }
-
-      .previewable.portrait {
-        height: 15rem;
-      }
-    }
-
-    &.zoom-2 {
-      width: 30rem;
-
-      .previewable {
-        max-height: 22.5rem;
+        .previewable.portrait {
+          height: 15rem;
+        }
       }
 
-      .previewable.portrait {
-        height: 22.5rem;
+      &.zoom-2 {
+        width: 30rem;
+
+        .previewable {
+          max-height: 22.5rem;
+        }
+
+        .previewable.portrait {
+          height: 22.5rem;
+        }
       }
-    }
 
-    &.zoom-3 {
-      width: 40rem;
+      &.zoom-3 {
+        width: 40rem;
 
-      .previewable {
-        max-height: 30rem;
-      }
+        .previewable {
+          max-height: 30rem;
+        }
 
-      .previewable.portrait {
-        height: 30rem;
+        .previewable.portrait {
+          height: 30rem;
+        }
       }
     }
 
@@ -314,11 +325,6 @@ video.preview.portrait {
   width: 100%;
 }
 
-#details-container {
-  margin: 10px auto;
-  width: 75%;
-}
-
 .pre {
   white-space: pre-line;
 }
@@ -527,3 +533,35 @@ video.preview.portrait {
   }
 }
 /* stylelint-enable */
+
+.brand-icon {
+  padding: 3px 6px;
+
+  img {
+    height: 1.5rem;
+  }
+}
+
+.top-nav {
+  @media (max-width: 576px) {
+    a {
+      padding: 6px;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .nav-tabs {
+    border: none;
+    margin: auto;
+
+    .nav-link {
+      border: none;
+      padding: 8px;
+
+      &.active {
+        border-bottom: 2px solid;
+      }
+    }
+  }
+}

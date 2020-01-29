@@ -134,7 +134,7 @@ export const ParserInput: React.FC<IParserInputProps> = (props: IParserInputProp
           <InputGroup.Append>
             <DropdownButton id="parser-field-select" title="Add Field">
               {validFields.map(item => (
-                <Dropdown.Item onSelect={() => addParserField(item)}>
+                <Dropdown.Item key={item.field} onSelect={() => addParserField(item)}>
                   <span>{item.field}</span>
                   <span className="ml-auto">{item.helperText}</span>
                 </Dropdown.Item>
@@ -184,7 +184,7 @@ export const ParserInput: React.FC<IParserInputProps> = (props: IParserInputProp
       <Form.Group>
         <DropdownButton variant="secondary" id="recipe-select" title="Select Parser Recipe">
           {builtInRecipes.map(item => (
-            <Dropdown.Item onSelect={() => setParserRecipe(item)}>
+            <Dropdown.Item key={item.pattern} onSelect={() => setParserRecipe(item)}>
               <span>{item.pattern}</span>
               <span className="mr-auto">{item.description}</span>
             </Dropdown.Item>

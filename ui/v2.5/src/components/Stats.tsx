@@ -10,46 +10,44 @@ export const Stats: React.FC = () => {
   if (error) return <span>error.message</span>;
 
   return (
-    <div className="w-75 m-auto">
-      <nav className="w-75 m-auto d-flex flex-row">
-        <div className="flex-grow-1">
-          <div>
-            <p className="heading">Scenes</p>
-            <p className="title">{data.stats.scene_count}</p>
+    <div className="mt-5">
+      <div className="col col-sm-8 m-sm-auto">
+        <nav className="col col-sm-8 m-sm-auto row">
+          <div className="flex-grow-1">
+            <div>
+              <p className="heading">Scenes</p>
+              <p className="title">{data.stats.scene_count}</p>
+            </div>
           </div>
-        </div>
-        <div className="flex-grow-1">
-          <div>
-            <p className="heading">Galleries</p>
-            <p className="title">{data.stats.gallery_count}</p>
+          <div className="flex-grow-1">
+            <div>
+              <p className="heading">Galleries</p>
+              <p className="title">{data.stats.gallery_count}</p>
+            </div>
           </div>
-        </div>
-        <div className="flex-grow-1">
-          <div>
-            <p className="heading">Performers</p>
-            <p className="title">{data.stats.performer_count}</p>
+          <div className="flex-grow-1">
+            <div>
+              <p className="heading">Performers</p>
+              <p className="title">{data.stats.performer_count}</p>
+            </div>
           </div>
-        </div>
-        <div className="flex-grow-1">
-          <div>
-            <p className="heading">Studios</p>
-            <p className="title">{data.stats.studio_count}</p>
+          <div className="flex-grow-1">
+            <div>
+              <p className="heading">Studios</p>
+              <p className="title">{data.stats.studio_count}</p>
+            </div>
           </div>
-        </div>
-        <div className="flex-grow-1">
-          <div>
-            <p className="heading">Tags</p>
-            <p className="title">{data.stats.tag_count}</p>
+          <div className="flex-grow-1">
+            <div>
+              <p className="heading">Tags</p>
+              <p className="title">{data.stats.tag_count}</p>
+            </div>
           </div>
-        </div>
-      </nav>
+        </nav>
 
-      <h5>Notes</h5>
-      <pre>
-        {`
-        This is still an early version, some things are still a work in progress.
-        `}
-      </pre>
+        <h5>Notes</h5>
+        <em>This is still an early version, some things are still a work in progress.</em>
+      </div>
     </div>
   );
 };

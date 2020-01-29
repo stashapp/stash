@@ -43,7 +43,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   function renderDeleteButton() {
     if (props.isNew || props.isEditing) return;
     return (
-      <Button variant="danger" className="delete" onClick={() => setIsDeleteAlertOpen(true)}>
+      <Button variant="danger" className="delete d-none d-sm-block" onClick={() => setIsDeleteAlertOpen(true)}>
         Delete
       </Button>
     );

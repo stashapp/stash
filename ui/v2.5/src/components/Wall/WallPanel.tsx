@@ -104,7 +104,7 @@ export const WallPanel: React.FC<IWallPanelProps> = (
     return (
       <>
         <div className={`wall-overlay ${overlayClassName}`} />
-        <div className="wall grid">
+        <div className="wall grid row">
           {maybeRenderScenes()}
           {maybeRenderSceneMarkers()}
         </div>

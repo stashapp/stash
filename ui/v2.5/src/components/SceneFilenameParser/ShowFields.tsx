@@ -20,7 +20,8 @@ export const ShowFields = (props: IShowFieldsProps) => {
   }
 
   const fieldRows = [...props.fields.entries()].map(([label, enabled]) => (
-    <div
+    <Button
+      className="minimal d-block"
       key={label}
       onClick={() => {
         handleClick(label);
@@ -28,7 +29,7 @@ export const ShowFields = (props: IShowFieldsProps) => {
     >
       <Icon icon={enabled ? "check" : "times"} />
       <span>{label}</span>
-    </div>
+    </Button>
   ));
 
   return (
