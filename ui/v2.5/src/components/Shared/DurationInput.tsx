@@ -35,10 +35,20 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
   function renderButtons() {
     return (
       <ButtonGroup vertical>
-        <Button variant="secondary" className="duration-button" disabled={props.disabled} onClick={() => increment()}>
+        <Button
+          variant="secondary"
+          className="duration-button"
+          disabled={props.disabled}
+          onClick={() => increment()}
+        >
           <Icon icon="chevron-up" />
         </Button>
-        <Button variant="secondary" className="duration-button" disabled={props.disabled} onClick={() => decrement()}>
+        <Button
+          variant="secondary"
+          className="duration-button"
+          disabled={props.disabled}
+          onClick={() => decrement()}
+        >
           <Icon icon="chevron-down" />
         </Button>
       </ButtonGroup>

@@ -1,16 +1,16 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Form,
-  Popover,
-  OverlayTrigger,
-  Table
-} from "react-bootstrap";
+import { Button, Form, Popover, OverlayTrigger, Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import { Icon, Modal, ImageInput, ScrapePerformerSuggest, LoadingIndicator } from "src/components/Shared";
+import {
+  Icon,
+  Modal,
+  ImageInput,
+  ScrapePerformerSuggest,
+  LoadingIndicator
+} from "src/components/Shared";
 import { ImageUtils, TableUtils } from "src/utils";
 import { useToast } from "src/hooks";
 
@@ -276,7 +276,10 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       return undefined;
     }
     return (
-      <Button className="minimal scrape-url-button" onClick={() => onScrapePerformerURL()}>
+      <Button
+        className="minimal scrape-url-button"
+        onClick={() => onScrapePerformerURL()}
+      >
         <Icon icon="file-upload" />
       </Button>
     );
@@ -446,7 +449,10 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             isEditing: !!isEditing,
             onChange: setInstagram
           })}
-          <ImageInput isEditing={!!isEditing} onImageChange={onImageChangeHandler} />
+          <ImageInput
+            isEditing={!!isEditing}
+            onImageChange={onImageChangeHandler}
+          />
         </tbody>
       </Table>
 

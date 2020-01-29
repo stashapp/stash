@@ -8,9 +8,7 @@ interface IStudioScenesPanel {
   studio: Partial<GQL.StudioDataFragment>;
 }
 
-export const StudioScenesPanel: React.FC<IStudioScenesPanel> = ({
-  studio
-}) => {
+export const StudioScenesPanel: React.FC<IStudioScenesPanel> = ({ studio }) => {
   function filterHook(filter: ListFilterModel) {
     const studioValue = { id: studio.id!, label: studio.name! };
     // if studio is already present, then we modify it, otherwise add

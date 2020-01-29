@@ -91,9 +91,7 @@ export const MainNavbar: React.FC = () => {
         ))}
       </Nav>
       <Nav>
-        <div className="d-none d-sm-block">
-          {newButton}
-        </div>
+        <div className="d-none d-sm-block">{newButton}</div>
         <LinkContainer exact to="/settings">
           <Button className="minimal">
             <Icon icon="cog" />

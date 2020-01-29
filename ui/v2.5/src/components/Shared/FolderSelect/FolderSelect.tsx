@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, InputGroup, Form, Modal } from "react-bootstrap";
-import { LoadingIndicator } from 'src/components/Shared';
+import { LoadingIndicator } from "src/components/Shared";
 import { StashService } from "src/core/StashService";
 
 interface IProps {
@@ -80,7 +80,9 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="success" onClick={() => onSelectDirectory()}>Add</Button>
+          <Button variant="success" onClick={() => onSelectDirectory()}>
+            Add
+          </Button>
         </Modal.Footer>
       </Modal>
     );
@@ -103,7 +105,9 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
         })}
       </Form.Group>
 
-      <Button variant="secondary" onClick={() => setIsDisplayingDialog(true)}>Add Directory</Button>
+      <Button variant="secondary" onClick={() => setIsDisplayingDialog(true)}>
+        Add Directory
+      </Button>
     </>
   );
 };

@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { StashService } from "src/core/StashService";
-import { LoadingIndicator } from 'src/components/Shared';
+import { LoadingIndicator } from "src/components/Shared";
 import { GalleryViewer } from "./GalleryViewer";
 
 export const Gallery: React.FC = () => {
@@ -10,8 +10,7 @@ export const Gallery: React.FC = () => {
   const { data, error, loading } = StashService.useFindGallery(id);
   const gallery = data?.findGallery;
 
-  if (loading || !gallery)
-    return <LoadingIndicator />;
+  if (loading || !gallery) return <LoadingIndicator />;
   if (error) return <div>{error.message}</div>;
 
   return (

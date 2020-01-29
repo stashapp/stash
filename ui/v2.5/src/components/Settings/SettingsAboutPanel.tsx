@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Table } from "react-bootstrap";
-import { LoadingIndicator } from 'src/components/Shared';
+import { LoadingIndicator } from "src/components/Shared";
 import { StashService } from "src/core/StashService";
 
 export const SettingsAboutPanel: React.FC = () => {

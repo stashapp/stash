@@ -1,6 +1,6 @@
 import React from "react";
 import { Spinner } from "react-bootstrap";
-import cx from 'classnames';
+import cx from "classnames";
 
 interface ILoadingProps {
   message?: string;
@@ -10,8 +10,11 @@ interface ILoadingProps {
 const CLASSNAME = "LoadingIndicator";
 const CLASSNAME_MESSAGE = `${CLASSNAME}-message`;
 
-const LoadingIndicator: React.FC<ILoadingProps> = ({ message, inline = false }) => (
-  <div className={cx(CLASSNAME, { inline }) }>
+const LoadingIndicator: React.FC<ILoadingProps> = ({
+  message,
+  inline = false
+}) => (
+  <div className={cx(CLASSNAME, { inline })}>
     <Spinner animation="border" role="status">
       <span className="sr-only">Loading...</span>
     </Spinner>

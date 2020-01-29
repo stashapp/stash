@@ -93,8 +93,7 @@ export const TagList: React.FC = () => {
     </Modal>
   );
 
-  if (!data?.allTags)
-    return <LoadingIndicator />;
+  if (!data?.allTags) return <LoadingIndicator />;
   if (error) return <div>{error.message}</div>;
 
   const tagElements = data.allTags.map(tag => {
@@ -104,7 +103,9 @@ export const TagList: React.FC = () => {
           {tag.name}
         </Button>
         <div style={{ float: "right" }}>
-          <Button variant="secondary" onClick={() => onAutoTag(tag)}>Auto Tag</Button>
+          <Button variant="secondary" onClick={() => onAutoTag(tag)}>
+            Auto Tag
+          </Button>
           <Button variant="secondary">
             <Link to={NavUtils.makeTagScenesUrl(tag)}>
               Scenes: {tag.scene_count}

@@ -46,7 +46,10 @@ export const Stats: React.FC = () => {
         </nav>
 
         <h5>Notes</h5>
-        <em>This is still an early version, some things are still a work in progress.</em>
+        <em>
+          This is still an early version, some things are still a work in
+          progress.
+        </em>
       </div>
     </div>
   );

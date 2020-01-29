@@ -158,7 +158,10 @@ export const ListFilter: React.FC<IListFilterProps> = (
         onClick={() => onClickCriterionTag(criterion)}
       >
         {criterion.getLabel()}
-        <Button variant="secondary" onClick={() => onRemoveCriterionTag(criterion)}>
+        <Button
+          variant="secondary"
+          onClick={() => onRemoveCriterionTag(criterion)}
+        >
           <Icon icon="times" />
         </Button>
       </Badge>
@@ -180,7 +183,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function renderSelectAll() {
     if (props.onSelectAll) {
       return (
-        <Dropdown.Item key="select-all" onClick={() => onSelectAll()}>Select All</Dropdown.Item>
+        <Dropdown.Item key="select-all" onClick={() => onSelectAll()}>
+          Select All
+        </Dropdown.Item>
       );
     }
   }
@@ -201,7 +206,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
     if (props.otherOperations) {
       props.otherOperations.forEach(o => {
         options.push(
-          <Dropdown.Item key={o.text}  onClick={o.onClick}>{o.text}</Dropdown.Item>
+          <Dropdown.Item key={o.text} onClick={o.onClick}>
+            {o.text}
+          </Dropdown.Item>
         );
       });
     }
@@ -259,7 +266,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
             className="filter-item col-1 d-none d-sm-inline"
           >
             {PAGE_SIZE_OPTIONS.map(s => (
-              <option value={s} key={s}>{s}</option>
+              <option value={s} key={s}>
+                {s}
+              </option>
             ))}
           </Form.Control>
           <ButtonGroup className="filter-item">
@@ -288,7 +297,6 @@ export const ListFilter: React.FC<IListFilterProps> = (
                 </Button>
               </OverlayTrigger>
             </Dropdown>
-
           </ButtonGroup>
 
           <AddFilter
@@ -304,7 +312,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
           {maybeRenderZoom()}
 
-          <ButtonGroup className="filter-item d-none d-sm-inline-flex">{renderMore()}</ButtonGroup>
+          <ButtonGroup className="filter-item d-none d-sm-inline-flex">
+            {renderMore()}
+          </ButtonGroup>
         </div>
         <div
           style={{

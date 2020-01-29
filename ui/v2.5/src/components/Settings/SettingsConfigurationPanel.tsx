@@ -153,8 +153,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   }
 
   if (error) return <h1>{error.message}</h1>;
-  if (!data?.configuration || loading)
-    return <LoadingIndicator />;
+  if (!data?.configuration || loading) return <LoadingIndicator />;
 
   return (
     <>
@@ -199,27 +198,26 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group>
           <h6>Excluded Patterns</h6>
           <Form.Group>
-            {excludes
-              && excludes.map((regexp, i) => (
-                  <InputGroup>
-                    <Form.Control
-                      className="col col-sm-6"
-                      value={regexp}
-                      onChange={(e: any) =>
-                        excludeRegexChanged(i, e.target.value)
-                      }
-                    />
-                    <InputGroup.Append>
-                      <Button
-                        variant="danger"
-                        onClick={() => excludeRemoveRegex(i)}
-                      >
-                        <Icon icon="minus" />
-                      </Button>
-                    </InputGroup.Append>
-                  </InputGroup>
-                ))
-            }
+            {excludes &&
+              excludes.map((regexp, i) => (
+                <InputGroup>
+                  <Form.Control
+                    className="col col-sm-6"
+                    value={regexp}
+                    onChange={(e: any) =>
+                      excludeRegexChanged(i, e.target.value)
+                    }
+                  />
+                  <InputGroup.Append>
+                    <Button
+                      variant="danger"
+                      onClick={() => excludeRemoveRegex(i)}
+                    >
+                      <Icon icon="minus" />
+                    </Button>
+                  </InputGroup.Append>
+                </InputGroup>
+              ))}
           </Form.Group>
           <Button className="minimal" onClick={() => excludeAddRegex()}>
             <Icon icon="plus" />

@@ -1,9 +1,6 @@
-import React, { useState } from 'react';
-import {
-  Button,
-  Collapse
-} from 'react-bootstrap';
-import { Icon } from 'src/components/Shared';
+import React, { useState } from "react";
+import { Button, Collapse } from "react-bootstrap";
+import { Icon } from "src/components/Shared";
 
 interface IShowFieldsProps {
   fields: Map<string, boolean>;
@@ -43,4 +40,4 @@ export const ShowFields = (props: IShowFieldsProps) => {
       </Collapse>
     </div>
   );
-}
+};

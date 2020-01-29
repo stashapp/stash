@@ -36,9 +36,7 @@ export const SceneMarkerList: React.FC = () => {
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await StashService.queryFindSceneMarkers(filterCopy);
-      if (
-        singleResult?.data?.findSceneMarkers?.scene_markers?.length === 1
-      ) {
+      if (singleResult?.data?.findSceneMarkers?.scene_markers?.length === 1) {
         // navigate to the scene player page
         const url = NavUtils.makeSceneMarkerUrl(
           singleResult.data.findSceneMarkers.scene_markers[0]

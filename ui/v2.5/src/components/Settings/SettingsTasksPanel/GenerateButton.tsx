@@ -53,7 +53,12 @@ export const GenerateButton: React.FC = () => {
         />
       </Form.Group>
       <Form.Group>
-        <Button id="generate" variant="secondary" type="submit" onClick={() => onGenerate()}>
+        <Button
+          id="generate"
+          variant="secondary"
+          type="submit"
+          onClick={() => onGenerate()}
+        >
           Generate
         </Button>
         <Form.Text className="text-muted">
