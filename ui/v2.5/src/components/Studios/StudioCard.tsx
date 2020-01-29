@@ -12,9 +12,10 @@ export const StudioCard: React.FC<IProps> = ({ studio }) => {
     <Card className="studio-card">
       <Link
         to={`/studios/${studio.id}`}
-        className="studio previewable image"
-        style={{ backgroundImage: `url(${studio.image_path})` }}
-      />
+        className="studio-image"
+      >
+        <img alt={studio.name} src={studio.image_path ?? ''} />
+      </Link>
       <div className="card-section">
         <h5 className="text-truncate">{studio.name}</h5>
         <span>{studio.scene_count} scenes.</span>

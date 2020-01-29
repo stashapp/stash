@@ -256,7 +256,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
             as="select"
             onChange={onChangePageSize}
             value={props.filter.itemsPerPage.toString()}
-            className="filter-item"
+            className="filter-item col-1"
           >
             {PAGE_SIZE_OPTIONS.map(s => (
               <option value={s} key={s}>{s}</option>

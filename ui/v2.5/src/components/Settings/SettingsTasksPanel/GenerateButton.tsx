@@ -25,37 +25,41 @@ export const GenerateButton: React.FC = () => {
   }
 
   return (
-    <Form.Group>
-      <Form.Check
-        id="sprite-task"
-        checked={sprites}
-        label="Sprites (for the scene scrubber)"
-        onChange={() => setSprites(!sprites)}
-      />
-      <Form.Check
-        id="preview-task"
-        checked={previews}
-        label="Previews (video previews which play when hovering over a scene)"
-        onChange={() => setPreviews(!previews)}
-      />
-      <Form.Check
-        id="marker-task"
-        checked={markers}
-        label="Markers (20 second videos which begin at the given timecode)"
-        onChange={() => setMarkers(!markers)}
-      />
-      <Form.Check
-        id="transcode-task"
-        checked={transcodes}
-        label="Transcodes (MP4 conversions of unsupported video formats)"
-        onChange={() => setTranscodes(!transcodes)}
-      />
-      <Button id="generate" type="submit" onClick={() => onGenerate()}>
-        Generate
-      </Button>
-      <Form.Text className="text-muted">
-        Generate supporting image, sprite, video, vtt and other files.
-      </Form.Text>
-    </Form.Group>
+    <>
+      <Form.Group>
+        <Form.Check
+          id="sprite-task"
+          checked={sprites}
+          label="Sprites (for the scene scrubber)"
+          onChange={() => setSprites(!sprites)}
+        />
+        <Form.Check
+          id="preview-task"
+          checked={previews}
+          label="Previews (video previews which play when hovering over a scene)"
+          onChange={() => setPreviews(!previews)}
+        />
+        <Form.Check
+          id="marker-task"
+          checked={markers}
+          label="Markers (20 second videos which begin at the given timecode)"
+          onChange={() => setMarkers(!markers)}
+        />
+        <Form.Check
+          id="transcode-task"
+          checked={transcodes}
+          label="Transcodes (MP4 conversions of unsupported video formats)"
+          onChange={() => setTranscodes(!transcodes)}
+        />
+      </Form.Group>
+      <Form.Group>
+        <Button id="generate" variant="secondary" type="submit" onClick={() => onGenerate()}>
+          Generate
+        </Button>
+        <Form.Text className="text-muted">
+          Generate supporting image, sprite, video, vtt and other files.
+        </Form.Text>
+      </Form.Group>
+    </>
   );
 };

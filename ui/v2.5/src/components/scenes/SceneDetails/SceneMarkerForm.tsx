@@ -64,7 +64,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({ sceneID, editingMa
         .catch(err => Toast.error(err));
   }
   const renderTitleField = (fieldProps: FieldProps<string>) => (
-    <div className="col-6">
+    <div className="col-10">
       <MarkerTitleSuggest
         initialMarkerTitle={fieldProps.field.value}
         onChange={(query: string) =>
@@ -75,16 +75,18 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({ sceneID, editingMa
   );
 
   const renderSecondsField = (fieldProps: FieldProps<string>) => (
-    <DurationInput
-      onValueChange={s => fieldProps.form.setFieldValue("seconds", s)}
-      onReset={() =>
-        fieldProps.form.setFieldValue(
-          "seconds",
-          Math.round(playerPosition ?? 0)
-        )
-      }
-      numericValue={Number.parseInt(fieldProps.field.value ?? '0', 10)}
-    />
+    <div className="col-3">
+      <DurationInput
+        onValueChange={s => fieldProps.form.setFieldValue("seconds", s)}
+        onReset={() =>
+          fieldProps.form.setFieldValue(
+            "seconds",
+            Math.round(playerPosition ?? 0)
+          )
+        }
+        numericValue={Number.parseInt(fieldProps.field.value ?? '0', 10)}
+      />
+    </div>
   );
 
   const renderPrimaryTagField = (fieldProps: FieldProps<string>) => (
@@ -129,25 +131,27 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({ sceneID, editingMa
             <Form.Label htmlFor="title" className="col-2">
               Scene Marker Title
             </Form.Label>
-            <Field name="title" className="col-6">
+            <Field name="title">
               {renderTitleField}
-            </Field>
-            <Form.Label htmlFor="seconds" className="col-1">Time</Form.Label>
-            <Field name="seconds" className="col-2">
-              {renderSecondsField}
             </Field>
           </Form.Group>
           <Form.Group className="row">
             <Form.Label htmlFor="primaryTagId" className="col-2">
               Primary Tag
             </Form.Label>
-            <div className="col-4">
+            <div className="col-6">
               <Field name="primaryTagId">
                 {renderPrimaryTagField}
               </Field>
             </div>
+            <Form.Label htmlFor="seconds" className="col-1">Time</Form.Label>
+            <Field name="seconds">
+              {renderSecondsField}
+            </Field>
+          </Form.Group>
+          <Form.Group className="row">
             <Form.Label htmlFor="tagIds" className="col-2">Tags</Form.Label>
-            <div className="col-4">
+            <div className="col-10">
               <Field name="tagIds">
                 {renderTagsField}
               </Field>

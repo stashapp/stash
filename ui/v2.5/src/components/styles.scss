@@ -1,0 +1,15 @@
+.studio-card {
+  padding: .5rem;
+}
+
+.studio-image {
+  height: 150px;
+  line-height: 150px;
+  text-align: center;
+
+  img {
+    max-height: 100%;
+    max-width: 100%;
+    vertical-align: middle;
+  }
+}

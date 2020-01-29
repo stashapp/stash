@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { LoadingIndicator } from 'src/components/Shared';
+import { DurationInput, LoadingIndicator } from 'src/components/Shared';
 import { StashService } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
@@ -61,11 +61,13 @@ export const SettingsInterfacePanel: React.FC = () => {
       <Form.Group>
         <Form.Label>Scene / Marker Wall</Form.Label>
         <Form.Check
+          id="wall-show-title"
           checked={wallShowTitle}
           label="Display title and tags"
           onChange={() => setWallShowTitle(!wallShowTitle)}
         />
         <Form.Check
+          id="wall-sound-enabled"
           checked={soundOnPreview}
           label="Enable sound"
           onChange={() => setSoundOnPreview(!soundOnPreview)}
@@ -76,8 +78,9 @@ export const SettingsInterfacePanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group>
-        <Form.Label>Scene List</Form.Label>
+        <h5>Scene List</h5>
         <Form.Check
+          id="show-text-studios"
           checked={showStudioAsText}
           label="Show Studios as text"
           onChange={() => {
@@ -87,8 +90,9 @@ export const SettingsInterfacePanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group>
-        <Form.Label>Scene Player</Form.Label>
+        <h5>Scene Player</h5>
         <Form.Check
+          id="auto-start-video"
           checked={autostartVideo}
           label="Auto-start video"
           onChange={() => {
@@ -98,27 +102,21 @@ export const SettingsInterfacePanel: React.FC = () => {
 
         <Form.Group id="max-loop-duration">
           <Form.Label>Maximum loop duration</Form.Label>
-          <Form.Control
-            type="number"
-            defaultValue={maximumLoopDuration}
-            onChange={(event: React.FormEvent<HTMLInputElement>) =>
-              setMaximumLoopDuration(
-                Number.parseInt(event.currentTarget.value, 10) ?? 0
-              )
-            }
-            min={0}
-            step={1}
+          <DurationInput
+            className="col-4"
+            numericValue={maximumLoopDuration}
+            onValueChange={duration => setMaximumLoopDuration(duration)}
           />
           <Form.Text className="text-muted">
-            Maximum scene duration - in seconds - where scene player will loop
-            the video - 0 to disable
+            Maximum scene duration where scene player will loop the video - 0 to disable
           </Form.Text>
         </Form.Group>
       </Form.Group>
 
       <Form.Group>
-        <Form.Label>Custom CSS</Form.Label>
+        <h5>Custom CSS</h5>
         <Form.Check
+          id="custom-css"
           checked={cssEnabled}
           label="Custom CSS enabled"
           onChange={() => {
@@ -131,6 +129,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           value={css}
           onChange={(e: any) => setCSS(e.target.value)}
           rows={16}
+          className="col-6"
         ></Form.Control>
         <Form.Text className="text-muted">
           Page must be reloaded for changes to take effect.

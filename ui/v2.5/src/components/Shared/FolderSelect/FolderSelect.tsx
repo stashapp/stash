@@ -62,21 +62,25 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
                 )}
               </InputGroup.Append>
             </InputGroup>
-            {selectableDirectories.map(path => {
-              return (
-                <Button
-                  variant="link"
-                  key={path}
-                  onClick={() => setCurrentDirectory(path)}
-                >
-                  {path}
-                </Button>
-              );
-            })}
+            <ul className="folder-list">
+              {selectableDirectories.map(path => {
+                return (
+                  <li className="folder-item">
+                    <Button
+                      variant="link"
+                      key={path}
+                      onClick={() => setCurrentDirectory(path)}
+                    >
+                      {path}
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button onClick={() => onSelectDirectory()}>Add</Button>
+          <Button variant="success" onClick={() => onSelectDirectory()}>Add</Button>
         </Modal.Footer>
       </Modal>
     );
@@ -99,7 +103,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
         })}
       </Form.Group>
 
-      <Button onClick={() => setIsDisplayingDialog(true)}>Add Directory</Button>
+      <Button variant="secondary" onClick={() => setIsDisplayingDialog(true)}>Add Directory</Button>
     </>
   );
 };

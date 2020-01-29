@@ -80,7 +80,7 @@ export const MainNavbar: React.FC = () => {
           >
             <Button className="minimal">
               <Icon icon={i.icon} />
-              {i.text}
+              <span>{i.text}</span>
             </Button>
           </LinkContainer>
         ))}

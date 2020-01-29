@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form, Col } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 
@@ -37,12 +37,11 @@ const LogElement: React.FC<ILogElementProps> = ({ logEntry }) => {
   const level = logEntry.level.padEnd(GQL.LogLevel.Progress.length);
 
   return (
-    <>
-      <span>{logEntry.time}</span>&nbsp;
-      <span className={levelClass(logEntry.level)}>{level}</span>&nbsp;
-      <span>{logEntry.message}</span>
-      <br />
-    </>
+    <div className="row">
+      <span className="log-time">{logEntry.time}</span>
+      <span className={`${levelClass(logEntry.level)}`}>{level}</span>
+      <span className="col-9">{logEntry.message}</span>
+    </div>
   );
 };
 
@@ -100,22 +99,19 @@ export const SettingsLogsPanel: React.FC = () => {
     <>
       <h4>Logs</h4>
       <Form.Row id="log-level">
-        <Col xs={1}>
-          <Form.Label>Log Level</Form.Label>
-        </Col>
-        <Col xs={2}>
-          <Form.Control
-            as="select"
-            defaultValue={logLevel}
-            onChange={event => setLogLevel(event.currentTarget.value)}
-          >
-            {logLevels.map(level => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
+        <Form.Label className="col-2">Log Level</Form.Label>
+        <Form.Control
+          className="col-2"
+          as="select"
+          defaultValue={logLevel}
+          onChange={event => setLogLevel(event.currentTarget.value)}
+        >
+          {logLevels.map(level => (
+            <option key={level} value={level}>
+              {level}
+            </option>
+          ))}
           </Form.Control>
-        </Col>
       </Form.Row>
       <div className="logs">
         {maybeRenderError}
