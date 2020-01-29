@@ -1,0 +1,38 @@
+mutation MovieCreate(
+  $name: String!,
+  $aliases: String,
+  $duration_movie: String,
+  $date_movie: String,
+  $rating_movie: Int,
+  $director: String,
+  $synopsis: String,
+  $url: String,
+  $front_image: String,
+  $back_image: String) {
+
+  movieCreate(input: { name: $name, aliases: $aliases, duration_movie: $duration_movie, date_movie: $date_movie, rating_movie: $rating_movie, director: $director, synopsis: $synopsis, url: $url, front_image: $front_image, back_image: $back_image }) {
+    ...MovieData
+  }
+}
+
+mutation MovieUpdate(
+  $id: ID!
+  $name: String,
+  $aliases: String,
+  $duration_movie: String,
+  $date_movie: String,
+  $rating_movie: Int,
+  $director: String,
+  $synopsis: String,
+  $url: String,
+  $front_image: String,
+  $back_image: String) {
+
+  movieUpdate(input: { id: $id, name: $name, aliases: $aliases, duration_movie: $duration_movie, date_movie: $date_movie, rating_movie: $rating_movie, director: $director, synopsis: $synopsis, url: $url, front_image: $front_image, back_image: $back_image }) {
+    ...MovieData
+  }
+}
+
+mutation MovieDestroy($id: ID!) {
+  movieDestroy(input: { id: $id })
+}
