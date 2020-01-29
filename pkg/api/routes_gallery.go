@@ -31,12 +31,12 @@ func (rs galleryRoutes) File(w http.ResponseWriter, r *http.Request) {
 	} else if thumb == "" {
 		_, _ = w.Write(gallery.GetImage(fileIndex))
 	} else {
-		height, err := strconv.ParseInt(thumb, 0, 64)
+		width, err := strconv.ParseInt(thumb, 0, 64)
 		if err != nil {
 			http.Error(w, http.StatusText(400), 400)
 			return
 		}
-		_, _ = w.Write(gallery.GetThumbnail(fileIndex, int(height)))
+		_, _ = w.Write(gallery.GetThumbnail(fileIndex, int(width)))
 	}
 }
 
