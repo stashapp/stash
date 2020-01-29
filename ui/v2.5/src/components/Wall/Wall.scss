@@ -85,17 +85,19 @@
   z-index: -1;
 }
 
-.wall-item video,
-.wall-item img {
-  height: 100%;
-  object-fit: contain;
-  width: 100%;
-}
+.wall {
+  .wall-item {
+    line-height: 0;
+    overflow: visible;
+    padding: 0;
+    position: relative;
+    width: 20%;
 
-.wall-item {
-  line-height: 0;
-  overflow: visible;
-  padding: 0 !important;
-  position: relative;
-  width: 20%;
+    video,
+    img {
+      height: 100%;
+      object-fit: contain;
+      width: 100%;
+    }
+  }
 }

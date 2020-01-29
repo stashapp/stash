@@ -1,7 +1,7 @@
 .performer.image {
-  background-position: center !important;
-  background-repeat: no-repeat !important;
-  background-size: cover !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   height: 50vh;
   min-height: 400px;
 }
@@ -20,10 +20,6 @@
     width: 100%;
   }
 
-  #url-field {
-    line-height: 30px;
-  }
-
   .scrape-url-button {
     color: $text-color;
     float: right;
@@ -36,6 +32,10 @@
       padding: 0;
     }
   }
+}
+
+#url-field {
+  line-height: 30px;
 }
 
 #performer-page {
@@ -57,11 +57,11 @@
       margin-left: 10px;
 
       .not-favorite {
-        color: rgba(191, 204, 214, .5) !important;
+        color: rgba(191, 204, 214, .5);
       }
 
       .favorite {
-        color: #ff7373 !important;
+        color: #ff7373;
       }
 
       .link {

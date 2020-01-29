@@ -228,7 +228,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     if (props.onChangeZoom) {
       return (
         <Form.Control
-          className="zoom-slider"
+          className="zoom-slider col-1"
           type="range"
           min={0}
           max={3}

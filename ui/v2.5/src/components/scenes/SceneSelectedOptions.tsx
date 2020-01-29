@@ -180,57 +180,49 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     return ret;
   }
 
-  function updateScenesEditState(state: GQL.SlimSceneDataFragment[]) {
+  useEffect(() => {
+    const state = props.selected;
     let updateRating = "";
-    let updateStudioId: string|undefined;
+    let updateStudioID: string|undefined;
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
     let first = true;
 
     state.forEach((scene: GQL.SlimSceneDataFragment) => {
-      const thisRating = scene.rating?.toString() ?? "";
-      const thisStudio = scene?.studio?.id;
+      const sceneRating = scene.rating?.toString() ?? "";
+      const sceneStudioID = scene?.studio?.id;
+      const scenePerformerIDs = (scene.performers ?? []).map(p => p.id).sort();
+      const sceneTagIDs = (scene.tags ?? []).map(p => p.id).sort();
 
       if (first) {
-        updateRating = thisRating;
-        updateStudioId = thisStudio;
-        updatePerformerIds = scene.performers
-          ? scene.performers.map(p => p.id).sort()
-          : [];
-        updateTagIds = scene.tags ? scene.tags.map(p => p.id).sort() : [];
+        updateRating = sceneRating;
+        updateStudioID = sceneStudioID;
+        updatePerformerIds = scenePerformerIDs;
+        updateTagIds = sceneTagIDs;
         first = false;
       } else {
-        if (rating !== thisRating) {
+        if (sceneRating !== updateRating) {
           updateRating = "";
         }
-        if (studioId !== thisStudio) {
-          updateStudioId = undefined;
+        if (sceneStudioID !== updateStudioID) {
+          updateStudioID = undefined;
         }
-        const perfIds = scene.performers
-          ? scene.performers.map(p => p.id).sort()
-          : [];
-        const tIds = scene.tags ? scene.tags.map(t => t.id).sort() : [];
-
-        if (!_.isEqual(performerIds, perfIds)) {
+        if (!_.isEqual(scenePerformerIDs, updatePerformerIds)) {
           updatePerformerIds = [];
         }
-
-        if (!_.isEqual(tagIds, tIds)) {
+        if (!_.isEqual(sceneTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
       }
     });
 
     setRating(updateRating);
-    setStudioId(updateStudioId);
+    setStudioId(updateStudioID);
     setPerformerIds(updatePerformerIds);
     setTagIds(updateTagIds);
-  }
-
-  useEffect(() => {
-    updateScenesEditState(props.selected);
     setIsLoading(false);
   }, [props.selected]);
+
 
   function renderMultiSelect(
     type: "performers" | "tags",

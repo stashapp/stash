@@ -1,22 +1,9 @@
 @import "styles/theme";
 @import "styles/range";
 @import "styles/scrollbars";
-@import "styles/variables";
 @import "./components/**/*.scss";
 
 body {
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    "Fira Sans",
-    "Droid Sans",
-    "Helvetica Neue",
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
@@ -70,6 +57,7 @@ code {
         max-height: 11.25rem;
       }
     }
+
     &.zoom-1 {
       width: 20rem;
 
@@ -81,6 +69,7 @@ code {
         height: 15rem;
       }
     }
+
     &.zoom-2 {
       width: 30rem;
 
@@ -92,6 +81,7 @@ code {
         height: 22.5rem;
       }
     }
+
     &.zoom-3 {
       width: 40rem;
 
@@ -156,7 +146,7 @@ video.preview.portrait {
 }
 
 .tag-item {
-  background-color: #bfccd6;
+  background-color: $muted-gray;
   color: #182026;
   font-size: 12px;
   font-weight: 400;
@@ -214,7 +204,7 @@ video.preview.portrait {
 }
 
 .rating-5 {
-  background: #FF2F39;
+  background: #ff2f39;
 }
 
 .rating-4 {
@@ -224,6 +214,7 @@ video.preview.portrait {
 .rating-3 {
   background: $orange1;
 }
+
 .rating-2 {
   background: $sepia1;
 }
@@ -250,7 +241,7 @@ video.preview.portrait {
 
 .scene-specs-overlay {
   bottom: 1rem;
-  color: #f5f8fa;
+  color: $text-color;
   display: block;
   font-weight: 400;
   letter-spacing: -.03rem;
@@ -274,7 +265,7 @@ video.preview.portrait {
     background-position: right top;
     background-repeat: no-repeat;
     background-size: contain;
-    color: #f5f8fa;
+    color: $text-color;
     display: inline-block;
     height: 100%;
     letter-spacing: -.03rem;
@@ -332,20 +323,13 @@ video.preview.portrait {
   white-space: pre-line;
 }
 
-.studio {
-  .image {
-    background-position: center !important;
-    background-repeat: no-repeat !important;
-    background-size: contain !important;
-    height: 100px;
-  }
-}
-
+/* stylelint-disable selector-class-pattern */
 .react-photo-gallery--gallery {
   img {
     object-fit: contain;
   }
 }
+/* stylelint-enable selector-class-pattern */
 
 #parser-container {
   margin: 10px auto;
@@ -413,11 +397,11 @@ video.preview.portrait {
 }
 
 .main {
-  color: #f5f8fa;
+  color: $text-color;
 }
 
 .table {
-  color: #f5f8fa;
+  color: $text-color;
   width: inherit;
 }
 
@@ -425,7 +409,7 @@ video.preview.portrait {
   border: none;
 }
 
-.table-striped tbody tr:nth-child(odd) td {
+.table-striped tr:nth-child(odd) td {
   background: rgba(92, 112, 128, .15);
 }
 
@@ -455,7 +439,7 @@ video.preview.portrait {
 .button-link {
   background-color: transparent;
   border-width: 0;
-  color: #48aff0;
+  color: $link-color;
   cursor: pointer;
   display: inline;
   padding: 0;
@@ -467,7 +451,7 @@ video.preview.portrait {
 
 .scrubber-button {
   background-color: transparent;
-  color: #48aff0;
+  color: $link-color;
 }
 
 .scrubber-button:hover {
@@ -532,6 +516,7 @@ video.preview.portrait {
   padding-bottom: 2rem;
 }
 
+/* stylelint-disable  selector-class-pattern */
 .svg-inline--fa {
   margin: 0 .4rem;
 }
@@ -541,3 +526,4 @@ video.preview.portrait {
     margin: 0;
   }
 }
+/* stylelint-enable */

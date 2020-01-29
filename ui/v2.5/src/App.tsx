@@ -13,7 +13,7 @@ import { Settings } from "./components/Settings/Settings";
 import { Stats } from "./components/Stats";
 import Studios from "./components/Studios/Studios";
 import { TagList } from "./components/Tags/TagList";
-import { SceneFilenameParser } from "./components/scenes/SceneFilenameParser";
+import { SceneFilenameParser } from "./components/SceneFilenameParser/SceneFilenameParser";
 
 library.add(fas);
 
