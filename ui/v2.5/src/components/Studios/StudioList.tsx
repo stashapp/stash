@@ -18,7 +18,7 @@ export const StudioList: React.FC = () => {
 
     if (filter.displayMode === DisplayMode.Grid) {
       return (
-        <div className="grid">
+        <div className="row px-xl-5 justify-content-center">
           {result.data.findStudios.studios.map(studio => (
             <StudioCard key={studio.id} studio={studio} />
           ))}

@@ -99,6 +99,16 @@ hr {
   }
 }
 
+.table {
+  td {
+    padding: .25rem .75rem;
+  }
+}
+
 .popover {
   max-width: inherit;
+}
+
+.card {
+  border: none;
 }

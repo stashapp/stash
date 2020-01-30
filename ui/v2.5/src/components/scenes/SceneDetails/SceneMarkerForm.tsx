@@ -153,17 +153,17 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
             </div>
           </Form.Group>
         </div>
-        <div className="buttons-container">
+        <div className="buttons-container row">
           <Button variant="primary" type="submit">
             Submit
           </Button>
-          <Button type="button" onClick={onClose}>
+          <Button variant="secondary" type="button" onClick={onClose} className="ml-2">
             Cancel
           </Button>
           {editingMarker && (
             <Button
               variant="danger"
-              style={{ float: "right", marginRight: "10px" }}
+              className="ml-auto"
               onClick={() => onDelete()}
             >
               Delete

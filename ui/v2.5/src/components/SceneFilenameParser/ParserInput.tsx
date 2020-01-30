@@ -156,11 +156,12 @@ export const ParserInput: React.FC<IParserInputProps> = (
 
       <Form.Group className="row" controlId="ignored-words">
         <Form.Label className="col-2">Ignored words</Form.Label>
-        <Form.Control
-          className="col-8"
-          onChange={(newValue: any) => setIgnoreWords(newValue.target.value)}
-          value={ignoreWords}
-        />
+        <InputGroup className="col-8">
+          <Form.Control
+            onChange={(newValue: any) => setIgnoreWords(newValue.target.value)}
+            value={ignoreWords}
+          />
+        </InputGroup>
         <Form.Text className="text-muted col-10 offset-2">
           Matches with {"{i}"}
         </Form.Text>
@@ -171,27 +172,29 @@ export const ParserInput: React.FC<IParserInputProps> = (
         <Form.Label htmlFor="whitespace-characters" className="col-2">
           Whitespace characters:
         </Form.Label>
-        <Form.Control
-          className="col-8"
-          onChange={(newValue: any) =>
-            setWhitespaceCharacters(newValue.target.value)
-          }
-          value={whitespaceCharacters}
-        />
+        <InputGroup className="col-8">
+          <Form.Control
+            onChange={(newValue: any) =>
+              setWhitespaceCharacters(newValue.target.value)
+            }
+            value={whitespaceCharacters}
+          />
+        </InputGroup>
         <Form.Text className="text-muted col-10 offset-2">
           These characters will be replaced with whitespace in the title
         </Form.Text>
       </Form.Group>
-      <Form.Group className="row">
-        <Form.Label htmlFor="capitalize-title" className="col-2">
-          Capitalize title
-        </Form.Label>
-        <Form.Control
-          className="col-8"
-          type="checkbox"
+      <Form.Group>
+        <Form.Check
+          inline
+          className="m-0"
+          id="capitalize-title"
           checked={capitalizeTitle}
           onChange={() => setCapitalizeTitle(!capitalizeTitle)}
         />
+        <Form.Label htmlFor="capitalize-title">
+          Capitalize title
+        </Form.Label>
       </Form.Group>
 
       {/* TODO - mapping stuff will go here */}
@@ -222,12 +225,11 @@ export const ParserInput: React.FC<IParserInputProps> = (
       </Form.Group>
 
       <Form.Group className="row">
-        <Button variant="secondary" className="col-1" onClick={onFind}>
+        <Button variant="secondary" className="ml-3 col-1" onClick={onFind}>
           Find
         </Button>
         <Form.Control
           as="select"
-          style={{ flexBasis: "min-content" }}
           options={PAGE_SIZE_OPTIONS}
           onChange={(event: any) =>
             props.onPageSizeChanged(parseInt(event.target.value, 10))
@@ -236,7 +238,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
           className="col-1 filter-item"
         >
           {PAGE_SIZE_OPTIONS.map(val => (
-            <option value="val">{val}</option>
+            <option key={val} value={val}>{val}</option>
           ))}
         </Form.Control>
       </Form.Group>

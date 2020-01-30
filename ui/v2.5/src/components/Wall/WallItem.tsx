@@ -142,7 +142,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
           />
           {showTextContainer ? (
             <div className="scene-wall-item-text-container">
-              <div style={{ lineHeight: 1 }}>{title}</div>
+              <div>{title}</div>
               {tags}
             </div>
           ) : (

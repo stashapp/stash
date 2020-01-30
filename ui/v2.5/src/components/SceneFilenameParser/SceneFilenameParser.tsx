@@ -414,8 +414,7 @@ export const SceneFilenameParser: React.FC = () => {
     return (
       <>
         <td>
-          <Form.Control
-            type="checkbox"
+          <Form.Check
             checked={props.parserResult.set}
             onChange={() => {
               props.onSetChanged(!props.parserResult.set);
@@ -458,7 +457,7 @@ export const SceneFilenameParser: React.FC = () => {
         disabled={!props.parserResult.set}
         className={props.className}
         value={props.parserResult.value || ""}
-        onBlur={(event: any) => props.onChange(event.target.value)}
+        onChange={(event: any) => props.onChange(event.target.value)}
       />
     );
   }
@@ -494,7 +493,7 @@ export const SceneFilenameParser: React.FC = () => {
     return (
       <div>
         {elements.map((name: string) => (
-          <Badge variant="secondary">{name}</Badge>
+          <Badge key={name} variant="secondary">{name}</Badge>
         ))}
       </div>
     );
@@ -592,7 +591,7 @@ export const SceneFilenameParser: React.FC = () => {
 
     return (
       <tr className="scene-parser-row">
-        <td style={{ textAlign: "left" }}>{props.scene.filename}</td>
+        <td className="text-left">{props.scene.filename}</td>
         <SceneParserField
           key="title"
           fieldName="Title"
@@ -689,9 +688,8 @@ export const SceneFilenameParser: React.FC = () => {
 
     return (
       <>
-        <td>
-          <Form.Control
-            type="checkbox"
+        <td className="w-15">
+          <Form.Check
             checked={allSet}
             onChange={() => {
               onAllSet(!allSet);
@@ -715,7 +713,7 @@ export const SceneFilenameParser: React.FC = () => {
             <Table>
               <thead>
                 <tr className="scene-parser-row">
-                  <th>Filename</th>
+                  <th className="w-25">Filename</th>
                   {renderHeader("Title", allTitleSet, onSelectAllTitleSet)}
                   {renderHeader("Date", allDateSet, onSelectAllDateSet)}
                   {renderHeader(

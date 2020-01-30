@@ -23,7 +23,7 @@ export const GalleryList: React.FC = () => {
     }
     if (filter.displayMode === DisplayMode.List) {
       return (
-        <Table style={{ margin: "0 auto" }}>
+        <Table className="m-auto">
           <thead>
             <tr>
               <th>Preview</th>

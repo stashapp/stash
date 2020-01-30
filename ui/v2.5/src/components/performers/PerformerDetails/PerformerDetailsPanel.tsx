@@ -222,6 +222,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             {queryableScrapers
               ? queryableScrapers.map(s => (
                   <Button
+                    key={s.name}
                     variant="link"
                     onClick={() => onDisplayFreeOnesDialog(s)}
                   >
@@ -294,7 +295,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         </td>
         <td>
           <Form.Control
-            value={url}
+            value={url ?? ''}
             readOnly={!isEditing}
             plaintext={!isEditing}
             placeholder="URL"
@@ -310,7 +311,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   function maybeRenderButtons() {
     if (isEditing) {
       return (
-        <>
+        <div className="row">
           <Button
             className="edit-button"
             variant="primary"
@@ -330,7 +331,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             ""
           )}
           {renderScraperMenu()}
-        </>
+          <ImageInput
+            isEditing={!!isEditing}
+            onImageChange={onImageChangeHandler}
+          />
+        </div>
       );
     }
   }
@@ -377,7 +382,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       {renderDeleteAlert()}
       {renderScraperDialog()}
 
-      <Table id="performer-details" style={{ width: "100%" }}>
+      <Table id="performer-details" className="w-100">
         <tbody>
           {maybeRenderName()}
           {maybeRenderAliases()}
@@ -449,10 +454,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             isEditing: !!isEditing,
             onChange: setInstagram
           })}
-          <ImageInput
-            isEditing={!!isEditing}
-            onImageChange={onImageChangeHandler}
-          />
         </tbody>
       </Table>
 

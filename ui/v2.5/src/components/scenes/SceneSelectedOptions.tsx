@@ -264,10 +264,11 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
           <Form.Label>Rating</Form.Label>
           <Form.Control
             as="select"
+            value={rating}
             onChange={(event: any) => setRating(event.target.value)}
           >
             {["", "1", "2", "3", "4", "5"].map(opt => (
-              <option selected={opt === rating} value={opt}>
+              <option key={opt} value={opt}>
                 {opt}
               </option>
             ))}

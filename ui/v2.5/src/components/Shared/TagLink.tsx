@@ -12,6 +12,7 @@ interface IProps {
   tag?: Partial<TagDataFragment>;
   performer?: Partial<PerformerDataFragment>;
   marker?: Partial<SceneMarkerDataFragment>;
+  className?: string;
 }
 
 export const TagLink: React.FC<IProps> = (props: IProps) => {
@@ -30,7 +31,7 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     )}`;
   }
   return (
-    <Badge className="tag-item" variant="secondary">
+    <Badge className={`tag-item ${props.className}`} variant="secondary">
       <Link to={link}>{title}</Link>
     </Badge>
   );

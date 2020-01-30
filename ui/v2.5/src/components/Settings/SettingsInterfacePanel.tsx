@@ -7,13 +7,13 @@ import { useToast } from "src/hooks";
 export const SettingsInterfacePanel: React.FC = () => {
   const Toast = useToast();
   const config = StashService.useConfiguration();
-  const [soundOnPreview, setSoundOnPreview] = useState<boolean>();
-  const [wallShowTitle, setWallShowTitle] = useState<boolean>();
+  const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
+  const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
   const [maximumLoopDuration, setMaximumLoopDuration] = useState<number>(0);
-  const [autostartVideo, setAutostartVideo] = useState<boolean>();
-  const [showStudioAsText, setShowStudioAsText] = useState<boolean>();
+  const [autostartVideo, setAutostartVideo] = useState<boolean>(false);
+  const [showStudioAsText, setShowStudioAsText] = useState<boolean>(false);
   const [css, setCSS] = useState<string>();
-  const [cssEnabled, setCSSEnabled] = useState<boolean>();
+  const [cssEnabled, setCSSEnabled] = useState<boolean>(false);
 
   const [updateInterfaceConfig] = StashService.useConfigureInterface({
     soundOnPreview,
