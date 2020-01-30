@@ -340,6 +340,10 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     container: (base: CSSProperties, state: any) => ({
       ...base,
       zIndex: state.isFocused ? 10 : base.zIndex
+    }),
+    multiValueRemove: (base: CSSProperties, state: any) => ({
+      ...base,
+      color: state.isFocused ? base.color: '#333333'
     })
   };
 

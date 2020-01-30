@@ -13,10 +13,31 @@
   }
 }
 
-.grid {
+.row {
   .scene-card {
-    padding-bottom: 0;
+    overflow: hidden;
+    padding: 0;
   }
+}
+
+.scene-card-link {
+  position: relative;
+}
+
+.card-section {
+  margin-bottom: 0;
+  padding: .5rem 1rem 0 1rem;
+}
+
+.card-select {
+  left: .5rem;
+  margin-top: -12px;
+  opacity: .5;
+  padding-left: 15px;
+  position: absolute;
+  top: .7rem;
+  width: 1.2rem;
+  z-index: 1;
 }
 
 .performer-tag-container {
@@ -103,5 +124,26 @@
   &-body {
     max-height: 15rem;
     overflow-y: auto;
+  }
+}
+
+.studio-card {
+  padding: .5rem;
+
+  &-header {
+    height: 150px;
+    line-height: 150px;
+    text-align: center;
+  }
+
+  &-image {
+    max-height: 150px;
+    object-fit: contain;
+    vertical-align: middle;
+    width: 320px;
+
+    @media (max-width: 576px) {
+      width: 100%;
+    }
   }
 }

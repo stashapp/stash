@@ -25,126 +25,71 @@ code {
   margin: $pt-grid-size $pt-grid-size 0 0;
   padding: 0;
 
-  .performer-card,
-  .studio-card {
-    min-width: 185px;
-    width: 320px;
-  }
-
   &.wall {
     margin: 0;
     padding: 0;
-  }
-
-  & .performer-list-thumbnail {
-    height: 100px;
-    min-width: 50px;
-  }
-
-  & .scene-list-thumbnail {
-    min-height: 50px;
-    width: 150px;
   }
 
   table td {
     text-align: center;
     vertical-align: middle;
   }
+}
 
-  .card {
-    margin: 0 0 10px 10px;
-    overflow: hidden;
+.card {
+  margin: 5px;
+}
 
-    @media (min-width: 576px) {
-      &.zoom-0 {
-        width: 15rem;
+@media (min-width: 576px) {
+  .zoom-0 {
+    width: 15rem;
+  }
 
-        .previewable {
-          max-height: 11.25rem;
-        }
+  .zoom-1 {
+    width: 20rem;
+  }
 
-        .previewable.portrait {
-          max-height: 11.25rem;
-        }
-      }
+  .zoom-2 {
+    width: 30rem;
+  }
 
-      &.zoom-1 {
-        width: 20rem;
-
-        .previewable {
-          max-height: 15rem;
-        }
-
-        .previewable.portrait {
-          height: 15rem;
-        }
-      }
-
-      &.zoom-2 {
-        width: 30rem;
-
-        .previewable {
-          max-height: 22.5rem;
-        }
-
-        .previewable.portrait {
-          height: 22.5rem;
-        }
-      }
-
-      &.zoom-3 {
-        width: 40rem;
-
-        .previewable {
-          max-height: 30rem;
-        }
-
-        .previewable.portrait {
-          height: 30rem;
-        }
-      }
-    }
-
-    .card-select {
-      margin-top: -12px;
-      opacity: .5;
-      padding-left: 15px;
-      position: absolute;
-      width: 1.2rem;
-      z-index: 1;
-    }
+  .zoom-3 {
+    width: 40rem;
   }
 }
 
-.previewable {
-  display: block;
-  line-height: 0;
-  margin: -20px 0 0 -20px;
-  max-height: 240px;
-  overflow: hidden;
-  position: relative;
-  width: calc(100% + 40px);
-}
-
-.previewable.portrait {
-  height: 240px;
-}
-
-.video-container {
-  height: 100%;
+.scene-card-video {
+  height: auto;
   width: 100%;
+
+  .zoom-0 {
+    height: 11.25rem;
+  }
+
+  .zoom-1 {
+    height: 15rem;
+  }
+
+  .zoom-2 {
+    height: 22.5rem;
+  }
+
+  .zoom-3 {
+    height: 30rem;
+  }
 }
 
-video.preview {
-  display: block;
-  margin: 0 auto;
+.image-thumbnail {
+  height: 100px;
+  min-width: 50px;
   object-fit: cover;
-  width: 100%;
+  object-position: center 20%;
 }
 
-video.preview.portrait {
-  height: 100%;
-  width: auto;
+.card-image {
+  height: 30rem;
+  min-width: 11.25rem;
+  width: 20rem;
 }
 
 .filter-item,
@@ -204,16 +149,6 @@ video.preview.portrait {
   margin: 10px auto;
 }
 
-.card-section {
-  padding: 10px 0 0 0;
-
-  &.centered {
-    display: flex;
-    flex-flow: wrap;
-    justify-content: center;
-  }
-}
-
 .rating-5 {
   background: #ff2f39;
 }
@@ -264,26 +199,27 @@ video.preview.portrait {
 .scene-studio-overlay {
   display: block;
   font-weight: 900;
-  height: 20%;
+  height: 10%;
+  max-width: 40%;
   opacity: .75;
   position: absolute;
   right: .7rem;
   top: .7rem;
-  width: 40%;
   z-index: 9;
 
+  .image-thumbnail {
+    height: auto;
+    max-height: 50px;
+    max-width: 100%;
+  }
+
   a {
-    background-position: right top;
-    background-repeat: no-repeat;
-    background-size: contain;
     color: $text-color;
     display: inline-block;
-    height: 100%;
     letter-spacing: -.03rem;
     text-align: right;
     text-decoration: none;
     text-shadow: 0 0 3px #000;
-    width: 100%;
   }
 }
 
@@ -468,6 +404,12 @@ video.preview.portrait {
 .form-control {
   &-plaintext {
     color: $text-color;
+    margin: 0;
+    padding: 0;
+
+    option {
+      color: black;
+    }
 
     &::placeholder {
       color: transparent;
@@ -496,6 +438,7 @@ video.preview.portrait {
 
 .image-input {
   margin-bottom: 0;
+  margin-left: .5rem;
   overflow: hidden;
   position: relative;
 
@@ -504,7 +447,6 @@ video.preview.portrait {
   }
 
   [type=file] {
-    cursor: inherit;
     display: block;
     filter: alpha(opacity=0);
     font-size: 999px;
@@ -515,6 +457,11 @@ video.preview.portrait {
     right: 0;
     text-align: right;
     top: 0;
+
+    &:hover {
+      cursor: pointer;
+    }
+
   }
 }
 
@@ -564,4 +511,8 @@ video.preview.portrait {
       }
     }
   }
+}
+
+.error-message {
+  white-space: "pre-wrap";
 }

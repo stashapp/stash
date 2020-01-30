@@ -160,7 +160,7 @@ export const Studio: React.FC = () => {
       >
         {isNew && <h2>Add Studio</h2>}
         <img className="logo" alt={name} src={imagePreview} />
-        <Table id="performer-details" style={{ width: "100%" }}>
+        <Table>
           <tbody>
             {TableUtils.renderInputGroup({
               title: "Name",

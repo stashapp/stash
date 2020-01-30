@@ -98,11 +98,11 @@ export const TagList: React.FC = () => {
 
   const tagElements = data.allTags.map(tag => {
     return (
-      <div key={tag.id} className="tag-list-row">
+      <div key={tag.id} className="tag-list-row row">
         <Button variant="link" onClick={() => setEditingTag(tag)}>
           {tag.name}
         </Button>
-        <div style={{ float: "right" }}>
+        <div className="ml-auto">
           <Button variant="secondary" onClick={() => onAutoTag(tag)}>
             Auto Tag
           </Button>
@@ -131,7 +131,7 @@ export const TagList: React.FC = () => {
     <div id="tag-list-container">
       <Button
         variant="primary"
-        style={{ marginTop: "20px" }}
+        className="mt-2"
         onClick={() => setEditingTag({})}
       >
         New Tag

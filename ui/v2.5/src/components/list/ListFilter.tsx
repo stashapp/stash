@@ -257,7 +257,6 @@ export const ListFilter: React.FC<IListFilterProps> = (
             defaultValue={props.filter.searchTerm}
             onChange={onChangeQuery}
             className="filter-item col-5 col-sm-2"
-            style={{ width: "inherit" }}
           />
           <Form.Control
             as="select"
@@ -316,13 +315,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
             {renderMore()}
           </ButtonGroup>
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            margin: "10px auto"
-          }}
-        >
+        <div className="d-flex justify-content-center">
           {renderFilterTags()}
         </div>
       </>

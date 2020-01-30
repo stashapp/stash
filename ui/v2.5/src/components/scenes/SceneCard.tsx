@@ -63,20 +63,13 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderSceneStudioOverlay() {
     if (!props.scene.studio) return;
 
-    let style: React.CSSProperties = {
-      backgroundImage: `url('${props.scene.studio.image_path}')`
-    };
-
-    let text = "";
-    if (showStudioAsText) {
-      style = {};
-      text = props.scene.studio.name;
-    }
-
     return (
       <div className="scene-studio-overlay">
-        <Link to={`/studios/${props.scene.studio.id}`} style={style}>
-          {text}
+        <Link to={`/studios/${props.scene.studio.id}`}>
+        { showStudioAsText
+            ? props.scene.studio.name
+            : <img className="image-thumbnail" alt={props.scene.studio.name} src={props.scene.studio.image_path ?? ''} />
+        }
         </Link>
       </div>
     );
@@ -103,13 +96,14 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (props.scene.performers.length <= 0) return;
 
     const popoverContent = props.scene.performers.map(performer => (
-      <div className="performer-tag-container" key="performer">
+      <div className="performer-tag-container row" key="performer">
         <Link
           to={`/performers/${performer.id}`}
-          className="performer-tag previewable image"
-          style={{ backgroundImage: `url(${performer.image_path})` }}
-        />
-        <TagLink key={performer.id} performer={performer} />
+          className="performer-tag col m-auto zoom-2"
+        >
+          <img className="image-thumbnail" alt={performer.name ?? ''} src={performer.image_path ?? ''} />
+        </Link>
+        <TagLink key={performer.id} performer={performer} className="d-block" />
       </div>
     ));
 
@@ -182,7 +176,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
   return (
     <Card
-      className={`zoom-${props.zoomIndex} scene-card`}
+      className={`scene-card zoom-${props.zoomIndex}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -200,20 +194,18 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       {maybeRenderSceneStudioOverlay()}
       <Link
         to={`/scenes/${props.scene.id}`}
-        className={cx("image", "previewable", { portrait: isPortrait() })}
+        className="scene-card-link"
       >
-        <div className="video-container">
-          {maybeRenderRatingBanner()}
-          {maybeRenderSceneSpecsOverlay()}
-          <video
-            loop
-            className={cx("preview", { portrait: isPortrait() })}
-            poster={props.scene.paths.screenshot || ""}
-            ref={videoHoverHook.videoEl}
-          >
-            {previewPath ? <source src={previewPath} /> : ""}
-          </video>
-        </div>
+        {maybeRenderRatingBanner()}
+        {maybeRenderSceneSpecsOverlay()}
+        <video
+          loop
+          className={cx('scene-card-video', { portrait: isPortrait() })}
+          poster={props.scene.paths.screenshot || ""}
+          ref={videoHoverHook.videoEl}
+        >
+          {previewPath ? <source src={previewPath} /> : ""}
+        </video>
       </Link>
       <div className="card-section">
         <h5 className="text-truncate">
@@ -222,13 +214,15 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             : TextUtils.fileNameFromPath(props.scene.path)}
         </h5>
         <span>{props.scene.date}</span>
-        <p>
-          {TextUtils.truncate(
-            props.scene.details ?? "",
-            100,
-            "... (continued)"
-          )}
-        </p>
+        { props.scene.details && (
+          <p>
+            {TextUtils.truncate(
+              props.scene.details,
+              100,
+              "... (continued)"
+            )}
+          </p>
+        )}
       </div>
 
       {maybeRenderPopoverButtonGroup()}

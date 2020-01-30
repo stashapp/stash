@@ -14,7 +14,7 @@ export const Gallery: React.FC = () => {
   if (error) return <div>{error.message}</div>;
 
   return (
-    <div style={{ width: "75vw", margin: "0 auto" }}>
+    <div className="col-9 m-auto">
       <GalleryViewer gallery={gallery as any} />
     </div>
   );

@@ -10,8 +10,8 @@ interface IProps {
 export const StudioCard: React.FC<IProps> = ({ studio }) => {
   return (
     <Card className="studio-card">
-      <Link to={`/studios/${studio.id}`} className="studio-image">
-        <img alt={studio.name} src={studio.image_path ?? ""} />
+      <Link to={`/studios/${studio.id}`} className="studio-card-header">
+        <img className="studio-card-image" alt={studio.name} src={studio.image_path ?? ""} />
       </Link>
       <div className="card-section">
         <h5 className="text-truncate">{studio.name}</h5>

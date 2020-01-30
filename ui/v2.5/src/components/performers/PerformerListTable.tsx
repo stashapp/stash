@@ -14,78 +14,55 @@ interface IPerformerListTableProps {
 export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   props: IPerformerListTableProps
 ) => {
-  function maybeRenderFavoriteHeart(performer: GQL.PerformerDataFragment) {
-    if (!performer.favorite) {
-      return;
-    }
-    return (
-      <Button disabled className="favorite">
-        <Icon icon="heart" />
-      </Button>
-    );
-  }
-
-  function renderPerformerImage(performer: GQL.PerformerDataFragment) {
-    const style: React.CSSProperties = {
-      backgroundImage: `url('${performer.image_path}')`,
-      lineHeight: 5,
-      backgroundSize: "contain",
-      display: "inline-block",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat"
-    };
-
-    return (
-      <Link
-        className="performer-list-thumbnail"
-        to={`/performers/${performer.id}`}
-        style={style}
-      />
-    );
-  }
-
-  function renderPerformerRow(performer: GQL.PerformerDataFragment) {
-    return (
-      <>
-        <tr>
-          <td>{renderPerformerImage(performer)}</td>
-          <td style={{ textAlign: "left" }}>
-            <Link to={`/performers/${performer.id}`}>
-              <h5 className="text-truncate">{performer.name}</h5>
-            </Link>
-          </td>
-          <td>{performer.aliases ? performer.aliases : ""}</td>
-          <td>{maybeRenderFavoriteHeart(performer)}</td>
-          <td>
-            <Link to={NavUtils.makePerformerScenesUrl(performer)}>
-              <h6>{performer.scene_count}</h6>
-            </Link>
-          </td>
-          <td>{performer.birthdate}</td>
-          <td>{performer.height}</td>
-        </tr>
-      </>
-    );
-  }
+  const renderPerformerRow = (performer: GQL.PerformerDataFragment) => (
+    <tr key={performer.id}>
+      <td>
+        <Link
+          to={`/performers/${performer.id}`}
+        >
+          <img className="image-thumbnail" alt={performer.name ?? ""} src={performer.image_path ?? ''} />
+        </Link>
+      </td>
+      <td className="text-left">
+        <Link to={`/performers/${performer.id}`}>
+          <h5 className="text-truncate">{performer.name}</h5>
+        </Link>
+      </td>
+      <td>{performer.aliases ? performer.aliases : ""}</td>
+      <td>{
+        performer.favorite && (
+          <Button disabled className="favorite">
+            <Icon icon="heart" />
+          </Button>
+        )
+      }
+      </td>
+      <td>
+        <Link to={NavUtils.makePerformerScenesUrl(performer)}>
+          <h6>{performer.scene_count}</h6>
+        </Link>
+      </td>
+      <td>{performer.birthdate}</td>
+      <td>{performer.height}</td>
+    </tr>
+  );
 
   return (
-    <>
-      <div className="grid">
-        <Table bordered striped>
-          <thead>
-            <tr>
-              <th />
-              <th>Name</th>
-              <th>Aliases</th>
-              <th>Favourite</th>
-              <th>Scene Count</th>
-              <th>Birthdate</th>
-              <th>Height</th>
-            </tr>
-          </thead>
-          <tbody>{props.performers.map(renderPerformerRow)}</tbody>
-        </Table>
-      </div>
-    </>
+    <div className="grid">
+      <Table bordered striped>
+        <thead>
+          <tr>
+            <th />
+            <th>Name</th>
+            <th>Aliases</th>
+            <th>Favourite</th>
+            <th>Scene Count</th>
+            <th>Birthdate</th>
+            <th>Height</th>
+          </tr>
+        </thead>
+        <tbody>{props.performers.map(renderPerformerRow)}</tbody>
+      </Table>
+    </div>
   );
 };

@@ -37,13 +37,13 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
       return (
         <div key={marker.id}>
           <hr />
-          <div>
+          <div className="row">
             <Button variant="link" onClick={() => onClickMarker(marker)}>
               {marker.title}
             </Button>
             <Button
               variant="link"
-              style={{ float: "right" }}
+              className="ml-auto"
               onClick={() => onEdit(marker)}
             >
               Edit

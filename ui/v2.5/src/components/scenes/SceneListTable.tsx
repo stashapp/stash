@@ -11,77 +11,48 @@ interface ISceneListTableProps {
 export const SceneListTable: React.FC<ISceneListTableProps> = (
   props: ISceneListTableProps
 ) => {
-  function renderSceneImage(scene: GQL.SlimSceneDataFragment) {
-    const style: React.CSSProperties = {
-      backgroundImage: `url('${scene.paths.screenshot}')`,
-      lineHeight: 5,
-      backgroundSize: "contain",
-      display: "inline-block",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat"
-    };
-
-    return (
-      <Link
-        className="scene-list-thumbnail"
-        to={`/scenes/${scene.id}`}
-        style={style}
-      />
-    );
-  }
-
-  function renderDuration(scene: GQL.SlimSceneDataFragment) {
-    if (scene.file.duration === undefined) {
-      return;
-    }
-    return TextUtils.secondsToTimestamp(scene.file.duration ?? 0);
-  }
-
-  function renderTags(tags: GQL.Tag[]) {
-    return tags.map(tag => (
+  const renderTags = (tags: GQL.Tag[]) => (
+    tags.map(tag => (
       <Link key={tag.id} to={NavUtils.makeTagScenesUrl(tag)}>
         <h6>{tag.name}</h6>
       </Link>
-    ));
-  }
+    ))
+  );
 
-  function renderPerformers(performers: Partial<GQL.Performer>[]) {
-    return performers.map(performer => (
-      <Link key={performer.id} to={NavUtils.makePerformerScenesUrl(performer)}>
-        <h6>{performer.name}</h6>
-      </Link>
-    ));
-  }
+  const renderPerformers = (performers: Partial<GQL.Performer>[]) => (
+    performers.map(performer => (
+      <Link key={performer.id} to={NavUtils.makePerformerScenesUrl(performer)} />
+    ))
+  );
 
-  function renderStudio(studio: Partial<GQL.Studio> | undefined) {
-    if (studio) {
-      return (
-        <Link to={NavUtils.makeStudioScenesUrl(studio)}>
-          <h6>{studio.name}</h6>
+  const renderSceneRow = (scene: GQL.SlimSceneDataFragment) => (
+    <tr key={scene.id}>
+      <td>
+        <Link
+          to={`/scenes/${scene.id}`}
+        >
+          <img className="image-thumbnail" alt={scene.title ?? ''} src={scene.paths.screenshot ?? ''} />
         </Link>
-      );
-    }
-  }
-
-  function renderSceneRow(scene: GQL.SlimSceneDataFragment) {
-    return (
-      <tr key={scene.id}>
-        <td>{renderSceneImage(scene)}</td>
-        <td style={{ textAlign: "left" }}>
-          <Link to={`/scenes/${scene.id}`}>
-            <h5 className="text-truncate">
-              {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
-            </h5>
-          </Link>
-        </td>
-        <td>{scene.rating ? scene.rating : ""}</td>
-        <td>{renderDuration(scene)}</td>
-        <td>{renderTags(scene.tags)}</td>
-        <td>{renderPerformers(scene.performers)}</td>
-        <td>{renderStudio(scene.studio ?? undefined)}</td>
-      </tr>
-    );
-  }
+      </td>
+      <td className="text-left">
+        <Link to={`/scenes/${scene.id}`}>
+          <h5 className="text-truncate">
+            {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
+          </h5>
+        </Link>
+      </td>
+      <td>{scene.rating ? scene.rating : ""}</td>
+      <td>{scene.file.duration && TextUtils.secondsToTimestamp(scene.file.duration) }</td>
+      <td>{renderTags(scene.tags)}</td>
+      <td>{renderPerformers(scene.performers)}</td>
+      <td>{ scene.studio && (
+        <Link to={NavUtils.makeStudioScenesUrl(scene.studio)}>
+          <h6>{scene.studio.name}</h6>
+        </Link>
+      )}
+      </td>
+    </tr>
+  )
 
   return (
     <div className="grid">
