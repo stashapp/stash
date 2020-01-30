@@ -22,13 +22,17 @@ export function useInterfaceLocalForage(): [ILocalForage<IInterfaceConfig | unde
   const result = useLocalForage("interface");
   // Set defaults
   React.useEffect(() => {
-    if (result.data === undefined) {
+    if (!result.data) {
       result.setData({
         wall: {
           // nothing here currently
         },
         queries: {}
       });
+    } else if (!result.data.queries) {
+      let newData = Object.assign({}, result.data);
+      newData.queries = {};
+      result.setData(newData);
     }
   });
   return [result, result.setData];
