@@ -114,7 +114,6 @@ func (qb *JoinsQueryBuilder) DestroyPerformersScenes(sceneID int, tx *sqlx.Tx) e
 func (qb *JoinsQueryBuilder) GetSceneMovies(sceneID int, tx *sqlx.Tx) ([]MoviesScenes, error) {
 	ensureTx(tx)
 
-	// Delete the existing joins and then create new ones
 	query := `SELECT * from movies_scenes WHERE scene_id = ?`
 
 	var rows *sqlx.Rows
