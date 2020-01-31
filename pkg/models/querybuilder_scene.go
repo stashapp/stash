@@ -232,6 +232,14 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		}
 	}
 
+	if oCounter := sceneFilter.OCounter; oCounter != nil {
+		clause, count := getIntCriterionWhereClause("scenes.o_counter", *sceneFilter.OCounter)
+		whereClauses = append(whereClauses, clause)
+		if count == 1 {
+			args = append(args, sceneFilter.OCounter.Value)
+		}
+	}
+
 	if durationFilter := sceneFilter.Duration; durationFilter != nil {
 		clause, thisArgs := getDurationWhereClause(*durationFilter)
 		whereClauses = append(whereClauses, clause)

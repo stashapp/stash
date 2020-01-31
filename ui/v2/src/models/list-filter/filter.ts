@@ -56,7 +56,7 @@ export class ListFilterModel {
     switch (filterMode) {
       case FilterMode.Scenes:
         if (!!this.sortBy === false) { this.sortBy = "date"; }
-        this.sortByOptions = ["title", "path", "rating", "date", "filesize", "duration", "framerate", "bitrate", "random"];
+        this.sortByOptions = ["title", "path", "rating", "o_counter", "date", "filesize", "duration", "framerate", "bitrate", "random"];
         this.displayModeOptions = [
           DisplayMode.Grid,
           DisplayMode.List,
@@ -65,6 +65,7 @@ export class ListFilterModel {
         this.criterionOptions = [
           new NoneCriterionOption(),
           new RatingCriterionOption(),
+          ListFilterModel.createCriterionOption("o_counter"),
           new ResolutionCriterionOption(),
           ListFilterModel.createCriterionOption("duration"),
           new HasMarkersCriterionOption(),
@@ -154,7 +155,7 @@ export class ListFilterModel {
     const params = rawParms as IQueryParameters;
     if (params.sortby !== undefined) {
       this.sortBy = params.sortby;
-
+      
       // parse the random seed if provided
       const randomPrefix = "random_";
       if (this.sortBy && this.sortBy.startsWith(randomPrefix)) {
@@ -234,7 +235,7 @@ export class ListFilterModel {
       encodedCriteria.push(jsonCriterion);
     });
 
-    
+
     const result = {
       sortby: this.getSortBy(),
       sortdir: this.sortDirection,
@@ -253,7 +254,7 @@ export class ListFilterModel {
       q: this.searchTerm,
       page: this.currentPage,
       per_page: this.itemsPerPage,
-      sort: this.getSortBy(),
+      sort: this.sortBy,
       direction: this.sortDirection === "asc" ? SortDirectionEnum.Asc : SortDirectionEnum.Desc,
     };
   }
@@ -266,6 +267,10 @@ export class ListFilterModel {
           const ratingCrit = criterion as RatingCriterion;
           result.rating = { value: ratingCrit.value, modifier: ratingCrit.modifier };
           break;
+        case "o_counter":
+            const oCounterCrit = criterion as NumberCriterion;
+            result.o_counter = { value: oCounterCrit.value, modifier: oCounterCrit.modifier };
+            break;
         case "resolution": {
           switch ((criterion as ResolutionCriterion).value) {
             case "240p": result.resolution = ResolutionEnum.Low; break;

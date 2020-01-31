@@ -95,7 +95,7 @@ func getSort(sort string, direction string, tableName string) string {
 
 	const randomSeedPrefix = "random_"
 
-	if strings.Contains(sort, "_count") {
+	if strings.HasSuffix(sort, "_count") {
 		var relationTableName = strings.Split(sort, "_")[0] // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
 		return " ORDER BY COUNT(distinct " + colName + ") " + direction
