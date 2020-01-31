@@ -29,6 +29,7 @@ interface IQueryParameters {
   disp?: string;
   q?: string;
   p?: string;
+  perPage?: string;
   c?: string[];
 }
 
@@ -45,7 +46,6 @@ export class ListFilterModel {
   public displayModeOptions: DisplayMode[] = [];
   public criterionOptions: ICriterionOption[] = [];
   public criteria: Array<Criterion<any, any>> = [];
-  public totalCount: number = 0;
   public randomSeed: number = -1;
 
   private static createCriterionOption(criterion: CriterionType) {
@@ -180,6 +180,9 @@ export class ListFilterModel {
     if (params.p !== undefined) {
       this.currentPage = Number(params.p);
     }
+    if (params.perPage !== undefined) {
+      this.itemsPerPage = Number(params.perPage);
+    }
 
     if (params.c !== undefined) {
       this.criteria = [];
@@ -241,6 +244,7 @@ export class ListFilterModel {
       disp: this.displayMode,
       q: this.searchTerm,
       p: this.currentPage,
+      perPage: this.itemsPerPage,
       c: encodedCriteria,
     };
     return queryString.stringify(result, {encode: false});
