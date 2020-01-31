@@ -78,8 +78,9 @@ export class Pagination extends React.Component<IPaginationProps, IPaginationSta
 
     const pagerState = this.getPagerState(this.props.totalItems, page, this.props.itemsPerPage);
 
-    if (page < 1) { page = 1; }
+    // rearranged this so that the minimum page number is 1, not 0
     if (page > pagerState.totalPages) { page = pagerState.totalPages; }
+    if (page < 1) { page = 1; }
 
     this.setState(pagerState);
     if (propagate) { this.props.onChangePage(page); }
