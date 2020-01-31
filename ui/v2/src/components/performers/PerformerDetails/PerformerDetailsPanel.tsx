@@ -174,16 +174,17 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
 
   async function onScrapePerformer() {
     setIsDisplayingScraperDialog(undefined);
-    setIsLoading(true);
     try {
       if (!scrapePerformerDetails || !isDisplayingScraperDialog) { return; }
+      setIsLoading(true);
       const result = await StashService.queryScrapePerformer(isDisplayingScraperDialog.id, getQueryScraperPerformerInput());
       if (!result.data || !result.data.scrapePerformer) { return; }
       updatePerformerEditState(result.data.scrapePerformer);
     } catch (e) {
       ErrorUtils.handle(e);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }
 
   async function onScrapePerformerURL() {
