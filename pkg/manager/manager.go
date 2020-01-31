@@ -28,6 +28,7 @@ var once sync.Once
 type flagStruct struct {
 	configFilePath string
 }
+
 var flags = flagStruct{}
 
 func GetInstance() *singleton {
