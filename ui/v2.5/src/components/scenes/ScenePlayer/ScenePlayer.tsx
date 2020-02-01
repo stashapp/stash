@@ -194,7 +194,7 @@ export class ScenePlayerImpl extends React.Component<
     return (
       <ReactJWPlayer
         playerId={JWUtils.playerID}
-        playerScript="http://localhost:9999/jwplayer/jwplayer.js"
+        playerScript="http://192.168.1.65:9999/jwplayer/jwplayer.js"
         customProps={config}
         onReady={this.onReady}
         onSeeked={this.onSeeked}

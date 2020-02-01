@@ -25,7 +25,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (
   }
 
   return (
-    <Card>
+    <Card className="performer-card">
       <Link
         to={`/performers/${performer.id}`}
       >

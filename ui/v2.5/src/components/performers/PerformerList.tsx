@@ -55,7 +55,7 @@ export const PerformerList: React.FC = () => {
     }
     if (filter.displayMode === DisplayMode.Grid) {
       return (
-        <div className="grid row">
+        <div className="row justify-content-center">
           {result.data.findPerformers.performers.map(p => (
             <PerformerCard key={p.id} performer={p} />
           ))}

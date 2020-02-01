@@ -19,7 +19,7 @@ export const ScenePerformerPanel: FunctionComponent<IScenePerformerPanelProps> =
 
   return (
     <>
-      <div className="grid">{cards}</div>
+      <div className="row justify-content-center">{cards}</div>
     </>
   );
 };

@@ -79,7 +79,6 @@ export const MainNavbar: React.FC = () => {
         {menuItems.map(i => (
           <LinkContainer
             activeClassName="active"
-            exact
             to={i.href}
             key={i.href}
           >
