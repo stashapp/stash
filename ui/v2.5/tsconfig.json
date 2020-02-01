@@ -19,10 +19,9 @@
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "baseUrl": ".",
-    "paths": {
-      "src/*": ["./src/*"]
-    },
-    "sourceMap": true
+    "sourceMap": true,
+    "allowJs": true,
+    "isolatedModules": true
   },
   "include": [
     "src/**/*"

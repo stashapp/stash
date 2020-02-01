@@ -1,7 +1,15 @@
 @import "styles/theme";
 @import "styles/range";
 @import "styles/scrollbars";
-@import "./components/**/*.scss";
+@import "src/components/Tags/styles.scss";
+@import "src/components/performers/styles.scss";
+@import "src/components/list/styles.scss";
+@import "src/components/Settings/styles.scss";
+@import "src/components/Studios/styles.scss";
+@import "src/components/Shared/styles.scss";
+@import "src/components/Wall/Wall.scss";
+@import "src/components/scenes/ScenePlayer/ScenePlayerScrubber.scss";
+@import "src/components/scenes/styles.scss";
 
 body {
   -webkit-font-smoothing: antialiased;
@@ -481,22 +489,6 @@ code {
   @media (max-width: 576px) {
     a {
       padding: 6px;
-    }
-  }
-}
-
-@media (max-width: 576px) {
-  .nav-tabs {
-    border: none;
-    margin: auto;
-
-    .nav-link {
-      border: none;
-      padding: 8px;
-
-      &.active {
-        border-bottom: 2px solid;
-      }
     }
   }
 }
