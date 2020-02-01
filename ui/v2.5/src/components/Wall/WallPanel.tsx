@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { WallItem } from "./WallItem";
-import "./Wall.scss";
 
 interface IWallPanelProps {
   scenes?: GQL.SlimSceneDataFragment[];
