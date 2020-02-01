@@ -163,7 +163,10 @@ export class ListHook {
     const result = filterListImpl.getData(getFilter());
 
     useEffect(() => {
-      setTotalCount(filterListImpl.getCount(result.data));
+      // don't set the total count while loading
+      if (!result.loading) {
+        setTotalCount(filterListImpl.getCount(result.data));
+      }
 
       // select none when data changes
       onSelectNone();
