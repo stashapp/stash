@@ -348,6 +348,25 @@ export class ListHook {
       }
     }) : undefined;
 
+    function maybeRenderContent() {
+      if (!result.loading && !result.error) {
+        return options.renderContent(result, filter, selectedIds, zoomIndex);
+      }
+    }
+
+    function maybeRenderPagination() {
+      if (!result.loading && !result.error) {
+        return (
+          <Pagination
+            itemsPerPage={filter.itemsPerPage}
+            currentPage={filter.currentPage}
+            totalItems={totalCount}
+            onChangePage={onChangePage}
+          />
+        );
+      }
+    }
+
     const template = (
       <div>
         <ListFilter
@@ -368,13 +387,8 @@ export class ListHook {
         {options.renderSelectedOptions && selectedIds.size > 0 ? options.renderSelectedOptions(result, selectedIds) : undefined}
         {result.loading || (!options.subComponent && !forageInitialised.current) ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
         {result.error ? <h1>{result.error.message}</h1> : undefined}
-        {options.renderContent(result, filter, selectedIds, zoomIndex)}
-        <Pagination
-          itemsPerPage={filter.itemsPerPage}
-          currentPage={filter.currentPage}
-          totalItems={totalCount}
-          onChangePage={onChangePage}
-        />
+        {maybeRenderContent()}
+        {maybeRenderPagination()}
       </div>
     );
 
