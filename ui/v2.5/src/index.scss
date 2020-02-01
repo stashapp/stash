@@ -18,26 +18,14 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
-.grid {
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: center;
-  margin: $pt-grid-size $pt-grid-size 0 0;
-  padding: 0;
-
-  &.wall {
-    margin: 0;
-    padding: 0;
-  }
-
-  table td {
-    text-align: center;
-    vertical-align: middle;
-  }
+.table-list td {
+  text-align: center;
+  vertical-align: middle;
 }
 
 .card {
   margin: 5px;
+  overflow: hidden;
 }
 
 @media (min-width: 576px) {

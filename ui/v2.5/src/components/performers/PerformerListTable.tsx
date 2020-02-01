@@ -48,7 +48,7 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   );
 
   return (
-    <div className="grid">
+    <div className="row justify-content-center table-list">
       <Table bordered striped>
         <thead>
           <tr>
