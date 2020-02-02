@@ -6,7 +6,7 @@ import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { LoadingIndicator } from "src/components/Shared";
-import { ScenePlayer } from "src/components/scenes/ScenePlayer/ScenePlayer";
+import { ScenePlayer } from "src/components/ScenePlayer";
 import { ScenePerformerPanel } from "./ScenePerformerPanel";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
@@ -50,7 +50,7 @@ export const Scene: React.FC = () => {
   return (
     <>
       <ScenePlayer scene={scene} timestamp={timestamp} autoplay={autoplay} />
-      <div id="details-container" className="col col-sm-9 m-sm-auto">
+      <div id="scene-details-container" className="col col-sm-9 m-sm-auto">
         <Tabs id="scene-tabs" mountOnEnter>
           <Tab eventKey="scene-details-panel" title="Details">
             <SceneDetailPanel scene={scene} />

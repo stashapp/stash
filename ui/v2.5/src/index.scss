@@ -1,21 +1,24 @@
 @import "styles/theme";
 @import "styles/range";
 @import "styles/scrollbars";
-@import "src/components/Tags/styles.scss";
-@import "src/components/performers/styles.scss";
-@import "src/components/list/styles.scss";
+@import "src/components/Galleries/styles.scss";
+@import "src/components/List/styles.scss";
+@import "src/components/Performers/styles.scss";
+@import "src/components/Scenes/styles.scss";
+@import "src/components/SceneFilenameParser/styles.scss";
+@import "src/components/ScenePlayer/styles.scss";
 @import "src/components/Settings/styles.scss";
 @import "src/components/Studios/styles.scss";
 @import "src/components/Shared/styles.scss";
-@import "src/components/Wall/Wall.scss";
-@import "src/components/scenes/ScenePlayer/ScenePlayerScrubber.scss";
-@import "src/components/scenes/styles.scss";
+@import "src/components/Tags/styles.scss";
+@import "src/components/Wall/styles.scss";
 
 body {
+  color: $text-color;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
-  padding: $pt-navbar-height 0 0 0;
+  padding: 4rem 0 0 0;
 
   @media (min-width: 600px) {
     min-width: 845px;
@@ -29,11 +32,6 @@ code {
 .table-list td {
   text-align: center;
   vertical-align: middle;
-}
-
-.card {
-  margin: 5px;
-  overflow: hidden;
 }
 
 @media (min-width: 576px) {
@@ -88,18 +86,13 @@ code {
   width: 20rem;
 }
 
-.filter-item,
-.operation-item {
-  margin: 0 10px;
-}
-
 .edit-button {
   margin-right: 10px;
 }
 
 .tag-item {
   background-color: $muted-gray;
-  color: #182026;
+  color: $dark-text;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
@@ -114,7 +107,7 @@ code {
     background: none;
     border: none;
     bottom: 2px;
-    color: #182026;
+    color: $dark-text;
     font-size: 12px;
     line-height: 1rem;
     margin-left: .5rem;
@@ -143,6 +136,11 @@ code {
   display: flex;
   justify-content: center;
   margin: 10px auto;
+}
+
+.filter-item,
+.operation-item {
+  margin: 0 10px;
 }
 
 .rating-5 {
@@ -181,180 +179,6 @@ code {
   transform: rotate(-36deg);
 }
 
-.scene-specs-overlay {
-  bottom: 1rem;
-  color: $text-color;
-  display: block;
-  font-weight: 400;
-  letter-spacing: -.03rem;
-  position: absolute;
-  right: .7rem;
-  text-shadow: 0 0 3px #000;
-}
-
-.scene-studio-overlay {
-  display: block;
-  font-weight: 900;
-  height: 10%;
-  max-width: 40%;
-  opacity: .75;
-  position: absolute;
-  right: .7rem;
-  top: .7rem;
-  z-index: 9;
-
-  .image-thumbnail {
-    height: auto;
-    max-height: 50px;
-    max-width: 100%;
-  }
-
-  a {
-    color: $text-color;
-    display: inline-block;
-    letter-spacing: -.03rem;
-    text-align: right;
-    text-decoration: none;
-    text-shadow: 0 0 3px #000;
-  }
-}
-
-.overlay-resolution {
-  font-weight: 900;
-  margin-right: .3rem;
-  text-transform: uppercase;
-}
-
-.scene-card {
-  .scene-specs-overlay,
-  .rating-banner,
-  .scene-studio-overlay {
-    transition: opacity .5s;
-  }
-}
-
-.scene-card:hover {
-  .scene-specs-overlay,
-  .rating-banner,
-  .scene-studio-overlay {
-    opacity: 0;
-    transition: opacity .5s;
-  }
-
-  .scene-studio-overlay:hover {
-    opacity: .75;
-    transition: opacity .5s;
-  }
-}
-
-#jwplayer-container {
-  margin: 10px auto;
-  width: 75%;
-}
-
-.video-js {
-  height: 90vh;
-  width: 100%;
-}
-
-.pre {
-  white-space: pre-line;
-}
-
-/* stylelint-disable selector-class-pattern */
-.react-photo-gallery--gallery {
-  img {
-    object-fit: contain;
-  }
-}
-/* stylelint-enable selector-class-pattern */
-
-#parser-container {
-  margin: 10px auto;
-  width: 75%;
-
-  .inputs label {
-    width: 12rem;
-  }
-
-  .scene-parser-results {
-    overflow-x: auto;
-  }
-
-  .scene-parser-row .parser-field-title input {
-    width: 50ch;
-  }
-
-  .scene-parser-row .parser-field-date input {
-    width: 13ch;
-  }
-
-  .scene-parser-row .parser-field-performers input {
-    width: 20ch;
-  }
-
-  .scene-parser-row .parser-field-tags input {
-    width: 20ch;
-  }
-
-  .scene-parser-row .parser-field-studio input {
-    width: 15ch;
-  }
-
-  .scene-parser-row input {
-    min-width: 10ch;
-  }
-
-  .scene-parser-row div:first-child > input {
-    margin-bottom: 5px;
-  }
-}
-
-.aliases-field > label {
-  font-weight: 300;
-}
-
-.scene-cover {
-  display: block;
-  margin-bottom: 10px;
-  margin-top: 10px;
-  max-width: 100%;
-}
-
-.collapsible-label {
-  cursor: pointer;
-}
-
-.label-icon {
-  margin-right: .3rem;
-  vertical-align: middle;
-
-  + span {
-    vertical-align: middle;
-  }
-}
-
-.main {
-  color: $text-color;
-}
-
-.table {
-  color: $text-color;
-  width: inherit;
-}
-
-.table td {
-  border: none;
-}
-
-.table-striped tr:nth-child(odd) td {
-  background: rgba(92, 112, 128, .15);
-}
-
-.tab-pane {
-  margin-top: 20px;
-}
-
 .card {
   background-color: #30404d;
   border-radius: 3px;
@@ -371,64 +195,6 @@ code {
 
   .toast {
     width: 350px;
-  }
-}
-
-.button-link {
-  background-color: transparent;
-  border-width: 0;
-  color: $link-color;
-  cursor: pointer;
-  display: inline;
-  padding: 0;
-}
-
-.button-link:hover {
-  text-decoration: underline;
-}
-
-.scrubber-button {
-  background-color: transparent;
-  color: $link-color;
-}
-
-.scrubber-button:hover {
-  text-decoration: underline;
-}
-
-/* BOOTSTRAP OVERRIDES */
-.form-control {
-  &-plaintext {
-    color: $text-color;
-    margin: 0;
-    padding: 0;
-
-    option {
-      color: black;
-    }
-
-    &::placeholder {
-      color: transparent;
-    }
-
-    &:hover {
-      cursor: default;
-    }
-  }
-}
-
-.popover {
-  &-body {
-    .btn {
-      color: $text-color;
-    }
-  }
-}
-
-.modal {
-  .modal-body,
-  .modal-footer {
-    background-color: rgb(235, 241, 245);
   }
 }
 
@@ -461,21 +227,15 @@ code {
   }
 }
 
-.tab-content {
-  padding-bottom: 2rem;
-}
-
-/* stylelint-disable  selector-class-pattern */
-.svg-inline--fa {
+.fa-icon {
   margin: 0 .4rem;
 }
 
-.btn .svg-inline--fa {
+.btn .fa-icon {
   &:last-child:first-child {
     margin: 0;
   }
 }
-/* stylelint-enable */
 
 .brand-icon {
   padding: 3px 6px;
@@ -487,7 +247,7 @@ code {
 
 .top-nav {
   @media (max-width: 576px) {
-    a {
+    .btn {
       padding: 6px;
     }
   }

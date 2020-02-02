@@ -4,7 +4,7 @@
 
 ::selection {
   background-color: #cce2ff;
-  color: rgba(0, 0, 0, .87);
+  color: $dark-text;
 }
 
 /* Form */
@@ -12,7 +12,7 @@
 textarea::selection,
 input::selection {
   background-color: rgba(100, 100, 100, .4);
-  color: rgba(0, 0, 0, .87);
+  color: $dark-text;
 }
 
 /* Force Simple Scrollbars */

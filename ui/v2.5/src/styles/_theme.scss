@@ -16,11 +16,12 @@ $theme-colors: (
 $body-bg: #202b33;
 $text-muted: $muted-gray;
 $link-color: #48aff0;
-$link-hover-color: #48aff0;
+$link-hover-color: $link-color;
 $text-color: #f5f8fa;
 $pre-color: $text-color;
 $navbar-dark-color: rgb(245, 248, 250);
 $popover-bg: $secondary;
+$dark-text: #182026;
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
@@ -29,8 +30,6 @@ $orange1: #a66321;
 $sepia1: #63411e;
 $dark-gray2: #202b33;
 $dark-gray5: #394b59;
-
-$pt-navbar-height: 4rem;
 
 .btn.active:not(.disabled),
 .btn.active.minimal:not(.disabled) {
@@ -56,6 +55,10 @@ button.minimal {
   }
 }
 
+hr {
+  margin: 5px 0;
+}
+
 .dropdown-toggle::after {
   content: none;
 }
@@ -67,6 +70,7 @@ button.minimal {
 .nav-tabs {
   border: none;
   margin: auto;
+  margin-bottom: .5rem;
 
   .nav-link {
     border: none;
@@ -78,34 +82,38 @@ button.minimal {
       color: $link-color;
 
       &:hover {
+        border-bottom-color: $link-color;
         cursor: default;
       }
+    }
+
+    &:hover {
+      border-bottom: 2px solid white;
     }
   }
 }
 
-hr {
-  margin: 5px 0;
+.tab-content {
+  padding-bottom: 2rem;
+}
+
+.table-striped tr:nth-child(odd) td {
+  background: rgba(92, 112, 128, .15);
 }
 
 .table {
   border: none;
+  color: $text-color;
 
   thead {
     th {
-      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, .15);
+      border-top: none;
     }
   }
 
   td {
-    a {
-      color: $text-color;
-    }
-  }
-}
-
-.table {
-  td {
+    border: none;
     padding: .25rem .75rem;
   }
 }
@@ -116,4 +124,43 @@ hr {
 
 .card {
   border: none;
+  margin: 5px;
+  overflow: hidden;
+}
+
+.form-control {
+  &-plaintext {
+    color: $text-color;
+    margin: 0;
+    padding: 0;
+
+    option {
+      color: black;
+    }
+
+    &::placeholder {
+      color: transparent;
+    }
+
+    &:hover {
+      cursor: default;
+    }
+  }
+}
+
+.popover {
+  &-body {
+    .btn {
+      color: $text-color;
+    }
+  }
+}
+
+.modal {
+  color: $dark-text;
+
+  .modal-body,
+  .modal-footer {
+    background-color: rgb(235, 241, 245);
+  }
 }

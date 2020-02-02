@@ -55,7 +55,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   )
 
   return (
-    <div className="row justify-content-center table-list">
+    <div className="row table-list col col-lg-8 mx-auto">
       <Table striped bordered>
         <thead>
           <tr>

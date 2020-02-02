@@ -1,17 +1,4 @@
 #performer-details {
-  td {
-    padding: 2px 0;
-    vertical-align: middle;
-  }
-
-  td:first-child {
-    min-width: 10rem;
-  }
-
-  .form-control {
-    width: 100%;
-  }
-
   .scrape-url-button {
     color: $text-color;
     float: right;
@@ -28,7 +15,7 @@
   margin: 10px auto;
   overflow: hidden;
 
-  .image-container img {
+  .image-container .performer {
     max-height: 960px;
     max-width: 100%;
   }
