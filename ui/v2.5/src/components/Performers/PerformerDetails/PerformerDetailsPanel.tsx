@@ -164,9 +164,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
   async function onScrapePerformer() {
     setIsDisplayingScraperDialog(undefined);
-    setIsLoading(true);
     try {
       if (!scrapePerformerDetails || !isDisplayingScraperDialog) return;
+      setIsLoading(true);
       const result = await StashService.queryScrapePerformer(
         isDisplayingScraperDialog.id,
         getQueryScraperPerformerInput()
@@ -175,8 +175,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       updatePerformerEditState(result.data.scrapePerformer);
     } catch (e) {
       Toast.error(e);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }
 
   async function onScrapePerformerURL() {
