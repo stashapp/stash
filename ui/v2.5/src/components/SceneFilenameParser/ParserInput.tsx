@@ -150,7 +150,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
           </InputGroup.Append>
         </InputGroup>
         <Form.Text className="text-muted row col-10 offset-2">
-          Use &apos;\\&apos; to escape literal {} characters
+          Use &apos;\&apos; to escape literal {} characters
         </Form.Text>
       </Form.Group>
 
