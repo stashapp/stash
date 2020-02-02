@@ -87,10 +87,10 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
         )}`
       );
       const thisTags = props.sceneMarker.tags.map(tag => (
-        <span key={tag.id}>{tag.name}</span>
+        <span key={tag.id} className="wall-tag">{tag.name}</span>
       ));
       thisTags.unshift(
-        <span key={props.sceneMarker.primary_tag.id}>
+        <span key={props.sceneMarker.primary_tag.id} className="wall-tag">
           {props.sceneMarker.primary_tag.name}
         </span>
       );
@@ -130,6 +130,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
           <video
             src={videoPath}
             poster={screenshotPath}
+            className="scene-wall-video"
             style={videoHoverHook.isHovering.current ? {} : { display: "none" }}
             autoPlay
             loop
@@ -137,6 +138,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
           />
           <img
             alt={title}
+            className="scene-wall-image"
             src={previewPath || screenshotPath}
             onError={() => previewNotFound()}
           />

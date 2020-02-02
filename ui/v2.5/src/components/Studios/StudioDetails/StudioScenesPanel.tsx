@@ -2,7 +2,7 @@ import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { SceneList } from "../../scenes/SceneList";
+import { SceneList } from "src/components/Scenes/SceneList";
 
 interface IStudioScenesPanel {
   studio: Partial<GQL.StudioDataFragment>;

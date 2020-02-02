@@ -9,7 +9,7 @@ interface IIcon {
 }
 
 const Icon: React.FC<IIcon> = ({ icon, className, color }) => (
-  <FontAwesomeIcon icon={icon} className={className} color={color} />
+  <FontAwesomeIcon icon={icon} className={`fa-icon ${className}`} color={color} />
 );
 
 export default Icon;

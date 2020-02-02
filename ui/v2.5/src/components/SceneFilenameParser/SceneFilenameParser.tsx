@@ -12,7 +12,7 @@ import {
 } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import { useToast } from "src/hooks";
-import { Pagination } from "../list/Pagination";
+import { Pagination } from "src/components/List/Pagination";
 import { IParserInput, ParserInput } from "./ParserInput";
 import { ParserField } from "./ParserField";
 
@@ -513,7 +513,7 @@ export const SceneFilenameParser: React.FC = () => {
           const ids = items.map(i => i.id);
           onChangeHandler(ids);
         }}
-        initialIds={props.parserResult.value}
+        ids={props.parserResult.value}
       />
     );
   }
@@ -591,7 +591,7 @@ export const SceneFilenameParser: React.FC = () => {
 
     return (
       <tr className="scene-parser-row">
-        <td className="text-left">{props.scene.filename}</td>
+        <td className="text-left parser-field-filename">{props.scene.filename}</td>
         <SceneParserField
           key="title"
           fieldName="Title"
@@ -688,14 +688,14 @@ export const SceneFilenameParser: React.FC = () => {
 
     return (
       <>
-        <td className="w-15">
+        <th className="w-15">
           <Form.Check
             checked={allSet}
             onChange={() => {
               onAllSet(!allSet);
             }}
           />
-        </td>
+        </th>
         <th>{fieldName}</th>
       </>
     );
@@ -708,50 +708,48 @@ export const SceneFilenameParser: React.FC = () => {
 
     return (
       <>
-        <div>
-          <div className="scene-parser-results">
-            <Table>
-              <thead>
-                <tr className="scene-parser-row">
-                  <th className="w-25">Filename</th>
-                  {renderHeader("Title", allTitleSet, onSelectAllTitleSet)}
-                  {renderHeader("Date", allDateSet, onSelectAllDateSet)}
-                  {renderHeader(
-                    "Performers",
-                    allPerformerSet,
-                    onSelectAllPerformerSet
-                  )}
-                  {renderHeader("Tags", allTagSet, onSelectAllTagSet)}
-                  {renderHeader("Studio", allStudioSet, onSelectAllStudioSet)}
-                </tr>
-              </thead>
-              <tbody>
-                {parserResult.map(scene => (
-                  <SceneParserRow
-                    scene={scene}
-                    key={scene.id}
-                    onChange={changedScene => onChange(scene, changedScene)}
-                  />
-                ))}
-              </tbody>
-            </Table>
-          </div>
-          <Pagination
-            currentPage={parserInput.page}
-            itemsPerPage={parserInput.pageSize}
-            totalItems={totalItems}
-            onChangePage={page => onPageChanged(page)}
-          />
-          <Button variant="primary" onClick={onApply}>
-            Apply
-          </Button>
+        <div className="scene-parser-results">
+          <Table>
+            <thead>
+              <tr className="scene-parser-row">
+                <th className="w-25">Filename</th>
+                {renderHeader("Title", allTitleSet, onSelectAllTitleSet)}
+                {renderHeader("Date", allDateSet, onSelectAllDateSet)}
+                {renderHeader(
+                  "Performers",
+                  allPerformerSet,
+                  onSelectAllPerformerSet
+                )}
+                {renderHeader("Tags", allTagSet, onSelectAllTagSet)}
+                {renderHeader("Studio", allStudioSet, onSelectAllStudioSet)}
+              </tr>
+            </thead>
+            <tbody>
+              {parserResult.map(scene => (
+                <SceneParserRow
+                  scene={scene}
+                  key={scene.id}
+                  onChange={changedScene => onChange(scene, changedScene)}
+                />
+              ))}
+            </tbody>
+          </Table>
         </div>
+        <Pagination
+          currentPage={parserInput.page}
+          itemsPerPage={parserInput.pageSize}
+          totalItems={totalItems}
+          onChangePage={page => onPageChanged(page)}
+        />
+        <Button variant="primary" onClick={onApply}>
+          Apply
+        </Button>
       </>
     );
   }
 
   return (
-    <Card id="parser-container">
+    <Card id="parser-container" className="col col-sm-9 mx-auto">
       <h4>Scene Filename Parser</h4>
       <ParserInput
         input={parserInput}

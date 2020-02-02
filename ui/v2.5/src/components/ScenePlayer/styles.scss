@@ -1,3 +1,7 @@
+.scene-player:focus {
+  outline: 0;
+}
+
 .scrubber-wrapper {
   margin: 5px 0;
   overflow: hidden;
@@ -13,8 +17,9 @@
 }
 
 .scrubber-button {
+  background-color: transparent;
   border: 1px solid #555;
-  color: #fff;
+  color: $link-color;
   cursor: pointer;
   font-size: 20px;
   font-weight: 800;
@@ -35,18 +40,10 @@
   position: relative;
   -webkit-user-select: none;
   width: 96%;
-}
 
-.scrubber-content.dragging {
-  cursor: grabbing;
-}
-
-.scrubber-tags-background {
-  background-color: #555;
-  height: 20px;
-  left: 0;
-  position: absolute;
-  right: 0;
+  &.dragging {
+    cursor: grabbing;
+  }
 }
 
 #scrubber-position-indicator {
@@ -85,6 +82,14 @@
   height: 20px;
   margin-bottom: 10px;
   position: relative;
+
+  &-background {
+    background-color: #555;
+    height: 20px;
+    left: 0;
+    position: absolute;
+    right: 0;
+  }
 }
 
 .scrubber-tag {
@@ -94,22 +99,22 @@
   padding: 0 10px;
   position: absolute;
   white-space: nowrap;
-}
 
-.scrubber-tag:hover {
-  background-color: #444;
-  z-index: 1;
-}
+  &:hover {
+    background-color: #444;
+    z-index: 1;
+  }
 
-.scrubber-tag::after {
-  border-left: solid 5px transparent;
-  border-right: solid 5px transparent;
-  border-top: solid 5px #000;
-  bottom: -5px;
-  content: "";
-  left: 50%;
-  margin-left: -5px;
-  position: absolute;
+  &::after {
+    border-left: solid 5px transparent;
+    border-right: solid 5px transparent;
+    border-top: solid 5px #000;
+    bottom: -5px;
+    content: "";
+    left: 50%;
+    margin-left: -5px;
+    position: absolute;
+  }
 }
 
 .scrubber-item {
@@ -121,10 +126,10 @@
   position: absolute;
   text-align: center;
   text-shadow: 1px 1px black;
-}
 
-.scrubber-item span {
-  align-self: flex-end;
-  display: inline-block;
-  width: 100%;
+  &-time {
+    align-self: flex-end;
+    display: inline-block;
+    width: 100%;
+  }
 }

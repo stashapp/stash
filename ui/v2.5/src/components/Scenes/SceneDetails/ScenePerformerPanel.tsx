@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { PerformerCard } from "src/components/performers/PerformerCard";
+import { PerformerCard } from "src/components/Performers/PerformerCard";
 
 interface IScenePerformerPanelProps {
   scene: GQL.SceneDataFragment;

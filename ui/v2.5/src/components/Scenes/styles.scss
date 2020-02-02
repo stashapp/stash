@@ -3,25 +3,14 @@
   justify-content: center;
   margin-bottom: 10px;
 
-  button {
+  .btn {
     padding-bottom: 3px;
     padding-top: 3px;
   }
 
-  svg {
+  .fa-icon {
     margin-right: 7px;
   }
-}
-
-.row {
-  .scene-card {
-    overflow: hidden;
-    padding: 0;
-  }
-}
-
-.scene-card-link {
-  position: relative;
 }
 
 .card-section {
@@ -29,7 +18,7 @@
   padding: .5rem 1rem 0 1rem;
 }
 
-.card-select {
+.scene-card-check {
   left: .5rem;
   margin-top: -12px;
   opacity: .5;
@@ -78,17 +67,15 @@
 }
 
 .studio-logo {
-  img {
-    margin-top: 1rem;
-    max-width: 100%;
-  }
+  margin-top: 1rem;
+  max-width: 100%;
 }
 
 .scene-header {
   flex-basis: auto;
 }
 
-#details-container {
+#scene-details-container {
   .tab-content {
     min-height: 15rem;
   }
@@ -101,12 +88,6 @@
 .file-info-panel {
   div {
     margin-bottom: .5rem;
-  }
-}
-
-#scene-details {
-  input {
-    width: 100%;
   }
 }
 
@@ -146,4 +127,86 @@
       width: 100%;
     }
   }
+}
+
+.scene-specs-overlay {
+  bottom: 1rem;
+  color: $text-color;
+  display: block;
+  font-weight: 400;
+  letter-spacing: -.03rem;
+  position: absolute;
+  right: .7rem;
+  text-shadow: 0 0 3px #000;
+}
+
+.scene-studio-overlay {
+  display: block;
+  font-weight: 900;
+  height: 10%;
+  max-width: 40%;
+  opacity: .75;
+  position: absolute;
+  right: .7rem;
+  top: .7rem;
+  z-index: 9;
+
+  .image-thumbnail {
+    height: auto;
+    max-height: 50px;
+    max-width: 100%;
+  }
+
+  a {
+    color: $text-color;
+    display: inline-block;
+    letter-spacing: -.03rem;
+    text-align: right;
+    text-decoration: none;
+    text-shadow: 0 0 3px #000;
+  }
+}
+
+.overlay-resolution {
+  font-weight: 900;
+  margin-right: .3rem;
+  text-transform: uppercase;
+}
+
+.scene-card {
+  &.card {
+    overflow: hidden;
+    padding: 0;
+  }
+
+  &-link {
+    position: relative;
+  }
+
+  .scene-specs-overlay,
+  .rating-banner,
+  .scene-studio-overlay {
+    transition: opacity .5s;
+  }
+
+  &:hover {
+    .scene-specs-overlay,
+    .rating-banner,
+    .scene-studio-overlay {
+      opacity: 0;
+      transition: opacity .5s;
+    }
+
+    .scene-studio-overlay:hover {
+      opacity: .75;
+      transition: opacity .5s;
+    }
+  }
+}
+
+.scene-cover {
+  display: block;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  max-width: 100%;
 }

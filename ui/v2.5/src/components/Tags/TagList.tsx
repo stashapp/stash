@@ -103,20 +103,20 @@ export const TagList: React.FC = () => {
           {tag.name}
         </Button>
         <div className="ml-auto">
-          <Button variant="secondary" onClick={() => onAutoTag(tag)}>
+          <Button variant="secondary" className="tag-list-button" onClick={() => onAutoTag(tag)}>
             Auto Tag
           </Button>
-          <Button variant="secondary">
-            <Link to={NavUtils.makeTagScenesUrl(tag)}>
+          <Button variant="secondary" className="tag-list-button">
+            <Link to={NavUtils.makeTagScenesUrl(tag)} className="tag-list-anchor">
               Scenes: {tag.scene_count}
             </Link>
           </Button>
-          <Button variant="secondary">
-            <Link to={NavUtils.makeTagSceneMarkersUrl(tag)}>
+          <Button variant="secondary" className="tag-list-button">
+            <Link to={NavUtils.makeTagSceneMarkersUrl(tag)} className="tag-list-anchor">
               Markers: {tag.scene_marker_count}
             </Link>
           </Button>
-          <span>
+          <span className="tag-list-count">
             Total: {(tag.scene_count || 0) + (tag.scene_marker_count || 0)}
           </span>
           <Button variant="danger" onClick={() => setDeletingTag(tag)}>
@@ -128,7 +128,7 @@ export const TagList: React.FC = () => {
   });
 
   return (
-    <div id="tag-list-container">
+    <div className="col col-sm-8 m-auto">
       <Button
         variant="primary"
         className="mt-2"

@@ -16,7 +16,7 @@ export const Settings: React.FC = () => {
   const onSelect = (val: string) => history.push(`?tab=${val}`);
 
   return (
-    <Card id="details-container">
+    <Card className="col col-lg-9 mx-auto">
       <Tab.Container
         defaultActiveKey={defaultTab}
         id="configuration-tabs"

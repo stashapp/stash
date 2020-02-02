@@ -1,0 +1,37 @@
+.scene-parser-results {
+  overflow-x: auto;
+}
+
+.scene-parser-row {
+  .parser-field-filename {
+    width: 10ch;
+  }
+
+  .parser-field-title {
+    width: 40ch;
+  }
+
+  .parser-field-date {
+    width: 13ch;
+  }
+
+  .parser-field-performers {
+    width: 20ch;
+  }
+
+  .parser-field-tags {
+    width: 20ch;
+  }
+
+  .parser-field-studio {
+    width: 15ch;
+  }
+
+  .form-control {
+    min-width: 10ch;
+  }
+
+  .form-control + .form-control {
+    margin-top: .5rem;
+  }
+}

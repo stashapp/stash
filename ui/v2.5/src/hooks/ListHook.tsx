@@ -16,8 +16,8 @@ import {
   FindPerformersQueryResult
 } from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared";
-import { ListFilter } from "src/components/list/ListFilter";
-import { Pagination } from "src/components/list/Pagination";
+import { ListFilter } from "src/components/List/ListFilter";
+import { Pagination } from "src/components/List/Pagination";
 import { StashService } from "src/core/StashService";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";

@@ -182,7 +182,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     >
       <Form.Control
         type="checkbox"
-        className="card-select d-none d-sm-block"
+        className="scene-card-check d-none d-sm-block"
         checked={props.selected}
         onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
         onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {

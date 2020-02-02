@@ -346,7 +346,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
           style={getStyleForSprite(index)}
           {...dataAttrs}
         >
-          <span>
+          <span className="scrubber-item-time">
             {TextUtils.secondsToTimestamp(spriteItem.start)} -{" "}
             {TextUtils.secondsToTimestamp(spriteItem.end)}
           </span>

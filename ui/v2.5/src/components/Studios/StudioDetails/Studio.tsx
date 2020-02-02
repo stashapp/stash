@@ -159,7 +159,7 @@ export const Studio: React.FC = () => {
         })}
       >
         {isNew && <h2>Add Studio</h2>}
-        <img className="logo" alt={name} src={imagePreview} />
+        <img className="logo w-100" alt={name} src={imagePreview} />
         <Table>
           <tbody>
             {TableUtils.renderInputGroup({

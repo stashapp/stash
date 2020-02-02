@@ -205,7 +205,7 @@ export class ScenePlayerImpl extends React.Component<
 
   public render() {
     return (
-      <HotKeys keyMap={KeyMap} handlers={this.KeyHandlers} className="row">
+      <HotKeys keyMap={KeyMap} handlers={this.KeyHandlers} className="row scene-player">
         <div
           id="jwplayer-container"
           className="w-100 col-sm-9 m-sm-auto no-gutter"

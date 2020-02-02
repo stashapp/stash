@@ -293,7 +293,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   return (
     <div className="form-container row">
       <div className="col-6">
-        <Table id="scene-details">
+        <Table id="scene-edit-details">
           <tbody>
             {TableUtils.renderInputGroup({
               title: "Title",
