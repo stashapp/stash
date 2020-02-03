@@ -5,7 +5,7 @@ Please be sure to consider how heavily your contribution impacts the maintainabi
 ## Due Diligence Checklist
 Please make sure that you've considered the following before you submit your Pull Requests as ready for merging.
 * I've run Code linters and [gofmt](https://golang.org/cmd/gofmt/) to make sure that my code is readable.
-* I have read through formerly submitted pull requests and git issues issues to make sure that this contribution is required and isn't a duplicate. Also, so that I can manage to close any git Issues needing closed relating to this feature submission.
+* I have read through formerly submitted [pull requests](https://github.com/stashapp/stash/pulls) and [git issues](https://github.com/stashapp/stash/issues) to make sure that this contribution is required and isn't a duplicate. Also, so that I can manage to close any git Issues needing closed relating to this feature submission.
 * I  commented adequately on my code with the expectation in mind that anyone else should be able to look at this code I've submitted and know exactly what's happening and what the expectations are.
 
 ### Legal Agreements
