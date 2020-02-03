@@ -8,7 +8,8 @@ release: generate ui build
 build:
 	$(eval DATE := $(shell go run scripts/getDate.go))
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -mod=vendor -v -ldflags "-X 'github.com/stashapp/stash/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)'"
+	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest))
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -mod=vendor -v -ldflags "-X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)'"
 
 install:
 	packr2 install
