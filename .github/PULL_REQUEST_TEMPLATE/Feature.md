@@ -16,13 +16,6 @@ assignees: 'WithoutPants, bnkai, Leopere'
 <!-- Declare any issues by typing `fixes #1` or `closes #1` for example so that the automation can kick in when this is merged -->
 ## Closes/Fixes Issues
 
-<!-- Explain what your feature does in a short paragraph. -->
-# Scope
-
-<!-- Declare any issues by typing `fixes #1` or `closes #1` for example so that the automation can kick in when this is merged -->
-## Closes/Fixes Issues
-
-
 <!-- Please check off what of our main supported platforms have you tested this code change on. -->
 ## Platforms tested
 * [ ] Windows 10
