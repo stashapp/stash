@@ -43,6 +43,7 @@ export const SceneDetailPanel: FunctionComponent<ISceneDetailProps> = (props: IS
       <H1 className="bp3-heading">
         {!!props.scene.title ? props.scene.title : TextUtils.fileNameFromPath(props.scene.path)}
       </H1>
+      
       {!!props.scene.date ? <H4>{props.scene.date}</H4> : undefined}
       {!!props.scene.rating ? <H6>Rating: {props.scene.rating}</H6> : undefined}
       {!!props.scene.file.height ? <H6>Resolution: {TextUtils.resolution(props.scene.file.height)}</H6> : undefined}

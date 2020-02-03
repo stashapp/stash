@@ -16,6 +16,8 @@ import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { ScenePerformerPanel } from "./ScenePerformerPanel";
+import { ErrorUtils } from "../../../utils/errors";
+import { IOCounterButtonProps, OCounterButton } from "../OCounterButton";
 
 interface ISceneProps extends IBaseProps {}
 
@@ -24,7 +26,13 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
   const [autoplay, setAutoplay] = useState<boolean>(false);
   const [scene, setScene] = useState<Partial<GQL.SceneDataFragment>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const { data, error, loading } = StashService.useFindScene(props.match.params.id);
+  const { data, error, loading, refetch } = StashService.useFindScene(props.match.params.id);
+
+  const [oLoading, setOLoading] = useState(false);
+
+  const incrementO = StashService.useSceneIncrementO(scene.id || "0");
+  const decrementO = StashService.useSceneDecrementO(scene.id || "0");
+  const resetO = StashService.useSceneResetO(scene.id || "0");
 
   useEffect(() => {
     setIsLoading(loading);
@@ -53,6 +61,56 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
   const modifiedScene =
     Object.assign({scene_marker_tags: data.sceneMarkerTags}, scene) as GQL.SceneDataFragment; // TODO Hack from angular
   if (!!error) { return <>error...</>; }
+
+  function updateOCounter(newValue: number) {
+    const modifiedScene = Object.assign({}, scene);
+    modifiedScene.o_counter = newValue;
+    setScene(modifiedScene);
+  }
+
+  async function onIncrementClick() {
+    try {
+      setOLoading(true);
+      const result = await incrementO();
+      updateOCounter(result.data.sceneIncrementO);
+    } catch (e) {
+      ErrorUtils.handle(e);
+    } finally {
+      setOLoading(false);
+    }
+  }
+
+  async function onDecrementClick() {
+    try {
+      setOLoading(true);
+      const result = await decrementO();
+      updateOCounter(result.data.sceneDecrementO);
+    } catch (e) {
+      ErrorUtils.handle(e);
+    } finally {
+      setOLoading(false);
+    }
+  }
+
+  async function onResetClick() {
+    try {
+      setOLoading(true);
+      const result = await resetO();
+      updateOCounter(result.data.sceneResetO);
+    } catch (e) {
+      ErrorUtils.handle(e);
+    } finally {
+      setOLoading(false);
+    }
+  }
+
+  const oCounterProps : IOCounterButtonProps = {
+    loading: oLoading,
+    value: scene.o_counter || 0,
+    onIncrement: onIncrementClick,
+    onDecrement: onDecrementClick,
+    onReset: onResetClick
+  }
 
   return (
     <>
@@ -92,6 +150,11 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
                   onUpdate={(newScene) => setScene(newScene)} 
                   onDelete={() => props.history.push("/scenes")}
                 />}
+            />
+
+            <Tabs.Expander />
+            <OCounterButton
+              {...oCounterProps}
             />
         </Tabs>
       </Card>
