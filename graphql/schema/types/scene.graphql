@@ -26,6 +26,7 @@ type Scene {
   url: String
   date: String
   rating: Int
+  o_counter: Int
   path: String!
 
   file: SceneFileType! # Resolver
