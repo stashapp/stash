@@ -13,7 +13,6 @@ import (
 )
 
 //we use the github REST V3 API as no login is required
-const apiURL string = "https://api.github.com/repos/stashapp/stash/tags"
 const apiReleases string = "https://api.github.com/repos/stashapp/stash/releases"
 const apiAcceptHeader string = "application/vnd.github.v3+json"
 const developmentTag string = "latest_develop"
@@ -25,17 +24,6 @@ var stashReleases = func() map[string]string {
 		"darwin/amd64":  "stash-osx",
 		"linux/arm":     "stash-pi",
 	}
-}
-
-type githubTagResponse struct {
-	Name        string
-	Zipball_url string
-	Tarball_url string
-	Commit      struct {
-		Sha string
-		Url string
-	}
-	Node_id string
 }
 
 type githubReleasesResponse struct {
