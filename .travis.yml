@@ -41,7 +41,7 @@ deploy:
     skip_cleanup: true
     overwrite: true
     name: "${STASH_VERSION}: Latest development build"
-    body: This is always the latest committed version on the develop branch. Use as your own risk!
+    body: ${RELEASE_DATE}\n This is always the latest committed version on the develop branch. Use as your own risk!
     prerelease: true
     on:
       repo: stashapp/stash
