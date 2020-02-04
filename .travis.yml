@@ -23,7 +23,7 @@ after_success:
 - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then sh ./scripts/upload-pull-request.sh; fi'
 before_deploy:
 # push the latest tag when on the develop branch
-- if [ "$TRAVIS_BRANCH" = "develop" ]; then git tag -f latest; git push -f --tags; fi
+- if [ "$TRAVIS_BRANCH" = "develop" ]; then git tag -f latest_develop; git push -f --tags; fi
 - export RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')
 deploy:
   provider: releases
