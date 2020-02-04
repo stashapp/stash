@@ -3,6 +3,7 @@ package scraper
 import (
 	"errors"
 	"net/url"
+	"net/http"
 	"reflect"
 	"regexp"
 	"strings"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/charset"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -437,6 +439,29 @@ func (r xPathResults) setKey(index int, key string, value string) xPathResults {
 	return r
 }
 
+func loadURL(url string) (*html.Node, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	r, err := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
+	if err != nil {
+		return nil, err
+	}
+
+	return html.Parse(r)
+}
+
 func scrapePerformerURLXpath(c scraperTypeConfig, url string) (*models.ScrapedPerformer, error) {
 	scraper := c.scraperConfig.XPathScrapers[c.Scraper]
 
@@ -444,7 +469,7 @@ func scrapePerformerURLXpath(c scraperTypeConfig, url string) (*models.ScrapedPe
 		return nil, errors.New("xpath scraper with name " + c.Scraper + " not found in config")
 	}
 
-	doc, err := htmlquery.LoadURL(url)
+	doc, err := loadURL(url)
 
 	if err != nil {
 		return nil, err
@@ -460,7 +485,7 @@ func scrapeSceneURLXPath(c scraperTypeConfig, url string) (*models.ScrapedScene,
 		return nil, errors.New("xpath scraper with name " + c.Scraper + " not found in config")
 	}
 
-	doc, err := htmlquery.LoadURL(url)
+	doc, err := loadURL(url)
 
 	if err != nil {
 		return nil, err
