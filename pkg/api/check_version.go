@@ -3,17 +3,20 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stashapp/stash/pkg/logger"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"runtime"
 	"time"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 //we use the github REST V3 API as no login is required
 const apiURL string = "https://api.github.com/repos/stashapp/stash/tags"
 const apiReleases string = "https://api.github.com/repos/stashapp/stash/releases"
 const apiAcceptHeader string = "application/vnd.github.v3+json"
+const developmentTag string = "latest_develop"
 
 var stashReleases = func() map[string]string {
 	return map[string]string{
@@ -93,74 +96,85 @@ type githubAsset struct {
 	Browser_download_url string
 }
 
-//gets latest version (git commit hash) from github API
-//the repo's tags are used to find the latest version
-//of the "master" or "develop" branch
+// GetLatestVersion gets latest version (git commit hash) from github API
+// If running a build from the "master" branch, then the latest full release
+// is used, otherwise it uses the release that is tagged with "latest_develop"
+// which is the latest pre-release build.
 func GetLatestVersion(shortHash bool) (latestVersion string, latestRelease string, err error) {
 
 	platform := fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH)
 	wantedRelease := stashReleases()[platform]
 
-	branch, _, _ := GetVersion()
-	if branch == "" {
+	version, _, _ := GetVersion()
+	if version == "" {
 		return "", "", fmt.Errorf("Stash doesn't have a version. Version check not supported.")
+	}
+
+	// if the version is suffixed with -x-xxxx, then we are running a development build
+	usePreRelease := false
+	re := regexp.MustCompile(`-\d+-g\w+$`)
+	if re.MatchString(version) {
+		usePreRelease = true
 	}
 
 	client := &http.Client{
 		Timeout: 3 * time.Second,
 	}
 
-	req, _ := http.NewRequest("GET", apiReleases, nil)
+	url := apiReleases
+	if !usePreRelease {
+		// just get the latest full release
+		url += "/latest"
+	} else {
+		// get the release tagged with the development tag
+		url += "/tags/" + developmentTag
+	}
+	req, _ := http.NewRequest("GET", url, nil)
 
 	req.Header.Add("Accept", apiAcceptHeader) // gh api recommendation , send header with api version
 	response, err := client.Do(req)
 
-	input := make([]githubReleasesResponse, 0)
+	release := githubReleasesResponse{}
+
+	if response.StatusCode != http.StatusOK {
+		return "", "", fmt.Errorf("Github API request failed: %s", response.Status)
+	}
 
 	if err != nil {
 		return "", "", fmt.Errorf("Github API request failed: %s", err)
-	} else {
+	}
 
-		defer response.Body.Close()
+	defer response.Body.Close()
 
-		data, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return "", "", fmt.Errorf("Github API read response failed: %s", err)
+	data, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return "", "", fmt.Errorf("Github API read response failed: %s", err)
+	}
+	err = json.Unmarshal(data, &release)
+	if err != nil {
+		return "", "", fmt.Errorf("Unmarshalling Github API response failed: %s", err)
+	}
+
+	if release.Prerelease == usePreRelease {
+		if shortHash {
+			latestVersion = release.Target_commitish[0:7] //shorthash is first 7 digits of git commit hash
 		} else {
-			err = json.Unmarshal(data, &input)
-			if err != nil {
-				return "", "", fmt.Errorf("Unmarshalling Github API response failed: %s", err)
-			} else {
-
-				for _, ghApi := range input {
-					if ghApi.Tag_name == branch {
-
-						if shortHash {
-							latestVersion = ghApi.Target_commitish[0:7] //shorthash is first 7 digits of git commit hash
-						} else {
-							latestVersion = ghApi.Target_commitish
-						}
-						if wantedRelease != "" {
-							for _, asset := range ghApi.Assets {
-								if asset.Name == wantedRelease {
-									latestRelease = asset.Browser_download_url
-									break
-								}
-
-							}
-						}
-						break
-					}
+			latestVersion = release.Target_commitish
+		}
+		if wantedRelease != "" {
+			for _, asset := range release.Assets {
+				if asset.Name == wantedRelease {
+					latestRelease = asset.Browser_download_url
+					break
 				}
-
 			}
 		}
-		if latestVersion == "" {
-			return "", "", fmt.Errorf("No version found for \"%s\"", branch)
-		}
+	}
+
+	if latestVersion == "" {
+		return "", "", fmt.Errorf("No version found for \"%s\"", version)
 	}
 	return latestVersion, latestRelease, nil
-
 }
 
 func printLatestVersion() {
@@ -175,5 +189,4 @@ func printLatestVersion() {
 			logger.Infof("New version: (%s) available.", latest)
 		}
 	}
-
 }
