@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
+import { countries } from "countries-list";
 import { DurationInput, LoadingIndicator } from "src/components/Shared";
 import { StashService } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
 export const SettingsInterfacePanel: React.FC = () => {
   const Toast = useToast();
-  const config = StashService.useConfiguration();
+  const { data: config, error, loading } = StashService.useConfiguration();
   const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
   const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
   const [maximumLoopDuration, setMaximumLoopDuration] = useState<number>(0);
@@ -14,6 +15,8 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [showStudioAsText, setShowStudioAsText] = useState<boolean>(false);
   const [css, setCSS] = useState<string>();
   const [cssEnabled, setCSSEnabled] = useState<boolean>(false);
+  const [language, setLanguage] = useState<string>('en');
+  const [locale, setLocale] = useState<string>('US');
 
   const [updateInterfaceConfig] = StashService.useConfigureInterface({
     soundOnPreview,
@@ -22,13 +25,13 @@ export const SettingsInterfacePanel: React.FC = () => {
     autostartVideo,
     showStudioAsText,
     css,
-    cssEnabled
+    cssEnabled,
+    language,
+    locale
   });
 
   useEffect(() => {
-    if (config.error) return;
-
-    const iCfg = config?.data?.configuration?.interface;
+    const iCfg = config?.configuration?.interface;
     setSoundOnPreview(iCfg?.soundOnPreview ?? true);
     setWallShowTitle(iCfg?.wallShowTitle ?? true);
     setMaximumLoopDuration(iCfg?.maximumLoopDuration ?? 0);
@@ -36,6 +39,8 @@ export const SettingsInterfacePanel: React.FC = () => {
     setShowStudioAsText(iCfg?.showStudioAsText ?? false);
     setCSS(iCfg?.css ?? "");
     setCSSEnabled(iCfg?.cssEnabled ?? false);
+    setLanguage(iCfg?.language ?? 'en');
+    setLocale(iCfg?.locale ?? 'en_US');
   }, [config]);
 
   async function onSave() {
@@ -49,15 +54,39 @@ export const SettingsInterfacePanel: React.FC = () => {
     }
   }
 
+  if(error)
+    return <h1>{error.message}</h1>;
+  if(loading)
+    return <LoadingIndicator />;
+
   return (
     <>
-      {config.error ? <h1>{config.error.message}</h1> : ""}
-      {!config?.data?.configuration || config.loading ? (
-        <LoadingIndicator />
-      ) : (
-        ""
-      )}
       <h4>User Interface</h4>
+      <Form.Group controlId="language" className="row">
+        <Form.Label className="col-2">Language</Form.Label>
+        <Form.Control
+          as="select"
+          className="col-2"
+          value={language}
+          onChange={(e:React.FormEvent<HTMLSelectElement>) => setLanguage(e.currentTarget.value)}
+        >
+          <option value="en">English</option>
+          <option value="de">German</option>
+        </Form.Control>
+      </Form.Group>
+      <Form.Group controlId="region" className="row">
+        <Form.Label className="col-2">Region</Form.Label>
+        <Form.Control
+          as="select"
+          className="col-2"
+          value={locale}
+          onChange={(e:React.FormEvent<HTMLSelectElement>) => setLocale(e.currentTarget.value)}
+        >
+          { Object.keys(countries).map(code => (
+            <option value={code}>{(countries as any)[code].name}</option>
+          ))}
+        </Form.Control>
+      </Form.Group>
       <Form.Group>
         <Form.Label>Scene / Marker Wall</Form.Label>
         <Form.Check

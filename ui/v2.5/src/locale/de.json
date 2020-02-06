@@ -1,0 +1,12 @@
+{
+  "new": "Neu",
+  "tags": "Etiketten",
+  "scenes": "Szenen",
+  "studios": "Studios",
+  "galleries": "Galerien",
+  "performers": "Künstler",
+  "stats": {
+    "notes": "Anmerkungen",
+    "warning": "Dies ist noch eine frühe Version, einige Dinge sind noch in Arbeit."
+  }
+}

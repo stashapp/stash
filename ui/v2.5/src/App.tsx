@@ -1,8 +1,13 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
+import { IntlProvider } from 'react-intl';
 import { ToastProvider } from "src/hooks/Toast";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
+
+import locales from 'src/locale';
+import { StashService } from 'src/core/StashService';
+import { flattenMessages } from 'src/utils';
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Galleries from "./components/Galleries/Galleries";
 import { MainNavbar } from "./components/MainNavbar";
@@ -15,31 +20,41 @@ import Studios from "./components/Studios/Studios";
 import { TagList } from "./components/Tags/TagList";
 import { SceneFilenameParser } from "./components/SceneFilenameParser/SceneFilenameParser";
 
+
 library.add(fas);
 
-export const App: React.FC = () => (
-  <div className="bp3-dark">
-    <ErrorBoundary>
-      <ToastProvider>
-        <MainNavbar />
-        <div className="main container-fluid">
-          <Switch>
-            <Route exact path="/" component={Stats} />
-            <Route path="/scenes" component={Scenes} />
-            {/* <Route path="/scenes/:id" component={Scene} /> */}
-            <Route path="/galleries" component={Galleries} />
-            <Route path="/performers" component={Performers} />
-            <Route path="/tags" component={TagList} />
-            <Route path="/studios" component={Studios} />
-            <Route path="/settings" component={Settings} />
-            <Route
-              path="/sceneFilenameParser"
-              component={SceneFilenameParser}
-            />
-            <Route component={PageNotFound} />
-          </Switch>
-        </div>
-      </ToastProvider>
-    </ErrorBoundary>
-  </div>
-);
+export const App: React.FC = () => {
+  const config = StashService.useConfiguration();
+  const locale = config.data?.configuration?.interface?.locale ?? 'US';
+  const language = config.data?.configuration?.interface?.language ?? 'en';
+  const messages = flattenMessages((locales as any)[language] ?? locales.en);
+
+  return (
+    <div className="bp3-dark">
+      <ErrorBoundary>
+        <IntlProvider locale={locale} messages={messages}>
+          <ToastProvider>
+            <MainNavbar />
+            <div className="main container-fluid">
+              <Switch>
+                <Route exact path="/" component={Stats} />
+                <Route path="/scenes" component={Scenes} />
+                {/* <Route path="/scenes/:id" component={Scene} /> */}
+                <Route path="/galleries" component={Galleries} />
+                <Route path="/performers" component={Performers} />
+                <Route path="/tags" component={TagList} />
+                <Route path="/studios" component={Studios} />
+                <Route path="/settings" component={Settings} />
+                <Route
+                  path="/sceneFilenameParser"
+                  component={SceneFilenameParser}
+                />
+                <Route component={PageNotFound} />
+              </Switch>
+            </div>
+          </ToastProvider>
+        </IntlProvider>
+      </ErrorBoundary>
+    </div>
+  );
+};

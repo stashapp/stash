@@ -1,4 +1,5 @@
 import React from "react";
+import { FormattedMessage } from 'react-intl';
 import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
@@ -7,7 +8,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Icon } from "src/components/Shared";
 
 interface IMenuItem {
-  text: string;
+  messageID: string;
   href: string;
   icon: IconName;
 }
@@ -15,33 +16,33 @@ interface IMenuItem {
 const menuItems: IMenuItem[] = [
   {
     icon: "play-circle",
-    text: "Scenes",
+    messageID: "scenes",
     href: "/scenes"
   },
   {
     href: "/scenes/markers",
     icon: "map-marker-alt",
-    text: "Markers"
+    messageID: "markers"
   },
   {
     href: "/galleries",
     icon: "image",
-    text: "Galleries"
+    messageID: "galleries"
   },
   {
     href: "/performers",
     icon: "user",
-    text: "Performers"
+    messageID: "performers"
   },
   {
     href: "/studios",
     icon: "video",
-    text: "Studios"
+    messageID: "studios"
   },
   {
     href: "/tags",
     icon: "tag",
-    text: "Tags"
+    messageID: "tags"
   }
 ];
 
@@ -59,7 +60,7 @@ export const MainNavbar: React.FC = () => {
       ""
     ) : (
       <LinkContainer to={path}>
-        <Button variant="primary">New</Button>
+        <Button variant="primary"><FormattedMessage id="new" defaultMessage="New" /></Button>
       </LinkContainer>
     );
 
@@ -85,7 +86,9 @@ export const MainNavbar: React.FC = () => {
           >
             <Button className="minimal">
               <Icon icon={i.icon} />
-              <span className="d-none d-sm-inline">{i.text}</span>
+              <span className="d-none d-sm-inline">
+                <FormattedMessage id={i.messageID} />
+              </span>
             </Button>
           </LinkContainer>
         ))}
