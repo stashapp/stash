@@ -248,7 +248,7 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 			Aliases:        sql.NullString{String: movieJSON.Aliases, Valid: true},
 			Date_movie:     models.SQLiteDate{String: movieJSON.Date_movie, Valid: true},
 			Duration_movie: sql.NullString{String: movieJSON.Duration_movie, Valid: true},
-			Rating_movie:   sql.NullInt64{Int64: int64(movieJSON.Rating_movie), Valid: true},
+			Rating_movie:   sql.NullString{String: movieJSON.Rating_movie, Valid: true},
 			Director:       sql.NullString{String: movieJSON.Director, Valid: true},
 			Synopsis:       sql.NullString{String: movieJSON.Synopsis, Valid: true},
 			URL:            sql.NullString{String: movieJSON.URL, Valid: true},

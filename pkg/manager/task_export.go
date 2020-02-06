@@ -373,7 +373,7 @@ func (t *ExportTask) ExportMovies(ctx context.Context) {
 			newMovieJSON.Date_movie = utils.GetYMDFromDatabaseDate(movie.Date_movie.String)
 		}
 		if movie.Rating_movie.Valid {
-			newMovieJSON.Rating_movie = int(movie.Rating_movie.Int64)
+			newMovieJSON.Rating_movie = movie.Rating_movie.String
 		}
 		if movie.Duration_movie.Valid {
 			newMovieJSON.Duration_movie = movie.Duration_movie.String

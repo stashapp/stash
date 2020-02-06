@@ -44,10 +44,9 @@ func (r *movieResolver) DateMovie(ctx context.Context, obj *models.Movie) (*stri
 	return nil, nil
 }
 
-func (r *movieResolver) RatingMovie(ctx context.Context, obj *models.Movie) (*int, error) {
+func (r *movieResolver) RatingMovie(ctx context.Context, obj *models.Movie) (*string, error) {
 	if obj.Rating_movie.Valid {
-		rating := int(obj.Rating_movie.Int64)
-		return &rating, nil
+		return &obj.Rating_movie.String, nil
 	}
 	return nil, nil
 }

@@ -5,7 +5,7 @@ type Movie {
   aliases: String
   duration_movie: String
   date_movie: String
-  rating_movie: Int
+  rating_movie: String
   director: String
   synopsis: String
   url: String
@@ -22,7 +22,7 @@ input MovieCreateInput {
   aliases: String
   duration_movie: String
   date_movie: String
-  rating_movie: Int
+  rating_movie: String
   director: String
   synopsis: String
   url: String
@@ -37,7 +37,7 @@ input MovieUpdateInput {
   aliases: String
   duration_movie: String
   date_movie: String
-  rating_movie: Int
+  rating_movie: String
   director: String
   synopsis: String
   url: String

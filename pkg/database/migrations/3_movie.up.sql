@@ -4,7 +4,7 @@ CREATE TABLE `movies` (
   `aliases` varchar(255),
   `duration_movie` varchar(6),
   `date_movie` date,
-  `rating_movie` tinyint,
+  `rating_movie` varchar(1),
   `director` varchar(255),
   `synopsis` text,
   `front_image` blob not null,

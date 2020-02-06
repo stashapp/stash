@@ -27,7 +27,7 @@ export const Movie: FunctionComponent<IProps> = (props: IProps) => {
   const [aliases, setAliases] = useState<string | undefined>(undefined);
   const [duration_movie, setDuration_movie] = useState<string | undefined>(undefined);
   const [date_movie, setDate_movie] = useState<string | undefined>(undefined);
-  const [rating_movie, setRating] = useState<number | undefined>(undefined);
+  const [rating_movie, setRating] = useState<string | undefined>(undefined);
   const [director, setDirector] = useState<string | undefined>(undefined);
   const [synopsis, setSynopsis] = useState<string | undefined>(undefined);
   const [url, setUrl] = useState<string | undefined>(undefined);
@@ -50,7 +50,7 @@ export const Movie: FunctionComponent<IProps> = (props: IProps) => {
     setAliases(state.aliases);
     setDuration_movie(state.duration_movie);
     setDate_movie(state.date_movie);
-    setRating(state.rating_movie == null ? NaN : state.rating_movie);
+    setRating(state.rating_movie);
     setDirector(state.director);
     setSynopsis(state.synopsis);
     setUrl(state.url);
@@ -190,8 +190,8 @@ export const Movie: FunctionComponent<IProps> = (props: IProps) => {
                 title: "Rating", 
                 value: rating_movie, 
                 isEditing, 
-                onChange: (value: string) => setRating(parseInt(value)), 
-                selectOptions: ["",1,2,3,4,5]
+                onChange: (value: string) => setRating(value), 
+                selectOptions: ["","1","2","3","4","5"]
                 })}
               {TableUtils.renderInputGroup({title: "URL", value: url, isEditing, onChange: setUrl})}
               {TableUtils.renderTextArea({title: "Synopsis", value: synopsis, isEditing, onChange: setSynopsis})}            

@@ -13,7 +13,7 @@ type Movie struct {
 	Aliases        sql.NullString  `db:"aliases" json:"aliases"`
 	Duration_movie sql.NullString  `db:"duration_movie" json:"duration_movie"`
 	Date_movie     SQLiteDate      `db:"date_movie" json:"date_movie"`
-	Rating_movie   sql.NullInt64   `db:"rating_movie" json:"rating_movie"`
+	Rating_movie   sql.NullString  `db:"rating_movie" json:"rating_movie"`
 	Director       sql.NullString  `db:"director" json:"director"`
 	Synopsis       sql.NullString  `db:"synopsis" json:"synopsis"`
 	URL            sql.NullString  `db:"url" json:"url"`

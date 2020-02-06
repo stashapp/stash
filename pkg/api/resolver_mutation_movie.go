@@ -59,12 +59,9 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 	}
 
 	if input.RatingMovie != nil {
-		newMovie.Rating_movie = sql.NullInt64{Int64: int64(*input.RatingMovie), Valid: true}
-	} else {
-		// rating must be nullable
-		newMovie.Rating_movie = sql.NullInt64{Valid: false}
-	}
-
+		newMovie.Rating_movie = sql.NullString{String: *input.RatingMovie, Valid: true}
+	} 
+	
 	if input.Director != nil {
 		newMovie.Director = sql.NullString{String: *input.Director, Valid: true}
 	}
@@ -135,12 +132,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 	}
 
 	if input.RatingMovie != nil {
-		// a rating of 0 means unset the rating
-		if *input.RatingMovie == 0 {
-			updatedMovie.Rating_movie = sql.NullInt64{Int64: 0, Valid: false}
-		} else {
-			updatedMovie.Rating_movie = sql.NullInt64{Int64: int64(*input.RatingMovie), Valid: true}
-		}
+		updatedMovie.Rating_movie = sql.NullString{String: *input.RatingMovie, Valid: true}
 	}
 
 	if input.Director != nil {
