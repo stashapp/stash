@@ -45,7 +45,7 @@ deploy:
     prerelease: true
     on:
       repo: stashapp/stash
-      branches: develop
+      branch: develop
   # official master release - only build when tagged
   - provider: releases
     api_key:
@@ -64,7 +64,7 @@ deploy:
     name: ${STASH_VERSION}
     on:
       repo: stashapp/stash
-      branches: master
+      branch: master
       tags: true
       # make sure we don't release using the latest_develop tag
       condition: $TRAVIS_TAG != latest_develop
