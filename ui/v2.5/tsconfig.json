@@ -4,7 +4,10 @@
     "lib": [
       "dom",
       "dom.iterable",
-      "esnext"
+      "esnext",
+      "esnext.intl",
+      "es2017.intl",
+      "es2018.intl"
     ],
     "skipLibCheck": true,
     "esModuleInterop": true,
