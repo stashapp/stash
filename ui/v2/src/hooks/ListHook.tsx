@@ -95,11 +95,17 @@ export interface IListHookOptions {
   renderSelectedOptions?: (result: QueryHookResult<any, any>, selectedIds: Set<string>) => JSX.Element | undefined;
 }
 
-function updateFromQueryString(queryStr: string, setFilter: (value: React.SetStateAction<ListFilterModel>) => void) {
+function updateFromQueryString(queryStr: string, setFilter: (value: React.SetStateAction<ListFilterModel>) => void, forageData?: any) {
   const queryParams = queryString.parse(queryStr);
   setFilter((f) => {
     const newFilter = _.cloneDeep(f);
     newFilter.configureFromQueryParameters(queryParams);
+
+    if (forageData) {
+      const forageParams = queryString.parse(forageData.filter);
+      newFilter.overridePrefs(queryParams, forageParams);      
+    }
+
     return newFilter;
   });
 }
@@ -134,13 +140,19 @@ export class ListHook {
       function initialise() {
         forageInitialised.current = true;
 
-        if (!options.props!.location.search && interfaceForage.data && interfaceForage.data.queries[options.filterMode]) {
-          let queryData = interfaceForage.data.queries[options.filterMode];
+        let forageData: any;
+
+        if (interfaceForage.data && interfaceForage.data.queries[options.filterMode]) {
+          forageData = interfaceForage.data.queries[options.filterMode];
+        }
+
+        if (!options.props!.location.search && forageData) {
           // we have some data, try to load it
-          updateFromLocalForage(queryData);
+          updateFromLocalForage(forageData);
         } else {
-          // use query string instead
-          updateFromQueryString(options.props!.location.search, setFilter);
+          // use query string instead - include the forageData to include the following
+          // preferences if not specified: displayMode, itemsPerPage, sortBy and sortDir
+          updateFromQueryString(options.props!.location.search, setFilter, forageData);
         }
       }
 
@@ -193,7 +205,8 @@ export class ListHook {
         // don't update this until local forage is loaded
         if (forageInitialised.current) {
           const location = Object.assign({}, options.props.history.location);
-          location.search = "?" + filter.makeQueryParameters();
+          const includePrefs = true;
+          location.search = "?" + filter.makeQueryParameters(includePrefs);
 
           if (location.search !== options.props.history.location.search) {
             options.props.history.replace(location);

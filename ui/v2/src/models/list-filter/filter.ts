@@ -151,23 +151,27 @@ export class ListFilterModel {
     this.sortByOptions = [...this.sortByOptions, "created_at", "updated_at"];
   }
 
+  private setSortBy(sortBy: any) {
+    this.sortBy = sortBy;
+      
+    // parse the random seed if provided
+    const randomPrefix = "random_";
+    if (this.sortBy && this.sortBy.startsWith(randomPrefix)) {
+      let seedStr = this.sortBy.substring(randomPrefix.length);
+
+      this.sortBy = "random";
+      try {
+        this.randomSeed = Number.parseInt(seedStr);
+      } catch (err) {
+        // ignore
+      }
+    }
+  }
+
   public configureFromQueryParameters(rawParms: any) {
     const params = rawParms as IQueryParameters;
     if (params.sortby !== undefined) {
-      this.sortBy = params.sortby;
-      
-      // parse the random seed if provided
-      const randomPrefix = "random_";
-      if (this.sortBy && this.sortBy.startsWith(randomPrefix)) {
-        let seedStr = this.sortBy.substring(randomPrefix.length);
-
-        this.sortBy = "random";
-        try {
-          this.randomSeed = Number.parseInt(seedStr);
-        } catch (err) {
-          // ignore
-        }
-      }
+      this.setSortBy(params.sortby);
     }
     if (params.sortdir === "asc" || params.sortdir === "desc") {
       this.sortDirection = params.sortdir;
@@ -205,6 +209,26 @@ export class ListFilterModel {
     }
   }
 
+  public overridePrefs(original: any, override: any) {
+    const originalParams = original as IQueryParameters;
+    const overrideParams = override as IQueryParameters;
+
+    if (originalParams.sortby === undefined && overrideParams.sortby !== undefined) {
+      this.setSortBy(overrideParams.sortby);
+    }
+    if (originalParams.sortdir === undefined && overrideParams.sortdir !== undefined) {
+      if (overrideParams.sortdir === "asc" || overrideParams.sortdir === "desc") {
+        this.sortDirection = overrideParams.sortdir;
+      }
+    }
+    if (originalParams.disp === undefined && overrideParams.disp !== undefined) {
+      this.displayMode = parseInt(overrideParams.disp, 10);
+    }
+    if (originalParams.perPage === undefined && overrideParams.perPage !== undefined) {
+      this.itemsPerPage = Number(overrideParams.perPage);
+    }
+  }
+
   private setRandomSeed() {
     if (this.sortBy == "random") {
       // #321 - set the random seed if it is not set
@@ -227,7 +251,8 @@ export class ListFilterModel {
     return this.sortBy;
   }
 
-  public makeQueryParameters(): string {
+  // includePrefs includes displayMode, sortBy, sortDir and perPage
+  public makeQueryParameters(includePrefs?: boolean): string {
     const encodedCriteria: string[] = [];
     this.criteria.forEach((criterion) => {
       const encodedCriterion: any = {};
@@ -238,16 +263,18 @@ export class ListFilterModel {
       encodedCriteria.push(jsonCriterion);
     });
 
-
-    const result = {
-      sortby: this.getSortBy(),
-      sortdir: this.sortDirection,
-      disp: this.displayMode,
+    const result: any = {
       q: this.searchTerm,
       p: this.currentPage,
-      perPage: this.itemsPerPage,
       c: encodedCriteria,
     };
+
+    if (includePrefs) {
+      result.disp = this.displayMode;
+      result.perPage = this.itemsPerPage;
+      result.sortby = this.getSortBy();
+      result.sortdir = this.sortDirection;
+    }
     return queryString.stringify(result, {encode: false});
   }
 
