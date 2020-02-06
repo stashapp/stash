@@ -598,3 +598,15 @@ span.block {
     transition: margin-left 0.5s;
   }
 }
+
+.stats {
+  & p.title {
+    font-size: 4em;
+    text-align: center;
+  }
+  
+  & p.heading {
+    text-align: center;
+    text-transform: uppercase;
+  }
+}
