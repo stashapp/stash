@@ -27,7 +27,7 @@ export const PerformerList: React.FC = () => {
     result: FindPerformersQueryResult,
     filter: ListFilterModel
   ) {
-    if (result.data && result.data.findPerformers) {
+    if (result.data?.findPerformers) {
       const { count } = result.data.findPerformers;
       const index = Math.floor(Math.random() * count);
       const filterCopy = _.cloneDeep(filter);
@@ -50,7 +50,7 @@ export const PerformerList: React.FC = () => {
     result: FindPerformersQueryResult,
     filter: ListFilterModel
   ) {
-    if (!result.data || !result.data.findPerformers) {
+    if (!result.data?.findPerformers) {
       return;
     }
     if (filter.displayMode === DisplayMode.Grid) {
