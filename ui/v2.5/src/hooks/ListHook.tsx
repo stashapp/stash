@@ -322,37 +322,42 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       })
     : undefined;
 
-  const template = (
-    <div>
-      <ListFilter
-        onChangePageSize={onChangePageSize}
-        onChangeQuery={onChangeQuery}
-        onChangeSortDirection={onChangeSortDirection}
-        onChangeSortBy={onChangeSortBy}
-        onChangeDisplayMode={onChangeDisplayMode}
-        onAddCriterion={onAddCriterion}
-        onRemoveCriterion={onRemoveCriterion}
-        onSelectAll={onSelectAll}
-        onSelectNone={onSelectNone}
-        zoomIndex={options.zoomable ? zoomIndex : undefined}
-        onChangeZoom={options.zoomable ? onChangeZoom : undefined}
-        otherOperations={otherOperations}
-        filter={filter}
-      />
-      {options.renderSelectedOptions && selectedIds.size > 0
-        ? options.renderSelectedOptions(result, selectedIds)
-        : undefined}
-      {result.loading && <LoadingIndicator />}
-      {result.error && <h1>{result.error.message}</h1>}
-      {options.renderContent(result, filter, selectedIds, zoomIndex)}
-      <Pagination
-        itemsPerPage={filter.itemsPerPage}
-        currentPage={filter.currentPage}
-        totalItems={totalCount}
-        onChangePage={onChangePage}
-      />
-    </div>
-  );
+  let template;
+  if(result.loading || !forageInitialised.current) {
+    template = <LoadingIndicator />;
+  } else if(result.error) {
+    template = <h1>{result.error.message}</h1>;
+  } else {
+    template = (
+      <div>
+        <ListFilter
+          onChangePageSize={onChangePageSize}
+          onChangeQuery={onChangeQuery}
+          onChangeSortDirection={onChangeSortDirection}
+          onChangeSortBy={onChangeSortBy}
+          onChangeDisplayMode={onChangeDisplayMode}
+          onAddCriterion={onAddCriterion}
+          onRemoveCriterion={onRemoveCriterion}
+          onSelectAll={onSelectAll}
+          onSelectNone={onSelectNone}
+          zoomIndex={options.zoomable ? zoomIndex : undefined}
+          onChangeZoom={options.zoomable ? onChangeZoom : undefined}
+          otherOperations={otherOperations}
+          filter={filter}
+        />
+        {options.renderSelectedOptions && selectedIds.size > 0
+          ? options.renderSelectedOptions(result, selectedIds)
+          : undefined}
+        {options.renderContent(result, filter, selectedIds, zoomIndex)}
+        <Pagination
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+          onChangePage={onChangePage}
+        />
+      </div>
+    );
+  }
 
   return { filter, template, onSelectChange };
 };
