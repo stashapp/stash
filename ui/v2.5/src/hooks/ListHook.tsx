@@ -1,6 +1,6 @@
 import _ from "lodash";
 import queryString from "query-string";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ApolloError } from "apollo-client";
 import { useHistory, useLocation } from "react-router-dom";
 import {
@@ -16,6 +16,7 @@ import {
   FindStudiosQueryResult,
   FindPerformersQueryResult
 } from "src/core/generated-graphql";
+import { useInterfaceLocalForage } from 'src/hooks/LocalForage';
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
 import { Pagination } from "src/components/List/Pagination";
@@ -74,6 +75,8 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
 const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   options: IListHookOptions<QueryResult> & IQuery<QueryResult, QueryData>
 ): IListHookData => {
+  const [interfaceForage, setInterfaceForage] = useInterfaceLocalForage();
+  const forageInitialised = useRef(false);
   const history = useHistory();
   const location = useLocation();
   const [filter, setFilter] = useState<ListFilterModel>(
@@ -90,14 +93,56 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const totalCount = options.getCount(result);
   const items = options.getData(result);
 
-  useEffect(() => (
-    setFilter(
-      new ListFilterModel(
+  useEffect(() => {
+    if(!forageInitialised.current && !interfaceForage.loading) {
+      forageInitialised.current = true;
+
+      // Don't use query parameters for sub-components
+      if(options.subComponent)
+        return;
+      // Don't read localForage if page already had query parameters
+      if(history.location.search)
+        return;
+
+      const queryData = interfaceForage.data?.queries[options.filterMode];
+      if(!queryData)
+        return;
+
+      const newFilter = new ListFilterModel(
         options.filterMode,
-        options.subComponent ? "" : queryString.parse(location.search)
-      )
-    )
-  ), [location, options.filterMode, options.subComponent]);
+        queryString.parse(queryData.filter)
+      );
+      newFilter.currentPage = queryData.currentPage;
+      newFilter.itemsPerPage = queryData.itemsPerPage;
+
+      const newLocation = { ...history.location };
+      newLocation.search = queryData.filter;
+      history.replace(newLocation);
+    }
+  }, [interfaceForage.data, interfaceForage.loading, history, options.subComponent, options.filterMode]);
+
+  useEffect(() => {
+    if(options.subComponent)
+      return;
+
+    const newFilter = new ListFilterModel(
+      options.filterMode,
+      options.subComponent ? "" : queryString.parse(location.search)
+    );
+    setFilter(newFilter);
+
+    if(forageInitialised.current) {
+      setInterfaceForage((d) => {
+        const dataClone = _.cloneDeep(d);
+        dataClone!.queries[options.filterMode] = {
+          filter: location.search,
+          itemsPerPage: newFilter.itemsPerPage,
+          currentPage: newFilter.currentPage
+        };
+        return dataClone;
+      });
+    }
+  }, [location, options.filterMode, options.subComponent, setInterfaceForage]);
 
   function getFilter() {
     if (!options.filterHook) {

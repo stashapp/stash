@@ -1,22 +1,26 @@
 import localForage from "localforage";
 import _ from "lodash";
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 
 interface IInterfaceWallConfig {}
 export interface IInterfaceConfig {
   wall: IInterfaceWallConfig;
+  queries: any;
 }
 
 type ValidTypes = IInterfaceConfig | undefined;
 
 interface ILocalForage<T> {
   data: T;
-  setData: React.Dispatch<React.SetStateAction<T>>;
+  setData: Dispatch<SetStateAction<T>>;
   error: Error | null;
+  loading: boolean;
 }
 
 function useLocalForage(item: string): ILocalForage<ValidTypes> {
   const [json, setJson] = React.useState<ValidTypes>(undefined);
+  const [err, setErr] = React.useState(null);
+  const [loaded, setLoaded] = React.useState<boolean>(false);
 
   const prevJson = React.useRef<ValidTypes>(undefined);
   React.useEffect(() => {
@@ -29,7 +33,6 @@ function useLocalForage(item: string): ILocalForage<ValidTypes> {
     runAsync();
   });
 
-  const [err, setErr] = React.useState(null);
   React.useEffect(() => {
     async function runAsync() {
       try {
@@ -42,26 +45,27 @@ function useLocalForage(item: string): ILocalForage<ValidTypes> {
       } catch (error) {
         setErr(error);
       }
+      setLoaded(true);
     }
     runAsync();
   });
 
-  return { data: json, setData: setJson, error: err };
+	return {data: json, setData: setJson, error: err, loading: !loaded};
 }
 
-export function useInterfaceLocalForage(): ILocalForage<
-  IInterfaceConfig | undefined
-> {
+export function useInterfaceLocalForage(): [ILocalForage<IInterfaceConfig | undefined>, Dispatch<SetStateAction<IInterfaceConfig | undefined>>] {
   const result = useLocalForage("interface");
-  // Set defaults
-  React.useEffect(() => {
-    if (result.data === undefined) {
-      result.setData({
-        wall: {
-          // nothing here currently
-        }
-      });
-    }
-  });
-  return result;
+
+  let returnVal = result;
+  if(!result.data?.queries) {
+    returnVal = {
+      ...result,
+      data: {
+        wall: {},
+        queries: {}
+      }
+    };
+  }
+
+  return [returnVal, result.setData];;
 }
