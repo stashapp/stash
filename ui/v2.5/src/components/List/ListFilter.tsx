@@ -1,5 +1,6 @@
 import { debounce } from "lodash";
 import React, { SyntheticEvent, useCallback, useState } from "react";
+import { SortDirectionEnum } from 'src/core/generated-graphql';
 import {
   Badge,
   Button,
@@ -24,7 +25,7 @@ interface IListFilterOperation {
 interface IListFilterProps {
   onChangePageSize: (pageSize: number) => void;
   onChangeQuery: (query: string) => void;
-  onChangeSortDirection: (sortDirection: "asc" | "desc") => void;
+  onChangeSortDirection: (sortDirection: SortDirectionEnum) => void;
   onChangeSortBy: (sortBy: string) => void;
   onChangeDisplayMode: (displayMode: DisplayMode) => void;
   onAddCriterion: (criterion: Criterion, oldId?: string) => void;
@@ -64,10 +65,10 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function onChangeSortDirection() {
-    if (props.filter.sortDirection === "asc") {
-      props.onChangeSortDirection("desc");
+    if (props.filter.sortDirection === SortDirectionEnum.Asc) {
+      props.onChangeSortDirection(SortDirectionEnum.Desc);
     } else {
-      props.onChangeSortDirection("asc");
+      props.onChangeSortDirection(SortDirectionEnum.Asc);
     }
   }
 
@@ -279,7 +280,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
               <OverlayTrigger
                 overlay={
                   <Tooltip id="sort-direction-tooltip">
-                    {props.filter.sortDirection === "asc"
+                    {props.filter.sortDirection === SortDirectionEnum.Asc
                       ? "Ascending"
                       : "Descending"}
                   </Tooltip>
@@ -288,7 +289,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
                 <Button variant="secondary" onClick={onChangeSortDirection}>
                   <Icon
                     icon={
-                      props.filter.sortDirection === "asc"
+                      props.filter.sortDirection === SortDirectionEnum.Asc
                         ? "caret-up"
                         : "caret-down"
                     }

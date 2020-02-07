@@ -48,6 +48,7 @@ import { makeCriteria } from "./criteria/utils";
 import { DisplayMode, FilterMode } from "./types";
 
 interface IQueryParameters {
+  items?: string;
   sortby?: string;
   sortdir?: string;
   disp?: string;
@@ -56,16 +57,24 @@ interface IQueryParameters {
   c?: string[];
 }
 
+const DEFAULT_PARAMS = {
+  sortDirection: SortDirectionEnum.Asc,
+  displayMode: DisplayMode.Grid,
+  currentPage: 1,
+  itemsPerPage: 40
+};
+
+
 // TODO: handle customCriteria
 export class ListFilterModel {
   public filterMode: FilterMode = FilterMode.Scenes;
   public searchTerm?: string;
-  public currentPage = 1;
-  public itemsPerPage = 40;
-  public sortDirection: "asc" | "desc" = "asc";
+  public currentPage = DEFAULT_PARAMS.currentPage;
+  public itemsPerPage = DEFAULT_PARAMS.itemsPerPage;
+  public sortDirection: SortDirectionEnum = SortDirectionEnum.Asc;
   public sortBy?: string;
   public sortByOptions: string[] = [];
-  public displayMode: DisplayMode = DisplayMode.Grid;
+  public displayMode: DisplayMode = DEFAULT_PARAMS.displayMode;
   public displayModeOptions: DisplayMode[] = [];
   public criterionOptions: ICriterionOption[] = [];
   public criteria: Array<Criterion<any, any>> = [];
@@ -78,9 +87,7 @@ export class ListFilterModel {
   public constructor(filterMode: FilterMode, rawParms?: any) {
     switch (filterMode) {
       case FilterMode.Scenes:
-        if (!!this.sortBy === false) {
-          this.sortBy = "date";
-        }
+        this.sortBy = "date";
         this.sortByOptions = [
           "title",
           "path",
@@ -110,9 +117,7 @@ export class ListFilterModel {
         ];
         break;
       case FilterMode.Performers: {
-        if (!!this.sortBy === false) {
-          this.sortBy = "name";
-        }
+        this.sortBy = "name";
         this.sortByOptions = ["name", "height", "birthdate", "scenes_count"];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 
@@ -143,25 +148,19 @@ export class ListFilterModel {
         break;
       }
       case FilterMode.Studios:
-        if (!!this.sortBy === false) {
-          this.sortBy = "name";
-        }
+        this.sortBy = "name";
         this.sortByOptions = ["name", "scenes_count"];
         this.displayModeOptions = [DisplayMode.Grid];
         this.criterionOptions = [new NoneCriterionOption()];
         break;
       case FilterMode.Galleries:
-        if (!!this.sortBy === false) {
-          this.sortBy = "path";
-        }
+        this.sortBy = "path";
         this.sortByOptions = ["path"];
         this.displayModeOptions = [DisplayMode.List];
         this.criterionOptions = [new NoneCriterionOption()];
         break;
       case FilterMode.SceneMarkers:
-        if (!!this.sortBy === false) {
-          this.sortBy = "title";
-        }
+        this.sortBy = "title";
         this.sortByOptions = [
           "title",
           "seconds",
@@ -208,18 +207,20 @@ export class ListFilterModel {
         }
       }
     }
-    if (params.sortdir === "asc" || params.sortdir === "desc") {
-      this.sortDirection = params.sortdir;
+    this.sortDirection = params.sortdir === "desc"
+      ? SortDirectionEnum.Desc
+      : SortDirectionEnum.Asc;
+    if (params.disp) {
+      this.displayMode = Number.parseInt(params.disp, 10);
     }
-    if (params.disp !== undefined) {
-      this.displayMode = parseInt(params.disp, 10);
-    }
-    if (params.q !== undefined) {
+    if (params.q) {
       this.searchTerm = params.q;
     }
-    if (params.p !== undefined) {
-      this.currentPage = Number(params.p);
+    if (params.p) {
+      this.currentPage = Number.parseInt(params.p, 10);
     }
+    if (params.items)
+      this.itemsPerPage = Number.parseInt(params.items, 10);
 
     if (params.c !== undefined) {
       this.criteria = [];
@@ -275,11 +276,12 @@ export class ListFilterModel {
     });
 
     const result = {
+      items: this.itemsPerPage !== DEFAULT_PARAMS.itemsPerPage ? this.itemsPerPage : undefined,
       sortby: this.getSortBy(),
-      sortdir: this.sortDirection,
-      disp: this.displayMode,
+      sortdir: this.sortDirection === SortDirectionEnum.Desc  ? "desc" : undefined,
+      disp: this.displayMode !== DEFAULT_PARAMS.displayMode ? this.displayMode : undefined,
       q: this.searchTerm,
-      p: this.currentPage,
+      p: this.currentPage !== DEFAULT_PARAMS.currentPage ? this.currentPage : undefined,
       c: encodedCriteria
     };
     return queryString.stringify(result, { encode: false });
@@ -293,10 +295,7 @@ export class ListFilterModel {
       page: this.currentPage,
       per_page: this.itemsPerPage,
       sort: this.getSortBy(),
-      direction:
-        this.sortDirection === "asc"
-          ? SortDirectionEnum.Asc
-          : SortDirectionEnum.Desc
+      direction: this.sortDirection
     };
   }
 

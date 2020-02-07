@@ -1,9 +1,10 @@
 import _ from "lodash";
 import queryString from "query-string";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ApolloError } from "apollo-client";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import {
+  SortDirectionEnum,
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
   GalleryDataFragment,
@@ -74,10 +75,11 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   options: IListHookOptions<QueryResult> & IQuery<QueryResult, QueryData>
 ): IListHookData => {
   const history = useHistory();
+  const location = useLocation();
   const [filter, setFilter] = useState<ListFilterModel>(
     new ListFilterModel(
       options.filterMode,
-      options.subComponent ? "" : queryString.parse(history.location.search)
+      options.subComponent ? "" : queryString.parse(location.search)
     )
   );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -87,6 +89,15 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const result = options.useData(getFilter());
   const totalCount = options.getCount(result);
   const items = options.getData(result);
+
+  useEffect(() => (
+    setFilter(
+      new ListFilterModel(
+        options.filterMode,
+        options.subComponent ? "" : queryString.parse(location.search)
+      )
+    )
+  ), [location, options.filterMode, options.subComponent]);
 
   function getFilter() {
     if (!options.filterHook) {
@@ -108,7 +119,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     const newFilter = _.cloneDeep(filter);
     newFilter.itemsPerPage = pageSize;
     newFilter.currentPage = 1;
-    setFilter(newFilter);
     updateQueryParams(newFilter);
   }
 
@@ -116,14 +126,12 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     const newFilter = _.cloneDeep(filter);
     newFilter.searchTerm = query;
     newFilter.currentPage = 1;
-    setFilter(newFilter);
     updateQueryParams(newFilter);
   }
 
-  function onChangeSortDirection(sortDirection: "asc" | "desc") {
+  function onChangeSortDirection(sortDirection: SortDirectionEnum) {
     const newFilter = _.cloneDeep(filter);
     newFilter.sortDirection = sortDirection;
-    setFilter(newFilter);
     updateQueryParams(newFilter);
   }
 
@@ -131,14 +139,12 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     const newFilter = _.cloneDeep(filter);
     newFilter.sortBy = sortBy;
     newFilter.currentPage = 1;
-    setFilter(newFilter);
     updateQueryParams(newFilter);
   }
 
   function onChangeDisplayMode(displayMode: DisplayMode) {
     const newFilter = _.cloneDeep(filter);
     newFilter.displayMode = displayMode;
-    setFilter(newFilter);
     updateQueryParams(newFilter);
   }
 
@@ -165,7 +171,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     });
 
     newFilter.currentPage = 1;
-    setFilter(newFilter);
     updateQueryParams(newFilter);
   }
 
@@ -175,14 +180,12 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       criterion => criterion.getId() !== removedCriterion.getId()
     );
     newFilter.currentPage = 1;
-    setFilter(newFilter);
     updateQueryParams(newFilter);
   }
 
   function onChangePage(page: number) {
     const newFilter = _.cloneDeep(filter);
     newFilter.currentPage = page;
-    setFilter(newFilter);
     updateQueryParams(newFilter);
   }
 
