@@ -95,6 +95,21 @@ export interface IListHookOptions {
   renderSelectedOptions?: (result: QueryHookResult<any, any>, selectedIds: Set<string>) => JSX.Element | undefined;
 }
 
+function updateFromQueryString(queryStr: string, setFilter: (value: React.SetStateAction<ListFilterModel>) => void, forageData?: any) {
+  const queryParams = queryString.parse(queryStr);
+  setFilter((f) => {
+    const newFilter = _.cloneDeep(f);
+    newFilter.configureFromQueryParameters(queryParams);
+
+    if (forageData) {
+      const forageParams = queryString.parse(forageData.filter);
+      newFilter.overridePrefs(queryParams, forageParams);      
+    }
+
+    return newFilter;
+  });
+}
+
 export class ListHook {
   public static useList(options: IListHookOptions): IListHookData {
     const [filter, setFilter] = useState<ListFilterModel>(new ListFilterModel(options.filterMode));
@@ -108,8 +123,7 @@ export class ListHook {
 
     const filterListImpl = getFilterListImpl(options.filterMode);
 
-    // Update the filter when the query parameters change
-    // we want to use the local forage only when the location search has not been set
+    // Initialise from interface forage when loaded
     useEffect(() => {
       function updateFromLocalForage(queryData: any) {
         const queryParams = queryString.parse(queryData.filter);
@@ -123,32 +137,45 @@ export class ListHook {
         });
       }
 
-      function updateFromQueryString(queryStr: string) {
-        const queryParams = queryString.parse(queryStr);
-        setFilter((f) => {
-          const newFilter = _.cloneDeep(f);
-          newFilter.configureFromQueryParameters(queryParams);
-          return newFilter;
-        });
+      function initialise() {
+        forageInitialised.current = true;
+
+        let forageData: any;
+
+        if (interfaceForage.data && interfaceForage.data.queries[options.filterMode]) {
+          forageData = interfaceForage.data.queries[options.filterMode];
+        }
+
+        if (!options.props!.location.search && forageData) {
+          // we have some data, try to load it
+          updateFromLocalForage(forageData);
+        } else {
+          // use query string instead - include the forageData to include the following
+          // preferences if not specified: displayMode, itemsPerPage, sortBy and sortDir
+          updateFromQueryString(options.props!.location.search, setFilter, forageData);
+        }
       }
 
       // don't use query parameters for sub-components
       if (!options.subComponent) {
-        // do this only once after local forage has been initialised
+        // initialise once when the forage is loaded
         if (!forageInitialised.current && !interfaceForage.loading) {
-          forageInitialised.current = true;
-
-          if (!options.props!.location.search && interfaceForage.data && interfaceForage.data.queries[options.filterMode]) {
-            let queryData = interfaceForage.data.queries[options.filterMode];
-            // we have some data, try to load it
-            updateFromLocalForage(queryData);
-          } else if (interfaceForage.data) {
-            // else fallback to query string
-            updateFromQueryString(options.props!.location.search);
-          }
+          initialise();
+          return;
         }
       }
     }, [interfaceForage.data, interfaceForage.loading, options.props, options.filterMode, options.subComponent]);
+
+    // Update the filter when the query parameters change
+    useEffect(() => {
+      // don't use query parameters for sub-components
+      if (!options.subComponent) {
+        // only update from the URL if the forage is initialised
+        if (forageInitialised.current) {
+          updateFromQueryString(options.props!.location.search, setFilter);
+        }
+      }
+    }, [options.props, options.filterMode, options.subComponent]);
 
     function getFilter() {
       if (!options.filterHook) {
@@ -178,8 +205,12 @@ export class ListHook {
         // don't update this until local forage is loaded
         if (forageInitialised.current) {
           const location = Object.assign({}, options.props.history.location);
-          location.search = filter.makeQueryParameters();
-          options.props.history.replace(location);
+          const includePrefs = true;
+          location.search = "?" + filter.makeQueryParameters(includePrefs);
+
+          if (location.search !== options.props.history.location.search) {
+            options.props.history.replace(location);
+          }
 
           setInterfaceForage((d) => {
             const dataClone = _.cloneDeep(d);
@@ -367,31 +398,42 @@ export class ListHook {
       }
     }
 
-    const template = (
-      <div>
-        <ListFilter
-          onChangePageSize={onChangePageSize}
-          onChangeQuery={onChangeQuery}
-          onChangeSortDirection={onChangeSortDirection}
-          onChangeSortBy={onChangeSortBy}
-          onChangeDisplayMode={onChangeDisplayMode}
-          onAddCriterion={onAddCriterion}
-          onRemoveCriterion={onRemoveCriterion}
-          onSelectAll={onSelectAll}
-          onSelectNone={onSelectNone}
-          zoomIndex={options.zoomable ? zoomIndex : undefined}
-          onChangeZoom={options.zoomable ? onChangeZoom : undefined}
-          otherOperations={otherOperations}
-          filter={filter}
-        />
-        {options.renderSelectedOptions && selectedIds.size > 0 ? options.renderSelectedOptions(result, selectedIds) : undefined}
-        {result.loading || (!options.subComponent && !forageInitialised.current) ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
-        {result.error ? <h1>{result.error.message}</h1> : undefined}
-        {maybeRenderContent()}
-        {maybeRenderPagination()}
-      </div>
-    );
+    function getTemplate() {
+      if (!options.subComponent && !forageInitialised.current) {
+        return (
+          <div>
+            {!result.error ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
+            {result.error ? <h1>{result.error.message}</h1> : undefined}
+          </div>
+        )
+      } else {
+        return (
+          <div>
+            <ListFilter
+              onChangePageSize={onChangePageSize}
+              onChangeQuery={onChangeQuery}
+              onChangeSortDirection={onChangeSortDirection}
+              onChangeSortBy={onChangeSortBy}
+              onChangeDisplayMode={onChangeDisplayMode}
+              onAddCriterion={onAddCriterion}
+              onRemoveCriterion={onRemoveCriterion}
+              onSelectAll={onSelectAll}
+              onSelectNone={onSelectNone}
+              zoomIndex={options.zoomable ? zoomIndex : undefined}
+              onChangeZoom={options.zoomable ? onChangeZoom : undefined}
+              otherOperations={otherOperations}
+              filter={filter}
+            />
+            {options.renderSelectedOptions && selectedIds.size > 0 ? options.renderSelectedOptions(result, selectedIds) : undefined}
+            {result.loading || (!options.subComponent && !forageInitialised.current) ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
+            {result.error ? <h1>{result.error.message}</h1> : undefined}
+            {maybeRenderContent()}
+            {maybeRenderPagination()}
+          </div>
+        )
+      }
+    }
 
-    return { filter, template, options, onSelectChange };
+    return { filter, template: getTemplate(), options, onSelectChange };
   }
 }
