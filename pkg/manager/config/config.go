@@ -34,7 +34,6 @@ const ExternalHost = "external_host"
 
 // i18n
 const Language = "language"
-const Locale = "locale"
 
 // Interface options
 const SoundOnPreview = "sound_on_preview"
@@ -106,18 +105,7 @@ func GetLanguage() string {
 
 	// default to English
 	if ret == "" {
-		return "en"
-	}
-
-	return ret
-}
-
-func GetLocale() string {
-	ret := viper.GetString(Locale)
-
-	// default to US
-	if ret == "" {
-		return "US"
+		return "en-US"
 	}
 
 	return ret

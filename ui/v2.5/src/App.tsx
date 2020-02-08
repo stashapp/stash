@@ -25,14 +25,14 @@ library.add(fas);
 
 export const App: React.FC = () => {
   const config = StashService.useConfiguration();
-  const locale = config.data?.configuration?.interface?.locale ?? 'US';
-  const language = config.data?.configuration?.interface?.language ?? 'en';
-  const messages = flattenMessages((locales as any)[language] ?? locales.en);
+  const language = config.data?.configuration?.interface?.language ?? 'en-US';
+  const messageLanguage = language.slice(0,2);
+  const messages = flattenMessages((locales as any)[messageLanguage]);
 
   return (
     <div className="bp3-dark">
       <ErrorBoundary>
-        <IntlProvider locale={locale} messages={messages}>
+        <IntlProvider locale={language} messages={messages}>
           <ToastProvider>
             <MainNavbar />
             <div className="main container-fluid">

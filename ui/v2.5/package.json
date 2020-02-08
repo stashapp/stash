@@ -36,7 +36,6 @@
     "axios": "0.18.1",
     "bootstrap": "^4.4.1",
     "classnames": "^2.2.6",
-    "countries-list": "^2.5.1",
     "formik": "^2.1.2",
     "graphql": "^14.5.8",
     "graphql-tag": "^2.10.1",

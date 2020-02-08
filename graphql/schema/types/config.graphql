@@ -76,7 +76,6 @@ input ConfigInterfaceInput {
   css: String
   cssEnabled: Boolean
   language: String
-  locale: String
 }
 
 type ConfigInterfaceResult {
@@ -95,8 +94,6 @@ type ConfigInterfaceResult {
   cssEnabled: Boolean
   """Interface language"""
   language: String
-  """Interface locale"""
-  locale: String
 }
 
 """All configuration settings"""
