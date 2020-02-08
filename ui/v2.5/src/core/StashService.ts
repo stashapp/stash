@@ -369,6 +369,24 @@ export class StashService {
     return GQL.useScenesUpdateMutation({ variables: { input } });
   }
 
+  public static useSceneIncrementO(id: string) {
+    return GQL.useSceneIncrementOMutation({
+      variables: {id}
+    });
+  }
+
+  public static useSceneDecrementO(id: string) {
+    return GQL.useSceneDecrementOMutation({
+      variables: {id}
+    });
+  }
+
+  public static useSceneResetO(id: string) {
+    return GQL.useSceneResetOMutation({
+      variables: {id}
+    });
+  }
+
   public static useSceneDestroy(input: GQL.SceneDestroyInput) {
     return GQL.useSceneDestroyMutation({
       variables: input,

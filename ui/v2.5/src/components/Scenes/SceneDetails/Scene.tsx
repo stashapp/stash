@@ -6,20 +6,27 @@ import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { LoadingIndicator } from "src/components/Shared";
+import { useToast } from 'src/hooks';
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { ScenePerformerPanel } from "./ScenePerformerPanel";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
+import { OCounterButton } from './OCounterButton';
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
   const location = useLocation();
   const history = useHistory();
+  const Toast = useToast();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = StashService.useFindScene(id);
+  const [oLoading, setOLoading] = useState(false);
+  const [incrementO] = StashService.useSceneIncrementO(scene?.id ?? "0");
+  const [decrementO] = StashService.useSceneDecrementO(scene?.id ?? "0");
+  const [resetO] = StashService.useSceneResetO(scene?.id ?? "0");
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
@@ -37,6 +44,51 @@ export const Scene: React.FC = () => {
     );
   }
 
+  const updateOCounter = (newValue: number) => {
+    const modifiedScene = { ...scene } as GQL.SceneDataFragment;
+    modifiedScene.o_counter = newValue;
+    setScene(modifiedScene);
+  }
+
+  const onIncrementClick = async () => {
+    try {
+      setOLoading(true);
+      const result = await incrementO();
+      if(result.data)
+        updateOCounter(result.data.sceneIncrementO);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOLoading(false);
+    }
+  }
+
+  const onDecrementClick = async () => {
+    try {
+      setOLoading(true);
+      const result = await decrementO();
+      if(result.data)
+        updateOCounter(result.data.sceneDecrementO);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOLoading(false);
+    }
+  }
+
+  const onResetClick = async () => {
+    try {
+      setOLoading(true);
+      const result = await resetO();
+      if(result.data)
+        updateOCounter(result.data.sceneResetO);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOLoading(false);
+    }
+  }
+
   function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
     setTimestamp(marker.seconds);
   }
@@ -51,6 +103,15 @@ export const Scene: React.FC = () => {
     <>
       <ScenePlayer scene={scene} timestamp={timestamp} autoplay={autoplay} />
       <div id="scene-details-container" className="col col-sm-9 m-sm-auto">
+        <div className="float-right">
+          <OCounterButton
+            loading={oLoading}
+            value={scene.o_counter || 0}
+            onIncrement={onIncrementClick}
+            onDecrement={onDecrementClick}
+            onReset={onResetClick}
+          />
+        </div>
         <Tabs id="scene-tabs" mountOnEnter>
           <Tab eventKey="scene-details-panel" title="Details">
             <SceneDetailPanel scene={scene} />
