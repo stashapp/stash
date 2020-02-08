@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { countries } from "countries-list";
 import { DurationInput, LoadingIndicator } from "src/components/Shared";
 import { StashService } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -16,7 +15,6 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [css, setCSS] = useState<string>();
   const [cssEnabled, setCSSEnabled] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>('en');
-  const [locale, setLocale] = useState<string>('US');
 
   const [updateInterfaceConfig] = StashService.useConfigureInterface({
     soundOnPreview,
@@ -26,8 +24,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     showStudioAsText,
     css,
     cssEnabled,
-    language,
-    locale
+    language
   });
 
   useEffect(() => {
@@ -39,8 +36,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     setShowStudioAsText(iCfg?.showStudioAsText ?? false);
     setCSS(iCfg?.css ?? "");
     setCSSEnabled(iCfg?.cssEnabled ?? false);
-    setLanguage(iCfg?.language ?? 'en');
-    setLocale(iCfg?.locale ?? 'en_US');
+    setLanguage(iCfg?.language ?? 'en-US');
   }, [config]);
 
   async function onSave() {
@@ -66,25 +62,13 @@ export const SettingsInterfacePanel: React.FC = () => {
         <Form.Label className="col-2">Language</Form.Label>
         <Form.Control
           as="select"
-          className="col-2"
+          className="col-4"
           value={language}
           onChange={(e:React.FormEvent<HTMLSelectElement>) => setLanguage(e.currentTarget.value)}
         >
-          <option value="en">English</option>
-          <option value="de">German</option>
-        </Form.Control>
-      </Form.Group>
-      <Form.Group controlId="region" className="row">
-        <Form.Label className="col-2">Region</Form.Label>
-        <Form.Control
-          as="select"
-          className="col-2"
-          value={locale}
-          onChange={(e:React.FormEvent<HTMLSelectElement>) => setLocale(e.currentTarget.value)}
-        >
-          { Object.keys(countries).map(code => (
-            <option value={code}>{(countries as any)[code].name}</option>
-          ))}
+          <option value="en-US">English (United States)</option>
+          <option value="en-GB">English (United Kingdom)</option>
+          <option value="de-DE">German</option>
         </Form.Control>
       </Form.Group>
       <Form.Group>

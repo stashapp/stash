@@ -7,7 +7,7 @@ import * as ApolloReactHooks from '@apollo/react-hooks';
 export type Maybe<T> = T | null;
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
-// Generated in 2020-02-08T16:10:44+01:00
+// Generated in 2020-02-08T21:46:36+01:00
 
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -113,7 +113,6 @@ export type ConfigInterfaceInput = {
   css?: Maybe<Scalars['String']>,
   cssEnabled?: Maybe<Scalars['Boolean']>,
   language?: Maybe<Scalars['String']>,
-  locale?: Maybe<Scalars['String']>,
 };
 
 export type ConfigInterfaceResult = {
@@ -133,8 +132,6 @@ export type ConfigInterfaceResult = {
   cssEnabled?: Maybe<Scalars['Boolean']>,
   /** Interface language */
   language?: Maybe<Scalars['String']>,
-  /** Interface locale */
-  locale?: Maybe<Scalars['String']>,
 };
 
 /** All configuration settings */
@@ -1158,7 +1155,7 @@ export type ConfigGeneralDataFragment = (
 
 export type ConfigInterfaceDataFragment = (
   { __typename?: 'ConfigInterfaceResult' }
-  & Pick<ConfigInterfaceResult, 'soundOnPreview' | 'wallShowTitle' | 'maximumLoopDuration' | 'autostartVideo' | 'showStudioAsText' | 'css' | 'cssEnabled' | 'locale' | 'language'>
+  & Pick<ConfigInterfaceResult, 'soundOnPreview' | 'wallShowTitle' | 'maximumLoopDuration' | 'autostartVideo' | 'showStudioAsText' | 'css' | 'cssEnabled' | 'language'>
 );
 
 export type ConfigDataFragment = (
@@ -2242,7 +2239,6 @@ export const ConfigInterfaceDataFragmentDoc = gql`
   showStudioAsText
   css
   cssEnabled
-  locale
   language
 }
     `;

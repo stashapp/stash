@@ -57,7 +57,6 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	showStudioAsText := config.GetShowStudioAsText()
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
-    locale := config.GetLocale()
     language := config.GetLanguage()
 
 
@@ -70,6 +69,5 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		CSS:                 &css,
 		CSSEnabled:          &cssEnabled,
         Language:                  &language,
-        Locale:                    &locale,
 	}
 }

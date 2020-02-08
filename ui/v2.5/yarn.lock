@@ -4442,11 +4442,6 @@ cosmiconfig@6.0.0, cosmiconfig@^6.0.0:
     path-type "^4.0.0"
     yaml "^1.7.2"
 
-countries-list@^2.5.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/countries-list/-/countries-list-2.5.1.tgz#784b7fb1a9fd116f1f8d00c307726d75a6a8d7ad"
-  integrity sha512-ht9obORj0Im7BqGfqlqTd7qLNMuuhdCvFMKmWx15ZQjpGVddd+018LOegE4J1wLtiZ5TYC/KhivkOYmelqSNLg==
-
 create-ecdh@^4.0.0:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/create-ecdh/-/create-ecdh-4.0.3.tgz#c9111b6f33045c4697f144787f9254cdc77c45ff"
