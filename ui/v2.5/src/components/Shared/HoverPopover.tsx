@@ -7,6 +7,8 @@ interface IHoverPopover {
   content: JSX.Element[] | JSX.Element | string;
   className?: string;
   placement?: OverlayProps["placement"];
+  onOpen?: () => void;
+  onClose?: () => void;
 }
 
 export const HoverPopover: React.FC<IHoverPopover> = ({
@@ -15,7 +17,9 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
   content,
   children,
   className,
-  placement = "top"
+  placement = "top",
+  onOpen,
+  onClose
 }) => {
   const [show, setShow] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -24,13 +28,19 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
 
   const handleMouseEnter = useCallback(() => {
     window.clearTimeout(leaveTimer.current);
-    enterTimer.current = window.setTimeout(() => setShow(true), enterDelay);
-  }, [enterDelay]);
+    enterTimer.current = window.setTimeout(() => {
+      setShow(true)
+      onOpen?.();
+    }, enterDelay);
+  }, [enterDelay, onOpen]);
 
   const handleMouseLeave = useCallback(() => {
     window.clearTimeout(enterTimer.current);
-    leaveTimer.current = window.setTimeout(() => setShow(false), leaveDelay);
-  }, [leaveDelay]);
+    leaveTimer.current = window.setTimeout(() => {
+      setShow(false)
+      onClose?.();
+    }, leaveDelay);
+  }, [leaveDelay, onClose]);
 
   useEffect(
     () => () => {

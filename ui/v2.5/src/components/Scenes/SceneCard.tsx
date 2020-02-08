@@ -5,7 +5,7 @@ import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { VideoHoverHook } from "src/hooks";
-import { Icon, TagLink, HoverPopover } from "src/components/Shared";
+import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 
 interface ISceneCardProps {
@@ -135,11 +135,25 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     );
   }
 
+  function maybeRenderOCounter() {
+    if (props.scene.o_counter) {
+      return (
+        <div>
+          <Button className="minimal">
+            <SweatDrops />
+            <span>{props.scene.o_counter}</span>
+          </Button>
+        </div>
+      )
+    }
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       props.scene.tags.length > 0 ||
       props.scene.performers.length > 0 ||
-      props.scene.scene_markers.length > 0
+      props.scene.scene_markers.length > 0 ||
+      props.scene?.o_counter
     ) {
       return (
         <>
@@ -148,6 +162,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderSceneMarkerPopoverButton()}
+            {maybeRenderOCounter()}
           </ButtonGroup>
         </>
       );

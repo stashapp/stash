@@ -7,7 +7,7 @@ import * as ApolloReactHooks from '@apollo/react-hooks';
 export type Maybe<T> = T | null;
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
-// Generated in 2020-02-06T18:11:21+01:00
+// Generated in 2020-02-08T16:10:44+01:00
 
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -271,6 +271,12 @@ export type Mutation = {
   bulkSceneUpdate?: Maybe<Array<Scene>>,
   sceneDestroy: Scalars['Boolean'],
   scenesUpdate?: Maybe<Array<Maybe<Scene>>>,
+  /** Increments the o-counter for a scene. Returns the new value */
+  sceneIncrementO: Scalars['Int'],
+  /** Decrements the o-counter for a scene. Returns the new value */
+  sceneDecrementO: Scalars['Int'],
+  /** Resets the o-counter for a scene to 0. Returns the new value */
+  sceneResetO: Scalars['Int'],
   sceneMarkerCreate?: Maybe<SceneMarker>,
   sceneMarkerUpdate?: Maybe<SceneMarker>,
   sceneMarkerDestroy: Scalars['Boolean'],
@@ -306,6 +312,21 @@ export type MutationSceneDestroyArgs = {
 
 export type MutationScenesUpdateArgs = {
   input: Array<SceneUpdateInput>
+};
+
+
+export type MutationSceneIncrementOArgs = {
+  id: Scalars['ID']
+};
+
+
+export type MutationSceneDecrementOArgs = {
+  id: Scalars['ID']
+};
+
+
+export type MutationSceneResetOArgs = {
+  id: Scalars['ID']
 };
 
 
@@ -762,6 +783,7 @@ export type Scene = {
   url?: Maybe<Scalars['String']>,
   date?: Maybe<Scalars['String']>,
   rating?: Maybe<Scalars['Int']>,
+  o_counter?: Maybe<Scalars['Int']>,
   path: Scalars['String'],
   file: SceneFileType,
   paths: ScenePathsType,
@@ -794,6 +816,8 @@ export type SceneFileType = {
 export type SceneFilterType = {
   /** Filter by rating */
   rating?: Maybe<IntCriterionInput>,
+  /** Filter by o-counter */
+  o_counter?: Maybe<IntCriterionInput>,
   /** Filter by resolution */
   resolution?: Maybe<ResolutionEnum>,
   /** Filter by duration (in seconds) */
@@ -1189,7 +1213,7 @@ export type SceneMarkerDataFragment = (
 
 export type SlimSceneDataFragment = (
   { __typename?: 'Scene' }
-  & Pick<Scene, 'id' | 'checksum' | 'title' | 'details' | 'url' | 'date' | 'rating' | 'path'>
+  & Pick<Scene, 'id' | 'checksum' | 'title' | 'details' | 'url' | 'date' | 'rating' | 'o_counter' | 'path'>
   & { file: (
     { __typename?: 'SceneFileType' }
     & Pick<SceneFileType, 'size' | 'duration' | 'video_codec' | 'audio_codec' | 'width' | 'height' | 'framerate' | 'bitrate'>
@@ -1216,7 +1240,7 @@ export type SlimSceneDataFragment = (
 
 export type SceneDataFragment = (
   { __typename?: 'Scene' }
-  & Pick<Scene, 'id' | 'checksum' | 'title' | 'details' | 'url' | 'date' | 'rating' | 'path' | 'is_streamable'>
+  & Pick<Scene, 'id' | 'checksum' | 'title' | 'details' | 'url' | 'date' | 'rating' | 'o_counter' | 'path' | 'is_streamable'>
   & { file: (
     { __typename?: 'SceneFileType' }
     & Pick<SceneFileType, 'size' | 'duration' | 'video_codec' | 'audio_codec' | 'width' | 'height' | 'framerate' | 'bitrate'>
@@ -1490,6 +1514,36 @@ export type ScenesUpdateMutation = (
     { __typename?: 'Scene' }
     & SceneDataFragment
   )>>> }
+);
+
+export type SceneIncrementOMutationVariables = {
+  id: Scalars['ID']
+};
+
+
+export type SceneIncrementOMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'sceneIncrementO'>
+);
+
+export type SceneDecrementOMutationVariables = {
+  id: Scalars['ID']
+};
+
+
+export type SceneDecrementOMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'sceneDecrementO'>
+);
+
+export type SceneResetOMutationVariables = {
+  id: Scalars['ID']
+};
+
+
+export type SceneResetOMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'sceneResetO'>
 );
 
 export type SceneDestroyMutationVariables = {
@@ -2226,6 +2280,7 @@ export const SlimSceneDataFragmentDoc = gql`
   url
   date
   rating
+  o_counter
   path
   file {
     size
@@ -2356,6 +2411,7 @@ export const SceneDataFragmentDoc = gql`
   url
   date
   rating
+  o_counter
   path
   file {
     size
@@ -2960,6 +3016,114 @@ export function useScenesUpdateMutation(baseOptions?: ApolloReactHooks.MutationH
 export type ScenesUpdateMutationHookResult = ReturnType<typeof useScenesUpdateMutation>;
 export type ScenesUpdateMutationResult = ApolloReactCommon.MutationResult<ScenesUpdateMutation>;
 export type ScenesUpdateMutationOptions = ApolloReactCommon.BaseMutationOptions<ScenesUpdateMutation, ScenesUpdateMutationVariables>;
+export const SceneIncrementODocument = gql`
+    mutation SceneIncrementO($id: ID!) {
+  sceneIncrementO(id: $id)
+}
+    `;
+export type SceneIncrementOMutationFn = ApolloReactCommon.MutationFunction<SceneIncrementOMutation, SceneIncrementOMutationVariables>;
+export type SceneIncrementOComponentProps = Omit<ApolloReactComponents.MutationComponentOptions<SceneIncrementOMutation, SceneIncrementOMutationVariables>, 'mutation'>;
+
+    export const SceneIncrementOComponent = (props: SceneIncrementOComponentProps) => (
+      <ApolloReactComponents.Mutation<SceneIncrementOMutation, SceneIncrementOMutationVariables> mutation={SceneIncrementODocument} {...props} />
+    );
+    
+
+/**
+ * __useSceneIncrementOMutation__
+ *
+ * To run a mutation, you first call `useSceneIncrementOMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSceneIncrementOMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [sceneIncrementOMutation, { data, loading, error }] = useSceneIncrementOMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useSceneIncrementOMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<SceneIncrementOMutation, SceneIncrementOMutationVariables>) {
+        return ApolloReactHooks.useMutation<SceneIncrementOMutation, SceneIncrementOMutationVariables>(SceneIncrementODocument, baseOptions);
+      }
+export type SceneIncrementOMutationHookResult = ReturnType<typeof useSceneIncrementOMutation>;
+export type SceneIncrementOMutationResult = ApolloReactCommon.MutationResult<SceneIncrementOMutation>;
+export type SceneIncrementOMutationOptions = ApolloReactCommon.BaseMutationOptions<SceneIncrementOMutation, SceneIncrementOMutationVariables>;
+export const SceneDecrementODocument = gql`
+    mutation SceneDecrementO($id: ID!) {
+  sceneDecrementO(id: $id)
+}
+    `;
+export type SceneDecrementOMutationFn = ApolloReactCommon.MutationFunction<SceneDecrementOMutation, SceneDecrementOMutationVariables>;
+export type SceneDecrementOComponentProps = Omit<ApolloReactComponents.MutationComponentOptions<SceneDecrementOMutation, SceneDecrementOMutationVariables>, 'mutation'>;
+
+    export const SceneDecrementOComponent = (props: SceneDecrementOComponentProps) => (
+      <ApolloReactComponents.Mutation<SceneDecrementOMutation, SceneDecrementOMutationVariables> mutation={SceneDecrementODocument} {...props} />
+    );
+    
+
+/**
+ * __useSceneDecrementOMutation__
+ *
+ * To run a mutation, you first call `useSceneDecrementOMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSceneDecrementOMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [sceneDecrementOMutation, { data, loading, error }] = useSceneDecrementOMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useSceneDecrementOMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<SceneDecrementOMutation, SceneDecrementOMutationVariables>) {
+        return ApolloReactHooks.useMutation<SceneDecrementOMutation, SceneDecrementOMutationVariables>(SceneDecrementODocument, baseOptions);
+      }
+export type SceneDecrementOMutationHookResult = ReturnType<typeof useSceneDecrementOMutation>;
+export type SceneDecrementOMutationResult = ApolloReactCommon.MutationResult<SceneDecrementOMutation>;
+export type SceneDecrementOMutationOptions = ApolloReactCommon.BaseMutationOptions<SceneDecrementOMutation, SceneDecrementOMutationVariables>;
+export const SceneResetODocument = gql`
+    mutation SceneResetO($id: ID!) {
+  sceneResetO(id: $id)
+}
+    `;
+export type SceneResetOMutationFn = ApolloReactCommon.MutationFunction<SceneResetOMutation, SceneResetOMutationVariables>;
+export type SceneResetOComponentProps = Omit<ApolloReactComponents.MutationComponentOptions<SceneResetOMutation, SceneResetOMutationVariables>, 'mutation'>;
+
+    export const SceneResetOComponent = (props: SceneResetOComponentProps) => (
+      <ApolloReactComponents.Mutation<SceneResetOMutation, SceneResetOMutationVariables> mutation={SceneResetODocument} {...props} />
+    );
+    
+
+/**
+ * __useSceneResetOMutation__
+ *
+ * To run a mutation, you first call `useSceneResetOMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSceneResetOMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [sceneResetOMutation, { data, loading, error }] = useSceneResetOMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useSceneResetOMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<SceneResetOMutation, SceneResetOMutationVariables>) {
+        return ApolloReactHooks.useMutation<SceneResetOMutation, SceneResetOMutationVariables>(SceneResetODocument, baseOptions);
+      }
+export type SceneResetOMutationHookResult = ReturnType<typeof useSceneResetOMutation>;
+export type SceneResetOMutationResult = ApolloReactCommon.MutationResult<SceneResetOMutation>;
+export type SceneResetOMutationOptions = ApolloReactCommon.BaseMutationOptions<SceneResetOMutation, SceneResetOMutationVariables>;
 export const SceneDestroyDocument = gql`
     mutation SceneDestroy($id: ID!, $delete_file: Boolean, $delete_generated: Boolean) {
   sceneDestroy(input: {id: $id, delete_file: $delete_file, delete_generated: $delete_generated})

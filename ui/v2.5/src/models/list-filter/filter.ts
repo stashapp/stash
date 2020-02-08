@@ -92,6 +92,7 @@ export class ListFilterModel {
           "title",
           "path",
           "rating",
+          "o_counter",
           "date",
           "filesize",
           "duration",
@@ -107,6 +108,7 @@ export class ListFilterModel {
         this.criterionOptions = [
           new NoneCriterionOption(),
           new RatingCriterionOption(),
+          ListFilterModel.createCriterionOption("o_counter"),
           new ResolutionCriterionOption(),
           ListFilterModel.createCriterionOption("duration"),
           new HasMarkersCriterionOption(),
@@ -294,7 +296,7 @@ export class ListFilterModel {
       q: this.searchTerm,
       page: this.currentPage,
       per_page: this.itemsPerPage,
-      sort: this.getSortBy(),
+      sort: this.sortBy,
       direction: this.sortDirection
     };
   }
@@ -309,6 +311,11 @@ export class ListFilterModel {
             value: ratingCrit.value,
             modifier: ratingCrit.modifier
           };
+          break;
+        }
+        case "o_counter": {
+          const oCounterCrit = criterion as NumberCriterion;
+          result.o_counter = { value: oCounterCrit.value, modifier: oCounterCrit.modifier };
           break;
         }
         case "resolution": {
