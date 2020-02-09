@@ -29,7 +29,7 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
   const handleMouseEnter = useCallback(() => {
     window.clearTimeout(leaveTimer.current);
     enterTimer.current = window.setTimeout(() => {
-      setShow(true)
+      setShow(true);
       onOpen?.();
     }, enterDelay);
   }, [enterDelay, onOpen]);
@@ -37,7 +37,7 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
   const handleMouseLeave = useCallback(() => {
     window.clearTimeout(enterTimer.current);
     leaveTimer.current = window.setTimeout(() => {
-      setShow(false)
+      setShow(false);
       onClose?.();
     }, leaveDelay);
   }, [leaveDelay, onClose]);

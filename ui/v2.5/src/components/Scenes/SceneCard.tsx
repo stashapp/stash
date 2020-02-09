@@ -66,10 +66,15 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     return (
       <div className="scene-studio-overlay">
         <Link to={`/studios/${props.scene.studio.id}`}>
-        { showStudioAsText
-            ? props.scene.studio.name
-            : <img className="image-thumbnail" alt={props.scene.studio.name} src={props.scene.studio.image_path ?? ''} />
-        }
+          {showStudioAsText ? (
+            props.scene.studio.name
+          ) : (
+            <img
+              className="image-thumbnail"
+              alt={props.scene.studio.name}
+              src={props.scene.studio.image_path ?? ""}
+            />
+          )}
         </Link>
       </div>
     );
@@ -101,7 +106,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
           to={`/performers/${performer.id}`}
           className="performer-tag col m-auto zoom-2"
         >
-          <img className="image-thumbnail" alt={performer.name ?? ''} src={performer.image_path ?? ''} />
+          <img
+            className="image-thumbnail"
+            alt={performer.name ?? ""}
+            src={performer.image_path ?? ""}
+          />
         </Link>
         <TagLink key={performer.id} performer={performer} className="d-block" />
       </div>
@@ -144,7 +153,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             <span>{props.scene.o_counter}</span>
           </Button>
         </div>
-      )
+      );
     }
   }
 
@@ -207,15 +216,12 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         }}
       />
       {maybeRenderSceneStudioOverlay()}
-      <Link
-        to={`/scenes/${props.scene.id}`}
-        className="scene-card-link"
-      >
+      <Link to={`/scenes/${props.scene.id}`} className="scene-card-link">
         {maybeRenderRatingBanner()}
         {maybeRenderSceneSpecsOverlay()}
         <video
           loop
-          className={cx('scene-card-video', { portrait: isPortrait() })}
+          className={cx("scene-card-video", { portrait: isPortrait() })}
           poster={props.scene.paths.screenshot || ""}
           ref={videoHoverHook.videoEl}
         >
@@ -229,13 +235,9 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             : TextUtils.fileNameFromPath(props.scene.path)}
         </h5>
         <span>{props.scene.date}</span>
-        { props.scene.details && (
+        {props.scene.details && (
           <p>
-            {TextUtils.truncate(
-              props.scene.details,
-              100,
-              "... (continued)"
-            )}
+            {TextUtils.truncate(props.scene.details, 100, "... (continued)")}
           </p>
         )}
       </div>

@@ -157,7 +157,12 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
           <Button variant="primary" type="submit">
             Submit
           </Button>
-          <Button variant="secondary" type="button" onClick={onClose} className="ml-2">
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={onClose}
+            className="ml-2"
+          >
             Cancel
           </Button>
           {editingMarker && (

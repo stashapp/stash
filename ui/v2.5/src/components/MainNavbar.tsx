@@ -1,5 +1,5 @@
 import React from "react";
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage } from "react-intl";
 import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
@@ -60,7 +60,9 @@ export const MainNavbar: React.FC = () => {
       ""
     ) : (
       <LinkContainer to={path}>
-        <Button variant="primary"><FormattedMessage id="new" defaultMessage="New" /></Button>
+        <Button variant="primary">
+          <FormattedMessage id="new" defaultMessage="New" />
+        </Button>
       </LinkContainer>
     );
 

@@ -87,7 +87,9 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
         )}`
       );
       const thisTags = props.sceneMarker.tags.map(tag => (
-        <span key={tag.id} className="wall-tag">{tag.name}</span>
+        <span key={tag.id} className="wall-tag">
+          {tag.name}
+        </span>
       ));
       thisTags.unshift(
         <span key={props.sceneMarker.primary_tag.id} className="wall-tag">

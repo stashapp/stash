@@ -1,6 +1,6 @@
 import React from "react";
 import { StashService } from "src/core/StashService";
-import { FormattedMessage, FormattedNumber } from 'react-intl';
+import { FormattedMessage, FormattedNumber } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared";
 
 export const Stats: React.FC = () => {
@@ -17,9 +17,7 @@ export const Stats: React.FC = () => {
           <div className="flex-grow-1">
             <div>
               <p className="heading">
-                <FormattedMessage
-                  id="scenes"
-                  defaultMessage="Scenes" />
+                <FormattedMessage id="scenes" defaultMessage="Scenes" />
               </p>
               <p className="title">
                 <FormattedNumber value={data.stats.scene_count} />
@@ -29,9 +27,7 @@ export const Stats: React.FC = () => {
           <div className="flex-grow-1">
             <div>
               <p className="heading">
-                <FormattedMessage
-                  id="galleries"
-                  defaultMessage="Galleries" />
+                <FormattedMessage id="galleries" defaultMessage="Galleries" />
               </p>
               <p className="title">
                 <FormattedNumber value={data.stats.gallery_count} />
@@ -41,9 +37,7 @@ export const Stats: React.FC = () => {
           <div className="flex-grow-1">
             <div>
               <p className="heading">
-                <FormattedMessage
-                  id="performers"
-                  defaultMessage="Performers" />
+                <FormattedMessage id="performers" defaultMessage="Performers" />
               </p>
               <p className="title">
                 <FormattedNumber value={data.stats.performer_count} />
@@ -53,9 +47,7 @@ export const Stats: React.FC = () => {
           <div className="flex-grow-1">
             <div>
               <p className="heading">
-                <FormattedMessage
-                  id="studios"
-                  defaultMessage="Studios" />
+                <FormattedMessage id="studios" defaultMessage="Studios" />
               </p>
               <p className="title">
                 <FormattedNumber value={data.stats.studio_count} />
@@ -65,9 +57,7 @@ export const Stats: React.FC = () => {
           <div className="flex-grow-1">
             <div>
               <p className="heading">
-                <FormattedMessage
-                  id="tags"
-                  defaultMessage="Tags" />
+                <FormattedMessage id="tags" defaultMessage="Tags" />
               </p>
               <p className="title">
                 <FormattedNumber value={data.stats.tag_count} />

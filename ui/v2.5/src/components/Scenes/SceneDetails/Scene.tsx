@@ -6,14 +6,14 @@ import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { LoadingIndicator } from "src/components/Shared";
-import { useToast } from 'src/hooks';
+import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { ScenePerformerPanel } from "./ScenePerformerPanel";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
-import { OCounterButton } from './OCounterButton';
+import { OCounterButton } from "./OCounterButton";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
@@ -48,46 +48,43 @@ export const Scene: React.FC = () => {
     const modifiedScene = { ...scene } as GQL.SceneDataFragment;
     modifiedScene.o_counter = newValue;
     setScene(modifiedScene);
-  }
+  };
 
   const onIncrementClick = async () => {
     try {
       setOLoading(true);
       const result = await incrementO();
-      if(result.data)
-        updateOCounter(result.data.sceneIncrementO);
+      if (result.data) updateOCounter(result.data.sceneIncrementO);
     } catch (e) {
       Toast.error(e);
     } finally {
       setOLoading(false);
     }
-  }
+  };
 
   const onDecrementClick = async () => {
     try {
       setOLoading(true);
       const result = await decrementO();
-      if(result.data)
-        updateOCounter(result.data.sceneDecrementO);
+      if (result.data) updateOCounter(result.data.sceneDecrementO);
     } catch (e) {
       Toast.error(e);
     } finally {
       setOLoading(false);
     }
-  }
+  };
 
   const onResetClick = async () => {
     try {
       setOLoading(true);
       const result = await resetO();
-      if(result.data)
-        updateOCounter(result.data.sceneResetO);
+      if (result.data) updateOCounter(result.data.sceneResetO);
     } catch (e) {
       Toast.error(e);
     } finally {
       setOLoading(false);
     }
-  }
+  };
 
   function onClickMarker(marker: GQL.SceneMarkerDataFragment) {
     setTimestamp(marker.seconds);

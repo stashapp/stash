@@ -296,7 +296,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         </td>
         <td>
           <Form.Control
-            value={url ?? ''}
+            value={url ?? ""}
             readOnly={!isEditing}
             plaintext={!isEditing}
             placeholder="URL"

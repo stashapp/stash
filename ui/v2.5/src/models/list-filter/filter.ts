@@ -64,7 +64,6 @@ const DEFAULT_PARAMS = {
   itemsPerPage: 40
 };
 
-
 // TODO: handle customCriteria
 export class ListFilterModel {
   public filterMode: FilterMode = FilterMode.Scenes;
@@ -209,9 +208,10 @@ export class ListFilterModel {
         }
       }
     }
-    this.sortDirection = params.sortdir === "desc"
-      ? SortDirectionEnum.Desc
-      : SortDirectionEnum.Asc;
+    this.sortDirection =
+      params.sortdir === "desc"
+        ? SortDirectionEnum.Desc
+        : SortDirectionEnum.Asc;
     if (params.disp) {
       this.displayMode = Number.parseInt(params.disp, 10);
     }
@@ -221,8 +221,7 @@ export class ListFilterModel {
     if (params.p) {
       this.currentPage = Number.parseInt(params.p, 10);
     }
-    if (params.items)
-      this.itemsPerPage = Number.parseInt(params.items, 10);
+    if (params.items) this.itemsPerPage = Number.parseInt(params.items, 10);
 
     if (params.c !== undefined) {
       this.criteria = [];
@@ -249,7 +248,7 @@ export class ListFilterModel {
       // #321 - set the random seed if it is not set
       if (this.randomSeed === -1) {
         // generate 8-digit seed
-        this.randomSeed = Math.floor(Math.random() * (10 ** 8));
+        this.randomSeed = Math.floor(Math.random() * 10 ** 8);
       }
     } else {
       this.randomSeed = -1;
@@ -278,12 +277,22 @@ export class ListFilterModel {
     });
 
     const result = {
-      items: this.itemsPerPage !== DEFAULT_PARAMS.itemsPerPage ? this.itemsPerPage : undefined,
+      items:
+        this.itemsPerPage !== DEFAULT_PARAMS.itemsPerPage
+          ? this.itemsPerPage
+          : undefined,
       sortby: this.getSortBy(),
-      sortdir: this.sortDirection === SortDirectionEnum.Desc  ? "desc" : undefined,
-      disp: this.displayMode !== DEFAULT_PARAMS.displayMode ? this.displayMode : undefined,
+      sortdir:
+        this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
+      disp:
+        this.displayMode !== DEFAULT_PARAMS.displayMode
+          ? this.displayMode
+          : undefined,
       q: this.searchTerm,
-      p: this.currentPage !== DEFAULT_PARAMS.currentPage ? this.currentPage : undefined,
+      p:
+        this.currentPage !== DEFAULT_PARAMS.currentPage
+          ? this.currentPage
+          : undefined,
       c: encodedCriteria
     };
     return queryString.stringify(result, { encode: false });
@@ -315,7 +324,10 @@ export class ListFilterModel {
         }
         case "o_counter": {
           const oCounterCrit = criterion as NumberCriterion;
-          result.o_counter = { value: oCounterCrit.value, modifier: oCounterCrit.modifier };
+          result.o_counter = {
+            value: oCounterCrit.value,
+            modifier: oCounterCrit.modifier
+          };
           break;
         }
         case "resolution": {

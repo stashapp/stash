@@ -103,16 +103,26 @@ export const TagList: React.FC = () => {
           {tag.name}
         </Button>
         <div className="ml-auto">
-          <Button variant="secondary" className="tag-list-button" onClick={() => onAutoTag(tag)}>
+          <Button
+            variant="secondary"
+            className="tag-list-button"
+            onClick={() => onAutoTag(tag)}
+          >
             Auto Tag
           </Button>
           <Button variant="secondary" className="tag-list-button">
-            <Link to={NavUtils.makeTagScenesUrl(tag)} className="tag-list-anchor">
+            <Link
+              to={NavUtils.makeTagScenesUrl(tag)}
+              className="tag-list-anchor"
+            >
               Scenes: {tag.scene_count}
             </Link>
           </Button>
           <Button variant="secondary" className="tag-list-button">
-            <Link to={NavUtils.makeTagSceneMarkersUrl(tag)} className="tag-list-anchor">
+            <Link
+              to={NavUtils.makeTagSceneMarkersUrl(tag)}
+              className="tag-list-anchor"
+            >
               Markers: {tag.scene_marker_count}
             </Link>
           </Button>

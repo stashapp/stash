@@ -17,10 +17,12 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
   const renderPerformerRow = (performer: GQL.PerformerDataFragment) => (
     <tr key={performer.id}>
       <td>
-        <Link
-          to={`/performers/${performer.id}`}
-        >
-          <img className="image-thumbnail" alt={performer.name ?? ""} src={performer.image_path ?? ''} />
+        <Link to={`/performers/${performer.id}`}>
+          <img
+            className="image-thumbnail"
+            alt={performer.name ?? ""}
+            src={performer.image_path ?? ""}
+          />
         </Link>
       </td>
       <td className="text-left">
@@ -29,13 +31,12 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
         </Link>
       </td>
       <td>{performer.aliases ? performer.aliases : ""}</td>
-      <td>{
-        performer.favorite && (
+      <td>
+        {performer.favorite && (
           <Button disabled className="favorite">
             <Icon icon="heart" />
           </Button>
-        )
-      }
+        )}
       </td>
       <td>
         <Link to={NavUtils.makePerformerScenesUrl(performer)}>

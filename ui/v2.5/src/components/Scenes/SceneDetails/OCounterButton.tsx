@@ -1,27 +1,24 @@
 import React from "react";
-import { Button, Spinner } from 'react-bootstrap';
-import { Icon, HoverPopover, SweatDrops } from 'src/components/Shared';
+import { Button, Spinner } from "react-bootstrap";
+import { Icon, HoverPopover, SweatDrops } from "src/components/Shared";
 
 export interface IOCounterButtonProps {
-  loading: boolean
-  value: number
-  onIncrement: () => void
-  onDecrement: () => void
-  onReset: () => void
-  onMenuOpened?: () => void
-  onMenuClosed?: () => void
+  loading: boolean;
+  value: number;
+  onIncrement: () => void;
+  onDecrement: () => void;
+  onReset: () => void;
+  onMenuOpened?: () => void;
+  onMenuClosed?: () => void;
 }
 
-export const OCounterButton: React.FC<IOCounterButtonProps> = (props: IOCounterButtonProps) => {
-  if(props.loading)
-    return <Spinner animation="border" role="status" />;
+export const OCounterButton: React.FC<IOCounterButtonProps> = (
+  props: IOCounterButtonProps
+) => {
+  if (props.loading) return <Spinner animation="border" role="status" />;
 
   const renderButton = () => (
-    <Button
-      className="minimal"
-      onClick={props.onIncrement}
-      variant="secondary"
-    >
+    <Button className="minimal" onClick={props.onIncrement} variant="secondary">
       <SweatDrops />
       <span className="ml-2">{props.value}</span>
     </Button>
@@ -59,9 +56,9 @@ export const OCounterButton: React.FC<IOCounterButtonProps> = (props: IOCounterB
         onOpen={props.onMenuOpened}
         onClose={props.onMenuClosed}
       >
-        { renderButton() }
+        {renderButton()}
       </HoverPopover>
     );
   }
   return renderButton();
-}
+};

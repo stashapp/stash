@@ -343,7 +343,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     }),
     multiValueRemove: (base: CSSProperties, state: any) => ({
       ...base,
-      color: state.isFocused ? base.color: '#333333'
+      color: state.isFocused ? base.color : "#333333"
     })
   };
 
