@@ -16,7 +16,7 @@ import {
   FindStudiosQueryResult,
   FindPerformersQueryResult
 } from "src/core/generated-graphql";
-import { useInterfaceLocalForage } from "src/hooks/LocalForage";
+import { useInterfaceLocalForage, IInterfaceConfig } from "src/hooks/LocalForage";
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
 import { Pagination } from "src/components/List/Pagination";
@@ -134,14 +134,17 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     setFilter(newFilter);
 
     if (forageInitialised.current) {
-      setInterfaceForage(d => {
-        const dataClone = _.cloneDeep(d);
-        dataClone!.queries[options.filterMode] = {
-          filter: location.search,
-          itemsPerPage: newFilter.itemsPerPage,
-          currentPage: newFilter.currentPage
-        };
-        return dataClone;
+      setInterfaceForage(config => {
+        const data = { ...config } as IInterfaceConfig;
+        data.queries = {
+          ...config?.queries,
+          [options.filterMode]: {
+            filter: location.search,
+            itemsPerPage: newFilter.itemsPerPage,
+            currentPage: newFilter.currentPage
+          }
+        }
+        return data;
       });
     }
   }, [location, options.filterMode, options.subComponent, setInterfaceForage]);
