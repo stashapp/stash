@@ -16,7 +16,7 @@ import {
   FindStudiosQueryResult,
   FindPerformersQueryResult
 } from "src/core/generated-graphql";
-import { useInterfaceLocalForage } from 'src/hooks/LocalForage';
+import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
 import { Pagination } from "src/components/List/Pagination";
@@ -94,19 +94,16 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const items = options.getData(result);
 
   useEffect(() => {
-    if(!forageInitialised.current && !interfaceForage.loading) {
+    if (!forageInitialised.current && !interfaceForage.loading) {
       forageInitialised.current = true;
 
       // Don't use query parameters for sub-components
-      if(options.subComponent)
-        return;
+      if (options.subComponent) return;
       // Don't read localForage if page already had query parameters
-      if(history.location.search)
-        return;
+      if (history.location.search) return;
 
       const queryData = interfaceForage.data?.queries[options.filterMode];
-      if(!queryData)
-        return;
+      if (!queryData) return;
 
       const newFilter = new ListFilterModel(
         options.filterMode,
@@ -119,11 +116,16 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       newLocation.search = queryData.filter;
       history.replace(newLocation);
     }
-  }, [interfaceForage.data, interfaceForage.loading, history, options.subComponent, options.filterMode]);
+  }, [
+    interfaceForage.data,
+    interfaceForage.loading,
+    history,
+    options.subComponent,
+    options.filterMode
+  ]);
 
   useEffect(() => {
-    if(options.subComponent)
-      return;
+    if (options.subComponent) return;
 
     const newFilter = new ListFilterModel(
       options.filterMode,
@@ -131,8 +133,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     );
     setFilter(newFilter);
 
-    if(forageInitialised.current) {
-      setInterfaceForage((d) => {
+    if (forageInitialised.current) {
+      setInterfaceForage(d => {
         const dataClone = _.cloneDeep(d);
         dataClone!.queries[options.filterMode] = {
           filter: location.search,
@@ -323,9 +325,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     : undefined;
 
   let template;
-  if(result.loading || !forageInitialised.current) {
+  if (result.loading || !forageInitialised.current) {
     template = <LoadingIndicator />;
-  } else if(result.error) {
+  } else if (result.error) {
     template = <h1>{result.error.message}</h1>;
   } else {
     template = (

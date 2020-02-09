@@ -1,19 +1,19 @@
-const flattenMessages = ((nestedMessages:any, prefix = '') => {
+const flattenMessages = (nestedMessages: any, prefix = "") => {
   if (nestedMessages === null) {
-    return {}
+    return {};
   }
   return Object.keys(nestedMessages).reduce((messages, key) => {
-    const value       = nestedMessages[key]
-    const prefixedKey = prefix ? `${prefix}.${key}` : key
+    const value = nestedMessages[key];
+    const prefixedKey = prefix ? `${prefix}.${key}` : key;
 
-    if (typeof value === 'string') {
-      Object.assign(messages, { [prefixedKey]: value })
+    if (typeof value === "string") {
+      Object.assign(messages, { [prefixedKey]: value });
     } else {
-      Object.assign(messages, flattenMessages(value, prefixedKey))
+      Object.assign(messages, flattenMessages(value, prefixedKey));
     }
 
-    return messages
-  }, {})
-})
+    return messages;
+  }, {});
+};
 
 export default flattenMessages;

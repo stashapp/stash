@@ -1,13 +1,13 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
-import { IntlProvider } from 'react-intl';
+import { IntlProvider } from "react-intl";
 import { ToastProvider } from "src/hooks/Toast";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 
-import locales from 'src/locale';
-import { StashService } from 'src/core/StashService';
-import { flattenMessages } from 'src/utils';
+import locales from "src/locale";
+import { StashService } from "src/core/StashService";
+import { flattenMessages } from "src/utils";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Galleries from "./components/Galleries/Galleries";
 import { MainNavbar } from "./components/MainNavbar";
@@ -20,13 +20,12 @@ import Studios from "./components/Studios/Studios";
 import { TagList } from "./components/Tags/TagList";
 import { SceneFilenameParser } from "./components/SceneFilenameParser/SceneFilenameParser";
 
-
 library.add(fas);
 
 export const App: React.FC = () => {
   const config = StashService.useConfiguration();
-  const language = config.data?.configuration?.interface?.language ?? 'en-US';
-  const messageLanguage = language.slice(0,2);
+  const language = config.data?.configuration?.interface?.language ?? "en-US";
+  const messageLanguage = language.slice(0, 2);
   const messages = flattenMessages((locales as any)[messageLanguage]);
 
   return (

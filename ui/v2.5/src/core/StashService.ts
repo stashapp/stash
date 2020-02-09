@@ -371,19 +371,19 @@ export class StashService {
 
   public static useSceneIncrementO(id: string) {
     return GQL.useSceneIncrementOMutation({
-      variables: {id}
+      variables: { id }
     });
   }
 
   public static useSceneDecrementO(id: string) {
     return GQL.useSceneDecrementOMutation({
-      variables: {id}
+      variables: { id }
     });
   }
 
   public static useSceneResetO(id: string) {
     return GQL.useSceneResetOMutation({
-      variables: {id}
+      variables: { id }
     });
   }
 

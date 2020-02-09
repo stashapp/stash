@@ -14,7 +14,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [showStudioAsText, setShowStudioAsText] = useState<boolean>(false);
   const [css, setCSS] = useState<string>();
   const [cssEnabled, setCSSEnabled] = useState<boolean>(false);
-  const [language, setLanguage] = useState<string>('en');
+  const [language, setLanguage] = useState<string>("en");
 
   const [updateInterfaceConfig] = StashService.useConfigureInterface({
     soundOnPreview,
@@ -36,7 +36,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     setShowStudioAsText(iCfg?.showStudioAsText ?? false);
     setCSS(iCfg?.css ?? "");
     setCSSEnabled(iCfg?.cssEnabled ?? false);
-    setLanguage(iCfg?.language ?? 'en-US');
+    setLanguage(iCfg?.language ?? "en-US");
   }, [config]);
 
   async function onSave() {
@@ -50,10 +50,8 @@ export const SettingsInterfacePanel: React.FC = () => {
     }
   }
 
-  if(error)
-    return <h1>{error.message}</h1>;
-  if(loading)
-    return <LoadingIndicator />;
+  if (error) return <h1>{error.message}</h1>;
+  if (loading) return <LoadingIndicator />;
 
   return (
     <>
@@ -64,7 +62,9 @@ export const SettingsInterfacePanel: React.FC = () => {
           as="select"
           className="col-4"
           value={language}
-          onChange={(e:React.FormEvent<HTMLSelectElement>) => setLanguage(e.currentTarget.value)}
+          onChange={(e: React.FormEvent<HTMLSelectElement>) =>
+            setLanguage(e.currentTarget.value)
+          }
         >
           <option value="en-US">English (United States)</option>
           <option value="en-GB">English (United Kingdom)</option>

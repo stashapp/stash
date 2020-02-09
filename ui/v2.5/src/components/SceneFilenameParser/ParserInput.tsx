@@ -192,9 +192,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
           checked={capitalizeTitle}
           onChange={() => setCapitalizeTitle(!capitalizeTitle)}
         />
-        <Form.Label htmlFor="capitalize-title">
-          Capitalize title
-        </Form.Label>
+        <Form.Label htmlFor="capitalize-title">Capitalize title</Form.Label>
       </Form.Group>
 
       {/* TODO - mapping stuff will go here */}
@@ -238,7 +236,9 @@ export const ParserInput: React.FC<IParserInputProps> = (
           className="col-1 filter-item"
         >
           {PAGE_SIZE_OPTIONS.map(val => (
-            <option key={val} value={val}>{val}</option>
+            <option key={val} value={val}>
+              {val}
+            </option>
           ))}
         </Form.Control>
       </Form.Group>

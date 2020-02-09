@@ -48,9 +48,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = props => {
       </div>
       <div className="col-4 offset-2">
         {props.scene.studio && (
-          <Link
-            to={`/studios/${props.scene.studio.id}`}
-          >
+          <Link to={`/studios/${props.scene.studio.id}`}>
             <img
               src={props.scene.studio.image_path ?? ""}
               alt={`${props.scene.studio.name} logo`}

@@ -1,6 +1,6 @@
 import { debounce } from "lodash";
 import React, { SyntheticEvent, useCallback, useState } from "react";
-import { SortDirectionEnum } from 'src/core/generated-graphql';
+import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
   Badge,
   Button,

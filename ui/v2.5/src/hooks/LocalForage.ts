@@ -50,14 +50,17 @@ function useLocalForage(item: string): ILocalForage<ValidTypes> {
     runAsync();
   });
 
-	return {data: json, setData: setJson, error: err, loading: !loaded};
+  return { data: json, setData: setJson, error: err, loading: !loaded };
 }
 
-export function useInterfaceLocalForage(): [ILocalForage<IInterfaceConfig | undefined>, Dispatch<SetStateAction<IInterfaceConfig | undefined>>] {
+export function useInterfaceLocalForage(): [
+  ILocalForage<IInterfaceConfig | undefined>,
+  Dispatch<SetStateAction<IInterfaceConfig | undefined>>
+] {
   const result = useLocalForage("interface");
 
   let returnVal = result;
-  if(!result.data?.queries) {
+  if (!result.data?.queries) {
     returnVal = {
       ...result,
       data: {
@@ -67,5 +70,5 @@ export function useInterfaceLocalForage(): [ILocalForage<IInterfaceConfig | unde
     };
   }
 
-  return [returnVal, result.setData];;
+  return [returnVal, result.setData];
 }

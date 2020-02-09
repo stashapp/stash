@@ -493,7 +493,9 @@ export const SceneFilenameParser: React.FC = () => {
     return (
       <div>
         {elements.map((name: string) => (
-          <Badge key={name} variant="secondary">{name}</Badge>
+          <Badge key={name} variant="secondary">
+            {name}
+          </Badge>
         ))}
       </div>
     );
@@ -591,7 +593,9 @@ export const SceneFilenameParser: React.FC = () => {
 
     return (
       <tr className="scene-parser-row">
-        <td className="text-left parser-field-filename">{props.scene.filename}</td>
+        <td className="text-left parser-field-filename">
+          {props.scene.filename}
+        </td>
         <SceneParserField
           key="title"
           fieldName="Title"

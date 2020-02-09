@@ -9,13 +9,12 @@ interface IPerformerCardProps {
   ageFromDate?: string;
 }
 
-export const PerformerCard: React.FC<IPerformerCardProps> = (
-  { performer, ageFromDate }
-) => {
+export const PerformerCard: React.FC<IPerformerCardProps> = ({
+  performer,
+  ageFromDate
+}) => {
   const age = TextUtils.age(performer.birthdate, ageFromDate);
-  const ageString = `${age} years old${
-    ageFromDate ? " in this scene." : "."
-  }`;
+  const ageString = `${age} years old${ageFromDate ? " in this scene." : "."}`;
 
   function maybeRenderFavoriteBanner() {
     if (performer.favorite === false) {
@@ -26,12 +25,12 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (
 
   return (
     <Card className="performer-card">
-      <Link
-        to={`/performers/${performer.id}`}
-      >
+      <Link to={`/performers/${performer.id}`}>
         <img
           className="image-thumbnail card-image"
-          alt={performer.name ?? ''} src={performer.image_path ?? ''} />
+          alt={performer.name ?? ""}
+          src={performer.image_path ?? ""}
+        />
         {maybeRenderFavoriteBanner()}
       </Link>
       <div className="card-section">
@@ -39,10 +38,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = (
         {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
         <div className="text-muted">
           Stars in {performer.scene_count}{" "}
-          <Link to={NavUtils.makePerformerScenesUrl(performer)}>
-            scenes
-          </Link>
-          .
+          <Link to={NavUtils.makePerformerScenesUrl(performer)}>scenes</Link>.
         </div>
       </div>
     </Card>
