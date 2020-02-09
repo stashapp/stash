@@ -20,6 +20,7 @@ import Studios from "./components/Studios/Studios";
 import { TagList } from "./components/Tags/TagList";
 import { SceneFilenameParser } from "./components/SceneFilenameParser/SceneFilenameParser";
 
+// Set fontawesome/free-solid-svg as default fontawesome icons
 library.add(fas);
 
 export const App: React.FC = () => {
@@ -29,31 +30,28 @@ export const App: React.FC = () => {
   const messages = flattenMessages((locales as any)[messageLanguage]);
 
   return (
-    <div className="bp3-dark">
-      <ErrorBoundary>
-        <IntlProvider locale={language} messages={messages}>
-          <ToastProvider>
-            <MainNavbar />
-            <div className="main container-fluid">
-              <Switch>
-                <Route exact path="/" component={Stats} />
-                <Route path="/scenes" component={Scenes} />
-                {/* <Route path="/scenes/:id" component={Scene} /> */}
-                <Route path="/galleries" component={Galleries} />
-                <Route path="/performers" component={Performers} />
-                <Route path="/tags" component={TagList} />
-                <Route path="/studios" component={Studios} />
-                <Route path="/settings" component={Settings} />
-                <Route
-                  path="/sceneFilenameParser"
-                  component={SceneFilenameParser}
-                />
-                <Route component={PageNotFound} />
-              </Switch>
-            </div>
-          </ToastProvider>
-        </IntlProvider>
-      </ErrorBoundary>
-    </div>
+    <ErrorBoundary>
+      <IntlProvider locale={language} messages={messages}>
+        <ToastProvider>
+          <MainNavbar />
+          <div className="main container-fluid">
+            <Switch>
+              <Route exact path="/" component={Stats} />
+              <Route path="/scenes" component={Scenes} />
+              <Route path="/galleries" component={Galleries} />
+              <Route path="/performers" component={Performers} />
+              <Route path="/tags" component={TagList} />
+              <Route path="/studios" component={Studios} />
+              <Route path="/settings" component={Settings} />
+              <Route
+                path="/sceneFilenameParser"
+                component={SceneFilenameParser}
+              />
+              <Route component={PageNotFound} />
+            </Switch>
+          </div>
+        </ToastProvider>
+      </IntlProvider>
+    </ErrorBoundary>
   );
 };
