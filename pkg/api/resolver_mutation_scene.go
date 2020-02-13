@@ -163,10 +163,6 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 
 	// only update the cover image if provided and everything else was successful
 	if coverImageData != nil {
-		scene, err := qb.Find(sceneID)
-		if err != nil {
-			return nil, err
-		}
 
 		err = manager.SetSceneScreenshot(scene.Checksum, coverImageData)
 		if err != nil {
