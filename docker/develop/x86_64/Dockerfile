@@ -1,5 +1,5 @@
 FROM ubuntu:18.04 as prep
-LABEL MAINTAINER="leopere [at] nixc [dot] us"
+LABEL MAINTAINER="github@c.nixc.us"
 
 RUN apt-get update && \
     apt-get -y install curl xz-utils && \
