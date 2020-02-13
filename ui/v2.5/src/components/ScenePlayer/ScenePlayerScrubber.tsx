@@ -78,8 +78,8 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
   const positionIndicatorEl = useRef<HTMLDivElement>(null);
   const scrubberSliderEl = useRef<HTMLDivElement>(null);
   const mouseDown = useRef(false);
-  const lastMouseEvent = useRef<MouseEvent|null>(null);
-  const startMouseEvent = useRef<MouseEvent|null>(null);
+  const lastMouseEvent = useRef<MouseEvent | null>(null);
+  const startMouseEvent = useRef<MouseEvent | null>(null);
   const velocity = useRef(0);
 
   const _position = useRef(0);
@@ -279,7 +279,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
         return {};
       }
 
-      let tag: Element|null;
+      let tag: Element | null;
       for (let index = 0; index < tags.length; index++) {
         tag = tags.item(index);
         const id = tag?.getAttribute("data-marker-id") ?? null;
@@ -293,7 +293,8 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
       const percentage = marker.seconds / duration;
 
       const left =
-        scrubberSliderEl.current.scrollWidth * percentage - tag!.clientWidth / 2;
+        scrubberSliderEl.current.scrollWidth * percentage -
+        tag!.clientWidth / 2;
       return {
         left: `${left}px`,
         height: 20

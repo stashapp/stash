@@ -16,7 +16,10 @@ import {
   FindStudiosQueryResult,
   FindPerformersQueryResult
 } from "src/core/generated-graphql";
-import { useInterfaceLocalForage, IInterfaceConfig } from "src/hooks/LocalForage";
+import {
+  useInterfaceLocalForage,
+  IInterfaceConfig
+} from "src/hooks/LocalForage";
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
 import { Pagination } from "src/components/List/Pagination";
@@ -75,7 +78,7 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
 const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   options: IListHookOptions<QueryResult> & IQuery<QueryResult, QueryData>
 ): IListHookData => {
-  const [interfaceState, setInterfaceState]= useInterfaceLocalForage();
+  const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
   const forageInitialised = useRef(false);
   const history = useHistory();
   const location = useLocation();
@@ -142,7 +145,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
             itemsPerPage: newFilter.itemsPerPage,
             currentPage: newFilter.currentPage
           }
-        }
+        };
         return data;
       });
     }
@@ -214,9 +217,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     // Remove duplicate modifiers
     newFilter.criteria = newFilter.criteria.filter((obj, pos, arr) => {
-      return (
-        arr.map(mapObj => mapObj.getId()).indexOf(obj.getId()) === pos
-      );
+      return arr.map(mapObj => mapObj.getId()).indexOf(obj.getId()) === pos;
     });
 
     newFilter.currentPage = 1;

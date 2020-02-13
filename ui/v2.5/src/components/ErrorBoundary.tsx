@@ -1,19 +1,22 @@
 import React from "react";
 
 interface IErrorBoundaryProps {
-  children?: React.ReactNode,
+  children?: React.ReactNode;
 }
 
 type ErrorInfo = {
-    componentStack: string,
+  componentStack: string;
 };
 
 interface IErrorBoundaryState {
-	error?: Error;
+  error?: Error;
   errorInfo?: ErrorInfo;
 }
 
-export class ErrorBoundary extends React.Component<IErrorBoundaryProps, IErrorBoundaryState> {
+export class ErrorBoundary extends React.Component<
+  IErrorBoundaryProps,
+  IErrorBoundaryState
+> {
   constructor(props: IErrorBoundaryProps) {
     super(props);
     this.state = {};

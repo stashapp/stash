@@ -132,7 +132,9 @@ export const ParserInput: React.FC<IParserInputProps> = (
         <InputGroup className="col-8">
           <Form.Control
             id="filename-pattern"
-            onChange={(e: React.FormEvent<HTMLInputElement>) => setPattern(e.currentTarget.value)}
+            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+              setPattern(e.currentTarget.value)
+            }
             value={pattern}
           />
           <InputGroup.Append>
@@ -158,7 +160,9 @@ export const ParserInput: React.FC<IParserInputProps> = (
         <Form.Label className="col-2">Ignored words</Form.Label>
         <InputGroup className="col-8">
           <Form.Control
-            onChange={(e: React.FormEvent<HTMLInputElement>) => setIgnoreWords(e.currentTarget.value)}
+            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+              setIgnoreWords(e.currentTarget.value)
+            }
             value={ignoreWords}
           />
         </InputGroup>

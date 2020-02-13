@@ -26,9 +26,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   const defaultValue = useRef<string | number | undefined>();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [criterion, setCriterion] = useState<Criterion>(
-    new NoneCriterion()
-  );
+  const [criterion, setCriterion] = useState<Criterion>(new NoneCriterion());
 
   const valueStage = useRef<CriterionValue>(criterion.value);
 
@@ -140,10 +138,11 @@ export const AddFilter: React.FC<IAddFilterProps> = (
       }
 
       if (Array.isArray(criterion.value)) {
-        if(
+        if (
           criterion.type !== "performers" &&
           criterion.type !== "studios" &&
-          criterion.type !== "tags")
+          criterion.type !== "tags"
+        )
           return;
 
         return (

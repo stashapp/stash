@@ -287,7 +287,9 @@ export const TagSelect: React.FC<IFilterProps> = props => {
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedValues = getSelectedValues(selectedItems);
     setSelectedIds(selectedValues);
-    props.onSelect?.(tags.filter(item => selectedValues.indexOf(item.id) !== -1));
+    props.onSelect?.(
+      tags.filter(item => selectedValues.indexOf(item.id) !== -1)
+    );
   };
 
   return (
@@ -361,7 +363,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     isClearable,
     defaultValue,
     noOptionsMessage: () => (type !== "tags" ? "None" : null),
-    placeholder: isDisabled ? '' : placeholder,
+    placeholder: isDisabled ? "" : placeholder,
     onInputChange,
     isDisabled,
     isLoading,

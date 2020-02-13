@@ -72,8 +72,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
     }
   }
 
-  function onChangeSortBy(event:React.MouseEvent<SafeAnchor>) {
-    const target = event.currentTarget as unknown as HTMLAnchorElement;
+  function onChangeSortBy(event: React.MouseEvent<SafeAnchor>) {
+    const target = (event.currentTarget as unknown) as HTMLAnchorElement;
     props.onChangeSortBy(target.text);
   }
 

@@ -23,10 +23,12 @@ interface ILocalForage<T> {
   loading: boolean;
 }
 
-const Loading:Record<string, boolean> = {};
-const Cache:Record<string, ValidTypes> = {};
+const Loading: Record<string, boolean> = {};
+const Cache: Record<string, ValidTypes> = {};
 
-function useLocalForage(key: Key): [ILocalForage<ValidTypes>, Dispatch<SetStateAction<ValidTypes>>] {
+function useLocalForage(
+  key: Key
+): [ILocalForage<ValidTypes>, Dispatch<SetStateAction<ValidTypes>>] {
   const [error, setError] = React.useState(null);
   const [data, setData] = React.useState(Cache[key]);
   const [loading, setLoading] = React.useState(Loading[key]);
@@ -48,7 +50,7 @@ function useLocalForage(key: Key): [ILocalForage<ValidTypes>, Dispatch<SetStateA
         setLoading(false);
       }
     }
-    if(!loading && !Cache[key]) {
+    if (!loading && !Cache[key]) {
       Loading[key] = true;
       setLoading(true);
       runAsync();
@@ -67,9 +69,9 @@ function useLocalForage(key: Key): [ILocalForage<ValidTypes>, Dispatch<SetStateA
   return [{ data, error, loading: isLoading }, setData];
 }
 
-export function useInterfaceLocalForage():
-  [ILocalForage<IInterfaceConfig>,
-  Dispatch<SetStateAction<IInterfaceConfig>>]
- {
+export function useInterfaceLocalForage(): [
+  ILocalForage<IInterfaceConfig>,
+  Dispatch<SetStateAction<IInterfaceConfig>>
+] {
   return useLocalForage("interface");
 }

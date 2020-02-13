@@ -68,10 +68,11 @@ export class ScenePlayerImpl extends React.Component<
   }
 
   public UNSAFE_componentWillReceiveProps(props: IScenePlayerProps) {
-    if(props.scene !== this.props.scene) {
-      this.setState( state => (
-        { ...state, config: this.makeJWPlayerConfig(this.props.scene) }
-      ));
+    if (props.scene !== this.props.scene) {
+      this.setState(state => ({
+        ...state,
+        config: this.makeJWPlayerConfig(this.props.scene)
+      }));
     }
   }
 
@@ -147,7 +148,9 @@ export class ScenePlayerImpl extends React.Component<
     let seekHook:
       | ((seekToPosition: number, _videoTag: HTMLVideoElement) => void)
       | undefined;
-    let getCurrentTimeHook: ((_videoTag: HTMLVideoElement) => number) | undefined;
+    let getCurrentTimeHook:
+      | ((_videoTag: HTMLVideoElement) => number)
+      | undefined;
 
     if (!this.props.scene.is_streamable) {
       getDurationHook = () => {
@@ -163,7 +166,7 @@ export class ScenePlayerImpl extends React.Component<
       };
 
       getCurrentTimeHook = (_videoTag: HTMLVideoElement) => {
-        const start = Number.parseInt(_videoTag.dataset?.start ?? '0', 10);
+        const start = Number.parseInt(_videoTag.dataset?.start ?? "0", 10);
         return _videoTag.currentTime + start;
       };
     }
