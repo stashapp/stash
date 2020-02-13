@@ -47,6 +47,7 @@ type ScrapedScene struct {
 	Details    *string                  `graphql:"details" json:"details"`
 	URL        *string                  `graphql:"url" json:"url"`
 	Date       *string                  `graphql:"date" json:"date"`
+	Image      *string                  `graphql:"image" json:"image"`
 	File       *SceneFileType           `graphql:"file" json:"file"`
 	Studio     *ScrapedSceneStudio      `graphql:"studio" json:"studio"`
 	Movies     []*ScrapedSceneMovie     `graphql:"movies" json:"movies"`

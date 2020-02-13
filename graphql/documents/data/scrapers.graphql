@@ -76,6 +76,7 @@ fragment ScrapedSceneData on ScrapedScene {
   details
   url
   date
+  image
 
   file {
     size

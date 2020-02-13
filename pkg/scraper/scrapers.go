@@ -248,6 +248,11 @@ func postScrapeScene(ret *models.ScrapedScene) error {
 		}
 	}
 
+	// post-process - set the image if applicable
+	if err := setSceneImage(ret); err != nil {
+		logger.Warn("Could not set image using URL: %s", ret.Image)
+	}
+
 	return nil
 }
 

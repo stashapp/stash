@@ -85,12 +85,12 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
   function updatePerformerEditStateFromScraper(state: Partial<GQL.ScrapedPerformerDataFragment | GQL.ScrapeFreeonesScrapeFreeones>) {
     updatePerformerEditState(state);
 
-    // image is a raw base64 string
+    // image is a base64 string
     if ((state as GQL.ScrapedPerformerDataFragment).image !== undefined) {
-      let imageStr = "data:image/png;base64," + (state as GQL.ScrapedPerformerDataFragment).image;
+      let imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
       setImage(imageStr);
       if (props.onImageChange) {
-        props.onImageChange(imageStr);
+        props.onImageChange(imageStr!);
       }
     }
   }
