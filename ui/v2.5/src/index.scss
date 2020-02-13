@@ -193,8 +193,31 @@ code {
   top: 2rem;
   z-index: 1031;
 
+  .success {
+    background-color: $success;
+  }
+
+  .danger {
+    background-color: $danger;
+  }
+
+  .warning {
+    background-color: $warning;
+  }
+
   .toast {
     width: 350px;
+  }
+
+  .toast-header {
+    background-color: transparent;
+    border: none;
+    color: $text-color;
+
+    .close {
+      color: $text-color;
+      text-shadow: none;
+    }
   }
 }
 

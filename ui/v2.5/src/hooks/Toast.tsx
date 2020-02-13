@@ -5,7 +5,7 @@ interface IToast {
   header?: string;
   content: JSX.Element | string;
   delay?: number;
-  variant?: "success" | "danger" | "warning" | "info";
+  variant?: "success" | "danger" | "warning";
 }
 interface IActiveToast extends IToast {
   id: number;
@@ -29,7 +29,7 @@ export const ToastProvider: React.FC = ({ children }) => {
       delay={toast.delay ?? 3000}
     >
       <Toast.Header>
-        <span className="mr-auto">{toast.header ?? "Stash"}</span>
+        <span className="mr-auto">{toast.header}</span>
       </Toast.Header>
       <Toast.Body>{toast.content}</Toast.Body>
     </Toast>

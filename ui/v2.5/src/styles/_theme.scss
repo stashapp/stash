@@ -3,13 +3,16 @@
 
 $secondary: #394b59;
 $muted-gray: #bfccd6;
+$success: #0f9960;
+$warning: #d9822b;
+$danger: #db3737;
 
 $theme-colors: (
   primary: #137cbd,
   secondary: $secondary,
-  success: #0f9960,
-  warning: #d9822b,
-  danger: #db3737,
+  success: $success,
+  warning: $warning,
+  danger: $danger,
   dark: #394b59
 );
 
