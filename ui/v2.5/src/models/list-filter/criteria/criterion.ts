@@ -121,11 +121,9 @@ export abstract class Criterion {
   public inputType: "number" | "text" | undefined;
 
   public getLabelValue(): string {
-    if(typeof this.value === "string")
-      return this.value;
-    if(typeof this.value === "number")
-      return this.value.toString();
-    return this.value.map(v => v.label).join(', ');
+    if (typeof this.value === "string") return this.value;
+    if (typeof this.value === "number") return this.value.toString();
+    return this.value.map(v => v.label).join(", ");
   }
 
   public getLabel(): string {

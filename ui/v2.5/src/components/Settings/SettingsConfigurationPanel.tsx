@@ -175,7 +175,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6"
             defaultValue={databasePath}
-            onChange={(e: React.FormEvent<HTMLInputElement>) => setDatabasePath(e.currentTarget.value)}
+            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+              setDatabasePath(e.currentTarget.value)
+            }
           />
           <Form.Text className="text-muted">
             File location for the SQLite database (requires restart)
@@ -187,7 +189,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6"
             defaultValue={generatedPath}
-            onChange={(e: React.FormEvent<HTMLInputElement>) => setGeneratedPath(e.currentTarget.value)}
+            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+              setGeneratedPath(e.currentTarget.value)
+            }
           />
           <Form.Text className="text-muted">
             Directory location for the generated files (scene markers, scene

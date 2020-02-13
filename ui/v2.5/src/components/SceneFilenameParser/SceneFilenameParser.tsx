@@ -10,7 +10,7 @@ import { useToast } from "src/hooks";
 import { Pagination } from "src/components/List/Pagination";
 import { IParserInput, ParserInput } from "./ParserInput";
 import { ParserField } from "./ParserField";
-import { SceneParserResult, SceneParserRow } from './SceneParserRow';
+import { SceneParserResult, SceneParserRow } from "./SceneParserRow";
 
 const initialParserInput = {
   pattern: "{title}.{ext}",

@@ -268,10 +268,10 @@ export class ListFilterModel {
   public makeQueryParameters(): string {
     const encodedCriteria: string[] = [];
     this.criteria.forEach(criterion => {
-      const encodedCriterion:Partial<Criterion> = {
+      const encodedCriterion: Partial<Criterion> = {
         type: criterion.type,
         value: criterion.value,
-        modifier: criterion.modifier,
+        modifier: criterion.modifier
       };
       const jsonCriterion = JSON.stringify(encodedCriterion);
       encodedCriteria.push(jsonCriterion);
