@@ -19,11 +19,12 @@ interface ITypeProps {
 interface IFilterProps {
   ids?: string[];
   initialIds?: string[];
-  onSelect: (item: ValidTypes[]) => void;
+  onSelect?: (item: ValidTypes[]) => void;
   noSelectionString?: string;
   className?: string;
   isMulti?: boolean;
   isClearable?: boolean;
+  isDisabled?: boolean;
 }
 interface ISelectProps {
   className?: string;
@@ -32,6 +33,7 @@ interface ISelectProps {
   creatable?: boolean;
   onCreateOption?: (value: string) => void;
   isLoading: boolean;
+  isDisabled?: boolean;
   onChange: (item: ValueType<Option>) => void;
   initialIds?: string[];
   isMulti?: boolean;
@@ -183,7 +185,7 @@ export const PerformerSelect: React.FC<IFilterProps> = props => {
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedIds = getSelectedValues(selectedItems);
-    props.onSelect(
+    props.onSelect?.(
       normalizedData.filter(item => selectedIds.indexOf(item.id) !== -1)
     );
   };
@@ -216,7 +218,7 @@ export const StudioSelect: React.FC<IFilterProps> = props => {
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedIds = getSelectedValues(selectedItems);
-    props.onSelect(
+    props.onSelect?.(
       normalizedData.filter(item => selectedIds.indexOf(item.id) !== -1)
     );
   };
@@ -262,7 +264,7 @@ export const TagSelect: React.FC<IFilterProps> = props => {
 
       if (result?.data?.tagCreate) {
         setSelectedIds([...selectedIds, result.data.tagCreate.id]);
-        props.onSelect(
+        props.onSelect?.(
           [...tags, result.data.tagCreate].filter(
             item => selectedIds.indexOf(item.id) !== -1
           )
@@ -285,7 +287,7 @@ export const TagSelect: React.FC<IFilterProps> = props => {
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedValues = getSelectedValues(selectedItems);
     setSelectedIds(selectedValues);
-    props.onSelect(tags.filter(item => selectedValues.indexOf(item.id) !== -1));
+    props.onSelect?.(tags.filter(item => selectedValues.indexOf(item.id) !== -1));
   };
 
   return (
@@ -311,6 +313,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   items,
   selectedOptions,
   isLoading,
+  isDisabled = false,
   onCreateOption,
   isClearable = true,
   creatable = false,
@@ -337,10 +340,12 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
       ...base,
       color: "#000"
     }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     container: (base: CSSProperties, state: any) => ({
       ...base,
       zIndex: state.isFocused ? 10 : base.zIndex
     }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     multiValueRemove: (base: CSSProperties, state: any) => ({
       ...base,
       color: state.isFocused ? base.color : "#333333"
@@ -356,20 +361,22 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     isClearable,
     defaultValue,
     noOptionsMessage: () => (type !== "tags" ? "None" : null),
-    placeholder,
+    placeholder: isDisabled ? '' : placeholder,
     onInputChange,
+    isDisabled,
     isLoading,
     styles,
     components: {
       IndicatorSeparator: () => null,
-      ...(!showDropdown && { DropdownIndicator: () => null })
+      ...((!showDropdown || isDisabled) && { DropdownIndicator: () => null }),
+      ...(isDisabled && { MultiValueRemove: () => null })
     }
   };
 
   return creatable ? (
     <CreatableSelect
       {...props}
-      isDisabled={isLoading}
+      isDisabled={isLoading || isDisabled}
       onCreateOption={onCreateOption}
     />
   ) : (

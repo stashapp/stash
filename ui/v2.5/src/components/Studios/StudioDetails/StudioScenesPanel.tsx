@@ -14,7 +14,7 @@ export const StudioScenesPanel: React.FC<IStudioScenesPanel> = ({ studio }) => {
     // if studio is already present, then we modify it, otherwise add
     let studioCriterion = filter.criteria.find(c => {
       return c.type === "studios";
-    });
+    }) as StudiosCriterion;
 
     if (
       studioCriterion &&
@@ -23,7 +23,7 @@ export const StudioScenesPanel: React.FC<IStudioScenesPanel> = ({ studio }) => {
     ) {
       // add the studio if not present
       if (
-        !studioCriterion.value.find((p: any) => {
+        !studioCriterion.value.find(p => {
           return p.id === studio.id;
         })
       ) {

@@ -78,7 +78,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
           className="duration-control"
           disabled={props.disabled}
           value={value}
-          onChange={(e: any) => setValue(e.target.value)}
+          onChange={(e: React.FormEvent<HTMLInputElement>) => setValue(e.currentTarget.value)}
           onBlur={() =>
             props.onValueChange(DurationUtils.stringToSeconds(value))
           }

@@ -51,7 +51,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
             <InputGroup>
               <Form.Control
                 placeholder="File path"
-                onChange={(e: any) => setCurrentDirectory(e.target.value)}
+                onChange={(e: React.FormEvent<HTMLInputElement>) => setCurrentDirectory(e.currentTarget.value)}
                 defaultValue={currentDirectory}
               />
               <InputGroup.Append>

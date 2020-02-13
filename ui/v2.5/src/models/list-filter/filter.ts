@@ -1,4 +1,4 @@
-import queryString from "query-string";
+import queryString, { ParsedQuery } from "query-string";
 import {
   FindFilterType,
   PerformerFilterType,
@@ -76,14 +76,15 @@ export class ListFilterModel {
   public displayMode: DisplayMode = DEFAULT_PARAMS.displayMode;
   public displayModeOptions: DisplayMode[] = [];
   public criterionOptions: ICriterionOption[] = [];
-  public criteria: Array<Criterion<any, any>> = [];
+  public criteria: Array<Criterion> = [];
   public randomSeed = -1;
 
   private static createCriterionOption(criterion: CriterionType) {
     return new CriterionOption(Criterion.getLabel(criterion), criterion);
   }
 
-  public constructor(filterMode: FilterMode, rawParms?: any) {
+  public constructor(filterMode: FilterMode, rawParms?: ParsedQuery<string>) {
+    const params = rawParms as IQueryParameters;
     switch (filterMode) {
       case FilterMode.Scenes:
         this.sortBy = "date";
@@ -187,11 +188,10 @@ export class ListFilterModel {
       this.displayMode = this.displayModeOptions[0];
     }
     this.sortByOptions = [...this.sortByOptions, "created_at", "updated_at"];
-    if (rawParms) this.configureFromQueryParameters(rawParms);
+    if (params) this.configureFromQueryParameters(params);
   }
 
-  public configureFromQueryParameters(rawParms: any) {
-    const params = rawParms as IQueryParameters;
+  public configureFromQueryParameters(params: IQueryParameters) {
     if (params.sortby !== undefined) {
       this.sortBy = params.sortby;
 
@@ -226,7 +226,7 @@ export class ListFilterModel {
     if (params.c !== undefined) {
       this.criteria = [];
 
-      let jsonParameters: any[];
+      let jsonParameters: string[];
       if (params.c instanceof Array) {
         jsonParameters = params.c;
       } else {
@@ -268,10 +268,11 @@ export class ListFilterModel {
   public makeQueryParameters(): string {
     const encodedCriteria: string[] = [];
     this.criteria.forEach(criterion => {
-      const encodedCriterion: any = {};
-      encodedCriterion.type = criterion.type;
-      encodedCriterion.value = criterion.value;
-      encodedCriterion.modifier = criterion.modifier;
+      const encodedCriterion:Partial<Criterion> = {
+        type: criterion.type,
+        value: criterion.value,
+        modifier: criterion.modifier,
+      };
       const jsonCriterion = JSON.stringify(encodedCriterion);
       encodedCriteria.push(jsonCriterion);
     });

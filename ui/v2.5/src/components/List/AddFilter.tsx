@@ -6,12 +6,10 @@ import { CriterionModifier } from "src/core/generated-graphql";
 import {
   Criterion,
   CriterionType,
-  DurationCriterion
+  DurationCriterion,
+  CriterionValue
 } from "src/models/list-filter/criteria/criterion";
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
-import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
-import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
-import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import { makeCriteria } from "src/models/list-filter/criteria/utils";
 import { ListFilterModel } from "src/models/list-filter/filter";
 
@@ -28,11 +26,11 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   const defaultValue = useRef<string | number | undefined>();
 
   const [isOpen, setIsOpen] = useState(false);
-  const [criterion, setCriterion] = useState<Criterion<any, any>>(
+  const [criterion, setCriterion] = useState<Criterion>(
     new NoneCriterion()
   );
 
-  const valueStage = useRef<any>(criterion.value);
+  const valueStage = useRef<CriterionValue>(criterion.value);
 
   // Configure if we are editing an existing criterion
   useEffect(() => {
@@ -53,7 +51,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
     event: React.ChangeEvent<HTMLSelectElement>
   ) {
     const newCriterion = _.cloneDeep(criterion);
-    newCriterion.modifier = event.target.value as any;
+    newCriterion.modifier = event.target.value as CriterionModifier;
     setCriterion(newCriterion);
   }
 
@@ -83,6 +81,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
       const value = defaultValue.current;
       if (
         criterion.options &&
+        !Array.isArray(criterion.options) &&
         (value === undefined || value === "" || typeof value === "number")
       ) {
         criterion.value = criterion.options[0];
@@ -141,20 +140,15 @@ export const AddFilter: React.FC<IAddFilterProps> = (
       }
 
       if (Array.isArray(criterion.value)) {
-        let type: "performers" | "studios" | "tags";
-        if (criterion instanceof PerformersCriterion) {
-          type = "performers";
-        } else if (criterion instanceof StudiosCriterion) {
-          type = "studios";
-        } else if (criterion instanceof TagsCriterion) {
-          type = "tags";
-        } else {
+        if(
+          criterion.type !== "performers" &&
+          criterion.type !== "studios" &&
+          criterion.type !== "tags")
           return;
-        }
 
         return (
           <FilterSelect
-            type={type}
+            type={criterion.type}
             isMulti
             onSelect={items => {
               const newCriterion = _.cloneDeep(criterion);
@@ -164,7 +158,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
               }));
               setCriterion(newCriterion);
             }}
-            ids={criterion.value.map((labeled: any) => labeled.id)}
+            ids={criterion.value.map(labeled => labeled.id)}
           />
         );
       }
@@ -174,10 +168,10 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           <Form.Control
             as="select"
             onChange={onChangedSingleSelect}
-            value={criterion.value}
+            value={criterion.value.toString()}
           >
             {criterion.options.map(c => (
-              <option key={c} value={c}>
+              <option key={c.toString()} value={c.toString()}>
                 {c}
               </option>
             ))}
@@ -198,7 +192,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           type={criterion.inputType}
           onChange={onChangedInput}
           onBlur={onBlurInput}
-          value={criterion.value || ""}
+          value={criterion.value.toString()}
         />
       );
     }

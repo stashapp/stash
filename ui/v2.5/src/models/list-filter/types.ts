@@ -21,3 +21,9 @@ export interface ILabeledValue {
   label: string;
   value: string;
 }
+
+export interface IOptionType {
+  id: string;
+  name?: string;
+  image_path?: string;
+}

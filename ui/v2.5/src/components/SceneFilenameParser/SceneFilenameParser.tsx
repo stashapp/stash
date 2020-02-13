@@ -1,154 +1,16 @@
 /* eslint-disable no-param-reassign, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
 
 import React, { useEffect, useState, useCallback } from "react";
-import { Badge, Button, Card, Form, Table } from "react-bootstrap";
+import { Button, Card, Form, Table } from "react-bootstrap";
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import {
-  FilterSelect,
-  StudioSelect,
-  LoadingIndicator
-} from "src/components/Shared";
-import { TextUtils } from "src/utils";
+import { LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { Pagination } from "src/components/List/Pagination";
 import { IParserInput, ParserInput } from "./ParserInput";
 import { ParserField } from "./ParserField";
-
-class ParserResult<T> {
-  public value: GQL.Maybe<T> = null;
-  public originalValue: GQL.Maybe<T> = null;
-  public set: boolean = false;
-
-  public setOriginalValue(v: GQL.Maybe<T>) {
-    this.originalValue = v;
-    this.value = v;
-  }
-
-  public setValue(v: GQL.Maybe<T>) {
-    if (v) {
-      this.value = v;
-      this.set = !_.isEqual(this.value, this.originalValue);
-    }
-  }
-}
-
-class SceneParserResult {
-  public id: string;
-  public filename: string;
-  public title: ParserResult<string> = new ParserResult();
-  public date: ParserResult<string> = new ParserResult();
-
-  public studio: ParserResult<Partial<GQL.Studio>> = new ParserResult();
-  public studioId: ParserResult<string> = new ParserResult();
-  public tags: ParserResult<GQL.Tag[]> = new ParserResult();
-  public tagIds: ParserResult<string[]> = new ParserResult();
-  public performers: ParserResult<
-    Partial<GQL.Performer>[]
-  > = new ParserResult();
-  public performerIds: ParserResult<string[]> = new ParserResult();
-
-  public scene: GQL.SlimSceneDataFragment;
-
-  constructor(
-    result: GQL.ParseSceneFilenamesQuery["parseSceneFilenames"]["results"][0]
-  ) {
-    this.scene = result.scene;
-
-    this.id = this.scene.id;
-    this.filename = TextUtils.fileNameFromPath(this.scene.path);
-    this.title.setOriginalValue(this.scene.title ?? null);
-    this.date.setOriginalValue(this.scene.date ?? null);
-    this.performerIds.setOriginalValue(this.scene.performers.map(p => p.id));
-    this.performers.setOriginalValue(this.scene.performers);
-    this.tagIds.setOriginalValue(this.scene.tags.map(t => t.id));
-    this.tags.setOriginalValue(this.scene.tags);
-    this.studioId.setOriginalValue(this.scene.studio?.id ?? null);
-    this.studio.setOriginalValue(this.scene.studio ?? null);
-
-    this.title.setValue(result.title ?? null);
-    this.date.setValue(result.date ?? null);
-    this.performerIds.setValue(result.performer_ids ?? []);
-    this.tagIds.setValue(result.tag_ids ?? []);
-    this.studioId.setValue(result.studio_id ?? null);
-
-    if (result.performer_ids) {
-      this.performers.setValue(
-        (result.performer_ids ?? []).map(
-          p =>
-            ({
-              id: p,
-              name: "",
-              favorite: false,
-              image_path: ""
-            } as GQL.Performer)
-        )
-      );
-    }
-
-    if (result.tag_ids) {
-      this.tags.setValue(
-        result.tag_ids.map(t => ({
-          id: t,
-          name: ""
-        }))
-      );
-    }
-
-    if (result.studio_id) {
-      this.studio.setValue({
-        id: result.studio_id,
-        name: "",
-        image_path: ""
-      } as GQL.Studio);
-    }
-  }
-
-  private static setInput(
-    obj: any,
-    key: string,
-    parserResult: ParserResult<any>
-  ) {
-    if (parserResult.set) {
-      obj[key] = parserResult.value;
-    }
-  }
-
-  // returns true if any of its fields have set == true
-  public isChanged() {
-    return (
-      this.title.set ||
-      this.date.set ||
-      this.performerIds.set ||
-      this.studioId.set ||
-      this.tagIds.set
-    );
-  }
-
-  public toSceneUpdateInput() {
-    const ret = {
-      id: this.id,
-      title: this.scene.title,
-      details: this.scene.details,
-      url: this.scene.url,
-      date: this.scene.date,
-      rating: this.scene.rating,
-      gallery_id: this.scene.gallery ? this.scene.gallery.id : undefined,
-      studio_id: this.scene.studio ? this.scene.studio.id : undefined,
-      performer_ids: this.scene.performers.map(performer => performer.id),
-      tag_ids: this.scene.tags.map(tag => tag.id)
-    };
-
-    SceneParserResult.setInput(ret, "title", this.title);
-    SceneParserResult.setInput(ret, "date", this.date);
-    SceneParserResult.setInput(ret, "performer_ids", this.performerIds);
-    SceneParserResult.setInput(ret, "studio_id", this.studioId);
-    SceneParserResult.setInput(ret, "tag_ids", this.tagIds);
-
-    return ret;
-  }
-}
+import { SceneParserResult, SceneParserRow } from './SceneParserRow';
 
 const initialParserInput = {
   pattern: "{title}.{ext}",
@@ -309,19 +171,19 @@ export const SceneFilenameParser: React.FC = () => {
 
   useEffect(() => {
     const newAllTitleSet = !parserResult.some(r => {
-      return !r.title.set;
+      return !r.title.isSet;
     });
     const newAllDateSet = !parserResult.some(r => {
-      return !r.date.set;
+      return !r.date.isSet;
     });
     const newAllPerformerSet = !parserResult.some(r => {
-      return !r.performerIds.set;
+      return !r.performers.isSet;
     });
     const newAllTagSet = !parserResult.some(r => {
-      return !r.tagIds.set;
+      return !r.tags.isSet;
     });
     const newAllStudioSet = !parserResult.some(r => {
-      return !r.studioId.set;
+      return !r.studio.isSet;
     });
 
     setAllTitleSet(newAllTitleSet);
@@ -335,7 +197,7 @@ export const SceneFilenameParser: React.FC = () => {
     const newResult = [...parserResult];
 
     newResult.forEach(r => {
-      r.title.set = selected;
+      r.title.isSet = selected;
     });
 
     setParserResult(newResult);
@@ -346,7 +208,7 @@ export const SceneFilenameParser: React.FC = () => {
     const newResult = [...parserResult];
 
     newResult.forEach(r => {
-      r.date.set = selected;
+      r.date.isSet = selected;
     });
 
     setParserResult(newResult);
@@ -357,7 +219,7 @@ export const SceneFilenameParser: React.FC = () => {
     const newResult = [...parserResult];
 
     newResult.forEach(r => {
-      r.performerIds.set = selected;
+      r.performers.isSet = selected;
     });
 
     setParserResult(newResult);
@@ -368,7 +230,7 @@ export const SceneFilenameParser: React.FC = () => {
     const newResult = [...parserResult];
 
     newResult.forEach(r => {
-      r.tagIds.set = selected;
+      r.tags.isSet = selected;
     });
 
     setParserResult(newResult);
@@ -379,297 +241,11 @@ export const SceneFilenameParser: React.FC = () => {
     const newResult = [...parserResult];
 
     newResult.forEach(r => {
-      r.studioId.set = selected;
+      r.studio.isSet = selected;
     });
 
     setParserResult(newResult);
     setAllStudioSet(selected);
-  }
-
-  interface ISceneParserFieldProps {
-    parserResult: ParserResult<any>;
-    className?: string;
-    fieldName: string;
-    onSetChanged: (set: boolean) => void;
-    onValueChanged: (value: any) => void;
-    originalParserResult?: ParserResult<any>;
-    renderOriginalInputField: (props: ISceneParserFieldProps) => JSX.Element;
-    renderNewInputField: (
-      props: ISceneParserFieldProps,
-      onChange: (event: any) => void
-    ) => JSX.Element;
-  }
-
-  function SceneParserField(props: ISceneParserFieldProps) {
-    function maybeValueChanged(value: any) {
-      if (value !== props.parserResult.value) {
-        props.onValueChanged(value);
-      }
-    }
-
-    if (!showFields.get(props.fieldName)) {
-      return null;
-    }
-
-    return (
-      <>
-        <td>
-          <Form.Check
-            checked={props.parserResult.set}
-            onChange={() => {
-              props.onSetChanged(!props.parserResult.set);
-            }}
-          />
-        </td>
-        <td>
-          <Form.Group>
-            {props.renderOriginalInputField(props)}
-            {props.renderNewInputField(props, value =>
-              maybeValueChanged(value)
-            )}
-          </Form.Group>
-        </td>
-      </>
-    );
-  }
-
-  function renderOriginalInputGroup(props: ISceneParserFieldProps) {
-    const result = props.originalParserResult || props.parserResult;
-
-    return (
-      <Form.Control
-        disabled
-        className={props.className}
-        defaultValue={result.originalValue || ""}
-      />
-    );
-  }
-
-  interface IInputGroupWrapperProps {
-    parserResult: ParserResult<any>;
-    onChange: (event: any) => void;
-    className?: string;
-  }
-
-  function InputGroupWrapper(props: IInputGroupWrapperProps) {
-    return (
-      <Form.Control
-        disabled={!props.parserResult.set}
-        className={props.className}
-        value={props.parserResult.value || ""}
-        onChange={(event: any) => props.onChange(event.target.value)}
-      />
-    );
-  }
-
-  function renderNewInputGroup(
-    props: ISceneParserFieldProps,
-    onChangeHandler: (value: any) => void
-  ) {
-    return (
-      <InputGroupWrapper
-        className={props.className}
-        onChange={(value: any) => {
-          onChangeHandler(value);
-        }}
-        parserResult={props.parserResult}
-      />
-    );
-  }
-
-  interface IHasName {
-    name: string;
-  }
-
-  function renderOriginalSelect(props: ISceneParserFieldProps) {
-    const result = props.originalParserResult || props.parserResult;
-
-    const elements = result.originalValue
-      ? Array.isArray(result.originalValue)
-        ? result.originalValue.map((el: IHasName) => el.name)
-        : [result.originalValue.name]
-      : [];
-
-    return (
-      <div>
-        {elements.map((name: string) => (
-          <Badge key={name} variant="secondary">
-            {name}
-          </Badge>
-        ))}
-      </div>
-    );
-  }
-
-  function renderNewMultiSelect(
-    type: "performers" | "tags",
-    props: ISceneParserFieldProps,
-    onChangeHandler: (value: any) => void
-  ) {
-    return (
-      <FilterSelect
-        className={props.className}
-        type={type}
-        isMulti
-        onSelect={items => {
-          const ids = items.map(i => i.id);
-          onChangeHandler(ids);
-        }}
-        ids={props.parserResult.value}
-      />
-    );
-  }
-
-  function renderNewPerformerSelect(
-    props: ISceneParserFieldProps,
-    onChangeHandler: (value: any) => void
-  ) {
-    return renderNewMultiSelect("performers", props, onChangeHandler);
-  }
-
-  function renderNewTagSelect(
-    props: ISceneParserFieldProps,
-    onChangeHandler: (value: any) => void
-  ) {
-    return renderNewMultiSelect("tags", props, onChangeHandler);
-  }
-
-  function renderNewStudioSelect(
-    props: ISceneParserFieldProps,
-    onChangeHandler: (value: any) => void
-  ) {
-    return (
-      <StudioSelect
-        noSelectionString=""
-        className={props.className}
-        onSelect={items => onChangeHandler(items[0]?.id)}
-        initialIds={props.parserResult.value ? [props.parserResult.value] : []}
-      />
-    );
-  }
-
-  interface ISceneParserRowProps {
-    scene: SceneParserResult;
-    onChange: (changedScene: SceneParserResult) => void;
-  }
-
-  function SceneParserRow(props: ISceneParserRowProps) {
-    function changeParser(result: ParserResult<any>, set: boolean, value: any) {
-      const newParser = _.clone(result);
-      newParser.set = set;
-      newParser.value = value;
-      return newParser;
-    }
-
-    function onTitleChanged(set: boolean, value: string | undefined) {
-      const newResult = _.clone(props.scene);
-      newResult.title = changeParser(newResult.title, set, value);
-      props.onChange(newResult);
-    }
-
-    function onDateChanged(set: boolean, value: string | undefined) {
-      const newResult = _.clone(props.scene);
-      newResult.date = changeParser(newResult.date, set, value);
-      props.onChange(newResult);
-    }
-
-    function onPerformerIdsChanged(set: boolean, value: string[] | undefined) {
-      const newResult = _.clone(props.scene);
-      newResult.performerIds = changeParser(newResult.performerIds, set, value);
-      props.onChange(newResult);
-    }
-
-    function onTagIdsChanged(set: boolean, value: string[] | undefined) {
-      const newResult = _.clone(props.scene);
-      newResult.tagIds = changeParser(newResult.tagIds, set, value);
-      props.onChange(newResult);
-    }
-
-    function onStudioIdChanged(set: boolean, value: string | undefined) {
-      const newResult = _.clone(props.scene);
-      newResult.studioId = changeParser(newResult.studioId, set, value);
-      props.onChange(newResult);
-    }
-
-    return (
-      <tr className="scene-parser-row">
-        <td className="text-left parser-field-filename">
-          {props.scene.filename}
-        </td>
-        <SceneParserField
-          key="title"
-          fieldName="Title"
-          className="parser-field-title"
-          parserResult={props.scene.title}
-          onSetChanged={set =>
-            onTitleChanged(set, props.scene.title.value ?? undefined)
-          }
-          onValueChanged={value => onTitleChanged(props.scene.title.set, value)}
-          renderOriginalInputField={renderOriginalInputGroup}
-          renderNewInputField={renderNewInputGroup}
-        />
-        <SceneParserField
-          key="date"
-          fieldName="Date"
-          className="parser-field-date"
-          parserResult={props.scene.date}
-          onSetChanged={set =>
-            onDateChanged(set, props.scene.date.value ?? undefined)
-          }
-          onValueChanged={value => onDateChanged(props.scene.date.set, value)}
-          renderOriginalInputField={renderOriginalInputGroup}
-          renderNewInputField={renderNewInputGroup}
-        />
-        <SceneParserField
-          key="performers"
-          fieldName="Performers"
-          className="parser-field-performers"
-          parserResult={props.scene.performerIds}
-          originalParserResult={props.scene.performers}
-          onSetChanged={set =>
-            onPerformerIdsChanged(
-              set,
-              props.scene.performerIds.value ?? undefined
-            )
-          }
-          onValueChanged={value =>
-            onPerformerIdsChanged(props.scene.performerIds.set, value)
-          }
-          renderOriginalInputField={renderOriginalSelect}
-          renderNewInputField={renderNewPerformerSelect}
-        />
-        <SceneParserField
-          key="tags"
-          fieldName="Tags"
-          className="parser-field-tags"
-          parserResult={props.scene.tagIds}
-          originalParserResult={props.scene.tags}
-          onSetChanged={set =>
-            onTagIdsChanged(set, props.scene.tagIds.value ?? undefined)
-          }
-          onValueChanged={value =>
-            onTagIdsChanged(props.scene.tagIds.set, value)
-          }
-          renderOriginalInputField={renderOriginalSelect}
-          renderNewInputField={renderNewTagSelect}
-        />
-        <SceneParserField
-          key="studio"
-          fieldName="Studio"
-          className="parser-field-studio"
-          parserResult={props.scene.studioId}
-          originalParserResult={props.scene.studio}
-          onSetChanged={set =>
-            onStudioIdChanged(set, props.scene.studioId.value ?? undefined)
-          }
-          onValueChanged={value =>
-            onStudioIdChanged(props.scene.studioId.set, value)
-          }
-          renderOriginalInputField={renderOriginalSelect}
-          renderNewInputField={renderNewStudioSelect}
-        />
-      </tr>
-    );
   }
 
   function onChange(scene: SceneParserResult, changedScene: SceneParserResult) {
@@ -716,7 +292,7 @@ export const SceneFilenameParser: React.FC = () => {
           <Table>
             <thead>
               <tr className="scene-parser-row">
-                <th className="w-25">Filename</th>
+                <th className="parser-field-filename">Filename</th>
                 {renderHeader("Title", allTitleSet, onSelectAllTitleSet)}
                 {renderHeader("Date", allDateSet, onSelectAllDateSet)}
                 {renderHeader(
@@ -734,6 +310,7 @@ export const SceneFilenameParser: React.FC = () => {
                   scene={scene}
                   key={scene.id}
                   onChange={changedScene => onChange(scene, changedScene)}
+                  showFields={showFields}
                 />
               ))}
             </tbody>

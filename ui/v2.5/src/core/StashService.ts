@@ -1,6 +1,6 @@
 import ApolloClient from "apollo-client";
 import { WebSocketLink } from "apollo-link-ws";
-import { InMemoryCache } from "apollo-cache-inmemory";
+import { InMemoryCache, NormalizedCacheObject } from "apollo-cache-inmemory";
 import { HttpLink } from "apollo-link-http";
 import { split } from "apollo-link";
 import { getMainDefinition } from "apollo-utilities";
@@ -8,7 +8,7 @@ import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
 
 export class StashService {
-  public static client: ApolloClient<any>;
+  public static client: ApolloClient<NormalizedCacheObject>;
   private static cache: InMemoryCache;
 
   public static initialize() {
@@ -60,12 +60,13 @@ export class StashService {
       cache: StashService.cache
     });
 
-    (window as any).StashService = StashService;
     return StashService.client;
   }
 
+  // TODO: Invalidation should happen through apollo client, rather than rewriting cache directly
   private static invalidateQueries(queries: string[]) {
     if (StashService.cache) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cache = StashService.cache as any;
       const keyMatchers = queries.map(query => {
         return new RegExp(`^${query}`);

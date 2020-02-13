@@ -26,7 +26,7 @@ export const ToastProvider: React.FC = ({ children }) => {
       key={toast.id}
       onClose={() => removeToast(toast.id)}
       className={toast.variant ?? "success"}
-      delay={toast.delay ?? 5000}
+      delay={toast.delay ?? 3000}
     >
       <Toast.Header>
         <span className="mr-auto">{toast.header ?? "Stash"}</span>

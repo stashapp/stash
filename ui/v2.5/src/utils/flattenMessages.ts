@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const flattenMessages = (nestedMessages: any, prefix = "") => {
   if (nestedMessages === null) {
     return {};

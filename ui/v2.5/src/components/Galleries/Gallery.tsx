@@ -15,7 +15,7 @@ export const Gallery: React.FC = () => {
 
   return (
     <div className="col-9 m-auto">
-      <GalleryViewer gallery={gallery as any} />
+      <GalleryViewer gallery={gallery} />
     </div>
   );
 };

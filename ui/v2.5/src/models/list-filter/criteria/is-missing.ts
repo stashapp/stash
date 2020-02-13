@@ -1,7 +1,7 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
-export class IsMissingCriterion extends Criterion<string, string> {
+export class IsMissingCriterion extends Criterion {
   public type: CriterionType = "isMissing";
   public parameterName: string = "is_missing";
   public modifier = CriterionModifier.Equals;

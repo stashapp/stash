@@ -1,5 +1,5 @@
 import { debounce } from "lodash";
-import React, { SyntheticEvent, useCallback, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
   Badge,
@@ -8,7 +8,8 @@ import {
   Dropdown,
   Form,
   OverlayTrigger,
-  Tooltip
+  Tooltip,
+  SafeAnchor
 } from "react-bootstrap";
 
 import { Icon } from "src/components/Shared";
@@ -44,8 +45,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
   props: IListFilterProps
 ) => {
   const searchCallback = useCallback(
-    debounce((event: any) => {
-      props.onChangeQuery(event.target.value);
+    debounce((value: string) => {
+      props.onChangeQuery(value);
     }, 500),
     [props.onChangeQuery]
   );
@@ -54,14 +55,13 @@ export const ListFilter: React.FC<IListFilterProps> = (
     Criterion | undefined
   >(undefined);
 
-  function onChangePageSize(event: SyntheticEvent<HTMLSelectElement>) {
-    const val = event!.currentTarget!.value;
+  function onChangePageSize(event: React.FormEvent<HTMLSelectElement>) {
+    const val = event.currentTarget.value;
     props.onChangePageSize(parseInt(val, 10));
   }
 
-  function onChangeQuery(event: SyntheticEvent<HTMLInputElement>) {
-    event.persist();
-    searchCallback(event);
+  function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {
+    searchCallback(event.currentTarget.value);
   }
 
   function onChangeSortDirection() {
@@ -72,8 +72,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
     }
   }
 
-  function onChangeSortBy(event: React.MouseEvent<any>) {
-    props.onChangeSortBy(event.currentTarget.text);
+  function onChangeSortBy(event:React.MouseEvent<SafeAnchor>) {
+    const target = event.currentTarget as unknown as HTMLAnchorElement;
+    props.onChangeSortBy(target.text);
   }
 
   function onChangeDisplayMode(displayMode: DisplayMode) {
@@ -156,6 +157,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
       <Badge
         className="tag-item"
         variant="secondary"
+        key={criterion.getId()}
         onClick={() => onClickCriterionTag(criterion)}
       >
         {criterion.getLabel()}
@@ -241,8 +243,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
           min={0}
           max={3}
           defaultValue={1}
-          onChange={(event: any) =>
-            onChangeZoom(Number.parseInt(event.target.value, 10))
+          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
           }
         />
       );
