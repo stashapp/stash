@@ -6,11 +6,8 @@ labels: enhancement
 assignees: 'WithoutPants, bnkai, Leopere'
 
 ---
-<!-- Please make sure to read https://github.com/stashapp/stash/docs/CONTRIBUTING.md and check that you understand and have followed it as best as possible -->
-# Pre-Submission Checklist
-* [ ] I have read [CONTRIBUTING.md](/docs/CONTRIBUTING.md)
-
-<!-- Explain what your feature does in a short paragraph. -->
+<!-- Please make sure to read https://github.com/stashapp/stash/docs/CONTRIBUTING.md and check that you understand and have followed it as best as possible
+Explain what your feature does in a short paragraph. -->
 # Scope
 
 <!-- Declare any issues by typing `fixes #1` or `closes #1` for example so that the automation can kick in when this is merged -->
