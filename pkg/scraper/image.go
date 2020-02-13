@@ -3,13 +3,14 @@ package scraper
 import (
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 func setPerformerImage(p *models.ScrapedPerformer) error {
-	if p == nil || p.Image == nil {
+	if p == nil || p.Image == nil || !strings.HasPrefix(*p.Image, "http") {
 		// nothing to do
 		return nil
 	}
@@ -25,7 +26,8 @@ func setPerformerImage(p *models.ScrapedPerformer) error {
 }
 
 func setSceneImage(s *models.ScrapedScene) error {
-	if s == nil || s.Image == nil {
+	// don't try to get the image if it doesn't appear to be a URL
+	if s == nil || s.Image == nil || !strings.HasPrefix(*s.Image, "http") {
 		// nothing to do
 		return nil
 	}
@@ -62,4 +64,12 @@ func getImage(url string) (*string, error) {
 
 	img := "data:" + contentType + ";base64," + utils.GetBase64StringFromData(body)
 	return &img, nil
+}
+
+func getStashPerformerImage(stashURL string, performerID string) (*string, error) {
+	return getImage(stashURL + "/performer/" + performerID + "/image")
+}
+
+func getStashSceneImage(stashURL string, sceneID string) (*string, error) {
+	return getImage(stashURL + "/scene/" + sceneID + "/screenshot")
 }
