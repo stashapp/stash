@@ -27,6 +27,7 @@ export const App: React.FC = () => {
   const config = StashService.useConfiguration();
   const language = config.data?.configuration?.interface?.language ?? "en-US";
   const messageLanguage = language.slice(0, 2);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const messages = flattenMessages((locales as any)[messageLanguage]);
 
   return (

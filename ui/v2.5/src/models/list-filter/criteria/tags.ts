@@ -1,8 +1,8 @@
 import * as GQL from "src/core/generated-graphql";
-import { ILabeledId } from "../types";
+import { ILabeledId, IOptionType } from "../types";
 import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
-export class TagsCriterion extends Criterion<GQL.Tag, ILabeledId[]> {
+export class TagsCriterion extends Criterion {
   public type: CriterionType;
   public parameterName: string;
   public modifier = GQL.CriterionModifier.IncludesAll;
@@ -11,7 +11,7 @@ export class TagsCriterion extends Criterion<GQL.Tag, ILabeledId[]> {
     Criterion.getModifierOption(GQL.CriterionModifier.Includes),
     Criterion.getModifierOption(GQL.CriterionModifier.Excludes)
   ];
-  public options: GQL.Tag[] = [];
+  public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
 
   constructor(type: "tags" | "sceneTags") {

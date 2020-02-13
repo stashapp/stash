@@ -2,7 +2,7 @@
 
 import { CriterionModifier } from "src/core/generated-graphql";
 import DurationUtils from "src/utils/duration";
-import { ILabeledId, ILabeledValue } from "../types";
+import { ILabeledId, ILabeledValue, IOptionType } from "../types";
 
 export type CriterionType =
   | "none"
@@ -30,7 +30,10 @@ export type CriterionType =
   | "piercings"
   | "aliases";
 
-export abstract class Criterion<Option = any, Value = any> {
+type Option = string | number | IOptionType;
+export type CriterionValue = string | number | ILabeledId[];
+
+export abstract class Criterion {
   public static getLabel(type: CriterionType = "none") {
     switch (type) {
       case "none":
@@ -114,8 +117,16 @@ export abstract class Criterion<Option = any, Value = any> {
   public abstract modifier: CriterionModifier;
   public abstract modifierOptions: ILabeledValue[];
   public abstract options: Option[] | undefined;
-  public abstract value: Value;
+  public abstract value: CriterionValue;
   public inputType: "number" | "text" | undefined;
+
+  public getLabelValue(): string {
+    if(typeof this.value === "string")
+      return this.value;
+    if(typeof this.value === "number")
+      return this.value.toString();
+    return this.value.map(v => v.label).join(', ');
+  }
 
   public getLabel(): string {
     let modifierString: string;
@@ -163,27 +174,11 @@ export abstract class Criterion<Option = any, Value = any> {
     return `${Criterion.getLabel(this.type)} ${modifierString} ${valueString}`;
   }
 
-  public getLabelValue() {
-    let valueString: string;
-    if (Array.isArray(this.value) && this.value.length > 0) {
-      let items = this.value;
-      if ((this.value as ILabeledId[])[0].label) {
-        items = this.value.map(item => item.label) as any;
-      }
-      valueString = items.join(", ");
-    } else if (typeof this.value === "string") {
-      valueString = this.value;
-    } else {
-      valueString = (this.value as any).toString();
-    }
-
-    return valueString;
-  }
-
   public getId(): string {
     return `${this.parameterName}-${this.modifier.toString()}`; // TODO add values?
   }
 
+  /*
   public set(modifier: CriterionModifier, value: Value) {
     this.modifier = modifier;
     if (Array.isArray(this.value)) {
@@ -192,6 +187,7 @@ export abstract class Criterion<Option = any, Value = any> {
       this.value = value;
     }
   }
+  */
 }
 
 export interface ICriterionOption {
@@ -209,7 +205,7 @@ export class CriterionOption implements ICriterionOption {
   }
 }
 
-export class StringCriterion extends Criterion<string, string> {
+export class StringCriterion extends Criterion {
   public type: CriterionType;
   public parameterName: string;
   public modifier = CriterionModifier.Equals;
@@ -221,6 +217,10 @@ export class StringCriterion extends Criterion<string, string> {
   ];
   public options: string[] | undefined;
   public value: string = "";
+
+  public getLabelValue() {
+    return this.value;
+  }
 
   constructor(type: CriterionType, parameterName?: string, options?: string[]) {
     super();
@@ -237,7 +237,7 @@ export class StringCriterion extends Criterion<string, string> {
   }
 }
 
-export class NumberCriterion extends Criterion<number, number> {
+export class NumberCriterion extends Criterion {
   public type: CriterionType;
   public parameterName: string;
   public modifier = CriterionModifier.Equals;
@@ -251,6 +251,10 @@ export class NumberCriterion extends Criterion<number, number> {
   ];
   public options: number[] | undefined;
   public value: number = 0;
+
+  public getLabelValue() {
+    return this.value.toString();
+  }
 
   constructor(type: CriterionType, parameterName?: string, options?: number[]) {
     super();
@@ -267,7 +271,7 @@ export class NumberCriterion extends Criterion<number, number> {
   }
 }
 
-export class DurationCriterion extends Criterion<number, number> {
+export class DurationCriterion extends Criterion {
   public type: CriterionType;
   public parameterName: string;
   public modifier = CriterionModifier.Equals;

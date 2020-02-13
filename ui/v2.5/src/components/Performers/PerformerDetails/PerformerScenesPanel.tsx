@@ -16,7 +16,7 @@ export const PerformerScenesPanel: React.FC<IPerformerDetailsProps> = ({
     // if performers is already present, then we modify it, otherwise add
     let performerCriterion = filter.criteria.find(c => {
       return c.type === "performers";
-    });
+    }) as PerformersCriterion;
 
     if (
       performerCriterion &&
@@ -25,7 +25,7 @@ export const PerformerScenesPanel: React.FC<IPerformerDetailsProps> = ({
     ) {
       // add the performer if not present
       if (
-        !performerCriterion.value.find((p: any) => {
+        !performerCriterion.value.find(p => {
           return p.id === performer.id;
         })
       ) {

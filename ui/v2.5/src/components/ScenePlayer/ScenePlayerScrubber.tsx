@@ -78,8 +78,8 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
   const positionIndicatorEl = useRef<HTMLDivElement>(null);
   const scrubberSliderEl = useRef<HTMLDivElement>(null);
   const mouseDown = useRef(false);
-  const lastMouseEvent = useRef<any>(null);
-  const startMouseEvent = useRef<any>(null);
+  const lastMouseEvent = useRef<MouseEvent|null>(null);
+  const startMouseEvent = useRef<MouseEvent|null>(null);
   const velocity = useRef(0);
 
   const _position = useRef(0);
@@ -228,7 +228,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
     }
 
     // negative dragging right (past), positive left (future)
-    const delta = event.clientX - lastMouseEvent.current.clientX;
+    const delta = event.clientX - (lastMouseEvent.current?.clientX ?? 0);
 
     const movement = event.movementX;
     velocity.current = movement;
@@ -279,10 +279,10 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
         return {};
       }
 
-      let tag: any;
+      let tag: Element|null;
       for (let index = 0; index < tags.length; index++) {
-        tag = tags.item(index) as any;
-        const id = tag.getAttribute("data-marker-id");
+        tag = tags.item(index);
+        const id = tag?.getAttribute("data-marker-id") ?? null;
         if (id === i.toString()) {
           break;
         }
@@ -293,7 +293,7 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
       const percentage = marker.seconds / duration;
 
       const left =
-        scrubberSliderEl.current.scrollWidth * percentage - tag.clientWidth / 2;
+        scrubberSliderEl.current.scrollWidth * percentage - tag!.clientWidth / 2;
       return {
         left: `${left}px`,
         height: 20

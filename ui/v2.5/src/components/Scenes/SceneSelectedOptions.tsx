@@ -265,7 +265,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
           <Form.Control
             as="select"
             value={rating}
-            onChange={(event: any) => setRating(event.target.value)}
+            onChange={(event: React.FormEvent<HTMLSelectElement>) => setRating(event.currentTarget.value)}
           >
             {["", "1", "2", "3", "4", "5"].map(opt => (
               <option key={opt} value={opt}>

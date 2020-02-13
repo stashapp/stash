@@ -155,7 +155,7 @@ export const SettingsAboutPanel: React.FC = () => {
       {!dataLatest || loadingLatest || networkStatus === 4 ? (
         <LoadingIndicator inline />
       ) : (
-        <>{renderLatestVersion()}</>
+        renderLatestVersion()
       )}
     </>
   );

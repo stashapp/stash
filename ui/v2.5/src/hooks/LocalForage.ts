@@ -1,74 +1,75 @@
 import localForage from "localforage";
 import _ from "lodash";
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useEffect } from "react";
 
 interface IInterfaceWallConfig {}
-export interface IInterfaceConfig {
-  wall: IInterfaceWallConfig;
-  queries: any;
+interface IInterfaceQueryConfig {
+  filter: string;
+  itemsPerPage: number;
+  currentPage: number;
 }
 
-type ValidTypes = IInterfaceConfig | undefined;
+export interface IInterfaceConfig {
+  wall?: IInterfaceWallConfig;
+  queries?: Record<string, IInterfaceQueryConfig>;
+}
+
+type ValidTypes = IInterfaceConfig;
+type Key = "interface";
 
 interface ILocalForage<T> {
-  data: T;
-  setData: Dispatch<SetStateAction<T>>;
+  data?: T;
   error: Error | null;
   loading: boolean;
 }
 
-function useLocalForage(item: string): ILocalForage<ValidTypes> {
-  const [json, setJson] = React.useState<ValidTypes>(undefined);
-  const [err, setErr] = React.useState(null);
-  const [loaded, setLoaded] = React.useState<boolean>(false);
+const Loading:Record<string, boolean> = {};
+const Cache:Record<string, ValidTypes> = {};
 
-  const prevJson = React.useRef<ValidTypes>(undefined);
-  React.useEffect(() => {
-    async function runAsync() {
-      if (typeof json !== "undefined" && !_.isEqual(json, prevJson.current)) {
-        await localForage.setItem(item, JSON.stringify(json));
-      }
-      prevJson.current = json;
-    }
-    runAsync();
-  });
+function useLocalForage(key: Key): [ILocalForage<ValidTypes>, Dispatch<SetStateAction<ValidTypes>>] {
+  const [error, setError] = React.useState(null);
+  const [data, setData] = React.useState(Cache[key]);
+  const [loading, setLoading] = React.useState(Loading[key]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     async function runAsync() {
       try {
-        const serialized = await localForage.getItem<any>(item);
+        const serialized = await localForage.getItem<string>(key);
         const parsed = JSON.parse(serialized);
-        if (typeof json === "undefined" && !Object.is(parsed, null)) {
-          setErr(null);
-          setJson(parsed);
+        if (!Object.is(parsed, null)) {
+          setError(null);
+          setData(parsed);
+          Cache[key] = parsed;
         }
-      } catch (error) {
-        setErr(error);
+      } catch (err) {
+        setError(err);
+      } finally {
+        Loading[key] = false;
+        setLoading(false);
       }
-      setLoaded(true);
     }
-    runAsync();
+    if(!loading && !Cache[key]) {
+      Loading[key] = true;
+      setLoading(true);
+      runAsync();
+    }
+  }, [loading, data, key]);
+
+  useEffect(() => {
+    if (!_.isEqual(Cache[key], data)) {
+      Cache[key] = _.merge(Cache[key], data);
+      localForage.setItem(key, JSON.stringify(Cache[key]));
+    }
   });
 
-  return { data: json, setData: setJson, error: err, loading: !loaded };
+  const isLoading = loading || loading === undefined;
+
+  return [{ data, error, loading: isLoading }, setData];
 }
 
-export function useInterfaceLocalForage(): [
-  ILocalForage<IInterfaceConfig | undefined>,
-  Dispatch<SetStateAction<IInterfaceConfig | undefined>>
-] {
-  const result = useLocalForage("interface");
-
-  let returnVal = result;
-  if (!result.data?.queries) {
-    returnVal = {
-      ...result,
-      data: {
-        wall: {},
-        queries: {}
-      }
-    };
-  }
-
-  return [returnVal, result.setData];
+export function useInterfaceLocalForage():
+  [ILocalForage<IInterfaceConfig>,
+  Dispatch<SetStateAction<IInterfaceConfig>>]
+ {
+  return useLocalForage("interface");
 }

@@ -132,7 +132,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
         <InputGroup className="col-8">
           <Form.Control
             id="filename-pattern"
-            onChange={(newValue: any) => setPattern(newValue.target.value)}
+            onChange={(e: React.FormEvent<HTMLInputElement>) => setPattern(e.currentTarget.value)}
             value={pattern}
           />
           <InputGroup.Append>
@@ -158,7 +158,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
         <Form.Label className="col-2">Ignored words</Form.Label>
         <InputGroup className="col-8">
           <Form.Control
-            onChange={(newValue: any) => setIgnoreWords(newValue.target.value)}
+            onChange={(e: React.FormEvent<HTMLInputElement>) => setIgnoreWords(e.currentTarget.value)}
             value={ignoreWords}
           />
         </InputGroup>
@@ -174,8 +174,8 @@ export const ParserInput: React.FC<IParserInputProps> = (
         </Form.Label>
         <InputGroup className="col-8">
           <Form.Control
-            onChange={(newValue: any) =>
-              setWhitespaceCharacters(newValue.target.value)
+            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+              setWhitespaceCharacters(e.currentTarget.value)
             }
             value={whitespaceCharacters}
           />
@@ -229,8 +229,8 @@ export const ParserInput: React.FC<IParserInputProps> = (
         <Form.Control
           as="select"
           options={PAGE_SIZE_OPTIONS}
-          onChange={(event: any) =>
-            props.onPageSizeChanged(parseInt(event.target.value, 10))
+          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            props.onPageSizeChanged(parseInt(e.currentTarget.value, 10))
           }
           defaultValue={props.input.pageSize}
           className="col-1 filter-item"

@@ -1,8 +1,7 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
-export class ResolutionCriterion extends Criterion<string, string> {
-  // TODO <string, string[]>
+export class ResolutionCriterion extends Criterion {
   public type: CriterionType = "resolution";
   public parameterName: string = "resolution";
   public modifier = CriterionModifier.Equals;

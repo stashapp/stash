@@ -75,14 +75,14 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
 const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   options: IListHookOptions<QueryResult> & IQuery<QueryResult, QueryData>
 ): IListHookData => {
-  const [interfaceForage, setInterfaceForage] = useInterfaceLocalForage();
+  const [interfaceState, setInterfaceState]= useInterfaceLocalForage();
   const forageInitialised = useRef(false);
   const history = useHistory();
   const location = useLocation();
   const [filter, setFilter] = useState<ListFilterModel>(
     new ListFilterModel(
       options.filterMode,
-      options.subComponent ? "" : queryString.parse(location.search)
+      options.subComponent ? undefined : queryString.parse(location.search)
     )
   );
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -94,7 +94,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const items = options.getData(result);
 
   useEffect(() => {
-    if (!forageInitialised.current && !interfaceForage.loading) {
+    if (!forageInitialised.current && !interfaceState.loading) {
       forageInitialised.current = true;
 
       // Don't use query parameters for sub-components
@@ -102,7 +102,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       // Don't read localForage if page already had query parameters
       if (history.location.search) return;
 
-      const queryData = interfaceForage.data?.queries[options.filterMode];
+      const queryData = interfaceState.data?.queries?.[options.filterMode];
       if (!queryData) return;
 
       const newFilter = new ListFilterModel(
@@ -117,8 +117,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       history.replace(newLocation);
     }
   }, [
-    interfaceForage.data,
-    interfaceForage.loading,
+    interfaceState.data,
+    interfaceState.loading,
     history,
     options.subComponent,
     options.filterMode
@@ -129,15 +129,14 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     const newFilter = new ListFilterModel(
       options.filterMode,
-      options.subComponent ? "" : queryString.parse(location.search)
+      options.subComponent ? undefined : queryString.parse(location.search)
     );
     setFilter(newFilter);
 
     if (forageInitialised.current) {
-      setInterfaceForage(config => {
+      setInterfaceState(config => {
         const data = { ...config } as IInterfaceConfig;
         data.queries = {
-          ...config?.queries,
           [options.filterMode]: {
             filter: location.search,
             itemsPerPage: newFilter.itemsPerPage,
@@ -147,7 +146,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         return data;
       });
     }
-  }, [location, options.filterMode, options.subComponent, setInterfaceForage]);
+  }, [location, options.filterMode, options.subComponent, setInterfaceState]);
 
   function getFilter() {
     if (!options.filterHook) {
@@ -216,7 +215,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     // Remove duplicate modifiers
     newFilter.criteria = newFilter.criteria.filter((obj, pos, arr) => {
       return (
-        arr.map((mapObj: any) => mapObj.getId()).indexOf(obj.getId()) === pos
+        arr.map(mapObj => mapObj.getId()).indexOf(obj.getId()) === pos
       );
     });
 

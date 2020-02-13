@@ -141,7 +141,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         <Form.Control
           as="textarea"
           value={css}
-          onChange={(e: any) => setCSS(e.target.value)}
+          onChange={(e: React.FormEvent<HTMLTextAreaElement>) => setCSS(e.currentTarget.value)}
           rows={16}
           className="col col-sm-6"
         ></Form.Control>

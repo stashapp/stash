@@ -60,7 +60,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
           sceneMarkers={props.scene.scene_markers}
           clickHandler={marker => {
             window.scrollTo(0, 0);
-            onClickMarker(marker as any);
+            onClickMarker(marker as GQL.SceneMarkerDataFragment);
           }}
         />
       </div>
