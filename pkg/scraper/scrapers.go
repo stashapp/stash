@@ -108,7 +108,17 @@ func ScrapePerformer(scraperID string, scrapedPerformer models.ScrapedPerformerI
 	// find scraper with the provided id
 	s := findScraper(scraperID)
 	if s != nil {
-		return s.ScrapePerformer(scrapedPerformer)
+		ret, err := s.ScrapePerformer(scrapedPerformer)
+		if err != nil {
+			return nil, err
+		}
+
+		// post-process - set the image if applicable
+		if err := setPerformerImage(ret); err != nil {
+			logger.Warn("Could not set image using URL: %s", ret.Image)
+		}
+
+		return ret, nil
 	}
 
 	return nil, errors.New("Scraper with ID " + scraperID + " not found")
@@ -117,7 +127,17 @@ func ScrapePerformer(scraperID string, scrapedPerformer models.ScrapedPerformerI
 func ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
 	for _, s := range scrapers {
 		if s.matchesPerformerURL(url) {
-			return s.ScrapePerformerURL(url)
+			ret, err := s.ScrapePerformerURL(url)
+			if err != nil {
+				return nil, err
+			}
+
+			// post-process - set the image if applicable
+			if err := setPerformerImage(ret); err != nil {
+				logger.Warn("Could not set image using URL: %s", ret.Image)
+			}
+
+			return ret, nil
 		}
 	}
 

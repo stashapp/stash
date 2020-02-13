@@ -61,7 +61,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
   const Scrapers = StashService.useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListPerformerScrapersListPerformerScrapers[]>([]);
 
-  function updatePerformerEditState(state: Partial<GQL.PerformerDataFragment | GQL.ScrapeFreeonesScrapeFreeones>) {
+  function updatePerformerEditState(state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformerDataFragment | GQL.ScrapeFreeonesScrapeFreeones>) {
     if ((state as GQL.PerformerDataFragment).favorite !== undefined) {
       setFavorite((state as GQL.PerformerDataFragment).favorite);
     }
@@ -80,6 +80,19 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
     setUrl(state.url);
     setTwitter(state.twitter);
     setInstagram(state.instagram);
+  }
+
+  function updatePerformerEditStateFromScraper(state: Partial<GQL.ScrapedPerformerDataFragment | GQL.ScrapeFreeonesScrapeFreeones>) {
+    updatePerformerEditState(state);
+
+    // image is a raw base64 string
+    if ((state as GQL.ScrapedPerformerDataFragment).image !== undefined) {
+      let imageStr = "data:image/png;base64," + (state as GQL.ScrapedPerformerDataFragment).image;
+      setImage(imageStr);
+      if (props.onImageChange) {
+        props.onImageChange(imageStr);
+      }
+    }
   }
 
   useEffect(() => {
@@ -169,6 +182,10 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
 
     let ret = _.clone(scrapePerformerDetails);
     delete ret.__typename;
+
+    // image is not supported
+    delete ret.image;
+    
     return ret as GQL.ScrapedPerformerInput;
   }
 
@@ -179,7 +196,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
       setIsLoading(true);
       const result = await StashService.queryScrapePerformer(isDisplayingScraperDialog.id, getQueryScraperPerformerInput());
       if (!result.data || !result.data.scrapePerformer) { return; }
-      updatePerformerEditState(result.data.scrapePerformer);
+      updatePerformerEditStateFromScraper(result.data.scrapePerformer);
     } catch (e) {
       ErrorUtils.handle(e);
     } finally {
@@ -199,7 +216,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
         result.data.scrapePerformerURL.url = url;
       }
 
-      updatePerformerEditState(result.data.scrapePerformerURL);
+      updatePerformerEditStateFromScraper(result.data.scrapePerformerURL);
     } catch (e) {
       ErrorUtils.handle(e);
     } finally {

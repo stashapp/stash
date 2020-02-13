@@ -39,6 +39,7 @@ type ScrapedPerformer struct {
 	Tattoos      *string `graphql:"tattoos" json:"tattoos"`
 	Piercings    *string `graphql:"piercings" json:"piercings"`
 	Aliases      *string `graphql:"aliases" json:"aliases"`
+	Image        *string `graphql:"image" json:"image"`
 }
 
 type ScrapedScene struct {
