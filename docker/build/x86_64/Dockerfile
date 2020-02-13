@@ -2,7 +2,7 @@
 # ie from top=level stash:
 # docker build -t stash/build -f docker/build/x86_64/Dockerfile .
 
-FROM golang:1.11.5 as compiler
+FROM golang:1.11.13 as compiler
 
 RUN apt-get update && apt-get install -y apt-transport-https
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
