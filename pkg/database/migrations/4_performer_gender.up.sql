@@ -1,1 +1,1 @@
-ALTER TABLE `performers` ADD COLUMN `gender` tinyint not null default 'female';
+ALTER TABLE `performers` ADD COLUMN `gender` varchar(255) default 'female';
