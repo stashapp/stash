@@ -42,6 +42,9 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	if input.URL != nil {
 		newPerformer.URL = sql.NullString{String: *input.URL, Valid: true}
 	}
+	if input.Gender != nil {
+		newPerformer.Gender = sql.NullString{String: *input.Gender, Valid: true}
+	}
 	if input.Birthdate != nil {
 		newPerformer.Birthdate = models.SQLiteDate{String: *input.Birthdate, Valid: true}
 	}
@@ -127,6 +130,9 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	}
 	if input.URL != nil {
 		updatedPerformer.URL = sql.NullString{String: *input.URL, Valid: true}
+	}
+	if input.Gender != nil {
+		updatedPerformer.Gender = sql.NullString{String: *input.Gender, Valid: true}
 	}
 	if input.Birthdate != nil {
 		updatedPerformer.Birthdate = models.SQLiteDate{String: *input.Birthdate, Valid: true}

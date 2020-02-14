@@ -3,6 +3,7 @@ fragment PerformerData on Performer {
   checksum
   name
   url
+  gender
   twitter
   instagram
   birthdate

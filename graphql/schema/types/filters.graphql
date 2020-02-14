@@ -46,6 +46,8 @@ input PerformerFilterType {
   piercings: StringCriterionInput
   """Filter by aliases"""
   aliases: StringCriterionInput
+  """Filter by gender"""
+  gender: StringCriterionInput
 }
 
 input SceneMarkerFilterType {

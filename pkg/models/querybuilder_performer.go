@@ -18,10 +18,10 @@ func NewPerformerQueryBuilder() PerformerQueryBuilder {
 func (qb *PerformerQueryBuilder) Create(newPerformer Performer, tx *sqlx.Tx) (*Performer, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO performers (image, checksum, name, url, twitter, instagram, birthdate, ethnicity, country,
+		`INSERT INTO performers (image, checksum, name, url, gender, twitter, instagram, birthdate, ethnicity, country,
                         				eye_color, height, measurements, fake_tits, career_length, tattoos, piercings,
                         				aliases, favorite, created_at, updated_at)
-				VALUES (:image, :checksum, :name, :url, :twitter, :instagram, :birthdate, :ethnicity, :country,
+				VALUES (:image, :checksum, :name, :url, :gender, :twitter, :instagram, :birthdate, :ethnicity, :country,
                         :eye_color, :height, :measurements, :fake_tits, :career_length, :tattoos, :piercings,
                         :aliases, :favorite, :created_at, :updated_at)
 		`,

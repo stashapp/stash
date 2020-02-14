@@ -3,6 +3,7 @@ type Performer {
   checksum: String!
   name: String
   url: String
+  gender: String
   twitter: String
   instagram: String
   birthdate: String
@@ -26,6 +27,7 @@ type Performer {
 input PerformerCreateInput {
   name: String
   url: String
+  gender: String
   birthdate: String
   ethnicity: String
   country: String
@@ -48,6 +50,7 @@ input PerformerUpdateInput {
   id: ID!
   name: String
   url: String
+  gender: String
   birthdate: String
   ethnicity: String
   country: String

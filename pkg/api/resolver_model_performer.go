@@ -20,6 +20,13 @@ func (r *performerResolver) URL(ctx context.Context, obj *models.Performer) (*st
 	return nil, nil
 }
 
+func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (*string, error) {
+	if obj.Gender.Valid {
+		return &obj.Gender.String, nil
+	}
+	return nil, nil
+}
+
 func (r *performerResolver) Twitter(ctx context.Context, obj *models.Performer) (*string, error) {
 	if obj.Twitter.Valid {
 		return &obj.Twitter.String, nil

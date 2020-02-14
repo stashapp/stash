@@ -54,6 +54,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
   const [url, setUrl] = useState<string | undefined>(undefined);
   const [twitter, setTwitter] = useState<string | undefined>(undefined);
   const [instagram, setInstagram] = useState<string | undefined>(undefined);
+  const [gender, setGender] = useState<string | undefined>('female');
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -80,6 +81,9 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
     setUrl(state.url);
     setTwitter(state.twitter);
     setInstagram(state.instagram);
+    if ((state as GQL.PerformerDataFragment).favorite !== undefined) {
+      setGender((state as GQL.PerformerDataFragment).gender)
+    }
   }
 
   useEffect(() => {
@@ -134,6 +138,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
       twitter,
       instagram,
       image,
+      gender
     };
 
     if (!props.isNew) {
@@ -356,6 +361,16 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
     }
   }
 
+  function renderGender() {
+    return TableUtils.renderHtmlSelect({
+      title: "Gender",
+      value: gender,
+      isEditing: !!props.isEditing,
+      onChange: (value: string) => setGender(value),
+      selectOptions: ["male", "female"],
+    });
+  }
+
   const twitterPrefix = "https://twitter.com/";
   const instagramPrefix = "https://www.instagram.com/";
 
@@ -368,6 +383,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
         <tbody>
           {maybeRenderName()}
           {maybeRenderAliases()}
+          {renderGender()}
           {TableUtils.renderInputGroup(
             {title: "Birthdate (YYYY-MM-DD)", value: birthdate, isEditing: !!props.isEditing, onChange: setBirthdate})}
           {renderEthnicity()}

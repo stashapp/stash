@@ -1,6 +1,7 @@
 mutation PerformerCreate(
   $name: String,
   $url: String,
+  $gender: String,
   $birthdate: String,
   $ethnicity: String,
   $country: String,
@@ -20,6 +21,7 @@ mutation PerformerCreate(
   performerCreate(input: {
                             name: $name,
                             url: $url,
+                            gender: $gender,
                             birthdate: $birthdate,
                             ethnicity: $ethnicity,
                             country: $country,
@@ -44,6 +46,7 @@ mutation PerformerUpdate(
   $id: ID!,
   $name: String,
   $url: String,
+  $gender: String,
   $birthdate: String,
   $ethnicity: String,
   $country: String,
@@ -64,6 +67,7 @@ mutation PerformerUpdate(
                             id: $id,
                             name: $name,
                             url: $url,
+                            gender: $gender,
                             birthdate: $birthdate,
                             ethnicity: $ethnicity,
                             country: $country,
