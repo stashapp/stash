@@ -44,12 +44,12 @@ RUN make generate
 RUN make ui 
 RUN make build
 
-FROM ubuntu:18.04 as app
+FROM ubuntu:19.10 as app
 
 RUN apt-get update && \
     apt-get -y install ca-certificates && \
     adduser stash --gecos GECOS --shell /bin/bash --disabled-password --home /home/stash
-COPY --from=compiler /stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
+COPY --from=compiler /stash/stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
 
 EXPOSE 9999
 CMD ["stash"]
