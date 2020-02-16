@@ -87,7 +87,7 @@ const renderHtmlSelect = (options: {
     <td>
       <Form.Control
         as="select"
-        readOnly={!options.isEditing}
+        disabled={!options.isEditing}
         plaintext={!options.isEditing}
         value={options.value?.toString()}
         onChange={(event: React.FormEvent<HTMLSelectElement>) =>

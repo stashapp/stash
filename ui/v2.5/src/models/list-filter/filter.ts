@@ -48,7 +48,7 @@ import { makeCriteria } from "./criteria/utils";
 import { DisplayMode, FilterMode } from "./types";
 
 interface IQueryParameters {
-  items?: string;
+  perPage?: string;
   sortby?: string;
   sortdir?: string;
   disp?: string;
@@ -221,7 +221,7 @@ export class ListFilterModel {
     if (params.p) {
       this.currentPage = Number.parseInt(params.p, 10);
     }
-    if (params.items) this.itemsPerPage = Number.parseInt(params.items, 10);
+    if (params.perPage) this.itemsPerPage = Number.parseInt(params.perPage, 10);
 
     if (params.c !== undefined) {
       this.criteria = [];
@@ -278,11 +278,11 @@ export class ListFilterModel {
     });
 
     const result = {
-      items:
+      perPage:
         this.itemsPerPage !== DEFAULT_PARAMS.itemsPerPage
           ? this.itemsPerPage
           : undefined,
-      sortby: this.getSortBy(),
+      sortby: this.sortBy !== "date" ? this.getSortBy() : undefined,
       sortdir:
         this.sortDirection === SortDirectionEnum.Desc ? "desc" : undefined,
       disp:

@@ -1,6 +1,6 @@
 import _ from "lodash";
 import queryString from "query-string";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { ApolloError } from "apollo-client";
 import { useHistory, useLocation } from "react-router-dom";
 import {
@@ -79,7 +79,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   options: IListHookOptions<QueryResult> & IQuery<QueryResult, QueryData>
 ): IListHookData => {
   const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
-  const forageInitialised = useRef(false);
+  const [forageInitialised, setForageInitialised] = useState(false);
   const history = useHistory();
   const location = useLocation();
   const [filter, setFilter] = useState<ListFilterModel>(
@@ -96,39 +96,72 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const totalCount = options.getCount(result);
   const items = options.getData(result);
 
+  const updateInterfaceConfig = useCallback((filter: ListFilterModel) => {
+    setInterfaceState(config => {
+      const data = { ...config } as IInterfaceConfig;
+      data.queries = {
+        [options.filterMode]: {
+          filter: filter.makeQueryParameters(),
+          itemsPerPage: filter.itemsPerPage,
+          currentPage: filter.currentPage
+        }
+      };
+      return data;
+    });
+  }, [location.search, options.filterMode, setInterfaceState]);
+
   useEffect(() => {
-    if (!forageInitialised.current && !interfaceState.loading) {
-      forageInitialised.current = true;
+    if(interfaceState.loading)
+      return;
+    if(!forageInitialised)
+      setForageInitialised(true);
 
-      // Don't use query parameters for sub-components
-      if (options.subComponent) return;
-      // Don't read localForage if page already had query parameters
-      if (history.location.search) return;
+    // Don't use query parameters for sub-components
+    if (options.subComponent) return;
 
-      const queryData = interfaceState.data?.queries?.[options.filterMode];
-      if (!queryData) return;
+    const storedQuery = interfaceState.data?.queries?.[options.filterMode];
+    if (!storedQuery) return;
 
-      const newFilter = new ListFilterModel(
-        options.filterMode,
-        queryString.parse(queryData.filter)
-      );
-      newFilter.currentPage = queryData.currentPage;
-      newFilter.itemsPerPage = queryData.itemsPerPage;
+    const queryFilter = queryString.parse(location.search);
+    const storedFilter = queryString.parse(storedQuery.filter);
+    const query = location.search ? {
+      sortby: storedFilter.sortby,
+      sortdir: storedFilter.sortdir,
+      disp: storedFilter.disp,
+      perPage: storedFilter.perPage,
+      ...queryFilter
+    } : storedFilter;
 
-      const newLocation = { ...history.location };
-      newLocation.search = queryData.filter;
+    const newFilter = new ListFilterModel(
+      options.filterMode,
+      query
+    );
+
+    // Compare constructed filter with current filter.
+    // If different it's the result of navigation, and we update the filter.
+    const newLocation = { ...location };
+    newLocation.search = newFilter.makeQueryParameters();
+    if(newLocation.search !== filter.makeQueryParameters()) {
+      setFilter(newFilter);
+      updateInterfaceConfig(newFilter);
+      const newLocation = { ...location };
+      newLocation.search = newFilter.makeQueryParameters();
       history.replace(newLocation);
     }
   }, [
+    filter,
     interfaceState.data,
     interfaceState.loading,
-    history,
+    location,
     options.subComponent,
-    options.filterMode
+    options.filterMode,
+    forageInitialised,
+    updateInterfaceConfig
   ]);
 
+  /*
   useEffect(() => {
-    if (options.subComponent) return;
+    if (options.subComponent || !forageInitialised) return;
 
     const newFilter = new ListFilterModel(
       options.filterMode,
@@ -136,20 +169,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     );
     setFilter(newFilter);
 
-    if (forageInitialised.current) {
-      setInterfaceState(config => {
-        const data = { ...config } as IInterfaceConfig;
-        data.queries = {
-          [options.filterMode]: {
-            filter: location.search,
-            itemsPerPage: newFilter.itemsPerPage,
-            currentPage: newFilter.currentPage
-          }
-        };
-        return data;
-      });
-    }
-  }, [location, options.filterMode, options.subComponent, setInterfaceState]);
+  }, [location, options.filterMode, options.subComponent, setInterfaceState, forageInitialised]);
+   */
 
   function getFilter() {
     if (!options.filterHook) {
@@ -161,10 +182,14 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     return options.filterHook(newFilter);
   }
 
-  function updateQueryParams(listfilter: ListFilterModel) {
-    const newLocation = { ...history.location };
-    newLocation.search = listfilter.makeQueryParameters();
-    history.replace(newLocation);
+  function updateQueryParams(listFilter: ListFilterModel) {
+    setFilter(listFilter);
+    if(!options.subComponent) {
+      const newLocation = { ...location };
+      newLocation.search = listFilter.makeQueryParameters();
+      history.replace(newLocation);
+      updateInterfaceConfig(listFilter);
+    }
   }
 
   function onChangePageSize(pageSize: number) {
@@ -328,7 +353,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     : undefined;
 
   let template;
-  if (result.loading || !forageInitialised.current) {
+  if (result.loading || !forageInitialised) {
     template = <LoadingIndicator />;
   } else if (result.error) {
     template = <h1>{result.error.message}</h1>;
