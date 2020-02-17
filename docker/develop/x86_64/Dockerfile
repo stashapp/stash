@@ -1,5 +1,5 @@
 FROM ubuntu:18.04 as prep
-LABEL MAINTAINER="leopere [at] nixc [dot] us"
+LABEL MAINTAINER="https://discord.gg/Uz29ny"
 
 RUN apt-get update && \
     apt-get -y install curl xz-utils && \

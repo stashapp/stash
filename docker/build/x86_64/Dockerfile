@@ -2,7 +2,7 @@
 # ie from top=level stash:
 # docker build -t stash/build -f docker/build/x86_64/Dockerfile .
 
-FROM golang:1.11.5 as compiler
+FROM golang:1.11.13 as compiler
 
 RUN apt-get update && apt-get install -y apt-transport-https
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
@@ -44,12 +44,12 @@ RUN make generate
 RUN make ui 
 RUN make build
 
-FROM ubuntu:18.04 as app
+FROM ubuntu:19.10 as app
 
 RUN apt-get update && \
     apt-get -y install ca-certificates && \
     adduser stash --gecos GECOS --shell /bin/bash --disabled-password --home /home/stash
-COPY --from=compiler /stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
+COPY --from=compiler /stash/stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
 
 EXPOSE 9999
 CMD ["stash"]
