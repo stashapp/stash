@@ -78,7 +78,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
 
   function onImport() {
     setIsImportAlertOpen(false);
-    StashService.queryMetadataImport().then(() => { jobStatus.refetch()});
+    StashService.mutateMetadataImport().then(() => { jobStatus.refetch()});
   }
 
   function renderImportAlert() {
@@ -102,7 +102,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
 
   function onClean() {
     setIsCleanAlertOpen(false);
-    StashService.queryMetadataClean().then(() => { jobStatus.refetch()});
+    StashService.mutateMetadataClean().then(() => { jobStatus.refetch()});
   }
 
   function renderCleanAlert() {
@@ -127,7 +127,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
 
   async function onScan() {
     try {
-      await StashService.queryMetadataScan({useFileMetadata: useFileMetadata});
+      await StashService.mutateMetadataScan({useFileMetadata: useFileMetadata});
       ToastUtils.success("Started scan");
       jobStatus.refetch();
     } catch (e) {
@@ -146,7 +146,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
 
   async function onAutoTag() {
     try {
-      await StashService.queryMetadataAutoTag(getAutoTagInput());
+      await StashService.mutateMetadataAutoTag(getAutoTagInput());
       ToastUtils.success("Started auto tagging");
       jobStatus.refetch();
     } catch (e) {
@@ -162,7 +162,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
     return (
       <>
       <FormGroup>
-        <Button id="stop" text="Stop" intent="danger" onClick={() => StashService.queryStopJob().then(() => jobStatus.refetch())} />
+        <Button id="stop" text="Stop" intent="danger" onClick={() => StashService.mutateStopJob().then(() => jobStatus.refetch())} />
       </FormGroup>
       </>
     );
@@ -256,7 +256,7 @@ export const SettingsTasksPanel: FunctionComponent<IProps> = (props: IProps) => 
         labelFor="export"
         inline={true}
       >
-        <Button id="export" text="Export" onClick={() => StashService.queryMetadataExport().then(() => { jobStatus.refetch()})} />
+        <Button id="export" text="Export" onClick={() => StashService.mutateMetadataExport().then(() => { jobStatus.refetch()})} />
       </FormGroup>
 
       <FormGroup

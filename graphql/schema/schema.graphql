@@ -77,21 +77,7 @@ type Query {
 
   # Metadata
 
-  """Start an import. Returns the job ID"""
-  metadataImport: String!
-  """Start an export. Returns the job ID"""
-  metadataExport: String!
-  """Start a scan. Returns the job ID"""
-  metadataScan(input: ScanMetadataInput!): String!
-  """Start generating content. Returns the job ID"""
-  metadataGenerate(input: GenerateMetadataInput!): String!
-  """Start auto-tagging. Returns the job ID"""
-  metadataAutoTag(input: AutoTagMetadataInput!): String!
-  """Clean metadata. Returns the job ID"""
-  metadataClean: String!
-
   jobStatus: MetadataUpdateStatus!
-  stopJob: Boolean!
 
   # Get everything
 
@@ -143,6 +129,21 @@ type Mutation {
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
   configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
+
+  """Start an import. Returns the job ID"""
+  metadataImport: String!
+  """Start an export. Returns the job ID"""
+  metadataExport: String!
+  """Start a scan. Returns the job ID"""
+  metadataScan(input: ScanMetadataInput!): String!
+  """Start generating content. Returns the job ID"""
+  metadataGenerate(input: GenerateMetadataInput!): String!
+  """Start auto-tagging. Returns the job ID"""
+  metadataAutoTag(input: AutoTagMetadataInput!): String!
+  """Clean metadata. Returns the job ID"""
+  metadataClean: String!
+
+  stopJob: Boolean!
 }
 
 type Subscription {

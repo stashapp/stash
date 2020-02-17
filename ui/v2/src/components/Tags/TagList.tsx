@@ -76,7 +76,7 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
       return;
     }
     try {
-      await StashService.queryMetadataAutoTag({ tags: [tag.id]});
+      await StashService.mutateMetadataAutoTag({ tags: [tag.id]});
       ToastUtils.success("Started auto tagging");
     } catch (e) {
       ErrorUtils.handle(e);
