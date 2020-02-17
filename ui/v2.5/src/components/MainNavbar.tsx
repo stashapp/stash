@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
-import { Link, useLocation } from "react-router-dom";
+import { NavLink, Link, useLocation } from "react-router-dom";
 
 import { Icon } from "src/components/Shared";
 
@@ -67,8 +67,8 @@ export const MainNavbar: React.FC = () => {
     );
 
   return (
-    <Navbar fixed="top" variant="dark" bg="dark" className="top-nav">
-      <Navbar.Brand as="div">
+    <Navbar collapseOnSelect fixed="top" variant="dark" bg="dark" className="top-nav" expand="sm">
+      <Navbar.Brand as="div" className="order-1 order-sm-0">
         <Link to="/">
           <Button className="minimal brand-link d-none d-sm-inline-block">
             Stash
@@ -78,24 +78,29 @@ export const MainNavbar: React.FC = () => {
           </Button>
         </Link>
       </Navbar.Brand>
-      <Nav className="mr-md-auto">
-        {menuItems.map(i => (
-          <LinkContainer
-            activeClassName="active"
-            exact
-            to={i.href}
-            key={i.href}
-          >
-            <Button className="minimal">
-              <Icon icon={i.icon} />
-              <span className="d-none d-sm-inline">
-                <FormattedMessage id={i.messageID} />
-              </span>
-            </Button>
-          </LinkContainer>
-        ))}
-      </Nav>
-      <Nav>
+      <Navbar.Toggle className="order-0" />
+      <Navbar.Collapse className="order-3 order-sm-1">
+        <Nav className="mr-md-auto">
+          {menuItems.map(i => (
+            <Nav.Link eventKey={i.href} as="div">
+              <LinkContainer
+                activeClassName="active"
+                exact
+                to={i.href}
+                key={i.href}
+              >
+                <Button className="minimal w-100">
+                  <Icon icon={i.icon} />
+                  <span>
+                    <FormattedMessage id={i.messageID} />
+                  </span>
+                </Button>
+              </LinkContainer>
+            </Nav.Link>
+          ))}
+        </Nav>
+      </Navbar.Collapse>
+      <Nav className="order-2">
         <div className="d-none d-sm-block">{newButton}</div>
         <LinkContainer exact to="/settings">
           <Button className="minimal">
