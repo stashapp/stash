@@ -34,6 +34,7 @@ docker run \
  -v <path to metadata>:/metadata \
  -v <path to cache>:/cache \
  -v <path to generated>:/generated \
+ -p 9999:9999 \
  stash/build:latest 
 ```
 
@@ -61,5 +62,6 @@ docker run \
  -v /stash/metadata:/metadata \
  -v /stash/cache:/cache \
  -v /stash/generated:/generated \
+ -p 9999:9999 \
  stash/build:latest 
 ```
