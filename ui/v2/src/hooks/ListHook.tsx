@@ -321,12 +321,12 @@ export class ListHook {
       let thisIndex = -1;
   
       if (!!lastClickedId) {
-        startIndex = filterListImpl.getItems(result).findIndex((item) => {
+        startIndex = filterListImpl.getItems(result.data).findIndex((item) => {
           return item.id === lastClickedId;
         });
       }
 
-      thisIndex = filterListImpl.getItems(result).findIndex((item) => {
+      thisIndex = filterListImpl.getItems(result.data).findIndex((item) => {
         return item.id === id;
       });
 
@@ -340,7 +340,7 @@ export class ListHook {
         endIndex = tmp;
       }
   
-      const subset = filterListImpl.getItems(result).slice(startIndex, endIndex + 1);
+      const subset = filterListImpl.getItems(result.data).slice(startIndex, endIndex + 1);
       const newSelectedIds : Set<string> = new Set();
 
       subset.forEach((item) => {
@@ -352,7 +352,7 @@ export class ListHook {
 
     function onSelectAll() {
       const newSelectedIds : Set<string> = new Set();
-      filterListImpl.getItems(result).forEach((item) => {
+      filterListImpl.getItems(result.data).forEach((item) => {
         newSelectedIds.add(item.id);
       });
 
