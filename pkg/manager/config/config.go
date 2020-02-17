@@ -30,6 +30,7 @@ const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
 const Host = "host"
 const Port = "port"
+const ExternalHost = "external_host"
 
 // Interface options
 const SoundOnPreview = "sound_on_preview"
@@ -106,6 +107,10 @@ func GetHost() string {
 
 func GetPort() int {
 	return viper.GetInt(Port)
+}
+
+func GetExternalHost() string {
+	return viper.GetString(ExternalHost)
 }
 
 func GetMaxTranscodeSize() models.StreamingResolutionEnum {

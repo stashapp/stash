@@ -296,6 +296,11 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 		}
 		baseURL := scheme + "://" + r.Host
 
+		externalHost := config.GetExternalHost()
+		if externalHost != "" {
+			baseURL = externalHost
+		}
+
 		r = r.WithContext(context.WithValue(ctx, BaseURLCtxKey, baseURL))
 
 		next.ServeHTTP(w, r)
