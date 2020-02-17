@@ -96,25 +96,26 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const totalCount = options.getCount(result);
   const items = options.getData(result);
 
-  const updateInterfaceConfig = useCallback((updatedFilter: ListFilterModel) => {
-    setInterfaceState(config => {
-      const data = { ...config } as IInterfaceConfig;
-      data.queries = {
-        [options.filterMode]: {
-          filter: updatedFilter.makeQueryParameters(),
-          itemsPerPage: updatedFilter.itemsPerPage,
-          currentPage: updatedFilter.currentPage
-        }
-      };
-      return data;
-    });
-  }, [options.filterMode, setInterfaceState]);
+  const updateInterfaceConfig = useCallback(
+    (updatedFilter: ListFilterModel) => {
+      setInterfaceState(config => {
+        const data = { ...config } as IInterfaceConfig;
+        data.queries = {
+          [options.filterMode]: {
+            filter: updatedFilter.makeQueryParameters(),
+            itemsPerPage: updatedFilter.itemsPerPage,
+            currentPage: updatedFilter.currentPage
+          }
+        };
+        return data;
+      });
+    },
+    [options.filterMode, setInterfaceState]
+  );
 
   useEffect(() => {
-    if(interfaceState.loading)
-      return;
-    if(!forageInitialised)
-      setForageInitialised(true);
+    if (interfaceState.loading) return;
+    if (!forageInitialised) setForageInitialised(true);
 
     // Don't use query parameters for sub-components
     if (options.subComponent) return;
@@ -124,29 +125,28 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     const queryFilter = queryString.parse(history.location.search);
     const storedFilter = queryString.parse(storedQuery.filter);
-    const query = history.location.search ? {
-      sortby: storedFilter.sortby,
-      sortdir: storedFilter.sortdir,
-      disp: storedFilter.disp,
-      perPage: storedFilter.perPage,
-      ...queryFilter
-    } : storedFilter;
+    const query = history.location.search
+      ? {
+          sortby: storedFilter.sortby,
+          sortdir: storedFilter.sortdir,
+          disp: storedFilter.disp,
+          perPage: storedFilter.perPage,
+          ...queryFilter
+        }
+      : storedFilter;
 
-    const newFilter = new ListFilterModel(
-      options.filterMode,
-      query
-    );
+    const newFilter = new ListFilterModel(options.filterMode, query);
 
     // Compare constructed filter with current filter.
     // If different it's the result of navigation, and we update the filter.
     const newLocation = { ...history.location };
     newLocation.search = newFilter.makeQueryParameters();
-    if(newLocation.search !== filter.makeQueryParameters()) {
+    if (newLocation.search !== filter.makeQueryParameters()) {
       setFilter(newFilter);
       updateInterfaceConfig(newFilter);
     }
     // If constructed search is different from current, update it as well
-    if(newLocation.search !== location.search) {
+    if (newLocation.search !== location.search) {
       newLocation.search = newFilter.makeQueryParameters();
       history.replace(newLocation);
     }
@@ -174,7 +174,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
   function updateQueryParams(listFilter: ListFilterModel) {
     setFilter(listFilter);
-    if(!options.subComponent) {
+    if (!options.subComponent) {
       const newLocation = { ...location };
       newLocation.search = listFilter.makeQueryParameters();
       history.replace(newLocation);

@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
-import { NavLink, Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { Icon } from "src/components/Shared";
 
@@ -67,7 +67,14 @@ export const MainNavbar: React.FC = () => {
     );
 
   return (
-    <Navbar collapseOnSelect fixed="top" variant="dark" bg="dark" className="top-nav" expand="sm">
+    <Navbar
+      collapseOnSelect
+      fixed="top"
+      variant="dark"
+      bg="dark"
+      className="top-nav"
+      expand="sm"
+    >
       <Navbar.Brand as="div" className="order-1 order-sm-0">
         <Link to="/">
           <Button className="minimal brand-link d-none d-sm-inline-block">
