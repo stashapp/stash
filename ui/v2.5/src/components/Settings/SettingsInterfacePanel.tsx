@@ -68,7 +68,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         >
           <option value="en-US">English (United States)</option>
           <option value="en-GB">English (United Kingdom)</option>
-          <option value="de-DE">German</option>
+          <option value="de-DE">Deutsch</option>
         </Form.Control>
       </Form.Group>
       <Form.Group>

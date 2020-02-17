@@ -74,7 +74,7 @@ export const MainNavbar: React.FC = () => {
             Stash
           </Button>
           <Button className="minimal brand-icon d-inline d-sm-none">
-            <img src="http://192.168.1.65:9999/favicon.ico" alt="" />
+            <img src="favicon.ico" alt="" />
           </Button>
         </Link>
       </Navbar.Brand>
