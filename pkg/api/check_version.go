@@ -124,12 +124,12 @@ func GetLatestVersion(shortHash bool) (latestVersion string, latestRelease strin
 
 	release := githubReleasesResponse{}
 
-	if response.StatusCode != http.StatusOK {
-		return "", "", fmt.Errorf("Github API request failed: %s", response.Status)
-	}
-
 	if err != nil {
 		return "", "", fmt.Errorf("Github API request failed: %s", err)
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return "", "", fmt.Errorf("Github API request failed: %s", response.Status)
 	}
 
 	defer response.Body.Close()
