@@ -46,9 +46,7 @@ RUN make build
 
 FROM ubuntu:19.10 as app
 
-RUN apt-get update && \
-    apt-get -y install ca-certificates && \
-    adduser stash --gecos GECOS --shell /bin/bash --disabled-password --home /home/stash
+RUN apt-get update && apt-get -y install ca-certificates
 COPY --from=compiler /stash/stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
 
 EXPOSE 9999

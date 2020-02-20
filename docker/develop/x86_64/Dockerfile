@@ -15,9 +15,7 @@ RUN curl -L -o /stash $(curl -s https://api.github.com/repos/stashapp/stash/rele
     mv /ffmpeg*/ /ffmpeg/
 
 FROM ubuntu:18.04 as app
-RUN apt-get update && \
-    apt-get -y install ca-certificates && \
-    adduser stash --gecos GECOS --shell /bin/bash --disabled-password --home /home/stash
+RUN apt-get update && apt-get -y install ca-certificates
 COPY --from=prep /stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
 EXPOSE 9999
 CMD ["stash"]
