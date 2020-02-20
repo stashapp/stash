@@ -177,26 +177,17 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 		logger.Infof("Regenerating images for %s", t.FilePath)
 	}
 
+	at := float64(probeResult.Duration) * 0.2
+
 	if !thumbExists {
 		logger.Debugf("Creating thumbnail for %s", t.FilePath)
-		t.makeScreenshot(*probeResult, thumbPath, 5, 320)
+		makeScreenshot(*probeResult, thumbPath, 5, 320, at)
 	}
 
 	if !normalExists {
 		logger.Debugf("Creating screenshot for %s", t.FilePath)
-		t.makeScreenshot(*probeResult, normalPath, 2, probeResult.Width)
+		makeScreenshot(*probeResult, normalPath, 2, probeResult.Width, at)
 	}
-}
-
-func (t *ScanTask) makeScreenshot(probeResult ffmpeg.VideoFile, outputPath string, quality int, width int) {
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
-	options := ffmpeg.ScreenshotOptions{
-		OutputPath: outputPath,
-		Quality:    quality,
-		Time:       float64(probeResult.Duration) * 0.2,
-		Width:      width,
-	}
-	encoder.Screenshot(probeResult, options)
 }
 
 func (t *ScanTask) calculateChecksum() (string, error) {

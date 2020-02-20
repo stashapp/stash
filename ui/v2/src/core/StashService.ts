@@ -355,6 +355,12 @@ export class StashService {
     });
   }
 
+  public static useSceneGenerateScreenshot() {
+    return GQL.useSceneGenerateScreenshot({ 
+      update: () => StashService.invalidateQueries(["findScenes"]),
+    });
+  }
+
   private static studioMutationImpactedQueries = [
     "findStudios",
     "findScenes",

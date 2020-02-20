@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 )
 
+const previewImageWidth = 640
+
 type PreviewGenerator struct {
 	Info *GeneratorInfo
 
@@ -50,10 +52,22 @@ func (g *PreviewGenerator) Generate() error {
 	if err := g.generateVideo(&encoder); err != nil {
 		return err
 	}
-	if err := g.generateImage(&encoder); err != nil {
+	if err := g.generateDefaultImage(&encoder, false); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (g *PreviewGenerator) GenerateDefaultImage() error {
+	logger.Infof("[generator] generating scene preview for %s", g.Info.VideoFile.Path)
+	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	return g.generateDefaultImage(&encoder, true)
+}
+
+func (g *PreviewGenerator) GenerateImageAt(at float64) error {
+	logger.Infof("[generator] generating scene preview for %s", g.Info.VideoFile.Path)
+	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
+	return g.generateImageAt(&encoder, at)
 }
 
 func (g *PreviewGenerator) generateConcatFile() error {
@@ -100,21 +114,46 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder) error {
 	return nil
 }
 
-func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
+func (g *PreviewGenerator) generateDefaultImage(encoder *ffmpeg.Encoder, overwrite bool) error {
 	outputPath := filepath.Join(g.OutputDirectory, g.ImageFilename)
 	outputExists, _ := utils.FileExists(outputPath)
-	if outputExists {
+	if !overwrite && outputExists {
 		return nil
 	}
 
 	videoPreviewPath := filepath.Join(g.OutputDirectory, g.VideoFilename)
 	tmpOutputPath := instance.Paths.Generated.GetTmpPath(g.ImageFilename)
-	if err := encoder.ScenePreviewVideoToImage(g.Info.VideoFile, 640, videoPreviewPath, tmpOutputPath); err != nil {
+	if err := encoder.ScenePreviewVideoToImage(g.Info.VideoFile, previewImageWidth, videoPreviewPath, tmpOutputPath); err != nil {
 		return err
 	}
 	if err := os.Rename(tmpOutputPath, outputPath); err != nil {
 		return err
 	}
+	logger.Debug("created video preview image: ", outputPath)
+
+	return nil
+}
+
+func (g *PreviewGenerator) generateImageAt(encoder *ffmpeg.Encoder, at float64) error {
+	outputPath := filepath.Join(g.OutputDirectory, g.ImageFilename)
+
+	// assume always overwrite
+
+	tmpOutputPath := instance.Paths.Generated.GetTmpPath(g.ImageFilename)
+	options := ffmpeg.ScreenshotOptions{
+		OutputPath: tmpOutputPath,
+		Time:       at,
+		Width:      previewImageWidth,
+	}
+
+	if err := encoder.Screenshot(g.Info.VideoFile, options); err != nil {
+		return err
+	}
+
+	if err := os.Rename(tmpOutputPath, outputPath); err != nil {
+		return err
+	}
+
 	logger.Debug("created video preview image: ", outputPath)
 
 	return nil
