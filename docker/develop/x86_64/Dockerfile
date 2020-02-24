@@ -1,5 +1,5 @@
 FROM ubuntu:18.04 as prep
-LABEL MAINTAINER="leopere [at] nixc [dot] us"
+LABEL MAINTAINER="https://discord.gg/Uz29ny"
 
 RUN apt-get update && \
     apt-get -y install curl xz-utils && \
@@ -7,7 +7,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN curl -L -o /stash $(curl -s https://api.github.com/repos/stashapp/stash/releases/latest | awk '/browser_download_url/ && /stash-linux/' | sed -e 's/.*: "\(.*\)"/\1/') && \
+RUN curl -L -o /stash $(curl -s https://api.github.com/repos/stashapp/stash/releases/tags/latest_develop | awk '/browser_download_url/ && /stash-linux/' | sed -e 's/.*: "\(.*\)"/\1/') && \
     chmod +x /stash && \
     curl --http1.1 -o /ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz && \
     tar xf /ffmpeg.tar.xz && \
