@@ -476,7 +476,6 @@ export class StashService {
   public static mutateStopJob() {
     return StashService.client.mutate<GQL.StopJobMutation>({
       mutation: GQL.StopJobDocument,
-      fetchPolicy: "network-only",
     });
   }
 
@@ -531,7 +530,6 @@ export class StashService {
     return StashService.client.mutate<GQL.MetadataScanMutation>({
       mutation: GQL.MetadataScanDocument,
       variables: { input },
-      fetchPolicy: "network-only",
     });
   }
 
@@ -539,7 +537,6 @@ export class StashService {
     return StashService.client.mutate<GQL.MetadataAutoTagMutation>({
       mutation: GQL.MetadataAutoTagDocument,
       variables: { input },
-      fetchPolicy: "network-only",
     });
   }
 
@@ -547,28 +544,24 @@ export class StashService {
     return StashService.client.mutate<GQL.MetadataGenerateMutation>({
       mutation: GQL.MetadataGenerateDocument,
       variables: { input },
-      fetchPolicy: "network-only",
     });
   }
 
   public static mutateMetadataClean() {
     return StashService.client.mutate<GQL.MetadataCleanMutation>({
       mutation: GQL.MetadataCleanDocument,
-      fetchPolicy: "network-only",
     });
   }
 
   public static mutateMetadataExport() {
     return StashService.client.mutate<GQL.MetadataExportMutation>({
       mutation: GQL.MetadataExportDocument,
-      fetchPolicy: "network-only",
     });
   }
 
   public static mutateMetadataImport() {
     return StashService.client.mutate<GQL.MetadataImportMutation>({
       mutation: GQL.MetadataImportDocument,
-      fetchPolicy: "network-only",
     });
   }
 
