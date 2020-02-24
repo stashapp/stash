@@ -67,8 +67,3 @@ deploy:
       tags: true
       # make sure we don't release using the latest_develop tag
       condition: $TRAVIS_TAG != latest_develop
-      
-branches:
-  only:
-    - master
-    - develop
