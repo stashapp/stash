@@ -10,6 +10,7 @@ const (
 	Generate JobStatus = 4
 	Clean    JobStatus = 5
 	Scrape   JobStatus = 6
+	AutoTag  JobStatus = 7
 )
 
 func (s JobStatus) String() string {
@@ -26,6 +27,8 @@ func (s JobStatus) String() string {
 		statusMessage = "Scan"
 	case Generate:
 		statusMessage = "Generate"
+	case AutoTag:
+		statusMessage = "Auto Tag"
 	}
 
 	return statusMessage

@@ -1,7 +1,7 @@
 import { Spinner } from "@blueprintjs/core";
 import _ from "lodash";
 import queryString from "query-string";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { QueryHookResult } from "react-apollo-hooks";
 import { ListFilter } from "../components/list/ListFilter";
 import { Pagination } from "../components/list/Pagination";
@@ -10,6 +10,7 @@ import { IBaseProps } from "../models";
 import { Criterion } from "../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "../models/list-filter/filter";
 import { DisplayMode, FilterMode } from "../models/list-filter/types";
+import { useInterfaceLocalForage } from "./LocalForage";
 
 export interface IListHookData {
   filter: ListFilterModel;
@@ -18,11 +19,95 @@ export interface IListHookData {
   onSelectChange: (id: string, selected : boolean, shiftKey: boolean) => void;
 }
 
+interface IListHookOperation {
+  text: string;
+  onClick: (result: QueryHookResult<any, any>, filter: ListFilterModel, selectedIds: Set<string>) => void;
+}
+
+export interface IFilterListImpl {
+  getData: (filter : ListFilterModel) => QueryHookResult<any, any>;
+  getItems: (data: any) => any[];
+  getCount: (data: any) => number;
+}
+
+const SceneFilterListImpl: IFilterListImpl = {
+  getData: (filter : ListFilterModel) => { return StashService.useFindScenes(filter); },
+  getItems: (data: any) => { return !!data && !!data.findScenes ? data.findScenes.scenes : []; },
+  getCount: (data: any) => { return !!data && !!data.findScenes ? data.findScenes.count : 0; }
+}
+
+const SceneMarkerFilterListImpl: IFilterListImpl = {
+  getData: (filter : ListFilterModel) => { return StashService.useFindSceneMarkers(filter); },
+  getItems: (data: any) => { return !!data && !!data.findSceneMarkers ? data.findSceneMarkers.scene_markers : []; },
+  getCount: (data: any) => { return !!data && !!data.findSceneMarkers ? data.findSceneMarkers.count : 0; }
+}
+
+const GalleryFilterListImpl: IFilterListImpl = {
+  getData: (filter : ListFilterModel) => { return StashService.useFindGalleries(filter); },
+  getItems: (data: any) => { return !!data && !!data.findGalleries ? data.findGalleries.galleries : []; },
+  getCount: (data: any) => { return !!data && !!data.findGalleries ? data.findGalleries.count : 0; }
+}
+
+const StudioFilterListImpl: IFilterListImpl = {
+  getData: (filter : ListFilterModel) => { return StashService.useFindStudios(filter); },
+  getItems: (data: any) => { return !!data && !!data.findStudios ? data.findStudios.studios : []; },
+  getCount: (data: any) => { return !!data && !!data.findStudios ? data.findStudios.count : 0; }
+}
+
+const PerformerFilterListImpl: IFilterListImpl = {
+  getData: (filter : ListFilterModel) => { return StashService.useFindPerformers(filter); },
+  getItems: (data: any) => { return !!data && !!data.findPerformers ? data.findPerformers.performers : []; },
+  getCount: (data: any) => { return !!data && !!data.findPerformers ? data.findPerformers.count : 0; }
+}
+
+function getFilterListImpl(filterMode: FilterMode) {
+  switch (filterMode) {
+    case FilterMode.Scenes: {
+      return SceneFilterListImpl;
+    }
+    case FilterMode.SceneMarkers: {
+      return SceneMarkerFilterListImpl;
+    }
+    case FilterMode.Galleries: {
+      return GalleryFilterListImpl;
+    }
+    case FilterMode.Studios: {
+      return StudioFilterListImpl;
+    }
+    case FilterMode.Performers: {
+      return PerformerFilterListImpl;
+    }
+    default: {
+      console.error("REMOVE DEFAULT IN LIST HOOK");
+      return SceneFilterListImpl;
+    }
+  }
+}
+
 export interface IListHookOptions {
   filterMode: FilterMode;
+  subComponent?: boolean;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
   props: IBaseProps;
-  renderContent: (result: QueryHookResult<any, any>, filter: ListFilterModel, selectedIds: Set<string>) => JSX.Element | undefined;
+  zoomable?: boolean;
+  otherOperations?: IListHookOperation[];
+  renderContent: (result: QueryHookResult<any, any>, filter: ListFilterModel, selectedIds: Set<string>, zoomIndex: number) => JSX.Element | undefined;
   renderSelectedOptions?: (result: QueryHookResult<any, any>, selectedIds: Set<string>) => JSX.Element | undefined;
+}
+
+function updateFromQueryString(queryStr: string, setFilter: (value: React.SetStateAction<ListFilterModel>) => void, forageData?: any) {
+  const queryParams = queryString.parse(queryStr);
+  setFilter((f) => {
+    const newFilter = _.cloneDeep(f);
+    newFilter.configureFromQueryParameters(queryParams);
+
+    if (forageData) {
+      const forageParams = queryString.parse(forageData.filter);
+      newFilter.overridePrefs(queryParams, forageParams);      
+    }
+
+    return newFilter;
+  });
 }
 
 export class ListHook {
@@ -31,87 +116,114 @@ export class ListHook {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [lastClickedId, setLastClickedId] = useState<string | undefined>(undefined);
     const [totalCount, setTotalCount] = useState<number>(0);
+    const [zoomIndex, setZoomIndex] = useState<number>(1);
+
+    const [interfaceForage, setInterfaceForage] = useInterfaceLocalForage();
+    const forageInitialised = useRef<boolean>(false);
+
+    const filterListImpl = getFilterListImpl(options.filterMode);
+
+    // Initialise from interface forage when loaded
+    useEffect(() => {
+      function updateFromLocalForage(queryData: any) {
+        const queryParams = queryString.parse(queryData.filter);
+        
+        setFilter((f) => {
+          const newFilter = _.cloneDeep(f);
+          newFilter.configureFromQueryParameters(queryParams);
+          newFilter.currentPage = queryData.currentPage;
+          newFilter.itemsPerPage = queryData.itemsPerPage;
+          return newFilter;
+        });
+      }
+
+      function initialise() {
+        forageInitialised.current = true;
+
+        let forageData: any;
+
+        if (interfaceForage.data && interfaceForage.data.queries[options.filterMode]) {
+          forageData = interfaceForage.data.queries[options.filterMode];
+        }
+
+        if (!options.props!.location.search && forageData) {
+          // we have some data, try to load it
+          updateFromLocalForage(forageData);
+        } else {
+          // use query string instead - include the forageData to include the following
+          // preferences if not specified: displayMode, itemsPerPage, sortBy and sortDir
+          updateFromQueryString(options.props!.location.search, setFilter, forageData);
+        }
+      }
+
+      // don't use query parameters for sub-components
+      if (!options.subComponent) {
+        // initialise once when the forage is loaded
+        if (!forageInitialised.current && !interfaceForage.loading) {
+          initialise();
+          return;
+        }
+      }
+    }, [interfaceForage.data, interfaceForage.loading, options.props, options.filterMode, options.subComponent]);
 
     // Update the filter when the query parameters change
     useEffect(() => {
-      const queryParams = queryString.parse(options.props.location.search);
-      const newFilter = _.cloneDeep(filter);
-      newFilter.configureFromQueryParameters(queryParams);
-      setFilter(newFilter);
+      // don't use query parameters for sub-components
+      if (!options.subComponent) {
+        // only update from the URL if the forage is initialised
+        if (forageInitialised.current) {
+          updateFromQueryString(options.props!.location.search, setFilter);
+        }
+      }
+    }, [options.props, options.filterMode, options.subComponent]);
 
-      // TODO: Need this side effect to update the query params properly
-      filter.configureFromQueryParameters(queryParams);
-    }, [options.props.location.search]);
+    function getFilter() {
+      if (!options.filterHook) {
+        return filter;
+      }
 
-    let result: QueryHookResult<any, any>;
-
-    let getData: (filter : ListFilterModel) => QueryHookResult<any, any>;
-    let getItems: () => any[];
-    let getCount: () => number;
-
-    switch (options.filterMode) {
-      case FilterMode.Scenes: {
-        getData = (filter : ListFilterModel) => { return StashService.useFindScenes(filter); }
-        getItems = () => { return !!result.data && !!result.data.findScenes ? result.data.findScenes.scenes : []; }
-        getCount = () => { return !!result.data && !!result.data.findScenes ? result.data.findScenes.count : 0; }
-        break;
-      }
-      case FilterMode.SceneMarkers: {
-        getData = (filter : ListFilterModel) => { return StashService.useFindSceneMarkers(filter); }
-        getItems = () => { return !!result.data && !!result.data.findSceneMarkers ? result.data.findSceneMarkers.scene_markers : []; }
-        getCount = () => { return !!result.data && !!result.data.findSceneMarkers ? result.data.findSceneMarkers.count : 0; }
-        break;
-      }
-      case FilterMode.Galleries: {
-        getData = (filter : ListFilterModel) => { return StashService.useFindGalleries(filter); }
-        getItems = () => { return !!result.data && !!result.data.findGalleries ? result.data.findGalleries.galleries : []; }
-        getCount = () => { return !!result.data && !!result.data.findGalleries ? result.data.findGalleries.count : 0; }
-        break;
-      }
-      case FilterMode.Studios: {
-        getData = (filter : ListFilterModel) => { return StashService.useFindStudios(filter); }
-        getItems = () => { return !!result.data && !!result.data.findStudios ? result.data.findStudios.studios : []; }
-        getCount = () => { return !!result.data && !!result.data.findStudios ? result.data.findStudios.count : 0; }
-        break;
-      }
-      case FilterMode.Performers: {
-        getData = (filter : ListFilterModel) => { return StashService.useFindPerformers(filter); }
-        getItems = () => { return !!result.data && !!result.data.findPerformers ? result.data.findPerformers.performers : []; }
-        getCount = () => { return !!result.data && !!result.data.findPerformers ? result.data.findPerformers.count : 0; }
-        break;
-      }
-      default: {
-        console.error("REMOVE DEFAULT IN LIST HOOK");
-        getData = (filter : ListFilterModel) => { return StashService.useFindScenes(filter); }
-        getItems = () => { return !!result.data && !!result.data.findScenes ? result.data.findScenes.scenes : []; }
-        getCount = () => { return !!result.data && !!result.data.findScenes ? result.data.findScenes.count : 0; }
-        break;
-      }
+      // make a copy of the filter and call the hook
+      let newFilter = _.cloneDeep(filter);
+      return options.filterHook(newFilter);
     }
 
-    result = getData(filter);
+    const result = filterListImpl.getData(getFilter());
 
     useEffect(() => {
-      setTotalCount(getCount());
+      setTotalCount(filterListImpl.getCount(result.data));
 
       // select none when data changes
       onSelectNone();
       setLastClickedId(undefined);
-    }, [result.data])
+    }, [result.data, filterListImpl])
 
     // Update the query parameters when the data changes
+    
     useEffect(() => {
-      const location = Object.assign({}, options.props.history.location);
-      location.search = filter.makeQueryParameters();
-      options.props.history.replace(location);
-    }, [result.data, filter.displayMode]);
+      // don't use query parameters for sub-components
+      if (!options.subComponent) {
+        // don't update this until local forage is loaded
+        if (forageInitialised.current) {
+          const location = Object.assign({}, options.props.history.location);
+          const includePrefs = true;
+          location.search = "?" + filter.makeQueryParameters(includePrefs);
 
-    // Update the total count
-    useEffect(() => {
-      const newFilter = _.cloneDeep(filter);
-      newFilter.totalCount = totalCount;
-      setFilter(newFilter);
-    }, [totalCount]);
+          if (location.search !== options.props.history.location.search) {
+            options.props.history.replace(location);
+          }
+
+          setInterfaceForage((d) => {
+            const dataClone = _.cloneDeep(d);
+            dataClone!.queries[options.filterMode] = {
+              filter: location.search,
+              itemsPerPage: filter.itemsPerPage,
+              currentPage: filter.currentPage
+            };
+            return dataClone;
+          });
+        }
+      }
+    }, [result.data, filter, options.subComponent, options.filterMode, options.props.history, setInterfaceForage]);
 
     function onChangePageSize(pageSize: number) {
       const newFilter = _.cloneDeep(filter);
@@ -209,12 +321,12 @@ export class ListHook {
       let thisIndex = -1;
   
       if (!!lastClickedId) {
-        startIndex = getItems().findIndex((item) => {
+        startIndex = filterListImpl.getItems(result.data).findIndex((item) => {
           return item.id === lastClickedId;
         });
       }
 
-      thisIndex = getItems().findIndex((item) => {
+      thisIndex = filterListImpl.getItems(result.data).findIndex((item) => {
         return item.id === id;
       });
 
@@ -228,7 +340,7 @@ export class ListHook {
         endIndex = tmp;
       }
   
-      const subset = getItems().slice(startIndex, endIndex + 1);
+      const subset = filterListImpl.getItems(result.data).slice(startIndex, endIndex + 1);
       const newSelectedIds : Set<string> = new Set();
 
       subset.forEach((item) => {
@@ -240,7 +352,7 @@ export class ListHook {
 
     function onSelectAll() {
       const newSelectedIds : Set<string> = new Set();
-      getItems().forEach((item) => {
+      filterListImpl.getItems(result.data).forEach((item) => {
         newSelectedIds.add(item.id);
       });
 
@@ -254,33 +366,74 @@ export class ListHook {
       setLastClickedId(undefined);
     }
 
-    const template = (
-      <div>
-        <ListFilter
-          onChangePageSize={onChangePageSize}
-          onChangeQuery={onChangeQuery}
-          onChangeSortDirection={onChangeSortDirection}
-          onChangeSortBy={onChangeSortBy}
-          onChangeDisplayMode={onChangeDisplayMode}
-          onAddCriterion={onAddCriterion}
-          onRemoveCriterion={onRemoveCriterion}
-          onSelectAll={onSelectAll}
-          onSelectNone={onSelectNone}
-          filter={filter}
-        />
-        {options.renderSelectedOptions && selectedIds.size > 0 ? options.renderSelectedOptions(result, selectedIds) : undefined}
-        {result.loading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
-        {result.error ? <h1>{result.error.message}</h1> : undefined}
-        {options.renderContent(result, filter, selectedIds)}
-        <Pagination
-          itemsPerPage={filter.itemsPerPage}
-          currentPage={filter.currentPage}
-          totalItems={totalCount}
-          onChangePage={onChangePage}
-        />
-      </div>
-    );
+    function onChangeZoom(newZoomIndex : number) {
+      setZoomIndex(newZoomIndex);
+    }
 
-    return { filter, template, options, onSelectChange };
+    const otherOperations = options.otherOperations ? options.otherOperations.map((o) => {
+      return {
+        text: o.text,
+        onClick: () => {
+          o.onClick(result, filter, selectedIds);
+        }
+      }
+    }) : undefined;
+
+    function maybeRenderContent() {
+      if (!result.loading && !result.error) {
+        return options.renderContent(result, filter, selectedIds, zoomIndex);
+      }
+    }
+
+    function maybeRenderPagination() {
+      if (!result.loading && !result.error) {
+        return (
+          <Pagination
+            itemsPerPage={filter.itemsPerPage}
+            currentPage={filter.currentPage}
+            totalItems={totalCount}
+            onChangePage={onChangePage}
+          />
+        );
+      }
+    }
+
+    function getTemplate() {
+      if (!options.subComponent && !forageInitialised.current) {
+        return (
+          <div>
+            {!result.error ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
+            {result.error ? <h1>{result.error.message}</h1> : undefined}
+          </div>
+        )
+      } else {
+        return (
+          <div>
+            <ListFilter
+              onChangePageSize={onChangePageSize}
+              onChangeQuery={onChangeQuery}
+              onChangeSortDirection={onChangeSortDirection}
+              onChangeSortBy={onChangeSortBy}
+              onChangeDisplayMode={onChangeDisplayMode}
+              onAddCriterion={onAddCriterion}
+              onRemoveCriterion={onRemoveCriterion}
+              onSelectAll={onSelectAll}
+              onSelectNone={onSelectNone}
+              zoomIndex={options.zoomable ? zoomIndex : undefined}
+              onChangeZoom={options.zoomable ? onChangeZoom : undefined}
+              otherOperations={otherOperations}
+              filter={filter}
+            />
+            {options.renderSelectedOptions && selectedIds.size > 0 ? options.renderSelectedOptions(result, selectedIds) : undefined}
+            {result.loading || (!options.subComponent && !forageInitialised.current) ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
+            {result.error ? <h1>{result.error.message}</h1> : undefined}
+            {maybeRenderContent()}
+            {maybeRenderPagination()}
+          </div>
+        )
+      }
+    }
+
+    return { filter, template: getTemplate(), options, onSelectChange };
   }
 }

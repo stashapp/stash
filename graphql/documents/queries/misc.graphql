@@ -61,7 +61,15 @@ query Logs {
 }
 query Version {
   version {
-    hash,
+    version
+    hash
     build_time
+  }
+}
+
+query LatestVersion {
+  latestversion {
+    shorthash
+    url
   }
 }

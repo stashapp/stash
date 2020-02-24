@@ -5,12 +5,13 @@ import {
   FormGroup,
   HTMLSelect,
   InputGroup,
+  Tooltip,
 } from "@blueprintjs/core";
 import _ from "lodash";
 import React, { FunctionComponent, useEffect, useRef, useState } from "react";
 import { isArray } from "util";
 import { CriterionModifier } from "../../core/generated-graphql";
-import { Criterion, CriterionType } from "../../models/list-filter/criteria/criterion";
+import { Criterion, CriterionType, DurationCriterion } from "../../models/list-filter/criteria/criterion";
 import { NoneCriterion } from "../../models/list-filter/criteria/none";
 import { PerformersCriterion } from "../../models/list-filter/criteria/performers";
 import { StudiosCriterion } from "../../models/list-filter/criteria/studios";
@@ -18,6 +19,7 @@ import { TagsCriterion } from "../../models/list-filter/criteria/tags";
 import { makeCriteria } from "../../models/list-filter/criteria/utils";
 import { ListFilterModel } from "../../models/list-filter/filter";
 import { FilterMultiSelect } from "../select/FilterMultiSelect";
+import { DurationInput } from "../Shared/DurationInput";
 
 interface IAddFilterProps {
   onAddCriterion: (criterion: Criterion, oldId?: string) => void;
@@ -61,6 +63,11 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
 
   function onChangedInput(event: React.ChangeEvent<HTMLInputElement>) {
     valueStage.current = event.target.value;
+  }
+
+  function onChangedDuration(valueAsNumber: number) {
+    valueStage.current = valueAsNumber;
+    onBlurInput();
   }
 
   function onBlurInput() {
@@ -147,6 +154,14 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
               defaultValue={criterion.value}
             />
           );
+        } else if (criterion instanceof DurationCriterion) {
+          // render duration control
+          return (
+            <DurationInput
+              numericValue={criterion.value ? criterion.value : 0}
+              onValueChange={onChangedDuration}
+            />
+          )
         } else {
           return (
             <InputGroup
@@ -188,7 +203,19 @@ export const AddFilter: FunctionComponent<IAddFilterProps> = (props: IAddFilterP
   const title = !props.editingCriterion ? "Add Filter" : "Update Filter";
   return (
     <>
-      <Button onClick={() => onToggle()} active={isOpen} large={true}>Filter</Button>
+      <Tooltip
+        hoverOpenDelay={200}
+        content="Filter"
+      >
+        <Button 
+          icon="filter"
+          onClick={() => onToggle()} 
+          active={isOpen} 
+          large={true}
+        >
+        </Button>
+      </Tooltip>
+      
       <Dialog isOpen={isOpen} onClose={() => onToggle()} title={title}>
         <div className="dialog-content">
           {maybeRenderFilterSelect()}

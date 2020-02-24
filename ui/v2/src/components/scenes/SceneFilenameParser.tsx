@@ -14,7 +14,7 @@ import {
   Tree,
   ITreeNode,
 } from "@blueprintjs/core";
-import React, { FunctionComponent, useEffect, useState, useRef } from "react";
+import React, { FunctionComponent, useEffect, useState } from "react";
 import { IBaseProps } from "../../models";
 import { StashService } from "../../core/StashService";
 import * as GQL from "../../core/generated-graphql";
@@ -186,7 +186,7 @@ class SceneParserResult {
 
   // returns true if any of its fields have set == true
   public isChanged() {
-    return this.title.set || this.date.set;
+    return this.title.set || this.date.set || this.performerIds.set || this.studioId.set || this.tagIds.set;
   }
 
   public toSceneUpdateInput() {
@@ -205,7 +205,9 @@ class SceneParserResult {
 
     SceneParserResult.setInput(ret, "title", this.title);
     SceneParserResult.setInput(ret, "date", this.date);
-    // TODO - other fields as added
+    SceneParserResult.setInput(ret, "performer_ids", this.performerIds);
+    SceneParserResult.setInput(ret, "studio_id", this.studioId);
+    SceneParserResult.setInput(ret, "tag_ids", this.tagIds);
 
     return ret;
   }
@@ -273,9 +275,6 @@ const builtInRecipes = [
     description: "Foreign language"
   }
 ];
-
-// TODO:
-// Add mappings for tags, performers, studio
 
 export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) => {
   const [parserResult, setParserResult] = useState<SceneParserResult[]>([]);
@@ -450,19 +449,19 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       return !r.studioId.set;
     });
 
-    if (newAllTitleSet != allTitleSet) {
+    if (newAllTitleSet !== allTitleSet) {
       setAllTitleSet(newAllTitleSet);
     }
-    if (newAllDateSet != allDateSet) {
+    if (newAllDateSet !== allDateSet) {
       setAllDateSet(newAllDateSet);
     }
-    if (newAllPerformerSet != allPerformerSet) {
+    if (newAllPerformerSet !== allPerformerSet) {
       setAllTagSet(newAllPerformerSet);
     }
-    if (newAllTagSet != allTagSet) {
+    if (newAllTagSet !== allTagSet) {
       setAllTagSet(newAllTagSet);
     }
-    if (newAllStudioSet != allStudioSet) {
+    if (newAllStudioSet !== allStudioSet) {
       setAllStudioSet(newAllStudioSet);
     }
   }, [parserResult]);
@@ -695,7 +694,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           <FormGroup 
             label="Filename pattern:" 
             inline={true}
-            helperText="Use '\\' to escape literal {} characters"
+            helperText="Use '\' to escape literal {} characters"
           >
             <InputGroup
               onChange={(newValue: any) => setPattern(newValue.target.value)}
@@ -1072,7 +1071,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
   }
 
   function renderTable() {
-    if (parserResult.length == 0) { return undefined; }
+    if (parserResult.length === 0) { return undefined; }
 
     return (
       <>

@@ -3,10 +3,13 @@ ifeq ($(OS),Windows_NT)
   SET := set
 endif
 
+release: generate ui build
+
 build:
 	$(eval DATE := $(shell go run scripts/getDate.go))
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -mod=vendor -v -ldflags "-X 'github.com/stashapp/stash/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)'"
+	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest_develop))
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -mod=vendor -v -ldflags "-X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)'"
 
 install:
 	packr2 install
@@ -17,7 +20,7 @@ clean:
 # Regenerates GraphQL files
 .PHONY: generate
 generate:
-	go generate
+	go generate -mod=vendor
 	cd ui/v2 && yarn run gqlgen
 
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
@@ -28,11 +31,21 @@ fmt:
 # Runs go vet on the project's source code.
 .PHONY: vet
 vet:
-	go vet ./...
+	go vet -mod=vendor ./...
 
 .PHONY: lint
 lint:
 	revive -config revive.toml -exclude ./vendor/...  ./...
+
+# runs unit tests - excluding integration tests
+.PHONY: test
+test: 
+	go test -mod=vendor ./...
+
+# runs all tests - including integration tests
+.PHONY: it
+it:
+	go test -mod=vendor -tags=integration ./...
 
 .PHONY: ui
 ui:

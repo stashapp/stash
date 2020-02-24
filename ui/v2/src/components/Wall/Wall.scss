@@ -45,6 +45,7 @@
   width: 100%;
   height: 100%;
   transition: transform .5s;
+  max-height: 253px;
 }
 
 .scene-wall-item-container video {
@@ -87,7 +88,7 @@
 .wall.grid-item video, .wall.grid-item img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .wall.grid-item {

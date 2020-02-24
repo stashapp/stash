@@ -52,13 +52,13 @@ func (g *Gallery) GetImage(index int) []byte {
 	return data
 }
 
-func (g *Gallery) GetThumbnail(index int) []byte {
+func (g *Gallery) GetThumbnail(index int, width int) []byte {
 	data, _ := g.readZipFile(index)
 	srcImage, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		return data
 	}
-	resizedImage := imaging.Resize(srcImage, 100, 0, imaging.NearestNeighbor)
+	resizedImage := imaging.Resize(srcImage, width, 0, imaging.Box)
 	buf := new(bytes.Buffer)
 	err = jpeg.Encode(buf, resizedImage, nil)
 	if err != nil {

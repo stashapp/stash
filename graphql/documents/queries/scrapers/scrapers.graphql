@@ -1,0 +1,51 @@
+query ListPerformerScrapers {
+  listPerformerScrapers {
+    id
+    name
+    performer {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
+query ListSceneScrapers {
+  listSceneScrapers {
+    id
+    name
+    scene {
+      urls
+      supported_scrapes
+    }
+  }
+}
+
+query ScrapePerformerList($scraper_id: ID!, $query: String!) {
+  scrapePerformerList(scraper_id: $scraper_id, query: $query) {
+    ...ScrapedPerformerData
+  }
+}
+
+query ScrapePerformer($scraper_id: ID!, $scraped_performer: ScrapedPerformerInput!) {
+  scrapePerformer(scraper_id: $scraper_id, scraped_performer: $scraped_performer) {
+    ...ScrapedPerformerData
+  }
+}
+
+query ScrapePerformerURL($url: String!) {
+  scrapePerformerURL(url: $url) {
+    ...ScrapedPerformerData
+  }
+}
+
+query ScrapeScene($scraper_id: ID!, $scene: SceneUpdateInput!) {
+  scrapeScene(scraper_id: $scraper_id, scene: $scene) {
+    ...ScrapedSceneData
+  }
+}
+
+query ScrapeSceneURL($url: String!) {
+  scrapeSceneURL(url: $url) {
+    ...ScrapedSceneData
+  }
+}

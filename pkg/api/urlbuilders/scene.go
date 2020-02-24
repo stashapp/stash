@@ -1,6 +1,9 @@
 package urlbuilders
 
-import "strconv"
+import (
+	"strconv"
+	"time"
+)
 
 type SceneURLBuilder struct {
 	BaseURL string
@@ -30,8 +33,8 @@ func (b SceneURLBuilder) GetSpriteVTTURL() string {
 	return b.BaseURL + "/scene/" + b.SceneID + "_thumbs.vtt"
 }
 
-func (b SceneURLBuilder) GetScreenshotURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/screenshot"
+func (b SceneURLBuilder) GetScreenshotURL(updateTime time.Time) string {
+	return b.BaseURL + "/scene/" + b.SceneID + "/screenshot?" + strconv.FormatInt(updateTime.Unix(), 10)
 }
 
 func (b SceneURLBuilder) GetChaptersVTTURL() string {

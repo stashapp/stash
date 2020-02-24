@@ -45,14 +45,26 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		LogOut:                    config.GetLogOut(),
 		LogLevel:                  config.GetLogLevel(),
 		LogAccess:                 config.GetLogAccess(),
+		Excludes:                  config.GetExcludes(),
 	}
 }
 
 func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
+	soundOnPreview := config.GetSoundOnPreview()
+	wallShowTitle := config.GetWallShowTitle()
+	maximumLoopDuration := config.GetMaximumLoopDuration()
+	autostartVideo := config.GetAutostartVideo()
+	showStudioAsText := config.GetShowStudioAsText()
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
+
 	return &models.ConfigInterfaceResult{
-		CSS:        &css,
-		CSSEnabled: &cssEnabled,
+		SoundOnPreview:      &soundOnPreview,
+		WallShowTitle:       &wallShowTitle,
+		MaximumLoopDuration: &maximumLoopDuration,
+		AutostartVideo:      &autostartVideo,
+		ShowStudioAsText:    &showStudioAsText,
+		CSS:                 &css,
+		CSSEnabled:          &cssEnabled,
 	}
 }

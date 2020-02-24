@@ -2,7 +2,6 @@ import {
   ITagProps,
   Tag,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent } from "react";
 import { Link } from "react-router-dom";
 import { PerformerDataFragment, SceneMarkerDataFragment, TagDataFragment } from "../../core/generated-graphql";

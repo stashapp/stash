@@ -1,138 +1,67 @@
 import {
-  Button,
-  Classes,
-  Dialog,
-  EditableText,
-  HTMLTable,
   Spinner,
+  Tabs,
+  Tab,
+  Button,
+  AnchorButton,
+  IconName,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
 import { IBaseProps } from "../../../models";
 import { ErrorUtils } from "../../../utils/errors";
-import { TableUtils } from "../../../utils/table";
-import { FreeOnesPerformerSuggest } from "../../select/FreeOnesPerformerSuggest";
-import { DetailsEditNavbar } from "../../Shared/DetailsEditNavbar";
+import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
+import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
+import { PerformerScenesPanel } from "./PerformerScenesPanel";
+import { TextUtils } from "../../../utils/text";
+import Lightbox from "react-images";
 
 interface IPerformerProps extends IBaseProps {}
 
 export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerProps) => {
   const isNew = props.match.params.id === "new";
 
-  // Editing state
-  const [isEditing, setIsEditing] = useState<boolean>(isNew);
-  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<"freeones" | undefined>(undefined);
-  const [scrapePerformerName, setScrapePerformerName] = useState<string>("");
-
-  // Editing performer state
-  const [image, setImage] = useState<string | undefined>(undefined);
-  const [name, setName] = useState<string | undefined>(undefined);
-  const [aliases, setAliases] = useState<string | undefined>(undefined);
-  const [favorite, setFavorite] = useState<boolean | undefined>(undefined);
-  const [birthdate, setBirthdate] = useState<string | undefined>(undefined);
-  const [ethnicity, setEthnicity] = useState<string | undefined>(undefined);
-  const [country, setCountry] = useState<string | undefined>(undefined);
-  const [eyeColor, setEyeColor] = useState<string | undefined>(undefined);
-  const [height, setHeight] = useState<string | undefined>(undefined);
-  const [measurements, setMeasurements] = useState<string | undefined>(undefined);
-  const [fakeTits, setFakeTits] = useState<string | undefined>(undefined);
-  const [careerLength, setCareerLength] = useState<string | undefined>(undefined);
-  const [tattoos, setTattoos] = useState<string | undefined>(undefined);
-  const [piercings, setPiercings] = useState<string | undefined>(undefined);
-  const [url, setUrl] = useState<string | undefined>(undefined);
-  const [twitter, setTwitter] = useState<string | undefined>(undefined);
-  const [instagram, setInstagram] = useState<string | undefined>(undefined);
-
   // Performer state
   const [performer, setPerformer] = useState<Partial<GQL.PerformerDataFragment>>({});
   const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
+  const [lightboxIsOpen, setLightboxIsOpen] = useState<boolean>(false);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
   const { data, error, loading } = StashService.useFindPerformer(props.match.params.id);
-  const updatePerformer = StashService.usePerformerUpdate(getPerformerInput() as GQL.PerformerUpdateInput);
-  const createPerformer = StashService.usePerformerCreate(getPerformerInput() as GQL.PerformerCreateInput);
-  const deletePerformer = StashService.usePerformerDestroy(getPerformerInput() as GQL.PerformerDestroyInput);
-
-  function updatePerformerEditState(state: Partial<GQL.PerformerDataFragment | GQL.ScrapeFreeonesScrapeFreeones>) {
-    if ((state as GQL.PerformerDataFragment).favorite !== undefined) {
-      setFavorite((state as GQL.PerformerDataFragment).favorite);
-    }
-    setName(state.name);
-    setAliases(state.aliases);
-    setBirthdate(state.birthdate);
-    setEthnicity(state.ethnicity);
-    setCountry(state.country);
-    setEyeColor(state.eye_color);
-    setHeight(state.height);
-    setMeasurements(state.measurements);
-    setFakeTits(state.fake_tits);
-    setCareerLength(state.career_length);
-    setTattoos(state.tattoos);
-    setPiercings(state.piercings);
-    setUrl(state.url);
-    setTwitter(state.twitter);
-    setInstagram(state.instagram);
-  }
+  const updatePerformer = StashService.usePerformerUpdate();
+  const createPerformer = StashService.usePerformerCreate();
+  const deletePerformer = StashService.usePerformerDestroy();
 
   useEffect(() => {
     setIsLoading(loading);
     if (!data || !data.findPerformer || !!error) { return; }
     setPerformer(data.findPerformer);
-  }, [data]);
+  }, [data, error, loading]);
 
   useEffect(() => {
     setImagePreview(performer.image_path);
-    setImage(undefined);
-    updatePerformerEditState(performer);
-    if (!isNew) {
-      setIsEditing(false);
-    }
   }, [performer]);
 
-  if (!isNew && !isEditing) {
-    if (!data || !data.findPerformer || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
-    if (!!error) { return <>error...</>; }
+  function onImageChange(image: string) {
+    setImagePreview(image);
   }
 
-  function getPerformerInput() {
-    const performerInput: Partial<GQL.PerformerCreateInput | GQL.PerformerUpdateInput> = {
-      name,
-      aliases,
-      favorite,
-      birthdate,
-      ethnicity,
-      country,
-      eye_color: eyeColor,
-      height,
-      measurements,
-      fake_tits: fakeTits,
-      career_length: careerLength,
-      tattoos,
-      piercings,
-      url,
-      twitter,
-      instagram,
-      image,
-    };
-
-    if (!isNew) {
-      (performerInput as GQL.PerformerUpdateInput).id = props.match.params.id;
-    }
-    return performerInput;
+  if ((!isNew && (!data || !data.findPerformer)) || isLoading) {
+    return <Spinner size={Spinner.SIZE_LARGE} />; 
   }
+  if (!!error) { return <>error...</>; }
 
-  async function onSave() {
+  async function onSave(performer : Partial<GQL.PerformerCreateInput> | Partial<GQL.PerformerUpdateInput>) {
     setIsLoading(true);
     try {
       if (!isNew) {
-        const result = await updatePerformer();
+        const result = await updatePerformer({variables: performer as GQL.PerformerUpdateInput});
         setPerformer(result.data.performerUpdate);
       } else {
-        const result = await createPerformer();
+        const result = await createPerformer({variables: performer as GQL.PerformerCreateInput});
         setPerformer(result.data.performerCreate);
         props.history.push(`/performers/${result.data.performerCreate.id}`);
       }
@@ -145,7 +74,7 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
   async function onDelete() {
     setIsLoading(true);
     try {
-      const result = await deletePerformer();
+      await deletePerformer({variables: {id: props.match.params.id}});
     } catch (e) {
       ErrorUtils.handle(e);
     }
@@ -155,146 +84,164 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     props.history.push(`/performers`);
   }
 
-  function onImageChange(event: React.FormEvent<HTMLInputElement>) {
-    const file: File = (event.target as any).files[0];
-    const reader: FileReader = new FileReader();
-
-    reader.onloadend = (e) => {
-      setImagePreview(reader.result as string);
-      setImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  function onDisplayFreeOnesDialog() {
-    setIsDisplayingScraperDialog("freeones");
-  }
-
-  async function onScrapeFreeOnes() {
-    setIsLoading(true);
-    try {
-      if (!scrapePerformerName) { return; }
-      const result = await StashService.queryScrapeFreeones(scrapePerformerName);
-      if (!result.data || !result.data.scrapeFreeones) { return; }
-      updatePerformerEditState(result.data.scrapeFreeones);
-    } catch (e) {
-      ErrorUtils.handle(e);
-    } finally {
-      setIsDisplayingScraperDialog(undefined);
+  function renderTabs() {
+    function renderEditPanel() {
+      return (
+        <PerformerDetailsPanel 
+          performer={performer} 
+          isEditing={true} 
+          isNew={isNew} 
+          onDelete={onDelete} 
+          onSave={onSave}
+          onImageChange={onImageChange}
+        />
+      );
     }
-    setIsLoading(false);
+
+    // render tabs if not new
+    if (!isNew) {
+      return (
+        <>
+          <Tabs
+            renderActiveTabPanelOnly={true}
+            large={true}
+          >
+            <Tab id="performer-details-panel" title="Details" panel={<PerformerDetailsPanel performer={performer} isEditing={false}/>} />
+            <Tab id="performer-scenes-panel" title="Scenes" panel={<PerformerScenesPanel performer={performer} base={props} />} />
+            <Tab id="performer-edit-panel" title="Edit" panel={renderEditPanel()} />
+            <Tab id="performer-operations-panel" title="Operations" panel={<PerformerOperationsPanel performer={performer} />} />
+          </Tabs>
+        </>
+      );
+    } else {
+      return renderEditPanel();
+    }
   }
 
-  function renderEthnicity() {
-    return TableUtils.renderHtmlSelect({
-      title: "Ethnicity",
-      value: ethnicity,
-      isEditing,
-      onChange: (value: string) => setEthnicity(value),
-      selectOptions: ["white", "black", "asian", "hispanic"],
-    });
-  }
-
-  function renderScraperDialog() {
-    return (
-      <Dialog
-        isOpen={!!isDisplayingScraperDialog}
-        onClose={() => setIsDisplayingScraperDialog(undefined)}
-        title="Scrape"
-      >
-        <div className="dialog-content">
-          <FreeOnesPerformerSuggest
-            placeholder="Performer name"
-            style={{width: "100%"}}
-            onQueryChange={(query) => setScrapePerformerName(query)}
-          />
-        </div>
-        <div className={Classes.DIALOG_FOOTER}>
-          <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-            <Button onClick={() => onScrapeFreeOnes()}>Scrape</Button>
+  function maybeRenderAge() {
+    if (performer && performer.birthdate) {
+      // calculate the age from birthdate. In future, this should probably be
+      // provided by the server
+      return (
+        <>
+          <div>
+            <span className="age">{TextUtils.age(performer.birthdate)}</span>
+            <span className="age-tail"> years old</span>
           </div>
-        </div>
-      </Dialog>
+        </>
+      );
+    }
+  }
+
+  function maybeRenderAliases() {
+    if (performer && performer.aliases) {
+      return (
+        <>
+          <div>
+            <span className="alias-head">Also known as </span>
+            <span className="alias">{performer.aliases}</span>
+          </div>
+        </>
+      );
+    }
+  }
+
+  function setFavorite(v : boolean) {
+    performer.favorite = v;
+    onSave(performer);
+  }
+
+  function renderIcons() {
+    function maybeRenderURL(url?: string, icon?: IconName) {
+      if (performer.url) {
+        if (!icon) {
+          icon = "link";
+        }
+
+        return (
+          <>
+            <AnchorButton
+              icon={icon}
+              href={performer.url}
+              minimal={true}
+            />
+          </>
+        )
+      }
+    }
+
+    return (
+      <>
+        <span className="name-icons">
+          <Button
+            icon="heart"
+            className={performer.favorite ? "favorite" : "not-favorite"}
+            onClick={() => setFavorite(!performer.favorite)}
+            minimal={true}
+          />
+          {maybeRenderURL(performer.url)}
+          {/* TODO - render instagram and twitter links with icons */}
+        </span>
+      </>
     );
+  }
+
+  function renderNewView() {
+    return (
+      <div className="columns is-multiline no-spacing">
+        <div className="column is-half details-image-container">
+          {!imagePreview ? undefined : <img alt="Performer" className="performer" src={imagePreview} />}
+        </div>
+        <div className="column is-half details-detail-container">
+          {renderTabs()}
+        </div>
+      </div>
+    );
+  }
+
+  const photos = [{src: imagePreview || "", caption: "Image"}];
+
+  function openLightbox() {
+    setLightboxIsOpen(true);
+  }
+
+  function closeLightbox() {
+    setLightboxIsOpen(false);
+  }
+
+  if (isNew) {
+    return renderNewView();
   }
 
   return (
     <>
-      {renderScraperDialog()}
-      <div className="columns is-multiline no-spacing">
-        <div className="column is-half details-image-container">
-          <img className="performer" src={imagePreview} />
+      <div id="performer-page">
+        <div className="details-image-container">
+          <img alt={performer.name} className="performer" src={imagePreview} onClick={openLightbox} />
         </div>
-        <div className="column is-half details-detail-container">
-          <DetailsEditNavbar
-            performer={performer}
-            isNew={isNew}
-            isEditing={isEditing}
-            onToggleEdit={() => { setIsEditing(!isEditing); updatePerformerEditState(performer); }}
-            onSave={onSave}
-            onDelete={onDelete}
-            onImageChange={onImageChange}
-            onDisplayFreeOnesDialog={onDisplayFreeOnesDialog}
-          />
+        <div className="performer-head">
           <h1 className="bp3-heading">
-            <EditableText
-              disabled={!isEditing}
-              value={name}
-              placeholder="Name"
-              onChange={(value) => setName(value)}
-            />
+            {performer.name}
+            {renderIcons()}
           </h1>
-          <h6 className="bp3-heading">
-            <span style={{fontWeight: 300}}>Aliases: </span>
-            <EditableText
-              disabled={!isEditing}
-              value={aliases}
-              placeholder="Aliases"
-              onChange={(value) => setAliases(value)}
-            />
-          </h6>
-          <div>
-            <span style={{fontWeight: 300}}>Favorite:</span>
-            <Button
-              icon="heart"
-              disabled={!isEditing}
-              className={favorite ? "favorite" : undefined}
-              onClick={() => setFavorite(!favorite)}
-              minimal={true}
-            />
+          {maybeRenderAliases()}
+          {maybeRenderAge()}
+        </div>
+        
+        <div className="performer-body">
+          <div className="details-detail-container">
+            {renderTabs()}
           </div>
-
-          <HTMLTable style={{width: "100%"}}>
-            <tbody>
-              {TableUtils.renderEditableTextTableRow(
-                {title: "Birthdate (YYYY-MM-DD)", value: birthdate, isEditing, onChange: setBirthdate})}
-              {renderEthnicity()}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "Eye Color", value: eyeColor, isEditing, onChange: setEyeColor})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "Country", value: country, isEditing, onChange: setCountry})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "Height (CM)", value: height, isEditing, onChange: setHeight})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "Measurements", value: measurements, isEditing, onChange: setMeasurements})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "Fake Tits", value: fakeTits, isEditing, onChange: setFakeTits})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "Career Length", value: careerLength, isEditing, onChange: setCareerLength})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "Tattoos", value: tattoos, isEditing, onChange: setTattoos})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "Piercings", value: piercings, isEditing, onChange: setPiercings})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "URL", value: url, isEditing, onChange: setUrl})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "Twitter", value: twitter, isEditing, onChange: setTwitter})}
-              {TableUtils.renderEditableTextTableRow(
-                {title: "Instagram", value: instagram, isEditing, onChange: setInstagram})}
-            </tbody>
-          </HTMLTable>
         </div>
       </div>
+      <Lightbox
+        images={photos}
+        onClose={closeLightbox}
+        currentImage={0}
+        isOpen={lightboxIsOpen}
+        onClickImage={() => window.open(imagePreview, "_blank")}
+        width={9999}
+      />
     </>
   );
 };

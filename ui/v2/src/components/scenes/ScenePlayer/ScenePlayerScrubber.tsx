@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { CSSProperties, FunctionComponent, RefObject, useEffect, useRef, useState } from "react";
+import React, { CSSProperties, FunctionComponent, useEffect, useRef, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { TextUtils } from "../../../utils/text";
 import "./ScenePlayerScrubber.scss";
@@ -55,7 +55,6 @@ export const ScenePlayerScrubber: FunctionComponent<IScenePlayerScrubberProps> =
   }
 
   const [spriteItems, setSpriteItems] = useState<ISceneSpriteItem[]>([]);
-  const [delayedRender, setDelayedRender] = useState(false);
 
   useEffect(() => {
     if (!scrubberSliderEl.current) { return; }
@@ -63,6 +62,47 @@ export const ScenePlayerScrubber: FunctionComponent<IScenePlayerScrubberProps> =
   }, [scrubberSliderEl]);
 
   useEffect(() => {
+    async function fetchSpriteInfo() {
+      if (!props.scene || !props.scene.paths.vtt) { return; }
+  
+      const response = await axios.get<string>(props.scene.paths.vtt, {responseType: "text"});
+      if (response.status !== 200) {
+        console.log(response.statusText);
+      }
+  
+      // TODO: This is gnarly
+      const lines = response.data.split("\n");
+      if (lines.shift() !== "WEBVTT") { return; }
+      if (lines.shift() !== "") { return; }
+      let item: ISceneSpriteItem = {start: 0, end: 0, x: 0, y: 0, w: 0, h: 0};
+      const newSpriteItems: ISceneSpriteItem[] = [];
+      while (lines.length) {
+        const line = lines.shift();
+        if (line === undefined) { continue; }
+  
+        if (line.includes("#") && line.includes("=") && line.includes(",")) {
+          const size = line.split("#")[1].split("=")[1].split(",");
+          item.x = Number(size[0]);
+          item.y = Number(size[1]);
+          item.w = Number(size[2]);
+          item.h = Number(size[3]);
+  
+          newSpriteItems.push(item);
+          item = {start: 0, end: 0, x: 0, y: 0, w: 0, h: 0};
+        } else if (line.includes(" --> ")) {
+          const times = line.split(" --> ");
+  
+          const start = times[0].split(":");
+          item.start = (+start[0]) * 60 * 60 + (+start[1]) * 60 + (+start[2]);
+  
+          const end = times[1].split(":");
+          item.end = (+end[0]) * 60 * 60 + (+end[1]) * 60 + (+end[2]);
+        }
+      }
+  
+      setSpriteItems(newSpriteItems);
+    }
+
     fetchSpriteInfo();
   }, [props.scene]);
 
@@ -77,27 +117,17 @@ export const ScenePlayerScrubber: FunctionComponent<IScenePlayerScrubberProps> =
   }, [props.position]);
 
   useEffect(() => {
+    let element = contentEl.current;
+    if (!element) { return; }
+    element.addEventListener("mousedown", onMouseDown, false);
+    element.addEventListener("mousemove", onMouseMove, false);
     window.addEventListener("mouseup", onMouseUp, false);
+
     return () => {
+      if (!element) { return; }
+      element.removeEventListener("mousedown", onMouseDown);
+      element.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
-    };
-  });
-
-  useEffect(() => {
-    if (!contentEl.current) { return; }
-    contentEl.current.addEventListener("mousedown", onMouseDown, false);
-    return () => {
-      if (!contentEl.current) { return; }
-      contentEl.current.removeEventListener("mousedown", onMouseDown);
-    };
-  });
-
-  useEffect(() => {
-    if (!contentEl.current) { return; }
-    contentEl.current.addEventListener("mousemove", onMouseMove, false);
-    return () => {
-      if (!contentEl.current) { return; }
-      contentEl.current.removeEventListener("mousemove", onMouseMove);
     };
   });
 
@@ -168,51 +198,6 @@ export const ScenePlayerScrubber: FunctionComponent<IScenePlayerScrubberProps> =
     if (!scrubberSliderEl.current) { return; }
     const newPosition = getPostion() - scrubberSliderEl.current.clientWidth;
     setPosition(newPosition);
-  }
-
-  async function fetchSpriteInfo() {
-    if (!props.scene || !props.scene.paths.vtt) { return; }
-
-    const response = await axios.get<string>(props.scene.paths.vtt, {responseType: "text"});
-    if (response.status !== 200) {
-      console.log(response.statusText);
-    }
-
-    // TODO: This is gnarly
-    const lines = response.data.split("\n");
-    if (lines.shift() !== "WEBVTT") { return; }
-    if (lines.shift() !== "") { return; }
-    let item: ISceneSpriteItem = {start: 0, end: 0, x: 0, y: 0, w: 0, h: 0};
-    const newSpriteItems: ISceneSpriteItem[] = [];
-    while (lines.length) {
-      const line = lines.shift();
-      if (line === undefined) { continue; }
-
-      if (line.includes("#") && line.includes("=") && line.includes(",")) {
-        const size = line.split("#")[1].split("=")[1].split(",");
-        item.x = Number(size[0]);
-        item.y = Number(size[1]);
-        item.w = Number(size[2]);
-        item.h = Number(size[3]);
-
-        newSpriteItems.push(item);
-        item = {start: 0, end: 0, x: 0, y: 0, w: 0, h: 0};
-      } else if (line.includes(" --> ")) {
-        const times = line.split(" --> ");
-
-        const start = times[0].split(":");
-        item.start = (+start[0]) * 60 * 60 + (+start[1]) * 60 + (+start[2]);
-
-        const end = times[1].split(":");
-        item.end = (+end[0]) * 60 * 60 + (+end[1]) * 60 + (+end[2]);
-      }
-    }
-
-    setSpriteItems(newSpriteItems);
-    // TODO: Very hacky.  Need to wait for the scroll width to update from the image loading.
-    setTimeout(() => {
-      setDelayedRender(true);
-    }, 100);
   }
 
   function renderTags() {
@@ -296,7 +281,7 @@ export const ScenePlayerScrubber: FunctionComponent<IScenePlayerScrubberProps> =
 
   return (
     <div className="scrubber-wrapper">
-      <a className="scrubber-button" id="scrubber-back" onClick={() => goBack()}>&lt;</a>
+      <button className="scrubber-button" id="scrubber-back" onClick={() => goBack()}>&lt;</button>
       <div ref={contentEl} className="scrubber-content">
         <div className="scrubber-tags-background" />
         <div ref={positionIndicatorEl} id="scrubber-position-indicator" />
@@ -310,7 +295,7 @@ export const ScenePlayerScrubber: FunctionComponent<IScenePlayerScrubberProps> =
           </div>
         </div>
       </div>
-      <a className="scrubber-button" id="scrubber-forward" onClick={() => goForward()}>&gt;</a>
+      <button className="scrubber-button" id="scrubber-forward" onClick={() => goForward()}>&gt;</button>
     </div>
   );
 };

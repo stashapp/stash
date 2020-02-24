@@ -2,10 +2,10 @@ import _ from "lodash";
 import React, { FunctionComponent, useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "../../core/generated-graphql";
-import { useInterfaceLocalForage } from "../../hooks/LocalForage";
 import { VideoHoverHook } from "../../hooks/VideoHover";
 import { TextUtils } from "../../utils/text";
 import { NavigationUtils } from "../../utils/navigation";
+import { StashService } from "../../core/StashService";
 
 interface IWallItemProps {
   scene?: GQL.SlimSceneDataFragment;
@@ -21,9 +21,9 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
   const [screenshotPath, setScreenshotPath] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [tags, setTags] = useState<JSX.Element[]>([]);
+  const config = StashService.useConfiguration();
   const videoHoverHook = VideoHoverHook.useVideoHover({resetOnMouseLeave: true});
-  const interfaceSettings = useInterfaceLocalForage();
-  const showTextContainer = !!interfaceSettings.data ? interfaceSettings.data.wall.textContainerEnabled : true;
+  const showTextContainer = !!config.data && !!config.data.configuration ? config.data.configuration.interface.wallShowTitle : true;
 
   function onMouseEnter() {
     VideoHoverHook.onMouseEnter(videoHoverHook);
@@ -116,7 +116,7 @@ export const WallItem: FunctionComponent<IWallItemProps> = (props: IWallItemProp
             loop={true}
             ref={videoHoverHook.videoEl}
           />
-          <img src={previewPath || screenshotPath} onError={() => previewNotFound()} />
+          <img alt={title} src={previewPath || screenshotPath} onError={() => previewNotFound()} />
           {showTextContainer ?
             <div className="scene-wall-item-text-container">
               <div style={{lineHeight: 1}}>

@@ -8,7 +8,7 @@ import (
 )
 
 func (r *queryResolver) MetadataScan(ctx context.Context, input models.ScanMetadataInput) (string, error) {
-	manager.GetInstance().Scan(input.NameFromMetadata)
+	manager.GetInstance().Scan(input.UseFileMetadata)
 	return "todo", nil
 }
 
@@ -24,6 +24,11 @@ func (r *queryResolver) MetadataExport(ctx context.Context) (string, error) {
 
 func (r *queryResolver) MetadataGenerate(ctx context.Context, input models.GenerateMetadataInput) (string, error) {
 	manager.GetInstance().Generate(input.Sprites, input.Previews, input.Markers, input.Transcodes)
+	return "todo", nil
+}
+
+func (r *queryResolver) MetadataAutoTag(ctx context.Context, input models.AutoTagMetadataInput) (string, error) {
+	manager.GetInstance().AutoTag(input.Performers, input.Studios, input.Tags)
 	return "todo", nil
 }
 

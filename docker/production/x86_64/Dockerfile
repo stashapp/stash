@@ -7,17 +7,15 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN curl -L -o /stash $(curl -s https://api.github.com/repos/stashapp/stash/releases | grep -F 'stash-linux' | grep download | head -n 1 | cut -d'"' -f4) && \
+RUN curl -L -o /stash $(curl -s https://api.github.com/repos/stashapp/stash/releases/latest | awk '/browser_download_url/ && /stash-linux/' | sed -e 's/.*: "\(.*\)"/\1/') && \
     chmod +x /stash && \
-    curl -o /ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz && \
+    curl --http1.1 -o /ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz && \
     tar xf /ffmpeg.tar.xz && \
     rm ffmpeg.tar.xz && \
     mv /ffmpeg*/ /ffmpeg/
 
 FROM ubuntu:18.04 as app
-RUN apt-get update && \
-    apt-get -y install ca-certificates && \
-    adduser stash --gecos GECOS --shell /bin/bash --disabled-password --home /home/stash
+RUN apt-get update && apt-get -y install ca-certificates
 COPY --from=prep /stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
 EXPOSE 9999
 CMD ["stash"]

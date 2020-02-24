@@ -3,6 +3,10 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
@@ -10,9 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"strconv"
-	"sync"
-	"time"
 )
 
 type ImportTask struct {
@@ -34,7 +35,12 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 	}
 	t.Scraped = scraped
 
-	database.Reset(config.GetDatabasePath())
+	err := database.Reset(config.GetDatabasePath())
+
+	if err != nil {
+		logger.Errorf("Error resetting database: %s", err.Error())
+		return
+	}
 
 	ctx := context.TODO()
 
@@ -374,6 +380,21 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		if err != nil {
 			logger.Infof("[scenes] <%s> json parse failure: %s", mappingJSON.Checksum, err.Error())
 			continue
+		}
+
+		// Process the base 64 encoded cover image string
+		if sceneJSON.Cover != "" {
+			_, coverImageData, err := utils.ProcessBase64Image(sceneJSON.Cover)
+			if err != nil {
+				logger.Warnf("[scenes] <%s> invalid cover image: %s", mappingJSON.Checksum, err.Error())
+			}
+			if len(coverImageData) > 0 {
+				if err = SetSceneScreenshot(mappingJSON.Checksum, coverImageData); err != nil {
+					logger.Warnf("[scenes] <%s> failed to create cover image: %s", mappingJSON.Checksum, err.Error())
+				} else {
+					newScene.Cover = coverImageData
+				}
+			}
 		}
 
 		// Populate scene fields

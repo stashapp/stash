@@ -1,15 +1,9 @@
-import { Alert, Button, Classes, Dialog, EditableText, FormGroup, HTMLTable, InputGroup, Spinner, Tag } from "@blueprintjs/core";
-import _ from "lodash";
+import { Alert, Button, Classes, Dialog, FormGroup, InputGroup, Spinner } from "@blueprintjs/core";
 import React, { FunctionComponent, useEffect, useState } from "react";
-import { QueryHookResult } from "react-apollo-hooks";
 import { Link } from "react-router-dom";
-import { FindGalleriesQuery, FindGalleriesVariables } from "../../core/generated-graphql";
 import * as GQL from "../../core/generated-graphql";
 import { StashService } from "../../core/StashService";
-import { ListHook } from "../../hooks/ListHook";
 import { IBaseProps } from "../../models/base-props";
-import { ListFilterModel } from "../../models/list-filter/filter";
-import { DisplayMode, FilterMode } from "../../models/list-filter/types";
 import { ErrorUtils } from "../../utils/errors";
 import { NavigationUtils } from "../../utils/navigation";
 import { ToastUtils } from "../../utils/toasts";
@@ -36,7 +30,7 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
     setIsLoading(loading);
     if (!data || !data.allTags || !!error) { return; }
     setTags(data.allTags);
-  }, [data]);
+  }, [data, loading, error]);
 
   useEffect(() => {
     if (!!editingTag) {
@@ -72,6 +66,18 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
         ToastUtils.success("Created tag");
       }
       setEditingTag(undefined);
+    } catch (e) {
+      ErrorUtils.handle(e);
+    }
+  }
+
+  async function onAutoTag(tag : GQL.TagDataFragment) {
+    if (!tag) {
+      return;
+    }
+    try {
+      await StashService.queryMetadataAutoTag({ tags: [tag.id]});
+      ToastUtils.success("Started auto tagging");
     } catch (e) {
       ErrorUtils.handle(e);
     }
@@ -115,6 +121,7 @@ export const TagList: FunctionComponent<IProps> = (props: IProps) => {
       <div key={tag.id} className="tag-list-row">
         <span onClick={() => setEditingTag(tag)}>{tag.name}</span>
         <div style={{float: "right"}}>
+          <Button text="Auto Tag" onClick={() => onAutoTag(tag)}></Button>
           <Link className="bp3-button" to={NavigationUtils.makeTagScenesUrl(tag)}>Scenes: {tag.scene_count}</Link>
           <Link className="bp3-button" to={NavigationUtils.makeTagSceneMarkersUrl(tag)}>
             Markers: {tag.scene_marker_count}

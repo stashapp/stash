@@ -5,7 +5,6 @@ import {
   Divider,
   FormGroup,
   H3,
-  NumericInput,
   Tag,
 } from "@blueprintjs/core";
 import { Field, FieldProps, Form, Formik, FormikActions, FormikProps } from "formik";
@@ -19,6 +18,7 @@ import { MarkerTitleSuggest } from "../../select/MarkerTitleSuggest";
 import { WallPanel } from "../../Wall/WallPanel";
 import { SceneHelpers } from "../helpers";
 import { ErrorUtils } from "../../../utils/errors";
+import { DurationInput } from "../../Shared/DurationInput";
 
 interface ISceneMarkersPanelProps {
   scene: GQL.SceneDataFragment;
@@ -62,8 +62,8 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
           <div key={marker.id}>
             <Divider />
             <div>
-              <a onClick={() => onClickMarker(marker)}>{marker.title}</a>
-              {!isEditorOpen ? <a style={{float: "right"}} onClick={() => onOpenEditor(marker)}>Edit</a> : undefined}
+              <button className="button-link" onClick={() => onClickMarker(marker)}>{marker.title}</button>
+              {!isEditorOpen ? <button className="button-link" style={{float: "right"}} onClick={() => onOpenEditor(marker)}>Edit</button> : undefined}
             </div>
             <div>
               {TextUtils.secondsToTimestamp(marker.seconds)}
@@ -148,14 +148,10 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
     }
     function renderSecondsField(fieldProps: FieldProps<IFormFields>) {
       return (
-        <NumericInput
-          placeholder="Seconds"
-          fill={true}
-          allowNumericCharactersOnly={true}
-          name={fieldProps.field.name}
-          onValueChange={(_, s) => fieldProps.form.setFieldValue("seconds", s)}
-          onBlur={fieldProps.field.onBlur}
-          value={fieldProps.field.value}
+        <DurationInput
+          onValueChange={(s) => fieldProps.form.setFieldValue("seconds", s)}
+          onReset={() => fieldProps.form.setFieldValue("seconds", Math.round(jwplayer.getPosition()))}
+          numericValue={fieldProps.field.value}
         />
       );
     }
@@ -197,7 +193,7 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
             <FormGroup label="Scene Marker Title" labelFor="title" className="column is-full">
               <Field name="title" render={renderTitleField} />
             </FormGroup>
-            <FormGroup label="Seconds" labelFor="seconds" className="column is-half">
+            <FormGroup label="Time" labelFor="seconds" className="column is-half">
               <Field name="seconds" render={renderSecondsField} />
             </FormGroup>
             <FormGroup label="Primary Tag" labelFor="primaryTagId" className="column is-half">
@@ -228,11 +224,11 @@ export const SceneMarkersPanel: FunctionComponent<ISceneMarkersPanelProps> = (pr
     }
     return (
       <Collapse isOpen={isEditorOpen}>
-        <Formik
+        {isEditorOpen ? <Formik
           initialValues={initialValues}
           onSubmit={onSubmit}
           render={renderFormFields}
-        />
+        /> : undefined}
       </Collapse>
     );
   }

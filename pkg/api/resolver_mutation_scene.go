@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *mutationResolver) SceneUpdate(ctx context.Context, input models.SceneUpdateInput) (*models.Scene, error) {
@@ -59,6 +60,9 @@ func (r *mutationResolver) ScenesUpdate(ctx context.Context, input []*models.Sce
 func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.Tx) (*models.Scene, error) {
 	// Populate scene from the input
 	sceneID, _ := strconv.Atoi(input.ID)
+
+	var coverImageData []byte
+
 	updatedTime := time.Now()
 	updatedScene := models.ScenePartial{
 		ID:        sceneID,
@@ -75,6 +79,14 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 	}
 	if input.Date != nil {
 		updatedScene.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
+	}
+	if input.CoverImage != nil && *input.CoverImage != "" {
+		var err error
+		_, coverImageData, err = utils.ProcessBase64Image(*input.CoverImage)
+		if err != nil {
+			return nil, err
+		}
+		updatedScene.Cover = &coverImageData
 	}
 
 	if input.Rating != nil {
@@ -147,6 +159,15 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 	}
 	if err := jqb.UpdateScenesTags(sceneID, tagJoins, tx); err != nil {
 		return nil, err
+	}
+
+	// only update the cover image if provided and everything else was successful
+	if coverImageData != nil {
+
+		err = manager.SetSceneScreenshot(scene.Checksum, coverImageData)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return scene, nil
@@ -283,7 +304,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	if err := tx.Commit(); err != nil {
 		return false, err
 	}
-	
+
 	// if delete generated is true, then delete the generated files
 	// for the scene
 	if input.DeleteGenerated != nil && *input.DeleteGenerated {
@@ -396,4 +417,64 @@ func changeMarker(ctx context.Context, changeType int, changedMarker models.Scen
 	}
 
 	return sceneMarker, nil
+}
+
+func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (int, error) {
+	sceneID, _ := strconv.Atoi(id)
+
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewSceneQueryBuilder()
+
+	newVal, err := qb.IncrementOCounter(sceneID, tx)
+	if err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return newVal, nil
+}
+
+func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (int, error) {
+	sceneID, _ := strconv.Atoi(id)
+
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewSceneQueryBuilder()
+
+	newVal, err := qb.DecrementOCounter(sceneID, tx)
+	if err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return newVal, nil
+}
+
+func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (int, error) {
+	sceneID, _ := strconv.Atoi(id)
+
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewSceneQueryBuilder()
+
+	newVal, err := qb.ResetOCounter(sceneID, tx)
+	if err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return newVal, nil
 }

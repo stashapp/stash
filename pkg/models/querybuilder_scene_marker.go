@@ -162,8 +162,8 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 			havingClauses = append(havingClauses, "((COUNT(DISTINCT ptj.id) + COUNT(DISTINCT tj.tag_id)) >= "+strconv.Itoa(requiredCount)+")")
 		} else if tagsFilter.Modifier == CriterionModifierExcludes {
 			// excludes all of the provided ids
-			whereClauses = append(whereClauses, "scene_markers.primary_tag_id not in " + getInBinding(length))
-			whereClauses = append(whereClauses, "not exists (select smt.scene_marker_id from scene_markers_tags as smt where smt.scene_marker_id = scene_markers.id and smt.tag_id in " + getInBinding(length) + ")")
+			whereClauses = append(whereClauses, "scene_markers.primary_tag_id not in "+getInBinding(length))
+			whereClauses = append(whereClauses, "not exists (select smt.scene_marker_id from scene_markers_tags as smt where smt.scene_marker_id = scene_markers.id and smt.tag_id in "+getInBinding(length)+")")
 		}
 
 		for _, tagID := range tagsFilter.Value {
@@ -176,7 +176,7 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 
 	if sceneTagsFilter := sceneMarkerFilter.SceneTags; sceneTagsFilter != nil && len(sceneTagsFilter.Value) > 0 {
 		length := len(sceneTagsFilter.Value)
-		
+
 		if sceneTagsFilter.Modifier == CriterionModifierIncludes || sceneTagsFilter.Modifier == CriterionModifierIncludesAll {
 			body += " LEFT JOIN scenes_tags AS scene_tags_join ON scene_tags_join.scene_id = scene.id AND scene_tags_join.tag_id IN " + getInBinding(length)
 
@@ -191,9 +191,9 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 			havingClauses = append(havingClauses, "COUNT(DISTINCT scene_tags_join.tag_id) >= "+strconv.Itoa(requiredCount))
 		} else if sceneTagsFilter.Modifier == CriterionModifierExcludes {
 			// excludes all of the provided ids
-			whereClauses = append(whereClauses, "not exists (select st.scene_id from scenes_tags as st where st.scene_id = scene.id AND st.tag_id IN " + getInBinding(length) + ")")
+			whereClauses = append(whereClauses, "not exists (select st.scene_id from scenes_tags as st where st.scene_id = scene.id AND st.tag_id IN "+getInBinding(length)+")")
 		}
-		
+
 		for _, tagID := range sceneTagsFilter.Value {
 			args = append(args, tagID)
 		}
@@ -213,13 +213,13 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 			if performersFilter.Modifier == CriterionModifierIncludesAll {
 				requiredCount = length
 			}
-			
+
 			havingClauses = append(havingClauses, "COUNT(DISTINCT scene_performers.performer_id) >= "+strconv.Itoa(requiredCount))
 		} else if performersFilter.Modifier == CriterionModifierExcludes {
 			// excludes all of the provided ids
-			whereClauses = append(whereClauses, "not exists (select sp.scene_id from performers_scenes as sp where sp.scene_id = scene.id AND sp.performer_id IN " + getInBinding(length) + ")")
+			whereClauses = append(whereClauses, "not exists (select sp.scene_id from performers_scenes as sp where sp.scene_id = scene.id AND sp.performer_id IN "+getInBinding(length)+")")
 		}
-			
+
 		for _, performerID := range performersFilter.Value {
 			args = append(args, performerID)
 		}

@@ -18,12 +18,22 @@ export class TextUtils {
   }
 
   public static secondsToTimestamp(seconds: number): string {
-    return new Date(seconds * 1000).toISOString().substr(11, 8);
+    let ret = new Date(seconds * 1000).toISOString().substr(11, 8);
+
+    if (ret.startsWith("00")) {
+      // strip hours if under one hour
+      ret = ret.substr(3);
+    }
+    if (ret.startsWith("0")) {
+      // for duration under a minute, leave one leading zero
+      ret = ret.substr(1);
+    }
+    return ret;
   }
 
   public static fileNameFromPath(path: string): string {
     if (!!path === false) { return "No File Name"; }
-    return path.replace(/^.*[\\\/]/, "");
+    return path.replace(/^.*[\\/]/, "");
   }
 
   public static age(dateString?: string, fromDateString?: string): number {

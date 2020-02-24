@@ -42,9 +42,11 @@ func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error)
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scenes (checksum, path, title, details, url, date, rating, size, duration, video_codec,
-                    			    audio_codec, width, height, framerate, bitrate, studio_id, created_at, updated_at)
+                    			    audio_codec, width, height, framerate, bitrate, studio_id, cover,
+                    				created_at, updated_at)
 				VALUES (:checksum, :path, :title, :details, :url, :date, :rating, :size, :duration, :video_codec,
-				        :audio_codec, :width, :height, :framerate, :bitrate, :studio_id, :created_at, :updated_at)
+				        :audio_codec, :width, :height, :framerate, :bitrate, :studio_id, :cover,
+				        :created_at, :updated_at)
 		`,
 		newScene,
 	)
@@ -72,6 +74,60 @@ func (qb *SceneQueryBuilder) Update(updatedScene ScenePartial, tx *sqlx.Tx) (*Sc
 	}
 
 	return qb.find(updatedScene.ID, tx)
+}
+
+func (qb *SceneQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error) {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET o_counter = o_counter + 1 WHERE scenes.id = ?`,
+		id,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	scene, err := qb.find(id, tx)
+	if err != nil {
+		return 0, err
+	}
+
+	return scene.OCounter, nil
+}
+
+func (qb *SceneQueryBuilder) DecrementOCounter(id int, tx *sqlx.Tx) (int, error) {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET o_counter = o_counter - 1 WHERE scenes.id = ? and scenes.o_counter > 0`,
+		id,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	scene, err := qb.find(id, tx)
+	if err != nil {
+		return 0, err
+	}
+
+	return scene.OCounter, nil
+}
+
+func (qb *SceneQueryBuilder) ResetOCounter(id int, tx *sqlx.Tx) (int, error) {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET o_counter = 0 WHERE scenes.id = ?`,
+		id,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	scene, err := qb.find(id, tx)
+	if err != nil {
+		return 0, err
+	}
+
+	return scene.OCounter, nil
 }
 
 func (qb *SceneQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
@@ -169,11 +225,25 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	}
 
 	if rating := sceneFilter.Rating; rating != nil {
-		clause, count := getIntCriterionWhereClause("rating", *sceneFilter.Rating)
+		clause, count := getIntCriterionWhereClause("scenes.rating", *sceneFilter.Rating)
 		whereClauses = append(whereClauses, clause)
 		if count == 1 {
 			args = append(args, sceneFilter.Rating.Value)
 		}
+	}
+
+	if oCounter := sceneFilter.OCounter; oCounter != nil {
+		clause, count := getIntCriterionWhereClause("scenes.o_counter", *sceneFilter.OCounter)
+		whereClauses = append(whereClauses, clause)
+		if count == 1 {
+			args = append(args, sceneFilter.OCounter.Value)
+		}
+	}
+
+	if durationFilter := sceneFilter.Duration; durationFilter != nil {
+		clause, thisArgs := getDurationWhereClause(*durationFilter)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	if resolutionFilter := sceneFilter.Resolution; resolutionFilter != nil {
@@ -268,6 +338,34 @@ func appendClause(clauses []string, clause string) []string {
 	return clauses
 }
 
+func getDurationWhereClause(durationFilter IntCriterionInput) (string, []interface{}) {
+	// special case for duration. We accept duration as seconds as int but the
+	// field is floating point. Change the equals filter to return a range
+	// between x and x + 1
+	// likewise, not equals needs to be duration < x OR duration >= x
+	var clause string
+	args := []interface{}{}
+
+	value := durationFilter.Value
+	if durationFilter.Modifier == CriterionModifierEquals {
+		clause = "scenes.duration >= ? AND scenes.duration < ?"
+		args = append(args, value)
+		args = append(args, value+1)
+	} else if durationFilter.Modifier == CriterionModifierNotEquals {
+		clause = "(scenes.duration < ? OR scenes.duration >= ?)"
+		args = append(args, value)
+		args = append(args, value+1)
+	} else {
+		var count int
+		clause, count = getIntCriterionWhereClause("scenes.duration", durationFilter)
+		if count == 1 {
+			args = append(args, value)
+		}
+	}
+
+	return clause, args
+}
+
 // returns where clause and having clause
 func getMultiCriterionClause(table string, joinTable string, joinTableField string, criterion *MultiCriterionInput) (string, string) {
 	whereClause := ""
@@ -291,6 +389,32 @@ func getMultiCriterionClause(table string, joinTable string, joinTableField stri
 	return whereClause, havingClause
 }
 
+func (qb *SceneQueryBuilder) QueryAllByPathRegex(regex string) ([]*Scene, error) {
+	var args []interface{}
+	body := selectDistinctIDs("scenes") + " WHERE scenes.path regexp ?"
+
+	args = append(args, "(?i)"+regex)
+
+	idsResult, err := runIdsQuery(body, args)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var scenes []*Scene
+	for _, id := range idsResult {
+		scene, err := qb.Find(id)
+
+		if err != nil {
+			return nil, err
+		}
+
+		scenes = append(scenes, scene)
+	}
+
+	return scenes, nil
+}
+
 func (qb *SceneQueryBuilder) QueryByPathRegex(findFilter *FindFilterType) ([]*Scene, int) {
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
@@ -302,7 +426,8 @@ func (qb *SceneQueryBuilder) QueryByPathRegex(findFilter *FindFilterType) ([]*Sc
 	body := selectDistinctIDs("scenes")
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		whereClauses = append(whereClauses, "scenes.path regexp '(?i)"+*q+"'")
+		whereClauses = append(whereClauses, "scenes.path regexp ?")
+		args = append(args, "(?i)"+*q)
 	}
 
 	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)

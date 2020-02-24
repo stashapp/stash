@@ -8,7 +8,6 @@ import {
   NavbarDivider,
   Popover,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useState } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "../../core/generated-graphql";
@@ -22,10 +21,12 @@ interface IProps {
   onToggleEdit: () => void;
   onSave: () => void;
   onDelete: () => void;
+  onAutoTag?: () => void;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
 
   // TODO: only for performers.  make generic
-  onDisplayFreeOnesDialog?: () => void;
+  scrapers?: GQL.ListPerformerScrapersListPerformerScrapers[];
+  onDisplayScraperDialog?: (scraper: GQL.ListPerformerScrapersListPerformerScrapers) => void;
 }
 
 export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
@@ -57,15 +58,21 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
     return <FileInput text="Choose image..." onInputChange={props.onImageChange} inputProps={{accept: ".jpg,.jpeg"}} />;
   }
 
+  function renderScraperMenuItem(scraper : GQL.ListPerformerScrapersListPerformerScrapers) {
+    return (
+      <MenuItem
+        text={scraper.name}
+        onClick={() => { if (props.onDisplayScraperDialog) { props.onDisplayScraperDialog(scraper); }}}
+      />
+    );
+  }
+
   function renderScraperMenu() {
     if (!props.performer) { return; }
     if (!props.isEditing) { return; }
     const scraperMenu = (
       <Menu>
-        <MenuItem
-          text="FreeOnes"
-          onClick={() => { if (props.onDisplayFreeOnesDialog) { props.onDisplayFreeOnesDialog(); }}}
-        />
+        {props.scrapers ? props.scrapers.map((s) => renderScraperMenuItem(s)) : undefined}
       </Menu>
     );
     return (
@@ -73,6 +80,15 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
         <Button text="Scrape with..."/>
       </Popover>
     );
+  }
+
+  function renderAutoTagButton() {
+    if (props.isNew || props.isEditing) { return; }
+    if (!!props.onAutoTag) {
+      return (<Button text="Auto Tag" onClick={() => {
+        if (props.onAutoTag) { props.onAutoTag() }
+      }}></Button>)
+    }
   }
 
   function renderScenesButton() {
@@ -129,6 +145,7 @@ export const DetailsEditNavbar: FunctionComponent<IProps> = (props: IProps) => {
         {renderImageInput()}
         {renderSaveButton()}
 
+        {renderAutoTagButton()}
         {renderScenesButton()}
         {renderDeleteButton()}
       </Navbar.Group>

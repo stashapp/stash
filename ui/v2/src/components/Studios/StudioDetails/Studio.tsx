@@ -1,13 +1,8 @@
 import {
-  Button,
-  Classes,
-  Dialog,
   EditableText,
-  HTMLSelect,
   HTMLTable,
   Spinner,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
@@ -15,6 +10,8 @@ import { IBaseProps } from "../../../models";
 import { ErrorUtils } from "../../../utils/errors";
 import { TableUtils } from "../../../utils/table";
 import { DetailsEditNavbar } from "../../Shared/DetailsEditNavbar";
+import { ToastUtils } from "../../../utils/toasts";
+import { ImageUtils } from "../../../utils/image";
 
 interface IProps extends IBaseProps {}
 
@@ -50,7 +47,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     setIsLoading(loading);
     if (!data || !data.findStudio || !!error) { return; }
     setStudio(data.findStudio);
-  }, [data]);
+  }, [data, loading, error]);
 
   useEffect(() => {
     setImagePreview(studio.image_path);
@@ -59,7 +56,14 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     if (!isNew) {
       setIsEditing(false);
     }
-  }, [studio]);
+  }, [studio, isNew]);
+
+  function onImageLoad(this: FileReader) {
+    setImagePreview(this.result as string);
+    setImage(this.result as string);
+  }
+
+  ImageUtils.addPasteImageHook(onImageLoad);
 
   if (!isNew && !isEditing) {
     if (!data || !data.findStudio || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
@@ -96,10 +100,22 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     setIsLoading(false);
   }
 
+  async function onAutoTag() {
+    if (!studio || !studio.id) {
+      return;
+    }
+    try {
+      await StashService.queryMetadataAutoTag({ studios: [studio.id]});
+      ToastUtils.success("Started auto tagging");
+    } catch (e) {
+      ErrorUtils.handle(e);
+    }
+  }
+
   async function onDelete() {
     setIsLoading(true);
     try {
-      const result = await deleteStudio();
+      await deleteStudio();
     } catch (e) {
       ErrorUtils.handle(e);
     }
@@ -110,14 +126,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
   }
 
   function onImageChange(event: React.FormEvent<HTMLInputElement>) {
-    const file: File = (event.target as any).files[0];
-    const reader: FileReader = new FileReader();
-
-    reader.onloadend = (e) => {
-      setImagePreview(reader.result as string);
-      setImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    ImageUtils.onImageChange(event, onImageLoad);
   }
 
   // TODO: CSS class
@@ -125,7 +134,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     <>
       <div className="columns is-multiline no-spacing">
         <div className="column is-half details-image-container">
-          <img className="studio" src={imagePreview} />
+          <img alt={name} className="studio" src={imagePreview} />
         </div>
         <div className="column is-half details-detail-container">
           <DetailsEditNavbar
@@ -135,6 +144,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
             onToggleEdit={() => { setIsEditing(!isEditing); updateStudioEditState(studio); }}
             onSave={onSave}
             onDelete={onDelete}
+            onAutoTag={onAutoTag}
             onImageChange={onImageChange}
           />
           <h1 className="bp3-heading">
@@ -148,7 +158,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
 
           <HTMLTable style={{width: "100%"}}>
             <tbody>
-              {TableUtils.renderEditableTextTableRow({title: "URL", value: url, isEditing, onChange: setUrl})}
+              {TableUtils.renderInputGroup({title: "URL", value: url, isEditing, onChange: setUrl})}
             </tbody>
           </HTMLTable>
         </div>

@@ -28,7 +28,7 @@ export const SceneListTable: FunctionComponent<ISceneListTableProps> = (props: I
     return (
       <Link 
         className="scene-list-thumbnail"
-        to={`/performers/${scene.id}`}
+        to={`/scenes/${scene.id}`}
         style={style}/>
     )
   }
@@ -101,7 +101,7 @@ export const SceneListTable: FunctionComponent<ISceneListTableProps> = (props: I
   return (
     <>
     <div className="grid">
-      <HTMLTable>
+      <HTMLTable className="bp3-html-table bp3-html-table-bordered bp3-html-table-condensed bp3-html-table-striped bp3-interactive">
         <thead>
           <tr>
             <th></th>
