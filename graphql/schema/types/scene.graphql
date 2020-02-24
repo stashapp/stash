@@ -26,6 +26,7 @@ type Scene {
   url: String
   date: String
   rating: Int
+  o_counter: Int
   path: String!
 
   file: SceneFileType! # Resolver
@@ -51,6 +52,8 @@ input SceneUpdateInput {
   gallery_id: ID
   performer_ids: [ID!]
   tag_ids: [ID!]
+  """This should be base64 encoded"""
+  cover_image: String
 }
 
 input BulkSceneUpdateInput {

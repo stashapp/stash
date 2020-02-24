@@ -6,6 +6,7 @@ fragment SceneData on Scene {
   url
   date
   rating
+  o_counter
   path
 
   file {

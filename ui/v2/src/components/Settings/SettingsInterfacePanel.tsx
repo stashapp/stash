@@ -5,11 +5,10 @@ import {
   FormGroup,
   H4,
   Spinner,
-  TextArea
+  TextArea,
+  NumericInput
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
-import { useInterfaceLocalForage } from "../../hooks/LocalForage";
 import { StashService } from "../../core/StashService";
 import { ErrorUtils } from "../../utils/errors";
 import { ToastUtils } from "../../utils/toasts";
@@ -17,12 +16,21 @@ import { ToastUtils } from "../../utils/toasts";
 interface IProps {}
 
 export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
-  const {data, setData} = useInterfaceLocalForage();
   const config = StashService.useConfiguration();
+  const [soundOnPreview, setSoundOnPreview] = useState<boolean>();
+  const [wallShowTitle, setWallShowTitle] = useState<boolean>();
+  const [maximumLoopDuration, setMaximumLoopDuration] = useState<number>(0);
+  const [autostartVideo, setAutostartVideo] = useState<boolean>();
+  const [showStudioAsText, setShowStudioAsText] = useState<boolean>();
   const [css, setCSS] = useState<string>();
   const [cssEnabled, setCSSEnabled] = useState<boolean>();
 
   const updateInterfaceConfig = StashService.useConfigureInterface({
+    soundOnPreview,
+    wallShowTitle,
+    maximumLoopDuration,
+    autostartVideo,
+    showStudioAsText,
     css,
     cssEnabled
   });
@@ -30,10 +38,16 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
   useEffect(() => {
     if (!config.data || !config.data.configuration || !!config.error) { return; }
     if (!!config.data.configuration.interface) {
+      let iCfg = config.data.configuration.interface;
+      setSoundOnPreview(iCfg.soundOnPreview !== undefined ? iCfg.soundOnPreview : true);
+      setWallShowTitle(iCfg.wallShowTitle !== undefined ? iCfg.wallShowTitle : true);
+      setMaximumLoopDuration(iCfg.maximumLoopDuration || 0);
+      setAutostartVideo(iCfg.autostartVideo !== undefined ? iCfg.autostartVideo : false);
+      setShowStudioAsText(iCfg.showStudioAsText !== undefined ? iCfg.showStudioAsText : false);
       setCSS(config.data.configuration.interface.css || "");
       setCSSEnabled(config.data.configuration.interface.cssEnabled || false);
     }
-  }, [config.data]);
+  }, [config.data, config.error]);
 
   async function onSave() {
     try {
@@ -55,25 +69,52 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
         helperText="Configuration for wall items"
       >
         <Checkbox
-          checked={!!data ? data.wall.textContainerEnabled : true}
+          checked={wallShowTitle}
           label="Display title and tags"
-          onChange={() => {
-            if (!data) { return; }
-            const newSettings = _.cloneDeep(data);
-            newSettings.wall.textContainerEnabled = !data.wall.textContainerEnabled;
-            setData(newSettings);
-          }}
+          onChange={() => setWallShowTitle(!wallShowTitle)}
         />
         <Checkbox
-          checked={!!data ? data.wall.soundEnabled : true}
+          checked={soundOnPreview}
           label="Enable sound"
+          onChange={() => setSoundOnPreview(!soundOnPreview)}
+        />
+      </FormGroup>
+
+      <FormGroup
+        label="Scene List"
+      >
+        <Checkbox
+          checked={showStudioAsText}
+          label="Show Studios as text"
           onChange={() => {
-            if (!data) { return; }
-            const newSettings = _.cloneDeep(data);
-            newSettings.wall.soundEnabled = !data.wall.soundEnabled;
-            setData(newSettings);
+            setShowStudioAsText(!showStudioAsText)
           }}
         />
+      </FormGroup>
+      
+      <FormGroup
+        label="Scene Player"
+      >
+        <Checkbox
+          checked={autostartVideo}
+          label="Auto-start video"
+          onChange={() => {
+            setAutostartVideo(!autostartVideo)
+          }}
+        />
+
+        <FormGroup
+          label="Maximum loop duration"
+          helperText="Maximum scene duration - in seconds - where scene player will loop the video - 0 to disable"
+        >
+          <NumericInput 
+            value={maximumLoopDuration} 
+            type="number"
+            onValueChange={(value: number) => setMaximumLoopDuration(value)}
+            min={0}
+            minorStepSize={1}
+          />
+        </FormGroup>
       </FormGroup>
 
       <FormGroup
@@ -94,10 +135,10 @@ export const SettingsInterfacePanel: FunctionComponent<IProps> = () => {
           fill={true}
           rows={16}>
         </TextArea>
-
-        <Divider />
-        <Button intent="primary" onClick={() => onSave()}>Save</Button>
       </FormGroup>
+
+      <Divider />
+      <Button intent="primary" onClick={() => onSave()}>Save</Button>
     </>
   );
 };

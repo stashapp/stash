@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	streamingFiles = make(map[string][]*http.ResponseWriter)
+	streamingFiles      = make(map[string][]*http.ResponseWriter)
 	streamingFilesMutex = sync.RWMutex{}
 )
 

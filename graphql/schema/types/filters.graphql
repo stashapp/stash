@@ -62,8 +62,12 @@ input SceneMarkerFilterType {
 input SceneFilterType {
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by o-counter"""
+  o_counter: IntCriterionInput
   """Filter by resolution"""
   resolution: ResolutionEnum
+  """Filter by duration (in seconds)"""
+  duration: IntCriterionInput
   """Filter to only include scenes which have markers. `true` or `false`"""
   has_markers: String
   """Filter to only include scenes missing this property"""

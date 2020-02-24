@@ -1,13 +1,11 @@
 import {
+  AnchorButton,
   Button,
   Divider,
   FormGroup,
-  H1,
   H4,
-  H6,
   InputGroup,
   Spinner,
-  Tag,
   Checkbox,
   HTMLSelect,
 } from "@blueprintjs/core";
@@ -33,6 +31,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
   const [logOut, setLogOut] = useState<boolean>(true);
   const [logLevel, setLogLevel] = useState<string>("Info");
   const [logAccess, setLogAccess] = useState<boolean>(true);
+  const [excludes, setExcludes] = useState<(string)[]>([]);
 
   const { data, error, loading } = StashService.useConfiguration();
 
@@ -48,6 +47,8 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
     logOut,
     logLevel,
     logAccess,
+    excludes,
+
   });
 
   useEffect(() => {
@@ -65,12 +66,35 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       setLogOut(conf.general.logOut);
       setLogLevel(conf.general.logLevel);
       setLogAccess(conf.general.logAccess);
+      setExcludes(conf.general.excludes);
     }
-  }, [data]);
+  }, [data, error]);
 
   function onStashesChanged(directories: string[]) {
     setStashes(directories);
   }
+
+  function excludeRegexChanged(idx: number, value: string) {
+    const newExcludes = excludes.map((regex, i)=> {
+      const ret = ( idx !== i ) ? regex : value ;
+      return ret
+      })
+    setExcludes(newExcludes);
+  }
+
+  function excludeRemoveRegex(idx: number) {
+    const newExcludes = excludes.filter((regex, i) => i!== idx );
+
+    setExcludes(newExcludes);
+  }
+
+  function excludeAddRegex() {
+    const demo = "sample\\.mp4$"
+    const newExcludes = excludes.concat(demo);
+
+    setExcludes(newExcludes);
+  }
+
 
   async function onSave() {
     try {
@@ -147,6 +171,35 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
           helperText="Directory location for the generated files (scene markers, scene previews, sprites, etc)"
         >
           <InputGroup value={generatedPath} onChange={(e: any) => setGeneratedPath(e.target.value)} />
+        </FormGroup>
+
+        <FormGroup
+          label="Excluded Patterns"
+        >
+
+       { (excludes) ? excludes.map((regexp, i) => {
+         return(
+           <InputGroup
+             value={regexp}
+             onChange={(e: any) => excludeRegexChanged(i, e.target.value)}
+             rightElement={<Button icon="minus" minimal={true} intent="danger" onClick={(e: any) => excludeRemoveRegex(i)} />}
+           />
+           );
+         }) : null
+       }
+
+          <Button icon="plus" minimal={true} onClick={(e: any) => excludeAddRegex()} />
+          <div>
+            <p>
+              <AnchorButton
+                href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
+                rightIcon="help"
+                text="Regexps of files/paths to exclude from Scan and add to Clean"
+                minimal={true}
+                target="_blank" 
+              />
+            </p>
+          </div>
         </FormGroup>
       </FormGroup>
       

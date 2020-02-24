@@ -8,7 +8,8 @@ mutation SceneUpdate(
   $studio_id: ID,
   $gallery_id: ID,
   $performer_ids: [ID!] = [],
-  $tag_ids: [ID!] = []) {
+  $tag_ids: [ID!] = [],
+  $cover_image: String) {
 
   sceneUpdate(input: {
                         id: $id,
@@ -20,7 +21,8 @@ mutation SceneUpdate(
                         studio_id: $studio_id,
                         gallery_id: $gallery_id,
                         performer_ids: $performer_ids,
-                        tag_ids: $tag_ids
+                        tag_ids: $tag_ids,
+                        cover_image: $cover_image
                       }) {
       ...SceneData
   }
@@ -58,6 +60,18 @@ mutation ScenesUpdate($input : [SceneUpdateInput!]!) {
   scenesUpdate(input: $input) {
     ...SceneData
   }
+}
+
+mutation SceneIncrementO($id: ID!) {
+  sceneIncrementO(id: $id) 
+}
+
+mutation SceneDecrementO($id: ID!) {
+  sceneDecrementO(id: $id)
+}
+
+mutation SceneResetO($id: ID!) {
+  sceneResetO(id: $id)
 }
 
 mutation SceneDestroy($id: ID!, $delete_file: Boolean, $delete_generated : Boolean) {

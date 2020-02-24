@@ -155,7 +155,7 @@ export const SettingsLogsPanel: FunctionComponent<IProps> = (props: IProps) => {
   const logLevels = ["Debug", "Info", "Warning", "Error"];
 
   function filterByLogLevel(logEntry : LogEntry) {
-    if (logLevel == "Debug") {
+    if (logLevel === "Debug") {
       return true;
     }
 

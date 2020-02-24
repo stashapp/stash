@@ -22,12 +22,22 @@ const Password = "password"
 
 const Database = "database"
 
+const ScrapersPath = "scrapers_path"
+const Exclude = "exclude"
+
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
 const Host = "host"
 const Port = "port"
+const ExternalHost = "external_host"
 
+// Interface options
+const SoundOnPreview = "sound_on_preview"
+const WallShowTitle = "wall_show_title"
+const MaximumLoopDuration = "maximum_loop_duration"
+const AutostartVideo = "autostart_video"
+const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
 
 // Logging options
@@ -73,12 +83,34 @@ func GetDatabasePath() string {
 	return viper.GetString(Database)
 }
 
+func GetDefaultScrapersPath() string {
+	// default to the same directory as the config file
+	configFileUsed := viper.ConfigFileUsed()
+	configDir := filepath.Dir(configFileUsed)
+
+	fn := filepath.Join(configDir, "scrapers")
+
+	return fn
+}
+
+func GetExcludes() []string {
+	return viper.GetStringSlice(Exclude)
+}
+
+func GetScrapersPath() string {
+	return viper.GetString(ScrapersPath)
+}
+
 func GetHost() string {
 	return viper.GetString(Host)
 }
 
 func GetPort() int {
 	return viper.GetInt(Port)
+}
+
+func GetExternalHost() string {
+	return viper.GetString(ExternalHost)
 }
 
 func GetMaxTranscodeSize() models.StreamingResolutionEnum {
@@ -147,6 +179,32 @@ func ValidateCredentials(username string, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(authPWHash), []byte(password))
 
 	return username == authUser && err == nil
+}
+
+// Interface options
+func GetSoundOnPreview() bool {
+	viper.SetDefault(SoundOnPreview, true)
+	return viper.GetBool(SoundOnPreview)
+}
+
+func GetWallShowTitle() bool {
+	viper.SetDefault(WallShowTitle, true)
+	return viper.GetBool(WallShowTitle)
+}
+
+func GetMaximumLoopDuration() int {
+	viper.SetDefault(MaximumLoopDuration, 0)
+	return viper.GetInt(MaximumLoopDuration)
+}
+
+func GetAutostartVideo() bool {
+	viper.SetDefault(AutostartVideo, false)
+	return viper.GetBool(AutostartVideo)
+}
+
+func GetShowStudioAsText() bool {
+	viper.SetDefault(ShowStudioAsText, false)
+	return viper.GetBool(ShowStudioAsText)
 }
 
 func GetCSSPath() string {

@@ -25,6 +25,12 @@ type singleton struct {
 var instance *singleton
 var once sync.Once
 
+type flagStruct struct {
+	configFilePath string
+}
+
+var flags = flagStruct{}
+
 func GetInstance() *singleton {
 	Initialize()
 	return instance
@@ -33,9 +39,9 @@ func GetInstance() *singleton {
 func Initialize() *singleton {
 	once.Do(func() {
 		_ = utils.EnsureDir(paths.GetConfigDirectory())
+		initFlags()
 		initConfig()
 		initLog()
-		initFlags()
 		initEnvs()
 		instance = &singleton{
 			Status: TaskStatus{Status: Idle, Progress: -1},
@@ -43,7 +49,7 @@ func Initialize() *singleton {
 			JSON:   &jsonUtils{},
 		}
 
-		instance.refreshConfig()
+		instance.RefreshConfig()
 
 		initFFMPEG()
 	})
@@ -55,8 +61,11 @@ func initConfig() {
 	// The config file is called config.  Leave off the file extension.
 	viper.SetConfigName("config")
 
-	viper.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
+	if flagConfigFileExists, _ := utils.FileExists(flags.configFilePath); flagConfigFileExists {
+		viper.SetConfigFile(flags.configFilePath)
+	}
 	viper.AddConfigPath(".")            // Look for config in the working directory
+	viper.AddConfigPath("$HOME/.stash") // Look for the config in the home directory
 
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {             // Handle errors reading the config file
@@ -65,11 +74,15 @@ func initConfig() {
 			panic(err)
 		}
 	}
+	logger.Infof("using config file: %s", viper.ConfigFileUsed())
 
 	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(config.Generated, viper.GetString(config.Metadata))
+
+	// Set default scrapers path
+	viper.SetDefault(config.ScrapersPath, config.GetDefaultScrapersPath())
 
 	// Disabling config watching due to race condition issue
 	// See: https://github.com/spf13/viper/issues/174
@@ -88,6 +101,7 @@ func initConfig() {
 func initFlags() {
 	pflag.IP("host", net.IPv4(0, 0, 0, 0), "ip address for the host")
 	pflag.Int("port", 9999, "port to serve from")
+	pflag.StringVarP(&flags.configFilePath, "config", "c", "", "config file to use")
 
 	pflag.Parse()
 	if err := viper.BindPFlags(pflag.CommandLine); err != nil {
@@ -96,13 +110,14 @@ func initFlags() {
 }
 
 func initEnvs() {
-	viper.SetEnvPrefix("stash") // will be uppercased automatically
-	viper.BindEnv("host")       // STASH_HOST
-	viper.BindEnv("port")       // STASH_PORT
-	viper.BindEnv("stash")      // STASH_STASH
-	viper.BindEnv("generated")  // STASH_GENERATED
-	viper.BindEnv("metadata")   // STASH_METADATA
-	viper.BindEnv("cache")      // STASH_CACHE
+	viper.SetEnvPrefix("stash")    // will be uppercased automatically
+	viper.BindEnv("host")          // STASH_HOST
+	viper.BindEnv("port")          // STASH_PORT
+	viper.BindEnv("external_host") // STASH_EXTERNAL_HOST
+	viper.BindEnv("stash")         // STASH_STASH
+	viper.BindEnv("generated")     // STASH_GENERATED
+	viper.BindEnv("metadata")      // STASH_METADATA
+	viper.BindEnv("cache")         // STASH_CACHE
 }
 
 func initFFMPEG() {
@@ -131,7 +146,7 @@ func initLog() {
 	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
 }
 
-func (s *singleton) refreshConfig() {
+func (s *singleton) RefreshConfig() {
 	s.Paths = paths.NewPaths()
 	if config.IsValid() {
 		_ = utils.EnsureDir(s.Paths.Generated.Screenshots)

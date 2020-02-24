@@ -30,6 +30,8 @@ input ConfigGeneralInput {
   logLevel: String!
   """Whether to log http access"""
   logAccess: Boolean!
+  """Array of file regexp to exclude from Scan"""
+  excludes: [String!]
 }
 
 type ConfigGeneralResult {
@@ -55,15 +57,37 @@ type ConfigGeneralResult {
   logLevel: String!
   """Whether to log http access"""
   logAccess: Boolean!
+  """Array of file regexp to exclude from Scan"""
+  excludes: [String!]!
 }
 
 input ConfigInterfaceInput {
+  """Enable sound on mouseover previews"""
+  soundOnPreview: Boolean
+  """Show title and tags in wall view"""
+  wallShowTitle: Boolean
+  """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
+  maximumLoopDuration: Int
+  """If true, video will autostart on load in the scene player"""
+  autostartVideo: Boolean
+  """If true, studio overlays will be shown as text instead of logo images"""
+  showStudioAsText: Boolean
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
 }
 
 type ConfigInterfaceResult {
+  """Enable sound on mouseover previews"""
+  soundOnPreview: Boolean
+  """Show title and tags in wall view"""
+  wallShowTitle: Boolean
+  """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
+  maximumLoopDuration: Int
+  """If true, video will autostart on load in the scene player"""
+  autostartVideo: Boolean
+   """If true, studio overlays will be shown as text instead of logo images"""
+  showStudioAsText: Boolean
   """Custom CSS"""
   css: String
   cssEnabled: Boolean

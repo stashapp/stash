@@ -1,98 +1,26 @@
 import { Hotkey, Hotkeys, HotkeysTarget } from "@blueprintjs/core";
-import React from "react";
+import React, { FunctionComponent } from "react";
 import ReactJWPlayer from "react-jw-player";
 import * as GQL from "../../../core/generated-graphql";
 import { SceneHelpers } from "../helpers";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
-import videojs from "video.js";
-import "video.js/dist/video-js.css";
+import { StashService } from "../../../core/StashService";
 
 interface IScenePlayerProps {
   scene: GQL.SceneDataFragment;
   timestamp: number;
+  autoplay?: boolean;
   onReady?: any;
   onSeeked?: any;
   onTime?: any;
+  config?: GQL.ConfigInterfaceDataFragment;
 }
 interface IScenePlayerState {
   scrubberPosition: number;
 }
 
-export class VideoJSPlayer extends React.Component<IScenePlayerProps> {
-  private player: any;
-  private videoNode: any;
-
-  constructor(props: IScenePlayerProps) {
-    super(props);
-  }
-
-  componentDidMount() {
-    this.player = videojs(this.videoNode);
-
-    // dirty hack - make this player look like JWPlayer
-    this.player.seek = this.player.currentTime;
-    this.player.getPosition = this.player.currentTime;
-    
-    SceneHelpers.registerJSPlayer(this.player);
-
-    this.player.src(this.props.scene.paths.stream);
-
-    // hack duration
-    this.player.duration = () => { return this.props.scene.file.duration; };
-    this.player.start = 0;
-    this.player.oldCurrentTime = this.player.currentTime;
-    this.player.currentTime = (time: any) => { 
-      if( time == undefined )
-      {
-          return this.player.oldCurrentTime() + this.player.start;
-      }
-      this.player.start = time;
-      this.player.oldCurrentTime(0);
-      this.player.src(this.props.scene.paths.stream + "?start=" + time);
-      this.player.play();
-
-      return this;
-    };
-
-    this.player.ready(() => {
-      this.player.on("timeupdate", () => {
-        this.props.onTime();
-      });
-
-      this.player.on("seeked", () => {
-        this.props.onSeeked();
-      });
-
-      this.props.onReady();
-    });
-  }
-
-  componentWillUnmount() {
-    if (this.player) {
-      this.player.dispose();
-      SceneHelpers.deregisterJSPlayer();
-    }
-  }
-
-  render() {
-    return (
-      <div>
-        <div className="vjs-player" data-vjs-player>
-          <video 
-              ref={ node => this.videoNode = node } 
-              className="video-js vjs-default-skin vjs-big-play-centered" 
-              poster={this.props.scene.paths.screenshot}
-              controls 
-              preload="auto">
-          </video>
-        </div>
-      </div>
-    );
-  }
-}
-
 @HotkeysTarget
-export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayerState> {
+export class ScenePlayerImpl extends React.Component<IScenePlayerProps, IScenePlayerState> {
   private player: any;
   private lastTime = 0;
 
@@ -115,8 +43,7 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
   }
 
   renderPlayer() {
-    if (this.props.scene.is_streamable) {
-      const config = this.makeConfig(this.props.scene);
+      const config = this.makeJWPlayerConfig(this.props.scene);
       return (
         <ReactJWPlayer
             playerId={SceneHelpers.getJWPlayerId()}
@@ -127,17 +54,6 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
             onTime={this.onTime}
           />
       );
-    } else {
-      return (
-        <VideoJSPlayer 
-            scene={this.props.scene}
-            timestamp={this.props.timestamp}
-            onReady={this.onReady}
-            onSeeked={this.onSeeked}
-            onTime={this.onTime}>
-        </VideoJSPlayer>
-      )
-    }
   }
 
   public render() {
@@ -194,9 +110,37 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
     );
   }
 
-  private makeConfig(scene: GQL.SceneDataFragment) {
+  private shouldRepeat(scene: GQL.SceneDataFragment) {
+    let maxLoopDuration = this.props.config ? this.props.config.maximumLoopDuration : 0;
+    return !!scene.file.duration && !!maxLoopDuration && scene.file.duration < maxLoopDuration;
+  }
+
+  private makeJWPlayerConfig(scene: GQL.SceneDataFragment) {
     if (!scene.paths.stream) { return {}; }
-    return {
+
+    let repeat = this.shouldRepeat(scene);
+    let getDurationHook: (() => GQL.Maybe<number>) | undefined = undefined;
+    let seekHook: ((seekToPosition: number, _videoTag: any) => void) | undefined = undefined;
+    let getCurrentTimeHook: ((_videoTag: any) => number) | undefined = undefined;
+
+    if (!this.props.scene.is_streamable) {
+      getDurationHook = () => { 
+        return this.props.scene.file.duration; 
+      };
+
+      seekHook = (seekToPosition: number, _videoTag: any) => {
+        _videoTag.start = seekToPosition;
+        _videoTag.src = (this.props.scene.paths.stream + "?start=" + seekToPosition);
+        _videoTag.play();
+      };
+
+      getCurrentTimeHook = (_videoTag: any) => {
+        let start = _videoTag.start || 0;
+        return _videoTag.currentTime + start;
+      }
+    }
+
+    let ret = {
       file: scene.paths.stream,
       image: scene.paths.screenshot,
       tracks: [
@@ -216,10 +160,16 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
       },
       cast: {},
       primary: "html5",
-      autostart: false,
+      autostart: this.props.autoplay || (this.props.config ? this.props.config.autostartVideo : false),
+      repeat: repeat,
       playbackRateControls: true,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
+      getDurationHook: getDurationHook,
+      seekHook: seekHook,
+      getCurrentTimeHook: getCurrentTimeHook
     };
+
+    return ret;
   }
 
   private onReady() {
@@ -251,4 +201,10 @@ export class ScenePlayer extends React.Component<IScenePlayerProps, IScenePlayer
   private onScrubberScrolled() {
     this.player.pause();
   }
+}
+
+export const ScenePlayer: FunctionComponent<IScenePlayerProps> = (props: IScenePlayerProps) => {
+    const config = StashService.useConfiguration();
+
+    return <ScenePlayerImpl {...props} config={config.data && config.data.configuration ? config.data.configuration.interface : undefined}/>
 }

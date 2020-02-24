@@ -1,21 +1,26 @@
 import {
-  AnchorButton,
   Button,
   ButtonGroup,
-  ControlGroup,
   HTMLSelect,
   InputGroup,
   Menu,
   MenuItem,
   Popover,
   Tag,
+  Tooltip,
+  Slider,
 } from "@blueprintjs/core";
 import { debounce } from "lodash";
-import React, { FunctionComponent, SyntheticEvent, useEffect, useRef, useState } from "react";
+import React, { FunctionComponent, SyntheticEvent, useState } from "react";
 import { Criterion } from "../../models/list-filter/criteria/criterion";
 import { ListFilterModel } from "../../models/list-filter/filter";
 import { DisplayMode } from "../../models/list-filter/types";
 import { AddFilter } from "./AddFilter";
+
+interface IListFilterOperation {
+  text: string;
+  onClick: () => void;
+}
 
 interface IListFilterProps {
   onChangePageSize: (pageSize: number) => void;
@@ -25,23 +30,18 @@ interface IListFilterProps {
   onChangeDisplayMode: (displayMode: DisplayMode) => void;
   onAddCriterion: (criterion: Criterion, oldId?: string) => void;
   onRemoveCriterion: (criterion: Criterion) => void;
+  zoomIndex?: number;
+  onChangeZoom?: (zoomIndex: number) => void;
   onSelectAll?: () => void;
   onSelectNone?: () => void;
+  otherOperations?: IListFilterOperation[];
   filter: ListFilterModel;
 }
 
 const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
 
 export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilterProps) => {
-  let searchCallback: any;
-
   const [editingCriterion, setEditingCriterion] = useState<Criterion | undefined>(undefined);
-
-  useEffect(() => {
-    searchCallback = debounce((event: any) => {
-      props.onChangeQuery(event.target.value);
-    }, 500);
-  });
 
   function onChangePageSize(event: SyntheticEvent<HTMLSelectElement>) {
     const val = event!.currentTarget!.value;
@@ -49,6 +49,10 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
   }
 
   function onChangeQuery(event: SyntheticEvent<HTMLInputElement>) {
+    let searchCallback = debounce((event: any) => {
+      props.onChangeQuery(event.target.value);
+    }, 500);
+    
     event.persist();
     searchCallback(event);
   }
@@ -111,13 +115,14 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
       }
     }
     return props.filter.displayModeOptions.map((option) => (
-      <Button
-        key={option}
-        active={props.filter.displayMode === option}
-        onClick={() => onChangeDisplayMode(option)}
-        icon={getIcon(option)}
-        text={getLabel(option)}
-      />
+      <Tooltip content={getLabel(option)} hoverOpenDelay={200}>
+        <Button
+          key={option}
+          active={props.filter.displayMode === option}
+          onClick={() => onChangeDisplayMode(option)}
+          icon={getIcon(option)}
+        />
+      </Tooltip>
     ));
   }
 
@@ -150,23 +155,70 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
 
   function renderSelectAll() {
     if (props.onSelectAll) {
-      return <Button onClick={() => onSelectAll()} text="Select All"/>;
+      return <MenuItem onClick={() => onSelectAll()} text="Select All" />;
     }
   }
 
   function renderSelectNone() {
     if (props.onSelectNone) {
-      return <Button onClick={() => onSelectNone()} text="Select None"/>;
+      return <MenuItem onClick={() => onSelectNone()} text="Select None" />;
     }
   }
 
-  function renderSelectAllNone() {
-    return (
-      <>
-      {renderSelectAll()}
-      {renderSelectNone()}
-      </>
-    );
+  function renderMore() {
+    let options = [];
+    options.push(renderSelectAll());
+    options.push(renderSelectNone());
+
+    if (props.otherOperations) {
+      props.otherOperations.forEach((o) => {
+        options.push(<MenuItem onClick={o.onClick} text={o.text} />);
+      });
+    }
+
+    options = options.filter((o) => !!o);
+
+    let menuItems = options as JSX.Element[];
+
+    function renderMoreOptions() {
+      return (
+        <>
+        {menuItems}
+        </>
+      )
+    }
+
+    if (menuItems.length > 0) {
+      return (
+        <Popover position="bottom">
+          <Button icon="more"/>
+          <Menu>{renderMoreOptions()}</Menu>
+        </Popover>
+      );
+    }
+  }
+
+  function onChangeZoom(v : number) {
+    if (props.onChangeZoom) {
+      props.onChangeZoom(v);
+    }
+  } 
+
+  function maybeRenderZoom() {
+    if (props.onChangeZoom) {
+      return (
+        <span className="zoom-slider">
+          <Slider 
+            min={0}
+            value={props.zoomIndex}
+            initialValue={props.zoomIndex}
+            max={3}
+            labelRenderer={false}
+            onChange={(v) => onChangeZoom(v)}
+          />
+      </span>
+      );
+    }
   }
 
   function render() {
@@ -188,18 +240,23 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
             value={props.filter.itemsPerPage}
             className="filter-item"
           />
-          <ControlGroup className="filter-item">
-            <AnchorButton
-              rightIcon={props.filter.sortDirection === "asc" ? "caret-up" : "caret-down"}
-              onClick={onChangeSortDirection}
-            >
-              {props.filter.sortDirection === "asc" ? "Ascending" : "Descending"}
-            </AnchorButton>
+          <ButtonGroup className="filter-item">
             <Popover position="bottom">
               <Button large={true}>{props.filter.sortBy}</Button>
               <Menu>{renderSortByOptions()}</Menu>
             </Popover>
-          </ControlGroup>
+            
+            <Tooltip 
+              content={props.filter.sortDirection === "asc" ? "Ascending" : "Descending"}
+              hoverOpenDelay={200}
+            >
+              <Button
+                rightIcon={props.filter.sortDirection === "asc" ? "caret-up" : "caret-down"}
+                onClick={onChangeSortDirection}
+              />
+            </Tooltip>
+            
+          </ButtonGroup>
 
           <AddFilter
             filter={props.filter}
@@ -212,8 +269,10 @@ export const ListFilter: FunctionComponent<IListFilterProps> = (props: IListFilt
             {renderDisplayModeOptions()}
           </ButtonGroup>
 
+          {maybeRenderZoom()}
+
           <ButtonGroup className="filter-item">
-            {renderSelectAllNone()}
+            {renderMore()}
           </ButtonGroup>
         </div>
         <div style={{display: "flex", justifyContent: "center", margin: "10px auto"}}>

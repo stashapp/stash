@@ -1,0 +1,70 @@
+enum ScrapeType {
+  """From text query""" 
+  NAME
+  """From existing object"""
+  FRAGMENT
+  """From URL"""
+  URL
+}
+
+type ScraperSpec {
+    """URLs matching these can be scraped with"""
+    urls: [String!]
+    supported_scrapes: [ScrapeType!]!
+}
+
+type Scraper {
+    id: ID!
+    name: String!
+    """Details for performer scraper"""
+    performer: ScraperSpec
+    """Details for scene scraper"""
+    scene: ScraperSpec
+}
+
+
+type ScrapedScenePerformer {
+  """Set if performer matched"""
+  id: ID
+  name: String!
+  url: String
+  twitter: String
+  instagram: String
+  birthdate: String
+  ethnicity: String
+  country: String
+  eye_color: String
+  height: String
+  measurements: String
+  fake_tits: String
+  career_length: String
+  tattoos: String
+  piercings: String
+  aliases: String
+}
+
+type ScrapedSceneStudio {
+  """Set if studio matched"""
+  id: ID
+  name: String!
+  url: String
+}
+
+type ScrapedSceneTag {
+  """Set if tag matched"""
+  id: ID
+  name: String!
+}
+
+type ScrapedScene {
+  title: String
+  details: String
+  url: String
+  date: String
+
+  file: SceneFileType # Resolver
+
+  studio: ScrapedSceneStudio
+  tags: [ScrapedSceneTag!]
+  performers: [ScrapedScenePerformer!]
+}

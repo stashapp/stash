@@ -10,10 +10,10 @@ import (
 
 func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *string) (*models.Scene, error) {
 	qb := models.NewSceneQueryBuilder()
-	idInt, _ := strconv.Atoi(*id)
 	var scene *models.Scene
 	var err error
 	if id != nil {
+		idInt, _ := strconv.Atoi(*id)
 		scene, err = qb.Find(idInt)
 	} else if checksum != nil {
 		scene, err = qb.FindByChecksum(*checksum)

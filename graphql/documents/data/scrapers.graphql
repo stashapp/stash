@@ -1,0 +1,77 @@
+fragment ScrapedPerformerData on ScrapedPerformer {
+  name
+  url
+  twitter
+  instagram
+  birthdate
+  ethnicity
+  country
+  eye_color
+  height
+  measurements
+  fake_tits
+  career_length
+  tattoos
+  piercings
+  aliases
+}
+
+fragment ScrapedScenePerformerData on ScrapedScenePerformer {
+  id
+  name
+  url
+  twitter
+  instagram
+  birthdate
+  ethnicity
+  country
+  eye_color
+  height
+  measurements
+  fake_tits
+  career_length
+  tattoos
+  piercings
+  aliases
+}
+
+fragment ScrapedSceneStudioData on ScrapedSceneStudio {
+  id
+  name
+  url
+}
+
+fragment ScrapedSceneTagData on ScrapedSceneTag {
+  id
+  name
+}
+
+fragment ScrapedSceneData on ScrapedScene {
+  title
+  details
+  url
+  date
+
+  file {
+    size
+    duration
+    video_codec
+    audio_codec
+    width
+    height
+    framerate
+    bitrate
+  }
+
+  studio {
+    ...ScrapedSceneStudioData
+  }
+
+  tags {
+    ...ScrapedSceneTagData
+  }
+
+  performers {
+    ...ScrapedScenePerformerData
+  }
+}

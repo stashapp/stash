@@ -8,8 +8,13 @@ import {
   InputGroup,
   Spinner,
   TextArea,
+  Collapse,
+  Icon,
+  FileInput,
+  Menu,
+  Popover,
+  MenuItem,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import * as GQL from "../../../core/generated-graphql";
 import { StashService } from "../../../core/StashService";
@@ -18,6 +23,7 @@ import { ToastUtils } from "../../../utils/toasts";
 import { FilterMultiSelect } from "../../select/FilterMultiSelect";
 import { FilterSelect } from "../../select/FilterSelect";
 import { ValidGalleriesSelect } from "../../select/ValidGalleriesSelect";
+import { ImageUtils } from "../../../utils/image";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -36,16 +42,36 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   const [studioId, setStudioId] = useState<string | undefined>(undefined);
   const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
+  const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
+
+  const Scrapers = StashService.useListSceneScrapers();
+  const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListSceneScrapersListSceneScrapers[]>([]);
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
   const [deleteFile, setDeleteFile] = useState<boolean>(false);
   const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
+
+  const [isCoverImageOpen, setIsCoverImageOpen] = useState<boolean>(false);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | undefined>(undefined);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
   const updateScene = StashService.useSceneUpdate(getSceneInput());
   const deleteScene = StashService.useSceneDestroy(getSceneDeleteInput());
+
+  useEffect(() => {
+    var newQueryableScrapers : GQL.ListSceneScrapersListSceneScrapers[] = [];
+
+    if (!!Scrapers.data && Scrapers.data.listSceneScrapers) {
+      newQueryableScrapers = Scrapers.data.listSceneScrapers.filter((s) => {
+        return s.scene && s.scene.supported_scrapes.includes(GQL.ScrapeType.Fragment);
+      });
+    }
+
+    setQueryableScrapers(newQueryableScrapers);
+
+  }, [Scrapers.data])
 
   function updateSceneEditState(state: Partial<GQL.SceneDataFragment>) {
     const perfIds = !!state.performers ? state.performers.map((performer) => performer.id) : undefined;
@@ -64,7 +90,10 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
 
   useEffect(() => {
     updateSceneEditState(props.scene);
+    setCoverImagePreview(props.scene.paths.screenshot);
   }, [props.scene]);
+
+  ImageUtils.addPasteImageHook(onImageLoad);
 
   // if (!isNew && !isEditing) {
   //   if (!data || !data.findPerformer || isLoading) { return <Spinner size={Spinner.SIZE_LARGE} />; }
@@ -83,6 +112,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
       studio_id: studioId,
       performer_ids: performerIds,
       tag_ids: tagIds,
+      cover_image: coverImage,
     };
   }
 
@@ -166,6 +196,131 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     );
   }
 
+  function onImageLoad(this: FileReader) {
+    setCoverImagePreview(this.result as string);
+    setCoverImage(this.result as string);
+  }
+
+  function onCoverImageChange(event: React.FormEvent<HTMLInputElement>) {
+    ImageUtils.onImageChange(event, onImageLoad);
+  }
+  
+  async function onScrapeClicked(scraper : GQL.ListSceneScrapersListSceneScrapers) {
+    setIsLoading(true);
+    try {
+      const result = await StashService.queryScrapeScene(scraper.id, getSceneInput());
+      if (!result.data || !result.data.scrapeScene) { return; }
+      updateSceneFromScrapedScene(result.data.scrapeScene);
+    } catch (e) {
+      ErrorUtils.handle(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function renderScraperMenuItem(scraper : GQL.ListSceneScrapersListSceneScrapers) {
+    return (
+      <MenuItem
+        text={scraper.name}
+        onClick={() => { onScrapeClicked(scraper); }}
+      />
+    );
+  }
+
+  function renderScraperMenu() {
+    if (!queryableScrapers || queryableScrapers.length === 0) {
+      return;
+    }
+
+    const scraperMenu = (
+      <Menu>
+        {queryableScrapers ? queryableScrapers.map((s) => renderScraperMenuItem(s)) : undefined}
+      </Menu>
+    );
+    return (
+      <Popover content={scraperMenu} position="bottom">
+        <Button text="Scrape with..."/>
+      </Popover>
+    );
+  }
+
+  function urlScrapable(url: string) : boolean {
+    return !!url && !!Scrapers.data && Scrapers.data.listSceneScrapers && Scrapers.data.listSceneScrapers.some((s) => {
+      return !!s.scene && !!s.scene.urls && s.scene.urls.some((u) => { return url.includes(u); });
+    });
+  }
+
+  function updateSceneFromScrapedScene(scene : GQL.ScrapedSceneDataFragment) {
+    if (!title && scene.title) {
+      setTitle(scene.title);
+    }
+
+    if (!details && scene.details) {
+      setDetails(scene.details);
+    }
+    
+    if (!date && scene.date) {
+      setDate(scene.date);
+    }
+
+    if (!url && scene.url) {
+      setUrl(scene.url);
+    }
+    
+    if (!studioId && scene.studio && scene.studio.id) {
+      setStudioId(scene.studio.id);
+    }
+
+    if ((!performerIds || performerIds.length === 0) && scene.performers && scene.performers.length > 0) {
+      let idPerfs = scene.performers.filter((p) => {
+        return p.id !== undefined && p.id !== null;
+      });
+
+      if (idPerfs.length > 0) {
+        let newIds = idPerfs.map((p) => p.id);
+        setPerformerIds(newIds as string[]);
+      }
+    }
+
+    if ((!tagIds || tagIds.length === 0) && scene.tags && scene.tags.length > 0) {
+      let idTags = scene.tags.filter((p) => {
+        return p.id !== undefined && p.id !== null;
+      });
+
+      if (idTags.length > 0) {
+        let newIds = idTags.map((p) => p.id);
+        setTagIds(newIds as string[]);
+      }
+    }
+  }
+
+  async function onScrapeSceneURL() {
+    if (!url) { return; }
+    setIsLoading(true);
+    try {
+      const result = await StashService.queryScrapeSceneURL(url);
+      if (!result.data || !result.data.scrapeSceneURL) { return; }
+      updateSceneFromScrapedScene(result.data.scrapeSceneURL);
+    } catch (e) {
+      ErrorUtils.handle(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function maybeRenderScrapeButton() {
+    if (!url || !urlScrapable(url)) {
+      return undefined;
+    }
+    return (
+      <Button 
+        minimal={true} 
+        icon="import" 
+        id="scrape-url-button"
+        onClick={() => onScrapeSceneURL()}/>
+    )
+  }
+
   return (
     <>
       {renderDeleteAlert()}
@@ -191,6 +346,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
             onChange={(newValue: any) => setUrl(newValue.target.value)}
             value={url}
           />
+          {maybeRenderScrapeButton()}
         </FormGroup>
 
         <FormGroup label="Date" helperText="YYYY-MM-DD">
@@ -231,9 +387,22 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
         <FormGroup label="Tags">
           {renderMultiSelect("tags", tagIds)}
         </FormGroup>
+
+        <div className="bp3-form-group">
+          <label className="bp3-label collapsible-label" onClick={() => setIsCoverImageOpen(!isCoverImageOpen)}>
+            <Icon className="label-icon" icon={isCoverImageOpen ? "chevron-down" : "chevron-right"}/>
+            <span>Cover Image</span>
+          </label>
+          <Collapse isOpen={isCoverImageOpen}>
+            <img alt="Scene cover" className="scene-cover" src={coverImagePreview} />
+            <FileInput text="Choose image..." onInputChange={onCoverImageChange} inputProps={{accept: ".jpg,.jpeg,.png"}} />
+          </Collapse>
+        </div>
+        
       </div>
       <Button className="edit-button" text="Save" intent="primary" onClick={() => onSave()}/>
       <Button className="edit-button" text="Delete" intent="danger" onClick={() => setIsDeleteAlertOpen(true)}/>
+      {renderScraperMenu()}
     </>
   );
 };

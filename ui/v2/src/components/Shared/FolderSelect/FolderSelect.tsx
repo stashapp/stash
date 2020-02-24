@@ -6,7 +6,6 @@ import {
   Spinner,
   FormGroup,
 } from "@blueprintjs/core";
-import _ from "lodash";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import { StashService } from "../../../core/StashService";
 
@@ -29,7 +28,7 @@ export const FolderSelect: FunctionComponent<IProps> = (props: IProps) => {
   useEffect(() => {
     if (!data || !data.directories || !!error) { return; }
     setSelectableDirectories(StashService.nullToUndefined(data.directories));
-  }, [data]);
+  }, [data, error]);
 
   function onSelectDirectory() {
     selectedDirectories.push(currentDirectory);
@@ -79,7 +78,7 @@ export const FolderSelect: FunctionComponent<IProps> = (props: IProps) => {
       {renderDialog()}
       <FormGroup>
         {selectedDirectories.map((path) => {
-          return <div key={path}>{path} <a onClick={() => onRemoveDirectory(path)}>Remove</a></div>;
+          return <div key={path}>{path} <button className="button-link" onClick={() => onRemoveDirectory(path)}>Remove</button></div>;
         })}
       </FormGroup>
       

@@ -84,7 +84,7 @@ export const PerformerListTable: FunctionComponent<IPerformerListTableProps> = (
   return (
     <>
     <div className="grid">
-      <HTMLTable>
+      <HTMLTable className="bp3-html-table bp3-html-table-bordered bp3-html-table-condensed bp3-html-table-striped bp3-interactive">
         <thead>
           <tr>
             <th></th>

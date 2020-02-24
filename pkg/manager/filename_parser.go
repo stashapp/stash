@@ -335,9 +335,15 @@ func (h *sceneHolder) postParse() {
 }
 
 func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
-	// perform matching on basename
-	// TODO - may want to handle full path at some point
+
+	// #302 - if the pattern includes a path separator, then include the entire
+	// scene path in the match. Otherwise, use the default behaviour of just
+	// the file's basename
+	// must be double \ because of the regex escaping
 	filename := filepath.Base(scene.Path)
+	if strings.Contains(m.regexString, `\\`) || strings.Contains(m.regexString, "/") {
+		filename = scene.Path
+	}
 
 	result := m.regex.FindStringSubmatch(filename)
 

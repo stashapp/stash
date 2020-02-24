@@ -3,13 +3,14 @@ package manager
 import (
 	"bytes"
 	"fmt"
-	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 	"math"
 	"os/exec"
 	"runtime"
 	"strconv"
+
+	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type GeneratorInfo struct {
@@ -84,7 +85,7 @@ func (g *GeneratorInfo) configure() error {
 	// Something seriously wrong with this file
 	if numberOfFrames == 0 || !utils.IsValidFloat64(framerate) {
 		logger.Errorf(
-			"number of frames or framerate is 0.  nb_frames <%s> framerate <%s> duration <%s>",
+			"number of frames or framerate is 0.  nb_frames <%s> framerate <%f> duration <%f>",
 			videoStream.NbFrames,
 			framerate,
 			g.VideoFile.Duration,

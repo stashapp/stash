@@ -1,15 +1,15 @@
 package manager
 
 import (
-	"path/filepath"
-	"sync"
-	"time"
-
 	"github.com/bmatcuk/doublestar"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"path/filepath"
+	"strconv"
+	"sync"
+	"time"
 )
 
 type TaskStatus struct {
@@ -17,6 +17,8 @@ type TaskStatus struct {
 	Progress   float64
 	LastUpdate time.Time
 	stopping   bool
+	upTo       int
+	total      int
 }
 
 func (t *TaskStatus) Stop() bool {
@@ -34,8 +36,14 @@ func (t *TaskStatus) setProgress(upTo int, total int) {
 	if total == 0 {
 		t.Progress = 1
 	}
+	t.upTo = upTo
+	t.total = total
 	t.Progress = float64(upTo) / float64(total)
 	t.updated()
+}
+
+func (t *TaskStatus) incrementProgress() {
+	t.setProgress(t.upTo+1, t.total)
 }
 
 func (t *TaskStatus) indefiniteProgress() {
@@ -47,7 +55,7 @@ func (t *TaskStatus) updated() {
 	t.LastUpdate = time.Now()
 }
 
-func (s *singleton) Scan(nameFromMetadata bool) {
+func (s *singleton) Scan(useFileMetadata bool) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -69,6 +77,7 @@ func (s *singleton) Scan(nameFromMetadata bool) {
 			return
 		}
 
+		results, _ = excludeFiles(results, config.GetExcludes())
 		total := len(results)
 		logger.Infof("Starting scan of %d files. %d New files found", total, s.neededScan(results))
 
@@ -81,7 +90,7 @@ func (s *singleton) Scan(nameFromMetadata bool) {
 				return
 			}
 			wg.Add(1)
-			task := ScanTask{FilePath: path, NameFromMetadata: nameFromMetadata}
+			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -156,8 +165,12 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 			return
 		}
 		totalsNeeded := s.neededGenerate(scenes, sprites, previews, markers, transcodes)
-		logger.Infof("Generating %d sprites %d previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.markers, totalsNeeded.transcodes)
-
+		if totalsNeeded == nil {
+			logger.Infof("Taking too long to count content. Skipping...")
+			logger.Infof("Generating content")
+		} else {
+			logger.Infof("Generating %d sprites %d previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.markers, totalsNeeded.transcodes)
+		}
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -199,7 +212,174 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 
 			wg.Wait()
 		}
+		logger.Infof("Generate finished")
 	}()
+}
+
+func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []string) {
+	if s.Status.Status != Idle {
+		return
+	}
+	s.Status.SetStatus(AutoTag)
+	s.Status.indefiniteProgress()
+
+	go func() {
+		defer s.returnToIdleState()
+
+		// calculate work load
+		performerCount := len(performerIds)
+		studioCount := len(studioIds)
+		tagCount := len(tagIds)
+
+		performerQuery := models.NewPerformerQueryBuilder()
+		studioQuery := models.NewTagQueryBuilder()
+		tagQuery := models.NewTagQueryBuilder()
+
+		const wildcard = "*"
+		var err error
+		if performerCount == 1 && performerIds[0] == wildcard {
+			performerCount, err = performerQuery.Count()
+			if err != nil {
+				logger.Errorf("Error getting performer count: %s", err.Error())
+			}
+		}
+		if studioCount == 1 && studioIds[0] == wildcard {
+			studioCount, err = studioQuery.Count()
+			if err != nil {
+				logger.Errorf("Error getting studio count: %s", err.Error())
+			}
+		}
+		if tagCount == 1 && tagIds[0] == wildcard {
+			tagCount, err = tagQuery.Count()
+			if err != nil {
+				logger.Errorf("Error getting tag count: %s", err.Error())
+			}
+		}
+
+		total := performerCount + studioCount + tagCount
+		s.Status.setProgress(0, total)
+
+		s.autoTagPerformers(performerIds)
+		s.autoTagStudios(studioIds)
+		s.autoTagTags(tagIds)
+	}()
+}
+
+func (s *singleton) autoTagPerformers(performerIds []string) {
+	performerQuery := models.NewPerformerQueryBuilder()
+
+	var wg sync.WaitGroup
+	for _, performerId := range performerIds {
+		var performers []*models.Performer
+		if performerId == "*" {
+			var err error
+			performers, err = performerQuery.All()
+			if err != nil {
+				logger.Errorf("Error querying performers: %s", err.Error())
+				continue
+			}
+		} else {
+			performerIdInt, err := strconv.Atoi(performerId)
+			if err != nil {
+				logger.Errorf("Error parsing performer id %s: %s", performerId, err.Error())
+				continue
+			}
+
+			performer, err := performerQuery.Find(performerIdInt)
+			if err != nil {
+				logger.Errorf("Error finding performer id %s: %s", performerId, err.Error())
+				continue
+			}
+			performers = append(performers, performer)
+		}
+
+		for _, performer := range performers {
+			wg.Add(1)
+			task := AutoTagPerformerTask{performer: performer}
+			go task.Start(&wg)
+			wg.Wait()
+
+			s.Status.incrementProgress()
+		}
+	}
+}
+
+func (s *singleton) autoTagStudios(studioIds []string) {
+	studioQuery := models.NewStudioQueryBuilder()
+
+	var wg sync.WaitGroup
+	for _, studioId := range studioIds {
+		var studios []*models.Studio
+		if studioId == "*" {
+			var err error
+			studios, err = studioQuery.All()
+			if err != nil {
+				logger.Errorf("Error querying studios: %s", err.Error())
+				continue
+			}
+		} else {
+			studioIdInt, err := strconv.Atoi(studioId)
+			if err != nil {
+				logger.Errorf("Error parsing studio id %s: %s", studioId, err.Error())
+				continue
+			}
+
+			studio, err := studioQuery.Find(studioIdInt, nil)
+			if err != nil {
+				logger.Errorf("Error finding studio id %s: %s", studioId, err.Error())
+				continue
+			}
+			studios = append(studios, studio)
+		}
+
+		for _, studio := range studios {
+			wg.Add(1)
+			task := AutoTagStudioTask{studio: studio}
+			go task.Start(&wg)
+			wg.Wait()
+
+			s.Status.incrementProgress()
+		}
+	}
+}
+
+func (s *singleton) autoTagTags(tagIds []string) {
+	tagQuery := models.NewTagQueryBuilder()
+
+	var wg sync.WaitGroup
+	for _, tagId := range tagIds {
+		var tags []*models.Tag
+		if tagId == "*" {
+			var err error
+			tags, err = tagQuery.All()
+			if err != nil {
+				logger.Errorf("Error querying tags: %s", err.Error())
+				continue
+			}
+		} else {
+			tagIdInt, err := strconv.Atoi(tagId)
+			if err != nil {
+				logger.Errorf("Error parsing tag id %s: %s", tagId, err.Error())
+				continue
+			}
+
+			tag, err := tagQuery.Find(tagIdInt, nil)
+			if err != nil {
+				logger.Errorf("Error finding tag id %s: %s", tagId, err.Error())
+				continue
+			}
+			tags = append(tags, tag)
+		}
+
+		for _, tag := range tags {
+			wg.Add(1)
+			task := AutoTagTagTask{tag: tag}
+			go task.Start(&wg)
+			wg.Wait()
+
+			s.Status.incrementProgress()
+		}
+	}
 }
 
 func (s *singleton) Clean() {
@@ -236,7 +416,7 @@ func (s *singleton) Clean() {
 			}
 
 			if scene == nil {
-				logger.Errorf("nil scene, skipping generate")
+				logger.Errorf("nil scene, skipping Clean")
 				continue
 			}
 
@@ -286,6 +466,18 @@ type totalsGenerate struct {
 func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, markers, transcodes bool) *totalsGenerate {
 
 	var totals totalsGenerate
+	const timeoutSecs = 90 * time.Second
+
+	// create a control channel through which to signal the counting loop when the timeout is reached
+	chTimeout := make(chan struct{})
+
+	//run the timeout function in a separate thread
+	go func() {
+		time.Sleep(timeoutSecs)
+		chTimeout <- struct{}{}
+	}()
+
+	logger.Infof("Counting content to generate...")
 	for _, scene := range scenes {
 		if scene != nil {
 			if sprites {
@@ -314,6 +506,13 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, ma
 				}
 			}
 		}
+		//check for timeout
+		select {
+		case <-chTimeout:
+			return nil
+		default:
+		}
+
 	}
 	return &totals
 }

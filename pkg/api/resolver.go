@@ -6,9 +6,8 @@ import (
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
-
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/scraper"
 )
 
 type Resolver struct{}
@@ -108,12 +107,28 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 }
 
 func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {
-	hash, buildtime := GetVersion()
+	version, hash, buildtime := GetVersion()
 
 	return &models.Version{
+		Version:   &version,
 		Hash:      hash,
 		BuildTime: buildtime,
 	}, nil
+}
+
+//Gets latest version (git shorthash commit for now)
+func (r *queryResolver) Latestversion(ctx context.Context) (*models.ShortVersion, error) {
+	ver, url, err := GetLatestVersion(true)
+	if err == nil {
+		logger.Infof("Retrieved latest hash: %s", ver)
+	} else {
+		logger.Errorf("Error while retrieving latest hash: %s", err)
+	}
+
+	return &models.ShortVersion{
+		Shorthash: ver,
+		URL:       url,
+	}, err
 }
 
 // Get scene marker tags which show up under the video.
@@ -160,20 +175,12 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 	return result, nil
 }
 
-func (r *queryResolver) ScrapeFreeones(ctx context.Context, performer_name string) (*models.ScrapedPerformer, error) {
-	return scraper.GetPerformer(performer_name)
-}
-
-func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error) {
-	return scraper.GetPerformerNames(query)
-}
-
 // wasFieldIncluded returns true if the given field was included in the request.
 // Slices are unmarshalled to empty slices even if the field was omitted. This
 // method determines if it was omitted altogether.
 func wasFieldIncluded(ctx context.Context, field string) bool {
 	rctx := graphql.GetRequestContext(ctx)
-	
+
 	_, ret := rctx.Variables[field]
 	return ret
 }

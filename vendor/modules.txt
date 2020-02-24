@@ -1,8 +1,20 @@
 # github.com/99designs/gqlgen v0.9.0
-github.com/99designs/gqlgen/handler
+github.com/99designs/gqlgen
 github.com/99designs/gqlgen/graphql
+github.com/99designs/gqlgen/handler
 github.com/99designs/gqlgen/graphql/introspection
+github.com/99designs/gqlgen/cmd
 github.com/99designs/gqlgen/complexity
+github.com/99designs/gqlgen/api
+github.com/99designs/gqlgen/codegen/config
+github.com/99designs/gqlgen/plugin/servergen
+github.com/99designs/gqlgen/codegen
+github.com/99designs/gqlgen/plugin
+github.com/99designs/gqlgen/plugin/modelgen
+github.com/99designs/gqlgen/plugin/resolvergen
+github.com/99designs/gqlgen/codegen/templates
+github.com/99designs/gqlgen/internal/code
+github.com/99designs/gqlgen/internal/imports
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
 # github.com/PuerkitoBio/goquery v1.5.0
@@ -11,6 +23,10 @@ github.com/PuerkitoBio/goquery
 github.com/agnivade/levenshtein
 # github.com/andybalholm/cascadia v1.0.0
 github.com/andybalholm/cascadia
+# github.com/antchfx/htmlquery v1.2.0
+github.com/antchfx/htmlquery
+# github.com/antchfx/xpath v1.1.2
+github.com/antchfx/xpath
 # github.com/bmatcuk/doublestar v1.1.5
 github.com/bmatcuk/doublestar
 # github.com/disintegration/imaging v1.6.0
@@ -59,6 +75,8 @@ github.com/golang-migrate/migrate/v4/source/file
 github.com/golang-migrate/migrate/v4
 github.com/golang-migrate/migrate/v4/source
 github.com/golang-migrate/migrate/v4/database
+# github.com/golang/groupcache v0.0.0-20190129154638-5b532d6fd5ef
+github.com/golang/groupcache/lru
 # github.com/gorilla/websocket v1.4.0
 github.com/gorilla/websocket
 # github.com/h2non/filetype v1.0.8
@@ -115,6 +133,10 @@ github.com/rogpeppe/go-internal/module
 github.com/rogpeppe/go-internal/semver
 # github.com/rs/cors v1.6.0
 github.com/rs/cors
+# github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
+github.com/shurcooL/graphql
+github.com/shurcooL/graphql/ident
+github.com/shurcooL/graphql/internal/jsonutil
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
 # github.com/spf13/afero v1.2.0
@@ -130,6 +152,11 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.4.0
 github.com/spf13/viper
+# github.com/urfave/cli v1.20.0
+github.com/urfave/cli
+# github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e
+github.com/vektah/dataloaden
+github.com/vektah/dataloaden/pkg/generator
 # github.com/vektah/gqlparser v1.1.2
 github.com/vektah/gqlparser
 github.com/vektah/gqlparser/ast
@@ -148,6 +175,8 @@ golang.org/x/image/tiff
 golang.org/x/image/tiff/lzw
 # golang.org/x/net v0.0.0-20190522155817-f3200d17e092
 golang.org/x/net/html
+golang.org/x/net/html/charset
+golang.org/x/net/context/ctxhttp
 golang.org/x/net/html/atom
 # golang.org/x/sys v0.0.0-20190426135247-a129542de9ae
 golang.org/x/sys/unix
@@ -155,16 +184,32 @@ golang.org/x/sys/windows
 # golang.org/x/text v0.3.2
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
+golang.org/x/text/encoding
+golang.org/x/text/encoding/charmap
+golang.org/x/text/encoding/htmlindex
+golang.org/x/text/encoding/internal/identifier
+golang.org/x/text/encoding/internal
+golang.org/x/text/encoding/japanese
+golang.org/x/text/encoding/korean
+golang.org/x/text/encoding/simplifiedchinese
+golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/encoding/unicode
+golang.org/x/text/language
+golang.org/x/text/internal/utf8internal
+golang.org/x/text/runes
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/tag
 # golang.org/x/tools v0.0.0-20190515012406-7d7faa4812bd
-golang.org/x/tools/go/ast/astutil
-golang.org/x/tools/imports
 golang.org/x/tools/go/packages
-golang.org/x/tools/internal/gopathwalk
-golang.org/x/tools/internal/module
+golang.org/x/tools/imports
+golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/semver
-golang.org/x/tools/internal/fastwalk
+golang.org/x/tools/internal/module
 golang.org/x/tools/go/internal/gcimporter
+golang.org/x/tools/internal/fastwalk
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2

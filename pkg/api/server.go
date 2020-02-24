@@ -21,12 +21,14 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+var version string = ""
 var buildstamp string = ""
 var githash string = ""
 
@@ -67,7 +69,7 @@ func Start() {
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
 
 	initialiseImages()
-	
+
 	r := chi.NewRouter()
 
 	r.Use(authenticateHandler())
@@ -112,7 +114,7 @@ func Start() {
 		if !config.GetCSSEnabled() {
 			return
 		}
-		
+
 		// search for custom.css in current directory, then $HOME/.stash
 		fn := config.GetCSSPath()
 		exists, _ := utils.FileExists(fn)
@@ -127,7 +129,7 @@ func Start() {
 	r.HandleFunc("/setup*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			data := setupUIBox.Bytes("index.html")
+			data, _ := setupUIBox.Find("index.html")
 			_, _ = w.Write(data)
 		} else {
 			r.URL.Path = strings.Replace(r.URL.Path, "/setup", "", 1)
@@ -182,6 +184,8 @@ func Start() {
 			return
 		}
 
+		manager.GetInstance().RefreshConfig()
+
 		http.Redirect(w, r, "/", 301)
 	})
 
@@ -189,12 +193,22 @@ func Start() {
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
 		if ext == ".html" || ext == "" {
-			data := uiBox.Bytes("index.html")
+			data, _ := uiBox.Find("index.html")
 			_, _ = w.Write(data)
 		} else {
+			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
+			if isStatic {
+				w.Header().Add("Cache-Control", "max-age=604800000")
+			}
 			http.FileServer(uiBox).ServeHTTP(w, r)
 		}
 	})
+
+	displayHost := config.GetHost()
+	if displayHost == "0.0.0.0" {
+		displayHost = "localhost"
+	}
+	displayAddress := displayHost + ":" + strconv.Itoa(config.GetPort())
 
 	address := config.GetHost() + ":" + strconv.Itoa(config.GetPort())
 	if tlsConfig := makeTLSConfig(); tlsConfig != nil {
@@ -206,7 +220,9 @@ func Start() {
 
 		go func() {
 			printVersion()
-			logger.Infof("stash is running on HTTPS at https://" + address + "/")
+			printLatestVersion()
+			logger.Infof("stash is listening on " + address)
+			logger.Infof("stash is running at https://" + displayAddress + "/")
 			logger.Fatal(httpsServer.ListenAndServeTLS("", ""))
 		}()
 	} else {
@@ -217,18 +233,24 @@ func Start() {
 
 		go func() {
 			printVersion()
-			logger.Infof("stash is running on HTTP at http://" + address + "/")
+			printLatestVersion()
+			logger.Infof("stash is listening on " + address)
+			logger.Infof("stash is running at http://" + displayAddress + "/")
 			logger.Fatal(server.ListenAndServe())
 		}()
 	}
 }
 
 func printVersion() {
-	fmt.Printf("stash version: %s (%s)\n", githash, buildstamp)
+	versionString := githash
+	if version != "" {
+		versionString = version + " (" + versionString + ")"
+	}
+	fmt.Printf("stash version: %s - %s\n", versionString, buildstamp)
 }
 
-func GetVersion() (string, string) {
-	return githash, buildstamp
+func GetVersion() (string, string, string) {
+	return version, githash, buildstamp
 }
 
 func makeTLSConfig() *tls.Config {
@@ -273,6 +295,11 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 			scheme = "http"
 		}
 		baseURL := scheme + "://" + r.Host
+
+		externalHost := config.GetExternalHost()
+		if externalHost != "" {
+			baseURL = externalHost
+		}
 
 		r = r.WithContext(context.WithValue(ctx, BaseURLCtxKey, baseURL))
 

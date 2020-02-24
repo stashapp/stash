@@ -45,6 +45,20 @@ type Query {
 
   # Scrapers
 
+  """List available scrapers"""
+  listPerformerScrapers: [Scraper!]!
+  listSceneScrapers: [Scraper!]!
+  """Scrape a list of performers based on name"""
+  scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
+  """Scrapes a complete performer record based on a scrapePerformerList result"""
+  scrapePerformer(scraper_id: ID!, scraped_performer: ScrapedPerformerInput!): ScrapedPerformer
+  """Scrapes a complete performer record based on a URL"""
+  scrapePerformerURL(url: String!): ScrapedPerformer
+  """Scrapes a complete scene record based on an existing scene"""
+  scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
+  """Scrapes a complete performer record based on a URL"""
+  scrapeSceneURL(url: String!): ScrapedScene
+
   """Scrape a performer using Freeones"""
   scrapeFreeones(performer_name: String!): ScrapedPerformer
   """Scrape a list of performers from a query"""
@@ -66,6 +80,8 @@ type Query {
   metadataScan(input: ScanMetadataInput!): String!
   """Start generating content. Returns the job ID"""
   metadataGenerate(input: GenerateMetadataInput!): String!
+  """Start auto-tagging. Returns the job ID"""
+  metadataAutoTag(input: AutoTagMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
   metadataClean: String!
 
@@ -80,6 +96,9 @@ type Query {
 
   # Version
   version: Version!
+  
+  # LatestVersion
+  latestversion: ShortVersion!
 }
 
 type Mutation {
@@ -87,6 +106,13 @@ type Mutation {
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!
   scenesUpdate(input: [SceneUpdateInput!]!): [Scene]
+
+  """Increments the o-counter for a scene. Returns the new value"""
+  sceneIncrementO(id: ID!): Int!
+  """Decrements the o-counter for a scene. Returns the new value"""
+  sceneDecrementO(id: ID!): Int!
+  """Resets the o-counter for a scene to 0. Returns the new value"""
+  sceneResetO(id: ID!): Int!
 
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker

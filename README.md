@@ -16,7 +16,7 @@ Follow [this README.md in the docker directory.](docker/production/README.md)
 
 Stash supports macOS, Windows, and Linux.  Download the [latest release here](https://github.com/stashapp/stash/releases).
 
-Run the executable (double click the exe on windows or run `./stash-osx` / `./stash-linux` from the terminal on macOS / Linux) and navigate to either https://localhost:9999 or http://localhost:9998 to get started.
+Run the executable (double click the exe on windows or run `./stash-osx` / `./stash-linux` from the terminal on macOS / Linux) and navigate to either https://localhost:9999 or http://localhost:9999 to get started.
 
 *Note for Windows users:* Running the app might present a security prompt since the binary isn't signed yet.  Just click more info and then the "run anyway" button.
 
@@ -62,12 +62,14 @@ Join the [Discord server](https://discord.gg/2TsNFKt).
 
 ## Install
 
+* [Go](https://golang.org/dl/)
 * [Revive](https://github.com/mgechev/revive) - Configurable linter
     * Go Install: `go get github.com/mgechev/revive`
 * [Packr2](https://github.com/gobuffalo/packr/tree/v2.0.2/v2) - Static asset bundler
     * Go Install: `go get github.com/gobuffalo/packr/v2/packr2@v2.0.2`
     * [Binary Download](https://github.com/gobuffalo/packr/releases)
 * [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
+    * Run `yarn install --frozen-lockfile` in the `stash/ui/v2` folder (before running make generate for first time).
 
 NOTE: You may need to run the `go get` commands outside the project directory to avoid modifying the projects module file.
 
@@ -85,6 +87,8 @@ TODO
     1. Click the `Environment Variables` button
     2. Add `GO111MODULE=on`
     3. Under system variables find the `Path`.  Edit and add `C:\Program Files\mingw-w64\*\mingw64\bin` (replace * with the correct path).
+
+NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 
 ## Commands
 
