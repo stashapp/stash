@@ -14,6 +14,7 @@ import (
 
 //we use the github REST V3 API as no login is required
 const apiReleases string = "https://api.github.com/repos/stashapp/stash/releases"
+const apiTags string = "https://api.github.com/repos/stashapp/stash/tags"
 const apiAcceptHeader string = "application/vnd.github.v3+json"
 const developmentTag string = "latest_develop"
 
@@ -84,6 +85,17 @@ type githubAsset struct {
 	Browser_download_url string
 }
 
+type githubTagResponse struct {
+	Name        string
+	Zipball_url string
+	Tarball_url string
+	Commit      struct {
+		Sha string
+		Url string
+	}
+	Node_id string
+}
+
 // GetLatestVersion gets latest version (git commit hash) from github API
 // If running a build from the "master" branch, then the latest full release
 // is used, otherwise it uses the release that is tagged with "latest_develop"
@@ -144,7 +156,9 @@ func GetLatestVersion(shortHash bool) (latestVersion string, latestRelease strin
 	}
 
 	if release.Prerelease == usePreRelease {
-		if shortHash {
+		if len(release.Target_commitish) != 40 { // sha is not present in the commit
+			latestVersion = getShaFromTags(shortHash, version)
+		} else if shortHash {
 			latestVersion = release.Target_commitish[0:7] //shorthash is first 7 digits of git commit hash
 		} else {
 			latestVersion = release.Target_commitish
@@ -177,4 +191,53 @@ func printLatestVersion() {
 			logger.Infof("New version: (%s) available.", latest)
 		}
 	}
+}
+
+// get sha from the github api tags endpoint
+// returns the sha1 hash/shorthash or "" if something's wrong
+func getShaFromTags(shortHash bool, name string) string {
+	client := &http.Client{
+		Timeout: 3 * time.Second,
+	}
+
+	url := apiTags
+	req, _ := http.NewRequest("GET", url, nil)
+
+	req.Header.Add("Accept", apiAcceptHeader) // gh api recommendation , send header with api version
+	response, err := client.Do(req)
+	if err != nil {
+		logger.Errorf("Gihub Tags Api %v", err)
+		return ""
+	} else {
+		defer response.Body.Close()
+
+		data, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			logger.Errorf("Gihub Tags Api %v", err)
+			return ""
+		} else {
+			tags := []githubTagResponse{}
+			err = json.Unmarshal(data, &tags)
+			if err != nil {
+				logger.Errorf("Gihub Tags Api %v", err)
+				return ""
+			} else {
+				for _, tag := range tags {
+					if tag.Name == name {
+						if len(tag.Commit.Sha) != 40 {
+							return ""
+						}
+						if shortHash {
+							return tag.Commit.Sha[0:7] //shorthash is first 7 digits of git commit hash
+						} else {
+							return tag.Commit.Sha
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return ""
+
 }
