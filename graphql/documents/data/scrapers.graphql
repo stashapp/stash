@@ -38,9 +38,9 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
 fragment ScrapedMovieData on ScrapedMovie {
   name
   aliases
-  duration_movie
-  date_movie
-  rating_movie
+  duration
+  date
+  rating
   director
   url
   synopsis
@@ -51,9 +51,9 @@ fragment ScrapedSceneMovieData on ScrapedSceneMovie {
   id
   name
   aliases
-  duration_movie
-  date_movie
-  rating_movie
+  duration
+  date
+  rating
   director
   url
   synopsis

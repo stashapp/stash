@@ -48,9 +48,9 @@ type ScrapedSceneMovie {
   id: ID
   name: String!
   aliases: String
-  duration_movie: String
-  date_movie: String
-  rating_movie: String
+  duration: String
+  date: String
+  rating: String
   director: String
   synopsis: String
   url: String

@@ -85,9 +85,9 @@ type ScrapedSceneMovie struct {
 	ID              *string `graphql:"id" json:"id"`
 	Name            string  `graphql:"name" json:"name"`
 	Aliases         string  `graphql:"aliases" json:"aliases"`
-	DurationMovie   string  `graphql:"duration_movie" json:"duration_movie"`
-	DateMovie       string  `graphql:"date_movie" json:"date_movie"`
-	RatingMovie     string  `graphql:"rating_movie" json:"rating_movie"`
+	Duration	    string  `graphql:"duration" json:"duration"`
+	Date	        string  `graphql:"date" json:"date"`
+	Rating	        string  `graphql:"rating" json:"rating"`
 	Director        string  `graphql:"director" json:"director"`
 	Synopsis        string  `graphql:"synopsis" json:"synopsis"`
 	URL             *string `graphql:"url" json:"url"`

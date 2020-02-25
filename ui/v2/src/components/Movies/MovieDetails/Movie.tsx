@@ -25,9 +25,9 @@ export const Movie: FunctionComponent<IProps> = (props: IProps) => {
   const [back_image, setBack_Image] = useState<string | undefined>(undefined);
   const [name, setName] = useState<string | undefined>(undefined);
   const [aliases, setAliases] = useState<string | undefined>(undefined);
-  const [duration_movie, setDuration_movie] = useState<string | undefined>(undefined);
-  const [date_movie, setDate_movie] = useState<string | undefined>(undefined);
-  const [rating_movie, setRating] = useState<string | undefined>(undefined);
+  const [duration, setDuration] = useState<string | undefined>(undefined);
+  const [date, setDate] = useState<string | undefined>(undefined);
+  const [rating, setRating] = useState<string | undefined>(undefined);
   const [director, setDirector] = useState<string | undefined>(undefined);
   const [synopsis, setSynopsis] = useState<string | undefined>(undefined);
   const [url, setUrl] = useState<string | undefined>(undefined);
@@ -48,9 +48,9 @@ export const Movie: FunctionComponent<IProps> = (props: IProps) => {
   function updateMovieEditState(state: Partial<GQL.MovieDataFragment>) {
     setName(state.name);
     setAliases(state.aliases);
-    setDuration_movie(state.duration_movie);
-    setDate_movie(state.date_movie);
-    setRating(state.rating_movie);
+    setDuration(state.duration);
+    setDate(state.date);
+    setRating(state.rating);
     setDirector(state.director);
     setSynopsis(state.synopsis);
     setUrl(state.url);
@@ -97,9 +97,9 @@ export const Movie: FunctionComponent<IProps> = (props: IProps) => {
     const input: Partial<GQL.MovieCreateInput | GQL.MovieUpdateInput> = {
       name,
       aliases,
-      duration_movie,
-      date_movie,
-	    rating_movie,
+      duration,
+      date,
+	    rating,
       director,
       synopsis,
       url,
@@ -183,12 +183,12 @@ export const Movie: FunctionComponent<IProps> = (props: IProps) => {
           <HTMLTable style={{width: "100%"}}>
             <tbody>
               {TableUtils.renderInputGroup({title: "Aliases", value: aliases, isEditing, onChange: setAliases})}
-              {TableUtils.renderInputGroup({title: "Duration", value: duration_movie, isEditing, onChange: setDuration_movie})}
-              {TableUtils.renderInputGroup({title: "Date (YYYY-MM-DD)", value: date_movie, isEditing, onChange: setDate_movie})}
+              {TableUtils.renderInputGroup({title: "Duration", value: duration, isEditing, onChange: setDuration})}
+              {TableUtils.renderInputGroup({title: "Date (YYYY-MM-DD)", value: date, isEditing, onChange: setDate})}
               {TableUtils.renderInputGroup({title: "Director", value: director, isEditing, onChange: setDirector})}
               {TableUtils.renderHtmlSelect({
                 title: "Rating", 
-                value: rating_movie, 
+                value: rating, 
                 isEditing, 
                 onChange: (value: string) => setRating(value), 
                 selectOptions: ["","1","2","3","4","5"]

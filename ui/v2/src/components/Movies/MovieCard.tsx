@@ -17,10 +17,10 @@ interface IProps {
 
 export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
   function maybeRenderRatingBanner() {
-    if (!props.movie.rating_movie) { return; }
+    if (!props.movie.rating) { return; }
     return (
-      <div className={`rating-banner ${ColorUtils.classForRating(parseInt(props.movie.rating_movie,10))}`}>
-        RATING: {props.movie.rating_movie}
+      <div className={`rating-banner ${ColorUtils.classForRating(parseInt(props.movie.rating,10))}`}>
+        RATING: {props.movie.rating}
       </div>
     );
   }

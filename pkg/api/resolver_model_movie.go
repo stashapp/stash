@@ -29,24 +29,24 @@ func (r *movieResolver) Aliases(ctx context.Context, obj *models.Movie) (*string
 	return nil, nil
 }
 
-func (r *movieResolver) DurationMovie(ctx context.Context, obj *models.Movie) (*string, error) {
-	if obj.Duration_movie.Valid {
-		return &obj.Duration_movie.String, nil
+func (r *movieResolver) Duration(ctx context.Context, obj *models.Movie) (*string, error) {
+	if obj.Duration.Valid {
+		return &obj.Duration.String, nil
 	}
 	return nil, nil
 }
 
-func (r *movieResolver) DateMovie(ctx context.Context, obj *models.Movie) (*string, error) {
-	if obj.Date_movie.Valid {
-		result := utils.GetYMDFromDatabaseDate(obj.Date_movie.String)
+func (r *movieResolver) Date(ctx context.Context, obj *models.Movie) (*string, error) {
+	if obj.Date.Valid {
+		result := utils.GetYMDFromDatabaseDate(obj.Date.String)
 		return &result, nil
 	}
 	return nil, nil
 }
 
-func (r *movieResolver) RatingMovie(ctx context.Context, obj *models.Movie) (*string, error) {
-	if obj.Rating_movie.Valid {
-		return &obj.Rating_movie.String, nil
+func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*string, error) {
+	if obj.Rating.Valid {
+		return &obj.Rating.String, nil
 	}
 	return nil, nil
 }

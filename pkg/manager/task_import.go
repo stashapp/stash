@@ -241,14 +241,14 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 
 		// Populate a new movie from the input
 		newMovie := models.Movie{
-			Front_Image:     frontimageData,
-			Back_Image:      backimageData,
+			Front_Image:    frontimageData,
+			Back_Image:     backimageData,
 			Checksum:       checksum,
 			Name:           sql.NullString{String: movieJSON.Name, Valid: true},
 			Aliases:        sql.NullString{String: movieJSON.Aliases, Valid: true},
-			Date_movie:     models.SQLiteDate{String: movieJSON.Date_movie, Valid: true},
-			Duration_movie: sql.NullString{String: movieJSON.Duration_movie, Valid: true},
-			Rating_movie:   sql.NullString{String: movieJSON.Rating_movie, Valid: true},
+			Date:     		models.SQLiteDate{String: movieJSON.Date, Valid: true},
+			Duration: 		sql.NullString{String: movieJSON.Duration, Valid: true},
+			Rating:   		sql.NullString{String: movieJSON.Rating, Valid: true},
 			Director:       sql.NullString{String: movieJSON.Director, Valid: true},
 			Synopsis:       sql.NullString{String: movieJSON.Synopsis, Valid: true},
 			URL:            sql.NullString{String: movieJSON.URL, Valid: true},

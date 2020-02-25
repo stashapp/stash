@@ -11,9 +11,9 @@ type Movie struct {
 	Checksum       string          `db:"checksum" json:"checksum"`
 	Name           sql.NullString  `db:"name" json:"name"`
 	Aliases        sql.NullString  `db:"aliases" json:"aliases"`
-	Duration_movie sql.NullString  `db:"duration_movie" json:"duration_movie"`
-	Date_movie     SQLiteDate      `db:"date_movie" json:"date_movie"`
-	Rating_movie   sql.NullString  `db:"rating_movie" json:"rating_movie"`
+	Duration 	   sql.NullString  `db:"duration" json:"duration"`
+	Date     	   SQLiteDate      `db:"date" json:"date"`
+	Rating   	   sql.NullString  `db:"rating" json:"rating"`
 	Director       sql.NullString  `db:"director" json:"director"`
 	Synopsis       sql.NullString  `db:"synopsis" json:"synopsis"`
 	URL            sql.NullString  `db:"url" json:"url"`

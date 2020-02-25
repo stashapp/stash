@@ -11,9 +11,9 @@ import (
 type Movie struct {
 	Name           string          `json:"name,omitempty"`
 	Aliases        string          `json:"aliases,omitempty"`
-	Duration_movie string          `json:"duration_movie,omitempty"`
-	Date_movie     string          `json:"date_movie,omitempty"`
-	Rating_movie   string          `json:"rating_movie,omitempty"`
+	Duration	   string          `json:"duration,omitempty"`
+	Date    	   string          `json:"date,omitempty"`
+	Rating   	   string          `json:"rating,omitempty"`
 	Director       string          `json:"director,omitempty"`
 	Synopsis       string          `json:"sypnopsis,omitempty"`
 	Front_Image    string          `json:"front_image,omitempty"`

@@ -368,14 +368,14 @@ func (t *ExportTask) ExportMovies(ctx context.Context) {
 		if movie.Aliases.Valid {
 			newMovieJSON.Aliases = movie.Aliases.String
 		}
-		if movie.Date_movie.Valid {
-			newMovieJSON.Date_movie = utils.GetYMDFromDatabaseDate(movie.Date_movie.String)
+		if movie.Date.Valid {
+			newMovieJSON.Date = utils.GetYMDFromDatabaseDate(movie.Date.String)
 		}
-		if movie.Rating_movie.Valid {
-			newMovieJSON.Rating_movie = movie.Rating_movie.String
+		if movie.Rating.Valid {
+			newMovieJSON.Rating = movie.Rating.String
 		}
-		if movie.Duration_movie.Valid {
-			newMovieJSON.Duration_movie = movie.Duration_movie.String
+		if movie.Duration.Valid {
+			newMovieJSON.Duration = movie.Duration.String
 		}
 
 		if movie.Director.Valid {

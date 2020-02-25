@@ -3,9 +3,9 @@ fragment MovieData on Movie {
   checksum
   name
   aliases
-  duration_movie
-  date_movie
-  rating_movie
+  duration
+  date
+  rating
   director
   synopsis
   url

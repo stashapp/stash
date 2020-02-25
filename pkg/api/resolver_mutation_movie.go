@@ -50,16 +50,16 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 	if input.Aliases != nil {
 		newMovie.Aliases = sql.NullString{String: *input.Aliases, Valid: true}
 	}
-	if input.DurationMovie != nil {
-		newMovie.Duration_movie = sql.NullString{String: *input.DurationMovie, Valid: true}
+	if input.Duration != nil {
+		newMovie.Duration = sql.NullString{String: *input.Duration, Valid: true}
 	}
 
-	if input.DateMovie != nil {
-		newMovie.Date_movie = models.SQLiteDate{String: *input.DateMovie, Valid: true}
+	if input.Date != nil {
+		newMovie.Date = models.SQLiteDate{String: *input.Date, Valid: true}
 	}
 
-	if input.RatingMovie != nil {
-		newMovie.Rating_movie = sql.NullString{String: *input.RatingMovie, Valid: true}
+	if input.Rating != nil {
+		newMovie.Rating = sql.NullString{String: *input.Rating, Valid: true}
 	} 
 	
 	if input.Director != nil {
@@ -123,16 +123,16 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 	if input.Aliases != nil {
 		updatedMovie.Aliases = sql.NullString{String: *input.Aliases, Valid: true}
 	}
-	if input.DurationMovie != nil {
-		updatedMovie.Duration_movie = sql.NullString{String: *input.DurationMovie, Valid: true}
+	if input.Duration != nil {
+		updatedMovie.Duration = sql.NullString{String: *input.Duration, Valid: true}
 	}
 
-	if input.DateMovie != nil {
-		updatedMovie.Date_movie = models.SQLiteDate{String: *input.DateMovie, Valid: true}
+	if input.Date != nil {
+		updatedMovie.Date = models.SQLiteDate{String: *input.Date, Valid: true}
 	}
 
-	if input.RatingMovie != nil {
-		updatedMovie.Rating_movie = sql.NullString{String: *input.RatingMovie, Valid: true}
+	if input.Rating != nil {
+		updatedMovie.Rating = sql.NullString{String: *input.Rating, Valid: true}
 	}
 
 	if input.Director != nil {

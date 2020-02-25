@@ -2,9 +2,9 @@
 type ScrapedMovie {
   name: String
   aliases: String
-  duration_movie: String
-  date_movie: String
-  rating_movie: String
+  duration: String
+  date: String
+  rating: String
   director: String
   url: String
   synopsis: String
@@ -14,9 +14,9 @@ type ScrapedMovie {
 input ScrapedMovieInput {
   name: String
   aliases: String
-  duration_movie: String
-  date_movie: String
-  rating_movie: String
+  duration: String
+  date: String
+  rating: String
   director: String
   url: String
   synopsis: String
