@@ -27,34 +27,26 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
   
   function maybeRenderSceneNumber() {
     if (!props.fromscene) {
-         return (
-<div className="card-section">
-      
-      <H4 style={{textOverflow: "ellipsis", overflow: "hidden"}}>
-        {props.movie.name}
-      </H4>
-      
-      <span className="bp3-text-muted block">{props.movie.scene_count} scenes.</span>
-      
-      
-      </div>
-         );  
-  } else {
     return (
-<div className="card-section">
-      
-      <H4 style={{textOverflow: "ellipsis", overflow: "hidden"}}>
-        {props.movie.name}
-      </H4>
-          <span className="bp3-text-muted block">Scene number: {props.movie.scene_index}</span>   
+      <div className="card-section">
+         <H4 style={{textOverflow: "ellipsis", overflow: "hidden"}}>
+          {props.movie.name}
+         </H4>
+         <span className="bp3-text-muted block">{props.movie.scene_count} scenes.</span>
       </div>
-         );  
-  }
-      
-    
+    );  
+    } else {
+    return (
+      <div className="card-section">
+        <H4 style={{textOverflow: "ellipsis", overflow: "hidden"}}>
+        {props.movie.name}
+        </H4>
+        <span className="bp3-text-muted block">Scene number: {props.movie.scene_index}</span>   
+      </div>
+    );  
+      }
   }
   
-
   return (
     <Card
       className="grid-item"
@@ -65,13 +57,11 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
         to={`/movies/${props.movie.id}`}
         className="movie previewable image"
         style={{backgroundImage: `url(${props.movie.front_image_path})`}}
-        
       >
       {maybeRenderRatingBanner()}
       </Link>
       {maybeRenderSceneNumber()}
-      
- 
+
     </Card>
   );
 };

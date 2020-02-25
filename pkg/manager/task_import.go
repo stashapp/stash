@@ -598,8 +598,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 					logger.Errorf("[scenes] <%s> failed to associate movies: %s", scene.Checksum, err.Error())
 				}
 			}
-		
-			}	
+		}	
 
 		// Relate the scene to the tags
 		if len(sceneJSON.Tags) > 0 {

@@ -109,7 +109,6 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		}
 
 		newSceneJSON.Performers = t.getPerformerNames(performers)
-	
 	    newSceneJSON.Tags = t.getTagNames(tags)
 
 		for _, sceneMarker := range sceneMarkers {
@@ -139,16 +138,16 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 			newSceneJSON.Markers = append(newSceneJSON.Markers, sceneMarkerJSON)
 		}
 
-		   for _, movie := range movies {
-			   if movie.Name.Valid {
-				   sceneMovieJSON := jsonschema.SceneMovie{
-					   MovieID:        movie.ID,
-					   MovieName:      movie.Name.String,
-					   Scene_index:    movie.Scene_index,
-				   }
-				   newSceneJSON.Movies = append(newSceneJSON.Movies, sceneMovieJSON)
-				 }
-		   }
+		for _, movie := range movies {
+			if movie.Name.Valid {
+				sceneMovieJSON := jsonschema.SceneMovie{
+					MovieID:        movie.ID,
+					MovieName:      movie.Name.String,
+					Scene_index:    movie.Scene_index,
+				}
+			newSceneJSON.Movies = append(newSceneJSON.Movies, sceneMovieJSON)
+			}
+		}
 		 
 		newSceneJSON.File = &jsonschema.SceneFile{}
 		if scene.Size.Valid {
