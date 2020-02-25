@@ -236,7 +236,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 			whereClauses = append(whereClauses, "gallery.scene_id IS NULL")
 		case "studio":
 			whereClauses = append(whereClauses, "scenes.studio_id IS NULL")
-		case "movies":
+		case "movie":
 			whereClauses = append(whereClauses, "movies_join.scene_id IS NULL")
 		case "performers":
 			whereClauses = append(whereClauses, "performers_join.scene_id IS NULL")
