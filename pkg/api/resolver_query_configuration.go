@@ -68,6 +68,6 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		ShowStudioAsText:    &showStudioAsText,
 		CSS:                 &css,
 		CSSEnabled:          &cssEnabled,
-        Language:                  &language,
+		Language:            &language,
 	}
 }
