@@ -222,13 +222,15 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           <div>
             {queryableScrapers
               ? queryableScrapers.map(s => (
-                  <Button
-                    key={s.name}
-                    variant="link"
-                    onClick={() => onDisplayFreeOnesDialog(s)}
-                  >
-                    {s.name}
-                  </Button>
+                  <div>
+                    <Button
+                      key={s.name}
+                      className="minimal"
+                      onClick={() => onDisplayFreeOnesDialog(s)}
+                    >
+                      {s.name}
+                    </Button>
+                  </div>
                 ))
               : ""}
           </div>
@@ -237,7 +239,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
 
     return (
-      <OverlayTrigger trigger="click" placement="bottom" overlay={popover}>
+      <OverlayTrigger trigger="click" placement="top" overlay={popover}>
         <Button variant="secondary">Scrape with...</Button>
       </OverlayTrigger>
     );
