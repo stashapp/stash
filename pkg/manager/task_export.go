@@ -109,7 +109,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		}
 
 		newSceneJSON.Performers = t.getPerformerNames(performers)
-	    newSceneJSON.Tags = t.getTagNames(tags)
+	        newSceneJSON.Tags = t.getTagNames(tags)
 
 		for _, sceneMarker := range sceneMarkers {
 			primaryTag, err := tagQB.Find(sceneMarker.PrimaryTagID, tx)

@@ -288,7 +288,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 			}
 		}
 
-	    // Save the tags
+	        // Save the tags
 		if wasFieldIncluded(ctx, "tag_ids") {
 			var tagJoins []models.ScenesTags
 			for _, tid := range input.TagIds {
