@@ -1,7 +1,7 @@
 type Movie {
   id: ID!
   checksum: String!
-  name: String!
+  name: String
   aliases: String
   duration: String
   date: String
