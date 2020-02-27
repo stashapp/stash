@@ -82,8 +82,3 @@ func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (*int
 	res, err := qb.CountByMovieID(obj.ID)
 	return &res, err
 }
-
-func (r *movieResolver) Scenes(ctx context.Context, obj *models.Movie) ([]*models.Scene, error) {
-	qb := models.NewSceneQueryBuilder()
-	return qb.FindByPerformerID(obj.ID)
-}

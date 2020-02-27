@@ -14,7 +14,6 @@ type Movie {
   back_image_path: String # Resolver
   scene_count: Int # Resolver
   scene_index: String # Resolver
-  scenes: [Scene!]!
 }
 
 input MovieCreateInput {
