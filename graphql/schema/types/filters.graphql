@@ -62,6 +62,8 @@ input SceneMarkerFilterType {
 input SceneFilterType {
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by o-counter"""
+  o_counter: IntCriterionInput
   """Filter by resolution"""
   resolution: ResolutionEnum
   """Filter by duration (in seconds)"""

@@ -197,6 +197,10 @@ func Start() {
 			data, _ := uiBox.Find("index.html")
 			_, _ = w.Write(data)
 		} else {
+			isStatic, _ := path.Match("/static/*/*", r.URL.Path)
+			if isStatic {
+				w.Header().Add("Cache-Control", "max-age=604800000")
+			}
 			http.FileServer(uiBox).ServeHTTP(w, r)
 		}
 	})
@@ -292,6 +296,11 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 			scheme = "http"
 		}
 		baseURL := scheme + "://" + r.Host
+
+		externalHost := config.GetExternalHost()
+		if externalHost != "" {
+			baseURL = externalHost
+		}
 
 		r = r.WithContext(context.WithValue(ctx, BaseURLCtxKey, baseURL))
 

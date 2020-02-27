@@ -66,6 +66,18 @@ mutation ScenesUpdate($input : [SceneUpdateInput!]!) {
   }
 }
 
+mutation SceneIncrementO($id: ID!) {
+  sceneIncrementO(id: $id) 
+}
+
+mutation SceneDecrementO($id: ID!) {
+  sceneDecrementO(id: $id)
+}
+
+mutation SceneResetO($id: ID!) {
+  sceneResetO(id: $id)
+}
+
 mutation SceneDestroy($id: ID!, $delete_file: Boolean, $delete_generated : Boolean) {
   sceneDestroy(input: {id: $id, delete_file: $delete_file, delete_generated: $delete_generated})
 }

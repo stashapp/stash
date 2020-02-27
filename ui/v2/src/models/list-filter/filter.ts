@@ -30,6 +30,7 @@ interface IQueryParameters {
   disp?: string;
   q?: string;
   p?: string;
+  perPage?: string;
   c?: string[];
 }
 
@@ -46,7 +47,6 @@ export class ListFilterModel {
   public displayModeOptions: DisplayMode[] = [];
   public criterionOptions: ICriterionOption[] = [];
   public criteria: Array<Criterion<any, any>> = [];
-  public totalCount: number = 0;
   public randomSeed: number = -1;
 
   private static createCriterionOption(criterion: CriterionType) {
@@ -57,7 +57,7 @@ export class ListFilterModel {
     switch (filterMode) {
       case FilterMode.Scenes:
         if (!!this.sortBy === false) { this.sortBy = "date"; }
-        this.sortByOptions = ["title", "path", "rating", "date", "filesize", "duration", "framerate", "bitrate", "random"];
+        this.sortByOptions = ["title", "path", "rating", "o_counter", "date", "filesize", "duration", "framerate", "bitrate", "random"];
         this.displayModeOptions = [
           DisplayMode.Grid,
           DisplayMode.List,
@@ -66,6 +66,7 @@ export class ListFilterModel {
         this.criterionOptions = [
           new NoneCriterionOption(),
           new RatingCriterionOption(),
+          ListFilterModel.createCriterionOption("o_counter"),
           new ResolutionCriterionOption(),
           new HasMarkersCriterionOption(),
           new IsMissingCriterionOption(),
@@ -164,23 +165,27 @@ export class ListFilterModel {
     this.sortByOptions = [...this.sortByOptions, "created_at", "updated_at"];
   }
 
+  private setSortBy(sortBy: any) {
+    this.sortBy = sortBy;
+      
+    // parse the random seed if provided
+    const randomPrefix = "random_";
+    if (this.sortBy && this.sortBy.startsWith(randomPrefix)) {
+      let seedStr = this.sortBy.substring(randomPrefix.length);
+
+      this.sortBy = "random";
+      try {
+        this.randomSeed = Number.parseInt(seedStr);
+      } catch (err) {
+        // ignore
+      }
+    }
+  }
+
   public configureFromQueryParameters(rawParms: any) {
     const params = rawParms as IQueryParameters;
     if (params.sortby !== undefined) {
-      this.sortBy = params.sortby;
-
-      // parse the random seed if provided
-      const randomPrefix = "random_";
-      if (this.sortBy && this.sortBy.startsWith(randomPrefix)) {
-        let seedStr = this.sortBy.substring(randomPrefix.length);
-
-        this.sortBy = "random";
-        try {
-          this.randomSeed = Number.parseInt(seedStr);
-        } catch (err) {
-          // ignore
-        }
-      }
+      this.setSortBy(params.sortby);
     }
     if (params.sortdir === "asc" || params.sortdir === "desc") {
       this.sortDirection = params.sortdir;
@@ -193,6 +198,9 @@ export class ListFilterModel {
     }
     if (params.p !== undefined) {
       this.currentPage = Number(params.p);
+    }
+    if (params.perPage !== undefined) {
+      this.itemsPerPage = Number(params.perPage);
     }
 
     if (params.c !== undefined) {
@@ -212,6 +220,26 @@ export class ListFilterModel {
         criterion.modifier = encodedCriterion.modifier;
         this.criteria.push(criterion);
       }
+    }
+  }
+
+  public overridePrefs(original: any, override: any) {
+    const originalParams = original as IQueryParameters;
+    const overrideParams = override as IQueryParameters;
+
+    if (originalParams.sortby === undefined && overrideParams.sortby !== undefined) {
+      this.setSortBy(overrideParams.sortby);
+    }
+    if (originalParams.sortdir === undefined && overrideParams.sortdir !== undefined) {
+      if (overrideParams.sortdir === "asc" || overrideParams.sortdir === "desc") {
+        this.sortDirection = overrideParams.sortdir;
+      }
+    }
+    if (originalParams.disp === undefined && overrideParams.disp !== undefined) {
+      this.displayMode = parseInt(overrideParams.disp, 10);
+    }
+    if (originalParams.perPage === undefined && overrideParams.perPage !== undefined) {
+      this.itemsPerPage = Number(overrideParams.perPage);
     }
   }
 
@@ -237,7 +265,8 @@ export class ListFilterModel {
     return this.sortBy;
   }
 
-  public makeQueryParameters(): string {
+  // includePrefs includes displayMode, sortBy, sortDir and perPage
+  public makeQueryParameters(includePrefs?: boolean): string {
     const encodedCriteria: string[] = [];
     this.criteria.forEach((criterion) => {
       const encodedCriterion: any = {};
@@ -248,15 +277,18 @@ export class ListFilterModel {
       encodedCriteria.push(jsonCriterion);
     });
 
-    
-    const result = {
-      sortby: this.getSortBy(),
-      sortdir: this.sortDirection,
-      disp: this.displayMode,
+    const result: any = {
       q: this.searchTerm,
       p: this.currentPage,
       c: encodedCriteria,
     };
+
+    if (includePrefs) {
+      result.disp = this.displayMode;
+      result.perPage = this.itemsPerPage;
+      result.sortby = this.getSortBy();
+      result.sortdir = this.sortDirection;
+    }
     return queryString.stringify(result, {encode: false});
   }
 
@@ -267,7 +299,7 @@ export class ListFilterModel {
       q: this.searchTerm,
       page: this.currentPage,
       per_page: this.itemsPerPage,
-      sort: this.getSortBy(),
+      sort: this.sortBy,
       direction: this.sortDirection === "asc" ? SortDirectionEnum.Asc : SortDirectionEnum.Desc,
     };
   }
@@ -280,6 +312,10 @@ export class ListFilterModel {
           const ratingCrit = criterion as RatingCriterion;
           result.rating = { value: ratingCrit.value, modifier: ratingCrit.modifier };
           break;
+        case "o_counter":
+            const oCounterCrit = criterion as NumberCriterion;
+            result.o_counter = { value: oCounterCrit.value, modifier: oCounterCrit.modifier };
+            break;
         case "resolution": {
           switch ((criterion as ResolutionCriterion).value) {
             case "240p": result.resolution = ResolutionEnum.Low; break;

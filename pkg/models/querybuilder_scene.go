@@ -83,6 +83,60 @@ func (qb *SceneQueryBuilder) Update(updatedScene ScenePartial, tx *sqlx.Tx) (*Sc
 	return qb.find(updatedScene.ID, tx)
 }
 
+func (qb *SceneQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error) {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET o_counter = o_counter + 1 WHERE scenes.id = ?`,
+		id,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	scene, err := qb.find(id, tx)
+	if err != nil {
+		return 0, err
+	}
+
+	return scene.OCounter, nil
+}
+
+func (qb *SceneQueryBuilder) DecrementOCounter(id int, tx *sqlx.Tx) (int, error) {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET o_counter = o_counter - 1 WHERE scenes.id = ? and scenes.o_counter > 0`,
+		id,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	scene, err := qb.find(id, tx)
+	if err != nil {
+		return 0, err
+	}
+
+	return scene.OCounter, nil
+}
+
+func (qb *SceneQueryBuilder) ResetOCounter(id int, tx *sqlx.Tx) (int, error) {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET o_counter = 0 WHERE scenes.id = ?`,
+		id,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	scene, err := qb.find(id, tx)
+	if err != nil {
+		return 0, err
+	}
+
+	return scene.OCounter, nil
+}
+
 func (qb *SceneQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	return executeDeleteQuery("scenes", id, tx)
 }
@@ -194,6 +248,14 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		whereClauses = append(whereClauses, clause)
 		if count == 1 {
 			args = append(args, sceneFilter.Rating.Value)
+		}
+	}
+
+	if oCounter := sceneFilter.OCounter; oCounter != nil {
+		clause, count := getIntCriterionWhereClause("scenes.o_counter", *sceneFilter.OCounter)
+		whereClauses = append(whereClauses, clause)
+		if count == 1 {
+			args = append(args, sceneFilter.OCounter.Value)
 		}
 	}
 

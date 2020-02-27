@@ -17,6 +17,7 @@ export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
     case "none": return new NoneCriterion();
     case "rating": return new RatingCriterion();
+    case "o_counter": return new NumberCriterion(type, type);
     case "resolution": return new ResolutionCriterion();
     case "duration": return new DurationCriterion(type, type);
     case "favorite": return new FavoriteCriterion();

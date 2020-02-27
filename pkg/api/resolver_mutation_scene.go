@@ -185,10 +185,6 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 
 	// only update the cover image if provided and everything else was successful
 	if coverImageData != nil {
-		scene, err := qb.Find(sceneID)
-		if err != nil {
-			return nil, err
-		}
 
 		err = manager.SetSceneScreenshot(scene.Checksum, coverImageData)
 		if err != nil {
@@ -443,4 +439,64 @@ func changeMarker(ctx context.Context, changeType int, changedMarker models.Scen
 	}
 
 	return sceneMarker, nil
+}
+
+func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (int, error) {
+	sceneID, _ := strconv.Atoi(id)
+
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewSceneQueryBuilder()
+
+	newVal, err := qb.IncrementOCounter(sceneID, tx)
+	if err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return newVal, nil
+}
+
+func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (int, error) {
+	sceneID, _ := strconv.Atoi(id)
+
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewSceneQueryBuilder()
+
+	newVal, err := qb.DecrementOCounter(sceneID, tx)
+	if err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return newVal, nil
+}
+
+func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (int, error) {
+	sceneID, _ := strconv.Atoi(id)
+
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewSceneQueryBuilder()
+
+	newVal, err := qb.ResetOCounter(sceneID, tx)
+	if err != nil {
+		_ = tx.Rollback()
+		return 0, err
+	}
+
+	// Commit
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+
+	return newVal, nil
 }

@@ -113,6 +113,13 @@ type Mutation {
   sceneDestroy(input: SceneDestroyInput!): Boolean!
   scenesUpdate(input: [SceneUpdateInput!]!): [Scene]
 
+  """Increments the o-counter for a scene. Returns the new value"""
+  sceneIncrementO(id: ID!): Int!
+  """Decrements the o-counter for a scene. Returns the new value"""
+  sceneDecrementO(id: ID!): Int!
+  """Resets the o-counter for a scene to 0. Returns the new value"""
+  sceneResetO(id: ID!): Int!
+
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
   sceneMarkerDestroy(id: ID!): Boolean!

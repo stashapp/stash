@@ -6,16 +6,16 @@ import (
 	"strconv"
 
 	"github.com/jmoiron/sqlx"
-	
+
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func DestroyScene(sceneID int, tx *sqlx.Tx) (error) {
+func DestroyScene(sceneID int, tx *sqlx.Tx) error {
 	qb := models.NewSceneQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
-	
+
 	_, err := qb.Find(sceneID)
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func DestroyScene(sceneID int, tx *sqlx.Tx) (error) {
 	if err := qb.Destroy(strconv.Itoa(sceneID), tx); err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 

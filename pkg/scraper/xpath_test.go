@@ -183,22 +183,49 @@ func makeCommonXPath(attr string) string {
 	return `//table[@id="biographyTable"]//tr/td[@class="paramname"]//b[text() = '` + attr + `']/ancestor::tr/td[@class="paramvalue"]`
 }
 
+func makeReplaceRegex(regex string, with string) map[interface{}]interface{} {
+	ret := make(map[interface{}]interface{})
+
+	ret["regex"] = regex
+	ret["with"] = with
+	return ret
+}
+
 func makeXPathConfig() xpathScraperConfig {
 	config := make(xpathScraperConfig)
 
 	config["Name"] = makeCommonXPath("Babe Name:") + `/a`
 	config["Ethnicity"] = makeCommonXPath("Ethnicity:")
 	config["Country"] = makeCommonXPath("Country of Origin:")
-	config["Birthdate"] = makeCommonXPath("Date of Birth:")
 	config["Aliases"] = makeCommonXPath("Aliases:")
 	config["EyeColor"] = makeCommonXPath("Eye Color:")
 	config["Measurements"] = makeCommonXPath("Measurements:")
 	config["FakeTits"] = makeCommonXPath("Fake boobs:")
 	config["Height"] = makeCommonXPath("Height:")
-	// no colon in attribute header
-	config["CareerLength"] = makeCommonXPath("Career Start And End")
 	config["Tattoos"] = makeCommonXPath("Tattoos:")
 	config["Piercings"] = makeCommonXPath("Piercings:")
+
+	// special handling for birthdate
+	birthdateAttrConfig := make(map[interface{}]interface{})
+	birthdateAttrConfig["selector"] = makeCommonXPath("Date of Birth:")
+
+	var birthdateReplace []interface{}
+	birthdateReplace = append(birthdateReplace, makeReplaceRegex(` \(.* years old\)`, ""))
+
+	birthdateAttrConfig["replace"] = birthdateReplace
+	birthdateAttrConfig["parseDate"] = "January 2, 2006" // "July 1, 1992 (27 years old)&nbsp;"
+	config["Birthdate"] = birthdateAttrConfig
+
+	// special handling for career length
+	careerLengthAttrConfig := make(map[interface{}]interface{})
+	// no colon in attribute header
+	careerLengthAttrConfig["selector"] = makeCommonXPath("Career Start And End")
+
+	var careerLengthReplace []interface{}
+	careerLengthReplace = append(careerLengthReplace, makeReplaceRegex(`\s+\(.*\)`, ""))
+	careerLengthAttrConfig["replace"] = careerLengthReplace
+
+	config["CareerLength"] = careerLengthAttrConfig
 
 	return config
 }
@@ -240,7 +267,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const performerName = "Mia Malkova"
 	const ethnicity = "Caucasian"
 	const country = "United States"
-	const birthdate = "July 1, 1992 (27 years old)"
+	const birthdate = "1992-07-01"
 	const aliases = "Mia Bliss, Madison Clover, Madison Swan, Mia Mountain, Jessica"
 	const eyeColor = "Hazel"
 	const measurements = "34C-26-36"
@@ -251,17 +278,63 @@ func TestScrapePerformerXPath(t *testing.T) {
 	verifyField(t, performerName, performer.Name, "Name")
 	verifyField(t, ethnicity, performer.Ethnicity, "Ethnicity")
 	verifyField(t, country, performer.Country, "Country")
+
 	verifyField(t, birthdate, performer.Birthdate, "Birthdate")
+
 	verifyField(t, aliases, performer.Aliases, "Aliases")
 	verifyField(t, eyeColor, performer.EyeColor, "EyeColor")
 	verifyField(t, measurements, performer.Measurements, "Measurements")
 	verifyField(t, fakeTits, performer.FakeTits, "FakeTits")
 
-	// TODO - this needs post-processing
-	//verifyField(t, careerLength, performer.CareerLength, "CareerLength")
+	verifyField(t, careerLength, performer.CareerLength, "CareerLength")
 
 	verifyField(t, tattoosPiercings, performer.Tattoos, "Tattoos")
 	verifyField(t, tattoosPiercings, performer.Piercings, "Piercings")
+}
+
+func TestConcatXPath(t *testing.T) {
+	const firstName = "FirstName"
+	const lastName = "LastName"
+	const eyeColor = "EyeColor"
+	const separator = " "
+	const testDoc = `
+	<html>
+	<div>` + firstName + `</div>
+	<div>` + lastName + `</div>
+	<span>` + eyeColor + `</span>
+	</html>
+	`
+
+	reader := strings.NewReader(testDoc)
+	doc, err := htmlquery.Parse(reader)
+
+	if err != nil {
+		t.Errorf("Error loading document: %s", err.Error())
+		return
+	}
+
+	xpathConfig := make(xpathScraperConfig)
+	nameAttrConfig := make(map[interface{}]interface{})
+	nameAttrConfig["selector"] = "//div"
+	nameAttrConfig["concat"] = separator
+	xpathConfig["Name"] = nameAttrConfig
+	xpathConfig["EyeColor"] = "//span"
+
+	scraper := xpathScraper{
+		Performer: xpathConfig,
+	}
+
+	performer, err := scraper.scrapePerformer(doc)
+
+	if err != nil {
+		t.Errorf("Error scraping performer: %s", err.Error())
+		return
+	}
+
+	const performerName = firstName + separator + lastName
+
+	verifyField(t, performerName, performer.Name, "Name")
+	verifyField(t, eyeColor, performer.EyeColor, "EyeColor")
 }
 
 const sceneHTML = `

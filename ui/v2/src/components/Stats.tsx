@@ -8,11 +8,11 @@ export const Stats: FunctionComponent = () => {
   function renderStats() {
     if (!data || !data.stats) { return; }
     return (
-      <nav id="details-container" className="level">
+      <nav id="details-container" className="level stats">
         <div className="level-item has-text-centered">
           <div>
-            <p className="heading">Scenes</p>
             <p className="title">{data.stats.scene_count}</p>
+            <p className="heading">Scenes</p>
           </div>
         </div>
         <div className="level-item has-text-centered">
@@ -29,20 +29,20 @@ export const Stats: FunctionComponent = () => {
         </div>
         <div className="level-item has-text-centered">
           <div>
-            <p className="heading">Performers</p>
             <p className="title">{data.stats.performer_count}</p>
+            <p className="heading">Performers</p>
           </div>
         </div>
         <div className="level-item has-text-centered">
           <div>
-            <p className="heading">Studios</p>
             <p className="title">{data.stats.studio_count}</p>
+            <p className="heading">Studios</p>
           </div>
         </div>
         <div className="level-item has-text-centered">
           <div>
-            <p className="heading">Tags</p>
             <p className="title">{data.stats.tag_count}</p>
+            <p className="heading">Tags</p>
           </div>
         </div>
       </nav>
@@ -54,13 +54,6 @@ export const Stats: FunctionComponent = () => {
       {!data || loading ? <Spinner size={Spinner.SIZE_LARGE} /> : undefined}
       {!!error ? <span>error.message</span> : undefined}
       {renderStats()}
-
-      <h3>Notes</h3>
-      <pre>
-        {`
-        This is still an early version, some things are still a work in progress.
-        `}
-      </pre>
     </div>
   );
 };

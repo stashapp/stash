@@ -17,6 +17,7 @@ import { TextUtils } from "../../utils/text";
 import { TagLink } from "../Shared/TagLink";
 import { ZoomUtils } from "../../utils/zoom";
 import { StashService } from "../../core/StashService";
+import { Icons } from "../../utils/icons";
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
@@ -170,11 +171,24 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
     );
   }
 
+  function maybeRenderOCounter() {
+    if (props.scene.o_counter) {
+      return (
+        <Button
+          icon={Icons.sweatDrops()}
+          text={props.scene.o_counter}
+        />
+      )
+    }
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (props.scene.tags.length > 0 ||
         props.scene.performers.length > 0 ||
         props.scene.movies.length > 0  ||
-        props.scene.scene_markers.length > 0) {
+        props.scene.scene_markers.length > 0 ||
+        props.scene.o_counter) {
+
       return (
         <>
           <Divider />
@@ -183,6 +197,7 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderMoviePopoverButton()}
             {maybeRenderSceneMarkerPopoverButton()}
+            {maybeRenderOCounter()}
           </ButtonGroup>
         </>
       );

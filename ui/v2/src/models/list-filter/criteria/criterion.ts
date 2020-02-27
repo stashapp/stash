@@ -6,6 +6,7 @@ import { DurationUtils } from "../../../utils/duration";
 export type CriterionType =
   "none" |
   "rating" |
+  "o_counter" |
   "resolution" |
   "duration" |
   "favorite" |
@@ -34,6 +35,7 @@ export abstract class Criterion<Option = any, Value = any> {
     switch (type) {
       case "none": return "None";
       case "rating": return "Rating";
+      case "o_counter": return "O-Counter";
       case "resolution": return "Resolution";
       case "duration": return "Duration";
       case "favorite": return "Favorite";
