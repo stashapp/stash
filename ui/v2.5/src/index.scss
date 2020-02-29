@@ -29,9 +29,25 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
-.table-list td {
+.table-list table {
+  width: inherit;
+}
+
+.table-list td,
+.table-list th {
+  border-left: 1px solid rgba(255, 255, 255, .15);
+  font-size: 1rem;
   text-align: center;
   vertical-align: middle;
+
+  h5,
+  h6 {
+    font-size: 1rem;
+  }
+
+  &:first-child {
+    border-left: none;
+  }
 }
 
 @media (min-width: 576px) {

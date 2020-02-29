@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/control-has-associated-label */
 import React from "react";
 import { Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -23,7 +24,9 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       <Link
         key={performer.id}
         to={NavUtils.makePerformerScenesUrl(performer)}
-      />
+      >
+        <h6>{performer.name}</h6>
+      </Link>
     ));
 
   const renderSceneRow = (scene: GQL.SlimSceneDataFragment) => (
@@ -62,11 +65,12 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   );
 
   return (
-    <div className="row table-list col col-lg-8 mx-auto">
+    <div className="row table-list justify-content-center">
       <Table striped bordered>
         <thead>
           <tr>
-            <th colSpan={2}>Title</th>
+            <th />
+            <th className="text-left">Title</th>
             <th>Rating</th>
             <th>Duration</th>
             <th>Tags</th>
