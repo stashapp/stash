@@ -229,7 +229,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         </video>
       </Link>
       <div className="card-section">
-        <h5 className="text-truncate">
+        <h5 className="card-section-title">
           {props.scene.title
             ? props.scene.title
             : TextUtils.fileNameFromPath(props.scene.path)}
