@@ -137,29 +137,6 @@ func getRandomSort(tableName string, direction string, seed float64) string {
 	return " ORDER BY " + "(substr(" + colName + " * " + randomSortString + ", length(" + colName + ") + 2))" + " " + direction
 }
 
-func getSearch(columns []string, q string) string {
-	// TODO - susceptible to SQL injection
-	var likeClauses []string
-	queryWords := strings.Split(q, " ")
-	trimmedQuery := strings.Trim(q, "\"")
-	if trimmedQuery == q {
-		// Search for any word
-		for _, word := range queryWords {
-			for _, column := range columns {
-				likeClauses = append(likeClauses, column+" LIKE '%"+word+"%'")
-			}
-		}
-	} else {
-		// Search the exact query
-		for _, column := range columns {
-			likeClauses = append(likeClauses, column+" LIKE '%"+trimmedQuery+"%'")
-		}
-	}
-	likes := strings.Join(likeClauses, " OR ")
-
-	return "(" + likes + ")"
-}
-
 func getSearchBinding(columns []string, q string, not bool) (string, []interface{}) {
 	var likeClauses []string
 	var args []interface{}
