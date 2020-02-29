@@ -147,7 +147,9 @@ func (qb *TagQueryBuilder) Query(findFilter *FindFilterType) ([]*Tag, int) {
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"tags.name"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	sortAndPagination := qb.getTagSort(findFilter) + getPagination(findFilter)

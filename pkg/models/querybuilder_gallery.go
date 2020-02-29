@@ -119,7 +119,9 @@ func (qb *GalleryQueryBuilder) Query(findFilter *FindFilterType) ([]*Gallery, in
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"galleries.path", "galleries.checksum"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	sortAndPagination := qb.getGallerySort(findFilter) + getPagination(findFilter)
