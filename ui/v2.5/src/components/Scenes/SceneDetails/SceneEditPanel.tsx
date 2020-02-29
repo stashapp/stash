@@ -292,7 +292,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
   return (
     <div className="form-container row">
-      <div className="col-6">
+      <div className="col-12 col-lg-6">
         <Table id="scene-edit-details">
           <tbody>
             {TableUtils.renderInputGroup({
@@ -315,7 +315,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               </td>
             </tr>
             {TableUtils.renderInputGroup({
-              title: "Date (YYYY-MM-DD)",
+              title: "Date",
               value: date,
               isEditing: true,
               onChange: setDate
@@ -372,7 +372,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           </tbody>
         </Table>
       </div>
-      <div className="col-5 offset-1">
+      <div className="col-12 col-lg-6">
         <Form.Group controlId="details">
           <Form.Label>Details</Form.Label>
           <Form.Control
