@@ -111,13 +111,20 @@ hr {
   thead {
     th {
       border-bottom: 1px solid rgba(255, 255, 255, .15);
+      border-color: rgba(255, 255, 255, .15);
+      border-right: none;
       border-top: none;
     }
   }
 
   td {
     border: none;
+    border-color: rgba(255, 255, 255, .15);
     padding: .25rem .75rem;
+  }
+
+  a {
+    color: $text-color;
   }
 }
 
