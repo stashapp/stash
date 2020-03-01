@@ -110,8 +110,7 @@ hr {
 
   thead {
     th {
-      border-bottom: 1px solid rgba(255, 255, 255, .15);
-      border-color: rgba(255, 255, 255, .15);
+      border-bottom: 1px solid #414c53;
       border-right: none;
       border-top: none;
     }
@@ -119,7 +118,7 @@ hr {
 
   td {
     border: none;
-    border-color: rgba(255, 255, 255, .15);
+    border-color: #414c53;
     padding: .25rem .75rem;
 
     &:first-child {
