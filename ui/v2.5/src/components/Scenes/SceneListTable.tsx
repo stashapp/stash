@@ -21,10 +21,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
 
   const renderPerformers = (performers: Partial<GQL.Performer>[]) =>
     performers.map(performer => (
-      <Link
-        key={performer.id}
-        to={NavUtils.makePerformerScenesUrl(performer)}
-      >
+      <Link key={performer.id} to={NavUtils.makePerformerScenesUrl(performer)}>
         <h6>{performer.name}</h6>
       </Link>
     ));
