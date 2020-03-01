@@ -190,7 +190,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           type={criterion.inputType}
           onChange={onChangedInput}
           onBlur={onBlurInput}
-          defaultValue={criterion.value ? criterion.value.toString() : ''}
+          defaultValue={criterion.value ? criterion.value.toString() : ""}
         />
       );
     }

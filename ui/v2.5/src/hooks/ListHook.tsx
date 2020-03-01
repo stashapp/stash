@@ -342,6 +342,25 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       })
     : undefined;
 
+  function maybeRenderContent() {
+    if (!result.loading && !result.error) {
+      return options.renderContent(result, filter, selectedIds, zoomIndex);
+    }
+  }
+
+  function maybeRenderPagination() {
+    if (!result.loading && !result.error) {
+      return (
+        <Pagination
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+          onChangePage={onChangePage}
+        />
+      );
+    }
+  }
+
   const template = (
     <div>
       <ListFilter
@@ -362,15 +381,10 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       {options.renderSelectedOptions && selectedIds.size > 0
         ? options.renderSelectedOptions(result, selectedIds)
         : undefined}
-      {options.renderContent(result, filter, selectedIds, zoomIndex)}
-      { (result.loading || !forageInitialised) && <LoadingIndicator /> }
-      { result.error && <h1>{result.error.message}</h1> }
-      <Pagination
-        itemsPerPage={filter.itemsPerPage}
-        currentPage={filter.currentPage}
-        totalItems={totalCount}
-        onChangePage={onChangePage}
-      />
+      {(result.loading || !forageInitialised) && <LoadingIndicator />}
+      {result.error && <h1>{result.error.message}</h1>}
+      {maybeRenderContent()}
+      {maybeRenderPagination()}
     </div>
   );
 
