@@ -75,14 +75,13 @@ export const AddFilter: React.FC<IAddFilterProps> = (
   }
 
   function onAddFilter() {
-    if (!Array.isArray(criterion.value) && defaultValue.current) {
+    if (!Array.isArray(criterion.value) && defaultValue.current !== undefined) {
       const value = defaultValue.current;
       if (
         criterion.options &&
-        !Array.isArray(criterion.options) &&
         (value === undefined || value === "" || typeof value === "number")
       ) {
-        criterion.value = criterion.options[0];
+        criterion.value = criterion.options[0].toString();
       } else if (typeof value === "number" && value === undefined) {
         criterion.value = 0;
       } else if (value === undefined) {
@@ -191,7 +190,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           type={criterion.inputType}
           onChange={onChangedInput}
           onBlur={onBlurInput}
-          value={criterion.value.toString()}
+          defaultValue={criterion.value ? criterion.value.toString() : ''}
         />
       );
     }
