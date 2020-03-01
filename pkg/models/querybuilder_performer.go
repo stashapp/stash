@@ -155,7 +155,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	handleStringCriterion("ethnicity", performerFilter.Ethnicity, &query)
 	handleStringCriterion("country", performerFilter.Country, &query)
 	handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
-	handleStringCriterion("height", performerFilter.Height, &query)
+	handleStringCriterion(query.tableName + ".height", performerFilter.Height, &query)
 	handleStringCriterion("measurements", performerFilter.Measurements, &query)
 	handleStringCriterion("fake_tits", performerFilter.FakeTits, &query)
 	handleStringCriterion("career_length", performerFilter.CareerLength, &query)
