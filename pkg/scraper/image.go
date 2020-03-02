@@ -4,10 +4,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+// Timeout to get the image. Includes transfer time. May want to make this
+// configurable at some point.
+const imageGetTimeout = time.Second * 30
 
 func setPerformerImage(p *models.ScrapedPerformer) error {
 	if p == nil || p.Image == nil || !strings.HasPrefix(*p.Image, "http") {
@@ -43,8 +48,12 @@ func setSceneImage(s *models.ScrapedScene) error {
 }
 
 func getImage(url string) (*string, error) {
+	client := &http.Client{
+		Timeout: imageGetTimeout,
+	}
+
 	// assume is a URL for now
-	resp, err := http.Get(url)
+	resp, err := client.Get(url)
 	if err != nil {
 		return nil, err
 	}
