@@ -59,6 +59,10 @@ export const Performer: FunctionComponent<IPerformerProps> = (props: IPerformerP
     try {
       if (!isNew) {
         const result = await updatePerformer({variables: performer as GQL.PerformerUpdateInput});
+        if (performer.image) {
+            // Refetch image to bust browser cache
+            await fetch(`/performer/${result.data.performerUpdate.id}/image`, { cache: "reload" });
+        }
         setPerformer(result.data.performerUpdate);
       } else {
         const result = await createPerformer({variables: performer as GQL.PerformerCreateInput});
