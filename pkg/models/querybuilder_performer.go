@@ -113,11 +113,12 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		findFilter = &FindFilterType{}
 	}
 
+	tableName := "performers"
 	query := queryBuilder{
-		tableName: "performers",
+		tableName: tableName,
 	}
 
-	query.body = selectDistinctIDs("performers")
+	query.body = selectDistinctIDs(tableName)
 	query.body += `
 		left join performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		left join scenes on scenes_join.scene_id = scenes.id
@@ -152,18 +153,18 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		query.addArg(thisArgs...)
 	}
 
-	handleStringCriterion("ethnicity", performerFilter.Ethnicity, &query)
-	handleStringCriterion("country", performerFilter.Country, &query)
-	handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
-	handleStringCriterion(query.tableName + ".height", performerFilter.Height, &query)
-	handleStringCriterion("measurements", performerFilter.Measurements, &query)
-	handleStringCriterion("fake_tits", performerFilter.FakeTits, &query)
-	handleStringCriterion("career_length", performerFilter.CareerLength, &query)
-	handleStringCriterion("tattoos", performerFilter.Tattoos, &query)
-	handleStringCriterion("piercings", performerFilter.Piercings, &query)
+	handleStringCriterion(tableName+".ethnicity", performerFilter.Ethnicity, &query)
+	handleStringCriterion(tableName+".country", performerFilter.Country, &query)
+	handleStringCriterion(tableName+".eye_color", performerFilter.EyeColor, &query)
+	handleStringCriterion(tableName+".height", performerFilter.Height, &query)
+	handleStringCriterion(tableName+".measurements", performerFilter.Measurements, &query)
+	handleStringCriterion(tableName+".fake_tits", performerFilter.FakeTits, &query)
+	handleStringCriterion(tableName+".career_length", performerFilter.CareerLength, &query)
+	handleStringCriterion(tableName+".tattoos", performerFilter.Tattoos, &query)
+	handleStringCriterion(tableName+".piercings", performerFilter.Piercings, &query)
 
 	// TODO - need better handling of aliases
-	handleStringCriterion("aliases", performerFilter.Aliases, &query)
+	handleStringCriterion(tableName+".aliases", performerFilter.Aliases, &query)
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := query.executeFind()
