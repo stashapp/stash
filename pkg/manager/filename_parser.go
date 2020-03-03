@@ -205,7 +205,7 @@ type sceneHolder struct {
 	mm         string
 	dd         string
 	performers []string
-	movies	   []string
+	movies     []string
 	studio     string
 	tags       []string
 }
@@ -635,7 +635,9 @@ func (p *SceneFilenameParser) setMovies(h sceneHolder, result *models.SceneParse
 			movie := p.queryMovie(movieName)
 			if movie != nil {
 				if _, found := moviesSet[movie.ID]; !found {
-					result.MovieIds = append(result.MovieIds, strconv.Itoa(movie.ID))
+					result.Movies = append(result.Movies, &models.SceneMovieID{
+						MovieID: strconv.Itoa(movie.ID),
+					})
 					moviesSet[movie.ID] = true
 				}
 			}
@@ -666,9 +668,9 @@ func (p *SceneFilenameParser) setParserResult(h sceneHolder, result *models.Scen
 		p.setTags(h, result)
 	}
 	p.setStudio(h, result)
-	
+
 	if len(h.movies) > 0 {
 		p.setMovies(h, result)
 	}
-	
+
 }

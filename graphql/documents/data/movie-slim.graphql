@@ -2,4 +2,4 @@ fragment SlimMovieData on Movie {
   id
   name
   front_image_path
- }
+}

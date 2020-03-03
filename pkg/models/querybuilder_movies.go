@@ -53,7 +53,7 @@ func (qb *MovieQueryBuilder) Update(updatedMovie Movie, tx *sqlx.Tx) (*Movie, er
 
 func (qb *MovieQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	// delete movie from movies_scenes
-	
+
 	_, err := tx.Exec("DELETE FROM movies_scenes WHERE movie_id = ?", id)
 	if err != nil {
 		return err
@@ -74,11 +74,9 @@ func (qb *MovieQueryBuilder) Find(id int, tx *sqlx.Tx) (*Movie, error) {
 	return qb.queryMovie(query, args, tx)
 }
 
-
-
 func (qb *MovieQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Movie, error) {
 	query := `
-		SELECT movies.*, scenes_join.scene_index FROM movies
+		SELECT movies.* FROM movies
 		LEFT JOIN movies_scenes as scenes_join on scenes_join.movie_id = movies.id
 		LEFT JOIN scenes on scenes_join.scene_id = scenes.id
 		WHERE scenes.id = ?
@@ -102,8 +100,6 @@ func (qb *MovieQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]*Movie,
 	}
 	return qb.queryMovies(query, args, tx)
 }
-
-
 
 func (qb *MovieQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT movies.id FROM movies"), nil)
@@ -143,8 +139,6 @@ func (qb *MovieQueryBuilder) Query(findFilter *FindFilterType) ([]*Movie, int) {
 
 	return movies, countResult
 }
-
-
 
 func (qb *MovieQueryBuilder) getMovieSort(findFilter *FindFilterType) string {
 	var sort string

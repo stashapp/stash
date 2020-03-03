@@ -12,5 +12,4 @@ fragment MovieData on Movie {
   front_image_path
   back_image_path
   scene_count
-  scene_index
 }

@@ -126,20 +126,23 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
 
   function maybeRenderMoviePopoverButton() {
     if (props.scene.movies.length <= 0) { return; }
-    const movies = props.scene.movies.map((movie) => {
-     return (
-      <>
-        <div className="movie-tag-container">
-          <Link
-            to={`/movies/${movie.id}`}
-            className="movie-tag previewable image"
-            style={{backgroundImage: `url(${movie.front_image_path})`}}
-          ></Link>
-          <TagLink key={movie.id} movie={movie} />
-        </div>
+    
+    const movies = props.scene.movies.map((sceneMovie) => {
+      let movie = sceneMovie.movie;
+      return (
+        <>
+          <div className="movie-tag-container">
+            <Link
+              to={`/movies/${movie.id}`}
+              className="movie-tag previewable image"
+              style={{backgroundImage: `url(${movie.front_image_path})`}}
+            ></Link>
+            <TagLink key={movie.id} movie={movie} />
+          </div>
         </>
       );
     });
+
     return (
       <Popover interactionKind={"hover"} position="bottom">
         <Button
@@ -149,7 +152,6 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
         <>{movies}</>
       </Popover>
     ); 
- 
   }
   
   function maybeRenderSceneMarkerPopoverButton() {

@@ -241,20 +241,19 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 
 		// Populate a new movie from the input
 		newMovie := models.Movie{
-			Front_Image:    frontimageData,
-			Back_Image:     backimageData,
-			Checksum:       checksum,
-			Name:           sql.NullString{String: movieJSON.Name, Valid: true},
-			Aliases:        sql.NullString{String: movieJSON.Aliases, Valid: true},
-			Date:     		models.SQLiteDate{String: movieJSON.Date, Valid: true},
-			Duration: 		sql.NullString{String: movieJSON.Duration, Valid: true},
-			Rating:   		sql.NullString{String: movieJSON.Rating, Valid: true},
-			Director:       sql.NullString{String: movieJSON.Director, Valid: true},
-			Synopsis:       sql.NullString{String: movieJSON.Synopsis, Valid: true},
-			URL:            sql.NullString{String: movieJSON.URL, Valid: true},
-			CreatedAt:      models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
-			UpdatedAt:      models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
-			
+			Front_Image: frontimageData,
+			Back_Image:  backimageData,
+			Checksum:    checksum,
+			Name:        sql.NullString{String: movieJSON.Name, Valid: true},
+			Aliases:     sql.NullString{String: movieJSON.Aliases, Valid: true},
+			Date:        models.SQLiteDate{String: movieJSON.Date, Valid: true},
+			Duration:    sql.NullString{String: movieJSON.Duration, Valid: true},
+			Rating:      sql.NullString{String: movieJSON.Rating, Valid: true},
+			Director:    sql.NullString{String: movieJSON.Director, Valid: true},
+			Synopsis:    sql.NullString{String: movieJSON.Synopsis, Valid: true},
+			URL:         sql.NullString{String: movieJSON.URL, Valid: true},
+			CreatedAt:   models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
+			UpdatedAt:   models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
 		}
 
 		_, err = qb.Create(newMovie, tx)
@@ -585,12 +584,10 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			} else {
 				var movieJoins []models.MoviesScenes
 				for _, movie := range sceneJSON.Movies {
-					var sceneidx, err= strconv.Atoi(movie.Scene_index)
-					if err == nil{}
 					join := models.MoviesScenes{
-						MovieID: movie.MovieID,
-						SceneID: scene.ID,
-						SceneIdx:  sceneidx,
+						MovieID:    movie.MovieID,
+						SceneID:    scene.ID,
+						SceneIndex: movie.SceneIndex,
 					}
 					movieJoins = append(movieJoins, join)
 				}
@@ -598,7 +595,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 					logger.Errorf("[scenes] <%s> failed to associate movies: %s", scene.Checksum, err.Error())
 				}
 			}
-		}	
+		}
 
 		// Relate the scene to the tags
 		if len(sceneJSON.Tags) > 0 {

@@ -21,7 +21,7 @@ export const MovieList: FunctionComponent<IProps> = (props: IProps) => {
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <div className="grid">
-          {result.data.findMovies.movies.map((movie) => (<MovieCard key={movie.id} movie={movie} fromscene={false} />))}
+          {result.data.findMovies.movies.map((movie) => (<MovieCard key={movie.id} movie={movie}/>))}
         </div>
       );
     } else if (filter.displayMode === DisplayMode.List) {

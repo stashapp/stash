@@ -78,7 +78,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
 
   function updateSceneEditState(state: Partial<GQL.SceneDataFragment>) {
     const perfIds = !!state.performers ? state.performers.map((performer) => performer.id) : undefined;
-    const moviIds = !!state.movies ? state.movies.map((movie) => movie.id) : undefined;
+    const moviIds = !!state.movies ? state.movies.map((sceneMovie) => sceneMovie.movie.id) : undefined;
     const scenIdx = !!state.movies ? state.movies.map((movie) => movie.scene_index!) : undefined; 
   
     const tIds = !!state.tags ? state.tags.map((tag) => tag.id) : undefined;
@@ -119,11 +119,33 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
       gallery_id: galleryId,
       studio_id: studioId,
       performer_ids: performerIds,
-      movie_ids: movieIds,
-      scene_idx: sceneIdx,
+      movies: makeMovieInputs(),
       tag_ids: tagIds,
       cover_image: coverImage,
     };
+  }
+
+  function makeMovieInputs(): GQL.SceneMovieInput[] | undefined {
+    if (!movieIds) {
+      return undefined;
+    }
+    
+    let ret = movieIds.map((id) => {
+      let r : GQL.SceneMovieInput = {
+        movie_id: id
+      };
+      return r;
+    });
+
+    if (sceneIdx) {
+      sceneIdx.forEach((idx, i) => {
+        if (!!idx && ret.length > i) {
+          ret[i].scene_index = idx;
+        }
+      });
+    }
+
+    return ret;
   }
 
   async function onSave() {
@@ -185,7 +207,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
           onUpdate={(items) => {
             const idx = items.map((i) => i);
             setSceneIdx(idx);
-            }}
+          }}
       />
     );
   }
