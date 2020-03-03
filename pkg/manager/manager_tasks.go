@@ -196,10 +196,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 			}
 
 			if previews {
-				task := GeneratePreviewTask{
-					Scene:     *scene,
-					Operation: PreviewTaskOpAll,
-				}
+				task := GeneratePreviewTask{Scene: *scene}
 				go task.Start(&wg)
 			}
 
@@ -253,15 +250,9 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 			return
 		}
 
-		task := GeneratePreviewTask{
-			Scene: *scene,
-		}
-
-		if at == nil {
-			task.Operation = PreviewTaskOpDefaultScreenshot
-		} else {
-			task.Operation = PreviewTaskOpScreenshot
-			task.ScreenshotAt = *at
+		task := GenerateScreenshotTask{
+			Scene:        *scene,
+			ScreenshotAt: at,
 		}
 
 		var wg sync.WaitGroup
