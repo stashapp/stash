@@ -115,7 +115,7 @@ func ScrapePerformer(scraperID string, scrapedPerformer models.ScrapedPerformerI
 
 		// post-process - set the image if applicable
 		if err := setPerformerImage(ret); err != nil {
-			logger.Warn("Could not set image using URL: %s", ret.Image)
+			logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
 		}
 
 		return ret, nil
@@ -134,7 +134,7 @@ func ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
 
 			// post-process - set the image if applicable
 			if err := setPerformerImage(ret); err != nil {
-				logger.Warn("Could not set image using URL: %s", ret.Image)
+				logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
 			}
 
 			return ret, nil
@@ -250,7 +250,7 @@ func postScrapeScene(ret *models.ScrapedScene) error {
 
 	// post-process - set the image if applicable
 	if err := setSceneImage(ret); err != nil {
-		logger.Warn("Could not set image using URL: %s", ret.Image)
+		logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
 	}
 
 	return nil
