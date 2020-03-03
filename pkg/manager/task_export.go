@@ -145,7 +145,6 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 
 			if movie.Name.Valid {
 				sceneMovieJSON := jsonschema.SceneMovie{
-					MovieID:    sceneMovie.MovieID,
 					MovieName:  movie.Name.String,
 					SceneIndex: sceneMovie.SceneIndex,
 				}

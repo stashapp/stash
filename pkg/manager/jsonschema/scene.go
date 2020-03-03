@@ -30,7 +30,6 @@ type SceneFile struct {
 
 type SceneMovie struct {
 	MovieName  string `json:"movieName,omitempty"`
-	MovieID    int    `json:"movieID,omitempty"`
 	SceneIndex string `json:"scene_index,omitempty"`
 }
 
