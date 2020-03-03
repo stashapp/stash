@@ -3,14 +3,15 @@ package manager
 import (
 	"context"
 	"fmt"
+	"math"
+	"strconv"
+	"sync"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"math"
-	"strconv"
-	"sync"
 )
 
 type ExportTask struct {
@@ -50,6 +51,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 	performerQB := models.NewPerformerQueryBuilder()
 	tagQB := models.NewTagQueryBuilder()
 	sceneMarkerQB := models.NewSceneMarkerQueryBuilder()
+	joinQB := models.NewJoinsQueryBuilder()
 	scenes, err := qb.All()
 	if err != nil {
 		logger.Errorf("[scenes] failed to fetch all scenes: %s", err.Error())
@@ -82,7 +84,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		}
 
 		performers, _ := performerQB.FindBySceneID(scene.ID, tx)
-		movies, _ := movieQB.FindBySceneID(scene.ID, tx)
+		sceneMovies, _ := joinQB.GetSceneMovies(scene.ID, tx)
 		tags, _ := tagQB.FindBySceneID(scene.ID, tx)
 		sceneMarkers, _ := sceneMarkerQB.FindBySceneID(scene.ID, tx)
 
@@ -109,7 +111,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		}
 
 		newSceneJSON.Performers = t.getPerformerNames(performers)
-	        newSceneJSON.Tags = t.getTagNames(tags)
+		newSceneJSON.Tags = t.getTagNames(tags)
 
 		for _, sceneMarker := range sceneMarkers {
 			primaryTag, err := tagQB.Find(sceneMarker.PrimaryTagID, tx)
@@ -138,17 +140,18 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 			newSceneJSON.Markers = append(newSceneJSON.Markers, sceneMarkerJSON)
 		}
 
-		for _, movie := range movies {
+		for _, sceneMovie := range sceneMovies {
+			movie, _ := movieQB.Find(sceneMovie.MovieID, tx)
+
 			if movie.Name.Valid {
 				sceneMovieJSON := jsonschema.SceneMovie{
-					MovieID:        movie.ID,
-					MovieName:      movie.Name.String,
-					Scene_index:    movie.Scene_index,
+					MovieName:  movie.Name.String,
+					SceneIndex: sceneMovie.SceneIndex,
 				}
-			newSceneJSON.Movies = append(newSceneJSON.Movies, sceneMovieJSON)
+				newSceneJSON.Movies = append(newSceneJSON.Movies, sceneMovieJSON)
 			}
 		}
-		 
+
 		newSceneJSON.File = &jsonschema.SceneFile{}
 		if scene.Size.Valid {
 			newSceneJSON.File.Size = scene.Size.String

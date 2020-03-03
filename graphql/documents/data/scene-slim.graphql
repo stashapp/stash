@@ -48,10 +48,12 @@ fragment SlimSceneData on Scene {
   }
 
   movies {
-    id
-    name
+    movie {
+      id
+      name
+      front_image_path
+    }
     scene_index
-    front_image_path
   }
 
   tags {

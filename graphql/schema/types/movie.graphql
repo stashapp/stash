@@ -13,7 +13,6 @@ type Movie {
   front_image_path: String # Resolver
   back_image_path: String # Resolver
   scene_count: Int # Resolver
-  scene_index: String # Resolver
 }
 
 input MovieCreateInput {
@@ -43,7 +42,6 @@ input MovieUpdateInput {
   """This should be base64 encoded"""
   front_image: String
   back_image: String
-
 }
 
 input MovieDestroyInput {

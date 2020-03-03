@@ -241,20 +241,19 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 
 		// Populate a new movie from the input
 		newMovie := models.Movie{
-			Front_Image:    frontimageData,
-			Back_Image:     backimageData,
-			Checksum:       checksum,
-			Name:           sql.NullString{String: movieJSON.Name, Valid: true},
-			Aliases:        sql.NullString{String: movieJSON.Aliases, Valid: true},
-			Date:     		models.SQLiteDate{String: movieJSON.Date, Valid: true},
-			Duration: 		sql.NullString{String: movieJSON.Duration, Valid: true},
-			Rating:   		sql.NullString{String: movieJSON.Rating, Valid: true},
-			Director:       sql.NullString{String: movieJSON.Director, Valid: true},
-			Synopsis:       sql.NullString{String: movieJSON.Synopsis, Valid: true},
-			URL:            sql.NullString{String: movieJSON.URL, Valid: true},
-			CreatedAt:      models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
-			UpdatedAt:      models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
-			
+			Front_Image: frontimageData,
+			Back_Image:  backimageData,
+			Checksum:    checksum,
+			Name:        sql.NullString{String: movieJSON.Name, Valid: true},
+			Aliases:     sql.NullString{String: movieJSON.Aliases, Valid: true},
+			Date:        models.SQLiteDate{String: movieJSON.Date, Valid: true},
+			Duration:    sql.NullString{String: movieJSON.Duration, Valid: true},
+			Rating:      sql.NullString{String: movieJSON.Rating, Valid: true},
+			Director:    sql.NullString{String: movieJSON.Director, Valid: true},
+			Synopsis:    sql.NullString{String: movieJSON.Synopsis, Valid: true},
+			URL:         sql.NullString{String: movieJSON.URL, Valid: true},
+			CreatedAt:   models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
+			UpdatedAt:   models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
 		}
 
 		_, err = qb.Create(newMovie, tx)
@@ -578,27 +577,15 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 		// Relate the scene to the movies
 		if len(sceneJSON.Movies) > 0 {
-			//movies, err := t.getMovies(sceneJSON.SceneMovie, tx)
-			jqb := models.NewJoinsQueryBuilder()
+			moviesScenes, err := t.getMoviesScenes(sceneJSON.Movies, scene.ID, tx)
 			if err != nil {
 				logger.Warnf("[scenes] <%s> failed to fetch movies: %s", scene.Checksum, err.Error())
 			} else {
-				var movieJoins []models.MoviesScenes
-				for _, movie := range sceneJSON.Movies {
-					var sceneidx, err= strconv.Atoi(movie.Scene_index)
-					if err == nil{}
-					join := models.MoviesScenes{
-						MovieID: movie.MovieID,
-						SceneID: scene.ID,
-						SceneIdx:  sceneidx,
-					}
-					movieJoins = append(movieJoins, join)
-				}
-				if err := jqb.CreateMoviesScenes(movieJoins, tx); err != nil {
+				if err := jqb.CreateMoviesScenes(moviesScenes, tx); err != nil {
 					logger.Errorf("[scenes] <%s> failed to associate movies: %s", scene.Checksum, err.Error())
 				}
 			}
-		}	
+		}
 
 		// Relate the scene to the tags
 		if len(sceneJSON.Tags) > 0 {
@@ -706,27 +693,25 @@ func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Perfo
 	return performers, nil
 }
 
-func (t *ImportTask) getMovies(names []string, tx *sqlx.Tx) ([]*models.Movie, error) {
+func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int, tx *sqlx.Tx) ([]models.MoviesScenes, error) {
 	mqb := models.NewMovieQueryBuilder()
-	movies, err := mqb.FindByNames(names, tx)
-	if err != nil {
-		return nil, err
-	}
 
-	var pluckedNames []string
-	for _, movie := range movies {
-		if !movie.Name.Valid {
-			continue
+	var movies []models.MoviesScenes
+	for _, inputMovie := range input {
+		movie, err := mqb.FindByName(inputMovie.MovieName, tx)
+		if err != nil {
+			return nil, err
 		}
-		pluckedNames = append(pluckedNames, movie.Name.String)
-	}
 
-	missingMovies := utils.StrFilter(names, func(name string) bool {
-		return !utils.StrInclude(pluckedNames, name)
-	})
-
-	for _, missingMovie := range missingMovies {
-		logger.Warnf("[scenes] movie %s does not exist", missingMovie)
+		if movie == nil {
+			logger.Warnf("[scenes] movie %s does not exist", inputMovie.MovieName)
+		} else {
+			movies = append(movies, models.MoviesScenes{
+				MovieID:    movie.ID,
+				SceneID:    sceneID,
+				SceneIndex: inputMovie.SceneIndex,
+			})
+		}
 	}
 
 	return movies, nil

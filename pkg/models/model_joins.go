@@ -6,9 +6,9 @@ type PerformersScenes struct {
 }
 
 type MoviesScenes struct {
-	MovieID  int `db:"movie_id" json:"movie_id"`
-	SceneID  int `db:"scene_id" json:"scene_id"`
-	SceneIdx int `db:"scene_index" json:"scene_index"`
+	MovieID    int    `db:"movie_id" json:"movie_id"`
+	SceneID    int    `db:"scene_id" json:"scene_id"`
+	SceneIndex string `db:"scene_index" json:"scene_index"`
 }
 
 type ScenesTags struct {
