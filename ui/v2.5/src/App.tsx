@@ -23,6 +23,7 @@ import Studios from "./components/Studios/Studios";
 import { SceneFilenameParser } from "./components/SceneFilenameParser/SceneFilenameParser";
 import Movies from "./components/Movies/Movies";
 import Tags from "./components/Tags/Tags";
+import Tagger from "./components/Tagger";
 
 // Set fontawesome/free-solid-svg as default fontawesome icons
 library.add(fas);
@@ -55,6 +56,7 @@ export const App: React.FC = () => {
               <Route path="/studios" component={Studios} />
               <Route path="/movies" component={Movies} />
               <Route path="/settings" component={Settings} />
+              <Route path="/tagger" component={Tagger} />
               <Route
                 path="/sceneFilenameParser"
                 component={SceneFilenameParser}
