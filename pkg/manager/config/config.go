@@ -32,6 +32,9 @@ const Host = "host"
 const Port = "port"
 const ExternalHost = "external_host"
 
+// i18n
+const Language = "language"
+
 // Interface options
 const SoundOnPreview = "sound_on_preview"
 const WallShowTitle = "wall_show_title"
@@ -95,6 +98,17 @@ func GetDefaultScrapersPath() string {
 
 func GetExcludes() []string {
 	return viper.GetStringSlice(Exclude)
+}
+
+func GetLanguage() string {
+	ret := viper.GetString(Language)
+
+	// default to English
+	if ret == "" {
+		return "en-US"
+	}
+
+	return ret
 }
 
 func GetScrapersPath() string {
