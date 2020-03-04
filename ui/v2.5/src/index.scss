@@ -13,6 +13,10 @@
 @import "src/components/Tags/styles.scss";
 @import "src/components/Wall/styles.scss";
 
+html {
+  font-size: 14px;
+}
+
 body {
   color: $text-color;
   -webkit-font-smoothing: antialiased;
@@ -284,6 +288,16 @@ code {
 }
 
 .top-nav {
+  padding: .25rem 1rem;
+
+  .nav-link {
+    padding: 0;
+  }
+
+  .btn {
+    white-space: nowrap;
+  }
+
   @media (max-width: 576px) {
     .btn {
       padding: 6px;

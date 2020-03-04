@@ -222,7 +222,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           <div>
             {queryableScrapers
               ? queryableScrapers.map(s => (
-                  <div>
+                  <div key={s.name}>
                     <Button
                       key={s.name}
                       className="minimal"
@@ -390,7 +390,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           {maybeRenderName()}
           {maybeRenderAliases()}
           {TableUtils.renderInputGroup({
-            title: "Birthdate (YYYY-MM-DD)",
+            title: "Birthdate",
             value: birthdate,
             isEditing: !!isEditing,
             onChange: setBirthdate
@@ -409,7 +409,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             onChange: setCountry
           })}
           {TableUtils.renderInputGroup({
-            title: "Height (CM)",
+            title: "Height (cm)",
             value: height,
             isEditing: !!isEditing,
             onChange: setHeight

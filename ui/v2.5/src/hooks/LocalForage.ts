@@ -39,10 +39,14 @@ function useLocalForage(
         const serialized = await localForage.getItem<string>(key);
         const parsed = JSON.parse(serialized);
         if (!Object.is(parsed, null)) {
-          setError(null);
           setData(parsed);
           Cache[key] = parsed;
         }
+        else {
+          setData({});
+          Cache[key] = {};
+        }
+        setError(null);
       } catch (err) {
         setError(err);
       } finally {
