@@ -27,7 +27,7 @@ export const GalleryList: React.FC = () => {
           <thead>
             <tr>
               <th>Preview</th>
-              <th>Path</th>
+              <th className="d-none d-sm-none">Path</th>
             </tr>
           </thead>
           <tbody>
@@ -38,6 +38,7 @@ export const GalleryList: React.FC = () => {
                     {gallery.files.length > 0 ? (
                       <img
                         alt={gallery.title ?? ""}
+                        className="w-100 w-sm-auto"
                         src={`${gallery.files[0].path}?thumb=true`}
                       />
                     ) : (
@@ -45,7 +46,7 @@ export const GalleryList: React.FC = () => {
                     )}
                   </Link>
                 </td>
-                <td>
+                <td className="d-none d-sm-block">
                   <Link to={`/galleries/${gallery.id}`}>{gallery.path}</Link>
                 </td>
               </tr>

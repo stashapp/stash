@@ -40,6 +40,7 @@ export const Settings: React.FC = () => {
               <Nav.Item>
                 <Nav.Link eventKey="about">About</Nav.Link>
               </Nav.Item>
+              <hr className="d-sm-none" />
             </Nav>
           </Col>
           <Col sm={10}>
