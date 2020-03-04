@@ -1,0 +1,67 @@
+#performer-details {
+  .scrape-url-button {
+    color: $text-color;
+    float: right;
+    margin-right: .5rem;
+  }
+}
+
+#url-field {
+  line-height: 30px;
+}
+
+#performer-page {
+  flex-direction: row;
+  margin: 10px auto;
+  overflow: hidden;
+
+  .image-container .performer {
+    max-height: 960px;
+    max-width: 100%;
+  }
+
+  .performer-head {
+    display: inline-block;
+    margin-bottom: 2rem;
+    vertical-align: top;
+
+    .name-icons {
+      margin-left: 10px;
+
+      .not-favorite {
+        color: rgba(191, 204, 214, .5);
+      }
+
+      .favorite {
+        color: #ff7373;
+      }
+
+      .link {
+        color: rgb(191, 204, 214);
+      }
+
+      .instagram {
+        color: pink;
+      }
+    }
+  }
+
+  .alias {
+    font-weight: bold;
+  }
+}
+
+.new-view {
+  margin-bottom: 2rem;
+
+  .photo {
+    padding: 1rem 1rem 1rem 2rem;
+    width: 100%;
+  }
+}
+
+.card {
+  &.performer-card {
+    padding: 0 0 1rem 0;
+  }
+}

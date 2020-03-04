@@ -57,6 +57,8 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	showStudioAsText := config.GetShowStudioAsText()
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
+	language := config.GetLanguage()
+
 
 	return &models.ConfigInterfaceResult{
 		SoundOnPreview:      &soundOnPreview,
@@ -66,5 +68,6 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 		ShowStudioAsText:    &showStudioAsText,
 		CSS:                 &css,
 		CSSEnabled:          &cssEnabled,
+		Language:            &language,
 	}
 }

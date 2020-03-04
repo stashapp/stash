@@ -1,0 +1,33 @@
+.logs {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-size: smaller;
+  max-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-top: 1rem;
+  white-space: pre-wrap;
+
+  .debug {
+    color: lightgreen;
+    font-weight: bold;
+  }
+
+  .info {
+    color: white;
+    font-weight: bold;
+  }
+
+  .warning {
+    color: orange;
+    font-weight: bold;
+  }
+
+  .error {
+    color: red;
+    font-weight: bold;
+  }
+}
+
+.log-time {
+  margin-right: 1rem;
+}

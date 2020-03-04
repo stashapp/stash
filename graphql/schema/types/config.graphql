@@ -75,6 +75,7 @@ input ConfigInterfaceInput {
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
+  language: String
 }
 
 type ConfigInterfaceResult {
@@ -91,6 +92,8 @@ type ConfigInterfaceResult {
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
+  """Interface language"""
+  language: String
 }
 
 """All configuration settings"""
