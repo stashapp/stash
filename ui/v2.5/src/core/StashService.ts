@@ -11,23 +11,32 @@ export class StashService {
   public static client: ApolloClient<NormalizedCacheObject>;
   private static cache: InMemoryCache;
 
-  public static initialize() {
+  public static getPlatformURL(ws? : boolean) {
     const platformUrl = new URL(window.location.origin);
-    const wsPlatformUrl = new URL(window.location.origin);
-    wsPlatformUrl.protocol = "ws:";
 
     if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
       platformUrl.port = "9999"; // TODO: Hack. Development expects port 9999
-      wsPlatformUrl.port = "9999";
 
       if (process.env.REACT_APP_HTTPS === "true") {
         platformUrl.protocol = "https:";
       }
     }
 
+    if (ws) {
+      platformUrl.protocol = "ws:";
+    }
+
+    return platformUrl;
+  }
+
+  public static initialize() {
+    const platformUrl = StashService.getPlatformURL();
+    const wsPlatformUrl = StashService.getPlatformURL(true);
+
     if (platformUrl.protocol === "https:") {
       wsPlatformUrl.protocol = "wss:";
     }
+    
     const url = `${platformUrl.toString().slice(0, -1)}/graphql`;
     const wsUrl = `${wsPlatformUrl.toString().slice(0, -1)}/graphql`;
 
