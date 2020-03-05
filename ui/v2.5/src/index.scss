@@ -80,41 +80,53 @@ code {
 
 @media (min-width: 576px) {
   .zoom-0 {
-    width: 15rem;
+    width: 240px;
+
+    & .scene-card-video {
+      max-height: 180px;
+    }
+    & .previewable.portrait {
+      height: 180px;
+    }
   }
 
   .zoom-1 {
-    width: 20rem;
+    width: 320px;
+
+    & .scene-card-video {
+      max-height: 240px;
+    }
+    & .previewable.portrait {
+      height: 240px;
+    }
   }
 
   .zoom-2 {
-    width: 30rem;
+    width: 480px;
+
+    & .scene-card-video {
+      max-height: 360px;
+    }
+    & .previewable.portrait {
+      height: 360px;
+    }
   }
 
   .zoom-3 {
-    width: 40rem;
+    width: 640px;
+
+    & .scene-card-video {
+      max-height: 480px;
+    }
+    & .portrait {
+      height: 480px;
+    }
   }
 }
 
 .scene-card-video {
   height: auto;
   width: 100%;
-
-  .zoom-0 {
-    height: 11.25rem;
-  }
-
-  .zoom-1 {
-    height: 15rem;
-  }
-
-  .zoom-2 {
-    height: 22.5rem;
-  }
-
-  .zoom-3 {
-    height: 30rem;
-  }
 }
 
 /* this is a bit of a hack, because we can't supply direct class names
