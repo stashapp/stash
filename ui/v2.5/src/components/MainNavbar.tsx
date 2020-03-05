@@ -73,23 +73,23 @@ export const MainNavbar: React.FC = () => {
       variant="dark"
       bg="dark"
       className="top-nav"
-      expand="sm"
+      expand="md"
     >
-      <Navbar.Brand as="div" className="order-1 order-sm-0">
+      <Navbar.Brand as="div" className="order-1 order-md-0">
         <Link to="/">
-          <Button className="minimal brand-link d-none d-sm-inline-block">
+          <Button className="minimal brand-link d-none d-md-inline-block">
             Stash
           </Button>
-          <Button className="minimal brand-icon d-inline d-sm-none">
+          <Button className="minimal brand-icon d-inline d-md-none">
             <img src="favicon.ico" alt="" />
           </Button>
         </Link>
       </Navbar.Brand>
       <Navbar.Toggle className="order-0" />
-      <Navbar.Collapse className="order-3 order-sm-1">
+      <Navbar.Collapse className="order-3 order-md-1">
         <Nav className="mr-md-auto">
           {menuItems.map(i => (
-            <Nav.Link eventKey={i.href} as="div" key={i.href}>
+            <Nav.Link eventKey={i.href} key={i.href}>
               <LinkContainer
                 activeClassName="active"
                 exact
