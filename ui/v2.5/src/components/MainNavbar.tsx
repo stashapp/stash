@@ -89,7 +89,7 @@ export const MainNavbar: React.FC = () => {
       <Navbar.Collapse className="order-3 order-md-1">
         <Nav className="mr-md-auto">
           {menuItems.map(i => (
-            <Nav.Link eventKey={i.href} key={i.href}>
+            <Nav.Link eventKey={i.href} as="div" key={i.href}>
               <LinkContainer
                 activeClassName="active"
                 exact
