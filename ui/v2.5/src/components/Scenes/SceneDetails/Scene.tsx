@@ -140,7 +140,6 @@ export const Scene: React.FC = () => {
           <Tab
             eventKey="scene-edit-panel"
             title="Edit"
-            tabClassName="d-none d-sm-block"
           >
             <SceneEditPanel
               scene={scene}
