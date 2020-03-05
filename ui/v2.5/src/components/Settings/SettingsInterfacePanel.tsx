@@ -146,7 +146,7 @@ export const SettingsInterfacePanel: React.FC = () => {
             setCSS(e.currentTarget.value)
           }
           rows={16}
-          className="col col-sm-6 text-input"
+          className="col col-sm-6 text-input code"
         ></Form.Control>
         <Form.Text className="text-muted">
           Page must be reloaded for changes to take effect.
