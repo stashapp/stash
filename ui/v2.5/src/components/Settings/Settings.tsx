@@ -11,7 +11,7 @@ import { SettingsTasksPanel } from "./SettingsTasksPanel/SettingsTasksPanel";
 export const Settings: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
-  const defaultTab = queryString.parse(location.search).tab ?? "configuration";
+  const defaultTab = queryString.parse(location.search).tab ?? "tasks";
 
   const onSelect = (val: string) => history.push(`?tab=${val}`);
 
