@@ -155,7 +155,8 @@ code {
 .operation-container {
   display: flex;
   justify-content: center;
-  margin: 10px auto;
+  align-items: center;
+  margin: 0 auto 10px;
 }
 
 .filter-item,
