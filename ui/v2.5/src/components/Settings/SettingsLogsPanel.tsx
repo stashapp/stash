@@ -101,7 +101,7 @@ export const SettingsLogsPanel: React.FC = () => {
       <Form.Row id="log-level">
         <Form.Label className="col-6 col-sm-2">Log Level</Form.Label>
         <Form.Control
-          className="col-6 col-sm-2"
+          className="col-6 col-sm-2 input-control"
           as="select"
           defaultValue={logLevel}
           onChange={event => setLogLevel(event.currentTarget.value)}
