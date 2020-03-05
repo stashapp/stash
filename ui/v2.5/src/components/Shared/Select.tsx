@@ -73,17 +73,20 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = props => {
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedItem = getSelectedValues(selectedItems)[0];
-    props.onSelect(galleries.find(g => g.id === selectedItem.value));
+    props.onSelect(selectedItem ? galleries.find(g => g.id === selectedItem) : undefined);
   };
 
-  const initialId = props.initialId ? [props.initialId] : [];
+  const selectedOptions: Option[] = props.initialId
+    ? items.filter(item => props.initialId?.indexOf(item.value) !== -1)
+    : [];
+
   return (
     <SelectComponent
       className="input-control"
       onChange={onChange}
       isLoading={loading}
       items={items}
-      initialIds={initialId}
+      selectedOptions={selectedOptions}
     />
   );
 };
