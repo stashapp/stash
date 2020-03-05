@@ -208,10 +208,15 @@ export const StudioSelect: React.FC<IFilterProps> = props => {
   const { data, loading } = StashService.useAllStudiosForFilter();
 
   const normalizedData = data?.allStudios ?? [];
-  const items: Option[] = normalizedData.map(item => ({
+  
+  const items = (normalizedData.length > 0
+    ? [{ name: "None", id: "0" }, ...normalizedData]
+    : []
+  ).map(item => ({
     value: item.id,
     label: item.name
   }));
+
   const placeholder = props.noSelectionString ?? "Select studio...";
   const selectedOptions: Option[] = props.ids
     ? items.filter(item => props.ids?.indexOf(item.value) !== -1)

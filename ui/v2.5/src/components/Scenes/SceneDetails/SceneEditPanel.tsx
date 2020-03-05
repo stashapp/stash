@@ -344,7 +344,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               <td>Studio</td>
               <td>
                 <StudioSelect
-                  onSelect={items => items.length && setStudioId(items[0]?.id)}
+                  onSelect={items => setStudioId(items.length > 0 ? items[0]?.id : undefined)}
                   ids={studioId ? [studioId] : []}
                 />
               </td>
