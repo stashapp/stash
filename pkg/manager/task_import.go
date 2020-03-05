@@ -226,13 +226,13 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 		checksum := utils.MD5FromString(movieJSON.Name)
 
 		// Process the base 64 encoded image string
-		_, frontimageData, err := utils.ProcessBase64Image(movieJSON.Front_Image)
+		_, frontimageData, err := utils.ProcessBase64Image(movieJSON.FrontImage)
 		if err != nil {
 			_ = tx.Rollback()
 			logger.Errorf("[movies] <%s> invalid front_image: %s", mappingJSON.Checksum, err.Error())
 			return
 		}
-		_, backimageData, err := utils.ProcessBase64Image(movieJSON.Back_Image)
+		_, backimageData, err := utils.ProcessBase64Image(movieJSON.BackImage)
 		if err != nil {
 			_ = tx.Rollback()
 			logger.Errorf("[movies] <%s> invalid back_image: %s", mappingJSON.Checksum, err.Error())
@@ -241,8 +241,8 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 
 		// Populate a new movie from the input
 		newMovie := models.Movie{
-			Front_Image: frontimageData,
-			Back_Image:  backimageData,
+			FrontImage:  frontimageData,
+			BackImage:   backimageData,
 			Checksum:    checksum,
 			Name:        sql.NullString{String: movieJSON.Name, Valid: true},
 			Aliases:     sql.NullString{String: movieJSON.Aliases, Valid: true},

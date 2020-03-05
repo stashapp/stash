@@ -21,8 +21,8 @@ export const Movie: FunctionComponent<IProps> = (props: IProps) => {
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
 
   // Editing movie state
-  const [front_image, setFront_Image] = useState<string | undefined>(undefined);
-  const [back_image, setBack_Image] = useState<string | undefined>(undefined);
+  const [front_image, setFrontImage] = useState<string | undefined>(undefined);
+  const [back_image, setBackImage] = useState<string | undefined>(undefined);
   const [name, setName] = useState<string | undefined>(undefined);
   const [aliases, setAliases] = useState<string | undefined>(undefined);
   const [duration, setDuration] = useState<string | undefined>(undefined);
@@ -65,8 +65,8 @@ export const Movie: FunctionComponent<IProps> = (props: IProps) => {
   useEffect(() => {
     setImagePreview(movie.front_image_path);
     setBackImagePreview(movie.back_image_path);
-    setFront_Image(undefined);
-    setBack_Image(undefined);
+    setFrontImage(undefined);
+    setBackImage(undefined);
     updateMovieEditState(movie);
     if (!isNew) {
       setIsEditing(false);
@@ -75,13 +75,13 @@ export const Movie: FunctionComponent<IProps> = (props: IProps) => {
 
   function onImageLoad(this: FileReader) {
     setImagePreview(this.result as string);
-    setFront_Image(this.result as string);
+    setFrontImage(this.result as string);
     
   }
 
   function onBackImageLoad(this: FileReader) {
     setBackImagePreview(this.result as string);
-    setBack_Image(this.result as string);
+    setBackImage(this.result as string);
   }
 
 

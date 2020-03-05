@@ -6,8 +6,8 @@ import (
 
 type Movie struct {
 	ID          int             `db:"id" json:"id"`
-	Front_Image []byte          `db:"front_image" json:"front_image"`
-	Back_Image  []byte          `db:"back_image" json:"back_image"`
+	FrontImage []byte           `db:"front_image" json:"front_image"`
+	BackImage  []byte           `db:"back_image" json:"back_image"`
 	Checksum    string          `db:"checksum" json:"checksum"`
 	Name        sql.NullString  `db:"name" json:"name"`
 	Aliases     sql.NullString  `db:"aliases" json:"aliases"`

@@ -393,8 +393,8 @@ func (t *ExportTask) ExportMovies(ctx context.Context) {
 			newMovieJSON.URL = movie.URL.String
 		}
 
-		newMovieJSON.Front_Image = utils.GetBase64StringFromData(movie.Front_Image)
-		newMovieJSON.Back_Image = utils.GetBase64StringFromData(movie.Back_Image)
+		newMovieJSON.FrontImage = utils.GetBase64StringFromData(movie.FrontImage)
+		newMovieJSON.BackImage = utils.GetBase64StringFromData(movie.BackImage)
 		movieJSON, err := instance.JSON.getMovie(movie.Checksum)
 		if err != nil {
 			logger.Debugf("[movies] error reading movie json: %s", err.Error())

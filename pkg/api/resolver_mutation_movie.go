@@ -39,8 +39,8 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 	// Populate a new movie from the input
 	currentTime := time.Now()
 	newMovie := models.Movie{
-		Back_Image:  backimageData,
-		Front_Image: frontimageData,
+		BackImage:  backimageData,
+		FrontImage: frontimageData,
 		Checksum:   checksum,
 		Name:       sql.NullString{String: input.Name, Valid: true},
 		CreatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
@@ -103,14 +103,14 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 		if err != nil {
 			return nil, err
 		}
-		updatedMovie.Front_Image = frontimageData
+		updatedMovie.FrontImage = frontimageData
 	}
 	if input.BackImage != nil {
 		_, backimageData, err := utils.ProcessBase64Image(*input.BackImage)
 		if err != nil {
 			return nil, err
 		}
-		updatedMovie.Back_Image = backimageData
+		updatedMovie.BackImage = backimageData
 	}
 
 	if input.Name != nil {

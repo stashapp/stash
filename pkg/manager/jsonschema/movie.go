@@ -16,8 +16,8 @@ type Movie struct {
 	Rating   	   string          `json:"rating,omitempty"`
 	Director       string          `json:"director,omitempty"`
 	Synopsis       string          `json:"sypnopsis,omitempty"`
-	Front_Image    string          `json:"front_image,omitempty"`
-	Back_Image     string          `json:"back_image,omitempty"`
+	FrontImage     string          `json:"front_image,omitempty"`
+	BackImage      string          `json:"back_image,omitempty"`
 	URL            string          `json:"url,omitempty"`
 	CreatedAt      models.JSONTime `json:"created_at,omitempty"`
 	UpdatedAt      models.JSONTime `json:"updated_at,omitempty"`

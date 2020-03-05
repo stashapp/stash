@@ -25,12 +25,12 @@ func (rs movieRoutes) Routes() chi.Router {
 
 func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	movie := r.Context().Value(movieKey).(*models.Movie)
-	_, _ = w.Write(movie.Front_Image)
+	_, _ = w.Write(movie.FrontImage)
 }
 
 func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	movie := r.Context().Value(movieKey).(*models.Movie)
-	_, _ = w.Write(movie.Back_Image)
+	_, _ = w.Write(movie.BackImage)
 }
 
 func MovieCtx(next http.Handler) http.Handler {
