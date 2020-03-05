@@ -63,6 +63,7 @@ const renderInputGroup = (options: {
     <td>{options.title}</td>
     <td>
       <Form.Control
+        className="text-input"
         readOnly={!options.isEditing}
         plaintext={!options.isEditing}
         defaultValue={options.value}
@@ -87,6 +88,7 @@ const renderHtmlSelect = (options: {
     <td>
       <Form.Control
         as="select"
+        className="input-control"
         disabled={!options.isEditing}
         plaintext={!options.isEditing}
         value={options.value?.toString()}

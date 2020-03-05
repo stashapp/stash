@@ -79,6 +79,7 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = props => {
   const initialId = props.initialId ? [props.initialId] : [];
   return (
     <SelectComponent
+      className="input-control"
       onChange={onChange}
       isLoading={loading}
       items={items}
@@ -358,6 +359,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     options,
     value: selectedOptions,
     className,
+    classNamePrefix: "react-select",
     onChange,
     isMulti,
     isClearable,

@@ -310,6 +310,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
                   }
                   value={url}
                   placeholder="URL"
+                  className="text-input"
                 />
                 {maybeRenderScrapeButton()}
               </td>
@@ -318,7 +319,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               title: "Date",
               value: date,
               isEditing: true,
-              onChange: setDate
+              onChange: setDate,
+              placeholder: "YYYY-MM-DD"
             })}
             {TableUtils.renderHtmlSelect({
               title: "Rating",
@@ -377,7 +379,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           <Form.Label>Details</Form.Label>
           <Form.Control
             as="textarea"
-            className="scene-description"
+            className="scene-description text-input"
             onChange={(newValue: React.FormEvent<HTMLTextAreaElement>) =>
               setDetails(newValue.currentTarget.value)
             }

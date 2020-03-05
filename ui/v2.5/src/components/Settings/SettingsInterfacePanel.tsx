@@ -56,11 +56,11 @@ export const SettingsInterfacePanel: React.FC = () => {
   return (
     <>
       <h4>User Interface</h4>
-      <Form.Group controlId="language" className="row">
-        <Form.Label className="col-2">Language</Form.Label>
+      <Form.Group controlId="language">
+        <h6>Language</h6>
         <Form.Control
           as="select"
-          className="col-4"
+          className="col-4 input-control"
           value={language}
           onChange={(e: React.FormEvent<HTMLSelectElement>) =>
             setLanguage(e.currentTarget.value)
@@ -72,7 +72,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         </Form.Control>
       </Form.Group>
       <Form.Group>
-        <Form.Label>Scene / Marker Wall</Form.Label>
+        <h5>Scene / Marker Wall</h5>
         <Form.Check
           id="wall-show-title"
           checked={wallShowTitle}
@@ -104,19 +104,20 @@ export const SettingsInterfacePanel: React.FC = () => {
 
       <Form.Group>
         <h5>Scene Player</h5>
-        <Form.Check
-          id="auto-start-video"
-          checked={autostartVideo}
-          label="Auto-start video"
-          onChange={() => {
-            setAutostartVideo(!autostartVideo);
-          }}
-        />
+        <Form.Group id="auto-start-video">
+          <Form.Check
+            checked={autostartVideo}
+            label="Auto-start video"
+            onChange={() => {
+              setAutostartVideo(!autostartVideo);
+            }}
+          />
+        </Form.Group>
 
         <Form.Group id="max-loop-duration">
-          <Form.Label>Maximum loop duration</Form.Label>
+          <h6>Maximum loop duration</h6>
           <DurationInput
-            className="col col-sm-4"
+            className="row col col-4"
             numericValue={maximumLoopDuration}
             onValueChange={duration => setMaximumLoopDuration(duration)}
           />
@@ -145,7 +146,7 @@ export const SettingsInterfacePanel: React.FC = () => {
             setCSS(e.currentTarget.value)
           }
           rows={16}
-          className="col col-sm-6"
+          className="col col-sm-6 text-input"
         ></Form.Control>
         <Form.Text className="text-muted">
           Page must be reloaded for changes to take effect.

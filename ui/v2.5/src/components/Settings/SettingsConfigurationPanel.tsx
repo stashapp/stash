@@ -173,7 +173,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="database-path">
           <h6>Database Path</h6>
           <Form.Control
-            className="col col-sm-6"
+            className="col col-sm-6 text-input"
             defaultValue={databasePath}
             onChange={(e: React.FormEvent<HTMLInputElement>) =>
               setDatabasePath(e.currentTarget.value)
@@ -187,7 +187,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="generated-path">
           <h6>Generated Path</h6>
           <Form.Control
-            className="col col-sm-6"
+            className="col col-sm-6 text-input"
             defaultValue={generatedPath}
             onChange={(e: React.FormEvent<HTMLInputElement>) =>
               setGeneratedPath(e.currentTarget.value)
@@ -206,7 +206,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
               excludes.map((regexp, i) => (
                 <InputGroup>
                   <Form.Control
-                    className="col col-sm-6"
+                    className="col col-sm-6 text-input"
                     value={regexp}
                     onChange={(e: React.FormEvent<HTMLInputElement>) =>
                       excludeRegexChanged(i, e.currentTarget.value)
@@ -226,15 +226,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Button className="minimal" onClick={() => excludeAddRegex()}>
             <Icon icon="plus" />
           </Button>
-          <Form.Text>
+          <Form.Text className="text-muted">
+            Regexps of files/paths to exclude from Scan and add to Clean
             <a
               href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
               rel="noopener noreferrer"
               target="_blank"
             >
-              <span>
-                Regexps of files/paths to exclude from Scan and add to Clean
-              </span>
               <Icon icon="question-circle" />
             </a>
           </Form.Text>
@@ -248,7 +246,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="transcode-size">
           <h6>Maximum transcode size</h6>
           <Form.Control
-            className="col col-sm-6"
+            className="col col-sm-6 input-control"
             as="select"
             onChange={(event: React.FormEvent<HTMLSelectElement>) =>
               setMaxTranscodeSize(translateQuality(event.currentTarget.value))
@@ -268,7 +266,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="streaming-transcode-size">
           <h6>Maximum streaming transcode size</h6>
           <Form.Control
-            className="col col-sm-6"
+            className="col col-sm-6 input-control"
             as="select"
             onChange={(event: React.FormEvent<HTMLSelectElement>) =>
               setMaxStreamingTranscodeSize(
@@ -296,7 +294,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="username">
           <h6>Username</h6>
           <Form.Control
-            className="col col-sm-6"
+            className="col col-sm-6 text-input"
             defaultValue={username}
             onChange={(e: React.FormEvent<HTMLInputElement>) =>
               setUsername(e.currentTarget.value)
@@ -309,7 +307,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="password">
           <h6>Password</h6>
           <Form.Control
-            className="col col-sm-6"
+            className="col col-sm-6 text-input"
             type="password"
             defaultValue={password}
             onChange={(e: React.FormEvent<HTMLInputElement>) =>
@@ -328,7 +326,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <Form.Group id="log-file">
         <h6>Log file</h6>
         <Form.Control
-          className="col col-sm-6"
+          className="col col-sm-6 text-input"
           defaultValue={logFile}
           onChange={(e: React.FormEvent<HTMLInputElement>) =>
             setLogFile(e.currentTarget.value)
@@ -356,7 +354,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <Form.Group id="log-level">
         <h6>Log Level</h6>
         <Form.Control
-          className="col col-sm-6"
+          className="col col-sm-6 input-control"
           as="select"
           onChange={(event: React.FormEvent<HTMLSelectElement>) =>
             setLogLevel(event.currentTarget.value)

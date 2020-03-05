@@ -25,6 +25,7 @@ $pre-color: $text-color;
 $navbar-dark-color: rgb(245, 248, 250);
 $popover-bg: $secondary;
 $dark-text: #182026;
+$textfield-bg: rgba(16,22,26,.3);
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
@@ -128,10 +129,6 @@ hr {
     &:last-child {
       padding-right: 0;
     }
-  }
-
-  a {
-    color: $text-color;
   }
 }
 
