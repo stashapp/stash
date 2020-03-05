@@ -37,12 +37,12 @@ code {
   color: $text-color;
   border: 0;
   box-shadow:0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0), inset 0 0 0 1px rgba(16, 22, 26, 0.3), inset 0 1px 1px rgba(16, 22, 26, 0.4);
-}
 
-.input-control:focus, .text-input:focus {
-  color: $text-color;
-  border: 0;
-  box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary, 0 0 0 3px rgba(19,124,189,.3), inset 0 0 0 1px rgba(16,22,26,.3), inset 0 1px 1px rgba(16,22,26,.4);
+  &:focus {
+    color: $text-color;
+    border: 0;
+    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary, 0 0 0 3px rgba(19,124,189,.3), inset 0 0 0 1px rgba(16,22,26,.3), inset 0 1px 1px rgba(16,22,26,.4);
+  }
 }
 
 .text-input, .text-input:focus {
@@ -82,10 +82,10 @@ code {
   .zoom-0 {
     width: 240px;
 
-    & .scene-card-video {
+    .scene-card-video {
       max-height: 180px;
     }
-    & .previewable.portrait {
+    .previewable.portrait {
       height: 180px;
     }
   }
@@ -93,10 +93,10 @@ code {
   .zoom-1 {
     width: 320px;
 
-    & .scene-card-video {
+    .scene-card-video {
       max-height: 240px;
     }
-    & .previewable.portrait {
+    .previewable.portrait {
       height: 240px;
     }
   }
@@ -104,10 +104,10 @@ code {
   .zoom-2 {
     width: 480px;
 
-    & .scene-card-video {
+    .scene-card-video {
       max-height: 360px;
     }
-    & .previewable.portrait {
+    .previewable.portrait {
       height: 360px;
     }
   }
@@ -115,10 +115,10 @@ code {
   .zoom-3 {
     width: 640px;
 
-    & .scene-card-video {
+    .scene-card-video {
       max-height: 480px;
     }
-    & .portrait {
+    .portrait {
       height: 480px;
     }
   }
@@ -137,11 +137,11 @@ div.react-select__control {
   color: $text-color;
   cursor: pointer;
 
-  & .react-select__single-value, .react-select__input {
+  .react-select__single-value, .react-select__input {
     color: $text-color;
   }
 
-  & .react-select__multi-value {
+  .react-select__multi-value {
     background-color: $muted-gray;
     color: $text-color;
   }
@@ -151,11 +151,11 @@ div.react-select__menu {
   background-color: $secondary;
   color: $text-color;
 
-  & .react-select__option {
+  .react-select__option {
     color: $text-color;
   }
 
-  & .react-select__option--is-focused {
+  .react-select__option--is-focused {
     background-color: #8a9ba826;
     cursor: pointer;
   }
