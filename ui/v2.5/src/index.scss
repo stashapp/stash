@@ -23,14 +23,38 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 4rem 0 0 0;
+}
 
-  @media (min-width: 600px) {
-    min-width: 845px;
+a {
+  color: $primary;
+}
+
+code, .code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+.input-control, .text-input {
+  color: $text-color;
+  border: 0;
+  box-shadow:0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0), inset 0 0 0 1px rgba(16, 22, 26, 0.3), inset 0 1px 1px rgba(16, 22, 26, 0.4);
+
+  &:focus {
+    color: $text-color;
+    border: 0;
+    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary, 0 0 0 3px rgba(19,124,189,.3), inset 0 0 0 1px rgba(16,22,26,.3), inset 0 1px 1px rgba(16,22,26,.4);
   }
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+.text-input, .text-input:focus {
+  background-color: $textfield-bg;
+}
+
+.input-control, .input-control:focus {
+  background-color: $secondary;
+}
+
+.table-list a {
+  color: $text-color;
 }
 
 .table-list table {
@@ -56,40 +80,84 @@ code {
 
 @media (min-width: 576px) {
   .zoom-0 {
-    width: 15rem;
+    width: 240px;
+
+    .scene-card-video {
+      max-height: 180px;
+    }
+    .previewable.portrait {
+      height: 180px;
+    }
   }
 
   .zoom-1 {
-    width: 20rem;
+    width: 320px;
+
+    .scene-card-video {
+      max-height: 240px;
+    }
+    .previewable.portrait {
+      height: 240px;
+    }
   }
 
   .zoom-2 {
-    width: 30rem;
+    width: 480px;
+
+    .scene-card-video {
+      max-height: 360px;
+    }
+    .previewable.portrait {
+      height: 360px;
+    }
   }
 
   .zoom-3 {
-    width: 40rem;
+    width: 640px;
+
+    .scene-card-video {
+      max-height: 480px;
+    }
+    .portrait {
+      height: 480px;
+    }
   }
 }
 
 .scene-card-video {
   height: auto;
   width: 100%;
+}
 
-  .zoom-0 {
-    height: 11.25rem;
+/* this is a bit of a hack, because we can't supply direct class names
+   to the react-select controls */
+div.react-select__control {
+  background-color: $secondary;
+  border-color: $secondary;
+  color: $text-color;
+  cursor: pointer;
+
+  .react-select__single-value, .react-select__input {
+    color: $text-color;
   }
 
-  .zoom-1 {
-    height: 15rem;
+  .react-select__multi-value {
+    background-color: $muted-gray;
+    color: $text-color;
+  }
+}
+
+div.react-select__menu {
+  background-color: $secondary;
+  color: $text-color;
+
+  .react-select__option {
+    color: $text-color;
   }
 
-  .zoom-2 {
-    height: 22.5rem;
-  }
-
-  .zoom-3 {
-    height: 30rem;
+  .react-select__option--is-focused {
+    background-color: #8a9ba826;
+    cursor: pointer;
   }
 }
 
@@ -155,7 +223,8 @@ code {
 .operation-container {
   display: flex;
   justify-content: center;
-  margin: 10px auto;
+  align-items: center;
+  margin: 0 auto 10px;
 }
 
 .filter-item,
@@ -292,6 +361,10 @@ code {
 
   .nav-link {
     padding: 0;
+  }
+
+  .fa-icon {
+    margin-left: 0;
   }
 
   .btn {

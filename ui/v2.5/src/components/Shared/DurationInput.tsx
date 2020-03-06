@@ -75,7 +75,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
     <Form.Group className={`duration-input ${props.className}`}>
       <InputGroup>
         <Form.Control
-          className="duration-control"
+          className="duration-control text-input"
           disabled={props.disabled}
           value={value}
           onChange={(e: React.FormEvent<HTMLInputElement>) =>

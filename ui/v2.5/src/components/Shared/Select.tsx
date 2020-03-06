@@ -73,16 +73,20 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = props => {
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedItem = getSelectedValues(selectedItems)[0];
-    props.onSelect(galleries.find(g => g.id === selectedItem.value));
+    props.onSelect(selectedItem ? galleries.find(g => g.id === selectedItem) : undefined);
   };
 
-  const initialId = props.initialId ? [props.initialId] : [];
+  const selectedOptions: Option[] = props.initialId
+    ? items.filter(item => props.initialId?.indexOf(item.value) !== -1)
+    : [];
+
   return (
     <SelectComponent
+      className="input-control"
       onChange={onChange}
       isLoading={loading}
       items={items}
-      initialIds={initialId}
+      selectedOptions={selectedOptions}
     />
   );
 };
@@ -207,10 +211,15 @@ export const StudioSelect: React.FC<IFilterProps> = props => {
   const { data, loading } = StashService.useAllStudiosForFilter();
 
   const normalizedData = data?.allStudios ?? [];
-  const items: Option[] = normalizedData.map(item => ({
+  
+  const items = (normalizedData.length > 0
+    ? [{ name: "None", id: "0" }, ...normalizedData]
+    : []
+  ).map(item => ({
     value: item.id,
     label: item.name
   }));
+
   const placeholder = props.noSelectionString ?? "Select studio...";
   const selectedOptions: Option[] = props.ids
     ? items.filter(item => props.ids?.indexOf(item.value) !== -1)
@@ -358,6 +367,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     options,
     value: selectedOptions,
     className,
+    classNamePrefix: "react-select",
     onChange,
     isMulti,
     isClearable,
