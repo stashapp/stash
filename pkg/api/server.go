@@ -111,6 +111,7 @@ func Start() {
 	r.Mount("/studio", studioRoutes{}.Routes())
 
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Content-Type", "text/css")
 		if !config.GetCSSEnabled() {
 			return
 		}

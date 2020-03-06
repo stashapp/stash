@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
@@ -48,6 +48,27 @@ const menuItems: IMenuItem[] = [
 
 export const MainNavbar: React.FC = () => {
   const location = useLocation();
+  const [expanded, setExpanded] = useState(false);
+  // react-bootstrap typing bug
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const navbarRef = useRef<any>();
+
+  const maybeCollapse = (event: Event) => {
+    if (navbarRef.current && event.target instanceof Node && !navbarRef.current.contains(event.target)) {
+      setExpanded(false);
+    }
+  };
+
+  useEffect(() => {
+    if(expanded) {
+      document.addEventListener('click', maybeCollapse);
+      document.addEventListener('touchstart', maybeCollapse);
+    }
+    return () => {
+      document.removeEventListener('click', maybeCollapse);
+      document.removeEventListener('touchstart', maybeCollapse);
+    }
+  }, [expanded]);
 
   const path =
     location.pathname === "/performers"
@@ -74,8 +95,11 @@ export const MainNavbar: React.FC = () => {
       bg="dark"
       className="top-nav"
       expand="md"
+      expanded={expanded}
+      onToggle={setExpanded}
+      ref={navbarRef}
     >
-      <Navbar.Brand as="div" className="order-1 order-md-0">
+        <Navbar.Brand as="div" className="order-1 order-md-0" onClick={() => setExpanded(false)}>
         <Link to="/">
           <Button className="minimal brand-link d-none d-md-inline-block">
             Stash
@@ -109,8 +133,8 @@ export const MainNavbar: React.FC = () => {
       </Navbar.Collapse>
       <Nav className="order-2">
         <div className="d-none d-sm-block">{newButton}</div>
-        <LinkContainer exact to="/settings">
-          <Button className="minimal">
+        <LinkContainer exact to="/settings" onClick={() => setExpanded(false)}>
+          <Button className="minimal settings-button">
             <Icon icon="cog" />
           </Button>
         </LinkContainer>

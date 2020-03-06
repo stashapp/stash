@@ -29,27 +29,31 @@ a {
   color: $primary;
 }
 
-code, .code {
+code,
+.code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
-.input-control, .text-input {
-  color: $text-color;
+.input-control,
+.text-input {
   border: 0;
-  box-shadow:0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0), inset 0 0 0 1px rgba(16, 22, 26, 0.3), inset 0 1px 1px rgba(16, 22, 26, 0.4);
+  box-shadow: 0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0), inset 0 0 0 1px rgba(16, 22, 26, .3), inset 0 1px 1px rgba(16, 22, 26, .4);
+  color: $text-color;
 
   &:focus {
-    color: $text-color;
     border: 0;
-    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary, 0 0 0 3px rgba(19,124,189,.3), inset 0 0 0 1px rgba(16,22,26,.3), inset 0 1px 1px rgba(16,22,26,.4);
+    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary, 0 0 0 3px rgba(19, 124, 189, .3), inset 0 0 0 1px rgba(16, 22, 26, .3), inset 0 1px 1px rgba(16, 22, 26, .4);
+    color: $text-color;
   }
 }
 
-.text-input, .text-input:focus {
+.text-input,
+.text-input:focus {
   background-color: $textfield-bg;
 }
 
-.input-control, .input-control:focus {
+.input-control,
+.input-control:focus {
   background-color: $secondary;
 }
 
@@ -85,6 +89,7 @@ code, .code {
     .scene-card-video {
       max-height: 180px;
     }
+
     .previewable.portrait {
       height: 180px;
     }
@@ -96,6 +101,7 @@ code, .code {
     .scene-card-video {
       max-height: 240px;
     }
+
     .previewable.portrait {
       height: 240px;
     }
@@ -107,6 +113,7 @@ code, .code {
     .scene-card-video {
       max-height: 360px;
     }
+
     .previewable.portrait {
       height: 360px;
     }
@@ -118,6 +125,7 @@ code, .code {
     .scene-card-video {
       max-height: 480px;
     }
+
     .portrait {
       height: 480px;
     }
@@ -131,13 +139,15 @@ code, .code {
 
 /* this is a bit of a hack, because we can't supply direct class names
    to the react-select controls */
+/* stylelint-disable selector-class-pattern */
 div.react-select__control {
   background-color: $secondary;
   border-color: $secondary;
   color: $text-color;
   cursor: pointer;
 
-  .react-select__single-value, .react-select__input {
+  .react-select__single-value,
+  .react-select__input {
     color: $text-color;
   }
 
@@ -160,6 +170,7 @@ div.react-select__menu {
     cursor: pointer;
   }
 }
+/* stylelint-enable selector-class-pattern */
 
 .image-thumbnail {
   height: 100px;
@@ -221,9 +232,9 @@ div.react-select__menu {
 
 .filter-container,
 .operation-container {
+  align-items: center;
   display: flex;
   justify-content: center;
-  align-items: center;
   margin: 0 auto 10px;
 }
 
@@ -375,6 +386,11 @@ div.react-select__menu {
     .btn {
       padding: 6px;
     }
+
+    .settings-button {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
   }
 }
 
@@ -383,9 +399,18 @@ div.react-select__menu {
 }
 
 .stats {
+  &-element {
+    flex-grow: 1;
+    margin: auto .5rem;
+  }
+
   .title {
     font-size: 3vw;
     text-align: center;
+
+    @media (max-width: 576px) {
+      font-size: 16px;
+    }
   }
 
   .heading {

@@ -9,7 +9,7 @@ import * as serviceWorker from "./serviceWorker";
 
 ReactDOM.render((
   <>
-  <link rel="stylesheet" type="text/css" href={StashService.getPlatformURL() + "css"}/>
+  <link rel="stylesheet" type="text/css" href={`${StashService.getPlatformURL()}css`}/>
   <BrowserRouter>
     <ApolloProvider client={StashService.initialize()!}>
       <App />
