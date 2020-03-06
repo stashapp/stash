@@ -11,7 +11,7 @@ import { SettingsTasksPanel } from "./SettingsTasksPanel/SettingsTasksPanel";
 export const Settings: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
-  const defaultTab = queryString.parse(location.search).tab ?? "configuration";
+  const defaultTab = queryString.parse(location.search).tab ?? "tasks";
 
   const onSelect = (val: string) => history.push(`?tab=${val}`);
 
@@ -23,7 +23,7 @@ export const Settings: React.FC = () => {
         onSelect={onSelect}
       >
         <Row>
-          <Col sm={2}>
+          <Col sm={3} md={2}>
             <Nav variant="pills" className="flex-column">
               <Nav.Item>
                 <Nav.Link eventKey="configuration">Configuration</Nav.Link>
@@ -43,7 +43,7 @@ export const Settings: React.FC = () => {
               <hr className="d-sm-none" />
             </Nav>
           </Col>
-          <Col sm={10}>
+          <Col sm={9} md={10}>
             <Tab.Content>
               <Tab.Pane eventKey="configuration">
                 <SettingsConfigurationPanel />

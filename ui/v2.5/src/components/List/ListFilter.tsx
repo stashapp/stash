@@ -107,7 +107,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
   function renderSortByOptions() {
     return props.filter.sortByOptions.map(option => (
-      <Dropdown.Item onClick={onChangeSortBy} key={option}>
+      <Dropdown.Item onClick={onChangeSortBy} key={option} className="bg-secondary text-white">
         {option}
       </Dropdown.Item>
     ));
@@ -186,7 +186,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function renderSelectAll() {
     if (props.onSelectAll) {
       return (
-        <Dropdown.Item key="select-all" onClick={() => onSelectAll()}>
+        <Dropdown.Item key="select-all" className="bg-secondary text-white" onClick={() => onSelectAll()}>
           Select All
         </Dropdown.Item>
       );
@@ -196,7 +196,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function renderSelectNone() {
     if (props.onSelectNone) {
       return (
-        <Dropdown.Item key="select-none" onClick={() => onSelectNone()}>
+        <Dropdown.Item key="select-none" className="bg-secondary text-white" onClick={() => onSelectNone()}>
           Select None
         </Dropdown.Item>
       );
@@ -209,7 +209,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     if (props.otherOperations) {
       props.otherOperations.forEach(o => {
         options.push(
-          <Dropdown.Item key={o.text} onClick={o.onClick}>
+          <Dropdown.Item key={o.text} className="bg-secondary text-white" onClick={o.onClick}>
             {o.text}
           </Dropdown.Item>
         );
@@ -222,7 +222,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           <Dropdown.Toggle variant="secondary" id="more-menu">
             <Icon icon="ellipsis-h" />
           </Dropdown.Toggle>
-          <Dropdown.Menu>{options}</Dropdown.Menu>
+          <Dropdown.Menu className="bg-secondary text-white">{options}</Dropdown.Menu>
         </Dropdown>
       );
     }
@@ -259,13 +259,13 @@ export const ListFilter: React.FC<IListFilterProps> = (
             placeholder="Search..."
             defaultValue={props.filter.searchTerm}
             onChange={onChangeQuery}
-            className="filter-item col-5 col-sm-2"
+            className="filter-item col-5 col-sm-2 bg-secondary text-white border-secondary"
           />
           <Form.Control
             as="select"
             onChange={onChangePageSize}
             value={props.filter.itemsPerPage.toString()}
-            className="filter-item col-1 d-none d-sm-inline"
+            className="btn-secondary filter-item col-1 d-none d-sm-inline"
           >
             {PAGE_SIZE_OPTIONS.map(s => (
               <option value={s} key={s}>
@@ -278,7 +278,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
               <Dropdown.Toggle split variant="secondary" id="more-menu">
                 {props.filter.sortBy}
               </Dropdown.Toggle>
-              <Dropdown.Menu>{renderSortByOptions()}</Dropdown.Menu>
+              <Dropdown.Menu className="bg-secondary text-white">{renderSortByOptions()}</Dropdown.Menu>
               <OverlayTrigger
                 overlay={
                   <Tooltip id="sort-direction-tooltip">

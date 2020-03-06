@@ -298,6 +298,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         </td>
         <td>
           <Form.Control
+            className="text-input"
             value={url ?? ""}
             readOnly={!isEditing}
             plaintext={!isEditing}

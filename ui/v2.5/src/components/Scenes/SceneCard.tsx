@@ -235,11 +235,9 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             : TextUtils.fileNameFromPath(props.scene.path)}
         </h5>
         <span>{props.scene.date}</span>
-        {props.scene.details && (
-          <p>
-            {TextUtils.truncate(props.scene.details, 100, "... (continued)")}
-          </p>
-        )}
+        <p>
+          {props.scene.details && TextUtils.truncate(props.scene.details, 100, "... (continued)")}
+        </p>
       </div>
 
       {maybeRenderPopoverButtonGroup()}
