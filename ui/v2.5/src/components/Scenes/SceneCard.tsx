@@ -236,7 +236,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         </h5>
         <span>{props.scene.date}</span>
         <p>
-          {props.scene.details && TextUtils.truncate(props.scene.details, 100, "... (continued)")}
+          {props.scene.details &&
+            TextUtils.truncate(props.scene.details, 100, "... (continued)")}
         </p>
       </div>
 

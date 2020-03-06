@@ -54,20 +54,24 @@ export const MainNavbar: React.FC = () => {
   const navbarRef = useRef<any>();
 
   const maybeCollapse = (event: Event) => {
-    if (navbarRef.current && event.target instanceof Node && !navbarRef.current.contains(event.target)) {
+    if (
+      navbarRef.current &&
+      event.target instanceof Node &&
+      !navbarRef.current.contains(event.target)
+    ) {
       setExpanded(false);
     }
   };
 
   useEffect(() => {
-    if(expanded) {
-      document.addEventListener('click', maybeCollapse);
-      document.addEventListener('touchstart', maybeCollapse);
+    if (expanded) {
+      document.addEventListener("click", maybeCollapse);
+      document.addEventListener("touchstart", maybeCollapse);
     }
     return () => {
-      document.removeEventListener('click', maybeCollapse);
-      document.removeEventListener('touchstart', maybeCollapse);
-    }
+      document.removeEventListener("click", maybeCollapse);
+      document.removeEventListener("touchstart", maybeCollapse);
+    };
   }, [expanded]);
 
   const path =
@@ -99,7 +103,11 @@ export const MainNavbar: React.FC = () => {
       onToggle={setExpanded}
       ref={navbarRef}
     >
-        <Navbar.Brand as="div" className="order-1 order-md-0" onClick={() => setExpanded(false)}>
+      <Navbar.Brand
+        as="div"
+        className="order-1 order-md-0"
+        onClick={() => setExpanded(false)}
+      >
         <Link to="/">
           <Button className="minimal brand-link d-none d-md-inline-block">
             Stash
