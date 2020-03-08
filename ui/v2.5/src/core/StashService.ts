@@ -11,7 +11,7 @@ export class StashService {
   public static client: ApolloClient<NormalizedCacheObject>;
   private static cache: InMemoryCache;
 
-  public static getPlatformURL(ws? : boolean) {
+  public static getPlatformURL(ws?: boolean) {
     const platformUrl = new URL(window.location.origin);
 
     if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
@@ -36,7 +36,7 @@ export class StashService {
     if (platformUrl.protocol === "https:") {
       wsPlatformUrl.protocol = "wss:";
     }
-    
+
     const url = `${platformUrl.toString().slice(0, -1)}/graphql`;
     const wsUrl = `${wsPlatformUrl.toString().slice(0, -1)}/graphql`;
 
