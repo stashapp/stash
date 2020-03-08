@@ -107,7 +107,11 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
   function renderSortByOptions() {
     return props.filter.sortByOptions.map(option => (
-      <Dropdown.Item onClick={onChangeSortBy} key={option} className="bg-secondary text-white">
+      <Dropdown.Item
+        onClick={onChangeSortBy}
+        key={option}
+        className="bg-secondary text-white"
+      >
         {option}
       </Dropdown.Item>
     ));
@@ -186,7 +190,11 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function renderSelectAll() {
     if (props.onSelectAll) {
       return (
-        <Dropdown.Item key="select-all" className="bg-secondary text-white" onClick={() => onSelectAll()}>
+        <Dropdown.Item
+          key="select-all"
+          className="bg-secondary text-white"
+          onClick={() => onSelectAll()}
+        >
           Select All
         </Dropdown.Item>
       );
@@ -196,7 +204,11 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function renderSelectNone() {
     if (props.onSelectNone) {
       return (
-        <Dropdown.Item key="select-none" className="bg-secondary text-white" onClick={() => onSelectNone()}>
+        <Dropdown.Item
+          key="select-none"
+          className="bg-secondary text-white"
+          onClick={() => onSelectNone()}
+        >
           Select None
         </Dropdown.Item>
       );
@@ -209,7 +221,11 @@ export const ListFilter: React.FC<IListFilterProps> = (
     if (props.otherOperations) {
       props.otherOperations.forEach(o => {
         options.push(
-          <Dropdown.Item key={o.text} className="bg-secondary text-white" onClick={o.onClick}>
+          <Dropdown.Item
+            key={o.text}
+            className="bg-secondary text-white"
+            onClick={o.onClick}
+          >
             {o.text}
           </Dropdown.Item>
         );
@@ -222,7 +238,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
           <Dropdown.Toggle variant="secondary" id="more-menu">
             <Icon icon="ellipsis-h" />
           </Dropdown.Toggle>
-          <Dropdown.Menu className="bg-secondary text-white">{options}</Dropdown.Menu>
+          <Dropdown.Menu className="bg-secondary text-white">
+            {options}
+          </Dropdown.Menu>
         </Dropdown>
       );
     }
@@ -278,7 +296,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
               <Dropdown.Toggle split variant="secondary" id="more-menu">
                 {props.filter.sortBy}
               </Dropdown.Toggle>
-              <Dropdown.Menu className="bg-secondary text-white">{renderSortByOptions()}</Dropdown.Menu>
+              <Dropdown.Menu className="bg-secondary text-white">
+                {renderSortByOptions()}
+              </Dropdown.Menu>
               <OverlayTrigger
                 overlay={
                   <Tooltip id="sort-direction-tooltip">

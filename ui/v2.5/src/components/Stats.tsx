@@ -13,7 +13,7 @@ export const Stats: React.FC = () => {
   return (
     <div className="mt-5">
       <div className="col col-sm-8 m-sm-auto row stats">
-        <div className="flex-grow-1">
+        <div className="stats-element">
           <p className="title">
             <FormattedNumber value={data.stats.scene_count} />
           </p>
@@ -21,7 +21,7 @@ export const Stats: React.FC = () => {
             <FormattedMessage id="scenes" defaultMessage="Scenes" />
           </p>
         </div>
-        <div className="flex-grow-1">
+        <div className="stats-element">
           <p className="title">
             <FormattedNumber value={data.stats.gallery_count} />
           </p>
@@ -29,7 +29,7 @@ export const Stats: React.FC = () => {
             <FormattedMessage id="galleries" defaultMessage="Galleries" />
           </p>
         </div>
-        <div className="flex-grow-1">
+        <div className="stats-element">
           <p className="title">
             <FormattedNumber value={data.stats.performer_count} />
           </p>
@@ -37,7 +37,7 @@ export const Stats: React.FC = () => {
             <FormattedMessage id="performers" defaultMessage="Performers" />
           </p>
         </div>
-        <div className="flex-grow-1">
+        <div className="stats-element">
           <p className="title">
             <FormattedNumber value={data.stats.studio_count} />
           </p>
@@ -45,7 +45,7 @@ export const Stats: React.FC = () => {
             <FormattedMessage id="studios" defaultMessage="Studios" />
           </p>
         </div>
-        <div className="flex-grow-1">
+        <div className="stats-element">
           <p className="title">
             <FormattedNumber value={data.stats.tag_count} />
           </p>

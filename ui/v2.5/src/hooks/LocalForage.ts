@@ -41,8 +41,7 @@ function useLocalForage(
         if (!Object.is(parsed, null)) {
           setData(parsed);
           Cache[key] = parsed;
-        }
-        else {
+        } else {
           setData({});
           Cache[key] = {};
         }

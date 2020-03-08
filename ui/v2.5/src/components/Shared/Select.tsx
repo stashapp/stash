@@ -73,7 +73,9 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = props => {
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedItem = getSelectedValues(selectedItems)[0];
-    props.onSelect(selectedItem ? galleries.find(g => g.id === selectedItem) : undefined);
+    props.onSelect(
+      selectedItem ? galleries.find(g => g.id === selectedItem) : undefined
+    );
   };
 
   const selectedOptions: Option[] = props.initialId
@@ -211,7 +213,7 @@ export const StudioSelect: React.FC<IFilterProps> = props => {
   const { data, loading } = StashService.useAllStudiosForFilter();
 
   const normalizedData = data?.allStudios ?? [];
-  
+
   const items = (normalizedData.length > 0
     ? [{ name: "None", id: "0" }, ...normalizedData]
     : []

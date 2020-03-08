@@ -137,10 +137,7 @@ export const Scene: React.FC = () => {
           >
             <SceneFileInfoPanel scene={scene} />
           </Tab>
-          <Tab
-            eventKey="scene-edit-panel"
-            title="Edit"
-          >
+          <Tab eventKey="scene-edit-panel" title="Edit">
             <SceneEditPanel
               scene={scene}
               onUpdate={newScene => setScene(newScene)}

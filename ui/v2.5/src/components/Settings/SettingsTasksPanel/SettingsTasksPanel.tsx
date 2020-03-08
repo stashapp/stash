@@ -168,7 +168,11 @@ export const SettingsTasksPanel: React.FC = () => {
         <Form.Group>
           <h5>Status: {status}</h5>
           {!!status && status !== "Idle" ? (
-            <ProgressBar animated now={progress} label={`${progress.toFixed(0)}%`} />
+            <ProgressBar
+              animated
+              now={progress}
+              label={`${progress.toFixed(0)}%`}
+            />
           ) : (
             ""
           )}
