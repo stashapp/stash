@@ -1,0 +1,180 @@
+
+/* Blueprint dark theme */
+
+$secondary: #394b59;
+$muted-gray: #bfccd6;
+$success: #0f9960;
+$warning: #d9822b;
+$danger: #db3737;
+
+$theme-colors: (
+  primary: #137cbd,
+  secondary: $secondary,
+  success: $success,
+  warning: $warning,
+  danger: $danger,
+  dark: #394b59
+);
+
+$body-bg: #202b33;
+$text-muted: $muted-gray;
+$link-color: #48aff0;
+$link-hover-color: $link-color;
+$text-color: #f5f8fa;
+$pre-color: $text-color;
+$navbar-dark-color: rgb(245, 248, 250);
+$popover-bg: $secondary;
+$dark-text: #182026;
+$textfield-bg: rgba(16, 22, 26, .3);
+
+@import "node_modules/bootstrap/scss/bootstrap";
+
+$red1: #a82a2a;
+$orange1: #a66321;
+$sepia1: #63411e;
+$dark-gray2: #202b33;
+$dark-gray5: #394b59;
+
+.btn.active:not(.disabled),
+.btn.active.minimal:not(.disabled) {
+  background-color: rgba(138, 155, 168, .3);
+  color: $text-color;
+}
+
+a.minimal,
+button.minimal {
+  background: none;
+  border: none;
+  color: $text-color;
+  transition: none;
+
+  &:hover {
+    background: rgba(138, 155, 168, .15);
+    color: $text-color;
+  }
+
+  &:active {
+    background: rgba(138, 155, 168, .3);
+    color: $text-color;
+  }
+}
+
+hr {
+  margin: 5px 0;
+}
+
+.dropdown-toggle::after {
+  content: none;
+}
+
+.nav-link {
+  color: $text-color;
+}
+
+.nav-tabs {
+  border: none;
+  margin: auto;
+  margin-bottom: .5rem;
+
+  .nav-link {
+    border: none;
+    color: $text-color;
+    padding: 8px;
+
+    &.active {
+      border-bottom: 2px solid;
+      color: $link-color;
+
+      &:hover {
+        border-bottom-color: $link-color;
+        cursor: default;
+      }
+    }
+
+    &:hover {
+      border-bottom: 2px solid white;
+    }
+  }
+}
+
+.tab-content {
+  padding-bottom: 2rem;
+}
+
+.table-striped tr:nth-child(odd) td {
+  background: rgba(92, 112, 128, .15);
+}
+
+.table {
+  border: none;
+  color: $text-color;
+
+  thead {
+    th {
+      border-bottom: 1px solid #414c53;
+      border-right: none;
+      border-top: none;
+    }
+  }
+
+  td {
+    border: none;
+    border-color: #414c53;
+    padding: .25rem .75rem;
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    &:last-child {
+      padding-right: 0;
+    }
+  }
+}
+
+.popover {
+  max-width: inherit;
+}
+
+.card {
+  border: none;
+  margin: 5px;
+  overflow: hidden;
+}
+
+.form-control {
+  &-plaintext {
+    color: $text-color;
+    margin: 0;
+    padding: 0;
+
+    option {
+      color: black;
+    }
+
+    &::placeholder {
+      color: transparent;
+    }
+
+    &:hover {
+      cursor: default;
+    }
+  }
+}
+
+.popover {
+  &-body {
+    .btn {
+      color: $text-color;
+    }
+  }
+}
+
+.modal {
+  color: $dark-text;
+
+  .modal-body,
+  .modal-footer {
+    background-color: rgb(235, 241, 245);
+  }
+}

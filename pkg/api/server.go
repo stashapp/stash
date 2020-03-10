@@ -112,6 +112,7 @@ func Start() {
 	r.Mount("/movie", movieRoutes{}.Routes())
 
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/css")
 		if !config.GetCSSEnabled() {
 			return
 		}

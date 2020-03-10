@@ -108,7 +108,9 @@ func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]*Studio, int)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	sortAndPagination := qb.getStudioSort(findFilter) + getPagination(findFilter)
