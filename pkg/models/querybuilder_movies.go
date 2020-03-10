@@ -125,7 +125,9 @@ func (qb *MovieQueryBuilder) Query(findFilter *FindFilterType) ([]*Movie, int) {
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"movies.name"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	sortAndPagination := qb.getMovieSort(findFilter) + getPagination(findFilter)
