@@ -24,6 +24,7 @@ import { FilterMultiSelect } from "../../select/FilterMultiSelect";
 import { FilterSelect } from "../../select/FilterSelect";
 import { ValidGalleriesSelect } from "../../select/ValidGalleriesSelect";
 import { ImageUtils } from "../../../utils/image";
+import { SceneMovieTable }  from "./SceneMovieTable";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -41,6 +42,8 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
   const [galleryId, setGalleryId] = useState<string | undefined>(undefined);
   const [studioId, setStudioId] = useState<string | undefined>(undefined);
   const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
+  const [movieIds, setMovieIds] = useState<string[] | undefined>(undefined); 
+  const [sceneIdx, setSceneIdx] = useState<string[] | undefined>(undefined); 
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
   const [coverImage, setCoverImage] = useState<string | undefined>(undefined);
 
@@ -75,16 +78,21 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
 
   function updateSceneEditState(state: Partial<GQL.SceneDataFragment>) {
     const perfIds = !!state.performers ? state.performers.map((performer) => performer.id) : undefined;
+    const moviIds = !!state.movies ? state.movies.map((sceneMovie) => sceneMovie.movie.id) : undefined;
+    const scenIdx = !!state.movies ? state.movies.map((movie) => movie.scene_index!) : undefined; 
+  
     const tIds = !!state.tags ? state.tags.map((tag) => tag.id) : undefined;
-
+       
     setTitle(state.title);
-    setDetails(state.details);
+    setDetails(state.details); 
     setUrl(state.url);
     setDate(state.date);
     setRating(state.rating == null ? NaN : state.rating);
     setGalleryId(state.gallery ? state.gallery.id : undefined);
     setStudioId(state.studio ? state.studio.id : undefined);
+    setMovieIds(moviIds);
     setPerformerIds(perfIds);
+    setSceneIdx(scenIdx);
     setTagIds(tIds);
   }
 
@@ -111,9 +119,33 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
       gallery_id: galleryId,
       studio_id: studioId,
       performer_ids: performerIds,
+      movies: makeMovieInputs(),
       tag_ids: tagIds,
       cover_image: coverImage,
     };
+  }
+
+  function makeMovieInputs(): GQL.SceneMovieInput[] | undefined {
+    if (!movieIds) {
+      return undefined;
+    }
+    
+    let ret = movieIds.map((id) => {
+      let r : GQL.SceneMovieInput = {
+        movie_id: id
+      };
+      return r;
+    });
+
+    if (sceneIdx) {
+      sceneIdx.forEach((idx, i) => {
+        if (!!idx && ret.length > i) {
+          ret[i].scene_index = idx;
+        }
+      });
+    }
+
+    return ret;
   }
 
   async function onSave() {
@@ -150,7 +182,7 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
     props.onDelete();
   }
 
-  function renderMultiSelect(type: "performers" | "tags", initialIds: string[] | undefined) {
+  function renderMultiSelect(type: "performers" | "movies" | "tags", initialIds: string[] | undefined) {
     return (
       <FilterMultiSelect
         type={type}
@@ -158,10 +190,24 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
           const ids = items.map((i) => i.id);
           switch (type) {
             case "performers": setPerformerIds(ids); break;
+            case "movies": setMovieIds(ids); break;
             case "tags": setTagIds(ids); break;
           }
         }}
         initialIds={initialIds}
+      />
+    );
+  }
+
+  function renderTableMovies( initialIds: string[] | undefined, initialIdx: string[] | undefined ) {
+    return (
+      <SceneMovieTable
+          initialIds={initialIds}
+          initialIdx={initialIdx}
+          onUpdate={(items) => {
+            const idx = items.map((i) => i);
+            setSceneIdx(idx);
+          }}
       />
     );
   }
@@ -281,6 +327,28 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
         setPerformerIds(newIds as string[]);
       }
     }
+    
+    if ((!movieIds || movieIds.length === 0) && scene.movies && scene.movies.length > 0) {
+      let idMovis = scene.movies.filter((p) => {
+        return p.id !== undefined && p.id !== null;
+      });
+
+      if (idMovis.length > 0) {
+        let newIds = idMovis.map((p) => p.id);
+        setMovieIds(newIds as string[]);
+      }
+    }
+
+    if ((!sceneIdx || sceneIdx.length === 0) && scene.movies && scene.movies.length > 0) {
+      let idxScen= scene.movies.filter((p) => {
+        return p.id !== undefined && p.id !== null;
+      });
+
+      if (idxScen.length > 0) {
+        let newIds = idxScen.map((p) => p.id);
+        setSceneIdx(newIds as string[]);
+      }
+    }
 
     if ((!tagIds || tagIds.length === 0) && scene.tags && scene.tags.length > 0) {
       let idTags = scene.tags.filter((p) => {
@@ -383,7 +451,12 @@ export const SceneEditPanel: FunctionComponent<IProps> = (props: IProps) => {
         <FormGroup label="Performers">
           {renderMultiSelect("performers", performerIds)}
         </FormGroup>
-
+        
+        <FormGroup label="Movies/Scenes">
+          {renderMultiSelect("movies", movieIds)}
+          {renderTableMovies(movieIds, sceneIdx)}
+        </FormGroup>
+ 
         <FormGroup label="Tags">
           {renderMultiSelect("tags", tagIds)}
         </FormGroup>

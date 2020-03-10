@@ -147,6 +147,28 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 		return nil, err
 	}
 
+	// Save the movies
+	var movieJoins []models.MoviesScenes
+
+	for _, movie := range input.Movies {
+
+		movieID, _ := strconv.Atoi(movie.MovieID)
+		sceneIdx := ""
+		if movie.SceneIndex != nil {
+			sceneIdx = *movie.SceneIndex
+		}
+
+		movieJoin := models.MoviesScenes{
+			MovieID:    movieID,
+			SceneID:    sceneID,
+			SceneIndex: sceneIdx,
+		}
+		movieJoins = append(movieJoins, movieJoin)
+	}
+	if err := jqb.UpdateMoviesScenes(sceneID, movieJoins, tx); err != nil {
+		return nil, err
+	}
+
 	// Save the tags
 	var tagJoins []models.ScenesTags
 	for _, tid := range input.TagIds {

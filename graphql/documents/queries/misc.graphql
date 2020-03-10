@@ -29,6 +29,11 @@ query AllStudiosForFilter {
     ...SlimStudioData
   }
 }
+query AllMoviesForFilter {
+  allMovies {
+    ...SlimMovieData
+  }
+}
 
 query AllTagsForFilter {
   allTags {
@@ -50,6 +55,7 @@ query Stats {
     gallery_count,
     performer_count,
     studio_count,
+    movie_count,
     tag_count
   }
 }

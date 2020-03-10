@@ -10,7 +10,7 @@ export class IsMissingCriterion extends Criterion<string, string> {
   public parameterName: string = "is_missing";
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
-  public options: string[] = ["title", "url", "date", "gallery", "studio", "performers"];
+  public options: string[] = ["title", "url", "date", "gallery", "studio", "movie", "performers"];
   public value: string = "";
 }
 

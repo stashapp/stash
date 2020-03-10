@@ -9,14 +9,16 @@ import { HTMLInputProps } from "../../models";
 const InternalPerformerSelect = Select.ofType<GQL.AllPerformersForFilterAllPerformers>();
 const InternalTagSelect = Select.ofType<GQL.AllTagsForFilterAllTags>();
 const InternalStudioSelect = Select.ofType<GQL.AllStudiosForFilterAllStudios>();
+const InternalMovieSelect = Select.ofType<GQL.AllMoviesForFilterAllMovies>();
 
 type ValidTypes =
   GQL.AllPerformersForFilterAllPerformers |
   GQL.AllTagsForFilterAllTags |
-  GQL.AllStudiosForFilterAllStudios;
+  GQL.AllStudiosForFilterAllStudios | 
+  GQL.AllMoviesForFilterAllMovies;
 
 interface IProps extends HTMLInputProps {
-  type: "performers" | "studios" | "tags";
+  type: "performers" | "studios" | "movies" | "tags";
   initialId?: string;
   noSelectionString?: string;
   onSelectItem: (item: ValidTypes | undefined) => void;
@@ -45,6 +47,14 @@ export const FilterSelect: React.FunctionComponent<IProps> = (props: IProps) => 
       InternalSelect = InternalStudioSelect;
       break;
     }
+    case "movies": {
+      const { data } = StashService.useAllMoviesForFilter();
+      items = !!data && !!data.allMovies ? data.allMovies : [];
+      addNoneOption(items);
+      InternalSelect = InternalMovieSelect;
+      break;
+    }
+
     case "tags": {
       const { data } = StashService.useAllTagsForFilter();
       items = !!data && !!data.allTags ? data.allTags : [];

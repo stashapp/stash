@@ -158,5 +158,6 @@ func (s *singleton) RefreshConfig() {
 		_ = utils.EnsureDir(s.Paths.JSON.Scenes)
 		_ = utils.EnsureDir(s.Paths.JSON.Galleries)
 		_ = utils.EnsureDir(s.Paths.JSON.Studios)
+		_ = utils.EnsureDir(s.Paths.JSON.Movies)
 	}
 }

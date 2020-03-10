@@ -35,6 +35,30 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   aliases
 }
 
+fragment ScrapedMovieData on ScrapedMovie {
+  name
+  aliases
+  duration
+  date
+  rating
+  director
+  url
+  synopsis
+
+}
+
+fragment ScrapedSceneMovieData on ScrapedSceneMovie {
+  id
+  name
+  aliases
+  duration
+  date
+  rating
+  director
+  url
+  synopsis
+}
+
 fragment ScrapedSceneStudioData on ScrapedSceneStudio {
   id
   name
@@ -73,5 +97,9 @@ fragment ScrapedSceneData on ScrapedScene {
 
   performers {
     ...ScrapedScenePerformerData
+  }
+
+  movies {
+    ...ScrapedSceneMovieData
   }
 }

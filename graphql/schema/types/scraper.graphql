@@ -43,6 +43,20 @@ type ScrapedScenePerformer {
   aliases: String
 }
 
+type ScrapedSceneMovie {
+  """Set if movie matched"""
+  id: ID
+  name: String!
+  aliases: String
+  duration: String
+  date: String
+  rating: String
+  director: String
+  synopsis: String
+  url: String
+  
+}
+
 type ScrapedSceneStudio {
   """Set if studio matched"""
   id: ID
@@ -67,4 +81,5 @@ type ScrapedScene {
   studio: ScrapedSceneStudio
   tags: [ScrapedSceneTag!]
   performers: [ScrapedScenePerformer!]
+  movies: [ScrapedSceneMovie!]
 }

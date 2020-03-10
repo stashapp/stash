@@ -1,0 +1,15 @@
+fragment MovieData on Movie {
+  id
+  checksum
+  name
+  aliases
+  duration
+  date
+  rating
+  director
+  synopsis
+  url
+  front_image_path
+  back_image_path
+  scene_count
+}
