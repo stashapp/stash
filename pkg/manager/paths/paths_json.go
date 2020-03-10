@@ -13,6 +13,7 @@ type jsonPaths struct {
 	Scenes     string
 	Galleries  string
 	Studios    string
+	Movies     string
 }
 
 func newJSONPaths() *jsonPaths {
@@ -23,6 +24,7 @@ func newJSONPaths() *jsonPaths {
 	jp.Scenes = filepath.Join(config.GetMetadataPath(), "scenes")
 	jp.Galleries = filepath.Join(config.GetMetadataPath(), "galleries")
 	jp.Studios = filepath.Join(config.GetMetadataPath(), "studios")
+	jp.Movies = filepath.Join(config.GetMetadataPath(), "movies")
 	return &jp
 }
 
@@ -36,4 +38,8 @@ func (jp *jsonPaths) SceneJSONPath(checksum string) string {
 
 func (jp *jsonPaths) StudioJSONPath(checksum string) string {
 	return filepath.Join(jp.Studios, checksum+".json")
+}
+
+func (jp *jsonPaths) MovieJSONPath(checksum string) string {
+	return filepath.Join(jp.Movies, checksum+".json")
 }

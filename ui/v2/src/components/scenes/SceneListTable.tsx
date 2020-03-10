@@ -64,6 +64,14 @@ export const SceneListTable: FunctionComponent<ISceneListTableProps> = (props: I
     }
   }
 
+  function renderMovies(movies : GQL.SlimSceneDataMovies[]) {
+    return movies.map((sceneMovie) => (
+        <Link to={NavigationUtils.makeMovieScenesUrl(sceneMovie.movie)}>
+          <H6>{sceneMovie.movie.name}</H6>
+        </Link>
+      ));
+  }
+
   function renderSceneRow(scene : GQL.SlimSceneDataFragment) {
     return (
       <>
@@ -93,6 +101,9 @@ export const SceneListTable: FunctionComponent<ISceneListTableProps> = (props: I
         <td>
           {renderStudio(scene.studio)}
         </td>
+        <td>
+          {renderMovies(scene.movies)}
+        </td>
       </tr>
       </>
     )
@@ -111,6 +122,7 @@ export const SceneListTable: FunctionComponent<ISceneListTableProps> = (props: I
             <th>Tags</th>
             <th>Performers</th>
             <th>Studio</th>
+            <th>Movies</th>
           </tr>
         </thead>
         <tbody>

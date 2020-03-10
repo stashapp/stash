@@ -265,6 +265,7 @@ const (
 	XPathScraperConfigSceneTags       = "Tags"
 	XPathScraperConfigScenePerformers = "Performers"
 	XPathScraperConfigSceneStudio     = "Studio"
+	XPathScraperConfigSceneMovies     = "Movies"
 )
 
 func (s xpathScraper) GetSceneSimple() xpathScraperConfig {
@@ -274,7 +275,7 @@ func (s xpathScraper) GetSceneSimple() xpathScraperConfig {
 
 	if mapped != nil {
 		for k, v := range mapped {
-			if k != XPathScraperConfigSceneTags && k != XPathScraperConfigScenePerformers && k != XPathScraperConfigSceneStudio {
+			if k != XPathScraperConfigSceneTags && k != XPathScraperConfigScenePerformers && k != XPathScraperConfigSceneStudio && k != XPathScraperConfigSceneMovies {
 				ret[k] = v
 			}
 		}
@@ -311,6 +312,10 @@ func (s xpathScraper) GetSceneTags() xpathScraperConfig {
 
 func (s xpathScraper) GetSceneStudio() xpathScraperConfig {
 	return s.getSceneSubMap(XPathScraperConfigSceneStudio)
+}
+
+func (s xpathScraper) GetSceneMovies() xpathScraperConfig {
+	return s.getSceneSubMap(XPathScraperConfigSceneMovies)
 }
 
 func (s xpathScraper) scrapePerformer(doc *html.Node) (*models.ScrapedPerformer, error) {
@@ -358,6 +363,7 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 	scenePerformersMap := s.GetScenePerformers()
 	sceneTagsMap := s.GetSceneTags()
 	sceneStudioMap := s.GetSceneStudio()
+	sceneMoviesMap := s.GetSceneMovies()
 
 	results := sceneMap.process(doc, s.Common)
 	if len(results) > 0 {
@@ -392,6 +398,17 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 				studioResults[0].apply(studio)
 				ret.Studio = studio
 			}
+		}
+
+		if sceneMoviesMap != nil {
+			movieResults := sceneMoviesMap.process(doc, s.Common)
+
+			for _, p := range movieResults {
+				movie := &models.ScrapedSceneMovie{}
+				p.apply(movie)
+				ret.Movies = append(ret.Movies, movie)
+			}
+
 		}
 	}
 

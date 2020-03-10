@@ -16,6 +16,7 @@ import { PerformersCriterion, PerformersCriterionOption } from "./criteria/perfo
 import { RatingCriterion, RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterion, ResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterion, StudiosCriterionOption } from "./criteria/studios";
+import { MoviesCriterion, MoviesCriterionOption } from "./criteria/movies";
 import { SceneTagsCriterionOption, TagsCriterion, TagsCriterionOption } from "./criteria/tags";
 import { makeCriteria } from "./criteria/utils";
 import {
@@ -67,12 +68,12 @@ export class ListFilterModel {
           new RatingCriterionOption(),
           ListFilterModel.createCriterionOption("o_counter"),
           new ResolutionCriterionOption(),
-          ListFilterModel.createCriterionOption("duration"),
           new HasMarkersCriterionOption(),
           new IsMissingCriterionOption(),
           new TagsCriterionOption(),
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
+          new MoviesCriterionOption(),
         ];
         break;
       case FilterMode.Performers:
@@ -116,6 +117,19 @@ export class ListFilterModel {
           new NoneCriterionOption(),
         ];
         break;
+
+        case FilterMode.Movies:
+          if (!!this.sortBy === false) { this.sortBy = "name"; }
+          this.sortByOptions = ["name", "scenes_count"];
+          this.displayModeOptions = [
+            DisplayMode.Grid,
+          ];
+          this.criterionOptions = [
+            new NoneCriterionOption(),
+          ];
+          break;
+
+
       case FilterMode.Galleries:
         if (!!this.sortBy === false) { this.sortBy = "path"; }
         this.sortByOptions = ["path"];
@@ -230,9 +244,9 @@ export class ListFilterModel {
   }
 
   private setRandomSeed() {
-    if (this.sortBy == "random") {
+    if (this.sortBy === "random") {
       // #321 - set the random seed if it is not set
-      if (this.randomSeed == -1) {
+      if (this.randomSeed === -1) {
         // generate 8-digit seed
         this.randomSeed = Math.floor(Math.random() * Math.pow(10, 8));
       }
@@ -244,7 +258,7 @@ export class ListFilterModel {
   private getSortBy(): string | undefined {
     this.setRandomSeed();
 
-    if (this.sortBy == "random") {
+    if (this.sortBy === "random") {
       return this.sortBy + "_" + this.randomSeed.toString();
     }
 
@@ -335,6 +349,11 @@ export class ListFilterModel {
           const studCrit = criterion as StudiosCriterion;
           result.studios = { value: studCrit.value.map((studio) => studio.id), modifier: studCrit.modifier };
           break;
+        case "movies":
+            const movieCrit = criterion as MoviesCriterion;
+            result.movies = { value: movieCrit.value.map((movie) => movie.id), modifier: movieCrit.modifier };
+            break;
+
       }
     });
     return result;

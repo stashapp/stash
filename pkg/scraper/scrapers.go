@@ -161,6 +161,24 @@ func matchStudio(s *models.ScrapedSceneStudio) error {
 	s.ID = &id
 	return nil
 }
+func matchMovie(m *models.ScrapedSceneMovie) error {
+	qb := models.NewMovieQueryBuilder()
+
+	movies, err := qb.FindByNames([]string{m.Name}, nil)
+
+	if err != nil {
+		return err
+	}
+
+	if len(movies) !=1 {
+		// ignore - cannot match
+		return nil
+	}
+
+	id := strconv.Itoa(movies[0].ID)
+	m.ID = &id
+	return nil
+}
 
 func matchTag(s *models.ScrapedSceneTag) error {
 	qb := models.NewTagQueryBuilder()
@@ -184,6 +202,13 @@ func matchTag(s *models.ScrapedSceneTag) error {
 func postScrapeScene(ret *models.ScrapedScene) error {
 	for _, p := range ret.Performers {
 		err := matchPerformer(p)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, p := range ret.Movies {
+		err := matchMovie(p)
 		if err != nil {
 			return err
 		}

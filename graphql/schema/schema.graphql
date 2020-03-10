@@ -22,6 +22,11 @@ type Query {
   """A function which queries Studio objects"""
   findStudios(filter: FindFilterType): FindStudiosResultType!
 
+   """Find a movie by ID"""
+  findMovie(id: ID!): Movie
+  """A function which queries Movie objects"""
+  findMovies(filter: FindFilterType): FindMoviesResultType!
+
   findGallery(id: ID!): Gallery
   findGalleries(filter: FindFilterType): FindGalleriesResultType!
 
@@ -92,6 +97,7 @@ type Query {
 
   allPerformers: [Performer!]!
   allStudios: [Studio!]!
+  allMovies: [Movie!]!
   allTags: [Tag!]!
 
   # Version
@@ -125,6 +131,10 @@ type Mutation {
   studioCreate(input: StudioCreateInput!): Studio
   studioUpdate(input: StudioUpdateInput!): Studio
   studioDestroy(input: StudioDestroyInput!): Boolean!
+
+  movieCreate(input: MovieCreateInput!): Movie
+  movieUpdate(input: MovieUpdateInput!): Movie
+  movieDestroy(input: MovieDestroyInput!): Boolean!
 
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag

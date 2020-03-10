@@ -124,6 +124,36 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
     );
   }
 
+  function maybeRenderMoviePopoverButton() {
+    if (props.scene.movies.length <= 0) { return; }
+    
+    const movies = props.scene.movies.map((sceneMovie) => {
+      let movie = sceneMovie.movie;
+      return (
+        <>
+          <div className="movie-tag-container">
+            <Link
+              to={`/movies/${movie.id}`}
+              className="movie-tag previewable image"
+              style={{backgroundImage: `url(${movie.front_image_path})`}}
+            ></Link>
+            <TagLink key={movie.id} movie={movie} />
+          </div>
+        </>
+      );
+    });
+
+    return (
+      <Popover interactionKind={"hover"} position="bottom">
+        <Button
+          icon="film"
+          text={props.scene.movies.length}
+        />
+        <>{movies}</>
+      </Popover>
+    ); 
+  }
+  
   function maybeRenderSceneMarkerPopoverButton() {
     if (props.scene.scene_markers.length <= 0) { return; }
 
@@ -157,14 +187,17 @@ export const SceneCard: FunctionComponent<ISceneCardProps> = (props: ISceneCardP
   function maybeRenderPopoverButtonGroup() {
     if (props.scene.tags.length > 0 ||
         props.scene.performers.length > 0 ||
+        props.scene.movies.length > 0  ||
         props.scene.scene_markers.length > 0 ||
         props.scene.o_counter) {
+
       return (
         <>
           <Divider />
           <ButtonGroup minimal={true} className="card-section centered">
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
+            {maybeRenderMoviePopoverButton()}
             {maybeRenderSceneMarkerPopoverButton()}
             {maybeRenderOCounter()}
           </ButtonGroup>
