@@ -12,7 +12,7 @@ export const GenerateButton: React.FC = () => {
 
   async function onGenerate() {
     try {
-      await StashService.queryMetadataGenerate({
+      await StashService.mutateMetadataGenerate({
         sprites,
         previews,
         markers,
