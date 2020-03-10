@@ -94,7 +94,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     setInstagram(state.instagram ?? undefined);
   }
 
-  function updatePerformerEditStateFromScraper(state: Partial<GQL.ScrapedPerformerDataFragment>) {
+  function updatePerformerEditStateFromScraper(
+    state: Partial<GQL.ScrapedPerformerDataFragment>
+  ) {
     updatePerformerEditState(state);
 
     // image is a base64 string
