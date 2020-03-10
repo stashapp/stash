@@ -16,17 +16,32 @@ type GenerateTranscodeTask struct {
 
 func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
-	videoCodec := t.Scene.VideoCodec.String
-	if ffmpeg.IsValidCodec(videoCodec) {
-		return
-	}
 
 	hasTranscode, _ := HasTranscode(&t.Scene)
 	if hasTranscode {
 		return
 	}
 
-	logger.Infof("[transcode] <%s> scene has codec %s", t.Scene.Checksum, t.Scene.VideoCodec.String)
+	var container ffmpeg.Container
+
+	if t.Scene.Format.Valid {
+		container = ffmpeg.Container(t.Scene.Format.String)
+
+	} else { // container isn't in the DB
+		// shouldn't happen unless user hasn't scanned after updating to PR#384+ version
+		tmpVideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path)
+		if err != nil {
+			logger.Errorf("[transcode] error reading video file: %s", err.Error())
+			return
+		}
+
+		container = ffmpeg.MatchContainer(tmpVideoFile.Container, t.Scene.Path)
+	}
+
+	videoCodec := t.Scene.VideoCodec.String
+	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, container) {
+		return
+	}
 
 	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path)
 	if err != nil {
@@ -41,24 +56,38 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 		MaxTranscodeSize: transcodeSize,
 	}
 	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
-	encoder.Transcode(*videoFile, options)
+
+	if videoCodec == "h264" { // for non supported h264 files stream copy the video part
+		encoder.TranscodeAudio(*videoFile, options)
+	} else {
+		encoder.Transcode(*videoFile, options)
+	}
+
 	if err := os.Rename(outputPath, instance.Paths.Scene.GetTranscodePath(t.Scene.Checksum)); err != nil {
 		logger.Errorf("[transcode] error generating transcode: %s", err.Error())
 		return
 	}
+
 	logger.Debugf("[transcode] <%s> created transcode: %s", t.Scene.Checksum, outputPath)
 	return
 }
 
+// return true if transcode is needed
+// used only when counting files to generate, doesn't affect the actual transcode generation
+// if container is missing from DB it is treated as non supported in order not to delay the user
 func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 
 	videoCodec := t.Scene.VideoCodec.String
-	hasTranscode, _ := HasTranscode(&t.Scene)
+	container := ""
+	if t.Scene.Format.Valid {
+		container = t.Scene.Format.String
+	}
 
-	if ffmpeg.IsValidCodec(videoCodec) {
+	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, ffmpeg.Container(container)) {
 		return false
 	}
 
+	hasTranscode, _ := HasTranscode(&t.Scene)
 	if hasTranscode {
 		return false
 	}

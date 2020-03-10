@@ -14,11 +14,89 @@ import (
 
 var ValidCodecs = []string{"h264", "h265", "vp8", "vp9"}
 
+type Container string
+
+const (
+	Mp4      Container = "mp4"
+	M4v      Container = "m4v"
+	Mov      Container = "mov"
+	Wmv      Container = "wmv"
+	Webm     Container = "webm"
+	Matroska Container = "matroska"
+	Avi      Container = "avi"
+	Flv      Container = "flv"
+	Mpegts   Container = "mpegts"
+)
+
+var validForH264 = []Container{Mp4}
+var validForH265 = []Container{Mp4}
+var validForVp8 = []Container{Webm}
+var validForVp9 = []Container{Webm}
+
+//maps user readable container strings to ffprobe's format_name
+//on some formats ffprobe can't differentiate
+var ContainerToFfprobe = map[Container]string{
+	Mp4:      "mov,mp4,m4a,3gp,3g2,mj2",
+	M4v:      "mov,mp4,m4a,3gp,3g2,mj2",
+	Mov:      "mov,mp4,m4a,3gp,3g2,mj2",
+	Wmv:      "asf",
+	Webm:     "matroska,webm",
+	Matroska: "matroska,webm",
+	Avi:      "avi",
+	Flv:      "flv",
+	Mpegts:   "mpegts",
+}
+
+var FfprobeToContainer = map[string]Container{
+	"mov,mp4,m4a,3gp,3g2,mj2": Mp4, // browsers support all of them so we don't  care
+	"asf":                     Wmv,
+	"avi":                     Avi,
+	"flv":                     Flv,
+	"mpegts":                  Mpegts,
+	"matroska,webm":           Matroska,
+}
+
+func MatchContainer(format string, filePath string) Container { // match ffprobe string to our Container
+
+	container := FfprobeToContainer[format]
+	if container == Matroska {
+		container = MagicContainer(filePath) // use magic number instead of ffprobe for matroska,webm
+	}
+	if container == "" { // if format is not in our Container list leave it as ffprobes reported format_name
+		container = Container(format)
+	}
+	return container
+}
+
 func IsValidCodec(codecName string) bool {
 	for _, c := range ValidCodecs {
 		if c == codecName {
 			return true
 		}
+	}
+	return false
+}
+
+func IsValidForContainer(format Container, validContainers []Container) bool {
+	for _, fmt := range validContainers {
+		if fmt == format {
+			return true
+		}
+	}
+	return false
+}
+
+//extend stream validation check to take into account container
+func IsValidCombo(codecName string, format Container) bool {
+	switch codecName {
+	case "h264":
+		return IsValidForContainer(format, validForH264)
+	case "h265":
+		return IsValidForContainer(format, validForH265)
+	case "vp8":
+		return IsValidForContainer(format, validForVp8)
+	case "vp9":
+		return IsValidForContainer(format, validForVp9)
 	}
 	return false
 }

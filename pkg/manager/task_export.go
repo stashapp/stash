@@ -165,6 +165,9 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		if scene.AudioCodec.Valid {
 			newSceneJSON.File.AudioCodec = scene.AudioCodec.String
 		}
+		if scene.Format.Valid {
+			newSceneJSON.File.Format = scene.Format.String
+		}
 		if scene.Width.Valid {
 			newSceneJSON.File.Width = int(scene.Width.Int64)
 		}

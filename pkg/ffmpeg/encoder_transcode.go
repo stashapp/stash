@@ -69,6 +69,18 @@ func (e *Encoder) Transcode(probeResult VideoFile, options TranscodeOptions) {
 	_, _ = e.run(probeResult, args)
 }
 
+//copy the video stream as is
+func (e *Encoder) TranscodeAudio(probeResult VideoFile, options TranscodeOptions) {
+	args := []string{
+		"-i", probeResult.Path,
+		"-c:v", "copy",
+		"-c:a", "aac",
+		"-strict", "-2",
+		options.OutputPath,
+	}
+	_, _ = e.run(probeResult, args)
+}
+
 func (e *Encoder) StreamTranscode(probeResult VideoFile, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (io.ReadCloser, *os.Process, error) {
 	scale := calculateTranscodeScale(probeResult, maxTranscodeSize)
 	args := []string{}

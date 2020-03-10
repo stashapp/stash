@@ -42,13 +42,19 @@ func (rs sceneRoutes) Routes() chi.Router {
 // region Handlers
 
 func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
+
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+
+	container := ""
+	if scene.Format.Valid {
+		container = scene.Format.String
+	}
 
 	// detect if not a streamable file and try to transcode it instead
 	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.Checksum)
 	videoCodec := scene.VideoCodec.String
 	hasTranscode, _ := manager.HasTranscode(scene)
-	if ffmpeg.IsValidCodec(videoCodec) || hasTranscode {
+	if (ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, ffmpeg.Container(container))) || hasTranscode {
 		manager.RegisterStream(filepath, &w)
 		http.ServeFile(w, r, filepath)
 		manager.WaitAndDeregisterStream(filepath, &w, r)
