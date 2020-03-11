@@ -76,6 +76,9 @@ type ScrapedScene {
   url: String
   date: String
 
+  """This should be base64 encoded"""
+  image: String
+
   file: SceneFileType # Resolver
 
   studio: ScrapedSceneStudio

@@ -140,6 +140,7 @@ code,
 /* this is a bit of a hack, because we can't supply direct class names
    to the react-select controls */
 /* stylelint-disable selector-class-pattern */
+
 div.react-select__control {
   background-color: $secondary;
   border-color: $secondary;
@@ -170,6 +171,39 @@ div.react-select__menu {
     cursor: pointer;
   }
 }
+
+/* we don't want to override this for dialogs, which are light colored */
+.modal {
+  div.react-select__control {
+    background-color: #fff;
+    border-color: inherit;
+    color: $dark-text;
+  
+    .react-select__single-value,
+    .react-select__input {
+      color: $dark-text;
+    }
+  
+    .react-select__multi-value {
+      background-color: #fff;
+      color: $dark-text;
+    }
+  }
+  
+  div.react-select__menu {
+    background-color: #fff;
+    color: $text-color;
+  
+    .react-select__option {
+      color: $dark-text;
+    }
+  
+    .react-select__option--is-focused {
+      background-color: rgba(167,182,194,.3);
+    }
+  }
+}
+
 /* stylelint-enable selector-class-pattern */
 
 .image-thumbnail {
