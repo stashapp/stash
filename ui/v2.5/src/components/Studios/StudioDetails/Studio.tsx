@@ -115,7 +115,7 @@ export const Studio: React.FC = () => {
   async function onAutoTag() {
     if (!studio.id) return;
     try {
-      await StashService.queryMetadataAutoTag({ studios: [studio.id] });
+      await StashService.mutateMetadataAutoTag({ studios: [studio.id] });
       Toast.success({ content: "Started auto tagging" });
     } catch (e) {
       Toast.error(e);

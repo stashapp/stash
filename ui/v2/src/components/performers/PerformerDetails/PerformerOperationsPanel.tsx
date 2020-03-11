@@ -18,7 +18,7 @@ export const PerformerOperationsPanel: FunctionComponent<IPerformerOperationsPro
         return;
     }
     try {
-        await StashService.queryMetadataAutoTag({ performers: [props.performer.id]});
+        await StashService.mutateMetadataAutoTag({ performers: [props.performer.id]});
         ToastUtils.success("Started auto tagging");
     } catch (e) {
         ErrorUtils.handle(e);

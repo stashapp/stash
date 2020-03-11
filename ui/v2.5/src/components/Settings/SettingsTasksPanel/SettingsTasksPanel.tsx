@@ -68,7 +68,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   function onImport() {
     setIsImportAlertOpen(false);
-    StashService.queryMetadataImport().then(() => {
+    StashService.mutateMetadataImport().then(() => {
       jobStatus.refetch();
     });
   }
@@ -91,7 +91,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   function onClean() {
     setIsCleanAlertOpen(false);
-    StashService.queryMetadataClean().then(() => {
+    StashService.mutateMetadataClean().then(() => {
       jobStatus.refetch();
     });
   }
@@ -115,7 +115,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   async function onScan() {
     try {
-      await StashService.queryMetadataScan({ useFileMetadata });
+      await StashService.mutateMetadataScan({ useFileMetadata });
       Toast.success({ content: "Started scan" });
       jobStatus.refetch();
     } catch (e) {
@@ -134,7 +134,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   async function onAutoTag() {
     try {
-      await StashService.queryMetadataAutoTag(getAutoTagInput());
+      await StashService.mutateMetadataAutoTag(getAutoTagInput());
       Toast.success({ content: "Started auto tagging" });
       jobStatus.refetch();
     } catch (e) {
@@ -153,7 +153,7 @@ export const SettingsTasksPanel: React.FC = () => {
           id="stop"
           variant="danger"
           onClick={() =>
-            StashService.queryStopJob().then(() => jobStatus.refetch())
+            StashService.mutateStopJob().then(() => jobStatus.refetch())
           }
         >
           Stop
@@ -277,7 +277,7 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="secondary"
           type="submit"
           onClick={() =>
-            StashService.queryMetadataExport().then(() => {
+            StashService.mutateMetadataExport().then(() => {
               jobStatus.refetch();
             })
           }
