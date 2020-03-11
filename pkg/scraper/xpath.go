@@ -135,6 +135,22 @@ func (c xpathScraperAttrConfig) getReplace() xpathRegexConfigs {
 	return ret
 }
 
+func (c xpathScraperAttrConfig) getSubScraper() xpathScraperAttrConfig {
+	const subScraperKey = "subScraper"
+	val, _ := c[subScraperKey]
+
+	if val == nil {
+		return nil
+	}
+
+	asMap, _ := val.(map[interface{}]interface{})
+	if asMap != nil {
+		return xpathScraperAttrConfig(asMap)
+	}
+
+	return nil
+}
+
 func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
 	separator := c.getConcat()
 	result := []string{}
@@ -174,10 +190,44 @@ func (c xpathScraperAttrConfig) replaceRegex(value string) string {
 	return replace.apply(value)
 }
 
+func (c xpathScraperAttrConfig) applySubScraper(value string) string {
+	subScraper := c.getSubScraper()
+
+	if subScraper == nil {
+		return value
+	}
+
+	doc, err := htmlquery.LoadURL(value)
+
+	if err != nil {
+		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
+		return ""
+	}
+
+	found := runXPathQuery(doc, subScraper.getSelector(), nil)
+
+	if len(found) > 0 {
+		// check if we're concatenating the results into a single result
+		var result string
+		if subScraper.hasConcat() {
+			result = subScraper.concatenateResults(found)
+		} else {
+			result = htmlquery.InnerText(found[0])
+			result = commonPostProcess(result)
+		}
+
+		result = subScraper.postProcess(result)
+		return result
+	}
+
+	return ""
+}
+
 func (c xpathScraperAttrConfig) postProcess(value string) string {
 	// perform regex replacements first
 	value = c.replaceRegex(value)
 	value = c.parseDate(value)
+	value = c.applySubScraper(value)
 
 	return value
 }

@@ -257,6 +257,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
         setTagIds(newIds as string[]);
       }
     }
+
+    if (scene.image) {
+      // image is a base64 string
+      setCoverImage(scene.image);
+      setCoverImagePreview(scene.image);
+    }
   }
 
   async function onScrapeSceneURL() {

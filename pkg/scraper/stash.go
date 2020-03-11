@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/jinzhu/copier"
 	"github.com/shurcooL/graphql"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -67,12 +68,14 @@ func scrapePerformerFragmentStash(c scraperTypeConfig, scrapedPerformer models.S
 	client := getStashClient(c)
 
 	var q struct {
-		FindPerformer *models.ScrapedPerformer `graphql:"findPerformer(id: $f)"`
+		FindPerformer *models.ScrapedPerformerStash `graphql:"findPerformer(id: $f)"`
 	}
+
+	performerID := *scrapedPerformer.URL
 
 	// get the id from the URL field
 	vars := map[string]interface{}{
-		"f": *scrapedPerformer.URL,
+		"f": performerID,
 	}
 
 	err := client.Query(context.Background(), &q, vars)
@@ -80,7 +83,20 @@ func scrapePerformerFragmentStash(c scraperTypeConfig, scrapedPerformer models.S
 		return nil, err
 	}
 
-	return q.FindPerformer, nil
+	// need to copy back to a scraped performer
+	ret := models.ScrapedPerformer{}
+	err = copier.Copy(&ret, q.FindPerformer)
+	if err != nil {
+		return nil, err
+	}
+
+	// get the performer image directly
+	ret.Image, err = getStashPerformerImage(c.scraperConfig.StashServer.URL, performerID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
 }
 
 func scrapeSceneFragmentStash(c scraperTypeConfig, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
@@ -99,7 +115,7 @@ func scrapeSceneFragmentStash(c scraperTypeConfig, scene models.SceneUpdateInput
 	}
 
 	var q struct {
-		FindScene *models.ScrapedScene `graphql:"findScene(checksum: $c)"`
+		FindScene *models.ScrapedSceneStash `graphql:"findScene(checksum: $c)"`
 	}
 
 	checksum := graphql.String(storedScene.Checksum)
@@ -128,5 +144,18 @@ func scrapeSceneFragmentStash(c scraperTypeConfig, scene models.SceneUpdateInput
 		}
 	}
 
-	return q.FindScene, nil
+	// need to copy back to a scraped scene
+	ret := models.ScrapedScene{}
+	err = copier.Copy(&ret, q.FindScene)
+	if err != nil {
+		return nil, err
+	}
+
+	// get the performer image directly
+	ret.Image, err = getStashSceneImage(c.scraperConfig.StashServer.URL, q.FindScene.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
 }

@@ -72,7 +72,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
   function updatePerformerEditState(
-    state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformer>
+    state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformerDataFragment>
   ) {
     if ((state as GQL.PerformerDataFragment).favorite !== undefined) {
       setFavorite((state as GQL.PerformerDataFragment).favorite);
@@ -92,6 +92,21 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     setUrl(state.url ?? undefined);
     setTwitter(state.twitter ?? undefined);
     setInstagram(state.instagram ?? undefined);
+  }
+
+  function updatePerformerEditStateFromScraper(
+    state: Partial<GQL.ScrapedPerformerDataFragment>
+  ) {
+    updatePerformerEditState(state);
+
+    // image is a base64 string
+    if ((state as GQL.ScrapedPerformerDataFragment).image !== undefined) {
+      let imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
+      setImage(imageStr ?? undefined);
+      if (onImageChange) {
+        onImageChange(imageStr!);
+      }
+    }
   }
 
   useEffect(() => {
@@ -158,7 +173,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   function getQueryScraperPerformerInput() {
     if (!scrapePerformerDetails) return {};
 
-    const { __typename, ...ret } = scrapePerformerDetails;
+    // image is not supported
+    const { __typename, image, ...ret } = scrapePerformerDetails;
     return ret;
   }
 
@@ -172,7 +188,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         getQueryScraperPerformerInput()
       );
       if (!result?.data?.scrapePerformer) return;
-      updatePerformerEditState(result.data.scrapePerformer);
+      updatePerformerEditStateFromScraper(result.data.scrapePerformer);
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -193,7 +209,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       if (!result.data.scrapePerformerURL.url) {
         result.data.scrapePerformerURL.url = url;
       }
-      updatePerformerEditState(result.data.scrapePerformerURL);
+      updatePerformerEditStateFromScraper(result.data.scrapePerformerURL);
     } catch (e) {
       Toast.error(e);
     } finally {
