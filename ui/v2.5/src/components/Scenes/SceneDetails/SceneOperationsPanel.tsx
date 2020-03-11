@@ -3,30 +3,21 @@ import React, { FunctionComponent } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { useToast } from "src/hooks";
+import { JWUtils } from "src/utils";
 
 interface IOperationsPanelProps {
   scene: GQL.SceneDataFragment;
-  playerPosition?: number;
 }
 
 export const SceneOperationsPanel: FunctionComponent<IOperationsPanelProps> = (props: IOperationsPanelProps) => {
   const Toast = useToast();
   const [generateScreenshot] = StashService.useSceneGenerateScreenshot();
 
-  async function onGenerateScreenshot() {
+  async function onGenerateScreenshot(at?: number) {
     await generateScreenshot({
       variables: {
         id: props.scene.id,
-        at: props.playerPosition
-      }
-    });
-    Toast.success({ content: "Generating screenshot" });
-  }
-
-  async function onGenerateDefaultScreenshot() {
-    await generateScreenshot({
-      variables: {
-        id: props.scene.id,
+        at: at
       }
     });
     Toast.success({ content: "Generating screenshot" });
@@ -34,10 +25,10 @@ export const SceneOperationsPanel: FunctionComponent<IOperationsPanelProps> = (p
 
   return (
     <>
-      <Button className="edit-button" onClick={() => onGenerateScreenshot()}>
+      <Button className="edit-button" onClick={() => onGenerateScreenshot(JWUtils.getPlayer().getPosition())}>
         Generate thumbnail from current
       </Button>
-      <Button className="edit-button" onClick={() => onGenerateDefaultScreenshot()}>
+      <Button className="edit-button" onClick={() => onGenerateScreenshot()}>
         Generate default thumbnail
       </Button>
     </>
