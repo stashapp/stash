@@ -12,9 +12,20 @@ func IsStreamable(scene *models.Scene) (bool, error) {
 	if scene == nil {
 		return false, fmt.Errorf("nil scene")
 	}
+	var container ffmpeg.Container
+	if scene.Format.Valid {
+		container = ffmpeg.Container(scene.Format.String)
+	} else { // container isn't in the DB
+		// shouldn't happen, fallback to ffprobe reading from file
+		tmpVideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, scene.Path)
+		if err != nil {
+			return false, fmt.Errorf("error reading video file: %s", err.Error())
+		}
+		container = ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path)
+	}
 
 	videoCodec := scene.VideoCodec.String
-	if ffmpeg.IsValidCodec(videoCodec) {
+	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, container) {
 		return true, nil
 	} else {
 		hasTranscode, _ := HasTranscode(scene)
