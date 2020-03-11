@@ -1,8 +1,13 @@
 package manager
 
 import (
+	"context"
+	"io/ioutil"
+	"os"
 	"sync"
+	"time"
 
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -32,12 +37,48 @@ func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
 	}
 
 	checksum := t.Scene.Checksum
-	thumbPath := instance.Paths.Scene.GetThumbnailScreenshotPath(checksum)
 	normalPath := instance.Paths.Scene.GetScreenshotPath(checksum)
 
-	logger.Debugf("Creating thumbnail for %s", scenePath)
-	makeScreenshot(*probeResult, thumbPath, 5, 320, at)
+	// we'll generate the screenshot, grab the generated data and set it
+	// in the database. We'll use SetSceneScreenshot to set the data
+	// which also generates the thumbnail
 
 	logger.Debugf("Creating screenshot for %s", scenePath)
 	makeScreenshot(*probeResult, normalPath, 2, probeResult.Width, at)
+
+	f, err := os.Open(normalPath)
+	if err != nil {
+		logger.Errorf("Error reading screenshot: %s", err.Error())
+		return
+	}
+	defer f.Close()
+
+	coverImageData, err := ioutil.ReadAll(f)
+	if err != nil {
+		logger.Errorf("Error reading screenshot: %s", err.Error())
+		return
+	}
+
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	qb := models.NewSceneQueryBuilder()
+	updatedTime := time.Now()
+	updatedScene := models.ScenePartial{
+		ID:        t.Scene.ID,
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
+	}
+
+	updatedScene.Cover = &coverImageData
+	err = SetSceneScreenshot(t.Scene.Checksum, coverImageData)
+	_, err = qb.Update(updatedScene, tx)
+	if err != nil {
+		logger.Errorf("Error setting screenshot: %s", err.Error())
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		logger.Errorf("Error setting screenshot: %s", err.Error())
+		return
+	}
 }
