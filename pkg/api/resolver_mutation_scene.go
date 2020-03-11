@@ -500,3 +500,13 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (int, err
 
 	return newVal, nil
 }
+
+func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {
+	if at != nil {
+		manager.GetInstance().GenerateScreenshot(id, *at)
+	} else {
+		manager.GetInstance().GenerateDefaultScreenshot(id)
+	}
+
+	return "todo", nil
+}

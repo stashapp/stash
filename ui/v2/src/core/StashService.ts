@@ -355,6 +355,12 @@ export class StashService {
     });
   }
 
+  public static useSceneGenerateScreenshot() {
+    return GQL.useSceneGenerateScreenshot({ 
+      update: () => StashService.invalidateQueries(["findScenes"]),
+    });
+  }
+
   private static studioMutationImpactedQueries = [
     "findStudios",
     "findScenes",
@@ -467,10 +473,9 @@ export class StashService {
     });
   }
 
-  public static queryStopJob() {
-    return StashService.client.query<GQL.StopJobQuery>({
-      query: GQL.StopJobDocument,
-      fetchPolicy: "network-only",
+  public static mutateStopJob() {
+    return StashService.client.mutate<GQL.StopJobMutation>({
+      mutation: GQL.StopJobDocument,
     });
   }
 
@@ -521,48 +526,42 @@ export class StashService {
     });
   }
 
-  public static queryMetadataScan(input: GQL.ScanMetadataInput) {
-    return StashService.client.query<GQL.MetadataScanQuery>({
-      query: GQL.MetadataScanDocument,
+  public static mutateMetadataScan(input: GQL.ScanMetadataInput) {
+    return StashService.client.mutate<GQL.MetadataScanMutation>({
+      mutation: GQL.MetadataScanDocument,
       variables: { input },
-      fetchPolicy: "network-only",
     });
   }
 
-  public static queryMetadataAutoTag(input: GQL.AutoTagMetadataInput) {
-    return StashService.client.query<GQL.MetadataAutoTagQuery>({
-      query: GQL.MetadataAutoTagDocument,
+  public static mutateMetadataAutoTag(input: GQL.AutoTagMetadataInput) {
+    return StashService.client.mutate<GQL.MetadataAutoTagMutation>({
+      mutation: GQL.MetadataAutoTagDocument,
       variables: { input },
-      fetchPolicy: "network-only",
     });
   }
 
-  public static queryMetadataGenerate(input: GQL.GenerateMetadataInput) {
-    return StashService.client.query<GQL.MetadataGenerateQuery>({
-      query: GQL.MetadataGenerateDocument,
+  public static mutateMetadataGenerate(input: GQL.GenerateMetadataInput) {
+    return StashService.client.mutate<GQL.MetadataGenerateMutation>({
+      mutation: GQL.MetadataGenerateDocument,
       variables: { input },
-      fetchPolicy: "network-only",
     });
   }
 
-  public static queryMetadataClean() {
-    return StashService.client.query<GQL.MetadataCleanQuery>({
-      query: GQL.MetadataCleanDocument,
-      fetchPolicy: "network-only",
+  public static mutateMetadataClean() {
+    return StashService.client.mutate<GQL.MetadataCleanMutation>({
+      mutation: GQL.MetadataCleanDocument,
     });
   }
 
-  public static queryMetadataExport() {
-    return StashService.client.query<GQL.MetadataExportQuery>({
-      query: GQL.MetadataExportDocument,
-      fetchPolicy: "network-only",
+  public static mutateMetadataExport() {
+    return StashService.client.mutate<GQL.MetadataExportMutation>({
+      mutation: GQL.MetadataExportDocument,
     });
   }
 
-  public static queryMetadataImport() {
-    return StashService.client.query<GQL.MetadataImportQuery>({
-      query: GQL.MetadataImportDocument,
-      fetchPolicy: "network-only",
+  public static mutateMetadataImport() {
+    return StashService.client.mutate<GQL.MetadataImportMutation>({
+      mutation: GQL.MetadataImportDocument,
     });
   }
 

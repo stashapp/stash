@@ -62,7 +62,7 @@ export const TagList: React.FC = () => {
   async function onAutoTag(tag: GQL.TagDataFragment) {
     if (!tag) return;
     try {
-      await StashService.queryMetadataAutoTag({ tags: [tag.id] });
+      await StashService.mutateMetadataAutoTag({ tags: [tag.id] });
       Toast.success({ content: "Started auto tagging" });
     } catch (e) {
       Toast.error(e);

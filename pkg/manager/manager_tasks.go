@@ -216,6 +216,55 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 	}()
 }
 
+func (s *singleton) GenerateDefaultScreenshot(sceneId string) {
+	s.generateScreenshot(sceneId, nil)
+}
+
+func (s *singleton) GenerateScreenshot(sceneId string, at float64) {
+	s.generateScreenshot(sceneId, &at)
+}
+
+// generate default screenshot if at is nil
+func (s *singleton) generateScreenshot(sceneId string, at *float64) {
+	if s.Status.Status != Idle {
+		return
+	}
+	s.Status.SetStatus(Generate)
+	s.Status.indefiniteProgress()
+
+	qb := models.NewSceneQueryBuilder()
+	instance.Paths.Generated.EnsureTmpDir()
+
+	go func() {
+		defer s.returnToIdleState()
+
+		sceneIdInt, err := strconv.Atoi(sceneId)
+		if err != nil {
+			logger.Errorf("Error parsing scene id %s: %s", sceneId, err.Error())
+			return
+		}
+
+		scene, err := qb.Find(sceneIdInt)
+		if err != nil || scene == nil {
+			logger.Errorf("failed to get scene for generate")
+			return
+		}
+
+		task := GenerateScreenshotTask{
+			Scene:        *scene,
+			ScreenshotAt: at,
+		}
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go task.Start(&wg)
+
+		wg.Wait()
+
+		logger.Infof("Generate finished")
+	}()
+}
+
 func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []string) {
 	if s.Status.Status != Idle {
 		return
