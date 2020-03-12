@@ -1,5 +1,5 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { ILabeledId, IOptionType } from "../types";
+import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
 import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
 export class PerformersCriterion extends Criterion {
@@ -13,6 +13,10 @@ export class PerformersCriterion extends Criterion {
   ];
   public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
+
+  public encodeValue() {
+    return this.value.map((o) => { return encodeILabeledId(o); });
+  }
 }
 
 export class PerformersCriterionOption implements ICriterionOption {

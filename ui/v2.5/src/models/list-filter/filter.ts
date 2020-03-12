@@ -270,7 +270,11 @@ export class ListFilterModel {
     this.criteria.forEach(criterion => {
       const encodedCriterion: Partial<Criterion> = {
         type: criterion.type,
-        value: criterion.value,
+        // #394 - the presence of a # symbol results in the query URL being 
+        // malformed. We could set encode: true in the queryString.stringify
+        // call below, but this results in a URL that gets pretty long and ugly.
+        // Instead, we'll encode the criteria values.
+        value: criterion.encodeValue(),
         modifier: criterion.modifier
       };
       const jsonCriterion = JSON.stringify(encodedCriterion);

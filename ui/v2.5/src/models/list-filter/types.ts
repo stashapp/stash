@@ -22,6 +22,12 @@ export interface ILabeledValue {
   value: string;
 }
 
+export function encodeILabeledId(o: ILabeledId) {
+  let ret = Object.assign({}, o);
+  ret.label = encodeURIComponent(o.label);
+  return ret;
+}
+
 export interface IOptionType {
   id: string;
   name?: string;
