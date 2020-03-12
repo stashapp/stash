@@ -9,7 +9,9 @@ interface IOperationsPanelProps {
   scene: GQL.SceneDataFragment;
 }
 
-export const SceneOperationsPanel: FunctionComponent<IOperationsPanelProps> = (props: IOperationsPanelProps) => {
+export const SceneOperationsPanel: FunctionComponent<IOperationsPanelProps> = (
+  props: IOperationsPanelProps
+) => {
   const Toast = useToast();
   const [generateScreenshot] = StashService.useSceneGenerateScreenshot();
 
@@ -25,7 +27,10 @@ export const SceneOperationsPanel: FunctionComponent<IOperationsPanelProps> = (p
 
   return (
     <>
-      <Button className="edit-button" onClick={() => onGenerateScreenshot(JWUtils.getPlayer().getPosition())}>
+      <Button
+        className="edit-button"
+        onClick={() => onGenerateScreenshot(JWUtils.getPlayer().getPosition())}
+      >
         Generate thumbnail from current
       </Button>
       <Button className="edit-button" onClick={() => onGenerateScreenshot()}>

@@ -24,7 +24,9 @@ export class TagsCriterion extends Criterion {
   }
 
   public encodeValue() {
-    return this.value.map((o) => { return encodeILabeledId(o); });
+    return this.value.map(o => {
+      return encodeILabeledId(o);
+    });
   }
 }
 

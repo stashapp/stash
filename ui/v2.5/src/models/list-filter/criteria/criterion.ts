@@ -187,12 +187,8 @@ export abstract class Criterion {
   }
   */
 
-  public encodeValue(): any {
-    if (typeof this.value === "string") {
-      return this.value;
-    } else {
-      return this.value.toString();
-    }
+  public encodeValue(): CriterionValue {
+    return this.value;
   }
 }
 

@@ -14,7 +14,9 @@ export class StudiosCriterion extends Criterion {
   public value: ILabeledId[] = [];
 
   public encodeValue() {
-    return this.value.map((o) => { return encodeILabeledId(o); });
+    return this.value.map(o => {
+      return encodeILabeledId(o);
+    });
   }
 }
 

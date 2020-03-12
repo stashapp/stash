@@ -23,7 +23,7 @@ export interface ILabeledValue {
 }
 
 export function encodeILabeledId(o: ILabeledId) {
-  let ret = Object.assign({}, o);
+  const ret = { ...o };
   ret.label = encodeURIComponent(o.label);
   return ret;
 }
