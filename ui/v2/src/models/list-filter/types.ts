@@ -20,6 +20,12 @@ export interface ILabeledId {
   label: string;
 }
 
+export function encodeILabeledId(o: ILabeledId) {
+  let ret = Object.assign({}, o);
+  ret.label = encodeURIComponent(o.label);
+  return ret;
+}
+
 export interface ILabeledValue {
   label: string;
   value: string;

@@ -136,6 +136,14 @@ export abstract class Criterion<Option = any, Value = any> {
       this.value = value;
     }
   }
+
+  public encodeValue(): any {
+    if (typeof this.value === "string") {
+      return this.value;
+    } else {
+      return this.value.toString();
+    }
+  }
 }
 
 export interface ICriterionOption {
