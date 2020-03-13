@@ -115,7 +115,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   const values: IFormFields = {
     title: editingMarker?.title ?? "",
     seconds: (
-      editingMarker?.seconds ?? Math.round(JWUtils.getPlayer()?.getPosition() ?? 0)
+      editingMarker?.seconds ??
+      Math.round(JWUtils.getPlayer()?.getPosition() ?? 0)
     ).toString(),
     primaryTagId: editingMarker?.primary_tag.id ?? "",
     tagIds: editingMarker?.tags.map(tag => tag.id) ?? []
