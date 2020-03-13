@@ -1,5 +1,5 @@
 import * as GQL from "src/core/generated-graphql";
-import { ILabeledId, IOptionType } from "../types";
+import { ILabeledId, IOptionType, encodeILabeledId } from "../types";
 import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
 export class TagsCriterion extends Criterion {
@@ -21,6 +21,12 @@ export class TagsCriterion extends Criterion {
     if (type === "sceneTags") {
       this.parameterName = "scene_tags";
     }
+  }
+
+  public encodeValue() {
+    return this.value.map(o => {
+      return encodeILabeledId(o);
+    });
   }
 }
 
