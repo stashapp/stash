@@ -146,9 +146,7 @@ export const Scene: React.FC = () => {
             />
           </Tab>
           <Tab eventKey="scene-operations-panel" title="Operations">
-            <SceneOperationsPanel 
-              scene={scene} 
-            />
+            <SceneOperationsPanel scene={scene} />
           </Tab>
         </Tabs>
       </div>

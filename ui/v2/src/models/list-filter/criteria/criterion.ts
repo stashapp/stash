@@ -136,6 +136,10 @@ export abstract class Criterion<Option = any, Value = any> {
       this.value = value;
     }
   }
+
+  public encodeValue(): Value {
+    return this.value;
+  }
 }
 
 export interface ICriterionOption {

@@ -408,8 +408,8 @@ export class StashService {
   }
 
   public static useSceneGenerateScreenshot() {
-    return GQL.useSceneGenerateScreenshotMutation({ 
-      update: () => StashService.invalidateQueries(["findScenes"]),
+    return GQL.useSceneGenerateScreenshotMutation({
+      update: () => StashService.invalidateQueries(["findScenes"])
     });
   }
 
@@ -514,7 +514,7 @@ export class StashService {
 
   public static mutateStopJob() {
     return StashService.client.mutate<GQL.StopJobMutation>({
-      mutation: GQL.StopJobDocument,
+      mutation: GQL.StopJobDocument
     });
   }
 
@@ -574,39 +574,39 @@ export class StashService {
   public static mutateMetadataScan(input: GQL.ScanMetadataInput) {
     return StashService.client.mutate<GQL.MetadataScanMutation>({
       mutation: GQL.MetadataScanDocument,
-      variables: { input },
+      variables: { input }
     });
   }
 
   public static mutateMetadataAutoTag(input: GQL.AutoTagMetadataInput) {
     return StashService.client.mutate<GQL.MetadataAutoTagMutation>({
       mutation: GQL.MetadataAutoTagDocument,
-      variables: { input },
+      variables: { input }
     });
   }
 
   public static mutateMetadataGenerate(input: GQL.GenerateMetadataInput) {
     return StashService.client.mutate<GQL.MetadataGenerateMutation>({
       mutation: GQL.MetadataGenerateDocument,
-      variables: { input },
+      variables: { input }
     });
   }
 
   public static mutateMetadataClean() {
     return StashService.client.mutate<GQL.MetadataCleanMutation>({
-      mutation: GQL.MetadataCleanDocument,
+      mutation: GQL.MetadataCleanDocument
     });
   }
 
   public static mutateMetadataExport() {
     return StashService.client.mutate<GQL.MetadataExportMutation>({
-      mutation: GQL.MetadataExportDocument,
+      mutation: GQL.MetadataExportDocument
     });
   }
 
   public static mutateMetadataImport() {
     return StashService.client.mutate<GQL.MetadataImportMutation>({
-      mutation: GQL.MetadataImportDocument,
+      mutation: GQL.MetadataImportDocument
     });
   }
 

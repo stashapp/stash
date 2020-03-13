@@ -1,3 +1,3 @@
 go.mod text eol=lf
 go.sum text eol=lf
-ui/v2.5/** -text
+ui/v2.5/**/*.ts* text eol=lf
