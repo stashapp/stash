@@ -7,7 +7,7 @@ import * as ApolloReactHooks from '@apollo/react-hooks';
 export type Maybe<T> = T | null;
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
-// Generated in 2020-03-05T11:18:15+11:00
+// Generated in 2020-03-13T19:46:59+02:00
 
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -54,6 +54,10 @@ export type ConfigGeneralInput = {
   maxTranscodeSize?: Maybe<StreamingResolutionEnum>,
   /** Max streaming transcode size */
   maxStreamingTranscodeSize?: Maybe<StreamingResolutionEnum>,
+  /** Force MKV as supported format */
+  forceMkv: Scalars['Boolean'],
+  /** Force HEVC as a supported codec */
+  forceHevc: Scalars['Boolean'],
   /** Username */
   username?: Maybe<Scalars['String']>,
   /** Password */
@@ -82,6 +86,10 @@ export type ConfigGeneralResult = {
   maxTranscodeSize?: Maybe<StreamingResolutionEnum>,
   /** Max streaming transcode size */
   maxStreamingTranscodeSize?: Maybe<StreamingResolutionEnum>,
+  /** Force MKV as supported format */
+  forceMkv: Scalars['Boolean'],
+  /** Force HEVC as a supported codec */
+  forceHevc: Scalars['Boolean'],
   /** Username */
   username: Scalars['String'],
   /** Password */
@@ -174,6 +182,12 @@ export type FindGalleriesResultType = {
   galleries: Array<Gallery>,
 };
 
+export type FindMoviesResultType = {
+   __typename?: 'FindMoviesResultType',
+  count: Scalars['Int'],
+  movies: Array<Movie>,
+};
+
 export type FindPerformersResultType = {
    __typename?: 'FindPerformersResultType',
   count: Scalars['Int'],
@@ -257,6 +271,56 @@ export type MetadataUpdateStatus = {
   message: Scalars['String'],
 };
 
+export type Movie = {
+   __typename?: 'Movie',
+  id: Scalars['ID'],
+  checksum: Scalars['String'],
+  name?: Maybe<Scalars['String']>,
+  aliases?: Maybe<Scalars['String']>,
+  duration?: Maybe<Scalars['String']>,
+  date?: Maybe<Scalars['String']>,
+  rating?: Maybe<Scalars['String']>,
+  director?: Maybe<Scalars['String']>,
+  synopsis?: Maybe<Scalars['String']>,
+  url?: Maybe<Scalars['String']>,
+  front_image_path?: Maybe<Scalars['String']>,
+  back_image_path?: Maybe<Scalars['String']>,
+  scene_count?: Maybe<Scalars['Int']>,
+};
+
+export type MovieCreateInput = {
+  name: Scalars['String'],
+  aliases?: Maybe<Scalars['String']>,
+  duration?: Maybe<Scalars['String']>,
+  date?: Maybe<Scalars['String']>,
+  rating?: Maybe<Scalars['String']>,
+  director?: Maybe<Scalars['String']>,
+  synopsis?: Maybe<Scalars['String']>,
+  url?: Maybe<Scalars['String']>,
+  /** This should be base64 encoded */
+  front_image?: Maybe<Scalars['String']>,
+  back_image?: Maybe<Scalars['String']>,
+};
+
+export type MovieDestroyInput = {
+  id: Scalars['ID'],
+};
+
+export type MovieUpdateInput = {
+  id: Scalars['ID'],
+  name?: Maybe<Scalars['String']>,
+  aliases?: Maybe<Scalars['String']>,
+  duration?: Maybe<Scalars['String']>,
+  date?: Maybe<Scalars['String']>,
+  rating?: Maybe<Scalars['String']>,
+  director?: Maybe<Scalars['String']>,
+  synopsis?: Maybe<Scalars['String']>,
+  url?: Maybe<Scalars['String']>,
+  /** This should be base64 encoded */
+  front_image?: Maybe<Scalars['String']>,
+  back_image?: Maybe<Scalars['String']>,
+};
+
 export type MultiCriterionInput = {
   value?: Maybe<Array<Scalars['ID']>>,
   modifier: CriterionModifier,
@@ -283,6 +347,9 @@ export type Mutation = {
   studioCreate?: Maybe<Studio>,
   studioUpdate?: Maybe<Studio>,
   studioDestroy: Scalars['Boolean'],
+  movieCreate?: Maybe<Movie>,
+  movieUpdate?: Maybe<Movie>,
+  movieDestroy: Scalars['Boolean'],
   tagCreate?: Maybe<Tag>,
   tagUpdate?: Maybe<Tag>,
   tagDestroy: Scalars['Boolean'],
@@ -369,6 +436,21 @@ export type MutationStudioUpdateArgs = {
 
 export type MutationStudioDestroyArgs = {
   input: StudioDestroyInput
+};
+
+
+export type MutationMovieCreateArgs = {
+  input: MovieCreateInput
+};
+
+
+export type MutationMovieUpdateArgs = {
+  input: MovieUpdateInput
+};
+
+
+export type MutationMovieDestroyArgs = {
+  input: MovieDestroyInput
 };
 
 
@@ -516,6 +598,10 @@ export type Query = {
   findStudio?: Maybe<Studio>,
   /** A function which queries Studio objects */
   findStudios: FindStudiosResultType,
+  /** Find a movie by ID */
+  findMovie?: Maybe<Movie>,
+  /** A function which queries Movie objects */
+  findMovies: FindMoviesResultType,
   findGallery?: Maybe<Gallery>,
   findGalleries: FindGalleriesResultType,
   findTag?: Maybe<Tag>,
@@ -569,6 +655,7 @@ export type Query = {
   stopJob: Scalars['Boolean'],
   allPerformers: Array<Performer>,
   allStudios: Array<Studio>,
+  allMovies: Array<Movie>,
   allTags: Array<Tag>,
   /** Version */
   version: Version,
@@ -633,6 +720,18 @@ export type QueryFindStudioArgs = {
 
 /** The query root for this schema */
 export type QueryFindStudiosArgs = {
+  filter?: Maybe<FindFilterType>
+};
+
+
+/** The query root for this schema */
+export type QueryFindMovieArgs = {
+  id: Scalars['ID']
+};
+
+
+/** The query root for this schema */
+export type QueryFindMoviesArgs = {
   filter?: Maybe<FindFilterType>
 };
 
@@ -788,6 +887,7 @@ export type Scene = {
   scene_markers: Array<SceneMarker>,
   gallery?: Maybe<Gallery>,
   studio?: Maybe<Studio>,
+  movies: Array<SceneMovie>,
   tags: Array<Tag>,
   performers: Array<Performer>,
 };
@@ -825,6 +925,8 @@ export type SceneFilterType = {
   is_missing?: Maybe<Scalars['String']>,
   /** Filter to only include scenes with this studio */
   studios?: Maybe<MultiCriterionInput>,
+  /** Filter to only include scenes with this movie */
+  movies?: Maybe<MultiCriterionInput>,
   /** Filter to only include scenes with these tags */
   tags?: Maybe<MultiCriterionInput>,
   /** Filter to only include scenes with these performers */
@@ -879,6 +981,23 @@ export type SceneMarkerUpdateInput = {
   tag_ids?: Maybe<Array<Scalars['ID']>>,
 };
 
+export type SceneMovie = {
+   __typename?: 'SceneMovie',
+  movie: Movie,
+  scene_index?: Maybe<Scalars['String']>,
+};
+
+export type SceneMovieId = {
+   __typename?: 'SceneMovieID',
+  movie_id: Scalars['ID'],
+  scene_index?: Maybe<Scalars['String']>,
+};
+
+export type SceneMovieInput = {
+  movie_id: Scalars['ID'],
+  scene_index?: Maybe<Scalars['String']>,
+};
+
 export type SceneParserInput = {
   ignoreWords?: Maybe<Array<Scalars['String']>>,
   whitespaceCharacters?: Maybe<Scalars['String']>,
@@ -896,6 +1015,7 @@ export type SceneParserResult = {
   studio_id?: Maybe<Scalars['ID']>,
   gallery_id?: Maybe<Scalars['ID']>,
   performer_ids?: Maybe<Array<Scalars['ID']>>,
+  movies?: Maybe<Array<SceneMovieId>>,
   tag_ids?: Maybe<Array<Scalars['ID']>>,
 };
 
@@ -926,9 +1046,34 @@ export type SceneUpdateInput = {
   studio_id?: Maybe<Scalars['ID']>,
   gallery_id?: Maybe<Scalars['ID']>,
   performer_ids?: Maybe<Array<Scalars['ID']>>,
+  movies?: Maybe<Array<SceneMovieInput>>,
   tag_ids?: Maybe<Array<Scalars['ID']>>,
   /** This should be base64 encoded */
   cover_image?: Maybe<Scalars['String']>,
+};
+
+/** A movie from a scraping operation... */
+export type ScrapedMovie = {
+   __typename?: 'ScrapedMovie',
+  name?: Maybe<Scalars['String']>,
+  aliases?: Maybe<Scalars['String']>,
+  duration?: Maybe<Scalars['String']>,
+  date?: Maybe<Scalars['String']>,
+  rating?: Maybe<Scalars['String']>,
+  director?: Maybe<Scalars['String']>,
+  url?: Maybe<Scalars['String']>,
+  synopsis?: Maybe<Scalars['String']>,
+};
+
+export type ScrapedMovieInput = {
+  name?: Maybe<Scalars['String']>,
+  aliases?: Maybe<Scalars['String']>,
+  duration?: Maybe<Scalars['String']>,
+  date?: Maybe<Scalars['String']>,
+  rating?: Maybe<Scalars['String']>,
+  director?: Maybe<Scalars['String']>,
+  url?: Maybe<Scalars['String']>,
+  synopsis?: Maybe<Scalars['String']>,
 };
 
 /** A performer from a scraping operation... */
@@ -979,6 +1124,21 @@ export type ScrapedScene = {
   studio?: Maybe<ScrapedSceneStudio>,
   tags?: Maybe<Array<ScrapedSceneTag>>,
   performers?: Maybe<Array<ScrapedScenePerformer>>,
+  movies?: Maybe<Array<ScrapedSceneMovie>>,
+};
+
+export type ScrapedSceneMovie = {
+   __typename?: 'ScrapedSceneMovie',
+  /** Set if movie matched */
+  id?: Maybe<Scalars['ID']>,
+  name: Scalars['String'],
+  aliases?: Maybe<Scalars['String']>,
+  duration?: Maybe<Scalars['String']>,
+  date?: Maybe<Scalars['String']>,
+  rating?: Maybe<Scalars['String']>,
+  director?: Maybe<Scalars['String']>,
+  synopsis?: Maybe<Scalars['String']>,
+  url?: Maybe<Scalars['String']>,
 };
 
 export type ScrapedScenePerformer = {
@@ -1060,6 +1220,7 @@ export type StatsResultType = {
   gallery_count: Scalars['Int'],
   performer_count: Scalars['Int'],
   studio_count: Scalars['Int'],
+  movie_count: Scalars['Int'],
   tag_count: Scalars['Int'],
 };
 
@@ -1150,7 +1311,7 @@ export type Version = {
 
 export type ConfigGeneralDataFragment = (
   { __typename?: 'ConfigGeneralResult' }
-  & Pick<ConfigGeneralResult, 'stashes' | 'databasePath' | 'generatedPath' | 'maxTranscodeSize' | 'maxStreamingTranscodeSize' | 'username' | 'password' | 'logFile' | 'logOut' | 'logLevel' | 'logAccess' | 'excludes'>
+  & Pick<ConfigGeneralResult, 'stashes' | 'databasePath' | 'generatedPath' | 'maxTranscodeSize' | 'maxStreamingTranscodeSize' | 'forceMkv' | 'forceHevc' | 'username' | 'password' | 'logFile' | 'logOut' | 'logLevel' | 'logAccess' | 'excludes'>
 );
 
 export type ConfigInterfaceDataFragment = (
@@ -1181,6 +1342,16 @@ export type GalleryDataFragment = (
 export type LogEntryDataFragment = (
   { __typename?: 'LogEntry' }
   & Pick<LogEntry, 'time' | 'level' | 'message'>
+);
+
+export type SlimMovieDataFragment = (
+  { __typename?: 'Movie' }
+  & Pick<Movie, 'id' | 'name' | 'front_image_path'>
+);
+
+export type MovieDataFragment = (
+  { __typename?: 'Movie' }
+  & Pick<Movie, 'id' | 'checksum' | 'name' | 'aliases' | 'duration' | 'date' | 'rating' | 'director' | 'synopsis' | 'url' | 'front_image_path' | 'back_image_path' | 'scene_count'>
 );
 
 export type SlimPerformerDataFragment = (
@@ -1226,6 +1397,13 @@ export type SlimSceneDataFragment = (
   )>, studio: Maybe<(
     { __typename?: 'Studio' }
     & Pick<Studio, 'id' | 'name' | 'image_path'>
+  )>, movies: Array<(
+    { __typename?: 'SceneMovie' }
+    & Pick<SceneMovie, 'scene_index'>
+    & { movie: (
+      { __typename?: 'Movie' }
+      & Pick<Movie, 'id' | 'name' | 'front_image_path'>
+    ) }
   )>, tags: Array<(
     { __typename?: 'Tag' }
     & Pick<Tag, 'id' | 'name'>
@@ -1253,6 +1431,13 @@ export type SceneDataFragment = (
   )>, studio: Maybe<(
     { __typename?: 'Studio' }
     & StudioDataFragment
+  )>, movies: Array<(
+    { __typename?: 'SceneMovie' }
+    & Pick<SceneMovie, 'scene_index'>
+    & { movie: (
+      { __typename?: 'Movie' }
+      & MovieDataFragment
+    ) }
   )>, tags: Array<(
     { __typename?: 'Tag' }
     & TagDataFragment
@@ -1270,6 +1455,16 @@ export type ScrapedPerformerDataFragment = (
 export type ScrapedScenePerformerDataFragment = (
   { __typename?: 'ScrapedScenePerformer' }
   & Pick<ScrapedScenePerformer, 'id' | 'name' | 'url' | 'twitter' | 'instagram' | 'birthdate' | 'ethnicity' | 'country' | 'eye_color' | 'height' | 'measurements' | 'fake_tits' | 'career_length' | 'tattoos' | 'piercings' | 'aliases'>
+);
+
+export type ScrapedMovieDataFragment = (
+  { __typename?: 'ScrapedMovie' }
+  & Pick<ScrapedMovie, 'name' | 'aliases' | 'duration' | 'date' | 'rating' | 'director' | 'url' | 'synopsis'>
+);
+
+export type ScrapedSceneMovieDataFragment = (
+  { __typename?: 'ScrapedSceneMovie' }
+  & Pick<ScrapedSceneMovie, 'id' | 'name' | 'aliases' | 'duration' | 'date' | 'rating' | 'director' | 'url' | 'synopsis'>
 );
 
 export type ScrapedSceneStudioDataFragment = (
@@ -1297,6 +1492,9 @@ export type ScrapedSceneDataFragment = (
   )>>, performers: Maybe<Array<(
     { __typename?: 'ScrapedScenePerformer' }
     & ScrapedScenePerformerDataFragment
+  )>>, movies: Maybe<Array<(
+    { __typename?: 'ScrapedSceneMovie' }
+    & ScrapedSceneMovieDataFragment
   )>> }
 );
 
@@ -1339,6 +1537,61 @@ export type ConfigureInterfaceMutation = (
     { __typename?: 'ConfigInterfaceResult' }
     & ConfigInterfaceDataFragment
   ) }
+);
+
+export type MovieCreateMutationVariables = {
+  name: Scalars['String'],
+  aliases?: Maybe<Scalars['String']>,
+  duration?: Maybe<Scalars['String']>,
+  date?: Maybe<Scalars['String']>,
+  rating?: Maybe<Scalars['String']>,
+  director?: Maybe<Scalars['String']>,
+  synopsis?: Maybe<Scalars['String']>,
+  url?: Maybe<Scalars['String']>,
+  front_image?: Maybe<Scalars['String']>,
+  back_image?: Maybe<Scalars['String']>
+};
+
+
+export type MovieCreateMutation = (
+  { __typename?: 'Mutation' }
+  & { movieCreate: Maybe<(
+    { __typename?: 'Movie' }
+    & MovieDataFragment
+  )> }
+);
+
+export type MovieUpdateMutationVariables = {
+  id: Scalars['ID'],
+  name?: Maybe<Scalars['String']>,
+  aliases?: Maybe<Scalars['String']>,
+  duration?: Maybe<Scalars['String']>,
+  date?: Maybe<Scalars['String']>,
+  rating?: Maybe<Scalars['String']>,
+  director?: Maybe<Scalars['String']>,
+  synopsis?: Maybe<Scalars['String']>,
+  url?: Maybe<Scalars['String']>,
+  front_image?: Maybe<Scalars['String']>,
+  back_image?: Maybe<Scalars['String']>
+};
+
+
+export type MovieUpdateMutation = (
+  { __typename?: 'Mutation' }
+  & { movieUpdate: Maybe<(
+    { __typename?: 'Movie' }
+    & MovieDataFragment
+  )> }
+);
+
+export type MovieDestroyMutationVariables = {
+  id: Scalars['ID']
+};
+
+
+export type MovieDestroyMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'movieDestroy'>
 );
 
 export type PerformerCreateMutationVariables = {
@@ -1465,6 +1718,7 @@ export type SceneUpdateMutationVariables = {
   studio_id?: Maybe<Scalars['ID']>,
   gallery_id?: Maybe<Scalars['ID']>,
   performer_ids?: Maybe<Array<Scalars['ID']>>,
+  movies?: Maybe<Array<SceneMovieInput>>,
   tag_ids?: Maybe<Array<Scalars['ID']>>,
   cover_image?: Maybe<Scalars['String']>
 };
@@ -1749,6 +2003,17 @@ export type AllStudiosForFilterQuery = (
   )> }
 );
 
+export type AllMoviesForFilterQueryVariables = {};
+
+
+export type AllMoviesForFilterQuery = (
+  { __typename?: 'Query' }
+  & { allMovies: Array<(
+    { __typename?: 'Movie' }
+    & SlimMovieDataFragment
+  )> }
+);
+
 export type AllTagsForFilterQueryVariables = {};
 
 
@@ -1780,7 +2045,7 @@ export type StatsQuery = (
   { __typename?: 'Query' }
   & { stats: (
     { __typename?: 'StatsResultType' }
-    & Pick<StatsResultType, 'scene_count' | 'gallery_count' | 'performer_count' | 'studio_count' | 'tag_count'>
+    & Pick<StatsResultType, 'scene_count' | 'gallery_count' | 'performer_count' | 'studio_count' | 'movie_count' | 'tag_count'>
   ) }
 );
 
@@ -1815,6 +2080,36 @@ export type LatestVersionQuery = (
     { __typename?: 'ShortVersion' }
     & Pick<ShortVersion, 'shorthash' | 'url'>
   ) }
+);
+
+export type FindMoviesQueryVariables = {
+  filter?: Maybe<FindFilterType>
+};
+
+
+export type FindMoviesQuery = (
+  { __typename?: 'Query' }
+  & { findMovies: (
+    { __typename?: 'FindMoviesResultType' }
+    & Pick<FindMoviesResultType, 'count'>
+    & { movies: Array<(
+      { __typename?: 'Movie' }
+      & MovieDataFragment
+    )> }
+  ) }
+);
+
+export type FindMovieQueryVariables = {
+  id: Scalars['ID']
+};
+
+
+export type FindMovieQuery = (
+  { __typename?: 'Query' }
+  & { findMovie: Maybe<(
+    { __typename?: 'Movie' }
+    & MovieDataFragment
+  )> }
 );
 
 export type FindPerformersQueryVariables = {
@@ -1942,7 +2237,10 @@ export type ParseSceneFilenamesQuery = (
       & { scene: (
         { __typename?: 'Scene' }
         & SlimSceneDataFragment
-      ) }
+      ), movies: Maybe<Array<(
+        { __typename?: 'SceneMovieID' }
+        & Pick<SceneMovieId, 'movie_id'>
+      )>> }
     )> }
   ) }
 );
@@ -2221,6 +2519,8 @@ export const ConfigGeneralDataFragmentDoc = gql`
   generatedPath
   maxTranscodeSize
   maxStreamingTranscodeSize
+  forceMkv
+  forceHevc
   username
   password
   logFile
@@ -2258,6 +2558,13 @@ export const LogEntryDataFragmentDoc = gql`
   time
   level
   message
+}
+    `;
+export const SlimMovieDataFragmentDoc = gql`
+    fragment SlimMovieData on Movie {
+  id
+  name
+  front_image_path
 }
     `;
 export const SlimPerformerDataFragmentDoc = gql`
@@ -2311,6 +2618,14 @@ export const SlimSceneDataFragmentDoc = gql`
     name
     image_path
   }
+  movies {
+    movie {
+      id
+      name
+      front_image_path
+    }
+    scene_index
+  }
   tags {
     id
     name
@@ -2363,6 +2678,23 @@ export const StudioDataFragmentDoc = gql`
   name
   url
   image_path
+  scene_count
+}
+    `;
+export const MovieDataFragmentDoc = gql`
+    fragment MovieData on Movie {
+  id
+  checksum
+  name
+  aliases
+  duration
+  date
+  rating
+  director
+  synopsis
+  url
+  front_image_path
+  back_image_path
   scene_count
 }
     `;
@@ -2437,6 +2769,12 @@ export const SceneDataFragmentDoc = gql`
   studio {
     ...StudioData
   }
+  movies {
+    movie {
+      ...MovieData
+    }
+    scene_index
+  }
   tags {
     ...TagData
   }
@@ -2447,6 +2785,7 @@ export const SceneDataFragmentDoc = gql`
     ${SceneMarkerDataFragmentDoc}
 ${GalleryDataFragmentDoc}
 ${StudioDataFragmentDoc}
+${MovieDataFragmentDoc}
 ${TagDataFragmentDoc}
 ${PerformerDataFragmentDoc}`;
 export const ScrapedPerformerDataFragmentDoc = gql`
@@ -2466,6 +2805,18 @@ export const ScrapedPerformerDataFragmentDoc = gql`
   tattoos
   piercings
   aliases
+}
+    `;
+export const ScrapedMovieDataFragmentDoc = gql`
+    fragment ScrapedMovieData on ScrapedMovie {
+  name
+  aliases
+  duration
+  date
+  rating
+  director
+  url
+  synopsis
 }
     `;
 export const ScrapedSceneStudioDataFragmentDoc = gql`
@@ -2501,6 +2852,19 @@ export const ScrapedScenePerformerDataFragmentDoc = gql`
   aliases
 }
     `;
+export const ScrapedSceneMovieDataFragmentDoc = gql`
+    fragment ScrapedSceneMovieData on ScrapedSceneMovie {
+  id
+  name
+  aliases
+  duration
+  date
+  rating
+  director
+  url
+  synopsis
+}
+    `;
 export const ScrapedSceneDataFragmentDoc = gql`
     fragment ScrapedSceneData on ScrapedScene {
   title
@@ -2526,10 +2890,14 @@ export const ScrapedSceneDataFragmentDoc = gql`
   performers {
     ...ScrapedScenePerformerData
   }
+  movies {
+    ...ScrapedSceneMovieData
+  }
 }
     ${ScrapedSceneStudioDataFragmentDoc}
 ${ScrapedSceneTagDataFragmentDoc}
-${ScrapedScenePerformerDataFragmentDoc}`;
+${ScrapedScenePerformerDataFragmentDoc}
+${ScrapedSceneMovieDataFragmentDoc}`;
 export const SlimStudioDataFragmentDoc = gql`
     fragment SlimStudioData on Studio {
   id
@@ -2613,6 +2981,137 @@ export function useConfigureInterfaceMutation(baseOptions?: ApolloReactHooks.Mut
 export type ConfigureInterfaceMutationHookResult = ReturnType<typeof useConfigureInterfaceMutation>;
 export type ConfigureInterfaceMutationResult = ApolloReactCommon.MutationResult<ConfigureInterfaceMutation>;
 export type ConfigureInterfaceMutationOptions = ApolloReactCommon.BaseMutationOptions<ConfigureInterfaceMutation, ConfigureInterfaceMutationVariables>;
+export const MovieCreateDocument = gql`
+    mutation MovieCreate($name: String!, $aliases: String, $duration: String, $date: String, $rating: String, $director: String, $synopsis: String, $url: String, $front_image: String, $back_image: String) {
+  movieCreate(input: {name: $name, aliases: $aliases, duration: $duration, date: $date, rating: $rating, director: $director, synopsis: $synopsis, url: $url, front_image: $front_image, back_image: $back_image}) {
+    ...MovieData
+  }
+}
+    ${MovieDataFragmentDoc}`;
+export type MovieCreateMutationFn = ApolloReactCommon.MutationFunction<MovieCreateMutation, MovieCreateMutationVariables>;
+export type MovieCreateComponentProps = Omit<ApolloReactComponents.MutationComponentOptions<MovieCreateMutation, MovieCreateMutationVariables>, 'mutation'>;
+
+    export const MovieCreateComponent = (props: MovieCreateComponentProps) => (
+      <ApolloReactComponents.Mutation<MovieCreateMutation, MovieCreateMutationVariables> mutation={MovieCreateDocument} {...props} />
+    );
+    
+
+/**
+ * __useMovieCreateMutation__
+ *
+ * To run a mutation, you first call `useMovieCreateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMovieCreateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [movieCreateMutation, { data, loading, error }] = useMovieCreateMutation({
+ *   variables: {
+ *      name: // value for 'name'
+ *      aliases: // value for 'aliases'
+ *      duration: // value for 'duration'
+ *      date: // value for 'date'
+ *      rating: // value for 'rating'
+ *      director: // value for 'director'
+ *      synopsis: // value for 'synopsis'
+ *      url: // value for 'url'
+ *      front_image: // value for 'front_image'
+ *      back_image: // value for 'back_image'
+ *   },
+ * });
+ */
+export function useMovieCreateMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<MovieCreateMutation, MovieCreateMutationVariables>) {
+        return ApolloReactHooks.useMutation<MovieCreateMutation, MovieCreateMutationVariables>(MovieCreateDocument, baseOptions);
+      }
+export type MovieCreateMutationHookResult = ReturnType<typeof useMovieCreateMutation>;
+export type MovieCreateMutationResult = ApolloReactCommon.MutationResult<MovieCreateMutation>;
+export type MovieCreateMutationOptions = ApolloReactCommon.BaseMutationOptions<MovieCreateMutation, MovieCreateMutationVariables>;
+export const MovieUpdateDocument = gql`
+    mutation MovieUpdate($id: ID!, $name: String, $aliases: String, $duration: String, $date: String, $rating: String, $director: String, $synopsis: String, $url: String, $front_image: String, $back_image: String) {
+  movieUpdate(input: {id: $id, name: $name, aliases: $aliases, duration: $duration, date: $date, rating: $rating, director: $director, synopsis: $synopsis, url: $url, front_image: $front_image, back_image: $back_image}) {
+    ...MovieData
+  }
+}
+    ${MovieDataFragmentDoc}`;
+export type MovieUpdateMutationFn = ApolloReactCommon.MutationFunction<MovieUpdateMutation, MovieUpdateMutationVariables>;
+export type MovieUpdateComponentProps = Omit<ApolloReactComponents.MutationComponentOptions<MovieUpdateMutation, MovieUpdateMutationVariables>, 'mutation'>;
+
+    export const MovieUpdateComponent = (props: MovieUpdateComponentProps) => (
+      <ApolloReactComponents.Mutation<MovieUpdateMutation, MovieUpdateMutationVariables> mutation={MovieUpdateDocument} {...props} />
+    );
+    
+
+/**
+ * __useMovieUpdateMutation__
+ *
+ * To run a mutation, you first call `useMovieUpdateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMovieUpdateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [movieUpdateMutation, { data, loading, error }] = useMovieUpdateMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      name: // value for 'name'
+ *      aliases: // value for 'aliases'
+ *      duration: // value for 'duration'
+ *      date: // value for 'date'
+ *      rating: // value for 'rating'
+ *      director: // value for 'director'
+ *      synopsis: // value for 'synopsis'
+ *      url: // value for 'url'
+ *      front_image: // value for 'front_image'
+ *      back_image: // value for 'back_image'
+ *   },
+ * });
+ */
+export function useMovieUpdateMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<MovieUpdateMutation, MovieUpdateMutationVariables>) {
+        return ApolloReactHooks.useMutation<MovieUpdateMutation, MovieUpdateMutationVariables>(MovieUpdateDocument, baseOptions);
+      }
+export type MovieUpdateMutationHookResult = ReturnType<typeof useMovieUpdateMutation>;
+export type MovieUpdateMutationResult = ApolloReactCommon.MutationResult<MovieUpdateMutation>;
+export type MovieUpdateMutationOptions = ApolloReactCommon.BaseMutationOptions<MovieUpdateMutation, MovieUpdateMutationVariables>;
+export const MovieDestroyDocument = gql`
+    mutation MovieDestroy($id: ID!) {
+  movieDestroy(input: {id: $id})
+}
+    `;
+export type MovieDestroyMutationFn = ApolloReactCommon.MutationFunction<MovieDestroyMutation, MovieDestroyMutationVariables>;
+export type MovieDestroyComponentProps = Omit<ApolloReactComponents.MutationComponentOptions<MovieDestroyMutation, MovieDestroyMutationVariables>, 'mutation'>;
+
+    export const MovieDestroyComponent = (props: MovieDestroyComponentProps) => (
+      <ApolloReactComponents.Mutation<MovieDestroyMutation, MovieDestroyMutationVariables> mutation={MovieDestroyDocument} {...props} />
+    );
+    
+
+/**
+ * __useMovieDestroyMutation__
+ *
+ * To run a mutation, you first call `useMovieDestroyMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMovieDestroyMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [movieDestroyMutation, { data, loading, error }] = useMovieDestroyMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useMovieDestroyMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<MovieDestroyMutation, MovieDestroyMutationVariables>) {
+        return ApolloReactHooks.useMutation<MovieDestroyMutation, MovieDestroyMutationVariables>(MovieDestroyDocument, baseOptions);
+      }
+export type MovieDestroyMutationHookResult = ReturnType<typeof useMovieDestroyMutation>;
+export type MovieDestroyMutationResult = ApolloReactCommon.MutationResult<MovieDestroyMutation>;
+export type MovieDestroyMutationOptions = ApolloReactCommon.BaseMutationOptions<MovieDestroyMutation, MovieDestroyMutationVariables>;
 export const PerformerCreateDocument = gql`
     mutation PerformerCreate($name: String, $url: String, $birthdate: String, $ethnicity: String, $country: String, $eye_color: String, $height: String, $measurements: String, $fake_tits: String, $career_length: String, $tattoos: String, $piercings: String, $aliases: String, $twitter: String, $instagram: String, $favorite: Boolean, $image: String) {
   performerCreate(input: {name: $name, url: $url, birthdate: $birthdate, ethnicity: $ethnicity, country: $country, eye_color: $eye_color, height: $height, measurements: $measurements, fake_tits: $fake_tits, career_length: $career_length, tattoos: $tattoos, piercings: $piercings, aliases: $aliases, twitter: $twitter, instagram: $instagram, favorite: $favorite, image: $image}) {
@@ -2880,8 +3379,8 @@ export type SceneMarkerDestroyMutationHookResult = ReturnType<typeof useSceneMar
 export type SceneMarkerDestroyMutationResult = ApolloReactCommon.MutationResult<SceneMarkerDestroyMutation>;
 export type SceneMarkerDestroyMutationOptions = ApolloReactCommon.BaseMutationOptions<SceneMarkerDestroyMutation, SceneMarkerDestroyMutationVariables>;
 export const SceneUpdateDocument = gql`
-    mutation SceneUpdate($id: ID!, $title: String, $details: String, $url: String, $date: String, $rating: Int, $studio_id: ID, $gallery_id: ID, $performer_ids: [ID!] = [], $tag_ids: [ID!] = [], $cover_image: String) {
-  sceneUpdate(input: {id: $id, title: $title, details: $details, url: $url, date: $date, rating: $rating, studio_id: $studio_id, gallery_id: $gallery_id, performer_ids: $performer_ids, tag_ids: $tag_ids, cover_image: $cover_image}) {
+    mutation SceneUpdate($id: ID!, $title: String, $details: String, $url: String, $date: String, $rating: Int, $studio_id: ID, $gallery_id: ID, $performer_ids: [ID!] = [], $movies: [SceneMovieInput!] = [], $tag_ids: [ID!] = [], $cover_image: String) {
+  sceneUpdate(input: {id: $id, title: $title, details: $details, url: $url, date: $date, rating: $rating, studio_id: $studio_id, gallery_id: $gallery_id, performer_ids: $performer_ids, movies: $movies, tag_ids: $tag_ids, cover_image: $cover_image}) {
     ...SceneData
   }
 }
@@ -2916,6 +3415,7 @@ export type SceneUpdateComponentProps = Omit<ApolloReactComponents.MutationCompo
  *      studio_id: // value for 'studio_id'
  *      gallery_id: // value for 'gallery_id'
  *      performer_ids: // value for 'performer_ids'
+ *      movies: // value for 'movies'
  *      tag_ids: // value for 'tag_ids'
  *      cover_image: // value for 'cover_image'
  *   },
@@ -3742,6 +4242,44 @@ export function useAllStudiosForFilterLazyQuery(baseOptions?: ApolloReactHooks.L
 export type AllStudiosForFilterQueryHookResult = ReturnType<typeof useAllStudiosForFilterQuery>;
 export type AllStudiosForFilterLazyQueryHookResult = ReturnType<typeof useAllStudiosForFilterLazyQuery>;
 export type AllStudiosForFilterQueryResult = ApolloReactCommon.QueryResult<AllStudiosForFilterQuery, AllStudiosForFilterQueryVariables>;
+export const AllMoviesForFilterDocument = gql`
+    query AllMoviesForFilter {
+  allMovies {
+    ...SlimMovieData
+  }
+}
+    ${SlimMovieDataFragmentDoc}`;
+export type AllMoviesForFilterComponentProps = Omit<ApolloReactComponents.QueryComponentOptions<AllMoviesForFilterQuery, AllMoviesForFilterQueryVariables>, 'query'>;
+
+    export const AllMoviesForFilterComponent = (props: AllMoviesForFilterComponentProps) => (
+      <ApolloReactComponents.Query<AllMoviesForFilterQuery, AllMoviesForFilterQueryVariables> query={AllMoviesForFilterDocument} {...props} />
+    );
+    
+
+/**
+ * __useAllMoviesForFilterQuery__
+ *
+ * To run a query within a React component, call `useAllMoviesForFilterQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAllMoviesForFilterQuery` returns an object from Apollo Client that contains loading, error, and data properties 
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAllMoviesForFilterQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useAllMoviesForFilterQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<AllMoviesForFilterQuery, AllMoviesForFilterQueryVariables>) {
+        return ApolloReactHooks.useQuery<AllMoviesForFilterQuery, AllMoviesForFilterQueryVariables>(AllMoviesForFilterDocument, baseOptions);
+      }
+export function useAllMoviesForFilterLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<AllMoviesForFilterQuery, AllMoviesForFilterQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<AllMoviesForFilterQuery, AllMoviesForFilterQueryVariables>(AllMoviesForFilterDocument, baseOptions);
+        }
+export type AllMoviesForFilterQueryHookResult = ReturnType<typeof useAllMoviesForFilterQuery>;
+export type AllMoviesForFilterLazyQueryHookResult = ReturnType<typeof useAllMoviesForFilterLazyQuery>;
+export type AllMoviesForFilterQueryResult = ApolloReactCommon.QueryResult<AllMoviesForFilterQuery, AllMoviesForFilterQueryVariables>;
 export const AllTagsForFilterDocument = gql`
     query AllTagsForFilter {
   allTags {
@@ -3828,6 +4366,7 @@ export const StatsDocument = gql`
     gallery_count
     performer_count
     studio_count
+    movie_count
     tag_count
   }
 }
@@ -3980,6 +4519,87 @@ export function useLatestVersionLazyQuery(baseOptions?: ApolloReactHooks.LazyQue
 export type LatestVersionQueryHookResult = ReturnType<typeof useLatestVersionQuery>;
 export type LatestVersionLazyQueryHookResult = ReturnType<typeof useLatestVersionLazyQuery>;
 export type LatestVersionQueryResult = ApolloReactCommon.QueryResult<LatestVersionQuery, LatestVersionQueryVariables>;
+export const FindMoviesDocument = gql`
+    query FindMovies($filter: FindFilterType) {
+  findMovies(filter: $filter) {
+    count
+    movies {
+      ...MovieData
+    }
+  }
+}
+    ${MovieDataFragmentDoc}`;
+export type FindMoviesComponentProps = Omit<ApolloReactComponents.QueryComponentOptions<FindMoviesQuery, FindMoviesQueryVariables>, 'query'>;
+
+    export const FindMoviesComponent = (props: FindMoviesComponentProps) => (
+      <ApolloReactComponents.Query<FindMoviesQuery, FindMoviesQueryVariables> query={FindMoviesDocument} {...props} />
+    );
+    
+
+/**
+ * __useFindMoviesQuery__
+ *
+ * To run a query within a React component, call `useFindMoviesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFindMoviesQuery` returns an object from Apollo Client that contains loading, error, and data properties 
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFindMoviesQuery({
+ *   variables: {
+ *      filter: // value for 'filter'
+ *   },
+ * });
+ */
+export function useFindMoviesQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<FindMoviesQuery, FindMoviesQueryVariables>) {
+        return ApolloReactHooks.useQuery<FindMoviesQuery, FindMoviesQueryVariables>(FindMoviesDocument, baseOptions);
+      }
+export function useFindMoviesLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<FindMoviesQuery, FindMoviesQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<FindMoviesQuery, FindMoviesQueryVariables>(FindMoviesDocument, baseOptions);
+        }
+export type FindMoviesQueryHookResult = ReturnType<typeof useFindMoviesQuery>;
+export type FindMoviesLazyQueryHookResult = ReturnType<typeof useFindMoviesLazyQuery>;
+export type FindMoviesQueryResult = ApolloReactCommon.QueryResult<FindMoviesQuery, FindMoviesQueryVariables>;
+export const FindMovieDocument = gql`
+    query FindMovie($id: ID!) {
+  findMovie(id: $id) {
+    ...MovieData
+  }
+}
+    ${MovieDataFragmentDoc}`;
+export type FindMovieComponentProps = Omit<ApolloReactComponents.QueryComponentOptions<FindMovieQuery, FindMovieQueryVariables>, 'query'> & ({ variables: FindMovieQueryVariables; skip?: boolean; } | { skip: boolean; });
+
+    export const FindMovieComponent = (props: FindMovieComponentProps) => (
+      <ApolloReactComponents.Query<FindMovieQuery, FindMovieQueryVariables> query={FindMovieDocument} {...props} />
+    );
+    
+
+/**
+ * __useFindMovieQuery__
+ *
+ * To run a query within a React component, call `useFindMovieQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFindMovieQuery` returns an object from Apollo Client that contains loading, error, and data properties 
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFindMovieQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useFindMovieQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<FindMovieQuery, FindMovieQueryVariables>) {
+        return ApolloReactHooks.useQuery<FindMovieQuery, FindMovieQueryVariables>(FindMovieDocument, baseOptions);
+      }
+export function useFindMovieLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<FindMovieQuery, FindMovieQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<FindMovieQuery, FindMovieQueryVariables>(FindMovieDocument, baseOptions);
+        }
+export type FindMovieQueryHookResult = ReturnType<typeof useFindMovieQuery>;
+export type FindMovieLazyQueryHookResult = ReturnType<typeof useFindMovieLazyQuery>;
+export type FindMovieQueryResult = ApolloReactCommon.QueryResult<FindMovieQuery, FindMovieQueryVariables>;
 export const FindPerformersDocument = gql`
     query FindPerformers($filter: FindFilterType, $performer_filter: PerformerFilterType) {
   findPerformers(filter: $filter, performer_filter: $performer_filter) {
@@ -4256,6 +4876,9 @@ export const ParseSceneFilenamesDocument = gql`
       rating
       studio_id
       gallery_id
+      movies {
+        movie_id
+      }
       performer_ids
       tag_ids
     }
