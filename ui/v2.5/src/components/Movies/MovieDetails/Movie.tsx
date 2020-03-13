@@ -101,7 +101,7 @@ export const Movie: React.FC = () => {
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
-    if (!error) {
+    if (error) {
       return <>{error!.message}</>;
     }
   }
