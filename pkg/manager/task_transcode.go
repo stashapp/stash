@@ -60,7 +60,12 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 	if videoCodec == "h264" { // for non supported h264 files stream copy the video part
 		encoder.TranscodeAudio(*videoFile, options)
 	} else {
-		encoder.Transcode(*videoFile, options)
+		if !t.Scene.AudioCodec.Valid || (t.Scene.AudioCodec.Valid && t.Scene.AudioCodec.String == "") {
+			//ffmpeg fails if it trys to transcode an unsupported audio codec
+			encoder.TranscodeVideo(*videoFile, options)
+		} else {
+			encoder.Transcode(*videoFile, options)
+		}
 	}
 
 	if err := os.Rename(outputPath, instance.Paths.Scene.GetTranscodePath(t.Scene.Checksum)); err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -84,7 +85,16 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 
 	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
 
-	stream, process, err := encoder.StreamTranscode(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+	var stream io.ReadCloser
+	var process *os.Process
+
+	if !scene.AudioCodec.Valid || (scene.AudioCodec.Valid && scene.AudioCodec.String == "") {
+		//ffmpeg fails if it trys to transcode a non supported audio codec
+		stream, process, err = encoder.StreamTranscodeVideo(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+	} else {
+		stream, process, err = encoder.StreamTranscode(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+	}
+
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %s", err.Error())
 		return
