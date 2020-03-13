@@ -39,6 +39,8 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		GeneratedPath:             config.GetGeneratedPath(),
 		MaxTranscodeSize:          &maxTranscodeSize,
 		MaxStreamingTranscodeSize: &maxStreamingTranscodeSize,
+		ForceMkv:                  config.GetForceMKV(),
+		ForceHevc:                 config.GetForceHEVC(),
 		Username:                  config.GetUsername(),
 		Password:                  config.GetPasswordHash(),
 		LogFile:                   &logFile,
@@ -58,7 +60,6 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	css := config.GetCSS()
 	cssEnabled := config.GetCSSEnabled()
 	language := config.GetLanguage()
-
 
 	return &models.ConfigInterfaceResult{
 		SoundOnPreview:      &soundOnPreview,
