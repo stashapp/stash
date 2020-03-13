@@ -1,6 +1,6 @@
 import * as GQL from "../../../core/generated-graphql";
 import { CriterionModifier } from "../../../core/generated-graphql";
-import { ILabeledId } from "../types";
+import { ILabeledId, encodeILabeledId } from "../types";
 import {
   Criterion,
   CriterionType,
@@ -26,6 +26,10 @@ export class TagsCriterion extends Criterion<GQL.AllTagsForFilterAllTags, ILabel
     if (type === "sceneTags") {
       this.parameterName = "scene_tags";
     }
+  }
+
+  public encodeValue() {
+    return this.value.map((o) => { return encodeILabeledId(o); });
   }
 }
 

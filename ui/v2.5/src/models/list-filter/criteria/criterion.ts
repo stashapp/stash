@@ -189,6 +189,10 @@ export abstract class Criterion {
     }
   }
   */
+
+  public encodeValue(): CriterionValue {
+    return this.value;
+  }
 }
 
 export interface ICriterionOption {

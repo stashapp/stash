@@ -25,6 +25,10 @@ export interface ILabeledValue {
   value: string;
 }
 
+export function encodeILabeledId(o: ILabeledId) {
+  return { ...o, label: encodeURIComponent(o.label) };
+}
+
 export interface IOptionType {
   id: string;
   name?: string;
