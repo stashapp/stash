@@ -2,8 +2,8 @@ import React from "react";
 import { FindMoviesQueryResult } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { MovieCard } from "./MovieCard";
 import { useMoviesList } from "src/hooks/ListHook";
+import { MovieCard } from "./MovieCard";
 
 export const MovieList: React.FC = () => {
   const listData = useMoviesList({

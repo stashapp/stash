@@ -1,3 +1,4 @@
+/* eslint-disable react/no-this-in-sfc */
 import React, { useEffect, useState, useCallback } from "react";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
@@ -24,8 +25,8 @@ export const Movie: React.FC = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing movie state
-  const [front_image, setFrontImage] = useState<string | undefined>(undefined);
-  const [back_image, setBackImage] = useState<string | undefined>(undefined);
+  const [frontImage, setFrontImage] = useState<string | undefined>(undefined);
+  const [backImage, setBackImage] = useState<string | undefined>(undefined);
   const [name, setName] = useState<string | undefined>(undefined);
   const [aliases, setAliases] = useState<string | undefined>(undefined);
   const [duration, setDuration] = useState<string | undefined>(undefined);
@@ -100,8 +101,8 @@ export const Movie: React.FC = () => {
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
-    if (!!error) {
-      return <>{error.message}</>;
+    if (!error) {
+      return <>{error!.message}</>;
     }
   }
 
@@ -115,8 +116,8 @@ export const Movie: React.FC = () => {
       director,
       synopsis,
       url,
-      front_image,
-      back_image
+      front_image: frontImage,
+      back_image: backImage
     };
 
     if (!isNew) {

@@ -27,9 +27,9 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
   function maybeRenderSceneNumber() {
     if (!props.sceneIndex) {
       return <span>{props.movie.scene_count} scenes.</span>;
-    } else {
-      return <span>Scene number: {props.sceneIndex}</span>;
     }
+
+    return <span>Scene number: {props.sceneIndex}</span>;
   }
 
   return (

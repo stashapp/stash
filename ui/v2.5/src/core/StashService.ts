@@ -229,7 +229,7 @@ export class StashService {
     return GQL.useFindStudioQuery({ variables: { id }, skip });
   }
   public static useFindMovie(id: string) {
-    const skip = id === "new" ? true : false;
+    const skip = id === "new";
     return GQL.useFindMovieQuery({ variables: { id }, skip });
   }
 
