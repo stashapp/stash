@@ -174,6 +174,14 @@ export class StashService {
     });
   }
 
+  public static useFindMovies(filter: ListFilterModel) {
+    return GQL.useFindMoviesQuery({
+      variables: {
+        filter: filter.makeFindFilter(),
+      },
+    });
+  }
+
   public static useFindPerformers(filter: ListFilterModel) {
     let performerFilter = {};
     // if (!!filter && filter.criteriaFilterOpen) {
@@ -219,6 +227,10 @@ export class StashService {
   public static useFindStudio(id: string) {
     const skip = id === "new";
     return GQL.useFindStudioQuery({ variables: { id }, skip });
+  }
+  public static useFindMovie(id: string) {
+    const skip = id === "new" ? true : false;
+    return GQL.useFindMovieQuery({ variables: { id }, skip });
   }
 
   // TODO - scene marker manipulation functions are handled differently
@@ -278,6 +290,9 @@ export class StashService {
   }
   public static useAllStudiosForFilter() {
     return GQL.useAllStudiosForFilterQuery();
+  }
+  public static useAllMoviesForFilter() {
+    return GQL.useAllMoviesForFilterQuery(); 
   }
   public static useValidGalleriesForScene(sceneId: string) {
     return GQL.useValidGalleriesForSceneQuery({
@@ -341,6 +356,7 @@ export class StashService {
     "findScenes",
     "findSceneMarkers",
     "findStudios",
+    "findMovies",
     "allTags"
     // TODO - add "findTags" when it is implemented
   ];
@@ -362,6 +378,7 @@ export class StashService {
     "findPerformers",
     "findSceneMarkers",
     "findStudios",
+    "findMovies",
     "allTags"
   ];
 
@@ -446,6 +463,33 @@ export class StashService {
         StashService.invalidateQueries(
           StashService.studioMutationImpactedQueries
         )
+    });
+  }
+
+  private static movieMutationImpactedQueries = [
+    "findMovies",
+    "findScenes",
+    "allMovies"
+  ];
+
+  public static useMovieCreate(input: GQL.MovieCreateInput) {
+    return GQL.useMovieCreateMutation({
+      variables: input,
+      update: () => StashService.invalidateQueries(StashService.movieMutationImpactedQueries)
+    });
+  }
+
+  public static useMovieUpdate(input: GQL.MovieUpdateInput) {
+    return GQL.useMovieUpdateMutation({
+      variables: input,
+      update: () => StashService.invalidateQueries(StashService.movieMutationImpactedQueries)
+    });
+  }
+
+  public static useMovieDestroy(input: GQL.MovieDestroyInput) {
+    return GQL.useMovieDestroyMutation({
+      variables: input,
+      update: () => StashService.invalidateQueries(StashService.movieMutationImpactedQueries)
     });
   }
 

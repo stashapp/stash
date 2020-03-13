@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import {
   PerformerDataFragment,
   SceneMarkerDataFragment,
-  TagDataFragment
+  TagDataFragment,
+  MovieDataFragment
 } from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 
@@ -12,6 +13,7 @@ interface IProps {
   tag?: Partial<TagDataFragment>;
   performer?: Partial<PerformerDataFragment>;
   marker?: Partial<SceneMarkerDataFragment>;
+  movie?: Partial<MovieDataFragment>;
   className?: string;
 }
 
@@ -24,6 +26,9 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
   } else if (props.performer) {
     link = NavUtils.makePerformerScenesUrl(props.performer);
     title = props.performer.name || "";
+  } else if (props.movie) {
+    link = NavUtils.makeMovieScenesUrl(props.movie);
+    title = props.movie.name || "";
   } else if (props.marker) {
     link = NavUtils.makeSceneMarkerUrl(props.marker);
     title = `${props.marker.title} - ${TextUtils.secondsToTimestamp(

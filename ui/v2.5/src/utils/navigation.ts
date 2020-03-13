@@ -4,6 +4,7 @@ import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
 import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { FilterMode } from "src/models/list-filter/types";
+import { MoviesCriterion } from "src/models/list-filter/criteria/movies";
 
 const makePerformerScenesUrl = (
   performer: Partial<GQL.PerformerDataFragment>
@@ -24,6 +25,17 @@ const makeStudioScenesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   const criterion = new StudiosCriterion();
   criterion.value = [
     { id: studio.id, label: studio.name || `Studio ${studio.id}` }
+  ];
+  filter.criteria.push(criterion);
+  return `/scenes?${filter.makeQueryParameters()}`;
+};
+
+const makeMovieScenesUrl = (movie: Partial<GQL.MovieDataFragment>) => {
+  if (!movie.id) return "#";
+  const filter = new ListFilterModel(FilterMode.Scenes);
+  const criterion = new MoviesCriterion();
+  criterion.value = [
+    { id: movie.id, label: movie.name || `Movie ${movie.id}` }
   ];
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
@@ -59,5 +71,6 @@ export default {
   makeStudioScenesUrl,
   makeTagSceneMarkersUrl,
   makeTagScenesUrl,
-  makeSceneMarkerUrl
+  makeSceneMarkerUrl,
+  makeMovieScenesUrl,
 };
