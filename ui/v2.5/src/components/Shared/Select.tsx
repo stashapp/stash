@@ -14,7 +14,7 @@ type ValidTypes =
 type Option = { value: string; label: string };
 
 interface ITypeProps {
-  type?: "performers" | "studios" | "tags";
+  type?: "performers" | "studios" | "tags" | "movies";
 }
 interface IFilterProps {
   ids?: string[];
@@ -172,6 +172,8 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = props =>
     <PerformerSelect {...(props as IFilterProps)} />
   ) : props.type === "studios" ? (
     <StudioSelect {...(props as IFilterProps)} />
+  ) : props.type === "movies" ? (
+    <MovieSelect {...(props as IFilterProps)} />
   ) : (
     <TagSelect {...(props as IFilterProps)} />
   );
@@ -223,6 +225,44 @@ export const StudioSelect: React.FC<IFilterProps> = props => {
   }));
 
   const placeholder = props.noSelectionString ?? "Select studio...";
+  const selectedOptions: Option[] = props.ids
+    ? items.filter(item => props.ids?.indexOf(item.value) !== -1)
+    : [];
+
+  const onChange = (selectedItems: ValueType<Option>) => {
+    const selectedIds = getSelectedValues(selectedItems);
+    props.onSelect?.(
+      normalizedData.filter(item => selectedIds.indexOf(item.id) !== -1)
+    );
+  };
+
+  return (
+    <SelectComponent
+      {...props}
+      onChange={onChange}
+      type="studios"
+      isLoading={loading}
+      items={items}
+      placeholder={placeholder}
+      selectedOptions={selectedOptions}
+    />
+  );
+};
+
+export const MovieSelect: React.FC<IFilterProps> = props => {
+  const { data, loading } = StashService.useAllMoviesForFilter();
+
+  const normalizedData = data?.allMovies ?? [];
+
+  const items = (normalizedData.length > 0
+    ? [{ name: "None", id: "0" }, ...normalizedData]
+    : []
+  ).map(item => ({
+    value: item.id,
+    label: item.name
+  }));
+
+  const placeholder = props.noSelectionString ?? "Select movie...";
   const selectedOptions: Option[] = props.ids
     ? items.filter(item => props.ids?.indexOf(item.value) !== -1)
     : [];
