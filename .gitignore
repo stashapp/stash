@@ -21,6 +21,7 @@
 # GraphQL generated output
 pkg/models/generated_*.go
 ui/v2/src/core/generated-*.tsx
+ui/v2.5/src/core/generated-*.tsx
 
 # packr generated files
 *-packr.go
