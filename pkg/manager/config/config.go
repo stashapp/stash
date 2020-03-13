@@ -43,6 +43,10 @@ const AutostartVideo = "autostart_video"
 const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
 
+// Playback force codec,container
+const ForceMKV = "forceMKV"
+const ForceHEVC = "forceHEVC"
+
 // Logging options
 const LogFile = "logFile"
 const LogOut = "logOut"
@@ -258,6 +262,15 @@ func SetCSS(css string) {
 
 func GetCSSEnabled() bool {
 	return viper.GetBool(CSSEnabled)
+}
+
+// force codec,container
+func GetForceMKV() bool {
+	return viper.GetBool(ForceMKV)
+}
+
+func GetForceHEVC() bool {
+	return viper.GetBool(ForceHEVC)
 }
 
 // GetLogFile returns the filename of the file to output logs to.

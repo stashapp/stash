@@ -48,6 +48,15 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 	container := ""
 	if scene.Format.Valid {
 		container = scene.Format.String
+	} else { // container isn't in the DB
+		// shouldn't happen, fallback to ffprobe
+		tmpVideoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path)
+		if err != nil {
+			logger.Errorf("[transcode] error reading video file: %s", err.Error())
+			return
+		}
+
+		container = string(ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path))
 	}
 
 	// detect if not a streamable file and try to transcode it instead

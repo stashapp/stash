@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/stashapp/stash/pkg/manager/config"
 )
 
 var ValidCodecs = []string{"h264", "h265", "vp8", "vp9"}
@@ -28,10 +30,15 @@ const (
 	Mpegts   Container = "mpegts"
 )
 
+var validForH264Mkv = []Container{Mp4, Matroska}
 var validForH264 = []Container{Mp4}
+var validForH265Mkv = []Container{Mp4, Matroska}
 var validForH265 = []Container{Mp4}
 var validForVp8 = []Container{Webm}
+var validForVp9Mkv = []Container{Webm, Matroska}
 var validForVp9 = []Container{Webm}
+var validForHevcMkv = []Container{Mp4, Matroska}
+var validForHevc = []Container{Mp4}
 
 //maps user readable container strings to ffprobe's format_name
 //on some formats ffprobe can't differentiate
@@ -69,6 +76,13 @@ func MatchContainer(format string, filePath string) Container { // match ffprobe
 }
 
 func IsValidCodec(codecName string) bool {
+	forceHEVC := config.GetForceHEVC()
+	if forceHEVC {
+		if codecName == "hevc" {
+			return true
+		}
+	}
+
 	for _, c := range ValidCodecs {
 		if c == codecName {
 			return true
@@ -88,15 +102,33 @@ func IsValidForContainer(format Container, validContainers []Container) bool {
 
 //extend stream validation check to take into account container
 func IsValidCombo(codecName string, format Container) bool {
+	forceMKV := config.GetForceMKV()
+	forceHEVC := config.GetForceHEVC()
 	switch codecName {
 	case "h264":
+		if forceMKV {
+			return IsValidForContainer(format, validForH264Mkv)
+		}
 		return IsValidForContainer(format, validForH264)
 	case "h265":
+		if forceMKV {
+			return IsValidForContainer(format, validForH265Mkv)
+		}
 		return IsValidForContainer(format, validForH265)
 	case "vp8":
 		return IsValidForContainer(format, validForVp8)
 	case "vp9":
+		if forceMKV {
+			return IsValidForContainer(format, validForVp9Mkv)
+		}
 		return IsValidForContainer(format, validForVp9)
+	case "hevc":
+		if forceHEVC {
+			if forceMKV {
+				return IsValidForContainer(format, validForHevcMkv)
+			}
+			return IsValidForContainer(format, validForHevc)
+		}
 	}
 	return false
 }
