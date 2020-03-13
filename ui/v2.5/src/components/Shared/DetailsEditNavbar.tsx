@@ -54,7 +54,9 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   }
 
   function renderBackImageInput() {
-    if (!props.isEditing || !props.onBackImageChange) { return; }
+    if (!props.isEditing || !props.onBackImageChange) {
+      return;
+    }
     return (
       <ImageInput
         isEditing={props.isEditing}
@@ -85,7 +87,9 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   function renderDeleteAlert() {
     return (
       <Modal show={isDeleteAlertOpen}>
-        <Modal.Body>Are you sure you want to delete {props.objectName}?</Modal.Body>
+        <Modal.Body>
+          Are you sure you want to delete {props.objectName}?
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="danger" onClick={props.onDelete}>
             Delete

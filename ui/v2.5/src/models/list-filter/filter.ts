@@ -117,7 +117,7 @@ export class ListFilterModel {
           new TagsCriterionOption(),
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
-          new MoviesCriterionOption(),
+          new MoviesCriterionOption()
         ];
         break;
       case FilterMode.Performers: {

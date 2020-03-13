@@ -456,15 +456,13 @@ export const usePerformersList = (
       result?.data?.findPerformers?.count ?? 0
   });
 
-  export const useMoviesList = (
-    props: IListHookOptions<FindMoviesQueryResult>
-  ) =>
-    useList<FindMoviesQueryResult, MovieDataFragment>({
-      ...props,
-      filterMode: FilterMode.Performers,
-      useData: StashService.useFindMovies,
-      getData: (result: FindMoviesQueryResult) =>
-        result?.data?.findMovies?.movies ?? [],
-      getCount: (result: FindMoviesQueryResult) =>
-        result?.data?.findMovies?.count ?? 0
+export const useMoviesList = (props: IListHookOptions<FindMoviesQueryResult>) =>
+  useList<FindMoviesQueryResult, MovieDataFragment>({
+    ...props,
+    filterMode: FilterMode.Performers,
+    useData: StashService.useFindMovies,
+    getData: (result: FindMoviesQueryResult) =>
+      result?.data?.findMovies?.movies ?? [],
+    getCount: (result: FindMoviesQueryResult) =>
+      result?.data?.findMovies?.count ?? 0
   });

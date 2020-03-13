@@ -37,8 +37,12 @@ export const Movie: React.FC = () => {
 
   // Movie state
   const [movie, setMovie] = useState<Partial<GQL.MovieDataFragment>>({});
-  const [imagePreview, setImagePreview] = useState<string | undefined>(undefined);
-  const [backimagePreview, setBackImagePreview] = useState<string | undefined>(undefined);
+  const [imagePreview, setImagePreview] = useState<string | undefined>(
+    undefined
+  );
+  const [backimagePreview, setBackImagePreview] = useState<string | undefined>(
+    undefined
+  );
 
   // Network state
   const { data, error, loading } = StashService.useFindMovie(id);
@@ -63,14 +67,17 @@ export const Movie: React.FC = () => {
     setUrl(state.url ?? undefined);
   }
 
-  const updateMovieData = useCallback((movieData: Partial<GQL.MovieDataFragment>) => {
-    setFrontImage(undefined);
-    setBackImage(undefined);
-    updateMovieEditState(movieData);
-    setImagePreview(movieData.front_image_path ?? undefined);
-    setBackImagePreview(movieData.back_image_path ?? undefined);
-    setMovie(movieData);
-  }, []);
+  const updateMovieData = useCallback(
+    (movieData: Partial<GQL.MovieDataFragment>) => {
+      setFrontImage(undefined);
+      setBackImage(undefined);
+      updateMovieEditState(movieData);
+      setImagePreview(movieData.front_image_path ?? undefined);
+      setBackImagePreview(movieData.back_image_path ?? undefined);
+      setMovie(movieData);
+    },
+    []
+  );
 
   useEffect(() => {
     if (data && data.findMovie) {
@@ -93,7 +100,9 @@ export const Movie: React.FC = () => {
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
-    if (!!error) { return <>{error.message}</>; }
+    if (!!error) {
+      return <>{error.message}</>;
+    }
   }
 
   function getMovieInput() {
@@ -102,7 +111,7 @@ export const Movie: React.FC = () => {
       aliases,
       duration,
       date,
-	    rating,
+      rating,
       director,
       synopsis,
       url,
@@ -182,7 +191,7 @@ export const Movie: React.FC = () => {
           <img alt={name} className="logo w-50" src={imagePreview} />
           <img alt={name} className="logo w-50" src={backimagePreview} />
         </div>
-        
+
         <Table>
           <tbody>
             {TableUtils.renderInputGroup({
@@ -191,19 +200,49 @@ export const Movie: React.FC = () => {
               isEditing: !!isEditing,
               onChange: setName
             })}
-            {TableUtils.renderInputGroup({title: "Aliases", value: aliases, isEditing, onChange: setAliases})}
-            {TableUtils.renderInputGroup({title: "Duration", value: duration, isEditing, onChange: setDuration})}
-            {TableUtils.renderInputGroup({title: "Date (YYYY-MM-DD)", value: date, isEditing, onChange: setDate})}
-            {TableUtils.renderInputGroup({title: "Director", value: director, isEditing, onChange: setDirector})}
+            {TableUtils.renderInputGroup({
+              title: "Aliases",
+              value: aliases,
+              isEditing,
+              onChange: setAliases
+            })}
+            {TableUtils.renderInputGroup({
+              title: "Duration",
+              value: duration,
+              isEditing,
+              onChange: setDuration
+            })}
+            {TableUtils.renderInputGroup({
+              title: "Date (YYYY-MM-DD)",
+              value: date,
+              isEditing,
+              onChange: setDate
+            })}
+            {TableUtils.renderInputGroup({
+              title: "Director",
+              value: director,
+              isEditing,
+              onChange: setDirector
+            })}
             {TableUtils.renderHtmlSelect({
-              title: "Rating", 
-              value: rating, 
-              isEditing, 
-              onChange: (value: string) => setRating(value), 
-              selectOptions: ["","1","2","3","4","5"]
-              })}
-            {TableUtils.renderInputGroup({title: "URL", value: url, isEditing, onChange: setUrl})}
-            {TableUtils.renderTextArea({title: "Synopsis", value: synopsis, isEditing, onChange: setSynopsis})}  
+              title: "Rating",
+              value: rating,
+              isEditing,
+              onChange: (value: string) => setRating(value),
+              selectOptions: ["", "1", "2", "3", "4", "5"]
+            })}
+            {TableUtils.renderInputGroup({
+              title: "URL",
+              value: url,
+              isEditing,
+              onChange: setUrl
+            })}
+            {TableUtils.renderTextArea({
+              title: "Synopsis",
+              value: synopsis,
+              isEditing,
+              onChange: setSynopsis
+            })}
           </tbody>
         </Table>
         <DetailsEditNavbar

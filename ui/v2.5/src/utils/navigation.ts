@@ -72,5 +72,5 @@ export default {
   makeTagSceneMarkersUrl,
   makeTagScenesUrl,
   makeSceneMarkerUrl,
-  makeMovieScenesUrl,
+  makeMovieScenesUrl
 };

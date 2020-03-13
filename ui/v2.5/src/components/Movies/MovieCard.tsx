@@ -23,25 +23,18 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
       </div>
     );
   }
-  
+
   function maybeRenderSceneNumber() {
     if (!props.sceneIndex) {
-      return (
-        <span>{props.movie.scene_count} scenes.</span>
-      );  
+      return <span>{props.movie.scene_count} scenes.</span>;
     } else {
-      return (
-        <span>Scene number: {props.sceneIndex}</span>   
-      );  
+      return <span>Scene number: {props.sceneIndex}</span>;
     }
   }
-  
+
   return (
     <Card className="movie-card">
-      <Link
-        to={`/movies/${props.movie.id}`}
-        className="movie-card-header"
-      >
+      <Link to={`/movies/${props.movie.id}`} className="movie-card-header">
         <img
           className="movie-card-image"
           alt={props.movie.name ?? ""}
@@ -50,9 +43,7 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
         {maybeRenderRatingBanner()}
       </Link>
       <div className="card-section">
-        <h5 className="text-truncate">
-          {props.movie.name}
-        </h5>
+        <h5 className="text-truncate">{props.movie.name}</h5>
         {maybeRenderSceneNumber()}
       </div>
     </Card>

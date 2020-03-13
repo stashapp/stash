@@ -177,8 +177,8 @@ export class StashService {
   public static useFindMovies(filter: ListFilterModel) {
     return GQL.useFindMoviesQuery({
       variables: {
-        filter: filter.makeFindFilter(),
-      },
+        filter: filter.makeFindFilter()
+      }
     });
   }
 
@@ -292,7 +292,7 @@ export class StashService {
     return GQL.useAllStudiosForFilterQuery();
   }
   public static useAllMoviesForFilter() {
-    return GQL.useAllMoviesForFilterQuery(); 
+    return GQL.useAllMoviesForFilterQuery();
   }
   public static useValidGalleriesForScene(sceneId: string) {
     return GQL.useValidGalleriesForSceneQuery({
@@ -425,8 +425,8 @@ export class StashService {
   }
 
   public static useSceneGenerateScreenshot() {
-    return GQL.useSceneGenerateScreenshotMutation({ 
-      update: () => StashService.invalidateQueries(["findScenes"]),
+    return GQL.useSceneGenerateScreenshotMutation({
+      update: () => StashService.invalidateQueries(["findScenes"])
     });
   }
 
@@ -475,21 +475,30 @@ export class StashService {
   public static useMovieCreate(input: GQL.MovieCreateInput) {
     return GQL.useMovieCreateMutation({
       variables: input,
-      update: () => StashService.invalidateQueries(StashService.movieMutationImpactedQueries)
+      update: () =>
+        StashService.invalidateQueries(
+          StashService.movieMutationImpactedQueries
+        )
     });
   }
 
   public static useMovieUpdate(input: GQL.MovieUpdateInput) {
     return GQL.useMovieUpdateMutation({
       variables: input,
-      update: () => StashService.invalidateQueries(StashService.movieMutationImpactedQueries)
+      update: () =>
+        StashService.invalidateQueries(
+          StashService.movieMutationImpactedQueries
+        )
     });
   }
 
   public static useMovieDestroy(input: GQL.MovieDestroyInput) {
     return GQL.useMovieDestroyMutation({
       variables: input,
-      update: () => StashService.invalidateQueries(StashService.movieMutationImpactedQueries)
+      update: () =>
+        StashService.invalidateQueries(
+          StashService.movieMutationImpactedQueries
+        )
     });
   }
 
@@ -558,7 +567,7 @@ export class StashService {
 
   public static mutateStopJob() {
     return StashService.client.mutate<GQL.StopJobMutation>({
-      mutation: GQL.StopJobDocument,
+      mutation: GQL.StopJobDocument
     });
   }
 
@@ -618,39 +627,39 @@ export class StashService {
   public static mutateMetadataScan(input: GQL.ScanMetadataInput) {
     return StashService.client.mutate<GQL.MetadataScanMutation>({
       mutation: GQL.MetadataScanDocument,
-      variables: { input },
+      variables: { input }
     });
   }
 
   public static mutateMetadataAutoTag(input: GQL.AutoTagMetadataInput) {
     return StashService.client.mutate<GQL.MetadataAutoTagMutation>({
       mutation: GQL.MetadataAutoTagDocument,
-      variables: { input },
+      variables: { input }
     });
   }
 
   public static mutateMetadataGenerate(input: GQL.GenerateMetadataInput) {
     return StashService.client.mutate<GQL.MetadataGenerateMutation>({
       mutation: GQL.MetadataGenerateDocument,
-      variables: { input },
+      variables: { input }
     });
   }
 
   public static mutateMetadataClean() {
     return StashService.client.mutate<GQL.MetadataCleanMutation>({
-      mutation: GQL.MetadataCleanDocument,
+      mutation: GQL.MetadataCleanDocument
     });
   }
 
   public static mutateMetadataExport() {
     return StashService.client.mutate<GQL.MetadataExportMutation>({
-      mutation: GQL.MetadataExportDocument,
+      mutation: GQL.MetadataExportDocument
     });
   }
 
   public static mutateMetadataImport() {
     return StashService.client.mutate<GQL.MetadataImportMutation>({
-      mutation: GQL.MetadataImportDocument,
+      mutation: GQL.MetadataImportDocument
     });
   }
 

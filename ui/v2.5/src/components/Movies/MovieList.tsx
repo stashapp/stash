@@ -5,7 +5,7 @@ import { DisplayMode } from "src/models/list-filter/types";
 import { MovieCard } from "./MovieCard";
 import { useMoviesList } from "src/hooks/ListHook";
 
-export const MovieList: React.FC= () => {
+export const MovieList: React.FC = () => {
   const listData = useMoviesList({
     renderContent
   });

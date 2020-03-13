@@ -141,7 +141,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             src={sceneMovie.movie.front_image_path ?? ""}
           />
         </Link>
-        <TagLink key={sceneMovie.movie.id} movie={sceneMovie.movie} className="d-block"/>
+        <TagLink
+          key={sceneMovie.movie.id}
+          movie={sceneMovie.movie}
+          className="d-block"
+        />
       </div>
     ));
 
@@ -190,7 +194,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (
       props.scene.tags.length > 0 ||
       props.scene.performers.length > 0 ||
-      props.scene.movies.length > 0  ||
+      props.scene.movies.length > 0 ||
       props.scene.scene_markers.length > 0 ||
       props.scene?.o_counter
     ) {

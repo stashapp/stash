@@ -1,10 +1,6 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { ILabeledId } from "../types";
-import {
-  Criterion,
-  CriterionType,
-  ICriterionOption,
-} from "./criterion";
+import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
 interface IOptionType {
   id: string;
@@ -18,7 +14,7 @@ export class MoviesCriterion extends Criterion {
   public modifier = CriterionModifier.Includes;
   public modifierOptions = [
     Criterion.getModifierOption(CriterionModifier.Includes),
-    Criterion.getModifierOption(CriterionModifier.Excludes),
+    Criterion.getModifierOption(CriterionModifier.Excludes)
   ];
   public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
