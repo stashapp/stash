@@ -23,9 +23,7 @@ export interface ILabeledValue {
 }
 
 export function encodeILabeledId(o: ILabeledId) {
-  const ret = { ...o };
-  ret.label = encodeURIComponent(o.label);
-  return ret;
+  return { ...o, label: encodeURIComponent(o.label) };
 }
 
 export interface IOptionType {
