@@ -58,6 +58,12 @@ code,
   background-color: $secondary;
 }
 
+textarea.text-input {
+  line-height: 2.5ex;
+  min-height: 12ex;
+  overflow-y: scroll;
+}
+
 .table-list a {
   color: $text-color;
 }
