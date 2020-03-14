@@ -60,6 +60,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
     return (
       <ImageInput
         isEditing={props.isEditing}
+        text="Back image..."
         onImageChange={props.onBackImageChange}
       />
     );
@@ -110,6 +111,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
       {renderEditButton()}
       <ImageInput
         isEditing={props.isEditing}
+        text={props.onBackImageChange ? "Front image..." : undefined}
         onImageChange={props.onImageChange}
       />
       {renderBackImageInput()}
