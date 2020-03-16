@@ -12,6 +12,32 @@ import (
 	"time"
 )
 
+var extensionsToScan = []string{"zip", "m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
+var extensionsGallery = []string{"zip"}
+
+func constructGlob() string { // create a sequence for glob doublestar from our extensions
+	extLen := len(extensionsToScan)
+	glb := "{"
+	for i := 0; i < extLen-1; i++ { // append extensions and commas
+		glb += extensionsToScan[i] + ","
+	}
+	if extLen >= 1 { // append last extension without comma
+		glb += extensionsToScan[extLen-1]
+	}
+	glb += "}"
+	return glb
+
+}
+
+func isGallery(pathname string) bool {
+	for _, ext := range extensionsGallery {
+		if filepath.Ext(pathname) == "."+ext {
+			return true
+		}
+	}
+	return false
+}
+
 type TaskStatus struct {
 	Status     JobStatus
 	Progress   float64
@@ -67,7 +93,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 
 		var results []string
 		for _, path := range config.GetStashPaths() {
-			globPath := filepath.Join(path, "**/*.{zip,m4v,mp4,mov,wmv,avi,mpg,mpeg,rmvb,rm,flv,asf,mkv,webm}") // TODO: Make this configurable
+			globPath := filepath.Join(path, "**/*."+constructGlob())
 			globResults, _ := doublestar.Glob(globPath)
 			results = append(results, globResults...)
 		}
@@ -96,6 +122,14 @@ func (s *singleton) Scan(useFileMetadata bool) {
 		}
 
 		logger.Info("Finished scan")
+		for _, path := range results {
+			if isGallery(path) {
+				wg.Add(1)
+				task := ScanTask{FilePath: path, UseFileMetadata: false}
+				go task.associateGallery(&wg)
+				wg.Wait()
+			}
+		}
 	}()
 }
 
