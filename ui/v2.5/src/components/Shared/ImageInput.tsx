@@ -14,11 +14,9 @@ export const ImageInput: React.FC<IImageInput> = ({
 }) => {
   if (!isEditing) return <div />;
 
-  text = text ?? "Browse for image...";
-
   return (
     <Form.Label className="image-input">
-      <Button variant="secondary">{text}</Button>
+      <Button variant="secondary">{text ?? "Browse for image..."}</Button>
       <Form.Control
         type="file"
         onChange={onImageChange}
