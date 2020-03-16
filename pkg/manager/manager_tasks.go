@@ -130,6 +130,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 				wg.Wait()
 			}
 		}
+		logger.Info("Finished gallery association")
 	}()
 }
 

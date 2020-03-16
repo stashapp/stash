@@ -22,7 +22,7 @@ type ScanTask struct {
 }
 
 func (t *ScanTask) Start(wg *sync.WaitGroup) {
-	if filepath.Ext(t.FilePath) == ".zip" {
+	if isGallery(t.FilePath) {
 		t.scanGallery()
 	} else {
 		t.scanScene()
@@ -100,7 +100,6 @@ func (t *ScanTask) associateGallery(wg *sync.WaitGroup) {
 			}
 		}
 		for _, scenePath := range relatedFiles {
-			//	logger.Infof("associate: searching for related scene %s", scenePath)
 			qbScene := models.NewSceneQueryBuilder()
 			scene, _ := qbScene.FindByPath(scenePath)
 			if scene != nil { // found related Scene
