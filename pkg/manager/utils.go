@@ -26,9 +26,11 @@ func IsStreamable(scene *models.Scene) (bool, error) {
 
 	videoCodec := scene.VideoCodec.String
 	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, container) {
+		fmt.Printf("File is streamable %s,%s\n", videoCodec, container)
 		return true, nil
 	} else {
 		hasTranscode, _ := HasTranscode(scene)
+		fmt.Printf("File is not streamable , transcode is needed  %s,%s\n", videoCodec, container)
 		return hasTranscode, nil
 	}
 }
