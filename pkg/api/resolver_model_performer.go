@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -20,10 +21,16 @@ func (r *performerResolver) URL(ctx context.Context, obj *models.Performer) (*st
 	return nil, nil
 }
 
-func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (*string, error) {
+func (r *performerResolver) Gender(ctx context.Context, obj *models.Performer) (*models.GenderEnum, error) {
+	var ret models.GenderEnum
+
 	if obj.Gender.Valid {
-		return &obj.Gender.String, nil
+		ret = models.GenderEnum(obj.Gender.String)
+		if ret.IsValid() {
+			return &ret, nil
+		}
 	}
+
 	return nil, nil
 }
 

@@ -54,7 +54,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
   const [url, setUrl] = useState<string | undefined>(undefined);
   const [twitter, setTwitter] = useState<string | undefined>(undefined);
   const [instagram, setInstagram] = useState<string | undefined>(undefined);
-  const [gender, setGender] = useState<string | undefined>('female');
+  const [gender, setGender] = useState<string | undefined>(undefined);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -81,9 +81,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
     setUrl(state.url);
     setTwitter(state.twitter);
     setInstagram(state.instagram);
-    if ((state as GQL.PerformerDataFragment).favorite !== undefined) {
-      setGender((state as GQL.PerformerDataFragment).gender)
-    }
+    setGender(StashService.genderToString((state as GQL.PerformerDataFragment).gender));
   }
 
   function updatePerformerEditStateFromScraper(state: Partial<GQL.ScrapedPerformerDataFragment | GQL.ScrapeFreeonesScrapeFreeones>) {
@@ -151,7 +149,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
       twitter,
       instagram,
       image,
-      gender
+      gender: StashService.stringToGender(gender)
     };
 
     if (!props.isNew) {
@@ -384,7 +382,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
       value: gender,
       isEditing: !!props.isEditing,
       onChange: (value: string) => setGender(value),
-      selectOptions: ["male", "female"],
+      selectOptions: [""].concat(StashService.getGenderStrings()),
     });
   }
 

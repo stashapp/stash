@@ -153,6 +153,11 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		query.addArg(thisArgs...)
 	}
 
+	if gender := performerFilter.Gender; gender != nil {
+		query.addWhere("performers.gender = ?")
+		query.addArg(gender.Value.String())
+	}
+
 	handleStringCriterion(tableName+".ethnicity", performerFilter.Ethnicity, &query)
 	handleStringCriterion(tableName+".country", performerFilter.Country, &query)
 	handleStringCriterion(tableName+".eye_color", performerFilter.EyeColor, &query)
