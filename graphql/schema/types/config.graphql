@@ -32,6 +32,8 @@ input ConfigGeneralInput {
   logAccess: Boolean!
   """Array of file regexp to exclude from Scan"""
   excludes: [String!]
+  """Scraper user agent string"""
+  scraperUserAgent: String
 }
 
 type ConfigGeneralResult {
@@ -59,6 +61,8 @@ type ConfigGeneralResult {
   logAccess: Boolean!
   """Array of file regexp to exclude from Scan"""
   excludes: [String!]!
+  """Scraper user agent string"""
+  scraperUserAgent: String
 }
 
 input ConfigInterfaceInput {
