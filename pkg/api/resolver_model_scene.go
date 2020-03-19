@@ -100,6 +100,31 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.
 	return qb.FindBySceneID(obj.ID)
 }
 
+func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*models.SceneMovie, error) {
+	joinQB := models.NewJoinsQueryBuilder()
+	qb := models.NewMovieQueryBuilder()
+
+	sceneMovies, err := joinQB.GetSceneMovies(obj.ID, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*models.SceneMovie
+	for _, sm := range sceneMovies {
+		movie, err := qb.Find(sm.MovieID, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		sceneIdx := sm.SceneIndex
+		ret = append(ret, &models.SceneMovie{
+			Movie:      movie,
+			SceneIndex: &sceneIdx,
+		})
+	}
+	return ret, nil
+}
+
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {
 	qb := models.NewTagQueryBuilder()
 	return qb.FindBySceneID(obj.ID, nil)

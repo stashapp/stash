@@ -227,7 +227,9 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"scene_markers.title", "scene.title"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	if tagID := sceneMarkerFilter.TagID; tagID != nil {

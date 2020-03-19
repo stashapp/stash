@@ -5,7 +5,8 @@ uploadFile()
 {
     FILE=$1
     BASENAME="$(basename "${FILE}")"
-    uploadedTo=`curl --upload-file $FILE "https://transfer.sh/$BASENAME"`
+    # abort if it takes more than two minutes to upload
+    uploadedTo=`curl -m 120 --upload-file $FILE "https://transfer.sh/$BASENAME"`
     echo "$BASENAME uploaded to url: $uploadedTo"
 }
 

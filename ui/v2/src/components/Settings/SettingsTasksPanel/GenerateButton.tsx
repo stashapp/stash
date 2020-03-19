@@ -18,7 +18,7 @@ export const GenerateButton: FunctionComponent<IProps> = () => {
 
   async function onGenerate() {
     try {
-      await StashService.queryMetadataGenerate({sprites, previews, markers, transcodes});
+      await StashService.mutateMetadataGenerate({sprites, previews, markers, transcodes});
       ToastUtils.success("Started generating");
     } catch (e) {
       ErrorUtils.handle(e);

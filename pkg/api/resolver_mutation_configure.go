@@ -106,6 +106,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		config.Set(config.ShowStudioAsText, *input.ShowStudioAsText)
 	}
 
+	if input.Language != nil {
+		config.Set(config.Language, *input.Language)
+	}
+
 	css := ""
 
 	if input.CSS != nil {

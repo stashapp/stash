@@ -1,0 +1,27 @@
+mutation MetadataImport {
+  metadataImport
+}
+
+mutation MetadataExport {
+  metadataExport
+}
+
+mutation MetadataScan($input: ScanMetadataInput!) {
+  metadataScan(input: $input)
+}
+
+mutation MetadataGenerate($input: GenerateMetadataInput!) {
+  metadataGenerate(input: $input)
+}
+
+mutation MetadataAutoTag($input: AutoTagMetadataInput!) {
+  metadataAutoTag(input: $input)
+}
+
+mutation MetadataClean {
+  metadataClean
+}
+
+mutation StopJob {
+  stopJob
+}

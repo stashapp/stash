@@ -76,6 +76,8 @@ input SceneFilterType {
   is_missing: String
   """Filter to only include scenes with this studio"""
   studios: MultiCriterionInput
+  """Filter to only include scenes with this movie"""
+  movies: MultiCriterionInput
   """Filter to only include scenes with these tags"""
   tags: MultiCriterionInput
   """Filter to only include scenes with these performers"""

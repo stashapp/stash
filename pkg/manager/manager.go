@@ -110,13 +110,14 @@ func initFlags() {
 }
 
 func initEnvs() {
-	viper.SetEnvPrefix("stash") // will be uppercased automatically
-	viper.BindEnv("host")       // STASH_HOST
-	viper.BindEnv("port")       // STASH_PORT
-	viper.BindEnv("stash")      // STASH_STASH
-	viper.BindEnv("generated")  // STASH_GENERATED
-	viper.BindEnv("metadata")   // STASH_METADATA
-	viper.BindEnv("cache")      // STASH_CACHE
+	viper.SetEnvPrefix("stash")    // will be uppercased automatically
+	viper.BindEnv("host")          // STASH_HOST
+	viper.BindEnv("port")          // STASH_PORT
+	viper.BindEnv("external_host") // STASH_EXTERNAL_HOST
+	viper.BindEnv("stash")         // STASH_STASH
+	viper.BindEnv("generated")     // STASH_GENERATED
+	viper.BindEnv("metadata")      // STASH_METADATA
+	viper.BindEnv("cache")         // STASH_CACHE
 }
 
 func initFFMPEG() {
@@ -157,5 +158,6 @@ func (s *singleton) RefreshConfig() {
 		_ = utils.EnsureDir(s.Paths.JSON.Scenes)
 		_ = utils.EnsureDir(s.Paths.JSON.Galleries)
 		_ = utils.EnsureDir(s.Paths.JSON.Studios)
+		_ = utils.EnsureDir(s.Paths.JSON.Movies)
 	}
 }

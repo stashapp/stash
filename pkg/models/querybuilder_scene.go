@@ -23,6 +23,13 @@ JOIN studios ON studios.id = scenes.studio_id
 WHERE studios.id = ?
 GROUP BY scenes.id
 `
+const scenesForMovieQuery = `
+SELECT scenes.* FROM scenes
+LEFT JOIN movies_scenes as movies_join on movies_join.scene_id = scenes.id
+LEFT JOIN movies on movies_join.movie_id = movies.id
+WHERE movies.id = ?
+GROUP BY scenes.id
+`
 
 const scenesForTagQuery = `
 SELECT scenes.* FROM scenes
@@ -170,6 +177,16 @@ func (qb *SceneQueryBuilder) FindByStudioID(studioID int) ([]*Scene, error) {
 	return qb.queryScenes(scenesForStudioQuery, args, nil)
 }
 
+func (qb *SceneQueryBuilder) FindByMovieID(movieID int) ([]*Scene, error) {
+	args := []interface{}{movieID}
+	return qb.queryScenes(scenesForMovieQuery, args, nil)
+}
+
+func (qb *SceneQueryBuilder) CountByMovieID(movieID int) (int, error) {
+	args := []interface{}{movieID}
+	return runCountQuery(buildCountQuery(scenesForMovieQuery), args)
+}
+
 func (qb *SceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
@@ -212,7 +229,9 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	body = body + `
 		left join scene_markers on scene_markers.scene_id = scenes.id
 		left join performers_scenes as performers_join on performers_join.scene_id = scenes.id
+		left join movies_scenes as movies_join on movies_join.scene_id = scenes.id
 		left join performers on performers_join.performer_id = performers.id
+		left join movies on movies_join.movie_id = movies.id
 		left join studios as studio on studio.id = scenes.studio_id
 		left join galleries as gallery on gallery.scene_id = scenes.id
 		left join scenes_tags as tags_join on tags_join.scene_id = scenes.id
@@ -221,7 +240,9 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details", "scenes.path", "scenes.checksum", "scene_markers.title"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	if rating := sceneFilter.Rating; rating != nil {
@@ -279,6 +300,8 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 			whereClauses = append(whereClauses, "gallery.scene_id IS NULL")
 		case "studio":
 			whereClauses = append(whereClauses, "scenes.studio_id IS NULL")
+		case "movie":
+			whereClauses = append(whereClauses, "movies_join.scene_id IS NULL")
 		case "performers":
 			whereClauses = append(whereClauses, "performers_join.scene_id IS NULL")
 		case "date":
@@ -314,6 +337,16 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		}
 
 		whereClause, havingClause := getMultiCriterionClause("studio", "", "studio_id", studiosFilter)
+		whereClauses = appendClause(whereClauses, whereClause)
+		havingClauses = appendClause(havingClauses, havingClause)
+	}
+
+	if moviesFilter := sceneFilter.Movies; moviesFilter != nil && len(moviesFilter.Value) > 0 {
+		for _, movieID := range moviesFilter.Value {
+			args = append(args, movieID)
+		}
+
+		whereClause, havingClause := getMultiCriterionClause("movies", "movies_scenes", "movie_id", moviesFilter)
 		whereClauses = appendClause(whereClauses, whereClause)
 		havingClauses = appendClause(havingClauses, havingClause)
 	}

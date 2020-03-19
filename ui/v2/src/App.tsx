@@ -9,6 +9,7 @@ import Scenes from "./components/scenes/scenes";
 import { Settings } from "./components/Settings/Settings";
 import { Stats } from "./components/Stats";
 import Studios from "./components/Studios/Studios";
+import Movies from "./components/Movies/Movies";
 import Tags from "./components/Tags/Tags";
 import { SceneFilenameParser } from "./components/scenes/SceneFilenameParser";
 import { Sidebar } from "./components/Sidebar";
@@ -38,6 +39,11 @@ export const App: FunctionComponent<IProps> = (props: IProps) => {
       icon: "video",
       text: "Scenes",
       href: "/scenes"
+    },
+    {
+      href: "/movies",
+      icon: "film",
+      text: "Movies"
     },
     {
       href: "/scenes/markers",
@@ -80,6 +86,7 @@ export const App: FunctionComponent<IProps> = (props: IProps) => {
             <Route path="/performers" component={Performers} />
             <Route path="/tags" component={Tags} />
             <Route path="/studios" component={Studios} />
+            <Route path="/movies" component={Movies} />
             <Route path="/settings" component={Settings} />
             <Route path="/sceneFilenameParser" component={SceneFilenameParser} />
             <Route component={PageNotFound} />

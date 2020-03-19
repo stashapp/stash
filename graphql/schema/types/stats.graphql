@@ -3,5 +3,6 @@ type StatsResultType {
   gallery_count: Int!
   performer_count: Int!
   studio_count: Int!
+  movie_count: Int!
   tag_count: Int!
 }

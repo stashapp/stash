@@ -16,6 +16,7 @@ import { PerformersCriterion, PerformersCriterionOption } from "./criteria/perfo
 import { RatingCriterion, RatingCriterionOption } from "./criteria/rating";
 import { ResolutionCriterion, ResolutionCriterionOption } from "./criteria/resolution";
 import { StudiosCriterion, StudiosCriterionOption } from "./criteria/studios";
+import { MoviesCriterion, MoviesCriterionOption } from "./criteria/movies";
 import { SceneTagsCriterionOption, TagsCriterion, TagsCriterionOption } from "./criteria/tags";
 import { makeCriteria } from "./criteria/utils";
 import {
@@ -67,12 +68,12 @@ export class ListFilterModel {
           new RatingCriterionOption(),
           ListFilterModel.createCriterionOption("o_counter"),
           new ResolutionCriterionOption(),
-          ListFilterModel.createCriterionOption("duration"),
           new HasMarkersCriterionOption(),
           new IsMissingCriterionOption(),
           new TagsCriterionOption(),
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
+          new MoviesCriterionOption(),
         ];
         break;
       case FilterMode.Performers:
@@ -116,6 +117,19 @@ export class ListFilterModel {
           new NoneCriterionOption(),
         ];
         break;
+
+        case FilterMode.Movies:
+          if (!!this.sortBy === false) { this.sortBy = "name"; }
+          this.sortByOptions = ["name", "scenes_count"];
+          this.displayModeOptions = [
+            DisplayMode.Grid,
+          ];
+          this.criterionOptions = [
+            new NoneCriterionOption(),
+          ];
+          break;
+
+
       case FilterMode.Galleries:
         if (!!this.sortBy === false) { this.sortBy = "path"; }
         this.sortByOptions = ["path"];
@@ -151,23 +165,27 @@ export class ListFilterModel {
     this.sortByOptions = [...this.sortByOptions, "created_at", "updated_at"];
   }
 
+  private setSortBy(sortBy: any) {
+    this.sortBy = sortBy;
+      
+    // parse the random seed if provided
+    const randomPrefix = "random_";
+    if (this.sortBy && this.sortBy.startsWith(randomPrefix)) {
+      let seedStr = this.sortBy.substring(randomPrefix.length);
+
+      this.sortBy = "random";
+      try {
+        this.randomSeed = Number.parseInt(seedStr);
+      } catch (err) {
+        // ignore
+      }
+    }
+  }
+
   public configureFromQueryParameters(rawParms: any) {
     const params = rawParms as IQueryParameters;
     if (params.sortby !== undefined) {
-      this.sortBy = params.sortby;
-      
-      // parse the random seed if provided
-      const randomPrefix = "random_";
-      if (this.sortBy && this.sortBy.startsWith(randomPrefix)) {
-        let seedStr = this.sortBy.substring(randomPrefix.length);
-
-        this.sortBy = "random";
-        try {
-          this.randomSeed = Number.parseInt(seedStr);
-        } catch (err) {
-          // ignore
-        }
-      }
+      this.setSortBy(params.sortby);
     }
     if (params.sortdir === "asc" || params.sortdir === "desc") {
       this.sortDirection = params.sortdir;
@@ -205,10 +223,30 @@ export class ListFilterModel {
     }
   }
 
+  public overridePrefs(original: any, override: any) {
+    const originalParams = original as IQueryParameters;
+    const overrideParams = override as IQueryParameters;
+
+    if (originalParams.sortby === undefined && overrideParams.sortby !== undefined) {
+      this.setSortBy(overrideParams.sortby);
+    }
+    if (originalParams.sortdir === undefined && overrideParams.sortdir !== undefined) {
+      if (overrideParams.sortdir === "asc" || overrideParams.sortdir === "desc") {
+        this.sortDirection = overrideParams.sortdir;
+      }
+    }
+    if (originalParams.disp === undefined && overrideParams.disp !== undefined) {
+      this.displayMode = parseInt(overrideParams.disp, 10);
+    }
+    if (originalParams.perPage === undefined && overrideParams.perPage !== undefined) {
+      this.itemsPerPage = Number(overrideParams.perPage);
+    }
+  }
+
   private setRandomSeed() {
-    if (this.sortBy == "random") {
+    if (this.sortBy === "random") {
       // #321 - set the random seed if it is not set
-      if (this.randomSeed == -1) {
+      if (this.randomSeed === -1) {
         // generate 8-digit seed
         this.randomSeed = Math.floor(Math.random() * Math.pow(10, 8));
       }
@@ -220,34 +258,42 @@ export class ListFilterModel {
   private getSortBy(): string | undefined {
     this.setRandomSeed();
 
-    if (this.sortBy == "random") {
+    if (this.sortBy === "random") {
       return this.sortBy + "_" + this.randomSeed.toString();
     }
 
     return this.sortBy;
   }
 
-  public makeQueryParameters(): string {
+  // includePrefs includes displayMode, sortBy, sortDir and perPage
+  public makeQueryParameters(includePrefs?: boolean): string {
     const encodedCriteria: string[] = [];
     this.criteria.forEach((criterion) => {
       const encodedCriterion: any = {};
       encodedCriterion.type = criterion.type;
-      encodedCriterion.value = criterion.value;
+      // #394 - the presence of a # symbol results in the query URL being 
+      // malformed. We could set encode: true in the queryString.stringify
+      // call below, but this results in a URL that gets pretty long and ugly.
+      // Instead, we'll encode the criteria values.
+      encodedCriterion.value = criterion.encodeValue();
+
       encodedCriterion.modifier = criterion.modifier;
       const jsonCriterion = JSON.stringify(encodedCriterion);
       encodedCriteria.push(jsonCriterion);
     });
 
-
-    const result = {
-      sortby: this.getSortBy(),
-      sortdir: this.sortDirection,
-      disp: this.displayMode,
+    const result: any = {
       q: this.searchTerm,
       p: this.currentPage,
-      perPage: this.itemsPerPage,
       c: encodedCriteria,
     };
+
+    if (includePrefs) {
+      result.disp = this.displayMode;
+      result.perPage = this.itemsPerPage;
+      result.sortby = this.getSortBy();
+      result.sortdir = this.sortDirection;
+    }
     return queryString.stringify(result, {encode: false});
   }
 
@@ -308,6 +354,11 @@ export class ListFilterModel {
           const studCrit = criterion as StudiosCriterion;
           result.studios = { value: studCrit.value.map((studio) => studio.id), modifier: studCrit.modifier };
           break;
+        case "movies":
+            const movieCrit = criterion as MoviesCriterion;
+            result.movies = { value: movieCrit.value.map((movie) => movie.id), modifier: movieCrit.modifier };
+            break;
+
       }
     });
     return result;

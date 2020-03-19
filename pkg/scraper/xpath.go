@@ -135,6 +135,22 @@ func (c xpathScraperAttrConfig) getReplace() xpathRegexConfigs {
 	return ret
 }
 
+func (c xpathScraperAttrConfig) getSubScraper() xpathScraperAttrConfig {
+	const subScraperKey = "subScraper"
+	val, _ := c[subScraperKey]
+
+	if val == nil {
+		return nil
+	}
+
+	asMap, _ := val.(map[interface{}]interface{})
+	if asMap != nil {
+		return xpathScraperAttrConfig(asMap)
+	}
+
+	return nil
+}
+
 func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
 	separator := c.getConcat()
 	result := []string{}
@@ -174,10 +190,44 @@ func (c xpathScraperAttrConfig) replaceRegex(value string) string {
 	return replace.apply(value)
 }
 
+func (c xpathScraperAttrConfig) applySubScraper(value string) string {
+	subScraper := c.getSubScraper()
+
+	if subScraper == nil {
+		return value
+	}
+
+	doc, err := htmlquery.LoadURL(value)
+
+	if err != nil {
+		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
+		return ""
+	}
+
+	found := runXPathQuery(doc, subScraper.getSelector(), nil)
+
+	if len(found) > 0 {
+		// check if we're concatenating the results into a single result
+		var result string
+		if subScraper.hasConcat() {
+			result = subScraper.concatenateResults(found)
+		} else {
+			result = htmlquery.InnerText(found[0])
+			result = commonPostProcess(result)
+		}
+
+		result = subScraper.postProcess(result)
+		return result
+	}
+
+	return ""
+}
+
 func (c xpathScraperAttrConfig) postProcess(value string) string {
 	// perform regex replacements first
 	value = c.replaceRegex(value)
 	value = c.parseDate(value)
+	value = c.applySubScraper(value)
 
 	return value
 }
@@ -265,6 +315,7 @@ const (
 	XPathScraperConfigSceneTags       = "Tags"
 	XPathScraperConfigScenePerformers = "Performers"
 	XPathScraperConfigSceneStudio     = "Studio"
+	XPathScraperConfigSceneMovies     = "Movies"
 )
 
 func (s xpathScraper) GetSceneSimple() xpathScraperConfig {
@@ -274,7 +325,7 @@ func (s xpathScraper) GetSceneSimple() xpathScraperConfig {
 
 	if mapped != nil {
 		for k, v := range mapped {
-			if k != XPathScraperConfigSceneTags && k != XPathScraperConfigScenePerformers && k != XPathScraperConfigSceneStudio {
+			if k != XPathScraperConfigSceneTags && k != XPathScraperConfigScenePerformers && k != XPathScraperConfigSceneStudio && k != XPathScraperConfigSceneMovies {
 				ret[k] = v
 			}
 		}
@@ -311,6 +362,10 @@ func (s xpathScraper) GetSceneTags() xpathScraperConfig {
 
 func (s xpathScraper) GetSceneStudio() xpathScraperConfig {
 	return s.getSceneSubMap(XPathScraperConfigSceneStudio)
+}
+
+func (s xpathScraper) GetSceneMovies() xpathScraperConfig {
+	return s.getSceneSubMap(XPathScraperConfigSceneMovies)
 }
 
 func (s xpathScraper) scrapePerformer(doc *html.Node) (*models.ScrapedPerformer, error) {
@@ -358,6 +413,7 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 	scenePerformersMap := s.GetScenePerformers()
 	sceneTagsMap := s.GetSceneTags()
 	sceneStudioMap := s.GetSceneStudio()
+	sceneMoviesMap := s.GetSceneMovies()
 
 	results := sceneMap.process(doc, s.Common)
 	if len(results) > 0 {
@@ -392,6 +448,17 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 				studioResults[0].apply(studio)
 				ret.Studio = studio
 			}
+		}
+
+		if sceneMoviesMap != nil {
+			movieResults := sceneMoviesMap.process(doc, s.Common)
+
+			for _, p := range movieResults {
+				movie := &models.ScrapedSceneMovie{}
+				p.apply(movie)
+				ret.Movies = append(ret.Movies, movie)
+			}
+
 		}
 	}
 

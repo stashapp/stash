@@ -147,6 +147,28 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 		return nil, err
 	}
 
+	// Save the movies
+	var movieJoins []models.MoviesScenes
+
+	for _, movie := range input.Movies {
+
+		movieID, _ := strconv.Atoi(movie.MovieID)
+		sceneIdx := ""
+		if movie.SceneIndex != nil {
+			sceneIdx = *movie.SceneIndex
+		}
+
+		movieJoin := models.MoviesScenes{
+			MovieID:    movieID,
+			SceneID:    sceneID,
+			SceneIndex: sceneIdx,
+		}
+		movieJoins = append(movieJoins, movieJoin)
+	}
+	if err := jqb.UpdateMoviesScenes(sceneID, movieJoins, tx); err != nil {
+		return nil, err
+	}
+
 	// Save the tags
 	var tagJoins []models.ScenesTags
 	for _, tid := range input.TagIds {
@@ -163,10 +185,6 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 
 	// only update the cover image if provided and everything else was successful
 	if coverImageData != nil {
-		scene, err := qb.Find(sceneID)
-		if err != nil {
-			return nil, err
-		}
 
 		err = manager.SetSceneScreenshot(scene.Checksum, coverImageData)
 		if err != nil {
@@ -481,4 +499,14 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (int, err
 	}
 
 	return newVal, nil
+}
+
+func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {
+	if at != nil {
+		manager.GetInstance().GenerateScreenshot(id, *at)
+	} else {
+		manager.GetInstance().GenerateDefaultScreenshot(id)
+	}
+
+	return "todo", nil
 }

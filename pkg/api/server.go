@@ -109,8 +109,10 @@ func Start() {
 	r.Mount("/performer", performerRoutes{}.Routes())
 	r.Mount("/scene", sceneRoutes{}.Routes())
 	r.Mount("/studio", studioRoutes{}.Routes())
+	r.Mount("/movie", movieRoutes{}.Routes())
 
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/css")
 		if !config.GetCSSEnabled() {
 			return
 		}
@@ -295,6 +297,11 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 			scheme = "http"
 		}
 		baseURL := scheme + "://" + r.Host
+
+		externalHost := config.GetExternalHost()
+		if externalHost != "" {
+			baseURL = externalHost
+		}
 
 		r = r.WithContext(context.WithValue(ctx, BaseURLCtxKey, baseURL))
 

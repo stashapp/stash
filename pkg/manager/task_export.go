@@ -3,14 +3,15 @@ package manager
 import (
 	"context"
 	"fmt"
+	"math"
+	"strconv"
+	"sync"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"math"
-	"strconv"
-	"sync"
 )
 
 type ExportTask struct {
@@ -20,7 +21,7 @@ type ExportTask struct {
 
 func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
-	// @manager.total = Scene.count + Gallery.count + Performer.count + Studio.count
+	// @manager.total = Scene.count + Gallery.count + Performer.count + Studio.count + Movie.count
 
 	t.Mappings = &jsonschema.Mappings{}
 	t.Scraped = []jsonschema.ScrapedItem{}
@@ -31,6 +32,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	t.ExportGalleries(ctx)
 	t.ExportPerformers(ctx)
 	t.ExportStudios(ctx)
+	t.ExportMovies(ctx)
 
 	if err := instance.JSON.saveMappings(t.Mappings); err != nil {
 		logger.Errorf("[mappings] failed to save json: %s", err.Error())
@@ -44,10 +46,12 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 	defer tx.Commit()
 	qb := models.NewSceneQueryBuilder()
 	studioQB := models.NewStudioQueryBuilder()
+	movieQB := models.NewMovieQueryBuilder()
 	galleryQB := models.NewGalleryQueryBuilder()
 	performerQB := models.NewPerformerQueryBuilder()
 	tagQB := models.NewTagQueryBuilder()
 	sceneMarkerQB := models.NewSceneMarkerQueryBuilder()
+	joinQB := models.NewJoinsQueryBuilder()
 	scenes, err := qb.All()
 	if err != nil {
 		logger.Errorf("[scenes] failed to fetch all scenes: %s", err.Error())
@@ -80,6 +84,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		}
 
 		performers, _ := performerQB.FindBySceneID(scene.ID, tx)
+		sceneMovies, _ := joinQB.GetSceneMovies(scene.ID, tx)
 		tags, _ := tagQB.FindBySceneID(scene.ID, tx)
 		sceneMarkers, _ := sceneMarkerQB.FindBySceneID(scene.ID, tx)
 
@@ -133,6 +138,18 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 			}
 
 			newSceneJSON.Markers = append(newSceneJSON.Markers, sceneMarkerJSON)
+		}
+
+		for _, sceneMovie := range sceneMovies {
+			movie, _ := movieQB.Find(sceneMovie.MovieID, tx)
+
+			if movie.Name.Valid {
+				sceneMovieJSON := jsonschema.SceneMovie{
+					MovieName:  movie.Name.String,
+					SceneIndex: sceneMovie.SceneIndex,
+				}
+				newSceneJSON.Movies = append(newSceneJSON.Movies, sceneMovieJSON)
+			}
 		}
 
 		newSceneJSON.File = &jsonschema.SceneFile{}
@@ -326,6 +343,71 @@ func (t *ExportTask) ExportStudios(ctx context.Context) {
 	}
 
 	logger.Infof("[studios] export complete")
+}
+
+func (t *ExportTask) ExportMovies(ctx context.Context) {
+	qb := models.NewMovieQueryBuilder()
+	movies, err := qb.All()
+	if err != nil {
+		logger.Errorf("[movies] failed to fetch all movies: %s", err.Error())
+	}
+
+	logger.Info("[movies] exporting")
+
+	for i, movie := range movies {
+		index := i + 1
+		logger.Progressf("[movies] %d of %d", index, len(movies))
+
+		t.Mappings.Movies = append(t.Mappings.Movies, jsonschema.NameMapping{Name: movie.Name.String, Checksum: movie.Checksum})
+
+		newMovieJSON := jsonschema.Movie{
+			CreatedAt: models.JSONTime{Time: movie.CreatedAt.Timestamp},
+			UpdatedAt: models.JSONTime{Time: movie.UpdatedAt.Timestamp},
+		}
+
+		if movie.Name.Valid {
+			newMovieJSON.Name = movie.Name.String
+		}
+		if movie.Aliases.Valid {
+			newMovieJSON.Aliases = movie.Aliases.String
+		}
+		if movie.Date.Valid {
+			newMovieJSON.Date = utils.GetYMDFromDatabaseDate(movie.Date.String)
+		}
+		if movie.Rating.Valid {
+			newMovieJSON.Rating = movie.Rating.String
+		}
+		if movie.Duration.Valid {
+			newMovieJSON.Duration = movie.Duration.String
+		}
+
+		if movie.Director.Valid {
+			newMovieJSON.Director = movie.Director.String
+		}
+
+		if movie.Synopsis.Valid {
+			newMovieJSON.Synopsis = movie.Synopsis.String
+		}
+
+		if movie.URL.Valid {
+			newMovieJSON.URL = movie.URL.String
+		}
+
+		newMovieJSON.FrontImage = utils.GetBase64StringFromData(movie.FrontImage)
+		newMovieJSON.BackImage = utils.GetBase64StringFromData(movie.BackImage)
+		movieJSON, err := instance.JSON.getMovie(movie.Checksum)
+		if err != nil {
+			logger.Debugf("[movies] error reading movie json: %s", err.Error())
+		} else if jsonschema.CompareJSON(*movieJSON, newMovieJSON) {
+			continue
+		}
+
+		if err := instance.JSON.saveMovie(movie.Checksum, &newMovieJSON); err != nil {
+			logger.Errorf("[movies] <%s> failed to save json: %s", movie.Checksum, err.Error())
+		}
+	}
+
+	logger.Infof("[movies] export complete")
 }
 
 func (t *ExportTask) ExportScrapedItems(ctx context.Context) {

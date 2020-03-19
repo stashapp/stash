@@ -46,6 +46,7 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 
 	t.ImportPerformers(ctx)
 	t.ImportStudios(ctx)
+	t.ImportMovies(ctx)
 	t.ImportGalleries(ctx)
 	t.ImportTags(ctx)
 
@@ -202,6 +203,72 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 		logger.Errorf("[studios] import failed to commit: %s", err.Error())
 	}
 	logger.Info("[studios] import complete")
+}
+
+func (t *ImportTask) ImportMovies(ctx context.Context) {
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewMovieQueryBuilder()
+
+	for i, mappingJSON := range t.Mappings.Movies {
+		index := i + 1
+		movieJSON, err := instance.JSON.getMovie(mappingJSON.Checksum)
+		if err != nil {
+			logger.Errorf("[movies] failed to read json: %s", err.Error())
+			continue
+		}
+		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || movieJSON == nil {
+			return
+		}
+
+		logger.Progressf("[movies] %d of %d", index, len(t.Mappings.Movies))
+
+		// generate checksum from movie name rather than image
+		checksum := utils.MD5FromString(movieJSON.Name)
+
+		// Process the base 64 encoded image string
+		_, frontimageData, err := utils.ProcessBase64Image(movieJSON.FrontImage)
+		if err != nil {
+			_ = tx.Rollback()
+			logger.Errorf("[movies] <%s> invalid front_image: %s", mappingJSON.Checksum, err.Error())
+			return
+		}
+		_, backimageData, err := utils.ProcessBase64Image(movieJSON.BackImage)
+		if err != nil {
+			_ = tx.Rollback()
+			logger.Errorf("[movies] <%s> invalid back_image: %s", mappingJSON.Checksum, err.Error())
+			return
+		}
+
+		// Populate a new movie from the input
+		newMovie := models.Movie{
+			FrontImage:  frontimageData,
+			BackImage:   backimageData,
+			Checksum:    checksum,
+			Name:        sql.NullString{String: movieJSON.Name, Valid: true},
+			Aliases:     sql.NullString{String: movieJSON.Aliases, Valid: true},
+			Date:        models.SQLiteDate{String: movieJSON.Date, Valid: true},
+			Duration:    sql.NullString{String: movieJSON.Duration, Valid: true},
+			Rating:      sql.NullString{String: movieJSON.Rating, Valid: true},
+			Director:    sql.NullString{String: movieJSON.Director, Valid: true},
+			Synopsis:    sql.NullString{String: movieJSON.Synopsis, Valid: true},
+			URL:         sql.NullString{String: movieJSON.URL, Valid: true},
+			CreatedAt:   models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
+			UpdatedAt:   models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
+		}
+
+		_, err = qb.Create(newMovie, tx)
+		if err != nil {
+			_ = tx.Rollback()
+			logger.Errorf("[movies] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
+			return
+		}
+	}
+
+	logger.Info("[movies] importing")
+	if err := tx.Commit(); err != nil {
+		logger.Errorf("[movies] import failed to commit: %s", err.Error())
+	}
+	logger.Info("[movies] import complete")
 }
 
 func (t *ImportTask) ImportGalleries(ctx context.Context) {
@@ -508,6 +575,18 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			}
 		}
 
+		// Relate the scene to the movies
+		if len(sceneJSON.Movies) > 0 {
+			moviesScenes, err := t.getMoviesScenes(sceneJSON.Movies, scene.ID, tx)
+			if err != nil {
+				logger.Warnf("[scenes] <%s> failed to fetch movies: %s", scene.Checksum, err.Error())
+			} else {
+				if err := jqb.CreateMoviesScenes(moviesScenes, tx); err != nil {
+					logger.Errorf("[scenes] <%s> failed to associate movies: %s", scene.Checksum, err.Error())
+				}
+			}
+		}
+
 		// Relate the scene to the tags
 		if len(sceneJSON.Tags) > 0 {
 			tags, err := t.getTags(scene.Checksum, sceneJSON.Tags, tx)
@@ -612,6 +691,30 @@ func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Perfo
 	}
 
 	return performers, nil
+}
+
+func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int, tx *sqlx.Tx) ([]models.MoviesScenes, error) {
+	mqb := models.NewMovieQueryBuilder()
+
+	var movies []models.MoviesScenes
+	for _, inputMovie := range input {
+		movie, err := mqb.FindByName(inputMovie.MovieName, tx)
+		if err != nil {
+			return nil, err
+		}
+
+		if movie == nil {
+			logger.Warnf("[scenes] movie %s does not exist", inputMovie.MovieName)
+		} else {
+			movies = append(movies, models.MoviesScenes{
+				MovieID:    movie.ID,
+				SceneID:    sceneID,
+				SceneIndex: inputMovie.SceneIndex,
+			})
+		}
+	}
+
+	return movies, nil
 }
 
 func (t *ImportTask) getTags(sceneChecksum string, names []string, tx *sqlx.Tx) ([]*models.Tag, error) {

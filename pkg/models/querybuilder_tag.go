@@ -33,6 +33,7 @@ func (qb *TagQueryBuilder) Create(newTag Tag, tx *sqlx.Tx) (*Tag, error) {
 	if err := tx.Get(&newTag, `SELECT * FROM tags WHERE id = ? LIMIT 1`, studioID); err != nil {
 		return nil, err
 	}
+	
 	return &newTag, nil
 }
 
@@ -147,7 +148,9 @@ func (qb *TagQueryBuilder) Query(findFilter *FindFilterType) ([]*Tag, int) {
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"tags.name"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	sortAndPagination := qb.getTagSort(findFilter) + getPagination(findFilter)

@@ -4,13 +4,14 @@ import {
 } from "@blueprintjs/core";
 import React, { FunctionComponent } from "react";
 import { Link } from "react-router-dom";
-import { PerformerDataFragment, SceneMarkerDataFragment, TagDataFragment } from "../../core/generated-graphql";
+import { MovieDataFragment,PerformerDataFragment, SceneMarkerDataFragment, TagDataFragment } from "../../core/generated-graphql";
 import { NavigationUtils } from "../../utils/navigation";
 import { TextUtils } from "../../utils/text";
 
 interface IProps extends ITagProps {
   tag?: Partial<TagDataFragment>;
   performer?: Partial<PerformerDataFragment>;
+  movie?: Partial<MovieDataFragment>;
   marker?: Partial<SceneMarkerDataFragment>;
 }
 
@@ -23,6 +24,9 @@ export const TagLink: FunctionComponent<IProps> = (props: IProps) => {
   } else if (!!props.performer) {
     link = NavigationUtils.makePerformerScenesUrl(props.performer);
     title = props.performer.name || "";
+  } else if (!!props.movie) {
+    link = NavigationUtils.makeMovieScenesUrl(props.movie);
+    title = props.movie.name || "";
   } else if (!!props.marker) {
     link = NavigationUtils.makeSceneMarkerUrl(props.marker);
     title = `${props.marker.title} - ${TextUtils.secondsToTimestamp(props.marker.seconds || 0)}`;
