@@ -1,1 +1,1 @@
-ALTER TABLE `performers` ADD COLUMN `gender` varchar(20) default 'FEMALE';
+ALTER TABLE `performers` ADD COLUMN `gender` varchar(20);
