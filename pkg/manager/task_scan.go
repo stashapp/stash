@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -21,7 +22,7 @@ type ScanTask struct {
 }
 
 func (t *ScanTask) Start(wg *sync.WaitGroup) {
-	if filepath.Ext(t.FilePath) == ".zip" {
+	if isGallery(t.FilePath) {
 		t.scanGallery()
 	} else {
 		t.scanScene()
@@ -60,6 +61,7 @@ func (t *ScanTask) scanGallery() {
 	} else {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
+
 		newGallery := models.Gallery{
 			Checksum:  checksum,
 			Path:      t.FilePath,
@@ -75,6 +77,56 @@ func (t *ScanTask) scanGallery() {
 	} else if err := tx.Commit(); err != nil {
 		logger.Error(err.Error())
 	}
+}
+
+// associates a gallery to a scene with the same basename
+func (t *ScanTask) associateGallery(wg *sync.WaitGroup) {
+	qb := models.NewGalleryQueryBuilder()
+	gallery, _ := qb.FindByPath(t.FilePath)
+	if gallery == nil {
+		// shouldn't happen , associate is run after scan is finished
+		logger.Errorf("associate: gallery %s not found in DB", t.FilePath)
+		wg.Done()
+		return
+	}
+
+	if !gallery.SceneID.Valid { // gallery has no SceneID
+		basename := strings.TrimSuffix(t.FilePath, filepath.Ext(t.FilePath))
+		var relatedFiles []string
+		for _, ext := range extensionsToScan { // make a list of media files that can be related to the gallery
+			related := basename + "." + ext
+			if !isGallery(related) { //exclude gallery extensions from the related files
+				relatedFiles = append(relatedFiles, related)
+			}
+		}
+		for _, scenePath := range relatedFiles {
+			qbScene := models.NewSceneQueryBuilder()
+			scene, _ := qbScene.FindByPath(scenePath)
+			if scene != nil { // found related Scene
+				logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
+
+				gallery.SceneID.Int64 = int64(scene.ID)
+				gallery.SceneID.Valid = true
+
+				ctx := context.TODO()
+				tx := database.DB.MustBeginTx(ctx, nil)
+
+				_, err := qb.Update(*gallery, tx)
+				if err != nil {
+					logger.Errorf("associate: Error updating gallery sceneId %s", err)
+					_ = tx.Rollback()
+				} else if err := tx.Commit(); err != nil {
+					logger.Error(err.Error())
+				}
+
+				break // since a gallery can have only one related scene
+				// only first found is associated
+			}
+
+		}
+
+	}
+	wg.Done()
 }
 
 func (t *ScanTask) scanScene() {
