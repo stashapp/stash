@@ -15,6 +15,9 @@ type ScrapedPerformer {
   tattoos: String
   piercings: String
   aliases: String
+
+  """This should be base64 encoded"""
+  image: String
 }
 
 input ScrapedPerformerInput {
@@ -33,4 +36,6 @@ input ScrapedPerformerInput {
   tattoos: String
   piercings: String
   aliases: String
+
+  # not including image for the input
 }

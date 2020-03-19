@@ -30,6 +30,10 @@ const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
 const Host = "host"
 const Port = "port"
+const ExternalHost = "external_host"
+
+// i18n
+const Language = "language"
 
 // Interface options
 const SoundOnPreview = "sound_on_preview"
@@ -96,6 +100,17 @@ func GetExcludes() []string {
 	return viper.GetStringSlice(Exclude)
 }
 
+func GetLanguage() string {
+	ret := viper.GetString(Language)
+
+	// default to English
+	if ret == "" {
+		return "en-US"
+	}
+
+	return ret
+}
+
 func GetScrapersPath() string {
 	return viper.GetString(ScrapersPath)
 }
@@ -106,6 +121,10 @@ func GetHost() string {
 
 func GetPort() int {
 	return viper.GetInt(Port)
+}
+
+func GetExternalHost() string {
+	return viper.GetString(ExternalHost)
 }
 
 func GetMaxTranscodeSize() models.StreamingResolutionEnum {

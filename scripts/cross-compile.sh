@@ -1,9 +1,8 @@
 #!/bin/sh
 
-STASH_VERSION="$1"
-
 DATE=`go run -mod=vendor scripts/getDate.go`
 GITHASH=`git rev-parse --short HEAD`
+STASH_VERSION=`git describe --tags --exclude latest_develop`
 VERSION_FLAGS="-X 'github.com/stashapp/stash/pkg/api.version=$STASH_VERSION' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$DATE' -X 'github.com/stashapp/stash/pkg/api.githash=$GITHASH'"
 SETUP="export GO111MODULE=on; export CGO_ENABLED=1;"
 WINDOWS="GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ packr2 build -o dist/stash-win.exe -ldflags \"-extldflags '-static' $VERSION_FLAGS\" -tags extended -v -mod=vendor;"

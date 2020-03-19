@@ -256,6 +256,32 @@ video.preview.portrait {
   color: #f5f8fa;
 }
 
+.scene-movie-overlay {
+  display: block;
+  position: absolute;
+  top: .7em;
+  right: .7em;
+  font-weight: 900;
+  width: 40%;
+  height: 20%;
+  opacity: 0.75;
+  z-index: 9;
+}
+
+.scene-movie-overlay a {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  display: inline-block;
+  background-position: right top;
+  background-repeat: no-repeat;
+  letter-spacing: -.03em;
+  text-shadow: 0 0 3px #000;
+  text-align: right;
+  text-decoration: none;
+  color: #f5f8fa;
+}
+
 .overlay-resolution {
   font-weight: 900;
   text-transform: uppercase;
@@ -263,18 +289,22 @@ video.preview.portrait {
 }
 
 .scene-card {
-  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay {
+  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay, .scene-movie-overlay {
     transition: opacity 0.5s;
   }
 }
 
 .scene-card:hover {
-  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay {
+  & .scene-specs-overlay, .rating-banner, .scene-studio-overlay, .scene-movie-overlay {
     opacity: 0;
     transition: opacity 0.5s;
   }
 
   .scene-studio-overlay:hover {
+    opacity: 0.75;
+    transition: opacity 0.5s;
+  }
+  .scene-movie-overlay:hover {
     opacity: 0.75;
     transition: opacity 0.5s;
   }
@@ -360,7 +390,7 @@ span.block {
   height: 50vh;
   min-height: 400px;
   background-size: cover !important;
-  background-position: center !important;
+  background-position: top !important;
   background-repeat: no-repeat !important;
 }
 
@@ -377,12 +407,34 @@ span.block {
   margin: 0 auto;
 }
 
+.movie-tag-container {
+  margin: 5px;
+}
+
+.movie-tag.image {
+  height: 150px;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: 0 auto;
+}
+
+
 .studio.image {
   height: 100px;
   background-size: contain !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
 }
+
+.movie.image {
+  height: 300px;
+  background-size: contain !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
 
 .no-spacing {
   padding: 0;
@@ -455,6 +507,11 @@ span.block {
     width: 15ch;
   }
   
+  & .scene-parser-row .parser-field-movie input {
+    width: 15ch;
+  }
+
+
   & .scene-parser-row input {
     min-width: 10ch;
   }
@@ -596,5 +653,17 @@ span.block {
   .main.sidebar-closed {
     margin-left: 0px;
     transition: margin-left 0.5s;
+  }
+}
+
+.stats {
+  & p.title {
+    font-size: 3vw;
+    text-align: center;
+  }
+  
+  & p.heading {
+    text-align: center;
+    text-transform: uppercase;
   }
 }

@@ -12,6 +12,32 @@ import (
 	"time"
 )
 
+var extensionsToScan = []string{"zip", "m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
+var extensionsGallery = []string{"zip"}
+
+func constructGlob() string { // create a sequence for glob doublestar from our extensions
+	extLen := len(extensionsToScan)
+	glb := "{"
+	for i := 0; i < extLen-1; i++ { // append extensions and commas
+		glb += extensionsToScan[i] + ","
+	}
+	if extLen >= 1 { // append last extension without comma
+		glb += extensionsToScan[extLen-1]
+	}
+	glb += "}"
+	return glb
+
+}
+
+func isGallery(pathname string) bool {
+	for _, ext := range extensionsGallery {
+		if filepath.Ext(pathname) == "."+ext {
+			return true
+		}
+	}
+	return false
+}
+
 type TaskStatus struct {
 	Status     JobStatus
 	Progress   float64
@@ -67,7 +93,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 
 		var results []string
 		for _, path := range config.GetStashPaths() {
-			globPath := filepath.Join(path, "**/*.{zip,m4v,mp4,mov,wmv,avi,mpg,mpeg,rmvb,rm,flv,asf,mkv,webm}") // TODO: Make this configurable
+			globPath := filepath.Join(path, "**/*."+constructGlob())
 			globResults, _ := doublestar.Glob(globPath)
 			results = append(results, globResults...)
 		}
@@ -96,6 +122,15 @@ func (s *singleton) Scan(useFileMetadata bool) {
 		}
 
 		logger.Info("Finished scan")
+		for _, path := range results {
+			if isGallery(path) {
+				wg.Add(1)
+				task := ScanTask{FilePath: path, UseFileMetadata: false}
+				go task.associateGallery(&wg)
+				wg.Wait()
+			}
+		}
+		logger.Info("Finished gallery association")
 	}()
 }
 
@@ -212,6 +247,55 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 
 			wg.Wait()
 		}
+		logger.Infof("Generate finished")
+	}()
+}
+
+func (s *singleton) GenerateDefaultScreenshot(sceneId string) {
+	s.generateScreenshot(sceneId, nil)
+}
+
+func (s *singleton) GenerateScreenshot(sceneId string, at float64) {
+	s.generateScreenshot(sceneId, &at)
+}
+
+// generate default screenshot if at is nil
+func (s *singleton) generateScreenshot(sceneId string, at *float64) {
+	if s.Status.Status != Idle {
+		return
+	}
+	s.Status.SetStatus(Generate)
+	s.Status.indefiniteProgress()
+
+	qb := models.NewSceneQueryBuilder()
+	instance.Paths.Generated.EnsureTmpDir()
+
+	go func() {
+		defer s.returnToIdleState()
+
+		sceneIdInt, err := strconv.Atoi(sceneId)
+		if err != nil {
+			logger.Errorf("Error parsing scene id %s: %s", sceneId, err.Error())
+			return
+		}
+
+		scene, err := qb.Find(sceneIdInt)
+		if err != nil || scene == nil {
+			logger.Errorf("failed to get scene for generate")
+			return
+		}
+
+		task := GenerateScreenshotTask{
+			Scene:        *scene,
+			ScreenshotAt: at,
+		}
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go task.Start(&wg)
+
+		wg.Wait()
+
 		logger.Infof("Generate finished")
 	}()
 }

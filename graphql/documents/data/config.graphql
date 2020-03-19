@@ -21,6 +21,7 @@ fragment ConfigInterfaceData on ConfigInterfaceResult {
   showStudioAsText
   css
   cssEnabled
+  language
 }
 
 fragment ConfigData on ConfigResult {

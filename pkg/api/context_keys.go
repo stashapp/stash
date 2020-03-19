@@ -9,4 +9,5 @@ const (
 	performerKey key = 1
 	sceneKey     key = 2
 	studioKey    key = 3
+	movieKey     key = 4
 )

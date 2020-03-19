@@ -1,0 +1,45 @@
+.scene-parser-results {
+  margin-left: 31ch;
+  overflow-x: auto;
+}
+
+.scene-parser-row {
+  .parser-field-filename {
+    left: 1ch;
+    position: absolute;
+    width: 30ch;
+  }
+
+  .parser-field-title {
+    width: 40ch;
+  }
+
+  .parser-field-date {
+    width: 13ch;
+  }
+
+  .parser-field-performers {
+    width: 30ch;
+  }
+
+  .parser-field-tags {
+    width: 30ch;
+  }
+
+  .parser-field-studio {
+    width: 20ch;
+  }
+
+  .form-control {
+    min-width: 10ch;
+  }
+
+  .form-control + .form-control {
+    margin-top: .5rem;
+  }
+
+  .badge-items {
+    background-color: #e9ecef;
+    margin-bottom: .25rem;
+  }
+}

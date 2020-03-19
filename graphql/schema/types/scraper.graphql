@@ -43,6 +43,20 @@ type ScrapedScenePerformer {
   aliases: String
 }
 
+type ScrapedSceneMovie {
+  """Set if movie matched"""
+  id: ID
+  name: String!
+  aliases: String
+  duration: String
+  date: String
+  rating: String
+  director: String
+  synopsis: String
+  url: String
+  
+}
+
 type ScrapedSceneStudio {
   """Set if studio matched"""
   id: ID
@@ -62,9 +76,13 @@ type ScrapedScene {
   url: String
   date: String
 
+  """This should be base64 encoded"""
+  image: String
+
   file: SceneFileType # Resolver
 
   studio: ScrapedSceneStudio
   tags: [ScrapedSceneTag!]
   performers: [ScrapedScenePerformer!]
+  movies: [ScrapedSceneMovie!]
 }

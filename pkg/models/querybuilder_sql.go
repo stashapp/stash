@@ -118,7 +118,7 @@ func getSort(sort string, direction string, tableName string) string {
 		colName := getColumn(tableName, sort)
 		var additional string
 		if tableName == "scenes" {
-			additional = ", bitrate DESC, framerate DESC, rating DESC, duration DESC"
+			additional = ", bitrate DESC, framerate DESC, scenes.rating DESC, scenes.duration DESC"
 		} else if tableName == "scene_markers" {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
@@ -135,29 +135,6 @@ func getRandomSort(tableName string, direction string, seed float64) string {
 	colName := getColumn(tableName, "id")
 	randomSortString := strconv.FormatFloat(seed, 'f', 16, 32)
 	return " ORDER BY " + "(substr(" + colName + " * " + randomSortString + ", length(" + colName + ") + 2))" + " " + direction
-}
-
-func getSearch(columns []string, q string) string {
-	// TODO - susceptible to SQL injection
-	var likeClauses []string
-	queryWords := strings.Split(q, " ")
-	trimmedQuery := strings.Trim(q, "\"")
-	if trimmedQuery == q {
-		// Search for any word
-		for _, word := range queryWords {
-			for _, column := range columns {
-				likeClauses = append(likeClauses, column+" LIKE '%"+word+"%'")
-			}
-		}
-	} else {
-		// Search the exact query
-		for _, column := range columns {
-			likeClauses = append(likeClauses, column+" LIKE '%"+trimmedQuery+"%'")
-		}
-	}
-	likes := strings.Join(likeClauses, " OR ")
-
-	return "(" + likes + ")"
 }
 
 func getSearchBinding(columns []string, q string, not bool) (string, []interface{}) {

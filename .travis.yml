@@ -18,33 +18,52 @@ script:
 #- make vet
 - make it
 after_success:
-- if [ "$TRAVIS_BRANCH" = "develop" ]; then export TAG_SUFFIX="_dev"; elif [ "$TRAVIS_BRANCH" != "master" ]; then export TAG_SUFFIX="_$TRAVIS_BRANCH"; fi
-- export STASH_VERSION="v0.0.0-alpha${TAG_SUFFIX}"
 - docker pull stashapp/compiler:develop
-- sh ./scripts/cross-compile.sh ${STASH_VERSION}
+- sh ./scripts/cross-compile.sh
 - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then sh ./scripts/upload-pull-request.sh; fi'
 before_deploy:
-- if [ "$TRAVIS_BRANCH" = "develop" ]; then export TAG_SUFFIX="_dev"; fi
-- git tag -f ${STASH_VERSION}
-- git push -f --tags
+# push the latest tag when on the develop branch
+- if [ "$TRAVIS_BRANCH" = "develop" ]; then git tag -f latest_develop; git push -f --tags; fi
 - export RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')
+- export STASH_VERSION=$(git describe --tags --exclude latest_develop)
+# set TRAVIS_TAG explcitly to the version so that it doesn't pick up latest_develop
+- if [ "$TRAVIS_BRANCH" = "master"]; then export TRAVIS_TAG=${STASH_VERSION}; fi
 deploy:
-  provider: releases
-  api_key:
-    secure: tGJ2q62CfPdayid2qEtW2aGRhMgCl3lBXYYQqp3eH0vFgIIf6cs7IDX7YC/x3XKMEQ/iMLZmtCXZvSTqNrD6Sk7MSnt30GIs+4uxIZDnnd8mV5X3K4n4gjD+NAORc4DrQBvUGrYMKJsR5gtkH0nu6diWb1o1If7OiJEuCPRhrmQYcza7NUdABnA9Z2wn2RNUV9Ga33WUCqLMEU5GtNBlfQPiP/khCQrqn/ocR6wUjYut3J6YagzqH4wsfJi3glHyWtowcNIw1LZi5zFxHD/bRBT4Tln7yypkjWNq9eQILA6i6kRUGf7ggyTx26/k8n4tnu+QD0vVh4EcjlThpU/LGyUXzKrrxjRwaDZnM0oYxg5AfHcBuAiAdo0eWnV3lEWRfTJMIVb9MPf4qDmzR4RREfB5OXOxwq3ODeCcJE8sTIMD/wBPZrlqS/QrRpND2gn2X4snkVukN9t9F4CMTFMtVSzFV7TDJW5E5Lq6VEExulteQhs6kcK9NRPNAaLgRQAw7X9kVWfDtiGUP+fE2i8F9Bo8bm7sOT5O5VPMPykx3EgeNg1IqIgMTCsMlhMJT4xBJoQUgmd2wWyf3Ryw+P+sFgdb5Sd7+lFgJBjMUUoOxMxAOiEgdFvCXcr+/Udyz2RdtetU1/6VzXzLPcKOw0wubZeBkISqu7o9gpfdMP9Eq00=
-  file:
-  - dist/stash-osx
-  - dist/stash-win.exe
-  - dist/stash-linux
-  - dist/stash-pi
-  skip_cleanup: true
-  overwrite: true
-  body: ${RELEASE_DATE}
-  on:
-    repo: stashapp/stash
-    all_branches: true
-    condition: $TRAVIS_BRANCH =~ ^(master|develop)$
-branches:
-  only:
-    - master
-    - develop
+  # latest develop release
+  - provider: releases
+    api_key:
+      secure: tGJ2q62CfPdayid2qEtW2aGRhMgCl3lBXYYQqp3eH0vFgIIf6cs7IDX7YC/x3XKMEQ/iMLZmtCXZvSTqNrD6Sk7MSnt30GIs+4uxIZDnnd8mV5X3K4n4gjD+NAORc4DrQBvUGrYMKJsR5gtkH0nu6diWb1o1If7OiJEuCPRhrmQYcza7NUdABnA9Z2wn2RNUV9Ga33WUCqLMEU5GtNBlfQPiP/khCQrqn/ocR6wUjYut3J6YagzqH4wsfJi3glHyWtowcNIw1LZi5zFxHD/bRBT4Tln7yypkjWNq9eQILA6i6kRUGf7ggyTx26/k8n4tnu+QD0vVh4EcjlThpU/LGyUXzKrrxjRwaDZnM0oYxg5AfHcBuAiAdo0eWnV3lEWRfTJMIVb9MPf4qDmzR4RREfB5OXOxwq3ODeCcJE8sTIMD/wBPZrlqS/QrRpND2gn2X4snkVukN9t9F4CMTFMtVSzFV7TDJW5E5Lq6VEExulteQhs6kcK9NRPNAaLgRQAw7X9kVWfDtiGUP+fE2i8F9Bo8bm7sOT5O5VPMPykx3EgeNg1IqIgMTCsMlhMJT4xBJoQUgmd2wWyf3Ryw+P+sFgdb5Sd7+lFgJBjMUUoOxMxAOiEgdFvCXcr+/Udyz2RdtetU1/6VzXzLPcKOw0wubZeBkISqu7o9gpfdMP9Eq00=
+    file:
+    - dist/stash-osx
+    - dist/stash-win.exe
+    - dist/stash-linux
+    - dist/stash-pi
+    skip_cleanup: true
+    overwrite: true
+    name: "${STASH_VERSION}: Latest development build"
+    body: ${RELEASE_DATE}\n This is always the latest committed version on the develop branch. Use as your own risk!
+    prerelease: true
+    on:
+      repo: stashapp/stash
+      branch: develop
+  # official master release - only build when tagged
+  - provider: releases
+    api_key:
+      secure: tGJ2q62CfPdayid2qEtW2aGRhMgCl3lBXYYQqp3eH0vFgIIf6cs7IDX7YC/x3XKMEQ/iMLZmtCXZvSTqNrD6Sk7MSnt30GIs+4uxIZDnnd8mV5X3K4n4gjD+NAORc4DrQBvUGrYMKJsR5gtkH0nu6diWb1o1If7OiJEuCPRhrmQYcza7NUdABnA9Z2wn2RNUV9Ga33WUCqLMEU5GtNBlfQPiP/khCQrqn/ocR6wUjYut3J6YagzqH4wsfJi3glHyWtowcNIw1LZi5zFxHD/bRBT4Tln7yypkjWNq9eQILA6i6kRUGf7ggyTx26/k8n4tnu+QD0vVh4EcjlThpU/LGyUXzKrrxjRwaDZnM0oYxg5AfHcBuAiAdo0eWnV3lEWRfTJMIVb9MPf4qDmzR4RREfB5OXOxwq3ODeCcJE8sTIMD/wBPZrlqS/QrRpND2gn2X4snkVukN9t9F4CMTFMtVSzFV7TDJW5E5Lq6VEExulteQhs6kcK9NRPNAaLgRQAw7X9kVWfDtiGUP+fE2i8F9Bo8bm7sOT5O5VPMPykx3EgeNg1IqIgMTCsMlhMJT4xBJoQUgmd2wWyf3Ryw+P+sFgdb5Sd7+lFgJBjMUUoOxMxAOiEgdFvCXcr+/Udyz2RdtetU1/6VzXzLPcKOw0wubZeBkISqu7o9gpfdMP9Eq00=
+    file:
+    - dist/stash-osx
+    - dist/stash-win.exe
+    - dist/stash-linux
+    - dist/stash-pi
+    # make the release a draft so the maintainers can confirm before releasing
+    draft: true
+    skip_cleanup: true
+    overwrite: true
+    # don't write the body. To be done manually for now. In future we might 
+    # want to generate the changelog or get it from a file
+    name: ${STASH_VERSION}
+    on:
+      repo: stashapp/stash
+      tags: true
+      # make sure we don't release using the latest_develop tag
+      condition: $TRAVIS_TAG != latest_develop
