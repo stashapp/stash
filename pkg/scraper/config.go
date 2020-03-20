@@ -139,6 +139,10 @@ func (c *scrapeSceneByURLConfig) resolveFn() {
 	}
 }
 
+type scraperDebugOptions struct {
+	PrintHTML bool `yaml:"printHTML"`
+}
+
 type scraperConfig struct {
 	ID                  string
 	Name                string                        `yaml:"name"`
@@ -148,8 +152,9 @@ type scraperConfig struct {
 	SceneByFragment     *sceneByFragmentConfig        `yaml:"sceneByFragment"`
 	SceneByURL          []*scrapeSceneByURLConfig     `yaml:"sceneByURL"`
 
-	StashServer   *stashServer  `yaml:"stashServer"`
-	XPathScrapers xpathScrapers `yaml:"xPathScrapers"`
+	DebugOptions  *scraperDebugOptions `yaml:"debug"`
+	StashServer   *stashServer         `yaml:"stashServer"`
+	XPathScrapers xpathScrapers        `yaml:"xPathScrapers"`
 }
 
 func loadScraperFromYAML(path string) (*scraperConfig, error) {
