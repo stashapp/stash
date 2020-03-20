@@ -3,19 +3,26 @@ import ApolloClient from 'apollo-client';
 import { ApolloLink } from 'apollo-link';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { HttpLink } from 'apollo-link-http';
-import { Button, Table } from 'react-bootstrap';
+import { Button, Form, InputGroup } from 'react-bootstrap';
 import path from 'parse-filepath';
 import { debounce } from "lodash";
+import cx from 'classnames';
 
-import { StashService } from 'src/core/StashService';
 import * as GQL from 'src/core/generated-graphql';
 import { Pagination } from "src/components/List/Pagination";
+import { Icon, PerformerSelect, StudioSelect } from 'src/components/Shared';
 
-import { SearchSceneVariables, SearchScene } from 'src/definitions-box/SearchScene';
+import {
+  SearchSceneVariables,
+  SearchScene,
+  SearchScene_searchScene as SearchResult,
+  SearchScene_searchScene_performers_performer as StashPerformer,
+  SearchScene_searchScene_studio as StashStudio
+} from 'src/definitions-box/SearchScene';
 import { loader } from 'graphql.macro';
 const SearchSceneQuery = loader('src/queries/searchScene.gql');
 
-const ApiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIxODM2ZWE0YS03NmQyLTRjODEtYjJiMy1mNGVjZGNjOTRmOWUiLCJpYXQiOjE1ODMxMzgzODMsInN1YiI6IkFQSUtleSJ9.Ac1PtkDWvIZuIBstqDuFQad_vYlZfHHyrKE-DXvGBgc';
+const ApiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI0N2ZkNzAwYi03ZmVlLTQyYTktYTBiYy1kMTUyYTQzMWQzYjkiLCJpYXQiOjE1ODQyMjI3MzgsInN1YiI6IkFQSUtleSJ9.FGpuM_4QxqA4iuMeioWGriqhpuVpTKrcpV2rTIyZ3wc';
 
 const createClient = () => {
   const httpLink = new HttpLink({
@@ -45,7 +52,10 @@ const client = createClient();
 
 const blacklist = ['XXX', '1080p', '720p', '2160p', /-[A-Z]+\[rarbg\]/, 'MP4'];
 const dateRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
-function prepareQueryString(str: string) {
+function prepareQueryString(scene: Partial<GQL.Scene>, str: string) {
+  if (scene.date && scene.studio) {
+    return `${scene.date} ${scene.studio.name} ${(scene?.performers ?? []).map(p => p.name).join(' ')}`;
+  }
   let s = str;
   blacklist.forEach(b => { s = s.replace(b, '') });
   const date = s.match(dateRegex);
@@ -56,13 +66,20 @@ function prepareQueryString(str: string) {
 }
 
 
+const SuccessIcon = () => (
+  <Icon icon="check" className="success mr-4" />
+);
+
 export const Tagger: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<SearchScene>();
   const [searchFilter, setSearchFilter] = useState('');
   const [page, setPage] = useState(1);
-  const [searchResults, setSearchResults] = useState<Record<string, SearchScene>>({});
+  const [searchResults, setSearchResults] = useState<Record<string, SearchScene|null>>({});
+  const [queryString, setQueryString] = useState<Record<string, string>>({});
+  const [selectedResult, setSelectedResult] = useState<Record<string, number>>();
+  const [showMales, setShowMales] = useState(false);
 
   const { data: sceneData, loading: sceneLoading } = GQL.useFindScenesQuery({
     variables: {
@@ -89,7 +106,7 @@ export const Tagger: React.FC = () => {
     }).then(queryData => {
       setSearchResults({
         ...searchResults,
-        [sceneID]: queryData.data
+        [sceneID]: queryData.data.searchScene.length > 0 ? queryData.data : null
       });
       setLoading(false);
     });
@@ -100,64 +117,207 @@ export const Tagger: React.FC = () => {
   const scenes = sceneData?.findScenes?.scenes ?? [];
 
   return (
-    <div>
-      <div className="row">
-        <input className="form-control col-2" onChange={(event: React.FormEvent<HTMLInputElement>) => searchCallback(event.currentTarget.value)} ref={inputRef} placeholder="Search text" disabled={sceneLoading} />
-      </div>
-      { !loading && (
-        <div>
-          <div>Name: {data?.searchScene?.[0]?.title}</div>
-          <div>Date: {data?.searchScene?.[0]?.date}</div>
+    <div className="col-9 mx-auto">
+      <div className="row my-2">
+        <input
+          className="form-control col-2 ml-4"
+          onChange={(event: React.FormEvent<HTMLInputElement>) => searchCallback(event.currentTarget.value)}
+          ref={inputRef}
+          placeholder="Search text"
+          disabled={sceneLoading}
+        />
+        <Form.Group controlId="tag-males" className="col-2 mr-auto d-flex align-items-center mt-1">
+          <Form.Check label="Show male performers" onChange={(e: React.FormEvent<HTMLInputElement>) => setShowMales(e.currentTarget.checked)} />
+        </Form.Group>
+        <div className="float-right mr-4">
+          <Pagination
+            currentPage={page}
+            itemsPerPage={20}
+            totalItems={sceneData?.findScenes?.count ?? 0}
+            onChangePage={newPage => setPage(newPage)}
+          />
         </div>
-      )}
+      </div>
 
-      <Pagination
-        currentPage={page}
-        itemsPerPage={20}
-        totalItems={sceneData?.findScenes?.count ?? 0}
-        onChangePage={newPage => setPage(newPage)}
-      />
-
-      <Table>
-        <thead>
-          <tr>
-            <th>Filename</th>
-            <th>Path</th>
-            <th>StashDB-query</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
+      <div className="tagger-table card">
+        <div className="tagger-table-header row mb-4">
+          <div className="col-6"><b>Path</b></div>
+          <div className="col-6"><b>StashDB Query</b></div>
+        </div>
           {scenes.map(scene => {
             const parsedPath = path(scene.path);
             const dir = path(parsedPath.dir).base;
+            const defaultQueryString = prepareQueryString(scene, dir);
             return (
-              <>
-                <tr>
-                  <td>{parsedPath.base}</td>
-                  <td>{dir}</td>
-                  <td>
-                    <Button disabled={loading} onClick={() => doBoxSearch(scene.id, prepareQueryString(dir))}>Search</Button>
-                    {prepareQueryString(dir)}
-                  </td>
-                </tr>
+              <div key={scene.id} className="mb-4">
+                <div className="row">
+                  <div className="col-6">{`${dir}/${parsedPath.base}`}</div>
+                  <div className="col-6">
+                    <InputGroup>
+                      <Form.Control
+                        defaultValue={defaultQueryString}
+                        onChange={(e: React.FormEvent<HTMLInputElement>) => setQueryString({ ...queryString, [scene.id]: e.currentTarget.value})} />
+                      <InputGroup.Append>
+                        <Button disabled={loading} onClick={() => doBoxSearch(scene.id, queryString[scene.id] || defaultQueryString)}>Search</Button>
+                      </InputGroup.Append>
+                    </InputGroup>
+                  </div>
+                </div>
+                { searchResults[scene.id] === null && <div>No results found.</div> }
                 { searchResults[scene.id] && (
-                  <tr>
-                    <td colSpan={3}>
-                      <ul>
-                        { searchResults[scene.id].searchScene.map(scene => (
-                          <li>Title: {scene?.title ?? 'Unknown'}, Date: {scene?.date ?? 'Unknown'}, Studio: {scene?.studio?.name ?? 'Unknown'}, Performer(s): { scene?.performers.map(p => p.performer.name).join(', ') }</li>
-                        ))
-                        }
-                      </ul>
-                    </td>
-                  </tr>
+                  <div className="col mt-4">
+                    <ul className="pl-0">
+                      { searchResults[scene.id]?.searchScene.map((sceneResult, i) => (
+                        sceneResult && (
+                          <StashSearchResult
+                            showMales={showMales}
+                            scene={sceneResult}
+                            isActive={(selectedResult?.[scene.id] ?? 0) === i}
+                            setActive={() => setSelectedResult({ ...selectedResult, [scene.id]: i})}
+                          />
+                        )
+                      ))
+                      }
+                    </ul>
+                  </div>
                 )}
-              </>
+              </div>
             );
           })}
-        </tbody>
-      </Table>
+      </div>
     </div>
+  );
+};
+
+interface IPerformerResultProps {
+  performer: StashPerformer
+}
+
+const PerformerResult: React.FC<IPerformerResultProps> = ({ performer }) => {
+  const [selectedPerformer, setSelectedPerformer] = useState();
+  const { data: stashData, loading: stashLoading } = GQL.useFindPerformersQuery({
+    variables: {
+      performer_filter: {
+        stash_id: {
+          value: performer.id,
+          modifier: GQL.CriterionModifier.Equals
+        }
+      }
+    }
+  });
+  const { loading } = GQL.useFindPerformersQuery({
+    variables: {
+      filter: {
+        q: `"${performer.name}"`
+      }
+    },
+    onCompleted: (data) => {
+      setSelectedPerformer(data.findPerformers.count > 0
+        ? data.findPerformers.performers[0].id
+        : null
+      );
+    }
+  });
+
+  if(stashLoading || loading)
+    return <div>Loading studio</div>;
+
+  if((stashData?.findPerformers.count ?? 0) > 0) {
+    return (
+      <div>
+        <SuccessIcon />
+        <span>{ stashData!.findPerformers.performers[0].name }</span>
+      </div>
+    );
+  }
+  return (
+    <div className="row align-items-center">
+      <div className="col-3">
+        Performer:
+        <b className="ml-2">{performer.name}</b>
+      </div>
+      <div className="col-3">
+        <Button variant="secondary">Create</Button>
+      </div>
+      <div className="col-2">Select existing:</div>
+      <div className="col-4">
+        <PerformerSelect ids={selectedPerformer ? [selectedPerformer] : []} onSelect={items => setSelectedPerformer(items.length ? items[0].id : null)} />
+      </div>
+    </div>
+  );
+}
+
+interface IStudioResultProps {
+  studio: StashStudio|null;
+}
+
+const StudioResult: React.FC<IStudioResultProps> = ({ studio }) => {
+  const [selectedStudio, setSelectedStudio] = useState();
+  const { data: stashData, loading: stashLoading } = GQL.useFindStudioByStashIdQuery({
+    variables: {
+      id: studio?.id ?? ''
+    }
+  })
+  const { loading } = GQL.useFindStudiosQuery({
+    variables: {
+      filter: {
+        q: `"${studio?.name ?? ''}"`
+      }
+    },
+    onCompleted: (data) => {
+      setSelectedStudio(data.findStudios.count > 0
+        ? data.findStudios.studios[0].id
+        : null
+      );
+    }
+  });
+
+  if(loading || stashLoading)
+    return <div>Loading performer</div>;
+
+  if(stashData?.findStudioByStashID) {
+    return <div>{ stashData.findStudioByStashID?.name }</div>
+  }
+  return <StudioSelect ids={selectedStudio ? [selectedStudio] : []} onSelect={(items) => setSelectedStudio(items.length ? items[0].id : null)} />
+}
+
+interface IStashSearchResultProps {
+  scene: SearchResult;
+  isActive: boolean;
+  setActive: () => void;
+  showMales: boolean;
+}
+
+const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, isActive, setActive, showMales }) => {
+  const classname = cx('row mb-4 search-result', { 'selected-result': isActive });
+  return (
+    <li className={classname} key={scene?.id}>
+      <div className="col-1">
+        <label className="h-100 w-100 d-flex justify-content-center align-items-center">
+          <input type="radio" checked={isActive} onChange={setActive} />
+        </label>
+      </div>
+      <div className="col-5 d-flex">
+        <div className="mr-3">
+          <img height={100} src={scene?.urls?.[0]?.url} alt="" />
+        </div>
+        <div className="d-flex flex-column justify-content-center">
+          <h4 className="text-truncate">{scene?.title}</h4>
+          <h5>{scene?.studio?.name} • {scene?.date}</h5>
+          <div>Performers: {scene?.performers?.map(p => p.performer.name).join(', ')}</div>
+        </div>
+      </div>
+      { isActive && (
+        <div className="col-6">
+          <StudioResult studio={scene.studio} />
+          { scene.performers
+            .filter(p => p.performer.gender !== 'MALE' || showMales)
+            .map(performer => (
+            <PerformerResult performer={performer.performer} />
+            ))
+          }
+        </div>
+      )}
+    </li>
   );
 };

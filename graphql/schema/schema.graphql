@@ -21,6 +21,7 @@ type Query {
   findStudio(id: ID!): Studio
   """A function which queries Studio objects"""
   findStudios(studio_filter: StudioFilterType, filter: FindFilterType): FindStudiosResultType!
+  findStudioByStashID(id: String!): Studio
 
    """Find a movie by ID"""
   findMovie(id: ID!): Movie

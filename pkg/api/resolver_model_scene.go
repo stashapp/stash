@@ -143,3 +143,10 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*m
 	qb := models.NewPerformerQueryBuilder()
 	return qb.FindBySceneID(obj.ID, nil)
 }
+
+func (r *sceneResolver) StashID(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.StashID.Valid {
+		return &obj.StashID.String, nil
+	}
+	return nil, nil
+}

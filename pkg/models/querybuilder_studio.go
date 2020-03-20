@@ -80,6 +80,12 @@ func (qb *StudioQueryBuilder) FindChildren(id int, tx *sqlx.Tx) ([]*Studio, erro
 	return qb.queryStudios(query, args, tx)
 }
 
+func (qb *StudioQueryBuilder) FindByStashID(id string, tx *sqlx.Tx) (*Studio, error) {
+	query := "SELECT * FROM studios WHERE stash_id = ? LIMIT 1"
+	args := []interface{}{id}
+	return qb.queryStudio(query, args, tx)
+}
+
 func (qb *StudioQueryBuilder) FindBySceneID(sceneID int) (*Studio, error) {
 	query := "SELECT studios.* FROM studios JOIN scenes ON studios.id = scenes.studio_id WHERE scenes.id = ? LIMIT 1"
 	args := []interface{}{sceneID}

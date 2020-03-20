@@ -24,6 +24,7 @@ type Performer struct {
 	Piercings    sql.NullString  `db:"piercings" json:"piercings"`
 	Aliases      sql.NullString  `db:"aliases" json:"aliases"`
 	Favorite     sql.NullBool    `db:"favorite" json:"favorite"`
+    StashID      sql.NullString  `db:"stash_id" json:"stash_id"`
 	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt    SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }

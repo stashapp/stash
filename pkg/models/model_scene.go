@@ -25,6 +25,7 @@ type Scene struct {
 	Framerate  sql.NullFloat64 `db:"framerate" json:"framerate"`
 	Bitrate    sql.NullInt64   `db:"bitrate" json:"bitrate"`
 	StudioID   sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
+    StashID    sql.NullString  `db:"stash_id" json:"stash_id"`
 	CreatedAt  SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt  SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
@@ -48,6 +49,7 @@ type ScenePartial struct {
 	Bitrate    *sql.NullInt64   `db:"bitrate" json:"bitrate"`
 	StudioID   *sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
 	MovieID    *sql.NullInt64   `db:"movie_id,omitempty" json:"movie_id"`
+    StashID    *sql.NullString  `db:"stash_id" json:"stash_id"`
 	CreatedAt  *SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt  *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
