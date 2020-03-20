@@ -3,6 +3,7 @@
 @import "styles/scrollbars";
 @import "src/components/Galleries/styles.scss";
 @import "src/components/List/styles.scss";
+@import "src/components/Movies/styles.scss";
 @import "src/components/Performers/styles.scss";
 @import "src/components/Scenes/styles.scss";
 @import "src/components/SceneFilenameParser/styles.scss";
@@ -48,13 +49,20 @@ code,
 }
 
 .text-input,
-.text-input:focus {
+.text-input:focus,
+.text-input[readonly] {
   background-color: $textfield-bg;
 }
 
 .input-control,
 .input-control:focus {
   background-color: $secondary;
+}
+
+textarea.text-input {
+  line-height: 2.5ex;
+  min-height: 12ex;
+  overflow-y: scroll;
 }
 
 .table-list a {

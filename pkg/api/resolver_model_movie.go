@@ -8,11 +8,11 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func (r *movieResolver) Name(ctx context.Context, obj *models.Movie) (*string, error) {
+func (r *movieResolver) Name(ctx context.Context, obj *models.Movie) (string, error) {
 	if obj.Name.Valid {
-		return &obj.Name.String, nil
+		return obj.Name.String, nil
 	}
-	return nil, nil
+	return "", nil
 }
 
 func (r *movieResolver) URL(ctx context.Context, obj *models.Movie) (*string, error) {

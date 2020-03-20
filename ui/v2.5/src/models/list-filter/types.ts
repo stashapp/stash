@@ -1,3 +1,5 @@
+// NOTE: add new enum values to the end, to ensure existing data
+// is not impacted
 export enum DisplayMode {
   Grid,
   List,
@@ -9,7 +11,8 @@ export enum FilterMode {
   Performers,
   Studios,
   Galleries,
-  SceneMarkers
+  SceneMarkers,
+  Movies
 }
 
 export interface ILabeledId {

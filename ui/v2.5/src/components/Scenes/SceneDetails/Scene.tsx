@@ -15,6 +15,7 @@ import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneOperationsPanel } from "./SceneOperationsPanel";
+import { SceneMoviePanel } from "./SceneMoviePanel";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
@@ -120,6 +121,13 @@ export const Scene: React.FC = () => {
           {scene.performers.length > 0 ? (
             <Tab eventKey="scene-performer-panel" title="Performers">
               <ScenePerformerPanel scene={scene} />
+            </Tab>
+          ) : (
+            ""
+          )}
+          {scene.movies.length > 0 ? (
+            <Tab eventKey="scene-movie-panel" title="Movies">
+              <SceneMoviePanel scene={scene} />
             </Tab>
           ) : (
             ""

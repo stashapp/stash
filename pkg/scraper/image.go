@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -52,8 +53,18 @@ func getImage(url string) (*string, error) {
 		Timeout: imageGetTimeout,
 	}
 
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	userAgent := config.GetScraperUserAgent()
+	if userAgent != "" {
+		req.Header.Set("User-Agent", userAgent)
+	}
+
 	// assume is a URL for now
-	resp, err := client.Get(url)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}

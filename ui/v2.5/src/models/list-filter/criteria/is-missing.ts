@@ -12,6 +12,7 @@ export class IsMissingCriterion extends Criterion {
     "date",
     "gallery",
     "studio",
+    "movie",
     "performers"
   ];
   public value: string = "";

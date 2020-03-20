@@ -14,7 +14,9 @@ import {
   FindSceneMarkersQueryResult,
   FindGalleriesQueryResult,
   FindStudiosQueryResult,
-  FindPerformersQueryResult
+  FindPerformersQueryResult,
+  FindMoviesQueryResult,
+  MovieDataFragment
 } from "src/core/generated-graphql";
 import {
   useInterfaceLocalForage,
@@ -452,4 +454,15 @@ export const usePerformersList = (
       result?.data?.findPerformers?.performers ?? [],
     getCount: (result: FindPerformersQueryResult) =>
       result?.data?.findPerformers?.count ?? 0
+  });
+
+export const useMoviesList = (props: IListHookOptions<FindMoviesQueryResult>) =>
+  useList<FindMoviesQueryResult, MovieDataFragment>({
+    ...props,
+    filterMode: FilterMode.Performers,
+    useData: StashService.useFindMovies,
+    getData: (result: FindMoviesQueryResult) =>
+      result?.data?.findMovies?.movies ?? [],
+    getCount: (result: FindMoviesQueryResult) =>
+      result?.data?.findMovies?.count ?? 0
   });

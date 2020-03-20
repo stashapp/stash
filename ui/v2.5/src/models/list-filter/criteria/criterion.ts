@@ -17,6 +17,7 @@ export type CriterionType =
   | "sceneTags"
   | "performers"
   | "studios"
+  | "movies"
   | "birth_year"
   | "age"
   | "ethnicity"
@@ -61,6 +62,8 @@ export abstract class Criterion {
         return "Performers";
       case "studios":
         return "Studios";
+      case "movies":
+        return "Movies";
       case "birth_year":
         return "Birth Year";
       case "age":
