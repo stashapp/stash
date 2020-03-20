@@ -244,9 +244,12 @@ export class ListFilterModel {
       jsonParameters.forEach(jsonString => {
         const encodedCriterion = JSON.parse(jsonString);
         const criterion = makeCriteria(encodedCriterion.type);
-        criterion.value = encodedCriterion.value;
-        criterion.modifier = encodedCriterion.modifier;
-        this.criteria.push(criterion);
+        // it's possible that we have unsupported criteria. Just skip if so.
+        if (criterion) {
+          criterion.value = encodedCriterion.value;
+          criterion.modifier = encodedCriterion.modifier;
+          this.criteria.push(criterion);
+        }
       });
     }
   }
