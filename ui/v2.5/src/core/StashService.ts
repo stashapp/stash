@@ -628,6 +628,40 @@ export class StashService {
     });
   }
 
+  private static stringGenderMap = new Map<string, GQL.GenderEnum>(
+    [["Male", GQL.GenderEnum.Male],
+    ["Female", GQL.GenderEnum.Female],
+    ["Transgender Male", GQL.GenderEnum.TransgenderMale],
+    ["Transgender Female", GQL.GenderEnum.TransgenderFemale],
+    ["Intersex", GQL.GenderEnum.Intersex]]
+  );
+
+  public static genderToString(value?: GQL.GenderEnum) {
+    if (!value) {
+      return undefined;
+    }
+
+    const foundEntry = Array.from(StashService.stringGenderMap.entries()).find((e) => {
+      return e[1] === value;
+    });
+
+    if (foundEntry) {
+      return foundEntry[0];
+    }
+  }
+
+  public static stringToGender(value?: string) {
+    if (!value) {
+      return undefined;
+    }
+
+    return StashService.stringGenderMap.get(value);
+  }
+
+  public static getGenderStrings() {
+    return Array.from(StashService.stringGenderMap.keys());
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor() {}
 }

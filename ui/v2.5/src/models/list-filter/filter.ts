@@ -46,6 +46,8 @@ import {
 } from "./criteria/tags";
 import { makeCriteria } from "./criteria/utils";
 import { DisplayMode, FilterMode } from "./types";
+import { GenderCriterionOption, GenderCriterion } from "./criteria/gender";
+import { StashService } from "src/core/StashService";
 
 interface IQueryParameters {
   perPage?: string;
@@ -139,7 +141,8 @@ export class ListFilterModel {
 
         this.criterionOptions = [
           new NoneCriterionOption(),
-          new FavoriteCriterionOption()
+          new FavoriteCriterionOption(),
+          new GenderCriterionOption(),
         ];
 
         this.criterionOptions = this.criterionOptions.concat(
@@ -481,6 +484,11 @@ export class ListFilterModel {
         case "aliases": {
           const aCrit = criterion as StringCriterion;
           result.aliases = { value: aCrit.value, modifier: aCrit.modifier };
+          break;
+        }
+        case "gender": {
+          const gCrit = criterion as GenderCriterion;
+          result.gender = { value: StashService.stringToGender(gCrit.value), modifier: gCrit.modifier };
           break;
         }
         // no default

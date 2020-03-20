@@ -16,6 +16,7 @@ import { RatingCriterion } from "./rating";
 import { ResolutionCriterion } from "./resolution";
 import { StudiosCriterion } from "./studios";
 import { TagsCriterion } from "./tags";
+import { GenderCriterion } from "./gender";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
@@ -57,6 +58,8 @@ export function makeCriteria(type: CriterionType = "none") {
       ];
       return ret;
     }
+    case "gender": 
+      return new GenderCriterion();
     case "ethnicity":
     case "country":
     case "eye_color":

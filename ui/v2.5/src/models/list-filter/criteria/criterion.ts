@@ -28,7 +28,8 @@ export type CriterionType =
   | "career_length"
   | "tattoos"
   | "piercings"
-  | "aliases";
+  | "aliases"
+  | "gender";
 
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
@@ -84,6 +85,8 @@ export abstract class Criterion {
         return "Piercings";
       case "aliases":
         return "Aliases";
+      case "gender":
+        return "Gender";
     }
   }
 
