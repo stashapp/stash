@@ -68,6 +68,17 @@ input SceneUpdateInput {
   cover_image: String
 }
 
+enum BulkUpdateIdMode {
+  SET
+  ADD
+  REMOVE
+}
+
+input BulkUpdateIds {
+  ids: [ID!]
+  mode: BulkUpdateIdMode!
+}
+
 input BulkSceneUpdateInput {
   clientMutationId: String
   ids: [ID!]
@@ -78,8 +89,8 @@ input BulkSceneUpdateInput {
   rating: Int
   studio_id: ID
   gallery_id: ID
-  performer_ids: [ID!]
-  tag_ids: [ID!]
+  performer_ids: BulkUpdateIds
+  tag_ids: BulkUpdateIds
 }
 
 input SceneDestroyInput {
