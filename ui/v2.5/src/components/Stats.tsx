@@ -23,6 +23,14 @@ export const Stats: React.FC = () => {
         </div>
         <div className="stats-element">
           <p className="title">
+            <FormattedNumber value={data.stats.movie_count} />
+          </p>
+          <p className="heading">
+            <FormattedMessage id="movies" defaultMessage="Movies" />
+          </p>
+        </div>
+        <div className="stats-element">
+          <p className="title">
             <FormattedNumber value={data.stats.gallery_count} />
           </p>
           <p className="heading">

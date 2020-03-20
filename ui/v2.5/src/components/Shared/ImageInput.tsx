@@ -3,18 +3,20 @@ import { Button, Form } from "react-bootstrap";
 
 interface IImageInput {
   isEditing: boolean;
+  text?: string;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
 }
 
 export const ImageInput: React.FC<IImageInput> = ({
   isEditing,
+  text,
   onImageChange
 }) => {
   if (!isEditing) return <div />;
 
   return (
     <Form.Label className="image-input">
-      <Button variant="secondary">Browse for image...</Button>
+      <Button variant="secondary">{text ?? "Browse for image..."}</Button>
       <Form.Control
         type="file"
         onChange={onImageChange}

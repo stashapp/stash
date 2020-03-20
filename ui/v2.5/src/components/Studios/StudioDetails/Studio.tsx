@@ -177,7 +177,7 @@ export const Studio: React.FC = () => {
           </tbody>
         </Table>
         <DetailsEditNavbar
-          studio={studio}
+          objectName={studio.name ?? "studio"}
           isNew={isNew}
           isEditing={isEditing}
           onToggleEdit={() => setIsEditing(!isEditing)}
