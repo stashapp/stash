@@ -13,6 +13,7 @@ import { StashService } from "../../core/StashService";
 import * as GQL from "../../core/generated-graphql";
 import { ErrorUtils } from "../../utils/errors";
 import { ToastUtils } from "../../utils/toasts";
+import { FilterMultiSet, MultiSetMode } from "../select/FilterMultiSet";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[],
@@ -22,7 +23,9 @@ interface IListOperationProps {
 export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (props: IListOperationProps) => {
   const [rating, setRating] = useState<string>("");
   const [studioId, setStudioId] = useState<string | undefined>(undefined);
+  const [performerMode, setPerformerMode] = React.useState<MultiSetMode>(MultiSetMode.ADD);
   const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
+  const [tagMode, setTagMode] = React.useState<MultiSetMode>(MultiSetMode.ADD);
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
 
   const updateScenes = StashService.useBulkSceneUpdate(getSceneInput());
@@ -241,8 +244,14 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
   }, [props.selected]);
 
   function renderMultiSelect(type: "performers" | "tags", initialIds: string[] | undefined) {
+    let mode = MultiSetMode.ADD;
+    switch (type) {
+      case "performers": mode = performerMode; break;
+      case "tags": mode = tagMode; break;
+    }
+
     return (
-      <FilterMultiSelect
+      <FilterMultiSet
         type={type}
         onUpdate={(items) => {
           const ids = items.map((i) => i.id);
@@ -251,7 +260,14 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
             case "tags": setTagIds(ids); break;
           }
         }}
+        onSetMode={(mode) => {
+          switch (type) {
+            case "performers": setPerformerMode(mode); break;
+            case "tags": setTagMode(mode); break;
+          }
+        }}
         initialIds={initialIds}
+        mode={mode}
       />
     );
   }
