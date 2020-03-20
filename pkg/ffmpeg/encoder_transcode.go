@@ -89,13 +89,24 @@ func (e *Encoder) TranscodeVideo(probeResult VideoFile, options TranscodeOptions
 	_, _ = e.run(probeResult, args)
 }
 
-//copy the video stream as is
+//copy the video stream as is, transcode audio
 func (e *Encoder) TranscodeAudio(probeResult VideoFile, options TranscodeOptions) {
 	args := []string{
 		"-i", probeResult.Path,
 		"-c:v", "copy",
 		"-c:a", "aac",
 		"-strict", "-2",
+		options.OutputPath,
+	}
+	_, _ = e.run(probeResult, args)
+}
+
+//copy the video stream as is, drop audio
+func (e *Encoder) CopyVideo(probeResult VideoFile, options TranscodeOptions) {
+	args := []string{
+		"-i", probeResult.Path,
+		"-an",
+		"-c:v", "copy",
 		options.OutputPath,
 	}
 	_, _ = e.run(probeResult, args)
@@ -147,6 +158,28 @@ func (e *Encoder) StreamTranscodeVideo(probeResult VideoFile, startTime string, 
 		"-crf", "30",
 		"-b:v", "0",
 		"-f", "webm",
+		"pipe:",
+	)
+
+	return e.stream(probeResult, args)
+}
+
+//it is very common in MKVs to have just the audio codec unsupported
+//copy the video stream, transcode the audio and serve as Matroska
+func (e *Encoder) StreamMkvTranscodeAudio(probeResult VideoFile, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (io.ReadCloser, *os.Process, error) {
+	args := []string{}
+
+	if startTime != "" {
+		args = append(args, "-ss", startTime)
+	}
+
+	args = append(args,
+		"-i", probeResult.Path,
+		"-c:v", "copy",
+		"-c:a", "libopus",
+		"-b:a", "96k",
+		"-vbr", "on",
+		"-f", "matroska",
 		"pipe:",
 	)
 

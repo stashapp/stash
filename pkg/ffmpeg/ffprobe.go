@@ -17,17 +17,23 @@ import (
 var ValidCodecs = []string{"h264", "h265", "vp8", "vp9"}
 
 type Container string
+type AudioCodec string
 
 const (
-	Mp4      Container = "mp4"
-	M4v      Container = "m4v"
-	Mov      Container = "mov"
-	Wmv      Container = "wmv"
-	Webm     Container = "webm"
-	Matroska Container = "matroska"
-	Avi      Container = "avi"
-	Flv      Container = "flv"
-	Mpegts   Container = "mpegts"
+	Mp4                Container  = "mp4"
+	M4v                Container  = "m4v"
+	Mov                Container  = "mov"
+	Wmv                Container  = "wmv"
+	Webm               Container  = "webm"
+	Matroska           Container  = "matroska"
+	Avi                Container  = "avi"
+	Flv                Container  = "flv"
+	Mpegts             Container  = "mpegts"
+	Aac                AudioCodec = "aac"
+	Mp3                AudioCodec = "mp3"
+	Opus               AudioCodec = "opus"
+	Vorbis             AudioCodec = "vorbis"
+	MissingUnsupported AudioCodec = ""
 )
 
 var validForH264Mkv = []Container{Mp4, Matroska}
@@ -39,6 +45,10 @@ var validForVp9Mkv = []Container{Webm, Matroska}
 var validForVp9 = []Container{Webm}
 var validForHevcMkv = []Container{Mp4, Matroska}
 var validForHevc = []Container{Mp4}
+
+var validAudioForMkv = []AudioCodec{Aac, Mp3, Vorbis, Opus}
+var validAudioForWebm = []AudioCodec{Vorbis, Opus}
+var validAudioForMp4 = []AudioCodec{Aac, Mp3}
 
 //maps user readable container strings to ffprobe's format_name
 //on some formats ffprobe can't differentiate
@@ -89,6 +99,36 @@ func IsValidCodec(codecName string) bool {
 		}
 	}
 	return false
+}
+
+func IsValidAudio(audio AudioCodec, ValidCodecs []AudioCodec) bool {
+
+	// if audio codec is missing or unsupported by ffmpeg we can't do anything about it
+	// report it as valid so that the file can at least be streamed directly if the video codec is supported
+	if audio == MissingUnsupported {
+		return true
+	}
+
+	for _, c := range ValidCodecs {
+		if c == audio {
+			return true
+		}
+	}
+
+	return false
+}
+
+func IsValidAudioForContainer(audio AudioCodec, format Container) bool {
+	switch format {
+	case Matroska:
+		return IsValidAudio(audio, validAudioForMkv)
+	case Webm:
+		return IsValidAudio(audio, validAudioForWebm)
+	case Mp4:
+		return IsValidAudio(audio, validAudioForMkv)
+	}
+	return false
+
 }
 
 func IsValidForContainer(format Container, validContainers []Container) bool {

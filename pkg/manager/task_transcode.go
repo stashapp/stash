@@ -39,7 +39,12 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 	}
 
 	videoCodec := t.Scene.VideoCodec.String
-	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, container) {
+	audioCodec := ffmpeg.MissingUnsupported
+	if t.Scene.AudioCodec.Valid {
+		audioCodec = ffmpeg.AudioCodec(t.Scene.AudioCodec.String)
+	}
+
+	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, container) && ffmpeg.IsValidAudioForContainer(audioCodec, container) {
 		return
 	}
 
@@ -58,9 +63,13 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
 
 	if videoCodec == "h264" { // for non supported h264 files stream copy the video part
-		encoder.TranscodeAudio(*videoFile, options)
+		if audioCodec == ffmpeg.MissingUnsupported {
+			encoder.CopyVideo(*videoFile, options)
+		} else {
+			encoder.TranscodeAudio(*videoFile, options)
+		}
 	} else {
-		if !t.Scene.AudioCodec.Valid || (t.Scene.AudioCodec.Valid && t.Scene.AudioCodec.String == "") {
+		if audioCodec == ffmpeg.MissingUnsupported {
 			//ffmpeg fails if it trys to transcode an unsupported audio codec
 			encoder.TranscodeVideo(*videoFile, options)
 		} else {
@@ -84,11 +93,16 @@ func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 
 	videoCodec := t.Scene.VideoCodec.String
 	container := ""
+	audioCodec := ffmpeg.MissingUnsupported
+	if t.Scene.AudioCodec.Valid {
+		audioCodec = ffmpeg.AudioCodec(t.Scene.AudioCodec.String)
+	}
+
 	if t.Scene.Format.Valid {
 		container = t.Scene.Format.String
 	}
 
-	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, ffmpeg.Container(container)) {
+	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, ffmpeg.Container(container)) && ffmpeg.IsValidAudioForContainer(audioCodec, ffmpeg.Container(container)) {
 		return false
 	}
 
