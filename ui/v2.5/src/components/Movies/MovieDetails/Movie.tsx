@@ -10,7 +10,7 @@ import {
   Modal
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { Table } from "react-bootstrap";
+import { Table, Form } from "react-bootstrap";
 import { TableUtils, ImageUtils } from "src/utils";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 
@@ -232,20 +232,34 @@ export const Movie: React.FC = () => {
               onChange: (value: string) => setRating(value),
               selectOptions: ["", "1", "2", "3", "4", "5"]
             })}
-            {TableUtils.renderInputGroup({
-              title: "URL",
-              value: url,
-              isEditing,
-              onChange: setUrl
-            })}
-            {TableUtils.renderTextArea({
-              title: "Synopsis",
-              value: synopsis,
-              isEditing,
-              onChange: setSynopsis
-            })}
           </tbody>
         </Table>
+
+        <Form.Group controlId="url">
+          <Form.Label>URL</Form.Label>
+          <Form.Control
+            className="text-input"
+            readOnly={!isEditing}
+            onChange={(newValue: React.FormEvent<HTMLTextAreaElement>) =>
+              setUrl(newValue.currentTarget.value)
+            }
+            value={url}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="synopsis">
+          <Form.Label>Synopsis</Form.Label>
+          <Form.Control
+            as="textarea"
+            readOnly={!isEditing}
+            className="movie-synopsis text-input"
+            onChange={(newValue: React.FormEvent<HTMLTextAreaElement>) =>
+              setSynopsis(newValue.currentTarget.value)
+            }
+            value={synopsis}
+          />
+        </Form.Group>
+
         <DetailsEditNavbar
           objectName={movie.name ?? "movie"}
           isNew={isNew}
