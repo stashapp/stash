@@ -46,6 +46,7 @@ import {
 } from "./criteria/tags";
 import { makeCriteria } from "./criteria/utils";
 import { DisplayMode, FilterMode } from "./types";
+import { MoviesCriterionOption, MoviesCriterion } from "./criteria/movies";
 
 interface IQueryParameters {
   perPage?: string;
@@ -115,7 +116,8 @@ export class ListFilterModel {
           new IsMissingCriterionOption(),
           new TagsCriterionOption(),
           new PerformersCriterionOption(),
-          new StudiosCriterionOption()
+          new StudiosCriterionOption(),
+          new MoviesCriterionOption()
         ];
         break;
       case FilterMode.Performers: {
@@ -150,6 +152,12 @@ export class ListFilterModel {
         break;
       }
       case FilterMode.Studios:
+        this.sortBy = "name";
+        this.sortByOptions = ["name", "scenes_count"];
+        this.displayModeOptions = [DisplayMode.Grid];
+        this.criterionOptions = [new NoneCriterionOption()];
+        break;
+      case FilterMode.Movies:
         this.sortBy = "name";
         this.sortByOptions = ["name", "scenes_count"];
         this.displayModeOptions = [DisplayMode.Grid];
@@ -236,9 +244,12 @@ export class ListFilterModel {
       jsonParameters.forEach(jsonString => {
         const encodedCriterion = JSON.parse(jsonString);
         const criterion = makeCriteria(encodedCriterion.type);
-        criterion.value = encodedCriterion.value;
-        criterion.modifier = encodedCriterion.modifier;
-        this.criteria.push(criterion);
+        // it's possible that we have unsupported criteria. Just skip if so.
+        if (criterion) {
+          criterion.value = encodedCriterion.value;
+          criterion.modifier = encodedCriterion.modifier;
+          this.criteria.push(criterion);
+        }
       });
     }
   }
@@ -391,6 +402,14 @@ export class ListFilterModel {
           result.studios = {
             value: studCrit.value.map(studio => studio.id),
             modifier: studCrit.modifier
+          };
+          break;
+        }
+        case "movies": {
+          const movCrit = criterion as MoviesCriterion;
+          result.movies = {
+            value: movCrit.value.map(movie => movie.id),
+            modifier: movCrit.modifier
           };
           break;
         }

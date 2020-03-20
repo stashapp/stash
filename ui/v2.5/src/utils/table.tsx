@@ -38,6 +38,7 @@ const renderTextArea = (options: {
     <td>{options.title}</td>
     <td>
       <Form.Control
+        className="text-input"
         as="textarea"
         readOnly={!options.isEditing}
         plaintext={!options.isEditing}

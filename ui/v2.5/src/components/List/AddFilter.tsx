@@ -140,7 +140,8 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         if (
           criterion.type !== "performers" &&
           criterion.type !== "studios" &&
-          criterion.type !== "tags"
+          criterion.type !== "tags" &&
+          criterion.type !== "movies"
         )
           return;
 

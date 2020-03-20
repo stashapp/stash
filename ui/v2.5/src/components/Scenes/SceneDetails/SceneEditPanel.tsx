@@ -16,6 +16,8 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ImageUtils, TableUtils } from "src/utils";
+import { MovieSelect } from "src/components/Shared/Select";
+import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -33,6 +35,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [galleryId, setGalleryId] = useState<string>();
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
+  const [movieIds, setMovieIds] = useState<string[] | undefined>(undefined);
+  const [movieSceneIndexes, setMovieSceneIndexes] = useState<
+    MovieSceneIndexMap
+  >(new Map());
   const [tagIds, setTagIds] = useState<string[]>();
   const [coverImage, setCoverImage] = useState<string>();
 
@@ -59,9 +65,46 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers]);
 
+  useEffect(() => {
+    let changed = false;
+    const newMap: MovieSceneIndexMap = new Map();
+    if (movieIds) {
+      movieIds.forEach(id => {
+        if (!movieSceneIndexes.has(id)) {
+          changed = true;
+          newMap.set(id, undefined);
+        } else {
+          newMap.set(id, movieSceneIndexes.get(id));
+        }
+      });
+
+      if (!changed) {
+        movieSceneIndexes.forEach((v, id) => {
+          if (!newMap.has(id)) {
+            // id was removed
+            changed = true;
+          }
+        });
+      }
+
+      if (changed) {
+        setMovieSceneIndexes(newMap);
+      }
+    }
+  }, [movieIds, movieSceneIndexes]);
+
   function updateSceneEditState(state: Partial<GQL.SceneDataFragment>) {
     const perfIds = state.performers?.map(performer => performer.id);
     const tIds = state.tags ? state.tags.map(tag => tag.id) : undefined;
+    const moviIds = state.movies
+      ? state.movies.map(sceneMovie => sceneMovie.movie.id)
+      : undefined;
+    const movieSceneIdx: MovieSceneIndexMap = new Map();
+    if (state.movies) {
+      state.movies.forEach(m => {
+        movieSceneIdx.set(m.movie.id, m.scene_index ?? undefined);
+      });
+    }
 
     setTitle(state.title ?? undefined);
     setDetails(state.details ?? undefined);
@@ -70,6 +113,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setRating(state.rating === null ? NaN : state.rating);
     setGalleryId(state?.gallery?.id ?? undefined);
     setStudioId(state?.studio?.id ?? undefined);
+    setMovieIds(moviIds);
+    setMovieSceneIndexes(movieSceneIdx);
     setPerformerIds(perfIds);
     setTagIds(tIds);
   }
@@ -93,9 +138,29 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       gallery_id: galleryId,
       studio_id: studioId,
       performer_ids: performerIds,
+      movies: makeMovieInputs(),
       tag_ids: tagIds,
       cover_image: coverImage
     };
+  }
+
+  function makeMovieInputs(): GQL.SceneMovieInput[] | undefined {
+    if (!movieIds) {
+      return undefined;
+    }
+
+    let ret = movieIds.map(id => {
+      const r: GQL.SceneMovieInput = {
+        movie_id: id
+      };
+      return r;
+    });
+
+    ret = ret.map(r => {
+      return { scene_index: movieSceneIndexes.get(r.movie_id), ...r };
+    });
+
+    return ret;
   }
 
   async function onSave() {
@@ -131,6 +196,17 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
     setIsLoading(false);
     props.onDelete();
+  }
+
+  function renderTableMovies() {
+    return (
+      <SceneMovieTable
+        movieSceneIndexes={movieSceneIndexes}
+        onUpdate={items => {
+          setMovieSceneIndexes(items);
+        }}
+      />
+    );
   }
 
   function renderDeleteAlert() {
@@ -197,7 +273,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     return (
       <DropdownButton id="scene-scrape" title="Scrape with...">
         {queryableScrapers.map(s => (
-          <Dropdown.Item onClick={() => onScrapeClicked(s)}>
+          <Dropdown.Item key={s.name} onClick={() => onScrapeClicked(s)}>
             {s.name}
           </Dropdown.Item>
         ))}
@@ -244,6 +320,21 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       if (idPerfs.length > 0) {
         const newIds = idPerfs.map(p => p.id);
         setPerformerIds(newIds as string[]);
+      }
+    }
+
+    if (
+      (!movieIds || movieIds.length === 0) &&
+      scene.movies &&
+      scene.movies.length > 0
+    ) {
+      const idMovis = scene.movies.filter(p => {
+        return p.id !== undefined && p.id !== null;
+      });
+
+      if (idMovis.length > 0) {
+        const newIds = idMovis.map(p => p.id);
+        setMovieIds(newIds as string[]);
       }
     }
 
@@ -367,6 +458,17 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
                   }
                   ids={performerIds}
                 />
+              </td>
+            </tr>
+            <tr>
+              <td>Movies/Scenes</td>
+              <td>
+                <MovieSelect
+                  isMulti
+                  onSelect={items => setMovieIds(items.map(item => item.id))}
+                  ids={movieIds}
+                />
+                {renderTableMovies()}
               </td>
             </tr>
             <tr>

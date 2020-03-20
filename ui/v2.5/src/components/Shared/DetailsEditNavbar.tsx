@@ -1,11 +1,9 @@
 import { Button, Modal } from "react-bootstrap";
 import React, { useState } from "react";
-import * as GQL from "src/core/generated-graphql";
 import { ImageInput } from "src/components/Shared";
 
 interface IProps {
-  performer?: Partial<GQL.PerformerDataFragment>;
-  studio?: Partial<GQL.StudioDataFragment>;
+  objectName?: string;
   isNew: boolean;
   isEditing: boolean;
   onToggleEdit: () => void;
@@ -13,6 +11,7 @@ interface IProps {
   onDelete: () => void;
   onAutoTag?: () => void;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
+  onBackImageChange?: (event: React.FormEvent<HTMLInputElement>) => void;
 }
 
 export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
@@ -54,6 +53,19 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
     );
   }
 
+  function renderBackImageInput() {
+    if (!props.isEditing || !props.onBackImageChange) {
+      return;
+    }
+    return (
+      <ImageInput
+        isEditing={props.isEditing}
+        text="Back image..."
+        onImageChange={props.onBackImageChange}
+      />
+    );
+  }
+
   function renderAutoTagButton() {
     if (props.isNew || props.isEditing) return;
 
@@ -74,11 +86,11 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
   }
 
   function renderDeleteAlert() {
-    const name = props?.studio?.name ?? props?.performer?.name;
-
     return (
       <Modal show={isDeleteAlertOpen}>
-        <Modal.Body>Are you sure you want to delete {name}?</Modal.Body>
+        <Modal.Body>
+          Are you sure you want to delete {props.objectName}?
+        </Modal.Body>
         <Modal.Footer>
           <Button variant="danger" onClick={props.onDelete}>
             Delete
@@ -99,8 +111,10 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
       {renderEditButton()}
       <ImageInput
         isEditing={props.isEditing}
+        text={props.onBackImageChange ? "Front image..." : undefined}
         onImageChange={props.onImageChange}
       />
+      {renderBackImageInput()}
       {renderAutoTagButton()}
       {renderSaveButton()}
       {renderDeleteButton()}

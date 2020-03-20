@@ -1,0 +1,23 @@
+.card.movie-card {
+  padding: 0 0 1rem 0;
+}
+
+.movie-card {
+  &-header {
+    height: 240px;
+    line-height: 240px;
+    text-align: center;
+  }
+
+  &-image {
+    max-height: 240px;
+    object-fit: contain;
+    vertical-align: middle;
+    width: 320px;
+
+    @media (max-width: 576px) {
+      width: 100%;
+    }
+  }
+}
+  

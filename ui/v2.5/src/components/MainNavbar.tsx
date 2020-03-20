@@ -20,6 +20,11 @@ const menuItems: IMenuItem[] = [
     href: "/scenes"
   },
   {
+    href: "/movies",
+    icon: "film",
+    messageID: "movies"
+  },
+  {
     href: "/scenes/markers",
     icon: "map-marker-alt",
     messageID: "markers"
@@ -79,6 +84,8 @@ export const MainNavbar: React.FC = () => {
       ? "/performers/new"
       : location.pathname === "/studios"
       ? "/studios/new"
+      : location.pathname === "/movies"
+      ? "/movies/new"
       : null;
   const newButton =
     path === null ? (
@@ -98,7 +105,7 @@ export const MainNavbar: React.FC = () => {
       variant="dark"
       bg="dark"
       className="top-nav"
-      expand="md"
+      expand="lg"
       expanded={expanded}
       onToggle={setExpanded}
       ref={navbarRef}
