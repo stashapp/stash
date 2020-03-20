@@ -304,7 +304,7 @@ export class ListFilterModel {
       q: this.searchTerm,
       page: this.currentPage,
       per_page: this.itemsPerPage,
-      sort: this.sortBy,
+      sort: this.getSortBy(),
       direction: this.sortDirection === "asc" ? SortDirectionEnum.Asc : SortDirectionEnum.Desc,
     };
   }
