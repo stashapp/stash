@@ -11,6 +11,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logLevel
   logAccess
   excludes
+  scraperUserAgent
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
