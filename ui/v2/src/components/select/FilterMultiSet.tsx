@@ -1,18 +1,8 @@
 import * as React from "react";
 
-import { MenuItem, ControlGroup, Button } from "@blueprintjs/core";
-import { IMultiSelectProps, ItemPredicate, ItemRenderer, MultiSelect } from "@blueprintjs/select";
+import { ControlGroup, Button } from "@blueprintjs/core";
 import * as GQL from "../../core/generated-graphql";
-import { StashService } from "../../core/StashService";
-import { HTMLInputProps } from "../../models";
-import { ErrorUtils } from "../../utils/errors";
-import { ToastUtils } from "../../utils/toasts";
 import { FilterMultiSelect } from "./FilterMultiSelect";
-
-const InternalPerformerMultiSelect = MultiSelect.ofType<GQL.AllPerformersForFilterAllPerformers>();
-const InternalTagMultiSelect = MultiSelect.ofType<GQL.AllTagsForFilterAllTags>();
-const InternalStudioMultiSelect = MultiSelect.ofType<GQL.AllStudiosForFilterAllStudios>();
-const InternalMovieMultiSelect = MultiSelect.ofType<GQL.AllMoviesForFilterAllMovies>();
 
 type ValidTypes =
   GQL.AllPerformersForFilterAllPerformers |
@@ -20,18 +10,12 @@ type ValidTypes =
   GQL.AllMoviesForFilterAllMovies | 
   GQL.AllStudiosForFilterAllStudios;
 
-export enum MultiSetMode {
-    SET = "Set",
-    ADD = "Add",
-    REMOVE = "Remove"
-}
-
 interface IFilterMultiSetProps {
   type: "performers" | "studios" | "movies" | "tags";
   initialIds?: string[];
-  mode: MultiSetMode;
+  mode: GQL.BulkUpdateIdMode;
   onUpdate: (items: ValidTypes[]) => void;
-  onSetMode: (mode: MultiSetMode) => void;
+  onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
 }
 
 export const FilterMultiSet: React.FunctionComponent<IFilterMultiSetProps> = (props: IFilterMultiSetProps) => {
@@ -41,23 +25,34 @@ export const FilterMultiSet: React.FunctionComponent<IFilterMultiSetProps> = (pr
 
   function getModeIcon() {
     switch(props.mode) {
-      case MultiSetMode.SET:
+      case GQL.BulkUpdateIdMode.Set:
         return "edit";
-      case MultiSetMode.ADD:
+      case GQL.BulkUpdateIdMode.Add:
         return "plus";
-      case MultiSetMode.REMOVE:
+      case GQL.BulkUpdateIdMode.Remove:
         return "cross";
+    }
+  }
+
+  function getModeText() {
+    switch(props.mode) {
+      case GQL.BulkUpdateIdMode.Set:
+        return "Set";
+      case GQL.BulkUpdateIdMode.Add:
+        return "Add";
+      case GQL.BulkUpdateIdMode.Remove:
+        return "Remove";
     }
   }
 
   function nextMode() {
     switch(props.mode) {
-      case MultiSetMode.SET:
-        return MultiSetMode.ADD;
-      case MultiSetMode.ADD:
-        return MultiSetMode.REMOVE;
-      case MultiSetMode.REMOVE:
-        return MultiSetMode.SET;
+      case GQL.BulkUpdateIdMode.Set:
+        return GQL.BulkUpdateIdMode.Add;
+      case GQL.BulkUpdateIdMode.Add:
+        return GQL.BulkUpdateIdMode.Remove;
+      case GQL.BulkUpdateIdMode.Remove:
+        return GQL.BulkUpdateIdMode.Set;
     }
   }
 
@@ -67,7 +62,7 @@ export const FilterMultiSet: React.FunctionComponent<IFilterMultiSetProps> = (pr
         icon={getModeIcon()} 
         minimal={true} 
         onClick={() => props.onSetMode(nextMode())}
-        title={props.mode}
+        title={getModeText()}
       />
       <FilterMultiSelect
         type={props.type}
