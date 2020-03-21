@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"time"
 
 	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
@@ -27,6 +28,18 @@ func init() {
 }
 
 func Initialize(databasePath string) {
+
+	dbExists, _ := utils.FileExists(databasePath)
+	//if database exists (setup is completed)
+	//create a backup of the db if a migration is needed
+	if dbExists {
+		err := Backup(databasePath, false)
+
+		if err != nil {
+			logger.Fatalf("Backup error: %s", err)
+		}
+	}
+
 	runMigrations(databasePath)
 
 	// https://github.com/mattn/go-sqlite3
@@ -53,6 +66,45 @@ func Reset(databasePath string) error {
 
 	Initialize(databasePath)
 	return nil
+}
+
+// Backup the database if a migration is needed
+// or force is set to true
+func Backup(databasePath string, force bool) error {
+
+	db, err := sqlx.Connect(sqlite3Driver, "file:"+databasePath+"?_fk=true")
+	if err != nil {
+		return fmt.Errorf("Open database %s failed:%s", databasePath, err)
+	}
+	defer db.Close()
+
+	var dbVersion uint
+	err = db.Get(&dbVersion, "SELECT version FROM schema_migrations")
+	if err != nil {
+		return err
+	}
+
+	if dbVersion > appSchemaVersion {
+
+		return fmt.Errorf("Stash schema version (%d) used is old. Version >= %d is needed", appSchemaVersion, dbVersion)
+
+	} else if dbVersion < appSchemaVersion || force {
+
+		backupPath := fmt.Sprintf("\"%s.%d.%s\"", databasePath, dbVersion, time.Now().Format("20060102_150405"))
+		version, _, _ := sqlite3.Version()
+		if !force {
+			logger.Infof("Migration is needed.")
+		}
+		logger.Infof("Sqlite library %s. Backing up database to %s ", version, backupPath)
+
+		_, err = db.Exec("VACUUM INTO " + backupPath)
+		if err != nil {
+			return fmt.Errorf("Vacuum failed: %s", err)
+		}
+
+	}
+	return nil
+
 }
 
 // Migrate the database
