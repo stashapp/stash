@@ -125,7 +125,7 @@ export const SceneList: React.FC<ISceneList> = ({
     }
     if (filter.displayMode === DisplayMode.Grid) {
       return (
-        <div className="row justify-content-center">
+        <div className={`grid zoom-${zoomIndex}`}>
           {result.data.findScenes.scenes.map(scene =>
             renderSceneCard(scene, selectedIds, zoomIndex)
           )}

@@ -94,10 +94,6 @@ textarea.text-input {
   .zoom-0 {
     width: 240px;
 
-    .scene-card-video {
-      max-height: 180px;
-    }
-
     .previewable.portrait {
       height: 180px;
     }
@@ -105,10 +101,6 @@ textarea.text-input {
 
   .zoom-1 {
     width: 320px;
-
-    .scene-card-video {
-      max-height: 240px;
-    }
 
     .previewable.portrait {
       height: 240px;
@@ -118,10 +110,6 @@ textarea.text-input {
   .zoom-2 {
     width: 480px;
 
-    .scene-card-video {
-      max-height: 360px;
-    }
-
     .previewable.portrait {
       height: 360px;
     }
@@ -129,10 +117,6 @@ textarea.text-input {
 
   .zoom-3 {
     width: 640px;
-
-    .scene-card-video {
-      max-height: 480px;
-    }
 
     .portrait {
       height: 480px;
@@ -143,6 +127,7 @@ textarea.text-input {
 .scene-card-video {
   height: auto;
   width: 100%;
+  object-fit: cover;
 }
 
 /* this is a bit of a hack, because we can't supply direct class names
@@ -186,26 +171,26 @@ div.react-select__menu {
     background-color: #fff;
     border-color: inherit;
     color: $dark-text;
-  
+
     .react-select__single-value,
     .react-select__input {
       color: $dark-text;
     }
-  
+
     .react-select__multi-value {
       background-color: #fff;
       color: $dark-text;
     }
   }
-  
+
   div.react-select__menu {
     background-color: #fff;
     color: $text-color;
-  
+
     .react-select__option {
       color: $dark-text;
     }
-  
+
     .react-select__option--is-focused {
       background-color: rgba(167,182,194,.3);
     }
@@ -458,5 +443,24 @@ div.react-select__menu {
   .heading {
     text-align: center;
     text-transform: uppercase;
+  }
+}
+
+.grid{
+  display: grid;
+  grid-gap: 10px;
+  justify-content: center;
+  width: auto;
+  @media (min-width: 576px){
+    grid-template-columns: repeat(auto-fill, minmax(300px, 320px));
+    &.zoom-1{
+      grid-template-columns: repeat(auto-fill, minmax(320px, 440px));
+    }
+    &.zoom-2{
+      grid-template-columns: repeat(auto-fill, minmax(440px, 560px));
+    }
+    &.zoom-3{
+      grid-template-columns: repeat(auto-fill, minmax(560px, 680px));
+    }
   }
 }

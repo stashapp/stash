@@ -235,7 +235,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
   return (
     <Card
-      className={`scene-card zoom-${props.zoomIndex}`}
+      className={`scene-card`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
