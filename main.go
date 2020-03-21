@@ -13,6 +13,7 @@ import (
 
 func main() {
 	manager.Initialize()
+	database.RunBackup(config.GetDatabasePath())
 	database.Initialize(config.GetDatabasePath())
 	api.Start()
 	blockForever()

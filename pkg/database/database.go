@@ -29,17 +29,6 @@ func init() {
 
 func Initialize(databasePath string) {
 
-	dbExists, _ := utils.FileExists(databasePath)
-	//if database exists (setup is completed)
-	//create a backup of the db if a migration is needed
-	if dbExists {
-		err := Backup(databasePath, false)
-
-		if err != nil {
-			logger.Fatalf("Backup error: %s", err)
-		}
-	}
-
 	runMigrations(databasePath)
 
 	// https://github.com/mattn/go-sqlite3
@@ -66,6 +55,20 @@ func Reset(databasePath string) error {
 
 	Initialize(databasePath)
 	return nil
+}
+
+func RunBackup(databasePath string) {
+	dbExists, _ := utils.FileExists(databasePath)
+	//if database exists (setup is completed)
+	//create a backup of the db if a migration is needed
+	if dbExists {
+		err := Backup(databasePath, false)
+
+		if err != nil {
+			logger.Fatalf("Backup error: %s", err)
+		}
+	}
+
 }
 
 // Backup the database if a migration is needed
