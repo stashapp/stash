@@ -36,10 +36,10 @@ apt install -f curl
 
 ### Get the docker-compose.yml file
 
-Now you can either navigate to the [docker-compose.yml](https://raw.githubusercontent.com/stashapp/stash/master/docker/production/docker-compose.yml) in the repository, OR you can make your Linux console do it for you with this.
+Now you can either navigate to the [docker-compose.yml](https://raw.githubusercontent.com/stashapp/stash/develop/docker/production/docker-compose.yml) in the repository, OR you can make your Linux console do it for you with this.
 
 ```
-curl -o ~/docker-compose.yml https://raw.githubusercontent.com/stashapp/stash/master/docker/production/docker-compose.yml
+curl -o ~/docker-compose.yml https://raw.githubusercontent.com/stashapp/stash/develop/docker/production/docker-compose.yml
 ```
 
 Once you have that file where you want it, you can either modify the settings as you please OR you can run the following to get it up and running instantly.
