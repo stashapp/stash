@@ -10,15 +10,15 @@ import (
 
 type migrateData struct {
 	ExistingVersion uint
-	MigrateVersion uint
-	BackupPath string
+	MigrateVersion  uint
+	BackupPath      string
 }
 
 func getMigrateData() migrateData {
 	return migrateData{
 		ExistingVersion: database.Version(),
-		MigrateVersion: database.AppSchemaVersion(),
-		BackupPath: "",
+		MigrateVersion:  database.AppSchemaVersion(),
+		BackupPath:      database.DatabaseBackupPath(),
 	}
 }
 
@@ -47,13 +47,20 @@ func doMigrateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("error: %s", err), 500)
 	}
 
-	r.Form.Get("backuppath")
+	backupPath := r.Form.Get("backuppath")
 
-	// TODO - perform database backup
+	// perform database backup
+	if backupPath != "" {
+		if err = database.Backup(backupPath); err != nil {
+			http.Error(w, fmt.Sprintf("error backing up database: %s", err), 500)
+			return
+		}
+	}
 
 	err = database.RunMigrations()
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error: %s", err), 500)
+		http.Error(w, fmt.Sprintf("error performing migration: %s", err), 500)
+		return
 	}
 	http.Redirect(w, r, "/", 301)
 }

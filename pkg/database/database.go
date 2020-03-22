@@ -36,14 +36,23 @@ func Initialize(databasePath string) {
 		panic(err)
 	}
 
-	if databaseSchemaVersion > appSchemaVersion {
-		panic(fmt.Sprintf("Database schema version %d is incompatible with required schema version %d", databaseSchemaVersion, appSchemaVersion))
-	}
-
-	// if migration is needed, then don't open the connection
-	if NeedsMigration() {
-		logger.Warnf("Database schema version %d does not match required schema version %d.", databaseSchemaVersion, appSchemaVersion)
+	if databaseSchemaVersion == 0 {
+		// new database, just run the migrations
+		if err := RunMigrations(); err != nil {
+			panic(err)
+		}
+		// RunMigrations calls Initialise. Just return
 		return
+	} else {
+		if databaseSchemaVersion > appSchemaVersion {
+			panic(fmt.Sprintf("Database schema version %d is incompatible with required schema version %d", databaseSchemaVersion, appSchemaVersion))
+		}
+
+		// if migration is needed, then don't open the connection
+		if NeedsMigration() {
+			logger.Warnf("Database schema version %d does not match required schema version %d.", databaseSchemaVersion, appSchemaVersion)
+			return
+		}
 	}
 
 	// https://github.com/mattn/go-sqlite3
@@ -77,11 +86,11 @@ func Reset(databasePath string) error {
 func Backup(backupPath string) error {
 	db, err := sqlx.Connect(sqlite3Driver, "file:"+dbPath+"?_fk=true")
 	if err != nil {
-		return fmt.Errorf("Open database %s failed:%s", databasePath, err)
+		return fmt.Errorf("Open database %s failed:%s", dbPath, err)
 	}
 	defer db.Close()
 
-	_, err = db.Exec("VACUUM INTO " + backupPath)
+	_, err = db.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
 		return fmt.Errorf("Vacuum failed: %s", err)
 	}
@@ -99,7 +108,7 @@ func AppSchemaVersion() uint {
 }
 
 func DatabaseBackupPath() string {
-	return fmt.Sprintf("\"%s.%d.%s\"", databasePath, dbVersion, time.Now().Format("20060102_150405"))
+	return fmt.Sprintf("%s.%d.%s", dbPath, databaseSchemaVersion, time.Now().Format("20060102_150405"))
 }
 
 func Version() uint {

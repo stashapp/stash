@@ -131,6 +131,7 @@ func Start() {
 
 	// Serve the migration UI
 	r.Get("/migrate", getMigrateHandler)
+	r.Post("/migrate", doMigrateHandler)
 
 	// Serve the setup UI
 	r.HandleFunc("/setup*", func(w http.ResponseWriter, r *http.Request) {
