@@ -29,7 +29,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [logLevel, setLogLevel] = useState<string>("Info");
   const [logAccess, setLogAccess] = useState<boolean>(true);
   const [excludes, setExcludes] = useState<string[]>([]);
-  const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(undefined);
+  const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(
+    undefined
+  );
 
   const { data, error, loading } = StashService.useConfiguration();
 
