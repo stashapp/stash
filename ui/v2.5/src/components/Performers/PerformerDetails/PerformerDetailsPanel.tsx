@@ -101,7 +101,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
     // image is a base64 string
     if ((state as GQL.ScrapedPerformerDataFragment).image !== undefined) {
-      let imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
+      const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
       setImage(imageStr ?? undefined);
       if (onImageChange) {
         onImageChange(imageStr!);
@@ -174,7 +174,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     if (!scrapePerformerDetails) return {};
 
     // image is not supported
-    const { __typename, image, ...ret } = scrapePerformerDetails;
+    const { __typename, image: _image, ...ret } = scrapePerformerDetails;
     return ret;
   }
 
