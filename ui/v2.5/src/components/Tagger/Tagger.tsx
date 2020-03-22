@@ -8,9 +8,11 @@ import path from 'parse-filepath';
 import { debounce } from "lodash";
 import cx from 'classnames';
 
+import { BreastTypeEnum } from 'src/definitions-box/globalTypes';
 import * as GQL from 'src/core/generated-graphql';
 import { Pagination } from "src/components/List/Pagination";
-import { Icon, PerformerSelect, StudioSelect } from 'src/components/Shared';
+import { Icon, Modal, PerformerSelect, StudioSelect } from 'src/components/Shared';
+import { ValidTypes } from 'src/components/Shared/Select';
 
 import {
   SearchSceneVariables,
@@ -20,6 +22,7 @@ import {
   SearchScene_searchScene_studio as StashStudio
 } from 'src/definitions-box/SearchScene';
 import { loader } from 'graphql.macro';
+
 const SearchSceneQuery = loader('src/queries/searchScene.gql');
 
 const ApiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI0N2ZkNzAwYi03ZmVlLTQyYTktYTBiYy1kMTUyYTQzMWQzYjkiLCJpYXQiOjE1ODQyMjI3MzgsInN1YiI6IkFQSUtleSJ9.FGpuM_4QxqA4iuMeioWGriqhpuVpTKrcpV2rTIyZ3wc';
@@ -65,15 +68,22 @@ function prepareQueryString(scene: Partial<GQL.Scene>, str: string) {
   return s.split(/(?=[A-Z])/).join(' ').replace(/\./g, ' ');
 }
 
+interface ISelectResult {
+  label: string;
+  value: string;
+}
 
-const SuccessIcon = () => (
-  <Icon icon="check" className="success mr-4" />
+
+interface IconProps {
+  className?: string;
+}
+const SuccessIcon: React.FC<IconProps> = ({ className }) => (
+  <Icon icon="check" className={cx("success mr-4", className)} color="#0f9960" />
 );
 
 export const Tagger: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<SearchScene>();
   const [searchFilter, setSearchFilter] = useState('');
   const [page, setPage] = useState(1);
   const [searchResults, setSearchResults] = useState<Record<string, SearchScene|null>>({});
@@ -195,6 +205,9 @@ interface IPerformerResultProps {
 
 const PerformerResult: React.FC<IPerformerResultProps> = ({ performer }) => {
   const [selectedPerformer, setSelectedPerformer] = useState();
+  const [selectedSource, setSelectedSource] = useState<'create'|'existing'|undefined>();
+  const [modalVisible, showModal] = useState(false);
+  const [newPerformer, setNewPerformer] = useState<GQL.PerformerCreateInput|undefined>();
   const { data: stashData, loading: stashLoading } = GQL.useFindPerformersQuery({
     variables: {
       performer_filter: {
@@ -212,12 +225,29 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer }) => {
       }
     },
     onCompleted: (data) => {
-      setSelectedPerformer(data.findPerformers.count > 0
-        ? data.findPerformers.performers[0].id
-        : null
-      );
+      const performer = data.findPerformers?.performers?.[0]?.id;
+      if (performer) {
+        setSelectedPerformer(performer);
+        setSelectedSource('existing');
+      }
     }
   });
+
+  const handlePerformerSelect = (items: ValidTypes[]) => {
+    if (items.length) {
+      setSelectedSource('existing');
+      setSelectedPerformer(items[0].id);
+    }
+    else {
+      setSelectedSource(undefined);
+      setSelectedPerformer(null);
+    }
+  };
+
+  const handlePerformerCreate = () => {
+    setSelectedSource('create');
+    showModal(false);
+  };
 
   if(stashLoading || loading)
     return <div>Loading studio</div>;
@@ -231,17 +261,73 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer }) => {
     );
   }
   return (
-    <div className="row align-items-center">
-      <div className="col-3">
+    <div className="row align-items-center mt-2">
+      <Modal
+        show={modalVisible}
+        accept={{ text: "Save", onClick: handlePerformerCreate }}
+        cancel={{ onClick: () => showModal(false), variant: "secondary" }}
+      >
+        <div className="row">
+          <div className="col-6">
+            <div className="row">
+              <div className="col-6">Name:</div>{ performer.name }
+            </div>
+            <div className="row">
+              <div className="col-6">Gender:</div> { performer.gender }
+            </div>
+            <div className="row">
+              <div className="col-6">Birthdate:</div> { performer.birthdate?.date ?? 'Unknown' }
+            </div>
+            <div className="row">
+              <div className="col-6">Ethnicity:</div>{ performer.ethnicity }
+            </div>
+            <div className="row">
+              <div className="col-6">Country:</div>{ performer.country }
+            </div>
+            <div className="row">
+              <div className="col-6">Eye Color:</div>{ performer.eye_color }
+            </div>
+            <div className="row">
+              <div className="col-6">Height:</div>{ performer.height }
+            </div>
+            <div className="row">
+              <div className="col-6">Measurements:</div>{ `${performer.measurements.band_size}${performer.measurements.cup_size}-${performer.measurements.waist}-${performer.measurements.hip}` }
+            </div>
+            <div className="row">
+              <div className="col-6">Fake Tits:</div>{ performer.breast_type === BreastTypeEnum.FAKE ? "Yes" : "No" }
+            </div>
+            <div className="row">
+              <div className="col-6">Career Length:</div>{ `${performer.career_start_year} - ${ performer.career_end_year ?? ''}` }
+            </div>
+            <div className="row">
+              <div className="col-6">Tattoos:</div>{ performer.tattoos?.join(', ') ?? '' }
+            </div>
+            <div className="row">
+              <div className="col-6">Piercings:</div>{ performer.piercings?.join(', ') ?? '' }
+            </div>
+          </div>
+          <div className="col-6">
+            <img src={performer.urls?.[0]?.url} className="w-100" />
+          </div>
+        </div>
+      </Modal>
+      <div className="col-4">
         Performer:
         <b className="ml-2">{performer.name}</b>
       </div>
-      <div className="col-3">
-        <Button variant="secondary">Create</Button>
+      <div className="col-2">
+        <Button variant="secondary" className="mr-2" onClick={() => showModal(true)}>Create</Button>
+        <SuccessIcon className={cx({'invisible': selectedSource !== 'create'})} />
       </div>
-      <div className="col-2">Select existing:</div>
-      <div className="col-4">
-        <PerformerSelect ids={selectedPerformer ? [selectedPerformer] : []} onSelect={items => setSelectedPerformer(items.length ? items[0].id : null)} />
+      <div className="col-3">
+        <SuccessIcon className={cx({'invisible': selectedSource !== 'existing'})} />
+        <span className="d-inline-block">Select existing:</span>
+      </div>
+      <div className="col-3">
+        <PerformerSelect
+          ids={selectedPerformer ? [selectedPerformer] : []}
+          onSelect={handlePerformerSelect}
+        />
       </div>
     </div>
   );
@@ -316,6 +402,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, isActive,
             <PerformerResult performer={performer.performer} />
             ))
           }
+          <div className="row pr-3 mt-2">
+            <Button className="col-1 offset-11">Save</Button>
+          </div>
         </div>
       )}
     </li>

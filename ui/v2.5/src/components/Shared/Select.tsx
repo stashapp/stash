@@ -16,7 +16,7 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
-type ValidTypes =
+export type ValidTypes =
   | GQL.SlimPerformerDataFragment
   | GQL.Tag
   | GQL.SlimStudioDataFragment;
