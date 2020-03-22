@@ -81,8 +81,7 @@ func Reset(databasePath string) error {
 	return nil
 }
 
-// Backup the database if a migration is needed
-// or force is set to true
+// Backup the database
 func Backup(backupPath string) error {
 	db, err := sqlx.Connect(sqlite3Driver, "file:"+dbPath+"?_fk=true")
 	if err != nil {
