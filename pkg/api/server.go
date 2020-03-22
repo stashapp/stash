@@ -20,6 +20,7 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -83,6 +84,7 @@ func Start() {
 	r.Use(cors.AllowAll().Handler)
 	r.Use(BaseURLMiddleware)
 	r.Use(ConfigCheckMiddleware)
+	r.Use(DatabaseCheckMiddleware)
 
 	recoverFunc := handler.RecoverFunc(func(ctx context.Context, err interface{}) error {
 		logger.Error(err)
@@ -126,6 +128,10 @@ func Start() {
 
 		http.ServeFile(w, r, fn)
 	})
+
+	// Serve the migration UI
+	r.Get("/migrate", getMigrateHandler)
+	r.Post("/migrate", doMigrateHandler)
 
 	// Serve the setup UI
 	r.HandleFunc("/setup*", func(w http.ResponseWriter, r *http.Request) {
@@ -317,6 +323,20 @@ func ConfigCheckMiddleware(next http.Handler) http.Handler {
 		if !config.IsValid() && shouldRedirect {
 			if !strings.HasPrefix(r.URL.Path, "/setup") {
 				http.Redirect(w, r, "/setup", 301)
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func DatabaseCheckMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ext := path.Ext(r.URL.Path)
+		shouldRedirect := ext == "" && r.Method == "GET"
+		if shouldRedirect && database.NeedsMigration() {
+			if !strings.HasPrefix(r.URL.Path, "/migrate") {
+				http.Redirect(w, r, "/migrate", 301)
 				return
 			}
 		}
