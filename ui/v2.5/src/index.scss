@@ -192,7 +192,7 @@ div.react-select__menu {
     }
 
     .react-select__option--is-focused {
-      background-color: rgba(167, 182, 194, .3);
+      background-color: rgba(167,182,194,.3);
     }
   }
 }
@@ -446,20 +446,20 @@ div.react-select__menu {
   }
 }
 
-.grid {
+.grid{
   display: grid;
   grid-gap: 10px;
   justify-content: center;
   width: auto;
-  @media (min-width: 576px) {
+  @media (min-width: 576px){
     grid-template-columns: repeat(auto-fill, minmax(300px, 320px));
-    &.zoom-1 {
+    &.zoom-1{
       grid-template-columns: repeat(auto-fill, minmax(320px, 440px));
     }
-    &.zoom-2 {
+    &.zoom-2{
       grid-template-columns: repeat(auto-fill, minmax(440px, 560px));
     }
-    &.zoom-3 {
+    &.zoom-3{
       grid-template-columns: repeat(auto-fill, minmax(560px, 680px));
     }
   }
