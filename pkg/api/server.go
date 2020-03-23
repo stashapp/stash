@@ -64,7 +64,7 @@ func unauthorized(w http.ResponseWriter) {
 }
 
 func Start() {
-	uiBox = packr.New("UI Box", "../../ui/v2/build")
+	uiBox = packr.New("UI Box", "../../ui/v2.5/build")
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
 

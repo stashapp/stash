@@ -317,7 +317,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={username}
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
               setUsername(e.currentTarget.value)
             }
           />
@@ -331,7 +331,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             className="col col-sm-6 text-input"
             type="password"
             defaultValue={password}
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
               setPassword(e.currentTarget.value)
             }
           />
@@ -349,7 +349,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Control
           className="col col-sm-6 text-input"
           defaultValue={logFile}
-          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+          onInput={(e: React.FormEvent<HTMLInputElement>) =>
             setLogFile(e.currentTarget.value)
           }
         />
