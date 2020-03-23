@@ -21,7 +21,7 @@ clean:
 .PHONY: generate
 generate:
 	go generate -mod=vendor
-	cd ui/v2.5 && yarn run gqlgen
+	cd ui/v2 && yarn run gqlgen
 
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 .PHONY: fmt
@@ -49,5 +49,5 @@ it:
 
 .PHONY: ui
 ui:
-	cd ui/v2.5 && yarn build
+	cd ui/v2 && yarn build
 	packr2
