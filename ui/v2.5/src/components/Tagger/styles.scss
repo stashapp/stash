@@ -6,3 +6,9 @@
 .search-result {
   padding: .5rem 0;
 }
+
+.scene-select {
+  &:hover {
+    cursor: pointer;
+  }
+}

@@ -80,6 +80,9 @@ interface IconProps {
 const SuccessIcon: React.FC<IconProps> = ({ className }) => (
   <Icon icon="check" className={cx("success mr-4", className)} color="#0f9960" />
 );
+const FailIcon: React.FC<IconProps> = ({ className }) => (
+  <Icon icon="times" className={cx("secondary mr-4", className)} color="#394b59" />
+);
 
 export const Tagger: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -181,6 +184,7 @@ export const Tagger: React.FC = () => {
                         sceneResult && (
                           <StashSearchResult
                             showMales={showMales}
+                            stashScene={scene}
                             scene={sceneResult}
                             isActive={(selectedResult?.[scene.id] ?? 0) === i}
                             setActive={() => setSelectedResult({ ...selectedResult, [scene.id]: i})}
@@ -317,10 +321,16 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer }) => {
       </div>
       <div className="col-2">
         <Button variant="secondary" className="mr-2" onClick={() => showModal(true)}>Create</Button>
-        <SuccessIcon className={cx({'invisible': selectedSource !== 'create'})} />
+        { selectedSource === 'create'
+          ? <SuccessIcon />
+          : <FailIcon />
+        }
       </div>
       <div className="col-3">
-        <SuccessIcon className={cx({'invisible': selectedSource !== 'existing'})} />
+        { selectedSource === 'existing'
+          ? <SuccessIcon />
+          : <FailIcon />
+        }
         <span className="d-inline-block">Select existing:</span>
       </div>
       <div className="col-3">
@@ -369,25 +379,38 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio }) => {
 
 interface IStashSearchResultProps {
   scene: SearchResult;
+  stashScene: Partial<GQL.Scene>;
   isActive: boolean;
   setActive: () => void;
   showMales: boolean;
 }
 
-const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, isActive, setActive, showMales }) => {
+type PerformerData = StashPerformer|string;
+type StudioData = StashStudio|string;
+
+const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScene, isActive, setActive, showMales }) => {
+  const [studio, setStudio] = useState<StudioData>();
+  const [performers, setPerformers] = useState<Record<string, PerformerData>>();
+
+  const [updateScene] = GQL.useSceneUpdateMutation({ variables: {
+    id: stashScene.id
+  }});
+
+  const setPerformer = (performerData: PerformerData, performerID: string) => (
+    setPerformers({ ...performers, [performerID]: performerData })
+  );
+
   const classname = cx('row mb-4 search-result', { 'selected-result': isActive });
   return (
     <li className={classname} key={scene?.id}>
-      <div className="col-1">
-        <label className="h-100 w-100 d-flex justify-content-center align-items-center">
+      <div className="col-6 row">
+        <label className="d-flex justify-content-center align-items-center col-2 scene-select">
           <input type="radio" checked={isActive} onChange={setActive} />
         </label>
-      </div>
-      <div className="col-5 d-flex">
-        <div className="mr-3">
-          <img height={100} src={scene?.urls?.[0]?.url} alt="" />
+        <div className="d-flex col-3">
+          <img height={100} src={scene?.urls?.[0]?.url} alt="" className="align-self-center" />
         </div>
-        <div className="d-flex flex-column justify-content-center">
+        <div className="col-7 d-flex flex-column justify-content-center">
           <h4 className="text-truncate">{scene?.title}</h4>
           <h5>{scene?.studio?.name} • {scene?.date}</h5>
           <div>Performers: {scene?.performers?.map(p => p.performer.name).join(', ')}</div>
