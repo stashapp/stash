@@ -35,7 +35,7 @@ func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	}
 
 	contentType := http.DetectContentType(studio.Image)
-	if contentType == "text/xml; charset=utf-8" {
+	if contentType == "text/xml; charset=utf-8" || contentType == "text/plain; charset=utf-8" {
 		contentType = "image/svg+xml"
 	}
 
