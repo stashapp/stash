@@ -7,6 +7,7 @@ require (
 	github.com/antchfx/xpath v1.1.2 // indirect
 	github.com/bmatcuk/doublestar v1.1.5
 	github.com/disintegration/imaging v1.6.0
+	github.com/dustin/go-humanize v1.0.0
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/gobuffalo/packr/v2 v2.0.2
 	github.com/golang-migrate/migrate/v4 v4.3.1

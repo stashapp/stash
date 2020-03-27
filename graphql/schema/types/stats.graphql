@@ -1,5 +1,6 @@
 type StatsResultType {
   scene_count: Int!
+  scene_size_count: String!
   gallery_count: Int!
   performer_count: Int!
   studio_count: Int!

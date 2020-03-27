@@ -258,6 +258,18 @@ func runCountQuery(query string, args []interface{}) (int, error) {
 	return result.Int, nil
 }
 
+func runSumQuery(query string, args []interface{}) (uint64, error) {
+	// Perform query and fetch result
+	result := struct {
+		Uint uint64 `db:"sum"`
+	}{0}
+	if err := database.DB.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
+		return 0, err
+	}
+
+	return result.Uint, nil
+}
+
 func executeFindQuery(tableName string, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int, int) {
 	if len(whereClauses) > 0 {
 		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
