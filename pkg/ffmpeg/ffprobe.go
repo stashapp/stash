@@ -125,7 +125,7 @@ func IsValidAudioForContainer(audio AudioCodec, format Container) bool {
 	case Webm:
 		return IsValidAudio(audio, validAudioForWebm)
 	case Mp4:
-		return IsValidAudio(audio, validAudioForMkv)
+		return IsValidAudio(audio, validAudioForMp4)
 	}
 	return false
 
