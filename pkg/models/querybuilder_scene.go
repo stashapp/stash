@@ -195,7 +195,7 @@ func (qb *SceneQueryBuilder) Count() (int, error) {
 func (qb *SceneQueryBuilder) SizeCount() (string, error) {
 	sum, err := runSumQuery("SELECT SUM(size) as sum FROM scenes", nil)
 	if err != nil {
-		return "O", err
+		return "0", err
 	}
 	return humanize.Bytes(sum), err
 }
