@@ -14,6 +14,7 @@ require (
 	github.com/h2non/filetype v1.0.8
 	// this is required for generate
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/rs/cors v1.6.0

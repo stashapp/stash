@@ -35,12 +35,12 @@
   z-index: 1;
 }
 
-.performer-tag-container {
+.performer-tag-container, .movie-tag-container {
   display: inline-block;
   margin: 5px;
 }
 
-.performer-tag.image {
+.performer-tag.image, .movie-tag.image {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -211,4 +211,8 @@
   margin-bottom: 10px;
   margin-top: 10px;
   max-width: 100%;
+}
+
+.movie-table td {
+  vertical-align: middle;
 }

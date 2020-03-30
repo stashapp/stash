@@ -31,6 +31,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [logLevel, setLogLevel] = useState<string>("Info");
   const [logAccess, setLogAccess] = useState<boolean>(true);
   const [excludes, setExcludes] = useState<string[]>([]);
+  const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(undefined);
 
   const { data, error, loading } = StashService.useConfiguration();
 
@@ -48,7 +49,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
     logOut,
     logLevel,
     logAccess,
-    excludes
+    excludes,
+    scraperUserAgent
   });
 
   useEffect(() => {
@@ -72,6 +74,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setLogLevel(conf.general.logLevel);
       setLogAccess(conf.general.logAccess);
       setExcludes(conf.general.excludes);
+      setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
     }
   }, [data, error]);
 
@@ -313,6 +316,22 @@ export const SettingsConfigurationPanel: React.FC = () => {
             Treat HEVC as a supported codec. Recommended for Safari or some Android based browsers
           </Form.Text>
         </Form.Group>
+      </Form.Group>
+
+      <hr />
+
+      <Form.Group id="generated-path">
+        <h6>Scraping</h6>
+        <Form.Control
+          className="col col-sm-6 text-input"
+          defaultValue={scraperUserAgent}
+          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            setScraperUserAgent(e.currentTarget.value)
+          }
+        />
+        <Form.Text className="text-muted">
+          User-Agent string used during scrape http requests
+        </Form.Text>
       </Form.Group>
 
       <hr />

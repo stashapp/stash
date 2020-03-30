@@ -34,6 +34,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
   const [logLevel, setLogLevel] = useState<string>("Info");
   const [logAccess, setLogAccess] = useState<boolean>(true);
   const [excludes, setExcludes] = useState<(string)[]>([]);
+  const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(undefined);
 
   const { data, error, loading } = StashService.useConfiguration();
 
@@ -52,7 +53,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
     logLevel,
     logAccess,
     excludes,
-
+    scraperUserAgent,
   });
 
   useEffect(() => {
@@ -73,6 +74,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       setLogLevel(conf.general.logLevel);
       setLogAccess(conf.general.logAccess);
       setExcludes(conf.general.excludes);
+      setScraperUserAgent(conf.general.scraperUserAgent);
     }
   }, [data, error]);
 
@@ -251,6 +253,18 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
           />
         </FormGroup>
       </FormGroup>
+      <Divider />
+
+      <FormGroup>
+        <H4>Scraping</H4>
+        <FormGroup
+          label="Scraper User-Agent string"
+          helperText="User-Agent string used during scrape http requests"
+        >
+          <InputGroup value={scraperUserAgent} onChange={(e: any) => setScraperUserAgent(e.target.value)} />
+        </FormGroup>
+      </FormGroup>
+
       <Divider />
 
       <FormGroup>

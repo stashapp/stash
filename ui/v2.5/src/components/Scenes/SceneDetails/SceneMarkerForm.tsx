@@ -9,6 +9,7 @@ import {
   MarkerTitleSuggest
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import { JWUtils } from "src/utils";
 
 interface IFormFields {
   title: string;
@@ -20,14 +21,12 @@ interface IFormFields {
 interface ISceneMarkerForm {
   sceneID: string;
   editingMarker?: GQL.SceneMarkerDataFragment;
-  playerPosition?: number;
   onClose: () => void;
 }
 
 export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   sceneID,
   editingMarker,
-  playerPosition,
   onClose
 }) => {
   const [sceneMarkerCreate] = StashService.useSceneMarkerCreate();
@@ -81,7 +80,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
         onReset={() =>
           fieldProps.form.setFieldValue(
             "seconds",
-            Math.round(playerPosition ?? 0)
+            Math.round(JWUtils.getPlayer()?.getPosition() ?? 0)
           )
         }
         numericValue={Number.parseInt(fieldProps.field.value ?? "0", 10)}
@@ -116,7 +115,8 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   const values: IFormFields = {
     title: editingMarker?.title ?? "",
     seconds: (
-      editingMarker?.seconds ?? Math.round(playerPosition ?? 0)
+      editingMarker?.seconds ??
+      Math.round(JWUtils.getPlayer()?.getPosition() ?? 0)
     ).toString(),
     primaryTagId: editingMarker?.primary_tag.id ?? "",
     tagIds: editingMarker?.tags.map(tag => tag.id) ?? []

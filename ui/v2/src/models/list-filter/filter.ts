@@ -271,7 +271,12 @@ export class ListFilterModel {
     this.criteria.forEach((criterion) => {
       const encodedCriterion: any = {};
       encodedCriterion.type = criterion.type;
-      encodedCriterion.value = criterion.value;
+      // #394 - the presence of a # symbol results in the query URL being 
+      // malformed. We could set encode: true in the queryString.stringify
+      // call below, but this results in a URL that gets pretty long and ugly.
+      // Instead, we'll encode the criteria values.
+      encodedCriterion.value = criterion.encodeValue();
+
       encodedCriterion.modifier = criterion.modifier;
       const jsonCriterion = JSON.stringify(encodedCriterion);
       encodedCriteria.push(jsonCriterion);
@@ -299,7 +304,7 @@ export class ListFilterModel {
       q: this.searchTerm,
       page: this.currentPage,
       per_page: this.itemsPerPage,
-      sort: this.sortBy,
+      sort: this.getSortBy(),
       direction: this.sortDirection === "asc" ? SortDirectionEnum.Asc : SortDirectionEnum.Desc,
     };
   }

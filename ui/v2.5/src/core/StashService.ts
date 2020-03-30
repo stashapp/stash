@@ -174,6 +174,14 @@ export class StashService {
     });
   }
 
+  public static useFindMovies(filter: ListFilterModel) {
+    return GQL.useFindMoviesQuery({
+      variables: {
+        filter: filter.makeFindFilter()
+      }
+    });
+  }
+
   public static useFindPerformers(filter: ListFilterModel) {
     let performerFilter = {};
     // if (!!filter && filter.criteriaFilterOpen) {
@@ -219,6 +227,10 @@ export class StashService {
   public static useFindStudio(id: string) {
     const skip = id === "new";
     return GQL.useFindStudioQuery({ variables: { id }, skip });
+  }
+  public static useFindMovie(id: string) {
+    const skip = id === "new";
+    return GQL.useFindMovieQuery({ variables: { id }, skip });
   }
 
   // TODO - scene marker manipulation functions are handled differently
@@ -278,6 +290,9 @@ export class StashService {
   }
   public static useAllStudiosForFilter() {
     return GQL.useAllStudiosForFilterQuery();
+  }
+  public static useAllMoviesForFilter() {
+    return GQL.useAllMoviesForFilterQuery();
   }
   public static useValidGalleriesForScene(sceneId: string) {
     return GQL.useValidGalleriesForSceneQuery({
@@ -341,6 +356,7 @@ export class StashService {
     "findScenes",
     "findSceneMarkers",
     "findStudios",
+    "findMovies",
     "allTags"
     // TODO - add "findTags" when it is implemented
   ];
@@ -362,6 +378,7 @@ export class StashService {
     "findPerformers",
     "findSceneMarkers",
     "findStudios",
+    "findMovies",
     "allTags"
   ];
 
@@ -407,6 +424,12 @@ export class StashService {
     });
   }
 
+  public static useSceneGenerateScreenshot() {
+    return GQL.useSceneGenerateScreenshotMutation({
+      update: () => StashService.invalidateQueries(["findScenes"])
+    });
+  }
+
   private static studioMutationImpactedQueries = [
     "findStudios",
     "findScenes",
@@ -439,6 +462,42 @@ export class StashService {
       update: () =>
         StashService.invalidateQueries(
           StashService.studioMutationImpactedQueries
+        )
+    });
+  }
+
+  private static movieMutationImpactedQueries = [
+    "findMovies",
+    "findScenes",
+    "allMovies"
+  ];
+
+  public static useMovieCreate(input: GQL.MovieCreateInput) {
+    return GQL.useMovieCreateMutation({
+      variables: input,
+      update: () =>
+        StashService.invalidateQueries(
+          StashService.movieMutationImpactedQueries
+        )
+    });
+  }
+
+  public static useMovieUpdate(input: GQL.MovieUpdateInput) {
+    return GQL.useMovieUpdateMutation({
+      variables: input,
+      update: () =>
+        StashService.invalidateQueries(
+          StashService.movieMutationImpactedQueries
+        )
+    });
+  }
+
+  public static useMovieDestroy(input: GQL.MovieDestroyInput) {
+    return GQL.useMovieDestroyMutation({
+      variables: input,
+      update: () =>
+        StashService.invalidateQueries(
+          StashService.movieMutationImpactedQueries
         )
     });
   }
@@ -506,10 +565,9 @@ export class StashService {
     });
   }
 
-  public static queryStopJob() {
-    return StashService.client.query<GQL.StopJobQuery>({
-      query: GQL.StopJobDocument,
-      fetchPolicy: "network-only"
+  public static mutateStopJob() {
+    return StashService.client.mutate<GQL.StopJobMutation>({
+      mutation: GQL.StopJobDocument
     });
   }
 
@@ -566,48 +624,42 @@ export class StashService {
     });
   }
 
-  public static queryMetadataScan(input: GQL.ScanMetadataInput) {
-    return StashService.client.query<GQL.MetadataScanQuery>({
-      query: GQL.MetadataScanDocument,
-      variables: { input },
-      fetchPolicy: "network-only"
+  public static mutateMetadataScan(input: GQL.ScanMetadataInput) {
+    return StashService.client.mutate<GQL.MetadataScanMutation>({
+      mutation: GQL.MetadataScanDocument,
+      variables: { input }
     });
   }
 
-  public static queryMetadataAutoTag(input: GQL.AutoTagMetadataInput) {
-    return StashService.client.query<GQL.MetadataAutoTagQuery>({
-      query: GQL.MetadataAutoTagDocument,
-      variables: { input },
-      fetchPolicy: "network-only"
+  public static mutateMetadataAutoTag(input: GQL.AutoTagMetadataInput) {
+    return StashService.client.mutate<GQL.MetadataAutoTagMutation>({
+      mutation: GQL.MetadataAutoTagDocument,
+      variables: { input }
     });
   }
 
-  public static queryMetadataGenerate(input: GQL.GenerateMetadataInput) {
-    return StashService.client.query<GQL.MetadataGenerateQuery>({
-      query: GQL.MetadataGenerateDocument,
-      variables: { input },
-      fetchPolicy: "network-only"
+  public static mutateMetadataGenerate(input: GQL.GenerateMetadataInput) {
+    return StashService.client.mutate<GQL.MetadataGenerateMutation>({
+      mutation: GQL.MetadataGenerateDocument,
+      variables: { input }
     });
   }
 
-  public static queryMetadataClean() {
-    return StashService.client.query<GQL.MetadataCleanQuery>({
-      query: GQL.MetadataCleanDocument,
-      fetchPolicy: "network-only"
+  public static mutateMetadataClean() {
+    return StashService.client.mutate<GQL.MetadataCleanMutation>({
+      mutation: GQL.MetadataCleanDocument
     });
   }
 
-  public static queryMetadataExport() {
-    return StashService.client.query<GQL.MetadataExportQuery>({
-      query: GQL.MetadataExportDocument,
-      fetchPolicy: "network-only"
+  public static mutateMetadataExport() {
+    return StashService.client.mutate<GQL.MetadataExportMutation>({
+      mutation: GQL.MetadataExportDocument
     });
   }
 
-  public static queryMetadataImport() {
-    return StashService.client.query<GQL.MetadataImportQuery>({
-      query: GQL.MetadataImportDocument,
-      fetchPolicy: "network-only"
+  public static mutateMetadataImport() {
+    return StashService.client.mutate<GQL.MetadataImportMutation>({
+      mutation: GQL.MetadataImportDocument
     });
   }
 

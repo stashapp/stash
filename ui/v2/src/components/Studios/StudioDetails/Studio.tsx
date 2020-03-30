@@ -109,7 +109,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
       return;
     }
     try {
-      await StashService.queryMetadataAutoTag({ studios: [studio.id]});
+      await StashService.mutateMetadataAutoTag({ studios: [studio.id]});
       ToastUtils.success("Started auto tagging");
     } catch (e) {
       ErrorUtils.handle(e);

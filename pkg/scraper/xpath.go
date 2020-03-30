@@ -1,7 +1,9 @@
 package scraper
 
 import (
+	"bytes"
 	"errors"
+	"net/http"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -10,10 +12,16 @@ import (
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/charset"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+// Timeout for the scrape http request. Includes transfer time. May want to make this
+// configurable at some point.
+const scrapeGetTimeout = time.Second * 30
 
 type commonXPathConfig map[string]string
 
@@ -135,6 +143,22 @@ func (c xpathScraperAttrConfig) getReplace() xpathRegexConfigs {
 	return ret
 }
 
+func (c xpathScraperAttrConfig) getSubScraper() xpathScraperAttrConfig {
+	const subScraperKey = "subScraper"
+	val, _ := c[subScraperKey]
+
+	if val == nil {
+		return nil
+	}
+
+	asMap, _ := val.(map[interface{}]interface{})
+	if asMap != nil {
+		return xpathScraperAttrConfig(asMap)
+	}
+
+	return nil
+}
+
 func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
 	separator := c.getConcat()
 	result := []string{}
@@ -174,10 +198,44 @@ func (c xpathScraperAttrConfig) replaceRegex(value string) string {
 	return replace.apply(value)
 }
 
+func (c xpathScraperAttrConfig) applySubScraper(value string) string {
+	subScraper := c.getSubScraper()
+
+	if subScraper == nil {
+		return value
+	}
+
+	doc, err := loadURL(value, nil)
+
+	if err != nil {
+		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
+		return ""
+	}
+
+	found := runXPathQuery(doc, subScraper.getSelector(), nil)
+
+	if len(found) > 0 {
+		// check if we're concatenating the results into a single result
+		var result string
+		if subScraper.hasConcat() {
+			result = subScraper.concatenateResults(found)
+		} else {
+			result = htmlquery.InnerText(found[0])
+			result = commonPostProcess(result)
+		}
+
+		result = subScraper.postProcess(result)
+		return result
+	}
+
+	return ""
+}
+
 func (c xpathScraperAttrConfig) postProcess(value string) string {
 	// perform regex replacements first
 	value = c.replaceRegex(value)
 	value = c.parseDate(value)
+	value = c.applySubScraper(value)
 
 	return value
 }
@@ -454,6 +512,42 @@ func (r xPathResults) setKey(index int, key string, value string) xPathResults {
 	return r
 }
 
+func loadURL(url string, c *scraperConfig) (*html.Node, error) {
+	client := &http.Client{
+		Timeout: scrapeGetTimeout,
+	}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	userAgent := config.GetScraperUserAgent()
+	if userAgent != "" {
+		req.Header.Set("User-Agent", userAgent)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	r, err := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
+	if err != nil {
+		return nil, err
+	}
+
+	ret, err := html.Parse(r)
+
+	if err == nil && c != nil && c.DebugOptions != nil && c.DebugOptions.PrintHTML {
+		var b bytes.Buffer
+		html.Render(&b, ret)
+		logger.Infof("loadURL (%s) response: \n%s", url, b.String())
+	}
+
+	return ret, err
+}
+
 func scrapePerformerURLXpath(c scraperTypeConfig, url string) (*models.ScrapedPerformer, error) {
 	scraper := c.scraperConfig.XPathScrapers[c.Scraper]
 
@@ -461,7 +555,7 @@ func scrapePerformerURLXpath(c scraperTypeConfig, url string) (*models.ScrapedPe
 		return nil, errors.New("xpath scraper with name " + c.Scraper + " not found in config")
 	}
 
-	doc, err := htmlquery.LoadURL(url)
+	doc, err := loadURL(url, c.scraperConfig)
 
 	if err != nil {
 		return nil, err
@@ -477,7 +571,7 @@ func scrapeSceneURLXPath(c scraperTypeConfig, url string) (*models.ScrapedScene,
 		return nil, errors.New("xpath scraper with name " + c.Scraper + " not found in config")
 	}
 
-	doc, err := htmlquery.LoadURL(url)
+	doc, err := loadURL(url, c.scraperConfig)
 
 	if err != nil {
 		return nil, err
@@ -501,7 +595,7 @@ func scrapePerformerNamesXPath(c scraperTypeConfig, name string) ([]*models.Scra
 	u := c.QueryURL
 	u = strings.Replace(u, placeholder, escapedName, -1)
 
-	doc, err := htmlquery.LoadURL(u)
+	doc, err := loadURL(u, c.scraperConfig)
 
 	if err != nil {
 		return nil, err

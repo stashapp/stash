@@ -19,6 +19,7 @@ import { ScenePerformerPanel } from "./ScenePerformerPanel";
 import { SceneMoviePanel } from "./SceneMoviePanel";
 import { ErrorUtils } from "../../../utils/errors";
 import { IOCounterButtonProps, OCounterButton } from "../OCounterButton";
+import { SceneOperationsPanel } from "./SceneOperationsPanel";
 
 interface ISceneProps extends IBaseProps {}
 
@@ -158,6 +159,14 @@ export const Scene: FunctionComponent<ISceneProps> = (props: ISceneProps) => {
                   scene={modifiedScene} 
                   onUpdate={(newScene) => setScene(newScene)} 
                   onDelete={() => props.history.push("/scenes")}
+                />}
+            />
+            <Tab
+              id="scene-operations-panel"
+              title="Operations"
+              panel={
+                <SceneOperationsPanel 
+                  scene={modifiedScene} 
                 />}
             />
 

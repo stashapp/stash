@@ -22,7 +22,6 @@ const Password = "password"
 
 const Database = "database"
 
-const ScrapersPath = "scrapers_path"
 const Exclude = "exclude"
 
 const MaxTranscodeSize = "max_transcode_size"
@@ -31,6 +30,10 @@ const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 const Host = "host"
 const Port = "port"
 const ExternalHost = "external_host"
+
+// scraping options
+const ScrapersPath = "scrapers_path"
+const ScraperUserAgent = "scraper_user_agent"
 
 // i18n
 const Language = "language"
@@ -117,6 +120,10 @@ func GetLanguage() string {
 
 func GetScrapersPath() string {
 	return viper.GetString(ScrapersPath)
+}
+
+func GetScraperUserAgent() string {
+	return viper.GetString(ScraperUserAgent)
 }
 
 func GetHost() string {

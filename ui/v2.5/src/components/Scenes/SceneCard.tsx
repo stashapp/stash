@@ -126,6 +126,39 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     );
   }
 
+  function maybeRenderMoviePopoverButton() {
+    if (props.scene.movies.length <= 0) return;
+
+    const popoverContent = props.scene.movies.map(sceneMovie => (
+      <div className="movie-tag-container row" key="movie">
+        <Link
+          to={`/movies/${sceneMovie.movie.id}`}
+          className="movie-tag col m-auto zoom-2"
+        >
+          <img
+            className="image-thumbnail"
+            alt={sceneMovie.movie.name ?? ""}
+            src={sceneMovie.movie.front_image_path ?? ""}
+          />
+        </Link>
+        <TagLink
+          key={sceneMovie.movie.id}
+          movie={sceneMovie.movie}
+          className="d-block"
+        />
+      </div>
+    ));
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal">
+          <Icon icon="film" />
+          <span>{props.scene.movies.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
   function maybeRenderSceneMarkerPopoverButton() {
     if (props.scene.scene_markers.length <= 0) return;
 
@@ -161,6 +194,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (
       props.scene.tags.length > 0 ||
       props.scene.performers.length > 0 ||
+      props.scene.movies.length > 0 ||
       props.scene.scene_markers.length > 0 ||
       props.scene?.o_counter
     ) {
@@ -170,6 +204,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
           <ButtonGroup className="scene-popovers">
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
+            {maybeRenderMoviePopoverButton()}
             {maybeRenderSceneMarkerPopoverButton()}
             {maybeRenderOCounter()}
           </ButtonGroup>

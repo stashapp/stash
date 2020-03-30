@@ -78,6 +78,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		config.Set(config.Exclude, input.Excludes)
 	}
 
+	if input.ScraperUserAgent != nil {
+		config.Set(config.ScraperUserAgent, input.ScraperUserAgent)
+	}
+
 	if err := config.Write(); err != nil {
 		return makeConfigGeneralResult(), err
 	}

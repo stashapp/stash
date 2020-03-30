@@ -14,6 +14,8 @@ import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
+import { SceneOperationsPanel } from "./SceneOperationsPanel";
+import { SceneMoviePanel } from "./SceneMoviePanel";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
@@ -123,6 +125,13 @@ export const Scene: React.FC = () => {
           ) : (
             ""
           )}
+          {scene.movies.length > 0 ? (
+            <Tab eventKey="scene-movie-panel" title="Movies">
+              <SceneMoviePanel scene={scene} />
+            </Tab>
+          ) : (
+            ""
+          )}
           {scene.gallery ? (
             <Tab eventKey="scene-gallery-panel" title="Gallery">
               <GalleryViewer gallery={scene.gallery} />
@@ -143,6 +152,9 @@ export const Scene: React.FC = () => {
               onUpdate={newScene => setScene(newScene)}
               onDelete={() => history.push("/scenes")}
             />
+          </Tab>
+          <Tab eventKey="scene-operations-panel" title="Operations">
+            <SceneOperationsPanel scene={scene} />
           </Tab>
         </Tabs>
       </div>
