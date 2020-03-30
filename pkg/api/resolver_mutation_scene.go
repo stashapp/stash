@@ -269,9 +269,14 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 
 		// Save the performers
 		if wasFieldIncluded(ctx, "performer_ids") {
+			performerIDs, err := adjustScenePerformerIDs(tx, sceneID, *input.PerformerIds)
+			if err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
+
 			var performerJoins []models.PerformersScenes
-			for _, pid := range input.PerformerIds {
-				performerID, _ := strconv.Atoi(pid)
+			for _, performerID := range performerIDs {
 				performerJoin := models.PerformersScenes{
 					PerformerID: performerID,
 					SceneID:     sceneID,
@@ -286,9 +291,14 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 
 		// Save the tags
 		if wasFieldIncluded(ctx, "tag_ids") {
+			tagIDs, err := adjustSceneTagIDs(tx, sceneID, *input.TagIds)
+			if err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
+
 			var tagJoins []models.ScenesTags
-			for _, tid := range input.TagIds {
-				tagID, _ := strconv.Atoi(tid)
+			for _, tagID := range tagIDs {
 				tagJoin := models.ScenesTags{
 					SceneID: sceneID,
 					TagID:   tagID,
@@ -308,6 +318,72 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 	}
 
 	return ret, nil
+}
+
+func adjustIDs(existingIDs []int, updateIDs models.BulkUpdateIds) []int {
+	for _, idStr := range updateIDs.Ids {
+		id, _ := strconv.Atoi(idStr)
+
+		// look for the id in the list
+		foundExisting := false
+		for idx, existingID := range existingIDs {
+			if existingID == id {
+				if updateIDs.Mode == models.BulkUpdateIDModeRemove {
+					// remove from the list
+					existingIDs = append(existingIDs[:idx], existingIDs[idx+1:]...)
+				}
+
+				foundExisting = true
+				break
+			}
+		}
+
+		if !foundExisting && updateIDs.Mode != models.BulkUpdateIDModeRemove {
+			existingIDs = append(existingIDs, id)
+		}
+	}
+
+	return existingIDs
+}
+
+func adjustScenePerformerIDs(tx *sqlx.Tx, sceneID int, ids models.BulkUpdateIds) ([]int, error) {
+	var ret []int
+
+	jqb := models.NewJoinsQueryBuilder()
+	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
+		// adding to the joins
+		performerJoins, err := jqb.GetScenePerformers(sceneID, tx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, join := range performerJoins {
+			ret = append(ret, join.PerformerID)
+		}
+	}
+
+	return adjustIDs(ret, ids), nil
+}
+
+func adjustSceneTagIDs(tx *sqlx.Tx, sceneID int, ids models.BulkUpdateIds) ([]int, error) {
+	var ret []int
+
+	jqb := models.NewJoinsQueryBuilder()
+	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
+		// adding to the joins
+		tagJoins, err := jqb.GetSceneTags(sceneID, tx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, join := range tagJoins {
+			ret = append(ret, join.TagID)
+		}
+	}
+
+	return adjustIDs(ret, ids), nil
 }
 
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {

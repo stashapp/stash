@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"time"
 
 	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
@@ -17,7 +18,9 @@ import (
 )
 
 var DB *sqlx.DB
+var dbPath string
 var appSchemaVersion uint = 5
+var databaseSchemaVersion uint
 
 const sqlite3Driver = "sqlite3_regexp"
 
@@ -27,7 +30,30 @@ func init() {
 }
 
 func Initialize(databasePath string) {
-	runMigrations(databasePath)
+	dbPath = databasePath
+
+	if err := getDatabaseSchemaVersion(); err != nil {
+		panic(err)
+	}
+
+	if databaseSchemaVersion == 0 {
+		// new database, just run the migrations
+		if err := RunMigrations(); err != nil {
+			panic(err)
+		}
+		// RunMigrations calls Initialise. Just return
+		return
+	} else {
+		if databaseSchemaVersion > appSchemaVersion {
+			panic(fmt.Sprintf("Database schema version %d is incompatible with required schema version %d", databaseSchemaVersion, appSchemaVersion))
+		}
+
+		// if migration is needed, then don't open the connection
+		if NeedsMigration() {
+			logger.Warnf("Database schema version %d does not match required schema version %d.", databaseSchemaVersion, appSchemaVersion)
+			return
+		}
+	}
 
 	// https://github.com/mattn/go-sqlite3
 	conn, err := sqlx.Open(sqlite3Driver, "file:"+databasePath+"?_fk=true")
@@ -55,34 +81,87 @@ func Reset(databasePath string) error {
 	return nil
 }
 
+// Backup the database
+func Backup(backupPath string) error {
+	db, err := sqlx.Connect(sqlite3Driver, "file:"+dbPath+"?_fk=true")
+	if err != nil {
+		return fmt.Errorf("Open database %s failed:%s", dbPath, err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec(`VACUUM INTO "` + backupPath + `"`)
+	if err != nil {
+		return fmt.Errorf("Vacuum failed: %s", err)
+	}
+
+	return nil
+}
+
 // Migrate the database
-func runMigrations(databasePath string) {
+func NeedsMigration() bool {
+	return databaseSchemaVersion != appSchemaVersion
+}
+
+func AppSchemaVersion() uint {
+	return appSchemaVersion
+}
+
+func DatabaseBackupPath() string {
+	return fmt.Sprintf("%s.%d.%s", dbPath, databaseSchemaVersion, time.Now().Format("20060102_150405"))
+}
+
+func Version() uint {
+	return databaseSchemaVersion
+}
+
+func getMigrate() (*migrate.Migrate, error) {
 	migrationsBox := packr.New("Migrations Box", "./migrations")
 	packrSource := &Packr2Source{
 		Box:        migrationsBox,
 		Migrations: source.NewMigrations(),
 	}
 
-	databasePath = utils.FixWindowsPath(databasePath)
+	databasePath := utils.FixWindowsPath(dbPath)
 	s, _ := WithInstance(packrSource)
-	m, err := migrate.NewWithSourceInstance(
+	return migrate.NewWithSourceInstance(
 		"packr2",
 		s,
 		fmt.Sprintf("sqlite3://%s", "file:"+databasePath),
 	)
+}
+
+func getDatabaseSchemaVersion() error {
+	m, err := getMigrate()
+	if err != nil {
+		return err
+	}
+
+	databaseSchemaVersion, _, _ = m.Version()
+	m.Close()
+	return nil
+}
+
+// Migrate the database
+func RunMigrations() error {
+	m, err := getMigrate()
 	if err != nil {
 		panic(err.Error())
 	}
 
-	databaseSchemaVersion, _, _ := m.Version()
+	databaseSchemaVersion, _, _ = m.Version()
 	stepNumber := appSchemaVersion - databaseSchemaVersion
 	if stepNumber != 0 {
 		err = m.Steps(int(stepNumber))
 		if err != nil {
-			panic(err.Error())
+			return err
 		}
 	}
 	m.Close()
+
+	// re-initialise the database
+	Initialize(dbPath)
+
+	return nil
 }
 
 func registerRegexpFunc() {
