@@ -4,11 +4,11 @@ import _ from "lodash";
 import { StashService } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import {
-  FilterSelect,
   StudioSelect,
   LoadingIndicator
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import MultiSet from "../Shared/MultiSet";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[];
@@ -21,13 +21,22 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
   const Toast = useToast();
   const [rating, setRating] = useState<string>("");
   const [studioId, setStudioId] = useState<string>();
+  const [performerMode, setPerformerMode] = React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[]>();
+  const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [tagIds, setTagIds] = useState<string[]>();
 
   const [updateScenes] = StashService.useBulkSceneUpdate(getSceneInput());
 
   // Network state
   const [isLoading, setIsLoading] = useState(true);
+
+  function makeBulkUpdateIds(ids: string[], mode: GQL.BulkUpdateIdMode) : GQL.BulkUpdateIds {
+    return {
+      mode,
+      ids
+    };
+  }
 
   function getSceneInput(): GQL.BulkSceneUpdateInput {
     // need to determine what we are actually setting on each scene
@@ -69,27 +78,27 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     }
 
     // if performerIds are empty
-    if (!performerIds || performerIds.length === 0) {
+    if (performerMode === GQL.BulkUpdateIdMode.Set && (!performerIds || performerIds.length === 0)) {
       // and all scenes have the same ids,
       if (aggregatePerformerIds.length > 0) {
         // then unset the performerIds, otherwise ignore
-        sceneInput.performer_ids = performerIds;
+        sceneInput.performer_ids = makeBulkUpdateIds(performerIds || [], performerMode);
       }
     } else {
       // if performerIds non-empty, then we are setting them
-      sceneInput.performer_ids = performerIds;
+      sceneInput.performer_ids = makeBulkUpdateIds(performerIds || [], performerMode);
     }
 
     // if tagIds non-empty, then we are setting them
-    if (!tagIds || tagIds.length === 0) {
+    if (tagMode === GQL.BulkUpdateIdMode.Set && (!tagIds || tagIds.length === 0)) {
       // and all scenes have the same ids,
       if (aggregateTagIds.length > 0) {
         // then unset the tagIds, otherwise ignore
-        sceneInput.tag_ids = tagIds;
+        sceneInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
       }
     } else {
       // if tagIds non-empty, then we are setting them
-      sceneInput.tag_ids = tagIds;
+      sceneInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
     }
 
     return sceneInput;
@@ -222,21 +231,31 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
 
     setRating(updateRating);
     setStudioId(updateStudioID);
-    setPerformerIds(updatePerformerIds);
-    setTagIds(updateTagIds);
+    if (performerMode === GQL.BulkUpdateIdMode.Set) {
+      setPerformerIds(updatePerformerIds);
+    }
+
+    if (tagMode === GQL.BulkUpdateIdMode.Set) {
+      setTagIds(updateTagIds);
+    }
+    
     setIsLoading(false);
-  }, [props.selected]);
+  }, [props.selected, performerMode, tagMode]);
 
   function renderMultiSelect(
     type: "performers" | "tags",
     ids: string[] | undefined
   ) {
+    let mode = GQL.BulkUpdateIdMode.Add;
+    switch (type) {
+      case "performers": mode = performerMode; break;
+      case "tags": mode = tagMode; break;
+    }
+
     return (
-      <FilterSelect
+      <MultiSet
         type={type}
-        isMulti
-        isClearable={false}
-        onSelect={items => {
+        onUpdate={items => {
           const itemIDs = items.map(i => i.id);
           switch (type) {
             case "performers":
@@ -247,7 +266,14 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
               break;
           }
         }}
+        onSetMode={(mode) => {
+          switch (type) {
+            case "performers": setPerformerMode(mode); break;
+            case "tags": setTagMode(mode); break;
+          }
+        }}
         ids={ids ?? []}
+        mode={mode}
       />
     );
   }
@@ -264,6 +290,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
           <Form.Label>Rating</Form.Label>
           <Form.Control
             as="select"
+            className="btn-secondary"
             value={rating}
             onChange={(event: React.FormEvent<HTMLSelectElement>) =>
               setRating(event.currentTarget.value)
