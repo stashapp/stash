@@ -3,12 +3,14 @@ package jsonschema
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stashapp/stash/pkg/models"
 	"os"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type Performer struct {
 	Name         string          `json:"name,omitempty"`
+	Gender       string          `json:"gender,omitempty"`
 	URL          string          `json:"url,omitempty"`
 	Twitter      string          `json:"twitter,omitempty"`
 	Instagram    string          `json:"instagram,omitempty"`

@@ -28,7 +28,8 @@ export type CriterionType =
   "career_length" |
   "tattoos" |
   "piercings" |
-  "aliases";
+  "aliases" | 
+  "gender";
 
 export abstract class Criterion<Option = any, Value = any> {
   public static getLabel(type: CriterionType = "none"): string {
@@ -58,6 +59,7 @@ export abstract class Criterion<Option = any, Value = any> {
       case "tattoos": return "Tattoos";
       case "piercings": return "Piercings";
       case "aliases": return "Aliases";
+      case "gender": return "Gender";
     }
   }
 
