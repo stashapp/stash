@@ -64,6 +64,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const [url, setUrl] = useState<string>();
   const [twitter, setTwitter] = useState<string>();
   const [instagram, setInstagram] = useState<string>();
+  const [gender, setGender] = useState<string | undefined>(undefined);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -92,6 +93,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     setUrl(state.url ?? undefined);
     setTwitter(state.twitter ?? undefined);
     setInstagram(state.instagram ?? undefined);
+    setGender(StashService.genderToString((state as GQL.PerformerDataFragment).gender ?? undefined));
   }
 
   function updatePerformerEditStateFromScraper(
@@ -153,7 +155,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       url,
       twitter,
       instagram,
-      image
+      image,
+      gender: StashService.stringToGender(gender)
     };
 
     if (!isNew) {
@@ -397,6 +400,16 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
+  function renderGender() {
+    return TableUtils.renderHtmlSelect({
+      title: "Gender",
+      value: gender,
+      isEditing: !!isEditing,
+      onChange: (value: string) => setGender(value),
+      selectOptions: [""].concat(StashService.getGenderStrings()),
+    });
+  }
+
   return (
     <>
       {renderDeleteAlert()}
@@ -406,6 +419,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         <tbody>
           {maybeRenderName()}
           {maybeRenderAliases()}
+          {renderGender()}
           {TableUtils.renderInputGroup({
             title: "Birthdate",
             value: birthdate,

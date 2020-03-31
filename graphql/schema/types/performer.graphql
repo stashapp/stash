@@ -1,8 +1,17 @@
+enum GenderEnum {
+  MALE
+  FEMALE
+  TRANSGENDER_MALE
+  TRANSGENDER_FEMALE
+  INTERSEX
+}
+
 type Performer {
   id: ID!
   checksum: String!
   name: String
   url: String
+  gender: GenderEnum
   twitter: String
   instagram: String
   birthdate: String
@@ -26,6 +35,7 @@ type Performer {
 input PerformerCreateInput {
   name: String
   url: String
+  gender: GenderEnum
   birthdate: String
   ethnicity: String
   country: String
@@ -48,6 +58,7 @@ input PerformerUpdateInput {
   id: ID!
   name: String
   url: String
+  gender: GenderEnum
   birthdate: String
   ethnicity: String
   country: String

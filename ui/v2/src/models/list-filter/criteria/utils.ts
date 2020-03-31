@@ -12,6 +12,7 @@ import { ResolutionCriterion } from "./resolution";
 import { StudiosCriterion } from "./studios";
 import { MoviesCriterion } from "./movies";
 import { TagsCriterion } from "./tags";
+import { GenderCriterion } from "./gender";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
@@ -40,6 +41,7 @@ export function makeCriteria(type: CriterionType = "none") {
           Criterion.getModifierOption(CriterionModifier.LessThan)
         ];
         return ret;
+    case "gender": return new GenderCriterion();
     case "ethnicity": 
     case "country":
     case "eye_color":
