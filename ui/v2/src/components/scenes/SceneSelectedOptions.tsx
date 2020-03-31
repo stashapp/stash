@@ -8,11 +8,11 @@ import {
 } from "@blueprintjs/core";
 import React, { FunctionComponent, useEffect, useState } from "react";
 import { FilterSelect } from "../select/FilterSelect";
-import { FilterMultiSelect } from "../select/FilterMultiSelect";
 import { StashService } from "../../core/StashService";
 import * as GQL from "../../core/generated-graphql";
 import { ErrorUtils } from "../../utils/errors";
 import { ToastUtils } from "../../utils/toasts";
+import { FilterMultiSet } from "../select/FilterMultiSet";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[],
@@ -22,7 +22,9 @@ interface IListOperationProps {
 export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (props: IListOperationProps) => {
   const [rating, setRating] = useState<string>("");
   const [studioId, setStudioId] = useState<string | undefined>(undefined);
+  const [performerMode, setPerformerMode] = React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[] | undefined>(undefined);
+  const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [tagIds, setTagIds] = useState<string[] | undefined>(undefined);
 
   const updateScenes = StashService.useBulkSceneUpdate(getSceneInput());
@@ -30,6 +32,13 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
+  function makeBulkUpdateIds(ids: string[], mode: GQL.BulkUpdateIdMode) : GQL.BulkUpdateIds {
+    return {
+      mode,
+      ids
+    };
+  }
+  
   function getSceneInput() : GQL.BulkSceneUpdateInput {
     // need to determine what we are actually setting on each scene
     var aggregateRating = getRating(props.selected);
@@ -70,27 +79,27 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
     }
     
     // if performerIds are empty
-    if (!performerIds || performerIds.length === 0) {
+    if (performerMode == GQL.BulkUpdateIdMode.Set && (!performerIds || performerIds.length === 0)) {
       // and all scenes have the same ids,
       if (aggregatePerformerIds.length > 0) {
         // then unset the performerIds, otherwise ignore
-        sceneInput.performer_ids = performerIds;
+        sceneInput.performer_ids = makeBulkUpdateIds(performerIds || [], performerMode);
       }
     } else {
       // if performerIds non-empty, then we are setting them
-      sceneInput.performer_ids = performerIds;
+      sceneInput.performer_ids = makeBulkUpdateIds(performerIds || [], performerMode);
     }
     
     // if tagIds non-empty, then we are setting them
-    if (!tagIds || tagIds.length === 0) {
+    if (tagMode == GQL.BulkUpdateIdMode.Set && (!tagIds || tagIds.length === 0)) {
       // and all scenes have the same ids,
       if (aggregateTagIds.length > 0) {
         // then unset the tagIds, otherwise ignore
-        sceneInput.tag_ids = tagIds;
+        sceneInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
       }
     } else {
       // if tagIds non-empty, then we are setting them
-      sceneInput.tag_ids = tagIds;
+      sceneInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
     }
 
     return sceneInput;
@@ -232,17 +241,28 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
     
     setRating(rating);
     setStudioId(studioId);
-    setPerformerIds(performerIds);
-    setTagIds(tagIds);
+    if (performerMode == GQL.BulkUpdateIdMode.Set) {
+      setPerformerIds(performerIds);
+    }
+
+    if (tagMode == GQL.BulkUpdateIdMode.Set) {
+      setTagIds(tagIds);
+    }
   }
 
   useEffect(() => {
     updateScenesEditState(props.selected);
-  }, [props.selected]);
+  }, [props.selected, performerMode, tagMode]);
 
   function renderMultiSelect(type: "performers" | "tags", initialIds: string[] | undefined) {
+    let mode = GQL.BulkUpdateIdMode.Add;
+    switch (type) {
+      case "performers": mode = performerMode; break;
+      case "tags": mode = tagMode; break;
+    }
+
     return (
-      <FilterMultiSelect
+      <FilterMultiSet
         type={type}
         onUpdate={(items) => {
           const ids = items.map((i) => i.id);
@@ -251,7 +271,14 @@ export const SceneSelectedOptions: FunctionComponent<IListOperationProps> = (pro
             case "tags": setTagIds(ids); break;
           }
         }}
+        onSetMode={(mode) => {
+          switch (type) {
+            case "performers": setPerformerMode(mode); break;
+            case "tags": setTagMode(mode); break;
+          }
+        }}
         initialIds={initialIds}
+        mode={mode}
       />
     );
   }

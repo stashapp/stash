@@ -68,3 +68,10 @@
     padding: 0;
   }
 }
+
+.multi-set > div.input-group-prepend + div  {
+  position: relative;
+  flex: 1 1;
+  min-width: 0;
+  margin-bottom: 0;
+}
