@@ -2,6 +2,10 @@
   padding: 0 0 1rem 0;
 }
 
+.movie-details {
+  max-width: 1200px;
+}
+
 .movie-card {
   &-header {
     height: 240px;
@@ -20,4 +24,3 @@
     }
   }
 }
-  

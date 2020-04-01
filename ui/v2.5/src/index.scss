@@ -186,28 +186,28 @@ div.react-select__menu {
     background-color: #fff;
     border-color: inherit;
     color: $dark-text;
-  
+
     .react-select__single-value,
     .react-select__input {
       color: $dark-text;
     }
-  
+
     .react-select__multi-value {
       background-color: #fff;
       color: $dark-text;
     }
   }
-  
+
   div.react-select__menu {
     background-color: #fff;
     color: $text-color;
-  
+
     .react-select__option {
       color: $dark-text;
     }
-  
+
     .react-select__option--is-focused {
-      background-color: rgba(167,182,194,.3);
+      background-color: rgba(167, 182, 194, .3);
     }
   }
 }
@@ -368,7 +368,8 @@ div.react-select__menu {
   overflow: hidden;
   position: relative;
 
-  &:hover {
+  input[type=file], /* FF, IE7+, chrome (except button) */
+  input[type=file]::-webkit-file-upload-button { /* chromes and blink button */
     cursor: pointer;
   }
 
@@ -383,11 +384,6 @@ div.react-select__menu {
     right: 0;
     text-align: right;
     top: 0;
-
-    &:hover {
-      cursor: pointer;
-    }
-
   }
 }
 
