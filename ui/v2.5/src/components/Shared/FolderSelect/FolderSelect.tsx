@@ -55,6 +55,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
                   setCurrentDirectory(e.currentTarget.value)
                 }
                 defaultValue={currentDirectory}
+                spellCheck={false}
               />
               <InputGroup.Append>
                 {!data || !data.directories || loading ? (
