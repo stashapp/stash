@@ -164,7 +164,7 @@ function SceneParserRatingField(props: ISceneParserFieldProps<number>) {
         />
       </td>
       <td>
-      <Form.Group>
+        <Form.Group>
           <Form.Control
             readOnly
             className={props.className}
@@ -394,7 +394,9 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
           onSetChanged={isSet =>
             onRatingChanged(isSet, props.scene.rating.value ?? 0)
           }
-          onValueChanged={value => onRatingChanged(props.scene.rating.isSet, value)}
+          onValueChanged={value =>
+            onRatingChanged(props.scene.rating.isSet, value)
+          }
         />
       )}
       {props.showFields.get("Performers") && (
