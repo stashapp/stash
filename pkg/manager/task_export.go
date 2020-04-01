@@ -238,6 +238,9 @@ func (t *ExportTask) ExportPerformers(ctx context.Context) {
 		if performer.Name.Valid {
 			newPerformerJSON.Name = performer.Name.String
 		}
+		if performer.Gender.Valid {
+			newPerformerJSON.Gender = performer.Gender.String
+		}
 		if performer.URL.Valid {
 			newPerformerJSON.URL = performer.URL.String
 		}

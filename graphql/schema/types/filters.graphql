@@ -46,6 +46,8 @@ input PerformerFilterType {
   piercings: StringCriterionInput
   """Filter by aliases"""
   aliases: StringCriterionInput
+  """Filter by gender"""
+  gender: GenderCriterionInput
 }
 
 input SceneMarkerFilterType {
@@ -113,5 +115,10 @@ input IntCriterionInput {
 
 input MultiCriterionInput {
   value: [ID!]
+  modifier: CriterionModifier!
+}
+
+input GenderCriterionInput {
+  value: GenderEnum
   modifier: CriterionModifier!
 }

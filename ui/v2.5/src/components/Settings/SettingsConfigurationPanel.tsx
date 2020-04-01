@@ -29,7 +29,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [logLevel, setLogLevel] = useState<string>("Info");
   const [logAccess, setLogAccess] = useState<boolean>(true);
   const [excludes, setExcludes] = useState<string[]>([]);
-  const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(undefined);
+  const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(
+    undefined
+  );
 
   const { data, error, loading } = StashService.useConfiguration();
 
@@ -315,7 +317,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={username}
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
               setUsername(e.currentTarget.value)
             }
           />
@@ -329,7 +331,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             className="col col-sm-6 text-input"
             type="password"
             defaultValue={password}
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
               setPassword(e.currentTarget.value)
             }
           />
@@ -347,7 +349,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Control
           className="col col-sm-6 text-input"
           defaultValue={logFile}
-          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+          onInput={(e: React.FormEvent<HTMLInputElement>) =>
             setLogFile(e.currentTarget.value)
           }
         />

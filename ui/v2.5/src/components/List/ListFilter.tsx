@@ -276,7 +276,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           <Form.Control
             placeholder="Search..."
             defaultValue={props.filter.searchTerm}
-            onChange={onChangeQuery}
+            onInput={onChangeQuery}
             className="filter-item col-5 col-sm-2 bg-secondary text-white border-secondary"
           />
           <Form.Control

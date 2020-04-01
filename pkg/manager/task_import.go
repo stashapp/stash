@@ -94,6 +94,9 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 		if performerJSON.Name != "" {
 			newPerformer.Name = sql.NullString{String: performerJSON.Name, Valid: true}
 		}
+		if performerJSON.Gender != "" {
+			newPerformer.Gender = sql.NullString{String: performerJSON.Gender, Valid: true}
+		}
 		if performerJSON.URL != "" {
 			newPerformer.URL = sql.NullString{String: performerJSON.URL, Valid: true}
 		}
@@ -241,19 +244,19 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 
 		// Populate a new movie from the input
 		newMovie := models.Movie{
-			FrontImage:  frontimageData,
-			BackImage:   backimageData,
-			Checksum:    checksum,
-			Name:        sql.NullString{String: movieJSON.Name, Valid: true},
-			Aliases:     sql.NullString{String: movieJSON.Aliases, Valid: true},
-			Date:        models.SQLiteDate{String: movieJSON.Date, Valid: true},
-			Duration:    sql.NullString{String: movieJSON.Duration, Valid: true},
-			Rating:      sql.NullString{String: movieJSON.Rating, Valid: true},
-			Director:    sql.NullString{String: movieJSON.Director, Valid: true},
-			Synopsis:    sql.NullString{String: movieJSON.Synopsis, Valid: true},
-			URL:         sql.NullString{String: movieJSON.URL, Valid: true},
-			CreatedAt:   models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
-			UpdatedAt:   models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
+			FrontImage: frontimageData,
+			BackImage:  backimageData,
+			Checksum:   checksum,
+			Name:       sql.NullString{String: movieJSON.Name, Valid: true},
+			Aliases:    sql.NullString{String: movieJSON.Aliases, Valid: true},
+			Date:       models.SQLiteDate{String: movieJSON.Date, Valid: true},
+			Duration:   sql.NullString{String: movieJSON.Duration, Valid: true},
+			Rating:     sql.NullString{String: movieJSON.Rating, Valid: true},
+			Director:   sql.NullString{String: movieJSON.Director, Valid: true},
+			Synopsis:   sql.NullString{String: movieJSON.Synopsis, Valid: true},
+			URL:        sql.NullString{String: movieJSON.URL, Valid: true},
+			CreatedAt:  models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
+			UpdatedAt:  models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
 		}
 
 		_, err = qb.Create(newMovie, tx)

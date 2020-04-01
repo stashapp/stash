@@ -64,6 +64,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const [url, setUrl] = useState<string>();
   const [twitter, setTwitter] = useState<string>();
   const [instagram, setInstagram] = useState<string>();
+  const [gender, setGender] = useState<string | undefined>(undefined);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -92,6 +93,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     setUrl(state.url ?? undefined);
     setTwitter(state.twitter ?? undefined);
     setInstagram(state.instagram ?? undefined);
+    setGender(StashService.genderToString((state as GQL.PerformerDataFragment).gender ?? undefined));
   }
 
   function updatePerformerEditStateFromScraper(
@@ -101,7 +103,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
     // image is a base64 string
     if ((state as GQL.ScrapedPerformerDataFragment).image !== undefined) {
-      let imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
+      const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
       setImage(imageStr ?? undefined);
       if (onImageChange) {
         onImageChange(imageStr!);
@@ -153,7 +155,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       url,
       twitter,
       instagram,
-      image
+      image,
+      gender: StashService.stringToGender(gender)
     };
 
     if (!isNew) {
@@ -174,7 +177,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     if (!scrapePerformerDetails) return {};
 
     // image is not supported
-    const { __typename, image, ...ret } = scrapePerformerDetails;
+    const { __typename, image: _image, ...ret } = scrapePerformerDetails;
     return ret;
   }
 
@@ -397,6 +400,16 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
+  function renderGender() {
+    return TableUtils.renderHtmlSelect({
+      title: "Gender",
+      value: gender,
+      isEditing: !!isEditing,
+      onChange: (value: string) => setGender(value),
+      selectOptions: [""].concat(StashService.getGenderStrings()),
+    });
+  }
+
   return (
     <>
       {renderDeleteAlert()}
@@ -406,6 +419,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         <tbody>
           {maybeRenderName()}
           {maybeRenderAliases()}
+          {renderGender()}
           {TableUtils.renderInputGroup({
             title: "Birthdate",
             value: birthdate,
