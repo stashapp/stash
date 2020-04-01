@@ -221,12 +221,12 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   }
 
   function renderEthnicity() {
-    return TableUtils.renderHtmlSelect({
+    return TableUtils.renderInputGroup({
       title: "Ethnicity",
       value: ethnicity,
       isEditing: !!isEditing,
-      onChange: (value: string) => setEthnicity(value),
-      selectOptions: ["white", "black", "asian", "hispanic"]
+      placeholder: "Ethnicity",
+      onChange: setEthnicity
     });
   }
 
