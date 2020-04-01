@@ -166,18 +166,23 @@ div.react-select__control {
   }
 }
 
-div.react-select__menu {
+div.react-select__menu, div.dropdown-menu {
   background-color: $secondary;
   color: $text-color;
 
-  .react-select__option {
+  .react-select__option, .dropdown-item {
     color: $text-color;
   }
 
-  .react-select__option--is-focused {
+  .react-select__option--is-focused, .dropdown-item:focus, .dropdown-item:hover {
     background-color: #8a9ba826;
     cursor: pointer;
   }
+}
+
+div.dropdown-menu {
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 /* we don't want to override this for dialogs, which are light colored */
