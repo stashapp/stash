@@ -25,6 +25,7 @@ const initialParserInput = {
 const initialShowFieldsState = new Map<string, boolean>([
   ["Title", true],
   ["Date", true],
+  ["Rating", true],
   ["Performers", true],
   ["Tags", true],
   ["Studio", true]
@@ -39,6 +40,7 @@ export const SceneFilenameParser: React.FC = () => {
 
   const [allTitleSet, setAllTitleSet] = useState<boolean>(false);
   const [allDateSet, setAllDateSet] = useState<boolean>(false);
+  const [allRatingSet, setAllRatingSet] = useState<boolean>(false);
   const [allPerformerSet, setAllPerformerSet] = useState<boolean>(false);
   const [allTagSet, setAllTagSet] = useState<boolean>(false);
   const [allStudioSet, setAllStudioSet] = useState<boolean>(false);
@@ -63,6 +65,7 @@ export const SceneFilenameParser: React.FC = () => {
       ParserField.fullDateFields.some(f => {
         return pattern.includes(`{${f.field}}`);
       });
+    const ratingSet = pattern.includes("{rating}");
     const performerSet = pattern.includes("{performer}");
     const tagSet = pattern.includes("{tag}");
     const studioSet = pattern.includes("{studio}");
@@ -70,6 +73,7 @@ export const SceneFilenameParser: React.FC = () => {
     const newShowFields = new Map<string, boolean>([
       ["Title", titleSet],
       ["Date", dateSet],
+      ["Rating", ratingSet],
       ["Performers", performerSet],
       ["Tags", tagSet],
       ["Studio", studioSet]
@@ -176,6 +180,9 @@ export const SceneFilenameParser: React.FC = () => {
     const newAllDateSet = !parserResult.some(r => {
       return !r.date.isSet;
     });
+    const newAllRatingSet = !parserResult.some(r => {
+      return !r.rating.isSet;
+    });
     const newAllPerformerSet = !parserResult.some(r => {
       return !r.performers.isSet;
     });
@@ -188,6 +195,7 @@ export const SceneFilenameParser: React.FC = () => {
 
     setAllTitleSet(newAllTitleSet);
     setAllDateSet(newAllDateSet);
+    setAllRatingSet(newAllRatingSet);
     setAllTagSet(newAllPerformerSet);
     setAllTagSet(newAllTagSet);
     setAllStudioSet(newAllStudioSet);
@@ -213,6 +221,17 @@ export const SceneFilenameParser: React.FC = () => {
 
     setParserResult(newResult);
     setAllDateSet(selected);
+  }
+
+  function onSelectAllRatingSet(selected: boolean) {
+    const newResult = [...parserResult];
+
+    newResult.forEach(r => {
+      r.rating.isSet = selected;
+    });
+
+    setParserResult(newResult);
+    setAllRatingSet(selected);
   }
 
   function onSelectAllPerformerSet(selected: boolean) {
@@ -295,6 +314,7 @@ export const SceneFilenameParser: React.FC = () => {
                 <th className="parser-field-filename">Filename</th>
                 {renderHeader("Title", allTitleSet, onSelectAllTitleSet)}
                 {renderHeader("Date", allDateSet, onSelectAllDateSet)}
+                {renderHeader("Rating", allRatingSet, onSelectAllRatingSet)}
                 {renderHeader(
                   "Performers",
                   allPerformerSet,

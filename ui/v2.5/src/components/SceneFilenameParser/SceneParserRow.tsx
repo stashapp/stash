@@ -35,6 +35,7 @@ export class SceneParserResult {
   public filename: string;
   public title: ParserResult<string> = new ParserResult<string>();
   public date: ParserResult<string> = new ParserResult<string>();
+  public rating: ParserResult<number> = new ParserResult<number>();
 
   public studio: ParserResult<string> = new ParserResult<string>();
   public tags: ParserResult<string[]> = new ParserResult<string[]>();
@@ -51,12 +52,14 @@ export class SceneParserResult {
     this.filename = TextUtils.fileNameFromPath(this.scene.path);
     this.title.setOriginalValue(this.scene.title ?? undefined);
     this.date.setOriginalValue(this.scene.date ?? undefined);
+    this.rating.setOriginalValue(this.scene.rating ?? undefined);
     this.performers.setOriginalValue(this.scene.performers.map(p => p.id));
     this.tags.setOriginalValue(this.scene.tags.map(t => t.id));
     this.studio.setOriginalValue(this.scene.studio?.id);
 
     this.title.setValue(result.title ?? undefined);
     this.date.setValue(result.date ?? undefined);
+    this.rating.setValue(result.rating ?? undefined);
   }
 
   // returns true if any of its fields have set == true
@@ -64,6 +67,7 @@ export class SceneParserResult {
     return (
       this.title.isSet ||
       this.date.isSet ||
+      this.rating.isSet ||
       this.performers.isSet ||
       this.studio.isSet ||
       this.tags.isSet
@@ -75,7 +79,7 @@ export class SceneParserResult {
       id: this.id,
       details: this.scene.details,
       url: this.scene.url,
-      rating: this.scene.rating,
+      rating: this.rating.isSet ? this.rating.value : this.scene.rating,
       gallery_id: this.scene.gallery?.id,
       title: this.title.isSet ? this.title.value : this.scene.title,
       date: this.date.isSet ? this.date.value : this.scene.date,
@@ -133,6 +137,54 @@ function SceneParserStringField(props: ISceneParserFieldProps<string>) {
               maybeValueChanged(event.currentTarget.value)
             }
           />
+        </Form.Group>
+      </td>
+    </>
+  );
+}
+
+function SceneParserRatingField(props: ISceneParserFieldProps<number>) {
+  function maybeValueChanged(value: number) {
+    if (value !== props.parserResult.value) {
+      props.onValueChanged(value);
+    }
+  }
+
+  const result = props.originalParserResult || props.parserResult;
+  const options = ["", 1, 2, 3, 4, 5];
+
+  return (
+    <>
+      <td>
+        <Form.Check
+          checked={props.parserResult.isSet}
+          onChange={() => {
+            props.onSetChanged(!props.parserResult.isSet);
+          }}
+        />
+      </td>
+      <td>
+      <Form.Group>
+          <Form.Control
+            disabled
+            className={props.className}
+            defaultValue={result.originalValue || ""}
+          />
+          <Form.Control
+            as="select"
+            className={props.className}
+            disabled={!props.parserResult.isSet}
+            value={props.parserResult.value?.toString()}
+            onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+              maybeValueChanged(Number.parseInt(event.currentTarget.value, 10))
+            }
+          >
+            {options.map(opt => (
+              <option value={opt} key={opt}>
+                {opt}
+              </option>
+            ))}
+          </Form.Control>
         </Form.Group>
       </td>
     </>
@@ -275,6 +327,12 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
     props.onChange(newResult);
   }
 
+  function onRatingChanged(set: boolean, value: number) {
+    const newResult = _.clone(props.scene);
+    newResult.rating = changeParser(newResult.rating, set, value);
+    props.onChange(newResult);
+  }
+
   function onPerformerIdsChanged(set: boolean, value: string[]) {
     const newResult = _.clone(props.scene);
     newResult.performers = changeParser(newResult.performers, set, value);
@@ -322,6 +380,18 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
             onDateChanged(isSet, props.scene.date.value ?? "")
           }
           onValueChanged={value => onDateChanged(props.scene.date.isSet, value)}
+        />
+      )}
+      {props.showFields.get("Rating") && (
+        <SceneParserRatingField
+          key="rating"
+          fieldName="Rating"
+          className="parser-field-rating"
+          parserResult={props.scene.rating}
+          onSetChanged={isSet =>
+            onRatingChanged(isSet, props.scene.rating.value ?? 0)
+          }
+          onValueChanged={value => onRatingChanged(props.scene.rating.isSet, value)}
         />
       )}
       {props.showFields.get("Performers") && (
