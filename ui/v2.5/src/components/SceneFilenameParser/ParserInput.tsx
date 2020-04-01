@@ -145,8 +145,8 @@ export const ParserInput: React.FC<IParserInputProps> = (
                   key={item.field}
                   onSelect={() => addParserField(item)}
                 >
-                  <span>{item.field}</span>
-                  <span className="ml-auto">{item.helperText}</span>
+                  <span>{item.field || "{}"}</span>
+                  <span className="ml-auto text-muted">{item.helperText}</span>
                 </Dropdown.Item>
               ))}
             </DropdownButton>
@@ -217,7 +217,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
               onSelect={() => setParserRecipe(item)}
             >
               <span>{item.pattern}</span>
-              <span className="mr-auto">{item.description}</span>
+              <span className="ml-auto text-muted">{item.description}</span>
             </Dropdown.Item>
           ))}
         </DropdownButton>

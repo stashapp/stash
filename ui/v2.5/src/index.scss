@@ -183,6 +183,18 @@ div.react-select__menu, div.dropdown-menu {
 div.dropdown-menu {
   max-height: 300px;
   overflow-y: auto;
+
+  .dropdown-item {
+    display: flex;
+    
+    & > * {
+      margin-right: 7px;
+    }
+
+    & > :last-child {
+      margin-right: 0;
+    }
+  }
 }
 
 /* we don't want to override this for dialogs, which are light colored */
