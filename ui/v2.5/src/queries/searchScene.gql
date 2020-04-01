@@ -6,6 +6,7 @@ query SearchScene($term: String!) {
     date
     urls {
       url
+      type
     }
     studio {
       name
@@ -25,6 +26,7 @@ query SearchScene($term: String!) {
         gender
         urls {
           url
+          type
         }
         birthdate {
           date

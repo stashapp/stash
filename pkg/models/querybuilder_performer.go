@@ -192,7 +192,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	handleStringCriterion(tableName+".career_length", performerFilter.CareerLength, &query)
 	handleStringCriterion(tableName+".tattoos", performerFilter.Tattoos, &query)
 	handleStringCriterion(tableName+".piercings", performerFilter.Piercings, &query)
-	handleStringCriterion(tableName+".ethnicity", performerFilter.StashID, &query)
+	handleStringCriterion(tableName+".stash_id", performerFilter.StashID, &query)
 
 	// TODO - need better handling of aliases
 	handleStringCriterion(tableName+".aliases", performerFilter.Aliases, &query)

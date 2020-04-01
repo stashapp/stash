@@ -16,7 +16,8 @@ mutation PerformerCreate(
   $twitter: String,
   $instagram: String,
   $favorite: Boolean,
-  $image: String) {
+  $image: String,
+  $stash_id: String) {
 
   performerCreate(input: {
                             name: $name,
@@ -36,7 +37,8 @@ mutation PerformerCreate(
                             twitter: $twitter,
                             instagram: $instagram,
                             favorite: $favorite,
-                            image: $image
+                            image: $image,
+                            stash_id: $stash_id
                           }) {
       ...PerformerData
   }
@@ -61,7 +63,8 @@ mutation PerformerUpdate(
   $twitter: String,
   $instagram: String,
   $favorite: Boolean,
-  $image: String) {
+  $image: String,
+  $stash_id: String) {
 
   performerUpdate(input: {
                             id: $id,
@@ -82,7 +85,8 @@ mutation PerformerUpdate(
                             twitter: $twitter,
                             instagram: $instagram,
                             favorite: $favorite,
-                            image: $image
+                            image: $image,
+                            stash_id: $stash_id
                           }) {
     ...PerformerData
   }

@@ -16,8 +16,8 @@ func NewStudioQueryBuilder() StudioQueryBuilder {
 func (qb *StudioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO studios (checksum, name, url, parent_id, created_at, updated_at)
-				VALUES (:checksum, :name, :url, :parent_id, :created_at, :updated_at)
+		`INSERT INTO studios (checksum, name, url, parent_id, stash_id, created_at, updated_at)
+                VALUES (:checksum, :name, :url, :parent_id, :stash_id, :created_at, :updated_at)
 		`,
 		newStudio,
 	)

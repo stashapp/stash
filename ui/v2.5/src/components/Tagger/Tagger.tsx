@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState, useRef, Dispatch, SetStateAction } from "react";
 import ApolloClient from 'apollo-client';
 import { ApolloLink } from 'apollo-link';
 import { InMemoryCache } from 'apollo-cache-inmemory';
@@ -7,6 +7,7 @@ import { Button, Form, InputGroup } from 'react-bootstrap';
 import path from 'parse-filepath';
 import { debounce } from "lodash";
 import cx from 'classnames';
+import { blobToBase64 } from 'base64-blob';
 
 import { BreastTypeEnum } from 'src/definitions-box/globalTypes';
 import * as GQL from 'src/core/generated-graphql';
@@ -68,12 +69,6 @@ function prepareQueryString(scene: Partial<GQL.Scene>, str: string) {
   return s.split(/(?=[A-Z])/).join(' ').replace(/\./g, ' ');
 }
 
-interface ISelectResult {
-  label: string;
-  value: string;
-}
-
-
 interface IconProps {
   className?: string;
 }
@@ -93,6 +88,7 @@ export const Tagger: React.FC = () => {
   const [queryString, setQueryString] = useState<Record<string, string>>({});
   const [selectedResult, setSelectedResult] = useState<Record<string, number>>();
   const [showMales, setShowMales] = useState(false);
+  const [taggedScenes, setTaggedScenes] = useState<Record<string, Partial<GQL.Scene>>>({});
 
   const { data: sceneData, loading: sceneLoading } = GQL.useFindScenesQuery({
     variables: {
@@ -125,6 +121,13 @@ export const Tagger: React.FC = () => {
     });
 
     setLoading(true);
+  };
+
+  const handleTaggedScene = (scene: Partial<GQL.Scene>) => {
+    setTaggedScenes({
+      ...taggedScenes,
+      [scene.id as string]: scene
+    });
   };
 
   const scenes = sceneData?.findScenes?.scenes ?? [];
@@ -176,18 +179,27 @@ export const Tagger: React.FC = () => {
                     </InputGroup>
                   </div>
                 </div>
+                { scene?.stash_id && <div className="col-5 offset-6 text-right"><b>Scene already tagged</b></div> }
                 { searchResults[scene.id] === null && <div>No results found.</div> }
-                { searchResults[scene.id] && (
+                { taggedScenes[scene.id] && (
+                  <div className="col-5 offset-6 text-right">
+                    <b>Scene successfully tagged:</b>
+                    <a href={`/scenes/${scene.id}`}>{taggedScenes[scene.id].title}</a>
+                  </div>
+                )}
+                { searchResults[scene.id] && !taggedScenes[scene.id] && (
                   <div className="col mt-4">
                     <ul className="pl-0">
                       { searchResults[scene.id]?.searchScene.map((sceneResult, i) => (
                         sceneResult && (
                           <StashSearchResult
+                            key={sceneResult.id}
                             showMales={showMales}
                             stashScene={scene}
                             scene={sceneResult}
                             isActive={(selectedResult?.[scene.id] ?? 0) === i}
                             setActive={() => setSelectedResult({ ...selectedResult, [scene.id]: i})}
+                            setScene={handleTaggedScene}
                           />
                         )
                       ))
@@ -205,13 +217,13 @@ export const Tagger: React.FC = () => {
 
 interface IPerformerResultProps {
   performer: StashPerformer
+  setPerformer: (data:IPerformerOperation) => void;
 }
 
-const PerformerResult: React.FC<IPerformerResultProps> = ({ performer }) => {
+const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerformer }) => {
   const [selectedPerformer, setSelectedPerformer] = useState();
   const [selectedSource, setSelectedSource] = useState<'create'|'existing'|undefined>();
   const [modalVisible, showModal] = useState(false);
-  const [newPerformer, setNewPerformer] = useState<GQL.PerformerCreateInput|undefined>();
   const { data: stashData, loading: stashLoading } = GQL.useFindPerformersQuery({
     variables: {
       performer_filter: {
@@ -229,18 +241,36 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer }) => {
       }
     },
     onCompleted: (data) => {
-      const performer = data.findPerformers?.performers?.[0]?.id;
-      if (performer) {
-        setSelectedPerformer(performer);
+      const performerResult = data.findPerformers?.performers?.[0]?.id;
+      if (performerResult) {
+        setSelectedPerformer(performerResult);
         setSelectedSource('existing');
+        setPerformer({
+          type: 'Update',
+          data: performerResult
+        });
       }
     }
   });
+
+  useEffect(() => {
+    if(!stashData?.findPerformers.count)
+      return;
+
+    setPerformer({
+      type: 'Existing',
+      data: stashData.findPerformers.performers[0].id
+    });
+  }, [stashData]);
 
   const handlePerformerSelect = (items: ValidTypes[]) => {
     if (items.length) {
       setSelectedSource('existing');
       setSelectedPerformer(items[0].id);
+      setPerformer({
+        type: 'Update',
+        data: items[0].id
+      });
     }
     else {
       setSelectedSource(undefined);
@@ -250,6 +280,10 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer }) => {
 
   const handlePerformerCreate = () => {
     setSelectedSource('create');
+    setPerformer({
+      type: 'Create',
+      data: performer
+    });
     showModal(false);
   };
 
@@ -258,9 +292,11 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer }) => {
 
   if((stashData?.findPerformers.count ?? 0) > 0) {
     return (
-      <div>
-        <SuccessIcon />
-        <span>{ stashData!.findPerformers.performers[0].name }</span>
+      <div className="row">
+        <span className="col-3 offset-6">
+          <SuccessIcon />Performer found:
+        </span>
+        <b className="col-3 text-right">{ stashData!.findPerformers.performers[0].name }</b>
       </div>
     );
   }
@@ -320,7 +356,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer }) => {
         <b className="ml-2">{performer.name}</b>
       </div>
       <div className="col-2">
-        <Button variant="secondary" className="mr-2" onClick={() => showModal(true)}>Create</Button>
+        <Button variant="secondary" className="mr-1" onClick={() => showModal(true)}>Create</Button>
         { selectedSource === 'create'
           ? <SuccessIcon />
           : <FailIcon />
@@ -345,10 +381,13 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer }) => {
 
 interface IStudioResultProps {
   studio: StashStudio|null;
+  setStudio: Dispatch<SetStateAction<IStudioOperation|undefined>>;
 }
 
-const StudioResult: React.FC<IStudioResultProps> = ({ studio }) => {
+const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
   const [selectedStudio, setSelectedStudio] = useState();
+  const [modalVisible, showModal] = useState(false);
+  const [selectedSource, setSelectedSource] = useState<'create'|'existing'|undefined>();
   const { data: stashData, loading: stashLoading } = GQL.useFindStudioByStashIdQuery({
     variables: {
       id: studio?.id ?? ''
@@ -360,21 +399,101 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio }) => {
         q: `"${studio?.name ?? ''}"`
       }
     },
-    onCompleted: (data) => {
-      setSelectedStudio(data.findStudios.count > 0
-        ? data.findStudios.studios[0].id
-        : null
-      );
-    }
+    onCompleted: (data) => (
+      handleStudioSelect(data.findStudios?.studios?.[0]?.id)
+    )
   });
 
+  useEffect(() => {
+    if(!stashData?.findStudioByStashID)
+      return;
+
+    setStudio({
+      type: 'Existing',
+      data: stashData.findStudioByStashID.id
+    });
+  }, [stashData]);
+
+  const handleStudioCreate = () => {
+    if(!studio)
+      return;
+    setSelectedSource('create');
+    setStudio({
+      type: 'Create',
+      data: studio
+    });
+    showModal(false);
+  };
+
+  const handleStudioSelect = (id?: string) => {
+    if (id) {
+      setSelectedStudio(id);
+      setSelectedSource('existing');
+      setStudio({
+        type: 'Update',
+        data: id
+      });
+    }
+  };
+
   if(loading || stashLoading)
-    return <div>Loading performer</div>;
+    return <div>Loading studio</div>;
 
   if(stashData?.findStudioByStashID) {
-    return <div>{ stashData.findStudioByStashID?.name }</div>
+    return (
+      <div className="row">
+        <span className="col-3 offset-6">
+          <SuccessIcon />Studio found:
+        </span>
+        <b className="col-3 text-right">{ stashData.findStudioByStashID.name }</b>
+      </div>
+    );
   }
-  return <StudioSelect ids={selectedStudio ? [selectedStudio] : []} onSelect={(items) => setSelectedStudio(items.length ? items[0].id : null)} />
+
+
+  return (
+    <div className="row align-items-center mt-2">
+      <Modal
+        show={modalVisible}
+        accept={{ text: "Save", onClick: handleStudioCreate }}
+        cancel={{ onClick: () => showModal(false), variant: "secondary" }}
+      >
+        <div className="row">
+          <div className="col-6">
+            <div className="row">
+              <div className="col-6">Name:</div>{ studio?.name }
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      <div className="col-4">
+        Studio:
+        <b className="ml-2">{studio?.name}</b>
+      </div>
+      <div className="col-2">
+        <Button variant="secondary" className="mr-1" onClick={() => showModal(true)}>Create</Button>
+        { selectedSource === 'create'
+          ? <SuccessIcon />
+          : <FailIcon />
+        }
+      </div>
+      <div className="col-3">
+        { selectedSource === 'existing'
+          ? <SuccessIcon />
+          : <FailIcon />
+        }
+        <span className="d-inline-block">Select existing:</span>
+      </div>
+      <div className="col-3">
+        <StudioSelect
+          ids={selectedStudio ? [selectedStudio] : []}
+          onSelect={(items) => handleStudioSelect(items.length ? items[0].id : undefined)}
+        />
+      </div>
+    </div>
+
+  );
 }
 
 interface IStashSearchResultProps {
@@ -383,29 +502,153 @@ interface IStashSearchResultProps {
   isActive: boolean;
   setActive: () => void;
   showMales: boolean;
+  setScene: (scene: Partial<GQL.Scene>) => void;
 }
 
-type PerformerData = StashPerformer|string;
-type StudioData = StashStudio|string;
+interface IPerformerOperation {
+  type: "Create"|"Existing"|"Update";
+  data: StashPerformer|string;
+}
 
-const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScene, isActive, setActive, showMales }) => {
-  const [studio, setStudio] = useState<StudioData>();
-  const [performers, setPerformers] = useState<Record<string, PerformerData>>();
+interface IStudioOperation {
+  type: "Create"|"Existing"|"Update";
+  data: StashStudio|string;
+}
 
-  const [updateScene] = GQL.useSceneUpdateMutation({ variables: {
-    id: stashScene.id
-  }});
+const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScene, isActive, setActive, showMales, setScene }) => {
+  const [studio, setStudio] = useState<IStudioOperation>();
+  const [performers, setPerformers] = useState<Record<string, IPerformerOperation>>();
 
-  const setPerformer = (performerData: PerformerData, performerID: string) => (
+  const [createStudio] = GQL.useStudioCreateMutation();
+  const [updateStudio] = GQL.useStudioUpdateMutation();
+  const [updateScene] = GQL.useSceneUpdateMutation();
+  const [createPerformer] = GQL.usePerformerCreateMutation();
+  const [updatePerformer] = GQL.usePerformerUpdateMutation();
+
+  const setPerformer = (performerData: IPerformerOperation, performerID: string) => (
     setPerformers({ ...performers, [performerID]: performerData })
   );
+
+  const handleSave = async () => {
+    if(!performers || !studio)
+      return;
+
+    let studioID:string;
+    let performerIDs = [];
+
+    if (studio.type === 'Update') {
+      const studioUpdateResult = await updateStudio({
+        variables: {
+          id: studio.data as string,
+          stash_id: scene.studio?.id ?? ''
+        }
+      });
+      const id = studioUpdateResult.data?.studioUpdate?.id;
+      if(studioUpdateResult.errors || !id)
+        return;
+      studioID = id;
+    }
+    else if(studio.type === 'Create') {
+      const studioData = studio.data as StashStudio;
+      const studioCreateResult = await createStudio({
+        variables: {
+          name: studioData.name,
+          stash_id: studioData.id
+        }
+      });
+
+      const id = studioCreateResult.data?.studioCreate?.id;
+      if(studioCreateResult.errors || !id)
+        return;
+      studioID = id;
+    }
+    else {
+      studioID = studio.data as string;
+    }
+
+    performerIDs = await Promise.all(Object.keys(performers).map(async (performerID) => {
+      const performer = performers[performerID];
+      if (performer.type === 'Update') {
+        const res = await updatePerformer({
+          variables: {
+            id: performer.data as string,
+            stash_id: performerID
+          }
+        });
+
+        if(res.errors)
+          return;
+
+        return res?.data?.performerUpdate?.id ?? null;
+      }
+      if(performer.type === 'Create') {
+        const performerData = performer.data as StashPerformer;
+        const imgurl = performerData.urls?.[0]?.url;
+        let imgData = null;
+        if(imgurl) {
+          const img = await fetch(imgurl);
+          if(img.status === 200) {
+            const blob = await img.blob();
+            imgData = await blobToBase64(blob);
+          }
+        }
+
+        const res = await createPerformer({
+          variables: {
+            name: performerData.name,
+            country: performerData.country,
+            height: performerData.height?.toString(),
+            ethnicity: performerData.ethnicity,
+            birthdate: performerData.birthdate?.date ?? null,
+            eye_color: performerData.eye_color,
+            fake_tits: performerData.breast_type === BreastTypeEnum.FAKE ? 'Yes' : 'No',
+            measurements: `${performerData.measurements.band_size}${performerData.measurements.cup_size}-${performerData.measurements.waist}-${performerData.measurements.hip}`,
+            image: imgData,
+            stash_id: performerID
+          }
+        });
+
+        if(res.errors)
+          return;
+
+        return res?.data?.performerCreate?.id ?? null;
+      }
+      return performer.data as string;
+    }));
+
+    if(studioID && !performerIDs.some(id => !id)) {
+      const imgurl = scene.urls?.[scene.urls.length - 1]?.url;
+      let imgData = null;
+      if(imgurl) {
+        const img = await fetch(imgurl);
+        if(img.status === 200) {
+          const blob = await img.blob();
+          imgData = await blobToBase64(blob);
+        }
+      }
+      const sceneUpdateResult = await updateScene({
+        variables: {
+          id: stashScene.id ?? '',
+          stash_id: scene.id,
+          title: scene.title,
+          details: scene.details,
+          date: scene.date,
+          performer_ids: performerIDs as string[],
+          studio_id: studioID,
+          cover_image: imgData
+        }
+      });
+      if(sceneUpdateResult.data?.sceneUpdate)
+        setScene(sceneUpdateResult.data.sceneUpdate);
+    }
+  };
 
   const classname = cx('row mb-4 search-result', { 'selected-result': isActive });
   return (
     <li className={classname} key={scene?.id}>
       <div className="col-6 row">
-        <label className="d-flex justify-content-center align-items-center col-2 scene-select">
-          <input type="radio" checked={isActive} onChange={setActive} />
+        <label htmlFor={scene.id} className="d-flex justify-content-center align-items-center col-2 scene-select">
+          <input type="radio" checked={isActive} onChange={setActive} id={scene.id} />
         </label>
         <div className="d-flex col-3">
           <img height={100} src={scene?.urls?.[0]?.url} alt="" className="align-self-center" />
@@ -418,15 +661,15 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       </div>
       { isActive && (
         <div className="col-6">
-          <StudioResult studio={scene.studio} />
+          <StudioResult studio={scene.studio} setStudio={setStudio} />
           { scene.performers
             .filter(p => p.performer.gender !== 'MALE' || showMales)
             .map(performer => (
-            <PerformerResult performer={performer.performer} />
+              <PerformerResult performer={performer.performer} setPerformer={(data:IPerformerOperation) => setPerformer(data, performer.performer.id)} key={`${scene.id}${performer.performer.id}`} />
             ))
           }
           <div className="row pr-3 mt-2">
-            <Button className="col-1 offset-11">Save</Button>
+            <Button className="col-1 offset-11" onClick={handleSave}>Save</Button>
           </div>
         </div>
       )}

@@ -1,10 +1,11 @@
 mutation StudioCreate(
   $name: String!,
   $url: String,
-  $image: String
-  $parent_id: ID) {
+  $image: String,
+  $parent_id: ID,
+  $stash_id: String) {
 
-  studioCreate(input: { name: $name, url: $url, image: $image, parent_id: $parent_id }) {
+  studioCreate(input: { name: $name, url: $url, image: $image, parent_id: $parent_id, stash_id: $stash_id }) {
     ...StudioData
   }
 }
@@ -13,10 +14,11 @@ mutation StudioUpdate(
   $id: ID!
   $name: String,
   $url: String,
-  $image: String
-  $parent_id: ID) {
+  $image: String,
+  $parent_id: ID,
+  $stash_id: String) {
 
-  studioUpdate(input: { id: $id, name: $name, url: $url, image: $image, parent_id: $parent_id }) {
+  studioUpdate(input: { id: $id, name: $name, url: $url, image: $image, parent_id: $parent_id, stash_id: $stash_id }) {
     ...StudioData
   }
 }
