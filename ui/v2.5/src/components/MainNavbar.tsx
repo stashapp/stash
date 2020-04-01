@@ -17,38 +17,38 @@ const menuItems: IMenuItem[] = [
   {
     icon: "play-circle",
     messageID: "scenes",
-    href: "/scenes"
+    href: "/scenes",
   },
   {
     href: "/movies",
     icon: "film",
-    messageID: "movies"
+    messageID: "movies",
   },
   {
     href: "/scenes/markers",
     icon: "map-marker-alt",
-    messageID: "markers"
+    messageID: "markers",
   },
   {
     href: "/galleries",
     icon: "image",
-    messageID: "galleries"
+    messageID: "galleries",
   },
   {
     href: "/performers",
     icon: "user",
-    messageID: "performers"
+    messageID: "performers",
   },
   {
     href: "/studios",
     icon: "video",
-    messageID: "studios"
+    messageID: "studios",
   },
   {
     href: "/tags",
     icon: "tag",
-    messageID: "tags"
-  }
+    messageID: "tags",
+  },
 ];
 
 export const MainNavbar: React.FC = () => {
@@ -127,7 +127,7 @@ export const MainNavbar: React.FC = () => {
       <Navbar.Toggle className="order-0" />
       <Navbar.Collapse className="order-3 order-md-1">
         <Nav className="mr-md-auto">
-          {menuItems.map(i => (
+          {menuItems.map((i) => (
             <Nav.Link eventKey={i.href} as="div" key={i.href}>
               <LinkContainer
                 activeClassName="active"

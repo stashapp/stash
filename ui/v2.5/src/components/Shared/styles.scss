@@ -25,7 +25,7 @@
   justify-content: left;
 
   .btn {
-    margin-right: .5rem;
+    margin-right: 0.5rem;
   }
 
   .delete,
@@ -58,7 +58,7 @@
 }
 
 .folder-list {
-  margin-top: .5rem 0 0 0;
+  margin-top: 0.5rem 0 0 0;
   max-height: 30vw;
   overflow-x: auto;
 }
@@ -69,9 +69,9 @@
   }
 }
 
-.multi-set > div.input-group-prepend + div  {
-  position: relative;
+.multi-set > div.input-group-prepend + div {
   flex: 1 1;
-  min-width: 0;
   margin-bottom: 0;
+  min-width: 0;
+  position: relative;
 }

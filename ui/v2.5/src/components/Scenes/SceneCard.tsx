@@ -20,7 +20,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 ) => {
   const [previewPath, setPreviewPath] = useState<string>();
   const videoHoverHook = VideoHoverHook.useVideoHover({
-    resetOnMouseLeave: false
+    resetOnMouseLeave: false,
   });
 
   const config = StashService.useConfiguration();
@@ -83,7 +83,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderTagPopoverButton() {
     if (props.scene.tags.length <= 0) return;
 
-    const popoverContent = props.scene.tags.map(tag => (
+    const popoverContent = props.scene.tags.map((tag) => (
       <TagLink key={tag.id} tag={tag} />
     ));
 
@@ -100,7 +100,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderPerformerPopoverButton() {
     if (props.scene.performers.length <= 0) return;
 
-    const popoverContent = props.scene.performers.map(performer => (
+    const popoverContent = props.scene.performers.map((performer) => (
       <div className="performer-tag-container row" key="performer">
         <Link
           to={`/performers/${performer.id}`}
@@ -129,7 +129,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderMoviePopoverButton() {
     if (props.scene.movies.length <= 0) return;
 
-    const popoverContent = props.scene.movies.map(sceneMovie => (
+    const popoverContent = props.scene.movies.map((sceneMovie) => (
       <div className="movie-tag-container row" key="movie">
         <Link
           to={`/movies/${sceneMovie.movie.id}`}
@@ -162,7 +162,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderSceneMarkerPopoverButton() {
     if (props.scene.scene_markers.length <= 0) return;
 
-    const popoverContent = props.scene.scene_markers.map(marker => {
+    const popoverContent = props.scene.scene_markers.map((marker) => {
       const markerPopover = { ...marker, scene: { id: props.scene.id } };
       return <TagLink key={marker.id} marker={markerPopover} />;
     });

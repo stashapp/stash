@@ -24,7 +24,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     showStudioAsText,
     css,
     cssEnabled,
-    language
+    language,
   });
 
   useEffect(() => {
@@ -119,7 +119,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           <DurationInput
             className="row col col-4"
             numericValue={maximumLoopDuration}
-            onValueChange={duration => setMaximumLoopDuration(duration)}
+            onValueChange={(duration) => setMaximumLoopDuration(duration)}
           />
           <Form.Text className="text-muted">
             Maximum scene duration where scene player will loop the video - 0 to

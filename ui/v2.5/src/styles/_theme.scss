@@ -1,4 +1,3 @@
-
 /* Blueprint dark theme */
 
 $secondary: #394b59;
@@ -13,7 +12,7 @@ $theme-colors: (
   success: $success,
   warning: $warning,
   danger: $danger,
-  dark: #394b59
+  dark: #394b59,
 );
 
 $body-bg: #202b33;
@@ -25,7 +24,7 @@ $pre-color: $text-color;
 $navbar-dark-color: rgb(245, 248, 250);
 $popover-bg: $secondary;
 $dark-text: #182026;
-$textfield-bg: rgba(16, 22, 26, .3);
+$textfield-bg: rgba(16, 22, 26, 0.3);
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
@@ -37,7 +36,7 @@ $dark-gray5: #394b59;
 
 .btn.active:not(.disabled),
 .btn.active.minimal:not(.disabled) {
-  background-color: rgba(138, 155, 168, .3);
+  background-color: rgba(138, 155, 168, 0.3);
   color: $text-color;
 }
 
@@ -49,12 +48,12 @@ button.minimal {
   transition: none;
 
   &:hover {
-    background: rgba(138, 155, 168, .15);
+    background: rgba(138, 155, 168, 0.15);
     color: $text-color;
   }
 
   &:active {
-    background: rgba(138, 155, 168, .3);
+    background: rgba(138, 155, 168, 0.3);
     color: $text-color;
   }
 }
@@ -74,7 +73,7 @@ hr {
 .nav-tabs {
   border: none;
   margin: auto;
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
 
   .nav-link {
     border: none;
@@ -102,7 +101,7 @@ hr {
 }
 
 .table-striped tr:nth-child(odd) td {
-  background: rgba(92, 112, 128, .15);
+  background: rgba(92, 112, 128, 0.15);
 }
 
 .table {
@@ -120,7 +119,7 @@ hr {
   td {
     border: none;
     border-color: #414c53;
-    padding: .25rem .75rem;
+    padding: 0.25rem 0.75rem;
 
     &:first-child {
       padding-left: 0;

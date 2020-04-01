@@ -12,7 +12,7 @@ export const Pagination: React.FC<IPaginationProps> = ({
   itemsPerPage,
   currentPage,
   totalItems,
-  onChangePage
+  onChangePage,
 }) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
@@ -34,7 +34,7 @@ export const Pagination: React.FC<IPaginationProps> = ({
   }
 
   const pages = [...Array(endPage + 1 - startPage).keys()].map(
-    i => startPage + i
+    (i) => startPage + i
   );
 
   const calculatePageClass = (buttonPage: number) => {

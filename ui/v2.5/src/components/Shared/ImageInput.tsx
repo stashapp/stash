@@ -10,7 +10,7 @@ interface IImageInput {
 export const ImageInput: React.FC<IImageInput> = ({
   isEditing,
   text,
-  onImageChange
+  onImageChange,
 }) => {
   if (!isEditing) return <div />;
 

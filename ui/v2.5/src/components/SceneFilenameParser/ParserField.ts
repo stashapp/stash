@@ -52,7 +52,7 @@ export class ParserField {
     ParserField.DDMMYYYY,
     ParserField.DDMMYY,
     ParserField.MMDDYYYY,
-    ParserField.MMDDYY
+    ParserField.MMDDYY,
   ];
 
   static fullDateFields = [
@@ -61,6 +61,6 @@ export class ParserField {
     ParserField.DDMMYYYY,
     ParserField.DDMMYY,
     ParserField.MMDDYYYY,
-    ParserField.MMDDYY
+    ParserField.MMDDYY,
   ];
 }

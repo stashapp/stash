@@ -25,7 +25,7 @@ const KeyMap = {
   NUM0: "0",
   NUM1: "1",
   NUM2: "2",
-  SPACE: " "
+  SPACE: " ",
 };
 
 export class ScenePlayerImpl extends React.Component<
@@ -49,7 +49,7 @@ export class ScenePlayerImpl extends React.Component<
     },
     SPACE: () => {
       this.onPause();
-    }
+    },
   };
 
   constructor(props: IScenePlayerProps) {
@@ -63,15 +63,15 @@ export class ScenePlayerImpl extends React.Component<
 
     this.state = {
       scrubberPosition: 0,
-      config: this.makeJWPlayerConfig(props.scene)
+      config: this.makeJWPlayerConfig(props.scene),
     };
   }
 
   public UNSAFE_componentWillReceiveProps(props: IScenePlayerProps) {
     if (props.scene !== this.props.scene) {
-      this.setState(state => ({
+      this.setState((state) => ({
         ...state,
-        config: this.makeJWPlayerConfig(this.props.scene)
+        config: this.makeJWPlayerConfig(this.props.scene),
       }));
     }
   }
@@ -177,17 +177,17 @@ export class ScenePlayerImpl extends React.Component<
       tracks: [
         {
           file: scene.paths.vtt,
-          kind: "thumbnails"
+          kind: "thumbnails",
         },
         {
           file: scene.paths.chapters_vtt,
-          kind: "chapters"
-        }
+          kind: "chapters",
+        },
       ],
       aspectratio: "16:9",
       width: "100%",
       floating: {
-        dismissible: true
+        dismissible: true,
       },
       cast: {},
       primary: "html5",
@@ -199,7 +199,7 @@ export class ScenePlayerImpl extends React.Component<
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
       getDurationHook,
       seekHook,
-      getCurrentTimeHook
+      getCurrentTimeHook,
     };
 
     return ret;

@@ -16,7 +16,7 @@ export const GenerateButton: React.FC = () => {
         sprites,
         previews,
         markers,
-        transcodes
+        transcodes,
       });
       Toast.success({ content: "Started generating" });
     } catch (e) {

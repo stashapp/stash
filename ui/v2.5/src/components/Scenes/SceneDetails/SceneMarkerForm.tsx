@@ -6,7 +6,7 @@ import { StashService } from "src/core/StashService";
 import {
   DurationInput,
   TagSelect,
-  MarkerTitleSuggest
+  MarkerTitleSuggest,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { JWUtils } from "src/utils";
@@ -27,7 +27,7 @@ interface ISceneMarkerForm {
 export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   sceneID,
   editingMarker,
-  onClose
+  onClose,
 }) => {
   const [sceneMarkerCreate] = StashService.useSceneMarkerCreate();
   const [sceneMarkerUpdate] = StashService.useSceneMarkerUpdate();
@@ -40,18 +40,18 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       seconds: parseFloat(values.seconds),
       scene_id: sceneID,
       primary_tag_id: values.primaryTagId,
-      tag_ids: values.tagIds
+      tag_ids: values.tagIds,
     };
     if (!editingMarker) {
       sceneMarkerCreate({ variables })
         .then(onClose)
-        .catch(err => Toast.error(err));
+        .catch((err) => Toast.error(err));
     } else {
       const updateVariables = variables as GQL.SceneMarkerUpdateInput;
       updateVariables.id = editingMarker!.id;
       sceneMarkerUpdate({ variables: updateVariables })
         .then(onClose)
-        .catch(err => Toast.error(err));
+        .catch((err) => Toast.error(err));
     }
   };
 
@@ -60,7 +60,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
 
     sceneMarkerDestroy({ variables: { id: editingMarker.id } })
       .then(onClose)
-      .catch(err => Toast.error(err));
+      .catch((err) => Toast.error(err));
   };
   const renderTitleField = (fieldProps: FieldProps<string>) => (
     <div className="col-10">
@@ -76,7 +76,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   const renderSecondsField = (fieldProps: FieldProps<string>) => (
     <div className="col-3">
       <DurationInput
-        onValueChange={s => fieldProps.form.setFieldValue("seconds", s)}
+        onValueChange={(s) => fieldProps.form.setFieldValue("seconds", s)}
         onReset={() =>
           fieldProps.form.setFieldValue(
             "seconds",
@@ -90,7 +90,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
 
   const renderPrimaryTagField = (fieldProps: FieldProps<string>) => (
     <TagSelect
-      onSelect={tags =>
+      onSelect={(tags) =>
         fieldProps.form.setFieldValue("primaryTagId", tags[0]?.id)
       }
       ids={fieldProps.field.value ? [fieldProps.field.value] : []}
@@ -101,10 +101,10 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   const renderTagsField = (fieldProps: FieldProps<string[]>) => (
     <TagSelect
       isMulti
-      onSelect={tags =>
+      onSelect={(tags) =>
         fieldProps.form.setFieldValue(
           "tagIds",
-          tags.map(tag => tag.id)
+          tags.map((tag) => tag.id)
         )
       }
       ids={fieldProps.field.value}
@@ -119,7 +119,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       Math.round(JWUtils.getPlayer()?.getPosition() ?? 0)
     ).toString(),
     primaryTagId: editingMarker?.primary_tag.id ?? "",
-    tagIds: editingMarker?.tags.map(tag => tag.id) ?? []
+    tagIds: editingMarker?.tags.map((tag) => tag.id) ?? [],
   };
 
   return (

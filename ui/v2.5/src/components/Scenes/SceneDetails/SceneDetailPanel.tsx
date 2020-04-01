@@ -8,7 +8,7 @@ interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
 }
 
-export const SceneDetailPanel: React.FC<ISceneDetailProps> = props => {
+export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
   function renderDetails() {
     if (!props.scene.details || props.scene.details === "") return;
     return (
@@ -21,7 +21,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = props => {
 
   function renderTags() {
     if (props.scene.tags.length === 0) return;
-    const tags = props.scene.tags.map(tag => (
+    const tags = props.scene.tags.map((tag) => (
       <TagLink key={tag.id} tag={tag} />
     ));
     return (

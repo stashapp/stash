@@ -5,7 +5,7 @@ export {
   FilterSelect,
   PerformerSelect,
   StudioSelect,
-  TagSelect
+  TagSelect,
 } from "./Select";
 
 export { default as Icon } from "./Icon";

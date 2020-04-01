@@ -21,6 +21,16 @@
         "warn",
         { "prefixWithI": "always" }
       ],
+			"import/extensions": [
+				"error",
+				"ignorePackages",
+				{
+					"js": "never",
+					"jsx": "never",
+					"ts": "never",
+					"tsx": "never"
+				}
+			],
       "import/named": "off",
       "import/namespace": "off",
       "import/default": "off",

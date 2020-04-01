@@ -10,7 +10,7 @@ export const SettingsAboutPanel: React.FC = () => {
     error: errorLatest,
     loading: loadingLatest,
     refetch,
-    networkStatus
+    networkStatus,
   } = StashService.useLatestVersion();
 
   function maybeRenderTag() {

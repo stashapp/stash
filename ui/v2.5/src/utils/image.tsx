@@ -36,6 +36,6 @@ const usePasteImage = (onLoadEnd: (this: FileReader) => void) => {
 
 const Image = {
   onImageChange,
-  usePasteImage
+  usePasteImage,
 };
 export default Image;

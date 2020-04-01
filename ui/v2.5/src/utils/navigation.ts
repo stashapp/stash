@@ -13,7 +13,7 @@ const makePerformerScenesUrl = (
   const filter = new ListFilterModel(FilterMode.Scenes);
   const criterion = new PerformersCriterion();
   criterion.value = [
-    { id: performer.id, label: performer.name || `Performer ${performer.id}` }
+    { id: performer.id, label: performer.name || `Performer ${performer.id}` },
   ];
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
@@ -24,7 +24,7 @@ const makeStudioScenesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   const filter = new ListFilterModel(FilterMode.Scenes);
   const criterion = new StudiosCriterion();
   criterion.value = [
-    { id: studio.id, label: studio.name || `Studio ${studio.id}` }
+    { id: studio.id, label: studio.name || `Studio ${studio.id}` },
   ];
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
@@ -35,7 +35,7 @@ const makeMovieScenesUrl = (movie: Partial<GQL.MovieDataFragment>) => {
   const filter = new ListFilterModel(FilterMode.Scenes);
   const criterion = new MoviesCriterion();
   criterion.value = [
-    { id: movie.id, label: movie.name || `Movie ${movie.id}` }
+    { id: movie.id, label: movie.name || `Movie ${movie.id}` },
   ];
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
@@ -72,5 +72,5 @@ export default {
   makeTagSceneMarkersUrl,
   makeTagScenesUrl,
   makeSceneMarkerUrl,
-  makeMovieScenesUrl
+  makeMovieScenesUrl,
 };

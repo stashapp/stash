@@ -2,6 +2,7 @@
   "plugins": [
     "stylelint-order"
   ],
+  "extends": "stylelint-config-prettier",
   "rules": {
     "indentation": 2,
     "at-rule-empty-line-before": [ "always", {
@@ -33,7 +34,6 @@
     "declaration-block-semicolon-space-before": "never",
     "declaration-block-single-line-max-declarations": 1,
     "declaration-block-trailing-semicolon": "always",
-    "declaration-colon-newline-after": "always-multi-line",
     "declaration-colon-space-after": "always-single-line",
     "declaration-colon-space-before": "never",
     "declaration-no-important": true,
@@ -61,7 +61,6 @@
     "no-descending-specificity": null,
     "no-invalid-double-slash-comments": true,
     "no-missing-end-of-source-newline": true,
-    "number-leading-zero": "never",
     "number-max-precision": 2,
     "number-no-trailing-zeros": true,
     "order/order": [
@@ -87,7 +86,6 @@
     "string-quotes": "double",
     "time-min-milliseconds": 100,
     "unit-blacklist": ["em"],
-    "value-list-comma-newline-after": "always-multi-line",
     "value-list-comma-space-after": "always-single-line",
     "value-list-comma-space-before": "never",
     "value-no-vendor-prefix": true
