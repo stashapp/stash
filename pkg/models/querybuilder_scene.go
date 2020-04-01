@@ -138,6 +138,10 @@ func (qb *SceneQueryBuilder) ResetOCounter(id int, tx *sqlx.Tx) (int, error) {
 }
 
 func (qb *SceneQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
+	_, err := tx.Exec("DELETE FROM movies_scenes WHERE scene_id = ?", id)
+	if err != nil {
+		return err
+	}
 	return executeDeleteQuery("scenes", id, tx)
 }
 func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
