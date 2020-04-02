@@ -45,7 +45,7 @@ export const GalleryList: React.FC = () => {
                   </Link>
                 </td>
                 <td className="d-none d-sm-block">
-                  <Link to={`/galleries/${gallery.id}`}>{gallery.path}</Link>
+                  <Link to={`/galleries/${gallery.id}`}>{gallery.path} ({gallery.files.length} {gallery.files.length === 1 ? 'image' : 'images'})</Link>
                 </td>
               </tr>
             ))}

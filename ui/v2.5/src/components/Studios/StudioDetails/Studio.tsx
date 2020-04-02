@@ -185,6 +185,7 @@ export const Studio: React.FC = () => {
           onImageChange={onImageChangeHandler}
           onAutoTag={onAutoTag}
           onDelete={onDelete}
+          acceptSVG
         />
       </div>
       {!isNew && (
