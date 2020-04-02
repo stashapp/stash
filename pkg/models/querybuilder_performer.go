@@ -158,6 +158,45 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		query.addArg(gender.Value.String())
 	}
 
+	if isMissingFilter := performerFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
+		switch *isMissingFilter {
+		case "image":
+			query.addWhere("performers.image IS NULL")
+		case "url":
+			query.addWhere("performers.url IS NULL")
+		case "twitter":
+			query.addWhere("performers.twitter IS NULL")
+		case "instagram":
+			query.addWhere("performers.instagram IS NULL")
+		case "ethnicity":
+			query.addWhere("performers.ethnicity IS NULL")
+		case "country":
+			query.addWhere("performers.country IS NULL")
+		case "eye_color":
+			query.addWhere("performers.eye_color IS NULL")
+		case "height":
+			query.addWhere("performers.height IS NULL")
+		case "measurements":
+			query.addWhere("performers.measurements IS NULL")
+		case "fake_tits":
+			query.addWhere("performers.fake_tits IS NULL")
+		case "career_length":
+			query.addWhere("performers.career_length IS NULL")
+		case "tattoos":
+			query.addWhere("performers.tattoos IS NULL")
+		case "piercings":
+			query.addWhere("performers.piercings IS NULL")
+		case "aliases":
+			query.addWhere("performers.aliases IS NULL")
+		case "gender":
+			query.addWhere("performers.gender IS NULL")
+		case "scenes":
+			query.addWhere("scenes_join.scene_id IS NULL")
+		default:
+			query.addWhere("performers." + *isMissingFilter + " IS NULL")
+		}
+	}
+
 	handleStringCriterion(tableName+".ethnicity", performerFilter.Ethnicity, &query)
 	handleStringCriterion(tableName+".country", performerFilter.Country, &query)
 	handleStringCriterion(tableName+".eye_color", performerFilter.EyeColor, &query)

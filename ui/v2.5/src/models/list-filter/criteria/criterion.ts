@@ -12,7 +12,8 @@ export type CriterionType =
   | "duration"
   | "favorite"
   | "hasMarkers"
-  | "isMissing"
+  | "SceneIsMissing"
+  | "PerformerIsMissing"
   | "tags"
   | "sceneTags"
   | "performers"
@@ -52,7 +53,9 @@ export abstract class Criterion {
         return "Favorite";
       case "hasMarkers":
         return "Has Markers";
-      case "isMissing":
+      case "SceneIsMissing":
+        return "Is Missing";
+      case "PerformerIsMissing":
         return "Is Missing";
       case "tags":
         return "Tags";
