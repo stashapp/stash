@@ -12,6 +12,7 @@ interface IProps {
   onAutoTag?: () => void;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
   onBackImageChange?: (event: React.FormEvent<HTMLInputElement>) => void;
+  acceptSVG?: boolean;
 }
 
 export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
@@ -113,6 +114,7 @@ export const DetailsEditNavbar: React.FC<IProps> = (props: IProps) => {
         isEditing={props.isEditing}
         text={props.onBackImageChange ? "Front image..." : undefined}
         onImageChange={props.onImageChange}
+        acceptSVG={props.acceptSVG ?? false}
       />
       {renderBackImageInput()}
       {renderAutoTagButton()}

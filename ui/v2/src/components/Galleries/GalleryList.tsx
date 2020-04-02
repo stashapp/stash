@@ -38,7 +38,7 @@ export const GalleryList: FunctionComponent<IProps> = (props: IProps) => {
                     {gallery.files.length > 0 ? <img alt={gallery.title} src={`${gallery.files[0].path}?thumb=true`} /> : undefined}
                   </Link>
                 </td>
-                <td><Link to={`/galleries/${gallery.id}`}>{gallery.path}</Link></td>
+                <td><Link to={`/galleries/${gallery.id}`}>{gallery.path} ({gallery.files.length} {gallery.files.length === 1 ? 'image' : 'images'})</Link></td>
               </tr>
             ))}
           </tbody>
