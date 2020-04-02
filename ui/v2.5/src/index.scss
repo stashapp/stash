@@ -32,18 +32,23 @@ a {
 
 code,
 .code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
 }
 
 .input-control,
 .text-input {
   border: 0;
-  box-shadow: 0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0), inset 0 0 0 1px rgba(16, 22, 26, .3), inset 0 1px 1px rgba(16, 22, 26, .4);
+  box-shadow: 0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0),
+    0 0 0 0 rgba(19, 124, 189, 0), inset 0 0 0 1px rgba(16, 22, 26, 0.3),
+    inset 0 1px 1px rgba(16, 22, 26, 0.4);
   color: $text-color;
 
   &:focus {
     border: 0;
-    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary, 0 0 0 3px rgba(19, 124, 189, .3), inset 0 0 0 1px rgba(16, 22, 26, .3), inset 0 1px 1px rgba(16, 22, 26, .4);
+    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary,
+      0 0 0 3px rgba(19, 124, 189, 0.3), inset 0 0 0 1px rgba(16, 22, 26, 0.3),
+      inset 0 1px 1px rgba(16, 22, 26, 0.4);
     color: $text-color;
   }
 }
@@ -207,7 +212,7 @@ div.react-select__menu {
     }
 
     .react-select__option--is-focused {
-      background-color: rgba(167, 182, 194, .3);
+      background-color: rgba(167, 182, 194, 0.3);
     }
   }
 }
@@ -251,8 +256,8 @@ div.react-select__menu {
     color: $dark-text;
     font-size: 12px;
     line-height: 1rem;
-    margin-left: .5rem;
-    opacity: .5;
+    margin-left: 0.5rem;
+    opacity: 0.5;
     padding: 0;
     position: relative;
 
@@ -308,7 +313,7 @@ div.react-select__menu {
 .rating-banner {
   color: #fff;
   display: block;
-  font-size: .86rem;
+  font-size: 0.86rem;
   font-weight: 400;
   left: -46px;
   letter-spacing: 1px;
@@ -324,7 +329,8 @@ div.react-select__menu {
 .card {
   background-color: #30404d;
   border-radius: 3px;
-  box-shadow: 0 0 0 1px rgba(16, 22, 26, .4), 0 0 0 rgba(16, 22, 26, 0), 0 0 0 rgba(16, 22, 26, 0);
+  box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.4), 0 0 0 rgba(16, 22, 26, 0),
+    0 0 0 rgba(16, 22, 26, 0);
   padding: 20px;
 }
 
@@ -368,12 +374,13 @@ div.react-select__menu {
   overflow: hidden;
   position: relative;
 
-  input[type=file], /* FF, IE7+, chrome (except button) */
-  input[type=file]::-webkit-file-upload-button { /* chromes and blink button */
+  input[type="file"], /* FF, IE7+, chrome (except button) */
+  input[type="file"]::-webkit-file-upload-button {
+    /* chromes and blink button */
     cursor: pointer;
   }
 
-  [type=file] {
+  [type="file"] {
     display: block;
     filter: alpha(opacity=0);
     font-size: 999px;
@@ -388,7 +395,7 @@ div.react-select__menu {
 }
 
 .fa-icon {
-  margin: 0 .4rem;
+  margin: 0 0.4rem;
 }
 
 .btn .fa-icon {
@@ -406,7 +413,7 @@ div.react-select__menu {
 }
 
 .top-nav {
-  padding: .25rem 1rem;
+  padding: 0.25rem 1rem;
 
   .nav-link {
     padding: 0;
@@ -439,7 +446,7 @@ div.react-select__menu {
 .stats {
   &-element {
     flex-grow: 1;
-    margin: auto .5rem;
+    margin: auto 0.5rem;
   }
 
   .title {

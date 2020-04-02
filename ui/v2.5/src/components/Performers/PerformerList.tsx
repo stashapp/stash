@@ -14,13 +14,13 @@ export const PerformerList: React.FC = () => {
   const otherOperations = [
     {
       text: "Open Random",
-      onClick: getRandom
-    }
+      onClick: getRandom,
+    },
   ];
 
   const listData = usePerformersList({
     otherOperations,
-    renderContent
+    renderContent,
   });
 
   async function getRandom(
@@ -56,7 +56,7 @@ export const PerformerList: React.FC = () => {
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <div className="row justify-content-center">
-          {result.data.findPerformers.performers.map(p => (
+          {result.data.findPerformers.performers.map((p) => (
             <PerformerCard key={p.id} performer={p} />
           ))}
         </div>

@@ -149,7 +149,7 @@ export const Scene: React.FC = () => {
           <Tab eventKey="scene-edit-panel" title="Edit">
             <SceneEditPanel
               scene={scene}
-              onUpdate={newScene => setScene(newScene)}
+              onUpdate={(newScene) => setScene(newScene)}
               onDelete={() => history.push("/scenes")}
             />
           </Tab>

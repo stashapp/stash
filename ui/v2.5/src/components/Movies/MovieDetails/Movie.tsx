@@ -7,7 +7,7 @@ import cx from "classnames";
 import {
   DetailsEditNavbar,
   LoadingIndicator,
-  Modal
+  Modal,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { Table, Form } from "react-bootstrap";
@@ -117,7 +117,7 @@ export const Movie: React.FC = () => {
       synopsis,
       url,
       front_image: frontImage,
-      back_image: backImage
+      back_image: backImage,
     };
 
     if (!isNew) {
@@ -183,7 +183,7 @@ export const Movie: React.FC = () => {
     <div className="row">
       <div
         className={cx("movie-details", "col", {
-          "col ml-sm-5": !isNew
+          "col ml-sm-5": !isNew,
         })}
       >
         {isNew && <h2>Add Movie</h2>}
@@ -198,38 +198,38 @@ export const Movie: React.FC = () => {
               title: "Name",
               value: movie.name ?? "",
               isEditing: !!isEditing,
-              onChange: setName
+              onChange: setName,
             })}
             {TableUtils.renderInputGroup({
               title: "Aliases",
               value: aliases,
               isEditing,
-              onChange: setAliases
+              onChange: setAliases,
             })}
             {TableUtils.renderInputGroup({
               title: "Duration",
               value: duration,
               isEditing,
-              onChange: setDuration
+              onChange: setDuration,
             })}
             {TableUtils.renderInputGroup({
               title: "Date (YYYY-MM-DD)",
               value: date,
               isEditing,
-              onChange: setDate
+              onChange: setDate,
             })}
             {TableUtils.renderInputGroup({
               title: "Director",
               value: director,
               isEditing,
-              onChange: setDirector
+              onChange: setDirector,
             })}
             {TableUtils.renderHtmlSelect({
               title: "Rating",
               value: rating,
               isEditing,
               onChange: (value: string) => setRating(value),
-              selectOptions: ["", "1", "2", "3", "4", "5"]
+              selectOptions: ["", "1", "2", "3", "4", "5"],
             })}
           </tbody>
         </Table>

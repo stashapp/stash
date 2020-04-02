@@ -11,7 +11,7 @@
     "lint": "yarn lint:css && yarn lint:js",
     "lint:js": "eslint --cache src/**/*.{ts,tsx}",
     "lint:css": "stylelint 'src/**/*.scss'",
-    "format": "prettier --write \"src/**/!(generated-graphql).{js,jsx,ts,tsx}\"",
+    "format": "prettier --write \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\"",
     "gqlgen": "gql-gen --config codegen.yml",
     "extract": "NODE_ENV=development extract-messages -l=en,de -o src/locale -d en --flat false 'src/**/!(*.test).tsx'"
   },
@@ -80,7 +80,7 @@
     "@typescript-eslint/parser": "^2.16.0",
     "eslint": "^6.7.2",
     "eslint-config-airbnb-typescript": "^6.3.1",
-    "eslint-config-prettier": "^6.9.0",
+    "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-import": "^2.20.0",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.18.0",
@@ -88,9 +88,10 @@
     "extract-react-intl-messages": "^2.3.5",
     "node-sass": "4.13.1",
     "postcss-safe-parser": "^4.0.1",
-    "prettier": "1.19.1",
+    "prettier": "2.0.2",
     "react-scripts": "^3.3.1",
     "stylelint": "^13.0.0",
+    "stylelint-config-prettier": "^8.0.1",
     "stylelint-order": "^4.0.0",
     "typescript": "^3.7.5"
   }

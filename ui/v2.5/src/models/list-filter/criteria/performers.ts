@@ -9,13 +9,13 @@ export class PerformersCriterion extends Criterion {
   public modifierOptions = [
     Criterion.getModifierOption(CriterionModifier.IncludesAll),
     Criterion.getModifierOption(CriterionModifier.Includes),
-    Criterion.getModifierOption(CriterionModifier.Excludes)
+    Criterion.getModifierOption(CriterionModifier.Excludes),
   ];
   public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
 
   public encodeValue() {
-    return this.value.map(o => {
+    return this.value.map((o) => {
       return encodeILabeledId(o);
     });
   }

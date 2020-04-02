@@ -90,7 +90,7 @@ const TextUtils = {
   fileNameFromPath,
   age: getAge,
   bitRate,
-  resolution
+  resolution,
 };
 
 export default TextUtils;

@@ -129,7 +129,7 @@ export abstract class Criterion {
   public getLabelValue(): string {
     if (typeof this.value === "string") return this.value;
     if (typeof this.value === "number") return this.value.toString();
-    return this.value.map(v => v.label).join(", ");
+    return this.value.map((v) => v.label).join(", ");
   }
 
   public getLabel(): string {
@@ -221,7 +221,7 @@ export class StringCriterion extends Criterion {
     Criterion.getModifierOption(CriterionModifier.Equals),
     Criterion.getModifierOption(CriterionModifier.NotEquals),
     Criterion.getModifierOption(CriterionModifier.IsNull),
-    Criterion.getModifierOption(CriterionModifier.NotNull)
+    Criterion.getModifierOption(CriterionModifier.NotNull),
   ];
   public options: string[] | undefined;
   public value: string = "";
@@ -255,7 +255,7 @@ export class NumberCriterion extends Criterion {
     Criterion.getModifierOption(CriterionModifier.GreaterThan),
     Criterion.getModifierOption(CriterionModifier.LessThan),
     Criterion.getModifierOption(CriterionModifier.IsNull),
-    Criterion.getModifierOption(CriterionModifier.NotNull)
+    Criterion.getModifierOption(CriterionModifier.NotNull),
   ];
   public options: number[] | undefined;
   public value: number = 0;
@@ -287,7 +287,7 @@ export class DurationCriterion extends Criterion {
     Criterion.getModifierOption(CriterionModifier.Equals),
     Criterion.getModifierOption(CriterionModifier.NotEquals),
     Criterion.getModifierOption(CriterionModifier.GreaterThan),
-    Criterion.getModifierOption(CriterionModifier.LessThan)
+    Criterion.getModifierOption(CriterionModifier.LessThan),
   ];
   public options: number[] | undefined;
   public value: number = 0;

@@ -19,7 +19,7 @@ const initialParserInput = {
   capitalizeTitle: true,
   page: 1,
   pageSize: 20,
-  findClicked: false
+  findClicked: false,
 };
 
 const initialShowFieldsState = new Map<string, boolean>([
@@ -27,7 +27,7 @@ const initialShowFieldsState = new Map<string, boolean>([
   ["Date", true],
   ["Performers", true],
   ["Tags", true],
-  ["Studio", true]
+  ["Studio", true],
 ]);
 
 export const SceneFilenameParser: React.FC = () => {
@@ -60,7 +60,7 @@ export const SceneFilenameParser: React.FC = () => {
     const dateSet =
       pattern.includes("{date}") ||
       pattern.includes("{dd}") || // don't worry about other partial date fields since this should be implied
-      ParserField.fullDateFields.some(f => {
+      ParserField.fullDateFields.some((f) => {
         return pattern.includes(`{${f.field}}`);
       });
     const performerSet = pattern.includes("{performer}");
@@ -72,7 +72,7 @@ export const SceneFilenameParser: React.FC = () => {
       ["Date", dateSet],
       ["Performers", performerSet],
       ["Tags", tagSet],
-      ["Studio", studioSet]
+      ["Studio", studioSet],
     ]);
 
     setShowFields(newShowFields);
@@ -84,10 +84,10 @@ export const SceneFilenameParser: React.FC = () => {
     ) => {
       if (results) {
         const result = results
-          .map(r => {
+          .map((r) => {
             return new SceneParserResult(r);
           })
-          .filter(r => !!r) as SceneParserResult[];
+          .filter((r) => !!r) as SceneParserResult[];
 
         setParserResult(result);
         determineFieldsToHide();
@@ -106,24 +106,24 @@ export const SceneFilenameParser: React.FC = () => {
         page: parserInput.page,
         per_page: parserInput.pageSize,
         sort: "path",
-        direction: GQL.SortDirectionEnum.Asc
+        direction: GQL.SortDirectionEnum.Asc,
       };
 
       const parserInputData = {
         ignoreWords: parserInput.ignoreWords,
         whitespaceCharacters: parserInput.whitespaceCharacters,
-        capitalizeTitle: parserInput.capitalizeTitle
+        capitalizeTitle: parserInput.capitalizeTitle,
       };
 
       StashService.queryParseSceneFilenames(parserFilter, parserInputData)
-        .then(response => {
+        .then((response) => {
           const result = response.data.parseSceneFilenames;
           if (result) {
             parseResults(result.results);
             setTotalItems(result.count);
           }
         })
-        .catch(err => Toast.error(err))
+        .catch((err) => Toast.error(err))
         .finally(() => setIsLoading(false));
     }
   }, [parserInput, parseResults, Toast]);
@@ -152,8 +152,8 @@ export const SceneFilenameParser: React.FC = () => {
 
   function getScenesUpdateData() {
     return parserResult
-      .filter(result => result.isChanged())
-      .map(result => result.toSceneUpdateInput());
+      .filter((result) => result.isChanged())
+      .map((result) => result.toSceneUpdateInput());
   }
 
   async function onApply() {
@@ -170,19 +170,19 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   useEffect(() => {
-    const newAllTitleSet = !parserResult.some(r => {
+    const newAllTitleSet = !parserResult.some((r) => {
       return !r.title.isSet;
     });
-    const newAllDateSet = !parserResult.some(r => {
+    const newAllDateSet = !parserResult.some((r) => {
       return !r.date.isSet;
     });
-    const newAllPerformerSet = !parserResult.some(r => {
+    const newAllPerformerSet = !parserResult.some((r) => {
       return !r.performers.isSet;
     });
-    const newAllTagSet = !parserResult.some(r => {
+    const newAllTagSet = !parserResult.some((r) => {
       return !r.tags.isSet;
     });
-    const newAllStudioSet = !parserResult.some(r => {
+    const newAllStudioSet = !parserResult.some((r) => {
       return !r.studio.isSet;
     });
 
@@ -196,7 +196,7 @@ export const SceneFilenameParser: React.FC = () => {
   function onSelectAllTitleSet(selected: boolean) {
     const newResult = [...parserResult];
 
-    newResult.forEach(r => {
+    newResult.forEach((r) => {
       r.title.isSet = selected;
     });
 
@@ -207,7 +207,7 @@ export const SceneFilenameParser: React.FC = () => {
   function onSelectAllDateSet(selected: boolean) {
     const newResult = [...parserResult];
 
-    newResult.forEach(r => {
+    newResult.forEach((r) => {
       r.date.isSet = selected;
     });
 
@@ -218,7 +218,7 @@ export const SceneFilenameParser: React.FC = () => {
   function onSelectAllPerformerSet(selected: boolean) {
     const newResult = [...parserResult];
 
-    newResult.forEach(r => {
+    newResult.forEach((r) => {
       r.performers.isSet = selected;
     });
 
@@ -229,7 +229,7 @@ export const SceneFilenameParser: React.FC = () => {
   function onSelectAllTagSet(selected: boolean) {
     const newResult = [...parserResult];
 
-    newResult.forEach(r => {
+    newResult.forEach((r) => {
       r.tags.isSet = selected;
     });
 
@@ -240,7 +240,7 @@ export const SceneFilenameParser: React.FC = () => {
   function onSelectAllStudioSet(selected: boolean) {
     const newResult = [...parserResult];
 
-    newResult.forEach(r => {
+    newResult.forEach((r) => {
       r.studio.isSet = selected;
     });
 
@@ -305,11 +305,11 @@ export const SceneFilenameParser: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {parserResult.map(scene => (
+              {parserResult.map((scene) => (
                 <SceneParserRow
                   scene={scene}
                   key={scene.id}
-                  onChange={changedScene => onChange(scene, changedScene)}
+                  onChange={(changedScene) => onChange(scene, changedScene)}
                   showFields={showFields}
                 />
               ))}
@@ -320,7 +320,7 @@ export const SceneFilenameParser: React.FC = () => {
           currentPage={parserInput.page}
           itemsPerPage={parserInput.pageSize}
           totalItems={totalItems}
-          onChangePage={page => onPageChanged(page)}
+          onChangePage={(page) => onPageChanged(page)}
         />
         <Button variant="primary" onClick={onApply}>
           Apply
@@ -334,7 +334,7 @@ export const SceneFilenameParser: React.FC = () => {
       <h4>Scene Filename Parser</h4>
       <ParserInput
         input={parserInput}
-        onFind={input => onFindClicked(input)}
+        onFind={(input) => onFindClicked(input)}
         onPageSizeChanged={onPageSizeChanged}
         showFields={showFields}
         setShowFields={setShowFields}

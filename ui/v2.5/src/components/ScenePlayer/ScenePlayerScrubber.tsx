@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useRef,
   useState,
-  useCallback
+  useCallback,
 } from "react";
 import { Button } from "react-bootstrap";
 import axios from "axios";
@@ -45,10 +45,7 @@ async function fetchSpriteInfo(vttPath: string) {
     const line = lines.shift();
     if (line !== undefined) {
       if (line.includes("#") && line.includes("=") && line.includes(",")) {
-        const size = line
-          .split("#")[1]
-          .split("=")[1]
-          .split(",");
+        const size = line.split("#")[1].split("=")[1].split(",");
         item.x = Number(size[0]);
         item.y = Number(size[1]);
         item.w = Number(size[2]);
@@ -120,13 +117,14 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
     if (!scrubberSliderEl.current) {
       return;
     }
-    scrubberSliderEl.current.style.transform = `translateX(${scrubberSliderEl
-      .current.clientWidth / 2}px)`;
+    scrubberSliderEl.current.style.transform = `translateX(${
+      scrubberSliderEl.current.clientWidth / 2
+    }px)`;
   }, [scrubberSliderEl]);
 
   useEffect(() => {
     if (!props.scene.paths.vtt) return;
-    fetchSpriteInfo(props.scene.paths.vtt).then(sprites => {
+    fetchSpriteInfo(props.scene.paths.vtt).then((sprites) => {
       if (sprites) setSpriteItems(sprites);
     });
   }, [props.scene]);
@@ -297,13 +295,13 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
         tag!.clientWidth / 2;
       return {
         left: `${left}px`,
-        height: 20
+        height: 20,
       };
     }
 
     return props.scene.scene_markers.map((marker, index) => {
       const dataAttrs = {
-        "data-marker-id": index
+        "data-marker-id": index,
       };
       return (
         <div
@@ -332,13 +330,13 @@ export const ScenePlayerScrubber: React.FC<IScenePlayerScrubberProps> = (
         margin: "0px auto",
         backgroundPosition: `${-sprite.x}px ${-sprite.y}px`,
         backgroundImage: `url(${path})`,
-        left: `${left}px`
+        left: `${left}px`,
       };
     }
 
     return spriteItems.map((spriteItem, index) => {
       const dataAttrs = {
-        "data-sprite-item-id": index
+        "data-sprite-item-id": index,
       };
       return (
         <div

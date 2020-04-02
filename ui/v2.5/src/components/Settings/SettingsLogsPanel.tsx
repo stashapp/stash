@@ -73,8 +73,8 @@ export const SettingsLogsPanel: React.FC = () => {
   const { data: existingData } = StashService.useLogs();
   const [logLevel, setLogLevel] = useState<string>("Info");
 
-  const oldData = (existingData?.logs ?? []).map(e => new LogEntry(e));
-  const newData = (data?.loggingSubscribe ?? []).map(e => new LogEntry(e));
+  const oldData = (existingData?.logs ?? []).map((e) => new LogEntry(e));
+  const newData = (data?.loggingSubscribe ?? []).map((e) => new LogEntry(e));
 
   const filteredLogEntries = [...newData.reverse(), ...oldData]
     .filter(filterByLogLevel)
@@ -104,9 +104,9 @@ export const SettingsLogsPanel: React.FC = () => {
           className="col-6 col-sm-2 input-control"
           as="select"
           defaultValue={logLevel}
-          onChange={event => setLogLevel(event.currentTarget.value)}
+          onChange={(event) => setLogLevel(event.currentTarget.value)}
         >
-          {logLevels.map(level => (
+          {logLevels.map((level) => (
             <option key={level} value={level}>
               {level}
             </option>
@@ -115,7 +115,7 @@ export const SettingsLogsPanel: React.FC = () => {
       </Form.Row>
       <div className="logs">
         {maybeRenderError}
-        {filteredLogEntries.map(logEntry => (
+        {filteredLogEntries.map((logEntry) => (
           <LogElement logEntry={logEntry} key={logEntry.id} />
         ))}
       </div>

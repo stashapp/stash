@@ -20,7 +20,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 
   function renderPath() {
     const {
-      scene: { path }
+      scene: { path },
     } = props;
     return (
       <div className="row">

@@ -48,7 +48,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     logLevel,
     logAccess,
     excludes,
-    scraperUserAgent
+    scraperUserAgent,
   });
 
   useEffect(() => {
@@ -116,7 +116,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     GQL.StreamingResolutionEnum.StandardHd,
     GQL.StreamingResolutionEnum.FullHd,
     GQL.StreamingResolutionEnum.FourK,
-    GQL.StreamingResolutionEnum.Original
+    GQL.StreamingResolutionEnum.Original,
   ].map(resolutionToString);
 
   function resolutionToString(r: GQL.StreamingResolutionEnum | undefined) {
@@ -258,7 +258,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
             value={resolutionToString(maxTranscodeSize)}
           >
-            {transcodeQualities.map(q => (
+            {transcodeQualities.map((q) => (
               <option key={q} value={q}>
                 {q}
               </option>
@@ -280,7 +280,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
             value={resolutionToString(maxStreamingTranscodeSize)}
           >
-            {transcodeQualities.map(q => (
+            {transcodeQualities.map((q) => (
               <option key={q} value={q}>
                 {q}
               </option>
@@ -382,7 +382,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           }
           value={logLevel}
         >
-          {["Debug", "Info", "Warning", "Error"].map(o => (
+          {["Debug", "Info", "Warning", "Error"].map((o) => (
             <option key={o} value={o}>
               {o}
             </option>

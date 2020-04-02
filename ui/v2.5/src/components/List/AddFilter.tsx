@@ -7,7 +7,7 @@ import {
   Criterion,
   CriterionType,
   DurationCriterion,
-  CriterionValue
+  CriterionValue,
 } from "src/models/list-filter/criteria/criterion";
 import { NoneCriterion } from "src/models/list-filter/criteria/none";
 import { makeCriteria } from "src/models/list-filter/criteria/utils";
@@ -118,7 +118,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           onChange={onChangedModifierSelect}
           value={criterion.modifier}
         >
-          {criterion.modifierOptions.map(c => (
+          {criterion.modifierOptions.map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}
             </option>
@@ -149,15 +149,15 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           <FilterSelect
             type={criterion.type}
             isMulti
-            onSelect={items => {
+            onSelect={(items) => {
               const newCriterion = _.cloneDeep(criterion);
-              newCriterion.value = items.map(i => ({
+              newCriterion.value = items.map((i) => ({
                 id: i.id,
-                label: i.name!
+                label: i.name!,
               }));
               setCriterion(newCriterion);
             }}
-            ids={criterion.value.map(labeled => labeled.id)}
+            ids={criterion.value.map((labeled) => labeled.id)}
           />
         );
       }
@@ -169,7 +169,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
             onChange={onChangedSingleSelect}
             value={criterion.value.toString()}
           >
-            {criterion.options.map(c => (
+            {criterion.options.map((c) => (
               <option key={c.toString()} value={c.toString()}>
                 {c}
               </option>
@@ -215,7 +215,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           onChange={onChangedCriteriaType}
           value={criterion.type}
         >
-          {props.filter.criterionOptions.map(c => (
+          {props.filter.criterionOptions.map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}
             </option>

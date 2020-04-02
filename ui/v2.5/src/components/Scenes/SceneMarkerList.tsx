@@ -14,13 +14,13 @@ export const SceneMarkerList: React.FC = () => {
   const otherOperations = [
     {
       text: "Play Random",
-      onClick: playRandom
-    }
+      onClick: playRandom,
+    },
   ];
 
   const listData = useSceneMarkersList({
     otherOperations,
-    renderContent
+    renderContent,
   });
 
   async function playRandom(

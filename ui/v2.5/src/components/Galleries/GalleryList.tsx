@@ -8,7 +8,7 @@ import { DisplayMode } from "src/models/list-filter/types";
 
 export const GalleryList: React.FC = () => {
   const listData = useGalleriesList({
-    renderContent
+    renderContent,
   });
 
   function renderContent(
@@ -31,7 +31,7 @@ export const GalleryList: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {result.data.findGalleries.galleries.map(gallery => (
+            {result.data.findGalleries.galleries.map((gallery) => (
               <tr key={gallery.id}>
                 <td>
                   <Link to={`/galleries/${gallery.id}`}>
@@ -41,9 +41,7 @@ export const GalleryList: React.FC = () => {
                         className="w-100 w-sm-auto"
                         src={`${gallery.files[0].path}?thumb=true`}
                       />
-                    ) : (
-                      undefined
-                    )}
+                    ) : undefined}
                   </Link>
                 </td>
                 <td className="d-none d-sm-block">

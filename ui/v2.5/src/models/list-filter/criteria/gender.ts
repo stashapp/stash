@@ -1,10 +1,6 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
-import {
-  Criterion,
-  CriterionType,
-  ICriterionOption,
-} from "./criterion";
+import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
 export class GenderCriterion extends Criterion {
   public type: CriterionType = "gender";
