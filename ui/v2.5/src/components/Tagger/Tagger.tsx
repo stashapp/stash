@@ -54,14 +54,14 @@ const createClient = () => {
 
 const client = createClient();
 
-const blacklist = ['XXX', '1080p', '720p', '2160p', /-[A-Z]+\[rarbg\]/, 'MP4'];
+const DEFAULT_BLACKLIST = ['XXX', '1080p', '720p', '2160p', /-[A-Z]+\[rarbg\]/, 'MP4'];
 const dateRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
-function prepareQueryString(scene: Partial<GQL.Scene>, str: string) {
-  if (scene.date && scene.studio) {
-    return `${scene.date} ${scene.studio.name} ${(scene?.performers ?? []).map(p => p.name).join(' ')}`;
+function prepareQueryString(scene: Partial<GQL.Scene>, str: string, mode:ParseMode) {
+  if ((scene.date && scene.studio) || mode === "metadata") {
+    return `${scene.date} ${scene.studio?.name ?? ''} ${(scene?.performers ?? []).map(p => p.name).join(' ')}`;
   }
   let s = str;
-  blacklist.forEach(b => { s = s.replace(b, '') });
+  DEFAULT_BLACKLIST.forEach(b => { s = s.replace(b, '') });
   const date = s.match(dateRegex);
   if(date) {
     s = s.replace(date[0], ` 20${date[1]}-${date[2]}-${date[3]} `);
@@ -79,6 +79,8 @@ const FailIcon: React.FC<IconProps> = ({ className }) => (
   <Icon icon="times" className={cx("secondary mr-4", className)} color="#394b59" />
 );
 
+type ParseMode = 'auto'|'filename'|'dir'|'path'|'metadata';
+
 export const Tagger: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -88,6 +90,9 @@ export const Tagger: React.FC = () => {
   const [queryString, setQueryString] = useState<Record<string, string>>({});
   const [selectedResult, setSelectedResult] = useState<Record<string, number>>();
   const [showMales, setShowMales] = useState(false);
+  const [advanced, setAdvanced] = useState(false);
+  const [mode, setMode] = useState<ParseMode>('auto');
+  const [blacklist, setBlacklist] = useState<(string|RegExp)[]>(DEFAULT_BLACKLIST);
   const [taggedScenes, setTaggedScenes] = useState<Record<string, Partial<GQL.Scene>>>({});
 
   const { data: sceneData, loading: sceneLoading } = GQL.useFindScenesQuery({
@@ -133,7 +138,7 @@ export const Tagger: React.FC = () => {
   const scenes = sceneData?.findScenes?.scenes ?? [];
 
   return (
-    <div className="col-9 mx-auto">
+    <div className="tagger-container mx-auto">
       <div className="row my-2">
         <input
           className="form-control col-2 ml-4"
@@ -142,8 +147,11 @@ export const Tagger: React.FC = () => {
           placeholder="Search text"
           disabled={sceneLoading}
         />
-        <Form.Group controlId="tag-males" className="col-2 mr-auto d-flex align-items-center mt-1">
+        <Form.Group controlId="tag-males" className="mx-4 d-flex align-items-center mt-1">
           <Form.Check label="Show male performers" onChange={(e: React.FormEvent<HTMLInputElement>) => setShowMales(e.currentTarget.checked)} />
+        </Form.Group>
+        <Form.Group controlId="advanced-config" className="mr-auto d-flex align-items-center mt-1">
+          <Form.Check label="Advanced configuration" onChange={(e: React.FormEvent<HTMLInputElement>) => setAdvanced(e.currentTarget.checked)} />
         </Form.Group>
         <div className="float-right mr-4">
           <Pagination
@@ -155,6 +163,24 @@ export const Tagger: React.FC = () => {
         </div>
       </div>
 
+      { advanced && (
+        <div className="mx-4">
+          <div className="row">
+            <h5 className="col">Advanced settings</h5>
+          </div>
+          <Form.Group controlId="mode-select" className="col-4">
+            <Form.Label>Mode: </Form.Label>
+              <Form.Control as="select" selected={mode} onChange={(e:React.FormEvent<HTMLSelectElement>) => setMode(e.currentTarget.value as ParseMode)}>
+                <option value="auto">Auto</option>
+                <option value="filename">Filename</option>
+                <option value="dir">Dir</option>
+                <option value="path">Path</option>
+                <option value="metadata">Metadata</option>
+            </Form.Control>
+          </Form.Group>
+        </div>
+      )}
+
       <div className="tagger-table card">
         <div className="tagger-table-header row mb-4">
           <div className="col-6"><b>Path</b></div>
@@ -163,7 +189,7 @@ export const Tagger: React.FC = () => {
           {scenes.map(scene => {
             const parsedPath = path(scene.path);
             const dir = path(parsedPath.dir).base;
-            const defaultQueryString = prepareQueryString(scene, dir);
+            const defaultQueryString = prepareQueryString(scene, dir, mode);
             return (
               <div key={scene.id} className="mb-4">
                 <div className="row">
@@ -292,9 +318,9 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerfor
 
   if((stashData?.findPerformers.count ?? 0) > 0) {
     return (
-      <div className="row">
-        <span className="col-3 offset-6">
-          <SuccessIcon />Performer found:
+      <div className="row my-2">
+        <span className="ml-auto">
+          <SuccessIcon />Performer matched:
         </span>
         <b className="col-3 text-right">{ stashData!.findPerformers.performers[0].name }</b>
       </div>
@@ -351,30 +377,28 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerfor
           </div>
         </div>
       </Modal>
-      <div className="col-4">
+      <div className="entity-name">
         Performer:
         <b className="ml-2">{performer.name}</b>
       </div>
-      <div className="col-2">
+      <div>
         <Button variant="secondary" className="mr-1" onClick={() => showModal(true)}>Create</Button>
         { selectedSource === 'create'
           ? <SuccessIcon />
           : <FailIcon />
         }
       </div>
-      <div className="col-3">
+      <div className="select-existing">
         { selectedSource === 'existing'
           ? <SuccessIcon />
           : <FailIcon />
         }
-        <span className="d-inline-block">Select existing:</span>
       </div>
-      <div className="col-3">
-        <PerformerSelect
-          ids={selectedPerformer ? [selectedPerformer] : []}
-          onSelect={handlePerformerSelect}
-        />
-      </div>
+      <PerformerSelect
+        ids={selectedPerformer ? [selectedPerformer] : []}
+        onSelect={handlePerformerSelect}
+        className="performer-select"
+      />
     </div>
   );
 }
@@ -434,6 +458,10 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
         data: id
       });
     }
+    else {
+      setSelectedSource(undefined);
+      setSelectedStudio(null);
+    }
   };
 
   if(loading || stashLoading)
@@ -441,9 +469,9 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
 
   if(stashData?.findStudioByStashID) {
     return (
-      <div className="row">
-        <span className="col-3 offset-6">
-          <SuccessIcon />Studio found:
+      <div className="row my-2">
+        <span className="ml-auto">
+          <SuccessIcon />Studio matched:
         </span>
         <b className="col-3 text-right">{ stashData.findStudioByStashID.name }</b>
       </div>
@@ -467,30 +495,28 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
         </div>
       </Modal>
 
-      <div className="col-4">
+      <div className="entity-name">
         Studio:
         <b className="ml-2">{studio?.name}</b>
       </div>
-      <div className="col-2">
+      <div>
         <Button variant="secondary" className="mr-1" onClick={() => showModal(true)}>Create</Button>
         { selectedSource === 'create'
           ? <SuccessIcon />
           : <FailIcon />
         }
       </div>
-      <div className="col-3">
+      <div className="select-existing">
         { selectedSource === 'existing'
           ? <SuccessIcon />
           : <FailIcon />
         }
-        <span className="d-inline-block">Select existing:</span>
       </div>
-      <div className="col-3">
-        <StudioSelect
-          ids={selectedStudio ? [selectedStudio] : []}
-          onSelect={(items) => handleStudioSelect(items.length ? items[0].id : undefined)}
-        />
-      </div>
+      <StudioSelect
+        ids={selectedStudio ? [selectedStudio] : []}
+        onSelect={(items) => handleStudioSelect(items.length ? items[0].id : undefined)}
+        className="studio-select"
+      />
     </div>
 
   );
@@ -645,15 +671,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
 
   const classname = cx('row mb-4 search-result', { 'selected-result': isActive });
   return (
-    <li className={classname} key={scene?.id}>
+    <li className={classname} key={scene?.id} onClick={() => !isActive && setActive()}>
       <div className="col-6 row">
-        <label htmlFor={scene.id} className="d-flex justify-content-center align-items-center col-2 scene-select">
-          <input type="radio" checked={isActive} onChange={setActive} id={scene.id} />
-        </label>
-        <div className="d-flex col-3">
-          <img height={100} src={scene?.urls?.[0]?.url} alt="" className="align-self-center" />
-        </div>
-        <div className="col-7 d-flex flex-column justify-content-center">
+        <img src={scene?.urls?.[0]?.url} alt="" className="align-self-center scene-image" />
+        <div className="d-flex flex-column justify-content-center scene-metadata">
           <h4 className="text-truncate">{scene?.title}</h4>
           <h5>{scene?.studio?.name} • {scene?.date}</h5>
           <div>Performers: {scene?.performers?.map(p => p.performer.name).join(', ')}</div>
