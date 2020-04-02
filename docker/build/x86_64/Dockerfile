@@ -32,10 +32,10 @@ RUN wget -O /ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-rele
     mv /ffmpeg*/ /ffmpeg/
 
 # copy the ui yarn stuff so that it doesn't get rebuilt every time
-COPY ./ui/v2/package.json ./ui/v2/yarn.lock /stash/ui/v2/
+COPY ./ui/v2.5/package.json ./ui/v2.5/yarn.lock /stash/ui/v2.5/
 
 WORKDIR /stash
-RUN yarn --cwd ui/v2 install --frozen-lockfile
+RUN yarn --cwd ui/v2.5 install --frozen-lockfile
 
 COPY . /stash/
 ENV GO111MODULE=on
