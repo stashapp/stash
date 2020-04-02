@@ -11,7 +11,7 @@ import { ImageUtils, TableUtils } from "src/utils";
 import {
   DetailsEditNavbar,
   Modal,
-  LoadingIndicator
+  LoadingIndicator,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { StudioScenesPanel } from "./StudioScenesPanel";
@@ -83,7 +83,7 @@ export const Studio: React.FC = () => {
     const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
       name,
       url,
-      image
+      image,
     };
 
     if (!isNew) {
@@ -155,7 +155,7 @@ export const Studio: React.FC = () => {
       <div
         className={cx("studio-details", {
           "col ml-sm-5": !isNew,
-          "col-8": isNew
+          "col-8": isNew,
         })}
       >
         {isNew && <h2>Add Studio</h2>}
@@ -166,13 +166,13 @@ export const Studio: React.FC = () => {
               title: "Name",
               value: studio.name ?? "",
               isEditing: !!isEditing,
-              onChange: setName
+              onChange: setName,
             })}
             {TableUtils.renderInputGroup({
               title: "URL",
               value: url,
               isEditing: !!isEditing,
-              onChange: setUrl
+              onChange: setUrl,
             })}
           </tbody>
         </Table>

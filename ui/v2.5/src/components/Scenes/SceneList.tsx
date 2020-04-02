@@ -3,7 +3,7 @@ import _ from "lodash";
 import { useHistory } from "react-router-dom";
 import {
   FindScenesQueryResult,
-  SlimSceneDataFragment
+  SlimSceneDataFragment,
 } from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { useScenesList } from "src/hooks";
@@ -21,14 +21,14 @@ interface ISceneList {
 
 export const SceneList: React.FC<ISceneList> = ({
   subComponent,
-  filterHook
+  filterHook,
 }) => {
   const history = useHistory();
   const otherOperations = [
     {
       text: "Play Random",
-      onClick: playRandom
-    }
+      onClick: playRandom,
+    },
   ];
 
   const listData = useScenesList({
@@ -37,7 +37,7 @@ export const SceneList: React.FC<ISceneList> = ({
     renderContent,
     renderSelectedOptions,
     subComponent,
-    filterHook
+    filterHook,
   });
 
   async function playRandom(
@@ -78,8 +78,8 @@ export const SceneList: React.FC<ISceneList> = ({
     const { scenes } = result.data.findScenes;
 
     const selectedScenes: SlimSceneDataFragment[] = [];
-    selectedIds.forEach(id => {
-      const scene = scenes.find(s => s.id === id);
+    selectedIds.forEach((id) => {
+      const scene = scenes.find((s) => s.id === id);
 
       if (scene) {
         selectedScenes.push(scene);
@@ -126,7 +126,7 @@ export const SceneList: React.FC<ISceneList> = ({
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <div className="row justify-content-center">
-          {result.data.findScenes.scenes.map(scene =>
+          {result.data.findScenes.scenes.map((scene) =>
             renderSceneCard(scene, selectedIds, zoomIndex)
           )}
         </div>

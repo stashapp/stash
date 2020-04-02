@@ -15,7 +15,7 @@
 
 .card-section {
   margin-bottom: 0;
-  padding: .5rem 1rem 0 1rem;
+  padding: 0.5rem 1rem 0 1rem;
 
   &-title {
     overflow: hidden;
@@ -25,12 +25,12 @@
 }
 
 .scene-card-check {
-  left: .5rem;
+  left: 0.5rem;
   margin-top: -12px;
-  opacity: .5;
+  opacity: 0.5;
   padding-left: 15px;
   position: absolute;
-  top: .7rem;
+  top: 0.7rem;
   width: 1.2rem;
   z-index: 1;
 }
@@ -95,7 +95,7 @@
 
 .file-info-panel {
   div {
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
   }
 }
 
@@ -113,7 +113,7 @@
 }
 
 .studio-card {
-  padding: .5rem;
+  padding: 0.5rem;
 
   &-header {
     height: 150px;
@@ -138,9 +138,9 @@
   color: $text-color;
   display: block;
   font-weight: 400;
-  letter-spacing: -.03rem;
+  letter-spacing: -0.03rem;
   position: absolute;
-  right: .7rem;
+  right: 0.7rem;
   text-shadow: 0 0 3px #000;
 }
 
@@ -149,10 +149,10 @@
   font-weight: 900;
   height: 10%;
   max-width: 40%;
-  opacity: .75;
+  opacity: 0.75;
   position: absolute;
-  right: .7rem;
-  top: .7rem;
+  right: 0.7rem;
+  top: 0.7rem;
   z-index: 9;
 
   .image-thumbnail {
@@ -164,7 +164,7 @@
   a {
     color: $text-color;
     display: inline-block;
-    letter-spacing: -.03rem;
+    letter-spacing: -0.03rem;
     text-align: right;
     text-decoration: none;
     text-shadow: 0 0 3px #000;
@@ -173,7 +173,7 @@
 
 .overlay-resolution {
   font-weight: 900;
-  margin-right: .3rem;
+  margin-right: 0.3rem;
   text-transform: uppercase;
 }
 
@@ -190,7 +190,7 @@
   .scene-specs-overlay,
   .rating-banner,
   .scene-studio-overlay {
-    transition: opacity .5s;
+    transition: opacity 0.5s;
   }
 
   &:hover {
@@ -198,12 +198,12 @@
     .rating-banner,
     .scene-studio-overlay {
       opacity: 0;
-      transition: opacity .5s;
+      transition: opacity 0.5s;
     }
 
     .scene-studio-overlay:hover {
-      opacity: .75;
-      transition: opacity .5s;
+      opacity: 0.75;
+      transition: opacity 0.5s;
     }
   }
 }

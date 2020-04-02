@@ -9,7 +9,7 @@ import {
   Modal,
   ImageInput,
   ScrapePerformerSuggest,
-  LoadingIndicator
+  LoadingIndicator,
 } from "src/components/Shared";
 import { ImageUtils, TableUtils } from "src/utils";
 import { useToast } from "src/hooks";
@@ -33,7 +33,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   isEditing,
   onSave,
   onDelete,
-  onImageChange
+  onImageChange,
 }) => {
   const Toast = useToast();
 
@@ -93,7 +93,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     setUrl(state.url ?? undefined);
     setTwitter(state.twitter ?? undefined);
     setInstagram(state.instagram ?? undefined);
-    setGender(StashService.genderToString((state as GQL.PerformerDataFragment).gender ?? undefined));
+    setGender(
+      StashService.genderToString(
+        (state as GQL.PerformerDataFragment).gender ?? undefined
+      )
+    );
   }
 
   function updatePerformerEditStateFromScraper(
@@ -128,7 +132,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   useEffect(() => {
     const newQueryableScrapers = (
       Scrapers?.data?.listPerformerScrapers ?? []
-    ).filter(s => s.performer?.supported_scrapes.includes(GQL.ScrapeType.Name));
+    ).filter((s) =>
+      s.performer?.supported_scrapes.includes(GQL.ScrapeType.Name)
+    );
 
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers]);
@@ -156,7 +162,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       twitter,
       instagram,
       image,
-      gender: StashService.stringToGender(gender)
+      gender: StashService.stringToGender(gender),
     };
 
     if (!isNew) {
@@ -226,7 +232,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       value: ethnicity,
       isEditing: !!isEditing,
       placeholder: "Ethnicity",
-      onChange: setEthnicity
+      onChange: setEthnicity,
     });
   }
 
@@ -240,7 +246,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         <Popover.Content>
           <div>
             {queryableScrapers
-              ? queryableScrapers.map(s => (
+              ? queryableScrapers.map((s) => (
                   <div key={s.name}>
                     <Button
                       key={s.name}
@@ -278,7 +284,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             scraperId={
               isDisplayingScraperDialog ? isDisplayingScraperDialog.id : ""
             }
-            onSelectPerformer={query => setScrapePerformerDetails(query)}
+            onSelectPerformer={(query) => setScrapePerformerDetails(query)}
           />
         </div>
       </Modal>
@@ -288,8 +294,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   function urlScrapable(scrapedUrl: string) {
     return (
       !!scrapedUrl &&
-      (Scrapers?.data?.listPerformerScrapers ?? []).some(s =>
-        (s?.performer?.urls ?? []).some(u => scrapedUrl.includes(u))
+      (Scrapers?.data?.listPerformerScrapers ?? []).some((s) =>
+        (s?.performer?.urls ?? []).some((u) => scrapedUrl.includes(u))
       )
     );
   }
@@ -383,7 +389,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         value: name,
         isEditing: !!isEditing,
         placeholder: "Name",
-        onChange: setName
+        onChange: setName,
       });
     }
   }
@@ -395,7 +401,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         value: aliases,
         isEditing: !!isEditing,
         placeholder: "Aliases",
-        onChange: setAliases
+        onChange: setAliases,
       });
     }
   }
@@ -424,69 +430,69 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             title: "Birthdate",
             value: birthdate,
             isEditing: !!isEditing,
-            onChange: setBirthdate
+            onChange: setBirthdate,
           })}
           {renderEthnicity()}
           {TableUtils.renderInputGroup({
             title: "Eye Color",
             value: eyeColor,
             isEditing: !!isEditing,
-            onChange: setEyeColor
+            onChange: setEyeColor,
           })}
           {TableUtils.renderInputGroup({
             title: "Country",
             value: country,
             isEditing: !!isEditing,
-            onChange: setCountry
+            onChange: setCountry,
           })}
           {TableUtils.renderInputGroup({
             title: "Height (cm)",
             value: height,
             isEditing: !!isEditing,
-            onChange: setHeight
+            onChange: setHeight,
           })}
           {TableUtils.renderInputGroup({
             title: "Measurements",
             value: measurements,
             isEditing: !!isEditing,
-            onChange: setMeasurements
+            onChange: setMeasurements,
           })}
           {TableUtils.renderInputGroup({
             title: "Fake Tits",
             value: fakeTits,
             isEditing: !!isEditing,
-            onChange: setFakeTits
+            onChange: setFakeTits,
           })}
           {TableUtils.renderInputGroup({
             title: "Career Length",
             value: careerLength,
             isEditing: !!isEditing,
-            onChange: setCareerLength
+            onChange: setCareerLength,
           })}
           {TableUtils.renderInputGroup({
             title: "Tattoos",
             value: tattoos,
             isEditing: !!isEditing,
-            onChange: setTattoos
+            onChange: setTattoos,
           })}
           {TableUtils.renderInputGroup({
             title: "Piercings",
             value: piercings,
             isEditing: !!isEditing,
-            onChange: setPiercings
+            onChange: setPiercings,
           })}
           {renderURLField()}
           {TableUtils.renderInputGroup({
             title: "Twitter",
             value: twitter,
             isEditing: !!isEditing,
-            onChange: setTwitter
+            onChange: setTwitter,
           })}
           {TableUtils.renderInputGroup({
             title: "Instagram",
             value: instagram,
             isEditing: !!isEditing,
-            onChange: setInstagram
+            onChange: setInstagram,
           })}
         </tbody>
       </Table>

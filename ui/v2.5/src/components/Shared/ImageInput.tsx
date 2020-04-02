@@ -12,7 +12,7 @@ export const ImageInput: React.FC<IImageInput> = ({
   isEditing,
   text,
   onImageChange,
-  acceptSVG = false
+  acceptSVG = false,
 }) => {
   if (!isEditing) return <div />;
 

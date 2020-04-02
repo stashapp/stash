@@ -64,7 +64,7 @@ export class VideoHoverHook {
       return;
     }
     if (videoTag.paused && !data.isPlaying.current) {
-      videoTag.play().catch(error => {
+      videoTag.play().catch((error) => {
         console.log(error.message);
       });
     }

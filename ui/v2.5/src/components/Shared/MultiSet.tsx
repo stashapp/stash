@@ -1,9 +1,9 @@
 import * as React from "react";
 
 import * as GQL from "src/core/generated-graphql";
-import { FilterSelect } from "./Select";
 import { Button, InputGroup } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
+import { FilterSelect } from "./Select";
 
 type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -18,13 +18,15 @@ interface IMultiSetProps {
   onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
 }
 
-const MultiSet: React.FunctionComponent<IMultiSetProps> = (props: IMultiSetProps) => {
+const MultiSet: React.FunctionComponent<IMultiSetProps> = (
+  props: IMultiSetProps
+) => {
   function onUpdate(items: ValidTypes[]) {
     props.onUpdate(items);
   }
 
   function getModeIcon() {
-    switch(props.mode) {
+    switch (props.mode) {
       case GQL.BulkUpdateIdMode.Set:
         return "pencil-alt";
       case GQL.BulkUpdateIdMode.Add:
@@ -35,7 +37,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (props: IMultiSetProps
   }
 
   function getModeText() {
-    switch(props.mode) {
+    switch (props.mode) {
       case GQL.BulkUpdateIdMode.Set:
         return "Set";
       case GQL.BulkUpdateIdMode.Add:
@@ -46,7 +48,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (props: IMultiSetProps
   }
 
   function nextMode() {
-    switch(props.mode) {
+    switch (props.mode) {
       case GQL.BulkUpdateIdMode.Set:
         return GQL.BulkUpdateIdMode.Add;
       case GQL.BulkUpdateIdMode.Add:
@@ -59,7 +61,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (props: IMultiSetProps
   return (
     <InputGroup className="multi-set">
       <InputGroup.Prepend>
-        <Button 
+        <Button
           size="sm"
           variant="secondary"
           onClick={() => props.onSetMode(nextMode())}
@@ -68,7 +70,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (props: IMultiSetProps
           <Icon icon={getModeIcon()} className="fa-fw" />
         </Button>
       </InputGroup.Prepend>
-      
+
       <FilterSelect
         type={props.type}
         isMulti

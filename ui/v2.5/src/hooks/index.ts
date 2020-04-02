@@ -6,5 +6,5 @@ export {
   useSceneMarkersList,
   useGalleriesList,
   useStudiosList,
-  usePerformersList
+  usePerformersList,
 } from "./ListHook";

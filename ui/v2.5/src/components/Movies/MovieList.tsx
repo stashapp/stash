@@ -7,7 +7,7 @@ import { MovieCard } from "./MovieCard";
 
 export const MovieList: React.FC = () => {
   const listData = useMoviesList({
-    renderContent
+    renderContent,
   });
 
   function renderContent(
@@ -20,7 +20,7 @@ export const MovieList: React.FC = () => {
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <div className="row justify-content-center">
-          {result.data.findMovies.movies.map(p => (
+          {result.data.findMovies.movies.map((p) => (
             <MovieCard key={p.id} movie={p} />
           ))}
         </div>

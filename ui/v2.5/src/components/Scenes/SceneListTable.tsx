@@ -13,24 +13,22 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
   props: ISceneListTableProps
 ) => {
   const renderTags = (tags: GQL.Tag[]) =>
-    tags.map(tag => (
+    tags.map((tag) => (
       <Link key={tag.id} to={NavUtils.makeTagScenesUrl(tag)}>
         <h6>{tag.name}</h6>
       </Link>
     ));
 
   const renderPerformers = (performers: Partial<GQL.Performer>[]) =>
-    performers.map(performer => (
+    performers.map((performer) => (
       <Link key={performer.id} to={NavUtils.makePerformerScenesUrl(performer)}>
         <h6>{performer.name}</h6>
       </Link>
     ));
 
   const renderMovies = (movies: Partial<GQL.SceneMovie>[]) => {
-    return movies.map(sceneMovie =>
-      !sceneMovie.movie ? (
-        undefined
-      ) : (
+    return movies.map((sceneMovie) =>
+      !sceneMovie.movie ? undefined : (
         <Link to={NavUtils.makeMovieScenesUrl(sceneMovie.movie)}>
           <h6>{sceneMovie.movie.name}</h6>
         </Link>

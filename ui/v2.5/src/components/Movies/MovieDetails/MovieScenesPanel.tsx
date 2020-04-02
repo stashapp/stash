@@ -12,7 +12,7 @@ export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({ movie }) => {
   function filterHook(filter: ListFilterModel) {
     const movieValue = { id: movie.id!, label: movie.name! };
     // if movie is already present, then we modify it, otherwise add
-    let movieCriterion = filter.criteria.find(c => {
+    let movieCriterion = filter.criteria.find((c) => {
       return c.type === "movies";
     }) as MoviesCriterion;
 
@@ -23,7 +23,7 @@ export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({ movie }) => {
     ) {
       // add the movie if not present
       if (
-        !movieCriterion.value.find(p => {
+        !movieCriterion.value.find((p) => {
           return p.id === movie.id;
         })
       ) {

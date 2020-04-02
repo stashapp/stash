@@ -25,7 +25,7 @@ const ModalComponent: React.FC<IModal> = ({
   header,
   cancel,
   accept,
-  onHide
+  onHide,
 }) => (
   <Modal keyboard={false} onHide={onHide} show={show}>
     <Modal.Header>

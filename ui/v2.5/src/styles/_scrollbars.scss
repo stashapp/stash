@@ -11,7 +11,7 @@
 
 textarea::selection,
 input::selection {
-  background-color: rgba(100, 100, 100, .4);
+  background-color: rgba(100, 100, 100, 0.4);
   color: $dark-text;
 }
 
@@ -24,21 +24,21 @@ body ::-webkit-scrollbar {
 }
 
 body ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, .1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 0;
 }
 
 body ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, .25);
+  background: rgba(0, 0, 0, 0.25);
   border-radius: 5px;
   cursor: pointer;
-  transition: color .2s ease;
+  transition: color 0.2s ease;
 }
 
 body ::-webkit-scrollbar-thumb:window-inactive {
-  background: rgba(0, 0, 0, .15);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 body ::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 135, 139, .8);
+  background: rgba(128, 135, 139, 0.8);
 }

@@ -96,7 +96,7 @@ export const TagList: React.FC = () => {
   if (!data?.allTags) return <LoadingIndicator />;
   if (error) return <div>{error.message}</div>;
 
-  const tagElements = data.allTags.map(tag => {
+  const tagElements = data.allTags.map((tag) => {
     return (
       <div key={tag.id} className="tag-list-row row">
         <Button variant="link" onClick={() => setEditingTag(tag)}>
@@ -154,7 +154,7 @@ export const TagList: React.FC = () => {
         accept={{
           onClick: onEdit,
           variant: "danger",
-          text: editingTag?.id ? "Update" : "Create"
+          text: editingTag?.id ? "Update" : "Create",
         }}
       >
         <Form.Group controlId="tag-name">

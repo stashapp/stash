@@ -7,7 +7,7 @@ import { StudioCard } from "./StudioCard";
 
 export const StudioList: React.FC = () => {
   const listData = useStudiosList({
-    renderContent
+    renderContent,
   });
 
   function renderContent(
@@ -19,7 +19,7 @@ export const StudioList: React.FC = () => {
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <div className="row px-xl-5 justify-content-center">
-          {result.data.findStudios.studios.map(studio => (
+          {result.data.findStudios.studios.map((studio) => (
             <StudioCard key={studio.id} studio={studio} />
           ))}
         </div>

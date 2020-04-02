@@ -24,7 +24,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   const [tags, setTags] = useState<JSX.Element[]>([]);
   const config = StashService.useConfiguration();
   const videoHoverHook = VideoHoverHook.useVideoHover({
-    resetOnMouseLeave: true
+    resetOnMouseLeave: true,
   });
   const showTextContainer =
     config.data?.configuration.interface.wallShowTitle ?? true;
@@ -86,7 +86,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
           props.sceneMarker.seconds
         )}`
       );
-      const thisTags = props.sceneMarker.tags.map(tag => (
+      const thisTags = props.sceneMarker.tags.map((tag) => (
         <span key={tag.id} className="wall-tag">
           {tag.name}
         </span>
