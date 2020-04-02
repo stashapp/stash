@@ -9,9 +9,10 @@ env:
   - GO111MODULE=on
 before_install:
 - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
-- travis_retry yarn --cwd ui/v2 install --frozen-lockfile
+- nvm install 12
+- travis_retry yarn --cwd ui/v2.5 install --frozen-lockfile
 - make generate
-- CI=false yarn --cwd ui/v2 build # TODO: Fix warnings
+- CI=false yarn --cwd ui/v2.5 build # TODO: Fix warnings
 #- go get -v github.com/mgechev/revive
 script:
 #- make lint
