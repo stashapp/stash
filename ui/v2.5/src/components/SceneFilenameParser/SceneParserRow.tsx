@@ -143,8 +143,8 @@ function SceneParserStringField(props: ISceneParserFieldProps<string>) {
   );
 }
 
-function SceneParserRatingField(props: ISceneParserFieldProps<number>) {
-  function maybeValueChanged(value: number) {
+function SceneParserRatingField(props: ISceneParserFieldProps<number | undefined>) {
+  function maybeValueChanged(value?: number) {
     if (value !== props.parserResult.value) {
       props.onValueChanged(value);
     }
@@ -176,7 +176,7 @@ function SceneParserRatingField(props: ISceneParserFieldProps<number>) {
             readOnly={!props.parserResult.isSet}
             value={props.parserResult.value?.toString()}
             onChange={(event: React.FormEvent<HTMLSelectElement>) =>
-              maybeValueChanged(Number.parseInt(event.currentTarget.value, 10))
+              maybeValueChanged(event.currentTarget.value === "" ? undefined : Number.parseInt(event.currentTarget.value, 10))
             }
           >
             {options.map(opt => (
@@ -311,7 +311,7 @@ interface ISceneParserRowProps {
 }
 
 export const SceneParserRow = (props: ISceneParserRowProps) => {
-  function changeParser<T>(result: ParserResult<T>, isSet: boolean, value: T) {
+  function changeParser<T>(result: ParserResult<T>, isSet: boolean, value?: T) {
     const newParser = _.clone(result);
     newParser.isSet = isSet;
     newParser.value = value;
@@ -330,7 +330,7 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
     props.onChange(newResult);
   }
 
-  function onRatingChanged(set: boolean, value: number) {
+  function onRatingChanged(set: boolean, value?: number) {
     const newResult = _.clone(props.scene);
     newResult.rating = changeParser(newResult.rating, set, value);
     props.onChange(newResult);
@@ -392,7 +392,7 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
           className="parser-field-rating input-control text-input"
           parserResult={props.scene.rating}
           onSetChanged={isSet =>
-            onRatingChanged(isSet, props.scene.rating.value ?? 0)
+            onRatingChanged(isSet, props.scene.rating.value ?? undefined)
           }
           onValueChanged={value =>
             onRatingChanged(props.scene.rating.isSet, value)
