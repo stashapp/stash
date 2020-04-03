@@ -55,7 +55,8 @@ code,
 
 .text-input,
 .text-input:focus,
-.text-input[readonly] {
+.text-input[readonly],
+.text-input:disabled {
   background-color: $textfield-bg;
 }
 

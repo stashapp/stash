@@ -175,7 +175,7 @@ function SceneParserRatingField(
           <Form.Control
             as="select"
             className={props.className}
-            readOnly={!props.parserResult.isSet}
+            disabled={!props.parserResult.isSet}
             value={props.parserResult.value?.toString()}
             onChange={(event: React.FormEvent<HTMLSelectElement>) =>
               maybeValueChanged(
