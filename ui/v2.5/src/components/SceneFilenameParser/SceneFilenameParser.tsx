@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Button, Card, Form, Table } from "react-bootstrap";
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
@@ -37,6 +37,8 @@ export const SceneFilenameParser: React.FC = () => {
   const [parserInput, setParserInput] = useState<IParserInput>(
     initialParserInput
   );
+  const prevParserInputRef = useRef<IParserInput>();
+  const prevParserInput = prevParserInputRef.current;
 
   const [allTitleSet, setAllTitleSet] = useState<boolean>(false);
   const [allDateSet, setAllDateSet] = useState<boolean>(false);
@@ -55,6 +57,10 @@ export const SceneFilenameParser: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [updateScenes] = StashService.useScenesUpdate(getScenesUpdateData());
+
+  useEffect(() => {
+    prevParserInputRef.current = parserInput;
+  }, [parserInput]);
 
   const determineFieldsToHide = useCallback(() => {
     const { pattern } = parserInput;
@@ -100,37 +106,46 @@ export const SceneFilenameParser: React.FC = () => {
     [determineFieldsToHide]
   );
 
-  useEffect(() => {
-    if (parserInput.findClicked) {
-      setParserResult([]);
-      setIsLoading(true);
+  const parseSceneFilenames = useCallback(() => {
+    setParserResult([]);
+    setIsLoading(true);
 
-      const parserFilter = {
-        q: parserInput.pattern,
-        page: parserInput.page,
-        per_page: parserInput.pageSize,
-        sort: "path",
-        direction: GQL.SortDirectionEnum.Asc
-      };
+    const parserFilter = {
+      q: parserInput.pattern,
+      page: parserInput.page,
+      per_page: parserInput.pageSize,
+      sort: "path",
+      direction: GQL.SortDirectionEnum.Asc
+    };
 
-      const parserInputData = {
-        ignoreWords: parserInput.ignoreWords,
-        whitespaceCharacters: parserInput.whitespaceCharacters,
-        capitalizeTitle: parserInput.capitalizeTitle
-      };
+    const parserInputData = {
+      ignoreWords: parserInput.ignoreWords,
+      whitespaceCharacters: parserInput.whitespaceCharacters,
+      capitalizeTitle: parserInput.capitalizeTitle
+    };
 
-      StashService.queryParseSceneFilenames(parserFilter, parserInputData)
-        .then(response => {
-          const result = response.data.parseSceneFilenames;
-          if (result) {
-            parseResults(result.results);
-            setTotalItems(result.count);
-          }
-        })
-        .catch(err => Toast.error(err))
-        .finally(() => setIsLoading(false));
-    }
+    StashService.queryParseSceneFilenames(parserFilter, parserInputData)
+      .then(response => {
+        const result = response.data.parseSceneFilenames;
+        if (result) {
+          parseResults(result.results);
+          setTotalItems(result.count);
+        }
+      })
+      .catch(err => Toast.error(err))
+      .finally(() => setIsLoading(false));
   }, [parserInput, parseResults, Toast]);
+  
+  useEffect(() => {
+    // only refresh if parserInput actually changed
+    if (prevParserInput === parserInput) {
+      return;
+    }
+
+    if (parserInput.findClicked) {
+      parseSceneFilenames();
+    }
+  }, [parserInput, parseSceneFilenames, prevParserInput]);
 
   function onPageSizeChanged(newSize: number) {
     const newInput = _.clone(parserInput);
@@ -148,9 +163,10 @@ export const SceneFilenameParser: React.FC = () => {
   }
 
   function onFindClicked(input: IParserInput) {
-    input.page = 1;
-    input.findClicked = true;
-    setParserInput(input);
+    const newInput = _.clone(input);
+    newInput.page = 1;
+    newInput.findClicked = true;
+    setParserInput(newInput);
     setTotalItems(0);
   }
 
@@ -171,6 +187,9 @@ export const SceneFilenameParser: React.FC = () => {
     }
 
     setIsLoading(false);
+
+    // trigger a refresh of the results
+    onFindClicked(parserInput);
   }
 
   useEffect(() => {
