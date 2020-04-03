@@ -12,7 +12,7 @@ export const StudioScenesPanel: React.FC<IStudioScenesPanel> = ({ studio }) => {
   function filterHook(filter: ListFilterModel) {
     const studioValue = { id: studio.id!, label: studio.name! };
     // if studio is already present, then we modify it, otherwise add
-    let studioCriterion = filter.criteria.find(c => {
+    let studioCriterion = filter.criteria.find((c) => {
       return c.type === "studios";
     }) as StudiosCriterion;
 
@@ -23,7 +23,7 @@ export const StudioScenesPanel: React.FC<IStudioScenesPanel> = ({ studio }) => {
     ) {
       // add the studio if not present
       if (
-        !studioCriterion.value.find(p => {
+        !studioCriterion.value.find((p) => {
           return p.id === studio.id;
         })
       ) {

@@ -3,7 +3,7 @@
 export enum DisplayMode {
   Grid,
   List,
-  Wall
+  Wall,
 }
 
 export enum FilterMode {
@@ -12,7 +12,7 @@ export enum FilterMode {
   Studios,
   Galleries,
   SceneMarkers,
-  Movies
+  Movies,
 }
 
 export interface ILabeledId {

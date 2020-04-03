@@ -5,22 +5,24 @@ interface IImageInput {
   isEditing: boolean;
   text?: string;
   onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
+  acceptSVG?: boolean;
 }
 
 export const ImageInput: React.FC<IImageInput> = ({
   isEditing,
   text,
-  onImageChange
+  onImageChange,
+  acceptSVG = false,
 }) => {
   if (!isEditing) return <div />;
 
   return (
-    <Form.Label className="image-input">
+    <Form.Label className="image-input ml-2">
       <Button variant="secondary">{text ?? "Browse for image..."}</Button>
       <Form.Control
         type="file"
         onChange={onImageChange}
-        accept=".jpg,.jpeg,.png"
+        accept={`.jpg,.jpeg,.png${acceptSVG ? ',.svg' : ''}`}
       />
     </Form.Label>
   );

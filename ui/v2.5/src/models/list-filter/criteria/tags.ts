@@ -9,7 +9,7 @@ export class TagsCriterion extends Criterion {
   public modifierOptions = [
     Criterion.getModifierOption(GQL.CriterionModifier.IncludesAll),
     Criterion.getModifierOption(GQL.CriterionModifier.Includes),
-    Criterion.getModifierOption(GQL.CriterionModifier.Excludes)
+    Criterion.getModifierOption(GQL.CriterionModifier.Excludes),
   ];
   public options: IOptionType[] = [];
   public value: ILabeledId[] = [];
@@ -24,7 +24,7 @@ export class TagsCriterion extends Criterion {
   }
 
   public encodeValue() {
-    return this.value.map(o => {
+    return this.value.map((o) => {
       return encodeILabeledId(o);
     });
   }

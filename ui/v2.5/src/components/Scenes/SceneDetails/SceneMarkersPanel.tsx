@@ -54,7 +54,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
       <div className="row">
         <WallPanel
           sceneMarkers={props.scene.scene_markers}
-          clickHandler={marker => {
+          clickHandler={(marker) => {
             window.scrollTo(0, 0);
             onClickMarker(marker as GQL.SceneMarkerDataFragment);
           }}

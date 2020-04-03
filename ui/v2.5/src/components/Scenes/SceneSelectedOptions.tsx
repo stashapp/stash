@@ -3,10 +3,7 @@ import { Button, Form } from "react-bootstrap";
 import _ from "lodash";
 import { StashService } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import {
-  StudioSelect,
-  LoadingIndicator
-} from "src/components/Shared";
+import { StudioSelect, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import MultiSet from "../Shared/MultiSet";
 
@@ -21,9 +18,13 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
   const Toast = useToast();
   const [rating, setRating] = useState<string>("");
   const [studioId, setStudioId] = useState<string>();
-  const [performerMode, setPerformerMode] = React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
+  const [performerMode, setPerformerMode] = React.useState<
+    GQL.BulkUpdateIdMode
+  >(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[]>();
-  const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
+  const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
+    GQL.BulkUpdateIdMode.Add
+  );
   const [tagIds, setTagIds] = useState<string[]>();
 
   const [updateScenes] = StashService.useBulkSceneUpdate(getSceneInput());
@@ -31,10 +32,13 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
   // Network state
   const [isLoading, setIsLoading] = useState(true);
 
-  function makeBulkUpdateIds(ids: string[], mode: GQL.BulkUpdateIdMode) : GQL.BulkUpdateIds {
+  function makeBulkUpdateIds(
+    ids: string[],
+    mode: GQL.BulkUpdateIdMode
+  ): GQL.BulkUpdateIds {
     return {
       mode,
-      ids
+      ids,
     };
   }
 
@@ -46,9 +50,9 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     const aggregateTagIds = getTagIds(props.selected);
 
     const sceneInput: GQL.BulkSceneUpdateInput = {
-      ids: props.selected.map(scene => {
+      ids: props.selected.map((scene) => {
         return scene.id;
-      })
+      }),
     };
 
     // if rating is undefined
@@ -78,19 +82,31 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     }
 
     // if performerIds are empty
-    if (performerMode === GQL.BulkUpdateIdMode.Set && (!performerIds || performerIds.length === 0)) {
+    if (
+      performerMode === GQL.BulkUpdateIdMode.Set &&
+      (!performerIds || performerIds.length === 0)
+    ) {
       // and all scenes have the same ids,
       if (aggregatePerformerIds.length > 0) {
         // then unset the performerIds, otherwise ignore
-        sceneInput.performer_ids = makeBulkUpdateIds(performerIds || [], performerMode);
+        sceneInput.performer_ids = makeBulkUpdateIds(
+          performerIds || [],
+          performerMode
+        );
       }
     } else {
       // if performerIds non-empty, then we are setting them
-      sceneInput.performer_ids = makeBulkUpdateIds(performerIds || [], performerMode);
+      sceneInput.performer_ids = makeBulkUpdateIds(
+        performerIds || [],
+        performerMode
+      );
     }
 
     // if tagIds non-empty, then we are setting them
-    if (tagMode === GQL.BulkUpdateIdMode.Set && (!tagIds || tagIds.length === 0)) {
+    if (
+      tagMode === GQL.BulkUpdateIdMode.Set &&
+      (!tagIds || tagIds.length === 0)
+    ) {
       // and all scenes have the same ids,
       if (aggregateTagIds.length > 0) {
         // then unset the tagIds, otherwise ignore
@@ -157,11 +173,11 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
 
     state.forEach((scene: GQL.SlimSceneDataFragment) => {
       if (first) {
-        ret = scene.performers ? scene.performers.map(p => p.id).sort() : [];
+        ret = scene.performers ? scene.performers.map((p) => p.id).sort() : [];
         first = false;
       } else {
         const perfIds = scene.performers
-          ? scene.performers.map(p => p.id).sort()
+          ? scene.performers.map((p) => p.id).sort()
           : [];
 
         if (!_.isEqual(ret, perfIds)) {
@@ -179,10 +195,10 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
 
     state.forEach((scene: GQL.SlimSceneDataFragment) => {
       if (first) {
-        ret = scene.tags ? scene.tags.map(t => t.id).sort() : [];
+        ret = scene.tags ? scene.tags.map((t) => t.id).sort() : [];
         first = false;
       } else {
-        const tIds = scene.tags ? scene.tags.map(t => t.id).sort() : [];
+        const tIds = scene.tags ? scene.tags.map((t) => t.id).sort() : [];
 
         if (!_.isEqual(ret, tIds)) {
           ret = [];
@@ -204,8 +220,10 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     state.forEach((scene: GQL.SlimSceneDataFragment) => {
       const sceneRating = scene.rating?.toString() ?? "";
       const sceneStudioID = scene?.studio?.id;
-      const scenePerformerIDs = (scene.performers ?? []).map(p => p.id).sort();
-      const sceneTagIDs = (scene.tags ?? []).map(p => p.id).sort();
+      const scenePerformerIDs = (scene.performers ?? [])
+        .map((p) => p.id)
+        .sort();
+      const sceneTagIDs = (scene.tags ?? []).map((p) => p.id).sort();
 
       if (first) {
         updateRating = sceneRating;
@@ -238,7 +256,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     if (tagMode === GQL.BulkUpdateIdMode.Set) {
       setTagIds(updateTagIds);
     }
-    
+
     setIsLoading(false);
   }, [props.selected, performerMode, tagMode]);
 
@@ -248,15 +266,19 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
   ) {
     let mode = GQL.BulkUpdateIdMode.Add;
     switch (type) {
-      case "performers": mode = performerMode; break;
-      case "tags": mode = tagMode; break;
+      case "performers":
+        mode = performerMode;
+        break;
+      case "tags":
+        mode = tagMode;
+        break;
     }
 
     return (
       <MultiSet
         type={type}
-        onUpdate={items => {
-          const itemIDs = items.map(i => i.id);
+        onUpdate={(items) => {
+          const itemIDs = items.map((i) => i.id);
           switch (type) {
             case "performers":
               setPerformerIds(itemIDs);
@@ -266,10 +288,14 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
               break;
           }
         }}
-        onSetMode={(mode) => {
+        onSetMode={(newMode) => {
           switch (type) {
-            case "performers": setPerformerMode(mode); break;
-            case "tags": setTagMode(mode); break;
+            case "performers":
+              setPerformerMode(newMode);
+              break;
+            case "tags":
+              setTagMode(newMode);
+              break;
           }
         }}
         ids={ids ?? []}
@@ -296,7 +322,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
               setRating(event.currentTarget.value)
             }
           >
-            {["", "1", "2", "3", "4", "5"].map(opt => (
+            {["", "1", "2", "3", "4", "5"].map((opt) => (
               <option key={opt} value={opt}>
                 {opt}
               </option>
@@ -307,7 +333,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
         <Form.Group controlId="studio" className="operation-item">
           <Form.Label>Studio</Form.Label>
           <StudioSelect
-            onSelect={items => setStudioId(items[0]?.id)}
+            onSelect={(items) => setStudioId(items[0]?.id)}
             ids={studioId ? [studioId] : []}
           />
         </Form.Group>

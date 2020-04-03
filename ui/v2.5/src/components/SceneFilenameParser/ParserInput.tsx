@@ -4,7 +4,7 @@ import {
   Dropdown,
   DropdownButton,
   Form,
-  InputGroup
+  InputGroup,
 } from "react-bootstrap";
 import { ParserField } from "./ParserField";
 import { ShowFields } from "./ShowFields";
@@ -15,43 +15,43 @@ const builtInRecipes = [
     ignoreWords: [],
     whitespaceCharacters: "",
     capitalizeTitle: false,
-    description: "Filename"
+    description: "Filename",
   },
   {
     pattern: "{title}.{ext}",
     ignoreWords: [],
     whitespaceCharacters: "",
     capitalizeTitle: false,
-    description: "Without extension"
+    description: "Without extension",
   },
   {
     pattern: "{}.{yy}.{mm}.{dd}.{title}.XXX.{}.{ext}",
     ignoreWords: [],
     whitespaceCharacters: ".",
     capitalizeTitle: true,
-    description: ""
+    description: "",
   },
   {
     pattern: "{}.{yy}.{mm}.{dd}.{title}.{ext}",
     ignoreWords: [],
     whitespaceCharacters: ".",
     capitalizeTitle: true,
-    description: ""
+    description: "",
   },
   {
     pattern: "{title}.XXX.{}.{ext}",
     ignoreWords: [],
     whitespaceCharacters: ".",
     capitalizeTitle: true,
-    description: ""
+    description: "",
   },
   {
     pattern: "{}.{yy}.{mm}.{dd}.{title}.{i}.{ext}",
     ignoreWords: ["cz", "fr"],
     whitespaceCharacters: ".",
     capitalizeTitle: true,
-    description: "Foreign language"
-  }
+    description: "Foreign language",
+  },
 ];
 
 export interface IParserInput {
@@ -102,7 +102,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
       capitalizeTitle,
       page: 1,
       pageSize: props.input.pageSize,
-      findClicked: props.input.findClicked
+      findClicked: props.input.findClicked,
     });
   }
 
@@ -139,7 +139,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
           />
           <InputGroup.Append>
             <DropdownButton id="parser-field-select" title="Add Field">
-              {validFields.map(item => (
+              {validFields.map((item) => (
                 <Dropdown.Item
                   key={item.field}
                   onSelect={() => addParserField(item)}
@@ -207,7 +207,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
           id="recipe-select"
           title="Select Parser Recipe"
         >
-          {builtInRecipes.map(item => (
+          {builtInRecipes.map((item) => (
             <Dropdown.Item
               key={item.pattern}
               onSelect={() => setParserRecipe(item)}
@@ -222,7 +222,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
       <Form.Group>
         <ShowFields
           fields={props.showFields}
-          onShowFieldsChanged={fields => props.setShowFields(fields)}
+          onShowFieldsChanged={(fields) => props.setShowFields(fields)}
         />
       </Form.Group>
 
@@ -239,7 +239,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
           defaultValue={props.input.pageSize}
           className="col-1 filter-item"
         >
-          {PAGE_SIZE_OPTIONS.map(val => (
+          {PAGE_SIZE_OPTIONS.map((val) => (
             <option key={val} value={val}>
               {val}
             </option>

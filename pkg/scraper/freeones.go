@@ -278,7 +278,9 @@ func getEthnicity(ethnicity string) string {
 	case "Asian":
 		return "asian"
 	default:
-		panic("unknown ethnicity")
+		// #367 - unknown ethnicity shouldn't cause the entire operation to
+		// fail. Just return the original string instead
+		return ethnicity
 	}
 }
 

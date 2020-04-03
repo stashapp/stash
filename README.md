@@ -69,7 +69,7 @@ Join the [Discord server](https://discord.gg/2TsNFKt).
     * Go Install: `go get github.com/gobuffalo/packr/v2/packr2@v2.0.2`
     * [Binary Download](https://github.com/gobuffalo/packr/releases)
 * [Yarn](https://yarnpkg.com/en/docs/install) - Yarn package manager
-    * Run `yarn install --frozen-lockfile` in the `stash/ui/v2` folder (before running make generate for first time).
+    * Run `yarn install --frozen-lockfile` in the `stash/ui/v2.5` folder (before running make generate for first time).
 
 NOTE: You may need to run the `go get` commands outside the project directory to avoid modifying the projects module file.
 

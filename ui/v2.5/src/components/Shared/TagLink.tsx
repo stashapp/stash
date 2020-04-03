@@ -5,7 +5,7 @@ import {
   PerformerDataFragment,
   SceneMarkerDataFragment,
   TagDataFragment,
-  MovieDataFragment
+  MovieDataFragment,
 } from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 

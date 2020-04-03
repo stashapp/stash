@@ -18,9 +18,9 @@ export const ToastProvider: React.FC = ({ children }) => {
   const [toasts, setToasts] = useState<IActiveToast[]>([]);
 
   const removeToast = (id: number) =>
-    setToasts(toasts.filter(item => item.id !== id));
+    setToasts(toasts.filter((item) => item.id !== id));
 
-  const toastItems = toasts.map(toast => (
+  const toastItems = toasts.map((toast) => (
     <Toast
       autohide
       key={toast.id}
@@ -55,9 +55,9 @@ function createHookObject(toastFunc: (toast: IToast) => void) {
       toastFunc({
         variant: "danger",
         header: "Error",
-        content: error.message ?? error.toString()
+        content: error.message ?? error.toString(),
       });
-    }
+    },
   };
 }
 

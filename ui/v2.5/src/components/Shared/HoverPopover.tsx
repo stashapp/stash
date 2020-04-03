@@ -19,7 +19,7 @@ export const HoverPopover: React.FC<IHoverPopover> = ({
   className,
   placement = "top",
   onOpen,
-  onClose
+  onClose,
 }) => {
   const [show, setShow] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);

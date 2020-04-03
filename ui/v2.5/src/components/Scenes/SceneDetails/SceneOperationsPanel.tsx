@@ -19,8 +19,8 @@ export const SceneOperationsPanel: FunctionComponent<IOperationsPanelProps> = (
     await generateScreenshot({
       variables: {
         id: props.scene.id,
-        at: at
-      }
+        at,
+      },
     });
     Toast.success({ content: "Generating screenshot" });
   }

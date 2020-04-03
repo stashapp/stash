@@ -9,7 +9,7 @@ interface ISceneMoviePanelProps {
 export const SceneMoviePanel: FunctionComponent<ISceneMoviePanelProps> = (
   props: ISceneMoviePanelProps
 ) => {
-  const cards = props.scene.movies.map(sceneMovie => (
+  const cards = props.scene.movies.map((sceneMovie) => (
     <MovieCard
       key={sceneMovie.movie.id}
       movie={sceneMovie.movie}

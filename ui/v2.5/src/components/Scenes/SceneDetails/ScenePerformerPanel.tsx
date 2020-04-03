@@ -9,7 +9,7 @@ interface IScenePerformerPanelProps {
 export const ScenePerformerPanel: FunctionComponent<IScenePerformerPanelProps> = (
   props: IScenePerformerPanelProps
 ) => {
-  const cards = props.scene.performers.map(performer => (
+  const cards = props.scene.performers.map((performer) => (
     <PerformerCard
       key={performer.id}
       performer={performer}

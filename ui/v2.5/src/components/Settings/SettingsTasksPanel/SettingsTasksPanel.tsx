@@ -128,7 +128,7 @@ export const SettingsTasksPanel: React.FC = () => {
     return {
       performers: autoTagPerformers ? wildcard : [],
       studios: autoTagStudios ? wildcard : [],
-      tags: autoTagTags ? wildcard : []
+      tags: autoTagTags ? wildcard : [],
     };
   }
 

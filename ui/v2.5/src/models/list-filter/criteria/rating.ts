@@ -11,7 +11,7 @@ export class RatingCriterion extends Criterion {
     Criterion.getModifierOption(CriterionModifier.GreaterThan),
     Criterion.getModifierOption(CriterionModifier.LessThan),
     Criterion.getModifierOption(CriterionModifier.IsNull),
-    Criterion.getModifierOption(CriterionModifier.NotNull)
+    Criterion.getModifierOption(CriterionModifier.NotNull),
   ];
   public options: number[] = [1, 2, 3, 4, 5];
   public value: number = 0;

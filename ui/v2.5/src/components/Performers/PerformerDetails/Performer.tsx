@@ -62,13 +62,13 @@ export const Performer: React.FC = () => {
     try {
       if (!isNew) {
         const result = await updatePerformer({
-          variables: performerInput as GQL.PerformerUpdateInput
+          variables: performerInput as GQL.PerformerUpdateInput,
         });
         if (result.data?.performerUpdate)
           setPerformer(result.data?.performerUpdate);
       } else {
         const result = await createPerformer({
-          variables: performerInput as GQL.PerformerCreateInput
+          variables: performerInput as GQL.PerformerCreateInput,
         });
         if (result.data?.performerCreate) {
           setPerformer(result.data.performerCreate);

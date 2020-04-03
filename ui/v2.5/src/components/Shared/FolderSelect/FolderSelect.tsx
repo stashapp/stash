@@ -32,7 +32,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
 
   function onRemoveDirectory(directory: string) {
     const newSelectedDirectories = selectedDirectories.filter(
-      dir => dir !== directory
+      (dir) => dir !== directory
     );
     setSelectedDirectories(newSelectedDirectories);
     props.onDirectoriesChanged(newSelectedDirectories);
@@ -55,6 +55,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
                   setCurrentDirectory(e.currentTarget.value)
                 }
                 defaultValue={currentDirectory}
+                spellCheck={false}
               />
               <InputGroup.Append>
                 {!data || !data.directories || loading ? (
@@ -65,7 +66,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
               </InputGroup.Append>
             </InputGroup>
             <ul className="folder-list">
-              {selectableDirectories.map(path => {
+              {selectableDirectories.map((path) => {
                 return (
                   <li key={path} className="folder-item">
                     <Button
@@ -95,7 +96,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
       {error ? <h1>{error.message}</h1> : ""}
       {renderDialog()}
       <Form.Group>
-        {selectedDirectories.map(path => {
+        {selectedDirectories.map((path) => {
           return (
             <div key={path}>
               {path}{" "}

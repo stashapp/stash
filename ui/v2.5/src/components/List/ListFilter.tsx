@@ -9,7 +9,7 @@ import {
   Form,
   OverlayTrigger,
   Tooltip,
-  SafeAnchor
+  SafeAnchor,
 } from "react-bootstrap";
 
 import { Icon } from "src/components/Shared";
@@ -106,7 +106,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function renderSortByOptions() {
-    return props.filter.sortByOptions.map(option => (
+    return props.filter.sortByOptions.map((option) => (
       <Dropdown.Item
         onClick={onChangeSortBy}
         key={option}
@@ -138,7 +138,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           return "Wall";
       }
     }
-    return props.filter.displayModeOptions.map(option => (
+    return props.filter.displayModeOptions.map((option) => (
       <OverlayTrigger
         key={option}
         overlay={
@@ -157,7 +157,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function renderFilterTags() {
-    return props.filter.criteria.map(criterion => (
+    return props.filter.criteria.map((criterion) => (
       <Badge
         className="tag-item"
         variant="secondary"
@@ -219,7 +219,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     const options = [renderSelectAll(), renderSelectNone()];
 
     if (props.otherOperations) {
-      props.otherOperations.forEach(o => {
+      props.otherOperations.forEach((o) => {
         options.push(
           <Dropdown.Item
             key={o.text}
@@ -276,7 +276,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           <Form.Control
             placeholder="Search..."
             defaultValue={props.filter.searchTerm}
-            onChange={onChangeQuery}
+            onInput={onChangeQuery}
             className="filter-item col-5 col-sm-2 bg-secondary text-white border-secondary"
           />
           <Form.Control
@@ -285,7 +285,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
             value={props.filter.itemsPerPage.toString()}
             className="btn-secondary filter-item col-1 d-none d-sm-inline"
           >
-            {PAGE_SIZE_OPTIONS.map(s => (
+            {PAGE_SIZE_OPTIONS.map((s) => (
               <option value={s} key={s}>
                 {s}
               </option>

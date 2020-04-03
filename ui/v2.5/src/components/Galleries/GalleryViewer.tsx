@@ -29,14 +29,14 @@ export const GalleryViewer: FunctionComponent<IProps> = ({ gallery }) => {
     setCurrentImage(currentImage + 1);
   }
 
-  const photos = gallery.files.map(file => ({
+  const photos = gallery.files.map((file) => ({
     src: file.path ?? "",
-    caption: file.name ?? ""
+    caption: file.name ?? "",
   }));
-  const thumbs = gallery.files.map(file => ({
+  const thumbs = gallery.files.map((file) => ({
     src: `${file.path}?thumb=true` || "",
     width: 1,
-    height: 1
+    height: 1,
   }));
 
   return (

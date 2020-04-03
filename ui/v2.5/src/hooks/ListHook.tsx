@@ -16,11 +16,11 @@ import {
   FindStudiosQueryResult,
   FindPerformersQueryResult,
   FindMoviesQueryResult,
-  MovieDataFragment
+  MovieDataFragment,
 } from "src/core/generated-graphql";
 import {
   useInterfaceLocalForage,
-  IInterfaceConfig
+  IInterfaceConfig,
 } from "src/hooks/LocalForage";
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
@@ -100,14 +100,14 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
   const updateInterfaceConfig = useCallback(
     (updatedFilter: ListFilterModel) => {
-      setInterfaceState(config => {
+      setInterfaceState((config) => {
         const data = { ...config } as IInterfaceConfig;
         data.queries = {
           [options.filterMode]: {
             filter: updatedFilter.makeQueryParameters(),
             itemsPerPage: updatedFilter.itemsPerPage,
-            currentPage: updatedFilter.currentPage
-          }
+            currentPage: updatedFilter.currentPage,
+          },
         };
         return data;
       });
@@ -133,7 +133,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
           sortdir: storedFilter.sortdir,
           disp: storedFilter.disp,
           perPage: storedFilter.perPage,
-          ...queryFilter
+          ...queryFilter,
         }
       : storedFilter;
 
@@ -161,7 +161,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     options.subComponent,
     options.filterMode,
     forageInitialised,
-    updateInterfaceConfig
+    updateInterfaceConfig,
   ]);
 
   function getFilter() {
@@ -221,7 +221,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     const newFilter = _.cloneDeep(filter);
 
     // Find if we are editing an existing criteria, then modify that.  Or create a new one.
-    const existingIndex = newFilter.criteria.findIndex(c => {
+    const existingIndex = newFilter.criteria.findIndex((c) => {
       // If we modified an existing criterion, then look for the old id.
       const id = oldId || criterion.getId();
       return c.getId() === id;
@@ -234,7 +234,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     // Remove duplicate modifiers
     newFilter.criteria = newFilter.criteria.filter((obj, pos, arr) => {
-      return arr.map(mapObj => mapObj.getId()).indexOf(obj.getId()) === pos;
+      return arr.map((mapObj) => mapObj.getId()).indexOf(obj.getId()) === pos;
     });
 
     newFilter.currentPage = 1;
@@ -244,7 +244,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   function onRemoveCriterion(removedCriterion: Criterion) {
     const newFilter = _.cloneDeep(filter);
     newFilter.criteria = newFilter.criteria.filter(
-      criterion => criterion.getId() !== removedCriterion.getId()
+      (criterion) => criterion.getId() !== removedCriterion.getId()
     );
     newFilter.currentPage = 1;
     updateQueryParams(newFilter);
@@ -281,7 +281,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     const subset = items.slice(start, end + 1);
     const newSelectedIds: Set<string> = new Set();
 
-    subset.forEach(item => {
+    subset.forEach((item) => {
       newSelectedIds.add(item.id);
     });
 
@@ -293,12 +293,12 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     let thisIndex = -1;
 
     if (lastClickedId) {
-      startIndex = items.findIndex(item => {
+      startIndex = items.findIndex((item) => {
         return item.id === lastClickedId;
       });
     }
 
-    thisIndex = items.findIndex(item => {
+    thisIndex = items.findIndex((item) => {
       return item.id === id;
     });
 
@@ -315,7 +315,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
   function onSelectAll() {
     const newSelectedIds: Set<string> = new Set();
-    items.forEach(item => {
+    items.forEach((item) => {
       newSelectedIds.add(item.id);
     });
 
@@ -334,12 +334,12 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   }
 
   const otherOperations = options.otherOperations
-    ? options.otherOperations.map(o => {
+    ? options.otherOperations.map((o) => {
         return {
           text: o.text,
           onClick: () => {
             o.onClick(result, filter, selectedIds);
-          }
+          },
         };
       })
     : undefined;
@@ -401,7 +401,7 @@ export const useScenesList = (props: IListHookOptions<FindScenesQueryResult>) =>
     getData: (result: FindScenesQueryResult) =>
       result?.data?.findScenes?.scenes ?? [],
     getCount: (result: FindScenesQueryResult) =>
-      result?.data?.findScenes?.count ?? 0
+      result?.data?.findScenes?.count ?? 0,
   });
 
 export const useSceneMarkersList = (
@@ -414,7 +414,7 @@ export const useSceneMarkersList = (
     getData: (result: FindSceneMarkersQueryResult) =>
       result?.data?.findSceneMarkers?.scene_markers ?? [],
     getCount: (result: FindSceneMarkersQueryResult) =>
-      result?.data?.findSceneMarkers?.count ?? 0
+      result?.data?.findSceneMarkers?.count ?? 0,
   });
 
 export const useGalleriesList = (
@@ -427,7 +427,7 @@ export const useGalleriesList = (
     getData: (result: FindGalleriesQueryResult) =>
       result?.data?.findGalleries?.galleries ?? [],
     getCount: (result: FindGalleriesQueryResult) =>
-      result?.data?.findGalleries?.count ?? 0
+      result?.data?.findGalleries?.count ?? 0,
   });
 
 export const useStudiosList = (
@@ -440,7 +440,7 @@ export const useStudiosList = (
     getData: (result: FindStudiosQueryResult) =>
       result?.data?.findStudios?.studios ?? [],
     getCount: (result: FindStudiosQueryResult) =>
-      result?.data?.findStudios?.count ?? 0
+      result?.data?.findStudios?.count ?? 0,
   });
 
 export const usePerformersList = (
@@ -453,16 +453,16 @@ export const usePerformersList = (
     getData: (result: FindPerformersQueryResult) =>
       result?.data?.findPerformers?.performers ?? [],
     getCount: (result: FindPerformersQueryResult) =>
-      result?.data?.findPerformers?.count ?? 0
+      result?.data?.findPerformers?.count ?? 0,
   });
 
 export const useMoviesList = (props: IListHookOptions<FindMoviesQueryResult>) =>
   useList<FindMoviesQueryResult, MovieDataFragment>({
     ...props,
-    filterMode: FilterMode.Performers,
+    filterMode: FilterMode.Movies,
     useData: StashService.useFindMovies,
     getData: (result: FindMoviesQueryResult) =>
       result?.data?.findMovies?.movies ?? [],
     getCount: (result: FindMoviesQueryResult) =>
-      result?.data?.findMovies?.count ?? 0
+      result?.data?.findMovies?.count ?? 0,
   });
