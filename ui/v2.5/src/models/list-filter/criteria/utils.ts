@@ -5,7 +5,7 @@ import {
   CriterionType,
   StringCriterion,
   NumberCriterion,
-  DurationCriterion
+  DurationCriterion,
 } from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
@@ -57,11 +57,11 @@ export function makeCriteria(type: CriterionType = "none") {
         Criterion.getModifierOption(CriterionModifier.Equals),
         Criterion.getModifierOption(CriterionModifier.NotEquals),
         Criterion.getModifierOption(CriterionModifier.GreaterThan),
-        Criterion.getModifierOption(CriterionModifier.LessThan)
+        Criterion.getModifierOption(CriterionModifier.LessThan),
       ];
       return ret;
     }
-    case "gender": 
+    case "gender":
       return new GenderCriterion();
     case "ethnicity":
     case "country":

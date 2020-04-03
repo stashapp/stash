@@ -12,7 +12,7 @@ const CLASSNAME_MESSAGE = `${CLASSNAME}-message`;
 
 const LoadingIndicator: React.FC<ILoadingProps> = ({
   message,
-  inline = false
+  inline = false,
 }) => (
   <div className={cx(CLASSNAME, { inline })}>
     <Spinner animation="border" role="status">

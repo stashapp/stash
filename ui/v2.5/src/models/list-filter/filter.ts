@@ -5,8 +5,9 @@ import {
   ResolutionEnum,
   SceneFilterType,
   SceneMarkerFilterType,
-  SortDirectionEnum
+  SortDirectionEnum,
 } from "src/core/generated-graphql";
+import { StashService } from "src/core/StashService";
 import {
   Criterion,
   ICriterionOption,
@@ -14,40 +15,39 @@ import {
   CriterionOption,
   NumberCriterion,
   StringCriterion,
-  DurationCriterion
+  DurationCriterion,
 } from "./criteria/criterion";
 import {
   FavoriteCriterion,
-  FavoriteCriterionOption
+  FavoriteCriterionOption,
 } from "./criteria/favorite";
 import {
   HasMarkersCriterion,
-  HasMarkersCriterionOption
+  HasMarkersCriterionOption,
 } from "./criteria/has-markers";
 import {
   IsMissingCriterion,
-  IsMissingCriterionOption
+  IsMissingCriterionOption,
 } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import {
   PerformersCriterion,
-  PerformersCriterionOption
+  PerformersCriterionOption,
 } from "./criteria/performers";
 import { RatingCriterion, RatingCriterionOption } from "./criteria/rating";
 import {
   ResolutionCriterion,
-  ResolutionCriterionOption
+  ResolutionCriterionOption,
 } from "./criteria/resolution";
 import { StudiosCriterion, StudiosCriterionOption } from "./criteria/studios";
 import {
   SceneTagsCriterionOption,
   TagsCriterion,
-  TagsCriterionOption
+  TagsCriterionOption,
 } from "./criteria/tags";
 import { makeCriteria } from "./criteria/utils";
 import { DisplayMode, FilterMode } from "./types";
 import { GenderCriterionOption, GenderCriterion } from "./criteria/gender";
-import { StashService } from "src/core/StashService";
 import { MoviesCriterionOption, MoviesCriterion } from "./criteria/movies";
 
 interface IQueryParameters {
@@ -64,7 +64,7 @@ const DEFAULT_PARAMS = {
   sortDirection: SortDirectionEnum.Asc,
   displayMode: DisplayMode.Grid,
   currentPage: 1,
-  itemsPerPage: 40
+  itemsPerPage: 40,
 };
 
 // TODO: handle customCriteria
@@ -101,12 +101,12 @@ export class ListFilterModel {
           "duration",
           "framerate",
           "bitrate",
-          "random"
+          "random",
         ];
         this.displayModeOptions = [
           DisplayMode.Grid,
           DisplayMode.List,
-          DisplayMode.Wall
+          DisplayMode.Wall,
         ];
         this.criterionOptions = [
           new NoneCriterionOption(),
@@ -119,7 +119,7 @@ export class ListFilterModel {
           new TagsCriterionOption(),
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
-          new MoviesCriterionOption()
+          new MoviesCriterionOption(),
         ];
         break;
       case FilterMode.Performers: {
@@ -138,7 +138,7 @@ export class ListFilterModel {
           "career_length",
           "tattoos",
           "piercings",
-          "aliases"
+          "aliases",
         ];
 
         this.criterionOptions = [
@@ -148,7 +148,7 @@ export class ListFilterModel {
         ];
 
         this.criterionOptions = this.criterionOptions.concat(
-          numberCriteria.concat(stringCriteria).map(c => {
+          numberCriteria.concat(stringCriteria).map((c) => {
             return ListFilterModel.createCriterionOption(c);
           })
         );
@@ -179,14 +179,14 @@ export class ListFilterModel {
           "seconds",
           "scene_id",
           "random",
-          "scenes_updated_at"
+          "scenes_updated_at",
         ];
         this.displayModeOptions = [DisplayMode.Wall];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new TagsCriterionOption(),
           new SceneTagsCriterionOption(),
-          new PerformersCriterionOption()
+          new PerformersCriterionOption(),
         ];
         break;
       default:
@@ -244,7 +244,7 @@ export class ListFilterModel {
         jsonParameters = [params.c];
       }
 
-      jsonParameters.forEach(jsonString => {
+      jsonParameters.forEach((jsonString) => {
         const encodedCriterion = JSON.parse(jsonString);
         const criterion = makeCriteria(encodedCriterion.type);
         // it's possible that we have unsupported criteria. Just skip if so.
@@ -281,7 +281,7 @@ export class ListFilterModel {
 
   public makeQueryParameters(): string {
     const encodedCriteria: string[] = [];
-    this.criteria.forEach(criterion => {
+    this.criteria.forEach((criterion) => {
       const encodedCriterion: Partial<Criterion> = {
         type: criterion.type,
         // #394 - the presence of a # symbol results in the query URL being
@@ -289,7 +289,7 @@ export class ListFilterModel {
         // call below, but this results in a URL that gets pretty long and ugly.
         // Instead, we'll encode the criteria values.
         value: criterion.encodeValue(),
-        modifier: criterion.modifier
+        modifier: criterion.modifier,
       };
       const jsonCriterion = JSON.stringify(encodedCriterion);
       encodedCriteria.push(jsonCriterion);
@@ -312,7 +312,7 @@ export class ListFilterModel {
         this.currentPage !== DEFAULT_PARAMS.currentPage
           ? this.currentPage
           : undefined,
-      c: encodedCriteria
+      c: encodedCriteria,
     };
     return queryString.stringify(result, { encode: false });
   }
@@ -325,19 +325,19 @@ export class ListFilterModel {
       page: this.currentPage,
       per_page: this.itemsPerPage,
       sort: this.getSortBy(),
-      direction: this.sortDirection
+      direction: this.sortDirection,
     };
   }
 
   public makeSceneFilter(): SceneFilterType {
     const result: SceneFilterType = {};
-    this.criteria.forEach(criterion => {
+    this.criteria.forEach((criterion) => {
       switch (criterion.type) {
         case "rating": {
           const ratingCrit = criterion as RatingCriterion;
           result.rating = {
             value: ratingCrit.value,
-            modifier: ratingCrit.modifier
+            modifier: ratingCrit.modifier,
           };
           break;
         }
@@ -345,7 +345,7 @@ export class ListFilterModel {
           const oCounterCrit = criterion as NumberCriterion;
           result.o_counter = {
             value: oCounterCrit.value,
-            modifier: oCounterCrit.modifier
+            modifier: oCounterCrit.modifier,
           };
           break;
         }
@@ -374,7 +374,7 @@ export class ListFilterModel {
           const durationCrit = criterion as DurationCriterion;
           result.duration = {
             value: durationCrit.value,
-            modifier: durationCrit.modifier
+            modifier: durationCrit.modifier,
           };
           break;
         }
@@ -387,32 +387,32 @@ export class ListFilterModel {
         case "tags": {
           const tagsCrit = criterion as TagsCriterion;
           result.tags = {
-            value: tagsCrit.value.map(tag => tag.id),
-            modifier: tagsCrit.modifier
+            value: tagsCrit.value.map((tag) => tag.id),
+            modifier: tagsCrit.modifier,
           };
           break;
         }
         case "performers": {
           const perfCrit = criterion as PerformersCriterion;
           result.performers = {
-            value: perfCrit.value.map(perf => perf.id),
-            modifier: perfCrit.modifier
+            value: perfCrit.value.map((perf) => perf.id),
+            modifier: perfCrit.modifier,
           };
           break;
         }
         case "studios": {
           const studCrit = criterion as StudiosCriterion;
           result.studios = {
-            value: studCrit.value.map(studio => studio.id),
-            modifier: studCrit.modifier
+            value: studCrit.value.map((studio) => studio.id),
+            modifier: studCrit.modifier,
           };
           break;
         }
         case "movies": {
           const movCrit = criterion as MoviesCriterion;
           result.movies = {
-            value: movCrit.value.map(movie => movie.id),
-            modifier: movCrit.modifier
+            value: movCrit.value.map((movie) => movie.id),
+            modifier: movCrit.modifier,
           };
           break;
         }
@@ -424,7 +424,7 @@ export class ListFilterModel {
 
   public makePerformerFilter(): PerformerFilterType {
     const result: PerformerFilterType = {};
-    this.criteria.forEach(criterion => {
+    this.criteria.forEach((criterion) => {
       switch (criterion.type) {
         case "favorite":
           result.filter_favorites =
@@ -434,7 +434,7 @@ export class ListFilterModel {
           const byCrit = criterion as NumberCriterion;
           result.birth_year = {
             value: byCrit.value,
-            modifier: byCrit.modifier
+            modifier: byCrit.modifier,
           };
           break;
         }
@@ -447,7 +447,7 @@ export class ListFilterModel {
           const ethCrit = criterion as StringCriterion;
           result.ethnicity = {
             value: ethCrit.value,
-            modifier: ethCrit.modifier
+            modifier: ethCrit.modifier,
           };
           break;
         }
@@ -455,7 +455,7 @@ export class ListFilterModel {
           const cntryCrit = criterion as StringCriterion;
           result.country = {
             value: cntryCrit.value,
-            modifier: cntryCrit.modifier
+            modifier: cntryCrit.modifier,
           };
           break;
         }
@@ -473,7 +473,7 @@ export class ListFilterModel {
           const mCrit = criterion as StringCriterion;
           result.measurements = {
             value: mCrit.value,
-            modifier: mCrit.modifier
+            modifier: mCrit.modifier,
           };
           break;
         }
@@ -486,7 +486,7 @@ export class ListFilterModel {
           const clCrit = criterion as StringCriterion;
           result.career_length = {
             value: clCrit.value,
-            modifier: clCrit.modifier
+            modifier: clCrit.modifier,
           };
           break;
         }
@@ -507,7 +507,10 @@ export class ListFilterModel {
         }
         case "gender": {
           const gCrit = criterion as GenderCriterion;
-          result.gender = { value: StashService.stringToGender(gCrit.value), modifier: gCrit.modifier };
+          result.gender = {
+            value: StashService.stringToGender(gCrit.value),
+            modifier: gCrit.modifier,
+          };
           break;
         }
         // no default
@@ -518,29 +521,29 @@ export class ListFilterModel {
 
   public makeSceneMarkerFilter(): SceneMarkerFilterType {
     const result: SceneMarkerFilterType = {};
-    this.criteria.forEach(criterion => {
+    this.criteria.forEach((criterion) => {
       switch (criterion.type) {
         case "tags": {
           const tagsCrit = criterion as TagsCriterion;
           result.tags = {
-            value: tagsCrit.value.map(tag => tag.id),
-            modifier: tagsCrit.modifier
+            value: tagsCrit.value.map((tag) => tag.id),
+            modifier: tagsCrit.modifier,
           };
           break;
         }
         case "sceneTags": {
           const sceneTagsCrit = criterion as TagsCriterion;
           result.scene_tags = {
-            value: sceneTagsCrit.value.map(tag => tag.id),
-            modifier: sceneTagsCrit.modifier
+            value: sceneTagsCrit.value.map((tag) => tag.id),
+            modifier: sceneTagsCrit.modifier,
           };
           break;
         }
         case "performers": {
           const performersCrit = criterion as PerformersCriterion;
           result.performers = {
-            value: performersCrit.value.map(performer => performer.id),
-            modifier: performersCrit.modifier
+            value: performersCrit.value.map((performer) => performer.id),
+            modifier: performersCrit.modifier,
           };
           break;
         }

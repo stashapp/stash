@@ -12,7 +12,7 @@ import {
   Modal,
   Icon,
   LoadingIndicator,
-  ImageInput
+  ImageInput,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ImageUtils, TableUtils } from "src/utils";
@@ -60,7 +60,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   useEffect(() => {
     const newQueryableScrapers = (
       Scrapers?.data?.listSceneScrapers ?? []
-    ).filter(s => s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment));
+    ).filter((s) =>
+      s.scene?.supported_scrapes.includes(GQL.ScrapeType.Fragment)
+    );
 
     setQueryableScrapers(newQueryableScrapers);
   }, [Scrapers]);
@@ -69,7 +71,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     let changed = false;
     const newMap: MovieSceneIndexMap = new Map();
     if (movieIds) {
-      movieIds.forEach(id => {
+      movieIds.forEach((id) => {
         if (!movieSceneIndexes.has(id)) {
           changed = true;
           newMap.set(id, undefined);
@@ -94,14 +96,14 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   }, [movieIds, movieSceneIndexes]);
 
   function updateSceneEditState(state: Partial<GQL.SceneDataFragment>) {
-    const perfIds = state.performers?.map(performer => performer.id);
-    const tIds = state.tags ? state.tags.map(tag => tag.id) : undefined;
+    const perfIds = state.performers?.map((performer) => performer.id);
+    const tIds = state.tags ? state.tags.map((tag) => tag.id) : undefined;
     const moviIds = state.movies
-      ? state.movies.map(sceneMovie => sceneMovie.movie.id)
+      ? state.movies.map((sceneMovie) => sceneMovie.movie.id)
       : undefined;
     const movieSceneIdx: MovieSceneIndexMap = new Map();
     if (state.movies) {
-      state.movies.forEach(m => {
+      state.movies.forEach((m) => {
         movieSceneIdx.set(m.movie.id, m.scene_index ?? undefined);
       });
     }
@@ -140,7 +142,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       performer_ids: performerIds,
       movies: makeMovieInputs(),
       tag_ids: tagIds,
-      cover_image: coverImage
+      cover_image: coverImage,
     };
   }
 
@@ -149,14 +151,14 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       return undefined;
     }
 
-    let ret = movieIds.map(id => {
+    let ret = movieIds.map((id) => {
       const r: GQL.SceneMovieInput = {
-        movie_id: id
+        movie_id: id,
       };
       return r;
     });
 
-    ret = ret.map(r => {
+    ret = ret.map((r) => {
       return { scene_index: movieSceneIndexes.get(r.movie_id), ...r };
     });
 
@@ -181,7 +183,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     return {
       id: props.scene.id,
       delete_file: deleteFile,
-      delete_generated: deleteGenerated
+      delete_generated: deleteGenerated,
     };
   }
 
@@ -202,7 +204,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     return (
       <SceneMovieTable
         movieSceneIndexes={movieSceneIndexes}
-        onUpdate={items => {
+        onUpdate={(items) => {
           setMovieSceneIndexes(items);
         }}
       />
@@ -272,7 +274,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
     return (
       <DropdownButton id="scene-scrape" title="Scrape with...">
-        {queryableScrapers.map(s => (
+        {queryableScrapers.map((s) => (
           <Dropdown.Item key={s.name} onClick={() => onScrapeClicked(s)}>
             {s.name}
           </Dropdown.Item>
@@ -282,8 +284,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   }
 
   function urlScrapable(scrapedUrl: string): boolean {
-    return (Scrapers?.data?.listSceneScrapers ?? []).some(s =>
-      (s?.scene?.urls ?? []).some(u => scrapedUrl.includes(u))
+    return (Scrapers?.data?.listSceneScrapers ?? []).some((s) =>
+      (s?.scene?.urls ?? []).some((u) => scrapedUrl.includes(u))
     );
   }
 
@@ -313,12 +315,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       scene.performers &&
       scene.performers.length > 0
     ) {
-      const idPerfs = scene.performers.filter(p => {
+      const idPerfs = scene.performers.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
 
       if (idPerfs.length > 0) {
-        const newIds = idPerfs.map(p => p.id);
+        const newIds = idPerfs.map((p) => p.id);
         setPerformerIds(newIds as string[]);
       }
     }
@@ -328,23 +330,23 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       scene.movies &&
       scene.movies.length > 0
     ) {
-      const idMovis = scene.movies.filter(p => {
+      const idMovis = scene.movies.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
 
       if (idMovis.length > 0) {
-        const newIds = idMovis.map(p => p.id);
+        const newIds = idMovis.map((p) => p.id);
         setMovieIds(newIds as string[]);
       }
     }
 
     if (!tagIds?.length && scene?.tags?.length) {
-      const idTags = scene.tags.filter(p => {
+      const idTags = scene.tags.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
 
       if (idTags.length > 0) {
-        const newIds = idTags.map(p => p.id);
+        const newIds = idTags.map((p) => p.id);
         setTagIds(newIds as string[]);
       }
     }
@@ -396,7 +398,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               title: "Title",
               value: title,
               onChange: setTitle,
-              isEditing: true
+              isEditing: true,
             })}
             <tr>
               <td>URL</td>
@@ -417,7 +419,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               value: date,
               isEditing: true,
               onChange: setDate,
-              placeholder: "YYYY-MM-DD"
+              placeholder: "YYYY-MM-DD",
             })}
             {TableUtils.renderHtmlSelect({
               title: "Rating",
@@ -425,7 +427,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               isEditing: true,
               onChange: (value: string) =>
                 setRating(Number.parseInt(value, 10)),
-              selectOptions: ["", 1, 2, 3, 4, 5]
+              selectOptions: ["", 1, 2, 3, 4, 5],
             })}
             <tr>
               <td>Gallery</td>
@@ -433,7 +435,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
                 <SceneGallerySelect
                   sceneId={props.scene.id}
                   initialId={galleryId}
-                  onSelect={item => setGalleryId(item ? item.id : undefined)}
+                  onSelect={(item) => setGalleryId(item ? item.id : undefined)}
                 />
               </td>
             </tr>
@@ -441,7 +443,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               <td>Studio</td>
               <td>
                 <StudioSelect
-                  onSelect={items =>
+                  onSelect={(items) =>
                     setStudioId(items.length > 0 ? items[0]?.id : undefined)
                   }
                   ids={studioId ? [studioId] : []}
@@ -453,8 +455,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               <td>
                 <PerformerSelect
                   isMulti
-                  onSelect={items =>
-                    setPerformerIds(items.map(item => item.id))
+                  onSelect={(items) =>
+                    setPerformerIds(items.map((item) => item.id))
                   }
                   ids={performerIds}
                 />
@@ -465,7 +467,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               <td>
                 <MovieSelect
                   isMulti
-                  onSelect={items => setMovieIds(items.map(item => item.id))}
+                  onSelect={(items) =>
+                    setMovieIds(items.map((item) => item.id))
+                  }
                   ids={movieIds}
                 />
                 {renderTableMovies()}
@@ -476,7 +480,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               <td>
                 <TagSelect
                   isMulti
-                  onSelect={items => setTagIds(items.map(item => item.id))}
+                  onSelect={(items) => setTagIds(items.map((item) => item.id))}
                   ids={tagIds}
                 />
               </td>

@@ -9,7 +9,7 @@ interface IPerformerOperationsProps {
 }
 
 export const PerformerOperationsPanel: React.FC<IPerformerOperationsProps> = ({
-  performer
+  performer,
 }) => {
   const Toast = useToast();
 

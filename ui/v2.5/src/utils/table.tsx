@@ -97,7 +97,7 @@ const renderHtmlSelect = (options: {
           options.onChange(event.currentTarget.value)
         }
       >
-        {options.selectOptions.map(opt => (
+        {options.selectOptions.map((opt) => (
           <option value={opt} key={opt}>
             {opt}
           </option>
@@ -119,7 +119,7 @@ const renderFilterSelect = (options: {
     <td>
       <FilterSelect
         type={options.type}
-        onSelect={items => options.onChange(items[0]?.id)}
+        onSelect={(items) => options.onChange(items[0]?.id)}
         initialIds={options.initialId ? [options.initialId] : []}
       />
     </td>
@@ -139,7 +139,7 @@ const renderMultiSelect = (options: {
       <FilterSelect
         type={options.type}
         isMulti
-        onSelect={items => options.onChange(items.map(i => i.id))}
+        onSelect={(items) => options.onChange(items.map((i) => i.id))}
         initialIds={options.initialIds ?? []}
       />
     </td>
@@ -152,6 +152,6 @@ const Table = {
   renderInputGroup,
   renderHtmlSelect,
   renderFilterSelect,
-  renderMultiSelect
+  renderMultiSelect,
 };
 export default Table;

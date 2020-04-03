@@ -1,23 +1,23 @@
 .wall-overlay {
-  background-color: rgba(0, 0, 0, .8);
+  background-color: rgba(0, 0, 0, 0.8);
   bottom: 0;
   left: 0;
   pointer-events: none;
   position: fixed;
   right: 0;
   top: 0;
-  transition: transform .5s ease-in-out;
+  transition: transform 0.5s ease-in-out;
   z-index: 1;
 }
 
 .visible {
   opacity: 1;
-  transition: opacity .5s ease-in-out;
+  transition: opacity 0.5s ease-in-out;
 }
 
 .hidden {
   opacity: 0;
-  transition: opacity .5s ease-in-out;
+  transition: opacity 0.5s ease-in-out;
 }
 
 .visible-unanimated {
@@ -52,7 +52,7 @@
   justify-content: center;
   max-height: 253px;
   position: relative;
-  transition: transform .5s;
+  transition: transform 0.5s;
   width: 100%;
 }
 
@@ -64,7 +64,10 @@
 }
 
 .scene-wall-item-text-container {
-  background: linear-gradient(rgba(255, 255, 255, .25), rgba(255, 255, 255, .65));
+  background: linear-gradient(
+    rgba(255, 255, 255, 0.25),
+    rgba(255, 255, 255, 0.65)
+  );
   bottom: 0;
   color: #444;
   font-weight: 700;

@@ -9,12 +9,12 @@ interface IPerformerDetailsProps {
 }
 
 export const PerformerScenesPanel: React.FC<IPerformerDetailsProps> = ({
-  performer
+  performer,
 }) => {
   function filterHook(filter: ListFilterModel) {
     const performerValue = { id: performer.id!, label: performer.name! };
     // if performers is already present, then we modify it, otherwise add
-    let performerCriterion = filter.criteria.find(c => {
+    let performerCriterion = filter.criteria.find((c) => {
       return c.type === "performers";
     }) as PerformersCriterion;
 
@@ -25,7 +25,7 @@ export const PerformerScenesPanel: React.FC<IPerformerDetailsProps> = ({
     ) {
       // add the performer if not present
       if (
-        !performerCriterion.value.find(p => {
+        !performerCriterion.value.find((p) => {
           return p.id === performer.id;
         })
       ) {

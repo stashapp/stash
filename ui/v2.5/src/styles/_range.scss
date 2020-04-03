@@ -1,4 +1,4 @@
-input[type=range] {
+input[type="range"] {
   -webkit-appearance: none;
   background-color: transparent;
   border-color: transparent;
@@ -14,7 +14,7 @@ input[type=range] {
   }
 
   &::-webkit-slider-runnable-track {
-    animate: .2s;
+    animate: 0.2s;
     background: #137cbd;
     border: 0 solid #000101;
     border-radius: 25px;
@@ -41,7 +41,7 @@ input[type=range] {
   }
 
   &::-moz-range-track {
-    animate: .2s;
+    animate: 0.2s;
     background: #137cbd;
     border: 0 solid #000101;
     border-radius: 25px;
@@ -62,7 +62,7 @@ input[type=range] {
   }
 
   &::-ms-track {
-    animate: .2s;
+    animate: 0.2s;
     background: transparent;
     border-color: transparent;
     color: transparent;

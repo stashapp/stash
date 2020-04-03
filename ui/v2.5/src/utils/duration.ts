@@ -47,5 +47,5 @@ const stringToSeconds = (v: string) => {
 
 export default {
   secondsToString,
-  stringToSeconds
+  stringToSeconds,
 };

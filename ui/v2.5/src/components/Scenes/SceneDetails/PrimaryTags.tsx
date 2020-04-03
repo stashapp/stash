@@ -12,13 +12,13 @@ interface IPrimaryTags {
 export const PrimaryTags: React.FC<IPrimaryTags> = ({
   sceneMarkers,
   onClickMarker,
-  onEdit
+  onEdit,
 }) => {
   if (!sceneMarkers?.length) return <div />;
 
   const primaries: Record<string, GQL.Tag> = {};
   const primaryTags: Record<string, GQL.SceneMarkerDataFragment[]> = {};
-  sceneMarkers.forEach(m => {
+  sceneMarkers.forEach((m) => {
     if (primaryTags[m.primary_tag.id]) primaryTags[m.primary_tag.id].push(m);
     else {
       primaryTags[m.primary_tag.id] = [m];
@@ -26,9 +26,9 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
     }
   });
 
-  const primaryCards = Object.keys(primaryTags).map(id => {
-    const markers = primaryTags[id].map(marker => {
-      const tags = marker.tags.map(tag => (
+  const primaryCards = Object.keys(primaryTags).map((id) => {
+    const markers = primaryTags[id].map((marker) => {
+      const tags = marker.tags.map((tag) => (
         <Badge key={tag.id} variant="secondary" className="tag-item">
           {tag.name}
         </Badge>

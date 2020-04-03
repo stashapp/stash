@@ -22,11 +22,11 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
 
   if (!!props.movieSceneIndexes && !!items) {
     props.movieSceneIndexes.forEach((index, movieId) => {
-      itemsFilter = itemsFilter.concat(items.filter(x => x.id === movieId));
+      itemsFilter = itemsFilter.concat(items.filter((x) => x.id === movieId));
     });
   }
 
-  const storeIdx = itemsFilter.map(movie => {
+  const storeIdx = itemsFilter.map((movie) => {
     return props.movieSceneIndexes.get(movie.id);
   });
 
@@ -54,7 +54,7 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
                 }
               >
                 {["", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"].map(
-                  opt => (
+                  (opt) => (
                     <option value={opt} key={opt}>
                       {opt}
                     </option>
