@@ -139,13 +139,13 @@ func (qb *GalleryQueryBuilder) Query(findFilter *FindFilterType) ([]*Gallery, in
 func (qb *GalleryQueryBuilder) getGallerySort(findFilter *FindFilterType) string {
 	var sort string
 	var direction string
-	//if findFilter == nil { // TODO temp until title is removed from schema and UI
-	sort = "path"
-	direction = "ASC"
-	//} else {
-	//	sort = findFilter.getSort("path")
-	//	direction = findFilter.getDirection()
-	//}
+	if findFilter == nil {
+		sort = "path"
+		direction = "ASC"
+	} else {
+		sort = findFilter.GetSort("path")
+		direction = findFilter.GetDirection()
+	}
 	return getSort(sort, direction, "galleries")
 }
 
