@@ -185,7 +185,7 @@ function SceneParserRatingField(
               )
             }
           >
-            {options.map(opt => (
+            {options.map((opt) => (
               <option value={opt} key={opt}>
                 {opt}
               </option>
@@ -261,7 +261,7 @@ function SceneParserTagField(props: ISceneParserFieldProps<string[]>) {
           <TagSelect
             isMulti
             isDisabled={!props.parserResult.isSet}
-            onSelect={items => {
+            onSelect={(items) => {
               maybeValueChanged(items.map((i) => i.id));
             }}
             ids={newTags}
@@ -399,10 +399,10 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
           fieldName="Rating"
           className="parser-field-rating input-control text-input"
           parserResult={props.scene.rating}
-          onSetChanged={isSet =>
+          onSetChanged={(isSet) =>
             onRatingChanged(isSet, props.scene.rating.value ?? undefined)
           }
-          onValueChanged={value =>
+          onValueChanged={(value) =>
             onRatingChanged(props.scene.rating.isSet, value)
           }
         />

@@ -245,7 +245,7 @@ export const SceneFilenameParser: React.FC = () => {
   function onSelectAllRatingSet(selected: boolean) {
     const newResult = [...parserResult];
 
-    newResult.forEach(r => {
+    newResult.forEach((r) => {
       r.rating.isSet = selected;
     });
 
