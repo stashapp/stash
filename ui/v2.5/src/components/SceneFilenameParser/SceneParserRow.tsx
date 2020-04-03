@@ -143,7 +143,9 @@ function SceneParserStringField(props: ISceneParserFieldProps<string>) {
   );
 }
 
-function SceneParserRatingField(props: ISceneParserFieldProps<number | undefined>) {
+function SceneParserRatingField(
+  props: ISceneParserFieldProps<number | undefined>
+) {
   function maybeValueChanged(value?: number) {
     if (value !== props.parserResult.value) {
       props.onValueChanged(value);
@@ -176,7 +178,11 @@ function SceneParserRatingField(props: ISceneParserFieldProps<number | undefined
             readOnly={!props.parserResult.isSet}
             value={props.parserResult.value?.toString()}
             onChange={(event: React.FormEvent<HTMLSelectElement>) =>
-              maybeValueChanged(event.currentTarget.value === "" ? undefined : Number.parseInt(event.currentTarget.value, 10))
+              maybeValueChanged(
+                event.currentTarget.value === ""
+                  ? undefined
+                  : Number.parseInt(event.currentTarget.value, 10)
+              )
             }
           >
             {options.map(opt => (

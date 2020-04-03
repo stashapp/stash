@@ -135,7 +135,7 @@ export const SceneFilenameParser: React.FC = () => {
       .catch(err => Toast.error(err))
       .finally(() => setIsLoading(false));
   }, [parserInput, parseResults, Toast]);
-  
+
   useEffect(() => {
     // only refresh if parserInput actually changed
     if (prevParserInput === parserInput) {
