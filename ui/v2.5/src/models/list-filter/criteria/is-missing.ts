@@ -2,7 +2,7 @@ import { CriterionModifier } from "src/core/generated-graphql";
 import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
 export class SceneIsMissingCriterion extends Criterion {
-  public type: CriterionType = "SceneIsMissing";
+  public type: CriterionType = "sceneIsMissing";
   public parameterName: string = "is_missing";
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
@@ -19,17 +19,16 @@ export class SceneIsMissingCriterion extends Criterion {
 }
 
 export class SceneIsMissingCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("SceneIsMissing");
-  public value: CriterionType = "SceneIsMissing";
+  public label: string = Criterion.getLabel("sceneIsMissing");
+  public value: CriterionType = "sceneIsMissing";
 }
 
 export class PerformerIsMissingCriterion extends Criterion {
-  public type: CriterionType = "PerformerIsMissing";
+  public type: CriterionType = "performerIsMissing";
   public parameterName: string = "is_missing";
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
   public options: string[] = [
-    "image",
     "url",
     "twitter",
     "instagram",
@@ -50,6 +49,6 @@ export class PerformerIsMissingCriterion extends Criterion {
 }
 
 export class PerformerIsMissingCriterionOption implements ICriterionOption {
-  public label: string = Criterion.getLabel("PerformerIsMissing");
-  public value: CriterionType = "PerformerIsMissing";
+  public label: string = Criterion.getLabel("performerIsMissing");
+  public value: CriterionType = "performerIsMissing";
 }

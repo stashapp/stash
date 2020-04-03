@@ -35,9 +35,9 @@ export function makeCriteria(type: CriterionType = "none") {
       return new FavoriteCriterion();
     case "hasMarkers":
       return new HasMarkersCriterion();
-    case "SceneIsMissing":
+    case "sceneIsMissing":
       return new SceneIsMissingCriterion();
-    case "PerformerIsMissing":
+    case "performerIsMissing":
       return new PerformerIsMissingCriterion();
     case "tags":
       return new TagsCriterion("tags");
