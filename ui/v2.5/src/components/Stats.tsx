@@ -15,6 +15,14 @@ export const Stats: React.FC = () => {
       <div className="col col-sm-8 m-sm-auto row stats">
         <div className="stats-element">
           <p className="title">
+            <FormattedMessage id="size" defaultMessage={data.stats.scene_size_count} />
+          </p>
+          <p className="heading">
+            <FormattedMessage id="library" defaultMessage="Library size" />
+          </p>
+        </div>
+        <div className="stats-element">
+          <p className="title">
             <FormattedNumber value={data.stats.scene_count} />
           </p>
           <p className="heading">
