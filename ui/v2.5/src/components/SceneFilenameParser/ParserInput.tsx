@@ -131,6 +131,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
         </Form.Label>
         <InputGroup className="col-8">
           <Form.Control
+            className="text-input"
             id="filename-pattern"
             onChange={(e: React.FormEvent<HTMLInputElement>) =>
               setPattern(e.currentTarget.value)
@@ -144,8 +145,8 @@ export const ParserInput: React.FC<IParserInputProps> = (
                   key={item.field}
                   onSelect={() => addParserField(item)}
                 >
-                  <span>{item.field}</span>
-                  <span className="ml-auto">{item.helperText}</span>
+                  <span>{item.field || "{}"}</span>
+                  <span className="ml-auto text-muted">{item.helperText}</span>
                 </Dropdown.Item>
               ))}
             </DropdownButton>
@@ -160,6 +161,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
         <Form.Label className="col-2">Ignored words</Form.Label>
         <InputGroup className="col-8">
           <Form.Control
+            className="text-input"
             onChange={(e: React.FormEvent<HTMLInputElement>) =>
               setIgnoreWords(e.currentTarget.value)
             }
@@ -178,6 +180,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
         </Form.Label>
         <InputGroup className="col-8">
           <Form.Control
+            className="text-input"
             onChange={(e: React.FormEvent<HTMLInputElement>) =>
               setWhitespaceCharacters(e.currentTarget.value)
             }
@@ -206,6 +209,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
           variant="secondary"
           id="recipe-select"
           title="Select Parser Recipe"
+          drop="up"
         >
           {builtInRecipes.map((item) => (
             <Dropdown.Item
@@ -213,7 +217,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
               onSelect={() => setParserRecipe(item)}
             >
               <span>{item.pattern}</span>
-              <span className="mr-auto">{item.description}</span>
+              <span className="ml-auto text-muted">{item.description}</span>
             </Dropdown.Item>
           ))}
         </DropdownButton>
@@ -237,7 +241,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
             props.onPageSizeChanged(parseInt(e.currentTarget.value, 10))
           }
           defaultValue={props.input.pageSize}
-          className="col-1 filter-item"
+          className="col-1 input-control filter-item"
         >
           {PAGE_SIZE_OPTIONS.map((val) => (
             <option key={val} value={val}>
