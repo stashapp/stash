@@ -98,6 +98,7 @@ func Start() {
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
 
+	initSessionStore()
 	initialiseImages()
 
 	r := chi.NewRouter()
@@ -138,7 +139,7 @@ func Start() {
 
 	// session handlers
 	r.Post("/login", handleLogin)
-	r.Post("/logout", handleLogout)
+	r.Get("/logout", handleLogout)
 
 	r.Get("/login", getLoginHandler)
 

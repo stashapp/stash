@@ -25,6 +25,10 @@ type LoginTemplateData struct {
 	Error string
 }
 
+func initSessionStore() {
+	sessionStore.MaxAge(maxCookieAge)
+}
+
 func redirectToLogin(w http.ResponseWriter, returnURL string, loginError string) {
 	data, _ := setupUIBox.Find("login.html")
 	templ, err := template.New("Login").Parse(string(data))
@@ -54,12 +58,8 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 		url = "/"
 	}
 
-	newSession, err := sessionStore.Get(r, cookieName)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// ignore error - we want a new session regardless
+	newSession, _ := sessionStore.Get(r, cookieName)
 
 	username := r.FormValue("username")
 	password := r.FormValue("password")
@@ -72,9 +72,8 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newSession.Values[userIDKey] = username
-	newSession.Options.MaxAge = maxCookieAge
 
-	err = newSession.Save(r, w)
+	err := newSession.Save(r, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -98,12 +97,17 @@ func handleLogout(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// redirect to the login page if credentials are required
+	getLoginHandler(w, r)
 }
 
 func getSessionUserID(w http.ResponseWriter, r *http.Request) (string, error) {
 	session, err := sessionStore.Get(r, cookieName)
+	// ignore errors and treat as an empty user id, so that we handle expired
+	// cookie
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
 	if !session.IsNew {

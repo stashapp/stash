@@ -4,6 +4,7 @@ import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
 import { Link, useLocation } from "react-router-dom";
+import { SessionUtils } from "src/utils";
 
 import { Icon } from "src/components/Shared";
 
@@ -98,6 +99,16 @@ export const MainNavbar: React.FC = () => {
       </LinkContainer>
     );
 
+  function maybeRenderLogout() {
+    if (SessionUtils.isLoggedIn()) {
+      return (
+        <Button className="minimal logout-button" onClick={() => window.location.href = "/logout"}>
+          <Icon icon="sign-out-alt" />
+        </Button>
+      );
+    }
+  }
+
   return (
     <Navbar
       collapseOnSelect
@@ -153,6 +164,7 @@ export const MainNavbar: React.FC = () => {
             <Icon icon="cog" />
           </Button>
         </LinkContainer>
+        {maybeRenderLogout()}
       </Nav>
     </Navbar>
   );
