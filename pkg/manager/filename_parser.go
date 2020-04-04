@@ -87,6 +87,7 @@ func initParserFields() {
 	//I = new ParserField("i", undefined, "Matches any ignored word", false);
 
 	ret["d"] = newParserField("d", `(?:\.|-|_)`, false)
+	ret["rating"] = newParserField("rating", `\d`, true)
 	ret["performer"] = newParserField("performer", ".*", true)
 	ret["studio"] = newParserField("studio", ".*", true)
 	ret["movie"] = newParserField("movie", ".*", true)
@@ -224,6 +225,10 @@ func newSceneHolder(scene *models.Scene) *sceneHolder {
 	return &ret
 }
 
+func validateRating(rating int) bool {
+	return rating >= 1 && rating <= 5
+}
+
 func validateDate(dateStr string) bool {
 	splits := strings.Split(dateStr, "-")
 	if len(splits) != 3 {
@@ -302,6 +307,14 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 			h.result.Date = models.SQLiteDate{
 				String: value.(string),
 				Valid:  true,
+			}
+		}
+	case "rating":
+		rating, _ := strconv.Atoi(value.(string))
+		if validateRating(rating) {
+			h.result.Rating = sql.NullInt64{
+				Int64: int64(rating),
+				Valid: true,
 			}
 		}
 	case "performer":
@@ -659,6 +672,11 @@ func (p *SceneFilenameParser) setParserResult(h sceneHolder, result *models.Scen
 
 	if h.result.Date.Valid {
 		result.Date = &h.result.Date.String
+	}
+
+	if h.result.Rating.Valid {
+		rating := int(h.result.Rating.Int64)
+		result.Rating = &rating
 	}
 
 	if len(h.performers) > 0 {

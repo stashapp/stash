@@ -35,6 +35,7 @@ export class SceneParserResult {
   public filename: string;
   public title: ParserResult<string> = new ParserResult<string>();
   public date: ParserResult<string> = new ParserResult<string>();
+  public rating: ParserResult<number> = new ParserResult<number>();
 
   public studio: ParserResult<string> = new ParserResult<string>();
   public tags: ParserResult<string[]> = new ParserResult<string[]>();
@@ -51,12 +52,14 @@ export class SceneParserResult {
     this.filename = TextUtils.fileNameFromPath(this.scene.path);
     this.title.setOriginalValue(this.scene.title ?? undefined);
     this.date.setOriginalValue(this.scene.date ?? undefined);
+    this.rating.setOriginalValue(this.scene.rating ?? undefined);
     this.performers.setOriginalValue(this.scene.performers.map((p) => p.id));
     this.tags.setOriginalValue(this.scene.tags.map((t) => t.id));
     this.studio.setOriginalValue(this.scene.studio?.id);
 
     this.title.setValue(result.title ?? undefined);
     this.date.setValue(result.date ?? undefined);
+    this.rating.setValue(result.rating ?? undefined);
   }
 
   // returns true if any of its fields have set == true
@@ -64,6 +67,7 @@ export class SceneParserResult {
     return (
       this.title.isSet ||
       this.date.isSet ||
+      this.rating.isSet ||
       this.performers.isSet ||
       this.studio.isSet ||
       this.tags.isSet
@@ -75,7 +79,7 @@ export class SceneParserResult {
       id: this.id,
       details: this.scene.details,
       url: this.scene.url,
-      rating: this.scene.rating,
+      rating: this.rating.isSet ? this.rating.value : this.scene.rating,
       gallery_id: this.scene.gallery?.id,
       title: this.title.isSet ? this.title.value : this.scene.title,
       date: this.date.isSet ? this.date.value : this.scene.date,
@@ -121,18 +125,72 @@ function SceneParserStringField(props: ISceneParserFieldProps<string>) {
       <td>
         <Form.Group>
           <Form.Control
-            disabled
+            readOnly
             className={props.className}
             defaultValue={result.originalValue || ""}
           />
           <Form.Control
-            disabled={!props.parserResult.isSet}
+            readOnly={!props.parserResult.isSet}
             className={props.className}
             value={props.parserResult.value || ""}
             onChange={(event: React.FormEvent<HTMLInputElement>) =>
               maybeValueChanged(event.currentTarget.value)
             }
           />
+        </Form.Group>
+      </td>
+    </>
+  );
+}
+
+function SceneParserRatingField(
+  props: ISceneParserFieldProps<number | undefined>
+) {
+  function maybeValueChanged(value?: number) {
+    if (value !== props.parserResult.value) {
+      props.onValueChanged(value);
+    }
+  }
+
+  const result = props.originalParserResult || props.parserResult;
+  const options = ["", 1, 2, 3, 4, 5];
+
+  return (
+    <>
+      <td>
+        <Form.Check
+          checked={props.parserResult.isSet}
+          onChange={() => {
+            props.onSetChanged(!props.parserResult.isSet);
+          }}
+        />
+      </td>
+      <td>
+        <Form.Group>
+          <Form.Control
+            readOnly
+            className={props.className}
+            defaultValue={result.originalValue || ""}
+          />
+          <Form.Control
+            as="select"
+            className={props.className}
+            disabled={!props.parserResult.isSet}
+            value={props.parserResult.value?.toString()}
+            onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+              maybeValueChanged(
+                event.currentTarget.value === ""
+                  ? undefined
+                  : Number.parseInt(event.currentTarget.value, 10)
+              )
+            }
+          >
+            {options.map((opt) => (
+              <option value={opt} key={opt}>
+                {opt}
+              </option>
+            ))}
+          </Form.Control>
         </Form.Group>
       </td>
     </>
@@ -165,6 +223,7 @@ function SceneParserPerformerField(props: ISceneParserFieldProps<string[]>) {
           <PerformerSelect isDisabled isMulti ids={originalPerformers} />
           <PerformerSelect
             isMulti
+            isDisabled={!props.parserResult.isSet}
             onSelect={(items) => {
               maybeValueChanged(items.map((i) => i.id));
             }}
@@ -201,6 +260,7 @@ function SceneParserTagField(props: ISceneParserFieldProps<string[]>) {
           <TagSelect isDisabled isMulti ids={originalTags} />
           <TagSelect
             isMulti
+            isDisabled={!props.parserResult.isSet}
             onSelect={(items) => {
               maybeValueChanged(items.map((i) => i.id));
             }}
@@ -238,6 +298,7 @@ function SceneParserStudioField(props: ISceneParserFieldProps<string>) {
         <Form.Group className={props.className}>
           <StudioSelect isDisabled ids={originalStudio} />
           <StudioSelect
+            isDisabled={!props.parserResult.isSet}
             onSelect={(items) => {
               maybeValueChanged(items[0].id);
             }}
@@ -256,7 +317,7 @@ interface ISceneParserRowProps {
 }
 
 export const SceneParserRow = (props: ISceneParserRowProps) => {
-  function changeParser<T>(result: ParserResult<T>, isSet: boolean, value: T) {
+  function changeParser<T>(result: ParserResult<T>, isSet: boolean, value?: T) {
     const newParser = _.clone(result);
     newParser.isSet = isSet;
     newParser.value = value;
@@ -272,6 +333,12 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
   function onDateChanged(set: boolean, value: string) {
     const newResult = _.clone(props.scene);
     newResult.date = changeParser(newResult.date, set, value);
+    props.onChange(newResult);
+  }
+
+  function onRatingChanged(set: boolean, value?: number) {
+    const newResult = _.clone(props.scene);
+    newResult.rating = changeParser(newResult.rating, set, value);
     props.onChange(newResult);
   }
 
@@ -302,7 +369,7 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
         <SceneParserStringField
           key="title"
           fieldName="Title"
-          className="parser-field-title"
+          className="parser-field-title input-control text-input"
           parserResult={props.scene.title}
           onSetChanged={(isSet) =>
             onTitleChanged(isSet, props.scene.title.value ?? "")
@@ -316,7 +383,7 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
         <SceneParserStringField
           key="date"
           fieldName="Date"
-          className="parser-field-date"
+          className="parser-field-date input-control text-input"
           parserResult={props.scene.date}
           onSetChanged={(isSet) =>
             onDateChanged(isSet, props.scene.date.value ?? "")
@@ -326,11 +393,25 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
           }
         />
       )}
+      {props.showFields.get("Rating") && (
+        <SceneParserRatingField
+          key="rating"
+          fieldName="Rating"
+          className="parser-field-rating input-control text-input"
+          parserResult={props.scene.rating}
+          onSetChanged={(isSet) =>
+            onRatingChanged(isSet, props.scene.rating.value ?? undefined)
+          }
+          onValueChanged={(value) =>
+            onRatingChanged(props.scene.rating.isSet, value)
+          }
+        />
+      )}
       {props.showFields.get("Performers") && (
         <SceneParserPerformerField
           key="performers"
           fieldName="Performers"
-          className="parser-field-performers"
+          className="parser-field-performers input-control text-input"
           parserResult={props.scene.performers}
           originalParserResult={props.scene.performers}
           onSetChanged={(set) =>
@@ -345,7 +426,7 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
         <SceneParserTagField
           key="tags"
           fieldName="Tags"
-          className="parser-field-tags"
+          className="parser-field-tags input-control text-input"
           parserResult={props.scene.tags}
           originalParserResult={props.scene.tags}
           onSetChanged={(isSet) =>
@@ -360,7 +441,7 @@ export const SceneParserRow = (props: ISceneParserRowProps) => {
         <SceneParserStudioField
           key="studio"
           fieldName="Studio"
-          className="parser-field-studio"
+          className="parser-field-studio input-control text-input"
           parserResult={props.scene.studio}
           originalParserResult={props.scene.studio}
           onSetChanged={(set) =>

@@ -70,6 +70,7 @@ class ParserField {
   static Performer = new ParserField("performer");
   static Studio = new ParserField("studio");
   static Tag = new ParserField("tag");
+  static Rating = new ParserField("rating");
 
   // date fields
   static Date = new ParserField("date", "YYYY-MM-DD");
@@ -89,6 +90,7 @@ class ParserField {
     ParserField.Ext,
     ParserField.D,
     ParserField.I,
+    ParserField.Rating,
     ParserField.Performer,
     ParserField.Studio,
     ParserField.Tag,
@@ -119,6 +121,7 @@ class SceneParserResult {
   public filename: string;
   public title: ParserResult<string> = new ParserResult();
   public date: ParserResult<string> = new ParserResult();
+  public rating: ParserResult<number> = new ParserResult();
 
   public studio: ParserResult<GQL.SlimSceneDataStudio> = new ParserResult();
   public studioId: ParserResult<string> = new ParserResult();
@@ -133,6 +136,7 @@ class SceneParserResult {
     this.scene = result.scene;
 
     this.id = this.scene.id;
+    this.rating.setOriginalValue(this.scene.rating);
     this.filename = TextUtils.fileNameFromPath(this.scene.path);
     this.title.setOriginalValue(this.scene.title);
     this.date.setOriginalValue(this.scene.date);
@@ -144,6 +148,7 @@ class SceneParserResult {
     this.studio.setOriginalValue(this.scene.studio);
 
     this.title.setValue(result.title);
+    this.rating.setValue(result.rating);
     this.date.setValue(result.date);
     this.performerIds.setValue(result.performer_ids);
     this.tagIds.setValue(result.tag_ids);
@@ -186,7 +191,7 @@ class SceneParserResult {
 
   // returns true if any of its fields have set == true
   public isChanged() {
-    return this.title.set || this.date.set || this.performerIds.set || this.studioId.set || this.tagIds.set;
+    return this.title.set || this.date.set || this.rating.set || this.performerIds.set || this.studioId.set || this.tagIds.set;
   }
 
   public toSceneUpdateInput() {
@@ -205,6 +210,7 @@ class SceneParserResult {
 
     SceneParserResult.setInput(ret, "title", this.title);
     SceneParserResult.setInput(ret, "date", this.date);
+    SceneParserResult.setInput(ret, "rating", this.rating);
     SceneParserResult.setInput(ret, "performer_ids", this.performerIds);
     SceneParserResult.setInput(ret, "studio_id", this.studioId);
     SceneParserResult.setInput(ret, "tag_ids", this.tagIds);
@@ -282,6 +288,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
 
   const [allTitleSet, setAllTitleSet] = useState<boolean>(false);
   const [allDateSet, setAllDateSet] = useState<boolean>(false);
+  const [allRatingSet, setAllRatingSet] = useState<boolean>(false);
   const [allPerformerSet, setAllPerformerSet] = useState<boolean>(false);
   const [allTagSet, setAllTagSet] = useState<boolean>(false);
   const [allStudioSet, setAllStudioSet] = useState<boolean>(false);
@@ -311,6 +318,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     return new Map<string, boolean>([
       ["Title", true],
       ["Date", true],
+      ["Rating", true],
       ["Performers", true],
       ["Tags", true],
       ["Studio", true]
@@ -419,6 +427,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       ParserField.fullDateFields.some((f) => {
         return pattern.includes("{" + f.field + "}");
       });
+    var ratingSet = pattern.includes("{rating}");
     var performerSet = pattern.includes("{performer}");
     var tagSet = pattern.includes("{tag}");
     var studioSet = pattern.includes("{studio}");
@@ -426,6 +435,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     var showFieldsCopy = _.clone(showFields);
     showFieldsCopy.set("Title", titleSet);
     showFieldsCopy.set("Date", dateSet);
+    showFieldsCopy.set("Rating", ratingSet);
     showFieldsCopy.set("Performers", performerSet);
     showFieldsCopy.set("Tags", tagSet);
     showFieldsCopy.set("Studio", studioSet);
@@ -438,6 +448,9 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     });
     var newAllDateSet = !parserResult.some((r) => {
       return !r.date.set;
+    });
+    var newAllRatingSet = !parserResult.some((r) => {
+      return !r.rating.set;
     });
     var newAllPerformerSet = !parserResult.some((r) => {
       return !r.performerIds.set;
@@ -454,6 +467,9 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
     }
     if (newAllDateSet !== allDateSet) {
       setAllDateSet(newAllDateSet);
+    }
+    if (newAllRatingSet !== allRatingSet) {
+      setAllRatingSet(newAllRatingSet);
     }
     if (newAllPerformerSet !== allPerformerSet) {
       setAllTagSet(newAllPerformerSet);
@@ -486,6 +502,17 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
 
     setParserResult(newResult);
     setAllDateSet(selected);
+  }
+
+  function onSelectAllRatingSet(selected : boolean) {
+    var newResult = [...parserResult];
+
+    newResult.forEach((r) => {
+      r.rating.set = selected;
+    });
+
+    setParserResult(newResult);
+    setAllRatingSet(selected);
   }
 
   function onSelectAllPerformerSet(selected : boolean) {
@@ -545,14 +572,18 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           },
           {
             id: 3,
-            label: "Performers",
+            label: "Rating",
           },
           {
             id: 4,
-            label: "Tags",
+            label: "Performers",
           },
           {
             id: 5,
+            label: "Tags",
+          },
+          {
+            id: 6,
             label: "Studio",
           }
         ]
@@ -960,6 +991,12 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
       props.onChange(newResult);
     }
 
+    function onRatingChanged(set : boolean, value: number | undefined) {
+      var newResult = _.clone(props.scene);
+      newResult.rating = changeParser(newResult.rating, set, value);
+      props.onChange(newResult);
+    }
+
     function onPerformerIdsChanged(set : boolean, value: string[] | undefined) {
       var newResult = _.clone(props.scene);
       newResult.performerIds = changeParser(newResult.performerIds, set, value);
@@ -1001,6 +1038,16 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
           parserResult={props.scene.date}
           onSetChanged={(set) => onDateChanged(set, props.scene.date.value)}
           onValueChanged={(value) => onDateChanged(props.scene.date.set, value)}
+          renderOriginalInputField={renderOriginalInputGroup}
+          renderNewInputField={renderNewInputGroup}
+        />
+        <SceneParserField 
+          key="rating"
+          fieldName="Rating"
+          className="parser-field-rating"
+          parserResult={props.scene.rating}
+          onSetChanged={(set) => onRatingChanged(set, props.scene.rating.value)}
+          onValueChanged={(value) => onRatingChanged(props.scene.rating.set, value)}
           renderOriginalInputField={renderOriginalInputGroup}
           renderNewInputField={renderNewInputGroup}
         />
@@ -1083,6 +1130,7 @@ export const SceneFilenameParser: FunctionComponent<IProps> = (props: IProps) =>
                 <th>Filename</th>
                 {renderHeader("Title", allTitleSet, onSelectAllTitleSet)}
                 {renderHeader("Date", allDateSet, onSelectAllDateSet)}
+                {renderHeader("Rating", allRatingSet, onSelectAllRatingSet)}
                 {renderHeader("Performers", allPerformerSet, onSelectAllPerformerSet)}
                 {renderHeader("Tags", allTagSet, onSelectAllTagSet)}
                 {renderHeader("Studio", allStudioSet, onSelectAllStudioSet)}
