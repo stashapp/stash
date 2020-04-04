@@ -29,7 +29,7 @@ func initSessionStore() {
 }
 
 func redirectToLogin(w http.ResponseWriter, returnURL string, loginError string) {
-	data, _ := setupUIBox.Find("login.html")
+	data, _ := loginUIBox.Find("login.html")
 	templ, err := template.New("Login").Parse(string(data))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error: %s", err), http.StatusInternalServerError)

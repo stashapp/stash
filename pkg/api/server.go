@@ -38,9 +38,10 @@ var uiBox *packr.Box
 
 //var legacyUiBox *packr.Box
 var setupUIBox *packr.Box
+var loginUIBox *packr.Box
 
 func allowUnauthenticated(r *http.Request) bool {
-	return r.URL.Path == "/login" || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/setup")
+	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
 }
 
 func authenticateHandler() func(http.Handler) http.Handler {
@@ -97,6 +98,7 @@ func Start() {
 	uiBox = packr.New("UI Box", "../../ui/v2.5/build")
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
+	loginUIBox = packr.New("Login UI Box", "../../ui/login")
 
 	initSessionStore()
 	initialiseImages()
@@ -178,6 +180,16 @@ func Start() {
 		} else {
 			r.URL.Path = strings.Replace(r.URL.Path, "/setup", "", 1)
 			http.FileServer(setupUIBox).ServeHTTP(w, r)
+		}
+	})
+	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
+		ext := path.Ext(r.URL.Path)
+		if ext == ".html" || ext == "" {
+			data, _ := loginUIBox.Find("login.html")
+			_, _ = w.Write(data)
+		} else {
+			r.URL.Path = strings.Replace(r.URL.Path, "/login", "", 1)
+			http.FileServer(loginUIBox).ServeHTTP(w, r)
 		}
 	})
 	r.Post("/init", func(w http.ResponseWriter, r *http.Request) {
