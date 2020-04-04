@@ -31,6 +31,12 @@ const Host = "host"
 const Port = "port"
 const ExternalHost = "external_host"
 
+// key used to sign JWT tokens
+const JWTSignKey = "jwt_secret_key"
+
+// key used for session store
+const SessionStoreKey = "session_store_key"
+
 // scraping options
 const ScrapersPath = "scrapers_path"
 const ScraperUserAgent = "scraper_user_agent"
@@ -87,6 +93,14 @@ func GetMetadataPath() string {
 
 func GetDatabasePath() string {
 	return viper.GetString(Database)
+}
+
+func GetJWTSignKey() []byte {
+	return []byte(viper.GetString(JWTSignKey))
+}
+
+func GetSessionStoreKey() []byte {
+	return []byte(viper.GetString(SessionStoreKey))
 }
 
 func GetDefaultScrapersPath() string {
@@ -314,4 +328,22 @@ func IsValid() bool {
 
 	// TODO: check valid paths
 	return setPaths
+}
+
+// SetInitialConfig fills in missing required config fields
+func SetInitialConfig() error {
+	// generate some api keys
+	const apiKeyLength = 32
+
+	if string(GetJWTSignKey()) == "" {
+		signKey := utils.GenerateRandomKey(apiKeyLength)
+		Set(JWTSignKey, signKey)
+	}
+
+	if string(GetSessionStoreKey()) == "" {
+		sessionStoreKey := utils.GenerateRandomKey(apiKeyLength)
+		Set(SessionStoreKey, sessionStoreKey)
+	}
+
+	return Write()
 }

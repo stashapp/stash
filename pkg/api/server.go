@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -38,30 +39,58 @@ var uiBox *packr.Box
 //var legacyUiBox *packr.Box
 var setupUIBox *packr.Box
 
+func allowUnauthenticated(r *http.Request) bool {
+	return r.URL.Path == "/login" || r.URL.Path == "/css" || strings.HasPrefix(r.URL.Path, "/setup")
+}
+
 func authenticateHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// only do this if credentials have been configured
-			if !config.HasCredentials() {
-				next.ServeHTTP(w, r)
+			ctx := r.Context()
+
+			// translate api key into current user, if present
+			userID := ""
+			var err error
+
+			// handle session
+			userID, err = getSessionUserID(w, r)
+
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(err.Error()))
 				return
 			}
 
-			authUser, authPW, ok := r.BasicAuth()
+			// handle redirect if no user and user is required
+			if userID == "" && config.HasCredentials() && !allowUnauthenticated(r) {
+				// always allow
 
-			if !ok || !config.ValidateCredentials(authUser, authPW) {
-				unauthorized(w)
+				// if we don't have a userID, then redirect
+				// if graphql was requested, we just return a forbidden error
+				if r.URL.Path == "/graphql" {
+					w.Header().Add("WWW-Authenticate", `FormBased`)
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				// otherwise redirect to the login page
+				u := url.URL{
+					Path: "/login",
+				}
+				q := u.Query()
+				q.Set(returnURLParam, r.URL.Path)
+				u.RawQuery = q.Encode()
+				http.Redirect(w, r, u.String(), http.StatusFound)
 				return
 			}
+
+			ctx = context.WithValue(ctx, ContextUser, userID)
+
+			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)
 		})
 	}
-}
-
-func unauthorized(w http.ResponseWriter) {
-	w.Header().Add("WWW-Authenticate", `Basic realm=\"Stash\"`)
-	w.WriteHeader(http.StatusUnauthorized)
 }
 
 func Start() {
@@ -106,6 +135,12 @@ func Start() {
 
 	r.Handle("/graphql", gqlHandler)
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
+
+	// session handlers
+	r.Post("/login", handleLogin)
+	r.Post("/logout", handleLogout)
+
+	r.Get("/login", getLoginHandler)
 
 	r.Mount("/gallery", galleryRoutes{}.Routes())
 	r.Mount("/performer", performerRoutes{}.Routes())
