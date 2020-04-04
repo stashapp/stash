@@ -24,6 +24,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   >(undefined);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
+  const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
   const [logFile, setLogFile] = useState<string | undefined>();
   const [logOut, setLogOut] = useState<boolean>(true);
   const [logLevel, setLogLevel] = useState<string>("Info");
@@ -43,6 +44,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     maxStreamingTranscodeSize,
     username,
     password,
+    maxSessionAge,
     logFile,
     logOut,
     logLevel,
@@ -65,6 +67,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       );
       setUsername(conf.general.username);
       setPassword(conf.general.password);
+      setMaxSessionAge(conf.general.maxSessionAge);
       setLogFile(conf.general.logFile ?? undefined);
       setLogOut(conf.general.logOut);
       setLogLevel(conf.general.logLevel);
@@ -337,6 +340,21 @@ export const SettingsConfigurationPanel: React.FC = () => {
           />
           <Form.Text className="text-muted">
             Password to access Stash. Leave blank to disable user authentication
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="maxSessionAge">
+          <h6>Maximum Session Age</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={maxSessionAge.toString()}
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
+              setMaxSessionAge(Number.parseInt(e.currentTarget.value))
+            }
+          />
+          <Form.Text className="text-muted">
+            Maximum idle time before a login session is expired, in seconds.
           </Form.Text>
         </Form.Group>
       </Form.Group>

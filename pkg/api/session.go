@@ -14,19 +14,18 @@ const cookieName = "session"
 const usernameFormKey = "username"
 const passwordFormKey = "password"
 const userIDKey = "userID"
-const maxCookieAge = 60 * 60 * 1 // 1 hours
 
 const returnURLParam = "returnURL"
 
 var sessionStore = sessions.NewCookieStore(config.GetSessionStoreKey())
 
-type LoginTemplateData struct {
+type loginTemplateData struct {
 	URL   string
 	Error string
 }
 
 func initSessionStore() {
-	sessionStore.MaxAge(maxCookieAge)
+	sessionStore.MaxAge(config.GetMaxSessionAge())
 }
 
 func redirectToLogin(w http.ResponseWriter, returnURL string, loginError string) {
@@ -37,7 +36,7 @@ func redirectToLogin(w http.ResponseWriter, returnURL string, loginError string)
 		return
 	}
 
-	err = templ.Execute(w, LoginTemplateData{URL: returnURL, Error: loginError})
+	err = templ.Execute(w, loginTemplateData{URL: returnURL, Error: loginError})
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error: %s", err), http.StatusInternalServerError)
 	}

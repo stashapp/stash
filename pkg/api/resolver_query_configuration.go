@@ -43,6 +43,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		MaxStreamingTranscodeSize: &maxStreamingTranscodeSize,
 		Username:                  config.GetUsername(),
 		Password:                  config.GetPasswordHash(),
+		MaxSessionAge:             config.GetMaxSessionAge(),
 		LogFile:                   &logFile,
 		LogOut:                    config.GetLogOut(),
 		LogLevel:                  config.GetLogLevel(),

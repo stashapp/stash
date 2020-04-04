@@ -19,6 +19,9 @@ const Metadata = "metadata"
 const Downloads = "downloads"
 const Username = "username"
 const Password = "password"
+const MaxSessionAge = "max_session_age"
+
+const DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 
 const Database = "database"
 
@@ -214,6 +217,13 @@ func ValidateCredentials(username string, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(authPWHash), []byte(password))
 
 	return username == authUser && err == nil
+}
+
+// GetMaxSessionAge gets the maximum age for session cookies, in seconds.
+// Session cookie expiry times are refreshed every request.
+func GetMaxSessionAge() int {
+	viper.SetDefault(MaxSessionAge, DefaultMaxSessionAge)
+	return viper.GetInt(MaxSessionAge)
 }
 
 // Interface options
