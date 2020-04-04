@@ -1,4 +1,4 @@
-import Cookies from 'universal-cookie';
+import Cookies from "universal-cookie";
 
 const isLoggedIn = () => {
   return new Cookies().get("session") !== undefined;

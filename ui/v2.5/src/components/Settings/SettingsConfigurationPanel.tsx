@@ -350,7 +350,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             type="number"
             value={maxSessionAge.toString()}
             onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setMaxSessionAge(Number.parseInt(e.currentTarget.value))
+              setMaxSessionAge(Number.parseInt(e.currentTarget.value, 10))
             }
           />
           <Form.Text className="text-muted">

@@ -3,7 +3,7 @@ import { WebSocketLink } from "apollo-link-ws";
 import { InMemoryCache, NormalizedCacheObject } from "apollo-cache-inmemory";
 import { HttpLink } from "apollo-link-http";
 import { onError } from "apollo-link-error";
-import { ServerError } from 'apollo-link-http-common';
+import { ServerError } from "apollo-link-http-common";
 import { split, from } from "apollo-link";
 import { getMainDefinition } from "apollo-utilities";
 import { ListFilterModel } from "../models/list-filter/filter";
@@ -53,7 +53,7 @@ export class StashService {
       },
     });
 
-    const errorLink = onError(({ graphQLErrors, networkError}) => {
+    const errorLink = onError(({ networkError }) => {
       // handle unauthorized error by redirecting to the login page
       if (networkError && (networkError as ServerError).statusCode === 401) {
         // redirect to login page

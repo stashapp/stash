@@ -102,7 +102,7 @@ export const MainNavbar: React.FC = () => {
   function maybeRenderLogout() {
     if (SessionUtils.isLoggedIn()) {
       return (
-        <Button className="minimal logout-button" onClick={() => window.location.href = "/logout"}>
+        <Button className="minimal logout-button" href="/logout">
           <Icon icon="sign-out-alt" />
         </Button>
       );
