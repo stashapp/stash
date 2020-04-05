@@ -26,9 +26,8 @@ import {
   HasMarkersCriterionOption,
 } from "./criteria/has-markers";
 import {
-  PerformerIsMissingCriterion,
+  IsMissingCriterion,
   PerformerIsMissingCriterionOption,
-  SceneIsMissingCriterion,
   SceneIsMissingCriterionOption
 } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
@@ -381,7 +380,7 @@ export class ListFilterModel {
           result.has_markers = (criterion as HasMarkersCriterion).value;
           break;
         case "sceneIsMissing":
-          result.is_missing = (criterion as SceneIsMissingCriterion).value;
+          result.is_missing = (criterion as IsMissingCriterion).value;
           break;
         case "tags": {
           const tagsCrit = criterion as TagsCriterion;
@@ -513,7 +512,7 @@ export class ListFilterModel {
           break;
         }
         case "performerIsMissing":
-          result.is_missing = (criterion as PerformerIsMissingCriterion).value;
+          result.is_missing = (criterion as IsMissingCriterion).value;
         // no default
       }
     });

@@ -1,11 +1,15 @@
 import { CriterionModifier } from "src/core/generated-graphql";
 import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
-export class SceneIsMissingCriterion extends Criterion {
-  public type: CriterionType = "sceneIsMissing";
+export abstract class IsMissingCriterion extends Criterion {
   public parameterName: string = "is_missing";
-  public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
+  public modifier = CriterionModifier.Equals;
+  public value: string = "";
+}
+
+export class SceneIsMissingCriterion extends IsMissingCriterion {
+  public type: CriterionType = "sceneIsMissing";
   public options: string[] = [
     "title",
     "url",
@@ -15,7 +19,6 @@ export class SceneIsMissingCriterion extends Criterion {
     "movie",
     "performers",
   ];
-  public value: string = "";
 }
 
 export class SceneIsMissingCriterionOption implements ICriterionOption {
@@ -23,11 +26,8 @@ export class SceneIsMissingCriterionOption implements ICriterionOption {
   public value: CriterionType = "sceneIsMissing";
 }
 
-export class PerformerIsMissingCriterion extends Criterion {
+export class PerformerIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "performerIsMissing";
-  public parameterName: string = "is_missing";
-  public modifier = CriterionModifier.Equals;
-  public modifierOptions = [];
   public options: string[] = [
     "url",
     "twitter",
@@ -45,7 +45,6 @@ export class PerformerIsMissingCriterion extends Criterion {
     "gender",
     "scenes"
   ];
-  public value: string = "";
 }
 
 export class PerformerIsMissingCriterionOption implements ICriterionOption {
