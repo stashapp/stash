@@ -163,29 +163,6 @@ export const Performer: React.FC = () => {
     onSave(performer);
   }
 
-  function sanitiseURL(url: string, siteURL?: URL) {
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      // just return the entire URL
-      return url;
-    }
-
-    if (siteURL) {
-      // if url starts with the site host, then prepend the protocol
-      if (url.startsWith(siteURL.host)) {
-        return siteURL.protocol + url;
-      }
-
-      // otherwise, construct the url from the protocol, host and passed url
-      return siteURL.protocol + siteURL.host + "/" + url;
-    }
-
-    // just prepend the protocol - assume https
-    return "https://" + url;
-  }
-
-  const twitterURL = new URL("https://www.twitter.com");
-  const instagramURL = new URL("https://www.instagram.com");
-
   const renderIcons = () => (
     <span className="name-icons d-block d-sm-inline">
       <Button
@@ -200,7 +177,7 @@ export const Performer: React.FC = () => {
       {performer.url && (
         <Button className="minimal">
           <a
-            href={sanitiseURL(performer.url)}
+            href={TextUtils.sanitiseURL(performer.url)}
             className="link"
             target="_blank"
             rel="noopener noreferrer"
@@ -212,7 +189,7 @@ export const Performer: React.FC = () => {
       {performer.twitter && (
         <Button className="minimal">
           <a
-            href={sanitiseURL(performer.twitter, twitterURL)}
+            href={TextUtils.sanitiseURL(performer.twitter, TextUtils.twitterURL)}
             className="twitter"
             target="_blank"
             rel="noopener noreferrer"
@@ -224,7 +201,7 @@ export const Performer: React.FC = () => {
       {performer.instagram && (
         <Button className="minimal">
           <a
-            href={sanitiseURL(performer.instagram, instagramURL)}
+            href={TextUtils.sanitiseURL(performer.instagram, TextUtils.instagramURL)}
             className="instagram"
             target="_blank"
             rel="noopener noreferrer"

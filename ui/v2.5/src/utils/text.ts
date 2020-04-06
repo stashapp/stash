@@ -83,6 +83,33 @@ const resolution = (height: number) => {
   }
 };
 
+const twitterURL = new URL("https://www.twitter.com");
+const instagramURL = new URL("https://www.instagram.com");
+
+const sanitiseURL = (url?: string, siteURL?: URL) => {
+  if (!url) {
+    return url;
+  }
+  
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    // just return the entire URL
+    return url;
+  }
+
+  if (siteURL) {
+    // if url starts with the site host, then prepend the protocol
+    if (url.startsWith(siteURL.host)) {
+      return siteURL.protocol + url;
+    }
+
+    // otherwise, construct the url from the protocol, host and passed url
+    return siteURL.protocol + siteURL.host + "/" + url;
+  }
+
+  // just prepend the protocol - assume https
+  return "https://" + url;
+}
+
 const TextUtils = {
   truncate,
   fileSize,
@@ -91,6 +118,9 @@ const TextUtils = {
   age: getAge,
   bitRate,
   resolution,
+  sanitiseURL,
+  twitterURL,
+  instagramURL,
 };
 
 export default TextUtils;
