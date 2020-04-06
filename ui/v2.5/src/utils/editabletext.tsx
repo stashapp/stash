@@ -55,7 +55,13 @@ const renderInputGroup = (options: {
 }) => {
   if (options.url && !options.isEditing) {
     return (
-      <a href={options.value}>{options.url}</a>
+      <a 
+        href={options.url}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {options.value}
+      </a>
     );
   } else {
     return (
