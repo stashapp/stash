@@ -1,7 +1,7 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
-import { Button, Form, Popover, OverlayTrigger, Table } from "react-bootstrap";
+import { Button, Popover, OverlayTrigger, Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import {
@@ -11,7 +11,7 @@ import {
   ScrapePerformerSuggest,
   LoadingIndicator,
 } from "src/components/Shared";
-import { ImageUtils, TableUtils } from "src/utils";
+import { ImageUtils, TableUtils, TextUtils, EditableTextUtils } from "src/utils";
 import { useToast } from "src/hooks";
 
 interface IPerformerDetails {
@@ -322,16 +322,13 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           {maybeRenderScrapeButton()}
         </td>
         <td>
-          <Form.Control
-            className="text-input"
-            value={url ?? ""}
-            readOnly={!isEditing}
-            plaintext={!isEditing}
-            placeholder="URL"
-            onChange={(event: React.FormEvent<HTMLInputElement>) =>
-              setUrl(event.currentTarget.value)
-            }
-          />
+          {EditableTextUtils.renderInputGroup({
+            title: "URL",
+            value: url,
+            url: TextUtils.sanitiseURL(url),
+            isEditing: !!isEditing,
+            onChange: setUrl,
+          })}
         </td>
       </tr>
     );
@@ -485,12 +482,14 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           {TableUtils.renderInputGroup({
             title: "Twitter",
             value: twitter,
+            url: TextUtils.sanitiseURL(twitter, TextUtils.twitterURL),
             isEditing: !!isEditing,
             onChange: setTwitter,
           })}
           {TableUtils.renderInputGroup({
             title: "Instagram",
             value: instagram,
+            url: TextUtils.sanitiseURL(instagram, TextUtils.instagramURL),
             isEditing: !!isEditing,
             onChange: setInstagram,
           })}
