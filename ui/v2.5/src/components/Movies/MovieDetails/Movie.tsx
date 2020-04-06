@@ -11,7 +11,7 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { Table, Form } from "react-bootstrap";
-import { TableUtils, ImageUtils } from "src/utils";
+import { TableUtils, ImageUtils, EditableTextUtils, TextUtils } from "src/utils";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 
 export const Movie: React.FC = () => {
@@ -236,14 +236,14 @@ export const Movie: React.FC = () => {
 
         <Form.Group controlId="url">
           <Form.Label>URL</Form.Label>
-          <Form.Control
-            className="text-input"
-            readOnly={!isEditing}
-            onChange={(newValue: React.FormEvent<HTMLTextAreaElement>) =>
-              setUrl(newValue.currentTarget.value)
-            }
-            value={url}
-          />
+          <div>
+            {EditableTextUtils.renderInputGroup({
+              isEditing,
+              onChange: setUrl,
+              value: url,
+              url: TextUtils.sanitiseURL(url),
+            })}
+          </div>
         </Form.Group>
 
         <Form.Group controlId="synopsis">

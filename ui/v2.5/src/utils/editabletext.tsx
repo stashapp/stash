@@ -4,7 +4,6 @@ import { FilterSelect, DurationInput } from "src/components/Shared";
 import { DurationUtils } from ".";
 
 const renderTextArea = (options: {
-  title: string;
   value: string | undefined;
   isEditing: boolean;
   onChange: (value: string) => void;
@@ -24,7 +23,7 @@ const renderTextArea = (options: {
 }
 
 const renderEditableText = (options: {
-  title: string;
+  title?: string;
   value?: string | number;
   isEditing: boolean;
   onChange: (value: string) => void;
@@ -47,7 +46,7 @@ const renderEditableText = (options: {
 }
 
 const renderInputGroup = (options: {
-  title: string;
+  title?: string;
   placeholder?: string;
   value: string | undefined;
   isEditing: boolean;
@@ -81,8 +80,6 @@ const renderInputGroup = (options: {
 }
 
 const renderDurationInput = (options: {
-  title: string;
-  placeholder?: string;
   value: string | undefined;
   isEditing: boolean;
   url?: string;
