@@ -163,6 +163,29 @@ export const Performer: React.FC = () => {
     onSave(performer);
   }
 
+  function sanitiseURL(url: string, siteURL?: URL) {
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      // just return the entire URL
+      return url;
+    }
+
+    if (siteURL) {
+      // if url starts with the site host, then prepend the protocol
+      if (url.startsWith(siteURL.host)) {
+        return siteURL.protocol + url;
+      }
+
+      // otherwise, construct the url from the protocol, host and passed url
+      return siteURL.protocol + siteURL.host + "/" + url;
+    }
+
+    // just prepend the protocol - assume https
+    return "https://" + url;
+  }
+
+  const twitterURL = new URL("https://www.twitter.com");
+  const instagramURL = new URL("https://www.instagram.com");
+
   const renderIcons = () => (
     <span className="name-icons d-block d-sm-inline">
       <Button
@@ -177,7 +200,7 @@ export const Performer: React.FC = () => {
       {performer.url && (
         <Button className="minimal">
           <a
-            href={performer.url}
+            href={sanitiseURL(performer.url)}
             className="link"
             target="_blank"
             rel="noopener noreferrer"
@@ -189,7 +212,7 @@ export const Performer: React.FC = () => {
       {performer.twitter && (
         <Button className="minimal">
           <a
-            href={`https://www.twitter.com/${performer.twitter}`}
+            href={sanitiseURL(performer.twitter, twitterURL)}
             className="twitter"
             target="_blank"
             rel="noopener noreferrer"
@@ -201,7 +224,7 @@ export const Performer: React.FC = () => {
       {performer.instagram && (
         <Button className="minimal">
           <a
-            href={`https://www.instagram.com/${performer.instagram}`}
+            href={sanitiseURL(performer.instagram, instagramURL)}
             className="instagram"
             target="_blank"
             rel="noopener noreferrer"
@@ -250,11 +273,6 @@ export const Performer: React.FC = () => {
       </div>
       <div className="col col-sm-6">
         <div className="row">
-          <div className="image-container col-6 d-block d-sm-none">
-            <Button variant="link" onClick={() => setLightboxIsOpen(true)}>
-              <img className="performer" src={imagePreview} alt="Performer" />
-            </Button>
-          </div>
           <div className="performer-head col-6 col-sm-12">
             <h2>
               {performer.name}
