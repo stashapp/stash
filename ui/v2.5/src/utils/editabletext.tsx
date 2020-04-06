@@ -1,6 +1,7 @@
 import React from "react";
 import { Form } from "react-bootstrap";
-import { FilterSelect } from "src/components/Shared";
+import { FilterSelect, DurationInput } from "src/components/Shared";
+import { DurationUtils } from ".";
 
 const renderTextArea = (options: {
   title: string;
@@ -79,6 +80,50 @@ const renderInputGroup = (options: {
   }
 }
 
+const renderDurationInput = (options: {
+  title: string;
+  placeholder?: string;
+  value: string | undefined;
+  isEditing: boolean;
+  url?: string;
+  onChange: (value: string | undefined) => void;
+}) => {
+  let numericValue: number | undefined = undefined;
+  if (options.value) {
+    try {
+      numericValue = Number.parseInt(options.value, 10);
+    } catch {
+      // ignore
+    }
+  }
+  
+  if (!options.isEditing) {
+    let durationString = undefined;
+    if (numericValue !== undefined) {
+      durationString = DurationUtils.secondsToString(numericValue);
+    }
+
+    return (
+      <Form.Control
+        className="text-input"
+        readOnly={true}
+        plaintext={true}
+        defaultValue={durationString}
+      />
+    );
+  } else {
+    return (
+      <DurationInput
+        disabled={!options.isEditing}
+        numericValue={numericValue}
+        onValueChange={(valueAsNumber: number) => { 
+          options.onChange(valueAsNumber !== undefined ? valueAsNumber.toString() : undefined);
+        }}
+      />
+    );
+  }
+}
+
 const renderHtmlSelect = (options: {
   value?: string | number;
   isEditing: boolean;
@@ -147,6 +192,7 @@ const EditableTextUtils = {
   renderTextArea,
   renderEditableText,
   renderInputGroup,
+  renderDurationInput,
   renderHtmlSelect,
   renderFilterSelect,
   renderMultiSelect,

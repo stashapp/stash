@@ -45,6 +45,23 @@ const renderInputGroup = (options: {
   </tr>
 );
 
+const renderDurationInput = (options: {
+  title: string;
+  placeholder?: string;
+  value: string | undefined;
+  isEditing: boolean;
+  onChange: (value: string | undefined) => void;
+}) => {
+  return (
+    <tr>
+      <td>{options.title}</td>
+      <td>
+        {EditableTextUtils.renderDurationInput(options)}
+      </td>
+    </tr>
+  );
+};
+
 const renderHtmlSelect = (options: {
   title: string;
   value?: string | number;
@@ -94,6 +111,7 @@ const Table = {
   renderEditableTextTableRow,
   renderTextArea,
   renderInputGroup,
+  renderDurationInput,
   renderHtmlSelect,
   renderFilterSelect,
   renderMultiSelect,

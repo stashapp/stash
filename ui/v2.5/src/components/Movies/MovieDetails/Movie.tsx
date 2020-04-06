@@ -206,7 +206,7 @@ export const Movie: React.FC = () => {
               isEditing,
               onChange: setAliases,
             })}
-            {TableUtils.renderInputGroup({
+            {TableUtils.renderDurationInput({
               title: "Duration",
               value: duration,
               isEditing,

@@ -84,6 +84,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
           )
         }
         numericValue={Number.parseInt(fieldProps.field.value ?? "0", 10)}
+        mandatory={true}
       />
     </div>
   );
