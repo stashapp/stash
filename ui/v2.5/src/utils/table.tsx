@@ -77,16 +77,23 @@ const renderInputGroup = (options: {
   </tr>
 );
 
-const renderHtmlSelect = (options: {
-  title: string;
+function renderSelectOrInput(options: {
   value?: string | number;
   isEditing: boolean;
   onChange: (value: string) => void;
   selectOptions: Array<string | number>;
-}) => (
-  <tr>
-    <td>{options.title}</td>
-    <td>
+}) {
+  if (!options.isEditing) {
+    return (
+      <Form.Control
+        className="text-input"
+        readOnly={true}
+        plaintext={true}
+        defaultValue={options.value}
+      />
+    );
+  } else {
+    return (
       <Form.Control
         as="select"
         className="input-control"
@@ -103,6 +110,21 @@ const renderHtmlSelect = (options: {
           </option>
         ))}
       </Form.Control>
+    );
+  }
+}
+
+const renderHtmlSelect = (options: {
+  title: string;
+  value?: string | number;
+  isEditing: boolean;
+  onChange: (value: string) => void;
+  selectOptions: Array<string | number>;
+}) => (
+  <tr>
+    <td>{options.title}</td>
+    <td>
+      {renderSelectOrInput(options)}
     </td>
   </tr>
 );

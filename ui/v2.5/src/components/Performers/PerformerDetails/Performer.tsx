@@ -213,11 +213,19 @@ export const Performer: React.FC = () => {
     </span>
   );
 
+  function renderPerformerImage() {
+    if (imagePreview) {
+      return (
+        <img className="photo" src={imagePreview} alt="Performer" />
+      );
+    }
+  }
+
   function renderNewView() {
     return (
       <div className="row new-view">
         <div className="col-4">
-          <img className="photo" src={imagePreview} alt="Performer" />
+          {renderPerformerImage()}
         </div>
         <div className="col-6">
           <h2>Create Performer</h2>
