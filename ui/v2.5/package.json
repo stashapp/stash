@@ -6,7 +6,7 @@
   "scripts": {
     "prestart": "yarn run gqlgen",
     "start": "react-scripts start",
-    "prebuild": "yarn --cwd run gqlgen",
+    "prebuild": "yarn run gqlgen",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
