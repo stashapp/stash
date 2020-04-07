@@ -1,0 +1,3 @@
+mutation SubmitFingerprint($input: FingerprintSubmission!) {
+  submitFingerprint(input: $input)
+}

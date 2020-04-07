@@ -63,6 +63,16 @@ export enum HairColorEnum {
   VARIOUS = "VARIOUS",
 }
 
+export interface FingerprintInput {
+  hash: string;
+  algorithm: FingerprintAlgorithm;
+}
+
+export interface FingerprintSubmission {
+  scene_id: string;
+  fingerprint: FingerprintInput;
+}
+
 //==============================================================
 // END Enums and Input Objects
 //==============================================================

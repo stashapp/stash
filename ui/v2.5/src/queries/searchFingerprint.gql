@@ -1,5 +1,5 @@
-query SearchScene($term: String!) {
-  searchScene(term: $term) {
+query FindSceneByFingerprint($fingerprint: FingerprintInput!) {
+  findSceneByFingerprint(fingerprint: $fingerprint) {
     id
     title
     details

@@ -17,7 +17,7 @@
     "format-check": "prettier --check \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\"",
     "gqlgen": "gql-gen --config codegen.yml",
     "extract": "NODE_ENV=development extract-messages -l=en,de -o src/locale -d en --flat false 'src/**/!(*.test).tsx'",
-    "generate": "apollo client:codegen --target typescript --outputFlat src/definitions-box --no-addTypename --includes src/queries/*"
+    "generate": "apollo client:codegen --target typescript --outputFlat src/definitions-box --no-addTypename --includes='src/queries/*.gql'"
   },
   "browserslist": [
     ">0.2%",
@@ -51,6 +51,7 @@
     "graphql-tag": "^2.10.3",
     "i18n-iso-countries": "^5.2.0",
     "jimp": "^0.12.1",
+    "graphql.macro": "1.4.2",
     "localforage": "1.7.3",
     "lodash": "^4.17.15",
     "mousetrap": "^1.6.5",

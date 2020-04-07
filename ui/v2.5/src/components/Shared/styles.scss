@@ -16,7 +16,13 @@
   }
 
   &.inline {
-    height: inherit;
+    display: inline;
+    margin-left: .5rem;
+  }
+
+  &.small .spinner-border {
+    height: 1rem;
+    width: 1rem;
   }
 }
 
