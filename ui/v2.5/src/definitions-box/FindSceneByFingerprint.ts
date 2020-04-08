@@ -12,11 +12,23 @@ import { FingerprintInput, GenderEnum, DateAccuracyEnum, EthnicityEnum, EyeColor
 export interface FindSceneByFingerprint_findSceneByFingerprint_urls {
   url: string;
   type: string;
+  image_id: string | null;
+  width: number | null;
+  height: number | null;
+}
+
+export interface FindSceneByFingerprint_findSceneByFingerprint_studio_urls {
+  url: string;
+  type: string;
+  image_id: string | null;
+  width: number | null;
+  height: number | null;
 }
 
 export interface FindSceneByFingerprint_findSceneByFingerprint_studio {
   name: string;
   id: string;
+  urls: (FindSceneByFingerprint_findSceneByFingerprint_studio_urls | null)[];
 }
 
 export interface FindSceneByFingerprint_findSceneByFingerprint_tags {
@@ -27,6 +39,9 @@ export interface FindSceneByFingerprint_findSceneByFingerprint_tags {
 export interface FindSceneByFingerprint_findSceneByFingerprint_performers_performer_urls {
   url: string;
   type: string;
+  image_id: string | null;
+  width: number | null;
+  height: number | null;
 }
 
 export interface FindSceneByFingerprint_findSceneByFingerprint_performers_performer_birthdate {

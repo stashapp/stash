@@ -12,11 +12,23 @@ import { GenderEnum, DateAccuracyEnum, EthnicityEnum, EyeColorEnum, HairColorEnu
 export interface SearchScene_searchScene_urls {
   url: string;
   type: string;
+  image_id: string | null;
+  width: number | null;
+  height: number | null;
+}
+
+export interface SearchScene_searchScene_studio_urls {
+  url: string;
+  type: string;
+  image_id: string | null;
+  width: number | null;
+  height: number | null;
 }
 
 export interface SearchScene_searchScene_studio {
   name: string;
   id: string;
+  urls: (SearchScene_searchScene_studio_urls | null)[];
 }
 
 export interface SearchScene_searchScene_tags {
@@ -27,6 +39,9 @@ export interface SearchScene_searchScene_tags {
 export interface SearchScene_searchScene_performers_performer_urls {
   url: string;
   type: string;
+  image_id: string | null;
+  width: number | null;
+  height: number | null;
 }
 
 export interface SearchScene_searchScene_performers_performer_birthdate {

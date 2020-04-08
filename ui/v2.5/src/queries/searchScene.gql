@@ -8,10 +8,20 @@ query SearchScene($term: String!) {
     urls {
       url
       type
+      image_id
+      width
+      height
     }
     studio {
       name
       id
+      urls {
+        url
+        type
+        image_id
+        width
+        height
+      }
     }
     tags {
       name
@@ -28,6 +38,9 @@ query SearchScene($term: String!) {
         urls {
           url
           type
+          image_id
+          width
+          height
         }
         birthdate {
           date

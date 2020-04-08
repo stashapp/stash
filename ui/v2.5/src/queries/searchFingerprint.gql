@@ -8,10 +8,20 @@ query FindSceneByFingerprint($fingerprint: FingerprintInput!) {
     urls {
       url
       type
+      image_id
+      width
+      height
     }
     studio {
       name
       id
+      urls {
+        url
+        type
+        image_id
+        width
+        height
+      }
     }
     tags {
       name
@@ -28,6 +38,9 @@ query FindSceneByFingerprint($fingerprint: FingerprintInput!) {
         urls {
           url
           type
+          image_id
+          width
+          height
         }
         birthdate {
           date
