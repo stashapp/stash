@@ -27,7 +27,8 @@ import {
 } from "./criteria/has-markers";
 import {
   IsMissingCriterion,
-  IsMissingCriterionOption,
+  PerformerIsMissingCriterionOption,
+  SceneIsMissingCriterionOption
 } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import {
@@ -115,7 +116,7 @@ export class ListFilterModel {
           new ResolutionCriterionOption(),
           ListFilterModel.createCriterionOption("duration"),
           new HasMarkersCriterionOption(),
-          new IsMissingCriterionOption(),
+          new SceneIsMissingCriterionOption(),
           new TagsCriterionOption(),
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
@@ -145,13 +146,10 @@ export class ListFilterModel {
           new NoneCriterionOption(),
           new FavoriteCriterionOption(),
           new GenderCriterionOption(),
+          new PerformerIsMissingCriterionOption(),
+          ...numberCriteria.concat(stringCriteria).map(c => ListFilterModel.createCriterionOption(c))
         ];
 
-        this.criterionOptions = this.criterionOptions.concat(
-          numberCriteria.concat(stringCriteria).map((c) => {
-            return ListFilterModel.createCriterionOption(c);
-          })
-        );
         break;
       }
       case FilterMode.Studios:
@@ -381,7 +379,7 @@ export class ListFilterModel {
         case "hasMarkers":
           result.has_markers = (criterion as HasMarkersCriterion).value;
           break;
-        case "isMissing":
+        case "sceneIsMissing":
           result.is_missing = (criterion as IsMissingCriterion).value;
           break;
         case "tags": {
@@ -513,6 +511,8 @@ export class ListFilterModel {
           };
           break;
         }
+        case "performerIsMissing":
+          result.is_missing = (criterion as IsMissingCriterion).value;
         // no default
       }
     });
