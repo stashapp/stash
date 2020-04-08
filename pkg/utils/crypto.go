@@ -2,6 +2,7 @@ package utils
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"fmt"
 	"io"
 	"os"
@@ -30,4 +31,10 @@ func MD5FromFilePath(filePath string) (string, error) {
 	}
 	checksum := h.Sum(nil)
 	return fmt.Sprintf("%x", checksum), nil
+}
+
+func GenerateRandomKey(l int) string {
+	b := make([]byte, l)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
 }
