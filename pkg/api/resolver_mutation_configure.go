@@ -60,6 +60,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		}
 	}
 
+	if input.MaxSessionAge != nil {
+		config.Set(config.MaxSessionAge, *input.MaxSessionAge)
+	}
+
 	if input.LogFile != nil {
 		config.Set(config.LogFile, input.LogFile)
 	}

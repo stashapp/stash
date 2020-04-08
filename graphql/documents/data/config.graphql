@@ -6,6 +6,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   maxStreamingTranscodeSize
   username
   password
+  maxSessionAge
   logFile
   logOut
   logLevel

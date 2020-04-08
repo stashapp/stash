@@ -2,7 +2,9 @@ import ApolloClient from "apollo-client";
 import { WebSocketLink } from "apollo-link-ws";
 import { InMemoryCache, NormalizedCacheObject } from "apollo-cache-inmemory";
 import { HttpLink } from "apollo-link-http";
-import { split } from "apollo-link";
+import { onError } from "apollo-link-error";
+import { ServerError } from "apollo-link-http-common";
+import { split, from } from "apollo-link";
 import { getMainDefinition } from "apollo-utilities";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
@@ -51,7 +53,15 @@ export class StashService {
       },
     });
 
-    const link = split(
+    const errorLink = onError(({ networkError }) => {
+      // handle unauthorized error by redirecting to the login page
+      if (networkError && (networkError as ServerError).statusCode === 401) {
+        // redirect to login page
+        window.location.href = "/login";
+      }
+    });
+
+    const splitLink = split(
       ({ query }) => {
         const definition = getMainDefinition(query);
         return (
@@ -62,6 +72,8 @@ export class StashService {
       wsLink,
       httpLink
     );
+
+    const link = from([errorLink, splitLink]);
 
     StashService.cache = new InMemoryCache();
     StashService.client = new ApolloClient({
