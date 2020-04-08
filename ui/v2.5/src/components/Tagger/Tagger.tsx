@@ -109,7 +109,9 @@ export const Tagger: React.FC = () => {
 
   const { data: sceneData, loading: sceneLoading } = GQL.useFindScenesQuery({
     variables: {
-      scene_filter: {},
+      scene_filter: {
+        is_missing: "stash_id"
+      },
       filter: {
         q: searchFilter,
         page,
@@ -242,7 +244,10 @@ export const Tagger: React.FC = () => {
         </div>
       </div>
 
-      <div className="row my-2">
+      <div className="row">
+        <div className="col text-right mr-2">{ sceneData?.findScenes?.count } results</div>
+      </div>
+      <div className="row mb-2">
         <input
           className="form-control col-2 ml-4"
           onChange={(event: React.FormEvent<HTMLInputElement>) => searchCallback(event.currentTarget.value)}
@@ -311,7 +316,7 @@ export const Tagger: React.FC = () => {
                 </div>
                 { scene?.stash_id && <div className="col-5 offset-6 text-right"><b>Scene already tagged</b></div> }
                 { searchResults[scene.id] === null && <div>No results found.</div> }
-                { fingerprintMatch && (
+                { fingerprintMatch && !scene?.stash_id && (
                     <StashSearchResult
                       showMales={config.showMales}
                       stashScene={scene}

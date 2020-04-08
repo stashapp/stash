@@ -46,6 +46,7 @@ export class PerformerIsMissingCriterion extends IsMissingCriterion {
     "aliases",
     "gender",
     "scenes",
+    "stash_id"
   ];
 }
 
