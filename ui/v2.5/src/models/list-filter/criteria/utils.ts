@@ -9,7 +9,7 @@ import {
 } from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
-import { IsMissingCriterion } from "./is-missing";
+import {PerformerIsMissingCriterion, SceneIsMissingCriterion} from "./is-missing";
 import { NoneCriterion } from "./none";
 import { PerformersCriterion } from "./performers";
 import { RatingCriterion } from "./rating";
@@ -35,8 +35,10 @@ export function makeCriteria(type: CriterionType = "none") {
       return new FavoriteCriterion();
     case "hasMarkers":
       return new HasMarkersCriterion();
-    case "isMissing":
-      return new IsMissingCriterion();
+    case "sceneIsMissing":
+      return new SceneIsMissingCriterion();
+    case "performerIsMissing":
+      return new PerformerIsMissingCriterion();
     case "tags":
       return new TagsCriterion("tags");
     case "sceneTags":
@@ -47,7 +49,6 @@ export function makeCriteria(type: CriterionType = "none") {
       return new StudiosCriterion();
     case "movies":
       return new MoviesCriterion();
-
     case "birth_year":
       return new NumberCriterion(type, type);
     case "age": {
