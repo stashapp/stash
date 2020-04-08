@@ -105,6 +105,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   ) {
     updatePerformerEditState(state);
 
+    // gender is a string in the scraper data
+    setGender(state.gender ?? undefined);
+
     // image is a base64 string
     if ((state as GQL.ScrapedPerformerDataFragment).image !== undefined) {
       const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
