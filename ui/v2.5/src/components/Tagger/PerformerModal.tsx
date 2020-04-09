@@ -6,7 +6,7 @@ import { BreastTypeEnum, GenderEnum } from 'src/definitions-box/globalTypes';
 import {
   SearchScene_searchScene_performers_performer as StashPerformer,
 } from 'src/definitions-box/SearchScene';
-import { sortImageURLs } from './utils';
+import { formatMeasurements, sortImageURLs } from './utils';
 
 interface IPerformerModalProps {
   performer: StashPerformer;
@@ -66,9 +66,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({ modalVisible, performe
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Measurements:</strong>
-            <span className="col-6 text-truncate">{
-              (performer.measurements.cup_size && !performer.measurements.waist && !performer.measurements.hip) &&
-              `${performer.measurements.band_size}${performer.measurements.cup_size}-${performer.measurements.waist}-${performer.measurements.hip}` }</span>
+            <span className="col-6 text-truncate">{ formatMeasurements(performer.measurements) }</span>
           </div>
           { performer?.gender !== GenderEnum.MALE && (
             <div className="row no-gutters">

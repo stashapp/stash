@@ -1,4 +1,9 @@
-import { SearchScene_searchScene_performers_performer_urls as URL } from 'src/definitions-box/SearchScene';
+import {
+  SearchScene_searchScene_performers_performer_urls as URL,
+  SearchScene_searchScene_performers_performer_measurements as Measurements
+} from 'src/definitions-box/SearchScene';
+import { BreastTypeEnum, GenderEnum as StashGenderEnum} from 'src/definitions-box/globalTypes';
+import { GenderEnum } from 'src/core/generated-graphql';
 
 const CDN = 'https://cdn.stashdb.org';
 
@@ -28,3 +33,23 @@ export const getUrlByType = (
     return sortImageURLs(urls.filter(u => u !== null) as URL[], orientation)[0].url;
   return (urls && (urls.find((url) => url?.type === type) || {}).url) || '';
 };
+
+
+export const formatMeasurements = (measurements: Measurements) => (
+  (measurements.cup_size && measurements.waist && measurements.hip) ?
+    `${measurements.band_size}${measurements.cup_size}-${measurements.waist}-${measurements.hip}`
+  : ''
+);
+
+export const formatBreastType = (type: BreastTypeEnum|null) => (
+    type === BreastTypeEnum.FAKE ? "Yes" :
+    type === BreastTypeEnum.NATURAL ? "No" : ""
+);
+
+export const formatGender = (type: StashGenderEnum|null) => (
+  type === StashGenderEnum.FEMALE ? GenderEnum.Female :
+  type === StashGenderEnum.MALE ? GenderEnum.Male :
+  type === StashGenderEnum.TRANSGENDER_FEMALE ? GenderEnum.TransgenderFemale :
+  type === StashGenderEnum.TRANSGENDER_MALE ? GenderEnum.TransgenderMale :
+  type === StashGenderEnum.INTERSEX ? GenderEnum.Intersex : null
+);

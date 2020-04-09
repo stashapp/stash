@@ -9,7 +9,7 @@ import {
   SearchScene_searchScene_performers_performer as StashPerformer,
   SearchScene_searchScene_studio as StashStudio
 } from 'src/definitions-box/SearchScene';
-import { BreastTypeEnum, FingerprintAlgorithm } from 'src/definitions-box/globalTypes';
+import { FingerprintAlgorithm } from 'src/definitions-box/globalTypes';
 import * as GQL from 'src/core/generated-graphql';
 import {
   SubmitFingerprintVariables,
@@ -18,7 +18,7 @@ import {
 import { FindPerformersDocument, FindStudioByStashIdDocument } from '../../core/generated-graphql';
 import PerformerResult from './PerformerResult';
 import StudioResult from './StudioResult';
-import { getUrlByType, sortImageURLs } from './utils';
+import { formatGender, formatMeasurements, formatBreastType, getUrlByType, sortImageURLs } from './utils';
 import { client } from './client';
 
 const SubmitFingerprintMutation = loader('src/queries/submitFingerprint.gql');
@@ -44,6 +44,13 @@ interface IStashSearchResultProps {
   isFingerprintMatch?: boolean;
   setCoverImage: boolean;
 }
+
+const titleCase = (str?: string) => {
+  if (!str) return '';
+  return (str ?? '').split(' ')
+    .map(w => w[0].toUpperCase() + w.substr(1).toLowerCase())
+    .join(' ');
+};
 
 interface IPerformerOperation {
   type: "Create"|"Existing"|"Update";
@@ -192,13 +199,14 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
         const res = await createPerformer({
           variables: {
             name: performerData.name,
+            gender: formatGender(performerData.gender),
             country: performerData.country,
             height: performerData.height?.toString(),
-            ethnicity: performerData.ethnicity,
+            ethnicity: titleCase(performerData.ethnicity ?? ''),
             birthdate: performerData.birthdate?.date ?? null,
-            eye_color: performerData.eye_color,
-            fake_tits: performerData.breast_type === BreastTypeEnum.FAKE ? 'Yes' : 'No',
-            measurements: `${performerData.measurements.band_size}${performerData.measurements.cup_size}-${performerData.measurements.waist}-${performerData.measurements.hip}`,
+            eye_color: titleCase(performerData.eye_color ?? ''),
+            fake_tits: formatBreastType(performerData.breast_type),
+            measurements: formatMeasurements(performerData.measurements),
             image: imgData,
             stash_id: performerID
           },
