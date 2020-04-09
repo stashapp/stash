@@ -3,7 +3,7 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { FingerprintInput, GenderEnum, DateAccuracyEnum, EthnicityEnum, EyeColorEnum, HairColorEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
+import { FingerprintQueryInput, GenderEnum, DateAccuracyEnum, EthnicityEnum, EyeColorEnum, HairColorEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: FindSceneByFingerprint
@@ -101,6 +101,7 @@ export interface FindSceneByFingerprint_findSceneByFingerprint_performers {
 export interface FindSceneByFingerprint_findSceneByFingerprint_fingerprints {
   algorithm: FingerprintAlgorithm;
   hash: string;
+  duration: number;
 }
 
 export interface FindSceneByFingerprint_findSceneByFingerprint {
@@ -124,5 +125,5 @@ export interface FindSceneByFingerprint {
 }
 
 export interface FindSceneByFingerprintVariables {
-  fingerprint: FingerprintInput;
+  fingerprint: FingerprintQueryInput;
 }

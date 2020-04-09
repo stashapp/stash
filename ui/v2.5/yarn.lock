@@ -2890,6 +2890,11 @@
   resolved "https://registry.yarnpkg.com/@types/object-assign/-/object-assign-4.0.30.tgz#8949371d5a99f4381ee0f1df0a9b7a187e07e652"
   integrity sha1-iUk3HVqZ9Dge4PHfCpt6GH4H5lI=
 
+"@types/parse-filepath@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/parse-filepath/-/parse-filepath-1.0.0.tgz#e46c92548d928d3215dcad93e04b4a7d9859b86b"
+  integrity sha512-y8m4AfQnSEG3mv16kMvqF0WsnCFaYgG30CU/3+K5FKlNXQ+/9zu/cZPyQ98kZqAYqJV6kJIWLkQw4ccWAKOc/Q==
+
 "@types/parse-json@^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@types/parse-json/-/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"

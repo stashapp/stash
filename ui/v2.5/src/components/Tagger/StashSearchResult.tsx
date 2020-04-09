@@ -23,9 +23,11 @@ import { client } from './client';
 
 const SubmitFingerprintMutation = loader('src/queries/submitFingerprint.gql');
 
-const getDurationStatus = (dbDuration: number|null, stashDuration: number|undefined|null) => {
-  if(!dbDuration || !stashDuration) return '';
-  const diff = Math.abs(dbDuration - stashDuration);
+const getDurationStatus = (scene: SearchResult, stashDuration: number|undefined|null) => {
+  const fingerprintDuration = scene.fingerprints.map(f => f.duration)?.[0] ?? null;
+  const sceneDuration = scene.duration || fingerprintDuration;
+  if(!sceneDuration || !stashDuration) return '';
+  const diff = Math.abs(sceneDuration - stashDuration);
   if(diff < 5) {
     return <div><b>Duration is a match</b></div>;
   }
@@ -108,6 +110,20 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
           stash_id: studioData.id,
           url: getUrlByType(studioData.urls, 'HOME') ?? null,
           image: getUrlByType(studioData.urls, 'PHOTO') ?? null
+        },
+        update: (store, newStudio) => {
+          if (!newStudio?.data?.studioCreate)
+            return;
+
+          store.writeQuery({
+            query: FindStudioByStashIdDocument,
+            variables: {
+              id: newStudio.data.studioCreate.stash_id
+            },
+            data: {
+              findStudioByStashID: newStudio.data.studioCreate
+            }
+          });
         }
       });
 
@@ -185,6 +201,29 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
             measurements: `${performerData.measurements.band_size}${performerData.measurements.cup_size}-${performerData.measurements.waist}-${performerData.measurements.hip}`,
             image: imgData,
             stash_id: performerID
+          },
+          update: (store, newPerformer) => {
+            if (!newPerformer?.data?.performerCreate)
+              return;
+
+            store.writeQuery({
+              query: FindPerformersDocument,
+              variables: {
+                performer_filter: {
+                  stash_id: {
+                    value: newPerformer.data.performerCreate.stash_id,
+                    modifier: GQL.CriterionModifier.Equals
+                  }
+                }
+              },
+              data: {
+                findPerformers: {
+                  performers: [newPerformer.data.performerCreate],
+                  count: 1,
+                  __typename: "FindPerformersResultType"
+                }
+              }
+            });
           }
         });
 
@@ -224,7 +263,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       if(sceneUpdateResult.data?.sceneUpdate)
         setScene(sceneUpdateResult.data.sceneUpdate);
 
-      if(stashScene.checksum)
+      if(stashScene.checksum && stashScene.file?.duration)
         client.mutate<SubmitFingerprint, SubmitFingerprintVariables>({
           mutation: SubmitFingerprintMutation,
           variables: {
@@ -232,7 +271,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
               scene_id: scene.id,
               fingerprint: {
                 hash: stashScene.checksum,
-                algorithm: FingerprintAlgorithm.MD5
+                algorithm: FingerprintAlgorithm.MD5,
+                duration: Math.floor(stashScene.file?.duration)
               }
             }
           }
@@ -251,7 +291,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
           <h4 className="text-truncate">{scene?.title}</h4>
           <h5>{scene?.studio?.name} • {scene?.date}</h5>
           <div>Performers: {scene?.performers?.map(p => p.performer.name).join(', ')}</div>
-          { getDurationStatus(scene.duration, stashScene.file?.duration) }
+          { getDurationStatus(scene, stashScene.file?.duration) }
         </div>
       </div>
       { isActive && (

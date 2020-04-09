@@ -30,11 +30,11 @@ func GetConfigDirectory() string {
 }
 
 func GetDefaultDatabaseFilePath() string {
-	return filepath.Join(GetConfigDirectory(), "stash-go-tagger.sqlite")
+	return filepath.Join(GetConfigDirectory(), "stash-go.sqlite")
 }
 
 func GetDefaultConfigFilePath() string {
-	return filepath.Join(GetConfigDirectory(), "config-tagger.yml")
+	return filepath.Join(GetConfigDirectory(), "config.yml")
 }
 
 func GetSSLKey() string {

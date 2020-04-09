@@ -33,7 +33,7 @@ function prepareQueryString(scene: Partial<GQL.Scene>, paths: string[], mode:Par
       scene.date,
       scene.studio?.name ?? '',
       (scene?.performers ?? []).map(p => p.name).join(' '),
-      scene?.title ?? ''
+      scene?.title ? scene.title.replace(/[^a-zA-Z0-9 ]+/g, '') : ''
     ].filter(s => s !== '').join(' ');
     blacklist.forEach(b => { str = str.replace(new RegExp(b, 'gi'), '') });
     return str;
@@ -316,7 +316,7 @@ export const Tagger: React.FC = () => {
                 </div>
                 { scene?.stash_id && <div className="col-5 offset-6 text-right"><b>Scene already tagged</b></div> }
                 { searchResults[scene.id] === null && <div>No results found.</div> }
-                { fingerprintMatch && !scene?.stash_id && (
+                { fingerprintMatch && !scene?.stash_id && !taggedScenes[scene.id] && (
                     <StashSearchResult
                       showMales={config.showMales}
                       stashScene={scene}

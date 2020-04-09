@@ -101,6 +101,7 @@ export interface SearchScene_searchScene_performers {
 export interface SearchScene_searchScene_fingerprints {
   algorithm: FingerprintAlgorithm;
   hash: string;
+  duration: number;
 }
 
 export interface SearchScene_searchScene {

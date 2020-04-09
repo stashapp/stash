@@ -66,6 +66,12 @@ export enum HairColorEnum {
 export interface FingerprintInput {
   hash: string;
   algorithm: FingerprintAlgorithm;
+  duration: number;
+}
+
+export interface FingerprintQueryInput {
+  hash: string;
+  algorithm: FingerprintAlgorithm;
 }
 
 export interface FingerprintSubmission {

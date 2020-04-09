@@ -1,4 +1,4 @@
-query FindSceneByFingerprint($fingerprint: FingerprintInput!) {
+query FindSceneByFingerprint($fingerprint: FingerprintQueryInput!) {
   findSceneByFingerprint(fingerprint: $fingerprint) {
     id
     title
@@ -73,6 +73,7 @@ query FindSceneByFingerprint($fingerprint: FingerprintInput!) {
     fingerprints {
       algorithm
       hash
+      duration
     }
   }
 }

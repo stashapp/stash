@@ -59,7 +59,7 @@ func Initialize() *singleton {
 
 func initConfig() {
 	// The config file is called config.  Leave off the file extension.
-	viper.SetConfigName("config-tagger")
+	viper.SetConfigName("config")
 
 	if flagConfigFileExists, _ := utils.FileExists(flags.configFilePath); flagConfigFileExists {
 		viper.SetConfigFile(flags.configFilePath)

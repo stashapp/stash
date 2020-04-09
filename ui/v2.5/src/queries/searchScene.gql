@@ -73,6 +73,7 @@ query SearchScene($term: String!) {
     fingerprints {
       algorithm
       hash
+      duration
     }
   }
 }
