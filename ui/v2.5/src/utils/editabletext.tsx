@@ -69,7 +69,7 @@ const renderInputGroup = (options: {
         className="text-input"
         readOnly={!options.isEditing}
         plaintext={!options.isEditing}
-        defaultValue={options.value}
+        value={options.value}
         placeholder={options.placeholder ?? options.title}
         onChange={(event: React.FormEvent<HTMLInputElement>) =>
           options.onChange(event.currentTarget.value)
