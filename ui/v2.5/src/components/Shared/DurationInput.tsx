@@ -7,7 +7,7 @@ interface IProps {
   disabled?: boolean;
   numericValue: number | undefined;
   mandatory?: boolean;
-  onValueChange(valueAsNumber: number | undefined): void;
+  onValueChange(valueAsNumber: number | undefined, valueAsString?: string): void;
   onReset?(): void;
   className?: string;
 }
@@ -32,7 +32,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
 
     let seconds = DurationUtils.stringToSeconds(value);
     seconds += 1;
-    props.onValueChange(seconds);
+    props.onValueChange(seconds, DurationUtils.secondsToString(seconds));
   }
 
   function decrement() {
@@ -42,7 +42,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
 
     let seconds = DurationUtils.stringToSeconds(value);
     seconds -= 1;
-    props.onValueChange(seconds);
+    props.onValueChange(seconds, DurationUtils.secondsToString(seconds));
   }
 
   function renderButtons() {
@@ -98,7 +98,7 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
           }
           onBlur={() => {
             if (props.mandatory || (value !== undefined && value !== "")) {
-              props.onValueChange(DurationUtils.stringToSeconds(value));
+              props.onValueChange(DurationUtils.stringToSeconds(value), value);
             } else {
               props.onValueChange(undefined);
             }

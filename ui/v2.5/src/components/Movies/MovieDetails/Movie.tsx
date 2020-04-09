@@ -210,7 +210,10 @@ export const Movie: React.FC = () => {
               title: "Duration",
               value: duration,
               isEditing,
-              onChange: setDuration,
+              onChange: (value: string | undefined) => {
+                setDuration(value ?? "");
+              },
+              asString: true,
             })}
             {TableUtils.renderInputGroup({
               title: "Date (YYYY-MM-DD)",

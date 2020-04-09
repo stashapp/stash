@@ -50,6 +50,7 @@ const renderDurationInput = (options: {
   placeholder?: string;
   value: string | undefined;
   isEditing: boolean;
+  asString?: boolean;
   onChange: (value: string | undefined) => void;
 }) => {
   return (
