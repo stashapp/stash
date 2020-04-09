@@ -20,7 +20,7 @@ const fileSize = (bytes: number = 0, precision: number = 2) => {
     unit++;
   }
 
-  return `${bytes.toFixed(+precision)} ${Units[unit]}`;
+  return `${count.toFixed(+precision)} ${Units[unit]}`;
 };
 
 const secondsToTimestamp = (seconds: number) => {
