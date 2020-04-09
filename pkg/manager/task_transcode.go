@@ -62,7 +62,7 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 	}
 	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
 
-	if videoCodec == "h264" { // for non supported h264 files stream copy the video part
+	if videoCodec == ffmpeg.H264 { // for non supported h264 files stream copy the video part
 		if audioCodec == ffmpeg.MissingUnsupported {
 			encoder.CopyVideo(*videoFile, options)
 		} else {

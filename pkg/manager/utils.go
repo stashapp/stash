@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -31,11 +32,11 @@ func IsStreamable(scene *models.Scene) (bool, error) {
 	}
 
 	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, container) && ffmpeg.IsValidAudioForContainer(audioCodec, container) {
-		fmt.Printf("File is streamable %s, %s, %s\n", videoCodec, audioCodec, container)
+		logger.Debugf("File is streamable %s, %s, %s\n", videoCodec, audioCodec, container)
 		return true, nil
 	} else {
 		hasTranscode, _ := HasTranscode(scene)
-		fmt.Printf("File is not streamable , transcode is needed  %s, %s, %s\n", videoCodec, audioCodec, container)
+		logger.Debugf("File is not streamable , transcode is needed  %s, %s, %s\n", videoCodec, audioCodec, container)
 		return hasTranscode, nil
 	}
 }

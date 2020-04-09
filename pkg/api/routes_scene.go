@@ -102,9 +102,9 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 			if ffmpeg.Container(container) == ffmpeg.Matroska {
 				if config.GetForceMKV() {
 					switch videoCodec {
-					case "h264", "vp9", "vp8":
+					case ffmpeg.H264, ffmpeg.Vp9, ffmpeg.Vp8:
 						copyVideo = true
-					case "hevc":
+					case ffmpeg.Hevc:
 						if config.GetForceHEVC() {
 							copyVideo = true
 						}
