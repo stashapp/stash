@@ -265,7 +265,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
           date: scene.date,
           performer_ids: performerIDs as string[],
           studio_id: studioID,
-          cover_image: imgData
+          cover_image: imgData,
+          url: getUrlByType(scene.urls, 'STUDIO') ?? null,
         }
       });
       if(sceneUpdateResult.data?.sceneUpdate)
@@ -290,13 +291,17 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
 
   const classname = cx('row mb-4 search-result', { 'selected-result': isActive });
 
+  const sceneTitle = getUrlByType(scene.urls, 'STUDIO') ? (
+    <a href={getUrlByType(scene.urls, 'STUDIO')} target="_blank" rel="noopener noreferrer" className="scene-link">{scene?.title}</a>
+  ) : (<span>{scene?.title}</span>);
+
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <li className={classname} key={scene?.id} onClick={() => !isActive && setActive()}>
       <div className="col-6 row">
         <img src={sortImageURLs(scene?.urls, 'landscape')[0]?.url} alt="" className="align-self-center scene-image" />
         <div className="d-flex flex-column justify-content-center scene-metadata">
-          <h4 className="text-truncate">{scene?.title}</h4>
+          <h4 className="text-truncate">{ sceneTitle }</h4>
           <h5>{scene?.studio?.name} • {scene?.date}</h5>
           <div>Performers: {scene?.performers?.map(p => p.performer.name).join(', ')}</div>
           { getDurationStatus(scene, stashScene.file?.duration) }
