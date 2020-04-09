@@ -11,6 +11,7 @@ require (
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/gobuffalo/packr/v2 v2.0.2
 	github.com/golang-migrate/migrate/v4 v4.3.1
+	github.com/gorilla/sessions v1.2.0
 	github.com/gorilla/websocket v1.4.0
 	github.com/h2non/filetype v1.0.8
 	// this is required for generate

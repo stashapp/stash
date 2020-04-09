@@ -158,6 +158,15 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		query.addArg(gender.Value.String())
 	}
 
+	if isMissingFilter := performerFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
+		switch *isMissingFilter {
+		case "scenes":
+			query.addWhere("scenes_join.scene_id IS NULL")
+		default:
+			query.addWhere("performers." + *isMissingFilter + " IS NULL")
+		}
+	}
+
 	handleStringCriterion(tableName+".ethnicity", performerFilter.Ethnicity, &query)
 	handleStringCriterion(tableName+".country", performerFilter.Country, &query)
 	handleStringCriterion(tableName+".eye_color", performerFilter.EyeColor, &query)

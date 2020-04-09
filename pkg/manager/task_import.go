@@ -501,6 +501,9 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				if sceneJSON.File.AudioCodec != "" {
 					newScene.AudioCodec = sql.NullString{String: sceneJSON.File.AudioCodec, Valid: true}
 				}
+				if sceneJSON.File.Format != "" {
+					newScene.Format = sql.NullString{String: sceneJSON.File.Format, Valid: true}
+				}
 				if sceneJSON.File.Width != 0 {
 					newScene.Width = sql.NullInt64{Int64: int64(sceneJSON.File.Width), Valid: true}
 				}

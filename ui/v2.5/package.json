@@ -55,6 +55,7 @@
     "react-router-dom": "^5.1.2",
     "react-select": "^3.0.8",
     "subscriptions-transport-ws": "^0.9.16",
+    "universal-cookie": "^4.0.3",
     "video.js": "^7.6.0"
   },
   "devDependencies": {

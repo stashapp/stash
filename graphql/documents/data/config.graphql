@@ -4,8 +4,11 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   generatedPath
   maxTranscodeSize
   maxStreamingTranscodeSize
+  forceMkv
+  forceHevc
   username
   password
+  maxSessionAge
   logFile
   logOut
   logLevel

@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -42,13 +43,32 @@ func (rs sceneRoutes) Routes() chi.Router {
 // region Handlers
 
 func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
+
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+
+	container := ""
+	if scene.Format.Valid {
+		container = scene.Format.String
+	} else { // container isn't in the DB
+		// shouldn't happen, fallback to ffprobe
+		tmpVideoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path)
+		if err != nil {
+			logger.Errorf("[transcode] error reading video file: %s", err.Error())
+			return
+		}
+
+		container = string(ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path))
+	}
 
 	// detect if not a streamable file and try to transcode it instead
 	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.Checksum)
 	videoCodec := scene.VideoCodec.String
+	audioCodec := ffmpeg.MissingUnsupported
+	if scene.AudioCodec.Valid {
+		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
+	}
 	hasTranscode, _ := manager.HasTranscode(scene)
-	if ffmpeg.IsValidCodec(videoCodec) || hasTranscode {
+	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, ffmpeg.Container(container)) && ffmpeg.IsValidAudioForContainer(audioCodec, ffmpeg.Container(container)) || hasTranscode {
 		manager.RegisterStream(filepath, &w)
 		http.ServeFile(w, r, filepath)
 		manager.WaitAndDeregisterStream(filepath, &w, r)
@@ -69,16 +89,50 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 
 	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
 
-	stream, process, err := encoder.StreamTranscode(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+	var stream io.ReadCloser
+	var process *os.Process
+	mimeType := ffmpeg.MimeWebm
+
+	if audioCodec == ffmpeg.MissingUnsupported {
+		//ffmpeg fails if it trys to transcode a non supported audio codec
+		stream, process, err = encoder.StreamTranscodeVideo(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+	} else {
+		copyVideo := false // try to be smart if the video to be transcoded is in a Matroska container
+		//  mp4 has always supported audio so it doesn't need to be checked
+		//  while mpeg_ts has seeking issues if we don't reencode the video
+
+		if config.GetForceMKV() { // If MKV is forced as supported and video codec is also supported then only transcode audio
+			if ffmpeg.Container(container) == ffmpeg.Matroska {
+				switch videoCodec {
+				case ffmpeg.H264, ffmpeg.Vp9, ffmpeg.Vp8:
+					copyVideo = true
+				case ffmpeg.Hevc:
+					if config.GetForceHEVC() {
+						copyVideo = true
+					}
+
+				}
+			}
+		}
+
+		if copyVideo { // copy video stream instead of transcoding it
+			stream, process, err = encoder.StreamMkvTranscodeAudio(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+			mimeType = ffmpeg.MimeMkv
+
+		} else {
+			stream, process, err = encoder.StreamTranscode(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+		}
+	}
+
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %s", err.Error())
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "video/webm")
+	w.Header().Set("Content-Type", mimeType)
 
-	logger.Info("[stream] transcoding video file")
+	logger.Infof("[stream] transcoding video file to %s", mimeType)
 
 	// handle if client closes the connection
 	notify := r.Context().Done()

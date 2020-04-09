@@ -19,6 +19,9 @@ const Metadata = "metadata"
 const Downloads = "downloads"
 const Username = "username"
 const Password = "password"
+const MaxSessionAge = "max_session_age"
+
+const DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 
 const Database = "database"
 
@@ -30,6 +33,12 @@ const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 const Host = "host"
 const Port = "port"
 const ExternalHost = "external_host"
+
+// key used to sign JWT tokens
+const JWTSignKey = "jwt_secret_key"
+
+// key used for session store
+const SessionStoreKey = "session_store_key"
 
 // scraping options
 const ScrapersPath = "scrapers_path"
@@ -45,6 +54,10 @@ const MaximumLoopDuration = "maximum_loop_duration"
 const AutostartVideo = "autostart_video"
 const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
+
+// Playback force codec,container
+const ForceMKV = "forceMKV"
+const ForceHEVC = "forceHEVC"
 
 // Logging options
 const LogFile = "logFile"
@@ -87,6 +100,14 @@ func GetMetadataPath() string {
 
 func GetDatabasePath() string {
 	return viper.GetString(Database)
+}
+
+func GetJWTSignKey() []byte {
+	return []byte(viper.GetString(JWTSignKey))
+}
+
+func GetSessionStoreKey() []byte {
+	return []byte(viper.GetString(SessionStoreKey))
 }
 
 func GetDefaultScrapersPath() string {
@@ -202,6 +223,13 @@ func ValidateCredentials(username string, password string) bool {
 	return username == authUser && err == nil
 }
 
+// GetMaxSessionAge gets the maximum age for session cookies, in seconds.
+// Session cookie expiry times are refreshed every request.
+func GetMaxSessionAge() int {
+	viper.SetDefault(MaxSessionAge, DefaultMaxSessionAge)
+	return viper.GetInt(MaxSessionAge)
+}
+
 // Interface options
 func GetSoundOnPreview() bool {
 	viper.SetDefault(SoundOnPreview, true)
@@ -267,6 +295,15 @@ func GetCSSEnabled() bool {
 	return viper.GetBool(CSSEnabled)
 }
 
+// force codec,container
+func GetForceMKV() bool {
+	return viper.GetBool(ForceMKV)
+}
+
+func GetForceHEVC() bool {
+	return viper.GetBool(ForceHEVC)
+}
+
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
 func GetLogFile() string {
@@ -314,4 +351,22 @@ func IsValid() bool {
 
 	// TODO: check valid paths
 	return setPaths
+}
+
+// SetInitialConfig fills in missing required config fields
+func SetInitialConfig() error {
+	// generate some api keys
+	const apiKeyLength = 32
+
+	if string(GetJWTSignKey()) == "" {
+		signKey := utils.GenerateRandomKey(apiKeyLength)
+		Set(JWTSignKey, signKey)
+	}
+
+	if string(GetSessionStoreKey()) == "" {
+		sessionStoreKey := utils.GenerateRandomKey(apiKeyLength)
+		Set(SessionStoreKey, sessionStoreKey)
+	}
+
+	return Write()
 }

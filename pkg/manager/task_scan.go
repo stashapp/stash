@@ -133,8 +133,31 @@ func (t *ScanTask) scanScene() {
 	qb := models.NewSceneQueryBuilder()
 	scene, _ := qb.FindByPath(t.FilePath)
 	if scene != nil {
-		// We already have this item in the database, check for thumbnails,screenshots
+		// We already have this item in the database
+		//check for thumbnails,screenshots
 		t.makeScreenshots(nil, scene.Checksum)
+
+		//check for container
+		if !scene.Format.Valid {
+			videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+			container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
+			logger.Infof("Adding container %s to file %s", container, t.FilePath)
+
+			ctx := context.TODO()
+			tx := database.DB.MustBeginTx(ctx, nil)
+			err = qb.UpdateFormat(scene.ID, string(container), tx)
+			if err != nil {
+				logger.Error(err.Error())
+				_ = tx.Rollback()
+			} else if err := tx.Commit(); err != nil {
+				logger.Error(err.Error())
+			}
+
+		}
 		return
 	}
 
@@ -143,6 +166,7 @@ func (t *ScanTask) scanScene() {
 		logger.Error(err.Error())
 		return
 	}
+	container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
 
 	// Override title to be filename if UseFileMetadata is false
 	if !t.UseFileMetadata {
@@ -182,6 +206,7 @@ func (t *ScanTask) scanScene() {
 			Duration:   sql.NullFloat64{Float64: videoFile.Duration, Valid: true},
 			VideoCodec: sql.NullString{String: videoFile.VideoCodec, Valid: true},
 			AudioCodec: sql.NullString{String: videoFile.AudioCodec, Valid: true},
+			Format:     sql.NullString{String: string(container), Valid: true},
 			Width:      sql.NullInt64{Int64: int64(videoFile.Width), Valid: true},
 			Height:     sql.NullInt64{Int64: int64(videoFile.Height), Valid: true},
 			Framerate:  sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true},
