@@ -106,7 +106,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     updatePerformerEditState(state);
 
     // image is a base64 string
-    if ((state as GQL.ScrapedPerformerDataFragment).image !== undefined) {
+    // #404: don't overwrite image if it has been modified by the user
+    if (image === undefined && (state as GQL.ScrapedPerformerDataFragment).image !== undefined) {
       const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
       setImage(imageStr ?? undefined);
       if (onImageChange) {
