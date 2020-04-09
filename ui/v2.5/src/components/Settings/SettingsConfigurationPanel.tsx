@@ -22,6 +22,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [maxStreamingTranscodeSize, setMaxStreamingTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
+  const [forceMkv, setForceMkv] = useState<boolean>(false);
+  const [forceHevc, setForceHevc] = useState<boolean>(false);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
@@ -42,6 +44,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
     generatedPath,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
+    forceMkv,
+    forceHevc,
     username,
     password,
     maxSessionAge,
@@ -65,6 +69,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
       );
+      setForceMkv(conf.general.forceMkv);
+      setForceHevc(conf.general.forceHevc);
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setMaxSessionAge(conf.general.maxSessionAge);
@@ -291,6 +297,28 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Control>
           <Form.Text className="text-muted">
             Maximum size for transcoded streams
+          </Form.Text>
+        </Form.Group>
+        <Form.Group id="force-options-mkv">
+          <Form.Check
+            id="force-mkv"
+            checked={forceMkv}
+            label="Force Matroska as supported"
+            onChange={() => setForceMkv(!forceMkv)}
+          />
+          <Form.Text className="text-muted">
+            Treat Matroska (MKV) as a supported container. Recommended for Chromium based browsers
+          </Form.Text>
+        </Form.Group>
+        <Form.Group id="force-options-hevc">
+          <Form.Check
+            id="force-hevc"
+            checked={forceHevc}
+            label="Force HEVC as supported"
+            onChange={() => setForceHevc(!forceHevc)}
+          />
+          <Form.Text className="text-muted">
+            Treat HEVC as a supported codec. Recommended for Safari or some Android based browsers
           </Form.Text>
         </Form.Group>
       </Form.Group>

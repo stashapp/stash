@@ -19,6 +19,7 @@ type Scene struct {
 	Size       sql.NullString  `db:"size" json:"size"`
 	Duration   sql.NullFloat64 `db:"duration" json:"duration"`
 	VideoCodec sql.NullString  `db:"video_codec" json:"video_codec"`
+	Format     sql.NullString  `db:"format" json:"format_name"`
 	AudioCodec sql.NullString  `db:"audio_codec" json:"audio_codec"`
 	Width      sql.NullInt64   `db:"width" json:"width"`
 	Height     sql.NullInt64   `db:"height" json:"height"`

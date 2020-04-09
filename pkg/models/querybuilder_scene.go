@@ -50,10 +50,10 @@ func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error)
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scenes (checksum, path, title, details, url, date, rating, size, duration, video_codec,
-                    			    audio_codec, width, height, framerate, bitrate, studio_id, cover,
+                    			    audio_codec, format, width, height, framerate, bitrate, studio_id, cover,
                     				created_at, updated_at)
 				VALUES (:checksum, :path, :title, :details, :url, :date, :rating, :size, :duration, :video_codec,
-				        :audio_codec, :width, :height, :framerate, :bitrate, :studio_id, :cover,
+					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :cover,
 				        :created_at, :updated_at)
 		`,
 		newScene,
@@ -533,4 +533,17 @@ func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *s
 	}
 
 	return scenes, nil
+}
+
+func (qb *SceneQueryBuilder) UpdateFormat(id int, format string, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET format = ? WHERE scenes.id = ? `,
+		format, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
