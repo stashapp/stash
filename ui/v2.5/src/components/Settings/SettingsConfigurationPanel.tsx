@@ -22,8 +22,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [maxStreamingTranscodeSize, setMaxStreamingTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
+  const [forceMkv, setForceMkv] = useState<boolean>(false);
+  const [forceHevc, setForceHevc] = useState<boolean>(false);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
+  const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
   const [logFile, setLogFile] = useState<string | undefined>();
   const [logOut, setLogOut] = useState<boolean>(true);
   const [logLevel, setLogLevel] = useState<string>("Info");
@@ -41,8 +44,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
     generatedPath,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
+    forceMkv,
+    forceHevc,
     username,
     password,
+    maxSessionAge,
     logFile,
     logOut,
     logLevel,
@@ -63,8 +69,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
       );
+      setForceMkv(conf.general.forceMkv);
+      setForceHevc(conf.general.forceHevc);
       setUsername(conf.general.username);
       setPassword(conf.general.password);
+      setMaxSessionAge(conf.general.maxSessionAge);
       setLogFile(conf.general.logFile ?? undefined);
       setLogOut(conf.general.logOut);
       setLogLevel(conf.general.logLevel);
@@ -290,6 +299,28 @@ export const SettingsConfigurationPanel: React.FC = () => {
             Maximum size for transcoded streams
           </Form.Text>
         </Form.Group>
+        <Form.Group id="force-options-mkv">
+          <Form.Check
+            id="force-mkv"
+            checked={forceMkv}
+            label="Force Matroska as supported"
+            onChange={() => setForceMkv(!forceMkv)}
+          />
+          <Form.Text className="text-muted">
+            Treat Matroska (MKV) as a supported container. Recommended for Chromium based browsers
+          </Form.Text>
+        </Form.Group>
+        <Form.Group id="force-options-hevc">
+          <Form.Check
+            id="force-hevc"
+            checked={forceHevc}
+            label="Force HEVC as supported"
+            onChange={() => setForceHevc(!forceHevc)}
+          />
+          <Form.Text className="text-muted">
+            Treat HEVC as a supported codec. Recommended for Safari or some Android based browsers
+          </Form.Text>
+        </Form.Group>
       </Form.Group>
 
       <hr />
@@ -337,6 +368,21 @@ export const SettingsConfigurationPanel: React.FC = () => {
           />
           <Form.Text className="text-muted">
             Password to access Stash. Leave blank to disable user authentication
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="maxSessionAge">
+          <h6>Maximum Session Age</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={maxSessionAge.toString()}
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
+              setMaxSessionAge(Number.parseInt(e.currentTarget.value, 10))
+            }
+          />
+          <Form.Text className="text-muted">
+            Maximum idle time before a login session is expired, in seconds.
           </Form.Text>
         </Form.Group>
       </Form.Group>

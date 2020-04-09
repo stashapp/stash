@@ -45,6 +45,8 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	if input.MaxStreamingTranscodeSize != nil {
 		config.Set(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
 	}
+	config.Set(config.ForceMKV, input.ForceMkv)
+	config.Set(config.ForceHEVC, input.ForceHevc)
 
 	if input.Username != nil {
 		config.Set(config.Username, input.Username)
@@ -58,6 +60,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		if *input.Password != currentPWHash {
 			config.SetPassword(*input.Password)
 		}
+	}
+
+	if input.MaxSessionAge != nil {
+		config.Set(config.MaxSessionAge, *input.MaxSessionAge)
 	}
 
 	if input.LogFile != nil {

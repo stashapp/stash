@@ -16,7 +16,7 @@ import { ErrorUtils } from "../../utils/errors";
 import { ToastUtils } from "../../utils/toasts";
 import { FolderSelect } from "../Shared/FolderSelect/FolderSelect";
 
-interface IProps {}
+interface IProps { }
 
 export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IProps) => {
   // Editing config state
@@ -25,6 +25,8 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
   const [generatedPath, setGeneratedPath] = useState<string | undefined>(undefined);
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<GQL.StreamingResolutionEnum | undefined>(undefined);
   const [maxStreamingTranscodeSize, setMaxStreamingTranscodeSize] = useState<GQL.StreamingResolutionEnum | undefined>(undefined);
+  const [forceMkv, setForceMkv] = useState<boolean>(false);
+  const [forceHevc, setForceHevc] = useState<boolean>(false);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [logFile, setLogFile] = useState<string | undefined>();
@@ -42,6 +44,8 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
     generatedPath,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
+    forceMkv,
+    forceHevc,
     username,
     password,
     logFile,
@@ -61,6 +65,8 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
       setGeneratedPath(conf.general.generatedPath);
       setMaxTranscodeSize(conf.general.maxTranscodeSize);
       setMaxStreamingTranscodeSize(conf.general.maxStreamingTranscodeSize);
+      setForceMkv(conf.general.forceMkv);
+      setForceHevc(conf.general.forceHevc);
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setLogFile(conf.general.logFile);
@@ -77,15 +83,15 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
   }
 
   function excludeRegexChanged(idx: number, value: string) {
-    const newExcludes = excludes.map((regex, i)=> {
-      const ret = ( idx !== i ) ? regex : value ;
+    const newExcludes = excludes.map((regex, i) => {
+      const ret = (idx !== i) ? regex : value;
       return ret
-      })
+    })
     setExcludes(newExcludes);
   }
 
   function excludeRemoveRegex(idx: number) {
-    const newExcludes = excludes.filter((regex, i) => i!== idx );
+    const newExcludes = excludes.filter((regex, i) => i !== idx);
 
     setExcludes(newExcludes);
   }
@@ -117,7 +123,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
     GQL.StreamingResolutionEnum.Original
   ].map(resolutionToString);
 
-  function resolutionToString(r : GQL.StreamingResolutionEnum | undefined) {
+  function resolutionToString(r: GQL.StreamingResolutionEnum | undefined) {
     switch (r) {
       case GQL.StreamingResolutionEnum.Low: return "240p";
       case GQL.StreamingResolutionEnum.Standard: return "480p";
@@ -130,7 +136,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
     return "Original";
   }
 
-  function translateQuality(quality : string) {
+  function translateQuality(quality: string) {
     switch (quality) {
       case "240p": return GQL.StreamingResolutionEnum.Low;
       case "480p": return GQL.StreamingResolutionEnum.Standard;
@@ -160,7 +166,7 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
             />
           </FormGroup>
         </FormGroup>
-        
+
         <FormGroup
           label="Database Path"
           helperText="File location for the SQLite database (requires restart)"
@@ -179,16 +185,16 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
           label="Excluded Patterns"
         >
 
-       { (excludes) ? excludes.map((regexp, i) => {
-         return(
-           <InputGroup
-             value={regexp}
-             onChange={(e: any) => excludeRegexChanged(i, e.target.value)}
-             rightElement={<Button icon="minus" minimal={true} intent="danger" onClick={(e: any) => excludeRemoveRegex(i)} />}
-           />
-           );
-         }) : null
-       }
+          {(excludes) ? excludes.map((regexp, i) => {
+            return (
+              <InputGroup
+                value={regexp}
+                onChange={(e: any) => excludeRegexChanged(i, e.target.value)}
+                rightElement={<Button icon="minus" minimal={true} intent="danger" onClick={(e: any) => excludeRemoveRegex(i)} />}
+              />
+            );
+          }) : null
+          }
 
           <Button icon="plus" minimal={true} onClick={(e: any) => excludeAddRegex()} />
           <div>
@@ -198,37 +204,55 @@ export const SettingsConfigurationPanel: FunctionComponent<IProps> = (props: IPr
                 rightIcon="help"
                 text="Regexps of files/paths to exclude from Scan and add to Clean"
                 minimal={true}
-                target="_blank" 
+                target="_blank"
               />
             </p>
           </div>
         </FormGroup>
       </FormGroup>
-      
+
       <Divider />
-        <FormGroup>
-          <H4>Video</H4>
-          <FormGroup 
-            label="Maximum transcode size"
-            helperText="Maximum size for generated transcodes"
-          >
-            <HTMLSelect
-              options={transcodeQualities}
-              onChange={(event) => setMaxTranscodeSize(translateQuality(event.target.value))}
-              value={resolutionToString(maxTranscodeSize)}
-            />
-          </FormGroup>
-          <FormGroup 
-            label="Maximum streaming transcode size"
-            helperText="Maximum size for transcoded streams"
-          >
-            <HTMLSelect
-              options={transcodeQualities}
-              onChange={(event) => setMaxStreamingTranscodeSize(translateQuality(event.target.value))}
-              value={resolutionToString(maxStreamingTranscodeSize)}
-            />
-          </FormGroup>
+      <FormGroup>
+        <H4>Video</H4>
+        <FormGroup
+          label="Maximum transcode size"
+          helperText="Maximum size for generated transcodes"
+        >
+          <HTMLSelect
+            options={transcodeQualities}
+            onChange={(event) => setMaxTranscodeSize(translateQuality(event.target.value))}
+            value={resolutionToString(maxTranscodeSize)}
+          />
         </FormGroup>
+        <FormGroup
+          label="Maximum streaming transcode size"
+          helperText="Maximum size for transcoded streams"
+        >
+          <HTMLSelect
+            options={transcodeQualities}
+            onChange={(event) => setMaxStreamingTranscodeSize(translateQuality(event.target.value))}
+            value={resolutionToString(maxStreamingTranscodeSize)}
+          />
+        </FormGroup>
+        <FormGroup
+          helperText="Treat Matroska (MKV) as a supported container. Recommended for Chromium based browsers"
+        >
+          <Checkbox
+            checked={forceMkv}
+            label="Force Matroska as supported"
+            onChange={() => setForceMkv(!forceMkv)}
+          />
+        </FormGroup>
+        <FormGroup
+          helperText="Treat HEVC as a supported codec. Recommended for Safari or some Android based browsers"
+        >
+          <Checkbox
+            checked={forceHevc}
+            label="Force HEVC as supported"
+            onChange={() => setForceHevc(!forceHevc)}
+          />
+        </FormGroup>
+      </FormGroup>
       <Divider />
 
       <FormGroup>

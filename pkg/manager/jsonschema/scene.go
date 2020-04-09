@@ -22,6 +22,7 @@ type SceneFile struct {
 	Duration   string `json:"duration"`
 	VideoCodec string `json:"video_codec"`
 	AudioCodec string `json:"audio_codec"`
+	Format     string `json:"format"`
 	Width      int    `json:"width"`
 	Height     int    `json:"height"`
 	Framerate  string `json:"framerate"`
