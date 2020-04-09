@@ -97,7 +97,10 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 		//ffmpeg fails if it trys to transcode a non supported audio codec
 		stream, process, err = encoder.StreamTranscodeVideo(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
 	} else {
-		copyVideo := false        // try to be smart if the video to be transcoded is in a Matroska container
+		copyVideo := false // try to be smart if the video to be transcoded is in a Matroska container
+		//  mp4 has always supported audio so it doesn't need to be checked
+		//  while mpeg_ts has seeking issues if we don't reencode the video
+
 		if config.GetForceMKV() { // If MKV is forced as supported and video codec is also supported then only transcode audio
 			if ffmpeg.Container(container) == ffmpeg.Matroska {
 				switch videoCodec {
