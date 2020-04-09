@@ -383,7 +383,8 @@ func DatabaseCheckMiddleware(next http.Handler) http.Handler {
 		ext := path.Ext(r.URL.Path)
 		shouldRedirect := ext == "" && r.Method == "GET"
 		if shouldRedirect && database.NeedsMigration() {
-			if !strings.HasPrefix(r.URL.Path, "/migrate") {
+			// #451 - don't redirect if loading login page
+			if !strings.HasPrefix(r.URL.Path, "/migrate") && !strings.HasPrefix(r.URL.Path, "/login") {
 				http.Redirect(w, r, "/migrate", 301)
 				return
 			}
