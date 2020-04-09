@@ -454,6 +454,14 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
 	qb := models.NewSceneMarkerQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
+
+	markerID, _ := strconv.Atoi(id)
+	marker, err := qb.Find(markerID)
+
+	if err != nil {
+		return false, err
+	}
+
 	if err := qb.Destroy(id, tx); err != nil {
 		_ = tx.Rollback()
 		return false, err
@@ -461,6 +469,16 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 	if err := tx.Commit(); err != nil {
 		return false, err
 	}
+
+	// delete the preview for the marker
+	sqb := models.NewSceneQueryBuilder()
+	scene, _ := sqb.Find(int(marker.SceneID.Int64))
+
+	if scene != nil {
+		seconds := int(marker.Seconds)
+		manager.DeleteSceneMarkerFiles(scene, seconds)
+	}
+
 	return true, nil
 }
 
@@ -470,13 +488,18 @@ func changeMarker(ctx context.Context, changeType int, changedMarker models.Scen
 	qb := models.NewSceneMarkerQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
 
+	var existingMarker *models.SceneMarker
 	var sceneMarker *models.SceneMarker
 	var err error
 	switch changeType {
 	case create:
 		sceneMarker, err = qb.Create(changedMarker, tx)
 	case update:
-		sceneMarker, err = qb.Update(changedMarker, tx)
+		// check to see if timestamp was changed
+		existingMarker, err = qb.Find(changedMarker.ID)
+		if err == nil {
+			sceneMarker, err = qb.Update(changedMarker, tx)
+		}
 	}
 	if err != nil {
 		_ = tx.Rollback()
@@ -512,6 +535,18 @@ func changeMarker(ctx context.Context, changeType int, changedMarker models.Scen
 	// Commit
 	if err := tx.Commit(); err != nil {
 		return nil, err
+	}
+
+	// remove the marker preview if the timestamp was changed
+	if existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
+		sqb := models.NewSceneQueryBuilder()
+
+		scene, _ := sqb.Find(int(existingMarker.SceneID.Int64))
+
+		if scene != nil {
+			seconds := int(existingMarker.Seconds)
+			manager.DeleteSceneMarkerFiles(scene, seconds)
+		}
 	}
 
 	return sceneMarker, nil
