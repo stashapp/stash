@@ -108,8 +108,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
         variables: {
           name: studioData.name,
           stash_id: studioData.id,
-          url: getUrlByType(studioData.urls, 'HOME') ?? null,
-          image: getUrlByType(studioData.urls, 'PHOTO') ?? null
+          ...(!!getUrlByType(studioData.urls, 'HOME') && { url: getUrlByType(studioData.urls, 'HOME') }),
+          ...(!!getUrlByType(studioData.urls, 'PHOTO') && { image: getUrlByType(studioData.urls, 'PHOTO') })
         },
         update: (store, newStudio) => {
           if (!newStudio?.data?.studioCreate)
