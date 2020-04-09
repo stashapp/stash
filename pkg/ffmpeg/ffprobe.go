@@ -46,6 +46,8 @@ const (
 	Hevc               string     = "hevc"
 	Vp8                string     = "vp8"
 	Vp9                string     = "vp9"
+	MimeWebm           string     = "video/webm"
+	MimeMkv            string     = "video/x-matroska"
 )
 
 var ValidCodecs = []string{H264, H265, Vp8, Vp9}

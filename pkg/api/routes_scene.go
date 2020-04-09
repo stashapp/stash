@@ -91,7 +91,7 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 
 	var stream io.ReadCloser
 	var process *os.Process
-	mimeType := "video/webm"
+	mimeType := ffmpeg.MimeWebm
 
 	if audioCodec == ffmpeg.MissingUnsupported {
 		//ffmpeg fails if it trys to transcode a non supported audio codec
@@ -100,23 +100,21 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 		copyVideo := false        // try to be smart if the video to be transcoded is in a Matroska container
 		if config.GetForceMKV() { // If MKV is forced as supported and video codec is also supported then only transcode audio
 			if ffmpeg.Container(container) == ffmpeg.Matroska {
-				if config.GetForceMKV() {
-					switch videoCodec {
-					case ffmpeg.H264, ffmpeg.Vp9, ffmpeg.Vp8:
+				switch videoCodec {
+				case ffmpeg.H264, ffmpeg.Vp9, ffmpeg.Vp8:
+					copyVideo = true
+				case ffmpeg.Hevc:
+					if config.GetForceHEVC() {
 						copyVideo = true
-					case ffmpeg.Hevc:
-						if config.GetForceHEVC() {
-							copyVideo = true
-						}
-
 					}
+
 				}
 			}
 		}
 
 		if copyVideo { // copy video stream instead of transcoding it
 			stream, process, err = encoder.StreamMkvTranscodeAudio(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
-			mimeType = "video/x-matroska"
+			mimeType = ffmpeg.MimeMkv
 
 		} else {
 			stream, process, err = encoder.StreamTranscode(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
