@@ -153,16 +153,19 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 	for _, movie := range input.Movies {
 
 		movieID, _ := strconv.Atoi(movie.MovieID)
-		sceneIdx := ""
-		if movie.SceneIndex != nil {
-			sceneIdx = *movie.SceneIndex
-		}
 
 		movieJoin := models.MoviesScenes{
-			MovieID:    movieID,
-			SceneID:    sceneID,
-			SceneIndex: sceneIdx,
+			MovieID: movieID,
+			SceneID: sceneID,
 		}
+
+		if movie.SceneIndex != nil {
+			movieJoin.SceneIndex = sql.NullInt64{
+				Int64: int64(*movie.SceneIndex),
+				Valid: true,
+			}
+		}
+
 		movieJoins = append(movieJoins, movieJoin)
 	}
 	if err := jqb.UpdateMoviesScenes(sceneID, movieJoins, tx); err != nil {

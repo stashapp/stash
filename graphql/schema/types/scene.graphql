@@ -20,7 +20,7 @@ type ScenePathsType {
 
 type SceneMovie {
   movie: Movie!
-  scene_index: String
+  scene_index: Int
 }
 
 type Scene {
@@ -48,7 +48,7 @@ type Scene {
 
 input SceneMovieInput {
   movie_id: ID!
-  scene_index: String
+  scene_index: Int
 }
 
 input SceneUpdateInput {

@@ -3,9 +3,9 @@ type Movie {
   checksum: String!
   name: String!
   aliases: String
-  duration: String
+  duration: Int
   date: String
-  rating: String
+  rating: Int
   director: String
   synopsis: String
   url: String
@@ -18,9 +18,9 @@ type Movie {
 input MovieCreateInput {
   name: String!
   aliases: String
-  duration: String
+  duration: Int
   date: String
-  rating: String
+  rating: Int
   director: String
   synopsis: String
   url: String
@@ -33,9 +33,9 @@ input MovieUpdateInput {
   id: ID!
   name: String
   aliases: String
-  duration: String
+  duration: Int
   date: String
-  rating: String
+  rating: Int
   director: String
   synopsis: String
   url: String

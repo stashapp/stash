@@ -51,7 +51,8 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 		newMovie.Aliases = sql.NullString{String: *input.Aliases, Valid: true}
 	}
 	if input.Duration != nil {
-		newMovie.Duration = sql.NullString{String: *input.Duration, Valid: true}
+		duration := int64(*input.Duration)
+		newMovie.Duration = sql.NullInt64{Int64: duration, Valid: true}
 	}
 
 	if input.Date != nil {
@@ -59,9 +60,10 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 	}
 
 	if input.Rating != nil {
-		newMovie.Rating = sql.NullString{String: *input.Rating, Valid: true}
-	} 
-	
+		rating := int64(*input.Rating)
+		newMovie.Rating = sql.NullInt64{Int64: rating, Valid: true}
+	}
+
 	if input.Director != nil {
 		newMovie.Director = sql.NullString{String: *input.Director, Valid: true}
 	}
@@ -124,7 +126,8 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 		updatedMovie.Aliases = sql.NullString{String: *input.Aliases, Valid: true}
 	}
 	if input.Duration != nil {
-		updatedMovie.Duration = sql.NullString{String: *input.Duration, Valid: true}
+		duration := int64(*input.Duration)
+		updatedMovie.Duration = sql.NullInt64{Int64: duration, Valid: true}
 	}
 
 	if input.Date != nil {
@@ -132,7 +135,8 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 	}
 
 	if input.Rating != nil {
-		updatedMovie.Rating = sql.NullString{String: *input.Rating, Valid: true}
+		rating := int64(*input.Rating)
+		updatedMovie.Rating = sql.NullInt64{Int64: rating, Valid: true}
 	}
 
 	if input.Director != nil {

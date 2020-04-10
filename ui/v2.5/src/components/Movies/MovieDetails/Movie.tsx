@@ -29,9 +29,9 @@ export const Movie: React.FC = () => {
   const [backImage, setBackImage] = useState<string | undefined>(undefined);
   const [name, setName] = useState<string | undefined>(undefined);
   const [aliases, setAliases] = useState<string | undefined>(undefined);
-  const [duration, setDuration] = useState<string | undefined>(undefined);
+  const [duration, setDuration] = useState<number | undefined>(undefined);
   const [date, setDate] = useState<string | undefined>(undefined);
-  const [rating, setRating] = useState<string | undefined>(undefined);
+  const [rating, setRating] = useState<number | undefined>(undefined);
   const [director, setDirector] = useState<string | undefined>(undefined);
   const [synopsis, setSynopsis] = useState<string | undefined>(undefined);
   const [url, setUrl] = useState<string | undefined>(undefined);
@@ -208,9 +208,10 @@ export const Movie: React.FC = () => {
             })}
             {TableUtils.renderInputGroup({
               title: "Duration",
-              value: duration,
+              value: duration ? duration.toString() : "",
               isEditing,
-              onChange: setDuration,
+              onChange: (value: string) =>
+                setDuration(Number.parseInt(value, 10)),
             })}
             {TableUtils.renderInputGroup({
               title: "Date (YYYY-MM-DD)",
@@ -228,7 +229,8 @@ export const Movie: React.FC = () => {
               title: "Rating",
               value: rating,
               isEditing,
-              onChange: (value: string) => setRating(value),
+              onChange: (value: string) =>
+                setRating(Number.parseInt(value, 10)),
               selectOptions: ["", "1", "2", "3", "4", "5"],
             })}
           </tbody>

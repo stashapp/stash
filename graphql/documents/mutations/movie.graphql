@@ -1,9 +1,9 @@
 mutation MovieCreate(
   $name: String!,
   $aliases: String,
-  $duration: String,
+  $duration: Int,
   $date: String,
-  $rating: String,
+  $rating: Int,
   $director: String,
   $synopsis: String,
   $url: String,
@@ -19,9 +19,9 @@ mutation MovieUpdate(
   $id: ID!
   $name: String,
   $aliases: String,
-  $duration: String,
+  $duration: Int,
   $date: String,
-  $rating: String,
+  $rating: Int,
   $director: String,
   $synopsis: String,
   $url: String,
