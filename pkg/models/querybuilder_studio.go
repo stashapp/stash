@@ -94,7 +94,7 @@ func (qb *StudioQueryBuilder) All() ([]*Studio, error) {
 }
 
 func (qb *StudioQueryBuilder) AllSlim() ([]*Studio, error) {
-	return qb.queryStudios("SELECT studios.id, studios.name FROM studios " + qb.getStudioSort(nil), nil, nil)
+	return qb.queryStudios("SELECT studios.id, studios.name FROM studios "+qb.getStudioSort(nil), nil, nil)
 }
 
 func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]*Studio, int) {
