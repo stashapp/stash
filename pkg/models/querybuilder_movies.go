@@ -109,6 +109,10 @@ func (qb *MovieQueryBuilder) All() ([]*Movie, error) {
 	return qb.queryMovies(selectAll("movies")+qb.getMovieSort(nil), nil, nil)
 }
 
+func (qb *MovieQueryBuilder) AllSlim() ([]*Movie, error) {
+	return qb.queryMovies("SELECT movies.id, movies.name FROM movies "+qb.getMovieSort(nil), nil, nil)
+}
+
 func (qb *MovieQueryBuilder) Query(findFilter *FindFilterType) ([]*Movie, int) {
 	if findFilter == nil {
 		findFilter = &FindFilterType{}

@@ -105,6 +105,10 @@ func (qb *PerformerQueryBuilder) All() ([]*Performer, error) {
 	return qb.queryPerformers(selectAll("performers")+qb.getPerformerSort(nil), nil, nil)
 }
 
+func (qb *PerformerQueryBuilder) AllSlim() ([]*Performer, error) {
+	return qb.queryPerformers("SELECT performers.id, performers.name, performers.gender FROM performers " + qb.getPerformerSort(nil), nil, nil)
+}
+
 func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int) {
 	if performerFilter == nil {
 		performerFilter = &PerformerFilterType{}

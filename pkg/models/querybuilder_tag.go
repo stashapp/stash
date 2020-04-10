@@ -136,6 +136,10 @@ func (qb *TagQueryBuilder) All() ([]*Tag, error) {
 	return qb.queryTags(selectAll("tags")+qb.getTagSort(nil), nil, nil)
 }
 
+func (qb *TagQueryBuilder) AllSlim() ([]*Tag, error) {
+	return qb.queryTags("SELECT tags.id, tags.name FROM tags "+qb.getTagSort(nil), nil, nil)
+}
+
 func (qb *TagQueryBuilder) Query(findFilter *FindFilterType) ([]*Tag, int) {
 	if findFilter == nil {
 		findFilter = &FindFilterType{}

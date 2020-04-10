@@ -25,3 +25,8 @@ func (r *queryResolver) AllPerformers(ctx context.Context) ([]*models.Performer,
 	qb := models.NewPerformerQueryBuilder()
 	return qb.All()
 }
+
+func (r *queryResolver) AllPerformersSlim(ctx context.Context) ([]*models.Performer, error) {
+	qb := models.NewPerformerQueryBuilder()
+	return qb.AllSlim()
+}
