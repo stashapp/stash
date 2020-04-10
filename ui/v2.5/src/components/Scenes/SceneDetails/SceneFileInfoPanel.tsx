@@ -150,7 +150,11 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Downloaded From</span>
-        <span className="col-8 text-truncate">{props.scene.url}</span>
+        <span className="col-8 text-truncate">
+          <a href={TextUtils.sanitiseURL(props.scene.url)}>
+            {props.scene.url}
+          </a>
+        </span>
       </div>
     );
   }
