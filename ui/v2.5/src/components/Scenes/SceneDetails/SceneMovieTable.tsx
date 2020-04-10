@@ -17,11 +17,11 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
 ) => {
   const { data } = StashService.useAllMoviesForFilter();
 
-  const items = !!data && !!data.allMovies ? data.allMovies : [];
+  const items = !!data && !!data.allMoviesSlim ? data.allMoviesSlim : [];
   let itemsFilter: ValidTypes[] = [];
 
   if (!!props.movieSceneIndexes && !!items) {
-    props.movieSceneIndexes.forEach((index, movieId) => {
+    props.movieSceneIndexes.forEach((_index, movieId) => {
       itemsFilter = itemsFilter.concat(items.filter((x) => x.id === movieId));
     });
   }
