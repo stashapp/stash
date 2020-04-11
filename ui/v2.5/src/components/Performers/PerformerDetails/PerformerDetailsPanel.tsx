@@ -100,10 +100,34 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
+  function translateScrapedGender(gender?: string) {
+    if (!gender) {
+      return;
+    }
+
+    let retEnum : GQL.GenderEnum | undefined;
+
+    // try to translate from enum values first
+    const upperGender = gender?.toUpperCase();
+    const asEnum = StashService.genderToString(upperGender as GQL.GenderEnum);
+    if (asEnum) {
+      retEnum = StashService.stringToGender(asEnum);
+    } else {
+      // try to match against gender strings
+      const caseInsensitive = true;
+      retEnum = StashService.stringToGender(gender, caseInsensitive);
+    }
+
+    return StashService.genderToString(retEnum);
+  }
+
   function updatePerformerEditStateFromScraper(
     state: Partial<GQL.ScrapedPerformerDataFragment>
   ) {
     updatePerformerEditState(state);
+
+    // gender is a string in the scraper data
+    setGender(translateScrapedGender(state.gender ?? undefined));
 
     // image is a base64 string
     // #404: don't overwrite image if it has been modified by the user
