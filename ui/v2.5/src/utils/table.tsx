@@ -1,6 +1,5 @@
 import React from "react";
-import { Form } from "react-bootstrap";
-import { FilterSelect } from "src/components/Shared";
+import EditableTextUtils from "./editabletext";
 
 const renderEditableTextTableRow = (options: {
   title: string;
@@ -11,19 +10,7 @@ const renderEditableTextTableRow = (options: {
   <tr>
     <td>{options.title}</td>
     <td>
-      <Form.Control
-        readOnly={!options.isEditing}
-        plaintext={!options.isEditing}
-        onChange={(event: React.FormEvent<HTMLInputElement>) =>
-          options.onChange(event.currentTarget.value)
-        }
-        value={
-          typeof options.value === "number"
-            ? options.value.toString()
-            : options.value
-        }
-        placeholder={options.title}
-      />
+      {EditableTextUtils.renderEditableText(options)}
     </td>
   </tr>
 );
@@ -37,16 +24,7 @@ const renderTextArea = (options: {
   <tr>
     <td>{options.title}</td>
     <td>
-      <Form.Control
-        className="text-input"
-        as="textarea"
-        readOnly={!options.isEditing}
-        plaintext={!options.isEditing}
-        onChange={(event: React.FormEvent<HTMLTextAreaElement>) =>
-          options.onChange(event.currentTarget.value)
-        }
-        value={options.value}
-      />
+      {EditableTextUtils.renderTextArea(options)}
     </td>
   </tr>
 );
@@ -56,26 +34,34 @@ const renderInputGroup = (options: {
   placeholder?: string;
   value: string | undefined;
   isEditing: boolean;
-  asURL?: boolean;
-  urlPrefix?: string;
+  url?: string;
   onChange: (value: string) => void;
 }) => (
   <tr>
     <td>{options.title}</td>
     <td>
-      <Form.Control
-        className="text-input"
-        readOnly={!options.isEditing}
-        plaintext={!options.isEditing}
-        defaultValue={options.value}
-        placeholder={options.placeholder ?? options.title}
-        onChange={(event: React.FormEvent<HTMLInputElement>) =>
-          options.onChange(event.currentTarget.value)
-        }
-      />
+      {EditableTextUtils.renderInputGroup(options)}
     </td>
   </tr>
 );
+
+const renderDurationInput = (options: {
+  title: string;
+  placeholder?: string;
+  value: string | undefined;
+  isEditing: boolean;
+  asString?: boolean;
+  onChange: (value: string | undefined) => void;
+}) => {
+  return (
+    <tr>
+      <td>{options.title}</td>
+      <td>
+        {EditableTextUtils.renderDurationInput(options)}
+      </td>
+    </tr>
+  );
+};
 
 const renderHtmlSelect = (options: {
   title: string;
@@ -87,22 +73,7 @@ const renderHtmlSelect = (options: {
   <tr>
     <td>{options.title}</td>
     <td>
-      <Form.Control
-        as="select"
-        className="input-control"
-        disabled={!options.isEditing}
-        plaintext={!options.isEditing}
-        value={options.value?.toString()}
-        onChange={(event: React.FormEvent<HTMLSelectElement>) =>
-          options.onChange(event.currentTarget.value)
-        }
-      >
-        {options.selectOptions.map((opt) => (
-          <option value={opt} key={opt}>
-            {opt}
-          </option>
-        ))}
-      </Form.Control>
+      {EditableTextUtils.renderHtmlSelect(options)}
     </td>
   </tr>
 );
@@ -117,11 +88,7 @@ const renderFilterSelect = (options: {
   <tr>
     <td>{options.title}</td>
     <td>
-      <FilterSelect
-        type={options.type}
-        onSelect={(items) => options.onChange(items[0]?.id)}
-        initialIds={options.initialId ? [options.initialId] : []}
-      />
+      {EditableTextUtils.renderFilterSelect(options)}
     </td>
   </tr>
 );
@@ -136,12 +103,7 @@ const renderMultiSelect = (options: {
   <tr>
     <td>{options.title}</td>
     <td>
-      <FilterSelect
-        type={options.type}
-        isMulti
-        onSelect={(items) => options.onChange(items.map((i) => i.id))}
-        initialIds={options.initialIds ?? []}
-      />
+      {EditableTextUtils.renderMultiSelect(options)}
     </td>
   </tr>
 );
@@ -150,6 +112,7 @@ const Table = {
   renderEditableTextTableRow,
   renderTextArea,
   renderInputGroup,
+  renderDurationInput,
   renderHtmlSelect,
   renderFilterSelect,
   renderMultiSelect,

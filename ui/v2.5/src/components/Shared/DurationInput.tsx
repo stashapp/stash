@@ -5,54 +5,69 @@ import { DurationUtils } from "src/utils";
 
 interface IProps {
   disabled?: boolean;
-  numericValue: number;
-  onValueChange(valueAsNumber: number): void;
+  numericValue: number | undefined;
+  mandatory?: boolean;
+  onValueChange(valueAsNumber: number | undefined, valueAsString?: string): void;
   onReset?(): void;
   className?: string;
 }
 
 export const DurationInput: React.FC<IProps> = (props: IProps) => {
-  const [value, setValue] = useState<string>(
-    DurationUtils.secondsToString(props.numericValue)
+  const [value, setValue] = useState<string | undefined>(
+    props.numericValue !== undefined ? DurationUtils.secondsToString(props.numericValue) : undefined
   );
 
   useEffect(() => {
-    setValue(DurationUtils.secondsToString(props.numericValue));
-  }, [props.numericValue]);
+    if (props.numericValue !== undefined || props.mandatory) {
+      setValue(DurationUtils.secondsToString(props.numericValue ?? 0));
+    } else {
+      setValue(undefined);
+    }
+  }, [props.numericValue, props.mandatory]);
 
   function increment() {
+    if (value === undefined) {
+      return;
+    }
+
     let seconds = DurationUtils.stringToSeconds(value);
     seconds += 1;
-    props.onValueChange(seconds);
+    props.onValueChange(seconds, DurationUtils.secondsToString(seconds));
   }
 
   function decrement() {
+    if (value === undefined) {
+      return;
+    }
+
     let seconds = DurationUtils.stringToSeconds(value);
     seconds -= 1;
-    props.onValueChange(seconds);
+    props.onValueChange(seconds, DurationUtils.secondsToString(seconds));
   }
 
   function renderButtons() {
-    return (
-      <ButtonGroup vertical>
-        <Button
-          variant="secondary"
-          className="duration-button"
-          disabled={props.disabled}
-          onClick={() => increment()}
-        >
-          <Icon icon="chevron-up" />
-        </Button>
-        <Button
-          variant="secondary"
-          className="duration-button"
-          disabled={props.disabled}
-          onClick={() => decrement()}
-        >
-          <Icon icon="chevron-down" />
-        </Button>
-      </ButtonGroup>
-    );
+    if (!props.disabled) {
+      return (
+        <ButtonGroup vertical>
+          <Button
+            variant="secondary"
+            className="duration-button"
+            disabled={props.disabled}
+            onClick={() => increment()}
+          >
+            <Icon icon="chevron-up" />
+          </Button>
+          <Button
+            variant="secondary"
+            className="duration-button"
+            disabled={props.disabled}
+            onClick={() => decrement()}
+          >
+            <Icon icon="chevron-down" />
+          </Button>
+        </ButtonGroup>
+      );
+    }
   }
 
   function onReset() {
@@ -81,10 +96,14 @@ export const DurationInput: React.FC<IProps> = (props: IProps) => {
           onChange={(e: React.FormEvent<HTMLInputElement>) =>
             setValue(e.currentTarget.value)
           }
-          onBlur={() =>
-            props.onValueChange(DurationUtils.stringToSeconds(value))
-          }
-          placeholder="hh:mm:ss"
+          onBlur={() => {
+            if (props.mandatory || (value !== undefined && value !== "")) {
+              props.onValueChange(DurationUtils.stringToSeconds(value), value);
+            } else {
+              props.onValueChange(undefined);
+            }
+          }}
+          placeholder={!props.disabled ? "hh:mm:ss" : undefined}
         />
         <InputGroup.Append>
           {maybeRenderReset()}
