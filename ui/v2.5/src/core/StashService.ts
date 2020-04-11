@@ -717,12 +717,26 @@ export class StashService {
     }
   }
 
-  public static stringToGender(value?: string) {
+  public static stringToGender(value?: string, caseInsensitive?: boolean) {
     if (!value) {
       return undefined;
     }
 
-    return StashService.stringGenderMap.get(value);
+    const ret = StashService.stringGenderMap.get(value);
+    if (ret || !caseInsensitive) {
+      return ret;
+    }
+
+    const asUpper = value.toUpperCase();
+    const foundEntry = Array.from(StashService.stringGenderMap.entries()).find(
+      (e) => {
+        return e[0].toUpperCase() === asUpper;
+      }
+    );
+
+    if (foundEntry) {
+      return foundEntry[1];
+    }
   }
 
   public static getGenderStrings() {

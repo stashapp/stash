@@ -1,5 +1,6 @@
 fragment ScrapedPerformerData on ScrapedPerformer {
   name
+  gender
   url
   twitter
   instagram
@@ -20,6 +21,7 @@ fragment ScrapedPerformerData on ScrapedPerformer {
 fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   id
   name
+  gender
   url
   twitter
   instagram
@@ -45,7 +47,6 @@ fragment ScrapedMovieData on ScrapedMovie {
   director
   url
   synopsis
-
 }
 
 fragment ScrapedSceneMovieData on ScrapedSceneMovie {

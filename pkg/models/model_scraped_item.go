@@ -25,6 +25,7 @@ type ScrapedItem struct {
 
 type ScrapedPerformer struct {
 	Name         *string `graphql:"name" json:"name"`
+	Gender       *string `graphql:"gender" json:"gender"`
 	URL          *string `graphql:"url" json:"url"`
 	Twitter      *string `graphql:"twitter" json:"twitter"`
 	Instagram    *string `graphql:"instagram" json:"instagram"`
@@ -45,6 +46,7 @@ type ScrapedPerformer struct {
 // this type has no Image field
 type ScrapedPerformerStash struct {
 	Name         *string `graphql:"name" json:"name"`
+	Gender       *string `graphql:"gender" json:"gender"`
 	URL          *string `graphql:"url" json:"url"`
 	Twitter      *string `graphql:"twitter" json:"twitter"`
 	Instagram    *string `graphql:"instagram" json:"instagram"`
@@ -91,6 +93,7 @@ type ScrapedScenePerformer struct {
 	// Set if performer matched
 	ID           *string `graphql:"id" json:"id"`
 	Name         string  `graphql:"name" json:"name"`
+	Gender       *string `graphql:"gender" json:"gender"`
 	URL          *string `graphql:"url" json:"url"`
 	Twitter      *string `graphql:"twitter" json:"twitter"`
 	Instagram    *string `graphql:"instagram" json:"instagram"`
@@ -116,15 +119,15 @@ type ScrapedSceneStudio struct {
 
 type ScrapedSceneMovie struct {
 	// Set if movie matched
-	ID              *string `graphql:"id" json:"id"`
-	Name            string  `graphql:"name" json:"name"`
-	Aliases         string  `graphql:"aliases" json:"aliases"`
-	Duration	    string  `graphql:"duration" json:"duration"`
-	Date	        string  `graphql:"date" json:"date"`
-	Rating	        string  `graphql:"rating" json:"rating"`
-	Director        string  `graphql:"director" json:"director"`
-	Synopsis        string  `graphql:"synopsis" json:"synopsis"`
-	URL             *string `graphql:"url" json:"url"`
+	ID       *string `graphql:"id" json:"id"`
+	Name     string  `graphql:"name" json:"name"`
+	Aliases  string  `graphql:"aliases" json:"aliases"`
+	Duration string  `graphql:"duration" json:"duration"`
+	Date     string  `graphql:"date" json:"date"`
+	Rating   string  `graphql:"rating" json:"rating"`
+	Director string  `graphql:"director" json:"director"`
+	Synopsis string  `graphql:"synopsis" json:"synopsis"`
+	URL      *string `graphql:"url" json:"url"`
 }
 
 type ScrapedSceneTag struct {

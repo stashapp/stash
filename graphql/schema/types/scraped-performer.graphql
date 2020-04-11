@@ -1,6 +1,7 @@
 """A performer from a scraping operation..."""
 type ScrapedPerformer {
   name: String
+  gender: String
   url: String
   twitter: String
   instagram: String
@@ -22,6 +23,7 @@ type ScrapedPerformer {
 
 input ScrapedPerformerInput {
   name: String
+  gender: String
   url: String
   twitter: String
   instagram: String
