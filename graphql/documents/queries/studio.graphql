@@ -12,3 +12,18 @@ query FindStudio($id: ID!) {
     ...StudioData
   }
 }
+
+query findParentStudio($parent_id: ID!) {
+  findParentStudio(parent_id: $parent_id) {
+    ...StudioData
+  }
+}
+
+query findChildrenStudios($id: ID!) {
+  findChildrenStudios(id: $id) {
+    count
+    studios {
+      ...StudioData
+    }
+  }
+}
