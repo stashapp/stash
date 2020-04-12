@@ -19,12 +19,8 @@ type Query {
 
   """Find a studio by ID"""
   findStudio(id: ID!): Studio
-  """Find a studio by parent ID"""
-  findParentStudio(parent_id: ID!): Studio
-  """A function which queries Studio objects for children Studios"""
-  findChildrenStudios(id: ID!): FindStudiosResultType!
   """A function which queries Studio objects"""
-  findStudios(filter: FindFilterType): FindStudiosResultType!
+  findStudios(studio_filter: StudioFilterType, filter: FindFilterType): FindStudiosResultType!
 
    """Find a movie by ID"""
   findMovie(id: ID!): Movie

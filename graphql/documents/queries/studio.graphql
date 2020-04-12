@@ -1,5 +1,5 @@
-query FindStudios($filter: FindFilterType) {
-  findStudios(filter: $filter) {
+query FindStudios($filter: FindFilterType, $studio_filter: StudioFilterType ) {
+  findStudios(filter: $filter, studio_filter: $studio_filter) {
     count
     studios {
       ...StudioData
@@ -10,20 +10,5 @@ query FindStudios($filter: FindFilterType) {
 query FindStudio($id: ID!) {
   findStudio(id: $id) {
     ...StudioData
-  }
-}
-
-query findParentStudio($parent_id: ID!) {
-  findParentStudio(parent_id: $parent_id) {
-    ...StudioData
-  }
-}
-
-query findChildrenStudios($id: ID!) {
-  findChildrenStudios(id: $id) {
-    count
-    studios {
-      ...StudioData
-    }
   }
 }

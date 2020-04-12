@@ -73,6 +73,12 @@ func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*Studio, error) {
 	return qb.queryStudio(query, args, tx)
 }
 
+func (qb *StudioQueryBuilder) FindChildren(id int, tx *sqlx.Tx) ([]*Studio, error) {
+	query := "SELECT studios.* FROM studios WHERE studios.parent_id = ?"
+	args := []interface{}{id}
+	return qb.queryStudios(query, args, tx)
+}
+
 func (qb *StudioQueryBuilder) FindBySceneID(sceneID int) (*Studio, error) {
 	query := "SELECT studios.* FROM studios JOIN scenes ON studios.id = scenes.studio_id WHERE scenes.id = ? LIMIT 1"
 	args := []interface{}{sceneID}
@@ -93,7 +99,10 @@ func (qb *StudioQueryBuilder) All() ([]*Studio, error) {
 	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil, nil)
 }
 
-func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]*Studio, int) {
+func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int) {
+	if studioFilter == nil {
+		studioFilter = &StudioFilterType{}
+	}
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
 	}
@@ -108,9 +117,18 @@ func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]*Studio, int)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
+
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		whereClauses = append(whereClauses, clause)
 		args = append(args, thisArgs...)
+	}
+
+	if parentId := studioFilter.ParentID; parentId != nil {
+		clause, count := getIntCriterionWhereClause("studios.parent_id", *studioFilter.ParentID)
+		whereClauses = append(whereClauses, clause)
+		if count == 1 {
+			args = append(args, studioFilter.ParentID.Value)
+		}
 	}
 
 	sortAndPagination := qb.getStudioSort(findFilter) + getPagination(findFilter)
