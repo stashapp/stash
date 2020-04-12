@@ -85,6 +85,7 @@ textarea.text-input {
   font-size: 1rem;
   text-align: center;
   vertical-align: middle;
+  word-wrap: break-spaces;
 
   h5,
   h6 {
@@ -484,4 +485,11 @@ div.dropdown-menu {
     text-align: center;
     text-transform: uppercase;
   }
+}
+
+.grid{
+  display: grid;
+  grid-gap: 20px;
+  justify-content: center;
+  width: auto;
 }

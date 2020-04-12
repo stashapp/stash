@@ -7,19 +7,24 @@
 }
 
 #performer-page {
-  flex-direction: row;
-  margin: 10px auto;
-  overflow: hidden;
+  margin: 10px auto 0;
+  max-width: 1600px;
 
-  .image-container .performer {
-    max-height: 960px;
-    max-width: 100%;
+  &.grid{
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .performer-image {
+    grid-row: 1 / 3;
+    cursor: pointer;
+    max-width: 50vw;
+    max-height: 70vh;
+    object-fit: contain;
+    object-position: top;
   }
 
   .performer-head {
-    display: inline-block;
-    margin-bottom: 2rem;
-    vertical-align: top;
 
     .name-icons {
       margin-left: 10px;
@@ -39,6 +44,12 @@
       .instagram {
         color: pink;
       }
+    }
+  }
+
+  .performer-tabs{
+    @media (max-width: 767px) {
+      grid-column: 1 / 3;
     }
   }
 
