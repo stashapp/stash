@@ -6,12 +6,11 @@ CREATE TABLE studios_dg_tmp
     checksum VARCHAR(255) NOT NULL,
     name VARCHAR(255),
     url VARCHAR(255),
+    parent_id INTEGER DEFAULT NULL
+        CHECK ( id IS NOT parent_id ),
+    FOREIGN KEY(parent_id) REFERENCES studios(id),
     created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL,
-    parent_studio_id INTEGER DEFAULT NULL
-        CONSTRAINT studios_studios_id_fk
-            REFERENCES studios
-        CHECK ( id IS NOT parent_studio_id )
+    updated_at DATETIME NOT NULL
 );
 
 INSERT INTO studios_dg_tmp(id, image, checksum, name, url, created_at, updated_at) SELECT id, image, checksum, name, url, created_at, updated_at FROM studios;
