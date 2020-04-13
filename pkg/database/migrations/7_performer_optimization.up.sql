@@ -1,4 +1,3 @@
-BEGIN TRANSACTION;
 PRAGMA foreign_keys = OFF;
 DROP INDEX `performers_checksum_unique`;
 DROP INDEX `index_performers_on_name`;
@@ -81,4 +80,3 @@ SELECT
 FROM temp_old_performers;
 DROP TABLE temp_old_performers;
 PRAGMA foreign_keys = ON;
-COMMIT TRANSACTION;
