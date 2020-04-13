@@ -317,11 +317,10 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
 
       if (result?.data?.tagCreate) {
         setSelectedIds([...selectedIds, result.data.tagCreate.id]);
-        props.onSelect?.(
-          [...tags, result.data.tagCreate].filter(
-            (item) => selectedIds.indexOf(item.id) !== -1
-          )
-        );
+        props.onSelect?.([
+          ...tags.filter((item) => selectedIds.indexOf(item.id) !== -1),
+          result.data.tagCreate,
+        ]);
         setLoading(false);
 
         Toast.success({
