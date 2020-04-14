@@ -173,7 +173,7 @@ export const Movie: React.FC = () => {
         accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {movie.name ?? "movie"}?</p>
+        <p>Are you sure you want to delete {name ?? "movie"}?</p>
       </Modal>
     );
   }
@@ -196,7 +196,7 @@ export const Movie: React.FC = () => {
           <tbody>
             {TableUtils.renderInputGroup({
               title: "Name",
-              value: movie.name ?? "",
+              value: name ?? "",
               isEditing: !!isEditing,
               onChange: setName,
             })}
@@ -263,7 +263,7 @@ export const Movie: React.FC = () => {
         </Form.Group>
 
         <DetailsEditNavbar
-          objectName={movie.name ?? "movie"}
+          objectName={name ?? "movie"}
           isNew={isNew}
           isEditing={isEditing}
           onToggleEdit={() => setIsEditing(!isEditing)}
