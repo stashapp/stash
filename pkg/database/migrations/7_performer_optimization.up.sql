@@ -100,5 +100,3 @@ FROM `temp_old_performers_scenes`;
 
 DROP TABLE `temp_old_performers`;
 DROP TABLE `temp_old_performers_scenes`;
-
-VACUUM;
