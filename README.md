@@ -111,3 +111,10 @@ where the app can be cross-compiled.  This process is kicked off by CI via the `
 command to open a bash shell to the container to poke around:
 
 `docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash -i -t stashappdev/compiler:latest /bin/bash`
+
+## Customization
+
+You can make Stash interface fit your desired style with  [Custom CSS snippets](https://github.com/stashapp/stash/wiki/Custom-CSS-snippets) and [CSS Tweaks](https://github.com/stashapp/stash/wiki/CSS-Tweaks).
+
+[Stash Plex Theme](https://github.com/stashapp/stash/wiki/Stash-Plex-Theme) is a community created theme inspired by popular Plex Interface.
+
