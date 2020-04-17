@@ -280,7 +280,7 @@ func SceneCtx(next http.Handler) http.Handler {
 		if sceneID == 0 {
 			scene, err = qb.FindByChecksum(sceneIdentifierQueryParam)
 		} else {
-			scene, err = qb.Find(sceneID)
+			scene, err = qb.FindWithAllColumns(sceneID)
 		}
 
 		if err != nil {

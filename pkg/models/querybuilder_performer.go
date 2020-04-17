@@ -3,11 +3,47 @@ package models
 import (
 	"database/sql"
 	"strconv"
+    "strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 )
+
+var metadataColumns = []string {
+    "id",
+    "checksum",
+    "name",
+    "gender",
+    "url",
+    "twitter",
+    "instagram",
+    "birthdate",
+    "ethnicity",
+    "country",
+    "eye_color",
+    "height",
+    "measurements",
+    "fake_tits",
+    "career_length",
+    "tattoos",
+    "piercings",
+    "aliases",
+    "favorite",
+    "created_at",
+    "updated_at",
+}
+
+func selectPerformerMetadata() string {
+    var str strings.Builder
+
+    for _, colName := range metadataColumns {
+        str.WriteString("performers." + colName + ", ")
+    }
+
+    returnVal := str.String()
+    return "SELECT " + returnVal[:len(returnVal)-2] + " FROM performers "
+}
 
 type PerformerQueryBuilder struct{}
 
@@ -67,7 +103,17 @@ func (qb *PerformerQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 }
 
 func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
-	query := "SELECT * FROM performers WHERE id = ? LIMIT 1"
+	query := selectPerformerMetadata() + "WHERE id = ? LIMIT 1"
+	args := []interface{}{id}
+	results, err := qb.queryPerformers(query, args, nil)
+	if err != nil || len(results) < 1 {
+		return nil, err
+	}
+	return results[0], nil
+}
+
+func (qb *PerformerQueryBuilder) FindWithAllColumns(id int) (*Performer, error) {
+    query := "SELECT * FROM performers WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	results, err := qb.queryPerformers(query, args, nil)
 	if err != nil || len(results) < 1 {
@@ -77,11 +123,9 @@ func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
 }
 
 func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {
-	query := `
-		SELECT performers.* FROM performers
+	query := selectPerformerMetadata() + `
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
-		LEFT JOIN scenes on scenes_join.scene_id = scenes.id
-		WHERE scenes.id = ?
+		WHERE scenes_join.scene_id = ?
 		GROUP BY performers.id
 	`
 	args := []interface{}{sceneID}
@@ -133,10 +177,9 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		tableName: tableName,
 	}
 
-	query.body = selectDistinctIDs(tableName)
+	query.body = selectPerformerMetadata()
 	query.body += `
 		left join performers_scenes as scenes_join on scenes_join.performer_id = performers.id
-		left join scenes on scenes_join.scene_id = scenes.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -196,13 +239,20 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	handleStringCriterion(tableName+".aliases", performerFilter.Aliases, &query)
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := query.executeFind()
 
-	var performers []*Performer
-	for _, id := range idsResult {
-		performer, _ := qb.Find(id)
-		performers = append(performers, performer)
+	if len(query.whereClauses) > 0 {
+		query.body += " WHERE " + strings.Join(query.whereClauses, " AND ") // TODO handle AND or OR
 	}
+	query.body += " GROUP BY " + tableName + ".id "
+	if len(query.havingClauses) > 0 {
+		query.body += " HAVING " + strings.Join(query.havingClauses, " AND ") // TODO handle AND or OR
+	}
+
+	countQuery := buildCountQuery(query.body)
+	countResult, _ := runCountQuery(countQuery, query.args)
+
+	performersQuery := query.body + query.sortAndPagination
+    performers, _ := qb.queryPerformers(performersQuery, query.args, nil)
 
 	return performers, countResult
 }

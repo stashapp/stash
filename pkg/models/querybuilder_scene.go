@@ -10,33 +10,67 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 )
 
-const scenesForPerformerQuery = `
-SELECT scenes.* FROM scenes
+var sceneMetadataColumns = []string {
+    "id",
+    "checksum",
+    "title",
+    "details",
+    "url",
+    "date",
+    "rating",
+    "size",
+    "duration",
+    "video_codec",
+    "audio_codec",
+    "format",
+    "width",
+    "height",
+    "framerate",
+    "bitrate",
+    "studio_id",
+    "created_at",
+    "updated_at",
+}
+
+func selectSceneMetadata() string {
+    var str strings.Builder
+
+    for _, colName := range sceneMetadataColumns {
+        str.WriteString("scenes." + colName + ", ")
+    }
+
+    returnVal := str.String()
+    return "SELECT " + returnVal[:len(returnVal)-2] + " FROM scenes "
+}
+
+
+
+var scenesForPerformerQuery = selectSceneMetadata() + `
 LEFT JOIN performers_scenes as performers_join on performers_join.scene_id = scenes.id
-LEFT JOIN performers on performers_join.performer_id = performers.id
-WHERE performers.id = ?
+WHERE performers_join.performer_id = ?
 GROUP BY scenes.id
 `
 
-const scenesForStudioQuery = `
-SELECT scenes.* FROM scenes
+var countScenesForPerformerQuery = `
+SELECT performer_id FROM performers_scenes as performers_join
+WHERE performer_id = ?
+GROUP BY scene_id
+`
+
+var scenesForStudioQuery = selectSceneMetadata() + `
 JOIN studios ON studios.id = scenes.studio_id
 WHERE studios.id = ?
 GROUP BY scenes.id
 `
-const scenesForMovieQuery = `
-SELECT scenes.* FROM scenes
+var scenesForMovieQuery = selectSceneMetadata() + `
 LEFT JOIN movies_scenes as movies_join on movies_join.scene_id = scenes.id
-LEFT JOIN movies on movies_join.movie_id = movies.id
-WHERE movies.id = ?
+WHERE movies_join.movie_id = ?
 GROUP BY scenes.id
 `
 
-const scenesForTagQuery = `
-SELECT scenes.* FROM scenes
+var scenesForTagQuery = selectSceneMetadata() + `
 LEFT JOIN scenes_tags as tags_join on tags_join.scene_id = scenes.id
-LEFT JOIN tags on tags_join.tag_id = tags.id
-WHERE tags.id = ?
+WHERE tags_join.tag_id = ?
 GROUP BY scenes.id
 `
 
@@ -149,8 +183,14 @@ func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
 	return qb.find(id, nil)
 }
 
-func (qb *SceneQueryBuilder) find(id int, tx *sqlx.Tx) (*Scene, error) {
+func (qb *SceneQueryBuilder) FindWithAllColumns(id int) (*Scene, error) {
 	query := "SELECT * FROM scenes WHERE id = ? LIMIT 1"
+	args := []interface{}{id}
+	return qb.queryScene(query, args, nil)
+}
+
+func (qb *SceneQueryBuilder) find(id int, tx *sqlx.Tx) (*Scene, error) {
+	query := selectSceneMetadata() + "WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryScene(query, args, tx)
 }
@@ -162,7 +202,7 @@ func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*Scene, error) {
 }
 
 func (qb *SceneQueryBuilder) FindByPath(path string) (*Scene, error) {
-	query := "SELECT * FROM scenes WHERE path = ? LIMIT 1"
+	query := selectSceneMetadata() + "WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
 	return qb.queryScene(query, args, nil)
 }
@@ -174,7 +214,7 @@ func (qb *SceneQueryBuilder) FindByPerformerID(performerID int) ([]*Scene, error
 
 func (qb *SceneQueryBuilder) CountByPerformerID(performerID int) (int, error) {
 	args := []interface{}{performerID}
-	return runCountQuery(buildCountQuery(scenesForPerformerQuery), args)
+	return runCountQuery(buildCountQuery(countScenesForPerformerQuery), args)
 }
 
 func (qb *SceneQueryBuilder) FindByStudioID(studioID int) ([]*Scene, error) {
@@ -219,12 +259,12 @@ func (qb *SceneQueryBuilder) Wall(q *string) ([]*Scene, error) {
 	if q != nil {
 		s = *q
 	}
-	query := "SELECT scenes.* FROM scenes WHERE scenes.details LIKE '%" + s + "%' ORDER BY RANDOM() LIMIT 80"
+	query := selectSceneMetadata() + "WHERE scenes.details LIKE '%" + s + "%' ORDER BY RANDOM() LIMIT 80"
 	return qb.queryScenes(query, nil, nil)
 }
 
 func (qb *SceneQueryBuilder) All() ([]*Scene, error) {
-	return qb.queryScenes(selectAll("scenes")+qb.getSceneSort(nil), nil, nil)
+	return qb.queryScenes(selectSceneMetadata() + qb.getSceneSort(nil), nil, nil)
 }
 
 func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]*Scene, int) {
@@ -238,17 +278,14 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	var whereClauses []string
 	var havingClauses []string
 	var args []interface{}
-	body := selectDistinctIDs("scenes")
+	body := selectSceneMetadata()
 	body = body + `
 		left join scene_markers on scene_markers.scene_id = scenes.id
 		left join performers_scenes as performers_join on performers_join.scene_id = scenes.id
 		left join movies_scenes as movies_join on movies_join.scene_id = scenes.id
-		left join performers on performers_join.performer_id = performers.id
-		left join movies on movies_join.movie_id = movies.id
 		left join studios as studio on studio.id = scenes.studio_id
 		left join galleries as gallery on gallery.scene_id = scenes.id
 		left join scenes_tags as tags_join on tags_join.scene_id = scenes.id
-		left join tags on tags_join.tag_id = tags.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -329,6 +366,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 			args = append(args, tagID)
 		}
 
+		body += " LEFT JOIN tags on tags_join.tag_id = tags.id"
 		whereClause, havingClause := getMultiCriterionClause("tags", "scenes_tags", "tag_id", tagsFilter)
 		whereClauses = appendClause(whereClauses, whereClause)
 		havingClauses = appendClause(havingClauses, havingClause)
@@ -339,6 +377,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 			args = append(args, performerID)
 		}
 
+        body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
 		whereClause, havingClause := getMultiCriterionClause("performers", "performers_scenes", "performer_id", performersFilter)
 		whereClauses = appendClause(whereClauses, whereClause)
 		havingClauses = appendClause(havingClauses, havingClause)
@@ -359,19 +398,35 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 			args = append(args, movieID)
 		}
 
+		body += " LEFT JOIN movies ON movies_join.movie_id = movies.id"
 		whereClause, havingClause := getMultiCriterionClause("movies", "movies_scenes", "movie_id", moviesFilter)
 		whereClauses = appendClause(whereClauses, whereClause)
 		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
-	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := executeFindQuery("scenes", body, args, sortAndPagination, whereClauses, havingClauses)
+	//idsResult, countResult := executeFindQuery("scenes", body, args, sortAndPagination, whereClauses, havingClauses)
 
-	var scenes []*Scene
-	for _, id := range idsResult {
-		scene, _ := qb.Find(id)
-		scenes = append(scenes, scene)
+	//var scenes []*Scene
+	//for _, id := range idsResult {
+		//scene, _ := qb.Find(id)
+		//scenes = append(scenes, scene)
+	//}
+
+	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
+
+	if len(whereClauses) > 0 {
+		body += " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
 	}
+	body += " GROUP BY scenes.id "
+	if len(havingClauses) > 0 {
+		body += " HAVING " + strings.Join(havingClauses, " AND ") // TODO handle AND or OR
+	}
+
+	countQuery := buildCountQuery(body)
+	countResult, _ := runCountQuery(countQuery, args)
+
+	scenesQuery := body + sortAndPagination
+    scenes, _ := qb.queryScenes(scenesQuery, args, nil)
 
 	return scenes, countResult
 }

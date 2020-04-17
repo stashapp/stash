@@ -48,7 +48,7 @@ func PerformerCtx(next http.Handler) http.Handler {
 		}
 
 		qb := models.NewPerformerQueryBuilder()
-		performer, err := qb.Find(performerID)
+		performer, err := qb.FindWithAllColumns(performerID)
 		if err != nil {
 			http.Error(w, http.StatusText(404), 404)
 			return
