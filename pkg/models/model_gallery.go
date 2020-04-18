@@ -88,7 +88,7 @@ func (g *Gallery) readZipFile(index int) ([]byte, error) {
 func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 	readCloser, err := zip.OpenReader(g.Path)
 	if err != nil {
-		logger.Warn("failed to read zip file %s", g.Path)
+		logger.Warnf("failed to read zip file %s", g.Path)
 		return nil, nil, err
 	}
 
