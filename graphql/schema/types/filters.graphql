@@ -86,6 +86,11 @@ input SceneFilterType {
   performers: MultiCriterionInput
 }
 
+input MovieFilterType {
+  """Filter to only include movies with this studio"""
+  studios: MultiCriterionInput
+}
+
 enum CriterionModifier {
   """="""
   EQUALS,

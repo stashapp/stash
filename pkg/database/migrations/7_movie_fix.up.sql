@@ -17,6 +17,7 @@ CREATE TABLE `movies` (
   `date` date,
   -- varchar(1) -> tinyint
   `rating` tinyint,
+  `studio_id` integer,
   `director` varchar(255),
   `synopsis` text,
   `front_image` blob not null,
@@ -24,7 +25,8 @@ CREATE TABLE `movies` (
   `checksum` varchar(255) not null,
   `url` varchar(255),
   `created_at` datetime not null,
-  `updated_at` datetime not null
+  `updated_at` datetime not null,
+  foreign key(`studio_id`) references `studios`(`id`) on delete set null
 );
 CREATE TABLE `movies_scenes` (
   `movie_id` integer,
@@ -41,6 +43,7 @@ CREATE UNIQUE INDEX `movies_checksum_unique` on `movies` (`checksum`);
 -- remove unique index on movies_scenes
 CREATE INDEX `index_movies_scenes_on_movie_id` on `movies_scenes` (`movie_id`);
 CREATE INDEX `index_movies_scenes_on_scene_id` on `movies_scenes` (`scene_id`);
+CREATE INDEX `index_movies_on_studio_id` on `movies` (`studio_id`);
 
 -- custom functions cannot accept NULL values, so massage the old data
 UPDATE `_movies_old` set `duration` = 0 WHERE `duration` IS NULL;

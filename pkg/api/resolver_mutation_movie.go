@@ -139,6 +139,14 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 		updatedMovie.Rating = sql.NullInt64{Int64: rating, Valid: true}
 	}
 
+	if input.StudioID != nil {
+		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
+		updatedMovie.StudioID = sql.NullInt64{Int64: studioID, Valid: true}
+	} else {
+		// studio must be nullable
+		updatedMovie.StudioID = sql.NullInt64{Valid: false}
+	}
+
 	if input.Director != nil {
 		updatedMovie.Director = sql.NullString{String: *input.Director, Valid: true}
 	}

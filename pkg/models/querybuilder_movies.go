@@ -16,8 +16,8 @@ func NewMovieQueryBuilder() MovieQueryBuilder {
 func (qb *MovieQueryBuilder) Create(newMovie Movie, tx *sqlx.Tx) (*Movie, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO movies (front_image, back_image, checksum, name, aliases, duration, date, rating, director, synopsis, url, created_at, updated_at)
-				VALUES (:front_image, :back_image, :checksum, :name, :aliases, :duration, :date, :rating, :director, :synopsis, :url, :created_at, :updated_at)
+		`INSERT INTO movies (front_image, back_image, checksum, name, aliases, duration, date, rating, studio_id, director, synopsis, url, created_at, updated_at)
+				VALUES (:front_image, :back_image, :checksum, :name, :aliases, :duration, :date, :rating, :studio_id, :director, :synopsis, :url, :created_at, :updated_at)
 		`,
 		newMovie,
 	)
@@ -109,9 +109,12 @@ func (qb *MovieQueryBuilder) All() ([]*Movie, error) {
 	return qb.queryMovies(selectAll("movies")+qb.getMovieSort(nil), nil, nil)
 }
 
-func (qb *MovieQueryBuilder) Query(findFilter *FindFilterType) ([]*Movie, int) {
+func (qb *MovieQueryBuilder) Query(movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int) {
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
+	}
+	if movieFilter == nil {
+		movieFilter = &MovieFilterType{}
 	}
 
 	var whereClauses []string
@@ -128,6 +131,16 @@ func (qb *MovieQueryBuilder) Query(findFilter *FindFilterType) ([]*Movie, int) {
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		whereClauses = append(whereClauses, clause)
 		args = append(args, thisArgs...)
+	}
+
+	if studiosFilter := movieFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
+		for _, studioID := range studiosFilter.Value {
+			args = append(args, studioID)
+		}
+
+		whereClause, havingClause := getMultiCriterionClause("studio", "", "studio_id", studiosFilter)
+		whereClauses = appendClause(whereClauses, whereClause)
+		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
 	sortAndPagination := qb.getMovieSort(findFilter) + getPagination(findFilter)

@@ -25,7 +25,7 @@ type Query {
    """Find a movie by ID"""
   findMovie(id: ID!): Movie
   """A function which queries Movie objects"""
-  findMovies(filter: FindFilterType): FindMoviesResultType!
+  findMovies(movie_filter: MovieFilterType, filter: FindFilterType): FindMoviesResultType!
 
   findGallery(id: ID!): Gallery
   findGalleries(filter: FindFilterType): FindGalleriesResultType!

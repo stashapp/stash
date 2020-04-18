@@ -8,6 +8,7 @@ import {
   DetailsEditNavbar,
   LoadingIndicator,
   Modal,
+  StudioSelect,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { Table, Form } from "react-bootstrap";
@@ -32,6 +33,7 @@ export const Movie: React.FC = () => {
   const [duration, setDuration] = useState<number | undefined>(undefined);
   const [date, setDate] = useState<string | undefined>(undefined);
   const [rating, setRating] = useState<number | undefined>(undefined);
+  const [studioId, setStudioId] = useState<string>();
   const [director, setDirector] = useState<string | undefined>(undefined);
   const [synopsis, setSynopsis] = useState<string | undefined>(undefined);
   const [url, setUrl] = useState<string | undefined>(undefined);
@@ -63,6 +65,7 @@ export const Movie: React.FC = () => {
     setDuration(state.duration ?? undefined);
     setDate(state.date ?? undefined);
     setRating(state.rating ?? undefined);
+    setStudioId(state?.studio?.id ?? undefined);
     setDirector(state.director ?? undefined);
     setSynopsis(state.synopsis ?? undefined);
     setUrl(state.url ?? undefined);
@@ -113,6 +116,7 @@ export const Movie: React.FC = () => {
       duration,
       date,
       rating,
+      studio_id: studioId,
       director,
       synopsis,
       url,
@@ -219,6 +223,18 @@ export const Movie: React.FC = () => {
               isEditing,
               onChange: setDate,
             })}
+            <tr>
+              <td>Studio</td>
+              <td>
+                <StudioSelect
+                  isDisabled={!isEditing}
+                  onSelect={(items) =>
+                    setStudioId(items.length > 0 ? items[0]?.id : undefined)
+                  }
+                  ids={studioId ? [studioId] : []}
+                />
+              </td>
+            </tr>
             {TableUtils.renderInputGroup({
               title: "Director",
               value: director,

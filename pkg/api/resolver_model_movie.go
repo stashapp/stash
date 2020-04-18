@@ -53,6 +53,15 @@ func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*int, er
 	return nil, nil
 }
 
+func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (*models.Studio, error) {
+	qb := models.NewStudioQueryBuilder()
+	if obj.StudioID.Valid {
+		return qb.Find(int(obj.StudioID.Int64), nil)
+	}
+
+	return nil, nil
+}
+
 func (r *movieResolver) Director(ctx context.Context, obj *models.Movie) (*string, error) {
 	if obj.Director.Valid {
 		return &obj.Director.String, nil

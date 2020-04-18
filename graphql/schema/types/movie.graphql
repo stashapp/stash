@@ -6,6 +6,7 @@ type Movie {
   duration: Int
   date: String
   rating: Int
+  studio: Studio
   director: String
   synopsis: String
   url: String
@@ -21,6 +22,7 @@ input MovieCreateInput {
   duration: Int
   date: String
   rating: Int
+  studio_id: ID
   director: String
   synopsis: String
   url: String
@@ -36,6 +38,7 @@ input MovieUpdateInput {
   duration: Int
   date: String
   rating: Int
+  studio_id: ID
   director: String
   synopsis: String
   url: String

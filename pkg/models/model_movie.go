@@ -14,6 +14,7 @@ type Movie struct {
 	Duration   sql.NullInt64   `db:"duration" json:"duration"`
 	Date       SQLiteDate      `db:"date" json:"date"`
 	Rating     sql.NullInt64   `db:"rating" json:"rating"`
+	StudioID   sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
 	Director   sql.NullString  `db:"director" json:"director"`
 	Synopsis   sql.NullString  `db:"synopsis" json:"synopsis"`
 	URL        sql.NullString  `db:"url" json:"url"`
