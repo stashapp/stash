@@ -28,7 +28,6 @@ CREATE TABLE `performers` (
 );
 CREATE UNIQUE INDEX `performers_checksum_unique` on `performers` (`checksum`);
 CREATE INDEX `index_performers_on_name` on `performers` (`name`);
-CREATE INDEX `index_performers_on_checksum` on `performers` (`checksum`);
 INSERT INTO `performers` (
   `id`,
   `checksum`,
