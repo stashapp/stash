@@ -10,40 +10,38 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 )
 
-var sceneMetadataColumns = []string {
-    "id",
-    "checksum",
-    "title",
-    "details",
-    "url",
-    "date",
-    "rating",
-    "size",
-    "duration",
-    "video_codec",
-    "audio_codec",
-    "format",
-    "width",
-    "height",
-    "framerate",
-    "bitrate",
-    "studio_id",
-    "created_at",
-    "updated_at",
+var sceneMetadataColumns = []string{
+	"id",
+	"checksum",
+	"title",
+	"details",
+	"url",
+	"date",
+	"rating",
+	"size",
+	"duration",
+	"video_codec",
+	"audio_codec",
+	"format",
+	"width",
+	"height",
+	"framerate",
+	"bitrate",
+	"studio_id",
+	"created_at",
+	"updated_at",
 }
 
 func selectSceneMetadata() string {
-    var str strings.Builder
+	var str strings.Builder
 
-    for _, colName := range sceneMetadataColumns {
-        str.WriteString("scenes." + colName + ", ")
-    }
+	for _, colName := range sceneMetadataColumns {
+		str.WriteString("scenes." + colName + ", ")
+	}
 
-    returnVal := str.String()
-    return "SELECT " + returnVal[:len(returnVal)-2] + " FROM scenes "
+	returnVal := str.String()
+	return "SELECT " + returnVal[:len(returnVal)-2] + " FROM scenes "
 }
-
-
 
 var scenesForPerformerQuery = selectSceneMetadata() + `
 LEFT JOIN performers_scenes as performers_join on performers_join.scene_id = scenes.id
@@ -264,7 +262,7 @@ func (qb *SceneQueryBuilder) Wall(q *string) ([]*Scene, error) {
 }
 
 func (qb *SceneQueryBuilder) All() ([]*Scene, error) {
-	return qb.queryScenes(selectSceneMetadata() + qb.getSceneSort(nil), nil, nil)
+	return qb.queryScenes(selectSceneMetadata()+qb.getSceneSort(nil), nil, nil)
 }
 
 func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]*Scene, int) {
@@ -377,7 +375,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 			args = append(args, performerID)
 		}
 
-        body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
+		body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
 		whereClause, havingClause := getMultiCriterionClause("performers", "performers_scenes", "performer_id", performersFilter)
 		whereClauses = appendClause(whereClauses, whereClause)
 		havingClauses = appendClause(havingClauses, havingClause)
@@ -408,8 +406,8 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 
 	//var scenes []*Scene
 	//for _, id := range idsResult {
-		//scene, _ := qb.Find(id)
-		//scenes = append(scenes, scene)
+	//scene, _ := qb.Find(id)
+	//scenes = append(scenes, scene)
 	//}
 
 	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
@@ -426,7 +424,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	countResult, _ := runCountQuery(countQuery, args)
 
 	scenesQuery := body + sortAndPagination
-    scenes, _ := qb.queryScenes(scenesQuery, args, nil)
+	scenes, _ := qb.queryScenes(scenesQuery, args, nil)
 
 	return scenes, countResult
 }

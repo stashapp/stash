@@ -3,46 +3,46 @@ package models
 import (
 	"database/sql"
 	"strconv"
-    "strings"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 )
 
-var metadataColumns = []string {
-    "id",
-    "checksum",
-    "name",
-    "gender",
-    "url",
-    "twitter",
-    "instagram",
-    "birthdate",
-    "ethnicity",
-    "country",
-    "eye_color",
-    "height",
-    "measurements",
-    "fake_tits",
-    "career_length",
-    "tattoos",
-    "piercings",
-    "aliases",
-    "favorite",
-    "created_at",
-    "updated_at",
+var metadataColumns = []string{
+	"id",
+	"checksum",
+	"name",
+	"gender",
+	"url",
+	"twitter",
+	"instagram",
+	"birthdate",
+	"ethnicity",
+	"country",
+	"eye_color",
+	"height",
+	"measurements",
+	"fake_tits",
+	"career_length",
+	"tattoos",
+	"piercings",
+	"aliases",
+	"favorite",
+	"created_at",
+	"updated_at",
 }
 
 func selectPerformerMetadata() string {
-    var str strings.Builder
+	var str strings.Builder
 
-    for _, colName := range metadataColumns {
-        str.WriteString("performers." + colName + ", ")
-    }
+	for _, colName := range metadataColumns {
+		str.WriteString("performers." + colName + ", ")
+	}
 
-    returnVal := str.String()
-    return "SELECT " + returnVal[:len(returnVal)-2] + " FROM performers "
+	returnVal := str.String()
+	return "SELECT " + returnVal[:len(returnVal)-2] + " FROM performers "
 }
 
 type PerformerQueryBuilder struct{}
@@ -113,7 +113,7 @@ func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
 }
 
 func (qb *PerformerQueryBuilder) FindWithAllColumns(id int) (*Performer, error) {
-    query := "SELECT * FROM performers WHERE id = ? LIMIT 1"
+	query := "SELECT * FROM performers WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	results, err := qb.queryPerformers(query, args, nil)
 	if err != nil || len(results) < 1 {
@@ -252,7 +252,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	countResult, _ := runCountQuery(countQuery, query.args)
 
 	performersQuery := query.body + query.sortAndPagination
-    performers, _ := qb.queryPerformers(performersQuery, query.args, nil)
+	performers, _ := qb.queryPerformers(performersQuery, query.args, nil)
 
 	return performers, countResult
 }

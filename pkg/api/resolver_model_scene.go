@@ -89,17 +89,17 @@ func (r *sceneResolver) IsStreamable(ctx context.Context, obj *models.Scene) (bo
 
 func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) ([]*models.SceneMarker, error) {
 	qb := models.NewSceneMarkerQueryBuilder()
-    return qb.FindBySceneID(obj.ID, nil)
+	return qb.FindBySceneID(obj.ID, nil)
 }
 
 func (r *sceneResolver) Gallery(ctx context.Context, obj *models.Scene) (*models.Gallery, error) {
 	qb := models.NewGalleryQueryBuilder()
-    return qb.FindBySceneID(obj.ID, nil)
+	return qb.FindBySceneID(obj.ID, nil)
 }
 
 func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.Studio, error) {
 	qb := models.NewStudioQueryBuilder()
-    return qb.FindBySceneID(obj.ID)
+	return qb.FindBySceneID(obj.ID)
 }
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*models.SceneMovie, error) {
@@ -136,10 +136,10 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*model
 
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {
 	qb := models.NewTagQueryBuilder()
-    return qb.FindBySceneID(obj.ID, nil)
+	return qb.FindBySceneID(obj.ID, nil)
 }
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.Performer, error) {
 	qb := models.NewPerformerQueryBuilder()
-    return qb.FindBySceneID(obj.ID, nil)
+	return qb.FindBySceneID(obj.ID, nil)
 }
