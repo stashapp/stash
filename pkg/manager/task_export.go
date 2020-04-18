@@ -84,15 +84,15 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
 }
 func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask, tx *sqlx.Tx) {
 	defer wg.Done()
-	for scene := range jobChan {
-		studioQB := models.NewStudioQueryBuilder()
-		movieQB := models.NewMovieQueryBuilder()
-		galleryQB := models.NewGalleryQueryBuilder()
-		performerQB := models.NewPerformerQueryBuilder()
-		tagQB := models.NewTagQueryBuilder()
-		sceneMarkerQB := models.NewSceneMarkerQueryBuilder()
-		joinQB := models.NewJoinsQueryBuilder()
+	studioQB := models.NewStudioQueryBuilder()
+	movieQB := models.NewMovieQueryBuilder()
+	galleryQB := models.NewGalleryQueryBuilder()
+	performerQB := models.NewPerformerQueryBuilder()
+	tagQB := models.NewTagQueryBuilder()
+	sceneMarkerQB := models.NewSceneMarkerQueryBuilder()
+	joinQB := models.NewJoinsQueryBuilder()
 
+	for scene := range jobChan {
 		newSceneJSON := jsonschema.Scene{
 			CreatedAt: models.JSONTime{Time: scene.CreatedAt.Timestamp},
 			UpdatedAt: models.JSONTime{Time: scene.UpdatedAt.Timestamp},
