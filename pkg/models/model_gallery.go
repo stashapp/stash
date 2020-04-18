@@ -88,7 +88,7 @@ func (g *Gallery) readZipFile(index int) ([]byte, error) {
 func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 	readCloser, err := zip.OpenReader(g.Path)
 	if err != nil {
-		logger.Warn("failed to read zip file")
+		logger.Warn("failed to read zip file %s", g.Path)
 		return nil, nil, err
 	}
 
@@ -111,6 +111,39 @@ func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 		b := filteredFiles[j]
 		return utils.NaturalCompare(a.Name, b.Name)
 	})
+	cover := Contains(filteredFiles, "cover.jpg") // first image with cover.jpg in the name
+	if cover >= 0 {                               // will be moved to the start
+		filteredFiles = Reorder(filteredFiles, cover)
+	}
 
 	return filteredFiles, readCloser, nil
+}
+
+func Contains(a []*zip.File, x string) int { // return index of first occurenece of string x in name of zip contents
+	for i, n := range a { // -1 otherwise
+		if strings.Contains(n.Name, x) {
+			logger.Debugf("Cover found in zip file %s.Position:%d", n.Name, i)
+			return i
+		}
+	}
+	return -1
+}
+
+func Reorder(a []*zip.File, toFirst int) []*zip.File { // reorder slice so that element with position toFirst gets at the start
+	var result []*zip.File
+	switch {
+	case toFirst < 0 || toFirst >= len(a):
+		return nil
+	case toFirst == 0:
+		return a
+	default:
+		result = append(result, a[toFirst])
+		for i := 0; i < toFirst; i++ {
+			result = append(result, a[i])
+		}
+		for i := toFirst + 1; i < len(a); i++ {
+			result = append(result, a[i])
+		}
+	}
+	return result
 }
