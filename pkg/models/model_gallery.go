@@ -113,7 +113,10 @@ func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 	})
 	cover := Contains(filteredFiles, "cover.jpg") // first image with cover.jpg in the name
 	if cover >= 0 {                               // will be moved to the start
-		filteredFiles = Reorder(filteredFiles, cover)
+		reorderedFiles := Reorder(filteredFiles, cover)
+		if reorderedFiles != nil {
+			return reorderedFiles, readCloser, nil
+		}
 	}
 
 	return filteredFiles, readCloser, nil
