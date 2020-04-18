@@ -402,14 +402,6 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
-	//idsResult, countResult := executeFindQuery("scenes", body, args, sortAndPagination, whereClauses, havingClauses)
-
-	//var scenes []*Scene
-	//for _, id := range idsResult {
-	//scene, _ := qb.Find(id)
-	//scenes = append(scenes, scene)
-	//}
-
 	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
 
 	if len(whereClauses) > 0 {
