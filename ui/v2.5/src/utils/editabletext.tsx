@@ -63,20 +63,20 @@ const renderInputGroup = (options: {
         {options.value}
       </a>
     );
-  } else {
-    return (
-      <Form.Control
-        className="text-input"
-        readOnly={!options.isEditing}
-        plaintext={!options.isEditing}
-        value={options.value ?? ""}
-        placeholder={options.placeholder ?? options.title}
-        onChange={(event: React.FormEvent<HTMLInputElement>) =>
-          options.onChange(event.currentTarget.value)
-        }
-      />
-    );
   }
+    
+  return (
+    <Form.Control
+      className="text-input"
+      readOnly={!options.isEditing}
+      plaintext={!options.isEditing}
+      value={options.value ?? ""}
+      placeholder={options.placeholder ?? options.title}
+      onChange={(event: React.FormEvent<HTMLInputElement>) =>
+        options.onChange(event.currentTarget.value)
+      }
+    />
+  );
 }
 
 const renderDurationInput = (options: {
@@ -86,7 +86,7 @@ const renderDurationInput = (options: {
   asString?: boolean
   onChange: (value: string | undefined) => void;
 }) => {
-  let numericValue: number | undefined = undefined;
+  let numericValue: number | undefined;
   if (options.value) {
     if (!options.asString) {
       try {
@@ -100,7 +100,7 @@ const renderDurationInput = (options: {
   }
   
   if (!options.isEditing) {
-    let durationString = undefined;
+    let durationString;
     if (numericValue !== undefined) {
       durationString = DurationUtils.secondsToString(numericValue);
     }
@@ -108,26 +108,26 @@ const renderDurationInput = (options: {
     return (
       <Form.Control
         className="text-input"
-        readOnly={true}
-        plaintext={true}
+        readOnly
+        plaintext
         defaultValue={durationString}
       />
     );
-  } else {
-    return (
-      <DurationInput
-        disabled={!options.isEditing}
-        numericValue={numericValue}
-        onValueChange={(valueAsNumber: number, valueAsString? : string) => { 
-          if (!options.asString) {
-            valueAsString = valueAsNumber !== undefined ? valueAsNumber.toString() : undefined;
-          }
-
-          options.onChange(valueAsString);
-        }}
-      />
-    );
   }
+  return (
+    <DurationInput
+      disabled={!options.isEditing}
+      numericValue={numericValue}
+      onValueChange={(valueAsNumber: number, valueAsString? : string) => { 
+        let value = valueAsString;
+        if (!options.asString) {
+          value = valueAsNumber !== undefined ? valueAsNumber.toString() : undefined;
+        }
+
+        options.onChange(value);
+      }}
+    />
+  );
 }
 
 const renderHtmlSelect = (options: {
@@ -140,31 +140,30 @@ const renderHtmlSelect = (options: {
     return (
       <Form.Control
         className="text-input"
-        readOnly={true}
-        plaintext={true}
+        readOnly
+        plaintext
         defaultValue={options.value}
       />
     );
-  } else {
-    return (
-      <Form.Control
-        as="select"
-        className="input-control"
-        disabled={!options.isEditing}
-        plaintext={!options.isEditing}
-        value={options.value?.toString()}
-        onChange={(event: React.FormEvent<HTMLSelectElement>) =>
-          options.onChange(event.currentTarget.value)
-        }
-      >
-        {options.selectOptions.map((opt) => (
-          <option value={opt} key={opt}>
-            {opt}
-          </option>
-        ))}
-      </Form.Control>
-    );
   }
+  return (
+    <Form.Control
+      as="select"
+      className="input-control"
+      disabled={!options.isEditing}
+      plaintext={!options.isEditing}
+      value={options.value?.toString()}
+      onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+        options.onChange(event.currentTarget.value)
+      }
+    >
+      {options.selectOptions.map((opt) => (
+        <option value={opt} key={opt}>
+          {opt}
+        </option>
+      ))}
+    </Form.Control>
+  );
 }
 
 // TODO: isediting
