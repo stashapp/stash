@@ -3,6 +3,7 @@ type Movie {
   checksum: String!
   name: String!
   aliases: String
+  """Duration in seconds"""
   duration: Int
   date: String
   rating: Int
@@ -19,6 +20,7 @@ type Movie {
 input MovieCreateInput {
   name: String!
   aliases: String
+  """Duration in seconds"""
   duration: Int
   date: String
   rating: Int
