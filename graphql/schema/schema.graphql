@@ -86,6 +86,13 @@ type Query {
   allMovies: [Movie!]!
   allTags: [Tag!]!
 
+  # Get everything with minimal metadata
+
+  allPerformersSlim: [Performer!]!
+  allStudiosSlim: [Studio!]!
+  allMoviesSlim: [Movie!]!
+  allTagsSlim: [Tag!]!
+
   # Version
   version: Version!
   
