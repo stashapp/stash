@@ -12,7 +12,7 @@ import (
 
 var sceneMetadataColumns = []string{
 	"id",
-    "path",
+	"path",
 	"checksum",
 	"title",
 	"details",
@@ -31,6 +31,7 @@ var sceneMetadataColumns = []string{
 	"studio_id",
 	"created_at",
 	"updated_at",
+	"o_counter",
 }
 
 func selectSceneMetadata() string {
