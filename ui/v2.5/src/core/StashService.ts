@@ -187,7 +187,7 @@ export class StashService {
   }
 
   public static useFindMovies(filter: ListFilterModel) {
-    let movieFilter = filter.makeMovieFilter();
+    const movieFilter = filter.makeMovieFilter();
 
     return GQL.useFindMoviesQuery({
       variables: {
