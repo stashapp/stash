@@ -111,9 +111,10 @@ func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 		b := filteredFiles[j]
 		return utils.NaturalCompare(a.Name, b.Name)
 	})
-	cover := Contains(filteredFiles, "cover.jpg") // first image with cover.jpg in the name
+
+	cover := contains(filteredFiles, "cover.jpg") // first image with cover.jpg in the name
 	if cover >= 0 {                               // will be moved to the start
-		reorderedFiles := Reorder(filteredFiles, cover)
+		reorderedFiles := reorder(filteredFiles, cover)
 		if reorderedFiles != nil {
 			return reorderedFiles, readCloser, nil
 		}
@@ -122,8 +123,9 @@ func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 	return filteredFiles, readCloser, nil
 }
 
-func Contains(a []*zip.File, x string) int { // return index of first occurenece of string x in name of zip contents
-	for i, n := range a { // -1 otherwise
+// return index of first occurenece of string x in name of zip contents, -1 otherwise
+func contains(a []*zip.File, x string) int {
+	for i, n := range a {
 		if strings.Contains(n.Name, x) {
 			logger.Debugf("Cover found in zip file %s.Position:%d", n.Name, i)
 			return i
@@ -132,21 +134,20 @@ func Contains(a []*zip.File, x string) int { // return index of first occurenece
 	return -1
 }
 
-func Reorder(a []*zip.File, toFirst int) []*zip.File { // reorder slice so that element with position toFirst gets at the start
-	var result []*zip.File
+// reorder slice so that element with position toFirst gets at the start
+func reorder(a []*zip.File, toFirst int) []*zip.File {
+	var first *zip.File
 	switch {
 	case toFirst < 0 || toFirst >= len(a):
 		return nil
 	case toFirst == 0:
 		return a
 	default:
-		result = append(result, a[toFirst])
-		for i := 0; i < toFirst; i++ {
-			result = append(result, a[i])
-		}
-		for i := toFirst + 1; i < len(a); i++ {
-			result = append(result, a[i])
-		}
+		first = a[toFirst]
+		copy(a[toFirst:], a[toFirst+1:])     // Shift a[toFirst+1:] left one index removing a[toFirst] element
+		a[len(a)-1] = nil                    // Nil now unused element for garbage collection
+		a = a[:len(a)-1]                     // Truncate slice
+		a = append([]*zip.File{first}, a...) // Push first to the start of the slice
 	}
-	return result
+	return a
 }
