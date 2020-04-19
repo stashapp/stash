@@ -19,7 +19,7 @@ import (
 
 var DB *sqlx.DB
 var dbPath string
-var appSchemaVersion uint = 6
+var appSchemaVersion uint = 7
 var databaseSchemaVersion uint
 
 const sqlite3Driver = "sqlite3_regexp"

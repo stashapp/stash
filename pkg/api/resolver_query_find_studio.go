@@ -25,3 +25,8 @@ func (r *queryResolver) AllStudios(ctx context.Context) ([]*models.Studio, error
 	qb := models.NewStudioQueryBuilder()
 	return qb.All()
 }
+
+func (r *queryResolver) AllStudiosSlim(ctx context.Context) ([]*models.Studio, error) {
+	qb := models.NewStudioQueryBuilder()
+	return qb.AllSlim()
+}
