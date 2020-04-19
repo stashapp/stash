@@ -145,7 +145,7 @@ export const Studio: React.FC = () => {
         accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {studio.name ?? "studio"}?</p>
+        <p>Are you sure you want to delete {name ?? "studio"}?</p>
       </Modal>
     );
   }
@@ -164,7 +164,7 @@ export const Studio: React.FC = () => {
           <tbody>
             {TableUtils.renderInputGroup({
               title: "Name",
-              value: studio.name ?? "",
+              value: name ?? "",
               isEditing: !!isEditing,
               onChange: setName,
             })}
@@ -177,7 +177,7 @@ export const Studio: React.FC = () => {
           </tbody>
         </Table>
         <DetailsEditNavbar
-          objectName={studio.name ?? "studio"}
+          objectName={name ?? "studio"}
           isNew={isNew}
           isEditing={isEditing}
           onToggleEdit={() => setIsEditing(!isEditing)}

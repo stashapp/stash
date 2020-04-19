@@ -33,7 +33,7 @@ func (qb *TagQueryBuilder) Create(newTag Tag, tx *sqlx.Tx) (*Tag, error) {
 	if err := tx.Get(&newTag, `SELECT * FROM tags WHERE id = ? LIMIT 1`, studioID); err != nil {
 		return nil, err
 	}
-	
+
 	return &newTag, nil
 }
 
@@ -134,6 +134,10 @@ func (qb *TagQueryBuilder) Count() (int, error) {
 
 func (qb *TagQueryBuilder) All() ([]*Tag, error) {
 	return qb.queryTags(selectAll("tags")+qb.getTagSort(nil), nil, nil)
+}
+
+func (qb *TagQueryBuilder) AllSlim() ([]*Tag, error) {
+	return qb.queryTags("SELECT tags.id, tags.name FROM tags "+qb.getTagSort(nil), nil, nil)
 }
 
 func (qb *TagQueryBuilder) Query(findFilter *FindFilterType) ([]*Tag, int) {

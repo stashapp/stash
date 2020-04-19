@@ -19,24 +19,24 @@ query AllTags {
 }
 
 query AllPerformersForFilter {
-  allPerformers {
+  allPerformersSlim {
     ...SlimPerformerData
   }
 }
 
 query AllStudiosForFilter {
-  allStudios {
+  allStudiosSlim {
     ...SlimStudioData
   }
 }
 query AllMoviesForFilter {
-  allMovies {
+  allMoviesSlim {
     ...SlimMovieData
   }
 }
 
 query AllTagsForFilter {
-  allTags {
+  allTagsSlim {
     id
     name
   }

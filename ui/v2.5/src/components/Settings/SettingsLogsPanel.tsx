@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useReducer, useState } from "react";
 import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
@@ -68,15 +68,24 @@ class LogEntry {
 const MAX_LOG_ENTRIES = 200;
 const logLevels = ["Debug", "Info", "Warning", "Error"];
 
+const logReducer = (existingEntries:LogEntry[], newEntries:LogEntry[]) => (
+  [...newEntries.reverse(), ...existingEntries]
+);
+
 export const SettingsLogsPanel: React.FC = () => {
   const { data, error } = StashService.useLoggingSubscribe();
   const { data: existingData } = StashService.useLogs();
+  const [currentData, dispatchLogUpdate] = useReducer(logReducer, []);
   const [logLevel, setLogLevel] = useState<string>("Info");
 
-  const oldData = (existingData?.logs ?? []).map((e) => new LogEntry(e));
-  const newData = (data?.loggingSubscribe ?? []).map((e) => new LogEntry(e));
 
-  const filteredLogEntries = [...newData.reverse(), ...oldData]
+  useEffect(() => {
+    const newData = (data?.loggingSubscribe ?? []).map((e) => new LogEntry(e));
+    dispatchLogUpdate(newData)
+  }, [data]);
+
+  const oldData = (existingData?.logs ?? []).map((e) => new LogEntry(e));
+  const filteredLogEntries = [...currentData, ...oldData]
     .filter(filterByLogLevel)
     .slice(0, MAX_LOG_ENTRIES);
 

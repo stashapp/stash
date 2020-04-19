@@ -183,7 +183,7 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
 export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = StashService.useAllPerformersForFilter();
 
-  const normalizedData = data?.allPerformers ?? [];
+  const normalizedData = data?.allPerformersSlim ?? [];
   const items: Option[] = normalizedData.map((item) => ({
     value: item.id,
     label: item.name ?? "",
@@ -216,7 +216,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
 export const StudioSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = StashService.useAllStudiosForFilter();
 
-  const normalizedData = data?.allStudios ?? [];
+  const normalizedData = data?.allStudiosSlim ?? [];
 
   const items = (normalizedData.length > 0
     ? [{ name: "None", id: "0" }, ...normalizedData]
@@ -254,7 +254,7 @@ export const StudioSelect: React.FC<IFilterProps> = (props) => {
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = StashService.useAllMoviesForFilter();
 
-  const normalizedData = data?.allMovies ?? [];
+  const normalizedData = data?.allMoviesSlim ?? [];
 
   const items = (normalizedData.length > 0
     ? [{ name: "None", id: "0" }, ...normalizedData]
@@ -299,7 +299,7 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
 
   const selectedTags = props.ids ?? selectedIds;
 
-  const tags = data?.allTags ?? [];
+  const tags = data?.allTagsSlim ?? [];
   const selected = tags
     .filter((tag) => selectedTags.indexOf(tag.id) !== -1)
     .map((tag) => ({ value: tag.id, label: tag.name }));
@@ -317,11 +317,10 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
 
       if (result?.data?.tagCreate) {
         setSelectedIds([...selectedIds, result.data.tagCreate.id]);
-        props.onSelect?.(
-          [...tags, result.data.tagCreate].filter(
-            (item) => selectedIds.indexOf(item.id) !== -1
-          )
-        );
+        props.onSelect?.([
+          ...tags.filter((item) => selectedIds.indexOf(item.id) !== -1),
+          result.data.tagCreate,
+        ]);
         setLoading(false);
 
         Toast.success({

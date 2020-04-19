@@ -12,7 +12,7 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { Table, Form } from "react-bootstrap";
-import { TableUtils, ImageUtils } from "src/utils";
+import { TableUtils, ImageUtils, EditableTextUtils, TextUtils } from "src/utils";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 
 export const Movie: React.FC = () => {
@@ -177,7 +177,7 @@ export const Movie: React.FC = () => {
         accept={{ text: "Delete", variant: "danger", onClick: onDelete }}
         cancel={{ onClick: () => setIsDeleteAlertOpen(false) }}
       >
-        <p>Are you sure you want to delete {movie.name ?? "movie"}?</p>
+        <p>Are you sure you want to delete {name ?? "movie"}?</p>
       </Modal>
     );
   }
@@ -200,7 +200,7 @@ export const Movie: React.FC = () => {
           <tbody>
             {TableUtils.renderInputGroup({
               title: "Name",
-              value: movie.name ?? "",
+              value: name ?? "",
               isEditing: !!isEditing,
               onChange: setName,
             })}
@@ -210,12 +210,13 @@ export const Movie: React.FC = () => {
               isEditing,
               onChange: setAliases,
             })}
-            {TableUtils.renderInputGroup({
+            {TableUtils.renderDurationInput({
               title: "Duration",
               value: duration ? duration.toString() : "",
               isEditing,
-              onChange: (value: string) =>
-                setDuration(Number.parseInt(value, 10)),
+              onChange: (value: string | undefined) =>
+                setDuration(value ? Number.parseInt(value, 10) : undefined),
+              asString: true,
             })}
             {TableUtils.renderInputGroup({
               title: "Date (YYYY-MM-DD)",
@@ -254,14 +255,14 @@ export const Movie: React.FC = () => {
 
         <Form.Group controlId="url">
           <Form.Label>URL</Form.Label>
-          <Form.Control
-            className="text-input"
-            readOnly={!isEditing}
-            onChange={(newValue: React.FormEvent<HTMLTextAreaElement>) =>
-              setUrl(newValue.currentTarget.value)
-            }
-            value={url}
-          />
+          <div>
+            {EditableTextUtils.renderInputGroup({
+              isEditing,
+              onChange: setUrl,
+              value: url,
+              url: TextUtils.sanitiseURL(url),
+            })}
+          </div>
         </Form.Group>
 
         <Form.Group controlId="synopsis">
@@ -278,7 +279,7 @@ export const Movie: React.FC = () => {
         </Form.Group>
 
         <DetailsEditNavbar
-          objectName={movie.name ?? "movie"}
+          objectName={name ?? "movie"}
           isNew={isNew}
           isEditing={isEditing}
           onToggleEdit={() => setIsEditing(!isEditing)}

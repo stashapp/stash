@@ -177,7 +177,7 @@ export const Performer: React.FC = () => {
       {performer.url && (
         <Button className="minimal">
           <a
-            href={performer.url}
+            href={TextUtils.sanitiseURL(performer.url)}
             className="link"
             target="_blank"
             rel="noopener noreferrer"
@@ -189,7 +189,7 @@ export const Performer: React.FC = () => {
       {performer.twitter && (
         <Button className="minimal">
           <a
-            href={`https://www.twitter.com/${performer.twitter}`}
+            href={TextUtils.sanitiseURL(performer.twitter, TextUtils.twitterURL)}
             className="twitter"
             target="_blank"
             rel="noopener noreferrer"
@@ -201,7 +201,7 @@ export const Performer: React.FC = () => {
       {performer.instagram && (
         <Button className="minimal">
           <a
-            href={`https://www.instagram.com/${performer.instagram}`}
+            href={TextUtils.sanitiseURL(performer.instagram, TextUtils.instagramURL)}
             className="instagram"
             target="_blank"
             rel="noopener noreferrer"
@@ -213,11 +213,19 @@ export const Performer: React.FC = () => {
     </span>
   );
 
+  function renderPerformerImage() {
+    if (imagePreview) {
+      return (
+        <img className="photo" src={imagePreview} alt="Performer" />
+      );
+    }
+  }
+
   function renderNewView() {
     return (
       <div className="row new-view">
         <div className="col-4">
-          <img className="photo" src={imagePreview} alt="Performer" />
+          {renderPerformerImage()}
         </div>
         <div className="col-6">
           <h2>Create Performer</h2>
@@ -242,11 +250,6 @@ export const Performer: React.FC = () => {
       </div>
       <div className="col col-sm-6">
         <div className="row">
-          <div className="image-container col-6 d-block d-sm-none">
-            <Button variant="link" onClick={() => setLightboxIsOpen(true)}>
-              <img className="performer" src={imagePreview} alt="Performer" />
-            </Button>
-          </div>
           <div className="performer-head col-6 col-sm-12">
             <h2>
               {performer.name}

@@ -27,6 +27,7 @@ type ScrapedScenePerformer {
   """Set if performer matched"""
   id: ID
   name: String!
+  gender: String
   url: String
   twitter: String
   instagram: String
@@ -54,7 +55,6 @@ type ScrapedSceneMovie {
   director: String
   synopsis: String
   url: String
-  
 }
 
 type ScrapedSceneStudio {

@@ -1,7 +1,7 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
-import { Button, Form, Popover, OverlayTrigger, Table } from "react-bootstrap";
+import { Button, Popover, OverlayTrigger, Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import {
@@ -11,7 +11,7 @@ import {
   ScrapePerformerSuggest,
   LoadingIndicator,
 } from "src/components/Shared";
-import { ImageUtils, TableUtils } from "src/utils";
+import { ImageUtils, TableUtils, TextUtils, EditableTextUtils } from "src/utils";
 import { useToast } from "src/hooks";
 
 interface IPerformerDetails {
@@ -100,10 +100,34 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
+  function translateScrapedGender(gender?: string) {
+    if (!gender) {
+      return;
+    }
+
+    let retEnum : GQL.GenderEnum | undefined;
+
+    // try to translate from enum values first
+    const upperGender = gender?.toUpperCase();
+    const asEnum = StashService.genderToString(upperGender as GQL.GenderEnum);
+    if (asEnum) {
+      retEnum = StashService.stringToGender(asEnum);
+    } else {
+      // try to match against gender strings
+      const caseInsensitive = true;
+      retEnum = StashService.stringToGender(gender, caseInsensitive);
+    }
+
+    return StashService.genderToString(retEnum);
+  }
+
   function updatePerformerEditStateFromScraper(
     state: Partial<GQL.ScrapedPerformerDataFragment>
   ) {
     updatePerformerEditState(state);
+
+    // gender is a string in the scraper data
+    setGender(translateScrapedGender(state.gender ?? undefined));
 
     // image is a base64 string
     // #404: don't overwrite image if it has been modified by the user
@@ -323,16 +347,13 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           {maybeRenderScrapeButton()}
         </td>
         <td>
-          <Form.Control
-            className="text-input"
-            value={url ?? ""}
-            readOnly={!isEditing}
-            plaintext={!isEditing}
-            placeholder="URL"
-            onChange={(event: React.FormEvent<HTMLInputElement>) =>
-              setUrl(event.currentTarget.value)
-            }
-          />
+          {EditableTextUtils.renderInputGroup({
+            title: "URL",
+            value: url,
+            url: TextUtils.sanitiseURL(url),
+            isEditing: !!isEditing,
+            onChange: setUrl,
+          })}
         </td>
       </tr>
     );
@@ -486,12 +507,14 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           {TableUtils.renderInputGroup({
             title: "Twitter",
             value: twitter,
+            url: TextUtils.sanitiseURL(twitter, TextUtils.twitterURL),
             isEditing: !!isEditing,
             onChange: setTwitter,
           })}
           {TableUtils.renderInputGroup({
             title: "Instagram",
             value: instagram,
+            url: TextUtils.sanitiseURL(instagram, TextUtils.instagramURL),
             isEditing: !!isEditing,
             onChange: setInstagram,
           })}

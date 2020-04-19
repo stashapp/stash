@@ -26,3 +26,8 @@ func (r *queryResolver) AllMovies(ctx context.Context) ([]*models.Movie, error) 
 	qb := models.NewMovieQueryBuilder()
 	return qb.All()
 }
+
+func (r *queryResolver) AllMoviesSlim(ctx context.Context) ([]*models.Movie, error) {
+	qb := models.NewMovieQueryBuilder()
+	return qb.AllSlim()
+}

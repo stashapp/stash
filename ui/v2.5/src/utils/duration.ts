@@ -14,7 +14,7 @@ const secondsToString = (seconds: number) => {
   return ret;
 };
 
-const stringToSeconds = (v: string) => {
+const stringToSeconds = (v?: string) => {
   if (!v) {
     return 0;
   }
