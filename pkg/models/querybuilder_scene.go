@@ -12,6 +12,7 @@ import (
 
 var sceneMetadataColumns = []string{
 	"id",
+    "path",
 	"checksum",
 	"title",
 	"details",
