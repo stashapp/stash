@@ -20,12 +20,12 @@ CREATE TABLE `movies` (
   `studio_id` integer,
   `director` varchar(255),
   `synopsis` text,
-  `front_image` blob not null,
-  `back_image` blob,
   `checksum` varchar(255) not null,
   `url` varchar(255),
   `created_at` datetime not null,
   `updated_at` datetime not null,
+  `front_image` blob not null,
+  `back_image` blob,
   foreign key(`studio_id`) references `studios`(`id`) on delete set null
 );
 CREATE TABLE `movies_scenes` (
