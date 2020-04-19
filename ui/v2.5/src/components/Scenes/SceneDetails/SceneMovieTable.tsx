@@ -50,7 +50,13 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
                 className="input-control"
                 value={storeIdx[index] ? storeIdx[index]?.toString() : ""}
                 onChange={(e: React.FormEvent<HTMLInputElement>) =>
-                  updateFieldChanged(item.id, Number.parseInt(e.currentTarget.value ? e.currentTarget.value : "0", 10))
+                  updateFieldChanged(
+                    item.id,
+                    Number.parseInt(
+                      e.currentTarget.value ? e.currentTarget.value : "0",
+                      10
+                    )
+                  )
                 }
               >
                 {["", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"].map(

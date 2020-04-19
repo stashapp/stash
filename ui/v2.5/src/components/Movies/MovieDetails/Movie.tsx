@@ -12,7 +12,12 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { Table, Form } from "react-bootstrap";
-import { TableUtils, ImageUtils, EditableTextUtils, TextUtils } from "src/utils";
+import {
+  TableUtils,
+  ImageUtils,
+  EditableTextUtils,
+  TextUtils,
+} from "src/utils";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 
 export const Movie: React.FC = () => {
