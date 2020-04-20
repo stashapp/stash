@@ -157,7 +157,7 @@ export const MainNavbar: React.FC = () => {
           ))}
         </Nav>
       </Navbar.Collapse>
-      <Nav className="order-2">
+      <Nav className="order-2 flex-row">
         <div className="d-none d-sm-block">{newButton}</div>
         <LinkContainer exact to="/settings" onClick={() => setExpanded(false)}>
           <Button className="minimal settings-button">
