@@ -55,12 +55,18 @@ func Initialize(databasePath string) {
 		}
 	}
 
-	DB = open(databasePath)
+	const disableForeignKeys = false
+	DB = open(databasePath, disableForeignKeys)
 }
 
-func open(databasePath string) *sqlx.DB {
+func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
 	// https://github.com/mattn/go-sqlite3
-	conn, err := sqlx.Open(sqlite3Driver, "file:"+databasePath+"?_fk=true")
+	url := "file:" + databasePath
+	if !disableForeignKeys {
+		url += "?_fk=true"
+	}
+
+	conn, err := sqlx.Open(sqlite3Driver, url)
 	conn.SetMaxOpenConns(25)
 	conn.SetMaxIdleConns(4)
 	if err != nil {
@@ -132,7 +138,9 @@ func getMigrate() (*migrate.Migrate, error) {
 
 	databasePath := utils.FixWindowsPath(dbPath)
 	s, _ := WithInstance(packrSource)
-	conn := open(databasePath)
+
+	const disableForeignKeys = true
+	conn := open(databasePath, disableForeignKeys)
 
 	driver, err := sqlite3mig.WithInstance(conn.DB, &sqlite3mig.Config{})
 	if err != nil {
