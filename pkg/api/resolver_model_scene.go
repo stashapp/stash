@@ -82,7 +82,9 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 }
 
 func (r *sceneResolver) IsStreamable(ctx context.Context, obj *models.Scene) (bool, error) {
-	return manager.IsStreamable(obj)
+	// ignore error
+	ret, _ := manager.IsStreamable(obj)
+	return ret, nil
 }
 
 func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) ([]*models.SceneMarker, error) {
