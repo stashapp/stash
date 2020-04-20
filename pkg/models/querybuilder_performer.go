@@ -180,6 +180,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	query.body = selectPerformerMetadata()
 	query.body += `
 		left join performers_scenes as scenes_join on scenes_join.performer_id = performers.id
+		left join scenes on scenes_join.scene_id = scenes.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
