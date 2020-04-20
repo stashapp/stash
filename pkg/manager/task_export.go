@@ -3,18 +3,17 @@ package manager
 import (
 	"context"
 	"fmt"
-	"math"
-	"runtime"
-	"strconv"
-	"sync"
-	"time"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"math"
+	"runtime"
+	"strconv"
+	"sync"
+	"time"
 )
 
 type ExportTask struct {
@@ -112,7 +111,7 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 			galleryChecksum = gallery.Checksum
 		}
 
-		performers, _ := performerQB.FindBySceneID(scene.ID, tx)
+		performers, _ := performerQB.FindNameBySceneID(scene.ID, tx)
 		sceneMovies, _ := joinQB.GetSceneMovies(scene.ID, tx)
 		tags, _ := tagQB.FindBySceneID(scene.ID, tx)
 		sceneMarkers, _ := sceneMarkerQB.FindBySceneID(scene.ID, tx)

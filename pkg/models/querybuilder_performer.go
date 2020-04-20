@@ -88,6 +88,17 @@ func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Per
 	return qb.queryPerformers(query, args, tx)
 }
 
+func (qb *PerformerQueryBuilder) FindNameBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {
+	query := `
+		SELECT performers.name FROM performers
+		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
+		WHERE scenes_join.scene_id = ?
+		GROUP BY performers.name
+	`
+	args := []interface{}{sceneID}
+	return qb.queryPerformers(query, args, tx)
+}
+
 func (qb *PerformerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]*Performer, error) {
 	query := "SELECT * FROM performers WHERE name IN " + getInBinding(len(names))
 	var args []interface{}

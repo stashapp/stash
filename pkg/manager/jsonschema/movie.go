@@ -1,26 +1,26 @@
 package jsonschema
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/json-iterator/go"
 	"os"
 
 	"github.com/stashapp/stash/pkg/models"
 )
 
 type Movie struct {
-	Name           string          `json:"name,omitempty"`
-	Aliases        string          `json:"aliases,omitempty"`
-	Duration	   string          `json:"duration,omitempty"`
-	Date    	   string          `json:"date,omitempty"`
-	Rating   	   string          `json:"rating,omitempty"`
-	Director       string          `json:"director,omitempty"`
-	Synopsis       string          `json:"sypnopsis,omitempty"`
-	FrontImage     string          `json:"front_image,omitempty"`
-	BackImage      string          `json:"back_image,omitempty"`
-	URL            string          `json:"url,omitempty"`
-	CreatedAt      models.JSONTime `json:"created_at,omitempty"`
-	UpdatedAt      models.JSONTime `json:"updated_at,omitempty"`
+	Name       string          `json:"name,omitempty"`
+	Aliases    string          `json:"aliases,omitempty"`
+	Duration   string          `json:"duration,omitempty"`
+	Date       string          `json:"date,omitempty"`
+	Rating     string          `json:"rating,omitempty"`
+	Director   string          `json:"director,omitempty"`
+	Synopsis   string          `json:"sypnopsis,omitempty"`
+	FrontImage string          `json:"front_image,omitempty"`
+	BackImage  string          `json:"back_image,omitempty"`
+	URL        string          `json:"url,omitempty"`
+	CreatedAt  models.JSONTime `json:"created_at,omitempty"`
+	UpdatedAt  models.JSONTime `json:"updated_at,omitempty"`
 }
 
 func LoadMovieFile(filePath string) (*Movie, error) {
@@ -30,6 +30,7 @@ func LoadMovieFile(filePath string) (*Movie, error) {
 	if err != nil {
 		return nil, err
 	}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&movie)
 	if err != nil {
