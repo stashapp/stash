@@ -150,6 +150,11 @@ export const Studio: React.FC = () => {
     );
   }
 
+  function onToggleEdit() {
+    setIsEditing(!isEditing);
+    updateStudioData(studio);
+  }
+
   return (
     <div className="row">
       <div
@@ -180,7 +185,7 @@ export const Studio: React.FC = () => {
           objectName={name ?? "studio"}
           isNew={isNew}
           isEditing={isEditing}
-          onToggleEdit={() => setIsEditing(!isEditing)}
+          onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChangeHandler}
           onAutoTag={onAutoTag}
