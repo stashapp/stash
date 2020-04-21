@@ -221,7 +221,6 @@ export const Movie: React.FC = () => {
               isEditing,
               onChange: (value: string | undefined) =>
                 setDuration(value ? Number.parseInt(value, 10) : undefined),
-              asString: true,
             })}
             {TableUtils.renderInputGroup({
               title: "Date (YYYY-MM-DD)",
