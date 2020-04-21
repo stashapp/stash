@@ -174,6 +174,11 @@ export const Movie: React.FC = () => {
     ImageUtils.onImageChange(event, onBackImageLoad);
   }
 
+  function onToggleEdit() {
+    setIsEditing(!isEditing);
+    updateMovieData(movie);
+  }
+
   function renderDeleteAlert() {
     return (
       <Modal
@@ -286,7 +291,7 @@ export const Movie: React.FC = () => {
           objectName={name ?? "movie"}
           isNew={isNew}
           isEditing={isEditing}
-          onToggleEdit={() => setIsEditing(!isEditing)}
+          onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChange}
           onBackImageChange={onBackImageChange}
