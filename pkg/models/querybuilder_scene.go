@@ -264,7 +264,7 @@ func (qb *SceneQueryBuilder) Wall(q *string) ([]*Scene, error) {
 }
 
 func (qb *SceneQueryBuilder) All() ([]*Scene, error) {
-	return qb.queryScenes(selectSceneMetadata()+qb.getSceneSort(nil), nil, nil)
+	return qb.queryScenes(selectAll("scenes")+qb.getSceneSort(nil), nil, nil)
 }
 
 func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]*Scene, int) {
