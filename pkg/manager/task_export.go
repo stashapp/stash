@@ -7,6 +7,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
+	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 	"math"
@@ -31,6 +32,15 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 
 	ctx := context.TODO()
 	startTime := time.Now()
+
+	jsonPaths := paths.GetJSONPaths()
+
+	utils.EnsureDir(jsonPaths.Metadata)
+	utils.EnsureDir(jsonPaths.Scenes)
+	utils.EnsureDir(jsonPaths.Galleries)
+	utils.EnsureDir(jsonPaths.Performers)
+	utils.EnsureDir(jsonPaths.Studios)
+	utils.EnsureDir(jsonPaths.Movies)
 
 	t.ExportScenes(ctx, workerCount)
 	t.ExportGalleries(ctx)
