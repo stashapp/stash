@@ -36,20 +36,17 @@ func (qb *MovieQueryBuilder) Create(newMovie Movie, tx *sqlx.Tx) (*Movie, error)
 	return &newMovie, nil
 }
 
-func (qb *MovieQueryBuilder) Update(updatedMovie Movie, tx *sqlx.Tx) (*Movie, error) {
+func (qb *MovieQueryBuilder) Update(updatedMovie MoviePartial, tx *sqlx.Tx) (*Movie, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE movies SET `+SQLGenKeys(updatedMovie)+` WHERE movies.id = :id`,
+		`UPDATE movies SET `+SQLGenKeysPartial(updatedMovie)+` WHERE movies.id = :id`,
 		updatedMovie,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := tx.Get(&updatedMovie, `SELECT * FROM movies WHERE id = ? LIMIT 1`, updatedMovie.ID); err != nil {
-		return nil, err
-	}
-	return &updatedMovie, nil
+	return qb.Find(updatedMovie.ID, tx)
 }
 
 func (qb *MovieQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
