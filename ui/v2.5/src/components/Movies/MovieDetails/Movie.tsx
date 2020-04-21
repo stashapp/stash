@@ -248,7 +248,7 @@ export const Movie: React.FC = () => {
             })}
             {TableUtils.renderHtmlSelect({
               title: "Rating",
-              value: rating,
+              value: rating ? rating : "",
               isEditing,
               onChange: (value: string) =>
                 setRating(Number.parseInt(value, 10)),
