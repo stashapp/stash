@@ -6,6 +6,7 @@ import {
   SceneFilterType,
   SceneMarkerFilterType,
   SortDirectionEnum,
+  MovieFilterType,
 } from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import {
@@ -162,7 +163,10 @@ export class ListFilterModel {
         this.sortBy = "name";
         this.sortByOptions = ["name", "scenes_count"];
         this.displayModeOptions = [DisplayMode.Grid];
-        this.criterionOptions = [new NoneCriterionOption()];
+        this.criterionOptions = [
+          new NoneCriterionOption(),
+          new StudiosCriterionOption(),
+        ];
         break;
       case FilterMode.Galleries:
         this.sortBy = "path";
@@ -544,6 +548,24 @@ export class ListFilterModel {
           result.performers = {
             value: performersCrit.value.map((performer) => performer.id),
             modifier: performersCrit.modifier,
+          };
+          break;
+        }
+        // no default
+      }
+    });
+    return result;
+  }
+
+  public makeMovieFilter(): MovieFilterType {
+    const result: MovieFilterType = {};
+    this.criteria.forEach((criterion) => {
+      switch (criterion.type) {
+        case "studios": {
+          const studCrit = criterion as StudiosCriterion;
+          result.studios = {
+            value: studCrit.value.map((studio) => studio.id),
+            modifier: studCrit.modifier,
           };
           break;
         }

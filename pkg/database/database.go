@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"regexp"
 	"time"
 
 	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
+	sqlite3mig "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	"github.com/golang-migrate/migrate/v4/source"
 	"github.com/jmoiron/sqlx"
 	sqlite3 "github.com/mattn/go-sqlite3"
@@ -19,14 +19,14 @@ import (
 
 var DB *sqlx.DB
 var dbPath string
-var appSchemaVersion uint = 7
+var appSchemaVersion uint = 8
 var databaseSchemaVersion uint
 
-const sqlite3Driver = "sqlite3_regexp"
+const sqlite3Driver = "sqlite3ex"
 
 func init() {
 	// register custom driver with regexp function
-	registerRegexpFunc()
+	registerCustomDriver()
 }
 
 func Initialize(databasePath string) {
@@ -55,14 +55,25 @@ func Initialize(databasePath string) {
 		}
 	}
 
+	const disableForeignKeys = false
+	DB = open(databasePath, disableForeignKeys)
+}
+
+func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
 	// https://github.com/mattn/go-sqlite3
-	conn, err := sqlx.Open(sqlite3Driver, "file:"+databasePath+"?_fk=true")
+	url := "file:" + databasePath
+	if !disableForeignKeys {
+		url += "?_fk=true"
+	}
+
+	conn, err := sqlx.Open(sqlite3Driver, url)
 	conn.SetMaxOpenConns(25)
 	conn.SetMaxIdleConns(4)
 	if err != nil {
 		logger.Fatalf("db.Open(): %q\n", err)
 	}
-	DB = conn
+
+	return conn
 }
 
 func Reset(databasePath string) error {
@@ -97,6 +108,10 @@ func Backup(backupPath string) error {
 	return nil
 }
 
+func RestoreFromBackup(backupPath string) error {
+	return os.Rename(backupPath, dbPath)
+}
+
 // Migrate the database
 func NeedsMigration() bool {
 	return databaseSchemaVersion != appSchemaVersion
@@ -123,10 +138,21 @@ func getMigrate() (*migrate.Migrate, error) {
 
 	databasePath := utils.FixWindowsPath(dbPath)
 	s, _ := WithInstance(packrSource)
-	return migrate.NewWithSourceInstance(
+
+	const disableForeignKeys = true
+	conn := open(databasePath, disableForeignKeys)
+
+	driver, err := sqlite3mig.WithInstance(conn.DB, &sqlite3mig.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	// use sqlite3Driver so that migration has access to durationToTinyInt
+	return migrate.NewWithInstance(
 		"packr2",
 		s,
-		fmt.Sprintf("sqlite3://%s", "file:"+databasePath),
+		databasePath,
+		driver,
 	)
 }
 
@@ -153,6 +179,8 @@ func RunMigrations() error {
 	if stepNumber != 0 {
 		err = m.Steps(int(stepNumber))
 		if err != nil {
+			// migration failed
+			m.Close()
 			return err
 		}
 	}
@@ -164,15 +192,23 @@ func RunMigrations() error {
 	return nil
 }
 
-func registerRegexpFunc() {
-	regexFn := func(re, s string) (bool, error) {
-		return regexp.MatchString(re, s)
-	}
-
+func registerCustomDriver() {
 	sql.Register(sqlite3Driver,
 		&sqlite3.SQLiteDriver{
 			ConnectHook: func(conn *sqlite3.SQLiteConn) error {
-				return conn.RegisterFunc("regexp", regexFn, true)
+				funcs := map[string]interface{}{
+					"regexp":            regexFn,
+					"durationToTinyInt": durationToTinyIntFn,
+				}
+
+				for name, fn := range funcs {
+					if err := conn.RegisterFunc(name, fn, true); err != nil {
+						return fmt.Errorf("Error registering function %s: %s", name, err.Error())
+					}
+				}
+
+				return nil
 			},
-		})
+		},
+	)
 }

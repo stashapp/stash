@@ -51,7 +51,8 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 		newMovie.Aliases = sql.NullString{String: *input.Aliases, Valid: true}
 	}
 	if input.Duration != nil {
-		newMovie.Duration = sql.NullString{String: *input.Duration, Valid: true}
+		duration := int64(*input.Duration)
+		newMovie.Duration = sql.NullInt64{Int64: duration, Valid: true}
 	}
 
 	if input.Date != nil {
@@ -59,9 +60,10 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 	}
 
 	if input.Rating != nil {
-		newMovie.Rating = sql.NullString{String: *input.Rating, Valid: true}
-	} 
-	
+		rating := int64(*input.Rating)
+		newMovie.Rating = sql.NullInt64{Int64: rating, Valid: true}
+	}
+
 	if input.Director != nil {
 		newMovie.Director = sql.NullString{String: *input.Director, Valid: true}
 	}
@@ -94,57 +96,71 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUpdateInput) (*models.Movie, error) {
 	// Populate movie from the input
 	movieID, _ := strconv.Atoi(input.ID)
-	updatedMovie := models.Movie{
+
+	updatedMovie := models.MoviePartial{
 		ID:        movieID,
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 	if input.FrontImage != nil {
 		_, frontimageData, err := utils.ProcessBase64Image(*input.FrontImage)
 		if err != nil {
 			return nil, err
 		}
-		updatedMovie.FrontImage = frontimageData
+		updatedMovie.FrontImage = &frontimageData
 	}
 	if input.BackImage != nil {
 		_, backimageData, err := utils.ProcessBase64Image(*input.BackImage)
 		if err != nil {
 			return nil, err
 		}
-		updatedMovie.BackImage = backimageData
+		updatedMovie.BackImage = &backimageData
 	}
 
 	if input.Name != nil {
 		// generate checksum from movie name rather than image
 		checksum := utils.MD5FromString(*input.Name)
-		updatedMovie.Name = sql.NullString{String: *input.Name, Valid: true}
-		updatedMovie.Checksum = checksum
+		updatedMovie.Name = &sql.NullString{String: *input.Name, Valid: true}
+		updatedMovie.Checksum = &checksum
 	}
 
 	if input.Aliases != nil {
-		updatedMovie.Aliases = sql.NullString{String: *input.Aliases, Valid: true}
+		updatedMovie.Aliases = &sql.NullString{String: *input.Aliases, Valid: true}
 	}
 	if input.Duration != nil {
-		updatedMovie.Duration = sql.NullString{String: *input.Duration, Valid: true}
+		duration := int64(*input.Duration)
+		updatedMovie.Duration = &sql.NullInt64{Int64: duration, Valid: true}
 	}
 
 	if input.Date != nil {
-		updatedMovie.Date = models.SQLiteDate{String: *input.Date, Valid: true}
+		updatedMovie.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
 	}
 
 	if input.Rating != nil {
-		updatedMovie.Rating = sql.NullString{String: *input.Rating, Valid: true}
+		rating := int64(*input.Rating)
+		updatedMovie.Rating = &sql.NullInt64{Int64: rating, Valid: true}
+	} else {
+		// rating must be nullable
+		updatedMovie.Rating = &sql.NullInt64{Valid: false}
+	}
+
+	if input.StudioID != nil {
+		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
+		updatedMovie.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
+	} else {
+		// studio must be nullable
+		updatedMovie.StudioID = &sql.NullInt64{Valid: false}
 	}
 
 	if input.Director != nil {
-		updatedMovie.Director = sql.NullString{String: *input.Director, Valid: true}
+		updatedMovie.Director = &sql.NullString{String: *input.Director, Valid: true}
 	}
 
 	if input.Synopsis != nil {
-		updatedMovie.Synopsis = sql.NullString{String: *input.Synopsis, Valid: true}
+		updatedMovie.Synopsis = &sql.NullString{String: *input.Synopsis, Valid: true}
 	}
 
 	if input.URL != nil {
-		updatedMovie.URL = sql.NullString{String: *input.URL, Valid: true}
+		updatedMovie.URL = &sql.NullString{String: *input.URL, Valid: true}
 	}
 
 	// Start the transaction and save the movie

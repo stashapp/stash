@@ -7,6 +7,11 @@ fragment MovieData on Movie {
   date
   rating
   director
+
+  studio {
+    ...StudioData
+  }
+  
   synopsis
   url
   front_image_path

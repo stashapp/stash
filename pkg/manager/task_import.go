@@ -250,13 +250,18 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 			Name:       sql.NullString{String: movieJSON.Name, Valid: true},
 			Aliases:    sql.NullString{String: movieJSON.Aliases, Valid: true},
 			Date:       models.SQLiteDate{String: movieJSON.Date, Valid: true},
-			Duration:   sql.NullString{String: movieJSON.Duration, Valid: true},
-			Rating:     sql.NullString{String: movieJSON.Rating, Valid: true},
 			Director:   sql.NullString{String: movieJSON.Director, Valid: true},
 			Synopsis:   sql.NullString{String: movieJSON.Synopsis, Valid: true},
 			URL:        sql.NullString{String: movieJSON.URL, Valid: true},
 			CreatedAt:  models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
 			UpdatedAt:  models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
+		}
+
+		if movieJSON.Rating != 0 {
+			newMovie.Rating = sql.NullInt64{Int64: int64(movieJSON.Rating), Valid: true}
+		}
+		if movieJSON.Duration != 0 {
+			newMovie.Duration = sql.NullInt64{Int64: int64(movieJSON.Duration), Valid: true}
 		}
 
 		_, err = qb.Create(newMovie, tx)
@@ -712,11 +717,19 @@ func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int,
 		if movie == nil {
 			logger.Warnf("[scenes] movie %s does not exist", inputMovie.MovieName)
 		} else {
-			movies = append(movies, models.MoviesScenes{
-				MovieID:    movie.ID,
-				SceneID:    sceneID,
-				SceneIndex: inputMovie.SceneIndex,
-			})
+			toAdd := models.MoviesScenes{
+				MovieID: movie.ID,
+				SceneID: sceneID,
+			}
+
+			if inputMovie.SceneIndex != 0 {
+				toAdd.SceneIndex = sql.NullInt64{
+					Int64: int64(inputMovie.SceneIndex),
+					Valid: true,
+				}
+			}
+
+			movies = append(movies, toAdd)
 		}
 	}
 
