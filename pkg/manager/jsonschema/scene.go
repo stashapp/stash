@@ -40,6 +40,7 @@ type Scene struct {
 	URL        string          `json:"url,omitempty"`
 	Date       string          `json:"date,omitempty"`
 	Rating     int             `json:"rating,omitempty"`
+	OCounter   int             `json:"o_counter,omitempty"`
 	Details    string          `json:"details,omitempty"`
 	Gallery    string          `json:"gallery,omitempty"`
 	Performers []string        `json:"performers,omitempty"`
