@@ -489,6 +489,8 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			if sceneJSON.Rating != 0 {
 				newScene.Rating = sql.NullInt64{Int64: int64(sceneJSON.Rating), Valid: true}
 			}
+
+			newScene.OCounter = sceneJSON.OCounter
 			newScene.CreatedAt = models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(sceneJSON.CreatedAt)}
 			newScene.UpdatedAt = models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(sceneJSON.UpdatedAt)}
 

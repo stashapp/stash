@@ -103,6 +103,9 @@ func (t *ExportTask) ExportScenes(ctx context.Context) {
 		if scene.Rating.Valid {
 			newSceneJSON.Rating = int(scene.Rating.Int64)
 		}
+
+		newSceneJSON.OCounter = scene.OCounter
+
 		if scene.Details.Valid {
 			newSceneJSON.Details = scene.Details.String
 		}
