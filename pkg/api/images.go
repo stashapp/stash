@@ -2,6 +2,7 @@ package api
 
 import (
 	"math/rand"
+	"strings"
 
 	"github.com/gobuffalo/packr/v2"
 )
@@ -16,7 +17,7 @@ func initialiseImages() {
 
 func getRandomPerformerImage(gender string) ([]byte, error) {
 	var box *packr.Box
-	switch gender {
+	switch strings.ToUpper(gender) {
 	case "FEMALE":
 		box = performerBox
 	case "MALE":
