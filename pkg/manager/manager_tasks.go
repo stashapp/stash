@@ -1,15 +1,16 @@
 package manager
 
 import (
+	"path/filepath"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/bmatcuk/doublestar"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"path/filepath"
-	"strconv"
-	"sync"
-	"time"
 )
 
 var extensionsToScan = []string{"zip", "m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
@@ -474,6 +475,7 @@ func (s *singleton) Clean() {
 	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
+	gqb := models.NewGalleryQueryBuilder()
 	go func() {
 		defer s.returnToIdleState()
 
@@ -484,6 +486,12 @@ func (s *singleton) Clean() {
 			return
 		}
 
+		galleries, err := gqb.All()
+		if err != nil {
+			logger.Errorf("failed to fetch list of galleries for cleaning")
+			return
+		}
+
 		if s.Status.stopping {
 			logger.Info("Stopping due to user request")
 			return
@@ -491,7 +499,7 @@ func (s *singleton) Clean() {
 
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
-		total := len(scenes)
+		total := len(scenes) + len(galleries)
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -506,7 +514,26 @@ func (s *singleton) Clean() {
 
 			wg.Add(1)
 
-			task := CleanTask{Scene: *scene}
+			task := CleanTask{Scene: scene}
+			go task.Start(&wg)
+			wg.Wait()
+		}
+
+		for _, gallery := range galleries {
+			s.Status.incrementProgress()
+			if s.Status.stopping {
+				logger.Info("Stopping due to user request")
+				return
+			}
+
+			if gallery == nil {
+				logger.Errorf("nil gallery, skipping Clean")
+				continue
+			}
+
+			wg.Add(1)
+
+			task := CleanTask{Gallery: gallery}
 			go task.Start(&wg)
 			wg.Wait()
 		}
