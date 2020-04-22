@@ -127,7 +127,6 @@ func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 func contains(a []*zip.File, x string) int {
 	for i, n := range a {
 		if strings.Contains(n.Name, x) {
-			logger.Debugf("Cover found in zip file %s.Position:%d", n.Name, i)
 			return i
 		}
 	}
