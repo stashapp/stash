@@ -29,9 +29,10 @@ func (r *movieResolver) Aliases(ctx context.Context, obj *models.Movie) (*string
 	return nil, nil
 }
 
-func (r *movieResolver) Duration(ctx context.Context, obj *models.Movie) (*string, error) {
+func (r *movieResolver) Duration(ctx context.Context, obj *models.Movie) (*int, error) {
 	if obj.Duration.Valid {
-		return &obj.Duration.String, nil
+		rating := int(obj.Duration.Int64)
+		return &rating, nil
 	}
 	return nil, nil
 }
@@ -44,10 +45,20 @@ func (r *movieResolver) Date(ctx context.Context, obj *models.Movie) (*string, e
 	return nil, nil
 }
 
-func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*string, error) {
+func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*int, error) {
 	if obj.Rating.Valid {
-		return &obj.Rating.String, nil
+		rating := int(obj.Rating.Int64)
+		return &rating, nil
 	}
+	return nil, nil
+}
+
+func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (*models.Studio, error) {
+	qb := models.NewStudioQueryBuilder()
+	if obj.StudioID.Valid {
+		return qb.Find(int(obj.StudioID.Int64), nil)
+	}
+
 	return nil, nil
 }
 

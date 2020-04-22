@@ -5,7 +5,7 @@ import * as GQL from "src/core/generated-graphql";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
-  sceneIndex?: string;
+  sceneIndex?: number;
 }
 
 export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {

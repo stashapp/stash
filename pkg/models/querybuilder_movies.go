@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -16,8 +17,8 @@ func NewMovieQueryBuilder() MovieQueryBuilder {
 func (qb *MovieQueryBuilder) Create(newMovie Movie, tx *sqlx.Tx) (*Movie, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO movies (front_image, back_image, checksum, name, aliases, duration, date, rating, director, synopsis, url, created_at, updated_at)
-				VALUES (:front_image, :back_image, :checksum, :name, :aliases, :duration, :date, :rating, :director, :synopsis, :url, :created_at, :updated_at)
+		`INSERT INTO movies (front_image, back_image, checksum, name, aliases, duration, date, rating, studio_id, director, synopsis, url, created_at, updated_at)
+				VALUES (:front_image, :back_image, :checksum, :name, :aliases, :duration, :date, :rating, :studio_id, :director, :synopsis, :url, :created_at, :updated_at)
 		`,
 		newMovie,
 	)
@@ -35,20 +36,17 @@ func (qb *MovieQueryBuilder) Create(newMovie Movie, tx *sqlx.Tx) (*Movie, error)
 	return &newMovie, nil
 }
 
-func (qb *MovieQueryBuilder) Update(updatedMovie Movie, tx *sqlx.Tx) (*Movie, error) {
+func (qb *MovieQueryBuilder) Update(updatedMovie MoviePartial, tx *sqlx.Tx) (*Movie, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE movies SET `+SQLGenKeys(updatedMovie)+` WHERE movies.id = :id`,
+		`UPDATE movies SET `+SQLGenKeysPartial(updatedMovie)+` WHERE movies.id = :id`,
 		updatedMovie,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := tx.Get(&updatedMovie, `SELECT * FROM movies WHERE id = ? LIMIT 1`, updatedMovie.ID); err != nil {
-		return nil, err
-	}
-	return &updatedMovie, nil
+	return qb.Find(updatedMovie.ID, tx)
 }
 
 func (qb *MovieQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
@@ -113,9 +111,12 @@ func (qb *MovieQueryBuilder) AllSlim() ([]*Movie, error) {
 	return qb.queryMovies("SELECT movies.id, movies.name FROM movies "+qb.getMovieSort(nil), nil, nil)
 }
 
-func (qb *MovieQueryBuilder) Query(findFilter *FindFilterType) ([]*Movie, int) {
+func (qb *MovieQueryBuilder) Query(movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int) {
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
+	}
+	if movieFilter == nil {
+		movieFilter = &MovieFilterType{}
 	}
 
 	var whereClauses []string
@@ -125,6 +126,7 @@ func (qb *MovieQueryBuilder) Query(findFilter *FindFilterType) ([]*Movie, int) {
 	body += `
 	left join movies_scenes as scenes_join on scenes_join.movie_id = movies.id
 	left join scenes on scenes_join.scene_id = scenes.id
+	left join studios as studio on studio.id = movies.studio_id
 `
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -132,6 +134,16 @@ func (qb *MovieQueryBuilder) Query(findFilter *FindFilterType) ([]*Movie, int) {
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		whereClauses = append(whereClauses, clause)
 		args = append(args, thisArgs...)
+	}
+
+	if studiosFilter := movieFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
+		for _, studioID := range studiosFilter.Value {
+			args = append(args, studioID)
+		}
+
+		whereClause, havingClause := qb.getMultiCriterionClause("studio", "", "studio_id", studiosFilter)
+		whereClauses = appendClause(whereClauses, whereClause)
+		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
 	sortAndPagination := qb.getMovieSort(findFilter) + getPagination(findFilter)
@@ -144,6 +156,29 @@ func (qb *MovieQueryBuilder) Query(findFilter *FindFilterType) ([]*Movie, int) {
 	}
 
 	return movies, countResult
+}
+
+// returns where clause and having clause
+func (qb *MovieQueryBuilder) getMultiCriterionClause(table string, joinTable string, joinTableField string, criterion *MultiCriterionInput) (string, string) {
+	whereClause := ""
+	havingClause := ""
+	if criterion.Modifier == CriterionModifierIncludes {
+		// includes any of the provided ids
+		whereClause = table + ".id IN " + getInBinding(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierIncludesAll {
+		// includes all of the provided ids
+		whereClause = table + ".id IN " + getInBinding(len(criterion.Value))
+		havingClause = "count(distinct " + table + ".id) IS " + strconv.Itoa(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierExcludes {
+		// excludes all of the provided ids
+		if joinTable != "" {
+			whereClause = "not exists (select " + joinTable + ".movie_id from " + joinTable + " where " + joinTable + ".movie_id = movies.id and " + joinTable + "." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
+		} else {
+			whereClause = "not exists (select m.id from movies as m where m.id = movies.id and m." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
+		}
+	}
+
+	return whereClause, havingClause
 }
 
 func (qb *MovieQueryBuilder) getMovieSort(findFilter *FindFilterType) string {

@@ -8,10 +8,16 @@ import {
   DetailsEditNavbar,
   LoadingIndicator,
   Modal,
+  StudioSelect,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { Table, Form } from "react-bootstrap";
-import { TableUtils, ImageUtils, EditableTextUtils, TextUtils } from "src/utils";
+import {
+  TableUtils,
+  ImageUtils,
+  EditableTextUtils,
+  TextUtils,
+} from "src/utils";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 
 export const Movie: React.FC = () => {
@@ -29,9 +35,10 @@ export const Movie: React.FC = () => {
   const [backImage, setBackImage] = useState<string | undefined>(undefined);
   const [name, setName] = useState<string | undefined>(undefined);
   const [aliases, setAliases] = useState<string | undefined>(undefined);
-  const [duration, setDuration] = useState<string | undefined>(undefined);
+  const [duration, setDuration] = useState<number | undefined>(undefined);
   const [date, setDate] = useState<string | undefined>(undefined);
-  const [rating, setRating] = useState<string | undefined>(undefined);
+  const [rating, setRating] = useState<number | undefined>(undefined);
+  const [studioId, setStudioId] = useState<string>();
   const [director, setDirector] = useState<string | undefined>(undefined);
   const [synopsis, setSynopsis] = useState<string | undefined>(undefined);
   const [url, setUrl] = useState<string | undefined>(undefined);
@@ -63,6 +70,7 @@ export const Movie: React.FC = () => {
     setDuration(state.duration ?? undefined);
     setDate(state.date ?? undefined);
     setRating(state.rating ?? undefined);
+    setStudioId(state?.studio?.id ?? undefined);
     setDirector(state.director ?? undefined);
     setSynopsis(state.synopsis ?? undefined);
     setUrl(state.url ?? undefined);
@@ -113,6 +121,7 @@ export const Movie: React.FC = () => {
       duration,
       date,
       rating,
+      studio_id: studioId,
       director,
       synopsis,
       url,
@@ -213,12 +222,10 @@ export const Movie: React.FC = () => {
             })}
             {TableUtils.renderDurationInput({
               title: "Duration",
-              value: duration,
+              value: duration ? duration.toString() : "",
               isEditing,
-              onChange: (value: string | undefined) => {
-                setDuration(value ?? "");
-              },
-              asString: true,
+              onChange: (value: string | undefined) =>
+                setDuration(value ? Number.parseInt(value, 10) : undefined),
             })}
             {TableUtils.renderInputGroup({
               title: "Date (YYYY-MM-DD)",
@@ -226,6 +233,18 @@ export const Movie: React.FC = () => {
               isEditing,
               onChange: setDate,
             })}
+            <tr>
+              <td>Studio</td>
+              <td>
+                <StudioSelect
+                  isDisabled={!isEditing}
+                  onSelect={(items) =>
+                    setStudioId(items.length > 0 ? items[0]?.id : undefined)
+                  }
+                  ids={studioId ? [studioId] : []}
+                />
+              </td>
+            </tr>
             {TableUtils.renderInputGroup({
               title: "Director",
               value: director,
@@ -234,9 +253,10 @@ export const Movie: React.FC = () => {
             })}
             {TableUtils.renderHtmlSelect({
               title: "Rating",
-              value: rating,
+              value: rating ? rating : "",
               isEditing,
-              onChange: (value: string) => setRating(value),
+              onChange: (value: string) =>
+                setRating(Number.parseInt(value, 10)),
               selectOptions: ["", "1", "2", "3", "4", "5"],
             })}
           </tbody>
