@@ -25,7 +25,7 @@ type Query {
    """Find a movie by ID"""
   findMovie(id: ID!): Movie
   """A function which queries Movie objects"""
-  findMovies(filter: FindFilterType): FindMoviesResultType!
+  findMovies(movie_filter: MovieFilterType, filter: FindFilterType): FindMoviesResultType!
 
   findGallery(id: ID!): Gallery
   findGalleries(filter: FindFilterType): FindGalleriesResultType!
@@ -85,6 +85,13 @@ type Query {
   allStudios: [Studio!]!
   allMovies: [Movie!]!
   allTags: [Tag!]!
+
+  # Get everything with minimal metadata
+
+  allPerformersSlim: [Performer!]!
+  allStudiosSlim: [Studio!]!
+  allMoviesSlim: [Movie!]!
+  allTagsSlim: [Tag!]!
 
   # Version
   version: Version!

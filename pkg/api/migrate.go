@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"os"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 type migrateData struct {
@@ -47,20 +49,44 @@ func doMigrateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("error: %s", err), 500)
 	}
 
-	backupPath := r.Form.Get("backuppath")
+	formBackupPath := r.Form.Get("backuppath")
+
+	// always backup so that we can roll back to the previous version if
+	// migration fails
+	backupPath := formBackupPath
+	if formBackupPath == "" {
+		backupPath = database.DatabaseBackupPath()
+	}
 
 	// perform database backup
-	if backupPath != "" {
-		if err = database.Backup(backupPath); err != nil {
-			http.Error(w, fmt.Sprintf("error backing up database: %s", err), 500)
-			return
-		}
+	if err = database.Backup(backupPath); err != nil {
+		http.Error(w, fmt.Sprintf("error backing up database: %s", err), 500)
+		return
 	}
 
 	err = database.RunMigrations()
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error performing migration: %s", err), 500)
+		errStr := fmt.Sprintf("error performing migration: %s", err)
+
+		// roll back to the backed up version
+		restoreErr := database.RestoreFromBackup(backupPath)
+		if restoreErr != nil {
+			errStr = fmt.Sprintf("ERROR: unable to restore database from backup after migration failure: %s\n%s", restoreErr.Error(), errStr)
+		} else {
+			errStr = "An error occurred migrating the database to the latest schema version. The backup database file was automatically renamed to restore the database.\n" + errStr
+		}
+
+		http.Error(w, errStr, 500)
 		return
 	}
+
+	// if no backup path was provided, then delete the created backup
+	if formBackupPath == "" {
+		err = os.Remove(backupPath)
+		if err != nil {
+			logger.Warnf("error removing unwanted database backup (%s): %s", backupPath, err.Error())
+		}
+	}
+
 	http.Redirect(w, r, "/", 301)
 }

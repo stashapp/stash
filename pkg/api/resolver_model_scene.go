@@ -82,7 +82,9 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 }
 
 func (r *sceneResolver) IsStreamable(ctx context.Context, obj *models.Scene) (bool, error) {
-	return manager.IsStreamable(obj)
+	// ignore error
+	ret, _ := manager.IsStreamable(obj)
+	return ret, nil
 }
 
 func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) ([]*models.SceneMarker, error) {
@@ -117,10 +119,17 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*model
 		}
 
 		sceneIdx := sm.SceneIndex
-		ret = append(ret, &models.SceneMovie{
-			Movie:      movie,
-			SceneIndex: &sceneIdx,
-		})
+		sceneMovie := &models.SceneMovie{
+			Movie: movie,
+		}
+
+		if sceneIdx.Valid {
+			var idx int
+			idx = int(sceneIdx.Int64)
+			sceneMovie.SceneIndex = &idx
+		}
+
+		ret = append(ret, sceneMovie)
 	}
 	return ret, nil
 }

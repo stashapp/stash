@@ -5,7 +5,7 @@ import { Form } from "react-bootstrap";
 
 type ValidTypes = GQL.SlimMovieDataFragment;
 
-export type MovieSceneIndexMap = Map<string, string | undefined>;
+export type MovieSceneIndexMap = Map<string, number | undefined>;
 
 export interface IProps {
   movieSceneIndexes: MovieSceneIndexMap;
@@ -17,11 +17,11 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
 ) => {
   const { data } = StashService.useAllMoviesForFilter();
 
-  const items = !!data && !!data.allMovies ? data.allMovies : [];
+  const items = !!data && !!data.allMoviesSlim ? data.allMoviesSlim : [];
   let itemsFilter: ValidTypes[] = [];
 
   if (!!props.movieSceneIndexes && !!items) {
-    props.movieSceneIndexes.forEach((index, movieId) => {
+    props.movieSceneIndexes.forEach((_index, movieId) => {
       itemsFilter = itemsFilter.concat(items.filter((x) => x.id === movieId));
     });
   }
@@ -30,7 +30,7 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
     return props.movieSceneIndexes.get(movie.id);
   });
 
-  const updateFieldChanged = (movieId: string, value: string) => {
+  const updateFieldChanged = (movieId: string, value: number) => {
     const newMap = new Map(props.movieSceneIndexes);
     newMap.set(movieId, value);
     props.onUpdate(newMap);
@@ -48,9 +48,15 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
               <Form.Control
                 as="select"
                 className="input-control"
-                value={storeIdx[index] ?? ""}
+                value={storeIdx[index] ? storeIdx[index]?.toString() : ""}
                 onChange={(e: React.FormEvent<HTMLInputElement>) =>
-                  updateFieldChanged(item.id, e.currentTarget.value)
+                  updateFieldChanged(
+                    item.id,
+                    Number.parseInt(
+                      e.currentTarget.value ? e.currentTarget.value : "0",
+                      10
+                    )
+                  )
                 }
               >
                 {["", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"].map(

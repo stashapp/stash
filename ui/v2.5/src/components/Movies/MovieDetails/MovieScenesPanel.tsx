@@ -41,5 +41,8 @@ export const MovieScenesPanel: React.FC<IMovieScenesPanel> = ({ movie }) => {
     return filter;
   }
 
-  return <SceneList subComponent filterHook={filterHook} />;
+  if (movie && movie.id) {
+    return <SceneList subComponent filterHook={filterHook} />;
+  }
+  return <></>;
 };

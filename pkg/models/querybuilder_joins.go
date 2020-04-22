@@ -161,7 +161,7 @@ func (qb *JoinsQueryBuilder) CreateMoviesScenes(newJoins []MoviesScenes, tx *sql
 // if the movie already exists on the scene. It returns true if scene
 // movie was added.
 
-func (qb *JoinsQueryBuilder) AddMoviesScene(sceneID int, movieID int, sceneIdx string, tx *sqlx.Tx) (bool, error) {
+func (qb *JoinsQueryBuilder) AddMoviesScene(sceneID int, movieID int, sceneIdx *int, tx *sqlx.Tx) (bool, error) {
 	ensureTx(tx)
 
 	existingMovies, err := qb.GetSceneMovies(sceneID, tx)
@@ -178,9 +178,15 @@ func (qb *JoinsQueryBuilder) AddMoviesScene(sceneID int, movieID int, sceneIdx s
 	}
 
 	movieJoin := MoviesScenes{
-		MovieID:    movieID,
-		SceneID:    sceneID,
-		SceneIndex: sceneIdx,
+		MovieID: movieID,
+		SceneID: sceneID,
+	}
+
+	if sceneIdx != nil {
+		movieJoin.SceneIndex = sql.NullInt64{
+			Int64: int64(*sceneIdx),
+			Valid: true,
+		}
 	}
 	movieJoins := append(existingMovies, movieJoin)
 

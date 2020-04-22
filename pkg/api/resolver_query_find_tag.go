@@ -16,3 +16,8 @@ func (r *queryResolver) AllTags(ctx context.Context) ([]*models.Tag, error) {
 	qb := models.NewTagQueryBuilder()
 	return qb.All()
 }
+
+func (r *queryResolver) AllTagsSlim(ctx context.Context) ([]*models.Tag, error) {
+	qb := models.NewTagQueryBuilder()
+	return qb.AllSlim()
+}

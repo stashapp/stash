@@ -1,5 +1,5 @@
-query FindMovies($filter: FindFilterType) {
-  findMovies(filter: $filter) {
+query FindMovies($filter: FindFilterType, $movie_filter: MovieFilterType) {
+  findMovies(filter: $filter, movie_filter: $movie_filter) {
     count
     movies {
       ...MovieData

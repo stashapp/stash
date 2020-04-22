@@ -184,7 +184,7 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 			if movie.Name.Valid {
 				sceneMovieJSON := jsonschema.SceneMovie{
 					MovieName:  movie.Name.String,
-					SceneIndex: sceneMovie.SceneIndex,
+					SceneIndex: int(sceneMovie.SceneIndex.Int64),
 				}
 				newSceneJSON.Movies = append(newSceneJSON.Movies, sceneMovieJSON)
 			}
@@ -480,10 +480,10 @@ func exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movie) {
 			newMovieJSON.Date = utils.GetYMDFromDatabaseDate(movie.Date.String)
 		}
 		if movie.Rating.Valid {
-			newMovieJSON.Rating = movie.Rating.String
+			newMovieJSON.Rating = int(movie.Rating.Int64)
 		}
 		if movie.Duration.Valid {
-			newMovieJSON.Duration = movie.Duration.String
+			newMovieJSON.Duration = int(movie.Duration.Int64)
 		}
 
 		if movie.Director.Valid {
