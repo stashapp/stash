@@ -16,6 +16,11 @@ export const Pagination: React.FC<IPaginationProps> = ({
 }) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
+  // Build the n-m/total string
+  const firstItemCount:number = (currentPage-1)*itemsPerPage+1;
+  const lastItemCount:number = Math.min(firstItemCount+(itemsPerPage-1), totalItems);
+  const indexText:string = `${firstItemCount}-${lastItemCount}/${totalItems}`;
+
   let startPage: number;
   let endPage: number;
   if (totalPages <= 10) {
@@ -95,6 +100,12 @@ export const Pagination: React.FC<IPaginationProps> = ({
       >
         <span className="d-none d-sm-inline">Last</span>
         <span className="d-inline d-sm-none">&#x300b;</span>
+      </Button>
+      <Button
+        variant="secondary"
+        disabled={true}
+      >
+        {indexText}
       </Button>
     </ButtonGroup>
   );
