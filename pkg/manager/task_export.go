@@ -33,14 +33,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	ctx := context.TODO()
 	startTime := time.Now()
 
-	jsonPaths := paths.GetJSONPaths()
-
-	utils.EnsureDir(jsonPaths.Metadata)
-	utils.EnsureDir(jsonPaths.Scenes)
-	utils.EnsureDir(jsonPaths.Galleries)
-	utils.EnsureDir(jsonPaths.Performers)
-	utils.EnsureDir(jsonPaths.Studios)
-	utils.EnsureDir(jsonPaths.Movies)
+	paths.EnsureJSONDirs()
 
 	t.ExportScenes(ctx, workerCount)
 	t.ExportGalleries(ctx)

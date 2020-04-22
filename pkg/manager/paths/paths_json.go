@@ -2,6 +2,7 @@ package paths
 
 import (
 	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/utils"
 	"path/filepath"
 )
 
@@ -34,6 +35,16 @@ func newJSONPaths() *jsonPaths {
 func GetJSONPaths() *jsonPaths {
 	jp := newJSONPaths()
 	return jp
+}
+
+func EnsureJSONDirs() {
+	jsonPaths := GetJSONPaths()
+	utils.EnsureDir(jsonPaths.Metadata)
+	utils.EnsureDir(jsonPaths.Scenes)
+	utils.EnsureDir(jsonPaths.Galleries)
+	utils.EnsureDir(jsonPaths.Performers)
+	utils.EnsureDir(jsonPaths.Studios)
+	utils.EnsureDir(jsonPaths.Movies)
 }
 
 func (jp *jsonPaths) PerformerJSONPath(checksum string) string {
