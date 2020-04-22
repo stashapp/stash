@@ -519,8 +519,8 @@ func (s *singleton) Clean() {
 			wg.Wait()
 		}
 
-		for _, gallery := range galleries {
-			s.Status.incrementProgress()
+		for i, gallery := range galleries {
+			s.Status.setProgress(len(scenes)+i, total)
 			if s.Status.stopping {
 				logger.Info("Stopping due to user request")
 				return
