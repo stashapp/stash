@@ -9,7 +9,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "yarn lint:css && yarn lint:js",
-    "lint:js": "eslint --cache \"src/**/*.{ts,tsx}\"",
+    "lint:js": "eslint --cache src/**/*.{ts,tsx}",
     "lint:css": "stylelint \"src/**/*.scss\"",
     "format": "prettier --write \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\"",
     "format-check": "prettier --check \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\"",
