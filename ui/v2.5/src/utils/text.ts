@@ -103,11 +103,11 @@ const sanitiseURL = (url?: string, siteURL?: URL) => {
     }
 
     // otherwise, construct the url from the protocol, host and passed url
-    return siteURL.protocol + siteURL.host + "/" + url;
+    return `${siteURL.protocol}${siteURL.host}/${url}`;
   }
 
   // just prepend the protocol - assume https
-  return "https://" + url;
+  return `https://${url}`;
 }
 
 const TextUtils = {
