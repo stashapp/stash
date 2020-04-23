@@ -1,6 +1,8 @@
 if: tag != develop_latest # dont build for the latest_develop tagged version
 
 dist: xenial
+git:
+  depth: false
 language: go
 go:
 - 1.11.x
