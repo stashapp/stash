@@ -92,11 +92,15 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 
 ## Commands
 
-* `make generate` - Generate Go GraphQL and packr2 files
+* `make generate` - Generate Go and UI GraphQL files
 * `make build` - Builds the binary (make sure to build the UI as well... see below)
-* `make ui` - Builds the frontend
+* `make ui-pre` - Installs the UI dependencies. Only needs to be run once before building the UI for the first time, or if the dependencies are updated
+* `make ui` - Builds the frontend and the packr2 files
+* `make packr` - Generate packr2 files (sub-target of `ui`. Use to regenerate packr2 files without rebuilding UI)
 * `make vet` - Run `go vet`
 * `make lint` - Run the linter
+* `make fmt` - Run `go fmt`
+* `make fmt-check` - Ensure changed files are formatted correctly
 
 ## Building a release
 

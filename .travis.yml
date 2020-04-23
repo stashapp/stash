@@ -14,12 +14,12 @@ before_install:
 - nvm install 12
 - travis_retry yarn --cwd ui/v2.5 install --frozen-lockfile
 - make generate
-- CI=false yarn --cwd ui/v2.5 build # TODO: Fix warnings
+- CI=false yarn --cwd ui/v2.5 lint format-check build
 #- go get -v github.com/mgechev/revive
 script:
+# left lint off to avoid getting extra dependency
 #- make lint
-#- make vet
-- make it
+- make fmt-check vet it
 after_success:
 - docker pull stashapp/compiler:develop
 - sh ./scripts/cross-compile.sh
