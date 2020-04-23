@@ -1,15 +1,16 @@
 package manager
 
 import (
+	"path/filepath"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/bmatcuk/doublestar"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"path/filepath"
-	"strconv"
-	"sync"
-	"time"
 )
 
 var extensionsToScan = []string{"zip", "m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
@@ -529,7 +530,7 @@ func (s *singleton) returnToIdleState() {
 }
 
 func (s *singleton) neededScan(paths []string) int64 {
-	var neededScans int64 = 0
+	var neededScans int64
 
 	for _, path := range paths {
 		task := ScanTask{FilePath: path}
@@ -550,14 +551,14 @@ type totalsGenerate struct {
 func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, markers, transcodes bool) *totalsGenerate {
 
 	var totals totalsGenerate
-	const timeoutSecs = 90 * time.Second
+	const timeout = 90 * time.Second
 
 	// create a control channel through which to signal the counting loop when the timeout is reached
 	chTimeout := make(chan struct{})
 
 	//run the timeout function in a separate thread
 	go func() {
-		time.Sleep(timeoutSecs)
+		time.Sleep(timeout)
 		chTimeout <- struct{}{}
 	}()
 
