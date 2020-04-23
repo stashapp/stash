@@ -16,10 +16,10 @@ export const Pagination: React.FC<IPaginationProps> = ({
 }) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  // Build the n-m/total string
+  // Build the pagination index string
   const firstItemCount:number = Math.min((currentPage-1)*itemsPerPage+1, totalItems);
   const lastItemCount:number = Math.min(firstItemCount+(itemsPerPage-1), totalItems);
-  const indexText:string = `${firstItemCount}-${lastItemCount}/${totalItems}`;
+  const indexText:string = `${firstItemCount}-${lastItemCount} of ${totalItems}`;
 
   let startPage: number;
   let endPage: number;
