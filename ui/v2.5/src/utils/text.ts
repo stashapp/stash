@@ -90,7 +90,7 @@ const sanitiseURL = (url?: string, siteURL?: URL) => {
   if (!url) {
     return url;
   }
-  
+
   if (url.startsWith("http://") || url.startsWith("https://")) {
     // just return the entire URL
     return url;
@@ -108,7 +108,7 @@ const sanitiseURL = (url?: string, siteURL?: URL) => {
 
   // just prepend the protocol - assume https
   return `https://${url}`;
-}
+};
 
 const TextUtils = {
   truncate,
