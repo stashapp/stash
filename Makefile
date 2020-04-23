@@ -31,7 +31,7 @@ fmt:
 # Ensures that changed files have had gofmt run on them
 .PHONY: fmt-check
 fmt-check:
-	./scripts/check-gofmt.sh
+	sh ./scripts/check-gofmt.sh
 
 # Runs go vet on the project's source code.
 .PHONY: vet
