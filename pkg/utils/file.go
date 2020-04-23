@@ -66,6 +66,11 @@ func EnsureDir(path string) error {
 	return err
 }
 
+// EnsudirAll will create a directory at the given path along with any necessary parents if they don't already exist
+func EnsureDirAll(path string) error {
+	return os.MkdirAll(path, 0755)
+}
+
 // RemoveDir removes the given file path along with all of its contents
 func RemoveDir(path string) error {
 	return os.RemoveAll(path)
