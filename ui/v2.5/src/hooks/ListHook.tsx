@@ -211,6 +211,13 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     updateQueryParams(newFilter);
   }
 
+  function onSortReshuffle() {
+    const newFilter = _.cloneDeep(filter);
+    newFilter.currentPage = 1;
+    newFilter.randomSeed = -1;
+    updateQueryParams(newFilter);
+  }
+
   function onChangeDisplayMode(displayMode: DisplayMode) {
     const newFilter = _.cloneDeep(filter);
     newFilter.displayMode = displayMode;
@@ -370,6 +377,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         onChangeQuery={onChangeQuery}
         onChangeSortDirection={onChangeSortDirection}
         onChangeSortBy={onChangeSortBy}
+        onSortReshuffle={onSortReshuffle}
         onChangeDisplayMode={onChangeDisplayMode}
         onAddCriterion={onAddCriterion}
         onRemoveCriterion={onRemoveCriterion}
