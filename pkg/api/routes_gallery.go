@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"github.com/dustin/go-humanize"
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -22,6 +24,8 @@ type thumbBuffer struct {
 	data []byte
 }
 
+const ThumbCacheLimit int64 = 25 * 1024 * 1024 // cache size limit in bytes // TODO add to options instead
+
 func newThumb(dir string, path string, data []byte) *thumbBuffer {
 	t := thumbBuffer{dir: dir, path: path, data: data}
 	return &t
@@ -30,7 +34,23 @@ func newThumb(dir string, path string, data []byte) *thumbBuffer {
 var writeChan chan *thumbBuffer
 var touchChan chan *string
 
-func startThumbCache() { // TODO add extra wait code when stash gets a stop mode
+func startThumbCache() { // TODO add extra wait, close chan code if/when stash gets a stop mode
+
+	dir := config.GetCachePath()
+	info, err := os.Lstat(dir)
+	if err == nil {
+		var files []utils.DuDetails
+		size := utils.DuDir(dir, info, &files) // get cache stats
+		logger.Infof("Current cache size: %s", humanize.Bytes(uint64(size)))
+
+		diff := size - ThumbCacheLimit
+		if diff > 0 { // reduce cache by deleting files if needed
+			utils.SortDuDetailsByMtime(files) // sort slice so least recently modified files are first
+			diff = utils.ReduceDir(files, diff)
+			logger.Infof("Reduced cache by %s", humanize.Bytes(uint64(diff)))
+		}
+	}
+
 	writeChan = make(chan *thumbBuffer, 20)
 	touchChan = make(chan *string, 100)
 	go thumbnailWriter()
@@ -94,15 +114,16 @@ func (rs galleryRoutes) File(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// get thumbnail from cache otherwise create it
-// and store to cache
+// get thumbnail from cache, otherwise create it and store to cache
 func cacheThumb(gallery *models.Gallery, index int, width int) []byte {
 	thumbPath := paths.GetThumbPath(gallery.Checksum, index, width)
 	exists, _ := utils.FileExists(thumbPath)
 	if exists { // if thumbnail exists in cache return that
 		content, err := ioutil.ReadFile(thumbPath)
 		if err == nil {
-			touchChan <- &thumbPath // touch the file so we know which thumbs are rarely accessed
+			if ThumbCacheLimit > 0 {
+				touchChan <- &thumbPath // touch the file so we know which thumbs are rarely accessed
+			}
 			return content
 		} else {
 			logger.Errorf("Read Error for file %s : %s", thumbPath, err)

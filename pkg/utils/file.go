@@ -8,7 +8,15 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"sort"
+	"time"
 )
+
+type DuDetails struct {
+	path  string
+	mtime time.Time
+	size  int64
+}
 
 // FileType uses the filetype package to determine the given file path's type
 func FileType(filePath string) (types.Type, error) {
@@ -137,4 +145,78 @@ func GetHomeDirectory() string {
 		panic(err)
 	}
 	return currentUser.HomeDir
+}
+
+func PrintDuDetails(files []DuDetails) {
+	for i, file := range files {
+		fmt.Printf("%d: %s size: %d mod date: %s\n", i, file.path, file.size, file.mtime.Format("2006-01-02T15:04:05"))
+	}
+}
+
+// Sort DuDetails slice by mod time, older first
+func SortDuDetailsByMtime(files []DuDetails) {
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].mtime.After(files[j].mtime)
+	})
+}
+
+// DuDir returns the size of the directory (only actual files are counted)
+// The filesInfo slice is populated during the recursion
+func DuDir(path string, info os.FileInfo, filesInfo *[]DuDetails) int64 {
+	var details DuDetails
+	var err error
+
+	path, err = filepath.Abs(path)
+
+	if err != nil {
+		panic(err)
+	}
+	if !info.IsDir() {
+		details.size = info.Size()
+		details.mtime = info.ModTime()
+		details.path = path
+		*filesInfo = append(*filesInfo, details)
+		return details.size
+	}
+	size := info.Size()
+	dir, err := os.Open(path)
+	if err != nil {
+		fmt.Errorf("Error openig path %s: %s\n", path, err)
+		return size
+	}
+	defer dir.Close()
+
+	fis, err := dir.Readdir(-1)
+	if err != nil {
+		panic(err)
+	}
+	for _, fi := range fis {
+		if fi.Name() == "." || fi.Name() == ".." {
+			continue
+		}
+
+		size += DuDir(filepath.Join(path, fi.Name()), fi, filesInfo)
+	}
+
+	return size
+}
+
+// Reduce dir by at least size bytes
+// Returns the size of removed files
+func ReduceDir(files []DuDetails, size int64) int64 {
+	var rmSize int64 = 0
+	for _, file := range files {
+		if rmSize <= size {
+			err := os.Remove(file.path)
+
+			if err != nil {
+				fmt.Printf("Error removing file: %s\n", file.path)
+				continue
+			}
+			rmSize += file.size
+		} else {
+			break
+		}
+	}
+	return rmSize
 }
