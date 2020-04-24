@@ -1,9 +1,10 @@
 package manager
 
 import (
-	"github.com/stashapp/stash/pkg/logger"
 	"regexp"
 	"strings"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 func excludeFiles(files []string, patterns []string) ([]string, int) {
@@ -37,21 +38,13 @@ func excludeFiles(files []string, patterns []string) ([]string, int) {
 }
 
 func matchFile(file string, patterns []string) bool {
-	if patterns == nil {
-		logger.Infof("No exclude patterns in config.")
-
-	} else {
+	if patterns != nil {
 		fileRegexps := generateRegexps(patterns)
-
-		if len(fileRegexps) == 0 {
-			return false
-		}
 
 		for _, regPattern := range fileRegexps {
 			if regPattern.MatchString(strings.ToLower(file)) {
 				return true
 			}
-
 		}
 	}
 
