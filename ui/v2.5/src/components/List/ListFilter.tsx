@@ -28,6 +28,7 @@ interface IListFilterProps {
   onChangeQuery: (query: string) => void;
   onChangeSortDirection: (sortDirection: SortDirectionEnum) => void;
   onChangeSortBy: (sortBy: string) => void;
+  onSortReshuffle: () => void;
   onChangeDisplayMode: (displayMode: DisplayMode) => void;
   onAddCriterion: (criterion: Criterion, oldId?: string) => void;
   onRemoveCriterion: (criterion: Criterion) => void;
@@ -75,6 +76,10 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function onChangeSortBy(event: React.MouseEvent<SafeAnchor>) {
     const target = (event.currentTarget as unknown) as HTMLAnchorElement;
     props.onChangeSortBy(target.text);
+  }
+
+  function onReshuffleRandomSort() {
+    props.onSortReshuffle();
   }
 
   function onChangeDisplayMode(displayMode: DisplayMode) {
@@ -318,6 +323,13 @@ export const ListFilter: React.FC<IListFilterProps> = (
                   />
                 </Button>
               </OverlayTrigger>
+              { props.filter.sortBy === "random" &&
+                <OverlayTrigger overlay={ <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip> } >
+                  <Button variant="secondary" onClick={onReshuffleRandomSort}>
+                    <Icon icon="random" />
+                  </Button>
+                </OverlayTrigger>
+              }
             </Dropdown>
           </ButtonGroup>
 
