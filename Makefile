@@ -63,8 +63,17 @@ ui:
 	cd ui/v2.5 && yarn build
 	packr2
 
+# runs tests and checks on the UI and builds it
+.PHONY: ui-validate
+ui-validate:
+	cd ui/v2.5 && yarn run validate
+
 # just repacks the packr files - use when updating migrations and packed files without 
 # rebuilding the UI
 .PHONY: packr
 packr:
 	packr2
+
+# runs all of the tests and checks required for a PR to be accepted
+.PHONY: validate
+validate: ui-validate fmt-check vet lint it

@@ -101,6 +101,8 @@ NOTE: The `make` command in Windows will be `mingw32-make` with MingW.
 * `make lint` - Run the linter
 * `make fmt` - Run `go fmt`
 * `make fmt-check` - Ensure changed files are formatted correctly
+* `make it` - Run the unit and integration tests
+* `make validate` - Run all of the tests and checks required to submit a PR
 
 ## Building a release
 
