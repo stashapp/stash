@@ -1,5 +1,6 @@
 import React from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
+import { useIntl } from "react-intl";
 
 interface IPaginationProps {
   itemsPerPage: number;
@@ -14,12 +15,14 @@ export const Pagination: React.FC<IPaginationProps> = ({
   totalItems,
   onChangePage,
 }) => {
+  const intl = useIntl();
+
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   // Build the pagination index string
   const firstItemCount:number = Math.min((currentPage-1)*itemsPerPage+1, totalItems);
   const lastItemCount:number = Math.min(firstItemCount+(itemsPerPage-1), totalItems);
-  const indexText:string = `${firstItemCount}-${lastItemCount} of ${totalItems}`;
+  const indexText:string = `${intl.formatNumber(firstItemCount)}-${intl.formatNumber(lastItemCount)} of ${intl.formatNumber(totalItems)}`;
 
   let startPage: number;
   let endPage: number;
