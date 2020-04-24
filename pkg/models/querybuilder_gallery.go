@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"path/filepath"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -49,6 +50,10 @@ func (qb *GalleryQueryBuilder) Update(updatedGallery Gallery, tx *sqlx.Tx) (*Gal
 		return nil, err
 	}
 	return &updatedGallery, nil
+}
+
+func (qb *GalleryQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
+	return executeDeleteQuery("galleries", strconv.Itoa(id), tx)
 }
 
 type GalleryNullSceneID struct {
