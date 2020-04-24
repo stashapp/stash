@@ -2,10 +2,13 @@ package paths
 
 import (
 	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/utils"
 	"path/filepath"
 )
 
 type jsonPaths struct {
+	Metadata string
+
 	MappingsFile string
 	ScrapedFile  string
 
@@ -18,6 +21,7 @@ type jsonPaths struct {
 
 func newJSONPaths() *jsonPaths {
 	jp := jsonPaths{}
+	jp.Metadata = config.GetMetadataPath()
 	jp.MappingsFile = filepath.Join(config.GetMetadataPath(), "mappings.json")
 	jp.ScrapedFile = filepath.Join(config.GetMetadataPath(), "scraped.json")
 	jp.Performers = filepath.Join(config.GetMetadataPath(), "performers")
@@ -26,6 +30,21 @@ func newJSONPaths() *jsonPaths {
 	jp.Studios = filepath.Join(config.GetMetadataPath(), "studios")
 	jp.Movies = filepath.Join(config.GetMetadataPath(), "movies")
 	return &jp
+}
+
+func GetJSONPaths() *jsonPaths {
+	jp := newJSONPaths()
+	return jp
+}
+
+func EnsureJSONDirs() {
+	jsonPaths := GetJSONPaths()
+	utils.EnsureDir(jsonPaths.Metadata)
+	utils.EnsureDir(jsonPaths.Scenes)
+	utils.EnsureDir(jsonPaths.Galleries)
+	utils.EnsureDir(jsonPaths.Performers)
+	utils.EnsureDir(jsonPaths.Studios)
+	utils.EnsureDir(jsonPaths.Movies)
 }
 
 func (jp *jsonPaths) PerformerJSONPath(checksum string) string {

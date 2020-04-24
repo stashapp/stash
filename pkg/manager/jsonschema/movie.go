@@ -1,8 +1,8 @@
 package jsonschema
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/json-iterator/go"
 	"os"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -30,6 +30,7 @@ func LoadMovieFile(filePath string) (*Movie, error) {
 	if err != nil {
 		return nil, err
 	}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&movie)
 	if err != nil {
