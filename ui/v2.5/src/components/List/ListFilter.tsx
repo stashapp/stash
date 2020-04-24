@@ -323,13 +323,17 @@ export const ListFilter: React.FC<IListFilterProps> = (
                   />
                 </Button>
               </OverlayTrigger>
-              { props.filter.sortBy === "random" &&
-                <OverlayTrigger overlay={ <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip> } >
+              {props.filter.sortBy === "random" && (
+                <OverlayTrigger
+                  overlay={
+                    <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>
+                  }
+                >
                   <Button variant="secondary" onClick={onReshuffleRandomSort}>
                     <Icon icon="random" />
                   </Button>
                 </OverlayTrigger>
-              }
+              )}
             </Dropdown>
           </ButtonGroup>
 
