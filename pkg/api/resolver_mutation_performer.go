@@ -19,7 +19,11 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	var err error
 
 	if input.Image == nil {
-		imageData, err = getRandomPerformerImage()
+		gender := ""
+		if input.Gender != nil {
+			gender = input.Gender.String()
+		}
+		imageData, err = getRandomPerformerImage(gender)
 	} else {
 		_, imageData, err = utils.ProcessBase64Image(*input.Image)
 	}
