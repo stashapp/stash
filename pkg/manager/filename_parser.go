@@ -303,7 +303,7 @@ func mmmToMonth(mmm string) string {
 
 	// expect month in two-digit format
 	format = "01-02-2006"
-	return t.Format(format)[0:1]
+	return t.Format(format)[0:2]
 }
 
 func (h *sceneHolder) setField(field parserField, value interface{}) {
