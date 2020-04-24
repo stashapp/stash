@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 
@@ -98,6 +99,7 @@ func initParserFields() {
 	ret["yyyy"] = newParserField("yyyy", `\d{4}`, true)
 	ret["yy"] = newParserField("yy", `\d{2}`, true)
 	ret["mm"] = newParserField("mm", `\d{2}`, true)
+	ret["mmm"] = newParserField("mmm", `\w{3}`, true)
 	ret["dd"] = newParserField("dd", `\d{2}`, true)
 	ret["yyyymmdd"] = newFullDateParserField("yyyymmdd", `\d{8}`)
 	ret["yymmdd"] = newFullDateParserField("yymmdd", `\d{6}`)
@@ -290,6 +292,20 @@ func (h *sceneHolder) setDate(field *parserField, value string) {
 	}
 }
 
+func mmmToMonth(mmm string) string {
+	format := "02-Jan-2006"
+	dateStr := "01-" + mmm + "-2000"
+	t, err := time.Parse(format, dateStr)
+
+	if err != nil {
+		return ""
+	}
+
+	// expect month in two-digit format
+	format = "01-02-2006"
+	return t.Format(format)[0:1]
+}
+
 func (h *sceneHolder) setField(field parserField, value interface{}) {
 	if field.isFullDateField {
 		h.setDate(&field, value.(string))
@@ -328,18 +344,16 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 		h.tags = append(h.tags, value.(string))
 	case "yyyy":
 		h.yyyy = value.(string)
-		break
 	case "yy":
 		v := value.(string)
 		v = "20" + v
 		h.yyyy = v
-		break
+	case "mmm":
+		h.mm = mmmToMonth(value.(string))
 	case "mm":
 		h.mm = value.(string)
-		break
 	case "dd":
 		h.dd = value.(string)
-		break
 	}
 }
 
