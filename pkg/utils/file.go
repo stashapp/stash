@@ -229,6 +229,7 @@ func IsZipFileUncompressed(path string) (bool, error) {
 		fmt.Printf("Error reading zip file %s: %s\n", path, err)
 		return false, err
 	} else {
+		defer r.Close()
 		for _, f := range r.File {
 			if f.FileInfo().IsDir() { // skip dirs, they always get store level compression
 				continue
@@ -236,6 +237,5 @@ func IsZipFileUncompressed(path string) (bool, error) {
 			return f.Method == 0, nil // check compression level of first actual  file
 		}
 	}
-	r.Close()
 	return false, nil
 }
