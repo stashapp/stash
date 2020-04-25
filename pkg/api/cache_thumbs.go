@@ -58,8 +58,14 @@ func thumbnailCacheWriter() {
 	for thumb := range writeChan {
 
 		exists, _ := utils.FileExists(thumb.path)
+
 		if !exists { // file to write shouldn't exist
-			utils.EnsureDirAll(thumb.dir)
+			pathErr := utils.EnsureDirAll(thumb.dir)
+			if pathErr != nil {
+				logger.Errorf("Cannot ensure path %s", pathErr)
+				continue
+			}
+
 			err := ioutil.WriteFile(thumb.path, thumb.data, 0755) // store thumbnail in cache
 			if err != nil {
 				logger.Errorf("Write error for thumbnail %s: %s ", thumb.path, err)

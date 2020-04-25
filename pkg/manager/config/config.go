@@ -15,7 +15,6 @@ import (
 const Stash = "stash"
 const Cache = "cache"
 const CacheThumbSize = "cache_thumb_size"
-const DefaultCacheThumbSize = 0
 const Generated = "generated"
 const Metadata = "metadata"
 const Downloads = "downloads"
@@ -93,7 +92,6 @@ func GetCachePath() string {
 }
 
 func GetCacheThumbSize() int {
-	viper.SetDefault(CacheThumbSize, DefaultCacheThumbSize)
 	return viper.GetInt(CacheThumbSize)
 }
 

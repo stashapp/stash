@@ -23,6 +23,10 @@ func (rs galleryRoutes) Routes() chi.Router {
 
 func (rs galleryRoutes) File(w http.ResponseWriter, r *http.Request) {
 	gallery := r.Context().Value(galleryKey).(*models.Gallery)
+	if gallery == nil {
+		http.Error(w, http.StatusText(404), 404)
+		return
+	}
 	fileIndex, _ := strconv.Atoi(chi.URLParam(r, "fileIndex"))
 	thumb := r.URL.Query().Get("thumb")
 	w.Header().Add("Cache-Control", "max-age=604800000") // 1 Week
