@@ -8,7 +8,7 @@ import (
 
 type galleryPaths struct{}
 
-const thumbDir = "thumbs"
+const thumbDir = "gthumbs"
 
 func newGalleryPaths() *galleryPaths {
 	return &galleryPaths{}
@@ -18,15 +18,15 @@ func (gp *galleryPaths) GetExtractedPath(checksum string) string {
 	return filepath.Join(config.GetCachePath(), checksum)
 }
 
-func GetThumbCache() string {
+func GetGthumbCache() string {
 	return filepath.Join(config.GetCachePath(), thumbDir)
 }
 
-func GetThumbDir(checksum string) string {
+func GetGthumbDir(checksum string) string {
 	return filepath.Join(config.GetCachePath(), thumbDir, checksum)
 }
 
-func GetThumbPath(checksum string, index int, width int) string {
+func GetGthumbPath(checksum string, index int, width int) string {
 	fname := fmt.Sprintf("%s_%d_%d.jpg", checksum, index, width)
 	return filepath.Join(config.GetCachePath(), thumbDir, checksum, fname)
 }

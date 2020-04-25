@@ -80,7 +80,7 @@ func EnsureDirAll(path string) error {
 	return os.MkdirAll(path, 0755)
 }
 
-// RemoveDir removes the given file path along with all of its contents
+// RemoveDir removes the given dir (if it exists) along with all of its contents
 func RemoveDir(path string) error {
 	return os.RemoveAll(path)
 }
@@ -229,10 +229,13 @@ func IsZipFileUncompressed(path string) (bool, error) {
 		fmt.Printf("Error reading zip file %s: %s\n", path, err)
 		return false, err
 	} else {
-		if r.File[0].Method == 0 { // for performance reasons we only check the compression
-			return true, nil // level of the first file in the zip
+		for _, f := range r.File {
+			if f.FileInfo().IsDir() { // skip dirs, they always get store level compression
+				continue
+			}
+			return f.Method == 0, nil // check compression level of first actual  file
 		}
-		r.Close()
 	}
+	r.Close()
 	return false, nil
 }
