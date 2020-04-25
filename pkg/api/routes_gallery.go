@@ -5,7 +5,6 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -26,7 +25,7 @@ type thumbBuffer struct {
 
 const ThumbCacheLimit int64 = 25 * 1024 * 1024 // cache size limit in bytes // TODO add to options instead
 
-func newThumb(dir string, path string, data []byte) *thumbBuffer {
+func newCacheThumb(dir string, path string, data []byte) *thumbBuffer {
 	t := thumbBuffer{dir: dir, path: path, data: data}
 	return &t
 }
@@ -36,29 +35,31 @@ var touchChan chan *string
 
 func startThumbCache() { // TODO add extra wait, close chan code if/when stash gets a stop mode
 
-	dir := config.GetCachePath()
+	dir := paths.GetThumbCache()
 	info, err := os.Lstat(dir)
 	if err == nil {
 		var files []utils.DuDetails
 		size := utils.DuDir(dir, info, &files) // get cache stats
+		logger.Infof("Cache dir used for galleries: %s", dir)
 		logger.Infof("Current cache size: %s", humanize.Bytes(uint64(size)))
-
-		diff := size - ThumbCacheLimit
-		if diff > 0 { // reduce cache by deleting files if needed
-			utils.SortDuDetailsByMtime(files) // sort slice so least recently modified files are first
-			diff = utils.ReduceDir(files, diff)
-			logger.Infof("Reduced cache by %s", humanize.Bytes(uint64(diff)))
+		if ThumbCacheLimit > 0 { // ThumbCachelimit = 0 means limit disabled
+			diff := size - ThumbCacheLimit
+			if diff > 0 { // reduce cache by deleting files if needed
+				utils.SortDuDetailsByMtime(files) // sort slice so least recently modified files are first
+				diff = utils.ReduceDir(files, diff)
+				logger.Infof("Reduced cache by %s", humanize.Bytes(uint64(diff)))
+			}
 		}
 	}
 
 	writeChan = make(chan *thumbBuffer, 20)
 	touchChan = make(chan *string, 100)
-	go thumbnailWriter()
-	go thumbnailToucher()
+	go thumbnailCacheWriter()
+	go thumbnailCacheToucher()
 }
 
 //serialize file writes to avoid race conditions
-func thumbnailWriter() {
+func thumbnailCacheWriter() {
 
 	for thumb := range writeChan {
 
@@ -76,7 +77,7 @@ func thumbnailWriter() {
 }
 
 //serialize file touches to avoid race conditions
-func thumbnailToucher() {
+func thumbnailCacheToucher() {
 	for thumbPath := range touchChan {
 		time := time.Now()
 		os.Chtimes(*thumbPath, time, time)
@@ -132,7 +133,7 @@ func cacheThumb(gallery *models.Gallery, index int, width int) []byte {
 	}
 	data := gallery.GetThumbnail(index, width)
 	thumbDir := paths.GetThumbDir(gallery.Checksum)
-	t := newThumb(thumbDir, thumbPath, data)
+	t := newCacheThumb(thumbDir, thumbPath, data)
 	writeChan <- t // write the file to cache
 	return data
 }

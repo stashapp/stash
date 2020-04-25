@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"archive/zip"
 	"fmt"
 	"github.com/h2non/filetype"
 	"github.com/h2non/filetype/types"
@@ -219,4 +220,19 @@ func ReduceDir(files []DuDetails, size int64) int64 {
 		}
 	}
 	return rmSize
+}
+
+// Return true if zip file is using 0 compression level
+func IsZipFileUncompressed(path string) (bool, error) {
+	r, err := zip.OpenReader(path)
+	if err != nil {
+		fmt.Printf("Error reading zip file %s: %s\n", path, err)
+		return false, err
+	} else {
+		if r.File[0].Method == 0 { // for performance reasons we only check the compression
+			return true, nil // level of the first file in the zip
+		}
+		r.Close()
+	}
+	return false, nil
 }

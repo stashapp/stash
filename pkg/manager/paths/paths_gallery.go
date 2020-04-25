@@ -18,6 +18,10 @@ func (gp *galleryPaths) GetExtractedPath(checksum string) string {
 	return filepath.Join(config.GetCachePath(), checksum)
 }
 
+func GetThumbCache() string {
+	return filepath.Join(config.GetCachePath(), thumbDir)
+}
+
 func GetThumbDir(checksum string) string {
 	return filepath.Join(config.GetCachePath(), thumbDir, checksum)
 }
