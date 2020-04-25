@@ -14,6 +14,10 @@ input ConfigGeneralInput {
   databasePath: String
   """Path to generated files"""
   generatedPath: String
+  """Path to cache"""
+  cachePath: String
+  """Max size for thumbs in cache (MB)"""
+  cacheThumbSize: Int
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
@@ -49,7 +53,11 @@ type ConfigGeneralResult {
   databasePath: String!
   """Path to generated files"""
   generatedPath: String!
-    """Max generated transcode size"""
+  """Path to cache"""
+  cachePath: String!
+  """Max size for thumbs in cache (MB)"""
+  cacheThumbSize: Int!
+  """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
