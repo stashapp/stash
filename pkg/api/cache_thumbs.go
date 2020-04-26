@@ -1,7 +1,6 @@
 package api
 
 import (
-	"github.com/dustin/go-humanize"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
@@ -34,14 +33,14 @@ func startThumbCache() { // TODO add extra wait, close chan code if/when stash g
 	if err == nil {
 		var files []utils.DuDetails
 		size := utils.DuDir(dir, info, &files) // get cache stats
-		logger.Infof("Current cache : %s", humanize.IBytes(uint64(size)))
+		logger.Infof("Current cache : %s", utils.HumanizeBytes(uint64(size)))
 		if thumbCacheLimit > 0 { // thumbCachelimit == 0 means limit disabled
-			logger.Infof("Storage reserved for cache : %s", humanize.IBytes(uint64(thumbCacheLimit)))
+			logger.Infof("Storage reserved for cache : %s", utils.HumanizeBytes(uint64(thumbCacheLimit)))
 			diff := size - thumbCacheLimit
 			if diff > 0 { // reduce cache by deleting files if needed
 				utils.SortDuDetailsByMtime(files) // sort slice so least recently modified files are first
 				diff = utils.ReduceDir(files, diff)
-				logger.Infof("Reduced cache by %s", humanize.IBytes(uint64(diff)))
+				logger.Infof("Reduced cache by %s", utils.HumanizeBytes(uint64(diff)))
 			}
 		}
 	}
