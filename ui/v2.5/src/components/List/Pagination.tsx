@@ -9,20 +9,20 @@ interface IPaginationProps {
   onChangePage: (page: number) => void;
 }
 
+interface IPaginationIndexProps {
+  itemsPerPage: number;
+  currentPage: number;
+  totalItems: number;
+  onClick?: () => void;
+}
+
 export const Pagination: React.FC<IPaginationProps> = ({
   itemsPerPage,
   currentPage,
   totalItems,
   onChangePage,
 }) => {
-  const intl = useIntl();
-
   const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  // Build the pagination index string
-  const firstItemCount:number = Math.min((currentPage-1)*itemsPerPage+1, totalItems);
-  const lastItemCount:number = Math.min(firstItemCount+(itemsPerPage-1), totalItems);
-  const indexText:string = `${intl.formatNumber(firstItemCount)}-${intl.formatNumber(lastItemCount)} of ${intl.formatNumber(totalItems)}`;
 
   let startPage: number;
   let endPage: number;
@@ -104,12 +104,22 @@ export const Pagination: React.FC<IPaginationProps> = ({
         <span className="d-none d-sm-inline">Last</span>
         <span className="d-inline d-sm-none">&#x300b;</span>
       </Button>
-      <Button
-        variant="secondary"
-        disabled={true}
-      >
-        {indexText}
-      </Button>
     </ButtonGroup>
   );
+};
+
+export const PaginationIndex: React.FC<IPaginationIndexProps> = ({
+  itemsPerPage,
+  currentPage,
+  totalItems,
+  onClick
+}) => {
+  const intl = useIntl();
+
+  // Build the pagination index string
+  const firstItemCount:number = Math.min((currentPage-1)*itemsPerPage+1, totalItems);
+  const lastItemCount:number = Math.min(firstItemCount+(itemsPerPage-1), totalItems);
+  const indexText:string = `${intl.formatNumber(firstItemCount)}-${intl.formatNumber(lastItemCount)} of ${intl.formatNumber(totalItems)}`;
+
+  return <span className="filter-container paginationIndex" onClick={onClick}>{indexText}</span>
 };
