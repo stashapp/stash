@@ -121,5 +121,5 @@ export const PaginationIndex: React.FC<IPaginationIndexProps> = ({
   const lastItemCount:number = Math.min(firstItemCount+(itemsPerPage-1), totalItems);
   const indexText:string = `${intl.formatNumber(firstItemCount)}-${intl.formatNumber(lastItemCount)} of ${intl.formatNumber(totalItems)}`;
 
-  return <span className="filter-container paginationIndex" onClick={onClick}>{indexText}</span>
+  return <span className="filter-container text-muted paginationIndex" onClick={onClick}>{indexText}</span>
 };
