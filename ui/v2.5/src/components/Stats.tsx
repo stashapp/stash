@@ -10,15 +10,18 @@ export const Stats: React.FC = () => {
 
   if (error) return <span>error.message</span>;
 
+  var size = data.stats.scene_size_count.split(" ")
+
   return (
     <div className="mt-5">
       <div className="col col-sm-8 m-sm-auto row stats">
         <div className="stats-element">
           <p className="title">
-            <FormattedMessage id="size" defaultMessage={data.stats.scene_size_count} />
+            <FormattedNumber value={parseFloat(size[0])} />
+            {" " + size[1]}
           </p>
           <p className="heading">
-            <FormattedMessage id="library" defaultMessage="Library size" />
+            <FormattedMessage id="library-size" defaultMessage="Library size" />
           </p>
         </div>
         <div className="stats-element">
