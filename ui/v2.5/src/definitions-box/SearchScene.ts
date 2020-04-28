@@ -20,7 +20,11 @@ export interface SearchScene_searchScene_urls {
 export interface SearchScene_searchScene_studio_urls {
   url: string;
   type: string;
-  image_id: string | null;
+}
+
+export interface SearchScene_searchScene_studio_images {
+  id: string;
+  url: string;
   width: number | null;
   height: number | null;
 }
@@ -29,6 +33,7 @@ export interface SearchScene_searchScene_studio {
   name: string;
   id: string;
   urls: (SearchScene_searchScene_studio_urls | null)[];
+  images: SearchScene_searchScene_studio_images[];
 }
 
 export interface SearchScene_searchScene_tags {
@@ -39,7 +44,11 @@ export interface SearchScene_searchScene_tags {
 export interface SearchScene_searchScene_performers_performer_urls {
   url: string;
   type: string;
-  image_id: string | null;
+}
+
+export interface SearchScene_searchScene_performers_performer_images {
+  id: string;
+  url: string;
   width: number | null;
   height: number | null;
 }
@@ -73,6 +82,7 @@ export interface SearchScene_searchScene_performers_performer {
   aliases: string[];
   gender: GenderEnum | null;
   urls: SearchScene_searchScene_performers_performer_urls[];
+  images: SearchScene_searchScene_performers_performer_images[];
   birthdate: SearchScene_searchScene_performers_performer_birthdate | null;
   ethnicity: EthnicityEnum | null;
   country: string | null;

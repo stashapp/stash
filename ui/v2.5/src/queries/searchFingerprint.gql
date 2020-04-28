@@ -8,7 +8,10 @@ query FindSceneByFingerprint($fingerprint: FingerprintQueryInput!) {
     urls {
       url
       type
-      image_id
+    }
+    images {
+      id
+      url
       width
       height
     }
@@ -18,7 +21,10 @@ query FindSceneByFingerprint($fingerprint: FingerprintQueryInput!) {
       urls {
         url
         type
-        image_id
+      }
+      images {
+        id
+        url
         width
         height
       }
@@ -38,7 +44,10 @@ query FindSceneByFingerprint($fingerprint: FingerprintQueryInput!) {
         urls {
           url
           type
-          image_id
+        }
+        images {
+          id
+          url
           width
           height
         }

@@ -12,7 +12,11 @@ import { FingerprintQueryInput, GenderEnum, DateAccuracyEnum, EthnicityEnum, Eye
 export interface FindSceneByFingerprint_findSceneByFingerprint_urls {
   url: string;
   type: string;
-  image_id: string | null;
+}
+
+export interface FindSceneByFingerprint_findSceneByFingerprint_images {
+  id: string;
+  url: string;
   width: number | null;
   height: number | null;
 }
@@ -20,7 +24,11 @@ export interface FindSceneByFingerprint_findSceneByFingerprint_urls {
 export interface FindSceneByFingerprint_findSceneByFingerprint_studio_urls {
   url: string;
   type: string;
-  image_id: string | null;
+}
+
+export interface FindSceneByFingerprint_findSceneByFingerprint_studio_images {
+  id: string;
+  url: string;
   width: number | null;
   height: number | null;
 }
@@ -29,6 +37,7 @@ export interface FindSceneByFingerprint_findSceneByFingerprint_studio {
   name: string;
   id: string;
   urls: (FindSceneByFingerprint_findSceneByFingerprint_studio_urls | null)[];
+  images: FindSceneByFingerprint_findSceneByFingerprint_studio_images[];
 }
 
 export interface FindSceneByFingerprint_findSceneByFingerprint_tags {
@@ -39,7 +48,11 @@ export interface FindSceneByFingerprint_findSceneByFingerprint_tags {
 export interface FindSceneByFingerprint_findSceneByFingerprint_performers_performer_urls {
   url: string;
   type: string;
-  image_id: string | null;
+}
+
+export interface FindSceneByFingerprint_findSceneByFingerprint_performers_performer_images {
+  id: string;
+  url: string;
   width: number | null;
   height: number | null;
 }
@@ -73,6 +86,7 @@ export interface FindSceneByFingerprint_findSceneByFingerprint_performers_perfor
   aliases: string[];
   gender: GenderEnum | null;
   urls: FindSceneByFingerprint_findSceneByFingerprint_performers_performer_urls[];
+  images: FindSceneByFingerprint_findSceneByFingerprint_performers_performer_images[];
   birthdate: FindSceneByFingerprint_findSceneByFingerprint_performers_performer_birthdate | null;
   ethnicity: EthnicityEnum | null;
   country: string | null;
@@ -111,6 +125,7 @@ export interface FindSceneByFingerprint_findSceneByFingerprint {
   duration: number | null;
   date: any | null;
   urls: FindSceneByFingerprint_findSceneByFingerprint_urls[];
+  images: FindSceneByFingerprint_findSceneByFingerprint_images[];
   studio: FindSceneByFingerprint_findSceneByFingerprint_studio | null;
   tags: FindSceneByFingerprint_findSceneByFingerprint_tags[];
   performers: FindSceneByFingerprint_findSceneByFingerprint_performers[];
