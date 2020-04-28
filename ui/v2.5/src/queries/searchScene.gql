@@ -8,7 +8,10 @@ query SearchScene($term: String!) {
     urls {
       url
       type
-      image_id
+    }
+    images {
+      id
+      url
       width
       height
     }

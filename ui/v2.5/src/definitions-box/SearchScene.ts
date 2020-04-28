@@ -12,7 +12,11 @@ import { GenderEnum, DateAccuracyEnum, EthnicityEnum, EyeColorEnum, HairColorEnu
 export interface SearchScene_searchScene_urls {
   url: string;
   type: string;
-  image_id: string | null;
+}
+
+export interface SearchScene_searchScene_images {
+  id: string;
+  url: string;
   width: number | null;
   height: number | null;
 }
@@ -121,6 +125,7 @@ export interface SearchScene_searchScene {
   duration: number | null;
   date: any | null;
   urls: SearchScene_searchScene_urls[];
+  images: SearchScene_searchScene_images[];
   studio: SearchScene_searchScene_studio | null;
   tags: SearchScene_searchScene_tags[];
   performers: SearchScene_searchScene_performers[];

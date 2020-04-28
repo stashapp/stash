@@ -1,5 +1,6 @@
 import {
   SearchScene_searchScene_performers_performer_urls as URL,
+  SearchScene_searchScene_performers_performer_images as Image,
   SearchScene_searchScene_performers_performer_measurements as Measurements
 } from 'src/definitions-box/SearchScene';
 import { BreastTypeEnum, GenderEnum as StashGenderEnum} from 'src/definitions-box/globalTypes';
@@ -7,12 +8,13 @@ import { GenderEnum } from 'src/core/generated-graphql';
 
 const CDN = 'https://cdn.stashdb.org';
 
-export const sortImageURLs = (urls: URL[], orientation: 'portrait'|'landscape') => (
-  urls.filter((u) => u.type === 'PHOTO').map((u:URL) => ({
-      url: u.image_id ? `${CDN}/${u.image_id.slice(0, 2)}/${u.image_id.slice(2, 4)}/${u.image_id}` : u.url,
-      width: u.width ?? 1,
-      height: u.height ?? 1,
-      aspect: orientation === 'portrait' ? (u.height ?? 1) / (u?.width ?? 1) > 1 : ((u.width ?? 1) / (u.height ?? 1)) > 1
+export const sortImageURLs = (images: Image[], orientation: 'portrait'|'landscape') => (
+  images.map((i) => ({
+      url: i.id ? `${CDN}/${i.id.slice(0, 2)}/${i.id.slice(2, 4)}/${i.id}` : i.url,
+      id: i.id,
+      width: i.width ?? 1,
+      height: i.height ?? 1,
+      aspect: orientation === 'portrait' ? (i.height ?? 1) / (i.width ?? 1) > 1 : ((i.width ?? 1) / (i.height ?? 1)) > 1
   })).sort((a, b) => {
       if (a.aspect > b.aspect) return -1;
       if (a.aspect < b.aspect) return 1;
@@ -24,15 +26,16 @@ export const sortImageURLs = (urls: URL[], orientation: 'portrait'|'landscape') 
   })
 )
 
+export const getImage = (images: Image[], orientation: 'portrait'|'landscape') => (
+  sortImageURLs(images, orientation)?.[0].url ?? ''
+);
+
 export const getUrlByType = (
     urls:(URL|null)[],
-    type:string,
-    orientation?: 'portrait'|'landscape'
-) => {
-  if (urls.length > 0 && type === 'PHOTO' && orientation)
-    return sortImageURLs(urls.filter(u => u !== null) as URL[], orientation)[0].url;
-  return (urls && (urls.find((url) => url?.type === type) || {}).url) || '';
-};
+    type:string
+) => (
+  (urls && (urls.find((url) => url?.type === type) || {}).url) || ''
+);
 
 
 export const formatMeasurements = (measurements: Measurements) => (

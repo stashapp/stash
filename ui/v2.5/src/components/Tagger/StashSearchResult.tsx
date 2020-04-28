@@ -15,10 +15,10 @@ import {
   SubmitFingerprintVariables,
   SubmitFingerprint
 } from 'src/definitions-box/SubmitFingerprint';
-import { FindPerformersDocument, FindStudioByStashIdDocument } from '../../core/generated-graphql';
+import { FindPerformersDocument, FindStudioByStashIdDocument, AllTagsDocument } from '../../core/generated-graphql';
 import PerformerResult from './PerformerResult';
 import StudioResult from './StudioResult';
-import { formatGender, formatMeasurements, formatBreastType, getUrlByType, sortImageURLs } from './utils';
+import { formatGender, formatMeasurements, formatBreastType, getUrlByType, getImage } from './utils';
 import { client } from './client';
 
 const SubmitFingerprintMutation = loader('src/queries/submitFingerprint.gql');
@@ -71,6 +71,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
   const [updateScene] = GQL.useSceneUpdateMutation();
   const [createPerformer] = GQL.usePerformerCreateMutation();
   const [updatePerformer] = GQL.usePerformerUpdateMutation();
+  const [createTag] = GQL.useTagCreateMutation();
+  const { data: allTags } = GQL.useAllTagsForFilterQuery();
 
   const setPerformer = useCallback((performerData: IPerformerOperation, performerID: string) => (
     setPerformers({ ...performers, [performerID]: performerData })
@@ -244,7 +246,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
     }));
 
     if(studioID && !performerIDs.some(id => !id)) {
-      const imgurl = sortImageURLs(scene.urls, 'landscape')[0]?.url;
+      const imgurl = getImage(scene.images, 'landscape');
       let imgData = null;
       if(imgurl && setCoverImage) {
         const img = await fetch(imgurl, {
@@ -256,6 +258,47 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
           imgData = await blobToBase64(blob);
         }
       }
+
+      const tagIDs:string[] = [];
+      const tags = stashScene.tags ?? [];
+      if (tags.length > 0) {
+        const tagDict:Record<string, string> = (allTags?.allTags ?? []).reduce((dict, t) => ({ ...dict, [t.name.toLowerCase()]: t.id }), {});
+        const newTags:string[] = [];
+        tags.forEach(tag => {
+          if (tagDict[tag.name.toLowerCase()])
+            tagIDs.push(tagDict[tag.name.toLowerCase()]);
+          else
+            newTags.push(tag.name);
+        });
+
+        const createdTags = await Promise.all(newTags.map(tag => (
+          createTag({
+            variables: {
+              name: tag
+            },
+            update: (store, _newTag) => {
+              if (!_newTag.data?.tagCreate)
+                return;
+
+              store.writeQuery({
+                query: AllTagsDocument,
+                variables: {},
+                data: {
+                  allTags: {
+                    allTags: [...(allTags?.allTags ?? []), _newTag],
+                    __typename: "AllTagsResultType"
+                  }
+                }
+              });
+            }
+          })
+        )));
+        createdTags.forEach(createdTag => {
+          if (createdTag?.data?.tagCreate?.id)
+            tagIDs.push(createdTag.data.tagCreate.id);
+        });
+      }
+
       const sceneUpdateResult = await updateScene({
         variables: {
           id: stashScene.id ?? '',
@@ -267,6 +310,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
           studio_id: studioID,
           cover_image: imgData,
           url: getUrlByType(scene.urls, 'STUDIO') ?? null,
+          ...(tagIDs ? { tag_ids: tagIDs } : {})
         }
       });
       if(sceneUpdateResult.data?.sceneUpdate)
@@ -299,7 +343,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <li className={classname} key={scene?.id} onClick={() => !isActive && setActive()}>
       <div className="col-6 row">
-        <img src={sortImageURLs(scene?.urls, 'landscape')[0]?.url} alt="" className="align-self-center scene-image" />
+        <img src={getImage(scene?.images, 'landscape')} alt="" className="align-self-center scene-image" />
         <div className="d-flex flex-column justify-content-center scene-metadata">
           <h4 className="text-truncate">{ sceneTitle }</h4>
           <h5>{scene?.studio?.name} • {scene?.date}</h5>

@@ -18,7 +18,7 @@ interface IPerformerModalProps {
 const PerformerModal: React.FC<IPerformerModalProps> = ({ modalVisible, performer, handlePerformerCreate, showModal }) => {
   const [imageIndex, setImageIndex] = useState(0);
 
-  const images = sortImageURLs(performer.urls, 'portrait');
+  const images = sortImageURLs(performer.images, 'portrait');
 
   const setPrev = () => (
     setImageIndex(imageIndex === 0 ? images.length - 1 : imageIndex - 1)

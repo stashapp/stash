@@ -93,11 +93,10 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerfor
   };
 
   const handlePerformerCreate = (imageIndex: number) => {
-    const images = sortImageURLs(performer.urls, 'portrait');
-    const urls = images.length ? [{
+    const images = sortImageURLs(performer.images, 'portrait');
+    const imageURLs = images.length ? [{
       url: images[imageIndex].url,
-      type: 'PHOTO',
-      image_id: null,
+      id: images[imageIndex].id,
       width: null,
       height: null
     }] : [];
@@ -106,7 +105,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerfor
       type: 'Create',
       data: {
         ...performer,
-        urls
+        images: imageURLs
       }
     });
     showModal(false);

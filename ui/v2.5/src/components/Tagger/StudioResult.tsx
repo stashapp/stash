@@ -7,7 +7,7 @@ import * as GQL from 'src/core/generated-graphql';
 import {
   SearchScene_searchScene_studio as StashStudio
 } from 'src/definitions-box/SearchScene';
-import { getUrlByType } from './utils';
+import { getImage, getUrlByType } from './utils';
 
 interface IIconProps {
   className?: string;
@@ -121,7 +121,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
         </div>
         <div className="row">
           <strong className="col-2">Logo:</strong>
-          <span className="col-10"><img src={ getUrlByType(studio?.urls ?? [], 'PHOTO') } alt='' /></span>
+          <span className="col-10"><img src={ getImage(studio?.images ?? [], 'landscape') } alt='' /></span>
         </div>
       </Modal>
 
