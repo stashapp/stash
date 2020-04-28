@@ -1,0 +1,88 @@
+query SearchScene($term: String!) {
+  searchScene(term: $term) {
+    id
+    title
+    details
+    duration
+    date
+    urls {
+      url
+      type
+    }
+    images {
+      id
+      url
+      width
+      height
+    }
+    studio {
+      name
+      id
+      urls {
+        url
+        type
+      }
+      images {
+        id
+        url
+        width
+        height
+      }
+    }
+    tags {
+      name
+      id
+    }
+    performers {
+      as
+      performer {
+        id
+        name
+        disambiguation
+        aliases
+        gender
+        urls {
+          url
+          type
+        }
+        images {
+          id
+          url
+          width
+          height
+        }
+        birthdate {
+          date
+          accuracy
+        }
+        ethnicity
+        country
+        eye_color
+        hair_color
+        height
+        measurements {
+          band_size
+          cup_size
+          waist
+          hip
+        }
+        breast_type
+        career_start_year
+        career_end_year
+        tattoos {
+          location
+          description
+        }
+        piercings {
+          location
+          description
+        }
+      }
+    }
+    fingerprints {
+      algorithm
+      hash
+      duration
+    }
+  }
+}

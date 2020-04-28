@@ -18,7 +18,7 @@ func (qb *StudioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, er
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO studios (checksum, name, url, parent_id, created_at, updated_at)
-				VALUES (:checksum, :name, :url, :parent_id, :created_at, :updated_at)
+            VALUES (:checksum, :name, :url, :parent_id, :created_at, :updated_at)
 		`,
 		newStudio,
 	)
@@ -163,6 +163,14 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 		whereClause, havingClause := getMultiCriterionClause("studios", "parent_studio", "", "", "parent_id", parentsFilter)
 		whereClauses = appendClause(whereClauses, whereClause)
 		havingClauses = appendClause(havingClauses, havingClause)
+	}
+
+	if stashIDFilter := studioFilter.StashID; stashIDFilter != nil {
+		body += `
+			JOIN studio_stash_ids on studio_stash_ids.studio_id = studios.id
+		`
+		whereClauses = append(whereClauses, "studio_stash_ids.stash_id = ?")
+		args = append(args, stashIDFilter)
 	}
 
 	if isMissingFilter := studioFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {

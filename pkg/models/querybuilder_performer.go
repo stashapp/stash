@@ -206,6 +206,14 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		}
 	}
 
+	if stashIDFilter := performerFilter.StashID; stashIDFilter != nil {
+		query.body += `
+			JOIN performer_stash_ids on performer_stash_ids.performer_id = performers.id
+		`
+		query.addWhere("performer_stash_ids.stash_id = ?")
+		query.addArg(stashIDFilter)
+	}
+
 	handleStringCriterion(tableName+".ethnicity", performerFilter.Ethnicity, &query)
 	handleStringCriterion(tableName+".country", performerFilter.Country, &query)
 	handleStringCriterion(tableName+".eye_color", performerFilter.EyeColor, &query)

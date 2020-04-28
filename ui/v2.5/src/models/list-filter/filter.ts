@@ -121,6 +121,7 @@ export class ListFilterModel {
           DisplayMode.Grid,
           DisplayMode.List,
           DisplayMode.Wall,
+          DisplayMode.Tagger,
         ];
         this.criterionOptions = [
           new NoneCriterionOption(),

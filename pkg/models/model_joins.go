@@ -22,3 +22,8 @@ type SceneMarkersTags struct {
 	SceneMarkerID int `db:"scene_marker_id" json:"scene_marker_id"`
 	TagID         int `db:"tag_id" json:"tag_id"`
 }
+
+type StashID struct {
+	StashID  string `db:"stash_id" json:"stash_id"`
+	Endpoint string `db:"endpoint" json:"endpoint"`
+}

@@ -18,7 +18,7 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
-type ValidTypes =
+export type ValidTypes =
   | GQL.SlimPerformerDataFragment
   | GQL.Tag
   | GQL.SlimStudioDataFragment;
@@ -61,13 +61,9 @@ interface ISelectProps {
   groupHeader?: string;
   closeMenuOnSelect?: boolean;
 }
-interface IFilterItem {
-  id: string;
-  name?: string | null;
-}
 interface IFilterComponentProps extends IFilterProps {
-  items: Array<IFilterItem>;
-  onCreate?: (name: string) => Promise<{ item: IFilterItem; message: string }>;
+  items: Array<ValidTypes>;
+  onCreate?: (name: string) => Promise<{ item: ValidTypes; message: string }>;
 }
 interface IFilterSelectProps
   extends Omit<ISelectProps, "onChange" | "items" | "onCreateOption"> {}

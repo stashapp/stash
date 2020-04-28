@@ -365,3 +365,117 @@ func (qb *JoinsQueryBuilder) DestroyScenesMarkers(sceneID int, tx *sqlx.Tx) erro
 
 	return err
 }
+
+func (qb *JoinsQueryBuilder) CreateStashIDs(entityName string, entityID int, newJoins []StashID, tx *sqlx.Tx) error {
+  query := "INSERT INTO "+entityName+"_stash_ids ("+entityName+"_id, endpoint, stash_id) VALUES (?, ?, ?)"
+	ensureTx(tx)
+	for _, join := range newJoins {
+		_, err := tx.Exec(query, entityID, join.Endpoint, join.StashID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (qb *JoinsQueryBuilder) GetSceneStashIDs(sceneID int) ([]*StashID, error) {
+	rows, err := database.DB.Queryx(`SELECT stash_id, endpoint from scene_stash_ids WHERE scene_id = ?`, sceneID)
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	stashIDs := []*StashID{}
+	for rows.Next() {
+		stashID := StashID{}
+		if err := rows.StructScan(&stashID); err != nil {
+			return nil, err
+		}
+		stashIDs = append(stashIDs, &stashID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return stashIDs, nil
+}
+
+func (qb *JoinsQueryBuilder) GetPerformerStashIDs(performerID int) ([]*StashID, error) {
+	rows, err := database.DB.Queryx(`SELECT stash_id, endpoint from performer_stash_ids WHERE performer_id = ?`, performerID)
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	stashIDs := []*StashID{}
+	for rows.Next() {
+		stashID := StashID{}
+		if err := rows.StructScan(&stashID); err != nil {
+			return nil, err
+		}
+		stashIDs = append(stashIDs, &stashID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return stashIDs, nil
+}
+
+func (qb *JoinsQueryBuilder) GetStudioStashIDs(studioID int) ([]*StashID, error) {
+	rows, err := database.DB.Queryx(`SELECT stash_id, endpoint from studio_stash_ids WHERE studio_id = ?`, studioID)
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	stashIDs := []*StashID{}
+	for rows.Next() {
+		stashID := StashID{}
+		if err := rows.StructScan(&stashID); err != nil {
+			return nil, err
+		}
+		stashIDs = append(stashIDs, &stashID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return stashIDs, nil
+}
+
+func (qb *JoinsQueryBuilder) UpdateSceneStashIDs(sceneID int, updatedJoins []StashID, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	_, err := tx.Exec("DELETE FROM scene_stash_ids WHERE scene_id = ?", sceneID)
+	if err != nil {
+		return err
+	}
+	return qb.CreateStashIDs("scene", sceneID, updatedJoins, tx)
+}
+
+func (qb *JoinsQueryBuilder) UpdatePerformerStashIDs(performerID int, updatedJoins []StashID, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	_, err := tx.Exec("DELETE FROM performer_stash_ids WHERE performer_id = ?", performerID)
+	if err != nil {
+		return err
+	}
+	return qb.CreateStashIDs("performer", performerID, updatedJoins, tx)
+}
+
+func (qb *JoinsQueryBuilder) UpdateStudioStashIDs(studioID int, updatedJoins []StashID, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	_, err := tx.Exec("DELETE FROM studio_stash_ids WHERE studio_id = ?", studioID)
+	if err != nil {
+		return err
+	}
+	return qb.CreateStashIDs("studio", studioID, updatedJoins, tx)
+}
