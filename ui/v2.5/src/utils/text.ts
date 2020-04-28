@@ -108,7 +108,7 @@ const sanitiseURL = (url?: string, siteURL?: URL) => {
 
   // just prepend the protocol - assume https
   return `https://${url}`;
-}
+};
 
 const TextUtils = {
   truncate,

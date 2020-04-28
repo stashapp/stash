@@ -10,7 +10,7 @@ export const Stats: React.FC = () => {
 
   if (error) return <span>error.message</span>;
 
-  const size = data.stats.scene_size_count.split(" ")
+  const size = data.stats.scene_size_count.split(" ");
 
   return (
     <div className="mt-5">

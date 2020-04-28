@@ -42,7 +42,7 @@ interface ISelectProps {
   placeholder?: string;
   showDropdown?: boolean;
   groupHeader?: string;
-  closeMenuOnSelect?: boolean
+  closeMenuOnSelect?: boolean;
 }
 
 interface ISceneGallerySelect {
@@ -378,7 +378,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   placeholder,
   showDropdown = true,
   groupHeader,
-  closeMenuOnSelect = true
+  closeMenuOnSelect = true,
 }) => {
   const defaultValue =
     items.filter((item) => initialIds?.indexOf(item.value) !== -1) ?? null;
