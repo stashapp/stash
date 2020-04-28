@@ -9,7 +9,10 @@ import {
 } from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
-import {PerformerIsMissingCriterion, SceneIsMissingCriterion} from "./is-missing";
+import {
+  PerformerIsMissingCriterion,
+  SceneIsMissingCriterion,
+} from "./is-missing";
 import { NoneCriterion } from "./none";
 import { PerformersCriterion } from "./performers";
 import { RatingCriterion } from "./rating";

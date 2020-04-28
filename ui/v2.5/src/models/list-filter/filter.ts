@@ -29,7 +29,7 @@ import {
 import {
   IsMissingCriterion,
   PerformerIsMissingCriterionOption,
-  SceneIsMissingCriterionOption
+  SceneIsMissingCriterionOption,
 } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import {
@@ -148,7 +148,9 @@ export class ListFilterModel {
           new FavoriteCriterionOption(),
           new GenderCriterionOption(),
           new PerformerIsMissingCriterionOption(),
-          ...numberCriteria.concat(stringCriteria).map(c => ListFilterModel.createCriterionOption(c))
+          ...numberCriteria
+            .concat(stringCriteria)
+            .map((c) => ListFilterModel.createCriterionOption(c)),
         ];
 
         break;

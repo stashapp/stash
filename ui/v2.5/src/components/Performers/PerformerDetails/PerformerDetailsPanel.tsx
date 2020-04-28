@@ -11,7 +11,12 @@ import {
   ScrapePerformerSuggest,
   LoadingIndicator,
 } from "src/components/Shared";
-import { ImageUtils, TableUtils, TextUtils, EditableTextUtils } from "src/utils";
+import {
+  ImageUtils,
+  TableUtils,
+  TextUtils,
+  EditableTextUtils,
+} from "src/utils";
 import { useToast } from "src/hooks";
 
 interface IPerformerDetails {
@@ -100,22 +105,22 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-  function translateScrapedGender(gender?: string) {
-    if (!gender) {
+  function translateScrapedGender(scrapedGender?: string) {
+    if (!scrapedGender) {
       return;
     }
 
-    let retEnum : GQL.GenderEnum | undefined;
+    let retEnum: GQL.GenderEnum | undefined;
 
     // try to translate from enum values first
-    const upperGender = gender?.toUpperCase();
+    const upperGender = scrapedGender?.toUpperCase();
     const asEnum = StashService.genderToString(upperGender as GQL.GenderEnum);
     if (asEnum) {
       retEnum = StashService.stringToGender(asEnum);
     } else {
       // try to match against gender strings
       const caseInsensitive = true;
-      retEnum = StashService.stringToGender(gender, caseInsensitive);
+      retEnum = StashService.stringToGender(scrapedGender, caseInsensitive);
     }
 
     return StashService.genderToString(retEnum);
@@ -131,7 +136,10 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
     // image is a base64 string
     // #404: don't overwrite image if it has been modified by the user
-    if (image === undefined && (state as GQL.ScrapedPerformerDataFragment).image !== undefined) {
+    if (
+      image === undefined &&
+      (state as GQL.ScrapedPerformerDataFragment).image !== undefined
+    ) {
       const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
       setImage(imageStr ?? undefined);
       if (onImageChange) {
