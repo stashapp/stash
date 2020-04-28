@@ -27,7 +27,7 @@ export const sortImageURLs = (images: Image[], orientation: 'portrait'|'landscap
 )
 
 export const getImage = (images: Image[], orientation: 'portrait'|'landscape') => (
-  sortImageURLs(images, orientation)?.[0].url ?? ''
+  sortImageURLs(images, orientation)?.[0]?.url ?? ''
 );
 
 export const getUrlByType = (

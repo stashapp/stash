@@ -15,7 +15,7 @@ import {
   SubmitFingerprintVariables,
   SubmitFingerprint
 } from 'src/definitions-box/SubmitFingerprint';
-import { FindPerformersDocument, FindStudioByStashIdDocument, AllTagsDocument } from '../../core/generated-graphql';
+import { FindPerformersDocument, FindStudioByStashIdDocument, AllTagsForFilterDocument } from '../../core/generated-graphql';
 import PerformerResult from './PerformerResult';
 import StudioResult from './StudioResult';
 import { formatGender, formatMeasurements, formatBreastType, getUrlByType, getImage } from './utils';
@@ -260,9 +260,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       }
 
       const tagIDs:string[] = [];
-      const tags = stashScene.tags ?? [];
+      const tags = scene.tags ?? [];
       if (tags.length > 0) {
-        const tagDict:Record<string, string> = (allTags?.allTags ?? []).reduce((dict, t) => ({ ...dict, [t.name.toLowerCase()]: t.id }), {});
+        const tagDict:Record<string, string> = (allTags?.allTagsSlim ?? []).reduce((dict, t) => ({ ...dict, [t.name.toLowerCase()]: t.id }), {});
         const newTags:string[] = [];
         tags.forEach(tag => {
           if (tagDict[tag.name.toLowerCase()])
@@ -281,13 +281,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
                 return;
 
               store.writeQuery({
-                query: AllTagsDocument,
+                query: AllTagsForFilterDocument,
                 variables: {},
                 data: {
-                  allTags: {
-                    allTags: [...(allTags?.allTags ?? []), _newTag],
-                    __typename: "AllTagsResultType"
-                  }
+                  allTagsSlim: [...(allTags?.allTagsSlim ?? []), _newTag.data.tagCreate],
                 }
               });
             }
