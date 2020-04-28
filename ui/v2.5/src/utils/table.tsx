@@ -9,9 +9,7 @@ const renderEditableTextTableRow = (options: {
 }) => (
   <tr>
     <td>{options.title}</td>
-    <td>
-      {EditableTextUtils.renderEditableText(options)}
-    </td>
+    <td>{EditableTextUtils.renderEditableText(options)}</td>
   </tr>
 );
 
@@ -23,9 +21,7 @@ const renderTextArea = (options: {
 }) => (
   <tr>
     <td>{options.title}</td>
-    <td>
-      {EditableTextUtils.renderTextArea(options)}
-    </td>
+    <td>{EditableTextUtils.renderTextArea(options)}</td>
   </tr>
 );
 
@@ -39,9 +35,7 @@ const renderInputGroup = (options: {
 }) => (
   <tr>
     <td>{options.title}</td>
-    <td>
-      {EditableTextUtils.renderInputGroup(options)}
-    </td>
+    <td>{EditableTextUtils.renderInputGroup(options)}</td>
   </tr>
 );
 
@@ -56,9 +50,7 @@ const renderDurationInput = (options: {
   return (
     <tr>
       <td>{options.title}</td>
-      <td>
-        {EditableTextUtils.renderDurationInput(options)}
-      </td>
+      <td>{EditableTextUtils.renderDurationInput(options)}</td>
     </tr>
   );
 };
@@ -72,9 +64,7 @@ const renderHtmlSelect = (options: {
 }) => (
   <tr>
     <td>{options.title}</td>
-    <td>
-      {EditableTextUtils.renderHtmlSelect(options)}
-    </td>
+    <td>{EditableTextUtils.renderHtmlSelect(options)}</td>
   </tr>
 );
 
@@ -87,9 +77,7 @@ const renderFilterSelect = (options: {
 }) => (
   <tr>
     <td>{options.title}</td>
-    <td>
-      {EditableTextUtils.renderFilterSelect(options)}
-    </td>
+    <td>{EditableTextUtils.renderFilterSelect(options)}</td>
   </tr>
 );
 
@@ -102,9 +90,7 @@ const renderMultiSelect = (options: {
 }) => (
   <tr>
     <td>{options.title}</td>
-    <td>
-      {EditableTextUtils.renderMultiSelect(options)}
-    </td>
+    <td>{EditableTextUtils.renderMultiSelect(options)}</td>
   </tr>
 );
 

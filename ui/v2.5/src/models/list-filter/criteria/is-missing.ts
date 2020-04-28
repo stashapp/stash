@@ -43,7 +43,7 @@ export class PerformerIsMissingCriterion extends IsMissingCriterion {
     "piercings",
     "aliases",
     "gender",
-    "scenes"
+    "scenes",
   ];
 }
 

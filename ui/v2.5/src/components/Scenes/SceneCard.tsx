@@ -182,7 +182,9 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       return (
         <div>
           <Button className="minimal">
-            <span className="fa-icon"><SweatDrops /></span>
+            <span className="fa-icon">
+              <SweatDrops />
+            </span>
             <span>{props.scene.o_counter}</span>
           </Button>
         </div>

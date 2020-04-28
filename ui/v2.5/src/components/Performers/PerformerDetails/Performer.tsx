@@ -189,7 +189,10 @@ export const Performer: React.FC = () => {
       {performer.twitter && (
         <Button className="minimal">
           <a
-            href={TextUtils.sanitiseURL(performer.twitter, TextUtils.twitterURL)}
+            href={TextUtils.sanitiseURL(
+              performer.twitter,
+              TextUtils.twitterURL
+            )}
             className="twitter"
             target="_blank"
             rel="noopener noreferrer"
@@ -201,7 +204,10 @@ export const Performer: React.FC = () => {
       {performer.instagram && (
         <Button className="minimal">
           <a
-            href={TextUtils.sanitiseURL(performer.instagram, TextUtils.instagramURL)}
+            href={TextUtils.sanitiseURL(
+              performer.instagram,
+              TextUtils.instagramURL
+            )}
             className="instagram"
             target="_blank"
             rel="noopener noreferrer"
@@ -215,18 +221,14 @@ export const Performer: React.FC = () => {
 
   function renderPerformerImage() {
     if (imagePreview) {
-      return (
-        <img className="photo" src={imagePreview} alt="Performer" />
-      );
+      return <img className="photo" src={imagePreview} alt="Performer" />;
     }
   }
 
   function renderNewView() {
     return (
       <div className="row new-view">
-        <div className="col-4">
-          {renderPerformerImage()}
-        </div>
+        <div className="col-4">{renderPerformerImage()}</div>
         <div className="col-6">
           <h2>Create Performer</h2>
           {renderTabs()}

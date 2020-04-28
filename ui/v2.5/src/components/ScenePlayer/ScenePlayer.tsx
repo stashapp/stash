@@ -1,6 +1,5 @@
 import React from "react";
 import ReactJWPlayer from "react-jw-player";
-import { HotKeys } from "react-hotkeys";
 import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { JWUtils } from "src/utils";
@@ -21,13 +20,6 @@ interface IScenePlayerState {
   config: Record<string, any>;
 }
 
-const KeyMap = {
-  NUM0: "0",
-  NUM1: "1",
-  NUM2: "2",
-  SPACE: " ",
-};
-
 export class ScenePlayerImpl extends React.Component<
   IScenePlayerProps,
   IScenePlayerState
@@ -36,21 +28,6 @@ export class ScenePlayerImpl extends React.Component<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private player: any;
   private lastTime = 0;
-
-  private KeyHandlers = {
-    NUM0: () => {
-      this.onReset();
-    },
-    NUM1: () => {
-      this.onDecrease();
-    },
-    NUM2: () => {
-      this.onIncrease();
-    },
-    SPACE: () => {
-      this.onPause();
-    },
-  };
 
   constructor(props: IScenePlayerProps) {
     super(props);
@@ -207,31 +184,25 @@ export class ScenePlayerImpl extends React.Component<
 
   public render() {
     return (
-      <HotKeys
-        keyMap={KeyMap}
-        handlers={this.KeyHandlers}
-        className="row scene-player"
+      <div
+        id="jwplayer-container"
+        className="w-100 col-sm-9 m-sm-auto no-gutter"
       >
-        <div
-          id="jwplayer-container"
-          className="w-100 col-sm-9 m-sm-auto no-gutter"
-        >
-          <ReactJWPlayer
-            playerId={JWUtils.playerID}
-            playerScript="/jwplayer/jwplayer.js"
-            customProps={this.state.config}
-            onReady={this.onReady}
-            onSeeked={this.onSeeked}
-            onTime={this.onTime}
-          />
-          <ScenePlayerScrubber
-            scene={this.props.scene}
-            position={this.state.scrubberPosition}
-            onSeek={this.onScrubberSeek}
-            onScrolled={this.onScrubberScrolled}
-          />
-        </div>
-      </HotKeys>
+        <ReactJWPlayer
+          playerId={JWUtils.playerID}
+          playerScript="/jwplayer/jwplayer.js"
+          customProps={this.state.config}
+          onReady={this.onReady}
+          onSeeked={this.onSeeked}
+          onTime={this.onTime}
+        />
+        <ScenePlayerScrubber
+          scene={this.props.scene}
+          position={this.state.scrubberPosition}
+          onSeek={this.onScrubberSeek}
+          onScrolled={this.onScrubberScrolled}
+        />
+      </div>
     );
   }
 }
