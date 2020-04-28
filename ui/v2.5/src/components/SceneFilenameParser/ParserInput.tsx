@@ -145,7 +145,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
                   key={item.field}
                   onSelect={() => addParserField(item)}
                 >
-                  <span>{item.field || "{}"}</span>
+                  <span className="mr-2">{item.field || "{}"}</span>
                   <span className="ml-auto text-muted">{item.helperText}</span>
                 </Dropdown.Item>
               ))}

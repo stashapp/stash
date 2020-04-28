@@ -100,22 +100,22 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
-  function translateScrapedGender(gender?: string) {
-    if (!gender) {
+  function translateScrapedGender(scrapedGender?: string) {
+    if (!scrapedGender) {
       return;
     }
 
     let retEnum : GQL.GenderEnum | undefined;
 
     // try to translate from enum values first
-    const upperGender = gender?.toUpperCase();
+    const upperGender = scrapedGender?.toUpperCase();
     const asEnum = StashService.genderToString(upperGender as GQL.GenderEnum);
     if (asEnum) {
       retEnum = StashService.stringToGender(asEnum);
     } else {
       // try to match against gender strings
       const caseInsensitive = true;
-      retEnum = StashService.stringToGender(gender, caseInsensitive);
+      retEnum = StashService.stringToGender(scrapedGender, caseInsensitive);
     }
 
     return StashService.genderToString(retEnum);
