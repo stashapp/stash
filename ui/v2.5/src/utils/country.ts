@@ -8,6 +8,7 @@ const fuzzyDict: Record<string, string> = {
   "United States": "US",
   America: "US",
   American: "US",
+  Czechia: "CZ",
   England: "GB",
   "United Kingdom": "GB",
   Russia: "RU",
