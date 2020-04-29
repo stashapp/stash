@@ -105,9 +105,9 @@ export const SettingsTasksPanel: React.FC = () => {
         cancel={{ onClick: () => setIsCleanAlertOpen(false) }}
       >
         <p>
-          Are you sure you want to Clean? This will delete db information and
-          generated content for all scenes that are no longer found in the
-          filesystem.
+          Are you sure you want to Clean? This will delete database information
+          and generated content for all scenes and galleries that are no longer
+          found in the filesystem.
         </p>
       </Modal>
     );

@@ -24,7 +24,7 @@ import {
 } from "src/hooks/LocalForage";
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
-import { Pagination } from "src/components/List/Pagination";
+import { Pagination, PaginationIndex } from "src/components/List/Pagination";
 import { StashService } from "src/core/StashService";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -211,6 +211,13 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     updateQueryParams(newFilter);
   }
 
+  function onSortReshuffle() {
+    const newFilter = _.cloneDeep(filter);
+    newFilter.currentPage = 1;
+    newFilter.randomSeed = -1;
+    updateQueryParams(newFilter);
+  }
+
   function onChangeDisplayMode(displayMode: DisplayMode) {
     const newFilter = _.cloneDeep(filter);
     newFilter.displayMode = displayMode;
@@ -350,6 +357,19 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     }
   }
 
+  function maybeRenderPaginationIndex() {
+    if (!result.loading && !result.error) {
+      return (
+        <PaginationIndex
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+          onClick={() => {}}
+        />
+      );
+    }
+  }
+
   function maybeRenderPagination() {
     if (!result.loading && !result.error) {
       return (
@@ -370,6 +390,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         onChangeQuery={onChangeQuery}
         onChangeSortDirection={onChangeSortDirection}
         onChangeSortBy={onChangeSortBy}
+        onSortReshuffle={onSortReshuffle}
         onChangeDisplayMode={onChangeDisplayMode}
         onAddCriterion={onAddCriterion}
         onRemoveCriterion={onRemoveCriterion}
@@ -386,6 +407,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       {(result.loading || !forageInitialised) && <LoadingIndicator />}
       {result.error && <h1>{result.error.message}</h1>}
       {maybeRenderContent()}
+      {maybeRenderPaginationIndex()}
       {maybeRenderPagination()}
     </div>
   );

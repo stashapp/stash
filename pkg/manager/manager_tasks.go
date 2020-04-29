@@ -475,6 +475,7 @@ func (s *singleton) Clean() {
 	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
+	gqb := models.NewGalleryQueryBuilder()
 	go func() {
 		defer s.returnToIdleState()
 
@@ -485,6 +486,12 @@ func (s *singleton) Clean() {
 			return
 		}
 
+		galleries, err := gqb.All()
+		if err != nil {
+			logger.Errorf("failed to fetch list of galleries for cleaning")
+			return
+		}
+
 		if s.Status.stopping {
 			logger.Info("Stopping due to user request")
 			return
@@ -492,7 +499,7 @@ func (s *singleton) Clean() {
 
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
-		total := len(scenes)
+		total := len(scenes) + len(galleries)
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -507,7 +514,26 @@ func (s *singleton) Clean() {
 
 			wg.Add(1)
 
-			task := CleanTask{Scene: *scene}
+			task := CleanTask{Scene: scene}
+			go task.Start(&wg)
+			wg.Wait()
+		}
+
+		for i, gallery := range galleries {
+			s.Status.setProgress(len(scenes)+i, total)
+			if s.Status.stopping {
+				logger.Info("Stopping due to user request")
+				return
+			}
+
+			if gallery == nil {
+				logger.Errorf("nil gallery, skipping Clean")
+				continue
+			}
+
+			wg.Add(1)
+
+			task := CleanTask{Gallery: gallery}
 			go task.Start(&wg)
 			wg.Wait()
 		}

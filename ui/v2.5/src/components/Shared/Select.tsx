@@ -42,6 +42,7 @@ interface ISelectProps {
   placeholder?: string;
   showDropdown?: boolean;
   groupHeader?: string;
+  closeMenuOnSelect?: boolean;
 }
 
 interface ISceneGallerySelect {
@@ -355,6 +356,7 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
       items={items}
       onCreateOption={onCreate}
       selectedOptions={selected}
+      closeMenuOnSelect={false}
     />
   );
 };
@@ -376,6 +378,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   placeholder,
   showDropdown = true,
   groupHeader,
+  closeMenuOnSelect = true,
 }) => {
   const defaultValue =
     items.filter((item) => initialIds?.indexOf(item.value) !== -1) ?? null;
@@ -421,6 +424,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     isDisabled,
     isLoading,
     styles,
+    closeMenuOnSelect,
     components: {
       IndicatorSeparator: () => null,
       ...((!showDropdown || isDisabled) && { DropdownIndicator: () => null }),

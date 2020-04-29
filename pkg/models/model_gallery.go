@@ -8,6 +8,7 @@ import (
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
+	_ "golang.org/x/image/webp"
 	"image"
 	"image/jpeg"
 	"io/ioutil"
@@ -88,7 +89,7 @@ func (g *Gallery) readZipFile(index int) ([]byte, error) {
 func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 	readCloser, err := zip.OpenReader(g.Path)
 	if err != nil {
-		logger.Warn("failed to read zip file")
+		logger.Warnf("failed to read zip file %s", g.Path)
 		return nil, nil, err
 	}
 
@@ -98,7 +99,8 @@ func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 			continue
 		}
 		ext := filepath.Ext(file.Name)
-		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif" {
+		ext = strings.ToLower(ext)
+		if ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif" && ext != ".webp" {
 			continue
 		}
 		if strings.Contains(file.Name, "__MACOSX") {
@@ -112,5 +114,41 @@ func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 		return utils.NaturalCompare(a.Name, b.Name)
 	})
 
+	cover := contains(filteredFiles, "cover.jpg") // first image with cover.jpg in the name
+	if cover >= 0 {                               // will be moved to the start
+		reorderedFiles := reorder(filteredFiles, cover)
+		if reorderedFiles != nil {
+			return reorderedFiles, readCloser, nil
+		}
+	}
+
 	return filteredFiles, readCloser, nil
+}
+
+// return index of first occurrenece of string x ( case insensitive ) in name of zip contents, -1 otherwise
+func contains(a []*zip.File, x string) int {
+	for i, n := range a {
+		if strings.Contains(strings.ToLower(n.Name), strings.ToLower(x)) {
+			return i
+		}
+	}
+	return -1
+}
+
+// reorder slice so that element with position toFirst gets at the start
+func reorder(a []*zip.File, toFirst int) []*zip.File {
+	var first *zip.File
+	switch {
+	case toFirst < 0 || toFirst >= len(a):
+		return nil
+	case toFirst == 0:
+		return a
+	default:
+		first = a[toFirst]
+		copy(a[toFirst:], a[toFirst+1:])     // Shift a[toFirst+1:] left one index removing a[toFirst] element
+		a[len(a)-1] = nil                    // Nil now unused element for garbage collection
+		a = a[:len(a)-1]                     // Truncate slice
+		a = append([]*zip.File{first}, a...) // Push first to the start of the slice
+	}
+	return a
 }

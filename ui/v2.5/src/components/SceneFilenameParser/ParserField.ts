@@ -27,6 +27,7 @@ export class ParserField {
   static YYYY = new ParserField("yyyy", "Year");
   static YY = new ParserField("yy", "Year (20YY)");
   static MM = new ParserField("mm", "Two digit month");
+  static MMM = new ParserField("mmm", "Three letter month (eg Jan)");
   static DD = new ParserField("dd", "Two digit date");
   static YYYYMMDD = new ParserField("yyyymmdd");
   static YYMMDD = new ParserField("yymmdd");
@@ -48,6 +49,7 @@ export class ParserField {
     ParserField.YYYY,
     ParserField.YY,
     ParserField.MM,
+    ParserField.MMM,
     ParserField.DD,
     ParserField.YYYYMMDD,
     ParserField.YYMMDD,
