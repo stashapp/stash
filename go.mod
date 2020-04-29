@@ -3,8 +3,7 @@ module github.com/stashapp/stash
 require (
 	github.com/99designs/gqlgen v0.9.0
 	github.com/PuerkitoBio/goquery v1.5.0
-	github.com/antchfx/htmlquery v1.2.0
-	github.com/antchfx/xpath v1.1.2 // indirect
+	github.com/antchfx/htmlquery v1.2.3
 	github.com/bmatcuk/doublestar v1.1.5
 	github.com/disintegration/imaging v1.6.0
 	github.com/dustin/go-humanize v1.0.0
@@ -14,6 +13,7 @@ require (
 	github.com/gorilla/sessions v1.2.0
 	github.com/gorilla/websocket v1.4.0
 	github.com/h2non/filetype v1.0.8
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/json-iterator/go v1.1.9
@@ -26,7 +26,7 @@ require (
 	github.com/vektah/gqlparser v1.1.2
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2
-	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
+	golang.org/x/net v0.0.0-20200421231249-e086a090c8fd
 	gopkg.in/yaml.v2 v2.2.2
 )
 
