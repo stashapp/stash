@@ -5002,6 +5002,11 @@ detect-port-alt@1.1.6:
     address "^1.0.1"
     debug "^2.6.0"
 
+diacritics@1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/diacritics/-/diacritics-1.3.0.tgz#3efa87323ebb863e6696cebb0082d48ff3d6f7a1"
+  integrity sha1-PvqHMj67hj5mls67AILUj/PW96E=
+
 diff-sequences@^24.9.0:
   version "24.9.0"
   resolved "https://registry.yarnpkg.com/diff-sequences/-/diff-sequences-24.9.0.tgz#5715d6244e2aa65f48bba0bc972db0b0b11e95b5"
@@ -6109,6 +6114,11 @@ find-up@^3.0.0:
   dependencies:
     locate-path "^3.0.0"
 
+flag-icon-css@^3.4.6:
+  version "3.4.6"
+  resolved "https://registry.yarnpkg.com/flag-icon-css/-/flag-icon-css-3.4.6.tgz#7e51099c85648c65f86d9ebb9c0ec6f5d8826714"
+  integrity sha512-rF69rt19Hr63SRQTiPBzQABaYB20LAgZhDkr/AxqSdgmCIN+tC5PRMz56Y0gxehFXJmdRwv55+GMi7R1fCRTwg==
+
 flat-cache@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/flat-cache/-/flat-cache-2.0.1.tgz#5d296d6f04bda44a4630a301413bdbc2ec085ec0"
@@ -6969,6 +6979,13 @@ hyphenate-style-name@^1.0.1:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/hyphenate-style-name/-/hyphenate-style-name-1.0.3.tgz#097bb7fa0b8f1a9cf0bd5c734cf95899981a9b48"
   integrity sha512-EcuixamT82oplpoJ2XU4pDtKGWQ7b00CD9f1ug9IaQ3p1bkHMiKCZ9ut9QDI6qsa6cpUuB+A/I+zLtdNK4n2DQ==
+
+i18n-iso-countries@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/i18n-iso-countries/-/i18n-iso-countries-5.2.0.tgz#3384c5b91c09b76035c7726e54fd941f9b61e9e1"
+  integrity sha512-U14vanOZJrNNm6yAL26qyZcOhlyJLmondS4rSWzT+JQzotkyTAkRv8mrJzzJf4EewqrRBVtzqFAH0PnSJm2AQw==
+  dependencies:
+    diacritics "1.3.0"
 
 iconv-lite@0.4.24, iconv-lite@^0.4.24, iconv-lite@~0.4.13:
   version "0.4.24"
@@ -11154,7 +11171,7 @@ prop-types-extra@^1.1.0:
     react-is "^16.3.2"
     warning "^3.0.0"
 
-prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@~15.7.2:
+prop-types@^15.5.10, prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@~15.7.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -11425,13 +11442,6 @@ react-fast-compare@^2.0.1:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/react-fast-compare/-/react-fast-compare-2.0.4.tgz#e84b4d455b0fec113e0402c329352715196f81f9"
   integrity sha512-suNP+J1VU1MWFKcyt7RtjiSWUjvidmQSlqu+eHslq+342xCbGTYmC0mEhPCOHxlW0CywylOC1u2DFAT+bv4dBw==
-
-react-hotkeys@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/react-hotkeys/-/react-hotkeys-2.0.0.tgz#a7719c7340cbba888b0e9184f806a9ec0ac2c53f"
-  integrity sha512-3n3OU8vLX/pfcJrR3xJ1zlww6KS1kEJt0Whxc4FiGV+MJrQ1mYSYI3qS/11d2MJDFm8IhOXMTFQirfu6AVOF6Q==
-  dependencies:
-    prop-types "^15.6.1"
 
 react-images@0.5.19:
   version "0.5.19"
