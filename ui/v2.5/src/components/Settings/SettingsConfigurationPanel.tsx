@@ -345,7 +345,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
             onChange={() => setForceMkv(!forceMkv)}
           />
           <Form.Text className="text-muted">
-            Treat Matroska (MKV) as a supported container. Recommended for Chromium based browsers
+            Treat Matroska (MKV) as a supported container. Recommended for
+            Chromium based browsers
           </Form.Text>
         </Form.Group>
         <Form.Group id="force-options-hevc">
@@ -356,7 +357,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
             onChange={() => setForceHevc(!forceHevc)}
           />
           <Form.Text className="text-muted">
-            Treat HEVC as a supported codec. Recommended for Safari or some Android based browsers
+            Treat HEVC as a supported codec. Recommended for Safari or some
+            Android based browsers
           </Form.Text>
         </Form.Group>
       </Form.Group>

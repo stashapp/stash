@@ -68,9 +68,10 @@ class LogEntry {
 const MAX_LOG_ENTRIES = 200;
 const logLevels = ["Debug", "Info", "Warning", "Error"];
 
-const logReducer = (existingEntries:LogEntry[], newEntries:LogEntry[]) => (
-  [...newEntries.reverse(), ...existingEntries]
-);
+const logReducer = (existingEntries: LogEntry[], newEntries: LogEntry[]) => [
+  ...newEntries.reverse(),
+  ...existingEntries,
+];
 
 export const SettingsLogsPanel: React.FC = () => {
   const { data, error } = StashService.useLoggingSubscribe();
@@ -78,10 +79,9 @@ export const SettingsLogsPanel: React.FC = () => {
   const [currentData, dispatchLogUpdate] = useReducer(logReducer, []);
   const [logLevel, setLogLevel] = useState<string>("Info");
 
-
   useEffect(() => {
     const newData = (data?.loggingSubscribe ?? []).map((e) => new LogEntry(e));
-    dispatchLogUpdate(newData)
+    dispatchLogUpdate(newData);
   }, [data]);
 
   const oldData = (existingData?.logs ?? []).map((e) => new LogEntry(e));

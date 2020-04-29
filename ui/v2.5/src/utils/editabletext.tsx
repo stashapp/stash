@@ -20,7 +20,7 @@ const renderTextArea = (options: {
       value={options.value}
     />
   );
-}
+};
 
 const renderEditableText = (options: {
   title?: string;
@@ -42,8 +42,8 @@ const renderEditableText = (options: {
       }
       placeholder={options.title}
     />
-  )
-}
+  );
+};
 
 const renderInputGroup = (options: {
   title?: string;
@@ -55,16 +55,12 @@ const renderInputGroup = (options: {
 }) => {
   if (options.url && !options.isEditing) {
     return (
-      <a 
-        href={options.url}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      <a href={options.url} target="_blank" rel="noopener noreferrer">
         {options.value}
       </a>
     );
   }
-    
+
   return (
     <Form.Control
       className="text-input"
@@ -77,13 +73,13 @@ const renderInputGroup = (options: {
       }
     />
   );
-}
+};
 
 const renderDurationInput = (options: {
   value: string | undefined;
   isEditing: boolean;
   url?: string;
-  asString?: boolean
+  asString?: boolean;
   onChange: (value: string | undefined) => void;
 }) => {
   let numericValue: number | undefined;
@@ -98,7 +94,7 @@ const renderDurationInput = (options: {
       numericValue = DurationUtils.stringToSeconds(options.value);
     }
   }
-  
+
   if (!options.isEditing) {
     let durationString;
     if (numericValue !== undefined) {
@@ -118,17 +114,18 @@ const renderDurationInput = (options: {
     <DurationInput
       disabled={!options.isEditing}
       numericValue={numericValue}
-      onValueChange={(valueAsNumber: number, valueAsString? : string) => { 
+      onValueChange={(valueAsNumber: number, valueAsString?: string) => {
         let value = valueAsString;
         if (!options.asString) {
-          value = valueAsNumber !== undefined ? valueAsNumber.toString() : undefined;
+          value =
+            valueAsNumber !== undefined ? valueAsNumber.toString() : undefined;
         }
 
         options.onChange(value);
       }}
     />
   );
-}
+};
 
 const renderHtmlSelect = (options: {
   value?: string | number;
@@ -164,7 +161,7 @@ const renderHtmlSelect = (options: {
       ))}
     </Form.Control>
   );
-}
+};
 
 // TODO: isediting
 const renderFilterSelect = (options: {

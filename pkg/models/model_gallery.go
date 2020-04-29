@@ -127,10 +127,10 @@ func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 	return filteredFiles, readCloser, nil
 }
 
-// return index of first occurenece of string x (low case) in name of zip contents, -1 otherwise
+// return index of first occurrenece of string x ( case insensitive ) in name of zip contents, -1 otherwise
 func contains(a []*zip.File, x string) int {
 	for i, n := range a {
-		if strings.Contains(strings.ToLower(n.Name), x) {
+		if strings.Contains(strings.ToLower(n.Name), strings.ToLower(x)) {
 			return i
 		}
 	}

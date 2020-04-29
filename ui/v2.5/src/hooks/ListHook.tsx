@@ -24,7 +24,7 @@ import {
 } from "src/hooks/LocalForage";
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
-import { Pagination } from "src/components/List/Pagination";
+import { Pagination, PaginationIndex } from "src/components/List/Pagination";
 import { StashService } from "src/core/StashService";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -357,6 +357,19 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     }
   }
 
+  function maybeRenderPaginationIndex() {
+    if (!result.loading && !result.error) {
+      return (
+        <PaginationIndex
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+          onClick={() => {}}
+        />
+      );
+    }
+  }
+
   function maybeRenderPagination() {
     if (!result.loading && !result.error) {
       return (
@@ -394,6 +407,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       {(result.loading || !forageInitialised) && <LoadingIndicator />}
       {result.error && <h1>{result.error.message}</h1>}
       {maybeRenderContent()}
+      {maybeRenderPaginationIndex()}
       {maybeRenderPagination()}
     </div>
   );

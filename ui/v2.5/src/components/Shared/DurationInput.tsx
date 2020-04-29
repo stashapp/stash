@@ -7,14 +7,19 @@ interface IProps {
   disabled?: boolean;
   numericValue: number | undefined;
   mandatory?: boolean;
-  onValueChange(valueAsNumber: number | undefined, valueAsString?: string): void;
+  onValueChange(
+    valueAsNumber: number | undefined,
+    valueAsString?: string
+  ): void;
   onReset?(): void;
   className?: string;
 }
 
 export const DurationInput: React.FC<IProps> = (props: IProps) => {
   const [value, setValue] = useState<string | undefined>(
-    props.numericValue !== undefined ? DurationUtils.secondsToString(props.numericValue) : undefined
+    props.numericValue !== undefined
+      ? DurationUtils.secondsToString(props.numericValue)
+      : undefined
   );
 
   useEffect(() => {
