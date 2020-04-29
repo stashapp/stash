@@ -16,9 +16,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [generatedPath, setGeneratedPath] = useState<string | undefined>(
     undefined
   );
-  const [cachePath, setCachePath] = useState<string | undefined>(
-    undefined
-  );
+  const [cachePath, setCachePath] = useState<string | undefined>(undefined);
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);

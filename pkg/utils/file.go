@@ -183,7 +183,7 @@ func DuDir(path string, info os.FileInfo, filesInfo *[]DuDetails) int64 {
 	size := info.Size()
 	dir, err := os.Open(path)
 	if err != nil {
-		fmt.Errorf("Error openig path %s: %s\n", path, err)
+		fmt.Printf("Error openig path %s: %s\n", path, err)
 		return size
 	}
 	defer dir.Close()
@@ -206,7 +206,7 @@ func DuDir(path string, info os.FileInfo, filesInfo *[]DuDetails) int64 {
 // Reduce dir by at least size bytes
 // Returns the size of removed files
 func ReduceDir(files []DuDetails, size int64) int64 {
-	var rmSize int64 = 0
+	var rmSize int64
 	for _, file := range files {
 		if rmSize <= size {
 			err := os.Remove(file.path)
