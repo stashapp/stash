@@ -10,42 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 )
 
-var sceneMetadataColumns = []string{
-	"id",
-	"path",
-	"checksum",
-	"title",
-	"details",
-	"url",
-	"date",
-	"rating",
-	"size",
-	"duration",
-	"video_codec",
-	"audio_codec",
-	"format",
-	"width",
-	"height",
-	"framerate",
-	"bitrate",
-	"studio_id",
-	"created_at",
-	"updated_at",
-	"o_counter",
-}
-
-func selectSceneMetadata() string {
-	var str strings.Builder
-
-	for _, colName := range sceneMetadataColumns {
-		str.WriteString("scenes." + colName + ", ")
-	}
-
-	returnVal := str.String()
-	return "SELECT " + returnVal[:len(returnVal)-2] + " FROM scenes "
-}
-
-var scenesForPerformerQuery = selectSceneMetadata() + `
+var scenesForPerformerQuery = selectAll("scenes") + `
 LEFT JOIN performers_scenes as performers_join on performers_join.scene_id = scenes.id
 WHERE performers_join.performer_id = ?
 GROUP BY scenes.id
@@ -57,18 +22,18 @@ WHERE performer_id = ?
 GROUP BY scene_id
 `
 
-var scenesForStudioQuery = selectSceneMetadata() + `
+var scenesForStudioQuery = selectAll("scenes") + `
 JOIN studios ON studios.id = scenes.studio_id
 WHERE studios.id = ?
 GROUP BY scenes.id
 `
-var scenesForMovieQuery = selectSceneMetadata() + `
+var scenesForMovieQuery = selectAll("all") + `
 LEFT JOIN movies_scenes as movies_join on movies_join.scene_id = scenes.id
 WHERE movies_join.movie_id = ?
 GROUP BY scenes.id
 `
 
-var scenesForTagQuery = selectSceneMetadata() + `
+var scenesForTagQuery = selectAll("all") + `
 LEFT JOIN scenes_tags as tags_join on tags_join.scene_id = scenes.id
 WHERE tags_join.tag_id = ?
 GROUP BY scenes.id
@@ -183,14 +148,8 @@ func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
 	return qb.find(id, nil)
 }
 
-func (qb *SceneQueryBuilder) FindWithAllColumns(id int) (*Scene, error) {
-	query := "SELECT * FROM scenes WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	return qb.queryScene(query, args, nil)
-}
-
 func (qb *SceneQueryBuilder) find(id int, tx *sqlx.Tx) (*Scene, error) {
-	query := selectSceneMetadata() + "WHERE id = ? LIMIT 1"
+	query := selectAll("scenes") + "WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryScene(query, args, tx)
 }
@@ -202,7 +161,7 @@ func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*Scene, error) {
 }
 
 func (qb *SceneQueryBuilder) FindByPath(path string) (*Scene, error) {
-	query := selectSceneMetadata() + "WHERE path = ? LIMIT 1"
+	query := selectAll("scenes") + "WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
 	return qb.queryScene(query, args, nil)
 }
@@ -259,7 +218,7 @@ func (qb *SceneQueryBuilder) Wall(q *string) ([]*Scene, error) {
 	if q != nil {
 		s = *q
 	}
-	query := selectSceneMetadata() + "WHERE scenes.details LIKE '%" + s + "%' ORDER BY RANDOM() LIMIT 80"
+	query := selectAll("scenes") + "WHERE scenes.details LIKE '%" + s + "%' ORDER BY RANDOM() LIMIT 80"
 	return qb.queryScenes(query, nil, nil)
 }
 
@@ -278,7 +237,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	var whereClauses []string
 	var havingClauses []string
 	var args []interface{}
-	body := selectSceneMetadata()
+	body := selectAll("scenes")
 	body = body + `
 		left join scene_markers on scene_markers.scene_id = scenes.id
 		left join performers_scenes as performers_join on performers_join.scene_id = scenes.id

@@ -10,41 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 )
 
-var metadataColumns = []string{
-	"id",
-	"checksum",
-	"name",
-	"gender",
-	"url",
-	"twitter",
-	"instagram",
-	"birthdate",
-	"ethnicity",
-	"country",
-	"eye_color",
-	"height",
-	"measurements",
-	"fake_tits",
-	"career_length",
-	"tattoos",
-	"piercings",
-	"aliases",
-	"favorite",
-	"created_at",
-	"updated_at",
-}
-
-func selectPerformerMetadata() string {
-	var str strings.Builder
-
-	for _, colName := range metadataColumns {
-		str.WriteString("performers." + colName + ", ")
-	}
-
-	returnVal := str.String()
-	return "SELECT " + returnVal[:len(returnVal)-2] + " FROM performers "
-}
-
 type PerformerQueryBuilder struct{}
 
 func NewPerformerQueryBuilder() PerformerQueryBuilder {
@@ -103,16 +68,6 @@ func (qb *PerformerQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 }
 
 func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
-	query := selectPerformerMetadata() + "WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	results, err := qb.queryPerformers(query, args, nil)
-	if err != nil || len(results) < 1 {
-		return nil, err
-	}
-	return results[0], nil
-}
-
-func (qb *PerformerQueryBuilder) FindWithAllColumns(id int) (*Performer, error) {
 	query := "SELECT * FROM performers WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	results, err := qb.queryPerformers(query, args, nil)
@@ -123,7 +78,7 @@ func (qb *PerformerQueryBuilder) FindWithAllColumns(id int) (*Performer, error) 
 }
 
 func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {
-	query := selectPerformerMetadata() + `
+	query := selectAll("performers") + `
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		WHERE scenes_join.scene_id = ?
 		GROUP BY performers.id
@@ -177,7 +132,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		tableName: tableName,
 	}
 
-	query.body = selectPerformerMetadata()
+	query.body = selectAll("performers")
 	query.body += `
 		left join performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		left join scenes on scenes_join.scene_id = scenes.id
