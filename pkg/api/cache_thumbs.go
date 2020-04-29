@@ -55,22 +55,13 @@ func startThumbCache() { // TODO add extra wait, close chan code if/when stash g
 func thumbnailCacheWriter() {
 
 	for thumb := range writeChan {
-
 		exists, _ := utils.FileExists(thumb.path)
-
-		if !exists { // file to write shouldn't exist
-			pathErr := utils.EnsureDirAll(thumb.dir)
-			if pathErr != nil {
-				logger.Errorf("Cannot ensure path %s", pathErr)
-				continue
-			}
-
-			err := ioutil.WriteFile(thumb.path, thumb.data, 0755) // store thumbnail in cache
+		if !exists {
+			err := utils.WriteFile(thumb.path, thumb.data)
 			if err != nil {
 				logger.Errorf("Write error for thumbnail %s: %s ", thumb.path, err)
 			}
 		}
-
 	}
 
 }
@@ -106,4 +97,12 @@ func cacheGthumb(gallery *models.Gallery, index int, width int) []byte {
 	t := newCacheThumb(thumbDir, thumbPath, data)
 	writeChan <- t // write the file to cache
 	return data
+}
+
+// create all thumbs for a given gallery
+func CreateGthumbs(gallery *models.Gallery) {
+	count := gallery.ImageCount()
+	for i := 0; i < count; i++ {
+		cacheGthumb(gallery, i, models.DefaultGthumbWidth)
+	}
 }

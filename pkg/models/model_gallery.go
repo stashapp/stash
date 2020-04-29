@@ -26,6 +26,8 @@ type Gallery struct {
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
+const DefaultGthumbWidth int = 200
+
 func (g *Gallery) GetFiles(baseURL string) []*GalleryFilesType {
 	var galleryFiles []*GalleryFilesType
 	filteredFiles, readCloser, err := g.listZipContents()
@@ -151,4 +153,12 @@ func reorder(a []*zip.File, toFirst int) []*zip.File {
 		a = append([]*zip.File{first}, a...) // Push first to the start of the slice
 	}
 	return a
+}
+
+func (g *Gallery) ImageCount() int {
+	images, _, _ := g.listZipContents()
+	if images == nil {
+		return 0
+	}
+	return len(images)
 }

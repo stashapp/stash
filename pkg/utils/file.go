@@ -263,3 +263,17 @@ func HumanizeBytes(s uint64) string {
 
 	return fmt.Sprintf(f, val, suffix)
 }
+
+// write file to path creating parent directories if needed
+func WriteFile(path string, file []byte) error {
+	pathErr := EnsureDirAll(filepath.Dir(path))
+	if pathErr != nil {
+		return fmt.Errorf("Cannot ensure path %s", pathErr)
+	}
+
+	err := ioutil.WriteFile(path, file, 0755) // store thumbnail in cache
+	if err != nil {
+		return fmt.Errorf("Write error for thumbnail %s: %s ", path, err)
+	}
+	return nil
+}

@@ -8,7 +8,8 @@ export const GenerateButton: React.FC = () => {
   const [sprites, setSprites] = useState(true);
   const [previews, setPreviews] = useState(true);
   const [markers, setMarkers] = useState(true);
-  const [transcodes, setTranscodes] = useState(true);
+  const [transcodes, setTranscodes] = useState(false);
+  const [thumbnails, setThumbnails] = useState(false);
 
   async function onGenerate() {
     try {
@@ -17,6 +18,7 @@ export const GenerateButton: React.FC = () => {
         previews,
         markers,
         transcodes,
+        thumbnails,
       });
       Toast.success({ content: "Started generating" });
     } catch (e) {
@@ -50,6 +52,12 @@ export const GenerateButton: React.FC = () => {
           checked={transcodes}
           label="Transcodes (MP4 conversions of unsupported video formats)"
           onChange={() => setTranscodes(!transcodes)}
+        />
+        <Form.Check
+          id="thumbnail-task"
+          checked={thumbnails}
+          label="Gallery thumbnails"
+          onChange={() => setThumbnails(!thumbnails)}
         />
       </Form.Group>
       <Form.Group>

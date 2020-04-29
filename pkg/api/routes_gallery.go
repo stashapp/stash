@@ -31,7 +31,7 @@ func (rs galleryRoutes) File(w http.ResponseWriter, r *http.Request) {
 	thumb := r.URL.Query().Get("thumb")
 	w.Header().Add("Cache-Control", "max-age=604800000") // 1 Week
 	if thumb == "true" {
-		_, _ = w.Write(cacheGthumb(gallery, fileIndex, 200))
+		_, _ = w.Write(cacheGthumb(gallery, fileIndex, models.DefaultGthumbWidth))
 	} else if thumb == "" {
 		_, _ = w.Write(gallery.GetImage(fileIndex))
 	} else {
