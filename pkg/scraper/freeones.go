@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+const freeonesTimeout = 30 * time.Second
 
 const freeonesScraperID = "builtin_freeones"
 const freeonesName = "Freeones"
@@ -44,9 +45,12 @@ func GetFreeonesScraper() scraperConfig {
 func GetPerformerNames(c scraperTypeConfig, q string) ([]*models.ScrapedPerformer, error) {
 	// Request the HTML page.
 	queryURL := "https://www.freeones.com/suggestions.php?q=" + url.PathEscape(q) + "&t=1"
-	res, err := http.Get(queryURL)
+	client := http.Client{
+		Timeout: freeonesTimeout,
+	}
+	res, err := client.Get(queryURL)
 	if err != nil {
-		logger.Fatal(err)
+		return nil, err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
@@ -74,12 +78,20 @@ func GetPerformerNames(c scraperTypeConfig, q string) ([]*models.ScrapedPerforme
 
 func GetPerformerURL(c scraperTypeConfig, href string) (*models.ScrapedPerformer, error) {
 	// if we're already in the bio page, just scrape it
-	if regexp.MustCompile(`\/bio_.*\.php$`).MatchString(href) {
+	reg, err := regexp.Compile(`\/bio_.*\.php$`)
+	if err != nil {
+		return nil, err
+	}
+	if reg.MatchString(href) {
 		return getPerformerBio(c, href)
 	}
 
 	// otherwise try to get the bio page from the url
-	profileRE := regexp.MustCompile(`_links\/(.*?)\/$`)
+	profileRE, err := regexp.Compile(`_links\/(.*?)\/$`)
+	if err != nil {
+		return nil, err
+	}
+
 	if profileRE.MatchString(href) {
 		href = profileRE.ReplaceAllString(href, "_links/bio_$1.php")
 		return getPerformerBio(c, href)
@@ -89,7 +101,11 @@ func GetPerformerURL(c scraperTypeConfig, href string) (*models.ScrapedPerformer
 }
 
 func getPerformerBio(c scraperTypeConfig, href string) (*models.ScrapedPerformer, error) {
-	bioRes, err := http.Get(href)
+	client := http.Client{
+		Timeout: freeonesTimeout,
+	}
+
+	bioRes, err := client.Get(href)
 	if err != nil {
 		return nil, err
 	}
@@ -131,10 +147,12 @@ func getPerformerBio(c scraperTypeConfig, href string) (*models.ScrapedPerformer
 	result.FakeTits = &fakeTits
 
 	careerLength := paramValue(params, paramIndexes["career_length"])
-	careerRegex := regexp.MustCompile(`\([\s\S]*`)
-	careerLength = careerRegex.ReplaceAllString(careerLength, "")
-	careerLength = trim(careerLength)
-	result.CareerLength = &careerLength
+	careerRegex, err := regexp.Compile(`\([\s\S]*`)
+	if err == nil {
+		careerLength = careerRegex.ReplaceAllString(careerLength, "")
+		careerLength = trim(careerLength)
+		result.CareerLength = &careerLength
+	}
 
 	tattoos := paramValue(params, paramIndexes["tattoos"])
 	result.Tattoos = &tattoos
@@ -146,20 +164,24 @@ func getPerformerBio(c scraperTypeConfig, href string) (*models.ScrapedPerformer
 	result.Aliases = &aliases
 
 	birthdate := paramValue(params, paramIndexes["birthdate"])
-	birthdateRegex := regexp.MustCompile(` \(\d* years old\)`)
-	birthdate = birthdateRegex.ReplaceAllString(birthdate, "")
-	birthdate = trim(birthdate)
-	if birthdate != "Unknown" && len(birthdate) > 0 {
-		t, _ := time.Parse("January _2, 2006", birthdate) // TODO
-		formattedBirthdate := t.Format("2006-01-02")
-		result.Birthdate = &formattedBirthdate
+	birthdateRegex, err := regexp.Compile(` \(\d* years old\)`)
+	if err == nil {
+		birthdate = birthdateRegex.ReplaceAllString(birthdate, "")
+		birthdate = trim(birthdate)
+		if birthdate != "Unknown" && len(birthdate) > 0 {
+			t, _ := time.Parse("January _2, 2006", birthdate) // TODO
+			formattedBirthdate := t.Format("2006-01-02")
+			result.Birthdate = &formattedBirthdate
+		}
 	}
 
 	height := paramValue(params, paramIndexes["height"])
-	heightRegex := regexp.MustCompile(`heightcm = "(.*)"\;`)
-	heightMatches := heightRegex.FindStringSubmatch(height)
-	if len(heightMatches) > 1 {
-		result.Height = &heightMatches[1]
+	heightRegex, err := regexp.Compile(`heightcm = "(.*)"\;`)
+	if err == nil {
+		heightMatches := heightRegex.FindStringSubmatch(height)
+		if len(heightMatches) > 1 {
+			result.Height = &heightMatches[1]
+		}
 	}
 
 	twitterElement := bioDoc.Find(".twitter a")
@@ -220,7 +242,10 @@ func GetPerformer(c scraperTypeConfig, scrapedPerformer models.ScrapedPerformerI
 
 	href, _ := performerLink.Attr("href")
 	href = strings.TrimSuffix(href, "/")
-	regex := regexp.MustCompile(`.+_links\/(.+)`)
+	regex, err := regexp.Compile(`.+_links\/(.+)`)
+	if err != nil {
+		return nil, nil
+	}
 	matches := regex.FindStringSubmatch(href)
 	if len(matches) < 2 {
 		return nil, fmt.Errorf("No matches found in %s", href)
@@ -230,6 +255,7 @@ func GetPerformer(c scraperTypeConfig, scrapedPerformer models.ScrapedPerformerI
 	href = "https://www.freeones.com" + href
 
 	return getPerformerBio(c, href)
+
 }
 
 func getIndexes(doc *goquery.Document) map[string]int {
