@@ -56,7 +56,7 @@ export const GenerateButton: React.FC = () => {
         <Form.Check
           id="thumbnail-task"
           checked={thumbnails}
-          label="Gallery thumbnails"
+          label="Gallery thumbnails (thumbnails for all the gallery images)"
           onChange={() => setThumbnails(!thumbnails)}
         />
       </Form.Group>

@@ -16,8 +16,6 @@ input ConfigGeneralInput {
   generatedPath: String
   """Path to cache"""
   cachePath: String
-  """Max size for thumbs in cache (MB)"""
-  cacheThumbSize: Int
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
@@ -56,8 +54,6 @@ type ConfigGeneralResult {
   """Path to cache"""
   cachePath: String!
   """Max size for thumbs in cache (MB)"""
-  cacheThumbSize: Int!
-  """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum

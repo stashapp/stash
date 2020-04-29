@@ -19,7 +19,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [cachePath, setCachePath] = useState<string | undefined>(
     undefined
   );
-  const [cacheThumbSize, setCacheThumbSize] = useState<number>(0);
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
@@ -47,7 +46,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
     databasePath,
     generatedPath,
     cachePath,
-    cacheThumbSize,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
     forceMkv,
@@ -72,7 +70,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
       setCachePath(conf.general.cachePath);
-      setCacheThumbSize(conf.general.cacheThumbSize);
       setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
@@ -234,22 +231,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
             Directory location of the cache
           </Form.Text>
         </Form.Group>
-
-        <Form.Group id="cache-thumb-size">
-          <h6>Thumbnails Cache Size (MB)</h6>
-          <Form.Control
-            className="col col-sm-6 text-input"
-            type="number"
-            value={cacheThumbSize.toString()}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setCacheThumbSize(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-          <Form.Text className="text-muted">
-            Maximum size of cache to use for storing gallery thumbnails. 0 means unlimited.
-          </Form.Text>
-        </Form.Group>
-
 
         <Form.Group>
           <h6>Excluded Patterns</h6>

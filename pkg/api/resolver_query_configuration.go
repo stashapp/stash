@@ -40,7 +40,6 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		DatabasePath:              config.GetDatabasePath(),
 		GeneratedPath:             config.GetGeneratedPath(),
 		CachePath:                 config.GetCachePath(),
-		CacheThumbSize:            config.GetCacheThumbSize(),
 		MaxTranscodeSize:          &maxTranscodeSize,
 		MaxStreamingTranscodeSize: &maxStreamingTranscodeSize,
 		ForceMkv:                  config.GetForceMKV(),
