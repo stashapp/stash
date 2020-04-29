@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +18,10 @@ const apiReleases string = "https://api.github.com/repos/stashapp/stash/releases
 const apiTags string = "https://api.github.com/repos/stashapp/stash/tags"
 const apiAcceptHeader string = "application/vnd.github.v3+json"
 const developmentTag string = "latest_develop"
+
+// ErrNoVersion indicates that no version information has been embedded in the
+// stash binary
+var ErrNoVersion = errors.New("no stash version")
 
 var stashReleases = func() map[string]string {
 	return map[string]string{
@@ -140,7 +145,7 @@ func GetLatestVersion(shortHash bool) (latestVersion string, latestRelease strin
 
 	version, _, _ := GetVersion()
 	if version == "" {
-		return "", "", fmt.Errorf("Stash doesn't have a version. Version check not supported.")
+		return "", "", ErrNoVersion
 	}
 
 	// if the version is suffixed with -x-xxxx, then we are running a development build

@@ -28,6 +28,11 @@ generate:
 fmt:
 	go fmt ./...
 
+# Ensures that changed files have had gofmt run on them
+.PHONY: fmt-check
+fmt-check:
+	sh ./scripts/check-gofmt.sh
+
 # Runs go vet on the project's source code.
 .PHONY: vet
 vet:
@@ -47,7 +52,31 @@ test:
 it:
 	go test -mod=vendor -tags=integration ./...
 
+# installs UI dependencies. Run when first cloning repository, or if UI 
+# dependencies have changed
+.PHONY: pre-ui
+pre-ui:
+	cd ui/v2.5 && yarn install --frozen-lockfile
+
 .PHONY: ui
 ui:
 	cd ui/v2.5 && yarn build
 	packr2
+
+fmt-ui:
+	cd ui/v2.5 && yarn format
+
+# runs tests and checks on the UI and builds it
+.PHONY: ui-validate
+ui-validate:
+	cd ui/v2.5 && yarn run validate
+
+# just repacks the packr files - use when updating migrations and packed files without 
+# rebuilding the UI
+.PHONY: packr
+packr:
+	packr2
+
+# runs all of the tests and checks required for a PR to be accepted
+.PHONY: validate
+validate: ui-validate fmt-check vet lint it

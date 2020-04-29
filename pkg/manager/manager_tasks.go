@@ -589,7 +589,7 @@ func (s *singleton) returnToIdleState() {
 }
 
 func (s *singleton) neededScan(paths []string) int64 {
-	var neededScans int64 = 0
+	var neededScans int64
 
 	for _, path := range paths {
 		task := ScanTask{FilePath: path}
@@ -610,14 +610,14 @@ type totalsGenerate struct {
 func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, markers, transcodes bool) *totalsGenerate {
 
 	var totals totalsGenerate
-	const timeoutSecs = 90 * time.Second
+	const timeout = 90 * time.Second
 
 	// create a control channel through which to signal the counting loop when the timeout is reached
 	chTimeout := make(chan struct{})
 
 	//run the timeout function in a separate thread
 	go func() {
-		time.Sleep(timeoutSecs)
+		time.Sleep(timeout)
 		chTimeout <- struct{}{}
 	}()
 

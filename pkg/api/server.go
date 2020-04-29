@@ -30,9 +30,9 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-var version string = ""
-var buildstamp string = ""
-var githash string = ""
+var version string
+var buildstamp string
+var githash string
 
 var uiBox *packr.Box
 
