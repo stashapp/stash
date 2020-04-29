@@ -271,7 +271,7 @@ func WriteFile(path string, file []byte) error {
 		return fmt.Errorf("Cannot ensure path %s", pathErr)
 	}
 
-	err := ioutil.WriteFile(path, file, 0755) // store thumbnail in cache
+	err := ioutil.WriteFile(path, file, 0755)
 	if err != nil {
 		return fmt.Errorf("Write error for thumbnail %s: %s ", path, err)
 	}
