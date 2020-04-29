@@ -63,6 +63,9 @@ ui:
 	cd ui/v2.5 && yarn build
 	packr2
 
+fmt-ui:
+	cd ui/v2.5 && yarn format
+
 # runs tests and checks on the UI and builds it
 .PHONY: ui-validate
 ui-validate:
