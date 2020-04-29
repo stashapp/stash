@@ -3,7 +3,6 @@ package models
 import (
 	"database/sql"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -132,7 +131,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		tableName: tableName,
 	}
 
-	query.body = selectAll("performers")
+	query.body = selectDistinctIDs(tableName)
 	query.body += `
 		left join performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		left join scenes on scenes_join.scene_id = scenes.id
@@ -195,20 +194,13 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	handleStringCriterion(tableName+".aliases", performerFilter.Aliases, &query)
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
+    idsResult, countResult := query.executeFind()
 
-	if len(query.whereClauses) > 0 {
-		query.body += " WHERE " + strings.Join(query.whereClauses, " AND ") // TODO handle AND or OR
+	var performers []*Performer
+	for _, id := range idsResult {
+		performer, _ := qb.Find(id)
+		performers = append(performers, performer)
 	}
-	query.body += " GROUP BY " + tableName + ".id "
-	if len(query.havingClauses) > 0 {
-		query.body += " HAVING " + strings.Join(query.havingClauses, " AND ") // TODO handle AND or OR
-	}
-
-	countQuery := buildCountQuery(query.body)
-	countResult, _ := runCountQuery(countQuery, query.args)
-
-	performersQuery := query.body + query.sortAndPagination
-	performers, _ := qb.queryPerformers(performersQuery, query.args, nil)
 
 	return performers, countResult
 }

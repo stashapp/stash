@@ -237,7 +237,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	var whereClauses []string
 	var havingClauses []string
 	var args []interface{}
-	body := selectAll("scenes")
+	body := selectDistinctIDs("scenes")
 	body = body + `
 		left join scene_markers on scene_markers.scene_id = scenes.id
 		left join performers_scenes as performers_join on performers_join.scene_id = scenes.id
@@ -364,20 +364,13 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	}
 
 	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
+    idsResult, countResult := executeFindQuery("scenes", body, args, sortAndPagination, whereClauses, havingClauses)
 
-	if len(whereClauses) > 0 {
-		body += " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
+	var scenes []*Scene
+	for _, id := range idsResult {
+		scene, _ := qb.Find(id)
+		scenes = append(scenes, scene)
 	}
-	body += " GROUP BY scenes.id "
-	if len(havingClauses) > 0 {
-		body += " HAVING " + strings.Join(havingClauses, " AND ") // TODO handle AND or OR
-	}
-
-	countQuery := buildCountQuery(body)
-	countResult, _ := runCountQuery(countQuery, args)
-
-	scenesQuery := body + sortAndPagination
-	scenes, _ := qb.queryScenes(scenesQuery, args, nil)
 
 	return scenes, countResult
 }
