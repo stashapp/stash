@@ -1,4 +1,4 @@
-if: tag != develop_latest # dont build for the latest_develop tagged version
+if: tag != latest_develop # dont build for the latest_develop tagged version
 
 dist: xenial
 git:
