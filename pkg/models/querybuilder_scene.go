@@ -234,11 +234,13 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		findFilter = &FindFilterType{}
 	}
 
-	var whereClauses []string
-	var havingClauses []string
-	var args []interface{}
-	body := selectDistinctIDs("scenes")
-	body = body + `
+	tableName := "scenes"
+	query := queryBuilder{
+		tableName: tableName,
+	}
+
+	query.body = selectDistinctIDs(tableName)
+	query.body += `
 		left join scene_markers on scene_markers.scene_id = scenes.id
 		left join performers_scenes as performers_join on performers_join.scene_id = scenes.id
 		left join movies_scenes as movies_join on movies_join.scene_id = scenes.id
@@ -250,121 +252,121 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details", "scenes.path", "scenes.checksum", "scene_markers.title"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		whereClauses = append(whereClauses, clause)
-		args = append(args, thisArgs...)
+		query.addWhere(clause)
+		query.addArg(thisArgs...)
 	}
 
 	if rating := sceneFilter.Rating; rating != nil {
 		clause, count := getIntCriterionWhereClause("scenes.rating", *sceneFilter.Rating)
-		whereClauses = append(whereClauses, clause)
+		query.addWhere(clause)
 		if count == 1 {
-			args = append(args, sceneFilter.Rating.Value)
+			query.addArg(sceneFilter.Rating.Value)
 		}
 	}
 
 	if oCounter := sceneFilter.OCounter; oCounter != nil {
 		clause, count := getIntCriterionWhereClause("scenes.o_counter", *sceneFilter.OCounter)
-		whereClauses = append(whereClauses, clause)
+		query.addWhere(clause)
 		if count == 1 {
-			args = append(args, sceneFilter.OCounter.Value)
+			query.addArg(sceneFilter.OCounter.Value)
 		}
 	}
 
 	if durationFilter := sceneFilter.Duration; durationFilter != nil {
 		clause, thisArgs := getDurationWhereClause(*durationFilter)
-		whereClauses = append(whereClauses, clause)
-		args = append(args, thisArgs...)
+		query.addWhere(clause)
+		query.addArg(thisArgs...)
 	}
 
 	if resolutionFilter := sceneFilter.Resolution; resolutionFilter != nil {
 		if resolution := resolutionFilter.String(); resolutionFilter.IsValid() {
 			switch resolution {
 			case "LOW":
-				whereClauses = append(whereClauses, "scenes.height < 480")
+				query.addWhere("scenes.height < 480")
 			case "STANDARD":
-				whereClauses = append(whereClauses, "(scenes.height >= 480 AND scenes.height < 720)")
+				query.addWhere("(scenes.height >= 480 AND scenes.height < 720)")
 			case "STANDARD_HD":
-				whereClauses = append(whereClauses, "(scenes.height >= 720 AND scenes.height < 1080)")
+				query.addWhere("(scenes.height >= 720 AND scenes.height < 1080)")
 			case "FULL_HD":
-				whereClauses = append(whereClauses, "(scenes.height >= 1080 AND scenes.height < 2160)")
+				query.addWhere("(scenes.height >= 1080 AND scenes.height < 2160)")
 			case "FOUR_K":
-				whereClauses = append(whereClauses, "scenes.height >= 2160")
+				query.addWhere("scenes.height >= 2160")
 			}
 		}
 	}
 
 	if hasMarkersFilter := sceneFilter.HasMarkers; hasMarkersFilter != nil {
 		if strings.Compare(*hasMarkersFilter, "true") == 0 {
-			havingClauses = append(havingClauses, "count(scene_markers.scene_id) > 0")
+			query.addHaving("count(scene_markers.scene_id) > 0")
 		} else {
-			whereClauses = append(whereClauses, "scene_markers.id IS NULL")
+			query.addWhere("scene_markers.id IS NULL")
 		}
 	}
 
 	if isMissingFilter := sceneFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "gallery":
-			whereClauses = append(whereClauses, "gallery.scene_id IS NULL")
+			query.addWhere("gallery.scene_id IS NULL")
 		case "studio":
-			whereClauses = append(whereClauses, "scenes.studio_id IS NULL")
+			query.addWhere("scenes.studio_id IS NULL")
 		case "movie":
-			whereClauses = append(whereClauses, "movies_join.scene_id IS NULL")
+			query.addWhere("movies_join.scene_id IS NULL")
 		case "performers":
-			whereClauses = append(whereClauses, "performers_join.scene_id IS NULL")
+			query.addWhere("performers_join.scene_id IS NULL")
 		case "date":
-			whereClauses = append(whereClauses, "scenes.date IS \"\" OR scenes.date IS \"0001-01-01\"")
+			query.addWhere("scenes.date IS \"\" OR scenes.date IS \"0001-01-01\"")
 		case "tags":
-			whereClauses = append(whereClauses, "tags_join.scene_id IS NULL")
+			query.addWhere("tags_join.scene_id IS NULL")
 		default:
-			whereClauses = append(whereClauses, "scenes."+*isMissingFilter+" IS NULL")
+			query.addWhere("scenes." + *isMissingFilter + " IS NULL")
 		}
 	}
 
 	if tagsFilter := sceneFilter.Tags; tagsFilter != nil && len(tagsFilter.Value) > 0 {
 		for _, tagID := range tagsFilter.Value {
-			args = append(args, tagID)
+			query.addArg(tagID)
 		}
 
-		body += " LEFT JOIN tags on tags_join.tag_id = tags.id"
+		query.body += " LEFT JOIN tags on tags_join.tag_id = tags.id"
 		whereClause, havingClause := getMultiCriterionClause("tags", "scenes_tags", "tag_id", tagsFilter)
-		whereClauses = appendClause(whereClauses, whereClause)
-		havingClauses = appendClause(havingClauses, havingClause)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
 	}
 
 	if performersFilter := sceneFilter.Performers; performersFilter != nil && len(performersFilter.Value) > 0 {
 		for _, performerID := range performersFilter.Value {
-			args = append(args, performerID)
+			query.addArg(performerID)
 		}
 
-		body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
+		query.body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
 		whereClause, havingClause := getMultiCriterionClause("performers", "performers_scenes", "performer_id", performersFilter)
-		whereClauses = appendClause(whereClauses, whereClause)
-		havingClauses = appendClause(havingClauses, havingClause)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
 	}
 
 	if studiosFilter := sceneFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
 		for _, studioID := range studiosFilter.Value {
-			args = append(args, studioID)
+			query.addArg(studioID)
 		}
 
 		whereClause, havingClause := getMultiCriterionClause("studio", "", "studio_id", studiosFilter)
-		whereClauses = appendClause(whereClauses, whereClause)
-		havingClauses = appendClause(havingClauses, havingClause)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
 	}
 
 	if moviesFilter := sceneFilter.Movies; moviesFilter != nil && len(moviesFilter.Value) > 0 {
 		for _, movieID := range moviesFilter.Value {
-			args = append(args, movieID)
+			query.addArg(movieID)
 		}
 
-		body += " LEFT JOIN movies ON movies_join.movie_id = movies.id"
+		query.body += " LEFT JOIN movies ON movies_join.movie_id = movies.id"
 		whereClause, havingClause := getMultiCriterionClause("movies", "movies_scenes", "movie_id", moviesFilter)
-		whereClauses = appendClause(whereClauses, whereClause)
-		havingClauses = appendClause(havingClauses, havingClause)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
 	}
 
-	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
-    idsResult, countResult := executeFindQuery("scenes", body, args, sortAndPagination, whereClauses, havingClauses)
+	query.sortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
+	idsResult, countResult := query.executeFind()
 
 	var scenes []*Scene
 	for _, id := range idsResult {

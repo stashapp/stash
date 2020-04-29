@@ -192,7 +192,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	handleStringCriterion(tableName+".aliases", performerFilter.Aliases, &query)
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
-    idsResult, countResult := query.executeFind()
+	idsResult, countResult := query.executeFind()
 
 	var performers []*Performer
 	for _, id := range idsResult {
