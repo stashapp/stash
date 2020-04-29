@@ -13,7 +13,6 @@ interface IPaginationIndexProps {
   itemsPerPage: number;
   currentPage: number;
   totalItems: number;
-  onClick?: () => void;
 }
 
 export const Pagination: React.FC<IPaginationProps> = ({
@@ -112,14 +111,25 @@ export const PaginationIndex: React.FC<IPaginationIndexProps> = ({
   itemsPerPage,
   currentPage,
   totalItems,
-  onClick
 }) => {
   const intl = useIntl();
 
   // Build the pagination index string
-  const firstItemCount:number = Math.min((currentPage-1)*itemsPerPage+1, totalItems);
-  const lastItemCount:number = Math.min(firstItemCount+(itemsPerPage-1), totalItems);
-  const indexText:string = `${intl.formatNumber(firstItemCount)}-${intl.formatNumber(lastItemCount)} of ${intl.formatNumber(totalItems)}`;
+  const firstItemCount: number = Math.min(
+    (currentPage - 1) * itemsPerPage + 1,
+    totalItems
+  );
+  const lastItemCount: number = Math.min(
+    firstItemCount + (itemsPerPage - 1),
+    totalItems
+  );
+  const indexText: string = `${intl.formatNumber(
+    firstItemCount
+  )}-${intl.formatNumber(lastItemCount)} of ${intl.formatNumber(totalItems)}`;
 
-  return <span className="filter-container text-muted paginationIndex" onClick={onClick}>{indexText}</span>
+  return (
+    <span className="filter-container text-muted paginationIndex">
+      {indexText}
+    </span>
+  );
 };

@@ -364,7 +364,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
           itemsPerPage={filter.itemsPerPage}
           currentPage={filter.currentPage}
           totalItems={totalCount}
-          onClick={() => {}}
         />
       );
     }

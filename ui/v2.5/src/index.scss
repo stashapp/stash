@@ -196,6 +196,14 @@ div.dropdown-menu {
 
   .dropdown-item {
     display: flex;
+
+    & > :not(:last-child) {
+      margin-right: 7px;
+    }
+
+    & > :last-child {
+      margin-right: 0;
+    }
   }
 }
 

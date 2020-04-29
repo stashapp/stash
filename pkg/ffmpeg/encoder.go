@@ -18,8 +18,8 @@ type Encoder struct {
 }
 
 var (
-	runningEncoders      map[string][]*os.Process = make(map[string][]*os.Process)
-	runningEncodersMutex                          = sync.RWMutex{}
+	runningEncoders      = make(map[string][]*os.Process)
+	runningEncodersMutex = sync.RWMutex{}
 )
 
 func NewEncoder(ffmpegPath string) Encoder {
