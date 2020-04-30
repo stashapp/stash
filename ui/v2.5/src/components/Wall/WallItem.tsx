@@ -16,9 +16,29 @@ interface IWallItemProps {
   ) => void;
 }
 
+interface IPreviews {
+  video?: string;
+  animation?: string;
+  image?: string;
+}
+
+const Preview: React.FC<{previews?: IPreviews, config?: any}> = ({ previews, config }) => {
+  if (!previews) return <div />;
+
+  const previewType = config?.data?.configuration?.interface?.wallPlayback;
+  if (previewType === "video")
+    return <video src={previews.video} poster={previews.image} autoPlay loop muted className="scene-wall-image" />;
+  if (previewType === "animation")
+    return <img alt="" className="scene-wall-image" src={previews.animation || previews.image} />
+
+  if (previews.image)
+    return <img alt="" className="scene-wall-image" src={previews.image} />
+  return <video src={previews.video} className="scene-wall-image" />;
+};
+
 export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   const [videoPath, setVideoPath] = useState<string>();
-  const [previewPath, setPreviewPath] = useState<string>("");
+  const [previews, setPreviews] = useState<IPreviews>();
   const [screenshotPath, setScreenshotPath] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [tags, setTags] = useState<JSX.Element[]>([]);
@@ -80,7 +100,10 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
 
   useEffect(() => {
     if (props.sceneMarker) {
-      setPreviewPath(props.sceneMarker.preview);
+      setPreviews({
+        video: props.sceneMarker.stream,
+        animation: props.sceneMarker.preview
+      });
       setTitle(
         `${props.sceneMarker!.title} - ${TextUtils.secondsToTimestamp(
           props.sceneMarker.seconds
@@ -98,17 +121,15 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
       );
       setTags(thisTags);
     } else if (props.scene) {
-      setPreviewPath(props.scene.paths.webp || "");
+      setPreviews({
+        video: props.scene.paths.preview ?? undefined,
+        animation: props.scene.paths.webp ?? undefined,
+        image: props.scene.paths.screenshot ?? undefined
+      });
       setScreenshotPath(props.scene.paths.screenshot || "");
       setTitle(props.scene.title || "");
     }
   }, [props.sceneMarker, props.scene]);
-
-  function previewNotFound() {
-    if (previewPath !== screenshotPath) {
-      setPreviewPath(screenshotPath);
-    }
-  }
 
   const className = ["scene-wall-item-container"];
   if (hoverHandler.isHovering.current) {
@@ -138,12 +159,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
             loop
             ref={hoverHandler.videoEl}
           />
-          <img
-            alt={title}
-            className="scene-wall-image"
-            src={previewPath || screenshotPath}
-            onError={() => previewNotFound()}
-          />
+          <Preview previews={previews} config={config} />
           {showTextContainer ? (
             <div className="scene-wall-item-text-container">
               <div>{title}</div>
