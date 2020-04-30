@@ -64,6 +64,11 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 		newMovie.Rating = sql.NullInt64{Int64: rating, Valid: true}
 	}
 
+	if input.StudioID != nil {
+		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
+		newMovie.StudioID = sql.NullInt64{Int64: studioID, Valid: true}
+	}
+
 	if input.Director != nil {
 		newMovie.Director = sql.NullString{String: *input.Director, Valid: true}
 	}
