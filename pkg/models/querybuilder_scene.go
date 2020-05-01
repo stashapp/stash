@@ -293,8 +293,6 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 				whereClauses = append(whereClauses, "(scenes.height >= 1080 AND scenes.height < 2160)")
 			case "FOUR_K":
 				whereClauses = append(whereClauses, "scenes.height >= 2160")
-			default:
-				whereClauses = append(whereClauses, "scenes.height < 240")
 			}
 		}
 	}
