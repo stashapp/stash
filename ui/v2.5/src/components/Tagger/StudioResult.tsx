@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Dispatch, SetStateAction } from 'react';
-import { Button } from 'react-bootstrap';
+import { Button, ButtonGroup } from 'react-bootstrap';
 import cx from 'classnames';
 
 import { Icon, Modal, StudioSelect } from 'src/components/Shared';
@@ -8,6 +8,7 @@ import {
   SearchScene_searchScene_studio as StashStudio
 } from 'src/definitions-box/SearchScene';
 import { getImage, getUrlByType } from './utils';
+import { Operation } from './StashSearchResult';
 
 interface IIconProps {
   className?: string;
@@ -21,7 +22,7 @@ const FailIcon: React.FC<IIconProps> = ({ className }) => (
 );
 
 interface IStudioOperation {
-  type: "Create"|"Existing"|"Update";
+  type: Operation;
   data: StashStudio|string;
 }
 
@@ -31,9 +32,9 @@ interface IStudioResultProps {
 }
 
 const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
-  const [selectedStudio, setSelectedStudio] = useState();
+  const [selectedStudio, setSelectedStudio] = useState<string|null>();
   const [modalVisible, showModal] = useState(false);
-  const [selectedSource, setSelectedSource] = useState<'create'|'existing'|undefined>();
+  const [selectedSource, setSelectedSource] = useState<'create'|'existing'|'skip'|undefined>();
   const { data: stashData, loading: stashLoading } = GQL.useFindStudioByStashIdQuery({
     variables: {
       id: studio?.id ?? ''
@@ -89,6 +90,14 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
     showModal(false);
   };
 
+  const handleStudioSkip = () => {
+    setSelectedSource('skip');
+    setStudio({
+      type: 'Skip',
+      data: ''
+    });
+  };
+
   if(loading || stashLoading)
     return <div>Loading studio</div>;
 
@@ -129,25 +138,16 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
         Studio:
         <b className="ml-2">{studio?.name}</b>
       </div>
-      <div>
-        <Button variant="secondary" className="mr-1" onClick={() => showModal(true)}>Create</Button>
-        { selectedSource === 'create'
-          ? <SuccessIcon />
-          : <FailIcon />
-        }
-      </div>
-      <div className="select-existing">
-        { selectedSource === 'existing'
-          ? <SuccessIcon />
-          : <FailIcon />
-        }
-      </div>
+      <ButtonGroup>
+        <Button variant={selectedSource === 'create' ? 'primary' : "secondary"} onClick={() => showModal(true)}>Create</Button>
+        <Button variant={selectedSource === 'skip' ? 'primary' : 'secondary'} onClick={() => handleStudioSkip()}>Skip</Button>
       <StudioSelect
         ids={selectedStudio ? [selectedStudio] : []}
         onSelect={(items) => handleStudioSelect(items.length ? items[0].id : undefined)}
-        className="studio-select"
+          className={cx("studio-select", {'studio-select-active': selectedSource === 'existing' })}
       />
-    </div>
+    </ButtonGroup>
+  </div>
   );
 }
 

@@ -46,6 +46,10 @@
 .performer-select,
 .studio-select {
   width: 14rem;
+
+  &-active .react-select__control {
+    background-color: #137cbd;
+  }
 }
 
 .entity-name {

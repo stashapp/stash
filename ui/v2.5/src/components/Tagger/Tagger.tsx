@@ -109,9 +109,6 @@ export const Tagger: React.FC = () => {
 
   const { data: sceneData, loading: sceneLoading } = GQL.useFindScenesQuery({
     variables: {
-      scene_filter: {
-        is_missing: "stash_id"
-      },
       filter: {
         q: searchFilter,
         page,

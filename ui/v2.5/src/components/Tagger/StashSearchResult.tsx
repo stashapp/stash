@@ -52,13 +52,15 @@ const titleCase = (str?: string) => {
     .join(' ');
 };
 
+export type Operation = "Create"|"Existing"|"Update"|"Skip";
+
 interface IPerformerOperation {
-  type: "Create"|"Existing"|"Update";
+  type: Operation;
   data: StashPerformer|string;
 }
 
 interface IStudioOperation {
-  type: "Create"|"Existing"|"Update";
+  type: Operation;
   data: StashStudio|string;
 }
 
@@ -118,7 +120,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
           name: studioData.name,
           stash_id: studioData.id,
           ...(!!getUrlByType(studioData.urls, 'HOME') && { url: getUrlByType(studioData.urls, 'HOME') }),
-          ...(!!getUrlByType(studioData.urls, 'PHOTO') && { image: getUrlByType(studioData.urls, 'PHOTO') })
+          ...(!!getImage(studioData.images, 'landscape') && { image: getImage(studioData.images, 'landscape') })
         },
         update: (store, newStudio) => {
           if (!newStudio?.data?.studioCreate)
@@ -185,7 +187,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       }
       if(performer.type === 'Create') {
         const performerData = performer.data as StashPerformer;
-        const imgurl = performerData.urls?.[0]?.url;
+        const imgurl = performerData.images[0].url;
         let imgData = null;
         if(imgurl) {
           const img = await fetch(imgurl, {
@@ -241,6 +243,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
           return;
 
         return res?.data?.performerCreate?.id ?? null;
+      }
+
+      if(performer.type === 'Skip') {
+        return 'Skip';
       }
       return performer.data as string;
     }));
@@ -303,7 +309,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
           title: scene.title,
           details: scene.details,
           date: scene.date,
-          performer_ids: performerIDs as string[],
+          performer_ids: performerIDs.filter(id => id !== 'Skip') as string[],
           studio_id: studioID,
           cover_image: imgData,
           url: getUrlByType(scene.urls, 'STUDIO') ?? null,
@@ -336,6 +342,12 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
     <a href={getUrlByType(scene.urls, 'STUDIO')} target="_blank" rel="noopener noreferrer" className="scene-link">{scene?.title}</a>
   ) : (<span>{scene?.title}</span>);
 
+  const saveEnabled = (
+    performers
+    && (Object.keys(performers).some(id => !!performers[id].type))
+    && Object.keys(performers).length === scene.performers.filter(p => p.performer.gender !== 'MALE' || showMales).length
+  );
+
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <li className={classname} key={scene?.id} onClick={() => !isActive && setActive()}>
@@ -358,7 +370,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
             ))
           }
           <div className="row pr-3 mt-2">
-            <Button className="col-1 offset-11" onClick={handleSave}>Save</Button>
+            <Button className="col-1 offset-11" onClick={handleSave} disabled={!saveEnabled}>Save</Button>
           </div>
         </div>
       )}
