@@ -29,6 +29,8 @@ github.com/antchfx/htmlquery
 github.com/antchfx/xpath
 # github.com/bmatcuk/doublestar v1.1.5
 github.com/bmatcuk/doublestar
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
 # github.com/disintegration/imaging v1.6.0
 github.com/disintegration/imaging
 # github.com/dustin/go-humanize v1.0.0
@@ -141,6 +143,8 @@ github.com/modern-go/reflect2
 github.com/pelletier/go-toml
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/rogpeppe/go-internal v1.2.2
 github.com/rogpeppe/go-internal/modfile
 github.com/rogpeppe/go-internal/module
@@ -166,6 +170,8 @@ github.com/spf13/jwalterweatherman
 github.com/spf13/pflag
 # github.com/spf13/viper v1.4.0
 github.com/spf13/viper
+# github.com/stretchr/testify v1.5.1
+github.com/stretchr/testify/assert
 # github.com/urfave/cli v1.20.0
 github.com/urfave/cli
 # github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e
