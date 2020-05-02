@@ -334,7 +334,7 @@ func verifySceneResolution(t *testing.T, height sql.NullInt64, resolution models
 
 	switch resolution {
 	case models.ResolutionEnumLow:
-		assert.True(h >= 240 && h < 480)
+		assert.True(h < 480)
 	case models.ResolutionEnumStandard:
 		assert.True(h >= 480 && h < 720)
 	case models.ResolutionEnumStandardHd:

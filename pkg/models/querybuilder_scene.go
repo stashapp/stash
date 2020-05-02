@@ -284,7 +284,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		if resolution := resolutionFilter.String(); resolutionFilter.IsValid() {
 			switch resolution {
 			case "LOW":
-				whereClauses = append(whereClauses, "(scenes.height >= 240 AND scenes.height < 480)")
+				whereClauses = append(whereClauses, "scenes.height < 480")
 			case "STANDARD":
 				whereClauses = append(whereClauses, "(scenes.height >= 480 AND scenes.height < 720)")
 			case "STANDARD_HD":
