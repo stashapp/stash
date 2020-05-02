@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
-import { Badge, Button, Form, InputGroup } from 'react-bootstrap';
+import { Badge, Button, Collapse, Form, InputGroup } from 'react-bootstrap';
 import path from 'parse-filepath';
 import { debounce } from "lodash";
 import localForage from "localforage";
@@ -85,6 +85,7 @@ export const Tagger: React.FC = () => {
   const [taggedScenes, setTaggedScenes] = useState<Record<string, Partial<GQL.Scene>>>({});
   const [fingerprints, setFingerprints] = useState<Record<string, FingerprintResult|null>>({});
   const [loadingFingerprints, setLoadingFingerprints] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
   const [config, setConfig] = useState<ITaggerConfig>({
     blacklist: DEFAULT_BLACKLIST,
     showMales: false,
@@ -206,7 +207,7 @@ export const Tagger: React.FC = () => {
         <div className="col-4">
           <Form.Group controlId="mode-select">
             <Form.Label>Mode: </Form.Label>
-              <Form.Control as="select" value={config.mode} onChange={(e:React.FormEvent<HTMLSelectElement>) => setConfig({ ...config, mode: e.currentTarget.value as ParseMode})}>
+              <Form.Control as="select" value={config.mode} onChange={(e:React.ChangeEvent<HTMLSelectElement>) => setConfig({ ...config, mode: e.currentTarget.value as ParseMode})}>
                 <option value="auto">Auto</option>
                 <option value="filename">Filename</option>
                 <option value="dir">Dir</option>
@@ -232,7 +233,7 @@ export const Tagger: React.FC = () => {
           <InputGroup>
             <Form.Control
               value={blacklistInput}
-              onChange={(e: React.FormEvent<HTMLInputElement>) => setBlacklistInput(e.currentTarget.value)} />
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBlacklistInput(e.currentTarget.value)} />
             <InputGroup.Append>
               <Button onClick={handleBlacklistAddition}>Add</Button>
             </InputGroup.Append>
@@ -247,17 +248,12 @@ export const Tagger: React.FC = () => {
       <div className="row mb-2">
         <input
           className="form-control col-2 ml-4"
-          onChange={(event: React.FormEvent<HTMLInputElement>) => searchCallback(event.currentTarget.value)}
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) => searchCallback(event.currentTarget.value)}
           ref={inputRef}
           placeholder="Search text"
           disabled={sceneLoading}
         />
-        <Form.Group controlId="tag-males" className="mx-4 d-flex align-items-center mt-1">
-          <Form.Check label="Show male performers" checked={config.showMales} onChange={(e: React.FormEvent<HTMLInputElement>) => setConfig({ ...config, showMales: e.currentTarget.checked })} />
-        </Form.Group>
-        <Form.Group controlId="set-cover" className="mx-4 d-flex align-items-center mt-1">
-          <Form.Check label="Set scene cover image" checked={config.setCoverImage} onChange={(e: React.FormEvent<HTMLInputElement>) => setConfig({ ...config, setCoverImage: e.currentTarget.checked })} />
-        </Form.Group>
+        <Button onClick={() => setShowConfig(!showConfig)} variant="link">Show Configuration</Button>
         <div className="float-right mr-4 ml-auto">
           <Pagination
             currentPage={page}
@@ -267,6 +263,15 @@ export const Tagger: React.FC = () => {
           />
         </div>
       </div>
+
+      <Collapse in={showConfig}>
+        <Form.Group controlId="tag-males" className="mx-4 d-flex align-items-center mt-1">
+          <Form.Check label="Show male performers" checked={config.showMales} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, showMales: e.currentTarget.checked })} />
+        </Form.Group>
+        <Form.Group controlId="set-cover" className="mx-4 d-flex align-items-center mt-1">
+          <Form.Check label="Set scene cover image" checked={config.setCoverImage} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, setCoverImage: e.currentTarget.checked })} />
+        </Form.Group>
+      </Collapse>
 
       <div className="tagger-table card">
         <div className="tagger-table-header row mb-4">
@@ -297,7 +302,7 @@ export const Tagger: React.FC = () => {
                       <InputGroup>
                         <Form.Control
                           value={modifiedQuery || defaultQueryString}
-                          onChange={(e: React.FormEvent<HTMLInputElement>) => setQueryString({ ...queryString, [scene.id]: e.currentTarget.value})} />
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQueryString({ ...queryString, [scene.id]: e.currentTarget.value})} />
                         <InputGroup.Append>
                           <Button disabled={loading} onClick={() => doBoxSearch(scene.id, queryString[scene.id] || defaultQueryString)}>Search</Button>
                         </InputGroup.Append>
