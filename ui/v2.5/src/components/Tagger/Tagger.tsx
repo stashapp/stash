@@ -71,6 +71,8 @@ interface ITaggerConfig {
   showMales: boolean;
   mode: ParseMode;
   setCoverImage: boolean;
+  setTags: boolean;
+  tagOperation: string;
 }
 
 export const Tagger: React.FC = () => {
@@ -91,6 +93,8 @@ export const Tagger: React.FC = () => {
     showMales: false,
     mode: 'auto',
     setCoverImage: true,
+    setTags: true,
+    tagOperation: "merge"
   });
 
   useEffect(() => {
@@ -100,6 +104,8 @@ export const Tagger: React.FC = () => {
         showMales: data?.showMales ?? false,
         mode: data?.mode ?? 'auto',
         setCoverImage: data?.setCoverImage ?? true,
+        setTags: true,
+        tagOperation: "merge"
       });
     }
   )}, []);
@@ -206,7 +212,7 @@ export const Tagger: React.FC = () => {
       <div className="row mb-4 my-2">
         <div className="col-4">
           <Form.Group controlId="mode-select">
-            <Form.Label>Mode: </Form.Label>
+            <Form.Label><h5>Mode:</h5></Form.Label>
               <Form.Control as="select" value={config.mode} onChange={(e:React.ChangeEvent<HTMLSelectElement>) => setConfig({ ...config, mode: e.currentTarget.value as ParseMode})}>
                 <option value="auto">Auto</option>
                 <option value="filename">Filename</option>
@@ -253,7 +259,7 @@ export const Tagger: React.FC = () => {
           placeholder="Search text"
           disabled={sceneLoading}
         />
-        <Button onClick={() => setShowConfig(!showConfig)} variant="link">Show Configuration</Button>
+        <Button onClick={() => setShowConfig(!showConfig)} variant="link">{ showConfig ? 'Hide' : 'Show'} Configuration</Button>
         <div className="float-right mr-4 ml-auto">
           <Pagination
             currentPage={page}
@@ -265,12 +271,44 @@ export const Tagger: React.FC = () => {
       </div>
 
       <Collapse in={showConfig}>
-        <Form.Group controlId="tag-males" className="mx-4 d-flex align-items-center mt-1">
-          <Form.Check label="Show male performers" checked={config.showMales} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, showMales: e.currentTarget.checked })} />
-        </Form.Group>
-        <Form.Group controlId="set-cover" className="mx-4 d-flex align-items-center mt-1">
-          <Form.Check label="Set scene cover image" checked={config.setCoverImage} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, setCoverImage: e.currentTarget.checked })} />
-        </Form.Group>
+        <div className="card">
+          <div className="row">
+            <Form className="col-6">
+              <h4>Configuration</h4>
+              <Form.Group controlId="tag-males" className="align-items-center">
+                <Form.Check label="Show male performers" checked={config.showMales} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, showMales: e.currentTarget.checked })} />
+                <Form.Text>Toggle whether male performers will be available to tag.</Form.Text>
+              </Form.Group>
+              <Form.Group controlId="set-cover" className="align-items-center">
+                <Form.Check label="Set scene cover image" checked={config.setCoverImage} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, setCoverImage: e.currentTarget.checked })} />
+                <Form.Text>Replace the scene cover if one is found.</Form.Text>
+              </Form.Group>
+              <Form.Group controlId="set-tags" className="align-items-center">
+                <div className="d-flex align-items-center">
+                  <Form.Check label="Set tags" className="mr-4" checked={config.setTags} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, setTags: e.currentTarget.checked })} />
+                  <Form.Control
+                    className="col-2"
+                    as="select"
+                    value={config.tagOperation}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setConfig({ ...config, tagOperation: e.currentTarget.value})}
+                    disabled={!config.setTags}
+                  >
+                    <option value="merge">Merge</option>
+                    <option value="overwrite">Overwrite</option>
+                  </Form.Control>
+                </div>
+                <Form.Text>Attach tags to scene, either by overwriting or merging with existing tags on scene.</Form.Text>
+              </Form.Group>
+            </Form>
+            <div className="col-6">
+              <h4>Help</h4>
+              <p>The search works by matching the query against a scene's <i>title</i>, <i>release date</i>, <i>studio name</i>, and <i>performer names</i>.
+                An important thing to note is that it only returns a match <b>if all query terms are a match</b>.</p>
+              <p>As an example, if a scene is titled <code>"A Trip to the Mall"</code>, a search for <code>"Trip to the Mall 1080p"</code> will <b>not</b> match, however <code>"trip mall"</code> would. Usually a few pieces of info is enough, for instance performer name + release date or studio name.</p>
+              <p><b>Please note</b> that this is still a work in progress, and the number of studios for which scenes are available is not exhaustive. For a complete list see <a href="https://stashdb.org/studios" target="_blank" className="btn-link">stashdb.org</a>.</p>
+            </div>
+          </div>
+        </div>
       </Collapse>
 
       <div className="tagger-table card">

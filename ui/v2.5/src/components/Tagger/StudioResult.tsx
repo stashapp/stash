@@ -17,9 +17,6 @@ interface IIconProps {
 const SuccessIcon: React.FC<IIconProps> = ({ className }) => (
   <Icon icon="check" className={cx("success mr-4", className)} color="#0f9960" />
 );
-const FailIcon: React.FC<IIconProps> = ({ className }) => (
-  <Icon icon="times" className={cx("secondary mr-4", className)} color="#394b59" />
-);
 
 interface IStudioOperation {
   type: Operation;
