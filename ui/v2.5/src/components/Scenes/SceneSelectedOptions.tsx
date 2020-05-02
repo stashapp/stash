@@ -318,7 +318,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
             as="select"
             className="btn-secondary"
             value={rating}
-            onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setRating(event.currentTarget.value)
             }
           >

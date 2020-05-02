@@ -280,7 +280,7 @@ export const Movie: React.FC = () => {
             as="textarea"
             readOnly={!isEditing}
             className="movie-synopsis text-input"
-            onChange={(newValue: React.FormEvent<HTMLTextAreaElement>) =>
+            onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
               setSynopsis(newValue.currentTarget.value)
             }
             value={synopsis}

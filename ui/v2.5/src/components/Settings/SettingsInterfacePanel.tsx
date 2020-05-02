@@ -62,7 +62,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           as="select"
           className="col-4 input-control"
           value={language}
-          onChange={(e: React.FormEvent<HTMLSelectElement>) =>
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
             setLanguage(e.currentTarget.value)
           }
         >
@@ -142,7 +142,7 @@ export const SettingsInterfacePanel: React.FC = () => {
         <Form.Control
           as="textarea"
           value={css}
-          onChange={(e: React.FormEvent<HTMLTextAreaElement>) =>
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
             setCSS(e.currentTarget.value)
           }
           rows={16}

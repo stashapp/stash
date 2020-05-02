@@ -404,7 +404,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               <td>URL</td>
               <td>
                 <Form.Control
-                  onChange={(newValue: React.FormEvent<HTMLInputElement>) =>
+                  onChange={(newValue: React.ChangeEvent<HTMLInputElement>) =>
                     setUrl(newValue.currentTarget.value)
                   }
                   value={url}
@@ -494,7 +494,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           <Form.Control
             as="textarea"
             className="scene-description text-input"
-            onChange={(newValue: React.FormEvent<HTMLTextAreaElement>) =>
+            onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
               setDetails(newValue.currentTarget.value)
             }
             value={details}

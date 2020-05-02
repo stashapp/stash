@@ -160,7 +160,7 @@ export const TagList: React.FC = () => {
         <Form.Group controlId="tag-name">
           <Form.Label>Name</Form.Label>
           <Form.Control
-            onChange={(newValue: React.FormEvent<HTMLInputElement>) =>
+            onChange={(newValue: React.ChangeEvent<HTMLInputElement>) =>
               setName(newValue.currentTarget.value)
             }
             defaultValue={(editingTag && editingTag.name) || ""}

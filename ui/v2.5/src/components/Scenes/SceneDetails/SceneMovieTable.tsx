@@ -49,7 +49,7 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
                 as="select"
                 className="input-control"
                 value={storeIdx[index] ? storeIdx[index]?.toString() : ""}
-                onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   updateFieldChanged(
                     item.id,
                     Number.parseInt(

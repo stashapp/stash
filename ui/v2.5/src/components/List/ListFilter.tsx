@@ -9,7 +9,7 @@ import {
   Form,
   OverlayTrigger,
   Tooltip,
-  SafeAnchor,
+  SafeAnchorProps
 } from "react-bootstrap";
 
 import { Icon } from "src/components/Shared";
@@ -56,7 +56,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     Criterion | undefined
   >(undefined);
 
-  function onChangePageSize(event: React.FormEvent<HTMLSelectElement>) {
+  function onChangePageSize(event: React.ChangeEvent<HTMLSelectElement>) {
     const val = event.currentTarget.value;
     props.onChangePageSize(parseInt(val, 10));
   }
@@ -73,7 +73,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
     }
   }
 
-  function onChangeSortBy(event: React.MouseEvent<SafeAnchor>) {
+  function onChangeSortBy(event: React.MouseEvent<SafeAnchorProps>) {
+    debugger;
     const target = (event.currentTarget as unknown) as HTMLAnchorElement;
     props.onChangeSortBy(target.text);
   }
@@ -266,7 +267,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           min={0}
           max={3}
           defaultValue={1}
-          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
           }
         />

@@ -14,7 +14,7 @@ const renderTextArea = (options: {
       as="textarea"
       readOnly={!options.isEditing}
       plaintext={!options.isEditing}
-      onChange={(event: React.FormEvent<HTMLTextAreaElement>) =>
+      onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
         options.onChange(event.currentTarget.value)
       }
       value={options.value}
@@ -32,7 +32,7 @@ const renderEditableText = (options: {
     <Form.Control
       readOnly={!options.isEditing}
       plaintext={!options.isEditing}
-      onChange={(event: React.FormEvent<HTMLInputElement>) =>
+      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
         options.onChange(event.currentTarget.value)
       }
       value={
@@ -68,7 +68,7 @@ const renderInputGroup = (options: {
       plaintext={!options.isEditing}
       value={options.value ?? ""}
       placeholder={options.placeholder ?? options.title}
-      onChange={(event: React.FormEvent<HTMLInputElement>) =>
+      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
         options.onChange(event.currentTarget.value)
       }
     />
@@ -150,7 +150,7 @@ const renderHtmlSelect = (options: {
       disabled={!options.isEditing}
       plaintext={!options.isEditing}
       value={options.value?.toString()}
-      onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+      onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
         options.onChange(event.currentTarget.value)
       }
     >
