@@ -8,7 +8,7 @@ import * as GQL from "src/core/generated-graphql";
 import { StashService } from "src/core/StashService";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { TextUtils } from "src/utils";
+import { getCountryISO, TextUtils } from "src/utils";
 import Lightbox from "react-images";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
@@ -93,6 +93,17 @@ export const Performer: React.FC = () => {
     // redirect to performers page
     history.push("/performers");
   }
+
+  const maybeRenderFlag = () => {
+    const countryISO = getCountryISO(performer.country);
+    if (countryISO)
+      return (
+        <span
+          className={`mr-2 flag-icon flag-icon-${countryISO.toLowerCase()}`}
+        />
+      );
+    return undefined;
+  };
 
   function renderTabs() {
     function renderEditPanel() {
@@ -254,6 +265,7 @@ export const Performer: React.FC = () => {
         <div className="row">
           <div className="performer-head col-6 col-sm-12">
             <h2>
+              {maybeRenderFlag()}
               {performer.name}
               {renderIcons()}
             </h2>
