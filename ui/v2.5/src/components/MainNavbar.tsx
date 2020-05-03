@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { defineMessages, FormattedMessage, MessageDescriptor, useIntl } from "react-intl";
+import {
+  defineMessages,
+  FormattedMessage,
+  MessageDescriptor,
+  useIntl,
+} from "react-intl";
 import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
@@ -14,35 +19,34 @@ interface IMenuItem {
   icon: IconName;
 }
 
-
 const messages = defineMessages({
   scenes: {
     id: "scenes",
-    defaultMessage: "Scenes"
+    defaultMessage: "Scenes",
   },
   movies: {
     id: "movies",
-    defaultMessage: "Movies"
+    defaultMessage: "Movies",
   },
   markers: {
     id: "markers",
-    defaultMessage: "Markers"
+    defaultMessage: "Markers",
   },
   performers: {
     id: "performers",
-    defaultMessage: "Performers"
+    defaultMessage: "Performers",
   },
   studios: {
     id: "studios",
-    defaultMessage: "Studios"
+    defaultMessage: "Studios",
   },
   tags: {
     id: "tags",
-    defaultMessage: "Tags"
+    defaultMessage: "Tags",
   },
   galleries: {
     id: "galleries",
-    defaultMessage: "Galleries"
+    defaultMessage: "Galleries",
   },
 });
 
@@ -65,22 +69,22 @@ const menuItems: IMenuItem[] = [
   {
     href: "/galleries",
     icon: "image",
-    message: messages.galleries
+    message: messages.galleries,
   },
   {
     href: "/performers",
     icon: "user",
-    message: messages.performers
+    message: messages.performers,
   },
   {
     href: "/studios",
     icon: "video",
-    message: messages.studios
+    message: messages.studios,
   },
   {
     href: "/tags",
     icon: "tag",
-    message: messages.tags
+    message: messages.tags,
   },
 ];
 
@@ -176,9 +180,7 @@ export const MainNavbar: React.FC = () => {
               <LinkContainer activeClassName="active" exact to={i.href}>
                 <Button className="minimal w-100">
                   <Icon icon={i.icon} />
-                  <span>
-                    { intl.formatMessage(i.message) }
-                  </span>
+                  <span>{intl.formatMessage(i.message)}</span>
                 </Button>
               </LinkContainer>
             </Nav.Link>
