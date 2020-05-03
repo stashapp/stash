@@ -390,8 +390,23 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   if (isLoading) return <LoadingIndicator />;
 
   return (
-    <div className="form-container row">
-      <div className="col-12 col-lg-6">
+    <div className="form-container row pl-3">
+      <div className="col edit-buttons mb-3">
+        <Button className="edit-button" variant="primary" onClick={onSave}>
+          Save
+        </Button>
+        <Button
+          className="edit-button"
+          variant="danger"
+          onClick={() => setIsDeleteAlertOpen(true)}
+        >
+          Delete
+        </Button>
+      </div>
+      {renderScraperMenu()}
+      {renderDeleteAlert()}
+
+      <div className="w-100">
         <Table id="scene-edit-details">
           <tbody>
             {TableUtils.renderInputGroup({
@@ -488,7 +503,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           </tbody>
         </Table>
       </div>
-      <div className="col-12 col-lg-6">
+      <div className="w-100">
         <Form.Group controlId="details">
           <Form.Label>Details</Form.Label>
           <Form.Control
@@ -513,20 +528,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           </Form.Group>
         </div>
       </div>
-      <div className="col edit-buttons">
-        <Button className="edit-button" variant="primary" onClick={onSave}>
-          Save
-        </Button>
-        <Button
-          className="edit-button"
-          variant="danger"
-          onClick={() => setIsDeleteAlertOpen(true)}
-        >
-          Delete
-        </Button>
-      </div>
-      {renderScraperMenu()}
-      {renderDeleteAlert()}
     </div>
   );
 };
