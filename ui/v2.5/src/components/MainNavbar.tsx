@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { defineMessages, FormattedMessage, MessageDescriptor, useIntl } from "react-intl";
 import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
@@ -9,46 +9,78 @@ import { SessionUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
 
 interface IMenuItem {
-  messageID: string;
+  message: MessageDescriptor;
   href: string;
   icon: IconName;
 }
 
+
+const messages = defineMessages({
+  scenes: {
+    id: "scenes",
+    defaultMessage: "Scenes"
+  },
+  movies: {
+    id: "movies",
+    defaultMessage: "Movies"
+  },
+  markers: {
+    id: "markers",
+    defaultMessage: "Markers"
+  },
+  performers: {
+    id: "performers",
+    defaultMessage: "Performers"
+  },
+  studios: {
+    id: "studios",
+    defaultMessage: "Studios"
+  },
+  tags: {
+    id: "tags",
+    defaultMessage: "Tags"
+  },
+  galleries: {
+    id: "galleries",
+    defaultMessage: "Galleries"
+  },
+});
+
 const menuItems: IMenuItem[] = [
   {
     icon: "play-circle",
-    messageID: "scenes",
+    message: messages.scenes,
     href: "/scenes",
   },
   {
     href: "/movies",
     icon: "film",
-    messageID: "movies",
+    message: messages.movies,
   },
   {
     href: "/scenes/markers",
     icon: "map-marker-alt",
-    messageID: "markers",
+    message: messages.markers,
   },
   {
     href: "/galleries",
     icon: "image",
-    messageID: "galleries",
+    message: messages.galleries
   },
   {
     href: "/performers",
     icon: "user",
-    messageID: "performers",
+    message: messages.performers
   },
   {
     href: "/studios",
     icon: "video",
-    messageID: "studios",
+    message: messages.studios
   },
   {
     href: "/tags",
     icon: "tag",
-    messageID: "tags",
+    message: messages.tags
   },
 ];
 
@@ -58,6 +90,7 @@ export const MainNavbar: React.FC = () => {
   // react-bootstrap typing bug
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const navbarRef = useRef<any>();
+  const intl = useIntl();
 
   const maybeCollapse = (event: Event) => {
     if (
@@ -144,7 +177,7 @@ export const MainNavbar: React.FC = () => {
                 <Button className="minimal w-100">
                   <Icon icon={i.icon} />
                   <span>
-                    <FormattedMessage id={i.messageID} />
+                    { intl.formatMessage(i.message) }
                   </span>
                 </Button>
               </LinkContainer>

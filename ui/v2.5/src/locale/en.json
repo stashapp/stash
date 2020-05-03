@@ -1,14 +1,11 @@
 {
-  "new": "New",
-  "tags": "Tags",
-  "scenes": "Scenes",
-  "movies": "Movies",
-  "studios": "Studios",
   "galleries": "Galleries",
-  "performers": "Performers",
+  "library-size": "Library size",
   "markers": "Markers",
-  "stats": {
-    "notes": "Notes",
-    "warning": "This is still an early version, some things are still a work in progress."
-  }
+  "movies": "Movies",
+  "new": "New",
+  "performers": "Performers",
+  "scenes": "Scenes",
+  "studios": "Studios",
+  "tags": "Tags"
 }
