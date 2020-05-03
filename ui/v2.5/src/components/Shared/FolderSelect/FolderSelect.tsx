@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, InputGroup, Form, Modal } from "react-bootstrap";
 import { LoadingIndicator } from "src/components/Shared";
-import { StashService } from "src/core/StashService";
+import { useDirectories } from "src/core/StashService";
 
 interface IProps {
   directories: string[];
@@ -12,9 +12,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
   const [currentDirectory, setCurrentDirectory] = useState<string>("");
   const [isDisplayingDialog, setIsDisplayingDialog] = useState<boolean>(false);
   const [selectedDirectories, setSelectedDirectories] = useState<string[]>([]);
-  const { data, error, loading } = StashService.useDirectories(
-    currentDirectory
-  );
+  const { data, error, loading } = useDirectories(currentDirectory);
 
   useEffect(() => {
     setSelectedDirectories(props.directories);

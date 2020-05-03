@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import _ from "lodash";
-import { StashService } from "src/core/StashService";
+import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { StudioSelect, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
@@ -27,7 +27,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
   );
   const [tagIds, setTagIds] = useState<string[]>();
 
-  const [updateScenes] = StashService.useBulkSceneUpdate(getSceneInput());
+  const [updateScenes] = useBulkSceneUpdate(getSceneInput());
 
   // Network state
   const [isLoading, setIsLoading] = useState(true);

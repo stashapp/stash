@@ -5,7 +5,12 @@ import { Button, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import {
+  useFindPerformer,
+  usePerformerUpdate,
+  usePerformerCreate,
+  usePerformerDestroy,
+} from "src/core/StashService";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { getCountryISO, TextUtils } from "src/utils";
@@ -30,10 +35,10 @@ export const Performer: React.FC = () => {
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data, error } = StashService.useFindPerformer(id);
-  const [updatePerformer] = StashService.usePerformerUpdate();
-  const [createPerformer] = StashService.usePerformerCreate();
-  const [deletePerformer] = StashService.usePerformerDestroy();
+  const { data, error } = useFindPerformer(id);
+  const [updatePerformer] = usePerformerUpdate();
+  const [createPerformer] = usePerformerCreate();
+  const [deletePerformer] = usePerformerDestroy();
 
   useEffect(() => {
     setIsLoading(false);

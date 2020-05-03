@@ -3,7 +3,13 @@
 import React, { useEffect, useState } from "react";
 import { Button, Dropdown, DropdownButton, Form, Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import {
+  queryScrapeScene,
+  queryScrapeSceneURL,
+  useListSceneScrapers,
+  useSceneUpdate,
+  useSceneDestroy,
+} from "src/core/StashService";
 import {
   PerformerSelect,
   TagSelect,
@@ -42,7 +48,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [tagIds, setTagIds] = useState<string[]>();
   const [coverImage, setCoverImage] = useState<string>();
 
-  const Scrapers = StashService.useListSceneScrapers();
+  const Scrapers = useListSceneScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
@@ -54,8 +60,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   // Network state
   const [isLoading, setIsLoading] = useState(true);
 
-  const [updateScene] = StashService.useSceneUpdate(getSceneInput());
-  const [deleteScene] = StashService.useSceneDestroy(getSceneDeleteInput());
+  const [updateScene] = useSceneUpdate(getSceneInput());
+  const [deleteScene] = useSceneDestroy(getSceneDeleteInput());
 
   useEffect(() => {
     const newQueryableScrapers = (
@@ -252,10 +258,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   async function onScrapeClicked(scraper: GQL.Scraper) {
     setIsLoading(true);
     try {
-      const result = await StashService.queryScrapeScene(
-        scraper.id,
-        getSceneInput()
-      );
+      const result = await queryScrapeScene(scraper.id, getSceneInput());
       if (!result.data || !result.data.scrapeScene) {
         return;
       }
@@ -364,7 +367,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
     setIsLoading(true);
     try {
-      const result = await StashService.queryScrapeSceneURL(url);
+      const result = await queryScrapeSceneURL(url);
       if (!result.data || !result.data.scrapeSceneURL) {
         return;
       }

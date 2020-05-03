@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { useConfiguration, useConfigureGeneral } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
@@ -36,9 +36,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
     undefined
   );
 
-  const { data, error, loading } = StashService.useConfiguration();
+  const { data, error, loading } = useConfiguration();
 
-  const [updateGeneralConfig] = StashService.useConfigureGeneral({
+  const [updateGeneralConfig] = useConfigureGeneral({
     stashes,
     databasePath,
     generatedPath,

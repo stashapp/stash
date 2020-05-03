@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { SessionUtils } from "src/utils";
 
 import { Icon } from "src/components/Shared";
@@ -92,11 +92,11 @@ export const MainNavbar: React.FC = () => {
     path === null ? (
       ""
     ) : (
-      <LinkContainer to={path}>
+      <Link to={path}>
         <Button variant="primary">
           <FormattedMessage id="new" defaultMessage="New" />
         </Button>
-      </LinkContainer>
+      </Link>
     );
 
   function maybeRenderLogout() {
@@ -140,12 +140,7 @@ export const MainNavbar: React.FC = () => {
         <Nav className="mr-md-auto">
           {menuItems.map((i) => (
             <Nav.Link eventKey={i.href} as="div" key={i.href}>
-              <LinkContainer
-                activeClassName="active"
-                exact
-                to={i.href}
-                key={i.href}
-              >
+              <LinkContainer activeClassName="active" exact to={i.href}>
                 <Button className="minimal w-100">
                   <Icon icon={i.icon} />
                   <span>
@@ -159,11 +154,11 @@ export const MainNavbar: React.FC = () => {
       </Navbar.Collapse>
       <Nav className="order-2 flex-row">
         <div className="d-none d-sm-block">{newButton}</div>
-        <LinkContainer exact to="/settings" onClick={() => setExpanded(false)}>
+        <NavLink exact to="/settings" onClick={() => setExpanded(false)}>
           <Button className="minimal settings-button">
             <Icon icon="cog" />
           </Button>
-        </LinkContainer>
+        </NavLink>
         {maybeRenderLogout()}
       </Nav>
     </Navbar>

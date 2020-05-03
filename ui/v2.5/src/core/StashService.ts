@@ -1,751 +1,504 @@
-import ApolloClient from "apollo-client";
-import { WebSocketLink } from "apollo-link-ws";
-import { InMemoryCache, NormalizedCacheObject } from "apollo-cache-inmemory";
-import { HttpLink } from "apollo-link-http";
-import { onError } from "apollo-link-error";
-import { ServerError } from "apollo-link-http-common";
-import { split, from } from "apollo-link";
-import { getMainDefinition } from "apollo-utilities";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
 
-export class StashService {
-  public static client: ApolloClient<NormalizedCacheObject>;
-  private static cache: InMemoryCache;
+import { createClient } from "./createClient";
 
-  public static getPlatformURL(ws?: boolean) {
-    const platformUrl = new URL(window.location.origin);
+const { client, cache } = createClient();
 
-    if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
-      platformUrl.port = "9999"; // TODO: Hack. Development expects port 9999
+export const getClient = () => client;
 
-      if (process.env.REACT_APP_HTTPS === "true") {
-        platformUrl.protocol = "https:";
-      }
-    }
-
-    if (ws) {
-      platformUrl.protocol = "ws:";
-    }
-
-    return platformUrl;
-  }
-
-  public static initialize() {
-    const platformUrl = StashService.getPlatformURL();
-    const wsPlatformUrl = StashService.getPlatformURL(true);
-
-    if (platformUrl.protocol === "https:") {
-      wsPlatformUrl.protocol = "wss:";
-    }
-
-    const url = `${platformUrl.toString().slice(0, -1)}/graphql`;
-    const wsUrl = `${wsPlatformUrl.toString().slice(0, -1)}/graphql`;
-
-    const httpLink = new HttpLink({
-      uri: url,
+// TODO: Invalidation should happen through apollo client, rather than rewriting cache directly
+const invalidateQueries = (queries: string[]) => {
+  if (cache) {
+    const keyMatchers = queries.map((query) => {
+      return new RegExp(`^${query}`);
     });
 
-    const wsLink = new WebSocketLink({
-      uri: wsUrl,
-      options: {
-        reconnect: true,
-      },
-    });
-
-    const errorLink = onError(({ networkError }) => {
-      // handle unauthorized error by redirecting to the login page
-      if (networkError && (networkError as ServerError).statusCode === 401) {
-        // redirect to login page
-        window.location.href = "/login";
+    // TODO: Hack to invalidate, manipulating private data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rootQuery = (cache as any).data.data.ROOT_QUERY;
+    Object.keys(rootQuery).forEach((key) => {
+      if (
+        keyMatchers.some((matcher) => {
+          return !!key.match(matcher);
+        })
+      ) {
+        delete rootQuery[key];
       }
     });
-
-    const splitLink = split(
-      ({ query }) => {
-        const definition = getMainDefinition(query);
-        return (
-          definition.kind === "OperationDefinition" &&
-          definition.operation === "subscription"
-        );
-      },
-      wsLink,
-      httpLink
-    );
-
-    const link = from([errorLink, splitLink]);
-
-    StashService.cache = new InMemoryCache();
-    StashService.client = new ApolloClient({
-      link,
-      cache: StashService.cache,
-    });
-
-    return StashService.client;
-  }
-
-  // TODO: Invalidation should happen through apollo client, rather than rewriting cache directly
-  private static invalidateQueries(queries: string[]) {
-    if (StashService.cache) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cache = StashService.cache as any;
-      const keyMatchers = queries.map((query) => {
-        return new RegExp(`^${query}`);
-      });
-
-      const rootQuery = cache.data.data.ROOT_QUERY;
-      Object.keys(rootQuery).forEach((key) => {
-        if (
-          keyMatchers.some((matcher) => {
-            return !!key.match(matcher);
-          })
-        ) {
-          delete rootQuery[key];
-        }
-      });
-    }
-  }
-
-  public static useFindGalleries(filter: ListFilterModel) {
-    return GQL.useFindGalleriesQuery({
-      variables: {
-        filter: filter.makeFindFilter(),
-      },
-    });
-  }
-
-  public static useFindScenes(filter: ListFilterModel) {
-    let sceneFilter = {};
-    // if (!!filter && filter.criteriaFilterOpen) {
-    sceneFilter = filter.makeSceneFilter();
-    // }
-    // if (filter.customCriteria) {
-    //   filter.customCriteria.forEach(criteria => {
-    //     scene_filter[criteria.key] = criteria.value;
-    //   });
-    // }
-
-    return GQL.useFindScenesQuery({
-      variables: {
-        filter: filter.makeFindFilter(),
-        scene_filter: sceneFilter,
-      },
-    });
-  }
-
-  public static queryFindScenes(filter: ListFilterModel) {
-    let sceneFilter = {};
-    sceneFilter = filter.makeSceneFilter();
-
-    return StashService.client.query<GQL.FindScenesQuery>({
-      query: GQL.FindScenesDocument,
-      variables: {
-        filter: filter.makeFindFilter(),
-        scene_filter: sceneFilter,
-      },
-    });
-  }
-
-  public static useFindSceneMarkers(filter: ListFilterModel) {
-    let sceneMarkerFilter = {};
-    // if (!!filter && filter.criteriaFilterOpen) {
-    sceneMarkerFilter = filter.makeSceneMarkerFilter();
-    // }
-    // if (filter.customCriteria) {
-    //   filter.customCriteria.forEach(criteria => {
-    //     scene_filter[criteria.key] = criteria.value;
-    //   });
-    // }
-
-    return GQL.useFindSceneMarkersQuery({
-      variables: {
-        filter: filter.makeFindFilter(),
-        scene_marker_filter: sceneMarkerFilter,
-      },
-    });
-  }
-
-  public static queryFindSceneMarkers(filter: ListFilterModel) {
-    let sceneMarkerFilter = {};
-    sceneMarkerFilter = filter.makeSceneMarkerFilter();
-
-    return StashService.client.query<GQL.FindSceneMarkersQuery>({
-      query: GQL.FindSceneMarkersDocument,
-      variables: {
-        filter: filter.makeFindFilter(),
-        scene_marker_filter: sceneMarkerFilter,
-      },
-    });
-  }
-
-  public static useFindStudios(filter: ListFilterModel) {
-    return GQL.useFindStudiosQuery({
-      variables: {
-        filter: filter.makeFindFilter(),
-      },
-    });
-  }
-
-  public static useFindMovies(filter: ListFilterModel) {
-    const movieFilter = filter.makeMovieFilter();
-
-    return GQL.useFindMoviesQuery({
-      variables: {
-        filter: filter.makeFindFilter(),
-        movie_filter: movieFilter,
-      },
-    });
-  }
-
-  public static useFindPerformers(filter: ListFilterModel) {
-    let performerFilter = {};
-    // if (!!filter && filter.criteriaFilterOpen) {
-    performerFilter = filter.makePerformerFilter();
-    // }
-    // if (filter.customCriteria) {
-    //   filter.customCriteria.forEach(criteria => {
-    //     scene_filter[criteria.key] = criteria.value;
-    //   });
-    // }
-
-    return GQL.useFindPerformersQuery({
-      variables: {
-        filter: filter.makeFindFilter(),
-        performer_filter: performerFilter,
-      },
-    });
-  }
-
-  public static queryFindPerformers(filter: ListFilterModel) {
-    let performerFilter = {};
-    performerFilter = filter.makePerformerFilter();
-
-    return StashService.client.query<GQL.FindPerformersQuery>({
-      query: GQL.FindPerformersDocument,
-      variables: {
-        filter: filter.makeFindFilter(),
-        performer_filter: performerFilter,
-      },
-    });
-  }
-
-  public static useFindGallery(id: string) {
-    return GQL.useFindGalleryQuery({ variables: { id } });
-  }
-  public static useFindScene(id: string) {
-    return GQL.useFindSceneQuery({ variables: { id } });
-  }
-  public static useFindPerformer(id: string) {
-    const skip = id === "new";
-    return GQL.useFindPerformerQuery({ variables: { id }, skip });
-  }
-  public static useFindStudio(id: string) {
-    const skip = id === "new";
-    return GQL.useFindStudioQuery({ variables: { id }, skip });
-  }
-  public static useFindMovie(id: string) {
-    const skip = id === "new";
-    return GQL.useFindMovieQuery({ variables: { id }, skip });
-  }
-
-  // TODO - scene marker manipulation functions are handled differently
-  private static sceneMarkerMutationImpactedQueries = [
-    "findSceneMarkers",
-    "findScenes",
-    "markerStrings",
-    "sceneMarkerTags",
-  ];
-
-  public static useSceneMarkerCreate() {
-    return GQL.useSceneMarkerCreateMutation({ refetchQueries: ["FindScene"] });
-  }
-  public static useSceneMarkerUpdate() {
-    return GQL.useSceneMarkerUpdateMutation({ refetchQueries: ["FindScene"] });
-  }
-  public static useSceneMarkerDestroy() {
-    return GQL.useSceneMarkerDestroyMutation({ refetchQueries: ["FindScene"] });
-  }
-
-  public static useListPerformerScrapers() {
-    return GQL.useListPerformerScrapersQuery();
-  }
-  public static useScrapePerformerList(scraperId: string, q: string) {
-    return GQL.useScrapePerformerListQuery({
-      variables: { scraper_id: scraperId, query: q },
-      skip: q === "",
-    });
-  }
-  public static useScrapePerformer(
-    scraperId: string,
-    scrapedPerformer: GQL.ScrapedPerformerInput
-  ) {
-    return GQL.useScrapePerformerQuery({
-      variables: { scraper_id: scraperId, scraped_performer: scrapedPerformer },
-    });
-  }
-
-  public static useListSceneScrapers() {
-    return GQL.useListSceneScrapersQuery();
-  }
-
-  public static useScrapeFreeonesPerformers(q: string) {
-    return GQL.useScrapeFreeonesPerformersQuery({ variables: { q } });
-  }
-  public static useMarkerStrings() {
-    return GQL.useMarkerStringsQuery();
-  }
-  public static useAllTags() {
-    return GQL.useAllTagsQuery();
-  }
-  public static useAllTagsForFilter() {
-    return GQL.useAllTagsForFilterQuery();
-  }
-  public static useAllPerformersForFilter() {
-    return GQL.useAllPerformersForFilterQuery();
-  }
-  public static useAllStudiosForFilter() {
-    return GQL.useAllStudiosForFilterQuery();
-  }
-  public static useAllMoviesForFilter() {
-    return GQL.useAllMoviesForFilterQuery();
-  }
-  public static useValidGalleriesForScene(sceneId: string) {
-    return GQL.useValidGalleriesForSceneQuery({
-      variables: { scene_id: sceneId },
-    });
-  }
-  public static useStats() {
-    return GQL.useStatsQuery();
-  }
-  public static useVersion() {
-    return GQL.useVersionQuery();
-  }
-  public static useLatestVersion() {
-    return GQL.useLatestVersionQuery({
-      notifyOnNetworkStatusChange: true,
-      errorPolicy: "ignore",
-    });
-  }
-
-  public static useConfiguration() {
-    return GQL.useConfigurationQuery();
-  }
-  public static useDirectories(path?: string) {
-    return GQL.useDirectoriesQuery({ variables: { path } });
-  }
-
-  private static performerMutationImpactedQueries = [
-    "findPerformers",
-    "findScenes",
-    "findSceneMarkers",
-    "allPerformers",
-  ];
-
-  public static usePerformerCreate() {
-    return GQL.usePerformerCreateMutation({
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.performerMutationImpactedQueries
-        ),
-    });
-  }
-  public static usePerformerUpdate() {
-    return GQL.usePerformerUpdateMutation({
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.performerMutationImpactedQueries
-        ),
-    });
-  }
-  public static usePerformerDestroy() {
-    return GQL.usePerformerDestroyMutation({
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.performerMutationImpactedQueries
-        ),
-    });
-  }
-
-  private static sceneMutationImpactedQueries = [
-    "findPerformers",
-    "findScenes",
-    "findSceneMarkers",
-    "findStudios",
-    "findMovies",
-    "allTags",
-    // TODO - add "findTags" when it is implemented
-  ];
-
-  public static useSceneUpdate(input: GQL.SceneUpdateInput) {
-    return GQL.useSceneUpdateMutation({
-      variables: input,
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.sceneMutationImpactedQueries
-        ),
-      refetchQueries: ["AllTagsForFilter"],
-    });
-  }
-
-  // remove findScenes for bulk scene update so that we don't lose
-  // existing results
-  private static sceneBulkMutationImpactedQueries = [
-    "findPerformers",
-    "findSceneMarkers",
-    "findStudios",
-    "findMovies",
-    "allTags",
-  ];
-
-  public static useBulkSceneUpdate(input: GQL.BulkSceneUpdateInput) {
-    return GQL.useBulkSceneUpdateMutation({
-      variables: input,
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.sceneBulkMutationImpactedQueries
-        ),
-    });
-  }
-
-  public static useScenesUpdate(input: GQL.SceneUpdateInput[]) {
-    return GQL.useScenesUpdateMutation({ variables: { input } });
-  }
-
-  public static useSceneIncrementO(id: string) {
-    return GQL.useSceneIncrementOMutation({
-      variables: { id },
-    });
-  }
-
-  public static useSceneDecrementO(id: string) {
-    return GQL.useSceneDecrementOMutation({
-      variables: { id },
-    });
-  }
-
-  public static useSceneResetO(id: string) {
-    return GQL.useSceneResetOMutation({
-      variables: { id },
-    });
-  }
-
-  public static useSceneDestroy(input: GQL.SceneDestroyInput) {
-    return GQL.useSceneDestroyMutation({
-      variables: input,
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.sceneMutationImpactedQueries
-        ),
-    });
-  }
-
-  public static useSceneGenerateScreenshot() {
-    return GQL.useSceneGenerateScreenshotMutation({
-      update: () => StashService.invalidateQueries(["findScenes"]),
-    });
-  }
-
-  private static studioMutationImpactedQueries = [
-    "findStudios",
-    "findScenes",
-    "allStudios",
-  ];
-
-  public static useStudioCreate(input: GQL.StudioCreateInput) {
-    return GQL.useStudioCreateMutation({
-      variables: input,
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.studioMutationImpactedQueries
-        ),
-    });
-  }
-
-  public static useStudioUpdate(input: GQL.StudioUpdateInput) {
-    return GQL.useStudioUpdateMutation({
-      variables: input,
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.studioMutationImpactedQueries
-        ),
-    });
-  }
-
-  public static useStudioDestroy(input: GQL.StudioDestroyInput) {
-    return GQL.useStudioDestroyMutation({
-      variables: input,
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.studioMutationImpactedQueries
-        ),
-    });
-  }
-
-  private static movieMutationImpactedQueries = [
-    "findMovies",
-    "findScenes",
-    "allMovies",
-  ];
-
-  public static useMovieCreate(input: GQL.MovieCreateInput) {
-    return GQL.useMovieCreateMutation({
-      variables: input,
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.movieMutationImpactedQueries
-        ),
-    });
-  }
-
-  public static useMovieUpdate(input: GQL.MovieUpdateInput) {
-    return GQL.useMovieUpdateMutation({
-      variables: input,
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.movieMutationImpactedQueries
-        ),
-    });
-  }
-
-  public static useMovieDestroy(input: GQL.MovieDestroyInput) {
-    return GQL.useMovieDestroyMutation({
-      variables: input,
-      update: () =>
-        StashService.invalidateQueries(
-          StashService.movieMutationImpactedQueries
-        ),
-    });
-  }
-
-  private static tagMutationImpactedQueries = [
-    "findScenes",
-    "findSceneMarkers",
-    "sceneMarkerTags",
-    "allTags",
-  ];
-
-  public static useTagCreate(input: GQL.TagCreateInput) {
-    return GQL.useTagCreateMutation({
-      variables: input,
-      refetchQueries: ["AllTags", "AllTagsForFilter"],
-      // update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
-    });
-  }
-  public static useTagUpdate(input: GQL.TagUpdateInput) {
-    return GQL.useTagUpdateMutation({
-      variables: input,
-      refetchQueries: ["AllTags", "AllTagsForFilter"],
-    });
-  }
-  public static useTagDestroy(input: GQL.TagDestroyInput) {
-    return GQL.useTagDestroyMutation({
-      variables: input,
-      refetchQueries: ["AllTags", "AllTagsForFilter"],
-      update: () =>
-        StashService.invalidateQueries(StashService.tagMutationImpactedQueries),
-    });
-  }
-
-  public static useConfigureGeneral(input: GQL.ConfigGeneralInput) {
-    return GQL.useConfigureGeneralMutation({
-      variables: { input },
-      refetchQueries: ["Configuration"],
-    });
-  }
-
-  public static useConfigureInterface(input: GQL.ConfigInterfaceInput) {
-    return GQL.useConfigureInterfaceMutation({
-      variables: { input },
-      refetchQueries: ["Configuration"],
-    });
-  }
-
-  public static useMetadataUpdate() {
-    return GQL.useMetadataUpdateSubscription();
-  }
-
-  public static useLoggingSubscribe() {
-    return GQL.useLoggingSubscribeSubscription();
-  }
-
-  public static useLogs() {
-    return GQL.useLogsQuery({
-      fetchPolicy: "no-cache",
-    });
-  }
-
-  public static useJobStatus() {
-    return GQL.useJobStatusQuery({
-      fetchPolicy: "no-cache",
-    });
-  }
-
-  public static mutateStopJob() {
-    return StashService.client.mutate<GQL.StopJobMutation>({
-      mutation: GQL.StopJobDocument,
-    });
-  }
-
-  public static queryScrapeFreeones(performerName: string) {
-    return StashService.client.query<GQL.ScrapeFreeonesQuery>({
-      query: GQL.ScrapeFreeonesDocument,
-      variables: {
-        performer_name: performerName,
-      },
-    });
-  }
-
-  public static queryScrapePerformer(
-    scraperId: string,
-    scrapedPerformer: GQL.ScrapedPerformerInput
-  ) {
-    return StashService.client.query<GQL.ScrapePerformerQuery>({
-      query: GQL.ScrapePerformerDocument,
-      variables: {
-        scraper_id: scraperId,
-        scraped_performer: scrapedPerformer,
-      },
-    });
-  }
-
-  public static queryScrapePerformerURL(url: string) {
-    return StashService.client.query<GQL.ScrapePerformerUrlQuery>({
-      query: GQL.ScrapePerformerUrlDocument,
-      variables: {
-        url,
-      },
-    });
-  }
-
-  public static queryScrapeSceneURL(url: string) {
-    return StashService.client.query<GQL.ScrapeSceneUrlQuery>({
-      query: GQL.ScrapeSceneUrlDocument,
-      variables: {
-        url,
-      },
-    });
-  }
-
-  public static queryScrapeScene(
-    scraperId: string,
-    scene: GQL.SceneUpdateInput
-  ) {
-    return StashService.client.query<GQL.ScrapeSceneQuery>({
-      query: GQL.ScrapeSceneDocument,
-      variables: {
-        scraper_id: scraperId,
-        scene,
-      },
-    });
-  }
-
-  public static mutateMetadataScan(input: GQL.ScanMetadataInput) {
-    return StashService.client.mutate<GQL.MetadataScanMutation>({
-      mutation: GQL.MetadataScanDocument,
-      variables: { input },
-    });
-  }
-
-  public static mutateMetadataAutoTag(input: GQL.AutoTagMetadataInput) {
-    return StashService.client.mutate<GQL.MetadataAutoTagMutation>({
-      mutation: GQL.MetadataAutoTagDocument,
-      variables: { input },
-    });
-  }
-
-  public static mutateMetadataGenerate(input: GQL.GenerateMetadataInput) {
-    return StashService.client.mutate<GQL.MetadataGenerateMutation>({
-      mutation: GQL.MetadataGenerateDocument,
-      variables: { input },
-    });
   }
-
-  public static mutateMetadataClean() {
-    return StashService.client.mutate<GQL.MetadataCleanMutation>({
-      mutation: GQL.MetadataCleanDocument,
-    });
-  }
-
-  public static mutateMetadataExport() {
-    return StashService.client.mutate<GQL.MetadataExportMutation>({
-      mutation: GQL.MetadataExportDocument,
-    });
-  }
-
-  public static mutateMetadataImport() {
-    return StashService.client.mutate<GQL.MetadataImportMutation>({
-      mutation: GQL.MetadataImportDocument,
-    });
-  }
-
-  public static querySceneByPathRegex(filter: GQL.FindFilterType) {
-    return StashService.client.query<GQL.FindScenesByPathRegexQuery>({
-      query: GQL.FindScenesByPathRegexDocument,
-      variables: { filter },
-    });
-  }
-
-  public static queryParseSceneFilenames(
-    filter: GQL.FindFilterType,
-    config: GQL.SceneParserInput
-  ) {
-    return StashService.client.query<GQL.ParseSceneFilenamesQuery>({
-      query: GQL.ParseSceneFilenamesDocument,
-      variables: { filter, config },
-      fetchPolicy: "network-only",
-    });
-  }
-
-  private static stringGenderMap = new Map<string, GQL.GenderEnum>([
-    ["Male", GQL.GenderEnum.Male],
-    ["Female", GQL.GenderEnum.Female],
-    ["Transgender Male", GQL.GenderEnum.TransgenderMale],
-    ["Transgender Female", GQL.GenderEnum.TransgenderFemale],
-    ["Intersex", GQL.GenderEnum.Intersex],
-  ]);
-
-  public static genderToString(value?: GQL.GenderEnum) {
-    if (!value) {
-      return undefined;
-    }
-
-    const foundEntry = Array.from(StashService.stringGenderMap.entries()).find(
-      (e) => {
-        return e[1] === value;
-      }
-    );
-
-    if (foundEntry) {
-      return foundEntry[0];
-    }
-  }
-
-  public static stringToGender(value?: string, caseInsensitive?: boolean) {
-    if (!value) {
-      return undefined;
-    }
-
-    const ret = StashService.stringGenderMap.get(value);
-    if (ret || !caseInsensitive) {
-      return ret;
-    }
-
-    const asUpper = value.toUpperCase();
-    const foundEntry = Array.from(StashService.stringGenderMap.entries()).find(
-      (e) => {
-        return e[0].toUpperCase() === asUpper;
-      }
-    );
-
-    if (foundEntry) {
-      return foundEntry[1];
-    }
-  }
-
-  public static getGenderStrings() {
-    return Array.from(StashService.stringGenderMap.keys());
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  private constructor() {}
-}
+};
+
+export const useFindGalleries = (filter: ListFilterModel) =>
+  GQL.useFindGalleriesQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+    },
+  });
+
+export const useFindScenes = (filter: ListFilterModel) =>
+  GQL.useFindScenesQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      scene_filter: filter.makeSceneFilter(),
+    },
+  });
+
+export const queryFindScenes = (filter: ListFilterModel) =>
+  client.query<GQL.FindScenesQuery>({
+    query: GQL.FindScenesDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      scene_filter: filter.makeSceneFilter(),
+    },
+  });
+
+export const useFindSceneMarkers = (filter: ListFilterModel) =>
+  GQL.useFindSceneMarkersQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      scene_marker_filter: filter.makeSceneMarkerFilter(),
+    },
+  });
+
+export const queryFindSceneMarkers = (filter: ListFilterModel) =>
+  client.query<GQL.FindSceneMarkersQuery>({
+    query: GQL.FindSceneMarkersDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      scene_marker_filter: filter.makeSceneMarkerFilter(),
+    },
+  });
+
+export const useFindStudios = (filter: ListFilterModel) =>
+  GQL.useFindStudiosQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+    },
+  });
+
+export const useFindMovies = (filter: ListFilterModel) =>
+  GQL.useFindMoviesQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      movie_filter: filter.makeMovieFilter(),
+    },
+  });
+
+export const useFindPerformers = (filter: ListFilterModel) =>
+  GQL.useFindPerformersQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      performer_filter: filter.makePerformerFilter(),
+    },
+  });
+
+export const queryFindPerformers = (filter: ListFilterModel) =>
+  client.query<GQL.FindPerformersQuery>({
+    query: GQL.FindPerformersDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      performer_filter: filter.makePerformerFilter(),
+    },
+  });
+
+export const useFindGallery = (id: string) =>
+  GQL.useFindGalleryQuery({ variables: { id } });
+export const useFindScene = (id: string) =>
+  GQL.useFindSceneQuery({ variables: { id } });
+export const useFindPerformer = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindPerformerQuery({ variables: { id }, skip });
+};
+export const useFindStudio = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindStudioQuery({ variables: { id }, skip });
+};
+export const useFindMovie = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindMovieQuery({ variables: { id }, skip });
+};
+
+// TODO - scene marker manipulation functions are handled differently
+export const sceneMarkerMutationImpactedQueries = [
+  "findSceneMarkers",
+  "findScenes",
+  "markerStrings",
+  "sceneMarkerTags",
+];
+
+export const useSceneMarkerCreate = () =>
+  GQL.useSceneMarkerCreateMutation({ refetchQueries: ["FindScene"] });
+export const useSceneMarkerUpdate = () =>
+  GQL.useSceneMarkerUpdateMutation({ refetchQueries: ["FindScene"] });
+export const useSceneMarkerDestroy = () =>
+  GQL.useSceneMarkerDestroyMutation({ refetchQueries: ["FindScene"] });
+
+export const useListPerformerScrapers = () =>
+  GQL.useListPerformerScrapersQuery();
+export const useScrapePerformerList = (scraperId: string, q: string) =>
+  GQL.useScrapePerformerListQuery({
+    variables: { scraper_id: scraperId, query: q },
+    skip: q === "",
+  });
+export const useScrapePerformer = (
+  scraperId: string,
+  scrapedPerformer: GQL.ScrapedPerformerInput
+) =>
+  GQL.useScrapePerformerQuery({
+    variables: { scraper_id: scraperId, scraped_performer: scrapedPerformer },
+  });
+
+export const useListSceneScrapers = () => GQL.useListSceneScrapersQuery();
+
+export const useScrapeFreeonesPerformers = (q: string) =>
+  GQL.useScrapeFreeonesPerformersQuery({ variables: { q } });
+export const useMarkerStrings = () => GQL.useMarkerStringsQuery();
+export const useAllTags = () => GQL.useAllTagsQuery();
+export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
+export const useAllPerformersForFilter = () =>
+  GQL.useAllPerformersForFilterQuery();
+export const useAllStudiosForFilter = () => GQL.useAllStudiosForFilterQuery();
+export const useAllMoviesForFilter = () => GQL.useAllMoviesForFilterQuery();
+export const useValidGalleriesForScene = (sceneId: string) =>
+  GQL.useValidGalleriesForSceneQuery({
+    variables: { scene_id: sceneId },
+  });
+export const useStats = () => GQL.useStatsQuery();
+export const useVersion = () => GQL.useVersionQuery();
+export const useLatestVersion = () =>
+  GQL.useLatestVersionQuery({
+    notifyOnNetworkStatusChange: true,
+    errorPolicy: "ignore",
+  });
+
+export const useConfiguration = () => GQL.useConfigurationQuery();
+export const useDirectories = (path?: string) =>
+  GQL.useDirectoriesQuery({ variables: { path } });
+
+export const performerMutationImpactedQueries = [
+  "findPerformers",
+  "findScenes",
+  "findSceneMarkers",
+  "allPerformers",
+];
+
+export const usePerformerCreate = () =>
+  GQL.usePerformerCreateMutation({
+    update: () => invalidateQueries(performerMutationImpactedQueries),
+  });
+export const usePerformerUpdate = () =>
+  GQL.usePerformerUpdateMutation({
+    update: () => invalidateQueries(performerMutationImpactedQueries),
+  });
+export const usePerformerDestroy = () =>
+  GQL.usePerformerDestroyMutation({
+    update: () => invalidateQueries(performerMutationImpactedQueries),
+  });
+
+export const sceneMutationImpactedQueries = [
+  "findPerformers",
+  "findScenes",
+  "findSceneMarkers",
+  "findStudios",
+  "findMovies",
+  "allTags",
+  // TODO - add "findTags" when it is implemented
+];
+
+export const useSceneUpdate = (input: GQL.SceneUpdateInput) =>
+  GQL.useSceneUpdateMutation({
+    variables: input,
+    update: () => invalidateQueries(sceneMutationImpactedQueries),
+    refetchQueries: ["AllTagsForFilter"],
+  });
+
+// remove findScenes for bulk scene update so that we don't lose
+// existing results
+export const sceneBulkMutationImpactedQueries = [
+  "findPerformers",
+  "findSceneMarkers",
+  "findStudios",
+  "findMovies",
+  "allTags",
+];
+
+export const useBulkSceneUpdate = (input: GQL.BulkSceneUpdateInput) =>
+  GQL.useBulkSceneUpdateMutation({
+    variables: input,
+    update: () => invalidateQueries(sceneBulkMutationImpactedQueries),
+  });
+
+export const useScenesUpdate = (input: GQL.SceneUpdateInput[]) =>
+  GQL.useScenesUpdateMutation({ variables: { input } });
+
+export const useSceneIncrementO = (id: string) =>
+  GQL.useSceneIncrementOMutation({
+    variables: { id },
+  });
+
+export const useSceneDecrementO = (id: string) =>
+  GQL.useSceneDecrementOMutation({
+    variables: { id },
+  });
+
+export const useSceneResetO = (id: string) =>
+  GQL.useSceneResetOMutation({
+    variables: { id },
+  });
+
+export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
+  GQL.useSceneDestroyMutation({
+    variables: input,
+    update: () => invalidateQueries(sceneMutationImpactedQueries),
+  });
+
+export const useSceneGenerateScreenshot = () =>
+  GQL.useSceneGenerateScreenshotMutation({
+    update: () => invalidateQueries(["findScenes"]),
+  });
+
+export const studioMutationImpactedQueries = [
+  "findStudios",
+  "findScenes",
+  "allStudios",
+];
+
+export const useStudioCreate = (input: GQL.StudioCreateInput) =>
+  GQL.useStudioCreateMutation({
+    variables: input,
+    update: () => invalidateQueries(studioMutationImpactedQueries),
+  });
+
+export const useStudioUpdate = (input: GQL.StudioUpdateInput) =>
+  GQL.useStudioUpdateMutation({
+    variables: input,
+    update: () => invalidateQueries(studioMutationImpactedQueries),
+  });
+
+export const useStudioDestroy = (input: GQL.StudioDestroyInput) =>
+  GQL.useStudioDestroyMutation({
+    variables: input,
+    update: () => invalidateQueries(studioMutationImpactedQueries),
+  });
+
+export const movieMutationImpactedQueries = [
+  "findMovies",
+  "findScenes",
+  "allMovies",
+];
+
+export const useMovieCreate = (input: GQL.MovieCreateInput) =>
+  GQL.useMovieCreateMutation({
+    variables: input,
+    update: () => invalidateQueries(movieMutationImpactedQueries),
+  });
+
+export const useMovieUpdate = (input: GQL.MovieUpdateInput) =>
+  GQL.useMovieUpdateMutation({
+    variables: input,
+    update: () => invalidateQueries(movieMutationImpactedQueries),
+  });
+
+export const useMovieDestroy = (input: GQL.MovieDestroyInput) =>
+  GQL.useMovieDestroyMutation({
+    variables: input,
+    update: () => invalidateQueries(movieMutationImpactedQueries),
+  });
+
+export const tagMutationImpactedQueries = [
+  "findScenes",
+  "findSceneMarkers",
+  "sceneMarkerTags",
+  "allTags",
+];
+
+export const useTagCreate = (input: GQL.TagCreateInput) =>
+  GQL.useTagCreateMutation({
+    variables: input,
+    refetchQueries: ["AllTags", "AllTagsForFilter"],
+    // update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
+  });
+export const useTagUpdate = (input: GQL.TagUpdateInput) =>
+  GQL.useTagUpdateMutation({
+    variables: input,
+    refetchQueries: ["AllTags", "AllTagsForFilter"],
+  });
+export const useTagDestroy = (input: GQL.TagDestroyInput) =>
+  GQL.useTagDestroyMutation({
+    variables: input,
+    refetchQueries: ["AllTags", "AllTagsForFilter"],
+    update: () => invalidateQueries(tagMutationImpactedQueries),
+  });
+
+export const useConfigureGeneral = (input: GQL.ConfigGeneralInput) =>
+  GQL.useConfigureGeneralMutation({
+    variables: { input },
+    refetchQueries: ["Configuration"],
+  });
+
+export const useConfigureInterface = (input: GQL.ConfigInterfaceInput) =>
+  GQL.useConfigureInterfaceMutation({
+    variables: { input },
+    refetchQueries: ["Configuration"],
+  });
+
+export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
+
+export const useLoggingSubscribe = () => GQL.useLoggingSubscribeSubscription();
+
+export const useLogs = () =>
+  GQL.useLogsQuery({
+    fetchPolicy: "no-cache",
+  });
+
+export const useJobStatus = () =>
+  GQL.useJobStatusQuery({
+    fetchPolicy: "no-cache",
+  });
+
+export const mutateStopJob = () =>
+  client.mutate<GQL.StopJobMutation>({
+    mutation: GQL.StopJobDocument,
+  });
+
+export const queryScrapeFreeones = (performerName: string) =>
+  client.query<GQL.ScrapeFreeonesQuery>({
+    query: GQL.ScrapeFreeonesDocument,
+    variables: {
+      performer_name: performerName,
+    },
+  });
+
+export const queryScrapePerformer = (
+  scraperId: string,
+  scrapedPerformer: GQL.ScrapedPerformerInput
+) =>
+  client.query<GQL.ScrapePerformerQuery>({
+    query: GQL.ScrapePerformerDocument,
+    variables: {
+      scraper_id: scraperId,
+      scraped_performer: scrapedPerformer,
+    },
+  });
+
+export const queryScrapePerformerURL = (url: string) =>
+  client.query<GQL.ScrapePerformerUrlQuery>({
+    query: GQL.ScrapePerformerUrlDocument,
+    variables: {
+      url,
+    },
+  });
+
+export const queryScrapeSceneURL = (url: string) =>
+  client.query<GQL.ScrapeSceneUrlQuery>({
+    query: GQL.ScrapeSceneUrlDocument,
+    variables: {
+      url,
+    },
+  });
+
+export const queryScrapeScene = (
+  scraperId: string,
+  scene: GQL.SceneUpdateInput
+) =>
+  client.query<GQL.ScrapeSceneQuery>({
+    query: GQL.ScrapeSceneDocument,
+    variables: {
+      scraper_id: scraperId,
+      scene,
+    },
+  });
+
+export const mutateMetadataScan = (input: GQL.ScanMetadataInput) =>
+  client.mutate<GQL.MetadataScanMutation>({
+    mutation: GQL.MetadataScanDocument,
+    variables: { input },
+  });
+
+export const mutateMetadataAutoTag = (input: GQL.AutoTagMetadataInput) =>
+  client.mutate<GQL.MetadataAutoTagMutation>({
+    mutation: GQL.MetadataAutoTagDocument,
+    variables: { input },
+  });
+
+export const mutateMetadataGenerate = (input: GQL.GenerateMetadataInput) =>
+  client.mutate<GQL.MetadataGenerateMutation>({
+    mutation: GQL.MetadataGenerateDocument,
+    variables: { input },
+  });
+
+export const mutateMetadataClean = () =>
+  client.mutate<GQL.MetadataCleanMutation>({
+    mutation: GQL.MetadataCleanDocument,
+  });
+
+export const mutateMetadataExport = () =>
+  client.mutate<GQL.MetadataExportMutation>({
+    mutation: GQL.MetadataExportDocument,
+  });
+
+export const mutateMetadataImport = () =>
+  client.mutate<GQL.MetadataImportMutation>({
+    mutation: GQL.MetadataImportDocument,
+  });
+
+export const querySceneByPathRegex = (filter: GQL.FindFilterType) =>
+  client.query<GQL.FindScenesByPathRegexQuery>({
+    query: GQL.FindScenesByPathRegexDocument,
+    variables: { filter },
+  });
+
+export const queryParseSceneFilenames = (
+  filter: GQL.FindFilterType,
+  config: GQL.SceneParserInput
+) =>
+  client.query<GQL.ParseSceneFilenamesQuery>({
+    query: GQL.ParseSceneFilenamesDocument,
+    variables: { filter, config },
+    fetchPolicy: "network-only",
+  });
+
+export const stringGenderMap = new Map<string, GQL.GenderEnum>([
+  ["Male", GQL.GenderEnum.Male],
+  ["Female", GQL.GenderEnum.Female],
+  ["Transgender Male", GQL.GenderEnum.TransgenderMale],
+  ["Transgender Female", GQL.GenderEnum.TransgenderFemale],
+  ["Intersex", GQL.GenderEnum.Intersex],
+]);
+
+export const genderToString = (value?: GQL.GenderEnum) => {
+  if (!value) {
+    return undefined;
+  }
+
+  const foundEntry = Array.from(stringGenderMap.entries()).find((e) => {
+    return e[1] === value;
+  });
+
+  if (foundEntry) {
+    return foundEntry[0];
+  }
+};
+
+export const stringToGender = (value?: string, caseInsensitive?: boolean) => {
+  if (!value) {
+    return undefined;
+  }
+
+  const ret = stringGenderMap.get(value);
+  if (ret || !caseInsensitive) {
+    return ret;
+  }
+
+  const asUpper = value.toUpperCase();
+  const foundEntry = Array.from(stringGenderMap.entries()).find((e) => {
+    return e[0].toUpperCase() === asUpper;
+  });
+
+  if (foundEntry) {
+    return foundEntry[1];
+  }
+};
+
+export const getGenderStrings = () => Array.from(stringGenderMap.keys());

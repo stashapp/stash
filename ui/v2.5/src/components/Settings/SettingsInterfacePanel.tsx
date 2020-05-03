@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { DurationInput, LoadingIndicator } from "src/components/Shared";
-import { StashService } from "src/core/StashService";
+import { useConfiguration, useConfigureInterface } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
 export const SettingsInterfacePanel: React.FC = () => {
   const Toast = useToast();
-  const { data: config, error, loading } = StashService.useConfiguration();
+  const { data: config, error, loading } = useConfiguration();
   const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
   const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
   const [maximumLoopDuration, setMaximumLoopDuration] = useState<number>(0);
@@ -16,7 +16,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [cssEnabled, setCSSEnabled] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>("en");
 
-  const [updateInterfaceConfig] = StashService.useConfigureInterface({
+  const [updateInterfaceConfig] = useConfigureInterface({
     soundOnPreview,
     wallShowTitle,
     maximumLoopDuration,
@@ -147,7 +147,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           }
           rows={16}
           className="col col-sm-6 text-input code"
-        ></Form.Control>
+        />
         <Form.Text className="text-muted">
           Page must be reloaded for changes to take effect.
         </Form.Text>

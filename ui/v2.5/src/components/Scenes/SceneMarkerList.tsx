@@ -2,7 +2,7 @@ import _ from "lodash";
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { FindSceneMarkersQueryResult } from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { queryFindSceneMarkers } from "src/core/StashService";
 import { NavUtils } from "src/utils";
 import { useSceneMarkersList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
@@ -35,7 +35,7 @@ export const SceneMarkerList: React.FC = () => {
       const filterCopy = _.cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
-      const singleResult = await StashService.queryFindSceneMarkers(filterCopy);
+      const singleResult = await queryFindSceneMarkers(filterCopy);
       if (singleResult?.data?.findSceneMarkers?.scene_markers?.length === 1) {
         // navigate to the scene player page
         const url = NavUtils.makeSceneMarkerUrl(

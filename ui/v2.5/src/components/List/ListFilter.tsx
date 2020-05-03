@@ -1,5 +1,5 @@
 import { debounce } from "lodash";
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
   Badge,
@@ -9,7 +9,7 @@ import {
   Form,
   OverlayTrigger,
   Tooltip,
-  SafeAnchorProps
+  SafeAnchorProps,
 } from "react-bootstrap";
 
 import { Icon } from "src/components/Shared";
@@ -45,12 +45,9 @@ const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
 export const ListFilter: React.FC<IListFilterProps> = (
   props: IListFilterProps
 ) => {
-  const searchCallback = useCallback(
-    debounce((value: string) => {
-      props.onChangeQuery(value);
-    }, 500),
-    [props.onChangeQuery]
-  );
+  const searchCallback = debounce((value: string) => {
+    props.onChangeQuery(value);
+  }, 500);
 
   const [editingCriterion, setEditingCriterion] = useState<
     Criterion | undefined
@@ -74,8 +71,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function onChangeSortBy(event: React.MouseEvent<SafeAnchorProps>) {
-    debugger;
-    const target = (event.currentTarget as unknown) as HTMLAnchorElement;
+    const target = event.currentTarget as HTMLAnchorElement;
     props.onChangeSortBy(target.text);
   }
 

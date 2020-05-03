@@ -2,7 +2,7 @@ import _ from "lodash";
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { FindPerformersQueryResult } from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { queryFindPerformers } from "src/core/StashService";
 import { usePerformersList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -33,7 +33,7 @@ export const PerformerList: React.FC = () => {
       const filterCopy = _.cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
-      const singleResult = await StashService.queryFindPerformers(filterCopy);
+      const singleResult = await queryFindPerformers(filterCopy);
       if (
         singleResult &&
         singleResult.data &&

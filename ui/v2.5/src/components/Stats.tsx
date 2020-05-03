@@ -1,10 +1,10 @@
 import React from "react";
-import { StashService } from "src/core/StashService";
+import { useStats } from "src/core/StashService";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared";
 
 export const Stats: React.FC = () => {
-  const { data, error, loading } = StashService.useStats();
+  const { data, error, loading } = useStats();
 
   if (loading || !data) return <LoadingIndicator />;
 
