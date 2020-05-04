@@ -36,7 +36,7 @@ interface IPerformerDetails {
       | Partial<GQL.PerformerUpdateInput>
   ) => void;
   onDelete?: () => void;
-  onImageChange?: (image: string) => void;
+  onImageChange?: (image?: string) => void;
 }
 
 export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
@@ -84,7 +84,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  ImageUtils.usePasteImage(onImageLoad);
+  ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   function updatePerformerEditState(
     state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformerDataFragment>
@@ -149,10 +149,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     ) {
       const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
       setImage(imageStr ?? undefined);
-      if (onImageChange) {
-        onImageChange(imageStr!);
-      }
     }
+  }
+
+  function onImageLoad(this: FileReader) {
+    setImage(this.result as string);
   }
 
   useEffect(() => {
@@ -160,13 +161,12 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     updatePerformerEditState(performer);
   }, [performer]);
 
-  function onImageLoad(this: FileReader) {
-    if (!isEditing) return;
-    setImage(this.result as string);
+  useEffect(() => {
     if (onImageChange) {
-      onImageChange(this.result as string);
+      onImageChange(image);
     }
-  }
+    return () => onImageChange?.();
+  }, [image, onImageChange]);
 
   useEffect(() => {
     const newQueryableScrapers = (

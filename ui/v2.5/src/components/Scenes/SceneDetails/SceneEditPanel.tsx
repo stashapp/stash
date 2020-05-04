@@ -133,7 +133,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setIsLoading(false);
   }, [props.scene]);
 
-  ImageUtils.usePasteImage(onImageLoad);
+  ImageUtils.usePasteImage(onImageLoad, true);
 
   function getSceneInput(): GQL.SceneUpdateInput {
     return {

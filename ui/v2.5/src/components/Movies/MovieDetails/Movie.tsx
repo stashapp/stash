@@ -105,8 +105,8 @@ export const Movie: React.FC = () => {
     setBackImage(this.result as string);
   }
 
-  ImageUtils.usePasteImage(onImageLoad);
-  ImageUtils.usePasteImage(onBackImageLoad);
+  ImageUtils.usePasteImage(onImageLoad, isEditing);
+  ImageUtils.usePasteImage(onBackImageLoad, isEditing);
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
