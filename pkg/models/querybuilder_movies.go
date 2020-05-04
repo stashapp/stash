@@ -76,7 +76,7 @@ func (qb *MovieQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Movie, 
 	query := `
 		SELECT movies.* FROM movies
 		LEFT JOIN movies_scenes as scenes_join on scenes_join.movie_id = movies.id
-		WHERE scenes_join.scenes.id = ?
+		WHERE scenes_join.scene_id = ?
 		GROUP BY movies.id
 	`
 	args := []interface{}{sceneID}
