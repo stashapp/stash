@@ -8,7 +8,6 @@ fragment SlimSceneData on Scene {
   rating
   o_counter
   path
-  stash_id
 
   file {
     size

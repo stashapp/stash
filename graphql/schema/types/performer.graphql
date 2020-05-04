@@ -26,7 +26,6 @@ type Performer {
   piercings: String
   aliases: String
   favorite: Boolean!
-  stash_id: String
 
   image_path: String # Resolver
   scene_count: Int # Resolver
@@ -53,7 +52,6 @@ input PerformerCreateInput {
   favorite: Boolean
   """This should be base64 encoded"""
   image: String
-  stash_id: String
 }
 
 input PerformerUpdateInput {
@@ -77,7 +75,6 @@ input PerformerUpdateInput {
   favorite: Boolean
   """This should be base64 encoded"""
   image: String
-  stash_id: String
 }
 
 input PerformerDestroyInput {

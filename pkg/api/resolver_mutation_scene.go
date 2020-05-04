@@ -106,10 +106,6 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 		updatedScene.StudioID = &sql.NullInt64{Valid: false}
 	}
 
-	if input.StashID != nil {
-		updatedScene.StashID = &sql.NullString{String: *input.StashID, Valid: true}
-	}
-
 	qb := models.NewSceneQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
 	scene, err := qb.Update(updatedScene, tx)

@@ -10,7 +10,6 @@ type Studio struct {
 	Name      sql.NullString  `db:"name" json:"name"`
 	URL       sql.NullString  `db:"url" json:"url"`
 	ParentID  sql.NullInt64   `db:"parent_id,omitempty" json:"parent_id"`
-    StashID   sql.NullString  `db:"stash_id" json:"stash_id"`
 	CreatedAt SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }

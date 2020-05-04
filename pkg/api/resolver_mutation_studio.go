@@ -44,9 +44,6 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		parentID, _ := strconv.ParseInt(*input.ParentID, 10, 64)
 		newStudio.ParentID = sql.NullInt64{Int64: parentID, Valid: true}
 	}
-	if input.StashID != nil {
-		newStudio.StashID = sql.NullString{String: *input.StashID, Valid: true}
-	}
 
 	// Start the transaction and save the studio
 	tx := database.DB.MustBeginTx(ctx, nil)
@@ -106,9 +103,6 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	} else {
 		// parent studio must be nullable
 		updatedStudio.ParentID = &sql.NullInt64{Valid: false}
-	}
-	if input.StashID != nil {
-		updatedStudio.StashID = sql.NullString{String: *input.StashID, Valid: true}
 	}
 
 	// Start the transaction and save the studio

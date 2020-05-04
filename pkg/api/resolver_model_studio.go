@@ -46,10 +46,3 @@ func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (
 	qb := models.NewStudioQueryBuilder()
 	return qb.FindChildren(obj.ID, nil)
 }
-
-func (r *studioResolver) StashID(ctx context.Context, obj *models.Studio) (*string, error) {
-	if obj.StashID.Valid {
-		return &obj.StashID.String, nil
-	}
-	return nil, nil
-}

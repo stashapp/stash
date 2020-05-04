@@ -15,7 +15,7 @@ import {
   SubmitFingerprintVariables,
   SubmitFingerprint
 } from 'src/definitions-box/SubmitFingerprint';
-import { FindPerformersDocument, FindStudioByStashIdDocument, AllTagsForFilterDocument } from '../../core/generated-graphql';
+import { FindPerformersDocument, FindStudioByUrlDocument, AllTagsForFilterDocument } from '../../core/generated-graphql';
 import PerformerResult from './PerformerResult';
 import StudioResult from './StudioResult';
 import { formatGender, formatMeasurements, formatBreastType, getUrlByType, getImage } from './utils';
@@ -91,19 +91,19 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       const studioUpdateResult = await updateStudio({
         variables: {
           id: studio.data as string,
-          stash_id: scene.studio?.id ?? ''
+          url: scene.studio?.id ?? ''
         },
         update: (store, updatedStudio) => {
           if (!updatedStudio?.data?.studioUpdate)
             return;
 
           store.writeQuery({
-            query: FindStudioByStashIdDocument,
+            query: FindStudioByUrlDocument,
             variables: {
-              id: updatedStudio.data.studioUpdate.stash_id
+              id: updatedStudio.data.studioUpdate.url
             },
             data: {
-              findStudioByStashID: updatedStudio.data.studioUpdate
+              findStudioByURL: updatedStudio.data.studioUpdate
             }
           });
         }
@@ -118,7 +118,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       const studioCreateResult = await createStudio({
         variables: {
           name: studioData.name,
-          stash_id: studioData.id,
+          url: studioData.id,
           ...(!!getUrlByType(studioData.urls, 'HOME') && { url: getUrlByType(studioData.urls, 'HOME') }),
           ...(!!getImage(studioData.images, 'landscape') && { image: getImage(studioData.images, 'landscape') })
         },
@@ -127,12 +127,12 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
             return;
 
           store.writeQuery({
-            query: FindStudioByStashIdDocument,
+            query: FindStudioByUrlDocument,
             variables: {
-              id: newStudio.data.studioCreate.stash_id
+              url: newStudio.data.studioCreate.url
             },
             data: {
-              findStudioByStashID: newStudio.data.studioCreate
+              findStudioByURL: newStudio.data.studioCreate
             }
           });
         }
@@ -153,7 +153,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
         const res = await updatePerformer({
           variables: {
             id: performer.data as string,
-            stash_id: performerID
+            instagram: performerID
           },
           update: (store, updatedPerformer) => {
             if (!updatedPerformer?.data?.performerUpdate)
@@ -163,8 +163,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
               query: FindPerformersDocument,
               variables: {
                 performer_filter: {
-                  stash_id: {
-                    value: updatedPerformer.data.performerUpdate.stash_id,
+                  instagram: {
+                    value: updatedPerformer.data.performerUpdate.instagram,
                     modifier: GQL.CriterionModifier.Equals
                   }
                 }
@@ -212,7 +212,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
             fake_tits: formatBreastType(performerData.breast_type),
             measurements: formatMeasurements(performerData.measurements),
             image: imgData,
-            stash_id: performerID
+            instagram: performerID
           },
           update: (store, newPerformer) => {
             if (!newPerformer?.data?.performerCreate)
@@ -222,8 +222,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
               query: FindPerformersDocument,
               variables: {
                 performer_filter: {
-                  stash_id: {
-                    value: newPerformer.data.performerCreate.stash_id,
+                  instagram: {
+                    value: newPerformer.data.performerCreate.instagram,
                     modifier: GQL.CriterionModifier.Equals
                   }
                 }
@@ -305,14 +305,14 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       const sceneUpdateResult = await updateScene({
         variables: {
           id: stashScene.id ?? '',
-          stash_id: scene.id,
+          url: scene.id,
           title: scene.title,
           details: scene.details,
           date: scene.date,
           performer_ids: performerIDs.filter(id => id !== 'Skip') as string[],
           studio_id: studioID,
           cover_image: imgData,
-          url: getUrlByType(scene.urls, 'STUDIO') ?? null,
+          //url: getUrlByType(scene.urls, 'STUDIO') ?? null,
           ...(tagIDs ? { tag_ids: tagIDs } : {})
         }
       });

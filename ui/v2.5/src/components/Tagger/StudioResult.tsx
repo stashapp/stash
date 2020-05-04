@@ -32,7 +32,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
   const [selectedStudio, setSelectedStudio] = useState<string|null>();
   const [modalVisible, showModal] = useState(false);
   const [selectedSource, setSelectedSource] = useState<'create'|'existing'|'skip'|undefined>();
-  const { data: stashData, loading: stashLoading } = GQL.useFindStudioByStashIdQuery({
+  const { data: stashData, loading: stashLoading } = GQL.useFindStudioByUrlQuery({
     variables: {
       id: studio?.id ?? ''
     }
@@ -66,12 +66,12 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
   });
 
   useEffect(() => {
-    if(!stashData?.findStudioByStashID)
+    if(!stashData?.findStudioByURL)
       return;
 
     setStudio({
       type: 'Existing',
-      data: stashData.findStudioByStashID.id
+      data: stashData.findStudioByURL.id
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stashData]);
@@ -98,13 +98,13 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
   if(loading || stashLoading)
     return <div>Loading studio</div>;
 
-  if(stashData?.findStudioByStashID) {
+  if(stashData?.findStudioByURL) {
     return (
       <div className="row my-2">
         <span className="ml-auto">
           <SuccessIcon />Studio matched:
         </span>
-        <b className="col-3 text-right">{ stashData.findStudioByStashID.name }</b>
+        <b className="col-3 text-right">{ stashData.findStudioByURL.name }</b>
       </div>
     );
   }
@@ -141,7 +141,8 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
       <StudioSelect
         ids={selectedStudio ? [selectedStudio] : []}
         onSelect={(items) => handleStudioSelect(items.length ? items[0].id : undefined)}
-          className={cx("studio-select", {'studio-select-active': selectedSource === 'existing' })}
+        className={cx("studio-select", {'studio-select-active': selectedSource === 'existing' })}
+        isClearable={false}
       />
     </ButtonGroup>
   </div>

@@ -25,6 +25,8 @@ import { client } from './client';
 const SearchSceneQuery = loader('src/queries/searchScene.gql');
 const FindSceneByFingerprintQuery = loader('src/queries/searchFingerprint.gql');
 
+const uuidRegexp = /\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b/i;
+
 const DEFAULT_BLACKLIST = [' XXX ', '1080p', '720p', '2160p', 'KTR', 'RARBG', 'MP4', 'x264', '\\[', '\\]'];
 const dateRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
 function prepareQueryString(scene: Partial<GQL.Scene>, paths: string[], mode:ParseMode, blacklist: string[]) {
@@ -305,7 +307,7 @@ export const Tagger: React.FC = () => {
               <p>The search works by matching the query against a scene's <i>title</i>, <i>release date</i>, <i>studio name</i>, and <i>performer names</i>.
                 An important thing to note is that it only returns a match <b>if all query terms are a match</b>.</p>
               <p>As an example, if a scene is titled <code>"A Trip to the Mall"</code>, a search for <code>"Trip to the Mall 1080p"</code> will <b>not</b> match, however <code>"trip mall"</code> would. Usually a few pieces of info is enough, for instance performer name + release date or studio name.</p>
-              <p><b>Please note</b> that this is still a work in progress, and the number of studios for which scenes are available is not exhaustive. For a complete list see <a href="https://stashdb.org/studios" target="_blank" className="btn-link">stashdb.org</a>.</p>
+              <p><b>Please note</b> that this is still a work in progress, and the number of studios for which scenes are available is not exhaustive. For a complete list see <a href="https://stashdb.org/studios" target="_blank" rel="noopener noreferrer" className="btn-link">stashdb.org</a>.</p>
             </div>
           </div>
         </div>
@@ -336,7 +338,8 @@ export const Tagger: React.FC = () => {
                     <a href={`/scenes/${scene.id}`} className="scene-link">{`${dir}/${parsedPath.base}`}</a>
                   </div>
                   <div className="col-6">
-                    { !taggedScenes[scene.id] && (
+                    { !taggedScenes[scene.id] && scene?.url && scene.url.match(uuidRegexp) && <div className="col-5 offset-6 text-right"><b>Scene already tagged</b></div> }
+                    { !taggedScenes[scene.id] && (!scene?.url || !scene.url.match(uuidRegexp)) && (
                       <InputGroup>
                         <Form.Control
                           value={modifiedQuery || defaultQueryString}
@@ -354,9 +357,8 @@ export const Tagger: React.FC = () => {
                     )}
                   </div>
                 </div>
-                { scene?.stash_id && <div className="col-5 offset-6 text-right"><b>Scene already tagged</b></div> }
                 { searchResults[scene.id] === null && <div>No results found.</div> }
-                { fingerprintMatch && !scene?.stash_id && !taggedScenes[scene.id] && (
+                { fingerprintMatch && (!scene?.url || !scene.url.match(uuidRegexp)) && !taggedScenes[scene.id] && (
                     <StashSearchResult
                       showMales={config.showMales}
                       stashScene={scene}

@@ -12,9 +12,9 @@ func (r *queryResolver) FindStudio(ctx context.Context, id string) (*models.Stud
 	return qb.Find(idInt, nil)
 }
 
-func (r *queryResolver) FindStudioByStashID(ctx context.Context, id string) (*models.Studio, error) {
+func (r *queryResolver) FindStudioByURL(ctx context.Context, id string) (*models.Studio, error) {
 	qb := models.NewStudioQueryBuilder()
-	return qb.FindByStashID(id, nil)
+	return qb.FindByURL(id, nil)
 }
 
 func (r *queryResolver) FindStudios(ctx context.Context, studioFilter *models.StudioFilterType, filter *models.FindFilterType) (*models.FindStudiosResultType, error) {

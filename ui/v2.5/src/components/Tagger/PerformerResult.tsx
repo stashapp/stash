@@ -38,7 +38,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerfor
   const { data: stashData, loading: stashLoading } = GQL.useFindPerformersQuery({
     variables: {
       performer_filter: {
-        stash_id: {
+        instagram: {
           value: performer.id,
           modifier: GQL.CriterionModifier.Equals
         }

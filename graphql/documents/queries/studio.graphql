@@ -13,8 +13,8 @@ query FindStudio($id: ID!) {
   }
 }
 
-query FindStudioByStashID($id: String!) {
-  findStudioByStashID(id: $id) {
+query FindStudioByURL($id: String!) {
+  findStudioByURL(id: $id) {
     ...StudioData
   }
 }

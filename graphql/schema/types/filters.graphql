@@ -50,8 +50,8 @@ input PerformerFilterType {
   gender: GenderCriterionInput
   """Filter to only include performers missing this property"""
   is_missing: String
-  """Filter by StashID"""
-  stash_id: StringCriterionInput
+  """Filter by Instagram"""
+  instagram: StringCriterionInput
 }
 
 input SceneMarkerFilterType {
@@ -86,6 +86,8 @@ input SceneFilterType {
   tags: MultiCriterionInput
   """Filter to only include scenes with these performers"""
   performers: MultiCriterionInput
+
+  url: StringCriterionInput
 }
 
 input MovieFilterType {
