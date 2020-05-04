@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+const freeonesTimeout = 45 * time.Second
 
 const freeonesScraperID = "builtin_freeones"
 const freeonesName = "Freeones"
@@ -44,9 +45,12 @@ func GetFreeonesScraper() scraperConfig {
 func GetPerformerNames(c scraperTypeConfig, q string) ([]*models.ScrapedPerformer, error) {
 	// Request the HTML page.
 	queryURL := "https://www.freeones.com/suggestions.php?q=" + url.PathEscape(q) + "&t=1"
-	res, err := http.Get(queryURL)
+	client := http.Client{
+		Timeout: freeonesTimeout,
+	}
+	res, err := client.Get(queryURL)
 	if err != nil {
-		logger.Fatal(err)
+		return nil, err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
@@ -74,7 +78,8 @@ func GetPerformerNames(c scraperTypeConfig, q string) ([]*models.ScrapedPerforme
 
 func GetPerformerURL(c scraperTypeConfig, href string) (*models.ScrapedPerformer, error) {
 	// if we're already in the bio page, just scrape it
-	if regexp.MustCompile(`\/bio_.*\.php$`).MatchString(href) {
+	reg := regexp.MustCompile(`\/bio_.*\.php$`)
+	if reg.MatchString(href) {
 		return getPerformerBio(c, href)
 	}
 
@@ -85,11 +90,15 @@ func GetPerformerURL(c scraperTypeConfig, href string) (*models.ScrapedPerformer
 		return getPerformerBio(c, href)
 	}
 
-	return nil, nil
+	return nil, fmt.Errorf("Bio page not found in %s", href)
 }
 
 func getPerformerBio(c scraperTypeConfig, href string) (*models.ScrapedPerformer, error) {
-	bioRes, err := http.Get(href)
+	client := http.Client{
+		Timeout: freeonesTimeout,
+	}
+
+	bioRes, err := client.Get(href)
 	if err != nil {
 		return nil, err
 	}
@@ -230,6 +239,7 @@ func GetPerformer(c scraperTypeConfig, scrapedPerformer models.ScrapedPerformerI
 	href = "https://www.freeones.com" + href
 
 	return getPerformerBio(c, href)
+
 }
 
 func getIndexes(doc *goquery.Document) map[string]int {
