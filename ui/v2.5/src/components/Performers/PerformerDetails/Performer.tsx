@@ -1,4 +1,4 @@
-/* eslint-disable react/no-this-in-sfc */
+
 
 import React, { useEffect, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
@@ -12,8 +12,9 @@ import {
   usePerformerDestroy,
 } from "src/core/StashService";
 import { Icon, LoadingIndicator } from "src/components/Shared";
+import { CountryFlag, Icon, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { getCountryISO, TextUtils } from "src/utils";
+import { TextUtils } from "src/utils";
 import Lightbox from "react-images";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
@@ -99,17 +100,6 @@ export const Performer: React.FC = () => {
     // redirect to performers page
     history.push("/performers");
   }
-
-  const maybeRenderFlag = () => {
-    const countryISO = getCountryISO(performer.country);
-    if (countryISO)
-      return (
-        <span
-          className={`mr-2 flag-icon flag-icon-${countryISO.toLowerCase()}`}
-        />
-      );
-    return undefined;
-  };
 
   const renderTabs = () => (
     <Tabs defaultActiveKey="details" id="performer-details" unmountOnExit>
@@ -257,7 +247,7 @@ export const Performer: React.FC = () => {
         <div className="row">
           <div className="performer-head col-6 col-sm-12">
             <h2>
-              {maybeRenderFlag()}
+              <CountryFlag country={performer.country} className="mr-2" />
               {performer.name}
               {renderIcons()}
             </h2>
