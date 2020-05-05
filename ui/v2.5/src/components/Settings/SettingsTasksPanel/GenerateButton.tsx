@@ -10,12 +10,14 @@ export const GenerateButton: React.FC = () => {
   const [markers, setMarkers] = useState(true);
   const [transcodes, setTranscodes] = useState(false);
   const [thumbnails, setThumbnails] = useState(false);
+  const [imagePreviews, setImagePreviews] = useState(false);
 
   async function onGenerate() {
     try {
       await mutateMetadataGenerate({
         sprites,
         previews,
+        imagePreviews: previews && imagePreviews,
         markers,
         transcodes,
         thumbnails,
@@ -41,6 +43,17 @@ export const GenerateButton: React.FC = () => {
           label="Previews (video previews which play when hovering over a scene)"
           onChange={() => setPreviews(!previews)}
         />
+        <div>
+          <span>↳</span>
+          <Form.Check
+            id="image-preview-task"
+            checked={imagePreviews}
+            disabled={!previews}
+            label="Image Previews (animated webp previews, only required if 'Preview Type' is set to 'Animated Image')"
+            onChange={() => setImagePreviews(!imagePreviews)}
+            className="d-inline-flex ml-2"
+          />
+        </div>
         <Form.Check
           id="marker-task"
           checked={markers}

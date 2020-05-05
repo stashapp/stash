@@ -1,6 +1,7 @@
 input GenerateMetadataInput {
   sprites: Boolean!
   previews: Boolean!
+  imagePreviews: Boolean!
   markers: Boolean!
   transcodes: Boolean!
   """gallery thumbnails for cache usage"""

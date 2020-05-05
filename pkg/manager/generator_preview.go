@@ -16,9 +16,12 @@ type PreviewGenerator struct {
 	VideoFilename   string
 	ImageFilename   string
 	OutputDirectory string
+
+	GenerateVideo bool
+	GenerateImage bool
 }
 
-func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, imageFilename string, outputDirectory string) (*PreviewGenerator, error) {
+func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, imageFilename string, outputDirectory string, generateVideo bool, generateImage bool) (*PreviewGenerator, error) {
 	exists, err := utils.FileExists(videoFile.Path)
 	if !exists {
 		return nil, err
@@ -37,6 +40,8 @@ func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, image
 		VideoFilename:   videoFilename,
 		ImageFilename:   imageFilename,
 		OutputDirectory: outputDirectory,
+		GenerateVideo:   generateVideo,
+		GenerateImage:   generateImage,
 	}, nil
 }
 
@@ -47,11 +52,16 @@ func (g *PreviewGenerator) Generate() error {
 	if err := g.generateConcatFile(); err != nil {
 		return err
 	}
-	if err := g.generateVideo(&encoder); err != nil {
-		return err
+
+	if g.GenerateVideo {
+		if err := g.generateVideo(&encoder); err != nil {
+			return err
+		}
 	}
-	if err := g.generateImage(&encoder); err != nil {
-		return err
+	if g.GenerateImage {
+		if err := g.generateImage(&encoder); err != nil {
+			return err
+		}
 	}
 	return nil
 }
