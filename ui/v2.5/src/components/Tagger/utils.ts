@@ -63,7 +63,7 @@ export const formatCareerLength = (start?: number|null, end?: number|null) => (
 );
 
 export const formatBodyModification = (mods: BodyModification[]|null) => (
-  (mods || []).map(m => `${m.location}, ${m.description}`).join('; ')
+  (mods || []).map(m => m.location && m.description ? `${m.location}, ${m.description}` : m.description || m.location).join('; ')
 );
 
 export const formatURL = (urls: URL[], type: string) => (

@@ -6,7 +6,7 @@ import { BreastTypeEnum, GenderEnum } from 'src/definitions-box/globalTypes';
 import {
   SearchScene_searchScene_performers_performer as StashPerformer,
 } from 'src/definitions-box/SearchScene';
-import { formatMeasurements, sortImageURLs } from './utils';
+import { formatBodyModification, formatMeasurements, sortImageURLs } from './utils';
 
 interface IPerformerModalProps {
   performer: StashPerformer;
@@ -82,11 +82,11 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({ modalVisible, performe
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Tattoos:</strong>
-            <span className="col-6 text-truncate">{ performer.tattoos?.join(', ') ?? '' }</span>
+            <span className="col-6 text-truncate">{ formatBodyModification(performer.tattoos) }</span>
           </div>
           <div className="row no-gutters ">
             <strong className="col-6">Piercings:</strong>
-            <span className="col-6 text-truncate">{ performer.piercings?.join(', ') ?? '' }</span>
+            <span className="col-6 text-truncate">{ formatBodyModification(performer.piercings) }</span>
           </div>
         </div>
         { images.length > 0 && (
