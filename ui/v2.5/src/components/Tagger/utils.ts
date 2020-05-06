@@ -1,7 +1,8 @@
 import {
   SearchScene_searchScene_performers_performer_urls as URL,
   SearchScene_searchScene_performers_performer_images as Image,
-  SearchScene_searchScene_performers_performer_measurements as Measurements
+  SearchScene_searchScene_performers_performer_measurements as Measurements,
+  SearchScene_searchScene_performers_performer_tattoos as  BodyModification
 } from 'src/definitions-box/SearchScene';
 import { BreastTypeEnum, GenderEnum as StashGenderEnum} from 'src/definitions-box/globalTypes';
 import { GenderEnum } from 'src/core/generated-graphql';
@@ -55,4 +56,16 @@ export const formatGender = (type: StashGenderEnum|null) => (
   type === StashGenderEnum.TRANSGENDER_FEMALE ? GenderEnum.TransgenderFemale :
   type === StashGenderEnum.TRANSGENDER_MALE ? GenderEnum.TransgenderMale :
   type === StashGenderEnum.INTERSEX ? GenderEnum.Intersex : null
+);
+
+export const formatCareerLength = (start?: number|null, end?: number|null) => (
+  start && end ? `${start} - ${end}` : start ? `${start} - ` : null
+);
+
+export const formatBodyModification = (mods: BodyModification[]|null) => (
+  (mods || []).map(m => `${m.location}, ${m.description}`).join('; ')
+);
+
+export const formatURL = (urls: URL[], type: string) => (
+  urls.find(u => u.type === type)?.url ?? null
 );

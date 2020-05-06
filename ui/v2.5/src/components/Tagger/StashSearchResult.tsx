@@ -18,7 +18,16 @@ import {
 import { FindPerformersDocument, FindStudioByUrlDocument, AllTagsForFilterDocument } from '../../core/generated-graphql';
 import PerformerResult from './PerformerResult';
 import StudioResult from './StudioResult';
-import { formatGender, formatMeasurements, formatBreastType, getUrlByType, getImage } from './utils';
+import {
+  formatBodyModification,
+  formatCareerLength,
+  formatGender,
+  formatMeasurements,
+  formatBreastType,
+  formatURL,
+  getUrlByType,
+  getImage
+} from './utils';
 import { client } from './client';
 
 const SubmitFingerprintMutation = loader('src/queries/submitFingerprint.gql');
@@ -211,6 +220,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
             eye_color: titleCase(performerData.eye_color ?? ''),
             fake_tits: formatBreastType(performerData.breast_type),
             measurements: formatMeasurements(performerData.measurements),
+            career_length: formatCareerLength(performerData.career_start_year, performerData.career_end_year),
+            tattoos: formatBodyModification(performerData.tattoos),
+            piercings: formatBodyModification(performerData.piercings),
+            twitter: formatURL(performerData.urls, 'TWITTER'),
+            instagram: formatURL(performerData.urls, 'INSTAGRAM'),
             image: imgData,
             instagram: performerID
           },
