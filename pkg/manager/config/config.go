@@ -29,6 +29,7 @@ const Exclude = "exclude"
 
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
+const StreamingProfile = "streaming_profile"
 
 const Host = "host"
 const Port = "port"
@@ -175,6 +176,17 @@ func GetMaxStreamingTranscodeSize() models.StreamingResolutionEnum {
 	}
 
 	return models.StreamingResolutionEnum(ret)
+}
+
+func GetStreamingProfile() models.StreamingProfile {
+	ret := viper.GetString(StreamingProfile)
+
+	// default to vp9
+	if ret == "" {
+		return models.StreamingProfileVp9
+	}
+
+	return models.StreamingProfile(ret)
 }
 
 func GetUsername() string {

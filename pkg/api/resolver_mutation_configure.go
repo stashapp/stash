@@ -45,6 +45,11 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	if input.MaxStreamingTranscodeSize != nil {
 		config.Set(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
 	}
+
+	if input.Profile != nil {
+		config.Set(config.StreamingProfile, input.Profile.String())
+	}
+
 	config.Set(config.ForceMKV, input.ForceMkv)
 	config.Set(config.ForceHEVC, input.ForceHevc)
 

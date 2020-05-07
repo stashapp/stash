@@ -32,6 +32,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 
 	maxTranscodeSize := config.GetMaxTranscodeSize()
 	maxStreamingTranscodeSize := config.GetMaxStreamingTranscodeSize()
+	streamingProfile := config.GetStreamingProfile()
 
 	scraperUserAgent := config.GetScraperUserAgent()
 
@@ -41,6 +42,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		GeneratedPath:             config.GetGeneratedPath(),
 		MaxTranscodeSize:          &maxTranscodeSize,
 		MaxStreamingTranscodeSize: &maxStreamingTranscodeSize,
+		Profile:                   &streamingProfile,
 		ForceMkv:                  config.GetForceMKV(),
 		ForceHevc:                 config.GetForceHEVC(),
 		Username:                  config.GetUsername(),

@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -130,6 +131,39 @@ func (e *Encoder) StreamTranscode(probeResult VideoFile, startTime string, maxTr
 		"-crf", "30",
 		"-b:v", "0",
 		"-f", "webm",
+		"pipe:",
+	)
+
+	return e.stream(probeResult, args)
+}
+
+func (e *Encoder) StreamTranscodeX264(probeResult VideoFile, startTime string, maxTranscodeSize models.StreamingResolutionEnum, profile models.StreamingProfile) (io.ReadCloser, *os.Process, error) {
+	preset := string(models.StreamingProfileUltrafast)
+	if profile.IsValid() {
+		switch profile {
+		case models.StreamingProfileUltrafast, models.StreamingProfileMedium, models.StreamingProfileSlow:
+			preset = string(profile)
+		}
+	}
+	logger.Infof("Using x264 preset: %s", preset)
+
+	scale := calculateTranscodeScale(probeResult, maxTranscodeSize)
+	args := []string{}
+
+	if startTime != "" {
+		args = append(args, "-ss", startTime)
+	}
+
+	args = append(args,
+		"-i", probeResult.Path,
+		"-c:v", "libx264",
+		"-pix_fmt", "yuv420p",
+		"-vf", "scale="+scale,
+		"-preset", preset,
+		"-tune", "zerolatency",
+		"-crf", "25",
+		"-c:a", "aac",
+		"-f", "matroska",
 		"pipe:",
 	)
 

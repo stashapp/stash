@@ -7,6 +7,13 @@ enum StreamingResolutionEnum {
   "Original", ORIGINAL
 }
 
+enum StreamingProfile {
+  "VP9", vp9
+  "X264_ULTRAFAST", ultrafast
+  "X264_MEDIUM", medium
+  "X264_SLOW", slow
+}
+
 input ConfigGeneralInput {
   """Array of file paths to content"""
   stashes: [String!]
@@ -18,6 +25,8 @@ input ConfigGeneralInput {
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
+  """Streaming profile"""
+  profile: StreamingProfile
   """Force MKV as supported format"""
   forceMkv: Boolean!
   """Force HEVC as a supported codec"""
@@ -53,6 +62,8 @@ type ConfigGeneralResult {
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
+  """Streaming profile"""
+  profile: StreamingProfile
   """Force MKV as supported format"""
   forceMkv: Boolean!
   """Force HEVC as a supported codec"""

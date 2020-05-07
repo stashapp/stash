@@ -4,6 +4,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   generatedPath
   maxTranscodeSize
   maxStreamingTranscodeSize
+  profile
   forceMkv
   forceHevc
   username

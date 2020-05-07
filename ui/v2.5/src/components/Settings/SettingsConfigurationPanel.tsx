@@ -22,6 +22,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [maxStreamingTranscodeSize, setMaxStreamingTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
+  const [profile, setProfile] = useState<GQL.StreamingProfile | undefined>(
+    undefined
+  );
   const [forceMkv, setForceMkv] = useState<boolean>(false);
   const [forceHevc, setForceHevc] = useState<boolean>(false);
   const [username, setUsername] = useState<string | undefined>(undefined);
@@ -44,6 +47,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     generatedPath,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
+    profile,
     forceMkv,
     forceHevc,
     username,
@@ -69,6 +73,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
       );
+      setProfile(conf.general.profile ?? undefined);
       setForceMkv(conf.general.forceMkv);
       setForceHevc(conf.general.forceHevc);
       setUsername(conf.general.username);
@@ -164,6 +169,43 @@ export const SettingsConfigurationPanel: React.FC = () => {
     }
 
     return GQL.StreamingResolutionEnum.Original;
+  }
+
+  const transcodeProfiles = [
+    GQL.StreamingProfile.Vp9,
+    GQL.StreamingProfile.Ultrafast,
+    GQL.StreamingProfile.Medium,
+    GQL.StreamingProfile.Slow,
+  ].map(profileToString);
+
+  function profileToString(r: GQL.StreamingProfile | undefined) {
+    switch (r) {
+      case GQL.StreamingProfile.Vp9:
+        return "vp9";
+      case GQL.StreamingProfile.Ultrafast:
+        return "x264 ultrafast (mkv)";
+      case GQL.StreamingProfile.Medium:
+        return "x264 medium (mkv)";
+      case GQL.StreamingProfile.Slow:
+        return "x264 slow (mkv)";
+    }
+
+    return "vp9";
+  }
+
+  function translateProfile(sProfile: string) {
+    switch (sProfile) {
+      case "vp9":
+        return GQL.StreamingProfile.Vp9;
+      case "x264 ultrafast (mkv)":
+        return GQL.StreamingProfile.Ultrafast;
+      case "x264 medium (mkv)":
+        return GQL.StreamingProfile.Medium;
+      case "x264 slow (mkv)":
+        return GQL.StreamingProfile.Slow;
+    }
+
+    return GQL.StreamingProfile.Vp9;
   }
 
   if (error) return <h1>{error.message}</h1>;
@@ -297,6 +339,27 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Control>
           <Form.Text className="text-muted">
             Maximum size for transcoded streams
+          </Form.Text>
+        </Form.Group>
+        <Form.Group id="streaming-profile">
+          <h6>Stream profile</h6>
+          <Form.Control
+            className="col col-sm-6 input-control"
+            as="select"
+            onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+              setProfile(translateProfile(event.currentTarget.value))
+            }
+            value={profileToString(profile)}
+          >
+            {transcodeProfiles.map((q) => (
+              <option key={q} value={q}>
+                {q}
+              </option>
+            ))}
+          </Form.Control>
+          <Form.Text className="text-muted">
+            Profile used for live transcoding. Profiles other than vp9 may not
+            be supported by all browsers ( Firefox )
           </Form.Text>
         </Form.Group>
         <Form.Group id="force-options-mkv">
