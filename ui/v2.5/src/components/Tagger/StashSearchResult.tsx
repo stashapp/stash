@@ -224,7 +224,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
             tattoos: formatBodyModification(performerData.tattoos),
             piercings: formatBodyModification(performerData.piercings),
             twitter: formatURL(performerData.urls, 'TWITTER'),
-            instagram: formatURL(performerData.urls, 'INSTAGRAM'),
             image: imgData,
             instagram: performerID
           },
