@@ -11,7 +11,6 @@ import {
   usePerformerCreate,
   usePerformerDestroy,
 } from "src/core/StashService";
-import { Icon, LoadingIndicator } from "src/components/Shared";
 import { CountryFlag, Icon, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
