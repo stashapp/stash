@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
