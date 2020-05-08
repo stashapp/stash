@@ -52,7 +52,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setCurrentDirectory(e.currentTarget.value)
                 }
-                defaultValue={currentDirectory}
+                value={currentDirectory}
                 spellCheck={false}
               />
               <InputGroup.Append>
