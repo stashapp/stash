@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { NavUtils, TextUtils } from "src/utils";
+import { getCountryISO, NavUtils, TextUtils } from "src/utils";
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
@@ -15,6 +15,8 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
 }) => {
   const age = TextUtils.age(performer.birthdate, ageFromDate);
   const ageString = `${age} years old${ageFromDate ? " in this scene." : "."}`;
+
+  const countryISO = getCountryISO(performer.country);
 
   function maybeRenderFavoriteBanner() {
     if (performer.favorite === false) {
@@ -36,6 +38,9 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       <div className="card-section">
         <h5 className="text-truncate">{performer.name}</h5>
         {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
+        {countryISO && (
+          <span className={`flag-icon flag-icon-${countryISO.toLowerCase()}`} />
+        )}
         <div className="text-muted">
           Stars in {performer.scene_count}{" "}
           <Link to={NavUtils.makePerformerScenesUrl(performer)}>scenes</Link>.

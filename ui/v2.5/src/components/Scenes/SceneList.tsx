@@ -5,7 +5,7 @@ import {
   FindScenesQueryResult,
   SlimSceneDataFragment,
 } from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { queryFindScenes } from "src/core/StashService";
 import { useScenesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -52,7 +52,7 @@ export const SceneList: React.FC<ISceneList> = ({
       const filterCopy = _.cloneDeep(filter);
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
-      const singleResult = await StashService.queryFindScenes(filterCopy);
+      const singleResult = await queryFindScenes(filterCopy);
       if (
         singleResult &&
         singleResult.data &&

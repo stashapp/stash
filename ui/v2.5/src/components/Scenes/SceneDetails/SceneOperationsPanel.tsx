@@ -1,7 +1,7 @@
 import { Button } from "react-bootstrap";
 import React, { FunctionComponent } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { useSceneGenerateScreenshot } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { JWUtils } from "src/utils";
 
@@ -13,7 +13,7 @@ export const SceneOperationsPanel: FunctionComponent<IOperationsPanelProps> = (
   props: IOperationsPanelProps
 ) => {
   const Toast = useToast();
-  const [generateScreenshot] = StashService.useSceneGenerateScreenshot();
+  const [generateScreenshot] = useSceneGenerateScreenshot();
 
   async function onGenerateScreenshot(at?: number) {
     await generateScreenshot({

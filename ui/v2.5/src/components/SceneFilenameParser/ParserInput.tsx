@@ -133,7 +133,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
           <Form.Control
             className="text-input"
             id="filename-pattern"
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setPattern(e.currentTarget.value)
             }
             value={pattern}
@@ -162,7 +162,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
         <InputGroup className="col-8">
           <Form.Control
             className="text-input"
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setIgnoreWords(e.currentTarget.value)
             }
             value={ignoreWords}
@@ -181,7 +181,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
         <InputGroup className="col-8">
           <Form.Control
             className="text-input"
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setWhitespaceCharacters(e.currentTarget.value)
             }
             value={whitespaceCharacters}
@@ -236,8 +236,7 @@ export const ParserInput: React.FC<IParserInputProps> = (
         </Button>
         <Form.Control
           as="select"
-          options={PAGE_SIZE_OPTIONS}
-          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             props.onPageSizeChanged(parseInt(e.currentTarget.value, 10))
           }
           defaultValue={props.input.pageSize}

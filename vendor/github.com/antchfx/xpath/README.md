@@ -144,6 +144,8 @@ Supported Features
 `not()`| ✓ |
 `number()`| ✓ |
 `position()`| ✓ |
+`replace()`| ✓ |
+`reverse()`| ✓ |
 `round()`| ✓ |
 `starts-with()`| ✓ |
 `string()`| ✓ |

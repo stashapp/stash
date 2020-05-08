@@ -3,19 +3,16 @@ import { ApolloProvider } from "react-apollo";
 import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
-import { StashService } from "./core/StashService";
+import { getClient } from "./core/StashService";
+import { getPlatformURL } from "./core/createClient";
 import "./index.scss";
 import * as serviceWorker from "./serviceWorker";
 
 ReactDOM.render(
   <>
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href={`${StashService.getPlatformURL()}css`}
-    />
+    <link rel="stylesheet" type="text/css" href={`${getPlatformURL()}css`} />
     <BrowserRouter>
-      <ApolloProvider client={StashService.initialize()!}>
+      <ApolloProvider client={getClient()}>
         <App />
       </ApolloProvider>
     </BrowserRouter>
