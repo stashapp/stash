@@ -187,14 +187,11 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		defer s.returnToIdleState()
 
 		scenes, err := qb.All()
+		var galleries []*models.Gallery
+		var gqErr error
+
 		if err != nil {
 			logger.Errorf("failed to get scenes for generate")
-			return
-		}
-
-		galleries, err := qg.All()
-		if err != nil {
-			logger.Errorf("failed to get galleries for generate")
 			return
 		}
 
@@ -204,6 +201,11 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		lenScenes := len(scenes)
 		total := lenScenes
 		if thumbnails {
+			galleries, gqErr = qg.All()
+			if gqErr != nil {
+				logger.Errorf("failed to get galleries for generate")
+				return
+			}
 			total += len(galleries)
 		}
 

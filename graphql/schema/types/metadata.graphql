@@ -3,6 +3,7 @@ input GenerateMetadataInput {
   previews: Boolean!
   markers: Boolean!
   transcodes: Boolean!
+  """gallery thumbnails for cache usage"""
   thumbnails: Boolean!
 }
 

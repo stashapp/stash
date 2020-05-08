@@ -10,15 +10,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"sort"
-	"time"
 )
-
-type DuDetails struct {
-	path  string
-	mtime time.Time
-	size  int64
-}
 
 // FileType uses the filetype package to determine the given file path's type
 func FileType(filePath string) (types.Type, error) {
@@ -149,81 +141,7 @@ func GetHomeDirectory() string {
 	return currentUser.HomeDir
 }
 
-func PrintDuDetails(files []DuDetails) {
-	for i, file := range files {
-		fmt.Printf("%d: %s size: %d mod date: %s\n", i, file.path, file.size, file.mtime.Format("2006-01-02T15:04:05"))
-	}
-}
-
-// Sort DuDetails slice by mod time, older first
-func SortDuDetailsByMtime(files []DuDetails) {
-	sort.Slice(files, func(i, j int) bool {
-		return files[i].mtime.After(files[j].mtime)
-	})
-}
-
-// DuDir returns the size of the directory (only actual files are counted)
-// The filesInfo slice is populated during the recursion
-func DuDir(path string, info os.FileInfo, filesInfo *[]DuDetails) int64 {
-	var details DuDetails
-	var err error
-
-	path, err = filepath.Abs(path)
-
-	if err != nil {
-		panic(err)
-	}
-	if !info.IsDir() {
-		details.size = info.Size()
-		details.mtime = info.ModTime()
-		details.path = path
-		*filesInfo = append(*filesInfo, details)
-		return details.size
-	}
-	size := info.Size()
-	dir, err := os.Open(path)
-	if err != nil {
-		fmt.Printf("Error openig path %s: %s\n", path, err)
-		return size
-	}
-	defer dir.Close()
-
-	fis, err := dir.Readdir(-1)
-	if err != nil {
-		panic(err)
-	}
-	for _, fi := range fis {
-		if fi.Name() == "." || fi.Name() == ".." {
-			continue
-		}
-
-		size += DuDir(filepath.Join(path, fi.Name()), fi, filesInfo)
-	}
-
-	return size
-}
-
-// Reduce dir by at least size bytes
-// Returns the size of removed files
-func ReduceDir(files []DuDetails, size int64) int64 {
-	var rmSize int64
-	for _, file := range files {
-		if rmSize <= size {
-			err := os.Remove(file.path)
-
-			if err != nil {
-				fmt.Printf("Error removing file: %s\n", file.path)
-				continue
-			}
-			rmSize += file.size
-		} else {
-			break
-		}
-	}
-	return rmSize
-}
-
-// Return true if zip file is using 0 compression level
+// IsZipFileUnmcompressed returns true if zip file in path is using 0 compression level
 func IsZipFileUncompressed(path string) (bool, error) {
 	r, err := zip.OpenReader(path)
 	if err != nil {
@@ -241,13 +159,13 @@ func IsZipFileUncompressed(path string) (bool, error) {
 	return false, nil
 }
 
-// taken from https://github.com/dustin/go-humanize
-// and adjusted
+// humanize code taken from https://github.com/dustin/go-humanize and adjusted
 
 func logn(n, b float64) float64 {
 	return math.Log(n) / math.Log(b)
 }
 
+// HumanizeBytes returns a human readable bytes string of a uint
 func HumanizeBytes(s uint64) string {
 	sizes := []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
 	if s < 10 {
@@ -264,7 +182,7 @@ func HumanizeBytes(s uint64) string {
 	return fmt.Sprintf(f, val, suffix)
 }
 
-// write file to path creating parent directories if needed
+// WriteFile writes file to path creating parent directories if needed
 func WriteFile(path string, file []byte) error {
 	pathErr := EnsureDirAll(filepath.Dir(path))
 	if pathErr != nil {
@@ -276,4 +194,18 @@ func WriteFile(path string, file []byte) error {
 		return fmt.Errorf("Write error for thumbnail %s: %s ", path, err)
 	}
 	return nil
+}
+
+// GetIntraDir returns a string that can be added to filepath.Join to implement directory depth, "" on error
+//eg given a pattern of 0af63ce3c99162e9df23a997f62621c5 and a depth of 2 length of 3
+//returns 0af/63c or 0af\63c ( dependin on os)  that can be later used like this  filepath.Join(directory, intradir, basename)
+func GetIntraDir(pattern string, depth, length int) string {
+	if depth < 1 || length < 1 || (depth*length > len(pattern)) {
+		return ""
+	}
+	intraDir := pattern[0:length] // depth 1 , get length number of characters from pattern
+	for i := 1; i < depth; i++ {  // for every extra depth: move to the right of the pattern length positions, get length number of chars
+		intraDir = filepath.Join(intraDir, pattern[length*i:length*(i+1)]) //  adding each time to intradir the extra characters with a filepath join
+	}
+	return intraDir
 }
