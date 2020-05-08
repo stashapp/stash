@@ -9,8 +9,9 @@ import (
 )
 
 type GeneratePreviewTask struct {
-	Scene        models.Scene
-	ImagePreview bool
+	Scene         models.Scene
+	ImagePreview  bool
+	PreviewPreset string
 }
 
 func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
@@ -29,7 +30,7 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, !videoExists, t.ImagePreview)
+	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, !videoExists, t.ImagePreview, t.PreviewPreset)
 	if err != nil {
 		logger.Errorf("error creating preview generator: %s", err.Error())
 		return

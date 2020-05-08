@@ -171,7 +171,7 @@ func (s *singleton) Export() {
 	}()
 }
 
-func (s *singleton) Generate(sprites bool, previews bool, imagePreviews bool, markers bool, transcodes bool, thumbnails bool) {
+func (s *singleton) Generate(sprites bool, previews bool, previewPreset *models.PreviewPreset, imagePreviews bool, markers bool, transcodes bool, thumbnails bool) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -182,6 +182,11 @@ func (s *singleton) Generate(sprites bool, previews bool, imagePreviews bool, ma
 	qg := models.NewGalleryQueryBuilder()
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
+
+	preset := string(models.PreviewPresetSlow)
+	if previewPreset != nil && previewPreset.IsValid() {
+		preset = string(*previewPreset)
+	}
 
 	go func() {
 		defer s.returnToIdleState()
@@ -244,7 +249,7 @@ func (s *singleton) Generate(sprites bool, previews bool, imagePreviews bool, ma
 			}
 
 			if previews {
-				task := GeneratePreviewTask{Scene: *scene, ImagePreview: imagePreviews}
+				task := GeneratePreviewTask{Scene: *scene, ImagePreview: imagePreviews, PreviewPreset: preset}
 				go task.Start(&wg)
 			}
 

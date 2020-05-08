@@ -19,9 +19,11 @@ type PreviewGenerator struct {
 
 	GenerateVideo bool
 	GenerateImage bool
+
+	PreviewPreset string
 }
 
-func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, imageFilename string, outputDirectory string, generateVideo bool, generateImage bool) (*PreviewGenerator, error) {
+func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, imageFilename string, outputDirectory string, generateVideo bool, generateImage bool, previewPreset string) (*PreviewGenerator, error) {
 	exists, err := utils.FileExists(videoFile.Path)
 	if !exists {
 		return nil, err
@@ -42,6 +44,7 @@ func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, image
 		OutputDirectory: outputDirectory,
 		GenerateVideo:   generateVideo,
 		GenerateImage:   generateImage,
+		PreviewPreset:   previewPreset,
 	}, nil
 }
 
@@ -101,7 +104,7 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder) error {
 			Width:      640,
 			OutputPath: chunkOutputPath,
 		}
-		encoder.ScenePreviewVideoChunk(g.Info.VideoFile, options)
+		encoder.ScenePreviewVideoChunk(g.Info.VideoFile, options, g.PreviewPreset)
 	}
 
 	videoOutputPath := filepath.Join(g.OutputDirectory, g.VideoFilename)

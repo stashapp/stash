@@ -94,7 +94,7 @@ export const SettingsInterfacePanel: React.FC = () => {
           name="wall-preview"
           className="col-4 input-control"
           value={wallPlayback}
-          onChange={(e: React.FormEvent<HTMLSelectElement>) =>
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
             setWallPlayback(e.currentTarget.value)
           }
         >
