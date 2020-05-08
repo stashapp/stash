@@ -133,7 +133,7 @@ function SceneParserStringField(props: ISceneParserFieldProps<string>) {
             readOnly={!props.parserResult.isSet}
             className={props.className}
             value={props.parserResult.value || ""}
-            onChange={(event: React.FormEvent<HTMLInputElement>) =>
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
               maybeValueChanged(event.currentTarget.value)
             }
           />
@@ -177,7 +177,7 @@ function SceneParserRatingField(
             className={props.className}
             disabled={!props.parserResult.isSet}
             value={props.parserResult.value?.toString()}
-            onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               maybeValueChanged(
                 event.currentTarget.value === ""
                   ? undefined

@@ -2,8 +2,8 @@ import _ from "lodash";
 import React, { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
-import { VideoHoverHook } from "src/hooks";
+import { useConfiguration } from "src/core/StashService";
+import { useVideoHover } from "src/hooks";
 import { TextUtils, NavUtils } from "src/utils";
 
 interface IWallItemProps {
@@ -22,15 +22,15 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   const [screenshotPath, setScreenshotPath] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [tags, setTags] = useState<JSX.Element[]>([]);
-  const config = StashService.useConfiguration();
-  const videoHoverHook = VideoHoverHook.useVideoHover({
+  const config = useConfiguration();
+  const hoverHandler = useVideoHover({
     resetOnMouseLeave: true,
   });
   const showTextContainer =
     config.data?.configuration.interface.wallShowTitle ?? true;
 
   function onMouseEnter() {
-    VideoHoverHook.onMouseEnter(videoHoverHook);
+    hoverHandler.onMouseEnter();
     if (!videoPath || videoPath === "") {
       if (props.sceneMarker) {
         setVideoPath(props.sceneMarker.stream || "");
@@ -43,7 +43,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   const debouncedOnMouseEnter = useRef(_.debounce(onMouseEnter, 500));
 
   function onMouseLeave() {
-    VideoHoverHook.onMouseLeave(videoHoverHook);
+    hoverHandler.onMouseLeave();
     setVideoPath("");
     debouncedOnMouseEnter.current.cancel();
     props.onOverlay(false);
@@ -111,7 +111,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   }
 
   const className = ["scene-wall-item-container"];
-  if (videoHoverHook.isHovering.current) {
+  if (hoverHandler.isHovering.current) {
     className.push("double-scale");
   }
   const style: React.CSSProperties = {};
@@ -133,10 +133,10 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
             src={videoPath}
             poster={screenshotPath}
             className="scene-wall-video"
-            style={videoHoverHook.isHovering.current ? {} : { display: "none" }}
+            style={hoverHandler.isHovering.current ? {} : { display: "none" }}
             autoPlay
             loop
-            ref={videoHoverHook.videoEl}
+            ref={hoverHandler.videoEl}
           />
           <img
             alt={title}

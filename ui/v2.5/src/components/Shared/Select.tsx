@@ -1,10 +1,19 @@
-import React, { useState, useCallback, CSSProperties } from "react";
+import React, { useState, CSSProperties } from "react";
 import Select, { ValueType } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { debounce } from "lodash";
 
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import {
+  useAllTagsForFilter,
+  useAllMoviesForFilter,
+  useAllStudiosForFilter,
+  useAllPerformersForFilter,
+  useMarkerStrings,
+  useScrapePerformerList,
+  useValidGalleriesForScene,
+  useTagCreate,
+} from "src/core/StashService";
 import { useToast } from "src/hooks";
 
 type ValidTypes =
@@ -63,9 +72,7 @@ const getSelectedValues = (selectedItems: ValueType<Option>) =>
     : [];
 
 export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
-  const { data, loading } = StashService.useValidGalleriesForScene(
-    props.sceneId
-  );
+  const { data, loading } = useValidGalleriesForScene(props.sceneId);
   const galleries = data?.validGalleriesForScene ?? [];
   const items = (galleries.length > 0
     ? [{ path: "None", id: "0" }, ...galleries]
@@ -103,10 +110,7 @@ export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = (
   props
 ) => {
   const [query, setQuery] = React.useState<string>("");
-  const { data, loading } = StashService.useScrapePerformerList(
-    props.scraperId,
-    query
-  );
+  const { data, loading } = useScrapePerformerList(props.scraperId, query);
 
   const performers = data?.scrapePerformerList ?? [];
   const items = performers.map((item) => ({
@@ -114,12 +118,10 @@ export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = (
     value: item.name ?? "",
   }));
 
-  const onInputChange = useCallback(
-    debounce((input: string) => {
-      setQuery(input);
-    }, 500),
-    []
-  );
+  const onInputChange = debounce((input: string) => {
+    setQuery(input);
+  }, 500);
+
   const onChange = (selectedItems: ValueType<Option>) => {
     const name = getSelectedValues(selectedItems)[0];
     const performer = performers.find((p) => p.name === name);
@@ -145,7 +147,7 @@ interface IMarkerSuggestProps {
   onChange: (title: string) => void;
 }
 export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = (props) => {
-  const { data, loading } = StashService.useMarkerStrings();
+  const { data, loading } = useMarkerStrings();
   const suggestions = data?.markerStrings ?? [];
 
   const onChange = (selectedItems: ValueType<Option>) =>
@@ -182,7 +184,7 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
   );
 
 export const PerformerSelect: React.FC<IFilterProps> = (props) => {
-  const { data, loading } = StashService.useAllPerformersForFilter();
+  const { data, loading } = useAllPerformersForFilter();
 
   const normalizedData = data?.allPerformersSlim ?? [];
   const items: Option[] = normalizedData.map((item) => ({
@@ -215,7 +217,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
 };
 
 export const StudioSelect: React.FC<IFilterProps> = (props) => {
-  const { data, loading } = StashService.useAllStudiosForFilter();
+  const { data, loading } = useAllStudiosForFilter();
 
   const normalizedData = data?.allStudiosSlim ?? [];
 
@@ -253,7 +255,7 @@ export const StudioSelect: React.FC<IFilterProps> = (props) => {
 };
 
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
-  const { data, loading } = StashService.useAllMoviesForFilter();
+  const { data, loading } = useAllMoviesForFilter();
 
   const normalizedData = data?.allMoviesSlim ?? [];
 
@@ -293,8 +295,8 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
 export const TagSelect: React.FC<IFilterProps> = (props) => {
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>(props.ids ?? []);
-  const { data, loading: dataLoading } = StashService.useAllTagsForFilter();
-  const [createTag] = StashService.useTagCreate({ name: "" });
+  const { data, loading: dataLoading } = useAllTagsForFilter();
+  const [createTag] = useTagCreate({ name: "" });
   const Toast = useToast();
   const placeholder = props.noSelectionString ?? "Select tags...";
 

@@ -6,7 +6,7 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 
 import locales from "src/locale";
-import { StashService } from "src/core/StashService";
+import { useConfiguration } from "src/core/StashService";
 import { flattenMessages } from "src/utils";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Galleries from "./components/Galleries/Galleries";
@@ -25,7 +25,7 @@ import Movies from "./components/Movies/Movies";
 library.add(fas);
 
 export const App: React.FC = () => {
-  const config = StashService.useConfiguration();
+  const config = useConfiguration();
   const language = config.data?.configuration?.interface?.language ?? "en-US";
   const messageLanguage = language.slice(0, 2);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -25,13 +25,18 @@ const onImageChange = (
   if (file) readImage(file, onLoadEnd);
 };
 
-const usePasteImage = (onLoadEnd: (this: FileReader) => void) => {
+const usePasteImage = (
+  onLoadEnd: (this: FileReader) => void,
+  isActive: boolean = true
+) => {
   useEffect(() => {
     const paste = (event: ClipboardEvent) => pasteImage(event, onLoadEnd);
-    document.addEventListener("paste", paste);
+    if (isActive) {
+      document.addEventListener("paste", paste);
+    }
 
     return () => document.removeEventListener("paste", paste);
-  });
+  }, [isActive, onLoadEnd]);
 };
 
 const Image = {

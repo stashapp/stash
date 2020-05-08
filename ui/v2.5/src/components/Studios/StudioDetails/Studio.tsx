@@ -6,7 +6,13 @@ import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import {
+  useFindStudio,
+  useStudioUpdate,
+  useStudioCreate,
+  useStudioDestroy,
+  mutateMetadataAutoTag,
+} from "src/core/StashService";
 import { ImageUtils, TableUtils } from "src/utils";
 import {
   DetailsEditNavbar,
@@ -35,14 +41,14 @@ export const Studio: React.FC = () => {
   const [studio, setStudio] = useState<Partial<GQL.StudioDataFragment>>({});
   const [imagePreview, setImagePreview] = useState<string>();
 
-  const { data, error, loading } = StashService.useFindStudio(id);
-  const [updateStudio] = StashService.useStudioUpdate(
+  const { data, error, loading } = useFindStudio(id);
+  const [updateStudio] = useStudioUpdate(
     getStudioInput() as GQL.StudioUpdateInput
   );
-  const [createStudio] = StashService.useStudioCreate(
+  const [createStudio] = useStudioCreate(
     getStudioInput() as GQL.StudioCreateInput
   );
-  const [deleteStudio] = StashService.useStudioDestroy(
+  const [deleteStudio] = useStudioDestroy(
     getStudioInput() as GQL.StudioDestroyInput
   );
 
@@ -72,7 +78,7 @@ export const Studio: React.FC = () => {
     setImage(this.result as string);
   }
 
-  ImageUtils.usePasteImage(onImageLoad);
+  ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   if (!isNew && !isEditing) {
     if (!data?.findStudio || loading) return <LoadingIndicator />;
@@ -115,7 +121,7 @@ export const Studio: React.FC = () => {
   async function onAutoTag() {
     if (!studio.id) return;
     try {
-      await StashService.mutateMetadataAutoTag({ studios: [studio.id] });
+      await mutateMetadataAutoTag({ studios: [studio.id] });
       Toast.success({ content: "Started auto tagging" });
     } catch (e) {
       Toast.error(e);
