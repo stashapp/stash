@@ -3,8 +3,8 @@ import { Button, ButtonGroup, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
-import { VideoHoverHook } from "src/hooks";
+import { useConfiguration } from "src/core/StashService";
+import { useVideoHover } from "src/hooks";
 import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 
@@ -19,11 +19,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   props: ISceneCardProps
 ) => {
   const [previewPath, setPreviewPath] = useState<string>();
-  const videoHoverHook = VideoHoverHook.useVideoHover({
+  const hoverHandler = useVideoHover({
     resetOnMouseLeave: false,
   });
 
-  const config = StashService.useConfiguration();
+  const config = useConfiguration();
   const showStudioAsText =
     config?.data?.configuration.interface.showStudioAsText ?? false;
 
@@ -219,10 +219,10 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (!previewPath || previewPath === "") {
       setPreviewPath(props.scene.paths.preview || "");
     }
-    VideoHoverHook.onMouseEnter(videoHoverHook);
+    hoverHandler.onMouseEnter();
   }
   function onMouseLeave() {
-    VideoHoverHook.onMouseLeave(videoHoverHook);
+    hoverHandler.onMouseLeave();
     setPreviewPath("");
   }
 
@@ -260,7 +260,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
           loop
           className={cx("scene-card-video", { portrait: isPortrait() })}
           poster={props.scene.paths.screenshot || ""}
-          ref={videoHoverHook.videoEl}
+          ref={hoverHandler.videoEl}
         >
           {previewPath ? <source src={previewPath} /> : ""}
         </video>

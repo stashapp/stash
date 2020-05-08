@@ -3,7 +3,10 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { Button, Card, Form, Table } from "react-bootstrap";
 import _ from "lodash";
-import { StashService } from "src/core/StashService";
+import {
+  queryParseSceneFilenames,
+  useScenesUpdate,
+} from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
@@ -56,7 +59,7 @@ export const SceneFilenameParser: React.FC = () => {
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const [updateScenes] = StashService.useScenesUpdate(getScenesUpdateData());
+  const [updateScenes] = useScenesUpdate(getScenesUpdateData());
 
   useEffect(() => {
     prevParserInputRef.current = parserInput;
@@ -124,7 +127,7 @@ export const SceneFilenameParser: React.FC = () => {
       capitalizeTitle: parserInput.capitalizeTitle,
     };
 
-    StashService.queryParseSceneFilenames(parserFilter, parserInputData)
+    queryParseSceneFilenames(parserFilter, parserInputData)
       .then((response) => {
         const result = response.data.parseSceneFilenames;
         if (result) {

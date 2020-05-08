@@ -8,7 +8,7 @@ import {
   SortDirectionEnum,
   MovieFilterType,
 } from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { stringToGender } from "src/core/StashService";
 import {
   Criterion,
   ICriterionOption,
@@ -512,7 +512,7 @@ export class ListFilterModel {
         case "gender": {
           const gCrit = criterion as GenderCriterion;
           result.gender = {
-            value: StashService.stringToGender(gCrit.value),
+            value: stringToGender(gCrit.value),
             modifier: gCrit.modifier,
           };
           break;

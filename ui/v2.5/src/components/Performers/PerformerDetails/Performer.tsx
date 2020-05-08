@@ -5,7 +5,12 @@ import { Button, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import {
+  useFindPerformer,
+  usePerformerUpdate,
+  usePerformerCreate,
+  usePerformerDestroy,
+} from "src/core/StashService";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { getCountryISO, TextUtils } from "src/utils";
@@ -26,25 +31,22 @@ export const Performer: React.FC = () => {
   >({});
   const [imagePreview, setImagePreview] = useState<string>();
   const [lightboxIsOpen, setLightboxIsOpen] = useState(false);
+  const activeImage = imagePreview ?? performer.image_path ?? "";
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const { data, error } = StashService.useFindPerformer(id);
-  const [updatePerformer] = StashService.usePerformerUpdate();
-  const [createPerformer] = StashService.usePerformerCreate();
-  const [deletePerformer] = StashService.usePerformerDestroy();
+  const { data, error } = useFindPerformer(id);
+  const [updatePerformer] = usePerformerUpdate();
+  const [createPerformer] = usePerformerCreate();
+  const [deletePerformer] = usePerformerDestroy();
 
   useEffect(() => {
     setIsLoading(false);
     if (data?.findPerformer) setPerformer(data.findPerformer);
   }, [data]);
 
-  useEffect(() => {
-    setImagePreview(performer.image_path ?? undefined);
-  }, [performer]);
-
-  function onImageChange(image: string) {
+  function onImageChange(image?: string) {
     setImagePreview(image);
   }
 
@@ -64,6 +66,10 @@ export const Performer: React.FC = () => {
         const result = await updatePerformer({
           variables: performerInput as GQL.PerformerUpdateInput,
         });
+        if (performerInput.image) {
+          // Refetch image to bust browser cache
+          await fetch(`/performer/${performer.id}/image`, { cache: "reload" });
+        }
         if (result.data?.performerUpdate)
           setPerformer(result.data?.performerUpdate);
       } else {
@@ -105,9 +111,15 @@ export const Performer: React.FC = () => {
     return undefined;
   };
 
-  function renderTabs() {
-    function renderEditPanel() {
-      return (
+  const renderTabs = () => (
+    <Tabs defaultActiveKey="details" id="performer-details" unmountOnExit>
+      <Tab eventKey="details" title="Details">
+        <PerformerDetailsPanel performer={performer} isEditing={false} />
+      </Tab>
+      <Tab eventKey="scenes" title="Scenes">
+        <PerformerScenesPanel performer={performer} />
+      </Tab>
+      <Tab eventKey="edit" title="Edit">
         <PerformerDetailsPanel
           performer={performer}
           isEditing
@@ -116,55 +128,33 @@ export const Performer: React.FC = () => {
           onSave={onSave}
           onImageChange={onImageChange}
         />
-      );
-    }
-
-    // render tabs if not new
-    if (!isNew) {
-      return (
-        <Tabs defaultActiveKey="details" id="performer-details">
-          <Tab eventKey="details" title="Details">
-            <PerformerDetailsPanel performer={performer} isEditing={false} />
-          </Tab>
-          <Tab eventKey="scenes" title="Scenes">
-            <PerformerScenesPanel performer={performer} />
-          </Tab>
-          <Tab eventKey="edit" title="Edit">
-            {renderEditPanel()}
-          </Tab>
-          <Tab eventKey="operations" title="Operations">
-            <PerformerOperationsPanel performer={performer} />
-          </Tab>
-        </Tabs>
-      );
-    }
-    return renderEditPanel();
-  }
+      </Tab>
+      <Tab eventKey="operations" title="Operations">
+        <PerformerOperationsPanel performer={performer} />
+      </Tab>
+    </Tabs>
+  );
 
   function maybeRenderAge() {
-    if (performer && performer.birthdate) {
+    if (performer?.birthdate) {
       // calculate the age from birthdate. In future, this should probably be
       // provided by the server
       return (
-        <>
-          <div>
-            <span className="age">{TextUtils.age(performer.birthdate)}</span>
-            <span className="age-tail"> years old</span>
-          </div>
-        </>
+        <div>
+          <span className="age">{TextUtils.age(performer.birthdate)}</span>
+          <span className="age-tail"> years old</span>
+        </div>
       );
     }
   }
 
   function maybeRenderAliases() {
-    if (performer && performer.aliases) {
+    if (performer?.aliases) {
       return (
-        <>
-          <div>
-            <span className="alias-head">Also known as </span>
-            <span className="alias">{performer.aliases}</span>
-          </div>
-        </>
+        <div>
+          <span className="alias-head">Also known as </span>
+          <span className="alias">{performer.aliases}</span>
+        </div>
       );
     }
   }
@@ -231,34 +221,36 @@ export const Performer: React.FC = () => {
   );
 
   function renderPerformerImage() {
-    if (imagePreview) {
-      return <img className="photo" src={imagePreview} alt="Performer" />;
+    if (activeImage) {
+      return <img className="photo" src={activeImage} alt="Performer" />;
     }
   }
 
-  function renderNewView() {
+  if (isNew)
     return (
       <div className="row new-view">
         <div className="col-4">{renderPerformerImage()}</div>
         <div className="col-6">
           <h2>Create Performer</h2>
-          {renderTabs()}
+          <PerformerDetailsPanel
+            performer={performer}
+            isEditing
+            isNew={isNew}
+            onDelete={onDelete}
+            onSave={onSave}
+            onImageChange={onImageChange}
+          />
         </div>
       </div>
     );
-  }
 
-  const photos = [{ src: imagePreview || "", caption: "Image" }];
-
-  if (isNew) {
-    return renderNewView();
-  }
+  const photos = [{ src: activeImage, caption: "Image" }];
 
   return (
     <div id="performer-page" className="row">
       <div className="image-container col-sm-4 offset-sm-1 d-none d-sm-block">
         <Button variant="link" onClick={() => setLightboxIsOpen(true)}>
-          <img className="performer" src={imagePreview} alt="Performer" />
+          <img className="performer" src={activeImage} alt="Performer" />
         </Button>
       </div>
       <div className="col col-sm-6">
@@ -282,7 +274,7 @@ export const Performer: React.FC = () => {
         onClose={() => setLightboxIsOpen(false)}
         currentImage={0}
         isOpen={lightboxIsOpen}
-        onClickImage={() => window.open(imagePreview, "_blank")}
+        onClickImage={() => window.open(activeImage, "_blank")}
         width={9999}
       />
     </div>

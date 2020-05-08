@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { StashService } from "src/core/StashService";
+import { mutateMetadataGenerate } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
 export const GenerateButton: React.FC = () => {
@@ -12,7 +12,7 @@ export const GenerateButton: React.FC = () => {
 
   async function onGenerate() {
     try {
-      await StashService.mutateMetadataGenerate({
+      await mutateMetadataGenerate({
         sprites,
         previews,
         markers,

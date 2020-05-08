@@ -1,14 +1,11 @@
 {
-  "new": "Neu",
-  "tags": "Etiketten",
-  "scenes": "Szenen",
-  "movies": "Filme",
-  "studios": "Studios",
   "galleries": "Galerien",
+  "library-size": "",
+  "markers": "",
+  "movies": "Filme",
+  "new": "Neu",
   "performers": "Künstler",
-  "markers": "Marken",
-  "stats": {
-    "notes": "Anmerkungen",
-    "warning": "Dies ist noch eine frühe Version, einige Dinge sind noch in Arbeit."
-  }
+  "scenes": "Szenen",
+  "studios": "Studios",
+  "tags": "Etiketten"
 }

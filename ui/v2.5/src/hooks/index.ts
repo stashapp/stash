@@ -1,6 +1,6 @@
 export { default as useToast } from "./Toast";
 export { useInterfaceLocalForage } from "./LocalForage";
-export { VideoHoverHook } from "./VideoHover";
+export { useVideoHover } from "./VideoHover";
 export {
   useScenesList,
   useSceneMarkersList,

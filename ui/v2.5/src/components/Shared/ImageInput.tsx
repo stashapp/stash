@@ -4,7 +4,7 @@ import { Button, Form } from "react-bootstrap";
 interface IImageInput {
   isEditing: boolean;
   text?: string;
-  onImageChange: (event: React.FormEvent<HTMLInputElement>) => void;
+  onImageChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   acceptSVG?: boolean;
 }
 
