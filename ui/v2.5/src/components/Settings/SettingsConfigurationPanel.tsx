@@ -221,7 +221,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={cachePath}
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setCachePath(e.currentTarget.value)
             }
           />
