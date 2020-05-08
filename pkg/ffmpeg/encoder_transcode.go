@@ -113,6 +113,29 @@ func (e *Encoder) CopyVideo(probeResult VideoFile, options TranscodeOptions) {
 	_, _ = e.run(probeResult, args)
 }
 
+func (e *Encoder) StreamTranscodeVp8(probeResult VideoFile, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (io.ReadCloser, *os.Process, error) {
+	scale := calculateTranscodeScale(probeResult, maxTranscodeSize)
+	args := []string{}
+
+	if startTime != "" {
+		args = append(args, "-ss", startTime)
+	}
+
+	args = append(args,
+		"-i", probeResult.Path,
+		"-c:v", "libvpx",
+		"-vf", "scale="+scale,
+		"-deadline", "realtime",
+		"-cpu-used", "8",
+		"-crf", "12",
+		"-b:v", "0",
+		"-f", "webm",
+		"pipe:",
+	)
+
+	return e.stream(probeResult, args)
+}
+
 func (e *Encoder) StreamTranscode(probeResult VideoFile, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (io.ReadCloser, *os.Process, error) {
 	scale := calculateTranscodeScale(probeResult, maxTranscodeSize)
 	args := []string{}
@@ -138,11 +161,11 @@ func (e *Encoder) StreamTranscode(probeResult VideoFile, startTime string, maxTr
 }
 
 func (e *Encoder) StreamTranscodeX264(probeResult VideoFile, startTime string, maxTranscodeSize models.StreamingResolutionEnum, profile models.StreamingProfile) (io.ReadCloser, *os.Process, error) {
-	preset := string(models.StreamingProfileUltrafast)
+	preset := X264Presets[models.StreamingProfileUltrafast]
 	if profile.IsValid() {
 		switch profile {
 		case models.StreamingProfileUltrafast, models.StreamingProfileMedium, models.StreamingProfileSlow:
-			preset = string(profile)
+			preset = X264Presets[profile]
 		}
 	}
 	logger.Infof("Using x264 preset: %s", preset)

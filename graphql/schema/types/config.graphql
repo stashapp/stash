@@ -9,6 +9,7 @@ enum StreamingResolutionEnum {
 
 enum StreamingProfile {
   "VP9", vp9
+  "VP8", vp8
   "X264_ULTRAFAST", ultrafast
   "X264_MEDIUM", medium
   "X264_SLOW", slow

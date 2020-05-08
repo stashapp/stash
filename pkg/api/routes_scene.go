@@ -121,12 +121,18 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 
 		} else {
 			profile := config.GetStreamingProfile()
-			if !profile.IsValid() || profile == models.StreamingProfileVp9 {
-				stream, process, err = encoder.StreamTranscode(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
-				mimeType = ffmpeg.MimeWebm
-			} else {
+			switch profile {
+
+			case models.StreamingProfileUltrafast, models.StreamingProfileMedium, models.StreamingProfileSlow:
 				stream, process, err = encoder.StreamTranscodeX264(*videoFile, startTime, config.GetMaxStreamingTranscodeSize(), profile)
 				mimeType = ffmpeg.MimeMkv
+			case models.StreamingProfileVp8:
+				stream, process, err = encoder.StreamTranscodeVp8(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+				mimeType = ffmpeg.MimeWebm
+			default: // vp9
+				stream, process, err = encoder.StreamTranscode(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+				mimeType = ffmpeg.MimeWebm
+
 			}
 		}
 	}

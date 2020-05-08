@@ -193,3 +193,9 @@ type VideoFile struct {
 
 	AudioCodec string
 }
+
+var X264Presets = map[models.StreamingProfile]string{
+	models.StreamingProfileUltrafast: "ultrafast",
+	models.StreamingProfileMedium:    "medium",
+	models.StreamingProfileSlow:      "slow",
+}

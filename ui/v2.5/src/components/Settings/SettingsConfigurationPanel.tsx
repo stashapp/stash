@@ -173,6 +173,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   const transcodeProfiles = [
     GQL.StreamingProfile.Vp9,
+    GQL.StreamingProfile.Vp8,
     GQL.StreamingProfile.Ultrafast,
     GQL.StreamingProfile.Medium,
     GQL.StreamingProfile.Slow,
@@ -181,7 +182,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   function profileToString(r: GQL.StreamingProfile | undefined) {
     switch (r) {
       case GQL.StreamingProfile.Vp9:
-        return "vp9";
+        return "vp9 (webm)";
+      case GQL.StreamingProfile.Vp8:
+        return "vp8 (webm)";
       case GQL.StreamingProfile.Ultrafast:
         return "x264 ultrafast (mkv)";
       case GQL.StreamingProfile.Medium:
@@ -190,13 +193,15 @@ export const SettingsConfigurationPanel: React.FC = () => {
         return "x264 slow (mkv)";
     }
 
-    return "vp9";
+    return "vp9 (webm)";
   }
 
   function translateProfile(sProfile: string) {
     switch (sProfile) {
-      case "vp9":
+      case "vp9 (webm)":
         return GQL.StreamingProfile.Vp9;
+      case "vp8 (webm)":
+        return GQL.StreamingProfile.Vp8;
       case "x264 ultrafast (mkv)":
         return GQL.StreamingProfile.Ultrafast;
       case "x264 medium (mkv)":
@@ -346,7 +351,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 input-control"
             as="select"
-            onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setProfile(translateProfile(event.currentTarget.value))
             }
             value={profileToString(profile)}
