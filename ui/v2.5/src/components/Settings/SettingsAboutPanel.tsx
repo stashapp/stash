@@ -1,17 +1,17 @@
 import React from "react";
 import { Button, Table } from "react-bootstrap";
 import { LoadingIndicator } from "src/components/Shared";
-import { StashService } from "src/core/StashService";
+import { useVersion, useLatestVersion } from "src/core/StashService";
 
 export const SettingsAboutPanel: React.FC = () => {
-  const { data, error, loading } = StashService.useVersion();
+  const { data, error, loading } = useVersion();
   const {
     data: dataLatest,
     error: errorLatest,
     loading: loadingLatest,
     refetch,
     networkStatus,
-  } = StashService.useLatestVersion();
+  } = useLatestVersion();
 
   function maybeRenderTag() {
     if (!data || !data.version || !data.version.version) {

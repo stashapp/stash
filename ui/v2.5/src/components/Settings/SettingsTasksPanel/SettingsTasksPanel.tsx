@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Button, Form, ProgressBar } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { StashService } from "src/core/StashService";
+import {
+  useJobStatus,
+  useMetadataUpdate,
+  mutateMetadataImport,
+  mutateMetadataClean,
+  mutateMetadataScan,
+  mutateMetadataAutoTag,
+  mutateMetadataExport,
+  mutateStopJob,
+} from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Modal } from "src/components/Shared";
 import { GenerateButton } from "./GenerateButton";
@@ -18,8 +27,8 @@ export const SettingsTasksPanel: React.FC = () => {
   const [autoTagStudios, setAutoTagStudios] = useState<boolean>(true);
   const [autoTagTags, setAutoTagTags] = useState<boolean>(true);
 
-  const jobStatus = StashService.useJobStatus();
-  const metadataUpdate = StashService.useMetadataUpdate();
+  const jobStatus = useJobStatus();
+  const metadataUpdate = useMetadataUpdate();
 
   function statusToText(s: string) {
     switch (s) {
@@ -68,7 +77,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   function onImport() {
     setIsImportAlertOpen(false);
-    StashService.mutateMetadataImport().then(() => {
+    mutateMetadataImport().then(() => {
       jobStatus.refetch();
     });
   }
@@ -91,7 +100,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   function onClean() {
     setIsCleanAlertOpen(false);
-    StashService.mutateMetadataClean().then(() => {
+    mutateMetadataClean().then(() => {
       jobStatus.refetch();
     });
   }
@@ -115,7 +124,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   async function onScan() {
     try {
-      await StashService.mutateMetadataScan({ useFileMetadata });
+      await mutateMetadataScan({ useFileMetadata });
       Toast.success({ content: "Started scan" });
       jobStatus.refetch();
     } catch (e) {
@@ -134,7 +143,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   async function onAutoTag() {
     try {
-      await StashService.mutateMetadataAutoTag(getAutoTagInput());
+      await mutateMetadataAutoTag(getAutoTagInput());
       Toast.success({ content: "Started auto tagging" });
       jobStatus.refetch();
     } catch (e) {
@@ -152,9 +161,7 @@ export const SettingsTasksPanel: React.FC = () => {
         <Button
           id="stop"
           variant="danger"
-          onClick={() =>
-            StashService.mutateStopJob().then(() => jobStatus.refetch())
-          }
+          onClick={() => mutateStopJob().then(() => jobStatus.refetch())}
         >
           Stop
         </Button>
@@ -277,7 +284,7 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="secondary"
           type="submit"
           onClick={() =>
-            StashService.mutateMetadataExport().then(() => {
+            mutateMetadataExport().then(() => {
               jobStatus.refetch();
             })
           }

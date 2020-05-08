@@ -1,5 +1,5 @@
 import { CriterionModifier } from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { getGenderStrings } from "src/core/StashService";
 import { Criterion, CriterionType, ICriterionOption } from "./criterion";
 
 export class GenderCriterion extends Criterion {
@@ -7,7 +7,7 @@ export class GenderCriterion extends Criterion {
   public parameterName: string = "gender";
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
-  public options: string[] = StashService.getGenderStrings();
+  public options: string[] = getGenderStrings();
   public value: string = "";
 }
 

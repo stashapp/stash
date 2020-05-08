@@ -3,7 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { Button, Popover, OverlayTrigger, Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import {
+  getGenderStrings,
+  useListPerformerScrapers,
+  genderToString,
+  stringToGender,
+  queryScrapePerformer,
+  queryScrapePerformerURL,
+} from "src/core/StashService";
 import {
   Icon,
   Modal,
@@ -29,7 +36,7 @@ interface IPerformerDetails {
       | Partial<GQL.PerformerUpdateInput>
   ) => void;
   onDelete?: () => void;
-  onImageChange?: (image: string) => void;
+  onImageChange?: (image?: string) => void;
 }
 
 export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
@@ -74,8 +81,10 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const Scrapers = StashService.useListPerformerScrapers();
+  const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
+
+  ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   function updatePerformerEditState(
     state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformerDataFragment>
@@ -99,9 +108,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     setTwitter(state.twitter ?? undefined);
     setInstagram(state.instagram ?? undefined);
     setGender(
-      StashService.genderToString(
-        (state as GQL.PerformerDataFragment).gender ?? undefined
-      )
+      genderToString((state as GQL.PerformerDataFragment).gender ?? undefined)
     );
   }
 
@@ -114,16 +121,16 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
     // try to translate from enum values first
     const upperGender = scrapedGender?.toUpperCase();
-    const asEnum = StashService.genderToString(upperGender as GQL.GenderEnum);
+    const asEnum = genderToString(upperGender as GQL.GenderEnum);
     if (asEnum) {
-      retEnum = StashService.stringToGender(asEnum);
+      retEnum = stringToGender(asEnum);
     } else {
       // try to match against gender strings
       const caseInsensitive = true;
-      retEnum = StashService.stringToGender(scrapedGender, caseInsensitive);
+      retEnum = stringToGender(scrapedGender, caseInsensitive);
     }
 
-    return StashService.genderToString(retEnum);
+    return genderToString(retEnum);
   }
 
   function updatePerformerEditStateFromScraper(
@@ -142,10 +149,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     ) {
       const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
       setImage(imageStr ?? undefined);
-      if (onImageChange) {
-        onImageChange(imageStr!);
-      }
     }
+  }
+
+  function onImageLoad(this: FileReader) {
+    setImage(this.result as string);
   }
 
   useEffect(() => {
@@ -153,14 +161,12 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     updatePerformerEditState(performer);
   }, [performer]);
 
-  function onImageLoad(this: FileReader) {
-    setImage(this.result as string);
+  useEffect(() => {
     if (onImageChange) {
-      onImageChange(this.result as string);
+      onImageChange(image);
     }
-  }
-
-  if (isEditing) ImageUtils.usePasteImage(onImageLoad);
+    return () => onImageChange?.();
+  }, [image, onImageChange]);
 
   useEffect(() => {
     const newQueryableScrapers = (
@@ -195,7 +201,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       twitter,
       instagram,
       image,
-      gender: StashService.stringToGender(gender),
+      gender: stringToGender(gender),
     };
 
     if (!isNew) {
@@ -225,7 +231,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     try {
       if (!scrapePerformerDetails || !isDisplayingScraperDialog) return;
       setIsLoading(true);
-      const result = await StashService.queryScrapePerformer(
+      const result = await queryScrapePerformer(
         isDisplayingScraperDialog.id,
         getQueryScraperPerformerInput()
       );
@@ -242,7 +248,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     if (!url) return;
     setIsLoading(true);
     try {
-      const result = await StashService.queryScrapePerformerURL(url);
+      const result = await queryScrapePerformerURL(url);
       if (!result.data || !result.data.scrapePerformerURL) {
         return;
       }
@@ -442,7 +448,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       value: gender,
       isEditing: !!isEditing,
       onChange: (value: string) => setGender(value),
-      selectOptions: [""].concat(StashService.getGenderStrings()),
+      selectOptions: [""].concat(getGenderStrings()),
     });
   }
 

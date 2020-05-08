@@ -2,7 +2,11 @@ import React from "react";
 import { Button, Form } from "react-bootstrap";
 import { Field, FieldProps, Form as FormikForm, Formik } from "formik";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import {
+  useSceneMarkerCreate,
+  useSceneMarkerUpdate,
+  useSceneMarkerDestroy,
+} from "src/core/StashService";
 import {
   DurationInput,
   TagSelect,
@@ -29,9 +33,9 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   editingMarker,
   onClose,
 }) => {
-  const [sceneMarkerCreate] = StashService.useSceneMarkerCreate();
-  const [sceneMarkerUpdate] = StashService.useSceneMarkerUpdate();
-  const [sceneMarkerDestroy] = StashService.useSceneMarkerDestroy();
+  const [sceneMarkerCreate] = useSceneMarkerCreate();
+  const [sceneMarkerUpdate] = useSceneMarkerUpdate();
+  const [sceneMarkerDestroy] = useSceneMarkerDestroy();
   const Toast = useToast();
 
   const onSubmit = (values: IFormFields) => {

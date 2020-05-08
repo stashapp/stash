@@ -1,5 +1,5 @@
 import { debounce } from "lodash";
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
   Badge,
@@ -9,7 +9,7 @@ import {
   Form,
   OverlayTrigger,
   Tooltip,
-  SafeAnchor,
+  SafeAnchorProps,
 } from "react-bootstrap";
 
 import { Icon } from "src/components/Shared";
@@ -45,18 +45,15 @@ const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
 export const ListFilter: React.FC<IListFilterProps> = (
   props: IListFilterProps
 ) => {
-  const searchCallback = useCallback(
-    debounce((value: string) => {
-      props.onChangeQuery(value);
-    }, 500),
-    [props.onChangeQuery]
-  );
+  const searchCallback = debounce((value: string) => {
+    props.onChangeQuery(value);
+  }, 500);
 
   const [editingCriterion, setEditingCriterion] = useState<
     Criterion | undefined
   >(undefined);
 
-  function onChangePageSize(event: React.FormEvent<HTMLSelectElement>) {
+  function onChangePageSize(event: React.ChangeEvent<HTMLSelectElement>) {
     const val = event.currentTarget.value;
     props.onChangePageSize(parseInt(val, 10));
   }
@@ -73,8 +70,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
     }
   }
 
-  function onChangeSortBy(event: React.MouseEvent<SafeAnchor>) {
-    const target = (event.currentTarget as unknown) as HTMLAnchorElement;
+  function onChangeSortBy(event: React.MouseEvent<SafeAnchorProps>) {
+    const target = event.currentTarget as HTMLAnchorElement;
     props.onChangeSortBy(target.text);
   }
 
@@ -266,7 +263,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           min={0}
           max={3}
           defaultValue={1}
-          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
           }
         />

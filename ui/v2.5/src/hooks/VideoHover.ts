@@ -1,7 +1,5 @@
-/* eslint-disable no-param-reassign, no-console */
-
 import { useEffect, useRef } from "react";
-import { StashService } from "../core/StashService";
+import { useConfiguration } from "../core/StashService";
 
 export interface IVideoHoverHookData {
   videoEl: React.RefObject<HTMLVideoElement>;
@@ -14,76 +12,78 @@ export interface IVideoHoverHookOptions {
   resetOnMouseLeave: boolean;
 }
 
-export class VideoHoverHook {
-  public static useVideoHover(
-    options: IVideoHoverHookOptions
-  ): IVideoHoverHookData {
-    const videoEl = useRef<HTMLVideoElement>(null);
-    const isPlaying = useRef<boolean>(false);
-    const isHovering = useRef<boolean>(false);
+export const useVideoHover = (options: IVideoHoverHookOptions) => {
+  const videoEl = useRef<HTMLVideoElement>(null);
+  const isPlaying = useRef<boolean>(false);
+  const isHovering = useRef<boolean>(false);
+  const config = useConfiguration();
 
-    const config = StashService.useConfiguration();
-    const soundEnabled =
-      !!config.data && !!config.data.configuration
-        ? config.data.configuration.interface.soundOnPreview
-        : true;
+  const onMouseEnter = () => {
+    isHovering.current = true;
 
-    useEffect(() => {
-      const videoTag = videoEl.current;
-      if (!videoTag) {
-        return;
-      }
-      videoTag.onplaying = () => {
-        if (isHovering.current === true) {
-          isPlaying.current = true;
-        } else {
-          videoTag.pause();
-        }
-      };
-      videoTag.onpause = () => {
-        isPlaying.current = false;
-      };
-    }, [videoEl]);
-
-    useEffect(() => {
-      const videoTag = videoEl.current;
-      if (!videoTag) {
-        return;
-      }
-      videoTag.volume = soundEnabled ? 0.05 : 0;
-    }, [soundEnabled]);
-
-    return { videoEl, isPlaying, isHovering, options };
-  }
-
-  public static onMouseEnter(data: IVideoHoverHookData) {
-    data.isHovering.current = true;
-
-    const videoTag = data.videoEl.current;
+    const videoTag = videoEl.current;
     if (!videoTag) {
       return;
     }
-    if (videoTag.paused && !data.isPlaying.current) {
+    if (videoTag.paused && !isPlaying.current) {
       videoTag.play().catch((error) => {
+        // eslint-disable-next-line no-console
         console.log(error.message);
       });
     }
-  }
+  };
 
-  public static onMouseLeave(data: IVideoHoverHookData) {
-    data.isHovering.current = false;
+  const onMouseLeave = () => {
+    isHovering.current = false;
 
-    const videoTag = data.videoEl.current;
+    const videoTag = videoEl.current;
     if (!videoTag) {
       return;
     }
-    if (!videoTag.paused && data.isPlaying) {
+    if (!videoTag.paused && isPlaying) {
       videoTag.pause();
-      if (data.options.resetOnMouseLeave) {
+      if (options.resetOnMouseLeave) {
         videoTag.removeAttribute("src");
         videoTag.load();
-        data.isPlaying.current = false;
+        isPlaying.current = false;
       }
     }
-  }
-}
+  };
+
+  const soundEnabled =
+    config?.data?.configuration?.interface?.soundOnPreview ?? true;
+
+  useEffect(() => {
+    const videoTag = videoEl.current;
+    if (!videoTag) {
+      return;
+    }
+    videoTag.onplaying = () => {
+      if (isHovering.current === true) {
+        isPlaying.current = true;
+      } else {
+        videoTag.pause();
+      }
+    };
+    videoTag.onpause = () => {
+      isPlaying.current = false;
+    };
+  }, [videoEl]);
+
+  useEffect(() => {
+    const videoTag = videoEl.current;
+    if (!videoTag) {
+      return;
+    }
+    videoTag.volume = soundEnabled ? 0.05 : 0;
+  }, [soundEnabled]);
+
+  return {
+    videoEl,
+    isPlaying,
+    isHovering,
+    options,
+    onMouseEnter,
+    onMouseLeave,
+  };
+};

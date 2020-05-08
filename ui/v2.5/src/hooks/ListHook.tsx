@@ -25,7 +25,14 @@ import {
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
 import { Pagination, PaginationIndex } from "src/components/List/Pagination";
-import { StashService } from "src/core/StashService";
+import {
+  useFindScenes,
+  useFindSceneMarkers,
+  useFindMovies,
+  useFindStudios,
+  useFindGalleries,
+  useFindPerformers,
+} from "src/core/StashService";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode, FilterMode } from "src/models/list-filter/types";
@@ -418,7 +425,7 @@ export const useScenesList = (props: IListHookOptions<FindScenesQueryResult>) =>
   useList<FindScenesQueryResult, SlimSceneDataFragment>({
     ...props,
     filterMode: FilterMode.Scenes,
-    useData: StashService.useFindScenes,
+    useData: useFindScenes,
     getData: (result: FindScenesQueryResult) =>
       result?.data?.findScenes?.scenes ?? [],
     getCount: (result: FindScenesQueryResult) =>
@@ -431,7 +438,7 @@ export const useSceneMarkersList = (
   useList<FindSceneMarkersQueryResult, SceneMarkerDataFragment>({
     ...props,
     filterMode: FilterMode.SceneMarkers,
-    useData: StashService.useFindSceneMarkers,
+    useData: useFindSceneMarkers,
     getData: (result: FindSceneMarkersQueryResult) =>
       result?.data?.findSceneMarkers?.scene_markers ?? [],
     getCount: (result: FindSceneMarkersQueryResult) =>
@@ -444,7 +451,7 @@ export const useGalleriesList = (
   useList<FindGalleriesQueryResult, GalleryDataFragment>({
     ...props,
     filterMode: FilterMode.Galleries,
-    useData: StashService.useFindGalleries,
+    useData: useFindGalleries,
     getData: (result: FindGalleriesQueryResult) =>
       result?.data?.findGalleries?.galleries ?? [],
     getCount: (result: FindGalleriesQueryResult) =>
@@ -457,7 +464,7 @@ export const useStudiosList = (
   useList<FindStudiosQueryResult, StudioDataFragment>({
     ...props,
     filterMode: FilterMode.Studios,
-    useData: StashService.useFindStudios,
+    useData: useFindStudios,
     getData: (result: FindStudiosQueryResult) =>
       result?.data?.findStudios?.studios ?? [],
     getCount: (result: FindStudiosQueryResult) =>
@@ -470,7 +477,7 @@ export const usePerformersList = (
   useList<FindPerformersQueryResult, PerformerDataFragment>({
     ...props,
     filterMode: FilterMode.Performers,
-    useData: StashService.useFindPerformers,
+    useData: useFindPerformers,
     getData: (result: FindPerformersQueryResult) =>
       result?.data?.findPerformers?.performers ?? [],
     getCount: (result: FindPerformersQueryResult) =>
@@ -481,7 +488,7 @@ export const useMoviesList = (props: IListHookOptions<FindMoviesQueryResult>) =>
   useList<FindMoviesQueryResult, MovieDataFragment>({
     ...props,
     filterMode: FilterMode.Movies,
-    useData: StashService.useFindMovies,
+    useData: useFindMovies,
     getData: (result: FindMoviesQueryResult) =>
       result?.data?.findMovies?.movies ?? [],
     getCount: (result: FindMoviesQueryResult) =>

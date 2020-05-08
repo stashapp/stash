@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { useConfiguration, useConfigureGeneral } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
@@ -39,9 +39,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
     undefined
   );
 
-  const { data, error, loading } = StashService.useConfiguration();
+  const { data, error, loading } = useConfiguration();
 
-  const [updateGeneralConfig] = StashService.useConfigureGeneral({
+  const [updateGeneralConfig] = useConfigureGeneral({
     stashes,
     databasePath,
     generatedPath,
@@ -231,7 +231,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={databasePath}
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setDatabasePath(e.currentTarget.value)
             }
           />
@@ -245,7 +245,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={generatedPath}
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setGeneratedPath(e.currentTarget.value)
             }
           />
@@ -264,7 +264,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
                   <Form.Control
                     className="col col-sm-6 text-input"
                     value={regexp}
-                    onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       excludeRegexChanged(i, e.currentTarget.value)
                     }
                   />
@@ -304,7 +304,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 input-control"
             as="select"
-            onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setMaxTranscodeSize(translateQuality(event.currentTarget.value))
             }
             value={resolutionToString(maxTranscodeSize)}
@@ -324,7 +324,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 input-control"
             as="select"
-            onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setMaxStreamingTranscodeSize(
                 translateQuality(event.currentTarget.value)
               )
@@ -395,7 +395,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Control
           className="col col-sm-6 text-input"
           defaultValue={scraperUserAgent}
-          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setScraperUserAgent(e.currentTarget.value)
           }
         />
@@ -488,7 +488,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Control
           className="col col-sm-6 input-control"
           as="select"
-          onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+          onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
             setLogLevel(event.currentTarget.value)
           }
           value={logLevel}

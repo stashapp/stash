@@ -1,7 +1,7 @@
 import React from "react";
 import ReactJWPlayer from "react-jw-player";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { useConfiguration } from "src/core/StashService";
 import { JWUtils } from "src/utils";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 
@@ -210,7 +210,7 @@ export class ScenePlayerImpl extends React.Component<
 export const ScenePlayer: React.FC<IScenePlayerProps> = (
   props: IScenePlayerProps
 ) => {
-  const config = StashService.useConfiguration();
+  const config = useConfiguration();
 
   return (
     <ScenePlayerImpl
