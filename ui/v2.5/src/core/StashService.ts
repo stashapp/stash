@@ -173,8 +173,8 @@ export const useLatestVersion = () =>
   });
 
 export const useConfiguration = () => GQL.useConfigurationQuery();
-export const useDirectories = (path?: string) =>
-  GQL.useDirectoriesQuery({ variables: { path } });
+export const useDirectory = (path?: string) =>
+  GQL.useDirectoryQuery({ variables: { path } });
 
 export const performerMutationImpactedQueries = [
   "findPerformers",

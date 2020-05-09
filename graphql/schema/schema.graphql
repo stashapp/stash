@@ -73,7 +73,7 @@ type Query {
   """Returns the current, complete configuration"""
   configuration: ConfigResult!
   """Returns an array of paths for the given path"""
-  directories(path: String): [String!]!
+  directory(path: String): Directory!
 
   # Metadata
 

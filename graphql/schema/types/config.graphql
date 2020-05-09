@@ -117,3 +117,10 @@ type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
 }
+
+"""Directory structure of a path"""
+type Directory {
+    path: String!
+    parent: String
+    directories: [String!]!
+}
