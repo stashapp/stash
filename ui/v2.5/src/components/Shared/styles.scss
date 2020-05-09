@@ -75,3 +75,41 @@
   min-width: 0;
   position: relative;
 }
+
+.folder-list {
+  list-style-type: none;
+  margin: 0;
+  padding-top: 1rem;
+
+  &-item {
+    white-space: nowrap;
+
+    .btn-link {
+      border: none;
+      color: black;
+      font-weight: 400;
+      padding: 0;
+    }
+
+    &:last-child::before {
+      content: "└ \1F4C1";
+    }
+
+    &::before {
+      content: "├ \1F4C1";
+      display: inline-block;
+      padding-right: 1rem;
+      transform: scale(1.5);
+    }
+  }
+
+  &-parent {
+    &::before {
+      visibility: hidden;
+    }
+
+    .btn-link {
+      font-weight: 500;
+    }
+  }
+}

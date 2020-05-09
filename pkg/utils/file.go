@@ -96,15 +96,6 @@ func EmptyDir(path string) error {
 
 // ListDir will return the contents of a given directory path as a string slice
 func ListDir(path string) []string {
-	if path == "" {
-		path = GetHomeDirectory()
-	}
-
-	absolutePath, err := filepath.Abs(path)
-	if err == nil {
-		path = absolutePath
-	}
-
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		path = filepath.Dir(path)
@@ -132,4 +123,26 @@ func GetHomeDirectory() string {
 		panic(err)
 	}
 	return currentUser.HomeDir
+}
+
+func GetDir(path string) string {
+	if path == "" {
+		path = GetHomeDirectory()
+	}
+
+	absolutePath, err := filepath.Abs(path)
+	if err == nil {
+		path = absolutePath
+	}
+	return absolutePath
+}
+
+func GetParent(path string) *string {
+	isRoot := path[len(path)-1:] == "/"
+	if isRoot {
+		return nil
+	} else {
+		parentPath := filepath.Clean(path + "/..")
+		return &parentPath
+	}
 }
