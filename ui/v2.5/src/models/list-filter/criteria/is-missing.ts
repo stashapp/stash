@@ -18,6 +18,7 @@ export class SceneIsMissingCriterion extends IsMissingCriterion {
     "studio",
     "movie",
     "performers",
+    "tags",
   ];
 }
 

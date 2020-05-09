@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { FormattedMessage } from "react-intl";
 import { Button, InputGroup, Form, Modal } from "react-bootstrap";
 import { LoadingIndicator } from "src/components/Shared";
-import { useDirectories } from "src/core/StashService";
+import { useDirectory } from "src/core/StashService";
 
 interface IProps {
   directories: string[];
@@ -12,13 +13,18 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
   const [currentDirectory, setCurrentDirectory] = useState<string>("");
   const [isDisplayingDialog, setIsDisplayingDialog] = useState<boolean>(false);
   const [selectedDirectories, setSelectedDirectories] = useState<string[]>([]);
-  const { data, error, loading } = useDirectories(currentDirectory);
+  const { data, error, loading } = useDirectory(currentDirectory);
 
   useEffect(() => {
     setSelectedDirectories(props.directories);
   }, [props.directories]);
 
-  const selectableDirectories: string[] = data?.directories ?? [];
+  useEffect(() => {
+    if (currentDirectory === "" && data?.directory.path)
+      setCurrentDirectory(data.directory.path);
+  }, [currentDirectory, data]);
+
+  const selectableDirectories: string[] = data?.directory.directories ?? [];
 
   function onSelectDirectory() {
     selectedDirectories.push(currentDirectory);
@@ -36,6 +42,19 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
     props.onDirectoriesChanged(newSelectedDirectories);
   }
 
+  const topDirectory = data?.directory?.parent ? (
+    <li className="folder-list-parent folder-list-item">
+      <Button
+        variant="link"
+        onClick={() =>
+          data.directory.parent && setCurrentDirectory(data.directory.parent)
+        }
+      >
+        <FormattedMessage defaultMessage="Up a directory" id="up-dir" />
+      </Button>
+    </li>
+  ) : null;
+
   function renderDialog() {
     return (
       <Modal
@@ -52,11 +71,11 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setCurrentDirectory(e.currentTarget.value)
                 }
-                defaultValue={currentDirectory}
+                value={currentDirectory}
                 spellCheck={false}
               />
               <InputGroup.Append>
-                {!data || !data.directories || loading ? (
+                {!data || !data.directory || loading ? (
                   <LoadingIndicator inline />
                 ) : (
                   ""
@@ -64,12 +83,12 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
               </InputGroup.Append>
             </InputGroup>
             <ul className="folder-list">
+              {topDirectory}
               {selectableDirectories.map((path) => {
                 return (
-                  <li key={path} className="folder-item">
+                  <li key={path} className="folder-list-item">
                     <Button
                       variant="link"
-                      key={path}
                       onClick={() => setCurrentDirectory(path)}
                     >
                       {path}

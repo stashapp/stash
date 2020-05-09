@@ -12,14 +12,19 @@ const fuzzyDict: Record<string, string> = {
   England: "GB",
   "United Kingdom": "GB",
   Russia: "RU",
+  "Slovak Republic": "SK",
 };
 
-const getISOCode = (country: string | null | undefined) => {
+const getISOCountry = (country: string | null | undefined) => {
   if (!country) return null;
 
-  if (fuzzyDict[country]) return fuzzyDict[country];
+  const code = fuzzyDict[country] ?? Countries.getAlpha2Code(country, "en");
+  if (!code) return null;
 
-  return Countries.getAlpha2Code(country, "en");
+  return {
+    code,
+    name: Countries.getName(code, "en"),
+  };
 };
 
-export default getISOCode;
+export default getISOCountry;
