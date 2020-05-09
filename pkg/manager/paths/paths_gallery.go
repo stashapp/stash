@@ -10,7 +10,7 @@ import (
 type galleryPaths struct{}
 
 const thumbDir = "gthumbs"
-const thumbDirDepth int = 1
+const thumbDirDepth int = 2
 const thumbDirLength int = 2 // thumbDirDepth * thumbDirLength must be smaller than the length of checksum
 
 func newGalleryPaths() *galleryPaths {
