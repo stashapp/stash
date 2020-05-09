@@ -10,9 +10,9 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 )
 
-const TABLE_NAME = "scenes"
+const sceneTable = "scenes"
 
-var scenesForPerformerQuery = selectAll(TABLE_NAME) + `
+var scenesForPerformerQuery = selectAll(sceneTable) + `
 LEFT JOIN performers_scenes as performers_join on performers_join.scene_id = scenes.id
 WHERE performers_join.performer_id = ?
 GROUP BY scenes.id
@@ -24,18 +24,18 @@ WHERE performer_id = ?
 GROUP BY scene_id
 `
 
-var scenesForStudioQuery = selectAll(TABLE_NAME) + `
+var scenesForStudioQuery = selectAll(sceneTable) + `
 JOIN studios ON studios.id = scenes.studio_id
 WHERE studios.id = ?
 GROUP BY scenes.id
 `
-var scenesForMovieQuery = selectAll(TABLE_NAME) + `
+var scenesForMovieQuery = selectAll(sceneTable) + `
 LEFT JOIN movies_scenes as movies_join on movies_join.scene_id = scenes.id
 WHERE movies_join.movie_id = ?
 GROUP BY scenes.id
 `
 
-var scenesForTagQuery = selectAll(TABLE_NAME) + `
+var scenesForTagQuery = selectAll(sceneTable) + `
 LEFT JOIN scenes_tags as tags_join on tags_join.scene_id = scenes.id
 WHERE tags_join.tag_id = ?
 GROUP BY scenes.id
@@ -151,7 +151,7 @@ func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
 }
 
 func (qb *SceneQueryBuilder) find(id int, tx *sqlx.Tx) (*Scene, error) {
-	query := selectAll(TABLE_NAME) + "WHERE id = ? LIMIT 1"
+	query := selectAll(sceneTable) + "WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryScene(query, args, tx)
 }
@@ -163,7 +163,7 @@ func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*Scene, error) {
 }
 
 func (qb *SceneQueryBuilder) FindByPath(path string) (*Scene, error) {
-	query := selectAll(TABLE_NAME) + "WHERE path = ? LIMIT 1"
+	query := selectAll(sceneTable) + "WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
 	return qb.queryScene(query, args, nil)
 }
@@ -220,12 +220,12 @@ func (qb *SceneQueryBuilder) Wall(q *string) ([]*Scene, error) {
 	if q != nil {
 		s = *q
 	}
-	query := selectAll(TABLE_NAME) + "WHERE scenes.details LIKE '%" + s + "%' ORDER BY RANDOM() LIMIT 80"
+	query := selectAll(sceneTable) + "WHERE scenes.details LIKE '%" + s + "%' ORDER BY RANDOM() LIMIT 80"
 	return qb.queryScenes(query, nil, nil)
 }
 
 func (qb *SceneQueryBuilder) All() ([]*Scene, error) {
-	return qb.queryScenes(selectAll(TABLE_NAME)+qb.getSceneSort(nil), nil, nil)
+	return qb.queryScenes(selectAll(sceneTable)+qb.getSceneSort(nil), nil, nil)
 }
 
 func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]*Scene, int) {
@@ -237,10 +237,10 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	}
 
 	query := queryBuilder{
-		tableName: TABLE_NAME,
+		tableName: sceneTable,
 	}
 
-	query.body = selectDistinctIDs(TABLE_NAME)
+	query.body = selectDistinctIDs(sceneTable)
 	query.body += `
 		left join scene_markers on scene_markers.scene_id = scenes.id
 		left join performers_scenes as performers_join on performers_join.scene_id = scenes.id
