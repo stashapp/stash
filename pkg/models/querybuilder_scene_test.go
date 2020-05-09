@@ -497,6 +497,28 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 	}
 }
 
+func TestSceneQueryIsMissingTags(t *testing.T) {
+	sqb := models.NewSceneQueryBuilder()
+	isMissing := "tags"
+	sceneFilter := models.SceneFilterType{
+		IsMissing: &isMissing,
+	}
+
+	q := getSceneStringValue(sceneIdxWithTwoTags, titleField)
+	findFilter := models.FindFilterType{
+		Q: &q,
+	}
+
+	scenes, _ := sqb.Query(&sceneFilter, &findFilter)
+
+	assert.Len(t, scenes, 0)
+
+	findFilter.Q = nil
+	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
+
+	assert.True(t, len(scenes) > 0)
+}
+
 func TestSceneQueryIsMissingRating(t *testing.T) {
 	sqb := models.NewSceneQueryBuilder()
 	isMissing := "rating"
