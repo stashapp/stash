@@ -2,7 +2,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 
 const markup = `
-💥 **Note: After upgrading performance will be degraded until a full [scan](/settings?tab=tasks) has been run.**
+💥 **Note: After upgrading performance will be degraded until a full [scan](/settings?tab=tasks) has been completed.**
 &nbsp;
 
 #### Major Changes:
