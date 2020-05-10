@@ -1,5 +1,5 @@
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
+import React from "react";
+import ReactMarkdown from "react-markdown";
 
 const markup = `
 💥 **Note: After upgrading performance will be degraded until a full [scan](/settings?tab=tasks) has been run.**
@@ -59,6 +59,4 @@ const markup = `
 * 💄 Overhaul look and feel of folder select.
 `;
 
-export default () => (
-  <ReactMarkdown source={markup} />
-);
+export default () => <ReactMarkdown source={markup} />;

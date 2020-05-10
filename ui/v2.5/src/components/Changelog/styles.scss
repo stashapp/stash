@@ -8,6 +8,11 @@
     font-weight: inherit;
   }
 
+  .card,
+  .card-body {
+    padding: 0;
+  }
+
   ul {
     list-style-type: none;
     padding-left: 1rem;
@@ -21,10 +26,5 @@
     &-header {
       color: $text-color;
     }
-  }
-
-  .card,
-  .card-body {
-    padding: 0;
   }
 }

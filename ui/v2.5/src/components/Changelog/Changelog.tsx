@@ -1,22 +1,22 @@
-import React from 'react';
-import { useChangelogStorage } from 'src/hooks';
-import Version from './Version';
-import { V010, V011, V020 } from './versions';
+import React from "react";
+import { useChangelogStorage } from "src/hooks";
+import Version from "./Version";
+import { V010, V011, V020 } from "./versions";
 
 const Changelog: React.FC = () => {
   const [{ data, loading }, setOpenState] = useChangelogStorage();
 
-  if (loading)
-    return <></>;
+  if (loading) return <></>;
 
   const openState = data?.versions ?? {};
 
-  const setVersionOpenState = (key: string, state: boolean) => setOpenState({
-    versions: {
-      ...openState,
-      [key]: state
-    }
-  });
+  const setVersionOpenState = (key: string, state: boolean) =>
+    setOpenState({
+      versions: {
+        ...openState,
+        [key]: state,
+      },
+    });
 
   return (
     <>
@@ -48,6 +48,6 @@ const Changelog: React.FC = () => {
       </Version>
     </>
   );
-}
+};
 
 export default Changelog;

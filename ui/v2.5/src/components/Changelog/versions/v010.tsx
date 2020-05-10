@@ -1,5 +1,5 @@
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
+import React from "react";
+import ReactMarkdown from "react-markdown";
 
 const markup = `
 ### ✨ New Features
@@ -52,6 +52,4 @@ const markup = `
 * Fix usage of Box.Bytes causing depreciation message
 `;
 
-export default () => (
-  <ReactMarkdown source={markup} />
-);
+export default () => <ReactMarkdown source={markup} />;

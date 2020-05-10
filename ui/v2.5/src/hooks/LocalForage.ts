@@ -73,10 +73,8 @@ function useLocalForage<T>(
   return [{ data, error, loading: isLoading }, setData];
 }
 
-export const useInterfaceLocalForage = () => (
-  useLocalForage<IInterfaceConfig>("interface")
-);
+export const useInterfaceLocalForage = () =>
+  useLocalForage<IInterfaceConfig>("interface");
 
-export const useChangelogStorage = () => (
-  useLocalForage<IChangelogConfig>("changelog")
-);
+export const useChangelogStorage = () =>
+  useLocalForage<IChangelogConfig>("changelog");
