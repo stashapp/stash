@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Button, Card, Collapse } from "react-bootstrap";
+import { FormattedDate, FormattedMessage } from "react-intl";
 import { Icon } from "src/components/Shared";
 
 interface IVersionProps {
   version: string;
-  date: string;
+  date?: string;
   defaultOpen?: boolean;
   setOpenState: (key: string, state: boolean) => void;
   openState: Record<string, boolean>;
@@ -33,7 +34,16 @@ const Version: React.FC<IVersionProps> = ({
         <h4 className="changelog-version-header d-flex align-items-center">
           <Icon icon={open ? "angle-up" : "angle-down"} />
           <Button onClick={updateState} variant="link">
-            {version} ({date})
+            {version} (
+            {date ? (
+              <FormattedDate value={new Date(Date.parse(date))} />
+            ) : (
+              <FormattedMessage
+                defaultMessage="Development Version"
+                id="developmentVersion"
+              />
+            )}
+            )
           </Button>
         </h4>
       </Card.Header>
