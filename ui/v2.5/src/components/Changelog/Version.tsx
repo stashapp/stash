@@ -1,19 +1,41 @@
 import React, { useState } from 'react';
-import { Button, Collapse } from 'react-bootstrap';
+import { Button, Card, Collapse } from 'react-bootstrap';
+import { Icon } from 'src/components/Shared';
 
 interface IVersionProps {
-  header: string;
+  version: string;
+  date: string;
   defaultOpen?: boolean
+  setOpenState: (key: string, state: boolean) => void;
+  openState: Record<string, boolean>;
 }
 
+const Version: React.FC<IVersionProps> = ({version, date, defaultOpen, openState, setOpenState, children}) => {
+  const [open, setOpen] = useState(defaultOpen ?? openState[version+date] ?? false);
 
-const Version: React.FC<IVersionProps> = ({header, defaultOpen = false, children}) => {
-  const [open, setOpen] = useState(defaultOpen);
+  const updateState = () => {
+    setOpenState(version+date, !open);
+    setOpen(!open);
+  };
+
   return (
-    <div>
-      <h4><Button onClick={() => setOpen(!open)} variant="link">{header}</Button></h4>
-      <Collapse in={open}>{children}</Collapse>
-    </div>
+    <Card className="changelog-version">
+      <Card.Header>
+        <h4 className="changelog-version-header d-flex align-items-center">
+          <Icon icon={open ? 'angle-up' : 'angle-down'} />
+          <Button onClick={updateState} variant="link">
+            {version} ({date})
+          </Button>
+        </h4>
+      </Card.Header>
+      <Card.Body>
+        <Collapse in={open}>
+          <div className="changelog-version-body">
+            {children}
+          </div>
+        </Collapse>
+      </Card.Body>
+    </Card>
   );
 }
 
