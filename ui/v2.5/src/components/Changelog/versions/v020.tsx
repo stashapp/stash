@@ -57,6 +57,7 @@ const markup = `
 * ✅ Querybuilder integration tests.
 * ✨ Add is-missing tags filter.
 * 💄 Overhaul look and feel of folder select.
+* 📝 Add changelog to start page.
 `;
 
 export default () => <ReactMarkdown source={markup} />;
