@@ -245,6 +245,7 @@ func Start() {
 		http.Redirect(w, r, "/", 301)
 	})
 
+	startThumbCache()
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
