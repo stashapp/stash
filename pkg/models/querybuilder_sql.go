@@ -29,11 +29,19 @@ func (qb queryBuilder) executeFind() ([]int, int) {
 }
 
 func (qb *queryBuilder) addWhere(clauses ...string) {
-	qb.whereClauses = append(qb.whereClauses, clauses...)
+	for _, clause := range clauses {
+		if len(clause) > 0 {
+			qb.whereClauses = append(qb.whereClauses, clauses...)
+		}
+	}
 }
 
 func (qb *queryBuilder) addHaving(clauses ...string) {
-	qb.havingClauses = append(qb.havingClauses, clauses...)
+	for _, clause := range clauses {
+		if len(clause) > 0 {
+			qb.havingClauses = append(qb.havingClauses, clause)
+		}
+	}
 }
 
 func (qb *queryBuilder) addArg(args ...interface{}) {
