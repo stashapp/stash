@@ -735,18 +735,135 @@ func TestSceneQueryPagination(t *testing.T) {
 	assert.Equal(t, secondID, scenes[1].ID)
 }
 
+func TestSceneCountByTagID(t *testing.T) {
+	sqb := models.NewSceneQueryBuilder()
+
+	sceneCount, err := sqb.CountByTagID(tagIDs[tagIdxWithScene])
+
+	if err != nil {
+		t.Fatalf("error calling CountByTagID: %s", err.Error())
+	}
+
+	assert.Equal(t, 1, sceneCount)
+
+	sceneCount, err = sqb.CountByTagID(0)
+
+	if err != nil {
+		t.Fatalf("error calling CountByTagID: %s", err.Error())
+	}
+
+	assert.Equal(t, 0, sceneCount)
+}
+
+func TestSceneCountByMovieID(t *testing.T) {
+	sqb := models.NewSceneQueryBuilder()
+
+	sceneCount, err := sqb.CountByMovieID(movieIDs[movieIdxWithScene])
+
+	if err != nil {
+		t.Fatalf("error calling CountByMovieID: %s", err.Error())
+	}
+
+	assert.Equal(t, 1, sceneCount)
+
+	sceneCount, err = sqb.CountByMovieID(0)
+
+	if err != nil {
+		t.Fatalf("error calling CountByMovieID: %s", err.Error())
+	}
+
+	assert.Equal(t, 0, sceneCount)
+}
+
+func TestSceneCountByStudioID(t *testing.T) {
+	sqb := models.NewSceneQueryBuilder()
+
+	sceneCount, err := sqb.CountByStudioID(studioIDs[studioIdxWithScene])
+
+	if err != nil {
+		t.Fatalf("error calling CountByStudioID: %s", err.Error())
+	}
+
+	assert.Equal(t, 1, sceneCount)
+
+	sceneCount, err = sqb.CountByStudioID(0)
+
+	if err != nil {
+		t.Fatalf("error calling CountByStudioID: %s", err.Error())
+	}
+
+	assert.Equal(t, 0, sceneCount)
+}
+
+func TestFindByMovieID(t *testing.T) {
+	sqb := models.NewSceneQueryBuilder()
+
+	scenes, err := sqb.FindByMovieID(movieIDs[movieIdxWithScene])
+
+	if err != nil {
+		t.Fatalf("error calling FindByMovieID: %s", err.Error())
+	}
+
+	assert.Len(t, scenes, 1)
+	assert.Equal(t, sceneIDs[sceneIdxWithMovie], scenes[0].ID)
+
+	scenes, err = sqb.FindByMovieID(0)
+
+	if err != nil {
+		t.Fatalf("error calling FindByMovieID: %s", err.Error())
+	}
+
+	assert.Len(t, scenes, 0)
+}
+
+func TestFindByPerformerID(t *testing.T) {
+	sqb := models.NewSceneQueryBuilder()
+
+	scenes, err := sqb.FindByPerformerID(performerIDs[performerIdxWithScene])
+
+	if err != nil {
+		t.Fatalf("error calling FindByPerformerID: %s", err.Error())
+	}
+
+	assert.Len(t, scenes, 1)
+	assert.Equal(t, sceneIDs[sceneIdxWithPerformer], scenes[0].ID)
+
+	scenes, err = sqb.FindByPerformerID(0)
+
+	if err != nil {
+		t.Fatalf("error calling FindByPerformerID: %s", err.Error())
+	}
+
+	assert.Len(t, scenes, 0)
+}
+
+func TestFindByStudioID(t *testing.T) {
+	sqb := models.NewSceneQueryBuilder()
+
+	scenes, err := sqb.FindByStudioID(performerIDs[studioIdxWithScene])
+
+	if err != nil {
+		t.Fatalf("error calling FindByStudioID: %s", err.Error())
+	}
+
+	assert.Len(t, scenes, 1)
+	assert.Equal(t, sceneIDs[sceneIdxWithStudio], scenes[0].ID)
+
+	scenes, err = sqb.FindByStudioID(0)
+
+	if err != nil {
+		t.Fatalf("error calling FindByStudioID: %s", err.Error())
+	}
+
+	assert.Len(t, scenes, 0)
+}
+
 // TODO Update
 // TODO IncrementOCounter
 // TODO DecrementOCounter
 // TODO ResetOCounter
 // TODO Destroy
 // TODO FindByChecksum
-// TODO FindByPerformerID
-// TODO FindByStudioID
-// TODO FindByMovieID
-// TODO CountByMovieID
 // TODO Count
 // TODO SizeCount
-// TODO CountByStudioID
-// TODO CountByTagID
 // TODO All
