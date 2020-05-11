@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dustin/go-humanize"
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 const sceneTable = "scenes"
@@ -202,7 +202,7 @@ func (qb *SceneQueryBuilder) SizeCount() (string, error) {
 	if err != nil {
 		return "0", err
 	}
-	return humanize.Bytes(sum), err
+	return utils.HumanizeBytes(sum), err
 }
 
 func (qb *SceneQueryBuilder) CountByStudioID(studioID int) (int, error) {

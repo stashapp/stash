@@ -171,7 +171,7 @@ func (s *singleton) Export() {
 	}()
 }
 
-func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcodes bool) {
+func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcodes bool, thumbnails bool) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -179,6 +179,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
+	qg := models.NewGalleryQueryBuilder()
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
 
@@ -186,6 +187,8 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		defer s.returnToIdleState()
 
 		scenes, err := qb.All()
+		var galleries []*models.Gallery
+
 		if err != nil {
 			logger.Errorf("failed to get scenes for generate")
 			return
@@ -194,7 +197,16 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		delta := utils.Btoi(sprites) + utils.Btoi(previews) + utils.Btoi(markers) + utils.Btoi(transcodes)
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
-		total := len(scenes)
+		lenScenes := len(scenes)
+		total := lenScenes
+		if thumbnails {
+			galleries, err = qg.All()
+			if err != nil {
+				logger.Errorf("failed to get galleries for generate")
+				return
+			}
+			total += len(galleries)
+		}
 
 		if s.Status.stopping {
 			logger.Info("Stopping due to user request")
@@ -248,6 +260,28 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 
 			wg.Wait()
 		}
+
+		if thumbnails {
+			logger.Infof("Generating thumbnails for the galleries")
+			for i, gallery := range galleries {
+				s.Status.setProgress(lenScenes+i, total)
+				if s.Status.stopping {
+					logger.Info("Stopping due to user request")
+					return
+				}
+
+				if gallery == nil {
+					logger.Errorf("nil gallery, skipping generate")
+					continue
+				}
+
+				wg.Add(1)
+				task := GenerateGthumbsTask{Gallery: *gallery}
+				go task.Start(&wg)
+				wg.Wait()
+			}
+		}
+
 		logger.Infof("Generate finished")
 	}()
 }
