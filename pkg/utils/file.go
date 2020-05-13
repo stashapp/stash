@@ -10,7 +10,10 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 )
+
+var supportedImages = []string{".jpg", ".jpeg", ".png", ".webp", ".gif"}
 
 // FileType uses the filetype package to determine the given file path's type
 func FileType(filePath string) (types.Type, error) {
@@ -130,6 +133,89 @@ func GetHomeDirectory() string {
 		panic(err)
 	}
 	return currentUser.HomeDir
+}
+
+//Returns true if filename extension is included in our supported images
+func FilenameIsImage(path string) bool {
+	ext := filepath.Ext(path)
+	ext = strings.ToLower(ext)
+	for _, image := range supportedImages {
+		if strings.ToLower(ext) == strings.ToLower(image) {
+			return true
+		}
+	}
+	return false
+}
+
+// return slice of image paths present in the directory
+// not recursive
+func ListImages(path string) []string {
+	if path == "" {
+		return nil
+	}
+
+	absolutePath, err := filepath.Abs(path)
+	if err == nil {
+		path = absolutePath
+	}
+
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		path = filepath.Dir(path)
+		files, err = ioutil.ReadDir(path)
+	}
+
+	if err != nil {
+		return nil
+	}
+
+	var images []string
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		abs, err := filepath.Abs(path)
+		if err != nil {
+			continue
+		}
+		if FilenameIsImage(file.Name()) {
+			images = append(images, filepath.Join(abs, file.Name()))
+		}
+	}
+
+	return images
+}
+
+// gets all directories in the path that contain images (recursive)
+// imageDirs slice gets updated during the recursion
+func GetImageDirs(path string, info os.FileInfo, imageDirs *[]string) {
+	var err error
+	path, err = filepath.Abs(path)
+
+	if err != nil || !info.IsDir() {
+		return
+	}
+
+	dir, err := os.Open(path)
+	if err != nil {
+		fmt.Printf("Error openig path %s: %s\n", path, err)
+		return
+	}
+	defer dir.Close()
+
+	fis, err := dir.Readdir(-1)
+	if err != nil {
+		return
+	}
+	if len(ListImages(path)) > 0 {
+		*imageDirs = append(*imageDirs, path)
+	}
+	for _, fi := range fis {
+		if fi.Name() == "." || fi.Name() == ".." {
+			continue
+		}
+		GetImageDirs(filepath.Join(path, fi.Name()), fi, imageDirs)
+	}
 }
 
 // IsZipFileUnmcompressed returns true if zip file in path is using 0 compression level

@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"database/sql"
+	"fmt"
 	"github.com/disintegration/imaging"
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/logger"
@@ -30,11 +31,23 @@ const DefaultGthumbWidth int = 200
 
 func (g *Gallery) GetFiles(baseURL string) []*GalleryFilesType {
 	var galleryFiles []*GalleryFilesType
-	filteredFiles, readCloser, err := g.listZipContents()
-	if err != nil {
-		return nil
+	var readCloser *zip.ReadCloser
+	var filteredFiles []*zip.File
+	var err error
+
+	if IsPathArchive(g.Path) {
+		filteredFiles, readCloser, err = g.listZipContents()
+		if err != nil {
+			return nil
+		}
+		defer readCloser.Close()
+	} else {
+		filteredFiles, err = g.listDirContents()
+		if err != nil {
+			return nil
+		}
+
 	}
-	defer readCloser.Close()
 
 	builder := urlbuilders.NewGalleryURLBuilder(baseURL, g.ID)
 	for i, file := range filteredFiles {
@@ -51,12 +64,23 @@ func (g *Gallery) GetFiles(baseURL string) []*GalleryFilesType {
 }
 
 func (g *Gallery) GetImage(index int) []byte {
-	data, _ := g.readZipFile(index)
+	var data []byte
+	if IsPathArchive(g.Path) {
+		data, _ = g.readZipFile(index)
+	} else {
+		data, _ = g.readFile(index)
+	}
 	return data
 }
 
 func (g *Gallery) GetThumbnail(index int, width int) []byte {
-	data, _ := g.readZipFile(index)
+	var data []byte
+	if IsPathArchive(g.Path) {
+		data, _ = g.readZipFile(index)
+	} else {
+		data, _ = g.readFile(index)
+	}
+
 	srcImage, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		return data
@@ -86,6 +110,19 @@ func (g *Gallery) readZipFile(index int) ([]byte, error) {
 	defer zipFileReadCloser.Close()
 
 	return ioutil.ReadAll(zipFileReadCloser)
+}
+
+func (g *Gallery) readFile(index int) ([]byte, error) {
+	filteredFiles, err := g.listDirContents()
+	if err != nil {
+		return nil, err
+	}
+	path := filteredFiles[index].Name
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read Error for file %s : %s", path, err)
+	}
+	return data, nil
 }
 
 func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
@@ -127,6 +164,73 @@ func (g *Gallery) listZipContents() ([]*zip.File, *zip.ReadCloser, error) {
 	return filteredFiles, readCloser, nil
 }
 
+func (g *Gallery) listDirContents() ([]*zip.File, error) {
+	images := utils.ListImages(g.Path)
+	if images == nil {
+		return nil, fmt.Errorf("error getting images from %s", g.Path)
+	}
+	var filteredFiles []*zip.File
+	for _, image := range images {
+		el := zip.File{FileHeader: zip.FileHeader{Name: image}}
+		filteredFiles = append(filteredFiles, &el)
+	}
+	sort.Slice(filteredFiles, func(i, j int) bool {
+		a := filteredFiles[i]
+		b := filteredFiles[j]
+		return utils.NaturalCompare(a.Name, b.Name)
+	})
+
+	cover := contains(filteredFiles, "cover.jpg") // first image with cover.jpg in the name
+	if cover >= 0 {                               // will be moved to the start
+		reorderedFiles := reorder(filteredFiles, cover)
+		if reorderedFiles != nil {
+			return reorderedFiles, nil
+		}
+	}
+
+	return filteredFiles, nil
+}
+
+// calculates the xor of the md5s from images in the dir
+// if only one image exists the md5 is returned as is
+func ChecksumFromDirPath(path string) (string, error) {
+	_, err := utils.DirExists(path)
+	if err != nil {
+		return "", err
+	}
+	images := utils.ListImages(path)
+	if images == nil {
+		return "", fmt.Errorf("no images found in %s", path)
+	}
+
+	m := make(map[string]struct{}) // a map is used to filter out duplicate MD5s in a dir
+	var empty struct{}
+
+	for _, image := range images { // we only want to keep one md5 if duplicates exist
+		md5, err := utils.MD5FromFilePath(image) // because  a xor a = 0
+		if err != nil {
+			return "", err
+		}
+		m[md5] = empty
+	}
+
+	var md5s []string
+	for k := range m {
+		md5s = append(md5s, k)
+	} // md5s is now a slice of unique MD5s
+
+	return utils.XorMD5Strings(md5s)
+
+}
+
+func IsPathArchive(path string) bool {
+	ext := filepath.Ext(path)
+	if strings.ToLower(ext) != ".zip" {
+		return false
+	}
+	return true
+}
+
 // return index of first occurrenece of string x ( case insensitive ) in name of zip contents, -1 otherwise
 func contains(a []*zip.File, x string) int {
 	for i, n := range a {
@@ -156,7 +260,12 @@ func reorder(a []*zip.File, toFirst int) []*zip.File {
 }
 
 func (g *Gallery) ImageCount() int {
-	images, _, _ := g.listZipContents()
+	var images []*zip.File
+	if IsPathArchive(g.Path) {
+		images, _, _ = g.listZipContents()
+	} else {
+		images, _ = g.listDirContents()
+	}
 	if images == nil {
 		return 0
 	}

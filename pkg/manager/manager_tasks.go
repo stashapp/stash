@@ -1,8 +1,10 @@
 package manager
 
 import (
+	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -37,6 +39,16 @@ func isGallery(pathname string) bool {
 		}
 	}
 	return false
+}
+
+func isGalleryFolder(pathname string) bool { // if a path is in the scan list and isnt't a file
+	ext := filepath.Ext(pathname) // then it must be a path added from GetImageDirs
+	for _, file := range extensionsToScan {
+		if strings.ToLower(ext) == "."+strings.ToLower(file) {
+			return false
+		}
+	}
+	return true
 }
 
 type TaskStatus struct {
@@ -93,10 +105,17 @@ func (s *singleton) Scan(useFileMetadata bool) {
 		defer s.returnToIdleState()
 
 		var results []string
+		var imageDirs []string
 		for _, path := range config.GetStashPaths() {
 			globPath := filepath.Join(path, "**/*."+constructGlob())
 			globResults, _ := doublestar.Glob(globPath)
 			results = append(results, globResults...)
+			info, err := os.Lstat(path)
+			if err == nil {
+				utils.GetImageDirs(path, info, &imageDirs) // search for directories containing images
+			}
+
+			results = append(results, imageDirs...)
 		}
 
 		if s.Status.stopping {
@@ -124,7 +143,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 
 		logger.Info("Finished scan")
 		for _, path := range results {
-			if isGallery(path) {
+			if isGallery(path) || isGalleryFolder(path) {
 				wg.Add(1)
 				task := ScanTask{FilePath: path, UseFileMetadata: false}
 				go task.associateGallery(&wg)

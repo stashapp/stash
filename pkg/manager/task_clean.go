@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type CleanTask struct {
@@ -32,7 +33,13 @@ func (t *CleanTask) Start(wg *sync.WaitGroup) {
 }
 
 func (t *CleanTask) shouldClean(path string) bool {
-	if t.fileExists(path) && t.pathInStash(path) {
+	var exists bool
+	if t.Gallery != nil && isGalleryFolder(path) {
+		exists, _ = utils.DirExists(path)
+	} else {
+		exists = t.fileExists(path)
+	}
+	if exists && t.pathInStash(path) {
 		logger.Debugf("File Found: %s", path)
 		if matchFile(path, config.GetExcludes()) {
 			logger.Infof("File matched regex. Cleaning: \"%s\"", path)
