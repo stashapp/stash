@@ -36,7 +36,15 @@ var testSeparators = []string{
 	" ",
 }
 
-func generateNamePatterns(name string, separator string) []string {
+var testEndSeparators = []string{
+	"{",
+	"}",
+	"(",
+	")",
+	",",
+}
+
+func generateNamePatterns(name, separator string) []string {
 	var ret []string
 	ret = append(ret, fmt.Sprintf("%s%saaa"+testExtension, name, separator))
 	ret = append(ret, fmt.Sprintf("aaa%s%s"+testExtension, separator, name))
@@ -152,13 +160,20 @@ func createScenes(tx *sqlx.Tx) error {
 	// create the scenes
 	var scenePatterns []string
 	var falseScenePatterns []string
-	for _, separator := range testSeparators {
+
+	separators := append(testSeparators, testEndSeparators...)
+
+	for _, separator := range separators {
 		scenePatterns = append(scenePatterns, generateNamePatterns(testName, separator)...)
 		scenePatterns = append(scenePatterns, generateNamePatterns(strings.ToLower(testName), separator)...)
+		falseScenePatterns = append(falseScenePatterns, generateFalseNamePattern(testName, separator))
+	}
+
+	// add test cases for intra-name separators
+	for _, separator := range testSeparators {
 		if separator != " " {
 			scenePatterns = append(scenePatterns, generateNamePatterns(strings.Replace(testName, " ", separator, -1), separator)...)
 		}
-		falseScenePatterns = append(falseScenePatterns, generateFalseNamePattern(testName, separator))
 	}
 
 	for _, fn := range scenePatterns {
