@@ -16,8 +16,8 @@ type ScenePreviewChunkOptions struct {
 func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePreviewChunkOptions) {
 	args := []string{
 		"-v", "error",
-		"-i", probeResult.Path,
 		"-ss", strconv.Itoa(options.Time),
+		"-i", probeResult.Path,
 		"-t", "0.75",
 		"-max_muxing_queue_size", "1024", // https://trac.ffmpeg.org/ticket/6375
 		"-y",
