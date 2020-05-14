@@ -32,8 +32,8 @@ const Version: React.FC<IVersionProps> = ({
     <Card className="changelog-version">
       <Card.Header>
         <h4 className="changelog-version-header d-flex align-items-center">
-          <Icon icon={open ? "angle-up" : "angle-down"} />
           <Button onClick={updateState} variant="link">
+            <Icon icon={open ? "angle-up" : "angle-down"} className="mr-3" />
             {version} (
             {date ? (
               <FormattedDate value={new Date(Date.parse(date))} />

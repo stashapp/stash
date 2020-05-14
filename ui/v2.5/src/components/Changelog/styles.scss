@@ -6,6 +6,14 @@
     color: inherit;
     font-size: inherit;
     font-weight: inherit;
+
+    &:focus {
+      text-decoration: unset;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   .card,
@@ -15,7 +23,7 @@
 
   ul {
     list-style-type: none;
-    padding-left: 1rem;
+    padding-left: .5rem;
   }
 
   &-version {

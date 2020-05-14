@@ -17,7 +17,7 @@ const markup = `
 * Add "O-" (or "splooge-") counter
 * Add external_host option
 
-### ⚡️Improvements
+### 🎨 Improvements
 
 * Improve scene wall layout
 * Read config from current working directory before user profile directory
