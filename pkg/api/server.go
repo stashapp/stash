@@ -94,6 +94,9 @@ func authenticateHandler() func(http.Handler) http.Handler {
 	}
 }
 
+const setupEndPoint = "/setup"
+const migrateEndPoint = "/migrate"
+
 func Start() {
 	uiBox = packr.New("UI Box", "../../ui/v2.5/build")
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
@@ -369,10 +372,10 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 func ConfigCheckMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
-		shouldRedirect := ext == "" && r.Method == "GET" && r.URL.Path != "/init"
+		shouldRedirect := ext == "" && r.Method == "GET"
 		if !config.IsValid() && shouldRedirect {
-			if !strings.HasPrefix(r.URL.Path, "/setup") {
-				http.Redirect(w, r, "/setup", 301)
+			if !strings.HasPrefix(r.URL.Path, setupEndPoint) {
+				http.Redirect(w, r, setupEndPoint, 301)
 				return
 			}
 		}
@@ -386,8 +389,9 @@ func DatabaseCheckMiddleware(next http.Handler) http.Handler {
 		shouldRedirect := ext == "" && r.Method == "GET"
 		if shouldRedirect && database.NeedsMigration() {
 			// #451 - don't redirect if loading login page
-			if !strings.HasPrefix(r.URL.Path, "/migrate") && !strings.HasPrefix(r.URL.Path, "/login") {
-				http.Redirect(w, r, "/migrate", 301)
+			// #539 - or setup page
+			if !strings.HasPrefix(r.URL.Path, migrateEndPoint) && !strings.HasPrefix(r.URL.Path, "/login") && !strings.HasPrefix(r.URL.Path, setupEndPoint) {
+				http.Redirect(w, r, migrateEndPoint, 301)
 				return
 			}
 		}
