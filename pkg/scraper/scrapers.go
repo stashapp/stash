@@ -32,7 +32,7 @@ func loadScrapers() ([]scraperConfig, error) {
 	scrapers = append(scrapers, GetFreeonesScraper())
 
 	for _, file := range scraperFiles {
-		scraper, err := loadScraperFromYAML(file)
+		scraper, err := loadScraperFromYAMLFile(file)
 		if err != nil {
 			logger.Errorf("Error loading scraper %s: %s", file, err.Error())
 		} else {
@@ -190,7 +190,7 @@ func matchMovie(m *models.ScrapedSceneMovie) error {
 		return err
 	}
 
-	if len(movies) !=1 {
+	if len(movies) != 1 {
 		// ignore - cannot match
 		return nil
 	}

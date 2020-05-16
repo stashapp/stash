@@ -34,11 +34,16 @@ func (t *ScanTask) Start(wg *sync.WaitGroup) {
 func (t *ScanTask) scanGallery() {
 	qb := models.NewGalleryQueryBuilder()
 	gallery, _ := qb.FindByPath(t.FilePath)
+
 	if gallery != nil {
 		// We already have this item in the database, keep going
 		return
 	}
 
+	ok, err := utils.IsZipFileUncompressed(t.FilePath)
+	if err == nil && !ok {
+		logger.Warnf("%s is using above store (0) level compression.", t.FilePath)
+	}
 	checksum, err := t.calculateChecksum()
 	if err != nil {
 		logger.Error(err.Error())

@@ -2,6 +2,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   stashes
   databasePath
   generatedPath
+  cachePath
   maxTranscodeSize
   maxStreamingTranscodeSize
   profile

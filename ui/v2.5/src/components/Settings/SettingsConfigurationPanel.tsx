@@ -16,6 +16,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [generatedPath, setGeneratedPath] = useState<string | undefined>(
     undefined
   );
+  const [cachePath, setCachePath] = useState<string | undefined>(undefined);
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
@@ -45,6 +46,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     stashes,
     databasePath,
     generatedPath,
+    cachePath,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
     profile,
@@ -69,6 +71,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setStashes(conf.general.stashes ?? []);
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
+      setCachePath(conf.general.cachePath);
       setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
@@ -257,6 +260,20 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Text className="text-muted">
             Directory location for the generated files (scene markers, scene
             previews, sprites, etc)
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="cache-path">
+          <h6>Cache Path</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={cachePath}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setCachePath(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Directory location of the cache
           </Form.Text>
         </Form.Group>
 

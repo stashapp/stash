@@ -93,7 +93,7 @@ func (qb *GalleryQueryBuilder) FindByPath(path string) (*Gallery, error) {
 }
 
 func (qb *GalleryQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) (*Gallery, error) {
-	query := "SELECT galleries.* FROM galleries JOIN scenes ON scenes.id = galleries.scene_id WHERE scenes.id = ? LIMIT 1"
+	query := "SELECT galleries.* FROM galleries WHERE galleries.scene_id = ? LIMIT 1"
 	args := []interface{}{sceneID}
 	return qb.queryGallery(query, args, tx)
 }

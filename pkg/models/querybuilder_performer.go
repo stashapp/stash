@@ -77,12 +77,9 @@ func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
 }
 
 func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {
-	query := `
-		SELECT performers.* FROM performers
+	query := selectAll("performers") + `
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
-		LEFT JOIN scenes on scenes_join.scene_id = scenes.id
-		WHERE scenes.id = ?
-		GROUP BY performers.id
+		WHERE scenes_join.scene_id = ?
 	`
 	args := []interface{}{sceneID}
 	return qb.queryPerformers(query, args, tx)
@@ -93,7 +90,6 @@ func (qb *PerformerQueryBuilder) FindNameBySceneID(sceneID int, tx *sqlx.Tx) ([]
 		SELECT performers.name FROM performers
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		WHERE scenes_join.scene_id = ?
-		GROUP BY performers.name
 	`
 	args := []interface{}{sceneID}
 	return qb.queryPerformers(query, args, tx)

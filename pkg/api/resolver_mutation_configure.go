@@ -38,6 +38,13 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		config.Set(config.Generated, input.GeneratedPath)
 	}
 
+	if input.CachePath != nil {
+		if err := utils.EnsureDir(*input.CachePath); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+		config.Set(config.Cache, input.CachePath)
+	}
+
 	if input.MaxTranscodeSize != nil {
 		config.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
 	}

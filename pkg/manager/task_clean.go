@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -54,13 +55,13 @@ func (t *CleanTask) deleteScene(sceneID int) {
 	err = DestroyScene(sceneID, tx)
 
 	if err != nil {
-		logger.Infof("Error deleting scene from database: %s", err.Error())
+		logger.Errorf("Error deleting scene from database: %s", err.Error())
 		tx.Rollback()
 		return
 	}
 
 	if err := tx.Commit(); err != nil {
-		logger.Infof("Error deleting scene from database: %s", err.Error())
+		logger.Errorf("Error deleting scene from database: %s", err.Error())
 		return
 	}
 
@@ -75,14 +76,19 @@ func (t *CleanTask) deleteGallery(galleryID int) {
 	err := qb.Destroy(galleryID, tx)
 
 	if err != nil {
-		logger.Infof("Error deleting gallery from database: %s", err.Error())
+		logger.Errorf("Error deleting gallery from database: %s", err.Error())
 		tx.Rollback()
 		return
 	}
 
 	if err := tx.Commit(); err != nil {
-		logger.Infof("Error deleting gallery from database: %s", err.Error())
+		logger.Errorf("Error deleting gallery from database: %s", err.Error())
 		return
+	}
+
+	pathErr := os.RemoveAll(paths.GetGthumbDir(t.Gallery.Checksum)) // remove cache dir of gallery
+	if pathErr != nil {
+		logger.Errorf("Error deleting gallery directory from cache: %s", pathErr)
 	}
 }
 

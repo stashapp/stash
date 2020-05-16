@@ -22,6 +22,8 @@ input ConfigGeneralInput {
   databasePath: String
   """Path to generated files"""
   generatedPath: String
+  """Path to cache"""
+  cachePath: String
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
@@ -59,7 +61,9 @@ type ConfigGeneralResult {
   databasePath: String!
   """Path to generated files"""
   generatedPath: String!
-    """Max generated transcode size"""
+  """Path to cache"""
+  cachePath: String!
+  """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
@@ -128,4 +132,11 @@ type ConfigInterfaceResult {
 type ConfigResult {
   general: ConfigGeneralResult!
   interface: ConfigInterfaceResult!
+}
+
+"""Directory structure of a path"""
+type Directory {
+    path: String!
+    parent: String
+    directories: [String!]!
 }

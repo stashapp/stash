@@ -33,8 +33,6 @@ github.com/bmatcuk/doublestar
 github.com/davecgh/go-spew/spew
 # github.com/disintegration/imaging v1.6.0
 github.com/disintegration/imaging
-# github.com/dustin/go-humanize v1.0.0
-github.com/dustin/go-humanize
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
 # github.com/go-chi/chi v4.0.2+incompatible

@@ -230,7 +230,8 @@ func Start() {
 
 		_ = os.Mkdir(downloads, 0755)
 
-		config.Set(config.Stash, stash)
+		// #536 - set stash as slice of strings
+		config.Set(config.Stash, []string{stash})
 		config.Set(config.Generated, generated)
 		config.Set(config.Metadata, metadata)
 		config.Set(config.Cache, cache)
@@ -245,6 +246,7 @@ func Start() {
 		http.Redirect(w, r, "/", 301)
 	})
 
+	startThumbCache()
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)

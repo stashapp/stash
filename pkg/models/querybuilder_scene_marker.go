@@ -77,8 +77,7 @@ func (qb *SceneMarkerQueryBuilder) Find(id int) (*SceneMarker, error) {
 func (qb *SceneMarkerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*SceneMarker, error) {
 	query := `
 		SELECT scene_markers.* FROM scene_markers
-		JOIN scenes ON scenes.id = scene_markers.scene_id
-		WHERE scenes.id = ?
+		WHERE scene_markers.scene_id = ?
 		GROUP BY scene_markers.id
 		ORDER BY scene_markers.seconds ASC
 	`
