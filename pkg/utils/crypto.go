@@ -19,7 +19,7 @@ func MD5FromString(str string) string {
 	return MD5FromBytes(data)
 }
 
-// xor dst and data byte slices and store the result to dst.
+// xorByteSlices xors dst and data byte slices and stores the result to dst.
 // we expect len(dst) >= len(a)
 func xorByteSlices(dst, data []byte) error {
 	length := len(data)
@@ -36,8 +36,8 @@ func xorByteSlices(dst, data []byte) error {
 
 }
 
-// calculates the XOR of given MD5 string slice
-// if slice has only one element it returns that
+// XorMD5Strings calculates the XOR of given MD5 string slice
+// if slice has only one element it returns that instead
 func XorMD5Strings(md5s []string) (string, error) {
 	const MD5Length = 32
 

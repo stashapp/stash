@@ -104,7 +104,7 @@ func EmptyDir(path string) error {
 	return nil
 }
 
-// ListDir will return the contents of a given directory path as a string slice
+// ListDir returns the contents of a given directory path as a string slice
 func ListDir(path string) []string {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -135,7 +135,7 @@ func GetHomeDirectory() string {
 	return currentUser.HomeDir
 }
 
-//Returns true if filename extension is included in our supported images
+// FilenameIsImage returns true if filename extension is included in our supported images
 func FilenameIsImage(path string) bool {
 	ext := filepath.Ext(path)
 	ext = strings.ToLower(ext)
@@ -147,7 +147,7 @@ func FilenameIsImage(path string) bool {
 	return false
 }
 
-// return slice of image paths present in the directory
+// ListImages returns a slice of image paths present in the directory
 // not recursive
 func ListImages(path string) []string {
 	if path == "" {
@@ -186,7 +186,7 @@ func ListImages(path string) []string {
 	return images
 }
 
-// gets all directories in the path that contain images (recursive)
+// GetImageDirs gets all directories in the path that contain images ( recursive )
 // imageDirs slice gets updated during the recursion
 func GetImageDirs(path string, info os.FileInfo, imageDirs *[]string) {
 	var err error

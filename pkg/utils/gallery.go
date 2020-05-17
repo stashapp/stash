@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-//ListZipContents returns the images in a zip file using a zip.File slice and ordered by name using natural order
+// ListZipContents returns the images in a zip file using a zip.File slice and ordered by name using natural order
 func ListZipContents(path string) ([]*zip.File, *zip.ReadCloser, error) {
 	readCloser, err := zip.OpenReader(path)
 	if err != nil {
@@ -52,7 +52,7 @@ func ListZipContents(path string) ([]*zip.File, *zip.ReadCloser, error) {
 	return filteredFiles, readCloser, nil
 }
 
-//ListDirContents returns the images in a directory path using a zip.File slice and ordered by name using natural order
+// ListDirContents returns the images in a directory path using a zip.File slice and ordered by name using natural order
 func ListDirContents(path string) ([]*zip.File, error) {
 	images := ListImages(path)
 	if images == nil {
@@ -80,8 +80,8 @@ func ListDirContents(path string) ([]*zip.File, error) {
 	return filteredFiles, nil
 }
 
-//ChecksumFromDirPath calculates the xor of the md5s from images in the dir
-//If only one image exists the md5 of the image is returned as is
+// ChecksumFromDirPath calculates the xor of the md5s from images in the dir
+// If only one image exists the md5 of the image is returned as is
 func ChecksumFromDirPath(path string) (string, error) {
 	_, err := DirExists(path)
 	if err != nil {
@@ -112,7 +112,7 @@ func ChecksumFromDirPath(path string) (string, error) {
 
 }
 
-//IsPathArchive returns true if path seems like a zip archive
+// IsPathArchive returns true if path seems like a zip archive
 func IsPathArchive(path string) bool {
 	ext := filepath.Ext(path)
 	if strings.ToLower(ext) != ".zip" {
@@ -121,7 +121,7 @@ func IsPathArchive(path string) bool {
 	return true
 }
 
-//contains returns the index of the first occurrenece of string x ( case insensitive ) in name of zip contents, -1 otherwise
+// contains returns the index of the first occurrenece of string x ( case insensitive ) in name of zip contents, -1 otherwise
 func contains(a []*zip.File, x string) int {
 	for i, n := range a {
 		if strings.Contains(strings.ToLower(n.Name), strings.ToLower(x)) {
@@ -131,7 +131,7 @@ func contains(a []*zip.File, x string) int {
 	return -1
 }
 
-//reorder reorders a slice so that element with position toFirst gets at the start
+// reorder reorders a slice so that element with position toFirst gets at the start
 func reorder(a []*zip.File, toFirst int) []*zip.File {
 	var first *zip.File
 	switch {
@@ -149,7 +149,7 @@ func reorder(a []*zip.File, toFirst int) []*zip.File {
 	return a
 }
 
-//ReadZipFile reads a zip file given by path and returns the image located in index position
+// ReadZipFile reads a zip file given by path and returns the image located in index position
 func ReadZipFile(index int, path string) ([]byte, error) {
 	filteredFiles, readCloser, err := ListZipContents(path)
 	if err != nil {
@@ -168,7 +168,7 @@ func ReadZipFile(index int, path string) ([]byte, error) {
 	return ioutil.ReadAll(zipFileReadCloser)
 }
 
-//ReadFile returns the image located in dir with index position
+// ReadFile returns the image located in dir with index position
 func ReadFile(index int, dir string) ([]byte, error) {
 	filteredFiles, err := ListDirContents(dir)
 	if err != nil {
@@ -182,7 +182,7 @@ func ReadFile(index int, dir string) ([]byte, error) {
 	return data, nil
 }
 
-//ImageCount returns the number of images in a dir or zip file located in path
+// ImageCount returns the number of images in a dir or zip file located in path
 func ImageCount(path string) int {
 	var images []*zip.File
 	if IsPathArchive(path) {
@@ -196,7 +196,7 @@ func ImageCount(path string) int {
 	return len(images)
 }
 
-//GetImage returns the image in a dir or zip file (path) with position index
+// GetImage returns the image in a dir or zip file (path) with position index
 func GetImage(index int, path string) []byte {
 	var data []byte
 	if IsPathArchive(path) {
@@ -207,7 +207,7 @@ func GetImage(index int, path string) []byte {
 	return data
 }
 
-//GetThumbnail returns the thumbnail ( or original image ) of an image in a path ( dir or zip file)
+// GetThumbnail returns the thumbnail ( or original image on decode,resize error ) of an image in a path ( dir or zip file)
 func GetThumbnail(index int, width int, path string) []byte {
 	var data []byte
 	if IsPathArchive(path) {
