@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -157,17 +158,27 @@ type scraperConfig struct {
 	XPathScrapers xpathScrapers        `yaml:"xPathScrapers"`
 }
 
-func loadScraperFromYAML(path string) (*scraperConfig, error) {
+func loadScraperFromYAML(id string, reader io.Reader) (*scraperConfig, error) {
 	ret := &scraperConfig{}
 
-	file, err := os.Open(path)
-	defer file.Close()
+	parser := yaml.NewDecoder(reader)
+	parser.SetStrict(true)
+	err := parser.Decode(&ret)
 	if err != nil {
 		return nil, err
 	}
-	parser := yaml.NewDecoder(file)
-	parser.SetStrict(true)
-	err = parser.Decode(&ret)
+
+	ret.ID = id
+
+	// set the scraper interface
+	ret.initialiseConfigs()
+
+	return ret, nil
+}
+
+func loadScraperFromYAMLFile(path string) (*scraperConfig, error) {
+	file, err := os.Open(path)
+	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -175,12 +186,8 @@ func loadScraperFromYAML(path string) (*scraperConfig, error) {
 	// set id to the filename
 	id := filepath.Base(path)
 	id = id[:strings.LastIndex(id, ".")]
-	ret.ID = id
 
-	// set the scraper interface
-	ret.initialiseConfigs()
-
-	return ret, nil
+	return loadScraperFromYAML(id, file)
 }
 
 func (c *scraperConfig) initialiseConfigs() {
