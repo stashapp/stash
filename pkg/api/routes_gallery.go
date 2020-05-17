@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 	"net/http"
 	"strconv"
 )
@@ -33,7 +34,7 @@ func (rs galleryRoutes) File(w http.ResponseWriter, r *http.Request) {
 	if thumb == "true" {
 		_, _ = w.Write(cacheGthumb(gallery, fileIndex, models.DefaultGthumbWidth))
 	} else if thumb == "" {
-		_, _ = w.Write(gallery.GetImage(fileIndex))
+		_, _ = w.Write(utils.GetImage(fileIndex, gallery.Path))
 	} else {
 		width, err := strconv.ParseInt(thumb, 0, 64)
 		if err != nil {

@@ -56,7 +56,7 @@ func cacheGthumb(gallery *models.Gallery, index int, width int) []byte {
 		}
 
 	}
-	data := gallery.GetThumbnail(index, width)
+	data := utils.GetThumbnail(index, width, gallery.Path)
 	thumbDir := paths.GetGthumbDir(gallery.Checksum)
 	t := newCacheThumb(thumbDir, thumbPath, data)
 	writeChan <- t // write the file to cache
@@ -65,7 +65,7 @@ func cacheGthumb(gallery *models.Gallery, index int, width int) []byte {
 
 // create all thumbs for a given gallery
 func CreateGthumbs(gallery *models.Gallery) {
-	count := gallery.ImageCount()
+	count := utils.ImageCount(gallery.Path)
 	for i := 0; i < count; i++ {
 		cacheGthumb(gallery, i, models.DefaultGthumbWidth)
 	}

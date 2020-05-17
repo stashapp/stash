@@ -41,10 +41,10 @@ func (t *ScanTask) scanGallery() {
 	}
 	var checksum string
 	var err error
-	if models.IsPathArchive(t.FilePath) {
+	if utils.IsPathArchive(t.FilePath) {
 		checksum, err = t.calculateChecksum()
 	} else {
-		checksum, err = models.ChecksumFromDirPath(t.FilePath)
+		checksum, err = utils.ChecksumFromDirPath(t.FilePath)
 	}
 
 	ok, err := utils.IsZipFileUncompressed(t.FilePath)
@@ -61,10 +61,10 @@ func (t *ScanTask) scanGallery() {
 	gallery, _ = qb.FindByChecksum(checksum, tx)
 	if gallery != nil {
 		var exists bool
-		if models.IsPathArchive(t.FilePath) {
+		if utils.IsPathArchive(t.FilePath) {
 			exists, _ = utils.FileExists(gallery.Path)
 		} else { // on image folder , folder might still be there but without same images
-			checksumRe, err := models.ChecksumFromDirPath(gallery.Path)
+			checksumRe, err := utils.ChecksumFromDirPath(gallery.Path)
 			exists = (err != nil && checksumRe == checksum)
 		}
 		if exists {
@@ -109,7 +109,7 @@ func (t *ScanTask) associateGallery(wg *sync.WaitGroup) {
 
 	if !gallery.SceneID.Valid { // gallery has no SceneID
 		basename := t.FilePath
-		if models.IsPathArchive(t.FilePath) {
+		if utils.IsPathArchive(t.FilePath) {
 			basename = strings.TrimSuffix(t.FilePath, filepath.Ext(t.FilePath))
 		}
 		var relatedFiles []string

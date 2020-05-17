@@ -15,14 +15,14 @@ type GenerateGthumbsTask struct {
 func (t *GenerateGthumbsTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 	generated := 0
-	count := t.Gallery.ImageCount()
+	count := utils.ImageCount(t.Gallery.Path)
 	for i := 0; i < count; i++ {
 		thumbPath := paths.GetGthumbPath(t.Gallery.Checksum, i, models.DefaultGthumbWidth)
 		exists, _ := utils.FileExists(thumbPath)
 		if exists {
 			continue
 		}
-		data := t.Gallery.GetThumbnail(i, models.DefaultGthumbWidth)
+		data := utils.GetThumbnail(i, models.DefaultGthumbWidth, t.Gallery.Path)
 		err := utils.WriteFile(thumbPath, data)
 		if err != nil {
 			logger.Errorf("error writing gallery thumbnail: %s", err)
