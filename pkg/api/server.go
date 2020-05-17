@@ -94,6 +94,10 @@ func authenticateHandler() func(http.Handler) http.Handler {
 	}
 }
 
+const setupEndPoint = "/setup"
+const migrateEndPoint = "/migrate"
+const loginEndPoint = "/login"
+
 func Start() {
 	uiBox = packr.New("UI Box", "../../ui/v2.5/build")
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
@@ -140,10 +144,10 @@ func Start() {
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
 
 	// session handlers
-	r.Post("/login", handleLogin)
+	r.Post(loginEndPoint, handleLogin)
 	r.Get("/logout", handleLogout)
 
-	r.Get("/login", getLoginHandler)
+	r.Get(loginEndPoint, getLoginHandler)
 
 	r.Mount("/gallery", galleryRoutes{}.Routes())
 	r.Mount("/performer", performerRoutes{}.Routes())
@@ -188,7 +192,7 @@ func Start() {
 			data, _ := loginUIBox.Find("login.html")
 			_, _ = w.Write(data)
 		} else {
-			r.URL.Path = strings.Replace(r.URL.Path, "/login", "", 1)
+			r.URL.Path = strings.Replace(r.URL.Path, loginEndPoint, "", 1)
 			http.FileServer(loginUIBox).ServeHTTP(w, r)
 		}
 	})
@@ -369,10 +373,11 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 func ConfigCheckMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
-		shouldRedirect := ext == "" && r.Method == "GET" && r.URL.Path != "/init"
+		shouldRedirect := ext == "" && r.Method == "GET"
 		if !config.IsValid() && shouldRedirect {
-			if !strings.HasPrefix(r.URL.Path, "/setup") {
-				http.Redirect(w, r, "/setup", 301)
+			// #539 - don't redirect if loading login page
+			if !strings.HasPrefix(r.URL.Path, setupEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) {
+				http.Redirect(w, r, setupEndPoint, 301)
 				return
 			}
 		}
@@ -386,8 +391,9 @@ func DatabaseCheckMiddleware(next http.Handler) http.Handler {
 		shouldRedirect := ext == "" && r.Method == "GET"
 		if shouldRedirect && database.NeedsMigration() {
 			// #451 - don't redirect if loading login page
-			if !strings.HasPrefix(r.URL.Path, "/migrate") && !strings.HasPrefix(r.URL.Path, "/login") {
-				http.Redirect(w, r, "/migrate", 301)
+			// #539 - or setup page
+			if !strings.HasPrefix(r.URL.Path, migrateEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) && !strings.HasPrefix(r.URL.Path, setupEndPoint) {
+				http.Redirect(w, r, migrateEndPoint, 301)
 				return
 			}
 		}
