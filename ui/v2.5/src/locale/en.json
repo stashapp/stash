@@ -1,4 +1,5 @@
 {
+  "developmentVersion": "Development Version",
   "galleries": "Galleries",
   "library-size": "Library size",
   "markers": "Markers",
@@ -7,5 +8,6 @@
   "performers": "Performers",
   "scenes": "Scenes",
   "studios": "Studios",
-  "tags": "Tags"
+  "tags": "Tags",
+  "up-dir": "Up a directory"
 }
