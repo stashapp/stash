@@ -16,6 +16,7 @@ type ScenePreviewChunkOptions struct {
 func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePreviewChunkOptions, preset string) {
 	args := []string{
 		"-v", "error",
+		"-xerror",
 		"-ss", strconv.Itoa(options.Time),
 		"-i", probeResult.Path,
 		"-t", "0.75",
