@@ -25,7 +25,7 @@ func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePre
 		"-pix_fmt", "yuv420p",
 		"-profile:v", "high",
 		"-level", "4.2",
-		"-preset", "veryslow",
+		"-preset", "slow",
 		"-crf", "21",
 		"-threads", "4",
 		"-vf", fmt.Sprintf("scale=%v:-2", options.Width),

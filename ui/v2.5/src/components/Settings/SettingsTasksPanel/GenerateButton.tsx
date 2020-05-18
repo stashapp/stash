@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { StashService } from "src/core/StashService";
+import { mutateMetadataGenerate } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
 export const GenerateButton: React.FC = () => {
@@ -8,15 +8,17 @@ export const GenerateButton: React.FC = () => {
   const [sprites, setSprites] = useState(true);
   const [previews, setPreviews] = useState(true);
   const [markers, setMarkers] = useState(true);
-  const [transcodes, setTranscodes] = useState(true);
+  const [transcodes, setTranscodes] = useState(false);
+  const [thumbnails, setThumbnails] = useState(false);
 
   async function onGenerate() {
     try {
-      await StashService.mutateMetadataGenerate({
+      await mutateMetadataGenerate({
         sprites,
         previews,
         markers,
         transcodes,
+        thumbnails,
       });
       Toast.success({ content: "Started generating" });
     } catch (e) {
@@ -50,6 +52,12 @@ export const GenerateButton: React.FC = () => {
           checked={transcodes}
           label="Transcodes (MP4 conversions of unsupported video formats)"
           onChange={() => setTranscodes(!transcodes)}
+        />
+        <Form.Check
+          id="thumbnail-task"
+          checked={thumbnails}
+          label="Gallery thumbnails (thumbnails for all the gallery images)"
+          onChange={() => setThumbnails(!thumbnails)}
         />
       </Form.Group>
       <Form.Group>

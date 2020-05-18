@@ -3,7 +3,12 @@ import queryString from "query-string";
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import {
+  useFindScene,
+  useSceneIncrementO,
+  useSceneDecrementO,
+  useSceneResetO,
+} from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
@@ -24,11 +29,11 @@ export const Scene: React.FC = () => {
   const Toast = useToast();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
-  const { data, error, loading } = StashService.useFindScene(id);
+  const { data, error, loading } = useFindScene(id);
   const [oLoading, setOLoading] = useState(false);
-  const [incrementO] = StashService.useSceneIncrementO(scene?.id ?? "0");
-  const [decrementO] = StashService.useSceneDecrementO(scene?.id ?? "0");
-  const [resetO] = StashService.useSceneResetO(scene?.id ?? "0");
+  const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
+  const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
+  const [resetO] = useSceneResetO(scene?.id ?? "0");
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";

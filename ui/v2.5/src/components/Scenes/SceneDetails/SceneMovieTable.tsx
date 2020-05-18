@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { useAllMoviesForFilter } from "src/core/StashService";
 import { Form } from "react-bootstrap";
 
 type ValidTypes = GQL.SlimMovieDataFragment;
@@ -15,7 +15,7 @@ export interface IProps {
 export const SceneMovieTable: React.FunctionComponent<IProps> = (
   props: IProps
 ) => {
-  const { data } = StashService.useAllMoviesForFilter();
+  const { data } = useAllMoviesForFilter();
 
   const items = !!data && !!data.allMoviesSlim ? data.allMoviesSlim : [];
   let itemsFilter: ValidTypes[] = [];
@@ -49,7 +49,7 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
                 as="select"
                 className="input-control"
                 value={storeIdx[index] ? storeIdx[index]?.toString() : ""}
-                onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   updateFieldChanged(
                     item.id,
                     Number.parseInt(

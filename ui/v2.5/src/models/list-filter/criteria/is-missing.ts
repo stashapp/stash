@@ -12,12 +12,14 @@ export class SceneIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "sceneIsMissing";
   public options: string[] = [
     "title",
+    "details",
     "url",
     "date",
     "gallery",
     "studio",
     "movie",
     "performers",
+    "tags",
   ];
 }
 

@@ -1,7 +1,7 @@
 import { Button } from "react-bootstrap";
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { mutateMetadataAutoTag } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
 interface IPerformerOperationsProps {
@@ -18,7 +18,7 @@ export const PerformerOperationsPanel: React.FC<IPerformerOperationsProps> = ({
       return;
     }
     try {
-      await StashService.mutateMetadataAutoTag({ performers: [performer.id] });
+      await mutateMetadataAutoTag({ performers: [performer.id] });
       Toast.success({ content: "Started auto tagging" });
     } catch (e) {
       Toast.error(e);

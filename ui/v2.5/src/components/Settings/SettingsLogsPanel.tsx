@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer, useState } from "react";
 import { Form } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { useLogs, useLoggingSubscribe } from "src/core/StashService";
 
 function convertTime(logEntry: GQL.LogEntryDataFragment) {
   function pad(val: number) {
@@ -74,8 +74,8 @@ const logReducer = (existingEntries: LogEntry[], newEntries: LogEntry[]) => [
 ];
 
 export const SettingsLogsPanel: React.FC = () => {
-  const { data, error } = StashService.useLoggingSubscribe();
-  const { data: existingData } = StashService.useLogs();
+  const { data, error } = useLoggingSubscribe();
+  const { data: existingData } = useLogs();
   const [currentData, dispatchLogUpdate] = useReducer(logReducer, []);
   const [logLevel, setLogLevel] = useState<string>("Info");
 

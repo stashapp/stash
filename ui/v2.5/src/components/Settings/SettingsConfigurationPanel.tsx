@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import { useConfiguration, useConfigureGeneral } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
@@ -16,6 +16,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [generatedPath, setGeneratedPath] = useState<string | undefined>(
     undefined
   );
+  const [cachePath, setCachePath] = useState<string | undefined>(undefined);
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
@@ -36,12 +37,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
     undefined
   );
 
-  const { data, error, loading } = StashService.useConfiguration();
+  const { data, error, loading } = useConfiguration();
 
-  const [updateGeneralConfig] = StashService.useConfigureGeneral({
+  const [updateGeneralConfig] = useConfigureGeneral({
     stashes,
     databasePath,
     generatedPath,
+    cachePath,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
     forceMkv,
@@ -65,6 +67,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setStashes(conf.general.stashes ?? []);
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
+      setCachePath(conf.general.cachePath);
       setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
@@ -189,7 +192,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={databasePath}
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setDatabasePath(e.currentTarget.value)
             }
           />
@@ -203,13 +206,27 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={generatedPath}
-            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setGeneratedPath(e.currentTarget.value)
             }
           />
           <Form.Text className="text-muted">
             Directory location for the generated files (scene markers, scene
             previews, sprites, etc)
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="cache-path">
+          <h6>Cache Path</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={cachePath}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setCachePath(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Directory location of the cache
           </Form.Text>
         </Form.Group>
 
@@ -222,7 +239,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
                   <Form.Control
                     className="col col-sm-6 text-input"
                     value={regexp}
-                    onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       excludeRegexChanged(i, e.currentTarget.value)
                     }
                   />
@@ -262,7 +279,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 input-control"
             as="select"
-            onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setMaxTranscodeSize(translateQuality(event.currentTarget.value))
             }
             value={resolutionToString(maxTranscodeSize)}
@@ -282,7 +299,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Control
             className="col col-sm-6 input-control"
             as="select"
-            onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setMaxStreamingTranscodeSize(
                 translateQuality(event.currentTarget.value)
               )
@@ -332,7 +349,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Control
           className="col col-sm-6 text-input"
           defaultValue={scraperUserAgent}
-          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setScraperUserAgent(e.currentTarget.value)
           }
         />
@@ -425,7 +442,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Control
           className="col col-sm-6 input-control"
           as="select"
-          onChange={(event: React.FormEvent<HTMLSelectElement>) =>
+          onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
             setLogLevel(event.currentTarget.value)
           }
           value={logLevel}

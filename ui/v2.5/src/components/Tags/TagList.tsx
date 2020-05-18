@@ -2,7 +2,13 @@ import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import {
+  mutateMetadataAutoTag,
+  useAllTags,
+  useTagUpdate,
+  useTagCreate,
+  useTagDestroy,
+} from "src/core/StashService";
 import { NavUtils } from "src/utils";
 import { Icon, Modal, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
@@ -18,16 +24,10 @@ export const TagList: React.FC = () => {
     GQL.TagDataFragment
   > | null>(null);
 
-  const { data, error } = StashService.useAllTags();
-  const [updateTag] = StashService.useTagUpdate(
-    getTagInput() as GQL.TagUpdateInput
-  );
-  const [createTag] = StashService.useTagCreate(
-    getTagInput() as GQL.TagCreateInput
-  );
-  const [deleteTag] = StashService.useTagDestroy(
-    getDeleteTagInput() as GQL.TagDestroyInput
-  );
+  const { data, error } = useAllTags();
+  const [updateTag] = useTagUpdate(getTagInput() as GQL.TagUpdateInput);
+  const [createTag] = useTagCreate(getTagInput() as GQL.TagCreateInput);
+  const [deleteTag] = useTagDestroy(getDeleteTagInput() as GQL.TagDestroyInput);
 
   function getTagInput() {
     const tagInput: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = { name };
@@ -62,7 +62,7 @@ export const TagList: React.FC = () => {
   async function onAutoTag(tag: GQL.TagDataFragment) {
     if (!tag) return;
     try {
-      await StashService.mutateMetadataAutoTag({ tags: [tag.id] });
+      await mutateMetadataAutoTag({ tags: [tag.id] });
       Toast.success({ content: "Started auto tagging" });
     } catch (e) {
       Toast.error(e);
@@ -160,7 +160,7 @@ export const TagList: React.FC = () => {
         <Form.Group controlId="tag-name">
           <Form.Label>Name</Form.Label>
           <Form.Control
-            onChange={(newValue: React.FormEvent<HTMLInputElement>) =>
+            onChange={(newValue: React.ChangeEvent<HTMLInputElement>) =>
               setName(newValue.currentTarget.value)
             }
             defaultValue={(editingTag && editingTag.name) || ""}

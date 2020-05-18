@@ -1,7 +1,12 @@
 /* eslint-disable react/no-this-in-sfc */
 import React, { useEffect, useState, useCallback } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { StashService } from "src/core/StashService";
+import {
+  useFindMovie,
+  useMovieUpdate,
+  useMovieCreate,
+  useMovieDestroy,
+} from "src/core/StashService";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
 import {
@@ -53,14 +58,10 @@ export const Movie: React.FC = () => {
   );
 
   // Network state
-  const { data, error, loading } = StashService.useFindMovie(id);
-  const [updateMovie] = StashService.useMovieUpdate(
-    getMovieInput() as GQL.MovieUpdateInput
-  );
-  const [createMovie] = StashService.useMovieCreate(
-    getMovieInput() as GQL.MovieCreateInput
-  );
-  const [deleteMovie] = StashService.useMovieDestroy(
+  const { data, error, loading } = useFindMovie(id);
+  const [updateMovie] = useMovieUpdate(getMovieInput() as GQL.MovieUpdateInput);
+  const [createMovie] = useMovieCreate(getMovieInput() as GQL.MovieCreateInput);
+  const [deleteMovie] = useMovieDestroy(
     getMovieInput() as GQL.MovieDestroyInput
   );
 
@@ -104,8 +105,8 @@ export const Movie: React.FC = () => {
     setBackImage(this.result as string);
   }
 
-  ImageUtils.usePasteImage(onImageLoad);
-  ImageUtils.usePasteImage(onBackImageLoad);
+  ImageUtils.usePasteImage(onImageLoad, isEditing);
+  ImageUtils.usePasteImage(onBackImageLoad, isEditing);
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
@@ -280,7 +281,7 @@ export const Movie: React.FC = () => {
             as="textarea"
             readOnly={!isEditing}
             className="movie-synopsis text-input"
-            onChange={(newValue: React.FormEvent<HTMLTextAreaElement>) =>
+            onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
               setSynopsis(newValue.currentTarget.value)
             }
             value={synopsis}

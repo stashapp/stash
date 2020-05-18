@@ -24,12 +24,10 @@ func (t *AutoTagPerformerTask) Start(wg *sync.WaitGroup) {
 func getQueryRegex(name string) string {
 	const separatorChars = `.\-_ `
 	// handle path separators
-	const endSeparatorChars = separatorChars + `\\/`
 	const separator = `[` + separatorChars + `]`
-	const endSeparator = `[` + endSeparatorChars + `]`
 
 	ret := strings.Replace(name, " ", separator+"*", -1)
-	ret = "(?:^|" + endSeparator + "+)" + ret + "(?:$|" + endSeparator + "+)"
+	ret = `(?:^|_|[^\w\d])` + ret + `(?:$|_|[^\w\d])`
 	return ret
 }
 

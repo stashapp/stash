@@ -103,8 +103,7 @@ func (qb *TagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int, tx *sqlx.Tx) (
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scene_markers_tags as scene_markers_join on scene_markers_join.tag_id = tags.id
-		LEFT JOIN scene_markers on scene_markers_join.scene_marker_id = scene_markers.id
-		WHERE scene_markers.id = ?
+		WHERE scene_markers_join.scene_marker_id = ?
 		GROUP BY tags.id
 	`
 	query += qb.getTagSort(nil)
