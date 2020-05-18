@@ -94,10 +94,11 @@ func (qb *MovieQueryBuilder) FindByName(name string, tx *sqlx.Tx, nocase bool) (
 }
 
 func (qb *MovieQueryBuilder) FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*Movie, error) {
-	query := "SELECT * FROM movies WHERE name IN " + getInBinding(len(names))
+	query := "SELECT * FROM movies WHERE name"
 	if nocase {
 		query += " COLLATE NOCASE"
 	}
+	query += " IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
 		args = append(args, name)

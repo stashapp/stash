@@ -96,10 +96,12 @@ func (qb *PerformerQueryBuilder) FindNameBySceneID(sceneID int, tx *sqlx.Tx) ([]
 }
 
 func (qb *PerformerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*Performer, error) {
-	query := "SELECT * FROM performers WHERE name IN " + getInBinding(len(names))
+	query := "SELECT * FROM performers WHERE name"
 	if nocase {
 		query += " COLLATE NOCASE"
 	}
+	query += " IN " + getInBinding(len(names))
+
 	var args []interface{}
 	for _, name := range names {
 		args = append(args, name)
