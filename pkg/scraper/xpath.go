@@ -164,7 +164,7 @@ func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
 	result := []string{}
 
 	for _, elem := range nodes {
-		text := htmlquery.InnerText(elem)
+		text := NodeText(elem)
 		text = commonPostProcess(text)
 
 		result = append(result, text)
@@ -220,7 +220,7 @@ func (c xpathScraperAttrConfig) applySubScraper(value string) string {
 		if subScraper.hasConcat() {
 			result = subScraper.concatenateResults(found)
 		} else {
-			result = htmlquery.InnerText(found[0])
+			result = NodeText(found[0])
 			result = commonPostProcess(result)
 		}
 
@@ -277,7 +277,7 @@ func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xP
 
 			if len(found) > 0 {
 				for i, elem := range found {
-					text := htmlquery.InnerText(elem)
+					text := NodeText(elem)
 					text = commonPostProcess(text)
 
 					ret = ret.setKey(i, k, text)
@@ -297,7 +297,7 @@ func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xP
 					ret = ret.setKey(i, k, result)
 				} else {
 					for i, elem := range found {
-						text := htmlquery.InnerText(elem)
+						text := NodeText(elem)
 						text = commonPostProcess(text)
 						text = attrConfig.postProcess(text)
 
@@ -602,4 +602,11 @@ func scrapePerformerNamesXPath(c scraperTypeConfig, name string) ([]*models.Scra
 	}
 
 	return scraper.scrapePerformers(doc)
+}
+
+func NodeText(n *html.Node) string {
+	if n != nil && n.Type == html.CommentNode {
+		return htmlquery.OutputHTML(n, true)
+	}
+	return htmlquery.InnerText(n)
 }
