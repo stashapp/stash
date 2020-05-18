@@ -12,7 +12,9 @@ export const GenerateButton: React.FC = () => {
   const [transcodes, setTranscodes] = useState(false);
   const [thumbnails, setThumbnails] = useState(false);
   const [imagePreviews, setImagePreviews] = useState(false);
-  const [previewPreset, setPreviewPreset] = useState<string>(PreviewPreset.Slow);
+  const [previewPreset, setPreviewPreset] = useState<string>(
+    PreviewPreset.Slow
+  );
 
   async function onGenerate() {
     try {
@@ -23,7 +25,7 @@ export const GenerateButton: React.FC = () => {
         markers,
         transcodes,
         thumbnails,
-        previewPreset: (previewPreset as PreviewPreset) ?? undefined
+        previewPreset: (previewPreset as PreviewPreset) ?? undefined,
       });
       Toast.success({ content: "Started generating" });
     } catch (e) {
@@ -55,13 +57,22 @@ export const GenerateButton: React.FC = () => {
           <Form.Control
             as="select"
             value={previewPreset}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPreviewPreset(e.currentTarget.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setPreviewPreset(e.currentTarget.value)
+            }
             disabled={!previews}
             className="col-1"
           >
-            { Object.keys(PreviewPreset).map(p => <option value={p.toLowerCase()} key={p}>{p}</option>) }
+            {Object.keys(PreviewPreset).map((p) => (
+              <option value={p.toLowerCase()} key={p}>
+                {p}
+              </option>
+            ))}
           </Form.Control>
-          <Form.Text className="text-muted">Encoder preset: Slower presets can give somewhat smaller files with possibly better quality, but slower than Slow is not recommended.</Form.Text>
+          <Form.Text className="text-muted">
+            Encoder preset: Slower presets can give somewhat smaller files with
+            possibly better quality, but slower than Slow is not recommended.
+          </Form.Text>
         </Form.Group>
         <Form.Check
           id="sprite-task"

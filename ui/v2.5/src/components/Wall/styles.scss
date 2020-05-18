@@ -71,15 +71,15 @@
       z-index: 0;
     }
 
-    &:nth-last-child(-n+5) &-container {
+    &:nth-last-child(-n + 5) &-container {
       transform-origin: bottom;
     }
 
-    &:nth-child(-n+5) &-container {
+    &:nth-child(-n + 5) &-container {
       transform-origin: top;
     }
 
-    &:nth-child(5n+1) &-container {
+    &:nth-child(5n + 1) &-container {
       transform-origin: left;
     }
 

@@ -13,15 +13,11 @@ interface IWallPanelProps {
 export const WallPanel: React.FC<IWallPanelProps> = (
   props: IWallPanelProps
 ) => {
-  const scenes = (props.scenes ?? []).map(scene => (
-    <WallItem
-      key={scene.id}
-      scene={scene}
-      clickHandler={props.clickHandler}
-    />
+  const scenes = (props.scenes ?? []).map((scene) => (
+    <WallItem key={scene.id} scene={scene} clickHandler={props.clickHandler} />
   ));
 
-  const sceneMarkers = (props.sceneMarkers ?? []).map(marker => (
+  const sceneMarkers = (props.sceneMarkers ?? []).map((marker) => (
     <WallItem
       key={marker.id}
       sceneMarker={marker}

@@ -19,7 +19,11 @@ interface IPreviews {
   image?: string;
 }
 
-const Preview: React.FC<{previews?: IPreviews, config?: GQL.ConfigDataFragment, active: boolean }> = ({ previews, config, active }) => {
+const Preview: React.FC<{
+  previews?: IPreviews;
+  config?: GQL.ConfigDataFragment;
+  active: boolean;
+}> = ({ previews, config, active }) => {
   const videoElement = useRef() as React.MutableRefObject<HTMLVideoElement>;
 
   const previewType = config?.interface?.wallPlayback;
@@ -29,24 +33,32 @@ const Preview: React.FC<{previews?: IPreviews, config?: GQL.ConfigDataFragment, 
     if (!videoElement.current) return;
     videoElement.current.muted = !(soundOnPreview && active);
     if (previewType !== "video") {
-      if (active)
-        videoElement.current.play();
-      else
-        videoElement.current.pause();
+      if (active) videoElement.current.play();
+      else videoElement.current.pause();
     }
   }, [videoElement, previewType, soundOnPreview, active]);
 
   if (!previews) return <div />;
 
-  const image = <img alt="" className="wall-item-media" src={(previewType === "animation" && previews.animation) || previews.image} />;
-  const video =  (
+  const image = (
+    <img
+      alt=""
+      className="wall-item-media"
+      src={
+        (previewType === "animation" && previews.animation) || previews.image
+      }
+    />
+  );
+  const video = (
     <video
       src={previews.video}
       poster={previews.image}
       autoPlay={previewType === "video"}
       loop
       muted
-      className={cx("wall-item-media", { "wall-item-preview": previewType !== "video" })}
+      className={cx("wall-item-media", {
+        "wall-item-preview": previewType !== "video",
+      })}
       ref={videoElement}
     />
   );
@@ -56,8 +68,8 @@ const Preview: React.FC<{previews?: IPreviews, config?: GQL.ConfigDataFragment, 
   }
   return (
     <>
-      { image }
-      { video }
+      {image}
+      {video}
     </>
   );
 };
@@ -67,35 +79,36 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   const wallItem = useRef() as React.MutableRefObject<HTMLDivElement>;
   const config = useConfiguration();
 
-  const showTextContainer = config.data?.configuration.interface.wallShowTitle ?? true;
+  const showTextContainer =
+    config.data?.configuration.interface.wallShowTitle ?? true;
 
-  const previews = props.sceneMarker ? {
-    video: props.sceneMarker.stream,
-    animation: props.sceneMarker.preview
-  } : {
-    video: props.scene?.paths.preview ?? undefined,
-    animation: props.scene?.paths.webp ?? undefined,
-    image: props.scene?.paths.screenshot ?? undefined
-  };
+  const previews = props.sceneMarker
+    ? {
+        video: props.sceneMarker.stream,
+        animation: props.sceneMarker.preview,
+      }
+    : {
+        video: props.scene?.paths.preview ?? undefined,
+        animation: props.scene?.paths.webp ?? undefined,
+        image: props.scene?.paths.screenshot ?? undefined,
+      };
 
-  const setInactive = () => (
-    setActive(false)
-  );
+  const setInactive = () => setActive(false);
   const toggleActive = (e: TransitionEvent) => {
     if (e.propertyName === "transform" && e.elapsedTime === 0) {
-      const newActive = getComputedStyle(wallItem.current).transform !== 'none';
+      const newActive = getComputedStyle(wallItem.current).transform !== "none";
       setActive(newActive);
     }
   };
 
   useEffect(() => {
     const { current } = wallItem;
-    current?.addEventListener('transitioncancel', setInactive);
-    current?.addEventListener('transitionstart', toggleActive);
+    current?.addEventListener("transitioncancel", setInactive);
+    current?.addEventListener("transitionstart", toggleActive);
     return () => {
-      current?.removeEventListener('transitioncancel', setInactive);
-      current?.removeEventListener('transitionstart', toggleActive);
-    }
+      current?.removeEventListener("transitioncancel", setInactive);
+      current?.removeEventListener("transitionstart", toggleActive);
+    };
   });
 
   const clickHandler = () => {
@@ -105,7 +118,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
     if (props.sceneMarker) {
       props?.clickHandler?.(props.sceneMarker);
     }
-  }
+  };
 
   let linkSrc: string = "#";
   if (!props.clickHandler) {
@@ -120,14 +133,18 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
     if (!showTextContainer) return;
 
     const title = props.sceneMarker
-      ? `${props.sceneMarker!.title} - ${TextUtils.secondsToTimestamp(props.sceneMarker.seconds)}`
+      ? `${props.sceneMarker!.title} - ${TextUtils.secondsToTimestamp(
+          props.sceneMarker.seconds
+        )}`
       : props.scene?.title ?? "";
-    const tags = props.sceneMarker ? [ props.sceneMarker.primary_tag, ...props.sceneMarker.tags] : [];
+    const tags = props.sceneMarker
+      ? [props.sceneMarker.primary_tag, ...props.sceneMarker.tags]
+      : [];
 
     return (
       <div className="wall-item-text">
         <div>{title}</div>
-        { tags.map(tag => (
+        {tags.map((tag) => (
           <span key={tag.id} className="wall-tag">
             {tag.name}
           </span>
@@ -140,8 +157,12 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
     <div className="wall-item">
       <div className="wall-item-container" ref={wallItem}>
         <Link onClick={clickHandler} to={linkSrc}>
-          <Preview previews={previews} config={config.data?.configuration} active={active} />
-          { renderText }
+          <Preview
+            previews={previews}
+            config={config.data?.configuration}
+            active={active}
+          />
+          {renderText}
         </Link>
       </div>
     </div>
