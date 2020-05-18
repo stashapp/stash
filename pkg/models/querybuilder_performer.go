@@ -95,8 +95,11 @@ func (qb *PerformerQueryBuilder) FindNameBySceneID(sceneID int, tx *sqlx.Tx) ([]
 	return qb.queryPerformers(query, args, tx)
 }
 
-func (qb *PerformerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]*Performer, error) {
+func (qb *PerformerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*Performer, error) {
 	query := "SELECT * FROM performers WHERE name IN " + getInBinding(len(names))
+	if nocase {
+		query += " COLLATE NOCASE"
+	}
 	var args []interface{}
 	for _, name := range names {
 		args = append(args, name)
