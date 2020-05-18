@@ -74,7 +74,12 @@ func (c xpathRegexConfig) apply(value string) string {
 			return value
 		}
 
-		return re.ReplaceAllString(value, with)
+		ret := re.ReplaceAllString(value, with)
+
+		logger.Debugf(`Replace: '%s' with '%s'`, regex, with)
+		logger.Debugf("Before: %s", value)
+		logger.Debugf("After: %s", ret)
+		return ret
 	}
 
 	return value
@@ -205,6 +210,7 @@ func (c xpathScraperAttrConfig) applySubScraper(value string) string {
 		return value
 	}
 
+	logger.Debugf("Sub-scraping for: %s", value)
 	doc, err := loadURL(value, nil)
 
 	if err != nil {
@@ -508,6 +514,7 @@ func (r xPathResults) setKey(index int, key string, value string) xPathResults {
 		r = append(r, make(xPathResult))
 	}
 
+	logger.Debugf(`[%d][%s] = %s`, index, key, value)
 	r[index][key] = value
 	return r
 }
