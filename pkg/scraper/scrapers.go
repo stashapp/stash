@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"strconv"
 
@@ -21,7 +22,13 @@ func loadScrapers() ([]scraperConfig, error) {
 	scrapers = make([]scraperConfig, 0)
 
 	logger.Debugf("Reading scraper configs from %s", path)
-	scraperFiles, err := filepath.Glob(filepath.Join(path, "*.yml"))
+	scraperFiles := []string{}
+	err := filepath.Walk(path, func(fp string, f os.FileInfo, err error) error {
+		if filepath.Ext(fp) == ".yml" {
+			scraperFiles = append(scraperFiles, fp)
+		}
+		return nil
+	})
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
