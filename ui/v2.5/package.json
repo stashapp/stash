@@ -45,6 +45,7 @@
     "graphql": "^14.5.8",
     "graphql-tag": "^2.10.3",
     "i18n-iso-countries": "^5.2.0",
+    "jimp": "^0.12.1",
     "localforage": "1.7.3",
     "lodash": "^4.17.15",
     "query-string": "6.12.1",
