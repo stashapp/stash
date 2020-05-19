@@ -393,6 +393,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   if (isLoading) return <LoadingIndicator />;
 
   return (
+    <>
     <div className="form-container row p-3">
       <div className="col edit-buttons mb-3 pl-0">
         <Button className="edit-button" variant="primary" onClick={onSave}>
@@ -408,8 +409,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       </div>
       {renderScraperMenu()}
       {renderDeleteAlert()}
-
-      <div className="w-100">
+    </div>
+    <div className="form-container row p-3">
+      <div className="col-12 col-lg-6 col-xl-12">
         <Table id="scene-edit-details">
           <tbody>
             {TableUtils.renderInputGroup({
@@ -506,7 +508,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           </tbody>
         </Table>
       </div>
-      <div className="w-100">
+      <div className="col-12 col-lg-6 col-xl-12">
         <Form.Group controlId="details">
           <Form.Label>Details</Form.Label>
           <Form.Control
@@ -532,5 +534,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
