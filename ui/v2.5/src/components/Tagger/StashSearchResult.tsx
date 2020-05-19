@@ -3,6 +3,7 @@ import { blobToBase64 } from 'base64-blob';
 import { loader } from 'graphql.macro';
 import cx from 'classnames';
 import { Button } from 'react-bootstrap';
+import { sortBy } from 'lodash';
 
 import {
   SearchScene_searchScene as SearchResult,
@@ -15,7 +16,16 @@ import {
   SubmitFingerprintVariables,
   SubmitFingerprint
 } from 'src/definitions-box/SubmitFingerprint';
-import { FindPerformersDocument, FindStudioByUrlDocument, AllTagsForFilterDocument } from '../../core/generated-graphql';
+import {
+  FindPerformersDocument,
+  FindStudioByUrlDocument,
+  AllPerformersForFilterQueryResult,
+  AllPerformersForFilterDocument,
+  AllStudiosForFilterQueryResult,
+  AllStudiosForFilterDocument,
+  AllTagsForFilterQueryResult,
+  AllTagsForFilterDocument,
+} from '../../core/generated-graphql';
 import PerformerResult from './PerformerResult';
 import StudioResult from './StudioResult';
 import {
@@ -144,6 +154,21 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
               findStudioByURL: newStudio.data.studioCreate
             }
           });
+
+          const currentQuery = store.readQuery<AllStudiosForFilterQueryResult>({
+            query: AllStudiosForFilterDocument,
+            variables: {},
+          });
+          const allStudiosSlim = sortBy([(currentQuery?.data?.allStudiosSlim ?? []), newStudio.data.studioCreate], ['name']);
+          if (allStudiosSlim.length > 1) {
+            store.writeQuery({
+              query: AllStudiosForFilterDocument,
+              variables: {},
+              data: {
+                allStudiosSlim
+              }
+            });
+          }
         }
       });
 
@@ -249,6 +274,21 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
                 }
               }
             });
+
+            const currentQuery = store.readQuery<AllPerformersForFilterQueryResult>({
+              query: AllPerformersForFilterDocument,
+              variables: {},
+            });
+            const allPerformersSlim = sortBy([(currentQuery?.data?.allPerformersSlim ?? []), newPerformer.data.performerCreate], ['name']);
+            if (allPerformersSlim.length > 1) {
+              store.writeQuery({
+                query: AllPerformersForFilterDocument,
+                variables: {},
+                data: {
+                  allPerformersSlim
+                }
+              });
+            }
           }
         });
 
@@ -299,11 +339,17 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
               if (!_newTag.data?.tagCreate)
                 return;
 
+              const currentQuery = store.readQuery<AllTagsForFilterQueryResult>({
+                query: AllTagsForFilterDocument,
+                variables: {},
+              });
+              const allTagsSlim = sortBy([(currentQuery?.data?.allTagsSlim ?? []), _newTag.data.tagCreate], ['name']);
+
               store.writeQuery({
                 query: AllTagsForFilterDocument,
                 variables: {},
                 data: {
-                  allTagsSlim: [...(allTags?.allTagsSlim ?? []), _newTag.data.tagCreate],
+                  allTagsSlim
                 }
               });
             }
@@ -349,7 +395,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
     }
   };
 
-  const classname = cx('row mb-4 search-result', { 'selected-result': isActive });
+  const classname = cx('row no-gutters mt-2 search-result', { 'selected-result': isActive });
 
   const sceneTitle = getUrlByType(scene.urls, 'STUDIO') ? (
     <a href={getUrlByType(scene.urls, 'STUDIO')} target="_blank" rel="noopener noreferrer" className="scene-link">{scene?.title}</a>
@@ -367,7 +413,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       <div className="col-6 row">
         <img src={getImage(scene?.images, 'landscape')} alt="" className="align-self-center scene-image" />
         <div className="d-flex flex-column justify-content-center scene-metadata">
-          <h4 className="text-truncate">{ sceneTitle }</h4>
+          <h4 className="text-truncate" title={ scene?.title ?? "" }>{ sceneTitle }</h4>
           <h5>{scene?.studio?.name} • {scene?.date}</h5>
           <div>Performers: {scene?.performers?.map(p => p.performer.name).join(', ')}</div>
           { getDurationStatus(scene, stashScene.file?.duration) }

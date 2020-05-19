@@ -101,8 +101,12 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
   if(stashData?.findStudioByURL) {
     return (
       <div className="row my-2">
+        <div className="entity-name">
+          Studio:
+          <b className="ml-2">{studio?.name}</b>
+        </div>
         <span className="ml-auto">
-          <SuccessIcon />Studio matched:
+          <SuccessIcon />Matched:
         </span>
         <b className="col-3 text-right">{ stashData.findStudioByURL.name }</b>
       </div>

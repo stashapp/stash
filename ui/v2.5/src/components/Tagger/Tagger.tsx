@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
-import { Badge, Button, Collapse, Form, InputGroup } from 'react-bootstrap';
+import { Badge, Button, Card, Collapse, Form, InputGroup } from 'react-bootstrap';
 import path from 'parse-filepath';
 import { debounce } from "lodash";
 import localForage from "localforage";
+import queryStringParser from "query-string";
+import { useHistory } from "react-router-dom";
 
 import { FingerprintAlgorithm } from 'src/definitions-box/globalTypes';
 import * as GQL from 'src/core/generated-graphql';
@@ -77,11 +79,34 @@ interface ITaggerConfig {
   tagOperation: string;
 }
 
+const parsePage = (searchQuery: string) => {
+  const parsedPage = queryStringParser.parse(searchQuery);
+  if (!parsedPage?.page) {
+    return 1;
+  }
+  if (Array.isArray(parsedPage.page)) {
+    return Number.parseInt(parsedPage.page[0]) ?? 1;
+  }
+  return Number.parseInt(parsedPage.page) ?? 1;
+}
+
+const parseTerm = (searchQuery: string) => {
+  const parsedPage = queryStringParser.parse(searchQuery);
+  if (!parsedPage?.term) {
+    return "";
+  }
+  if (Array.isArray(parsedPage.term)) {
+    return parsedPage.term[0] ?? "";
+  }
+  return parsedPage.term ?? "";
+}
+
 export const Tagger: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
-  const [searchFilter, setSearchFilter] = useState('');
-  const [page, setPage] = useState(1);
+  const history = useHistory();
+  const [searchFilter, setSearchFilter] = useState(parseTerm(history.location.search));
+  const [page, setPage] = useState(parsePage(history.location.search));
   const [searchResults, setSearchResults] = useState<Record<string, SearchScene|null>>({});
   const [queryString, setQueryString] = useState<Record<string, string>>({});
   const [selectedResult, setSelectedResult] = useState<Record<string, number>>();
@@ -115,6 +140,14 @@ export const Tagger: React.FC = () => {
   useEffect(() => {
     localForage.setItem('tagger', config);
   }, [config]);
+
+  useEffect(() => {
+    const newQuery = queryStringParser.stringify({
+      page: page !== 1 ? page : undefined,
+      term: searchFilter !== "" ? searchFilter : undefined,
+    });
+    history.push(`?${newQuery}`);
+  }, [page, searchFilter]);
 
   const { data: sceneData, loading: sceneLoading } = GQL.useFindScenesQuery({
     variables: {
@@ -211,7 +244,7 @@ export const Tagger: React.FC = () => {
       <h2>StashDB Tagger</h2>
       <hr />
 
-      <div className="row mb-4 my-2">
+      <div className="row mb-4 mt-2">
         <div className="col-4">
           <Form.Group controlId="mode-select">
             <Form.Label><h5>Mode:</h5></Form.Label>
@@ -259,6 +292,7 @@ export const Tagger: React.FC = () => {
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => searchCallback(event.currentTarget.value)}
           ref={inputRef}
           placeholder="Search text"
+          defaultValue={searchFilter}
           disabled={sceneLoading}
         />
         <Button onClick={() => setShowConfig(!showConfig)} variant="link">{ showConfig ? 'Hide' : 'Show'} Configuration</Button>
@@ -273,7 +307,7 @@ export const Tagger: React.FC = () => {
       </div>
 
       <Collapse in={showConfig}>
-        <div className="card">
+        <Card>
           <div className="row">
             <Form className="col-6">
               <h4>Configuration</h4>
@@ -285,7 +319,7 @@ export const Tagger: React.FC = () => {
                 <Form.Check label="Set scene cover image" checked={config.setCoverImage} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, setCoverImage: e.currentTarget.checked })} />
                 <Form.Text>Replace the scene cover if one is found.</Form.Text>
               </Form.Group>
-              <Form.Group controlId="set-tags" className="align-items-center">
+              <Form.Group className="align-items-center">
                 <div className="d-flex align-items-center">
                   <Form.Check label="Set tags" className="mr-4" checked={config.setTags} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, setTags: e.currentTarget.checked })} />
                   <Form.Control
@@ -310,10 +344,10 @@ export const Tagger: React.FC = () => {
               <p><b>Please note</b> that this is still a work in progress, and the number of studios for which scenes are available is not exhaustive. For a complete list see <a href="https://stashdb.org/studios" target="_blank" rel="noopener noreferrer" className="btn-link">stashdb.org</a>.</p>
             </div>
           </div>
-        </div>
+        </Card>
       </Collapse>
 
-      <div className="tagger-table card">
+      <Card className="tagger-table">
         <div className="tagger-table-header row mb-4">
           <div className="col-6"><b>Path</b></div>
           <div className="col-4"><b>StashDB Query</b></div>
@@ -332,10 +366,10 @@ export const Tagger: React.FC = () => {
             const modifiedQuery = queryString[scene.id];
             const fingerprintMatch = fingerprints[scene.id];
             return (
-              <div key={scene.id} className="mb-4">
+              <div key={scene.id} className="my-2 search-item">
                 <div className="row">
-                  <div className="col-6">
-                    <a href={`/scenes/${scene.id}`} className="scene-link">{`${dir}/${parsedPath.base}`}</a>
+                  <div className="col-6 text-truncate align-self-center">
+                    <a href={`/scenes/${scene.id}`} className="scene-link" title={`${dir}/${parsedPath.base}`}>{dir}/<wbr />{parsedPath.base}</a>
                   </div>
                   <div className="col-6">
                     { !taggedScenes[scene.id] && scene?.url && scene.url.match(uuidRegexp) && <div className="col-5 offset-6 text-right"><b>Scene already tagged</b></div> }
@@ -343,7 +377,8 @@ export const Tagger: React.FC = () => {
                       <InputGroup>
                         <Form.Control
                           value={modifiedQuery || defaultQueryString}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQueryString({ ...queryString, [scene.id]: e.currentTarget.value})} />
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setQueryString({ ...queryString, [scene.id]: e.currentTarget.value})}
+                          onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && doBoxSearch(scene.id, queryString[scene.id] || defaultQueryString)} />
                         <InputGroup.Append>
                           <Button disabled={loading} onClick={() => doBoxSearch(scene.id, queryString[scene.id] || defaultQueryString)}>Search</Button>
                         </InputGroup.Append>
@@ -371,44 +406,42 @@ export const Tagger: React.FC = () => {
                     />
                 )}
                 { searchResults[scene.id] && !taggedScenes[scene.id] && !fingerprintMatch && (
-                  <div className="col mt-4">
-                    <ul className="pl-0">
-                      { searchResults[scene.id]?.searchScene.sort((a, b) => {
-                        if(!a?.duration && !b?.duration) return 0;
-                        if(a?.duration && !b?.duration) return -1;
-                        if(!a?.duration && b?.duration) return 1;
+                  <ul className="pl-0 mt-4">
+                    { searchResults[scene.id]?.searchScene.sort((a, b) => {
+                      if(!a?.duration && !b?.duration) return 0;
+                      if(a?.duration && !b?.duration) return -1;
+                      if(!a?.duration && b?.duration) return 1;
 
-                        const sceneDur = scene.file.duration;
-                        if(!sceneDur) return 0;
+                      const sceneDur = scene.file.duration;
+                      if(!sceneDur) return 0;
 
-                        const aDiff = Math.abs((a?.duration ?? 0) - sceneDur);
-                        const bDiff = Math.abs((b?.duration ?? 0) - sceneDur);
+                      const aDiff = Math.abs((a?.duration ?? 0) - sceneDur);
+                      const bDiff = Math.abs((b?.duration ?? 0) - sceneDur);
 
-                        if(aDiff < bDiff) return -1;
-                        if(aDiff > bDiff) return 1;
-                        return 0;
-                      }).map((sceneResult, i) => (
-                        sceneResult && (
-                          <StashSearchResult
-                            key={sceneResult.id}
-                            showMales={config.showMales}
-                            stashScene={scene}
-                            scene={sceneResult}
-                            isActive={(selectedResult?.[scene.id] ?? 0) === i}
-                            setActive={() => setSelectedResult({ ...selectedResult, [scene.id]: i})}
-                            setCoverImage={config.setCoverImage}
-                            setScene={handleTaggedScene}
-                          />
-                        )
-                      ))
-                      }
-                    </ul>
-                  </div>
+                      if(aDiff < bDiff) return -1;
+                      if(aDiff > bDiff) return 1;
+                      return 0;
+                    }).map((sceneResult, i) => (
+                      sceneResult && (
+                        <StashSearchResult
+                          key={sceneResult.id}
+                          showMales={config.showMales}
+                          stashScene={scene}
+                          scene={sceneResult}
+                          isActive={(selectedResult?.[scene.id] ?? 0) === i}
+                          setActive={() => setSelectedResult({ ...selectedResult, [scene.id]: i})}
+                          setCoverImage={config.setCoverImage}
+                          setScene={handleTaggedScene}
+                        />
+                      )
+                    ))
+                    }
+                  </ul>
                 )}
               </div>
             );
           })}
-      </div>
+      </Card>
     </div>
   );
 };

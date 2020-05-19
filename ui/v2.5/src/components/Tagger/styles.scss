@@ -3,17 +3,25 @@
   min-width: 1200px;
 }
 
+.search-item {
+  background-color: #495b68;
+  margin-left: -20px;
+  margin-right: -20px;
+  padding: 1rem;
+}
+
 .search-result {
-  padding: .5rem 0;
+  background-color: rgba(61, 80, 92, 0.3);
+  padding: .5rem 1rem;
 
   &:hover {
-    background-color: #495b68;
+    background-color: hsl(204, 20, 30);
     cursor: pointer;
   }
 }
 
 .selected-result {
-  background-color: #495b68;
+  background-color: hsl(204, 20, 30);
   border-radius: 3px;
 
   &:hover {
@@ -59,4 +67,5 @@
 
 .scene-link {
   color: $text-color;
+  font-weight: 500;
 }

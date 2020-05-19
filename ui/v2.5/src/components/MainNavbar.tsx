@@ -49,6 +49,10 @@ const messages = defineMessages({
     id: "galleries",
     defaultMessage: "Galleries",
   },
+  sceneTagger: {
+    id: "sceneTagger",
+    defaultMessage: "Scene Tagger",
+  },
 });
 
 const menuItems: IMenuItem[] = [
@@ -90,7 +94,7 @@ const menuItems: IMenuItem[] = [
   {
     href: "/tagger",
     icon: "archive",
-    messageID: "scene-tagger"
+    message: messages.sceneTagger,
   }
 ];
 

@@ -125,8 +125,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerfor
   if((stashData?.findPerformers.count ?? 0) > 0) {
     return (
       <div className="row my-2">
+        <div className="entity-name">
+          Performer:
+          <b className="ml-2">{performer.name}</b>
+        </div>
         <span className="ml-auto">
-          <SuccessIcon />Performer matched:
+          <SuccessIcon />Matched:
         </span>
         <b className="col-3 text-right">{ stashData!.findPerformers.performers[0].name }</b>
       </div>
