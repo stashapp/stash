@@ -546,7 +546,7 @@ func (p *SceneFilenameParser) queryPerformer(performerName string) *models.Perfo
 	}
 
 	// perform an exact match and grab the first
-	performers, _ := p.performerQuery.FindByNames([]string{performerName}, nil, false)
+	performers, _ := p.performerQuery.FindByNames([]string{performerName}, nil, true)
 
 	var ret *models.Performer
 	if len(performers) > 0 {
@@ -568,7 +568,7 @@ func (p *SceneFilenameParser) queryStudio(studioName string) *models.Studio {
 		return ret
 	}
 
-	ret, _ := p.studioQuery.FindByName(studioName, nil, false)
+	ret, _ := p.studioQuery.FindByName(studioName, nil, true)
 
 	// add result to cache
 	p.studioCache[studioName] = ret
@@ -585,7 +585,7 @@ func (p *SceneFilenameParser) queryMovie(movieName string) *models.Movie {
 		return ret
 	}
 
-	ret, _ := p.movieQuery.FindByName(movieName, nil, false)
+	ret, _ := p.movieQuery.FindByName(movieName, nil, true)
 
 	// add result to cache
 	p.movieCache[movieName] = ret
@@ -603,7 +603,7 @@ func (p *SceneFilenameParser) queryTag(tagName string) *models.Tag {
 	}
 
 	// match tag name exactly
-	ret, _ := p.tagQuery.FindByName(tagName, nil, false)
+	ret, _ := p.tagQuery.FindByName(tagName, nil, true)
 
 	// add result to cache
 	p.tagCache[tagName] = ret
