@@ -225,19 +225,20 @@ export const Scene: React.FC = () => {
   if (layout === "compact") {
     return (
       <div className="row">
-        <div className="col col-sm-3">
+        <div className="scene-tabs order-xl-first order-last" style={{ maxHeight: "calc(100vh - 4rem)" }}> {/*className="col-xl-4 overflow-auto order-xl-first order-last"*/}
           {renderTabs()}
         </div>
-        <div className="col col-sm-9">
+        <div className="scene-player-container"> {/*className="col-xl-8"*/}
           <ScenePlayer className="w-100 m-sm-auto no-gutter" scene={scene} timestamp={timestamp} autoplay={autoplay} />
           <div className="float-right">
-            <OCounterButton
+            {/* TODO - move this */}
+            {/* <OCounterButton
               loading={oLoading}
               value={scene.o_counter || 0}
               onIncrement={onIncrementClick}
               onDecrement={onDecrementClick}
               onReset={onResetClick}
-            />
+            /> */}
           </div>
         </div>
       </div>

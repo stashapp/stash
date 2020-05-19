@@ -162,8 +162,8 @@ export class ScenePlayerImpl extends React.Component<
           kind: "chapters",
         },
       ],
-      aspectratio: "16:9",
       width: "100%",
+      height: "100%",
       floating: {
         dismissible: true,
       },

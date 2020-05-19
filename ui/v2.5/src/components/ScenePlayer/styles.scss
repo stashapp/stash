@@ -1,3 +1,35 @@
+#jwplayer-container {
+  /* full height minus the top navbar */
+  height: calc(100vh - 4rem);
+
+  > div:first-child {
+    /* minus the scrubber height and margin */
+    height: calc(100% - 120px - 15px);
+  }
+}
+
+$sceneTabWidth: 450px;
+
+@media (min-width: 1200px) {
+  .scene-tabs {
+    flex: 0 0 $sceneTabWidth;
+    max-width: $sceneTabWidth;
+    overflow: auto;
+  }
+
+  .scene-player-container {
+    flex: 0 0 calc(100% - #{$sceneTabWidth});
+    max-width: calc(100% - #{$sceneTabWidth});
+  }
+}
+
+.scene-tabs, .scene-player-container {
+  position: relative;
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
 .scene-player:focus {
   outline: 0;
 }

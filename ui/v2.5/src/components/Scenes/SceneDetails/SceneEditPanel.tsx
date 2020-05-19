@@ -393,8 +393,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   if (isLoading) return <LoadingIndicator />;
 
   return (
-    <div className="form-container row pl-3">
-      <div className="col edit-buttons mb-3">
+    <div className="form-container row p-3">
+      <div className="col edit-buttons mb-3 pl-0">
         <Button className="edit-button" variant="primary" onClick={onSave}>
           Save
         </Button>
