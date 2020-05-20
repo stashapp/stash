@@ -103,56 +103,57 @@ export const Scene: React.FC = () => {
     }
 
     return (
-      <Tabs id="scene-tabs" mountOnEnter>
-        <Tab eventKey="scene-details-panel" title="Details">
-          <SceneDetailPanel scene={scene} />
-        </Tab>
-        <Tab eventKey="scene-markers-panel" title="Markers">
-          <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} />
-        </Tab>
-        {scene.performers.length > 0 ? (
-          <Tab eventKey="scene-performer-panel" title="Performers">
-            <ScenePerformerPanel scene={scene} />
-          </Tab>
-        ) : (
-          ""
-        )}
-        {scene.movies.length > 0 ? (
-          <Tab eventKey="scene-movie-panel" title="Movies">
-            <SceneMoviePanel scene={scene} />
-          </Tab>
-        ) : (
-          ""
-        )}
-        {scene.gallery ? (
-          <Tab eventKey="scene-gallery-panel" title="Gallery">
-            <GalleryViewer gallery={scene.gallery} />
-          </Tab>
-        ) : (
-          ""
-        )}
-        <Tab
-          className="file-info-panel"
-          eventKey="scene-file-info-panel"
-          title="File Info"
-        >
-          <SceneFileInfoPanel scene={scene} />
-        </Tab>
-        <Tab eventKey="scene-edit-panel" title="Edit">
-          <SceneEditPanel
-            scene={scene}
-            onUpdate={(newScene) => setScene(newScene)}
-            onDelete={() => history.push("/scenes")}
-          />
-        </Tab>
-        <Tab eventKey="scene-operations-panel" title="Operations">
-          <SceneOperationsPanel scene={scene} />
-        </Tab>
-      </Tabs>
-    );
-
-    /*return (
       <Tab.Container defaultActiveKey="scene-details-panel">
+        <div>
+          <Nav variant="tabs" className="mr-auto">
+            <Nav.Item>
+              <Nav.Link eventKey="scene-details-panel">Details</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-markers-panel">Markers</Nav.Link>
+            </Nav.Item>
+            {scene.performers.length > 0 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-performer-panel">Performers</Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
+            )}
+            {scene.movies.length > 0 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-movie-panel">Movies</Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
+            )}
+            {scene.gallery ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-gallery-panel">Gallery</Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
+            )}
+            <Nav.Item>
+              <Nav.Link eventKey="scene-file-info-panel">File Info</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-edit-panel">Edit</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-operations-panel">Operations</Nav.Link>
+            </Nav.Item>
+            <Nav.Item className="ml-auto">
+              <OCounterButton
+                loading={oLoading}
+                value={scene.o_counter || 0}
+                onIncrement={onIncrementClick}
+                onDecrement={onDecrementClick}
+                onReset={onResetClick}
+              />
+            </Nav.Item>
+          </Nav>
+        </div>
+        
         <Tab.Content>
           <Tab.Pane eventKey="scene-details-panel" title="Details">
             <SceneDetailPanel scene={scene} />
@@ -160,27 +161,17 @@ export const Scene: React.FC = () => {
           <Tab.Pane eventKey="scene-markers-panel" title="Markers">
             <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} />
           </Tab.Pane>
-          {scene.performers.length > 0 ? (
-            <Tab.Pane eventKey="scene-performer-panel" title="Performers">
-              <ScenePerformerPanel scene={scene} />
-            </Tab.Pane>
-          ) : (
-            ""
-          )}
-          {scene.movies.length > 0 ? (
-            <Tab.Pane eventKey="scene-movie-panel" title="Movies">
-              <SceneMoviePanel scene={scene} />
-            </Tab.Pane>
-          ) : (
-            ""
-          )}
+          <Tab.Pane eventKey="scene-performer-panel" title="Performers">
+            <ScenePerformerPanel scene={scene} />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-movie-panel" title="Movies">
+            <SceneMoviePanel scene={scene} />
+          </Tab.Pane>
           {scene.gallery ? (
             <Tab.Pane eventKey="scene-gallery-panel" title="Gallery">
               <GalleryViewer gallery={scene.gallery} />
             </Tab.Pane>
-          ) : (
-            ""
-          )}
+          ): ""}
           <Tab.Pane
             className="file-info-panel"
             eventKey="scene-file-info-panel"
@@ -199,18 +190,8 @@ export const Scene: React.FC = () => {
             <SceneOperationsPanel scene={scene} />
           </Tab.Pane>
         </Tab.Content>
-        <div>
-          <Nav variant="tabs">
-            <Nav.Item>
-              <Nav.Link eventKey="scene-details-panel">Details</Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="scene-markers-panel">Markers</Nav.Link>
-            </Nav.Item>
-          </Nav>
-        </div>
       </Tab.Container>
-    )*/
+    );
   }
 
   if (loading || !scene || !data?.findScene) {
@@ -219,49 +200,14 @@ export const Scene: React.FC = () => {
 
   if (error) return <div>{error.message}</div>;
 
-  let layout = "default";
-  layout = "compact";
-
-  if (layout === "compact") {
-    return (
-      <div className="row">
-        <div className="scene-tabs order-xl-first order-last" style={{ maxHeight: "calc(100vh - 4rem)" }}> {/*className="col-xl-4 overflow-auto order-xl-first order-last"*/}
-          {renderTabs()}
-        </div>
-        <div className="scene-player-container"> {/*className="col-xl-8"*/}
-          <ScenePlayer className="w-100 m-sm-auto no-gutter" scene={scene} timestamp={timestamp} autoplay={autoplay} />
-          <div className="float-right">
-            {/* TODO - move this */}
-            {/* <OCounterButton
-              loading={oLoading}
-              value={scene.o_counter || 0}
-              onIncrement={onIncrementClick}
-              onDecrement={onDecrementClick}
-              onReset={onResetClick}
-            /> */}
-          </div>
-        </div>
+  return (
+    <div className="row">
+      <div className="scene-tabs order-xl-first order-last" style={{ maxHeight: "calc(100vh - 4rem)" }}> {/*className="col-xl-4 overflow-auto order-xl-first order-last"*/}
+        {renderTabs()}
       </div>
-    )
-  }
-
-  else { //if (layout === "default") {
-    return (
-      <>
-        <ScenePlayer scene={scene} timestamp={timestamp} autoplay={autoplay} />
-        <div id="scene-details-container" className="col col-sm-9 m-sm-auto">
-          <div className="float-right">
-            <OCounterButton
-              loading={oLoading}
-              value={scene.o_counter || 0}
-              onIncrement={onIncrementClick}
-              onDecrement={onDecrementClick}
-              onReset={onResetClick}
-            />
-          </div>
-          {renderTabs()}
-        </div>
-      </>
-    )
-  };
+      <div className="scene-player-container">
+        <ScenePlayer className="w-100 m-sm-auto no-gutter" scene={scene} timestamp={timestamp} autoplay={autoplay} />
+      </div>
+    </div>
+  )
 };
