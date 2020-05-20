@@ -23,6 +23,8 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem please ensure that your screenshots are SFW or at least appropriately censored.
 
+**Stash Version: (from Settings -> About):**
+
 **Desktop (please complete the following information):**
  - OS: [e.g. iOS]
  - Browser [e.g. chrome, safari]
