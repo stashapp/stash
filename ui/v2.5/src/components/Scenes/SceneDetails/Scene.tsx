@@ -1,4 +1,4 @@
-import { Tab, Tabs, Nav } from "react-bootstrap";
+import { Tab, Tabs, Nav, Button, Dropdown } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
@@ -8,9 +8,10 @@ import {
   useSceneIncrementO,
   useSceneDecrementO,
   useSceneResetO,
+  useSceneGenerateScreenshot,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { ScenePerformerPanel } from "./ScenePerformerPanel";
@@ -21,13 +22,14 @@ import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneOperationsPanel } from "./SceneOperationsPanel";
 import { SceneMoviePanel } from "./SceneMoviePanel";
-import { TextUtils } from "src/utils";
+import { TextUtils, JWUtils } from "src/utils";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
+  const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
@@ -98,6 +100,46 @@ export const Scene: React.FC = () => {
     setTimestamp(marker.seconds);
   }
 
+  async function onGenerateScreenshot(at?: number) {
+    if (!scene) {
+      return;
+    }
+    
+    await generateScreenshot({
+      variables: {
+        id: scene.id,
+        at,
+      },
+    });
+    Toast.success({ content: "Generating screenshot" });
+  }
+
+  function renderOperations() {
+    return (
+      <Dropdown>
+        <Dropdown.Toggle variant="secondary" id="operation-menu" className="minimal">
+          <Icon icon="ellipsis-v" />
+        </Dropdown.Toggle>
+        <Dropdown.Menu className="bg-secondary text-white">
+          <Dropdown.Item
+            key="generate-screenshot"
+            className="bg-secondary text-white"
+            onClick={() => onGenerateScreenshot(JWUtils.getPlayer().getPosition())}
+          >
+            Generate thumbnail from current
+          </Dropdown.Item>
+          <Dropdown.Item
+            key="generate-default"
+            className="bg-secondary text-white"
+            onClick={() => onGenerateScreenshot()}
+          >
+            Generate default thumbnail
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  }
+
   function renderTabs() {
     if (!scene) {
       return;
@@ -133,9 +175,6 @@ export const Scene: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="scene-edit-panel">Edit</Nav.Link>
             </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="scene-operations-panel">Operations</Nav.Link>
-            </Nav.Item>
             <Nav.Item className="ml-auto">
               <OCounterButton
                 loading={oLoading}
@@ -144,6 +183,9 @@ export const Scene: React.FC = () => {
                 onDecrement={onDecrementClick}
                 onReset={onResetClick}
               />
+            </Nav.Item>
+            <Nav.Item>
+              {renderOperations()}
             </Nav.Item>
           </Nav>
         </div>
