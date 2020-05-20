@@ -73,12 +73,12 @@ export const Studio: React.FC = () => {
     }
   }, [data]);
 
-  function onImageLoad(this: FileReader) {
-    setImagePreview(this.result as string);
-    setImage(this.result as string);
+  function onImageLoad(imageData: string) {
+    setImagePreview(imageData);
+    setImage(imageData);
   }
 
-  ImageUtils.usePasteImage(onImageLoad, isEditing);
+  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   if (!isNew && !isEditing) {
     if (!data?.findStudio || loading) return <LoadingIndicator />;
@@ -170,7 +170,11 @@ export const Studio: React.FC = () => {
         })}
       >
         {isNew && <h2>Add Studio</h2>}
-        <img className="logo w-100" alt={name} src={imagePreview} />
+        {imageEncoding ? (
+          <LoadingIndicator message="Encoding image..." />
+        ) : (
+          <img className="logo w-100" alt={name} src={imagePreview} />
+        )}
         <Table>
           <tbody>
             {TableUtils.renderInputGroup({
