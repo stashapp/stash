@@ -95,18 +95,21 @@ export const Movie: React.FC = () => {
     }
   }, [data, updateMovieData]);
 
-  function onImageLoad(this: FileReader) {
-    setImagePreview(this.result as string);
-    setFrontImage(this.result as string);
+  function onImageLoad(imageData: string) {
+    setImagePreview(imageData);
+    setFrontImage(imageData);
   }
 
-  function onBackImageLoad(this: FileReader) {
-    setBackImagePreview(this.result as string);
-    setBackImage(this.result as string);
+  function onBackImageLoad(imageData: string) {
+    setBackImagePreview(imageData);
+    setBackImage(imageData);
   }
 
-  ImageUtils.usePasteImage(onImageLoad, isEditing);
-  ImageUtils.usePasteImage(onBackImageLoad, isEditing);
+  const encodingFrontImage = ImageUtils.usePasteImage(onImageLoad, isEditing);
+  const encodingBackImage = ImageUtils.usePasteImage(
+    onBackImageLoad,
+    isEditing
+  );
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
@@ -203,8 +206,14 @@ export const Movie: React.FC = () => {
       >
         {isNew && <h2>Add Movie</h2>}
         <div className="logo w-100">
-          <img alt={name} className="logo w-50" src={imagePreview} />
-          <img alt={name} className="logo w-50" src={backimagePreview} />
+          {encodingFrontImage || encodingBackImage ? (
+            <LoadingIndicator message="Encoding image..." />
+          ) : (
+            <>
+              <img alt={name} className="logo w-50" src={imagePreview} />
+              <img alt={name} className="logo w-50" src={backimagePreview} />
+            </>
+          )}
         </div>
 
         <Table>
