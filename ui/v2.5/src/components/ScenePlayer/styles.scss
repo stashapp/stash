@@ -37,11 +37,12 @@ $sceneTabWidth: 450px;
   }
 }
 
-.scene-tabs, .scene-player-container {
+.scene-tabs,
+.scene-player-container {
+  padding-left: 15px;
+  padding-right: 15px;
   position: relative;
   width: 100%;
-  padding-right: 15px;
-  padding-left: 15px;
 }
 
 .scrubber-wrapper {

@@ -184,13 +184,11 @@ export class ScenePlayerImpl extends React.Component<
   }
 
   public render() {
-    let className = this.props.className ?? "w-100 col-sm-9 m-sm-auto no-gutter";
+    const className =
+      this.props.className ?? "w-100 col-sm-9 m-sm-auto no-gutter";
 
     return (
-      <div
-        id="jwplayer-container"
-        className={className}
-      >
+      <div id="jwplayer-container" className={className}>
         <ReactJWPlayer
           playerId={JWUtils.playerID}
           playerScript="/jwplayer/jwplayer.js"

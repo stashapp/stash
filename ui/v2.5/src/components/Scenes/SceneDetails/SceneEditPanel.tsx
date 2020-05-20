@@ -394,146 +394,150 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
   return (
     <>
-    <div className="form-container row p-3">
-      <div className="col edit-buttons mb-3 pl-0">
-        <Button className="edit-button" variant="primary" onClick={onSave}>
-          Save
-        </Button>
-        <Button
-          className="edit-button"
-          variant="danger"
-          onClick={() => setIsDeleteAlertOpen(true)}
-        >
-          Delete
-        </Button>
+      <div className="form-container row p-3">
+        <div className="col edit-buttons mb-3 pl-0">
+          <Button className="edit-button" variant="primary" onClick={onSave}>
+            Save
+          </Button>
+          <Button
+            className="edit-button"
+            variant="danger"
+            onClick={() => setIsDeleteAlertOpen(true)}
+          >
+            Delete
+          </Button>
+        </div>
+        {renderScraperMenu()}
+        {renderDeleteAlert()}
       </div>
-      {renderScraperMenu()}
-      {renderDeleteAlert()}
-    </div>
-    <div className="form-container row p-3">
-      <div className="col-12 col-lg-6 col-xl-12">
-        <Table id="scene-edit-details">
-          <tbody>
-            {TableUtils.renderInputGroup({
-              title: "Title",
-              value: title,
-              onChange: setTitle,
-              isEditing: true,
-            })}
-            <tr>
-              <td>URL</td>
-              <td>
-                <Form.Control
-                  onChange={(newValue: React.ChangeEvent<HTMLInputElement>) =>
-                    setUrl(newValue.currentTarget.value)
-                  }
-                  value={url}
-                  placeholder="URL"
-                  className="text-input"
-                />
-                {maybeRenderScrapeButton()}
-              </td>
-            </tr>
-            {TableUtils.renderInputGroup({
-              title: "Date",
-              value: date,
-              isEditing: true,
-              onChange: setDate,
-              placeholder: "YYYY-MM-DD",
-            })}
-            {TableUtils.renderHtmlSelect({
-              title: "Rating",
-              value: rating,
-              isEditing: true,
-              onChange: (value: string) =>
-                setRating(Number.parseInt(value, 10)),
-              selectOptions: ["", 1, 2, 3, 4, 5],
-            })}
-            <tr>
-              <td>Gallery</td>
-              <td>
-                <SceneGallerySelect
-                  sceneId={props.scene.id}
-                  initialId={galleryId}
-                  onSelect={(item) => setGalleryId(item ? item.id : undefined)}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Studio</td>
-              <td>
-                <StudioSelect
-                  onSelect={(items) =>
-                    setStudioId(items.length > 0 ? items[0]?.id : undefined)
-                  }
-                  ids={studioId ? [studioId] : []}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Performers</td>
-              <td>
-                <PerformerSelect
-                  isMulti
-                  onSelect={(items) =>
-                    setPerformerIds(items.map((item) => item.id))
-                  }
-                  ids={performerIds}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Movies/Scenes</td>
-              <td>
-                <MovieSelect
-                  isMulti
-                  onSelect={(items) =>
-                    setMovieIds(items.map((item) => item.id))
-                  }
-                  ids={movieIds}
-                />
-                {renderTableMovies()}
-              </td>
-            </tr>
-            <tr>
-              <td>Tags</td>
-              <td>
-                <TagSelect
-                  isMulti
-                  onSelect={(items) => setTagIds(items.map((item) => item.id))}
-                  ids={tagIds}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </Table>
-      </div>
-      <div className="col-12 col-lg-6 col-xl-12">
-        <Form.Group controlId="details">
-          <Form.Label>Details</Form.Label>
-          <Form.Control
-            as="textarea"
-            className="scene-description text-input"
-            onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setDetails(newValue.currentTarget.value)
-            }
-            value={details}
-          />
-        </Form.Group>
-
-        <div>
-          <Form.Group className="test" controlId="cover">
-            <Form.Label>Cover Image</Form.Label>
-            <img
-              className="scene-cover"
-              src={coverImagePreview}
-              alt="Scene cover"
+      <div className="form-container row p-3">
+        <div className="col-12 col-lg-6 col-xl-12">
+          <Table id="scene-edit-details">
+            <tbody>
+              {TableUtils.renderInputGroup({
+                title: "Title",
+                value: title,
+                onChange: setTitle,
+                isEditing: true,
+              })}
+              <tr>
+                <td>URL</td>
+                <td>
+                  <Form.Control
+                    onChange={(newValue: React.ChangeEvent<HTMLInputElement>) =>
+                      setUrl(newValue.currentTarget.value)
+                    }
+                    value={url}
+                    placeholder="URL"
+                    className="text-input"
+                  />
+                  {maybeRenderScrapeButton()}
+                </td>
+              </tr>
+              {TableUtils.renderInputGroup({
+                title: "Date",
+                value: date,
+                isEditing: true,
+                onChange: setDate,
+                placeholder: "YYYY-MM-DD",
+              })}
+              {TableUtils.renderHtmlSelect({
+                title: "Rating",
+                value: rating,
+                isEditing: true,
+                onChange: (value: string) =>
+                  setRating(Number.parseInt(value, 10)),
+                selectOptions: ["", 1, 2, 3, 4, 5],
+              })}
+              <tr>
+                <td>Gallery</td>
+                <td>
+                  <SceneGallerySelect
+                    sceneId={props.scene.id}
+                    initialId={galleryId}
+                    onSelect={(item) =>
+                      setGalleryId(item ? item.id : undefined)
+                    }
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>Studio</td>
+                <td>
+                  <StudioSelect
+                    onSelect={(items) =>
+                      setStudioId(items.length > 0 ? items[0]?.id : undefined)
+                    }
+                    ids={studioId ? [studioId] : []}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>Performers</td>
+                <td>
+                  <PerformerSelect
+                    isMulti
+                    onSelect={(items) =>
+                      setPerformerIds(items.map((item) => item.id))
+                    }
+                    ids={performerIds}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>Movies/Scenes</td>
+                <td>
+                  <MovieSelect
+                    isMulti
+                    onSelect={(items) =>
+                      setMovieIds(items.map((item) => item.id))
+                    }
+                    ids={movieIds}
+                  />
+                  {renderTableMovies()}
+                </td>
+              </tr>
+              <tr>
+                <td>Tags</td>
+                <td>
+                  <TagSelect
+                    isMulti
+                    onSelect={(items) =>
+                      setTagIds(items.map((item) => item.id))
+                    }
+                    ids={tagIds}
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </Table>
+        </div>
+        <div className="col-12 col-lg-6 col-xl-12">
+          <Form.Group controlId="details">
+            <Form.Label>Details</Form.Label>
+            <Form.Control
+              as="textarea"
+              className="scene-description text-input"
+              onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setDetails(newValue.currentTarget.value)
+              }
+              value={details}
             />
-            <ImageInput isEditing onImageChange={onCoverImageChange} />
           </Form.Group>
+
+          <div>
+            <Form.Group className="test" controlId="cover">
+              <Form.Label>Cover Image</Form.Label>
+              <img
+                className="scene-cover"
+                src={coverImagePreview}
+                alt="Scene cover"
+              />
+              <ImageInput isEditing onImageChange={onCoverImageChange} />
+            </Form.Group>
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 };

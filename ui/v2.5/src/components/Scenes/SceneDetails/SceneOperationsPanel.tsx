@@ -33,7 +33,10 @@ export const SceneOperationsPanel: FunctionComponent<IOperationsPanelProps> = (
       >
         Generate thumbnail from current
       </Button>
-      <Button className="edit-button mb-1" onClick={() => onGenerateScreenshot()}>
+      <Button
+        className="edit-button mb-1"
+        onClick={() => onGenerateScreenshot()}
+      >
         Generate default thumbnail
       </Button>
     </>
