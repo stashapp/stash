@@ -74,7 +74,12 @@ func (c xpathRegexConfig) apply(value string) string {
 			return value
 		}
 
-		return re.ReplaceAllString(value, with)
+		ret := re.ReplaceAllString(value, with)
+
+		logger.Debugf(`Replace: '%s' with '%s'`, regex, with)
+		logger.Debugf("Before: %s", value)
+		logger.Debugf("After: %s", ret)
+		return ret
 	}
 
 	return value
@@ -205,6 +210,7 @@ func (c xpathScraperAttrConfig) applySubScraper(value string) string {
 		return value
 	}
 
+	logger.Debugf("Sub-scraping for: %s", value)
 	doc, err := loadURL(value, nil)
 
 	if err != nil {
@@ -423,12 +429,14 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 	sceneStudioMap := s.GetSceneStudio()
 	sceneMoviesMap := s.GetSceneMovies()
 
+	logger.Debug(`Processing scene:`)
 	results := sceneMap.process(doc, s.Common)
 	if len(results) > 0 {
 		results[0].apply(&ret)
 
 		// now apply the performers and tags
 		if scenePerformersMap != nil {
+			logger.Debug(`Processing scene performers:`)
 			performerResults := scenePerformersMap.process(doc, s.Common)
 
 			for _, p := range performerResults {
@@ -439,6 +447,7 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 		}
 
 		if sceneTagsMap != nil {
+			logger.Debug(`Processing scene tags:`)
 			tagResults := sceneTagsMap.process(doc, s.Common)
 
 			for _, p := range tagResults {
@@ -449,6 +458,7 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 		}
 
 		if sceneStudioMap != nil {
+			logger.Debug(`Processing scene studio:`)
 			studioResults := sceneStudioMap.process(doc, s.Common)
 
 			if len(studioResults) > 0 {
@@ -459,6 +469,7 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 		}
 
 		if sceneMoviesMap != nil {
+			logger.Debug(`Processing scene movies:`)
 			movieResults := sceneMoviesMap.process(doc, s.Common)
 
 			for _, p := range movieResults {
@@ -508,6 +519,7 @@ func (r xPathResults) setKey(index int, key string, value string) xPathResults {
 		r = append(r, make(xPathResult))
 	}
 
+	logger.Debugf(`[%d][%s] = %s`, index, key, value)
 	r[index][key] = value
 	return r
 }
