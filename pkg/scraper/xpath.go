@@ -429,12 +429,14 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 	sceneStudioMap := s.GetSceneStudio()
 	sceneMoviesMap := s.GetSceneMovies()
 
+	logger.Debug(`Processing scene:`)
 	results := sceneMap.process(doc, s.Common)
 	if len(results) > 0 {
 		results[0].apply(&ret)
 
 		// now apply the performers and tags
 		if scenePerformersMap != nil {
+			logger.Debug(`Processing scene performers:`)
 			performerResults := scenePerformersMap.process(doc, s.Common)
 
 			for _, p := range performerResults {
@@ -445,6 +447,7 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 		}
 
 		if sceneTagsMap != nil {
+			logger.Debug(`Processing scene tags:`)
 			tagResults := sceneTagsMap.process(doc, s.Common)
 
 			for _, p := range tagResults {
@@ -455,6 +458,7 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 		}
 
 		if sceneStudioMap != nil {
+			logger.Debug(`Processing scene studio:`)
 			studioResults := sceneStudioMap.process(doc, s.Common)
 
 			if len(studioResults) > 0 {
@@ -465,6 +469,7 @@ func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) 
 		}
 
 		if sceneMoviesMap != nil {
+			logger.Debug(`Processing scene movies:`)
 			movieResults := sceneMoviesMap.process(doc, s.Common)
 
 			for _, p := range movieResults {
