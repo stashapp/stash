@@ -3,6 +3,11 @@ $scrubberHeight: 120px;
 #jwplayer-container {
   /* full height minus the top navbar */
   height: calc(100vh - 4rem);
+  padding-bottom: 0.25rem;
+
+  & video:focus {
+    outline: 0;
+  }
 
   > div:first-child {
     /* minus the scrubber height and margin */
@@ -10,8 +15,8 @@ $scrubberHeight: 120px;
   }
 }
 
-/* scrubber is not shown on small screens, so use entire height for scene player */
-@media (max-width: 575px) {
+/* scrubber is hidden when height < 450px, so use entire height for scene player */
+@media (max-height: 449px) {
   #jwplayer-container > div:first-child {
     height: 100%;
   }
@@ -39,14 +44,17 @@ $sceneTabWidth: 450px;
   padding-left: 15px;
 }
 
-.scene-player:focus {
-  outline: 0;
-}
-
 .scrubber-wrapper {
   margin: 5px 0;
   overflow: hidden;
   position: relative;
+}
+
+/* hide scrubber when height is < 450px */
+@media (max-height: 449px) {
+  .scrubber-wrapper {
+    display: none;
+  }
 }
 
 #scrubber-back {
