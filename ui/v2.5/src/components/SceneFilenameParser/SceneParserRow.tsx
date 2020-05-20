@@ -60,6 +60,10 @@ export class SceneParserResult {
     this.title.setValue(result.title ?? undefined);
     this.date.setValue(result.date ?? undefined);
     this.rating.setValue(result.rating ?? undefined);
+
+    this.performers.setValue(result.performer_ids ?? undefined);
+    this.tags.setValue(result.tag_ids ?? undefined);
+    this.studio.setValue(result.studio_id ?? undefined);
   }
 
   // returns true if any of its fields have set == true
