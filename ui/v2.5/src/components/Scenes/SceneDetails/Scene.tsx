@@ -1,7 +1,7 @@
 import { Tab, Tabs, Nav } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
-import { useParams, useLocation, useHistory } from "react-router-dom";
+import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindScene,
@@ -21,6 +21,7 @@ import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneOperationsPanel } from "./SceneOperationsPanel";
 import { SceneMoviePanel } from "./SceneMoviePanel";
+import { TextUtils } from "src/utils";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
@@ -112,14 +113,7 @@ export const Scene: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="scene-markers-panel">Markers</Nav.Link>
             </Nav.Item>
-            {scene.performers.length > 0 ? (
-              <Nav.Item>
-                <Nav.Link eventKey="scene-performer-panel">Performers</Nav.Link>
-              </Nav.Item>
-            ) : (
-              ""
-            )}
-            {scene.movies.length > 0 ? (
+                        {scene.movies.length > 0 ? (
               <Nav.Item>
                 <Nav.Link eventKey="scene-movie-panel">Movies</Nav.Link>
               </Nav.Item>
@@ -202,7 +196,23 @@ export const Scene: React.FC = () => {
 
   return (
     <div className="row">
-      <div className="scene-tabs order-xl-first order-last" style={{ maxHeight: "calc(100vh - 4rem)" }}> {/*className="col-xl-4 overflow-auto order-xl-first order-last"*/}
+      <div className="scene-tabs order-xl-first order-last">
+        <div className="d-none d-xl-block">
+          {scene.studio && (
+            <h1 className="text-center">
+              <Link to={`/studios/${scene.studio.id}`}>
+                <img
+                  src={scene.studio.image_path ?? ""}
+                  alt={`${scene.studio.name} logo`}
+                  className="studio-logo"
+                />
+              </Link>
+            </h1>
+          )}
+          <h3 className="scene-header">
+            {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
+          </h3>
+        </div>
         {renderTabs()}
       </div>
       <div className="scene-player-container">

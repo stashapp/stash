@@ -81,6 +81,8 @@
 
 .scene-header {
   flex-basis: auto;
+  margin-top: 30px;
+  margin-bottom: 30px;
 }
 
 #scene-details-container {
@@ -217,4 +219,8 @@
 
 .movie-table td {
   vertical-align: middle;
+}
+
+.scene-tabs {
+  max-height: calc(100vh - 4rem);
 }
