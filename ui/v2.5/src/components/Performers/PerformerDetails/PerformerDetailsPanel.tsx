@@ -37,6 +37,7 @@ interface IPerformerDetails {
   ) => void;
   onDelete?: () => void;
   onImageChange?: (image?: string) => void;
+  onImageEncoding?: (loading?: boolean) => void;
 }
 
 export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
@@ -46,6 +47,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   onSave,
   onDelete,
   onImageChange,
+  onImageEncoding,
 }) => {
   const Toast = useToast();
 
@@ -84,7 +86,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  ImageUtils.usePasteImage(onImageLoad, isEditing);
+  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   function updatePerformerEditState(
     state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformerDataFragment>
@@ -152,8 +154,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  function onImageLoad(this: FileReader) {
-    setImage(this.result as string);
+  function onImageLoad(imageData: string) {
+    setImage(imageData);
   }
 
   useEffect(() => {
@@ -167,6 +169,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
     return () => onImageChange?.();
   }, [image, onImageChange]);
+
+  useEffect(() => onImageEncoding?.(imageEncoding), [
+    onImageEncoding,
+    imageEncoding,
+  ]);
 
   useEffect(() => {
     const newQueryableScrapers = (
