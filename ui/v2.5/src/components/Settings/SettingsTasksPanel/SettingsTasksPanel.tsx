@@ -20,6 +20,7 @@ export const SettingsTasksPanel: React.FC = () => {
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
+  const [galleryFolders, setGalleryFolders] = useState<number>(0);
   const [status, setStatus] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
 
@@ -124,7 +125,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   async function onScan() {
     try {
-      await mutateMetadataScan({ useFileMetadata });
+      await mutateMetadataScan({ useFileMetadata, galleryFolders });
       Toast.success({ content: "Started scan" });
       jobStatus.refetch();
     } catch (e) {
@@ -209,6 +210,22 @@ export const SettingsTasksPanel: React.FC = () => {
           onChange={() => setUseFileMetadata(!useFileMetadata)}
         />
       </Form.Group>
+      <Form.Group id="galleryFolders">
+        <h6>Scan for Gallery folders</h6>
+        <Form.Control
+          className="col col-sm-6 text-input"
+          type="number"
+          value={galleryFolders.toString()}
+          onInput={(e: React.FormEvent<HTMLInputElement>) =>
+            setGalleryFolders(Number.parseInt(e.currentTarget.value, 10))
+          }
+        />
+        <Form.Text className="text-muted">
+          Minimum number of images that classifiess a directory as Gallery. ( 0
+          or negative numbers disable Gallery folder detection ).
+        </Form.Text>
+      </Form.Group>
+
       <Form.Group>
         <Button variant="secondary" type="submit" onClick={() => onScan()}>
           Scan

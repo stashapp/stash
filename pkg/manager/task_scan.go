@@ -43,17 +43,16 @@ func (t *ScanTask) scanGallery() {
 	var err error
 	if utils.IsPathArchive(t.FilePath) {
 		checksum, err = t.calculateChecksum()
+		ok, err := utils.IsZipFileUncompressed(t.FilePath)
+		if err == nil && !ok {
+			logger.Warnf("%s is using above store (0) level compression.", t.FilePath)
+		}
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
 	} else {
 		checksum, err = utils.ChecksumFromDirPath(t.FilePath)
-	}
-
-	ok, err := utils.IsZipFileUncompressed(t.FilePath)
-	if err == nil && !ok {
-		logger.Warnf("%s is using above store (0) level compression.", t.FilePath)
-	}
-	if err != nil {
-		logger.Error(err.Error())
-		return
 	}
 
 	ctx := context.TODO()

@@ -8,7 +8,7 @@ import (
 )
 
 func (r *mutationResolver) MetadataScan(ctx context.Context, input models.ScanMetadataInput) (string, error) {
-	manager.GetInstance().Scan(input.UseFileMetadata)
+	manager.GetInstance().Scan(input.UseFileMetadata, input.GalleryFolders)
 	return "todo", nil
 }
 

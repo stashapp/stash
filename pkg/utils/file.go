@@ -186,9 +186,9 @@ func ListImages(path string) []string {
 	return images
 }
 
-// GetImageDirs gets all directories in the path that contain images ( recursive )
+// GetImageDirs gets all directories in the path that contain at least minImg images ( recursive )
 // imageDirs slice gets updated during the recursion
-func GetImageDirs(path string, info os.FileInfo, imageDirs *[]string) {
+func GetImageDirs(path string, info os.FileInfo, imageDirs *[]string, minImg int) {
 	var err error
 	path, err = filepath.Abs(path)
 
@@ -207,14 +207,15 @@ func GetImageDirs(path string, info os.FileInfo, imageDirs *[]string) {
 	if err != nil {
 		return
 	}
-	if len(ListImages(path)) > 0 {
+	imgCount := len(ListImages(path))
+	if imgCount > 0 && imgCount >= minImg { // add dir to list only if it has >= minImg images (minImg > 0)
 		*imageDirs = append(*imageDirs, path)
 	}
 	for _, fi := range fis {
 		if fi.Name() == "." || fi.Name() == ".." {
 			continue
 		}
-		GetImageDirs(filepath.Join(path, fi.Name()), fi, imageDirs)
+		GetImageDirs(filepath.Join(path, fi.Name()), fi, imageDirs, minImg)
 	}
 }
 

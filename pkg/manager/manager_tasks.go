@@ -94,7 +94,7 @@ func (t *TaskStatus) updated() {
 	t.LastUpdate = time.Now()
 }
 
-func (s *singleton) Scan(useFileMetadata bool) {
+func (s *singleton) Scan(useFileMetadata bool, galleryFolders int) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -110,12 +110,15 @@ func (s *singleton) Scan(useFileMetadata bool) {
 			globPath := filepath.Join(path, "**/*."+constructGlob())
 			globResults, _ := doublestar.Glob(globPath)
 			results = append(results, globResults...)
-			info, err := os.Lstat(path)
-			if err == nil {
-				utils.GetImageDirs(path, info, &imageDirs) // search for directories containing images
-			}
 
-			results = append(results, imageDirs...)
+			if galleryFolders > 0 {
+				info, err := os.Lstat(path)
+				if err == nil {
+					utils.GetImageDirs(path, info, &imageDirs, galleryFolders) // search for directories containing images
+				}
+
+				results = append(results, imageDirs...)
+			}
 		}
 
 		if s.Status.stopping {
