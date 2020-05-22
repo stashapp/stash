@@ -425,7 +425,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               onChange: setDate,
               placeholder: "YYYY-MM-DD",
             })}
-            <tr>
+            <tr className="rating">
               <td>Rating</td>
               <td>
                 <RatingStars

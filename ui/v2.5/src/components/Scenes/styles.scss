@@ -223,6 +223,7 @@
   display: inline-block;
 
   button {
+    font-size: inherit;
     margin-right: 1px;
     padding: 0;
 
@@ -247,4 +248,17 @@
   .set {
     color: gold;
   }
+}
+
+.rating td {
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
+#scene-edit-details .rating-stars {
+  /* stylelint-disable*/
+  height: calc(1.5em + 0.75rem + 2px);
+
+  font-size: 1.3em;
+  /* stylelint-enable*/
 }
