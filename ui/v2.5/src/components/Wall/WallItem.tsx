@@ -11,6 +11,7 @@ interface IWallItemProps {
   clickHandler?: (
     item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment
   ) => void;
+  className: string;
 }
 
 interface IPreviews {
@@ -96,8 +97,12 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   const setInactive = () => setActive(false);
   const toggleActive = (e: TransitionEvent) => {
     if (e.propertyName === "transform" && e.elapsedTime === 0) {
-      const newActive = getComputedStyle(wallItem.current).transform !== "none";
-      setActive(newActive);
+      // Get the current scale of the wall-item. If it's smaller than 1.1 the item is being scaled up, otherwise down.
+      const matrixScale = getComputedStyle(wallItem.current).transform.match(
+        /-?\d+\.?\d+|\d+/g
+      )?.[0];
+      const scale = Number.parseFloat(matrixScale ?? "2") || 2;
+      setActive(scale <= 1.1 && !active);
     }
   };
 
@@ -155,7 +160,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
 
   return (
     <div className="wall-item">
-      <div className="wall-item-container" ref={wallItem}>
+      <div className={`wall-item-container ${props.className}`} ref={wallItem}>
         <Link onClick={clickHandler} to={linkSrc}>
           <Preview
             previews={previews}

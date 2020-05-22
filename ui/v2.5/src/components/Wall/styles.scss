@@ -71,36 +71,40 @@
       z-index: 0;
     }
 
-    &:nth-last-child(-n + 5) &-container {
-      transform-origin: bottom;
-    }
-
-    &:nth-child(-n + 5) &-container {
-      transform-origin: top;
-    }
-
-    &:nth-child(5n + 1) &-container {
-      transform-origin: left;
-    }
-
-    &:nth-child(5n) &-container {
-      transform-origin: right;
-    }
-
-    &:nth-child(1) &-container {
+    &-container.transform-origin-top-left {
       transform-origin: top left;
     }
 
-    &:nth-child(5) &-container {
+    &-container.transform-origin-top-right {
       transform-origin: top right;
     }
 
-    &:nth-last-child(5) &-container {
+    &-container.transform-origin-bottom-left {
       transform-origin: bottom left;
     }
 
-    &:nth-last-child(1) &-container {
+    &-container.transform-origin-bottom-right {
       transform-origin: bottom right;
+    }
+
+    &-container.transform-origin-left {
+      transform-origin: left;
+    }
+
+    &-container.transform-origin-right {
+      transform-origin: right;
+    }
+
+    &-container.transform-origin-top {
+      transform-origin: top;
+    }
+
+    &-container.transform-origin-bottom {
+      transform-origin: bottom;
+    }
+
+    &-container.transform-origin-center {
+      transform-origin: center;
     }
 
     &::before {

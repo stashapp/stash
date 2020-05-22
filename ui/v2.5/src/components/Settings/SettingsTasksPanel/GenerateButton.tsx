@@ -54,6 +54,9 @@ export const GenerateButton: React.FC = () => {
           />
         </div>
         <Form.Group controlId="preview-preset" className="mt-2">
+          <Form.Label>
+            <h6>Preview encoding preset</h6>
+          </Form.Label>
           <Form.Control
             as="select"
             value={previewPreset}
@@ -70,8 +73,9 @@ export const GenerateButton: React.FC = () => {
             ))}
           </Form.Control>
           <Form.Text className="text-muted">
-            Encoder preset: Slower presets can give somewhat smaller files with
-            possibly better quality, but slower than Slow is not recommended.
+            The preset regulates size, quality and encoding time of preview
+            generation. Presets beyond “slow” have diminishing returns and are
+            not recommended.
           </Form.Text>
         </Form.Group>
         <Form.Check

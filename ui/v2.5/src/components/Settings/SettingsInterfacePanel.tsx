@@ -88,7 +88,9 @@ export const SettingsInterfacePanel: React.FC = () => {
           label="Enable sound"
           onChange={() => setSoundOnPreview(!soundOnPreview)}
         />
-        <Form.Label htmlFor="wall-preview">Preview Type</Form.Label>
+        <Form.Label htmlFor="wall-preview">
+          <h6>Preview Type</h6>
+        </Form.Label>
         <Form.Control
           as="select"
           name="wall-preview"
