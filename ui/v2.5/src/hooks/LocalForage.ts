@@ -14,8 +14,9 @@ export interface IInterfaceConfig {
   queries?: Record<string, IInterfaceQueryConfig>;
 }
 
-type ValidTypes = IInterfaceConfig;
-type Key = "interface";
+export interface IChangelogConfig {
+  versions: Record<string, boolean>;
+}
 
 interface ILocalForage<T> {
   data?: T;
@@ -24,13 +25,13 @@ interface ILocalForage<T> {
 }
 
 const Loading: Record<string, boolean> = {};
-const Cache: Record<string, ValidTypes> = {};
+const Cache: Record<string, {}> = {};
 
-function useLocalForage(
-  key: Key
-): [ILocalForage<ValidTypes>, Dispatch<SetStateAction<ValidTypes>>] {
+function useLocalForage<T>(
+  key: string
+): [ILocalForage<T>, Dispatch<SetStateAction<T>>] {
   const [error, setError] = React.useState(null);
-  const [data, setData] = React.useState(Cache[key]);
+  const [data, setData] = React.useState<T>(Cache[key] as T);
   const [loading, setLoading] = React.useState(Loading[key]);
 
   useEffect(() => {
@@ -42,7 +43,7 @@ function useLocalForage(
           setData(parsed);
           Cache[key] = parsed;
         } else {
-          setData({});
+          setData({} as T);
           Cache[key] = {};
         }
         setError(null);
@@ -72,9 +73,8 @@ function useLocalForage(
   return [{ data, error, loading: isLoading }, setData];
 }
 
-export function useInterfaceLocalForage(): [
-  ILocalForage<IInterfaceConfig>,
-  Dispatch<SetStateAction<IInterfaceConfig>>
-] {
-  return useLocalForage("interface");
-}
+export const useInterfaceLocalForage = () =>
+  useLocalForage<IInterfaceConfig>("interface");
+
+export const useChangelogStorage = () =>
+  useLocalForage<IChangelogConfig>("changelog");

@@ -1,4 +1,5 @@
 {
+  "developmentVersion": "",
   "galleries": "Galerien",
   "library-size": "",
   "markers": "",
@@ -7,5 +8,6 @@
   "performers": "Künstler",
   "scenes": "Szenen",
   "studios": "Studios",
-  "tags": "Etiketten"
+  "tags": "Etiketten",
+  "up-dir": ""
 }

@@ -133,7 +133,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setIsLoading(false);
   }, [props.scene]);
 
-  ImageUtils.usePasteImage(onImageLoad, true);
+  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, true);
 
   function getSceneInput(): GQL.SceneUpdateInput {
     return {
@@ -246,9 +246,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     );
   }
 
-  function onImageLoad(this: FileReader) {
-    setCoverImagePreview(this.result as string);
-    setCoverImage(this.result as string);
+  function onImageLoad(imageData: string) {
+    setCoverImagePreview(imageData);
+    setCoverImage(imageData);
   }
 
   function onCoverImageChange(event: React.FormEvent<HTMLInputElement>) {
@@ -524,15 +524,18 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               value={details}
             />
           </Form.Group>
-
           <div>
             <Form.Group className="test" controlId="cover">
               <Form.Label>Cover Image</Form.Label>
-              <img
-                className="scene-cover"
-                src={coverImagePreview}
-                alt="Scene cover"
-              />
+              {imageEncoding ? (
+                <LoadingIndicator message="Encoding image..." />
+              ) : (
+                <img
+                  className="scene-cover"
+                  src={coverImagePreview}
+                  alt="Scene cover"
+                />
+              )}
               <ImageInput isEditing onImageChange={onCoverImageChange} />
             </Form.Group>
           </div>

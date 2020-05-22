@@ -28,6 +28,7 @@ export const Performer: React.FC = () => {
     Partial<GQL.PerformerDataFragment>
   >({});
   const [imagePreview, setImagePreview] = useState<string>();
+  const [imageEncoding, setImageEncoding] = useState<boolean>(false);
   const [lightboxIsOpen, setLightboxIsOpen] = useState(false);
   const activeImage = imagePreview ?? performer.image_path ?? "";
 
@@ -44,9 +45,9 @@ export const Performer: React.FC = () => {
     if (data?.findPerformer) setPerformer(data.findPerformer);
   }, [data]);
 
-  function onImageChange(image?: string) {
-    setImagePreview(image);
-  }
+  const onImageChange = (image?: string) => setImagePreview(image);
+
+  const onImageEncoding = (isEncoding = false) => setImageEncoding(isEncoding);
 
   if ((!isNew && (!data || !data.findPerformer)) || isLoading)
     return <LoadingIndicator />;
@@ -114,6 +115,7 @@ export const Performer: React.FC = () => {
           onDelete={onDelete}
           onSave={onSave}
           onImageChange={onImageChange}
+          onImageEncoding={onImageEncoding}
         />
       </Tab>
       <Tab eventKey="operations" title="Operations">
@@ -208,6 +210,9 @@ export const Performer: React.FC = () => {
   );
 
   function renderPerformerImage() {
+    if (imageEncoding) {
+      return <LoadingIndicator message="Encoding image..." />;
+    }
     if (activeImage) {
       return <img className="photo" src={activeImage} alt="Performer" />;
     }
@@ -226,6 +231,7 @@ export const Performer: React.FC = () => {
             onDelete={onDelete}
             onSave={onSave}
             onImageChange={onImageChange}
+            onImageEncoding={onImageEncoding}
           />
         </div>
       </div>
@@ -236,9 +242,13 @@ export const Performer: React.FC = () => {
   return (
     <div id="performer-page" className="row">
       <div className="image-container col-sm-4 offset-sm-1 d-none d-sm-block">
-        <Button variant="link" onClick={() => setLightboxIsOpen(true)}>
-          <img className="performer" src={activeImage} alt="Performer" />
-        </Button>
+        {imageEncoding ? (
+          <LoadingIndicator message="Encoding image..." />
+        ) : (
+          <Button variant="link" onClick={() => setLightboxIsOpen(true)}>
+            <img className="performer" src={activeImage} alt="Performer" />
+          </Button>
+        )}
       </div>
       <div className="col col-sm-6">
         <div className="row">
