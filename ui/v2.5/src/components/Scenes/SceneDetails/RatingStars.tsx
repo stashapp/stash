@@ -25,6 +25,10 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
       newRating = undefined;
     }
 
+    // set the hover rating to undefined so that it doesn't immediately clear 
+    // the stars
+    setHoverRating(undefined);
+
     props.onSetRating(newRating);
   }
 
@@ -72,13 +76,25 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     return "unset";
   }
 
+  function getTooltip(rating: number) {
+    if (disabled && props.value) {
+      // always return current rating for disabled control
+      return props.value.toString();
+    }
+
+    if (!disabled) {
+      return rating.toString();
+    }
+  }
+
   const renderRatingButton = (rating: number) => (
     <Button 
       disabled={disabled}
       className="minimal" 
       onClick={() => setRating(rating)} variant="secondary"
       onMouseOver={() => onMouseOver(rating)}
-      onMouseOut={() => onMouseOut(rating)}>
+      onMouseOut={() => onMouseOut(rating)}
+      title={getTooltip(rating)}>
       <Icon 
         icon={[getIconPrefix(rating), "star"]}
         className={getClassName(rating)} />
