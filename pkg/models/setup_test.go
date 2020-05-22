@@ -22,7 +22,8 @@ const totalScenes = 12
 const totalPerformers = 3
 const totalMovies = 1
 const totalGalleries = 1
-const totalTags = 5
+const tagsNameNoCase = 2
+const tagsNameCase = 5
 const totalStudios = 1
 
 var sceneIDs []int
@@ -32,6 +33,8 @@ var galleryIDs []int
 var tagIDs []int
 var studioIDs []int
 var markerIDs []int
+
+var tagNames []string
 
 const sceneIdxWithMovie = 0
 const sceneIdxWithGallery = 1
@@ -56,6 +59,8 @@ const tagIdx1WithScene = 1
 const tagIdx2WithScene = 2
 const tagIdxWithPrimaryMarker = 3
 const tagIdxWithMarker = 4
+const tagIdx1WithDupName = 5
+const tagIdxWithDupName = 6
 
 const studioIdxWithScene = 0
 
@@ -130,7 +135,7 @@ func populateDB() error {
 		return err
 	}
 
-	if err := createTags(tx, totalTags); err != nil {
+	if err := createTags(tx, tagsNameCase, tagsNameNoCase); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -341,12 +346,25 @@ func getTagStringValue(index int, field string) string {
 	return "tag_" + strconv.FormatInt(int64(index), 10) + "_" + field
 }
 
-func createTags(tx *sqlx.Tx, n int) error {
+//createTags creates n tags with plain Name and o tags with camel cased NaMe included
+func createTags(tx *sqlx.Tx, n int, o int) error {
 	tqb := models.NewTagQueryBuilder()
+	const namePlain = "Name"
+	const nameNoCase = "NaMe"
 
-	for i := 0; i < n; i++ {
+	name := namePlain
+
+	for i := 0; i < n+o; i++ {
+		index := i
+
+		if i >= n { // i<n tags get normal names
+			name = nameNoCase       // i>=n tags get dup names if case is not checked
+			index = n + o - (i + 1) // for the name to be the same the number (index) must be the same also
+		} // so count backwards to 0 as needed
+		// tags [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
+
 		tag := models.Tag{
-			Name: getTagStringValue(i, "Name"),
+			Name: getTagStringValue(index, name),
 		}
 
 		created, err := tqb.Create(tag, tx)
@@ -356,6 +374,8 @@ func createTags(tx *sqlx.Tx, n int) error {
 		}
 
 		tagIDs = append(tagIDs, created.ID)
+		tagNames = append(tagNames, created.Name)
+
 	}
 
 	return nil
