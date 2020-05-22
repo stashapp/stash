@@ -40,7 +40,13 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
       </h3>
       <div className="col-6 scene-details">
         <h4>{props.scene.date ?? ""}</h4>
-        {props.scene.rating ? <h6>Rating: <RatingStars value={props.scene.rating} /></h6> : ""}
+        {props.scene.rating ? (
+          <h6>
+            Rating: <RatingStars value={props.scene.rating} />
+          </h6>
+        ) : (
+          ""
+        )}
         {props.scene.file.height && (
           <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6>
         )}

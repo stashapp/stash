@@ -430,7 +430,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               <td>
                 <RatingStars
                   value={rating}
-                  onSetRating={(value) => setRating(value)} 
+                  onSetRating={(value) => setRating(value)}
                 />
               </td>
             </tr>

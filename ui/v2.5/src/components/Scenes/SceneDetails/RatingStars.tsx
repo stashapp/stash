@@ -17,15 +17,15 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     if (!props.onSetRating) {
       return;
     }
-    
-    let newRating : number | undefined = rating;
-    
+
+    let newRating: number | undefined = rating;
+
     // unset if we're clicking on the current rating
     if (props.value === rating) {
       newRating = undefined;
     }
 
-    // set the hover rating to undefined so that it doesn't immediately clear 
+    // set the hover rating to undefined so that it doesn't immediately clear
     // the stars
     setHoverRating(undefined);
 
@@ -44,7 +44,7 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
     if (!hoverRating && props.value && props.value >= rating) {
       return "fas";
     }
-    
+
     return "far";
   }
 
@@ -88,16 +88,19 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
   }
 
   const renderRatingButton = (rating: number) => (
-    <Button 
+    <Button
       disabled={disabled}
-      className="minimal" 
-      onClick={() => setRating(rating)} variant="secondary"
+      className="minimal"
+      onClick={() => setRating(rating)}
+      variant="secondary"
       onMouseOver={() => onMouseOver(rating)}
       onMouseOut={() => onMouseOut(rating)}
-      title={getTooltip(rating)}>
-      <Icon 
+      title={getTooltip(rating)}
+    >
+      <Icon
         icon={[getIconPrefix(rating), "star"]}
-        className={getClassName(rating)} />
+        className={getClassName(rating)}
+      />
     </Button>
   );
 
@@ -105,7 +108,9 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
 
   return (
     <div className="rating-stars">
-      {Array.from(Array(maxRating)).map((value, index) => renderRatingButton(index + 1))}
+      {Array.from(Array(maxRating)).map((value, index) =>
+        renderRatingButton(index + 1)
+      )}
     </div>
   );
 };
