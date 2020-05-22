@@ -218,3 +218,33 @@
 .movie-table td {
   vertical-align: middle;
 }
+
+.rating-stars {
+  display: inline-block;
+  
+  button {
+    padding: 0;
+    margin-right: 1px;
+
+    &:hover {
+      background-color: inherit;
+    }
+
+    &:disabled {
+      background-color: inherit;
+      opacity: inherit;
+    }
+  }
+
+  .unsetting {
+    color: gold;
+  }
+
+  .setting {
+    color: gold;
+  }
+
+  .set {
+    color: gold;
+  }
+}
