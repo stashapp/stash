@@ -95,6 +95,8 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
       variant="secondary"
       onMouseOver={() => onMouseOver(rating)}
       onMouseOut={() => onMouseOut(rating)}
+      onFocus={() => onMouseOver(rating)}
+      onBlur={() => onMouseOut(rating)}
       title={getTooltip(rating)}
     >
       <Icon
