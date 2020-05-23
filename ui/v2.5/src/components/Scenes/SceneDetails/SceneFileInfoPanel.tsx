@@ -115,7 +115,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   }
 
   function renderbitrate() {
-    // TODO: An upcoming react-intl version will support compound units, bitrate-per-second
+    // TODO: An upcoming react-intl version will support compound units, megabits-per-second
     if (props.scene.file.bitrate === undefined) {
       return;
     }
