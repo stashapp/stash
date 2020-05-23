@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { FormattedNumber } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
   mutateMetadataAutoTag,
@@ -115,7 +116,7 @@ export const TagList: React.FC = () => {
               to={NavUtils.makeTagScenesUrl(tag)}
               className="tag-list-anchor"
             >
-              Scenes: {tag.scene_count}
+              Scenes: <FormattedNumber value={tag.scene_count ?? 0} />
             </Link>
           </Button>
           <Button variant="secondary" className="tag-list-button">
@@ -123,11 +124,14 @@ export const TagList: React.FC = () => {
               to={NavUtils.makeTagSceneMarkersUrl(tag)}
               className="tag-list-anchor"
             >
-              Markers: {tag.scene_marker_count}
+              Markers: <FormattedNumber value={tag.scene_marker_count ?? 0} />
             </Link>
           </Button>
           <span className="tag-list-count">
-            Total: {(tag.scene_count || 0) + (tag.scene_marker_count || 0)}
+            Total:{" "}
+            <FormattedNumber
+              value={(tag.scene_count || 0) + (tag.scene_marker_count || 0)}
+            />
           </span>
           <Button variant="danger" onClick={() => setDeletingTag(tag)}>
             <Icon icon="trash-alt" color="danger" />
