@@ -1,4 +1,4 @@
-// Typescript currently does not implement the intl Unit interace
+// Typescript currently does not implement the intl Unit interface
 type Unit =
   | "byte"
   | "kilobyte"
