@@ -1,9 +1,9 @@
 FROM ubuntu:18.04 as prep
 LABEL MAINTAINER="leopere [at] nixc [dot] us"
 
-ARG STASH_BINARY=stash-linux
-ARG FFMPEG_ARCH=amd64
-ARG BASE_IMAGE=ubuntu
+ARG STASH_BINARY=stash-arm64v8
+ARG FFMPEG_ARCH=armhf
+ARG BASE_IMAGE=arm64v8/ubuntu
 
 RUN apt-get update && \
     apt-get -y install curl xz-utils ca-certificates && \
