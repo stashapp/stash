@@ -61,6 +61,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
         <span className="col-8 text-truncate">
           <FormattedNumber
             value={size}
+            // eslint-disable-next-line react/style-prop-object
             style="unit"
             unit={unit}
             unitDisplay="narrow"
