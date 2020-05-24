@@ -46,7 +46,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     return (
       <>
         <h6>Performers</h6>
-        <div className="row justify-content-center">{cards}</div>
+        <div className="row justify-content-center scene-performers">{cards}</div>
       </>
     );
   }

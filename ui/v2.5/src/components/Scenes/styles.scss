@@ -228,3 +228,10 @@
 .scene-tabs {
   max-height: calc(100vh - 4rem);
 }
+
+@media (min-width: 1200px), (max-width: 575px) {
+  .scene-performers .card-image {
+    height: 22.5rem;
+    width: 15rem;
+  }
+}
