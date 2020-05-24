@@ -367,7 +367,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             onChange: setTitle,
             isEditing: true,
           })}
-          <Form.Group controlId={"url"} as={Row}>
+          <Form.Group controlId="url" as={Row}>
             {FormUtils.renderLabel({
               title: "URL",
             })}
@@ -395,7 +395,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             onChange: (value: string) => setRating(Number.parseInt(value, 10)),
             selectOptions: ["", 1, 2, 3, 4, 5],
           })}
-          <Form.Group controlId={"gallery"} as={Row}>
+          <Form.Group controlId="gallery" as={Row}>
             {FormUtils.renderLabel({
               title: "Gallery",
             })}
@@ -408,7 +408,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             </Col>
           </Form.Group>
 
-          <Form.Group controlId={"studio"} as={Row}>
+          <Form.Group controlId="studio" as={Row}>
             {FormUtils.renderLabel({
               title: "Studio",
             })}
@@ -422,7 +422,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             </Col>
           </Form.Group>
 
-          <Form.Group controlId={"performers"} as={Row}>
+          <Form.Group controlId="performers" as={Row}>
             {FormUtils.renderLabel({
               title: "Performers",
               labelProps: {
@@ -442,7 +442,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             </Col>
           </Form.Group>
 
-          <Form.Group controlId={"moviesScenes"} as={Row}>
+          <Form.Group controlId="moviesScenes" as={Row}>
             {FormUtils.renderLabel({
               title: "Movies/Scenes",
               labelProps: {
@@ -461,7 +461,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             </Col>
           </Form.Group>
 
-          <Form.Group controlId={"tags"} as={Row}>
+          <Form.Group controlId="tags" as={Row}>
             {FormUtils.renderLabel({
               title: "Tags",
               labelProps: {
@@ -492,7 +492,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             />
           </Form.Group>
           <div>
-            <Form.Group className="test" controlId="cover">
+            <Form.Group controlId="cover">
               <Form.Label>Cover Image</Form.Label>
               {imageEncoding ? (
                 <LoadingIndicator message="Encoding image..." />
