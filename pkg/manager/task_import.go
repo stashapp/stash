@@ -410,7 +410,7 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 			UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
 		}
 
-		studio, err := sqb.FindByName(mappingJSON.Studio, tx)
+		studio, err := sqb.FindByName(mappingJSON.Studio, tx, false)
 		if err != nil {
 			logger.Errorf("[scraped sites] failed to fetch studio: %s", err.Error())
 		}
@@ -532,7 +532,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		// Populate the studio ID
 		if sceneJSON.Studio != "" {
 			sqb := models.NewStudioQueryBuilder()
-			studio, err := sqb.FindByName(sceneJSON.Studio, tx)
+			studio, err := sqb.FindByName(sceneJSON.Studio, tx, false)
 			if err != nil {
 				logger.Warnf("[scenes] studio <%s> does not exist: %s", sceneJSON.Studio, err.Error())
 			} else {
@@ -634,7 +634,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 					UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(marker.UpdatedAt)},
 				}
 
-				primaryTag, err := tqb.FindByName(marker.PrimaryTag, tx)
+				primaryTag, err := tqb.FindByName(marker.PrimaryTag, tx, false)
 				if err != nil {
 					logger.Errorf("[scenes] <%s> failed to find primary tag for marker: %s", scene.Checksum, err.Error())
 				} else {
@@ -682,7 +682,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Performer, error) {
 	pqb := models.NewPerformerQueryBuilder()
-	performers, err := pqb.FindByNames(names, tx)
+	performers, err := pqb.FindByNames(names, tx, false)
 	if err != nil {
 		return nil, err
 	}
@@ -711,7 +711,7 @@ func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int,
 
 	var movies []models.MoviesScenes
 	for _, inputMovie := range input {
-		movie, err := mqb.FindByName(inputMovie.MovieName, tx)
+		movie, err := mqb.FindByName(inputMovie.MovieName, tx, false)
 		if err != nil {
 			return nil, err
 		}
@@ -740,7 +740,7 @@ func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int,
 
 func (t *ImportTask) getTags(sceneChecksum string, names []string, tx *sqlx.Tx) ([]*models.Tag, error) {
 	tqb := models.NewTagQueryBuilder()
-	tags, err := tqb.FindByNames(names, tx)
+	tags, err := tqb.FindByNames(names, tx, false)
 	if err != nil {
 		return nil, err
 	}

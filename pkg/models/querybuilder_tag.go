@@ -111,14 +111,22 @@ func (qb *TagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int, tx *sqlx.Tx) (
 	return qb.queryTags(query, args, tx)
 }
 
-func (qb *TagQueryBuilder) FindByName(name string, tx *sqlx.Tx) (*Tag, error) {
-	query := "SELECT * FROM tags WHERE name = ? LIMIT 1"
+func (qb *TagQueryBuilder) FindByName(name string, tx *sqlx.Tx, nocase bool) (*Tag, error) {
+	query := "SELECT * FROM tags WHERE name = ?"
+	if nocase {
+		query += " COLLATE NOCASE"
+	}
+	query += " LIMIT 1"
 	args := []interface{}{name}
 	return qb.queryTag(query, args, tx)
 }
 
-func (qb *TagQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]*Tag, error) {
-	query := "SELECT * FROM tags WHERE name IN " + getInBinding(len(names))
+func (qb *TagQueryBuilder) FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*Tag, error) {
+	query := "SELECT * FROM tags WHERE name"
+	if nocase {
+		query += " COLLATE NOCASE"
+	}
+	query += " IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
 		args = append(args, name)

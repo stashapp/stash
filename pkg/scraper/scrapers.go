@@ -154,7 +154,7 @@ func ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
 func matchPerformer(p *models.ScrapedScenePerformer) error {
 	qb := models.NewPerformerQueryBuilder()
 
-	performers, err := qb.FindByNames([]string{p.Name}, nil)
+	performers, err := qb.FindByNames([]string{p.Name}, nil, true)
 
 	if err != nil {
 		return err
@@ -173,7 +173,7 @@ func matchPerformer(p *models.ScrapedScenePerformer) error {
 func matchStudio(s *models.ScrapedSceneStudio) error {
 	qb := models.NewStudioQueryBuilder()
 
-	studio, err := qb.FindByName(s.Name, nil)
+	studio, err := qb.FindByName(s.Name, nil, true)
 
 	if err != nil {
 		return err
@@ -191,7 +191,7 @@ func matchStudio(s *models.ScrapedSceneStudio) error {
 func matchMovie(m *models.ScrapedSceneMovie) error {
 	qb := models.NewMovieQueryBuilder()
 
-	movies, err := qb.FindByNames([]string{m.Name}, nil)
+	movies, err := qb.FindByNames([]string{m.Name}, nil, true)
 
 	if err != nil {
 		return err
@@ -210,7 +210,7 @@ func matchMovie(m *models.ScrapedSceneMovie) error {
 func matchTag(s *models.ScrapedSceneTag) error {
 	qb := models.NewTagQueryBuilder()
 
-	tag, err := qb.FindByName(s.Name, nil)
+	tag, err := qb.FindByName(s.Name, nil, true)
 
 	if err != nil {
 		return err

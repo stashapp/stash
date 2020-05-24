@@ -79,8 +79,12 @@ func (qb *StudioQueryBuilder) FindBySceneID(sceneID int) (*Studio, error) {
 	return qb.queryStudio(query, args, nil)
 }
 
-func (qb *StudioQueryBuilder) FindByName(name string, tx *sqlx.Tx) (*Studio, error) {
-	query := "SELECT * FROM studios WHERE name = ? LIMIT 1"
+func (qb *StudioQueryBuilder) FindByName(name string, tx *sqlx.Tx, nocase bool) (*Studio, error) {
+	query := "SELECT * FROM studios WHERE name = ?"
+	if nocase {
+		query += " COLLATE NOCASE"
+	}
+	query += " LIMIT 1"
 	args := []interface{}{name}
 	return qb.queryStudio(query, args, tx)
 }
