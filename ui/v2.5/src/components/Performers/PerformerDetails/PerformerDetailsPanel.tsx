@@ -469,13 +469,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     if (!height) {
       return "";
     }
-    const numericHeight = Number.parseInt(height, 10);
-    if (intl.locale === "en-US") {
-      const inches = Math.floor(numericHeight * 0.393700787);
-      const feet = Math.floor(inches / 12);
-      return `${feet}"${inches % 12}'`;
-    }
-    return intl.formatNumber(numericHeight, {
+    return intl.formatNumber(Number.parseInt(height, 10), {
       style: "unit",
       unit: "centimeter",
       unitDisplay: "narrow",
