@@ -1,7 +1,7 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
-import { Button, Dropdown, DropdownButton, Form, Table } from "react-bootstrap";
+import { Button, Dropdown, DropdownButton, Form, Table, Col, Row } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryScrapeScene,
@@ -21,7 +21,7 @@ import {
   ImageInput,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { ImageUtils, TableUtils } from "src/utils";
+import { ImageUtils, TableUtils, EditableTextUtils, FormUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
 
@@ -394,7 +394,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
   return (
     <>
-      <div className="form-container row p-3">
+      <div className="form-container row px-3 pt-3">
         <div className="col edit-buttons mb-3 pl-0">
           <Button className="edit-button" variant="primary" onClick={onSave}>
             Save
@@ -410,107 +410,124 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
         {renderScraperMenu()}
         {renderDeleteAlert()}
       </div>
-      <div className="form-container row p-3">
+      <div className="form-container row px-3">
         <div className="col-12 col-lg-6 col-xl-12">
-          <Table id="scene-edit-details">
-            <tbody>
-              {TableUtils.renderInputGroup({
-                title: "Title",
-                value: title,
-                onChange: setTitle,
-                isEditing: true,
-              })}
-              <tr>
-                <td>URL</td>
-                <td>
-                  <Form.Control
-                    onChange={(newValue: React.ChangeEvent<HTMLInputElement>) =>
-                      setUrl(newValue.currentTarget.value)
-                    }
-                    value={url}
-                    placeholder="URL"
-                    className="text-input"
-                  />
-                  {maybeRenderScrapeButton()}
-                </td>
-              </tr>
-              {TableUtils.renderInputGroup({
-                title: "Date",
-                value: date,
-                isEditing: true,
-                onChange: setDate,
-                placeholder: "YYYY-MM-DD",
-              })}
-              {TableUtils.renderHtmlSelect({
-                title: "Rating",
-                value: rating,
-                isEditing: true,
-                onChange: (value: string) =>
-                  setRating(Number.parseInt(value, 10)),
-                selectOptions: ["", 1, 2, 3, 4, 5],
-              })}
-              <tr>
-                <td>Gallery</td>
-                <td>
-                  <SceneGallerySelect
-                    sceneId={props.scene.id}
-                    initialId={galleryId}
-                    onSelect={(item) =>
-                      setGalleryId(item ? item.id : undefined)
-                    }
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td>Studio</td>
-                <td>
-                  <StudioSelect
-                    onSelect={(items) =>
-                      setStudioId(items.length > 0 ? items[0]?.id : undefined)
-                    }
-                    ids={studioId ? [studioId] : []}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td>Performers</td>
-                <td>
-                  <PerformerSelect
-                    isMulti
-                    onSelect={(items) =>
-                      setPerformerIds(items.map((item) => item.id))
-                    }
-                    ids={performerIds}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td>Movies/Scenes</td>
-                <td>
-                  <MovieSelect
-                    isMulti
-                    onSelect={(items) =>
-                      setMovieIds(items.map((item) => item.id))
-                    }
-                    ids={movieIds}
-                  />
-                  {renderTableMovies()}
-                </td>
-              </tr>
-              <tr>
-                <td>Tags</td>
-                <td>
-                  <TagSelect
-                    isMulti
-                    onSelect={(items) =>
-                      setTagIds(items.map((item) => item.id))
-                    }
-                    ids={tagIds}
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </Table>
+          {FormUtils.renderInputGroup({
+            title: "Title",
+            value: title,
+            onChange: setTitle,
+            isEditing: true,
+          })}
+          {FormUtils.renderInputGroup({
+            title: "URL",
+            value: url,
+            onChange: setUrl,
+            isEditing: true,
+          })}
+          {FormUtils.renderInputGroup({
+            title: "Date",
+            value: date,
+            isEditing: true,
+            onChange: setDate,
+            placeholder: "YYYY-MM-DD",
+          })}
+          {FormUtils.renderHtmlSelect({
+            title: "Rating",
+            value: rating,
+            isEditing: true,
+            onChange: (value: string) =>
+              setRating(Number.parseInt(value, 10)),
+            selectOptions: ["", 1, 2, 3, 4, 5],
+          })}
+          <Form.Group controlId={"gallery"} as={Row}>
+            {FormUtils.renderLabel({
+              title: "Gallery",
+            })}
+            <Col xs={9}>
+              <SceneGallerySelect
+                sceneId={props.scene.id}
+                initialId={galleryId}
+                onSelect={(item) =>
+                  setGalleryId(item ? item.id : undefined)
+                }
+              />
+            </Col>
+          </Form.Group>
+          
+          <Form.Group controlId={"studio"} as={Row}>
+            {FormUtils.renderLabel({
+              title: "Studio",
+            })}
+            <Col xs={9}>
+              <StudioSelect
+                onSelect={(items) =>
+                  setStudioId(items.length > 0 ? items[0]?.id : undefined)
+                }
+                ids={studioId ? [studioId] : []}
+              />
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId={"performers"} as={Row}>
+            {FormUtils.renderLabel({
+              title: "Performers",
+              labelProps: {
+                column: true,
+                sm: 3,
+                xl: 12,
+              }
+            })}
+            <Col sm={9} xl={12}>
+              <PerformerSelect
+                isMulti
+                onSelect={(items) =>
+                  setPerformerIds(items.map((item) => item.id))
+                }
+                ids={performerIds}
+              />
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId={"moviesScenes"} as={Row}>
+            {FormUtils.renderLabel({
+              title: "Movies/Scenes",
+              labelProps: {
+                column: true,
+                sm: 3,
+                xl: 12,
+              }
+            })}
+            <Col sm={9} xl={12}>
+              <MovieSelect
+                isMulti
+                onSelect={(items) =>
+                  setMovieIds(items.map((item) => item.id))
+                }
+                ids={movieIds}
+              />
+              {renderTableMovies()}
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId={"tags"} as={Row}>
+            {FormUtils.renderLabel({
+              title: "Tags",
+              labelProps: {
+                column: true,
+                sm: 3,
+                xl: 12,
+              }
+            })}
+            <Col sm={9} xl={12}>
+              <TagSelect
+                isMulti
+                onSelect={(items) =>
+                  setTagIds(items.map((item) => item.id))
+                }
+                ids={tagIds}
+              />
+            </Col>
+          </Form.Group>
         </div>
         <div className="col-12 col-lg-6 col-xl-12">
           <Form.Group controlId="details">
