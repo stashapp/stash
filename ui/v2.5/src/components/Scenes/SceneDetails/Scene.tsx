@@ -16,13 +16,11 @@ import { LoadingIndicator, Icon, Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
-import { ScenePerformerPanel } from "./ScenePerformerPanel";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
-import { SceneOperationsPanel } from "./SceneOperationsPanel";
 import { SceneMoviePanel } from "./SceneMoviePanel";
 
 export const Scene: React.FC = () => {
@@ -267,9 +265,6 @@ export const Scene: React.FC = () => {
           <Tab.Pane eventKey="scene-markers-panel" title="Markers">
             <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-performer-panel" title="Performers">
-            <ScenePerformerPanel scene={scene} />
-          </Tab.Pane>
           <Tab.Pane eventKey="scene-movie-panel" title="Movies">
             <SceneMoviePanel scene={scene} />
           </Tab.Pane>
@@ -293,9 +288,6 @@ export const Scene: React.FC = () => {
               onUpdate={(newScene) => setScene(newScene)}
               onDelete={onDelete}
             />
-          </Tab.Pane>
-          <Tab.Pane eventKey="scene-operations-panel" title="Operations">
-            <SceneOperationsPanel scene={scene} />
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
