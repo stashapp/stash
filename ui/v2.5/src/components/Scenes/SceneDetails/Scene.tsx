@@ -121,6 +121,7 @@ export const Scene: React.FC = () => {
           variant="secondary"
           id="operation-menu"
           className="minimal"
+          title="Operations"
         >
           <Icon icon="ellipsis-v" />
         </Dropdown.Toggle>
