@@ -35,10 +35,10 @@ WHERE movies_join.movie_id = ?
 GROUP BY scenes.id
 `
 
-var scenesForTagQuery = selectAll(sceneTable) + `
-LEFT JOIN scenes_tags as tags_join on tags_join.scene_id = scenes.id
-WHERE tags_join.tag_id = ?
-GROUP BY scenes.id
+var countScenesForTagQuery = `
+SELECT tag_id AS id FROM scenes_tags
+WHERE scenes_tags.tag_id = ?
+GROUP BY scenes_tags.scene_id
 `
 
 type SceneQueryBuilder struct{}
@@ -212,7 +212,7 @@ func (qb *SceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
 
 func (qb *SceneQueryBuilder) CountByTagID(tagID int) (int, error) {
 	args := []interface{}{tagID}
-	return runCountQuery(buildCountQuery(scenesForTagQuery), args)
+	return runCountQuery(buildCountQuery(countScenesForTagQuery), args)
 }
 
 func (qb *SceneQueryBuilder) Wall(q *string) ([]*Scene, error) {

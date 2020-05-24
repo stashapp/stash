@@ -32,10 +32,37 @@ func TestMarkerFindBySceneID(t *testing.T) {
 	assert.Len(t, markers, 0)
 }
 
+func TestMarkerCountByTagID(t *testing.T) {
+	mqb := models.NewSceneMarkerQueryBuilder()
+
+	markerCount, err := mqb.CountByTagID(tagIDs[tagIdxWithPrimaryMarker])
+
+	if err != nil {
+		t.Fatalf("error calling CountByTagID: %s", err.Error())
+	}
+
+	assert.Equal(t, 1, markerCount)
+
+	markerCount, err = mqb.CountByTagID(tagIDs[tagIdxWithMarker])
+
+	if err != nil {
+		t.Fatalf("error calling CountByTagID: %s", err.Error())
+	}
+
+	assert.Equal(t, 1, markerCount)
+
+	markerCount, err = mqb.CountByTagID(0)
+
+	if err != nil {
+		t.Fatalf("error calling CountByTagID: %s", err.Error())
+	}
+
+	assert.Equal(t, 0, markerCount)
+}
+
 // TODO Update
 // TODO Destroy
 // TODO Find
-// TODO CountByTagID
 // TODO GetMarkerStrings
 // TODO Wall
 // TODO Query
