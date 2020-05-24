@@ -15,8 +15,8 @@ $scrubberHeight: 120px;
   }
 }
 
-/* scrubber is hidden when height < 450px, so use entire height for scene player */
-@media (max-height: 449px) {
+/* scrubber is hidden when height < 450px or width < 576, so use entire height for scene player */
+@media (max-height: 449px), (max-width: 575px) {
   #jwplayer-container > div:first-child {
     height: 100%;
   }
@@ -51,8 +51,8 @@ $sceneTabWidth: 450px;
   position: relative;
 }
 
-/* hide scrubber when height is < 450px */
-@media (max-height: 449px) {
+/* hide scrubber when height is < 450px or width < 576 */
+@media (max-height: 449px), (max-width: 575px) {
   .scrubber-wrapper {
     display: none;
   }
