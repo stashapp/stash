@@ -1,7 +1,7 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
-import { Button, Dropdown, DropdownButton, Form, Table, Col, Row } from "react-bootstrap";
+import { Button, Dropdown, DropdownButton, Form, Col, Row } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryScrapeScene,
@@ -21,7 +21,7 @@ import {
   ImageInput,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { ImageUtils, TableUtils, EditableTextUtils, FormUtils } from "src/utils";
+import { ImageUtils, FormUtils, EditableTextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
 
@@ -384,7 +384,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       return undefined;
     }
     return (
-      <Button id="scrape-url-button" onClick={onScrapeSceneURL}>
+      <Button id="scrape-url-button" onClick={onScrapeSceneURL} title="Scrape">
         <Icon icon="file-download" />
       </Button>
     );
@@ -418,12 +418,20 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             onChange: setTitle,
             isEditing: true,
           })}
-          {FormUtils.renderInputGroup({
-            title: "URL",
-            value: url,
-            onChange: setUrl,
-            isEditing: true,
-          })}
+          <Form.Group controlId={"url"} as={Row}>
+            {FormUtils.renderLabel({
+              title: "URL",
+            })}
+            <Col xs={9}>
+              {EditableTextUtils.renderInputGroup({
+                title: "URL",
+                value: url,
+                onChange: setUrl,
+                isEditing: true,
+              })} 
+              {maybeRenderScrapeButton()}
+            </Col>
+          </Form.Group>
           {FormUtils.renderInputGroup({
             title: "Date",
             value: date,
