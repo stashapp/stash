@@ -51,17 +51,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const Scrapers = useListSceneScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const [deleteFile, setDeleteFile] = useState<boolean>(false);
-  const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
-
   const [coverImagePreview, setCoverImagePreview] = useState<string>();
 
   // Network state
   const [isLoading, setIsLoading] = useState(true);
 
   const [updateScene] = useSceneUpdate(getSceneInput());
-  const [deleteScene] = useSceneDestroy(getSceneDeleteInput());
 
   useEffect(() => {
     const newQueryableScrapers = (
@@ -185,27 +180,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setIsLoading(false);
   }
 
-  function getSceneDeleteInput(): GQL.SceneDestroyInput {
-    return {
-      id: props.scene.id,
-      delete_file: deleteFile,
-      delete_generated: deleteGenerated,
-    };
-  }
-
-  async function onDelete() {
-    setIsDeleteAlertOpen(false);
-    setIsLoading(true);
-    try {
-      await deleteScene();
-      Toast.success({ content: "Deleted scene" });
-    } catch (e) {
-      Toast.error(e);
-    }
-    setIsLoading(false);
-    props.onDelete();
-  }
-
   function renderTableMovies() {
     return (
       <SceneMovieTable
@@ -214,35 +188,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           setMovieSceneIndexes(items);
         }}
       />
-    );
-  }
-
-  function renderDeleteAlert() {
-    return (
-      <Modal
-        show={isDeleteAlertOpen}
-        icon="trash-alt"
-        header="Delete Scene?"
-        accept={{ variant: "danger", onClick: onDelete, text: "Delete" }}
-        cancel={{ onClick: () => setIsDeleteAlertOpen(false), text: "Cancel" }}
-      >
-        <p>
-          Are you sure you want to delete this scene? Unless the file is also
-          deleted, this scene will be re-added when scan is performed.
-        </p>
-        <Form>
-          <Form.Check
-            checked={deleteFile}
-            label="Delete file"
-            onChange={() => setDeleteFile(!deleteFile)}
-          />
-          <Form.Check
-            checked={deleteGenerated}
-            label="Delete generated supporting files"
-            onChange={() => setDeleteGenerated(!deleteGenerated)}
-          />
-        </Form>
-      </Modal>
     );
   }
 
@@ -402,13 +347,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           <Button
             className="edit-button"
             variant="danger"
-            onClick={() => setIsDeleteAlertOpen(true)}
+            onClick={() => props.onDelete()}
           >
             Delete
           </Button>
         </div>
         {renderScraperMenu()}
-        {renderDeleteAlert()}
       </div>
       <div className="form-container row px-3">
         <div className="col-12 col-lg-6 col-xl-12">
