@@ -217,8 +217,12 @@
   max-width: 100%;
 }
 
-.movie-table td {
-  vertical-align: middle;
+.movie-table {
+  width: 100%;
+  
+  td {
+    vertical-align: middle;
+  }
 }
 
 .scene-tabs {
