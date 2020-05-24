@@ -46,7 +46,9 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     return (
       <>
         <h6>Performers</h6>
-        <div className="row justify-content-center scene-performers">{cards}</div>
+        <div className="row justify-content-center scene-performers">
+          {cards}
+        </div>
       </>
     );
   }
@@ -57,7 +59,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
         <div className="col-9 col-xl-12 scene-details">
           <div className="scene-header d-xl-none">
             <h3>
-              {props.scene.title ?? TextUtils.fileNameFromPath(props.scene.path)}
+              {props.scene.title ??
+                TextUtils.fileNameFromPath(props.scene.path)}
             </h3>
           </div>
           <h5>{props.scene.date ?? ""}</h5>
@@ -83,7 +86,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           {renderDetails()}
           {renderTags()}
           {renderPerformers()}
-          </div>
+        </div>
       </div>
     </>
   );

@@ -7,7 +7,7 @@ function getLabelProps(labelProps?: FormLabelProps) {
   if (!ret) {
     ret = {
       column: true,
-      xs: 3
+      xs: 3,
     };
   }
 
@@ -18,7 +18,7 @@ function getInputProps(inputProps?: ColProps) {
   let ret = inputProps;
   if (!ret) {
     ret = {
-      xs: 9
+      xs: 9,
     };
   }
 
@@ -27,7 +27,7 @@ function getInputProps(inputProps?: ColProps) {
 
 const renderLabel = (options: {
   title: string;
-  labelProps?: FormLabelProps
+  labelProps?: FormLabelProps;
 }) => (
   <Form.Label column {...getLabelProps(options.labelProps)}>
     {options.title}
@@ -45,7 +45,7 @@ const renderEditableText = (options: {
   <Form.Group controlId={options.title} as={Row}>
     {renderLabel(options)}
     <Col {...getInputProps(options.inputProps)}>
-      {EditableTextUtils.renderEditableText(options)} 
+      {EditableTextUtils.renderEditableText(options)}
     </Col>
   </Form.Group>
 );

@@ -1,21 +1,26 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
-import { Button, Dropdown, DropdownButton, Form, Col, Row } from "react-bootstrap";
+import {
+  Button,
+  Dropdown,
+  DropdownButton,
+  Form,
+  Col,
+  Row,
+} from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryScrapeScene,
   queryScrapeSceneURL,
   useListSceneScrapers,
   useSceneUpdate,
-  useSceneDestroy,
 } from "src/core/StashService";
 import {
   PerformerSelect,
   TagSelect,
   StudioSelect,
   SceneGallerySelect,
-  Modal,
   Icon,
   LoadingIndicator,
   ImageInput,
@@ -372,7 +377,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
                 value: url,
                 onChange: setUrl,
                 isEditing: true,
-              })} 
+              })}
               {maybeRenderScrapeButton()}
             </Col>
           </Form.Group>
@@ -387,8 +392,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             title: "Rating",
             value: rating,
             isEditing: true,
-            onChange: (value: string) =>
-              setRating(Number.parseInt(value, 10)),
+            onChange: (value: string) => setRating(Number.parseInt(value, 10)),
             selectOptions: ["", 1, 2, 3, 4, 5],
           })}
           <Form.Group controlId={"gallery"} as={Row}>
@@ -399,13 +403,11 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               <SceneGallerySelect
                 sceneId={props.scene.id}
                 initialId={galleryId}
-                onSelect={(item) =>
-                  setGalleryId(item ? item.id : undefined)
-                }
+                onSelect={(item) => setGalleryId(item ? item.id : undefined)}
               />
             </Col>
           </Form.Group>
-          
+
           <Form.Group controlId={"studio"} as={Row}>
             {FormUtils.renderLabel({
               title: "Studio",
@@ -427,7 +429,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
                 column: true,
                 sm: 3,
                 xl: 12,
-              }
+              },
             })}
             <Col sm={9} xl={12}>
               <PerformerSelect
@@ -447,14 +449,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
                 column: true,
                 sm: 3,
                 xl: 12,
-              }
+              },
             })}
             <Col sm={9} xl={12}>
               <MovieSelect
                 isMulti
-                onSelect={(items) =>
-                  setMovieIds(items.map((item) => item.id))
-                }
+                onSelect={(items) => setMovieIds(items.map((item) => item.id))}
                 ids={movieIds}
               />
               {renderTableMovies()}
@@ -468,14 +468,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
                 column: true,
                 sm: 3,
                 xl: 12,
-              }
+              },
             })}
             <Col sm={9} xl={12}>
               <TagSelect
                 isMulti
-                onSelect={(items) =>
-                  setTagIds(items.map((item) => item.id))
-                }
+                onSelect={(items) => setTagIds(items.map((item) => item.id))}
                 ids={tagIds}
               />
             </Col>

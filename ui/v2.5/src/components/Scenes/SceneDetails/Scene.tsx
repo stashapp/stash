@@ -140,7 +140,7 @@ export const Scene: React.FC = () => {
       Toast.error(e);
     }
     setDeleteLoading(false);
-    history.push("/scenes")
+    history.push("/scenes");
   }
 
   function renderDeleteAlert() {
