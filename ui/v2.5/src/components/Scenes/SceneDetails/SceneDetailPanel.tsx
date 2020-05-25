@@ -53,10 +53,13 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     );
   }
 
+  // filename should use entire row if there is no studio
+  const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
+
   return (
     <>
       <div className="row">
-        <div className="col-9 col-xl-12 scene-details">
+        <div className={sceneDetailsWidth + " col-xl-12 scene-details"}>
           <div className="scene-header d-xl-none">
             <h3>
               {props.scene.title ??
@@ -69,8 +72,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6>
           )}
         </div>
-        <div className="col-3 d-xl-none">
-          {props.scene.studio && (
+        {props.scene.studio && (
+          <div className="col-3 d-xl-none">
             <Link to={`/studios/${props.scene.studio.id}`}>
               <img
                 src={props.scene.studio.image_path ?? ""}
@@ -78,8 +81,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
                 className="studio-logo float-right"
               />
             </Link>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       <div className="row">
         <div className="col-12">

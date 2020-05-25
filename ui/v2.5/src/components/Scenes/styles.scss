@@ -227,6 +227,9 @@
 
 .scene-tabs {
   max-height: calc(100vh - 4rem);
+
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 @media (min-width: 1200px), (max-width: 575px) {
