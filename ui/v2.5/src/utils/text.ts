@@ -1,4 +1,19 @@
-const Units = ["bytes", "kB", "MB", "GB", "TB", "PB"];
+// Typescript currently does not implement the intl Unit interface
+type Unit =
+  | "byte"
+  | "kilobyte"
+  | "megabyte"
+  | "gigabyte"
+  | "terabyte"
+  | "petabyte";
+const Units: Unit[] = [
+  "byte",
+  "kilobyte",
+  "megabyte",
+  "gigabyte",
+  "terabyte",
+  "petabyte",
+];
 
 const truncate = (
   value?: string,
@@ -9,9 +24,9 @@ const truncate = (
   return value.length > limit ? value.substring(0, limit) + tail : value;
 };
 
-const fileSize = (bytes: number = 0, precision: number = 2) => {
+const fileSize = (bytes: number = 0) => {
   if (Number.isNaN(parseFloat(String(bytes))) || !Number.isFinite(bytes))
-    return "?";
+    return { size: 0, unit: Units[0] };
 
   let unit = 0;
   let count = bytes;
@@ -20,7 +35,10 @@ const fileSize = (bytes: number = 0, precision: number = 2) => {
     unit++;
   }
 
-  return `${count.toFixed(+precision)} ${Units[unit]}`;
+  return {
+    size: count,
+    unit: Units[unit],
+  };
 };
 
 const secondsToTimestamp = (seconds: number) => {
