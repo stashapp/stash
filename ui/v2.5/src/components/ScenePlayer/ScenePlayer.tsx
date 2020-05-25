@@ -184,8 +184,13 @@ export class ScenePlayerImpl extends React.Component<
   }
 
   public render() {
-    const className =
+    let className =
       this.props.className ?? "w-100 col-sm-9 m-sm-auto no-gutter";
+    const sceneFile = this.props.scene.file;
+
+    if (sceneFile.height && sceneFile.width && sceneFile.height > sceneFile.width) {
+      className += " portrait";
+    }
 
     return (
       <div id="jwplayer-container" className={className}>

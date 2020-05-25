@@ -13,12 +13,14 @@ $scrubberHeight: 120px;
       height: 56.25vw;
       max-height: calc(100vh - #{$scrubberHeight} - 4.25rem - 15px);
     }
+
+    &.portrait .jw-aspect {
+      height: 177.78vw;
+    }
   }
 
   @media (max-height: 449px), (max-width: 575px) {
     .jw-aspect {
-      display: block;
-      height: 56.25vw;
       max-height: calc(100vh - 4.25rem);
     }
   }
