@@ -167,7 +167,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
             config={config.data?.configuration}
             active={active}
           />
-          {renderText}
+          {renderText()}
         </Link>
       </div>
     </div>
