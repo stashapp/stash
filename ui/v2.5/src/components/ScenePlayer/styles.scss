@@ -5,6 +5,24 @@ $scrubberHeight: 120px;
   height: calc(100vh - 4rem);
   padding-bottom: 0.25rem;
 
+  @media (max-width: 1200px) {
+    height: inherit;
+
+    .jw-aspect {
+      display: block;
+      height: 56.25vw;
+      max-height: calc(100vh - #{$scrubberHeight} - 4.25rem - 15px);
+    }
+  }
+
+  @media (max-height: 449px), (max-width: 575px) {
+    .jw-aspect {
+      display: block;
+      height: 56.25vw;
+      max-height: calc(100vh - 4.25rem);
+    }
+  }
+
   & video:focus {
     outline: 0;
   }
