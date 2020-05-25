@@ -129,6 +129,15 @@ func (c xpathScraperAttrConfig) getParseDate() string {
 	return c.getString(parseDateKey)
 }
 
+func (c xpathScraperAttrConfig) getSplit() string {
+	const splitKey = "split"
+	return c.getString(splitKey)
+}
+
+func (c xpathScraperAttrConfig) hasSplit() bool {
+	return c.getSplit() != ""
+}
+
 func (c xpathScraperAttrConfig) getReplace() xpathRegexConfigs {
 	const replaceKey = "replace"
 	val, _ := c[replaceKey]
@@ -196,6 +205,23 @@ func (c xpathScraperAttrConfig) parseDate(value string) string {
 	// convert it into our date format
 	const internalDateFormat = "2006-01-02"
 	return parsedValue.Format(internalDateFormat)
+}
+
+func (c xpathScraperAttrConfig) splitString(value string) []string {
+	separator := c.getSplit()
+	var res []string
+
+	if separator == "" {
+		return []string{value}
+	}
+
+	for _, str := range strings.Split(value, separator) {
+		if str != "" {
+			res = append(res, str)
+		}
+	}
+
+	return res
 }
 
 func (c xpathScraperAttrConfig) replaceRegex(value string) string {
@@ -299,15 +325,26 @@ func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xP
 				if attrConfig.hasConcat() {
 					result := attrConfig.concatenateResults(found)
 					result = attrConfig.postProcess(result)
-					const i = 0
-					ret = ret.setKey(i, k, result)
+					if attrConfig.hasSplit() {
+						for j, txt := range attrConfig.splitString(result) {
+							ret = ret.setKey(j, k, txt)
+						}
+					} else {
+						const i = 0
+						ret = ret.setKey(i, k, result)
+					}
 				} else {
 					for i, elem := range found {
 						text := NodeText(elem)
 						text = commonPostProcess(text)
 						text = attrConfig.postProcess(text)
-
-						ret = ret.setKey(i, k, text)
+						if attrConfig.hasSplit() {
+							for j, txt := range attrConfig.splitString(text) {
+								ret = ret.setKey(i+j, k, txt)
+							}
+						} else {
+							ret = ret.setKey(i, k, text)
+						}
 					}
 				}
 			}
