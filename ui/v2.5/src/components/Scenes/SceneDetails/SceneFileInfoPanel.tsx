@@ -1,4 +1,5 @@
 import React from "react";
+import { FormattedNumber } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 
@@ -49,11 +50,23 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     if (props.scene.file.size === undefined) {
       return;
     }
+
+    const { size, unit } = TextUtils.fileSize(
+      Number.parseInt(props.scene.file.size ?? "0", 10)
+    );
+
     return (
       <div className="row">
         <span className="col-4">File Size</span>
         <span className="col-8 text-truncate">
-          {TextUtils.fileSize(parseInt(props.scene.file.size ?? "0", 10))}
+          <FormattedNumber
+            value={size}
+            // eslint-disable-next-line react/style-prop-object
+            style="unit"
+            unit={unit}
+            unitDisplay="narrow"
+            maximumFractionDigits={2}
+          />
         </span>
       </div>
     );
@@ -95,13 +108,15 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       <div className="row">
         <span className="col-4">Frame Rate</span>
         <span className="col-8 text-truncate">
-          {props.scene.file.framerate} frames per second
+          <FormattedNumber value={props.scene.file.framerate ?? 0} /> frames per
+          second
         </span>
       </div>
     );
   }
 
   function renderbitrate() {
+    // TODO: An upcoming react-intl version will support compound units, megabits-per-second
     if (props.scene.file.bitrate === undefined) {
       return;
     }
@@ -109,7 +124,11 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
       <div className="row">
         <span className="col-4">Bit Rate</span>
         <span className="col-8 text-truncate">
-          {TextUtils.bitRate(props.scene.file.bitrate ?? 0)}
+          <FormattedNumber
+            value={(props.scene.file.bitrate ?? 0) / 1000000}
+            maximumFractionDigits={2}
+          />
+          &nbsp;megabits per second
         </span>
       </div>
     );
