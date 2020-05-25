@@ -230,6 +230,11 @@
 }
 
 @media (min-width: 1200px), (max-width: 575px) {
+  .performer-card .flag-icon {
+    height: 1.33rem;
+    width: 2rem;
+  }
+
   .scene-performers .card-image {
     height: 22.5rem;
     width: 15rem;
