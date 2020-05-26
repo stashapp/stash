@@ -11,16 +11,25 @@ interface IWallPanelProps {
 }
 
 const calculateClass = (index: number, count: number) => {
+  // First position and more than one row
   if (index === 0 && count > 5) return "transform-origin-top-left";
+  // Fifth position and more than one row
   if (index === 4 && count > 5) return "transform-origin-top-right";
+  // Top row
   if (index < 5) return "transform-origin-top";
+  // Two or more rows, with full last row and index is last
   if (count > 9 && count % 5 === 0 && index + 1 === count)
     return "transform-origin-bottom-right";
+  // Two or more rows, with full last row and index is fifth to last
   if (count > 9 && count % 5 === 0 && index + 5 === count)
     return "transform-origin-bottom-left";
-  if (count - (count % 5 || 5) <= index + 1) return "transform-origin-bottom";
+  // Multiple of five minus one
   if (index % 5 === 4) return "transform-origin-right";
+  // Multiple of five
   if (index % 5 === 0) return "transform-origin-left";
+  // Position is equal or larger than first postion in last row
+  if (count - (count % 5 || 5) <= index + 1) return "transform-origin-bottom";
+  // Default
   return "transform-origin-center";
 };
 

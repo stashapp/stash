@@ -19,12 +19,25 @@
       width: 100%;
     }
 
+    &-anchor:hover {
+      text-decoration: none;
+    }
+
     &-media {
+      background-color: black;
       height: 100%;
       object-fit: contain;
       transition: z-index 0s 0s;
       width: 100%;
       z-index: 0;
+    }
+
+    &-missing {
+      align-items: center;
+      color: $text-color;
+      display: flex;
+      font-size: 1.5rem;
+      justify-content: center;
     }
 
     &-preview {
@@ -61,6 +74,7 @@
     }
 
     &-container {
+      background-color: black;
       display: flex;
       height: 100%;
       justify-content: center;
@@ -110,11 +124,10 @@
       background-color: black;
       bottom: 0;
       content: "";
-      display: block;
       left: 0;
       opacity: 0;
       pointer-events: none;
-      position: absolute;
+      position: fixed;
       right: 0;
       top: 0;
       transition: opacity 0.5s 0s ease-in-out;

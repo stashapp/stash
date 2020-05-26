@@ -26,6 +26,7 @@ const Preview: React.FC<{
   active: boolean;
 }> = ({ previews, config, active }) => {
   const videoElement = useRef() as React.MutableRefObject<HTMLVideoElement>;
+  const [isMissing, setIsMissing] = useState(false);
 
   const previewType = config?.interface?.wallPlayback;
   const soundOnPreview = config?.interface?.soundOnPreview ?? false;
@@ -40,6 +41,14 @@ const Preview: React.FC<{
   }, [videoElement, previewType, soundOnPreview, active]);
 
   if (!previews) return <div />;
+
+  if (isMissing) {
+    return (
+      <div className="wall-item-media wall-item-missing">
+        Pending preview generation
+      </div>
+    );
+  }
 
   const image = (
     <img
@@ -60,6 +69,7 @@ const Preview: React.FC<{
       className={cx("wall-item-media", {
         "wall-item-preview": previewType !== "video",
       })}
+      onError={() => setIsMissing(true)}
       ref={videoElement}
     />
   );
@@ -161,7 +171,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
   return (
     <div className="wall-item">
       <div className={`wall-item-container ${props.className}`} ref={wallItem}>
-        <Link onClick={clickHandler} to={linkSrc}>
+        <Link onClick={clickHandler} to={linkSrc} className="wall-item-anchor">
           <Preview
             previews={previews}
             config={config.data?.configuration}
