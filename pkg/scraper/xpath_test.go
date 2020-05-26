@@ -790,7 +790,7 @@ func TestApplySceneXPathConfig(t *testing.T) {
 	}
 	verifyTags(t, expectedTags, scene.Tags)
 
-	// verify tags
+	// verify movies
 	expectedMovies := []string{
 		"Video",
 		"of",
