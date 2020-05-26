@@ -242,9 +242,7 @@ export const Movie: React.FC = () => {
             })}
             {TableUtils.renderInputGroup({
               title: `Date ${isEditing ? "(YYYY-MM-DD)" : ""}`,
-              value: isEditing
-                ? date
-                : intl.formatDate(date, { format: "long" }),
+              value: isEditing ? date : TextUtils.formatDate(intl, date),
               isEditing,
               onChange: setDate,
             })}

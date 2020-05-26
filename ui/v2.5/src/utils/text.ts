@@ -1,3 +1,5 @@
+import { IntlShape } from "react-intl";
+
 // Typescript currently does not implement the intl Unit interface
 type Unit =
   | "byte"
@@ -128,6 +130,14 @@ const sanitiseURL = (url?: string, siteURL?: URL) => {
   return `https://${url}`;
 };
 
+const formatDate = (intl: IntlShape, date?: string) => {
+  if (!date) {
+    return "";
+  }
+
+  return intl.formatDate(date, { format: "long" });
+};
+
 const TextUtils = {
   truncate,
   fileSize,
@@ -139,6 +149,7 @@ const TextUtils = {
   sanitiseURL,
   twitterURL,
   instagramURL,
+  formatDate,
 };
 
 export default TextUtils;

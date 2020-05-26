@@ -490,7 +490,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             title: "Birthdate",
             value: isEditing
               ? birthdate
-              : intl.formatDate(birthdate, { format: "long" }),
+              : TextUtils.formatDate(intl, birthdate),
             isEditing: !!isEditing,
             onChange: setBirthdate,
           })}
