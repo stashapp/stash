@@ -1,64 +1,139 @@
-import _ from "lodash";
 import React, { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
-import { useVideoHover } from "src/hooks";
 import { TextUtils, NavUtils } from "src/utils";
+import cx from "classnames";
 
 interface IWallItemProps {
   scene?: GQL.SlimSceneDataFragment;
   sceneMarker?: GQL.SceneMarkerDataFragment;
-  origin?: string;
-  onOverlay: (show: boolean) => void;
   clickHandler?: (
     item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment
   ) => void;
+  className: string;
 }
 
+interface IPreviews {
+  video?: string;
+  animation?: string;
+  image?: string;
+}
+
+const Preview: React.FC<{
+  previews?: IPreviews;
+  config?: GQL.ConfigDataFragment;
+  active: boolean;
+}> = ({ previews, config, active }) => {
+  const videoElement = useRef() as React.MutableRefObject<HTMLVideoElement>;
+  const [isMissing, setIsMissing] = useState(false);
+
+  const previewType = config?.interface?.wallPlayback;
+  const soundOnPreview = config?.interface?.soundOnPreview ?? false;
+
+  useEffect(() => {
+    if (!videoElement.current) return;
+    videoElement.current.muted = !(soundOnPreview && active);
+    if (previewType !== "video") {
+      if (active) videoElement.current.play();
+      else videoElement.current.pause();
+    }
+  }, [videoElement, previewType, soundOnPreview, active]);
+
+  if (!previews) return <div />;
+
+  if (isMissing) {
+    return (
+      <div className="wall-item-media wall-item-missing">
+        Pending preview generation
+      </div>
+    );
+  }
+
+  const image = (
+    <img
+      alt=""
+      className="wall-item-media"
+      src={
+        (previewType === "animation" && previews.animation) || previews.image
+      }
+    />
+  );
+  const video = (
+    <video
+      src={previews.video}
+      poster={previews.image}
+      autoPlay={previewType === "video"}
+      loop
+      muted
+      className={cx("wall-item-media", {
+        "wall-item-preview": previewType !== "video",
+      })}
+      onError={() => setIsMissing(true)}
+      ref={videoElement}
+    />
+  );
+
+  if (previewType === "video") {
+    return video;
+  }
+  return (
+    <>
+      {image}
+      {video}
+    </>
+  );
+};
+
 export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
-  const [videoPath, setVideoPath] = useState<string>();
-  const [previewPath, setPreviewPath] = useState<string>("");
-  const [screenshotPath, setScreenshotPath] = useState<string>("");
-  const [title, setTitle] = useState<string>("");
-  const [tags, setTags] = useState<JSX.Element[]>([]);
+  const [active, setActive] = useState(false);
+  const wallItem = useRef() as React.MutableRefObject<HTMLDivElement>;
   const config = useConfiguration();
-  const hoverHandler = useVideoHover({
-    resetOnMouseLeave: true,
-  });
+
   const showTextContainer =
     config.data?.configuration.interface.wallShowTitle ?? true;
 
-  function onMouseEnter() {
-    hoverHandler.onMouseEnter();
-    if (!videoPath || videoPath === "") {
-      if (props.sceneMarker) {
-        setVideoPath(props.sceneMarker.stream || "");
-      } else if (props.scene) {
-        setVideoPath(props.scene.paths.preview || "");
+  const previews = props.sceneMarker
+    ? {
+        video: props.sceneMarker.stream,
+        animation: props.sceneMarker.preview,
       }
-    }
-    props.onOverlay(true);
-  }
-  const debouncedOnMouseEnter = useRef(_.debounce(onMouseEnter, 500));
+    : {
+        video: props.scene?.paths.preview ?? undefined,
+        animation: props.scene?.paths.webp ?? undefined,
+        image: props.scene?.paths.screenshot ?? undefined,
+      };
 
-  function onMouseLeave() {
-    hoverHandler.onMouseLeave();
-    setVideoPath("");
-    debouncedOnMouseEnter.current.cancel();
-    props.onOverlay(false);
-  }
+  const setInactive = () => setActive(false);
+  const toggleActive = (e: TransitionEvent) => {
+    if (e.propertyName === "transform" && e.elapsedTime === 0) {
+      // Get the current scale of the wall-item. If it's smaller than 1.1 the item is being scaled up, otherwise down.
+      const matrixScale = getComputedStyle(wallItem.current).transform.match(
+        /-?\d+\.?\d+|\d+/g
+      )?.[0];
+      const scale = Number.parseFloat(matrixScale ?? "2") || 2;
+      setActive(scale <= 1.1 && !active);
+    }
+  };
 
-  function onClick() {
-    if (props.clickHandler === undefined) {
-      return;
+  useEffect(() => {
+    const { current } = wallItem;
+    current?.addEventListener("transitioncancel", setInactive);
+    current?.addEventListener("transitionstart", toggleActive);
+    return () => {
+      current?.removeEventListener("transitioncancel", setInactive);
+      current?.removeEventListener("transitionstart", toggleActive);
+    };
+  });
+
+  const clickHandler = () => {
+    if (props.scene) {
+      props?.clickHandler?.(props.scene);
     }
-    if (props.scene !== undefined) {
-      props.clickHandler(props.scene);
-    } else if (props.sceneMarker !== undefined) {
-      props.clickHandler(props.sceneMarker);
+    if (props.sceneMarker) {
+      props?.clickHandler?.(props.sceneMarker);
     }
-  }
+  };
 
   let linkSrc: string = "#";
   if (!props.clickHandler) {
@@ -69,89 +144,40 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
     }
   }
 
-  function onTransitionEnd(event: React.TransitionEvent<HTMLDivElement>) {
-    const target = event.currentTarget;
-    if (target.classList.contains("double-scale") && target.parentElement) {
-      target.parentElement.style.zIndex = "10";
-    } else if (target.parentElement) {
-      target.parentElement.style.zIndex = "";
-    }
-  }
+  const renderText = () => {
+    if (!showTextContainer) return;
 
-  useEffect(() => {
-    if (props.sceneMarker) {
-      setPreviewPath(props.sceneMarker.preview);
-      setTitle(
-        `${props.sceneMarker!.title} - ${TextUtils.secondsToTimestamp(
+    const title = props.sceneMarker
+      ? `${props.sceneMarker!.title} - ${TextUtils.secondsToTimestamp(
           props.sceneMarker.seconds
         )}`
-      );
-      const thisTags = props.sceneMarker.tags.map((tag) => (
-        <span key={tag.id} className="wall-tag">
-          {tag.name}
-        </span>
-      ));
-      thisTags.unshift(
-        <span key={props.sceneMarker.primary_tag.id} className="wall-tag">
-          {props.sceneMarker.primary_tag.name}
-        </span>
-      );
-      setTags(thisTags);
-    } else if (props.scene) {
-      setPreviewPath(props.scene.paths.webp || "");
-      setScreenshotPath(props.scene.paths.screenshot || "");
-      setTitle(props.scene.title || "");
-    }
-  }, [props.sceneMarker, props.scene]);
+      : props.scene?.title ?? "";
+    const tags = props.sceneMarker
+      ? [props.sceneMarker.primary_tag, ...props.sceneMarker.tags]
+      : [];
 
-  function previewNotFound() {
-    if (previewPath !== screenshotPath) {
-      setPreviewPath(screenshotPath);
-    }
-  }
+    return (
+      <div className="wall-item-text">
+        <div>{title}</div>
+        {tags.map((tag) => (
+          <span key={tag.id} className="wall-tag">
+            {tag.name}
+          </span>
+        ))}
+      </div>
+    );
+  };
 
-  const className = ["scene-wall-item-container"];
-  if (hoverHandler.isHovering.current) {
-    className.push("double-scale");
-  }
-  const style: React.CSSProperties = {};
-  if (props.origin) {
-    style.transformOrigin = props.origin;
-  }
   return (
     <div className="wall-item">
-      <div
-        className={className.join(" ")}
-        style={style}
-        onTransitionEnd={onTransitionEnd}
-        onMouseEnter={() => debouncedOnMouseEnter.current()}
-        onMouseMove={() => debouncedOnMouseEnter.current()}
-        onMouseLeave={onMouseLeave}
-      >
-        <Link onClick={onClick} to={linkSrc}>
-          <video
-            src={videoPath}
-            poster={screenshotPath}
-            className="scene-wall-video"
-            style={hoverHandler.isHovering.current ? {} : { display: "none" }}
-            autoPlay
-            loop
-            ref={hoverHandler.videoEl}
+      <div className={`wall-item-container ${props.className}`} ref={wallItem}>
+        <Link onClick={clickHandler} to={linkSrc} className="wall-item-anchor">
+          <Preview
+            previews={previews}
+            config={config.data?.configuration}
+            active={active}
           />
-          <img
-            alt={title}
-            className="scene-wall-image"
-            src={previewPath || screenshotPath}
-            onError={() => previewNotFound()}
-          />
-          {showTextContainer ? (
-            <div className="scene-wall-item-text-container">
-              <div>{title}</div>
-              {tags}
-            </div>
-          ) : (
-            ""
-          )}
+          {renderText()}
         </Link>
       </div>
     </div>

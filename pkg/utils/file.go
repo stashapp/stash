@@ -28,11 +28,8 @@ func FileExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
 		return true, nil
-	} else if os.IsNotExist(err) {
-		return false, err
-	} else {
-		panic(err)
 	}
+	return false, err
 }
 
 // DirExists returns true if the given path exists and is a directory

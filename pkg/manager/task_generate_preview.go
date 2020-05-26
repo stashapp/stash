@@ -9,7 +9,9 @@ import (
 )
 
 type GeneratePreviewTask struct {
-	Scene models.Scene
+	Scene         models.Scene
+	ImagePreview  bool
+	PreviewPreset string
 }
 
 func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
@@ -17,7 +19,8 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 
 	videoFilename := t.videoFilename()
 	imageFilename := t.imageFilename()
-	if t.doesPreviewExist(t.Scene.Checksum) {
+	videoExists := t.doesVideoPreviewExist(t.Scene.Checksum)
+	if (!t.ImagePreview || t.doesImagePreviewExist(t.Scene.Checksum)) && videoExists {
 		return
 	}
 
@@ -27,7 +30,7 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots)
+	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, !videoExists, t.ImagePreview, t.PreviewPreset)
 	if err != nil {
 		logger.Errorf("error creating preview generator: %s", err.Error())
 		return
@@ -39,10 +42,14 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 	}
 }
 
-func (t *GeneratePreviewTask) doesPreviewExist(sceneChecksum string) bool {
+func (t *GeneratePreviewTask) doesVideoPreviewExist(sceneChecksum string) bool {
 	videoExists, _ := utils.FileExists(instance.Paths.Scene.GetStreamPreviewPath(sceneChecksum))
+	return videoExists
+}
+
+func (t *GeneratePreviewTask) doesImagePreviewExist(sceneChecksum string) bool {
 	imageExists, _ := utils.FileExists(instance.Paths.Scene.GetStreamPreviewImagePath(sceneChecksum))
-	return videoExists && imageExists
+	return imageExists
 }
 
 func (t *GeneratePreviewTask) videoFilename() string {

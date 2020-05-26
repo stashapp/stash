@@ -54,6 +54,7 @@ const MaximumLoopDuration = "maximum_loop_duration"
 const AutostartVideo = "autostart_video"
 const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
+const WallPlayback = "wall_playback"
 
 // Playback force codec,container
 const ForceMKV = "forceMKV"
@@ -239,6 +240,11 @@ func GetSoundOnPreview() bool {
 func GetWallShowTitle() bool {
 	viper.SetDefault(WallShowTitle, true)
 	return viper.GetBool(WallShowTitle)
+}
+
+func GetWallPlayback() string {
+	viper.SetDefault(WallPlayback, "video")
+	return viper.GetString(WallPlayback)
 }
 
 func GetMaximumLoopDuration() int {
