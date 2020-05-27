@@ -23,6 +23,7 @@ const Changelog: React.FC = () => {
       <h1 className="mb-4">Changelog:</h1>
       <Version
         version="v0.2.0"
+        date="CHANGEME"
         openState={openState}
         setOpenState={setVersionOpenState}
         defaultOpen
