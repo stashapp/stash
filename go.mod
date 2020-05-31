@@ -2,9 +2,8 @@ module github.com/stashapp/stash
 
 require (
 	github.com/99designs/gqlgen v0.9.0
-	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/antchfx/htmlquery v1.2.3
-	github.com/bmatcuk/doublestar v1.1.5
+	github.com/bmatcuk/doublestar v1.3.1
 	github.com/disintegration/imaging v1.6.0
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/gobuffalo/packr/v2 v2.0.2
@@ -12,7 +11,6 @@ require (
 	github.com/gorilla/sessions v1.2.0
 	github.com/gorilla/websocket v1.4.0
 	github.com/h2non/filetype v1.0.8
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/json-iterator/go v1.1.9
