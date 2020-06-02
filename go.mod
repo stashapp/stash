@@ -11,6 +11,7 @@ require (
 	github.com/gorilla/sessions v1.2.0
 	github.com/gorilla/websocket v1.4.0
 	github.com/h2non/filetype v1.0.8
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/json-iterator/go v1.1.9
