@@ -233,7 +233,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     setIsLoading(true);
     try {
       await mutateReloadScrapers();
-      
+
       // reload the performer scrapers
       await Scrapers.refetch();
     } catch (e) {
@@ -321,19 +321,13 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
                     </Button>
                   </div>
                 ))
-              : ""
-            }
+              : ""}
             <div>
-              <Button
-                className="minimal"
-                onClick={() => onReloadScrapers()}
-              >
+              <Button className="minimal" onClick={() => onReloadScrapers()}>
                 <span className="fa-icon">
-                  <Icon icon="sync-alt" ></Icon>
+                  <Icon icon="sync-alt" />
                 </span>
-                <span>
-                  Reload scrapers
-                </span>
+                <span>Reload scrapers</span>
               </Button>
             </div>
           </div>

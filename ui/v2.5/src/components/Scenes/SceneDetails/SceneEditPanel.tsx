@@ -275,7 +275,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setIsLoading(true);
     try {
       await mutateReloadScrapers();
-      
+
       // reload the performer scrapers
       await Scrapers.refetch();
     } catch (e) {
@@ -299,11 +299,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
         ))}
         <Dropdown.Item onClick={() => onReloadScrapers()}>
           <span className="fa-icon">
-            <Icon icon="sync-alt" ></Icon>
+            <Icon icon="sync-alt" />
           </span>
-          <span>
-            Reload scrapers
-          </span>
+          <span>Reload scrapers</span>
         </Dropdown.Item>
       </DropdownButton>
     );
