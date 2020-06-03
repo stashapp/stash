@@ -9,6 +9,7 @@ import {
   useListSceneScrapers,
   useSceneUpdate,
   useSceneDestroy,
+  mutateReloadScrapers,
 } from "src/core/StashService";
 import {
   PerformerSelect,
@@ -270,6 +271,20 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   }
 
+  async function onReloadScrapers() {
+    setIsLoading(true);
+    try {
+      await mutateReloadScrapers();
+      
+      // reload the performer scrapers
+      await Scrapers.refetch();
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   function renderScraperMenu() {
     if (!queryableScrapers || queryableScrapers.length === 0) {
       return;
@@ -282,6 +297,14 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             {s.name}
           </Dropdown.Item>
         ))}
+        <Dropdown.Item onClick={() => onReloadScrapers()}>
+          <span className="fa-icon">
+            <Icon icon="sync-alt" ></Icon>
+          </span>
+          <span>
+            Reload scrapers
+          </span>
+        </Dropdown.Item>
       </DropdownButton>
     );
   }
