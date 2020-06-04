@@ -14,7 +14,6 @@ input StudioCreateInput {
   parent_id: ID
   """This should be base64 encoded"""
   image: String
-
 }
 
 input StudioUpdateInput {

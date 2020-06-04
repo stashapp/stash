@@ -16,8 +16,8 @@ func NewStudioQueryBuilder() StudioQueryBuilder {
 func (qb *StudioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO studios (image, checksum, name, url, created_at, updated_at)
-				VALUES (:image, :checksum, :name, :url, :created_at, :updated_at)
+		`INSERT INTO studios (image, checksum, name, url, parent_id, created_at, updated_at)
+				VALUES (:image, :checksum, :name, :url, :parent_id, :created_at, :updated_at)
 		`,
 		newStudio,
 	)
@@ -131,12 +131,18 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 		args = append(args, thisArgs...)
 	}
 
-	if parentId := studioFilter.ParentID; parentId != nil {
-		clause, count := getIntCriterionWhereClause("studios.parent_id", *studioFilter.ParentID)
-		whereClauses = append(whereClauses, clause)
-		if count == 1 {
-			args = append(args, studioFilter.ParentID.Value)
+	if parentsFilter := studioFilter.Parents; parentsFilter != nil && len(parentsFilter.Value) > 0 {
+		body += `
+			left join studios as parent_studio on parent_studio.id = studios.parent_id
+		`
+
+		for _, studioID := range parentsFilter.Value {
+			args = append(args, studioID)
 		}
+
+		whereClause, havingClause := getMultiCriterionClause("studios", "parent_studio", "", "", "parent_id", parentsFilter)
+		whereClauses = appendClause(whereClauses, whereClause)
+		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
 	sortAndPagination := qb.getStudioSort(findFilter) + getPagination(findFilter)
