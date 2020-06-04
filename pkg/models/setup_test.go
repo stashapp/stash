@@ -104,7 +104,7 @@ func testTeardown(databaseFile string) {
 		panic(err)
 	}
 
-	//err = os.Remove(databaseFile)
+	err = os.Remove(databaseFile)
 	if err != nil {
 		panic(err)
 	}
@@ -120,8 +120,6 @@ func runTests(m *testing.M) int {
 	f.Close()
 	databaseFile := f.Name()
 	database.Initialize(databaseFile)
-
-	fmt.Printf("Database @ %s\n", databaseFile)
 
 	// defer close and delete the database
 	defer testTeardown(databaseFile)
@@ -448,9 +446,29 @@ func getStudioStringValue(index int, field string) string {
 	return "studio_" + strconv.FormatInt(int64(index), 10) + "_" + field
 }
 
+func createStudio(tx *sqlx.Tx, name string, parentID *int64) (*models.Studio, error) {
+	sqb := models.NewStudioQueryBuilder()
+	studio := models.Studio{
+		Name:     sql.NullString{String: name, Valid: true},
+		Image:    []byte(models.DefaultStudioImage),
+		Checksum: utils.MD5FromString(name),
+	}
+
+	if parentID != nil {
+		studio.ParentID = sql.NullInt64{Int64: *parentID, Valid: true}
+	}
+
+	created, err := sqb.Create(studio, tx)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
+	}
+
+	return created, nil
+}
+
 //createStudios creates n studios with plain Name and o studios with camel cased NaMe included
 func createStudios(tx *sqlx.Tx, n int, o int) error {
-	sqb := models.NewStudioQueryBuilder()
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -465,16 +483,10 @@ func createStudios(tx *sqlx.Tx, n int, o int) error {
 		// studios [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
 		name = getStudioStringValue(index, name)
-		studio := models.Studio{
-			Name:     sql.NullString{String: name, Valid: true},
-			Image:    []byte(models.DefaultStudioImage),
-			Checksum: utils.MD5FromString(name),
-		}
-
-		created, err := sqb.Create(studio, tx)
+		created, err := createStudio(tx, name, nil)
 
 		if err != nil {
-			return fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
+			return err
 		}
 
 		studioIDs = append(studioIDs, created.ID)
@@ -619,7 +631,7 @@ func linkStudioParent(tx *sqlx.Tx, parentIndex, childIndex int) error {
 		return err
 	}
 
-	studio.ParentId = sql.NullInt64{Int64: int64(studioIDs[parentIndex]), Valid: true}
+	studio.ParentID = sql.NullInt64{Int64: int64(studioIDs[parentIndex]), Valid: true}
 	_, err = sqb.Update(*studio, tx)
 
 	return err

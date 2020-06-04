@@ -40,6 +40,10 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	if input.URL != nil {
 		newStudio.URL = sql.NullString{String: *input.URL, Valid: true}
 	}
+	if input.ParentID != nil {
+		parentID, _ := strconv.ParseInt(*input.ParentID, 10, 64)
+		newStudio.ParentID = sql.NullInt64{Int64: parentID, Valid: true}
+	}
 
 	// Start the transaction and save the studio
 	tx := database.DB.MustBeginTx(ctx, nil)
@@ -80,6 +84,10 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	}
 	if input.URL != nil {
 		updatedStudio.URL = sql.NullString{String: *input.URL, Valid: true}
+	}
+	if input.ParentID != nil {
+		parentID, _ := strconv.ParseInt(*input.ParentID, 10, 64)
+		updatedStudio.ParentID = sql.NullInt64{Int64: parentID, Valid: true}
 	}
 
 	// Start the transaction and save the studio
