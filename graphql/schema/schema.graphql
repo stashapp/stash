@@ -20,7 +20,7 @@ type Query {
   """Find a studio by ID"""
   findStudio(id: ID!): Studio
   """A function which queries Studio objects"""
-  findStudios(filter: FindFilterType): FindStudiosResultType!
+  findStudios(studio_filter: StudioFilterType, filter: FindFilterType): FindStudiosResultType!
 
    """Find a movie by ID"""
   findMovie(id: ID!): Movie

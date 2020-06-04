@@ -91,6 +91,11 @@ input MovieFilterType {
   studios: MultiCriterionInput
 }
 
+input StudioFilterType {
+  """Filter to only include studios with this parent studio"""
+  parent_id: IntCriterionInput
+}
+
 enum CriterionModifier {
   """="""
   EQUALS,
