@@ -3,6 +3,7 @@
 package models_test
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -37,6 +38,42 @@ func TestStudioFindByName(t *testing.T) {
 	//studio.Name should match with studioIdxWithDupName if the check is not case sensitive
 	assert.Equal(t, strings.ToLower(studioNames[studioIdxWithDupName]), strings.ToLower(studio.Name.String))
 
+}
+
+func TestStudioQueryParent(t *testing.T) {
+	sqb := models.NewStudioQueryBuilder()
+	studioCriterion := models.MultiCriterionInput{
+		Value: []string{
+			strconv.Itoa(studioIDs[studioIdxWithChildStudio]),
+		},
+		Modifier: models.CriterionModifierIncludes,
+	}
+
+	studioFilter := models.StudioFilterType{
+		Parents: &studioCriterion,
+	}
+
+	studios, _ := sqb.Query(&studioFilter, nil)
+
+	assert.Len(t, studios, 1)
+
+	// ensure id is correct
+	assert.Equal(t, sceneIDs[studioIdxWithParentStudio], studios[0].ID)
+
+	studioCriterion = models.MultiCriterionInput{
+		Value: []string{
+			strconv.Itoa(studioIDs[studioIdxWithChildStudio]),
+		},
+		Modifier: models.CriterionModifierExcludes,
+	}
+
+	q := getStudioStringValue(studioIdxWithParentStudio, titleField)
+	findFilter := models.FindFilterType{
+		Q: &q,
+	}
+
+	studios, _ = sqb.Query(&studioFilter, &findFilter)
+	assert.Len(t, studios, 0)
 }
 
 // TODO Create
