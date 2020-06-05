@@ -42,7 +42,12 @@ import {
   ResolutionCriterion,
   ResolutionCriterionOption,
 } from "./criteria/resolution";
-import { StudiosCriterion, StudiosCriterionOption, ParentStudiosCriterion, ParentStudiosCriterionOption } from "./criteria/studios";
+import {
+  StudiosCriterion,
+  StudiosCriterionOption,
+  ParentStudiosCriterion,
+  ParentStudiosCriterionOption,
+} from "./criteria/studios";
 import {
   SceneTagsCriterionOption,
   TagsCriterion,

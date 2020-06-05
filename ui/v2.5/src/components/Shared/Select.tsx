@@ -23,7 +23,13 @@ type ValidTypes =
 type Option = { value: string; label: string };
 
 interface ITypeProps {
-  type?: "performers" | "studios" | "parent_studios" | "tags" | "sceneTags" | "movies";
+  type?:
+    | "performers"
+    | "studios"
+    | "parent_studios"
+    | "tags"
+    | "sceneTags"
+    | "movies";
 }
 interface IFilterProps {
   ids?: string[];

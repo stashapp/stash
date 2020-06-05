@@ -10,7 +10,10 @@ interface IProps {
   hideParent?: boolean;
 }
 
-function maybeRenderParent(studio: GQL.StudioDataFragment, hideParent?: boolean) {
+function maybeRenderParent(
+  studio: GQL.StudioDataFragment,
+  hideParent?: boolean
+) {
   if (!hideParent && studio.parent_studio) {
     return (
       <div>

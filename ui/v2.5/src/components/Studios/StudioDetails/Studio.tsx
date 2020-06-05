@@ -199,7 +199,9 @@ export const Studio: React.FC = () => {
               <td>
                 <StudioSelect
                   onSelect={(items) =>
-                    setParentStudioId(items.length > 0 ? items[0]?.id : undefined)
+                    setParentStudioId(
+                      items.length > 0 ? items[0]?.id : undefined
+                    )
                   }
                   ids={parentStudioId ? [parentStudioId] : []}
                   isDisabled={!isEditing}

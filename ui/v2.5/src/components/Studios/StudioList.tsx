@@ -30,7 +30,11 @@ export const StudioList: React.FC<IStudioList> = ({
       return (
         <div className="row px-xl-5 justify-content-center">
           {result.data.findStudios.studios.map((studio) => (
-            <StudioCard key={studio.id} studio={studio} hideParent={fromParent}/>
+            <StudioCard
+              key={studio.id}
+              studio={studio}
+              hideParent={fromParent}
+            />
           ))}
         </div>
       );

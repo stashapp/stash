@@ -1,6 +1,9 @@
 import * as GQL from "src/core/generated-graphql";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
-import { StudiosCriterion, ParentStudiosCriterion } from "src/models/list-filter/criteria/studios";
+import {
+  StudiosCriterion,
+  ParentStudiosCriterion,
+} from "src/models/list-filter/criteria/studios";
 import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { FilterMode } from "src/models/list-filter/types";
