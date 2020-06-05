@@ -74,6 +74,7 @@ export const useFindStudios = (filter: ListFilterModel) =>
   GQL.useFindStudiosQuery({
     variables: {
       filter: filter.makeFindFilter(),
+      studio_filter: filter.makeStudioFilter(),
     },
   });
 

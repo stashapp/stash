@@ -3,9 +3,38 @@ import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedPlural } from "react-intl";
+import { NavUtils } from "src/utils";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
+}
+
+function maybeRenderParent(studio: GQL.StudioDataFragment) {
+  if (studio.parent_studio) {
+    return (
+      <div>
+        Part of&nbsp;
+        <Link to={`/studios/${studio.parent_studio.id}`}>
+          {studio.parent_studio.name}
+        </Link>
+        .
+      </div>
+    );
+  }
+}
+
+function maybeRenderChildren(studio: GQL.StudioDataFragment) {
+  if (studio.child_studios.length > 0) {
+    return (
+      <div>
+        Parent of&nbsp;
+        <Link to={NavUtils.makeChildStudiosUrl(studio)}>
+          {studio.child_studios.length} studios
+        </Link>
+        .
+      </div>
+    );
+  }
 }
 
 export const StudioCard: React.FC<IProps> = ({ studio }) => {
@@ -29,6 +58,8 @@ export const StudioCard: React.FC<IProps> = ({ studio }) => {
           />
           .
         </span>
+        {maybeRenderParent(studio)}
+        {maybeRenderChildren(studio)}
       </div>
     </Card>
   );
