@@ -7,10 +7,11 @@ import { NavUtils } from "src/utils";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
+  hideParent?: boolean;
 }
 
-function maybeRenderParent(studio: GQL.StudioDataFragment) {
-  if (studio.parent_studio) {
+function maybeRenderParent(studio: GQL.StudioDataFragment, hideParent?: boolean) {
+  if (!hideParent && studio.parent_studio) {
     return (
       <div>
         Part of&nbsp;
@@ -37,7 +38,7 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   }
 }
 
-export const StudioCard: React.FC<IProps> = ({ studio }) => {
+export const StudioCard: React.FC<IProps> = ({ studio, hideParent }) => {
   return (
     <Card className="studio-card">
       <Link to={`/studios/${studio.id}`} className="studio-card-header">
@@ -58,7 +59,7 @@ export const StudioCard: React.FC<IProps> = ({ studio }) => {
           />
           .
         </span>
-        {maybeRenderParent(studio)}
+        {maybeRenderParent(studio, hideParent)}
         {maybeRenderChildren(studio)}
       </div>
     </Card>
