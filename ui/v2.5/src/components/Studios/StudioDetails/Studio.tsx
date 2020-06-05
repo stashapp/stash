@@ -18,6 +18,7 @@ import {
   DetailsEditNavbar,
   Modal,
   LoadingIndicator,
+  StudioSelect,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { StudioScenesPanel } from "./StudioScenesPanel";
@@ -36,6 +37,7 @@ export const Studio: React.FC = () => {
   const [image, setImage] = useState<string>();
   const [name, setName] = useState<string>();
   const [url, setUrl] = useState<string>();
+  const [parentStudioId, setParentStudioId] = useState<string>();
 
   // Studio state
   const [studio, setStudio] = useState<Partial<GQL.StudioDataFragment>>({});
@@ -55,6 +57,7 @@ export const Studio: React.FC = () => {
   function updateStudioEditState(state: Partial<GQL.StudioDataFragment>) {
     setName(state.name);
     setUrl(state.url ?? undefined);
+    setParentStudioId(state?.parent_studio?.id ?? undefined);
   }
 
   function updateStudioData(studioData: Partial<GQL.StudioDataFragment>) {
@@ -89,6 +92,7 @@ export const Studio: React.FC = () => {
     const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
       name,
       url,
+      parent_id: parentStudioId,
       image,
     };
 
@@ -189,6 +193,18 @@ export const Studio: React.FC = () => {
               isEditing: !!isEditing,
               onChange: setUrl,
             })}
+            <tr>
+              <td>Parent Studio</td>
+              <td>
+                <StudioSelect
+                  onSelect={(items) =>
+                    setParentStudioId(items.length > 0 ? items[0]?.id : undefined)
+                  }
+                  ids={parentStudioId ? [parentStudioId] : []}
+                  isDisabled={!isEditing}
+                />
+              </td>
+            </tr>
           </tbody>
         </Table>
         <DetailsEditNavbar
