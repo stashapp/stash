@@ -13,9 +13,10 @@ type ScenePreviewChunkOptions struct {
 	OutputPath string
 }
 
-func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePreviewChunkOptions) {
+func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePreviewChunkOptions, preset string) {
 	args := []string{
 		"-v", "error",
+		"-xerror",
 		"-ss", strconv.Itoa(options.Time),
 		"-i", probeResult.Path,
 		"-t", "0.75",
@@ -25,7 +26,7 @@ func (e *Encoder) ScenePreviewVideoChunk(probeResult VideoFile, options ScenePre
 		"-pix_fmt", "yuv420p",
 		"-profile:v", "high",
 		"-level", "4.2",
-		"-preset", "slow",
+		"-preset", preset,
 		"-crf", "21",
 		"-threads", "4",
 		"-vf", fmt.Sprintf("scale=%v:-2", options.Width),

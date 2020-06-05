@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"strconv"
 
@@ -21,7 +22,13 @@ func loadScrapers() ([]scraperConfig, error) {
 	scrapers = make([]scraperConfig, 0)
 
 	logger.Debugf("Reading scraper configs from %s", path)
-	scraperFiles, err := filepath.Glob(filepath.Join(path, "*.yml"))
+	scraperFiles := []string{}
+	err := filepath.Walk(path, func(fp string, f os.FileInfo, err error) error {
+		if filepath.Ext(fp) == ".yml" {
+			scraperFiles = append(scraperFiles, fp)
+		}
+		return nil
+	})
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
@@ -147,7 +154,7 @@ func ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
 func matchPerformer(p *models.ScrapedScenePerformer) error {
 	qb := models.NewPerformerQueryBuilder()
 
-	performers, err := qb.FindByNames([]string{p.Name}, nil)
+	performers, err := qb.FindByNames([]string{p.Name}, nil, true)
 
 	if err != nil {
 		return err
@@ -166,7 +173,7 @@ func matchPerformer(p *models.ScrapedScenePerformer) error {
 func matchStudio(s *models.ScrapedSceneStudio) error {
 	qb := models.NewStudioQueryBuilder()
 
-	studio, err := qb.FindByName(s.Name, nil)
+	studio, err := qb.FindByName(s.Name, nil, true)
 
 	if err != nil {
 		return err
@@ -184,7 +191,7 @@ func matchStudio(s *models.ScrapedSceneStudio) error {
 func matchMovie(m *models.ScrapedSceneMovie) error {
 	qb := models.NewMovieQueryBuilder()
 
-	movies, err := qb.FindByNames([]string{m.Name}, nil)
+	movies, err := qb.FindByNames([]string{m.Name}, nil, true)
 
 	if err != nil {
 		return err
@@ -203,7 +210,7 @@ func matchMovie(m *models.ScrapedSceneMovie) error {
 func matchTag(s *models.ScrapedSceneTag) error {
 	qb := models.NewTagQueryBuilder()
 
-	tag, err := qb.FindByName(s.Name, nil)
+	tag, err := qb.FindByName(s.Name, nil, true)
 
 	if err != nil {
 		return err

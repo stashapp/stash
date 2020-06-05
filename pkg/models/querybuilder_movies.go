@@ -83,14 +83,22 @@ func (qb *MovieQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Movie, 
 	return qb.queryMovies(query, args, tx)
 }
 
-func (qb *MovieQueryBuilder) FindByName(name string, tx *sqlx.Tx) (*Movie, error) {
-	query := "SELECT * FROM movies WHERE name = ? LIMIT 1"
+func (qb *MovieQueryBuilder) FindByName(name string, tx *sqlx.Tx, nocase bool) (*Movie, error) {
+	query := "SELECT * FROM movies WHERE name = ?"
+	if nocase {
+		query += " COLLATE NOCASE"
+	}
+	query += " LIMIT 1"
 	args := []interface{}{name}
 	return qb.queryMovie(query, args, tx)
 }
 
-func (qb *MovieQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]*Movie, error) {
-	query := "SELECT * FROM movies WHERE name IN " + getInBinding(len(names))
+func (qb *MovieQueryBuilder) FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*Movie, error) {
+	query := "SELECT * FROM movies WHERE name"
+	if nocase {
+		query += " COLLATE NOCASE"
+	}
+	query += " IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
 		args = append(args, name)

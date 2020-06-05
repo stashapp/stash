@@ -1,0 +1,38 @@
+.changelog {
+  margin-bottom: 4rem;
+  margin-top: 4rem;
+
+  .btn {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+
+    &:focus {
+      text-decoration: unset;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .card,
+  .card-body {
+    padding: 0;
+  }
+
+  ul {
+    list-style-type: none;
+    padding-left: 0.5rem;
+  }
+
+  &-version {
+    &-body {
+      padding: 1rem 2rem;
+    }
+
+    &-header {
+      color: $text-color;
+    }
+  }
+}

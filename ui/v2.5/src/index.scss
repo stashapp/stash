@@ -1,6 +1,7 @@
 @import "styles/theme";
 @import "styles/range";
 @import "styles/scrollbars";
+@import "src/components/Changelog/styles.scss";
 @import "src/components/Galleries/styles.scss";
 @import "src/components/List/styles.scss";
 @import "src/components/Movies/styles.scss";
@@ -25,10 +26,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 4rem 0 0 0;
-}
-
-a {
-  color: $primary;
 }
 
 code,

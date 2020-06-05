@@ -67,6 +67,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
+	wallPlayback := config.GetWallPlayback()
 	maximumLoopDuration := config.GetMaximumLoopDuration()
 	autostartVideo := config.GetAutostartVideo()
 	showStudioAsText := config.GetShowStudioAsText()
@@ -77,6 +78,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	return &models.ConfigInterfaceResult{
 		SoundOnPreview:      &soundOnPreview,
 		WallShowTitle:       &wallShowTitle,
+		WallPlayback:        &wallPlayback,
 		MaximumLoopDuration: &maximumLoopDuration,
 		AutostartVideo:      &autostartVideo,
 		ShowStudioAsText:    &showStudioAsText,

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { WallItem } from "./WallItem";
 
@@ -10,106 +10,58 @@ interface IWallPanelProps {
   ) => void;
 }
 
+const calculateClass = (index: number, count: number) => {
+  // First position and more than one row
+  if (index === 0 && count > 5) return "transform-origin-top-left";
+  // Fifth position and more than one row
+  if (index === 4 && count > 5) return "transform-origin-top-right";
+  // Top row
+  if (index < 5) return "transform-origin-top";
+  // Two or more rows, with full last row and index is last
+  if (count > 9 && count % 5 === 0 && index + 1 === count)
+    return "transform-origin-bottom-right";
+  // Two or more rows, with full last row and index is fifth to last
+  if (count > 9 && count % 5 === 0 && index + 5 === count)
+    return "transform-origin-bottom-left";
+  // Multiple of five minus one
+  if (index % 5 === 4) return "transform-origin-right";
+  // Multiple of five
+  if (index % 5 === 0) return "transform-origin-left";
+  // Position is equal or larger than first postion in last row
+  if (count - (count % 5 || 5) <= index + 1) return "transform-origin-bottom";
+  // Default
+  return "transform-origin-center";
+};
+
 export const WallPanel: React.FC<IWallPanelProps> = (
   props: IWallPanelProps
 ) => {
-  const [showOverlay, setShowOverlay] = useState<boolean>(false);
+  const scenes = (props.scenes ?? []).map((scene, index, sceneArray) => (
+    <WallItem
+      key={scene.id}
+      scene={scene}
+      clickHandler={props.clickHandler}
+      className={calculateClass(index, sceneArray.length)}
+    />
+  ));
 
-  function onOverlay(show: boolean) {
-    setShowOverlay(show);
-  }
+  const sceneMarkers = (
+    props.sceneMarkers ?? []
+  ).map((marker, index, markerArray) => (
+    <WallItem
+      key={marker.id}
+      sceneMarker={marker}
+      clickHandler={props.clickHandler}
+      className={calculateClass(index, markerArray.length)}
+    />
+  ));
 
-  function getOrigin(index: number, rowSize: number, total: number): string {
-    const isAtStart = index % rowSize === 0;
-    const isAtEnd = index % rowSize === rowSize - 1;
-    const endRemaining = total % rowSize;
-
-    // First row
-    if (total === 1) {
-      return "top";
-    }
-    if (index === 0) {
-      return "top left";
-    }
-    if (index === rowSize - 1 || (total < rowSize && index === total - 1)) {
-      return "top right";
-    }
-    if (index < rowSize) {
-      return "top";
-    }
-
-    // Bottom row
-    if (isAtEnd && index === total - 1) {
-      return "bottom right";
-    }
-    if (isAtStart && index === total - rowSize) {
-      return "bottom left";
-    }
-    if (endRemaining !== 0 && index >= total - endRemaining) {
-      return "bottom";
-    }
-    if (endRemaining === 0 && index >= total - rowSize) {
-      return "bottom";
-    }
-
-    // Everything else
-    if (isAtStart) {
-      return "center left";
-    }
-    if (isAtEnd) {
-      return "center right";
-    }
-    return "center";
-  }
-
-  function maybeRenderScenes() {
-    if (props.scenes === undefined) {
-      return;
-    }
-    return props.scenes.map((scene, index) => {
-      const origin = getOrigin(index, 5, props.scenes!.length);
-      return (
-        <WallItem
-          key={scene.id}
-          scene={scene}
-          onOverlay={onOverlay}
-          clickHandler={props.clickHandler}
-          origin={origin}
-        />
-      );
-    });
-  }
-
-  function maybeRenderSceneMarkers() {
-    if (props.sceneMarkers === undefined) {
-      return;
-    }
-    return props.sceneMarkers.map((marker, index) => {
-      const origin = getOrigin(index, 5, props.sceneMarkers!.length);
-      return (
-        <WallItem
-          key={marker.id}
-          sceneMarker={marker}
-          onOverlay={onOverlay}
-          clickHandler={props.clickHandler}
-          origin={origin}
-        />
-      );
-    });
-  }
-
-  function render() {
-    const overlayClassName = showOverlay ? "visible" : "hidden";
-    return (
-      <>
-        <div className={`wall-overlay ${overlayClassName}`} />
-        <div className="wall row justify-content-center">
-          {maybeRenderScenes()}
-          {maybeRenderSceneMarkers()}
-        </div>
-      </>
-    );
-  }
-
-  return render();
+  return (
+    <div className="row">
+      <div className="wall w-100 row justify-content-center">
+        {scenes}
+        {sceneMarkers}
+      </div>
+    </div>
+  );
 };

@@ -1,6 +1,7 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
+import { useIntl } from "react-intl";
 import { Button, Popover, OverlayTrigger, Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -37,6 +38,7 @@ interface IPerformerDetails {
   ) => void;
   onDelete?: () => void;
   onImageChange?: (image?: string) => void;
+  onImageEncoding?: (loading?: boolean) => void;
 }
 
 export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
@@ -46,6 +48,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   onSave,
   onDelete,
   onImageChange,
+  onImageEncoding,
 }) => {
   const Toast = useToast();
 
@@ -81,10 +84,12 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
+  const intl = useIntl();
+
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  ImageUtils.usePasteImage(onImageLoad, isEditing);
+  const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   function updatePerformerEditState(
     state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformerDataFragment>
@@ -152,8 +157,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
   }
 
-  function onImageLoad(this: FileReader) {
-    setImage(this.result as string);
+  function onImageLoad(imageData: string) {
+    setImage(imageData);
   }
 
   useEffect(() => {
@@ -167,6 +172,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
     return () => onImageChange?.();
   }, [image, onImageChange]);
+
+  useEffect(() => onImageEncoding?.(imageEncoding), [
+    onImageEncoding,
+    imageEncoding,
+  ]);
 
   useEffect(() => {
     const newQueryableScrapers = (
@@ -452,6 +462,20 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     });
   }
 
+  const formatHeight = () => {
+    if (isEditing) {
+      return height;
+    }
+    if (!height) {
+      return "";
+    }
+    return intl.formatNumber(Number.parseInt(height, 10), {
+      style: "unit",
+      unit: "centimeter",
+      unitDisplay: "narrow",
+    });
+  };
+
   return (
     <>
       {renderDeleteAlert()}
@@ -464,7 +488,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           {renderGender()}
           {TableUtils.renderInputGroup({
             title: "Birthdate",
-            value: birthdate,
+            value: isEditing
+              ? birthdate
+              : TextUtils.formatDate(intl, birthdate),
             isEditing: !!isEditing,
             onChange: setBirthdate,
           })}
@@ -482,8 +508,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             onChange: setCountry,
           })}
           {TableUtils.renderInputGroup({
-            title: "Height (cm)",
-            value: height,
+            title: `Height ${isEditing ? "(cm)" : ""}`,
+            value: formatHeight(),
             isEditing: !!isEditing,
             onChange: setHeight,
           })}

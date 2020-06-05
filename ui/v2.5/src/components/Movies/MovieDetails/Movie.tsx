@@ -1,5 +1,6 @@
 /* eslint-disable react/no-this-in-sfc */
 import React, { useEffect, useState, useCallback } from "react";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindMovie,
@@ -65,6 +66,8 @@ export const Movie: React.FC = () => {
     getMovieInput() as GQL.MovieDestroyInput
   );
 
+  const intl = useIntl();
+
   function updateMovieEditState(state: Partial<GQL.MovieDataFragment>) {
     setName(state.name ?? undefined);
     setAliases(state.aliases ?? undefined);
@@ -95,18 +98,21 @@ export const Movie: React.FC = () => {
     }
   }, [data, updateMovieData]);
 
-  function onImageLoad(this: FileReader) {
-    setImagePreview(this.result as string);
-    setFrontImage(this.result as string);
+  function onImageLoad(imageData: string) {
+    setImagePreview(imageData);
+    setFrontImage(imageData);
   }
 
-  function onBackImageLoad(this: FileReader) {
-    setBackImagePreview(this.result as string);
-    setBackImage(this.result as string);
+  function onBackImageLoad(imageData: string) {
+    setBackImagePreview(imageData);
+    setBackImage(imageData);
   }
 
-  ImageUtils.usePasteImage(onImageLoad, isEditing);
-  ImageUtils.usePasteImage(onBackImageLoad, isEditing);
+  const encodingFrontImage = ImageUtils.usePasteImage(onImageLoad, isEditing);
+  const encodingBackImage = ImageUtils.usePasteImage(
+    onBackImageLoad,
+    isEditing
+  );
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
@@ -203,8 +209,14 @@ export const Movie: React.FC = () => {
       >
         {isNew && <h2>Add Movie</h2>}
         <div className="logo w-100">
-          <img alt={name} className="logo w-50" src={imagePreview} />
-          <img alt={name} className="logo w-50" src={backimagePreview} />
+          {encodingFrontImage || encodingBackImage ? (
+            <LoadingIndicator message="Encoding image..." />
+          ) : (
+            <>
+              <img alt={name} className="logo w-50" src={imagePreview} />
+              <img alt={name} className="logo w-50" src={backimagePreview} />
+            </>
+          )}
         </div>
 
         <Table>
@@ -229,8 +241,8 @@ export const Movie: React.FC = () => {
                 setDuration(value ? Number.parseInt(value, 10) : undefined),
             })}
             {TableUtils.renderInputGroup({
-              title: "Date (YYYY-MM-DD)",
-              value: date,
+              title: `Date ${isEditing ? "(YYYY-MM-DD)" : ""}`,
+              value: isEditing ? date : TextUtils.formatDate(intl, date),
               isEditing,
               onChange: setDate,
             })}

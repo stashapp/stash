@@ -252,9 +252,10 @@ export const SceneCard: React.FC<ISceneCardProps> = (
           event.stopPropagation();
         }}
       />
-      {maybeRenderSceneStudioOverlay()}
+
       <Link to={`/scenes/${props.scene.id}`} className="scene-card-link">
         {maybeRenderRatingBanner()}
+        {maybeRenderSceneStudioOverlay()}
         {maybeRenderSceneSpecsOverlay()}
         <video
           loop
