@@ -286,10 +286,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   }
 
   function renderScraperMenu() {
-    if (!queryableScrapers || queryableScrapers.length === 0) {
-      return;
-    }
-
     return (
       <DropdownButton id="scene-scrape" title="Scrape with...">
         {queryableScrapers.map((s) => (
