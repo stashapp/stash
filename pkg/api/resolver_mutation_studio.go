@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -93,9 +94,15 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	// Start the transaction and save the studio
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewStudioQueryBuilder()
+
+	if err := manager.ValidateModifyStudio(updatedStudio, tx); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
 	studio, err := qb.Update(updatedStudio, tx)
 	if err != nil {
-		_ = tx.Rollback()
+		tx.Rollback()
 		return nil, err
 	}
 
