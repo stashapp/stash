@@ -75,6 +75,9 @@ func (c xpathRegexConfig) apply(value string) string {
 		}
 
 		ret := re.ReplaceAllString(value, with)
+		if with == "\n" {
+			ret = replaceLines(ret)
+		}
 
 		logger.Debugf(`Replace: '%s' with '%s'`, regex, with)
 		logger.Debugf("Before: %s", value)
@@ -94,6 +97,8 @@ func (c xpathRegexConfigs) apply(value string) string {
 	// remove whitespace again
 	value = commonPostProcess(value)
 
+	// restore replaced lines
+	value = restoreLines(value)
 	return value
 }
 
@@ -280,6 +285,24 @@ func commonPostProcess(value string) string {
 	value = re.ReplaceAllString(value, "")
 	re = regexp.MustCompile("  +")
 	value = re.ReplaceAllString(value, " ")
+
+	return value
+}
+
+// func replaceLines replaces all newlines ("\n") with carriage returns ("\r")
+func replaceLines(value string) string {
+	re := regexp.MustCompile("\r")         // carriage returns shouldn't exist in the string
+	value = re.ReplaceAllString(value, "") // remove them
+	re = regexp.MustCompile("\n")          // replace newlines with CR's so that they don't get removed by commonPostprocess
+	value = re.ReplaceAllString(value, "\r")
+
+	return value
+}
+
+// func restoreLines replaces all carriage returns ("\r") with newlines ("\n")
+func restoreLines(value string) string {
+	re := regexp.MustCompile("\r")
+	value = re.ReplaceAllString(value, "\n")
 
 	return value
 }
