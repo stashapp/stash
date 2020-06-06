@@ -60,6 +60,7 @@ const markup = `
 *  Update built-in Freeones scraper for new API.
 *  Fix redirect loops in login, migrate and setup pages.
 *  Make studio, movies, tag, performers scrape/parser matching case insensitive.
+*  Fix files with special characters in filename not being scanned.
 
 `;
 
