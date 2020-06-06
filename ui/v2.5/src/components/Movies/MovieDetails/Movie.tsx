@@ -1,5 +1,6 @@
 /* eslint-disable react/no-this-in-sfc */
 import React, { useEffect, useState, useCallback } from "react";
+import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindMovie,
@@ -64,6 +65,8 @@ export const Movie: React.FC = () => {
   const [deleteMovie] = useMovieDestroy(
     getMovieInput() as GQL.MovieDestroyInput
   );
+
+  const intl = useIntl();
 
   function updateMovieEditState(state: Partial<GQL.MovieDataFragment>) {
     setName(state.name ?? undefined);
@@ -238,8 +241,8 @@ export const Movie: React.FC = () => {
                 setDuration(value ? Number.parseInt(value, 10) : undefined),
             })}
             {TableUtils.renderInputGroup({
-              title: "Date (YYYY-MM-DD)",
-              value: date,
+              title: `Date ${isEditing ? "(YYYY-MM-DD)" : ""}`,
+              value: isEditing ? date : TextUtils.formatDate(intl, date),
               isEditing,
               onChange: setDate,
             })}
