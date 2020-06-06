@@ -55,8 +55,9 @@ func TestTagFindByName(t *testing.T) {
 		t.Fatalf("Error finding tags: %s", err.Error())
 	}
 	// tagIdxWithDupName and tagIdxWithScene should have similar names ( only diff should be Name vs NaMe)
-	// match (tag.Name) should be the tagIdxWithScene since its ID is first
+	//tag.Name should match with tagIdxWithScene since its ID is before tagIdxWithDupName
 	assert.Equal(t, tagNames[tagIdxWithScene], tag.Name)
+	//tag.Name should match with tagIdxWithDupName if the check is not case sensitive
 	assert.Equal(t, strings.ToLower(tagNames[tagIdxWithDupName]), strings.ToLower(tag.Name))
 
 }
