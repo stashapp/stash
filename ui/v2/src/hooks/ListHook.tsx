@@ -60,6 +60,13 @@ const PerformerFilterListImpl: IFilterListImpl = {
   getCount: (data: any) => { return !!data && !!data.findPerformers ? data.findPerformers.count : 0; }
 }
 
+const MoviesFilterListImpl: IFilterListImpl = {
+  getData: (filter : ListFilterModel) => { return StashService.useFindMovies(filter); },
+  getItems: (data: any) => { return !!data && !!data.findMovies ? data.findMovies.movies : []; },
+  getCount: (data: any) => { return !!data && !!data.findMovies ? data.findMovies.count : 0; }
+}
+
+
 function getFilterListImpl(filterMode: FilterMode) {
   switch (filterMode) {
     case FilterMode.Scenes: {
@@ -76,6 +83,9 @@ function getFilterListImpl(filterMode: FilterMode) {
     }
     case FilterMode.Performers: {
       return PerformerFilterListImpl;
+    }
+    case FilterMode.Movies: {
+      return MoviesFilterListImpl;
     }
     default: {
       console.error("REMOVE DEFAULT IN LIST HOOK");

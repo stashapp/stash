@@ -1,0 +1,44 @@
+/* scrollbars from semantic-ui */
+
+/* Site */
+
+::selection {
+  background-color: #cce2ff;
+  color: $dark-text;
+}
+
+/* Form */
+
+textarea::selection,
+input::selection {
+  background-color: rgba(100, 100, 100, 0.4);
+  color: $dark-text;
+}
+
+/* Force Simple Scrollbars */
+
+body ::-webkit-scrollbar {
+  -webkit-appearance: none;
+  height: 10px;
+  width: 10px;
+}
+
+body ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 0;
+}
+
+body ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+body ::-webkit-scrollbar-thumb:window-inactive {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+body ::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 135, 139, 0.8);
+}

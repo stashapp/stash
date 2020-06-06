@@ -1,0 +1,106 @@
+input[type="range"] {
+  -webkit-appearance: none;
+  background-color: transparent;
+  border-color: transparent;
+  height: 22px;
+  margin: 10px 0;
+
+  &:focus {
+    background-color: transparent;
+    border: inherit;
+    border-color: transparent;
+    box-shadow: none;
+    outline: none;
+  }
+
+  &::-webkit-slider-runnable-track {
+    animate: 0.2s;
+    background: #137cbd;
+    border: 0 solid #000101;
+    border-radius: 25px;
+    box-shadow: 0 0 0 #000;
+    cursor: pointer;
+    height: 6px;
+    width: 100%;
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background: #394b59;
+    border: 0 solid #000;
+    border-radius: 5px;
+    box-shadow: 0 0 0 #000;
+    cursor: pointer;
+    height: 16px;
+    margin-top: -5px;
+    width: 16px;
+  }
+
+  &:focus::-webkit-slider-runnable-track {
+    background: #137cbd;
+  }
+
+  &::-moz-range-track {
+    animate: 0.2s;
+    background: #137cbd;
+    border: 0 solid #000101;
+    border-radius: 25px;
+    box-shadow: 0 0 0 #000;
+    cursor: pointer;
+    height: 6px;
+    width: 100%;
+  }
+
+  &::-moz-range-thumb {
+    background: #394b59;
+    border: 0 solid #000;
+    border-radius: 5px;
+    box-shadow: 0 0 0 #000;
+    cursor: pointer;
+    height: 16px;
+    width: 16px;
+  }
+
+  &::-ms-track {
+    animate: 0.2s;
+    background: transparent;
+    border-color: transparent;
+    color: transparent;
+    cursor: pointer;
+    height: 6px;
+    width: 100%;
+  }
+
+  &::-ms-fill-lower {
+    background: #137cbd;
+    border: 0 solid #000101;
+    border-radius: 50px;
+    box-shadow: 0 0 0 #000;
+  }
+
+  &::-ms-fill-upper {
+    background: #137cbd;
+    border: 0 solid #000101;
+    border-radius: 50px;
+    box-shadow: 0 0 0 #000;
+  }
+
+  &::-ms-thumb {
+    background: #394b59;
+    border: 0 solid #000;
+    border-radius: 5px;
+    box-shadow: 0 0 0 #000;
+    cursor: pointer;
+    height: 16px;
+    margin-top: 1px;
+    width: 16px;
+  }
+
+  &:focus::-ms-fill-lower {
+    background: #137cbd;
+  }
+
+  &:focus::-ms-fill-upper {
+    background: #137cbd;
+  }
+}

@@ -19,19 +19,24 @@ query AllTags {
 }
 
 query AllPerformersForFilter {
-  allPerformers {
+  allPerformersSlim {
     ...SlimPerformerData
   }
 }
 
 query AllStudiosForFilter {
-  allStudios {
+  allStudiosSlim {
     ...SlimStudioData
+  }
+}
+query AllMoviesForFilter {
+  allMoviesSlim {
+    ...SlimMovieData
   }
 }
 
 query AllTagsForFilter {
-  allTags {
+  allTagsSlim {
     id
     name
   }
@@ -47,9 +52,11 @@ query ValidGalleriesForScene($scene_id: ID!) {
 query Stats {
   stats {
     scene_count,
+    scene_size_count,
     gallery_count,
     performer_count,
     studio_count,
+    movie_count,
     tag_count
   }
 }

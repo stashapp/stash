@@ -2,25 +2,32 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   stashes
   databasePath
   generatedPath
+  cachePath
   maxTranscodeSize
   maxStreamingTranscodeSize
+  forceMkv
+  forceHevc
   username
   password
+  maxSessionAge
   logFile
   logOut
   logLevel
   logAccess
   excludes
+  scraperUserAgent
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
   soundOnPreview
   wallShowTitle
+  wallPlayback
   maximumLoopDuration
   autostartVideo
   showStudioAsText
   css
   cssEnabled
+  language
 }
 
 fragment ConfigData on ConfigResult {

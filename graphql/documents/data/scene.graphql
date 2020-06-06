@@ -42,6 +42,13 @@ fragment SceneData on Scene {
   studio {
     ...StudioData
   }
+  
+  movies {
+    movie {
+      ...MovieData
+    }
+    scene_index
+  }
 
   tags {
     ...TagData

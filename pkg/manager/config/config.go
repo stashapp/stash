@@ -19,10 +19,12 @@ const Metadata = "metadata"
 const Downloads = "downloads"
 const Username = "username"
 const Password = "password"
+const MaxSessionAge = "max_session_age"
+
+const DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 
 const Database = "database"
 
-const ScrapersPath = "scrapers_path"
 const Exclude = "exclude"
 
 const MaxTranscodeSize = "max_transcode_size"
@@ -32,6 +34,19 @@ const Host = "host"
 const Port = "port"
 const ExternalHost = "external_host"
 
+// key used to sign JWT tokens
+const JWTSignKey = "jwt_secret_key"
+
+// key used for session store
+const SessionStoreKey = "session_store_key"
+
+// scraping options
+const ScrapersPath = "scrapers_path"
+const ScraperUserAgent = "scraper_user_agent"
+
+// i18n
+const Language = "language"
+
 // Interface options
 const SoundOnPreview = "sound_on_preview"
 const WallShowTitle = "wall_show_title"
@@ -39,6 +54,11 @@ const MaximumLoopDuration = "maximum_loop_duration"
 const AutostartVideo = "autostart_video"
 const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
+const WallPlayback = "wall_playback"
+
+// Playback force codec,container
+const ForceMKV = "forceMKV"
+const ForceHEVC = "forceHEVC"
 
 // Logging options
 const LogFile = "logFile"
@@ -83,6 +103,14 @@ func GetDatabasePath() string {
 	return viper.GetString(Database)
 }
 
+func GetJWTSignKey() []byte {
+	return []byte(viper.GetString(JWTSignKey))
+}
+
+func GetSessionStoreKey() []byte {
+	return []byte(viper.GetString(SessionStoreKey))
+}
+
 func GetDefaultScrapersPath() string {
 	// default to the same directory as the config file
 	configFileUsed := viper.ConfigFileUsed()
@@ -97,8 +125,23 @@ func GetExcludes() []string {
 	return viper.GetStringSlice(Exclude)
 }
 
+func GetLanguage() string {
+	ret := viper.GetString(Language)
+
+	// default to English
+	if ret == "" {
+		return "en-US"
+	}
+
+	return ret
+}
+
 func GetScrapersPath() string {
 	return viper.GetString(ScrapersPath)
+}
+
+func GetScraperUserAgent() string {
+	return viper.GetString(ScraperUserAgent)
 }
 
 func GetHost() string {
@@ -181,6 +224,13 @@ func ValidateCredentials(username string, password string) bool {
 	return username == authUser && err == nil
 }
 
+// GetMaxSessionAge gets the maximum age for session cookies, in seconds.
+// Session cookie expiry times are refreshed every request.
+func GetMaxSessionAge() int {
+	viper.SetDefault(MaxSessionAge, DefaultMaxSessionAge)
+	return viper.GetInt(MaxSessionAge)
+}
+
 // Interface options
 func GetSoundOnPreview() bool {
 	viper.SetDefault(SoundOnPreview, true)
@@ -190,6 +240,11 @@ func GetSoundOnPreview() bool {
 func GetWallShowTitle() bool {
 	viper.SetDefault(WallShowTitle, true)
 	return viper.GetBool(WallShowTitle)
+}
+
+func GetWallPlayback() string {
+	viper.SetDefault(WallPlayback, "video")
+	return viper.GetString(WallPlayback)
 }
 
 func GetMaximumLoopDuration() int {
@@ -246,6 +301,15 @@ func GetCSSEnabled() bool {
 	return viper.GetBool(CSSEnabled)
 }
 
+// force codec,container
+func GetForceMKV() bool {
+	return viper.GetBool(ForceMKV)
+}
+
+func GetForceHEVC() bool {
+	return viper.GetBool(ForceHEVC)
+}
+
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
 func GetLogFile() string {
@@ -293,4 +357,22 @@ func IsValid() bool {
 
 	// TODO: check valid paths
 	return setPaths
+}
+
+// SetInitialConfig fills in missing required config fields
+func SetInitialConfig() error {
+	// generate some api keys
+	const apiKeyLength = 32
+
+	if string(GetJWTSignKey()) == "" {
+		signKey := utils.GenerateRandomKey(apiKeyLength)
+		Set(JWTSignKey, signKey)
+	}
+
+	if string(GetSessionStoreKey()) == "" {
+		sessionStoreKey := utils.GenerateRandomKey(apiKeyLength)
+		Set(SessionStoreKey, sessionStoreKey)
+	}
+
+	return Write()
 }

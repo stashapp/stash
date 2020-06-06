@@ -7,12 +7,10 @@ import (
 	"strconv"
 )
 
-const sceneMarkersForTagQuery = `
-SELECT scene_markers.* FROM scene_markers
+const countSceneMarkersForTagQuery = `
+SELECT scene_markers.id FROM scene_markers
 LEFT JOIN scene_markers_tags as tags_join on tags_join.scene_marker_id = scene_markers.id
-LEFT JOIN tags on tags_join.tag_id = tags.id
-LEFT JOIN tags AS ptj ON ptj.id = scene_markers.primary_tag_id
-WHERE tags.id = ? OR ptj.id = ?
+WHERE tags_join.tag_id = ? OR scene_markers.primary_tag_id = ?
 GROUP BY scene_markers.id
 `
 
@@ -77,8 +75,7 @@ func (qb *SceneMarkerQueryBuilder) Find(id int) (*SceneMarker, error) {
 func (qb *SceneMarkerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*SceneMarker, error) {
 	query := `
 		SELECT scene_markers.* FROM scene_markers
-		JOIN scenes ON scenes.id = scene_markers.scene_id
-		WHERE scenes.id = ?
+		WHERE scene_markers.scene_id = ?
 		GROUP BY scene_markers.id
 		ORDER BY scene_markers.seconds ASC
 	`
@@ -88,7 +85,7 @@ func (qb *SceneMarkerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*S
 
 func (qb *SceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
 	args := []interface{}{tagID, tagID}
-	return runCountQuery(buildCountQuery(sceneMarkersForTagQuery), args)
+	return runCountQuery(buildCountQuery(countSceneMarkersForTagQuery), args)
 }
 
 func (qb *SceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]*MarkerStringsResultType, error) {
@@ -227,7 +224,9 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"scene_markers.title", "scene.title"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	if tagID := sceneMarkerFilter.TagID; tagID != nil {

@@ -29,6 +29,10 @@ export const MainNavbar: FunctionComponent<IProps> = (props) => {
         setNewButtonPath("/studios/new");
         break;
       }
+      case "/movies": {
+        setNewButtonPath("/movies/new");
+        break;
+      }
       default: {
         setNewButtonPath(undefined);
       }

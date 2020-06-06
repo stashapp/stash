@@ -10,7 +10,7 @@ Overview
 
 `htmlquery` is an XPath query package for HTML, lets you extract data or evaluate from HTML documents by an XPath expression.
 
-`htmlquery` build-in the query object caching feature based on [LRU](https://godoc.org/github.com/golang/groupcache/lru), this feature will caching the recently used XPATH query string. enable caching can avoid re-compile XPath expression each query. 
+`htmlquery` built-in the query object caching feature based on [LRU](https://godoc.org/github.com/golang/groupcache/lru), this feature will caching the recently used XPATH query string. Enable query caching can avoid re-compile XPath expression each query. 
 
 Installation
 ====
@@ -101,7 +101,17 @@ Yes, you can. We offer the `QuerySelector` and `QuerySelectorAll` methods, It wi
 
 Cache a query expression object(or reused) will avoid re-compile XPath query expression, improve your query performance.
 
-#### Disable caching feature
+#### XPath query object cache performance
+
+```
+goos: windows
+goarch: amd64
+pkg: github.com/antchfx/htmlquery
+BenchmarkSelectorCache-4                20000000                55.2 ns/op
+BenchmarkDisableSelectorCache-4           500000              3162 ns/op
+```
+
+#### How to disable caching?
 
 ```
 htmlquery.DisableSelectorCache = true

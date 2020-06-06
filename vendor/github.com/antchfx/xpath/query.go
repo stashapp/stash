@@ -227,6 +227,7 @@ func (c *childQuery) position() int {
 type descendantQuery struct {
 	iterator func() NodeNavigator
 	posit    int
+	level    int
 
 	Self      bool
 	Input     query
@@ -242,7 +243,7 @@ func (d *descendantQuery) Select(t iterator) NodeNavigator {
 				return nil
 			}
 			node = node.Copy()
-			level := 0
+			d.level = 0
 			positmap := make(map[int]int)
 			first := true
 			d.iterator = func() NodeNavigator {
@@ -250,30 +251,30 @@ func (d *descendantQuery) Select(t iterator) NodeNavigator {
 					first = false
 					if d.Predicate(node) {
 						d.posit = 1
-						positmap[level] = 1
+						positmap[d.level] = 1
 						return node
 					}
 				}
 
 				for {
 					if node.MoveToChild() {
-						level++
-						positmap[level] = 0
+						d.level = d.level + 1
+						positmap[d.level] = 0
 					} else {
 						for {
-							if level == 0 {
+							if d.level == 0 {
 								return nil
 							}
 							if node.MoveToNext() {
 								break
 							}
 							node.MoveToParent()
-							level--
+							d.level = d.level - 1
 						}
 					}
 					if d.Predicate(node) {
-						positmap[level]++
-						d.posit = positmap[level]
+						positmap[d.level]++
+						d.posit = positmap[d.level]
 						return node
 					}
 				}
@@ -300,6 +301,10 @@ func (d *descendantQuery) Test(n NodeNavigator) bool {
 // position returns a position of current NodeNavigator.
 func (d *descendantQuery) position() int {
 	return d.posit
+}
+
+func (d *descendantQuery) depth() int {
+	return d.level
 }
 
 func (d *descendantQuery) Clone() query {
@@ -538,6 +543,7 @@ type filterQuery struct {
 	Input     query
 	Predicate query
 	posit     int
+	positmap  map[int]int
 }
 
 func (f *filterQuery) do(t iterator) bool {
@@ -563,7 +569,9 @@ func (f *filterQuery) position() int {
 }
 
 func (f *filterQuery) Select(t iterator) NodeNavigator {
-
+	if f.positmap == nil {
+		f.positmap = make(map[int]int)
+	}
 	for {
 
 		node := f.Input.Select(t)
@@ -574,10 +582,13 @@ func (f *filterQuery) Select(t iterator) NodeNavigator {
 
 		t.Current().MoveTo(node)
 		if f.do(t) {
-			f.posit++
+			// fix https://github.com/antchfx/htmlquery/issues/26
+			// Calculate and keep the each of matching node's position in the same depth.
+			level := getNodeDepth(f.Input)
+			f.positmap[level]++
+			f.posit = f.positmap[level]
 			return node
 		}
-		f.posit = 0
 	}
 }
 
@@ -590,8 +601,9 @@ func (f *filterQuery) Clone() query {
 	return &filterQuery{Input: f.Input.Clone(), Predicate: f.Predicate.Clone()}
 }
 
-// functionQuery is an XPath function that call a function to returns
-// value of current NodeNavigator node.
+// functionQuery is an XPath function that returns a computed value for
+// the Evaluate call of the current NodeNavigator node. Select call isn't
+// applicable for functionQuery.
 type functionQuery struct {
 	Input query                             // Node Set
 	Func  func(query, iterator) interface{} // The xpath function.
@@ -609,6 +621,34 @@ func (f *functionQuery) Evaluate(t iterator) interface{} {
 
 func (f *functionQuery) Clone() query {
 	return &functionQuery{Input: f.Input.Clone(), Func: f.Func}
+}
+
+// transformFunctionQuery diffs from functionQuery where the latter computes a scalar
+// value (number,string,boolean) for the current NodeNavigator node while the former
+// (transformFunctionQuery) performs a mapping or transform of the current NodeNavigator
+// and returns a new NodeNavigator. It is used for non-scalar XPath functions such as
+// reverse(), remove(), subsequence(), unordered(), etc.
+type transformFunctionQuery struct {
+	Input    query
+	Func     func(query, iterator) func() NodeNavigator
+	iterator func() NodeNavigator
+}
+
+func (f *transformFunctionQuery) Select(t iterator) NodeNavigator {
+	if f.iterator == nil {
+		f.iterator = f.Func(f.Input, t)
+	}
+	return f.iterator()
+}
+
+func (f *transformFunctionQuery) Evaluate(t iterator) interface{} {
+	f.Input.Evaluate(t)
+	f.iterator = nil
+	return f
+}
+
+func (f *transformFunctionQuery) Clone() query {
+	return &transformFunctionQuery{Input: f.Input.Clone(), Func: f.Func}
 }
 
 // constantQuery is an XPath constant operand.
@@ -827,8 +867,18 @@ func getHashCode(n NodeNavigator) uint64 {
 	switch n.NodeType() {
 	case AttributeNode, TextNode, CommentNode:
 		sb.WriteString(fmt.Sprintf("%s=%s", n.LocalName(), n.Value()))
-		if n.MoveToParent() {
-			sb.WriteString(n.LocalName())
+		// https://github.com/antchfx/htmlquery/issues/25
+		d := 1
+		for n.MoveToPrevious() {
+			d++
+		}
+		sb.WriteString(fmt.Sprintf("-%d", d))
+		for n.MoveToParent() {
+			d = 1
+			for n.MoveToPrevious() {
+				d++
+			}
+			sb.WriteString(fmt.Sprintf("-%d", d))
 		}
 	case ElementNode:
 		sb.WriteString(n.Prefix() + n.LocalName())
@@ -859,4 +909,14 @@ func getNodePosition(q query) int {
 		return count.position()
 	}
 	return 1
+}
+
+func getNodeDepth(q query) int {
+	type Depth interface {
+		depth() int
+	}
+	if count, ok := q.(Depth); ok {
+		return count.depth()
+	}
+	return 0
 }

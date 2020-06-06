@@ -122,6 +122,27 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 	}
 }
 
+func DeleteSceneMarkerFiles(scene *models.Scene, seconds int) {
+	videoPath := GetInstance().Paths.SceneMarkers.GetStreamPath(scene.Checksum, seconds)
+	imagePath := GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.Checksum, seconds)
+
+	exists, _ := utils.FileExists(videoPath)
+	if exists {
+		err := os.Remove(videoPath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", videoPath, err.Error())
+		}
+	}
+
+	exists, _ = utils.FileExists(imagePath)
+	if exists {
+		err := os.Remove(imagePath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", videoPath, err.Error())
+		}
+	}
+}
+
 func DeleteSceneFile(scene *models.Scene) {
 	// kill any running encoders
 	KillRunningStreams(scene.Path)

@@ -1,6 +1,7 @@
 """A performer from a scraping operation..."""
 type ScrapedPerformer {
   name: String
+  gender: String
   url: String
   twitter: String
   instagram: String
@@ -15,10 +16,14 @@ type ScrapedPerformer {
   tattoos: String
   piercings: String
   aliases: String
+
+  """This should be base64 encoded"""
+  image: String
 }
 
 input ScrapedPerformerInput {
   name: String
+  gender: String
   url: String
   twitter: String
   instagram: String
@@ -33,4 +38,6 @@ input ScrapedPerformerInput {
   tattoos: String
   piercings: String
   aliases: String
+
+  # not including image for the input
 }

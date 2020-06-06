@@ -147,6 +147,31 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 		return nil, err
 	}
 
+	// Save the movies
+	var movieJoins []models.MoviesScenes
+
+	for _, movie := range input.Movies {
+
+		movieID, _ := strconv.Atoi(movie.MovieID)
+
+		movieJoin := models.MoviesScenes{
+			MovieID: movieID,
+			SceneID: sceneID,
+		}
+
+		if movie.SceneIndex != nil {
+			movieJoin.SceneIndex = sql.NullInt64{
+				Int64: int64(*movie.SceneIndex),
+				Valid: true,
+			}
+		}
+
+		movieJoins = append(movieJoins, movieJoin)
+	}
+	if err := jqb.UpdateMoviesScenes(sceneID, movieJoins, tx); err != nil {
+		return nil, err
+	}
+
 	// Save the tags
 	var tagJoins []models.ScenesTags
 	for _, tid := range input.TagIds {
@@ -247,9 +272,14 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 
 		// Save the performers
 		if wasFieldIncluded(ctx, "performer_ids") {
+			performerIDs, err := adjustScenePerformerIDs(tx, sceneID, *input.PerformerIds)
+			if err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
+
 			var performerJoins []models.PerformersScenes
-			for _, pid := range input.PerformerIds {
-				performerID, _ := strconv.Atoi(pid)
+			for _, performerID := range performerIDs {
 				performerJoin := models.PerformersScenes{
 					PerformerID: performerID,
 					SceneID:     sceneID,
@@ -264,9 +294,14 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 
 		// Save the tags
 		if wasFieldIncluded(ctx, "tag_ids") {
+			tagIDs, err := adjustSceneTagIDs(tx, sceneID, *input.TagIds)
+			if err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
+
 			var tagJoins []models.ScenesTags
-			for _, tid := range input.TagIds {
-				tagID, _ := strconv.Atoi(tid)
+			for _, tagID := range tagIDs {
 				tagJoin := models.ScenesTags{
 					SceneID: sceneID,
 					TagID:   tagID,
@@ -286,6 +321,72 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 	}
 
 	return ret, nil
+}
+
+func adjustIDs(existingIDs []int, updateIDs models.BulkUpdateIds) []int {
+	for _, idStr := range updateIDs.Ids {
+		id, _ := strconv.Atoi(idStr)
+
+		// look for the id in the list
+		foundExisting := false
+		for idx, existingID := range existingIDs {
+			if existingID == id {
+				if updateIDs.Mode == models.BulkUpdateIDModeRemove {
+					// remove from the list
+					existingIDs = append(existingIDs[:idx], existingIDs[idx+1:]...)
+				}
+
+				foundExisting = true
+				break
+			}
+		}
+
+		if !foundExisting && updateIDs.Mode != models.BulkUpdateIDModeRemove {
+			existingIDs = append(existingIDs, id)
+		}
+	}
+
+	return existingIDs
+}
+
+func adjustScenePerformerIDs(tx *sqlx.Tx, sceneID int, ids models.BulkUpdateIds) ([]int, error) {
+	var ret []int
+
+	jqb := models.NewJoinsQueryBuilder()
+	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
+		// adding to the joins
+		performerJoins, err := jqb.GetScenePerformers(sceneID, tx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, join := range performerJoins {
+			ret = append(ret, join.PerformerID)
+		}
+	}
+
+	return adjustIDs(ret, ids), nil
+}
+
+func adjustSceneTagIDs(tx *sqlx.Tx, sceneID int, ids models.BulkUpdateIds) ([]int, error) {
+	var ret []int
+
+	jqb := models.NewJoinsQueryBuilder()
+	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
+		// adding to the joins
+		tagJoins, err := jqb.GetSceneTags(sceneID, tx)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, join := range tagJoins {
+			ret = append(ret, join.TagID)
+		}
+	}
+
+	return adjustIDs(ret, ids), nil
 }
 
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {
@@ -356,6 +457,14 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
 	qb := models.NewSceneMarkerQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
+
+	markerID, _ := strconv.Atoi(id)
+	marker, err := qb.Find(markerID)
+
+	if err != nil {
+		return false, err
+	}
+
 	if err := qb.Destroy(id, tx); err != nil {
 		_ = tx.Rollback()
 		return false, err
@@ -363,6 +472,16 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 	if err := tx.Commit(); err != nil {
 		return false, err
 	}
+
+	// delete the preview for the marker
+	sqb := models.NewSceneQueryBuilder()
+	scene, _ := sqb.Find(int(marker.SceneID.Int64))
+
+	if scene != nil {
+		seconds := int(marker.Seconds)
+		manager.DeleteSceneMarkerFiles(scene, seconds)
+	}
+
 	return true, nil
 }
 
@@ -372,13 +491,18 @@ func changeMarker(ctx context.Context, changeType int, changedMarker models.Scen
 	qb := models.NewSceneMarkerQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
 
+	var existingMarker *models.SceneMarker
 	var sceneMarker *models.SceneMarker
 	var err error
 	switch changeType {
 	case create:
 		sceneMarker, err = qb.Create(changedMarker, tx)
 	case update:
-		sceneMarker, err = qb.Update(changedMarker, tx)
+		// check to see if timestamp was changed
+		existingMarker, err = qb.Find(changedMarker.ID)
+		if err == nil {
+			sceneMarker, err = qb.Update(changedMarker, tx)
+		}
 	}
 	if err != nil {
 		_ = tx.Rollback()
@@ -414,6 +538,18 @@ func changeMarker(ctx context.Context, changeType int, changedMarker models.Scen
 	// Commit
 	if err := tx.Commit(); err != nil {
 		return nil, err
+	}
+
+	// remove the marker preview if the timestamp was changed
+	if existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
+		sqb := models.NewSceneQueryBuilder()
+
+		scene, _ := sqb.Find(int(existingMarker.SceneID.Int64))
+
+		if scene != nil {
+			seconds := int(existingMarker.Seconds)
+			manager.DeleteSceneMarkerFiles(scene, seconds)
+		}
 	}
 
 	return sceneMarker, nil
@@ -477,4 +613,14 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (int, err
 	}
 
 	return newVal, nil
+}
+
+func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {
+	if at != nil {
+		manager.GetInstance().GenerateScreenshot(id, *at)
+	} else {
+		manager.GetInstance().GenerateDefaultScreenshot(id)
+	}
+
+	return "todo", nil
 }

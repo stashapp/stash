@@ -1,0 +1,73 @@
+#performer-details {
+  .scrape-url-button {
+    color: $text-color;
+    float: right;
+    margin-right: 0.5rem;
+  }
+}
+
+#performer-page {
+  flex-direction: row;
+  margin: 10px auto;
+  overflow: hidden;
+
+  .image-container .performer {
+    max-height: 960px;
+    max-width: 100%;
+  }
+
+  .performer-head {
+    display: inline-block;
+    margin-bottom: 2rem;
+    vertical-align: top;
+
+    .name-icons {
+      margin-left: 10px;
+
+      .not-favorite {
+        color: rgba(191, 204, 214, 0.5);
+      }
+
+      .favorite {
+        color: #ff7373;
+      }
+
+      .link {
+        color: rgb(191, 204, 214);
+      }
+
+      .instagram {
+        color: pink;
+      }
+    }
+  }
+
+  .alias {
+    font-weight: bold;
+  }
+}
+
+.new-view {
+  margin-bottom: 2rem;
+
+  .photo {
+    padding: 1rem 1rem 1rem 2rem;
+    width: 100%;
+  }
+}
+
+.performer-card {
+  .flag-icon {
+    bottom: 1rem;
+    height: 2rem;
+    position: absolute;
+    right: 1rem;
+    width: 3rem;
+  }
+}
+
+.card {
+  &.performer-card {
+    padding: 0 0 1rem 0;
+  }
+}

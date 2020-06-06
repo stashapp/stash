@@ -46,6 +46,7 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 
 	t.ImportPerformers(ctx)
 	t.ImportStudios(ctx)
+	t.ImportMovies(ctx)
 	t.ImportGalleries(ctx)
 	t.ImportTags(ctx)
 
@@ -92,6 +93,9 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 
 		if performerJSON.Name != "" {
 			newPerformer.Name = sql.NullString{String: performerJSON.Name, Valid: true}
+		}
+		if performerJSON.Gender != "" {
+			newPerformer.Gender = sql.NullString{String: performerJSON.Gender, Valid: true}
 		}
 		if performerJSON.URL != "" {
 			newPerformer.URL = sql.NullString{String: performerJSON.URL, Valid: true}
@@ -202,6 +206,77 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 		logger.Errorf("[studios] import failed to commit: %s", err.Error())
 	}
 	logger.Info("[studios] import complete")
+}
+
+func (t *ImportTask) ImportMovies(ctx context.Context) {
+	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := models.NewMovieQueryBuilder()
+
+	for i, mappingJSON := range t.Mappings.Movies {
+		index := i + 1
+		movieJSON, err := instance.JSON.getMovie(mappingJSON.Checksum)
+		if err != nil {
+			logger.Errorf("[movies] failed to read json: %s", err.Error())
+			continue
+		}
+		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || movieJSON == nil {
+			return
+		}
+
+		logger.Progressf("[movies] %d of %d", index, len(t.Mappings.Movies))
+
+		// generate checksum from movie name rather than image
+		checksum := utils.MD5FromString(movieJSON.Name)
+
+		// Process the base 64 encoded image string
+		_, frontimageData, err := utils.ProcessBase64Image(movieJSON.FrontImage)
+		if err != nil {
+			_ = tx.Rollback()
+			logger.Errorf("[movies] <%s> invalid front_image: %s", mappingJSON.Checksum, err.Error())
+			return
+		}
+		_, backimageData, err := utils.ProcessBase64Image(movieJSON.BackImage)
+		if err != nil {
+			_ = tx.Rollback()
+			logger.Errorf("[movies] <%s> invalid back_image: %s", mappingJSON.Checksum, err.Error())
+			return
+		}
+
+		// Populate a new movie from the input
+		newMovie := models.Movie{
+			FrontImage: frontimageData,
+			BackImage:  backimageData,
+			Checksum:   checksum,
+			Name:       sql.NullString{String: movieJSON.Name, Valid: true},
+			Aliases:    sql.NullString{String: movieJSON.Aliases, Valid: true},
+			Date:       models.SQLiteDate{String: movieJSON.Date, Valid: true},
+			Director:   sql.NullString{String: movieJSON.Director, Valid: true},
+			Synopsis:   sql.NullString{String: movieJSON.Synopsis, Valid: true},
+			URL:        sql.NullString{String: movieJSON.URL, Valid: true},
+			CreatedAt:  models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
+			UpdatedAt:  models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
+		}
+
+		if movieJSON.Rating != 0 {
+			newMovie.Rating = sql.NullInt64{Int64: int64(movieJSON.Rating), Valid: true}
+		}
+		if movieJSON.Duration != 0 {
+			newMovie.Duration = sql.NullInt64{Int64: int64(movieJSON.Duration), Valid: true}
+		}
+
+		_, err = qb.Create(newMovie, tx)
+		if err != nil {
+			_ = tx.Rollback()
+			logger.Errorf("[movies] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
+			return
+		}
+	}
+
+	logger.Info("[movies] importing")
+	if err := tx.Commit(); err != nil {
+		logger.Errorf("[movies] import failed to commit: %s", err.Error())
+	}
+	logger.Info("[movies] import complete")
 }
 
 func (t *ImportTask) ImportGalleries(ctx context.Context) {
@@ -335,7 +410,7 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 			UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
 		}
 
-		studio, err := sqb.FindByName(mappingJSON.Studio, tx)
+		studio, err := sqb.FindByName(mappingJSON.Studio, tx, false)
 		if err != nil {
 			logger.Errorf("[scraped sites] failed to fetch studio: %s", err.Error())
 		}
@@ -414,6 +489,8 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			if sceneJSON.Rating != 0 {
 				newScene.Rating = sql.NullInt64{Int64: int64(sceneJSON.Rating), Valid: true}
 			}
+
+			newScene.OCounter = sceneJSON.OCounter
 			newScene.CreatedAt = models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(sceneJSON.CreatedAt)}
 			newScene.UpdatedAt = models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(sceneJSON.UpdatedAt)}
 
@@ -430,6 +507,9 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				}
 				if sceneJSON.File.AudioCodec != "" {
 					newScene.AudioCodec = sql.NullString{String: sceneJSON.File.AudioCodec, Valid: true}
+				}
+				if sceneJSON.File.Format != "" {
+					newScene.Format = sql.NullString{String: sceneJSON.File.Format, Valid: true}
 				}
 				if sceneJSON.File.Width != 0 {
 					newScene.Width = sql.NullInt64{Int64: int64(sceneJSON.File.Width), Valid: true}
@@ -452,7 +532,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		// Populate the studio ID
 		if sceneJSON.Studio != "" {
 			sqb := models.NewStudioQueryBuilder()
-			studio, err := sqb.FindByName(sceneJSON.Studio, tx)
+			studio, err := sqb.FindByName(sceneJSON.Studio, tx, false)
 			if err != nil {
 				logger.Warnf("[scenes] studio <%s> does not exist: %s", sceneJSON.Studio, err.Error())
 			} else {
@@ -508,6 +588,18 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			}
 		}
 
+		// Relate the scene to the movies
+		if len(sceneJSON.Movies) > 0 {
+			moviesScenes, err := t.getMoviesScenes(sceneJSON.Movies, scene.ID, tx)
+			if err != nil {
+				logger.Warnf("[scenes] <%s> failed to fetch movies: %s", scene.Checksum, err.Error())
+			} else {
+				if err := jqb.CreateMoviesScenes(moviesScenes, tx); err != nil {
+					logger.Errorf("[scenes] <%s> failed to associate movies: %s", scene.Checksum, err.Error())
+				}
+			}
+		}
+
 		// Relate the scene to the tags
 		if len(sceneJSON.Tags) > 0 {
 			tags, err := t.getTags(scene.Checksum, sceneJSON.Tags, tx)
@@ -542,7 +634,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 					UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(marker.UpdatedAt)},
 				}
 
-				primaryTag, err := tqb.FindByName(marker.PrimaryTag, tx)
+				primaryTag, err := tqb.FindByName(marker.PrimaryTag, tx, false)
 				if err != nil {
 					logger.Errorf("[scenes] <%s> failed to find primary tag for marker: %s", scene.Checksum, err.Error())
 				} else {
@@ -590,7 +682,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Performer, error) {
 	pqb := models.NewPerformerQueryBuilder()
-	performers, err := pqb.FindByNames(names, tx)
+	performers, err := pqb.FindByNames(names, tx, false)
 	if err != nil {
 		return nil, err
 	}
@@ -614,9 +706,41 @@ func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Perfo
 	return performers, nil
 }
 
+func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int, tx *sqlx.Tx) ([]models.MoviesScenes, error) {
+	mqb := models.NewMovieQueryBuilder()
+
+	var movies []models.MoviesScenes
+	for _, inputMovie := range input {
+		movie, err := mqb.FindByName(inputMovie.MovieName, tx, false)
+		if err != nil {
+			return nil, err
+		}
+
+		if movie == nil {
+			logger.Warnf("[scenes] movie %s does not exist", inputMovie.MovieName)
+		} else {
+			toAdd := models.MoviesScenes{
+				MovieID: movie.ID,
+				SceneID: sceneID,
+			}
+
+			if inputMovie.SceneIndex != 0 {
+				toAdd.SceneIndex = sql.NullInt64{
+					Int64: int64(inputMovie.SceneIndex),
+					Valid: true,
+				}
+			}
+
+			movies = append(movies, toAdd)
+		}
+	}
+
+	return movies, nil
+}
+
 func (t *ImportTask) getTags(sceneChecksum string, names []string, tx *sqlx.Tx) ([]*models.Tag, error) {
 	tqb := models.NewTagQueryBuilder()
-	tags, err := tqb.FindByNames(names, tx)
+	tags, err := tqb.FindByNames(names, tx, false)
 	if err != nil {
 		return nil, err
 	}

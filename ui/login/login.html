@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Login</title>
+
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+    <link rel="stylesheet" href="/login/login.css">
+    <link rel="stylesheet" href="/css">
+</head>
+<body class="login">
+
+    <div class="dialog">
+        <div class="card">
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label for="username"><h6>Username</h6></label>
+                    <input class="text-input form-control" name="username" type="text" placeholder="Username" />
+                </div>
+                <div>
+                <div class="form-group">
+                    <label for="password"><h6>Password</h6></label>
+                    <input class="text-input form-control" name="password" type="password" placeholder="Password" />
+                </div>
+                <div class="login-error">
+                    {{.Error}}
+                </div>
+    
+                <input type="hidden" name="returnURL" value="{{.URL}}" />
+    
+                <div>
+                    <input class="btn btn-primary" type="submit" value="Login">
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>

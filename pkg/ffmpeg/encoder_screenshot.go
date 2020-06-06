@@ -10,7 +10,7 @@ type ScreenshotOptions struct {
 	Verbosity  string
 }
 
-func (e *Encoder) Screenshot(probeResult VideoFile, options ScreenshotOptions) {
+func (e *Encoder) Screenshot(probeResult VideoFile, options ScreenshotOptions) error {
 	if options.Verbosity == "" {
 		options.Verbosity = "error"
 	}
@@ -28,5 +28,7 @@ func (e *Encoder) Screenshot(probeResult VideoFile, options ScreenshotOptions) {
 		"-f", "image2",
 		options.OutputPath,
 	}
-	_, _ = e.run(probeResult, args)
+	_, err := e.run(probeResult, args)
+
+	return err
 }

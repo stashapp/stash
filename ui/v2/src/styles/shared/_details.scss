@@ -19,6 +19,14 @@
     object-fit: contain;
     box-shadow: 0px 0px 10px black;
   }
+
+  & img.movie {
+    height: 50%;
+    max-width: 50%;
+    object-fit: contain;
+    box-shadow: 0px 0px 10px black;
+  }
+
 }
 
 .details-detail-container {

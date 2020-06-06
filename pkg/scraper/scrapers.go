@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"strconv"
 
@@ -21,7 +22,13 @@ func loadScrapers() ([]scraperConfig, error) {
 	scrapers = make([]scraperConfig, 0)
 
 	logger.Debugf("Reading scraper configs from %s", path)
-	scraperFiles, err := filepath.Glob(filepath.Join(path, "*.yml"))
+	scraperFiles := []string{}
+	err := filepath.Walk(path, func(fp string, f os.FileInfo, err error) error {
+		if filepath.Ext(fp) == ".yml" {
+			scraperFiles = append(scraperFiles, fp)
+		}
+		return nil
+	})
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
@@ -32,7 +39,7 @@ func loadScrapers() ([]scraperConfig, error) {
 	scrapers = append(scrapers, GetFreeonesScraper())
 
 	for _, file := range scraperFiles {
-		scraper, err := loadScraperFromYAML(file)
+		scraper, err := loadScraperFromYAMLFile(file)
 		if err != nil {
 			logger.Errorf("Error loading scraper %s: %s", file, err.Error())
 		} else {
@@ -108,7 +115,17 @@ func ScrapePerformer(scraperID string, scrapedPerformer models.ScrapedPerformerI
 	// find scraper with the provided id
 	s := findScraper(scraperID)
 	if s != nil {
-		return s.ScrapePerformer(scrapedPerformer)
+		ret, err := s.ScrapePerformer(scrapedPerformer)
+		if err != nil {
+			return nil, err
+		}
+
+		// post-process - set the image if applicable
+		if err := setPerformerImage(ret); err != nil {
+			logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
+		}
+
+		return ret, nil
 	}
 
 	return nil, errors.New("Scraper with ID " + scraperID + " not found")
@@ -117,7 +134,17 @@ func ScrapePerformer(scraperID string, scrapedPerformer models.ScrapedPerformerI
 func ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
 	for _, s := range scrapers {
 		if s.matchesPerformerURL(url) {
-			return s.ScrapePerformerURL(url)
+			ret, err := s.ScrapePerformerURL(url)
+			if err != nil {
+				return nil, err
+			}
+
+			// post-process - set the image if applicable
+			if err := setPerformerImage(ret); err != nil {
+				logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
+			}
+
+			return ret, nil
 		}
 	}
 
@@ -127,7 +154,7 @@ func ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
 func matchPerformer(p *models.ScrapedScenePerformer) error {
 	qb := models.NewPerformerQueryBuilder()
 
-	performers, err := qb.FindByNames([]string{p.Name}, nil)
+	performers, err := qb.FindByNames([]string{p.Name}, nil, true)
 
 	if err != nil {
 		return err
@@ -146,7 +173,7 @@ func matchPerformer(p *models.ScrapedScenePerformer) error {
 func matchStudio(s *models.ScrapedSceneStudio) error {
 	qb := models.NewStudioQueryBuilder()
 
-	studio, err := qb.FindByName(s.Name, nil)
+	studio, err := qb.FindByName(s.Name, nil, true)
 
 	if err != nil {
 		return err
@@ -161,11 +188,29 @@ func matchStudio(s *models.ScrapedSceneStudio) error {
 	s.ID = &id
 	return nil
 }
+func matchMovie(m *models.ScrapedSceneMovie) error {
+	qb := models.NewMovieQueryBuilder()
+
+	movies, err := qb.FindByNames([]string{m.Name}, nil, true)
+
+	if err != nil {
+		return err
+	}
+
+	if len(movies) != 1 {
+		// ignore - cannot match
+		return nil
+	}
+
+	id := strconv.Itoa(movies[0].ID)
+	m.ID = &id
+	return nil
+}
 
 func matchTag(s *models.ScrapedSceneTag) error {
 	qb := models.NewTagQueryBuilder()
 
-	tag, err := qb.FindByName(s.Name, nil)
+	tag, err := qb.FindByName(s.Name, nil, true)
 
 	if err != nil {
 		return err
@@ -189,6 +234,13 @@ func postScrapeScene(ret *models.ScrapedScene) error {
 		}
 	}
 
+	for _, p := range ret.Movies {
+		err := matchMovie(p)
+		if err != nil {
+			return err
+		}
+	}
+
 	for _, t := range ret.Tags {
 		err := matchTag(t)
 		if err != nil {
@@ -201,6 +253,11 @@ func postScrapeScene(ret *models.ScrapedScene) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	// post-process - set the image if applicable
+	if err := setSceneImage(ret); err != nil {
+		logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
 	}
 
 	return nil

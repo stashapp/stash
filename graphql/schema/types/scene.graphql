@@ -18,6 +18,11 @@ type ScenePathsType {
   chapters_vtt: String # Resolver
 }
 
+type SceneMovie {
+  movie: Movie!
+  scene_index: Int
+}
+
 type Scene {
   id: ID!
   checksum: String!
@@ -36,8 +41,14 @@ type Scene {
   scene_markers: [SceneMarker!]!
   gallery: Gallery
   studio: Studio
+  movies: [SceneMovie!]!
   tags: [Tag!]!
   performers: [Performer!]!
+}
+
+input SceneMovieInput {
+  movie_id: ID!
+  scene_index: Int
 }
 
 input SceneUpdateInput {
@@ -51,9 +62,21 @@ input SceneUpdateInput {
   studio_id: ID
   gallery_id: ID
   performer_ids: [ID!]
+  movies: [SceneMovieInput!]
   tag_ids: [ID!]
   """This should be base64 encoded"""
   cover_image: String
+}
+
+enum BulkUpdateIdMode {
+  SET
+  ADD
+  REMOVE
+}
+
+input BulkUpdateIds {
+  ids: [ID!]
+  mode: BulkUpdateIdMode!
 }
 
 input BulkSceneUpdateInput {
@@ -66,8 +89,8 @@ input BulkSceneUpdateInput {
   rating: Int
   studio_id: ID
   gallery_id: ID
-  performer_ids: [ID!]
-  tag_ids: [ID!]
+  performer_ids: BulkUpdateIds
+  tag_ids: BulkUpdateIds
 }
 
 input SceneDestroyInput {
@@ -87,6 +110,11 @@ input SceneParserInput {
   capitalizeTitle: Boolean
 }
 
+type SceneMovieID {
+  movie_id: ID!
+  scene_index: String
+}
+
 type SceneParserResult {
   scene: Scene!
   title: String
@@ -97,6 +125,7 @@ type SceneParserResult {
   studio_id: ID
   gallery_id: ID
   performer_ids: [ID!]
+  movies: [SceneMovieID!]
   tag_ids: [ID!]
 }
 

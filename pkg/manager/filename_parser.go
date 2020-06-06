@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 
@@ -87,8 +88,10 @@ func initParserFields() {
 	//I = new ParserField("i", undefined, "Matches any ignored word", false);
 
 	ret["d"] = newParserField("d", `(?:\.|-|_)`, false)
+	ret["rating"] = newParserField("rating", `\d`, true)
 	ret["performer"] = newParserField("performer", ".*", true)
 	ret["studio"] = newParserField("studio", ".*", true)
+	ret["movie"] = newParserField("movie", ".*", true)
 	ret["tag"] = newParserField("tag", ".*", true)
 
 	// date fields
@@ -96,6 +99,7 @@ func initParserFields() {
 	ret["yyyy"] = newParserField("yyyy", `\d{4}`, true)
 	ret["yy"] = newParserField("yy", `\d{2}`, true)
 	ret["mm"] = newParserField("mm", `\d{2}`, true)
+	ret["mmm"] = newParserField("mmm", `\w{3}`, true)
 	ret["dd"] = newParserField("dd", `\d{2}`, true)
 	ret["yyyymmdd"] = newFullDateParserField("yyyymmdd", `\d{8}`)
 	ret["yymmdd"] = newFullDateParserField("yymmdd", `\d{6}`)
@@ -204,6 +208,7 @@ type sceneHolder struct {
 	mm         string
 	dd         string
 	performers []string
+	movies     []string
 	studio     string
 	tags       []string
 }
@@ -220,6 +225,10 @@ func newSceneHolder(scene *models.Scene) *sceneHolder {
 	}
 
 	return &ret
+}
+
+func validateRating(rating int) bool {
+	return rating >= 1 && rating <= 5
 }
 
 func validateDate(dateStr string) bool {
@@ -283,6 +292,20 @@ func (h *sceneHolder) setDate(field *parserField, value string) {
 	}
 }
 
+func mmmToMonth(mmm string) string {
+	format := "02-Jan-2006"
+	dateStr := "01-" + mmm + "-2000"
+	t, err := time.Parse(format, dateStr)
+
+	if err != nil {
+		return ""
+	}
+
+	// expect month in two-digit format
+	format = "01-02-2006"
+	return t.Format(format)[0:2]
+}
+
 func (h *sceneHolder) setField(field parserField, value interface{}) {
 	if field.isFullDateField {
 		h.setDate(&field, value.(string))
@@ -302,27 +325,35 @@ func (h *sceneHolder) setField(field parserField, value interface{}) {
 				Valid:  true,
 			}
 		}
+	case "rating":
+		rating, _ := strconv.Atoi(value.(string))
+		if validateRating(rating) {
+			h.result.Rating = sql.NullInt64{
+				Int64: int64(rating),
+				Valid: true,
+			}
+		}
 	case "performer":
 		// add performer to list
 		h.performers = append(h.performers, value.(string))
 	case "studio":
 		h.studio = value.(string)
+	case "movie":
+		h.movies = append(h.movies, value.(string))
 	case "tag":
 		h.tags = append(h.tags, value.(string))
 	case "yyyy":
 		h.yyyy = value.(string)
-		break
 	case "yy":
 		v := value.(string)
 		v = "20" + v
 		h.yyyy = v
-		break
+	case "mmm":
+		h.mm = mmmToMonth(value.(string))
 	case "mm":
 		h.mm = value.(string)
-		break
 	case "dd":
 		h.dd = value.(string)
-		break
 	}
 }
 
@@ -374,7 +405,7 @@ func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
 }
 
 type performerQueryer interface {
-	FindByNames(names []string, tx *sqlx.Tx) ([]*models.Performer, error)
+	FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*models.Performer, error)
 }
 
 type sceneQueryer interface {
@@ -382,11 +413,15 @@ type sceneQueryer interface {
 }
 
 type tagQueryer interface {
-	FindByName(name string, tx *sqlx.Tx) (*models.Tag, error)
+	FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Tag, error)
 }
 
 type studioQueryer interface {
-	FindByName(name string, tx *sqlx.Tx) (*models.Studio, error)
+	FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Studio, error)
+}
+
+type movieQueryer interface {
+	FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Movie, error)
 }
 
 type SceneFilenameParser struct {
@@ -396,12 +431,14 @@ type SceneFilenameParser struct {
 	whitespaceRE   *regexp.Regexp
 	performerCache map[string]*models.Performer
 	studioCache    map[string]*models.Studio
+	movieCache     map[string]*models.Movie
 	tagCache       map[string]*models.Tag
 
 	performerQuery performerQueryer
 	sceneQuery     sceneQueryer
 	tagQuery       tagQueryer
 	studioQuery    studioQueryer
+	movieQuery     movieQueryer
 }
 
 func NewSceneFilenameParser(filter *models.FindFilterType, config models.SceneParserInput) *SceneFilenameParser {
@@ -413,6 +450,7 @@ func NewSceneFilenameParser(filter *models.FindFilterType, config models.ScenePa
 
 	p.performerCache = make(map[string]*models.Performer)
 	p.studioCache = make(map[string]*models.Studio)
+	p.movieCache = make(map[string]*models.Movie)
 	p.tagCache = make(map[string]*models.Tag)
 
 	p.initWhiteSpaceRegex()
@@ -428,6 +466,9 @@ func NewSceneFilenameParser(filter *models.FindFilterType, config models.ScenePa
 
 	studioQuery := models.NewStudioQueryBuilder()
 	p.studioQuery = &studioQuery
+
+	movieQuery := models.NewMovieQueryBuilder()
+	p.movieQuery = &movieQuery
 
 	return p
 }
@@ -505,7 +546,7 @@ func (p *SceneFilenameParser) queryPerformer(performerName string) *models.Perfo
 	}
 
 	// perform an exact match and grab the first
-	performers, _ := p.performerQuery.FindByNames([]string{performerName}, nil)
+	performers, _ := p.performerQuery.FindByNames([]string{performerName}, nil, true)
 
 	var ret *models.Performer
 	if len(performers) > 0 {
@@ -527,10 +568,27 @@ func (p *SceneFilenameParser) queryStudio(studioName string) *models.Studio {
 		return ret
 	}
 
-	ret, _ := p.studioQuery.FindByName(studioName, nil)
+	ret, _ := p.studioQuery.FindByName(studioName, nil, true)
 
 	// add result to cache
 	p.studioCache[studioName] = ret
+
+	return ret
+}
+
+func (p *SceneFilenameParser) queryMovie(movieName string) *models.Movie {
+	// massage the movie name
+	movieName = delimiterRE.ReplaceAllString(movieName, " ")
+
+	// check cache first
+	if ret, found := p.movieCache[movieName]; found {
+		return ret
+	}
+
+	ret, _ := p.movieQuery.FindByName(movieName, nil, true)
+
+	// add result to cache
+	p.movieCache[movieName] = ret
 
 	return ret
 }
@@ -545,7 +603,7 @@ func (p *SceneFilenameParser) queryTag(tagName string) *models.Tag {
 	}
 
 	// match tag name exactly
-	ret, _ := p.tagQuery.FindByName(tagName, nil)
+	ret, _ := p.tagQuery.FindByName(tagName, nil, true)
 
 	// add result to cache
 	p.tagCache[tagName] = ret
@@ -596,6 +654,24 @@ func (p *SceneFilenameParser) setStudio(h sceneHolder, result *models.SceneParse
 	}
 }
 
+func (p *SceneFilenameParser) setMovies(h sceneHolder, result *models.SceneParserResult) {
+	// query for each movie
+	moviesSet := make(map[int]bool)
+	for _, movieName := range h.movies {
+		if movieName != "" {
+			movie := p.queryMovie(movieName)
+			if movie != nil {
+				if _, found := moviesSet[movie.ID]; !found {
+					result.Movies = append(result.Movies, &models.SceneMovieID{
+						MovieID: strconv.Itoa(movie.ID),
+					})
+					moviesSet[movie.ID] = true
+				}
+			}
+		}
+	}
+}
+
 func (p *SceneFilenameParser) setParserResult(h sceneHolder, result *models.SceneParserResult) {
 	if h.result.Title.Valid {
 		title := h.result.Title.String
@@ -612,6 +688,11 @@ func (p *SceneFilenameParser) setParserResult(h sceneHolder, result *models.Scen
 		result.Date = &h.result.Date.String
 	}
 
+	if h.result.Rating.Valid {
+		rating := int(h.result.Rating.Int64)
+		result.Rating = &rating
+	}
+
 	if len(h.performers) > 0 {
 		p.setPerformers(h, result)
 	}
@@ -619,4 +700,9 @@ func (p *SceneFilenameParser) setParserResult(h sceneHolder, result *models.Scen
 		p.setTags(h, result)
 	}
 	p.setStudio(h, result)
+
+	if len(h.movies) > 0 {
+		p.setMovies(h, result)
+	}
+
 }

@@ -27,6 +27,7 @@ type ScrapedScenePerformer {
   """Set if performer matched"""
   id: ID
   name: String!
+  gender: String
   url: String
   twitter: String
   instagram: String
@@ -41,6 +42,19 @@ type ScrapedScenePerformer {
   tattoos: String
   piercings: String
   aliases: String
+}
+
+type ScrapedSceneMovie {
+  """Set if movie matched"""
+  id: ID
+  name: String!
+  aliases: String
+  duration: String
+  date: String
+  rating: String
+  director: String
+  synopsis: String
+  url: String
 }
 
 type ScrapedSceneStudio {
@@ -62,9 +76,13 @@ type ScrapedScene {
   url: String
   date: String
 
+  """This should be base64 encoded"""
+  image: String
+
   file: SceneFileType # Resolver
 
   studio: ScrapedSceneStudio
   tags: [ScrapedSceneTag!]
   performers: [ScrapedScenePerformer!]
+  movies: [ScrapedSceneMovie!]
 }

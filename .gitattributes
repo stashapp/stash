@@ -1,2 +1,6 @@
 go.mod text eol=lf
 go.sum text eol=lf
+*.go text eol=lf
+vendor/** -text
+ui/v2.5/**/*.ts* text eol=lf
+ui/v2.5/**/*.scss text eol=lf

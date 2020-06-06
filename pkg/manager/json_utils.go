@@ -38,6 +38,14 @@ func (jp *jsonUtils) saveStudio(checksum string, studio *jsonschema.Studio) erro
 	return jsonschema.SaveStudioFile(instance.Paths.JSON.StudioJSONPath(checksum), studio)
 }
 
+func (jp *jsonUtils) getMovie(checksum string) (*jsonschema.Movie, error) {
+	return jsonschema.LoadMovieFile(instance.Paths.JSON.MovieJSONPath(checksum))
+}
+
+func (jp *jsonUtils) saveMovie(checksum string, movie *jsonschema.Movie) error {
+	return jsonschema.SaveMovieFile(instance.Paths.JSON.MovieJSONPath(checksum), movie)
+}
+
 func (jp *jsonUtils) getScene(checksum string) (*jsonschema.Scene, error) {
 	return jsonschema.LoadSceneFile(instance.Paths.JSON.SceneJSONPath(checksum))
 }

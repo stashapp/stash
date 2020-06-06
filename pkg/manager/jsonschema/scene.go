@@ -1,10 +1,11 @@
 package jsonschema
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/stashapp/stash/pkg/models"
+	"github.com/json-iterator/go"
 	"os"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type SceneMarker struct {
@@ -21,10 +22,16 @@ type SceneFile struct {
 	Duration   string `json:"duration"`
 	VideoCodec string `json:"video_codec"`
 	AudioCodec string `json:"audio_codec"`
+	Format     string `json:"format"`
 	Width      int    `json:"width"`
 	Height     int    `json:"height"`
 	Framerate  string `json:"framerate"`
 	Bitrate    int    `json:"bitrate"`
+}
+
+type SceneMovie struct {
+	MovieName  string `json:"movieName,omitempty"`
+	SceneIndex int    `json:"scene_index,omitempty"`
 }
 
 type Scene struct {
@@ -33,9 +40,11 @@ type Scene struct {
 	URL        string          `json:"url,omitempty"`
 	Date       string          `json:"date,omitempty"`
 	Rating     int             `json:"rating,omitempty"`
+	OCounter   int             `json:"o_counter,omitempty"`
 	Details    string          `json:"details,omitempty"`
 	Gallery    string          `json:"gallery,omitempty"`
 	Performers []string        `json:"performers,omitempty"`
+	Movies     []SceneMovie    `json:"movies,omitempty"`
 	Tags       []string        `json:"tags,omitempty"`
 	Markers    []SceneMarker   `json:"markers,omitempty"`
 	File       *SceneFile      `json:"file,omitempty"`
@@ -51,6 +60,7 @@ func LoadSceneFile(filePath string) (*Scene, error) {
 	if err != nil {
 		return nil, err
 	}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&scene)
 	if err != nil {

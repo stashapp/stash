@@ -1,6 +1,7 @@
 import * as GQL from "../core/generated-graphql";
 import { PerformersCriterion } from "../models/list-filter/criteria/performers";
 import { StudiosCriterion } from "../models/list-filter/criteria/studios";
+import { MoviesCriterion } from "../models/list-filter/criteria/movies";
 import { TagsCriterion } from "../models/list-filter/criteria/tags";
 import { ListFilterModel } from "../models/list-filter/filter";
 import { FilterMode } from "../models/list-filter/types";
@@ -20,6 +21,15 @@ export class NavigationUtils {
     const filter = new ListFilterModel(FilterMode.Scenes);
     const criterion = new StudiosCriterion();
     criterion.value = [{ id: studio.id, label: studio.name || `Studio ${studio.id}` }];
+    filter.criteria.push(criterion);
+    return `/scenes?${filter.makeQueryParameters()}`;
+  }
+
+  public static makeMovieScenesUrl(movie: Partial<GQL.MovieDataFragment>): string {
+    if (movie.id === undefined) { return "#"; }
+    const filter = new ListFilterModel(FilterMode.Scenes);
+    const criterion = new MoviesCriterion();
+    criterion.value = [{ id: movie.id, label: movie.name || `Movie ${movie.id}` }];
     filter.criteria.push(criterion);
     return `/scenes?${filter.makeQueryParameters()}`;
   }

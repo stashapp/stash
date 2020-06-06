@@ -10,7 +10,9 @@ import { PerformersCriterion } from "./performers";
 import { RatingCriterion } from "./rating";
 import { ResolutionCriterion } from "./resolution";
 import { StudiosCriterion } from "./studios";
+import { MoviesCriterion } from "./movies";
 import { TagsCriterion } from "./tags";
+import { GenderCriterion } from "./gender";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
@@ -26,6 +28,7 @@ export function makeCriteria(type: CriterionType = "none") {
     case "sceneTags": return new TagsCriterion("sceneTags");
     case "performers": return new PerformersCriterion();
     case "studios": return new StudiosCriterion();
+    case "movies": return new MoviesCriterion();
     
     case "birth_year": return new NumberCriterion(type, type);
     case "age":
@@ -38,6 +41,7 @@ export function makeCriteria(type: CriterionType = "none") {
           Criterion.getModifierOption(CriterionModifier.LessThan)
         ];
         return ret;
+    case "gender": return new GenderCriterion();
     case "ethnicity": 
     case "country":
     case "eye_color":

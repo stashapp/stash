@@ -1,0 +1,115 @@
+.LoadingIndicator {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 70vh;
+  justify-content: center;
+  width: 100%;
+
+  &-message {
+    margin-top: 1rem;
+  }
+
+  .spinner-border {
+    height: 3rem;
+    width: 3rem;
+  }
+
+  &.inline {
+    height: inherit;
+  }
+}
+
+.details-edit {
+  display: flex;
+  justify-content: left;
+
+  .btn {
+    margin-right: 0.5rem;
+  }
+
+  .delete,
+  .save {
+    margin-left: auto;
+  }
+}
+
+.select-suggest {
+  &:hover {
+    cursor: text;
+  }
+}
+
+.duration-input {
+  .duration-control {
+    min-width: 3rem;
+  }
+
+  .duration-button {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+    line-height: 10px;
+    padding: 1px 7px;
+  }
+
+  .btn + .btn {
+    margin-left: 0;
+  }
+}
+
+.folder-list {
+  margin-top: 0.5rem 0 0 0;
+  max-height: 30vw;
+  overflow-x: auto;
+}
+
+.folder-item {
+  button {
+    padding: 0;
+  }
+}
+
+.multi-set > div.input-group-prepend + div {
+  flex: 1 1;
+  margin-bottom: 0;
+  min-width: 0;
+  position: relative;
+}
+
+.folder-list {
+  list-style-type: none;
+  margin: 0;
+  padding-top: 1rem;
+
+  &-item {
+    white-space: nowrap;
+
+    .btn-link {
+      border: none;
+      color: black;
+      font-weight: 400;
+      padding: 0;
+    }
+
+    &:last-child::before {
+      content: "└ \1F4C1";
+    }
+
+    &::before {
+      content: "├ \1F4C1";
+      display: inline-block;
+      padding-right: 1rem;
+      transform: scale(1.5);
+    }
+  }
+
+  &-parent {
+    &::before {
+      visibility: hidden;
+    }
+
+    .btn-link {
+      font-weight: 500;
+    }
+  }
+}

@@ -1,8 +1,8 @@
 package jsonschema
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/json-iterator/go"
 	"github.com/stashapp/stash/pkg/models"
 	"os"
 )
@@ -22,6 +22,7 @@ func LoadStudioFile(filePath string) (*Studio, error) {
 	if err != nil {
 		return nil, err
 	}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&studio)
 	if err != nil {
