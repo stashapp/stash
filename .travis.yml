@@ -44,6 +44,8 @@ deploy:
     - dist/stash-osx
     - dist/stash-win.exe
     - dist/stash-linux
+    - stash-linux-arm64v8
+    - stash-linux-arm32v7
     - dist/stash-pi
     skip_cleanup: true
     overwrite: true
@@ -61,6 +63,8 @@ deploy:
     - dist/stash-osx
     - dist/stash-win.exe
     - dist/stash-linux
+    - stash-linux-arm64v8
+    - stash-linux-arm32v7
     - dist/stash-pi
     # make the release a draft so the maintainers can confirm before releasing
     draft: true
