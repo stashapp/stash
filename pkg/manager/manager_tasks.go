@@ -1,16 +1,43 @@
 package manager
 
 import (
+	"path/filepath"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/bmatcuk/doublestar"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"path/filepath"
-	"strconv"
-	"sync"
-	"time"
 )
+
+var extensionsToScan = []string{"zip", "m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
+var extensionsGallery = []string{"zip"}
+
+func constructGlob() string { // create a sequence for glob doublestar from our extensions
+	extLen := len(extensionsToScan)
+	glb := "{"
+	for i := 0; i < extLen-1; i++ { // append extensions and commas
+		glb += extensionsToScan[i] + ","
+	}
+	if extLen >= 1 { // append last extension without comma
+		glb += extensionsToScan[extLen-1]
+	}
+	glb += "}"
+	return glb
+
+}
+
+func isGallery(pathname string) bool {
+	for _, ext := range extensionsGallery {
+		if filepath.Ext(pathname) == "."+ext {
+			return true
+		}
+	}
+	return false
+}
 
 type TaskStatus struct {
 	Status     JobStatus
@@ -67,7 +94,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 
 		var results []string
 		for _, path := range config.GetStashPaths() {
-			globPath := filepath.Join(path, "**/*.{zip,m4v,mp4,mov,wmv,avi,mpg,mpeg,rmvb,rm,flv,asf,mkv,webm}") // TODO: Make this configurable
+			globPath := filepath.Join(path, "**/*."+constructGlob())
 			globResults, _ := doublestar.Glob(globPath)
 			results = append(results, globResults...)
 		}
@@ -96,6 +123,15 @@ func (s *singleton) Scan(useFileMetadata bool) {
 		}
 
 		logger.Info("Finished scan")
+		for _, path := range results {
+			if isGallery(path) {
+				wg.Add(1)
+				task := ScanTask{FilePath: path, UseFileMetadata: false}
+				go task.associateGallery(&wg)
+				wg.Wait()
+			}
+		}
+		logger.Info("Finished gallery association")
 	}()
 }
 
@@ -135,7 +171,7 @@ func (s *singleton) Export() {
 	}()
 }
 
-func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcodes bool) {
+func (s *singleton) Generate(sprites bool, previews bool, previewPreset *models.PreviewPreset, imagePreviews bool, markers bool, transcodes bool, thumbnails bool) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -143,13 +179,21 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
+	qg := models.NewGalleryQueryBuilder()
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
+
+	preset := string(models.PreviewPresetSlow)
+	if previewPreset != nil && previewPreset.IsValid() {
+		preset = string(*previewPreset)
+	}
 
 	go func() {
 		defer s.returnToIdleState()
 
 		scenes, err := qb.All()
+		var galleries []*models.Gallery
+
 		if err != nil {
 			logger.Errorf("failed to get scenes for generate")
 			return
@@ -158,18 +202,27 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 		delta := utils.Btoi(sprites) + utils.Btoi(previews) + utils.Btoi(markers) + utils.Btoi(transcodes)
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
-		total := len(scenes)
+		lenScenes := len(scenes)
+		total := lenScenes
+		if thumbnails {
+			galleries, err = qg.All()
+			if err != nil {
+				logger.Errorf("failed to get galleries for generate")
+				return
+			}
+			total += len(galleries)
+		}
 
 		if s.Status.stopping {
 			logger.Info("Stopping due to user request")
 			return
 		}
-		totalsNeeded := s.neededGenerate(scenes, sprites, previews, markers, transcodes)
+		totalsNeeded := s.neededGenerate(scenes, sprites, previews, imagePreviews, markers, transcodes)
 		if totalsNeeded == nil {
 			logger.Infof("Taking too long to count content. Skipping...")
 			logger.Infof("Generating content")
 		} else {
-			logger.Infof("Generating %d sprites %d previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.markers, totalsNeeded.transcodes)
+			logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes)
 		}
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
@@ -196,7 +249,7 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 			}
 
 			if previews {
-				task := GeneratePreviewTask{Scene: *scene}
+				task := GeneratePreviewTask{Scene: *scene, ImagePreview: imagePreviews, PreviewPreset: preset}
 				go task.Start(&wg)
 			}
 
@@ -212,6 +265,77 @@ func (s *singleton) Generate(sprites bool, previews bool, markers bool, transcod
 
 			wg.Wait()
 		}
+
+		if thumbnails {
+			logger.Infof("Generating thumbnails for the galleries")
+			for i, gallery := range galleries {
+				s.Status.setProgress(lenScenes+i, total)
+				if s.Status.stopping {
+					logger.Info("Stopping due to user request")
+					return
+				}
+
+				if gallery == nil {
+					logger.Errorf("nil gallery, skipping generate")
+					continue
+				}
+
+				wg.Add(1)
+				task := GenerateGthumbsTask{Gallery: *gallery}
+				go task.Start(&wg)
+				wg.Wait()
+			}
+		}
+
+		logger.Infof("Generate finished")
+	}()
+}
+
+func (s *singleton) GenerateDefaultScreenshot(sceneId string) {
+	s.generateScreenshot(sceneId, nil)
+}
+
+func (s *singleton) GenerateScreenshot(sceneId string, at float64) {
+	s.generateScreenshot(sceneId, &at)
+}
+
+// generate default screenshot if at is nil
+func (s *singleton) generateScreenshot(sceneId string, at *float64) {
+	if s.Status.Status != Idle {
+		return
+	}
+	s.Status.SetStatus(Generate)
+	s.Status.indefiniteProgress()
+
+	qb := models.NewSceneQueryBuilder()
+	instance.Paths.Generated.EnsureTmpDir()
+
+	go func() {
+		defer s.returnToIdleState()
+
+		sceneIdInt, err := strconv.Atoi(sceneId)
+		if err != nil {
+			logger.Errorf("Error parsing scene id %s: %s", sceneId, err.Error())
+			return
+		}
+
+		scene, err := qb.Find(sceneIdInt)
+		if err != nil || scene == nil {
+			logger.Errorf("failed to get scene for generate")
+			return
+		}
+
+		task := GenerateScreenshotTask{
+			Scene:        *scene,
+			ScreenshotAt: at,
+		}
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go task.Start(&wg)
+
+		wg.Wait()
+
 		logger.Infof("Generate finished")
 	}()
 }
@@ -390,6 +514,7 @@ func (s *singleton) Clean() {
 	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
+	gqb := models.NewGalleryQueryBuilder()
 	go func() {
 		defer s.returnToIdleState()
 
@@ -400,6 +525,12 @@ func (s *singleton) Clean() {
 			return
 		}
 
+		galleries, err := gqb.All()
+		if err != nil {
+			logger.Errorf("failed to fetch list of galleries for cleaning")
+			return
+		}
+
 		if s.Status.stopping {
 			logger.Info("Stopping due to user request")
 			return
@@ -407,7 +538,7 @@ func (s *singleton) Clean() {
 
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
-		total := len(scenes)
+		total := len(scenes) + len(galleries)
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -422,7 +553,26 @@ func (s *singleton) Clean() {
 
 			wg.Add(1)
 
-			task := CleanTask{Scene: *scene}
+			task := CleanTask{Scene: scene}
+			go task.Start(&wg)
+			wg.Wait()
+		}
+
+		for i, gallery := range galleries {
+			s.Status.setProgress(len(scenes)+i, total)
+			if s.Status.stopping {
+				logger.Info("Stopping due to user request")
+				return
+			}
+
+			if gallery == nil {
+				logger.Errorf("nil gallery, skipping Clean")
+				continue
+			}
+
+			wg.Add(1)
+
+			task := CleanTask{Gallery: gallery}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -445,7 +595,7 @@ func (s *singleton) returnToIdleState() {
 }
 
 func (s *singleton) neededScan(paths []string) int64 {
-	var neededScans int64 = 0
+	var neededScans int64
 
 	for _, path := range paths {
 		task := ScanTask{FilePath: path}
@@ -457,23 +607,24 @@ func (s *singleton) neededScan(paths []string) int64 {
 }
 
 type totalsGenerate struct {
-	sprites    int64
-	previews   int64
-	markers    int64
-	transcodes int64
+	sprites       int64
+	previews      int64
+	imagePreviews int64
+	markers       int64
+	transcodes    int64
 }
 
-func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, markers, transcodes bool) *totalsGenerate {
+func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, imagePreviews, markers, transcodes bool) *totalsGenerate {
 
 	var totals totalsGenerate
-	const timeoutSecs = 90 * time.Second
+	const timeout = 90 * time.Second
 
 	// create a control channel through which to signal the counting loop when the timeout is reached
 	chTimeout := make(chan struct{})
 
 	//run the timeout function in a separate thread
 	go func() {
-		time.Sleep(timeoutSecs)
+		time.Sleep(timeout)
 		chTimeout <- struct{}{}
 	}()
 
@@ -488,9 +639,12 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, ma
 			}
 
 			if previews {
-				task := GeneratePreviewTask{Scene: *scene}
-				if !task.doesPreviewExist(task.Scene.Checksum) {
+				task := GeneratePreviewTask{Scene: *scene, ImagePreview: imagePreviews}
+				if !task.doesVideoPreviewExist(task.Scene.Checksum) {
 					totals.previews++
+				}
+				if imagePreviews && !task.doesImagePreviewExist(task.Scene.Checksum) {
+					totals.imagePreviews++
 				}
 			}
 

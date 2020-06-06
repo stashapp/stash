@@ -1,0 +1,135 @@
+.scene-player:focus {
+  outline: 0;
+}
+
+.scrubber-wrapper {
+  margin: 5px 0;
+  overflow: hidden;
+  position: relative;
+}
+
+#scrubber-back {
+  float: left;
+}
+
+#scrubber-forward {
+  float: right;
+}
+
+.scrubber-button {
+  background-color: transparent;
+  border: 1px solid #555;
+  color: $link-color;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 800;
+  height: 100%;
+  line-height: 120px;
+  padding: 0;
+  text-align: center;
+  width: 1.5%;
+}
+
+.scrubber-content {
+  cursor: grab;
+  display: inline-block;
+  height: 120px;
+  margin: 0 0.5%;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  -webkit-user-select: none;
+  width: 96%;
+
+  &.dragging {
+    cursor: grabbing;
+  }
+}
+
+#scrubber-position-indicator {
+  background-color: #ccc;
+  height: 20px;
+  left: -100%;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+}
+
+#scrubber-current-position {
+  background-color: #fff;
+  height: 30px;
+  left: 50%;
+  position: absolute;
+  width: 2px;
+  z-index: 1;
+}
+
+.scrubber-viewport {
+  height: 100%;
+  overflow: hidden;
+  position: static;
+}
+
+.scrubber-slider {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  transition: 333ms ease-out;
+  width: 100%;
+}
+
+.scrubber-tags {
+  height: 20px;
+  margin-bottom: 10px;
+  position: relative;
+
+  &-background {
+    background-color: #555;
+    height: 20px;
+    left: 0;
+    position: absolute;
+    right: 0;
+  }
+}
+
+.scrubber-tag {
+  background-color: #000;
+  cursor: pointer;
+  font-size: 10px;
+  padding: 0 10px;
+  position: absolute;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #444;
+    z-index: 1;
+  }
+
+  &::after {
+    border-left: solid 5px transparent;
+    border-right: solid 5px transparent;
+    border-top: solid 5px #000;
+    bottom: -5px;
+    content: "";
+    left: 50%;
+    margin-left: -5px;
+    position: absolute;
+  }
+}
+
+.scrubber-item {
+  color: white;
+  cursor: pointer;
+  display: flex;
+  font-size: 10px;
+  margin-right: 10px;
+  position: absolute;
+  text-align: center;
+  text-shadow: 1px 1px black;
+
+  &-time {
+    align-self: flex-end;
+    display: inline-block;
+    width: 100%;
+  }
+}

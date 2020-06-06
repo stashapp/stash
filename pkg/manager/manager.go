@@ -154,9 +154,6 @@ func (s *singleton) RefreshConfig() {
 		_ = utils.EnsureDir(s.Paths.Generated.Markers)
 		_ = utils.EnsureDir(s.Paths.Generated.Transcodes)
 
-		_ = utils.EnsureDir(s.Paths.JSON.Performers)
-		_ = utils.EnsureDir(s.Paths.JSON.Scenes)
-		_ = utils.EnsureDir(s.Paths.JSON.Galleries)
-		_ = utils.EnsureDir(s.Paths.JSON.Studios)
+		paths.EnsureJSONDirs()
 	}
 }

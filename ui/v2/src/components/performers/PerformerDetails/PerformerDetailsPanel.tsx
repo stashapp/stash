@@ -54,6 +54,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
   const [url, setUrl] = useState<string | undefined>(undefined);
   const [twitter, setTwitter] = useState<string | undefined>(undefined);
   const [instagram, setInstagram] = useState<string | undefined>(undefined);
+  const [gender, setGender] = useState<string | undefined>(undefined);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +62,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
   const Scrapers = StashService.useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.ListPerformerScrapersListPerformerScrapers[]>([]);
 
-  function updatePerformerEditState(state: Partial<GQL.PerformerDataFragment | GQL.ScrapeFreeonesScrapeFreeones>) {
+  function updatePerformerEditState(state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformerDataFragment | GQL.ScrapeFreeonesScrapeFreeones>) {
     if ((state as GQL.PerformerDataFragment).favorite !== undefined) {
       setFavorite((state as GQL.PerformerDataFragment).favorite);
     }
@@ -80,6 +81,20 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
     setUrl(state.url);
     setTwitter(state.twitter);
     setInstagram(state.instagram);
+    setGender(StashService.genderToString((state as GQL.PerformerDataFragment).gender));
+  }
+
+  function updatePerformerEditStateFromScraper(state: Partial<GQL.ScrapedPerformerDataFragment | GQL.ScrapeFreeonesScrapeFreeones>) {
+    updatePerformerEditState(state);
+
+    // image is a base64 string
+    if ((state as GQL.ScrapedPerformerDataFragment).image !== undefined) {
+      let imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
+      setImage(imageStr);
+      if (props.onImageChange) {
+        props.onImageChange(imageStr!);
+      }
+    }
   }
 
   useEffect(() => {
@@ -134,6 +149,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
       twitter,
       instagram,
       image,
+      gender: StashService.stringToGender(gender)
     };
 
     if (!props.isNew) {
@@ -169,6 +185,10 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
 
     let ret = _.clone(scrapePerformerDetails);
     delete ret.__typename;
+
+    // image is not supported
+    delete ret.image;
+    
     return ret as GQL.ScrapedPerformerInput;
   }
 
@@ -179,7 +199,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
       setIsLoading(true);
       const result = await StashService.queryScrapePerformer(isDisplayingScraperDialog.id, getQueryScraperPerformerInput());
       if (!result.data || !result.data.scrapePerformer) { return; }
-      updatePerformerEditState(result.data.scrapePerformer);
+      updatePerformerEditStateFromScraper(result.data.scrapePerformer);
     } catch (e) {
       ErrorUtils.handle(e);
     } finally {
@@ -199,7 +219,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
         result.data.scrapePerformerURL.url = url;
       }
 
-      updatePerformerEditState(result.data.scrapePerformerURL);
+      updatePerformerEditStateFromScraper(result.data.scrapePerformerURL);
     } catch (e) {
       ErrorUtils.handle(e);
     } finally {
@@ -208,12 +228,12 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
   }
 
   function renderEthnicity() {
-    return TableUtils.renderHtmlSelect({
+    return TableUtils.renderInputGroup({
       title: "Ethnicity",
       value: ethnicity,
       isEditing: !!props.isEditing,
-      onChange: (value: string) => setEthnicity(value),
-      selectOptions: ["white", "black", "asian", "hispanic"],
+      placeholder: "Ethnicity",
+      onChange: setEthnicity
     });
   }
 
@@ -356,6 +376,16 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
     }
   }
 
+  function renderGender() {
+    return TableUtils.renderHtmlSelect({
+      title: "Gender",
+      value: gender,
+      isEditing: !!props.isEditing,
+      onChange: (value: string) => setGender(value),
+      selectOptions: [""].concat(StashService.getGenderStrings()),
+    });
+  }
+
   const twitterPrefix = "https://twitter.com/";
   const instagramPrefix = "https://www.instagram.com/";
 
@@ -368,6 +398,7 @@ export const PerformerDetailsPanel: FunctionComponent<IPerformerDetailsProps> = 
         <tbody>
           {maybeRenderName()}
           {maybeRenderAliases()}
+          {renderGender()}
           {TableUtils.renderInputGroup(
             {title: "Birthdate (YYYY-MM-DD)", value: birthdate, isEditing: !!props.isEditing, onChange: setBirthdate})}
           {renderEthnicity()}

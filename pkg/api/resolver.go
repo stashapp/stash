@@ -33,6 +33,9 @@ func (r *Resolver) SceneMarker() models.SceneMarkerResolver {
 func (r *Resolver) Studio() models.StudioResolver {
 	return &studioResolver{r}
 }
+func (r *Resolver) Movie() models.MovieResolver {
+	return &movieResolver{r}
+}
 func (r *Resolver) Subscription() models.SubscriptionResolver {
 	return &subscriptionResolver{r}
 }
@@ -49,6 +52,7 @@ type performerResolver struct{ *Resolver }
 type sceneResolver struct{ *Resolver }
 type sceneMarkerResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
+type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
 
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) ([]*models.SceneMarker, error) {
@@ -89,19 +93,24 @@ func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *st
 func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, error) {
 	scenesQB := models.NewSceneQueryBuilder()
 	scenesCount, _ := scenesQB.Count()
+	scenesSizeCount, _ := scenesQB.SizeCount()
 	galleryQB := models.NewGalleryQueryBuilder()
 	galleryCount, _ := galleryQB.Count()
 	performersQB := models.NewPerformerQueryBuilder()
 	performersCount, _ := performersQB.Count()
 	studiosQB := models.NewStudioQueryBuilder()
 	studiosCount, _ := studiosQB.Count()
+	moviesQB := models.NewMovieQueryBuilder()
+	moviesCount, _ := moviesQB.Count()
 	tagsQB := models.NewTagQueryBuilder()
 	tagsCount, _ := tagsQB.Count()
 	return &models.StatsResultType{
 		SceneCount:     scenesCount,
+		SceneSizeCount: scenesSizeCount,
 		GalleryCount:   galleryCount,
 		PerformerCount: performersCount,
 		StudioCount:    studiosCount,
+		MovieCount:     moviesCount,
 		TagCount:       tagsCount,
 	}, nil
 }

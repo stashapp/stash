@@ -11,8 +11,20 @@ export const Stats: FunctionComponent = () => {
       <nav id="details-container" className="level stats">
         <div className="level-item has-text-centered">
           <div>
+            <p className="title">{data.stats.scene_size_count}</p>
+            <p className="heading">Library size</p>
+          </div>
+        </div>
+        <div className="level-item has-text-centered">
+          <div>
             <p className="title">{data.stats.scene_count}</p>
             <p className="heading">Scenes</p>
+          </div>
+        </div>
+        <div className="level-item has-text-centered">
+          <div>
+            <p className="title">{data.stats.movie_count}</p>
+            <p className="heading">Movies</p>
           </div>
         </div>
         <div className="level-item has-text-centered">

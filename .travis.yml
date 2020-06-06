@@ -1,4 +1,8 @@
+if: tag != latest_develop # dont build for the latest_develop tagged version
+
 dist: xenial
+git:
+  depth: false
 language: go
 go:
 - 1.11.x
@@ -9,14 +13,15 @@ env:
   - GO111MODULE=on
 before_install:
 - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
-- travis_retry yarn --cwd ui/v2 install --frozen-lockfile
+- nvm install 12
+- travis_retry yarn --cwd ui/v2.5 install --frozen-lockfile
 - make generate
-- CI=false yarn --cwd ui/v2 build # TODO: Fix warnings
+- CI=false yarn --cwd ui/v2.5 build-ci
 #- go get -v github.com/mgechev/revive
 script:
+# left lint off to avoid getting extra dependency
 #- make lint
-#- make vet
-- make it
+- make fmt-check vet it
 after_success:
 - docker pull stashapp/compiler:develop
 - sh ./scripts/cross-compile.sh
@@ -31,6 +36,8 @@ before_deploy:
 deploy:
   # latest develop release
   - provider: releases
+    # use the v2 release provider for proper release note setting
+    edge: true
     api_key:
       secure: tGJ2q62CfPdayid2qEtW2aGRhMgCl3lBXYYQqp3eH0vFgIIf6cs7IDX7YC/x3XKMEQ/iMLZmtCXZvSTqNrD6Sk7MSnt30GIs+4uxIZDnnd8mV5X3K4n4gjD+NAORc4DrQBvUGrYMKJsR5gtkH0nu6diWb1o1If7OiJEuCPRhrmQYcza7NUdABnA9Z2wn2RNUV9Ga33WUCqLMEU5GtNBlfQPiP/khCQrqn/ocR6wUjYut3J6YagzqH4wsfJi3glHyWtowcNIw1LZi5zFxHD/bRBT4Tln7yypkjWNq9eQILA6i6kRUGf7ggyTx26/k8n4tnu+QD0vVh4EcjlThpU/LGyUXzKrrxjRwaDZnM0oYxg5AfHcBuAiAdo0eWnV3lEWRfTJMIVb9MPf4qDmzR4RREfB5OXOxwq3ODeCcJE8sTIMD/wBPZrlqS/QrRpND2gn2X4snkVukN9t9F4CMTFMtVSzFV7TDJW5E5Lq6VEExulteQhs6kcK9NRPNAaLgRQAw7X9kVWfDtiGUP+fE2i8F9Bo8bm7sOT5O5VPMPykx3EgeNg1IqIgMTCsMlhMJT4xBJoQUgmd2wWyf3Ryw+P+sFgdb5Sd7+lFgJBjMUUoOxMxAOiEgdFvCXcr+/Udyz2RdtetU1/6VzXzLPcKOw0wubZeBkISqu7o9gpfdMP9Eq00=
     file:
@@ -41,7 +48,7 @@ deploy:
     skip_cleanup: true
     overwrite: true
     name: "${STASH_VERSION}: Latest development build"
-    body: ${RELEASE_DATE}\n This is always the latest committed version on the develop branch. Use as your own risk!
+    release_notes: "**${RELEASE_DATE}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
     prerelease: true
     on:
       repo: stashapp/stash

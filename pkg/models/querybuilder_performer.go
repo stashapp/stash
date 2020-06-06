@@ -18,10 +18,10 @@ func NewPerformerQueryBuilder() PerformerQueryBuilder {
 func (qb *PerformerQueryBuilder) Create(newPerformer Performer, tx *sqlx.Tx) (*Performer, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO performers (image, checksum, name, url, twitter, instagram, birthdate, ethnicity, country,
+		`INSERT INTO performers (image, checksum, name, url, gender, twitter, instagram, birthdate, ethnicity, country,
                         				eye_color, height, measurements, fake_tits, career_length, tattoos, piercings,
                         				aliases, favorite, created_at, updated_at)
-				VALUES (:image, :checksum, :name, :url, :twitter, :instagram, :birthdate, :ethnicity, :country,
+				VALUES (:image, :checksum, :name, :url, :gender, :twitter, :instagram, :birthdate, :ethnicity, :country,
                         :eye_color, :height, :measurements, :fake_tits, :career_length, :tattoos, :piercings,
                         :aliases, :favorite, :created_at, :updated_at)
 		`,
@@ -77,19 +77,31 @@ func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
 }
 
 func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {
-	query := `
-		SELECT performers.* FROM performers
+	query := selectAll("performers") + `
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
-		LEFT JOIN scenes on scenes_join.scene_id = scenes.id
-		WHERE scenes.id = ?
-		GROUP BY performers.id
+		WHERE scenes_join.scene_id = ?
 	`
 	args := []interface{}{sceneID}
 	return qb.queryPerformers(query, args, tx)
 }
 
-func (qb *PerformerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]*Performer, error) {
-	query := "SELECT * FROM performers WHERE name IN " + getInBinding(len(names))
+func (qb *PerformerQueryBuilder) FindNameBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {
+	query := `
+		SELECT performers.name FROM performers
+		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
+		WHERE scenes_join.scene_id = ?
+	`
+	args := []interface{}{sceneID}
+	return qb.queryPerformers(query, args, tx)
+}
+
+func (qb *PerformerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*Performer, error) {
+	query := "SELECT * FROM performers WHERE name"
+	if nocase {
+		query += " COLLATE NOCASE"
+	}
+	query += " IN " + getInBinding(len(names))
+
 	var args []interface{}
 	for _, name := range names {
 		args = append(args, name)
@@ -105,6 +117,10 @@ func (qb *PerformerQueryBuilder) All() ([]*Performer, error) {
 	return qb.queryPerformers(selectAll("performers")+qb.getPerformerSort(nil), nil, nil)
 }
 
+func (qb *PerformerQueryBuilder) AllSlim() ([]*Performer, error) {
+	return qb.queryPerformers("SELECT performers.id, performers.name, performers.gender FROM performers "+qb.getPerformerSort(nil), nil, nil)
+}
+
 func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int) {
 	if performerFilter == nil {
 		performerFilter = &PerformerFilterType{}
@@ -113,11 +129,12 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		findFilter = &FindFilterType{}
 	}
 
+	tableName := "performers"
 	query := queryBuilder{
-		tableName: "performers",
+		tableName: tableName,
 	}
 
-	query.body = selectDistinctIDs("performers")
+	query.body = selectDistinctIDs(tableName)
 	query.body += `
 		left join performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		left join scenes on scenes_join.scene_id = scenes.id
@@ -152,18 +169,32 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		query.addArg(thisArgs...)
 	}
 
-	handleStringCriterion("ethnicity", performerFilter.Ethnicity, &query)
-	handleStringCriterion("country", performerFilter.Country, &query)
-	handleStringCriterion("eye_color", performerFilter.EyeColor, &query)
-	handleStringCriterion("height", performerFilter.Height, &query)
-	handleStringCriterion("measurements", performerFilter.Measurements, &query)
-	handleStringCriterion("fake_tits", performerFilter.FakeTits, &query)
-	handleStringCriterion("career_length", performerFilter.CareerLength, &query)
-	handleStringCriterion("tattoos", performerFilter.Tattoos, &query)
-	handleStringCriterion("piercings", performerFilter.Piercings, &query)
+	if gender := performerFilter.Gender; gender != nil {
+		query.addWhere("performers.gender = ?")
+		query.addArg(gender.Value.String())
+	}
+
+	if isMissingFilter := performerFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
+		switch *isMissingFilter {
+		case "scenes":
+			query.addWhere("scenes_join.scene_id IS NULL")
+		default:
+			query.addWhere("performers." + *isMissingFilter + " IS NULL")
+		}
+	}
+
+	handleStringCriterion(tableName+".ethnicity", performerFilter.Ethnicity, &query)
+	handleStringCriterion(tableName+".country", performerFilter.Country, &query)
+	handleStringCriterion(tableName+".eye_color", performerFilter.EyeColor, &query)
+	handleStringCriterion(tableName+".height", performerFilter.Height, &query)
+	handleStringCriterion(tableName+".measurements", performerFilter.Measurements, &query)
+	handleStringCriterion(tableName+".fake_tits", performerFilter.FakeTits, &query)
+	handleStringCriterion(tableName+".career_length", performerFilter.CareerLength, &query)
+	handleStringCriterion(tableName+".tattoos", performerFilter.Tattoos, &query)
+	handleStringCriterion(tableName+".piercings", performerFilter.Piercings, &query)
 
 	// TODO - need better handling of aliases
-	handleStringCriterion("aliases", performerFilter.Aliases, &query)
+	handleStringCriterion(tableName+".aliases", performerFilter.Aliases, &query)
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := query.executeFind()

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -20,6 +21,7 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -28,46 +30,81 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-var version string = ""
-var buildstamp string = ""
-var githash string = ""
+var version string
+var buildstamp string
+var githash string
 
 var uiBox *packr.Box
 
 //var legacyUiBox *packr.Box
 var setupUIBox *packr.Box
+var loginUIBox *packr.Box
+
+func allowUnauthenticated(r *http.Request) bool {
+	return strings.HasPrefix(r.URL.Path, "/login") || r.URL.Path == "/css"
+}
 
 func authenticateHandler() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// only do this if credentials have been configured
-			if !config.HasCredentials() {
-				next.ServeHTTP(w, r)
+			ctx := r.Context()
+
+			// translate api key into current user, if present
+			userID := ""
+			var err error
+
+			// handle session
+			userID, err = getSessionUserID(w, r)
+
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(err.Error()))
 				return
 			}
 
-			authUser, authPW, ok := r.BasicAuth()
+			// handle redirect if no user and user is required
+			if userID == "" && config.HasCredentials() && !allowUnauthenticated(r) {
+				// always allow
 
-			if !ok || !config.ValidateCredentials(authUser, authPW) {
-				unauthorized(w)
+				// if we don't have a userID, then redirect
+				// if graphql was requested, we just return a forbidden error
+				if r.URL.Path == "/graphql" {
+					w.Header().Add("WWW-Authenticate", `FormBased`)
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				// otherwise redirect to the login page
+				u := url.URL{
+					Path: "/login",
+				}
+				q := u.Query()
+				q.Set(returnURLParam, r.URL.Path)
+				u.RawQuery = q.Encode()
+				http.Redirect(w, r, u.String(), http.StatusFound)
 				return
 			}
+
+			ctx = context.WithValue(ctx, ContextUser, userID)
+
+			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)
 		})
 	}
 }
 
-func unauthorized(w http.ResponseWriter) {
-	w.Header().Add("WWW-Authenticate", `Basic realm=\"Stash\"`)
-	w.WriteHeader(http.StatusUnauthorized)
-}
+const setupEndPoint = "/setup"
+const migrateEndPoint = "/migrate"
+const loginEndPoint = "/login"
 
 func Start() {
-	uiBox = packr.New("UI Box", "../../ui/v2/build")
+	uiBox = packr.New("UI Box", "../../ui/v2.5/build")
 	//legacyUiBox = packr.New("UI Box", "../../ui/v1/dist/stash-frontend")
 	setupUIBox = packr.New("Setup UI Box", "../../ui/setup")
+	loginUIBox = packr.New("Login UI Box", "../../ui/login")
 
+	initSessionStore()
 	initialiseImages()
 
 	r := chi.NewRouter()
@@ -83,6 +120,7 @@ func Start() {
 	r.Use(cors.AllowAll().Handler)
 	r.Use(BaseURLMiddleware)
 	r.Use(ConfigCheckMiddleware)
+	r.Use(DatabaseCheckMiddleware)
 
 	recoverFunc := handler.RecoverFunc(func(ctx context.Context, err interface{}) error {
 		logger.Error(err)
@@ -105,12 +143,20 @@ func Start() {
 	r.Handle("/graphql", gqlHandler)
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
 
+	// session handlers
+	r.Post(loginEndPoint, handleLogin)
+	r.Get("/logout", handleLogout)
+
+	r.Get(loginEndPoint, getLoginHandler)
+
 	r.Mount("/gallery", galleryRoutes{}.Routes())
 	r.Mount("/performer", performerRoutes{}.Routes())
 	r.Mount("/scene", sceneRoutes{}.Routes())
 	r.Mount("/studio", studioRoutes{}.Routes())
+	r.Mount("/movie", movieRoutes{}.Routes())
 
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/css")
 		if !config.GetCSSEnabled() {
 			return
 		}
@@ -125,6 +171,10 @@ func Start() {
 		http.ServeFile(w, r, fn)
 	})
 
+	// Serve the migration UI
+	r.Get("/migrate", getMigrateHandler)
+	r.Post("/migrate", doMigrateHandler)
+
 	// Serve the setup UI
 	r.HandleFunc("/setup*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
@@ -134,6 +184,16 @@ func Start() {
 		} else {
 			r.URL.Path = strings.Replace(r.URL.Path, "/setup", "", 1)
 			http.FileServer(setupUIBox).ServeHTTP(w, r)
+		}
+	})
+	r.HandleFunc("/login*", func(w http.ResponseWriter, r *http.Request) {
+		ext := path.Ext(r.URL.Path)
+		if ext == ".html" || ext == "" {
+			data, _ := loginUIBox.Find("login.html")
+			_, _ = w.Write(data)
+		} else {
+			r.URL.Path = strings.Replace(r.URL.Path, loginEndPoint, "", 1)
+			http.FileServer(loginUIBox).ServeHTTP(w, r)
 		}
 	})
 	r.Post("/init", func(w http.ResponseWriter, r *http.Request) {
@@ -174,7 +234,8 @@ func Start() {
 
 		_ = os.Mkdir(downloads, 0755)
 
-		config.Set(config.Stash, stash)
+		// #536 - set stash as slice of strings
+		config.Set(config.Stash, []string{stash})
 		config.Set(config.Generated, generated)
 		config.Set(config.Metadata, metadata)
 		config.Set(config.Cache, cache)
@@ -189,6 +250,7 @@ func Start() {
 		http.Redirect(w, r, "/", 301)
 	})
 
+	startThumbCache()
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
@@ -311,10 +373,27 @@ func BaseURLMiddleware(next http.Handler) http.Handler {
 func ConfigCheckMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)
-		shouldRedirect := ext == "" && r.Method == "GET" && r.URL.Path != "/init"
+		shouldRedirect := ext == "" && r.Method == "GET"
 		if !config.IsValid() && shouldRedirect {
-			if !strings.HasPrefix(r.URL.Path, "/setup") {
-				http.Redirect(w, r, "/setup", 301)
+			// #539 - don't redirect if loading login page
+			if !strings.HasPrefix(r.URL.Path, setupEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) {
+				http.Redirect(w, r, setupEndPoint, 301)
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func DatabaseCheckMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ext := path.Ext(r.URL.Path)
+		shouldRedirect := ext == "" && r.Method == "GET"
+		if shouldRedirect && database.NeedsMigration() {
+			// #451 - don't redirect if loading login page
+			// #539 - or setup page
+			if !strings.HasPrefix(r.URL.Path, migrateEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) && !strings.HasPrefix(r.URL.Path, setupEndPoint) {
+				http.Redirect(w, r, migrateEndPoint, 301)
 				return
 			}
 		}

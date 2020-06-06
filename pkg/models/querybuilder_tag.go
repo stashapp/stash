@@ -33,6 +33,7 @@ func (qb *TagQueryBuilder) Create(newTag Tag, tx *sqlx.Tx) (*Tag, error) {
 	if err := tx.Get(&newTag, `SELECT * FROM tags WHERE id = ? LIMIT 1`, studioID); err != nil {
 		return nil, err
 	}
+
 	return &newTag, nil
 }
 
@@ -90,8 +91,7 @@ func (qb *TagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Tag, erro
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scenes_tags as scenes_join on scenes_join.tag_id = tags.id
-		LEFT JOIN scenes on scenes_join.scene_id = scenes.id
-		WHERE scenes.id = ?
+		WHERE scenes_join.scene_id = ?
 		GROUP BY tags.id
 	`
 	query += qb.getTagSort(nil)
@@ -103,8 +103,7 @@ func (qb *TagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int, tx *sqlx.Tx) (
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scene_markers_tags as scene_markers_join on scene_markers_join.tag_id = tags.id
-		LEFT JOIN scene_markers on scene_markers_join.scene_marker_id = scene_markers.id
-		WHERE scene_markers.id = ?
+		WHERE scene_markers_join.scene_marker_id = ?
 		GROUP BY tags.id
 	`
 	query += qb.getTagSort(nil)
@@ -112,14 +111,22 @@ func (qb *TagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int, tx *sqlx.Tx) (
 	return qb.queryTags(query, args, tx)
 }
 
-func (qb *TagQueryBuilder) FindByName(name string, tx *sqlx.Tx) (*Tag, error) {
-	query := "SELECT * FROM tags WHERE name = ? LIMIT 1"
+func (qb *TagQueryBuilder) FindByName(name string, tx *sqlx.Tx, nocase bool) (*Tag, error) {
+	query := "SELECT * FROM tags WHERE name = ?"
+	if nocase {
+		query += " COLLATE NOCASE"
+	}
+	query += " LIMIT 1"
 	args := []interface{}{name}
 	return qb.queryTag(query, args, tx)
 }
 
-func (qb *TagQueryBuilder) FindByNames(names []string, tx *sqlx.Tx) ([]*Tag, error) {
-	query := "SELECT * FROM tags WHERE name IN " + getInBinding(len(names))
+func (qb *TagQueryBuilder) FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*Tag, error) {
+	query := "SELECT * FROM tags WHERE name"
+	if nocase {
+		query += " COLLATE NOCASE"
+	}
+	query += " IN " + getInBinding(len(names))
 	var args []interface{}
 	for _, name := range names {
 		args = append(args, name)
@@ -135,6 +142,10 @@ func (qb *TagQueryBuilder) All() ([]*Tag, error) {
 	return qb.queryTags(selectAll("tags")+qb.getTagSort(nil), nil, nil)
 }
 
+func (qb *TagQueryBuilder) AllSlim() ([]*Tag, error) {
+	return qb.queryTags("SELECT tags.id, tags.name FROM tags "+qb.getTagSort(nil), nil, nil)
+}
+
 func (qb *TagQueryBuilder) Query(findFilter *FindFilterType) ([]*Tag, int) {
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
@@ -147,7 +158,9 @@ func (qb *TagQueryBuilder) Query(findFilter *FindFilterType) ([]*Tag, int) {
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"tags.name"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	sortAndPagination := qb.getTagSort(findFilter) + getPagination(findFilter)

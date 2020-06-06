@@ -38,6 +38,13 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		config.Set(config.Generated, input.GeneratedPath)
 	}
 
+	if input.CachePath != nil {
+		if err := utils.EnsureDir(*input.CachePath); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+		config.Set(config.Cache, input.CachePath)
+	}
+
 	if input.MaxTranscodeSize != nil {
 		config.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
 	}
@@ -45,6 +52,8 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	if input.MaxStreamingTranscodeSize != nil {
 		config.Set(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
 	}
+	config.Set(config.ForceMKV, input.ForceMkv)
+	config.Set(config.ForceHEVC, input.ForceHevc)
 
 	if input.Username != nil {
 		config.Set(config.Username, input.Username)
@@ -58,6 +67,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		if *input.Password != currentPWHash {
 			config.SetPassword(*input.Password)
 		}
+	}
+
+	if input.MaxSessionAge != nil {
+		config.Set(config.MaxSessionAge, *input.MaxSessionAge)
 	}
 
 	if input.LogFile != nil {
@@ -74,6 +87,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	if input.Excludes != nil {
 		config.Set(config.Exclude, input.Excludes)
+	}
+
+	if input.ScraperUserAgent != nil {
+		config.Set(config.ScraperUserAgent, input.ScraperUserAgent)
 	}
 
 	if err := config.Write(); err != nil {
@@ -94,6 +111,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		config.Set(config.WallShowTitle, *input.WallShowTitle)
 	}
 
+	if input.WallPlayback != nil {
+		config.Set(config.WallPlayback, *input.WallPlayback)
+	}
+
 	if input.MaximumLoopDuration != nil {
 		config.Set(config.MaximumLoopDuration, *input.MaximumLoopDuration)
 	}
@@ -104,6 +125,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 
 	if input.ShowStudioAsText != nil {
 		config.Set(config.ShowStudioAsText, *input.ShowStudioAsText)
+	}
+
+	if input.Language != nil {
+		config.Set(config.Language, *input.Language)
 	}
 
 	css := ""

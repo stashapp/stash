@@ -1,5 +1,27 @@
 fragment ScrapedPerformerData on ScrapedPerformer {
   name
+  gender
+  url
+  twitter
+  instagram
+  birthdate
+  ethnicity
+  country
+  eye_color
+  height
+  measurements
+  fake_tits
+  career_length
+  tattoos
+  piercings
+  aliases
+  image
+}
+
+fragment ScrapedScenePerformerData on ScrapedScenePerformer {
+  id
+  name
+  gender
   url
   twitter
   instagram
@@ -16,23 +38,27 @@ fragment ScrapedPerformerData on ScrapedPerformer {
   aliases
 }
 
-fragment ScrapedScenePerformerData on ScrapedScenePerformer {
+fragment ScrapedMovieData on ScrapedMovie {
+  name
+  aliases
+  duration
+  date
+  rating
+  director
+  url
+  synopsis
+}
+
+fragment ScrapedSceneMovieData on ScrapedSceneMovie {
   id
   name
-  url
-  twitter
-  instagram
-  birthdate
-  ethnicity
-  country
-  eye_color
-  height
-  measurements
-  fake_tits
-  career_length
-  tattoos
-  piercings
   aliases
+  duration
+  date
+  rating
+  director
+  url
+  synopsis
 }
 
 fragment ScrapedSceneStudioData on ScrapedSceneStudio {
@@ -51,6 +77,7 @@ fragment ScrapedSceneData on ScrapedScene {
   details
   url
   date
+  image
 
   file {
     size
@@ -73,5 +100,9 @@ fragment ScrapedSceneData on ScrapedScene {
 
   performers {
     ...ScrapedScenePerformerData
+  }
+
+  movies {
+    ...ScrapedSceneMovieData
   }
 }

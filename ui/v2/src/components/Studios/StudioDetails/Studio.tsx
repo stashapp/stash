@@ -88,6 +88,10 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
     try {
       if (!isNew) {
         const result = await updateStudio();
+        if (image) {
+            // Refetch image to bust browser cache
+            await fetch(`/studio/${result.data.studioUpdate.id}/image`, { cache: "reload" });
+        }
         setStudio(result.data.studioUpdate);
       } else {
         const result = await createStudio();
@@ -105,7 +109,7 @@ export const Studio: FunctionComponent<IProps> = (props: IProps) => {
       return;
     }
     try {
-      await StashService.queryMetadataAutoTag({ studios: [studio.id]});
+      await StashService.mutateMetadataAutoTag({ studios: [studio.id]});
       ToastUtils.success("Started auto tagging");
     } catch (e) {
       ErrorUtils.handle(e);

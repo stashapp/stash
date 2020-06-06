@@ -22,6 +22,11 @@ type Query {
   """A function which queries Studio objects"""
   findStudios(filter: FindFilterType): FindStudiosResultType!
 
+   """Find a movie by ID"""
+  findMovie(id: ID!): Movie
+  """A function which queries Movie objects"""
+  findMovies(movie_filter: MovieFilterType, filter: FindFilterType): FindMoviesResultType!
+
   findGallery(id: ID!): Gallery
   findGalleries(filter: FindFilterType): FindGalleriesResultType!
 
@@ -68,31 +73,25 @@ type Query {
   """Returns the current, complete configuration"""
   configuration: ConfigResult!
   """Returns an array of paths for the given path"""
-  directories(path: String): [String!]!
+  directory(path: String): Directory!
 
   # Metadata
 
-  """Start an import. Returns the job ID"""
-  metadataImport: String!
-  """Start an export. Returns the job ID"""
-  metadataExport: String!
-  """Start a scan. Returns the job ID"""
-  metadataScan(input: ScanMetadataInput!): String!
-  """Start generating content. Returns the job ID"""
-  metadataGenerate(input: GenerateMetadataInput!): String!
-  """Start auto-tagging. Returns the job ID"""
-  metadataAutoTag(input: AutoTagMetadataInput!): String!
-  """Clean metadata. Returns the job ID"""
-  metadataClean: String!
-
   jobStatus: MetadataUpdateStatus!
-  stopJob: Boolean!
 
   # Get everything
 
   allPerformers: [Performer!]!
   allStudios: [Studio!]!
+  allMovies: [Movie!]!
   allTags: [Tag!]!
+
+  # Get everything with minimal metadata
+
+  allPerformersSlim: [Performer!]!
+  allStudiosSlim: [Studio!]!
+  allMoviesSlim: [Movie!]!
+  allTagsSlim: [Tag!]!
 
   # Version
   version: Version!
@@ -114,6 +113,9 @@ type Mutation {
   """Resets the o-counter for a scene to 0. Returns the new value"""
   sceneResetO(id: ID!): Int!
 
+  """Generates screenshot at specified time in seconds. Leave empty to generate default screenshot"""
+  sceneGenerateScreenshot(id: ID!, at: Float): String!
+
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
   sceneMarkerDestroy(id: ID!): Boolean!
@@ -126,6 +128,10 @@ type Mutation {
   studioUpdate(input: StudioUpdateInput!): Studio
   studioDestroy(input: StudioDestroyInput!): Boolean!
 
+  movieCreate(input: MovieCreateInput!): Movie
+  movieUpdate(input: MovieUpdateInput!): Movie
+  movieDestroy(input: MovieDestroyInput!): Boolean!
+
   tagCreate(input: TagCreateInput!): Tag
   tagUpdate(input: TagUpdateInput!): Tag
   tagDestroy(input: TagDestroyInput!): Boolean!
@@ -133,6 +139,21 @@ type Mutation {
   """Change general configuration options"""
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
   configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
+
+  """Start an import. Returns the job ID"""
+  metadataImport: String!
+  """Start an export. Returns the job ID"""
+  metadataExport: String!
+  """Start a scan. Returns the job ID"""
+  metadataScan(input: ScanMetadataInput!): String!
+  """Start generating content. Returns the job ID"""
+  metadataGenerate(input: GenerateMetadataInput!): String!
+  """Start auto-tagging. Returns the job ID"""
+  metadataAutoTag(input: AutoTagMetadataInput!): String!
+  """Clean metadata. Returns the job ID"""
+  metadataClean: String!
+
+  stopJob: Boolean!
 }
 
 type Subscription {

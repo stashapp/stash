@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"path/filepath"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -51,6 +52,10 @@ func (qb *GalleryQueryBuilder) Update(updatedGallery Gallery, tx *sqlx.Tx) (*Gal
 	return &updatedGallery, nil
 }
 
+func (qb *GalleryQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
+	return executeDeleteQuery("galleries", strconv.Itoa(id), tx)
+}
+
 type GalleryNullSceneID struct {
 	SceneID sql.NullInt64
 }
@@ -88,7 +93,7 @@ func (qb *GalleryQueryBuilder) FindByPath(path string) (*Gallery, error) {
 }
 
 func (qb *GalleryQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) (*Gallery, error) {
-	query := "SELECT galleries.* FROM galleries JOIN scenes ON scenes.id = galleries.scene_id WHERE scenes.id = ? LIMIT 1"
+	query := "SELECT galleries.* FROM galleries WHERE galleries.scene_id = ? LIMIT 1"
 	args := []interface{}{sceneID}
 	return qb.queryGallery(query, args, tx)
 }
@@ -119,7 +124,9 @@ func (qb *GalleryQueryBuilder) Query(findFilter *FindFilterType) ([]*Gallery, in
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"galleries.path", "galleries.checksum"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	sortAndPagination := qb.getGallerySort(findFilter) + getPagination(findFilter)
@@ -137,13 +144,13 @@ func (qb *GalleryQueryBuilder) Query(findFilter *FindFilterType) ([]*Gallery, in
 func (qb *GalleryQueryBuilder) getGallerySort(findFilter *FindFilterType) string {
 	var sort string
 	var direction string
-	//if findFilter == nil { // TODO temp until title is removed from schema and UI
-	sort = "path"
-	direction = "ASC"
-	//} else {
-	//	sort = findFilter.getSort("path")
-	//	direction = findFilter.getDirection()
-	//}
+	if findFilter == nil {
+		sort = "path"
+		direction = "ASC"
+	} else {
+		sort = findFilter.GetSort("path")
+		direction = findFilter.GetDirection()
+	}
 	return getSort(sort, direction, "galleries")
 }
 

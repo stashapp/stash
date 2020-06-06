@@ -19,6 +19,7 @@ type Scene struct {
 	Size       sql.NullString  `db:"size" json:"size"`
 	Duration   sql.NullFloat64 `db:"duration" json:"duration"`
 	VideoCodec sql.NullString  `db:"video_codec" json:"video_codec"`
+	Format     sql.NullString  `db:"format" json:"format_name"`
 	AudioCodec sql.NullString  `db:"audio_codec" json:"audio_codec"`
 	Width      sql.NullInt64   `db:"width" json:"width"`
 	Height     sql.NullInt64   `db:"height" json:"height"`
@@ -48,6 +49,7 @@ type ScenePartial struct {
 	Framerate  *sql.NullFloat64 `db:"framerate" json:"framerate"`
 	Bitrate    *sql.NullInt64   `db:"bitrate" json:"bitrate"`
 	StudioID   *sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
+	MovieID    *sql.NullInt64   `db:"movie_id,omitempty" json:"movie_id"`
 	CreatedAt  *SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt  *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }

@@ -1,8 +1,8 @@
 package jsonschema
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/json-iterator/go"
 	"os"
 )
 
@@ -19,6 +19,7 @@ type PathMapping struct {
 type Mappings struct {
 	Performers []NameMapping `json:"performers"`
 	Studios    []NameMapping `json:"studios"`
+	Movies     []NameMapping `json:"movies"`
 	Galleries  []PathMapping `json:"galleries"`
 	Scenes     []PathMapping `json:"scenes"`
 }
@@ -30,6 +31,7 @@ func LoadMappingsFile(filePath string) (*Mappings, error) {
 	if err != nil {
 		return nil, err
 	}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&mappings)
 	if err != nil {

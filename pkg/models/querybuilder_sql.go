@@ -29,11 +29,19 @@ func (qb queryBuilder) executeFind() ([]int, int) {
 }
 
 func (qb *queryBuilder) addWhere(clauses ...string) {
-	qb.whereClauses = append(qb.whereClauses, clauses...)
+	for _, clause := range clauses {
+		if len(clause) > 0 {
+			qb.whereClauses = append(qb.whereClauses, clauses...)
+		}
+	}
 }
 
 func (qb *queryBuilder) addHaving(clauses ...string) {
-	qb.havingClauses = append(qb.havingClauses, clauses...)
+	for _, clause := range clauses {
+		if len(clause) > 0 {
+			qb.havingClauses = append(qb.havingClauses, clause)
+		}
+	}
 }
 
 func (qb *queryBuilder) addArg(args ...interface{}) {
@@ -118,7 +126,7 @@ func getSort(sort string, direction string, tableName string) string {
 		colName := getColumn(tableName, sort)
 		var additional string
 		if tableName == "scenes" {
-			additional = ", bitrate DESC, framerate DESC, rating DESC, duration DESC"
+			additional = ", bitrate DESC, framerate DESC, scenes.rating DESC, scenes.duration DESC"
 		} else if tableName == "scene_markers" {
 			additional = ", scene_markers.scene_id ASC, scene_markers.seconds ASC"
 		}
@@ -135,29 +143,6 @@ func getRandomSort(tableName string, direction string, seed float64) string {
 	colName := getColumn(tableName, "id")
 	randomSortString := strconv.FormatFloat(seed, 'f', 16, 32)
 	return " ORDER BY " + "(substr(" + colName + " * " + randomSortString + ", length(" + colName + ") + 2))" + " " + direction
-}
-
-func getSearch(columns []string, q string) string {
-	// TODO - susceptible to SQL injection
-	var likeClauses []string
-	queryWords := strings.Split(q, " ")
-	trimmedQuery := strings.Trim(q, "\"")
-	if trimmedQuery == q {
-		// Search for any word
-		for _, word := range queryWords {
-			for _, column := range columns {
-				likeClauses = append(likeClauses, column+" LIKE '%"+word+"%'")
-			}
-		}
-	} else {
-		// Search the exact query
-		for _, column := range columns {
-			likeClauses = append(likeClauses, column+" LIKE '%"+trimmedQuery+"%'")
-		}
-	}
-	likes := strings.Join(likeClauses, " OR ")
-
-	return "(" + likes + ")"
 }
 
 func getSearchBinding(columns []string, q string, not bool) (string, []interface{}) {
@@ -279,6 +264,18 @@ func runCountQuery(query string, args []interface{}) (int, error) {
 	}
 
 	return result.Int, nil
+}
+
+func runSumQuery(query string, args []interface{}) (uint64, error) {
+	// Perform query and fetch result
+	result := struct {
+		Uint uint64 `db:"sum"`
+	}{0}
+	if err := database.DB.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
+		return 0, err
+	}
+
+	return result.Uint, nil
 }
 
 func executeFindQuery(tableName string, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int, int) {

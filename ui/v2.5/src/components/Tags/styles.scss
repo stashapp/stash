@@ -1,0 +1,20 @@
+.tag-list {
+  &-row {
+    margin: 0.5rem 0;
+  }
+
+  &-button {
+    margin: 0 0.5rem;
+    width: 8rem;
+  }
+
+  &-anchor {
+    color: $text-color;
+  }
+
+  &-count {
+    display: inline-block;
+    margin: 0 0.5rem;
+    min-width: 6rem;
+  }
+}

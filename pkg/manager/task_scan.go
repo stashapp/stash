@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -21,7 +22,7 @@ type ScanTask struct {
 }
 
 func (t *ScanTask) Start(wg *sync.WaitGroup) {
-	if filepath.Ext(t.FilePath) == ".zip" {
+	if isGallery(t.FilePath) {
 		t.scanGallery()
 	} else {
 		t.scanScene()
@@ -33,11 +34,16 @@ func (t *ScanTask) Start(wg *sync.WaitGroup) {
 func (t *ScanTask) scanGallery() {
 	qb := models.NewGalleryQueryBuilder()
 	gallery, _ := qb.FindByPath(t.FilePath)
+
 	if gallery != nil {
 		// We already have this item in the database, keep going
 		return
 	}
 
+	ok, err := utils.IsZipFileUncompressed(t.FilePath)
+	if err == nil && !ok {
+		logger.Warnf("%s is using above store (0) level compression.", t.FilePath)
+	}
 	checksum, err := t.calculateChecksum()
 	if err != nil {
 		logger.Error(err.Error())
@@ -60,6 +66,7 @@ func (t *ScanTask) scanGallery() {
 	} else {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
+
 		newGallery := models.Gallery{
 			Checksum:  checksum,
 			Path:      t.FilePath,
@@ -77,12 +84,85 @@ func (t *ScanTask) scanGallery() {
 	}
 }
 
+// associates a gallery to a scene with the same basename
+func (t *ScanTask) associateGallery(wg *sync.WaitGroup) {
+	qb := models.NewGalleryQueryBuilder()
+	gallery, _ := qb.FindByPath(t.FilePath)
+	if gallery == nil {
+		// shouldn't happen , associate is run after scan is finished
+		logger.Errorf("associate: gallery %s not found in DB", t.FilePath)
+		wg.Done()
+		return
+	}
+
+	if !gallery.SceneID.Valid { // gallery has no SceneID
+		basename := strings.TrimSuffix(t.FilePath, filepath.Ext(t.FilePath))
+		var relatedFiles []string
+		for _, ext := range extensionsToScan { // make a list of media files that can be related to the gallery
+			related := basename + "." + ext
+			if !isGallery(related) { //exclude gallery extensions from the related files
+				relatedFiles = append(relatedFiles, related)
+			}
+		}
+		for _, scenePath := range relatedFiles {
+			qbScene := models.NewSceneQueryBuilder()
+			scene, _ := qbScene.FindByPath(scenePath)
+			if scene != nil { // found related Scene
+				logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
+
+				gallery.SceneID.Int64 = int64(scene.ID)
+				gallery.SceneID.Valid = true
+
+				ctx := context.TODO()
+				tx := database.DB.MustBeginTx(ctx, nil)
+
+				_, err := qb.Update(*gallery, tx)
+				if err != nil {
+					logger.Errorf("associate: Error updating gallery sceneId %s", err)
+					_ = tx.Rollback()
+				} else if err := tx.Commit(); err != nil {
+					logger.Error(err.Error())
+				}
+
+				break // since a gallery can have only one related scene
+				// only first found is associated
+			}
+
+		}
+
+	}
+	wg.Done()
+}
+
 func (t *ScanTask) scanScene() {
 	qb := models.NewSceneQueryBuilder()
 	scene, _ := qb.FindByPath(t.FilePath)
 	if scene != nil {
-		// We already have this item in the database, check for thumbnails,screenshots
+		// We already have this item in the database
+		//check for thumbnails,screenshots
 		t.makeScreenshots(nil, scene.Checksum)
+
+		//check for container
+		if !scene.Format.Valid {
+			videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+			container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
+			logger.Infof("Adding container %s to file %s", container, t.FilePath)
+
+			ctx := context.TODO()
+			tx := database.DB.MustBeginTx(ctx, nil)
+			err = qb.UpdateFormat(scene.ID, string(container), tx)
+			if err != nil {
+				logger.Error(err.Error())
+				_ = tx.Rollback()
+			} else if err := tx.Commit(); err != nil {
+				logger.Error(err.Error())
+			}
+
+		}
 		return
 	}
 
@@ -91,6 +171,7 @@ func (t *ScanTask) scanScene() {
 		logger.Error(err.Error())
 		return
 	}
+	container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
 
 	// Override title to be filename if UseFileMetadata is false
 	if !t.UseFileMetadata {
@@ -130,6 +211,7 @@ func (t *ScanTask) scanScene() {
 			Duration:   sql.NullFloat64{Float64: videoFile.Duration, Valid: true},
 			VideoCodec: sql.NullString{String: videoFile.VideoCodec, Valid: true},
 			AudioCodec: sql.NullString{String: videoFile.AudioCodec, Valid: true},
+			Format:     sql.NullString{String: string(container), Valid: true},
 			Width:      sql.NullInt64{Int64: int64(videoFile.Width), Valid: true},
 			Height:     sql.NullInt64{Int64: int64(videoFile.Height), Valid: true},
 			Framerate:  sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true},
@@ -177,26 +259,17 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 		logger.Infof("Regenerating images for %s", t.FilePath)
 	}
 
+	at := float64(probeResult.Duration) * 0.2
+
 	if !thumbExists {
 		logger.Debugf("Creating thumbnail for %s", t.FilePath)
-		t.makeScreenshot(*probeResult, thumbPath, 5, 320)
+		makeScreenshot(*probeResult, thumbPath, 5, 320, at)
 	}
 
 	if !normalExists {
 		logger.Debugf("Creating screenshot for %s", t.FilePath)
-		t.makeScreenshot(*probeResult, normalPath, 2, probeResult.Width)
+		makeScreenshot(*probeResult, normalPath, 2, probeResult.Width, at)
 	}
-}
-
-func (t *ScanTask) makeScreenshot(probeResult ffmpeg.VideoFile, outputPath string, quality int, width int) {
-	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
-	options := ffmpeg.ScreenshotOptions{
-		OutputPath: outputPath,
-		Quality:    quality,
-		Time:       float64(probeResult.Duration) * 0.2,
-		Width:      width,
-	}
-	encoder.Screenshot(probeResult, options)
 }
 
 func (t *ScanTask) calculateChecksum() (string, error) {

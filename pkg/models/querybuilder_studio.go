@@ -79,8 +79,12 @@ func (qb *StudioQueryBuilder) FindBySceneID(sceneID int) (*Studio, error) {
 	return qb.queryStudio(query, args, nil)
 }
 
-func (qb *StudioQueryBuilder) FindByName(name string, tx *sqlx.Tx) (*Studio, error) {
-	query := "SELECT * FROM studios WHERE name = ? LIMIT 1"
+func (qb *StudioQueryBuilder) FindByName(name string, tx *sqlx.Tx, nocase bool) (*Studio, error) {
+	query := "SELECT * FROM studios WHERE name = ?"
+	if nocase {
+		query += " COLLATE NOCASE"
+	}
+	query += " LIMIT 1"
 	args := []interface{}{name}
 	return qb.queryStudio(query, args, tx)
 }
@@ -91,6 +95,10 @@ func (qb *StudioQueryBuilder) Count() (int, error) {
 
 func (qb *StudioQueryBuilder) All() ([]*Studio, error) {
 	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil, nil)
+}
+
+func (qb *StudioQueryBuilder) AllSlim() ([]*Studio, error) {
+	return qb.queryStudios("SELECT studios.id, studios.name FROM studios "+qb.getStudioSort(nil), nil, nil)
 }
 
 func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]*Studio, int) {
@@ -108,7 +116,9 @@ func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]*Studio, int)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
-		whereClauses = append(whereClauses, getSearch(searchColumns, *q))
+		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
+		whereClauses = append(whereClauses, clause)
+		args = append(args, thisArgs...)
 	}
 
 	sortAndPagination := qb.getStudioSort(findFilter) + getPagination(findFilter)

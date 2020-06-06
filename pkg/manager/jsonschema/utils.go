@@ -2,7 +2,8 @@ package jsonschema
 
 import (
 	"bytes"
-	"encoding/json"
+	"github.com/json-iterator/go"
+
 	"io/ioutil"
 	"time"
 )
@@ -25,6 +26,7 @@ func marshalToFile(filePath string, j interface{}) error {
 
 func encode(j interface{}) ([]byte, error) {
 	buffer := &bytes.Buffer{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	encoder := json.NewEncoder(buffer)
 	encoder.SetEscapeHTML(false)
 	encoder.SetIndent("", "  ")

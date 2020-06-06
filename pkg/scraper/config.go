@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -139,6 +140,10 @@ func (c *scrapeSceneByURLConfig) resolveFn() {
 	}
 }
 
+type scraperDebugOptions struct {
+	PrintHTML bool `yaml:"printHTML"`
+}
+
 type scraperConfig struct {
 	ID                  string
 	Name                string                        `yaml:"name"`
@@ -148,21 +153,32 @@ type scraperConfig struct {
 	SceneByFragment     *sceneByFragmentConfig        `yaml:"sceneByFragment"`
 	SceneByURL          []*scrapeSceneByURLConfig     `yaml:"sceneByURL"`
 
-	StashServer   *stashServer  `yaml:"stashServer"`
-	XPathScrapers xpathScrapers `yaml:"xPathScrapers"`
+	DebugOptions  *scraperDebugOptions `yaml:"debug"`
+	StashServer   *stashServer         `yaml:"stashServer"`
+	XPathScrapers xpathScrapers        `yaml:"xPathScrapers"`
 }
 
-func loadScraperFromYAML(path string) (*scraperConfig, error) {
+func loadScraperFromYAML(id string, reader io.Reader) (*scraperConfig, error) {
 	ret := &scraperConfig{}
 
-	file, err := os.Open(path)
-	defer file.Close()
+	parser := yaml.NewDecoder(reader)
+	parser.SetStrict(true)
+	err := parser.Decode(&ret)
 	if err != nil {
 		return nil, err
 	}
-	parser := yaml.NewDecoder(file)
-	parser.SetStrict(true)
-	err = parser.Decode(&ret)
+
+	ret.ID = id
+
+	// set the scraper interface
+	ret.initialiseConfigs()
+
+	return ret, nil
+}
+
+func loadScraperFromYAMLFile(path string) (*scraperConfig, error) {
+	file, err := os.Open(path)
+	defer file.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -170,12 +186,8 @@ func loadScraperFromYAML(path string) (*scraperConfig, error) {
 	// set id to the filename
 	id := filepath.Base(path)
 	id = id[:strings.LastIndex(id, ".")]
-	ret.ID = id
 
-	// set the scraper interface
-	ret.initialiseConfigs()
-
-	return ret, nil
+	return loadScraperFromYAML(id, file)
 }
 
 func (c *scraperConfig) initialiseConfigs() {

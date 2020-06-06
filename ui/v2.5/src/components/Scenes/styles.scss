@@ -1,0 +1,220 @@
+.scene-popovers {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+
+  .btn {
+    padding-bottom: 3px;
+    padding-top: 3px;
+  }
+
+  .fa-icon {
+    margin-right: 7px;
+  }
+}
+
+.card-section {
+  margin-bottom: 0;
+  padding: 0.5rem 1rem 0 1rem;
+
+  &-title {
+    overflow: hidden;
+    overflow-wrap: normal;
+    text-overflow: ellipsis;
+  }
+}
+
+.scene-card-check {
+  left: 0.5rem;
+  margin-top: -12px;
+  opacity: 0.5;
+  padding-left: 15px;
+  position: absolute;
+  top: 0.7rem;
+  width: 1.2rem;
+  z-index: 1;
+}
+
+.performer-tag-container,
+.movie-tag-container {
+  display: inline-block;
+  margin: 5px;
+}
+
+.performer-tag.image,
+.movie-tag.image {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 150px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.operation-container {
+  .operation-item {
+    min-width: 240px;
+  }
+
+  .rating-operation {
+    min-width: 20px;
+  }
+
+  .apply-operation {
+    margin-top: 2rem;
+  }
+}
+
+.marker-container {
+  display: "flex";
+  flex-wrap: "nowrap";
+  margin-bottom: "20px";
+  overflow-x: "scroll";
+  overflow-y: "hidden";
+  white-space: "nowrap";
+}
+
+.studio-logo {
+  margin-top: 1rem;
+  max-width: 100%;
+}
+
+.scene-header {
+  flex-basis: auto;
+}
+
+#scene-details-container {
+  .tab-content {
+    min-height: 15rem;
+  }
+
+  .scene-description {
+    width: 100%;
+  }
+}
+
+.file-info-panel {
+  div {
+    margin-bottom: 0.5rem;
+  }
+}
+
+#details {
+  min-height: 150px;
+}
+
+.primary-card {
+  margin: 1rem 0;
+
+  &-body {
+    max-height: 15rem;
+    overflow-y: auto;
+  }
+}
+
+.studio-card {
+  padding: 0.5rem;
+
+  &-header {
+    height: 150px;
+    line-height: 150px;
+    text-align: center;
+  }
+
+  &-image {
+    max-height: 150px;
+    object-fit: contain;
+    vertical-align: middle;
+    width: 320px;
+
+    @media (max-width: 576px) {
+      width: 100%;
+    }
+  }
+}
+
+.scene-specs-overlay {
+  bottom: 1rem;
+  color: $text-color;
+  display: block;
+  font-weight: 400;
+  letter-spacing: -0.03rem;
+  position: absolute;
+  right: 0.7rem;
+  text-shadow: 0 0 3px #000;
+}
+
+.scene-studio-overlay {
+  display: block;
+  font-weight: 900;
+  height: 10%;
+  max-width: 40%;
+  opacity: 0.75;
+  position: absolute;
+  right: 0.7rem;
+  top: 0.7rem;
+  z-index: 9;
+
+  .image-thumbnail {
+    height: auto;
+    max-height: 50px;
+    max-width: 100%;
+  }
+
+  a {
+    color: $text-color;
+    display: inline-block;
+    letter-spacing: -0.03rem;
+    text-align: right;
+    text-decoration: none;
+    text-shadow: 0 0 3px #000;
+  }
+}
+
+.overlay-resolution {
+  font-weight: 900;
+  margin-right: 0.3rem;
+  text-transform: uppercase;
+}
+
+.scene-card {
+  &.card {
+    overflow: hidden;
+    padding: 0;
+  }
+
+  &-link {
+    position: relative;
+  }
+
+  .scene-specs-overlay,
+  .rating-banner,
+  .scene-studio-overlay {
+    transition: opacity 0.5s;
+  }
+
+  &:hover {
+    .scene-specs-overlay,
+    .rating-banner,
+    .scene-studio-overlay {
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .scene-studio-overlay:hover {
+      opacity: 0.75;
+      transition: opacity 0.5s;
+    }
+  }
+}
+
+.scene-cover {
+  display: block;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  max-width: 100%;
+}
+
+.movie-table td {
+  vertical-align: middle;
+}

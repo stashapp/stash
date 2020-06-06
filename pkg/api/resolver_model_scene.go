@@ -82,7 +82,9 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 }
 
 func (r *sceneResolver) IsStreamable(ctx context.Context, obj *models.Scene) (bool, error) {
-	return manager.IsStreamable(obj)
+	// ignore error
+	ret, _ := manager.IsStreamable(obj)
+	return ret, nil
 }
 
 func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) ([]*models.SceneMarker, error) {
@@ -98,6 +100,38 @@ func (r *sceneResolver) Gallery(ctx context.Context, obj *models.Scene) (*models
 func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.Studio, error) {
 	qb := models.NewStudioQueryBuilder()
 	return qb.FindBySceneID(obj.ID)
+}
+
+func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*models.SceneMovie, error) {
+	joinQB := models.NewJoinsQueryBuilder()
+	qb := models.NewMovieQueryBuilder()
+
+	sceneMovies, err := joinQB.GetSceneMovies(obj.ID, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*models.SceneMovie
+	for _, sm := range sceneMovies {
+		movie, err := qb.Find(sm.MovieID, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		sceneIdx := sm.SceneIndex
+		sceneMovie := &models.SceneMovie{
+			Movie: movie,
+		}
+
+		if sceneIdx.Valid {
+			var idx int
+			idx = int(sceneIdx.Int64)
+			sceneMovie.SceneIndex = &idx
+		}
+
+		ret = append(ret, sceneMovie)
+	}
+	return ret, nil
 }
 
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {

@@ -1,0 +1,485 @@
+@import "styles/theme";
+@import "styles/range";
+@import "styles/scrollbars";
+@import "src/components/Changelog/styles.scss";
+@import "src/components/Galleries/styles.scss";
+@import "src/components/List/styles.scss";
+@import "src/components/Movies/styles.scss";
+@import "src/components/Performers/styles.scss";
+@import "src/components/Scenes/styles.scss";
+@import "src/components/SceneFilenameParser/styles.scss";
+@import "src/components/ScenePlayer/styles.scss";
+@import "src/components/Settings/styles.scss";
+@import "src/components/Studios/styles.scss";
+@import "src/components/Shared/styles.scss";
+@import "src/components/Tags/styles.scss";
+@import "src/components/Wall/styles.scss";
+@import "../node_modules/flag-icon-css/css/flag-icon.min.css";
+
+html {
+  font-size: 14px;
+}
+
+body {
+  color: $text-color;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 4rem 0 0 0;
+}
+
+code,
+.code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.input-control,
+.text-input {
+  border: 0;
+  box-shadow: 0 0 0 0 rgba(19, 124, 189, 0), 0 0 0 0 rgba(19, 124, 189, 0),
+    0 0 0 0 rgba(19, 124, 189, 0), inset 0 0 0 1px rgba(16, 22, 26, 0.3),
+    inset 0 1px 1px rgba(16, 22, 26, 0.4);
+  color: $text-color;
+
+  &:focus {
+    border: 0;
+    box-shadow: 0 0 0 1px $primary, 0 0 0 1px $primary,
+      0 0 0 3px rgba(19, 124, 189, 0.3), inset 0 0 0 1px rgba(16, 22, 26, 0.3),
+      inset 0 1px 1px rgba(16, 22, 26, 0.4);
+    color: $text-color;
+  }
+}
+
+.text-input,
+.text-input:focus,
+.text-input[readonly],
+.text-input:disabled {
+  background-color: $textfield-bg;
+}
+
+.input-control,
+.input-control:focus {
+  background-color: $secondary;
+}
+
+textarea.text-input {
+  line-height: 2.5ex;
+  min-height: 12ex;
+  overflow-y: scroll;
+}
+
+.table-list a {
+  color: $text-color;
+}
+
+.table-list table {
+  width: inherit;
+}
+
+.table-list td,
+.table-list th {
+  border-left: 1px solid #414c53;
+  font-size: 1rem;
+  text-align: center;
+  vertical-align: middle;
+
+  h5,
+  h6 {
+    font-size: 1rem;
+  }
+
+  &:first-child {
+    border-left: none;
+  }
+}
+
+@media (min-width: 576px) {
+  .zoom-0 {
+    width: 240px;
+
+    .scene-card-video {
+      max-height: 180px;
+    }
+
+    .previewable.portrait {
+      height: 180px;
+    }
+  }
+
+  .zoom-1 {
+    width: 320px;
+
+    .scene-card-video {
+      max-height: 240px;
+    }
+
+    .previewable.portrait {
+      height: 240px;
+    }
+  }
+
+  .zoom-2 {
+    width: 480px;
+
+    .scene-card-video {
+      max-height: 360px;
+    }
+
+    .previewable.portrait {
+      height: 360px;
+    }
+  }
+
+  .zoom-3 {
+    width: 640px;
+
+    .scene-card-video {
+      max-height: 480px;
+    }
+
+    .portrait {
+      height: 480px;
+    }
+  }
+}
+
+.scene-card-video {
+  height: auto;
+  width: 100%;
+}
+
+/* this is a bit of a hack, because we can't supply direct class names
+   to the react-select controls */
+/* stylelint-disable selector-class-pattern */
+
+div.react-select__control {
+  background-color: $secondary;
+  border-color: $secondary;
+  color: $text-color;
+  cursor: pointer;
+
+  .react-select__single-value,
+  .react-select__input {
+    color: $text-color;
+  }
+
+  .react-select__multi-value {
+    background-color: $muted-gray;
+    color: $text-color;
+  }
+}
+
+div.react-select__menu,
+div.dropdown-menu {
+  background-color: $secondary;
+  color: $text-color;
+
+  .react-select__option,
+  .dropdown-item {
+    color: $text-color;
+  }
+
+  .react-select__option--is-focused,
+  .dropdown-item:focus,
+  .dropdown-item:hover {
+    background-color: #8a9ba826;
+    cursor: pointer;
+  }
+}
+
+div.dropdown-menu {
+  max-height: 300px;
+  overflow-y: auto;
+
+  .dropdown-item {
+    display: flex;
+
+    & > :not(:last-child) {
+      margin-right: 7px;
+    }
+
+    & > :last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+/* we don't want to override this for dialogs, which are light colored */
+.modal {
+  div.react-select__control {
+    background-color: #fff;
+    border-color: inherit;
+    color: $dark-text;
+
+    .react-select__single-value,
+    .react-select__input {
+      color: $dark-text;
+    }
+
+    .react-select__multi-value {
+      background-color: #fff;
+      color: $dark-text;
+    }
+  }
+
+  div.react-select__menu {
+    background-color: #fff;
+    color: $text-color;
+
+    .react-select__option {
+      color: $dark-text;
+    }
+
+    .react-select__option--is-focused {
+      background-color: rgba(167, 182, 194, 0.3);
+    }
+  }
+}
+
+/* stylelint-enable selector-class-pattern */
+
+.image-thumbnail {
+  height: 100px;
+  min-width: 50px;
+  object-fit: cover;
+  object-position: top;
+}
+
+.card-image {
+  height: 30rem;
+  min-width: 11.25rem;
+  width: 20rem;
+}
+
+.edit-button {
+  margin-right: 10px;
+}
+
+.tag-item {
+  background-color: $muted-gray;
+  color: $dark-text;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  margin: 5px;
+  padding: 2px 6px;
+
+  &:hover {
+    cursor: pointer;
+  }
+
+  .btn {
+    background: none;
+    border: none;
+    bottom: 2px;
+    color: $dark-text;
+    font-size: 12px;
+    line-height: 1rem;
+    margin-left: 0.5rem;
+    opacity: 0.5;
+    padding: 0;
+    position: relative;
+
+    &:active,
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  a {
+    color: unset;
+
+    &:hover {
+      color: unset;
+      text-decoration: none;
+    }
+  }
+}
+
+.filter-container,
+.operation-container {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 10px;
+}
+
+.filter-item,
+.operation-item {
+  margin: 0 10px;
+}
+
+.rating-5 {
+  background: #ff2f39;
+}
+
+.rating-4 {
+  background: $red1;
+}
+
+.rating-3 {
+  background: $orange1;
+}
+
+.rating-2 {
+  background: $sepia1;
+}
+
+.rating-1 {
+  background: $dark-gray5;
+}
+
+.rating-banner {
+  color: #fff;
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 400;
+  left: -46px;
+  letter-spacing: 1px;
+  line-height: 1.6rem;
+  padding: 6px 45px;
+  position: absolute;
+  text-align: center;
+  text-size-adjust: none;
+  top: 14px;
+  transform: rotate(-36deg);
+}
+
+.card {
+  background-color: #30404d;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(16, 22, 26, 0.4), 0 0 0 rgba(16, 22, 26, 0),
+    0 0 0 rgba(16, 22, 26, 0);
+  padding: 20px;
+}
+
+.toast-container {
+  left: 45%;
+  max-width: 350px;
+  position: fixed;
+  top: 2rem;
+  z-index: 1031;
+
+  .success {
+    background-color: $success;
+  }
+
+  .danger {
+    background-color: $danger;
+  }
+
+  .warning {
+    background-color: $warning;
+  }
+
+  .toast {
+    width: 350px;
+  }
+
+  .toast-header {
+    background-color: transparent;
+    border: none;
+    color: $text-color;
+
+    .close {
+      color: $text-color;
+      text-shadow: none;
+    }
+  }
+}
+
+.image-input {
+  margin-bottom: 0;
+  overflow: hidden;
+  position: relative;
+
+  input[type="file"], /* FF, IE7+, chrome (except button) */
+  input[type="file"]::-webkit-file-upload-button {
+    /* chromes and blink button */
+    cursor: pointer;
+  }
+
+  [type="file"] {
+    display: block;
+    filter: alpha(opacity=0);
+    font-size: 999px;
+    min-height: 100%;
+    min-width: 100%;
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    text-align: right;
+    top: 0;
+  }
+}
+
+.fa-icon {
+  margin: 0 0.4rem;
+}
+
+.btn .fa-icon {
+  &:last-child:first-child {
+    margin: 0;
+  }
+}
+
+.brand-icon {
+  padding: 3px 6px;
+
+  img {
+    height: 1.5rem;
+  }
+}
+
+.top-nav {
+  padding: 0.25rem 1rem;
+
+  .nav-link {
+    padding: 0;
+  }
+
+  .fa-icon {
+    margin-left: 0;
+  }
+
+  .btn {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 576px) {
+    .btn {
+      padding: 6px;
+    }
+
+    .settings-button {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+}
+
+.error-message {
+  white-space: "pre-wrap";
+}
+
+.stats {
+  &-element {
+    flex-grow: 1;
+    margin: auto 0.5rem;
+  }
+
+  .title {
+    font-size: 3vw;
+    text-align: center;
+
+    @media (max-width: 576px) {
+      font-size: 16px;
+    }
+  }
+
+  .heading {
+    text-align: center;
+    text-transform: uppercase;
+  }
+}

@@ -1,14 +1,16 @@
 package jsonschema
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/stashapp/stash/pkg/models"
+	"github.com/json-iterator/go"
 	"os"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type Performer struct {
 	Name         string          `json:"name,omitempty"`
+	Gender       string          `json:"gender,omitempty"`
 	URL          string          `json:"url,omitempty"`
 	Twitter      string          `json:"twitter,omitempty"`
 	Instagram    string          `json:"instagram,omitempty"`
@@ -36,6 +38,7 @@ func LoadPerformerFile(filePath string) (*Performer, error) {
 	if err != nil {
 		return nil, err
 	}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	jsonParser := json.NewDecoder(file)
 	err = jsonParser.Decode(&performer)
 	if err != nil {

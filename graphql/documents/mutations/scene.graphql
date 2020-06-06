@@ -8,6 +8,7 @@ mutation SceneUpdate(
   $studio_id: ID,
   $gallery_id: ID,
   $performer_ids: [ID!] = [],
+  $movies: [SceneMovieInput!] = [],
   $tag_ids: [ID!] = [],
   $cover_image: String) {
 
@@ -21,6 +22,7 @@ mutation SceneUpdate(
                         studio_id: $studio_id,
                         gallery_id: $gallery_id,
                         performer_ids: $performer_ids,
+                        movies: $movies,
                         tag_ids: $tag_ids,
                         cover_image: $cover_image
                       }) {
@@ -37,8 +39,8 @@ mutation BulkSceneUpdate(
   $rating: Int,
   $studio_id: ID,
   $gallery_id: ID,
-  $performer_ids: [ID!],
-  $tag_ids: [ID!]) {
+  $performer_ids: BulkUpdateIds,
+  $tag_ids: BulkUpdateIds) {
 
   bulkSceneUpdate(input: {
                         ids: $ids,
@@ -76,4 +78,8 @@ mutation SceneResetO($id: ID!) {
 
 mutation SceneDestroy($id: ID!, $delete_file: Boolean, $delete_generated : Boolean) {
   sceneDestroy(input: {id: $id, delete_file: $delete_file, delete_generated: $delete_generated})
+}
+
+mutation SceneGenerateScreenshot($id: ID!, $at: Float) {
+  sceneGenerateScreenshot(id: $id, at: $at)
 }
