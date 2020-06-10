@@ -1,0 +1,22 @@
+FROM ubuntu:18.04 as prep
+LABEL MAINTAINER="leopere [at] nixc [dot] us"
+
+RUN apt-get update && \
+    apt-get -y install curl xz-utils ca-certificates && \
+    apt-get autoclean -y && \
+    rm -rf /var/lib/apt/lists/*
+WORKDIR /
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN curl -L -o /stash $(curl -s https://api.github.com/repos/stashapp/stash/releases/latest | awk '/browser_download_url/ && /stash-linux-arm32v7/' | sed -e 's/.*: "\(.*\)"/\1/') && \
+    chmod +x /stash && \ 
+    curl --http1.1 -o /ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-armel-static.tar.xz && \
+    tar xf /ffmpeg.tar.xz && \
+    rm ffmpeg.tar.xz && \
+    mv /ffmpeg*/ /ffmpeg/
+
+FROM arm32v7/ubuntu:18.04 as app
+COPY --from=prep /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=prep /stash /
+COPY --from=prep /ffmpeg/ffmpeg /ffmpeg/ffprobe /root/.stash/
+EXPOSE 9999
+CMD ["stash"]
