@@ -112,7 +112,7 @@ func (e *Encoder) CopyVideo(probeResult VideoFile, options TranscodeOptions) {
 	_, _ = e.run(probeResult, args)
 }
 
-func (e *Encoder) StreamTranscode(probeResult VideoFile, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (io.ReadCloser, *os.Process, error) {
+func (e *Encoder) StreamTranscode(probeResult VideoFile, codec string, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (io.ReadCloser, *os.Process, error) {
 	scale := calculateTranscodeScale(probeResult, maxTranscodeSize)
 	args := []string{}
 
@@ -120,16 +120,23 @@ func (e *Encoder) StreamTranscode(probeResult VideoFile, startTime string, maxTr
 		args = append(args, "-ss", startTime)
 	}
 
+	codecArg := "libvpx-vp9"
+	format := "webm"
+	if codec == H264 {
+		codecArg = "libx264"
+		format = "mp4"
+	}
+
 	args = append(args,
 		"-i", probeResult.Path,
-		"-c:v", "libvpx-vp9",
+		"-c:v", codecArg,
 		"-vf", "scale="+scale,
 		"-deadline", "realtime",
 		"-cpu-used", "5",
 		"-row-mt", "1",
 		"-crf", "30",
 		"-b:v", "0",
-		"-f", "webm",
+		"-f", format,
 		"pipe:",
 	)
 
@@ -139,7 +146,7 @@ func (e *Encoder) StreamTranscode(probeResult VideoFile, startTime string, maxTr
 //transcode the video, remove the audio
 //in some videos where the audio codec is not supported by ffmpeg
 //ffmpeg fails if you try to transcode the audio
-func (e *Encoder) StreamTranscodeVideo(probeResult VideoFile, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (io.ReadCloser, *os.Process, error) {
+func (e *Encoder) StreamTranscodeVideo(probeResult VideoFile, codec string, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (io.ReadCloser, *os.Process, error) {
 	scale := calculateTranscodeScale(probeResult, maxTranscodeSize)
 	args := []string{}
 
@@ -147,17 +154,24 @@ func (e *Encoder) StreamTranscodeVideo(probeResult VideoFile, startTime string, 
 		args = append(args, "-ss", startTime)
 	}
 
+	codecArg := "libvpx-vp9"
+	format := "webm"
+	if codec == H264 {
+		codecArg = "libx264"
+		format = "mp4"
+	}
+
 	args = append(args,
 		"-i", probeResult.Path,
 		"-an",
-		"-c:v", "libvpx-vp9",
+		"-c:v", codecArg,
 		"-vf", "scale="+scale,
 		"-deadline", "realtime",
 		"-cpu-used", "5",
 		"-row-mt", "1",
 		"-crf", "30",
 		"-b:v", "0",
-		"-f", "webm",
+		"-f", format,
 		"pipe:",
 	)
 

@@ -43,12 +43,15 @@ func (rs sceneRoutes) Routes() chi.Router {
 // region Handlers
 
 func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
-
 	scene := r.Context().Value(sceneKey).(*models.Scene)
+	r.ParseForm()
 
-	container := ""
+	supportedStr := r.Form.Get("supported")
+	supportedVideoCodecs := strings.Split(supportedStr, ",")
+
+	var container ffmpeg.Container
 	if scene.Format.Valid {
-		container = scene.Format.String
+		container = ffmpeg.Container(scene.Format.String)
 	} else { // container isn't in the DB
 		// shouldn't happen, fallback to ffprobe
 		tmpVideoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path)
@@ -57,18 +60,19 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		container = string(ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path))
+		container = ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path)
 	}
 
 	// detect if not a streamable file and try to transcode it instead
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.Checksum)
 	videoCodec := scene.VideoCodec.String
 	audioCodec := ffmpeg.MissingUnsupported
 	if scene.AudioCodec.Valid {
 		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
 	}
+
 	hasTranscode, _ := manager.HasTranscode(scene)
-	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, ffmpeg.Container(container)) && ffmpeg.IsValidAudioForContainer(audioCodec, ffmpeg.Container(container)) || hasTranscode {
+	if ffmpeg.IsStreamable(supportedVideoCodecs, videoCodec, audioCodec, container) || hasTranscode {
+		filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.Checksum)
 		manager.RegisterStream(filepath, &w)
 		http.ServeFile(w, r, filepath)
 		manager.WaitAndDeregisterStream(filepath, &w, r)
@@ -84,33 +88,37 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// start stream based on query param, if provided
-	r.ParseForm()
 	startTime := r.Form.Get("start")
 
 	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
 
 	var stream io.ReadCloser
 	var process *os.Process
+
+	transcodeFormat := ffmpeg.GetTranscodeFormat(supportedVideoCodecs)
+
 	mimeType := ffmpeg.MimeWebm
+	if transcodeFormat == ffmpeg.H264 {
+		mimeType = ffmpeg.MimeMp4
+	}
 
 	if audioCodec == ffmpeg.MissingUnsupported {
 		//ffmpeg fails if it trys to transcode a non supported audio codec
-		stream, process, err = encoder.StreamTranscodeVideo(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+		stream, process, err = encoder.StreamTranscodeVideo(*videoFile, transcodeFormat, startTime, config.GetMaxStreamingTranscodeSize())
 	} else {
 		copyVideo := false // try to be smart if the video to be transcoded is in a Matroska container
 		//  mp4 has always supported audio so it doesn't need to be checked
 		//  while mpeg_ts has seeking issues if we don't reencode the video
 
-		if config.GetForceMKV() { // If MKV is forced as supported and video codec is also supported then only transcode audio
+		if ffmpeg.IsValidCodec(ffmpeg.Mkv, supportedVideoCodecs) { // If MKV is supported and video codec is also supported then only transcode audio
 			if ffmpeg.Container(container) == ffmpeg.Matroska {
 				switch videoCodec {
 				case ffmpeg.H264, ffmpeg.Vp9, ffmpeg.Vp8:
 					copyVideo = true
 				case ffmpeg.Hevc:
-					if config.GetForceHEVC() {
+					if ffmpeg.IsValidCodec(ffmpeg.Hevc, supportedVideoCodecs) {
 						copyVideo = true
 					}
-
 				}
 			}
 		}
@@ -118,9 +126,8 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 		if copyVideo { // copy video stream instead of transcoding it
 			stream, process, err = encoder.StreamMkvTranscodeAudio(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
 			mimeType = ffmpeg.MimeMkv
-
 		} else {
-			stream, process, err = encoder.StreamTranscode(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+			stream, process, err = encoder.StreamTranscode(*videoFile, transcodeFormat, startTime, config.GetMaxStreamingTranscodeSize())
 		}
 	}
 

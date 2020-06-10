@@ -31,12 +31,12 @@ func IsStreamable(scene *models.Scene) (bool, error) {
 		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
 	}
 
-	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, container) && ffmpeg.IsValidAudioForContainer(audioCodec, container) {
-		logger.Debugf("File is streamable %s, %s, %s\n", videoCodec, audioCodec, container)
+	if ffmpeg.IsStreamable(nil, videoCodec, audioCodec, container) {
+		logger.Debugf("File is streamable %s, %s, %s", videoCodec, audioCodec, container)
 		return true, nil
 	} else {
 		hasTranscode, _ := HasTranscode(scene)
-		logger.Debugf("File is not streamable , transcode is needed  %s, %s, %s\n", videoCodec, audioCodec, container)
+		logger.Debugf("File is not streamable, transcode is needed  %s, %s, %s", videoCodec, audioCodec, container)
 		return hasTranscode, nil
 	}
 }

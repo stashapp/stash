@@ -4,6 +4,7 @@ import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
 import { JWUtils } from "src/utils";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
+import jwplayer from "src/utils/jwplayer";
 
 interface IScenePlayerProps {
   scene: GQL.SceneDataFragment;
@@ -135,9 +136,11 @@ export class ScenePlayerImpl extends React.Component<
       };
 
       seekHook = (seekToPosition: number, _videoTag: HTMLVideoElement) => {
+        const supported = getSupportedVideoParam();
+
         /* eslint-disable no-param-reassign */
         _videoTag.dataset.start = seekToPosition.toString();
-        _videoTag.src = `${this.props.scene.paths.stream}?start=${seekToPosition}`;
+        _videoTag.src = `${this.props.scene.paths.stream}?start=${seekToPosition}&${supported}`;
         /* eslint-enable no-param-reassign */
         _videoTag.play();
       };
@@ -148,8 +151,13 @@ export class ScenePlayerImpl extends React.Component<
       };
     }
 
+    function getSupportedVideoParam() {
+      const formats = jwplayer.getSupportedFormats();
+      return "supported=" + formats.join(",");
+    }
+
     const ret = {
-      file: scene.paths.stream,
+      file: scene.paths.stream + "?" + getSupportedVideoParam(),
       image: scene.paths.screenshot,
       tracks: [
         {
