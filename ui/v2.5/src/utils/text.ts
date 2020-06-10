@@ -119,11 +119,11 @@ const sanitiseURL = (url?: string, siteURL?: URL) => {
   if (siteURL) {
     // if url starts with the site host, then prepend the protocol
     if (url.startsWith(siteURL.host)) {
-      return siteURL.protocol + url;
+      return `${siteURL.protocol}//${url}`;
     }
 
     // otherwise, construct the url from the protocol, host and passed url
-    return `${siteURL.protocol}${siteURL.host}/${url}`;
+    return `${siteURL.protocol}//${siteURL.host}/${url}`;
   }
 
   // just prepend the protocol - assume https

@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 
 const markup = `
 #### 💥 **Note: After upgrading performance will be degraded until a full [scan](/settings?tab=tasks) has been completed.**
+#### 💥 **Note: [Language](/settings?tab=interface) has been set to \`English (United States)\` by default, which affects number and date formatting.**
 
 &nbsp;
 ### ✨ New Features
@@ -38,9 +39,14 @@ const markup = `
 *  Added various missing filters to performer page.
 *  Add index/total count to end of pagination buttons.
 *  Add flags for performer countries.
-*  Querybuilder integration tests.
 *  Overhaul look and feel of folder select.
+*  Add cache for gallery thumbnails.
 *  Add changelog to start page.
+*  Include subdirectories when searching for scraper configurations.
+*  Add debug logging for xpath scraping to assist scraper development.
+*  Encode pasted images to jpeg.
+*  Allow selection of wall preview type: video, animated image and static image.
+*  Localize dates and numbers.
 
 ### 🐛 Bug fixes
 *  Update performer image in UI when it's replaced.
@@ -48,11 +54,13 @@ const markup = `
 *  Fix error when viewing scenes related to objects with illegal characters in name.
 *  Make ethnicity freetext and fix freeones ethnicity panic.
 *  Delete marker preview on marker change or delete.
-*  Prefer modified performer image over scraped one.
-*  Include gender in performer scraper results.
 *  Include scene o-counter in import/export.
 *  Make image extension check in zip files case insensitive.
+*  Fix incorrect stash directory setting when directory has spaces.
 *  Update built-in Freeones scraper for new API.
+*  Fix redirect loops in login, migrate and setup pages.
+*  Make studio, movies, tag, performers scrape/parser matching case insensitive.
+*  Fix files with special characters in filename not being scanned.
 
 `;
 
