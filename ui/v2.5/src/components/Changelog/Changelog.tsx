@@ -1,7 +1,7 @@
 import React from "react";
 import { useChangelogStorage } from "src/hooks";
 import Version from "./Version";
-import { V010, V011, V020 } from "./versions";
+import { V010, V011, V020, V021 } from "./versions";
 
 const Changelog: React.FC = () => {
   const [{ data, loading }, setOpenState] = useChangelogStorage();
@@ -21,6 +21,15 @@ const Changelog: React.FC = () => {
   return (
     <>
       <h1 className="mb-4">Changelog:</h1>
+      <Version
+        version="v0.2.1"
+        date="2020-06-10"
+        openState={openState}
+        setOpenState={setVersionOpenState}
+        defaultOpen
+      >
+        <V021 />
+      </Version>
       <Version
         version="v0.2.0"
         date="2020-06-06"
