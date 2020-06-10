@@ -4,6 +4,7 @@ package models_test
 
 import (
 	"context"
+	"database/sql"
 	"strconv"
 	"strings"
 	"testing"
@@ -154,6 +155,59 @@ func TestStudioFindChildren(t *testing.T) {
 	}
 
 	assert.Len(t, studios, 0)
+}
+
+func TestStudioUpdateClearParent(t *testing.T) {
+	const parentName = "clearParent_parent"
+	const childName = "clearParent_child"
+
+	// create parent and child studios
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	createdParent, err := createStudio(tx, parentName, nil)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating parent studio: %s", err.Error())
+	}
+
+	parentID := int64(createdParent.ID)
+	createdChild, err := createStudio(tx, childName, &parentID)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating child studio: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	sqb := models.NewStudioQueryBuilder()
+
+	// clear the parent id from the child
+	tx = database.DB.MustBeginTx(ctx, nil)
+
+	updatePartial := models.StudioPartial{
+		ID:       createdChild.ID,
+		ParentID: &sql.NullInt64{Valid: false},
+	}
+
+	updatedStudio, err := sqb.Update(updatePartial, tx)
+
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updated studio: %s", err.Error())
+	}
+
+	if updatedStudio.ParentID.Valid {
+		t.Error("updated studio has parent ID set")
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
 }
 
 // TODO Create

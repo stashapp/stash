@@ -35,20 +35,21 @@ func (qb *StudioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, er
 	return &newStudio, nil
 }
 
-func (qb *StudioQueryBuilder) Update(updatedStudio Studio, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) Update(updatedStudio StudioPartial, tx *sqlx.Tx) (*Studio, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE studios SET `+SQLGenKeys(updatedStudio)+` WHERE studios.id = :id`,
+		`UPDATE studios SET `+SQLGenKeysPartial(updatedStudio)+` WHERE studios.id = :id`,
 		updatedStudio,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := tx.Get(&updatedStudio, `SELECT * FROM studios WHERE id = ? LIMIT 1`, updatedStudio.ID); err != nil {
+	var ret Studio
+	if err := tx.Get(&ret, `SELECT * FROM studios WHERE id = ? LIMIT 1`, updatedStudio.ID); err != nil {
 		return nil, err
 	}
-	return &updatedStudio, nil
+	return &ret, nil
 }
 
 func (qb *StudioQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {

@@ -626,13 +626,11 @@ func linkMovieStudio(tx *sqlx.Tx, movieIndex, studioIndex int) error {
 func linkStudioParent(tx *sqlx.Tx, parentIndex, childIndex int) error {
 	sqb := models.NewStudioQueryBuilder()
 
-	studio, err := sqb.Find(studioIDs[childIndex], tx)
-	if err != nil {
-		return err
+	studio := models.StudioPartial{
+		ID:       studioIDs[childIndex],
+		ParentID: &sql.NullInt64{Int64: int64(studioIDs[parentIndex]), Valid: true},
 	}
-
-	studio.ParentID = sql.NullInt64{Int64: int64(studioIDs[parentIndex]), Valid: true}
-	_, err = sqb.Update(*studio, tx)
+	_, err := sqb.Update(studio, tx)
 
 	return err
 }
