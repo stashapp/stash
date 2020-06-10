@@ -410,6 +410,11 @@ export const queryScrapeScene = (
     },
   });
 
+export const mutateReloadScrapers = () =>
+  client.mutate<GQL.ReloadScrapersMutation>({
+    mutation: GQL.ReloadScrapersDocument,
+  });
+
 export const mutateMetadataScan = (input: GQL.ScanMetadataInput) =>
   client.mutate<GQL.MetadataScanMutation>({
     mutation: GQL.MetadataScanDocument,

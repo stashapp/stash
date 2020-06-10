@@ -50,6 +50,12 @@ func loadScrapers() ([]scraperConfig, error) {
 	return scrapers, nil
 }
 
+func ReloadScrapers() error {
+	scrapers = nil
+	_, err := loadScrapers()
+	return err
+}
+
 func ListPerformerScrapers() ([]*models.Scraper, error) {
 	// read scraper config files from the directory and cache
 	scrapers, err := loadScrapers()
