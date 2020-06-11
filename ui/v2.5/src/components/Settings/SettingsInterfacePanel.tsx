@@ -9,6 +9,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   const { data: config, error, loading } = useConfiguration();
   const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
   const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
+  const [wallPlayback, setWallPlayback] = useState<string>("video");
   const [maximumLoopDuration, setMaximumLoopDuration] = useState<number>(0);
   const [autostartVideo, setAutostartVideo] = useState<boolean>(false);
   const [showStudioAsText, setShowStudioAsText] = useState<boolean>(false);
@@ -19,6 +20,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [updateInterfaceConfig] = useConfigureInterface({
     soundOnPreview,
     wallShowTitle,
+    wallPlayback,
     maximumLoopDuration,
     autostartVideo,
     showStudioAsText,
@@ -31,6 +33,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     const iCfg = config?.configuration?.interface;
     setSoundOnPreview(iCfg?.soundOnPreview ?? true);
     setWallShowTitle(iCfg?.wallShowTitle ?? true);
+    setWallPlayback(iCfg?.wallPlayback ?? "video");
     setMaximumLoopDuration(iCfg?.maximumLoopDuration ?? 0);
     setAutostartVideo(iCfg?.autostartVideo ?? false);
     setShowStudioAsText(iCfg?.showStudioAsText ?? false);
@@ -68,7 +71,6 @@ export const SettingsInterfacePanel: React.FC = () => {
         >
           <option value="en-US">English (United States)</option>
           <option value="en-GB">English (United Kingdom)</option>
-          <option value="de-DE">Deutsch</option>
         </Form.Control>
       </Form.Group>
       <Form.Group>
@@ -85,6 +87,22 @@ export const SettingsInterfacePanel: React.FC = () => {
           label="Enable sound"
           onChange={() => setSoundOnPreview(!soundOnPreview)}
         />
+        <Form.Label htmlFor="wall-preview">
+          <h6>Preview Type</h6>
+        </Form.Label>
+        <Form.Control
+          as="select"
+          name="wall-preview"
+          className="col-4 input-control"
+          value={wallPlayback}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+            setWallPlayback(e.currentTarget.value)
+          }
+        >
+          <option value="video">Video</option>
+          <option value="animation">Animated Image</option>
+          <option value="image">Static Image</option>
+        </Form.Control>
         <Form.Text className="text-muted">
           Configuration for wall items
         </Form.Text>

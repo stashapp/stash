@@ -23,7 +23,7 @@ func (r *mutationResolver) MetadataExport(ctx context.Context) (string, error) {
 }
 
 func (r *mutationResolver) MetadataGenerate(ctx context.Context, input models.GenerateMetadataInput) (string, error) {
-	manager.GetInstance().Generate(input.Sprites, input.Previews, input.Markers, input.Transcodes, input.Thumbnails)
+	manager.GetInstance().Generate(input.Sprites, input.Previews, input.PreviewPreset, input.ImagePreviews, input.Markers, input.Transcodes, input.Thumbnails)
 	return "todo", nil
 }
 

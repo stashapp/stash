@@ -1,6 +1,7 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
+import { useIntl } from "react-intl";
 import { Button, Popover, OverlayTrigger, Table } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -10,6 +11,7 @@ import {
   stringToGender,
   queryScrapePerformer,
   queryScrapePerformerURL,
+  mutateReloadScrapers,
 } from "src/core/StashService";
 import {
   Icon,
@@ -82,6 +84,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
+
+  const intl = useIntl();
 
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
@@ -221,8 +225,22 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  function onDisplayFreeOnesDialog(scraper: GQL.Scraper) {
+  function onDisplayScrapeDialog(scraper: GQL.Scraper) {
     setIsDisplayingScraperDialog(scraper);
+  }
+
+  async function onReloadScrapers() {
+    setIsLoading(true);
+    try {
+      await mutateReloadScrapers();
+
+      // reload the performer scrapers
+      await Scrapers.refetch();
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function getQueryScraperPerformerInput() {
@@ -297,13 +315,21 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
                     <Button
                       key={s.name}
                       className="minimal"
-                      onClick={() => onDisplayFreeOnesDialog(s)}
+                      onClick={() => onDisplayScrapeDialog(s)}
                     >
                       {s.name}
                     </Button>
                   </div>
                 ))
               : ""}
+            <div>
+              <Button className="minimal" onClick={() => onReloadScrapers()}>
+                <span className="fa-icon">
+                  <Icon icon="sync-alt" />
+                </span>
+                <span>Reload scrapers</span>
+              </Button>
+            </div>
           </div>
         </Popover.Content>
       </Popover>
@@ -459,6 +485,20 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     });
   }
 
+  const formatHeight = () => {
+    if (isEditing) {
+      return height;
+    }
+    if (!height) {
+      return "";
+    }
+    return intl.formatNumber(Number.parseInt(height, 10), {
+      style: "unit",
+      unit: "centimeter",
+      unitDisplay: "narrow",
+    });
+  };
+
   return (
     <>
       {renderDeleteAlert()}
@@ -471,7 +511,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           {renderGender()}
           {TableUtils.renderInputGroup({
             title: "Birthdate",
-            value: birthdate,
+            value: isEditing
+              ? birthdate
+              : TextUtils.formatDate(intl, birthdate),
             isEditing: !!isEditing,
             onChange: setBirthdate,
           })}
@@ -489,8 +531,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             onChange: setCountry,
           })}
           {TableUtils.renderInputGroup({
-            title: "Height (cm)",
-            value: height,
+            title: `Height ${isEditing ? "(cm)" : ""}`,
+            value: formatHeight(),
             isEditing: !!isEditing,
             onChange: setHeight,
           })}

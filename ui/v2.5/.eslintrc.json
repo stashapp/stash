@@ -47,6 +47,9 @@
       "react/prop-types": "off",
       "react/destructuring-assignment": "off",
       "react/jsx-props-no-spreading": "off",
+      "react/style-prop-object": ["error", {
+        "allow": ["FormattedNumber"]
+      }],
       "spaced-comment": ["error", "always", {
           "markers": ["/"]
       }],

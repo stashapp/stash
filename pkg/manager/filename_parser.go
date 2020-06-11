@@ -405,7 +405,7 @@ func (m parseMapper) parse(scene *models.Scene) *sceneHolder {
 }
 
 type performerQueryer interface {
-	FindByNames(names []string, tx *sqlx.Tx) ([]*models.Performer, error)
+	FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*models.Performer, error)
 }
 
 type sceneQueryer interface {
@@ -413,15 +413,15 @@ type sceneQueryer interface {
 }
 
 type tagQueryer interface {
-	FindByName(name string, tx *sqlx.Tx) (*models.Tag, error)
+	FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Tag, error)
 }
 
 type studioQueryer interface {
-	FindByName(name string, tx *sqlx.Tx) (*models.Studio, error)
+	FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Studio, error)
 }
 
 type movieQueryer interface {
-	FindByName(name string, tx *sqlx.Tx) (*models.Movie, error)
+	FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Movie, error)
 }
 
 type SceneFilenameParser struct {
@@ -546,7 +546,7 @@ func (p *SceneFilenameParser) queryPerformer(performerName string) *models.Perfo
 	}
 
 	// perform an exact match and grab the first
-	performers, _ := p.performerQuery.FindByNames([]string{performerName}, nil)
+	performers, _ := p.performerQuery.FindByNames([]string{performerName}, nil, true)
 
 	var ret *models.Performer
 	if len(performers) > 0 {
@@ -568,7 +568,7 @@ func (p *SceneFilenameParser) queryStudio(studioName string) *models.Studio {
 		return ret
 	}
 
-	ret, _ := p.studioQuery.FindByName(studioName, nil)
+	ret, _ := p.studioQuery.FindByName(studioName, nil, true)
 
 	// add result to cache
 	p.studioCache[studioName] = ret
@@ -585,7 +585,7 @@ func (p *SceneFilenameParser) queryMovie(movieName string) *models.Movie {
 		return ret
 	}
 
-	ret, _ := p.movieQuery.FindByName(movieName, nil)
+	ret, _ := p.movieQuery.FindByName(movieName, nil, true)
 
 	// add result to cache
 	p.movieCache[movieName] = ret
@@ -603,7 +603,7 @@ func (p *SceneFilenameParser) queryTag(tagName string) *models.Tag {
 	}
 
 	// match tag name exactly
-	ret, _ := p.tagQuery.FindByName(tagName, nil)
+	ret, _ := p.tagQuery.FindByName(tagName, nil, true)
 
 	// add result to cache
 	p.tagCache[tagName] = ret

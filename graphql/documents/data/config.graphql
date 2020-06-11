@@ -21,6 +21,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
 fragment ConfigInterfaceData on ConfigInterfaceResult {
   soundOnPreview
   wallShowTitle
+  wallPlayback
   maximumLoopDuration
   autostartVideo
   showStudioAsText

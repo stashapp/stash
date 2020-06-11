@@ -1,33 +1,29 @@
 # github.com/99designs/gqlgen v0.9.0
 github.com/99designs/gqlgen
-github.com/99designs/gqlgen/graphql
-github.com/99designs/gqlgen/handler
-github.com/99designs/gqlgen/graphql/introspection
-github.com/99designs/gqlgen/cmd
-github.com/99designs/gqlgen/complexity
 github.com/99designs/gqlgen/api
-github.com/99designs/gqlgen/codegen/config
-github.com/99designs/gqlgen/plugin/servergen
+github.com/99designs/gqlgen/cmd
 github.com/99designs/gqlgen/codegen
+github.com/99designs/gqlgen/codegen/config
+github.com/99designs/gqlgen/codegen/templates
+github.com/99designs/gqlgen/complexity
+github.com/99designs/gqlgen/graphql
+github.com/99designs/gqlgen/graphql/introspection
+github.com/99designs/gqlgen/handler
+github.com/99designs/gqlgen/internal/code
+github.com/99designs/gqlgen/internal/imports
 github.com/99designs/gqlgen/plugin
 github.com/99designs/gqlgen/plugin/modelgen
 github.com/99designs/gqlgen/plugin/resolvergen
-github.com/99designs/gqlgen/codegen/templates
-github.com/99designs/gqlgen/internal/code
-github.com/99designs/gqlgen/internal/imports
+github.com/99designs/gqlgen/plugin/servergen
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
-# github.com/PuerkitoBio/goquery v1.5.0
-github.com/PuerkitoBio/goquery
 # github.com/agnivade/levenshtein v1.0.1
 github.com/agnivade/levenshtein
-# github.com/andybalholm/cascadia v1.0.0
-github.com/andybalholm/cascadia
 # github.com/antchfx/htmlquery v1.2.3
 github.com/antchfx/htmlquery
 # github.com/antchfx/xpath v1.1.6
 github.com/antchfx/xpath
-# github.com/bmatcuk/doublestar v1.1.5
+# github.com/bmatcuk/doublestar v1.3.1
 github.com/bmatcuk/doublestar
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
@@ -46,8 +42,8 @@ github.com/gobuffalo/envy
 # github.com/gobuffalo/events v1.2.0
 github.com/gobuffalo/events
 # github.com/gobuffalo/flect v0.1.0
-github.com/gobuffalo/flect/name
 github.com/gobuffalo/flect
+github.com/gobuffalo/flect/name
 # github.com/gobuffalo/genny v0.0.0-20190219203444-c95082806342
 github.com/gobuffalo/genny
 # github.com/gobuffalo/gogen v0.0.0-20190224213239-1c6076128bbc
@@ -64,19 +60,19 @@ github.com/gobuffalo/meta
 github.com/gobuffalo/packd
 # github.com/gobuffalo/packr/v2 v2.0.2
 github.com/gobuffalo/packr/v2
-github.com/gobuffalo/packr/v2/file/resolver
 github.com/gobuffalo/packr/v2/file
+github.com/gobuffalo/packr/v2/file/resolver
+github.com/gobuffalo/packr/v2/file/resolver/encoding/hex
 github.com/gobuffalo/packr/v2/jam/parser
 github.com/gobuffalo/packr/v2/plog
-github.com/gobuffalo/packr/v2/file/resolver/encoding/hex
 # github.com/gobuffalo/syncx v0.0.0-20181120194010-558ac7de985f
 github.com/gobuffalo/syncx
 # github.com/golang-migrate/migrate/v4 v4.3.1
-github.com/golang-migrate/migrate/v4/database/sqlite3
-github.com/golang-migrate/migrate/v4/source/file
 github.com/golang-migrate/migrate/v4
-github.com/golang-migrate/migrate/v4/source
 github.com/golang-migrate/migrate/v4/database
+github.com/golang-migrate/migrate/v4/database/sqlite3
+github.com/golang-migrate/migrate/v4/source
+github.com/golang-migrate/migrate/v4/source/file
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
 # github.com/gorilla/securecookie v1.1.1
@@ -87,9 +83,9 @@ github.com/gorilla/sessions
 github.com/gorilla/websocket
 # github.com/h2non/filetype v1.0.8
 github.com/h2non/filetype
-github.com/h2non/filetype/types
 github.com/h2non/filetype/matchers
 github.com/h2non/filetype/matchers/isobmff
+github.com/h2non/filetype/types
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.0.0
@@ -99,13 +95,13 @@ github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
 # github.com/hashicorp/hcl v1.0.0
 github.com/hashicorp/hcl
-github.com/hashicorp/hcl/hcl/printer
 github.com/hashicorp/hcl/hcl/ast
 github.com/hashicorp/hcl/hcl/parser
-github.com/hashicorp/hcl/hcl/token
-github.com/hashicorp/hcl/json/parser
+github.com/hashicorp/hcl/hcl/printer
 github.com/hashicorp/hcl/hcl/scanner
 github.com/hashicorp/hcl/hcl/strconv
+github.com/hashicorp/hcl/hcl/token
+github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
 # github.com/inconshreveable/mousetrap v1.0.0
@@ -179,27 +175,27 @@ github.com/vektah/dataloaden/pkg/generator
 github.com/vektah/gqlparser
 github.com/vektah/gqlparser/ast
 github.com/vektah/gqlparser/gqlerror
+github.com/vektah/gqlparser/lexer
 github.com/vektah/gqlparser/parser
 github.com/vektah/gqlparser/validator
 github.com/vektah/gqlparser/validator/rules
-github.com/vektah/gqlparser/lexer
 # golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/image v0.0.0-20190118043309-183bebdce1b2
-golang.org/x/image/webp
 golang.org/x/image/bmp
-golang.org/x/image/tiff
 golang.org/x/image/riff
+golang.org/x/image/tiff
+golang.org/x/image/tiff/lzw
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
-golang.org/x/image/tiff/lzw
+golang.org/x/image/webp
 # golang.org/x/net v0.0.0-20200421231249-e086a090c8fd
-golang.org/x/net/html
-golang.org/x/net/html/charset
 golang.org/x/net/context/ctxhttp
+golang.org/x/net/html
 golang.org/x/net/html/atom
+golang.org/x/net/html/charset
 # golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
 golang.org/x/sys/unix
 golang.org/x/sys/windows
@@ -207,31 +203,31 @@ golang.org/x/sys/windows
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/htmlindex
-golang.org/x/text/transform
-golang.org/x/text/unicode/norm
-golang.org/x/text/encoding/internal/identifier
 golang.org/x/text/encoding/internal
+golang.org/x/text/encoding/internal/identifier
 golang.org/x/text/encoding/japanese
 golang.org/x/text/encoding/korean
 golang.org/x/text/encoding/simplifiedchinese
 golang.org/x/text/encoding/traditionalchinese
 golang.org/x/text/encoding/unicode
-golang.org/x/text/language
-golang.org/x/text/internal/utf8internal
-golang.org/x/text/runes
 golang.org/x/text/internal/language
 golang.org/x/text/internal/language/compact
 golang.org/x/text/internal/tag
+golang.org/x/text/internal/utf8internal
+golang.org/x/text/language
+golang.org/x/text/runes
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
 # golang.org/x/tools v0.0.0-20190515012406-7d7faa4812bd
-golang.org/x/tools/go/packages
-golang.org/x/tools/imports
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
-golang.org/x/tools/go/internal/packagesdriver
-golang.org/x/tools/internal/gopathwalk
-golang.org/x/tools/internal/semver
-golang.org/x/tools/internal/module
 golang.org/x/tools/go/internal/gcimporter
+golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/go/packages
+golang.org/x/tools/imports
 golang.org/x/tools/internal/fastwalk
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/module
+golang.org/x/tools/internal/semver
 # gopkg.in/yaml.v2 v2.2.2
 gopkg.in/yaml.v2
