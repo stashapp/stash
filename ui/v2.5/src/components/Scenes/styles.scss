@@ -256,9 +256,6 @@
 }
 
 #scene-edit-details .rating-stars {
-  /* stylelint-disable*/
-  height: calc(1.5em + 0.75rem + 2px);
-
   font-size: 1.3em;
-  /* stylelint-enable*/
+  height: calc(1.5em + 0.75rem + 2px);
 }
