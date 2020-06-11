@@ -34,7 +34,7 @@ var CodecH264 Codec = Codec{
 	},
 }
 
-var CodecVP8 Codec = Codec{
+var CodecVP9 Codec = Codec{
 	codec:    "libvpx-vp9",
 	format:   "webm",
 	MimeType: MimeWebm,
@@ -42,6 +42,17 @@ var CodecVP8 Codec = Codec{
 		"-deadline", "realtime",
 		"-cpu-used", "5",
 		"-row-mt", "1",
+		"-crf", "30",
+	},
+}
+
+var CodecVP8 Codec = Codec{
+	codec:    "libvpx",
+	format:   "webm",
+	MimeType: MimeWebm,
+	extraArgs: []string{
+		"-deadline", "realtime",
+		"-cpu-used", "5",
 		"-crf", "30",
 	},
 }
@@ -95,6 +106,8 @@ func (s streamOptions) getStreamArgs() []string {
 	}
 
 	args = append(args,
+		// this is needed for 5-channel ac3 files
+		"-af", "channelmap=channel_layout=5.1",
 		"-b:v", "0",
 		"-f", s.codec.format,
 		"pipe:",

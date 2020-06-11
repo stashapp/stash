@@ -202,7 +202,12 @@ func GetTranscodeCodec(supportedVideoCodecs []string) Codec {
 
 	logger.Debugf("Choosing transcode codec from: %s", strings.Join(supportedVideoCodecs, ","))
 
-	// prefer vp8; fallback to H.264 if not supported
+	// TODO - make preferred order configurable
+	if IsValidCodec(Vp9, supportedVideoCodecs) {
+		logger.Debug("Using VP9")
+		return CodecVP9
+	}
+
 	if IsValidCodec(Vp8, supportedVideoCodecs) {
 		logger.Debug("Using VP8")
 		return CodecVP8
