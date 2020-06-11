@@ -3,8 +3,8 @@ import ReactJWPlayer from "react-jw-player";
 import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
 import { JWUtils } from "src/utils";
-import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 import jwplayer from "src/utils/jwplayer";
+import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 
 interface IScenePlayerProps {
   scene: GQL.SceneDataFragment;
@@ -154,11 +154,11 @@ export class ScenePlayerImpl extends React.Component<
 
     function getSupportedVideoParam() {
       const formats = jwplayer.getSupportedFormats();
-      return "supported=" + formats.join(",");
+      return `supported=${formats.join(",")}`;
     }
 
     const ret = {
-      file: scene.paths.stream + "?" + getSupportedVideoParam(),
+      file: `${scene.paths.stream}?${getSupportedVideoParam()}`,
       image: scene.paths.screenshot,
       tracks: [
         {

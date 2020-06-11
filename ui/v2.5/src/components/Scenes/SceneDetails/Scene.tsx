@@ -14,6 +14,7 @@ import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
+import jwplayer from "src/utils/jwplayer";
 import { ScenePerformerPanel } from "./ScenePerformerPanel";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
@@ -22,7 +23,6 @@ import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneOperationsPanel } from "./SceneOperationsPanel";
 import { SceneMoviePanel } from "./SceneMoviePanel";
-import jwplayer from "src/utils/jwplayer";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
@@ -32,7 +32,11 @@ export const Scene: React.FC = () => {
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
-  const { data: isSceneStreamable, error: streamableError, loading: streamableLoading } = useIsSceneStreamable(id, jwplayer.getSupportedFormats());
+  const {
+    data: isSceneStreamable,
+    error: streamableError,
+    loading: streamableLoading,
+  } = useIsSceneStreamable(id, jwplayer.getSupportedFormats());
   const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
@@ -110,7 +114,12 @@ export const Scene: React.FC = () => {
 
   return (
     <>
-      <ScenePlayer scene={scene} timestamp={timestamp} autoplay={autoplay} streamable={isStreamable}/>
+      <ScenePlayer
+        scene={scene}
+        timestamp={timestamp}
+        autoplay={autoplay}
+        streamable={isStreamable}
+      />
       <div id="scene-details-container" className="col col-sm-9 m-sm-auto">
         <div className="float-right">
           <OCounterButton

@@ -23,7 +23,7 @@ type Codec struct {
 	extraArgs []string
 }
 
-var CodecH264 Codec = Codec{
+var CodecH264 = Codec{
 	codec:    "libx264",
 	format:   "mp4",
 	MimeType: MimeMp4,
@@ -34,7 +34,7 @@ var CodecH264 Codec = Codec{
 	},
 }
 
-var CodecVP9 Codec = Codec{
+var CodecVP9 = Codec{
 	codec:    "libvpx-vp9",
 	format:   "webm",
 	MimeType: MimeWebm,
@@ -46,7 +46,7 @@ var CodecVP9 Codec = Codec{
 	},
 }
 
-var CodecVP8 Codec = Codec{
+var CodecVP8 = Codec{
 	codec:    "libvpx",
 	format:   "webm",
 	MimeType: MimeWebm,
@@ -57,7 +57,7 @@ var CodecVP8 Codec = Codec{
 	},
 }
 
-var CodecHEVC Codec = Codec{
+var CodecHEVC = Codec{
 	codec:    "libx265",
 	format:   "mp4",
 	MimeType: MimeMp4,
