@@ -25,6 +25,7 @@ import { useToast } from "src/hooks";
 import { ImageUtils, TableUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
+import { RatingStars } from "./RatingStars";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -441,14 +442,15 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               onChange: setDate,
               placeholder: "YYYY-MM-DD",
             })}
-            {TableUtils.renderHtmlSelect({
-              title: "Rating",
-              value: rating,
-              isEditing: true,
-              onChange: (value: string) =>
-                setRating(Number.parseInt(value, 10)),
-              selectOptions: ["", 1, 2, 3, 4, 5],
-            })}
+            <tr className="rating">
+              <td>Rating</td>
+              <td>
+                <RatingStars
+                  value={rating}
+                  onSetRating={(value) => setRating(value)}
+                />
+              </td>
+            </tr>
             <tr>
               <td>Gallery</td>
               <td>
