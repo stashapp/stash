@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 	"io"
+	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
@@ -92,19 +92,14 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 
 	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
 
-	var stream io.ReadCloser
-	var process *os.Process
+	var stream *ffmpeg.Stream
 
-	transcodeFormat := ffmpeg.GetTranscodeFormat(supportedVideoCodecs)
-
-	mimeType := ffmpeg.MimeWebm
-	if transcodeFormat == ffmpeg.H264 {
-		mimeType = ffmpeg.MimeMp4
-	}
+	transcodeCodec := ffmpeg.GetTranscodeCodec(supportedVideoCodecs)
+	mimeType := transcodeCodec.MimeType
 
 	if audioCodec == ffmpeg.MissingUnsupported {
 		//ffmpeg fails if it trys to transcode a non supported audio codec
-		stream, process, err = encoder.StreamTranscodeVideo(*videoFile, transcodeFormat, startTime, config.GetMaxStreamingTranscodeSize())
+		stream, err = encoder.StreamTranscodeVideo(*videoFile, transcodeCodec, startTime, config.GetMaxStreamingTranscodeSize())
 	} else {
 		copyVideo := false // try to be smart if the video to be transcoded is in a Matroska container
 		//  mp4 has always supported audio so it doesn't need to be checked
@@ -112,22 +107,17 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 
 		if ffmpeg.IsValidCodec(ffmpeg.Mkv, supportedVideoCodecs) { // If MKV is supported and video codec is also supported then only transcode audio
 			if ffmpeg.Container(container) == ffmpeg.Matroska {
-				switch videoCodec {
-				case ffmpeg.H264, ffmpeg.Vp9, ffmpeg.Vp8:
+				if ffmpeg.IsValidCodec(videoCodec, supportedVideoCodecs) {
 					copyVideo = true
-				case ffmpeg.Hevc:
-					if ffmpeg.IsValidCodec(ffmpeg.Hevc, supportedVideoCodecs) {
-						copyVideo = true
-					}
 				}
 			}
 		}
 
 		if copyVideo { // copy video stream instead of transcoding it
-			stream, process, err = encoder.StreamMkvTranscodeAudio(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
+			stream, err = encoder.StreamMkvTranscodeAudio(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
 			mimeType = ffmpeg.MimeMkv
 		} else {
-			stream, process, err = encoder.StreamTranscode(*videoFile, transcodeFormat, startTime, config.GetMaxStreamingTranscodeSize())
+			stream, err = encoder.StreamTranscode(*videoFile, transcodeCodec, startTime, config.GetMaxStreamingTranscodeSize())
 		}
 	}
 
@@ -146,10 +136,19 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		<-notify
 		logger.Info("[stream] client closed the connection. Killing stream process.")
-		process.Kill()
+		stream.Process.Kill()
 	}()
 
-	_, err = io.Copy(w, stream)
+	// stderr must be consumed or the process deadlocks
+	go func() {
+		stderrData, _ := ioutil.ReadAll(stream.Stderr)
+		stderrString := string(stderrData)
+		if len(stderrString) > 0 {
+			logger.Debugf("[stream] ffmpeg stderr: %s", stderrString)
+		}
+	}()
+
+	_, err = io.Copy(w, stream.Stdout)
 	if err != nil {
 		logger.Errorf("[stream] error serving transcoded video file: %s", err.Error())
 	}

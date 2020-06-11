@@ -9,7 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func IsStreamable(scene *models.Scene) (bool, error) {
+func IsStreamable(scene *models.Scene, supportedVideoCodecs []string) (bool, error) {
 	if scene == nil {
 		return false, fmt.Errorf("nil scene")
 	}
@@ -31,7 +31,7 @@ func IsStreamable(scene *models.Scene) (bool, error) {
 		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
 	}
 
-	if ffmpeg.IsStreamable(nil, videoCodec, audioCodec, container) {
+	if ffmpeg.IsStreamable(supportedVideoCodecs, videoCodec, audioCodec, container) {
 		logger.Debugf("File is streamable %s, %s, %s", videoCodec, audioCodec, container)
 		return true, nil
 	} else {

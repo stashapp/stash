@@ -36,7 +36,6 @@ type Scene {
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver
-  is_streamable: Boolean! # Resolver
 
   scene_markers: [SceneMarker!]!
   gallery: Gallery

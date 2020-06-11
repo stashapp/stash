@@ -7,6 +7,8 @@ type Query {
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
 
+  isSceneStreamable(id: ID, supportedVideoCodecs: [String!]!): Boolean!
+
   parseSceneFilenames(filter: FindFilterType, config: SceneParserInput!): SceneParserResultType!
 
   """A function which queries SceneMarker objects"""

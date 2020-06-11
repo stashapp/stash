@@ -1,8 +1,6 @@
 package ffmpeg
 
 import (
-	"io"
-	"os"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -110,92 +108,4 @@ func (e *Encoder) CopyVideo(probeResult VideoFile, options TranscodeOptions) {
 		options.OutputPath,
 	}
 	_, _ = e.run(probeResult, args)
-}
-
-func (e *Encoder) StreamTranscode(probeResult VideoFile, codec string, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (io.ReadCloser, *os.Process, error) {
-	scale := calculateTranscodeScale(probeResult, maxTranscodeSize)
-	args := []string{}
-
-	if startTime != "" {
-		args = append(args, "-ss", startTime)
-	}
-
-	codecArg := "libvpx-vp9"
-	format := "webm"
-	if codec == H264 {
-		codecArg = "libx264"
-		format = "mp4"
-	}
-
-	args = append(args,
-		"-i", probeResult.Path,
-		"-c:v", codecArg,
-		"-vf", "scale="+scale,
-		"-deadline", "realtime",
-		"-cpu-used", "5",
-		"-row-mt", "1",
-		"-crf", "30",
-		"-b:v", "0",
-		"-f", format,
-		"pipe:",
-	)
-
-	return e.stream(probeResult, args)
-}
-
-//transcode the video, remove the audio
-//in some videos where the audio codec is not supported by ffmpeg
-//ffmpeg fails if you try to transcode the audio
-func (e *Encoder) StreamTranscodeVideo(probeResult VideoFile, codec string, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (io.ReadCloser, *os.Process, error) {
-	scale := calculateTranscodeScale(probeResult, maxTranscodeSize)
-	args := []string{}
-
-	if startTime != "" {
-		args = append(args, "-ss", startTime)
-	}
-
-	codecArg := "libvpx-vp9"
-	format := "webm"
-	if codec == H264 {
-		codecArg = "libx264"
-		format = "mp4"
-	}
-
-	args = append(args,
-		"-i", probeResult.Path,
-		"-an",
-		"-c:v", codecArg,
-		"-vf", "scale="+scale,
-		"-deadline", "realtime",
-		"-cpu-used", "5",
-		"-row-mt", "1",
-		"-crf", "30",
-		"-b:v", "0",
-		"-f", format,
-		"pipe:",
-	)
-
-	return e.stream(probeResult, args)
-}
-
-//it is very common in MKVs to have just the audio codec unsupported
-//copy the video stream, transcode the audio and serve as Matroska
-func (e *Encoder) StreamMkvTranscodeAudio(probeResult VideoFile, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (io.ReadCloser, *os.Process, error) {
-	args := []string{}
-
-	if startTime != "" {
-		args = append(args, "-ss", startTime)
-	}
-
-	args = append(args,
-		"-i", probeResult.Path,
-		"-c:v", "copy",
-		"-c:a", "libopus",
-		"-b:a", "96k",
-		"-vbr", "on",
-		"-f", "matroska",
-		"pipe:",
-	)
-
-	return e.stream(probeResult, args)
 }

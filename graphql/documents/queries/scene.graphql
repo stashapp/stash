@@ -54,3 +54,7 @@ query ParseSceneFilenames($filter: FindFilterType!, $config: SceneParserInput!) 
     }
   }
 }
+
+query IsSceneStreamable($id: ID!, $supportedVideoCodecs: [String!]!) {
+  isSceneStreamable(id: $id, supportedVideoCodecs: $supportedVideoCodecs)
+}

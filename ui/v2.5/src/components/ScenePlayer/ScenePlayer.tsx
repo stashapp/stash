@@ -8,6 +8,7 @@ import jwplayer from "src/utils/jwplayer";
 
 interface IScenePlayerProps {
   scene: GQL.SceneDataFragment;
+  streamable: boolean;
   timestamp: number;
   autoplay?: boolean;
   onReady?: () => void;
@@ -130,7 +131,7 @@ export class ScenePlayerImpl extends React.Component<
       | ((_videoTag: HTMLVideoElement) => number)
       | undefined;
 
-    if (!this.props.scene.is_streamable) {
+    if (!this.props.streamable) {
       getDurationHook = () => {
         return this.props.scene.file.duration ?? null;
       };

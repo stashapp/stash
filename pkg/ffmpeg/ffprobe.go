@@ -195,19 +195,26 @@ func IsStreamable(supportedVideoCodecs []string, videoCodec string, audioCodec A
 	return IsValidCodec(videoCodec, supportedVideoCodecs) && IsValidCombo(videoCodec, container, supportedVideoCodecs) && IsValidAudioForContainer(audioCodec, container)
 }
 
-func GetTranscodeFormat(supportedVideoCodecs []string) string {
+func GetTranscodeCodec(supportedVideoCodecs []string) Codec {
 	if len(supportedVideoCodecs) == 0 {
 		supportedVideoCodecs = DefaultSupportedCodecs
 	}
 
+	logger.Debugf("Choosing transcode codec from: %s", strings.Join(supportedVideoCodecs, ","))
+
 	// prefer vp8; fallback to H.264 if not supported
-	for _, codec := range supportedVideoCodecs {
-		if codec == Vp8 {
-			return Vp8
-		}
+	if IsValidCodec(Vp8, supportedVideoCodecs) {
+		logger.Debug("Using VP8")
+		return CodecVP8
 	}
 
-	return H264
+	if IsValidCodec(Hevc, supportedVideoCodecs) {
+		logger.Debug("Using HEVC")
+		return CodecHEVC
+	}
+
+	logger.Debug("Using H264")
+	return CodecH264
 }
 
 type VideoFile struct {

@@ -27,6 +27,7 @@ const getSupportedFormats = () => {
   if (video.mkv) ret.push("mkv");
   
   // not supported on the backend
+  // if (video.ogg) ret.push("ogg");
   // if (video.hls) ret.push("hls");
   // if (video.av1) ret.push("av1");
 

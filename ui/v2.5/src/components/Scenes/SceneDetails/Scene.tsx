@@ -8,6 +8,7 @@ import {
   useSceneIncrementO,
   useSceneDecrementO,
   useSceneResetO,
+  useIsSceneStreamable,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { LoadingIndicator } from "src/components/Shared";
@@ -21,6 +22,7 @@ import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneOperationsPanel } from "./SceneOperationsPanel";
 import { SceneMoviePanel } from "./SceneMoviePanel";
+import jwplayer from "src/utils/jwplayer";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
@@ -30,6 +32,7 @@ export const Scene: React.FC = () => {
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
+  const { data: isSceneStreamable, error: streamableError, loading: streamableLoading } = useIsSceneStreamable(id, jwplayer.getSupportedFormats());
   const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
@@ -37,6 +40,7 @@ export const Scene: React.FC = () => {
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
+  const isStreamable = isSceneStreamable?.isSceneStreamable ?? false;
 
   useEffect(() => {
     if (data?.findScene) setScene(data.findScene);
@@ -97,15 +101,16 @@ export const Scene: React.FC = () => {
     setTimestamp(marker.seconds);
   }
 
-  if (loading || !scene || !data?.findScene) {
+  if (loading || streamableLoading || !scene || !data?.findScene) {
     return <LoadingIndicator />;
   }
 
   if (error) return <div>{error.message}</div>;
+  if (streamableError) return <div>{streamableError.message}</div>;
 
   return (
     <>
-      <ScenePlayer scene={scene} timestamp={timestamp} autoplay={autoplay} />
+      <ScenePlayer scene={scene} timestamp={timestamp} autoplay={autoplay} streamable={isStreamable}/>
       <div id="scene-details-container" className="col col-sm-9 m-sm-auto">
         <div className="float-right">
           <OCounterButton
