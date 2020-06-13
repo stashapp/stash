@@ -107,7 +107,7 @@ func (s streamOptions) getStreamArgs() []string {
 
 	args = append(args,
 		// this is needed for 5-channel ac3 files
-		"-af", "channelmap=channel_layout=5.1",
+		"-ac", "2",
 		"-b:v", "0",
 		"-f", s.codec.format,
 		"pipe:",
