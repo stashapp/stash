@@ -55,6 +55,7 @@ type Query {
   """List available scrapers"""
   listPerformerScrapers: [Scraper!]!
   listSceneScrapers: [Scraper!]!
+
   """Scrape a list of performers based on name"""
   scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
   """Scrapes a complete performer record based on a scrapePerformerList result"""
@@ -154,6 +155,9 @@ type Mutation {
   metadataAutoTag(input: AutoTagMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
   metadataClean: String!
+
+  """Reload scrapers"""
+  reloadScrapers: Boolean!
 
   stopJob: Boolean!
 }

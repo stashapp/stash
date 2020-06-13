@@ -4,6 +4,7 @@ import { FormattedDate } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TagLink } from "src/components/Shared";
+import { RatingStars } from "./RatingStars";
 
 interface ISceneDetailProps {
   scene: GQL.SceneDataFragment;
@@ -44,7 +45,13 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
             <FormattedDate value={props.scene.date} format="long" />
           </h4>
         ) : undefined}
-        {props.scene.rating ? <h6>Rating: {props.scene.rating}</h6> : ""}
+        {props.scene.rating ? (
+          <h6>
+            Rating: <RatingStars value={props.scene.rating} />
+          </h6>
+        ) : (
+          ""
+        )}
         {props.scene.file.height && (
           <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6>
         )}

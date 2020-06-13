@@ -11,6 +11,7 @@ import {
   stringToGender,
   queryScrapePerformer,
   queryScrapePerformerURL,
+  mutateReloadScrapers,
 } from "src/core/StashService";
 import {
   Icon,
@@ -224,8 +225,22 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
-  function onDisplayFreeOnesDialog(scraper: GQL.Scraper) {
+  function onDisplayScrapeDialog(scraper: GQL.Scraper) {
     setIsDisplayingScraperDialog(scraper);
+  }
+
+  async function onReloadScrapers() {
+    setIsLoading(true);
+    try {
+      await mutateReloadScrapers();
+
+      // reload the performer scrapers
+      await Scrapers.refetch();
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function getQueryScraperPerformerInput() {
@@ -300,13 +315,21 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
                     <Button
                       key={s.name}
                       className="minimal"
-                      onClick={() => onDisplayFreeOnesDialog(s)}
+                      onClick={() => onDisplayScrapeDialog(s)}
                     >
                       {s.name}
                     </Button>
                   </div>
                 ))
               : ""}
+            <div>
+              <Button className="minimal" onClick={() => onReloadScrapers()}>
+                <span className="fa-icon">
+                  <Icon icon="sync-alt" />
+                </span>
+                <span>Reload scrapers</span>
+              </Button>
+            </div>
           </div>
         </Popover.Content>
       </Popover>
