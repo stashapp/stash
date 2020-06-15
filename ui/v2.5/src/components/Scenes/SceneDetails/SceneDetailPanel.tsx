@@ -63,7 +63,7 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
       <div className="row">
         <div className={sceneDetailsWidth + " col-xl-12 scene-details"}>
           <div className="scene-header d-xl-none">
-            <h3 className="col scene-header text-truncate">
+            <h3 className="text-truncate">
               {props.scene.title ?? TextUtils.fileNameFromPath(props.scene.path)}
             </h3>
           </div>
