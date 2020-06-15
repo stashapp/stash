@@ -2,8 +2,6 @@ package api
 
 import (
 	"context"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -81,6 +79,7 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// needs to be transcoded
+
 	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path)
 	if err != nil {
 		logger.Errorf("[stream] error reading video file: %s", err.Error())
@@ -90,68 +89,45 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 	// start stream based on query param, if provided
 	startTime := r.Form.Get("start")
 
-	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
-
 	var stream *ffmpeg.Stream
 
-	transcodeCodec := ffmpeg.GetTranscodeCodec(supportedVideoCodecs)
-	mimeType := transcodeCodec.MimeType
+	options := ffmpeg.GetTranscodeStreamOptions(*videoFile, videoCodec, audioCodec, container, supportedVideoCodecs)
+	options.MaxTranscodeSize = config.GetMaxStreamingTranscodeSize()
+	options.StartTime = startTime
 
-	if audioCodec == ffmpeg.MissingUnsupported {
-		//ffmpeg fails if it trys to transcode a non supported audio codec
-		stream, err = encoder.StreamTranscodeVideo(*videoFile, transcodeCodec, startTime, config.GetMaxStreamingTranscodeSize())
-	} else {
-		copyVideo := false // try to be smart if the video to be transcoded is in a Matroska container
-		//  mp4 has always supported audio so it doesn't need to be checked
-		//  while mpeg_ts has seeking issues if we don't reencode the video
+	requestByteRange := utils.CreateByteRange(r.Header.Get("Range"))
 
-		if ffmpeg.IsValidCodec(ffmpeg.Mkv, supportedVideoCodecs) { // If MKV is supported and video codec is also supported then only transcode audio
-			if ffmpeg.Container(container) == ffmpeg.Matroska {
-				if ffmpeg.IsValidCodec(videoCodec, supportedVideoCodecs) {
-					copyVideo = true
-				}
-			}
-		}
-
-		if copyVideo { // copy video stream instead of transcoding it
-			stream, err = encoder.StreamMkvTranscodeAudio(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
-			mimeType = ffmpeg.MimeMkv
-		} else {
-			stream, err = encoder.StreamTranscode(*videoFile, transcodeCodec, startTime, config.GetMaxStreamingTranscodeSize())
-		}
+	if requestByteRange.RawString != "" {
+		logger.Debugf("Requested range: %s", requestByteRange.RawString)
 	}
 
-	if err != nil {
-		logger.Errorf("[stream] error transcoding video file: %s", err.Error())
+	if options.Hls && startTime == "" {
+		logger.Debug("Returning HLS playlist")
+
+		// getting the playlist manifest only
+		w.Header().Set("Content-Type", "application/vnd.apple.mpegurl")
+		var str strings.Builder
+		ffmpeg.WriteHLSPlaylist(*videoFile, r.URL.String(), &str)
+
+		ret := requestByteRange.Apply([]byte(str.String()))
+		rangeStr := requestByteRange.ToHeaderValue(int64(str.Len()))
+		w.Header().Set("Content-Range", rangeStr)
+
+		w.Write(ret)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", mimeType)
+	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
+	stream, err = encoder.GetTranscodeStream(options)
 
-	logger.Infof("[stream] transcoding video file to %s", mimeType)
-
-	// handle if client closes the connection
-	notify := r.Context().Done()
-	go func() {
-		<-notify
-		logger.Info("[stream] client closed the connection. Killing stream process.")
-		stream.Process.Kill()
-	}()
-
-	// stderr must be consumed or the process deadlocks
-	go func() {
-		stderrData, _ := ioutil.ReadAll(stream.Stderr)
-		stderrString := string(stderrData)
-		if len(stderrString) > 0 {
-			logger.Debugf("[stream] ffmpeg stderr: %s", stderrString)
-		}
-	}()
-
-	_, err = io.Copy(w, stream.Stdout)
 	if err != nil {
-		logger.Errorf("[stream] error serving transcoded video file: %s", err.Error())
+		logger.Errorf("[stream] error transcoding video file: %s", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
 	}
+
+	stream.Serve(w, r)
 }
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {

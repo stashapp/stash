@@ -2,8 +2,11 @@ package ffmpeg
 
 import (
 	"io"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -11,31 +14,64 @@ import (
 )
 
 type Stream struct {
-	Stdout  io.ReadCloser
-	Stderr  io.ReadCloser
-	Process *os.Process
+	Stdout   io.ReadCloser
+	Process  *os.Process
+	options  TranscodeStreamOptions
+	mimeType string
+}
+
+func (s *Stream) Serve(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", s.mimeType)
+	w.WriteHeader(http.StatusOK)
+
+	logger.Infof("[stream] transcoding video file to %s", s.mimeType)
+
+	// handle if client closes the connection
+	notify := r.Context().Done()
+	go func() {
+		<-notify
+		s.Process.Kill()
+	}()
+
+	_, err := io.Copy(w, s.Stdout)
+	if err != nil {
+		logger.Errorf("[stream] error serving transcoded video file: %s", err.Error())
+	}
 }
 
 type Codec struct {
-	codec     string
+	Codec     string
 	format    string
 	MimeType  string
 	extraArgs []string
 }
 
+var CodecHLS = Codec{
+	Codec:    "libx264",
+	format:   "mpegts",
+	MimeType: MimeMpegts,
+	extraArgs: []string{
+		"-acodec", "aac",
+		"-pix_fmt", "yuv420p",
+		"-preset", "veryfast",
+		"-crf", "30",
+	},
+}
+
 var CodecH264 = Codec{
-	codec:    "libx264",
+	Codec:    "libx264",
 	format:   "mp4",
 	MimeType: MimeMp4,
 	extraArgs: []string{
 		"-movflags", "frag_keyframe",
+		"-pix_fmt", "yuv420p",
 		"-preset", "veryfast",
 		"-crf", "30",
 	},
 }
 
 var CodecVP9 = Codec{
-	codec:    "libvpx-vp9",
+	Codec:    "libvpx-vp9",
 	format:   "webm",
 	MimeType: MimeWebm,
 	extraArgs: []string{
@@ -47,7 +83,7 @@ var CodecVP9 = Codec{
 }
 
 var CodecVP8 = Codec{
-	codec:    "libvpx",
+	Codec:    "libvpx",
 	format:   "webm",
 	MimeType: MimeWebm,
 	extraArgs: []string{
@@ -58,7 +94,7 @@ var CodecVP8 = Codec{
 }
 
 var CodecHEVC = Codec{
-	codec:    "libx265",
+	Codec:    "libx265",
 	format:   "mp4",
 	MimeType: MimeMp4,
 	extraArgs: []string{
@@ -68,106 +104,134 @@ var CodecHEVC = Codec{
 	},
 }
 
-type streamOptions struct {
-	probeResult      VideoFile
-	codec            Codec
-	startTime        string
-	maxTranscodeSize models.StreamingResolutionEnum
-	videoOnly        bool
+// it is very common in MKVs to have just the audio codec unsupported
+// copy the video stream, transcode the audio and serve as Matroska
+var CodecMKVAudio = Codec{
+	Codec:    "copy",
+	format:   "matroska",
+	MimeType: MimeMkv,
+	extraArgs: []string{
+		"-c:a", "libopus",
+		"-b:a", "96k",
+		"-vbr", "on",
+	},
 }
 
-func (s streamOptions) getStreamArgs() []string {
-	scale := calculateTranscodeScale(s.probeResult, s.maxTranscodeSize)
+type TranscodeStreamOptions struct {
+	ProbeResult      VideoFile
+	Codec            Codec
+	Hls              bool
+	StartTime        string
+	MaxTranscodeSize models.StreamingResolutionEnum
+	// transcode the video, remove the audio
+	// in some videos where the audio codec is not supported by ffmpeg
+	// ffmpeg fails if you try to transcode the audio
+	VideoOnly bool
+}
+
+func GetTranscodeStreamOptions(probeResult VideoFile, videoCodec string, audioCodec AudioCodec, container Container, supportedVideoCodecs []string) TranscodeStreamOptions {
+	options := TranscodeStreamOptions{
+		ProbeResult: probeResult,
+	}
+
+	options.setTranscodeCodec(supportedVideoCodecs)
+
+	if audioCodec == MissingUnsupported {
+		//ffmpeg fails if it trys to transcode a non supported audio codec
+		options.VideoOnly = true
+	} else {
+		// try to be smart if the video to be transcoded is in a Matroska container
+		// mp4 has always supported audio so it doesn't need to be checked
+		// while mpeg_ts has seeking issues if we don't reencode the video
+
+		// If MKV is supported and video codec is also supported then only transcode audio
+		if IsValidCodec(Mkv, supportedVideoCodecs) && Container(container) == Matroska && IsValidCodec(videoCodec, supportedVideoCodecs) {
+			// copy video stream instead of transcoding it
+			options.Codec = CodecMKVAudio
+		}
+	}
+
+	return options
+}
+
+func (o *TranscodeStreamOptions) setTranscodeCodec(supportedVideoCodecs []string) {
+	if len(supportedVideoCodecs) == 0 {
+		supportedVideoCodecs = DefaultSupportedCodecs
+	}
+
+	logger.Debugf("Choosing transcode codec from: %s", strings.Join(supportedVideoCodecs, ","))
+
+	// TODO - make preferred order configurable
+	if IsValidCodec(Vp9, supportedVideoCodecs) {
+		logger.Debug("Using VP9")
+		o.Codec = CodecVP9
+	} else if IsValidCodec(Vp8, supportedVideoCodecs) {
+		logger.Debug("Using VP8")
+		o.Codec = CodecVP8
+	} else if IsValidCodec(Hevc, supportedVideoCodecs) {
+		logger.Debug("Using HEVC")
+		o.Codec = CodecHEVC
+	} else if IsValidCodec(Hls, supportedVideoCodecs) {
+		logger.Debug("Using HLS (with H264)")
+		o.Codec = CodecHLS
+		o.Hls = true
+	} else {
+		logger.Debug("Using H264")
+		o.Codec = CodecH264
+	}
+}
+
+func (s TranscodeStreamOptions) getStreamArgs() []string {
+	scale := calculateTranscodeScale(s.ProbeResult, s.MaxTranscodeSize)
 
 	args := []string{
 		"-hide_banner",
 		"-v", "error",
 	}
 
-	if s.startTime != "" {
-		args = append(args, "-ss", s.startTime)
+	if s.StartTime != "" {
+		args = append(args, "-ss", s.StartTime)
+	}
+
+	if s.Hls {
+		// we only serve a fixed segment length
+		args = append(args, "-t", strconv.Itoa(int(hlsSegmentLength)))
 	}
 
 	args = append(args,
-		"-i", s.probeResult.Path,
+		"-i", s.ProbeResult.Path,
 	)
 
-	if s.videoOnly {
+	if s.VideoOnly {
 		args = append(args, "-an")
 	}
 
 	args = append(args,
-		"-c:v", s.codec.codec,
+		"-c:v", s.Codec.Codec,
 		"-vf", "scale="+scale,
 	)
 
-	if len(s.codec.extraArgs) > 0 {
-		args = append(args, s.codec.extraArgs...)
+	if len(s.Codec.extraArgs) > 0 {
+		args = append(args, s.Codec.extraArgs...)
 	}
 
 	args = append(args,
 		// this is needed for 5-channel ac3 files
 		"-ac", "2",
 		"-b:v", "0",
-		"-f", s.codec.format,
+		"-f", s.Codec.format,
 		"pipe:",
 	)
 
 	return args
 }
 
-func (e *Encoder) StreamTranscode(probeResult VideoFile, codec Codec, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (*Stream, error) {
-	options := streamOptions{
-		probeResult:      probeResult,
-		codec:            codec,
-		startTime:        startTime,
-		maxTranscodeSize: maxTranscodeSize,
-	}
-
-	return e.stream(probeResult, options.getStreamArgs())
+func (e *Encoder) GetTranscodeStream(options TranscodeStreamOptions) (*Stream, error) {
+	return e.stream(options.ProbeResult, options)
 }
 
-//transcode the video, remove the audio
-//in some videos where the audio codec is not supported by ffmpeg
-//ffmpeg fails if you try to transcode the audio
-func (e *Encoder) StreamTranscodeVideo(probeResult VideoFile, codec Codec, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (*Stream, error) {
-	options := streamOptions{
-		probeResult:      probeResult,
-		codec:            codec,
-		startTime:        startTime,
-		maxTranscodeSize: maxTranscodeSize,
-		videoOnly:        true,
-	}
-
-	return e.stream(probeResult, options.getStreamArgs())
-}
-
-//it is very common in MKVs to have just the audio codec unsupported
-//copy the video stream, transcode the audio and serve as Matroska
-func (e *Encoder) StreamMkvTranscodeAudio(probeResult VideoFile, startTime string, maxTranscodeSize models.StreamingResolutionEnum) (*Stream, error) {
-	args := []string{
-		"-hide_banner",
-		"-v", "error",
-	}
-
-	if startTime != "" {
-		args = append(args, "-ss", startTime)
-	}
-
-	args = append(args,
-		"-i", probeResult.Path,
-		"-c:v", "copy",
-		"-c:a", "libopus",
-		"-b:a", "96k",
-		"-vbr", "on",
-		"-f", "matroska",
-		"pipe:",
-	)
-
-	return e.stream(probeResult, args)
-}
-
-func (e *Encoder) stream(probeResult VideoFile, args []string) (*Stream, error) {
+func (e *Encoder) stream(probeResult VideoFile, options TranscodeStreamOptions) (*Stream, error) {
+	args := options.getStreamArgs()
 	cmd := exec.Command(e.Path, args...)
 	logger.Debugf("Streaming via: %s", strings.Join(cmd.Args, " "))
 
@@ -190,10 +254,20 @@ func (e *Encoder) stream(probeResult VideoFile, args []string) (*Stream, error) 
 	registerRunningEncoder(probeResult.Path, cmd.Process)
 	go waitAndDeregister(probeResult.Path, cmd)
 
+	// stderr must be consumed or the process deadlocks
+	go func() {
+		stderrData, _ := ioutil.ReadAll(stderr)
+		stderrString := string(stderrData)
+		if len(stderrString) > 0 {
+			logger.Debugf("[stream] ffmpeg stderr: %s", stderrString)
+		}
+	}()
+
 	ret := &Stream{
-		Stdout:  stdout,
-		Stderr:  stderr,
-		Process: cmd.Process,
+		Stdout:   stdout,
+		Process:  cmd.Process,
+		options:  options,
+		mimeType: options.Codec.MimeType,
 	}
 	return ret, nil
 }

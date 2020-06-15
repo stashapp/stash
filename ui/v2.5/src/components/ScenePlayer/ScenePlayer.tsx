@@ -131,7 +131,7 @@ export class ScenePlayerImpl extends React.Component<
       | ((_videoTag: HTMLVideoElement) => number)
       | undefined;
 
-    if (!this.props.streamable) {
+    if (!jwplayer.hlsSupported() && !this.props.streamable) {
       getDurationHook = () => {
         return this.props.scene.file.duration ?? null;
       };

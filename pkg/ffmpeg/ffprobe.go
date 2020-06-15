@@ -47,9 +47,12 @@ const (
 	Vp8                string     = "vp8"
 	Vp9                string     = "vp9"
 	Mkv                string     = "mkv" // only used from the browser to indicate mkv support
+	Hls                string     = "hls" // only used from the browser to indicate hls support
 	MimeWebm           string     = "video/webm"
 	MimeMkv            string     = "video/x-matroska"
 	MimeMp4            string     = "video/mp4"
+	MimeHLS            string     = "application/x-mpegURL"
+	MimeMpegts         string     = "video/MP2T"
 )
 
 // only support H264 by default, since Safari does not support VP8/VP9
@@ -193,33 +196,6 @@ func IsStreamable(supportedVideoCodecs []string, videoCodec string, audioCodec A
 
 	// check if the video codec matches the supported codecs
 	return IsValidCodec(videoCodec, supportedVideoCodecs) && IsValidCombo(videoCodec, container, supportedVideoCodecs) && IsValidAudioForContainer(audioCodec, container)
-}
-
-func GetTranscodeCodec(supportedVideoCodecs []string) Codec {
-	if len(supportedVideoCodecs) == 0 {
-		supportedVideoCodecs = DefaultSupportedCodecs
-	}
-
-	logger.Debugf("Choosing transcode codec from: %s", strings.Join(supportedVideoCodecs, ","))
-
-	// TODO - make preferred order configurable
-	if IsValidCodec(Vp9, supportedVideoCodecs) {
-		logger.Debug("Using VP9")
-		return CodecVP9
-	}
-
-	if IsValidCodec(Vp8, supportedVideoCodecs) {
-		logger.Debug("Using VP8")
-		return CodecVP8
-	}
-
-	if IsValidCodec(Hevc, supportedVideoCodecs) {
-		logger.Debug("Using HEVC")
-		return CodecHEVC
-	}
-
-	logger.Debug("Using H264")
-	return CodecH264
 }
 
 type VideoFile struct {
