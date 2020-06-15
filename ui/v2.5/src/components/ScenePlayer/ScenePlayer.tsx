@@ -188,7 +188,11 @@ export class ScenePlayerImpl extends React.Component<
       this.props.className ?? "w-100 col-sm-9 m-sm-auto no-gutter";
     const sceneFile = this.props.scene.file;
 
-    if (sceneFile.height && sceneFile.width && sceneFile.height > sceneFile.width) {
+    if (
+      sceneFile.height &&
+      sceneFile.width &&
+      sceneFile.height > sceneFile.width
+    ) {
       className += " portrait";
     }
 
