@@ -28,7 +28,7 @@ const getSupportedFormats = () => {
   if (vp9) ret.push("vp9");
   if (mkv) ret.push("mkv");
   if (hls) ret.push("hls");
-  
+
   // not supported on the backend
   // if (video.ogg) ret.push("ogg");
   // if (video.av1) ret.push("av1");
@@ -40,7 +40,7 @@ const hlsSupported = () => {
   // only mark as supported if vp9/vp8/mkv are unsupported
   const { webm, vp9, mkv, hls } = Modernizr.video;
   return !webm && !vp9 && !mkv && hls;
-}
+};
 
 export default {
   playerID,

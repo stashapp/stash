@@ -181,45 +181,45 @@ func (o *TranscodeStreamOptions) setTranscodeCodec(supportedVideoCodecs []string
 	}
 }
 
-func (s TranscodeStreamOptions) getStreamArgs() []string {
-	scale := calculateTranscodeScale(s.ProbeResult, s.MaxTranscodeSize)
+func (o TranscodeStreamOptions) getStreamArgs() []string {
+	scale := calculateTranscodeScale(o.ProbeResult, o.MaxTranscodeSize)
 
 	args := []string{
 		"-hide_banner",
 		"-v", "error",
 	}
 
-	if s.StartTime != "" {
-		args = append(args, "-ss", s.StartTime)
+	if o.StartTime != "" {
+		args = append(args, "-ss", o.StartTime)
 	}
 
-	if s.Hls {
+	if o.Hls {
 		// we only serve a fixed segment length
 		args = append(args, "-t", strconv.Itoa(int(hlsSegmentLength)))
 	}
 
 	args = append(args,
-		"-i", s.ProbeResult.Path,
+		"-i", o.ProbeResult.Path,
 	)
 
-	if s.VideoOnly {
+	if o.VideoOnly {
 		args = append(args, "-an")
 	}
 
 	args = append(args,
-		"-c:v", s.Codec.Codec,
+		"-c:v", o.Codec.Codec,
 		"-vf", "scale="+scale,
 	)
 
-	if len(s.Codec.extraArgs) > 0 {
-		args = append(args, s.Codec.extraArgs...)
+	if len(o.Codec.extraArgs) > 0 {
+		args = append(args, o.Codec.extraArgs...)
 	}
 
 	args = append(args,
 		// this is needed for 5-channel ac3 files
 		"-ac", "2",
 		"-b:v", "0",
-		"-f", s.Codec.format,
+		"-f", o.Codec.format,
 		"pipe:",
 	)
 
