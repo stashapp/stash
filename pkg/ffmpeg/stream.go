@@ -54,7 +54,7 @@ var CodecHLS = Codec{
 		"-acodec", "aac",
 		"-pix_fmt", "yuv420p",
 		"-preset", "veryfast",
-		"-crf", "30",
+		"-crf", "25",
 	},
 }
 
@@ -66,7 +66,7 @@ var CodecH264 = Codec{
 		"-movflags", "frag_keyframe",
 		"-pix_fmt", "yuv420p",
 		"-preset", "veryfast",
-		"-crf", "30",
+		"-crf", "25",
 	},
 }
 
@@ -79,6 +79,7 @@ var CodecVP9 = Codec{
 		"-cpu-used", "5",
 		"-row-mt", "1",
 		"-crf", "30",
+		"-b:v", "0",
 	},
 }
 
@@ -89,7 +90,8 @@ var CodecVP8 = Codec{
 	extraArgs: []string{
 		"-deadline", "realtime",
 		"-cpu-used", "5",
-		"-crf", "30",
+		"-crf", "25",
+		"-b:v", "0",
 	},
 }
 
@@ -218,7 +220,6 @@ func (o TranscodeStreamOptions) getStreamArgs() []string {
 	args = append(args,
 		// this is needed for 5-channel ac3 files
 		"-ac", "2",
-		"-b:v", "0",
 		"-f", o.Codec.format,
 		"pipe:",
 	)
