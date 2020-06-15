@@ -240,8 +240,8 @@ func (c xpathScraperAttrConfig) applySubScraper(value string) string {
 func (c xpathScraperAttrConfig) postProcess(value string) string {
 	// perform regex replacements first
 	value = c.replaceRegex(value)
-	value = c.parseDate(value)
 	value = c.applySubScraper(value)
+	value = c.parseDate(value)
 
 	return value
 }
