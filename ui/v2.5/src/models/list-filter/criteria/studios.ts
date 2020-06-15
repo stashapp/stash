@@ -24,3 +24,13 @@ export class StudiosCriterionOption implements ICriterionOption {
   public label: string = Criterion.getLabel("studios");
   public value: CriterionType = "studios";
 }
+
+export class ParentStudiosCriterion extends StudiosCriterion {
+  public type: CriterionType = "parent_studios";
+  public parameterName: string = "parents";
+}
+
+export class ParentStudiosCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("parent_studios");
+  public value: CriterionType = "parent_studios";
+}
