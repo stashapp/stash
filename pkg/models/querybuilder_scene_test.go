@@ -676,6 +676,42 @@ func TestSceneQueryStudio(t *testing.T) {
 	assert.Len(t, scenes, 0)
 }
 
+func TestSceneQueryMovies(t *testing.T) {
+	sqb := models.NewSceneQueryBuilder()
+	movieCriterion := models.MultiCriterionInput{
+		Value: []string{
+			strconv.Itoa(movieIDs[movieIdxWithScene]),
+		},
+		Modifier: models.CriterionModifierIncludes,
+	}
+
+	sceneFilter := models.SceneFilterType{
+		Movies: &movieCriterion,
+	}
+
+	scenes, _ := sqb.Query(&sceneFilter, nil)
+
+	assert.Len(t, scenes, 1)
+
+	// ensure id is correct
+	assert.Equal(t, sceneIDs[sceneIdxWithMovie], scenes[0].ID)
+
+	movieCriterion = models.MultiCriterionInput{
+		Value: []string{
+			strconv.Itoa(movieIDs[movieIdxWithScene]),
+		},
+		Modifier: models.CriterionModifierExcludes,
+	}
+
+	q := getSceneStringValue(sceneIdxWithMovie, titleField)
+	findFilter := models.FindFilterType{
+		Q: &q,
+	}
+
+	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
+	assert.Len(t, scenes, 0)
+}
+
 func TestSceneQuerySorting(t *testing.T) {
 	sort := titleField
 	direction := models.SortDirectionEnumAsc

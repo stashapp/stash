@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"strconv"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -148,7 +147,7 @@ func (qb *MovieQueryBuilder) Query(movieFilter *MovieFilterType, findFilter *Fin
 			args = append(args, studioID)
 		}
 
-		whereClause, havingClause := qb.getMultiCriterionClause("studio", "", "studio_id", studiosFilter)
+		whereClause, havingClause := getMultiCriterionClause("movies", "studio", "", "", "studio_id", studiosFilter)
 		whereClauses = appendClause(whereClauses, whereClause)
 		havingClauses = appendClause(havingClauses, havingClause)
 	}
@@ -163,29 +162,6 @@ func (qb *MovieQueryBuilder) Query(movieFilter *MovieFilterType, findFilter *Fin
 	}
 
 	return movies, countResult
-}
-
-// returns where clause and having clause
-func (qb *MovieQueryBuilder) getMultiCriterionClause(table string, joinTable string, joinTableField string, criterion *MultiCriterionInput) (string, string) {
-	whereClause := ""
-	havingClause := ""
-	if criterion.Modifier == CriterionModifierIncludes {
-		// includes any of the provided ids
-		whereClause = table + ".id IN " + getInBinding(len(criterion.Value))
-	} else if criterion.Modifier == CriterionModifierIncludesAll {
-		// includes all of the provided ids
-		whereClause = table + ".id IN " + getInBinding(len(criterion.Value))
-		havingClause = "count(distinct " + table + ".id) IS " + strconv.Itoa(len(criterion.Value))
-	} else if criterion.Modifier == CriterionModifierExcludes {
-		// excludes all of the provided ids
-		if joinTable != "" {
-			whereClause = "not exists (select " + joinTable + ".movie_id from " + joinTable + " where " + joinTable + ".movie_id = movies.id and " + joinTable + "." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
-		} else {
-			whereClause = "not exists (select m.id from movies as m where m.id = movies.id and m." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
-		}
-	}
-
-	return whereClause, havingClause
 }
 
 func (qb *MovieQueryBuilder) getMovieSort(findFilter *FindFilterType) string {

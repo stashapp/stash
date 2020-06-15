@@ -22,12 +22,12 @@ import (
 const totalScenes = 12
 const performersNameCase = 3
 const performersNameNoCase = 2
-const moviesNameCase = 1
+const moviesNameCase = 2
 const moviesNameNoCase = 1
 const totalGalleries = 1
 const tagsNameNoCase = 2
 const tagsNameCase = 5
-const studiosNameCase = 1
+const studiosNameCase = 4
 const studiosNameNoCase = 1
 
 var sceneIDs []int
@@ -61,9 +61,10 @@ const performerIdx1WithDupName = 3
 const performerIdxWithDupName = 4
 
 const movieIdxWithScene = 0
+const movieIdxWithStudio = 1
 
 // movies with dup names start from the end
-const movieIdxWithDupName = 1
+const movieIdxWithDupName = 2
 
 const galleryIdxWithScene = 0
 
@@ -78,9 +79,12 @@ const tagIdx1WithDupName = 5
 const tagIdxWithDupName = 6
 
 const studioIdxWithScene = 0
+const studioIdxWithMovie = 1
+const studioIdxWithChildStudio = 2
+const studioIdxWithParentStudio = 3
 
 // studios with dup names start from the end
-const studioIdxWithDupName = 1
+const studioIdxWithDupName = 4
 
 const markerIdxWithScene = 0
 
@@ -192,6 +196,16 @@ func populateDB() error {
 	}
 
 	if err := linkSceneStudio(tx, sceneIdxWithStudio, studioIdxWithScene); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := linkMovieStudio(tx, movieIdxWithStudio, studioIdxWithMovie); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := linkStudioParent(tx, studioIdxWithChildStudio, studioIdxWithParentStudio); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -312,10 +326,9 @@ func createMovies(tx *sqlx.Tx, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
-	name := namePlain
-
 	for i := 0; i < n+o; i++ {
 		index := i
+		name := namePlain
 
 		if i >= n { // i<n tags get normal names
 			name = nameNoCase       // i>=n movies get dup names if case is not checked
@@ -323,8 +336,9 @@ func createMovies(tx *sqlx.Tx, n int, o int) error {
 		} // so count backwards to 0 as needed
 		// movies [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
+		name = getMovieStringValue(index, name)
 		movie := models.Movie{
-			Name:       sql.NullString{String: getMovieStringValue(index, name), Valid: true},
+			Name:       sql.NullString{String: name, Valid: true},
 			FrontImage: []byte(models.DefaultMovieImage),
 			Checksum:   utils.MD5FromString(name),
 		}
@@ -332,7 +346,7 @@ func createMovies(tx *sqlx.Tx, n int, o int) error {
 		created, err := mqb.Create(movie, tx)
 
 		if err != nil {
-			return fmt.Errorf("Error creating movie %v+: %s", movie, err.Error())
+			return fmt.Errorf("Error creating movie [%d] %v+: %s", i, movie, err.Error())
 		}
 
 		movieIDs = append(movieIDs, created.ID)
@@ -432,16 +446,35 @@ func getStudioStringValue(index int, field string) string {
 	return "studio_" + strconv.FormatInt(int64(index), 10) + "_" + field
 }
 
+func createStudio(tx *sqlx.Tx, name string, parentID *int64) (*models.Studio, error) {
+	sqb := models.NewStudioQueryBuilder()
+	studio := models.Studio{
+		Name:     sql.NullString{String: name, Valid: true},
+		Image:    []byte(models.DefaultStudioImage),
+		Checksum: utils.MD5FromString(name),
+	}
+
+	if parentID != nil {
+		studio.ParentID = sql.NullInt64{Int64: *parentID, Valid: true}
+	}
+
+	created, err := sqb.Create(studio, tx)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
+	}
+
+	return created, nil
+}
+
 //createStudios creates n studios with plain Name and o studios with camel cased NaMe included
 func createStudios(tx *sqlx.Tx, n int, o int) error {
-	sqb := models.NewStudioQueryBuilder()
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
-	name := namePlain
-
 	for i := 0; i < n+o; i++ {
 		index := i
+		name := namePlain
 
 		if i >= n { // i<n studios get normal names
 			name = nameNoCase       // i>=n studios get dup names if case is not checked
@@ -449,16 +482,11 @@ func createStudios(tx *sqlx.Tx, n int, o int) error {
 		} // so count backwards to 0 as needed
 		// studios [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
-		tag := models.Studio{
-			Name:     sql.NullString{String: getStudioStringValue(index, name), Valid: true},
-			Image:    []byte(models.DefaultStudioImage),
-			Checksum: utils.MD5FromString(name),
-		}
-
-		created, err := sqb.Create(tag, tx)
+		name = getStudioStringValue(index, name)
+		created, err := createStudio(tx, name, nil)
 
 		if err != nil {
-			return fmt.Errorf("Error creating studio %v+: %s", tag, err.Error())
+			return err
 		}
 
 		studioIDs = append(studioIDs, created.ID)
@@ -579,6 +607,30 @@ func linkSceneStudio(tx *sqlx.Tx, sceneIndex, studioIndex int) error {
 		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
 	}
 	_, err := sqb.Update(scene, tx)
+
+	return err
+}
+
+func linkMovieStudio(tx *sqlx.Tx, movieIndex, studioIndex int) error {
+	mqb := models.NewMovieQueryBuilder()
+
+	movie := models.MoviePartial{
+		ID:       movieIDs[movieIndex],
+		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
+	}
+	_, err := mqb.Update(movie, tx)
+
+	return err
+}
+
+func linkStudioParent(tx *sqlx.Tx, parentIndex, childIndex int) error {
+	sqb := models.NewStudioQueryBuilder()
+
+	studio := models.StudioPartial{
+		ID:       studioIDs[childIndex],
+		ParentID: &sql.NullInt64{Int64: int64(studioIDs[parentIndex]), Valid: true},
+	}
+	_, err := sqb.Update(studio, tx)
 
 	return err
 }

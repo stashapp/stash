@@ -23,7 +23,13 @@ type ValidTypes =
 type Option = { value: string; label: string };
 
 interface ITypeProps {
-  type?: "performers" | "studios" | "tags" | "sceneTags" | "movies";
+  type?:
+    | "performers"
+    | "studios"
+    | "parent_studios"
+    | "tags"
+    | "sceneTags"
+    | "movies";
 }
 interface IFilterProps {
   ids?: string[];
@@ -175,7 +181,7 @@ export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = (props) => {
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
   props.type === "performers" ? (
     <PerformerSelect {...(props as IFilterProps)} />
-  ) : props.type === "studios" ? (
+  ) : props.type === "studios" || props.type === "parent_studios" ? (
     <StudioSelect {...(props as IFilterProps)} />
   ) : props.type === "movies" ? (
     <MovieSelect {...(props as IFilterProps)} />

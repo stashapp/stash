@@ -1,5 +1,5 @@
-query FindStudios($filter: FindFilterType) {
-  findStudios(filter: $filter) {
+query FindStudios($filter: FindFilterType, $studio_filter: StudioFilterType ) {
+  findStudios(filter: $filter, studio_filter: $studio_filter) {
     count
     studios {
       ...StudioData
