@@ -140,6 +140,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
         if (
           criterion.type !== "performers" &&
           criterion.type !== "studios" &&
+          criterion.type !== "parent_studios" &&
           criterion.type !== "tags" &&
           criterion.type !== "sceneTags" &&
           criterion.type !== "movies"

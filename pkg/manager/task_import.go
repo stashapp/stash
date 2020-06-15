@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -157,7 +158,8 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 
 func (t *ImportTask) ImportStudios(ctx context.Context) {
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewStudioQueryBuilder()
+
+	pendingParent := make(map[string][]*jsonschema.Studio)
 
 	for i, mappingJSON := range t.Mappings.Studios {
 		index := i + 1
@@ -172,32 +174,25 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 
 		logger.Progressf("[studios] %d of %d", index, len(t.Mappings.Studios))
 
-		// generate checksum from studio name rather than image
-		checksum := utils.MD5FromString(studioJSON.Name)
-
-		// Process the base 64 encoded image string
-		_, imageData, err := utils.ProcessBase64Image(studioJSON.Image)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[studios] <%s> invalid image: %s", mappingJSON.Checksum, err.Error())
-			return
-		}
-
-		// Populate a new studio from the input
-		newStudio := models.Studio{
-			Image:     imageData,
-			Checksum:  checksum,
-			Name:      sql.NullString{String: studioJSON.Name, Valid: true},
-			URL:       sql.NullString{String: studioJSON.URL, Valid: true},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(studioJSON.CreatedAt)},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(studioJSON.UpdatedAt)},
-		}
-
-		_, err = qb.Create(newStudio, tx)
-		if err != nil {
-			_ = tx.Rollback()
+		if err := t.ImportStudio(studioJSON, pendingParent, tx); err != nil {
+			tx.Rollback()
 			logger.Errorf("[studios] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
 			return
+		}
+	}
+
+	// create the leftover studios, warning for missing parents
+	if len(pendingParent) > 0 {
+		logger.Warnf("[studios] importing studios with missing parents")
+
+		for _, s := range pendingParent {
+			for _, orphanStudioJSON := range s {
+				if err := t.ImportStudio(orphanStudioJSON, nil, tx); err != nil {
+					tx.Rollback()
+					logger.Errorf("[studios] <%s> failed to create: %s", orphanStudioJSON.Name, err.Error())
+					return
+				}
+			}
 		}
 	}
 
@@ -206,6 +201,74 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 		logger.Errorf("[studios] import failed to commit: %s", err.Error())
 	}
 	logger.Info("[studios] import complete")
+}
+
+func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, tx *sqlx.Tx) error {
+	qb := models.NewStudioQueryBuilder()
+
+	// generate checksum from studio name rather than image
+	checksum := utils.MD5FromString(studioJSON.Name)
+
+	// Process the base 64 encoded image string
+	_, imageData, err := utils.ProcessBase64Image(studioJSON.Image)
+	if err != nil {
+		return fmt.Errorf("invalid image: %s", err.Error())
+	}
+
+	// Populate a new studio from the input
+	newStudio := models.Studio{
+		Image:     imageData,
+		Checksum:  checksum,
+		Name:      sql.NullString{String: studioJSON.Name, Valid: true},
+		URL:       sql.NullString{String: studioJSON.URL, Valid: true},
+		CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(studioJSON.CreatedAt)},
+		UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(studioJSON.UpdatedAt)},
+	}
+
+	// Populate the parent ID
+	if studioJSON.ParentStudio != "" {
+		studio, err := qb.FindByName(studioJSON.ParentStudio, tx, false)
+		if err != nil {
+			return fmt.Errorf("error finding studio by name <%s>: %s", studioJSON.ParentStudio, err.Error())
+		}
+
+		if studio == nil {
+			// its possible that the parent hasn't been created yet
+			// do it after it is created
+			if pendingParent == nil {
+				logger.Warnf("[studios] studio <%s> does not exist", studioJSON.ParentStudio)
+			} else {
+				// add to the pending parent list so that it is created after the parent
+				s := pendingParent[studioJSON.ParentStudio]
+				s = append(s, studioJSON)
+				pendingParent[studioJSON.ParentStudio] = s
+
+				// skip
+				return nil
+			}
+		} else {
+			newStudio.ParentID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+		}
+	}
+
+	_, err = qb.Create(newStudio, tx)
+	if err != nil {
+		return err
+	}
+
+	// now create the studios pending this studios creation
+	s := pendingParent[studioJSON.Name]
+	for _, childStudioJSON := range s {
+		// map is nil since we're not checking parent studios at this point
+		if err := t.ImportStudio(childStudioJSON, nil, tx); err != nil {
+			return fmt.Errorf("failed to create child studio <%s>: %s", childStudioJSON.Name, err.Error())
+		}
+	}
+
+	// delete the entry from the map so that we know its not left over
+	delete(pendingParent, studioJSON.Name)
+
+	return err
 }
 
 func (t *ImportTask) ImportMovies(ctx context.Context) {
@@ -410,7 +473,7 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 			UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
 		}
 
-		studio, err := sqb.FindByName(mappingJSON.Studio, tx)
+		studio, err := sqb.FindByName(mappingJSON.Studio, tx, false)
 		if err != nil {
 			logger.Errorf("[scraped sites] failed to fetch studio: %s", err.Error())
 		}
@@ -532,7 +595,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		// Populate the studio ID
 		if sceneJSON.Studio != "" {
 			sqb := models.NewStudioQueryBuilder()
-			studio, err := sqb.FindByName(sceneJSON.Studio, tx)
+			studio, err := sqb.FindByName(sceneJSON.Studio, tx, false)
 			if err != nil {
 				logger.Warnf("[scenes] studio <%s> does not exist: %s", sceneJSON.Studio, err.Error())
 			} else {
@@ -634,7 +697,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 					UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(marker.UpdatedAt)},
 				}
 
-				primaryTag, err := tqb.FindByName(marker.PrimaryTag, tx)
+				primaryTag, err := tqb.FindByName(marker.PrimaryTag, tx, false)
 				if err != nil {
 					logger.Errorf("[scenes] <%s> failed to find primary tag for marker: %s", scene.Checksum, err.Error())
 				} else {
@@ -682,7 +745,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Performer, error) {
 	pqb := models.NewPerformerQueryBuilder()
-	performers, err := pqb.FindByNames(names, tx)
+	performers, err := pqb.FindByNames(names, tx, false)
 	if err != nil {
 		return nil, err
 	}
@@ -711,7 +774,7 @@ func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int,
 
 	var movies []models.MoviesScenes
 	for _, inputMovie := range input {
-		movie, err := mqb.FindByName(inputMovie.MovieName, tx)
+		movie, err := mqb.FindByName(inputMovie.MovieName, tx, false)
 		if err != nil {
 			return nil, err
 		}
@@ -740,7 +803,7 @@ func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int,
 
 func (t *ImportTask) getTags(sceneChecksum string, names []string, tx *sqlx.Tx) ([]*models.Tag, error) {
 	tqb := models.NewTagQueryBuilder()
-	tags, err := tqb.FindByNames(names, tx)
+	tags, err := tqb.FindByNames(names, tx, false)
 	if err != nil {
 		return nil, err
 	}

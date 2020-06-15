@@ -1,4 +1,21 @@
-const Units = ["bytes", "kB", "MB", "GB", "TB", "PB"];
+import { IntlShape } from "react-intl";
+
+// Typescript currently does not implement the intl Unit interface
+type Unit =
+  | "byte"
+  | "kilobyte"
+  | "megabyte"
+  | "gigabyte"
+  | "terabyte"
+  | "petabyte";
+const Units: Unit[] = [
+  "byte",
+  "kilobyte",
+  "megabyte",
+  "gigabyte",
+  "terabyte",
+  "petabyte",
+];
 
 const truncate = (
   value?: string,
@@ -9,9 +26,9 @@ const truncate = (
   return value.length > limit ? value.substring(0, limit) + tail : value;
 };
 
-const fileSize = (bytes: number = 0, precision: number = 2) => {
+const fileSize = (bytes: number = 0) => {
   if (Number.isNaN(parseFloat(String(bytes))) || !Number.isFinite(bytes))
-    return "?";
+    return { size: 0, unit: Units[0] };
 
   let unit = 0;
   let count = bytes;
@@ -20,7 +37,10 @@ const fileSize = (bytes: number = 0, precision: number = 2) => {
     unit++;
   }
 
-  return `${count.toFixed(+precision)} ${Units[unit]}`;
+  return {
+    size: count,
+    unit: Units[unit],
+  };
 };
 
 const secondsToTimestamp = (seconds: number) => {
@@ -99,15 +119,23 @@ const sanitiseURL = (url?: string, siteURL?: URL) => {
   if (siteURL) {
     // if url starts with the site host, then prepend the protocol
     if (url.startsWith(siteURL.host)) {
-      return siteURL.protocol + url;
+      return `${siteURL.protocol}//${url}`;
     }
 
     // otherwise, construct the url from the protocol, host and passed url
-    return `${siteURL.protocol}${siteURL.host}/${url}`;
+    return `${siteURL.protocol}//${siteURL.host}/${url}`;
   }
 
   // just prepend the protocol - assume https
   return `https://${url}`;
+};
+
+const formatDate = (intl: IntlShape, date?: string) => {
+  if (!date) {
+    return "";
+  }
+
+  return intl.formatDate(date, { format: "long" });
 };
 
 const TextUtils = {
@@ -121,6 +149,7 @@ const TextUtils = {
   sanitiseURL,
   twitterURL,
   instagramURL,
+  formatDate,
 };
 
 export default TextUtils;

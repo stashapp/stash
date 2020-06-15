@@ -17,47 +17,43 @@ performerByName:
   scraper: performerSearch
 performerByURL:
   - action: scrapeXPath
-    url: 
+    url:
       - https://www.freeones.xxx
     scraper: performerScraper
 
 xPathScrapers:
   performerSearch:
     performer:
-      Name: //div[@id="search-result"]//a[@class=""]//div//p/text()
+      Name: //div[@id="search-result"]//p[@data-test="subject-name"]/text()
       URL:
-        selector: //div[@id="search-result"]//a[@class=""]/@href
-        # URL is a partial url, add the first part
+        selector: //div[@id="search-result"]//div[@data-test="teaser-subject"]/a/@href
         replace:
           - regex: ^
             with: https://www.freeones.xxx
           - regex: $
             with: /profile
-  
+
   performerScraper:
     performer:
       Name: //h1
-      URL: 
+      URL:
         selector: //a[span[text()="Profile"]]/@href
-        # URL is a partial url, add the first part
         replace:
           - regex: ^
             with: https://www.freeones.xxx
-      Twitter: //div[p[text()='Follow On']]//div//a[@class='d-flex align-items-center justify-content-center mr-2 social-icons color-twitter']/@href 
+      Twitter: //div[p[text()='Follow On']]//div//a[@class='d-flex align-items-center justify-content-center mr-2 social-icons color-twitter']/@href
       Instagram: //div[p[text()='Follow On']]//div//a[@class='d-flex align-items-center justify-content-center mr-2 social-icons color-telegram']/@href
-      # need to add support for concatenating two elements or something
       Birthdate:
-        selector: //div[p[text()='Personal Information']]//div//p[1]//a
+        selector: //div[p[text()='Personal Information']]//div//p/a/span[contains(text(),'Born On')]
         replace:
           - regex: Born On
             with:
           - regex: ","
             with:
-        # reference date is: 2006/01/02
         parseDate: January 2 2006
-      Ethnicity: 
+      Ethnicity:
         selector: //div[p[text()='Ethnicity']]//div//p[@class='mb-0 text-center']
-        replace: 
+        replace:
           - regex: Asian
             with: "asian"
           - regex: Caucasian
@@ -66,20 +62,31 @@ xPathScrapers:
             with: "black"
           - regex: Latin
             with: "hispanic"
-      Country: //div[p[text()='Personal Information']]//div//p[3]//a[last()]
+      Country: //div[p[text()='Personal Information']]//div//p//a[@data-test="link-country"]
       EyeColor: //div[p[text()='Eye Color']]//div//p//a//span
-      Height: 
+      Height:
         selector: //div[p[text()='Height']]//div//p//a//span
-        replace: 
+        replace:
           - regex: \D+[\s\S]+
             with: ""
-      Measurements: //div[p[text()='Measurements']]//div[@class='p-3']//p
-      FakeTits: //div[p[text()='Fake Boobs']]//div[@class='p-3']//p
-      # nbsp; screws up the parsing, so use contains instead
-      CareerLength: 
+      Measurements:
+        selector: //div[p[text()='Measurements']]//div[@class='p-3']//p
+        replace:
+          - regex: Unknown
+            with:
+      FakeTits:
+        selector: //span[@data-test='link_span_boobs']
+        replace:
+          - regex: Unknown
+            with:
+          - regex: Fake
+            with: "Yes"
+          - regex: Natural
+            with: "No"
+      CareerLength:
         selector: //div[p[text()='career']]//div//div[@class='timeline-horizontal mb-3']//div//p[@class='m-0']
         concat: "-"
-        replace: 
+        replace:
           - regex: -\w+-\w+-\w+-\w+-\w+$
             with: ""
       Aliases: //div[p[text()='Aliases']]//div//p[@class='mb-0 text-center']
@@ -87,7 +94,6 @@ xPathScrapers:
       Piercings: //div[p[text()='Piercings']]//div//p[@class='mb-0 text-center']
       Image:
         selector: //div[@class='profile-image-large']//a/img/@src
-        # URL is a partial url, add the first part
 `
 
 func GetFreeonesScraper() scraperConfig {

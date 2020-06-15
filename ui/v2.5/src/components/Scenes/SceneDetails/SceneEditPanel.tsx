@@ -15,6 +15,7 @@ import {
   queryScrapeSceneURL,
   useListSceneScrapers,
   useSceneUpdate,
+  mutateReloadScrapers,
 } from "src/core/StashService";
 import {
   PerformerSelect,
@@ -29,6 +30,7 @@ import { useToast } from "src/hooks";
 import { ImageUtils, FormUtils, EditableTextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
+import { RatingStars } from "./RatingStars";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -220,11 +222,21 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   }
 
-  function renderScraperMenu() {
-    if (!queryableScrapers || queryableScrapers.length === 0) {
-      return;
-    }
+  async function onReloadScrapers() {
+    setIsLoading(true);
+    try {
+      await mutateReloadScrapers();
 
+      // reload the performer scrapers
+      await Scrapers.refetch();
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function renderScraperMenu() {
     return (
       <DropdownButton id="scene-scrape" title="Scrape with...">
         {queryableScrapers.map((s) => (
@@ -232,6 +244,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             {s.name}
           </Dropdown.Item>
         ))}
+        <Dropdown.Item onClick={() => onReloadScrapers()}>
+          <span className="fa-icon">
+            <Icon icon="sync-alt" />
+          </span>
+          <span>Reload scrapers</span>
+        </Dropdown.Item>
       </DropdownButton>
     );
   }
@@ -388,13 +406,17 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             onChange: setDate,
             placeholder: "YYYY-MM-DD",
           })}
-          {FormUtils.renderHtmlSelect({
-            title: "Rating",
-            value: rating,
-            isEditing: true,
-            onChange: (value: string) => setRating(Number.parseInt(value, 10)),
-            selectOptions: ["", 1, 2, 3, 4, 5],
-          })}
+          <Form.Group controlId="rating" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Rating",
+            })}
+            <Col xs={9}>
+              <RatingStars
+                value={rating}
+                onSetRating={(value) => setRating(value)}
+              />
+            </Col>
+          </Form.Group>
           <Form.Group controlId="gallery" as={Row}>
             {FormUtils.renderLabel({
               title: "Gallery",

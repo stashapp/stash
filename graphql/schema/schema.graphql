@@ -20,7 +20,7 @@ type Query {
   """Find a studio by ID"""
   findStudio(id: ID!): Studio
   """A function which queries Studio objects"""
-  findStudios(filter: FindFilterType): FindStudiosResultType!
+  findStudios(studio_filter: StudioFilterType, filter: FindFilterType): FindStudiosResultType!
 
    """Find a movie by ID"""
   findMovie(id: ID!): Movie
@@ -53,6 +53,7 @@ type Query {
   """List available scrapers"""
   listPerformerScrapers: [Scraper!]!
   listSceneScrapers: [Scraper!]!
+
   """Scrape a list of performers based on name"""
   scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
   """Scrapes a complete performer record based on a scrapePerformerList result"""
@@ -152,6 +153,9 @@ type Mutation {
   metadataAutoTag(input: AutoTagMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
   metadataClean: String!
+
+  """Reload scrapers"""
+  reloadScrapers: Boolean!
 
   stopJob: Boolean!
 }

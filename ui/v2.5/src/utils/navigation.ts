@@ -1,6 +1,9 @@
 import * as GQL from "src/core/generated-graphql";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
-import { StudiosCriterion } from "src/models/list-filter/criteria/studios";
+import {
+  StudiosCriterion,
+  ParentStudiosCriterion,
+} from "src/models/list-filter/criteria/studios";
 import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { FilterMode } from "src/models/list-filter/types";
@@ -28,6 +31,17 @@ const makeStudioScenesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
   ];
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
+};
+
+const makeChildStudiosUrl = (studio: Partial<GQL.StudioDataFragment>) => {
+  if (!studio.id) return "#";
+  const filter = new ListFilterModel(FilterMode.Studios);
+  const criterion = new ParentStudiosCriterion();
+  criterion.value = [
+    { id: studio.id, label: studio.name || `Studio ${studio.id}` },
+  ];
+  filter.criteria.push(criterion);
+  return `/studios?${filter.makeQueryParameters()}`;
 };
 
 const makeMovieScenesUrl = (movie: Partial<GQL.MovieDataFragment>) => {
@@ -73,4 +87,5 @@ export default {
   makeTagScenesUrl,
   makeSceneMarkerUrl,
   makeMovieScenesUrl,
+  makeChildStudiosUrl,
 };

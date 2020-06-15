@@ -1,111 +1,162 @@
-.wall-overlay {
-  background-color: rgba(0, 0, 0, 0.8);
-  bottom: 0;
-  left: 0;
-  pointer-events: none;
-  position: fixed;
-  right: 0;
-  top: 0;
-  transition: transform 0.5s ease-in-out;
-  z-index: 1;
-}
-
-.visible {
-  opacity: 1;
-  transition: opacity 0.5s ease-in-out;
-}
-
-.hidden {
-  opacity: 0;
-  transition: opacity 0.5s ease-in-out;
-}
-
-.visible-unanimated {
-  opacity: 1;
-}
-
-.hidden-unanimated {
-  opacity: 0;
-}
-
-.double-scale {
-  background-color: black;
-  position: absolute;
-  transform: scale(2);
-  z-index: 2;
-}
-
-.double-scale .scene-wall-image {
-  opacity: 0;
-}
-
-.scene-wall-video,
-.scene-wall-image {
-  height: 100%;
-  object-fit: contain;
-  width: 100%;
-}
-
-.scene-wall-item-container {
-  display: flex;
-  height: 100%;
-  justify-content: center;
-  max-height: 253px;
-  position: relative;
-  transition: transform 0.5s;
-  width: 100%;
-}
-
-.scene-wall-item-container .scene-wall-video {
-  height: 100%;
-  position: absolute;
-  width: 100%;
-  z-index: -1;
-}
-
-.scene-wall-item-text-container {
-  background: linear-gradient(
-    rgba(255, 255, 255, 0.25),
-    rgba(255, 255, 255, 0.65)
-  );
-  bottom: 0;
-  color: #444;
-  font-weight: 700;
-  left: 0;
-  line-height: 1;
-  overflow: hidden;
-  padding: 5px;
-  position: absolute;
-  text-align: center;
-  width: 100%;
-
-  .wall-tag {
-    font-size: 10px;
-    font-weight: 400;
-    line-height: 1;
-    margin: 0 3px;
-  }
-}
-
-.scene-wall-item-blur {
-  bottom: -5px;
-  left: -5px;
-  position: absolute;
-  right: -5px;
-  top: -5px;
-  z-index: -1;
-}
-
 .wall {
-  .wall-item {
+  margin: 0 auto;
+  max-width: 2250px;
+
+  &-item {
+    height: 11.25vw;
     line-height: 0;
+    max-height: 253px;
+    max-width: 450px;
     overflow: visible;
     padding: 0;
-    position: relative;
+    transition: z-index 0.5s 0.5s;
     width: 20%;
+    z-index: 0;
 
     @media (max-width: 576px) {
+      height: inherit;
+      max-width: 100%;
       width: 100%;
+    }
+
+    &-anchor:hover {
+      text-decoration: none;
+    }
+
+    &-media {
+      background-color: black;
+      height: 100%;
+      object-fit: contain;
+      transition: z-index 0s 0s;
+      width: 100%;
+      z-index: 0;
+    }
+
+    &-missing {
+      align-items: center;
+      color: $text-color;
+      display: flex;
+      font-size: 1.5rem;
+      justify-content: center;
+    }
+
+    &-preview {
+      left: 0;
+      position: absolute;
+      top: 0;
+      transition: z-index 0s 0s;
+      z-index: -1;
+    }
+
+    &-text {
+      background: linear-gradient(
+        rgba(255, 255, 255, 0.25),
+        rgba(255, 255, 255, 0.65)
+      );
+      bottom: 0;
+      color: #444;
+      font-weight: 700;
+      left: 0;
+      line-height: 1;
+      overflow: hidden;
+      padding: 5px;
+      position: absolute;
+      text-align: center;
+      width: 100%;
+      z-index: 2000000;
+
+      .wall-tag {
+        font-size: 10px;
+        font-weight: 400;
+        line-height: 1;
+        margin: 0 3px;
+      }
+    }
+
+    &-container {
+      background-color: black;
+      display: flex;
+      height: 100%;
+      justify-content: center;
+      position: relative;
+      transition: all 0.5s 0s;
+      width: 100%;
+      z-index: 0;
+    }
+
+    &-container.transform-origin-top-left {
+      transform-origin: top left;
+    }
+
+    &-container.transform-origin-top-right {
+      transform-origin: top right;
+    }
+
+    &-container.transform-origin-bottom-left {
+      transform-origin: bottom left;
+    }
+
+    &-container.transform-origin-bottom-right {
+      transform-origin: bottom right;
+    }
+
+    &-container.transform-origin-left {
+      transform-origin: left;
+    }
+
+    &-container.transform-origin-right {
+      transform-origin: right;
+    }
+
+    &-container.transform-origin-top {
+      transform-origin: top;
+    }
+
+    &-container.transform-origin-bottom {
+      transform-origin: bottom;
+    }
+
+    &-container.transform-origin-center {
+      transform-origin: center;
+    }
+
+    &::before {
+      background-color: black;
+      bottom: 0;
+      content: "";
+      left: 0;
+      opacity: 0;
+      pointer-events: none;
+      position: fixed;
+      right: 0;
+      top: 0;
+      transition: opacity 0.5s 0s ease-in-out;
+      z-index: -1;
+    }
+
+    @media (min-width: 576px) {
+      &:hover {
+        z-index: 2;
+
+        .wall-item-media {
+          transition-delay: 0.5s;
+          transition-duration: 0.5s;
+          z-index: 10;
+        }
+
+        &::before {
+          opacity: 0.8;
+          transition-delay: 0.5s;
+        }
+
+        .wall-item-container {
+          background-color: black;
+          position: relative;
+          transform: scale(2);
+          transition-delay: 0.5s;
+          z-index: 10;
+        }
+      }
     }
   }
 }

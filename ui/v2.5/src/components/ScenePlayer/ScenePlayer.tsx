@@ -108,7 +108,7 @@ export class ScenePlayerImpl extends React.Component<
   }
 
   private shouldRepeat(scene: GQL.SceneDataFragment) {
-    const maxLoopDuration = this.state?.config.maximumLoopDuration ?? 0;
+    const maxLoopDuration = this.props?.config?.maximumLoopDuration ?? 0;
     return (
       !!scene.file.duration &&
       !!maxLoopDuration &&

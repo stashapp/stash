@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 )
 
@@ -264,7 +265,11 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 	result.Container = probeJSON.Format.FormatName
 	duration, _ := strconv.ParseFloat(probeJSON.Format.Duration, 64)
 	result.Duration = math.Round(duration*100) / 100
-	fileStat, _ := os.Stat(filePath)
+	fileStat, err := os.Stat(filePath)
+	if err != nil {
+		logger.Errorf("Error statting file: %v", err)
+		return nil, err
+	}
 	result.Size = fileStat.Size()
 	result.StartTime, _ = strconv.ParseFloat(probeJSON.Format.StartTime, 64)
 	result.CreationTime = probeJSON.Format.Tags.CreationTime.Time

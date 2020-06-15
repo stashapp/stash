@@ -1,6 +1,7 @@
 import React from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import { FormattedNumber, FormattedPlural } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import { CountryFlag } from "src/components/Shared";
@@ -39,8 +40,17 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
         <CountryFlag country={performer.country} />
         <div className="text-muted">
-          Stars in {performer.scene_count}{" "}
-          <Link to={NavUtils.makePerformerScenesUrl(performer)}>scenes</Link>.
+          Stars in&nbsp;
+          <FormattedNumber value={performer.scene_count ?? 0} />
+          &nbsp;
+          <Link to={NavUtils.makePerformerScenesUrl(performer)}>
+            <FormattedPlural
+              value={performer.scene_count ?? 0}
+              one="scene"
+              other="scenes"
+            />
+          </Link>
+          .
         </div>
       </div>
     </Card>

@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, ButtonGroup } from "react-bootstrap";
-import { useIntl } from "react-intl";
+import { FormattedNumber, useIntl } from "react-intl";
 
 interface IPaginationProps {
   itemsPerPage: number;
@@ -62,7 +62,7 @@ export const Pagination: React.FC<IPaginationProps> = ({
       active={currentPage === page}
       onClick={() => onChangePage(page)}
     >
-      {page}
+      <FormattedNumber value={page} />
     </Button>
   ));
 

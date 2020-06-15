@@ -74,6 +74,7 @@ export const useFindStudios = (filter: ListFilterModel) =>
   GQL.useFindStudiosQuery({
     variables: {
       filter: filter.makeFindFilter(),
+      studio_filter: filter.makeStudioFilter(),
     },
   });
 
@@ -408,6 +409,11 @@ export const queryScrapeScene = (
       scraper_id: scraperId,
       scene,
     },
+  });
+
+export const mutateReloadScrapers = () =>
+  client.mutate<GQL.ReloadScrapersMutation>({
+    mutation: GQL.ReloadScrapersDocument,
   });
 
 export const mutateMetadataScan = (input: GQL.ScanMetadataInput) =>

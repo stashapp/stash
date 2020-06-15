@@ -4,6 +4,9 @@ import { IntlProvider } from "react-intl";
 import { ToastProvider } from "src/hooks/Toast";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
+import "@formatjs/intl-numberformat/polyfill";
+import "@formatjs/intl-numberformat/dist/locale-data/en";
+import "@formatjs/intl-numberformat/dist/locale-data/en-GB";
 
 import locales from "src/locale";
 import { useConfiguration } from "src/core/StashService";
@@ -24,6 +27,12 @@ import Movies from "./components/Movies/Movies";
 // Set fontawesome/free-solid-svg as default fontawesome icons
 library.add(fas);
 
+const intlFormats = {
+  date: {
+    long: { year: "numeric", month: "long", day: "numeric" },
+  },
+};
+
 export const App: React.FC = () => {
   const config = useConfiguration();
   const language = config.data?.configuration?.interface?.language ?? "en-US";
@@ -33,7 +42,7 @@ export const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <IntlProvider locale={language} messages={messages}>
+      <IntlProvider locale={language} messages={messages} formats={intlFormats}>
         <ToastProvider>
           <MainNavbar />
           <div className="main container-fluid">

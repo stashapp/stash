@@ -111,6 +111,10 @@ func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.
 		config.Set(config.WallShowTitle, *input.WallShowTitle)
 	}
 
+	if input.WallPlayback != nil {
+		config.Set(config.WallPlayback, *input.WallPlayback)
+	}
+
 	if input.MaximumLoopDuration != nil {
 		config.Set(config.MaximumLoopDuration, *input.MaximumLoopDuration)
 	}
