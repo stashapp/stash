@@ -184,14 +184,14 @@ func makeCommonXPath(attr string) string {
 	return `//table[@id="biographyTable"]//tr/td[@class="paramname"]//b[text() = '` + attr + `']/ancestor::tr/td[@class="paramvalue"]`
 }
 
-func makeSimpleAttrConfig(str string) xpathScraperAttrConfig {
-	return xpathScraperAttrConfig{
+func makeSimpleAttrConfig(str string) xPathScraperAttrConfig {
+	return xPathScraperAttrConfig{
 		Selector: str,
 	}
 }
 
-func makeReplaceRegex(regex string, with string) xpathRegexConfig {
-	ret := xpathRegexConfig{
+func makeReplaceRegex(regex string, with string) xPathRegexConfig {
+	ret := xPathRegexConfig{
 		Regex: regex,
 		With:  with,
 	}
@@ -199,26 +199,26 @@ func makeReplaceRegex(regex string, with string) xpathRegexConfig {
 	return ret
 }
 
-func makeXPathConfig() xpathPerformerScraperConfig {
-	config := xpathPerformerScraperConfig{
-		xpathScraperConfig: make(xpathScraperConfig),
+func makeXPathConfig() xPathPerformerScraperConfig {
+	config := xPathPerformerScraperConfig{
+		xPathScraperConfig: make(xPathScraperConfig),
 	}
 
-	config.xpathScraperConfig["Name"] = makeSimpleAttrConfig(makeCommonXPath("Babe Name:") + `/a`)
-	config.xpathScraperConfig["Ethnicity"] = makeSimpleAttrConfig(makeCommonXPath("Ethnicity:"))
-	config.xpathScraperConfig["Country"] = makeSimpleAttrConfig(makeCommonXPath("Country of Origin:"))
-	config.xpathScraperConfig["Aliases"] = makeSimpleAttrConfig(makeCommonXPath("Aliases:"))
-	config.xpathScraperConfig["EyeColor"] = makeSimpleAttrConfig(makeCommonXPath("Eye Color:"))
-	config.xpathScraperConfig["Measurements"] = makeSimpleAttrConfig(makeCommonXPath("Measurements:"))
-	config.xpathScraperConfig["FakeTits"] = makeSimpleAttrConfig(makeCommonXPath("Fake boobs:"))
-	config.xpathScraperConfig["Height"] = makeSimpleAttrConfig(makeCommonXPath("Height:"))
-	config.xpathScraperConfig["Tattoos"] = makeSimpleAttrConfig(makeCommonXPath("Tattoos:"))
-	config.xpathScraperConfig["Piercings"] = makeSimpleAttrConfig(makeCommonXPath("Piercings:"))
+	config.xPathScraperConfig["Name"] = makeSimpleAttrConfig(makeCommonXPath("Babe Name:") + `/a`)
+	config.xPathScraperConfig["Ethnicity"] = makeSimpleAttrConfig(makeCommonXPath("Ethnicity:"))
+	config.xPathScraperConfig["Country"] = makeSimpleAttrConfig(makeCommonXPath("Country of Origin:"))
+	config.xPathScraperConfig["Aliases"] = makeSimpleAttrConfig(makeCommonXPath("Aliases:"))
+	config.xPathScraperConfig["EyeColor"] = makeSimpleAttrConfig(makeCommonXPath("Eye Color:"))
+	config.xPathScraperConfig["Measurements"] = makeSimpleAttrConfig(makeCommonXPath("Measurements:"))
+	config.xPathScraperConfig["FakeTits"] = makeSimpleAttrConfig(makeCommonXPath("Fake boobs:"))
+	config.xPathScraperConfig["Height"] = makeSimpleAttrConfig(makeCommonXPath("Height:"))
+	config.xPathScraperConfig["Tattoos"] = makeSimpleAttrConfig(makeCommonXPath("Tattoos:"))
+	config.xPathScraperConfig["Piercings"] = makeSimpleAttrConfig(makeCommonXPath("Piercings:"))
 
 	// special handling for birthdate
 	birthdateAttrConfig := makeSimpleAttrConfig(makeCommonXPath("Date of Birth:"))
 
-	var birthdateReplace xpathRegexConfigs
+	var birthdateReplace xPathRegexConfigs
 	birthdateReplace = append(birthdateReplace, makeReplaceRegex(` \(.* years old\)`, ""))
 
 	birthdateReplaceAction := postProcessReplace(birthdateReplace)
@@ -227,20 +227,20 @@ func makeXPathConfig() xpathPerformerScraperConfig {
 		&birthdateReplaceAction,
 		&birthdateParseDate,
 	}
-	config.xpathScraperConfig["Birthdate"] = birthdateAttrConfig
+	config.xPathScraperConfig["Birthdate"] = birthdateAttrConfig
 
 	// special handling for career length
 	// no colon in attribute header
 	careerLengthAttrConfig := makeSimpleAttrConfig(makeCommonXPath("Career Start And End"))
 
-	var careerLengthReplace xpathRegexConfigs
+	var careerLengthReplace xPathRegexConfigs
 	careerLengthReplace = append(careerLengthReplace, makeReplaceRegex(`\s+\(.*\)`, ""))
 	careerLengthReplaceAction := postProcessReplace(careerLengthReplace)
 	careerLengthAttrConfig.postProcessActions = []postProcessAction{
 		&careerLengthReplaceAction,
 	}
 
-	config.xpathScraperConfig["CareerLength"] = careerLengthAttrConfig
+	config.xPathScraperConfig["CareerLength"] = careerLengthAttrConfig
 
 	// use map post-process action for gender
 	genderConfig := makeSimpleAttrConfig(makeCommonXPath("Profession:"))
@@ -250,10 +250,10 @@ func makeXPathConfig() xpathPerformerScraperConfig {
 		&genderMapAction,
 	}
 
-	config.xpathScraperConfig["Gender"] = genderConfig
+	config.xPathScraperConfig["Gender"] = genderConfig
 
 	// use fixed for height
-	config.xpathScraperConfig["Height"] = xpathScraperAttrConfig{
+	config.xPathScraperConfig["Height"] = xPathScraperAttrConfig{
 		Fixed: "1234",
 	}
 
@@ -283,7 +283,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 
 	xpathConfig := makeXPathConfig()
 
-	scraper := xpathScraper{
+	scraper := xPathScraper{
 		Performer: &xpathConfig,
 	}
 
@@ -347,17 +347,17 @@ func TestConcatXPath(t *testing.T) {
 		return
 	}
 
-	xpathConfig := make(xpathScraperConfig)
-	nameAttrConfig := xpathScraperAttrConfig{
+	xpathConfig := make(xPathScraperConfig)
+	nameAttrConfig := xPathScraperAttrConfig{
 		Selector: "//div",
 		Concat:   separator,
 	}
 	xpathConfig["Name"] = nameAttrConfig
 	xpathConfig["EyeColor"] = makeSimpleAttrConfig("//span")
 
-	scraper := xpathScraper{
-		Performer: &xpathPerformerScraperConfig{
-			xpathScraperConfig: xpathConfig,
+	scraper := xPathScraper{
+		Performer: &xPathPerformerScraperConfig{
+			xPathScraperConfig: xpathConfig,
 		},
 	}
 
@@ -674,35 +674,35 @@ const sceneHTML = `
 </body>
 </html>`
 
-func makeSceneXPathConfig() xpathScraper {
+func makeSceneXPathConfig() xPathScraper {
 	common := make(commonXPathConfig)
 
 	common["$performerElem"] = `//div[@class="pornstarsWrapper"]/a[@data-mxptype="Pornstar"]`
 	common["$studioElem"] = `//div[@data-type="channel"]/a`
 
-	config := xpathSceneScraperConfig{
-		xpathScraperConfig: make(xpathScraperConfig),
+	config := xPathSceneScraperConfig{
+		xPathScraperConfig: make(xPathScraperConfig),
 	}
 
-	config.xpathScraperConfig["Title"] = makeSimpleAttrConfig(`//meta[@property="og:title"]/@content`)
+	config.xPathScraperConfig["Title"] = makeSimpleAttrConfig(`//meta[@property="og:title"]/@content`)
 	// this needs post-processing
-	config.xpathScraperConfig["Date"] = makeSimpleAttrConfig(`//script[@type="application/ld+json"]`)
+	config.xPathScraperConfig["Date"] = makeSimpleAttrConfig(`//script[@type="application/ld+json"]`)
 
-	tagConfig := make(xpathScraperConfig)
+	tagConfig := make(xPathScraperConfig)
 	tagConfig["Name"] = makeSimpleAttrConfig(`//div[@class="categoriesWrapper"]//a[not(@class="add-btn-small ")]`)
 	config.Tags = tagConfig
 
-	performerConfig := make(xpathScraperConfig)
+	performerConfig := make(xPathScraperConfig)
 	performerConfig["Name"] = makeSimpleAttrConfig(`$performerElem/@data-mxptext`)
 	performerConfig["URL"] = makeSimpleAttrConfig(`$performerElem/@href`)
 	config.Performers = performerConfig
 
-	studioConfig := make(xpathScraperConfig)
+	studioConfig := make(xPathScraperConfig)
 	studioConfig["Name"] = makeSimpleAttrConfig(`$studioElem`)
 	studioConfig["URL"] = makeSimpleAttrConfig(`$studioElem/@href`)
 	config.Studio = studioConfig
 
-	scraper := xpathScraper{
+	scraper := xPathScraper{
 		Scene:  &config,
 		Common: common,
 	}
@@ -860,19 +860,19 @@ xPathScrapers:
 	sceneScraper := config.XPathScrapers["sceneScraper"]
 	sceneConfig := sceneScraper.Scene
 
-	assert.Equal(t, "//title", sceneConfig.xpathScraperConfig["Title"].Selector)
+	assert.Equal(t, "//title", sceneConfig.xPathScraperConfig["Title"].Selector)
 	assert.Equal(t, "//tags", sceneConfig.Tags["Name"].Selector)
 	assert.Equal(t, "//movies", sceneConfig.Movies["Name"].Selector)
 	assert.Equal(t, "//performers", sceneConfig.Performers["Name"].Selector)
 	assert.Equal(t, "//studio", sceneConfig.Studio["Name"].Selector)
 
-	postProcess := sceneConfig.xpathScraperConfig["Title"].postProcessActions
+	postProcess := sceneConfig.xPathScraperConfig["Title"].postProcessActions
 	parseDate := postProcess[0].(*postProcessParseDate)
 	assert.Equal(t, "January 2, 2006", string(*parseDate))
 }
 
 func TestLoadInvalidXPath(t *testing.T) {
-	config := make(xpathScraperConfig)
+	config := make(xPathScraperConfig)
 
 	config["Name"] = makeSimpleAttrConfig(`//a[id=']/span`)
 

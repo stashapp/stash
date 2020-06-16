@@ -38,16 +38,16 @@ func (c commonXPathConfig) applyCommon(src string) string {
 	return ret
 }
 
-type xpathScraperConfig map[string]xpathScraperAttrConfig
-type xpathSceneScraperConfig struct {
-	xpathScraperConfig
+type xPathScraperConfig map[string]xPathScraperAttrConfig
+type xPathSceneScraperConfig struct {
+	xPathScraperConfig
 
-	Tags       xpathScraperConfig `yaml:"Tags"`
-	Performers xpathScraperConfig `yaml:"Performers"`
-	Studio     xpathScraperConfig `yaml:"Studio"`
-	Movies     xpathScraperConfig `yaml:"Movies"`
+	Tags       xPathScraperConfig `yaml:"Tags"`
+	Performers xPathScraperConfig `yaml:"Performers"`
+	Studio     xPathScraperConfig `yaml:"Studio"`
+	Movies     xPathScraperConfig `yaml:"Movies"`
 }
-type _xpathSceneScraperConfig xpathSceneScraperConfig
+type _xPathSceneScraperConfig xPathSceneScraperConfig
 
 const (
 	XPathScraperConfigSceneTags       = "Tags"
@@ -56,7 +56,7 @@ const (
 	XPathScraperConfigSceneMovies     = "Movies"
 )
 
-func (s *xpathSceneScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (s *xPathSceneScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// HACK - unmarshal to map first, then remove known scene sub-fields, then
 	// remarshal to yaml and pass that down to the base map
 	parentMap := make(map[string]interface{})
@@ -84,41 +84,41 @@ func (s *xpathSceneScraperConfig) UnmarshalYAML(unmarshal func(interface{}) erro
 	}
 
 	// needs to be a different type to prevent infinite recursion
-	c := _xpathSceneScraperConfig{}
+	c := _xPathSceneScraperConfig{}
 	if err := yaml.Unmarshal(yml, &c); err != nil {
 		return err
 	}
 
-	*s = xpathSceneScraperConfig(c)
+	*s = xPathSceneScraperConfig(c)
 
 	yml, err = yaml.Marshal(parentMap)
 	if err != nil {
 		return err
 	}
 
-	if err := yaml.Unmarshal(yml, &s.xpathScraperConfig); err != nil {
+	if err := yaml.Unmarshal(yml, &s.xPathScraperConfig); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-type xpathPerformerScraperConfig struct {
-	xpathScraperConfig
+type xPathPerformerScraperConfig struct {
+	xPathScraperConfig
 }
 
-func (s *xpathPerformerScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	return unmarshal(&s.xpathScraperConfig)
+func (s *xPathPerformerScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	return unmarshal(&s.xPathScraperConfig)
 }
 
-type xpathRegexConfig struct {
+type xPathRegexConfig struct {
 	Regex string `yaml:"regex"`
 	With  string `yaml:"with"`
 }
 
-type xpathRegexConfigs []xpathRegexConfig
+type xPathRegexConfigs []xPathRegexConfig
 
-func (c xpathRegexConfig) apply(value string) string {
+func (c xPathRegexConfig) apply(value string) string {
 	if c.Regex != "" {
 		re, err := regexp.Compile(c.Regex)
 		if err != nil {
@@ -137,7 +137,7 @@ func (c xpathRegexConfig) apply(value string) string {
 	return value
 }
 
-func (c xpathRegexConfigs) apply(value string) string {
+func (c xPathRegexConfigs) apply(value string) string {
 	// apply regex in order
 	for _, config := range c {
 		value = config.apply(value)
@@ -175,17 +175,17 @@ func (p *postProcessParseDate) Apply(value string) string {
 	return parsedValue.Format(internalDateFormat)
 }
 
-type postProcessReplace xpathRegexConfigs
+type postProcessReplace xPathRegexConfigs
 
 func (c *postProcessReplace) Apply(value string) string {
-	replace := xpathRegexConfigs(*c)
+	replace := xPathRegexConfigs(*c)
 	return replace.apply(value)
 }
 
-type postProcessSubScraper xpathScraperAttrConfig
+type postProcessSubScraper xPathScraperAttrConfig
 
 func (p *postProcessSubScraper) Apply(value string) string {
-	subScraper := xpathScraperAttrConfig(*p)
+	subScraper := xPathScraperAttrConfig(*p)
 
 	logger.Debugf("Sub-scraping for: %s", value)
 	doc, err := loadURL(value, nil)
@@ -228,14 +228,14 @@ func (p *postProcessMap) Apply(value string) string {
 	return value
 }
 
-type xpathPostProcessAction struct {
+type xPathPostProcessAction struct {
 	ParseDate  string                  `yaml:"parseDate"`
-	Replace    xpathRegexConfigs       `yaml:"replace"`
-	SubScraper *xpathScraperAttrConfig `yaml:"subScraper"`
+	Replace    xPathRegexConfigs       `yaml:"replace"`
+	SubScraper *xPathScraperAttrConfig `yaml:"subScraper"`
 	Map        map[string]string       `yaml:"map"`
 }
 
-func (a xpathPostProcessAction) ToPostProcessAction() (postProcessAction, error) {
+func (a xPathPostProcessAction) ToPostProcessAction() (postProcessAction, error) {
 	var found string
 	var ret postProcessAction
 
@@ -272,23 +272,23 @@ func (a xpathPostProcessAction) ToPostProcessAction() (postProcessAction, error)
 	return ret, nil
 }
 
-type xpathScraperAttrConfig struct {
+type xPathScraperAttrConfig struct {
 	Selector    string                   `yaml:"selector"`
 	Fixed       string                   `yaml:"fixed"`
-	PostProcess []xpathPostProcessAction `yaml:"postProcess"`
+	PostProcess []xPathPostProcessAction `yaml:"postProcess"`
 	Concat      string                   `yaml:"concat"`
 
 	postProcessActions []postProcessAction
 
 	// deprecated: use PostProcess instead
 	ParseDate  string                  `yaml:"parseDate"`
-	Replace    xpathRegexConfigs       `yaml:"replace"`
-	SubScraper *xpathScraperAttrConfig `yaml:"subScraper"`
+	Replace    xPathRegexConfigs       `yaml:"replace"`
+	SubScraper *xPathScraperAttrConfig `yaml:"subScraper"`
 }
 
-type _xpathScraperAttrConfig xpathScraperAttrConfig
+type _xPathScraperAttrConfig xPathScraperAttrConfig
 
-func (c *xpathScraperAttrConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (c *xPathScraperAttrConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// try unmarshalling into a string first
 	if err := unmarshal(&c.Selector); err != nil {
 		// if it's a type error then we try to unmarshall to the full object
@@ -298,18 +298,18 @@ func (c *xpathScraperAttrConfig) UnmarshalYAML(unmarshal func(interface{}) error
 
 		// unmarshall to full object
 		// need it as a separate object
-		t := _xpathScraperAttrConfig{}
+		t := _xPathScraperAttrConfig{}
 		if err = unmarshal(&t); err != nil {
 			return err
 		}
 
-		*c = xpathScraperAttrConfig(t)
+		*c = xPathScraperAttrConfig(t)
 	}
 
 	return c.convertPostProcessActions()
 }
 
-func (c *xpathScraperAttrConfig) convertPostProcessActions() error {
+func (c *xPathScraperAttrConfig) convertPostProcessActions() error {
 	// ensure we don't have the old deprecated fields and the new post process field
 	if len(c.PostProcess) > 0 {
 		if c.ParseDate != "" || len(c.Replace) > 0 || c.SubScraper != nil {
@@ -351,11 +351,11 @@ func (c *xpathScraperAttrConfig) convertPostProcessActions() error {
 	return nil
 }
 
-func (c xpathScraperAttrConfig) hasConcat() bool {
+func (c xPathScraperAttrConfig) hasConcat() bool {
 	return c.Concat != ""
 }
 
-func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
+func (c xPathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
 	separator := c.Concat
 	result := []string{}
 
@@ -369,7 +369,7 @@ func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
 	return strings.Join(result, separator)
 }
 
-func (c xpathScraperAttrConfig) postProcess(value string) string {
+func (c xPathScraperAttrConfig) postProcess(value string) string {
 	for _, action := range c.postProcessActions {
 		value = action.Apply(value)
 	}
@@ -404,7 +404,7 @@ func runXPathQuery(doc *html.Node, xpath string, common commonXPathConfig) []*ht
 	return found
 }
 
-func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xPathResults {
+func (s xPathScraperConfig) process(doc *html.Node, common commonXPathConfig) xPathResults {
 	var ret xPathResults
 
 	for k, attrConfig := range s {
@@ -439,15 +439,15 @@ func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xP
 	return ret
 }
 
-type xpathScrapers map[string]*xpathScraper
+type xPathScrapers map[string]*xPathScraper
 
-type xpathScraper struct {
+type xPathScraper struct {
 	Common    commonXPathConfig            `yaml:"common"`
-	Scene     *xpathSceneScraperConfig     `yaml:"scene"`
-	Performer *xpathPerformerScraperConfig `yaml:"performer"`
+	Scene     *xPathSceneScraperConfig     `yaml:"scene"`
+	Performer *xPathPerformerScraperConfig `yaml:"performer"`
 }
 
-func (s xpathScraper) scrapePerformer(doc *html.Node) (*models.ScrapedPerformer, error) {
+func (s xPathScraper) scrapePerformer(doc *html.Node) (*models.ScrapedPerformer, error) {
 	var ret models.ScrapedPerformer
 
 	performerMap := s.Performer
@@ -463,7 +463,7 @@ func (s xpathScraper) scrapePerformer(doc *html.Node) (*models.ScrapedPerformer,
 	return &ret, nil
 }
 
-func (s xpathScraper) scrapePerformers(doc *html.Node) ([]*models.ScrapedPerformer, error) {
+func (s xPathScraper) scrapePerformers(doc *html.Node) ([]*models.ScrapedPerformer, error) {
 	var ret []*models.ScrapedPerformer
 
 	performerMap := s.Performer
@@ -481,11 +481,11 @@ func (s xpathScraper) scrapePerformers(doc *html.Node) ([]*models.ScrapedPerform
 	return ret, nil
 }
 
-func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) {
+func (s xPathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) {
 	var ret models.ScrapedScene
 
 	sceneScraperConfig := s.Scene
-	sceneMap := sceneScraperConfig.xpathScraperConfig
+	sceneMap := sceneScraperConfig.xPathScraperConfig
 	if sceneMap == nil {
 		return nil, nil
 	}

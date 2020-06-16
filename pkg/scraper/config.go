@@ -155,7 +155,7 @@ type scraperConfig struct {
 
 	DebugOptions  *scraperDebugOptions `yaml:"debug"`
 	StashServer   *stashServer         `yaml:"stashServer"`
-	XPathScrapers xpathScrapers        `yaml:"xPathScrapers"`
+	XPathScrapers xPathScrapers        `yaml:"xPathScrapers"`
 }
 
 func loadScraperFromYAML(id string, reader io.Reader) (*scraperConfig, error) {
