@@ -214,10 +214,25 @@ func (p *postProcessSubScraper) Apply(value string) string {
 	return ""
 }
 
+type postProcessMap map[string]string
+
+func (p *postProcessMap) Apply(value string) string {
+	// return the mapped value if present
+	m := *p
+	mapped, ok := m[value]
+
+	if ok {
+		return mapped
+	}
+
+	return value
+}
+
 type xpathPostProcessAction struct {
 	ParseDate  string                  `yaml:"parseDate"`
 	Replace    xpathRegexConfigs       `yaml:"replace"`
 	SubScraper *xpathScraperAttrConfig `yaml:"subScraper"`
+	Map        map[string]string       `yaml:"map"`
 }
 
 func (a xpathPostProcessAction) ToPostProcessAction() (postProcessAction, error) {
@@ -243,6 +258,14 @@ func (a xpathPostProcessAction) ToPostProcessAction() (postProcessAction, error)
 		}
 		found = "subScraper"
 		action := postProcessSubScraper(*a.SubScraper)
+		ret = &action
+	}
+	if a.Map != nil {
+		if found != "" {
+			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "map")
+		}
+		found = "map"
+		action := postProcessMap(a.Map)
 		ret = &action
 	}
 

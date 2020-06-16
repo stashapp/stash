@@ -242,6 +242,16 @@ func makeXPathConfig() xpathPerformerScraperConfig {
 
 	config.xpathScraperConfig["CareerLength"] = careerLengthAttrConfig
 
+	// use map post-process action for gender
+	genderConfig := makeSimpleAttrConfig(makeCommonXPath("Profession:"))
+	genderMapAction := make(postProcessMap)
+	genderMapAction["Porn Star"] = "Female"
+	genderConfig.postProcessActions = []postProcessAction{
+		&genderMapAction,
+	}
+
+	config.xpathScraperConfig["Gender"] = genderConfig
+
 	return config
 }
 
@@ -289,8 +299,10 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const fakeTits = "No"
 	const careerLength = "2012 - 2019"
 	const tattoosPiercings = "None"
+	const gender = "Female"
 
 	verifyField(t, performerName, performer.Name, "Name")
+	verifyField(t, gender, performer.Gender, "Gender")
 	verifyField(t, ethnicity, performer.Ethnicity, "Ethnicity")
 	verifyField(t, country, performer.Country, "Country")
 
