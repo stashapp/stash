@@ -13,6 +13,7 @@ import (
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/charset"
+	"gopkg.in/yaml.v2"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -36,47 +37,97 @@ func (c commonXPathConfig) applyCommon(src string) string {
 	return ret
 }
 
-type xpathScraperConfig map[string]interface{}
+type xpathScraperConfig map[string]xpathScraperAttrConfig
+type xpathSceneScraperConfig struct {
+	xpathScraperConfig
 
-func createXPathScraperConfig(src map[interface{}]interface{}) xpathScraperConfig {
-	ret := make(xpathScraperConfig)
+	Tags       xpathScraperConfig `yaml:"Tags"`
+	Performers xpathScraperConfig `yaml:"Performers"`
+	Studio     xpathScraperConfig `yaml:"Studio"`
+	Movies     xpathScraperConfig `yaml:"Movies"`
+}
+type _xpathSceneScraperConfig xpathSceneScraperConfig
 
-	if src != nil {
-		for k, v := range src {
-			keyStr, isStr := k.(string)
-			if isStr {
-				ret[keyStr] = v
-			}
-		}
+const (
+	XPathScraperConfigSceneTags       = "Tags"
+	XPathScraperConfigScenePerformers = "Performers"
+	XPathScraperConfigSceneStudio     = "Studio"
+	XPathScraperConfigSceneMovies     = "Movies"
+)
+
+func (s *xpathSceneScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// HACK - unmarshal to map first, then remove known scene sub-fields, then
+	// remarshal to yaml and pass that down to the base map
+	parentMap := make(map[string]interface{})
+	if err := unmarshal(parentMap); err != nil {
+		return err
 	}
 
-	return ret
+	// move the known sub-fields to a separate map
+	thisMap := make(map[string]interface{})
+
+	thisMap[XPathScraperConfigSceneTags] = parentMap[XPathScraperConfigSceneTags]
+	thisMap[XPathScraperConfigScenePerformers] = parentMap[XPathScraperConfigScenePerformers]
+	thisMap[XPathScraperConfigSceneStudio] = parentMap[XPathScraperConfigSceneStudio]
+	thisMap[XPathScraperConfigSceneMovies] = parentMap[XPathScraperConfigSceneMovies]
+
+	delete(parentMap, XPathScraperConfigSceneTags)
+	delete(parentMap, XPathScraperConfigScenePerformers)
+	delete(parentMap, XPathScraperConfigSceneStudio)
+	delete(parentMap, XPathScraperConfigSceneMovies)
+
+	// re-unmarshal the sub-fields
+	yml, err := yaml.Marshal(thisMap)
+	if err != nil {
+		return err
+	}
+
+	// needs to be a different type to prevent infinite recursion
+	c := _xpathSceneScraperConfig{}
+	if err := yaml.Unmarshal(yml, &c); err != nil {
+		return err
+	}
+
+	*s = xpathSceneScraperConfig(c)
+
+	yml, err = yaml.Marshal(parentMap)
+	if err != nil {
+		return err
+	}
+
+	if err := yaml.Unmarshal(yml, &s.xpathScraperConfig); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-type xpathRegexConfig map[interface{}]interface{}
+type xpathPerformerScraperConfig struct {
+	xpathScraperConfig
+}
+
+func (s *xpathPerformerScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	return unmarshal(&s.xpathScraperConfig)
+}
+
+type xpathRegexConfig struct {
+	Regex string `yaml:"regex"`
+	With  string `yaml:"with"`
+}
+
 type xpathRegexConfigs []xpathRegexConfig
 
 func (c xpathRegexConfig) apply(value string) string {
-	regex := ""
-	with := ""
-
-	if regexI, _ := c["regex"]; regexI != nil {
-		regex, _ = regexI.(string)
-	}
-	if withI, _ := c["with"]; withI != nil {
-		with, _ = withI.(string)
-	}
-
-	if regex != "" {
-		re, err := regexp.Compile(regex)
+	if c.Regex != "" {
+		re, err := regexp.Compile(c.Regex)
 		if err != nil {
-			logger.Warnf("Error compiling regex '%s': %s", regex, err.Error())
+			logger.Warnf("Error compiling regex '%s': %s", c.Regex, err.Error())
 			return value
 		}
 
-		ret := re.ReplaceAllString(value, with)
+		ret := re.ReplaceAllString(value, c.With)
 
-		logger.Debugf(`Replace: '%s' with '%s'`, regex, with)
+		logger.Debugf(`Replace: '%s' with '%s'`, c.Regex, c.With)
 		logger.Debugf("Before: %s", value)
 		logger.Debugf("After: %s", ret)
 		return ret
@@ -97,75 +148,43 @@ func (c xpathRegexConfigs) apply(value string) string {
 	return value
 }
 
-type xpathScraperAttrConfig map[interface{}]interface{}
-
-func (c xpathScraperAttrConfig) getString(key string) string {
-	ret, _ := c[key]
-
-	if ret == nil {
-		return ""
-	}
-
-	asStr, _ := ret.(string)
-	return asStr
+type xpathScraperAttrConfig struct {
+	Selector   string                  `yaml:"selector"`
+	Concat     string                  `yaml:"concat"`
+	ParseDate  string                  `yaml:"parseDate"`
+	Replace    xpathRegexConfigs       `yaml:"replace"`
+	SubScraper *xpathScraperAttrConfig `yaml:"subScraper"`
 }
 
-func (c xpathScraperAttrConfig) getSelector() string {
-	const selectorKey = "selector"
-	return c.getString(selectorKey)
-}
+type _xpathScraperAttrConfig xpathScraperAttrConfig
 
-func (c xpathScraperAttrConfig) getConcat() string {
-	const concatKey = "concat"
-	return c.getString(concatKey)
-}
+func (c *xpathScraperAttrConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// try unmarshalling into a string first
+	if err := unmarshal(&c.Selector); err != nil {
+		// if it's a type error then we try to unmarshall to the full object
+		if _, ok := err.(*yaml.TypeError); !ok {
+			return err
+		}
 
-func (c xpathScraperAttrConfig) hasConcat() bool {
-	return c.getConcat() != ""
-}
+		// unmarshall to full object
+		// need it as a separate object
+		t := _xpathScraperAttrConfig{}
+		if err = unmarshal(&t); err != nil {
+			return err
+		}
 
-func (c xpathScraperAttrConfig) getParseDate() string {
-	const parseDateKey = "parseDate"
-	return c.getString(parseDateKey)
-}
-
-func (c xpathScraperAttrConfig) getReplace() xpathRegexConfigs {
-	const replaceKey = "replace"
-	val, _ := c[replaceKey]
-
-	var ret xpathRegexConfigs
-	if val == nil {
-		return ret
-	}
-
-	asSlice, _ := val.([]interface{})
-
-	for _, v := range asSlice {
-		asMap, _ := v.(map[interface{}]interface{})
-		ret = append(ret, xpathRegexConfig(asMap))
-	}
-
-	return ret
-}
-
-func (c xpathScraperAttrConfig) getSubScraper() xpathScraperAttrConfig {
-	const subScraperKey = "subScraper"
-	val, _ := c[subScraperKey]
-
-	if val == nil {
-		return nil
-	}
-
-	asMap, _ := val.(map[interface{}]interface{})
-	if asMap != nil {
-		return xpathScraperAttrConfig(asMap)
+		*c = xpathScraperAttrConfig(t)
 	}
 
 	return nil
 }
 
+func (c xpathScraperAttrConfig) hasConcat() bool {
+	return c.Concat != ""
+}
+
 func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
-	separator := c.getConcat()
+	separator := c.Concat
 	result := []string{}
 
 	for _, elem := range nodes {
@@ -179,7 +198,7 @@ func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
 }
 
 func (c xpathScraperAttrConfig) parseDate(value string) string {
-	parseDate := c.getParseDate()
+	parseDate := c.ParseDate
 
 	if parseDate == "" {
 		return value
@@ -199,12 +218,12 @@ func (c xpathScraperAttrConfig) parseDate(value string) string {
 }
 
 func (c xpathScraperAttrConfig) replaceRegex(value string) string {
-	replace := c.getReplace()
+	replace := c.Replace
 	return replace.apply(value)
 }
 
 func (c xpathScraperAttrConfig) applySubScraper(value string) string {
-	subScraper := c.getSubScraper()
+	subScraper := c.SubScraper
 
 	if subScraper == nil {
 		return value
@@ -218,7 +237,7 @@ func (c xpathScraperAttrConfig) applySubScraper(value string) string {
 		return ""
 	}
 
-	found := runXPathQuery(doc, subScraper.getSelector(), nil)
+	found := runXPathQuery(doc, subScraper.Selector, nil)
 
 	if len(found) > 0 {
 		// check if we're concatenating the results into a single result
@@ -276,39 +295,24 @@ func runXPathQuery(doc *html.Node, xpath string, common commonXPathConfig) []*ht
 func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xPathResults {
 	var ret xPathResults
 
-	for k, value := range s {
-		switch v := value.(type) {
-		case string:
-			found := runXPathQuery(doc, v, common)
+	for k, attrConfig := range s {
 
-			if len(found) > 0 {
+		found := runXPathQuery(doc, attrConfig.Selector, common)
+
+		if len(found) > 0 {
+			// check if we're concatenating the results into a single result
+			if attrConfig.hasConcat() {
+				result := attrConfig.concatenateResults(found)
+				result = attrConfig.postProcess(result)
+				const i = 0
+				ret = ret.setKey(i, k, result)
+			} else {
 				for i, elem := range found {
 					text := NodeText(elem)
 					text = commonPostProcess(text)
+					text = attrConfig.postProcess(text)
 
 					ret = ret.setKey(i, k, text)
-				}
-			}
-		case map[interface{}]interface{}:
-			attrConfig := xpathScraperAttrConfig(v)
-
-			found := runXPathQuery(doc, attrConfig.getSelector(), common)
-
-			if len(found) > 0 {
-				// check if we're concatenating the results into a single result
-				if attrConfig.hasConcat() {
-					result := attrConfig.concatenateResults(found)
-					result = attrConfig.postProcess(result)
-					const i = 0
-					ret = ret.setKey(i, k, result)
-				} else {
-					for i, elem := range found {
-						text := NodeText(elem)
-						text = commonPostProcess(text)
-						text = attrConfig.postProcess(text)
-
-						ret = ret.setKey(i, k, text)
-					}
 				}
 			}
 		}
@@ -320,66 +324,9 @@ func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xP
 type xpathScrapers map[string]*xpathScraper
 
 type xpathScraper struct {
-	Common    commonXPathConfig  `yaml:"common"`
-	Scene     xpathScraperConfig `yaml:"scene"`
-	Performer xpathScraperConfig `yaml:"performer"`
-}
-
-const (
-	XPathScraperConfigSceneTags       = "Tags"
-	XPathScraperConfigScenePerformers = "Performers"
-	XPathScraperConfigSceneStudio     = "Studio"
-	XPathScraperConfigSceneMovies     = "Movies"
-)
-
-func (s xpathScraper) GetSceneSimple() xpathScraperConfig {
-	// exclude the complex sub-configs
-	ret := make(xpathScraperConfig)
-	mapped := s.Scene
-
-	if mapped != nil {
-		for k, v := range mapped {
-			if k != XPathScraperConfigSceneTags && k != XPathScraperConfigScenePerformers && k != XPathScraperConfigSceneStudio && k != XPathScraperConfigSceneMovies {
-				ret[k] = v
-			}
-		}
-	}
-
-	return ret
-}
-
-func (s xpathScraper) getSceneSubMap(key string) xpathScraperConfig {
-	var ret map[interface{}]interface{}
-	mapped := s.Scene
-
-	if mapped != nil {
-		v, ok := mapped[key]
-		if ok {
-			ret, _ = v.(map[interface{}]interface{})
-		}
-	}
-
-	if ret != nil {
-		return createXPathScraperConfig(ret)
-	}
-
-	return nil
-}
-
-func (s xpathScraper) GetScenePerformers() xpathScraperConfig {
-	return s.getSceneSubMap(XPathScraperConfigScenePerformers)
-}
-
-func (s xpathScraper) GetSceneTags() xpathScraperConfig {
-	return s.getSceneSubMap(XPathScraperConfigSceneTags)
-}
-
-func (s xpathScraper) GetSceneStudio() xpathScraperConfig {
-	return s.getSceneSubMap(XPathScraperConfigSceneStudio)
-}
-
-func (s xpathScraper) GetSceneMovies() xpathScraperConfig {
-	return s.getSceneSubMap(XPathScraperConfigSceneMovies)
+	Common    commonXPathConfig            `yaml:"common"`
+	Scene     *xpathSceneScraperConfig     `yaml:"scene"`
+	Performer *xpathPerformerScraperConfig `yaml:"performer"`
 }
 
 func (s xpathScraper) scrapePerformer(doc *html.Node) (*models.ScrapedPerformer, error) {
@@ -419,15 +366,16 @@ func (s xpathScraper) scrapePerformers(doc *html.Node) ([]*models.ScrapedPerform
 func (s xpathScraper) scrapeScene(doc *html.Node) (*models.ScrapedScene, error) {
 	var ret models.ScrapedScene
 
-	sceneMap := s.GetSceneSimple()
+	sceneScraperConfig := s.Scene
+	sceneMap := sceneScraperConfig.xpathScraperConfig
 	if sceneMap == nil {
 		return nil, nil
 	}
 
-	scenePerformersMap := s.GetScenePerformers()
-	sceneTagsMap := s.GetSceneTags()
-	sceneStudioMap := s.GetSceneStudio()
-	sceneMoviesMap := s.GetSceneMovies()
+	scenePerformersMap := sceneScraperConfig.Performers
+	sceneTagsMap := sceneScraperConfig.Tags
+	sceneStudioMap := sceneScraperConfig.Studio
+	sceneMoviesMap := sceneScraperConfig.Movies
 
 	logger.Debug(`Processing scene:`)
 	results := sceneMap.process(doc, s.Common)
