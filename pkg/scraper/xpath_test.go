@@ -252,6 +252,11 @@ func makeXPathConfig() xpathPerformerScraperConfig {
 
 	config.xpathScraperConfig["Gender"] = genderConfig
 
+	// use fixed for height
+	config.xpathScraperConfig["Height"] = xpathScraperAttrConfig{
+		Fixed: "1234",
+	}
+
 	return config
 }
 
@@ -300,6 +305,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const careerLength = "2012 - 2019"
 	const tattoosPiercings = "None"
 	const gender = "Female"
+	const height = "1234"
 
 	verifyField(t, performerName, performer.Name, "Name")
 	verifyField(t, gender, performer.Gender, "Gender")
@@ -317,6 +323,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 
 	verifyField(t, tattoosPiercings, performer.Tattoos, "Tattoos")
 	verifyField(t, tattoosPiercings, performer.Piercings, "Piercings")
+	verifyField(t, height, performer.Height, "Piercings")
 }
 
 func TestConcatXPath(t *testing.T) {

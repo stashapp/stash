@@ -274,6 +274,7 @@ func (a xpathPostProcessAction) ToPostProcessAction() (postProcessAction, error)
 
 type xpathScraperAttrConfig struct {
 	Selector    string                   `yaml:"selector"`
+	Fixed       string                   `yaml:"fixed"`
 	PostProcess []xpathPostProcessAction `yaml:"postProcess"`
 	Concat      string                   `yaml:"concat"`
 
@@ -408,22 +409,28 @@ func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xP
 
 	for k, attrConfig := range s {
 
-		found := runXPathQuery(doc, attrConfig.Selector, common)
+		if attrConfig.Fixed != "" {
+			// TODO - not sure if this needs to set _all_ indexes for the key
+			const i = 0
+			ret = ret.setKey(i, k, attrConfig.Fixed)
+		} else {
+			found := runXPathQuery(doc, attrConfig.Selector, common)
 
-		if len(found) > 0 {
-			// check if we're concatenating the results into a single result
-			if attrConfig.hasConcat() {
-				result := attrConfig.concatenateResults(found)
-				result = attrConfig.postProcess(result)
-				const i = 0
-				ret = ret.setKey(i, k, result)
-			} else {
-				for i, elem := range found {
-					text := NodeText(elem)
-					text = commonPostProcess(text)
-					text = attrConfig.postProcess(text)
+			if len(found) > 0 {
+				// check if we're concatenating the results into a single result
+				if attrConfig.hasConcat() {
+					result := attrConfig.concatenateResults(found)
+					result = attrConfig.postProcess(result)
+					const i = 0
+					ret = ret.setKey(i, k, result)
+				} else {
+					for i, elem := range found {
+						text := NodeText(elem)
+						text = commonPostProcess(text)
+						text = attrConfig.postProcess(text)
 
-					ret = ret.setKey(i, k, text)
+						ret = ret.setKey(i, k, text)
+					}
 				}
 			}
 		}
