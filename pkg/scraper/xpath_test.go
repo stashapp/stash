@@ -221,8 +221,12 @@ func makeXPathConfig() xpathPerformerScraperConfig {
 	var birthdateReplace xpathRegexConfigs
 	birthdateReplace = append(birthdateReplace, makeReplaceRegex(` \(.* years old\)`, ""))
 
-	birthdateAttrConfig.Replace = birthdateReplace
-	birthdateAttrConfig.ParseDate = "January 2, 2006" // "July 1, 1992 (27 years old)&nbsp;"
+	birthdateReplaceAction := postProcessReplace(birthdateReplace)
+	birthdateParseDate := postProcessParseDate("January 2, 2006") // "July 1, 1992 (27 years old)&nbsp;"
+	birthdateAttrConfig.postProcessActions = []postProcessAction{
+		&birthdateReplaceAction,
+		&birthdateParseDate,
+	}
 	config.xpathScraperConfig["Birthdate"] = birthdateAttrConfig
 
 	// special handling for career length
@@ -231,7 +235,10 @@ func makeXPathConfig() xpathPerformerScraperConfig {
 
 	var careerLengthReplace xpathRegexConfigs
 	careerLengthReplace = append(careerLengthReplace, makeReplaceRegex(`\s+\(.*\)`, ""))
-	careerLengthAttrConfig.Replace = careerLengthReplace
+	careerLengthReplaceAction := postProcessReplace(careerLengthReplace)
+	careerLengthAttrConfig.postProcessActions = []postProcessAction{
+		&careerLengthReplaceAction,
+	}
 
 	config.xpathScraperConfig["CareerLength"] = careerLengthAttrConfig
 
@@ -808,7 +815,10 @@ xPathScrapers:
       name: //h1[@itemprop="name"]
   sceneScraper:
     scene:
-      Title: //title
+      Title:
+        selector: //title
+        postProcess:
+          - parseDate: January 2, 2006
       Tags:
         Name: //tags  
       Movies:
@@ -836,6 +846,10 @@ xPathScrapers:
 	assert.Equal(t, "//movies", sceneConfig.Movies["Name"].Selector)
 	assert.Equal(t, "//performers", sceneConfig.Performers["Name"].Selector)
 	assert.Equal(t, "//studio", sceneConfig.Studio["Name"].Selector)
+
+	postProcess := sceneConfig.xpathScraperConfig["Title"].postProcessActions
+	parseDate := postProcess[0].(*postProcessParseDate)
+	assert.Equal(t, "January 2, 2006", string(*parseDate))
 }
 
 func TestLoadInvalidXPath(t *testing.T) {

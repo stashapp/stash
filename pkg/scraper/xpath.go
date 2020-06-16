@@ -3,6 +3,7 @@ package scraper
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -148,57 +149,14 @@ func (c xpathRegexConfigs) apply(value string) string {
 	return value
 }
 
-type xpathScraperAttrConfig struct {
-	Selector   string                  `yaml:"selector"`
-	Concat     string                  `yaml:"concat"`
-	ParseDate  string                  `yaml:"parseDate"`
-	Replace    xpathRegexConfigs       `yaml:"replace"`
-	SubScraper *xpathScraperAttrConfig `yaml:"subScraper"`
+type postProcessAction interface {
+	Apply(value string) string
 }
 
-type _xpathScraperAttrConfig xpathScraperAttrConfig
+type postProcessParseDate string
 
-func (c *xpathScraperAttrConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	// try unmarshalling into a string first
-	if err := unmarshal(&c.Selector); err != nil {
-		// if it's a type error then we try to unmarshall to the full object
-		if _, ok := err.(*yaml.TypeError); !ok {
-			return err
-		}
-
-		// unmarshall to full object
-		// need it as a separate object
-		t := _xpathScraperAttrConfig{}
-		if err = unmarshal(&t); err != nil {
-			return err
-		}
-
-		*c = xpathScraperAttrConfig(t)
-	}
-
-	return nil
-}
-
-func (c xpathScraperAttrConfig) hasConcat() bool {
-	return c.Concat != ""
-}
-
-func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
-	separator := c.Concat
-	result := []string{}
-
-	for _, elem := range nodes {
-		text := NodeText(elem)
-		text = commonPostProcess(text)
-
-		result = append(result, text)
-	}
-
-	return strings.Join(result, separator)
-}
-
-func (c xpathScraperAttrConfig) parseDate(value string) string {
-	parseDate := c.ParseDate
+func (p *postProcessParseDate) Apply(value string) string {
+	parseDate := string(*p)
 
 	if parseDate == "" {
 		return value
@@ -217,17 +175,17 @@ func (c xpathScraperAttrConfig) parseDate(value string) string {
 	return parsedValue.Format(internalDateFormat)
 }
 
-func (c xpathScraperAttrConfig) replaceRegex(value string) string {
-	replace := c.Replace
+type postProcessReplace xpathRegexConfigs
+
+func (c *postProcessReplace) Apply(value string) string {
+	replace := xpathRegexConfigs(*c)
 	return replace.apply(value)
 }
 
-func (c xpathScraperAttrConfig) applySubScraper(value string) string {
-	subScraper := c.SubScraper
+type postProcessSubScraper xpathScraperAttrConfig
 
-	if subScraper == nil {
-		return value
-	}
+func (p *postProcessSubScraper) Apply(value string) string {
+	subScraper := xpathScraperAttrConfig(*p)
 
 	logger.Debugf("Sub-scraping for: %s", value)
 	doc, err := loadURL(value, nil)
@@ -256,11 +214,141 @@ func (c xpathScraperAttrConfig) applySubScraper(value string) string {
 	return ""
 }
 
+type xpathPostProcessAction struct {
+	ParseDate  string                  `yaml:"parseDate"`
+	Replace    xpathRegexConfigs       `yaml:"replace"`
+	SubScraper *xpathScraperAttrConfig `yaml:"subScraper"`
+}
+
+func (a xpathPostProcessAction) ToPostProcessAction() (postProcessAction, error) {
+	var found string
+	var ret postProcessAction
+
+	if a.ParseDate != "" {
+		found = "parseDate"
+		action := postProcessParseDate(a.ParseDate)
+		ret = &action
+	}
+	if len(a.Replace) > 0 {
+		if found != "" {
+			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "replace")
+		}
+		found = "replace"
+		action := postProcessReplace(a.Replace)
+		ret = &action
+	}
+	if a.SubScraper != nil {
+		if found != "" {
+			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "subScraper")
+		}
+		found = "subScraper"
+		action := postProcessSubScraper(*a.SubScraper)
+		ret = &action
+	}
+
+	return ret, nil
+}
+
+type xpathScraperAttrConfig struct {
+	Selector    string                   `yaml:"selector"`
+	PostProcess []xpathPostProcessAction `yaml:"postProcess"`
+	Concat      string                   `yaml:"concat"`
+
+	postProcessActions []postProcessAction
+
+	// deprecated: use PostProcess instead
+	ParseDate  string                  `yaml:"parseDate"`
+	Replace    xpathRegexConfigs       `yaml:"replace"`
+	SubScraper *xpathScraperAttrConfig `yaml:"subScraper"`
+}
+
+type _xpathScraperAttrConfig xpathScraperAttrConfig
+
+func (c *xpathScraperAttrConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// try unmarshalling into a string first
+	if err := unmarshal(&c.Selector); err != nil {
+		// if it's a type error then we try to unmarshall to the full object
+		if _, ok := err.(*yaml.TypeError); !ok {
+			return err
+		}
+
+		// unmarshall to full object
+		// need it as a separate object
+		t := _xpathScraperAttrConfig{}
+		if err = unmarshal(&t); err != nil {
+			return err
+		}
+
+		*c = xpathScraperAttrConfig(t)
+	}
+
+	return c.convertPostProcessActions()
+}
+
+func (c *xpathScraperAttrConfig) convertPostProcessActions() error {
+	// ensure we don't have the old deprecated fields and the new post process field
+	if len(c.PostProcess) > 0 {
+		if c.ParseDate != "" || len(c.Replace) > 0 || c.SubScraper != nil {
+			return errors.New("cannot include postProcess and (parseDate, replace, subScraper) deprecated fields")
+		}
+
+		// convert xpathPostProcessAction actions to postProcessActions
+		for _, a := range c.PostProcess {
+			action, err := a.ToPostProcessAction()
+			if err != nil {
+				return err
+			}
+			c.postProcessActions = append(c.postProcessActions, action)
+		}
+
+		c.PostProcess = nil
+	} else {
+		// convert old deprecated fields if present
+		// in same order as they used to be executed
+		if len(c.Replace) > 0 {
+			action := postProcessReplace(c.Replace)
+			c.postProcessActions = append(c.postProcessActions, &action)
+			c.Replace = nil
+		}
+
+		if c.SubScraper != nil {
+			action := postProcessSubScraper(*c.SubScraper)
+			c.postProcessActions = append(c.postProcessActions, &action)
+			c.SubScraper = nil
+		}
+
+		if c.ParseDate != "" {
+			action := postProcessParseDate(c.ParseDate)
+			c.postProcessActions = append(c.postProcessActions, &action)
+			c.ParseDate = ""
+		}
+	}
+
+	return nil
+}
+
+func (c xpathScraperAttrConfig) hasConcat() bool {
+	return c.Concat != ""
+}
+
+func (c xpathScraperAttrConfig) concatenateResults(nodes []*html.Node) string {
+	separator := c.Concat
+	result := []string{}
+
+	for _, elem := range nodes {
+		text := NodeText(elem)
+		text = commonPostProcess(text)
+
+		result = append(result, text)
+	}
+
+	return strings.Join(result, separator)
+}
+
 func (c xpathScraperAttrConfig) postProcess(value string) string {
-	// perform regex replacements first
-	value = c.replaceRegex(value)
-	value = c.applySubScraper(value)
-	value = c.parseDate(value)
+	for _, action := range c.postProcessActions {
+		value = action.Apply(value)
+	}
 
 	return value
 }
