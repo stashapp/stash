@@ -6,6 +6,7 @@ const markup = `
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
+*  Show pagination at top as well as bottom of the page.
 *  Show rating as stars in scene page.
 *  Add reload scrapers button.
 
