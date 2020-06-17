@@ -151,7 +151,14 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	filepath := manager.GetInstance().Paths.Scene.GetScreenshotPath(scene.Checksum)
-	http.ServeFile(w, r, filepath)
+
+	// fall back to the scene image blob if the file isn't present
+	screenshotExists, _ := utils.FileExists(filepath)
+	if screenshotExists {
+		http.ServeFile(w, r, filepath)
+	} else {
+		utils.ServeImage(scene.Cover, w, r)
+	}
 }
 
 func (rs sceneRoutes) Preview(w http.ResponseWriter, r *http.Request) {
