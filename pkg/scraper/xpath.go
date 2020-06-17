@@ -75,6 +75,7 @@ func (c xpathRegexConfig) apply(value string) string {
 		}
 
 		ret := re.ReplaceAllString(value, with)
+		// replace  lines if needed to protect from commonPostprocess
 		if with == "\n" {
 			ret = replaceLines(ret)
 		}
@@ -98,6 +99,7 @@ func (c xpathRegexConfigs) apply(value string) string {
 	value = commonPostProcess(value)
 
 	// restore replaced lines
+
 	value = restoreLines(value)
 	return value
 }
@@ -229,6 +231,19 @@ func (c xpathScraperAttrConfig) splitString(value string) []string {
 	return res
 }
 
+// setKeyAndSplit sets the key "k" for the results "ret" and splits if needed
+// "i" is the index starting position
+func (c xpathScraperAttrConfig) setKeyAndSplit(ret *xPathResults, value string, k string, i int) {
+	if c.hasSplit() {
+		for j, txt := range c.splitString(value) {
+			*ret = ret.setKey(j+i, k, txt)
+		}
+	} else {
+		*ret = ret.setKey(i, k, value)
+	}
+
+}
+
 func (c xpathScraperAttrConfig) replaceRegex(value string) string {
 	replace := c.getReplace()
 	return replace.apply(value)
@@ -289,19 +304,19 @@ func commonPostProcess(value string) string {
 	return value
 }
 
-// func replaceLines replaces all newlines ("\n") with carriage returns ("\r")
+// func replaceLines replaces all newlines ("\n") with alert ("\a")
 func replaceLines(value string) string {
-	re := regexp.MustCompile("\r")         // carriage returns shouldn't exist in the string
-	value = re.ReplaceAllString(value, "") // remove them
-	re = regexp.MustCompile("\n")          // replace newlines with CR's so that they don't get removed by commonPostprocess
-	value = re.ReplaceAllString(value, "\r")
+	re := regexp.MustCompile("\a")         // \a shouldn't exist in the string
+	value = re.ReplaceAllString(value, "") // remove it
+	re = regexp.MustCompile("\n")          // replace newlines with (\a)'s so that they don't get removed by commonPostprocess
+	value = re.ReplaceAllString(value, "\a")
 
 	return value
 }
 
-// func restoreLines replaces all carriage returns ("\r") with newlines ("\n")
+// func restoreLines replaces all alerts ("\a") with newlines ("\n")
 func restoreLines(value string) string {
-	re := regexp.MustCompile("\r")
+	re := regexp.MustCompile("\a")
 	value = re.ReplaceAllString(value, "\n")
 
 	return value
@@ -348,26 +363,13 @@ func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xP
 				if attrConfig.hasConcat() {
 					result := attrConfig.concatenateResults(found)
 					result = attrConfig.postProcess(result)
-					if attrConfig.hasSplit() {
-						for j, txt := range attrConfig.splitString(result) {
-							ret = ret.setKey(j, k, txt)
-						}
-					} else {
-						const i = 0
-						ret = ret.setKey(i, k, result)
-					}
+					attrConfig.setKeyAndSplit(&ret, result, k, 0)
 				} else {
 					for i, elem := range found {
 						text := NodeText(elem)
 						text = commonPostProcess(text)
 						text = attrConfig.postProcess(text)
-						if attrConfig.hasSplit() {
-							for j, txt := range attrConfig.splitString(text) {
-								ret = ret.setKey(i+j, k, txt)
-							}
-						} else {
-							ret = ret.setKey(i, k, text)
-						}
+						attrConfig.setKeyAndSplit(&ret, text, k, i)
 					}
 				}
 			}
