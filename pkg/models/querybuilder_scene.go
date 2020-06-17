@@ -556,30 +556,5 @@ func (qb *SceneQueryBuilder) DestroySceneCover(sceneID int, tx *sqlx.Tx) error {
 
 func (qb *SceneQueryBuilder) GetSceneCover(sceneID int, tx *sqlx.Tx) ([]byte, error) {
 	query := `SELECT cover from scenes_cover WHERE scene_id = ?`
-
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, sceneID)
-	} else {
-		rows, err = database.DB.Queryx(query, sceneID)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var ret []byte
-	if rows.Next() {
-		if err := rows.Scan(ret); err != nil {
-			return nil, err
-		}
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return ret, nil
+	return getImage(tx, query, sceneID)
 }

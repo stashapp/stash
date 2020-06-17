@@ -85,7 +85,6 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 
 		// Populate a new performer from the input
 		newPerformer := models.Performer{
-			Image:     imageData,
 			Checksum:  checksum,
 			Favorite:  sql.NullBool{Bool: performerJSON.Favorite, Valid: true},
 			CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(performerJSON.CreatedAt)},
@@ -141,11 +140,20 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 			newPerformer.Instagram = sql.NullString{String: performerJSON.Instagram, Valid: true}
 		}
 
-		_, err = qb.Create(newPerformer, tx)
+		createdPerformer, err := qb.Create(newPerformer, tx)
 		if err != nil {
 			_ = tx.Rollback()
 			logger.Errorf("[performers] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
 			return
+		}
+
+		// Add the performer image if set
+		if len(imageData) > 0 {
+			if err := qb.UpdatePerformerImage(createdPerformer.ID, imageData, tx); err != nil {
+				_ = tx.Rollback()
+				logger.Errorf("[performers] <%s> error setting performer image: %s", mappingJSON.Checksum, err.Error())
+				return
+			}
 		}
 	}
 
@@ -217,7 +225,6 @@ func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent m
 
 	// Populate a new studio from the input
 	newStudio := models.Studio{
-		Image:     imageData,
 		Checksum:  checksum,
 		Name:      sql.NullString{String: studioJSON.Name, Valid: true},
 		URL:       sql.NullString{String: studioJSON.URL, Valid: true},
@@ -251,9 +258,15 @@ func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent m
 		}
 	}
 
-	_, err = qb.Create(newStudio, tx)
+	createdStudio, err := qb.Create(newStudio, tx)
 	if err != nil {
 		return err
+	}
+
+	if len(imageData) > 0 {
+		if err := qb.UpdateStudioImage(createdStudio.ID, imageData, tx); err != nil {
+			return fmt.Errorf("error setting studio image: %s", err.Error())
+		}
 	}
 
 	// now create the studios pending this studios creation
@@ -307,17 +320,15 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 
 		// Populate a new movie from the input
 		newMovie := models.Movie{
-			FrontImage: frontimageData,
-			BackImage:  backimageData,
-			Checksum:   checksum,
-			Name:       sql.NullString{String: movieJSON.Name, Valid: true},
-			Aliases:    sql.NullString{String: movieJSON.Aliases, Valid: true},
-			Date:       models.SQLiteDate{String: movieJSON.Date, Valid: true},
-			Director:   sql.NullString{String: movieJSON.Director, Valid: true},
-			Synopsis:   sql.NullString{String: movieJSON.Synopsis, Valid: true},
-			URL:        sql.NullString{String: movieJSON.URL, Valid: true},
-			CreatedAt:  models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
-			UpdatedAt:  models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
+			Checksum:  checksum,
+			Name:      sql.NullString{String: movieJSON.Name, Valid: true},
+			Aliases:   sql.NullString{String: movieJSON.Aliases, Valid: true},
+			Date:      models.SQLiteDate{String: movieJSON.Date, Valid: true},
+			Director:  sql.NullString{String: movieJSON.Director, Valid: true},
+			Synopsis:  sql.NullString{String: movieJSON.Synopsis, Valid: true},
+			URL:       sql.NullString{String: movieJSON.URL, Valid: true},
+			CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
 		}
 
 		if movieJSON.Rating != 0 {
@@ -327,11 +338,20 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 			newMovie.Duration = sql.NullInt64{Int64: int64(movieJSON.Duration), Valid: true}
 		}
 
-		_, err = qb.Create(newMovie, tx)
+		createdMovie, err := qb.Create(newMovie, tx)
 		if err != nil {
 			_ = tx.Rollback()
 			logger.Errorf("[movies] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
 			return
+		}
+
+		// Add the performer image if set
+		if len(frontimageData) > 0 {
+			if err := qb.UpdateMovieImages(createdMovie.ID, frontimageData, backimageData, tx); err != nil {
+				_ = tx.Rollback()
+				logger.Errorf("[movies] <%s> error setting movie images: %s", mappingJSON.Checksum, err.Error())
+				return
+			}
 		}
 	}
 

@@ -214,3 +214,42 @@ func (qb *MovieQueryBuilder) queryMovies(query string, args []interface{}, tx *s
 
 	return movies, nil
 }
+
+func (qb *MovieQueryBuilder) UpdateMovieImages(movieID int, frontImage []byte, backImage []byte, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing cover and then create new
+	if err := qb.DestroyMovieImages(movieID, tx); err != nil {
+		return err
+	}
+
+	_, err := tx.Exec(
+		`INSERT INTO movies_images (movie_id, front_image, back_image) VALUES (?, ?)`,
+		movieID,
+		frontImage,
+		backImage,
+	)
+
+	return err
+}
+
+func (qb *MovieQueryBuilder) DestroyMovieImages(movieID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins
+	_, err := tx.Exec("DELETE FROM movies_images WHERE movie_id = ?", movieID)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (qb *MovieQueryBuilder) GetFrontImage(movieID int, tx *sqlx.Tx) ([]byte, error) {
+	query := `SELECT front_image from movies_images WHERE movie_id = ?`
+	return getImage(tx, query, movieID)
+}
+
+func (qb *MovieQueryBuilder) GetBackImage(movieID int, tx *sqlx.Tx) ([]byte, error) {
+	query := `SELECT back_image from movies_images WHERE movie_id = ?`
+	return getImage(tx, query, movieID)
+}

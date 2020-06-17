@@ -25,7 +25,9 @@ func (rs performerRoutes) Routes() chi.Router {
 
 func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	performer := r.Context().Value(performerKey).(*models.Performer)
-	utils.ServeImage(performer.Image, w, r)
+	qb := models.NewPerformerQueryBuilder()
+	image, _ := qb.GetPerformerImage(performer.ID, nil)
+	utils.ServeImage(image, w, r)
 }
 
 func PerformerCtx(next http.Handler) http.Handler {

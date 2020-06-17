@@ -208,3 +208,36 @@ func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}, tx 
 
 	return studios, nil
 }
+
+func (qb *StudioQueryBuilder) UpdateStudioImage(studioID int, image []byte, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing cover and then create new
+	if err := qb.DestroyStudioImage(studioID, tx); err != nil {
+		return err
+	}
+
+	_, err := tx.Exec(
+		`INSERT INTO studios_image (studio_id, image) VALUES (?, ?)`,
+		studioID,
+		image,
+	)
+
+	return err
+}
+
+func (qb *StudioQueryBuilder) DestroyStudioImage(studioID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins
+	_, err := tx.Exec("DELETE FROM studios_image WHERE studio_id = ?", studioID)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (qb *StudioQueryBuilder) GetStudioImage(studioID int, tx *sqlx.Tx) ([]byte, error) {
+	query := `SELECT image from studios_image WHERE studio_id = ?`
+	return getImage(tx, query, studioID)
+}
