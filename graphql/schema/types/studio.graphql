@@ -3,7 +3,8 @@ type Studio {
   checksum: String!
   name: String!
   url: String
-
+  parent_studio: Studio
+  child_studios: [Studio!]!
   image_path: String # Resolver
   scene_count: Int # Resolver
 }
@@ -11,6 +12,7 @@ type Studio {
 input StudioCreateInput {
   name: String!
   url: String
+  parent_id: ID
   """This should be base64 encoded"""
   image: String
 }
@@ -19,6 +21,7 @@ input StudioUpdateInput {
   id: ID!
   name: String
   url: String
+  parent_id: ID,
   """This should be base64 encoded"""
   image: String
 }

@@ -3,6 +3,12 @@ package manager
 import (
 	"context"
 	"fmt"
+	"math"
+	"runtime"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
@@ -10,11 +16,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"math"
-	"runtime"
-	"strconv"
-	"sync"
-	"time"
 )
 
 type ExportTask struct {
@@ -395,6 +396,8 @@ func (t *ExportTask) ExportStudios(ctx context.Context, workers int) {
 func exportStudio(wg *sync.WaitGroup, jobChan <-chan *models.Studio) {
 	defer wg.Done()
 
+	studioQB := models.NewStudioQueryBuilder()
+
 	for studio := range jobChan {
 
 		newStudioJSON := jsonschema.Studio{
@@ -407,6 +410,12 @@ func exportStudio(wg *sync.WaitGroup, jobChan <-chan *models.Studio) {
 		}
 		if studio.URL.Valid {
 			newStudioJSON.URL = studio.URL.String
+		}
+		if studio.ParentID.Valid {
+			parent, _ := studioQB.Find(int(studio.ParentID.Int64), nil)
+			if parent != nil {
+				newStudioJSON.ParentStudio = parent.Name.String
+			}
 		}
 
 		newStudioJSON.Image = utils.GetBase64StringFromData(studio.Image)

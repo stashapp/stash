@@ -239,6 +239,29 @@ func getIntCriterionWhereClause(column string, input IntCriterionInput) (string,
 	return column + " " + binding, count
 }
 
+// returns where clause and having clause
+func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, foreignFK string, criterion *MultiCriterionInput) (string, string) {
+	whereClause := ""
+	havingClause := ""
+	if criterion.Modifier == CriterionModifierIncludes {
+		// includes any of the provided ids
+		whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierIncludesAll {
+		// includes all of the provided ids
+		whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
+		havingClause = "count(distinct " + foreignTable + ".id) IS " + strconv.Itoa(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierExcludes {
+		// excludes all of the provided ids
+		if joinTable != "" {
+			whereClause = "not exists (select " + joinTable + "." + primaryFK + " from " + joinTable + " where " + joinTable + "." + primaryFK + " = " + primaryTable + ".id and " + joinTable + "." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
+		} else {
+			whereClause = "not exists (select s.id from " + primaryTable + " as s where s.id = " + primaryTable + ".id and s." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
+		}
+	}
+
+	return whereClause, havingClause
+}
+
 func runIdsQuery(query string, args []interface{}) ([]int, error) {
 	var result []struct {
 		Int int `db:"id"`

@@ -16,8 +16,8 @@ func NewStudioQueryBuilder() StudioQueryBuilder {
 func (qb *StudioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO studios (image, checksum, name, url, created_at, updated_at)
-				VALUES (:image, :checksum, :name, :url, :created_at, :updated_at)
+		`INSERT INTO studios (image, checksum, name, url, parent_id, created_at, updated_at)
+				VALUES (:image, :checksum, :name, :url, :parent_id, :created_at, :updated_at)
 		`,
 		newStudio,
 	)
@@ -35,20 +35,21 @@ func (qb *StudioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, er
 	return &newStudio, nil
 }
 
-func (qb *StudioQueryBuilder) Update(updatedStudio Studio, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) Update(updatedStudio StudioPartial, tx *sqlx.Tx) (*Studio, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
-		`UPDATE studios SET `+SQLGenKeys(updatedStudio)+` WHERE studios.id = :id`,
+		`UPDATE studios SET `+SQLGenKeysPartial(updatedStudio)+` WHERE studios.id = :id`,
 		updatedStudio,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := tx.Get(&updatedStudio, `SELECT * FROM studios WHERE id = ? LIMIT 1`, updatedStudio.ID); err != nil {
+	var ret Studio
+	if err := tx.Get(&ret, `SELECT * FROM studios WHERE id = ? LIMIT 1`, updatedStudio.ID); err != nil {
 		return nil, err
 	}
-	return &updatedStudio, nil
+	return &ret, nil
 }
 
 func (qb *StudioQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
@@ -71,6 +72,12 @@ func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*Studio, error) {
 	query := "SELECT * FROM studios WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryStudio(query, args, tx)
+}
+
+func (qb *StudioQueryBuilder) FindChildren(id int, tx *sqlx.Tx) ([]*Studio, error) {
+	query := "SELECT studios.* FROM studios WHERE studios.parent_id = ?"
+	args := []interface{}{id}
+	return qb.queryStudios(query, args, tx)
 }
 
 func (qb *StudioQueryBuilder) FindBySceneID(sceneID int) (*Studio, error) {
@@ -101,7 +108,10 @@ func (qb *StudioQueryBuilder) AllSlim() ([]*Studio, error) {
 	return qb.queryStudios("SELECT studios.id, studios.name FROM studios "+qb.getStudioSort(nil), nil, nil)
 }
 
-func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]*Studio, int) {
+func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int) {
+	if studioFilter == nil {
+		studioFilter = &StudioFilterType{}
+	}
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
 	}
@@ -116,9 +126,24 @@ func (qb *StudioQueryBuilder) Query(findFilter *FindFilterType) ([]*Studio, int)
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"studios.name"}
+
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		whereClauses = append(whereClauses, clause)
 		args = append(args, thisArgs...)
+	}
+
+	if parentsFilter := studioFilter.Parents; parentsFilter != nil && len(parentsFilter.Value) > 0 {
+		body += `
+			left join studios as parent_studio on parent_studio.id = studios.parent_id
+		`
+
+		for _, studioID := range parentsFilter.Value {
+			args = append(args, studioID)
+		}
+
+		whereClause, havingClause := getMultiCriterionClause("studios", "parent_studio", "", "", "parent_id", parentsFilter)
+		whereClauses = appendClause(whereClauses, whereClause)
+		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
 	sortAndPagination := qb.getStudioSort(findFilter) + getPagination(findFilter)

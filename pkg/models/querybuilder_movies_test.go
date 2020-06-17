@@ -3,6 +3,7 @@
 package models_test
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -84,6 +85,42 @@ func TestMovieFindByNames(t *testing.T) {
 	assert.Len(t, movies, 2) // movieIdxWithScene and movieIdxWithDupName
 	assert.Equal(t, strings.ToLower(movieNames[movieIdxWithScene]), strings.ToLower(movies[0].Name.String))
 	assert.Equal(t, strings.ToLower(movieNames[movieIdxWithScene]), strings.ToLower(movies[1].Name.String))
+}
+
+func TestMovieQueryStudio(t *testing.T) {
+	mqb := models.NewMovieQueryBuilder()
+	studioCriterion := models.MultiCriterionInput{
+		Value: []string{
+			strconv.Itoa(studioIDs[studioIdxWithMovie]),
+		},
+		Modifier: models.CriterionModifierIncludes,
+	}
+
+	movieFilter := models.MovieFilterType{
+		Studios: &studioCriterion,
+	}
+
+	movies, _ := mqb.Query(&movieFilter, nil)
+
+	assert.Len(t, movies, 1)
+
+	// ensure id is correct
+	assert.Equal(t, movieIDs[movieIdxWithStudio], movies[0].ID)
+
+	studioCriterion = models.MultiCriterionInput{
+		Value: []string{
+			strconv.Itoa(studioIDs[studioIdxWithMovie]),
+		},
+		Modifier: models.CriterionModifierExcludes,
+	}
+
+	q := getMovieStringValue(movieIdxWithStudio, titleField)
+	findFilter := models.FindFilterType{
+		Q: &q,
+	}
+
+	movies, _ = mqb.Query(&movieFilter, &findFilter)
+	assert.Len(t, movies, 0)
 }
 
 // TODO Update

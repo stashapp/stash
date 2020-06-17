@@ -3,6 +3,22 @@ fragment StudioData on Studio {
   checksum
   name
   url
+  parent_studio {
+    id
+    checksum
+    name
+    url
+    image_path
+    scene_count
+  }
+  child_studios {
+    id
+    checksum
+    name
+    url
+    image_path
+    scene_count
+  }
   image_path
   scene_count
 }
