@@ -87,6 +87,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
 }
 func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask, tx *sqlx.Tx) {
 	defer wg.Done()
+	sceneQB := models.NewSceneQueryBuilder()
 	studioQB := models.NewStudioQueryBuilder()
 	movieQB := models.NewMovieQueryBuilder()
 	galleryQB := models.NewGalleryQueryBuilder()
@@ -216,8 +217,14 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 			newSceneJSON.File.Bitrate = int(scene.Bitrate.Int64)
 		}
 
-		if len(scene.Cover) > 0 {
-			newSceneJSON.Cover = utils.GetBase64StringFromData(scene.Cover)
+		cover, err := sceneQB.GetSceneCover(scene.ID, tx)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene cover: %s", scene.Checksum, err.Error())
+			continue
+		}
+
+		if len(cover) > 0 {
+			newSceneJSON.Cover = utils.GetBase64StringFromData(cover)
 		}
 
 		sceneJSON, err := instance.JSON.getScene(scene.Checksum)

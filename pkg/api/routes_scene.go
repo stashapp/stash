@@ -157,7 +157,9 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	if screenshotExists {
 		http.ServeFile(w, r, filepath)
 	} else {
-		utils.ServeImage(scene.Cover, w, r)
+		qb := models.NewSceneQueryBuilder()
+		cover, _ := qb.GetSceneCover(scene.ID, nil)
+		utils.ServeImage(cover, w, r)
 	}
 }
 

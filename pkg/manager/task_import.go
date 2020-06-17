@@ -521,17 +521,18 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		}
 
 		// Process the base 64 encoded cover image string
+		var coverImageData []byte
 		if sceneJSON.Cover != "" {
-			_, coverImageData, err := utils.ProcessBase64Image(sceneJSON.Cover)
+			_, coverImageData, err = utils.ProcessBase64Image(sceneJSON.Cover)
 			if err != nil {
 				logger.Warnf("[scenes] <%s> invalid cover image: %s", mappingJSON.Checksum, err.Error())
 			}
 			if len(coverImageData) > 0 {
 				if err = SetSceneScreenshot(mappingJSON.Checksum, coverImageData); err != nil {
 					logger.Warnf("[scenes] <%s> failed to create cover image: %s", mappingJSON.Checksum, err.Error())
-				} else {
-					newScene.Cover = coverImageData
 				}
+
+				// write the cover image data after creating the scene
 			}
 		}
 
@@ -614,6 +615,15 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			_ = tx.Rollback()
 			logger.Errorf("[scenes] <%s> invalid id after scene creation", mappingJSON.Checksum)
 			return
+		}
+
+		// Add the scene cover if set
+		if len(coverImageData) > 0 {
+			if err := qb.UpdateSceneCover(scene.ID, coverImageData, tx); err != nil {
+				_ = tx.Rollback()
+				logger.Errorf("[scenes] <%s> error setting scene cover: %s", mappingJSON.Checksum, err.Error())
+				return
+			}
 		}
 
 		// Relate the scene to the gallery

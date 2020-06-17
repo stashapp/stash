@@ -525,3 +525,61 @@ func (qb *SceneQueryBuilder) UpdateFormat(id int, format string, tx *sqlx.Tx) er
 
 	return nil
 }
+
+func (qb *SceneQueryBuilder) UpdateSceneCover(sceneID int, cover []byte, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing cover and then create new
+	if err := qb.DestroySceneCover(sceneID, tx); err != nil {
+		return err
+	}
+
+	_, err := tx.Exec(
+		`INSERT INTO scenes_cover (scene_id, cover) VALUES (?, ?)`,
+		sceneID,
+		cover,
+	)
+
+	return err
+}
+
+func (qb *SceneQueryBuilder) DestroySceneCover(sceneID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins
+	_, err := tx.Exec("DELETE FROM scenes_cover WHERE scene_id = ?", sceneID)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (qb *SceneQueryBuilder) GetSceneCover(sceneID int, tx *sqlx.Tx) ([]byte, error) {
+	query := `SELECT cover from scenes_cover WHERE scene_id = ?`
+
+	var rows *sqlx.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.Queryx(query, sceneID)
+	} else {
+		rows, err = database.DB.Queryx(query, sceneID)
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ret []byte
+	if rows.Next() {
+		if err := rows.Scan(ret); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}

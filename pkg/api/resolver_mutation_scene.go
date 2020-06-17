@@ -80,13 +80,15 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 	if input.Date != nil {
 		updatedScene.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
 	}
+
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error
 		_, coverImageData, err = utils.ProcessBase64Image(*input.CoverImage)
 		if err != nil {
 			return nil, err
 		}
-		updatedScene.Cover = &coverImageData
+
+		// update the cover after updating the scene
 	}
 
 	if input.Rating != nil {
@@ -109,6 +111,13 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 	scene, err := qb.Update(updatedScene, tx)
 	if err != nil {
 		return nil, err
+	}
+
+	// update cover table
+	if len(coverImageData) > 0 {
+		if err := qb.UpdateSceneCover(sceneID, coverImageData, tx); err != nil {
+			return nil, err
+		}
 	}
 
 	// Clear the existing gallery value
