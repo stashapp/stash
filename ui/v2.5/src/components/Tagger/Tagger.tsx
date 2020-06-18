@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Badge, Button, Card, Collapse, Form, InputGroup } from 'react-bootstrap';
 import path from 'parse-filepath';
 import { debounce } from "lodash";
@@ -85,9 +85,9 @@ const parsePage = (searchQuery: string) => {
     return 1;
   }
   if (Array.isArray(parsedPage.page)) {
-    return Number.parseInt(parsedPage.page[0]) ?? 1;
+    return Number.parseInt(parsedPage.page[0], 10) ?? 1;
   }
-  return Number.parseInt(parsedPage.page) ?? 1;
+  return Number.parseInt(parsedPage.page, 10) ?? 1;
 }
 
 const parseTerm = (searchQuery: string) => {
@@ -102,9 +102,9 @@ const parseTerm = (searchQuery: string) => {
 }
 
 export const Tagger: React.FC = () => {
+  const history = useHistory();
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
-  const history = useHistory();
   const [searchFilter, setSearchFilter] = useState(parseTerm(history.location.search));
   const [page, setPage] = useState(parsePage(history.location.search));
   const [searchResults, setSearchResults] = useState<Record<string, SearchScene|null>>({});
@@ -120,19 +120,19 @@ export const Tagger: React.FC = () => {
     showMales: false,
     mode: 'auto',
     setCoverImage: true,
-    setTags: true,
+    setTags: false,
     tagOperation: "merge"
   });
 
   useEffect(() => {
-    localForage.getItem<ITaggerConfig>('tagger').then((data) => {;
+    localForage.getItem<ITaggerConfig>('tagger').then((data) => {
       setConfig({
         blacklist: data?.blacklist ?? DEFAULT_BLACKLIST,
         showMales: data?.showMales ?? false,
         mode: data?.mode ?? 'auto',
         setCoverImage: data?.setCoverImage ?? true,
-        setTags: true,
-        tagOperation: "merge"
+        setTags: data?.setTags ?? false,
+        tagOperation: data?.tagOperation ?? "merge"
       });
     }
   )}, []);
@@ -147,7 +147,7 @@ export const Tagger: React.FC = () => {
       term: searchFilter !== "" ? searchFilter : undefined,
     });
     history.push(`?${newQuery}`);
-  }, [page, searchFilter]);
+  }, [page, searchFilter, history]);
 
   const { data: sceneData, loading: sceneLoading } = GQL.useFindScenesQuery({
     variables: {
@@ -159,13 +159,10 @@ export const Tagger: React.FC = () => {
     }
   });
 
-  const searchCallback = useCallback(
-    debounce((value: string) => {
-      setSearchFilter(value);
-      setPage(1);
-    }, 500),
-    []
-  );
+  const searchCallback = debounce((value: string) => {
+    setSearchFilter(value);
+    setPage(1);
+  }, 500);
 
   const doBoxSearch = (sceneID: string, searchVal: string) => {
     client.query<SearchScene, SearchSceneVariables>({
@@ -338,9 +335,9 @@ export const Tagger: React.FC = () => {
             </Form>
             <div className="col-6">
               <h4>Help</h4>
-              <p>The search works by matching the query against a scene's <i>title</i>, <i>release date</i>, <i>studio name</i>, and <i>performer names</i>.
+              <p>The search works by matching the query against a scene&rsquo;s <i>title</i>, <i>release date</i>, <i>studio name</i>, and <i>performer names</i>.
                 An important thing to note is that it only returns a match <b>if all query terms are a match</b>.</p>
-              <p>As an example, if a scene is titled <code>"A Trip to the Mall"</code>, a search for <code>"Trip to the Mall 1080p"</code> will <b>not</b> match, however <code>"trip mall"</code> would. Usually a few pieces of info is enough, for instance performer name + release date or studio name.</p>
+              <p>As an example, if a scene is titled <code>&ldquo;A Trip to the Mall&rdquo;</code>, a search for <code>&ldquo;Trip to the Mall 1080p&rdquo;</code> will <b>not</b> match, however <code>&ldquo;trip mall&rdquo;</code> would. Usually a few pieces of info is enough, for instance performer name + release date or studio name.</p>
               <p><b>Please note</b> that this is still a work in progress, and the number of studios for which scenes are available is not exhaustive. For a complete list see <a href="https://stashdb.org/studios" target="_blank" rel="noopener noreferrer" className="btn-link">stashdb.org</a>.</p>
             </div>
           </div>

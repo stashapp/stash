@@ -11,6 +11,7 @@ import {
   SearchScene_searchScene_studio as StashStudio
 } from 'src/definitions-box/SearchScene';
 import { FingerprintAlgorithm } from 'src/definitions-box/globalTypes';
+import { getCountryByISO } from 'src/utils/country';
 import * as GQL from 'src/core/generated-graphql';
 import {
   SubmitFingerprintVariables,
@@ -86,6 +87,7 @@ interface IStudioOperation {
 const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScene, isActive, setActive, showMales, setScene, setCoverImage }) => {
   const [studio, setStudio] = useState<IStudioOperation>();
   const [performers, setPerformers] = useState<Record<string, IPerformerOperation>>();
+  const [saveState, setSaveState] = useState<string>('');
 
   const [createStudio] = GQL.useStudioCreateMutation();
   const [updateStudio] = GQL.useStudioUpdateMutation();
@@ -107,6 +109,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
     let performerIDs = [];
 
     if (studio.type === 'Update') {
+      setSaveState("Updating studio");
       const studioUpdateResult = await updateStudio({
         variables: {
           id: studio.data as string,
@@ -133,6 +136,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       studioID = id;
     }
     else if(studio.type === 'Create') {
+      setSaveState("Creating studio");
       const studioData = studio.data as StashStudio;
       const studioCreateResult = await createStudio({
         variables: {
@@ -159,7 +163,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
             query: AllStudiosForFilterDocument,
             variables: {},
           });
-          const allStudiosSlim = sortBy([(currentQuery?.data?.allStudiosSlim ?? []), newStudio.data.studioCreate], ['name']);
+          const allStudiosSlim = sortBy([...(currentQuery?.data?.allStudiosSlim ?? []), newStudio.data.studioCreate], ['name']);
           if (allStudiosSlim.length > 1) {
             store.writeQuery({
               query: AllStudiosForFilterDocument,
@@ -181,6 +185,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       studioID = studio.data as string;
     }
 
+    setSaveState("Saving performers");
     performerIDs = await Promise.all(Object.keys(performers).map(async (performerID) => {
       const performer = performers[performerID];
       if (performer.type === 'Update') {
@@ -238,7 +243,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
           variables: {
             name: performerData.name,
             gender: formatGender(performerData.gender),
-            country: performerData.country,
+            country: getCountryByISO(performerData.country) ?? '',
             height: performerData.height?.toString(),
             ethnicity: titleCase(performerData.ethnicity ?? ''),
             birthdate: performerData.birthdate?.date ?? null,
@@ -279,7 +284,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
               query: AllPerformersForFilterDocument,
               variables: {},
             });
-            const allPerformersSlim = sortBy([(currentQuery?.data?.allPerformersSlim ?? []), newPerformer.data.performerCreate], ['name']);
+            const allPerformersSlim = sortBy([...(currentQuery?.data?.allPerformersSlim ?? []), newPerformer.data.performerCreate], ['name']);
             if (allPerformersSlim.length > 1) {
               store.writeQuery({
                 query: AllPerformersForFilterDocument,
@@ -304,6 +309,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       return performer.data as string;
     }));
 
+    setSaveState("Updating scene");
     if(studioID && !performerIDs.some(id => !id)) {
       const imgurl = getImage(scene.images, 'landscape');
       let imgData = null;
@@ -321,7 +327,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       const tagIDs:string[] = [];
       const tags = scene.tags ?? [];
       if (tags.length > 0) {
-        const tagDict:Record<string, string> = (allTags?.allTagsSlim ?? []).reduce((dict, t) => ({ ...dict, [t.name.toLowerCase()]: t.id }), {});
+        const tagDict:Record<string, string> = (allTags?.allTagsSlim ?? [])
+          .filter(t => t.name)
+          .reduce((dict, t) => ({ ...dict, [t.name.toLowerCase()]: t.id }), {});
         const newTags:string[] = [];
         tags.forEach(tag => {
           if (tagDict[tag.name.toLowerCase()])
@@ -371,7 +379,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
           performer_ids: performerIDs.filter(id => id !== 'Skip') as string[],
           studio_id: studioID,
           cover_image: imgData,
-          //url: getUrlByType(scene.urls, 'STUDIO') ?? null,
+          // url: getUrlByType(scene.urls, 'STUDIO') ?? null,
           ...(tagIDs ? { tag_ids: tagIDs } : {})
         }
       });
@@ -392,6 +400,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
             }
           }
         });
+      setSaveState('');
     }
   };
 
@@ -429,7 +438,8 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
             ))
           }
           <div className="row pr-3 mt-2">
-            <Button className="col-1 offset-11" onClick={handleSave} disabled={!saveEnabled}>Save</Button>
+            <strong className="offset-8 col-3 mt-1">{saveState}</strong>
+            <Button className="col-1" onClick={handleSave} disabled={!saveEnabled}>Save</Button>
           </div>
         </div>
       )}

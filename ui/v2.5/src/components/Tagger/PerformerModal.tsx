@@ -6,6 +6,7 @@ import { BreastTypeEnum, GenderEnum } from 'src/definitions-box/globalTypes';
 import {
   SearchScene_searchScene_performers_performer as StashPerformer,
 } from 'src/definitions-box/SearchScene';
+import { getCountryByISO } from 'src/utils/country';
 import { formatBodyModification, formatMeasurements, sortImageURLs } from './utils';
 
 interface IPerformerModalProps {
@@ -33,16 +34,20 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({ modalVisible, performe
       accept={{ text: "Save", onClick: () => handlePerformerCreate(imageIndex) }}
       cancel={{ onClick: () => showModal(false), variant: "secondary" }}
       onHide={() => showModal(false)}
+      dialogClassName="performer-create-modal"
     >
       <div className="row">
         <div className="col-6">
+          <div className="row no-gutters mb-4">
+            <strong>Performer information</strong>
+          </div>
           <div className="row no-gutters">
             <strong className="col-6">Name:</strong>
             <span className="col-6 text-truncate">{ performer.name }</span>
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Gender:</strong>
-            <span className="col-6 text-truncate">{ performer.gender}</span>
+            <span className="col-6 text-truncate text-capitalize">{ performer.gender?.toLowerCase()}</span>
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Birthdate:</strong>
@@ -50,15 +55,15 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({ modalVisible, performe
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Ethnicity:</strong>
-            <span className="col-6 text-truncate">{ performer.ethnicity }</span>
+            <span className="col-6 text-truncate text-capitalize">{ performer.ethnicity?.toLowerCase() }</span>
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Country:</strong>
-            <span className="col-6 text-truncate">{ performer.country }</span>
+            <span className="col-6 text-truncate">{ getCountryByISO(performer.country) ?? '' }</span>
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Eye Color:</strong>
-            <span className="col-6 text-truncate">{ performer.eye_color }</span>
+            <span className="col-6 text-truncate text-capitalize">{ performer.eye_color?.toLowerCase() }</span>
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Height:</strong>
@@ -90,14 +95,16 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({ modalVisible, performe
           </div>
         </div>
         { images.length > 0 && (
-          <div className="col-6">
-            <img src={images[imageIndex].url} alt='' className="w-100" />
+          <div className="col-6 image-selection">
+            <div className="performer-image">
+              <img src={images[imageIndex].url} alt='' />
+            </div>
             <div className="d-flex mt-2">
-              <Button className="mr-auto" onClick={setPrev}>
+              <Button className="mr-auto" onClick={setPrev} disabled={images.length === 1}>
                 <Icon icon="arrow-left" />
               </Button>
-              <h5>Image {imageIndex+1} of {images.length}</h5>
-              <Button className="ml-auto" onClick={setNext}>
+              <h5>Select performer image<br />{imageIndex+1} of {images.length}</h5>
+              <Button className="ml-auto" onClick={setNext} disabled={images.length === 1}>
                 <Icon icon="arrow-right" />
               </Button>
             </div>

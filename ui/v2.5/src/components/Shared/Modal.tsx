@@ -18,6 +18,7 @@ interface IModal {
   accept?: IButton;
   isRunning?: boolean;
   modalProps?: ModalProps;
+  dialogClassName?: string;
 }
 
 const ModalComponent: React.FC<IModal> = ({
@@ -30,8 +31,9 @@ const ModalComponent: React.FC<IModal> = ({
   onHide,
   isRunning,
   modalProps,
+  dialogClassName,
 }) => (
-  <Modal keyboard={false} onHide={onHide} show={show} {...modalProps}>
+  <Modal keyboard={false} onHide={onHide} show={show} dialogClassName={dialogClassName} {...modalProps}>
     <Modal.Header>
       {icon ? <Icon icon={icon} /> : ""}
       <span>{header ?? ""}</span>
