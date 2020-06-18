@@ -7,6 +7,8 @@ const markup = `
 
 ### 🎨 Improvements
 *  Show pagination at top as well as bottom of the page.
+*  Add split xpath post-processing action.
+*  Improved the layout of the scene page.
 *  Show rating as stars in scene page.
 *  Add reload scrapers button.
 
