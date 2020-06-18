@@ -663,6 +663,14 @@ func makeSceneXPathConfig() xpathScraper {
 	studioConfig["URL"] = `$studioElem/@href`
 	config["Studio"] = studioConfig
 
+	const sep = " "
+	moviesNameConfig := make(map[interface{}]interface{})
+	moviesNameConfig["selector"] = `//i[@class="isMe tooltipTrig"]/@data-title`
+	moviesNameConfig["split"] = sep
+	moviesConfig := make(map[interface{}]interface{})
+	moviesConfig["Name"] = moviesNameConfig
+	config["Movies"] = moviesConfig
+
 	scraper := xpathScraper{
 		Scene:  config,
 		Common: common,
@@ -687,6 +695,27 @@ func verifyTags(t *testing.T, expectedTagNames []string, actualTags []*models.Sc
 
 		if expectedTag != actualTag {
 			t.Errorf("Expected tag %s, got %s", expectedTag, actualTag)
+		}
+		i++
+	}
+}
+
+func verifyMovies(t *testing.T, expectedMovieNames []string, actualMovies []*models.ScrapedSceneMovie) {
+	t.Helper()
+
+	i := 0
+	for i < len(expectedMovieNames) || i < len(actualMovies) {
+		expectedMovie := ""
+		actualMovie := ""
+		if i < len(expectedMovieNames) {
+			expectedMovie = expectedMovieNames[i]
+		}
+		if i < len(actualMovies) {
+			actualMovie = actualMovies[i].Name
+		}
+
+		if expectedMovie != actualMovie {
+			t.Errorf("Expected movie %s, got %s", expectedMovie, actualMovie)
 		}
 		i++
 	}
@@ -760,6 +789,15 @@ func TestApplySceneXPathConfig(t *testing.T) {
 		"Verified Models",
 	}
 	verifyTags(t, expectedTags, scene.Tags)
+
+	// verify movies
+	expectedMovies := []string{
+		"Video",
+		"of",
+		"verified",
+		"member",
+	}
+	verifyMovies(t, expectedMovies, scene.Movies)
 
 	expectedPerformerNames := []string{
 		"Alex D",
