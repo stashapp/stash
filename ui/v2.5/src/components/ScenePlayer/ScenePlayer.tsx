@@ -6,6 +6,7 @@ import { JWUtils } from "src/utils";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 
 interface IScenePlayerProps {
+  className?: string;
   scene: GQL.SceneDataFragment;
   timestamp: number;
   autoplay?: boolean;
@@ -161,8 +162,8 @@ export class ScenePlayerImpl extends React.Component<
           kind: "chapters",
         },
       ],
-      aspectratio: "16:9",
       width: "100%",
+      height: "100%",
       floating: {
         dismissible: true,
       },
@@ -183,11 +184,20 @@ export class ScenePlayerImpl extends React.Component<
   }
 
   public render() {
+    let className =
+      this.props.className ?? "w-100 col-sm-9 m-sm-auto no-gutter";
+    const sceneFile = this.props.scene.file;
+
+    if (
+      sceneFile.height &&
+      sceneFile.width &&
+      sceneFile.height > sceneFile.width
+    ) {
+      className += " portrait";
+    }
+
     return (
-      <div
-        id="jwplayer-container"
-        className="w-100 col-sm-9 m-sm-auto no-gutter"
-      >
+      <div id="jwplayer-container" className={className}>
         <ReactJWPlayer
           playerId={JWUtils.playerID}
           playerScript="/jwplayer/jwplayer.js"

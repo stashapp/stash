@@ -18,7 +18,12 @@ export const OCounterButton: React.FC<IOCounterButtonProps> = (
   if (props.loading) return <Spinner animation="border" role="status" />;
 
   const renderButton = () => (
-    <Button className="minimal" onClick={props.onIncrement} variant="secondary">
+    <Button
+      className="minimal"
+      onClick={props.onIncrement}
+      variant="secondary"
+      title="O-Counter"
+    >
       <SweatDrops />
       <span className="ml-2">{props.value}</span>
     </Button>
