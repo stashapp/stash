@@ -16,8 +16,8 @@ func NewMovieQueryBuilder() MovieQueryBuilder {
 func (qb *MovieQueryBuilder) Create(newMovie Movie, tx *sqlx.Tx) (*Movie, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO movies (front_image, back_image, checksum, name, aliases, duration, date, rating, studio_id, director, synopsis, url, created_at, updated_at)
-				VALUES (:front_image, :back_image, :checksum, :name, :aliases, :duration, :date, :rating, :studio_id, :director, :synopsis, :url, :created_at, :updated_at)
+		`INSERT INTO movies (checksum, name, aliases, duration, date, rating, studio_id, director, synopsis, url, created_at, updated_at)
+				VALUES (:checksum, :name, :aliases, :duration, :date, :rating, :studio_id, :director, :synopsis, :url, :created_at, :updated_at)
 		`,
 		newMovie,
 	)

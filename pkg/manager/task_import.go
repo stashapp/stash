@@ -620,7 +620,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			if err != nil {
 				logger.Warnf("[scenes] error getting studio <%s>: %s", sceneJSON.Studio, err.Error())
 			} else if studio == nil {
-				logger.Warnf("[scenes] studio <%s> does not exist: %s", sceneJSON.Studio)
+				logger.Warnf("[scenes] studio <%s> does not exist", sceneJSON.Studio)
 			} else {
 				newScene.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
 			}
