@@ -224,7 +224,7 @@ func (qb *MovieQueryBuilder) UpdateMovieImages(movieID int, frontImage []byte, b
 	}
 
 	_, err := tx.Exec(
-		`INSERT INTO movies_images (movie_id, front_image, back_image) VALUES (?, ?)`,
+		`INSERT INTO movies_images (movie_id, front_image, back_image) VALUES (?, ?, ?)`,
 		movieID,
 		frontImage,
 		backImage,
