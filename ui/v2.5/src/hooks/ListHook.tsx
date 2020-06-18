@@ -412,6 +412,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         : undefined}
       {(result.loading || !forageInitialised) && <LoadingIndicator />}
       {result.error && <h1>{result.error.message}</h1>}
+      {maybeRenderPagination()}
       {maybeRenderContent()}
       {maybeRenderPaginationIndex()}
       {maybeRenderPagination()}
