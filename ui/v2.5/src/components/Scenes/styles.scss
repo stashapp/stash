@@ -76,11 +76,13 @@
 
 .studio-logo {
   margin-top: 1rem;
+  max-height: 8rem;
   max-width: 100%;
 }
 
 .scene-header {
   flex-basis: auto;
+  margin-top: 30px;
 }
 
 #scene-details-container {
@@ -215,8 +217,31 @@
   max-width: 100%;
 }
 
-.movie-table td {
-  vertical-align: middle;
+.movie-table {
+  width: 100%;
+
+  td {
+    vertical-align: middle;
+  }
+}
+
+.scene-tabs {
+  max-height: calc(100vh - 4rem);
+
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+@media (min-width: 1200px), (max-width: 575px) {
+  .performer-card .flag-icon {
+    height: 1.33rem;
+    width: 2rem;
+  }
+
+  .scene-performers .card-image {
+    height: 22.5rem;
+    width: 15rem;
+  }
 }
 
 .rating-stars {
@@ -248,11 +273,6 @@
   .set {
     color: gold;
   }
-}
-
-.rating td {
-  padding-bottom: 0;
-  padding-top: 0;
 }
 
 #scene-edit-details .rating-stars {

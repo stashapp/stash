@@ -1,11 +1,80 @@
-.scene-player:focus {
-  outline: 0;
+$scrubberHeight: 120px;
+
+#jwplayer-container {
+  /* full height minus the top navbar */
+  height: calc(100vh - 4rem);
+  padding-bottom: 0.25rem;
+
+  @media (max-width: 1200px) {
+    height: inherit;
+
+    .jw-aspect {
+      display: block;
+      height: 56.25vw;
+      max-height: calc(100vh - #{$scrubberHeight} - 4.25rem - 15px);
+    }
+
+    &.portrait .jw-aspect {
+      height: 177.78vw;
+    }
+  }
+  @media (max-height: 449px), (max-width: 575px) {
+    .jw-aspect {
+      max-height: calc(100vh - 4.25rem);
+    }
+  }
+
+  & video:focus {
+    outline: 0;
+  }
+
+  > div:first-child {
+    /* minus the scrubber height and margin */
+    height: calc(100% - #{$scrubberHeight} - 15px);
+  }
+}
+
+/* scrubber is hidden when height < 450px or width < 576, so use entire height for scene player */
+@media (max-height: 449px), (max-width: 575px) {
+  #jwplayer-container > div:first-child {
+    height: 100%;
+  }
+}
+
+$sceneTabWidth: 450px;
+
+@media (min-width: 1200px) {
+  .scene-tabs {
+    flex: 0 0 $sceneTabWidth;
+    max-width: $sceneTabWidth;
+    overflow: auto;
+  }
+
+  .scene-player-container {
+    flex: 0 0 calc(100% - #{$sceneTabWidth});
+    max-width: calc(100% - #{$sceneTabWidth});
+  }
+}
+
+.scene-tabs,
+.scene-player-container {
+  padding-left: 15px;
+  padding-right: 15px;
+  position: relative;
+  width: 100%;
 }
 
 .scrubber-wrapper {
   margin: 5px 0;
   overflow: hidden;
   position: relative;
+}
+
+/* hide scrubber when height is < 450px or width < 576 */
+@media (max-height: 449px), (max-width: 575px) {
+  .scrubber-wrapper {
+    display: none;
+  }
 }
 
 #scrubber-back {
@@ -24,7 +93,7 @@
   font-size: 20px;
   font-weight: 800;
   height: 100%;
-  line-height: 120px;
+  line-height: $scrubberHeight;
   padding: 0;
   text-align: center;
   width: 1.5%;
@@ -33,7 +102,7 @@
 .scrubber-content {
   cursor: grab;
   display: inline-block;
-  height: 120px;
+  height: $scrubberHeight;
   margin: 0 0.5%;
   overflow: hidden;
   -webkit-overflow-scrolling: touch;

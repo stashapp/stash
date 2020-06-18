@@ -67,7 +67,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       .catch((err) => Toast.error(err));
   };
   const renderTitleField = (fieldProps: FieldProps<string>) => (
-    <div className="col-10">
+    <div className="col-10 col-xl-12">
       <MarkerTitleSuggest
         initialMarkerTitle={fieldProps.field.value}
         onChange={(query: string) =>
@@ -78,7 +78,7 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
   );
 
   const renderSecondsField = (fieldProps: FieldProps<string>) => (
-    <div className="col-3">
+    <div className="col-3 col-xl-12">
       <DurationInput
         onValueChange={(s) => fieldProps.form.setFieldValue("seconds", s)}
         onReset={() =>
@@ -132,53 +132,55 @@ export const SceneMarkerForm: React.FC<ISceneMarkerForm> = ({
       <FormikForm>
         <div>
           <Form.Group className="row">
-            <Form.Label htmlFor="title" className="col-2">
+            <Form.Label htmlFor="title" className="col-2 col-xl-12">
               Scene Marker Title
             </Form.Label>
             <Field name="title">{renderTitleField}</Field>
           </Form.Group>
           <Form.Group className="row">
-            <Form.Label htmlFor="primaryTagId" className="col-2">
+            <Form.Label htmlFor="primaryTagId" className="col-2 col-xl-12">
               Primary Tag
             </Form.Label>
-            <div className="col-6">
+            <div className="col-6 col-xl-12">
               <Field name="primaryTagId">{renderPrimaryTagField}</Field>
             </div>
-            <Form.Label htmlFor="seconds" className="col-1">
+            <Form.Label htmlFor="seconds" className="col-1 col-xl-12">
               Time
             </Form.Label>
             <Field name="seconds">{renderSecondsField}</Field>
           </Form.Group>
           <Form.Group className="row">
-            <Form.Label htmlFor="tagIds" className="col-2">
+            <Form.Label htmlFor="tagIds" className="col-2 col-xl-12">
               Tags
             </Form.Label>
-            <div className="col-10">
+            <div className="col-10 col-xl-12">
               <Field name="tagIds">{renderTagsField}</Field>
             </div>
           </Form.Group>
         </div>
         <div className="buttons-container row">
-          <Button variant="primary" type="submit">
-            Submit
-          </Button>
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={onClose}
-            className="ml-2"
-          >
-            Cancel
-          </Button>
-          {editingMarker && (
-            <Button
-              variant="danger"
-              className="ml-auto"
-              onClick={() => onDelete()}
-            >
-              Delete
+          <div className="col">
+            <Button variant="primary" type="submit">
+              Submit
             </Button>
-          )}
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={onClose}
+              className="ml-2"
+            >
+              Cancel
+            </Button>
+            {editingMarker && (
+              <Button
+                variant="danger"
+                className="ml-auto"
+                onClick={() => onDelete()}
+              >
+                Delete
+              </Button>
+            )}
+          </div>
         </div>
       </FormikForm>
     </Formik>
