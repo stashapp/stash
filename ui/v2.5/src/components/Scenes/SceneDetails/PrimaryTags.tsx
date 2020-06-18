@@ -56,7 +56,7 @@ export const PrimaryTags: React.FC<IPrimaryTags> = ({
     });
 
     return (
-      <Card className="primary-card col-12 col-sm-3" key={id}>
+      <Card className="primary-card col-12 col-sm-3 col-xl-6" key={id}>
         <h3>{primaries[id].name}</h3>
         <Card.Body className="primary-card-body">{markers}</Card.Body>
       </Card>

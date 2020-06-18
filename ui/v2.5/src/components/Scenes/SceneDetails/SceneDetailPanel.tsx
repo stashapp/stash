@@ -4,6 +4,7 @@ import { FormattedDate } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
 import { TagLink } from "src/components/Shared";
+import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingStars } from "./RatingStars";
 
 interface ISceneDetailProps {
@@ -34,41 +35,74 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
     );
   }
 
+  function renderPerformers() {
+    if (props.scene.performers.length === 0) return;
+    const cards = props.scene.performers.map((performer) => (
+      <PerformerCard
+        key={performer.id}
+        performer={performer}
+        ageFromDate={props.scene.date ?? undefined}
+      />
+    ));
+
+    return (
+      <>
+        <h6>Performers</h6>
+        <div className="row justify-content-center scene-performers">
+          {cards}
+        </div>
+      </>
+    );
+  }
+
+  // filename should use entire row if there is no studio
+  const sceneDetailsWidth = props.scene.studio ? "col-9" : "col-12";
+
   return (
-    <div className="row">
-      <h3 className="col scene-header text-truncate">
-        {props.scene.title ?? TextUtils.fileNameFromPath(props.scene.path)}
-      </h3>
-      <div className="col-6 scene-details">
-        {props.scene.date ? (
-          <h4>
-            <FormattedDate value={props.scene.date} format="long" />
-          </h4>
-        ) : undefined}
-        {props.scene.rating ? (
-          <h6>
-            Rating: <RatingStars value={props.scene.rating} />
-          </h6>
-        ) : (
-          ""
-        )}
-        {props.scene.file.height && (
-          <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6>
-        )}
-        {renderDetails()}
-        {renderTags()}
-      </div>
-      <div className="col-4 offset-2">
+    <>
+      <div className="row">
+        <div className={`${sceneDetailsWidth} col-xl-12 scene-details`}>
+          <div className="scene-header d-xl-none">
+            <h3 className="text-truncate">
+              {props.scene.title ??
+                TextUtils.fileNameFromPath(props.scene.path)}
+            </h3>
+          </div>
+          {props.scene.date ? (
+            <h5>
+              <FormattedDate value={props.scene.date} format="long" />
+            </h5>
+          ) : undefined}
+          {props.scene.rating ? (
+            <h6>
+              Rating: <RatingStars value={props.scene.rating} />
+            </h6>
+          ) : (
+            ""
+          )}
+          {props.scene.file.height && (
+            <h6>Resolution: {TextUtils.resolution(props.scene.file.height)}</h6>
+          )}
+        </div>
         {props.scene.studio && (
-          <Link to={`/studios/${props.scene.studio.id}`}>
-            <img
-              src={props.scene.studio.image_path ?? ""}
-              alt={`${props.scene.studio.name} logo`}
-              className="studio-logo"
-            />
-          </Link>
+          <div className="col-3 d-xl-none">
+            <Link to={`/studios/${props.scene.studio.id}`}>
+              <img
+                src={props.scene.studio.image_path ?? ""}
+                alt={`${props.scene.studio.name} logo`}
+                className="studio-logo float-right"
+              />
+            </Link>
+          </div>
         )}
       </div>
-    </div>
+      <div className="row">
+        <div className="col-12">
+          {renderDetails()}
+          {renderTags()}
+          {renderPerformers()}
+        </div>
+      </div>
+    </>
   );
 };

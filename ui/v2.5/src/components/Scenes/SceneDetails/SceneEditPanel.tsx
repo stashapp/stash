@@ -1,14 +1,20 @@
 /* eslint-disable react/no-this-in-sfc */
 
 import React, { useEffect, useState } from "react";
-import { Button, Dropdown, DropdownButton, Form, Table } from "react-bootstrap";
+import {
+  Button,
+  Dropdown,
+  DropdownButton,
+  Form,
+  Col,
+  Row,
+} from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryScrapeScene,
   queryScrapeSceneURL,
   useListSceneScrapers,
   useSceneUpdate,
-  useSceneDestroy,
   mutateReloadScrapers,
 } from "src/core/StashService";
 import {
@@ -16,13 +22,12 @@ import {
   TagSelect,
   StudioSelect,
   SceneGallerySelect,
-  Modal,
   Icon,
   LoadingIndicator,
   ImageInput,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { ImageUtils, TableUtils } from "src/utils";
+import { ImageUtils, FormUtils, EditableTextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
@@ -53,17 +58,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const Scrapers = useListSceneScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const [deleteFile, setDeleteFile] = useState<boolean>(false);
-  const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
-
   const [coverImagePreview, setCoverImagePreview] = useState<string>();
 
   // Network state
   const [isLoading, setIsLoading] = useState(true);
 
   const [updateScene] = useSceneUpdate(getSceneInput());
-  const [deleteScene] = useSceneDestroy(getSceneDeleteInput());
 
   useEffect(() => {
     const newQueryableScrapers = (
@@ -187,27 +187,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setIsLoading(false);
   }
 
-  function getSceneDeleteInput(): GQL.SceneDestroyInput {
-    return {
-      id: props.scene.id,
-      delete_file: deleteFile,
-      delete_generated: deleteGenerated,
-    };
-  }
-
-  async function onDelete() {
-    setIsDeleteAlertOpen(false);
-    setIsLoading(true);
-    try {
-      await deleteScene();
-      Toast.success({ content: "Deleted scene" });
-    } catch (e) {
-      Toast.error(e);
-    }
-    setIsLoading(false);
-    props.onDelete();
-  }
-
   function renderTableMovies() {
     return (
       <SceneMovieTable
@@ -216,35 +195,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           setMovieSceneIndexes(items);
         }}
       />
-    );
-  }
-
-  function renderDeleteAlert() {
-    return (
-      <Modal
-        show={isDeleteAlertOpen}
-        icon="trash-alt"
-        header="Delete Scene?"
-        accept={{ variant: "danger", onClick: onDelete, text: "Delete" }}
-        cancel={{ onClick: () => setIsDeleteAlertOpen(false), text: "Cancel" }}
-      >
-        <p>
-          Are you sure you want to delete this scene? Unless the file is also
-          deleted, this scene will be re-added when scan is performed.
-        </p>
-        <Form>
-          <Form.Check
-            checked={deleteFile}
-            label="Delete file"
-            onChange={() => setDeleteFile(!deleteFile)}
-          />
-          <Form.Check
-            checked={deleteGenerated}
-            label="Delete generated supporting files"
-            onChange={() => setDeleteGenerated(!deleteGenerated)}
-          />
-        </Form>
-      </Modal>
     );
   }
 
@@ -402,7 +352,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       return undefined;
     }
     return (
-      <Button id="scrape-url-button" onClick={onScrapeSceneURL}>
+      <Button id="scrape-url-button" onClick={onScrapeSceneURL} title="Scrape">
         <Icon icon="file-download" />
       </Button>
     );
@@ -411,148 +361,175 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   if (isLoading) return <LoadingIndicator />;
 
   return (
-    <div className="form-container row">
-      <div className="col-12 col-lg-6">
-        <Table id="scene-edit-details">
-          <tbody>
-            {TableUtils.renderInputGroup({
-              title: "Title",
-              value: title,
-              onChange: setTitle,
-              isEditing: true,
-            })}
-            <tr>
-              <td>URL</td>
-              <td>
-                <Form.Control
-                  onChange={(newValue: React.ChangeEvent<HTMLInputElement>) =>
-                    setUrl(newValue.currentTarget.value)
-                  }
-                  value={url}
-                  placeholder="URL"
-                  className="text-input"
-                />
-                {maybeRenderScrapeButton()}
-              </td>
-            </tr>
-            {TableUtils.renderInputGroup({
-              title: "Date",
-              value: date,
-              isEditing: true,
-              onChange: setDate,
-              placeholder: "YYYY-MM-DD",
-            })}
-            <tr className="rating">
-              <td>Rating</td>
-              <td>
-                <RatingStars
-                  value={rating}
-                  onSetRating={(value) => setRating(value)}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Gallery</td>
-              <td>
-                <SceneGallerySelect
-                  sceneId={props.scene.id}
-                  initialId={galleryId}
-                  onSelect={(item) => setGalleryId(item ? item.id : undefined)}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Studio</td>
-              <td>
-                <StudioSelect
-                  onSelect={(items) =>
-                    setStudioId(items.length > 0 ? items[0]?.id : undefined)
-                  }
-                  ids={studioId ? [studioId] : []}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Performers</td>
-              <td>
-                <PerformerSelect
-                  isMulti
-                  onSelect={(items) =>
-                    setPerformerIds(items.map((item) => item.id))
-                  }
-                  ids={performerIds}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Movies/Scenes</td>
-              <td>
-                <MovieSelect
-                  isMulti
-                  onSelect={(items) =>
-                    setMovieIds(items.map((item) => item.id))
-                  }
-                  ids={movieIds}
-                />
-                {renderTableMovies()}
-              </td>
-            </tr>
-            <tr>
-              <td>Tags</td>
-              <td>
-                <TagSelect
-                  isMulti
-                  onSelect={(items) => setTagIds(items.map((item) => item.id))}
-                  ids={tagIds}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </Table>
+    <>
+      <div className="form-container row px-3 pt-3">
+        <div className="col edit-buttons mb-3 pl-0">
+          <Button className="edit-button" variant="primary" onClick={onSave}>
+            Save
+          </Button>
+          <Button
+            className="edit-button"
+            variant="danger"
+            onClick={() => props.onDelete()}
+          >
+            Delete
+          </Button>
+        </div>
+        {renderScraperMenu()}
       </div>
-      <div className="col-12 col-lg-6">
-        <Form.Group controlId="details">
-          <Form.Label>Details</Form.Label>
-          <Form.Control
-            as="textarea"
-            className="scene-description text-input"
-            onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setDetails(newValue.currentTarget.value)
-            }
-            value={details}
-          />
-        </Form.Group>
-
-        <div>
-          <Form.Group className="test" controlId="cover">
-            <Form.Label>Cover Image</Form.Label>
-            {imageEncoding ? (
-              <LoadingIndicator message="Encoding image..." />
-            ) : (
-              <img
-                className="scene-cover"
-                src={coverImagePreview}
-                alt="Scene cover"
+      <div className="form-container row px-3">
+        <div className="col-12 col-lg-6 col-xl-12">
+          {FormUtils.renderInputGroup({
+            title: "Title",
+            value: title,
+            onChange: setTitle,
+            isEditing: true,
+          })}
+          <Form.Group controlId="url" as={Row}>
+            {FormUtils.renderLabel({
+              title: "URL",
+            })}
+            <Col xs={9}>
+              {EditableTextUtils.renderInputGroup({
+                title: "URL",
+                value: url,
+                onChange: setUrl,
+                isEditing: true,
+              })}
+              {maybeRenderScrapeButton()}
+            </Col>
+          </Form.Group>
+          {FormUtils.renderInputGroup({
+            title: "Date",
+            value: date,
+            isEditing: true,
+            onChange: setDate,
+            placeholder: "YYYY-MM-DD",
+          })}
+          <Form.Group controlId="rating" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Rating",
+            })}
+            <Col xs={9}>
+              <RatingStars
+                value={rating}
+                onSetRating={(value) => setRating(value)}
               />
-            )}
-            <ImageInput isEditing onImageChange={onCoverImageChange} />
+            </Col>
+          </Form.Group>
+          <Form.Group controlId="gallery" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Gallery",
+            })}
+            <Col xs={9}>
+              <SceneGallerySelect
+                sceneId={props.scene.id}
+                initialId={galleryId}
+                onSelect={(item) => setGalleryId(item ? item.id : undefined)}
+              />
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId="studio" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Studio",
+            })}
+            <Col xs={9}>
+              <StudioSelect
+                onSelect={(items) =>
+                  setStudioId(items.length > 0 ? items[0]?.id : undefined)
+                }
+                ids={studioId ? [studioId] : []}
+              />
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId="performers" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Performers",
+              labelProps: {
+                column: true,
+                sm: 3,
+                xl: 12,
+              },
+            })}
+            <Col sm={9} xl={12}>
+              <PerformerSelect
+                isMulti
+                onSelect={(items) =>
+                  setPerformerIds(items.map((item) => item.id))
+                }
+                ids={performerIds}
+              />
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId="moviesScenes" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Movies/Scenes",
+              labelProps: {
+                column: true,
+                sm: 3,
+                xl: 12,
+              },
+            })}
+            <Col sm={9} xl={12}>
+              <MovieSelect
+                isMulti
+                onSelect={(items) => setMovieIds(items.map((item) => item.id))}
+                ids={movieIds}
+              />
+              {renderTableMovies()}
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId="tags" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Tags",
+              labelProps: {
+                column: true,
+                sm: 3,
+                xl: 12,
+              },
+            })}
+            <Col sm={9} xl={12}>
+              <TagSelect
+                isMulti
+                onSelect={(items) => setTagIds(items.map((item) => item.id))}
+                ids={tagIds}
+              />
+            </Col>
           </Form.Group>
         </div>
+        <div className="col-12 col-lg-6 col-xl-12">
+          <Form.Group controlId="details">
+            <Form.Label>Details</Form.Label>
+            <Form.Control
+              as="textarea"
+              className="scene-description text-input"
+              onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setDetails(newValue.currentTarget.value)
+              }
+              value={details}
+            />
+          </Form.Group>
+          <div>
+            <Form.Group controlId="cover">
+              <Form.Label>Cover Image</Form.Label>
+              {imageEncoding ? (
+                <LoadingIndicator message="Encoding image..." />
+              ) : (
+                <img
+                  className="scene-cover"
+                  src={coverImagePreview}
+                  alt="Scene cover"
+                />
+              )}
+              <ImageInput isEditing onImageChange={onCoverImageChange} />
+            </Form.Group>
+          </div>
+        </div>
       </div>
-      <div className="col edit-buttons">
-        <Button className="edit-button" variant="primary" onClick={onSave}>
-          Save
-        </Button>
-        <Button
-          className="edit-button"
-          variant="danger"
-          onClick={() => setIsDeleteAlertOpen(true)}
-        >
-          Delete
-        </Button>
-      </div>
-      {renderScraperMenu()}
-      {renderDeleteAlert()}
-    </div>
+    </>
   );
 };
