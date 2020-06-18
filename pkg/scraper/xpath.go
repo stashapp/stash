@@ -75,6 +75,10 @@ func (c xpathRegexConfig) apply(value string) string {
 		}
 
 		ret := re.ReplaceAllString(value, with)
+		// replace  lines if needed to protect from commonPostprocess
+		if with == "\n" {
+			ret = replaceLines(ret)
+		}
 
 		logger.Debugf(`Replace: '%s' with '%s'`, regex, with)
 		logger.Debugf("Before: %s", value)
@@ -94,6 +98,9 @@ func (c xpathRegexConfigs) apply(value string) string {
 	// remove whitespace again
 	value = commonPostProcess(value)
 
+	// restore replaced lines
+
+	value = restoreLines(value)
 	return value
 }
 
@@ -127,6 +134,15 @@ func (c xpathScraperAttrConfig) hasConcat() bool {
 func (c xpathScraperAttrConfig) getParseDate() string {
 	const parseDateKey = "parseDate"
 	return c.getString(parseDateKey)
+}
+
+func (c xpathScraperAttrConfig) getSplit() string {
+	const splitKey = "split"
+	return c.getString(splitKey)
+}
+
+func (c xpathScraperAttrConfig) hasSplit() bool {
+	return c.getSplit() != ""
 }
 
 func (c xpathScraperAttrConfig) getReplace() xpathRegexConfigs {
@@ -198,6 +214,36 @@ func (c xpathScraperAttrConfig) parseDate(value string) string {
 	return parsedValue.Format(internalDateFormat)
 }
 
+func (c xpathScraperAttrConfig) splitString(value string) []string {
+	separator := c.getSplit()
+	var res []string
+
+	if separator == "" {
+		return []string{value}
+	}
+
+	for _, str := range strings.Split(value, separator) {
+		if str != "" {
+			res = append(res, str)
+		}
+	}
+
+	return res
+}
+
+// setKeyAndSplit sets the key "k" for the results "ret" and splits if needed
+// "i" is the index starting position
+func (c xpathScraperAttrConfig) setKeyAndSplit(ret *xPathResults, value string, k string, i int) {
+	if c.hasSplit() {
+		for j, txt := range c.splitString(value) {
+			*ret = ret.setKey(j+i, k, txt)
+		}
+	} else {
+		*ret = ret.setKey(i, k, value)
+	}
+
+}
+
 func (c xpathScraperAttrConfig) replaceRegex(value string) string {
 	replace := c.getReplace()
 	return replace.apply(value)
@@ -258,6 +304,24 @@ func commonPostProcess(value string) string {
 	return value
 }
 
+// func replaceLines replaces all newlines ("\n") with alert ("\a")
+func replaceLines(value string) string {
+	re := regexp.MustCompile("\a")         // \a shouldn't exist in the string
+	value = re.ReplaceAllString(value, "") // remove it
+	re = regexp.MustCompile("\n")          // replace newlines with (\a)'s so that they don't get removed by commonPostprocess
+	value = re.ReplaceAllString(value, "\a")
+
+	return value
+}
+
+// func restoreLines replaces all alerts ("\a") with newlines ("\n")
+func restoreLines(value string) string {
+	re := regexp.MustCompile("\a")
+	value = re.ReplaceAllString(value, "\n")
+
+	return value
+}
+
 func runXPathQuery(doc *html.Node, xpath string, common commonXPathConfig) []*html.Node {
 	// apply common
 	if common != nil {
@@ -299,15 +363,13 @@ func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xP
 				if attrConfig.hasConcat() {
 					result := attrConfig.concatenateResults(found)
 					result = attrConfig.postProcess(result)
-					const i = 0
-					ret = ret.setKey(i, k, result)
+					attrConfig.setKeyAndSplit(&ret, result, k, 0)
 				} else {
 					for i, elem := range found {
 						text := NodeText(elem)
 						text = commonPostProcess(text)
 						text = attrConfig.postProcess(text)
-
-						ret = ret.setKey(i, k, text)
+						attrConfig.setKeyAndSplit(&ret, text, k, i)
 					}
 				}
 			}
