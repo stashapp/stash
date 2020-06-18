@@ -52,9 +52,11 @@ CREATE TABLE `scenes` (
 
 DROP INDEX IF EXISTS `scenes_path_unique`;
 DROP INDEX IF EXISTS `scenes_checksum_unique`;
+DROP INDEX IF EXISTS `index_scenes_on_studio_id`;
 
 CREATE UNIQUE INDEX `scenes_path_unique` on `scenes` (`path`);
 CREATE UNIQUE INDEX `scenes_checksum_unique` on `scenes` (`checksum`);
+CREATE INDEX `index_scenes_on_studio_id` on `scenes` (`studio_id`);
 
 -- remove performer image
 CREATE TABLE `performers` (
