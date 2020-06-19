@@ -1,8 +1,9 @@
-import { Card } from "react-bootstrap";
+import { Card, Button, ButtonGroup } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedPlural } from "react-intl";
+import { HoverPopover, Icon, TagLink } from "../Shared";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -10,6 +11,34 @@ interface IProps {
 }
 
 export const GalleryCard: React.FC<IProps> = ({ gallery, zoomIndex }) => {
+
+  function maybeRenderScenePopoverButton() {
+    if (!gallery.scene) return;
+
+    const popoverContent = <TagLink key={gallery.scene.id} scene={gallery.scene} />;
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal">
+          <Icon icon="play-circle" />
+        </Button>
+      </HoverPopover>
+    );
+  }
+
+  function maybeRenderPopoverButtonGroup() {
+    if (gallery.scene) {
+      return (
+        <>
+          <hr />
+          <ButtonGroup className="card-popovers">
+            {maybeRenderScenePopoverButton()}
+          </ButtonGroup>
+        </>
+      );
+    }
+  }
+
   return (
     <Card className={`gallery-card zoom-${zoomIndex}`}> 
       <Link to={`/galleries/${gallery.id}`} className="gallery-card-header">
@@ -33,6 +62,7 @@ export const GalleryCard: React.FC<IProps> = ({ gallery, zoomIndex }) => {
           .
         </span>
       </div>
+      {maybeRenderPopoverButtonGroup()}
     </Card>
   );
 };
