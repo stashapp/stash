@@ -31,18 +31,18 @@ export const Scene: React.FC = () => {
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
 
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const [deleteFile, setDeleteFile] = useState<boolean>(false);
-  const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [deleteScene] = useSceneDestroy(getSceneDeleteInput());
-
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
   const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
   const [resetO] = useSceneResetO(scene?.id ?? "0");
+
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [deleteFile, setDeleteFile] = useState<boolean>(false);
+  const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteScene] = useSceneDestroy(getSceneDeleteInput());
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
@@ -122,7 +122,7 @@ export const Scene: React.FC = () => {
 
   function getSceneDeleteInput(): GQL.SceneDestroyInput {
     return {
-      id: scene ? scene.id : "0",
+      id: scene?.id ?? "0",
       delete_file: deleteFile,
       delete_generated: deleteGenerated,
     };
@@ -286,7 +286,7 @@ export const Scene: React.FC = () => {
             <SceneEditPanel
               scene={scene}
               onUpdate={(newScene) => setScene(newScene)}
-              onDelete={onDelete}
+              onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
         </Tab.Content>
