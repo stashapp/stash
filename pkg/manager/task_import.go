@@ -338,6 +338,19 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 			newMovie.Duration = sql.NullInt64{Int64: int64(movieJSON.Duration), Valid: true}
 		}
 
+		// Populate the studio ID
+		if movieJSON.Studio != "" {
+			sqb := models.NewStudioQueryBuilder()
+			studio, err := sqb.FindByName(movieJSON.Studio, tx, false)
+			if err != nil {
+				logger.Warnf("[movies] error getting studio <%s>: %s", movieJSON.Studio, err.Error())
+			} else if studio == nil {
+				logger.Warnf("[movies] studio <%s> does not exist", movieJSON.Studio)
+			} else {
+				newMovie.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			}
+		}
+
 		createdMovie, err := qb.Create(newMovie, tx)
 		if err != nil {
 			_ = tx.Rollback()

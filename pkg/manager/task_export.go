@@ -495,6 +495,7 @@ func exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movie) {
 	defer wg.Done()
 
 	movieQB := models.NewMovieQueryBuilder()
+	studioQB := models.NewStudioQueryBuilder()
 
 	for movie := range jobChan {
 		newMovieJSON := jsonschema.Movie{
@@ -528,6 +529,13 @@ func exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movie) {
 
 		if movie.URL.Valid {
 			newMovieJSON.URL = movie.URL.String
+		}
+
+		if movie.StudioID.Valid {
+			studio, _ := studioQB.Find(int(movie.StudioID.Int64), nil)
+			if studio != nil {
+				newMovieJSON.Studio = studio.Name.String
+			}
 		}
 
 		frontImage, err := movieQB.GetFrontImage(movie.ID, nil)
