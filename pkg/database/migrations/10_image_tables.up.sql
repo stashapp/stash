@@ -496,9 +496,9 @@ INSERT INTO `movies_images`
   (
     `movie_id`,
     `front_image`,
-    'back_image'
+    `back_image`
   )
-  SELECT `id`, `front_image`, 'back_image' from `_movies_old` where `front_image` is not null;
+  SELECT `id`, `front_image`, `back_image` from `_movies_old` where `front_image` is not null;
 
 -- drop old tables
 DROP TABLE `_scenes_old`;
