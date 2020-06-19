@@ -11,11 +11,12 @@ interface IProps {
 }
 
 export const GalleryCard: React.FC<IProps> = ({ gallery, zoomIndex }) => {
-
   function maybeRenderScenePopoverButton() {
     if (!gallery.scene) return;
 
-    const popoverContent = <TagLink key={gallery.scene.id} scene={gallery.scene} />;
+    const popoverContent = (
+      <TagLink key={gallery.scene.id} scene={gallery.scene} />
+    );
 
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
@@ -40,15 +41,15 @@ export const GalleryCard: React.FC<IProps> = ({ gallery, zoomIndex }) => {
   }
 
   return (
-    <Card className={`gallery-card zoom-${zoomIndex}`}> 
+    <Card className={`gallery-card zoom-${zoomIndex}`}>
       <Link to={`/galleries/${gallery.id}`} className="gallery-card-header">
-        {gallery.files.length > 0 ? 
-        <img
-          className="gallery-card-image"
-          alt={gallery.path}
-          src={`${gallery.files[0].path}?thumb=true`}
-        />
-        : undefined}
+        {gallery.files.length > 0 ? (
+          <img
+            className="gallery-card-image"
+            alt={gallery.path}
+            src={`${gallery.files[0].path}?thumb=true`}
+          />
+        ) : undefined}
       </Link>
       <div className="card-section">
         <h5 className="card-section-title">{gallery.path}</h5>

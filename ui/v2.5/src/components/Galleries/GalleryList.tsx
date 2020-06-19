@@ -25,15 +25,13 @@ export const GalleryList: React.FC = () => {
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <div className="row justify-content-center">
-          {result.data.findGalleries.galleries.map((gallery) =>
-            (
+          {result.data.findGalleries.galleries.map((gallery) => (
             <GalleryCard
               key={gallery.id}
               gallery={gallery}
               zoomIndex={zoomIndex}
             />
-            )
-          )}
+          ))}
         </div>
       );
     }

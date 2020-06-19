@@ -59,7 +59,7 @@ export abstract class Criterion {
         return "Is Missing";
       case "performerIsMissing":
         return "Is Missing";
-        case "galleryIsMissing":
+      case "galleryIsMissing":
         return "Is Missing";
       case "tags":
         return "Tags";

@@ -606,7 +606,7 @@ export class ListFilterModel {
         // no default
       }
     });
-    
+
     return result;
   }
 
@@ -620,7 +620,7 @@ export class ListFilterModel {
         // no default
       }
     });
-    
+
     return result;
   }
 }

@@ -56,9 +56,7 @@ export class PerformerIsMissingCriterionOption implements ICriterionOption {
 
 export class GalleryIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "galleryIsMissing";
-  public options: string[] = [
-    "scene",
-  ];
+  public options: string[] = ["scene"];
 }
 
 export class GalleryIsMissingCriterionOption implements ICriterionOption {
