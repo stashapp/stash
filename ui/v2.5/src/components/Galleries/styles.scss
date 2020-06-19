@@ -5,3 +5,12 @@
   }
 }
 /* stylelint-enable selector-class-pattern */
+
+.gallery-card {
+  padding: 0.5rem;
+
+  &-image {
+    object-fit: contain;
+    vertical-align: middle;
+  }
+}

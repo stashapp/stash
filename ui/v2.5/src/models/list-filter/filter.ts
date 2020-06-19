@@ -182,7 +182,7 @@ export class ListFilterModel {
       case FilterMode.Galleries:
         this.sortBy = "path";
         this.sortByOptions = ["path"];
-        this.displayModeOptions = [DisplayMode.List];
+        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [new NoneCriterionOption()];
         break;
       case FilterMode.SceneMarkers:
