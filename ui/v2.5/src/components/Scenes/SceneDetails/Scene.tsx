@@ -1,4 +1,4 @@
-import { Tab, Nav, Dropdown, Form } from "react-bootstrap";
+import { Tab, Nav, Dropdown, Form, Modal as BSModal } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
@@ -22,6 +22,7 @@ import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
+import * as Mousetrap from "mousetrap";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
@@ -44,8 +45,27 @@ export const Scene: React.FC = () => {
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
   const [resetO] = useSceneResetO(scene?.id ?? "0");
 
+  const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
+  
+  const [isHelpOpen, setIsHelpOpen] = useState<boolean>(false);
+
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
+
+  // set up hotkeys
+  useEffect(() => {
+    Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
+    Mousetrap.bind("m", () => setActiveTabKey("scene-markers-panel"));
+    Mousetrap.bind("o", () => onIncrementClick());
+    Mousetrap.bind("?", () => setIsHelpOpen(true));
+
+    return () => {
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("m");
+      Mousetrap.unbind("o");
+      Mousetrap.unbind("?");
+    }
+  });
 
   useEffect(() => {
     if (data?.findScene) setScene(data.findScene);
@@ -170,6 +190,28 @@ export const Scene: React.FC = () => {
     );
   }
 
+  function renderHelp() {
+    return (
+      <BSModal
+        show={isHelpOpen}
+        onHide={() => setIsHelpOpen(false)}
+        icon="question-circle"
+      >
+        <BSModal.Header>
+          <BSModal.Title>Help</BSModal.Title>
+        </BSModal.Header>
+        <BSModal.Body>
+          <h6>Keyboard shortcuts</h6>
+          <ul>
+            <li><code>e</code> - Edit tab</li>
+            <li><code>m</code> - Markers tab</li>
+            <li><code>o</code> - Increment o-counter</li>
+          </ul>
+        </BSModal.Body>
+      </BSModal>
+    );
+  }
+
   function renderOperations() {
     return (
       <Dropdown>
@@ -216,7 +258,7 @@ export const Scene: React.FC = () => {
     }
 
     return (
-      <Tab.Container defaultActiveKey="scene-details-panel">
+      <Tab.Container activeKey={activeTabKey} onSelect={(k) => setActiveTabKey(k)}>
         <div>
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
@@ -303,6 +345,7 @@ export const Scene: React.FC = () => {
   return (
     <div className="row">
       {renderDeleteAlert()}
+      {renderHelp()}
       <div className="scene-tabs order-xl-first order-last">
         <div className="d-none d-xl-block">
           {scene.studio && (
