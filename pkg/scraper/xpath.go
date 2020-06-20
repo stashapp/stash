@@ -620,7 +620,6 @@ func loadURL(url string, c *scraperConfig) (*html.Node, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		logger.Info(resp.Request.URL)
 		return nil, err
 	}
 	defer resp.Body.Close()
