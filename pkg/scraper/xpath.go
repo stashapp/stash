@@ -2,7 +2,9 @@ package scraper
 
 import (
 	"bytes"
+	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -11,6 +13,10 @@ import (
 	"time"
 
 	"github.com/antchfx/htmlquery"
+	"github.com/chromedp/cdproto/dom"
+	"github.com/chromedp/chromedp"
+	jsoniter "github.com/json-iterator/go"
+
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/charset"
 
@@ -587,28 +593,44 @@ func (r xPathResults) setKey(index int, key string, value string) xPathResults {
 }
 
 func loadURL(url string, c *scraperConfig) (*html.Node, error) {
-	client := &http.Client{
-		Timeout: scrapeGetTimeout,
-	}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
+	var r io.Reader
 
-	userAgent := config.GetScraperUserAgent()
-	if userAgent != "" {
-		req.Header.Set("User-Agent", userAgent)
-	}
+	if c != nil && c.DriverOptions != nil && c.DriverOptions.UseCDP {
+		remote := false
+		if c.DriverOptions.Remote {
+			remote = true
+		}
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+		err, resp := urlFromCDP(url, remote)
+		if err != nil {
+			return nil, err
+		}
+		r = strings.NewReader(resp)
+	} else {
+		client := &http.Client{
+			Timeout: scrapeGetTimeout,
+		}
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
 
-	r, err := charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
-	if err != nil {
-		return nil, err
+		userAgent := config.GetScraperUserAgent()
+		if userAgent != "" {
+			req.Header.Set("User-Agent", userAgent)
+		}
+
+		resp, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		r, err = charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	ret, err := html.Parse(r)
@@ -683,4 +705,57 @@ func NodeText(n *html.Node) string {
 		return htmlquery.OutputHTML(n, true)
 	}
 	return htmlquery.InnerText(n)
+}
+
+// urlFromCDP uses chrome cdp to load and process the url
+// if remote is true it will try to use localhost:9222
+// else it will look for google-chrome in path
+func urlFromCDP(url string, remote bool) (error, string) {
+	act := context.Background()
+
+	if remote {
+		var cancelAct context.CancelFunc
+		errCDP, remote := getRemoteCDP()
+		if errCDP != nil {
+			return errCDP, ""
+		}
+		act, cancelAct = chromedp.NewRemoteAllocator(context.Background(), remote)
+		defer cancelAct()
+
+	}
+
+	ctx, cancel := chromedp.NewContext(act)
+	defer cancel()
+
+	var res string
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(url),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			node, err := dom.GetDocument().Do(ctx)
+			if err != nil {
+				return err
+			}
+			res, err = dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
+			return err
+		}),
+	)
+	if err != nil {
+		return err, ""
+
+	}
+	return nil, res
+}
+
+func getRemoteCDP() (error, string) {
+	resp, err := http.Get("http://localhost:9222/json/version")
+	if err != nil {
+		return err, ""
+	}
+
+	var result map[string]interface{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return err, ""
+	}
+	return nil, result["webSocketDebuggerUrl"].(string)
 }

@@ -144,6 +144,11 @@ type scraperDebugOptions struct {
 	PrintHTML bool `yaml:"printHTML"`
 }
 
+type scraperDriverOptions struct {
+	UseCDP bool `yaml:"useCDP"`
+	Remote bool `yaml:"remote"`
+}
+
 type scraperConfig struct {
 	ID                  string
 	Name                string                        `yaml:"name"`
@@ -153,9 +158,10 @@ type scraperConfig struct {
 	SceneByFragment     *sceneByFragmentConfig        `yaml:"sceneByFragment"`
 	SceneByURL          []*scrapeSceneByURLConfig     `yaml:"sceneByURL"`
 
-	DebugOptions  *scraperDebugOptions `yaml:"debug"`
-	StashServer   *stashServer         `yaml:"stashServer"`
-	XPathScrapers xpathScrapers        `yaml:"xPathScrapers"`
+	DebugOptions  *scraperDebugOptions  `yaml:"debug"`
+	DriverOptions *scraperDriverOptions `yaml:"driver"`
+	StashServer   *stashServer          `yaml:"stashServer"`
+	XPathScrapers xpathScrapers         `yaml:"xPathScrapers"`
 }
 
 func loadScraperFromYAML(id string, reader io.Reader) (*scraperConfig, error) {
