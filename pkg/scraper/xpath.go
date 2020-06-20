@@ -601,7 +601,7 @@ func loadURL(url string, c *scraperConfig) (*html.Node, error) {
 			remote = true
 		}
 
-		err, resp := urlFromCDP(url, remote)
+		resp, err := urlFromCDP(url, remote)
 		if err != nil {
 			return nil, err
 		}
@@ -710,14 +710,15 @@ func NodeText(n *html.Node) string {
 // urlFromCDP uses chrome cdp to load and process the url
 // if remote is true it will try to use localhost:9222
 // else it will look for google-chrome in path
-func urlFromCDP(url string, remote bool) (error, string) {
+func urlFromCDP(url string, remote bool) (string, error) {
+
 	act := context.Background()
 
 	if remote {
 		var cancelAct context.CancelFunc
-		errCDP, remote := getRemoteCDP()
+		remote, errCDP := getRemoteCDP()
 		if errCDP != nil {
-			return errCDP, ""
+			return "", errCDP
 		}
 		act, cancelAct = chromedp.NewRemoteAllocator(context.Background(), remote)
 		defer cancelAct()
@@ -740,22 +741,22 @@ func urlFromCDP(url string, remote bool) (error, string) {
 		}),
 	)
 	if err != nil {
-		return err, ""
+		return "", err
 
 	}
-	return nil, res
+	return res, nil
 }
 
-func getRemoteCDP() (error, string) {
+func getRemoteCDP() (string, error) {
 	resp, err := http.Get("http://localhost:9222/json/version")
 	if err != nil {
-		return err, ""
+		return "", err
 	}
 
 	var result map[string]interface{}
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return err, ""
+		return "", err
 	}
-	return nil, result["webSocketDebuggerUrl"].(string)
+	return result["webSocketDebuggerUrl"].(string), err
 }
