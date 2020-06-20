@@ -147,6 +147,7 @@ type scraperDebugOptions struct {
 type scraperDriverOptions struct {
 	UseCDP bool `yaml:"useCDP"`
 	Remote bool `yaml:"remote"`
+	Sleep  int  `yaml:"sleep"`
 }
 
 type scraperConfig struct {

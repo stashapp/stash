@@ -597,11 +597,16 @@ func loadURL(url string, c *scraperConfig) (*html.Node, error) {
 
 	if c != nil && c.DriverOptions != nil && c.DriverOptions.UseCDP {
 		remote := false
+		sleep := 2
 		if c.DriverOptions.Remote {
 			remote = true
 		}
 
-		resp, err := urlFromCDP(url, remote)
+		if c.DriverOptions.Sleep != 0 {
+			sleep = c.DriverOptions.Sleep
+		}
+
+		resp, err := urlFromCDP(url, remote, sleep)
 		if err != nil {
 			return nil, err
 		}
@@ -710,8 +715,9 @@ func NodeText(n *html.Node) string {
 // urlFromCDP uses chrome cdp to load and process the url
 // if remote is true it will try to use localhost:9222
 // else it will look for google-chrome in path
-func urlFromCDP(url string, remote bool) (string, error) {
+func urlFromCDP(url string, remote bool, sleep int) (string, error) {
 
+	sleepDuration := time.Duration(sleep) * time.Second
 	act := context.Background()
 
 	if remote {
@@ -731,6 +737,7 @@ func urlFromCDP(url string, remote bool) (string, error) {
 	var res string
 	err := chromedp.Run(ctx,
 		chromedp.Navigate(url),
+		chromedp.Sleep(sleepDuration),
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			node, err := dom.GetDocument().Do(ctx)
 			if err != nil {
