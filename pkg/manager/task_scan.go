@@ -64,7 +64,6 @@ func (t *ScanTask) scanGallery() {
 			_, err = qb.Update(*gallery, tx)
 		}
 	} else {
-		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
 
 		newGallery := models.Gallery{
@@ -73,7 +72,12 @@ func (t *ScanTask) scanGallery() {
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
-		_, err = qb.Create(newGallery, tx)
+
+		// don't create gallery if it has no images
+		if newGallery.CountFiles() > 0 {
+			logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
+			_, err = qb.Create(newGallery, tx)
+		}
 	}
 
 	if err != nil {

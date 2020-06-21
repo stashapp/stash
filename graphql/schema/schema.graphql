@@ -28,7 +28,7 @@ type Query {
   findMovies(movie_filter: MovieFilterType, filter: FindFilterType): FindMoviesResultType!
 
   findGallery(id: ID!): Gallery
-  findGalleries(filter: FindFilterType): FindGalleriesResultType!
+  findGalleries(gallery_filter: GalleryFilterType, filter: FindFilterType): FindGalleriesResultType!
 
   findTag(id: ID!): Tag
 

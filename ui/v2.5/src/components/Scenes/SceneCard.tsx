@@ -203,7 +203,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       return (
         <>
           <hr />
-          <ButtonGroup className="scene-popovers">
+          <ButtonGroup className="card-popovers">
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderMoviePopoverButton()}
