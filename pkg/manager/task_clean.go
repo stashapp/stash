@@ -26,7 +26,7 @@ func (t *CleanTask) Start(wg *sync.WaitGroup) {
 		t.deleteScene(t.Scene.ID)
 	}
 
-	if t.Gallery != nil && t.shouldClean(t.Gallery.Path) {
+	if t.Gallery != nil && t.shouldCleanGallery(t.Gallery) {
 		t.deleteGallery(t.Gallery.ID)
 	}
 }
@@ -40,6 +40,19 @@ func (t *CleanTask) shouldClean(path string) bool {
 		}
 	} else {
 		logger.Infof("File not found. Cleaning: \"%s\"", path)
+		return true
+	}
+
+	return false
+}
+
+func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
+	if t.shouldClean(g.Path) {
+		return true
+	}
+
+	if t.Gallery.CountFiles() == 0 {
+		logger.Infof("Gallery has 0 images. Cleaning: \"%s\"", g.Path)
 		return true
 	}
 

@@ -5,21 +5,35 @@ import { FindGalleriesQueryResult } from "src/core/generated-graphql";
 import { useGalleriesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import { GalleryCard } from "./GalleryCard";
 
 export const GalleryList: React.FC = () => {
   const listData = useGalleriesList({
+    zoomable: true,
     renderContent,
   });
 
   function renderContent(
     result: FindGalleriesQueryResult,
-    filter: ListFilterModel
+    filter: ListFilterModel,
+    selectedIds: Set<string>,
+    zoomIndex: number
   ) {
     if (!result.data || !result.data.findGalleries) {
       return;
     }
     if (filter.displayMode === DisplayMode.Grid) {
-      return <h1>TODO</h1>;
+      return (
+        <div className="row justify-content-center">
+          {result.data.findGalleries.galleries.map((gallery) => (
+            <GalleryCard
+              key={gallery.id}
+              gallery={gallery}
+              zoomIndex={zoomIndex}
+            />
+          ))}
+        </div>
+      );
     }
     if (filter.displayMode === DisplayMode.List) {
       return (

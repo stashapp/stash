@@ -33,6 +33,7 @@ export const useFindGalleries = (filter: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
     variables: {
       filter: filter.makeFindFilter(),
+      gallery_filter: filter.makeGalleryFilter(),
     },
   });
 

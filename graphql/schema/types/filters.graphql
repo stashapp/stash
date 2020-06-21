@@ -96,6 +96,11 @@ input StudioFilterType {
   parents: MultiCriterionInput
 }
 
+input GalleryFilterType {
+  """Filter to only include galleries missing this property"""
+  is_missing: String
+}
+
 enum CriterionModifier {
   """="""
   EQUALS,
