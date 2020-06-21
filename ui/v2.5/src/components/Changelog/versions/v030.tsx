@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 
 const markup = `
 ### ✨ New Features
+*  Add in-app help manual.
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
