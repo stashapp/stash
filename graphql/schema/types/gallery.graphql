@@ -4,6 +4,7 @@ type Gallery {
   checksum: String!
   path: String!
   title: String
+  scene: Scene
 
   """The files in the gallery"""
   files: [GalleryFilesType!]! # Resolver
