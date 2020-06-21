@@ -8,6 +8,7 @@ import {
   SortDirectionEnum,
   MovieFilterType,
   StudioFilterType,
+  GalleryFilterType,
 } from "src/core/generated-graphql";
 import { stringToGender } from "src/core/StashService";
 import {
@@ -31,6 +32,7 @@ import {
   IsMissingCriterion,
   PerformerIsMissingCriterionOption,
   SceneIsMissingCriterionOption,
+  GalleryIsMissingCriterionOption,
 } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import {
@@ -182,8 +184,11 @@ export class ListFilterModel {
       case FilterMode.Galleries:
         this.sortBy = "path";
         this.sortByOptions = ["path"];
-        this.displayModeOptions = [DisplayMode.List];
-        this.criterionOptions = [new NoneCriterionOption()];
+        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
+        this.criterionOptions = [
+          new NoneCriterionOption(),
+          new GalleryIsMissingCriterionOption(),
+        ];
         break;
       case FilterMode.SceneMarkers:
         this.sortBy = "title";
@@ -601,6 +606,21 @@ export class ListFilterModel {
         // no default
       }
     });
+
+    return result;
+  }
+
+  public makeGalleryFilter(): GalleryFilterType {
+    const result: GalleryFilterType = {};
+    this.criteria.forEach((criterion) => {
+      switch (criterion.type) {
+        case "galleryIsMissing":
+          result.is_missing = (criterion as IsMissingCriterion).value;
+          break;
+        // no default
+      }
+    });
+
     return result;
   }
 }
