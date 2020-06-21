@@ -7,6 +7,7 @@ const markup = `
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
+*  Add support for chrome dp in xpath scrapers.
 *  Add gallery grid view.
 *  Add is-missing scene filter for gallery query.
 *  Don't import galleries with no images, and delete galleries with no images during clean.
