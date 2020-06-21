@@ -199,7 +199,11 @@ export const MainNavbar: React.FC = () => {
               <Icon icon="cog" />
             </Button>
           </NavLink>
-          <Button className="minimal help-button" onClick={() => setShowManual(true)} title="Help">
+          <Button
+            className="minimal help-button"
+            onClick={() => setShowManual(true)}
+            title="Help"
+          >
             <Icon icon="question-circle" />
           </Button>
           {maybeRenderLogout()}

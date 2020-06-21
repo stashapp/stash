@@ -1,136 +1,137 @@
 .manual {
+  background-color: #30404d;
+  color: $text-color;
+
+  .close {
+    color: $text-color;
+  }
+
+  .manual-container {
+    padding-left: 1px;
+    padding-right: 5px;
+  }
+
+  .modal-header,
+  .modal-body {
     background-color: #30404d;
     color: $text-color;
+    overflow-y: hidden;
+  }
+}
 
-    .close {
-        color: $text-color;
+.manual .manual-content {
+  max-height: calc(100vh - 10rem);
+  overflow-y: auto;
+
+  .manual-page {
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin-bottom: 16px;
+      margin-top: 24px;
     }
 
-    .manual-container {
-        padding-right: 5px;
-        padding-left: 1px;
+    & > h1:first-child,
+    & > h2:first-child,
+    & > h3:first-child,
+    & > h4:first-child,
+    & > h5:first-child,
+    & > h6:first-child {
+      margin-top: 0;
     }
 
-    .modal-header,
-    .modal-body {
-        background-color: #30404d;
-        color: $text-color;
-        overflow-y: hidden;
-
-        .manual-content {
-            max-height: calc(100vh - 10rem);
-            overflow-y: auto;
-
-            .manual-page {
-                h1,
-                h2,
-                h3,
-                h4,
-                h5,
-                h6 {
-                    margin-top: 24px;
-                    margin-bottom: 16px;
-                }
-
-                & > h1:first-child,
-                & > h2:first-child,
-                & > h3:first-child,
-                & > h4:first-child,
-                & > h5:first-child,
-                & > h6:first-child {
-                    margin-top: 0;
-                }
-                
-                h1,
-                h2 {
-                    padding-bottom: .3em;
-                }
-
-                h1 {
-                    font-size: 2rem;
-                }
-                h2 {
-                    font-size: 1.83rem;
-                }
-                h3 {
-                    font-size: 1.67rem;
-                }
-                h4 {
-                    font-size: 1.5rem;
-                }
-                h5 {
-                    font-size: 1.33rem;
-                }
-
-                code {
-                    background-color: darken($color: #30404d, $amount: 3);
-                    padding: .2em .4em;
-                    color: $text-color;
-                }
-
-                blockquote {
-                    p {
-                        margin-bottom: 0;
-                        vertical-align: middle;
-                    }
-                }
-
-                blockquote, 
-                pre {
-                    code {
-                        padding: 0;
-                    }
-                    padding: 16px;
-                    background-color: darken($color: #30404d, $amount: 3);
-                    border-radius: 3px;
-                }
-
-                pre {
-                    overflow: auto;
-                    font-size: 85%;
-                    line-height: 1.45;
-                }
-
-                table {
-                    display: block;
-                    width: 100%;
-                    overflow: auto;
-                    margin-bottom: 16px;
-
-                    tr {
-                        border-top: 1px solid darken($color: #201d1a, $amount: 3);
-                    }
-
-                    tr:nth-child(2n) {
-                        background-color: darken($color: #30404d, $amount: 2);
-                    }
-
-                    td,
-                    th {
-                        padding: 6px 13px;
-                        border: 1px solid darken($color: #201d1a, $amount: 3);
-                    }
-                }
-            }
-        }
-
-        
+    h1,
+    h2 {
+      padding-bottom: 0.3em;
     }
 
-    .indent-1 {
-        padding-left: 2rem;
+    h1 {
+      font-size: 2rem;
     }
+
+    h2 {
+      font-size: 1.83rem;
+    }
+
+    h3 {
+      font-size: 1.67rem;
+    }
+
+    h4 {
+      font-size: 1.5rem;
+    }
+
+    h5 {
+      font-size: 1.33rem;
+    }
+
+    code {
+      background-color: darken($color: #30404d, $amount: 3);
+      color: $text-color;
+      padding: 0.2em 0.4em;
+    }
+
+    blockquote {
+      p {
+        margin-bottom: 0;
+        vertical-align: middle;
+      }
+    }
+
+    blockquote,
+    pre {
+      code {
+        padding: 0;
+      }
+
+      background-color: darken($color: #30404d, $amount: 3);
+      border-radius: 3px;
+      padding: 16px;
+    }
+
+    pre {
+      font-size: 85%;
+      line-height: 1.45;
+      overflow: auto;
+    }
+
+    table {
+      display: block;
+      margin-bottom: 16px;
+      overflow: auto;
+      width: 100%;
+
+      tr {
+        border-top: 1px solid darken($color: #201d1a, $amount: 3);
+      }
+
+      tr:nth-child(2n) {
+        background-color: darken($color: #30404d, $amount: 2);
+      }
+
+      td,
+      th {
+        border: 1px solid darken($color: #201d1a, $amount: 3);
+        padding: 6px 13px;
+      }
+    }
+  }
+
+  .indent-1 {
+    padding-left: 2rem;
+  }
 }
 
 @media (max-width: 992px) {
-    .manual {
-        .modal-body {
-            overflow-y: auto;
+  .manual .modal-body {
+    overflow-y: auto;
 
-            .manual-content {
-                overflow-y: hidden;
-                max-height: inherit;
-            }
-        }
+    .manual-content {
+      max-height: inherit;
+      overflow-y: hidden;
     }
+  }
 }
