@@ -20,9 +20,11 @@ export const GalleryCard: React.FC<IProps> = ({ gallery, zoomIndex }) => {
 
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
-        <Button className="minimal">
-          <Icon icon="play-circle" />
-        </Button>
+        <Link to={`/scenes/${gallery.scene.id}`}>
+          <Button className="minimal">
+            <Icon icon="play-circle" />
+          </Button>
+        </Link>
       </HoverPopover>
     );
   }
