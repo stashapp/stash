@@ -7,7 +7,7 @@ interface IPageProps {
 
 export const Page: React.FC<IPageProps> = ({page}) => {
   const [markdown, setMarkdown] = useState("");
-  
+
   useEffect(() => {
     if (!markdown) {
       fetch(page).then(res => res.text()).then(text => setMarkdown(text));
@@ -15,6 +15,6 @@ export const Page: React.FC<IPageProps> = ({page}) => {
   }, [page, markdown]);
 
   return (
-    <ReactMarkdown className="manual-page" source={markdown}/>
+    <ReactMarkdown className="manual-page" source={markdown} />
   );
 };

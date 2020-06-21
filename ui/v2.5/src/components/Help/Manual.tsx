@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Modal, Container, Row, Col, Nav, Tab } from "react-bootstrap";
 import Introduction from "src/docs/en/Introduction.md";
 import Tasks from "src/docs/en/Tasks.md";
@@ -80,6 +80,21 @@ export const Manual: React.FC<IManualProps> = ({show, onClose}) => {
     },
   ];
 
+  const [activeTab, setActiveTab] = useState(content[0].key);
+
+  // links to other manual pages are specified as "/help/page.md"
+  // intercept clicks to these pages and set the tab accordingly
+  function interceptLinkClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    if (event.target instanceof HTMLAnchorElement) {
+      const href = (event.target as HTMLAnchorElement).getAttribute("href");
+      if (href && href.startsWith("/help")) {
+        const newKey = (event.target as HTMLAnchorElement).pathname.substring("/help/".length);
+        setActiveTab(newKey);
+        event.preventDefault();
+      }
+    }
+  }
+
   return (
     <Modal show={show} onHide={onClose} dialogClassName="modal-dialog-scrollable manual modal-xl">
       <Modal.Header closeButton>
@@ -88,7 +103,8 @@ export const Manual: React.FC<IManualProps> = ({show, onClose}) => {
       <Modal.Body>
         <Container className="manual-container">
           <Tab.Container
-            defaultActiveKey={content[0].key}
+            activeKey={activeTab}
+            onSelect={(k) => setActiveTab(k)}
             id="manual-tabs"
           >
             <Row>
@@ -108,7 +124,7 @@ export const Manual: React.FC<IManualProps> = ({show, onClose}) => {
                 <Tab.Content>
                   {content.map((c) => {
                     return (
-                      <Tab.Pane eventKey={c.key}>
+                      <Tab.Pane eventKey={c.key} onClick={interceptLinkClick}>
                         <Page page={c.content} />
                       </Tab.Pane>
                     );

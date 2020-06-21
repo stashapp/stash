@@ -15,10 +15,10 @@ Stash currently ignores duplicate files. If a file is detected with the same has
 The "Set name, data, details from metadata" option will parse the files metadata (where supported) and set the scene attributes accordingly. It has previously been noted that this information is frequently incorrect, so only use this option where you are certain that the metadata is correct in the files.
 
 # Auto Tagging
-See the AutoTagging page.
+See the [Auto Tagging](/help/AutoTagging.md) page.
 
 # Scene Filename Parser
-See the SceneFilenameParser page.
+See the [Scene Filename Parser](/help/SceneFilenameParser.md) page.
 
 # Generated Content
 
@@ -51,6 +51,6 @@ The import and export tasks read and write JSON files to the configured metadata
 
 > **⚠️ Note:** The import task wipes the current database completely before importing.
 
-See JSONSpec for details on the exported JSON format.
+See the [JSON Specification](/help/JSONSpec.md) page for details on the exported JSON format.
 
 ---
