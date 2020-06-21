@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,7 +14,9 @@ import (
 	"time"
 
 	"github.com/antchfx/htmlquery"
+	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/dom"
+	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 	jsoniter "github.com/json-iterator/go"
 
@@ -596,22 +599,14 @@ func loadURL(url string, c *scraperConfig) (*html.Node, error) {
 	var r io.Reader
 
 	if c != nil && c.DriverOptions != nil && c.DriverOptions.UseCDP {
-		remote := false
-		sleep := 2
-		if c.DriverOptions.Remote {
-			remote = true
-		}
-
-		if c.DriverOptions.Sleep != 0 {
-			sleep = c.DriverOptions.Sleep
-		}
-
-		resp, err := urlFromCDP(url, remote, sleep)
+		// get the page using chrome dp
+		resp, err := urlFromCDP(url, c)
 		if err != nil {
 			return nil, err
 		}
 		r = strings.NewReader(resp)
 	} else {
+		// otherwise use a plain http.Client
 		client := &http.Client{
 			Timeout: scrapeGetTimeout,
 		}
@@ -712,10 +707,28 @@ func NodeText(n *html.Node) string {
 	return htmlquery.InnerText(n)
 }
 
-// urlFromCDP uses chrome cdp to load and process the url
-// if remote is true it will try to use localhost:9222
+// func urlFromCDP uses chrome cdp to load and process the url
+// if remote is set as true in the scraperConfig  it will try to use localhost:9222
 // else it will look for google-chrome in path
-func urlFromCDP(url string, remote bool, sleep int) (string, error) {
+func urlFromCDP(url string, c *scraperConfig) (string, error) {
+	if !(c != nil && c.DriverOptions != nil && c.DriverOptions.UseCDP) {
+		return "", fmt.Errorf("Url shouldn't be feetched through CDP")
+	}
+	remote := false
+	sleep := 2
+	clearCookies := false
+
+	if c.DriverOptions.Remote {
+		remote = true
+	}
+
+	if c.DriverOptions.ClearCookies {
+		clearCookies = true
+	}
+
+	if c.DriverOptions.Sleep != 0 {
+		sleep = c.DriverOptions.Sleep
+	}
 
 	sleepDuration := time.Duration(sleep) * time.Second
 	act := context.Background()
@@ -736,6 +749,7 @@ func urlFromCDP(url string, remote bool, sleep int) (string, error) {
 
 	var res string
 	err := chromedp.Run(ctx,
+		cdpClearCookies(clearCookies),
 		chromedp.Navigate(url),
 		chromedp.Sleep(sleepDuration),
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -754,6 +768,7 @@ func urlFromCDP(url string, remote bool, sleep int) (string, error) {
 	return res, nil
 }
 
+// func getRemoteCDP returns the complete remote address that is required to access the cdp instance
 func getRemoteCDP() (string, error) {
 	resp, err := http.Get("http://localhost:9222/json/version")
 	if err != nil {
@@ -765,5 +780,55 @@ func getRemoteCDP() (string, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return "", err
 	}
-	return result["webSocketDebuggerUrl"].(string), err
+	remote := result["webSocketDebuggerUrl"].(string)
+	logger.Debugf("Remote cdp instance found %s", remote)
+	return remote, err
+}
+
+func cdpSetCookie(name, value, domain, path string, httpOnly, secure bool) chromedp.Action {
+	return chromedp.ActionFunc(func(ctx context.Context) error {
+		expr := cdp.TimeSinceEpoch(time.Now().Add(30 * 24 * time.Hour))
+		success, err := network.SetCookie(name, value).
+			WithExpires(&expr).
+			WithDomain(domain).
+			WithPath(path).
+			WithHTTPOnly(httpOnly).
+			WithSecure(secure).
+			Do(ctx)
+		if err != nil {
+			return err
+		}
+		if !success {
+			return fmt.Errorf("could not set cookie %s", name)
+		}
+		logger.Debugf("Setting cookie with name: %s value: %s domain: %s path: %s", name, value, domain, path)
+		return nil
+	})
+}
+
+func cdpClearCookies(clear bool) chromedp.Action {
+	return chromedp.ActionFunc(func(ctx context.Context) error {
+		if clear {
+			network.ClearBrowserCookies().Do(ctx)
+		}
+		cookies, err := network.GetAllCookies().Do(ctx)
+		if err != nil {
+			return err
+		}
+		for i, cookie := range cookies {
+			logger.Debugf("chrome cookie %d: %+v", i, cookie)
+		}
+		return nil
+	})
+}
+
+func cdpNetwork(enable bool) chromedp.Action {
+	return chromedp.ActionFunc(func(ctx context.Context) error {
+		if enable {
+			network.Enable().Do(ctx)
+		} else {
+			network.Disable().Do(ctx)
+		}
+		return nil
+	})
 }
