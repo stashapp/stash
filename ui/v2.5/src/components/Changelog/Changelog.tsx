@@ -9,7 +9,7 @@ const Changelog: React.FC = () => {
   const stashVersion = process.env.REACT_APP_STASH_VERSION;
   const buildTime = process.env.REACT_APP_DATE;
 
-  let buildDate = undefined;
+  let buildDate;
   if (buildTime) {
     buildDate = buildTime.substring(0, buildTime.indexOf(" "));
   }
