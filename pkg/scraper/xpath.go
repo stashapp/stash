@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -13,6 +14,7 @@ import (
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/charset"
+	"golang.org/x/net/publicsuffix"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -587,8 +589,24 @@ func (r xPathResults) setKey(index int, key string, value string) xPathResults {
 }
 
 func loadURL(url string, c *scraperConfig) (*html.Node, error) {
+	options := cookiejar.Options{
+		PublicSuffixList: publicsuffix.List,
+	}
+	jar, er := cookiejar.New(&options)
+	if er != nil {
+		return nil, er
+	}
+
 	client := &http.Client{
 		Timeout: scrapeGetTimeout,
+		// defaultCheckRedirect code with max changed from 10 to 20
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 20 {
+				return errors.New("stopped after 20 redirects")
+			}
+			return nil
+		},
+		Jar: jar,
 	}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

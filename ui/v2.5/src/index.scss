@@ -99,7 +99,8 @@ textarea.text-input {
   .zoom-0 {
     width: 240px;
 
-    .scene-card-video {
+    .scene-card-video,
+    .gallery-card-image {
       max-height: 180px;
     }
 
@@ -111,7 +112,8 @@ textarea.text-input {
   .zoom-1 {
     width: 320px;
 
-    .scene-card-video {
+    .scene-card-video,
+    .gallery-card-image {
       max-height: 240px;
     }
 
@@ -123,7 +125,8 @@ textarea.text-input {
   .zoom-2 {
     width: 480px;
 
-    .scene-card-video {
+    .scene-card-video,
+    .gallery-card-image {
       max-height: 360px;
     }
 
@@ -135,7 +138,8 @@ textarea.text-input {
   .zoom-3 {
     width: 640px;
 
-    .scene-card-video {
+    .scene-card-video,
+    .gallery-card-image {
       max-height: 480px;
     }
 
@@ -145,7 +149,8 @@ textarea.text-input {
   }
 }
 
-.scene-card-video {
+.scene-card-video,
+.gallery-card-image {
   height: auto;
   width: 100%;
 }
