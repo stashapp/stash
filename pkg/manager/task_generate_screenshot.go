@@ -69,11 +69,24 @@ func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
 
-	updatedScene.Cover = &coverImageData
-	err = SetSceneScreenshot(t.Scene.Checksum, coverImageData)
+	if err := SetSceneScreenshot(t.Scene.Checksum, coverImageData); err != nil {
+		logger.Errorf("Error writing screenshot: %s", err.Error())
+		tx.Rollback()
+		return
+	}
+
+	// update the scene cover table
+	if err := qb.UpdateSceneCover(t.Scene.ID, coverImageData, tx); err != nil {
+		logger.Errorf("Error setting screenshot: %s", err.Error())
+		tx.Rollback()
+		return
+	}
+
+	// update the scene with the update date
 	_, err = qb.Update(updatedScene, tx)
 	if err != nil {
-		logger.Errorf("Error setting screenshot: %s", err.Error())
+		logger.Errorf("Error updating scene: %s", err.Error())
+		tx.Rollback()
 		return
 	}
 

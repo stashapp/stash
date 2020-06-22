@@ -3,12 +3,16 @@
 package models_test
 
 import (
+	"context"
+	"database/sql"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestPerformerFindBySceneID(t *testing.T) {
@@ -101,6 +105,106 @@ func TestPerformerFindByNames(t *testing.T) {
 	assert.Equal(t, performerNames[performerIdx1WithDupName], performers[2].Name.String)
 	assert.Equal(t, performerNames[performerIdxWithDupName], performers[3].Name.String)
 
+}
+
+func TestPerformerUpdatePerformerImage(t *testing.T) {
+	qb := models.NewPerformerQueryBuilder()
+
+	// create performer to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestPerformerUpdatePerformerImage"
+	performer := models.Performer{
+		Name:     sql.NullString{String: name, Valid: true},
+		Checksum: utils.MD5FromString(name),
+		Favorite: sql.NullBool{Bool: false, Valid: true},
+	}
+	created, err := qb.Create(performer, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating performer: %s", err.Error())
+	}
+
+	image := []byte("image")
+	err = qb.UpdatePerformerImage(created.ID, image, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating performer image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// ensure image set
+	storedImage, err := qb.GetPerformerImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting image: %s", err.Error())
+	}
+	assert.Equal(t, storedImage, image)
+
+	// set nil image
+	tx = database.DB.MustBeginTx(ctx, nil)
+	err = qb.UpdatePerformerImage(created.ID, nil, tx)
+	if err == nil {
+		t.Fatalf("Expected error setting nil image")
+	}
+
+	tx.Rollback()
+}
+
+func TestPerformerDestroyPerformerImage(t *testing.T) {
+	qb := models.NewPerformerQueryBuilder()
+
+	// create performer to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestPerformerDestroyPerformerImage"
+	performer := models.Performer{
+		Name:     sql.NullString{String: name, Valid: true},
+		Checksum: utils.MD5FromString(name),
+		Favorite: sql.NullBool{Bool: false, Valid: true},
+	}
+	created, err := qb.Create(performer, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating performer: %s", err.Error())
+	}
+
+	image := []byte("image")
+	err = qb.UpdatePerformerImage(created.ID, image, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating performer image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	tx = database.DB.MustBeginTx(ctx, nil)
+
+	err = qb.DestroyPerformerImage(created.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error destroying performer image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// image should be nil
+	storedImage, err := qb.GetPerformerImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting image: %s", err.Error())
+	}
+	assert.Nil(t, storedImage)
 }
 
 // TODO Update
