@@ -10,6 +10,10 @@ import {
   OverlayTrigger,
   Tooltip,
   SafeAnchorProps,
+  InputGroup,
+  FormControl,
+  Col,
+  Row,
 } from "react-bootstrap";
 
 import { Icon } from "src/components/Shared";
@@ -61,6 +65,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {
     searchCallback(event.currentTarget.value);
   }
+
+  function onEdit() {}
 
   function onChangeSortDirection() {
     if (props.filter.sortDirection === SortDirectionEnum.Asc) {
@@ -140,6 +146,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
           return "Wall";
       }
     }
+
+    const option = DisplayMode.Grid;
     return props.filter.displayModeOptions.map((option) => (
       <OverlayTrigger
         key={option}
@@ -258,7 +266,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     if (props.onChangeZoom) {
       return (
         <Form.Control
-          className="zoom-slider col-1 d-none d-sm-block"
+          className="zoom-slider d-none d-sm-inline-flex"
           type="range"
           min={0}
           max={3}
@@ -271,85 +279,145 @@ export const ListFilter: React.FC<IListFilterProps> = (
     }
   }
 
+  function maybeRenderMultiOps() {
+    if (true) {
+      return (
+        <>
+          <ButtonGroup className="mr-1">
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="edit">Edit</Tooltip>
+              }
+            >
+              <Button variant="secondary" onClick={onEdit}>
+                <Icon icon="pencil-alt" />
+              </Button>
+            </OverlayTrigger>
+          </ButtonGroup>
+
+          <ButtonGroup className="mr-1">
+            <OverlayTrigger
+              overlay={
+                <Tooltip id="delete">Delete</Tooltip>
+              }
+            >
+              <Button variant="danger" onClick={onEdit}>
+                <Icon icon="trash" />
+              </Button>
+            </OverlayTrigger>
+          </ButtonGroup>
+        </>
+      )
+    }
+  }
+
   function render() {
     return (
       <>
-        <div className="filter-container">
-          <Form.Control
-            placeholder="Search..."
-            defaultValue={props.filter.searchTerm}
-            onInput={onChangeQuery}
-            className="filter-item col-5 col-sm-2 bg-secondary text-white border-secondary"
-          />
-          <Form.Control
-            as="select"
-            onChange={onChangePageSize}
-            value={props.filter.itemsPerPage.toString()}
-            className="btn-secondary filter-item col-1 d-none d-sm-inline"
-          >
-            {PAGE_SIZE_OPTIONS.map((s) => (
-              <option value={s} key={s}>
-                {s}
-              </option>
-            ))}
-          </Form.Control>
-          <ButtonGroup className="filter-item">
-            <Dropdown as={ButtonGroup}>
-              <Dropdown.Toggle split variant="secondary" id="more-menu">
-                {props.filter.sortBy}
-              </Dropdown.Toggle>
-              <Dropdown.Menu className="bg-secondary text-white">
-                {renderSortByOptions()}
-              </Dropdown.Menu>
-              <OverlayTrigger
-                overlay={
-                  <Tooltip id="sort-direction-tooltip">
-                    {props.filter.sortDirection === SortDirectionEnum.Asc
-                      ? "Ascending"
-                      : "Descending"}
-                  </Tooltip>
-                }
-              >
-                <Button variant="secondary" onClick={onChangeSortDirection}>
-                  <Icon
-                    icon={
-                      props.filter.sortDirection === SortDirectionEnum.Asc
-                        ? "caret-up"
-                        : "caret-down"
-                    }
-                  />
-                </Button>
-              </OverlayTrigger>
-              {props.filter.sortBy === "random" && (
-                <OverlayTrigger
-                  overlay={
-                    <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>
-                  }
+        <div className="form-row align-items-center justify-content-center">
+          <Col sm={12} md={6} xl={4} lg={5} className="my-1">
+            <Row className="justify-content-center">
+              <Col xs={6} className="px-1">
+                <InputGroup>
+                  <FormControl 
+                    placeholder="Search..."
+                    defaultValue={props.filter.searchTerm}
+                    onInput={onChangeQuery}
+                    className="bg-secondary text-white border-secondary" />
+
+                  <InputGroup.Append>
+                    <AddFilter
+                      filter={props.filter}
+                      onAddCriterion={onAddCriterion}
+                      onCancel={onCancelAddCriterion}
+                      editingCriterion={editingCriterion}
+                    />
+                  </InputGroup.Append>
+                </InputGroup>
+              </Col>
+              
+              <Col xs="auto" className="px-1">
+                <ButtonGroup>
+                  <Dropdown as={ButtonGroup}>
+                    <Dropdown.Toggle split variant="secondary" id="more-menu">
+                      {props.filter.sortBy}
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="bg-secondary text-white">
+                      {renderSortByOptions()}
+                    </Dropdown.Menu>
+                    <OverlayTrigger
+                      overlay={
+                        <Tooltip id="sort-direction-tooltip">
+                          {props.filter.sortDirection === SortDirectionEnum.Asc
+                            ? "Ascending"
+                            : "Descending"}
+                        </Tooltip>
+                      }
+                    >
+                      <Button variant="secondary" onClick={onChangeSortDirection}>
+                        <Icon
+                          icon={
+                            props.filter.sortDirection === SortDirectionEnum.Asc
+                              ? "caret-up"
+                              : "caret-down"
+                          }
+                        />
+                      </Button>
+                    </OverlayTrigger>
+                    {props.filter.sortBy === "random" && (
+                      <OverlayTrigger
+                        overlay={
+                          <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>
+                        }
+                      >
+                        <Button variant="secondary" onClick={onReshuffleRandomSort}>
+                          <Icon icon="random" />
+                        </Button>
+                      </OverlayTrigger>
+                    )}
+                  </Dropdown>
+                </ButtonGroup>
+              </Col>
+
+              <Col xs="auto" className="px-1">
+                <Form.Control
+                  as="select"
+                  onChange={onChangePageSize}
+                  value={props.filter.itemsPerPage.toString()}
+                  className="btn-secondary"
                 >
-                  <Button variant="secondary" onClick={onReshuffleRandomSort}>
-                    <Icon icon="random" />
-                  </Button>
-                </OverlayTrigger>
-              )}
-            </Dropdown>
-          </ButtonGroup>
+                  {PAGE_SIZE_OPTIONS.map((s) => (
+                    <option value={s} key={s}>
+                      {s}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Col>
+            </Row>
+          </Col>      
+          
+          <Col sm={12} md="auto" className="my-1">
+            <Row className="align-items-center justify-content-center">
 
-          <AddFilter
-            filter={props.filter}
-            onAddCriterion={onAddCriterion}
-            onCancel={onCancelAddCriterion}
-            editingCriterion={editingCriterion}
-          />
+            {maybeRenderMultiOps()}
 
-          <ButtonGroup className="filter-item d-none d-sm-inline-flex">
-            {renderDisplayModeOptions()}
-          </ButtonGroup>
+            <ButtonGroup className="mr-3">
+              {renderMore()}
+            </ButtonGroup>
 
-          {maybeRenderZoom()}
+            <ButtonGroup className="mr-3">
+              {renderDisplayModeOptions()}
+            </ButtonGroup>
 
-          <ButtonGroup className="filter-item d-none d-sm-inline-flex">
-            {renderMore()}
-          </ButtonGroup>
+            <ButtonGroup>
+              {maybeRenderZoom()}
+            </ButtonGroup>
+            </Row>
+          </Col>      
+
+          <Col xs="auto">
+            
+          </Col>
         </div>
         <div className="d-flex justify-content-center">
           {renderFilterTags()}
