@@ -170,10 +170,16 @@ hr {
 }
 
 .modal {
-  color: $dark-text;
+  color: $text-color;
 
+  .close {
+    color: $text-color;
+  }
+
+  .modal-header,
   .modal-body,
   .modal-footer {
-    background-color: rgb(235, 241, 245);
+    background-color: #30404d;
+    color: $text-color;
   }
 }
