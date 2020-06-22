@@ -34,6 +34,10 @@ exclude:
 
 _a useful [link](https://regex101.com/) to experiment with regexps_
 
+## Scraping User Agent string
+
+Some websites require a legitimate User-Agent string when receiving requests, or they will be rejected. If entered, this string will be applied as the `User-Agent` header value in http scrape requests.
+
 ## Authentication
 
 By default, stash is not configured with any sort of password protection. To enable password protection, both `Username` and `Password` must be populated. Note that when entering a new username and password where none was set previously, the system will immediately request these credentials to log you in.
