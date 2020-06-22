@@ -2,13 +2,12 @@ package api
 
 import (
 	"context"
-	"crypto/md5"
-	"fmt"
-	"github.com/go-chi/chi"
-	"github.com/stashapp/stash/pkg/models"
 	"net/http"
 	"strconv"
-	"strings"
+
+	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type performerRoutes struct{}
@@ -26,17 +25,9 @@ func (rs performerRoutes) Routes() chi.Router {
 
 func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	performer := r.Context().Value(performerKey).(*models.Performer)
-	etag := fmt.Sprintf("%x", md5.Sum(performer.Image))
-
-	if match := r.Header.Get("If-None-Match"); match != "" {
-		if strings.Contains(match, etag) {
-			w.WriteHeader(http.StatusNotModified)
-			return
-		}
-	}
-
-	w.Header().Add("Etag", etag)
-	_, _ = w.Write(performer.Image)
+	qb := models.NewPerformerQueryBuilder()
+	image, _ := qb.GetPerformerImage(performer.ID, nil)
+	utils.ServeImage(image, w, r)
 }
 
 func PerformerCtx(next http.Handler) http.Handler {

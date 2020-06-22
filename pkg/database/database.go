@@ -19,7 +19,7 @@ import (
 
 var DB *sqlx.DB
 var dbPath string
-var appSchemaVersion uint = 9
+var appSchemaVersion uint = 10
 var databaseSchemaVersion uint
 
 const sqlite3Driver = "sqlite3ex"
@@ -100,6 +100,7 @@ func Backup(backupPath string) error {
 	}
 	defer db.Close()
 
+	logger.Infof("Backing up database into: %s", backupPath)
 	_, err = db.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
 		return fmt.Errorf("Vacuum failed: %s", err)
@@ -109,6 +110,7 @@ func Backup(backupPath string) error {
 }
 
 func RestoreFromBackup(backupPath string) error {
+	logger.Infof("Restoring backup database %s into %s", backupPath, dbPath)
 	return os.Rename(backupPath, dbPath)
 }
 
@@ -177,17 +179,27 @@ func RunMigrations() error {
 	databaseSchemaVersion, _, _ = m.Version()
 	stepNumber := appSchemaVersion - databaseSchemaVersion
 	if stepNumber != 0 {
+		logger.Infof("Migrating database from version %d to %d", databaseSchemaVersion, appSchemaVersion)
 		err = m.Steps(int(stepNumber))
 		if err != nil {
 			// migration failed
+			logger.Errorf("Error migrating database: %s", err.Error())
 			m.Close()
 			return err
 		}
 	}
+
 	m.Close()
 
 	// re-initialise the database
 	Initialize(dbPath)
+
+	// run a vacuum on the database
+	logger.Info("Performing vacuum on database")
+	_, err = DB.Exec("VACUUM")
+	if err != nil {
+		logger.Warnf("error while performing post-migration vacuum: %s", err.Error())
+	}
 
 	return nil
 }

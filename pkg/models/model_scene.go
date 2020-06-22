@@ -9,7 +9,6 @@ type Scene struct {
 	ID         int             `db:"id" json:"id"`
 	Checksum   string          `db:"checksum" json:"checksum"`
 	Path       string          `db:"path" json:"path"`
-	Cover      []byte          `db:"cover" json:"cover"`
 	Title      sql.NullString  `db:"title" json:"title"`
 	Details    sql.NullString  `db:"details" json:"details"`
 	URL        sql.NullString  `db:"url" json:"url"`
@@ -34,7 +33,6 @@ type ScenePartial struct {
 	ID         int              `db:"id" json:"id"`
 	Checksum   *string          `db:"checksum" json:"checksum"`
 	Path       *string          `db:"path" json:"path"`
-	Cover      *[]byte          `db:"cover" json:"cover"`
 	Title      *sql.NullString  `db:"title" json:"title"`
 	Details    *sql.NullString  `db:"details" json:"details"`
 	URL        *sql.NullString  `db:"url" json:"url"`

@@ -87,6 +87,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
 }
 func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask, tx *sqlx.Tx) {
 	defer wg.Done()
+	sceneQB := models.NewSceneQueryBuilder()
 	studioQB := models.NewStudioQueryBuilder()
 	movieQB := models.NewMovieQueryBuilder()
 	galleryQB := models.NewGalleryQueryBuilder()
@@ -216,8 +217,14 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 			newSceneJSON.File.Bitrate = int(scene.Bitrate.Int64)
 		}
 
-		if len(scene.Cover) > 0 {
-			newSceneJSON.Cover = utils.GetBase64StringFromData(scene.Cover)
+		cover, err := sceneQB.GetSceneCover(scene.ID, tx)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene cover: %s", scene.Checksum, err.Error())
+			continue
+		}
+
+		if len(cover) > 0 {
+			newSceneJSON.Cover = utils.GetBase64StringFromData(cover)
 		}
 
 		sceneJSON, err := instance.JSON.getScene(scene.Checksum)
@@ -287,6 +294,8 @@ func (t *ExportTask) ExportPerformers(ctx context.Context, workers int) {
 func exportPerformer(wg *sync.WaitGroup, jobChan <-chan *models.Performer) {
 	defer wg.Done()
 
+	performerQB := models.NewPerformerQueryBuilder()
+
 	for performer := range jobChan {
 		newPerformerJSON := jsonschema.Performer{
 			CreatedAt: models.JSONTime{Time: performer.CreatedAt.Timestamp},
@@ -345,7 +354,15 @@ func exportPerformer(wg *sync.WaitGroup, jobChan <-chan *models.Performer) {
 			newPerformerJSON.Favorite = performer.Favorite.Bool
 		}
 
-		newPerformerJSON.Image = utils.GetBase64StringFromData(performer.Image)
+		image, err := performerQB.GetPerformerImage(performer.ID, nil)
+		if err != nil {
+			logger.Errorf("[performers] <%s> error getting performers image: %s", performer.Checksum, err.Error())
+			continue
+		}
+
+		if len(image) > 0 {
+			newPerformerJSON.Image = utils.GetBase64StringFromData(image)
+		}
 
 		performerJSON, err := instance.JSON.getPerformer(performer.Checksum)
 		if err != nil {
@@ -418,7 +435,15 @@ func exportStudio(wg *sync.WaitGroup, jobChan <-chan *models.Studio) {
 			}
 		}
 
-		newStudioJSON.Image = utils.GetBase64StringFromData(studio.Image)
+		image, err := studioQB.GetStudioImage(studio.ID, nil)
+		if err != nil {
+			logger.Errorf("[studios] <%s> error getting studio image: %s", studio.Checksum, err.Error())
+			continue
+		}
+
+		if len(image) > 0 {
+			newStudioJSON.Image = utils.GetBase64StringFromData(image)
+		}
 
 		studioJSON, err := instance.JSON.getStudio(studio.Checksum)
 		if err != nil {
@@ -469,6 +494,9 @@ func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
 func exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movie) {
 	defer wg.Done()
 
+	movieQB := models.NewMovieQueryBuilder()
+	studioQB := models.NewStudioQueryBuilder()
+
 	for movie := range jobChan {
 		newMovieJSON := jsonschema.Movie{
 			CreatedAt: models.JSONTime{Time: movie.CreatedAt.Timestamp},
@@ -503,8 +531,33 @@ func exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movie) {
 			newMovieJSON.URL = movie.URL.String
 		}
 
-		newMovieJSON.FrontImage = utils.GetBase64StringFromData(movie.FrontImage)
-		newMovieJSON.BackImage = utils.GetBase64StringFromData(movie.BackImage)
+		if movie.StudioID.Valid {
+			studio, _ := studioQB.Find(int(movie.StudioID.Int64), nil)
+			if studio != nil {
+				newMovieJSON.Studio = studio.Name.String
+			}
+		}
+
+		frontImage, err := movieQB.GetFrontImage(movie.ID, nil)
+		if err != nil {
+			logger.Errorf("[movies] <%s> error getting movie front image: %s", movie.Checksum, err.Error())
+			continue
+		}
+
+		if len(frontImage) > 0 {
+			newMovieJSON.FrontImage = utils.GetBase64StringFromData(frontImage)
+		}
+
+		backImage, err := movieQB.GetBackImage(movie.ID, nil)
+		if err != nil {
+			logger.Errorf("[movies] <%s> error getting movie back image: %s", movie.Checksum, err.Error())
+			continue
+		}
+
+		if len(backImage) > 0 {
+			newMovieJSON.BackImage = utils.GetBase64StringFromData(backImage)
+		}
+
 		movieJSON, err := instance.JSON.getMovie(movie.Checksum)
 		if err != nil {
 			logger.Debugf("[movies] error reading movie json: %s", err.Error())
