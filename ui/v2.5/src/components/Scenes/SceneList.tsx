@@ -13,6 +13,7 @@ import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
+import { DeleteScenesDialog } from "./DeleteScenesDialog";
 
 interface ISceneList {
   subComponent?: boolean;
@@ -35,7 +36,8 @@ export const SceneList: React.FC<ISceneList> = ({
     zoomable: true,
     otherOperations,
     renderContent,
-    renderEditDialog: renderSelectedOptions,
+    renderEditDialog: renderEditScenesDialog,
+    renderDeleteDialog: renderDeleteScenesDialog,
     subComponent,
     filterHook,
   });
@@ -66,13 +68,27 @@ export const SceneList: React.FC<ISceneList> = ({
     }
   }
 
-  function renderSelectedOptions(
+  function renderEditScenesDialog(
     selectedScenes: SlimSceneDataFragment[],
     onClose: () => void
   ) {
     return (
       <>
         <EditScenesDialog
+          selected={selectedScenes}
+          onClose={onClose}
+        />
+      </>
+    );
+  }
+
+  function renderDeleteScenesDialog(
+    selectedScenes: SlimSceneDataFragment[],
+    onClose: () => void
+  ) {
+    return (
+      <>
+        <DeleteScenesDialog
           selected={selectedScenes}
           onClose={onClose}
         />

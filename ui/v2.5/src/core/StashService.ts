@@ -255,6 +255,12 @@ export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
     update: () => invalidateQueries(sceneMutationImpactedQueries),
   });
 
+export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
+  GQL.useScenesDestroyMutation({
+    variables: input,
+    update: () => invalidateQueries(sceneMutationImpactedQueries),
+  });
+
 export const useSceneGenerateScreenshot = () =>
   GQL.useSceneGenerateScreenshotMutation({
     update: () => invalidateQueries(["findScenes"]),

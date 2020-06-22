@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Col, Row } from "react-bootstrap";
+import { Form, Col, Row } from "react-bootstrap";
 import _ from "lodash";
 import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { StudioSelect, LoadingIndicator, Modal } from "src/components/Shared";
+import { StudioSelect, Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import MultiSet from "../Shared/MultiSet";
 import { FormUtils } from "src/utils";
