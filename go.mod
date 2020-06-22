@@ -25,7 +25,7 @@ require (
 	github.com/vektah/gqlparser v1.1.2
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2
-	golang.org/x/net v0.0.0-20200421231249-e086a090c8fd
+	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
 	gopkg.in/yaml.v2 v2.2.2
 )
 
