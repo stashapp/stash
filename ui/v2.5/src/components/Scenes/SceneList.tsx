@@ -12,7 +12,7 @@ import { DisplayMode } from "src/models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
-import { SceneSelectedOptions } from "./SceneSelectedOptions";
+import { EditScenesDialog } from "./EditScenesDialog";
 
 interface ISceneList {
   subComponent?: boolean;
@@ -35,7 +35,7 @@ export const SceneList: React.FC<ISceneList> = ({
     zoomable: true,
     otherOperations,
     renderContent,
-    renderSelectedOptions,
+    renderEditDialog: renderSelectedOptions,
     subComponent,
     filterHook,
   });
@@ -67,30 +67,14 @@ export const SceneList: React.FC<ISceneList> = ({
   }
 
   function renderSelectedOptions(
-    result: FindScenesQueryResult,
-    selectedIds: Set<string>
+    selectedScenes: SlimSceneDataFragment[],
+    onClose: () => void
   ) {
-    // find the selected items from the ids
-    if (!result.data || !result.data.findScenes) {
-      return undefined;
-    }
-
-    const { scenes } = result.data.findScenes;
-
-    const selectedScenes: SlimSceneDataFragment[] = [];
-    selectedIds.forEach((id) => {
-      const scene = scenes.find((s) => s.id === id);
-
-      if (scene) {
-        selectedScenes.push(scene);
-      }
-    });
-
     return (
       <>
-        <SceneSelectedOptions
+        <EditScenesDialog
           selected={selectedScenes}
-          onScenesUpdated={() => {}}
+          onClose={onClose}
         />
       </>
     );

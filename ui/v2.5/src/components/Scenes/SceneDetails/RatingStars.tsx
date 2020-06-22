@@ -5,13 +5,14 @@ import { Icon } from "src/components/Shared";
 export interface IRatingStarsProps {
   value?: number;
   onSetRating?: (value?: number) => void;
+  disabled?: boolean;
 }
 
 export const RatingStars: React.FC<IRatingStarsProps> = (
   props: IRatingStarsProps
 ) => {
   const [hoverRating, setHoverRating] = useState<number | undefined>();
-  const disabled = !props.onSetRating;
+  const disabled = props.disabled || !props.onSetRating;
 
   function setRating(rating: number) {
     if (!props.onSetRating) {
@@ -109,7 +110,7 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
   const maxRating = 5;
 
   return (
-    <div className="rating-stars">
+    <div className="rating-stars align-middle">
       {Array.from(Array(maxRating)).map((value, index) =>
         renderRatingButton(index + 1)
       )}

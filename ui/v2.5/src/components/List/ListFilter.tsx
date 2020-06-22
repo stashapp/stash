@@ -38,6 +38,7 @@ interface IListFilterProps {
   onDelete?: () => void;
   otherOperations?: IListFilterOperation[];
   filter: ListFilterModel;
+  itemsSelected?: boolean;
 }
 
 const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
@@ -241,7 +242,15 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function onEdit() {
+    if (props.onEdit) {
+      props.onEdit();
+    }
+  }
 
+  function onDelete() {
+    if (props.onDelete) {
+      props.onDelete();
+    }
   }
 
   function renderSelectAll() {
@@ -326,33 +335,37 @@ export const ListFilter: React.FC<IListFilterProps> = (
     }
   }
 
-  function maybeRenderMultiOps() {
-    if (true) {
+  function maybeRenderSelectedButtons() {
+    if (props.itemsSelected) {
       return (
         <>
-          <ButtonGroup className="mr-1">
-            <OverlayTrigger
-              overlay={
-                <Tooltip id="edit">Edit</Tooltip>
-              }
-            >
-              <Button variant="secondary" onClick={onEdit}>
-                <Icon icon="pencil-alt" />
-              </Button>
-            </OverlayTrigger>
-          </ButtonGroup>
+          {props.onEdit ? (
+            <ButtonGroup className="mr-1">
+              <OverlayTrigger
+                overlay={
+                  <Tooltip id="edit">Edit</Tooltip>
+                }
+              >
+                <Button variant="secondary" onClick={onEdit}>
+                  <Icon icon="pencil-alt" />
+                </Button>
+              </OverlayTrigger>
+            </ButtonGroup>
+          ) : undefined}
 
-          <ButtonGroup className="mr-1">
-            <OverlayTrigger
-              overlay={
-                <Tooltip id="delete">Delete</Tooltip>
-              }
-            >
-              <Button variant="danger" onClick={onEdit}>
-                <Icon icon="trash" />
-              </Button>
-            </OverlayTrigger>
-          </ButtonGroup>
+          {props.onDelete ? (
+            <ButtonGroup className="mr-1">
+              <OverlayTrigger
+                overlay={
+                  <Tooltip id="delete">Delete</Tooltip>
+                }
+              >
+                <Button variant="danger" onClick={onDelete}>
+                  <Icon icon="trash" />
+                </Button>
+              </OverlayTrigger>
+            </ButtonGroup>
+          ) : undefined}
         </>
       )
     }
@@ -446,7 +459,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           <Col sm={12} md="auto" className="my-1">
             <Row className="align-items-center justify-content-center">
 
-            {maybeRenderMultiOps()}
+            {maybeRenderSelectedButtons()}
 
             <ButtonGroup className="mr-3">
               {renderMore()}
@@ -461,10 +474,6 @@ export const ListFilter: React.FC<IListFilterProps> = (
             </ButtonGroup>
             </Row>
           </Col>      
-
-          <Col xs="auto">
-            
-          </Col>
         </div>
         <div className="d-flex justify-content-center">
           {renderFilterTags()}

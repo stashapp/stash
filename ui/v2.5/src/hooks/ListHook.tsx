@@ -50,7 +50,7 @@ interface IListHookOperation<T> {
   ) => void;
 }
 
-interface IListHookOptions<T> {
+interface IListHookOptions<T, E> {
   subComponent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
@@ -61,9 +61,13 @@ interface IListHookOptions<T> {
     selectedIds: Set<string>,
     zoomIndex: number
   ) => JSX.Element | undefined;
-  renderSelectedOptions?: (
-    result: T,
-    selectedIds: Set<string>
+  renderEditDialog?: (
+    selected: E[],
+    onClose: () => void
+  ) => JSX.Element | undefined;
+  renderDeleteDialog?: (
+    selected: E[],
+    onClose: () => void
   ) => JSX.Element | undefined;
 }
 
@@ -79,11 +83,12 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
   filterMode: FilterMode;
   useData: (filter: ListFilterModel) => T;
   getData: (data: T) => T2[];
+  getSelectedData: (data: T, selectedIds: Set<string>) => T2[];
   getCount: (data: T) => number;
 }
 
 const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
-  options: IListHookOptions<QueryResult> & IQuery<QueryResult, QueryData>
+  options: IListHookOptions<QueryResult, QueryData> & IQuery<QueryResult, QueryData>
 ): IListHookData => {
   const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
   const [forageInitialised, setForageInitialised] = useState(false);
@@ -95,6 +100,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       options.subComponent ? undefined : queryString.parse(location.search)
     )
   );
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | undefined>();
   const [zoomIndex, setZoomIndex] = useState<number>(1);
@@ -314,6 +321,14 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     }
   }
 
+  function onEdit() {
+    setIsEditDialogOpen(true);
+  }
+
+  function onDelete() {
+    setIsDeleteDialogOpen(true);
+  }
+
   const template = (
     <div>
       <ListFilter
@@ -323,10 +338,16 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         zoomIndex={options.zoomable ? zoomIndex : undefined}
         onChangeZoom={options.zoomable ? onChangeZoom : undefined}
         otherOperations={otherOperations}
+        itemsSelected={selectedIds.size > 0}
+        onEdit={options.renderEditDialog ? onEdit : undefined}
+        onDelete={options.renderDeleteDialog ? onDelete : undefined}
         filter={filter}
       />
-      {options.renderSelectedOptions && selectedIds.size > 0
-        ? options.renderSelectedOptions(result, selectedIds)
+      {isEditDialogOpen && options.renderEditDialog
+        ? options.renderEditDialog(options.getSelectedData(result, selectedIds), () => setIsEditDialogOpen(false))
+        : undefined}
+      {isDeleteDialogOpen && options.renderDeleteDialog
+        ? options.renderDeleteDialog(options.getSelectedData(result, selectedIds), () => setIsDeleteDialogOpen(false))
         : undefined}
       {(result.loading || !forageInitialised) && <LoadingIndicator />}
       {result.error && <h1>{result.error.message}</h1>}
@@ -340,7 +361,22 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   return { filter, template, onSelectChange };
 };
 
-export const useScenesList = (props: IListHookOptions<FindScenesQueryResult>) =>
+const getSelectedData = <I extends IDataItem>(result: I[], selectedIds: Set<string>) => {
+  // find the selected items from the ids
+  const selectedResults: I[] = [];
+
+  selectedIds.forEach((id) => {
+    const item = result.find((s) => s.id === id);
+
+    if (item) {
+      selectedResults.push(item);
+    }
+  });
+
+  return selectedResults;
+};
+
+export const useScenesList = (props: IListHookOptions<FindScenesQueryResult, SlimSceneDataFragment>) =>
   useList<FindScenesQueryResult, SlimSceneDataFragment>({
     ...props,
     filterMode: FilterMode.Scenes,
@@ -349,10 +385,12 @@ export const useScenesList = (props: IListHookOptions<FindScenesQueryResult>) =>
       result?.data?.findScenes?.scenes ?? [],
     getCount: (result: FindScenesQueryResult) =>
       result?.data?.findScenes?.count ?? 0,
+    getSelectedData: (result: FindScenesQueryResult, selectedIds: Set<string>) =>
+      getSelectedData(result?.data?.findScenes?.scenes ?? [], selectedIds),
   });
 
 export const useSceneMarkersList = (
-  props: IListHookOptions<FindSceneMarkersQueryResult>
+  props: IListHookOptions<FindSceneMarkersQueryResult, SceneMarkerDataFragment>
 ) =>
   useList<FindSceneMarkersQueryResult, SceneMarkerDataFragment>({
     ...props,
@@ -362,10 +400,12 @@ export const useSceneMarkersList = (
       result?.data?.findSceneMarkers?.scene_markers ?? [],
     getCount: (result: FindSceneMarkersQueryResult) =>
       result?.data?.findSceneMarkers?.count ?? 0,
+    getSelectedData: (result: FindSceneMarkersQueryResult, selectedIds: Set<string>) =>
+      getSelectedData(result?.data?.findSceneMarkers?.scene_markers ?? [], selectedIds),
   });
 
 export const useGalleriesList = (
-  props: IListHookOptions<FindGalleriesQueryResult>
+  props: IListHookOptions<FindGalleriesQueryResult, GalleryDataFragment>
 ) =>
   useList<FindGalleriesQueryResult, GalleryDataFragment>({
     ...props,
@@ -375,10 +415,12 @@ export const useGalleriesList = (
       result?.data?.findGalleries?.galleries ?? [],
     getCount: (result: FindGalleriesQueryResult) =>
       result?.data?.findGalleries?.count ?? 0,
+    getSelectedData: (result: FindGalleriesQueryResult, selectedIds: Set<string>) =>
+      getSelectedData(result?.data?.findGalleries?.galleries ?? [], selectedIds),
   });
 
 export const useStudiosList = (
-  props: IListHookOptions<FindStudiosQueryResult>
+  props: IListHookOptions<FindStudiosQueryResult, StudioDataFragment>
 ) =>
   useList<FindStudiosQueryResult, StudioDataFragment>({
     ...props,
@@ -388,10 +430,12 @@ export const useStudiosList = (
       result?.data?.findStudios?.studios ?? [],
     getCount: (result: FindStudiosQueryResult) =>
       result?.data?.findStudios?.count ?? 0,
+    getSelectedData: (result: FindStudiosQueryResult, selectedIds: Set<string>) =>
+      getSelectedData(result?.data?.findStudios?.studios ?? [], selectedIds),
   });
 
 export const usePerformersList = (
-  props: IListHookOptions<FindPerformersQueryResult>
+  props: IListHookOptions<FindPerformersQueryResult, PerformerDataFragment>
 ) =>
   useList<FindPerformersQueryResult, PerformerDataFragment>({
     ...props,
@@ -401,9 +445,11 @@ export const usePerformersList = (
       result?.data?.findPerformers?.performers ?? [],
     getCount: (result: FindPerformersQueryResult) =>
       result?.data?.findPerformers?.count ?? 0,
+    getSelectedData: (result: FindPerformersQueryResult, selectedIds: Set<string>) =>
+      getSelectedData(result?.data?.findPerformers?.performers ?? [], selectedIds),
   });
 
-export const useMoviesList = (props: IListHookOptions<FindMoviesQueryResult>) =>
+export const useMoviesList = (props: IListHookOptions<FindMoviesQueryResult, MovieDataFragment>) =>
   useList<FindMoviesQueryResult, MovieDataFragment>({
     ...props,
     filterMode: FilterMode.Movies,
@@ -412,4 +458,6 @@ export const useMoviesList = (props: IListHookOptions<FindMoviesQueryResult>) =>
       result?.data?.findMovies?.movies ?? [],
     getCount: (result: FindMoviesQueryResult) =>
       result?.data?.findMovies?.count ?? 0,
+    getSelectedData: (result: FindMoviesQueryResult, selectedIds: Set<string>) =>
+      getSelectedData(result?.data?.findMovies?.movies ?? [], selectedIds),
   });
