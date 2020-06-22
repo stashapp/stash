@@ -4,7 +4,6 @@ import React, { useCallback, useState, useEffect } from "react";
 import { ApolloError } from "apollo-client";
 import { useHistory, useLocation } from "react-router-dom";
 import {
-  SortDirectionEnum,
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
   GalleryDataFragment,
@@ -33,9 +32,8 @@ import {
   useFindGalleries,
   useFindPerformers,
 } from "src/core/StashService";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { DisplayMode, FilterMode } from "src/models/list-filter/types";
+import { FilterMode } from "src/models/list-filter/types";
 
 interface IListHookData {
   filter: ListFilterModel;
@@ -191,79 +189,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     }
   }
 
-  function onChangePageSize(pageSize: number) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.itemsPerPage = pageSize;
-    newFilter.currentPage = 1;
-    updateQueryParams(newFilter);
-  }
-
-  function onChangeQuery(query: string) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.searchTerm = query;
-    newFilter.currentPage = 1;
-    updateQueryParams(newFilter);
-  }
-
-  function onChangeSortDirection(sortDirection: SortDirectionEnum) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.sortDirection = sortDirection;
-    updateQueryParams(newFilter);
-  }
-
-  function onChangeSortBy(sortBy: string) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.sortBy = sortBy;
-    newFilter.currentPage = 1;
-    updateQueryParams(newFilter);
-  }
-
-  function onSortReshuffle() {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.currentPage = 1;
-    newFilter.randomSeed = -1;
-    updateQueryParams(newFilter);
-  }
-
-  function onChangeDisplayMode(displayMode: DisplayMode) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.displayMode = displayMode;
-    updateQueryParams(newFilter);
-  }
-
-  function onAddCriterion(criterion: Criterion, oldId?: string) {
-    const newFilter = _.cloneDeep(filter);
-
-    // Find if we are editing an existing criteria, then modify that.  Or create a new one.
-    const existingIndex = newFilter.criteria.findIndex((c) => {
-      // If we modified an existing criterion, then look for the old id.
-      const id = oldId || criterion.getId();
-      return c.getId() === id;
-    });
-    if (existingIndex === -1) {
-      newFilter.criteria.push(criterion);
-    } else {
-      newFilter.criteria[existingIndex] = criterion;
-    }
-
-    // Remove duplicate modifiers
-    newFilter.criteria = newFilter.criteria.filter((obj, pos, arr) => {
-      return arr.map((mapObj) => mapObj.getId()).indexOf(obj.getId()) === pos;
-    });
-
-    newFilter.currentPage = 1;
-    updateQueryParams(newFilter);
-  }
-
-  function onRemoveCriterion(removedCriterion: Criterion) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.criteria = newFilter.criteria.filter(
-      (criterion) => criterion.getId() !== removedCriterion.getId()
-    );
-    newFilter.currentPage = 1;
-    updateQueryParams(newFilter);
-  }
-
   function onChangePage(page: number) {
     const newFilter = _.cloneDeep(filter);
     newFilter.currentPage = page;
@@ -392,14 +317,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const template = (
     <div>
       <ListFilter
-        onChangePageSize={onChangePageSize}
-        onChangeQuery={onChangeQuery}
-        onChangeSortDirection={onChangeSortDirection}
-        onChangeSortBy={onChangeSortBy}
-        onSortReshuffle={onSortReshuffle}
-        onChangeDisplayMode={onChangeDisplayMode}
-        onAddCriterion={onAddCriterion}
-        onRemoveCriterion={onRemoveCriterion}
+        onFilterUpdate={updateQueryParams}
         onSelectAll={onSelectAll}
         onSelectNone={onSelectNone}
         zoomIndex={options.zoomable ? zoomIndex : undefined}

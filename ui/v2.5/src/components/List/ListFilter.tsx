@@ -1,4 +1,5 @@
 import { debounce } from "lodash";
+import _ from "lodash";
 import React, { useState } from "react";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
@@ -28,18 +29,13 @@ interface IListFilterOperation {
 }
 
 interface IListFilterProps {
-  onChangePageSize: (pageSize: number) => void;
-  onChangeQuery: (query: string) => void;
-  onChangeSortDirection: (sortDirection: SortDirectionEnum) => void;
-  onChangeSortBy: (sortBy: string) => void;
-  onSortReshuffle: () => void;
-  onChangeDisplayMode: (displayMode: DisplayMode) => void;
-  onAddCriterion: (criterion: Criterion, oldId?: string) => void;
-  onRemoveCriterion: (criterion: Criterion) => void;
+  onFilterUpdate: (newFilter: ListFilterModel) => void;
   zoomIndex?: number;
   onChangeZoom?: (zoomIndex: number) => void;
   onSelectAll?: () => void;
   onSelectNone?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
   otherOperations?: IListFilterOperation[];
   filter: ListFilterModel;
 }
@@ -49,8 +45,12 @@ const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
 export const ListFilter: React.FC<IListFilterProps> = (
   props: IListFilterProps
 ) => {
+
   const searchCallback = debounce((value: string) => {
-    props.onChangeQuery(value);
+    const newFilter = _.cloneDeep(props.filter);
+    newFilter.searchTerm = value;
+    newFilter.currentPage = 1;
+    props.onFilterUpdate(newFilter);
   }, 500);
 
   const [editingCriterion, setEditingCriterion] = useState<
@@ -59,42 +59,85 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
   function onChangePageSize(event: React.ChangeEvent<HTMLSelectElement>) {
     const val = event.currentTarget.value;
-    props.onChangePageSize(parseInt(val, 10));
+
+    const newFilter = _.cloneDeep(props.filter);
+    newFilter.itemsPerPage = parseInt(val, 10);
+    newFilter.currentPage = 1;
+    props.onFilterUpdate(newFilter);
   }
 
   function onChangeQuery(event: React.FormEvent<HTMLInputElement>) {
     searchCallback(event.currentTarget.value);
   }
 
-  function onEdit() {}
-
   function onChangeSortDirection() {
+    const newFilter = _.cloneDeep(props.filter);
     if (props.filter.sortDirection === SortDirectionEnum.Asc) {
-      props.onChangeSortDirection(SortDirectionEnum.Desc);
+      newFilter.sortDirection = SortDirectionEnum.Desc;
     } else {
-      props.onChangeSortDirection(SortDirectionEnum.Asc);
+      newFilter.sortDirection = SortDirectionEnum.Asc;
     }
+
+    props.onFilterUpdate(newFilter);
   }
 
   function onChangeSortBy(event: React.MouseEvent<SafeAnchorProps>) {
     const target = event.currentTarget as HTMLAnchorElement;
-    props.onChangeSortBy(target.text);
+
+    const newFilter = _.cloneDeep(props.filter);
+    newFilter.sortBy = target.text;
+    newFilter.currentPage = 1;
+    props.onFilterUpdate(newFilter);
   }
 
   function onReshuffleRandomSort() {
-    props.onSortReshuffle();
+    const newFilter = _.cloneDeep(props.filter);
+    newFilter.currentPage = 1;
+    newFilter.randomSeed = -1;
+    props.onFilterUpdate(newFilter);
   }
 
   function onChangeDisplayMode(displayMode: DisplayMode) {
-    props.onChangeDisplayMode(displayMode);
+    const newFilter = _.cloneDeep(props.filter);
+    newFilter.displayMode = displayMode;
+    props.onFilterUpdate(newFilter);
   }
 
   function onAddCriterion(criterion: Criterion, oldId?: string) {
-    props.onAddCriterion(criterion, oldId);
+    const newFilter = _.cloneDeep(props.filter);
+
+    // Find if we are editing an existing criteria, then modify that.  Or create a new one.
+    const existingIndex = newFilter.criteria.findIndex((c) => {
+      // If we modified an existing criterion, then look for the old id.
+      const id = oldId || criterion.getId();
+      return c.getId() === id;
+    });
+    if (existingIndex === -1) {
+      newFilter.criteria.push(criterion);
+    } else {
+      newFilter.criteria[existingIndex] = criterion;
+    }
+
+    // Remove duplicate modifiers
+    newFilter.criteria = newFilter.criteria.filter((obj, pos, arr) => {
+      return arr.map((mapObj) => mapObj.getId()).indexOf(obj.getId()) === pos;
+    });
+
+    newFilter.currentPage = 1;
+    props.onFilterUpdate(newFilter);
   }
 
   function onCancelAddCriterion() {
     setEditingCriterion(undefined);
+  }
+
+  function onRemoveCriterion(removedCriterion: Criterion) {
+    const newFilter = _.cloneDeep(props.filter);
+    newFilter.criteria = newFilter.criteria.filter(
+      (criterion) => criterion.getId() !== removedCriterion.getId()
+    );
+    newFilter.currentPage = 1;
+    props.onFilterUpdate(newFilter);
   }
 
   let removedCriterionId = "";
@@ -104,8 +147,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
     }
     setEditingCriterion(undefined);
     removedCriterionId = criterion.getId();
-    props.onRemoveCriterion(criterion);
+    onRemoveCriterion(criterion);
   }
+
   function onClickCriterionTag(criterion?: Criterion) {
     if (!criterion || removedCriterionId !== "") {
       return;
@@ -147,7 +191,6 @@ export const ListFilter: React.FC<IListFilterProps> = (
       }
     }
 
-    const option = DisplayMode.Grid;
     return props.filter.displayModeOptions.map((option) => (
       <OverlayTrigger
         key={option}
@@ -195,6 +238,10 @@ export const ListFilter: React.FC<IListFilterProps> = (
     if (props.onSelectNone) {
       props.onSelectNone();
     }
+  }
+
+  function onEdit() {
+
   }
 
   function renderSelectAll() {
