@@ -22,10 +22,10 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   const [studioId, setStudioId] = useState<string>();
   const [performerMode, setPerformerMode] = React.useState<
     GQL.BulkUpdateIdMode
-  >(GQL.BulkUpdateIdMode.Add);
+  >(GQL.BulkUpdateIdMode.Set);
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
-    GQL.BulkUpdateIdMode.Add
+    GQL.BulkUpdateIdMode.Set
   );
   const [tagIds, setTagIds] = useState<string[]>();
 
