@@ -23,6 +23,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
   const pluralMessage = "Are you sure you want to delete these scenes? Unless the files are also deleted, these scenes will be re-added when scan is performed.";
 
   const header = plural ? "Delete Scenes" : "Delete Scene";
+  const toastMessage = plural ? "Deleted scenes" : "Deleted scene";
   const messageId = plural ? pluralMessageId : singleMessageId;
   const message = plural ? pluralMessage : singleMessage;
 
@@ -47,7 +48,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
     setIsDeleting(true);
     try {
       await deleteScene();
-      Toast.success({ content: "Deleted scene" });
+      Toast.success({ content: toastMessage });
     } catch (e) {
       Toast.error(e);
     }

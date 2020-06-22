@@ -63,7 +63,7 @@ interface IListHookOptions<T, E> {
   ) => JSX.Element | undefined;
   renderEditDialog?: (
     selected: E[],
-    onClose: () => void
+    onClose: (applied: boolean) => void
   ) => JSX.Element | undefined;
   renderDeleteDialog?: (
     selected: E[],
@@ -77,6 +77,7 @@ interface IDataItem {
 interface IQueryResult {
   error?: ApolloError;
   loading: boolean;
+  refetch: () => any;
 }
 
 interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
@@ -325,6 +326,16 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     setIsEditDialogOpen(true);
   }
 
+  function onEditDialogClosed(applied: boolean) {
+    if (applied) {
+      onSelectNone();
+    }
+    setIsEditDialogOpen(false);
+    
+    // refetch
+    result.refetch();
+  }
+
   function onDelete() {
     setIsDeleteDialogOpen(true);
   }
@@ -334,6 +345,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       onSelectNone();
     }
     setIsDeleteDialogOpen(false);
+    
+    // refetch
+    result.refetch();
   }
 
   const template = (
@@ -351,7 +365,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         filter={filter}
       />
       {isEditDialogOpen && options.renderEditDialog
-        ? options.renderEditDialog(options.getSelectedData(result, selectedIds), () => setIsEditDialogOpen(false))
+        ? options.renderEditDialog(options.getSelectedData(result, selectedIds), (applied) => onEditDialogClosed(applied))
         : undefined}
       {isDeleteDialogOpen && options.renderDeleteDialog
         ? options.renderDeleteDialog(options.getSelectedData(result, selectedIds), (deleted) => onDeleteDialogClosed(deleted))

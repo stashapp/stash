@@ -70,7 +70,7 @@ export const SceneList: React.FC<ISceneList> = ({
 
   function renderEditScenesDialog(
     selectedScenes: SlimSceneDataFragment[],
-    onClose: () => void
+    onClose: (applied: boolean) => void
   ) {
     return (
       <>

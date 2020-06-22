@@ -11,7 +11,7 @@ import { RatingStars } from "./SceneDetails/RatingStars";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[];
-  onClose: () => void;
+  onClose: (applied: boolean) => void;
 }
 
 export const EditScenesDialog: React.FC<IListOperationProps> = (
@@ -127,7 +127,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     try {
       await updateScenes();
       Toast.success({ content: "Updated scenes" });
-      props.onClose();
+      props.onClose(true);
     } catch (e) {
       Toast.error(e);
     }
@@ -312,7 +312,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
         icon="pencil-alt"
         header="Edit Scenes"
         accept={{ onClick: onSave, text: "Apply" }}
-        cancel={{ onClick: () => props.onClose(), text: "Cancel", variant: "secondary" }}
+        cancel={{ onClick: () => props.onClose(false), text: "Cancel", variant: "secondary" }}
         isRunning={isUpdating}
       >
         <Form>
