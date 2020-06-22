@@ -14,7 +14,7 @@ After scrapers are added, removed or edited while stash is running, they can be 
 
 # Using custom scrapers
 
-Scrapers support a number of different scrapign types.
+Scrapers support a number of different scraping types.
 
 Performer details can be scraped from the new/edit Performer page in two different ways:
 

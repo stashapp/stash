@@ -16,7 +16,7 @@ For those with web page experience, we also welcome contributions to our [websit
 
 ## Testing features, improvements and bug fixes
 
-Testing is currently covered by a very small group, so new testers are welcomed. Being able to build stash locally is ideal, but custom bimaries for pull requests are available by navigating to the `continuous-integration/travis-ci/pr` travis check details. 
+Testing is currently covered by a very small group, so new testers are welcomed. Being able to build stash locally is ideal, but custom binaries for pull requests are available by navigating to the `continuous-integration/travis-ci/pr` travis check details. 
 
 The link to the custom binary for each platform can be found at the end of the build log, and looks like the following:
 ```
