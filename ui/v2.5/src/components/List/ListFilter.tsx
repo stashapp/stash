@@ -1,5 +1,4 @@
-import { debounce } from "lodash";
-import _ from "lodash";
+import _, { debounce } from "lodash";
 import React, { useState } from "react";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
@@ -46,7 +45,6 @@ const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
 export const ListFilter: React.FC<IListFilterProps> = (
   props: IListFilterProps
 ) => {
-
   const searchCallback = debounce((value: string) => {
     const newFilter = _.cloneDeep(props.filter);
     newFilter.searchTerm = value;
@@ -341,11 +339,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
         <>
           {props.onEdit ? (
             <ButtonGroup className="mr-1">
-              <OverlayTrigger
-                overlay={
-                  <Tooltip id="edit">Edit</Tooltip>
-                }
-              >
+              <OverlayTrigger overlay={<Tooltip id="edit">Edit</Tooltip>}>
                 <Button variant="secondary" onClick={onEdit}>
                   <Icon icon="pencil-alt" />
                 </Button>
@@ -355,11 +349,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
           {props.onDelete ? (
             <ButtonGroup className="mr-1">
-              <OverlayTrigger
-                overlay={
-                  <Tooltip id="delete">Delete</Tooltip>
-                }
-              >
+              <OverlayTrigger overlay={<Tooltip id="delete">Delete</Tooltip>}>
                 <Button variant="danger" onClick={onDelete}>
                   <Icon icon="trash" />
                 </Button>
@@ -367,7 +357,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
             </ButtonGroup>
           ) : undefined}
         </>
-      )
+      );
     }
   }
 
@@ -379,11 +369,12 @@ export const ListFilter: React.FC<IListFilterProps> = (
             <Row className="justify-content-center">
               <Col xs={6} className="px-1">
                 <InputGroup>
-                  <FormControl 
+                  <FormControl
                     placeholder="Search..."
                     defaultValue={props.filter.searchTerm}
                     onInput={onChangeQuery}
-                    className="bg-secondary text-white border-secondary" />
+                    className="bg-secondary text-white border-secondary"
+                  />
 
                   <InputGroup.Append>
                     <AddFilter
@@ -395,7 +386,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
                   </InputGroup.Append>
                 </InputGroup>
               </Col>
-              
+
               <Col xs="auto" className="px-1">
                 <ButtonGroup>
                   <Dropdown as={ButtonGroup}>
@@ -414,7 +405,10 @@ export const ListFilter: React.FC<IListFilterProps> = (
                         </Tooltip>
                       }
                     >
-                      <Button variant="secondary" onClick={onChangeSortDirection}>
+                      <Button
+                        variant="secondary"
+                        onClick={onChangeSortDirection}
+                      >
                         <Icon
                           icon={
                             props.filter.sortDirection === SortDirectionEnum.Asc
@@ -427,10 +421,15 @@ export const ListFilter: React.FC<IListFilterProps> = (
                     {props.filter.sortBy === "random" && (
                       <OverlayTrigger
                         overlay={
-                          <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>
+                          <Tooltip id="sort-reshuffle-tooltip">
+                            Reshuffle
+                          </Tooltip>
                         }
                       >
-                        <Button variant="secondary" onClick={onReshuffleRandomSort}>
+                        <Button
+                          variant="secondary"
+                          onClick={onReshuffleRandomSort}
+                        >
                           <Icon icon="random" />
                         </Button>
                       </OverlayTrigger>
@@ -454,26 +453,21 @@ export const ListFilter: React.FC<IListFilterProps> = (
                 </Form.Control>
               </Col>
             </Row>
-          </Col>      
-          
+          </Col>
+
           <Col sm={12} md="auto" className="my-1">
             <Row className="align-items-center justify-content-center">
+              {maybeRenderSelectedButtons()}
 
-            {maybeRenderSelectedButtons()}
+              <ButtonGroup className="mr-3">{renderMore()}</ButtonGroup>
 
-            <ButtonGroup className="mr-3">
-              {renderMore()}
-            </ButtonGroup>
+              <ButtonGroup className="mr-3">
+                {renderDisplayModeOptions()}
+              </ButtonGroup>
 
-            <ButtonGroup className="mr-3">
-              {renderDisplayModeOptions()}
-            </ButtonGroup>
-
-            <ButtonGroup>
-              {maybeRenderZoom()}
-            </ButtonGroup>
+              <ButtonGroup>{maybeRenderZoom()}</ButtonGroup>
             </Row>
-          </Col>      
+          </Col>
         </div>
         <div className="d-flex justify-content-center">
           {renderFilterTags()}

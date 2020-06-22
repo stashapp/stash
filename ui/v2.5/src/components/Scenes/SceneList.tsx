@@ -74,10 +74,7 @@ export const SceneList: React.FC<ISceneList> = ({
   ) {
     return (
       <>
-        <EditScenesDialog
-          selected={selectedScenes}
-          onClose={onClose}
-        />
+        <EditScenesDialog selected={selectedScenes} onClose={onClose} />
       </>
     );
   }
@@ -88,10 +85,7 @@ export const SceneList: React.FC<ISceneList> = ({
   ) {
     return (
       <>
-        <DeleteScenesDialog
-          selected={selectedScenes}
-          onClose={onClose}
-        />
+        <DeleteScenesDialog selected={selectedScenes} onClose={onClose} />
       </>
     );
   }

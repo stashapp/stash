@@ -19,8 +19,10 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
   const singleMessageId = "deleteSceneText";
   const pluralMessageId = "deleteScenesText";
 
-  const singleMessage = "Are you sure you want to delete this scene? Unless the file is also deleted, this scene will be re-added when scan is performed.";
-  const pluralMessage = "Are you sure you want to delete these scenes? Unless the files are also deleted, these scenes will be re-added when scan is performed.";
+  const singleMessage =
+    "Are you sure you want to delete this scene? Unless the file is also deleted, this scene will be re-added when scan is performed.";
+  const pluralMessage =
+    "Are you sure you want to delete these scenes? Unless the files are also deleted, these scenes will be re-added when scan is performed.";
 
   const header = plural ? "Delete Scenes" : "Delete Scene";
   const toastMessage = plural ? "Deleted scenes" : "Deleted scene";
@@ -38,7 +40,7 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
 
   function getScenesDeleteInput(): GQL.ScenesDestroyInput {
     return {
-      ids: props.selected.map(scene => scene.id),
+      ids: props.selected.map((scene) => scene.id),
       delete_file: deleteFile,
       delete_generated: deleteGenerated,
     };
@@ -58,11 +60,15 @@ export const DeleteScenesDialog: React.FC<IDeleteSceneDialogProps> = (
 
   return (
     <Modal
-      show={true}
+      show
       icon="trash-alt"
       header={header}
       accept={{ variant: "danger", onClick: onDelete, text: "Delete" }}
-      cancel={{ onClick: () => props.onClose(false), text: "Cancel", variant: "secondary" }}
+      cancel={{
+        onClick: () => props.onClose(false),
+        text: "Cancel",
+        variant: "secondary",
+      }}
       isRunning={isDeleting}
     >
       <p>

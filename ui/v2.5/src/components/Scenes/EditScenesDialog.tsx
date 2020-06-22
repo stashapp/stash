@@ -5,8 +5,8 @@ import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
 import { StudioSelect, Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import MultiSet from "../Shared/MultiSet";
 import { FormUtils } from "src/utils";
+import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "./SceneDetails/RatingStars";
 
 interface IListOperationProps {
@@ -308,15 +308,19 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
   function render() {
     return (
       <Modal
-        show={true}
+        show
         icon="pencil-alt"
         header="Edit Scenes"
         accept={{ onClick: onSave, text: "Apply" }}
-        cancel={{ onClick: () => props.onClose(false), text: "Cancel", variant: "secondary" }}
+        cancel={{
+          onClick: () => props.onClose(false),
+          text: "Cancel",
+          variant: "secondary",
+        }}
         isRunning={isUpdating}
       >
         <Form>
-        <Form.Group controlId="rating" as={Row}>
+          <Form.Group controlId="rating" as={Row}>
             {FormUtils.renderLabel({
               title: "Rating",
             })}

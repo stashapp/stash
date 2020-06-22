@@ -77,7 +77,7 @@ interface IDataItem {
 interface IQueryResult {
   error?: ApolloError;
   loading: boolean;
-  refetch: () => any;
+  refetch: () => void;
 }
 
 interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
@@ -89,7 +89,8 @@ interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
 }
 
 const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
-  options: IListHookOptions<QueryResult, QueryData> & IQuery<QueryResult, QueryData>
+  options: IListHookOptions<QueryResult, QueryData> &
+    IQuery<QueryResult, QueryData>
 ): IListHookData => {
   const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
   const [forageInitialised, setForageInitialised] = useState(false);
@@ -331,7 +332,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       onSelectNone();
     }
     setIsEditDialogOpen(false);
-    
+
     // refetch
     result.refetch();
   }
@@ -345,7 +346,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       onSelectNone();
     }
     setIsDeleteDialogOpen(false);
-    
+
     // refetch
     result.refetch();
   }
@@ -365,10 +366,16 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         filter={filter}
       />
       {isEditDialogOpen && options.renderEditDialog
-        ? options.renderEditDialog(options.getSelectedData(result, selectedIds), (applied) => onEditDialogClosed(applied))
+        ? options.renderEditDialog(
+            options.getSelectedData(result, selectedIds),
+            (applied) => onEditDialogClosed(applied)
+          )
         : undefined}
       {isDeleteDialogOpen && options.renderDeleteDialog
-        ? options.renderDeleteDialog(options.getSelectedData(result, selectedIds), (deleted) => onDeleteDialogClosed(deleted))
+        ? options.renderDeleteDialog(
+            options.getSelectedData(result, selectedIds),
+            (deleted) => onDeleteDialogClosed(deleted)
+          )
         : undefined}
       {(result.loading || !forageInitialised) && <LoadingIndicator />}
       {result.error && <h1>{result.error.message}</h1>}
@@ -382,7 +389,10 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   return { filter, template, onSelectChange };
 };
 
-const getSelectedData = <I extends IDataItem>(result: I[], selectedIds: Set<string>) => {
+const getSelectedData = <I extends IDataItem>(
+  result: I[],
+  selectedIds: Set<string>
+) => {
   // find the selected items from the ids
   const selectedResults: I[] = [];
 
@@ -397,7 +407,9 @@ const getSelectedData = <I extends IDataItem>(result: I[], selectedIds: Set<stri
   return selectedResults;
 };
 
-export const useScenesList = (props: IListHookOptions<FindScenesQueryResult, SlimSceneDataFragment>) =>
+export const useScenesList = (
+  props: IListHookOptions<FindScenesQueryResult, SlimSceneDataFragment>
+) =>
   useList<FindScenesQueryResult, SlimSceneDataFragment>({
     ...props,
     filterMode: FilterMode.Scenes,
@@ -406,8 +418,10 @@ export const useScenesList = (props: IListHookOptions<FindScenesQueryResult, Sli
       result?.data?.findScenes?.scenes ?? [],
     getCount: (result: FindScenesQueryResult) =>
       result?.data?.findScenes?.count ?? 0,
-    getSelectedData: (result: FindScenesQueryResult, selectedIds: Set<string>) =>
-      getSelectedData(result?.data?.findScenes?.scenes ?? [], selectedIds),
+    getSelectedData: (
+      result: FindScenesQueryResult,
+      selectedIds: Set<string>
+    ) => getSelectedData(result?.data?.findScenes?.scenes ?? [], selectedIds),
   });
 
 export const useSceneMarkersList = (
@@ -421,8 +435,14 @@ export const useSceneMarkersList = (
       result?.data?.findSceneMarkers?.scene_markers ?? [],
     getCount: (result: FindSceneMarkersQueryResult) =>
       result?.data?.findSceneMarkers?.count ?? 0,
-    getSelectedData: (result: FindSceneMarkersQueryResult, selectedIds: Set<string>) =>
-      getSelectedData(result?.data?.findSceneMarkers?.scene_markers ?? [], selectedIds),
+    getSelectedData: (
+      result: FindSceneMarkersQueryResult,
+      selectedIds: Set<string>
+    ) =>
+      getSelectedData(
+        result?.data?.findSceneMarkers?.scene_markers ?? [],
+        selectedIds
+      ),
   });
 
 export const useGalleriesList = (
@@ -436,8 +456,14 @@ export const useGalleriesList = (
       result?.data?.findGalleries?.galleries ?? [],
     getCount: (result: FindGalleriesQueryResult) =>
       result?.data?.findGalleries?.count ?? 0,
-    getSelectedData: (result: FindGalleriesQueryResult, selectedIds: Set<string>) =>
-      getSelectedData(result?.data?.findGalleries?.galleries ?? [], selectedIds),
+    getSelectedData: (
+      result: FindGalleriesQueryResult,
+      selectedIds: Set<string>
+    ) =>
+      getSelectedData(
+        result?.data?.findGalleries?.galleries ?? [],
+        selectedIds
+      ),
   });
 
 export const useStudiosList = (
@@ -451,8 +477,10 @@ export const useStudiosList = (
       result?.data?.findStudios?.studios ?? [],
     getCount: (result: FindStudiosQueryResult) =>
       result?.data?.findStudios?.count ?? 0,
-    getSelectedData: (result: FindStudiosQueryResult, selectedIds: Set<string>) =>
-      getSelectedData(result?.data?.findStudios?.studios ?? [], selectedIds),
+    getSelectedData: (
+      result: FindStudiosQueryResult,
+      selectedIds: Set<string>
+    ) => getSelectedData(result?.data?.findStudios?.studios ?? [], selectedIds),
   });
 
 export const usePerformersList = (
@@ -466,11 +494,19 @@ export const usePerformersList = (
       result?.data?.findPerformers?.performers ?? [],
     getCount: (result: FindPerformersQueryResult) =>
       result?.data?.findPerformers?.count ?? 0,
-    getSelectedData: (result: FindPerformersQueryResult, selectedIds: Set<string>) =>
-      getSelectedData(result?.data?.findPerformers?.performers ?? [], selectedIds),
+    getSelectedData: (
+      result: FindPerformersQueryResult,
+      selectedIds: Set<string>
+    ) =>
+      getSelectedData(
+        result?.data?.findPerformers?.performers ?? [],
+        selectedIds
+      ),
   });
 
-export const useMoviesList = (props: IListHookOptions<FindMoviesQueryResult, MovieDataFragment>) =>
+export const useMoviesList = (
+  props: IListHookOptions<FindMoviesQueryResult, MovieDataFragment>
+) =>
   useList<FindMoviesQueryResult, MovieDataFragment>({
     ...props,
     filterMode: FilterMode.Movies,
@@ -479,6 +515,8 @@ export const useMoviesList = (props: IListHookOptions<FindMoviesQueryResult, Mov
       result?.data?.findMovies?.movies ?? [],
     getCount: (result: FindMoviesQueryResult) =>
       result?.data?.findMovies?.count ?? 0,
-    getSelectedData: (result: FindMoviesQueryResult, selectedIds: Set<string>) =>
-      getSelectedData(result?.data?.findMovies?.movies ?? [], selectedIds),
+    getSelectedData: (
+      result: FindMoviesQueryResult,
+      selectedIds: Set<string>
+    ) => getSelectedData(result?.data?.findMovies?.movies ?? [], selectedIds),
   });

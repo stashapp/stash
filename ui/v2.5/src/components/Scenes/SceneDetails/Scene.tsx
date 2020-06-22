@@ -126,10 +126,7 @@ export const Scene: React.FC = () => {
   function maybeRenderDeleteDialog() {
     if (isDeleteAlertOpen && scene) {
       return (
-        <DeleteScenesDialog
-          selected={[scene]}
-          onClose={onDeleteDialogClosed}
-        />
+        <DeleteScenesDialog selected={[scene]} onClose={onDeleteDialogClosed} />
       );
     }
   }

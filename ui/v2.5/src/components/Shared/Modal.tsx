@@ -16,7 +16,7 @@ interface IModal {
   icon?: IconName;
   cancel?: IButton;
   accept?: IButton;
-  isRunning? : boolean;
+  isRunning?: boolean;
 }
 
 const ModalComponent: React.FC<IModal> = ({
@@ -53,7 +53,11 @@ const ModalComponent: React.FC<IModal> = ({
           variant={accept?.variant ?? "primary"}
           onClick={accept?.onClick}
         >
-          {isRunning ? <Spinner animation="border" role="status" size="sm" /> : accept?.text ?? "Close"}
+          {isRunning ? (
+            <Spinner animation="border" role="status" size="sm" />
+          ) : (
+            accept?.text ?? "Close"
+          )}
         </Button>
       </div>
     </Modal.Footer>
