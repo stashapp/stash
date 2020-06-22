@@ -67,7 +67,7 @@ interface IListHookOptions<T, E> {
   ) => JSX.Element | undefined;
   renderDeleteDialog?: (
     selected: E[],
-    onClose: () => void
+    onClose: (confirmed: boolean) => void
   ) => JSX.Element | undefined;
 }
 
@@ -329,6 +329,13 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     setIsDeleteDialogOpen(true);
   }
 
+  function onDeleteDialogClosed(deleted: boolean) {
+    if (deleted) {
+      onSelectNone();
+    }
+    setIsDeleteDialogOpen(false);
+  }
+
   const template = (
     <div>
       <ListFilter
@@ -347,7 +354,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
         ? options.renderEditDialog(options.getSelectedData(result, selectedIds), () => setIsEditDialogOpen(false))
         : undefined}
       {isDeleteDialogOpen && options.renderDeleteDialog
-        ? options.renderDeleteDialog(options.getSelectedData(result, selectedIds), () => setIsDeleteDialogOpen(false))
+        ? options.renderDeleteDialog(options.getSelectedData(result, selectedIds), (deleted) => onDeleteDialogClosed(deleted))
         : undefined}
       {(result.loading || !forageInitialised) && <LoadingIndicator />}
       {result.error && <h1>{result.error.message}</h1>}

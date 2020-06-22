@@ -84,7 +84,7 @@ export const SceneList: React.FC<ISceneList> = ({
 
   function renderDeleteScenesDialog(
     selectedScenes: SlimSceneDataFragment[],
-    onClose: () => void
+    onClose: (confirmed: boolean) => void
   ) {
     return (
       <>
