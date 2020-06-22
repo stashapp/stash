@@ -2,7 +2,7 @@
 
 This page allows you to direct the stash server to perform a variety of tasks.
 
-> **⚠️ Note:** It is currently only possible to run one task at a time. No queueing is currently implemented.
+> **⚠️ Note:** It is currently only possible to run one task at a time. No queuing is currently implemented.
 
 # Scanning
 
