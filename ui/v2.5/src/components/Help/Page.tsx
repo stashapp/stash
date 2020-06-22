@@ -18,5 +18,5 @@ export const Page: React.FC<IPageProps> = ({ page }) => {
     }
   }, [page, markdown]);
 
-  return <ReactMarkdown className="manual-page" source={markdown} />;
+  return <ReactMarkdown className="markdown" source={markdown} />;
 };
