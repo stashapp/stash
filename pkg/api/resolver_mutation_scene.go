@@ -429,6 +429,47 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	return true, nil
 }
 
+func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.ScenesDestroyInput) (bool, error) {
+	qb := models.NewSceneQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	var scenes []*models.Scene
+	for _, id := range input.Ids {
+		sceneID, _ := strconv.Atoi(id)
+
+		scene, err := qb.Find(sceneID)
+		if scene != nil {
+			scenes = append(scenes, scene)
+		}
+		err = manager.DestroyScene(sceneID, tx)
+
+		if err != nil {
+			tx.Rollback()
+			return false, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return false, err
+	}
+
+	for _, scene := range scenes {
+		// if delete generated is true, then delete the generated files
+		// for the scene
+		if input.DeleteGenerated != nil && *input.DeleteGenerated {
+			manager.DeleteGeneratedSceneFiles(scene)
+		}
+
+		// if delete file is true, then delete the file as well
+		// if it fails, just log a message
+		if input.DeleteFile != nil && *input.DeleteFile {
+			manager.DeleteSceneFile(scene)
+		}
+	}
+
+	return true, nil
+}
+
 func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.SceneMarkerCreateInput) (*models.SceneMarker, error) {
 	primaryTagID, _ := strconv.Atoi(input.PrimaryTagID)
 	sceneID, _ := strconv.Atoi(input.SceneID)
