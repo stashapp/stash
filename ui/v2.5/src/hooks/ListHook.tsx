@@ -4,7 +4,6 @@ import React, { useCallback, useState, useEffect } from "react";
 import { ApolloError } from "apollo-client";
 import { useHistory, useLocation } from "react-router-dom";
 import {
-  SortDirectionEnum,
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
   GalleryDataFragment,
@@ -33,9 +32,8 @@ import {
   useFindGalleries,
   useFindPerformers,
 } from "src/core/StashService";
-import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
-import { DisplayMode, FilterMode } from "src/models/list-filter/types";
+import { FilterMode } from "src/models/list-filter/types";
 
 interface IListHookData {
   filter: ListFilterModel;
@@ -52,7 +50,7 @@ interface IListHookOperation<T> {
   ) => void;
 }
 
-interface IListHookOptions<T> {
+interface IListHookOptions<T, E> {
   subComponent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
@@ -63,9 +61,13 @@ interface IListHookOptions<T> {
     selectedIds: Set<string>,
     zoomIndex: number
   ) => JSX.Element | undefined;
-  renderSelectedOptions?: (
-    result: T,
-    selectedIds: Set<string>
+  renderEditDialog?: (
+    selected: E[],
+    onClose: (applied: boolean) => void
+  ) => JSX.Element | undefined;
+  renderDeleteDialog?: (
+    selected: E[],
+    onClose: (confirmed: boolean) => void
   ) => JSX.Element | undefined;
 }
 
@@ -75,17 +77,20 @@ interface IDataItem {
 interface IQueryResult {
   error?: ApolloError;
   loading: boolean;
+  refetch: () => void;
 }
 
 interface IQuery<T extends IQueryResult, T2 extends IDataItem> {
   filterMode: FilterMode;
   useData: (filter: ListFilterModel) => T;
   getData: (data: T) => T2[];
+  getSelectedData: (data: T, selectedIds: Set<string>) => T2[];
   getCount: (data: T) => number;
 }
 
 const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
-  options: IListHookOptions<QueryResult> & IQuery<QueryResult, QueryData>
+  options: IListHookOptions<QueryResult, QueryData> &
+    IQuery<QueryResult, QueryData>
 ): IListHookData => {
   const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
   const [forageInitialised, setForageInitialised] = useState(false);
@@ -97,6 +102,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       options.subComponent ? undefined : queryString.parse(location.search)
     )
   );
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | undefined>();
   const [zoomIndex, setZoomIndex] = useState<number>(1);
@@ -189,79 +196,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       history.replace(newLocation);
       updateInterfaceConfig(listFilter);
     }
-  }
-
-  function onChangePageSize(pageSize: number) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.itemsPerPage = pageSize;
-    newFilter.currentPage = 1;
-    updateQueryParams(newFilter);
-  }
-
-  function onChangeQuery(query: string) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.searchTerm = query;
-    newFilter.currentPage = 1;
-    updateQueryParams(newFilter);
-  }
-
-  function onChangeSortDirection(sortDirection: SortDirectionEnum) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.sortDirection = sortDirection;
-    updateQueryParams(newFilter);
-  }
-
-  function onChangeSortBy(sortBy: string) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.sortBy = sortBy;
-    newFilter.currentPage = 1;
-    updateQueryParams(newFilter);
-  }
-
-  function onSortReshuffle() {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.currentPage = 1;
-    newFilter.randomSeed = -1;
-    updateQueryParams(newFilter);
-  }
-
-  function onChangeDisplayMode(displayMode: DisplayMode) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.displayMode = displayMode;
-    updateQueryParams(newFilter);
-  }
-
-  function onAddCriterion(criterion: Criterion, oldId?: string) {
-    const newFilter = _.cloneDeep(filter);
-
-    // Find if we are editing an existing criteria, then modify that.  Or create a new one.
-    const existingIndex = newFilter.criteria.findIndex((c) => {
-      // If we modified an existing criterion, then look for the old id.
-      const id = oldId || criterion.getId();
-      return c.getId() === id;
-    });
-    if (existingIndex === -1) {
-      newFilter.criteria.push(criterion);
-    } else {
-      newFilter.criteria[existingIndex] = criterion;
-    }
-
-    // Remove duplicate modifiers
-    newFilter.criteria = newFilter.criteria.filter((obj, pos, arr) => {
-      return arr.map((mapObj) => mapObj.getId()).indexOf(obj.getId()) === pos;
-    });
-
-    newFilter.currentPage = 1;
-    updateQueryParams(newFilter);
-  }
-
-  function onRemoveCriterion(removedCriterion: Criterion) {
-    const newFilter = _.cloneDeep(filter);
-    newFilter.criteria = newFilter.criteria.filter(
-      (criterion) => criterion.getId() !== removedCriterion.getId()
-    );
-    newFilter.currentPage = 1;
-    updateQueryParams(newFilter);
   }
 
   function onChangePage(page: number) {
@@ -389,26 +323,59 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     }
   }
 
+  function onEdit() {
+    setIsEditDialogOpen(true);
+  }
+
+  function onEditDialogClosed(applied: boolean) {
+    if (applied) {
+      onSelectNone();
+    }
+    setIsEditDialogOpen(false);
+
+    // refetch
+    result.refetch();
+  }
+
+  function onDelete() {
+    setIsDeleteDialogOpen(true);
+  }
+
+  function onDeleteDialogClosed(deleted: boolean) {
+    if (deleted) {
+      onSelectNone();
+    }
+    setIsDeleteDialogOpen(false);
+
+    // refetch
+    result.refetch();
+  }
+
   const template = (
     <div>
       <ListFilter
-        onChangePageSize={onChangePageSize}
-        onChangeQuery={onChangeQuery}
-        onChangeSortDirection={onChangeSortDirection}
-        onChangeSortBy={onChangeSortBy}
-        onSortReshuffle={onSortReshuffle}
-        onChangeDisplayMode={onChangeDisplayMode}
-        onAddCriterion={onAddCriterion}
-        onRemoveCriterion={onRemoveCriterion}
+        onFilterUpdate={updateQueryParams}
         onSelectAll={onSelectAll}
         onSelectNone={onSelectNone}
         zoomIndex={options.zoomable ? zoomIndex : undefined}
         onChangeZoom={options.zoomable ? onChangeZoom : undefined}
         otherOperations={otherOperations}
+        itemsSelected={selectedIds.size > 0}
+        onEdit={options.renderEditDialog ? onEdit : undefined}
+        onDelete={options.renderDeleteDialog ? onDelete : undefined}
         filter={filter}
       />
-      {options.renderSelectedOptions && selectedIds.size > 0
-        ? options.renderSelectedOptions(result, selectedIds)
+      {isEditDialogOpen && options.renderEditDialog
+        ? options.renderEditDialog(
+            options.getSelectedData(result, selectedIds),
+            (applied) => onEditDialogClosed(applied)
+          )
+        : undefined}
+      {isDeleteDialogOpen && options.renderDeleteDialog
+        ? options.renderDeleteDialog(
+            options.getSelectedData(result, selectedIds),
+            (deleted) => onDeleteDialogClosed(deleted)
+          )
         : undefined}
       {(result.loading || !forageInitialised) && <LoadingIndicator />}
       {result.error && <h1>{result.error.message}</h1>}
@@ -422,7 +389,27 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   return { filter, template, onSelectChange };
 };
 
-export const useScenesList = (props: IListHookOptions<FindScenesQueryResult>) =>
+const getSelectedData = <I extends IDataItem>(
+  result: I[],
+  selectedIds: Set<string>
+) => {
+  // find the selected items from the ids
+  const selectedResults: I[] = [];
+
+  selectedIds.forEach((id) => {
+    const item = result.find((s) => s.id === id);
+
+    if (item) {
+      selectedResults.push(item);
+    }
+  });
+
+  return selectedResults;
+};
+
+export const useScenesList = (
+  props: IListHookOptions<FindScenesQueryResult, SlimSceneDataFragment>
+) =>
   useList<FindScenesQueryResult, SlimSceneDataFragment>({
     ...props,
     filterMode: FilterMode.Scenes,
@@ -431,10 +418,14 @@ export const useScenesList = (props: IListHookOptions<FindScenesQueryResult>) =>
       result?.data?.findScenes?.scenes ?? [],
     getCount: (result: FindScenesQueryResult) =>
       result?.data?.findScenes?.count ?? 0,
+    getSelectedData: (
+      result: FindScenesQueryResult,
+      selectedIds: Set<string>
+    ) => getSelectedData(result?.data?.findScenes?.scenes ?? [], selectedIds),
   });
 
 export const useSceneMarkersList = (
-  props: IListHookOptions<FindSceneMarkersQueryResult>
+  props: IListHookOptions<FindSceneMarkersQueryResult, SceneMarkerDataFragment>
 ) =>
   useList<FindSceneMarkersQueryResult, SceneMarkerDataFragment>({
     ...props,
@@ -444,10 +435,18 @@ export const useSceneMarkersList = (
       result?.data?.findSceneMarkers?.scene_markers ?? [],
     getCount: (result: FindSceneMarkersQueryResult) =>
       result?.data?.findSceneMarkers?.count ?? 0,
+    getSelectedData: (
+      result: FindSceneMarkersQueryResult,
+      selectedIds: Set<string>
+    ) =>
+      getSelectedData(
+        result?.data?.findSceneMarkers?.scene_markers ?? [],
+        selectedIds
+      ),
   });
 
 export const useGalleriesList = (
-  props: IListHookOptions<FindGalleriesQueryResult>
+  props: IListHookOptions<FindGalleriesQueryResult, GalleryDataFragment>
 ) =>
   useList<FindGalleriesQueryResult, GalleryDataFragment>({
     ...props,
@@ -457,10 +456,18 @@ export const useGalleriesList = (
       result?.data?.findGalleries?.galleries ?? [],
     getCount: (result: FindGalleriesQueryResult) =>
       result?.data?.findGalleries?.count ?? 0,
+    getSelectedData: (
+      result: FindGalleriesQueryResult,
+      selectedIds: Set<string>
+    ) =>
+      getSelectedData(
+        result?.data?.findGalleries?.galleries ?? [],
+        selectedIds
+      ),
   });
 
 export const useStudiosList = (
-  props: IListHookOptions<FindStudiosQueryResult>
+  props: IListHookOptions<FindStudiosQueryResult, StudioDataFragment>
 ) =>
   useList<FindStudiosQueryResult, StudioDataFragment>({
     ...props,
@@ -470,10 +477,14 @@ export const useStudiosList = (
       result?.data?.findStudios?.studios ?? [],
     getCount: (result: FindStudiosQueryResult) =>
       result?.data?.findStudios?.count ?? 0,
+    getSelectedData: (
+      result: FindStudiosQueryResult,
+      selectedIds: Set<string>
+    ) => getSelectedData(result?.data?.findStudios?.studios ?? [], selectedIds),
   });
 
 export const usePerformersList = (
-  props: IListHookOptions<FindPerformersQueryResult>
+  props: IListHookOptions<FindPerformersQueryResult, PerformerDataFragment>
 ) =>
   useList<FindPerformersQueryResult, PerformerDataFragment>({
     ...props,
@@ -483,9 +494,19 @@ export const usePerformersList = (
       result?.data?.findPerformers?.performers ?? [],
     getCount: (result: FindPerformersQueryResult) =>
       result?.data?.findPerformers?.count ?? 0,
+    getSelectedData: (
+      result: FindPerformersQueryResult,
+      selectedIds: Set<string>
+    ) =>
+      getSelectedData(
+        result?.data?.findPerformers?.performers ?? [],
+        selectedIds
+      ),
   });
 
-export const useMoviesList = (props: IListHookOptions<FindMoviesQueryResult>) =>
+export const useMoviesList = (
+  props: IListHookOptions<FindMoviesQueryResult, MovieDataFragment>
+) =>
   useList<FindMoviesQueryResult, MovieDataFragment>({
     ...props,
     filterMode: FilterMode.Movies,
@@ -494,4 +515,8 @@ export const useMoviesList = (props: IListHookOptions<FindMoviesQueryResult>) =>
       result?.data?.findMovies?.movies ?? [],
     getCount: (result: FindMoviesQueryResult) =>
       result?.data?.findMovies?.count ?? 0,
+    getSelectedData: (
+      result: FindMoviesQueryResult,
+      selectedIds: Set<string>
+    ) => getSelectedData(result?.data?.findMovies?.movies ?? [], selectedIds),
   });

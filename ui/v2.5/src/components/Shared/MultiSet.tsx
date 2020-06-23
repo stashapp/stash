@@ -14,6 +14,7 @@ interface IMultiSetProps {
   type: "performers" | "studios" | "tags";
   ids?: string[];
   mode: GQL.BulkUpdateIdMode;
+  disabled?: boolean;
   onUpdate: (items: ValidTypes[]) => void;
   onSetMode: (mode: GQL.BulkUpdateIdMode) => void;
 }
@@ -66,6 +67,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
           variant="secondary"
           onClick={() => props.onSetMode(nextMode())}
           title={getModeText()}
+          disabled={props.disabled}
         >
           <Icon icon={getModeIcon()} className="fa-fw" />
         </Button>
@@ -73,6 +75,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
 
       <FilterSelect
         type={props.type}
+        isDisabled={props.disabled}
         isMulti
         isClearable={false}
         onSelect={onUpdate}
