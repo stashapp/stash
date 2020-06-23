@@ -87,6 +87,10 @@ func (c xpathRegexConfig) apply(value string) string {
 
 		ret := re.ReplaceAllString(value, with)
 		// replace  lines if needed to protect from commonPostprocess
+		// CAUTION: This protects newlines that are added with regex replace.
+		// Lines already present in the page source as innertext will not be protected
+		// as html.Parse->commonPostprocess has already removed them
+		// Lines as element values don't seem to get converted by html.Parse to newlines
 		if with == "\n" {
 			ret = replaceLines(ret)
 		}
