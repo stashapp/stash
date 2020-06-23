@@ -782,18 +782,6 @@ func urlFromCDP(url string, c *scraperConfig, responseHeaders *map[string]interf
 		// get which type of event it is
 		switch msg := event.(type) {
 
-		// just before request sent
-		/*		case *network.EventRequestWillBeSent:
-				request := msg.Request
-				//	logger.Debugf("CDP request url: %s\n", request.URL)
-
-				// see if we have been redirected
-				// if so, change the URL that we are tracking
-				if msg.RedirectResponse != nil {
-					url = request.URL
-					//			logger.Debugf("CDP got redirect: %s\n", msg.RedirectResponse.URL)
-				}
-		*/
 		// once we have the full response
 		case *network.EventResponseReceived:
 
@@ -803,9 +791,6 @@ func urlFromCDP(url string, c *scraperConfig, responseHeaders *map[string]interf
 			if response.URL == url {
 				*responseHeaders = response.Headers
 
-				//		logger.Debugf("CDP url: %s\n", response.URL)
-				//		logger.Debugf("CDP # headers: %d\n", len(*responseHeaders))
-				//		logger.Debugf("CDP headers: %v\n", *responseHeaders)
 			}
 		}
 
