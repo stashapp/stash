@@ -6,7 +6,6 @@ import (
 
 type Performer struct {
 	ID           int             `db:"id" json:"id"`
-	Image        []byte          `db:"image" json:"image"`
 	Checksum     string          `db:"checksum" json:"checksum"`
 	Name         sql.NullString  `db:"name" json:"name"`
 	Gender       sql.NullString  `db:"gender" json:"gender"`
