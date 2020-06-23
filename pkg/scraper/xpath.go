@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/antchfx/htmlquery"
-	"github.com/chromedp/cdproto/cdp"
 	"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
@@ -606,14 +605,11 @@ func loadURL(url string, c *scraperConfig) (*html.Node, error) {
 
 	if c != nil && c.DriverOptions != nil && c.DriverOptions.UseCDP {
 		// get the page using chrome dp
-		var responseHeaders map[string]interface{}
-		resp, err := urlFromCDP(url, c, &responseHeaders)
+		resp, err := urlFromCDP(url, c)
 		if err != nil {
 			return nil, err
 		}
-		rt := strings.NewReader(resp)
-		logger.Debugf("Url content-type  = %s\n", responseHeaders["content-type"].(string))
-		r, err = charset.NewReader(rt, responseHeaders["content-type"].(string))
+		r = strings.NewReader(resp)
 		if err != nil {
 			return nil, err
 		}
@@ -739,20 +735,15 @@ func NodeText(n *html.Node) string {
 // func urlFromCDP uses chrome cdp and DOM to load and process the url
 // if remote is set as true in the scraperConfig  it will try to use localhost:9222
 // else it will look for google-chrome in path
-func urlFromCDP(url string, c *scraperConfig, responseHeaders *map[string]interface{}) (string, error) {
+func urlFromCDP(url string, c *scraperConfig) (string, error) {
 	if !(c != nil && c.DriverOptions != nil && c.DriverOptions.UseCDP) {
 		return "", fmt.Errorf("Url shouldn't be feetched through CDP")
 	}
 	remote := false
 	sleep := 2
-	clearCookies := false
 
 	if c.DriverOptions.Remote {
 		remote = true
-	}
-
-	if c.DriverOptions.ClearCookies {
-		clearCookies = true
 	}
 
 	if c.DriverOptions.Sleep != 0 {
@@ -776,30 +767,9 @@ func urlFromCDP(url string, c *scraperConfig, responseHeaders *map[string]interf
 	ctx, cancel := chromedp.NewContext(act)
 	defer cancel()
 
-	// setup a listener for events
-	chromedp.ListenTarget(ctx, func(event interface{}) {
-
-		// get which type of event it is
-		switch msg := event.(type) {
-
-		// once we have the full response
-		case *network.EventResponseReceived:
-
-			response := msg.Response
-
-			// is the request we want the status/headers on?
-			if response.URL == url {
-				*responseHeaders = response.Headers
-
-			}
-		}
-
-	})
-
 	var res string
 	err := chromedp.Run(ctx,
 		network.Enable(),
-		cdpClearCookies(clearCookies),
 		chromedp.Navigate(url),
 		chromedp.Sleep(sleepDuration),
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -833,43 +803,6 @@ func getRemoteCDP() (string, error) {
 	remote := result["webSocketDebuggerUrl"].(string)
 	logger.Debugf("Remote cdp instance found %s", remote)
 	return remote, err
-}
-
-func cdpSetCookie(name, value, domain, path string, httpOnly, secure bool) chromedp.Action {
-	return chromedp.ActionFunc(func(ctx context.Context) error {
-		expr := cdp.TimeSinceEpoch(time.Now().Add(30 * 24 * time.Hour))
-		success, err := network.SetCookie(name, value).
-			WithExpires(&expr).
-			WithDomain(domain).
-			WithPath(path).
-			WithHTTPOnly(httpOnly).
-			WithSecure(secure).
-			Do(ctx)
-		if err != nil {
-			return err
-		}
-		if !success {
-			return fmt.Errorf("could not set cookie %s", name)
-		}
-		logger.Debugf("Setting cookie with name: %s value: %s domain: %s path: %s", name, value, domain, path)
-		return nil
-	})
-}
-
-func cdpClearCookies(clear bool) chromedp.Action {
-	return chromedp.ActionFunc(func(ctx context.Context) error {
-		if clear {
-			network.ClearBrowserCookies().Do(ctx)
-		}
-		cookies, err := network.GetAllCookies().Do(ctx)
-		if err != nil {
-			return err
-		}
-		for i, cookie := range cookies {
-			logger.Debugf("chrome cookie %d: %+v", i, cookie)
-		}
-		return nil
-	})
 }
 
 func cdpNetwork(enable bool) chromedp.Action {

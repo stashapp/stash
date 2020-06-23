@@ -145,10 +145,9 @@ type scraperDebugOptions struct {
 }
 
 type scraperDriverOptions struct {
-	UseCDP       bool `yaml:"useCDP"`
-	Remote       bool `yaml:"remote"`
-	Sleep        int  `yaml:"sleep"`
-	ClearCookies bool `yaml:"clearCookies"`
+	UseCDP bool `yaml:"useCDP"`
+	Remote bool `yaml:"remote"`
+	Sleep  int  `yaml:"sleep"`
 }
 
 type scraperConfig struct {
