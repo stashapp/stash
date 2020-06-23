@@ -6,7 +6,6 @@ import (
 
 type Studio struct {
 	ID        int             `db:"id" json:"id"`
-	Image     []byte          `db:"image" json:"image"`
 	Checksum  string          `db:"checksum" json:"checksum"`
 	Name      sql.NullString  `db:"name" json:"name"`
 	URL       sql.NullString  `db:"url" json:"url"`
@@ -17,7 +16,6 @@ type Studio struct {
 
 type StudioPartial struct {
 	ID        int              `db:"id" json:"id"`
-	Image     *[]byte          `db:"image" json:"image"`
 	Checksum  *string          `db:"checksum" json:"checksum"`
 	Name      *sql.NullString  `db:"name" json:"name"`
 	URL       *sql.NullString  `db:"url" json:"url"`

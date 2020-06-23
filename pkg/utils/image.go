@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"crypto/md5"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"regexp"
+	"strings"
 )
 
 // ProcessBase64Image transforms a base64 encoded string from a form post and returns the MD5 hash of the data and the
@@ -44,4 +47,19 @@ func GetBase64StringFromData(data []byte) string {
 	//	result += "\n"
 	//}
 	//return result
+}
+
+func ServeImage(image []byte, w http.ResponseWriter, r *http.Request) error {
+	etag := fmt.Sprintf("%x", md5.Sum(image))
+
+	if match := r.Header.Get("If-None-Match"); match != "" {
+		if strings.Contains(match, etag) {
+			w.WriteHeader(http.StatusNotModified)
+			return nil
+		}
+	}
+
+	w.Header().Add("Etag", etag)
+	_, err := w.Write(image)
+	return err
 }

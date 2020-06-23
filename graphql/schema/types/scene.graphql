@@ -99,6 +99,12 @@ input SceneDestroyInput {
   delete_generated: Boolean
 }
 
+input ScenesDestroyInput {
+  ids: [ID!]!
+  delete_file: Boolean
+  delete_generated: Boolean
+}
+
 type FindScenesResultType {
   count: Int!
   scenes: [Scene!]!

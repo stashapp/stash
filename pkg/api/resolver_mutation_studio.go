@@ -32,7 +32,6 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	// Populate a new studio from the input
 	currentTime := time.Now()
 	newStudio := models.Studio{
-		Image:     imageData,
 		Checksum:  checksum,
 		Name:      sql.NullString{String: input.Name, Valid: true},
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
@@ -55,6 +54,14 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 		return nil, err
 	}
 
+	// update image table
+	if len(imageData) > 0 {
+		if err := qb.UpdateStudioImage(studio.ID, imageData, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
 	// Commit
 	if err := tx.Commit(); err != nil {
 		return nil, err
@@ -71,12 +78,14 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		ID:        studioID,
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
+
+	var imageData []byte
 	if input.Image != nil {
-		_, imageData, err := utils.ProcessBase64Image(*input.Image)
+		var err error
+		_, imageData, err = utils.ProcessBase64Image(*input.Image)
 		if err != nil {
 			return nil, err
 		}
-		updatedStudio.Image = &imageData
 	}
 	if input.Name != nil {
 		// generate checksum from studio name rather than image
@@ -109,6 +118,14 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	if err != nil {
 		tx.Rollback()
 		return nil, err
+	}
+
+	// update image table
+	if len(imageData) > 0 {
+		if err := qb.UpdateStudioImage(studio.ID, imageData, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 
 	// Commit

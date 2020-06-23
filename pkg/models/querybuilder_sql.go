@@ -418,3 +418,31 @@ func sqlGenKeys(i interface{}, partial bool) string {
 	}
 	return strings.Join(query, ", ")
 }
+
+func getImage(tx *sqlx.Tx, query string, args ...interface{}) ([]byte, error) {
+	var rows *sqlx.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.Queryx(query, args...)
+	} else {
+		rows, err = database.DB.Queryx(query, args...)
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ret []byte
+	if rows.Next() {
+		if err := rows.Scan(&ret); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}

@@ -18,10 +18,10 @@ func NewPerformerQueryBuilder() PerformerQueryBuilder {
 func (qb *PerformerQueryBuilder) Create(newPerformer Performer, tx *sqlx.Tx) (*Performer, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO performers (image, checksum, name, url, gender, twitter, instagram, birthdate, ethnicity, country,
+		`INSERT INTO performers (checksum, name, url, gender, twitter, instagram, birthdate, ethnicity, country,
                         				eye_color, height, measurements, fake_tits, career_length, tattoos, piercings,
                         				aliases, favorite, created_at, updated_at)
-				VALUES (:image, :checksum, :name, :url, :gender, :twitter, :instagram, :birthdate, :ethnicity, :country,
+				VALUES (:checksum, :name, :url, :gender, :twitter, :instagram, :birthdate, :ethnicity, :country,
                         :eye_color, :height, :measurements, :fake_tits, :career_length, :tattoos, :piercings,
                         :aliases, :favorite, :created_at, :updated_at)
 		`,
@@ -341,4 +341,37 @@ func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{
 	}
 
 	return performers, nil
+}
+
+func (qb *PerformerQueryBuilder) UpdatePerformerImage(performerID int, image []byte, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing cover and then create new
+	if err := qb.DestroyPerformerImage(performerID, tx); err != nil {
+		return err
+	}
+
+	_, err := tx.Exec(
+		`INSERT INTO performers_image (performer_id, image) VALUES (?, ?)`,
+		performerID,
+		image,
+	)
+
+	return err
+}
+
+func (qb *PerformerQueryBuilder) DestroyPerformerImage(performerID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins
+	_, err := tx.Exec("DELETE FROM performers_image WHERE performer_id = ?", performerID)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (qb *PerformerQueryBuilder) GetPerformerImage(performerID int, tx *sqlx.Tx) ([]byte, error) {
+	query := `SELECT image from performers_image WHERE performer_id = ?`
+	return getImage(tx, query, performerID)
 }

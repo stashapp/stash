@@ -117,6 +117,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           as="select"
           onChange={onChangedModifierSelect}
           value={criterion.modifier}
+          className="btn-secondary"
         >
           {criterion.modifierOptions.map((c) => (
             <option key={c.value} value={c.value}>
@@ -170,6 +171,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
             as="select"
             onChange={onChangedSingleSelect}
             value={criterion.value.toString()}
+            className="btn-secondary"
           >
             {criterion.options.map((c) => (
               <option key={c.toString()} value={c.toString()}>
@@ -190,6 +192,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
       }
       return (
         <Form.Control
+          className="btn-secondary"
           type={criterion.inputType}
           onChange={onChangedInput}
           onBlur={onBlurInput}
@@ -216,6 +219,7 @@ export const AddFilter: React.FC<IAddFilterProps> = (
           as="select"
           onChange={onChangedCriteriaType}
           value={criterion.type}
+          className="btn-secondary"
         >
           {props.filter.criterionOptions.map((c) => (
             <option key={c.value} value={c.value}>

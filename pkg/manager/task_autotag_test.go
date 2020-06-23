@@ -111,7 +111,6 @@ func createPerformer(tx *sqlx.Tx) error {
 	pqb := models.NewPerformerQueryBuilder()
 
 	performer := models.Performer{
-		Image:    []byte{0, 1, 2},
 		Checksum: testName,
 		Name:     sql.NullString{Valid: true, String: testName},
 		Favorite: sql.NullBool{Valid: true, Bool: false},
@@ -130,7 +129,6 @@ func createStudio(tx *sqlx.Tx, name string) (*models.Studio, error) {
 	qb := models.NewStudioQueryBuilder()
 
 	studio := models.Studio{
-		Image:    []byte{0, 1, 2},
 		Checksum: name,
 		Name:     sql.NullString{Valid: true, String: testName},
 	}

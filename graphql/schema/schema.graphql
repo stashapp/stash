@@ -105,6 +105,7 @@ type Mutation {
   sceneUpdate(input: SceneUpdateInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!
+  scenesDestroy(input: ScenesDestroyInput!): Boolean!
   scenesUpdate(input: [SceneUpdateInput!]!): [Scene]
 
   """Increments the o-counter for a scene. Returns the new value"""

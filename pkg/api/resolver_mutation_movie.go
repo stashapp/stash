@@ -39,12 +39,10 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 	// Populate a new movie from the input
 	currentTime := time.Now()
 	newMovie := models.Movie{
-		BackImage:  backimageData,
-		FrontImage: frontimageData,
-		Checksum:   checksum,
-		Name:       sql.NullString{String: input.Name, Valid: true},
-		CreatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
+		Checksum:  checksum,
+		Name:      sql.NullString{String: input.Name, Valid: true},
+		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
 	if input.Aliases != nil {
@@ -90,6 +88,14 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 		return nil, err
 	}
 
+	// update image table
+	if len(frontimageData) > 0 {
+		if err := qb.UpdateMovieImages(movie.ID, frontimageData, backimageData, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
 	// Commit
 	if err := tx.Commit(); err != nil {
 		return nil, err
@@ -106,19 +112,20 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 		ID:        movieID,
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
+	var frontimageData []byte
+	var err error
 	if input.FrontImage != nil {
-		_, frontimageData, err := utils.ProcessBase64Image(*input.FrontImage)
+		_, frontimageData, err = utils.ProcessBase64Image(*input.FrontImage)
 		if err != nil {
 			return nil, err
 		}
-		updatedMovie.FrontImage = &frontimageData
 	}
+	var backimageData []byte
 	if input.BackImage != nil {
-		_, backimageData, err := utils.ProcessBase64Image(*input.BackImage)
+		_, backimageData, err = utils.ProcessBase64Image(*input.BackImage)
 		if err != nil {
 			return nil, err
 		}
-		updatedMovie.BackImage = &backimageData
 	}
 
 	if input.Name != nil {
@@ -175,6 +182,29 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
+	}
+
+	// update image table
+	if len(frontimageData) > 0 || len(backimageData) > 0 {
+		if len(frontimageData) == 0 {
+			frontimageData, err = qb.GetFrontImage(updatedMovie.ID, tx)
+			if err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
+		}
+		if len(backimageData) == 0 {
+			backimageData, err = qb.GetBackImage(updatedMovie.ID, tx)
+			if err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
+		}
+
+		if err := qb.UpdateMovieImages(movie.ID, frontimageData, backimageData, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 
 	// Commit
