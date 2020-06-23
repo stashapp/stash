@@ -600,11 +600,18 @@ func loadURL(url string, c *scraperConfig) (*html.Node, error) {
 
 	if c != nil && c.DriverOptions != nil && c.DriverOptions.UseCDP {
 		// get the page using chrome dp
-		resp, err := urlFromCDP(url, c)
+		var responseHeaders map[string]interface{}
+		resp, err := urlFromCDP(url, c, &responseHeaders)
 		if err != nil {
 			return nil, err
 		}
-		r = strings.NewReader(resp)
+		rt := strings.NewReader(resp)
+		logger.Debugf("Url content-type  = %s\n", responseHeaders["content-type"].(string))
+		r, err = charset.NewReader(rt, responseHeaders["content-type"].(string))
+		if err != nil {
+			return nil, err
+		}
+
 	} else {
 		// otherwise use a plain http.Client
 		client := &http.Client{
@@ -707,10 +714,10 @@ func NodeText(n *html.Node) string {
 	return htmlquery.InnerText(n)
 }
 
-// func urlFromCDP uses chrome cdp to load and process the url
+// func urlFromCDP uses chrome cdp and DOM to load and process the url
 // if remote is set as true in the scraperConfig  it will try to use localhost:9222
 // else it will look for google-chrome in path
-func urlFromCDP(url string, c *scraperConfig) (string, error) {
+func urlFromCDP(url string, c *scraperConfig, responseHeaders *map[string]interface{}) (string, error) {
 	if !(c != nil && c.DriverOptions != nil && c.DriverOptions.UseCDP) {
 		return "", fmt.Errorf("Url shouldn't be feetched through CDP")
 	}
@@ -747,8 +754,44 @@ func urlFromCDP(url string, c *scraperConfig) (string, error) {
 	ctx, cancel := chromedp.NewContext(act)
 	defer cancel()
 
+	// setup a listener for events
+	chromedp.ListenTarget(ctx, func(event interface{}) {
+
+		// get which type of event it is
+		switch msg := event.(type) {
+
+		// just before request sent
+		/*		case *network.EventRequestWillBeSent:
+				request := msg.Request
+				//	logger.Debugf("CDP request url: %s\n", request.URL)
+
+				// see if we have been redirected
+				// if so, change the URL that we are tracking
+				if msg.RedirectResponse != nil {
+					url = request.URL
+					//			logger.Debugf("CDP got redirect: %s\n", msg.RedirectResponse.URL)
+				}
+		*/
+		// once we have the full response
+		case *network.EventResponseReceived:
+
+			response := msg.Response
+
+			// is the request we want the status/headers on?
+			if response.URL == url {
+				*responseHeaders = response.Headers
+
+				//		logger.Debugf("CDP url: %s\n", response.URL)
+				//		logger.Debugf("CDP # headers: %d\n", len(*responseHeaders))
+				//		logger.Debugf("CDP headers: %v\n", *responseHeaders)
+			}
+		}
+
+	})
+
 	var res string
 	err := chromedp.Run(ctx,
+		network.Enable(),
 		cdpClearCookies(clearCookies),
 		chromedp.Navigate(url),
 		chromedp.Sleep(sleepDuration),
