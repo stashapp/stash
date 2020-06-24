@@ -189,26 +189,22 @@ export const ListFilter: React.FC<IListFilterProps> = (
       }
     }
 
-    return (
-      <>
-        {props.filter.displayModeOptions.map((option) => (
-          <OverlayTrigger
-            key={option}
-            overlay={
-              <Tooltip id="display-mode-tooltip">{getLabel(option)}</Tooltip>
-            }
-          >
-            <Button
-              variant="secondary"
-              active={props.filter.displayMode === option}
-              onClick={() => onChangeDisplayMode(option)}
-            >
-              <Icon icon={getIcon(option)} />
-            </Button>
-          </OverlayTrigger>
-        ))}
-      </>
-    );
+    return props.filter.displayModeOptions.map((option) => (
+      <OverlayTrigger
+        key={option}
+        overlay={
+          <Tooltip id="display-mode-tooltip">{getLabel(option)}</Tooltip>
+        }
+      >
+        <Button
+          variant="secondary"
+          active={props.filter.displayMode === option}
+          onClick={() => onChangeDisplayMode(option)}
+        >
+          <Icon icon={getIcon(option)} />
+        </Button>
+      </OverlayTrigger>
+    ));
   }
 
   function renderFilterTags() {
