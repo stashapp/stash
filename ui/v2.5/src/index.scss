@@ -442,6 +442,10 @@ div.dropdown-menu {
   white-space: "pre-wrap";
 }
 
+.btn-toolbar .form-control {
+  width: inherit;
+}
+
 .stats {
   &-element {
     flex-grow: 1;
