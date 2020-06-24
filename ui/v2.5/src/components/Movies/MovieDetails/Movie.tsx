@@ -9,7 +9,6 @@ import {
   useMovieDestroy,
 } from "src/core/StashService";
 import { useParams, useHistory } from "react-router-dom";
-import cx from "classnames";
 import {
   DetailsEditNavbar,
   LoadingIndicator,
