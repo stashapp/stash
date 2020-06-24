@@ -323,16 +323,16 @@ export const ListFilter: React.FC<IListFilterProps> = (
     if (props.onChangeZoom) {
       return (
         <div className="align-middle">
-        <Form.Control
-          className="zoom-slider d-none d-sm-inline-flex ml-3"
-          type="range"
-          min={0}
-          max={3}
-          defaultValue={1}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
-          }
-        />
+          <Form.Control
+            className="zoom-slider d-none d-sm-inline-flex ml-3"
+            type="range"
+            min={0}
+            max={3}
+            defaultValue={1}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
+            }
+          />
         </div>
       );
     }
@@ -405,10 +405,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
                   </Tooltip>
                 }
               >
-                <Button
-                  variant="secondary"
-                  onClick={onChangeSortDirection}
-                >
+                <Button variant="secondary" onClick={onChangeSortDirection}>
                   <Icon
                     icon={
                       props.filter.sortDirection === SortDirectionEnum.Asc
@@ -421,15 +418,10 @@ export const ListFilter: React.FC<IListFilterProps> = (
               {props.filter.sortBy === "random" && (
                 <OverlayTrigger
                   overlay={
-                    <Tooltip id="sort-reshuffle-tooltip">
-                      Reshuffle
-                    </Tooltip>
+                    <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>
                   }
                 >
-                  <Button
-                    variant="secondary"
-                    onClick={onReshuffleRandomSort}
-                  >
+                  <Button variant="secondary" onClick={onReshuffleRandomSort}>
                     <Icon icon="random" />
                   </Button>
                 </OverlayTrigger>
@@ -454,7 +446,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
             {maybeRenderSelectedButtons()}
             {renderMore()}
           </ButtonGroup>
-          
+
           <ButtonGroup className="my-1">
             {renderDisplayModeOptions()}
             {maybeRenderZoom()}

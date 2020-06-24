@@ -201,9 +201,7 @@ export const Movie: React.FC = () => {
   // TODO: CSS class
   return (
     <div className="row">
-      <div
-        className="movie-details col"
-      >
+      <div className="movie-details col">
         {isNew && <h2>Add Movie</h2>}
         <div className="logo w-100">
           {encodingFrontImage || encodingBackImage ? (

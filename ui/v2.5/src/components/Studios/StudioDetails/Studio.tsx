@@ -176,11 +176,11 @@ export const Studio: React.FC = () => {
       >
         {isNew && <h2>Add Studio</h2>}
         <div className="text-center">
-        {imageEncoding ? (
-          <LoadingIndicator message="Encoding image..." />
-        ) : (
-          <img className="logo" alt={name} src={imagePreview} />
-        )}
+          {imageEncoding ? (
+            <LoadingIndicator message="Encoding image..." />
+          ) : (
+            <img className="logo" alt={name} src={imagePreview} />
+          )}
         </div>
         <Table>
           <tbody>
