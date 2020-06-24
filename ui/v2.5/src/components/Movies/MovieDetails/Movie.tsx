@@ -203,9 +203,7 @@ export const Movie: React.FC = () => {
   return (
     <div className="row">
       <div
-        className={cx("movie-details", "col", {
-          "col ml-sm-5": !isNew,
-        })}
+        className="movie-details col"
       >
         {isNew && <h2>Add Movie</h2>}
         <div className="logo w-100">
@@ -312,7 +310,7 @@ export const Movie: React.FC = () => {
         />
       </div>
       {!isNew && (
-        <div className="col-12 col-sm-8">
+        <div className="col-lg-8 col-md-7">
           <MovieScenesPanel movie={movie} />
         </div>
       )}
