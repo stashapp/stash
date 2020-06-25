@@ -154,7 +154,7 @@ export const Performer: React.FC = () => {
   }
 
   const renderIcons = () => (
-    <span className="name-icons d-block d-sm-inline">
+    <span className="name-icons">
       <Button
         className={cx(
           "minimal",
@@ -241,7 +241,7 @@ export const Performer: React.FC = () => {
 
   return (
     <div id="performer-page" className="row">
-      <div className="image-container col-sm-4 offset-sm-1 d-none d-sm-block">
+      <div className="image-container col-md-4 text-center">
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
@@ -250,9 +250,9 @@ export const Performer: React.FC = () => {
           </Button>
         )}
       </div>
-      <div className="col col-sm-6">
+      <div className="col col-md-8 col-lg-7 col-xl-6">
         <div className="row">
-          <div className="performer-head col-6 col-sm-12">
+          <div className="performer-head col">
             <h2>
               <CountryFlag country={performer.country} className="mr-2" />
               {performer.name}

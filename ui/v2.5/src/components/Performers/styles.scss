@@ -12,7 +12,7 @@
   overflow: hidden;
 
   .image-container .performer {
-    max-height: 960px;
+    max-height: calc(100vh - 6rem);
     max-width: 100%;
   }
 
