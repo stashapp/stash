@@ -14,15 +14,25 @@ else
   SET := export
 endif
 
-release: generate ui build
+LDFLAGS :=
+
+.PHONY: release pre-build install clean 
+
+release: generate ui build-release
 
 pre-build:
 	$(eval DATE := $(shell go run scripts/getDate.go))
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
 	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest_develop))
+	$(eval LDFLAGS := -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
 
 build: pre-build
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -mod=vendor -v -ldflags "-X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)'"
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -mod=vendor -v -ldflags "$(LDFLAGS)"
+
+# strips debug symbols from the release build
+# consider -trimpath in go build if we move to go 1.13+
+build-release: LDFLAGS += -s -w
+build-release: build
 
 install:
 	packr2 install
