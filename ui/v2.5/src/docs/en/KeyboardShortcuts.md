@@ -92,8 +92,10 @@
 | `d d` | Delete Movie |
 | `r {1-5}` | Set rating (in edit mode) |
 | `r 0` | Unset rating (in edit mode) |
-| `u` | Focus Studio selector (in edit mode) |
 | `Ctrl + v` | Paste Movie image |
+
+[//]: # "Commented until implementation is dealt with"
+[//]: # "(| `u` | Focus Studio selector (in edit mode) |)"
 
 ## Markers Page shortcuts
 

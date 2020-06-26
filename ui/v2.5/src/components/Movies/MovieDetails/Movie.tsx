@@ -67,6 +67,42 @@ export const Movie: React.FC = () => {
 
   const intl = useIntl();
 
+  // set up hotkeys
+  useEffect(() => {
+    if (isEditing) {
+      Mousetrap.bind("r 0", () => setRating(NaN));
+      Mousetrap.bind("r 1", () => setRating(1));
+      Mousetrap.bind("r 2", () => setRating(2));
+      Mousetrap.bind("r 3", () => setRating(3));
+      Mousetrap.bind("r 4", () => setRating(4));
+      Mousetrap.bind("r 5", () => setRating(5));
+      // Mousetrap.bind("u", (e) => {
+      //   setStudioFocus()
+      //   e.preventDefault();
+      // });
+      Mousetrap.bind("s s", () => onSave());
+    }
+
+    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("d d", () => onDelete());
+    
+    return () => {
+      if (isEditing) {
+        Mousetrap.unbind("r 0");
+        Mousetrap.unbind("r 1");
+        Mousetrap.unbind("r 2");
+        Mousetrap.unbind("r 3");
+        Mousetrap.unbind("r 4");
+        Mousetrap.unbind("r 5");
+        // Mousetrap.unbind("u");
+        Mousetrap.unbind("s s");
+      }
+
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("d d");
+    }
+  });
+
   function updateMovieEditState(state: Partial<GQL.MovieDataFragment>) {
     setName(state.name ?? undefined);
     setAliases(state.aliases ?? undefined);
