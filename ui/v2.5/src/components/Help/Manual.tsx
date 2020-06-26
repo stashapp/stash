@@ -10,6 +10,7 @@ import Galleries from "src/docs/en/Galleries.md";
 import Scraping from "src/docs/en/Scraping.md";
 import Contributing from "src/docs/en/Contributing.md";
 import SceneFilenameParser from "src/docs/en/SceneFilenameParser.md";
+import KeyboardShortcuts from "src/docs/en/KeyboardShortcuts.md";
 import Help from "src/docs/en/Help.md";
 import { Page } from "./Page";
 
@@ -32,7 +33,7 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
     },
     {
       key: "Interface.md",
-      title: "Interface",
+      title: "Interface Options",
       content: Interface,
     },
     {
@@ -67,6 +68,11 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
       key: "Scraping.md",
       title: "Metadata Scraping",
       content: Scraping,
+    },
+    {
+      key: "KeyboardShortcuts.md",
+      title: "Keyboard Shortcuts",
+      content: KeyboardShortcuts,
     },
     {
       key: "Contributing.md",
