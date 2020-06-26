@@ -8,7 +8,7 @@ import {
 import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useHistory } from "react-router-dom";
 import { SessionUtils } from "src/utils";
 
 import { Icon } from "src/components/Shared";
@@ -90,6 +90,7 @@ const menuItems: IMenuItem[] = [
 ];
 
 export const MainNavbar: React.FC = () => {
+  const history = useHistory();
   const location = useLocation();
   const [expanded, setExpanded] = useState(false);
   const [showManual, setShowManual] = useState(false);
@@ -119,6 +120,31 @@ export const MainNavbar: React.FC = () => {
       document.removeEventListener("touchstart", maybeCollapse);
     };
   }, [expanded]);
+
+  // set up hotkeys
+  useEffect(() => {
+    Mousetrap.bind("?", () => setShowManual(!showManual));
+    Mousetrap.bind("g s", () => history.push("/scenes"));
+    Mousetrap.bind("g v", () => history.push("/movies"));
+    Mousetrap.bind("g k", () => history.push("/scenes/markers"));
+    Mousetrap.bind("g l", () => history.push("/galleries"));
+    Mousetrap.bind("g p", () => history.push("/performers"));
+    Mousetrap.bind("g u", () => history.push("/studios"));
+    Mousetrap.bind("g t", () => history.push("/tags"));
+    Mousetrap.bind("g z", () => history.push("/settings"));
+
+    return () => {
+      Mousetrap.unbind("?");
+      Mousetrap.unbind("g s");
+      Mousetrap.unbind("g v");
+      Mousetrap.unbind("g k");
+      Mousetrap.unbind("g l");
+      Mousetrap.unbind("g p");
+      Mousetrap.unbind("g u");
+      Mousetrap.unbind("g t");
+      Mousetrap.unbind("g z");
+    }
+  });
 
   const path =
     location.pathname === "/performers"
