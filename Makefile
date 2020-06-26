@@ -27,7 +27,7 @@ endif
 release: generate ui build-release
 
 pre-build:
-	$(eval DATE := $(shell go run scripts/getDate.go -mod=vendor))
+	$(eval DATE := $(shell go run -mod=vendor scripts/getDate.go))
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
 	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest_develop))
 
