@@ -119,7 +119,6 @@ ui-validate:
 # rebuilding the UI
 .PHONY: packr
 packr:
-	env
 	packr2
 
 # runs all of the tests and checks required for a PR to be accepted
