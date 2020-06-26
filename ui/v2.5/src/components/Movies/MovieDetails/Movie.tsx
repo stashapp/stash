@@ -9,7 +9,6 @@ import {
   useMovieDestroy,
 } from "src/core/StashService";
 import { useParams, useHistory } from "react-router-dom";
-import cx from "classnames";
 import {
   DetailsEditNavbar,
   LoadingIndicator,
@@ -202,11 +201,7 @@ export const Movie: React.FC = () => {
   // TODO: CSS class
   return (
     <div className="row">
-      <div
-        className={cx("movie-details", "col", {
-          "col ml-sm-5": !isNew,
-        })}
-      >
+      <div className="movie-details col">
         {isNew && <h2>Add Movie</h2>}
         <div className="logo w-100">
           {encodingFrontImage || encodingBackImage ? (
@@ -312,7 +307,7 @@ export const Movie: React.FC = () => {
         />
       </div>
       {!isNew && (
-        <div className="col-12 col-sm-8">
+        <div className="col-lg-8 col-md-7">
           <MovieScenesPanel movie={movie} />
         </div>
       )}

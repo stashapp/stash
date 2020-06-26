@@ -91,6 +91,16 @@ input MovieFilterType {
   studios: MultiCriterionInput
 }
 
+input StudioFilterType {
+  """Filter to only include studios with this parent studio"""
+  parents: MultiCriterionInput
+}
+
+input GalleryFilterType {
+  """Filter to only include galleries missing this property"""
+  is_missing: String
+}
+
 enum CriterionModifier {
   """="""
   EQUALS,

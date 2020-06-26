@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -13,6 +14,7 @@ import (
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/charset"
+	"golang.org/x/net/publicsuffix"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -75,6 +77,10 @@ func (c xpathRegexConfig) apply(value string) string {
 		}
 
 		ret := re.ReplaceAllString(value, with)
+		// replace  lines if needed to protect from commonPostprocess
+		if with == "\n" {
+			ret = replaceLines(ret)
+		}
 
 		logger.Debugf(`Replace: '%s' with '%s'`, regex, with)
 		logger.Debugf("Before: %s", value)
@@ -94,6 +100,9 @@ func (c xpathRegexConfigs) apply(value string) string {
 	// remove whitespace again
 	value = commonPostProcess(value)
 
+	// restore replaced lines
+
+	value = restoreLines(value)
 	return value
 }
 
@@ -127,6 +136,15 @@ func (c xpathScraperAttrConfig) hasConcat() bool {
 func (c xpathScraperAttrConfig) getParseDate() string {
 	const parseDateKey = "parseDate"
 	return c.getString(parseDateKey)
+}
+
+func (c xpathScraperAttrConfig) getSplit() string {
+	const splitKey = "split"
+	return c.getString(splitKey)
+}
+
+func (c xpathScraperAttrConfig) hasSplit() bool {
+	return c.getSplit() != ""
 }
 
 func (c xpathScraperAttrConfig) getReplace() xpathRegexConfigs {
@@ -198,6 +216,36 @@ func (c xpathScraperAttrConfig) parseDate(value string) string {
 	return parsedValue.Format(internalDateFormat)
 }
 
+func (c xpathScraperAttrConfig) splitString(value string) []string {
+	separator := c.getSplit()
+	var res []string
+
+	if separator == "" {
+		return []string{value}
+	}
+
+	for _, str := range strings.Split(value, separator) {
+		if str != "" {
+			res = append(res, str)
+		}
+	}
+
+	return res
+}
+
+// setKeyAndSplit sets the key "k" for the results "ret" and splits if needed
+// "i" is the index starting position
+func (c xpathScraperAttrConfig) setKeyAndSplit(ret *xPathResults, value string, k string, i int) {
+	if c.hasSplit() {
+		for j, txt := range c.splitString(value) {
+			*ret = ret.setKey(j+i, k, txt)
+		}
+	} else {
+		*ret = ret.setKey(i, k, value)
+	}
+
+}
+
 func (c xpathScraperAttrConfig) replaceRegex(value string) string {
 	replace := c.getReplace()
 	return replace.apply(value)
@@ -240,8 +288,8 @@ func (c xpathScraperAttrConfig) applySubScraper(value string) string {
 func (c xpathScraperAttrConfig) postProcess(value string) string {
 	// perform regex replacements first
 	value = c.replaceRegex(value)
-	value = c.parseDate(value)
 	value = c.applySubScraper(value)
+	value = c.parseDate(value)
 
 	return value
 }
@@ -254,6 +302,24 @@ func commonPostProcess(value string) string {
 	value = re.ReplaceAllString(value, "")
 	re = regexp.MustCompile("  +")
 	value = re.ReplaceAllString(value, " ")
+
+	return value
+}
+
+// func replaceLines replaces all newlines ("\n") with alert ("\a")
+func replaceLines(value string) string {
+	re := regexp.MustCompile("\a")         // \a shouldn't exist in the string
+	value = re.ReplaceAllString(value, "") // remove it
+	re = regexp.MustCompile("\n")          // replace newlines with (\a)'s so that they don't get removed by commonPostprocess
+	value = re.ReplaceAllString(value, "\a")
+
+	return value
+}
+
+// func restoreLines replaces all alerts ("\a") with newlines ("\n")
+func restoreLines(value string) string {
+	re := regexp.MustCompile("\a")
+	value = re.ReplaceAllString(value, "\n")
 
 	return value
 }
@@ -299,15 +365,13 @@ func (s xpathScraperConfig) process(doc *html.Node, common commonXPathConfig) xP
 				if attrConfig.hasConcat() {
 					result := attrConfig.concatenateResults(found)
 					result = attrConfig.postProcess(result)
-					const i = 0
-					ret = ret.setKey(i, k, result)
+					attrConfig.setKeyAndSplit(&ret, result, k, 0)
 				} else {
 					for i, elem := range found {
 						text := NodeText(elem)
 						text = commonPostProcess(text)
 						text = attrConfig.postProcess(text)
-
-						ret = ret.setKey(i, k, text)
+						attrConfig.setKeyAndSplit(&ret, text, k, i)
 					}
 				}
 			}
@@ -525,8 +589,24 @@ func (r xPathResults) setKey(index int, key string, value string) xPathResults {
 }
 
 func loadURL(url string, c *scraperConfig) (*html.Node, error) {
+	options := cookiejar.Options{
+		PublicSuffixList: publicsuffix.List,
+	}
+	jar, er := cookiejar.New(&options)
+	if er != nil {
+		return nil, er
+	}
+
 	client := &http.Client{
 		Timeout: scrapeGetTimeout,
+		// defaultCheckRedirect code with max changed from 10 to 20
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 20 {
+				return errors.New("stopped after 20 redirects")
+			}
+			return nil
+		},
+		Jar: jar,
 	}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

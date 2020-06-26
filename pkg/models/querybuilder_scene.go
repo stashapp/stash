@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"strconv"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -51,11 +50,9 @@ func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error)
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scenes (checksum, path, title, details, url, date, rating, o_counter, size, duration, video_codec,
-                    			    audio_codec, format, width, height, framerate, bitrate, studio_id, cover,
-                    				created_at, updated_at)
+                    			    audio_codec, format, width, height, framerate, bitrate, studio_id, created_at, updated_at)
 				VALUES (:checksum, :path, :title, :details, :url, :date, :rating, :o_counter, :size, :duration, :video_codec,
-					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :cover,
-				        :created_at, :updated_at)
+					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :created_at, :updated_at)
 		`,
 		newScene,
 	)
@@ -329,7 +326,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		}
 
 		query.body += " LEFT JOIN tags on tags_join.tag_id = tags.id"
-		whereClause, havingClause := getMultiCriterionClause("tags", "scenes_tags", "tag_id", tagsFilter)
+		whereClause, havingClause := getMultiCriterionClause("scenes", "tags", "scenes_tags", "scene_id", "tag_id", tagsFilter)
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
 	}
@@ -340,7 +337,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		}
 
 		query.body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
-		whereClause, havingClause := getMultiCriterionClause("performers", "performers_scenes", "performer_id", performersFilter)
+		whereClause, havingClause := getMultiCriterionClause("scenes", "performers", "performers_scenes", "scene_id", "performer_id", performersFilter)
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
 	}
@@ -350,7 +347,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 			query.addArg(studioID)
 		}
 
-		whereClause, havingClause := getMultiCriterionClause("studio", "", "studio_id", studiosFilter)
+		whereClause, havingClause := getMultiCriterionClause("scenes", "studio", "", "", "studio_id", studiosFilter)
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
 	}
@@ -361,7 +358,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		}
 
 		query.body += " LEFT JOIN movies ON movies_join.movie_id = movies.id"
-		whereClause, havingClause := getMultiCriterionClause("movies", "movies_scenes", "movie_id", moviesFilter)
+		whereClause, havingClause := getMultiCriterionClause("scenes", "movies", "movies_scenes", "scene_id", "movie_id", moviesFilter)
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
 	}
@@ -412,29 +409,6 @@ func getDurationWhereClause(durationFilter IntCriterionInput) (string, []interfa
 	}
 
 	return clause, args
-}
-
-// returns where clause and having clause
-func getMultiCriterionClause(table string, joinTable string, joinTableField string, criterion *MultiCriterionInput) (string, string) {
-	whereClause := ""
-	havingClause := ""
-	if criterion.Modifier == CriterionModifierIncludes {
-		// includes any of the provided ids
-		whereClause = table + ".id IN " + getInBinding(len(criterion.Value))
-	} else if criterion.Modifier == CriterionModifierIncludesAll {
-		// includes all of the provided ids
-		whereClause = table + ".id IN " + getInBinding(len(criterion.Value))
-		havingClause = "count(distinct " + table + ".id) IS " + strconv.Itoa(len(criterion.Value))
-	} else if criterion.Modifier == CriterionModifierExcludes {
-		// excludes all of the provided ids
-		if joinTable != "" {
-			whereClause = "not exists (select " + joinTable + ".scene_id from " + joinTable + " where " + joinTable + ".scene_id = scenes.id and " + joinTable + "." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
-		} else {
-			whereClause = "not exists (select s.id from scenes as s where s.id = scenes.id and s." + joinTableField + " in " + getInBinding(len(criterion.Value)) + ")"
-		}
-	}
-
-	return whereClause, havingClause
 }
 
 func (qb *SceneQueryBuilder) QueryAllByPathRegex(regex string) ([]*Scene, error) {
@@ -548,4 +522,37 @@ func (qb *SceneQueryBuilder) UpdateFormat(id int, format string, tx *sqlx.Tx) er
 	}
 
 	return nil
+}
+
+func (qb *SceneQueryBuilder) UpdateSceneCover(sceneID int, cover []byte, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing cover and then create new
+	if err := qb.DestroySceneCover(sceneID, tx); err != nil {
+		return err
+	}
+
+	_, err := tx.Exec(
+		`INSERT INTO scenes_cover (scene_id, cover) VALUES (?, ?)`,
+		sceneID,
+		cover,
+	)
+
+	return err
+}
+
+func (qb *SceneQueryBuilder) DestroySceneCover(sceneID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins
+	_, err := tx.Exec("DELETE FROM scenes_cover WHERE scene_id = ?", sceneID)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (qb *SceneQueryBuilder) GetSceneCover(sceneID int, tx *sqlx.Tx) ([]byte, error) {
+	query := `SELECT cover from scenes_cover WHERE scene_id = ?`
+	return getImage(tx, query, sceneID)
 }

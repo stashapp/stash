@@ -7,6 +7,8 @@ import {
   SceneMarkerFilterType,
   SortDirectionEnum,
   MovieFilterType,
+  StudioFilterType,
+  GalleryFilterType,
 } from "src/core/generated-graphql";
 import { stringToGender } from "src/core/StashService";
 import {
@@ -30,6 +32,7 @@ import {
   IsMissingCriterion,
   PerformerIsMissingCriterionOption,
   SceneIsMissingCriterionOption,
+  GalleryIsMissingCriterionOption,
 } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import {
@@ -41,7 +44,12 @@ import {
   ResolutionCriterion,
   ResolutionCriterionOption,
 } from "./criteria/resolution";
-import { StudiosCriterion, StudiosCriterionOption } from "./criteria/studios";
+import {
+  StudiosCriterion,
+  StudiosCriterionOption,
+  ParentStudiosCriterion,
+  ParentStudiosCriterionOption,
+} from "./criteria/studios";
 import {
   SceneTagsCriterionOption,
   TagsCriterion,
@@ -159,7 +167,10 @@ export class ListFilterModel {
         this.sortBy = "name";
         this.sortByOptions = ["name", "scenes_count"];
         this.displayModeOptions = [DisplayMode.Grid];
-        this.criterionOptions = [new NoneCriterionOption()];
+        this.criterionOptions = [
+          new NoneCriterionOption(),
+          new ParentStudiosCriterionOption(),
+        ];
         break;
       case FilterMode.Movies:
         this.sortBy = "name";
@@ -173,8 +184,11 @@ export class ListFilterModel {
       case FilterMode.Galleries:
         this.sortBy = "path";
         this.sortByOptions = ["path"];
-        this.displayModeOptions = [DisplayMode.List];
-        this.criterionOptions = [new NoneCriterionOption()];
+        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
+        this.criterionOptions = [
+          new NoneCriterionOption(),
+          new GalleryIsMissingCriterionOption(),
+        ];
         break;
       case FilterMode.SceneMarkers:
         this.sortBy = "title";
@@ -574,6 +588,39 @@ export class ListFilterModel {
         // no default
       }
     });
+    return result;
+  }
+
+  public makeStudioFilter(): StudioFilterType {
+    const result: StudioFilterType = {};
+    this.criteria.forEach((criterion) => {
+      switch (criterion.type) {
+        case "parent_studios": {
+          const studCrit = criterion as ParentStudiosCriterion;
+          result.parents = {
+            value: studCrit.value.map((studio) => studio.id),
+            modifier: studCrit.modifier,
+          };
+          break;
+        }
+        // no default
+      }
+    });
+
+    return result;
+  }
+
+  public makeGalleryFilter(): GalleryFilterType {
+    const result: GalleryFilterType = {};
+    this.criteria.forEach((criterion) => {
+      switch (criterion.type) {
+        case "galleryIsMissing":
+          result.is_missing = (criterion as IsMissingCriterion).value;
+          break;
+        // no default
+      }
+    });
+
     return result;
   }
 }

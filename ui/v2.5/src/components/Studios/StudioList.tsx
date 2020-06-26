@@ -5,9 +5,19 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { StudioCard } from "./StudioCard";
 
-export const StudioList: React.FC = () => {
+interface IStudioList {
+  fromParent?: boolean;
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+}
+
+export const StudioList: React.FC<IStudioList> = ({
+  fromParent,
+  filterHook,
+}) => {
   const listData = useStudiosList({
     renderContent,
+    subComponent: fromParent,
+    filterHook,
   });
 
   function renderContent(
@@ -20,7 +30,11 @@ export const StudioList: React.FC = () => {
       return (
         <div className="row px-xl-5 justify-content-center">
           {result.data.findStudios.studios.map((studio) => (
-            <StudioCard key={studio.id} studio={studio} />
+            <StudioCard
+              key={studio.id}
+              studio={studio}
+              hideParent={fromParent}
+            />
           ))}
         </div>
       );

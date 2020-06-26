@@ -1,7 +1,7 @@
-import { Tab, Tabs } from "react-bootstrap";
+import { Tab, Nav, Dropdown } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
-import { useParams, useLocation, useHistory } from "react-router-dom";
+import { useParams, useLocation, useHistory, Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindScene,
@@ -9,27 +9,30 @@ import {
   useSceneDecrementO,
   useSceneResetO,
   useIsSceneStreamable,
+  useSceneGenerateScreenshot,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import jwplayer from "src/utils/jwplayer";
-import { ScenePerformerPanel } from "./ScenePerformerPanel";
+import { TextUtils, JWUtils } from "src/utils";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
-import { SceneOperationsPanel } from "./SceneOperationsPanel";
 import { SceneMoviePanel } from "./SceneMoviePanel";
+import { DeleteScenesDialog } from "../DeleteScenesDialog";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
+  const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
+
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
   const {
@@ -41,6 +44,8 @@ export const Scene: React.FC = () => {
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
   const [resetO] = useSceneResetO(scene?.id ?? "0");
+
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
@@ -105,6 +110,159 @@ export const Scene: React.FC = () => {
     setTimestamp(marker.seconds);
   }
 
+  async function onGenerateScreenshot(at?: number) {
+    if (!scene) {
+      return;
+    }
+
+    await generateScreenshot({
+      variables: {
+        id: scene.id,
+        at,
+      },
+    });
+    Toast.success({ content: "Generating screenshot" });
+  }
+
+  function onDeleteDialogClosed(deleted: boolean) {
+    setIsDeleteAlertOpen(false);
+    if (deleted) {
+      history.push("/scenes");
+    }
+  }
+
+  function maybeRenderDeleteDialog() {
+    if (isDeleteAlertOpen && scene) {
+      return (
+        <DeleteScenesDialog selected={[scene]} onClose={onDeleteDialogClosed} />
+      );
+    }
+  }
+
+  function renderOperations() {
+    return (
+      <Dropdown>
+        <Dropdown.Toggle
+          variant="secondary"
+          id="operation-menu"
+          className="minimal"
+          title="Operations"
+        >
+          <Icon icon="ellipsis-v" />
+        </Dropdown.Toggle>
+        <Dropdown.Menu className="bg-secondary text-white">
+          <Dropdown.Item
+            key="generate-screenshot"
+            className="bg-secondary text-white"
+            onClick={() =>
+              onGenerateScreenshot(JWUtils.getPlayer().getPosition())
+            }
+          >
+            Generate thumbnail from current
+          </Dropdown.Item>
+          <Dropdown.Item
+            key="generate-default"
+            className="bg-secondary text-white"
+            onClick={() => onGenerateScreenshot()}
+          >
+            Generate default thumbnail
+          </Dropdown.Item>
+          <Dropdown.Item
+            key="delete-scene"
+            className="bg-secondary text-white"
+            onClick={() => setIsDeleteAlertOpen(true)}
+          >
+            Delete Scene
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  }
+
+  function renderTabs() {
+    if (!scene) {
+      return;
+    }
+
+    return (
+      <Tab.Container defaultActiveKey="scene-details-panel">
+        <div>
+          <Nav variant="tabs" className="mr-auto">
+            <Nav.Item>
+              <Nav.Link eventKey="scene-details-panel">Details</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-markers-panel">Markers</Nav.Link>
+            </Nav.Item>
+            {scene.movies.length > 0 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-movie-panel">Movies</Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
+            )}
+            {scene.gallery ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-gallery-panel">Gallery</Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
+            )}
+            <Nav.Item>
+              <Nav.Link eventKey="scene-file-info-panel">File Info</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="scene-edit-panel">Edit</Nav.Link>
+            </Nav.Item>
+            <Nav.Item className="ml-auto">
+              <OCounterButton
+                loading={oLoading}
+                value={scene.o_counter || 0}
+                onIncrement={onIncrementClick}
+                onDecrement={onDecrementClick}
+                onReset={onResetClick}
+              />
+            </Nav.Item>
+            <Nav.Item>{renderOperations()}</Nav.Item>
+          </Nav>
+        </div>
+
+        <Tab.Content>
+          <Tab.Pane eventKey="scene-details-panel" title="Details">
+            <SceneDetailPanel scene={scene} />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-markers-panel" title="Markers">
+            <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-movie-panel" title="Movies">
+            <SceneMoviePanel scene={scene} />
+          </Tab.Pane>
+          {scene.gallery ? (
+            <Tab.Pane eventKey="scene-gallery-panel" title="Gallery">
+              <GalleryViewer gallery={scene.gallery} />
+            </Tab.Pane>
+          ) : (
+            ""
+          )}
+          <Tab.Pane
+            className="file-info-panel"
+            eventKey="scene-file-info-panel"
+            title="File Info"
+          >
+            <SceneFileInfoPanel scene={scene} />
+          </Tab.Pane>
+          <Tab.Pane eventKey="scene-edit-panel" title="Edit">
+            <SceneEditPanel
+              scene={scene}
+              onUpdate={(newScene) => setScene(newScene)}
+              onDelete={() => setIsDeleteAlertOpen(true)}
+            />
+          </Tab.Pane>
+        </Tab.Content>
+      </Tab.Container>
+    );
+  }
+
   if (loading || streamableLoading || !scene || !data?.findScene) {
     return <LoadingIndicator />;
   }
@@ -113,70 +271,36 @@ export const Scene: React.FC = () => {
   if (streamableError) return <div>{streamableError.message}</div>;
 
   return (
-    <>
-      <ScenePlayer
-        scene={scene}
-        timestamp={timestamp}
-        autoplay={autoplay}
-        streamable={isStreamable}
-      />
-      <div id="scene-details-container" className="col col-sm-9 m-sm-auto">
-        <div className="float-right">
-          <OCounterButton
-            loading={oLoading}
-            value={scene.o_counter || 0}
-            onIncrement={onIncrementClick}
-            onDecrement={onDecrementClick}
-            onReset={onResetClick}
-          />
+    <div className="row">
+      {maybeRenderDeleteDialog()}
+      <div className="scene-tabs order-xl-first order-last">
+        <div className="d-none d-xl-block">
+          {scene.studio && (
+            <h1 className="text-center">
+              <Link to={`/studios/${scene.studio.id}`}>
+                <img
+                  src={scene.studio.image_path ?? ""}
+                  alt={`${scene.studio.name} logo`}
+                  className="studio-logo"
+                />
+              </Link>
+            </h1>
+          )}
+          <h3 className="scene-header">
+            {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
+          </h3>
         </div>
-        <Tabs id="scene-tabs" mountOnEnter>
-          <Tab eventKey="scene-details-panel" title="Details">
-            <SceneDetailPanel scene={scene} />
-          </Tab>
-          <Tab eventKey="scene-markers-panel" title="Markers">
-            <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} />
-          </Tab>
-          {scene.performers.length > 0 ? (
-            <Tab eventKey="scene-performer-panel" title="Performers">
-              <ScenePerformerPanel scene={scene} />
-            </Tab>
-          ) : (
-            ""
-          )}
-          {scene.movies.length > 0 ? (
-            <Tab eventKey="scene-movie-panel" title="Movies">
-              <SceneMoviePanel scene={scene} />
-            </Tab>
-          ) : (
-            ""
-          )}
-          {scene.gallery ? (
-            <Tab eventKey="scene-gallery-panel" title="Gallery">
-              <GalleryViewer gallery={scene.gallery} />
-            </Tab>
-          ) : (
-            ""
-          )}
-          <Tab
-            className="file-info-panel"
-            eventKey="scene-file-info-panel"
-            title="File Info"
-          >
-            <SceneFileInfoPanel scene={scene} />
-          </Tab>
-          <Tab eventKey="scene-edit-panel" title="Edit">
-            <SceneEditPanel
-              scene={scene}
-              onUpdate={(newScene) => setScene(newScene)}
-              onDelete={() => history.push("/scenes")}
-            />
-          </Tab>
-          <Tab eventKey="scene-operations-panel" title="Operations">
-            <SceneOperationsPanel scene={scene} />
-          </Tab>
-        </Tabs>
+        {renderTabs()}
       </div>
-    </>
+      <div className="scene-player-container">
+        <ScenePlayer
+          className="w-100 m-sm-auto no-gutter"
+          scene={scene}
+          timestamp={timestamp}
+          autoplay={autoplay}
+          streamable={isStreamable}
+        />
+      </div>
+    </div>
   );
 };

@@ -22,7 +22,7 @@ type Query {
   """Find a studio by ID"""
   findStudio(id: ID!): Studio
   """A function which queries Studio objects"""
-  findStudios(filter: FindFilterType): FindStudiosResultType!
+  findStudios(studio_filter: StudioFilterType, filter: FindFilterType): FindStudiosResultType!
 
    """Find a movie by ID"""
   findMovie(id: ID!): Movie
@@ -30,7 +30,7 @@ type Query {
   findMovies(movie_filter: MovieFilterType, filter: FindFilterType): FindMoviesResultType!
 
   findGallery(id: ID!): Gallery
-  findGalleries(filter: FindFilterType): FindGalleriesResultType!
+  findGalleries(gallery_filter: GalleryFilterType, filter: FindFilterType): FindGalleriesResultType!
 
   findTag(id: ID!): Tag
 
@@ -107,6 +107,7 @@ type Mutation {
   sceneUpdate(input: SceneUpdateInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!
+  scenesDestroy(input: ScenesDestroyInput!): Boolean!
   scenesUpdate(input: [SceneUpdateInput!]!): [Scene]
 
   """Increments the o-counter for a scene. Returns the new value"""

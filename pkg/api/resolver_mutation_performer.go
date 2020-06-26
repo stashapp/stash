@@ -35,7 +35,6 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	// Populate a new performer from the input
 	currentTime := time.Now()
 	newPerformer := models.Performer{
-		Image:     imageData,
 		Checksum:  checksum,
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
@@ -103,6 +102,14 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		return nil, err
 	}
 
+	// update image table
+	if len(imageData) > 0 {
+		if err := qb.UpdatePerformerImage(performer.ID, imageData, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
 	// Commit
 	if err := tx.Commit(); err != nil {
 		return nil, err
@@ -118,12 +125,13 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		ID:        performerID,
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
+	var imageData []byte
+	var err error
 	if input.Image != nil {
-		_, imageData, err := utils.ProcessBase64Image(*input.Image)
+		_, imageData, err = utils.ProcessBase64Image(*input.Image)
 		if err != nil {
 			return nil, err
 		}
-		updatedPerformer.Image = imageData
 	}
 	if input.Name != nil {
 		// generate checksum from performer name rather than image
@@ -190,6 +198,14 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
+	}
+
+	// update image table
+	if len(imageData) > 0 {
+		if err := qb.UpdatePerformerImage(performer.ID, imageData, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 
 	// Commit

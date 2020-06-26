@@ -239,6 +239,29 @@ func getIntCriterionWhereClause(column string, input IntCriterionInput) (string,
 	return column + " " + binding, count
 }
 
+// returns where clause and having clause
+func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, foreignFK string, criterion *MultiCriterionInput) (string, string) {
+	whereClause := ""
+	havingClause := ""
+	if criterion.Modifier == CriterionModifierIncludes {
+		// includes any of the provided ids
+		whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierIncludesAll {
+		// includes all of the provided ids
+		whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
+		havingClause = "count(distinct " + foreignTable + ".id) IS " + strconv.Itoa(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierExcludes {
+		// excludes all of the provided ids
+		if joinTable != "" {
+			whereClause = "not exists (select " + joinTable + "." + primaryFK + " from " + joinTable + " where " + joinTable + "." + primaryFK + " = " + primaryTable + ".id and " + joinTable + "." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
+		} else {
+			whereClause = "not exists (select s.id from " + primaryTable + " as s where s.id = " + primaryTable + ".id and s." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
+		}
+	}
+
+	return whereClause, havingClause
+}
+
 func runIdsQuery(query string, args []interface{}) ([]int, error) {
 	var result []struct {
 		Int int `db:"id"`
@@ -394,4 +417,32 @@ func sqlGenKeys(i interface{}, partial bool) string {
 		}
 	}
 	return strings.Join(query, ", ")
+}
+
+func getImage(tx *sqlx.Tx, query string, args ...interface{}) ([]byte, error) {
+	var rows *sqlx.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.Queryx(query, args...)
+	} else {
+		rows, err = database.DB.Queryx(query, args...)
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ret []byte
+	if rows.Next() {
+		if err := rows.Scan(&ret); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

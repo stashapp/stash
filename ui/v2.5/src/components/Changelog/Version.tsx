@@ -49,7 +49,7 @@ const Version: React.FC<IVersionProps> = ({
       </Card.Header>
       <Card.Body>
         <Collapse in={open}>
-          <div className="changelog-version-body">{children}</div>
+          <div className="changelog-version-body markdown">{children}</div>
         </Collapse>
       </Card.Body>
     </Card>
