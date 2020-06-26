@@ -5,6 +5,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   cachePath
   maxTranscodeSize
   maxStreamingTranscodeSize
+  forceHevc
   username
   password
   maxSessionAge

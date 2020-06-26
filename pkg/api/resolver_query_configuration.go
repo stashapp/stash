@@ -48,6 +48,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		CachePath:                 config.GetCachePath(),
 		MaxTranscodeSize:          &maxTranscodeSize,
 		MaxStreamingTranscodeSize: &maxStreamingTranscodeSize,
+		ForceHevc:                 config.GetForceHEVC(),
 		Username:                  config.GetUsername(),
 		Password:                  config.GetPasswordHash(),
 		MaxSessionAge:             config.GetMaxSessionAge(),

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 )
 
 type Container string
@@ -192,6 +193,10 @@ func IsValidCombo(codecName string, format Container, supportedVideoCodecs []str
 func IsStreamable(supportedVideoCodecs []string, videoCodec string, audioCodec AudioCodec, container Container) bool {
 	if len(supportedVideoCodecs) == 0 {
 		supportedVideoCodecs = DefaultSupportedCodecs
+	}
+
+	if config.GetForceHEVC() {
+		supportedVideoCodecs = append(supportedVideoCodecs, Hevc)
 	}
 
 	// check if the video codec matches the supported codecs
