@@ -41,7 +41,6 @@ export const Scene: React.FC = () => {
 
   const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
   
-  const [isHelpOpen, setIsHelpOpen] = useState<boolean>(false);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   const queryParams = queryString.parse(location.search);
@@ -49,16 +48,18 @@ export const Scene: React.FC = () => {
 
   // set up hotkeys
   useEffect(() => {
+    Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
     Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
-    Mousetrap.bind("m", () => setActiveTabKey("scene-markers-panel"));
+    Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
+    Mousetrap.bind("f", () => setActiveTabKey("scene-file-info-panel"));
     Mousetrap.bind("o", () => onIncrementClick());
-    Mousetrap.bind("?", () => setIsHelpOpen(true));
 
     return () => {
+      Mousetrap.unbind("a");
       Mousetrap.unbind("e");
-      Mousetrap.unbind("m");
+      Mousetrap.unbind("k");
+      Mousetrap.unbind("f");
       Mousetrap.unbind("o");
-      Mousetrap.unbind("?");
     }
   });
 
