@@ -122,7 +122,7 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
             id="manual-tabs"
           >
             <Row>
-              <Col lg={3} className="mb-3 mb-lg-0">
+              <Col lg={3} className="mb-3 mb-lg-0 manual-toc">
                 <Nav variant="pills" className="flex-column">
                   {content.map((c) => {
                     return (
