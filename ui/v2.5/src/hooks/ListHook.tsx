@@ -69,6 +69,11 @@ interface IListHookOptions<T, E> {
     selected: E[],
     onClose: (confirmed: boolean) => void
   ) => JSX.Element | undefined;
+  addKeybinds?: (
+    result: T,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) => () => void;
 }
 
 interface IDataItem {
@@ -140,6 +145,11 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       onChangePage(1);
     });
 
+    let unbindExtras: () => void;
+    if (options.addKeybinds) {
+      unbindExtras = options.addKeybinds(result, filter, selectedIds);
+    }
+
     return () => {
       Mousetrap.unbind("right");
       Mousetrap.unbind("left");
@@ -147,6 +157,10 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       Mousetrap.unbind("shift+left");
       Mousetrap.unbind("ctrl+end");
       Mousetrap.unbind("ctrl+home");
+
+      if (unbindExtras) {
+        unbindExtras();
+      }
     }
   });
 
