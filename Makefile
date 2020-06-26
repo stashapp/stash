@@ -14,7 +14,14 @@ else
   SET := export
 endif
 
-LDFLAGS :=
+# set LDFLAGS environment variable to any extra ldflags required
+# set OUTPUT to generate a specific binary name
+
+LDFLAGS := $(LDFLAGS)
+ifdef OUTPUT
+  OUTPUT := -o $(OUTPUT)
+  $(info $(OUTPUT))
+endif
 
 .PHONY: release pre-build install clean 
 
@@ -24,14 +31,14 @@ pre-build:
 	$(eval DATE := $(shell go run scripts/getDate.go))
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
 	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest_develop))
-	$(eval LDFLAGS := -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
 
 build: pre-build
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -mod=vendor -v -ldflags "$(LDFLAGS)"
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build $(OUTPUT) -mod=vendor -v -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
 # consider -trimpath in go build if we move to go 1.13+
-build-release: LDFLAGS += -s -w
+build-release: EXTRA_LDFLAGS := -s -w
 build-release: build
 
 install:
@@ -112,6 +119,7 @@ ui-validate:
 # rebuilding the UI
 .PHONY: packr
 packr:
+	env
 	packr2
 
 # runs all of the tests and checks required for a PR to be accepted
