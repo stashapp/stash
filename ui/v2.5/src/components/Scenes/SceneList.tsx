@@ -12,7 +12,8 @@ import { DisplayMode } from "src/models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
-import { SceneSelectedOptions } from "./SceneSelectedOptions";
+import { EditScenesDialog } from "./EditScenesDialog";
+import { DeleteScenesDialog } from "./DeleteScenesDialog";
 
 interface ISceneList {
   subComponent?: boolean;
@@ -35,7 +36,8 @@ export const SceneList: React.FC<ISceneList> = ({
     zoomable: true,
     otherOperations,
     renderContent,
-    renderSelectedOptions,
+    renderEditDialog: renderEditScenesDialog,
+    renderDeleteDialog: renderDeleteScenesDialog,
     subComponent,
     filterHook,
   });
@@ -66,32 +68,24 @@ export const SceneList: React.FC<ISceneList> = ({
     }
   }
 
-  function renderSelectedOptions(
-    result: FindScenesQueryResult,
-    selectedIds: Set<string>
+  function renderEditScenesDialog(
+    selectedScenes: SlimSceneDataFragment[],
+    onClose: (applied: boolean) => void
   ) {
-    // find the selected items from the ids
-    if (!result.data || !result.data.findScenes) {
-      return undefined;
-    }
-
-    const { scenes } = result.data.findScenes;
-
-    const selectedScenes: SlimSceneDataFragment[] = [];
-    selectedIds.forEach((id) => {
-      const scene = scenes.find((s) => s.id === id);
-
-      if (scene) {
-        selectedScenes.push(scene);
-      }
-    });
-
     return (
       <>
-        <SceneSelectedOptions
-          selected={selectedScenes}
-          onScenesUpdated={() => {}}
-        />
+        <EditScenesDialog selected={selectedScenes} onClose={onClose} />
+      </>
+    );
+  }
+
+  function renderDeleteScenesDialog(
+    selectedScenes: SlimSceneDataFragment[],
+    onClose: (confirmed: boolean) => void
+  ) {
+    return (
+      <>
+        <DeleteScenesDialog selected={selectedScenes} onClose={onClose} />
       </>
     );
   }

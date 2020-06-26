@@ -33,6 +33,7 @@ export const useFindGalleries = (filter: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
     variables: {
       filter: filter.makeFindFilter(),
+      gallery_filter: filter.makeGalleryFilter(),
     },
   });
 
@@ -250,6 +251,12 @@ export const useSceneResetO = (id: string) =>
 
 export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
   GQL.useSceneDestroyMutation({
+    variables: input,
+    update: () => invalidateQueries(sceneMutationImpactedQueries),
+  });
+
+export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
+  GQL.useScenesDestroyMutation({
     variables: input,
     update: () => invalidateQueries(sceneMutationImpactedQueries),
   });

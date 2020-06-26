@@ -24,7 +24,7 @@ const performersNameCase = 3
 const performersNameNoCase = 2
 const moviesNameCase = 2
 const moviesNameNoCase = 1
-const totalGalleries = 1
+const totalGalleries = 2
 const tagsNameNoCase = 2
 const tagsNameCase = 5
 const studiosNameCase = 4
@@ -338,9 +338,8 @@ func createMovies(tx *sqlx.Tx, n int, o int) error {
 
 		name = getMovieStringValue(index, name)
 		movie := models.Movie{
-			Name:       sql.NullString{String: name, Valid: true},
-			FrontImage: []byte(models.DefaultMovieImage),
-			Checksum:   utils.MD5FromString(name),
+			Name:     sql.NullString{String: name, Valid: true},
+			Checksum: utils.MD5FromString(name),
 		}
 
 		created, err := mqb.Create(movie, tx)
@@ -385,8 +384,6 @@ func createPerformers(tx *sqlx.Tx, n int, o int) error {
 		performer := models.Performer{
 			Name:     sql.NullString{String: getPerformerStringValue(index, name), Valid: true},
 			Checksum: getPerformerStringValue(i, checksumField),
-			// just use movie image
-			Image:    []byte(models.DefaultMovieImage),
 			Favorite: sql.NullBool{Bool: getPerformerBoolValue(i), Valid: true},
 		}
 
@@ -450,7 +447,6 @@ func createStudio(tx *sqlx.Tx, name string, parentID *int64) (*models.Studio, er
 	sqb := models.NewStudioQueryBuilder()
 	studio := models.Studio{
 		Name:     sql.NullString{String: name, Valid: true},
-		Image:    []byte(models.DefaultStudioImage),
 		Checksum: utils.MD5FromString(name),
 	}
 

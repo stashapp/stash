@@ -6,6 +6,14 @@ import { V010, V011, V020, V021, V030 } from "./versions";
 const Changelog: React.FC = () => {
   const [{ data, loading }, setOpenState] = useChangelogStorage();
 
+  const stashVersion = process.env.REACT_APP_STASH_VERSION;
+  const buildTime = process.env.REACT_APP_DATE;
+
+  let buildDate;
+  if (buildTime) {
+    buildDate = buildTime.substring(0, buildTime.indexOf(" "));
+  }
+
   if (loading) return <></>;
 
   const openState = data?.versions ?? {};
@@ -22,7 +30,8 @@ const Changelog: React.FC = () => {
     <>
       <h1 className="mb-4">Changelog:</h1>
       <Version
-        version="v0.3.0"
+        version={stashVersion || "v0.3.0"}
+        date={buildDate}
         openState={openState}
         setOpenState={setVersionOpenState}
         defaultOpen

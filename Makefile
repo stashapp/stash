@@ -1,14 +1,27 @@
-ifeq ($(OS),Windows_NT)
+IS_WIN =
+ifeq (${SHELL}, sh.exe)
+  IS_WIN = true
+endif
+ifeq (${SHELL}, cmd)
+  IS_WIN = true
+endif
+
+ifdef IS_WIN
   SEPARATOR := &&
   SET := set
+else 
+  SEPARATOR := ;
+  SET := export
 endif
 
 release: generate ui build
 
-build:
+pre-build:
 	$(eval DATE := $(shell go run scripts/getDate.go))
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
 	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest_develop))
+
+build: pre-build
 	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -mod=vendor -v -ldflags "-X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)'"
 
 install:
@@ -58,11 +71,25 @@ it:
 pre-ui:
 	cd ui/v2.5 && yarn install --frozen-lockfile
 
-.PHONY: ui
-ui:
+.PHONY: ui-only
+ui-only: pre-build
+	$(SET) REACT_APP_DATE="$(DATE)" $(SEPARATOR) \
+	$(SET) REACT_APP_GITHASH=$(GITHASH) $(SEPARATOR) \
+	$(SET) REACT_APP_STASH_VERSION=$(STASH_VERSION) $(SEPARATOR) \
 	cd ui/v2.5 && yarn build
+
+.PHONY: ui
+ui: ui-only
 	packr2
 
+.PHONY: ui-start
+ui-start: pre-build
+	$(SET) REACT_APP_DATE="$(DATE)" $(SEPARATOR) \
+	$(SET) REACT_APP_GITHASH=$(GITHASH) $(SEPARATOR) \
+	$(SET) REACT_APP_STASH_VERSION=$(STASH_VERSION) $(SEPARATOR) \
+	cd ui/v2.5 && yarn start
+
+.PHONY: fmt-ui
 fmt-ui:
 	cd ui/v2.5 && yarn format
 

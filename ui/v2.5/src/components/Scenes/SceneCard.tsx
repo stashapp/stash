@@ -203,7 +203,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       return (
         <>
           <hr />
-          <ButtonGroup className="scene-popovers">
+          <ButtonGroup className="card-popovers">
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderMoviePopoverButton()}
@@ -243,7 +243,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     >
       <Form.Control
         type="checkbox"
-        className="scene-card-check d-none d-sm-block"
+        className="scene-card-check"
         checked={props.selected}
         onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
         onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {

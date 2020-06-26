@@ -1,36 +1,38 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Form, Col, Row } from "react-bootstrap";
 import _ from "lodash";
 import { useBulkSceneUpdate } from "src/core/StashService";
 import * as GQL from "src/core/generated-graphql";
-import { StudioSelect, LoadingIndicator } from "src/components/Shared";
+import { StudioSelect, Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
+import { FormUtils } from "src/utils";
 import MultiSet from "../Shared/MultiSet";
+import { RatingStars } from "./SceneDetails/RatingStars";
 
 interface IListOperationProps {
   selected: GQL.SlimSceneDataFragment[];
-  onScenesUpdated: () => void;
+  onClose: (applied: boolean) => void;
 }
 
-export const SceneSelectedOptions: React.FC<IListOperationProps> = (
+export const EditScenesDialog: React.FC<IListOperationProps> = (
   props: IListOperationProps
 ) => {
   const Toast = useToast();
-  const [rating, setRating] = useState<string>("");
+  const [rating, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
   const [performerMode, setPerformerMode] = React.useState<
     GQL.BulkUpdateIdMode
-  >(GQL.BulkUpdateIdMode.Add);
+  >(GQL.BulkUpdateIdMode.Set);
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
-    GQL.BulkUpdateIdMode.Add
+    GQL.BulkUpdateIdMode.Set
   );
   const [tagIds, setTagIds] = useState<string[]>();
 
   const [updateScenes] = useBulkSceneUpdate(getSceneInput());
 
   // Network state
-  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   function makeBulkUpdateIds(
     ids: string[],
@@ -56,7 +58,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     };
 
     // if rating is undefined
-    if (rating === "") {
+    if (rating === undefined) {
       // and all scenes have the same rating, then we are unsetting the rating.
       if (aggregateRating) {
         // an undefined rating is ignored in the server, so set it to 0 instead
@@ -65,7 +67,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
       // otherwise not setting the rating
     } else {
       // if rating is set, then we are setting the rating for all
-      sceneInput.rating = Number.parseInt(rating, 10);
+      sceneInput.rating = rating;
     }
 
     // if studioId is undefined
@@ -121,15 +123,15 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
   }
 
   async function onSave() {
-    setIsLoading(true);
+    setIsUpdating(true);
     try {
       await updateScenes();
       Toast.success({ content: "Updated scenes" });
+      props.onClose(true);
     } catch (e) {
       Toast.error(e);
     }
-    setIsLoading(false);
-    props.onScenesUpdated();
+    setIsUpdating(false);
   }
 
   function getRating(state: GQL.SlimSceneDataFragment[]) {
@@ -211,14 +213,14 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
 
   useEffect(() => {
     const state = props.selected;
-    let updateRating = "";
+    let updateRating: number | undefined;
     let updateStudioID: string | undefined;
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
     let first = true;
 
     state.forEach((scene: GQL.SlimSceneDataFragment) => {
-      const sceneRating = scene.rating?.toString() ?? "";
+      const sceneRating = scene.rating;
       const sceneStudioID = scene?.studio?.id;
       const scenePerformerIDs = (scene.performers ?? [])
         .map((p) => p.id)
@@ -226,14 +228,14 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
       const sceneTagIDs = (scene.tags ?? []).map((p) => p.id).sort();
 
       if (first) {
-        updateRating = sceneRating;
+        updateRating = sceneRating ?? undefined;
         updateStudioID = sceneStudioID;
         updatePerformerIds = scenePerformerIDs;
         updateTagIds = sceneTagIDs;
         first = false;
       } else {
         if (sceneRating !== updateRating) {
-          updateRating = "";
+          updateRating = undefined;
         }
         if (sceneStudioID !== updateStudioID) {
           updateStudioID = undefined;
@@ -256,8 +258,6 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     if (tagMode === GQL.BulkUpdateIdMode.Set) {
       setTagIds(updateTagIds);
     }
-
-    setIsLoading(false);
   }, [props.selected, performerMode, tagMode]);
 
   function renderMultiSelect(
@@ -277,6 +277,7 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     return (
       <MultiSet
         type={type}
+        disabled={isUpdating}
         onUpdate={(items) => {
           const itemIDs = items.map((i) => i.id);
           switch (type) {
@@ -304,54 +305,60 @@ export const SceneSelectedOptions: React.FC<IListOperationProps> = (
     );
   }
 
-  if (isLoading) return <LoadingIndicator />;
-
   function render() {
     return (
-      <div className="operation-container">
-        <Form.Group
-          controlId="rating"
-          className="operation-item rating-operation"
-        >
-          <Form.Label>Rating</Form.Label>
-          <Form.Control
-            as="select"
-            className="btn-secondary"
-            value={rating}
-            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-              setRating(event.currentTarget.value)
-            }
-          >
-            {["", "1", "2", "3", "4", "5"].map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </Form.Control>
-        </Form.Group>
+      <Modal
+        show
+        icon="pencil-alt"
+        header="Edit Scenes"
+        accept={{ onClick: onSave, text: "Apply" }}
+        cancel={{
+          onClick: () => props.onClose(false),
+          text: "Cancel",
+          variant: "secondary",
+        }}
+        isRunning={isUpdating}
+      >
+        <Form>
+          <Form.Group controlId="rating" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Rating",
+            })}
+            <Col xs={9}>
+              <RatingStars
+                value={rating}
+                onSetRating={(value) => setRating(value)}
+                disabled={isUpdating}
+              />
+            </Col>
+          </Form.Group>
 
-        <Form.Group controlId="studio" className="operation-item">
-          <Form.Label>Studio</Form.Label>
-          <StudioSelect
-            onSelect={(items) => setStudioId(items[0]?.id)}
-            ids={studioId ? [studioId] : []}
-          />
-        </Form.Group>
+          <Form.Group controlId="studio" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Studio",
+            })}
+            <Col xs={9}>
+              <StudioSelect
+                onSelect={(items) =>
+                  setStudioId(items.length > 0 ? items[0]?.id : undefined)
+                }
+                ids={studioId ? [studioId] : []}
+                isDisabled={isUpdating}
+              />
+            </Col>
+          </Form.Group>
 
-        <Form.Group className="operation-item" controlId="performers">
-          <Form.Label>Performers</Form.Label>
-          {renderMultiSelect("performers", performerIds)}
-        </Form.Group>
+          <Form.Group controlId="performers">
+            <Form.Label>Performers</Form.Label>
+            {renderMultiSelect("performers", performerIds)}
+          </Form.Group>
 
-        <Form.Group className="operation-item" controlId="performers">
-          <Form.Label>Tags</Form.Label>
-          {renderMultiSelect("tags", tagIds)}
-        </Form.Group>
-
-        <Button variant="primary" onClick={onSave} className="apply-operation">
-          Apply
-        </Button>
-      </div>
+          <Form.Group controlId="performers">
+            <Form.Label>Tags</Form.Label>
+            {renderMultiSelect("tags", tagIds)}
+          </Form.Group>
+        </Form>
+      </Modal>
     );
   }
 
