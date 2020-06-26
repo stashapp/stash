@@ -121,17 +121,24 @@ export const MainNavbar: React.FC = () => {
     };
   }, [expanded]);
 
+  function goto(page: string) {
+    history.push(page);
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  }
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("?", () => setShowManual(!showManual));
-    Mousetrap.bind("g s", () => history.push("/scenes"));
-    Mousetrap.bind("g v", () => history.push("/movies"));
-    Mousetrap.bind("g k", () => history.push("/scenes/markers"));
-    Mousetrap.bind("g l", () => history.push("/galleries"));
-    Mousetrap.bind("g p", () => history.push("/performers"));
-    Mousetrap.bind("g u", () => history.push("/studios"));
-    Mousetrap.bind("g t", () => history.push("/tags"));
-    Mousetrap.bind("g z", () => history.push("/settings"));
+    Mousetrap.bind("g s", () => goto("/scenes"));
+    Mousetrap.bind("g v", () => goto("/movies"));
+    Mousetrap.bind("g k", () => goto("/scenes/markers"));
+    Mousetrap.bind("g l", () => goto("/galleries"));
+    Mousetrap.bind("g p", () => goto("/performers"));
+    Mousetrap.bind("g u", () => goto("/studios"));
+    Mousetrap.bind("g t", () => goto("/tags"));
+    Mousetrap.bind("g z", () => goto("/settings"));
 
     return () => {
       Mousetrap.unbind("?");
