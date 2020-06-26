@@ -20,7 +20,6 @@ endif
 LDFLAGS := $(LDFLAGS)
 ifdef OUTPUT
   OUTPUT := -o $(OUTPUT)
-  $(info $(OUTPUT))
 endif
 
 .PHONY: release pre-build install clean 
@@ -28,7 +27,7 @@ endif
 release: generate ui build-release
 
 pre-build:
-	$(eval DATE := $(shell go run scripts/getDate.go))
+	$(eval DATE := $(shell go run scripts/getDate.go -mod=vendor))
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
 	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest_develop))
 
