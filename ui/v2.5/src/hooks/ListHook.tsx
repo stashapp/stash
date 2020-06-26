@@ -112,6 +112,44 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const totalCount = options.getCount(result);
   const items = options.getData(result);
 
+  useEffect(() => {
+    Mousetrap.bind("right", () => {
+      const maxPage = totalCount / filter.itemsPerPage;
+      if (filter.currentPage < maxPage) {
+        onChangePage(filter.currentPage + 1);
+      }
+    });
+    Mousetrap.bind("left", () => {
+      if (filter.currentPage > 1) {
+        onChangePage(filter.currentPage - 1);
+      }
+    });
+
+    Mousetrap.bind("shift+right", () => {
+      const maxPage = totalCount / filter.itemsPerPage + 1;
+      onChangePage(Math.min(maxPage, filter.currentPage + 10));
+    });
+    Mousetrap.bind("shift+left", () => {
+      onChangePage(Math.max(1, filter.currentPage - 10));
+    });
+    Mousetrap.bind("ctrl+end", () => {
+      const maxPage = totalCount / filter.itemsPerPage + 1;
+      onChangePage(maxPage);
+    });
+    Mousetrap.bind("ctrl+home", () => {
+      onChangePage(1);
+    });
+
+    return () => {
+      Mousetrap.unbind("right");
+      Mousetrap.unbind("left");
+      Mousetrap.unbind("shift+right");
+      Mousetrap.unbind("shift+left");
+      Mousetrap.unbind("ctrl+end");
+      Mousetrap.unbind("ctrl+home");
+    }
+  });
+
   const updateInterfaceConfig = useCallback(
     (updatedFilter: ListFilterModel) => {
       setInterfaceState((config) => {
