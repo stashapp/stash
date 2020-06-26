@@ -128,6 +128,25 @@ export const MainNavbar: React.FC = () => {
     }
   }
 
+  const newPath =
+    location.pathname === "/performers"
+      ? "/performers/new"
+      : location.pathname === "/studios"
+      ? "/studios/new"
+      : location.pathname === "/movies"
+      ? "/movies/new"
+      : null;
+  const newButton =
+    newPath === null ? (
+      ""
+    ) : (
+      <Link to={newPath}>
+        <Button variant="primary">
+          <FormattedMessage id="new" defaultMessage="New" />
+        </Button>
+      </Link>
+    );
+
   // set up hotkeys
   useEffect(() => {
     Mousetrap.bind("?", () => setShowManual(!showManual));
@@ -140,6 +159,10 @@ export const MainNavbar: React.FC = () => {
     Mousetrap.bind("g t", () => goto("/tags"));
     Mousetrap.bind("g z", () => goto("/settings"));
 
+    if (newPath) {
+      Mousetrap.bind("n", () => history.push(newPath));
+    }
+
     return () => {
       Mousetrap.unbind("?");
       Mousetrap.unbind("g s");
@@ -150,27 +173,12 @@ export const MainNavbar: React.FC = () => {
       Mousetrap.unbind("g u");
       Mousetrap.unbind("g t");
       Mousetrap.unbind("g z");
+
+      if (newPath) {
+        Mousetrap.unbind("n");
+      }
     }
   });
-
-  const path =
-    location.pathname === "/performers"
-      ? "/performers/new"
-      : location.pathname === "/studios"
-      ? "/studios/new"
-      : location.pathname === "/movies"
-      ? "/movies/new"
-      : null;
-  const newButton =
-    path === null ? (
-      ""
-    ) : (
-      <Link to={path}>
-        <Button variant="primary">
-          <FormattedMessage id="new" defaultMessage="New" />
-        </Button>
-      </Link>
-    );
 
   function maybeRenderLogout() {
     if (SessionUtils.isLoggedIn()) {
