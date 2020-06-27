@@ -1,5 +1,8 @@
 #!/bin/sh
 
+BUILD_DATE=`go run -mod=vendor scripts/getDate.go`; export BUILD_DATE
+GITHASH=`git rev-parse --short HEAD`; export GITHASH
+STASH_VERSION=`git describe --tags --exclude latest_develop`; export STASH_VERSION
 SETUP="export GO111MODULE=on; export CGO_ENABLED=1; make packr;"
 WINDOWS="echo '=== Building Windows binary ==='; GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ LDFLAGS=\"-extldflags '-static' \" OUTPUT=\"dist/stash-win.exe\" make build-release;"
 DARWIN="echo '=== Building OSX binary ==='; GOOS=darwin GOARCH=amd64 CC=o64-clang CXX=o64-clang++ OUTPUT=\"dist/stash-osx\" make build-release;"
