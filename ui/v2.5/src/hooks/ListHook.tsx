@@ -406,6 +406,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const template = (
     <div>
       <ListFilter
+        subComponent={options.subComponent}
         onFilterUpdate={updateQueryParams}
         onSelectAll={onSelectAll}
         onSelectNone={onSelectNone}

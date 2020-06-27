@@ -39,6 +39,8 @@
 | `Ctrl + End` | Go to last page of results |
 | `s a` | Select all on page |
 | `s n` | Unselect all |
+| `e` | Edit selected |
+| `d d` | Delete selected |
 
 ## Scenes page shortcuts
 
