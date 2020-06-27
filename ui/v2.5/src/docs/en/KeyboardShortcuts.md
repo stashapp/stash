@@ -70,12 +70,14 @@
 | `r 0` | Unset rating |
 | `s s` | Save Scene |
 | `d d` | Delete Scene |
-| `l` | Focus Gallery selector |
-| `u` | Focus Studio selector |
-| `p` | Focus Performers selector |
-| `v` | Focus Movies selector |
-| `t` | Focus Tags selector |
 | `Ctrl + v` | Paste Scene cover |
+
+[//]: # "Commented until implementation is dealt with"
+[//]: # "(| `l` | Focus Gallery selector |)"
+[//]: # "(| `u` | Focus Studio selector |)"
+[//]: # "(| `p` | Focus Performers selector |)"
+[//]: # "(| `v` | Focus Movies selector |)"
+[//]: # "(| `t` | Focus Tags selector |)"
 
 ## Movies Page shortcuts
 

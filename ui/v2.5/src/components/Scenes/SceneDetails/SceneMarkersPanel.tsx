@@ -7,6 +7,7 @@ import { SceneMarkerForm } from "./SceneMarkerForm";
 
 interface ISceneMarkersPanelProps {
   scene: GQL.SceneDataFragment;
+  isVisible: boolean;
   onClickMarker: (marker: GQL.SceneMarkerDataFragment) => void;
 }
 
@@ -20,10 +21,12 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
 
   // set up hotkeys
   useEffect(() => {
-    Mousetrap.bind("n", () => onOpenEditor());
+    if (props.isVisible) {
+      Mousetrap.bind("n", () => onOpenEditor());
 
-    return () => {
-      Mousetrap.unbind("n");
+      return () => {
+        Mousetrap.unbind("n");
+      }
     }
   });
 

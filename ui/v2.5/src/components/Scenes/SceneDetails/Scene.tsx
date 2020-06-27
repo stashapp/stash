@@ -244,7 +244,7 @@ export const Scene: React.FC = () => {
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-markers-panel" title="Markers">
-            <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} />
+            <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} isVisible={activeTabKey === "scene-markers-panel"} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-movie-panel" title="Movies">
             <SceneMoviePanel scene={scene} />
@@ -265,6 +265,7 @@ export const Scene: React.FC = () => {
           </Tab.Pane>
           <Tab.Pane eventKey="scene-edit-panel" title="Edit">
             <SceneEditPanel
+              isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}
               onUpdate={(newScene) => setScene(newScene)}
               onDelete={() => setIsDeleteAlertOpen(true)}
