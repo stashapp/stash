@@ -68,7 +68,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
   useEffect(() => {
     if (props.isVisible) {
-      Mousetrap.bind("s t", () => {});
       Mousetrap.bind("s s", () => { onSave() });
       Mousetrap.bind("d d", () => { props.onDelete() });
 
@@ -97,7 +96,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       } );
       
       return () => {
-        Mousetrap.unbind("s t");
         Mousetrap.unbind("s s");
         Mousetrap.unbind("d d");
 

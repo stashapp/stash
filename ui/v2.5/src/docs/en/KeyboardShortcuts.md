@@ -117,7 +117,7 @@
 | Keyboard sequence | Action |
 |-------------------|--------|
 | `a` | Details tab |
-| `s` | Scenes tab |
+| `c` | Scenes tab |
 | `e` | Edit tab |
 | `o` | Operations tab |
 | `f` | Toggle favourite |

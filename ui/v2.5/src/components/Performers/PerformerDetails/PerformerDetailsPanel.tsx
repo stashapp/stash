@@ -32,6 +32,7 @@ interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isNew?: boolean;
   isEditing?: boolean;
+  isVisible: boolean;
   onSave?: (
     performer:
       | Partial<GQL.PerformerCreateInput>
@@ -46,6 +47,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   performer,
   isNew,
   isEditing,
+  isVisible,
   onSave,
   onDelete,
   onImageChange,
@@ -161,6 +163,25 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   function onImageLoad(imageData: string) {
     setImage(imageData);
   }
+
+  // set up hotkeys
+  useEffect(() => {
+    if (isEditing && isVisible) {
+      Mousetrap.bind("s s", () => { onSave?.(getPerformerInput()) });
+      
+      if (!isNew) {
+        Mousetrap.bind("d d", () => { setIsDeleteAlertOpen(true) });
+      }
+
+      return () => {
+        Mousetrap.unbind("s s");
+        
+        if (!isNew) {
+          Mousetrap.unbind("d d");
+        }
+      };
+    }
+  });
 
   useEffect(() => {
     setImage(undefined);
