@@ -161,7 +161,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       if (unbindExtras) {
         unbindExtras();
       }
-    }
+    };
   });
 
   const updateInterfaceConfig = useCallback(

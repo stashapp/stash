@@ -90,7 +90,7 @@ export const Movie: React.FC = () => {
 
     Mousetrap.bind("e", () => setIsEditing(true));
     Mousetrap.bind("d d", () => onDelete());
-    
+
     return () => {
       if (isEditing) {
         Mousetrap.unbind("r 0");
@@ -105,7 +105,7 @@ export const Movie: React.FC = () => {
 
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
-    }
+    };
   });
 
   function updateMovieEditState(state: Partial<GQL.MovieDataFragment>) {
@@ -259,19 +259,22 @@ export const Movie: React.FC = () => {
         </BSModal.Body>
         <BSModal.Footer>
           <div>
-            <Button className="mr-2"
+            <Button
+              className="mr-2"
               variant="secondary"
               onClick={() => setIsImageAlertOpen(false)}
             >
               Cancel
             </Button>
-            
-            <Button className="mr-2"
+
+            <Button
+              className="mr-2"
               onClick={() => setImageFromClipboard(false)}
             >
               Back Image
             </Button>
-            <Button className="mr-2"
+            <Button
+              className="mr-2"
               onClick={() => setImageFromClipboard(true)}
             >
               Front Image

@@ -15,13 +15,13 @@ import { LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
+import * as Mousetrap from "mousetrap";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
-import * as Mousetrap from "mousetrap";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
 
 export const Scene: React.FC = () => {
@@ -40,28 +40,11 @@ export const Scene: React.FC = () => {
   const [resetO] = useSceneResetO(scene?.id ?? "0");
 
   const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
-  
+
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
-
-  // set up hotkeys
-  useEffect(() => {
-    Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
-    Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
-    Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
-    Mousetrap.bind("f", () => setActiveTabKey("scene-file-info-panel"));
-    Mousetrap.bind("o", () => onIncrementClick());
-
-    return () => {
-      Mousetrap.unbind("a");
-      Mousetrap.unbind("e");
-      Mousetrap.unbind("k");
-      Mousetrap.unbind("f");
-      Mousetrap.unbind("o");
-    }
-  });
 
   useEffect(() => {
     if (data?.findScene) setScene(data.findScene);
@@ -197,7 +180,10 @@ export const Scene: React.FC = () => {
     }
 
     return (
-      <Tab.Container activeKey={activeTabKey} onSelect={(k) => setActiveTabKey(k)}>
+      <Tab.Container
+        activeKey={activeTabKey}
+        onSelect={(k) => setActiveTabKey(k)}
+      >
         <div>
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
@@ -244,7 +230,11 @@ export const Scene: React.FC = () => {
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-markers-panel" title="Markers">
-            <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} isVisible={activeTabKey === "scene-markers-panel"} />
+            <SceneMarkersPanel
+              scene={scene}
+              onClickMarker={onClickMarker}
+              isVisible={activeTabKey === "scene-markers-panel"}
+            />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-movie-panel" title="Movies">
             <SceneMoviePanel scene={scene} />
@@ -275,6 +265,23 @@ export const Scene: React.FC = () => {
       </Tab.Container>
     );
   }
+
+  // set up hotkeys
+  useEffect(() => {
+    Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
+    Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
+    Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
+    Mousetrap.bind("f", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("o", () => onIncrementClick());
+
+    return () => {
+      Mousetrap.unbind("a");
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("k");
+      Mousetrap.unbind("f");
+      Mousetrap.unbind("o");
+    };
+  });
 
   if (loading || !scene || !data?.findScene) {
     return <LoadingIndicator />;

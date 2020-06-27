@@ -20,8 +20,8 @@ export const PerformerList: React.FC = () => {
 
   const addKeybinds = (
     result: FindPerformersQueryResult,
-    filter: ListFilterModel) => {
-    
+    filter: ListFilterModel
+  ) => {
     Mousetrap.bind("p r", () => {
       getRandom(result, filter);
     });
@@ -29,7 +29,7 @@ export const PerformerList: React.FC = () => {
     return () => {
       Mousetrap.unbind("p r");
     };
-  }
+  };
 
   const listData = usePerformersList({
     otherOperations,

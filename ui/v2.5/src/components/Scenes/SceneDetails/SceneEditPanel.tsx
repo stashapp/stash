@@ -68,12 +68,16 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
   useEffect(() => {
     if (props.isVisible) {
-      Mousetrap.bind("s s", () => { onSave() });
-      Mousetrap.bind("d d", () => { props.onDelete() });
+      Mousetrap.bind("s s", () => {
+        onSave();
+      });
+      Mousetrap.bind("d d", () => {
+        props.onDelete();
+      });
 
       // numeric keypresses get caught by jwplayer, so blur the element
       // if the rating sequence is started
-      Mousetrap.bind("r", () => { 
+      Mousetrap.bind("r", () => {
         if (document.activeElement instanceof HTMLElement) {
           document.activeElement.blur();
         }
@@ -93,14 +97,14 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           Mousetrap.unbind("4");
           Mousetrap.unbind("5");
         }, 1000);
-      } );
-      
+      });
+
       return () => {
         Mousetrap.unbind("s s");
         Mousetrap.unbind("d d");
 
         Mousetrap.unbind("r");
-      }
+      };
     }
   });
 

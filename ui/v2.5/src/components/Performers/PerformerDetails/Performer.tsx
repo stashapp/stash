@@ -119,9 +119,18 @@ export const Performer: React.FC = () => {
   }
 
   const renderTabs = () => (
-    <Tabs activeKey={activeTabKey} onSelect={(k: any) => setActiveTabKey(k)} id="performer-details" unmountOnExit>
+    <Tabs
+      activeKey={activeTabKey}
+      onSelect={(k: string) => setActiveTabKey(k)}
+      id="performer-details"
+      unmountOnExit
+    >
       <Tab eventKey="details" title="Details">
-        <PerformerDetailsPanel performer={performer} isEditing={false} isVisible={activeTabKey === "details"} />
+        <PerformerDetailsPanel
+          performer={performer}
+          isEditing={false}
+          isVisible={activeTabKey === "details"}
+        />
       </Tab>
       <Tab eventKey="scenes" title="Scenes">
         <PerformerScenesPanel performer={performer} />
@@ -247,7 +256,7 @@ export const Performer: React.FC = () => {
           <PerformerDetailsPanel
             performer={performer}
             isEditing
-            isVisible={true}
+            isVisible
             isNew={isNew}
             onDelete={onDelete}
             onSave={onSave}

@@ -76,7 +76,7 @@ export const Studio: React.FC = () => {
 
     Mousetrap.bind("e", () => setIsEditing(true));
     Mousetrap.bind("d d", () => onDelete());
-    
+
     return () => {
       if (isEditing) {
         Mousetrap.unbind("s s");
@@ -84,7 +84,7 @@ export const Studio: React.FC = () => {
 
       Mousetrap.unbind("e");
       Mousetrap.unbind("d d");
-    }
+    };
   });
 
   useEffect(() => {

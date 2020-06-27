@@ -167,15 +167,19 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   // set up hotkeys
   useEffect(() => {
     if (isEditing && isVisible) {
-      Mousetrap.bind("s s", () => { onSave?.(getPerformerInput()) });
-      
+      Mousetrap.bind("s s", () => {
+        onSave?.(getPerformerInput());
+      });
+
       if (!isNew) {
-        Mousetrap.bind("d d", () => { setIsDeleteAlertOpen(true) });
+        Mousetrap.bind("d d", () => {
+          setIsDeleteAlertOpen(true);
+        });
       }
 
       return () => {
         Mousetrap.unbind("s s");
-        
+
         if (!isNew) {
           Mousetrap.unbind("d d");
         }

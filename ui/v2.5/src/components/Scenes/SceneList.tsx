@@ -34,8 +34,8 @@ export const SceneList: React.FC<ISceneList> = ({
 
   const addKeybinds = (
     result: FindScenesQueryResult,
-    filter: ListFilterModel) => {
-    
+    filter: ListFilterModel
+  ) => {
     Mousetrap.bind("p r", () => {
       playRandom(result, filter);
     });
@@ -43,7 +43,7 @@ export const SceneList: React.FC<ISceneList> = ({
     return () => {
       Mousetrap.unbind("p r");
     };
-  }
+  };
 
   const listData = useScenesList({
     zoomable: true,

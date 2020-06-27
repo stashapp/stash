@@ -19,8 +19,8 @@ import { Icon } from "src/components/Shared";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { AddFilter } from "./AddFilter";
 import { useFocus } from "src/utils";
+import { AddFilter } from "./AddFilter";
 
 interface IListFilterOperation {
   text: string;
@@ -62,7 +62,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
 
   useEffect(() => {
     Mousetrap.bind("/", (e) => {
-      setQueryFocus()
+      setQueryFocus();
       e.preventDefault();
     });
 
@@ -84,12 +84,20 @@ export const ListFilter: React.FC<IListFilterProps> = (
       }
     });
     Mousetrap.bind("+", () => {
-      if (props.onChangeZoom && props.zoomIndex !== undefined && props.zoomIndex < maxZoom) {
+      if (
+        props.onChangeZoom &&
+        props.zoomIndex !== undefined &&
+        props.zoomIndex < maxZoom
+      ) {
         props.onChangeZoom(props.zoomIndex + 1);
       }
     });
     Mousetrap.bind("-", () => {
-      if (props.onChangeZoom && props.zoomIndex !== undefined && props.zoomIndex > minZoom) {
+      if (
+        props.onChangeZoom &&
+        props.zoomIndex !== undefined &&
+        props.zoomIndex > minZoom
+      ) {
         props.onChangeZoom(props.zoomIndex - 1);
       }
     });

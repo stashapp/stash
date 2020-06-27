@@ -177,7 +177,7 @@ export const MainNavbar: React.FC = () => {
       if (newPath) {
         Mousetrap.unbind("n");
       }
-    }
+    };
   });
 
   function maybeRenderLogout() {

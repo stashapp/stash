@@ -20,8 +20,8 @@ export const SceneMarkerList: React.FC = () => {
 
   const addKeybinds = (
     result: FindSceneMarkersQueryResult,
-    filter: ListFilterModel) => {
-    
+    filter: ListFilterModel
+  ) => {
     Mousetrap.bind("p r", () => {
       playRandom(result, filter);
     });
@@ -29,8 +29,8 @@ export const SceneMarkerList: React.FC = () => {
     return () => {
       Mousetrap.unbind("p r");
     };
-  }
-  
+  };
+
   const listData = useSceneMarkersList({
     otherOperations,
     renderContent,

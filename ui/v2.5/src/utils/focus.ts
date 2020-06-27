@@ -1,13 +1,16 @@
-import { useRef } from "react"
+import { useRef } from "react";
 
 const useFocus = () => {
-    const htmlElRef = useRef<any>();
-    const setFocus = () => {
-        const currentEl = htmlElRef.current
-		currentEl && currentEl.focus();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const htmlElRef = useRef<any>();
+  const setFocus = () => {
+    const currentEl = htmlElRef.current;
+    if (currentEl) {
+      currentEl.focus();
     }
+  };
 
-    return [ htmlElRef, setFocus ] as const;
-}
+  return [htmlElRef, setFocus] as const;
+};
 
 export default useFocus;
