@@ -16,7 +16,7 @@ import {
   StudioSelect,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { Table, Form } from "react-bootstrap";
+import { Table, Form, Modal as BSModal, Button } from "react-bootstrap";
 import {
   TableUtils,
   ImageUtils,
@@ -34,6 +34,7 @@ export const Movie: React.FC = () => {
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isImageAlertOpen, setIsImageAlertOpen] = useState<boolean>(false);
 
   // Editing movie state
   const [frontImage, setFrontImage] = useState<string | undefined>(undefined);
@@ -54,6 +55,10 @@ export const Movie: React.FC = () => {
     undefined
   );
   const [backimagePreview, setBackImagePreview] = useState<string | undefined>(
+    undefined
+  );
+
+  const [imageClipboard, setImageClipboard] = useState<string | undefined>(
     undefined
   );
 
@@ -134,8 +139,21 @@ export const Movie: React.FC = () => {
   }, [data, updateMovieData]);
 
   function onImageLoad(imageData: string) {
-    setImagePreview(imageData);
-    setFrontImage(imageData);
+    setImageClipboard(imageData);
+    setIsImageAlertOpen(true);
+  }
+
+  function setImageFromClipboard(isFrontImage: boolean) {
+    if (isFrontImage) {
+      setImagePreview(imageClipboard);
+      setFrontImage(imageClipboard);
+    } else {
+      setBackImagePreview(imageClipboard);
+      setBackImage(imageClipboard);
+    }
+
+    setImageClipboard(undefined);
+    setIsImageAlertOpen(false);
   }
 
   function onBackImageLoad(imageData: string) {
@@ -143,11 +161,7 @@ export const Movie: React.FC = () => {
     setBackImage(imageData);
   }
 
-  const encodingFrontImage = ImageUtils.usePasteImage(onImageLoad, isEditing);
-  const encodingBackImage = ImageUtils.usePasteImage(
-    onBackImageLoad,
-    isEditing
-  );
+  const encodingImage = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
@@ -234,13 +248,47 @@ export const Movie: React.FC = () => {
     );
   }
 
+  function renderImageAlert() {
+    return (
+      <BSModal
+        show={isImageAlertOpen}
+        onHide={() => setIsImageAlertOpen(false)}
+      >
+        <BSModal.Body>
+          <p>Select image to set</p>
+        </BSModal.Body>
+        <BSModal.Footer>
+          <div>
+            <Button className="mr-2"
+              variant="secondary"
+              onClick={() => setIsImageAlertOpen(false)}
+            >
+              Cancel
+            </Button>
+            
+            <Button className="mr-2"
+              onClick={() => setImageFromClipboard(false)}
+            >
+              Back Image
+            </Button>
+            <Button className="mr-2"
+              onClick={() => setImageFromClipboard(true)}
+            >
+              Front Image
+            </Button>
+          </div>
+        </BSModal.Footer>
+      </BSModal>
+    );
+  }
+
   // TODO: CSS class
   return (
     <div className="row">
       <div className="movie-details col">
         {isNew && <h2>Add Movie</h2>}
         <div className="logo w-100">
-          {encodingFrontImage || encodingBackImage ? (
+          {encodingImage ? (
             <LoadingIndicator message="Encoding image..." />
           ) : (
             <>
@@ -348,6 +396,7 @@ export const Movie: React.FC = () => {
         </div>
       )}
       {renderDeleteAlert()}
+      {renderImageAlert()}
     </div>
   );
 };
