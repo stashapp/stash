@@ -127,6 +127,10 @@ export const useFindMovie = (id: string) => {
   const skip = id === "new";
   return GQL.useFindMovieQuery({ variables: { id }, skip });
 };
+export const useFindTag = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindTagQuery({ variables: { id }, skip });
+};
 
 // TODO - scene marker manipulation functions are handled differently
 export const sceneMarkerMutationImpactedQueries = [

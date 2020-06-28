@@ -33,10 +33,11 @@
     }
 
     &-missing {
+      text-align: center;
       align-items: center;
       color: $text-color;
       display: flex;
-      font-size: 1.5rem;
+      font-size: 1vw;
       justify-content: center;
     }
 
