@@ -154,6 +154,7 @@ func Start() {
 	r.Mount("/scene", sceneRoutes{}.Routes())
 	r.Mount("/studio", studioRoutes{}.Routes())
 	r.Mount("/movie", movieRoutes{}.Routes())
+	r.Mount("/tag", tagRoutes{}.Routes())
 
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css")

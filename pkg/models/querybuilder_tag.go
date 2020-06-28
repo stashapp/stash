@@ -225,3 +225,36 @@ func (qb *TagQueryBuilder) queryTags(query string, args []interface{}, tx *sqlx.
 
 	return tags, nil
 }
+
+func (qb *TagQueryBuilder) UpdateTagImage(tagID int, image []byte, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing cover and then create new
+	if err := qb.DestroyTagImage(tagID, tx); err != nil {
+		return err
+	}
+
+	_, err := tx.Exec(
+		`INSERT INTO tags_image (tag_id, image) VALUES (?, ?)`,
+		tagID,
+		image,
+	)
+
+	return err
+}
+
+func (qb *TagQueryBuilder) DestroyTagImage(tagID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins
+	_, err := tx.Exec("DELETE FROM tags_image WHERE tag_id = ?", tagID)
+	if err != nil {
+		return err
+	}
+	return err
+}
+
+func (qb *TagQueryBuilder) GetTagImage(tagID int, tx *sqlx.Tx) ([]byte, error) {
+	query := `SELECT image from tags_image WHERE tag_id = ?`
+	return getImage(tx, query, tagID)
+}

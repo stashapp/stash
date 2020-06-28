@@ -2,10 +2,12 @@ package api
 
 import (
 	"context"
-	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/models"
 	"strconv"
 	"time"
+
+	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreateInput) (*models.Tag, error) {
@@ -17,6 +19,17 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
+	var imageData []byte
+	var err error
+
+	if input.Image != nil {
+		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Start the transaction and save the studio
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewTagQueryBuilder()
@@ -24,6 +37,14 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
+	}
+
+	// update image table
+	if len(imageData) > 0 {
+		if err := qb.UpdateTagImage(tag.ID, imageData, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 
 	// Commit
@@ -43,6 +64,17 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 
+	var imageData []byte
+	var err error
+
+	if input.Image != nil {
+		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Start the transaction and save the tag
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewTagQueryBuilder()
@@ -50,6 +82,14 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err
+	}
+
+	// update image table
+	if len(imageData) > 0 {
+		if err := qb.UpdateTagImage(tag.ID, imageData, tx); err != nil {
+			_ = tx.Rollback()
+			return nil, err
+		}
 	}
 
 	// Commit

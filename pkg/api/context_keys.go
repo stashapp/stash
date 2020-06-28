@@ -11,4 +11,5 @@ const (
 	studioKey    key = 3
 	movieKey     key = 4
 	ContextUser  key = 5
+	tagKey       key = 6
 )
