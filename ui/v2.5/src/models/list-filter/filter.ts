@@ -207,6 +207,14 @@ export class ListFilterModel {
           new PerformersCriterionOption(),
         ];
         break;
+      case FilterMode.Tags:
+        this.sortBy = "name";
+        this.sortByOptions = ["name"];
+        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
+        this.criterionOptions = [
+          new NoneCriterionOption(),
+        ];
+        break;
       default:
         this.sortByOptions = [];
         this.displayModeOptions = [];

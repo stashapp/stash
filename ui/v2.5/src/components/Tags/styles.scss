@@ -18,3 +18,13 @@
     min-width: 6rem;
   }
 }
+
+.tag-card {
+  padding: 0.5rem;
+
+  &-image {
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+  }
+}
