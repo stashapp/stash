@@ -1,0 +1,14 @@
+query FindTags($filter: FindFilterType ) {
+  findTags(filter: $filter) {
+    count
+    tags {
+      ...TagData
+    }
+  }
+}
+
+query FindTag($id: ID!) {
+  findTag(id: $id) {
+    ...TagData
+  }
+}
