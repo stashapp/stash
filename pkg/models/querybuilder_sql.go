@@ -325,6 +325,9 @@ func executeFindQuery(tableName string, body string, args []interface{}, sortAnd
 		panic(idsErr)
 	}
 
+	// Perform query and fetch result
+	logger.Tracef("SQL: %s, args: %v", idsQuery, args)
+
 	return idsResult, countResult
 }
 
