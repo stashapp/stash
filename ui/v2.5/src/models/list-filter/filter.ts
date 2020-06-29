@@ -211,7 +211,7 @@ export class ListFilterModel {
         break;
       case FilterMode.Tags:
         this.sortBy = "name";
-        this.sortByOptions = ["name"];
+        this.sortByOptions = ["name", "scenes_count", "scene_markers_count"];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),

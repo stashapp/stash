@@ -104,7 +104,7 @@ func getSort(sort string, direction string, tableName string) string {
 	const randomSeedPrefix = "random_"
 
 	if strings.HasSuffix(sort, "_count") {
-		var relationTableName = strings.Split(sort, "_")[0] // TODO: pluralize?
+		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
 		return " ORDER BY COUNT(distinct " + colName + ") " + direction
 	} else if strings.Compare(sort, "filesize") == 0 {
