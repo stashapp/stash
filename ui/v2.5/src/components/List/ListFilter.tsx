@@ -324,7 +324,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
             type="range"
             min={0}
             max={3}
-            defaultValue={1}
+            defaultValue={props.zoomIndex}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
             }
