@@ -34,12 +34,12 @@
     }
 
     &-missing {
-      text-align: center;
       align-items: center;
       color: $text-color;
       display: flex;
       font-size: 1vw;
       justify-content: center;
+      text-align: center;
 
       @media (max-width: 576px) {
         font-size: 6vw;

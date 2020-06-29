@@ -42,15 +42,9 @@ export const Tag: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string>();
 
   const { data, error, loading } = useFindTag(id);
-  const [updateTag] = useTagUpdate(
-    getTagInput() as GQL.TagUpdateInput
-  );
-  const [createTag] = useTagCreate(
-    getTagInput() as GQL.TagUpdateInput
-  );
-  const [deleteTag] = useTagDestroy(
-    getTagInput() as GQL.TagUpdateInput
-  );
+  const [updateTag] = useTagUpdate(getTagInput() as GQL.TagUpdateInput);
+  const [createTag] = useTagCreate(getTagInput() as GQL.TagUpdateInput);
+  const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
 
   function updateTagEditState(state: Partial<GQL.TagDataFragment>) {
     setName(state.name);

@@ -11,7 +11,6 @@ interface IProps {
 }
 
 export const TagCard: React.FC<IProps> = ({ tag, zoomIndex }) => {
-  
   function maybeRenderScenesPopoverButton() {
     if (!tag.scene_count) return;
 

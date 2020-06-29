@@ -535,8 +535,6 @@ export const useTagsList = (
       result?.data?.findTags?.tags ?? [],
     getCount: (result: FindTagsQueryResult) =>
       result?.data?.findTags?.count ?? 0,
-    getSelectedData: (
-      result: FindTagsQueryResult,
-      selectedIds: Set<string>
-    ) => getSelectedData(result?.data?.findTags?.tags ?? [], selectedIds),
+    getSelectedData: (result: FindTagsQueryResult, selectedIds: Set<string>) =>
+      getSelectedData(result?.data?.findTags?.tags ?? [], selectedIds),
   });

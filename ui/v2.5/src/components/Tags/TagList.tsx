@@ -3,33 +3,28 @@ import { FindTagsQueryResult } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { useTagsList } from "src/hooks/ListHook";
-import { TagCard } from "./TagCard";
 import { Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import {
-  mutateMetadataAutoTag,
-  useTagDestroy,
-} from "src/core/StashService";
+import { mutateMetadataAutoTag, useTagDestroy } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { FormattedNumber } from "react-intl";
 import { NavUtils } from "src/utils";
+import { TagCard } from "./TagCard";
 import { Icon, Modal } from "../Shared";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
-export const TagList: React.FC<ITagList> = ({
-  filterHook,
-}) => {
+export const TagList: React.FC<ITagList> = ({ filterHook }) => {
   const Toast = useToast();
   const [deletingTag, setDeletingTag] = useState<Partial<
     GQL.TagDataFragment
   > | null>(null);
-  
+
   const [deleteTag] = useTagDestroy(getDeleteTagInput() as GQL.TagDestroyInput);
-  
+
   const listData = useTagsList({
     renderContent,
     filterHook,
@@ -90,11 +85,7 @@ export const TagList: React.FC<ITagList> = ({
       return (
         <div className="row px-xl-5 justify-content-center">
           {result.data.findTags.tags.map((tag) => (
-            <TagCard
-              key={tag.id}
-              tag={tag}
-              zoomIndex={zoomIndex}
-            />
+            <TagCard key={tag.id} tag={tag} zoomIndex={zoomIndex} />
           ))}
         </div>
       );
@@ -103,10 +94,8 @@ export const TagList: React.FC<ITagList> = ({
       const tagElements = result.data.findTags.tags.map((tag) => {
         return (
           <div key={tag.id} className="tag-list-row row">
-            <Link to={`/tags/${tag.id}`}>
-              {tag.name}
-            </Link>
-              
+            <Link to={`/tags/${tag.id}`}>{tag.name}</Link>
+
             <div className="ml-auto">
               <Button
                 variant="secondary"
@@ -128,7 +117,8 @@ export const TagList: React.FC<ITagList> = ({
                   to={NavUtils.makeTagSceneMarkersUrl(tag)}
                   className="tag-list-anchor"
                 >
-                  Markers: <FormattedNumber value={tag.scene_marker_count ?? 0} />
+                  Markers:{" "}
+                  <FormattedNumber value={tag.scene_marker_count ?? 0} />
                 </Link>
               </Button>
               <span className="tag-list-count">

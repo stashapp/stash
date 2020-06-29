@@ -211,9 +211,7 @@ export class ListFilterModel {
         this.sortBy = "name";
         this.sortByOptions = ["name"];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
-        this.criterionOptions = [
-          new NoneCriterionOption(),
-        ];
+        this.criterionOptions = [new NoneCriterionOption()];
         break;
       default:
         this.sortByOptions = [];

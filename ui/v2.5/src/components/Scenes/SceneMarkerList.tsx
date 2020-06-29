@@ -14,7 +14,10 @@ interface ISceneMarkerList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
-export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ subComponent, filterHook }) => {
+export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
+  subComponent,
+  filterHook,
+}) => {
   const history = useHistory();
   const otherOperations = [
     {
