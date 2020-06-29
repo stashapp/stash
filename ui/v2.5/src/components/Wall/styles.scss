@@ -16,6 +16,7 @@
     @media (max-width: 576px) {
       height: inherit;
       max-width: 100%;
+      min-height: 210px;
       width: 100%;
     }
 
@@ -39,6 +40,10 @@
       display: flex;
       font-size: 1vw;
       justify-content: center;
+
+      @media (max-width: 576px) {
+        font-size: 6vw;
+      }
     }
 
     &-preview {
