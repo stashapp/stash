@@ -3,9 +3,11 @@
 package models_test
 
 import (
+	"context"
 	"strings"
 	"testing"
 
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -104,6 +106,102 @@ func TestTagFindByNames(t *testing.T) {
 	assert.Equal(t, tagNames[tagIdx1WithDupName], tags[2].Name)
 	assert.Equal(t, tagNames[tagIdxWithDupName], tags[3].Name)
 
+}
+
+func TestTagUpdateTagImage(t *testing.T) {
+	qb := models.NewTagQueryBuilder()
+
+	// create tag to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestTagUpdateTagImage"
+	tag := models.Tag{
+		Name: name,
+	}
+	created, err := qb.Create(tag, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating tag: %s", err.Error())
+	}
+
+	image := []byte("image")
+	err = qb.UpdateTagImage(created.ID, image, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating studio image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// ensure image set
+	storedImage, err := qb.GetTagImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting image: %s", err.Error())
+	}
+	assert.Equal(t, storedImage, image)
+
+	// set nil image
+	tx = database.DB.MustBeginTx(ctx, nil)
+	err = qb.UpdateTagImage(created.ID, nil, tx)
+	if err == nil {
+		t.Fatalf("Expected error setting nil image")
+	}
+
+	tx.Rollback()
+}
+
+func TestTagDestroyTagImage(t *testing.T) {
+	qb := models.NewTagQueryBuilder()
+
+	// create performer to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestTagDestroyTagImage"
+	tag := models.Tag{
+		Name: name,
+	}
+	created, err := qb.Create(tag, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating tag: %s", err.Error())
+	}
+
+	image := []byte("image")
+	err = qb.UpdateTagImage(created.ID, image, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating studio image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	tx = database.DB.MustBeginTx(ctx, nil)
+
+	err = qb.DestroyTagImage(created.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error destroying studio image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// image should be nil
+	storedImage, err := qb.GetTagImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting image: %s", err.Error())
+	}
+	assert.Nil(t, storedImage)
 }
 
 // TODO Create
