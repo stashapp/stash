@@ -10,6 +10,7 @@ import { TextUtils } from "src/utils";
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
+  selecting?: boolean;
   selected: boolean | undefined;
   zoomIndex: number;
   onSelectedChanged: (selected: boolean, shiftKey: boolean) => void;
@@ -221,9 +222,19 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
     hoverHandler.onMouseEnter();
   }
+
   function onMouseLeave() {
     hoverHandler.onMouseLeave();
     setPreviewPath("");
+  }
+
+  function handleSceneClick(event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
+    const shiftKey = event.shiftKey;
+    
+    if (props.selecting) {
+      props.onSelectedChanged(!props.selected, shiftKey);
+      event.preventDefault();
+    }
   }
 
   function isPortrait() {
@@ -253,7 +264,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         }}
       />
 
-      <Link to={`/scenes/${props.scene.id}`} className="scene-card-link">
+      <Link to={`/scenes/${props.scene.id}`} className="scene-card-link" onClick={handleSceneClick}>
         {maybeRenderRatingBanner()}
         {maybeRenderSceneStudioOverlay()}
         {maybeRenderSceneSpecsOverlay()}

@@ -24,17 +24,6 @@
   }
 }
 
-.scene-card-check {
-  left: 0.5rem;
-  margin-top: -12px;
-  opacity: 0.5;
-  padding-left: 15px;
-  position: absolute;
-  top: 0.7rem;
-  width: 1.2rem;
-  z-index: 1;
-}
-
 .performer-tag-container,
 .movie-tag-container {
   display: inline-block;
@@ -189,6 +178,21 @@
     position: relative;
   }
 
+  .scene-card-check {
+    left: 0.5rem;
+    margin-top: -12px;
+    opacity: 0;
+    padding-left: 15px;
+    position: absolute;
+    top: 0.7rem;
+    width: 1.2rem;
+    z-index: 1;
+
+    &:checked {
+      opacity: 0.75;
+    }
+  }
+
   .scene-specs-overlay,
   .rating-banner,
   .scene-studio-overlay {
@@ -204,6 +208,11 @@
     }
 
     .scene-studio-overlay:hover {
+      opacity: 0.75;
+      transition: opacity 0.5s;
+    }
+
+    .scene-card-check {
       opacity: 0.75;
       transition: opacity 0.5s;
     }
