@@ -13,9 +13,9 @@ func (r *queryResolver) FindTag(ctx context.Context, id string) (*models.Tag, er
 	return qb.Find(idInt, nil)
 }
 
-func (r *queryResolver) FindTags(ctx context.Context, filter *models.FindFilterType) (*models.FindTagsResultType, error) {
+func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilterType, filter *models.FindFilterType) (*models.FindTagsResultType, error) {
 	qb := models.NewTagQueryBuilder()
-	tags, total := qb.Query(filter)
+	tags, total := qb.Query(tagFilter, filter)
 	return &models.FindTagsResultType{
 		Count: total,
 		Tags:  tags,

@@ -99,6 +99,7 @@ export const useFindTags = (filter: ListFilterModel) =>
   GQL.useFindTagsQuery({
     variables: {
       filter: filter.makeFindFilter(),
+      tag_filter: filter.makeTagFilter(),
     },
   });
 

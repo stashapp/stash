@@ -8,6 +8,8 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 )
 
+const tagTable = "tags"
+
 type TagQueryBuilder struct{}
 
 func NewTagQueryBuilder() TagQueryBuilder {
@@ -146,25 +148,59 @@ func (qb *TagQueryBuilder) AllSlim() ([]*Tag, error) {
 	return qb.queryTags("SELECT tags.id, tags.name FROM tags "+qb.getTagSort(nil), nil, nil)
 }
 
-func (qb *TagQueryBuilder) Query(findFilter *FindFilterType) ([]*Tag, int) {
+func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int) {
+	if tagFilter == nil {
+		tagFilter = &TagFilterType{}
+	}
 	if findFilter == nil {
 		findFilter = &FindFilterType{}
 	}
 
-	var whereClauses []string
-	var havingClauses []string
-	var args []interface{}
-	body := selectDistinctIDs("tags")
+	query := queryBuilder{
+		tableName: tagTable,
+	}
+
+	query.body = selectDistinctIDs(tagTable)
+	query.body += ` 
+	left join tags_image on tags_image.tag_id = tags.id
+	left join scenes_tags on scenes_tags.tag_id = tags.id
+	left join scene_markers_tags on scene_markers_tags.tag_id = tags.id
+	left join scene_markers on scene_markers.primary_tag_id = tags.id`
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"tags.name"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
-		whereClauses = append(whereClauses, clause)
-		args = append(args, thisArgs...)
+		query.addWhere(clause)
+		query.addArg(thisArgs...)
 	}
 
-	sortAndPagination := qb.getTagSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := executeFindQuery("tags", body, args, sortAndPagination, whereClauses, havingClauses)
+	if isMissingFilter := tagFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
+		switch *isMissingFilter {
+		case "image":
+			query.addWhere("tags_image.tag_id IS NULL")
+		default:
+			query.addWhere("tags." + *isMissingFilter + " IS NULL")
+		}
+	}
+
+	if sceneCount := tagFilter.SceneCount; sceneCount != nil {
+		clause, count := getIntCriterionWhereClause("count(distinct scenes_tags.scene_id)", *sceneCount)
+		query.addHaving(clause)
+		if count == 1 {
+			query.addArg(sceneCount.Value)
+		}
+	}
+
+	if markerCount := tagFilter.MarkerCount; markerCount != nil {
+		clause, count := getIntCriterionWhereClause("count(distinct scene_markers_tags.scene_marker_id) + count(distinct scene_markers.id)", *markerCount)
+		query.addHaving(clause)
+		if count == 1 {
+			query.addArg(markerCount.Value)
+		}
+	}
+
+	query.sortAndPagination = qb.getTagSort(findFilter) + getPagination(findFilter)
+	idsResult, countResult := query.executeFind()
 
 	var tags []*Tag
 	for _, id := range idsResult {

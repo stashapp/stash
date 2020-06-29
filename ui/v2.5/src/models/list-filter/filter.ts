@@ -9,6 +9,7 @@ import {
   MovieFilterType,
   StudioFilterType,
   GalleryFilterType,
+  TagFilterType,
 } from "src/core/generated-graphql";
 import { stringToGender } from "src/core/StashService";
 import {
@@ -33,6 +34,7 @@ import {
   PerformerIsMissingCriterionOption,
   SceneIsMissingCriterionOption,
   GalleryIsMissingCriterionOption,
+  TagIsMissingCriterionOption,
 } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import {
@@ -211,7 +213,12 @@ export class ListFilterModel {
         this.sortBy = "name";
         this.sortByOptions = ["name"];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
-        this.criterionOptions = [new NoneCriterionOption()];
+        this.criterionOptions = [
+          new NoneCriterionOption(),
+          new TagIsMissingCriterionOption(),
+          ListFilterModel.createCriterionOption("scene_count"),
+          ListFilterModel.createCriterionOption("marker_count"),
+        ];
         break;
       default:
         this.sortByOptions = [];
@@ -623,6 +630,36 @@ export class ListFilterModel {
         case "galleryIsMissing":
           result.is_missing = (criterion as IsMissingCriterion).value;
           break;
+        // no default
+      }
+    });
+
+    return result;
+  }
+
+  public makeTagFilter(): TagFilterType {
+    const result: TagFilterType = {};
+    this.criteria.forEach((criterion) => {
+      switch (criterion.type) {
+        case "tagIsMissing":
+          result.is_missing = (criterion as IsMissingCriterion).value;
+          break;
+        case "scene_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.scene_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        case "marker_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.marker_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });

@@ -4,6 +4,7 @@ package models_test
 
 import (
 	"context"
+	"database/sql"
 	"strings"
 	"testing"
 
@@ -106,6 +107,101 @@ func TestTagFindByNames(t *testing.T) {
 	assert.Equal(t, tagNames[tagIdx1WithDupName], tags[2].Name)
 	assert.Equal(t, tagNames[tagIdxWithDupName], tags[3].Name)
 
+}
+
+func TestTagQueryIsMissingImage(t *testing.T) {
+	qb := models.NewTagQueryBuilder()
+	isMissing := "image"
+	tagFilter := models.TagFilterType{
+		IsMissing: &isMissing,
+	}
+
+	q := getTagStringValue(tagIdxWithImage, "name")
+	findFilter := models.FindFilterType{
+		Q: &q,
+	}
+
+	tags, _ := qb.Query(&tagFilter, &findFilter)
+
+	assert.Len(t, tags, 0)
+
+	findFilter.Q = nil
+	tags, _ = qb.Query(&tagFilter, &findFilter)
+
+	// ensure non of the ids equal the one with image
+	for _, tag := range tags {
+		assert.NotEqual(t, tagIDs[tagIdxWithImage], tag.ID)
+	}
+}
+
+func TestTagQuerySceneCount(t *testing.T) {
+	countCriterion := models.IntCriterionInput{
+		Value:    1,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyTagSceneCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagSceneCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierLessThan
+	verifyTagSceneCount(t, countCriterion)
+
+	countCriterion.Value = 0
+	countCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyTagSceneCount(t, countCriterion)
+}
+
+func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
+	qb := models.NewTagQueryBuilder()
+	tagFilter := models.TagFilterType{
+		SceneCount: &sceneCountCriterion,
+	}
+
+	tags, _ := qb.Query(&tagFilter, nil)
+
+	for _, tag := range tags {
+		verifyInt64(t, sql.NullInt64{
+			Int64: int64(getTagSceneCount(tag.ID)),
+			Valid: true,
+		}, sceneCountCriterion)
+	}
+}
+
+func TestTagQueryMarkerCount(t *testing.T) {
+	countCriterion := models.IntCriterionInput{
+		Value:    1,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyTagMarkerCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagMarkerCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierLessThan
+	verifyTagMarkerCount(t, countCriterion)
+
+	countCriterion.Value = 0
+	countCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyTagMarkerCount(t, countCriterion)
+}
+
+func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterionInput) {
+	qb := models.NewTagQueryBuilder()
+	tagFilter := models.TagFilterType{
+		MarkerCount: &markerCountCriterion,
+	}
+
+	tags, _ := qb.Query(&tagFilter, nil)
+
+	for _, tag := range tags {
+		verifyInt64(t, sql.NullInt64{
+			Int64: int64(getTagMarkerCount(tag.ID)),
+			Valid: true,
+		}, markerCountCriterion)
+	}
 }
 
 func TestTagUpdateTagImage(t *testing.T) {
