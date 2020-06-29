@@ -110,7 +110,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | undefined>();
-  const [zoomIndex, setZoomIndex] = useState<number>(options.defaultZoomIndex ?? 1);
+  const [zoomIndex, setZoomIndex] = useState<number>(
+    options.defaultZoomIndex ?? 1
+  );
 
   const result = options.useData(getFilter());
   const totalCount = options.getCount(result);
