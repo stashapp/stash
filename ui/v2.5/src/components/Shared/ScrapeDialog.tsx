@@ -73,11 +73,9 @@ export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
     props.onChange(ret);
   }
 
-  // if (!props.result.scraped) {
-  //   return (
-  //     <></>
-  //   );
-  // }
+  if (!props.result.scraped) {
+    return <></>;
+  }
 
   return (
     <Row className="px-3 pt-3">
