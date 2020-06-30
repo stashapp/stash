@@ -31,6 +31,8 @@ import { ImageUtils, FormUtils, EditableTextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
+import Maybe from "graphql/tsutils/Maybe";
+import { SceneScrapeDialog } from "./SceneScrapeDialog";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -57,6 +59,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
   const Scrapers = useListSceneScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
+
+  const [scrapedScene, setScrapedScene] = useState<Maybe<GQL.ScrapedScene>>();
 
   const [coverImagePreview, setCoverImagePreview] = useState<string>();
 
@@ -214,7 +218,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       if (!result.data || !result.data.scrapeScene) {
         return;
       }
-      updateSceneFromScrapedScene(result.data.scrapeScene);
+      //updateSceneFromScrapedScene(result.data.scrapeScene);
+      setScrapedScene(result.data.scrapeScene);
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -234,6 +239,23 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function onScrapeDialogClosed(scene?: GQL.ScrapedSceneDataFragment) {
+    if (scene) {
+      updateSceneFromScrapedScene(scene);
+    }
+    setScrapedScene(undefined);
+  }
+
+  function maybeRenderScrapeDialog() {
+    if (!scrapedScene) {
+      return;
+    }
+
+    return (
+      <SceneScrapeDialog scene={props.scene} scraped={scrapedScene} onClose={(scene) => { onScrapeDialogClosed(scene)}}/>
+    );
   }
 
   function renderScraperMenu() {
@@ -339,7 +361,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       if (!result.data || !result.data.scrapeSceneURL) {
         return;
       }
-      updateSceneFromScrapedScene(result.data.scrapeSceneURL);
+      //updateSceneFromScrapedScene(result.data.scrapeSceneURL);
+      setScrapedScene(result.data.scrapeSceneURL);
+
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -362,6 +386,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
   return (
     <>
+      {maybeRenderScrapeDialog()}
       <div className="form-container row px-3 pt-3">
         <div className="col edit-buttons mb-3 pl-0">
           <Button className="edit-button" variant="primary" onClick={onSave}>
