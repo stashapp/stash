@@ -318,9 +318,13 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     if (!scrapedObjects) {
       return undefined;
     }
-    return scrapedObjects.map(p => p.id).filter(p => {
+    const ret = scrapedObjects.map(p => p.id).filter(p => {
       return p !== undefined && p !== null;
     }) as string[];
+
+    if (ret.length === 0) {
+      return undefined;
+    }
   }
 
   const [performers, setPerformers] = useState<ScrapeResult<string[]>>(new ScrapeResult<string[]>(props.scene.performers?.map(p => p.id), mapIdObjects(props.scraped.performers ?? undefined)));
