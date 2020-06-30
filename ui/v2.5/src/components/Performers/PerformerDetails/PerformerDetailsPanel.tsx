@@ -264,8 +264,14 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         getQueryScraperPerformerInput()
       );
       if (!result?.data?.scrapePerformer) return;
-      //updatePerformerEditStateFromScraper(result.data.scrapePerformer);
-      setScrapedPerformer(result.data.scrapePerformer);
+      
+      // if this is a new performer, just dump the data
+      if (isNew) {
+        updatePerformerEditStateFromScraper(result.data.scrapePerformer);
+      } else {
+        setScrapedPerformer(result.data.scrapePerformer);
+      }
+
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -282,12 +288,12 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         return;
       }
 
-      // leave URL as is if not set explicitly
-      if (!result.data.scrapePerformerURL.url) {
-        result.data.scrapePerformerURL.url = url;
+      // if this is a new performer, just dump the data
+      if (isNew) {
+        updatePerformerEditStateFromScraper(result.data.scrapePerformerURL);
+      } else {
+        setScrapedPerformer(result.data.scrapePerformerURL);
       }
-      //updatePerformerEditStateFromScraper(result.data.scrapePerformerURL);
-      setScrapedPerformer(result.data.scrapePerformerURL);
     } catch (e) {
       Toast.error(e);
     } finally {
