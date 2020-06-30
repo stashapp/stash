@@ -247,7 +247,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     <ScrapeDialog
       title="Scene Scrape Results"
       renderScrapeRows={renderScrapeRows}
-      onClose={() => { props.onClose(makeNewScrapedItem())}}
+      onClose={(apply) => { props.onClose(apply ? makeNewScrapedItem(): undefined)}}
     />
   );
 };

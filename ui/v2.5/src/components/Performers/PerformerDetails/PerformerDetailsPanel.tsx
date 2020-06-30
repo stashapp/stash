@@ -27,6 +27,7 @@ import {
   EditableTextUtils,
 } from "src/utils";
 import { useToast } from "src/hooks";
+import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
@@ -89,6 +90,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
+
+  const [scrapedPerformer, setScrapedPerformer] = useState<GQL.ScrapedPerformer | undefined>();
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
@@ -261,7 +264,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         getQueryScraperPerformerInput()
       );
       if (!result?.data?.scrapePerformer) return;
-      updatePerformerEditStateFromScraper(result.data.scrapePerformer);
+      //updatePerformerEditStateFromScraper(result.data.scrapePerformer);
+      setScrapedPerformer(result.data.scrapePerformer);
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -282,7 +286,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       if (!result.data.scrapePerformerURL.url) {
         result.data.scrapePerformerURL.url = url;
       }
-      updatePerformerEditStateFromScraper(result.data.scrapePerformerURL);
+      //updatePerformerEditStateFromScraper(result.data.scrapePerformerURL);
+      setScrapedPerformer(result.data.scrapePerformerURL);
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -384,6 +389,23 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         <Icon icon="file-upload" />
       </Button>
     );
+  }
+
+  function maybeRenderScrapeDialog() {
+    if (!scrapedPerformer) {
+      return;
+    }
+
+    return (
+      <PerformerScrapeDialog performer={performer} scraped={scrapedPerformer} onClose={(performer) => { onScrapeDialogClosed(performer)}}/>
+    );
+  }
+
+  function onScrapeDialogClosed(performer?: GQL.ScrapedPerformerDataFragment) {
+    if (performer) {
+      updatePerformerEditStateFromScraper(performer);
+    }
+    setScrapedPerformer(undefined);
   }
 
   function renderURLField() {
@@ -503,6 +525,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     <>
       {renderDeleteAlert()}
       {renderScraperDialog()}
+      {maybeRenderScrapeDialog()}
 
       <Table id="performer-details" className="w-100">
         <tbody>

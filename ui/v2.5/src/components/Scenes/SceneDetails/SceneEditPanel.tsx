@@ -218,7 +218,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       if (!result.data || !result.data.scrapeScene) {
         return;
       }
-      //updateSceneFromScrapedScene(result.data.scrapeScene);
       setScrapedScene(result.data.scrapeScene);
     } catch (e) {
       Toast.error(e);
@@ -359,7 +358,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       if (!result.data || !result.data.scrapeSceneURL) {
         return;
       }
-      //updateSceneFromScrapedScene(result.data.scrapeSceneURL);
       setScrapedScene(result.data.scrapeSceneURL);
 
     } catch (e) {
