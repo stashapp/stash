@@ -283,28 +283,27 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   }
 
   function updateSceneFromScrapedScene(scene: GQL.ScrapedSceneDataFragment) {
-    if (!title && scene.title) {
+    if (scene.title) {
       setTitle(scene.title);
     }
 
-    if (!details && scene.details) {
+    if (scene.details) {
       setDetails(scene.details);
     }
 
-    if (!date && scene.date) {
+    if (scene.date) {
       setDate(scene.date);
     }
 
-    if (!url && scene.url) {
+    if (scene.url) {
       setUrl(scene.url);
     }
 
-    if (!studioId && scene.studio && scene.studio.id) {
+    if (scene.studio && scene.studio.id) {
       setStudioId(scene.studio.id);
     }
 
     if (
-      (!performerIds || performerIds.length === 0) &&
       scene.performers &&
       scene.performers.length > 0
     ) {
@@ -319,7 +318,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
 
     if (
-      (!movieIds || movieIds.length === 0) &&
       scene.movies &&
       scene.movies.length > 0
     ) {
@@ -333,7 +331,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       }
     }
 
-    if (!tagIds?.length && scene?.tags?.length) {
+    if (scene?.tags?.length) {
       const idTags = scene.tags.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
