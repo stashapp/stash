@@ -147,15 +147,63 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   function updatePerformerEditStateFromScraper(
     state: Partial<GQL.ScrapedPerformerDataFragment>
   ) {
-    updatePerformerEditState(state);
+    if (state.name) {
+      setName(state.name);
+    }
 
-    // gender is a string in the scraper data
-    setGender(translateScrapedGender(state.gender ?? undefined));
+    if (state.aliases) {
+      setAliases(state.aliases ?? undefined);
+    }
+    if (state.birthdate) {
+      setBirthdate(state.birthdate ?? undefined);
+    }
+    if (state.ethnicity) {
+      setEthnicity(state.ethnicity ?? undefined);
+    }
+    if (state.country) {
+      setCountry(state.country ?? undefined);
+    }
+    if (state.eye_color) {
+      setEyeColor(state.eye_color ?? undefined);
+    }
+    if (state.height) {
+      setHeight(state.height ?? undefined);
+    }
+    if (state.measurements) {
+      setMeasurements(state.measurements ?? undefined);
+    }
+    if (state.fake_tits) {
+      setFakeTits(state.fake_tits ?? undefined);
+    }
+    if (state.career_length) {
+      setCareerLength(state.career_length ?? undefined);
+    }
+    if (state.tattoos) {
+      setTattoos(state.tattoos ?? undefined);
+    }
+    if (state.piercings) {
+      setPiercings(state.piercings ?? undefined);
+    }
+    if (state.url) {
+      setUrl(state.url ?? undefined);
+    }
+    if (state.twitter) {
+      setTwitter(state.twitter ?? undefined);
+    }
+    if (state.instagram) {
+      setInstagram(state.instagram ?? undefined);
+    }
+    if (state.gender) {
+      // gender is a string in the scraper data
+      setGender(translateScrapedGender(state.gender ?? undefined));
+    }
 
     // image is a base64 string
     // #404: don't overwrite image if it has been modified by the user
+    // overwrite if not new since it came from a dialog
+    // otherwise follow existing behaviour
     if (
-      image === undefined &&
+      (!isNew || image === undefined) &&
       (state as GQL.ScrapedPerformerDataFragment).image !== undefined
     ) {
       const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;

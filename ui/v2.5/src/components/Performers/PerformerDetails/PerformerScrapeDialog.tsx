@@ -180,18 +180,18 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
     return <></>;
   }
 
-  function makeNewScrapedItem() {
+  function makeNewScrapedItem(): GQL.ScrapedPerformer {
     return {
       name: name.getNewValue(),
       aliases: aliases.getNewValue(),
       birthdate: birthdate.getNewValue(),
       ethnicity: ethnicity.getNewValue(),
       country: country.getNewValue(),
-      eyeColor: eyeColor.getNewValue(),
+      eye_color: eyeColor.getNewValue(),
       height: height.getNewValue(),
       measurements: measurements.getNewValue(),
-      fakeTits: fakeTits.getNewValue(),
-      careerLength: careerLength.getNewValue(),
+      fake_tits: fakeTits.getNewValue(),
+      career_length: careerLength.getNewValue(),
       tattoos: tattoos.getNewValue(),
       piercings: piercings.getNewValue(),
       url: url.getNewValue(),
