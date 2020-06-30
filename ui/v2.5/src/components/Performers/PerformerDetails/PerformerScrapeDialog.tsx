@@ -1,6 +1,45 @@
 import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
-import { ScrapeDialog, ScrapeDialogRow, ScrapeResult, ScrapedInputGroupRow, ScrapedTextAreaRow, ScrapedImageRow } from "src/components/Shared/ScrapeDialog";
+import { ScrapeDialog, ScrapeResult, ScrapedInputGroupRow, ScrapedImageRow, ScrapeDialogRow } from "src/components/Shared/ScrapeDialog";
+import { getGenderStrings, genderToString, stringToGender } from "src/core/StashService";
+import { Form } from "react-bootstrap";
+
+function renderScrapedGender(result: ScrapeResult<string>, isNew?: boolean, onChange?: (value : string) => void) {
+  const selectOptions = [""].concat(getGenderStrings());
+
+  return (
+    <Form.Control
+      as="select"
+      className="input-control"
+      disabled={!isNew}
+      plaintext={!isNew}
+      value={isNew ? result.newValue : result.originalValue}
+      onChange={(e) => {
+        if (isNew && onChange) {
+          onChange(e.currentTarget.value);
+        }
+      }}
+    >
+      {selectOptions.map((opt) => (
+        <option value={opt} key={opt}>
+          {opt}
+        </option>
+      ))}
+    </Form.Control>
+  );
+}
+
+function renderScrapedGenderRow(result: ScrapeResult<string>, onChange: (value : ScrapeResult<string>) => void) {
+  return (
+    <ScrapeDialogRow
+      title="Gender"
+      result={result}
+      renderOriginalField={() => renderScrapedGender(result)}
+      renderNewField={() => renderScrapedGender(result, true, (value) => onChange(result.cloneWithValue(value)))}
+      onChange={onChange}
+    />
+  );
+}
 
 interface IPerformerScrapeDialogProps {
   performer: Partial<GQL.PerformerDataFragment>;
@@ -9,9 +48,32 @@ interface IPerformerScrapeDialogProps {
   onClose: (scrapedPerformer?: GQL.ScrapedPerformer) => void;
 }
 
+
+
 export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   props: IPerformerScrapeDialogProps
 ) => {
+  function translateScrapedGender(scrapedGender?: string | null) {
+    if (!scrapedGender) {
+      return;
+    }
+
+    let retEnum: GQL.GenderEnum | undefined;
+
+    // try to translate from enum values first
+    const upperGender = scrapedGender?.toUpperCase();
+    const asEnum = genderToString(upperGender as GQL.GenderEnum);
+    if (asEnum) {
+      retEnum = stringToGender(asEnum);
+    } else {
+      // try to match against gender strings
+      const caseInsensitive = true;
+      retEnum = stringToGender(scrapedGender, caseInsensitive);
+    }
+
+    return genderToString(retEnum);
+  }
+  
   const [name, setName] = useState<ScrapeResult<string>>(new ScrapeResult<string>(props.performer.name, props.scraped.name));
   const [aliases, setAliases] = useState<ScrapeResult<string>>(new ScrapeResult<string>(props.performer.aliases, props.scraped.aliases));
   const [birthdate, setBirthdate] = useState<ScrapeResult<string>>(new ScrapeResult<string>(props.performer.birthdate, props.scraped.birthdate));
@@ -27,7 +89,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
   const [url, setURL] = useState<ScrapeResult<string>>(new ScrapeResult<string>(props.performer.url, props.scraped.url));
   const [twitter, setTwitter] = useState<ScrapeResult<string>>(new ScrapeResult<string>(props.performer.twitter, props.scraped.twitter));
   const [instagram, setInstagram] = useState<ScrapeResult<string>>(new ScrapeResult<string>(props.performer.instagram, props.scraped.instagram));
-  const [gender, setGender] = useState<ScrapeResult<string>>(new ScrapeResult<string>(props.performer.gender, props.scraped.gender));
+  const [gender, setGender] = useState<ScrapeResult<string>>(new ScrapeResult<string>(genderToString(props.performer.gender ?? undefined), translateScrapedGender(props.scraped.gender)));
   
   const [image, setImage] = useState<ScrapeResult<string>>(new ScrapeResult<string>(props.performer.image_path, props.scraped.image));
 
@@ -73,12 +135,7 @@ export const PerformerScrapeDialog: React.FC<IPerformerScrapeDialogProps> = (
           result={aliases}
           onChange={(value) => setAliases(value)}
         />
-        {/* TODO */}
-        <ScrapedInputGroupRow
-          title="Gender"
-          result={gender}
-          onChange={(value) => setGender(value)}
-        />
+        {renderScrapedGenderRow(gender, (value) => setGender(value))}
         <ScrapedInputGroupRow
           title="Birthdate"
           result={birthdate}
