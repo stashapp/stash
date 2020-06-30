@@ -337,7 +337,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
     return (
       <OverlayTrigger trigger="click" placement="top" overlay={popover}>
-        <Button variant="secondary">Scrape with...</Button>
+        <Button variant="secondary" className="mr-2">Scrape with...</Button>
       </OverlayTrigger>
     );
   }
@@ -411,7 +411,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       return (
         <div className="row">
           <Button
-            className="edit-button"
+            className="mr-2"
             variant="primary"
             onClick={() => onSave?.(getPerformerInput())}
           >
@@ -419,7 +419,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           </Button>
           {!isNew ? (
             <Button
-              className="edit-button"
+              className="mr-2"
               variant="danger"
               onClick={() => setIsDeleteAlertOpen(true)}
             >
