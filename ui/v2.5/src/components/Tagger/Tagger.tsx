@@ -29,7 +29,7 @@ const FindSceneByFingerprintQuery = loader('src/queries/searchFingerprint.gql');
 
 const uuidRegexp = /\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b/i;
 
-const DEFAULT_BLACKLIST = [' XXX ', '1080p', '720p', '2160p', 'KTR', 'RARBG', 'MP4', 'x264', '\\[', '\\]'];
+const DEFAULT_BLACKLIST = [' XXX ', '1080p', '720p', '2160p', 'KTR', 'RARBG', 'MP4', 'x264', 'wmv', 'avi', 'com', 'mpe?g', '\\[', '\\]'];
 const dateRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
 function prepareQueryString(scene: Partial<GQL.Scene>, paths: string[], mode:ParseMode, blacklist: string[]) {
   if ((mode === 'auto' && scene.date && scene.studio) || mode === "metadata") {
@@ -154,7 +154,8 @@ export const Tagger: React.FC = () => {
       filter: {
         q: searchFilter,
         page,
-        per_page: 20
+        per_page: 20,
+        sort: 'path'
       }
     }
   });
@@ -290,7 +291,6 @@ export const Tagger: React.FC = () => {
           ref={inputRef}
           placeholder="Search text"
           defaultValue={searchFilter}
-          disabled={sceneLoading}
         />
         <Button onClick={() => setShowConfig(!showConfig)} variant="link">{ showConfig ? 'Hide' : 'Show'} Configuration</Button>
         <div className="float-right mr-4 ml-auto">
@@ -347,15 +347,16 @@ export const Tagger: React.FC = () => {
       <Card className="tagger-table">
         <div className="tagger-table-header row mb-4">
           <div className="col-6"><b>Path</b></div>
-          <div className="col-4"><b>StashDB Query</b></div>
-          <div className="col-2 text-right">
+          <div className="col-2"><b>StashDB Query</b></div>
+          <div className="col-4 text-right">
             <Button onClick={handleFingerprintSearch} disabled={canFingerprintSearch() && !loadingFingerprints}>
               Search Fingerprints
               { loadingFingerprints && <LoadingIndicator message="" inline small /> }
             </Button>
           </div>
         </div>
-          {scenes.map(scene => {
+          { sceneLoading && <LoadingIndicator /> }
+          { !sceneLoading && scenes.map(scene => {
             const paths = scene.path.split('/');
             const parsedPath = path(scene.path);
             const { dir } = parsedPath;
@@ -369,7 +370,7 @@ export const Tagger: React.FC = () => {
                     <a href={`/scenes/${scene.id}`} className="scene-link" title={`${dir}/${parsedPath.base}`}>{dir}/<wbr />{parsedPath.base}</a>
                   </div>
                   <div className="col-6">
-                    { !taggedScenes[scene.id] && scene?.url && scene.url.match(uuidRegexp) && <div className="col-5 offset-6 text-right"><b>Scene already tagged</b></div> }
+                    { !taggedScenes[scene.id] && scene?.url && scene.url.match(uuidRegexp) && <h5 className="text-right text-bold">Scene already tagged</h5> }
                     { !taggedScenes[scene.id] && (!scene?.url || !scene.url.match(uuidRegexp)) && (
                       <InputGroup>
                         <Form.Control
@@ -382,8 +383,8 @@ export const Tagger: React.FC = () => {
                       </InputGroup>
                     )}
                     { taggedScenes[scene.id] && (
-                      <h5 className="text-right">
-                        <b>Scene successfully tagged:</b>
+                      <h5 className="d-flex">
+                        <b className="mr-auto">Scene successfully tagged:</b>
                         <a className="ml-4" href={`/scenes/${scene.id}`}>{taggedScenes[scene.id].title}</a>
                       </h5>
                     )}
@@ -399,21 +400,22 @@ export const Tagger: React.FC = () => {
                       setScene={handleTaggedScene}
                       scene={fingerprintMatch}
                       setCoverImage={config.setCoverImage}
-                      isFingerprintMatch
                     />
                 )}
                 { searchResults[scene.id] && !taggedScenes[scene.id] && !fingerprintMatch && (
                   <ul className="pl-0 mt-4">
                     { searchResults[scene.id]?.searchScene.sort((a, b) => {
-                      if(!a?.duration && !b?.duration) return 0;
-                      if(a?.duration && !b?.duration) return -1;
-                      if(!a?.duration && b?.duration) return 1;
+                      const adur = a?.duration ?? a?.fingerprints.map(f => f.duration)?.[0] ?? null;
+                      const bdur = b?.duration ?? b?.fingerprints.map(f => f.duration)?.[0] ?? null;
+                      if(!adur && !bdur) return 0;
+                      if(adur && !bdur) return -1;
+                      if(!adur && bdur) return 1;
 
                       const sceneDur = scene.file.duration;
                       if(!sceneDur) return 0;
 
-                      const aDiff = Math.abs((a?.duration ?? 0) - sceneDur);
-                      const bDiff = Math.abs((b?.duration ?? 0) - sceneDur);
+                      const aDiff = Math.abs((adur ?? 0) - sceneDur);
+                      const bDiff = Math.abs((bdur ?? 0) - sceneDur);
 
                       if(aDiff < bDiff) return -1;
                       if(aDiff > bDiff) return 1;

@@ -18,3 +18,4 @@ export { default as LoadingIndicator } from "./LoadingIndicator";
 export { ImageInput } from "./ImageInput";
 export { SweatDrops } from "./SweatDrops";
 export { default as CountryFlag } from "./CountryFlag";
+export { default as SuccessIcon } from "./SuccessIcon";

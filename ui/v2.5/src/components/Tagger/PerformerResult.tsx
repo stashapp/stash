@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import cx from 'classnames';
 
-import { Icon, PerformerSelect } from 'src/components/Shared';
+import { SuccessIcon, PerformerSelect } from 'src/components/Shared';
 import * as GQL from 'src/core/generated-graphql';
 import { ValidTypes } from 'src/components/Shared/Select';
 import {
@@ -12,14 +12,6 @@ import { sortImageURLs } from './utils';
 import { Operation } from './StashSearchResult';
 
 import PerformerModal from './PerformerModal';
-
-interface IIconProps {
-  className?: string;
-}
-
-const SuccessIcon: React.FC<IIconProps> = ({ className }) => (
-  <Icon icon="check" className={cx("success mr-4", className)} color="#0f9960" />
-);
 
 interface IPerformerOperation {
   type: Operation;
@@ -124,7 +116,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerfor
 
   if((stashData?.findPerformers.count ?? 0) > 0) {
     return (
-      <div className="row my-2">
+      <div className="row no-gutters my-2">
         <div className="entity-name">
           Performer:
           <b className="ml-2">{performer.name}</b>
@@ -137,7 +129,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerfor
     );
   }
   return (
-    <div className="row align-items-center mt-2">
+    <div className="row no-gutters align-items-center mt-2">
       <PerformerModal
         showModal={showModal}
         modalVisible={modalVisible}

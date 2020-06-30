@@ -17,16 +17,7 @@ import {
   SubmitFingerprintVariables,
   SubmitFingerprint
 } from 'src/definitions-box/SubmitFingerprint';
-import {
-  FindPerformersDocument,
-  FindStudioByUrlDocument,
-  AllPerformersForFilterQueryResult,
-  AllPerformersForFilterDocument,
-  AllStudiosForFilterQueryResult,
-  AllStudiosForFilterDocument,
-  AllTagsForFilterQueryResult,
-  AllTagsForFilterDocument,
-} from '../../core/generated-graphql';
+import { LoadingIndicator, SuccessIcon } from 'src/components/Shared';
 import PerformerResult from './PerformerResult';
 import StudioResult from './StudioResult';
 import {
@@ -40,6 +31,16 @@ import {
   getImage
 } from './utils';
 import { client } from './client';
+import {
+  FindPerformersDocument,
+  FindStudioByUrlDocument,
+  AllPerformersForFilterQuery,
+  AllPerformersForFilterDocument,
+  AllStudiosForFilterQuery,
+  AllStudiosForFilterDocument,
+  AllTagsForFilterQuery,
+  AllTagsForFilterDocument,
+} from '../../core/generated-graphql';
 
 const SubmitFingerprintMutation = loader('src/queries/submitFingerprint.gql');
 
@@ -49,9 +50,24 @@ const getDurationStatus = (scene: SearchResult, stashDuration: number|undefined|
   if(!sceneDuration || !stashDuration) return '';
   const diff = Math.abs(sceneDuration - stashDuration);
   if(diff < 5) {
-    return <div><b>Duration is a match</b></div>;
+    return (
+      <div className="font-weight-bold">
+        <SuccessIcon className="mr-2" />
+        Duration is a match
+      </div>
+    );
   }
   return <div>Duration off by {Math.floor(diff)}s</div>;
+};
+
+const getFingerprintStatus = (scene: SearchResult, stashChecksum?: string) => {
+  if (scene.fingerprints.some(f => f.hash === stashChecksum))
+    return (
+      <div className="font-weight-bold">
+        <SuccessIcon className="mr-2" />
+        Checksum is a match
+      </div>
+    );
 };
 
 interface IStashSearchResultProps {
@@ -61,7 +77,6 @@ interface IStashSearchResultProps {
   setActive: () => void;
   showMales: boolean;
   setScene: (scene: Partial<GQL.Scene>) => void;
-  isFingerprintMatch?: boolean;
   setCoverImage: boolean;
 }
 
@@ -86,7 +101,7 @@ interface IStudioOperation {
 
 const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScene, isActive, setActive, showMales, setScene, setCoverImage }) => {
   const [studio, setStudio] = useState<IStudioOperation>();
-  const [performers, setPerformers] = useState<Record<string, IPerformerOperation>>();
+  const [performers, setPerformers] = useState<Record<string, IPerformerOperation>>({});
   const [saveState, setSaveState] = useState<string>('');
 
   const [createStudio] = GQL.useStudioCreateMutation();
@@ -102,7 +117,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
   ), [performers]);
 
   const handleSave = async () => {
-    if(!performers || !studio)
+    if(!studio)
       return;
 
     let studioID:string;
@@ -152,18 +167,18 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
           store.writeQuery({
             query: FindStudioByUrlDocument,
             variables: {
-              url: newStudio.data.studioCreate.url
+              id: newStudio.data.studioCreate.url
             },
             data: {
               findStudioByURL: newStudio.data.studioCreate
             }
           });
 
-          const currentQuery = store.readQuery<AllStudiosForFilterQueryResult>({
+          const currentQuery = store.readQuery<AllStudiosForFilterQuery>({
             query: AllStudiosForFilterDocument,
             variables: {},
           });
-          const allStudiosSlim = sortBy([...(currentQuery?.data?.allStudiosSlim ?? []), newStudio.data.studioCreate], ['name']);
+          const allStudiosSlim = sortBy([...(currentQuery?.allStudiosSlim ?? []), newStudio.data.studioCreate], ['name']);
           if (allStudiosSlim.length > 1) {
             store.writeQuery({
               query: AllStudiosForFilterDocument,
@@ -226,7 +241,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
       }
       if(performer.type === 'Create') {
         const performerData = performer.data as StashPerformer;
-        const imgurl = performerData.images[0].url;
+        const imgurl = performerData.images[0]?.url;
         let imgData = null;
         if(imgurl) {
           const img = await fetch(imgurl, {
@@ -280,11 +295,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
               }
             });
 
-            const currentQuery = store.readQuery<AllPerformersForFilterQueryResult>({
+            const currentQuery = store.readQuery<AllPerformersForFilterQuery>({
               query: AllPerformersForFilterDocument,
               variables: {},
             });
-            const allPerformersSlim = sortBy([...(currentQuery?.data?.allPerformersSlim ?? []), newPerformer.data.performerCreate], ['name']);
+            const allPerformersSlim = sortBy([...(currentQuery?.allPerformersSlim ?? []), newPerformer.data.performerCreate], ['name']);
             if (allPerformersSlim.length > 1) {
               store.writeQuery({
                 query: AllPerformersForFilterDocument,
@@ -347,11 +362,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
               if (!_newTag.data?.tagCreate)
                 return;
 
-              const currentQuery = store.readQuery<AllTagsForFilterQueryResult>({
+              const currentQuery = store.readQuery<AllTagsForFilterQuery>({
                 query: AllTagsForFilterDocument,
                 variables: {},
               });
-              const allTagsSlim = sortBy([(currentQuery?.data?.allTagsSlim ?? []), _newTag.data.tagCreate], ['name']);
+              const allTagsSlim = sortBy([(currentQuery?.allTagsSlim ?? []), _newTag.data.tagCreate], ['name']);
 
               store.writeQuery({
                 query: AllTagsForFilterDocument,
@@ -411,21 +426,24 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
   ) : (<span>{scene?.title}</span>);
 
   const saveEnabled = (
-    performers
-    && (Object.keys(performers).some(id => !!performers[id].type))
-    && Object.keys(performers).length === scene.performers.filter(p => p.performer.gender !== 'MALE' || showMales).length
+    Object.keys(performers ?? []).length === scene.performers.filter(p => p.performer.gender !== 'MALE' || showMales).length
+    && (Object.keys(performers ?? []).every(id => !!performers?.[id].type))
+    && saveState === ''
   );
 
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <li className={classname} key={scene?.id} onClick={() => !isActive && setActive()}>
-      <div className="col-6 row">
-        <img src={getImage(scene?.images, 'landscape')} alt="" className="align-self-center scene-image" />
-        <div className="d-flex flex-column justify-content-center scene-metadata">
-          <h4 className="text-truncate" title={ scene?.title ?? "" }>{ sceneTitle }</h4>
-          <h5>{scene?.studio?.name} • {scene?.date}</h5>
-          <div>Performers: {scene?.performers?.map(p => p.performer.name).join(', ')}</div>
-          { getDurationStatus(scene, stashScene.file?.duration) }
+      <div className="col-6">
+        <div className="row">
+          <img src={getImage(scene?.images, 'landscape')} alt="" className="align-self-center scene-image" />
+          <div className="d-flex flex-column justify-content-center scene-metadata">
+            <h4 className="text-truncate" title={ scene?.title ?? "" }>{ sceneTitle }</h4>
+            <h5>{scene?.studio?.name} • {scene?.date}</h5>
+            <div>Performers: {scene?.performers?.map(p => p.performer.name).join(', ')}</div>
+            { getDurationStatus(scene, stashScene.file?.duration) }
+            { getFingerprintStatus(scene, stashScene.checksum) }
+          </div>
         </div>
       </div>
       { isActive && (
@@ -437,9 +455,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
               <PerformerResult performer={performer.performer} setPerformer={(data:IPerformerOperation) => setPerformer(data, performer.performer.id)} key={`${scene.id}${performer.performer.id}`} />
             ))
           }
-          <div className="row pr-3 mt-2">
-            <strong className="offset-8 col-3 mt-1">{saveState}</strong>
-            <Button className="col-1" onClick={handleSave} disabled={!saveEnabled}>Save</Button>
+          <div className="row no-gutters mt-2 align-items-center">
+            <strong className="col-4 mt-1 ml-auto">{saveState}</strong>
+            <Button onClick={handleSave} disabled={!saveEnabled}>
+              { saveState ? <LoadingIndicator inline small message="" /> : 'Save' }
+            </Button>
           </div>
         </div>
       )}

@@ -2,21 +2,13 @@ import React, { useEffect, useState, Dispatch, SetStateAction } from 'react';
 import { Button, ButtonGroup } from 'react-bootstrap';
 import cx from 'classnames';
 
-import { Icon, Modal, StudioSelect } from 'src/components/Shared';
+import { SuccessIcon, Modal, StudioSelect } from 'src/components/Shared';
 import * as GQL from 'src/core/generated-graphql';
 import {
   SearchScene_searchScene_studio as StashStudio
 } from 'src/definitions-box/SearchScene';
 import { getImage, getUrlByType } from './utils';
 import { Operation } from './StashSearchResult';
-
-interface IIconProps {
-  className?: string;
-}
-
-const SuccessIcon: React.FC<IIconProps> = ({ className }) => (
-  <Icon icon="check" className={cx("success mr-4", className)} color="#0f9960" />
-);
 
 interface IStudioOperation {
   type: Operation;
@@ -100,13 +92,13 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
 
   if(stashData?.findStudioByURL) {
     return (
-      <div className="row my-2">
+      <div className="row no-gutters my-2">
         <div className="entity-name">
           Studio:
           <b className="ml-2">{studio?.name}</b>
         </div>
         <span className="ml-auto">
-          <SuccessIcon />Matched:
+          <SuccessIcon className="mr-2" />Matched:
         </span>
         <b className="col-3 text-right">{ stashData.findStudioByURL.name }</b>
       </div>
@@ -115,7 +107,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
 
 
   return (
-    <div className="row align-items-center mt-2">
+    <div className="row no-gutters align-items-center mt-2">
       <Modal
         show={modalVisible}
         accept={{ text: "Save", onClick: handleStudioCreate }}
