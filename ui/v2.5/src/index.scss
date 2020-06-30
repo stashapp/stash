@@ -155,17 +155,6 @@ textarea.text-input {
   width: 100%;
 }
 
-/* fix for react-select in input-group */
-.input-group .react-select {
-  padding: 0;
-  border: 0;
-  height: 100%;
-
-  .react-select__control {
-    border-radius: 0;
-  }
-}
-
 /* this is a bit of a hack, because we can't supply direct class names
    to the react-select controls */
 /* stylelint-disable selector-class-pattern */
@@ -219,6 +208,17 @@ div.dropdown-menu {
     & > :last-child {
       margin-right: 0;
     }
+  }
+}
+
+/* fix for react-select in input-group */
+.input-group .react-select {
+  border: 0;
+  height: 100%;
+  padding: 0;
+
+  .react-select__control {
+    border-radius: 0;
   }
 }
 

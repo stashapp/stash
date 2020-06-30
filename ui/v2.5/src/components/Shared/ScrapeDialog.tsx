@@ -1,5 +1,12 @@
 import React from "react";
-import { Form, Col, Row, InputGroup, Button, FormControl } from "react-bootstrap";
+import {
+  Form,
+  Col,
+  Row,
+  InputGroup,
+  Button,
+  FormControl,
+} from "react-bootstrap";
 import { Icon, Modal } from "src/components/Shared";
 import _ from "lodash";
 
@@ -38,7 +45,7 @@ export class ScrapeResult<T> {
 }
 
 interface IScrapedFieldProps<T> {
-  result: ScrapeResult<T>
+  result: ScrapeResult<T>;
 }
 
 interface IScrapedRowProps<T> extends IScrapedFieldProps<T> {
@@ -49,49 +56,57 @@ interface IScrapedRowProps<T> extends IScrapedFieldProps<T> {
 }
 
 function renderButtonIcon(selected: boolean) {
-  let className = selected ? "text-success" : "text-muted";
+  const className = selected ? "text-success" : "text-muted";
 
   return (
-    <Icon className={`fa-fw ${className}`} icon={selected ? "check" : "times"} />
+    <Icon
+      className={`fa-fw ${className}`}
+      icon={selected ? "check" : "times"}
+    />
   );
 }
 
-export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) =>{
+export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
   function handleSelectClick(isNew: boolean) {
     const ret = _.clone(props.result);
     ret.useNewValue = isNew;
     props.onChange(ret);
   }
 
-  if (!props.result.scraped) {
-    return (
-      <></>
-    );
-  }
+  // if (!props.result.scraped) {
+  //   return (
+  //     <></>
+  //   );
+  // }
 
   return (
     <Row className="px-3 pt-3">
       <Form.Label column lg="3">
         {props.title}
       </Form.Label>
-      
+
       <Col lg="9">
         <Row>
           <Col xs="6">
             <InputGroup>
               <InputGroup.Prepend className="bg-secondary text-white border-secondary">
-                <Button variant="secondary" onClick={() => handleSelectClick(false)}>
+                <Button
+                  variant="secondary"
+                  onClick={() => handleSelectClick(false)}
+                >
                   {renderButtonIcon(!props.result.useNewValue)}
                 </Button>
               </InputGroup.Prepend>
               {props.renderOriginalField(props.result)}
             </InputGroup>
-            
           </Col>
           <Col xs="6">
             <InputGroup>
               <InputGroup.Prepend>
-                <Button variant="secondary" onClick={() => handleSelectClick(true)}>
+                <Button
+                  variant="secondary"
+                  onClick={() => handleSelectClick(true)}
+                >
                   {renderButtonIcon(props.result.useNewValue)}
                 </Button>
               </InputGroup.Prepend>
@@ -102,13 +117,13 @@ export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) =>{
       </Col>
     </Row>
   );
-}
+};
 
 interface IScrapedInputGroupProps {
   isNew?: boolean;
-  placeholder?: string
+  placeholder?: string;
   result: ScrapeResult<string>;
-  onChange?: (value : string) => void;
+  onChange?: (value: string) => void;
 }
 
 const ScrapedInputGroup: React.FC<IScrapedInputGroupProps> = (props) => {
@@ -124,23 +139,39 @@ const ScrapedInputGroup: React.FC<IScrapedInputGroupProps> = (props) => {
       }}
       className="bg-secondary text-white border-secondary"
     />
-  )
-}
+  );
+};
 
 interface IScrapedInputGroupRowProps {
   title: string;
-  placeholder?: string
+  placeholder?: string;
   result: ScrapeResult<string>;
-  onChange: (value : ScrapeResult<string>) => void;
+  onChange: (value: ScrapeResult<string>) => void;
 }
 
-export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (props) => {
+export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (
+  props
+) => {
   return (
     <ScrapeDialogRow
       title={props.title}
       result={props.result}
-      renderOriginalField={() => <ScrapedInputGroup placeholder={props.placeholder || props.title} result={props.result} />}
-      renderNewField={() => <ScrapedInputGroup placeholder={props.placeholder || props.title} result={props.result} isNew={true} onChange={(value) => props.onChange(props.result.cloneWithValue(value))} />}
+      renderOriginalField={() => (
+        <ScrapedInputGroup
+          placeholder={props.placeholder || props.title}
+          result={props.result}
+        />
+      )}
+      renderNewField={() => (
+        <ScrapedInputGroup
+          placeholder={props.placeholder || props.title}
+          result={props.result}
+          isNew
+          onChange={(value) =>
+            props.onChange(props.result.cloneWithValue(value))
+          }
+        />
+      )}
       onChange={props.onChange}
     />
   );
@@ -148,7 +179,8 @@ export const ScrapedInputGroupRow: React.FC<IScrapedInputGroupRowProps> = (props
 
 const ScrapedTextArea: React.FC<IScrapedInputGroupProps> = (props) => {
   return (
-    <FormControl as="textarea"
+    <FormControl
+      as="textarea"
       placeholder={props.placeholder}
       value={props.isNew ? props.result.newValue : props.result.originalValue}
       readOnly={!props.isNew}
@@ -160,19 +192,35 @@ const ScrapedTextArea: React.FC<IScrapedInputGroupProps> = (props) => {
       className="bg-secondary text-white border-secondary scene-description"
     />
   );
-}
+};
 
-export const ScrapedTextAreaRow: React.FC<IScrapedInputGroupRowProps> = (props) => {
+export const ScrapedTextAreaRow: React.FC<IScrapedInputGroupRowProps> = (
+  props
+) => {
   return (
     <ScrapeDialogRow
       title={props.title}
       result={props.result}
-      renderOriginalField={() => <ScrapedTextArea placeholder={props.placeholder || props.title} result={props.result} />}
-      renderNewField={() => <ScrapedTextArea placeholder={props.placeholder || props.title} result={props.result} isNew={true} onChange={(value) => props.onChange(props.result.cloneWithValue(value))} />}
+      renderOriginalField={() => (
+        <ScrapedTextArea
+          placeholder={props.placeholder || props.title}
+          result={props.result}
+        />
+      )}
+      renderNewField={() => (
+        <ScrapedTextArea
+          placeholder={props.placeholder || props.title}
+          result={props.result}
+          isNew
+          onChange={(value) =>
+            props.onChange(props.result.cloneWithValue(value))
+          }
+        />
+      )}
       onChange={props.onChange}
     />
   );
-}
+};
 
 interface IScrapedImageProps {
   isNew?: boolean;
@@ -182,26 +230,24 @@ interface IScrapedImageProps {
 }
 
 const ScrapedImage: React.FC<IScrapedImageProps> = (props) => {
-  const value = props.isNew ? props.result.newValue : props.result.originalValue;
+  const value = props.isNew
+    ? props.result.newValue
+    : props.result.originalValue;
 
   if (!value) {
     return <></>;
   }
-  
+
   return (
-    <img
-      className={props.className}
-      src={value}
-      alt={props.placeholder}
-    />
+    <img className={props.className} src={value} alt={props.placeholder} />
   );
-}
+};
 
 interface IScrapedImageRowProps {
   title: string;
   className?: string;
   result: ScrapeResult<string>;
-  onChange: (value : ScrapeResult<string>) => void;
+  onChange: (value: ScrapeResult<string>) => void;
 }
 
 export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
@@ -209,12 +255,25 @@ export const ScrapedImageRow: React.FC<IScrapedImageRowProps> = (props) => {
     <ScrapeDialogRow
       title={props.title}
       result={props.result}
-      renderOriginalField={() => <ScrapedImage result={props.result} className={props.className} placeholder={props.title}/>}
-      renderNewField={() => <ScrapedImage result={props.result} className={props.className} placeholder={props.title} isNew={true} />}
+      renderOriginalField={() => (
+        <ScrapedImage
+          result={props.result}
+          className={props.className}
+          placeholder={props.title}
+        />
+      )}
+      renderNewField={() => (
+        <ScrapedImage
+          result={props.result}
+          className={props.className}
+          placeholder={props.title}
+          isNew
+        />
+      )}
       onChange={props.onChange}
     />
   );
-}
+};
 
 interface IScrapeDialogProps {
   title: string;
@@ -230,18 +289,23 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
       show
       icon="pencil-alt"
       header={props.title}
-      accept={{ onClick: () => { props.onClose(true) }, text: "Apply" }}
+      accept={{
+        onClick: () => {
+          props.onClose(true);
+        },
+        text: "Apply",
+      }}
       cancel={{
         onClick: () => props.onClose(),
         text: "Cancel",
         variant: "secondary",
       }}
-      modalProps={{size: "lg", dialogClassName: "scrape-dialog"}}
+      modalProps={{ size: "lg", dialogClassName: "scrape-dialog" }}
     >
       <div className="dialog-container">
         <Form>
           <Row className="px-3 pt-3">
-            <Col lg={{span: 9, offset: 3}}>
+            <Col lg={{ span: 9, offset: 3 }}>
               <Row>
                 <Form.Label column xs="6">
                   Existing
@@ -258,4 +322,4 @@ export const ScrapeDialog: React.FC<IScrapeDialogProps> = (
       </div>
     </Modal>
   );
-}
+};

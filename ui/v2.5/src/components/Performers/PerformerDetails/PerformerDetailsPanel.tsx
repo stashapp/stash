@@ -91,7 +91,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  const [scrapedPerformer, setScrapedPerformer] = useState<GQL.ScrapedPerformer | undefined>();
+  const [scrapedPerformer, setScrapedPerformer] = useState<
+    GQL.ScrapedPerformer | undefined
+  >();
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
@@ -264,14 +266,13 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         getQueryScraperPerformerInput()
       );
       if (!result?.data?.scrapePerformer) return;
-      
+
       // if this is a new performer, just dump the data
       if (isNew) {
         updatePerformerEditStateFromScraper(result.data.scrapePerformer);
       } else {
         setScrapedPerformer(result.data.scrapePerformer);
       }
-
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -348,7 +349,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
     return (
       <OverlayTrigger trigger="click" placement="top" overlay={popover}>
-        <Button variant="secondary" className="mr-2">Scrape with...</Button>
+        <Button variant="secondary" className="mr-2">
+          Scrape with...
+        </Button>
       </OverlayTrigger>
     );
   }
@@ -403,13 +406,19 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
 
     return (
-      <PerformerScrapeDialog performer={performer} scraped={scrapedPerformer} onClose={(performer) => { onScrapeDialogClosed(performer)}}/>
+      <PerformerScrapeDialog
+        performer={performer}
+        scraped={scrapedPerformer}
+        onClose={(p) => {
+          onScrapeDialogClosed(p);
+        }}
+      />
     );
   }
 
-  function onScrapeDialogClosed(performer?: GQL.ScrapedPerformerDataFragment) {
-    if (performer) {
-      updatePerformerEditStateFromScraper(performer);
+  function onScrapeDialogClosed(p?: GQL.ScrapedPerformerDataFragment) {
+    if (p) {
+      updatePerformerEditStateFromScraper(p);
     }
     setScrapedPerformer(undefined);
   }

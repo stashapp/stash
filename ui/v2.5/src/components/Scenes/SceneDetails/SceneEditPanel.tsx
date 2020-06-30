@@ -31,7 +31,6 @@ import { ImageUtils, FormUtils, EditableTextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
-import Maybe from "graphql/tsutils/Maybe";
 import { SceneScrapeDialog } from "./SceneScrapeDialog";
 
 interface IProps {
@@ -60,7 +59,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const Scrapers = useListSceneScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  const [scrapedScene, setScrapedScene] = useState<Maybe<GQL.ScrapedScene>>();
+  const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
 
   const [coverImagePreview, setCoverImagePreview] = useState<string>();
 
@@ -253,7 +252,13 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
 
     return (
-      <SceneScrapeDialog scene={props.scene} scraped={scrapedScene} onClose={(scene) => { onScrapeDialogClosed(scene)}}/>
+      <SceneScrapeDialog
+        scene={props.scene}
+        scraped={scrapedScene}
+        onClose={(scene) => {
+          onScrapeDialogClosed(scene);
+        }}
+      />
     );
   }
 
@@ -302,10 +307,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       setStudioId(scene.studio.id);
     }
 
-    if (
-      scene.performers &&
-      scene.performers.length > 0
-    ) {
+    if (scene.performers && scene.performers.length > 0) {
       const idPerfs = scene.performers.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
@@ -316,10 +318,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       }
     }
 
-    if (
-      scene.movies &&
-      scene.movies.length > 0
-    ) {
+    if (scene.movies && scene.movies.length > 0) {
       const idMovis = scene.movies.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
@@ -359,7 +358,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
         return;
       }
       setScrapedScene(result.data.scrapeSceneURL);
-
     } catch (e) {
       Toast.error(e);
     } finally {

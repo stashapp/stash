@@ -70,7 +70,7 @@ const renderInputGroup = (options: {
       placeholder={options.placeholder ?? options.title}
       onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
         if (options.onChange) {
-          options.onChange(event.currentTarget.value)
+          options.onChange(event.currentTarget.value);
         }
       }}
     />
