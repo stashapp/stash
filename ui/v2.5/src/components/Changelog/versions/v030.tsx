@@ -11,6 +11,7 @@ const markup = `
 
 ### 🎨 Improvements
 *  Add dialog when pasting movie images.
+*  Allow click and click-drag selection after selecting scene.
 *  Added multi-scene edit dialog.
 *  Moved images to separate tables, increasing performance.
 *  Add gallery grid view.
