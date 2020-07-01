@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 
 const markup = `
 ### ✨ New Features
+*  Add post-scrape dialog.
 *  Add various keyboard shortcuts (see manual).
 *  Support deleting multiple scenes.
 *  Add in-app help manual.
