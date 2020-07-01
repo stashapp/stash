@@ -250,10 +250,15 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     if (!scrapedScene) {
       return;
     }
+
+    const currentScene = getSceneInput();
+    if (!currentScene.cover_image) {
+      currentScene.cover_image = props.scene.paths.screenshot;
+    }
     
     return (
       <SceneScrapeDialog
-        scene={getSceneInput()}
+        scene={currentScene}
         scraped={scrapedScene}
         onClose={(scene) => {
           onScrapeDialogClosed(scene);
