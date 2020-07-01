@@ -453,9 +453,29 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       return;
     }
 
+    const currentPerformer: Partial<GQL.PerformerDataFragment> = {
+      name,
+      aliases,
+      birthdate,
+      ethnicity,
+      country,
+      eye_color: eyeColor,
+      height,
+      measurements,
+      fake_tits: fakeTits,
+      career_length: careerLength,
+      tattoos,
+      piercings,
+      url,
+      twitter,
+      instagram,
+      gender: stringToGender(gender),
+      image_path: image ?? performer.image_path,
+    }
+
     return (
       <PerformerScrapeDialog
-        performer={performer}
+        performer={currentPerformer}
         scraped={scrapedPerformer}
         onClose={(p) => {
           onScrapeDialogClosed(p);
