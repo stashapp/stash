@@ -158,6 +158,8 @@ type Mutation {
   """Reload scrapers"""
   reloadScrapers: Boolean!
 
+  runOperation(operation_id: ID!, args: [OperationArgInput!]): String
+
   stopJob: Boolean!
 }
 

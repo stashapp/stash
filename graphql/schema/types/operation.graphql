@@ -1,0 +1,14 @@
+
+input OperationArgInput {
+    key: String!
+    value: OperationValueInput
+}
+
+input OperationValueInput {
+    str: String
+    i: Int
+    b: Boolean
+    f: Float
+    o: [OperationArgInput!]
+    a: [OperationValueInput!]
+}
