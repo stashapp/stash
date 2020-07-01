@@ -67,7 +67,6 @@ export const ListFilter: React.FC<IListFilterProps> = (
       e.preventDefault();
     });
 
-    Mousetrap.bind("f", () => undefined); // TODO - trigger filter open
     Mousetrap.bind("r", () => onReshuffleRandomSort());
     Mousetrap.bind("v g", () => {
       if (props.filter.displayModeOptions.includes(DisplayMode.Grid)) {
