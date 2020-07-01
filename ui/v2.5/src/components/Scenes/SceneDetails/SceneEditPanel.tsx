@@ -35,6 +35,7 @@ import { SceneScrapeDialog } from "./SceneScrapeDialog";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
+  isVisible: boolean;
   onUpdate: (scene: GQL.SceneDataFragment) => void;
   onDelete: () => void;
 }
@@ -67,6 +68,48 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [updateScene] = useSceneUpdate(getSceneInput());
+
+  useEffect(() => {
+    if (props.isVisible) {
+      Mousetrap.bind("s s", () => {
+        onSave();
+      });
+      Mousetrap.bind("d d", () => {
+        props.onDelete();
+      });
+
+      // numeric keypresses get caught by jwplayer, so blur the element
+      // if the rating sequence is started
+      Mousetrap.bind("r", () => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+
+        Mousetrap.bind("0", () => setRating(NaN));
+        Mousetrap.bind("1", () => setRating(1));
+        Mousetrap.bind("2", () => setRating(2));
+        Mousetrap.bind("3", () => setRating(3));
+        Mousetrap.bind("4", () => setRating(4));
+        Mousetrap.bind("5", () => setRating(5));
+
+        setTimeout(() => {
+          Mousetrap.unbind("0");
+          Mousetrap.unbind("1");
+          Mousetrap.unbind("2");
+          Mousetrap.unbind("3");
+          Mousetrap.unbind("4");
+          Mousetrap.unbind("5");
+        }, 1000);
+      });
+
+      return () => {
+        Mousetrap.unbind("s s");
+        Mousetrap.unbind("d d");
+
+        Mousetrap.unbind("r");
+      };
+    }
+  });
 
   useEffect(() => {
     const newQueryableScrapers = (

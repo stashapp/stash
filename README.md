@@ -8,6 +8,8 @@
 
 See a demo [here](https://vimeo.com/275537038) (password is stashapp).
 
+An in-app manual is available, and the manual pages can be viewed [here](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en).
+
 # Docker install
 
 Follow [this README.md in the docker directory.](docker/production/README.md)
