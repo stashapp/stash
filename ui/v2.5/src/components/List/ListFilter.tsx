@@ -1,5 +1,5 @@
 import _, { debounce } from "lodash";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
   Badge,
@@ -19,6 +19,7 @@ import { Icon } from "src/components/Shared";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import { useFocus } from "src/utils";
 import { AddFilter } from "./AddFilter";
 
 interface IListFilterOperation {
@@ -27,6 +28,7 @@ interface IListFilterOperation {
 }
 
 interface IListFilterProps {
+  subComponent?: boolean;
   onFilterUpdate: (newFilter: ListFilterModel) => void;
   zoomIndex?: number;
   onChangeZoom?: (zoomIndex: number) => void;
@@ -40,10 +42,14 @@ interface IListFilterProps {
 }
 
 const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
+const minZoom = 0;
+const maxZoom = 3;
 
 export const ListFilter: React.FC<IListFilterProps> = (
   props: IListFilterProps
 ) => {
+  const [queryRef, setQueryFocus] = useFocus();
+
   const searchCallback = debounce((value: string) => {
     const newFilter = _.cloneDeep(props.filter);
     newFilter.searchTerm = value;
@@ -54,6 +60,81 @@ export const ListFilter: React.FC<IListFilterProps> = (
   const [editingCriterion, setEditingCriterion] = useState<
     Criterion | undefined
   >(undefined);
+
+  useEffect(() => {
+    Mousetrap.bind("/", (e) => {
+      setQueryFocus();
+      e.preventDefault();
+    });
+
+    Mousetrap.bind("r", () => onReshuffleRandomSort());
+    Mousetrap.bind("v g", () => {
+      if (props.filter.displayModeOptions.includes(DisplayMode.Grid)) {
+        onChangeDisplayMode(DisplayMode.Grid);
+      }
+    });
+    Mousetrap.bind("v l", () => {
+      if (props.filter.displayModeOptions.includes(DisplayMode.List)) {
+        onChangeDisplayMode(DisplayMode.List);
+      }
+    });
+    Mousetrap.bind("v w", () => {
+      if (props.filter.displayModeOptions.includes(DisplayMode.Wall)) {
+        onChangeDisplayMode(DisplayMode.Wall);
+      }
+    });
+    Mousetrap.bind("+", () => {
+      if (
+        props.onChangeZoom &&
+        props.zoomIndex !== undefined &&
+        props.zoomIndex < maxZoom
+      ) {
+        props.onChangeZoom(props.zoomIndex + 1);
+      }
+    });
+    Mousetrap.bind("-", () => {
+      if (
+        props.onChangeZoom &&
+        props.zoomIndex !== undefined &&
+        props.zoomIndex > minZoom
+      ) {
+        props.onChangeZoom(props.zoomIndex - 1);
+      }
+    });
+    Mousetrap.bind("s a", () => onSelectAll());
+    Mousetrap.bind("s n", () => onSelectNone());
+
+    if (!props.subComponent && props.itemsSelected) {
+      Mousetrap.bind("e", () => {
+        if (props.onEdit) {
+          props.onEdit();
+        }
+      });
+
+      Mousetrap.bind("d d", () => {
+        if (props.onDelete) {
+          props.onDelete();
+        }
+      });
+    }
+
+    return () => {
+      Mousetrap.unbind("/");
+      Mousetrap.unbind("r");
+      Mousetrap.unbind("v g");
+      Mousetrap.unbind("v l");
+      Mousetrap.unbind("v w");
+      Mousetrap.unbind("+");
+      Mousetrap.unbind("-");
+      Mousetrap.unbind("s a");
+      Mousetrap.unbind("s n");
+
+      if (!props.subComponent && props.itemsSelected) {
+        Mousetrap.unbind("e");
+        Mousetrap.unbind("d d");
+      }
+    };
+  });
 
   function onChangePageSize(event: React.ChangeEvent<HTMLSelectElement>) {
     const val = event.currentTarget.value;
@@ -322,9 +403,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
           <Form.Control
             className="zoom-slider d-none d-sm-inline-flex ml-3"
             type="range"
-            min={0}
-            max={3}
-            defaultValue={1}
+            min={minZoom}
+            max={maxZoom}
+            value={props.zoomIndex}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
             }
@@ -369,6 +450,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
           <ButtonGroup className="mr-3 my-1">
             <InputGroup className="mr-2">
               <FormControl
+                ref={queryRef}
                 placeholder="Search..."
                 defaultValue={props.filter.searchTerm}
                 onInput={onChangeQuery}
