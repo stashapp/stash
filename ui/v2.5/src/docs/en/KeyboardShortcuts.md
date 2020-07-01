@@ -62,7 +62,7 @@
 
 | Keyboard sequence | Action |
 |-------------------|--------|
-| `c` | Display Create Markers dialog |
+| `n` | Display Create Markers dialog |
 
 ### Edit Scene tab shortcuts
 
