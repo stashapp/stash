@@ -218,6 +218,8 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     if (ret.length === 0) {
       return undefined;
     }
+
+    return ret;
   }
 
   const [performers, setPerformers] = useState<ScrapeResult<string[]>>(

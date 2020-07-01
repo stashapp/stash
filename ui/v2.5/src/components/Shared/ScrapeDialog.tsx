@@ -19,7 +19,9 @@ export class ScrapeResult<T> {
   public constructor(originalValue?: T | null, newValue?: T | null) {
     this.originalValue = originalValue ?? undefined;
     this.newValue = newValue ?? undefined;
-    this.useNewValue = !!this.newValue && this.newValue !== this.originalValue;
+
+    const valuesEqual = _.isEqual(originalValue, newValue);
+    this.useNewValue = !!this.newValue && !valuesEqual;
     this.scraped = this.useNewValue;
   }
 
