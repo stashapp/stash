@@ -250,10 +250,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     if (!scrapedScene) {
       return;
     }
-
+    
     return (
       <SceneScrapeDialog
-        scene={props.scene}
+        scene={getSceneInput()}
         scraped={scrapedScene}
         onClose={(scene) => {
           onScrapeDialogClosed(scene);
