@@ -275,7 +275,19 @@ textarea.scene-description {
   }
 }
 
-#scene-edit-details .rating-stars {
-  font-size: 1.3em;
-  height: calc(1.5em + 0.75rem + 2px);
+#scene-edit-details {
+  .rating-stars {
+    font-size: 1.3em;
+    height: calc(1.5em + 0.75rem + 2px);
+  }
+
+  .scrape-button-container {
+    margin-right: -15px;
+  }
+
+  .scrape-url-button {
+    color: $text-color;
+    // float: right;
+    margin-right: 0;
+  }
 }

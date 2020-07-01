@@ -375,8 +375,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       return undefined;
     }
     return (
-      <Button id="scrape-url-button" onClick={onScrapeSceneURL} title="Scrape">
-        <Icon icon="file-download" />
+      <Button className="minimal scrape-url-button" onClick={onScrapeSceneURL} title="Scrape">
+        <Icon className="fa-fw" icon="file-download" />
       </Button>
     );
   }
@@ -384,7 +384,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   if (isLoading) return <LoadingIndicator />;
 
   return (
-    <>
+    <div id="scene-edit-details">
       {maybeRenderScrapeDialog()}
       <div className="form-container row px-3 pt-3">
         <div className="col edit-buttons mb-3 pl-0">
@@ -410,9 +410,14 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             isEditing: true,
           })}
           <Form.Group controlId="url" as={Row}>
-            {FormUtils.renderLabel({
-              title: "URL",
-            })}
+            <Col xs={3} className="pr-0 url-label">
+              <Form.Label className="col-form-label">
+                URL
+              </Form.Label>
+              <div className="float-right scrape-button-container">
+                {maybeRenderScrapeButton()}
+              </div>
+            </Col>
             <Col xs={9}>
               {EditableTextUtils.renderInputGroup({
                 title: "URL",
@@ -420,7 +425,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
                 onChange: setUrl,
                 isEditing: true,
               })}
-              {maybeRenderScrapeButton()}
             </Col>
           </Form.Group>
           {FormUtils.renderInputGroup({
@@ -554,6 +558,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
