@@ -255,7 +255,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     if (!currentScene.cover_image) {
       currentScene.cover_image = props.scene.paths.screenshot;
     }
-    
+
     return (
       <SceneScrapeDialog
         scene={currentScene}
@@ -375,7 +375,11 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       return undefined;
     }
     return (
-      <Button className="minimal scrape-url-button" onClick={onScrapeSceneURL} title="Scrape">
+      <Button
+        className="minimal scrape-url-button"
+        onClick={onScrapeSceneURL}
+        title="Scrape"
+      >
         <Icon className="fa-fw" icon="file-download" />
       </Button>
     );
@@ -411,9 +415,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           })}
           <Form.Group controlId="url" as={Row}>
             <Col xs={3} className="pr-0 url-label">
-              <Form.Label className="col-form-label">
-                URL
-              </Form.Label>
+              <Form.Label className="col-form-label">URL</Form.Label>
               <div className="float-right scrape-button-container">
                 {maybeRenderScrapeButton()}
               </div>

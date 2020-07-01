@@ -471,7 +471,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       instagram,
       gender: stringToGender(gender),
       image_path: image ?? performer.image_path,
-    }
+    };
 
     return (
       <PerformerScrapeDialog
