@@ -32,6 +32,19 @@ export const SceneList: React.FC<ISceneList> = ({
     },
   ];
 
+  const addKeybinds = (
+    result: FindScenesQueryResult,
+    filter: ListFilterModel
+  ) => {
+    Mousetrap.bind("p r", () => {
+      playRandom(result, filter);
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  };
+
   const listData = useScenesList({
     zoomable: true,
     otherOperations,
@@ -40,6 +53,7 @@ export const SceneList: React.FC<ISceneList> = ({
     renderDeleteDialog: renderDeleteScenesDialog,
     subComponent,
     filterHook,
+    addKeybinds,
   });
 
   async function playRandom(
