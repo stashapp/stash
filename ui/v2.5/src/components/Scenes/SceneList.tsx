@@ -100,6 +100,7 @@ export const SceneList: React.FC<ISceneList> = ({
         key={scene.id}
         scene={scene}
         zoomIndex={zoomIndex}
+        selecting={selectedIds.size > 0}
         selected={selectedIds.has(scene.id)}
         onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
           listData.onSelectChange(scene.id, selected, shiftKey)
