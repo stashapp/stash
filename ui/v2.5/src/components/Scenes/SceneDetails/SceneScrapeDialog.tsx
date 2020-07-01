@@ -10,6 +10,7 @@ import {
   ScrapedTextAreaRow,
   ScrapedImageRow,
 } from "src/components/Shared/ScrapeDialog";
+import _ from "lodash";
 
 function renderScrapedStudio(
   result: ScrapeResult<string>,
@@ -219,24 +220,43 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
       return undefined;
     }
 
+    // sort by id numerically
+    ret.sort((a, b) => {
+      return parseInt(a) - parseInt(b);
+    });
+
+    return ret;
+  }
+
+  function sortIdList(idList?: string[] | null) {
+    if (!idList) {
+      return;
+    }
+
+    const ret = _.clone(idList);
+    // sort by id numerically
+    ret.sort((a, b) => {
+      return parseInt(a) - parseInt(b);
+    });
+
     return ret;
   }
 
   const [performers, setPerformers] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
-      props.scene.performer_ids,
+      sortIdList(props.scene.performer_ids),
       mapIdObjects(props.scraped.performers ?? undefined)
     )
   );
   const [movies, setMovies] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
-      props.scene.movies?.map((p) => p.movie_id),
+      sortIdList(props.scene.movies?.map((p) => p.movie_id)),
       mapIdObjects(props.scraped.movies ?? undefined)
     )
   );
   const [tags, setTags] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
-      props.scene.tag_ids,
+      sortIdList(props.scene.tag_ids),
       mapIdObjects(props.scraped.tags ?? undefined)
     )
   );
