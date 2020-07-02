@@ -7,12 +7,8 @@ import (
 	"github.com/stashapp/stash/pkg/plugin"
 )
 
-func (r *mutationResolver) RunPluginOperation(ctx context.Context, pluginID string, operationName string, args []*models.OperationArgInput) (*models.OperationResult, error) {
-	return plugin.RunPluginOperation(pluginID, operationName, args)
-}
-
-func (r *mutationResolver) RunPluginOperationJob(ctx context.Context, pluginID string, operationName string, args []*models.OperationArgInput) (string, error) {
-	// TODO
+func (r *mutationResolver) RunPluginTask(ctx context.Context, pluginID string, taskName string, args []*models.PluginArgInput) (string, error) {
+	//return plugin.RunPluginOperation(pluginID, operationName, args)
 	return "", nil
 }
 

@@ -11,6 +11,6 @@ func (r *queryResolver) Plugins(ctx context.Context) ([]*models.Plugin, error) {
 	return plugin.ListPlugins()
 }
 
-func (r *queryResolver) PluginOperations(ctx context.Context) ([]*models.PluginOperation, error) {
-	return plugin.ListPluginOperations()
+func (r *queryResolver) PluginTasks(ctx context.Context) ([]*models.PluginTask, error) {
+	return plugin.ListPluginTasks()
 }

@@ -13,7 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-func executeRPC(operation *PluginOperationConfig, args []*models.OperationArgInput) (*common.PluginOutput, error) {
+func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput) (*common.PluginOutput, error) {
 	command := operation.Exec
 	if len(command) == 0 {
 		return nil, fmt.Errorf("empty exec value in operation %s", operation.Name)
@@ -37,6 +37,7 @@ func executeRPC(operation *PluginOperationConfig, args []*models.OperationArgInp
 		Client: client,
 	}
 
+	// TODO - pass args
 	input := common.PluginInput{
 		ServerPort: config.GetPort(),
 	}

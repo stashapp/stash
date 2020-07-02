@@ -2,42 +2,31 @@
 type Plugin {
     id: ID!
     name: String!
+    description: String
+    version: String
 }
 
-type PluginOperation {
+type PluginTask {
     plugin_id: ID!
-    operation_name: String!
+    name: String!
+    description: String
 }
 
-type OperationResult {
+type PluginResult {
     error: String
-    result: OperationValue
+    result: String
 }
 
-type OperationValue {
+input PluginArgInput {
+    key: String!
+    value: PluginValueInput
+}
+
+input PluginValueInput {
     str: String
     i: Int
     b: Boolean
     f: Float
-    o: [OperationKeyValue!]
-    a: [OperationValue!]
-}
-
-type OperationKeyValue {
-    key: String!
-    value: OperationValue
-}
-
-input OperationArgInput {
-    key: String!
-    value: OperationValueInput
-}
-
-input OperationValueInput {
-    str: String
-    i: Int
-    b: Boolean
-    f: Float
-    o: [OperationArgInput!]
-    a: [OperationValueInput!]
+    o: [PluginArgInput!]
+    a: [PluginValueInput!]
 }

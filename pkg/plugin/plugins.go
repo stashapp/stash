@@ -68,7 +68,7 @@ func ListPlugins() ([]*models.Plugin, error) {
 	return ret, nil
 }
 
-func ListPluginOperations() ([]*models.PluginOperation, error) {
+func ListPluginTasks() ([]*models.PluginTask, error) {
 	// read plugin config files from the directory and cache
 	plugins, err := loadPlugins()
 
@@ -76,9 +76,9 @@ func ListPluginOperations() ([]*models.PluginOperation, error) {
 		return nil, err
 	}
 
-	var ret []*models.PluginOperation
+	var ret []*models.PluginTask
 	for _, s := range plugins {
-		ret = append(ret, s.getPluginOperations()...)
+		ret = append(ret, s.getPluginTasks()...)
 	}
 
 	return ret, nil
@@ -101,27 +101,24 @@ func getPlugin(pluginID string) (*PluginConfig, error) {
 	return nil, nil
 }
 
-func RunPluginOperation(pluginID string, operationName string, args []*models.OperationArgInput) (*models.OperationResult, error) {
+func RunPluginOperation(pluginID string, operationName string, args []*models.PluginArgInput) error {
 	// find the plugin and operation
 	plugin, err := getPlugin(pluginID)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if plugin == nil {
-		return nil, fmt.Errorf("no plugin with ID %s", pluginID)
+		return fmt.Errorf("no plugin with ID %s", pluginID)
 	}
 
-	operation := plugin.getOperation(operationName)
+	operation := plugin.getTask(operationName)
 	if operation == nil {
-		return nil, fmt.Errorf("no operation with name %s in plugin %s", operationName, plugin.getName())
+		return fmt.Errorf("no task with name %s in plugin %s", operationName, plugin.getName())
 	}
 
-	out, err := executeRPC(operation, args)
-	if err != nil {
-		return nil, err
-	}
+	_, err = executeRPC(operation, args)
 
-	return toOperationResult(*out), nil
+	return err
 }

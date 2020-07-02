@@ -74,7 +74,7 @@ type Query {
   """List loaded plugins"""
   plugins: [Plugin!]
   """List available plugin operations"""
-  pluginOperations: [PluginOperation!]
+  pluginTasks: [PluginTask!]
 
 
   # Config
@@ -165,9 +165,8 @@ type Mutation {
   """Reload scrapers"""
   reloadScrapers: Boolean!
 
-  runPluginOperation(plugin_id: ID!, operation_name: String!, args: [OperationArgInput!]): OperationResult!
-  """Run plugin operation as a job. Returns the job ID"""
-  runPluginOperationJob(plugin_id: ID!, operation_name: String!, args: [OperationArgInput!]): String!
+  """Run plugin task. Returns the job ID"""
+  runPluginTask(plugin_id: ID!, task_name: String!, args: [PluginArgInput!]): String!
   reloadPlugins: Boolean!
 
   stopJob: Boolean!

@@ -13,16 +13,19 @@ import (
 type PluginConfig struct {
 	ID         string
 	Name       string                   `yaml:"name"`
-	Operations []*PluginOperationConfig `yaml:"operations"`
+	Description *string `yaml:"description"`
+	Version *string `yaml:"version"`
+	Tasks []*PluginOperationConfig `yaml:"tasks"`
 }
 
-func (c PluginConfig) getPluginOperations() []*models.PluginOperation {
-	var ret []*models.PluginOperation
+func (c PluginConfig) getPluginTasks() []*models.PluginTask {
+	var ret []*models.PluginTask
 
-	for _, o := range c.Operations {
-		ret = append(ret, &models.PluginOperation{
+	for _, o := range c.Tasks {
+		ret = append(ret, &models.PluginTask{
 			PluginID:      c.ID,
-			OperationName: o.Name,
+			Name: o.Name,
+			Description: &o.Description,
 		})
 	}
 
@@ -44,8 +47,8 @@ func (c PluginConfig) toPlugin() *models.Plugin {
 	}
 }
 
-func (c PluginConfig) getOperation(name string) *PluginOperationConfig {
-	for _, o := range c.Operations {
+func (c PluginConfig) getTask(name string) *PluginOperationConfig {
+	for _, o := range c.Tasks {
 		if o.Name == name {
 			return o
 		}
@@ -56,10 +59,8 @@ func (c PluginConfig) getOperation(name string) *PluginOperationConfig {
 
 type PluginOperationConfig struct {
 	Name string   `yaml:"name"`
+	Description string `yaml:"description"`
 	Exec []string `yaml:"exec,flow"`
-
-	// task, query, mutation
-	Type string `yaml:"type"`
 
 	// communication interface used when communicating with the spawned plugin process
 	Interface string `yaml:"interface"`

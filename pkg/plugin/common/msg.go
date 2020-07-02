@@ -29,5 +29,5 @@ func (i PluginInput) GetPort() int {
 
 type PluginOutput struct {
 	Error  *string         `json:"error"`
-	Output *PluginArgValue `json:"output"`
+	Output *string `json:"output"`
 }

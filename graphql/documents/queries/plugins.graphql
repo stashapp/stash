@@ -1,13 +1,16 @@
 query Plugins {
   plugins {
     id
-    name  
+    name
+    description
+    version
   }
 }
 
-query PluginOperations {
-  pluginOperations {
+query PluginTasks {
+  pluginTasks {
     plugin_id
-    operation_name
+    name
+    description
   }
 }
