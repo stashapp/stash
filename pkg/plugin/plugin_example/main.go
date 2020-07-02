@@ -24,8 +24,11 @@ func (api) Run(input common.PluginInput, output *common.PluginOutput) error {
 		return err
 	}
 
+	outputStr := "ok"
 	*output = common.PluginOutput{
-		Output: "ok",
+		Output: &common.PluginArgValue{
+			Str: &outputStr,
+		},
 	}
 
 	return nil

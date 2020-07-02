@@ -1,0 +1,7 @@
+# example plugin config
+name: Example
+operations:
+  - name: Reload Scrapers
+    exec:
+      - plugin_example.exe
+      

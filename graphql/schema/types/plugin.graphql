@@ -9,6 +9,25 @@ type PluginOperation {
     operation_name: String!
 }
 
+type OperationResult {
+    error: String
+    result: OperationValue
+}
+
+type OperationValue {
+    str: String
+    i: Int
+    b: Boolean
+    f: Float
+    o: [OperationKeyValue!]
+    a: [OperationValue!]
+}
+
+type OperationKeyValue {
+    key: String!
+    value: OperationValue
+}
+
 input OperationArgInput {
     key: String!
     value: OperationValueInput

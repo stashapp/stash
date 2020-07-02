@@ -1,7 +1,6 @@
 package plugin
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -102,28 +101,27 @@ func getPlugin(pluginID string) (*PluginConfig, error) {
 	return nil, nil
 }
 
-func RunPluginOperation(pluginID string, operationName string, args []*models.OperationArgInput) error {
+func RunPluginOperation(pluginID string, operationName string, args []*models.OperationArgInput) (*models.OperationResult, error) {
 	// find the plugin and operation
 	plugin, err := getPlugin(pluginID)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if plugin == nil {
-		return fmt.Errorf("no plugin with ID %s", pluginID)
+		return nil, fmt.Errorf("no plugin with ID %s", pluginID)
 	}
 
 	operation := plugin.getOperation(operationName)
 	if operation == nil {
-		return fmt.Errorf("no operation with name %s in plugin %s", operationName, plugin.getName())
+		return nil, fmt.Errorf("no operation with name %s in plugin %s", operationName, plugin.getName())
 	}
 
-	out := executeRPC(operation, args)
-	// TODO - handle output correctly
-	if out.Error != nil {
-		return errors.New(*out.Error)
+	out, err := executeRPC(operation, args)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	return toOperationResult(*out), nil
 }

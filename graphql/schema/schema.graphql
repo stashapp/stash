@@ -165,7 +165,9 @@ type Mutation {
   """Reload scrapers"""
   reloadScrapers: Boolean!
 
-  runPluginOperation(plugin_id: ID!, operation_name: String!, args: [OperationArgInput!]): String
+  runPluginOperation(plugin_id: ID!, operation_name: String!, args: [OperationArgInput!]): OperationResult!
+  """Run plugin operation as a job. Returns the job ID"""
+  runPluginOperationJob(plugin_id: ID!, operation_name: String!, args: [OperationArgInput!]): String!
   reloadPlugins: Boolean!
 
   stopJob: Boolean!

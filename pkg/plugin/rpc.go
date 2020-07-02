@@ -13,10 +13,10 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-func executeRPC(operation *PluginOperationConfig, args []*models.OperationArgInput) common.PluginOutput {
+func executeRPC(operation *PluginOperationConfig, args []*models.OperationArgInput) (*common.PluginOutput, error) {
 	command := operation.Exec
 	if len(command) == 0 {
-		return makeErrorOutput(fmt.Errorf("empty exec value in operation %s", operation.Name))
+		return nil, fmt.Errorf("empty exec value in operation %s", operation.Name)
 	}
 
 	// TODO - this should be the plugin config path, since it may be in a subdir
@@ -29,7 +29,7 @@ func executeRPC(operation *PluginOperationConfig, args []*models.OperationArgInp
 
 	client, err := pie.StartProviderCodec(jsonrpc.NewClientCodec, os.Stderr, command[0], command[1:]...)
 	if err != nil {
-		return makeErrorOutput(err)
+		return nil, err
 	}
 	defer client.Close()
 
@@ -44,8 +44,8 @@ func executeRPC(operation *PluginOperationConfig, args []*models.OperationArgInp
 	output := common.PluginOutput{}
 	err = iface.Run(input, &output)
 	if err != nil {
-		return makeErrorOutput(err)
+		return nil, err
 	}
 
-	return output
+	return &output, nil
 }
