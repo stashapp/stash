@@ -9,12 +9,9 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/util"
 )
 
-func main() {
-	input, err := common.ReadPluginInput()
-	if err != nil {
-		common.Error(err)
-	}
+type api struct{}
 
+func (api) Run(input common.PluginInput, output *common.PluginOutput) error {
 	client := util.NewClient(input)
 
 	var m struct {
@@ -22,13 +19,21 @@ func main() {
 	}
 
 	vars := map[string]interface{}{}
-	err = client.Mutate(context.Background(), &m, vars)
+	err := client.Mutate(context.Background(), &m, vars)
 	if err != nil {
-		common.Error(err)
+		return err
 	}
 
-	o := common.PluginOutput{
+	*output = common.PluginOutput{
 		Output: "ok",
 	}
-	o.Dispatch()
+
+	return nil
+}
+
+func main() {
+	err := common.ServePlugin(api{})
+	if err != nil {
+		panic(err)
+	}
 }

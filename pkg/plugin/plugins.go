@@ -119,7 +119,7 @@ func RunPluginOperation(pluginID string, operationName string, args []*models.Op
 		return fmt.Errorf("no operation with name %s in plugin %s", operationName, plugin.getName())
 	}
 
-	out := executeOperation(operation, args)
+	out := executeRPC(operation, args)
 	// TODO - handle output correctly
 	if out.Error != nil {
 		return errors.New(*out.Error)
