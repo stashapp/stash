@@ -113,3 +113,9 @@
     }
   }
 }
+
+.scrape-dialog .modal-content .dialog-container {
+  max-height: calc(100vh - 14rem);
+  overflow-y: auto;
+  padding-right: 15px;
+}

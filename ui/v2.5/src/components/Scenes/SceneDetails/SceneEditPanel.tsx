@@ -31,6 +31,7 @@ import { ImageUtils, FormUtils, EditableTextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
+import { SceneScrapeDialog } from "./SceneScrapeDialog";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
@@ -58,6 +59,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
   const Scrapers = useListSceneScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
+
+  const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
 
   const [coverImagePreview, setCoverImagePreview] = useState<string>();
 
@@ -257,7 +260,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       if (!result.data || !result.data.scrapeScene) {
         return;
       }
-      updateSceneFromScrapedScene(result.data.scrapeScene);
+      setScrapedScene(result.data.scrapeScene);
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -277,6 +280,34 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function onScrapeDialogClosed(scene?: GQL.ScrapedSceneDataFragment) {
+    if (scene) {
+      updateSceneFromScrapedScene(scene);
+    }
+    setScrapedScene(undefined);
+  }
+
+  function maybeRenderScrapeDialog() {
+    if (!scrapedScene) {
+      return;
+    }
+
+    const currentScene = getSceneInput();
+    if (!currentScene.cover_image) {
+      currentScene.cover_image = props.scene.paths.screenshot;
+    }
+
+    return (
+      <SceneScrapeDialog
+        scene={currentScene}
+        scraped={scrapedScene}
+        onClose={(scene) => {
+          onScrapeDialogClosed(scene);
+        }}
+      />
+    );
   }
 
   function renderScraperMenu() {
@@ -304,31 +335,27 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   }
 
   function updateSceneFromScrapedScene(scene: GQL.ScrapedSceneDataFragment) {
-    if (!title && scene.title) {
+    if (scene.title) {
       setTitle(scene.title);
     }
 
-    if (!details && scene.details) {
+    if (scene.details) {
       setDetails(scene.details);
     }
 
-    if (!date && scene.date) {
+    if (scene.date) {
       setDate(scene.date);
     }
 
-    if (!url && scene.url) {
+    if (scene.url) {
       setUrl(scene.url);
     }
 
-    if (!studioId && scene.studio && scene.studio.id) {
+    if (scene.studio && scene.studio.id) {
       setStudioId(scene.studio.id);
     }
 
-    if (
-      (!performerIds || performerIds.length === 0) &&
-      scene.performers &&
-      scene.performers.length > 0
-    ) {
+    if (scene.performers && scene.performers.length > 0) {
       const idPerfs = scene.performers.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
@@ -339,11 +366,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       }
     }
 
-    if (
-      (!movieIds || movieIds.length === 0) &&
-      scene.movies &&
-      scene.movies.length > 0
-    ) {
+    if (scene.movies && scene.movies.length > 0) {
       const idMovis = scene.movies.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
@@ -354,7 +377,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       }
     }
 
-    if (!tagIds?.length && scene?.tags?.length) {
+    if (scene?.tags?.length) {
       const idTags = scene.tags.filter((p) => {
         return p.id !== undefined && p.id !== null;
       });
@@ -382,7 +405,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       if (!result.data || !result.data.scrapeSceneURL) {
         return;
       }
-      updateSceneFromScrapedScene(result.data.scrapeSceneURL);
+      setScrapedScene(result.data.scrapeSceneURL);
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -395,8 +418,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       return undefined;
     }
     return (
-      <Button id="scrape-url-button" onClick={onScrapeSceneURL} title="Scrape">
-        <Icon icon="file-download" />
+      <Button
+        className="minimal scrape-url-button"
+        onClick={onScrapeSceneURL}
+        title="Scrape"
+      >
+        <Icon className="fa-fw" icon="file-download" />
       </Button>
     );
   }
@@ -404,7 +431,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   if (isLoading) return <LoadingIndicator />;
 
   return (
-    <>
+    <div id="scene-edit-details">
+      {maybeRenderScrapeDialog()}
       <div className="form-container row px-3 pt-3">
         <div className="col edit-buttons mb-3 pl-0">
           <Button className="edit-button" variant="primary" onClick={onSave}>
@@ -429,9 +457,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             isEditing: true,
           })}
           <Form.Group controlId="url" as={Row}>
-            {FormUtils.renderLabel({
-              title: "URL",
-            })}
+            <Col xs={3} className="pr-0 url-label">
+              <Form.Label className="col-form-label">URL</Form.Label>
+              <div className="float-right scrape-button-container">
+                {maybeRenderScrapeButton()}
+              </div>
+            </Col>
             <Col xs={9}>
               {EditableTextUtils.renderInputGroup({
                 title: "URL",
@@ -439,7 +470,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
                 onChange: setUrl,
                 isEditing: true,
               })}
-              {maybeRenderScrapeButton()}
             </Col>
           </Form.Group>
           {FormUtils.renderInputGroup({
@@ -573,6 +603,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
