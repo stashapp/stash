@@ -1,4 +1,14 @@
 
+type Plugin {
+    id: ID!
+    name: String!
+}
+
+type PluginOperation {
+    plugin_id: ID!
+    operation_name: String!
+}
+
 input OperationArgInput {
     key: String!
     value: OperationValueInput

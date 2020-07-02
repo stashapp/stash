@@ -44,6 +44,9 @@ const SessionStoreKey = "session_store_key"
 const ScrapersPath = "scrapers_path"
 const ScraperUserAgent = "scraper_user_agent"
 
+// plugin options
+const PluginsPath = "plugins_path"
+
 // i18n
 const Language = "language"
 
@@ -146,6 +149,20 @@ func GetScrapersPath() string {
 
 func GetScraperUserAgent() string {
 	return viper.GetString(ScraperUserAgent)
+}
+
+func GetDefaultPluginsPath() string {
+	// default to the same directory as the config file
+	configFileUsed := viper.ConfigFileUsed()
+	configDir := filepath.Dir(configFileUsed)
+
+	fn := filepath.Join(configDir, "plugins")
+
+	return fn
+}
+
+func GetPluginsPath() string {
+	return viper.GetString(PluginsPath)
 }
 
 func GetHost() string {

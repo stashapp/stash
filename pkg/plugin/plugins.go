@@ -1,65 +1,128 @@
 package plugin
 
 import (
-	"encoding/json"
 	"errors"
-	"io/ioutil"
-	"os/exec"
-	"strings"
+	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
-	"github.com/stashapp/stash/pkg/plugin/common"
+	"github.com/stashapp/stash/pkg/models"
 )
 
-func RunOperationPlugin(command []string, input common.PluginInput, out *common.PluginOutput) error {
-	cmd := exec.Command(command[0], command[1:]...)
-	cmd.Dir = config.GetScrapersPath()
+var plugins []PluginConfig
 
-	stdin, err := cmd.StdinPipe()
+func loadPlugins() ([]PluginConfig, error) {
+	if plugins != nil {
+		return plugins, nil
+	}
+
+	path := config.GetPluginsPath()
+	plugins = make([]PluginConfig, 0)
+
+	logger.Debugf("Reading plugin configs from %s", path)
+	pluginFiles := []string{}
+	err := filepath.Walk(path, func(fp string, f os.FileInfo, err error) error {
+		if filepath.Ext(fp) == ".yml" {
+			pluginFiles = append(pluginFiles, fp)
+		}
+		return nil
+	})
+
+	if err != nil {
+		logger.Errorf("Error reading plugin configs: %s", err.Error())
+		return nil, err
+	}
+
+	for _, file := range pluginFiles {
+		plugin, err := loadPluginFromYAMLFile(file)
+		if err != nil {
+			logger.Errorf("Error loading plugin %s: %s", file, err.Error())
+		} else {
+			plugins = append(plugins, *plugin)
+		}
+	}
+
+	return plugins, nil
+}
+
+func ReloadPlugins() error {
+	plugins = nil
+	_, err := loadPlugins()
+	return err
+}
+
+func ListPlugins() ([]*models.Plugin, error) {
+	// read plugin config files from the directory and cache
+	plugins, err := loadPlugins()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*models.Plugin
+	for _, s := range plugins {
+		ret = append(ret, s.toPlugin())
+	}
+
+	return ret, nil
+}
+
+func ListPluginOperations() ([]*models.PluginOperation, error) {
+	// read plugin config files from the directory and cache
+	plugins, err := loadPlugins()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*models.PluginOperation
+	for _, s := range plugins {
+		ret = append(ret, s.getPluginOperations()...)
+	}
+
+	return ret, nil
+}
+
+func getPlugin(pluginID string) (*PluginConfig, error) {
+	// read plugin config files from the directory and cache
+	plugins, err := loadPlugins()
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, s := range plugins {
+		if s.ID == pluginID {
+			return &s, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func RunPluginOperation(pluginID string, operationName string, args []*models.OperationArgInput) error {
+	// find the plugin and operation
+	plugin, err := getPlugin(pluginID)
+
 	if err != nil {
 		return err
 	}
 
-	go func() {
-		defer stdin.Close()
-
-		in, _ := json.Marshal(input)
-		stdin.Write(in)
-	}()
-
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		logger.Error("Scraper stderr not available: " + err.Error())
+	if plugin == nil {
+		return fmt.Errorf("no plugin with ID %s", pluginID)
 	}
 
-	stdout, err := cmd.StdoutPipe()
-	if nil != err {
-		logger.Error("Scraper stdout not available: " + err.Error())
+	operation := plugin.getOperation(operationName)
+	if operation == nil {
+		return fmt.Errorf("no operation with name %s in plugin %s", operationName, plugin.getName())
 	}
 
-	if err = cmd.Start(); err != nil {
-		logger.Error("Error running scraper script: " + err.Error())
-		return errors.New("Error running scraper script")
-	}
-
-	// TODO - add a timeout here
-	decodeErr := json.NewDecoder(stdout).Decode(out)
-
-	stderrData, _ := ioutil.ReadAll(stderr)
-	stderrString := string(stderrData)
-
-	err = cmd.Wait()
-
-	if err != nil {
-		// error message should be in the stderr stream
-		logger.Errorf("error when running command <%s>: %s", strings.Join(cmd.Args, " "), stderrString)
-		return errors.New("Error running script")
-	}
-
-	if decodeErr != nil {
-		logger.Errorf("error decoding performer from data: %s", decodeErr.Error())
-		return errors.New("Error decoding performer from script")
+	out := executeOperation(operation, args)
+	// TODO - handle output correctly
+	if out.Error != nil {
+		return errors.New(*out.Error)
 	}
 
 	return nil
