@@ -1,0 +1,13 @@
+query Plugins {
+  plugins {
+    id
+    name  
+  }
+}
+
+query PluginOperations {
+  pluginOperations {
+    plugin_id
+    operation_name
+  }
+}

@@ -155,6 +155,10 @@ export const useListSceneScrapers = () => GQL.useListSceneScrapersQuery();
 
 export const useScrapeFreeonesPerformers = (q: string) =>
   GQL.useScrapeFreeonesPerformersQuery({ variables: { q } });
+
+export const usePlugins = () => GQL.usePluginsQuery();
+export const usePluginOperations = () => GQL.usePluginOperationsQuery();
+
 export const useMarkerStrings = () => GQL.useMarkerStringsQuery();
 export const useAllTags = () => GQL.useAllTagsQuery();
 export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
@@ -421,6 +425,21 @@ export const queryScrapeScene = (
 export const mutateReloadScrapers = () =>
   client.mutate<GQL.ReloadScrapersMutation>({
     mutation: GQL.ReloadScrapersDocument,
+  });
+
+export const mutateReloadPlugins = () =>
+  client.mutate<GQL.ReloadPluginsMutation>({
+    mutation: GQL.ReloadPluginsDocument,
+  });
+
+export const mutateRunPluginOperation = (
+  pluginId: string,
+  operationName: string,
+  args?: GQL.OperationArgInput[],
+) =>
+  client.mutate<GQL.RunPluginOperationMutation>({
+    mutation: GQL.RunPluginOperationDocument,
+    variables: { plugin_id: pluginId, operation_name: operationName, args },
   });
 
 export const mutateMetadataScan = (input: GQL.ScanMetadataInput) =>

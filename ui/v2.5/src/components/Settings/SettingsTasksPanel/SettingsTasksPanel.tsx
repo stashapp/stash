@@ -10,10 +10,13 @@ import {
   mutateMetadataAutoTag,
   mutateMetadataExport,
   mutateStopJob,
+  usePluginOperations,
+  mutateRunPluginOperation,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Modal } from "src/components/Shared";
 import { GenerateButton } from "./GenerateButton";
+import { PluginOperation } from "src/core/generated-graphql";
 
 export const SettingsTasksPanel: React.FC = () => {
   const Toast = useToast();
@@ -29,6 +32,8 @@ export const SettingsTasksPanel: React.FC = () => {
 
   const jobStatus = useJobStatus();
   const metadataUpdate = useMetadataUpdate();
+
+  const pluginOperations = usePluginOperations();
 
   function statusToText(s: string) {
     switch (s) {
@@ -189,6 +194,24 @@ export const SettingsTasksPanel: React.FC = () => {
     );
   }
 
+  async function onOperationClicked(operation: PluginOperation) {
+    await mutateRunPluginOperation(operation.plugin_id, operation.operation_name);
+  }
+
+  function renderPluginOperations() {
+    if (!pluginOperations.data || !pluginOperations.data.pluginOperations) {
+      return;
+    }
+
+    return pluginOperations.data.pluginOperations.map(o => {
+      return (
+        <Button onClick={() => onOperationClicked(o)} className="my-2" key={`${o.plugin_id}/${o.operation_name}`}>
+          {o.operation_name}
+        </Button>
+      );
+    });
+  }
+
   return (
     <>
       {renderImportAlert()}
@@ -308,6 +331,11 @@ export const SettingsTasksPanel: React.FC = () => {
           Import from exported JSON. This is a destructive action.
         </Form.Text>
       </Form.Group>
+
+      <hr />
+      <h5>Plugin Tasks</h5>
+      {renderPluginOperations()}
+
     </>
   );
 };

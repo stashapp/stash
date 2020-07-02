@@ -1,0 +1,16 @@
+mutation ReloadPlugins {
+  reloadPlugins
+}
+
+mutation RunPluginOperation($plugin_id: ID!, $operation_name: String!, $args: [OperationArgInput!]) {
+  runPluginOperation(plugin_id: $plugin_id, operation_name: $operation_name, args: $args) {
+    error
+    result {
+      ...OperationValueFragment
+    }
+  }
+}
+
+mutation RunPluginOperationJob($plugin_id: ID!, $operation_name: String!, $args: [OperationArgInput!]) {
+  runPluginOperationJob(plugin_id: $plugin_id, operation_name: $operation_name, args: $args)
+}

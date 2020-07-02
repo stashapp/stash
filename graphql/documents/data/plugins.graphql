@@ -1,0 +1,32 @@
+# only return one level of objects
+fragment SlimOperationValueFragment on OperationValue {
+  str
+  i
+  b
+  f
+}
+
+fragment OperationValueFragment on OperationValue {
+  str
+  i
+  b
+  f
+  o {
+    key
+    value {
+      ...SlimOperationValueFragment
+    }
+  } 
+  a {
+    str
+    i
+    b
+    f
+    o {
+      key
+      value {
+        ...SlimOperationValueFragment
+      }
+    } 
+  }
+}
