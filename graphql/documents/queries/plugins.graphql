@@ -3,14 +3,18 @@ query Plugins {
     id
     name
     description
+    url
     version
   }
 }
 
 query PluginTasks {
   pluginTasks {
-    plugin_id
     name
     description
+    plugin {
+      id
+      name
+    }
   }
 }

@@ -3,13 +3,14 @@ type Plugin {
     id: ID!
     name: String!
     description: String
+    url: String
     version: String
 }
 
 type PluginTask {
-    plugin_id: ID!
     name: String!
     description: String
+    plugin: Plugin!
 }
 
 type PluginResult {

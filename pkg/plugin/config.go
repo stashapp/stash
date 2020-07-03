@@ -14,6 +14,7 @@ type PluginConfig struct {
 	ID          string
 	Name        string                   `yaml:"name"`
 	Description *string                  `yaml:"description"`
+	URL         *string                  `yaml:"url"`
 	Version     *string                  `yaml:"version"`
 	Tasks       []*PluginOperationConfig `yaml:"tasks"`
 }
@@ -23,9 +24,9 @@ func (c PluginConfig) getPluginTasks() []*models.PluginTask {
 
 	for _, o := range c.Tasks {
 		ret = append(ret, &models.PluginTask{
-			PluginID:    c.ID,
 			Name:        o.Name,
 			Description: &o.Description,
+			Plugin:      c.toPlugin(),
 		})
 	}
 
@@ -42,8 +43,11 @@ func (c PluginConfig) getName() string {
 
 func (c PluginConfig) toPlugin() *models.Plugin {
 	return &models.Plugin{
-		ID:   c.ID,
-		Name: c.getName(),
+		ID:          c.ID,
+		Name:        c.getName(),
+		Description: c.Description,
+		URL:         c.URL,
+		Version:     c.Version,
 	}
 }
 

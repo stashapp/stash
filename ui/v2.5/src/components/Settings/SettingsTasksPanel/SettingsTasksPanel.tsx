@@ -195,7 +195,7 @@ export const SettingsTasksPanel: React.FC = () => {
   }
 
   async function onPluginTaskClicked(operation: PluginTask) {
-    await mutateRunPluginTask(operation.plugin_id, operation.name);
+    await mutateRunPluginTask(operation.plugin.id, operation.name);
   }
 
   function renderPluginTasks() {
@@ -206,11 +206,13 @@ export const SettingsTasksPanel: React.FC = () => {
     return pluginTasks.data.pluginTasks.map(o => {
       return (
         <>
-          <Button onClick={() => onPluginTaskClicked(o)} className="my-2" key={`${o.plugin_id}/${o.name}`}>
+          <Button onClick={() => onPluginTaskClicked(o)} className="mt-3" key={`${o.plugin.id}/${o.name}`}>
             {o.name}
           </Button>
           {o.description ? (
-            <Form.Text className="text-muted">{o.description}</Form.Text>
+            <Form.Text className="text-muted">
+              {o.description} <span className="plugin-task-plugin">({o.plugin.name})</span>
+            </Form.Text>
           ) : undefined}
         </>
       );

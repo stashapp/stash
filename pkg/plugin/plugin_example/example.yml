@@ -1,5 +1,8 @@
 # example plugin config
 name: Hawwwwt Tagger
+description: Ultimate Hawwwwt tagging utility.
+version: 1.0
+url: http://www.github.com/stashapp/stash
 tasks:
   - name: Add hawwwwt tag to random scene
     description: Creates a "Hawwwwt" tag if not present and adds to a random scene.

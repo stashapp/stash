@@ -6,6 +6,8 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "../Shared";
+import * as GQL from "src/core/generated-graphql";
+import { TextUtils } from "src/utils";
 
 export const SettingsPluginsPanel: React.FC = () => {
   const Toast = useToast();
@@ -35,17 +37,44 @@ export const SettingsPluginsPanel: React.FC = () => {
     }
   }
 
+  function renderLink(plugin: GQL.Plugin) {
+    if (plugin.url) {
+      return (
+        <Button className="minimal">
+          <a
+            href={TextUtils.sanitiseURL(plugin.url)}
+            className="link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Icon icon="link" />
+          </a>
+        </Button>
+      );
+    }
+  }
+
+  function renderPlugin(plugin: GQL.Plugin) {
+    return (
+      <div>
+        <h5>{plugin.name} {plugin.version ? `(${plugin.version})` : undefined} {renderLink(plugin)}</h5>
+        {plugin.description ? (
+          <small className="text-muted">{plugin.description}</small>
+        ): undefined}
+        <hr />
+      </div>
+    );
+  }
+
   function renderPlugins() {
     if (!plugins.data || !plugins.data.plugins) {
       return;
     }
 
     return (
-      <ul>
-        {plugins.data?.plugins.map(p => {
-          return <li key={p.name}>{p.name}</li>;
-        })}
-      </ul>
+      <div>
+        {plugins.data?.plugins.map(renderPlugin)}
+      </div>
     );
   }
 
@@ -53,7 +82,8 @@ export const SettingsPluginsPanel: React.FC = () => {
 
   return (
     <>
-      <h5>Plugins</h5>
+      <h4>Plugins</h4>
+      <hr />
       {renderPlugins()}
       <Button onClick={() => onReloadPlugins()}>
         <span className="fa-icon">
