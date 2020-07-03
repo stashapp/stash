@@ -1,17 +1,21 @@
 package plugin
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"net/rpc/jsonrpc"
-	"os"
 	"os/exec"
 	"path/filepath"
 
 	"github.com/natefinch/pie"
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
+
+type pluginErrMonitor struct{}
 
 func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput) (*common.PluginOutput, error) {
 	command := operation.Exec
@@ -27,11 +31,27 @@ func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput)
 		command[0] = filepath.Join(pluginPath, command[0])
 	}
 
-	client, err := pie.StartProviderCodec(jsonrpc.NewClientCodec, os.Stderr, command[0], command[1:]...)
+	pluginErrReader, pluginErrWriter := io.Pipe()
+
+	client, err := pie.StartProviderCodec(jsonrpc.NewClientCodec, pluginErrWriter, command[0], command[1:]...)
 	if err != nil {
 		return nil, err
 	}
 	defer client.Close()
+
+	go func() {
+		// pipe plugin stderr to our logging
+		scanner := bufio.NewScanner(pluginErrReader)
+		for scanner.Scan() {
+			str := scanner.Text()
+			if str != "" {
+				// TODO - support logging and progress
+				logger.Infof("[Plugin] %s", str)
+			}
+		}
+
+		pluginErrReader.Close()
+	}()
 
 	iface := common.PluginClient{
 		Client: client,
