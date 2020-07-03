@@ -1,7 +1,14 @@
 # example plugin config
-name: Example
+name: Hawwwwt Tagger
 operations:
-  - name: Reload Scrapers
+  - name: Add hawwwwt tag to random scene
+    description: Creates a "Hawwwwt" tag if not present and adds to a random scene.
     exec:
       - plugin_example.exe
+        add
+  - name: Remove hawwwwt tag from system
+    description: Removes the "Hawwwwt" tag from all scenes and deletes the tag.
+    exec:
+      - plugin_example.exe
+        remove
       
