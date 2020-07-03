@@ -16,11 +16,6 @@ import (
 
 type api struct{}
 
-var mode string
-
-const modeAdd = "add"
-const modeRemove = "remove"
-
 const tagName = "Hawwwwt"
 
 // graphql inputs and returns
@@ -78,10 +73,12 @@ type SceneUpdateInput struct {
 func (api) Run(input common.PluginInput, output *common.PluginOutput) error {
 	client := util.NewClient(input)
 
+	modeArg := common.GetValue(input.Args, "mode")
+
 	var err error
-	if mode == modeAdd {
+	if modeArg == nil || modeArg.String() == "add" {
 		err = addTag(client)
-	} else {
+	} else if modeArg.String() == "remove" {
 		err = removeTag(client)
 	}
 
@@ -271,17 +268,8 @@ func main() {
 
 	debug := false
 
-	// TODO - this is a clunky way to do this
-	if len(os.Args) >= 2 {
-		mode = os.Args[1]
-
-		if len(os.Args) >= 3 && os.Args[2] == "debug" {
-			debug = true
-		}
-	}
-
-	if mode != modeAdd && mode != modeRemove {
-		mode = modeAdd
+	if len(os.Args) >= 2 && os.Args[1] == "debug" {
+		debug = true
 	}
 
 	if debug {

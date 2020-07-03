@@ -50,6 +50,12 @@ func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput)
 			}
 		}
 
+		str := scanner.Text()
+		if str != "" {
+			// TODO - support logging and progress
+			logger.Infof("[Plugin] %s", str)
+		}
+
 		pluginErrReader.Close()
 	}()
 
@@ -57,9 +63,11 @@ func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput)
 		Client: client,
 	}
 
-	// TODO - pass args
+	args = applyDefaultArgs(args, operation.DefaultArgs)
+
 	input := common.PluginInput{
 		ServerPort: config.GetPort(),
+		Args:       toPluginArgs(args),
 	}
 
 	output := common.PluginOutput{}

@@ -11,11 +11,11 @@ import (
 )
 
 type PluginConfig struct {
-	ID         string
-	Name       string                   `yaml:"name"`
-	Description *string `yaml:"description"`
-	Version *string `yaml:"version"`
-	Tasks []*PluginOperationConfig `yaml:"tasks"`
+	ID          string
+	Name        string                   `yaml:"name"`
+	Description *string                  `yaml:"description"`
+	Version     *string                  `yaml:"version"`
+	Tasks       []*PluginOperationConfig `yaml:"tasks"`
 }
 
 func (c PluginConfig) getPluginTasks() []*models.PluginTask {
@@ -23,8 +23,8 @@ func (c PluginConfig) getPluginTasks() []*models.PluginTask {
 
 	for _, o := range c.Tasks {
 		ret = append(ret, &models.PluginTask{
-			PluginID:      c.ID,
-			Name: o.Name,
+			PluginID:    c.ID,
+			Name:        o.Name,
 			Description: &o.Description,
 		})
 	}
@@ -58,9 +58,12 @@ func (c PluginConfig) getTask(name string) *PluginOperationConfig {
 }
 
 type PluginOperationConfig struct {
-	Name string   `yaml:"name"`
-	Description string `yaml:"description"`
-	Exec []string `yaml:"exec,flow"`
+	Name        string   `yaml:"name"`
+	Description string   `yaml:"description"`
+	Exec        []string `yaml:"exec,flow"`
+
+	// Argument fields
+	DefaultArgs map[string]string `yaml:"defaultArgs"`
 
 	// communication interface used when communicating with the spawned plugin process
 	Interface string `yaml:"interface"`
