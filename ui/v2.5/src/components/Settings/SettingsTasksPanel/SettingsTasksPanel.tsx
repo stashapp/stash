@@ -51,6 +51,8 @@ export const SettingsTasksPanel: React.FC = () => {
         return "Importing from JSON";
       case "Auto Tag":
         return "Auto tagging scenes";
+      case "Plugin Operation":
+        return "Running Plugin Operation"
       default:
         return "Idle";
     }
@@ -61,7 +63,7 @@ export const SettingsTasksPanel: React.FC = () => {
       setStatus(statusToText(jobStatus.data.jobStatus.status));
       const newProgress = jobStatus.data.jobStatus.progress;
       if (newProgress < 0) {
-        setProgress(0);
+        setProgress(-1);
       } else {
         setProgress(newProgress * 100);
       }
@@ -73,7 +75,7 @@ export const SettingsTasksPanel: React.FC = () => {
       setStatus(statusToText(metadataUpdate.data.metadataUpdate.status));
       const newProgress = metadataUpdate.data.metadataUpdate.progress;
       if (newProgress < 0) {
-        setProgress(0);
+        setProgress(-1);
       } else {
         setProgress(newProgress * 100);
       }
@@ -182,8 +184,8 @@ export const SettingsTasksPanel: React.FC = () => {
           {!!status && status !== "Idle" ? (
             <ProgressBar
               animated
-              now={progress}
-              label={`${progress.toFixed(0)}%`}
+              now={progress > -1 ? progress : 100}
+              label={progress > -1 ? `${progress.toFixed(0)}%` : ""}
             />
           ) : (
             ""
