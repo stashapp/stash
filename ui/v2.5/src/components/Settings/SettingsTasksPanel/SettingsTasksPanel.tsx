@@ -10,13 +10,13 @@ import {
   mutateMetadataAutoTag,
   mutateMetadataExport,
   mutateStopJob,
-  usePluginOperations,
-  mutateRunPluginOperation,
+  usePluginTasks,
+  mutateRunPluginTask,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Modal } from "src/components/Shared";
 import { GenerateButton } from "./GenerateButton";
-import { PluginOperation } from "src/core/generated-graphql";
+import { PluginTask } from "src/core/generated-graphql";
 
 export const SettingsTasksPanel: React.FC = () => {
   const Toast = useToast();
@@ -33,7 +33,7 @@ export const SettingsTasksPanel: React.FC = () => {
   const jobStatus = useJobStatus();
   const metadataUpdate = useMetadataUpdate();
 
-  const pluginOperations = usePluginOperations();
+  const pluginTasks = usePluginTasks();
 
   function statusToText(s: string) {
     switch (s) {
@@ -194,20 +194,25 @@ export const SettingsTasksPanel: React.FC = () => {
     );
   }
 
-  async function onOperationClicked(operation: PluginOperation) {
-    await mutateRunPluginOperation(operation.plugin_id, operation.operation_name);
+  async function onPluginTaskClicked(operation: PluginTask) {
+    await mutateRunPluginTask(operation.plugin_id, operation.name);
   }
 
-  function renderPluginOperations() {
-    if (!pluginOperations.data || !pluginOperations.data.pluginOperations) {
+  function renderPluginTasks() {
+    if (!pluginTasks.data || !pluginTasks.data.pluginTasks) {
       return;
     }
 
-    return pluginOperations.data.pluginOperations.map(o => {
+    return pluginTasks.data.pluginTasks.map(o => {
       return (
-        <Button onClick={() => onOperationClicked(o)} className="my-2" key={`${o.plugin_id}/${o.operation_name}`}>
-          {o.operation_name}
-        </Button>
+        <>
+          <Button onClick={() => onPluginTaskClicked(o)} className="my-2" key={`${o.plugin_id}/${o.name}`}>
+            {o.name}
+          </Button>
+          {o.description ? (
+            <Form.Text className="text-muted">{o.description}</Form.Text>
+          ) : undefined}
+        </>
       );
     });
   }
@@ -334,7 +339,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <hr />
       <h5>Plugin Tasks</h5>
-      {renderPluginOperations()}
+      {renderPluginTasks()}
 
     </>
   );

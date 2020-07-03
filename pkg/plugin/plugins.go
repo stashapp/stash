@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -118,7 +119,18 @@ func RunPluginOperation(pluginID string, operationName string, args []*models.Pl
 		return fmt.Errorf("no task with name %s in plugin %s", operationName, plugin.getName())
 	}
 
-	_, err = executeRPC(operation, args)
+	output, err := executeRPC(operation, args)
+	if err != nil {
+		return err
+	}
 
-	return err
+	if output.Error != nil {
+		return errors.New(*output.Error)
+	}
+
+	if output.Output != nil {
+		logger.Debugf("[Plugin output]: %s", *output.Output)
+	}
+
+	return nil
 }
