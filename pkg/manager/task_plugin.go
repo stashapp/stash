@@ -6,9 +6,10 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*models.PluginArgInput) {
+func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*models.PluginArgInput, serverConnection common.StashServerConnection) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -22,9 +23,10 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 		wg.Add(1)
 
 		task := RunningPluginTask{
-			PluginID: pluginID,
-			TaskName: taskName,
-			Args:     args,
+			PluginID:         pluginID,
+			TaskName:         taskName,
+			ServerConnection: serverConnection,
+			Args:             args,
 		}
 		go task.Start(&wg)
 		wg.Wait()
@@ -32,9 +34,10 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 }
 
 type RunningPluginTask struct {
-	PluginID string
-	TaskName string
-	Args     []*models.PluginArgInput
+	PluginID         string
+	TaskName         string
+	ServerConnection common.StashServerConnection
+	Args             []*models.PluginArgInput
 }
 
 func (t *RunningPluginTask) Start(wg *sync.WaitGroup) {
@@ -42,7 +45,7 @@ func (t *RunningPluginTask) Start(wg *sync.WaitGroup) {
 
 	// TODO - handle progress/stop
 
-	err := plugin.RunPluginOperation(t.PluginID, t.TaskName, t.Args)
+	err := plugin.RunPluginOperation(t.PluginID, t.TaskName, t.ServerConnection, t.Args)
 	if err != nil {
 		logger.Errorf("Error running plugin task: %s", err.Error())
 	}

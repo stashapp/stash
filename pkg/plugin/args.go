@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
 func findArg(args []*models.PluginArgInput, name string) *models.PluginArgInput {
@@ -27,4 +28,11 @@ func applyDefaultArgs(args []*models.PluginArgInput, defaultArgs map[string]stri
 	}
 
 	return args
+}
+
+func buildPluginInput(args []*models.PluginArgInput, serverConnection common.StashServerConnection) common.PluginInput {
+	return common.PluginInput{
+		ServerConnection: serverConnection,
+		Args:             toPluginArgs(args),
+	}
 }

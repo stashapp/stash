@@ -276,7 +276,10 @@ func main() {
 		api := api{}
 		output := common.PluginOutput{}
 		err := api.Run(common.PluginInput{
-			ServerPort: 9999,
+			ServerConnection: common.StashServerConnection{
+				Scheme: "http",
+				Port:   9999,
+			},
 		}, &output)
 
 		if err != nil {

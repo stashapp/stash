@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
 var plugins []PluginConfig
@@ -102,7 +103,7 @@ func getPlugin(pluginID string) (*PluginConfig, error) {
 	return nil, nil
 }
 
-func RunPluginOperation(pluginID string, operationName string, args []*models.PluginArgInput) error {
+func RunPluginOperation(pluginID string, operationName string, serverConnection common.StashServerConnection, args []*models.PluginArgInput) error {
 	// find the plugin and operation
 	plugin, err := getPlugin(pluginID)
 
@@ -119,7 +120,7 @@ func RunPluginOperation(pluginID string, operationName string, args []*models.Pl
 		return fmt.Errorf("no task with name %s in plugin %s", operationName, plugin.getName())
 	}
 
-	output, err := executeRPC(operation, args)
+	output, err := executeRPC(operation, args, serverConnection)
 	if err != nil {
 		return err
 	}

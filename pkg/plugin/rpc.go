@@ -15,7 +15,7 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput) (*common.PluginOutput, error) {
+func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) (*common.PluginOutput, error) {
 	command := operation.Exec
 	if len(command) == 0 {
 		return nil, fmt.Errorf("empty exec value in operation %s", operation.Name)
@@ -63,10 +63,7 @@ func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput)
 
 	args = applyDefaultArgs(args, operation.DefaultArgs)
 
-	input := common.PluginInput{
-		ServerPort: config.GetPort(),
-		Args:       toPluginArgs(args),
-	}
+	input := buildPluginInput(args, serverConnection)
 
 	output := common.PluginOutput{}
 	err = iface.Run(input, &output)

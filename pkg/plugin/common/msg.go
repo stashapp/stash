@@ -1,7 +1,17 @@
 package common
 
+import "net/http"
+
+type StashServerConnection struct {
+	Scheme        string
+	Port          int
+	SessionCookie *http.Cookie
+}
+
 type StashServerProvider interface {
+	GetScheme() string
 	GetPort() int
+	GetSessionCookie() *http.Cookie
 }
 
 type PluginKeyValue struct {
@@ -55,12 +65,20 @@ func (v PluginArgValue) Float() float64 {
 }
 
 type PluginInput struct {
-	ServerPort int               `json:"server_port"`
-	Args       []*PluginKeyValue `json:"args"`
+	ServerConnection StashServerConnection `json:"server_connection"`
+	Args             []*PluginKeyValue     `json:"args"`
 }
 
 func (i PluginInput) GetPort() int {
-	return i.ServerPort
+	return i.ServerConnection.Port
+}
+
+func (i PluginInput) GetScheme() string {
+	return i.ServerConnection.Scheme
+}
+
+func (i PluginInput) GetSessionCookie() *http.Cookie {
+	return i.ServerConnection.SessionCookie
 }
 
 func GetValue(keyValues []*PluginKeyValue, name string) *PluginArgValue {
