@@ -33,5 +33,6 @@ type PluginTaskManager interface {
 	Start() error
 	Stop() error
 	Wait()
+	GetProgress() *int
 	GetResult() common.PluginOutput
 }

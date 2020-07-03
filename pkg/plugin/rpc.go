@@ -1,7 +1,6 @@
 package plugin
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"net/rpc"
@@ -10,11 +9,27 @@ import (
 	"path/filepath"
 
 	"github.com/natefinch/pie"
-	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
+
+type rpcPluginClient struct {
+	Client *rpc.Client
+}
+
+func (p rpcPluginClient) Run(input common.PluginInput, output *common.PluginOutput) error {
+	return p.Client.Call("RPCRunner.Run", input, output)
+}
+
+func (p rpcPluginClient) RunAsync(input common.PluginInput, output *common.PluginOutput, done chan *rpc.Call) *rpc.Call {
+	return p.Client.Go("RPCRunner.Run", input, output, done)
+}
+
+func (p rpcPluginClient) Stop() error {
+	var resp interface{}
+	return p.Client.Call("RPCRunner.Stop", nil, &resp)
+}
 
 type RPCPluginTask struct {
 	PluginTask
@@ -50,27 +65,9 @@ func (t *RPCPluginTask) Start() error {
 		return err
 	}
 
-	go func() {
-		// pipe plugin stderr to our logging
-		scanner := bufio.NewScanner(pluginErrReader)
-		for scanner.Scan() {
-			str := scanner.Text()
-			if str != "" {
-				// TODO - support logging and progress
-				logger.Infof("[Plugin] %s", str)
-			}
-		}
+	go handleStderr(pluginErrReader)
 
-		str := scanner.Text()
-		if str != "" {
-			// TODO - support logging and progress
-			logger.Infof("[Plugin] %s", str)
-		}
-
-		pluginErrReader.Close()
-	}()
-
-	iface := common.PluginClient{
+	iface := rpcPluginClient{
 		Client: t.client,
 	}
 
@@ -96,9 +93,13 @@ func (t *RPCPluginTask) Wait() {
 }
 
 func (t *RPCPluginTask) Stop() error {
-	iface := common.PluginClient{
+	iface := rpcPluginClient{
 		Client: t.client,
 	}
 
 	return iface.Stop()
+}
+
+func (t *RPCPluginTask) GetProgress() *int {
+	return nil
 }

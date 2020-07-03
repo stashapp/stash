@@ -6,75 +6,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
 	"github.com/shurcooL/graphql"
 	"github.com/stashapp/stash/pkg/plugin/common"
+	"github.com/stashapp/stash/pkg/plugin/common/log"
 	"github.com/stashapp/stash/pkg/plugin/util"
 )
 
-type api struct {
-	stopping bool
-}
-
-const tagName = "Hawwwwt"
-
-// graphql inputs and returns
-type TagCreate struct {
-	ID graphql.ID `graphql:"id"`
-}
-
-type TagCreateInput struct {
-	Name graphql.String `graphql:"name" json:"name"`
-}
-
-type TagDestroyInput struct {
-	ID graphql.ID `graphql:"id" json:"id"`
-}
-
-type FindScenesResultType struct {
-	Count  graphql.Int
-	Scenes []Scene
-}
-
-type Tag struct {
-	ID   graphql.ID     `graphql:"id"`
-	Name graphql.String `graphql:"name"`
-}
-
-type Scene struct {
-	ID   graphql.ID
-	Tags []Tag
-}
-
-func (s Scene) getTagIds() []graphql.ID {
-	ret := []graphql.ID{}
-
-	for _, t := range s.Tags {
-		ret = append(ret, t.ID)
-	}
-
-	return ret
-}
-
-type FindFilterType struct {
-	PerPage *graphql.Int    `graphql:"per_page" json:"per_page"`
-	Sort    *graphql.String `graphql:"sort" json:"sort"`
-}
-
-type SceneUpdate struct {
-	ID graphql.ID `graphql:"id"`
-}
-
-type SceneUpdateInput struct {
-	ID     graphql.ID   `graphql:"id" json:"id"`
-	TagIds []graphql.ID `graphql:"tag_ids" json:"tag_ids"`
-}
-
 func (a *api) Stop(input struct{}, output *bool) error {
-	log.Println("Stopping...")
+	log.Info("Stopping...")
 	a.stopping = true
 	*output = true
 	return nil
@@ -111,7 +53,7 @@ func (a *api) Run(input common.PluginInput, output *common.PluginOutput) error {
 }
 
 func (a *api) doLongTask() error {
-	log.Println("Sleeping indefinitely")
+	log.Info("Sleeping indefinitely")
 	for {
 		time.Sleep(time.Second)
 		if a.stopping {
@@ -123,7 +65,7 @@ func (a *api) doLongTask() error {
 }
 
 func getTagID(client *graphql.Client, create bool) (*graphql.ID, error) {
-	log.Println("Checking if tag exists already")
+	log.Info("Checking if tag exists already")
 
 	// see if tag exists already
 	var q struct {
@@ -143,7 +85,7 @@ func getTagID(client *graphql.Client, create bool) (*graphql.ID, error) {
 	}
 
 	if !create {
-		log.Println("Not found and not creating")
+		log.Info("Not found and not creating")
 		return nil, nil
 	}
 
@@ -160,7 +102,7 @@ func getTagID(client *graphql.Client, create bool) (*graphql.ID, error) {
 		"s": input,
 	}
 
-	log.Println("Creating new tag")
+	log.Info("Creating new tag")
 
 	err = client.Mutate(context.Background(), &m, vars)
 	if err != nil {
@@ -187,7 +129,7 @@ func findRandomScene(client *graphql.Client) (*Scene, error) {
 		"c": filterInput,
 	}
 
-	log.Println("Finding a random scene")
+	log.Info("Finding a random scene")
 	err := client.Query(context.Background(), &q, vars)
 	if err != nil {
 		return nil, fmt.Errorf("Error getting random scene: %s\n", err.Error())
@@ -243,7 +185,7 @@ func addTag(client *graphql.Client) error {
 		"s": input,
 	}
 
-	log.Printf("Adding tag to scene %v\n", scene.ID)
+	log.Infof("Adding tag to scene %v", scene.ID)
 	err = client.Mutate(context.Background(), &m, vars)
 	if err != nil {
 		return fmt.Errorf("Error mutating scene: %s", err.Error())
@@ -260,7 +202,7 @@ func removeTag(client *graphql.Client) error {
 	}
 
 	if tagID == nil {
-		log.Println("Tag does not exist. Nothing to remove")
+		log.Info("Tag does not exist. Nothing to remove")
 		return nil
 	}
 
@@ -277,7 +219,7 @@ func removeTag(client *graphql.Client) error {
 		"s": input,
 	}
 
-	log.Println("Destroying tag")
+	log.Info("Destroying tag")
 
 	err = client.Mutate(context.Background(), &m, vars)
 	if err != nil {
@@ -288,8 +230,6 @@ func removeTag(client *graphql.Client) error {
 }
 
 func main() {
-	log.SetPrefix("[Hawwwwt plugin]")
-
 	debug := false
 
 	if len(os.Args) >= 2 && os.Args[1] == "debug" {

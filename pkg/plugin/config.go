@@ -61,6 +61,20 @@ func (c PluginConfig) getTask(name string) *PluginOperationConfig {
 	return nil
 }
 
+type InterfaceEnum string
+
+const (
+	// Uses the RPCRunner interface declared in common/rpc.go
+	InterfaceEnumRPCV1 InterfaceEnum = "rpc.v1"
+
+	// Treats stdout as raw output
+	InterfaceEnumRaw InterfaceEnum = "raw"
+)
+
+func (i InterfaceEnum) Valid() bool {
+	return i == InterfaceEnumRPCV1 || i == InterfaceEnumRaw
+}
+
 type PluginOperationConfig struct {
 	Name        string   `yaml:"name"`
 	Description string   `yaml:"description"`
@@ -70,7 +84,7 @@ type PluginOperationConfig struct {
 	DefaultArgs map[string]string `yaml:"defaultArgs"`
 
 	// communication interface used when communicating with the spawned plugin process
-	Interface string `yaml:"interface"`
+	Interface InterfaceEnum `yaml:"interface"`
 }
 
 func loadPluginFromYAML(id string, reader io.Reader) (*PluginConfig, error) {
