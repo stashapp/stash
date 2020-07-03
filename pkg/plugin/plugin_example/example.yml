@@ -16,8 +16,8 @@ tasks:
       - plugin_example
     defaultArgs:
       mode: remove
-  - name: Long task
-    description: Sleeps for a minute
+  - name: Indefinite task
+    description: Sleeps indefinitely - interruptable
     exec:
       - plugin_example
     defaultArgs:

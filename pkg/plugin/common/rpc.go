@@ -9,6 +9,7 @@ import (
 
 type RPCRunner interface {
 	Run(input PluginInput, output *PluginOutput) error
+	Stop(input struct{}, output *bool) error
 }
 
 func ServePlugin(iface RPCRunner) error {
@@ -27,4 +28,13 @@ type PluginClient struct {
 
 func (p PluginClient) Run(input PluginInput, output *PluginOutput) error {
 	return p.Client.Call("RPCRunner.Run", input, output)
+}
+
+func (p PluginClient) RunAsync(input PluginInput, output *PluginOutput, done chan *rpc.Call) *rpc.Call {
+	return p.Client.Go("RPCRunner.Run", input, output, done)
+}
+
+func (p PluginClient) Stop() error {
+	var resp interface{}
+	return p.Client.Call("RPCRunner.Stop", nil, &resp)
 }

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"net/rpc"
 	"net/rpc/jsonrpc"
 	"os/exec"
 	"path/filepath"
@@ -15,10 +16,23 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) (*common.PluginOutput, error) {
-	command := operation.Exec
+type RPCPluginTask struct {
+	PluginTask
+
+	client *rpc.Client
+	done   chan *rpc.Call
+}
+
+func newRPCPluginTask(operation *PluginOperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) *RPCPluginTask {
+	return &RPCPluginTask{
+		PluginTask: newPluginTask(operation, args, serverConnection),
+	}
+}
+
+func (t *RPCPluginTask) Start() error {
+	command := t.Operation.Exec
 	if len(command) == 0 {
-		return nil, fmt.Errorf("empty exec value in operation %s", operation.Name)
+		return fmt.Errorf("empty exec value in operation %s", t.Operation.Name)
 	}
 
 	// TODO - this should be the plugin config path, since it may be in a subdir
@@ -31,11 +45,10 @@ func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput,
 
 	pluginErrReader, pluginErrWriter := io.Pipe()
 
-	client, err := pie.StartProviderCodec(jsonrpc.NewClientCodec, pluginErrWriter, command[0], command[1:]...)
+	t.client, err = pie.StartProviderCodec(jsonrpc.NewClientCodec, pluginErrWriter, command[0], command[1:]...)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	defer client.Close()
 
 	go func() {
 		// pipe plugin stderr to our logging
@@ -58,18 +71,34 @@ func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput,
 	}()
 
 	iface := common.PluginClient{
-		Client: client,
+		Client: t.client,
 	}
 
-	args = applyDefaultArgs(args, operation.DefaultArgs)
+	args := applyDefaultArgs(t.Args, t.Operation.DefaultArgs)
 
-	input := buildPluginInput(args, serverConnection)
+	input := buildPluginInput(args, t.ServerConnection)
 
-	output := common.PluginOutput{}
-	err = iface.Run(input, &output)
-	if err != nil {
-		return nil, err
+	t.done = make(chan *rpc.Call, 1)
+	t.WaitGroup.Add(1)
+	iface.RunAsync(input, &t.result, t.done)
+	go t.waitToFinish()
+	return nil
+}
+
+func (t *RPCPluginTask) waitToFinish() {
+	defer t.client.Close()
+	defer t.WaitGroup.Done()
+	<-t.done
+}
+
+func (t *RPCPluginTask) Wait() {
+	t.WaitGroup.Wait()
+}
+
+func (t *RPCPluginTask) Stop() error {
+	iface := common.PluginClient{
+		Client: t.client,
 	}
 
-	return &output, nil
+	return iface.Stop()
 }

@@ -1,7 +1,6 @@
 package plugin
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -103,35 +102,27 @@ func getPlugin(pluginID string) (*PluginConfig, error) {
 	return nil, nil
 }
 
-func RunPluginOperation(pluginID string, operationName string, serverConnection common.StashServerConnection, args []*models.PluginArgInput) error {
+func RunPluginOperation(pluginID string, operationName string, serverConnection common.StashServerConnection, args []*models.PluginArgInput) (PluginTaskManager, error) {
 	// find the plugin and operation
 	plugin, err := getPlugin(pluginID)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if plugin == nil {
-		return fmt.Errorf("no plugin with ID %s", pluginID)
+		return nil, fmt.Errorf("no plugin with ID %s", pluginID)
 	}
 
 	operation := plugin.getTask(operationName)
 	if operation == nil {
-		return fmt.Errorf("no task with name %s in plugin %s", operationName, plugin.getName())
+		return nil, fmt.Errorf("no task with name %s in plugin %s", operationName, plugin.getName())
 	}
 
-	output, err := executeRPC(operation, args, serverConnection)
-	if err != nil {
-		return err
+	ret := newRPCPluginTask(operation, args, serverConnection)
+	if err := ret.Start(); err != nil {
+		return nil, err
 	}
 
-	if output.Error != nil {
-		return errors.New(*output.Error)
-	}
-
-	if output.Output != nil {
-		logger.Debugf("[Plugin output]: %s", *output.Output)
-	}
-
-	return nil
+	return ret, nil
 }

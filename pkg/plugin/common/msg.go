@@ -95,3 +95,8 @@ type PluginOutput struct {
 	Error  *string `json:"error"`
 	Output *string `json:"output"`
 }
+
+func (o *PluginOutput) SetError(err error) {
+	errStr := err.Error()
+	o.Error = &errStr
+}

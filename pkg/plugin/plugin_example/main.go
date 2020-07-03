@@ -15,7 +15,9 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/util"
 )
 
-type api struct{}
+type api struct {
+	stopping bool
+}
 
 const tagName = "Hawwwwt"
 
@@ -71,7 +73,14 @@ type SceneUpdateInput struct {
 	TagIds []graphql.ID `graphql:"tag_ids" json:"tag_ids"`
 }
 
-func (api) Run(input common.PluginInput, output *common.PluginOutput) error {
+func (a *api) Stop(input struct{}, output *bool) error {
+	log.Println("Stopping...")
+	a.stopping = true
+	*output = true
+	return nil
+}
+
+func (a *api) Run(input common.PluginInput, output *common.PluginOutput) error {
 	client := util.NewClient(input)
 
 	modeArg := common.GetValue(input.Args, "mode")
@@ -82,7 +91,7 @@ func (api) Run(input common.PluginInput, output *common.PluginOutput) error {
 	} else if modeArg.String() == "remove" {
 		err = removeTag(client)
 	} else if modeArg.String() == "long" {
-		err = doLongTask()
+		err = a.doLongTask()
 	}
 
 	if err != nil {
@@ -101,9 +110,15 @@ func (api) Run(input common.PluginInput, output *common.PluginOutput) error {
 	return nil
 }
 
-func doLongTask() error {
-	log.Println("Sleeping for a minute")
-	time.Sleep(time.Minute)
+func (a *api) doLongTask() error {
+	log.Println("Sleeping indefinitely")
+	for {
+		time.Sleep(time.Second)
+		if a.stopping {
+			return nil
+		}
+	}
+
 	return nil
 }
 
@@ -302,7 +317,7 @@ func main() {
 		return
 	}
 
-	err := common.ServePlugin(api{})
+	err := common.ServePlugin(&api{})
 	if err != nil {
 		panic(err)
 	}
