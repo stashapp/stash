@@ -16,4 +16,10 @@ tasks:
       - plugin_example
     defaultArgs:
       mode: remove
+  - name: Long task
+    description: Sleeps for a minute
+    exec:
+      - plugin_example
+    defaultArgs:
+      mode: long
       

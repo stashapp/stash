@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/shurcooL/graphql"
 	"github.com/stashapp/stash/pkg/plugin/common"
@@ -80,6 +81,8 @@ func (api) Run(input common.PluginInput, output *common.PluginOutput) error {
 		err = addTag(client)
 	} else if modeArg.String() == "remove" {
 		err = removeTag(client)
+	} else if modeArg.String() == "long" {
+		err = doLongTask()
 	}
 
 	if err != nil {
@@ -95,6 +98,12 @@ func (api) Run(input common.PluginInput, output *common.PluginOutput) error {
 		Output: &outputStr,
 	}
 
+	return nil
+}
+
+func doLongTask() error {
+	log.Println("Sleeping for a minute")
+	time.Sleep(time.Minute)
 	return nil
 }
 
