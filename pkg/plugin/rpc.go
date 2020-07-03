@@ -15,8 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-type pluginErrMonitor struct{}
-
 func executeRPC(operation *PluginOperationConfig, args []*models.PluginArgInput) (*common.PluginOutput, error) {
 	command := operation.Exec
 	if len(command) == 0 {
