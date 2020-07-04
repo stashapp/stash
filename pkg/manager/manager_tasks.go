@@ -3,6 +3,7 @@ package manager
 import (
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -20,11 +21,12 @@ func constructGlob() string { // create a sequence for glob doublestar from our 
 	extLen := len(extensionsToScan)
 	glb := "{"
 	for i := 0; i < extLen-1; i++ { // append extensions and commas
-		glb += extensionsToScan[i] + ","
+		glb += strings.ToLower(extensionsToScan[i]) + "," + strings.ToUpper(extensionsToScan[i]) + ","
 	}
-	if extLen >= 1 { // append last extension without comma
-		glb += extensionsToScan[extLen-1]
+	if extLen >= 1 { // append last extension without a comma at the end
+		glb += strings.ToLower(extensionsToScan[extLen-1]) + "," + strings.ToUpper(extensionsToScan[extLen-1])
 	}
+
 	glb += "}"
 	return glb
 
