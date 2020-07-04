@@ -14,7 +14,7 @@ type PluginTaskManager interface {
 }
 
 type PluginTask struct {
-	Operation        *PluginOperationConfig
+	Operation        *OperationConfig
 	ServerConnection common.StashServerConnection
 	Args             []*models.PluginArgInput
 
@@ -30,7 +30,7 @@ func (t *PluginTask) GetProgress() float64 {
 	return t.progress
 }
 
-func newPluginTask(operation *PluginOperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) PluginTask {
+func newPluginTask(operation *OperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) PluginTask {
 	return PluginTask{
 		Operation:        operation,
 		ServerConnection: serverConnection,

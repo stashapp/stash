@@ -40,7 +40,7 @@ type RPCPluginTask struct {
 	done      chan *rpc.Call
 }
 
-func newRPCPluginTask(operation *PluginOperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) *RPCPluginTask {
+func newRPCPluginTask(operation *OperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) *RPCPluginTask {
 	return &RPCPluginTask{
 		PluginTask: newPluginTask(operation, args, serverConnection),
 	}

@@ -10,16 +10,27 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type PluginConfig struct {
-	ID          string
-	Name        string                   `yaml:"name"`
-	Description *string                  `yaml:"description"`
-	URL         *string                  `yaml:"url"`
-	Version     *string                  `yaml:"version"`
-	Tasks       []*PluginOperationConfig `yaml:"tasks"`
+// Config describes the configuration for a single plugin.
+type Config struct {
+	id string
+
+	// The name of the plugin. This will be displayed in the UI.
+	Name string `yaml:"name"`
+
+	// An optional description of what the plugin does.
+	Description *string `yaml:"description"`
+
+	// An optional URL for the plugin.
+	URL *string `yaml:"url"`
+
+	// An optional version string.
+	Version *string `yaml:"version"`
+
+	// The task configurations for tasks provided by this plugin.
+	Tasks []*OperationConfig `yaml:"tasks"`
 }
 
-func (c PluginConfig) getPluginTasks() []*models.PluginTask {
+func (c Config) getPluginTasks() []*models.PluginTask {
 	var ret []*models.PluginTask
 
 	for _, o := range c.Tasks {
@@ -33,17 +44,17 @@ func (c PluginConfig) getPluginTasks() []*models.PluginTask {
 	return ret
 }
 
-func (c PluginConfig) getName() string {
+func (c Config) getName() string {
 	if c.Name != "" {
 		return c.Name
 	}
 
-	return c.ID
+	return c.id
 }
 
-func (c PluginConfig) toPlugin() *models.Plugin {
+func (c Config) toPlugin() *models.Plugin {
 	return &models.Plugin{
-		ID:          c.ID,
+		ID:          c.id,
 		Name:        c.getName(),
 		Description: c.Description,
 		URL:         c.URL,
@@ -51,7 +62,7 @@ func (c PluginConfig) toPlugin() *models.Plugin {
 	}
 }
 
-func (c PluginConfig) getTask(name string) *PluginOperationConfig {
+func (c Config) getTask(name string) *OperationConfig {
 	for _, o := range c.Tasks {
 		if o.Name == name {
 			return o
@@ -75,20 +86,38 @@ func (i InterfaceEnum) Valid() bool {
 	return i == InterfaceEnumRPC || i == InterfaceEnumRaw
 }
 
-type PluginOperationConfig struct {
-	Name        string   `yaml:"name"`
-	Description string   `yaml:"description"`
-	Exec        []string `yaml:"exec,flow"`
+// OperationConfig describes the configuration for a single plugin operation
+// provided by a plugin.
+type OperationConfig struct {
+	// Used to identify the operation. Must be unique within a plugin
+	// configuration. This name is shown in the button for the operation
+	// in the UI.
+	Name string `yaml:"name"`
 
-	// Argument fields
+	// A short description of the operation. This description is shown below
+	// the button in the UI.
+	Description string `yaml:"description"`
+
+	// The command to execute for the operation.
+	//
+	// Note: the execution process will search the path for the first element
+	// in this list, then will attempt to find the element in the plugins
+	// directory. The exe extension is not necessary on Windows platforms.
+	// The current working directory is set to that of the stash process.
+	Exec []string `yaml:"exec,flow"`
+
+	// A map of argument keys to their default values. The default value is
+	// used if the applicable argument is not provided during the operation
+	// call.
 	DefaultArgs map[string]string `yaml:"defaultArgs"`
 
-	// communication interface used when communicating with the spawned plugin process
+	// The communication interface used when communicating with the spawned
+	// plugin process.
 	Interface InterfaceEnum `yaml:"interface"`
 }
 
-func loadPluginFromYAML(id string, reader io.Reader) (*PluginConfig, error) {
-	ret := &PluginConfig{}
+func loadPluginFromYAML(id string, reader io.Reader) (*Config, error) {
+	ret := &Config{}
 
 	parser := yaml.NewDecoder(reader)
 	parser.SetStrict(true)
@@ -97,12 +126,12 @@ func loadPluginFromYAML(id string, reader io.Reader) (*PluginConfig, error) {
 		return nil, err
 	}
 
-	ret.ID = id
+	ret.id = id
 
 	return ret, nil
 }
 
-func loadPluginFromYAMLFile(path string) (*PluginConfig, error) {
+func loadPluginFromYAMLFile(path string) (*Config, error) {
 	file, err := os.Open(path)
 	defer file.Close()
 	if err != nil {

@@ -13,7 +13,7 @@ import (
 // PluginCache stores plugin details.
 type PluginCache struct {
 	path    string
-	plugins []PluginConfig
+	plugins []Config
 }
 
 // NewPluginCache returns a new PluginCache loading plugin configurations
@@ -47,8 +47,8 @@ func (c *PluginCache) ReloadPlugins() error {
 	return nil
 }
 
-func loadPlugins(path string) ([]PluginConfig, error) {
-	plugins := make([]PluginConfig, 0)
+func loadPlugins(path string) ([]Config, error) {
+	plugins := make([]Config, 0)
 
 	logger.Debugf("Reading plugin configs from %s", path)
 	pluginFiles := []string{}
@@ -120,9 +120,9 @@ func (c PluginCache) RunPluginOperation(pluginID string, operationName string, s
 	return ret, nil
 }
 
-func (c PluginCache) getPlugin(pluginID string) *PluginConfig {
+func (c PluginCache) getPlugin(pluginID string) *Config {
 	for _, s := range c.plugins {
-		if s.ID == pluginID {
+		if s.id == pluginID {
 			return &s
 		}
 	}
