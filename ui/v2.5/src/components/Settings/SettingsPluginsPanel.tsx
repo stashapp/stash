@@ -56,7 +56,7 @@ export const SettingsPluginsPanel: React.FC = () => {
 
   function renderPlugin(plugin: GQL.Plugin) {
     return (
-      <div>
+      <div key={plugin.id}>
         <h5>{plugin.name} {plugin.version ? `(${plugin.version})` : undefined} {renderLink(plugin)}</h5>
         {plugin.description ? (
           <small className="text-muted">{plugin.description}</small>

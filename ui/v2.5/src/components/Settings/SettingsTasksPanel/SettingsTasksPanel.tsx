@@ -207,8 +207,8 @@ export const SettingsTasksPanel: React.FC = () => {
 
     return pluginTasks.data.pluginTasks.map(o => {
       return (
-        <>
-          <Button onClick={() => onPluginTaskClicked(o)} className="mt-3" key={`${o.plugin.id}/${o.name}`}>
+        <div key={`${o.plugin.id}/${o.name}`}>
+          <Button onClick={() => onPluginTaskClicked(o)} className="mt-3">
             {o.name}
           </Button>
           {o.description ? (
@@ -216,7 +216,7 @@ export const SettingsTasksPanel: React.FC = () => {
               {o.description} <span className="plugin-task-plugin">({o.plugin.name})</span>
             </Form.Text>
           ) : undefined}
-        </>
+        </div>
       );
     });
   }
