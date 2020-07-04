@@ -11,15 +11,18 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-func NewClient(provider common.StashServerProvider) *graphql.Client {
-	portStr := strconv.Itoa(provider.GetPort())
+// NewClient creates a graphql Client connecting to the stash server using
+// the provided server connection details.
+// Always connects to the graphql endpoint of the localhost.
+func NewClient(provider common.StashServerConnection) *graphql.Client {
+	portStr := strconv.Itoa(provider.Port)
 
 	u, _ := url.Parse("http://localhost:" + portStr + "/graphql")
-	u.Scheme = provider.GetScheme()
+	u.Scheme = provider.Scheme
 
 	cookieJar, _ := cookiejar.New(nil)
 
-	cookie := provider.GetSessionCookie()
+	cookie := provider.SessionCookie
 	if cookie != nil {
 		cookieJar.SetCookies(u, []*http.Cookie{
 			cookie,

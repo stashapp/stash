@@ -2,23 +2,27 @@ package common
 
 import "net/http"
 
+// StashServerConnection represents the connection details needed for a
+// plugin instance to connect to its parent stash server.
 type StashServerConnection struct {
-	Scheme        string
-	Port          int
+	// http or https
+	Scheme string
+
+	Port int
+
+	// Cookie for authentication purposes
 	SessionCookie *http.Cookie
 }
 
-type StashServerProvider interface {
-	GetScheme() string
-	GetPort() int
-	GetSessionCookie() *http.Cookie
-}
-
+// PluginKeyValue represents a key/value pair for sending arguments to
+// plugin operations.
 type PluginKeyValue struct {
 	Key   string          `json:"key"`
 	Value *PluginArgValue `json:"value"`
 }
 
+// PluginArgValue represents a single value parameter for plugin operations.PluginArgValue
+// Only one of its fields should be non-nil.
 type PluginArgValue struct {
 	Str *string           `json:"str"`
 	I   *int              `json:"i"`
@@ -28,6 +32,8 @@ type PluginArgValue struct {
 	A   []*PluginArgValue `json:"a"`
 }
 
+// String returns the string field or an empty string if the string field is
+// nil
 func (v PluginArgValue) String() string {
 	var ret string
 	if v.Str != nil {
@@ -37,6 +43,7 @@ func (v PluginArgValue) String() string {
 	return ret
 }
 
+// Int returns the int field or 0 if the int field is nil
 func (v PluginArgValue) Int() int {
 	var ret int
 	if v.I != nil {
@@ -46,6 +53,7 @@ func (v PluginArgValue) Int() int {
 	return ret
 }
 
+// Bool returns the boolean field or false if the boolean field is nil
 func (v PluginArgValue) Bool() bool {
 	var ret bool
 	if v.B != nil {
@@ -55,6 +63,7 @@ func (v PluginArgValue) Bool() bool {
 	return ret
 }
 
+// Float returns the float field or 0 if the float field is nil
 func (v PluginArgValue) Float() float64 {
 	var ret float64
 	if v.F != nil {
@@ -64,23 +73,18 @@ func (v PluginArgValue) Float() float64 {
 	return ret
 }
 
+// PluginInput is the data structure that is sent to plugin instances when they
+// are spawned.
 type PluginInput struct {
+	// Server details to connect to the stash server.
 	ServerConnection StashServerConnection `json:"server_connection"`
-	Args             []*PluginKeyValue     `json:"args"`
+
+	// Arguments to the plugin operation.
+	Args []*PluginKeyValue `json:"args"`
 }
 
-func (i PluginInput) GetPort() int {
-	return i.ServerConnection.Port
-}
-
-func (i PluginInput) GetScheme() string {
-	return i.ServerConnection.Scheme
-}
-
-func (i PluginInput) GetSessionCookie() *http.Cookie {
-	return i.ServerConnection.SessionCookie
-}
-
+// GetValue gets the PluginArgValue whose key matches the provided name.
+// Returns nil if not found. This will be encoded as a JSON string.
 func GetValue(keyValues []*PluginKeyValue, name string) *PluginArgValue {
 	for _, v := range keyValues {
 		if name == v.Key {
@@ -91,11 +95,16 @@ func GetValue(keyValues []*PluginKeyValue, name string) *PluginArgValue {
 	return nil
 }
 
+// PluginOutput is the data structure that is expected to be output by plugin
+// processes when execution has concluded. It is expected that this data will
+// be encoded as JSON.
 type PluginOutput struct {
 	Error  *string `json:"error"`
 	Output *string `json:"output"`
 }
 
+// SetError is a convenience method that sets the Error field based on the
+// provided error.
 func (o *PluginOutput) SetError(err error) {
 	errStr := err.Error()
 	o.Error = &errStr

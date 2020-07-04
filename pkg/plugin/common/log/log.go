@@ -1,3 +1,18 @@
+// Package log provides a number of logging utility functions for encoding and
+// decoding log messages between a stash server and a plugin instance.
+//
+// Log messages sent from a plugin instance are transmitted via stderr and are
+// encoded with a prefix consisting of special character SOH, then the log
+// level (one of t, d, i, w, e, or p - corresponding to trace, debug, info,
+// warning, error and progress levels respectively), then special character
+// STX.
+//
+// The Trace, Debug, Info, Warning, and Error methods, and their equivalent
+// formatted methods are intended for use by plugin instances to transmit log
+// messages. The Progress method is also intended for sending progress data.
+//
+// Conversely, LevelFromName and DetectLogLevel are intended for use by the
+// stash server.
 package log
 
 import (
@@ -85,42 +100,57 @@ func (l Level) logf(format string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, formatToUse, args...)
 }
 
+// Trace outputs a trace logging message to os.Stderr. Message is encoded with a
+// prefix that signifies to the server that it is a trace message.
 func Trace(args ...interface{}) {
 	TraceLevel.log(args...)
 }
 
+// Tracef is the equivalent of Printf outputting as a trace logging message.
 func Tracef(format string, args ...interface{}) {
 	TraceLevel.logf(format, args...)
 }
 
+// Debug outputs a debug logging message to os.Stderr. Message is encoded with a
+// prefix that signifies to the server that it is a debug message.
 func Debug(args ...interface{}) {
 	DebugLevel.log(args...)
 }
 
+// Debugf is the equivalent of Printf outputting as a debug logging message.
 func Debugf(format string, args ...interface{}) {
 	DebugLevel.logf(format, args...)
 }
 
+// Info outputs an info logging message to os.Stderr. Message is encoded with a
+// prefix that signifies to the server that it is an info message.
 func Info(args ...interface{}) {
 	InfoLevel.log(args...)
 }
 
+// Infof is the equivalent of Printf outputting as an info logging message.
 func Infof(format string, args ...interface{}) {
 	InfoLevel.logf(format, args...)
 }
 
+// Warn outputs a warning logging message to os.Stderr. Message is encoded with a
+// prefix that signifies to the server that it is a warning message.
 func Warn(args ...interface{}) {
 	WarningLevel.log(args...)
 }
 
+// Warnf is the equivalent of Printf outputting as a warning logging message.
 func Warnf(format string, args ...interface{}) {
 	WarningLevel.logf(format, args...)
 }
 
+// Error outputs an error logging message to os.Stderr. Message is encoded with a
+// prefix that signifies to the server that it is an error message.
 func Error(args ...interface{}) {
 	ErrorLevel.log(args...)
 }
 
+// Errorf is the equivalent of Printf outputting as an error logging message.
 func Errorf(format string, args ...interface{}) {
 	ErrorLevel.logf(format, args...)
 }
