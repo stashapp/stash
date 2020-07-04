@@ -18,7 +18,8 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 	go func() {
 		defer s.returnToIdleState()
 
-		task, err := s.PluginCache.CreateTask(pluginID, taskName, serverConnection, args)
+		progress := make(chan float64)
+		task, err := s.PluginCache.CreateTask(pluginID, taskName, serverConnection, args, progress)
 		if err != nil {
 			logger.Errorf("Error creating plugin task: %s", err.Error())
 			return
@@ -36,15 +37,16 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 			task.Wait()
 		}()
 
+		// TODO - refactor stop to use channels
 		// check for stop every five seconds
 		pollingTime := time.Second * 5
 		for {
 			select {
 			case <-done:
 				return
+			case p := <-progress:
+				s.Status.setProgressPercent(p)
 			case <-time.After(pollingTime):
-				s.Status.setProgressPercent(task.GetProgress())
-
 				if s.Status.stopping {
 					if err := task.Stop(); err != nil {
 						logger.Errorf("Error stopping plugin operation: %s", err.Error())

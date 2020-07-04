@@ -99,7 +99,7 @@ func (c Cache) ListPluginTasks() []*models.PluginTask {
 // CreateTask runs the plugin operation for the pluginID and operation
 // name provided. Returns an error if the plugin or the operation could not be
 // resolved.
-func (c Cache) CreateTask(pluginID string, operationName string, serverConnection common.StashServerConnection, args []*models.PluginArgInput) (Task, error) {
+func (c Cache) CreateTask(pluginID string, operationName string, serverConnection common.StashServerConnection, args []*models.PluginArgInput, progress chan float64) (Task, error) {
 	// find the plugin and operation
 	plugin := c.getPlugin(pluginID)
 
@@ -117,6 +117,7 @@ func (c Cache) CreateTask(pluginID string, operationName string, serverConnectio
 		operation:        operation,
 		serverConnection: serverConnection,
 		args:             args,
+		progress:         progress,
 	}
 	return task.createTask(), nil
 }

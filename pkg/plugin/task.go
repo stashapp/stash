@@ -19,11 +19,6 @@ type Task interface {
 	// task has not been started.
 	Wait()
 
-	// GetProgress returns the current progress of the task. Returns -1 if the
-	// progress is not known, otherwise the return value will be between 0 and
-	// 1, inclusively.
-	GetProgress() float64
-
 	// GetResult returns the output of the plugin task. Returns nil if the task
 	// has not completed.
 	GetResult() *common.PluginOutput
@@ -39,16 +34,12 @@ type pluginTask struct {
 	serverConnection common.StashServerConnection
 	args             []*models.PluginArgInput
 
-	progress float64
+	progress chan float64
 	result   *common.PluginOutput
 }
 
 func (t *pluginTask) GetResult() *common.PluginOutput {
 	return t.result
-}
-
-func (t *pluginTask) GetProgress() float64 {
-	return t.progress
 }
 
 func (t *pluginTask) createTask() Task {

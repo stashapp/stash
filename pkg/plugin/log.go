@@ -35,7 +35,14 @@ func (t *pluginTask) handleStderrLine(line string) {
 		if err != nil {
 			logger.Errorf("Error parsing progress value '%s': %s", l, err.Error)
 		} else {
-			t.progress = progress
+			// only pass progress through if channel present
+			if t.progress != nil {
+				// don't block on this
+				select {
+				case t.progress <- progress:
+				default:
+				}
+			}
 		}
 	}
 }
