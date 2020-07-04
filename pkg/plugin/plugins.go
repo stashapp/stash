@@ -90,7 +90,7 @@ func (c Cache) ListPlugins() []*models.Plugin {
 func (c Cache) ListPluginTasks() []*models.PluginTask {
 	var ret []*models.PluginTask
 	for _, s := range c.plugins {
-		ret = append(ret, s.getPluginTasks()...)
+		ret = append(ret, s.getPluginTasks(true)...)
 	}
 
 	return ret

@@ -53,15 +53,19 @@ type Config struct {
 	Tasks []*OperationConfig `yaml:"tasks"`
 }
 
-func (c Config) getPluginTasks() []*models.PluginTask {
+func (c Config) getPluginTasks(includePlugin bool) []*models.PluginTask {
 	var ret []*models.PluginTask
 
 	for _, o := range c.Tasks {
-		ret = append(ret, &models.PluginTask{
+		task := &models.PluginTask{
 			Name:        o.Name,
 			Description: &o.Description,
-			Plugin:      c.toPlugin(),
-		})
+		}
+
+		if includePlugin {
+			task.Plugin = c.toPlugin()
+		}
+		ret = append(ret, task)
 	}
 
 	return ret
@@ -82,6 +86,7 @@ func (c Config) toPlugin() *models.Plugin {
 		Description: c.Description,
 		URL:         c.URL,
 		Version:     c.Version,
+		Tasks:       c.getPluginTasks(false),
 	}
 }
 

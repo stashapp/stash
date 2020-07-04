@@ -5,6 +5,8 @@ type Plugin {
     description: String
     url: String
     version: String
+
+    tasks: [PluginTask!]
 }
 
 type PluginTask {

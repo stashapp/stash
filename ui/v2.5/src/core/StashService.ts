@@ -427,9 +427,15 @@ export const mutateReloadScrapers = () =>
     mutation: GQL.ReloadScrapersDocument,
   });
 
+const reloadPluginsMutationImpactedQueries = [
+  "plugins",
+  "pluginTasks",
+];
+
 export const mutateReloadPlugins = () =>
   client.mutate<GQL.ReloadPluginsMutation>({
     mutation: GQL.ReloadPluginsDocument,
+    update: () => invalidateQueries(reloadPluginsMutationImpactedQueries),
   });
 
 export const mutateRunPluginTask = (

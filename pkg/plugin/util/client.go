@@ -30,5 +30,5 @@ func NewClient(provider common.StashServerProvider) *graphql.Client {
 		Jar: cookieJar,
 	}
 
-	return graphql.NewClient("http://localhost:"+portStr+"/graphql", httpClient)
+	return graphql.NewClient(u.String(), httpClient)
 }

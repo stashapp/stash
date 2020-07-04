@@ -5,6 +5,11 @@ query Plugins {
     description
     url
     version
+
+    tasks {
+      name
+      description
+    }
   }
 }
 
