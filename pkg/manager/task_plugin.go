@@ -23,11 +23,13 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 		var wg sync.WaitGroup
 		wg.Add(1)
 
-		task := RunningPluginTask{
-			PluginID:         pluginID,
-			TaskName:         taskName,
-			ServerConnection: serverConnection,
-			Args:             args,
+		task := runningPluginTask{
+			pluginCache:      s.PluginCache,
+			status:           &s.Status,
+			pluginID:         pluginID,
+			taskName:         taskName,
+			serverConnection: serverConnection,
+			args:             args,
 		}
 
 		done := make(chan bool)
@@ -50,22 +52,25 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 	}()
 }
 
-type RunningPluginTask struct {
-	PluginID         string
-	TaskName         string
-	ServerConnection common.StashServerConnection
-	Args             []*models.PluginArgInput
+type runningPluginTask struct {
+	pluginCache *plugin.PluginCache
+	status      *TaskStatus
+
+	pluginID         string
+	taskName         string
+	serverConnection common.StashServerConnection
+	args             []*models.PluginArgInput
 
 	stopping bool
 }
 
-func (t *RunningPluginTask) Start(wg *sync.WaitGroup) {
+func (t *runningPluginTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	// TODO - handle progress/stop
-	opManager, err := plugin.RunPluginOperation(t.PluginID, t.TaskName, t.ServerConnection, t.Args)
+	opManager, err := t.pluginCache.RunPluginOperation(t.pluginID, t.taskName, t.serverConnection, t.args)
 	if err != nil {
 		logger.Errorf("Error running plugin task: %s", err.Error())
+		return
 	}
 
 	done := make(chan bool)
@@ -74,13 +79,15 @@ func (t *RunningPluginTask) Start(wg *sync.WaitGroup) {
 		close(done)
 	}()
 
-	// check for stop every five seconds
+	// check for stop/progress every five seconds
 	pollingTime := time.Second * 5
 	for {
 		select {
 		case <-done:
 			return
 		case <-time.After(pollingTime):
+			t.status.setProgressPercent(opManager.GetProgress())
+
 			if t.stopping {
 				if err := opManager.Stop(); err != nil {
 					logger.Errorf("Error stopping plugin operation: %s", err.Error())

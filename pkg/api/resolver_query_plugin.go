@@ -3,14 +3,14 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/plugin"
 )
 
 func (r *queryResolver) Plugins(ctx context.Context) ([]*models.Plugin, error) {
-	return plugin.ListPlugins()
+	return manager.GetInstance().PluginCache.ListPlugins(), nil
 }
 
 func (r *queryResolver) PluginTasks(ctx context.Context) ([]*models.PluginTask, error) {
-	return plugin.ListPluginTasks()
+	return manager.GetInstance().PluginCache.ListPluginTasks(), nil
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
+	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -20,6 +21,8 @@ type singleton struct {
 
 	FFMPEGPath  string
 	FFProbePath string
+
+	PluginCache *plugin.PluginCache
 }
 
 var instance *singleton
@@ -47,6 +50,8 @@ func Initialize() *singleton {
 			Status: TaskStatus{Status: Idle, Progress: -1},
 			Paths:  paths.NewPaths(),
 			JSON:   &jsonUtils{},
+
+			PluginCache: initPluginCache(),
 		}
 
 		instance.RefreshConfig()
@@ -145,6 +150,16 @@ The error was: %s
 
 func initLog() {
 	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
+}
+
+func initPluginCache() *plugin.PluginCache {
+	ret, err := plugin.NewPluginCache(config.GetPluginsPath())
+
+	if err != nil {
+		logger.Errorf("Error reading plugin configs: %s", err.Error())
+	}
+
+	return ret
 }
 
 func (s *singleton) RefreshConfig() {

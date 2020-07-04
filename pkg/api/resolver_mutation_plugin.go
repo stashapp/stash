@@ -4,10 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
@@ -38,9 +38,9 @@ func (r *mutationResolver) RunPluginTask(ctx context.Context, pluginID string, t
 }
 
 func (r *mutationResolver) ReloadPlugins(ctx context.Context) (bool, error) {
-	err := plugin.ReloadPlugins()
+	err := manager.GetInstance().PluginCache.ReloadPlugins()
 	if err != nil {
-		return false, err
+		logger.Errorf("Error reading plugin configs: %s", err.Error())
 	}
 
 	return true, nil

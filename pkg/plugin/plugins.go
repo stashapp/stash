@@ -6,20 +6,49 @@ import (
 	"path/filepath"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-var plugins []PluginConfig
+// PluginCache stores plugin details.
+type PluginCache struct {
+	path    string
+	plugins []PluginConfig
+}
 
-func loadPlugins() ([]PluginConfig, error) {
-	if plugins != nil {
-		return plugins, nil
+// NewPluginCache returns a new PluginCache loading plugin configurations
+// from the provided plugin path. It returns an new instance and an error
+// if the plugin directory could not be loaded.
+//
+// Plugins configurations are loaded from yml files in the provided plugin
+// directory and any subdirectories.
+func NewPluginCache(pluginPath string) (*PluginCache, error) {
+	plugins, err := loadPlugins(pluginPath)
+	if err != nil {
+		return nil, err
 	}
 
-	path := config.GetPluginsPath()
-	plugins = make([]PluginConfig, 0)
+	return &PluginCache{
+		path:    pluginPath,
+		plugins: plugins,
+	}, nil
+}
+
+// ReloadPlugins clears the plugin cache and reloads from the plugin path.
+// In the event of an error during loading, the cache will be left empty.
+func (c *PluginCache) ReloadPlugins() error {
+	c.plugins = nil
+	plugins, err := loadPlugins(c.path)
+	if err != nil {
+		return err
+	}
+
+	c.plugins = plugins
+	return nil
+}
+
+func loadPlugins(path string) ([]PluginConfig, error) {
+	plugins := make([]PluginConfig, 0)
 
 	logger.Debugf("Reading plugin configs from %s", path)
 	pluginFiles := []string{}
@@ -31,7 +60,7 @@ func loadPlugins() ([]PluginConfig, error) {
 	})
 
 	if err != nil {
-		logger.Errorf("Error reading plugin configs: %s", err.Error())
+
 		return nil, err
 	}
 
@@ -47,68 +76,32 @@ func loadPlugins() ([]PluginConfig, error) {
 	return plugins, nil
 }
 
-func ReloadPlugins() error {
-	plugins = nil
-	_, err := loadPlugins()
-	return err
-}
-
-func ListPlugins() ([]*models.Plugin, error) {
-	// read plugin config files from the directory and cache
-	plugins, err := loadPlugins()
-
-	if err != nil {
-		return nil, err
-	}
-
+// ListPlugins returns plugin details for all of the loaded plugins.
+func (c PluginCache) ListPlugins() []*models.Plugin {
 	var ret []*models.Plugin
-	for _, s := range plugins {
+	for _, s := range c.plugins {
 		ret = append(ret, s.toPlugin())
 	}
 
-	return ret, nil
+	return ret
 }
 
-func ListPluginTasks() ([]*models.PluginTask, error) {
-	// read plugin config files from the directory and cache
-	plugins, err := loadPlugins()
-
-	if err != nil {
-		return nil, err
-	}
-
+// ListPluginTasks returns all runnable plugin tasks in all loaded plugins.
+func (c PluginCache) ListPluginTasks() []*models.PluginTask {
 	var ret []*models.PluginTask
-	for _, s := range plugins {
+	for _, s := range c.plugins {
 		ret = append(ret, s.getPluginTasks()...)
 	}
 
-	return ret, nil
+	return ret
 }
 
-func getPlugin(pluginID string) (*PluginConfig, error) {
-	// read plugin config files from the directory and cache
-	plugins, err := loadPlugins()
-
-	if err != nil {
-		return nil, err
-	}
-
-	for _, s := range plugins {
-		if s.ID == pluginID {
-			return &s, nil
-		}
-	}
-
-	return nil, nil
-}
-
-func RunPluginOperation(pluginID string, operationName string, serverConnection common.StashServerConnection, args []*models.PluginArgInput) (PluginTaskManager, error) {
+// RunPluginOperation runs the plugin operation for the pluginID and operation
+// name provided. Returns an error if the plugin or the operation could not be
+// resolved.
+func (c PluginCache) RunPluginOperation(pluginID string, operationName string, serverConnection common.StashServerConnection, args []*models.PluginArgInput) (PluginTaskManager, error) {
 	// find the plugin and operation
-	plugin, err := getPlugin(pluginID)
-
-	if err != nil {
-		return nil, err
-	}
+	plugin := c.getPlugin(pluginID)
 
 	if plugin == nil {
 		return nil, fmt.Errorf("no plugin with ID %s", pluginID)
@@ -125,4 +118,14 @@ func RunPluginOperation(pluginID string, operationName string, serverConnection 
 	}
 
 	return ret, nil
+}
+
+func (c PluginCache) getPlugin(pluginID string) *PluginConfig {
+	for _, s := range c.plugins {
+		if s.ID == pluginID {
+			return &s
+		}
+	}
+
+	return nil
 }
