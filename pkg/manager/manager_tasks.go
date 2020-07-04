@@ -34,7 +34,7 @@ func constructGlob() string { // create a sequence for glob doublestar from our 
 
 func isGallery(pathname string) bool {
 	for _, ext := range extensionsGallery {
-		if filepath.Ext(pathname) == "."+ext {
+		if strings.ToLower(filepath.Ext(pathname)) == "."+strings.ToLower(ext) {
 			return true
 		}
 	}
