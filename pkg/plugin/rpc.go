@@ -70,9 +70,7 @@ func (t *rpcPluginTask) Start() error {
 		Client: t.client,
 	}
 
-	args := applyDefaultArgs(t.args, t.operation.DefaultArgs)
-
-	input := buildPluginInput(args, t.serverConnection)
+	input := t.buildPluginInput()
 
 	t.done = make(chan *rpc.Call, 1)
 	result := common.PluginOutput{}

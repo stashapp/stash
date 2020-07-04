@@ -120,7 +120,10 @@ const (
 	// declared in common/rpc.go.
 	InterfaceEnumRPC interfaceEnum = "rpc"
 
-	// InterfaceEnumRaw indidates that stdout will be treated as raw output.
+	// InterfaceEnumRaw interfaces will have the common.PluginInput encoded as
+	// json (but may be ignored), and output will be decoded as
+	// common.PluginOutput. If this decoding fails, then the raw output will be
+	// treated as the output.
 	InterfaceEnumRaw interfaceEnum = "raw"
 )
 
@@ -155,7 +158,7 @@ type OperationConfig struct {
 
 	// A list of arguments that will be appended to the plugin's Exec arguments
 	// when executing this operation.
-	ExecArgs []string
+	ExecArgs []string `yaml:"execArgs"`
 
 	// A map of argument keys to their default values. The default value is
 	// used if the applicable argument is not provided during the operation

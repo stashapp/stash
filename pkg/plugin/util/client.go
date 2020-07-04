@@ -12,7 +12,6 @@ import (
 )
 
 func NewClient(provider common.StashServerProvider) *graphql.Client {
-	// TODO - handle auth
 	portStr := strconv.Itoa(provider.GetPort())
 
 	u, _ := url.Parse("http://localhost:" + portStr + "/graphql")

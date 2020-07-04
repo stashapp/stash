@@ -1,87 +1,67 @@
 // +build plugin_example
-
-package main
+package common
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-	"time"
 
 	"github.com/shurcooL/graphql"
-	"github.com/stashapp/stash/pkg/plugin/common"
 	"github.com/stashapp/stash/pkg/plugin/common/log"
-	"github.com/stashapp/stash/pkg/plugin/util"
 )
 
-func (a *api) Stop(input struct{}, output *bool) error {
-	log.Info("Stopping...")
-	a.stopping = true
-	*output = true
-	return nil
+const tagName = "Hawwwwt"
+
+// graphql inputs and returns
+type TagCreate struct {
+	ID graphql.ID `graphql:"id"`
 }
 
-func (a *api) Run(input common.PluginInput, output *common.PluginOutput) error {
-	client := util.NewClient(input)
-
-	modeArg := common.GetValue(input.Args, "mode")
-
-	var err error
-	if modeArg == nil || modeArg.String() == "add" {
-		err = addTag(client)
-	} else if modeArg.String() == "remove" {
-		err = removeTag(client)
-	} else if modeArg.String() == "long" {
-		err = a.doLongTask()
-	} else if modeArg.String() == "indef" {
-		err = a.doIndefiniteTask()
-	}
-
-	if err != nil {
-		errStr := err.Error()
-		*output = common.PluginOutput{
-			Error: &errStr,
-		}
-		return nil
-	}
-
-	outputStr := "ok"
-	*output = common.PluginOutput{
-		Output: &outputStr,
-	}
-
-	return nil
+type TagCreateInput struct {
+	Name graphql.String `graphql:"name" json:"name"`
 }
 
-func (a *api) doLongTask() error {
-	const total = 100
-	upTo := 0
-
-	log.Info("Doing long task")
-	for upTo < total {
-		time.Sleep(time.Second)
-		if a.stopping {
-			return nil
-		}
-
-		log.Progress(float64(upTo) / float64(total))
-		upTo++
-	}
-
-	return nil
+type TagDestroyInput struct {
+	ID graphql.ID `graphql:"id" json:"id"`
 }
 
-func (a *api) doIndefiniteTask() error {
-	log.Warn("Sleeping indefinitely")
-	for {
-		time.Sleep(time.Second)
-		if a.stopping {
-			return nil
-		}
+type FindScenesResultType struct {
+	Count  graphql.Int
+	Scenes []Scene
+}
+
+type Tag struct {
+	ID   graphql.ID     `graphql:"id"`
+	Name graphql.String `graphql:"name"`
+}
+
+type Scene struct {
+	ID   graphql.ID
+	Tags []Tag
+}
+
+func (s Scene) getTagIds() []graphql.ID {
+	ret := []graphql.ID{}
+
+	for _, t := range s.Tags {
+		ret = append(ret, t.ID)
 	}
 
-	return nil
+	return ret
+}
+
+type FindFilterType struct {
+	PerPage *graphql.Int    `graphql:"per_page" json:"per_page"`
+	Sort    *graphql.String `graphql:"sort" json:"sort"`
+}
+
+type SceneUpdate struct {
+	ID graphql.ID `graphql:"id"`
+}
+
+type SceneUpdateInput struct {
+	ID     graphql.ID   `graphql:"id" json:"id"`
+	TagIds []graphql.ID `graphql:"tag_ids" json:"tag_ids"`
 }
 
 func getTagID(client *graphql.Client, create bool) (*graphql.ID, error) {
@@ -173,7 +153,7 @@ func addTagId(tagIds []graphql.ID, tagId graphql.ID) []graphql.ID {
 	return tagIds
 }
 
-func addTag(client *graphql.Client) error {
+func AddTag(client *graphql.Client) error {
 	tagID, err := getTagID(client, true)
 
 	if err != nil {
@@ -214,7 +194,7 @@ func addTag(client *graphql.Client) error {
 	return nil
 }
 
-func removeTag(client *graphql.Client) error {
+func RemoveTag(client *graphql.Client) error {
 	tagID, err := getTagID(client, false)
 
 	if err != nil {
@@ -247,38 +227,4 @@ func removeTag(client *graphql.Client) error {
 	}
 
 	return nil
-}
-
-func main() {
-	debug := false
-
-	if len(os.Args) >= 2 && os.Args[1] == "debug" {
-		debug = true
-	}
-
-	if debug {
-		api := api{}
-		output := common.PluginOutput{}
-		err := api.Run(common.PluginInput{
-			ServerConnection: common.StashServerConnection{
-				Scheme: "http",
-				Port:   9999,
-			},
-		}, &output)
-
-		if err != nil {
-			panic(err)
-		}
-
-		if output.Error != nil {
-			panic(*output.Error)
-		}
-
-		return
-	}
-
-	err := common.ServePlugin(&api{})
-	if err != nil {
-		panic(err)
-	}
 }

@@ -45,3 +45,12 @@ func (t *pluginTask) GetResult() *common.PluginOutput {
 func (t *pluginTask) createTask() Task {
 	return t.plugin.Interface.getTaskBuilder().build(*t)
 }
+
+func (t *pluginTask) buildPluginInput() common.PluginInput {
+	args := applyDefaultArgs(t.args, t.operation.DefaultArgs)
+
+	return common.PluginInput{
+		ServerConnection: t.serverConnection,
+		Args:             toPluginArgs(args),
+	}
+}

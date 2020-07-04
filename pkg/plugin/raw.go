@@ -1,8 +1,10 @@
 package plugin
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os/exec"
 
@@ -37,6 +39,19 @@ func (t *rawPluginTask) Start() error {
 
 	cmd := exec.Command(command[0], command[1:]...)
 
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("error getting plugin process stdin: %s", err.Error())
+	}
+
+	go func() {
+		defer stdin.Close()
+
+		input := t.buildPluginInput()
+		inBytes, _ := json.Marshal(input)
+		io.WriteString(stdin, string(inBytes))
+	}()
+
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		logger.Error("Plugin stderr not available: " + err.Error())
@@ -51,7 +66,7 @@ func (t *rawPluginTask) Start() error {
 		return fmt.Errorf("Error running plugin: %s", err.Error())
 	}
 
-	t.handlePluginStderr(stderr)
+	go t.handlePluginStderr(stderr)
 	t.cmd = cmd
 
 	// send the stdout to the plugin output
@@ -59,12 +74,10 @@ func (t *rawPluginTask) Start() error {
 		stdoutData, _ := ioutil.ReadAll(stdout)
 		stdoutString := string(stdoutData)
 
-		output := common.PluginOutput{
-			Output: &stdoutString,
-		}
+		output := t.getOutput(stdoutString)
 
 		err := cmd.Wait()
-		if err != nil {
+		if err != nil && output.Error == nil {
 			errStr := err.Error()
 			output.Error = &errStr
 		}
@@ -74,6 +87,19 @@ func (t *rawPluginTask) Start() error {
 
 	t.started = true
 	return nil
+}
+
+func (t *rawPluginTask) getOutput(output string) common.PluginOutput {
+	// try to parse the output as a PluginOutput json. If it fails just
+	// get the raw output
+	ret := common.PluginOutput{}
+	decodeErr := json.Unmarshal([]byte(output), &ret)
+
+	if decodeErr != nil {
+		ret.Output = &output
+	}
+
+	return ret
 }
 
 func (t *rawPluginTask) Wait() {
