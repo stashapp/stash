@@ -3,12 +3,13 @@ package plugin
 import (
 	"bufio"
 	"io"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin/common/log"
 )
 
-func handleStderrLine(line string) {
+func (t *PluginTask) handleStderrLine(line string) {
 	level, l := log.DetectLogLevel(line)
 
 	const pluginPrefix = "[Plugin] "
@@ -29,24 +30,29 @@ func handleStderrLine(line string) {
 		logger.Warn(pluginPrefix, l)
 	case log.ErrorLevel:
 		logger.Error(pluginPrefix, l)
+	case log.ProgressLevel:
+		progress, err := strconv.ParseFloat(l, 64)
+		if err != nil {
+			logger.Errorf("Error parsing progress value '%s': %s", l, err.Error)
+		} else {
+			t.progress = progress
+		}
 	}
 }
 
-func handleStderr(pluginErrReader io.ReadCloser) {
+func (t *PluginTask) handleStderr(pluginErrReader io.ReadCloser) {
 	// pipe plugin stderr to our logging
 	scanner := bufio.NewScanner(pluginErrReader)
 	for scanner.Scan() {
 		str := scanner.Text()
 		if str != "" {
-			// TODO - support progress
-			handleStderrLine(str)
+			t.handleStderrLine(str)
 		}
 	}
 
 	str := scanner.Text()
 	if str != "" {
-		// TODO - support progress
-		handleStderrLine(str)
+		t.handleStderrLine(str)
 	}
 
 	pluginErrReader.Close()

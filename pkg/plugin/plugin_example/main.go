@@ -34,6 +34,8 @@ func (a *api) Run(input common.PluginInput, output *common.PluginOutput) error {
 		err = removeTag(client)
 	} else if modeArg.String() == "long" {
 		err = a.doLongTask()
+	} else if modeArg.String() == "indef" {
+		err = a.doIndefiniteTask()
 	}
 
 	if err != nil {
@@ -53,7 +55,25 @@ func (a *api) Run(input common.PluginInput, output *common.PluginOutput) error {
 }
 
 func (a *api) doLongTask() error {
-	log.Info("Sleeping indefinitely")
+	const total = 100
+	upTo := 0
+
+	log.Info("Doing long task")
+	for upTo < total {
+		time.Sleep(time.Second)
+		if a.stopping {
+			return nil
+		}
+
+		log.Progress(float64(upTo) / float64(total))
+		upTo++
+	}
+
+	return nil
+}
+
+func (a *api) doIndefiniteTask() error {
+	log.Warn("Sleeping indefinitely")
 	for {
 		time.Sleep(time.Second)
 		if a.stopping {

@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strings"
 )
@@ -12,15 +13,16 @@ const endLevelChar byte = 2
 type LogLevel byte
 
 const (
-	TraceLevel   LogLevel = 't'
-	DebugLevel   LogLevel = 'd'
-	InfoLevel    LogLevel = 'i'
-	WarningLevel LogLevel = 'w'
-	ErrorLevel   LogLevel = 'e'
+	TraceLevel    LogLevel = 't'
+	DebugLevel    LogLevel = 'd'
+	InfoLevel     LogLevel = 'i'
+	WarningLevel  LogLevel = 'w'
+	ErrorLevel    LogLevel = 'e'
+	ProgressLevel LogLevel = 'p'
 )
 
 func (l LogLevel) valid() bool {
-	return l == TraceLevel || l == DebugLevel || l == InfoLevel || l == WarningLevel || l == ErrorLevel
+	return l == TraceLevel || l == DebugLevel || l == InfoLevel || l == WarningLevel || l == ErrorLevel || l == ProgressLevel
 }
 
 func (l LogLevel) prefix() string {
@@ -82,6 +84,14 @@ func Error(args ...interface{}) {
 
 func Errorf(format string, args ...interface{}) {
 	ErrorLevel.logf(format, args...)
+}
+
+// Progress logs the current progress value. The progress value should be
+// between 0 and 1.0 inclusively, with 1 representing that the task is
+// complete. Values outside of this range will be clamp to be within it.
+func Progress(progress float64) {
+	progress = math.Min(math.Max(0, progress), 1)
+	ProgressLevel.log(progress)
 }
 
 func DetectLogLevel(line string) (*LogLevel, string) {

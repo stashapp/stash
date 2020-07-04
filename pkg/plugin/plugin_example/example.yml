@@ -21,5 +21,11 @@ tasks:
     exec:
       - plugin_example
     defaultArgs:
+      mode: indef
+  - name: Long task
+    description: Sleeps for 100 seconds - interruptable
+    exec:
+      - plugin_example
+    defaultArgs:
       mode: long
       
