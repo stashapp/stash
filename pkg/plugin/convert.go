@@ -5,34 +5,38 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-func toPluginArgs(args []*models.PluginArgInput) []*common.PluginKeyValue {
-	var ret []*common.PluginKeyValue
+func toPluginArgs(args []*models.PluginArgInput) common.ArgsMap {
+	ret := make(common.ArgsMap)
 	for _, a := range args {
-		ret = append(ret, &common.PluginKeyValue{
-			Key:   a.Key,
-			Value: toPluginArgValue(a.Value),
-		})
+		ret[a.Key] = toPluginArgValue(a.Value)
 	}
 
 	return ret
 }
 
-func toPluginArgValue(arg *models.PluginValueInput) *common.PluginArgValue {
+func toPluginArgValue(arg *models.PluginValueInput) common.PluginArgValue {
 	if arg == nil {
 		return nil
 	}
 
-	ret := &common.PluginArgValue{
-		Str: arg.Str,
-		I:   arg.I,
-		B:   arg.B,
-		F:   arg.F,
-		O:   toPluginArgs(arg.O),
+	switch {
+	case arg.Str != nil:
+		return common.PluginArgValue(*arg.Str)
+	case arg.I != nil:
+		return common.PluginArgValue(*arg.I)
+	case arg.B != nil:
+		return common.PluginArgValue(*arg.B)
+	case arg.F != nil:
+		return common.PluginArgValue(*arg.F)
+	case arg.O != nil:
+		return common.PluginArgValue(toPluginArgs(arg.O))
+	case arg.A != nil:
+		var ret []common.PluginArgValue
+		for _, v := range arg.A {
+			ret = append(ret, toPluginArgValue(v))
+		}
+		return common.PluginArgValue(ret)
 	}
 
-	for _, v := range arg.A {
-		ret.A = append(ret.A, toPluginArgValue(v))
-	}
-
-	return ret
+	return nil
 }

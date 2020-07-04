@@ -14,62 +14,54 @@ type StashServerConnection struct {
 	SessionCookie *http.Cookie
 }
 
-// PluginKeyValue represents a key/value pair for sending arguments to
-// plugin operations.
-type PluginKeyValue struct {
-	Key   string          `json:"key"`
-	Value *PluginArgValue `json:"value"`
-}
+// PluginArgValue represents a single value parameter for plugin operations.
+type PluginArgValue interface{}
 
-// PluginArgValue represents a single value parameter for plugin operations.PluginArgValue
-// Only one of its fields should be non-nil.
-type PluginArgValue struct {
-	Str *string           `json:"str"`
-	I   *int              `json:"i"`
-	B   *bool             `json:"b"`
-	F   *float64          `json:"f"`
-	O   []*PluginKeyValue `json:"o"`
-	A   []*PluginArgValue `json:"a"`
-}
+// ArgsMap is a map of argument key to value.
+type ArgsMap map[string]PluginArgValue
 
 // String returns the string field or an empty string if the string field is
 // nil
-func (v PluginArgValue) String() string {
+func (m ArgsMap) String(key string) string {
+	v, found := m[key]
 	var ret string
-	if v.Str != nil {
-		ret = *v.Str
+	if !found {
+		return ret
 	}
-
+	ret, _ = v.(string)
 	return ret
 }
 
 // Int returns the int field or 0 if the int field is nil
-func (v PluginArgValue) Int() int {
+func (m ArgsMap) Int(key string) int {
+	v, found := m[key]
 	var ret int
-	if v.I != nil {
-		ret = *v.I
+	if !found {
+		return ret
 	}
-
+	ret, _ = v.(int)
 	return ret
 }
 
 // Bool returns the boolean field or false if the boolean field is nil
-func (v PluginArgValue) Bool() bool {
+func (m ArgsMap) Bool(key string) bool {
+	v, found := m[key]
 	var ret bool
-	if v.B != nil {
-		ret = *v.B
+	if !found {
+		return ret
 	}
-
+	ret, _ = v.(bool)
 	return ret
 }
 
 // Float returns the float field or 0 if the float field is nil
-func (v PluginArgValue) Float() float64 {
+func (m ArgsMap) Float(key string) float64 {
+	v, found := m[key]
 	var ret float64
-	if v.F != nil {
-		ret = *v.F
+	if !found {
+		return ret
 	}
-
+	ret, _ = v.(float64)
 	return ret
 }
 
@@ -80,27 +72,15 @@ type PluginInput struct {
 	ServerConnection StashServerConnection `json:"server_connection"`
 
 	// Arguments to the plugin operation.
-	Args []*PluginKeyValue `json:"args"`
-}
-
-// GetValue gets the PluginArgValue whose key matches the provided name.
-// Returns nil if not found. This will be encoded as a JSON string.
-func GetValue(keyValues []*PluginKeyValue, name string) *PluginArgValue {
-	for _, v := range keyValues {
-		if name == v.Key {
-			return v.Value
-		}
-	}
-
-	return nil
+	Args ArgsMap `json:"args"`
 }
 
 // PluginOutput is the data structure that is expected to be output by plugin
 // processes when execution has concluded. It is expected that this data will
 // be encoded as JSON.
 type PluginOutput struct {
-	Error  *string `json:"error"`
-	Output *string `json:"output"`
+	Error  *string     `json:"error"`
+	Output interface{} `json:"output"`
 }
 
 // SetError is a convenience method that sets the Error field based on the

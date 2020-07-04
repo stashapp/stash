@@ -35,6 +35,17 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 		go func() {
 			defer close(done)
 			task.Wait()
+
+			output := task.GetResult()
+			if output == nil {
+				logger.Debug("Plugin returned no result")
+			} else {
+				if output.Error != nil {
+					logger.Errorf("Plugin returned error: %s", *output.Error)
+				} else if output.Output != nil {
+					logger.Debugf("Plugin returned: %v", output.Output)
+				}
+			}
 		}()
 
 		// TODO - refactor stop to use channels

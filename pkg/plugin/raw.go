@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os/exec"
+	"sync"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/plugin/common"
@@ -23,8 +24,10 @@ func (*rawTaskBuilder) build(task pluginTask) Task {
 type rawPluginTask struct {
 	pluginTask
 
-	started bool
-	cmd     *exec.Cmd
+	started   bool
+	waitGroup sync.WaitGroup
+	cmd       *exec.Cmd
+	done      chan bool
 }
 
 func (t *rawPluginTask) Start() error {
@@ -62,6 +65,8 @@ func (t *rawPluginTask) Start() error {
 		logger.Error("Plugin stdout not available: " + err.Error())
 	}
 
+	t.waitGroup.Add(1)
+	t.done = make(chan bool, 1)
 	if err = cmd.Start(); err != nil {
 		return fmt.Errorf("Error running plugin: %s", err.Error())
 	}
@@ -71,6 +76,8 @@ func (t *rawPluginTask) Start() error {
 
 	// send the stdout to the plugin output
 	go func() {
+		defer t.waitGroup.Done()
+		defer close(t.done)
 		stdoutData, _ := ioutil.ReadAll(stdout)
 		stdoutString := string(stdoutData)
 
@@ -103,9 +110,7 @@ func (t *rawPluginTask) getOutput(output string) common.PluginOutput {
 }
 
 func (t *rawPluginTask) Wait() {
-	if t.cmd != nil {
-		t.cmd.Wait()
-	}
+	t.waitGroup.Wait()
 }
 
 func (t *rawPluginTask) Stop() error {

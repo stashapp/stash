@@ -25,18 +25,18 @@ func (a *api) Stop(input struct{}, output *bool) error {
 }
 
 func (a *api) Run(input common.PluginInput, output *common.PluginOutput) error {
-	client := util.NewClient(input)
-
-	modeArg := common.GetValue(input.Args, "mode")
+	modeArg := input.Args.String("mode")
 
 	var err error
-	if modeArg == nil || modeArg.String() == "add" {
+	if modeArg == "" || modeArg == "add" {
+		client := util.NewClient(input.ServerConnection)
 		err = exampleCommon.AddTag(client)
-	} else if modeArg.String() == "remove" {
+	} else if modeArg == "remove" {
+		client := util.NewClient(input.ServerConnection)
 		err = exampleCommon.RemoveTag(client)
-	} else if modeArg.String() == "long" {
+	} else if modeArg == "long" {
 		err = a.doLongTask()
-	} else if modeArg.String() == "indef" {
+	} else if modeArg == "indef" {
 		err = a.doIndefiniteTask()
 	}
 
