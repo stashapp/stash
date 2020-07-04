@@ -65,14 +65,14 @@ type InterfaceEnum string
 
 const (
 	// Uses the RPCRunner interface declared in common/rpc.go
-	InterfaceEnumRPCV1 InterfaceEnum = "rpc.v1"
+	InterfaceEnumRPC InterfaceEnum = "rpc"
 
 	// Treats stdout as raw output
 	InterfaceEnumRaw InterfaceEnum = "raw"
 )
 
 func (i InterfaceEnum) Valid() bool {
-	return i == InterfaceEnumRPCV1 || i == InterfaceEnumRaw
+	return i == InterfaceEnumRPC || i == InterfaceEnumRaw
 }
 
 type PluginOperationConfig struct {

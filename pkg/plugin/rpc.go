@@ -7,6 +7,7 @@ import (
 	"net/rpc/jsonrpc"
 	"os/exec"
 	"path/filepath"
+	"sync"
 
 	"github.com/natefinch/pie"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -34,8 +35,9 @@ func (p rpcPluginClient) Stop() error {
 type RPCPluginTask struct {
 	PluginTask
 
-	client *rpc.Client
-	done   chan *rpc.Call
+	client    *rpc.Client
+	waitGroup sync.WaitGroup
+	done      chan *rpc.Call
 }
 
 func newRPCPluginTask(operation *PluginOperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) *RPCPluginTask {
@@ -76,20 +78,23 @@ func (t *RPCPluginTask) Start() error {
 	input := buildPluginInput(args, t.ServerConnection)
 
 	t.done = make(chan *rpc.Call, 1)
-	t.WaitGroup.Add(1)
-	iface.RunAsync(input, &t.result, t.done)
-	go t.waitToFinish()
+	result := common.PluginOutput{}
+	t.waitGroup.Add(1)
+	iface.RunAsync(input, &result, t.done)
+	go t.waitToFinish(&result)
 	return nil
 }
 
-func (t *RPCPluginTask) waitToFinish() {
+func (t *RPCPluginTask) waitToFinish(result *common.PluginOutput) {
 	defer t.client.Close()
-	defer t.WaitGroup.Done()
+	defer t.waitGroup.Done()
 	<-t.done
+
+	t.result = result
 }
 
 func (t *RPCPluginTask) Wait() {
-	t.WaitGroup.Wait()
+	t.waitGroup.Wait()
 }
 
 func (t *RPCPluginTask) Stop() error {
@@ -98,8 +103,4 @@ func (t *RPCPluginTask) Stop() error {
 	}
 
 	return iface.Stop()
-}
-
-func (t *RPCPluginTask) GetProgress() *int {
-	return nil
 }
