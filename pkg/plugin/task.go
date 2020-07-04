@@ -5,11 +5,10 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-// PluginTaskManager is the interface that handles management of a single 
-// plugin task.
-type PluginTaskManager interface {
-	// Start starts the plugin task. Returns an error if task could not be 
-	// started.
+// Task is the interface that handles management of a single plugin task.
+type Task interface {
+	// Start starts the plugin task. Returns an error if task could not be
+	// started or the task has already been started.
 	Start() error
 
 	// Stop instructs a running plugin task to stop and returns immediately.
@@ -30,10 +29,15 @@ type PluginTaskManager interface {
 	GetResult() *common.PluginOutput
 }
 
+type taskBuilder interface {
+	build(task pluginTask) Task
+}
+
 type pluginTask struct {
-	Operation        *OperationConfig
-	ServerConnection common.StashServerConnection
-	Args             []*models.PluginArgInput
+	plugin           *Config
+	operation        *OperationConfig
+	serverConnection common.StashServerConnection
+	args             []*models.PluginArgInput
 
 	progress float64
 	result   *common.PluginOutput
@@ -47,11 +51,6 @@ func (t *pluginTask) GetProgress() float64 {
 	return t.progress
 }
 
-func newPluginTask(operation *OperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) pluginTask {
-	return pluginTask{
-		Operation:        operation,
-		ServerConnection: serverConnection,
-		Args:             args,
-		progress:         -1,
-	}
+func (t *pluginTask) createTask() Task {
+	return t.plugin.Interface.getTaskBuilder().build(*t)
 }

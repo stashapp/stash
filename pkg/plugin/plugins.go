@@ -10,25 +10,25 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
-// PluginCache stores plugin details.
-type PluginCache struct {
+// Cache stores plugin details.
+type Cache struct {
 	path    string
 	plugins []Config
 }
 
-// NewPluginCache returns a new PluginCache loading plugin configurations
+// NewCache returns a new Cache loading plugin configurations
 // from the provided plugin path. It returns an new instance and an error
 // if the plugin directory could not be loaded.
 //
 // Plugins configurations are loaded from yml files in the provided plugin
 // directory and any subdirectories.
-func NewPluginCache(pluginPath string) (*PluginCache, error) {
+func NewCache(pluginPath string) (*Cache, error) {
 	plugins, err := loadPlugins(pluginPath)
 	if err != nil {
 		return nil, err
 	}
 
-	return &PluginCache{
+	return &Cache{
 		path:    pluginPath,
 		plugins: plugins,
 	}, nil
@@ -36,7 +36,7 @@ func NewPluginCache(pluginPath string) (*PluginCache, error) {
 
 // ReloadPlugins clears the plugin cache and reloads from the plugin path.
 // In the event of an error during loading, the cache will be left empty.
-func (c *PluginCache) ReloadPlugins() error {
+func (c *Cache) ReloadPlugins() error {
 	c.plugins = nil
 	plugins, err := loadPlugins(c.path)
 	if err != nil {
@@ -77,7 +77,7 @@ func loadPlugins(path string) ([]Config, error) {
 }
 
 // ListPlugins returns plugin details for all of the loaded plugins.
-func (c PluginCache) ListPlugins() []*models.Plugin {
+func (c Cache) ListPlugins() []*models.Plugin {
 	var ret []*models.Plugin
 	for _, s := range c.plugins {
 		ret = append(ret, s.toPlugin())
@@ -87,7 +87,7 @@ func (c PluginCache) ListPlugins() []*models.Plugin {
 }
 
 // ListPluginTasks returns all runnable plugin tasks in all loaded plugins.
-func (c PluginCache) ListPluginTasks() []*models.PluginTask {
+func (c Cache) ListPluginTasks() []*models.PluginTask {
 	var ret []*models.PluginTask
 	for _, s := range c.plugins {
 		ret = append(ret, s.getPluginTasks()...)
@@ -96,10 +96,10 @@ func (c PluginCache) ListPluginTasks() []*models.PluginTask {
 	return ret
 }
 
-// RunPluginOperation runs the plugin operation for the pluginID and operation
+// CreateTask runs the plugin operation for the pluginID and operation
 // name provided. Returns an error if the plugin or the operation could not be
 // resolved.
-func (c PluginCache) RunPluginOperation(pluginID string, operationName string, serverConnection common.StashServerConnection, args []*models.PluginArgInput) (PluginTaskManager, error) {
+func (c Cache) CreateTask(pluginID string, operationName string, serverConnection common.StashServerConnection, args []*models.PluginArgInput) (Task, error) {
 	// find the plugin and operation
 	plugin := c.getPlugin(pluginID)
 
@@ -112,15 +112,16 @@ func (c PluginCache) RunPluginOperation(pluginID string, operationName string, s
 		return nil, fmt.Errorf("no task with name %s in plugin %s", operationName, plugin.getName())
 	}
 
-	ret := newRPCPluginTask(operation, args, serverConnection)
-	if err := ret.Start(); err != nil {
-		return nil, err
+	task := pluginTask{
+		plugin:           plugin,
+		operation:        operation,
+		serverConnection: serverConnection,
+		args:             args,
 	}
-
-	return ret, nil
+	return task.createTask(), nil
 }
 
-func (c PluginCache) getPlugin(pluginID string) *Config {
+func (c Cache) getPlugin(pluginID string) *Config {
 	for _, s := range c.plugins {
 		if s.id == pluginID {
 			return &s

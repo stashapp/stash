@@ -1,12 +1,10 @@
 package manager
 
 import (
-	"sync"
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
@@ -20,23 +18,22 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 	go func() {
 		defer s.returnToIdleState()
 
-		var wg sync.WaitGroup
-		wg.Add(1)
+		task, err := s.PluginCache.CreateTask(pluginID, taskName, serverConnection, args)
+		if err != nil {
+			logger.Errorf("Error creating plugin task: %s", err.Error())
+			return
+		}
 
-		task := runningPluginTask{
-			pluginCache:      s.PluginCache,
-			status:           &s.Status,
-			pluginID:         pluginID,
-			taskName:         taskName,
-			serverConnection: serverConnection,
-			args:             args,
+		err = task.Start()
+		if err != nil {
+			logger.Errorf("Error running plugin task: %s", err.Error())
+			return
 		}
 
 		done := make(chan bool)
 		go func() {
 			defer close(done)
-			go task.Start(&wg)
-			wg.Wait()
+			task.Wait()
 		}()
 
 		// check for stop every five seconds
@@ -46,54 +43,15 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 			case <-done:
 				return
 			case <-time.After(pollingTime):
-				task.stopping = s.Status.stopping
-			}
-		}
-	}()
-}
+				s.Status.setProgressPercent(task.GetProgress())
 
-type runningPluginTask struct {
-	pluginCache *plugin.PluginCache
-	status      *TaskStatus
-
-	pluginID         string
-	taskName         string
-	serverConnection common.StashServerConnection
-	args             []*models.PluginArgInput
-
-	stopping bool
-}
-
-func (t *runningPluginTask) Start(wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	opManager, err := t.pluginCache.RunPluginOperation(t.pluginID, t.taskName, t.serverConnection, t.args)
-	if err != nil {
-		logger.Errorf("Error running plugin task: %s", err.Error())
-		return
-	}
-
-	done := make(chan bool)
-	go func() {
-		opManager.Wait()
-		close(done)
-	}()
-
-	// check for stop/progress every five seconds
-	pollingTime := time.Second * 5
-	for {
-		select {
-		case <-done:
-			return
-		case <-time.After(pollingTime):
-			t.status.setProgressPercent(opManager.GetProgress())
-
-			if t.stopping {
-				if err := opManager.Stop(); err != nil {
-					logger.Errorf("Error stopping plugin operation: %s", err.Error())
+				if s.Status.stopping {
+					if err := task.Stop(); err != nil {
+						logger.Errorf("Error stopping plugin operation: %s", err.Error())
+					}
+					return
 				}
-				return
 			}
 		}
-	}
+	}()
 }

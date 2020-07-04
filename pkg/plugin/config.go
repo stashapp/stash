@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -25,6 +26,20 @@ type Config struct {
 
 	// An optional version string.
 	Version *string `yaml:"version"`
+
+	// The communication interface used when communicating with the spawned
+	// plugin process. Defaults to 'raw' if not provided.
+	Interface interfaceEnum `yaml:"interface"`
+
+	// The command to execute for the operations in this plugin. The first
+	// element should be the program name, and subsequent elements are passed
+	// as arguments.
+	//
+	// Note: the execution process will search the path for the program,
+	// then will attempt to find the program in the plugins
+	// directory. The exe extension is not necessary on Windows platforms.
+	// The current working directory is set to that of the stash process.
+	Exec []string `yaml:"exec,flow"`
 
 	// The task configurations for tasks provided by this plugin.
 	Tasks []*OperationConfig `yaml:"tasks"`
@@ -72,18 +87,40 @@ func (c Config) getTask(name string) *OperationConfig {
 	return nil
 }
 
-type InterfaceEnum string
+func (c Config) getExecCommand(task *OperationConfig) []string {
+	ret := c.Exec
 
+	ret = append(ret, task.ExecArgs...)
+	return ret
+}
+
+type interfaceEnum string
+
+// Valid interfaceEnum values
 const (
-	// Uses the RPCRunner interface declared in common/rpc.go
-	InterfaceEnumRPC InterfaceEnum = "rpc"
+	// InterfaceEnumRPC indicates that the plugin uses the RPCRunner interface
+	// declared in common/rpc.go.
+	InterfaceEnumRPC interfaceEnum = "rpc"
 
-	// Treats stdout as raw output
-	InterfaceEnumRaw InterfaceEnum = "raw"
+	// InterfaceEnumRaw indidates that stdout will be treated as raw output.
+	InterfaceEnumRaw interfaceEnum = "raw"
 )
 
-func (i InterfaceEnum) Valid() bool {
+func (i interfaceEnum) Valid() bool {
 	return i == InterfaceEnumRPC || i == InterfaceEnumRaw
+}
+
+func (i *interfaceEnum) getTaskBuilder() taskBuilder {
+	if !i.Valid() || *i == InterfaceEnumRaw {
+		// TODO
+		return nil
+	}
+	if *i == InterfaceEnumRPC {
+		return &rpcTaskBuilder{}
+	}
+
+	// shouldn't happen
+	return nil
 }
 
 // OperationConfig describes the configuration for a single plugin operation
@@ -98,22 +135,14 @@ type OperationConfig struct {
 	// the button in the UI.
 	Description string `yaml:"description"`
 
-	// The command to execute for the operation.
-	//
-	// Note: the execution process will search the path for the first element
-	// in this list, then will attempt to find the element in the plugins
-	// directory. The exe extension is not necessary on Windows platforms.
-	// The current working directory is set to that of the stash process.
-	Exec []string `yaml:"exec,flow"`
+	// A list of arguments that will be appended to the plugin's Exec arguments
+	// when executing this operation.
+	ExecArgs []string
 
 	// A map of argument keys to their default values. The default value is
 	// used if the applicable argument is not provided during the operation
 	// call.
 	DefaultArgs map[string]string `yaml:"defaultArgs"`
-
-	// The communication interface used when communicating with the spawned
-	// plugin process.
-	Interface InterfaceEnum `yaml:"interface"`
 }
 
 func loadPluginFromYAML(id string, reader io.Reader) (*Config, error) {
@@ -127,6 +156,14 @@ func loadPluginFromYAML(id string, reader io.Reader) (*Config, error) {
 	}
 
 	ret.id = id
+
+	if ret.Interface == "" {
+		ret.Interface = InterfaceEnumRaw
+	}
+
+	if !ret.Interface.Valid() {
+		return nil, fmt.Errorf("invalid interface type %s", ret.Interface)
+	}
 
 	return ret, nil
 }

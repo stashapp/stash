@@ -22,7 +22,7 @@ type singleton struct {
 	FFMPEGPath  string
 	FFProbePath string
 
-	PluginCache *plugin.PluginCache
+	PluginCache *plugin.Cache
 }
 
 var instance *singleton
@@ -152,8 +152,8 @@ func initLog() {
 	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
 }
 
-func initPluginCache() *plugin.PluginCache {
-	ret, err := plugin.NewPluginCache(config.GetPluginsPath())
+func initPluginCache() *plugin.Cache {
+	ret, err := plugin.NewCache(config.GetPluginsPath())
 
 	if err != nil {
 		logger.Errorf("Error reading plugin configs: %s", err.Error())

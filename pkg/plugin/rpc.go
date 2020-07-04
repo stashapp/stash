@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/rpc"
@@ -11,9 +12,16 @@ import (
 
 	"github.com/natefinch/pie"
 	"github.com/stashapp/stash/pkg/manager/config"
-	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
+
+type rpcTaskBuilder struct{}
+
+func (*rpcTaskBuilder) build(task pluginTask) Task {
+	return &rpcPluginTask{
+		pluginTask: task,
+	}
+}
 
 type rpcPluginClient struct {
 	Client *rpc.Client
@@ -35,21 +43,20 @@ func (p rpcPluginClient) Stop() error {
 type rpcPluginTask struct {
 	pluginTask
 
+	started   bool
 	client    *rpc.Client
 	waitGroup sync.WaitGroup
 	done      chan *rpc.Call
 }
 
-func newRPCPluginTask(operation *OperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) *rpcPluginTask {
-	return &rpcPluginTask{
-		pluginTask: newPluginTask(operation, args, serverConnection),
-	}
-}
-
 func (t *rpcPluginTask) Start() error {
-	command := t.Operation.Exec
+	if t.started {
+		return errors.New("task already started")
+	}
+
+	command := t.plugin.getExecCommand(t.operation)
 	if len(command) == 0 {
-		return fmt.Errorf("empty exec value in operation %s", t.Operation.Name)
+		return fmt.Errorf("empty exec value in operation %s", t.operation.Name)
 	}
 
 	// TODO - this should be the plugin config path, since it may be in a subdir
@@ -73,15 +80,17 @@ func (t *rpcPluginTask) Start() error {
 		Client: t.client,
 	}
 
-	args := applyDefaultArgs(t.Args, t.Operation.DefaultArgs)
+	args := applyDefaultArgs(t.args, t.operation.DefaultArgs)
 
-	input := buildPluginInput(args, t.ServerConnection)
+	input := buildPluginInput(args, t.serverConnection)
 
 	t.done = make(chan *rpc.Call, 1)
 	result := common.PluginOutput{}
 	t.waitGroup.Add(1)
 	iface.RunAsync(input, &result, t.done)
 	go t.waitToFinish(&result)
+
+	t.started = true
 	return nil
 }
 
