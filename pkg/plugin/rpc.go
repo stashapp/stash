@@ -32,21 +32,21 @@ func (p rpcPluginClient) Stop() error {
 	return p.Client.Call("RPCRunner.Stop", nil, &resp)
 }
 
-type RPCPluginTask struct {
-	PluginTask
+type rpcPluginTask struct {
+	pluginTask
 
 	client    *rpc.Client
 	waitGroup sync.WaitGroup
 	done      chan *rpc.Call
 }
 
-func newRPCPluginTask(operation *OperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) *RPCPluginTask {
-	return &RPCPluginTask{
-		PluginTask: newPluginTask(operation, args, serverConnection),
+func newRPCPluginTask(operation *OperationConfig, args []*models.PluginArgInput, serverConnection common.StashServerConnection) *rpcPluginTask {
+	return &rpcPluginTask{
+		pluginTask: newPluginTask(operation, args, serverConnection),
 	}
 }
 
-func (t *RPCPluginTask) Start() error {
+func (t *rpcPluginTask) Start() error {
 	command := t.Operation.Exec
 	if len(command) == 0 {
 		return fmt.Errorf("empty exec value in operation %s", t.Operation.Name)
@@ -85,7 +85,7 @@ func (t *RPCPluginTask) Start() error {
 	return nil
 }
 
-func (t *RPCPluginTask) waitToFinish(result *common.PluginOutput) {
+func (t *rpcPluginTask) waitToFinish(result *common.PluginOutput) {
 	defer t.client.Close()
 	defer t.waitGroup.Done()
 	<-t.done
@@ -93,11 +93,11 @@ func (t *RPCPluginTask) waitToFinish(result *common.PluginOutput) {
 	t.result = result
 }
 
-func (t *RPCPluginTask) Wait() {
+func (t *rpcPluginTask) Wait() {
 	t.waitGroup.Wait()
 }
 
-func (t *RPCPluginTask) Stop() error {
+func (t *rpcPluginTask) Stop() error {
 	iface := rpcPluginClient{
 		Client: t.client,
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common/log"
 )
 
-func (t *PluginTask) handleStderrLine(line string) {
+func (t *pluginTask) handleStderrLine(line string) {
 	level, l := log.DetectLogLevel(line)
 
 	const pluginPrefix = "[Plugin] "
@@ -40,7 +40,7 @@ func (t *PluginTask) handleStderrLine(line string) {
 	}
 }
 
-func (t *PluginTask) handleStderr(pluginErrReader io.ReadCloser) {
+func (t *pluginTask) handleStderr(pluginErrReader io.ReadCloser) {
 	// pipe plugin stderr to our logging
 	scanner := bufio.NewScanner(pluginErrReader)
 	for scanner.Scan() {
