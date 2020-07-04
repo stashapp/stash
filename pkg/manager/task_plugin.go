@@ -40,13 +40,14 @@ func (s *singleton) RunPluginTask(pluginID string, taskName string, args []*mode
 		// TODO - refactor stop to use channels
 		// check for stop every five seconds
 		pollingTime := time.Second * 5
+		stopPoller := time.Tick(pollingTime)
 		for {
 			select {
 			case <-done:
 				return
 			case p := <-progress:
 				s.Status.setProgressPercent(p)
-			case <-time.After(pollingTime):
+			case <-stopPoller:
 				if s.Status.stopping {
 					if err := task.Stop(); err != nil {
 						logger.Errorf("Error stopping plugin operation: %s", err.Error())
