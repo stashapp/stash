@@ -7,33 +7,68 @@ import (
 	"strings"
 )
 
+// Level represents a logging level for plugin outputs.
+type Level struct {
+	char byte
+	name string
+}
+
+// Valid Level values.
+var (
+	TraceLevel = Level{
+		char: 't',
+		name: "trace",
+	}
+	DebugLevel = Level{
+		char: 'd',
+		name: "debug",
+	}
+	InfoLevel = Level{
+		char: 'i',
+		name: "info",
+	}
+	WarningLevel = Level{
+		char: 'w',
+		name: "warning",
+	}
+	ErrorLevel = Level{
+		char: 'e',
+		name: "error",
+	}
+	ProgressLevel = Level{
+		char: 'p',
+	}
+	NoneLevel = Level{
+		name: "none",
+	}
+)
+
+var validLevels = []Level{
+	TraceLevel,
+	DebugLevel,
+	InfoLevel,
+	WarningLevel,
+	ErrorLevel,
+	ProgressLevel,
+	NoneLevel,
+}
+
 const startLevelChar byte = 1
 const endLevelChar byte = 2
 
-type LogLevel byte
-
-const (
-	TraceLevel    LogLevel = 't'
-	DebugLevel    LogLevel = 'd'
-	InfoLevel     LogLevel = 'i'
-	WarningLevel  LogLevel = 'w'
-	ErrorLevel    LogLevel = 'e'
-	ProgressLevel LogLevel = 'p'
-)
-
-func (l LogLevel) valid() bool {
-	return l == TraceLevel || l == DebugLevel || l == InfoLevel || l == WarningLevel || l == ErrorLevel || l == ProgressLevel
-}
-
-func (l LogLevel) prefix() string {
+func (l Level) prefix() string {
 	return string([]byte{
 		startLevelChar,
-		byte(l),
+		byte(l.char),
 		endLevelChar,
 	})
 }
 
-func (l LogLevel) log(args ...interface{}) {
+func (l Level) log(args ...interface{}) {
+	if l.char == 0 {
+		return
+	}
+
 	argsToUse := []interface{}{
 		l.prefix(),
 	}
@@ -41,7 +76,11 @@ func (l LogLevel) log(args ...interface{}) {
 	fmt.Fprintln(os.Stderr, argsToUse...)
 }
 
-func (l LogLevel) logf(format string, args ...interface{}) {
+func (l Level) logf(format string, args ...interface{}) {
+	if l.char == 0 {
+		return
+	}
+
 	formatToUse := string(l.prefix()) + format + "\n"
 	fmt.Fprintf(os.Stderr, formatToUse, args...)
 }
@@ -94,17 +133,41 @@ func Progress(progress float64) {
 	ProgressLevel.log(progress)
 }
 
-func DetectLogLevel(line string) (*LogLevel, string) {
+// LevelFromName returns the Level that matches the provided name or nil if
+// the name does not match a valid value.
+func LevelFromName(name string) *Level {
+	for _, l := range validLevels {
+		if l.name == name {
+			return &l
+		}
+	}
+
+	return nil
+}
+
+// DetectLogLevel returns the Level and the logging string for a provided line
+// of plugin output. It parses the string for logging control characters and
+// determines the log level, if present. If not present, the plugin output
+// is returned unchanged with a nil Level.
+func DetectLogLevel(line string) (*Level, string) {
 	if len(line) < 4 || line[0] != startLevelChar || line[2] != endLevelChar {
 		return nil, line
 	}
 
-	level := LogLevel(line[1])
-	if !level.valid() {
+	char := line[1]
+	var level *Level
+	for _, l := range validLevels {
+		if l.char == char {
+			level = &l
+			break
+		}
+	}
+
+	if level == nil {
 		return nil, line
 	}
 
 	line = strings.TrimSpace(line[3:])
 
-	return &level, line
+	return level, line
 }

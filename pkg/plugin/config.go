@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -13,7 +14,8 @@ import (
 
 // Config describes the configuration for a single plugin.
 type Config struct {
-	id string
+	id   string
+	path string
 
 	// The name of the plugin. This will be displayed in the UI.
 	Name string `yaml:"name"`
@@ -40,6 +42,12 @@ type Config struct {
 	// directory. The exe extension is not necessary on Windows platforms.
 	// The current working directory is set to that of the stash process.
 	Exec []string `yaml:"exec,flow"`
+
+	// The default log level to output the plugin process's stderr stream.
+	// Only used if the plugin does not encode its output using log level
+	// control characters.
+	// If left unset, defaults to log.ErrorLevel.
+	PluginErrLogLevel string `ymal:"errLog"`
 
 	// The task configurations for tasks provided by this plugin.
 	Tasks []*OperationConfig `yaml:"tasks"`
@@ -91,6 +99,16 @@ func (c Config) getExecCommand(task *OperationConfig) []string {
 	ret := c.Exec
 
 	ret = append(ret, task.ExecArgs...)
+
+	if len(ret) > 0 {
+		_, err := exec.LookPath(ret[0])
+		if err != nil {
+			// change command to use absolute path
+			pluginPath := filepath.Dir(c.path)
+			ret[0] = filepath.Join(pluginPath, ret[0])
+		}
+	}
+
 	return ret
 }
 
@@ -111,10 +129,10 @@ func (i interfaceEnum) Valid() bool {
 }
 
 func (i *interfaceEnum) getTaskBuilder() taskBuilder {
-	if !i.Valid() || *i == InterfaceEnumRaw {
-		// TODO
-		return nil
+	if *i == InterfaceEnumRaw {
+		return &rawTaskBuilder{}
 	}
+
 	if *i == InterfaceEnumRPC {
 		return &rpcTaskBuilder{}
 	}
@@ -145,7 +163,7 @@ type OperationConfig struct {
 	DefaultArgs map[string]string `yaml:"defaultArgs"`
 }
 
-func loadPluginFromYAML(id string, reader io.Reader) (*Config, error) {
+func loadPluginFromYAML(reader io.Reader) (*Config, error) {
 	ret := &Config{}
 
 	parser := yaml.NewDecoder(reader)
@@ -154,8 +172,6 @@ func loadPluginFromYAML(id string, reader io.Reader) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	ret.id = id
 
 	if ret.Interface == "" {
 		ret.Interface = InterfaceEnumRaw
@@ -175,9 +191,15 @@ func loadPluginFromYAMLFile(path string) (*Config, error) {
 		return nil, err
 	}
 
+	ret, err := loadPluginFromYAML(file)
+	if err != nil {
+		return nil, err
+	}
+
 	// set id to the filename
 	id := filepath.Base(path)
-	id = id[:strings.LastIndex(id, ".")]
+	ret.id = id[:strings.LastIndex(id, ".")]
+	ret.path = path
 
-	return loadPluginFromYAML(id, file)
+	return ret, nil
 }

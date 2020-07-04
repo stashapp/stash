@@ -9,14 +9,17 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common/log"
 )
 
-func (t *pluginTask) handleStderrLine(line string) {
+func (t *pluginTask) handleStderrLine(line string, defaultLogLevel *log.Level) {
 	level, l := log.DetectLogLevel(line)
 
 	const pluginPrefix = "[Plugin] "
 	// if no log level, just output to info
 	if level == nil {
-		logger.Infof("%s %s", pluginPrefix, l)
-		return
+		if defaultLogLevel != nil {
+			level = defaultLogLevel
+		} else {
+			level = &log.InfoLevel
+		}
 	}
 
 	switch *level {
@@ -47,20 +50,30 @@ func (t *pluginTask) handleStderrLine(line string) {
 	}
 }
 
-func (t *pluginTask) handleStderr(pluginErrReader io.ReadCloser) {
+func (t *pluginTask) handlePluginOutput(pluginOutputReader io.ReadCloser, defaultLogLevel *log.Level) {
 	// pipe plugin stderr to our logging
-	scanner := bufio.NewScanner(pluginErrReader)
+	scanner := bufio.NewScanner(pluginOutputReader)
 	for scanner.Scan() {
 		str := scanner.Text()
 		if str != "" {
-			t.handleStderrLine(str)
+			t.handleStderrLine(str, defaultLogLevel)
 		}
 	}
 
 	str := scanner.Text()
 	if str != "" {
-		t.handleStderrLine(str)
+		t.handleStderrLine(str, defaultLogLevel)
 	}
 
-	pluginErrReader.Close()
+	pluginOutputReader.Close()
+}
+
+func (t *pluginTask) handlePluginStderr(pluginOutputReader io.ReadCloser) {
+	logLevel := log.LevelFromName(t.plugin.PluginErrLogLevel)
+	if logLevel == nil {
+		// default log level to error
+		logLevel = &log.ErrorLevel
+	}
+
+	t.handlePluginOutput(pluginOutputReader, logLevel)
 }

@@ -6,12 +6,9 @@ import (
 	"io"
 	"net/rpc"
 	"net/rpc/jsonrpc"
-	"os/exec"
-	"path/filepath"
 	"sync"
 
 	"github.com/natefinch/pie"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/plugin/common"
 )
 
@@ -59,22 +56,15 @@ func (t *rpcPluginTask) Start() error {
 		return fmt.Errorf("empty exec value in operation %s", t.operation.Name)
 	}
 
-	// TODO - this should be the plugin config path, since it may be in a subdir
-	_, err := exec.LookPath(command[0])
-	if err != nil {
-		// change command to use absolute path
-		pluginPath := config.GetPluginsPath()
-		command[0] = filepath.Join(pluginPath, command[0])
-	}
-
 	pluginErrReader, pluginErrWriter := io.Pipe()
 
+	var err error
 	t.client, err = pie.StartProviderCodec(jsonrpc.NewClientCodec, pluginErrWriter, command[0], command[1:]...)
 	if err != nil {
 		return err
 	}
 
-	go t.handleStderr(pluginErrReader)
+	go t.handlePluginStderr(pluginErrReader)
 
 	iface := rpcPluginClient{
 		Client: t.client,
