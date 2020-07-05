@@ -222,7 +222,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
 
     // sort by id numerically
     ret.sort((a, b) => {
-      return parseInt(a) - parseInt(b);
+      return parseInt(a, 10) - parseInt(b, 10);
     });
 
     return ret;
@@ -236,7 +236,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     const ret = _.clone(idList);
     // sort by id numerically
     ret.sort((a, b) => {
-      return parseInt(a) - parseInt(b);
+      return parseInt(a, 10) - parseInt(b, 10);
     });
 
     return ret;
