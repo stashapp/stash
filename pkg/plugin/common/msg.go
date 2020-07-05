@@ -12,6 +12,14 @@ type StashServerConnection struct {
 
 	// Cookie for authentication purposes
 	SessionCookie *http.Cookie
+
+	// Dir specifies the directory containing the stash server's configuration
+	// file.
+	Dir string
+
+	// PluginDir specifies the directory containing the plugin configuration
+	// file.
+	PluginDir string
 }
 
 // PluginArgValue represents a single value parameter for plugin operations.

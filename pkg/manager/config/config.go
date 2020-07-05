@@ -90,6 +90,11 @@ func Write() error {
 	return viper.WriteConfig()
 }
 
+func GetConfigPath() string {
+	configFileUsed := viper.ConfigFileUsed()
+	return filepath.Dir(configFileUsed)
+}
+
 func GetStashPaths() []string {
 	return viper.GetStringSlice(Stash)
 }
@@ -120,10 +125,8 @@ func GetSessionStoreKey() []byte {
 
 func GetDefaultScrapersPath() string {
 	// default to the same directory as the config file
-	configFileUsed := viper.ConfigFileUsed()
-	configDir := filepath.Dir(configFileUsed)
 
-	fn := filepath.Join(configDir, "scrapers")
+	fn := filepath.Join(GetConfigPath(), "scrapers")
 
 	return fn
 }
@@ -153,10 +156,7 @@ func GetScraperUserAgent() string {
 
 func GetDefaultPluginsPath() string {
 	// default to the same directory as the config file
-	configFileUsed := viper.ConfigFileUsed()
-	configDir := filepath.Dir(configFileUsed)
-
-	fn := filepath.Join(configDir, "plugins")
+	fn := filepath.Join(GetConfigPath(), "plugins")
 
 	return fn
 }

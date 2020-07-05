@@ -20,6 +20,7 @@ tasks:
     # we'll try command-line argument for this one
     execArgs:
       - indef
+      - "{pluginDir}"
   - name: Long task
     description: Sleeps for 100 seconds - interruptable
     defaultArgs:

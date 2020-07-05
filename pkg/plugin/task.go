@@ -48,7 +48,7 @@ func (t *pluginTask) createTask() Task {
 
 func (t *pluginTask) buildPluginInput() common.PluginInput {
 	args := applyDefaultArgs(t.args, t.operation.DefaultArgs)
-
+	t.serverConnection.PluginDir = t.plugin.getConfigPath()
 	return common.PluginInput{
 		ServerConnection: t.serverConnection,
 		Args:             toPluginArgs(args),

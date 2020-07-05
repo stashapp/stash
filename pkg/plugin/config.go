@@ -14,7 +14,9 @@ import (
 
 // Config describes the configuration for a single plugin.
 type Config struct {
-	id   string
+	id string
+
+	// path to the configuration file
 	path string
 
 	// The name of the plugin. This will be displayed in the UI.
@@ -101,6 +103,10 @@ func (c Config) getTask(name string) *OperationConfig {
 	return nil
 }
 
+func (c Config) getConfigPath() string {
+	return filepath.Dir(c.path)
+}
+
 func (c Config) getExecCommand(task *OperationConfig) []string {
 	ret := c.Exec
 
@@ -113,6 +119,16 @@ func (c Config) getExecCommand(task *OperationConfig) []string {
 			pluginPath := filepath.Dir(c.path)
 			ret[0] = filepath.Join(pluginPath, ret[0])
 		}
+	}
+
+	// replace {pluginDir} in arguments with that of the plugin directory
+	dir := c.getConfigPath()
+	for i, arg := range ret {
+		if i == 0 {
+			continue
+		}
+
+		ret[i] = strings.Replace(arg, "{pluginDir}", dir, -1)
 	}
 
 	return ret

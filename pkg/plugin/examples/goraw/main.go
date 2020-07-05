@@ -22,7 +22,6 @@ func main() {
 	input := common.PluginInput{}
 
 	if len(os.Args) < 2 {
-		log.Debug("Unmarshalling plugin input")
 		inData, _ := ioutil.ReadAll(os.Stdin)
 		log.Debugf("Raw input: %s", string(inData))
 		decodeErr := json.Unmarshal(inData, &input)
@@ -33,6 +32,7 @@ func main() {
 	} else {
 		log.Debug("Using command line inputs")
 		mode := os.Args[1]
+		log.Debugf("Command line inputs: %v", os.Args[1:])
 		input.Args = common.ArgsMap{
 			"mode": mode,
 		}

@@ -27,6 +27,7 @@ func (r *mutationResolver) RunPluginTask(ctx context.Context, pluginID string, t
 		Scheme:        "http",
 		Port:          config.GetPort(),
 		SessionCookie: cookie,
+		Dir:           config.GetConfigPath(),
 	}
 
 	if HasTLSConfig() {
