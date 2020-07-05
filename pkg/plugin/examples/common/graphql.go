@@ -1,4 +1,5 @@
 // +build plugin_example
+
 package common
 
 import (

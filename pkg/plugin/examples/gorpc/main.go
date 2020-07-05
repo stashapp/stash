@@ -3,7 +3,6 @@
 package main
 
 import (
-	"os"
 	"time"
 
 	exampleCommon "github.com/stashapp/stash/pkg/plugin/examples/common"
@@ -12,6 +11,15 @@ import (
 	"github.com/stashapp/stash/pkg/plugin/common/log"
 	"github.com/stashapp/stash/pkg/plugin/util"
 )
+
+func main() {
+	// serves the plugin, providing an object that satisfies the
+	// common.RPCRunner interface
+	err := common.ServePlugin(&api{})
+	if err != nil {
+		panic(err)
+	}
+}
 
 type api struct {
 	stopping bool
@@ -24,6 +32,8 @@ func (a *api) Stop(input struct{}, output *bool) error {
 	return nil
 }
 
+// Run is the main work function of the plugin. It interprets the input and
+// acts accordingly.
 func (a *api) Run(input common.PluginInput, output *common.PluginOutput) error {
 	modeArg := input.Args.String("mode")
 
@@ -84,38 +94,4 @@ func (a *api) doIndefiniteTask() error {
 	}
 
 	return nil
-}
-
-func main() {
-	debug := false
-
-	if len(os.Args) >= 2 && os.Args[1] == "debug" {
-		debug = true
-	}
-
-	if debug {
-		api := api{}
-		output := common.PluginOutput{}
-		err := api.Run(common.PluginInput{
-			ServerConnection: common.StashServerConnection{
-				Scheme: "http",
-				Port:   9999,
-			},
-		}, &output)
-
-		if err != nil {
-			panic(err)
-		}
-
-		if output.Error != nil {
-			panic(*output.Error)
-		}
-
-		return
-	}
-
-	err := common.ServePlugin(&api{})
-	if err != nil {
-		panic(err)
-	}
 }

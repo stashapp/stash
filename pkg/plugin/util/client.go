@@ -1,3 +1,5 @@
+// Package util implements utility and convenience methods for plugins. It is
+// not intended for the main stash code to access.
 package util
 
 import (

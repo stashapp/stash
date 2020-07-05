@@ -1,3 +1,10 @@
+// Package plugin implements functions and types for maintaining and running
+// stash plugins.
+//
+// Stash plugins are configured using yml files in the configured plugins
+// directory. These yml files must follow the Config structure format.
+//
+// The main entry into the plugin sub-system is via the Cache type.
 package plugin
 
 import (

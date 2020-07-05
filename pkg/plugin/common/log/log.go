@@ -25,36 +25,36 @@ import (
 // Level represents a logging level for plugin outputs.
 type Level struct {
 	char byte
-	name string
+	Name string
 }
 
 // Valid Level values.
 var (
 	TraceLevel = Level{
 		char: 't',
-		name: "trace",
+		Name: "trace",
 	}
 	DebugLevel = Level{
 		char: 'd',
-		name: "debug",
+		Name: "debug",
 	}
 	InfoLevel = Level{
 		char: 'i',
-		name: "info",
+		Name: "info",
 	}
 	WarningLevel = Level{
 		char: 'w',
-		name: "warning",
+		Name: "warning",
 	}
 	ErrorLevel = Level{
 		char: 'e',
-		name: "error",
+		Name: "error",
 	}
 	ProgressLevel = Level{
 		char: 'p',
 	}
 	NoneLevel = Level{
-		name: "none",
+		Name: "none",
 	}
 )
 
@@ -167,7 +167,7 @@ func Progress(progress float64) {
 // the name does not match a valid value.
 func LevelFromName(name string) *Level {
 	for _, l := range validLevels {
-		if l.name == name {
+		if l.Name == name {
 			return &l
 		}
 	}

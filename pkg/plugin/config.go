@@ -46,6 +46,7 @@ type Config struct {
 	// The default log level to output the plugin process's stderr stream.
 	// Only used if the plugin does not encode its output using log level
 	// control characters.
+	// See package common/log for valid values.
 	// If left unset, defaults to log.ErrorLevel.
 	PluginErrLogLevel string `ymal:"errLog"`
 
