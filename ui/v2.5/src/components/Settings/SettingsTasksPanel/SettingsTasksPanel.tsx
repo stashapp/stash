@@ -235,15 +235,21 @@ export const SettingsTasksPanel: React.FC = () => {
       return;
     }
 
-    return plugins.data.plugins.map((o) => {
-      return (
-        <div key={`${o.id}`} className="mb-3">
-          <h6>{o.name}</h6>
-          {renderPluginTasks(o, o.tasks ?? [])}
-          <hr />
-        </div>
-      );
-    });
+    return (
+      <>
+        <hr />
+        <h5>Plugin Tasks</h5>
+        {plugins.data.plugins.map((o) => {
+          return (
+            <div key={`${o.id}`} className="mb-3">
+              <h6>{o.name}</h6>
+              {renderPluginTasks(o, o.tasks ?? [])}
+              <hr />
+            </div>
+          );
+        })}
+      </>
+    );
   }
 
   return (
@@ -366,8 +372,6 @@ export const SettingsTasksPanel: React.FC = () => {
         </Form.Text>
       </Form.Group>
 
-      <hr />
-      <h5>Plugin Tasks</h5>
       {renderPlugins()}
     </>
   );
