@@ -16,7 +16,7 @@ before_install:
 - nvm install 12
 - travis_retry make pre-ui
 - make generate
-- CI=false make ui-only
+- CI=false make ui-validate ui-only
 #- go get -v github.com/mgechev/revive
 script:
 # left lint off to avoid getting extra dependency
