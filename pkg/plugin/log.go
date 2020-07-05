@@ -36,7 +36,7 @@ func (t *pluginTask) handleStderrLine(line string, defaultLogLevel *log.Level) {
 	case log.ProgressLevel:
 		progress, err := strconv.ParseFloat(l, 64)
 		if err != nil {
-			logger.Errorf("Error parsing progress value '%s': %s", l, err.Error)
+			logger.Errorf("Error parsing progress value '%s': %s", l, err.Error())
 		} else {
 			// only pass progress through if channel present
 			if t.progress != nil {

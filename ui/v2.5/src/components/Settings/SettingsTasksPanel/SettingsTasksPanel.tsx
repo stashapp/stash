@@ -15,8 +15,8 @@ import {
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Modal } from "src/components/Shared";
-import { GenerateButton } from "./GenerateButton";
 import { Plugin, PluginTask } from "src/core/generated-graphql";
+import { GenerateButton } from "./GenerateButton";
 
 export const SettingsTasksPanel: React.FC = () => {
   const Toast = useToast();
@@ -52,7 +52,7 @@ export const SettingsTasksPanel: React.FC = () => {
       case "Auto Tag":
         return "Auto tagging scenes";
       case "Plugin Operation":
-        return "Running Plugin Operation"
+        return "Running Plugin Operation";
       default:
         return "Idle";
     }
@@ -196,25 +196,34 @@ export const SettingsTasksPanel: React.FC = () => {
     );
   }
 
-  async function onPluginTaskClicked(plugin: Partial<Plugin>, operation: Partial<PluginTask>) {
+  async function onPluginTaskClicked(
+    plugin: Partial<Plugin>,
+    operation: Partial<PluginTask>
+  ) {
     await mutateRunPluginTask(plugin.id!, operation.name!);
   }
 
-  function renderPluginTasks(plugin: Partial<Plugin>, pluginTasks: Partial<PluginTask>[] | undefined) {
+  function renderPluginTasks(
+    plugin: Partial<Plugin>,
+    pluginTasks: Partial<PluginTask>[] | undefined
+  ) {
     if (!pluginTasks) {
       return;
     }
 
-    return pluginTasks.map(o => {
+    return pluginTasks.map((o) => {
       return (
         <div key={o.name}>
-          <Button onClick={() => onPluginTaskClicked(plugin, o)} className="mt-3" variant="secondary" size="sm">
+          <Button
+            onClick={() => onPluginTaskClicked(plugin, o)}
+            className="mt-3"
+            variant="secondary"
+            size="sm"
+          >
             {o.name}
           </Button>
           {o.description ? (
-            <Form.Text className="text-muted">
-              {o.description}
-            </Form.Text>
+            <Form.Text className="text-muted">{o.description}</Form.Text>
           ) : undefined}
         </div>
       );
@@ -226,14 +235,13 @@ export const SettingsTasksPanel: React.FC = () => {
       return;
     }
 
-    return plugins.data.plugins.map(o => {
+    return plugins.data.plugins.map((o) => {
       return (
         <div key={`${o.id}`} className="mb-3">
           <h6>{o.name}</h6>
           {renderPluginTasks(o, o.tasks ?? [])}
           <hr />
         </div>
-
       );
     });
   }
@@ -361,7 +369,6 @@ export const SettingsTasksPanel: React.FC = () => {
       <hr />
       <h5>Plugin Tasks</h5>
       {renderPlugins()}
-
     </>
   );
 };

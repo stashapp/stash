@@ -1,24 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
-import {
-  mutateReloadPlugins,
-  usePlugins,
-} from "src/core/StashService";
+import { mutateReloadPlugins, usePlugins } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { Icon, LoadingIndicator } from "../Shared";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
+import { Icon, LoadingIndicator } from "../Shared";
 
 export const SettingsPluginsPanel: React.FC = () => {
   const Toast = useToast();
-  
+
   const plugins = usePlugins();
 
   // Network state
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (plugins) {  
+    if (plugins) {
       setIsLoading(false);
     }
   }, [plugins]);
@@ -57,10 +54,13 @@ export const SettingsPluginsPanel: React.FC = () => {
   function renderPlugin(plugin: GQL.Plugin) {
     return (
       <div key={plugin.id}>
-        <h5>{plugin.name} {plugin.version ? `(${plugin.version})` : undefined} {renderLink(plugin)}</h5>
+        <h5>
+          {plugin.name} {plugin.version ? `(${plugin.version})` : undefined}{" "}
+          {renderLink(plugin)}
+        </h5>
         {plugin.description ? (
           <small className="text-muted">{plugin.description}</small>
-        ): undefined}
+        ) : undefined}
         <hr />
       </div>
     );
@@ -71,11 +71,7 @@ export const SettingsPluginsPanel: React.FC = () => {
       return;
     }
 
-    return (
-      <div>
-        {plugins.data?.plugins.map(renderPlugin)}
-      </div>
-    );
+    return <div>{plugins.data?.plugins.map(renderPlugin)}</div>;
   }
 
   if (isLoading) return <LoadingIndicator />;
