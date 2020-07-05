@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 
 const markup = `
 ### ✨ New Features
+*  Add support for plugin tasks.
 *  Support deleting multiple scenes.
 *  Add in-app help manual.
 *  Add support for custom served folders.
