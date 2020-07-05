@@ -9,3 +9,4 @@ export { default as JWUtils } from "./jwplayer";
 export { default as SessionUtils } from "./session";
 export { default as flattenMessages } from "./flattenMessages";
 export { default as getISOCountry } from "./country";
+export { default as useFocus } from "./focus";
