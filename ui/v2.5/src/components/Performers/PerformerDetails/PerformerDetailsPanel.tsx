@@ -27,11 +27,13 @@ import {
   EditableTextUtils,
 } from "src/utils";
 import { useToast } from "src/hooks";
+import { PerformerScrapeDialog } from "./PerformerScrapeDialog";
 
 interface IPerformerDetails {
   performer: Partial<GQL.PerformerDataFragment>;
   isNew?: boolean;
   isEditing?: boolean;
+  isVisible: boolean;
   onSave?: (
     performer:
       | Partial<GQL.PerformerCreateInput>
@@ -46,6 +48,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   performer,
   isNew,
   isEditing,
+  isVisible,
   onSave,
   onDelete,
   onImageChange,
@@ -89,6 +92,10 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
   const Scrapers = useListPerformerScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
+
+  const [scrapedPerformer, setScrapedPerformer] = useState<
+    GQL.ScrapedPerformer | undefined
+  >();
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
@@ -142,15 +149,63 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   function updatePerformerEditStateFromScraper(
     state: Partial<GQL.ScrapedPerformerDataFragment>
   ) {
-    updatePerformerEditState(state);
+    if (state.name) {
+      setName(state.name);
+    }
 
-    // gender is a string in the scraper data
-    setGender(translateScrapedGender(state.gender ?? undefined));
+    if (state.aliases) {
+      setAliases(state.aliases ?? undefined);
+    }
+    if (state.birthdate) {
+      setBirthdate(state.birthdate ?? undefined);
+    }
+    if (state.ethnicity) {
+      setEthnicity(state.ethnicity ?? undefined);
+    }
+    if (state.country) {
+      setCountry(state.country ?? undefined);
+    }
+    if (state.eye_color) {
+      setEyeColor(state.eye_color ?? undefined);
+    }
+    if (state.height) {
+      setHeight(state.height ?? undefined);
+    }
+    if (state.measurements) {
+      setMeasurements(state.measurements ?? undefined);
+    }
+    if (state.fake_tits) {
+      setFakeTits(state.fake_tits ?? undefined);
+    }
+    if (state.career_length) {
+      setCareerLength(state.career_length ?? undefined);
+    }
+    if (state.tattoos) {
+      setTattoos(state.tattoos ?? undefined);
+    }
+    if (state.piercings) {
+      setPiercings(state.piercings ?? undefined);
+    }
+    if (state.url) {
+      setUrl(state.url ?? undefined);
+    }
+    if (state.twitter) {
+      setTwitter(state.twitter ?? undefined);
+    }
+    if (state.instagram) {
+      setInstagram(state.instagram ?? undefined);
+    }
+    if (state.gender) {
+      // gender is a string in the scraper data
+      setGender(translateScrapedGender(state.gender ?? undefined));
+    }
 
     // image is a base64 string
     // #404: don't overwrite image if it has been modified by the user
+    // overwrite if not new since it came from a dialog
+    // otherwise follow existing behaviour
     if (
-      image === undefined &&
+      (!isNew || image === undefined) &&
       (state as GQL.ScrapedPerformerDataFragment).image !== undefined
     ) {
       const imageStr = (state as GQL.ScrapedPerformerDataFragment).image;
@@ -161,6 +216,29 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   function onImageLoad(imageData: string) {
     setImage(imageData);
   }
+
+  // set up hotkeys
+  useEffect(() => {
+    if (isEditing && isVisible) {
+      Mousetrap.bind("s s", () => {
+        onSave?.(getPerformerInput());
+      });
+
+      if (!isNew) {
+        Mousetrap.bind("d d", () => {
+          setIsDeleteAlertOpen(true);
+        });
+      }
+
+      return () => {
+        Mousetrap.unbind("s s");
+
+        if (!isNew) {
+          Mousetrap.unbind("d d");
+        }
+      };
+    }
+  });
 
   useEffect(() => {
     setImage(undefined);
@@ -261,7 +339,13 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         getQueryScraperPerformerInput()
       );
       if (!result?.data?.scrapePerformer) return;
-      updatePerformerEditStateFromScraper(result.data.scrapePerformer);
+
+      // if this is a new performer, just dump the data
+      if (isNew) {
+        updatePerformerEditStateFromScraper(result.data.scrapePerformer);
+      } else {
+        setScrapedPerformer(result.data.scrapePerformer);
+      }
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -278,11 +362,12 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         return;
       }
 
-      // leave URL as is if not set explicitly
-      if (!result.data.scrapePerformerURL.url) {
-        result.data.scrapePerformerURL.url = url;
+      // if this is a new performer, just dump the data
+      if (isNew) {
+        updatePerformerEditStateFromScraper(result.data.scrapePerformerURL);
+      } else {
+        setScrapedPerformer(result.data.scrapePerformerURL);
       }
-      updatePerformerEditStateFromScraper(result.data.scrapePerformerURL);
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -337,7 +422,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
     return (
       <OverlayTrigger trigger="click" placement="top" overlay={popover}>
-        <Button variant="secondary">Scrape with...</Button>
+        <Button variant="secondary" className="mr-2">
+          Scrape with...
+        </Button>
       </OverlayTrigger>
     );
   }
@@ -386,6 +473,49 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     );
   }
 
+  function maybeRenderScrapeDialog() {
+    if (!scrapedPerformer) {
+      return;
+    }
+
+    const currentPerformer: Partial<GQL.PerformerDataFragment> = {
+      name,
+      aliases,
+      birthdate,
+      ethnicity,
+      country,
+      eye_color: eyeColor,
+      height,
+      measurements,
+      fake_tits: fakeTits,
+      career_length: careerLength,
+      tattoos,
+      piercings,
+      url,
+      twitter,
+      instagram,
+      gender: stringToGender(gender),
+      image_path: image ?? performer.image_path,
+    };
+
+    return (
+      <PerformerScrapeDialog
+        performer={currentPerformer}
+        scraped={scrapedPerformer}
+        onClose={(p) => {
+          onScrapeDialogClosed(p);
+        }}
+      />
+    );
+  }
+
+  function onScrapeDialogClosed(p?: GQL.ScrapedPerformerDataFragment) {
+    if (p) {
+      updatePerformerEditStateFromScraper(p);
+    }
+    setScrapedPerformer(undefined);
+  }
+
   function renderURLField() {
     return (
       <tr>
@@ -411,7 +541,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       return (
         <div className="row">
           <Button
-            className="edit-button"
+            className="mr-2"
             variant="primary"
             onClick={() => onSave?.(getPerformerInput())}
           >
@@ -419,7 +549,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           </Button>
           {!isNew ? (
             <Button
-              className="edit-button"
+              className="mr-2"
               variant="danger"
               onClick={() => setIsDeleteAlertOpen(true)}
             >
@@ -503,6 +633,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     <>
       {renderDeleteAlert()}
       {renderScraperDialog()}
+      {maybeRenderScrapeDialog()}
 
       <Table id="performer-details" className="w-100">
         <tbody>

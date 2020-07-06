@@ -68,6 +68,25 @@ export const Studio: React.FC = () => {
     setStudio(studioData);
   }
 
+  // set up hotkeys
+  useEffect(() => {
+    if (isEditing) {
+      Mousetrap.bind("s s", () => onSave());
+    }
+
+    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("d d", () => onDelete());
+
+    return () => {
+      if (isEditing) {
+        Mousetrap.unbind("s s");
+      }
+
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("d d");
+    };
+  });
+
   useEffect(() => {
     if (data && data.findStudio) {
       setImage(undefined);

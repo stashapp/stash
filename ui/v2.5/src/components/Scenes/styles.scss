@@ -24,17 +24,6 @@
   }
 }
 
-.scene-card-check {
-  left: 0.5rem;
-  margin-top: -12px;
-  opacity: 0.5;
-  padding-left: 15px;
-  position: absolute;
-  top: 0.7rem;
-  width: 1.2rem;
-  z-index: 1;
-}
-
 .performer-tag-container,
 .movie-tag-container {
   display: inline-block;
@@ -101,7 +90,7 @@
   }
 }
 
-#details {
+textarea.scene-description {
   min-height: 150px;
 }
 
@@ -189,6 +178,21 @@
     position: relative;
   }
 
+  .scene-card-check {
+    left: 0.5rem;
+    margin-top: -12px;
+    opacity: 0;
+    padding-left: 15px;
+    position: absolute;
+    top: 0.7rem;
+    width: 1.2rem;
+    z-index: 1;
+
+    &:checked {
+      opacity: 0.75;
+    }
+  }
+
   .scene-specs-overlay,
   .rating-banner,
   .scene-studio-overlay {
@@ -204,6 +208,11 @@
     }
 
     .scene-studio-overlay:hover {
+      opacity: 0.75;
+      transition: opacity 0.5s;
+    }
+
+    .scene-card-check {
       opacity: 0.75;
       transition: opacity 0.5s;
     }
@@ -275,7 +284,18 @@
   }
 }
 
-#scene-edit-details .rating-stars {
-  font-size: 1.3em;
-  height: calc(1.5em + 0.75rem + 2px);
+#scene-edit-details {
+  .rating-stars {
+    font-size: 1.3em;
+    height: calc(1.5em + 0.75rem + 2px);
+  }
+
+  .scrape-button-container {
+    margin-right: -15px;
+  }
+
+  .scrape-url-button {
+    color: $text-color;
+    margin-right: 0;
+  }
 }

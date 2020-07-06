@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Modal, Spinner } from "react-bootstrap";
+import { Button, Modal, Spinner, ModalProps } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 
@@ -17,6 +17,7 @@ interface IModal {
   cancel?: IButton;
   accept?: IButton;
   isRunning?: boolean;
+  modalProps?: ModalProps;
 }
 
 const ModalComponent: React.FC<IModal> = ({
@@ -28,8 +29,9 @@ const ModalComponent: React.FC<IModal> = ({
   accept,
   onHide,
   isRunning,
+  modalProps,
 }) => (
-  <Modal keyboard={false} onHide={onHide} show={show}>
+  <Modal keyboard={false} onHide={onHide} show={show} {...modalProps}>
     <Modal.Header>
       {icon ? <Icon icon={icon} /> : ""}
       <span>{header ?? ""}</span>

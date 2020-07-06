@@ -216,6 +216,17 @@ div.dropdown-menu {
   }
 }
 
+/* fix for react-select in input-group */
+.input-group .react-select {
+  border: 0;
+  height: 100%;
+  padding: 0;
+
+  .react-select__control {
+    border-radius: 0;
+  }
+}
+
 /* stylelint-enable selector-class-pattern */
 
 .image-thumbnail {
