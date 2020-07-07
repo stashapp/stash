@@ -46,6 +46,25 @@ export const Tag: React.FC = () => {
   const [createTag] = useTagCreate(getTagInput() as GQL.TagUpdateInput);
   const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
 
+  // set up hotkeys
+  useEffect(() => {
+    if (isEditing) {
+      Mousetrap.bind("s s", () => onSave());
+    }
+
+    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("d d", () => onDelete());
+
+    return () => {
+      if (isEditing) {
+        Mousetrap.unbind("s s");
+      }
+
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("d d");
+    };
+  });
+
   function updateTagEditState(state: Partial<GQL.TagDataFragment>) {
     setName(state.name);
   }
