@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 
 const markup = `
 ### ✨ New Features
+*  Add tag thumbnails, tags grid view and tag page.
 *  Add post-scrape dialog.
 *  Add various keyboard shortcuts (see manual).
 *  Support deleting multiple scenes.

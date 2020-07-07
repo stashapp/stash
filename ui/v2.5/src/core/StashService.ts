@@ -95,6 +95,14 @@ export const useFindPerformers = (filter: ListFilterModel) =>
     },
   });
 
+export const useFindTags = (filter: ListFilterModel) =>
+  GQL.useFindTagsQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeTagFilter(),
+    },
+  });
+
 export const queryFindPerformers = (filter: ListFilterModel) =>
   client.query<GQL.FindPerformersQuery>({
     query: GQL.FindPerformersDocument,
@@ -119,6 +127,10 @@ export const useFindStudio = (id: string) => {
 export const useFindMovie = (id: string) => {
   const skip = id === "new";
   return GQL.useFindMovieQuery({ variables: { id }, skip });
+};
+export const useFindTag = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindTagQuery({ variables: { id }, skip });
 };
 
 // TODO - scene marker manipulation functions are handled differently

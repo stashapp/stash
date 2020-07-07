@@ -100,7 +100,8 @@ textarea.text-input {
     width: 240px;
 
     .scene-card-video,
-    .gallery-card-image {
+    .gallery-card-image,
+    .tag-card-image {
       max-height: 180px;
     }
 
@@ -113,7 +114,8 @@ textarea.text-input {
     width: 320px;
 
     .scene-card-video,
-    .gallery-card-image {
+    .gallery-card-image,
+    .tag-card-image {
       max-height: 240px;
     }
 
@@ -126,7 +128,8 @@ textarea.text-input {
     width: 480px;
 
     .scene-card-video,
-    .gallery-card-image {
+    .gallery-card-image,
+    .tag-card-image {
       max-height: 360px;
     }
 
@@ -139,7 +142,8 @@ textarea.text-input {
     width: 640px;
 
     .scene-card-video,
-    .gallery-card-image {
+    .gallery-card-image,
+    .tag-card-image {
       max-height: 480px;
     }
 
@@ -150,7 +154,8 @@ textarea.text-input {
 }
 
 .scene-card-video,
-.gallery-card-image {
+.gallery-card-image,
+.tag-card-image {
   height: auto;
   width: 100%;
 }

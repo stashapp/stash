@@ -3,9 +3,12 @@
 package models_test
 
 import (
+	"context"
+	"database/sql"
 	"strings"
 	"testing"
 
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -104,6 +107,197 @@ func TestTagFindByNames(t *testing.T) {
 	assert.Equal(t, tagNames[tagIdx1WithDupName], tags[2].Name)
 	assert.Equal(t, tagNames[tagIdxWithDupName], tags[3].Name)
 
+}
+
+func TestTagQueryIsMissingImage(t *testing.T) {
+	qb := models.NewTagQueryBuilder()
+	isMissing := "image"
+	tagFilter := models.TagFilterType{
+		IsMissing: &isMissing,
+	}
+
+	q := getTagStringValue(tagIdxWithImage, "name")
+	findFilter := models.FindFilterType{
+		Q: &q,
+	}
+
+	tags, _ := qb.Query(&tagFilter, &findFilter)
+
+	assert.Len(t, tags, 0)
+
+	findFilter.Q = nil
+	tags, _ = qb.Query(&tagFilter, &findFilter)
+
+	// ensure non of the ids equal the one with image
+	for _, tag := range tags {
+		assert.NotEqual(t, tagIDs[tagIdxWithImage], tag.ID)
+	}
+}
+
+func TestTagQuerySceneCount(t *testing.T) {
+	countCriterion := models.IntCriterionInput{
+		Value:    1,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyTagSceneCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagSceneCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierLessThan
+	verifyTagSceneCount(t, countCriterion)
+
+	countCriterion.Value = 0
+	countCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyTagSceneCount(t, countCriterion)
+}
+
+func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
+	qb := models.NewTagQueryBuilder()
+	tagFilter := models.TagFilterType{
+		SceneCount: &sceneCountCriterion,
+	}
+
+	tags, _ := qb.Query(&tagFilter, nil)
+
+	for _, tag := range tags {
+		verifyInt64(t, sql.NullInt64{
+			Int64: int64(getTagSceneCount(tag.ID)),
+			Valid: true,
+		}, sceneCountCriterion)
+	}
+}
+
+func TestTagQueryMarkerCount(t *testing.T) {
+	countCriterion := models.IntCriterionInput{
+		Value:    1,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyTagMarkerCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyTagMarkerCount(t, countCriterion)
+
+	countCriterion.Modifier = models.CriterionModifierLessThan
+	verifyTagMarkerCount(t, countCriterion)
+
+	countCriterion.Value = 0
+	countCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyTagMarkerCount(t, countCriterion)
+}
+
+func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterionInput) {
+	qb := models.NewTagQueryBuilder()
+	tagFilter := models.TagFilterType{
+		MarkerCount: &markerCountCriterion,
+	}
+
+	tags, _ := qb.Query(&tagFilter, nil)
+
+	for _, tag := range tags {
+		verifyInt64(t, sql.NullInt64{
+			Int64: int64(getTagMarkerCount(tag.ID)),
+			Valid: true,
+		}, markerCountCriterion)
+	}
+}
+
+func TestTagUpdateTagImage(t *testing.T) {
+	qb := models.NewTagQueryBuilder()
+
+	// create tag to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestTagUpdateTagImage"
+	tag := models.Tag{
+		Name: name,
+	}
+	created, err := qb.Create(tag, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating tag: %s", err.Error())
+	}
+
+	image := []byte("image")
+	err = qb.UpdateTagImage(created.ID, image, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating studio image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// ensure image set
+	storedImage, err := qb.GetTagImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting image: %s", err.Error())
+	}
+	assert.Equal(t, storedImage, image)
+
+	// set nil image
+	tx = database.DB.MustBeginTx(ctx, nil)
+	err = qb.UpdateTagImage(created.ID, nil, tx)
+	if err == nil {
+		t.Fatalf("Expected error setting nil image")
+	}
+
+	tx.Rollback()
+}
+
+func TestTagDestroyTagImage(t *testing.T) {
+	qb := models.NewTagQueryBuilder()
+
+	// create performer to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestTagDestroyTagImage"
+	tag := models.Tag{
+		Name: name,
+	}
+	created, err := qb.Create(tag, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating tag: %s", err.Error())
+	}
+
+	image := []byte("image")
+	err = qb.UpdateTagImage(created.ID, image, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating studio image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	tx = database.DB.MustBeginTx(ctx, nil)
+
+	err = qb.DestroyTagImage(created.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error destroying studio image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// image should be nil
+	storedImage, err := qb.GetTagImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting image: %s", err.Error())
+	}
+	assert.Nil(t, storedImage)
 }
 
 // TODO Create

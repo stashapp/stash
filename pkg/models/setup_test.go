@@ -26,7 +26,7 @@ const moviesNameCase = 2
 const moviesNameNoCase = 1
 const totalGalleries = 2
 const tagsNameNoCase = 2
-const tagsNameCase = 5
+const tagsNameCase = 6
 const studiosNameCase = 4
 const studiosNameNoCase = 1
 
@@ -73,10 +73,11 @@ const tagIdx1WithScene = 1
 const tagIdx2WithScene = 2
 const tagIdxWithPrimaryMarker = 3
 const tagIdxWithMarker = 4
+const tagIdxWithImage = 5
 
 // tags with dup names start from the end
-const tagIdx1WithDupName = 5
-const tagIdxWithDupName = 6
+const tagIdx1WithDupName = 6
+const tagIdxWithDupName = 7
 
 const studioIdxWithScene = 0
 const studioIdxWithMovie = 1
@@ -158,6 +159,11 @@ func populateDB() error {
 	}
 
 	if err := createTags(tx, tagsNameCase, tagsNameNoCase); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := addTagImage(tx, tagIdxWithImage); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -404,6 +410,22 @@ func getTagStringValue(index int, field string) string {
 	return "tag_" + strconv.FormatInt(int64(index), 10) + "_" + field
 }
 
+func getTagSceneCount(id int) int {
+	if id == tagIDs[tagIdx1WithScene] || id == tagIDs[tagIdx2WithScene] || id == tagIDs[tagIdxWithScene] {
+		return 1
+	}
+
+	return 0
+}
+
+func getTagMarkerCount(id int) int {
+	if id == tagIDs[tagIdxWithMarker] || id == tagIDs[tagIdxWithPrimaryMarker] {
+		return 1
+	}
+
+	return 0
+}
+
 //createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(tx *sqlx.Tx, n int, o int) error {
 	tqb := models.NewTagQueryBuilder()
@@ -433,7 +455,6 @@ func createTags(tx *sqlx.Tx, n int, o int) error {
 
 		tagIDs = append(tagIDs, created.ID)
 		tagNames = append(tagNames, created.Name)
-
 	}
 
 	return nil
@@ -629,4 +650,10 @@ func linkStudioParent(tx *sqlx.Tx, parentIndex, childIndex int) error {
 	_, err := sqb.Update(studio, tx)
 
 	return err
+}
+
+func addTagImage(tx *sqlx.Tx, tagIndex int) error {
+	qb := models.NewTagQueryBuilder()
+
+	return qb.UpdateTagImage(tagIDs[tagIndex], models.DefaultTagImage, tx)
 }

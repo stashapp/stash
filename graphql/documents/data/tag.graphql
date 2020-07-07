@@ -1,6 +1,7 @@
 fragment TagData on Tag {
   id
   name
+  image_path
   scene_count
   scene_marker_count
 }
