@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+
+	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -21,4 +23,10 @@ func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (*i
 	}
 	count, err := qb.CountByTagID(obj.ID)
 	return &count, err
+}
+
+func (r *tagResolver) ImagePath(ctx context.Context, obj *models.Tag) (*string, error) {
+	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	imagePath := urlbuilders.NewTagURLBuilder(baseURL, obj.ID).GetTagImageURL()
+	return &imagePath, nil
 }
