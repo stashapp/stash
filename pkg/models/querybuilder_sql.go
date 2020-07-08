@@ -311,9 +311,12 @@ func executeFindQuery(tableName string, body string, args []interface{}, sortAnd
 	}
 
 	countQuery := buildCountQuery(body)
-	countResult, countErr := runCountQuery(countQuery, args)
-
 	idsQuery := body + sortAndPagination
+
+	// Perform query and fetch result
+	logger.Tracef("SQL: %s, args: %v", idsQuery, args)
+
+	countResult, countErr := runCountQuery(countQuery, args)
 	idsResult, idsErr := runIdsQuery(idsQuery, args)
 
 	if countErr != nil {
@@ -324,9 +327,6 @@ func executeFindQuery(tableName string, body string, args []interface{}, sortAnd
 		logger.Errorf("Error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
 		panic(idsErr)
 	}
-
-	// Perform query and fetch result
-	logger.Tracef("SQL: %s, args: %v", idsQuery, args)
 
 	return idsResult, countResult
 }

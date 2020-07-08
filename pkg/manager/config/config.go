@@ -344,7 +344,7 @@ func GetLogLevel() string {
 	const defaultValue = "Info"
 
 	value := viper.GetString(LogLevel)
-	if value != "Debug" && value != "Info" && value != "Warning" && value != "Error" {
+	if value != "Debug" && value != "Info" && value != "Warning" && value != "Error" && value != "Trace" {
 		value = defaultValue
 	}
 
