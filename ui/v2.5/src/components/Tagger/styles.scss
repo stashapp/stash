@@ -79,6 +79,13 @@
   font-size: 1.2rem;
   max-width: 768px;
 
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    background-color: #fff;
+    color: black;
+  }
+
   .image-selection {
     height: 450px;
     text-align: center;

@@ -137,6 +137,10 @@ const parseTerm = (searchQuery: string) => {
   return parsedPage.term ?? "";
 };
 
+const stashBoxEndpoint = "https://stashdb.org/graphql";
+const apiKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJhZTA1NmQ0ZC0wYjRmLTQzNmMtYmVhMy0zNjNjMTQ2MmZlNjMiLCJpYXQiOjE1ODYwNDAzOTUsInN1YiI6IkFQSUtleSJ9.5VENvrLtJXTGcdOhA0QC1SyPQ59padh1XiQRDQelzA4";
+
 export const Tagger: React.FC = () => {
   const history = useHistory();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -169,9 +173,8 @@ export const Tagger: React.FC = () => {
     setCoverImage: true,
     setTags: false,
     tagOperation: "merge",
-    stashBoxEndpoint: "https://stashdb.org/graphql",
-    apiKey:
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJhZTA1NmQ0ZC0wYjRmLTQzNmMtYmVhMy0zNjNjMTQ2MmZlNjMiLCJpYXQiOjE1ODYwNDAzOTUsInN1YiI6IkFQSUtleSJ9.5VENvrLtJXTGcdOhA0QC1SyPQ59padh1XiQRDQelzA4",
+    stashBoxEndpoint,
+    apiKey,
   });
 
   useEffect(() => {
@@ -183,8 +186,8 @@ export const Tagger: React.FC = () => {
         setCoverImage: data?.setCoverImage ?? true,
         setTags: data?.setTags ?? false,
         tagOperation: data?.tagOperation ?? "merge",
-        stashBoxEndpoint: data?.stashBoxEndpoint ?? "",
-        apiKey: data?.apiKey ?? "",
+        stashBoxEndpoint: data?.stashBoxEndpoint ?? stashBoxEndpoint,
+        apiKey: data?.apiKey ?? apiKey,
       });
     });
   }, []);
