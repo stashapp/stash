@@ -211,16 +211,19 @@ export class ListFilterModel {
         break;
       case FilterMode.Tags:
         this.sortBy = "name";
-        // scene markers count has been disabled for now due to performance 
+        // scene markers count has been disabled for now due to performance
         // issues
-        this.sortByOptions = ["name", "scenes_count" /*, "scene_markers_count"*/];
+        this.sortByOptions = [
+          "name",
+          "scenes_count" /* , "scene_markers_count"*/,
+        ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new TagIsMissingCriterionOption(),
           ListFilterModel.createCriterionOption("scene_count"),
           // marker count has been disabled for now due to performance issues
-          //ListFilterModel.createCriterionOption("marker_count"),
+          // ListFilterModel.createCriterionOption("marker_count"),
         ];
         break;
       default:
