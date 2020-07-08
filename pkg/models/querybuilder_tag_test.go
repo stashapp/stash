@@ -169,24 +169,26 @@ func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 	}
 }
 
-func TestTagQueryMarkerCount(t *testing.T) {
-	countCriterion := models.IntCriterionInput{
-		Value:    1,
-		Modifier: models.CriterionModifierEquals,
-	}
+// disabled due to performance issues
 
-	verifyTagMarkerCount(t, countCriterion)
+// func TestTagQueryMarkerCount(t *testing.T) {
+// 	countCriterion := models.IntCriterionInput{
+// 		Value:    1,
+// 		Modifier: models.CriterionModifierEquals,
+// 	}
 
-	countCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyTagMarkerCount(t, countCriterion)
+// 	verifyTagMarkerCount(t, countCriterion)
 
-	countCriterion.Modifier = models.CriterionModifierLessThan
-	verifyTagMarkerCount(t, countCriterion)
+// 	countCriterion.Modifier = models.CriterionModifierNotEquals
+// 	verifyTagMarkerCount(t, countCriterion)
 
-	countCriterion.Value = 0
-	countCriterion.Modifier = models.CriterionModifierGreaterThan
-	verifyTagMarkerCount(t, countCriterion)
-}
+// 	countCriterion.Modifier = models.CriterionModifierLessThan
+// 	verifyTagMarkerCount(t, countCriterion)
+
+// 	countCriterion.Value = 0
+// 	countCriterion.Modifier = models.CriterionModifierGreaterThan
+// 	verifyTagMarkerCount(t, countCriterion)
+// }
 
 func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterionInput) {
 	qb := models.NewTagQueryBuilder()
