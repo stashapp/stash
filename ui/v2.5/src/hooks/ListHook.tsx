@@ -16,6 +16,8 @@ import {
   FindPerformersQueryResult,
   FindMoviesQueryResult,
   MovieDataFragment,
+  FindTagsQueryResult,
+  TagDataFragment,
 } from "src/core/generated-graphql";
 import {
   useInterfaceLocalForage,
@@ -31,6 +33,7 @@ import {
   useFindStudios,
   useFindGalleries,
   useFindPerformers,
+  useFindTags,
 } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { FilterMode } from "src/models/list-filter/types";
@@ -54,6 +57,7 @@ interface IListHookOptions<T, E> {
   subComponent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
+  defaultZoomIndex?: number;
   otherOperations?: IListHookOperation<T>[];
   renderContent: (
     result: T,
@@ -69,6 +73,11 @@ interface IListHookOptions<T, E> {
     selected: E[],
     onClose: (confirmed: boolean) => void
   ) => JSX.Element | undefined;
+  addKeybinds?: (
+    result: T,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) => () => void;
 }
 
 interface IDataItem {
@@ -106,11 +115,60 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | undefined>();
-  const [zoomIndex, setZoomIndex] = useState<number>(1);
+  const [zoomIndex, setZoomIndex] = useState<number>(
+    options.defaultZoomIndex ?? 1
+  );
 
   const result = options.useData(getFilter());
   const totalCount = options.getCount(result);
   const items = options.getData(result);
+
+  useEffect(() => {
+    Mousetrap.bind("right", () => {
+      const maxPage = totalCount / filter.itemsPerPage;
+      if (filter.currentPage < maxPage) {
+        onChangePage(filter.currentPage + 1);
+      }
+    });
+    Mousetrap.bind("left", () => {
+      if (filter.currentPage > 1) {
+        onChangePage(filter.currentPage - 1);
+      }
+    });
+
+    Mousetrap.bind("shift+right", () => {
+      const maxPage = totalCount / filter.itemsPerPage + 1;
+      onChangePage(Math.min(maxPage, filter.currentPage + 10));
+    });
+    Mousetrap.bind("shift+left", () => {
+      onChangePage(Math.max(1, filter.currentPage - 10));
+    });
+    Mousetrap.bind("ctrl+end", () => {
+      const maxPage = totalCount / filter.itemsPerPage + 1;
+      onChangePage(maxPage);
+    });
+    Mousetrap.bind("ctrl+home", () => {
+      onChangePage(1);
+    });
+
+    let unbindExtras: () => void;
+    if (options.addKeybinds) {
+      unbindExtras = options.addKeybinds(result, filter, selectedIds);
+    }
+
+    return () => {
+      Mousetrap.unbind("right");
+      Mousetrap.unbind("left");
+      Mousetrap.unbind("shift+right");
+      Mousetrap.unbind("shift+left");
+      Mousetrap.unbind("ctrl+end");
+      Mousetrap.unbind("ctrl+home");
+
+      if (unbindExtras) {
+        unbindExtras();
+      }
+    };
+  });
 
   const updateInterfaceConfig = useCallback(
     (updatedFilter: ListFilterModel) => {
@@ -354,6 +412,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const template = (
     <div>
       <ListFilter
+        subComponent={options.subComponent}
         onFilterUpdate={updateQueryParams}
         onSelectAll={onSelectAll}
         onSelectNone={onSelectNone}
@@ -519,4 +578,19 @@ export const useMoviesList = (
       result: FindMoviesQueryResult,
       selectedIds: Set<string>
     ) => getSelectedData(result?.data?.findMovies?.movies ?? [], selectedIds),
+  });
+
+export const useTagsList = (
+  props: IListHookOptions<FindTagsQueryResult, TagDataFragment>
+) =>
+  useList<FindTagsQueryResult, TagDataFragment>({
+    ...props,
+    filterMode: FilterMode.Tags,
+    useData: useFindTags,
+    getData: (result: FindTagsQueryResult) =>
+      result?.data?.findTags?.tags ?? [],
+    getCount: (result: FindTagsQueryResult) =>
+      result?.data?.findTags?.count ?? 0,
+    getSelectedData: (result: FindTagsQueryResult, selectedIds: Set<string>) =>
+      getSelectedData(result?.data?.findTags?.tags ?? [], selectedIds),
   });

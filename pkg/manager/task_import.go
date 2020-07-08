@@ -45,11 +45,11 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 
 	ctx := context.TODO()
 
+	t.ImportTags(ctx)
 	t.ImportPerformers(ctx)
 	t.ImportStudios(ctx)
 	t.ImportMovies(ctx)
 	t.ImportGalleries(ctx)
-	t.ImportTags(ctx)
 
 	t.ImportScrapedItems(ctx)
 	t.ImportScenes(ctx)
@@ -415,60 +415,51 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewTagQueryBuilder()
 
-	var tagNames []string
-
-	for i, mappingJSON := range t.Mappings.Scenes {
+	for i, mappingJSON := range t.Mappings.Tags {
 		index := i + 1
-		if mappingJSON.Checksum == "" || mappingJSON.Path == "" {
-			_ = tx.Rollback()
-			logger.Warn("[tags] scene mapping without checksum or path: ", mappingJSON)
+		tagJSON, err := instance.JSON.getTag(mappingJSON.Checksum)
+		if err != nil {
+			logger.Errorf("[tags] failed to read json: %s", err.Error())
+			continue
+		}
+		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || tagJSON == nil {
 			return
 		}
 
-		logger.Progressf("[tags] %d of %d scenes", index, len(t.Mappings.Scenes))
+		logger.Progressf("[tags] %d of %d", index, len(t.Mappings.Tags))
 
-		sceneJSON, err := instance.JSON.getScene(mappingJSON.Checksum)
-		if err != nil {
-			logger.Infof("[tags] <%s> json parse failure: %s", mappingJSON.Checksum, err.Error())
-		}
-		// Return early if we are missing a json file.
-		if sceneJSON == nil {
-			continue
-		}
-
-		// Get the tags from the tags json if we have it
-		if len(sceneJSON.Tags) > 0 {
-			tagNames = append(tagNames, sceneJSON.Tags...)
-		}
-
-		// Get the tags from the markers if we have marker json
-		if len(sceneJSON.Markers) == 0 {
-			continue
-		}
-		for _, markerJSON := range sceneJSON.Markers {
-			if markerJSON.PrimaryTag != "" {
-				tagNames = append(tagNames, markerJSON.PrimaryTag)
-			}
-			if len(markerJSON.Tags) > 0 {
-				tagNames = append(tagNames, markerJSON.Tags...)
+		// Process the base 64 encoded image string
+		var imageData []byte
+		if len(tagJSON.Image) > 0 {
+			_, imageData, err = utils.ProcessBase64Image(tagJSON.Image)
+			if err != nil {
+				_ = tx.Rollback()
+				logger.Errorf("[tags] <%s> invalid image: %s", mappingJSON.Checksum, err.Error())
+				return
 			}
 		}
-	}
 
-	uniqueTagNames := t.getUnique(tagNames)
-	for _, tagName := range uniqueTagNames {
-		currentTime := time.Now()
+		// Populate a new tag from the input
 		newTag := models.Tag{
-			Name:      tagName,
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			Name:      tagJSON.Name,
+			CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(tagJSON.CreatedAt)},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(tagJSON.UpdatedAt)},
 		}
 
-		_, err := qb.Create(newTag, tx)
+		createdTag, err := qb.Create(newTag, tx)
 		if err != nil {
 			_ = tx.Rollback()
-			logger.Errorf("[tags] <%s> failed to create: %s", tagName, err.Error())
+			logger.Errorf("[tags] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
 			return
+		}
+
+		// Add the tag image if set
+		if len(imageData) > 0 {
+			if err := qb.UpdateTagImage(createdTag.ID, imageData, tx); err != nil {
+				_ = tx.Rollback()
+				logger.Errorf("[tags] <%s> error setting tag image: %s", mappingJSON.Checksum, err.Error())
+				return
+			}
 		}
 	}
 

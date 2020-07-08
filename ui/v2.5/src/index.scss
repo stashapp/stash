@@ -100,7 +100,8 @@ textarea.text-input {
     width: 240px;
 
     .scene-card-video,
-    .gallery-card-image {
+    .gallery-card-image,
+    .tag-card-image {
       max-height: 180px;
     }
 
@@ -113,7 +114,8 @@ textarea.text-input {
     width: 320px;
 
     .scene-card-video,
-    .gallery-card-image {
+    .gallery-card-image,
+    .tag-card-image {
       max-height: 240px;
     }
 
@@ -126,7 +128,8 @@ textarea.text-input {
     width: 480px;
 
     .scene-card-video,
-    .gallery-card-image {
+    .gallery-card-image,
+    .tag-card-image {
       max-height: 360px;
     }
 
@@ -139,7 +142,8 @@ textarea.text-input {
     width: 640px;
 
     .scene-card-video,
-    .gallery-card-image {
+    .gallery-card-image,
+    .tag-card-image {
       max-height: 480px;
     }
 
@@ -150,7 +154,8 @@ textarea.text-input {
 }
 
 .scene-card-video,
-.gallery-card-image {
+.gallery-card-image,
+.tag-card-image {
   height: auto;
   width: 100%;
 }
@@ -208,6 +213,17 @@ div.dropdown-menu {
     & > :last-child {
       margin-right: 0;
     }
+  }
+}
+
+/* fix for react-select in input-group */
+.input-group .react-select {
+  border: 0;
+  height: 100%;
+  padding: 0;
+
+  .react-select__control {
+    border-radius: 0;
   }
 }
 

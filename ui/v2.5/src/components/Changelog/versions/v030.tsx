@@ -3,12 +3,17 @@ import ReactMarkdown from "react-markdown";
 
 const markup = `
 ### ✨ New Features
+*  Add tag thumbnails, tags grid view and tag page.
+*  Add post-scrape dialog.
+*  Add various keyboard shortcuts (see manual).
 *  Support deleting multiple scenes.
 *  Add in-app help manual.
 *  Add support for custom served folders.
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
+*  Add dialog when pasting movie images.
+*  Allow click and click-drag selection after selecting scene.
 *  Added multi-scene edit dialog.
 *  Moved images to separate tables, increasing performance.
 *  Add gallery grid view.

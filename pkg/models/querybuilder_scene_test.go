@@ -174,6 +174,7 @@ func verifyScenesRating(t *testing.T, ratingCriterion models.IntCriterionInput) 
 }
 
 func verifyInt64(t *testing.T, value sql.NullInt64, criterion models.IntCriterionInput) {
+	t.Helper()
 	assert := assert.New(t)
 	if criterion.Modifier == models.CriterionModifierIsNull {
 		assert.False(value.Valid, "expect is null values to be null")

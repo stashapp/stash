@@ -17,6 +17,7 @@ import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import jwplayer from "src/utils/jwplayer";
 import { TextUtils, JWUtils } from "src/utils";
+import * as Mousetrap from "mousetrap";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
@@ -44,6 +45,8 @@ export const Scene: React.FC = () => {
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
   const [resetO] = useSceneResetO(scene?.id ?? "0");
+
+  const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
@@ -185,7 +188,10 @@ export const Scene: React.FC = () => {
     }
 
     return (
-      <Tab.Container defaultActiveKey="scene-details-panel">
+      <Tab.Container
+        activeKey={activeTabKey}
+        onSelect={(k) => setActiveTabKey(k)}
+      >
         <div>
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
@@ -232,7 +238,11 @@ export const Scene: React.FC = () => {
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-markers-panel" title="Markers">
-            <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} />
+            <SceneMarkersPanel
+              scene={scene}
+              onClickMarker={onClickMarker}
+              isVisible={activeTabKey === "scene-markers-panel"}
+            />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-movie-panel" title="Movies">
             <SceneMoviePanel scene={scene} />
@@ -253,6 +263,7 @@ export const Scene: React.FC = () => {
           </Tab.Pane>
           <Tab.Pane eventKey="scene-edit-panel" title="Edit">
             <SceneEditPanel
+              isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}
               onUpdate={(newScene) => setScene(newScene)}
               onDelete={() => setIsDeleteAlertOpen(true)}
@@ -262,6 +273,23 @@ export const Scene: React.FC = () => {
       </Tab.Container>
     );
   }
+
+  // set up hotkeys
+  useEffect(() => {
+    Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
+    Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
+    Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
+    Mousetrap.bind("f", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("o", () => onIncrementClick());
+
+    return () => {
+      Mousetrap.unbind("a");
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("k");
+      Mousetrap.unbind("f");
+      Mousetrap.unbind("o");
+    };
+  });
 
   if (loading || streamableLoading || !scene || !data?.findScene) {
     return <LoadingIndicator />;

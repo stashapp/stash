@@ -66,7 +66,7 @@ class LogEntry {
 // maximum number of log entries to display. Subsequent entries will truncate
 // the list, dropping off the oldest entries first.
 const MAX_LOG_ENTRIES = 200;
-const logLevels = ["Debug", "Info", "Warning", "Error"];
+const logLevels = ["Trace", "Debug", "Info", "Warning", "Error"];
 
 const logReducer = (existingEntries: LogEntry[], newEntries: LogEntry[]) => [
   ...newEntries.reverse(),
@@ -96,7 +96,7 @@ export const SettingsLogsPanel: React.FC = () => {
   );
 
   function filterByLogLevel(logEntry: LogEntry) {
-    if (logLevel === "Debug") return true;
+    if (logLevel === "Trace") return true;
 
     const logLevelIndex = logLevels.indexOf(logLevel);
     const levelIndex = logLevels.indexOf(logEntry.level);

@@ -1,9 +1,3 @@
-query FindTag($id: ID!) {
-  findTag(id: $id) {
-    ...TagData
-  }
-}
-
 query MarkerStrings($q: String, $sort: String) {
   markerStrings(q: $q, sort: $sort) {
     id
