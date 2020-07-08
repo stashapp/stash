@@ -1,120 +1,124 @@
-import React, { useEffect, useState } from 'react';
-import { Button, ButtonGroup } from 'react-bootstrap';
-import cx from 'classnames';
+import React, { useEffect, useState } from "react";
+import { Button, ButtonGroup } from "react-bootstrap";
+import cx from "classnames";
 
-import { SuccessIcon, PerformerSelect } from 'src/components/Shared';
-import * as GQL from 'src/core/generated-graphql';
-import { ValidTypes } from 'src/components/Shared/Select';
-import {
-  SearchScene_searchScene_performers_performer as StashPerformer,
-} from 'src/definitions-box/SearchScene';
-import { sortImageURLs } from './utils';
-import { Operation } from './StashSearchResult';
+import { SuccessIcon, PerformerSelect } from "src/components/Shared";
+import * as GQL from "src/core/generated-graphql";
+import { ValidTypes } from "src/components/Shared/Select";
+import { SearchScene_searchScene_performers_performer as StashPerformer } from "src/definitions-box/SearchScene";
+import { sortImageURLs } from "./utils";
+import { Operation } from "./StashSearchResult";
 
-import PerformerModal from './PerformerModal';
+import PerformerModal from "./PerformerModal";
 
 interface IPerformerOperation {
   type: Operation;
-  data: StashPerformer|string;
+  data: StashPerformer | string;
 }
 
 interface IPerformerResultProps {
-  performer: StashPerformer
-  setPerformer: (data:IPerformerOperation) => void;
+  performer: StashPerformer;
+  setPerformer: (data: IPerformerOperation) => void;
 }
 
-const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerformer }) => {
-  const [selectedPerformer, setSelectedPerformer] = useState<string|null>();
-  const [selectedSource, setSelectedSource] = useState<'create'|'existing'|'skip'|undefined>();
+const PerformerResult: React.FC<IPerformerResultProps> = ({
+  performer,
+  setPerformer,
+}) => {
+  const [selectedPerformer, setSelectedPerformer] = useState<string | null>();
+  const [selectedSource, setSelectedSource] = useState<
+    "create" | "existing" | "skip" | undefined
+  >();
   const [modalVisible, showModal] = useState(false);
-  const { data: stashData, loading: stashLoading } = GQL.useFindPerformersQuery({
-    variables: {
-      performer_filter: {
-        instagram: {
-          value: performer.id,
-          modifier: GQL.CriterionModifier.Equals
-        }
-      }
+  const { data: stashData, loading: stashLoading } = GQL.useFindPerformersQuery(
+    {
+      variables: {
+        performer_filter: {
+          instagram: {
+            value: performer.id,
+            modifier: GQL.CriterionModifier.Equals,
+          },
+        },
+      },
     }
-  });
+  );
   const { loading } = GQL.useFindPerformersQuery({
     variables: {
       filter: {
-        q: `"${performer.name}"`
-      }
+        q: `"${performer.name}"`,
+      },
     },
     onCompleted: (data) => {
       const performerResult = data.findPerformers?.performers?.[0]?.id;
       if (performerResult) {
         setSelectedPerformer(performerResult);
-        setSelectedSource('existing');
+        setSelectedSource("existing");
         setPerformer({
-          type: 'Update',
-          data: performerResult
+          type: "Update",
+          data: performerResult,
         });
       }
-    }
+    },
   });
 
   useEffect(() => {
-    if(!stashData?.findPerformers.count)
-      return;
+    if (!stashData?.findPerformers.count) return;
 
     setPerformer({
-      type: 'Existing',
-      data: stashData.findPerformers.performers[0].id
+      type: "Existing",
+      data: stashData.findPerformers.performers[0].id,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stashData]);
 
   const handlePerformerSelect = (items: ValidTypes[]) => {
     if (items.length) {
-      setSelectedSource('existing');
+      setSelectedSource("existing");
       setSelectedPerformer(items[0].id);
       setPerformer({
-        type: 'Update',
-        data: items[0].id
+        type: "Update",
+        data: items[0].id,
       });
-    }
-    else {
+    } else {
       setSelectedSource(undefined);
       setSelectedPerformer(null);
     }
   };
 
   const handlePerformerCreate = (imageIndex: number) => {
-    const images = sortImageURLs(performer.images, 'portrait');
-    const imageURLs = images.length ? [{
-      url: images[imageIndex].url,
-      id: images[imageIndex].id,
-      width: null,
-      height: null
-    }] : [];
-    setSelectedSource('create');
+    const images = sortImageURLs(performer.images, "portrait");
+    const imageURLs = images.length
+      ? [
+          {
+            url: images[imageIndex].url,
+            id: images[imageIndex].id,
+            width: null,
+            height: null,
+          },
+        ]
+      : [];
+    setSelectedSource("create");
     setPerformer({
-      type: 'Create',
+      type: "Create",
       data: {
         ...performer,
-        images: imageURLs
-      }
+        images: imageURLs,
+      },
     });
     showModal(false);
   };
 
   const handlePerformerSkip = () => {
-    setSelectedSource('skip');
+    setSelectedSource("skip");
     setPerformer({
-      type: 'Skip',
-      data: ''
+      type: "Skip",
+      data: "",
     });
   };
 
+  if (stashLoading || loading) return <div>Loading performer</div>;
 
-
-  if(stashLoading || loading)
-    return <div>Loading performer</div>;
-
-  if((stashData?.findPerformers.count ?? 0) > 0) {
+  if ((stashData?.findPerformers.count ?? 0) > 0) {
     return (
       <div className="row no-gutters my-2">
         <div className="entity-name">
@@ -122,9 +126,12 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerfor
           <b className="ml-2">{performer.name}</b>
         </div>
         <span className="ml-auto">
-          <SuccessIcon />Matched:
+          <SuccessIcon />
+          Matched:
         </span>
-        <b className="col-3 text-right">{ stashData!.findPerformers.performers[0].name }</b>
+        <b className="col-3 text-right">
+          {stashData!.findPerformers.performers[0].name}
+        </b>
       </div>
     );
   }
@@ -141,17 +148,29 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({ performer, setPerfor
         <b className="ml-2">{performer.name}</b>
       </div>
       <ButtonGroup>
-        <Button variant={selectedSource === 'create' ? 'primary' : "secondary"} onClick={() => showModal(true)}>Create</Button>
-        <Button variant={selectedSource === 'skip' ? 'primary' : 'secondary'} onClick={() => handlePerformerSkip()}>Skip</Button>
+        <Button
+          variant={selectedSource === "create" ? "primary" : "secondary"}
+          onClick={() => showModal(true)}
+        >
+          Create
+        </Button>
+        <Button
+          variant={selectedSource === "skip" ? "primary" : "secondary"}
+          onClick={() => handlePerformerSkip()}
+        >
+          Skip
+        </Button>
         <PerformerSelect
           ids={selectedPerformer ? [selectedPerformer] : []}
           onSelect={handlePerformerSelect}
-          className={cx("performer-select", {'performer-select-active': selectedSource === 'existing' })}
+          className={cx("performer-select", {
+            "performer-select-active": selectedSource === "existing",
+          })}
           isClearable={false}
         />
       </ButtonGroup>
     </div>
   );
-}
+};
 
 export default PerformerResult;

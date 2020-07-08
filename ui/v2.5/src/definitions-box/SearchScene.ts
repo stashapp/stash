@@ -3,7 +3,15 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { GenderEnum, DateAccuracyEnum, EthnicityEnum, EyeColorEnum, HairColorEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
+import {
+  GenderEnum,
+  DateAccuracyEnum,
+  EthnicityEnum,
+  EyeColorEnum,
+  HairColorEnum,
+  BreastTypeEnum,
+  FingerprintAlgorithm,
+} from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SearchScene

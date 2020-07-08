@@ -95,7 +95,7 @@ const menuItems: IMenuItem[] = [
     href: "/tagger",
     icon: "archive",
     message: messages.sceneTagger,
-  }
+  },
 ];
 
 export const MainNavbar: React.FC = () => {

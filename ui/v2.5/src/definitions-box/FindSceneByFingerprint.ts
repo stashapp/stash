@@ -3,7 +3,16 @@
 // @generated
 // This file was automatically generated and should not be edited.
 
-import { FingerprintQueryInput, GenderEnum, DateAccuracyEnum, EthnicityEnum, EyeColorEnum, HairColorEnum, BreastTypeEnum, FingerprintAlgorithm } from "./globalTypes";
+import {
+  FingerprintQueryInput,
+  GenderEnum,
+  DateAccuracyEnum,
+  EthnicityEnum,
+  EyeColorEnum,
+  HairColorEnum,
+  BreastTypeEnum,
+  FingerprintAlgorithm,
+} from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: FindSceneByFingerprint
@@ -100,8 +109,12 @@ export interface FindSceneByFingerprint_findSceneByFingerprint_performers_perfor
   breast_type: BreastTypeEnum | null;
   career_start_year: number | null;
   career_end_year: number | null;
-  tattoos: FindSceneByFingerprint_findSceneByFingerprint_performers_performer_tattoos[] | null;
-  piercings: FindSceneByFingerprint_findSceneByFingerprint_performers_performer_piercings[] | null;
+  tattoos:
+    | FindSceneByFingerprint_findSceneByFingerprint_performers_performer_tattoos[]
+    | null;
+  piercings:
+    | FindSceneByFingerprint_findSceneByFingerprint_performers_performer_piercings[]
+    | null;
 }
 
 export interface FindSceneByFingerprint_findSceneByFingerprint_performers {

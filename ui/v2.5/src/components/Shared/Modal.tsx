@@ -33,7 +33,13 @@ const ModalComponent: React.FC<IModal> = ({
   modalProps,
   dialogClassName,
 }) => (
-  <Modal keyboard={false} onHide={onHide} show={show} dialogClassName={dialogClassName} {...modalProps}>
+  <Modal
+    keyboard={false}
+    onHide={onHide}
+    show={show}
+    dialogClassName={dialogClassName}
+    {...modalProps}
+  >
     <Modal.Header>
       {icon ? <Icon icon={icon} /> : ""}
       <span>{header ?? ""}</span>

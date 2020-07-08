@@ -1,3 +1,1 @@
-export {
-  Tagger as default
-} from "./Tagger";
+export { Tagger as default } from "./Tagger";
