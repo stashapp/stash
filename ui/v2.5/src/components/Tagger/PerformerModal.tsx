@@ -16,6 +16,14 @@ interface IPerformerModalProps {
   handlePerformerCreate: (imageIndex: number) => void;
 };
 
+const genderDict = {
+  [GenderEnum.FEMALE]: "Female",
+  [GenderEnum.MALE]: "Male",
+  [GenderEnum.TRANSGENDER_FEMALE]: "Transgender Female",
+  [GenderEnum.TRANSGENDER_MALE]: "Transgender Male",
+  [GenderEnum.INTERSEX]: "Intersex",
+};
+
 const PerformerModal: React.FC<IPerformerModalProps> = ({ modalVisible, performer, handlePerformerCreate, showModal }) => {
   const [imageIndex, setImageIndex] = useState(0);
 
@@ -47,7 +55,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({ modalVisible, performe
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Gender:</strong>
-            <span className="col-6 text-truncate text-capitalize">{ performer.gender?.toLowerCase()}</span>
+            <span className="col-6 text-truncate text-capitalize">{ performer.gender && genderDict[performer.gender] }</span>
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Birthdate:</strong>

@@ -63,6 +63,14 @@ export enum HairColorEnum {
   VARIOUS = "VARIOUS",
 }
 
+export enum RoleEnum {
+  ADMIN = "ADMIN",
+  EDIT = "EDIT",
+  MODIFY = "MODIFY",
+  READ = "READ",
+  VOTE = "VOTE",
+}
+
 export interface FingerprintInput {
   hash: string;
   algorithm: FingerprintAlgorithm;

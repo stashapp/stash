@@ -1,4 +1,6 @@
 import React, { useCallback, useState } from 'react';
+import { ApolloClient } from 'apollo-client';
+import { NormalizedCacheObject } from 'apollo-cache-inmemory';
 import { blobToBase64 } from 'base64-blob';
 import { loader } from 'graphql.macro';
 import cx from 'classnames';
@@ -30,7 +32,6 @@ import {
   getUrlByType,
   getImage
 } from './utils';
-import { client } from './client';
 import {
   FindPerformersDocument,
   FindStudioByUrlDocument,
@@ -78,6 +79,7 @@ interface IStashSearchResultProps {
   showMales: boolean;
   setScene: (scene: Partial<GQL.Scene>) => void;
   setCoverImage: boolean;
+  client?: ApolloClient<NormalizedCacheObject>;
 }
 
 const titleCase = (str?: string) => {
@@ -99,7 +101,7 @@ interface IStudioOperation {
   data: StashStudio|string;
 }
 
-const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScene, isActive, setActive, showMales, setScene, setCoverImage }) => {
+const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScene, isActive, setActive, showMales, setScene, setCoverImage, client }) => {
   const [studio, setStudio] = useState<IStudioOperation>();
   const [performers, setPerformers] = useState<Record<string, IPerformerOperation>>({});
   const [saveState, setSaveState] = useState<string>('');
@@ -366,7 +368,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
                 query: AllTagsForFilterDocument,
                 variables: {},
               });
-              const allTagsSlim = sortBy([(currentQuery?.allTagsSlim ?? []), _newTag.data.tagCreate], ['name']);
+              const allTagsSlim = sortBy([...(currentQuery?.allTagsSlim ?? []), _newTag.data.tagCreate], ['name']);
 
               store.writeQuery({
                 query: AllTagsForFilterDocument,
@@ -402,7 +404,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({ scene, stashScen
         setScene(sceneUpdateResult.data.sceneUpdate);
 
       if(stashScene.checksum && stashScene.file?.duration)
-        client.mutate<SubmitFingerprint, SubmitFingerprintVariables>({
+        client?.mutate<SubmitFingerprint, SubmitFingerprintVariables>({
           mutation: SubmitFingerprintMutation,
           variables: {
             input: {

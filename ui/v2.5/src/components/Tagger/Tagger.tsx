@@ -20,16 +20,18 @@ import {
   FindSceneByFingerprint,
   FindSceneByFingerprint_findSceneByFingerprint as FingerprintResult
 } from 'src/definitions-box/FindSceneByFingerprint';
+import { Me } from 'src/definitions-box/Me';
 import { loader } from 'graphql.macro';
 import StashSearchResult from './StashSearchResult';
-import { client } from './client';
+import { useStashBoxClient } from './client';
 
 const SearchSceneQuery = loader('src/queries/searchScene.gql');
 const FindSceneByFingerprintQuery = loader('src/queries/searchFingerprint.gql');
+const MeQuery = loader('src/queries/me.gql');
 
 const uuidRegexp = /\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b/i;
 
-const DEFAULT_BLACKLIST = [' XXX ', '1080p', '720p', '2160p', 'KTR', 'RARBG', 'MP4', 'x264', 'wmv', 'avi', 'com', 'mpe?g', '\\[', '\\]'];
+const DEFAULT_BLACKLIST = [' XXX', '1080p', '720p', '2160p', 'KTR', 'RARBG', 'MP4', 'x264', 'wmv', 'avi', 'com', 'mpe?g', 'm4v', '\\[', '\\]'];
 const dateRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
 function prepareQueryString(scene: Partial<GQL.Scene>, paths: string[], mode:ParseMode, blacklist: string[]) {
   if ((mode === 'auto' && scene.date && scene.studio) || mode === "metadata") {
@@ -77,6 +79,8 @@ interface ITaggerConfig {
   setCoverImage: boolean;
   setTags: boolean;
   tagOperation: string;
+  stashBoxEndpoint: string;
+  apiKey: string;
 }
 
 const parsePage = (searchQuery: string) => {
@@ -115,13 +119,16 @@ export const Tagger: React.FC = () => {
   const [fingerprints, setFingerprints] = useState<Record<string, FingerprintResult|null>>({});
   const [loadingFingerprints, setLoadingFingerprints] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
+  const [user, setUser] = useState<Me>();
   const [config, setConfig] = useState<ITaggerConfig>({
     blacklist: DEFAULT_BLACKLIST,
     showMales: false,
     mode: 'auto',
     setCoverImage: true,
     setTags: false,
-    tagOperation: "merge"
+    tagOperation: "merge",
+    stashBoxEndpoint: 'https://stashdb.org/graphql',
+    apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJhZTA1NmQ0ZC0wYjRmLTQzNmMtYmVhMy0zNjNjMTQ2MmZlNjMiLCJpYXQiOjE1ODYwNDAzOTUsInN1YiI6IkFQSUtleSJ9.5VENvrLtJXTGcdOhA0QC1SyPQ59padh1XiQRDQelzA4',
   });
 
   useEffect(() => {
@@ -132,7 +139,9 @@ export const Tagger: React.FC = () => {
         mode: data?.mode ?? 'auto',
         setCoverImage: data?.setCoverImage ?? true,
         setTags: data?.setTags ?? false,
-        tagOperation: data?.tagOperation ?? "merge"
+        tagOperation: data?.tagOperation ?? "merge",
+        stashBoxEndpoint: data?.stashBoxEndpoint ?? "",
+        apiKey: data?.apiKey ?? "",
       });
     }
   )}, []);
@@ -148,6 +157,16 @@ export const Tagger: React.FC = () => {
     });
     history.push(`?${newQuery}`);
   }, [page, searchFilter, history]);
+
+  const client = useStashBoxClient(config.stashBoxEndpoint, config.apiKey);
+  useEffect(() => {
+    if (!client)
+      setUser(undefined);
+    else
+      client.query<Me>({ query: MeQuery, errorPolicy: "ignore", fetchPolicy: "no-cache" })
+        .then((result) => setUser(result.data))
+        .catch(() => setUser(undefined));
+    }, [client]);
 
   const { data: sceneData, loading: sceneLoading } = GQL.useFindScenesQuery({
     variables: {
@@ -166,7 +185,7 @@ export const Tagger: React.FC = () => {
   }, 500);
 
   const doBoxSearch = (sceneID: string, searchVal: string) => {
-    client.query<SearchScene, SearchSceneVariables>({
+    client?.query<SearchScene, SearchSceneVariables>({
       query: SearchSceneQuery,
       variables: { term: searchVal}
     }).then(queryData => {
@@ -212,7 +231,7 @@ export const Tagger: React.FC = () => {
       scenes
         .filter(s => fingerprints[s.id] === undefined)
         .map(s => (
-          client.query<FindSceneByFingerprint, FindSceneByFingerprintVariables>({
+          client?.query<FindSceneByFingerprint, FindSceneByFingerprintVariables>({
               query: FindSceneByFingerprintQuery,
               variables: {
                 fingerprint: {
@@ -239,7 +258,7 @@ export const Tagger: React.FC = () => {
 
   return (
     <div className="tagger-container mx-auto">
-      <h2>StashDB Tagger</h2>
+      <h2>Scene Tagger</h2>
       <hr />
 
       <div className="row mb-4 mt-2">
@@ -338,8 +357,34 @@ export const Tagger: React.FC = () => {
               <p>The search works by matching the query against a scene&rsquo;s <i>title</i>, <i>release date</i>, <i>studio name</i>, and <i>performer names</i>.
                 An important thing to note is that it only returns a match <b>if all query terms are a match</b>.</p>
               <p>As an example, if a scene is titled <code>&ldquo;A Trip to the Mall&rdquo;</code>, a search for <code>&ldquo;Trip to the Mall 1080p&rdquo;</code> will <b>not</b> match, however <code>&ldquo;trip mall&rdquo;</code> would. Usually a few pieces of info is enough, for instance performer name + release date or studio name.</p>
-              <p><b>Please note</b> that this is still a work in progress, and the number of studios for which scenes are available is not exhaustive. For a complete list see <a href="https://stashdb.org/studios" target="_blank" rel="noopener noreferrer" className="btn-link">stashdb.org</a>.</p>
             </div>
+          </div>
+          <hr />
+          <div className="row">
+              <Form.Group controlId="stash-box-endpoint" className="align-items-center col-4">
+                <Form.Label>GraphQL Endpoint:</Form.Label>
+                <Form.Control
+                  disabled
+                  value={config.stashBoxEndpoint}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, stashBoxEndpoint: e.currentTarget.value})}
+                />
+                <Form.Text></Form.Text>
+              </Form.Group>
+              <Form.Group controlId="stash-box-apikey" className="align-items-center col-8">
+                <Form.Label>API key:</Form.Label>
+                <Form.Control
+                  disabled
+                  value={config.apiKey}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfig({ ...config, apiKey: e.currentTarget.value})}
+                />
+                <Form.Text>This can be found on your user page of your chosen stash-box instance.</Form.Text>
+              </Form.Group>
+          </div>
+          <div className="row">
+            { user?.me?.id
+              ? <h5 className="text-success col">Connection successful. You are logged in as <b>{user.me.name}</b>.</h5>
+              : <h5 className="text-danger col">Connection failed. Please check that the endpoint and API key are correct.</h5>
+            }
           </div>
         </Card>
       </Collapse>
@@ -347,7 +392,7 @@ export const Tagger: React.FC = () => {
       <Card className="tagger-table">
         <div className="tagger-table-header row mb-4">
           <div className="col-6"><b>Path</b></div>
-          <div className="col-2"><b>StashDB Query</b></div>
+          <div className="col-2"><b>Query</b></div>
           <div className="col-4 text-right">
             <Button onClick={handleFingerprintSearch} disabled={canFingerprintSearch() && !loadingFingerprints}>
               Search Fingerprints
@@ -383,9 +428,9 @@ export const Tagger: React.FC = () => {
                       </InputGroup>
                     )}
                     { taggedScenes[scene.id] && (
-                      <h5 className="d-flex">
-                        <b className="mr-auto">Scene successfully tagged:</b>
-                        <a className="ml-4" href={`/scenes/${scene.id}`}>{taggedScenes[scene.id].title}</a>
+                      <h5 className="row no-gutters">
+                        <b className="col-4">Scene successfully tagged:</b>
+                        <a className="offset-1 col-7 text-right" href={`/scenes/${scene.id}`}>{taggedScenes[scene.id].title}</a>
                       </h5>
                     )}
                   </div>
@@ -400,6 +445,7 @@ export const Tagger: React.FC = () => {
                       setScene={handleTaggedScene}
                       scene={fingerprintMatch}
                       setCoverImage={config.setCoverImage}
+                      client={client}
                     />
                 )}
                 { searchResults[scene.id] && !taggedScenes[scene.id] && !fingerprintMatch && (
@@ -431,6 +477,7 @@ export const Tagger: React.FC = () => {
                           setActive={() => setSelectedResult({ ...selectedResult, [scene.id]: i})}
                           setCoverImage={config.setCoverImage}
                           setScene={handleTaggedScene}
+                          client={client}
                         />
                       )
                     ))

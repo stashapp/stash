@@ -7,12 +7,10 @@ import {
 import { BreastTypeEnum, GenderEnum as StashGenderEnum} from 'src/definitions-box/globalTypes';
 import { GenderEnum } from 'src/core/generated-graphql';
 
-const CDN = 'https://cdn.stashdb.org';
-
 export const sortImageURLs = (images: Image[], orientation: 'portrait'|'landscape') => (
   images.map((i) => ({
-      url: i.id ? `${CDN}/${i.id.slice(0, 2)}/${i.id.slice(2, 4)}/${i.id}` : i.url,
       id: i.id,
+      url: i.url,
       width: i.width ?? 1,
       height: i.height ?? 1,
       aspect: orientation === 'portrait' ? (i.height ?? 1) / (i.width ?? 1) > 1 : ((i.width ?? 1) / (i.height ?? 1)) > 1
