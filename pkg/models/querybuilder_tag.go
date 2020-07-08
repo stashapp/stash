@@ -161,11 +161,23 @@ func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *FindFilte
 	}
 
 	query.body = selectDistinctIDs(tagTable)
+
+	/*
+		query.body += `
+		left join tags_image on tags_image.tag_id = tags.id
+		left join scenes_tags on scenes_tags.tag_id = tags.id
+		left join scene_markers_tags on scene_markers_tags.tag_id = tags.id
+		left join scene_markers on scene_markers.primary_tag_id = tags.id OR scene_markers.id = scene_markers_tags.scene_marker_id
+		left join scenes on scenes_tags.scene_id = scenes.id`
+	*/
+
+	// the presence of joining on scene_markers.primary_tag_id and scene_markers_tags.tag_id
+	// appears to confuse sqlite and causes serious performance issues.
+	// Disabling querying/sorting on marker count for now.
+
 	query.body += ` 
 	left join tags_image on tags_image.tag_id = tags.id
 	left join scenes_tags on scenes_tags.tag_id = tags.id
-	left join scene_markers_tags on scene_markers_tags.tag_id = tags.id
-	left join scene_markers on scene_markers.primary_tag_id = tags.id OR scene_markers.id = scene_markers_tags.scene_marker_id
 	left join scenes on scenes_tags.scene_id = scenes.id`
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -192,13 +204,13 @@ func (qb *TagQueryBuilder) Query(tagFilter *TagFilterType, findFilter *FindFilte
 		}
 	}
 
-	if markerCount := tagFilter.MarkerCount; markerCount != nil {
-		clause, count := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
-		query.addHaving(clause)
-		if count == 1 {
-			query.addArg(markerCount.Value)
-		}
-	}
+	// if markerCount := tagFilter.MarkerCount; markerCount != nil {
+	// 	clause, count := getIntCriterionWhereClause("count(distinct scene_markers.id)", *markerCount)
+	// 	query.addHaving(clause)
+	// 	if count == 1 {
+	// 		query.addArg(markerCount.Value)
+	// 	}
+	// }
 
 	query.sortAndPagination = qb.getTagSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := query.executeFind()

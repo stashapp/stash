@@ -211,13 +211,16 @@ export class ListFilterModel {
         break;
       case FilterMode.Tags:
         this.sortBy = "name";
-        this.sortByOptions = ["name", "scenes_count", "scene_markers_count"];
+        // scene markers count has been disabled for now due to performance 
+        // issues
+        this.sortByOptions = ["name", "scenes_count" /*, "scene_markers_count"*/];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new TagIsMissingCriterionOption(),
           ListFilterModel.createCriterionOption("scene_count"),
-          ListFilterModel.createCriterionOption("marker_count"),
+          // marker count has been disabled for now due to performance issues
+          //ListFilterModel.createCriterionOption("marker_count"),
         ];
         break;
       default:
@@ -652,14 +655,15 @@ export class ListFilterModel {
           };
           break;
         }
-        case "marker_count": {
-          const countCrit = criterion as NumberCriterion;
-          result.marker_count = {
-            value: countCrit.value,
-            modifier: countCrit.modifier,
-          };
-          break;
-        }
+        // disabled due to performance issues
+        // case "marker_count": {
+        //   const countCrit = criterion as NumberCriterion;
+        //   result.marker_count = {
+        //     value: countCrit.value,
+        //     modifier: countCrit.modifier,
+        //   };
+        //   break;
+        // }
         // no default
       }
     });
