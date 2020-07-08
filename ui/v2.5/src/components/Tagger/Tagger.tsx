@@ -508,7 +508,6 @@ export const Tagger: React.FC = () => {
                   })
                 }
               />
-              <Form.Text></Form.Text>
             </Form.Group>
             <Form.Group
               controlId="stash-box-apikey"
