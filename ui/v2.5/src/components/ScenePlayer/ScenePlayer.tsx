@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import ReactJWPlayer from "react-jw-player";
 import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
 import { JWUtils } from "src/utils";
-import jwplayer from "src/utils/jwplayer";
 import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 
 interface IScenePlayerProps {
@@ -27,8 +27,21 @@ export class ScenePlayerImpl extends React.Component<
   IScenePlayerProps,
   IScenePlayerState
 > {
+  private static isDirectStream(src?: string) {
+    if (!src) {
+      return false;
+    }
+
+    const startIndex = src.lastIndexOf("?start=");
+    let srcCopy = src;
+    if (startIndex !== -1) {
+      srcCopy = srcCopy.substring(0, startIndex);
+    }
+
+    return srcCopy.endsWith("/stream");
+  }
+
   // Typings for jwplayer are, unfortunately, very lacking
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private player: any;
   private playlist: any;
   private lastTime = 0;
@@ -128,19 +141,6 @@ export class ScenePlayerImpl extends React.Component<
     );
   }
 
-  private isDirectStream(src?: string) {
-    if (!src) {
-      return false;
-    }
-
-    const startIndex = src.lastIndexOf("?start=");
-    if (startIndex !== -1) {
-      src = src.substring(0, startIndex);
-    }
-
-    return src.endsWith("/stream");
-  }
-
   private tryNextStream() {
     if (this.playlist.length > 1) {
       this.playlist.shift();
@@ -152,13 +152,13 @@ export class ScenePlayerImpl extends React.Component<
 
   private makePlaylist() {
     return {
-      sources: this.props.sceneStreams.map(s => {
+      sources: this.props.sceneStreams.map((s) => {
         return {
           file: s.url,
           type: s.mime_type,
           label: s.label,
         };
-      })
+      }),
     };
   }
 
@@ -168,26 +168,21 @@ export class ScenePlayerImpl extends React.Component<
     }
 
     const repeat = this.shouldRepeat(scene);
-    let getDurationHook: (() => GQL.Maybe<number>) | undefined;
-    let seekHook:
-      | ((seekToPosition: number, _videoTag: HTMLVideoElement) => void)
-      | undefined;
-    let getCurrentTimeHook:
-      | ((_videoTag: HTMLVideoElement) => number)
-      | undefined;
-
-    getDurationHook = () => {
+    const getDurationHook = () => {
       return this.props.scene.file.duration ?? null;
     };
 
-    seekHook = (seekToPosition: number, _videoTag: HTMLVideoElement) => {
-      if (this.isDirectStream(_videoTag.src) || _videoTag.src.endsWith(".m3u8")) {
+    const seekHook = (seekToPosition: number, _videoTag: HTMLVideoElement) => {
+      if (
+        ScenePlayerImpl.isDirectStream(_videoTag.src) ||
+        _videoTag.src.endsWith(".m3u8")
+      ) {
         // direct stream - fall back to default
         return false;
       }
 
       // remove the start parameter
-      let src = _videoTag.src;
+      let { src } = _videoTag;
 
       const startIndex = src.lastIndexOf("?start=");
       if (startIndex !== -1) {
@@ -196,7 +191,7 @@ export class ScenePlayerImpl extends React.Component<
 
       /* eslint-disable no-param-reassign */
       _videoTag.dataset.start = seekToPosition.toString();
-      
+
       _videoTag.src = `${src}?start=${seekToPosition}`;
       /* eslint-enable no-param-reassign */
       _videoTag.play();
@@ -205,7 +200,7 @@ export class ScenePlayerImpl extends React.Component<
       return true;
     };
 
-    getCurrentTimeHook = (_videoTag: HTMLVideoElement) => {
+    const getCurrentTimeHook = (_videoTag: HTMLVideoElement) => {
       const start = Number.parseFloat(_videoTag.dataset?.start ?? "0");
       return _videoTag.currentTime + start;
     };

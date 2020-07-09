@@ -15,7 +15,6 @@ import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
-import jwplayer from "src/utils/jwplayer";
 import { TextUtils, JWUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";

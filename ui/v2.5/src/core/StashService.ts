@@ -116,9 +116,8 @@ export const useFindGallery = (id: string) =>
   GQL.useFindGalleryQuery({ variables: { id } });
 export const useFindScene = (id: string) =>
   GQL.useFindSceneQuery({ variables: { id } });
-export const useSceneStreams = (
-  id: string,
-) => GQL.useSceneStreamsQuery({ variables: { id } });
+export const useSceneStreams = (id: string) =>
+  GQL.useSceneStreamsQuery({ variables: { id } });
 
 export const useFindPerformer = (id: string) => {
   const skip = id === "new";
