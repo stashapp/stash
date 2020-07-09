@@ -138,3 +138,9 @@ type SceneParserResultType {
   count: Int!
   results: [SceneParserResult!]!
 }
+
+type SceneStreamEndpoint {
+  url: String!
+  mime_type: String
+  label: String
+}

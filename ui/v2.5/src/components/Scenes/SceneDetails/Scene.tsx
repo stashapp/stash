@@ -8,7 +8,7 @@ import {
   useSceneIncrementO,
   useSceneDecrementO,
   useSceneResetO,
-  useIsSceneStreamable,
+  useSceneStreams,
   useSceneGenerateScreenshot,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
@@ -37,10 +37,10 @@ export const Scene: React.FC = () => {
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
   const {
-    data: isSceneStreamable,
+    data: sceneStreams,
     error: streamableError,
     loading: streamableLoading,
-  } = useIsSceneStreamable(id, jwplayer.getSupportedFormats());
+  } = useSceneStreams(id);
   const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
@@ -52,7 +52,6 @@ export const Scene: React.FC = () => {
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
-  const isStreamable = isSceneStreamable?.isSceneStreamable ?? false;
 
   useEffect(() => {
     if (data?.findScene) setScene(data.findScene);
@@ -326,7 +325,7 @@ export const Scene: React.FC = () => {
           scene={scene}
           timestamp={timestamp}
           autoplay={autoplay}
-          streamable={isStreamable}
+          sceneStreams={sceneStreams?.sceneStreams ?? []}
         />
       </div>
     </div>

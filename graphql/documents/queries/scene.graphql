@@ -55,6 +55,10 @@ query ParseSceneFilenames($filter: FindFilterType!, $config: SceneParserInput!) 
   }
 }
 
-query IsSceneStreamable($id: ID!, $supportedVideoCodecs: [String!]!) {
-  isSceneStreamable(id: $id, supportedVideoCodecs: $supportedVideoCodecs)
+query SceneStreams($id: ID!) {
+  sceneStreams(id: $id) {
+    url
+    mime_type
+    label
+  }
 }

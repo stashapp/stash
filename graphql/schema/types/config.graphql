@@ -20,8 +20,6 @@ input ConfigGeneralInput {
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
-  """Force HEVC as a supported codec"""
-  forceHevc: Boolean!
   """Username"""
   username: String
   """Password"""
@@ -55,8 +53,6 @@ type ConfigGeneralResult {
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
-  """Force HEVC as a supported codec"""
-  forceHevc: Boolean!
   """Username"""
   username: String!
   """Password"""

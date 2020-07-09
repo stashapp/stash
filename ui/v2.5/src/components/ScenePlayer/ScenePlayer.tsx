@@ -9,7 +9,7 @@ import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 interface IScenePlayerProps {
   className?: string;
   scene: GQL.SceneDataFragment;
-  streamable: boolean;
+  sceneStreams: GQL.SceneStreamEndpoint[];
   timestamp: number;
   autoplay?: boolean;
   onReady?: () => void;
@@ -30,6 +30,7 @@ export class ScenePlayerImpl extends React.Component<
   // Typings for jwplayer are, unfortunately, very lacking
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private player: any;
+  private playlist: any;
   private lastTime = 0;
 
   constructor(props: IScenePlayerProps) {
@@ -84,6 +85,15 @@ export class ScenePlayerImpl extends React.Component<
     if (this.props.timestamp > 0) {
       this.player.seek(this.props.timestamp);
     }
+
+    this.player.on("error", (err: any) => {
+      if (err && err.code === 224003) {
+        if (this.tryNextStream()) {
+          this.player.load(this.playlist);
+          this.player.play();
+        }
+      }
+    });
   }
 
   private onSeeked() {
@@ -118,6 +128,40 @@ export class ScenePlayerImpl extends React.Component<
     );
   }
 
+  private isDirectStream(src?: string) {
+    if (!src) {
+      return false;
+    }
+
+    const startIndex = src.lastIndexOf("?start=");
+    if (startIndex !== -1) {
+      src = src.substring(0, startIndex);
+    }
+
+    return src.endsWith("/stream");
+  }
+
+  private tryNextStream() {
+    if (this.playlist.length > 1) {
+      this.playlist.shift();
+      return true;
+    }
+
+    return false;
+  }
+
+  private makePlaylist() {
+    return {
+      sources: this.props.sceneStreams.map(s => {
+        return {
+          file: s.url,
+          type: s.mime_type,
+          label: s.label,
+        };
+      })
+    };
+  }
+
   private makeJWPlayerConfig(scene: GQL.SceneDataFragment) {
     if (!scene.paths.stream) {
       return {};
@@ -132,34 +176,44 @@ export class ScenePlayerImpl extends React.Component<
       | ((_videoTag: HTMLVideoElement) => number)
       | undefined;
 
-    if (!jwplayer.hlsSupported() && !this.props.streamable) {
-      getDurationHook = () => {
-        return this.props.scene.file.duration ?? null;
-      };
+    getDurationHook = () => {
+      return this.props.scene.file.duration ?? null;
+    };
 
-      seekHook = (seekToPosition: number, _videoTag: HTMLVideoElement) => {
-        const supported = getSupportedVideoParam();
+    seekHook = (seekToPosition: number, _videoTag: HTMLVideoElement) => {
+      if (this.isDirectStream(_videoTag.src) || _videoTag.src.endsWith(".m3u8")) {
+        // direct stream - fall back to default
+        return false;
+      }
 
-        /* eslint-disable no-param-reassign */
-        _videoTag.dataset.start = seekToPosition.toString();
-        _videoTag.src = `${this.props.scene.paths.stream}?start=${seekToPosition}&${supported}`;
-        /* eslint-enable no-param-reassign */
-        _videoTag.play();
-      };
+      // remove the start parameter
+      let src = _videoTag.src;
 
-      getCurrentTimeHook = (_videoTag: HTMLVideoElement) => {
-        const start = Number.parseInt(_videoTag.dataset?.start ?? "0", 10);
-        return _videoTag.currentTime + start;
-      };
-    }
+      const startIndex = src.lastIndexOf("?start=");
+      if (startIndex !== -1) {
+        src = src.substring(0, startIndex);
+      }
 
-    function getSupportedVideoParam() {
-      const formats = jwplayer.getSupportedFormats();
-      return `supported=${formats.join(",")}`;
-    }
+      /* eslint-disable no-param-reassign */
+      _videoTag.dataset.start = seekToPosition.toString();
+      
+      _videoTag.src = `${src}?start=${seekToPosition}`;
+      /* eslint-enable no-param-reassign */
+      _videoTag.play();
+
+      // return true to indicate not to fall through to default
+      return true;
+    };
+
+    getCurrentTimeHook = (_videoTag: HTMLVideoElement) => {
+      const start = Number.parseFloat(_videoTag.dataset?.start ?? "0");
+      return _videoTag.currentTime + start;
+    };
+
+    this.playlist = this.makePlaylist();
 
     const ret = {
-      file: `${scene.paths.stream}?${getSupportedVideoParam()}`,
+      playlist: this.playlist,
       image: scene.paths.screenshot,
       tracks: [
         {

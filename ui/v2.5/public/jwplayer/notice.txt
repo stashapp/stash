@@ -1,5 +1,5 @@
 JW Player version 8.11.5
-Copyright (c) 2019, JW Player, All Rights Reserved 
+Copyright (c) 2020, JW Player, All Rights Reserved 
 https://github.com/jwplayer/jwplayer/blob/v8.11.5/README.md
 
 This source code and its use and distribution is subject to the terms and conditions of the applicable license agreement. 
@@ -14,7 +14,7 @@ The following software is used under Apache License 2.0
 **************************************************************************************************
 
 vtt.js v0.13.0
-Copyright (c) 2019 Mozilla (http://mozilla.org)
+Copyright (c) 2020 Mozilla (http://mozilla.org)
 https://github.com/mozilla/vtt.js/blob/v0.13.0/LICENSE
 
 * * *

@@ -13,6 +13,8 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+const CopyStreamCodec = "copy"
+
 type Stream struct {
 	Stdout   io.ReadCloser
 	Process  *os.Process
@@ -44,6 +46,7 @@ type Codec struct {
 	format    string
 	MimeType  string
 	extraArgs []string
+	hls       bool
 }
 
 var CodecHLS = Codec{
@@ -56,6 +59,7 @@ var CodecHLS = Codec{
 		"-preset", "veryfast",
 		"-crf", "25",
 	},
+	hls: true,
 }
 
 var CodecH264 = Codec{
@@ -109,7 +113,7 @@ var CodecHEVC = Codec{
 // it is very common in MKVs to have just the audio codec unsupported
 // copy the video stream, transcode the audio and serve as Matroska
 var CodecMKVAudio = Codec{
-	Codec:    "copy",
+	Codec:    CopyStreamCodec,
 	format:   "matroska",
 	MimeType: MimeMkv,
 	extraArgs: []string{
@@ -122,7 +126,6 @@ var CodecMKVAudio = Codec{
 type TranscodeStreamOptions struct {
 	ProbeResult      VideoFile
 	Codec            Codec
-	Hls              bool
 	StartTime        string
 	MaxTranscodeSize models.StreamingResolutionEnum
 	// transcode the video, remove the audio
@@ -131,61 +134,21 @@ type TranscodeStreamOptions struct {
 	VideoOnly bool
 }
 
-func GetTranscodeStreamOptions(probeResult VideoFile, videoCodec string, audioCodec AudioCodec, container Container, supportedVideoCodecs []string) TranscodeStreamOptions {
+func GetTranscodeStreamOptions(probeResult VideoFile, videoCodec Codec, audioCodec AudioCodec) TranscodeStreamOptions {
 	options := TranscodeStreamOptions{
 		ProbeResult: probeResult,
+		Codec:       videoCodec,
 	}
 
-	options.setTranscodeCodec(supportedVideoCodecs)
-
 	if audioCodec == MissingUnsupported {
-		//ffmpeg fails if it trys to transcode a non supported audio codec
+		// ffmpeg fails if it trys to transcode a non supported audio codec
 		options.VideoOnly = true
-	} else {
-		// try to be smart if the video to be transcoded is in a Matroska container
-		// mp4 has always supported audio so it doesn't need to be checked
-		// while mpeg_ts has seeking issues if we don't reencode the video
-
-		// If MKV is supported and video codec is also supported then only transcode audio
-		if IsValidCodec(Mkv, supportedVideoCodecs) && Container(container) == Matroska && IsValidCodec(videoCodec, supportedVideoCodecs) {
-			// copy video stream instead of transcoding it
-			options.Codec = CodecMKVAudio
-		}
 	}
 
 	return options
 }
 
-func (o *TranscodeStreamOptions) setTranscodeCodec(supportedVideoCodecs []string) {
-	if len(supportedVideoCodecs) == 0 {
-		supportedVideoCodecs = DefaultSupportedCodecs
-	}
-
-	logger.Debugf("Choosing transcode codec from: %s", strings.Join(supportedVideoCodecs, ","))
-
-	// TODO - make preferred order configurable
-	if IsValidCodec(Vp9, supportedVideoCodecs) {
-		logger.Debug("Using VP9")
-		o.Codec = CodecVP9
-	} else if IsValidCodec(Vp8, supportedVideoCodecs) {
-		logger.Debug("Using VP8")
-		o.Codec = CodecVP8
-	} else if IsValidCodec(Hevc, supportedVideoCodecs) {
-		logger.Debug("Using HEVC")
-		o.Codec = CodecHEVC
-	} else if IsValidCodec(Hls, supportedVideoCodecs) {
-		logger.Debug("Using HLS (with H264)")
-		o.Codec = CodecHLS
-		o.Hls = true
-	} else {
-		logger.Debug("Using H264")
-		o.Codec = CodecH264
-	}
-}
-
 func (o TranscodeStreamOptions) getStreamArgs() []string {
-	scale := calculateTranscodeScale(o.ProbeResult, o.MaxTranscodeSize)
-
 	args := []string{
 		"-hide_banner",
 		"-v", "error",
@@ -195,7 +158,7 @@ func (o TranscodeStreamOptions) getStreamArgs() []string {
 		args = append(args, "-ss", o.StartTime)
 	}
 
-	if o.Hls {
+	if o.Codec.hls {
 		// we only serve a fixed segment length
 		args = append(args, "-t", strconv.Itoa(int(hlsSegmentLength)))
 	}
@@ -210,8 +173,15 @@ func (o TranscodeStreamOptions) getStreamArgs() []string {
 
 	args = append(args,
 		"-c:v", o.Codec.Codec,
-		"-vf", "scale="+scale,
 	)
+
+	// don't set scale when copying video stream
+	if o.Codec.Codec != CopyStreamCodec {
+		scale := calculateTranscodeScale(o.ProbeResult, o.MaxTranscodeSize)
+		args = append(args,
+			"-vf", "scale="+scale,
+		)
+	}
 
 	if len(o.Codec.extraArgs) > 0 {
 		args = append(args, o.Codec.extraArgs...)

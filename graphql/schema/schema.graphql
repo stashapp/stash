@@ -7,7 +7,8 @@ type Query {
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
 
-  isSceneStreamable(id: ID, supportedVideoCodecs: [String!]!): Boolean!
+  """Return valid stream paths"""
+  sceneStreams(id: ID): [SceneStreamEndpoint!]!
 
   parseSceneFilenames(filter: FindFilterType, config: SceneParserInput!): SceneParserResultType!
 

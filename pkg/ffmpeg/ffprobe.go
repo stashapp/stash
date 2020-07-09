@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 )
 
 type Container string
@@ -52,7 +51,7 @@ const (
 	MimeWebm           string     = "video/webm"
 	MimeMkv            string     = "video/x-matroska"
 	MimeMp4            string     = "video/mp4"
-	MimeHLS            string     = "application/x-mpegURL"
+	MimeHLS            string     = "application/vnd.apple.mpegurl"
 	MimeMpegts         string     = "video/MP2T"
 )
 
@@ -190,14 +189,8 @@ func IsValidCombo(codecName string, format Container, supportedVideoCodecs []str
 	return false
 }
 
-func IsStreamable(supportedVideoCodecs []string, videoCodec string, audioCodec AudioCodec, container Container) bool {
-	if len(supportedVideoCodecs) == 0 {
-		supportedVideoCodecs = DefaultSupportedCodecs
-	}
-
-	if config.GetForceHEVC() {
-		supportedVideoCodecs = append(supportedVideoCodecs, Hevc)
-	}
+func IsStreamable(videoCodec string, audioCodec AudioCodec, container Container) bool {
+	supportedVideoCodecs := DefaultSupportedCodecs
 
 	// check if the video codec matches the supported codecs
 	return IsValidCodec(videoCodec, supportedVideoCodecs) && IsValidCombo(videoCodec, container, supportedVideoCodecs) && IsValidAudioForContainer(audioCodec, container)

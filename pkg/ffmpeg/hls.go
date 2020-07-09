@@ -3,6 +3,7 @@ package ffmpeg
 import (
 	"fmt"
 	"io"
+	"strings"
 )
 
 const hlsSegmentLength = 10.0
@@ -20,6 +21,10 @@ func WriteHLSPlaylist(probeResult VideoFile, baseUrl string, w io.Writer) {
 	leftover := duration
 	upTo := 0.0
 
+	tsURL := baseUrl
+	i := strings.LastIndex(baseUrl, ".m3u8")
+	tsURL = baseUrl[0:i] + ".ts"
+
 	for leftover > 0 {
 		thisLength := hlsSegmentLength
 		if leftover < thisLength {
@@ -27,7 +32,7 @@ func WriteHLSPlaylist(probeResult VideoFile, baseUrl string, w io.Writer) {
 		}
 
 		fmt.Fprintf(w, "#EXTINF: %f,\n", thisLength)
-		fmt.Fprintf(w, "%s&start=%f\n", baseUrl, upTo)
+		fmt.Fprintf(w, "%s?start=%f\n", tsURL, upTo)
 
 		leftover -= thisLength
 		upTo += thisLength

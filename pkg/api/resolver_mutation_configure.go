@@ -52,7 +52,6 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	if input.MaxStreamingTranscodeSize != nil {
 		config.Set(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
 	}
-	config.Set(config.ForceHEVC, input.ForceHevc)
 
 	if input.Username != nil {
 		config.Set(config.Username, input.Username)
