@@ -64,7 +64,14 @@ func getImage(url string) (*string, error) {
 	}
 
 	// assume is a URL for now
+
+	// set the host of the URL as the referer
+	if req.URL.Scheme != "" {
+		req.Header.Set("Referer", req.URL.Scheme+"://"+req.Host)
+	}
+
 	resp, err := client.Do(req)
+
 	if err != nil {
 		return nil, err
 	}
