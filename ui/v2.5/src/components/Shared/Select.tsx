@@ -304,7 +304,7 @@ const FilterSelectComponent: React.FC<
   const [selectedIds, setSelectedIds] = useState<string[]>(props.ids ?? []);
   const Toast = useToast();
 
-  const items = props.items;
+  const {items} = props;
   const options = items.map((i) => ({
     value: i.id,
     label: i.name ?? "",
@@ -313,20 +313,20 @@ const FilterSelectComponent: React.FC<
     selectedIds.includes(option.value)
   );
 
-  let onChange = (selectedItems: ValueType<Option>) => {
+  const onChange = (selectedItems: ValueType<Option>) => {
     const selectedValues = getSelectedValues(selectedItems);
     setSelectedIds(selectedValues);
     props.onSelect?.(items.filter((item) => selectedValues.includes(item.id)));
   };
 
-  let onCreate = async (name: string) => {
+  const onCreate = async (name: string) => {
     try {
       setLoading(true);
-      const { item, message } = await props.onCreate!(name);
-      setSelectedIds([...selectedIds, item.id]);
+      const { item: newItem, message } = await props.onCreate!(name);
+      setSelectedIds([...selectedIds, newItem.id]);
       props.onSelect?.([
         ...items.filter((item) => selectedIds.includes(item.id)),
-        item,
+        newItem,
       ]);
       setLoading(false);
       Toast.success({
