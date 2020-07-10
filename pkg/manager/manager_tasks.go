@@ -18,18 +18,12 @@ var extensionsToScan = []string{"zip", "m4v", "mp4", "mov", "wmv", "avi", "mpg",
 var extensionsGallery = []string{"zip"}
 
 func constructGlob() string { // create a sequence for glob doublestar from our extensions
-	extLen := len(extensionsToScan)
-	glb := "{"
-	for i := 0; i < extLen-1; i++ { // append extensions and commas
-		glb += strings.ToLower(extensionsToScan[i]) + "," + strings.ToUpper(extensionsToScan[i]) + ","
+	var extList []string
+	for _, ext := range extensionsToScan {
+		extList = append(extList, strings.ToLower(ext))
+		extList = append(extList, strings.ToUpper(ext))
 	}
-	if extLen >= 1 { // append last extension without a comma at the end
-		glb += strings.ToLower(extensionsToScan[extLen-1]) + "," + strings.ToUpper(extensionsToScan[extLen-1])
-	}
-
-	glb += "}"
-	return glb
-
+	return "{" + strings.Join(extList, ",") + "}"
 }
 
 func isGallery(pathname string) bool {
