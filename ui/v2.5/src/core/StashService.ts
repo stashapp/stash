@@ -191,23 +191,24 @@ export const useDirectory = (path?: string) =>
   GQL.useDirectoryQuery({ variables: { path } });
 
 export const performerMutationImpactedQueries = [
-  "findPerformers",
-  "findScenes",
-  "findSceneMarkers",
-  "allPerformers",
+  "FindPerformers",
+  "FindScenes",
+  "FindSceneMarkers",
+  "AllPerformers",
+  "AllPerformersForFilter",
 ];
 
 export const usePerformerCreate = () =>
   GQL.usePerformerCreateMutation({
-    update: () => invalidateQueries(performerMutationImpactedQueries),
+    refetchQueries: performerMutationImpactedQueries,
   });
 export const usePerformerUpdate = () =>
   GQL.usePerformerUpdateMutation({
-    update: () => invalidateQueries(performerMutationImpactedQueries),
+    refetchQueries: performerMutationImpactedQueries,
   });
 export const usePerformerDestroy = () =>
   GQL.usePerformerDestroyMutation({
-    update: () => invalidateQueries(performerMutationImpactedQueries),
+    refetchQueries: performerMutationImpactedQueries,
   });
 
 export const sceneMutationImpactedQueries = [
@@ -279,15 +280,16 @@ export const useSceneGenerateScreenshot = () =>
   });
 
 export const studioMutationImpactedQueries = [
-  "findStudios",
-  "findScenes",
-  "allStudios",
+  "FindStudios",
+  "FindScenes",
+  "AllStudios",
+  "AllStudiosForFilter",
 ];
 
 export const useStudioCreate = (input: GQL.StudioCreateInput) =>
   GQL.useStudioCreateMutation({
     variables: input,
-    update: () => invalidateQueries(studioMutationImpactedQueries),
+    refetchQueries: studioMutationImpactedQueries,
   });
 
 export const useStudioUpdate = (input: GQL.StudioUpdateInput) =>
