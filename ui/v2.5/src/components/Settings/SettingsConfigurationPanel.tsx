@@ -447,7 +447,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           }
           value={logLevel}
         >
-          {["Debug", "Info", "Warning", "Error"].map((o) => (
+          {["Trace", "Debug", "Info", "Warning", "Error"].map((o) => (
             <option key={o} value={o}>
               {o}
             </option>

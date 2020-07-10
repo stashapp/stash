@@ -25,6 +25,8 @@ import (
 // configurable at some point.
 const scrapeGetTimeout = time.Second * 30
 
+var debugMode = false
+
 type commonXPathConfig map[string]string
 
 func (c commonXPathConfig) applyCommon(src string) string {
@@ -259,7 +261,7 @@ func (c xpathScraperAttrConfig) applySubScraper(value string) string {
 	}
 
 	logger.Debugf("Sub-scraping for: %s", value)
-	doc, err := loadURL(value, nil)
+	doc, err := loadURL(value)
 
 	if err != nil {
 		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
@@ -588,7 +590,7 @@ func (r xPathResults) setKey(index int, key string, value string) xPathResults {
 	return r
 }
 
-func loadURL(url string, c *scraperConfig) (*html.Node, error) {
+func loadURL(url string) (*html.Node, error) {
 	options := cookiejar.Options{
 		PublicSuffixList: publicsuffix.List,
 	}
@@ -631,7 +633,7 @@ func loadURL(url string, c *scraperConfig) (*html.Node, error) {
 
 	ret, err := html.Parse(r)
 
-	if err == nil && c != nil && c.DebugOptions != nil && c.DebugOptions.PrintHTML {
+	if err == nil && debugMode {
 		var b bytes.Buffer
 		html.Render(&b, ret)
 		logger.Infof("loadURL (%s) response: \n%s", url, b.String())
@@ -647,7 +649,11 @@ func scrapePerformerURLXpath(c scraperTypeConfig, url string) (*models.ScrapedPe
 		return nil, errors.New("xpath scraper with name " + c.Scraper + " not found in config")
 	}
 
-	doc, err := loadURL(url, c.scraperConfig)
+	if c.scraperConfig != nil && c.scraperConfig.DebugOptions != nil && c.scraperConfig.DebugOptions.PrintHTML {
+		debugMode = true
+	}
+
+	doc, err := loadURL(url)
 
 	if err != nil {
 		return nil, err
@@ -663,7 +669,11 @@ func scrapeSceneURLXPath(c scraperTypeConfig, url string) (*models.ScrapedScene,
 		return nil, errors.New("xpath scraper with name " + c.Scraper + " not found in config")
 	}
 
-	doc, err := loadURL(url, c.scraperConfig)
+	if c.scraperConfig != nil && c.scraperConfig.DebugOptions != nil && c.scraperConfig.DebugOptions.PrintHTML {
+		debugMode = true
+	}
+
+	doc, err := loadURL(url)
 
 	if err != nil {
 		return nil, err
@@ -687,7 +697,7 @@ func scrapePerformerNamesXPath(c scraperTypeConfig, name string) ([]*models.Scra
 	u := c.QueryURL
 	u = strings.Replace(u, placeholder, escapedName, -1)
 
-	doc, err := loadURL(u, c.scraperConfig)
+	doc, err := loadURL(u)
 
 	if err != nil {
 		return nil, err

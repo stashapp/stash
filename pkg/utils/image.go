@@ -59,6 +59,12 @@ func ServeImage(image []byte, w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	contentType := http.DetectContentType(image)
+	if contentType == "text/xml; charset=utf-8" || contentType == "text/plain; charset=utf-8" {
+		contentType = "image/svg+xml"
+	}
+
+	w.Header().Set("Content-Type", contentType)
 	w.Header().Add("Etag", etag)
 	_, err := w.Write(image)
 	return err

@@ -153,3 +153,11 @@
 |-------------------|--------|
 | `n` | New Tag |
 
+## Tag Page shortcuts
+
+| Keyboard sequence | Action |
+|-------------------|--------|
+| `e` | Edit Tag |
+| `s s` | Save Tag |
+| `d d` | Delete Tag |
+| `Ctrl + v` | Paste Tag image |
