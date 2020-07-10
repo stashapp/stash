@@ -304,7 +304,7 @@ const FilterSelectComponent: React.FC<
   const [selectedIds, setSelectedIds] = useState<string[]>(props.ids ?? []);
   const Toast = useToast();
 
-  const {items} = props;
+  const { items } = props;
   const options = items.map((i) => ({
     value: i.id,
     label: i.name ?? "",
