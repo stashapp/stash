@@ -93,19 +93,6 @@ export class ScenePlayerImpl extends React.Component<
     else this.player.pause();
   }
 
-  private handleError() {
-    const currentFile = this.player.getPlaylistItem();
-    if (currentFile) {
-      console.log("Source failed: " + currentFile.file);
-    }
-    
-    if (this.tryNextStream()) {
-      console.log("Trying next source in playlist");
-      this.player.load(this.playlist);
-      this.player.play();
-    }
-  }
-
   private onReady() {
     this.player = JWUtils.getPlayer();
     if (this.props.timestamp > 0) {
@@ -119,11 +106,15 @@ export class ScenePlayerImpl extends React.Component<
     });
 
     this.player.on("meta", (metadata: any) => {
-      if (metadata.metadataType === "media" && !metadata.width && !metadata.height) {
+      if (
+        metadata.metadataType === "media" &&
+        !metadata.width &&
+        !metadata.height
+      ) {
         // treat this as a decoding error and try the next source
         this.handleError();
       }
-    })
+    });
   }
 
   private onSeeked() {
@@ -147,6 +138,21 @@ export class ScenePlayerImpl extends React.Component<
 
   private onScrubberScrolled() {
     this.player.pause();
+  }
+
+  private handleError() {
+    const currentFile = this.player.getPlaylistItem();
+    if (currentFile) {
+      // eslint-disable-next-line no-console
+      console.log(`Source failed: ${currentFile.file}`);
+    }
+
+    if (this.tryNextStream()) {
+      // eslint-disable-next-line no-console
+      console.log("Trying next source in playlist");
+      this.player.load(this.playlist);
+      this.player.play();
+    }
   }
 
   private shouldRepeat(scene: GQL.SceneDataFragment) {
