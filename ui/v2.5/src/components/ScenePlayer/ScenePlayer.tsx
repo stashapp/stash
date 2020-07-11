@@ -93,6 +93,19 @@ export class ScenePlayerImpl extends React.Component<
     else this.player.pause();
   }
 
+  private handleError() {
+    const currentFile = this.player.getPlaylistItem();
+    if (currentFile) {
+      console.log("Source failed: " + currentFile.file);
+    }
+    
+    if (this.tryNextStream()) {
+      console.log("Trying next source in playlist");
+      this.player.load(this.playlist);
+      this.player.play();
+    }
+  }
+
   private onReady() {
     this.player = JWUtils.getPlayer();
     if (this.props.timestamp > 0) {
@@ -101,12 +114,16 @@ export class ScenePlayerImpl extends React.Component<
 
     this.player.on("error", (err: any) => {
       if (err && err.code === 224003) {
-        if (this.tryNextStream()) {
-          this.player.load(this.playlist);
-          this.player.play();
-        }
+        this.handleError();
       }
     });
+
+    this.player.on("meta", (metadata: any) => {
+      if (metadata.metadataType === "media" && !metadata.width && !metadata.height) {
+        // treat this as a decoding error and try the next source
+        this.handleError();
+      }
+    })
   }
 
   private onSeeked() {
@@ -142,8 +159,8 @@ export class ScenePlayerImpl extends React.Component<
   }
 
   private tryNextStream() {
-    if (this.playlist.length > 1) {
-      this.playlist.shift();
+    if (this.playlist.sources.length > 1) {
+      this.playlist.sources.shift();
       return true;
     }
 
