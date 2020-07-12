@@ -175,6 +175,16 @@ export class ScenePlayerImpl extends React.Component<
 
   private makePlaylist() {
     return {
+      tracks: [
+        {
+          file: this.props.scene.paths.vtt,
+          kind: "thumbnails",
+        },
+        {
+          file: this.props.scene.paths.chapters_vtt,
+          kind: "chapters",
+        },
+      ],
       sources: this.props.sceneStreams.map((s) => {
         return {
           file: s.url,
@@ -233,16 +243,6 @@ export class ScenePlayerImpl extends React.Component<
     const ret = {
       playlist: this.playlist,
       image: scene.paths.screenshot,
-      tracks: [
-        {
-          file: scene.paths.vtt,
-          kind: "thumbnails",
-        },
-        {
-          file: scene.paths.chapters_vtt,
-          kind: "chapters",
-        },
-      ],
       width: "100%",
       height: "100%",
       floating: {
