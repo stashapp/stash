@@ -184,7 +184,6 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string) ([]*models
 
 	labelWebm := "webm"
 	labelHLS := "HLS"
-	labelMp4 := "mp4"
 
 	// direct stream should only apply when the audio codec is supported
 	audioCodec := ffmpeg.MissingUnsupported
@@ -227,11 +226,6 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string) ([]*models
 			URL:      directStreamURL + ".m3u8",
 			MimeType: &mimeHLS,
 			Label:    &labelHLS,
-		},
-		{
-			URL:      directStreamURL + ".mp4",
-			MimeType: &mimeMp4,
-			Label:    &labelMp4,
 		},
 	}
 
