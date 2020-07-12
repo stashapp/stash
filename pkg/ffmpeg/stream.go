@@ -94,8 +94,9 @@ var CodecVP8 = Codec{
 	extraArgs: []string{
 		"-deadline", "realtime",
 		"-cpu-used", "5",
-		"-crf", "25",
-		"-b:v", "0",
+		"-crf", "12",
+		"-b:v", "3M",
+		"-pix_fmt", "yuv420p",
 	},
 }
 

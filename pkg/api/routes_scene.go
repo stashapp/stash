@@ -89,7 +89,7 @@ func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
-	rs.streamTranscode(w, r, ffmpeg.CodecVP8)
+	rs.streamTranscode(w, r, ffmpeg.CodecVP9)
 }
 
 func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
