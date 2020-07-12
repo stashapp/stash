@@ -103,7 +103,7 @@ xPathScrapers:
 # Last updated June 15, 2020
 `
 
-func GetFreeonesScraper() scraperConfig {
+func GetFreeonesScraper() Config {
 	yml := freeonesScraperConfig
 
 	scraper, err := loadScraperFromYAML(freeonesScraperID, strings.NewReader(yml))

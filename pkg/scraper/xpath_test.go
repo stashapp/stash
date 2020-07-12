@@ -887,7 +887,7 @@ xPathScrapers:
         Name: //studio
 `
 
-	config := &scraperConfig{}
+	config := &Config{}
 	err := yaml.Unmarshal([]byte(yamlStr), &config)
 
 	if err != nil {
