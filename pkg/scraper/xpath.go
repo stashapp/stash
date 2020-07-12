@@ -17,7 +17,6 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -646,7 +645,7 @@ func (r xPathResults) setKey(index int, key string, value string) xPathResults {
 	return r
 }
 
-func loadURL(url string, c *Config) (*html.Node, error) {
+func loadURL(url string, c *config, g GlobalConfig) (*html.Node, error) {
 	client := &http.Client{
 		Timeout: scrapeGetTimeout,
 	}
@@ -655,7 +654,7 @@ func loadURL(url string, c *Config) (*html.Node, error) {
 		return nil, err
 	}
 
-	userAgent := config.GetScraperUserAgent()
+	userAgent := g.Path
 	if userAgent != "" {
 		req.Header.Set("User-Agent", userAgent)
 	}

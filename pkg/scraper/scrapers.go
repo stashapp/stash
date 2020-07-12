@@ -19,7 +19,7 @@ type GlobalConfig struct {
 
 // Cache stores scraper details.
 type Cache struct {
-	scrapers     []Config
+	scrapers     []config
 	globalConfig GlobalConfig
 }
 
@@ -41,8 +41,8 @@ func NewCache(globalConfig GlobalConfig) (*Cache, error) {
 	}, nil
 }
 
-func loadScrapers(path string) ([]Config, error) {
-	scrapers := make([]Config, 0)
+func loadScrapers(path string) ([]config, error) {
+	scrapers := make([]config, 0)
 
 	logger.Debugf("Reading scraper configs from %s", path)
 	scraperFiles := []string{}
@@ -120,7 +120,7 @@ func (c Cache) ListSceneScrapers() []*models.Scraper {
 	return ret
 }
 
-func (c Cache) findScraper(scraperID string) *Config {
+func (c Cache) findScraper(scraperID string) *config {
 	for _, s := range c.scrapers {
 		if s.ID == scraperID {
 			return &s
@@ -137,7 +137,7 @@ func (c Cache) ScrapePerformerList(scraperID string, query string) ([]*models.Sc
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
 	if s != nil {
-		return s.ScrapePerformerNames(query)
+		return s.ScrapePerformerNames(query, c.globalConfig)
 	}
 
 	return nil, errors.New("Scraper with ID " + scraperID + " not found")
@@ -149,13 +149,13 @@ func (c Cache) ScrapePerformer(scraperID string, scrapedPerformer models.Scraped
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
 	if s != nil {
-		ret, err := s.ScrapePerformer(scrapedPerformer)
+		ret, err := s.ScrapePerformer(scrapedPerformer, c.globalConfig)
 		if err != nil {
 			return nil, err
 		}
 
 		// post-process - set the image if applicable
-		if err := setPerformerImage(ret); err != nil {
+		if err := setPerformerImage(ret, c.globalConfig); err != nil {
 			logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
 		}
 
@@ -171,13 +171,13 @@ func (c Cache) ScrapePerformer(scraperID string, scrapedPerformer models.Scraped
 func (c Cache) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) {
 	for _, s := range c.scrapers {
 		if s.matchesPerformerURL(url) {
-			ret, err := s.ScrapePerformerURL(url)
+			ret, err := s.ScrapePerformerURL(url, c.globalConfig)
 			if err != nil {
 				return nil, err
 			}
 
 			// post-process - set the image if applicable
-			if err := setPerformerImage(ret); err != nil {
+			if err := setPerformerImage(ret, c.globalConfig); err != nil {
 				logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
 			}
 
@@ -264,7 +264,7 @@ func matchTag(s *models.ScrapedSceneTag) error {
 	return nil
 }
 
-func postScrapeScene(ret *models.ScrapedScene) error {
+func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 	for _, p := range ret.Performers {
 		err := matchPerformer(p)
 		if err != nil {
@@ -294,7 +294,7 @@ func postScrapeScene(ret *models.ScrapedScene) error {
 	}
 
 	// post-process - set the image if applicable
-	if err := setSceneImage(ret); err != nil {
+	if err := setSceneImage(ret, c.globalConfig); err != nil {
 		logger.Warnf("Could not set image using URL %s: %s", *ret.Image, err.Error())
 	}
 
@@ -306,14 +306,14 @@ func (c Cache) ScrapeScene(scraperID string, scene models.SceneUpdateInput) (*mo
 	// find scraper with the provided id
 	s := c.findScraper(scraperID)
 	if s != nil {
-		ret, err := s.ScrapeScene(scene)
+		ret, err := s.ScrapeScene(scene, c.globalConfig)
 
 		if err != nil {
 			return nil, err
 		}
 
 		if ret != nil {
-			err = postScrapeScene(ret)
+			err = c.postScrapeScene(ret)
 			if err != nil {
 				return nil, err
 			}
@@ -331,13 +331,13 @@ func (c Cache) ScrapeScene(scraperID string, scene models.SceneUpdateInput) (*mo
 func (c Cache) ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
 	for _, s := range c.scrapers {
 		if s.matchesSceneURL(url) {
-			ret, err := s.ScrapeSceneURL(url)
+			ret, err := s.ScrapeSceneURL(url, c.globalConfig)
 
 			if err != nil {
 				return nil, err
 			}
 
-			err = postScrapeScene(ret)
+			err = c.postScrapeScene(ret)
 			if err != nil {
 				return nil, err
 			}
