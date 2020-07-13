@@ -379,11 +379,11 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
     if (scene?.tags?.length) {
       const idTags = scene.tags.filter((p) => {
-        return p.id !== undefined && p.id !== null;
+        return p.stored_id !== undefined && p.stored_id !== null;
       });
 
       if (idTags.length > 0) {
-        const newIds = idTags.map((p) => p.id);
+        const newIds = idTags.map((p) => p.stored_id);
         setTagIds(newIds as string[]);
       }
     }

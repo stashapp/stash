@@ -162,8 +162,49 @@ function renderScrapedTags(
 
 function renderScrapedTagsRow(
   result: ScrapeResult<string[]>,
-  onChange: (value: ScrapeResult<string[]>) => void
+  onChange: (value: ScrapeResult<string[]>) => void,
+  newTags: GQL.ScrapedSceneTag[]
 ) {
+  function renderNewTags() {
+    if (!newTags || newTags.length === 0) {
+      return;
+    }
+
+    return (
+      <>
+        {newTags.map(t => (
+          <InputGroup className="my-1">
+            <Button variant="secondary">
+              <Icon className="fa-fw" icon="plus" />
+            </Button>
+            <FormControl
+              value={t.name}
+              readOnly
+              className="bg-secondary text-white border-secondary"
+            />
+          </InputGroup>
+        ))}
+      </>
+    );
+  }
+
+  return (
+      <ScrapeDialogRow
+        title="Tags"
+        result={result}
+        renderOriginalField={() => renderScrapedTags(result)}
+        renderNewField={() =>
+          renderScrapedTags(result, true, (value) =>
+            onChange(result.cloneWithValue(value))
+          )
+        }
+        renderNewValues={renderNewTags},
+        onChange={onChange}
+      />
+    );
+}
+
+function renderScrapedTextArea(props: IScrapedInputGroupProps, isNew?: boolean, onChange?: (value : string) => void) {
   return (
     <ScrapeDialogRow
       title="Tags"
@@ -188,6 +229,10 @@ interface ISceneScrapeDialogProps {
 
 interface IHasID {
   id?: string | null;
+}
+
+interface HasStoredID {
+  stored_id?: string | null;
 }
 
 export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
@@ -242,6 +287,15 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     return ret;
   }
 
+  function mapStoredIdObjects(scrapedObjects?: HasStoredID[]): string[] | undefined {
+    if (!scrapedObjects) {
+      return undefined;
+    }
+    return scrapedObjects.map(p => p.stored_id).filter(p => {
+      return p !== undefined && p !== null;
+    }) as string[];
+  }
+
   const [performers, setPerformers] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
       sortIdList(props.scene.performer_ids),
@@ -257,7 +311,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
   const [tags, setTags] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
       sortIdList(props.scene.tag_ids),
-      mapIdObjects(props.scraped.tags ?? undefined)
+      mapStoredIdObjects(props.scraped.tags ?? undefined)
     )
   );
   const [details, setDetails] = useState<ScrapeResult<string>>(

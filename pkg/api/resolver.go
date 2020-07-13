@@ -43,6 +43,10 @@ func (r *Resolver) Tag() models.TagResolver {
 	return &tagResolver{r}
 }
 
+func (r *Resolver) ScrapedSceneTag() models.ScrapedSceneTagResolver {
+	return &scrapedSceneTagResolver{r}
+}
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
@@ -54,6 +58,7 @@ type sceneMarkerResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
+type scrapedSceneTagResolver struct{ *Resolver }
 
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) ([]*models.SceneMarker, error) {
 	qb := models.NewSceneMarkerQueryBuilder()

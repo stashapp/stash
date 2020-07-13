@@ -132,6 +132,6 @@ type ScrapedSceneMovie struct {
 
 type ScrapedSceneTag struct {
 	// Set if tag matched
-	ID   *string `graphql:"id" json:"id"`
+	ID   *string `graphql:"stored_id" json:"stored_id"`
 	Name string  `graphql:"name" json:"name"`
 }
