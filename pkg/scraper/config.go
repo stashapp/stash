@@ -40,7 +40,7 @@ type config struct {
 	StashServer *stashServer `yaml:"stashServer"`
 
 	// Xpath scraping configurations
-	XPathScrapers xPathScrapers `yaml:"xPathScrapers"`
+	XPathScrapers mappedScrapers `yaml:"xPathScrapers"`
 }
 
 type stashServer struct {

@@ -59,7 +59,7 @@ func loadScrapers(path string) ([]config, error) {
 	}
 
 	// add built-in freeones scraper
-	scrapers = append(scrapers, GetFreeonesScraper())
+	scrapers = append(scrapers, getFreeonesScraper())
 
 	for _, file := range scraperFiles {
 		scraper, err := loadScraperFromYAMLFile(file)

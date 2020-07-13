@@ -13,12 +13,12 @@ func (r *queryResolver) ScrapeFreeones(ctx context.Context, performer_name strin
 	scrapedPerformer := models.ScrapedPerformerInput{
 		Name: &performer_name,
 	}
-	return scraper.GetFreeonesScraper().ScrapePerformer(scrapedPerformer)
+	return manager.GetInstance().ScraperCache.ScrapePerformer(scraper.FreeonesScraperID, scrapedPerformer)
 }
 
 // deprecated
 func (r *queryResolver) ScrapeFreeonesPerformerList(ctx context.Context, query string) ([]string, error) {
-	scrapedPerformers, err := scraper.GetFreeonesScraper().ScrapePerformerNames(query)
+	scrapedPerformers, err := manager.GetInstance().ScraperCache.ScrapePerformerList(scraper.FreeonesScraperID, query)
 
 	if err != nil {
 		return nil, err
