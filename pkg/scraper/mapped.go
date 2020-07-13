@@ -20,7 +20,9 @@ type mappedQuery interface {
 
 type commonMappedConfig map[string]string
 
-func applyCommon(c commonMappedConfig, src string) string {
+type mappedConfig map[string]mappedScraperAttrConfig
+
+func (s mappedConfig) applyCommon(c commonMappedConfig, src string) string {
 	if c == nil {
 		return src
 	}
@@ -35,8 +37,6 @@ func applyCommon(c commonMappedConfig, src string) string {
 	return ret
 }
 
-type mappedConfig map[string]mappedScraperAttrConfig
-
 func (s mappedConfig) process(q mappedQuery, common commonMappedConfig) mappedResults {
 	var ret mappedResults
 
@@ -48,7 +48,7 @@ func (s mappedConfig) process(q mappedQuery, common commonMappedConfig) mappedRe
 			ret = ret.setKey(i, k, attrConfig.Fixed)
 		} else {
 			selector := attrConfig.Selector
-			selector = applyCommon(common, selector)
+			selector = s.applyCommon(common, selector)
 
 			found := q.runQuery(selector)
 
