@@ -77,7 +77,6 @@ func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrCon
 		ret = []string{result}
 	} else {
 		for _, text := range found {
-			text = commonPostProcess(text)
 			text = attrConfig.postProcess(text, q)
 			if attrConfig.hasSplit() {
 				return attrConfig.splitString(text)
@@ -178,10 +177,6 @@ func (c mappedRegexConfig) apply(value string) string {
 		}
 
 		ret := re.ReplaceAllString(value, c.With)
-		// replace lines if needed to protect from commonPostprocess
-		if c.With == "\n" {
-			ret = replaceLines(ret)
-		}
 
 		logger.Debugf(`Replace: '%s' with '%s'`, c.Regex, c.With)
 		logger.Debugf("Before: %s", value)
@@ -198,11 +193,8 @@ func (c mappedRegexConfigs) apply(value string) string {
 		value = config.apply(value)
 	}
 
-	// remove whitespace again
-	value = commonPostProcess(value)
-
 	// restore replaced lines
-	value = restoreLines(value)
+	//value = restoreLines(value)
 	return value
 }
 
@@ -257,7 +249,6 @@ func (p *postProcessSubScraper) Apply(value string, q mappedQuery) string {
 				result = subScrapeConfig.concatenateResults(found)
 			} else {
 				result = found[0]
-				result = commonPostProcess(result)
 			}
 
 			result = subScrapeConfig.postProcess(result, ss)
@@ -321,6 +312,10 @@ func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error
 		found = "map"
 		action := postProcessMap(a.Map)
 		ret = &action
+	}
+
+	if ret == nil {
+		return nil, errors.New("invalid post-process action")
 	}
 
 	return ret, nil
@@ -419,8 +414,6 @@ func (c mappedScraperAttrConfig) concatenateResults(nodes []string) string {
 	result := []string{}
 
 	for _, text := range nodes {
-		text = commonPostProcess(text)
-
 		result = append(result, text)
 	}
 

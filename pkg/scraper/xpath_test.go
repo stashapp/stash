@@ -1,6 +1,9 @@
 package scraper
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -767,4 +770,63 @@ func TestLoadInvalidXPath(t *testing.T) {
 	}
 
 	config.process(q, nil)
+}
+
+func TestSubScrape(t *testing.T) {
+	retHTML := `
+	<div>
+		<a href="/getName">A link</a>
+	</div>
+	`
+
+	ssHTML := `
+	<span>The name</span>
+	`
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/getName" {
+			fmt.Fprint(w, ssHTML)
+		} else {
+			fmt.Fprint(w, retHTML)
+		}
+	}))
+	defer ts.Close()
+
+	yamlStr := `name: Test
+performerByURL:
+  - action: scrapeXPath
+    url: 
+      - ` + ts.URL + `
+    scraper: performerScraper
+xPathScrapers:
+  performerScraper:
+    performer:
+      Name: 
+        selector: //div/a/@href
+        postProcess:
+          - replace:
+              - regex: ^
+                with: ` + ts.URL + `
+          - subScraper:
+              selector: //span
+`
+
+	c := &config{}
+	err := yaml.Unmarshal([]byte(yamlStr), &c)
+
+	if err != nil {
+		t.Errorf("Error loading yaml: %s", err.Error())
+		return
+	}
+
+	globalConfig := GlobalConfig{}
+
+	performer, err := c.ScrapePerformerURL(ts.URL, globalConfig)
+
+	if err != nil {
+		t.Errorf("Error scraping performer: %s", err.Error())
+		return
+	}
+
+	verifyField(t, "The name", performer.Name, "Name")
 }

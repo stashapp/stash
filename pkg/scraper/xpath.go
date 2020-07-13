@@ -164,7 +164,8 @@ func (s *xpathScraper) loadURL(url string) (*html.Node, error) {
 
 func (s *xpathScraper) getXPathQuery(doc *html.Node) *xpathQuery {
 	return &xpathQuery{
-		doc: doc,
+		doc:     doc,
+		scraper: s,
 	}
 }
 
@@ -182,8 +183,33 @@ func (q *xpathQuery) runQuery(selector string) []string {
 
 	var ret []string
 	for _, n := range found {
-		ret = append(ret, nodeText(n))
+		// don't add empty strings
+		nodeText := q.nodeText(n)
+		if nodeText != "" {
+			ret = append(ret, q.nodeText(n))
+		}
 	}
+
+	return ret
+}
+
+func (q *xpathQuery) nodeText(n *html.Node) string {
+	var ret string
+	if n != nil && n.Type == html.CommentNode {
+		ret = htmlquery.OutputHTML(n, true)
+	}
+	ret = htmlquery.InnerText(n)
+
+	// trim all leading and trailing whitespace
+	ret = strings.TrimSpace(ret)
+
+	// remove multiple whitespace
+	re := regexp.MustCompile("  +")
+	ret = re.ReplaceAllString(ret, " ")
+
+	// TODO - make this optional
+	re = regexp.MustCompile("\n")
+	ret = re.ReplaceAllString(ret, "")
 
 	return ret
 }
@@ -197,41 +223,4 @@ func (q *xpathQuery) subScrape(value string) mappedQuery {
 	}
 
 	return q.scraper.getXPathQuery(doc)
-}
-
-func commonPostProcess(value string) string {
-	value = strings.TrimSpace(value)
-
-	// remove multiple whitespace and end lines
-	re := regexp.MustCompile("\n")
-	value = re.ReplaceAllString(value, "")
-	re = regexp.MustCompile("  +")
-	value = re.ReplaceAllString(value, " ")
-
-	return value
-}
-
-// func replaceLines replaces all newlines ("\n") with alert ("\a")
-func replaceLines(value string) string {
-	re := regexp.MustCompile("\a")         // \a shouldn't exist in the string
-	value = re.ReplaceAllString(value, "") // remove it
-	re = regexp.MustCompile("\n")          // replace newlines with (\a)'s so that they don't get removed by commonPostprocess
-	value = re.ReplaceAllString(value, "\a")
-
-	return value
-}
-
-// func restoreLines replaces all alerts ("\a") with newlines ("\n")
-func restoreLines(value string) string {
-	re := regexp.MustCompile("\a")
-	value = re.ReplaceAllString(value, "\n")
-
-	return value
-}
-
-func nodeText(n *html.Node) string {
-	if n != nil && n.Type == html.CommentNode {
-		return htmlquery.OutputHTML(n, true)
-	}
-	return htmlquery.InnerText(n)
 }
