@@ -193,8 +193,6 @@ func (c mappedRegexConfigs) apply(value string) string {
 		value = config.apply(value)
 	}
 
-	// restore replaced lines
-	//value = restoreLines(value)
 	return value
 }
 
