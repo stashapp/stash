@@ -222,7 +222,8 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 	birthdateAttrConfig := makeSimpleAttrConfig(makeCommonXPath("Date of Birth:"))
 
 	var birthdateReplace mappedRegexConfigs
-	birthdateReplace = append(birthdateReplace, makeReplaceRegex(` \(.* years old\)`, ""))
+	// make this leave the trailing space to test existing scrapers that do so
+	birthdateReplace = append(birthdateReplace, makeReplaceRegex(`\(.* years old\)`, ""))
 
 	birthdateReplaceAction := postProcessReplace(birthdateReplace)
 	birthdateParseDate := postProcessParseDate("January 2, 2006") // "July 1, 1992 (27 years old)&nbsp;"

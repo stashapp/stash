@@ -178,6 +178,11 @@ func (c mappedRegexConfig) apply(value string) string {
 
 		ret := re.ReplaceAllString(value, c.With)
 
+		// trim leading and trailing whitespace
+		// this is done to maintain backwards compatibility with existing
+		// scrapers
+		ret = strings.TrimSpace(ret)
+
 		logger.Debugf(`Replace: '%s' with '%s'`, c.Regex, c.With)
 		logger.Debugf("Before: %s", value)
 		logger.Debugf("After: %s", ret)
