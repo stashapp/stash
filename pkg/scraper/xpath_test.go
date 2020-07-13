@@ -387,55 +387,24 @@ const sceneHTML = `
 
 <head>
     <title>Test Video - Pornhub.com</title>
-
     <meta property="og:title" content="Test Video" />
-    <meta property="og:description"
-        content="Watch Test Video on Pornhub.com, the best hardcore porn site. Pornhub is home to the widest selection of free Babe sex videos full of the hottest pornstars. If you&#039;re craving 3some XXX movies you&#039;ll find them here." />
-    <meta property="og:image"
-        content="https://di.phncdn.com/videos/201910/13/254476211/thumbs_80/(m=eaAaGwObaaaa)(mh=_V1YEGdMFS1rEYoW)9.jpg" />
-
     <script type="application/ld+json">
 		{
-			"@context": "http://schema.org/",
-			"@type": "VideoObject",
 			"name": "Test Video",
-			"embedUrl": "https://www.pornhub.com/embed/ph5da270596459c",
-			"duration": "PT00H33M27S",
-			"thumbnailUrl": "https://di.phncdn.com/videos/201910/13/254476211/thumbs_80/(m=eaAaGwObaaaa)(mh=_V1YEGdMFS1rEYoW)9.jpg",
 			"uploadDate": "2019-10-13T00:33:51+00:00",
-			"description": "Watch Test Video on Pornhub&period;com&comma; the best hardcore porn site&period; Pornhub is home to the widest selection of free Babe sex videos full of the hottest pornstars&period; If you&apos;re craving 3some XXX movies you&apos;ll find them here&period;",
-				"author" : "Mia Malkova",                "interactionStatistic": [
-			{
-					"@type": "InteractionCounter",
-					"interactionType": "http://schema.org/WatchAction",
-					"userInteractionCount": "5,908,861"
-			},
-			{
-					"@type": "InteractionCounter",
-					"interactionType": "http://schema.org/LikeAction",
-					"userInteractionCount": "22,090"
-				}
-			]
+			"author" : "Mia Malkova"
 		}
 	</script>
 </head>
 
 <body class="logged-out">
     <div class="container  ">
-
-
-        <div id="main-container" class="clearfix" data-delete-check="1" data-is-private="1" data-is-premium=""
-            data-liu="0" data-next-shuffle="ph5da270596459c" data-pkey="" data-platform-pc="1" data-playlist-check="0"
-            data-playlist-id-check="0" data-playlist-geo-check="0" data-friend="0" data-playlist-user-check="0"
-            data-playlist-video-check="0" data-playlist-shuffle="0" data-shuffle-forward="ph5da270596459c"
-            data-shuffle-back="ph5da270596459c" data-min-large="1350"
-            data-video-title="Test Video">
-
+        <div id="main-container" class="clearfix">
             <div id="vpContentContainer">
                 <div id="hd-leftColVideoPage">
                     <div class="video-wrapper">
-                        <div class="title-container">
-                            <i class="isMe tooltipTrig" data-title="Video of verified member"></i>
+						<div class="title-container">
+							<i class="isMe tooltipTrig" data-title="Video of verified member"></i>
                             <h1 class="title">
                                 <span class="inlineFree">Test Video</span>
                             </h1>
@@ -447,45 +416,27 @@ const sceneHTML = `
                                     <div class="video-detailed-info">
                                         <div class="video-info-row">
                                             From:&nbsp;
-
-                                            <div class="usernameWrap clearfix" data-type="channel" data-userid="492538092"
-                                                data-liu-user="0"
-                                                data-json-url="/user/box?id=492538092&amp;token=MTU3NzA1NTkzNIqATol8v_WrhmNTXkeflvG09C2U7UUT_NyoZUFa7iKq0mlzBkmdgAH1aNHZkJmIOHbbwmho1BehHDoA63K5Wn4."
-                                                data-disable-popover="0">
-
+                                            <div class="usernameWrap clearfix" data-type="channel">
                                                 <a rel="" href="/channels/sis-loves-me" class="bolded">Sis Loves Me</a>
-                                                <div class="avatarPosition"></div>
                                             </div>
-
-                                            <span class="verified-icon flag tooltipTrig"
-                                                data-title="Verified member"></span>
-                                            - 87 videos
-                                            <span class="subscribers-count">&nbsp;459466</span>
                                         </div>
 
                                         <div class="video-info-row">
                                             <div class="pornstarsWrapper">
                                                 Pornstars:&nbsp;
                                                 <a class="pstar-list-btn js-mxp" data-mxptype="Pornstar"
-                                                    data-mxptext="Alex D" data-id="251341" data-login="1"
-                                                    href="/pornstar/alex-d">Alex D <span
-                                                        class="psbox-link-container display-none"></span>
+                                                    data-mxptext="Alex D" href="/pornstar/alex-d">Alex D
                                                 </a>
                                                 , <a class="pstar-list-btn js-mxp" data-mxptype="Pornstar"
-                                                    data-mxptext="Mia Malkova" data-id="10641" data-login="1"
-                                                    href="/pornstar/mia-malkova">Mia Malkova <span
-                                                        class="psbox-link-container display-none"></span>
+                                                    data-mxptext="Mia Malkova" href="/pornstar/mia-malkova">
                                                 </a>
                                                 , <a class="pstar-list-btn js-mxp" data-mxptype="Pornstar"
-                                                    data-mxptext="Riley Reid" data-id="5343" data-login="1"
-                                                    href="/pornstar/riley-reid">Riley Reid <span
-                                                        class="psbox-link-container display-none"></span>
+                                                    data-mxptext="Riley Reid" href="/pornstar/riley-reid">Riley Reid
                                                 </a>
                                                 <div class="tooltipTrig suggestBtn" data-title="Add a pornstar">
                                                     <a class="add-btn-small add-pornstar-btn-2">+
                                                         <span>Suggest</span></a>
                                                 </div>
-                                                <div id="deletePornstarResult" class="suggest-result"></div>
                                             </div>
                                         </div>
 
@@ -521,14 +472,6 @@ const sceneHTML = `
                                         </div>
 
                                         <div class="video-info-row showLess">
-                                            <div class="productionWrapper">
-                                                Production:&nbsp;
-                                                <a href="/video?p=professional" rel="nofollow"
-                                                    class="production">professional</a>
-                                            </div>
-                                        </div>
-
-                                        <div class="video-info-row showLess">
                                             <div class="tagsWrapper">
                                                 Tags:&nbsp;
                                                 <a href="/video/search?search=3some">3some</a>, <a
@@ -555,121 +498,6 @@ const sceneHTML = `
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="video-info-row showLess">
-                                            Added on: <span class="white">2 months ago</span>
-                                        </div>
-
-                                        <div class="video-info-row showLess">
-                                            Featured on: <span class="white">1 month ago</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="video-action-tab jump-to-tab">
-                                    <div class="title">Jump to your favorite action</div>
-
-                                    <div class="filters mainFilter float-right">
-                                        <div class="dropdownTrigger">
-                                            <div>
-                                                <span class="textFilter" id="tagSort">Sequence</span>
-                                                <span class="arrowFilters"></span>
-                                            </div>
-                                            <ul class="filterListItem dropdownWrapper">
-                                                <li class="active"><a class="actionTagSort"
-                                                        data-sort="seconds">Sequence</a></li>
-                                                <li><a class="actionTagSort" data-sort="tag">Alphabetical</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div class="reset"></div>
-                                    <div class="display-grid col-4 gap-row-none sortBy seconds">
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(862), ga('send', 'event', 'Video Page', 'click', 'Jump to Blowjob');">
-                                                    Blowjob </a>
-                                                &nbsp;
-                                                <var>14:22</var>
-                                            </li>
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1117), ga('send', 'event', 'Video Page', 'click', 'Jump to Reverse Cowgirl');">
-                                                    Reverse Cowgirl </a>
-                                                &nbsp;
-                                                <var>18:37</var>
-                                            </li>
-                                        </ul>
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1182), ga('send', 'event', 'Video Page', 'click', 'Jump to Cowgirl');">
-                                                    Cowgirl </a>
-                                                &nbsp;
-                                                <var>19:42</var>
-                                            </li>
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1625), ga('send', 'event', 'Video Page', 'click', 'Jump to Cowgirl');">
-                                                    Cowgirl </a>
-                                                &nbsp;
-                                                <var>27:05</var>
-                                            </li>
-                                        </ul>
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1822), ga('send', 'event', 'Video Page', 'click', 'Jump to Doggystyle');">
-                                                    Doggystyle </a>
-                                                &nbsp;
-                                                <var>30:22</var>
-                                            </li>
-                                        </ul>
-
-                                    </div>
-                                    <div class="display-grid col-4 gap-row-none sortBy tag">
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(862), ga('send', 'event', 'Video Page', 'click', 'Jump to Blowjob');">
-                                                    Blowjob </a>
-                                                &nbsp;
-                                                <var>14:22</var>
-                                            </li>
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1117), ga('send', 'event', 'Video Page', 'click', 'Jump to Reverse Cowgirl');">
-                                                    Reverse Cowgirl </a>
-                                                &nbsp;
-                                                <var>18:37</var>
-                                            </li>
-                                        </ul>
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1182), ga('send', 'event', 'Video Page', 'click', 'Jump to Cowgirl');">
-                                                    Cowgirl </a>
-                                                &nbsp;
-                                                <var>19:42</var>
-                                            </li>
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1625), ga('send', 'event', 'Video Page', 'click', 'Jump to Cowgirl');">
-                                                    Cowgirl </a>
-                                                &nbsp;
-                                                <var>27:05</var>
-                                            </li>
-                                        </ul>
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1822), ga('send', 'event', 'Video Page', 'click', 'Jump to Doggystyle');">
-                                                    Doggystyle </a>
-                                                &nbsp;
-                                                <var>30:22</var>
-                                            </li>
-                                        </ul>
                                     </div>
                                 </div>
                             </div>
