@@ -6,6 +6,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
+// FreeonesScraperID is the scraper ID for the built-in Freeones scraper
 const FreeonesScraperID = "builtin_freeones"
 
 // 537: stolen from: https://github.com/stashapp/CommunityScrapers/blob/master/scrapers/FreeonesCommunity.yml

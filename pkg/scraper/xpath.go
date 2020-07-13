@@ -69,7 +69,7 @@ func (q *xpathQuery) runQuery(selector string) []string {
 
 	var ret []string
 	for _, n := range found {
-		ret = append(ret, NodeText(n))
+		ret = append(ret, nodeText(n))
 	}
 
 	return ret
@@ -203,7 +203,7 @@ func restoreLines(value string) string {
 	return value
 }
 
-func NodeText(n *html.Node) string {
+func nodeText(n *html.Node) string {
 	if n != nil && n.Type == html.CommentNode {
 		return htmlquery.OutputHTML(n, true)
 	}
