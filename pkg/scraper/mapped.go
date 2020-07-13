@@ -53,19 +53,37 @@ func (s mappedConfig) process(q mappedQuery, common commonMappedConfig) mappedRe
 			found := q.runQuery(selector)
 
 			if len(found) > 0 {
-				// check if we're concatenating the results into a single result
-				if attrConfig.hasConcat() {
-					result := attrConfig.concatenateResults(found)
-					result = attrConfig.postProcess(result, q)
-					attrConfig.setKeyAndSplit(&ret, result, k, 0)
-				} else {
-					for i, text := range found {
-						text = commonPostProcess(text)
-						text = attrConfig.postProcess(text, q)
-						attrConfig.setKeyAndSplit(&ret, text, k, i)
-					}
+				result := s.postProcess(q, attrConfig, found)
+				for i, text := range result {
+					ret = ret.setKey(i, k, text)
 				}
 			}
+		}
+	}
+
+	return ret
+}
+
+func (s mappedConfig) postProcess(q mappedQuery, attrConfig mappedScraperAttrConfig, found []string) []string {
+	// check if we're concatenating the results into a single result
+	var ret []string
+	if attrConfig.hasConcat() {
+		result := attrConfig.concatenateResults(found)
+		result = attrConfig.postProcess(result, q)
+		if attrConfig.hasSplit() {
+			return attrConfig.splitString(result)
+		}
+
+		ret = []string{result}
+	} else {
+		for _, text := range found {
+			text = commonPostProcess(text)
+			text = attrConfig.postProcess(text, q)
+			if attrConfig.hasSplit() {
+				return attrConfig.splitString(text)
+			}
+
+			ret = append(ret, text)
 		}
 	}
 
@@ -160,7 +178,7 @@ func (c mappedRegexConfig) apply(value string) string {
 		}
 
 		ret := re.ReplaceAllString(value, c.With)
-		// replace  lines if needed to protect from commonPostprocess
+		// replace lines if needed to protect from commonPostprocess
 		if c.With == "\n" {
 			ret = replaceLines(ret)
 		}
@@ -424,18 +442,6 @@ func (c mappedScraperAttrConfig) splitString(value string) []string {
 	}
 
 	return res
-}
-
-// setKeyAndSplit sets the key "k" for the results "ret" and splits if needed
-// "i" is the index starting position
-func (c mappedScraperAttrConfig) setKeyAndSplit(ret *mappedResults, value string, k string, i int) {
-	if c.hasSplit() {
-		for j, txt := range c.splitString(value) {
-			*ret = ret.setKey(j+i, k, txt)
-		}
-	} else {
-		*ret = ret.setKey(i, k, value)
-	}
 }
 
 func (c mappedScraperAttrConfig) postProcess(value string, q mappedQuery) string {
