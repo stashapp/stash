@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"regexp"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
 	"golang.org/x/net/html/charset"
+	"golang.org/x/net/publicsuffix"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -109,8 +111,24 @@ func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 }
 
 func (s *xpathScraper) loadURL(url string) (*html.Node, error) {
+	options := cookiejar.Options{
+		PublicSuffixList: publicsuffix.List,
+	}
+	jar, er := cookiejar.New(&options)
+	if er != nil {
+		return nil, er
+	}
+
 	client := &http.Client{
 		Timeout: scrapeGetTimeout,
+		// defaultCheckRedirect code with max changed from 10 to 20
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 20 {
+				return errors.New("stopped after 20 redirects")
+			}
+			return nil
+		},
+		Jar: jar,
 	}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

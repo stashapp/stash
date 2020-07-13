@@ -33,6 +33,7 @@ export const useFindGalleries = (filter: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
     variables: {
       filter: filter.makeFindFilter(),
+      gallery_filter: filter.makeGalleryFilter(),
     },
   });
 
@@ -94,6 +95,14 @@ export const useFindPerformers = (filter: ListFilterModel) =>
     },
   });
 
+export const useFindTags = (filter: ListFilterModel) =>
+  GQL.useFindTagsQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeTagFilter(),
+    },
+  });
+
 export const queryFindPerformers = (filter: ListFilterModel) =>
   client.query<GQL.FindPerformersQuery>({
     query: GQL.FindPerformersDocument,
@@ -118,6 +127,10 @@ export const useFindStudio = (id: string) => {
 export const useFindMovie = (id: string) => {
   const skip = id === "new";
   return GQL.useFindMovieQuery({ variables: { id }, skip });
+};
+export const useFindTag = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindTagQuery({ variables: { id }, skip });
 };
 
 // TODO - scene marker manipulation functions are handled differently
@@ -250,6 +263,12 @@ export const useSceneResetO = (id: string) =>
 
 export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
   GQL.useSceneDestroyMutation({
+    variables: input,
+    update: () => invalidateQueries(sceneMutationImpactedQueries),
+  });
+
+export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
+  GQL.useScenesDestroyMutation({
     variables: input,
     update: () => invalidateQueries(sceneMutationImpactedQueries),
   });

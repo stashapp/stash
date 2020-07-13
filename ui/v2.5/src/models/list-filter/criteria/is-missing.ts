@@ -53,3 +53,23 @@ export class PerformerIsMissingCriterionOption implements ICriterionOption {
   public label: string = Criterion.getLabel("performerIsMissing");
   public value: CriterionType = "performerIsMissing";
 }
+
+export class GalleryIsMissingCriterion extends IsMissingCriterion {
+  public type: CriterionType = "galleryIsMissing";
+  public options: string[] = ["scene"];
+}
+
+export class GalleryIsMissingCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("galleryIsMissing");
+  public value: CriterionType = "galleryIsMissing";
+}
+
+export class TagIsMissingCriterion extends IsMissingCriterion {
+  public type: CriterionType = "tagIsMissing";
+  public options: string[] = ["image"];
+}
+
+export class TagIsMissingCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("tagIsMissing");
+  public value: CriterionType = "tagIsMissing";
+}

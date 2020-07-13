@@ -47,6 +47,10 @@ const ScraperUserAgent = "scraper_user_agent"
 // i18n
 const Language = "language"
 
+// served directories
+// this should be manually configured only
+const CustomServedFolders = "custom_served_folders"
+
 // Interface options
 const SoundOnPreview = "sound_on_preview"
 const WallShowTitle = "wall_show_title"
@@ -231,6 +235,12 @@ func GetMaxSessionAge() int {
 	return viper.GetInt(MaxSessionAge)
 }
 
+// GetCustomServedFolders gets the map of custom paths to their applicable
+// filesystem locations
+func GetCustomServedFolders() URLMap {
+	return viper.GetStringMapString(CustomServedFolders)
+}
+
 // Interface options
 func GetSoundOnPreview() bool {
 	viper.SetDefault(SoundOnPreview, true)
@@ -334,7 +344,7 @@ func GetLogLevel() string {
 	const defaultValue = "Info"
 
 	value := viper.GetString(LogLevel)
-	if value != "Debug" && value != "Info" && value != "Warning" && value != "Error" {
+	if value != "Debug" && value != "Info" && value != "Warning" && value != "Error" && value != "Trace" {
 		value = defaultValue
 	}
 

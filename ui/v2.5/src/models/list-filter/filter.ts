@@ -8,6 +8,8 @@ import {
   SortDirectionEnum,
   MovieFilterType,
   StudioFilterType,
+  GalleryFilterType,
+  TagFilterType,
 } from "src/core/generated-graphql";
 import { stringToGender } from "src/core/StashService";
 import {
@@ -31,6 +33,8 @@ import {
   IsMissingCriterion,
   PerformerIsMissingCriterionOption,
   SceneIsMissingCriterionOption,
+  GalleryIsMissingCriterionOption,
+  TagIsMissingCriterionOption,
 } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import {
@@ -182,8 +186,11 @@ export class ListFilterModel {
       case FilterMode.Galleries:
         this.sortBy = "path";
         this.sortByOptions = ["path"];
-        this.displayModeOptions = [DisplayMode.List];
-        this.criterionOptions = [new NoneCriterionOption()];
+        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
+        this.criterionOptions = [
+          new NoneCriterionOption(),
+          new GalleryIsMissingCriterionOption(),
+        ];
         break;
       case FilterMode.SceneMarkers:
         this.sortBy = "title";
@@ -200,6 +207,23 @@ export class ListFilterModel {
           new TagsCriterionOption(),
           new SceneTagsCriterionOption(),
           new PerformersCriterionOption(),
+        ];
+        break;
+      case FilterMode.Tags:
+        this.sortBy = "name";
+        // scene markers count has been disabled for now due to performance
+        // issues
+        this.sortByOptions = [
+          "name",
+          "scenes_count" /* , "scene_markers_count"*/,
+        ];
+        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
+        this.criterionOptions = [
+          new NoneCriterionOption(),
+          new TagIsMissingCriterionOption(),
+          ListFilterModel.createCriterionOption("scene_count"),
+          // marker count has been disabled for now due to performance issues
+          // ListFilterModel.createCriterionOption("marker_count"),
         ];
         break;
       default:
@@ -601,6 +625,52 @@ export class ListFilterModel {
         // no default
       }
     });
+
+    return result;
+  }
+
+  public makeGalleryFilter(): GalleryFilterType {
+    const result: GalleryFilterType = {};
+    this.criteria.forEach((criterion) => {
+      switch (criterion.type) {
+        case "galleryIsMissing":
+          result.is_missing = (criterion as IsMissingCriterion).value;
+          break;
+        // no default
+      }
+    });
+
+    return result;
+  }
+
+  public makeTagFilter(): TagFilterType {
+    const result: TagFilterType = {};
+    this.criteria.forEach((criterion) => {
+      switch (criterion.type) {
+        case "tagIsMissing":
+          result.is_missing = (criterion as IsMissingCriterion).value;
+          break;
+        case "scene_count": {
+          const countCrit = criterion as NumberCriterion;
+          result.scene_count = {
+            value: countCrit.value,
+            modifier: countCrit.modifier,
+          };
+          break;
+        }
+        // disabled due to performance issues
+        // case "marker_count": {
+        //   const countCrit = criterion as NumberCriterion;
+        //   result.marker_count = {
+        //     value: countCrit.value,
+        //     modifier: countCrit.modifier,
+        //   };
+        //   break;
+        // }
+        // no default
+      }
+    });
+
     return result;
   }
 }

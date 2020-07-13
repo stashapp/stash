@@ -28,9 +28,10 @@ type Query {
   findMovies(movie_filter: MovieFilterType, filter: FindFilterType): FindMoviesResultType!
 
   findGallery(id: ID!): Gallery
-  findGalleries(filter: FindFilterType): FindGalleriesResultType!
+  findGalleries(gallery_filter: GalleryFilterType, filter: FindFilterType): FindGalleriesResultType!
 
   findTag(id: ID!): Tag
+  findTags(tag_filter: TagFilterType, filter: FindFilterType): FindTagsResultType!
 
   """Retrieve random scene markers for the wall"""
   markerWall(q: String): [SceneMarker!]!
@@ -105,6 +106,7 @@ type Mutation {
   sceneUpdate(input: SceneUpdateInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!
+  scenesDestroy(input: ScenesDestroyInput!): Boolean!
   scenesUpdate(input: [SceneUpdateInput!]!): [Scene]
 
   """Increments the o-counter for a scene. Returns the new value"""

@@ -10,6 +10,7 @@ import { TextUtils } from "src/utils";
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
+  selecting?: boolean;
   selected: boolean | undefined;
   zoomIndex: number;
   onSelectedChanged: (selected: boolean, shiftKey: boolean) => void;
@@ -203,7 +204,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       return (
         <>
           <hr />
-          <ButtonGroup className="scene-popovers">
+          <ButtonGroup className="card-popovers">
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderMoviePopoverButton()}
@@ -221,9 +222,40 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
     hoverHandler.onMouseEnter();
   }
+
   function onMouseLeave() {
     hoverHandler.onMouseLeave();
     setPreviewPath("");
+  }
+
+  function handleSceneClick(
+    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
+  ) {
+    const { shiftKey } = event;
+
+    if (props.selecting) {
+      props.onSelectedChanged(!props.selected, shiftKey);
+      event.preventDefault();
+    }
+  }
+
+  function handleDrag(event: React.DragEvent<HTMLAnchorElement>) {
+    if (props.selecting) {
+      event.dataTransfer.setData("text/plain", "");
+      event.dataTransfer.setDragImage(new Image(), 0, 0);
+    }
+  }
+
+  function handleDragOver(event: React.DragEvent<HTMLAnchorElement>) {
+    const ev = event;
+    const shiftKey = false;
+
+    if (props.selecting && !props.selected) {
+      props.onSelectedChanged(true, shiftKey);
+    }
+
+    ev.dataTransfer.dropEffect = "move";
+    ev.preventDefault();
   }
 
   function isPortrait() {
@@ -243,7 +275,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     >
       <Form.Control
         type="checkbox"
-        className="scene-card-check d-none d-sm-block"
+        className="scene-card-check"
         checked={props.selected}
         onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
         onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
@@ -253,7 +285,14 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         }}
       />
 
-      <Link to={`/scenes/${props.scene.id}`} className="scene-card-link">
+      <Link
+        to={`/scenes/${props.scene.id}`}
+        className="scene-card-link"
+        onClick={handleSceneClick}
+        onDragStart={handleDrag}
+        onDragOver={handleDragOver}
+        draggable={props.selecting}
+      >
         {maybeRenderRatingBanner()}
         {maybeRenderSceneStudioOverlay()}
         {maybeRenderSceneSpecsOverlay()}

@@ -98,6 +98,58 @@ func TestGalleryFindBySceneID(t *testing.T) {
 	assert.Nil(t, gallery)
 }
 
+func TestGalleryQueryQ(t *testing.T) {
+	const galleryIdx = 0
+
+	q := getGalleryStringValue(galleryIdx, pathField)
+
+	sqb := models.NewGalleryQueryBuilder()
+
+	galleryQueryQ(t, sqb, q, galleryIdx)
+}
+
+func galleryQueryQ(t *testing.T, qb models.GalleryQueryBuilder, q string, expectedGalleryIdx int) {
+	filter := models.FindFilterType{
+		Q: &q,
+	}
+	galleries, _ := qb.Query(nil, &filter)
+
+	assert.Len(t, galleries, 1)
+	gallery := galleries[0]
+	assert.Equal(t, galleryIDs[expectedGalleryIdx], gallery.ID)
+
+	// no Q should return all results
+	filter.Q = nil
+	galleries, _ = qb.Query(nil, &filter)
+
+	assert.Len(t, galleries, totalGalleries)
+}
+
+func TestGalleryQueryIsMissingScene(t *testing.T) {
+	qb := models.NewGalleryQueryBuilder()
+	isMissing := "scene"
+	galleryFilter := models.GalleryFilterType{
+		IsMissing: &isMissing,
+	}
+
+	q := getGalleryStringValue(galleryIdxWithScene, titleField)
+	findFilter := models.FindFilterType{
+		Q: &q,
+	}
+
+	galleries, _ := qb.Query(&galleryFilter, &findFilter)
+
+	assert.Len(t, galleries, 0)
+
+	findFilter.Q = nil
+	galleries, _ = qb.Query(&galleryFilter, &findFilter)
+
+	// ensure non of the ids equal the one with gallery
+	for _, gallery := range galleries {
+		assert.NotEqual(t, galleryIDs[galleryIdxWithScene], gallery.ID)
+	}
+}
+
 // TODO ValidGalleriesForScenePath
 // TODO Count
 // TODO All

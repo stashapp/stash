@@ -12,6 +12,8 @@ import { HasMarkersCriterion } from "./has-markers";
 import {
   PerformerIsMissingCriterion,
   SceneIsMissingCriterion,
+  GalleryIsMissingCriterion,
+  TagIsMissingCriterion,
 } from "./is-missing";
 import { NoneCriterion } from "./none";
 import { PerformersCriterion } from "./performers";
@@ -29,6 +31,8 @@ export function makeCriteria(type: CriterionType = "none") {
     case "rating":
       return new RatingCriterion();
     case "o_counter":
+    case "scene_count":
+    case "marker_count":
       return new NumberCriterion(type, type);
     case "resolution":
       return new ResolutionCriterion();
@@ -42,6 +46,10 @@ export function makeCriteria(type: CriterionType = "none") {
       return new SceneIsMissingCriterion();
     case "performerIsMissing":
       return new PerformerIsMissingCriterion();
+    case "galleryIsMissing":
+      return new GalleryIsMissingCriterion();
+    case "tagIsMissing":
+      return new TagIsMissingCriterion();
     case "tags":
       return new TagsCriterion("tags");
     case "sceneTags":

@@ -1,0 +1,42 @@
+.manual {
+  background-color: #30404d;
+  color: $text-color;
+
+  .close {
+    color: $text-color;
+  }
+
+  .manual-container {
+    padding-left: 1px;
+    padding-right: 5px;
+  }
+
+  .modal-header,
+  .modal-body {
+    background-color: #30404d;
+    color: $text-color;
+    overflow-y: hidden;
+  }
+
+  .indent-1 {
+    padding-left: 2rem;
+  }
+}
+
+.manual .manual-content,
+.manual .manual-toc {
+  max-height: calc(100vh - 10rem);
+  overflow-y: auto;
+}
+
+@media (max-width: 992px) {
+  .manual .modal-body {
+    overflow-y: auto;
+
+    .manual-content,
+    .manual-toc {
+      max-height: inherit;
+      overflow-y: hidden;
+    }
+  }
+}

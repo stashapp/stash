@@ -9,7 +9,6 @@ import {
   useMovieDestroy,
 } from "src/core/StashService";
 import { useParams, useHistory } from "react-router-dom";
-import cx from "classnames";
 import {
   DetailsEditNavbar,
   LoadingIndicator,
@@ -17,7 +16,7 @@ import {
   StudioSelect,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { Table, Form } from "react-bootstrap";
+import { Table, Form, Modal as BSModal, Button } from "react-bootstrap";
 import {
   TableUtils,
   ImageUtils,
@@ -35,6 +34,7 @@ export const Movie: React.FC = () => {
   // Editing state
   const [isEditing, setIsEditing] = useState<boolean>(isNew);
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isImageAlertOpen, setIsImageAlertOpen] = useState<boolean>(false);
 
   // Editing movie state
   const [frontImage, setFrontImage] = useState<string | undefined>(undefined);
@@ -58,6 +58,10 @@ export const Movie: React.FC = () => {
     undefined
   );
 
+  const [imageClipboard, setImageClipboard] = useState<string | undefined>(
+    undefined
+  );
+
   // Network state
   const { data, error, loading } = useFindMovie(id);
   const [updateMovie] = useMovieUpdate(getMovieInput() as GQL.MovieUpdateInput);
@@ -67,6 +71,42 @@ export const Movie: React.FC = () => {
   );
 
   const intl = useIntl();
+
+  // set up hotkeys
+  useEffect(() => {
+    if (isEditing) {
+      Mousetrap.bind("r 0", () => setRating(NaN));
+      Mousetrap.bind("r 1", () => setRating(1));
+      Mousetrap.bind("r 2", () => setRating(2));
+      Mousetrap.bind("r 3", () => setRating(3));
+      Mousetrap.bind("r 4", () => setRating(4));
+      Mousetrap.bind("r 5", () => setRating(5));
+      // Mousetrap.bind("u", (e) => {
+      //   setStudioFocus()
+      //   e.preventDefault();
+      // });
+      Mousetrap.bind("s s", () => onSave());
+    }
+
+    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("d d", () => onDelete());
+
+    return () => {
+      if (isEditing) {
+        Mousetrap.unbind("r 0");
+        Mousetrap.unbind("r 1");
+        Mousetrap.unbind("r 2");
+        Mousetrap.unbind("r 3");
+        Mousetrap.unbind("r 4");
+        Mousetrap.unbind("r 5");
+        // Mousetrap.unbind("u");
+        Mousetrap.unbind("s s");
+      }
+
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("d d");
+    };
+  });
 
   function updateMovieEditState(state: Partial<GQL.MovieDataFragment>) {
     setName(state.name ?? undefined);
@@ -99,8 +139,21 @@ export const Movie: React.FC = () => {
   }, [data, updateMovieData]);
 
   function onImageLoad(imageData: string) {
-    setImagePreview(imageData);
-    setFrontImage(imageData);
+    setImageClipboard(imageData);
+    setIsImageAlertOpen(true);
+  }
+
+  function setImageFromClipboard(isFrontImage: boolean) {
+    if (isFrontImage) {
+      setImagePreview(imageClipboard);
+      setFrontImage(imageClipboard);
+    } else {
+      setBackImagePreview(imageClipboard);
+      setBackImage(imageClipboard);
+    }
+
+    setImageClipboard(undefined);
+    setIsImageAlertOpen(false);
   }
 
   function onBackImageLoad(imageData: string) {
@@ -108,11 +161,7 @@ export const Movie: React.FC = () => {
     setBackImage(imageData);
   }
 
-  const encodingFrontImage = ImageUtils.usePasteImage(onImageLoad, isEditing);
-  const encodingBackImage = ImageUtils.usePasteImage(
-    onBackImageLoad,
-    isEditing
-  );
+  const encodingImage = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
@@ -199,17 +248,50 @@ export const Movie: React.FC = () => {
     );
   }
 
+  function renderImageAlert() {
+    return (
+      <BSModal
+        show={isImageAlertOpen}
+        onHide={() => setIsImageAlertOpen(false)}
+      >
+        <BSModal.Body>
+          <p>Select image to set</p>
+        </BSModal.Body>
+        <BSModal.Footer>
+          <div>
+            <Button
+              className="mr-2"
+              variant="secondary"
+              onClick={() => setIsImageAlertOpen(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              className="mr-2"
+              onClick={() => setImageFromClipboard(false)}
+            >
+              Back Image
+            </Button>
+            <Button
+              className="mr-2"
+              onClick={() => setImageFromClipboard(true)}
+            >
+              Front Image
+            </Button>
+          </div>
+        </BSModal.Footer>
+      </BSModal>
+    );
+  }
+
   // TODO: CSS class
   return (
     <div className="row">
-      <div
-        className={cx("movie-details", "col", {
-          "col ml-sm-5": !isNew,
-        })}
-      >
+      <div className="movie-details col">
         {isNew && <h2>Add Movie</h2>}
         <div className="logo w-100">
-          {encodingFrontImage || encodingBackImage ? (
+          {encodingImage ? (
             <LoadingIndicator message="Encoding image..." />
           ) : (
             <>
@@ -312,11 +394,12 @@ export const Movie: React.FC = () => {
         />
       </div>
       {!isNew && (
-        <div className="col-12 col-sm-8">
+        <div className="col-lg-8 col-md-7">
           <MovieScenesPanel movie={movie} />
         </div>
       )}
       {renderDeleteAlert()}
+      {renderImageAlert()}
     </div>
   );
 };

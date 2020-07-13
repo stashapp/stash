@@ -1,4 +1,4 @@
-import { Tab, Nav, Dropdown, Form } from "react-bootstrap";
+import { Tab, Nav, Dropdown } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
@@ -9,19 +9,20 @@ import {
   useSceneDecrementO,
   useSceneResetO,
   useSceneGenerateScreenshot,
-  useSceneDestroy,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
-import { LoadingIndicator, Icon, Modal } from "src/components/Shared";
+import { LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
+import * as Mousetrap from "mousetrap";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
+import { DeleteScenesDialog } from "../DeleteScenesDialog";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
@@ -31,18 +32,16 @@ export const Scene: React.FC = () => {
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
 
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const [deleteFile, setDeleteFile] = useState<boolean>(false);
-  const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [deleteScene] = useSceneDestroy(getSceneDeleteInput());
-
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
   const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
   const [resetO] = useSceneResetO(scene?.id ?? "0");
+
+  const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
+
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
@@ -120,54 +119,19 @@ export const Scene: React.FC = () => {
     Toast.success({ content: "Generating screenshot" });
   }
 
-  function getSceneDeleteInput(): GQL.SceneDestroyInput {
-    return {
-      id: scene ? scene.id : "0",
-      delete_file: deleteFile,
-      delete_generated: deleteGenerated,
-    };
-  }
-
-  async function onDelete() {
+  function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
-    setDeleteLoading(true);
-    try {
-      await deleteScene();
-      Toast.success({ content: "Deleted scene" });
-    } catch (e) {
-      Toast.error(e);
+    if (deleted) {
+      history.push("/scenes");
     }
-    setDeleteLoading(false);
-    history.push("/scenes");
   }
 
-  function renderDeleteAlert() {
-    return (
-      <Modal
-        show={isDeleteAlertOpen}
-        icon="trash-alt"
-        header="Delete Scene?"
-        accept={{ variant: "danger", onClick: onDelete, text: "Delete" }}
-        cancel={{ onClick: () => setIsDeleteAlertOpen(false), text: "Cancel" }}
-      >
-        <p>
-          Are you sure you want to delete this scene? Unless the file is also
-          deleted, this scene will be re-added when scan is performed.
-        </p>
-        <Form>
-          <Form.Check
-            checked={deleteFile}
-            label="Delete file"
-            onChange={() => setDeleteFile(!deleteFile)}
-          />
-          <Form.Check
-            checked={deleteGenerated}
-            label="Delete generated supporting files"
-            onChange={() => setDeleteGenerated(!deleteGenerated)}
-          />
-        </Form>
-      </Modal>
-    );
+  function maybeRenderDeleteDialog() {
+    if (isDeleteAlertOpen && scene) {
+      return (
+        <DeleteScenesDialog selected={[scene]} onClose={onDeleteDialogClosed} />
+      );
+    }
   }
 
   function renderOperations() {
@@ -216,7 +180,10 @@ export const Scene: React.FC = () => {
     }
 
     return (
-      <Tab.Container defaultActiveKey="scene-details-panel">
+      <Tab.Container
+        activeKey={activeTabKey}
+        onSelect={(k) => setActiveTabKey(k)}
+      >
         <div>
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
@@ -263,7 +230,11 @@ export const Scene: React.FC = () => {
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-markers-panel" title="Markers">
-            <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} />
+            <SceneMarkersPanel
+              scene={scene}
+              onClickMarker={onClickMarker}
+              isVisible={activeTabKey === "scene-markers-panel"}
+            />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-movie-panel" title="Movies">
             <SceneMoviePanel scene={scene} />
@@ -284,9 +255,10 @@ export const Scene: React.FC = () => {
           </Tab.Pane>
           <Tab.Pane eventKey="scene-edit-panel" title="Edit">
             <SceneEditPanel
+              isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}
               onUpdate={(newScene) => setScene(newScene)}
-              onDelete={onDelete}
+              onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
         </Tab.Content>
@@ -294,7 +266,24 @@ export const Scene: React.FC = () => {
     );
   }
 
-  if (deleteLoading || loading || !scene || !data?.findScene) {
+  // set up hotkeys
+  useEffect(() => {
+    Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
+    Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
+    Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
+    Mousetrap.bind("f", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("o", () => onIncrementClick());
+
+    return () => {
+      Mousetrap.unbind("a");
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("k");
+      Mousetrap.unbind("f");
+      Mousetrap.unbind("o");
+    };
+  });
+
+  if (loading || !scene || !data?.findScene) {
     return <LoadingIndicator />;
   }
 
@@ -302,7 +291,7 @@ export const Scene: React.FC = () => {
 
   return (
     <div className="row">
-      {renderDeleteAlert()}
+      {maybeRenderDeleteDialog()}
       <div className="scene-tabs order-xl-first order-last">
         <div className="d-none d-xl-block">
           {scene.studio && (

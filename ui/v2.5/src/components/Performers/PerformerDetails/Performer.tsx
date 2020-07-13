@@ -35,6 +35,8 @@ export const Performer: React.FC = () => {
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
+  const [activeTabKey, setActiveTabKey] = useState("details");
+
   const { data, error } = useFindPerformer(id);
   const [updatePerformer] = usePerformerUpdate();
   const [createPerformer] = usePerformerCreate();
@@ -48,6 +50,23 @@ export const Performer: React.FC = () => {
   const onImageChange = (image?: string) => setImagePreview(image);
 
   const onImageEncoding = (isEncoding = false) => setImageEncoding(isEncoding);
+
+  // set up hotkeys
+  useEffect(() => {
+    Mousetrap.bind("a", () => setActiveTabKey("details"));
+    Mousetrap.bind("e", () => setActiveTabKey("edit"));
+    Mousetrap.bind("c", () => setActiveTabKey("scenes"));
+    Mousetrap.bind("o", () => setActiveTabKey("operations"));
+    Mousetrap.bind("f", () => setFavorite(!performer.favorite));
+
+    return () => {
+      Mousetrap.unbind("a");
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("c");
+      Mousetrap.unbind("f");
+      Mousetrap.unbind("o");
+    };
+  });
 
   if ((!isNew && (!data || !data.findPerformer)) || isLoading)
     return <LoadingIndicator />;
@@ -100,9 +119,18 @@ export const Performer: React.FC = () => {
   }
 
   const renderTabs = () => (
-    <Tabs defaultActiveKey="details" id="performer-details" unmountOnExit>
+    <Tabs
+      activeKey={activeTabKey}
+      onSelect={(k: string) => setActiveTabKey(k)}
+      id="performer-details"
+      unmountOnExit
+    >
       <Tab eventKey="details" title="Details">
-        <PerformerDetailsPanel performer={performer} isEditing={false} />
+        <PerformerDetailsPanel
+          performer={performer}
+          isEditing={false}
+          isVisible={activeTabKey === "details"}
+        />
       </Tab>
       <Tab eventKey="scenes" title="Scenes">
         <PerformerScenesPanel performer={performer} />
@@ -111,6 +139,7 @@ export const Performer: React.FC = () => {
         <PerformerDetailsPanel
           performer={performer}
           isEditing
+          isVisible={activeTabKey === "edit"}
           isNew={isNew}
           onDelete={onDelete}
           onSave={onSave}
@@ -154,7 +183,7 @@ export const Performer: React.FC = () => {
   }
 
   const renderIcons = () => (
-    <span className="name-icons d-block d-sm-inline">
+    <span className="name-icons">
       <Button
         className={cx(
           "minimal",
@@ -227,6 +256,7 @@ export const Performer: React.FC = () => {
           <PerformerDetailsPanel
             performer={performer}
             isEditing
+            isVisible
             isNew={isNew}
             onDelete={onDelete}
             onSave={onSave}
@@ -241,7 +271,7 @@ export const Performer: React.FC = () => {
 
   return (
     <div id="performer-page" className="row">
-      <div className="image-container col-sm-4 offset-sm-1 d-none d-sm-block">
+      <div className="image-container col-md-4 text-center">
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
@@ -250,9 +280,9 @@ export const Performer: React.FC = () => {
           </Button>
         )}
       </div>
-      <div className="col col-sm-6">
+      <div className="col col-md-8 col-lg-7 col-xl-6">
         <div className="row">
-          <div className="performer-head col-6 col-sm-12">
+          <div className="performer-head col">
             <h2>
               <CountryFlag country={performer.country} className="mr-2" />
               {performer.name}

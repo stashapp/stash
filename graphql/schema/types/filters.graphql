@@ -96,6 +96,22 @@ input StudioFilterType {
   parents: MultiCriterionInput
 }
 
+input GalleryFilterType {
+  """Filter to only include galleries missing this property"""
+  is_missing: String
+}
+
+input TagFilterType {
+  """Filter to only include tags missing this property"""
+  is_missing: String
+
+  """Filter by number of scenes with this tag"""
+  scene_count: IntCriterionInput
+
+  """Filter by number of markers with this tag"""
+  marker_count: IntCriterionInput
+}
+
 enum CriterionModifier {
   """="""
   EQUALS,

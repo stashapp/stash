@@ -9,7 +9,10 @@
   }
 }
 
-.zoom-slider {
+input[type="range"].zoom-slider {
+  height: 100%;
+  margin: 0;
+  max-width: 60px;
   padding-left: 0;
   padding-right: 0;
 }

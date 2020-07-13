@@ -3,13 +3,16 @@
 package models_test
 
 import (
+	"context"
 	"database/sql"
 	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestSceneFind(t *testing.T) {
@@ -171,6 +174,7 @@ func verifyScenesRating(t *testing.T, ratingCriterion models.IntCriterionInput) 
 }
 
 func verifyInt64(t *testing.T, value sql.NullInt64, criterion models.IntCriterionInput) {
+	t.Helper()
 	assert := assert.New(t)
 	if criterion.Modifier == models.CriterionModifierIsNull {
 		assert.False(value.Valid, "expect is null values to be null")
@@ -892,6 +896,104 @@ func TestFindByStudioID(t *testing.T) {
 	}
 
 	assert.Len(t, scenes, 0)
+}
+
+func TestSceneUpdateSceneCover(t *testing.T) {
+	qb := models.NewSceneQueryBuilder()
+
+	// create performer to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestSceneUpdateSceneCover"
+	scene := models.Scene{
+		Path:     name,
+		Checksum: utils.MD5FromString(name),
+	}
+	created, err := qb.Create(scene, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating scene: %s", err.Error())
+	}
+
+	image := []byte("image")
+	err = qb.UpdateSceneCover(created.ID, image, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating scene cover: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// ensure image set
+	storedImage, err := qb.GetSceneCover(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting image: %s", err.Error())
+	}
+	assert.Equal(t, storedImage, image)
+
+	// set nil image
+	tx = database.DB.MustBeginTx(ctx, nil)
+	err = qb.UpdateSceneCover(created.ID, nil, tx)
+	if err == nil {
+		t.Fatalf("Expected error setting nil image")
+	}
+
+	tx.Rollback()
+}
+
+func TestSceneDestroySceneCover(t *testing.T) {
+	qb := models.NewSceneQueryBuilder()
+
+	// create performer to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestSceneDestroySceneCover"
+	scene := models.Scene{
+		Path:     name,
+		Checksum: utils.MD5FromString(name),
+	}
+	created, err := qb.Create(scene, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating scene: %s", err.Error())
+	}
+
+	image := []byte("image")
+	err = qb.UpdateSceneCover(created.ID, image, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating scene image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	tx = database.DB.MustBeginTx(ctx, nil)
+
+	err = qb.DestroySceneCover(created.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error destroying scene cover: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// image should be nil
+	storedImage, err := qb.GetSceneCover(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting image: %s", err.Error())
+	}
+	assert.Nil(t, storedImage)
 }
 
 // TODO Update

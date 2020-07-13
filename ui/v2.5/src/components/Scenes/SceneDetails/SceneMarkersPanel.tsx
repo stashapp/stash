@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { WallPanel } from "src/components/Wall/WallPanel";
@@ -7,6 +7,7 @@ import { SceneMarkerForm } from "./SceneMarkerForm";
 
 interface ISceneMarkersPanelProps {
   scene: GQL.SceneDataFragment;
+  isVisible: boolean;
   onClickMarker: (marker: GQL.SceneMarkerDataFragment) => void;
 }
 
@@ -17,6 +18,17 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
   const [editingMarker, setEditingMarker] = useState<
     GQL.SceneMarkerDataFragment
   >();
+
+  // set up hotkeys
+  useEffect(() => {
+    if (props.isVisible) {
+      Mousetrap.bind("n", () => onOpenEditor());
+
+      return () => {
+        Mousetrap.unbind("n");
+      };
+    }
+  });
 
   function onOpenEditor(marker?: GQL.SceneMarkerDataFragment) {
     setIsEditorOpen(true);

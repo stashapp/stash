@@ -154,6 +154,7 @@ func Start() {
 	r.Mount("/scene", sceneRoutes{}.Routes())
 	r.Mount("/studio", studioRoutes{}.Routes())
 	r.Mount("/movie", movieRoutes{}.Routes())
+	r.Mount("/tag", tagRoutes{}.Routes())
 
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css")
@@ -251,6 +252,24 @@ func Start() {
 	})
 
 	startThumbCache()
+
+	// Serve static folders
+	customServedFolders := config.GetCustomServedFolders()
+	if customServedFolders != nil {
+		r.HandleFunc("/custom/*", func(w http.ResponseWriter, r *http.Request) {
+			r.URL.Path = strings.Replace(r.URL.Path, "/custom", "", 1)
+
+			// map the path to the applicable filesystem location
+			var dir string
+			r.URL.Path, dir = customServedFolders.GetFilesystemLocation(r.URL.Path)
+			if dir != "" {
+				http.FileServer(http.Dir(dir)).ServeHTTP(w, r)
+			} else {
+				http.NotFound(w, r)
+			}
+		})
+	}
+
 	// Serve the web app
 	r.HandleFunc("/*", func(w http.ResponseWriter, r *http.Request) {
 		ext := path.Ext(r.URL.Path)

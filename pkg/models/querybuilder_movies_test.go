@@ -3,13 +3,17 @@
 package models_test
 
 import (
+	"context"
+	"database/sql"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestMovieFindBySceneID(t *testing.T) {
@@ -121,6 +125,146 @@ func TestMovieQueryStudio(t *testing.T) {
 
 	movies, _ = mqb.Query(&movieFilter, &findFilter)
 	assert.Len(t, movies, 0)
+}
+
+func TestMovieUpdateMovieImages(t *testing.T) {
+	mqb := models.NewMovieQueryBuilder()
+
+	// create movie to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestMovieUpdateMovieImages"
+	movie := models.Movie{
+		Name:     sql.NullString{String: name, Valid: true},
+		Checksum: utils.MD5FromString(name),
+	}
+	created, err := mqb.Create(movie, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating movie: %s", err.Error())
+	}
+
+	frontImage := []byte("frontImage")
+	backImage := []byte("backImage")
+	err = mqb.UpdateMovieImages(created.ID, frontImage, backImage, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating movie images: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// ensure images are set
+	storedFront, err := mqb.GetFrontImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting front image: %s", err.Error())
+	}
+	assert.Equal(t, storedFront, frontImage)
+
+	storedBack, err := mqb.GetBackImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting back image: %s", err.Error())
+	}
+	assert.Equal(t, storedBack, backImage)
+
+	// set front image only
+	newImage := []byte("newImage")
+	tx = database.DB.MustBeginTx(ctx, nil)
+	err = mqb.UpdateMovieImages(created.ID, newImage, nil, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating movie images: %s", err.Error())
+	}
+
+	storedFront, err = mqb.GetFrontImage(created.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error getting front image: %s", err.Error())
+	}
+	assert.Equal(t, storedFront, newImage)
+
+	// back image should be nil
+	storedBack, err = mqb.GetBackImage(created.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error getting back image: %s", err.Error())
+	}
+	assert.Nil(t, nil)
+
+	// set back image only
+	err = mqb.UpdateMovieImages(created.ID, nil, newImage, tx)
+	if err == nil {
+		tx.Rollback()
+		t.Fatalf("Expected error setting nil front image")
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+}
+
+func TestMovieDestroyMovieImages(t *testing.T) {
+	mqb := models.NewMovieQueryBuilder()
+
+	// create movie to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestMovieDestroyMovieImages"
+	movie := models.Movie{
+		Name:     sql.NullString{String: name, Valid: true},
+		Checksum: utils.MD5FromString(name),
+	}
+	created, err := mqb.Create(movie, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating movie: %s", err.Error())
+	}
+
+	frontImage := []byte("frontImage")
+	backImage := []byte("backImage")
+	err = mqb.UpdateMovieImages(created.ID, frontImage, backImage, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating movie images: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	tx = database.DB.MustBeginTx(ctx, nil)
+
+	err = mqb.DestroyMovieImages(created.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error destroying movie images: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// front image should be nil
+	storedFront, err := mqb.GetFrontImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting front image: %s", err.Error())
+	}
+	assert.Nil(t, storedFront)
+
+	// back image should be nil
+	storedBack, err := mqb.GetBackImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting back image: %s", err.Error())
+	}
+	assert.Nil(t, storedBack)
 }
 
 // TODO Update

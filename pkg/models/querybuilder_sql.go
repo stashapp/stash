@@ -104,7 +104,7 @@ func getSort(sort string, direction string, tableName string) string {
 	const randomSeedPrefix = "random_"
 
 	if strings.HasSuffix(sort, "_count") {
-		var relationTableName = strings.Split(sort, "_")[0] // TODO: pluralize?
+		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
 		return " ORDER BY COUNT(distinct " + colName + ") " + direction
 	} else if strings.Compare(sort, "filesize") == 0 {
@@ -311,9 +311,12 @@ func executeFindQuery(tableName string, body string, args []interface{}, sortAnd
 	}
 
 	countQuery := buildCountQuery(body)
-	countResult, countErr := runCountQuery(countQuery, args)
-
 	idsQuery := body + sortAndPagination
+
+	// Perform query and fetch result
+	logger.Tracef("SQL: %s, args: %v", idsQuery, args)
+
+	countResult, countErr := runCountQuery(countQuery, args)
 	idsResult, idsErr := runIdsQuery(idsQuery, args)
 
 	if countErr != nil {
@@ -417,4 +420,32 @@ func sqlGenKeys(i interface{}, partial bool) string {
 		}
 	}
 	return strings.Join(query, ", ")
+}
+
+func getImage(tx *sqlx.Tx, query string, args ...interface{}) ([]byte, error) {
+	var rows *sqlx.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.Queryx(query, args...)
+	} else {
+		rows, err = database.DB.Queryx(query, args...)
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ret []byte
+	if rows.Next() {
+		if err := rows.Scan(&ret); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

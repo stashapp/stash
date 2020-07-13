@@ -8,4 +8,9 @@ fragment GalleryData on Gallery {
     name
     path
   }
+  scene {
+    id
+    title
+    path
+  }
 }
