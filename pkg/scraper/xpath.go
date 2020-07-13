@@ -55,43 +55,6 @@ func (s *xpathScraper) scrapeURL(url string) (*html.Node, *mappedScraper, error)
 	return doc, scraper, nil
 }
 
-type xpathQuery struct {
-	doc     *html.Node
-	scraper *xpathScraper
-}
-
-func (q *xpathQuery) runQuery(selector string) []string {
-	found, err := htmlquery.QueryAll(q.doc, selector)
-	if err != nil {
-		logger.Warnf("Error parsing xpath expression '%s': %s", selector, err.Error())
-		return nil
-	}
-
-	var ret []string
-	for _, n := range found {
-		ret = append(ret, nodeText(n))
-	}
-
-	return ret
-}
-
-func (q *xpathQuery) subScrape(value string) mappedQuery {
-	doc, err := q.scraper.loadURL(value)
-
-	if err != nil {
-		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
-		return nil
-	}
-
-	return q.scraper.getXPathQuery(doc)
-}
-
-func (s *xpathScraper) getXPathQuery(doc *html.Node) *xpathQuery {
-	return &xpathQuery{
-		doc: doc,
-	}
-}
-
 func (s *xpathScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer, error) {
 	doc, scraper, err := s.scrapeURL(url)
 	if err != nil {
@@ -137,6 +100,14 @@ func (s *xpathScraper) scrapePerformersByName(name string) ([]*models.ScrapedPer
 	return scraper.scrapePerformers(q)
 }
 
+func (s *xpathScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+	return nil, errors.New("scrapePerformerByFragment not supported for xpath scraper")
+}
+
+func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+	return nil, errors.New("scrapeSceneByFragment not supported for xpath scraper")
+}
+
 func (s *xpathScraper) loadURL(url string) (*html.Node, error) {
 	client := &http.Client{
 		Timeout: scrapeGetTimeout,
@@ -171,6 +142,43 @@ func (s *xpathScraper) loadURL(url string) (*html.Node, error) {
 	}
 
 	return ret, err
+}
+
+func (s *xpathScraper) getXPathQuery(doc *html.Node) *xpathQuery {
+	return &xpathQuery{
+		doc: doc,
+	}
+}
+
+type xpathQuery struct {
+	doc     *html.Node
+	scraper *xpathScraper
+}
+
+func (q *xpathQuery) runQuery(selector string) []string {
+	found, err := htmlquery.QueryAll(q.doc, selector)
+	if err != nil {
+		logger.Warnf("Error parsing xpath expression '%s': %s", selector, err.Error())
+		return nil
+	}
+
+	var ret []string
+	for _, n := range found {
+		ret = append(ret, nodeText(n))
+	}
+
+	return ret
+}
+
+func (q *xpathQuery) subScrape(value string) mappedQuery {
+	doc, err := q.scraper.loadURL(value)
+
+	if err != nil {
+		logger.Warnf("Error getting URL '%s' for sub-scraper: %s", value, err.Error())
+		return nil
+	}
+
+	return q.scraper.getXPathQuery(doc)
 }
 
 func commonPostProcess(value string) string {

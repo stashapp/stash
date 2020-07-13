@@ -45,6 +45,8 @@ func getScraper(scraper scraperTypeConfig, config config, globalConfig GlobalCon
 		return newScriptScraper(scraper, config, globalConfig)
 	case scraperActionStash:
 		return newStashScraper(scraper, config, globalConfig)
+	case scraperActionXPath:
+		return newXpathScraper(scraper, config, globalConfig)
 	}
 
 	panic("unknown scraper action: " + scraper.Action)

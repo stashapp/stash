@@ -1,6 +1,8 @@
 package scraper
 
 import (
+	"errors"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -43,6 +45,44 @@ type config struct {
 	XPathScrapers mappedScrapers `yaml:"xPathScrapers"`
 }
 
+func (c config) validate() error {
+	if strings.TrimSpace(c.Name) == "" {
+		return errors.New("name must not be empty")
+	}
+
+	if c.PerformerByName != nil {
+		if err := c.PerformerByName.validate(); err != nil {
+			return err
+		}
+	}
+
+	if c.PerformerByFragment != nil {
+		if err := c.PerformerByFragment.validate(); err != nil {
+			return err
+		}
+	}
+
+	if c.SceneByFragment != nil {
+		if err := c.SceneByFragment.validate(); err != nil {
+			return err
+		}
+	}
+
+	for _, s := range c.PerformerByURL {
+		if err := s.validate(); err != nil {
+			return err
+		}
+	}
+
+	for _, s := range c.SceneByURL {
+		if err := s.validate(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type stashServer struct {
 	URL string `yaml:"url"`
 }
@@ -56,9 +96,29 @@ type scraperTypeConfig struct {
 	QueryURL string `yaml:"queryURL"`
 }
 
+func (c scraperTypeConfig) validate() error {
+	if !c.Action.IsValid() {
+		return fmt.Errorf("%s is not a valid scraper action", c.Action)
+	}
+
+	if c.Action == scraperActionScript && len(c.Script) == 0 {
+		return errors.New("script is mandatory for script scraper action")
+	}
+
+	return nil
+}
+
 type scrapeByURLConfig struct {
 	scraperTypeConfig `yaml:",inline"`
 	URL               []string `yaml:"url,flow"`
+}
+
+func (c scrapeByURLConfig) validate() error {
+	if len(c.URL) == 0 {
+		return errors.New("url is mandatory for scrape by url scrapers")
+	}
+
+	return c.scraperTypeConfig.validate()
 }
 
 func (c scrapeByURLConfig) matchesURL(url string) bool {
@@ -86,6 +146,10 @@ func loadScraperFromYAML(id string, reader io.Reader) (*config, error) {
 	}
 
 	ret.ID = id
+
+	if err := ret.validate(); err != nil {
+		return nil, err
+	}
 
 	return ret, nil
 }
