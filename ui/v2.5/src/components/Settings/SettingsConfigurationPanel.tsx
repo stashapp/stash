@@ -17,6 +17,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
     undefined
   );
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
+  const [calculateMD5, setCalculateMD5] = useState<boolean>(false);
+  const [useMD5, setUseMD5] = useState<boolean>(false);
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
@@ -44,6 +46,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
     databasePath,
     generatedPath,
     cachePath,
+    calculateMD5,
+    useMD5,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
     forceMkv,
@@ -68,6 +72,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
       setCachePath(conf.general.cachePath);
+      setUseMD5(conf.general.useMD5);
+      setCalculateMD5(conf.general.calculateMD5);
       setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
@@ -167,6 +173,30 @@ export const SettingsConfigurationPanel: React.FC = () => {
     }
 
     return GQL.StreamingResolutionEnum.Original;
+  }
+
+  const namingHashes = [
+    "oshash",
+    "MD5",
+  ];
+
+  function namingHashToUseMD5(value: string) {
+    switch (value) {
+      case "oshash": 
+        return false;
+      case "MD5":
+        return true;
+    }
+
+    return false;
+  }
+
+  function md5FlagToNamingHash(value: boolean) {
+    if (value) {
+      return "MD5";
+    }
+
+    return "oshash";
   }
 
   if (error) return <h1>{error.message}</h1>;
@@ -270,6 +300,46 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
       </Form.Group>
 
+      <hr />
+
+      <Form.Group>
+        <h4>Hashing</h4>
+        <Form.Group>
+          <Form.Check
+            checked={calculateMD5}
+            label="Calculate MD5 for videos"
+            onChange={() => setCalculateMD5(!calculateMD5)}
+          />
+          <Form.Text className="text-muted">
+            Calculate MD5 checksum in addition to oshash. Enabling will cause initial scans to be slower.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="transcode-size">
+          <h6>Generated file naming hash</h6>
+          <Form.Control
+            className="col col-sm-6 input-control"
+            as="select"
+            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
+              setUseMD5(namingHashToUseMD5(event.currentTarget.value))
+            }
+            value={md5FlagToNamingHash(useMD5)}
+          >
+            {namingHashes.map((q) => (
+              <option key={q} value={q}>
+                {q}
+              </option>
+            ))}
+          </Form.Control>
+          <Form.Text className="text-muted">
+            Use MD5 or oshash for generated file naming. Changing this requires
+            that all scenes for the applicable MD5/oshash value populated. 
+            After changing this value, existing generated files will need to be 
+            migrated or regenerated. See Tasks page for migration.
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
+      
       <hr />
 
       <Form.Group>

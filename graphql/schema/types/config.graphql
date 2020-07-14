@@ -16,6 +16,10 @@ input ConfigGeneralInput {
   generatedPath: String
   """Path to cache"""
   cachePath: String
+  """Whether to calculate MD5 checksums for scene video files"""
+  calculateMD5: Boolean!
+  """Whether to use MD5 checksums for generated file naming"""
+  useMD5: Boolean!
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
@@ -53,6 +57,10 @@ type ConfigGeneralResult {
   generatedPath: String!
   """Path to cache"""
   cachePath: String!
+  """Whether to calculate MD5 checksums for scene video files"""
+  calculateMD5: Boolean!
+  """Whether to use MD5 checksums for generated file naming"""
+  useMD5: Boolean!
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""

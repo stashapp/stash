@@ -45,6 +45,17 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		config.Set(config.Cache, input.CachePath)
 	}
 
+	if input.UseMd5 != config.IsUseMD5() {
+		// validate changing UseMD5
+		if err := manager.ValidateUseMD5(input.UseMd5); err != nil {
+			return makeConfigGeneralResult(), err
+		}
+
+		config.Set(config.UseMD5, input.UseMd5)
+	}
+
+	config.Set(config.CalculateMD5, input.CalculateMd5)
+
 	if input.MaxTranscodeSize != nil {
 		config.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
 	}

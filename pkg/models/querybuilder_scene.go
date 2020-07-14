@@ -40,6 +40,16 @@ WHERE scenes_tags.tag_id = ?
 GROUP BY scenes_tags.scene_id
 `
 
+var countScenesForMissingChecksumQuery = `
+SELECT id FROM scenes
+WHERE scenes.checksum is null
+`
+
+var countScenesForMissingOSHashQuery = `
+SELECT id FROM scenes
+WHERE scenes.oshash is null
+`
+
 type SceneQueryBuilder struct{}
 
 func NewSceneQueryBuilder() SceneQueryBuilder {
@@ -216,6 +226,16 @@ func (qb *SceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
 func (qb *SceneQueryBuilder) CountByTagID(tagID int) (int, error) {
 	args := []interface{}{tagID}
 	return runCountQuery(buildCountQuery(countScenesForTagQuery), args)
+}
+
+// CountMissingChecksum returns the number of scenes missing a checksum value.
+func (qb *SceneQueryBuilder) CountMissingChecksum() (int, error) {
+	return runCountQuery(buildCountQuery(countScenesForMissingChecksumQuery), []interface{}{})
+}
+
+// CountMissingOSHash returns the number of scenes missing an oshash value.
+func (qb *SceneQueryBuilder) CountMissingOSHash() (int, error) {
+	return runCountQuery(buildCountQuery(countScenesForMissingOSHashQuery), []interface{}{})
 }
 
 func (qb *SceneQueryBuilder) Wall(q *string) ([]*Scene, error) {

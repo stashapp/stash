@@ -6,10 +6,8 @@ import (
 	"strconv"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/spf13/viper"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -164,26 +162,5 @@ func DeleteSceneFile(scene *models.Scene) {
 	err := os.Remove(scene.Path)
 	if err != nil {
 		logger.Warnf("Could not delete file %s: %s", scene.Path, err.Error())
-	}
-}
-
-func setInitialMD5Config() {
-	// if there are no scene files in the database, then default the useMD5
-	// and calculateMD5 config settings to false, otherwise set them to true
-	// for backwards compatibility purposes
-	sqb := models.NewSceneQueryBuilder()
-	count, err := sqb.Count()
-	if err != nil {
-		logger.Errorf("Error while counting scenes: %s", err.Error())
-		return
-	}
-
-	usingMD5 := count != 0
-
-	viper.SetDefault(config.UseMD5, usingMD5)
-	viper.SetDefault(config.CalculateMD5, usingMD5)
-
-	if err := config.Write(); err != nil {
-		logger.Errorf("Error while writing configuration file: %s", err.Error())
 	}
 }
