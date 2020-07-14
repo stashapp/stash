@@ -9,6 +9,7 @@ import {
   mutateMetadataScan,
   mutateMetadataAutoTag,
   mutateMetadataExport,
+  mutateMigrateHashNaming,
   mutateStopJob,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -272,6 +273,21 @@ export const SettingsTasksPanel: React.FC = () => {
         <Form.Text className="text-muted">
           Check for missing files and remove them from the database. This is a
           destructive action.
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group>
+        <Button
+          id="migrateHashNaming"
+          variant="danger"
+          onClick={() => mutateMigrateHashNaming().then(() => {
+            jobStatus.refetch();
+          })}
+        >
+          Migrate to current hash naming
+        </Button>
+        <Form.Text className="text-muted">
+          Used after changing the Generated file naming hash to rename existing generated files to the new hash format.
         </Form.Text>
       </Form.Group>
 

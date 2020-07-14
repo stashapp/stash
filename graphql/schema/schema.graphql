@@ -155,6 +155,8 @@ type Mutation {
   metadataAutoTag(input: AutoTagMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
   metadataClean: String!
+  """Migrate generated files for the current hash naming"""
+  migrateHashNaming: String!
 
   """Reload scrapers"""
   reloadScrapers: Boolean!

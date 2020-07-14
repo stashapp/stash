@@ -584,6 +584,54 @@ func (s *singleton) Clean() {
 	}()
 }
 
+func (s *singleton) MigrateHash() {
+	if s.Status.Status != Idle {
+		return
+	}
+	s.Status.SetStatus(Clean)
+	s.Status.indefiniteProgress()
+
+	qb := models.NewSceneQueryBuilder()
+
+	go func() {
+		defer s.returnToIdleState()
+
+		logger.Infof("Migrating generated files for current naming hash")
+
+		scenes, err := qb.All()
+		if err != nil {
+			logger.Errorf("failed to fetch list of scenes for cleaning")
+			return
+		}
+
+		var wg sync.WaitGroup
+		s.Status.Progress = 0
+		total := len(scenes)
+		useMD5 := config.IsUseMD5()
+
+		for i, scene := range scenes {
+			s.Status.setProgress(i, total)
+			if s.Status.stopping {
+				logger.Info("Stopping due to user request")
+				return
+			}
+
+			if scene == nil {
+				logger.Errorf("nil scene, skipping Clean")
+				continue
+			}
+
+			wg.Add(1)
+
+			task := MigrateHashTask{Scene: scene, useMD5: useMD5}
+			go task.Start(&wg)
+			wg.Wait()
+		}
+
+		logger.Info("Finished migrating")
+	}()
+}
+
 func (s *singleton) returnToIdleState() {
 	if r := recover(); r != nil {
 		logger.Info("recovered from ", r)

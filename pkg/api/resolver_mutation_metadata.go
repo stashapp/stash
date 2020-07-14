@@ -37,6 +37,11 @@ func (r *mutationResolver) MetadataClean(ctx context.Context) (string, error) {
 	return "todo", nil
 }
 
+func (r *mutationResolver) MigrateHashNaming(ctx context.Context) (string, error) {
+	manager.GetInstance().MigrateHash()
+	return "todo", nil
+}
+
 func (r *mutationResolver) JobStatus(ctx context.Context) (*models.MetadataUpdateStatus, error) {
 	status := manager.GetInstance().Status
 	ret := models.MetadataUpdateStatus{
