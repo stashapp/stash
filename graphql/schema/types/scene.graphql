@@ -25,7 +25,8 @@ type SceneMovie {
 
 type Scene {
   id: ID!
-  checksum: String!
+  checksum: String
+  oshash: String
   title: String
   details: String
   url: String

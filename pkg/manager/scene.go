@@ -6,12 +6,16 @@ import (
 	"strconv"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/spf13/viper"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+// DestroyScene deletes a scene and its associated relationships from the
+// database.
 func DestroyScene(sceneID int, tx *sqlx.Tx) error {
 	qb := models.NewSceneQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
@@ -44,18 +48,25 @@ func DestroyScene(sceneID int, tx *sqlx.Tx) error {
 	return nil
 }
 
-func DeleteGeneratedSceneFiles(scene *models.Scene) {
-	markersFolder := filepath.Join(GetInstance().Paths.Generated.Markers, scene.Checksum)
+// DeleteGeneratedSceneFiles deletes generated files for the provided scene.
+func DeleteGeneratedSceneFiles(scene *models.Scene, useMD5 bool) {
+	sceneHash := scene.GetHash(useMD5)
+
+	if sceneHash == "" {
+		return
+	}
+
+	markersFolder := filepath.Join(GetInstance().Paths.Generated.Markers, sceneHash)
 
 	exists, _ := utils.FileExists(markersFolder)
 	if exists {
 		err := os.RemoveAll(markersFolder)
 		if err != nil {
-			logger.Warnf("Could not delete file %s: %s", scene.Path, err.Error())
+			logger.Warnf("Could not delete folder %s: %s", markersFolder, err.Error())
 		}
 	}
 
-	thumbPath := GetInstance().Paths.Scene.GetThumbnailScreenshotPath(scene.Checksum)
+	thumbPath := GetInstance().Paths.Scene.GetThumbnailScreenshotPath(sceneHash)
 	exists, _ = utils.FileExists(thumbPath)
 	if exists {
 		err := os.Remove(thumbPath)
@@ -64,7 +75,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	normalPath := GetInstance().Paths.Scene.GetScreenshotPath(scene.Checksum)
+	normalPath := GetInstance().Paths.Scene.GetScreenshotPath(sceneHash)
 	exists, _ = utils.FileExists(normalPath)
 	if exists {
 		err := os.Remove(normalPath)
@@ -73,7 +84,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	streamPreviewPath := GetInstance().Paths.Scene.GetStreamPreviewPath(scene.Checksum)
+	streamPreviewPath := GetInstance().Paths.Scene.GetStreamPreviewPath(sceneHash)
 	exists, _ = utils.FileExists(streamPreviewPath)
 	if exists {
 		err := os.Remove(streamPreviewPath)
@@ -82,7 +93,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	streamPreviewImagePath := GetInstance().Paths.Scene.GetStreamPreviewImagePath(scene.Checksum)
+	streamPreviewImagePath := GetInstance().Paths.Scene.GetStreamPreviewImagePath(sceneHash)
 	exists, _ = utils.FileExists(streamPreviewImagePath)
 	if exists {
 		err := os.Remove(streamPreviewImagePath)
@@ -91,7 +102,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	transcodePath := GetInstance().Paths.Scene.GetTranscodePath(scene.Checksum)
+	transcodePath := GetInstance().Paths.Scene.GetTranscodePath(sceneHash)
 	exists, _ = utils.FileExists(transcodePath)
 	if exists {
 		// kill any running streams
@@ -103,7 +114,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	spritePath := GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.Checksum)
+	spritePath := GetInstance().Paths.Scene.GetSpriteImageFilePath(sceneHash)
 	exists, _ = utils.FileExists(spritePath)
 	if exists {
 		err := os.Remove(spritePath)
@@ -112,7 +123,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	vttPath := GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.Checksum)
+	vttPath := GetInstance().Paths.Scene.GetSpriteVttFilePath(sceneHash)
 	exists, _ = utils.FileExists(vttPath)
 	if exists {
 		err := os.Remove(vttPath)
@@ -122,9 +133,11 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 	}
 }
 
-func DeleteSceneMarkerFiles(scene *models.Scene, seconds int) {
-	videoPath := GetInstance().Paths.SceneMarkers.GetStreamPath(scene.Checksum, seconds)
-	imagePath := GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.Checksum, seconds)
+// DeleteSceneMarkerFiles deletes generated files for a scene marker with the
+// provided scene and timestamp.
+func DeleteSceneMarkerFiles(scene *models.Scene, seconds int, useMD5 bool) {
+	videoPath := GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(useMD5), seconds)
+	imagePath := GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(useMD5), seconds)
 
 	exists, _ := utils.FileExists(videoPath)
 	if exists {
@@ -143,6 +156,7 @@ func DeleteSceneMarkerFiles(scene *models.Scene, seconds int) {
 	}
 }
 
+// DeleteSceneFile deletes the scene video file from the filesystem.
 func DeleteSceneFile(scene *models.Scene) {
 	// kill any running encoders
 	KillRunningStreams(scene.Path)
@@ -150,5 +164,26 @@ func DeleteSceneFile(scene *models.Scene) {
 	err := os.Remove(scene.Path)
 	if err != nil {
 		logger.Warnf("Could not delete file %s: %s", scene.Path, err.Error())
+	}
+}
+
+func setInitialMD5Config() {
+	// if there are no scene files in the database, then default the useMD5
+	// and calculateMD5 config settings to false, otherwise set them to true
+	// for backwards compatibility purposes
+	sqb := models.NewSceneQueryBuilder()
+	count, err := sqb.Count()
+	if err != nil {
+		logger.Errorf("Error while counting scenes: %s", err.Error())
+		return
+	}
+
+	usingMD5 := count != 0
+
+	viper.SetDefault(config.UseMD5, usingMD5)
+	viper.SetDefault(config.CalculateMD5, usingMD5)
+
+	if err := config.Write(); err != nil {
+		logger.Errorf("Error while writing configuration file: %s", err.Error())
 	}
 }

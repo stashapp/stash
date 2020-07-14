@@ -1,17 +1,19 @@
 package manager
 
 import (
+	"sync"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"sync"
 )
 
 type GeneratePreviewTask struct {
 	Scene         models.Scene
 	ImagePreview  bool
 	PreviewPreset string
+	useMD5        bool
 }
 
 func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
@@ -19,8 +21,7 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 
 	videoFilename := t.videoFilename()
 	imageFilename := t.imageFilename()
-	videoExists := t.doesVideoPreviewExist(t.Scene.Checksum)
-	if (!t.ImagePreview || t.doesImagePreviewExist(t.Scene.Checksum)) && videoExists {
+	if !t.required() {
 		return
 	}
 
@@ -30,6 +31,8 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
+	sceneHash := t.Scene.GetHash(t.useMD5)
+	videoExists := t.doesVideoPreviewExist(sceneHash)
 	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, !videoExists, t.ImagePreview, t.PreviewPreset)
 	if err != nil {
 		logger.Errorf("error creating preview generator: %s", err.Error())
@@ -42,20 +45,35 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 	}
 }
 
+func (t GeneratePreviewTask) required() bool {
+	sceneHash := t.Scene.GetHash(t.useMD5)
+	videoExists := t.doesVideoPreviewExist(sceneHash)
+	imageExists := !t.ImagePreview || t.doesImagePreviewExist(sceneHash)
+	return !imageExists || !videoExists
+}
+
 func (t *GeneratePreviewTask) doesVideoPreviewExist(sceneChecksum string) bool {
+	if sceneChecksum == "" {
+		return false
+	}
+
 	videoExists, _ := utils.FileExists(instance.Paths.Scene.GetStreamPreviewPath(sceneChecksum))
 	return videoExists
 }
 
 func (t *GeneratePreviewTask) doesImagePreviewExist(sceneChecksum string) bool {
+	if sceneChecksum == "" {
+		return false
+	}
+
 	imageExists, _ := utils.FileExists(instance.Paths.Scene.GetStreamPreviewImagePath(sceneChecksum))
 	return imageExists
 }
 
 func (t *GeneratePreviewTask) videoFilename() string {
-	return t.Scene.Checksum + ".mp4"
+	return t.Scene.GetHash(t.useMD5) + ".mp4"
 }
 
 func (t *GeneratePreviewTask) imageFilename() string {
-	return t.Scene.Checksum + ".webp"
+	return t.Scene.GetHash(t.useMD5) + ".webp"
 }

@@ -61,13 +61,14 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// detect if not a streamable file and try to transcode it instead
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.Checksum)
+	useMD5 := config.IsUseMD5()
+	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.GetHash(useMD5))
 	videoCodec := scene.VideoCodec.String
 	audioCodec := ffmpeg.MissingUnsupported
 	if scene.AudioCodec.Valid {
 		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
 	}
-	hasTranscode, _ := manager.HasTranscode(scene)
+	hasTranscode := manager.HasTranscode(scene, useMD5)
 	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, ffmpeg.Container(container)) && ffmpeg.IsValidAudioForContainer(audioCodec, ffmpeg.Container(container)) || hasTranscode {
 		manager.RegisterStream(filepath, &w)
 		http.ServeFile(w, r, filepath)
@@ -150,7 +151,7 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetScreenshotPath(scene.Checksum)
+	filepath := manager.GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.IsUseMD5()))
 
 	// fall back to the scene image blob if the file isn't present
 	screenshotExists, _ := utils.FileExists(filepath)
@@ -165,13 +166,13 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 
 func (rs sceneRoutes) Preview(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewPath(scene.Checksum)
+	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewPath(scene.GetHash(config.IsUseMD5()))
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewImagePath(scene.Checksum)
+	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewImagePath(scene.GetHash(config.IsUseMD5()))
 	http.ServeFile(w, r, filepath)
 }
 
@@ -227,14 +228,14 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	w.Header().Set("Content-Type", "text/vtt")
-	filepath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.Checksum)
+	filepath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.GetHash(config.IsUseMD5()))
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) VttSprite(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	w.Header().Set("Content-Type", "image/jpeg")
-	filepath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.Checksum)
+	filepath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.GetHash(config.IsUseMD5()))
 	http.ServeFile(w, r, filepath)
 }
 
@@ -248,7 +249,7 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, http.StatusText(404), 404)
 		return
 	}
-	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPath(scene.Checksum, int(sceneMarker.Seconds))
+	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(config.IsUseMD5()), int(sceneMarker.Seconds))
 	http.ServeFile(w, r, filepath)
 }
 
@@ -262,7 +263,7 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 		http.Error(w, http.StatusText(404), 404)
 		return
 	}
-	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.Checksum, int(sceneMarker.Seconds))
+	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(config.IsUseMD5()), int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder
 	exists, _ := utils.FileExists(filepath)

@@ -21,6 +21,7 @@ import (
 type ExportTask struct {
 	Mappings *jsonschema.Mappings
 	Scraped  []jsonschema.ScrapedItem
+	useMD5   bool
 }
 
 func (t *ExportTask) Start(wg *sync.WaitGroup) {
@@ -77,7 +78,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
 		if (i % 100) == 0 { // make progress easier to read
 			logger.Progressf("[scenes] %d of %d", index, len(scenes))
 		}
-		t.Mappings.Scenes = append(t.Mappings.Scenes, jsonschema.PathMapping{Path: scene.Path, Checksum: scene.Checksum})
+		t.Mappings.Scenes = append(t.Mappings.Scenes, jsonschema.PathMapping{Path: scene.Path, Checksum: scene.GetHash(t.useMD5)})
 		jobCh <- scene // feed workers
 	}
 
@@ -101,6 +102,14 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 		newSceneJSON := jsonschema.Scene{
 			CreatedAt: models.JSONTime{Time: scene.CreatedAt.Timestamp},
 			UpdatedAt: models.JSONTime{Time: scene.UpdatedAt.Timestamp},
+		}
+
+		if scene.Checksum.Valid {
+			newSceneJSON.Checksum = scene.Checksum.String
+		}
+
+		if scene.OSHash.Valid {
+			newSceneJSON.OSHash = scene.OSHash.String
 		}
 
 		var studioName string
@@ -150,15 +159,17 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 		newSceneJSON.Performers = t.getPerformerNames(performers)
 		newSceneJSON.Tags = t.getTagNames(tags)
 
+		sceneHash := scene.GetHash(t.useMD5)
+
 		for _, sceneMarker := range sceneMarkers {
 			primaryTag, err := tagQB.Find(sceneMarker.PrimaryTagID, tx)
 			if err != nil {
-				logger.Errorf("[scenes] <%s> invalid primary tag for scene marker: %s", scene.Checksum, err.Error())
+				logger.Errorf("[scenes] <%s> invalid primary tag for scene marker: %s", sceneHash, err.Error())
 				continue
 			}
 			sceneMarkerTags, err := tagQB.FindBySceneMarkerID(sceneMarker.ID, tx)
 			if err != nil {
-				logger.Errorf("[scenes] <%s> invalid tags for scene marker: %s", scene.Checksum, err.Error())
+				logger.Errorf("[scenes] <%s> invalid tags for scene marker: %s", sceneHash, err.Error())
 				continue
 			}
 			if sceneMarker.Seconds == 0 || primaryTag.Name == "" {
@@ -228,15 +239,15 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 			newSceneJSON.Cover = utils.GetBase64StringFromData(cover)
 		}
 
-		sceneJSON, err := instance.JSON.getScene(scene.Checksum)
+		sceneJSON, err := instance.JSON.getScene(sceneHash)
 		if err != nil {
 			logger.Debugf("[scenes] error reading scene json: %s", err.Error())
 		} else if jsonschema.CompareJSON(*sceneJSON, newSceneJSON) {
 			continue
 		}
 
-		if err := instance.JSON.saveScene(scene.Checksum, &newSceneJSON); err != nil {
-			logger.Errorf("[scenes] <%s> failed to save json: %s", scene.Checksum, err.Error())
+		if err := instance.JSON.saveScene(sceneHash, &newSceneJSON); err != nil {
+			logger.Errorf("[scenes] <%s> failed to save json: %s", sceneHash, err.Error())
 		}
 	}
 

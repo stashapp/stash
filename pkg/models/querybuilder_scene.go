@@ -49,9 +49,9 @@ func NewSceneQueryBuilder() SceneQueryBuilder {
 func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO scenes (checksum, path, title, details, url, date, rating, o_counter, size, duration, video_codec,
+		`INSERT INTO scenes (oshash, checksum, path, title, details, url, date, rating, o_counter, size, duration, video_codec,
                     			    audio_codec, format, width, height, framerate, bitrate, studio_id, created_at, updated_at)
-				VALUES (:checksum, :path, :title, :details, :url, :date, :rating, :o_counter, :size, :duration, :video_codec,
+				VALUES (:oshash, :checksum, :path, :title, :details, :url, :date, :rating, :o_counter, :size, :duration, :video_codec,
 					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :created_at, :updated_at)
 		`,
 		newScene,
@@ -159,6 +159,12 @@ func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*Scene, error) {
 	return qb.queryScene(query, args, nil)
 }
 
+func (qb *SceneQueryBuilder) FindByOSHash(oshash string) (*Scene, error) {
+	query := "SELECT * FROM scenes WHERE oshash = ? LIMIT 1"
+	args := []interface{}{oshash}
+	return qb.queryScene(query, args, nil)
+}
+
 func (qb *SceneQueryBuilder) FindByPath(path string) (*Scene, error) {
 	query := selectAll(sceneTable) + "WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
@@ -248,7 +254,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"scenes.title", "scenes.details", "scenes.path", "scenes.checksum", "scene_markers.title"}
+		searchColumns := []string{"scenes.title", "scenes.details", "scenes.path", "scenes.oshash", "scenes.checksum", "scene_markers.title"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
 		query.addArg(thisArgs...)
@@ -516,6 +522,32 @@ func (qb *SceneQueryBuilder) UpdateFormat(id int, format string, tx *sqlx.Tx) er
 	_, err := tx.Exec(
 		`UPDATE scenes SET format = ? WHERE scenes.id = ? `,
 		format, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *SceneQueryBuilder) UpdateOSHash(id int, oshash string, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET oshash = ? WHERE scenes.id = ? `,
+		oshash, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *SceneQueryBuilder) UpdateChecksum(id int, checksum string, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET checksum = ? WHERE scenes.id = ? `,
+		checksum, id,
 	)
 	if err != nil {
 		return err

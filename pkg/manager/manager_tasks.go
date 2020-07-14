@@ -106,6 +106,8 @@ func (s *singleton) Scan(useFileMetadata bool) {
 
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
+		useMD5 := config.IsUseMD5()
+		calculateMD5 := config.IsCalculateMD5()
 		for i, path := range results {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -113,7 +115,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 				return
 			}
 			wg.Add(1)
-			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata}
+			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, useMD5: useMD5, calculateMD5: calculateMD5}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -143,7 +145,7 @@ func (s *singleton) Import() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		task := ImportTask{}
+		task := ImportTask{useMD5: config.IsUseMD5()}
 		go task.Start(&wg)
 		wg.Wait()
 	}()
@@ -161,7 +163,7 @@ func (s *singleton) Export() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		task := ExportTask{}
+		task := ExportTask{useMD5: config.IsUseMD5()}
 		go task.Start(&wg)
 		wg.Wait()
 	}()
@@ -220,6 +222,9 @@ func (s *singleton) Generate(sprites bool, previews bool, previewPreset *models.
 		} else {
 			logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes)
 		}
+
+		useMD5 := config.IsUseMD5()
+
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -240,22 +245,22 @@ func (s *singleton) Generate(sprites bool, previews bool, previewPreset *models.
 			}
 
 			if sprites {
-				task := GenerateSpriteTask{Scene: *scene}
+				task := GenerateSpriteTask{Scene: *scene, useMD5: useMD5}
 				go task.Start(&wg)
 			}
 
 			if previews {
-				task := GeneratePreviewTask{Scene: *scene, ImagePreview: imagePreviews, PreviewPreset: preset}
+				task := GeneratePreviewTask{Scene: *scene, ImagePreview: imagePreviews, PreviewPreset: preset, useMD5: useMD5}
 				go task.Start(&wg)
 			}
 
 			if markers {
-				task := GenerateMarkersTask{Scene: *scene}
+				task := GenerateMarkersTask{Scene: *scene, useMD5: useMD5}
 				go task.Start(&wg)
 			}
 
 			if transcodes {
-				task := GenerateTranscodeTask{Scene: *scene}
+				task := GenerateTranscodeTask{Scene: *scene, useMD5: useMD5}
 				go task.Start(&wg)
 			}
 
@@ -324,6 +329,7 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 		task := GenerateScreenshotTask{
 			Scene:        *scene,
 			ScreenshotAt: at,
+			useMD5:       config.IsUseMD5(),
 		}
 
 		var wg sync.WaitGroup
@@ -535,6 +541,7 @@ func (s *singleton) Clean() {
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
 		total := len(scenes) + len(galleries)
+		useMD5 := config.IsUseMD5()
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -549,7 +556,7 @@ func (s *singleton) Clean() {
 
 			wg.Add(1)
 
-			task := CleanTask{Scene: scene}
+			task := CleanTask{Scene: scene, useMD5: useMD5}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -624,33 +631,50 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, sprites, previews, im
 		chTimeout <- struct{}{}
 	}()
 
+	useMD5 := true
+
 	logger.Infof("Counting content to generate...")
 	for _, scene := range scenes {
 		if scene != nil {
 			if sprites {
-				task := GenerateSpriteTask{Scene: *scene}
-				if !task.doesSpriteExist(task.Scene.Checksum) {
+				task := GenerateSpriteTask{
+					Scene:  *scene,
+					useMD5: useMD5,
+				}
+
+				if task.required() {
 					totals.sprites++
 				}
 			}
 
 			if previews {
-				task := GeneratePreviewTask{Scene: *scene, ImagePreview: imagePreviews}
-				if !task.doesVideoPreviewExist(task.Scene.Checksum) {
+				task := GeneratePreviewTask{
+					Scene:        *scene,
+					ImagePreview: imagePreviews,
+					useMD5:       useMD5,
+				}
+				sceneHash := scene.GetHash(task.useMD5)
+				if !task.doesVideoPreviewExist(sceneHash) {
 					totals.previews++
 				}
-				if imagePreviews && !task.doesImagePreviewExist(task.Scene.Checksum) {
+				if imagePreviews && !task.doesImagePreviewExist(sceneHash) {
 					totals.imagePreviews++
 				}
 			}
 
 			if markers {
-				task := GenerateMarkersTask{Scene: *scene}
+				task := GenerateMarkersTask{
+					Scene:  *scene,
+					useMD5: useMD5,
+				}
 				totals.markers += int64(task.isMarkerNeeded())
-
 			}
+
 			if transcodes {
-				task := GenerateTranscodeTask{Scene: *scene}
+				task := GenerateTranscodeTask{
+					Scene:  *scene,
+					useMD5: useMD5,
+				}
 				if task.isTranscodeNeeded() {
 					totals.transcodes++
 				}

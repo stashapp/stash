@@ -9,7 +9,11 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-func IsStreamable(scene *models.Scene) (bool, error) {
+// IsStreamable returns true if the scene video can be streamed directly
+// without live transcoding. A video can be streamed directly if it has
+// a transcode already, or if video and audio codecs and container are
+// compatible with browser viewing.
+func IsStreamable(scene *models.Scene, useMD5 bool) (bool, error) {
 	if scene == nil {
 		return false, fmt.Errorf("nil scene")
 	}
@@ -35,16 +39,26 @@ func IsStreamable(scene *models.Scene) (bool, error) {
 		logger.Debugf("File is streamable %s, %s, %s\n", videoCodec, audioCodec, container)
 		return true, nil
 	} else {
-		hasTranscode, _ := HasTranscode(scene)
+		hasTranscode := HasTranscode(scene, useMD5)
 		logger.Debugf("File is not streamable , transcode is needed  %s, %s, %s\n", videoCodec, audioCodec, container)
 		return hasTranscode, nil
 	}
 }
 
-func HasTranscode(scene *models.Scene) (bool, error) {
+// HasTranscode returns true if a transcoded video exists for the provided
+// scene. It will check using the OSHash of the scene first, then fall back
+// to the checksum.
+func HasTranscode(scene *models.Scene, useMD5 bool) bool {
 	if scene == nil {
-		return false, fmt.Errorf("nil scene")
+		return false
 	}
-	transcodePath := instance.Paths.Scene.GetTranscodePath(scene.Checksum)
-	return utils.FileExists(transcodePath)
+
+	sceneHash := scene.GetHash(useMD5)
+	if sceneHash == "" {
+		return false
+	}
+
+	transcodePath := instance.Paths.Scene.GetTranscodePath(sceneHash)
+	ret, _ := utils.FileExists(transcodePath)
+	return ret
 }

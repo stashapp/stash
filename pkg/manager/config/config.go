@@ -27,6 +27,14 @@ const Database = "database"
 
 const Exclude = "exclude"
 
+// CalculateMD5 is the config key used to determine if MD5 should be calculated
+// for video files.
+const CalculateMD5 = "calculate_md5"
+
+// UseMD5 is the config key used to determine if MD5 should be used when
+// generating and using generated files for scenes.
+const UseMD5 = "use_md5"
+
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
@@ -138,6 +146,18 @@ func GetLanguage() string {
 	}
 
 	return ret
+}
+
+// IsCalculateMD5 returns true if MD5 checksums should be generated for
+// scene video files.
+func IsCalculateMD5() bool {
+	return viper.GetBool(CalculateMD5)
+}
+
+// IsUseMD5 returns true if the video MD5 checksum should be used to identify
+// scene video files for generated files. If false, then the oshash is used.
+func IsUseMD5() bool {
+	return viper.GetBool(UseMD5)
 }
 
 func GetScrapersPath() string {

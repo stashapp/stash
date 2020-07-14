@@ -16,6 +16,7 @@ import (
 type GenerateScreenshotTask struct {
 	Scene        models.Scene
 	ScreenshotAt *float64
+	useMD5       bool
 }
 
 func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
@@ -36,7 +37,7 @@ func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
 		at = *t.ScreenshotAt
 	}
 
-	checksum := t.Scene.Checksum
+	checksum := t.Scene.GetHash(t.useMD5)
 	normalPath := instance.Paths.Scene.GetScreenshotPath(checksum)
 
 	// we'll generate the screenshot, grab the generated data and set it
@@ -69,7 +70,7 @@ func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
 
-	if err := SetSceneScreenshot(t.Scene.Checksum, coverImageData); err != nil {
+	if err := SetSceneScreenshot(checksum, coverImageData); err != nil {
 		logger.Errorf("Error writing screenshot: %s", err.Error())
 		tx.Rollback()
 		return
