@@ -140,3 +140,8 @@ type SceneParserResultType {
   count: Int!
   results: [SceneParserResult!]!
 }
+
+input SceneHashInput {
+  checksum: String
+  oshash: String
+}

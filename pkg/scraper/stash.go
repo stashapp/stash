@@ -114,14 +114,22 @@ func scrapeSceneFragmentStash(c scraperTypeConfig, scene models.SceneUpdateInput
 		return nil, err
 	}
 
-	// TODO - change findScene to accept multiple inputs
 	var q struct {
-		FindScene *models.ScrapedSceneStash `graphql:"findScene(checksum: $c)"`
+		FindScene *models.ScrapedSceneStash `graphql:"findSceneByHash(input: $c)"`
 	}
 
-	checksum := graphql.String(storedScene.Checksum.String)
+	type SceneHashInput struct {
+		Checksum *string `graphql:"checksum" json:"checksum"`
+		Oshash   *string `graphql:"oshash" json:"oshash"`
+	}
+
+	input := SceneHashInput{
+		Checksum: &storedScene.Checksum.String,
+		Oshash:   &storedScene.OSHash.String,
+	}
+
 	vars := map[string]interface{}{
-		"c": &checksum,
+		"c": &input,
 	}
 
 	client := getStashClient(c)
