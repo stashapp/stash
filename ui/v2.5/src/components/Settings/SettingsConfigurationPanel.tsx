@@ -312,7 +312,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             onChange={() => setCalculateMD5(!calculateMD5)}
           />
           <Form.Text className="text-muted">
-            Calculate MD5 checksum in addition to oshash. Enabling will cause initial scans to be slower.
+            Calculate MD5 checksum in addition to oshash. Enabling will cause initial scans to be slower. File naming hash must be set to oshash to disable MD5 calculation.
           </Form.Text>
         </Form.Group>
 
@@ -334,7 +334,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Control>
           <Form.Text className="text-muted">
             Use MD5 or oshash for generated file naming. Changing this requires
-            that all scenes for the applicable MD5/oshash value populated. 
+            that all scenes have the applicable MD5/oshash value populated. 
             After changing this value, existing generated files will need to be 
             migrated or regenerated. See Tasks page for migration.
           </Form.Text>

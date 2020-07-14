@@ -2,7 +2,10 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 
 const markup = `
+#### 💥 **Note: After upgrading, the next scan will populate all scenes with oshash hashes. MD5 calculation can be disabled after populating the oshash for all scenes. See \`Hashing Algorithms\` in the \`Configuration\` section of the manual for details. **
+
 ### ✨ New Features
+*  Add oshash algorithm for hashing scene video files. Enabled by default on new systems.
 *  Add tag thumbnails, tags grid view and tag page.
 *  Add post-scrape dialog.
 *  Add various keyboard shortcuts (see manual).

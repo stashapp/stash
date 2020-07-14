@@ -34,6 +34,24 @@ exclude:
 
 _a useful [link](https://regex101.com/) to experiment with regexps_
 
+## Hashing algorithms
+
+Stash identifies video files by calculating a hash of the file. There are two algorithms available for hashing: `oshash` and `MD5`. `MD5` requires reading the entire file, and can therefore be slow, particularly when reading files over a network. `oshash` (which uses OpenSubtitle's hashing algorithm) only reads 64k from each end of the file.
+
+The hash is used to name the generated files such as preview images and videos, and sprite images.
+
+By default, new systems have MD5 calculation disabled for optimal performance. Existing systems that are upgraded will have the oshash populated for each scene on the next scan. 
+
+### Changing the hashing algorithm
+
+To change the file naming hash to oshash, all scenes must have their oshash values populated. oshash population is done automatically when scanning. 
+
+To change the file naming hash to `MD5`, the MD5 must be populated for all scenes. To do this, `Calculate MD5` for videos must be enabled and the library must be rescanned.
+
+MD5 calculation may only be disabled if the file naming hash is set to `oshash`.
+
+After changing the file naming hash, any existing generated files will now be named incorrectly. This means that stash will not find them and may regenerate them if the `Generate task` is used. To remedy this, run the `Rename generated files` task, which will rename existing generated files to their correct names.
+
 ## Scraping User Agent string
 
 Some websites require a legitimate User-Agent string when receiving requests, or they will be rejected. If entered, this string will be applied as the `User-Agent` header value in http scrape requests.
