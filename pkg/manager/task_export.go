@@ -231,7 +231,7 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 
 		cover, err := sceneQB.GetSceneCover(scene.ID, tx)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene cover: %s", scene.Checksum, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene cover: %s", sceneHash, err.Error())
 			continue
 		}
 

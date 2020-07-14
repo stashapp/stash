@@ -175,14 +175,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
     return GQL.StreamingResolutionEnum.Original;
   }
 
-  const namingHashes = [
-    "oshash",
-    "MD5",
-  ];
+  const namingHashes = ["oshash", "MD5"];
 
   function namingHashToUseMD5(value: string) {
     switch (value) {
-      case "oshash": 
+      case "oshash":
         return false;
       case "MD5":
         return true;
@@ -312,7 +309,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             onChange={() => setCalculateMD5(!calculateMD5)}
           />
           <Form.Text className="text-muted">
-            Calculate MD5 checksum in addition to oshash. Enabling will cause initial scans to be slower. File naming hash must be set to oshash to disable MD5 calculation.
+            Calculate MD5 checksum in addition to oshash. Enabling will cause
+            initial scans to be slower. File naming hash must be set to oshash
+            to disable MD5 calculation.
           </Form.Text>
         </Form.Group>
 
@@ -334,13 +333,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Control>
           <Form.Text className="text-muted">
             Use MD5 or oshash for generated file naming. Changing this requires
-            that all scenes have the applicable MD5/oshash value populated. 
-            After changing this value, existing generated files will need to be 
+            that all scenes have the applicable MD5/oshash value populated.
+            After changing this value, existing generated files will need to be
             migrated or regenerated. See Tasks page for migration.
           </Form.Text>
         </Form.Group>
       </Form.Group>
-      
+
       <hr />
 
       <Form.Group>

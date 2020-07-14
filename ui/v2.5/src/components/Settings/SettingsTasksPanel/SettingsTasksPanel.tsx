@@ -318,14 +318,17 @@ export const SettingsTasksPanel: React.FC = () => {
         <Button
           id="migrateHashNaming"
           variant="danger"
-          onClick={() => mutateMigrateHashNaming().then(() => {
-            jobStatus.refetch();
-          })}
+          onClick={() =>
+            mutateMigrateHashNaming().then(() => {
+              jobStatus.refetch();
+            })
+          }
         >
           Rename generated files
         </Button>
         <Form.Text className="text-muted">
-          Used after changing the Generated file naming hash to rename existing generated files to the new hash format.
+          Used after changing the Generated file naming hash to rename existing
+          generated files to the new hash format.
         </Form.Text>
       </Form.Group>
     </>
