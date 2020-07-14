@@ -276,21 +276,6 @@ export const SettingsTasksPanel: React.FC = () => {
         </Form.Text>
       </Form.Group>
 
-      <Form.Group>
-        <Button
-          id="migrateHashNaming"
-          variant="danger"
-          onClick={() => mutateMigrateHashNaming().then(() => {
-            jobStatus.refetch();
-          })}
-        >
-          Migrate to current hash naming
-        </Button>
-        <Form.Text className="text-muted">
-          Used after changing the Generated file naming hash to rename existing generated files to the new hash format.
-        </Form.Text>
-      </Form.Group>
-
       <hr />
 
       <h5>Metadata</h5>
@@ -322,6 +307,25 @@ export const SettingsTasksPanel: React.FC = () => {
         </Button>
         <Form.Text className="text-muted">
           Import from exported JSON. This is a destructive action.
+        </Form.Text>
+      </Form.Group>
+
+      <hr />
+
+      <h5>Migrations</h5>
+
+      <Form.Group>
+        <Button
+          id="migrateHashNaming"
+          variant="danger"
+          onClick={() => mutateMigrateHashNaming().then(() => {
+            jobStatus.refetch();
+          })}
+        >
+          Rename generated files
+        </Button>
+        <Form.Text className="text-muted">
+          Used after changing the Generated file naming hash to rename existing generated files to the new hash format.
         </Form.Text>
       </Form.Group>
     </>
