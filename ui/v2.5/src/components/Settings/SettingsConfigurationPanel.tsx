@@ -308,6 +308,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Check
             checked={calculateMD5}
             label="Calculate MD5 for videos"
+            disabled={useMD5}
             onChange={() => setCalculateMD5(!calculateMD5)}
           />
           <Form.Text className="text-muted">

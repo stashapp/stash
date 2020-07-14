@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 
@@ -43,6 +44,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 			return makeConfigGeneralResult(), err
 		}
 		config.Set(config.Cache, input.CachePath)
+	}
+
+	if !input.CalculateMd5 && input.UseMd5 {
+		return makeConfigGeneralResult(), errors.New("calculateMD5 must be true if using MD5")
 	}
 
 	if input.UseMd5 != config.IsUseMD5() {
