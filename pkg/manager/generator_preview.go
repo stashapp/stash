@@ -93,8 +93,9 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder) error {
 	}
 
 	stepSize := int(g.Info.VideoFile.Duration / float64(g.Info.ChunkCount))
+	twoPercent := int(g.Info.VideoFile.Duration * 0.02)
 	for i := 0; i < g.Info.ChunkCount; i++ {
-		time := i * stepSize
+		time := i * stepSize + twoPercent
 		num := fmt.Sprintf("%.3d", i)
 		filename := "preview" + num + ".mp4"
 		chunkOutputPath := instance.Paths.Generated.GetTmpPath(filename)
