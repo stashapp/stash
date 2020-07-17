@@ -78,5 +78,5 @@ func OSHashFromFilePath(filePath string) (string, error) {
 	sum += uint64(fileSize)
 
 	// output as hex
-	return fmt.Sprintf("%16x", sum), nil
+	return fmt.Sprintf("%016x", sum), nil
 }
