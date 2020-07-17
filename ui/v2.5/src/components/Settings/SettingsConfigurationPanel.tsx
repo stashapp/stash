@@ -18,9 +18,15 @@ export const SettingsConfigurationPanel: React.FC = () => {
   );
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
   const [previewSegments, setPreviewSegments] = useState<number>(0);
-  const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(0);
-  const [previewExcludeStart, setPreviewExcludeStart] = useState<string | undefined>(undefined);
-  const [previewExcludeEnd, setPreviewExcludeEnd] = useState<string | undefined>(undefined);
+  const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
+    0
+  );
+  const [previewExcludeStart, setPreviewExcludeStart] = useState<
+    string | undefined
+  >(undefined);
+  const [previewExcludeEnd, setPreviewExcludeEnd] = useState<
+    string | undefined
+  >(undefined);
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
@@ -381,7 +387,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             type="number"
             value={previewSegmentDuration.toString()}
             onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setPreviewSegmentDuration(Number.parseFloat(e.currentTarget.value))
+              setPreviewSegmentDuration(
+                Number.parseFloat(e.currentTarget.value)
+              )
             }
           />
           <Form.Text className="text-muted">
@@ -399,7 +407,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Exclude the first x seconds from scene previews. This can be a value in seconds, or a percentage (eg "2%") of the total scene duration.
+            Exclude the first x seconds from scene previews. This can be a value
+            in seconds, or a percentage (eg 2%) of the total scene duration.
           </Form.Text>
         </Form.Group>
 
@@ -413,7 +422,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg "2%") of the total scene duration.
+            Exclude the last x seconds from scene previews. This can be a value
+            in seconds, or a percentage (eg 2%) of the total scene duration.
           </Form.Text>
         </Form.Group>
       </Form.Group>
