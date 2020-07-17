@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { Form, Button } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { mutateMetadataGenerate } from "src/core/StashService";
-import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 
@@ -19,9 +18,6 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
   const [transcodes, setTranscodes] = useState(false);
   const [overwrite, setOverwrite] = useState(true);
   const [imagePreviews, setImagePreviews] = useState(false);
-  const [previewPreset, setPreviewPreset] = useState<string>(
-    GQL.PreviewPreset.Slow
-  );
 
   const Toast = useToast();
 
@@ -34,7 +30,6 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
         markers,
         transcodes,
         thumbnails: false,
-        previewPreset: (previewPreset as GQL.PreviewPreset) ?? undefined,
         overwrite,
         sceneIDs: props.selectedIds,
       });
@@ -77,31 +72,6 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
                 className="ml-2 flex-grow"
             />
             </div>
-            <Form.Group controlId="preview-preset" className="mt-2">
-            <Form.Label>
-                <h6>Preview encoding preset</h6>
-            </Form.Label>
-            <Form.Control
-                className="w-auto"
-                as="select"
-                value={previewPreset}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                setPreviewPreset(e.currentTarget.value)
-                }
-                disabled={!previews}
-            >
-                {Object.keys(GQL.PreviewPreset).map((p) => (
-                <option value={p.toLowerCase()} key={p}>
-                    {p}
-                </option>
-                ))}
-            </Form.Control>
-            <Form.Text className="text-muted">
-                The preset regulates size, quality and encoding time of preview
-                generation. Presets beyond “slow” have diminishing returns and are
-                not recommended.
-            </Form.Text>
-            </Form.Group>
             <Form.Check
             id="sprite-task"
             checked={sprites}

@@ -32,11 +32,12 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, !videoExists, t.ImagePreview, t.PreviewPreset)
+	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, true, t.ImagePreview, t.PreviewPreset)
 	if err != nil {
 		logger.Errorf("error creating preview generator: %s", err.Error())
 		return
 	}
+	generator.Overwrite = t.Overwrite
 
 	if err := generator.Generate(); err != nil {
 		logger.Errorf("error generating preview: %s", err.Error())

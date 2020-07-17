@@ -181,10 +181,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
 
-	preset := string(models.PreviewPresetSlow)
-	if input.PreviewPreset != nil && input.PreviewPreset.IsValid() {
-		preset = string(*input.PreviewPreset)
-	}
+	preset := config.GetPreviewPreset().String()
 
 	galleryIDs := utils.StringSliceToIntSlice(input.GalleryIDs)
 	sceneIDs := utils.StringSliceToIntSlice(input.SceneIDs)
