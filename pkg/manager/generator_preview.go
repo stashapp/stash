@@ -3,11 +3,12 @@ package manager
 import (
 	"bufio"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
-	"os"
-	"path/filepath"
 )
 
 type PreviewGenerator struct {
@@ -33,9 +34,6 @@ func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, image
 		return nil, err
 	}
 	generator.ChunkCount = 12 // 12 segments to the preview
-	if err := generator.configure(); err != nil {
-		return nil, err
-	}
 
 	return &PreviewGenerator{
 		Info:            generator,
@@ -50,6 +48,11 @@ func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, image
 
 func (g *PreviewGenerator) Generate() error {
 	logger.Infof("[generator] generating scene preview for %s", g.Info.VideoFile.Path)
+
+	if err := g.Info.configure(); err != nil {
+		return err
+	}
+
 	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
 
 	if err := g.generateConcatFile(); err != nil {
@@ -92,15 +95,17 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder) error {
 		return nil
 	}
 
-	stepSize := int(g.Info.VideoFile.Duration / float64(g.Info.ChunkCount))
+	stepSize, offset := g.Info.getStepSizeAndOffset()
+
 	for i := 0; i < g.Info.ChunkCount; i++ {
-		time := i * stepSize
+		time := offset + (float64(i) * stepSize)
 		num := fmt.Sprintf("%.3d", i)
 		filename := "preview" + num + ".mp4"
 		chunkOutputPath := instance.Paths.Generated.GetTmpPath(filename)
 
 		options := ffmpeg.ScenePreviewChunkOptions{
-			Time:       time,
+			StartTime:  time,
+			Duration:   g.Info.ChunkDuration,
 			Width:      640,
 			OutputPath: chunkOutputPath,
 		}

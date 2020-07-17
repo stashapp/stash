@@ -17,6 +17,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
     undefined
   );
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
+  const [previewSegments, setPreviewSegments] = useState<number>(0);
+  const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(0);
+  const [previewExcludeStart, setPreviewExcludeStart] = useState<string | undefined>(undefined);
+  const [previewExcludeEnd, setPreviewExcludeEnd] = useState<string | undefined>(undefined);
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
@@ -44,6 +48,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
     databasePath,
     generatedPath,
     cachePath,
+    previewSegments,
+    previewSegmentDuration,
+    previewExcludeStart,
+    previewExcludeEnd,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
     forceMkv,
@@ -68,6 +76,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
       setCachePath(conf.general.cachePath);
+      setPreviewSegments(conf.general.previewSegments);
+      setPreviewSegmentDuration(conf.general.previewSegmentDuration);
+      setPreviewExcludeStart(conf.general.previewExcludeStart);
+      setPreviewExcludeEnd(conf.general.previewExcludeEnd);
       setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
@@ -343,6 +355,68 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </Form.Group>
 
       <hr />
+
+      <Form.Group>
+        <h4>Preview Generation</h4>
+
+        <Form.Group id="preview-segments">
+          <h6>Number of segments in preview</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={previewSegments.toString()}
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
+              setPreviewSegments(Number.parseInt(e.currentTarget.value, 10))
+            }
+          />
+          <Form.Text className="text-muted">
+            Number of segments in preview files.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-segment-duration">
+          <h6>Preview segment duration</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={previewSegmentDuration.toString()}
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
+              setPreviewSegmentDuration(Number.parseFloat(e.currentTarget.value))
+            }
+          />
+          <Form.Text className="text-muted">
+            Duration of each preview segment, in seconds.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-exclude-start">
+          <h6>Exclude start time</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={previewExcludeStart}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewExcludeStart(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Exclude the first x seconds from scene previews. This can be a value in seconds, or a percentage (eg "2%") of the total scene duration.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-exclude-start">
+          <h6>Exclude end time</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={previewExcludeEnd}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewExcludeEnd(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Exclude the last x seconds from scene previews. This can be a value in seconds, or a percentage (eg "2%") of the total scene duration.
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
 
       <Form.Group id="generated-path">
         <h6>Scraping</h6>

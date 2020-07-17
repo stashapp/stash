@@ -30,6 +30,18 @@ const Exclude = "exclude"
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
+const PreviewSegmentDuration = "preview_segment_duration"
+const previewSegmentDurationDefault = 0.75
+
+const PreviewSegments = "preview_segments"
+const previewSegmentsDefault = 12
+
+const PreviewExcludeStart = "preview_exclude_start"
+const previewExcludeStartDefault = "0"
+
+const PreviewExcludeEnd = "preview_exclude_end"
+const previewExcludeEndDefault = "0"
+
 const Host = "host"
 const Port = "port"
 const ExternalHost = "external_host"
@@ -158,6 +170,36 @@ func GetPort() int {
 
 func GetExternalHost() string {
 	return viper.GetString(ExternalHost)
+}
+
+// GetPreviewSegmentDuration returns the duration of a single segment in a
+// scene preview file, in seconds.
+func GetPreviewSegmentDuration() float64 {
+	return viper.GetFloat64(PreviewSegmentDuration)
+}
+
+// GetPreviewSegments returns the amount of segments in a scene preview file.
+func GetPreviewSegments() int {
+	return viper.GetInt(PreviewSegments)
+}
+
+// GetPreviewExcludeStart returns the configuration setting string for
+// excluding the start of scene videos for preview generation. This can
+// be in two possible formats. A float value is interpreted as the amount
+// of seconds to exclude from the start of the video before it is included
+// in the preview. If the value is suffixed with a '%' character (for example
+// '2%'), then it is interpreted as a proportion of the total video duration.
+func GetPreviewExcludeStart() string {
+	return viper.GetString(PreviewExcludeStart)
+}
+
+// GetPreviewExcludeEnd returns the configuration setting string for
+// excluding the end of scene videos for preview generation. A float value
+// is interpreted as the amount of seconds to exclude from the end of the video
+// when generating previews. If the value is suffixed with a '%' character,
+// then it is interpreted as a proportion of the total video duration.
+func GetPreviewExcludeEnd() string {
+	return viper.GetString(PreviewExcludeEnd)
 }
 
 func GetMaxTranscodeSize() models.StreamingResolutionEnum {
@@ -369,6 +411,13 @@ func IsValid() bool {
 	return setPaths
 }
 
+func setDefaultValues() {
+	viper.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
+	viper.SetDefault(PreviewSegments, previewSegmentsDefault)
+	viper.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
+	viper.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
+}
+
 // SetInitialConfig fills in missing required config fields
 func SetInitialConfig() error {
 	// generate some api keys
@@ -383,6 +432,8 @@ func SetInitialConfig() error {
 		sessionStoreKey := utils.GenerateRandomKey(apiKeyLength)
 		Set(SessionStoreKey, sessionStoreKey)
 	}
+
+	setDefaultValues()
 
 	return Write()
 }

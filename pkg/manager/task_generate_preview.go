@@ -1,11 +1,13 @@
 package manager
 
 import (
+	"sync"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"sync"
 )
 
 type GeneratePreviewTask struct {
@@ -35,6 +37,12 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 		logger.Errorf("error creating preview generator: %s", err.Error())
 		return
 	}
+
+	// set the preview generation configuration from the global config
+	generator.Info.ChunkCount = config.GetPreviewSegments()
+	generator.Info.ChunkDuration = config.GetPreviewSegmentDuration()
+	generator.Info.ExcludeStart = config.GetPreviewExcludeStart()
+	generator.Info.ExcludeEnd = config.GetPreviewExcludeEnd()
 
 	if err := generator.Generate(); err != nil {
 		logger.Errorf("error generating preview: %s", err.Error())
