@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
 import {
@@ -14,6 +14,8 @@ import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
+import { showWhenSelected } from "src/hooks/ListHook";
+import { SceneGenerateDialog } from "./SceneGenerateDialog";
 
 interface ISceneList {
   subComponent?: boolean;
@@ -25,11 +27,18 @@ export const SceneList: React.FC<ISceneList> = ({
   filterHook,
 }) => {
   const history = useHistory();
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+
   const otherOperations = [
     {
       text: "Play Random",
       onClick: playRandom,
     },
+    {
+      text: "Generate...",
+      onClick: generate,
+      isDisplayed: showWhenSelected,
+    }
   ];
 
   const addKeybinds = (
@@ -82,6 +91,22 @@ export const SceneList: React.FC<ISceneList> = ({
     }
   }
 
+  async function generate() {
+    setIsGenerateDialogOpen(true);
+  }
+
+  function maybeRenderSceneGenerateDialog(
+    selectedIds: Set<string>
+  ) {
+    if (isGenerateDialogOpen) {
+      return (
+        <>
+          <SceneGenerateDialog selectedIds={Array.from(selectedIds.values())} onClose={() => {setIsGenerateDialogOpen(false)}} />
+        </>
+      );
+    }
+  }
+
   function renderEditScenesDialog(
     selectedScenes: SlimSceneDataFragment[],
     onClose: (applied: boolean) => void
@@ -123,7 +148,7 @@ export const SceneList: React.FC<ISceneList> = ({
     );
   }
 
-  function renderContent(
+  function renderScenes(
     result: FindScenesQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
@@ -147,6 +172,20 @@ export const SceneList: React.FC<ISceneList> = ({
     if (filter.displayMode === DisplayMode.Wall) {
       return <WallPanel scenes={result.data.findScenes.scenes} />;
     }
+  }
+
+  function renderContent(
+    result: FindScenesQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>,
+    zoomIndex: number
+  ) {
+    return (
+      <>
+        {maybeRenderSceneGenerateDialog(selectedIds)}
+        {renderScenes(result, filter, selectedIds, zoomIndex)}
+      </>
+    )
   }
 
   return listData.template;

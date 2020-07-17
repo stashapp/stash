@@ -249,6 +249,11 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes)
 		}
 
+		overwrite := false
+		if input.Overwrite != nil {
+			overwrite = *input.Overwrite
+		}
+
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -269,22 +274,22 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			}
 
 			if input.Sprites {
-				task := GenerateSpriteTask{Scene: *scene}
+				task := GenerateSpriteTask{Scene: *scene, Overwrite: overwrite}
 				go task.Start(&wg)
 			}
 
 			if input.Previews {
-				task := GeneratePreviewTask{Scene: *scene, ImagePreview: input.ImagePreviews, PreviewPreset: preset}
+				task := GeneratePreviewTask{Scene: *scene, ImagePreview: input.ImagePreviews, PreviewPreset: preset, Overwrite: overwrite}
 				go task.Start(&wg)
 			}
 
 			if input.Markers {
-				task := GenerateMarkersTask{Scene: scene}
+				task := GenerateMarkersTask{Scene: scene, Overwrite: overwrite}
 				go task.Start(&wg)
 			}
 
 			if input.Transcodes {
-				task := GenerateTranscodeTask{Scene: *scene}
+				task := GenerateTranscodeTask{Scene: *scene, Overwrite: overwrite}
 				go task.Start(&wg)
 			}
 
@@ -306,7 +311,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 				}
 
 				wg.Add(1)
-				task := GenerateGthumbsTask{Gallery: *gallery}
+				task := GenerateGthumbsTask{Gallery: *gallery, Overwrite: overwrite}
 				go task.Start(&wg)
 				wg.Wait()
 			}
@@ -325,7 +330,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			}
 
 			wg.Add(1)
-			task := GenerateMarkersTask{Marker: marker}
+			task := GenerateMarkersTask{Marker: marker, Overwrite: overwrite}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -671,33 +676,38 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 		chTimeout <- struct{}{}
 	}()
 
+	overwrite := false
+	if input.Overwrite != nil {
+		overwrite = *input.Overwrite
+	}
+
 	logger.Infof("Counting content to generate...")
 	for _, scene := range scenes {
 		if scene != nil {
 			if input.Sprites {
 				task := GenerateSpriteTask{Scene: *scene}
-				if !task.doesSpriteExist(task.Scene.Checksum) {
+				if overwrite || !task.doesSpriteExist(task.Scene.Checksum) {
 					totals.sprites++
 				}
 			}
 
 			if input.Previews {
 				task := GeneratePreviewTask{Scene: *scene, ImagePreview: input.ImagePreviews}
-				if !task.doesVideoPreviewExist(task.Scene.Checksum) {
+				if overwrite || !task.doesVideoPreviewExist(task.Scene.Checksum) {
 					totals.previews++
 				}
-				if input.ImagePreviews && !task.doesImagePreviewExist(task.Scene.Checksum) {
+				if input.ImagePreviews && (overwrite || !task.doesImagePreviewExist(task.Scene.Checksum)) {
 					totals.imagePreviews++
 				}
 			}
 
 			if input.Markers {
-				task := GenerateMarkersTask{Scene: scene}
+				task := GenerateMarkersTask{Scene: scene, Overwrite: overwrite}
 				totals.markers += int64(task.isMarkerNeeded())
 			}
 
 			if input.Transcodes {
-				task := GenerateTranscodeTask{Scene: *scene}
+				task := GenerateTranscodeTask{Scene: *scene, Overwrite: overwrite}
 				if task.isTranscodeNeeded() {
 					totals.transcodes++
 				}

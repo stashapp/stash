@@ -1,17 +1,19 @@
 package manager
 
 import (
+	"sync"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"sync"
 )
 
 type GeneratePreviewTask struct {
 	Scene         models.Scene
 	ImagePreview  bool
 	PreviewPreset string
+	Overwrite     bool
 }
 
 func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
@@ -20,7 +22,7 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 	videoFilename := t.videoFilename()
 	imageFilename := t.imageFilename()
 	videoExists := t.doesVideoPreviewExist(t.Scene.Checksum)
-	if (!t.ImagePreview || t.doesImagePreviewExist(t.Scene.Checksum)) && videoExists {
+	if !t.Overwrite && ((!t.ImagePreview || t.doesImagePreviewExist(t.Scene.Checksum)) && videoExists) {
 		return
 	}
 

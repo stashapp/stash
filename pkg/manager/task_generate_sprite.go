@@ -1,21 +1,23 @@
 package manager
 
 import (
+	"sync"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"sync"
 )
 
 type GenerateSpriteTask struct {
-	Scene models.Scene
+	Scene     models.Scene
+	Overwrite bool
 }
 
 func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	if t.doesSpriteExist(t.Scene.Checksum) {
+	if t.doesSpriteExist(t.Scene.Checksum) && !t.Overwrite {
 		return
 	}
 
@@ -28,6 +30,7 @@ func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 	imagePath := instance.Paths.Scene.GetSpriteImageFilePath(t.Scene.Checksum)
 	vttPath := instance.Paths.Scene.GetSpriteVttFilePath(t.Scene.Checksum)
 	generator, err := NewSpriteGenerator(*videoFile, imagePath, vttPath, 9, 9)
+	generator.Overwrite = t.Overwrite
 	if err != nil {
 		logger.Errorf("error creating sprite generator: %s", err.Error())
 		return

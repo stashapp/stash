@@ -13,8 +13,9 @@ import (
 )
 
 type GenerateMarkersTask struct {
-	Scene  *models.Scene
-	Marker *models.SceneMarker
+	Scene     *models.Scene
+	Marker    *models.SceneMarker
+	Overwrite bool
 }
 
 func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
@@ -85,7 +86,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 
 	encoder := ffmpeg.NewEncoder(instance.FFMPEGPath)
 
-	if !videoExists {
+	if t.Overwrite || !videoExists {
 		options.OutputPath = instance.Paths.Generated.GetTmpPath(videoFilename) // tmp output in case the process ends abruptly
 		if err := encoder.SceneMarkerVideo(*videoFile, options); err != nil {
 			logger.Errorf("[generator] failed to generate marker video: %s", err)
@@ -95,7 +96,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		}
 	}
 
-	if !imageExists {
+	if t.Overwrite || !imageExists {
 		options.OutputPath = instance.Paths.Generated.GetTmpPath(imageFilename) // tmp output in case the process ends abruptly
 		if err := encoder.SceneMarkerImage(*videoFile, options); err != nil {
 			logger.Errorf("[generator] failed to generate marker image: %s", err)
@@ -122,10 +123,11 @@ func (t *GenerateMarkersTask) isMarkerNeeded() int {
 		videoExists, _ := utils.FileExists(videoPath)
 		imageExists, _ := utils.FileExists(imagePath)
 
-		if (!videoExists) || (!imageExists) {
+		if t.Overwrite || !videoExists || !imageExists {
 			markers++
 		}
 
 	}
+
 	return markers
 }
