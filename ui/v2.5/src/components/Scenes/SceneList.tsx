@@ -9,12 +9,12 @@ import { queryFindScenes } from "src/core/StashService";
 import { useScenesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import { showWhenSelected } from "src/hooks/ListHook";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
-import { showWhenSelected } from "src/hooks/ListHook";
 import { SceneGenerateDialog } from "./SceneGenerateDialog";
 
 interface ISceneList {
@@ -38,7 +38,7 @@ export const SceneList: React.FC<ISceneList> = ({
       text: "Generate...",
       onClick: generate,
       isDisplayed: showWhenSelected,
-    }
+    },
   ];
 
   const addKeybinds = (
@@ -95,13 +95,16 @@ export const SceneList: React.FC<ISceneList> = ({
     setIsGenerateDialogOpen(true);
   }
 
-  function maybeRenderSceneGenerateDialog(
-    selectedIds: Set<string>
-  ) {
+  function maybeRenderSceneGenerateDialog(selectedIds: Set<string>) {
     if (isGenerateDialogOpen) {
       return (
         <>
-          <SceneGenerateDialog selectedIds={Array.from(selectedIds.values())} onClose={() => {setIsGenerateDialogOpen(false)}} />
+          <SceneGenerateDialog
+            selectedIds={Array.from(selectedIds.values())}
+            onClose={() => {
+              setIsGenerateDialogOpen(false);
+            }}
+          />
         </>
       );
     }
@@ -185,7 +188,7 @@ export const SceneList: React.FC<ISceneList> = ({
         {maybeRenderSceneGenerateDialog(selectedIds)}
         {renderScenes(result, filter, selectedIds, zoomIndex)}
       </>
-    )
+    );
   }
 
   return listData.template;

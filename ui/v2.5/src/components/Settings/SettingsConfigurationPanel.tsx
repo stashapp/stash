@@ -286,19 +286,19 @@ export const SettingsConfigurationPanel: React.FC = () => {
             as="select"
             value={previewPreset}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setPreviewPreset(e.currentTarget.value)
+              setPreviewPreset(e.currentTarget.value)
             }
           >
             {Object.keys(GQL.PreviewPreset).map((p) => (
-            <option value={p.toLowerCase()} key={p}>
+              <option value={p.toLowerCase()} key={p}>
                 {p}
-            </option>
+              </option>
             ))}
           </Form.Control>
           <Form.Text className="text-muted">
-              The preset regulates size, quality and encoding time of preview
-              generation. Presets beyond “slow” have diminishing returns and are
-              not recommended.
+            The preset regulates size, quality and encoding time of preview
+            generation. Presets beyond “slow” have diminishing returns and are
+            not recommended.
           </Form.Text>
         </Form.Group>
         <Form.Group id="transcode-size">

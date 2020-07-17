@@ -130,13 +130,22 @@ export const Scene: React.FC = () => {
 
   function maybeRenderDeleteDialog() {
     if (isDeleteAlertOpen && scene) {
-      return <DeleteScenesDialog selected={[scene]} onClose={onDeleteDialogClosed} />;
+      return (
+        <DeleteScenesDialog selected={[scene]} onClose={onDeleteDialogClosed} />
+      );
     }
   }
 
   function maybeRenderSceneGenerateDialog() {
     if (isGenerateDialogOpen && scene) {
-      return <SceneGenerateDialog selectedIds={[scene.id]} onClose={() => {setIsGenerateDialogOpen(false)}} />;
+      return (
+        <SceneGenerateDialog
+          selectedIds={[scene.id]}
+          onClose={() => {
+            setIsGenerateDialogOpen(false);
+          }}
+        />
+      );
     }
   }
 

@@ -357,7 +357,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
             }
 
             return true;
-          }
+          },
         };
       })
     : undefined;
@@ -607,9 +607,10 @@ export const useTagsList = (
       getSelectedData(result?.data?.findTags?.tags ?? [], selectedIds),
   });
 
-  export const showWhenSelected = (
-    result: FindScenesQueryResult,
-    filter: ListFilterModel,
-    selectedIds: Set<string>) => {
-      return selectedIds.size > 0;
-    };
+export const showWhenSelected = (
+  result: FindScenesQueryResult,
+  filter: ListFilterModel,
+  selectedIds: Set<string>
+) => {
+  return selectedIds.size > 0;
+};
