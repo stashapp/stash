@@ -7,6 +7,13 @@ input GenerateMetadataInput {
   transcodes: Boolean!
   """gallery thumbnails for cache usage"""
   thumbnails: Boolean!
+
+  """scene ids to generate for"""
+  sceneIDs: [ID!]
+  """marker ids to generate for"""
+  markerIDs: [ID!]
+  """gallery ids to generate for"""
+  galleryIDs: [ID!]
 }
 
 input ScanMetadataInput {

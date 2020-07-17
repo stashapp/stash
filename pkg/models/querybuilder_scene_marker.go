@@ -2,9 +2,11 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
+	"strconv"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
-	"strconv"
 )
 
 const countSceneMarkersForTagQuery = `
@@ -70,6 +72,24 @@ func (qb *SceneMarkerQueryBuilder) Find(id int) (*SceneMarker, error) {
 		return nil, err
 	}
 	return results[0], nil
+}
+
+func (qb *SceneMarkerQueryBuilder) FindMany(ids []int) ([]*SceneMarker, error) {
+	var markers []*SceneMarker
+	for _, id := range ids {
+		marker, err := qb.Find(id)
+		if err != nil {
+			return nil, err
+		}
+
+		if marker == nil {
+			return nil, fmt.Errorf("scene marker with id %d not found", id)
+		}
+
+		markers = append(markers, marker)
+	}
+
+	return markers, nil
 }
 
 func (qb *SceneMarkerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*SceneMarker, error) {
