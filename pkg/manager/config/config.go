@@ -27,6 +27,8 @@ const Database = "database"
 
 const Exclude = "exclude"
 
+const PreviewPreset = "preview_preset"
+
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
@@ -200,6 +202,19 @@ func GetPreviewExcludeStart() string {
 // then it is interpreted as a proportion of the total video duration.
 func GetPreviewExcludeEnd() string {
 	return viper.GetString(PreviewExcludeEnd)
+}
+
+// GetPreviewPreset returns the preset when generating previews. Defaults to
+// Slow.
+func GetPreviewPreset() models.PreviewPreset {
+	ret := viper.GetString(PreviewPreset)
+
+	// default to slow
+	if ret == "" {
+		return models.PreviewPresetSlow
+	}
+
+	return models.PreviewPreset(ret)
 }
 
 func GetMaxTranscodeSize() models.StreamingResolutionEnum {

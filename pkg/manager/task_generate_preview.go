@@ -14,6 +14,7 @@ type GeneratePreviewTask struct {
 	Scene         models.Scene
 	ImagePreview  bool
 	PreviewPreset string
+	Overwrite     bool
 }
 
 func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
@@ -22,7 +23,7 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 	videoFilename := t.videoFilename()
 	imageFilename := t.imageFilename()
 	videoExists := t.doesVideoPreviewExist(t.Scene.Checksum)
-	if (!t.ImagePreview || t.doesImagePreviewExist(t.Scene.Checksum)) && videoExists {
+	if !t.Overwrite && ((!t.ImagePreview || t.doesImagePreviewExist(t.Scene.Checksum)) && videoExists) {
 		return
 	}
 
@@ -32,11 +33,12 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, !videoExists, t.ImagePreview, t.PreviewPreset)
+	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, true, t.ImagePreview, t.PreviewPreset)
 	if err != nil {
 		logger.Errorf("error creating preview generator: %s", err.Error())
 		return
 	}
+	generator.Overwrite = t.Overwrite
 
 	// set the preview generation configuration from the global config
 	generator.Info.ChunkCount = config.GetPreviewSegments()

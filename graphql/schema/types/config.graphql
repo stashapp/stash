@@ -7,6 +7,16 @@ enum StreamingResolutionEnum {
   "Original", ORIGINAL
 }
 
+enum PreviewPreset {
+  "X264_ULTRAFAST", ultrafast
+  "X264_VERYFAST", veryfast
+  "X264_FAST", fast
+  "X264_MEDIUM", medium
+  "X264_SLOW", slow
+  "X264_SLOWER", slower
+  "X264_VERYSLOW", veryslow
+}
+
 input ConfigGeneralInput {
   """Array of file paths to content"""
   stashes: [String!]
@@ -24,6 +34,8 @@ input ConfigGeneralInput {
   previewExcludeStart: String
   """Duration of end of video to exclude when generating previews"""
   previewExcludeEnd: String
+  """Preset when generating preview"""
+  previewPreset: PreviewPreset
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
@@ -69,6 +81,8 @@ type ConfigGeneralResult {
   previewExcludeStart: String!
   """Duration of end of video to exclude when generating previews"""
   previewExcludeEnd: String!
+  """Preset when generating preview"""
+  previewPreset: PreviewPreset!
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""

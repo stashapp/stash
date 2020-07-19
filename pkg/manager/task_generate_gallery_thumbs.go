@@ -1,15 +1,17 @@
 package manager
 
 import (
+	"sync"
+
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"sync"
 )
 
 type GenerateGthumbsTask struct {
-	Gallery models.Gallery
+	Gallery   models.Gallery
+	Overwrite bool
 }
 
 func (t *GenerateGthumbsTask) Start(wg *sync.WaitGroup) {
@@ -19,7 +21,7 @@ func (t *GenerateGthumbsTask) Start(wg *sync.WaitGroup) {
 	for i := 0; i < count; i++ {
 		thumbPath := paths.GetGthumbPath(t.Gallery.Checksum, i, models.DefaultGthumbWidth)
 		exists, _ := utils.FileExists(thumbPath)
-		if exists {
+		if !t.Overwrite && exists {
 			continue
 		}
 		data := t.Gallery.GetThumbnail(i, models.DefaultGthumbWidth)

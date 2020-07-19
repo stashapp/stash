@@ -50,6 +50,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		PreviewSegmentDuration:    config.GetPreviewSegmentDuration(),
 		PreviewExcludeStart:       config.GetPreviewExcludeStart(),
 		PreviewExcludeEnd:         config.GetPreviewExcludeEnd(),
+		PreviewPreset:             config.GetPreviewPreset(),
 		MaxTranscodeSize:          &maxTranscodeSize,
 		MaxStreamingTranscodeSize: &maxStreamingTranscodeSize,
 		ForceMkv:                  config.GetForceMKV(),
