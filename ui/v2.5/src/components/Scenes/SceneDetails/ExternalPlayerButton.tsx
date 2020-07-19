@@ -25,7 +25,7 @@ export const ExternalPlayerButton: React.FC<IExternalPlayerButtonProps> = ({ sce
 
   return (
     <Button
-      className="minimal"
+      className="minimal px-0 px-sm-2 pt-2"
       variant="secondary"
       title="Open in external player"
     >
