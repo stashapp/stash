@@ -280,7 +280,7 @@ export const Performer: React.FC = () => {
           </Button>
         )}
       </div>
-      <div className="col col-md-8 col-lg-7 col-xl-6">
+      <div className="col-md-8">
         <div className="row">
           <div className="performer-head col">
             <h2>
