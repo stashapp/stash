@@ -21,6 +21,7 @@ import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
+import { ExternalPlayerButton } from "./ExternalPlayerButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
 
@@ -213,6 +214,9 @@ export const Scene: React.FC = () => {
               <Nav.Link eventKey="scene-edit-panel">Edit</Nav.Link>
             </Nav.Item>
             <Nav.Item className="ml-auto">
+              <ExternalPlayerButton scene={scene}/>
+            </Nav.Item>
+            <Nav.Item>
               <OCounterButton
                 loading={oLoading}
                 value={scene.o_counter || 0}
