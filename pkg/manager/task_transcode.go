@@ -11,14 +11,15 @@ import (
 )
 
 type GenerateTranscodeTask struct {
-	Scene models.Scene
+	Scene     models.Scene
+	Overwrite bool
 }
 
 func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	hasTranscode, _ := HasTranscode(&t.Scene)
-	if hasTranscode {
+	if !t.Overwrite && hasTranscode {
 		return
 	}
 
@@ -107,7 +108,7 @@ func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 	}
 
 	hasTranscode, _ := HasTranscode(&t.Scene)
-	if hasTranscode {
+	if !t.Overwrite && hasTranscode {
 		return false
 	}
 	return true

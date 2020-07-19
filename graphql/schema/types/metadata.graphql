@@ -1,12 +1,21 @@
 input GenerateMetadataInput {
   sprites: Boolean!
   previews: Boolean!
-  previewPreset: PreviewPreset
   imagePreviews: Boolean!
   markers: Boolean!
   transcodes: Boolean!
   """gallery thumbnails for cache usage"""
   thumbnails: Boolean!
+
+  """scene ids to generate for"""
+  sceneIDs: [ID!]
+  """marker ids to generate for"""
+  markerIDs: [ID!]
+  """gallery ids to generate for"""
+  galleryIDs: [ID!]
+
+  """overwrite existing media"""
+  overwrite: Boolean
 }
 
 input ScanMetadataInput {
@@ -26,14 +35,4 @@ type MetadataUpdateStatus {
   progress: Float!
   status: String!
   message: String!
-}
-
-enum PreviewPreset {
-  "X264_ULTRAFAST", ultrafast
-  "X264_VERYFAST", veryfast
-  "X264_FAST", fast
-  "X264_MEDIUM", medium
-  "X264_SLOW", slow
-  "X264_SLOWER", slower
-  "X264_VERYSLOW", veryslow
 }

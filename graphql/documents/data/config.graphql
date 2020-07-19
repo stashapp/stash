@@ -3,6 +3,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   databasePath
   generatedPath
   cachePath
+  previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
   forceMkv

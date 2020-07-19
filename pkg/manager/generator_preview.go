@@ -3,11 +3,12 @@ package manager
 import (
 	"bufio"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
-	"os"
-	"path/filepath"
 )
 
 type PreviewGenerator struct {
@@ -21,6 +22,8 @@ type PreviewGenerator struct {
 	GenerateImage bool
 
 	PreviewPreset string
+
+	Overwrite bool
 }
 
 func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, imageFilename string, outputDirectory string, generateVideo bool, generateImage bool, previewPreset string) (*PreviewGenerator, error) {
@@ -88,7 +91,7 @@ func (g *PreviewGenerator) generateConcatFile() error {
 func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder) error {
 	outputPath := filepath.Join(g.OutputDirectory, g.VideoFilename)
 	outputExists, _ := utils.FileExists(outputPath)
-	if outputExists {
+	if !g.Overwrite && outputExists {
 		return nil
 	}
 
@@ -116,7 +119,7 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder) error {
 func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
 	outputPath := filepath.Join(g.OutputDirectory, g.ImageFilename)
 	outputExists, _ := utils.FileExists(outputPath)
-	if outputExists {
+	if !g.Overwrite && outputExists {
 		return nil
 	}
 
