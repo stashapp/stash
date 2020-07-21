@@ -13,6 +13,7 @@ const markup = `
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
+*  Add mapped and fixed post-processing scraping options.
 *  Add random sorting for performers.
 *  Search for files which have low or upper case supported filename extensions.
 *  Add dialog when pasting movie images.

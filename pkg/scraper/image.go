@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -15,13 +14,13 @@ import (
 // configurable at some point.
 const imageGetTimeout = time.Second * 30
 
-func setPerformerImage(p *models.ScrapedPerformer) error {
+func setPerformerImage(p *models.ScrapedPerformer, globalConfig GlobalConfig) error {
 	if p == nil || p.Image == nil || !strings.HasPrefix(*p.Image, "http") {
 		// nothing to do
 		return nil
 	}
 
-	img, err := getImage(*p.Image)
+	img, err := getImage(*p.Image, globalConfig)
 	if err != nil {
 		return err
 	}
@@ -31,14 +30,14 @@ func setPerformerImage(p *models.ScrapedPerformer) error {
 	return nil
 }
 
-func setSceneImage(s *models.ScrapedScene) error {
+func setSceneImage(s *models.ScrapedScene, globalConfig GlobalConfig) error {
 	// don't try to get the image if it doesn't appear to be a URL
 	if s == nil || s.Image == nil || !strings.HasPrefix(*s.Image, "http") {
 		// nothing to do
 		return nil
 	}
 
-	img, err := getImage(*s.Image)
+	img, err := getImage(*s.Image, globalConfig)
 	if err != nil {
 		return err
 	}
@@ -48,7 +47,7 @@ func setSceneImage(s *models.ScrapedScene) error {
 	return nil
 }
 
-func getImage(url string) (*string, error) {
+func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 	client := &http.Client{
 		Timeout: imageGetTimeout,
 	}
@@ -58,7 +57,7 @@ func getImage(url string) (*string, error) {
 		return nil, err
 	}
 
-	userAgent := config.GetScraperUserAgent()
+	userAgent := globalConfig.UserAgent
 	if userAgent != "" {
 		req.Header.Set("User-Agent", userAgent)
 	}
@@ -93,10 +92,10 @@ func getImage(url string) (*string, error) {
 	return &img, nil
 }
 
-func getStashPerformerImage(stashURL string, performerID string) (*string, error) {
-	return getImage(stashURL + "/performer/" + performerID + "/image")
+func getStashPerformerImage(stashURL string, performerID string, globalConfig GlobalConfig) (*string, error) {
+	return getImage(stashURL+"/performer/"+performerID+"/image", globalConfig)
 }
 
-func getStashSceneImage(stashURL string, sceneID string) (*string, error) {
-	return getImage(stashURL + "/scene/" + sceneID + "/screenshot")
+func getStashSceneImage(stashURL string, sceneID string, globalConfig GlobalConfig) (*string, error) {
+	return getImage(stashURL+"/scene/"+sceneID+"/screenshot", globalConfig)
 }
