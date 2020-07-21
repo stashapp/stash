@@ -6,16 +6,32 @@ import (
 	"io"
 	"io/ioutil"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func runScraperScript(command []string, inString string, out interface{}) error {
+type scriptScraper struct {
+	scraper      scraperTypeConfig
+	config       config
+	globalConfig GlobalConfig
+}
+
+func newScriptScraper(scraper scraperTypeConfig, config config, globalConfig GlobalConfig) *scriptScraper {
+	return &scriptScraper{
+		scraper:      scraper,
+		config:       config,
+		globalConfig: globalConfig,
+	}
+}
+
+func (s *scriptScraper) runScraperScript(inString string, out interface{}) error {
+	command := s.scraper.Script
+
 	cmd := exec.Command(command[0], command[1:]...)
-	cmd.Dir = config.GetScrapersPath()
+	cmd.Dir = filepath.Dir(s.config.path)
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
@@ -65,12 +81,12 @@ func runScraperScript(command []string, inString string, out interface{}) error 
 	return nil
 }
 
-func scrapePerformerNamesScript(c scraperTypeConfig, name string) ([]*models.ScrapedPerformer, error) {
+func (s *scriptScraper) scrapePerformersByName(name string) ([]*models.ScrapedPerformer, error) {
 	inString := `{"name": "` + name + `"}`
 
 	var performers []models.ScrapedPerformer
 
-	err := runScraperScript(c.Script, inString, &performers)
+	err := s.runScraperScript(inString, &performers)
 
 	// convert to pointers
 	var ret []*models.ScrapedPerformer
@@ -83,7 +99,7 @@ func scrapePerformerNamesScript(c scraperTypeConfig, name string) ([]*models.Scr
 	return ret, err
 }
 
-func scrapePerformerFragmentScript(c scraperTypeConfig, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+func (s *scriptScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
 	inString, err := json.Marshal(scrapedPerformer)
 
 	if err != nil {
@@ -92,22 +108,22 @@ func scrapePerformerFragmentScript(c scraperTypeConfig, scrapedPerformer models.
 
 	var ret models.ScrapedPerformer
 
-	err = runScraperScript(c.Script, string(inString), &ret)
+	err = s.runScraperScript(string(inString), &ret)
 
 	return &ret, err
 }
 
-func scrapePerformerURLScript(c scraperTypeConfig, url string) (*models.ScrapedPerformer, error) {
+func (s *scriptScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer, error) {
 	inString := `{"url": "` + url + `"}`
 
 	var ret models.ScrapedPerformer
 
-	err := runScraperScript(c.Script, string(inString), &ret)
+	err := s.runScraperScript(string(inString), &ret)
 
 	return &ret, err
 }
 
-func scrapeSceneFragmentScript(c scraperTypeConfig, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+func (s *scriptScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	inString, err := json.Marshal(scene)
 
 	if err != nil {
@@ -116,17 +132,17 @@ func scrapeSceneFragmentScript(c scraperTypeConfig, scene models.SceneUpdateInpu
 
 	var ret models.ScrapedScene
 
-	err = runScraperScript(c.Script, string(inString), &ret)
+	err = s.runScraperScript(string(inString), &ret)
 
 	return &ret, err
 }
 
-func scrapeSceneURLScript(c scraperTypeConfig, url string) (*models.ScrapedScene, error) {
+func (s *scriptScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error) {
 	inString := `{"url": "` + url + `"}`
 
 	var ret models.ScrapedScene
 
-	err := runScraperScript(c.Script, string(inString), &ret)
+	err := s.runScraperScript(string(inString), &ret)
 
 	return &ret, err
 }
