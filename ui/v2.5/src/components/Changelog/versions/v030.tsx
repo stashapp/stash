@@ -13,6 +13,7 @@ const markup = `
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
+*  Add mapped and fixed post-processing scraping options.
 *  Add random sorting for performers.
 *  Search for files which have low or upper case supported filename extensions.
 *  Add dialog when pasting movie images.
@@ -27,6 +28,9 @@ const markup = `
 *  Improved the layout of the scene page.
 *  Show rating as stars in scene page.
 *  Add reload scrapers button.
+
+### 🐛 Bug fixes
+*  Fix formatted dates using incorrect timezone.
 
 `;
 

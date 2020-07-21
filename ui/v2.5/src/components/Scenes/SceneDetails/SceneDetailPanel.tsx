@@ -70,7 +70,11 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
           </div>
           {props.scene.date ? (
             <h5>
-              <FormattedDate value={props.scene.date} format="long" />
+              <FormattedDate
+                value={props.scene.date}
+                format="long"
+                timeZone="utc"
+              />
             </h5>
           ) : undefined}
           {props.scene.rating ? (
