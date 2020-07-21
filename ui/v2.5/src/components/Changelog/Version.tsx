@@ -36,7 +36,7 @@ const Version: React.FC<IVersionProps> = ({
             <Icon icon={open ? "angle-up" : "angle-down"} className="mr-3" />
             {version} (
             {date ? (
-              <FormattedDate value={new Date(Date.parse(date))} />
+              <FormattedDate value={date} timeZone="utc" />
             ) : (
               <FormattedMessage
                 defaultMessage="Development Version"
