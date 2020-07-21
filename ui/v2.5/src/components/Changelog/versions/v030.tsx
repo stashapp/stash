@@ -28,6 +28,9 @@ const markup = `
 *  Show rating as stars in scene page.
 *  Add reload scrapers button.
 
+### 🐛 Bug fixes
+*  Fix formatted dates using incorrect timezone.
+
 `;
 
 export default () => <ReactMarkdown source={markup} />;
