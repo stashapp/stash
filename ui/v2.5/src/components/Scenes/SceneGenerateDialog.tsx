@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Form, Button, Collapse } from "react-bootstrap";
-import { mutateMetadataGenerate, useConfiguration } from "src/core/StashService";
+import {
+  mutateMetadataGenerate,
+  useConfiguration,
+} from "src/core/StashService";
 import { Modal, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
@@ -14,7 +17,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
   props: ISceneGenerateDialogProps
 ) => {
   const { data, error, loading } = useConfiguration();
-  
+
   const [sprites, setSprites] = useState(true);
   const [previews, setPreviews] = useState(true);
   const [markers, setMarkers] = useState(true);
@@ -70,7 +73,7 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
           previewSegmentDuration,
           previewExcludeStart,
           previewExcludeEnd,
-        }
+        },
       });
       Toast.success({ content: "Started generating" });
     } catch (e) {
@@ -121,8 +124,13 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
             />
           </div>
           <div className="my-2">
-            <Button onClick={() => setPreviewOptionsOpen(!previewOptionsOpen)} className="minimal pl-0 no-focus">
-              <Icon icon={previewOptionsOpen ? "chevron-down" : "chevron-right"} />
+            <Button
+              onClick={() => setPreviewOptionsOpen(!previewOptionsOpen)}
+              className="minimal pl-0 no-focus"
+            >
+              <Icon
+                icon={previewOptionsOpen ? "chevron-down" : "chevron-right"}
+              />
               <span>Preview Options</span>
             </Button>
             <Collapse in={previewOptionsOpen}>
@@ -144,12 +152,12 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
                     ))}
                   </Form.Control>
                   <Form.Text className="text-muted">
-                    The preset regulates size, quality and encoding time of preview
-                    generation. Presets beyond “slow” have diminishing returns and are
-                    not recommended.
+                    The preset regulates size, quality and encoding time of
+                    preview generation. Presets beyond “slow” have diminishing
+                    returns and are not recommended.
                   </Form.Text>
                 </Form.Group>
-                
+
                 <Form.Group id="preview-segments">
                   <h6>Number of segments in preview</h6>
                   <Form.Control
@@ -157,7 +165,9 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
                     type="number"
                     value={previewSegments.toString()}
                     onInput={(e: React.FormEvent<HTMLInputElement>) =>
-                      setPreviewSegments(Number.parseInt(e.currentTarget.value, 10))
+                      setPreviewSegments(
+                        Number.parseInt(e.currentTarget.value, 10)
+                      )
                     }
                   />
                   <Form.Text className="text-muted">
@@ -192,8 +202,9 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
                     }
                   />
                   <Form.Text className="text-muted">
-                    Exclude the first x seconds from scene previews. This can be a value
-                    in seconds, or a percentage (eg 2%) of the total scene duration.
+                    Exclude the first x seconds from scene previews. This can be
+                    a value in seconds, or a percentage (eg 2%) of the total
+                    scene duration.
                   </Form.Text>
                 </Form.Group>
 
@@ -207,8 +218,9 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
                     }
                   />
                   <Form.Text className="text-muted">
-                    Exclude the last x seconds from scene previews. This can be a value
-                    in seconds, or a percentage (eg 2%) of the total scene duration.
+                    Exclude the last x seconds from scene previews. This can be
+                    a value in seconds, or a percentage (eg 2%) of the total
+                    scene duration.
                   </Form.Text>
                 </Form.Group>
               </div>
