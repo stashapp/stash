@@ -51,6 +51,11 @@ interface IListHookOperation<T> {
     filter: ListFilterModel,
     selectedIds: Set<string>
   ) => void;
+  isDisplayed?: (
+    result: T,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) => boolean;
 }
 
 interface IListHookOptions<T, E> {
@@ -346,6 +351,13 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
           onClick: () => {
             o.onClick(result, filter, selectedIds);
           },
+          isDisplayed: () => {
+            if (o.isDisplayed) {
+              return o.isDisplayed(result, filter, selectedIds);
+            }
+
+            return true;
+          },
         };
       })
     : undefined;
@@ -594,3 +606,11 @@ export const useTagsList = (
     getSelectedData: (result: FindTagsQueryResult, selectedIds: Set<string>) =>
       getSelectedData(result?.data?.findTags?.tags ?? [], selectedIds),
   });
+
+export const showWhenSelected = (
+  result: FindScenesQueryResult,
+  filter: ListFilterModel,
+  selectedIds: Set<string>
+) => {
+  return selectedIds.size > 0;
+};

@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 
 const markup = `
 ### ✨ New Features
+*  Support (re-)generation of generated content for specific scenes.
 *  Add tag thumbnails, tags grid view and tag page.
 *  Add post-scrape dialog.
 *  Add various keyboard shortcuts (see manual).
@@ -13,6 +14,7 @@ const markup = `
 
 ### 🎨 Improvements
 *  Add mapped and fixed post-processing scraping options.
+*  Add random sorting for performers.
 *  Search for files which have low or upper case supported filename extensions.
 *  Add dialog when pasting movie images.
 *  Allow click and click-drag selection after selecting scene.
@@ -26,6 +28,9 @@ const markup = `
 *  Improved the layout of the scene page.
 *  Show rating as stars in scene page.
 *  Add reload scrapers button.
+
+### 🐛 Bug fixes
+*  Fix formatted dates using incorrect timezone.
 
 `;
 
