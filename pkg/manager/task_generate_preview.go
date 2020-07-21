@@ -5,16 +5,17 @@ import (
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type GeneratePreviewTask struct {
-	Scene         models.Scene
-	ImagePreview  bool
-	PreviewPreset string
-	Overwrite     bool
+	Scene        models.Scene
+	ImagePreview bool
+
+	Options models.GeneratePreviewOptionsInput
+
+	Overwrite bool
 }
 
 func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
@@ -33,7 +34,7 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, true, t.ImagePreview, t.PreviewPreset)
+	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, true, t.ImagePreview, t.Options.PreviewPreset.String())
 	if err != nil {
 		logger.Errorf("error creating preview generator: %s", err.Error())
 		return
@@ -41,10 +42,10 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 	generator.Overwrite = t.Overwrite
 
 	// set the preview generation configuration from the global config
-	generator.Info.ChunkCount = config.GetPreviewSegments()
-	generator.Info.ChunkDuration = config.GetPreviewSegmentDuration()
-	generator.Info.ExcludeStart = config.GetPreviewExcludeStart()
-	generator.Info.ExcludeEnd = config.GetPreviewExcludeEnd()
+	generator.Info.ChunkCount = *t.Options.PreviewSegments
+	generator.Info.ChunkDuration = *t.Options.PreviewSegmentDuration
+	generator.Info.ExcludeStart = *t.Options.PreviewExcludeStart
+	generator.Info.ExcludeEnd = *t.Options.PreviewExcludeEnd
 
 	if err := generator.Generate(); err != nil {
 		logger.Errorf("error generating preview: %s", err.Error())

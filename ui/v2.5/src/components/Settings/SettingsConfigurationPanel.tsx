@@ -298,28 +298,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <Form.Group>
         <h4>Video</h4>
         <Form.Group id="transcode-size">
-          <h6>Preview encoding preset</h6>
-          <Form.Control
-            className="w-auto input-control"
-            as="select"
-            value={previewPreset}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setPreviewPreset(e.currentTarget.value)
-            }
-          >
-            {Object.keys(GQL.PreviewPreset).map((p) => (
-              <option value={p.toLowerCase()} key={p}>
-                {p}
-              </option>
-            ))}
-          </Form.Control>
-          <Form.Text className="text-muted">
-            The preset regulates size, quality and encoding time of preview
-            generation. Presets beyond “slow” have diminishing returns and are
-            not recommended.
-          </Form.Text>
-        </Form.Group>
-        <Form.Group id="transcode-size">
           <h6>Maximum transcode size</h6>
           <Form.Control
             className="w-auto input-control"
@@ -392,6 +370,28 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <Form.Group>
         <h4>Preview Generation</h4>
 
+        <Form.Group id="transcode-size">
+          <h6>Preview encoding preset</h6>
+          <Form.Control
+            className="w-auto input-control"
+            as="select"
+            value={previewPreset}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setPreviewPreset(e.currentTarget.value)
+            }
+          >
+            {Object.keys(GQL.PreviewPreset).map((p) => (
+              <option value={p.toLowerCase()} key={p}>
+                {p}
+              </option>
+            ))}
+          </Form.Control>
+          <Form.Text className="text-muted">
+            The preset regulates size, quality and encoding time of preview
+            generation. Presets beyond “slow” have diminishing returns and are
+            not recommended.
+          </Form.Text>
+        </Form.Group>
         <Form.Group id="preview-segments">
           <h6>Number of segments in preview</h6>
           <Form.Control

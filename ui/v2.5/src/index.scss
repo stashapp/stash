@@ -583,3 +583,9 @@ div.dropdown-menu {
     }
   }
 }
+
+.no-focus:focus {
+  background-color: inherit;
+  border-color: inherit;
+  box-shadow: inherit;
+}
