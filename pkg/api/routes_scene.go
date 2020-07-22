@@ -166,7 +166,7 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) Preview(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewPath(scene.Checksum)
-	http.ServeFile(w, r, filepath)
+	utils.ServeFileNoCache(w, r, filepath)
 }
 
 func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
