@@ -29,7 +29,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     <Card className="performer-card">
       <Link to={`/performers/${performer.id}`}>
         <img
-          className="image-thumbnail card-image"
+          className="performer-card-image"
           alt={performer.name ?? ""}
           src={performer.image_path ?? ""}
         />
