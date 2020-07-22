@@ -25,6 +25,7 @@ import { AddFilter } from "./AddFilter";
 interface IListFilterOperation {
   text: string;
   onClick: () => void;
+  isDisplayed?: () => boolean;
 }
 
 interface IListFilterProps {
@@ -363,17 +364,25 @@ export const ListFilter: React.FC<IListFilterProps> = (
     const options = [renderSelectAll(), renderSelectNone()];
 
     if (props.otherOperations) {
-      props.otherOperations.forEach((o) => {
-        options.push(
-          <Dropdown.Item
-            key={o.text}
-            className="bg-secondary text-white"
-            onClick={o.onClick}
-          >
-            {o.text}
-          </Dropdown.Item>
-        );
-      });
+      props.otherOperations
+        .filter((o) => {
+          if (!o.isDisplayed) {
+            return true;
+          }
+
+          return o.isDisplayed();
+        })
+        .forEach((o) => {
+          options.push(
+            <Dropdown.Item
+              key={o.text}
+              className="bg-secondary text-white"
+              onClick={o.onClick}
+            >
+              {o.text}
+            </Dropdown.Item>
+          );
+        });
     }
 
     if (options.length > 0) {

@@ -27,6 +27,8 @@ const Database = "database"
 
 const Exclude = "exclude"
 
+const PreviewPreset = "preview_preset"
+
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
@@ -154,6 +156,19 @@ func GetPort() int {
 
 func GetExternalHost() string {
 	return viper.GetString(ExternalHost)
+}
+
+// GetPreviewPreset returns the preset when generating previews. Defaults to
+// Slow.
+func GetPreviewPreset() models.PreviewPreset {
+	ret := viper.GetString(PreviewPreset)
+
+	// default to slow
+	if ret == "" {
+		return models.PreviewPresetSlow
+	}
+
+	return models.PreviewPreset(ret)
 }
 
 func GetMaxTranscodeSize() models.StreamingResolutionEnum {

@@ -3,11 +3,11 @@ package api
 import (
 	"context"
 
-	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/manager"
 )
 
 func (r *mutationResolver) ReloadScrapers(ctx context.Context) (bool, error) {
-	err := scraper.ReloadScrapers()
+	err := manager.GetInstance().ScraperCache.ReloadScrapers()
 
 	if err != nil {
 		return false, err

@@ -138,7 +138,7 @@ export const Movie: React.FC = () => {
     }
   }, [data, updateMovieData]);
 
-  function onImageLoad(imageData: string) {
+  function showImageAlert(imageData: string) {
     setImageClipboard(imageData);
     setIsImageAlertOpen(true);
   }
@@ -161,7 +161,12 @@ export const Movie: React.FC = () => {
     setBackImage(imageData);
   }
 
-  const encodingImage = ImageUtils.usePasteImage(onImageLoad, isEditing);
+  function onFrontImageLoad(imageData: string) {
+    setImagePreview(imageData);
+    setFrontImage(imageData);
+  }
+
+  const encodingImage = ImageUtils.usePasteImage(showImageAlert, isEditing);
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
@@ -222,8 +227,8 @@ export const Movie: React.FC = () => {
     history.push(`/movies`);
   }
 
-  function onImageChange(event: React.FormEvent<HTMLInputElement>) {
-    ImageUtils.onImageChange(event, onImageLoad);
+  function onFrontImageChange(event: React.FormEvent<HTMLInputElement>) {
+    ImageUtils.onImageChange(event, onFrontImageLoad);
   }
 
   function onBackImageChange(event: React.FormEvent<HTMLInputElement>) {
@@ -388,7 +393,7 @@ export const Movie: React.FC = () => {
           isEditing={isEditing}
           onToggleEdit={onToggleEdit}
           onSave={onSave}
-          onImageChange={onImageChange}
+          onImageChange={onFrontImageChange}
           onBackImageChange={onBackImageChange}
           onDelete={onDelete}
         />

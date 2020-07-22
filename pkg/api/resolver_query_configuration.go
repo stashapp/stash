@@ -46,6 +46,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		DatabasePath:              config.GetDatabasePath(),
 		GeneratedPath:             config.GetGeneratedPath(),
 		CachePath:                 config.GetCachePath(),
+		PreviewPreset:             config.GetPreviewPreset(),
 		MaxTranscodeSize:          &maxTranscodeSize,
 		MaxStreamingTranscodeSize: &maxStreamingTranscodeSize,
 		Username:                  config.GetUsername(),

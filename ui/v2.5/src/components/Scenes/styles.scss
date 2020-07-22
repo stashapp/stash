@@ -247,9 +247,14 @@ textarea.scene-description {
     width: 2rem;
   }
 
-  .scene-performers .card-image {
-    height: 22.5rem;
-    width: 15rem;
+  .scene-performers {
+    .performer-card {
+      width: 15rem;
+
+      &-image {
+        height: 22.5rem;
+      }
+    }
   }
 }
 

@@ -24,6 +24,7 @@ import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
+import { SceneGenerateDialog } from "../SceneGenerateDialog";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
@@ -48,6 +49,7 @@ export const Scene: React.FC = () => {
   const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
@@ -140,6 +142,19 @@ export const Scene: React.FC = () => {
     }
   }
 
+  function maybeRenderSceneGenerateDialog() {
+    if (isGenerateDialogOpen && scene) {
+      return (
+        <SceneGenerateDialog
+          selectedIds={[scene.id]}
+          onClose={() => {
+            setIsGenerateDialogOpen(false);
+          }}
+        />
+      );
+    }
+  }
+
   function renderOperations() {
     return (
       <Dropdown>
@@ -152,6 +167,13 @@ export const Scene: React.FC = () => {
           <Icon icon="ellipsis-v" />
         </Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white">
+          <Dropdown.Item
+            key="generate"
+            className="bg-secondary text-white"
+            onClick={() => setIsGenerateDialogOpen(true)}
+          >
+            Generate...
+          </Dropdown.Item>
           <Dropdown.Item
             key="generate-screenshot"
             className="bg-secondary text-white"
@@ -298,6 +320,7 @@ export const Scene: React.FC = () => {
 
   return (
     <div className="row">
+      {maybeRenderSceneGenerateDialog()}
       {maybeRenderDeleteDialog()}
       <div className="scene-tabs order-xl-first order-last">
         <div className="d-none d-xl-block">

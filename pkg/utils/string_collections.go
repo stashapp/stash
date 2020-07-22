@@ -1,5 +1,7 @@
 package utils
 
+import "strconv"
+
 // https://gobyexample.com/collection-functions
 
 func StrIndex(vs []string, t string) int {
@@ -31,4 +33,16 @@ func StrMap(vs []string, f func(string) string) []string {
 		vsm[i] = f(v)
 	}
 	return vsm
+}
+
+// StringSliceToIntSlice converts a slice of strings to a slice of ints. If any
+// values cannot be parsed, then they are inserted into the returned slice as
+// 0.
+func StringSliceToIntSlice(ss []string) []int {
+	ret := make([]int, len(ss))
+	for i, v := range ss {
+		ret[i], _ = strconv.Atoi(v)
+	}
+
+	return ret
 }
