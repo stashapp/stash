@@ -57,6 +57,16 @@
 }
 
 .performer-card {
+  width: 20rem;
+
+  &-image {
+    height: 30rem;
+    min-width: 11.25rem;
+    object-fit: cover;
+    object-position: top;
+    width: 100%;
+  }
+
   .flag-icon {
     bottom: 1rem;
     height: 2rem;
