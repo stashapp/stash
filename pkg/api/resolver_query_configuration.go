@@ -48,6 +48,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		CachePath:                 config.GetCachePath(),
 		CalculateMd5:              config.IsCalculateMD5(),
 		UseMd5:                    config.IsUseMD5(),
+		PreviewPreset:             config.GetPreviewPreset(),
 		MaxTranscodeSize:          &maxTranscodeSize,
 		MaxStreamingTranscodeSize: &maxStreamingTranscodeSize,
 		ForceMkv:                  config.GetForceMKV(),

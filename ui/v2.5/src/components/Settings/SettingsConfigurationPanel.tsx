@@ -19,6 +19,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
   const [calculateMD5, setCalculateMD5] = useState<boolean>(false);
   const [useMD5, setUseMD5] = useState<boolean>(false);
+  const [previewPreset, setPreviewPreset] = useState<string>(
+    GQL.PreviewPreset.Slow
+  );
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
@@ -48,6 +51,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     cachePath,
     calculateMD5,
     useMD5,
+    previewPreset: (previewPreset as GQL.PreviewPreset) ?? undefined,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
     forceMkv,
@@ -74,6 +78,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setCachePath(conf.general.cachePath);
       setUseMD5(conf.general.useMD5);
       setCalculateMD5(conf.general.calculateMD5);
+      setPreviewPreset(conf.general.previewPreset);
       setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
@@ -345,9 +350,31 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <Form.Group>
         <h4>Video</h4>
         <Form.Group id="transcode-size">
+          <h6>Preview encoding preset</h6>
+          <Form.Control
+            className="w-auto input-control"
+            as="select"
+            value={previewPreset}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setPreviewPreset(e.currentTarget.value)
+            }
+          >
+            {Object.keys(GQL.PreviewPreset).map((p) => (
+              <option value={p.toLowerCase()} key={p}>
+                {p}
+              </option>
+            ))}
+          </Form.Control>
+          <Form.Text className="text-muted">
+            The preset regulates size, quality and encoding time of preview
+            generation. Presets beyond “slow” have diminishing returns and are
+            not recommended.
+          </Form.Text>
+        </Form.Group>
+        <Form.Group id="transcode-size">
           <h6>Maximum transcode size</h6>
           <Form.Control
-            className="col col-sm-6 input-control"
+            className="w-auto input-control"
             as="select"
             onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setMaxTranscodeSize(translateQuality(event.currentTarget.value))
@@ -367,7 +394,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="streaming-transcode-size">
           <h6>Maximum streaming transcode size</h6>
           <Form.Control
-            className="col col-sm-6 input-control"
+            className="w-auto input-control"
             as="select"
             onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setMaxStreamingTranscodeSize(

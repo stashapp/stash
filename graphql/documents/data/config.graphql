@@ -5,6 +5,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   cachePath
   calculateMD5
   useMD5
+  previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
   forceMkv

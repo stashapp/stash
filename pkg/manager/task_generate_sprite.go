@@ -10,14 +10,15 @@ import (
 )
 
 type GenerateSpriteTask struct {
-	Scene  models.Scene
-	useMD5 bool
+	Scene     models.Scene
+	Overwrite bool
+	useMD5    bool
 }
 
 func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	if !t.required() {
+	if !t.Overwrite && !t.required() {
 		return
 	}
 
@@ -31,6 +32,7 @@ func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 	imagePath := instance.Paths.Scene.GetSpriteImageFilePath(sceneHash)
 	vttPath := instance.Paths.Scene.GetSpriteVttFilePath(sceneHash)
 	generator, err := NewSpriteGenerator(*videoFile, imagePath, vttPath, 9, 9)
+	generator.Overwrite = t.Overwrite
 	if err != nil {
 		logger.Errorf("error creating sprite generator: %s", err.Error())
 		return

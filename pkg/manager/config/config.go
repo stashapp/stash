@@ -35,6 +35,8 @@ const CalculateMD5 = "calculate_md5"
 // generating and using generated files for scenes.
 const UseMD5 = "use_md5"
 
+const PreviewPreset = "preview_preset"
+
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
@@ -178,6 +180,19 @@ func GetPort() int {
 
 func GetExternalHost() string {
 	return viper.GetString(ExternalHost)
+}
+
+// GetPreviewPreset returns the preset when generating previews. Defaults to
+// Slow.
+func GetPreviewPreset() models.PreviewPreset {
+	ret := viper.GetString(PreviewPreset)
+
+	// default to slow
+	if ret == "" {
+		return models.PreviewPresetSlow
+	}
+
+	return models.PreviewPreset(ret)
 }
 
 func GetMaxTranscodeSize() models.StreamingResolutionEnum {

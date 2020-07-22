@@ -61,6 +61,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	config.Set(config.CalculateMD5, input.CalculateMd5)
 
+	if input.PreviewPreset != nil {
+		config.Set(config.PreviewPreset, input.PreviewPreset.String())
+	}
+
 	if input.MaxTranscodeSize != nil {
 		config.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
 	}
