@@ -6,8 +6,6 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
-  forceMkv
-  forceHevc
   username
   password
   maxSessionAge

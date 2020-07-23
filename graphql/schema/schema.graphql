@@ -7,6 +7,9 @@ type Query {
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
 
+  """Return valid stream paths"""
+  sceneStreams(id: ID): [SceneStreamEndpoint!]!
+
   parseSceneFilenames(filter: FindFilterType, config: SceneParserInput!): SceneParserResultType!
 
   """A function which queries SceneMarker objects"""

@@ -49,8 +49,6 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		PreviewPreset:             config.GetPreviewPreset(),
 		MaxTranscodeSize:          &maxTranscodeSize,
 		MaxStreamingTranscodeSize: &maxStreamingTranscodeSize,
-		ForceMkv:                  config.GetForceMKV(),
-		ForceHevc:                 config.GetForceHEVC(),
 		Username:                  config.GetUsername(),
 		Password:                  config.GetPasswordHash(),
 		MaxSessionAge:             config.GetMaxSessionAge(),
