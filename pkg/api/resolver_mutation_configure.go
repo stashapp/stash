@@ -45,6 +45,18 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		config.Set(config.Cache, input.CachePath)
 	}
 
+	if input.PreviewSegments != nil {
+		config.Set(config.PreviewSegments, *input.PreviewSegments)
+	}
+	if input.PreviewSegmentDuration != nil {
+		config.Set(config.PreviewSegmentDuration, *input.PreviewSegmentDuration)
+	}
+	if input.PreviewExcludeStart != nil {
+		config.Set(config.PreviewExcludeStart, *input.PreviewExcludeStart)
+	}
+	if input.PreviewExcludeEnd != nil {
+		config.Set(config.PreviewExcludeEnd, *input.PreviewExcludeEnd)
+	}
 	if input.PreviewPreset != nil {
 		config.Set(config.PreviewPreset, input.PreviewPreset.String())
 	}
