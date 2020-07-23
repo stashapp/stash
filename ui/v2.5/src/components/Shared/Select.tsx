@@ -301,7 +301,7 @@ const FilterSelectComponent: React.FC<
   IFilterComponentProps & ITypeProps & IFilterSelectProps
 > = (props) => {
   const [loading, setLoading] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>(props.ids ?? []);
+  const selectedIds = props.ids ?? [];
   const Toast = useToast();
 
   const { items } = props;
@@ -315,7 +315,6 @@ const FilterSelectComponent: React.FC<
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedValues = getSelectedValues(selectedItems);
-    setSelectedIds(selectedValues);
     props.onSelect?.(items.filter((item) => selectedValues.includes(item.id)));
   };
 
@@ -323,7 +322,6 @@ const FilterSelectComponent: React.FC<
     try {
       setLoading(true);
       const { item: newItem, message } = await props.onCreate!(name);
-      setSelectedIds([...selectedIds, newItem.id]);
       props.onSelect?.([
         ...items.filter((item) => selectedIds.includes(item.id)),
         newItem,
