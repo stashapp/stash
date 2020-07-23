@@ -81,6 +81,8 @@ func initConfig() {
 	}
 	logger.Infof("using config file: %s", viper.ConfigFileUsed())
 
+	config.SetInitialConfig()
+
 	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
 
 	// Set generated to the metadata path for backwards compat

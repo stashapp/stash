@@ -17,6 +17,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
     undefined
   );
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
+  const [previewSegments, setPreviewSegments] = useState<number>(0);
+  const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
+    0
+  );
+  const [previewExcludeStart, setPreviewExcludeStart] = useState<
+    string | undefined
+  >(undefined);
+  const [previewExcludeEnd, setPreviewExcludeEnd] = useState<
+    string | undefined
+  >(undefined);
   const [previewPreset, setPreviewPreset] = useState<string>(
     GQL.PreviewPreset.Slow
   );
@@ -45,6 +55,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
     databasePath,
     generatedPath,
     cachePath,
+    previewSegments,
+    previewSegmentDuration,
+    previewExcludeStart,
+    previewExcludeEnd,
     previewPreset: (previewPreset as GQL.PreviewPreset) ?? undefined,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
@@ -68,6 +82,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
       setCachePath(conf.general.cachePath);
+      setPreviewSegments(conf.general.previewSegments);
+      setPreviewSegmentDuration(conf.general.previewSegmentDuration);
+      setPreviewExcludeStart(conf.general.previewExcludeStart);
+      setPreviewExcludeEnd(conf.general.previewExcludeEnd);
       setPreviewPreset(conf.general.previewPreset);
       setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
       setMaxStreamingTranscodeSize(
@@ -274,28 +292,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <Form.Group>
         <h4>Video</h4>
         <Form.Group id="transcode-size">
-          <h6>Preview encoding preset</h6>
-          <Form.Control
-            className="w-auto input-control"
-            as="select"
-            value={previewPreset}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setPreviewPreset(e.currentTarget.value)
-            }
-          >
-            {Object.keys(GQL.PreviewPreset).map((p) => (
-              <option value={p.toLowerCase()} key={p}>
-                {p}
-              </option>
-            ))}
-          </Form.Control>
-          <Form.Text className="text-muted">
-            The preset regulates size, quality and encoding time of preview
-            generation. Presets beyond “slow” have diminishing returns and are
-            not recommended.
-          </Form.Text>
-        </Form.Group>
-        <Form.Group id="transcode-size">
           <h6>Maximum transcode size</h6>
           <Form.Control
             className="w-auto input-control"
@@ -340,6 +336,94 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </Form.Group>
 
       <hr />
+
+      <Form.Group>
+        <h4>Preview Generation</h4>
+
+        <Form.Group id="transcode-size">
+          <h6>Preview encoding preset</h6>
+          <Form.Control
+            className="w-auto input-control"
+            as="select"
+            value={previewPreset}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setPreviewPreset(e.currentTarget.value)
+            }
+          >
+            {Object.keys(GQL.PreviewPreset).map((p) => (
+              <option value={p.toLowerCase()} key={p}>
+                {p}
+              </option>
+            ))}
+          </Form.Control>
+          <Form.Text className="text-muted">
+            The preset regulates size, quality and encoding time of preview
+            generation. Presets beyond “slow” have diminishing returns and are
+            not recommended.
+          </Form.Text>
+        </Form.Group>
+        <Form.Group id="preview-segments">
+          <h6>Number of segments in preview</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={previewSegments.toString()}
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
+              setPreviewSegments(Number.parseInt(e.currentTarget.value, 10))
+            }
+          />
+          <Form.Text className="text-muted">
+            Number of segments in preview files.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-segment-duration">
+          <h6>Preview segment duration</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={previewSegmentDuration.toString()}
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
+              setPreviewSegmentDuration(
+                Number.parseFloat(e.currentTarget.value)
+              )
+            }
+          />
+          <Form.Text className="text-muted">
+            Duration of each preview segment, in seconds.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-exclude-start">
+          <h6>Exclude start time</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={previewExcludeStart}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewExcludeStart(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Exclude the first x seconds from scene previews. This can be a value
+            in seconds, or a percentage (eg 2%) of the total scene duration.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-exclude-start">
+          <h6>Exclude end time</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={previewExcludeEnd}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewExcludeEnd(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Exclude the last x seconds from scene previews. This can be a value
+            in seconds, or a percentage (eg 2%) of the total scene duration.
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
 
       <Form.Group id="generated-path">
         <h6>Scraping</h6>

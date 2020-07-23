@@ -26,6 +26,14 @@ input ConfigGeneralInput {
   generatedPath: String
   """Path to cache"""
   cachePath: String
+  """Number of segments in a preview file"""
+  previewSegments: Int
+  """Preview segment duration, in seconds"""
+  previewSegmentDuration: Float
+  """Duration of start of video to exclude when generating previews"""
+  previewExcludeStart: String
+  """Duration of end of video to exclude when generating previews"""
+  previewExcludeEnd: String
   """Preset when generating preview"""
   previewPreset: PreviewPreset
   """Max generated transcode size"""
@@ -61,6 +69,14 @@ type ConfigGeneralResult {
   generatedPath: String!
   """Path to cache"""
   cachePath: String!
+  """Number of segments in a preview file"""
+  previewSegments: Int!
+  """Preview segment duration, in seconds"""
+  previewSegmentDuration: Float!
+  """Duration of start of video to exclude when generating previews"""
+  previewExcludeStart: String!
+  """Duration of end of video to exclude when generating previews"""
+  previewExcludeEnd: String!
   """Preset when generating preview"""
   previewPreset: PreviewPreset!
   """Max generated transcode size"""
