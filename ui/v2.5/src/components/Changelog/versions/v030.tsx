@@ -13,6 +13,7 @@ const markup = `
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
+*  Allow customisation of preview video generation.
 *  Add mapped and fixed post-processing scraping options.
 *  Add random sorting for performers.
 *  Search for files which have low or upper case supported filename extensions.
