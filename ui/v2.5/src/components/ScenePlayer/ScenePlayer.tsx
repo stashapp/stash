@@ -174,14 +174,17 @@ export class ScenePlayerImpl extends React.Component<
   }
 
   private makePlaylist() {
+    const scene = this.props.scene;
+
     return {
+      image: scene.paths.screenshot,
       tracks: [
         {
-          file: this.props.scene.paths.vtt,
+          file: scene.paths.vtt,
           kind: "thumbnails",
         },
         {
-          file: this.props.scene.paths.chapters_vtt,
+          file: scene.paths.chapters_vtt,
           kind: "chapters",
         },
       ],
