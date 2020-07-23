@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/manager/config"
 )
 
 type Container string
@@ -47,11 +46,17 @@ const (
 	Hevc               string     = "hevc"
 	Vp8                string     = "vp8"
 	Vp9                string     = "vp9"
+	Mkv                string     = "mkv" // only used from the browser to indicate mkv support
+	Hls                string     = "hls" // only used from the browser to indicate hls support
 	MimeWebm           string     = "video/webm"
 	MimeMkv            string     = "video/x-matroska"
+	MimeMp4            string     = "video/mp4"
+	MimeHLS            string     = "application/vnd.apple.mpegurl"
+	MimeMpegts         string     = "video/MP2T"
 )
 
-var ValidCodecs = []string{H264, H265, Vp8, Vp9}
+// only support H264 by default, since Safari does not support VP8/VP9
+var DefaultSupportedCodecs = []string{H264, H265}
 
 var validForH264Mkv = []Container{Mp4, Matroska}
 var validForH264 = []Container{Mp4}
@@ -102,15 +107,8 @@ func MatchContainer(format string, filePath string) Container { // match ffprobe
 	return container
 }
 
-func IsValidCodec(codecName string) bool {
-	forceHEVC := config.GetForceHEVC()
-	if forceHEVC {
-		if codecName == Hevc {
-			return true
-		}
-	}
-
-	for _, c := range ValidCodecs {
+func IsValidCodec(codecName string, supportedCodecs []string) bool {
+	for _, c := range supportedCodecs {
 		if c == codecName {
 			return true
 		}
@@ -158,36 +156,44 @@ func IsValidForContainer(format Container, validContainers []Container) bool {
 }
 
 //extend stream validation check to take into account container
-func IsValidCombo(codecName string, format Container) bool {
-	forceMKV := config.GetForceMKV()
-	forceHEVC := config.GetForceHEVC()
+func IsValidCombo(codecName string, format Container, supportedVideoCodecs []string) bool {
+	supportMKV := IsValidCodec(Mkv, supportedVideoCodecs)
+	supportHEVC := IsValidCodec(Hevc, supportedVideoCodecs)
+
 	switch codecName {
 	case H264:
-		if forceMKV {
+		if supportMKV {
 			return IsValidForContainer(format, validForH264Mkv)
 		}
 		return IsValidForContainer(format, validForH264)
 	case H265:
-		if forceMKV {
+		if supportMKV {
 			return IsValidForContainer(format, validForH265Mkv)
 		}
 		return IsValidForContainer(format, validForH265)
 	case Vp8:
 		return IsValidForContainer(format, validForVp8)
 	case Vp9:
-		if forceMKV {
+		if supportMKV {
 			return IsValidForContainer(format, validForVp9Mkv)
 		}
 		return IsValidForContainer(format, validForVp9)
 	case Hevc:
-		if forceHEVC {
-			if forceMKV {
+		if supportHEVC {
+			if supportMKV {
 				return IsValidForContainer(format, validForHevcMkv)
 			}
 			return IsValidForContainer(format, validForHevc)
 		}
 	}
 	return false
+}
+
+func IsStreamable(videoCodec string, audioCodec AudioCodec, container Container) bool {
+	supportedVideoCodecs := DefaultSupportedCodecs
+
+	// check if the video codec matches the supported codecs
+	return IsValidCodec(videoCodec, supportedVideoCodecs) && IsValidCombo(videoCodec, container, supportedVideoCodecs) && IsValidAudioForContainer(audioCodec, container)
 }
 
 type VideoFile struct {

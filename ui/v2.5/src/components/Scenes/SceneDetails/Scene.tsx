@@ -8,6 +8,7 @@ import {
   useSceneIncrementO,
   useSceneDecrementO,
   useSceneResetO,
+  useSceneStreams,
   useSceneGenerateScreenshot,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
@@ -35,6 +36,11 @@ export const Scene: React.FC = () => {
 
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
+  const {
+    data: sceneStreams,
+    error: streamableError,
+    loading: streamableLoading,
+  } = useSceneStreams(id);
   const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
@@ -305,11 +311,12 @@ export const Scene: React.FC = () => {
     };
   });
 
-  if (loading || !scene || !data?.findScene) {
+  if (loading || streamableLoading || !scene || !data?.findScene) {
     return <LoadingIndicator />;
   }
 
   if (error) return <div>{error.message}</div>;
+  if (streamableError) return <div>{streamableError.message}</div>;
 
   return (
     <div className="row">
@@ -340,6 +347,7 @@ export const Scene: React.FC = () => {
           scene={scene}
           timestamp={timestamp}
           autoplay={autoplay}
+          sceneStreams={sceneStreams?.sceneStreams ?? []}
         />
       </div>
     </div>
