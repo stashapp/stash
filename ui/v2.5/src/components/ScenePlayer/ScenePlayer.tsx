@@ -174,7 +174,7 @@ export class ScenePlayerImpl extends React.Component<
   }
 
   private makePlaylist() {
-    const scene = this.props.scene;
+    const { scene } = this.props;
 
     return {
       image: scene.paths.screenshot,
