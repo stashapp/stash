@@ -11,6 +11,7 @@ const (
 	Clean    JobStatus = 5
 	Scrape   JobStatus = 6
 	AutoTag  JobStatus = 7
+	Migrate  JobStatus = 8
 )
 
 func (s JobStatus) String() string {
@@ -29,6 +30,10 @@ func (s JobStatus) String() string {
 		statusMessage = "Generate"
 	case AutoTag:
 		statusMessage = "Auto Tag"
+	case Migrate:
+		statusMessage = "Migrate"
+	case Clean:
+		statusMessage = "Clean"
 	}
 
 	return statusMessage

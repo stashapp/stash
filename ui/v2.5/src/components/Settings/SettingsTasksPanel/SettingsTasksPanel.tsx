@@ -47,6 +47,8 @@ export const SettingsTasksPanel: React.FC = () => {
         return "Importing from JSON";
       case "Auto Tag":
         return "Auto tagging scenes";
+      case "Migrate":
+        return "Migrating";
       default:
         return "Idle";
     }

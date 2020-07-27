@@ -171,7 +171,7 @@ func (t *ScanTask) scanScene() {
 
 		// check if oshash is set
 		if !scene.OSHash.Valid {
-			logger.Infof("Calculating oshash existing file %s ...", t.FilePath)
+			logger.Infof("Calculating oshash for existing file %s ...", t.FilePath)
 			oshash, err := utils.OSHashFromFilePath(t.FilePath)
 			if err != nil {
 				logger.Error(err.Error())

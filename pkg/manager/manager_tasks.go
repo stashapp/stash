@@ -673,7 +673,7 @@ func (s *singleton) MigrateHash() {
 	if s.Status.Status != Idle {
 		return
 	}
-	s.Status.SetStatus(Clean)
+	s.Status.SetStatus(Migrate)
 	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
@@ -685,7 +685,7 @@ func (s *singleton) MigrateHash() {
 
 		scenes, err := qb.All()
 		if err != nil {
-			logger.Errorf("failed to fetch list of scenes for cleaning")
+			logger.Errorf("failed to fetch list of scenes for migration")
 			return
 		}
 
@@ -702,7 +702,7 @@ func (s *singleton) MigrateHash() {
 			}
 
 			if scene == nil {
-				logger.Errorf("nil scene, skipping Clean")
+				logger.Errorf("nil scene, skipping migrate")
 				continue
 			}
 

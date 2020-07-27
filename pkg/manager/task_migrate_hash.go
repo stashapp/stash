@@ -64,18 +64,20 @@ func (t *MigrateHashTask) Start(wg *sync.WaitGroup) {
 	oldPath = scenePaths.GetSpriteVttFilePath(oldHash)
 	newPath = scenePaths.GetSpriteVttFilePath(newHash)
 	t.migrate(oldPath, newPath)
+
+	oldPath = scenePaths.GetSpriteImageFilePath(oldHash)
+	newPath = scenePaths.GetSpriteImageFilePath(newHash)
+	t.migrate(oldPath, newPath)
 }
 
 func (t *MigrateHashTask) migrate(oldName, newName string) {
-	oldExists, _ := utils.FileExists(oldName)
-	newExists, _ := utils.FileExists(newName)
+	oldExists, err := utils.FileExists(oldName)
+	if err != nil {
+		logger.Errorf("Error checking existence of %s: %s", oldName, err.Error())
+		return
+	}
 
 	if oldExists {
-		if newExists {
-			logger.Warnf("both %s and %s exist. Not renaming", oldName, newName)
-			return
-		}
-
 		logger.Infof("renaming %s to %s", oldName, newName)
 		if err := os.Rename(oldName, newName); err != nil {
 			logger.Errorf("error renaming %s to %s: %s", oldName, newName, err.Error())
