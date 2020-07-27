@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import ReactJWPlayer from "react-jw-player";
 import * as GQL from "src/core/generated-graphql";
@@ -8,6 +9,7 @@ import { ScenePlayerScrubber } from "./ScenePlayerScrubber";
 interface IScenePlayerProps {
   className?: string;
   scene: GQL.SceneDataFragment;
+  sceneStreams: GQL.SceneStreamEndpoint[];
   timestamp: number;
   autoplay?: boolean;
   onReady?: () => void;
@@ -25,9 +27,23 @@ export class ScenePlayerImpl extends React.Component<
   IScenePlayerProps,
   IScenePlayerState
 > {
+  private static isDirectStream(src?: string) {
+    if (!src) {
+      return false;
+    }
+
+    const startIndex = src.lastIndexOf("?start=");
+    let srcCopy = src;
+    if (startIndex !== -1) {
+      srcCopy = srcCopy.substring(0, startIndex);
+    }
+
+    return srcCopy.endsWith("/stream");
+  }
+
   // Typings for jwplayer are, unfortunately, very lacking
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private player: any;
+  private playlist: any;
   private lastTime = 0;
 
   constructor(props: IScenePlayerProps) {
@@ -82,6 +98,23 @@ export class ScenePlayerImpl extends React.Component<
     if (this.props.timestamp > 0) {
       this.player.seek(this.props.timestamp);
     }
+
+    this.player.on("error", (err: any) => {
+      if (err && err.code === 224003) {
+        this.handleError();
+      }
+    });
+
+    this.player.on("meta", (metadata: any) => {
+      if (
+        metadata.metadataType === "media" &&
+        !metadata.width &&
+        !metadata.height
+      ) {
+        // treat this as a decoding error and try the next source
+        this.handleError();
+      }
+    });
   }
 
   private onSeeked() {
@@ -107,6 +140,21 @@ export class ScenePlayerImpl extends React.Component<
     this.player.pause();
   }
 
+  private handleError() {
+    const currentFile = this.player.getPlaylistItem();
+    if (currentFile) {
+      // eslint-disable-next-line no-console
+      console.log(`Source failed: ${currentFile.file}`);
+    }
+
+    if (this.tryNextStream()) {
+      // eslint-disable-next-line no-console
+      console.log("Trying next source in playlist");
+      this.player.load(this.playlist);
+      this.player.play();
+    }
+  }
+
   private shouldRepeat(scene: GQL.SceneDataFragment) {
     const maxLoopDuration = this.props?.config?.maximumLoopDuration ?? 0;
     return (
@@ -116,41 +164,19 @@ export class ScenePlayerImpl extends React.Component<
     );
   }
 
-  private makeJWPlayerConfig(scene: GQL.SceneDataFragment) {
-    if (!scene.paths.stream) {
-      return {};
+  private tryNextStream() {
+    if (this.playlist.sources.length > 1) {
+      this.playlist.sources.shift();
+      return true;
     }
 
-    const repeat = this.shouldRepeat(scene);
-    let getDurationHook: (() => GQL.Maybe<number>) | undefined;
-    let seekHook:
-      | ((seekToPosition: number, _videoTag: HTMLVideoElement) => void)
-      | undefined;
-    let getCurrentTimeHook:
-      | ((_videoTag: HTMLVideoElement) => number)
-      | undefined;
+    return false;
+  }
 
-    if (!this.props.scene.is_streamable) {
-      getDurationHook = () => {
-        return this.props.scene.file.duration ?? null;
-      };
+  private makePlaylist() {
+    const { scene } = this.props;
 
-      seekHook = (seekToPosition: number, _videoTag: HTMLVideoElement) => {
-        /* eslint-disable no-param-reassign */
-        _videoTag.dataset.start = seekToPosition.toString();
-        _videoTag.src = `${this.props.scene.paths.stream}?start=${seekToPosition}`;
-        /* eslint-enable no-param-reassign */
-        _videoTag.play();
-      };
-
-      getCurrentTimeHook = (_videoTag: HTMLVideoElement) => {
-        const start = Number.parseInt(_videoTag.dataset?.start ?? "0", 10);
-        return _videoTag.currentTime + start;
-      };
-    }
-
-    const ret = {
-      file: scene.paths.stream,
+    return {
       image: scene.paths.screenshot,
       tracks: [
         {
@@ -162,6 +188,64 @@ export class ScenePlayerImpl extends React.Component<
           kind: "chapters",
         },
       ],
+      sources: this.props.sceneStreams.map((s) => {
+        return {
+          file: s.url,
+          type: s.mime_type,
+          label: s.label,
+        };
+      }),
+    };
+  }
+
+  private makeJWPlayerConfig(scene: GQL.SceneDataFragment) {
+    if (!scene.paths.stream) {
+      return {};
+    }
+
+    const repeat = this.shouldRepeat(scene);
+    const getDurationHook = () => {
+      return this.props.scene.file.duration ?? null;
+    };
+
+    const seekHook = (seekToPosition: number, _videoTag: HTMLVideoElement) => {
+      if (
+        ScenePlayerImpl.isDirectStream(_videoTag.src) ||
+        _videoTag.src.endsWith(".m3u8")
+      ) {
+        // direct stream - fall back to default
+        return false;
+      }
+
+      // remove the start parameter
+      let { src } = _videoTag;
+
+      const startIndex = src.lastIndexOf("?start=");
+      if (startIndex !== -1) {
+        src = src.substring(0, startIndex);
+      }
+
+      /* eslint-disable no-param-reassign */
+      _videoTag.dataset.start = seekToPosition.toString();
+
+      _videoTag.src = `${src}?start=${seekToPosition}`;
+      /* eslint-enable no-param-reassign */
+      _videoTag.play();
+
+      // return true to indicate not to fall through to default
+      return true;
+    };
+
+    const getCurrentTimeHook = (_videoTag: HTMLVideoElement) => {
+      const start = Number.parseFloat(_videoTag.dataset?.start ?? "0");
+      return _videoTag.currentTime + start;
+    };
+
+    this.playlist = this.makePlaylist();
+
+    const ret = {
+      playlist: this.playlist,
+      image: scene.paths.screenshot,
       width: "100%",
       height: "100%",
       floating: {

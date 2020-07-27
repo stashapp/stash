@@ -169,6 +169,33 @@ func (s *singleton) Export() {
 	}()
 }
 
+func setGeneratePreviewOptionsInput(optionsInput *models.GeneratePreviewOptionsInput) {
+	if optionsInput.PreviewSegments == nil {
+		val := config.GetPreviewSegments()
+		optionsInput.PreviewSegments = &val
+	}
+
+	if optionsInput.PreviewSegmentDuration == nil {
+		val := config.GetPreviewSegmentDuration()
+		optionsInput.PreviewSegmentDuration = &val
+	}
+
+	if optionsInput.PreviewExcludeStart == nil {
+		val := config.GetPreviewExcludeStart()
+		optionsInput.PreviewExcludeStart = &val
+	}
+
+	if optionsInput.PreviewExcludeEnd == nil {
+		val := config.GetPreviewExcludeEnd()
+		optionsInput.PreviewExcludeEnd = &val
+	}
+
+	if optionsInput.PreviewPreset == nil {
+		val := config.GetPreviewPreset()
+		optionsInput.PreviewPreset = &val
+	}
+}
+
 func (s *singleton) Generate(input models.GenerateMetadataInput) {
 	if s.Status.Status != Idle {
 		return
@@ -182,8 +209,6 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
-
-	preset := config.GetPreviewPreset().String()
 
 	galleryIDs := utils.StringSliceToIntSlice(input.GalleryIDs)
 	sceneIDs := utils.StringSliceToIntSlice(input.SceneIDs)
@@ -255,6 +280,12 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			overwrite = *input.Overwrite
 		}
 
+		generatePreviewOptions := input.PreviewOptions
+		if generatePreviewOptions == nil {
+			generatePreviewOptions = &models.GeneratePreviewOptionsInput{}
+		}
+		setGeneratePreviewOptionsInput(generatePreviewOptions)
+
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -281,13 +312,12 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 
 			if input.Previews {
 				task := GeneratePreviewTask{
-					Scene:         *scene,
-					ImagePreview:  input.ImagePreviews,
-					PreviewPreset: preset,
-					Overwrite:     overwrite,
-					useMD5:        useMD5,
+					Scene:        *scene,
+					ImagePreview: input.ImagePreviews,
+					Options:      *generatePreviewOptions,
+					Overwrite:    overwrite,
+					useMD5:       useMD5,
 				}
-
 				go task.Start(&wg)
 			}
 

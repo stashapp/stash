@@ -45,7 +45,7 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 		audioCodec = ffmpeg.AudioCodec(t.Scene.AudioCodec.String)
 	}
 
-	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, container) && ffmpeg.IsValidAudioForContainer(audioCodec, container) {
+	if ffmpeg.IsStreamable(videoCodec, audioCodec, container) {
 		return
 	}
 
@@ -104,7 +104,7 @@ func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 		container = t.Scene.Format.String
 	}
 
-	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, ffmpeg.Container(container)) && ffmpeg.IsValidAudioForContainer(audioCodec, ffmpeg.Container(container)) {
+	if ffmpeg.IsStreamable(videoCodec, audioCodec, ffmpeg.Container(container)) {
 		return false
 	}
 

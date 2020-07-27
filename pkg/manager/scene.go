@@ -1,13 +1,16 @@
 package manager
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 
 	"github.com/jmoiron/sqlx"
 
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -163,4 +166,102 @@ func DeleteSceneFile(scene *models.Scene) {
 	if err != nil {
 		logger.Warnf("Could not delete file %s: %s", scene.Path, err.Error())
 	}
+}
+
+func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
+	var container ffmpeg.Container
+	if scene.Format.Valid {
+		container = ffmpeg.Container(scene.Format.String)
+	} else { // container isn't in the DB
+		// shouldn't happen, fallback to ffprobe
+		tmpVideoFile, err := ffmpeg.NewVideoFile(GetInstance().FFProbePath, scene.Path)
+		if err != nil {
+			return ffmpeg.Container(""), fmt.Errorf("error reading video file: %s", err.Error())
+		}
+
+		container = ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path)
+	}
+
+	return container, nil
+}
+
+func GetSceneStreamPaths(scene *models.Scene, directStreamURL string) ([]*models.SceneStreamEndpoint, error) {
+	if scene == nil {
+		return nil, fmt.Errorf("nil scene")
+	}
+
+	var ret []*models.SceneStreamEndpoint
+	mimeWebm := ffmpeg.MimeWebm
+	mimeHLS := ffmpeg.MimeHLS
+	mimeMp4 := ffmpeg.MimeMp4
+
+	labelWebm := "webm"
+	labelHLS := "HLS"
+
+	// direct stream should only apply when the audio codec is supported
+	audioCodec := ffmpeg.MissingUnsupported
+	if scene.AudioCodec.Valid {
+		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
+	}
+	container, err := GetSceneFileContainer(scene)
+	if err != nil {
+		return nil, err
+	}
+
+	if HasTranscode(scene, config.IsUseMD5()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
+		label := "Direct stream"
+		ret = append(ret, &models.SceneStreamEndpoint{
+			URL:      directStreamURL,
+			MimeType: &mimeMp4,
+			Label:    &label,
+		})
+	}
+
+	// only add mkv stream endpoint if the scene container is an mkv already
+	if container == ffmpeg.Matroska {
+		label := "mkv"
+		ret = append(ret, &models.SceneStreamEndpoint{
+			URL: directStreamURL + ".mkv",
+			// set mkv to mp4 to trick the client, since many clients won't try mkv
+			MimeType: &mimeMp4,
+			Label:    &label,
+		})
+	}
+
+	defaultStreams := []*models.SceneStreamEndpoint{
+		{
+			URL:      directStreamURL + ".webm",
+			MimeType: &mimeWebm,
+			Label:    &labelWebm,
+		},
+		{
+			URL:      directStreamURL + ".m3u8",
+			MimeType: &mimeHLS,
+			Label:    &labelHLS,
+		},
+	}
+
+	ret = append(ret, defaultStreams...)
+
+	// TODO - at some point, look at streaming at various resolutions
+
+	return ret, nil
+}
+
+// HasTranscode returns true if a transcoded video exists for the provided
+// scene. It will check using the OSHash of the scene first, then fall back
+// to the checksum.
+func HasTranscode(scene *models.Scene, useMD5 bool) bool {
+	if scene == nil {
+		return false
+	}
+
+	sceneHash := scene.GetHash(useMD5)
+	if sceneHash == "" {
+		return false
+	}
+
+	transcodePath := instance.Paths.Scene.GetTranscodePath(sceneHash)
+	ret, _ := utils.FileExists(transcodePath)
+	return ret
 }

@@ -2,7 +2,6 @@ package ffmpeg
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -132,22 +131,4 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 	}
 
 	return stdoutString, nil
-}
-
-func (e *Encoder) stream(probeResult VideoFile, args []string) (io.ReadCloser, *os.Process, error) {
-	cmd := exec.Command(e.Path, args...)
-
-	stdout, err := cmd.StdoutPipe()
-	if nil != err {
-		logger.Error("FFMPEG stdout not available: " + err.Error())
-	}
-
-	if err = cmd.Start(); err != nil {
-		return nil, nil, err
-	}
-
-	registerRunningEncoder(probeResult.Path, cmd.Process)
-	go waitAndDeregister(probeResult.Path, cmd)
-
-	return stdout, cmd.Process, nil
 }

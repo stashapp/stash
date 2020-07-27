@@ -2,6 +2,7 @@ input GenerateMetadataInput {
   sprites: Boolean!
   previews: Boolean!
   imagePreviews: Boolean!
+  previewOptions: GeneratePreviewOptionsInput
   markers: Boolean!
   transcodes: Boolean!
   """gallery thumbnails for cache usage"""
@@ -16,6 +17,19 @@ input GenerateMetadataInput {
 
   """overwrite existing media"""
   overwrite: Boolean
+}
+
+input GeneratePreviewOptionsInput {
+  """Number of segments in a preview file"""
+  previewSegments: Int
+  """Preview segment duration, in seconds"""
+  previewSegmentDuration: Float
+  """Duration of start of video to exclude when generating previews"""
+  previewExcludeStart: String
+  """Duration of end of video to exclude when generating previews"""
+  previewExcludeEnd: String
+  """Preset when generating preview"""
+  previewPreset: PreviewPreset
 }
 
 input ScanMetadataInput {

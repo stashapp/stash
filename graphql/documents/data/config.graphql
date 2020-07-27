@@ -5,11 +5,13 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   cachePath
   calculateMD5
   useMD5
+  previewSegments
+  previewSegmentDuration
+  previewExcludeStart
+  previewExcludeEnd
   previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
-  forceMkv
-  forceHevc
   username
   password
   maxSessionAge

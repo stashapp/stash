@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
@@ -17,7 +18,13 @@ type GeneratorInfo struct {
 	ChunkCount     int
 	FrameRate      float64
 	NumberOfFrames int
-	NthFrame       int
+
+	// NthFrame used for sprite generation
+	NthFrame int
+
+	ChunkDuration float64
+	ExcludeStart  string
+	ExcludeEnd    string
 
 	VideoFile ffmpeg.VideoFile
 }
@@ -33,12 +40,7 @@ func newGeneratorInfo(videoFile ffmpeg.VideoFile) (*GeneratorInfo, error) {
 	return generator, nil
 }
 
-func (g *GeneratorInfo) configure() error {
-	videoStream := g.VideoFile.VideoStream
-	if videoStream == nil {
-		return fmt.Errorf("missing video stream")
-	}
-
+func (g *GeneratorInfo) calculateFrameRate(videoStream *ffmpeg.FFProbeStream) error {
 	var framerate float64
 	if g.VideoFile.FrameRate == 0 {
 		framerate, _ = strconv.ParseFloat(videoStream.RFrameRate, 64)
@@ -94,7 +96,54 @@ func (g *GeneratorInfo) configure() error {
 
 	g.FrameRate = framerate
 	g.NumberOfFrames = numberOfFrames
+
+	return nil
+}
+
+func (g *GeneratorInfo) configure() error {
+	videoStream := g.VideoFile.VideoStream
+	if videoStream == nil {
+		return fmt.Errorf("missing video stream")
+	}
+
+	if err := g.calculateFrameRate(videoStream); err != nil {
+		return err
+	}
+
 	g.NthFrame = g.NumberOfFrames / g.ChunkCount
 
 	return nil
+}
+
+func (g GeneratorInfo) getExcludeValue(v string) float64 {
+	if strings.HasSuffix(v, "%") && len(v) > 1 {
+		// proportion of video duration
+		v = v[0 : len(v)-1]
+		prop, _ := strconv.ParseFloat(v, 64)
+		return prop / 100.0 * g.VideoFile.Duration
+	}
+
+	prop, _ := strconv.ParseFloat(v, 64)
+	return prop
+}
+
+// getStepSizeAndOffset calculates the step size for preview generation and
+// the starting offset.
+//
+// Step size is calculated based on the duration of the video file, minus the
+// excluded duration. The offset is based on the ExcludeStart. If the total
+// excluded duration exceeds the duration of the video, then offset is 0, and
+// the video duration is used to calculate the step size.
+func (g GeneratorInfo) getStepSizeAndOffset() (stepSize float64, offset float64) {
+	duration := g.VideoFile.Duration
+	excludeStart := g.getExcludeValue(g.ExcludeStart)
+	excludeEnd := g.getExcludeValue(g.ExcludeEnd)
+
+	if duration > excludeStart+excludeEnd {
+		duration = duration - excludeStart - excludeEnd
+		offset = excludeStart
+	}
+
+	stepSize = duration / float64(g.ChunkCount)
+	return
 }
