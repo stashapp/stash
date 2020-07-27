@@ -10,8 +10,8 @@ import { mutateMetadataAutoTag, useTagDestroy } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { FormattedNumber } from "react-intl";
 import { NavUtils } from "src/utils";
+import { Icon, Modal } from "src/components/Shared";
 import { TagCard } from "./TagCard";
-import { Icon, Modal } from "../Shared";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -60,20 +60,6 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     }
   }
 
-  const deleteAlert = (
-    <Modal
-      onHide={() => {}}
-      show={!!deletingTag}
-      icon="trash-alt"
-      accept={{ onClick: onDelete, variant: "danger", text: "Delete" }}
-      cancel={{ onClick: () => setDeletingTag(null) }}
-    >
-      <span>
-        Are you sure you want to delete {deletingTag && deletingTag.name}?
-      </span>
-    </Modal>
-  );
-
   function renderContent(
     result: FindTagsQueryResult,
     filter: ListFilterModel,
@@ -92,6 +78,20 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
       );
     }
     if (filter.displayMode === DisplayMode.List) {
+      const deleteAlert = (
+        <Modal
+          onHide={() => {}}
+          show={!!deletingTag}
+          icon="trash-alt"
+          accept={{ onClick: onDelete, variant: "danger", text: "Delete" }}
+          cancel={{ onClick: () => setDeletingTag(null) }}
+        >
+          <span>
+            Are you sure you want to delete {deletingTag && deletingTag.name}?
+          </span>
+        </Modal>
+      );
+
       const tagElements = result.data.findTags.tags.map((tag) => {
         return (
           <div key={tag.id} className="tag-list-row row">
