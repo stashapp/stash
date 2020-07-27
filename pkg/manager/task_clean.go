@@ -33,7 +33,13 @@ func (t *CleanTask) Start(wg *sync.WaitGroup) {
 }
 
 func (t *CleanTask) shouldClean(path string) bool {
-	if t.fileExists(path) && t.pathInStash(path) {
+	fileExists, err := t.fileExists(path)
+	if err != nil {
+		logger.Errorf("Error checking existence of %s: %s", path, err.Error())
+		return false
+	}
+
+	if fileExists && t.pathInStash(path) {
 		logger.Debugf("File Found: %s", path)
 		if matchFile(path, config.GetExcludes()) {
 			logger.Infof("File matched regex. Cleaning: \"%s\"", path)
@@ -106,12 +112,18 @@ func (t *CleanTask) deleteGallery(galleryID int) {
 	}
 }
 
-func (t *CleanTask) fileExists(filename string) bool {
+func (t *CleanTask) fileExists(filename string) (bool, error) {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
-		return false
+		return false, nil
 	}
-	return !info.IsDir()
+
+	// handle if error is something else
+	if err != nil {
+		return false, err
+	}
+
+	return !info.IsDir(), nil
 }
 
 func (t *CleanTask) pathInStash(pathToCheck string) bool {
