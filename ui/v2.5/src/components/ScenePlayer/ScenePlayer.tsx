@@ -113,7 +113,7 @@ export class ScenePlayerImpl extends React.Component<
       }
     });
 
-    this.player.on("playlist", () => {
+    this.player.on("firstFrame", () => {
       if (this.props.timestamp > 0) {
         this.player.seek(this.props.timestamp);
       }
@@ -155,12 +155,6 @@ export class ScenePlayerImpl extends React.Component<
       console.log("Trying next source in playlist");
       this.player.load(this.playlist);
       this.player.play();
-
-      this.player.on("firstFrame", () => {
-        if (this.props.timestamp > 0) {
-          this.player.seek(this.props.timestamp);
-        }
-      });
     }
   }
 
@@ -265,7 +259,8 @@ export class ScenePlayerImpl extends React.Component<
       primary: "html5",
       autostart:
         this.props.autoplay ||
-        (this.props.config ? this.props.config.autostartVideo : false),
+        (this.props.config ? this.props.config.autostartVideo : false) ||
+        this.props.timestamp > 0,
       repeat,
       playbackRateControls: true,
       playbackRates: [0.75, 1, 1.5, 2, 3, 4],
