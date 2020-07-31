@@ -245,7 +245,7 @@ func (t *ScanTask) scanScene() {
 		sceneHash = checksum
 		scene, _ = qb.FindByChecksum(sceneHash)
 	} else {
-		// TODO scene = findbyoshash
+		scene, _ = qb.FindByOSHash(sceneHash)
 	}
 
 	t.makeScreenshots(videoFile, sceneHash)
