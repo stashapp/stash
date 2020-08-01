@@ -121,9 +121,10 @@ func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 func (s *xpathScraper) loadURL(url string) (*html.Node, error) {
 	var r io.Reader
 
-	if c != nil && c.DriverOptions != nil && c.DriverOptions.UseCDP {
+	driverOptions := s.config.DriverOptions
+	if driverOptions != nil && driverOptions.UseCDP {
 		// get the page using chrome dp
-		resp, err := urlFromCDP(url, c)
+		resp, err := urlFromCDP(url, *driverOptions)
 		if err != nil {
 			return nil, err
 		}
@@ -252,19 +253,20 @@ func (q *xpathQuery) subScrape(value string) mappedQuery {
 // func urlFromCDP uses chrome cdp and DOM to load and process the url
 // if remote is set as true in the scraperConfig  it will try to use localhost:9222
 // else it will look for google-chrome in path
-func urlFromCDP(url string, c *scraperConfig) (string, error) {
-	if !(c != nil && c.DriverOptions != nil && c.DriverOptions.UseCDP) {
+func urlFromCDP(url string, driverOptions scraperDriverOptions) (string, error) {
+	if !driverOptions.UseCDP {
 		return "", fmt.Errorf("Url shouldn't be feetched through CDP")
 	}
+
 	remote := false
 	sleep := 2
 
-	if c.DriverOptions.Remote {
+	if driverOptions.Remote {
 		remote = true
 	}
 
-	if c.DriverOptions.Sleep != 0 {
-		sleep = c.DriverOptions.Sleep
+	if driverOptions.Sleep != 0 {
+		sleep = driverOptions.Sleep
 	}
 
 	sleepDuration := time.Duration(sleep) * time.Second
@@ -278,7 +280,6 @@ func urlFromCDP(url string, c *scraperConfig) (string, error) {
 		}
 		act, cancelAct = chromedp.NewRemoteAllocator(context.Background(), remote)
 		defer cancelAct()
-
 	}
 
 	ctx, cancel := chromedp.NewContext(act)
@@ -300,8 +301,8 @@ func urlFromCDP(url string, c *scraperConfig) (string, error) {
 	)
 	if err != nil {
 		return "", err
-
 	}
+
 	return res, nil
 }
 
