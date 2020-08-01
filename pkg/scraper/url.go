@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
+	"os"
 	"strings"
 	"time"
 
@@ -23,7 +25,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 	driverOptions := scraperConfig.DriverOptions
 	if driverOptions != nil && driverOptions.UseCDP {
 		// get the page using chrome dp
-		return urlFromCDP(url, *driverOptions)
+		return urlFromCDP(url, *driverOptions, globalConfig)
 	}
 
 	// get the page using http.Client
@@ -69,17 +71,14 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 // func urlFromCDP uses chrome cdp and DOM to load and process the url
 // if remote is set as true in the scraperConfig  it will try to use localhost:9222
 // else it will look for google-chrome in path
-func urlFromCDP(url string, driverOptions scraperDriverOptions) (io.Reader, error) {
+func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig GlobalConfig) (io.Reader, error) {
+	const defaultSleep = 2
+
 	if !driverOptions.UseCDP {
 		return nil, fmt.Errorf("Url shouldn't be feetched through CDP")
 	}
 
-	remote := false
-	sleep := 2
-
-	if driverOptions.Remote {
-		remote = true
-	}
+	sleep := defaultSleep
 
 	if driverOptions.Sleep != 0 {
 		sleep = driverOptions.Sleep
@@ -88,13 +87,38 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions) (io.Reader, erro
 	sleepDuration := time.Duration(sleep) * time.Second
 	act := context.Background()
 
-	if remote {
+	// if scraperCDPPath is a remote address, then allocate accordingly
+	if globalConfig.CDPPath != "" {
 		var cancelAct context.CancelFunc
-		remote, errCDP := getRemoteCDP()
-		if errCDP != nil {
-			return nil, errCDP
+
+		if globalConfig.isCDPPathHTTP() || globalConfig.isCDPPathWS() {
+			remote := globalConfig.CDPPath
+
+			// if CDPPath is http(s) then we need to get the websocket URL
+			if globalConfig.isCDPPathHTTP() {
+				var err error
+				remote, err = getRemoteCDPWSAddress(remote)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			act, cancelAct = chromedp.NewRemoteAllocator(context.Background(), remote)
+		} else {
+			// user a temporary user directory for chrome
+			dir, err := ioutil.TempDir("", "stash-chromedp")
+			if err != nil {
+				return nil, err
+			}
+			defer os.RemoveAll(dir)
+
+			opts := append(chromedp.DefaultExecAllocatorOptions[:],
+				chromedp.UserDataDir(dir),
+				chromedp.ExecPath(globalConfig.CDPPath),
+			)
+			act, cancelAct = chromedp.NewExecAllocator(act, opts...)
 		}
-		act, cancelAct = chromedp.NewRemoteAllocator(context.Background(), remote)
+
 		defer cancelAct()
 	}
 
@@ -122,9 +146,9 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions) (io.Reader, erro
 	return strings.NewReader(res), nil
 }
 
-// func getRemoteCDP returns the complete remote address that is required to access the cdp instance
-func getRemoteCDP() (string, error) {
-	resp, err := http.Get("http://localhost:9222/json/version")
+// getRemoteCDPWSAddress returns the complete remote address that is required to access the cdp instance
+func getRemoteCDPWSAddress(address string) (string, error) {
+	resp, err := http.Get(address)
 	if err != nil {
 		return "", err
 	}
