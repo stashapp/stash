@@ -495,6 +495,7 @@ export const stringGenderMap = new Map<string, GQL.GenderEnum>([
   ["Transgender Male", GQL.GenderEnum.TransgenderMale],
   ["Transgender Female", GQL.GenderEnum.TransgenderFemale],
   ["Intersex", GQL.GenderEnum.Intersex],
+  ["Non-Binary", GQL.GenderEnum.NonBinary],
 ]);
 
 export const genderToString = (value?: GQL.GenderEnum) => {
