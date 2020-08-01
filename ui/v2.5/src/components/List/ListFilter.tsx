@@ -1,5 +1,5 @@
 import _, { debounce } from "lodash";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
   Badge,
@@ -12,22 +12,24 @@ import {
   SafeAnchorProps,
   InputGroup,
   FormControl,
-  Col,
-  Row,
+  ButtonToolbar,
 } from "react-bootstrap";
 
 import { Icon } from "src/components/Shared";
 import { Criterion } from "src/models/list-filter/criteria/criterion";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import { useFocus } from "src/utils";
 import { AddFilter } from "./AddFilter";
 
 interface IListFilterOperation {
   text: string;
   onClick: () => void;
+  isDisplayed?: () => boolean;
 }
 
 interface IListFilterProps {
+  subComponent?: boolean;
   onFilterUpdate: (newFilter: ListFilterModel) => void;
   zoomIndex?: number;
   onChangeZoom?: (zoomIndex: number) => void;
@@ -41,10 +43,14 @@ interface IListFilterProps {
 }
 
 const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
+const minZoom = 0;
+const maxZoom = 3;
 
 export const ListFilter: React.FC<IListFilterProps> = (
   props: IListFilterProps
 ) => {
+  const [queryRef, setQueryFocus] = useFocus();
+
   const searchCallback = debounce((value: string) => {
     const newFilter = _.cloneDeep(props.filter);
     newFilter.searchTerm = value;
@@ -55,6 +61,81 @@ export const ListFilter: React.FC<IListFilterProps> = (
   const [editingCriterion, setEditingCriterion] = useState<
     Criterion | undefined
   >(undefined);
+
+  useEffect(() => {
+    Mousetrap.bind("/", (e) => {
+      setQueryFocus();
+      e.preventDefault();
+    });
+
+    Mousetrap.bind("r", () => onReshuffleRandomSort());
+    Mousetrap.bind("v g", () => {
+      if (props.filter.displayModeOptions.includes(DisplayMode.Grid)) {
+        onChangeDisplayMode(DisplayMode.Grid);
+      }
+    });
+    Mousetrap.bind("v l", () => {
+      if (props.filter.displayModeOptions.includes(DisplayMode.List)) {
+        onChangeDisplayMode(DisplayMode.List);
+      }
+    });
+    Mousetrap.bind("v w", () => {
+      if (props.filter.displayModeOptions.includes(DisplayMode.Wall)) {
+        onChangeDisplayMode(DisplayMode.Wall);
+      }
+    });
+    Mousetrap.bind("+", () => {
+      if (
+        props.onChangeZoom &&
+        props.zoomIndex !== undefined &&
+        props.zoomIndex < maxZoom
+      ) {
+        props.onChangeZoom(props.zoomIndex + 1);
+      }
+    });
+    Mousetrap.bind("-", () => {
+      if (
+        props.onChangeZoom &&
+        props.zoomIndex !== undefined &&
+        props.zoomIndex > minZoom
+      ) {
+        props.onChangeZoom(props.zoomIndex - 1);
+      }
+    });
+    Mousetrap.bind("s a", () => onSelectAll());
+    Mousetrap.bind("s n", () => onSelectNone());
+
+    if (!props.subComponent && props.itemsSelected) {
+      Mousetrap.bind("e", () => {
+        if (props.onEdit) {
+          props.onEdit();
+        }
+      });
+
+      Mousetrap.bind("d d", () => {
+        if (props.onDelete) {
+          props.onDelete();
+        }
+      });
+    }
+
+    return () => {
+      Mousetrap.unbind("/");
+      Mousetrap.unbind("r");
+      Mousetrap.unbind("v g");
+      Mousetrap.unbind("v l");
+      Mousetrap.unbind("v w");
+      Mousetrap.unbind("+");
+      Mousetrap.unbind("-");
+      Mousetrap.unbind("s a");
+      Mousetrap.unbind("s n");
+
+      if (!props.subComponent && props.itemsSelected) {
+        Mousetrap.unbind("e");
+        Mousetrap.unbind("d d");
+      }
+    };
+  });
 
   function onChangePageSize(event: React.ChangeEvent<HTMLSelectElement>) {
     const val = event.currentTarget.value;
@@ -283,17 +364,25 @@ export const ListFilter: React.FC<IListFilterProps> = (
     const options = [renderSelectAll(), renderSelectNone()];
 
     if (props.otherOperations) {
-      props.otherOperations.forEach((o) => {
-        options.push(
-          <Dropdown.Item
-            key={o.text}
-            className="bg-secondary text-white"
-            onClick={o.onClick}
-          >
-            {o.text}
-          </Dropdown.Item>
-        );
-      });
+      props.otherOperations
+        .filter((o) => {
+          if (!o.isDisplayed) {
+            return true;
+          }
+
+          return o.isDisplayed();
+        })
+        .forEach((o) => {
+          options.push(
+            <Dropdown.Item
+              key={o.text}
+              className="bg-secondary text-white"
+              onClick={o.onClick}
+            >
+              {o.text}
+            </Dropdown.Item>
+          );
+        });
     }
 
     if (options.length > 0) {
@@ -319,16 +408,18 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function maybeRenderZoom() {
     if (props.onChangeZoom) {
       return (
-        <Form.Control
-          className="zoom-slider d-none d-sm-inline-flex"
-          type="range"
-          min={0}
-          max={3}
-          defaultValue={1}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
-          }
-        />
+        <div className="align-middle">
+          <Form.Control
+            className="zoom-slider d-none d-sm-inline-flex ml-3"
+            type="range"
+            min={minZoom}
+            max={maxZoom}
+            value={props.zoomIndex}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChangeZoom(Number.parseInt(e.currentTarget.value, 10))
+            }
+          />
+        </div>
       );
     }
   }
@@ -364,111 +455,91 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function render() {
     return (
       <>
-        <div className="form-row align-items-center justify-content-center">
-          <Col sm={12} md={6} xl={4} lg={5} className="my-1">
-            <Row className="justify-content-center">
-              <Col xs={6} className="px-1">
-                <InputGroup>
-                  <FormControl
-                    placeholder="Search..."
-                    defaultValue={props.filter.searchTerm}
-                    onInput={onChangeQuery}
-                    className="bg-secondary text-white border-secondary"
+        <ButtonToolbar className="align-items-center justify-content-center">
+          <ButtonGroup className="mr-3 my-1">
+            <InputGroup className="mr-2">
+              <FormControl
+                ref={queryRef}
+                placeholder="Search..."
+                defaultValue={props.filter.searchTerm}
+                onInput={onChangeQuery}
+                className="bg-secondary text-white border-secondary"
+              />
+
+              <InputGroup.Append>
+                <AddFilter
+                  filter={props.filter}
+                  onAddCriterion={onAddCriterion}
+                  onCancel={onCancelAddCriterion}
+                  editingCriterion={editingCriterion}
+                />
+              </InputGroup.Append>
+            </InputGroup>
+
+            <Dropdown as={ButtonGroup} className="mr-2">
+              <Dropdown.Toggle split variant="secondary" id="more-menu">
+                {props.filter.sortBy}
+              </Dropdown.Toggle>
+              <Dropdown.Menu className="bg-secondary text-white">
+                {renderSortByOptions()}
+              </Dropdown.Menu>
+              <OverlayTrigger
+                overlay={
+                  <Tooltip id="sort-direction-tooltip">
+                    {props.filter.sortDirection === SortDirectionEnum.Asc
+                      ? "Ascending"
+                      : "Descending"}
+                  </Tooltip>
+                }
+              >
+                <Button variant="secondary" onClick={onChangeSortDirection}>
+                  <Icon
+                    icon={
+                      props.filter.sortDirection === SortDirectionEnum.Asc
+                        ? "caret-up"
+                        : "caret-down"
+                    }
                   />
-
-                  <InputGroup.Append>
-                    <AddFilter
-                      filter={props.filter}
-                      onAddCriterion={onAddCriterion}
-                      onCancel={onCancelAddCriterion}
-                      editingCriterion={editingCriterion}
-                    />
-                  </InputGroup.Append>
-                </InputGroup>
-              </Col>
-
-              <Col xs="auto" className="px-1">
-                <ButtonGroup>
-                  <Dropdown as={ButtonGroup}>
-                    <Dropdown.Toggle split variant="secondary" id="more-menu">
-                      {props.filter.sortBy}
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu className="bg-secondary text-white">
-                      {renderSortByOptions()}
-                    </Dropdown.Menu>
-                    <OverlayTrigger
-                      overlay={
-                        <Tooltip id="sort-direction-tooltip">
-                          {props.filter.sortDirection === SortDirectionEnum.Asc
-                            ? "Ascending"
-                            : "Descending"}
-                        </Tooltip>
-                      }
-                    >
-                      <Button
-                        variant="secondary"
-                        onClick={onChangeSortDirection}
-                      >
-                        <Icon
-                          icon={
-                            props.filter.sortDirection === SortDirectionEnum.Asc
-                              ? "caret-up"
-                              : "caret-down"
-                          }
-                        />
-                      </Button>
-                    </OverlayTrigger>
-                    {props.filter.sortBy === "random" && (
-                      <OverlayTrigger
-                        overlay={
-                          <Tooltip id="sort-reshuffle-tooltip">
-                            Reshuffle
-                          </Tooltip>
-                        }
-                      >
-                        <Button
-                          variant="secondary"
-                          onClick={onReshuffleRandomSort}
-                        >
-                          <Icon icon="random" />
-                        </Button>
-                      </OverlayTrigger>
-                    )}
-                  </Dropdown>
-                </ButtonGroup>
-              </Col>
-
-              <Col xs="auto" className="px-1">
-                <Form.Control
-                  as="select"
-                  onChange={onChangePageSize}
-                  value={props.filter.itemsPerPage.toString()}
-                  className="btn-secondary"
+                </Button>
+              </OverlayTrigger>
+              {props.filter.sortBy === "random" && (
+                <OverlayTrigger
+                  overlay={
+                    <Tooltip id="sort-reshuffle-tooltip">Reshuffle</Tooltip>
+                  }
                 >
-                  {PAGE_SIZE_OPTIONS.map((s) => (
-                    <option value={s} key={s}>
-                      {s}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Col>
-            </Row>
-          </Col>
+                  <Button variant="secondary" onClick={onReshuffleRandomSort}>
+                    <Icon icon="random" />
+                  </Button>
+                </OverlayTrigger>
+              )}
+            </Dropdown>
 
-          <Col sm={12} md="auto" className="my-1">
-            <Row className="align-items-center justify-content-center">
-              {maybeRenderSelectedButtons()}
+            <Form.Control
+              as="select"
+              onChange={onChangePageSize}
+              value={props.filter.itemsPerPage.toString()}
+              className="btn-secondary mr-1"
+            >
+              {PAGE_SIZE_OPTIONS.map((s) => (
+                <option value={s} key={s}>
+                  {s}
+                </option>
+              ))}
+            </Form.Control>
+          </ButtonGroup>
 
-              <ButtonGroup className="mr-3">{renderMore()}</ButtonGroup>
+          <ButtonGroup className="mr-3 my-1">
+            {maybeRenderSelectedButtons()}
+            {renderMore()}
+          </ButtonGroup>
 
-              <ButtonGroup className="mr-3">
-                {renderDisplayModeOptions()}
-              </ButtonGroup>
+          <ButtonGroup className="my-1">
+            {renderDisplayModeOptions()}
+            {maybeRenderZoom()}
+          </ButtonGroup>
+        </ButtonToolbar>
 
-              <ButtonGroup>{maybeRenderZoom()}</ButtonGroup>
-            </Row>
-          </Col>
-        </div>
         <div className="d-flex justify-content-center">
           {renderFilterTags()}
         </div>

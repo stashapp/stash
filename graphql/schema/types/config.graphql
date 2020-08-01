@@ -7,6 +7,16 @@ enum StreamingResolutionEnum {
   "Original", ORIGINAL
 }
 
+enum PreviewPreset {
+  "X264_ULTRAFAST", ultrafast
+  "X264_VERYFAST", veryfast
+  "X264_FAST", fast
+  "X264_MEDIUM", medium
+  "X264_SLOW", slow
+  "X264_SLOWER", slower
+  "X264_VERYSLOW", veryslow
+}
+
 input ConfigGeneralInput {
   """Array of file paths to content"""
   stashes: [String!]
@@ -16,14 +26,20 @@ input ConfigGeneralInput {
   generatedPath: String
   """Path to cache"""
   cachePath: String
+  """Number of segments in a preview file"""
+  previewSegments: Int
+  """Preview segment duration, in seconds"""
+  previewSegmentDuration: Float
+  """Duration of start of video to exclude when generating previews"""
+  previewExcludeStart: String
+  """Duration of end of video to exclude when generating previews"""
+  previewExcludeEnd: String
+  """Preset when generating preview"""
+  previewPreset: PreviewPreset
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
-  """Force MKV as supported format"""
-  forceMkv: Boolean!
-  """Force HEVC as a supported codec"""
-  forceHevc: Boolean!
   """Username"""
   username: String
   """Password"""
@@ -53,14 +69,20 @@ type ConfigGeneralResult {
   generatedPath: String!
   """Path to cache"""
   cachePath: String!
+  """Number of segments in a preview file"""
+  previewSegments: Int!
+  """Preview segment duration, in seconds"""
+  previewSegmentDuration: Float!
+  """Duration of start of video to exclude when generating previews"""
+  previewExcludeStart: String!
+  """Duration of end of video to exclude when generating previews"""
+  previewExcludeEnd: String!
+  """Preset when generating preview"""
+  previewPreset: PreviewPreset!
   """Max generated transcode size"""
   maxTranscodeSize: StreamingResolutionEnum
   """Max streaming transcode size"""
   maxStreamingTranscodeSize: StreamingResolutionEnum
-  """Force MKV as supported format"""
-  forceMkv: Boolean!
-  """Force HEVC as a supported codec"""
-  forceHevc: Boolean!
   """Username"""
   username: String!
   """Password"""

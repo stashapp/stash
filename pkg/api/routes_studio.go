@@ -2,14 +2,12 @@ package api
 
 import (
 	"context"
-	"crypto/md5"
-	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type studioRoutes struct{}
@@ -29,23 +27,7 @@ func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	studio := r.Context().Value(studioKey).(*models.Studio)
 	qb := models.NewStudioQueryBuilder()
 	image, _ := qb.GetStudioImage(studio.ID, nil)
-
-	etag := fmt.Sprintf("%x", md5.Sum(image))
-	if match := r.Header.Get("If-None-Match"); match != "" {
-		if strings.Contains(match, etag) {
-			w.WriteHeader(http.StatusNotModified)
-			return
-		}
-	}
-
-	contentType := http.DetectContentType(image)
-	if contentType == "text/xml; charset=utf-8" || contentType == "text/plain; charset=utf-8" {
-		contentType = "image/svg+xml"
-	}
-
-	w.Header().Set("Content-Type", contentType)
-	w.Header().Add("Etag", etag)
-	w.Write(image)
+	utils.ServeImage(image, w, r)
 }
 
 func StudioCtx(next http.Handler) http.Handler {

@@ -30,6 +30,15 @@ export const AddFilter: React.FC<IAddFilterProps> = (
 
   const valueStage = useRef<CriterionValue>(criterion.value);
 
+  // configure keyboard shortcuts
+  useEffect(() => {
+    Mousetrap.bind("f", () => setIsOpen(true));
+
+    return () => {
+      Mousetrap.unbind("f");
+    };
+  });
+
   // Configure if we are editing an existing criterion
   useEffect(() => {
     if (!props.editingCriterion) {

@@ -8,6 +8,7 @@ import {
   useSceneIncrementO,
   useSceneDecrementO,
   useSceneResetO,
+  useSceneStreams,
   useSceneGenerateScreenshot,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
@@ -15,6 +16,7 @@ import { LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
+import * as Mousetrap from "mousetrap";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
@@ -22,6 +24,7 @@ import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
+import { SceneGenerateDialog } from "../SceneGenerateDialog";
 
 export const Scene: React.FC = () => {
   const { id = "new" } = useParams();
@@ -33,12 +36,20 @@ export const Scene: React.FC = () => {
 
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
+  const {
+    data: sceneStreams,
+    error: streamableError,
+    loading: streamableLoading,
+  } = useSceneStreams(id);
   const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
   const [resetO] = useSceneResetO(scene?.id ?? "0");
 
+  const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
+
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
@@ -131,6 +142,19 @@ export const Scene: React.FC = () => {
     }
   }
 
+  function maybeRenderSceneGenerateDialog() {
+    if (isGenerateDialogOpen && scene) {
+      return (
+        <SceneGenerateDialog
+          selectedIds={[scene.id]}
+          onClose={() => {
+            setIsGenerateDialogOpen(false);
+          }}
+        />
+      );
+    }
+  }
+
   function renderOperations() {
     return (
       <Dropdown>
@@ -143,6 +167,13 @@ export const Scene: React.FC = () => {
           <Icon icon="ellipsis-v" />
         </Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white">
+          <Dropdown.Item
+            key="generate"
+            className="bg-secondary text-white"
+            onClick={() => setIsGenerateDialogOpen(true)}
+          >
+            Generate...
+          </Dropdown.Item>
           <Dropdown.Item
             key="generate-screenshot"
             className="bg-secondary text-white"
@@ -177,7 +208,10 @@ export const Scene: React.FC = () => {
     }
 
     return (
-      <Tab.Container defaultActiveKey="scene-details-panel">
+      <Tab.Container
+        activeKey={activeTabKey}
+        onSelect={(k) => setActiveTabKey(k)}
+      >
         <div>
           <Nav variant="tabs" className="mr-auto">
             <Nav.Item>
@@ -224,7 +258,11 @@ export const Scene: React.FC = () => {
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-markers-panel" title="Markers">
-            <SceneMarkersPanel scene={scene} onClickMarker={onClickMarker} />
+            <SceneMarkersPanel
+              scene={scene}
+              onClickMarker={onClickMarker}
+              isVisible={activeTabKey === "scene-markers-panel"}
+            />
           </Tab.Pane>
           <Tab.Pane eventKey="scene-movie-panel" title="Movies">
             <SceneMoviePanel scene={scene} />
@@ -245,6 +283,7 @@ export const Scene: React.FC = () => {
           </Tab.Pane>
           <Tab.Pane eventKey="scene-edit-panel" title="Edit">
             <SceneEditPanel
+              isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}
               onUpdate={(newScene) => setScene(newScene)}
               onDelete={() => setIsDeleteAlertOpen(true)}
@@ -255,14 +294,33 @@ export const Scene: React.FC = () => {
     );
   }
 
-  if (loading || !scene || !data?.findScene) {
+  // set up hotkeys
+  useEffect(() => {
+    Mousetrap.bind("a", () => setActiveTabKey("scene-details-panel"));
+    Mousetrap.bind("e", () => setActiveTabKey("scene-edit-panel"));
+    Mousetrap.bind("k", () => setActiveTabKey("scene-markers-panel"));
+    Mousetrap.bind("f", () => setActiveTabKey("scene-file-info-panel"));
+    Mousetrap.bind("o", () => onIncrementClick());
+
+    return () => {
+      Mousetrap.unbind("a");
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("k");
+      Mousetrap.unbind("f");
+      Mousetrap.unbind("o");
+    };
+  });
+
+  if (loading || streamableLoading || !scene || !data?.findScene) {
     return <LoadingIndicator />;
   }
 
   if (error) return <div>{error.message}</div>;
+  if (streamableError) return <div>{streamableError.message}</div>;
 
   return (
     <div className="row">
+      {maybeRenderSceneGenerateDialog()}
       {maybeRenderDeleteDialog()}
       <div className="scene-tabs order-xl-first order-last">
         <div className="d-none d-xl-block">
@@ -289,6 +347,7 @@ export const Scene: React.FC = () => {
           scene={scene}
           timestamp={timestamp}
           autoplay={autoplay}
+          sceneStreams={sceneStreams?.sceneStreams ?? []}
         />
       </div>
     </div>

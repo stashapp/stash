@@ -68,6 +68,25 @@ export const Studio: React.FC = () => {
     setStudio(studioData);
   }
 
+  // set up hotkeys
+  useEffect(() => {
+    if (isEditing) {
+      Mousetrap.bind("s s", () => onSave());
+    }
+
+    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("d d", () => onDelete());
+
+    return () => {
+      if (isEditing) {
+        Mousetrap.unbind("s s");
+      }
+
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("d d");
+    };
+  });
+
   useEffect(() => {
     if (data && data.findStudio) {
       setImage(undefined);
@@ -170,16 +189,18 @@ export const Studio: React.FC = () => {
     <div className="row">
       <div
         className={cx("studio-details", {
-          "col ml-sm-5": !isNew,
+          "col-md-4": !isNew,
           "col-8": isNew,
         })}
       >
         {isNew && <h2>Add Studio</h2>}
-        {imageEncoding ? (
-          <LoadingIndicator message="Encoding image..." />
-        ) : (
-          <img className="logo w-100" alt={name} src={imagePreview} />
-        )}
+        <div className="text-center">
+          {imageEncoding ? (
+            <LoadingIndicator message="Encoding image..." />
+          ) : (
+            <img className="logo" alt={name} src={imagePreview} />
+          )}
+        </div>
         <Table>
           <tbody>
             {TableUtils.renderInputGroup({
@@ -223,7 +244,7 @@ export const Studio: React.FC = () => {
         />
       </div>
       {!isNew && (
-        <div className="col-12 col-sm-8">
+        <div className="col col-md-8">
           <Tabs id="studio-tabs" mountOnEnter>
             <Tab eventKey="studio-scenes-panel" title="Scenes">
               <StudioScenesPanel studio={studio} />

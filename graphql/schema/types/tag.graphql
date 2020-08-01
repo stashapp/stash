@@ -2,19 +2,31 @@ type Tag {
   id: ID!
   name: String!
 
+  image_path: String # Resolver
   scene_count: Int # Resolver
   scene_marker_count: Int # Resolver
 }
 
 input TagCreateInput {
   name: String!
+
+  """This should be base64 encoded"""
+  image: String
 }
 
 input TagUpdateInput {
   id: ID!
   name: String!
+
+  """This should be base64 encoded"""
+  image: String
 }
 
 input TagDestroyInput {
   id: ID!
+}
+
+type FindTagsResultType {
+  count: Int!
+  tags: [Tag!]!
 }

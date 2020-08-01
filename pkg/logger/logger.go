@@ -65,6 +65,8 @@ func logLevelFromString(level string) logrus.Level {
 		ret = logrus.WarnLevel
 	} else if level == "Error" {
 		ret = logrus.ErrorLevel
+	} else if level == "Trace" {
+		ret = logrus.TraceLevel
 	}
 
 	return ret
@@ -176,6 +178,15 @@ func Progressf(format string, args ...interface{}) {
 
 func Trace(args ...interface{}) {
 	logger.Trace(args...)
+}
+
+func Tracef(format string, args ...interface{}) {
+	logger.Tracef(format, args...)
+	l := &LogItem{
+		Type:    "trace",
+		Message: fmt.Sprintf(format, args...),
+	}
+	addLogItem(l)
 }
 
 func Debug(args ...interface{}) {

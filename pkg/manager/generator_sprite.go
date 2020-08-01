@@ -2,17 +2,18 @@ package manager
 
 import (
 	"fmt"
-	"github.com/bmatcuk/doublestar"
-	"github.com/disintegration/imaging"
-	"github.com/stashapp/stash/pkg/ffmpeg"
-	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
 	"image"
 	"image/color"
 	"io/ioutil"
 	"math"
 	"path/filepath"
 	"strings"
+
+	"github.com/bmatcuk/doublestar"
+	"github.com/disintegration/imaging"
+	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type SpriteGenerator struct {
@@ -22,6 +23,8 @@ type SpriteGenerator struct {
 	VTTOutputPath   string
 	Rows            int
 	Columns         int
+
+	Overwrite bool
 }
 
 func NewSpriteGenerator(videoFile ffmpeg.VideoFile, imageOutputPath string, vttOutputPath string, rows int, cols int) (*SpriteGenerator, error) {
@@ -60,7 +63,7 @@ func (g *SpriteGenerator) Generate() error {
 }
 
 func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
-	if g.imageExists() {
+	if !g.Overwrite && g.imageExists() {
 		return nil
 	}
 	logger.Infof("[generator] generating sprite image for %s", g.Info.VideoFile.Path)
@@ -112,7 +115,7 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 }
 
 func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
-	if g.vttExists() {
+	if !g.Overwrite && g.vttExists() {
 		return nil
 	}
 	logger.Infof("[generator] generating sprite vtt for %s", g.Info.VideoFile.Path)

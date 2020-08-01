@@ -3,10 +3,13 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   databasePath
   generatedPath
   cachePath
+  previewSegments
+  previewSegmentDuration
+  previewExcludeStart
+  previewExcludeEnd
+  previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
-  forceMkv
-  forceHevc
   username
   password
   maxSessionAge

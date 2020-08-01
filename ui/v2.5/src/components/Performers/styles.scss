@@ -12,7 +12,7 @@
   overflow: hidden;
 
   .image-container .performer {
-    max-height: 960px;
+    max-height: calc(100vh - 6rem);
     max-width: 100%;
   }
 
@@ -57,6 +57,16 @@
 }
 
 .performer-card {
+  width: 20rem;
+
+  &-image {
+    height: 30rem;
+    min-width: 11.25rem;
+    object-fit: cover;
+    object-position: top;
+    width: 100%;
+  }
+
   .flag-icon {
     bottom: 1rem;
     height: 2rem;
@@ -70,4 +80,11 @@
   &.performer-card {
     padding: 0 0 1rem 0;
   }
+}
+
+.scrape-dialog .performer-image {
+  display: block;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  max-width: 100%;
 }
