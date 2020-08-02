@@ -14,9 +14,9 @@ env:
 before_install:
 - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
 - nvm install 12
-- travis_retry yarn --cwd ui/v2.5 install --frozen-lockfile
+- travis_retry make pre-ui
 - make generate
-- CI=false yarn --cwd ui/v2.5 build-ci
+- CI=false make ui-validate ui-only
 #- go get -v github.com/mgechev/revive
 script:
 # left lint off to avoid getting extra dependency

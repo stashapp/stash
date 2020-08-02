@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
+	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -20,6 +21,8 @@ type singleton struct {
 
 	FFMPEGPath  string
 	FFProbePath string
+
+	ScraperCache *scraper.Cache
 }
 
 var instance *singleton
@@ -47,6 +50,8 @@ func Initialize() *singleton {
 			Status: TaskStatus{Status: Idle, Progress: -1},
 			Paths:  paths.NewPaths(),
 			JSON:   &jsonUtils{},
+
+			ScraperCache: initScraperCache(),
 		}
 
 		instance.RefreshConfig()
@@ -75,6 +80,8 @@ func initConfig() {
 		}
 	}
 	logger.Infof("using config file: %s", viper.ConfigFileUsed())
+
+	config.SetInitialConfig()
 
 	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
 
@@ -146,6 +153,22 @@ func initLog() {
 	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
 }
 
+// initScraperCache initializes a new scraper cache and returns it.
+func initScraperCache() *scraper.Cache {
+	scraperConfig := scraper.GlobalConfig{
+		Path:      config.GetScrapersPath(),
+		UserAgent: config.GetScraperUserAgent(),
+		CDPPath:   config.GetScraperCDPPath(),
+	}
+	ret, err := scraper.NewCache(scraperConfig)
+
+	if err != nil {
+		logger.Errorf("Error reading scraper configs: %s", err.Error())
+	}
+
+	return ret
+}
+
 func (s *singleton) RefreshConfig() {
 	s.Paths = paths.NewPaths()
 	if config.IsValid() {
@@ -156,4 +179,10 @@ func (s *singleton) RefreshConfig() {
 
 		paths.EnsureJSONDirs()
 	}
+}
+
+// RefreshScraperCache refreshes the scraper cache. Call this when scraper
+// configuration changes.
+func (s *singleton) RefreshScraperCache() {
+	s.ScraperCache = initScraperCache()
 }

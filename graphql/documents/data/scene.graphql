@@ -33,8 +33,6 @@ fragment SceneData on Scene {
     ...SceneMarkerData
   }
 
-  is_streamable
-
   gallery {
     ...GalleryData
   }

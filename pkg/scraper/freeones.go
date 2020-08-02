@@ -6,7 +6,8 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-const freeonesScraperID = "builtin_freeones"
+// FreeonesScraperID is the scraper ID for the built-in Freeones scraper
+const FreeonesScraperID = "builtin_freeones"
 
 // 537: stolen from: https://github.com/stashapp/CommunityScrapers/blob/master/scrapers/FreeonesCommunity.yml
 const freeonesScraperConfig = `
@@ -103,10 +104,10 @@ xPathScrapers:
 # Last updated June 15, 2020
 `
 
-func GetFreeonesScraper() scraperConfig {
+func getFreeonesScraper() config {
 	yml := freeonesScraperConfig
 
-	scraper, err := loadScraperFromYAML(freeonesScraperID, strings.NewReader(yml))
+	scraper, err := loadScraperFromYAML(FreeonesScraperID, strings.NewReader(yml))
 	if err != nil {
 		logger.Fatalf("Error loading builtin freeones scraper: %s", err.Error())
 	}

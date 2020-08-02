@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
 import {
@@ -9,11 +9,13 @@ import { queryFindScenes } from "src/core/StashService";
 import { useScenesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import { showWhenSelected } from "src/hooks/ListHook";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
+import { SceneGenerateDialog } from "./SceneGenerateDialog";
 
 interface ISceneList {
   subComponent?: boolean;
@@ -25,12 +27,32 @@ export const SceneList: React.FC<ISceneList> = ({
   filterHook,
 }) => {
   const history = useHistory();
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+
   const otherOperations = [
     {
       text: "Play Random",
       onClick: playRandom,
     },
+    {
+      text: "Generate...",
+      onClick: generate,
+      isDisplayed: showWhenSelected,
+    },
   ];
+
+  const addKeybinds = (
+    result: FindScenesQueryResult,
+    filter: ListFilterModel
+  ) => {
+    Mousetrap.bind("p r", () => {
+      playRandom(result, filter);
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  };
 
   const listData = useScenesList({
     zoomable: true,
@@ -40,6 +62,7 @@ export const SceneList: React.FC<ISceneList> = ({
     renderDeleteDialog: renderDeleteScenesDialog,
     subComponent,
     filterHook,
+    addKeybinds,
   });
 
   async function playRandom(
@@ -65,6 +88,25 @@ export const SceneList: React.FC<ISceneList> = ({
         // navigate to the scene player page
         history.push(`/scenes/${id}?autoplay=true`);
       }
+    }
+  }
+
+  async function generate() {
+    setIsGenerateDialogOpen(true);
+  }
+
+  function maybeRenderSceneGenerateDialog(selectedIds: Set<string>) {
+    if (isGenerateDialogOpen) {
+      return (
+        <>
+          <SceneGenerateDialog
+            selectedIds={Array.from(selectedIds.values())}
+            onClose={() => {
+              setIsGenerateDialogOpen(false);
+            }}
+          />
+        </>
+      );
     }
   }
 
@@ -100,6 +142,7 @@ export const SceneList: React.FC<ISceneList> = ({
         key={scene.id}
         scene={scene}
         zoomIndex={zoomIndex}
+        selecting={selectedIds.size > 0}
         selected={selectedIds.has(scene.id)}
         onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
           listData.onSelectChange(scene.id, selected, shiftKey)
@@ -108,7 +151,7 @@ export const SceneList: React.FC<ISceneList> = ({
     );
   }
 
-  function renderContent(
+  function renderScenes(
     result: FindScenesQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
@@ -132,6 +175,20 @@ export const SceneList: React.FC<ISceneList> = ({
     if (filter.displayMode === DisplayMode.Wall) {
       return <WallPanel scenes={result.data.findScenes.scenes} />;
     }
+  }
+
+  function renderContent(
+    result: FindScenesQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>,
+    zoomIndex: number
+  ) {
+    return (
+      <>
+        {maybeRenderSceneGenerateDialog(selectedIds)}
+        {renderScenes(result, filter, selectedIds, zoomIndex)}
+      </>
+    );
   }
 
   return listData.template;

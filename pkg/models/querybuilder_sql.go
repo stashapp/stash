@@ -104,7 +104,7 @@ func getSort(sort string, direction string, tableName string) string {
 	const randomSeedPrefix = "random_"
 
 	if strings.HasSuffix(sort, "_count") {
-		var relationTableName = strings.Split(sort, "_")[0] // TODO: pluralize?
+		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
 		return " ORDER BY COUNT(distinct " + colName + ") " + direction
 	} else if strings.Compare(sort, "filesize") == 0 {
@@ -311,9 +311,12 @@ func executeFindQuery(tableName string, body string, args []interface{}, sortAnd
 	}
 
 	countQuery := buildCountQuery(body)
-	countResult, countErr := runCountQuery(countQuery, args)
-
 	idsQuery := body + sortAndPagination
+
+	// Perform query and fetch result
+	logger.Tracef("SQL: %s, args: %v", idsQuery, args)
+
+	countResult, countErr := runCountQuery(countQuery, args)
 	idsResult, idsErr := runIdsQuery(idsQuery, args)
 
 	if countErr != nil {

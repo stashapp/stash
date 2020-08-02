@@ -4,9 +4,13 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/stashapp/stash)](https://goreportcard.com/report/github.com/stashapp/stash)
 [![Discord](https://img.shields.io/discord/559159668438728723.svg?logo=discord)](https://discord.gg/2TsNFKt)
 
+https://stashapp.cc
+
 **Stash is a Go app which organizes and serves your porn.**
 
 See a demo [here](https://vimeo.com/275537038) (password is stashapp).
+
+An in-app manual is available, and the manual pages can be viewed [here](https://github.com/stashapp/stash/tree/develop/ui/v2.5/src/docs/en).
 
 # Docker install
 

@@ -41,6 +41,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	t.ExportPerformers(ctx, workerCount)
 	t.ExportStudios(ctx, workerCount)
 	t.ExportMovies(ctx, workerCount)
+	t.ExportTags(ctx, workerCount)
 
 	if err := instance.JSON.saveMappings(t.Mappings); err != nil {
 		logger.Errorf("[mappings] failed to save json: %s", err.Error())
@@ -160,7 +161,7 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 				logger.Errorf("[scenes] <%s> invalid tags for scene marker: %s", scene.Checksum, err.Error())
 				continue
 			}
-			if sceneMarker.Title == "" || sceneMarker.Seconds == 0 || primaryTag.Name == "" {
+			if sceneMarker.Seconds == 0 || primaryTag.Name == "" {
 				logger.Errorf("[scenes] invalid scene marker: %v", sceneMarker)
 			}
 
@@ -454,6 +455,81 @@ func exportStudio(wg *sync.WaitGroup, jobChan <-chan *models.Studio) {
 
 		if err := instance.JSON.saveStudio(studio.Checksum, &newStudioJSON); err != nil {
 			logger.Errorf("[studios] <%s> failed to save json: %s", studio.Checksum, err.Error())
+		}
+	}
+}
+
+func (t *ExportTask) ExportTags(ctx context.Context, workers int) {
+	var tagsWg sync.WaitGroup
+
+	qb := models.NewTagQueryBuilder()
+	tags, err := qb.All()
+	if err != nil {
+		logger.Errorf("[tags] failed to fetch all tags: %s", err.Error())
+	}
+
+	logger.Info("[tags] exporting")
+	startTime := time.Now()
+
+	jobCh := make(chan *models.Tag, workers*2) // make a buffered channel to feed workers
+
+	for w := 0; w < workers; w++ { // create export Tag workers
+		tagsWg.Add(1)
+		go exportTag(&tagsWg, jobCh)
+	}
+
+	for i, tag := range tags {
+		index := i + 1
+		logger.Progressf("[tags] %d of %d", index, len(tags))
+
+		// generate checksum on the fly by name, since we don't store it
+		checksum := utils.MD5FromString(tag.Name)
+
+		t.Mappings.Tags = append(t.Mappings.Tags, jsonschema.NameMapping{Name: tag.Name, Checksum: checksum})
+		jobCh <- tag // feed workers
+	}
+
+	close(jobCh)
+	tagsWg.Wait()
+
+	logger.Infof("[tags] export complete in %s. %d workers used.", time.Since(startTime), workers)
+}
+
+func exportTag(wg *sync.WaitGroup, jobChan <-chan *models.Tag) {
+	defer wg.Done()
+
+	tagQB := models.NewTagQueryBuilder()
+
+	for tag := range jobChan {
+
+		newTagJSON := jsonschema.Tag{
+			Name:      tag.Name,
+			CreatedAt: models.JSONTime{Time: tag.CreatedAt.Timestamp},
+			UpdatedAt: models.JSONTime{Time: tag.UpdatedAt.Timestamp},
+		}
+
+		image, err := tagQB.GetTagImage(tag.ID, nil)
+		if err != nil {
+			logger.Errorf("[tags] <%s> error getting tag image: %s", tag.Name, err.Error())
+			continue
+		}
+
+		if len(image) > 0 {
+			newTagJSON.Image = utils.GetBase64StringFromData(image)
+		}
+
+		// generate checksum on the fly by name, since we don't store it
+		checksum := utils.MD5FromString(tag.Name)
+
+		tagJSON, err := instance.JSON.getTag(checksum)
+		if err != nil {
+			logger.Debugf("[tags] error reading tag json: %s", err.Error())
+		} else if jsonschema.CompareJSON(*tagJSON, newTagJSON) {
+			continue
+		}
+
+		if err := instance.JSON.saveTag(checksum, &newTagJSON); err != nil {
+			logger.Errorf("[tags] <%s> failed to save json: %s", checksum, err.Error())
 		}
 	}
 }
