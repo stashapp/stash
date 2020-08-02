@@ -454,7 +454,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            File path to the Chrome executable, or a remote address (starting with http:// or https://) to a Chrome instance.
+            File path to the Chrome executable, or a remote address (starting
+            with http:// or https://, for example
+            http://localhost:9222/json/version) to a Chrome instance.
           </Form.Text>
         </Form.Group>
       </Form.Group>
