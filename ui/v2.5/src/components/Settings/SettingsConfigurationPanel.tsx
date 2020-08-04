@@ -431,8 +431,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </Form.Group>
 
       <Form.Group>
-        <h6>Scraping</h6>
+        <h4>Scraping</h4>
         <Form.Group id="scraperUserAgent">
+          <h6>Scraper User Agent</h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={scraperUserAgent}
@@ -446,6 +447,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group id="scraperCDPPath">
+          <h6>Chrome CDP path</h6>
           <Form.Control
             className="col col-sm-6 text-input"
             defaultValue={scraperCDPPath}
