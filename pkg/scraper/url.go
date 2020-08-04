@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -65,7 +66,14 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 	}
 	defer resp.Body.Close()
 
-	return charset.NewReader(resp.Body, resp.Header.Get("Content-Type"))
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyReader := bytes.NewReader(body)
+
+	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
 }
 
 // func urlFromCDP uses chrome cdp and DOM to load and process the url
