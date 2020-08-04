@@ -47,6 +47,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(
     undefined
   );
+  const [scraperCDPPath, setScraperCDPPath] = useState<string | undefined>(
+    undefined
+  );
 
   const { data, error, loading } = useConfiguration();
 
@@ -71,6 +74,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     logAccess,
     excludes,
     scraperUserAgent,
+    scraperCDPPath,
   });
 
   useEffect(() => {
@@ -100,6 +104,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setLogAccess(conf.general.logAccess);
       setExcludes(conf.general.excludes);
       setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
+      setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
     }
   }, [data, error]);
 
@@ -425,18 +430,37 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
       </Form.Group>
 
-      <Form.Group id="generated-path">
-        <h6>Scraping</h6>
-        <Form.Control
-          className="col col-sm-6 text-input"
-          defaultValue={scraperUserAgent}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setScraperUserAgent(e.currentTarget.value)
-          }
-        />
-        <Form.Text className="text-muted">
-          User-Agent string used during scrape http requests
-        </Form.Text>
+      <Form.Group>
+        <h4>Scraping</h4>
+        <Form.Group id="scraperUserAgent">
+          <h6>Scraper User Agent</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={scraperUserAgent}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setScraperUserAgent(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            User-Agent string used during scrape http requests
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="scraperCDPPath">
+          <h6>Chrome CDP path</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={scraperCDPPath}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setScraperCDPPath(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            File path to the Chrome executable, or a remote address (starting
+            with http:// or https://, for example
+            http://localhost:9222/json/version) to a Chrome instance.
+          </Form.Text>
+        </Form.Group>
       </Form.Group>
 
       <hr />

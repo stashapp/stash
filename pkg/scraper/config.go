@@ -43,6 +43,9 @@ type config struct {
 
 	// Xpath scraping configurations
 	XPathScrapers mappedScrapers `yaml:"xPathScrapers"`
+
+	// Scraping driver options
+	DriverOptions *scraperDriverOptions `yaml:"driver"`
 }
 
 func (c config) validate() error {
@@ -133,6 +136,11 @@ func (c scrapeByURLConfig) matchesURL(url string) bool {
 
 type scraperDebugOptions struct {
 	PrintHTML bool `yaml:"printHTML"`
+}
+
+type scraperDriverOptions struct {
+	UseCDP bool `yaml:"useCDP"`
+	Sleep  int  `yaml:"sleep"`
 }
 
 func loadScraperFromYAML(id string, reader io.Reader) (*config, error) {

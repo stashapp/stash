@@ -58,6 +58,8 @@ input ConfigGeneralInput {
   excludes: [String!]
   """Scraper user agent string"""
   scraperUserAgent: String
+  """Scraper CDP path. Path to chrome executable or remote address"""
+  scraperCDPPath: String
 }
 
 type ConfigGeneralResult {
@@ -101,6 +103,8 @@ type ConfigGeneralResult {
   excludes: [String!]!
   """Scraper user agent string"""
   scraperUserAgent: String
+  """Scraper CDP path. Path to chrome executable or remote address"""
+  scraperCDPPath: String
 }
 
 input ConfigInterfaceInput {

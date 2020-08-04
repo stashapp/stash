@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
@@ -14,7 +15,18 @@ import (
 type GlobalConfig struct {
 	// User Agent used when scraping using http.
 	UserAgent string
-	Path      string
+
+	// Path (file or remote address) to a Chrome CDP instance.
+	CDPPath string
+	Path    string
+}
+
+func (c GlobalConfig) isCDPPathHTTP() bool {
+	return strings.HasPrefix(c.CDPPath, "http://") || strings.HasPrefix(c.CDPPath, "https://")
+}
+
+func (c GlobalConfig) isCDPPathWS() bool {
+	return strings.HasPrefix(c.CDPPath, "ws://")
 }
 
 // Cache stores scraper details.
