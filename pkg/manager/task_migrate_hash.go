@@ -72,7 +72,7 @@ func (t *MigrateHashTask) Start(wg *sync.WaitGroup) {
 
 func (t *MigrateHashTask) migrate(oldName, newName string) {
 	oldExists, err := utils.FileExists(oldName)
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		logger.Errorf("Error checking existence of %s: %s", oldName, err.Error())
 		return
 	}
