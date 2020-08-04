@@ -283,6 +283,22 @@ For backwards compatibility, `regex`, `subscraper` and `parseDate` are also allo
 
 Post-processing on attribute post-process is done in the following order: `concat`, `regex`, `subscraper`, `parseDate` and then `split`.
 
+##### CDP support
+
+Some websites deliver content that cannot be scraped using the raw html file alone. These websites use javascript to dynamically load the content. As such, direct xpath scraping will not work on these websites. There is an option to use Chrome DevTools Protocol to load the webpage using an instance of Chrome, then scrape the result.
+
+Chrome CDP support can be enabled for a specific scraping configuration by adding the following to the root of the yml configuration:
+```
+driver:
+  useCDP: true
+```
+
+Optionally, you can add a `sleep` value under the `driver` section. This specifies the amount of time (in seconds) that the scraper should wait after loading the website to perform the scrape. This is needed as some sites need more time for loading scripts to finish. If unset, this value defaults to 2 seconds.
+
+When `useCDP` is set to true, stash will execute or connect to an instance of Chrome. The behaviour is dictated by the `Chrome CDP path` setting in the user configuration. If left empty, stash will attempt to find the Chrome executable in the path environment, and will fail if it cannot find one. 
+
+`Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`).
+
 ##### Example
 
 A performer and scene xpath scraper is shown as an example below:

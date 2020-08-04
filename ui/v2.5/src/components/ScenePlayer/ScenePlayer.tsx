@@ -95,9 +95,6 @@ export class ScenePlayerImpl extends React.Component<
 
   private onReady() {
     this.player = JWUtils.getPlayer();
-    if (this.props.timestamp > 0) {
-      this.player.seek(this.props.timestamp);
-    }
 
     this.player.on("error", (err: any) => {
       if (err && err.code === 224003) {
@@ -113,6 +110,12 @@ export class ScenePlayerImpl extends React.Component<
       ) {
         // treat this as a decoding error and try the next source
         this.handleError();
+      }
+    });
+
+    this.player.on("playlist", () => {
+      if (this.props.timestamp > 0) {
+        this.player.seek(this.props.timestamp);
       }
     });
   }
@@ -152,6 +155,12 @@ export class ScenePlayerImpl extends React.Component<
       console.log("Trying next source in playlist");
       this.player.load(this.playlist);
       this.player.play();
+
+      this.player.on("firstFrame", () => {
+        if (this.props.timestamp > 0) {
+          this.player.seek(this.props.timestamp);
+        }
+      });
     }
   }
 
@@ -210,6 +219,7 @@ export class ScenePlayerImpl extends React.Component<
 
     const seekHook = (seekToPosition: number, _videoTag: HTMLVideoElement) => {
       if (
+        !_videoTag.src ||
         ScenePlayerImpl.isDirectStream(_videoTag.src) ||
         _videoTag.src.endsWith(".m3u8")
       ) {

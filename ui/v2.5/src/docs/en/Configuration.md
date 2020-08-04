@@ -52,9 +52,17 @@ MD5 calculation may only be disabled if the file naming hash is set to `oshash`.
 
 After changing the file naming hash, any existing generated files will now be named incorrectly. This means that stash will not find them and may regenerate them if the `Generate task` is used. To remedy this, run the `Rename generated files` task, which will rename existing generated files to their correct names.
 
-## Scraping User Agent string
+## Scraping 
+
+### User Agent string
 
 Some websites require a legitimate User-Agent string when receiving requests, or they will be rejected. If entered, this string will be applied as the `User-Agent` header value in http scrape requests.
+
+### Chrome CDP path
+
+Some scrapers require a Chrome instance to function correctly. If left empty, stash will attempt to find the Chrome executable in the path environment, and will fail if it cannot find one. 
+
+`Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`).
 
 ## Authentication
 

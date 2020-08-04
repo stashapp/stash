@@ -40,6 +40,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 	maxStreamingTranscodeSize := config.GetMaxStreamingTranscodeSize()
 
 	scraperUserAgent := config.GetScraperUserAgent()
+	scraperCDPPath := config.GetScraperCDPPath()
 
 	return &models.ConfigGeneralResult{
 		Stashes:                   config.GetStashPaths(),
@@ -64,6 +65,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		LogAccess:                 config.GetLogAccess(),
 		Excludes:                  config.GetExcludes(),
 		ScraperUserAgent:          &scraperUserAgent,
+		ScraperCDPPath:            &scraperCDPPath,
 	}
 }
 

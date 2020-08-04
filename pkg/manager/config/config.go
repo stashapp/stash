@@ -65,6 +65,7 @@ const SessionStoreKey = "session_store_key"
 // scraping options
 const ScrapersPath = "scrapers_path"
 const ScraperUserAgent = "scraper_user_agent"
+const ScraperCDPPath = "scraper_cdp_path"
 
 // i18n
 const Language = "language"
@@ -176,6 +177,12 @@ func GetScrapersPath() string {
 
 func GetScraperUserAgent() string {
 	return viper.GetString(ScraperUserAgent)
+}
+
+// GetScraperCDPPath gets the path to the Chrome executable or remote address
+// to an instance of Chrome.
+func GetScraperCDPPath() string {
+	return viper.GetString(ScraperCDPPath)
 }
 
 func GetHost() string {

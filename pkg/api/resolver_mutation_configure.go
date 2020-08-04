@@ -119,8 +119,15 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		config.Set(config.Exclude, input.Excludes)
 	}
 
+	refreshScraperCache := false
 	if input.ScraperUserAgent != nil {
 		config.Set(config.ScraperUserAgent, input.ScraperUserAgent)
+		refreshScraperCache = true
+	}
+
+	if input.ScraperCDPPath != nil {
+		config.Set(config.ScraperCDPPath, input.ScraperCDPPath)
+		refreshScraperCache = true
 	}
 
 	if err := config.Write(); err != nil {
@@ -128,6 +135,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	}
 
 	manager.GetInstance().RefreshConfig()
+	if refreshScraperCache {
+		manager.GetInstance().RefreshScraperCache()
+	}
 
 	return makeConfigGeneralResult(), nil
 }

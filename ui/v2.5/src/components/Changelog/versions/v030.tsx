@@ -16,6 +16,7 @@ const markup = `
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
+*  Add support for chrome dp in xpath scrapers.
 *  Allow customisation of preview video generation.
 *  Add support for live transcoding in Safari.
 *  Add mapped and fixed post-processing scraping options.

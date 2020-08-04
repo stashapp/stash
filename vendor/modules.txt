@@ -25,6 +25,56 @@ github.com/antchfx/htmlquery
 github.com/antchfx/xpath
 # github.com/bmatcuk/doublestar v1.3.1
 github.com/bmatcuk/doublestar
+# github.com/chromedp/cdproto v0.0.0-20200608134039-8a80cdaf865c
+github.com/chromedp/cdproto
+github.com/chromedp/cdproto/accessibility
+github.com/chromedp/cdproto/animation
+github.com/chromedp/cdproto/applicationcache
+github.com/chromedp/cdproto/audits
+github.com/chromedp/cdproto/backgroundservice
+github.com/chromedp/cdproto/browser
+github.com/chromedp/cdproto/cachestorage
+github.com/chromedp/cdproto/cast
+github.com/chromedp/cdproto/cdp
+github.com/chromedp/cdproto/css
+github.com/chromedp/cdproto/database
+github.com/chromedp/cdproto/debugger
+github.com/chromedp/cdproto/deviceorientation
+github.com/chromedp/cdproto/dom
+github.com/chromedp/cdproto/domdebugger
+github.com/chromedp/cdproto/domsnapshot
+github.com/chromedp/cdproto/domstorage
+github.com/chromedp/cdproto/emulation
+github.com/chromedp/cdproto/fetch
+github.com/chromedp/cdproto/headlessexperimental
+github.com/chromedp/cdproto/heapprofiler
+github.com/chromedp/cdproto/indexeddb
+github.com/chromedp/cdproto/input
+github.com/chromedp/cdproto/inspector
+github.com/chromedp/cdproto/io
+github.com/chromedp/cdproto/layertree
+github.com/chromedp/cdproto/log
+github.com/chromedp/cdproto/media
+github.com/chromedp/cdproto/memory
+github.com/chromedp/cdproto/network
+github.com/chromedp/cdproto/overlay
+github.com/chromedp/cdproto/page
+github.com/chromedp/cdproto/performance
+github.com/chromedp/cdproto/profiler
+github.com/chromedp/cdproto/runtime
+github.com/chromedp/cdproto/security
+github.com/chromedp/cdproto/serviceworker
+github.com/chromedp/cdproto/storage
+github.com/chromedp/cdproto/systeminfo
+github.com/chromedp/cdproto/target
+github.com/chromedp/cdproto/tethering
+github.com/chromedp/cdproto/tracing
+github.com/chromedp/cdproto/webaudio
+github.com/chromedp/cdproto/webauthn
+# github.com/chromedp/chromedp v0.5.3
+github.com/chromedp/chromedp
+github.com/chromedp/chromedp/device
+github.com/chromedp/chromedp/kb
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/disintegration/imaging v1.6.0
@@ -67,6 +117,16 @@ github.com/gobuffalo/packr/v2/jam/parser
 github.com/gobuffalo/packr/v2/plog
 # github.com/gobuffalo/syncx v0.0.0-20181120194010-558ac7de985f
 github.com/gobuffalo/syncx
+# github.com/gobwas/httphead v0.0.0-20180130184737-2c6c146eadee
+github.com/gobwas/httphead
+# github.com/gobwas/pool v0.2.0
+github.com/gobwas/pool
+github.com/gobwas/pool/internal/pmath
+github.com/gobwas/pool/pbufio
+github.com/gobwas/pool/pbytes
+# github.com/gobwas/ws v1.0.2
+github.com/gobwas/ws
+github.com/gobwas/ws/wsutil
 # github.com/golang-migrate/migrate/v4 v4.3.1
 github.com/golang-migrate/migrate/v4
 github.com/golang-migrate/migrate/v4/database
@@ -117,10 +177,17 @@ github.com/joho/godotenv
 github.com/json-iterator/go
 # github.com/karrick/godirwalk v1.7.8
 github.com/karrick/godirwalk
+# github.com/knq/sysutil v0.0.0-20191005231841-15668db23d08
+github.com/knq/sysutil
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/magiconair/properties v1.8.0
 github.com/magiconair/properties
+# github.com/mailru/easyjson v0.7.1
+github.com/mailru/easyjson
+github.com/mailru/easyjson/buffer
+github.com/mailru/easyjson/jlexer
+github.com/mailru/easyjson/jwriter
 # github.com/markbates/oncer v0.0.0-20181203154359-bf2de49a0be2
 github.com/markbates/oncer
 # github.com/markbates/safe v1.0.1

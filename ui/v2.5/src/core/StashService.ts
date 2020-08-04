@@ -334,23 +334,25 @@ export const tagMutationImpactedQueries = [
   "findSceneMarkers",
   "sceneMarkerTags",
   "allTags",
+  "findTags",
 ];
 
 export const useTagCreate = (input: GQL.TagCreateInput) =>
   GQL.useTagCreateMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter"],
-    // update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
+    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
+    update: () => invalidateQueries(tagMutationImpactedQueries),
   });
 export const useTagUpdate = (input: GQL.TagUpdateInput) =>
   GQL.useTagUpdateMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter"],
+    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
+    update: () => invalidateQueries(tagMutationImpactedQueries),
   });
 export const useTagDestroy = (input: GQL.TagDestroyInput) =>
   GQL.useTagDestroyMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter"],
+    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
     update: () => invalidateQueries(tagMutationImpactedQueries),
   });
 
@@ -498,6 +500,7 @@ export const stringGenderMap = new Map<string, GQL.GenderEnum>([
   ["Transgender Male", GQL.GenderEnum.TransgenderMale],
   ["Transgender Female", GQL.GenderEnum.TransgenderFemale],
   ["Intersex", GQL.GenderEnum.Intersex],
+  ["Non-Binary", GQL.GenderEnum.NonBinary],
 ]);
 
 export const genderToString = (value?: GQL.GenderEnum) => {
