@@ -52,6 +52,14 @@ MD5 calculation may only be disabled if the file naming hash is set to `oshash`.
 
 After changing the file naming hash, any existing generated files will now be named incorrectly. This means that stash will not find them and may regenerate them if the `Generate task` is used. To remedy this, run the `Rename generated files` task, which will rename existing generated files to their correct names.
 
+#### Step-by-step instructions to migrate to oshash for existing users
+
+These instructions are for existing users whose systems will be defaulted to use and calculate MD5 checksums. Once completed, MD5 checksums will no longer be calculated when scanning, and oshash will be used for generated file naming. Existing calculated MD5 checksums will remain on scenes, but checksums will not be calculated for new scenes.
+
+1. Scan the library (to populate oshash for all existing scenes).
+2. In Settings -> Configuration page, untick `Calculate MD5` and select `oshash` as file naming hash. Save the configuration.
+3. In Settings -> Tasks page, click on the `Rename generated files` migration button.
+
 ## Scraping 
 
 ### User Agent string
