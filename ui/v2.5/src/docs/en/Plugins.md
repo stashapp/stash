@@ -8,9 +8,9 @@ Stash supports the running external tasks via plugins. Plugins are implemented b
 
 By default, Stash looks for plugin configurations in the `plugins` sub-directory of the directory where the stash `config.yml` is read. This will either be the `$HOME/.stash` directory or the current working directory.
 
-Plugins are added by adding configuration yaml files (format: `pluginName.yml`) to the `scrapers` directory.
+Plugins are added by adding configuration yaml files (format: `pluginName.yml`) to the `plugins` directory.
 
-Loaded plugins can be viewed in the Plugins page of the Settings. After plugins are added, removed or edited while stash is running, they can be reloaded by clicking `Reload Scrapers` button.
+Loaded plugins can be viewed in the Plugins page of the Settings. After plugins are added, removed or edited while stash is running, they can be reloaded by clicking `Reload Plugins` button.
 
 # Using plugins
 
