@@ -13,6 +13,8 @@ import {
   useScrapePerformerList,
   useValidGalleriesForScene,
   useTagCreate,
+  useStudioCreate,
+  usePerformerCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 
@@ -59,6 +61,16 @@ interface ISelectProps {
   groupHeader?: string;
   closeMenuOnSelect?: boolean;
 }
+interface IFilterItem {
+  id: string;
+  name?: string | null;
+}
+interface IFilterComponentProps extends IFilterProps {
+  items: Array<IFilterItem>;
+  onCreate?: (name: string) => Promise<{ item: IFilterItem; message: string }>;
+}
+interface IFilterSelectProps
+  extends Omit<ISelectProps, "onChange" | "items" | "onCreateOption"> {}
 
 interface ISceneGallerySelect {
   initialId?: string;
@@ -191,180 +203,151 @@ export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
 
 export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllPerformersForFilter();
+  const [createPerformer] = usePerformerCreate();
 
-  const normalizedData = data?.allPerformersSlim ?? [];
-  const items: Option[] = normalizedData.map((item) => ({
-    value: item.id,
-    label: item.name ?? "",
-  }));
-  const placeholder = props.noSelectionString ?? "Select performer...";
-  const selectedOptions: Option[] = props.ids
-    ? items.filter((item) => props.ids?.indexOf(item.value) !== -1)
-    : [];
+  const performers = data?.allPerformersSlim ?? [];
 
-  const onChange = (selectedItems: ValueType<Option>) => {
-    const selectedIds = getSelectedValues(selectedItems);
-    props.onSelect?.(
-      normalizedData.filter((item) => selectedIds.indexOf(item.id) !== -1)
-    );
+  const onCreate = async (name: string) => {
+    const result = await createPerformer({
+      variables: { name },
+    });
+    return {
+      item: result.data!.performerCreate!,
+      message: "Created performer",
+    };
   };
 
   return (
-    <SelectComponent
+    <FilterSelectComponent
       {...props}
-      selectedOptions={selectedOptions}
-      onChange={onChange}
+      creatable
+      onCreate={onCreate}
       type="performers"
       isLoading={loading}
-      items={items}
-      placeholder={placeholder}
+      items={performers}
+      placeholder={props.noSelectionString ?? "Select performer..."}
     />
   );
 };
 
 export const StudioSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllStudiosForFilter();
+  const [createStudio] = useStudioCreate({ name: "" });
 
-  const normalizedData = data?.allStudiosSlim ?? [];
+  const studios = data?.allStudiosSlim ?? [];
 
-  const items = (normalizedData.length > 0
-    ? [{ name: "None", id: "0" }, ...normalizedData]
-    : []
-  ).map((item) => ({
-    value: item.id,
-    label: item.name,
-  }));
-
-  const placeholder = props.noSelectionString ?? "Select studio...";
-  const selectedOptions: Option[] = props.ids
-    ? items.filter((item) => props.ids?.indexOf(item.value) !== -1)
-    : [];
-
-  const onChange = (selectedItems: ValueType<Option>) => {
-    const selectedIds = getSelectedValues(selectedItems);
-    props.onSelect?.(
-      normalizedData.filter((item) => selectedIds.indexOf(item.id) !== -1)
-    );
+  const onCreate = async (name: string) => {
+    const result = await createStudio({ variables: { name } });
+    return { item: result.data!.studioCreate!, message: "Created studio" };
   };
 
   return (
-    <SelectComponent
+    <FilterSelectComponent
       {...props}
-      onChange={onChange}
       type="studios"
       isLoading={loading}
-      items={items}
-      placeholder={placeholder}
-      selectedOptions={selectedOptions}
+      items={studios}
+      placeholder={props.noSelectionString ?? "Select studio..."}
+      creatable
+      onCreate={onCreate}
     />
   );
 };
 
 export const MovieSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllMoviesForFilter();
-
-  const normalizedData = data?.allMoviesSlim ?? [];
-
-  const items = (normalizedData.length > 0
-    ? [{ name: "None", id: "0" }, ...normalizedData]
-    : []
-  ).map((item) => ({
-    value: item.id,
-    label: item.name,
-  }));
-
-  const placeholder = props.noSelectionString ?? "Select movie...";
-  const selectedOptions: Option[] = props.ids
-    ? items.filter((item) => props.ids?.indexOf(item.value) !== -1)
-    : [];
-
-  const onChange = (selectedItems: ValueType<Option>) => {
-    const selectedIds = getSelectedValues(selectedItems);
-    props.onSelect?.(
-      normalizedData.filter((item) => selectedIds.indexOf(item.id) !== -1)
-    );
-  };
+  const items = data?.allMoviesSlim ?? [];
 
   return (
-    <SelectComponent
+    <FilterSelectComponent
       {...props}
-      onChange={onChange}
-      type="studios"
+      type="movies"
       isLoading={loading}
       items={items}
-      placeholder={placeholder}
-      selectedOptions={selectedOptions}
+      placeholder={props.noSelectionString ?? "Select movie..."}
     />
   );
 };
 
 export const TagSelect: React.FC<IFilterProps> = (props) => {
-  const [loading, setLoading] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>(props.ids ?? []);
-  const { data, loading: dataLoading } = useAllTagsForFilter();
+  const { data, loading } = useAllTagsForFilter();
   const [createTag] = useTagCreate({ name: "" });
-  const Toast = useToast();
   const placeholder = props.noSelectionString ?? "Select tags...";
 
-  const selectedTags = props.ids ?? selectedIds;
-
   const tags = data?.allTagsSlim ?? [];
-  const selected = tags
-    .filter((tag) => selectedTags.indexOf(tag.id) !== -1)
-    .map((tag) => ({ value: tag.id, label: tag.name }));
-  const items: Option[] = tags.map((item) => ({
-    value: item.id,
-    label: item.name,
-  }));
 
-  const onCreate = async (tagName: string) => {
+  const onCreate = async (name: string) => {
+    const result = await createTag({
+      variables: { name },
+    });
+    return { item: result.data!.tagCreate!, message: "Created tag" };
+  };
+
+  return (
+    <FilterSelectComponent
+      {...props}
+      items={tags}
+      creatable
+      type="tags"
+      placeholder={placeholder}
+      isLoading={loading}
+      onCreate={onCreate}
+      closeMenuOnSelect={false}
+    />
+  );
+};
+
+const FilterSelectComponent: React.FC<
+  IFilterComponentProps & ITypeProps & IFilterSelectProps
+> = (props) => {
+  const [loading, setLoading] = useState(false);
+  const selectedIds = props.ids ?? [];
+  const Toast = useToast();
+
+  const { items } = props;
+  const options = items.map((i) => ({
+    value: i.id,
+    label: i.name ?? "",
+  }));
+  const selectedOptions = options.filter((option) =>
+    selectedIds.includes(option.value)
+  );
+
+  const onChange = (selectedItems: ValueType<Option>) => {
+    const selectedValues = getSelectedValues(selectedItems);
+    props.onSelect?.(items.filter((item) => selectedValues.includes(item.id)));
+  };
+
+  const onCreate = async (name: string) => {
     try {
       setLoading(true);
-      const result = await createTag({
-        variables: { name: tagName },
+      const { item: newItem, message } = await props.onCreate!(name);
+      props.onSelect?.([
+        ...items.filter((item) => selectedIds.includes(item.id)),
+        newItem,
+      ]);
+      setLoading(false);
+      Toast.success({
+        content: (
+          <span>
+            {message}: <b>{name}</b>
+          </span>
+        ),
       });
-
-      if (result?.data?.tagCreate) {
-        setSelectedIds([...selectedIds, result.data.tagCreate.id]);
-        props.onSelect?.([
-          ...tags.filter((item) => selectedIds.indexOf(item.id) !== -1),
-          result.data.tagCreate,
-        ]);
-        setLoading(false);
-
-        Toast.success({
-          content: (
-            <span>
-              Created tag: <b>{tagName}</b>
-            </span>
-          ),
-        });
-      }
     } catch (e) {
       Toast.error(e);
     }
   };
 
-  const onChange = (selectedItems: ValueType<Option>) => {
-    const selectedValues = getSelectedValues(selectedItems);
-    setSelectedIds(selectedValues);
-    props.onSelect?.(
-      tags.filter((item) => selectedValues.indexOf(item.id) !== -1)
-    );
-  };
-
   return (
     <SelectComponent
-      {...props}
+      {...(props as ITypeProps)}
+      {...(props as IFilterSelectProps)}
+      isLoading={props.isLoading || loading}
       onChange={onChange}
-      creatable
-      type="tags"
-      placeholder={placeholder}
-      isLoading={loading || dataLoading}
-      items={items}
-      onCreateOption={onCreate}
-      selectedOptions={selected}
-      closeMenuOnSelect={false}
+      items={options}
+      selectedOptions={selectedOptions}
+      onCreateOption={props.creatable ? onCreate : undefined}
     />
   );
 };

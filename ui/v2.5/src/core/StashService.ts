@@ -11,7 +11,7 @@ export const getClient = () => client;
 const invalidateQueries = (queries: string[]) => {
   if (cache) {
     const keyMatchers = queries.map((query) => {
-      return new RegExp(`^${query}`);
+      return new RegExp(`^${query}`, "i");
     });
 
     // TODO: Hack to invalidate, manipulating private data
@@ -194,22 +194,26 @@ export const useDirectory = (path?: string) =>
   GQL.useDirectoryQuery({ variables: { path } });
 
 export const performerMutationImpactedQueries = [
-  "findPerformers",
-  "findScenes",
-  "findSceneMarkers",
-  "allPerformers",
+  "FindPerformers",
+  "FindScenes",
+  "FindSceneMarkers",
+  "AllPerformers",
+  "AllPerformersForFilter",
 ];
 
 export const usePerformerCreate = () =>
   GQL.usePerformerCreateMutation({
+    refetchQueries: performerMutationImpactedQueries,
     update: () => invalidateQueries(performerMutationImpactedQueries),
   });
 export const usePerformerUpdate = () =>
   GQL.usePerformerUpdateMutation({
+    refetchQueries: performerMutationImpactedQueries,
     update: () => invalidateQueries(performerMutationImpactedQueries),
   });
 export const usePerformerDestroy = () =>
   GQL.usePerformerDestroyMutation({
+    refetchQueries: performerMutationImpactedQueries,
     update: () => invalidateQueries(performerMutationImpactedQueries),
   });
 
@@ -282,14 +286,16 @@ export const useSceneGenerateScreenshot = () =>
   });
 
 export const studioMutationImpactedQueries = [
-  "findStudios",
-  "findScenes",
-  "allStudios",
+  "FindStudios",
+  "FindScenes",
+  "AllStudios",
+  "AllStudiosForFilter",
 ];
 
 export const useStudioCreate = (input: GQL.StudioCreateInput) =>
   GQL.useStudioCreateMutation({
     variables: input,
+    refetchQueries: studioMutationImpactedQueries,
     update: () => invalidateQueries(studioMutationImpactedQueries),
   });
 
