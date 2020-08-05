@@ -31,9 +31,9 @@ const Exclude = "exclude"
 // for video files.
 const CalculateMD5 = "calculate_md5"
 
-// UseMD5 is the config key used to determine if MD5 should be used when
-// generating and using generated files for scenes.
-const UseMD5 = "use_md5"
+// VideoFileNamingAlgorithm is the config key used to determine what hash
+// should be used when generating and using generated files for scenes.
+const VideoFileNamingAlgorithm = "video_file_naming_algorithm"
 
 const PreviewPreset = "preview_preset"
 
@@ -165,10 +165,17 @@ func IsCalculateMD5() bool {
 	return viper.GetBool(CalculateMD5)
 }
 
-// IsUseMD5 returns true if the video MD5 checksum should be used to identify
-// scene video files for generated files. If false, then the oshash is used.
-func IsUseMD5() bool {
-	return viper.GetBool(UseMD5)
+// GetVideoFileNamingAlgorithm returns what hash algorithm should be used for
+// naming generated scene video files.
+func GetVideoFileNamingAlgorithm() models.HashAlgorithm {
+	ret := viper.GetString(VideoFileNamingAlgorithm)
+
+	// default to oshash
+	if ret == "" {
+		return models.HashAlgorithmOshash
+	}
+
+	return models.HashAlgorithm(ret)
 }
 
 func GetScrapersPath() string {

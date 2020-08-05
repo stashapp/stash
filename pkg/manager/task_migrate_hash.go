@@ -11,10 +11,10 @@ import (
 )
 
 // MigrateHashTask renames generated files between oshash and MD5 based on the
-// value of the useMD5 flag.
+// value of the fileNamingAlgorithm flag.
 type MigrateHashTask struct {
-	Scene  *models.Scene
-	useMD5 bool
+	Scene               *models.Scene
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 // Start starts the task.
@@ -31,7 +31,7 @@ func (t *MigrateHashTask) Start(wg *sync.WaitGroup) {
 
 	oldHash := oshash
 	newHash := checksum
-	if !t.useMD5 {
+	if t.fileNamingAlgorithm == models.HashAlgorithmOshash {
 		oldHash = checksum
 		newHash = oshash
 	}

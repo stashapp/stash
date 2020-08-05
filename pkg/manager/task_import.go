@@ -18,9 +18,9 @@ import (
 )
 
 type ImportTask struct {
-	Mappings *jsonschema.Mappings
-	Scraped  []jsonschema.ScrapedItem
-	useMD5   bool
+	Mappings            *jsonschema.Mappings
+	Scraped             []jsonschema.ScrapedItem
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *ImportTask) Start(wg *sync.WaitGroup) {

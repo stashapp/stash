@@ -106,7 +106,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
-		useMD5 := config.IsUseMD5()
+		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 		calculateMD5 := config.IsCalculateMD5()
 		for i, path := range results {
 			s.Status.setProgress(i, total)
@@ -115,7 +115,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 				return
 			}
 			wg.Add(1)
-			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, useMD5: useMD5, calculateMD5: calculateMD5}
+			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -145,7 +145,7 @@ func (s *singleton) Import() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		task := ImportTask{useMD5: config.IsUseMD5()}
+		task := ImportTask{fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm()}
 		go task.Start(&wg)
 		wg.Wait()
 	}()
@@ -163,7 +163,7 @@ func (s *singleton) Export() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		task := ExportTask{useMD5: config.IsUseMD5()}
+		task := ExportTask{fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm()}
 		go task.Start(&wg)
 		wg.Wait()
 	}()
@@ -273,7 +273,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes)
 		}
 
-		useMD5 := config.IsUseMD5()
+		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 
 		overwrite := false
 		if input.Overwrite != nil {
@@ -306,28 +306,28 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			}
 
 			if input.Sprites {
-				task := GenerateSpriteTask{Scene: *scene, Overwrite: overwrite, useMD5: useMD5}
+				task := GenerateSpriteTask{Scene: *scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 				go task.Start(&wg)
 			}
 
 			if input.Previews {
 				task := GeneratePreviewTask{
-					Scene:        *scene,
-					ImagePreview: input.ImagePreviews,
-					Options:      *generatePreviewOptions,
-					Overwrite:    overwrite,
-					useMD5:       useMD5,
+					Scene:               *scene,
+					ImagePreview:        input.ImagePreviews,
+					Options:             *generatePreviewOptions,
+					Overwrite:           overwrite,
+					fileNamingAlgorithm: fileNamingAlgo,
 				}
 				go task.Start(&wg)
 			}
 
 			if input.Markers {
-				task := GenerateMarkersTask{Scene: scene, Overwrite: overwrite, useMD5: useMD5}
+				task := GenerateMarkersTask{Scene: scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 				go task.Start(&wg)
 			}
 
 			if input.Transcodes {
-				task := GenerateTranscodeTask{Scene: *scene, Overwrite: overwrite, useMD5: useMD5}
+				task := GenerateTranscodeTask{Scene: *scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 				go task.Start(&wg)
 			}
 
@@ -368,7 +368,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			}
 
 			wg.Add(1)
-			task := GenerateMarkersTask{Marker: marker, Overwrite: overwrite, useMD5: useMD5}
+			task := GenerateMarkersTask{Marker: marker, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -412,9 +412,9 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 		}
 
 		task := GenerateScreenshotTask{
-			Scene:        *scene,
-			ScreenshotAt: at,
-			useMD5:       config.IsUseMD5(),
+			Scene:               *scene,
+			ScreenshotAt:        at,
+			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
 
 		var wg sync.WaitGroup
@@ -626,7 +626,7 @@ func (s *singleton) Clean() {
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
 		total := len(scenes) + len(galleries)
-		useMD5 := config.IsUseMD5()
+		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -641,7 +641,7 @@ func (s *singleton) Clean() {
 
 			wg.Add(1)
 
-			task := CleanTask{Scene: scene, useMD5: useMD5}
+			task := CleanTask{Scene: scene, fileNamingAlgorithm: fileNamingAlgo}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -681,7 +681,8 @@ func (s *singleton) MigrateHash() {
 	go func() {
 		defer s.returnToIdleState()
 
-		logger.Infof("Migrating generated files for current naming hash")
+		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
 
 		scenes, err := qb.All()
 		if err != nil {
@@ -692,7 +693,6 @@ func (s *singleton) MigrateHash() {
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
 		total := len(scenes)
-		useMD5 := config.IsUseMD5()
 
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
@@ -708,7 +708,7 @@ func (s *singleton) MigrateHash() {
 
 			wg.Add(1)
 
-			task := MigrateHashTask{Scene: scene, useMD5: useMD5}
+			task := MigrateHashTask{Scene: scene, fileNamingAlgorithm: fileNamingAlgo}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -764,7 +764,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 		chTimeout <- struct{}{}
 	}()
 
-	useMD5 := true
+	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 	overwrite := false
 	if input.Overwrite != nil {
 		overwrite = *input.Overwrite
@@ -775,8 +775,8 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 		if scene != nil {
 			if input.Sprites {
 				task := GenerateSpriteTask{
-					Scene:  *scene,
-					useMD5: useMD5,
+					Scene:               *scene,
+					fileNamingAlgorithm: fileNamingAlgo,
 				}
 
 				if overwrite || task.required() {
@@ -786,12 +786,12 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 
 			if input.Previews {
 				task := GeneratePreviewTask{
-					Scene:        *scene,
-					ImagePreview: input.ImagePreviews,
-					useMD5:       useMD5,
+					Scene:               *scene,
+					ImagePreview:        input.ImagePreviews,
+					fileNamingAlgorithm: fileNamingAlgo,
 				}
 
-				sceneHash := scene.GetHash(task.useMD5)
+				sceneHash := scene.GetHash(task.fileNamingAlgorithm)
 				if overwrite || !task.doesVideoPreviewExist(sceneHash) {
 					totals.previews++
 				}
@@ -803,18 +803,18 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 
 			if input.Markers {
 				task := GenerateMarkersTask{
-					Scene:     scene,
-					Overwrite: overwrite,
-					useMD5:    useMD5,
+					Scene:               scene,
+					Overwrite:           overwrite,
+					fileNamingAlgorithm: fileNamingAlgo,
 				}
 				totals.markers += int64(task.isMarkerNeeded())
 			}
 
 			if input.Transcodes {
 				task := GenerateTranscodeTask{
-					Scene:     *scene,
-					Overwrite: overwrite,
-					useMD5:    useMD5,
+					Scene:               *scene,
+					Overwrite:           overwrite,
+					fileNamingAlgorithm: fileNamingAlgo,
 				}
 				if task.isTranscodeNeeded() {
 					totals.transcodes++

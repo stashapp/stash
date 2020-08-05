@@ -18,7 +18,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   );
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
   const [calculateMD5, setCalculateMD5] = useState<boolean>(false);
-  const [useMD5, setUseMD5] = useState<boolean>(false);
+  const [videoFileNamingAlgorithm, setVideoFileNamingAlgorithm] = useState<GQL.HashAlgorithm | undefined>(undefined);
   const [previewSegments, setPreviewSegments] = useState<number>(0);
   const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
     0
@@ -61,7 +61,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     generatedPath,
     cachePath,
     calculateMD5,
-    useMD5,
+    videoFileNamingAlgorithm: (videoFileNamingAlgorithm as GQL.HashAlgorithm) ?? undefined,
     previewSegments,
     previewSegmentDuration,
     previewExcludeStart,
@@ -90,7 +90,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
       setCachePath(conf.general.cachePath);
-      setUseMD5(conf.general.useMD5);
+      setVideoFileNamingAlgorithm(conf.general.videoFileNamingAlgorithm);
       setCalculateMD5(conf.general.calculateMD5);
       setPreviewSegments(conf.general.previewSegments);
       setPreviewSegmentDuration(conf.general.previewSegmentDuration);
@@ -197,25 +197,31 @@ export const SettingsConfigurationPanel: React.FC = () => {
     return GQL.StreamingResolutionEnum.Original;
   }
 
-  const namingHashes = ["oshash", "MD5"];
+  const namingHashAlgorithms = [
+    GQL.HashAlgorithm.Md5,
+    GQL.HashAlgorithm.Oshash,
+  ].map(namingHashToString);
 
-  function namingHashToUseMD5(value: string) {
+  function namingHashToString(value: GQL.HashAlgorithm | undefined) {
     switch (value) {
-      case "oshash":
-        return false;
-      case "MD5":
-        return true;
+      case GQL.HashAlgorithm.Oshash:
+        return "oshash";
+      case GQL.HashAlgorithm.Md5:
+        return "MD5";
     }
 
-    return false;
+    return "MD5";
   }
 
-  function md5FlagToNamingHash(value: boolean) {
-    if (value) {
-      return "MD5";
+  function translateNamingHash(value: string) {
+    switch (value) {
+      case "oshash":
+        return GQL.HashAlgorithm.Oshash;
+      case "MD5":
+        return GQL.HashAlgorithm.Md5;
     }
 
-    return "oshash";
+    return GQL.HashAlgorithm.Md5;
   }
 
   if (error) return <h1>{error.message}</h1>;
@@ -327,7 +333,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
           <Form.Check
             checked={calculateMD5}
             label="Calculate MD5 for videos"
-            disabled={useMD5}
             onChange={() => setCalculateMD5(!calculateMD5)}
           />
           <Form.Text className="text-muted">
@@ -339,20 +344,22 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
         <Form.Group id="transcode-size">
           <h6>Generated file naming hash</h6>
+
           <Form.Control
-            className="col col-sm-6 input-control"
+            className="w-auto input-control"
             as="select"
-            onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-              setUseMD5(namingHashToUseMD5(event.currentTarget.value))
+            value={namingHashToString(videoFileNamingAlgorithm)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setVideoFileNamingAlgorithm(translateNamingHash(e.currentTarget.value))
             }
-            value={md5FlagToNamingHash(useMD5)}
           >
-            {namingHashes.map((q) => (
+            {namingHashAlgorithms.map((q) => (
               <option key={q} value={q}>
                 {q}
               </option>
             ))}
           </Form.Control>
+
           <Form.Text className="text-muted">
             Use MD5 or oshash for generated file naming. Changing this requires
             that all scenes have the applicable MD5/oshash value populated.

@@ -10,9 +10,9 @@ import (
 )
 
 func setInitialMD5Config() {
-	// if there are no scene files in the database, then default the useMD5
-	// and calculateMD5 config settings to false, otherwise set them to true
-	// for backwards compatibility purposes
+	// if there are no scene files in the database, then default the
+	// VideoFileNamingAlgorithm config setting to oshash and calculateMD5 to
+	// false, otherwise set them to true for backwards compatibility purposes
 	sqb := models.NewSceneQueryBuilder()
 	count, err := sqb.Count()
 	if err != nil {
@@ -21,8 +21,13 @@ func setInitialMD5Config() {
 	}
 
 	usingMD5 := count != 0
+	defaultAlgorithm := models.HashAlgorithmOshash
 
-	viper.SetDefault(config.UseMD5, usingMD5)
+	if usingMD5 {
+		defaultAlgorithm = models.HashAlgorithmMd5
+	}
+
+	viper.SetDefault(config.VideoFileNamingAlgorithm, defaultAlgorithm)
 	viper.SetDefault(config.CalculateMD5, usingMD5)
 
 	if err := config.Write(); err != nil {
@@ -30,17 +35,18 @@ func setInitialMD5Config() {
 	}
 }
 
-// ValidateUseMD5 validates changing the UseMD5 configuration flag.
+// ValidateVideoFileNamingAlgorithm validates changing the
+// VideoFileNamingAlgorithm configuration flag.
 //
-// If setting UseMD5 to true, then this function will ensure that all checksum
-// values are set on all scenes.
+// If setting VideoFileNamingAlgorithm to MD5, then this function will ensure
+// that all checksum values are set on all scenes.
 //
-// Likewise, if UseMD5 is set to false, then this function will ensure that all
-// oshash values are set on all scenes.
-func ValidateUseMD5(newValue bool) error {
-	// if useMD5 is being set to true, then all checksums must be present
+// Likewise, if VideoFileNamingAlgorithm is set to oshash, then this function
+// will ensure that all oshash values are set on all scenes.
+func ValidateVideoFileNamingAlgorithm(newValue models.HashAlgorithm) error {
+	// if algorithm is being set to MD5, then all checksums must be present
 	qb := models.NewSceneQueryBuilder()
-	if newValue {
+	if newValue == models.HashAlgorithmMd5 {
 		missingMD5, err := qb.CountMissingChecksum()
 		if err != nil {
 			return err
@@ -49,7 +55,7 @@ func ValidateUseMD5(newValue bool) error {
 		if missingMD5 > 0 {
 			return errors.New("some checksums are missing on scenes. Run Scan with calculateMD5 set to true")
 		}
-	} else {
+	} else if newValue == models.HashAlgorithmOshash {
 		missingOSHash, err := qb.CountMissingOSHash()
 		if err != nil {
 			return err

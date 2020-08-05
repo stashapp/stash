@@ -50,8 +50,8 @@ func DestroyScene(sceneID int, tx *sqlx.Tx) error {
 }
 
 // DeleteGeneratedSceneFiles deletes generated files for the provided scene.
-func DeleteGeneratedSceneFiles(scene *models.Scene, useMD5 bool) {
-	sceneHash := scene.GetHash(useMD5)
+func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAlgorithm) {
+	sceneHash := scene.GetHash(fileNamingAlgo)
 
 	if sceneHash == "" {
 		return
@@ -136,9 +136,9 @@ func DeleteGeneratedSceneFiles(scene *models.Scene, useMD5 bool) {
 
 // DeleteSceneMarkerFiles deletes generated files for a scene marker with the
 // provided scene and timestamp.
-func DeleteSceneMarkerFiles(scene *models.Scene, seconds int, useMD5 bool) {
-	videoPath := GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(useMD5), seconds)
-	imagePath := GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(useMD5), seconds)
+func DeleteSceneMarkerFiles(scene *models.Scene, seconds int, fileNamingAlgo models.HashAlgorithm) {
+	videoPath := GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(fileNamingAlgo), seconds)
+	imagePath := GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(fileNamingAlgo), seconds)
 
 	exists, _ := utils.FileExists(videoPath)
 	if exists {
@@ -208,7 +208,7 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string) ([]*models
 		return nil, err
 	}
 
-	if HasTranscode(scene, config.IsUseMD5()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
+	if HasTranscode(scene, config.GetVideoFileNamingAlgorithm()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
 		label := "Direct stream"
 		ret = append(ret, &models.SceneStreamEndpoint{
 			URL:      directStreamURL,
@@ -251,12 +251,12 @@ func GetSceneStreamPaths(scene *models.Scene, directStreamURL string) ([]*models
 // HasTranscode returns true if a transcoded video exists for the provided
 // scene. It will check using the OSHash of the scene first, then fall back
 // to the checksum.
-func HasTranscode(scene *models.Scene, useMD5 bool) bool {
+func HasTranscode(scene *models.Scene, fileNamingAlgo models.HashAlgorithm) bool {
 	if scene == nil {
 		return false
 	}
 
-	sceneHash := scene.GetHash(useMD5)
+	sceneHash := scene.GetHash(fileNamingAlgo)
 	if sceneHash == "" {
 		return false
 	}

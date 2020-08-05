@@ -17,10 +17,10 @@ import (
 )
 
 type ScanTask struct {
-	FilePath        string
-	UseFileMetadata bool
-	calculateMD5    bool
-	useMD5          bool
+	FilePath            string
+	UseFileMetadata     bool
+	calculateMD5        bool
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *ScanTask) Start(wg *sync.WaitGroup) {
@@ -146,7 +146,7 @@ func (t *ScanTask) scanScene() {
 	if scene != nil {
 		// We already have this item in the database
 		// check for thumbnails,screenshots
-		t.makeScreenshots(nil, scene.GetHash(t.useMD5))
+		t.makeScreenshots(nil, scene.GetHash(t.fileNamingAlgorithm))
 
 		// check for container
 		if !scene.Format.Valid {
@@ -232,7 +232,7 @@ func (t *ScanTask) scanScene() {
 		return
 	}
 
-	if t.useMD5 || t.calculateMD5 {
+	if t.fileNamingAlgorithm == models.HashAlgorithmMd5 || t.calculateMD5 {
 		checksum, err = t.calculateChecksum()
 		if err != nil {
 			logger.Error(err.Error())
@@ -241,11 +241,14 @@ func (t *ScanTask) scanScene() {
 	}
 
 	sceneHash := oshash
-	if t.useMD5 {
+	if t.fileNamingAlgorithm == models.HashAlgorithmMd5 {
 		sceneHash = checksum
 		scene, _ = qb.FindByChecksum(sceneHash)
-	} else {
+	} else if t.fileNamingAlgorithm == models.HashAlgorithmOshash {
 		scene, _ = qb.FindByOSHash(sceneHash)
+	} else {
+		logger.Error("unknown file naming algorithm")
+		return
 	}
 
 	t.makeScreenshots(videoFile, sceneHash)

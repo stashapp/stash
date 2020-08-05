@@ -19,9 +19,9 @@ import (
 )
 
 type ExportTask struct {
-	Mappings *jsonschema.Mappings
-	Scraped  []jsonschema.ScrapedItem
-	useMD5   bool
+	Mappings            *jsonschema.Mappings
+	Scraped             []jsonschema.ScrapedItem
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *ExportTask) Start(wg *sync.WaitGroup) {
@@ -78,7 +78,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
 		if (i % 100) == 0 { // make progress easier to read
 			logger.Progressf("[scenes] %d of %d", index, len(scenes))
 		}
-		t.Mappings.Scenes = append(t.Mappings.Scenes, jsonschema.PathMapping{Path: scene.Path, Checksum: scene.GetHash(t.useMD5)})
+		t.Mappings.Scenes = append(t.Mappings.Scenes, jsonschema.PathMapping{Path: scene.Path, Checksum: scene.GetHash(t.fileNamingAlgorithm)})
 		jobCh <- scene // feed workers
 	}
 
@@ -159,7 +159,7 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 		newSceneJSON.Performers = t.getPerformerNames(performers)
 		newSceneJSON.Tags = t.getTagNames(tags)
 
-		sceneHash := scene.GetHash(t.useMD5)
+		sceneHash := scene.GetHash(t.fileNamingAlgorithm)
 
 		for _, sceneMarker := range sceneMarkers {
 			primaryTag, err := tagQB.Find(sceneMarker.PrimaryTagID, tx)

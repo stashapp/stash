@@ -15,9 +15,9 @@ import (
 )
 
 type CleanTask struct {
-	Scene   *models.Scene
-	Gallery *models.Gallery
-	useMD5  bool
+	Scene               *models.Scene
+	Gallery             *models.Gallery
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *CleanTask) Start(wg *sync.WaitGroup) {
@@ -85,7 +85,7 @@ func (t *CleanTask) deleteScene(sceneID int) {
 		return
 	}
 
-	DeleteGeneratedSceneFiles(scene, t.useMD5)
+	DeleteGeneratedSceneFiles(scene, t.fileNamingAlgorithm)
 }
 
 func (t *CleanTask) deleteGallery(galleryID int) {

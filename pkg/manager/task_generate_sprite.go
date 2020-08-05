@@ -10,9 +10,9 @@ import (
 )
 
 type GenerateSpriteTask struct {
-	Scene     models.Scene
-	Overwrite bool
-	useMD5    bool
+	Scene               models.Scene
+	Overwrite           bool
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
@@ -28,7 +28,7 @@ func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	sceneHash := t.Scene.GetHash(t.useMD5)
+	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	imagePath := instance.Paths.Scene.GetSpriteImageFilePath(sceneHash)
 	vttPath := instance.Paths.Scene.GetSpriteVttFilePath(sceneHash)
 	generator, err := NewSpriteGenerator(*videoFile, imagePath, vttPath, 9, 9)
@@ -46,7 +46,7 @@ func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 
 // required returns true if the sprite needs to be generated
 func (t GenerateSpriteTask) required() bool {
-	sceneHash := t.Scene.GetHash(t.useMD5)
+	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	return !t.doesSpriteExist(sceneHash)
 }
 

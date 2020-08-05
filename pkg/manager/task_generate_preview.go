@@ -15,8 +15,8 @@ type GeneratePreviewTask struct {
 
 	Options models.GeneratePreviewOptionsInput
 
-	Overwrite bool
-	useMD5    bool
+	Overwrite           bool
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
@@ -55,7 +55,7 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 }
 
 func (t GeneratePreviewTask) required() bool {
-	sceneHash := t.Scene.GetHash(t.useMD5)
+	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	videoExists := t.doesVideoPreviewExist(sceneHash)
 	imageExists := !t.ImagePreview || t.doesImagePreviewExist(sceneHash)
 	return !imageExists || !videoExists
@@ -80,9 +80,9 @@ func (t *GeneratePreviewTask) doesImagePreviewExist(sceneChecksum string) bool {
 }
 
 func (t *GeneratePreviewTask) videoFilename() string {
-	return t.Scene.GetHash(t.useMD5) + ".mp4"
+	return t.Scene.GetHash(t.fileNamingAlgorithm) + ".mp4"
 }
 
 func (t *GeneratePreviewTask) imageFilename() string {
-	return t.Scene.GetHash(t.useMD5) + ".webp"
+	return t.Scene.GetHash(t.fileNamingAlgorithm) + ".webp"
 }

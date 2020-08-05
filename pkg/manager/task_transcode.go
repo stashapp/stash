@@ -11,15 +11,15 @@ import (
 )
 
 type GenerateTranscodeTask struct {
-	Scene     models.Scene
-	Overwrite bool
-	useMD5    bool
+	Scene               models.Scene
+	Overwrite           bool
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	hasTranscode := HasTranscode(&t.Scene, t.useMD5)
+	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
 	if !t.Overwrite && hasTranscode {
 		return
 	}
@@ -55,7 +55,7 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	sceneHash := t.Scene.GetHash(t.useMD5)
+	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	outputPath := instance.Paths.Generated.GetTmpPath(sceneHash + ".mp4")
 	transcodeSize := config.GetMaxTranscodeSize()
 	options := ffmpeg.TranscodeOptions{
@@ -108,7 +108,7 @@ func (t *GenerateTranscodeTask) isTranscodeNeeded() bool {
 		return false
 	}
 
-	hasTranscode := HasTranscode(&t.Scene, t.useMD5)
+	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
 	if !t.Overwrite && hasTranscode {
 		return false
 	}

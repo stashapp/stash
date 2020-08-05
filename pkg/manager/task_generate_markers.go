@@ -14,10 +14,10 @@ import (
 )
 
 type GenerateMarkersTask struct {
-	Scene     *models.Scene
-	Marker    *models.SceneMarker
-	Overwrite bool
-	useMD5    bool
+	Scene               *models.Scene
+	Marker              *models.SceneMarker
+	Overwrite           bool
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
@@ -58,7 +58,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 		return
 	}
 
-	sceneHash := t.Scene.GetHash(t.useMD5)
+	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 
 	// Make the folder for the scenes markers
 	// use the existing folder if present, otherwise create one from the hash
@@ -76,7 +76,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 }
 
 func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene *models.Scene, sceneMarker *models.SceneMarker) {
-	sceneHash := t.Scene.GetHash(t.useMD5)
+	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	seconds := int(sceneMarker.Seconds)
 
 	videoExists := t.videoExists(sceneHash, seconds)
@@ -127,7 +127,7 @@ func (t *GenerateMarkersTask) isMarkerNeeded() int {
 		return 0
 	}
 
-	sceneHash := t.Scene.GetHash(t.useMD5)
+	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	for _, sceneMarker := range sceneMarkers {
 		seconds := int(sceneMarker.Seconds)
 

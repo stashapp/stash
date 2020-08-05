@@ -14,9 +14,9 @@ import (
 )
 
 type GenerateScreenshotTask struct {
-	Scene        models.Scene
-	ScreenshotAt *float64
-	useMD5       bool
+	Scene               models.Scene
+	ScreenshotAt        *float64
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
@@ -37,7 +37,7 @@ func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
 		at = *t.ScreenshotAt
 	}
 
-	checksum := t.Scene.GetHash(t.useMD5)
+	checksum := t.Scene.GetHash(t.fileNamingAlgorithm)
 	normalPath := instance.Paths.Scene.GetScreenshotPath(checksum)
 
 	// we'll generate the screenshot, grab the generated data and set it

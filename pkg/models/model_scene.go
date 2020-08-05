@@ -67,14 +67,16 @@ func (s Scene) GetTitle() string {
 	return filepath.Base(s.Path)
 }
 
-// GetHash returns the hash of the scene, based on the flag provided. If
-// useMD5 is true, then Checksum is returned. Otherwise, OSHash is returned.
-func (s Scene) GetHash(useMD5 bool) string {
-	if useMD5 {
+// GetHash returns the hash of the scene, based on the hash algorithm provided. If
+// hash algorithm is MD5, then Checksum is returned. Otherwise, OSHash is returned.
+func (s Scene) GetHash(hashAlgorithm HashAlgorithm) string {
+	if hashAlgorithm == HashAlgorithmMd5 {
 		return s.Checksum.String
+	} else if hashAlgorithm == HashAlgorithmOshash {
+		return s.OSHash.String
 	}
 
-	return s.OSHash.String
+	panic("unknown hash algorithm")
 }
 
 // SceneFileType represents the file metadata for a scene.
