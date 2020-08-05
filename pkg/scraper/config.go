@@ -35,6 +35,9 @@ type config struct {
 	// Configuration for querying a scene by a URL
 	SceneByURL []*scrapeByURLConfig `yaml:"sceneByURL"`
 
+	// Configuration for querying a movie by a URL
+	MovieByURL []*scrapeByURLConfig `yaml:"movieByURL"`
+
 	// Scraper debugging options
 	DebugOptions *scraperDebugOptions `yaml:"debug"`
 
@@ -78,6 +81,12 @@ func (c config) validate() error {
 	}
 
 	for _, s := range c.SceneByURL {
+		if err := s.validate(); err != nil {
+			return err
+		}
+	}
+
+	for _, s := range c.MovieByURL {
 		if err := s.validate(); err != nil {
 			return err
 		}
@@ -222,6 +231,18 @@ func (c config) toScraper() *models.Scraper {
 		ret.Scene = &scene
 	}
 
+	movie := models.ScraperSpec{}
+	if len(c.MovieByURL) > 0 {
+		movie.SupportedScrapes = append(movie.SupportedScrapes, models.ScrapeTypeURL)
+		for _, v := range c.MovieByURL {
+			movie.Urls = append(movie.Urls, v.URL...)
+		}
+	}
+
+	if len(movie.SupportedScrapes) > 0 {
+		ret.Movie = &movie
+	}
+
 	return &ret
 }
 
@@ -294,6 +315,20 @@ func (c config) matchesSceneURL(url string) bool {
 	return false
 }
 
+func (c config) supportsMovies() bool {
+	return len(c.MovieByURL) > 0
+}
+
+func (c config) matchesMovieURL(url string) bool {
+	for _, scraper := range c.MovieByURL {
+		if scraper.matchesURL(url) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (c config) ScrapeScene(scene models.SceneUpdateInput, globalConfig GlobalConfig) (*models.ScrapedScene, error) {
 	if c.SceneByFragment != nil {
 		s := getScraper(*c.SceneByFragment, c, globalConfig)
@@ -308,6 +343,24 @@ func (c config) ScrapeSceneURL(url string, globalConfig GlobalConfig) (*models.S
 		if scraper.matchesURL(url) {
 			s := getScraper(scraper.scraperTypeConfig, c, globalConfig)
 			ret, err := s.scrapeSceneByURL(url)
+			if err != nil {
+				return nil, err
+			}
+
+			if ret != nil {
+				return ret, nil
+			}
+		}
+	}
+
+	return nil, nil
+}
+
+func (c config) ScrapeMovieURL(url string, globalConfig GlobalConfig) (*models.ScrapedMovie, error) {
+	for _, scraper := range c.MovieByURL {
+		if scraper.matchesURL(url) {
+			s := getScraper(scraper.scraperTypeConfig, c, globalConfig)
+			ret, err := s.scrapeMovieByURL(url)
 			if err != nil {
 				return nil, err
 			}

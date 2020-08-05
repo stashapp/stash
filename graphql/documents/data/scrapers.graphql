@@ -47,6 +47,8 @@ fragment ScrapedMovieData on ScrapedMovie {
   director
   url
   synopsis
+  front_image
+  back_image
 }
 
 fragment ScrapedSceneMovieData on ScrapedSceneMovie {

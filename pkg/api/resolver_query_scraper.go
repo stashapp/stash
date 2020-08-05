@@ -41,6 +41,10 @@ func (r *queryResolver) ListSceneScrapers(ctx context.Context) ([]*models.Scrape
 	return manager.GetInstance().ScraperCache.ListSceneScrapers(), nil
 }
 
+func (r *queryResolver) ListMovieScrapers(ctx context.Context) ([]*models.Scraper, error) {
+	return manager.GetInstance().ScraperCache.ListMovieScrapers(), nil
+}
+
 func (r *queryResolver) ScrapePerformerList(ctx context.Context, scraperID string, query string) ([]*models.ScrapedPerformer, error) {
 	if query == "" {
 		return nil, nil
@@ -63,4 +67,8 @@ func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene
 
 func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
 	return manager.GetInstance().ScraperCache.ScrapeSceneURL(url)
+}
+
+func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
+	return manager.GetInstance().ScraperCache.ScrapeMovieURL(url)
 }

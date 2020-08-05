@@ -161,6 +161,14 @@ func (s *mappedPerformerScraperConfig) UnmarshalYAML(unmarshal func(interface{})
 	return unmarshal(&s.mappedConfig)
 }
 
+type mappedMovieScraperConfig struct {
+	mappedConfig
+}
+
+func (s *mappedMovieScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	return unmarshal(&s.mappedConfig)
+}
+
 type mappedRegexConfig struct {
 	Regex string `yaml:"regex"`
 	With  string `yaml:"with"`
@@ -454,6 +462,7 @@ type mappedScraper struct {
 	Common    commonMappedConfig            `yaml:"common"`
 	Scene     *mappedSceneScraperConfig     `yaml:"scene"`
 	Performer *mappedPerformerScraperConfig `yaml:"performer"`
+	Movie     *mappedMovieScraperConfig     `yaml:"movie"`
 }
 
 type mappedResult map[string]string
@@ -594,6 +603,22 @@ func (s mappedScraper) scrapeScene(q mappedQuery) (*models.ScrapedScene, error) 
 			}
 
 		}
+	}
+
+	return &ret, nil
+}
+
+func (s mappedScraper) scrapeMovie(q mappedQuery) (*models.ScrapedMovie, error) {
+	var ret models.ScrapedMovie
+
+	movieMap := s.Movie
+	if movieMap == nil {
+		return nil, nil
+	}
+
+	results := movieMap.process(q, s.Common)
+	if len(results) > 0 {
+		results[0].apply(&ret)
 	}
 
 	return &ret, nil

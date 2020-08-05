@@ -146,3 +146,13 @@ func (s *scriptScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, erro
 
 	return &ret, err
 }
+
+func (s *scriptScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
+	inString := `{"url": "` + url + `"}`
+
+	var ret models.ScrapedMovie
+
+	err := s.runScraperScript(string(inString), &ret)
+
+	return &ret, err
+}

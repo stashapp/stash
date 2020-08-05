@@ -8,6 +8,10 @@ type ScrapedMovie {
   director: String
   url: String
   synopsis: String
+
+  """This should be base64 encoded"""
+  front_image: String
+  back_image: String
 }
 
 input ScrapedMovieInput {
