@@ -13,6 +13,7 @@ export enum FilterMode {
   Galleries,
   SceneMarkers,
   Movies,
+  Tags,
 }
 
 export interface ILabeledId {

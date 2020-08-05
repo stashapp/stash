@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -145,6 +146,24 @@ func (qb *SceneQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 }
 func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
 	return qb.find(id, nil)
+}
+
+func (qb *SceneQueryBuilder) FindMany(ids []int) ([]*Scene, error) {
+	var scenes []*Scene
+	for _, id := range ids {
+		scene, err := qb.Find(id)
+		if err != nil {
+			return nil, err
+		}
+
+		if scene == nil {
+			return nil, fmt.Errorf("scene with id %d not found", id)
+		}
+
+		scenes = append(scenes, scene)
+	}
+
+	return scenes, nil
 }
 
 func (qb *SceneQueryBuilder) find(id int, tx *sqlx.Tx) (*Scene, error) {

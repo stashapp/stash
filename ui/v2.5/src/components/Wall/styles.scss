@@ -16,6 +16,7 @@
     @media (max-width: 576px) {
       height: inherit;
       max-width: 100%;
+      min-height: 210px;
       width: 100%;
     }
 
@@ -36,8 +37,13 @@
       align-items: center;
       color: $text-color;
       display: flex;
-      font-size: 1.5rem;
+      font-size: 1vw;
       justify-content: center;
+      text-align: center;
+
+      @media (max-width: 576px) {
+        font-size: 6vw;
+      }
     }
 
     &-preview {

@@ -17,14 +17,25 @@ export const SettingsConfigurationPanel: React.FC = () => {
     undefined
   );
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
+  const [previewSegments, setPreviewSegments] = useState<number>(0);
+  const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
+    0
+  );
+  const [previewExcludeStart, setPreviewExcludeStart] = useState<
+    string | undefined
+  >(undefined);
+  const [previewExcludeEnd, setPreviewExcludeEnd] = useState<
+    string | undefined
+  >(undefined);
+  const [previewPreset, setPreviewPreset] = useState<string>(
+    GQL.PreviewPreset.Slow
+  );
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
   const [maxStreamingTranscodeSize, setMaxStreamingTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
-  const [forceMkv, setForceMkv] = useState<boolean>(false);
-  const [forceHevc, setForceHevc] = useState<boolean>(false);
   const [username, setUsername] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const [maxSessionAge, setMaxSessionAge] = useState<number>(0);
@@ -36,6 +47,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(
     undefined
   );
+  const [scraperCDPPath, setScraperCDPPath] = useState<string | undefined>(
+    undefined
+  );
 
   const { data, error, loading } = useConfiguration();
 
@@ -44,10 +58,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
     databasePath,
     generatedPath,
     cachePath,
+    previewSegments,
+    previewSegmentDuration,
+    previewExcludeStart,
+    previewExcludeEnd,
+    previewPreset: (previewPreset as GQL.PreviewPreset) ?? undefined,
     maxTranscodeSize,
     maxStreamingTranscodeSize,
-    forceMkv,
-    forceHevc,
     username,
     password,
     maxSessionAge,
@@ -57,6 +74,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     logAccess,
     excludes,
     scraperUserAgent,
+    scraperCDPPath,
   });
 
   useEffect(() => {
@@ -68,12 +86,15 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
       setCachePath(conf.general.cachePath);
+      setPreviewSegments(conf.general.previewSegments);
+      setPreviewSegmentDuration(conf.general.previewSegmentDuration);
+      setPreviewExcludeStart(conf.general.previewExcludeStart);
+      setPreviewExcludeEnd(conf.general.previewExcludeEnd);
+      setPreviewPreset(conf.general.previewPreset);
       setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
       );
-      setForceMkv(conf.general.forceMkv);
-      setForceHevc(conf.general.forceHevc);
       setUsername(conf.general.username);
       setPassword(conf.general.password);
       setMaxSessionAge(conf.general.maxSessionAge);
@@ -83,6 +104,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setLogAccess(conf.general.logAccess);
       setExcludes(conf.general.excludes);
       setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
+      setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
     }
   }, [data, error]);
 
@@ -277,7 +299,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="transcode-size">
           <h6>Maximum transcode size</h6>
           <Form.Control
-            className="col col-sm-6 input-control"
+            className="w-auto input-control"
             as="select"
             onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setMaxTranscodeSize(translateQuality(event.currentTarget.value))
@@ -297,7 +319,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         <Form.Group id="streaming-transcode-size">
           <h6>Maximum streaming transcode size</h6>
           <Form.Control
-            className="col col-sm-6 input-control"
+            className="w-auto input-control"
             as="select"
             onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
               setMaxStreamingTranscodeSize(
@@ -316,46 +338,129 @@ export const SettingsConfigurationPanel: React.FC = () => {
             Maximum size for transcoded streams
           </Form.Text>
         </Form.Group>
-        <Form.Group id="force-options-mkv">
-          <Form.Check
-            id="force-mkv"
-            checked={forceMkv}
-            label="Force Matroska as supported"
-            onChange={() => setForceMkv(!forceMkv)}
-          />
-          <Form.Text className="text-muted">
-            Treat Matroska (MKV) as a supported container. Recommended for
-            Chromium based browsers
-          </Form.Text>
-        </Form.Group>
-        <Form.Group id="force-options-hevc">
-          <Form.Check
-            id="force-hevc"
-            checked={forceHevc}
-            label="Force HEVC as supported"
-            onChange={() => setForceHevc(!forceHevc)}
-          />
-          <Form.Text className="text-muted">
-            Treat HEVC as a supported codec. Recommended for Safari or some
-            Android based browsers
-          </Form.Text>
-        </Form.Group>
       </Form.Group>
 
       <hr />
 
-      <Form.Group id="generated-path">
-        <h6>Scraping</h6>
-        <Form.Control
-          className="col col-sm-6 text-input"
-          defaultValue={scraperUserAgent}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setScraperUserAgent(e.currentTarget.value)
-          }
-        />
-        <Form.Text className="text-muted">
-          User-Agent string used during scrape http requests
-        </Form.Text>
+      <Form.Group>
+        <h4>Preview Generation</h4>
+
+        <Form.Group id="transcode-size">
+          <h6>Preview encoding preset</h6>
+          <Form.Control
+            className="w-auto input-control"
+            as="select"
+            value={previewPreset}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setPreviewPreset(e.currentTarget.value)
+            }
+          >
+            {Object.keys(GQL.PreviewPreset).map((p) => (
+              <option value={p.toLowerCase()} key={p}>
+                {p}
+              </option>
+            ))}
+          </Form.Control>
+          <Form.Text className="text-muted">
+            The preset regulates size, quality and encoding time of preview
+            generation. Presets beyond “slow” have diminishing returns and are
+            not recommended.
+          </Form.Text>
+        </Form.Group>
+        <Form.Group id="preview-segments">
+          <h6>Number of segments in preview</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={previewSegments.toString()}
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
+              setPreviewSegments(Number.parseInt(e.currentTarget.value, 10))
+            }
+          />
+          <Form.Text className="text-muted">
+            Number of segments in preview files.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-segment-duration">
+          <h6>Preview segment duration</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={previewSegmentDuration.toString()}
+            onInput={(e: React.FormEvent<HTMLInputElement>) =>
+              setPreviewSegmentDuration(
+                Number.parseFloat(e.currentTarget.value)
+              )
+            }
+          />
+          <Form.Text className="text-muted">
+            Duration of each preview segment, in seconds.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-exclude-start">
+          <h6>Exclude start time</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={previewExcludeStart}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewExcludeStart(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Exclude the first x seconds from scene previews. This can be a value
+            in seconds, or a percentage (eg 2%) of the total scene duration.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="preview-exclude-start">
+          <h6>Exclude end time</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={previewExcludeEnd}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewExcludeEnd(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Exclude the last x seconds from scene previews. This can be a value
+            in seconds, or a percentage (eg 2%) of the total scene duration.
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
+
+      <Form.Group>
+        <h4>Scraping</h4>
+        <Form.Group id="scraperUserAgent">
+          <h6>Scraper User Agent</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={scraperUserAgent}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setScraperUserAgent(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            User-Agent string used during scrape http requests
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="scraperCDPPath">
+          <h6>Chrome CDP path</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={scraperCDPPath}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setScraperCDPPath(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            File path to the Chrome executable, or a remote address (starting
+            with http:// or https://, for example
+            http://localhost:9222/json/version) to a Chrome instance.
+          </Form.Text>
+        </Form.Group>
       </Form.Group>
 
       <hr />
@@ -447,7 +552,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
           }
           value={logLevel}
         >
-          {["Debug", "Info", "Warning", "Error"].map((o) => (
+          {["Trace", "Debug", "Info", "Warning", "Error"].map((o) => (
             <option key={o} value={o}>
               {o}
             </option>

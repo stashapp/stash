@@ -2,8 +2,9 @@ package jsonschema
 
 import (
 	"fmt"
-	"github.com/json-iterator/go"
 	"os"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 type NameMapping struct {
@@ -17,6 +18,7 @@ type PathMapping struct {
 }
 
 type Mappings struct {
+	Tags       []NameMapping `json:"tags"`
 	Performers []NameMapping `json:"performers"`
 	Studios    []NameMapping `json:"studios"`
 	Movies     []NameMapping `json:"movies"`

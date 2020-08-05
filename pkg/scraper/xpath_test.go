@@ -1,11 +1,15 @@
 package scraper
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/antchfx/htmlquery"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
 
@@ -183,49 +187,79 @@ func makeCommonXPath(attr string) string {
 	return `//table[@id="biographyTable"]//tr/td[@class="paramname"]//b[text() = '` + attr + `']/ancestor::tr/td[@class="paramvalue"]`
 }
 
-func makeReplaceRegex(regex string, with string) map[interface{}]interface{} {
-	ret := make(map[interface{}]interface{})
+func makeSimpleAttrConfig(str string) mappedScraperAttrConfig {
+	return mappedScraperAttrConfig{
+		Selector: str,
+	}
+}
 
-	ret["regex"] = regex
-	ret["with"] = with
+func makeReplaceRegex(regex string, with string) mappedRegexConfig {
+	ret := mappedRegexConfig{
+		Regex: regex,
+		With:  with,
+	}
+
 	return ret
 }
 
-func makeXPathConfig() xpathScraperConfig {
-	config := make(xpathScraperConfig)
+func makeXPathConfig() mappedPerformerScraperConfig {
+	config := mappedPerformerScraperConfig{
+		mappedConfig: make(mappedConfig),
+	}
 
-	config["Name"] = makeCommonXPath("Babe Name:") + `/a`
-	config["Ethnicity"] = makeCommonXPath("Ethnicity:")
-	config["Country"] = makeCommonXPath("Country of Origin:")
-	config["Aliases"] = makeCommonXPath("Aliases:")
-	config["EyeColor"] = makeCommonXPath("Eye Color:")
-	config["Measurements"] = makeCommonXPath("Measurements:")
-	config["FakeTits"] = makeCommonXPath("Fake boobs:")
-	config["Height"] = makeCommonXPath("Height:")
-	config["Tattoos"] = makeCommonXPath("Tattoos:")
-	config["Piercings"] = makeCommonXPath("Piercings:")
+	config.mappedConfig["Name"] = makeSimpleAttrConfig(makeCommonXPath("Babe Name:") + `/a`)
+	config.mappedConfig["Ethnicity"] = makeSimpleAttrConfig(makeCommonXPath("Ethnicity:"))
+	config.mappedConfig["Country"] = makeSimpleAttrConfig(makeCommonXPath("Country of Origin:"))
+	config.mappedConfig["Aliases"] = makeSimpleAttrConfig(makeCommonXPath("Aliases:"))
+	config.mappedConfig["EyeColor"] = makeSimpleAttrConfig(makeCommonXPath("Eye Color:"))
+	config.mappedConfig["Measurements"] = makeSimpleAttrConfig(makeCommonXPath("Measurements:"))
+	config.mappedConfig["FakeTits"] = makeSimpleAttrConfig(makeCommonXPath("Fake boobs:"))
+	config.mappedConfig["Height"] = makeSimpleAttrConfig(makeCommonXPath("Height:"))
+	config.mappedConfig["Tattoos"] = makeSimpleAttrConfig(makeCommonXPath("Tattoos:"))
+	config.mappedConfig["Piercings"] = makeSimpleAttrConfig(makeCommonXPath("Piercings:"))
 
 	// special handling for birthdate
-	birthdateAttrConfig := make(map[interface{}]interface{})
-	birthdateAttrConfig["selector"] = makeCommonXPath("Date of Birth:")
+	birthdateAttrConfig := makeSimpleAttrConfig(makeCommonXPath("Date of Birth:"))
 
-	var birthdateReplace []interface{}
-	birthdateReplace = append(birthdateReplace, makeReplaceRegex(` \(.* years old\)`, ""))
+	var birthdateReplace mappedRegexConfigs
+	// make this leave the trailing space to test existing scrapers that do so
+	birthdateReplace = append(birthdateReplace, makeReplaceRegex(`\(.* years old\)`, ""))
 
-	birthdateAttrConfig["replace"] = birthdateReplace
-	birthdateAttrConfig["parseDate"] = "January 2, 2006" // "July 1, 1992 (27 years old)&nbsp;"
-	config["Birthdate"] = birthdateAttrConfig
+	birthdateReplaceAction := postProcessReplace(birthdateReplace)
+	birthdateParseDate := postProcessParseDate("January 2, 2006") // "July 1, 1992 (27 years old)&nbsp;"
+	birthdateAttrConfig.postProcessActions = []postProcessAction{
+		&birthdateReplaceAction,
+		&birthdateParseDate,
+	}
+	config.mappedConfig["Birthdate"] = birthdateAttrConfig
 
 	// special handling for career length
-	careerLengthAttrConfig := make(map[interface{}]interface{})
 	// no colon in attribute header
-	careerLengthAttrConfig["selector"] = makeCommonXPath("Career Start And End")
+	careerLengthAttrConfig := makeSimpleAttrConfig(makeCommonXPath("Career Start And End"))
 
-	var careerLengthReplace []interface{}
+	var careerLengthReplace mappedRegexConfigs
 	careerLengthReplace = append(careerLengthReplace, makeReplaceRegex(`\s+\(.*\)`, ""))
-	careerLengthAttrConfig["replace"] = careerLengthReplace
+	careerLengthReplaceAction := postProcessReplace(careerLengthReplace)
+	careerLengthAttrConfig.postProcessActions = []postProcessAction{
+		&careerLengthReplaceAction,
+	}
 
-	config["CareerLength"] = careerLengthAttrConfig
+	config.mappedConfig["CareerLength"] = careerLengthAttrConfig
+
+	// use map post-process action for gender
+	genderConfig := makeSimpleAttrConfig(makeCommonXPath("Profession:"))
+	genderMapAction := make(postProcessMap)
+	genderMapAction["Porn Star"] = "Female"
+	genderConfig.postProcessActions = []postProcessAction{
+		&genderMapAction,
+	}
+
+	config.mappedConfig["Gender"] = genderConfig
+
+	// use fixed for height
+	config.mappedConfig["Height"] = mappedScraperAttrConfig{
+		Fixed: "1234",
+	}
 
 	return config
 }
@@ -253,11 +287,15 @@ func TestScrapePerformerXPath(t *testing.T) {
 
 	xpathConfig := makeXPathConfig()
 
-	scraper := xpathScraper{
-		Performer: xpathConfig,
+	scraper := mappedScraper{
+		Performer: &xpathConfig,
 	}
 
-	performer, err := scraper.scrapePerformer(doc)
+	q := &xpathQuery{
+		doc: doc,
+	}
+
+	performer, err := scraper.scrapePerformer(q)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())
@@ -274,8 +312,11 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const fakeTits = "No"
 	const careerLength = "2012 - 2019"
 	const tattoosPiercings = "None"
+	const gender = "Female"
+	const height = "1234"
 
 	verifyField(t, performerName, performer.Name, "Name")
+	verifyField(t, gender, performer.Gender, "Gender")
 	verifyField(t, ethnicity, performer.Ethnicity, "Ethnicity")
 	verifyField(t, country, performer.Country, "Country")
 
@@ -290,6 +331,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 
 	verifyField(t, tattoosPiercings, performer.Tattoos, "Tattoos")
 	verifyField(t, tattoosPiercings, performer.Piercings, "Piercings")
+	verifyField(t, height, performer.Height, "Piercings")
 }
 
 func TestConcatXPath(t *testing.T) {
@@ -313,18 +355,25 @@ func TestConcatXPath(t *testing.T) {
 		return
 	}
 
-	xpathConfig := make(xpathScraperConfig)
-	nameAttrConfig := make(map[interface{}]interface{})
-	nameAttrConfig["selector"] = "//div"
-	nameAttrConfig["concat"] = separator
+	xpathConfig := make(mappedConfig)
+	nameAttrConfig := mappedScraperAttrConfig{
+		Selector: "//div",
+		Concat:   separator,
+	}
 	xpathConfig["Name"] = nameAttrConfig
-	xpathConfig["EyeColor"] = "//span"
+	xpathConfig["EyeColor"] = makeSimpleAttrConfig("//span")
 
-	scraper := xpathScraper{
-		Performer: xpathConfig,
+	scraper := mappedScraper{
+		Performer: &mappedPerformerScraperConfig{
+			mappedConfig: xpathConfig,
+		},
 	}
 
-	performer, err := scraper.scrapePerformer(doc)
+	q := &xpathQuery{
+		doc: doc,
+	}
+
+	performer, err := scraper.scrapePerformer(q)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())
@@ -342,55 +391,24 @@ const sceneHTML = `
 
 <head>
     <title>Test Video - Pornhub.com</title>
-
     <meta property="og:title" content="Test Video" />
-    <meta property="og:description"
-        content="Watch Test Video on Pornhub.com, the best hardcore porn site. Pornhub is home to the widest selection of free Babe sex videos full of the hottest pornstars. If you&#039;re craving 3some XXX movies you&#039;ll find them here." />
-    <meta property="og:image"
-        content="https://di.phncdn.com/videos/201910/13/254476211/thumbs_80/(m=eaAaGwObaaaa)(mh=_V1YEGdMFS1rEYoW)9.jpg" />
-
     <script type="application/ld+json">
 		{
-			"@context": "http://schema.org/",
-			"@type": "VideoObject",
 			"name": "Test Video",
-			"embedUrl": "https://www.pornhub.com/embed/ph5da270596459c",
-			"duration": "PT00H33M27S",
-			"thumbnailUrl": "https://di.phncdn.com/videos/201910/13/254476211/thumbs_80/(m=eaAaGwObaaaa)(mh=_V1YEGdMFS1rEYoW)9.jpg",
 			"uploadDate": "2019-10-13T00:33:51+00:00",
-			"description": "Watch Test Video on Pornhub&period;com&comma; the best hardcore porn site&period; Pornhub is home to the widest selection of free Babe sex videos full of the hottest pornstars&period; If you&apos;re craving 3some XXX movies you&apos;ll find them here&period;",
-				"author" : "Mia Malkova",                "interactionStatistic": [
-			{
-					"@type": "InteractionCounter",
-					"interactionType": "http://schema.org/WatchAction",
-					"userInteractionCount": "5,908,861"
-			},
-			{
-					"@type": "InteractionCounter",
-					"interactionType": "http://schema.org/LikeAction",
-					"userInteractionCount": "22,090"
-				}
-			]
+			"author" : "Mia Malkova"
 		}
 	</script>
 </head>
 
 <body class="logged-out">
     <div class="container  ">
-
-
-        <div id="main-container" class="clearfix" data-delete-check="1" data-is-private="1" data-is-premium=""
-            data-liu="0" data-next-shuffle="ph5da270596459c" data-pkey="" data-platform-pc="1" data-playlist-check="0"
-            data-playlist-id-check="0" data-playlist-geo-check="0" data-friend="0" data-playlist-user-check="0"
-            data-playlist-video-check="0" data-playlist-shuffle="0" data-shuffle-forward="ph5da270596459c"
-            data-shuffle-back="ph5da270596459c" data-min-large="1350"
-            data-video-title="Test Video">
-
+        <div id="main-container" class="clearfix">
             <div id="vpContentContainer">
                 <div id="hd-leftColVideoPage">
                     <div class="video-wrapper">
-                        <div class="title-container">
-                            <i class="isMe tooltipTrig" data-title="Video of verified member"></i>
+						<div class="title-container">
+							<i class="isMe tooltipTrig" data-title="Video of verified member"></i>
                             <h1 class="title">
                                 <span class="inlineFree">Test Video</span>
                             </h1>
@@ -402,45 +420,27 @@ const sceneHTML = `
                                     <div class="video-detailed-info">
                                         <div class="video-info-row">
                                             From:&nbsp;
-
-                                            <div class="usernameWrap clearfix" data-type="channel" data-userid="492538092"
-                                                data-liu-user="0"
-                                                data-json-url="/user/box?id=492538092&amp;token=MTU3NzA1NTkzNIqATol8v_WrhmNTXkeflvG09C2U7UUT_NyoZUFa7iKq0mlzBkmdgAH1aNHZkJmIOHbbwmho1BehHDoA63K5Wn4."
-                                                data-disable-popover="0">
-
+                                            <div class="usernameWrap clearfix" data-type="channel">
                                                 <a rel="" href="/channels/sis-loves-me" class="bolded">Sis Loves Me</a>
-                                                <div class="avatarPosition"></div>
                                             </div>
-
-                                            <span class="verified-icon flag tooltipTrig"
-                                                data-title="Verified member"></span>
-                                            - 87 videos
-                                            <span class="subscribers-count">&nbsp;459466</span>
                                         </div>
 
                                         <div class="video-info-row">
                                             <div class="pornstarsWrapper">
                                                 Pornstars:&nbsp;
                                                 <a class="pstar-list-btn js-mxp" data-mxptype="Pornstar"
-                                                    data-mxptext="Alex D" data-id="251341" data-login="1"
-                                                    href="/pornstar/alex-d">Alex D <span
-                                                        class="psbox-link-container display-none"></span>
+                                                    data-mxptext="Alex D" href="/pornstar/alex-d">Alex D
                                                 </a>
                                                 , <a class="pstar-list-btn js-mxp" data-mxptype="Pornstar"
-                                                    data-mxptext="Mia Malkova" data-id="10641" data-login="1"
-                                                    href="/pornstar/mia-malkova">Mia Malkova <span
-                                                        class="psbox-link-container display-none"></span>
+                                                    data-mxptext="Mia Malkova" href="/pornstar/mia-malkova">
                                                 </a>
                                                 , <a class="pstar-list-btn js-mxp" data-mxptype="Pornstar"
-                                                    data-mxptext="Riley Reid" data-id="5343" data-login="1"
-                                                    href="/pornstar/riley-reid">Riley Reid <span
-                                                        class="psbox-link-container display-none"></span>
+                                                    data-mxptext="Riley Reid" href="/pornstar/riley-reid">Riley Reid
                                                 </a>
                                                 <div class="tooltipTrig suggestBtn" data-title="Add a pornstar">
                                                     <a class="add-btn-small add-pornstar-btn-2">+
                                                         <span>Suggest</span></a>
                                                 </div>
-                                                <div id="deletePornstarResult" class="suggest-result"></div>
                                             </div>
                                         </div>
 
@@ -476,14 +476,6 @@ const sceneHTML = `
                                         </div>
 
                                         <div class="video-info-row showLess">
-                                            <div class="productionWrapper">
-                                                Production:&nbsp;
-                                                <a href="/video?p=professional" rel="nofollow"
-                                                    class="production">professional</a>
-                                            </div>
-                                        </div>
-
-                                        <div class="video-info-row showLess">
                                             <div class="tagsWrapper">
                                                 Tags:&nbsp;
                                                 <a href="/video/search?search=3some">3some</a>, <a
@@ -510,121 +502,6 @@ const sceneHTML = `
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="video-info-row showLess">
-                                            Added on: <span class="white">2 months ago</span>
-                                        </div>
-
-                                        <div class="video-info-row showLess">
-                                            Featured on: <span class="white">1 month ago</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="video-action-tab jump-to-tab">
-                                    <div class="title">Jump to your favorite action</div>
-
-                                    <div class="filters mainFilter float-right">
-                                        <div class="dropdownTrigger">
-                                            <div>
-                                                <span class="textFilter" id="tagSort">Sequence</span>
-                                                <span class="arrowFilters"></span>
-                                            </div>
-                                            <ul class="filterListItem dropdownWrapper">
-                                                <li class="active"><a class="actionTagSort"
-                                                        data-sort="seconds">Sequence</a></li>
-                                                <li><a class="actionTagSort" data-sort="tag">Alphabetical</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-
-                                    <div class="reset"></div>
-                                    <div class="display-grid col-4 gap-row-none sortBy seconds">
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(862), ga('send', 'event', 'Video Page', 'click', 'Jump to Blowjob');">
-                                                    Blowjob </a>
-                                                &nbsp;
-                                                <var>14:22</var>
-                                            </li>
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1117), ga('send', 'event', 'Video Page', 'click', 'Jump to Reverse Cowgirl');">
-                                                    Reverse Cowgirl </a>
-                                                &nbsp;
-                                                <var>18:37</var>
-                                            </li>
-                                        </ul>
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1182), ga('send', 'event', 'Video Page', 'click', 'Jump to Cowgirl');">
-                                                    Cowgirl </a>
-                                                &nbsp;
-                                                <var>19:42</var>
-                                            </li>
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1625), ga('send', 'event', 'Video Page', 'click', 'Jump to Cowgirl');">
-                                                    Cowgirl </a>
-                                                &nbsp;
-                                                <var>27:05</var>
-                                            </li>
-                                        </ul>
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1822), ga('send', 'event', 'Video Page', 'click', 'Jump to Doggystyle');">
-                                                    Doggystyle </a>
-                                                &nbsp;
-                                                <var>30:22</var>
-                                            </li>
-                                        </ul>
-
-                                    </div>
-                                    <div class="display-grid col-4 gap-row-none sortBy tag">
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(862), ga('send', 'event', 'Video Page', 'click', 'Jump to Blowjob');">
-                                                    Blowjob </a>
-                                                &nbsp;
-                                                <var>14:22</var>
-                                            </li>
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1117), ga('send', 'event', 'Video Page', 'click', 'Jump to Reverse Cowgirl');">
-                                                    Reverse Cowgirl </a>
-                                                &nbsp;
-                                                <var>18:37</var>
-                                            </li>
-                                        </ul>
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1182), ga('send', 'event', 'Video Page', 'click', 'Jump to Cowgirl');">
-                                                    Cowgirl </a>
-                                                &nbsp;
-                                                <var>19:42</var>
-                                            </li>
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1625), ga('send', 'event', 'Video Page', 'click', 'Jump to Cowgirl');">
-                                                    Cowgirl </a>
-                                                &nbsp;
-                                                <var>27:05</var>
-                                            </li>
-                                        </ul>
-                                        <ul class="actionTagList full-width margin-none">
-                                            <li>
-                                                <a class="js-triggerJumpCat"
-                                                    onclick="jumpToAction(1822), ga('send', 'event', 'Video Page', 'click', 'Jump to Doggystyle');">
-                                                    Doggystyle </a>
-                                                &nbsp;
-                                                <var>30:22</var>
-                                            </li>
-                                        </ul>
                                     </div>
                                 </div>
                             </div>
@@ -637,42 +514,45 @@ const sceneHTML = `
 </body>
 </html>`
 
-func makeSceneXPathConfig() xpathScraper {
-	common := make(commonXPathConfig)
+func makeSceneXPathConfig() mappedScraper {
+	common := make(commonMappedConfig)
 
 	common["$performerElem"] = `//div[@class="pornstarsWrapper"]/a[@data-mxptype="Pornstar"]`
 	common["$studioElem"] = `//div[@data-type="channel"]/a`
 
-	config := make(xpathScraperConfig)
+	config := mappedSceneScraperConfig{
+		mappedConfig: make(mappedConfig),
+	}
 
-	config["Title"] = `//meta[@property="og:title"]/@content`
+	config.mappedConfig["Title"] = makeSimpleAttrConfig(`//meta[@property="og:title"]/@content`)
 	// this needs post-processing
-	config["Date"] = `//script[@type="application/ld+json"]`
+	config.mappedConfig["Date"] = makeSimpleAttrConfig(`//script[@type="application/ld+json"]`)
 
-	tagConfig := make(map[interface{}]interface{})
-	tagConfig["Name"] = `//div[@class="categoriesWrapper"]//a[not(@class="add-btn-small ")]`
-	config["Tags"] = tagConfig
+	tagConfig := make(mappedConfig)
+	tagConfig["Name"] = makeSimpleAttrConfig(`//div[@class="categoriesWrapper"]//a[not(@class="add-btn-small ")]`)
+	config.Tags = tagConfig
 
-	performerConfig := make(map[interface{}]interface{})
-	performerConfig["Name"] = `$performerElem/@data-mxptext`
-	performerConfig["URL"] = `$performerElem/@href`
-	config["Performers"] = performerConfig
+	performerConfig := make(mappedConfig)
+	performerConfig["Name"] = makeSimpleAttrConfig(`$performerElem/@data-mxptext`)
+	performerConfig["URL"] = makeSimpleAttrConfig(`$performerElem/@href`)
+	config.Performers = performerConfig
 
-	studioConfig := make(map[interface{}]interface{})
-	studioConfig["Name"] = `$studioElem`
-	studioConfig["URL"] = `$studioElem/@href`
-	config["Studio"] = studioConfig
+	studioConfig := make(mappedConfig)
+	studioConfig["Name"] = makeSimpleAttrConfig(`$studioElem`)
+	studioConfig["URL"] = makeSimpleAttrConfig(`$studioElem/@href`)
+	config.Studio = studioConfig
 
 	const sep = " "
-	moviesNameConfig := make(map[interface{}]interface{})
-	moviesNameConfig["selector"] = `//i[@class="isMe tooltipTrig"]/@data-title`
-	moviesNameConfig["split"] = sep
-	moviesConfig := make(map[interface{}]interface{})
+	moviesNameConfig := mappedScraperAttrConfig{
+		Selector: `//i[@class="isMe tooltipTrig"]/@data-title`,
+		Split:    sep,
+	}
+	moviesConfig := make(mappedConfig)
 	moviesConfig["Name"] = moviesNameConfig
-	config["Movies"] = moviesConfig
+	config.Movies = moviesConfig
 
-	scraper := xpathScraper{
-		Scene:  config,
+	scraper := mappedScraper{
+		Scene:  &config,
 		Common: common,
 	}
 
@@ -764,7 +644,10 @@ func TestApplySceneXPathConfig(t *testing.T) {
 
 	scraper := makeSceneXPathConfig()
 
-	scene, err := scraper.scrapeScene(doc)
+	q := &xpathQuery{
+		doc: doc,
+	}
+	scene, err := scraper.scrapeScene(q)
 
 	if err != nil {
 		t.Errorf("Error scraping scene: %s", err.Error())
@@ -831,21 +714,49 @@ xPathScrapers:
   performerScraper:
     performer:
       name: //h1[@itemprop="name"]
+  sceneScraper:
+    scene:
+      Title:
+        selector: //title
+        postProcess:
+          - parseDate: January 2, 2006
+      Tags:
+        Name: //tags  
+      Movies:
+        Name: //movies  
+      Performers:
+        Name: //performers  
+      Studio:
+        Name: //studio
 `
 
-	config := &scraperConfig{}
-	err := yaml.Unmarshal([]byte(yamlStr), &config)
+	c := &config{}
+	err := yaml.Unmarshal([]byte(yamlStr), &c)
 
 	if err != nil {
 		t.Errorf("Error loading yaml: %s", err.Error())
 		return
 	}
+
+	// ensure fields are filled in correctly
+	sceneScraper := c.XPathScrapers["sceneScraper"]
+	sceneConfig := sceneScraper.Scene
+
+	assert.Equal(t, "//title", sceneConfig.mappedConfig["Title"].Selector)
+	assert.Equal(t, "//tags", sceneConfig.Tags["Name"].Selector)
+	assert.Equal(t, "//movies", sceneConfig.Movies["Name"].Selector)
+	assert.Equal(t, "//performers", sceneConfig.Performers["Name"].Selector)
+	assert.Equal(t, "//studio", sceneConfig.Studio["Name"].Selector)
+
+	postProcess := sceneConfig.mappedConfig["Title"].postProcessActions
+	parseDate := postProcess[0].(*postProcessParseDate)
+	assert.Equal(t, "January 2, 2006", string(*parseDate))
 }
 
 func TestLoadInvalidXPath(t *testing.T) {
-	config := make(xpathScraperConfig)
+	config := make(mappedConfig)
 
-	config["Name"] = `//a[id=']/span`
+	config["Name"] = makeSimpleAttrConfig(`//a[id=']/span`)
 
 	reader := strings.NewReader(htmlDoc1)
 	doc, err := htmlquery.Parse(reader)
@@ -855,6 +766,68 @@ func TestLoadInvalidXPath(t *testing.T) {
 		return
 	}
 
-	common := make(commonXPathConfig)
-	config.process(doc, common)
+	q := &xpathQuery{
+		doc: doc,
+	}
+
+	config.process(q, nil)
+}
+
+func TestSubScrape(t *testing.T) {
+	retHTML := `
+	<div>
+		<a href="/getName">A link</a>
+	</div>
+	`
+
+	ssHTML := `
+	<span>The name</span>
+	`
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/getName" {
+			fmt.Fprint(w, ssHTML)
+		} else {
+			fmt.Fprint(w, retHTML)
+		}
+	}))
+	defer ts.Close()
+
+	yamlStr := `name: Test
+performerByURL:
+  - action: scrapeXPath
+    url: 
+      - ` + ts.URL + `
+    scraper: performerScraper
+xPathScrapers:
+  performerScraper:
+    performer:
+      Name: 
+        selector: //div/a/@href
+        postProcess:
+          - replace:
+              - regex: ^
+                with: ` + ts.URL + `
+          - subScraper:
+              selector: //span
+`
+
+	c := &config{}
+	err := yaml.Unmarshal([]byte(yamlStr), &c)
+
+	if err != nil {
+		t.Errorf("Error loading yaml: %s", err.Error())
+		return
+	}
+
+	globalConfig := GlobalConfig{}
+
+	performer, err := c.ScrapePerformerURL(ts.URL, globalConfig)
+
+	if err != nil {
+		t.Errorf("Error scraping performer: %s", err.Error())
+		return
+	}
+
+	verifyField(t, "The name", performer.Name, "Name")
 }

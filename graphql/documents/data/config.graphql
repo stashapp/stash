@@ -3,10 +3,13 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   databasePath
   generatedPath
   cachePath
+  previewSegments
+  previewSegmentDuration
+  previewExcludeStart
+  previewExcludeEnd
+  previewPreset
   maxTranscodeSize
   maxStreamingTranscodeSize
-  forceMkv
-  forceHevc
   username
   password
   maxSessionAge
@@ -16,6 +19,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logAccess
   excludes
   scraperUserAgent
+  scraperCDPPath
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {

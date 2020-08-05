@@ -16,6 +16,8 @@ import {
   FindPerformersQueryResult,
   FindMoviesQueryResult,
   MovieDataFragment,
+  FindTagsQueryResult,
+  TagDataFragment,
 } from "src/core/generated-graphql";
 import {
   useInterfaceLocalForage,
@@ -31,6 +33,7 @@ import {
   useFindStudios,
   useFindGalleries,
   useFindPerformers,
+  useFindTags,
 } from "src/core/StashService";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { FilterMode } from "src/models/list-filter/types";
@@ -48,12 +51,18 @@ interface IListHookOperation<T> {
     filter: ListFilterModel,
     selectedIds: Set<string>
   ) => void;
+  isDisplayed?: (
+    result: T,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) => boolean;
 }
 
 interface IListHookOptions<T, E> {
   subComponent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
+  defaultZoomIndex?: number;
   otherOperations?: IListHookOperation<T>[];
   renderContent: (
     result: T,
@@ -111,7 +120,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastClickedId, setLastClickedId] = useState<string | undefined>();
-  const [zoomIndex, setZoomIndex] = useState<number>(1);
+  const [zoomIndex, setZoomIndex] = useState<number>(
+    options.defaultZoomIndex ?? 1
+  );
 
   const result = options.useData(getFilter());
   const totalCount = options.getCount(result);
@@ -339,6 +350,13 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
           text: o.text,
           onClick: () => {
             o.onClick(result, filter, selectedIds);
+          },
+          isDisplayed: () => {
+            if (o.isDisplayed) {
+              return o.isDisplayed(result, filter, selectedIds);
+            }
+
+            return true;
           },
         };
       })
@@ -573,3 +591,26 @@ export const useMoviesList = (
       selectedIds: Set<string>
     ) => getSelectedData(result?.data?.findMovies?.movies ?? [], selectedIds),
   });
+
+export const useTagsList = (
+  props: IListHookOptions<FindTagsQueryResult, TagDataFragment>
+) =>
+  useList<FindTagsQueryResult, TagDataFragment>({
+    ...props,
+    filterMode: FilterMode.Tags,
+    useData: useFindTags,
+    getData: (result: FindTagsQueryResult) =>
+      result?.data?.findTags?.tags ?? [],
+    getCount: (result: FindTagsQueryResult) =>
+      result?.data?.findTags?.count ?? 0,
+    getSelectedData: (result: FindTagsQueryResult, selectedIds: Set<string>) =>
+      getSelectedData(result?.data?.findTags?.tags ?? [], selectedIds),
+  });
+
+export const showWhenSelected = (
+  result: FindScenesQueryResult,
+  filter: ListFilterModel,
+  selectedIds: Set<string>
+) => {
+  return selectedIds.size > 0;
+};
