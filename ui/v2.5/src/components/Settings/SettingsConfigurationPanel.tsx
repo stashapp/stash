@@ -18,7 +18,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
   );
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
   const [calculateMD5, setCalculateMD5] = useState<boolean>(false);
-  const [videoFileNamingAlgorithm, setVideoFileNamingAlgorithm] = useState<GQL.HashAlgorithm | undefined>(undefined);
+  const [videoFileNamingAlgorithm, setVideoFileNamingAlgorithm] = useState<
+    GQL.HashAlgorithm | undefined
+  >(undefined);
   const [previewSegments, setPreviewSegments] = useState<number>(0);
   const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
     0
@@ -61,7 +63,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
     generatedPath,
     cachePath,
     calculateMD5,
-    videoFileNamingAlgorithm: (videoFileNamingAlgorithm as GQL.HashAlgorithm) ?? undefined,
+    videoFileNamingAlgorithm:
+      (videoFileNamingAlgorithm as GQL.HashAlgorithm) ?? undefined,
     previewSegments,
     previewSegmentDuration,
     previewExcludeStart,
@@ -350,7 +353,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             as="select"
             value={namingHashToString(videoFileNamingAlgorithm)}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setVideoFileNamingAlgorithm(translateNamingHash(e.currentTarget.value))
+              setVideoFileNamingAlgorithm(
+                translateNamingHash(e.currentTarget.value)
+              )
             }
           >
             {namingHashAlgorithms.map((q) => (
