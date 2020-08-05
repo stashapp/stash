@@ -236,12 +236,6 @@ div.dropdown-menu {
   object-position: top;
 }
 
-.card-image {
-  height: 30rem;
-  min-width: 11.25rem;
-  width: 20rem;
-}
-
 .edit-button {
   margin-right: 10px;
 }
@@ -582,4 +576,10 @@ div.dropdown-menu {
       padding: 6px 13px;
     }
   }
+}
+
+.no-focus:focus {
+  background-color: inherit;
+  border-color: inherit;
+  box-shadow: inherit;
 }

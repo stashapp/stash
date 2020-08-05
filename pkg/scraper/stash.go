@@ -2,6 +2,7 @@ package scraper
 
 import (
 	"context"
+	"errors"
 	"strconv"
 
 	"github.com/jinzhu/copier"
@@ -10,8 +11,22 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func getStashClient(c scraperTypeConfig) *graphql.Client {
-	url := c.scraperConfig.StashServer.URL
+type stashScraper struct {
+	scraper      scraperTypeConfig
+	config       config
+	globalConfig GlobalConfig
+}
+
+func newStashScraper(scraper scraperTypeConfig, config config, globalConfig GlobalConfig) *stashScraper {
+	return &stashScraper{
+		scraper:      scraper,
+		config:       config,
+		globalConfig: globalConfig,
+	}
+}
+
+func (s *stashScraper) getStashClient() *graphql.Client {
+	url := s.config.StashServer.URL
 	return graphql.NewClient(url+"/graphql", nil)
 }
 
@@ -33,8 +48,8 @@ type stashFindPerformerNamesResultType struct {
 	Performers []*stashFindPerformerNamePerformer `graphql:"performers"`
 }
 
-func scrapePerformerNamesStash(c scraperTypeConfig, name string) ([]*models.ScrapedPerformer, error) {
-	client := getStashClient(c)
+func (s *stashScraper) scrapePerformersByName(name string) ([]*models.ScrapedPerformer, error) {
+	client := s.getStashClient()
 
 	var q struct {
 		FindPerformers stashFindPerformerNamesResultType `graphql:"findPerformers(filter: $f)"`
@@ -64,8 +79,8 @@ func scrapePerformerNamesStash(c scraperTypeConfig, name string) ([]*models.Scra
 	return ret, nil
 }
 
-func scrapePerformerFragmentStash(c scraperTypeConfig, scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
-	client := getStashClient(c)
+func (s *stashScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
+	client := s.getStashClient()
 
 	var q struct {
 		FindPerformer *models.ScrapedPerformerStash `graphql:"findPerformer(id: $f)"`
@@ -91,7 +106,7 @@ func scrapePerformerFragmentStash(c scraperTypeConfig, scrapedPerformer models.S
 	}
 
 	// get the performer image directly
-	ret.Image, err = getStashPerformerImage(c.scraperConfig.StashServer.URL, performerID)
+	ret.Image, err = getStashPerformerImage(s.config.StashServer.URL, performerID, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +114,7 @@ func scrapePerformerFragmentStash(c scraperTypeConfig, scrapedPerformer models.S
 	return &ret, nil
 }
 
-func scrapeSceneFragmentStash(c scraperTypeConfig, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
+func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	// query by MD5
 	// assumes that the scene exists in the database
 	qb := models.NewSceneQueryBuilder()
@@ -123,7 +138,7 @@ func scrapeSceneFragmentStash(c scraperTypeConfig, scene models.SceneUpdateInput
 		"c": &checksum,
 	}
 
-	client := getStashClient(c)
+	client := s.getStashClient()
 	err = client.Query(context.Background(), &q, vars)
 	if err != nil {
 		return nil, err
@@ -152,10 +167,18 @@ func scrapeSceneFragmentStash(c scraperTypeConfig, scene models.SceneUpdateInput
 	}
 
 	// get the performer image directly
-	ret.Image, err = getStashSceneImage(c.scraperConfig.StashServer.URL, q.FindScene.ID)
+	ret.Image, err = getStashSceneImage(s.config.StashServer.URL, q.FindScene.ID, s.globalConfig)
 	if err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
+}
+
+func (s *stashScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer, error) {
+	return nil, errors.New("scrapePerformerByURL not supported for stash scraper")
+}
+
+func (s *stashScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error) {
+	return nil, errors.New("scrapeSceneByURL not supported for stash scraper")
 }

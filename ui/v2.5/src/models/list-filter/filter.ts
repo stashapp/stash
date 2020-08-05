@@ -136,7 +136,13 @@ export class ListFilterModel {
         break;
       case FilterMode.Performers: {
         this.sortBy = "name";
-        this.sortByOptions = ["name", "height", "birthdate", "scenes_count"];
+        this.sortByOptions = [
+          "name",
+          "height",
+          "birthdate",
+          "scenes_count",
+          "random",
+        ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 
         const numberCriteria: CriterionType[] = ["birth_year", "age"];

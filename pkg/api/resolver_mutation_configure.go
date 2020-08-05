@@ -45,6 +45,22 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		config.Set(config.Cache, input.CachePath)
 	}
 
+	if input.PreviewSegments != nil {
+		config.Set(config.PreviewSegments, *input.PreviewSegments)
+	}
+	if input.PreviewSegmentDuration != nil {
+		config.Set(config.PreviewSegmentDuration, *input.PreviewSegmentDuration)
+	}
+	if input.PreviewExcludeStart != nil {
+		config.Set(config.PreviewExcludeStart, *input.PreviewExcludeStart)
+	}
+	if input.PreviewExcludeEnd != nil {
+		config.Set(config.PreviewExcludeEnd, *input.PreviewExcludeEnd)
+	}
+	if input.PreviewPreset != nil {
+		config.Set(config.PreviewPreset, input.PreviewPreset.String())
+	}
+
 	if input.MaxTranscodeSize != nil {
 		config.Set(config.MaxTranscodeSize, input.MaxTranscodeSize.String())
 	}
@@ -52,8 +68,6 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	if input.MaxStreamingTranscodeSize != nil {
 		config.Set(config.MaxStreamingTranscodeSize, input.MaxStreamingTranscodeSize.String())
 	}
-	config.Set(config.ForceMKV, input.ForceMkv)
-	config.Set(config.ForceHEVC, input.ForceHevc)
 
 	if input.Username != nil {
 		config.Set(config.Username, input.Username)
@@ -89,8 +103,15 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		config.Set(config.Exclude, input.Excludes)
 	}
 
+	refreshScraperCache := false
 	if input.ScraperUserAgent != nil {
 		config.Set(config.ScraperUserAgent, input.ScraperUserAgent)
+		refreshScraperCache = true
+	}
+
+	if input.ScraperCDPPath != nil {
+		config.Set(config.ScraperCDPPath, input.ScraperCDPPath)
+		refreshScraperCache = true
 	}
 
 	if err := config.Write(); err != nil {
@@ -98,6 +119,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	}
 
 	manager.GetInstance().RefreshConfig()
+	if refreshScraperCache {
+		manager.GetInstance().RefreshScraperCache()
+	}
 
 	return makeConfigGeneralResult(), nil
 }

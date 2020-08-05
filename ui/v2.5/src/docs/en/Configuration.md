@@ -34,9 +34,17 @@ exclude:
 
 _a useful [link](https://regex101.com/) to experiment with regexps_
 
-## Scraping User Agent string
+## Scraping 
+
+### User Agent string
 
 Some websites require a legitimate User-Agent string when receiving requests, or they will be rejected. If entered, this string will be applied as the `User-Agent` header value in http scrape requests.
+
+### Chrome CDP path
+
+Some scrapers require a Chrome instance to function correctly. If left empty, stash will attempt to find the Chrome executable in the path environment, and will fail if it cannot find one. 
+
+`Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`).
 
 ## Authentication
 

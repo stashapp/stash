@@ -54,3 +54,11 @@ query ParseSceneFilenames($filter: FindFilterType!, $config: SceneParserInput!) 
     }
   }
 }
+
+query SceneStreams($id: ID!) {
+  sceneStreams(id: $id) {
+    url
+    mime_type
+    label
+  }
+}

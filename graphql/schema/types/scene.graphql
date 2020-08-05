@@ -36,7 +36,6 @@ type Scene {
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver
-  is_streamable: Boolean! # Resolver
 
   scene_markers: [SceneMarker!]!
   gallery: Gallery
@@ -138,4 +137,10 @@ type SceneParserResult {
 type SceneParserResultType {
   count: Int!
   results: [SceneParserResult!]!
+}
+
+type SceneStreamEndpoint {
+  url: String!
+  mime_type: String
+  label: String
 }
