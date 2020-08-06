@@ -376,7 +376,7 @@ export const SettingsTasksPanel: React.FC = () => {
       </Form.Group>
 
       {renderPlugins()}
-      
+
       <hr />
 
       <h5>Migrations</h5>
