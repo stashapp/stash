@@ -62,7 +62,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 
 	// Make the folder for the scenes markers
 	// use the existing folder if present, otherwise create one from the hash
-	if !t.dirExists(t.Scene.OSHash) && !t.dirExists(t.Scene.Checksum) {
+	if !t.dirExists(sceneHash) {
 		markersFolder := filepath.Join(instance.Paths.Generated.Markers, sceneHash)
 		utils.EnsureDir(markersFolder)
 	}
