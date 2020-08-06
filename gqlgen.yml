@@ -46,3 +46,5 @@ models:
     model: github.com/stashapp/stash/pkg/models.SceneFileType
   ScrapedMovie:
     model: github.com/stashapp/stash/pkg/models.ScrapedMovie
+  ScrapedMovieStudio:
+    model: github.com/stashapp/stash/pkg/models.ScrapedMovieStudio

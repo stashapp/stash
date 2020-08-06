@@ -375,6 +375,25 @@ func (c Cache) ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
 	return nil, nil
 }
 
+func matchMovieStudio(s *models.ScrapedMovieStudio) error {
+	qb := models.NewStudioQueryBuilder()
+
+	studio, err := qb.FindByName(s.Name, nil, true)
+
+	if err != nil {
+		return err
+	}
+
+	if studio == nil {
+		// ignore - cannot match
+		return nil
+	}
+
+	id := strconv.Itoa(studio.ID)
+	s.ID = &id
+	return nil
+}
+
 // ScrapeMovieURL uses the first scraper it finds that matches the URL
 // provided to scrape a movie. If no scrapers are found that matches
 // the URL, then nil is returned.
@@ -384,6 +403,13 @@ func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 			ret, err := s.ScrapeMovieURL(url, c.globalConfig)
 			if err != nil {
 				return nil, err
+			}
+
+			if ret.Studio != nil {
+				err := matchMovieStudio(ret.Studio)
+				if err != nil {
+					return nil, err
+				}
 			}
 
 			// post-process - set the image if applicable

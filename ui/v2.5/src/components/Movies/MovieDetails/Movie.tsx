@@ -319,6 +319,10 @@ export const Movie: React.FC = () => {
       setDate(state.date ?? undefined);
     }
 
+    if (state.studio && state.studio.id) {
+      setStudioId(state.studio.id ?? undefined);
+    }
+
     if (state.director) {
       setDirector(state.director ?? undefined);
     }

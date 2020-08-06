@@ -163,10 +163,54 @@ func (s *mappedPerformerScraperConfig) UnmarshalYAML(unmarshal func(interface{})
 
 type mappedMovieScraperConfig struct {
 	mappedConfig
+
+	Studio mappedConfig `yaml:"Studio"`
 }
+type _mappedMovieScraperConfig mappedMovieScraperConfig
+
+const (
+	mappedScraperConfigMovieStudio = "Studio"
+)
 
 func (s *mappedMovieScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	return unmarshal(&s.mappedConfig)
+	// HACK - unmarshal to map first, then remove known movie sub-fields, then
+	// remarshal to yaml and pass that down to the base map
+	parentMap := make(map[string]interface{})
+	if err := unmarshal(parentMap); err != nil {
+		return err
+	}
+
+	// move the known sub-fields to a separate map
+	thisMap := make(map[string]interface{})
+
+	thisMap[mappedScraperConfigMovieStudio] = parentMap[mappedScraperConfigMovieStudio]
+
+	delete(parentMap, mappedScraperConfigMovieStudio)
+
+	// re-unmarshal the sub-fields
+	yml, err := yaml.Marshal(thisMap)
+	if err != nil {
+		return err
+	}
+
+	// needs to be a different type to prevent infinite recursion
+	c := _mappedMovieScraperConfig{}
+	if err := yaml.Unmarshal(yml, &c); err != nil {
+		return err
+	}
+
+	*s = mappedMovieScraperConfig(c)
+
+	yml, err = yaml.Marshal(parentMap)
+	if err != nil {
+		return err
+	}
+
+	if err := yaml.Unmarshal(yml, &s.mappedConfig); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type mappedRegexConfig struct {
@@ -611,14 +655,28 @@ func (s mappedScraper) scrapeScene(q mappedQuery) (*models.ScrapedScene, error) 
 func (s mappedScraper) scrapeMovie(q mappedQuery) (*models.ScrapedMovie, error) {
 	var ret models.ScrapedMovie
 
-	movieMap := s.Movie
+	movieScraperConfig := s.Movie
+	movieMap := movieScraperConfig.mappedConfig
 	if movieMap == nil {
 		return nil, nil
 	}
 
+	movieStudioMap := movieScraperConfig.Studio
+
 	results := movieMap.process(q, s.Common)
 	if len(results) > 0 {
 		results[0].apply(&ret)
+
+		if movieStudioMap != nil {
+			logger.Debug(`Processing movie studio:`)
+			studioResults := movieStudioMap.process(q, s.Common)
+
+			if len(studioResults) > 0 {
+				studio := &models.ScrapedMovieStudio{}
+				studioResults[0].apply(studio)
+				ret.Studio = studio
+			}
+		}
 	}
 
 	return &ret, nil
