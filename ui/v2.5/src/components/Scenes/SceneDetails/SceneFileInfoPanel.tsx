@@ -10,13 +10,26 @@ interface ISceneFileInfoPanelProps {
 export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
   props: ISceneFileInfoPanelProps
 ) => {
+  function renderOSHash() {
+    if (props.scene.oshash) {
+      return (
+        <div className="row">
+          <span className="col-4">Hash</span>
+          <span className="col-8 text-truncate">{props.scene.oshash}</span>
+        </div>
+      );
+    }
+  }
+
   function renderChecksum() {
-    return (
-      <div className="row">
-        <span className="col-4">Checksum</span>
-        <span className="col-8 text-truncate">{props.scene.checksum}</span>
-      </div>
-    );
+    if (props.scene.checksum) {
+      return (
+        <div className="row">
+          <span className="col-4">Checksum</span>
+          <span className="col-8 text-truncate">{props.scene.checksum}</span>
+        </div>
+      );
+    }
   }
 
   function renderPath() {
@@ -178,6 +191,7 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
 
   return (
     <div className="container scene-file-info">
+      {renderOSHash()}
       {renderChecksum()}
       {renderPath()}
       {renderStream()}

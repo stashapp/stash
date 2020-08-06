@@ -113,6 +113,8 @@ func (s *singleton) Scan(useFileMetadata bool) {
 
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
+		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+		calculateMD5 := config.IsCalculateMD5()
 		for i, path := range results {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -120,7 +122,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 				return
 			}
 			wg.Add(1)
-			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata}
+			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -150,7 +152,7 @@ func (s *singleton) Import() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		task := ImportTask{}
+		task := ImportTask{fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm()}
 		go task.Start(&wg)
 		wg.Wait()
 	}()
@@ -168,7 +170,7 @@ func (s *singleton) Export() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		task := ExportTask{}
+		task := ExportTask{fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm()}
 		go task.Start(&wg)
 		wg.Wait()
 	}()
@@ -278,6 +280,8 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			logger.Infof("Generating %d sprites %d previews %d image previews %d markers %d transcodes", totalsNeeded.sprites, totalsNeeded.previews, totalsNeeded.imagePreviews, totalsNeeded.markers, totalsNeeded.transcodes)
 		}
 
+		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+
 		overwrite := false
 		if input.Overwrite != nil {
 			overwrite = *input.Overwrite
@@ -309,27 +313,28 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			}
 
 			if input.Sprites {
-				task := GenerateSpriteTask{Scene: *scene, Overwrite: overwrite}
+				task := GenerateSpriteTask{Scene: *scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 				go task.Start(&wg)
 			}
 
 			if input.Previews {
 				task := GeneratePreviewTask{
-					Scene:        *scene,
-					ImagePreview: input.ImagePreviews,
-					Options:      *generatePreviewOptions,
-					Overwrite:    overwrite,
+					Scene:               *scene,
+					ImagePreview:        input.ImagePreviews,
+					Options:             *generatePreviewOptions,
+					Overwrite:           overwrite,
+					fileNamingAlgorithm: fileNamingAlgo,
 				}
 				go task.Start(&wg)
 			}
 
 			if input.Markers {
-				task := GenerateMarkersTask{Scene: scene, Overwrite: overwrite}
+				task := GenerateMarkersTask{Scene: scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 				go task.Start(&wg)
 			}
 
 			if input.Transcodes {
-				task := GenerateTranscodeTask{Scene: *scene, Overwrite: overwrite}
+				task := GenerateTranscodeTask{Scene: *scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 				go task.Start(&wg)
 			}
 
@@ -370,7 +375,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			}
 
 			wg.Add(1)
-			task := GenerateMarkersTask{Marker: marker, Overwrite: overwrite}
+			task := GenerateMarkersTask{Marker: marker, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -414,8 +419,9 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 		}
 
 		task := GenerateScreenshotTask{
-			Scene:        *scene,
-			ScreenshotAt: at,
+			Scene:               *scene,
+			ScreenshotAt:        at,
+			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
 		}
 
 		var wg sync.WaitGroup
@@ -627,6 +633,7 @@ func (s *singleton) Clean() {
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
 		total := len(scenes) + len(galleries)
+		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -641,7 +648,7 @@ func (s *singleton) Clean() {
 
 			wg.Add(1)
 
-			task := CleanTask{Scene: scene}
+			task := CleanTask{Scene: scene, fileNamingAlgorithm: fileNamingAlgo}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -666,6 +673,54 @@ func (s *singleton) Clean() {
 		}
 
 		logger.Info("Finished Cleaning")
+	}()
+}
+
+func (s *singleton) MigrateHash() {
+	if s.Status.Status != Idle {
+		return
+	}
+	s.Status.SetStatus(Migrate)
+	s.Status.indefiniteProgress()
+
+	qb := models.NewSceneQueryBuilder()
+
+	go func() {
+		defer s.returnToIdleState()
+
+		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
+
+		scenes, err := qb.All()
+		if err != nil {
+			logger.Errorf("failed to fetch list of scenes for migration")
+			return
+		}
+
+		var wg sync.WaitGroup
+		s.Status.Progress = 0
+		total := len(scenes)
+
+		for i, scene := range scenes {
+			s.Status.setProgress(i, total)
+			if s.Status.stopping {
+				logger.Info("Stopping due to user request")
+				return
+			}
+
+			if scene == nil {
+				logger.Errorf("nil scene, skipping migrate")
+				continue
+			}
+
+			wg.Add(1)
+
+			task := MigrateHashTask{Scene: scene, fileNamingAlgorithm: fileNamingAlgo}
+			go task.Start(&wg)
+			wg.Wait()
+		}
+
+		logger.Info("Finished migrating")
 	}()
 }
 
@@ -716,6 +771,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 		chTimeout <- struct{}{}
 	}()
 
+	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 	overwrite := false
 	if input.Overwrite != nil {
 		overwrite = *input.Overwrite
@@ -725,29 +781,48 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 	for _, scene := range scenes {
 		if scene != nil {
 			if input.Sprites {
-				task := GenerateSpriteTask{Scene: *scene}
-				if overwrite || !task.doesSpriteExist(task.Scene.Checksum) {
+				task := GenerateSpriteTask{
+					Scene:               *scene,
+					fileNamingAlgorithm: fileNamingAlgo,
+				}
+
+				if overwrite || task.required() {
 					totals.sprites++
 				}
 			}
 
 			if input.Previews {
-				task := GeneratePreviewTask{Scene: *scene, ImagePreview: input.ImagePreviews}
-				if overwrite || !task.doesVideoPreviewExist(task.Scene.Checksum) {
+				task := GeneratePreviewTask{
+					Scene:               *scene,
+					ImagePreview:        input.ImagePreviews,
+					fileNamingAlgorithm: fileNamingAlgo,
+				}
+
+				sceneHash := scene.GetHash(task.fileNamingAlgorithm)
+				if overwrite || !task.doesVideoPreviewExist(sceneHash) {
 					totals.previews++
 				}
-				if input.ImagePreviews && (overwrite || !task.doesImagePreviewExist(task.Scene.Checksum)) {
+
+				if input.ImagePreviews && (overwrite || !task.doesImagePreviewExist(sceneHash)) {
 					totals.imagePreviews++
 				}
 			}
 
 			if input.Markers {
-				task := GenerateMarkersTask{Scene: scene, Overwrite: overwrite}
+				task := GenerateMarkersTask{
+					Scene:               scene,
+					Overwrite:           overwrite,
+					fileNamingAlgorithm: fileNamingAlgo,
+				}
 				totals.markers += int64(task.isMarkerNeeded())
 			}
 
 			if input.Transcodes {
-				task := GenerateTranscodeTask{Scene: *scene, Overwrite: overwrite}
+				task := GenerateTranscodeTask{
+					Scene:               *scene,
+					Overwrite:           overwrite,
+					fileNamingAlgorithm: fileNamingAlgo,
+				}
 				if task.isTranscodeNeeded() {
 					totals.transcodes++
 				}

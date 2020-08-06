@@ -2,8 +2,11 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 
 const markup = `
+#### 💥 **Note: After upgrading, the next scan will populate all scenes with oshash hashes. MD5 calculation can be disabled after populating the oshash for all scenes. See \`Hashing Algorithms\` in the \`Configuration\` section of the manual for details. **
+
 ### ✨ New Features
 *  Add support for plugin tasks.
+*  Add oshash algorithm for hashing scene video files. Enabled by default on new systems.
 *  Support (re-)generation of generated content for specific scenes.
 *  Add tag thumbnails, tags grid view and tag page.
 *  Add post-scrape dialog.
@@ -14,6 +17,7 @@ const markup = `
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
+*  Allow adding performers and studios from selectors.
 *  Add support for chrome dp in xpath scrapers.
 *  Allow customisation of preview video generation.
 *  Add support for live transcoding in Safari.

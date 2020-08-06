@@ -9,6 +9,7 @@ import {
   mutateMetadataScan,
   mutateMetadataAutoTag,
   mutateMetadataExport,
+  mutateMigrateHashNaming,
   mutateStopJob,
   usePlugins,
   mutateRunPluginTask,
@@ -53,6 +54,8 @@ export const SettingsTasksPanel: React.FC = () => {
         return "Auto tagging scenes";
       case "Plugin Operation":
         return "Running Plugin Operation";
+      case "Migrate":
+        return "Migrating";
       default:
         return "Idle";
     }
@@ -373,6 +376,28 @@ export const SettingsTasksPanel: React.FC = () => {
       </Form.Group>
 
       {renderPlugins()}
+      
+      <hr />
+
+      <h5>Migrations</h5>
+
+      <Form.Group>
+        <Button
+          id="migrateHashNaming"
+          variant="danger"
+          onClick={() =>
+            mutateMigrateHashNaming().then(() => {
+              jobStatus.refetch();
+            })
+          }
+        >
+          Rename generated files
+        </Button>
+        <Form.Text className="text-muted">
+          Used after changing the Generated file naming hash to rename existing
+          generated files to the new hash format.
+        </Form.Text>
+      </Form.Group>
     </>
   );
 };

@@ -17,6 +17,11 @@ enum PreviewPreset {
   "X264_VERYSLOW", veryslow
 }
 
+enum HashAlgorithm {
+  MD5
+  "oshash", OSHASH
+}
+
 input ConfigGeneralInput {
   """Array of file paths to content"""
   stashes: [String!]
@@ -26,6 +31,10 @@ input ConfigGeneralInput {
   generatedPath: String
   """Path to cache"""
   cachePath: String
+  """Whether to calculate MD5 checksums for scene video files"""
+  calculateMD5: Boolean!
+  """Hash algorithm to use for generated file naming"""
+  videoFileNamingAlgorithm: HashAlgorithm!
   """Number of segments in a preview file"""
   previewSegments: Int
   """Preview segment duration, in seconds"""
@@ -71,6 +80,10 @@ type ConfigGeneralResult {
   generatedPath: String!
   """Path to cache"""
   cachePath: String!
+  """Whether to calculate MD5 checksums for scene video files"""
+  calculateMD5: Boolean!
+  """Hash algorithm to use for generated file naming"""
+  videoFileNamingAlgorithm: HashAlgorithm!
   """Number of segments in a preview file"""
   previewSegments: Int!
   """Preview segment duration, in seconds"""

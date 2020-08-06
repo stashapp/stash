@@ -1,6 +1,7 @@
 fragment SlimSceneData on Scene {
   id
   checksum
+  oshash
   title
   details
   url

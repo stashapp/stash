@@ -17,8 +17,10 @@ import (
 )
 
 type ScanTask struct {
-	FilePath        string
-	UseFileMetadata bool
+	FilePath            string
+	UseFileMetadata     bool
+	calculateMD5        bool
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *ScanTask) Start(wg *sync.WaitGroup) {
@@ -143,10 +145,10 @@ func (t *ScanTask) scanScene() {
 	scene, _ := qb.FindByPath(t.FilePath)
 	if scene != nil {
 		// We already have this item in the database
-		//check for thumbnails,screenshots
-		t.makeScreenshots(nil, scene.Checksum)
+		// check for thumbnails,screenshots
+		t.makeScreenshots(nil, scene.GetHash(t.fileNamingAlgorithm))
 
-		//check for container
+		// check for container
 		if !scene.Format.Valid {
 			videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
 			if err != nil {
@@ -165,8 +167,47 @@ func (t *ScanTask) scanScene() {
 			} else if err := tx.Commit(); err != nil {
 				logger.Error(err.Error())
 			}
-
 		}
+
+		// check if oshash is set
+		if !scene.OSHash.Valid {
+			logger.Infof("Calculating oshash for existing file %s ...", t.FilePath)
+			oshash, err := utils.OSHashFromFilePath(t.FilePath)
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+
+			ctx := context.TODO()
+			tx := database.DB.MustBeginTx(ctx, nil)
+			err = qb.UpdateOSHash(scene.ID, oshash, tx)
+			if err != nil {
+				logger.Error(err.Error())
+				_ = tx.Rollback()
+			} else if err := tx.Commit(); err != nil {
+				logger.Error(err.Error())
+			}
+		}
+
+		// check if MD5 is set, if calculateMD5 is true
+		if t.calculateMD5 && !scene.Checksum.Valid {
+			checksum, err := t.calculateChecksum()
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+
+			ctx := context.TODO()
+			tx := database.DB.MustBeginTx(ctx, nil)
+			err = qb.UpdateChecksum(scene.ID, checksum, tx)
+			if err != nil {
+				logger.Error(err.Error())
+				_ = tx.Rollback()
+			} else if err := tx.Commit(); err != nil {
+				logger.Error(err.Error())
+			}
+		}
+
 		return
 	}
 
@@ -182,15 +223,36 @@ func (t *ScanTask) scanScene() {
 		videoFile.SetTitleFromPath()
 	}
 
-	checksum, err := t.calculateChecksum()
+	var checksum string
+
+	logger.Infof("%s not found.  Calculating oshash...", t.FilePath)
+	oshash, err := utils.OSHashFromFilePath(t.FilePath)
 	if err != nil {
 		logger.Error(err.Error())
 		return
 	}
 
-	t.makeScreenshots(videoFile, checksum)
+	if t.fileNamingAlgorithm == models.HashAlgorithmMd5 || t.calculateMD5 {
+		checksum, err = t.calculateChecksum()
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+	}
 
-	scene, _ = qb.FindByChecksum(checksum)
+	sceneHash := oshash
+	if t.fileNamingAlgorithm == models.HashAlgorithmMd5 {
+		sceneHash = checksum
+		scene, _ = qb.FindByChecksum(sceneHash)
+	} else if t.fileNamingAlgorithm == models.HashAlgorithmOshash {
+		scene, _ = qb.FindByOSHash(sceneHash)
+	} else {
+		logger.Error("unknown file naming algorithm")
+		return
+	}
+
+	t.makeScreenshots(videoFile, sceneHash)
+
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
 	if scene != nil {
@@ -209,7 +271,8 @@ func (t *ScanTask) scanScene() {
 		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 		currentTime := time.Now()
 		newScene := models.Scene{
-			Checksum:   checksum,
+			Checksum:   sql.NullString{String: checksum, Valid: checksum != ""},
+			OSHash:     sql.NullString{String: oshash, Valid: oshash != ""},
 			Path:       t.FilePath,
 			Title:      sql.NullString{String: videoFile.Title, Valid: true},
 			Duration:   sql.NullFloat64{Float64: videoFile.Duration, Valid: true},
@@ -277,7 +340,7 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 }
 
 func (t *ScanTask) calculateChecksum() (string, error) {
-	logger.Infof("%s not found.  Calculating checksum...", t.FilePath)
+	logger.Infof("Calculating checksum for %s...", t.FilePath)
 	checksum, err := utils.MD5FromFilePath(t.FilePath)
 	if err != nil {
 		return "", err

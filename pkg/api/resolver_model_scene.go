@@ -8,6 +8,20 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+func (r *sceneResolver) Checksum(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.Checksum.Valid {
+		return &obj.Checksum.String, nil
+	}
+	return nil, nil
+}
+
+func (r *sceneResolver) Oshash(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.OSHash.Valid {
+		return &obj.OSHash.String, nil
+	}
+	return nil, nil
+}
+
 func (r *sceneResolver) Title(ctx context.Context, obj *models.Scene) (*string, error) {
 	if obj.Title.Valid {
 		return &obj.Title.String, nil

@@ -17,6 +17,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
     undefined
   );
   const [cachePath, setCachePath] = useState<string | undefined>(undefined);
+  const [calculateMD5, setCalculateMD5] = useState<boolean>(false);
+  const [videoFileNamingAlgorithm, setVideoFileNamingAlgorithm] = useState<
+    GQL.HashAlgorithm | undefined
+  >(undefined);
   const [previewSegments, setPreviewSegments] = useState<number>(0);
   const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
     0
@@ -58,6 +62,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
     databasePath,
     generatedPath,
     cachePath,
+    calculateMD5,
+    videoFileNamingAlgorithm:
+      (videoFileNamingAlgorithm as GQL.HashAlgorithm) ?? undefined,
     previewSegments,
     previewSegmentDuration,
     previewExcludeStart,
@@ -86,6 +93,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setDatabasePath(conf.general.databasePath);
       setGeneratedPath(conf.general.generatedPath);
       setCachePath(conf.general.cachePath);
+      setVideoFileNamingAlgorithm(conf.general.videoFileNamingAlgorithm);
+      setCalculateMD5(conf.general.calculateMD5);
       setPreviewSegments(conf.general.previewSegments);
       setPreviewSegmentDuration(conf.general.previewSegmentDuration);
       setPreviewExcludeStart(conf.general.previewExcludeStart);
@@ -191,6 +200,33 @@ export const SettingsConfigurationPanel: React.FC = () => {
     return GQL.StreamingResolutionEnum.Original;
   }
 
+  const namingHashAlgorithms = [
+    GQL.HashAlgorithm.Md5,
+    GQL.HashAlgorithm.Oshash,
+  ].map(namingHashToString);
+
+  function namingHashToString(value: GQL.HashAlgorithm | undefined) {
+    switch (value) {
+      case GQL.HashAlgorithm.Oshash:
+        return "oshash";
+      case GQL.HashAlgorithm.Md5:
+        return "MD5";
+    }
+
+    return "MD5";
+  }
+
+  function translateNamingHash(value: string) {
+    switch (value) {
+      case "oshash":
+        return GQL.HashAlgorithm.Oshash;
+      case "MD5":
+        return GQL.HashAlgorithm.Md5;
+    }
+
+    return GQL.HashAlgorithm.Md5;
+  }
+
   if (error) return <h1>{error.message}</h1>;
   if (!data?.configuration || loading) return <LoadingIndicator />;
 
@@ -288,6 +324,52 @@ export const SettingsConfigurationPanel: React.FC = () => {
             >
               <Icon icon="question-circle" />
             </a>
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
+
+      <hr />
+
+      <Form.Group>
+        <h4>Hashing</h4>
+        <Form.Group>
+          <Form.Check
+            checked={calculateMD5}
+            label="Calculate MD5 for videos"
+            onChange={() => setCalculateMD5(!calculateMD5)}
+          />
+          <Form.Text className="text-muted">
+            Calculate MD5 checksum in addition to oshash. Enabling will cause
+            initial scans to be slower. File naming hash must be set to oshash
+            to disable MD5 calculation.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="transcode-size">
+          <h6>Generated file naming hash</h6>
+
+          <Form.Control
+            className="w-auto input-control"
+            as="select"
+            value={namingHashToString(videoFileNamingAlgorithm)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setVideoFileNamingAlgorithm(
+                translateNamingHash(e.currentTarget.value)
+              )
+            }
+          >
+            {namingHashAlgorithms.map((q) => (
+              <option key={q} value={q}>
+                {q}
+              </option>
+            ))}
+          </Form.Control>
+
+          <Form.Text className="text-muted">
+            Use MD5 or oshash for generated file naming. Changing this requires
+            that all scenes have the applicable MD5/oshash value populated.
+            After changing this value, existing generated files will need to be
+            migrated or regenerated. See Tasks page for migration.
           </Form.Text>
         </Form.Group>
       </Form.Group>
