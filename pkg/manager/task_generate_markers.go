@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"database/sql"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -61,11 +60,8 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 
 	// Make the folder for the scenes markers
-	// use the existing folder if present, otherwise create one from the hash
-	if !t.dirExists(sceneHash) {
-		markersFolder := filepath.Join(instance.Paths.Generated.Markers, sceneHash)
-		utils.EnsureDir(markersFolder)
-	}
+	markersFolder := filepath.Join(instance.Paths.Generated.Markers, sceneHash)
+	utils.EnsureDir(markersFolder)
 
 	for i, sceneMarker := range sceneMarkers {
 		index := i + 1
@@ -150,18 +146,6 @@ func (t *GenerateMarkersTask) markerExists(sceneChecksum string, seconds int) bo
 	imageExists, _ := utils.FileExists(imagePath)
 
 	return videoExists && imageExists
-}
-
-func (t *GenerateMarkersTask) dirExists(sceneChecksumNull sql.NullString) bool {
-	if !sceneChecksumNull.Valid {
-		return false
-	}
-	sceneChecksum := sceneChecksumNull.String
-
-	markersFolder := filepath.Join(instance.Paths.Generated.Markers, sceneChecksum)
-	dirExists, _ := utils.DirExists(markersFolder)
-
-	return dirExists
 }
 
 func (t *GenerateMarkersTask) videoExists(sceneChecksum string, seconds int) bool {
