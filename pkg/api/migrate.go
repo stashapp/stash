@@ -8,6 +8,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager"
 )
 
 type migrateData struct {
@@ -79,6 +80,9 @@ func doMigrateHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, errStr, 500)
 		return
 	}
+
+	// perform post-migration operations
+	manager.GetInstance().PostMigrate()
 
 	// if no backup path was provided, then delete the created backup
 	if formBackupPath == "" {

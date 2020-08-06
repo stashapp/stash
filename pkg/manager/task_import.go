@@ -18,8 +18,9 @@ import (
 )
 
 type ImportTask struct {
-	Mappings *jsonschema.Mappings
-	Scraped  []jsonschema.ScrapedItem
+	Mappings            *jsonschema.Mappings
+	Scraped             []jsonschema.ScrapedItem
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *ImportTask) Start(wg *sync.WaitGroup) {
@@ -533,15 +534,18 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 		logger.Progressf("[scenes] %d of %d", index, len(t.Mappings.Scenes))
 
-		newScene := models.Scene{
-			Checksum: mappingJSON.Checksum,
-			Path:     mappingJSON.Path,
-		}
-
 		sceneJSON, err := instance.JSON.getScene(mappingJSON.Checksum)
 		if err != nil {
 			logger.Infof("[scenes] <%s> json parse failure: %s", mappingJSON.Checksum, err.Error())
 			continue
+		}
+
+		sceneHash := mappingJSON.Checksum
+
+		newScene := models.Scene{
+			Checksum: sql.NullString{String: sceneJSON.Checksum, Valid: sceneJSON.Checksum != ""},
+			OSHash:   sql.NullString{String: sceneJSON.OSHash, Valid: sceneJSON.OSHash != ""},
+			Path:     mappingJSON.Path,
 		}
 
 		// Process the base 64 encoded cover image string
@@ -549,11 +553,11 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		if sceneJSON.Cover != "" {
 			_, coverImageData, err = utils.ProcessBase64Image(sceneJSON.Cover)
 			if err != nil {
-				logger.Warnf("[scenes] <%s> invalid cover image: %s", mappingJSON.Checksum, err.Error())
+				logger.Warnf("[scenes] <%s> invalid cover image: %s", sceneHash, err.Error())
 			}
 			if len(coverImageData) > 0 {
-				if err = SetSceneScreenshot(mappingJSON.Checksum, coverImageData); err != nil {
-					logger.Warnf("[scenes] <%s> failed to create cover image: %s", mappingJSON.Checksum, err.Error())
+				if err = SetSceneScreenshot(sceneHash, coverImageData); err != nil {
+					logger.Warnf("[scenes] <%s> failed to create cover image: %s", sceneHash, err.Error())
 				}
 
 				// write the cover image data after creating the scene
@@ -634,12 +638,12 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		scene, err := qb.Create(newScene, tx)
 		if err != nil {
 			_ = tx.Rollback()
-			logger.Errorf("[scenes] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
+			logger.Errorf("[scenes] <%s> failed to create: %s", sceneHash, err.Error())
 			return
 		}
 		if scene.ID == 0 {
 			_ = tx.Rollback()
-			logger.Errorf("[scenes] <%s> invalid id after scene creation", mappingJSON.Checksum)
+			logger.Errorf("[scenes] <%s> invalid id after scene creation", sceneHash)
 			return
 		}
 
@@ -647,7 +651,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		if len(coverImageData) > 0 {
 			if err := qb.UpdateSceneCover(scene.ID, coverImageData, tx); err != nil {
 				_ = tx.Rollback()
-				logger.Errorf("[scenes] <%s> error setting scene cover: %s", mappingJSON.Checksum, err.Error())
+				logger.Errorf("[scenes] <%s> error setting scene cover: %s", sceneHash, err.Error())
 				return
 			}
 		}
@@ -662,7 +666,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				gallery.SceneID = sql.NullInt64{Int64: int64(scene.ID), Valid: true}
 				_, err := gqb.Update(*gallery, tx)
 				if err != nil {
-					logger.Errorf("[scenes] <%s> failed to update gallery: %s", scene.Checksum, err.Error())
+					logger.Errorf("[scenes] <%s> failed to update gallery: %s", sceneHash, err.Error())
 				}
 			}
 		}
@@ -671,7 +675,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		if len(sceneJSON.Performers) > 0 {
 			performers, err := t.getPerformers(sceneJSON.Performers, tx)
 			if err != nil {
-				logger.Warnf("[scenes] <%s> failed to fetch performers: %s", scene.Checksum, err.Error())
+				logger.Warnf("[scenes] <%s> failed to fetch performers: %s", sceneHash, err.Error())
 			} else {
 				var performerJoins []models.PerformersScenes
 				for _, performer := range performers {
@@ -682,7 +686,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 					performerJoins = append(performerJoins, join)
 				}
 				if err := jqb.CreatePerformersScenes(performerJoins, tx); err != nil {
-					logger.Errorf("[scenes] <%s> failed to associate performers: %s", scene.Checksum, err.Error())
+					logger.Errorf("[scenes] <%s> failed to associate performers: %s", sceneHash, err.Error())
 				}
 			}
 		}
@@ -691,19 +695,19 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		if len(sceneJSON.Movies) > 0 {
 			moviesScenes, err := t.getMoviesScenes(sceneJSON.Movies, scene.ID, tx)
 			if err != nil {
-				logger.Warnf("[scenes] <%s> failed to fetch movies: %s", scene.Checksum, err.Error())
+				logger.Warnf("[scenes] <%s> failed to fetch movies: %s", sceneHash, err.Error())
 			} else {
 				if err := jqb.CreateMoviesScenes(moviesScenes, tx); err != nil {
-					logger.Errorf("[scenes] <%s> failed to associate movies: %s", scene.Checksum, err.Error())
+					logger.Errorf("[scenes] <%s> failed to associate movies: %s", sceneHash, err.Error())
 				}
 			}
 		}
 
 		// Relate the scene to the tags
 		if len(sceneJSON.Tags) > 0 {
-			tags, err := t.getTags(scene.Checksum, sceneJSON.Tags, tx)
+			tags, err := t.getTags(sceneHash, sceneJSON.Tags, tx)
 			if err != nil {
-				logger.Warnf("[scenes] <%s> failed to fetch tags: %s", scene.Checksum, err.Error())
+				logger.Warnf("[scenes] <%s> failed to fetch tags: %s", sceneHash, err.Error())
 			} else {
 				var tagJoins []models.ScenesTags
 				for _, tag := range tags {
@@ -714,7 +718,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 					tagJoins = append(tagJoins, join)
 				}
 				if err := jqb.CreateScenesTags(tagJoins, tx); err != nil {
-					logger.Errorf("[scenes] <%s> failed to associate tags: %s", scene.Checksum, err.Error())
+					logger.Errorf("[scenes] <%s> failed to associate tags: %s", sceneHash, err.Error())
 				}
 			}
 		}
@@ -735,7 +739,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 				primaryTag, err := tqb.FindByName(marker.PrimaryTag, tx, false)
 				if err != nil {
-					logger.Errorf("[scenes] <%s> failed to find primary tag for marker: %s", scene.Checksum, err.Error())
+					logger.Errorf("[scenes] <%s> failed to find primary tag for marker: %s", sceneHash, err.Error())
 				} else {
 					newSceneMarker.PrimaryTagID = primaryTag.ID
 				}
@@ -743,18 +747,18 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				// Create the scene marker in the DB
 				sceneMarker, err := smqb.Create(newSceneMarker, tx)
 				if err != nil {
-					logger.Warnf("[scenes] <%s> failed to create scene marker: %s", scene.Checksum, err.Error())
+					logger.Warnf("[scenes] <%s> failed to create scene marker: %s", sceneHash, err.Error())
 					continue
 				}
 				if sceneMarker.ID == 0 {
-					logger.Warnf("[scenes] <%s> invalid scene marker id after scene marker creation", scene.Checksum)
+					logger.Warnf("[scenes] <%s> invalid scene marker id after scene marker creation", sceneHash)
 					continue
 				}
 
 				// Get the scene marker tags and create the joins
-				tags, err := t.getTags(scene.Checksum, marker.Tags, tx)
+				tags, err := t.getTags(sceneHash, marker.Tags, tx)
 				if err != nil {
-					logger.Warnf("[scenes] <%s> failed to fetch scene marker tags: %s", scene.Checksum, err.Error())
+					logger.Warnf("[scenes] <%s> failed to fetch scene marker tags: %s", sceneHash, err.Error())
 				} else {
 					var tagJoins []models.SceneMarkersTags
 					for _, tag := range tags {
@@ -765,7 +769,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 						tagJoins = append(tagJoins, join)
 					}
 					if err := jqb.CreateSceneMarkersTags(tagJoins, tx); err != nil {
-						logger.Errorf("[scenes] <%s> failed to associate scene marker tags: %s", scene.Checksum, err.Error())
+						logger.Errorf("[scenes] <%s> failed to associate scene marker tags: %s", sceneHash, err.Error())
 					}
 				}
 			}

@@ -5,9 +5,11 @@ import (
 	"path/filepath"
 )
 
+// Scene stores the metadata for a single video scene.
 type Scene struct {
 	ID         int             `db:"id" json:"id"`
-	Checksum   string          `db:"checksum" json:"checksum"`
+	Checksum   sql.NullString  `db:"checksum" json:"checksum"`
+	OSHash     sql.NullString  `db:"oshash" json:"oshash"`
 	Path       string          `db:"path" json:"path"`
 	Title      sql.NullString  `db:"title" json:"title"`
 	Details    sql.NullString  `db:"details" json:"details"`
@@ -29,9 +31,12 @@ type Scene struct {
 	UpdatedAt  SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
+// ScenePartial represents part of a Scene object. It is used to update
+// the database entry. Only non-nil fields will be updated.
 type ScenePartial struct {
 	ID         int              `db:"id" json:"id"`
-	Checksum   *string          `db:"checksum" json:"checksum"`
+	Checksum   *sql.NullString  `db:"checksum" json:"checksum"`
+	OSHash     *sql.NullString  `db:"oshash" json:"oshash"`
 	Path       *string          `db:"path" json:"path"`
 	Title      *sql.NullString  `db:"title" json:"title"`
 	Details    *sql.NullString  `db:"details" json:"details"`
@@ -52,6 +57,8 @@ type ScenePartial struct {
 	UpdatedAt  *SQLiteTimestamp `db:"updated_at" json:"updated_at"`
 }
 
+// GetTitle returns the title of the scene. If the Title field is empty,
+// then the base filename is returned.
 func (s Scene) GetTitle() string {
 	if s.Title.String != "" {
 		return s.Title.String
@@ -60,6 +67,19 @@ func (s Scene) GetTitle() string {
 	return filepath.Base(s.Path)
 }
 
+// GetHash returns the hash of the scene, based on the hash algorithm provided. If
+// hash algorithm is MD5, then Checksum is returned. Otherwise, OSHash is returned.
+func (s Scene) GetHash(hashAlgorithm HashAlgorithm) string {
+	if hashAlgorithm == HashAlgorithmMd5 {
+		return s.Checksum.String
+	} else if hashAlgorithm == HashAlgorithmOshash {
+		return s.OSHash.String
+	}
+
+	panic("unknown hash algorithm")
+}
+
+// SceneFileType represents the file metadata for a scene.
 type SceneFileType struct {
 	Size       *string  `graphql:"size" json:"size"`
 	Duration   *float64 `graphql:"duration" json:"duration"`

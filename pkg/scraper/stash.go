@@ -130,12 +130,21 @@ func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 	}
 
 	var q struct {
-		FindScene *models.ScrapedSceneStash `graphql:"findScene(checksum: $c)"`
+		FindScene *models.ScrapedSceneStash `graphql:"findSceneByHash(input: $c)"`
 	}
 
-	checksum := graphql.String(storedScene.Checksum)
+	type SceneHashInput struct {
+		Checksum *string `graphql:"checksum" json:"checksum"`
+		Oshash   *string `graphql:"oshash" json:"oshash"`
+	}
+
+	input := SceneHashInput{
+		Checksum: &storedScene.Checksum.String,
+		Oshash:   &storedScene.OSHash.String,
+	}
+
 	vars := map[string]interface{}{
-		"c": &checksum,
+		"c": &input,
 	}
 
 	client := s.getStashClient()

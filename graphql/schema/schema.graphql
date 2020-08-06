@@ -2,6 +2,8 @@
 type Query {
   """Find a scene by ID or Checksum"""
   findScene(id: ID, checksum: String): Scene
+  findSceneByHash(input: SceneHashInput!): Scene
+  
   """A function which queries Scene objects"""
   findScenes(scene_filter: SceneFilterType, scene_ids: [Int!], filter: FindFilterType): FindScenesResultType!
 
@@ -158,6 +160,8 @@ type Mutation {
   metadataAutoTag(input: AutoTagMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
   metadataClean: String!
+  """Migrate generated files for the current hash naming"""
+  migrateHashNaming: String!
 
   """Reload scrapers"""
   reloadScrapers: Boolean!

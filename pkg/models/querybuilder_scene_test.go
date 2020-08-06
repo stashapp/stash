@@ -908,7 +908,7 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 	const name = "TestSceneUpdateSceneCover"
 	scene := models.Scene{
 		Path:     name,
-		Checksum: utils.MD5FromString(name),
+		Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
 	}
 	created, err := qb.Create(scene, tx)
 	if err != nil {
@@ -955,7 +955,7 @@ func TestSceneDestroySceneCover(t *testing.T) {
 	const name = "TestSceneDestroySceneCover"
 	scene := models.Scene{
 		Path:     name,
-		Checksum: utils.MD5FromString(name),
+		Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
 	}
 	created, err := qb.Create(scene, tx)
 	if err != nil {

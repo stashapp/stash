@@ -21,6 +21,28 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 	return scene, err
 }
 
+func (r *queryResolver) FindSceneByHash(ctx context.Context, input models.SceneHashInput) (*models.Scene, error) {
+	qb := models.NewSceneQueryBuilder()
+	var scene *models.Scene
+	var err error
+
+	if input.Checksum != nil {
+		scene, err = qb.FindByChecksum(*input.Checksum)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if scene == nil && input.Oshash != nil {
+		scene, err = qb.FindByOSHash(*input.Oshash)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return scene, err
+}
+
 func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIds []int, filter *models.FindFilterType) (*models.FindScenesResultType, error) {
 	qb := models.NewSceneQueryBuilder()
 	scenes, total := qb.Query(sceneFilter, filter)

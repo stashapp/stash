@@ -10,6 +10,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -197,7 +198,7 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 
 	// only update the cover image if provided and everything else was successful
 	if coverImageData != nil {
-		err = manager.SetSceneScreenshot(scene.Checksum, coverImageData)
+		err = manager.SetSceneScreenshot(scene.GetHash(config.GetVideoFileNamingAlgorithm()), coverImageData)
 		if err != nil {
 			return nil, err
 		}
@@ -417,7 +418,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	// if delete generated is true, then delete the generated files
 	// for the scene
 	if input.DeleteGenerated != nil && *input.DeleteGenerated {
-		manager.DeleteGeneratedSceneFiles(scene)
+		manager.DeleteGeneratedSceneFiles(scene, config.GetVideoFileNamingAlgorithm())
 	}
 
 	// if delete file is true, then delete the file as well
@@ -453,11 +454,12 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 		return false, err
 	}
 
+	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 	for _, scene := range scenes {
 		// if delete generated is true, then delete the generated files
 		// for the scene
 		if input.DeleteGenerated != nil && *input.DeleteGenerated {
-			manager.DeleteGeneratedSceneFiles(scene)
+			manager.DeleteGeneratedSceneFiles(scene, fileNamingAlgo)
 		}
 
 		// if delete file is true, then delete the file as well
@@ -528,7 +530,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 
 	if scene != nil {
 		seconds := int(marker.Seconds)
-		manager.DeleteSceneMarkerFiles(scene, seconds)
+		manager.DeleteSceneMarkerFiles(scene, seconds, config.GetVideoFileNamingAlgorithm())
 	}
 
 	return true, nil
@@ -597,7 +599,7 @@ func changeMarker(ctx context.Context, changeType int, changedMarker models.Scen
 
 		if scene != nil {
 			seconds := int(existingMarker.Seconds)
-			manager.DeleteSceneMarkerFiles(scene, seconds)
+			manager.DeleteSceneMarkerFiles(scene, seconds, config.GetVideoFileNamingAlgorithm())
 		}
 	}
 

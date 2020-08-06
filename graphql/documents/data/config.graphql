@@ -3,6 +3,8 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   databasePath
   generatedPath
   cachePath
+  calculateMD5
+  videoFileNamingAlgorithm
   previewSegments
   previewSegmentDuration
   previewExcludeStart
