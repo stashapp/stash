@@ -47,6 +47,8 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		DatabasePath:              config.GetDatabasePath(),
 		GeneratedPath:             config.GetGeneratedPath(),
 		CachePath:                 config.GetCachePath(),
+		CalculateMd5:              config.IsCalculateMD5(),
+		VideoFileNamingAlgorithm:  config.GetVideoFileNamingAlgorithm(),
 		PreviewSegments:           config.GetPreviewSegments(),
 		PreviewSegmentDuration:    config.GetPreviewSegmentDuration(),
 		PreviewExcludeStart:       config.GetPreviewExcludeStart(),

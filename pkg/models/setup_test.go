@@ -276,7 +276,7 @@ func createScenes(tx *sqlx.Tx, n int) error {
 		scene := models.Scene{
 			Path:     getSceneStringValue(i, pathField),
 			Title:    sql.NullString{String: getSceneStringValue(i, titleField), Valid: true},
-			Checksum: getSceneStringValue(i, checksumField),
+			Checksum: sql.NullString{String: getSceneStringValue(i, checksumField), Valid: true},
 			Details:  sql.NullString{String: getSceneStringValue(i, "Details"), Valid: true},
 			Rating:   getSceneRating(i),
 			OCounter: getSceneOCounter(i),

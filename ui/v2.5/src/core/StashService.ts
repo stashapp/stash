@@ -469,6 +469,11 @@ export const mutateMetadataClean = () =>
     mutation: GQL.MetadataCleanDocument,
   });
 
+export const mutateMigrateHashNaming = () =>
+  client.mutate<GQL.MigrateHashNamingMutation>({
+    mutation: GQL.MigrateHashNamingDocument,
+  });
+
 export const mutateMetadataExport = () =>
   client.mutate<GQL.MetadataExportMutation>({
     mutation: GQL.MetadataExportDocument,

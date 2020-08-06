@@ -9,6 +9,7 @@ import {
   mutateMetadataScan,
   mutateMetadataAutoTag,
   mutateMetadataExport,
+  mutateMigrateHashNaming,
   mutateStopJob,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
@@ -46,6 +47,8 @@ export const SettingsTasksPanel: React.FC = () => {
         return "Importing from JSON";
       case "Auto Tag":
         return "Auto tagging scenes";
+      case "Migrate":
+        return "Migrating";
       default:
         return "Idle";
     }
@@ -306,6 +309,28 @@ export const SettingsTasksPanel: React.FC = () => {
         </Button>
         <Form.Text className="text-muted">
           Import from exported JSON. This is a destructive action.
+        </Form.Text>
+      </Form.Group>
+
+      <hr />
+
+      <h5>Migrations</h5>
+
+      <Form.Group>
+        <Button
+          id="migrateHashNaming"
+          variant="danger"
+          onClick={() =>
+            mutateMigrateHashNaming().then(() => {
+              jobStatus.refetch();
+            })
+          }
+        >
+          Rename generated files
+        </Button>
+        <Form.Text className="text-muted">
+          Used after changing the Generated file naming hash to rename existing
+          generated files to the new hash format.
         </Form.Text>
       </Form.Group>
     </>
