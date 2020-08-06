@@ -28,6 +28,7 @@ import {
   DurationUtils,
 } from "src/utils";
 import { MovieScenesPanel } from "./MovieScenesPanel";
+import { MovieScrapeDialog } from "./MovieScrapeDialog";
 
 export const Movie: React.FC = () => {
   const history = useHistory();
@@ -402,6 +403,35 @@ export const Movie: React.FC = () => {
     );
   }
 
+  function maybeRenderScrapeDialog() {
+    if (!scrapedMovie) {
+      return;
+    }
+
+    const currentMovie = getMovieInput();
+
+    // Get image paths for scrape gui
+    currentMovie.front_image = movie.front_image_path;
+    currentMovie.back_image = movie.back_image_path;
+
+    return (
+      <MovieScrapeDialog
+        movie={currentMovie}
+        scraped={scrapedMovie}
+        onClose={(m) => {
+          onScrapeDialogClosed(m);
+        }}
+      />
+    );
+  }
+
+  function onScrapeDialogClosed(p?: GQL.ScrapedMovieDataFragment) {
+    if (p) {
+      updateMovieEditStateFromScraper(p);
+    }
+    setScrapedMovie(undefined);
+  }
+
   if (isLoading) return <LoadingIndicator />;
 
   // TODO: CSS class
@@ -519,6 +549,7 @@ export const Movie: React.FC = () => {
       )}
       {renderDeleteAlert()}
       {renderImageAlert()}
+      {maybeRenderScrapeDialog()}
     </div>
   );
 };
