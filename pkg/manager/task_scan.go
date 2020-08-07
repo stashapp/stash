@@ -256,14 +256,16 @@ func (t *ScanTask) scanScene() {
 	}
 
 	sceneHash := oshash
-	if t.fileNamingAlgorithm == models.HashAlgorithmMd5 {
+
+	// check for scene by checksum and oshash - MD5 should be
+	// redundant, but check both
+	if checksum != "" {
 		sceneHash = checksum
 		scene, _ = qb.FindByChecksum(sceneHash)
-	} else if t.fileNamingAlgorithm == models.HashAlgorithmOshash {
+	}
+
+	if scene == nil {
 		scene, _ = qb.FindByOSHash(sceneHash)
-	} else {
-		logger.Error("unknown file naming algorithm")
-		return
 	}
 
 	t.makeScreenshots(videoFile, sceneHash)
