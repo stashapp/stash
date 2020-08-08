@@ -255,17 +255,20 @@ func (t *ScanTask) scanScene() {
 		}
 	}
 
-	sceneHash := oshash
-
 	// check for scene by checksum and oshash - MD5 should be
 	// redundant, but check both
 	if checksum != "" {
-		sceneHash = checksum
-		scene, _ = qb.FindByChecksum(sceneHash)
+		scene, _ = qb.FindByChecksum(checksum)
 	}
 
 	if scene == nil {
-		scene, _ = qb.FindByOSHash(sceneHash)
+		scene, _ = qb.FindByOSHash(oshash)
+	}
+
+	sceneHash := oshash
+
+	if t.fileNamingAlgorithm == models.HashAlgorithmMd5 {
+		sceneHash = checksum
 	}
 
 	t.makeScreenshots(videoFile, sceneHash)
