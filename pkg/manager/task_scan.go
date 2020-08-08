@@ -178,12 +178,20 @@ func (t *ScanTask) scanScene() {
 				return
 			}
 
+			// check if oshash clashes with existing scene
+			dupe, _ := qb.FindByOSHash(oshash)
+			if dupe != nil {
+				logger.Errorf("OSHash for file %s is the same as that of %s", t.FilePath, dupe.Path)
+				return
+			}
+
 			ctx := context.TODO()
 			tx := database.DB.MustBeginTx(ctx, nil)
 			err = qb.UpdateOSHash(scene.ID, oshash, tx)
 			if err != nil {
 				logger.Error(err.Error())
-				_ = tx.Rollback()
+				tx.Rollback()
+				return
 			} else if err := tx.Commit(); err != nil {
 				logger.Error(err.Error())
 			}
@@ -194,6 +202,13 @@ func (t *ScanTask) scanScene() {
 			checksum, err := t.calculateChecksum()
 			if err != nil {
 				logger.Error(err.Error())
+				return
+			}
+
+			// check if checksum clashes with existing scene
+			dupe, _ := qb.FindByChecksum(checksum)
+			if dupe != nil {
+				logger.Errorf("MD5 for file %s is the same as that of %s", t.FilePath, dupe.Path)
 				return
 			}
 
@@ -240,15 +255,20 @@ func (t *ScanTask) scanScene() {
 		}
 	}
 
+	// check for scene by checksum and oshash - MD5 should be
+	// redundant, but check both
+	if checksum != "" {
+		scene, _ = qb.FindByChecksum(checksum)
+	}
+
+	if scene == nil {
+		scene, _ = qb.FindByOSHash(oshash)
+	}
+
 	sceneHash := oshash
+
 	if t.fileNamingAlgorithm == models.HashAlgorithmMd5 {
 		sceneHash = checksum
-		scene, _ = qb.FindByChecksum(sceneHash)
-	} else if t.fileNamingAlgorithm == models.HashAlgorithmOshash {
-		scene, _ = qb.FindByOSHash(sceneHash)
-	} else {
-		logger.Error("unknown file naming algorithm")
-		return
 	}
 
 	t.makeScreenshots(videoFile, sceneHash)
