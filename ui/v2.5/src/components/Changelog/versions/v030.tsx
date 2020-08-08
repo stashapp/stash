@@ -5,6 +5,7 @@ const markup = `
 #### 💥 **Note: After upgrading, the next scan will populate all scenes with oshash hashes. MD5 calculation can be disabled after populating the oshash for all scenes. See \`Hashing Algorithms\` in the \`Configuration\` section of the manual for details. **
 
 ### ✨ New Features
+*  Add support for plugin tasks.
 *  Add oshash algorithm for hashing scene video files. Enabled by default on new systems.
 *  Support (re-)generation of generated content for specific scenes.
 *  Add tag thumbnails, tags grid view and tag page.

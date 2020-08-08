@@ -76,6 +76,13 @@ type Query {
   """Scrape a list of performers from a query"""
   scrapeFreeonesPerformerList(query: String!): [String!]!
 
+  # Plugins
+  """List loaded plugins"""
+  plugins: [Plugin!]
+  """List available plugin operations"""
+  pluginTasks: [PluginTask!]
+
+
   # Config
   """Returns the current, complete configuration"""
   configuration: ConfigResult!
@@ -165,6 +172,10 @@ type Mutation {
 
   """Reload scrapers"""
   reloadScrapers: Boolean!
+
+  """Run plugin task. Returns the job ID"""
+  runPluginTask(plugin_id: ID!, task_name: String!, args: [PluginArgInput!]): String!
+  reloadPlugins: Boolean!
 
   stopJob: Boolean!
 }

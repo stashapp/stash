@@ -67,6 +67,9 @@ const ScrapersPath = "scrapers_path"
 const ScraperUserAgent = "scraper_user_agent"
 const ScraperCDPPath = "scraper_cdp_path"
 
+// plugin options
+const PluginsPath = "plugins_path"
+
 // i18n
 const Language = "language"
 
@@ -106,6 +109,11 @@ func Write() error {
 	return viper.WriteConfig()
 }
 
+func GetConfigPath() string {
+	configFileUsed := viper.ConfigFileUsed()
+	return filepath.Dir(configFileUsed)
+}
+
 func GetStashPaths() []string {
 	return viper.GetStringSlice(Stash)
 }
@@ -136,10 +144,8 @@ func GetSessionStoreKey() []byte {
 
 func GetDefaultScrapersPath() string {
 	// default to the same directory as the config file
-	configFileUsed := viper.ConfigFileUsed()
-	configDir := filepath.Dir(configFileUsed)
 
-	fn := filepath.Join(configDir, "scrapers")
+	fn := filepath.Join(GetConfigPath(), "scrapers")
 
 	return fn
 }
@@ -190,6 +196,17 @@ func GetScraperUserAgent() string {
 // to an instance of Chrome.
 func GetScraperCDPPath() string {
 	return viper.GetString(ScraperCDPPath)
+}
+
+func GetDefaultPluginsPath() string {
+	// default to the same directory as the config file
+	fn := filepath.Join(GetConfigPath(), "plugins")
+
+	return fn
+}
+
+func GetPluginsPath() string {
+	return viper.GetString(PluginsPath)
 }
 
 func GetHost() string {
