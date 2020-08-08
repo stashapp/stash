@@ -11,9 +11,12 @@ import {
   mutateMetadataExport,
   mutateMigrateHashNaming,
   mutateStopJob,
+  usePlugins,
+  mutateRunPluginTask,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Modal } from "src/components/Shared";
+import { Plugin, PluginTask } from "src/core/generated-graphql";
 import { GenerateButton } from "./GenerateButton";
 
 export const SettingsTasksPanel: React.FC = () => {
@@ -31,6 +34,8 @@ export const SettingsTasksPanel: React.FC = () => {
   const jobStatus = useJobStatus();
   const metadataUpdate = useMetadataUpdate();
 
+  const plugins = usePlugins();
+
   function statusToText(s: string) {
     switch (s) {
       case "Idle":
@@ -47,6 +52,8 @@ export const SettingsTasksPanel: React.FC = () => {
         return "Importing from JSON";
       case "Auto Tag":
         return "Auto tagging scenes";
+      case "Plugin Operation":
+        return "Running Plugin Operation";
       case "Migrate":
         return "Migrating";
       default:
@@ -59,7 +66,7 @@ export const SettingsTasksPanel: React.FC = () => {
       setStatus(statusToText(jobStatus.data.jobStatus.status));
       const newProgress = jobStatus.data.jobStatus.progress;
       if (newProgress < 0) {
-        setProgress(0);
+        setProgress(-1);
       } else {
         setProgress(newProgress * 100);
       }
@@ -71,7 +78,7 @@ export const SettingsTasksPanel: React.FC = () => {
       setStatus(statusToText(metadataUpdate.data.metadataUpdate.status));
       const newProgress = metadataUpdate.data.metadataUpdate.progress;
       if (newProgress < 0) {
-        setProgress(0);
+        setProgress(-1);
       } else {
         setProgress(newProgress * 100);
       }
@@ -180,14 +187,70 @@ export const SettingsTasksPanel: React.FC = () => {
           {!!status && status !== "Idle" ? (
             <ProgressBar
               animated
-              now={progress}
-              label={`${progress.toFixed(0)}%`}
+              now={progress > -1 ? progress : 100}
+              label={progress > -1 ? `${progress.toFixed(0)}%` : ""}
             />
           ) : (
             ""
           )}
         </Form.Group>
         {maybeRenderStop()}
+      </>
+    );
+  }
+
+  async function onPluginTaskClicked(
+    plugin: Partial<Plugin>,
+    operation: Partial<PluginTask>
+  ) {
+    await mutateRunPluginTask(plugin.id!, operation.name!);
+  }
+
+  function renderPluginTasks(
+    plugin: Partial<Plugin>,
+    pluginTasks: Partial<PluginTask>[] | undefined
+  ) {
+    if (!pluginTasks) {
+      return;
+    }
+
+    return pluginTasks.map((o) => {
+      return (
+        <div key={o.name}>
+          <Button
+            onClick={() => onPluginTaskClicked(plugin, o)}
+            className="mt-3"
+            variant="secondary"
+            size="sm"
+          >
+            {o.name}
+          </Button>
+          {o.description ? (
+            <Form.Text className="text-muted">{o.description}</Form.Text>
+          ) : undefined}
+        </div>
+      );
+    });
+  }
+
+  function renderPlugins() {
+    if (!plugins.data || !plugins.data.plugins) {
+      return;
+    }
+
+    return (
+      <>
+        <hr />
+        <h5>Plugin Tasks</h5>
+        {plugins.data.plugins.map((o) => {
+          return (
+            <div key={`${o.id}`} className="mb-3">
+              <h6>{o.name}</h6>
+              {renderPluginTasks(o, o.tasks ?? [])}
+              <hr />
+            </div>
+          );
+        })}
       </>
     );
   }
@@ -311,6 +374,8 @@ export const SettingsTasksPanel: React.FC = () => {
           Import from exported JSON. This is a destructive action.
         </Form.Text>
       </Form.Group>
+
+      {renderPlugins()}
 
       <hr />
 

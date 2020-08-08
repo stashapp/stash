@@ -1,0 +1,25 @@
+query Plugins {
+  plugins {
+    id
+    name
+    description
+    url
+    version
+
+    tasks {
+      name
+      description
+    }
+  }
+}
+
+query PluginTasks {
+  pluginTasks {
+    name
+    description
+    plugin {
+      id
+      name
+    }
+  }
+}

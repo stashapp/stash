@@ -170,6 +170,10 @@ export const useListSceneScrapers = () => GQL.useListSceneScrapersQuery();
 
 export const useScrapeFreeonesPerformers = (q: string) =>
   GQL.useScrapeFreeonesPerformersQuery({ variables: { q } });
+
+export const usePlugins = () => GQL.usePluginsQuery();
+export const usePluginTasks = () => GQL.usePluginTasksQuery();
+
 export const useMarkerStrings = () => GQL.useMarkerStringsQuery();
 export const useAllTags = () => GQL.useAllTagsQuery();
 export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
@@ -444,6 +448,24 @@ export const queryScrapeScene = (
 export const mutateReloadScrapers = () =>
   client.mutate<GQL.ReloadScrapersMutation>({
     mutation: GQL.ReloadScrapersDocument,
+  });
+
+const reloadPluginsMutationImpactedQueries = ["plugins", "pluginTasks"];
+
+export const mutateReloadPlugins = () =>
+  client.mutate<GQL.ReloadPluginsMutation>({
+    mutation: GQL.ReloadPluginsDocument,
+    update: () => invalidateQueries(reloadPluginsMutationImpactedQueries),
+  });
+
+export const mutateRunPluginTask = (
+  pluginId: string,
+  taskName: string,
+  args?: GQL.PluginArgInput[]
+) =>
+  client.mutate<GQL.RunPluginTaskMutation>({
+    mutation: GQL.RunPluginTaskDocument,
+    variables: { plugin_id: pluginId, task_name: taskName, args },
   });
 
 export const mutateMetadataScan = (input: GQL.ScanMetadataInput) =>

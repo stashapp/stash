@@ -357,6 +357,15 @@ func makeTLSConfig() *tls.Config {
 	return tlsConfig
 }
 
+func HasTLSConfig() bool {
+	ret, _ := utils.FileExists(paths.GetSSLCert())
+	if ret {
+		ret, _ = utils.FileExists(paths.GetSSLKey())
+	}
+
+	return ret
+}
+
 type contextKey struct {
 	name string
 }
