@@ -22,6 +22,10 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
+// Timeout for the scrape http request. Includes transfer time. May want to make this
+// configurable at some point.
+const scrapeGetTimeout = time.Second * 30
+
 func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := scraperConfig.DriverOptions
 	if driverOptions != nil && driverOptions.UseCDP {

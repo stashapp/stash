@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/antchfx/htmlquery"
 
@@ -15,10 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
-
-// Timeout for the scrape http request. Includes transfer time. May want to make this
-// configurable at some point.
-const scrapeGetTimeout = time.Second * 30
 
 type xpathScraper struct {
 	scraper      scraperTypeConfig
