@@ -50,7 +50,7 @@ type Config struct {
 	// control characters.
 	// See package common/log for valid values.
 	// If left unset, defaults to log.ErrorLevel.
-	PluginErrLogLevel string `ymal:"errLog"`
+	PluginErrLogLevel string `yaml:"errLog"`
 
 	// The task configurations for tasks provided by this plugin.
 	Tasks []*OperationConfig `yaml:"tasks"`
