@@ -170,7 +170,15 @@ sceneByURL:
 
 The above configuration requires that `sceneScraper` exists in the `xPathScrapers` configuration.
 
-#### Use with `performerByName`
+XPath scraping configurations specify the mapping between object fields and an xpath selector. The xpath scraper scrapes the applicable URL and uses xpath to populate the object fields.
+
+### scrapeJson
+
+This action works in the same way as `scrapeXPath`, but uses a mapped json configuration to parse. It uses the top-level `jsonScrapers` configuration. This action is valid for `performerByName`, `performerByURL`, `sceneByFragment` and `sceneByURL`.
+
+JSON scraping configurations specify the mapping between object fields and a GJSON selector. The JSON scraper scrapes the applicable URL and uses [GJSON](https://github.com/tidwall/gjson/blob/master/SYNTAX.md) to parse the returned JSON object and populate the object fields.
+
+### scrapeXPath and scrapeJson use with `performerByName`
 
 For `performerByName`, the `queryURL` field must be present also. This field is used to perform a search query URL for performer names. The placeholder string sequence `{}` is replaced with the performer name search string. For the subsequent performer scrape to work, the `URL` field must be filled in with the URL of the performer page that matches a URL given in a `performerByURL` scraping configuration. For example:
 
@@ -194,13 +202,36 @@ xPathScrapers:
     # ... performer scraper details ...
 ```
 
-#### XPath scrapers configuration
+### scrapeXPath and scrapeJson use with `sceneByFragment`
 
-The top-level `xPathScrapers` field contains xpath scraping configurations, freely named. The scraping configuration may contain a `common` field, and must contain `performer` or `scene` depending on the scraping type it is configured for. 
+For `sceneByFragment`, the `queryURL` field must also be present. This field is used to build a query URL for scenes. For `sceneByFragment`, the `queryURL` field supports the following placeholder fields:
+* `{checksum}` - the MD5 checksum of the scene
+* `{oshash}` - the oshash of the scene
+* `{filename}` - the base filename of the scene
+* `{title}` - the title of the scene
+
+For example:
+
+```
+sceneByFragment:
+  action: scrapeJson
+  queryURL: https://metadataapi.net/api/scenes?parse={filename}&limit=1
+  scraper: sceneQueryScraper
+```
+
+### Xpath and JSON scrapers configuration
+
+The top-level `xPathScrapers` field contains xpath scraping configurations, freely named. These are referenced in the `scraper` field for `scrapeXPath` scrapers. 
+
+Likewise, the top-level `jsonScrapers` field contains json scraping configurations.
+
+Collectively, these configurations are known as mapped scraping configurations. 
+
+A mapped scraping configuration may contain a `common` field, and must contain `performer` or `scene` depending on the scraping type it is configured for. 
 
 Within the `performer`/`scene` field are key/value pairs corresponding to the golang fields (see below) on the performer/scene object. These fields are case-sensitive. 
 
-The values of these may be either a simple xpath value, which tells the system where to get the value of the field from, or a more advanced configuration (see below). For example:
+The values of these may be either a simple selector value, which tells the system where to get the value of the field from, or a more advanced configuration (see below). For example, for an xpath configuration:
 
 ```
 performer:
@@ -209,7 +240,14 @@ performer:
 
 This will set the `Name` attribute of the returned performer to the text content of the element that matches `<h1 itemprop="name">...`.
 
-The value may also be a sub-object. If it is a sub-object, then the xpath must be set to the `selector` key of the sub-object. For example, using the same xpath as above:
+For a json configuration:
+
+```
+performer:
+  Name: data.name
+```
+
+The value may also be a sub-object. If it is a sub-object, then the selector must be set to the `selector` key of the sub-object. For example, using the same xpath as above:
 
 ```
 performer:
@@ -231,7 +269,7 @@ performer:
 
 ##### Common fragments
 
-The `common` field is used to configure xpath fragments that can be referenced in the xpath strings. These are key-value pairs where the key is the string to reference the fragment, and the value is the string that the fragment will be replaced with. For example:
+The `common` field is used to configure selector fragments that can be referenced in the selector strings. These are key-value pairs where the key is the string to reference the fragment, and the value is the string that the fragment will be replaced with. For example:
 
 ```
 common:
@@ -299,7 +337,7 @@ When `useCDP` is set to true, stash will execute or connect to an instance of Ch
 
 `Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`).
 
-##### Example
+##### XPath scraper example
 
 A performer and scene xpath scraper is shown as an example below:
 
@@ -361,10 +399,97 @@ xPathScrapers:
 
 See also [#333](https://github.com/stashapp/stash/pull/333) for more examples.
 
+##### JSON scraper example
+
+A performer and scene scraper for ThePornDB is shown below:
+
+```
+name: ThePornDB
+performerByName:
+  action: scrapeJson
+  queryURL: https://metadataapi.net/api/performers?q={}
+  scraper: performerSearch
+performerByURL:
+  - action: scrapeJson
+    url:
+      - https://metadataapi.net/api/performers/
+    scraper: performerScraper
+sceneByURL:
+  - action: scrapeJson
+    url:
+      - https://metadataapi.net/api/scenes/
+    scraper: sceneScraper
+sceneByFragment:
+  action: scrapeJson
+  queryURL: https://metadataapi.net/api/scenes?parse={filename}&limit=1
+  scraper: sceneQueryScraper
+jsonScrapers:
+  performerSearch:
+    performer:
+      Name: data.#.name
+      URL:
+        selector: data.#.id
+        replace:
+          - regex: ^
+            with: https://metadataapi.net/api/performers/
+
+  performerScraper:
+    common:
+      $extras: data.extras
+    performer:
+      Name: data.name
+      Gender: $extras.gender
+      Birthdate: $extras.birthday
+      Ethnicity: $extras.ethnicity
+      Height: $extras.height
+      Measurements: $extras.measurements
+      Tattoos: $extras.tattoos
+      Piercings: $extras.piercings
+      Aliases: data.aliases
+      Image: data.image
+
+  sceneScraper:
+    common:
+      $performers: data.performers
+    scene:
+      Title: data.title
+      Details: data.description
+      Date: data.date
+      URL: data.url
+      Image: data.background.small
+      Performers:
+        Name: data.performers.#.name
+      Studio:
+        Name: data.site.name
+      Tags:
+        Name: data.tags.#.tag
+  
+  sceneQueryScraper:
+    common:
+      $data: data.0
+      $performers: data.0.performers
+    scene:
+      Title: $data.title
+      Details: $data.description
+      Date: $data.date
+      URL: $data.url
+      Image: $data.background.small
+      Performers:
+        Name: $data.performers.#.name
+      Studio:
+        Name: $data.site.name
+      Tags:
+        Name: $data.tags.#.tag  
+```
+
 #### XPath resources:
 
 - Test XPaths in Firefox: https://addons.mozilla.org/en-US/firefox/addon/try-xpath/
 - XPath cheatsheet: https://devhints.io/xpath
+
+#### GJSON resources:
+
+- GJSON Path Syntax: https://github.com/tidwall/gjson/blob/master/SYNTAX.md
 
 #### Object fields
 ##### Performer

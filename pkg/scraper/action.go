@@ -8,17 +8,19 @@ const (
 	scraperActionScript scraperAction = "script"
 	scraperActionStash  scraperAction = "stash"
 	scraperActionXPath  scraperAction = "scrapeXPath"
+	scraperActionJson   scraperAction = "scrapeJson"
 )
 
 var allScraperAction = []scraperAction{
 	scraperActionScript,
 	scraperActionStash,
 	scraperActionXPath,
+	scraperActionJson,
 }
 
 func (e scraperAction) IsValid() bool {
 	switch e {
-	case scraperActionScript, scraperActionStash, scraperActionXPath:
+	case scraperActionScript, scraperActionStash, scraperActionXPath, scraperActionJson:
 		return true
 	}
 	return false
@@ -49,6 +51,8 @@ func getScraper(scraper scraperTypeConfig, config config, globalConfig GlobalCon
 		return newStashScraper(scraper, config, globalConfig)
 	case scraperActionXPath:
 		return newXpathScraper(scraper, config, globalConfig)
+	case scraperActionJson:
+		return newJsonScraper(scraper, config, globalConfig)
 	}
 
 	panic("unknown scraper action: " + scraper.Action)
