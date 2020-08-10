@@ -235,6 +235,12 @@ github.com/spf13/pflag
 github.com/spf13/viper
 # github.com/stretchr/testify v1.5.1
 github.com/stretchr/testify/assert
+# github.com/tidwall/gjson v1.6.0
+github.com/tidwall/gjson
+# github.com/tidwall/match v1.0.1
+github.com/tidwall/match
+# github.com/tidwall/pretty v1.0.0
+github.com/tidwall/pretty
 # github.com/urfave/cli v1.20.0
 github.com/urfave/cli
 # github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e

@@ -44,6 +44,9 @@ type config struct {
 	// Xpath scraping configurations
 	XPathScrapers mappedScrapers `yaml:"xPathScrapers"`
 
+	// Json scraping configurations
+	JsonScrapers mappedScrapers `yaml:"jsonScrapers"`
+
 	// Scraping driver options
 	DriverOptions *scraperDriverOptions `yaml:"driver"`
 }
