@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/url"
-	"path/filepath"
 	"strings"
 
 	"github.com/stashapp/stash/pkg/logger"
@@ -129,7 +128,7 @@ func (s *jsonScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mod
 	}
 
 	// construct the URL
-	url := s.constructSceneURL(s.scraper.QueryURL, storedScene)
+	url := constructSceneURL(s.scraper.QueryURL, storedScene)
 
 	scraper := s.getJsonScraper()
 
@@ -145,16 +144,6 @@ func (s *jsonScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mod
 
 	q := s.getJsonQuery(doc)
 	return scraper.scrapeScene(q)
-}
-
-func (s *jsonScraper) constructSceneURL(url string, scene *models.Scene) string {
-	// support checksum, title and filename
-	ret := strings.Replace(url, "{checksum}", scene.Checksum.String, -1)
-	ret = strings.Replace(url, "{oshash}", scene.OSHash.String, -1)
-	ret = strings.Replace(ret, "{filename}", filepath.Base(scene.Path), -1)
-	ret = strings.Replace(ret, "{title}", scene.Title.String, -1)
-
-	return ret
 }
 
 func (s *jsonScraper) getJsonQuery(doc string) *jsonQuery {
