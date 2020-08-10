@@ -323,9 +323,9 @@ Additionally, there are a number of fixed post-processing fields that are specif
 * `concat`: if an xpath matches multiple elements, and `concat` is present, then all of the elements will be concatenated together
 * `split`: Its the inverse of `concat`. Splits a string to more elements using the separator given. For more info and examples have a look at PR [#579](https://github.com/stashapp/stash/pull/579)
 
-For backwards compatibility, `regex`, `subscraper` and `parseDate` are also allowed as keys for the attribute.
+For backwards compatibility, `replace`, `subscraper` and `parseDate` are also allowed as keys for the attribute.
 
-Post-processing on attribute post-process is done in the following order: `concat`, `regex`, `subscraper`, `parseDate` and then `split`.
+Post-processing on attribute post-process is done in the following order: `concat`, `replace`, `subscraper`, `parseDate` and then `split`.
 
 ##### CDP support
 
