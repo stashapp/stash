@@ -114,7 +114,7 @@ func (s *jsonScraper) scrapePerformersByName(name string) ([]*models.ScrapedPerf
 }
 
 func (s *jsonScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedPerformerInput) (*models.ScrapedPerformer, error) {
-	return nil, errors.New("scrapePerformerByFragment not supported for xpath scraper")
+	return nil, errors.New("scrapePerformerByFragment not supported for json scraper")
 }
 
 func (s *jsonScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
