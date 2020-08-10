@@ -135,3 +135,24 @@ type ScrapedSceneTag struct {
 	ID   *string `graphql:"id" json:"id"`
 	Name string  `graphql:"name" json:"name"`
 }
+
+type ScrapedMovie struct {
+	Name       *string             `graphql:"name" json:"name"`
+	Aliases    *string             `graphql:"aliases" json:"aliases"`
+	Duration   *string             `graphql:"duration" json:"duration"`
+	Date       *string             `graphql:"date" json:"date"`
+	Rating     *string             `graphql:"rating" json:"rating"`
+	Director   *string             `graphql:"director" json:"director"`
+	Studio     *ScrapedMovieStudio `graphql:"studio" json:"studio"`
+	Synopsis   *string             `graphql:"synopsis" json:"synopsis"`
+	URL        *string             `graphql:"url" json:"url"`
+	FrontImage *string             `graphql:"front_image" json:"front_image"`
+	BackImage  *string             `graphql:"back_image" json:"back_image"`
+}
+
+type ScrapedMovieStudio struct {
+	// Set if studio matched
+	ID   *string `graphql:"id" json:"id"`
+	Name string  `graphql:"name" json:"name"`
+	URL  *string `graphql:"url" json:"url"`
+}

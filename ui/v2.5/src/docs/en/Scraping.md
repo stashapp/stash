@@ -1,6 +1,6 @@
 # Metadata Scraping
 
-Stash supports scraping of performer and scene details.
+Stash supports scraping of performer, scene and movie details.
 
 Stash includes a freeones.xxx performer scraper built in.
 
@@ -23,6 +23,8 @@ Performer details can be scraped from the new/edit Performer page in two differe
 
 Scene details can be scraped using URL as above, or via the `Scrape With...` button, which scrapes using the current scene metadata.
 
+Movie details can currently only be scraped using URL as above.
+
 # Community Scrapers
 The stash community maintains a number of custom scraper configuration files that can be found [here](https://github.com/stashapp/CommunityScrapers).
 
@@ -42,6 +44,8 @@ sceneByFragment:
   <single scraper config>
 sceneByURL:
   <multiple scraper URL configs>
+movieByURL:
+  <multiple scraper URL configs>
 <other configurations>
 ```
 
@@ -57,6 +61,7 @@ The scraping types and their required fields are outlined in the following table
 | Scrape performer from URL | Valid `performerByURL` configuration with matching URL. |
 | Scraper in `Scrape...` dropdown button in Scene Edit page | Valid `sceneByFragment` configuration. |
 | Scrape scene from URL | Valid `sceneByURL` configuration with matching URL. |
+| Scrape movie from URL | Valid `movieByURL` configuration with matching URL. |
 
 URL-based scraping accepts multiple scrape configurations, and each configuration requires a `url` field. stash iterates through these configurations, attempting to match the entered URL against the `url` fields in the configuration. It executes the first scraping configuration where the entered URL contains the value of the `url` field. 
 
@@ -87,6 +92,7 @@ The script is sent input and expects output based on the scraping type, as detai
 | `performerByURL` | `{"url": "<url>"}` | JSON-encoded performer fragment |
 | `sceneByFragment` | JSON-encoded scene fragment | JSON-encoded scene fragment |
 | `sceneByURL` | `{"url": "<url>"}` | JSON-encoded scene fragment |
+| `movieByURL` | `{"url": "<url>"}` | JSON-encoded movie fragment |
 
 For `performerByName`, only `name` is required in the returned performer fragments. One entire object is sent back to `performerByFragment` to scrape a specific performer, so the other fields may be included to assist in scraping a performer. For example, the `url` field may be filled in for the specific performer page, then `performerByFragment` can extract by using its value.
 
@@ -547,8 +553,11 @@ Duration
 Date
 Rating
 Director
+Studio
 Synopsis
 URL
+FrontImage
+BackImage
 ```
 
 ### Stash
@@ -572,7 +581,7 @@ stashServer:
 ```
 
 ### Debugging support
-To print the received html from a scraper request to the log file, add the following to your scraper yml file:
+To print the received html/json from a scraper request to the log file, add the following to your scraper yml file:
 ```
 debug:
   printHTML: true

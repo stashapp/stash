@@ -38,6 +38,12 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   aliases
 }
 
+fragment ScrapedMovieStudioData on ScrapedMovieStudio {
+  id
+  name
+  url
+}
+
 fragment ScrapedMovieData on ScrapedMovie {
   name
   aliases
@@ -47,6 +53,12 @@ fragment ScrapedMovieData on ScrapedMovie {
   director
   url
   synopsis
+  front_image
+  back_image
+
+  studio {
+    ...ScrapedMovieStudioData
+  }
 }
 
 fragment ScrapedSceneMovieData on ScrapedSceneMovie {

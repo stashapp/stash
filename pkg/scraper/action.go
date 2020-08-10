@@ -39,6 +39,8 @@ type scraper interface {
 
 	scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error)
 	scrapeSceneByURL(url string) (*models.ScrapedScene, error)
+
+	scrapeMovieByURL(url string) (*models.ScrapedMovie, error)
 }
 
 func getScraper(scraper scraperTypeConfig, config config, globalConfig GlobalConfig) scraper {
