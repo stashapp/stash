@@ -168,6 +168,8 @@ export const useScrapePerformer = (
 
 export const useListSceneScrapers = () => GQL.useListSceneScrapersQuery();
 
+export const useListMovieScrapers = () => GQL.useListMovieScrapersQuery();
+
 export const useScrapeFreeonesPerformers = (q: string) =>
   GQL.useScrapeFreeonesPerformersQuery({ variables: { q } });
 
@@ -428,6 +430,14 @@ export const queryScrapePerformerURL = (url: string) =>
 export const queryScrapeSceneURL = (url: string) =>
   client.query<GQL.ScrapeSceneUrlQuery>({
     query: GQL.ScrapeSceneUrlDocument,
+    variables: {
+      url,
+    },
+  });
+
+export const queryScrapeMovieURL = (url: string) =>
+  client.query<GQL.ScrapeMovieUrlQuery>({
+    query: GQL.ScrapeMovieUrlDocument,
     variables: {
       url,
     },

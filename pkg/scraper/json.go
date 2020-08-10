@@ -88,6 +88,16 @@ func (s *jsonScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error)
 	return scraper.scrapeScene(q)
 }
 
+func (s *jsonScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
+	doc, scraper, err := s.scrapeURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getJsonQuery(doc)
+	return scraper.scrapeMovie(q)
+}
+
 func (s *jsonScraper) scrapePerformersByName(name string) ([]*models.ScrapedPerformer, error) {
 	scraper := s.getJsonScraper()
 

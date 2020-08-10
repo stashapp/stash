@@ -192,6 +192,10 @@ func (s *stashScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error
 	return nil, errors.New("scrapeSceneByURL not supported for stash scraper")
 }
 
+func (s *stashScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
+	return nil, errors.New("scrapeMovieByURL not supported for stash scraper")
+}
+
 func sceneFromUpdateFragment(scene models.SceneUpdateInput) (*models.Scene, error) {
 	qb := models.NewSceneQueryBuilder()
 	id, err := strconv.Atoi(scene.ID)

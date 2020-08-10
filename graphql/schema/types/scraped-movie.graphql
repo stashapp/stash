@@ -1,3 +1,10 @@
+type ScrapedMovieStudio {
+  """Set if studio matched"""
+  id: ID
+  name: String!
+  url: String
+}
+
 """A movie from a scraping operation..."""
 type ScrapedMovie {
   name: String
@@ -8,6 +15,11 @@ type ScrapedMovie {
   director: String
   url: String
   synopsis: String
+  studio: ScrapedMovieStudio
+
+  """This should be base64 encoded"""
+  front_image: String
+  back_image: String
 }
 
 input ScrapedMovieInput {

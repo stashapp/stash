@@ -47,6 +47,40 @@ func setSceneImage(s *models.ScrapedScene, globalConfig GlobalConfig) error {
 	return nil
 }
 
+func setMovieFrontImage(m *models.ScrapedMovie, globalConfig GlobalConfig) error {
+	// don't try to get the image if it doesn't appear to be a URL
+	if m == nil || m.FrontImage == nil || !strings.HasPrefix(*m.FrontImage, "http") {
+		// nothing to do
+		return nil
+	}
+
+	img, err := getImage(*m.FrontImage, globalConfig)
+	if err != nil {
+		return err
+	}
+
+	m.FrontImage = img
+
+	return nil
+}
+
+func setMovieBackImage(m *models.ScrapedMovie, globalConfig GlobalConfig) error {
+	// don't try to get the image if it doesn't appear to be a URL
+	if m == nil || m.BackImage == nil || !strings.HasPrefix(*m.BackImage, "http") {
+		// nothing to do
+		return nil
+	}
+
+	img, err := getImage(*m.BackImage, globalConfig)
+	if err != nil {
+		return err
+	}
+
+	m.BackImage = img
+
+	return nil
+}
+
 func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 	client := &http.Client{
 		Timeout: imageGetTimeout,

@@ -132,6 +132,20 @@ func (c Cache) ListSceneScrapers() []*models.Scraper {
 	return ret
 }
 
+// ListMovieScrapers returns a list of scrapers that are capable of
+// scraping scenes.
+func (c Cache) ListMovieScrapers() []*models.Scraper {
+	var ret []*models.Scraper
+	for _, s := range c.scrapers {
+		// filter on type
+		if s.supportsMovies() {
+			ret = append(ret, s.toScraper())
+		}
+	}
+
+	return ret
+}
+
 func (c Cache) findScraper(scraperID string) *config {
 	for _, s := range c.scrapers {
 		if s.ID == scraperID {
@@ -352,6 +366,58 @@ func (c Cache) ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
 			err = c.postScrapeScene(ret)
 			if err != nil {
 				return nil, err
+			}
+
+			return ret, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func matchMovieStudio(s *models.ScrapedMovieStudio) error {
+	qb := models.NewStudioQueryBuilder()
+
+	studio, err := qb.FindByName(s.Name, nil, true)
+
+	if err != nil {
+		return err
+	}
+
+	if studio == nil {
+		// ignore - cannot match
+		return nil
+	}
+
+	id := strconv.Itoa(studio.ID)
+	s.ID = &id
+	return nil
+}
+
+// ScrapeMovieURL uses the first scraper it finds that matches the URL
+// provided to scrape a movie. If no scrapers are found that matches
+// the URL, then nil is returned.
+func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
+	for _, s := range c.scrapers {
+		if s.matchesMovieURL(url) {
+			ret, err := s.ScrapeMovieURL(url, c.globalConfig)
+			if err != nil {
+				return nil, err
+			}
+
+			if ret.Studio != nil {
+				err := matchMovieStudio(ret.Studio)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			// post-process - set the image if applicable
+			if err := setMovieFrontImage(ret, c.globalConfig); err != nil {
+				logger.Warnf("Could not set front image using URL %s: %s", *ret.FrontImage, err.Error())
+			}
+			if err := setMovieBackImage(ret, c.globalConfig); err != nil {
+				logger.Warnf("Could not set back image using URL %s: %s", *ret.BackImage, err.Error())
 			}
 
 			return ret, nil

@@ -69,6 +69,16 @@ func (s *xpathScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error
 	return scraper.scrapeScene(q)
 }
 
+func (s *xpathScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
+	doc, scraper, err := s.scrapeURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getXPathQuery(doc)
+	return scraper.scrapeMovie(q)
+}
+
 func (s *xpathScraper) scrapePerformersByName(name string) ([]*models.ScrapedPerformer, error) {
 	scraper := s.getXpathScraper()
 
