@@ -306,15 +306,19 @@ func SceneCtx(next http.Handler) http.Handler {
 		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
 
 		var scene *models.Scene
-		var err error
 		qb := models.NewSceneQueryBuilder()
 		if sceneID == 0 {
-			scene, err = qb.FindByChecksum(sceneIdentifierQueryParam)
+			// determine checksum/os by the length of the query param
+			if len(sceneIdentifierQueryParam) == 32 {
+				scene, _ = qb.FindByChecksum(sceneIdentifierQueryParam)
+			} else {
+				scene, _ = qb.FindByOSHash(sceneIdentifierQueryParam)
+			}
 		} else {
-			scene, err = qb.Find(sceneID)
+			scene, _ = qb.Find(sceneID)
 		}
 
-		if err != nil {
+		if scene == nil {
 			http.Error(w, http.StatusText(404), 404)
 			return
 		}

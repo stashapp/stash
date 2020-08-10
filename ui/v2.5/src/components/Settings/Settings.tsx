@@ -7,6 +7,7 @@ import { SettingsConfigurationPanel } from "./SettingsConfigurationPanel";
 import { SettingsInterfacePanel } from "./SettingsInterfacePanel";
 import { SettingsLogsPanel } from "./SettingsLogsPanel";
 import { SettingsTasksPanel } from "./SettingsTasksPanel/SettingsTasksPanel";
+import { SettingsPluginsPanel } from "./SettingsPluginsPanel";
 
 export const Settings: React.FC = () => {
   const location = useLocation();
@@ -35,6 +36,9 @@ export const Settings: React.FC = () => {
                 <Nav.Link eventKey="tasks">Tasks</Nav.Link>
               </Nav.Item>
               <Nav.Item>
+                <Nav.Link eventKey="plugins">Plugins</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
                 <Nav.Link eventKey="logs">Logs</Nav.Link>
               </Nav.Item>
               <Nav.Item>
@@ -53,6 +57,9 @@ export const Settings: React.FC = () => {
               </Tab.Pane>
               <Tab.Pane eventKey="tasks">
                 <SettingsTasksPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="plugins">
+                <SettingsPluginsPanel />
               </Tab.Pane>
               <Tab.Pane eventKey="logs">
                 <SettingsLogsPanel />

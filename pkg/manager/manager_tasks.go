@@ -65,6 +65,13 @@ func (t *TaskStatus) setProgress(upTo int, total int) {
 	t.updated()
 }
 
+func (t *TaskStatus) setProgressPercent(progress float64) {
+	if progress != t.Progress {
+		t.Progress = progress
+		t.updated()
+	}
+}
+
 func (t *TaskStatus) incrementProgress() {
 	t.setProgress(t.upTo+1, t.total)
 }

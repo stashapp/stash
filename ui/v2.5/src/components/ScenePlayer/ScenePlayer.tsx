@@ -154,7 +154,6 @@ export class ScenePlayerImpl extends React.Component<
       // eslint-disable-next-line no-console
       console.log("Trying next source in playlist");
       this.player.load(this.playlist);
-      this.player.play();
     }
   }
 
