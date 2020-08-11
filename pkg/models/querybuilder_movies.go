@@ -152,6 +152,21 @@ func (qb *MovieQueryBuilder) Query(movieFilter *MovieFilterType, findFilter *Fin
 		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
+	if isMissingFilter := movieFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
+		switch *isMissingFilter {
+		case "front_image":
+			body += `left join movies_images on movies_images.movie_id = movies.id
+			`
+			whereClauses = appendClause(whereClauses, "movies_images.front_image IS NULL")
+		case "back_image":
+			body += `left join movies_images on movies_images.movie_id = movies.id
+			`
+			whereClauses = appendClause(whereClauses, "movies_images.back_image IS NULL")
+		default:
+			whereClauses = appendClause(whereClauses, "movies."+*isMissingFilter+" IS NULL")
+		}
+	}
+
 	sortAndPagination := qb.getMovieSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := executeFindQuery("movies", body, args, sortAndPagination, whereClauses, havingClauses)
 

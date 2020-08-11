@@ -28,6 +28,12 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	movie := r.Context().Value(movieKey).(*models.Movie)
 	qb := models.NewMovieQueryBuilder()
 	image, _ := qb.GetFrontImage(movie.ID, nil)
+
+	defaultParam := r.URL.Query().Get("default")
+	if len(image) == 0 || defaultParam == "true" {
+		_, image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+	}
+
 	utils.ServeImage(image, w, r)
 }
 
@@ -35,6 +41,12 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	movie := r.Context().Value(movieKey).(*models.Movie)
 	qb := models.NewMovieQueryBuilder()
 	image, _ := qb.GetBackImage(movie.ID, nil)
+
+	defaultParam := r.URL.Query().Get("default")
+	if len(image) == 0 || defaultParam == "true" {
+		_, image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+	}
+
 	utils.ServeImage(image, w, r)
 }
 

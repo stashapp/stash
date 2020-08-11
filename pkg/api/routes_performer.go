@@ -27,6 +27,12 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	performer := r.Context().Value(performerKey).(*models.Performer)
 	qb := models.NewPerformerQueryBuilder()
 	image, _ := qb.GetPerformerImage(performer.ID, nil)
+
+	defaultParam := r.URL.Query().Get("default")
+	if len(image) == 0 || defaultParam == "true" {
+		image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String)
+	}
+
 	utils.ServeImage(image, w, r)
 }
 

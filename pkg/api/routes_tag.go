@@ -29,7 +29,8 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	image, _ := qb.GetTagImage(tag.ID, nil)
 
 	// use default image if not present
-	if len(image) == 0 {
+	defaultParam := r.URL.Query().Get("default")
+	if len(image) == 0 || defaultParam == "true" {
 		image = models.DefaultTagImage
 	}
 

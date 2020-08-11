@@ -40,7 +40,7 @@ interface IPerformerDetails {
       | Partial<GQL.PerformerUpdateInput>
   ) => void;
   onDelete?: () => void;
-  onImageChange?: (image?: string) => void;
+  onImageChange?: (image?: string | null) => void;
   onImageEncoding?: (loading?: boolean) => void;
 }
 
@@ -66,7 +66,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing performer state
-  const [image, setImage] = useState<string>();
+  const [image, setImage] = useState<string | null>();
   const [name, setName] = useState<string>();
   const [aliases, setAliases] = useState<string>();
   const [favorite, setFavorite] = useState<boolean>();
@@ -241,7 +241,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   });
 
   useEffect(() => {
-    setImage(undefined);
     updatePerformerEditState(performer);
   }, [performer]);
 
@@ -563,6 +562,17 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             isEditing={!!isEditing}
             onImageChange={onImageChangeHandler}
           />
+          {isEditing ? (
+            <Button
+              className="mr-2"
+              variant="danger"
+              onClick={() => setImage(null)}
+            >
+              Clear image
+            </Button>
+          ) : (
+            ""
+          )}
         </div>
       );
     }

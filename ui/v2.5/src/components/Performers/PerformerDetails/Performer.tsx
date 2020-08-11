@@ -27,10 +27,17 @@ export const Performer: React.FC = () => {
   const [performer, setPerformer] = useState<
     Partial<GQL.PerformerDataFragment>
   >({});
-  const [imagePreview, setImagePreview] = useState<string>();
+  const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
   const [lightboxIsOpen, setLightboxIsOpen] = useState(false);
-  const activeImage = imagePreview ?? performer.image_path ?? "";
+
+  // if undefined then get the existing image
+  // if null then get the default (no) image
+  // otherwise get the set image
+  const activeImage =
+    imagePreview === undefined
+      ? performer.image_path ?? ""
+      : imagePreview ?? `${performer.image_path}?default=true`;
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +54,7 @@ export const Performer: React.FC = () => {
     if (data?.findPerformer) setPerformer(data.findPerformer);
   }, [data]);
 
-  const onImageChange = (image?: string) => setImagePreview(image);
+  const onImageChange = (image?: string | null) => setImagePreview(image);
 
   const onImageEncoding = (isEncoding = false) => setImageEncoding(isEncoding);
 
