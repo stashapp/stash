@@ -193,28 +193,28 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 
 	// update image table
 	if frontImageIncluded || backImageIncluded {
-		if frontImageIncluded && backImageIncluded && len(frontimageData) == 0 && len(backimageData) == 0 {
+		if !frontImageIncluded {
+			frontimageData, err = qb.GetFrontImage(updatedMovie.ID, tx)
+			if err != nil {
+				tx.Rollback()
+				return nil, err
+			}
+		}
+		if !backImageIncluded {
+			backimageData, err = qb.GetBackImage(updatedMovie.ID, tx)
+			if err != nil {
+				tx.Rollback()
+				return nil, err
+			}
+		}
+
+		if len(frontimageData) == 0 && len(backimageData) == 0 {
 			// both images are being nulled. Destroy them.
 			if err := qb.DestroyMovieImages(movie.ID, tx); err != nil {
 				tx.Rollback()
 				return nil, err
 			}
 		} else {
-			if !frontImageIncluded {
-				frontimageData, err = qb.GetFrontImage(updatedMovie.ID, tx)
-				if err != nil {
-					tx.Rollback()
-					return nil, err
-				}
-			}
-			if !backImageIncluded {
-				backimageData, err = qb.GetBackImage(updatedMovie.ID, tx)
-				if err != nil {
-					tx.Rollback()
-					return nil, err
-				}
-			}
-
 			// HACK - if front image is null and back image is not null, then set the front image
 			// to the default image since we can't have a null front image and a non-null back image
 			if frontimageData == nil && backimageData != nil {
