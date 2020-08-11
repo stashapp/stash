@@ -42,8 +42,12 @@ export const Movie: React.FC = () => {
   const [isImageAlertOpen, setIsImageAlertOpen] = useState<boolean>(false);
 
   // Editing movie state
-  const [frontImage, setFrontImage] = useState<string | undefined | null>(undefined);
-  const [backImage, setBackImage] = useState<string | undefined | null>(undefined);
+  const [frontImage, setFrontImage] = useState<string | undefined | null>(
+    undefined
+  );
+  const [backImage, setBackImage] = useState<string | undefined | null>(
+    undefined
+  );
   const [name, setName] = useState<string | undefined>(undefined);
   const [aliases, setAliases] = useState<string | undefined>(undefined);
   const [duration, setDuration] = useState<number | undefined>(undefined);
@@ -433,13 +437,21 @@ export const Movie: React.FC = () => {
   }
 
   function onClearFrontImage() {
-    setFrontImage(null); 
-    setImagePreview(movie.front_image_path ? movie.front_image_path + "?default=true" : undefined);
+    setFrontImage(null);
+    setImagePreview(
+      movie.front_image_path
+        ? `${movie.front_image_path}?default=true`
+        : undefined
+    );
   }
 
   function onClearBackImage() {
-    setBackImage(null); 
-    setBackImagePreview(movie.back_image_path ? movie.back_image_path + "?default=true" : undefined);
+    setBackImage(null);
+    setBackImagePreview(
+      movie.back_image_path
+        ? `${movie.back_image_path}?default=true`
+        : undefined
+    );
   }
 
   if (isLoading) return <LoadingIndicator />;

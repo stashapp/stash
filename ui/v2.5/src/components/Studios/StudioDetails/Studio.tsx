@@ -186,8 +186,10 @@ export const Studio: React.FC = () => {
   }
 
   function onClearImage() {
-    setImage(null); 
-    setImagePreview(studio.image_path ? studio.image_path + "?default=true" : undefined);
+    setImage(null);
+    setImagePreview(
+      studio.image_path ? `${studio.image_path}?default=true` : undefined
+    );
   }
 
   return (
@@ -202,11 +204,11 @@ export const Studio: React.FC = () => {
         <div className="text-center">
           {imageEncoding ? (
             <LoadingIndicator message="Encoding image..." />
-          ) : 
-            imagePreview ? (
-              <img className="logo" alt={name} src={imagePreview} />
-            ) : ""
-          }
+          ) : imagePreview ? (
+            <img className="logo" alt={name} src={imagePreview} />
+          ) : (
+            ""
+          )}
         </div>
         <Table>
           <tbody>
@@ -245,7 +247,9 @@ export const Studio: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChangeHandler}
-          onClearImage={() => { onClearImage() } }
+          onClearImage={() => {
+            onClearImage();
+          }}
           onAutoTag={onAutoTag}
           onDelete={onDelete}
           acceptSVG

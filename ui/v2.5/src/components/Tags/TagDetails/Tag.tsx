@@ -173,8 +173,10 @@ export const Tag: React.FC = () => {
   }
 
   function onClearImage() {
-    setImage(null); 
-    setImagePreview(tag.image_path ? tag.image_path + "?default=true" : undefined);
+    setImage(null);
+    setImagePreview(
+      tag.image_path ? `${tag.image_path}?default=true` : undefined
+    );
   }
 
   return (
@@ -210,7 +212,9 @@ export const Tag: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChangeHandler}
-          onClearImage={() => { onClearImage() } }
+          onClearImage={() => {
+            onClearImage();
+          }}
           onAutoTag={onAutoTag}
           onDelete={onDelete}
           acceptSVG

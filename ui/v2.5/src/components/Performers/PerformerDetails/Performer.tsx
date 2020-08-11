@@ -30,11 +30,14 @@ export const Performer: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
   const [lightboxIsOpen, setLightboxIsOpen] = useState(false);
-  
+
   // if undefined then get the existing image
   // if null then get the default (no) image
   // otherwise get the set image
-  const activeImage = imagePreview === undefined ? performer.image_path ?? "" : imagePreview ?? performer.image_path + "?default=true";
+  const activeImage =
+    imagePreview === undefined
+      ? performer.image_path ?? ""
+      : imagePreview ?? `${performer.image_path}?default=true`;
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
