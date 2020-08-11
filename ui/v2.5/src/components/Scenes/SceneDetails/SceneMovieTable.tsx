@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as GQL from "src/core/generated-graphql";
 import { useAllMoviesForFilter } from "src/core/StashService";
-import { Form } from "react-bootstrap";
+import { Form, Row, Col } from "react-bootstrap";
 
 type ValidTypes = GQL.SlimMovieDataFragment;
 
@@ -38,45 +38,49 @@ export const SceneMovieTable: React.FunctionComponent<IProps> = (
 
   function renderTableData() {
     return (
-      <tbody>
+      <>
         {itemsFilter!.map((item, index: number) => (
-          <tr key={item.toString()}>
-            <td>{item.name} </td>
-            <td />
-            <td>Scene number:</td>
-            <td>
+          <Row key={item.toString()}>
+            <Form.Label column xs={9}>
+              {item.name}
+            </Form.Label>
+            <Col xs={3}>
               <Form.Control
-                as="select"
-                className="input-control"
+                className="text-input"
+                type="number"
                 value={storeIdx[index] ? storeIdx[index]?.toString() : ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   updateFieldChanged(
                     item.id,
                     Number.parseInt(
                       e.currentTarget.value ? e.currentTarget.value : "0",
                       10
                     )
-                  )
-                }
-              >
-                {["", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"].map(
-                  (opt) => (
-                    <option value={opt} key={opt}>
-                      {opt}
-                    </option>
-                  )
-                )}
-              </Form.Control>
-            </td>
-          </tr>
+                  );
+                }}
+              />
+            </Col>
+          </Row>
         ))}
-      </tbody>
+      </>
     );
   }
 
-  return (
-    <div>
-      <table className="movie-table">{renderTableData()}</table>
-    </div>
-  );
+  if (props.movieSceneIndexes.size > 0) {
+    return (
+      <div className="movie-table">
+        <Row>
+          <Form.Label column xs={9}>
+            Movie
+          </Form.Label>
+          <Form.Label column xs={3}>
+            Scene #
+          </Form.Label>
+        </Row>
+        {renderTableData()}
+      </div>
+    );
+  }
+
+  return <></>;
 };
