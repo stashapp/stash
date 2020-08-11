@@ -89,11 +89,15 @@ input SceneFilterType {
 input MovieFilterType {
   """Filter to only include movies with this studio"""
   studios: MultiCriterionInput
+  """Filter to only include movies missing this property"""
+  is_missing: String
 }
 
 input StudioFilterType {
   """Filter to only include studios with this parent studio"""
   parents: MultiCriterionInput
+  """Filter to only include studios missing this property"""
+  is_missing: String
 }
 
 input GalleryFilterType {
