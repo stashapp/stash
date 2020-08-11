@@ -76,6 +76,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	var imageData []byte
 	var err error
 
+	imageIncluded := wasFieldIncluded(ctx, "image")
 	if input.Image != nil {
 		_, imageData, err = utils.ProcessBase64Image(*input.Image)
 
@@ -116,7 +117,13 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	// update image table
 	if len(imageData) > 0 {
 		if err := qb.UpdateTagImage(tag.ID, imageData, tx); err != nil {
-			_ = tx.Rollback()
+			tx.Rollback()
+			return nil, err
+		}
+	} else if imageIncluded {
+		// must be unsetting
+		if err := qb.DestroyTagImage(tag.ID, tx); err != nil {
+			tx.Rollback()
 			return nil, err
 		}
 	}
