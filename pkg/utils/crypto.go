@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"fmt"
+	"hash/fnv"
 	"io"
 	"os"
 )
@@ -37,4 +38,10 @@ func GenerateRandomKey(l int) string {
 	b := make([]byte, l)
 	rand.Read(b)
 	return fmt.Sprintf("%x", b)
+}
+
+func IntFromString(str string) uint64 {
+	h := fnv.New64a()
+	h.Write([]byte(str))
+	return h.Sum64()
 }

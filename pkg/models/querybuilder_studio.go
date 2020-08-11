@@ -146,6 +146,17 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
+	if isMissingFilter := studioFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
+		switch *isMissingFilter {
+		case "image":
+			body += `left join studios_image on studios_image.studio_id = studios.id
+			`
+			whereClauses = appendClause(whereClauses, "studios_image.studio_id IS NULL")
+		default:
+			whereClauses = appendClause(whereClauses, "studios."+*isMissingFilter+" IS NULL")
+		}
+	}
+
 	sortAndPagination := qb.getStudioSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := executeFindQuery("studios", body, args, sortAndPagination, whereClauses, havingClauses)
 
