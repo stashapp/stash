@@ -21,7 +21,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 ) => {
   const [previewPath, setPreviewPath] = useState<string>();
   const hoverHandler = useVideoHover({
-    resetOnMouseLeave: true,
+    resetOnMouseLeave: false,
   });
 
   const config = useConfiguration();
