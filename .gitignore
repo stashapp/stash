@@ -48,6 +48,9 @@ ui/v2.5/src/core/generated-*.tsx
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
+# Goland Junk
+pkg/pkg
+
 ####
 # Random
 ####
@@ -58,3 +61,4 @@ node_modules
 
 stash
 dist
+.DS_Store
