@@ -396,6 +396,9 @@ func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error
 		ret = &action
 	}
 	if a.FeetToCm {
+		if found != "" {
+			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "feetToCm")
+		}
 		found = "feetToCm"
 		action := postProcessFeetToCm(a.FeetToCm)
 		ret = &action
