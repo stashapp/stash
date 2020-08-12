@@ -3,8 +3,10 @@ package scraper
 import (
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -328,11 +330,36 @@ func (p *postProcessMap) Apply(value string, q mappedQuery) string {
 	return value
 }
 
+type postProcessFeetToCm bool
+
+func (p *postProcessFeetToCm) Apply(value string, q mappedQuery) string {
+	const foot_in_cm = 30.48
+	const inch_in_cm = 2.54
+
+	reg := regexp.MustCompile("[0-9]+")
+	filtered := reg.FindAllString(value, -1)
+
+	var feet float64
+	var inches float64
+	if len(filtered) > 0 {
+		feet, _ = strconv.ParseFloat(filtered[0], 64)
+	}
+	if len(filtered) > 1 {
+		inches, _ = strconv.ParseFloat(filtered[1], 64)
+	}
+
+	var centimeters = feet*foot_in_cm + inches*inch_in_cm
+
+	// Return rounded integer string
+	return strconv.Itoa(int(math.Round(centimeters)))
+}
+
 type mappedPostProcessAction struct {
 	ParseDate  string                   `yaml:"parseDate"`
 	Replace    mappedRegexConfigs       `yaml:"replace"`
 	SubScraper *mappedScraperAttrConfig `yaml:"subScraper"`
 	Map        map[string]string        `yaml:"map"`
+	FeetToCm   bool                     `yaml:"feetToCm"`
 }
 
 func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error) {
@@ -366,6 +393,14 @@ func (a mappedPostProcessAction) ToPostProcessAction() (postProcessAction, error
 		}
 		found = "map"
 		action := postProcessMap(a.Map)
+		ret = &action
+	}
+	if a.FeetToCm {
+		if found != "" {
+			return nil, fmt.Errorf("post-process actions must have a single field, found %s and %s", found, "feetToCm")
+		}
+		found = "feetToCm"
+		action := postProcessFeetToCm(a.FeetToCm)
 		ret = &action
 	}
 

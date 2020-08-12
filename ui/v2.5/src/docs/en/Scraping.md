@@ -289,6 +289,7 @@ The `Measurements` xpath string will replace `$infoPiece` with `//div[@class="in
 ##### Post-processing options
 
 Post-processing operations are contained in the `postProcess` key. Post-processing operations are performed in the order they are specified. The following post-processing operations are available:
+* `feetToCm`: converts a string containing feet and inches numbers into centimetres. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimetres.
 * `map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.
 
 Example:
@@ -302,6 +303,8 @@ performer:
           M: Male
 ```
 Gets the contents of the selected div element, and sets the returned value to `Female` if the scraped value is `F`; `Male` if the scraped value is `M`.
+
+* `parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`).
 
 * `replace`: contains an array of sub-objects. Each sub-object must have a `regex` and `with` field. The `regex` field is the regex pattern to replace, and `with` is the string to replace it with. `$` is used to reference capture groups - `$1` is the first capture group, `$2` the second and so on. Replacements are performed in order of the array.
 
@@ -317,7 +320,6 @@ CareerLength:
 Replaces `2001 to 2003` with `2001-2003`.
 
 * `subScraper`: if present, the sub-scraper will be executed after all other post-processes are complete and before parseDate. It then takes the value and performs an http request, using the value as the URL. Within the `subScraper` config is a nested scraping configuration. This allows you to traverse to other webpages to get the attribute value you are after. For more info and examples have a look at [#370](https://github.com/stashapp/stash/pull/370), [#606](https://github.com/stashapp/stash/pull/606)
-* `parseDate`: if present, the value is the date format using go's reference date (2006-01-02). For example, if an example date was `14-Mar-2003`, then the date format would be `02-Jan-2006`. See the [time.Parse documentation](https://golang.org/pkg/time/#Parse) for details. When present, the scraper will convert the input string into a date, then convert it to the string format used by stash (`YYYY-MM-DD`).
 
 Additionally, there are a number of fixed post-processing fields that are specified at the attribute level (not in `postProcess`) that are performed after the `postProcess` operations:
 * `concat`: if an xpath matches multiple elements, and `concat` is present, then all of the elements will be concatenated together
