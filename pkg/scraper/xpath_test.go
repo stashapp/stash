@@ -97,28 +97,7 @@ const htmlDoc1 = `
 								<b>Height:</b>
 							</td>
 							<td class="paramvalue">
-								<script type="text/javascript">
-									<!--
-									heightcm = "171";
-									morethenone = 'inch';
-									feet = heightcm / 30.48;
-									inches = (feet - Math.floor(feet)) * 30.48 / 2.54;
-					
-									feet = Math.floor(feet);
-									inches = inches.toFixed(0);
-					
-									if (inches > 1) {
-										morethenone = 'inches';
-									}
-					
-									if (heightcm == 0) {
-										message = 'Unknown';
-									} else {
-										message = '171 cm - ' + feet + ' feet and ' + inches + ' ' + morethenone;
-									}
-									document.write(message);
-									// -->
-								</script>&nbsp;
+								5ft7
 							</td>
 						</tr>
 						<tr>
@@ -209,12 +188,10 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 
 	config.mappedConfig["Name"] = makeSimpleAttrConfig(makeCommonXPath("Babe Name:") + `/a`)
 	config.mappedConfig["Ethnicity"] = makeSimpleAttrConfig(makeCommonXPath("Ethnicity:"))
-	config.mappedConfig["Country"] = makeSimpleAttrConfig(makeCommonXPath("Country of Origin:"))
 	config.mappedConfig["Aliases"] = makeSimpleAttrConfig(makeCommonXPath("Aliases:"))
 	config.mappedConfig["EyeColor"] = makeSimpleAttrConfig(makeCommonXPath("Eye Color:"))
 	config.mappedConfig["Measurements"] = makeSimpleAttrConfig(makeCommonXPath("Measurements:"))
 	config.mappedConfig["FakeTits"] = makeSimpleAttrConfig(makeCommonXPath("Fake boobs:"))
-	config.mappedConfig["Height"] = makeSimpleAttrConfig(makeCommonXPath("Height:"))
 	config.mappedConfig["Tattoos"] = makeSimpleAttrConfig(makeCommonXPath("Tattoos:"))
 	config.mappedConfig["Piercings"] = makeSimpleAttrConfig(makeCommonXPath("Piercings:"))
 
@@ -257,9 +234,16 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 	config.mappedConfig["Gender"] = genderConfig
 
 	// use fixed for height
-	config.mappedConfig["Height"] = mappedScraperAttrConfig{
-		Fixed: "1234",
+	config.mappedConfig["Country"] = mappedScraperAttrConfig{
+		Fixed: "United States",
 	}
+
+	heightConfig := makeSimpleAttrConfig(makeCommonXPath("Height:"))
+	heightConvAction := postProcessFeetToCm(true)
+	heightConfig.postProcessActions = []postProcessAction{
+		&heightConvAction,
+	}
+	config.mappedConfig["Height"] = heightConfig
 
 	return config
 }
@@ -313,7 +297,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const careerLength = "2012 - 2019"
 	const tattoosPiercings = "None"
 	const gender = "Female"
-	const height = "1234"
+	const height = "170"
 
 	verifyField(t, performerName, performer.Name, "Name")
 	verifyField(t, gender, performer.Gender, "Gender")
@@ -331,7 +315,7 @@ func TestScrapePerformerXPath(t *testing.T) {
 
 	verifyField(t, tattoosPiercings, performer.Tattoos, "Tattoos")
 	verifyField(t, tattoosPiercings, performer.Piercings, "Piercings")
-	verifyField(t, height, performer.Height, "Piercings")
+	verifyField(t, height, performer.Height, "Height")
 }
 
 func TestConcatXPath(t *testing.T) {
