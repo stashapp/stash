@@ -29,6 +29,7 @@ import {
 } from "src/utils";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 import { MovieScrapeDialog } from "./MovieScrapeDialog";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 
 export const Movie: React.FC = () => {
   const history = useHistory();
@@ -495,14 +496,16 @@ export const Movie: React.FC = () => {
               isEditing,
               onChange: setDirector,
             })}
-            {TableUtils.renderHtmlSelect({
-              title: "Rating",
-              value: rating ?? "",
-              isEditing,
-              onChange: (value: string) =>
-                setRating(Number.parseInt(value, 10)),
-              selectOptions: ["", "1", "2", "3", "4", "5"],
-            })}
+            <tr>
+              <td>Rating</td>
+              <td>
+                <RatingStars
+                  value={rating}
+                  disabled={!isEditing}
+                  onSetRating={(value) => setRating(value)}
+                />
+              </td>
+            </tr>
           </tbody>
         </Table>
 
