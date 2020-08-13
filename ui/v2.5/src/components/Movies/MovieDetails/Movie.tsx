@@ -27,9 +27,9 @@ import {
   TextUtils,
   DurationUtils,
 } from "src/utils";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 import { MovieScrapeDialog } from "./MovieScrapeDialog";
-import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 
 export const Movie: React.FC = () => {
   const history = useHistory();
