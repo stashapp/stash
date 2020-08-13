@@ -361,7 +361,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function renderMore() {
-    const options = [renderSelectAll(), renderSelectNone()];
+    const options = [renderSelectAll(), renderSelectNone()].filter((o) => o);
 
     if (props.otherOperations) {
       props.otherOperations

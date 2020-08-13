@@ -62,6 +62,7 @@ interface IListHookOptions<T, E> {
   subComponent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
+  selectable?: boolean;
   defaultZoomIndex?: number;
   otherOperations?: IListHookOperation<T>[];
   renderContent: (
@@ -426,8 +427,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       <ListFilter
         subComponent={options.subComponent}
         onFilterUpdate={updateQueryParams}
-        onSelectAll={onSelectAll}
-        onSelectNone={onSelectNone}
+        onSelectAll={options.selectable ? onSelectAll : undefined}
+        onSelectNone={options.selectable ? onSelectNone : undefined}
         zoomIndex={options.zoomable ? zoomIndex : undefined}
         onChangeZoom={options.zoomable ? onChangeZoom : undefined}
         otherOperations={otherOperations}
