@@ -10,7 +10,7 @@ DARWIN="echo '=== Building OSX binary ==='; $SETENV GOOS=darwin GOARCH=amd64 CC=
 LINUX="echo '=== Building Linux (amd64) binary ==='; $SETENV GOOS=linux GOARCH=amd64 OUTPUT=\"dist/stash-linux\" make build-release;"
 LINUX_ARM64v8="echo '=== Building Linux (armv8/arm64) binary ==='; $SETENV GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc OUTPUT=\"dist/stash-linux-arm64v8\" make build-release;"
 LINUX_ARM32v7="echo '=== Building Linux (armv7/armhf) binary ==='; $SETENV GOOS=linux GOARCH=arm GOARM=7 CC=arm-linux-gnueabihf-gcc OUTPUT=\"dist/stash-linux-arm32v7\" make build-release;"
-LINUX_ARM32v6="echo '=== Building Linux (armv6 | Raspberry Pi 1) binary ==='; $SETENV GOOS=linux GOARCH=arm GOARM=5 CC=arm-linux-gnueabi-gcc OUTPUT=\"dist/stash-pi\" make build-release;"
+LINUX_ARM32v6="echo '=== Building Linux (armv6 | Raspberry Pi 1) binary ==='; $SETENV GOOS=linux GOARCH=arm GOARM=6 CC=arm-linux-gnueabi-gcc OUTPUT=\"dist/stash-pi\" make build-release;"
 
 COMMAND="$SETUP $WINDOWS $DARWIN $LINUX_AMD64 $LINUX_ARM64v8 $LINUX_ARM32v7 $LINUX_ARM32v6 echo '=== Build complete ==='"
 
