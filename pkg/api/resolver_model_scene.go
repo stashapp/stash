@@ -4,10 +4,23 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
-	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
+
+func (r *sceneResolver) Checksum(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.Checksum.Valid {
+		return &obj.Checksum.String, nil
+	}
+	return nil, nil
+}
+
+func (r *sceneResolver) Oshash(ctx context.Context, obj *models.Scene) (*string, error) {
+	if obj.OSHash.Valid {
+		return &obj.OSHash.String, nil
+	}
+	return nil, nil
+}
 
 func (r *sceneResolver) Title(ctx context.Context, obj *models.Scene) (*string, error) {
 	if obj.Title.Valid {
@@ -79,12 +92,6 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 		Vtt:         &vttPath,
 		ChaptersVtt: &chaptersVttPath,
 	}, nil
-}
-
-func (r *sceneResolver) IsStreamable(ctx context.Context, obj *models.Scene) (bool, error) {
-	// ignore error
-	ret, _ := manager.IsStreamable(obj)
-	return ret, nil
 }
 
 func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) ([]*models.SceneMarker, error) {

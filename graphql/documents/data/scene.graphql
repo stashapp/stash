@@ -1,6 +1,7 @@
 fragment SceneData on Scene {
   id
   checksum
+  oshash
   title
   details
   url
@@ -32,8 +33,6 @@ fragment SceneData on Scene {
   scene_markers {
     ...SceneMarkerData
   }
-
-  is_streamable
 
   gallery {
     ...GalleryData

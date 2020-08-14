@@ -19,21 +19,26 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 	var backimageData []byte
 	var err error
 
-	if input.FrontImage == nil {
+	// HACK: if back image is being set, set the front image to the default.
+	// This is because we can't have a null front image with a non-null back image.
+	if input.FrontImage == nil && input.BackImage != nil {
 		input.FrontImage = &models.DefaultMovieImage
 	}
-	if input.BackImage == nil {
-		input.BackImage = &models.DefaultMovieImage
-	}
+
 	// Process the base 64 encoded image string
-	_, frontimageData, err = utils.ProcessBase64Image(*input.FrontImage)
-	if err != nil {
-		return nil, err
+	if input.FrontImage != nil {
+		_, frontimageData, err = utils.ProcessBase64Image(*input.FrontImage)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	// Process the base 64 encoded image string
-	_, backimageData, err = utils.ProcessBase64Image(*input.BackImage)
-	if err != nil {
-		return nil, err
+	if input.BackImage != nil {
+		_, backimageData, err = utils.ProcessBase64Image(*input.BackImage)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Populate a new movie from the input
@@ -114,12 +119,14 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 	}
 	var frontimageData []byte
 	var err error
+	frontImageIncluded := wasFieldIncluded(ctx, "front_image")
 	if input.FrontImage != nil {
 		_, frontimageData, err = utils.ProcessBase64Image(*input.FrontImage)
 		if err != nil {
 			return nil, err
 		}
 	}
+	backImageIncluded := wasFieldIncluded(ctx, "back_image")
 	var backimageData []byte
 	if input.BackImage != nil {
 		_, backimageData, err = utils.ProcessBase64Image(*input.BackImage)
@@ -185,25 +192,39 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 	}
 
 	// update image table
-	if len(frontimageData) > 0 || len(backimageData) > 0 {
-		if len(frontimageData) == 0 {
+	if frontImageIncluded || backImageIncluded {
+		if !frontImageIncluded {
 			frontimageData, err = qb.GetFrontImage(updatedMovie.ID, tx)
 			if err != nil {
-				_ = tx.Rollback()
+				tx.Rollback()
 				return nil, err
 			}
 		}
-		if len(backimageData) == 0 {
+		if !backImageIncluded {
 			backimageData, err = qb.GetBackImage(updatedMovie.ID, tx)
 			if err != nil {
-				_ = tx.Rollback()
+				tx.Rollback()
 				return nil, err
 			}
 		}
 
-		if err := qb.UpdateMovieImages(movie.ID, frontimageData, backimageData, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
+		if len(frontimageData) == 0 && len(backimageData) == 0 {
+			// both images are being nulled. Destroy them.
+			if err := qb.DestroyMovieImages(movie.ID, tx); err != nil {
+				tx.Rollback()
+				return nil, err
+			}
+		} else {
+			// HACK - if front image is null and back image is not null, then set the front image
+			// to the default image since we can't have a null front image and a non-null back image
+			if frontimageData == nil && backimageData != nil {
+				_, frontimageData, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+			}
+
+			if err := qb.UpdateMovieImages(movie.ID, frontimageData, backimageData, tx); err != nil {
+				_ = tx.Rollback()
+				return nil, err
+			}
 		}
 	}
 

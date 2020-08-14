@@ -1,17 +1,22 @@
 package manager
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 
 	"github.com/jmoiron/sqlx"
 
+	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+// DestroyScene deletes a scene and its associated relationships from the
+// database.
 func DestroyScene(sceneID int, tx *sqlx.Tx) error {
 	qb := models.NewSceneQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
@@ -44,18 +49,25 @@ func DestroyScene(sceneID int, tx *sqlx.Tx) error {
 	return nil
 }
 
-func DeleteGeneratedSceneFiles(scene *models.Scene) {
-	markersFolder := filepath.Join(GetInstance().Paths.Generated.Markers, scene.Checksum)
+// DeleteGeneratedSceneFiles deletes generated files for the provided scene.
+func DeleteGeneratedSceneFiles(scene *models.Scene, fileNamingAlgo models.HashAlgorithm) {
+	sceneHash := scene.GetHash(fileNamingAlgo)
+
+	if sceneHash == "" {
+		return
+	}
+
+	markersFolder := filepath.Join(GetInstance().Paths.Generated.Markers, sceneHash)
 
 	exists, _ := utils.FileExists(markersFolder)
 	if exists {
 		err := os.RemoveAll(markersFolder)
 		if err != nil {
-			logger.Warnf("Could not delete file %s: %s", scene.Path, err.Error())
+			logger.Warnf("Could not delete folder %s: %s", markersFolder, err.Error())
 		}
 	}
 
-	thumbPath := GetInstance().Paths.Scene.GetThumbnailScreenshotPath(scene.Checksum)
+	thumbPath := GetInstance().Paths.Scene.GetThumbnailScreenshotPath(sceneHash)
 	exists, _ = utils.FileExists(thumbPath)
 	if exists {
 		err := os.Remove(thumbPath)
@@ -64,7 +76,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	normalPath := GetInstance().Paths.Scene.GetScreenshotPath(scene.Checksum)
+	normalPath := GetInstance().Paths.Scene.GetScreenshotPath(sceneHash)
 	exists, _ = utils.FileExists(normalPath)
 	if exists {
 		err := os.Remove(normalPath)
@@ -73,7 +85,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	streamPreviewPath := GetInstance().Paths.Scene.GetStreamPreviewPath(scene.Checksum)
+	streamPreviewPath := GetInstance().Paths.Scene.GetStreamPreviewPath(sceneHash)
 	exists, _ = utils.FileExists(streamPreviewPath)
 	if exists {
 		err := os.Remove(streamPreviewPath)
@@ -82,7 +94,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	streamPreviewImagePath := GetInstance().Paths.Scene.GetStreamPreviewImagePath(scene.Checksum)
+	streamPreviewImagePath := GetInstance().Paths.Scene.GetStreamPreviewImagePath(sceneHash)
 	exists, _ = utils.FileExists(streamPreviewImagePath)
 	if exists {
 		err := os.Remove(streamPreviewImagePath)
@@ -91,7 +103,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	transcodePath := GetInstance().Paths.Scene.GetTranscodePath(scene.Checksum)
+	transcodePath := GetInstance().Paths.Scene.GetTranscodePath(sceneHash)
 	exists, _ = utils.FileExists(transcodePath)
 	if exists {
 		// kill any running streams
@@ -103,7 +115,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	spritePath := GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.Checksum)
+	spritePath := GetInstance().Paths.Scene.GetSpriteImageFilePath(sceneHash)
 	exists, _ = utils.FileExists(spritePath)
 	if exists {
 		err := os.Remove(spritePath)
@@ -112,7 +124,7 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 		}
 	}
 
-	vttPath := GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.Checksum)
+	vttPath := GetInstance().Paths.Scene.GetSpriteVttFilePath(sceneHash)
 	exists, _ = utils.FileExists(vttPath)
 	if exists {
 		err := os.Remove(vttPath)
@@ -122,9 +134,11 @@ func DeleteGeneratedSceneFiles(scene *models.Scene) {
 	}
 }
 
-func DeleteSceneMarkerFiles(scene *models.Scene, seconds int) {
-	videoPath := GetInstance().Paths.SceneMarkers.GetStreamPath(scene.Checksum, seconds)
-	imagePath := GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.Checksum, seconds)
+// DeleteSceneMarkerFiles deletes generated files for a scene marker with the
+// provided scene and timestamp.
+func DeleteSceneMarkerFiles(scene *models.Scene, seconds int, fileNamingAlgo models.HashAlgorithm) {
+	videoPath := GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(fileNamingAlgo), seconds)
+	imagePath := GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(fileNamingAlgo), seconds)
 
 	exists, _ := utils.FileExists(videoPath)
 	if exists {
@@ -143,6 +157,7 @@ func DeleteSceneMarkerFiles(scene *models.Scene, seconds int) {
 	}
 }
 
+// DeleteSceneFile deletes the scene video file from the filesystem.
 func DeleteSceneFile(scene *models.Scene) {
 	// kill any running encoders
 	KillRunningStreams(scene.Path)
@@ -151,4 +166,102 @@ func DeleteSceneFile(scene *models.Scene) {
 	if err != nil {
 		logger.Warnf("Could not delete file %s: %s", scene.Path, err.Error())
 	}
+}
+
+func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
+	var container ffmpeg.Container
+	if scene.Format.Valid {
+		container = ffmpeg.Container(scene.Format.String)
+	} else { // container isn't in the DB
+		// shouldn't happen, fallback to ffprobe
+		tmpVideoFile, err := ffmpeg.NewVideoFile(GetInstance().FFProbePath, scene.Path)
+		if err != nil {
+			return ffmpeg.Container(""), fmt.Errorf("error reading video file: %s", err.Error())
+		}
+
+		container = ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path)
+	}
+
+	return container, nil
+}
+
+func GetSceneStreamPaths(scene *models.Scene, directStreamURL string) ([]*models.SceneStreamEndpoint, error) {
+	if scene == nil {
+		return nil, fmt.Errorf("nil scene")
+	}
+
+	var ret []*models.SceneStreamEndpoint
+	mimeWebm := ffmpeg.MimeWebm
+	mimeHLS := ffmpeg.MimeHLS
+	mimeMp4 := ffmpeg.MimeMp4
+
+	labelWebm := "webm"
+	labelHLS := "HLS"
+
+	// direct stream should only apply when the audio codec is supported
+	audioCodec := ffmpeg.MissingUnsupported
+	if scene.AudioCodec.Valid {
+		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
+	}
+	container, err := GetSceneFileContainer(scene)
+	if err != nil {
+		return nil, err
+	}
+
+	if HasTranscode(scene, config.GetVideoFileNamingAlgorithm()) || ffmpeg.IsValidAudioForContainer(audioCodec, container) {
+		label := "Direct stream"
+		ret = append(ret, &models.SceneStreamEndpoint{
+			URL:      directStreamURL,
+			MimeType: &mimeMp4,
+			Label:    &label,
+		})
+	}
+
+	// only add mkv stream endpoint if the scene container is an mkv already
+	if container == ffmpeg.Matroska {
+		label := "mkv"
+		ret = append(ret, &models.SceneStreamEndpoint{
+			URL: directStreamURL + ".mkv",
+			// set mkv to mp4 to trick the client, since many clients won't try mkv
+			MimeType: &mimeMp4,
+			Label:    &label,
+		})
+	}
+
+	defaultStreams := []*models.SceneStreamEndpoint{
+		{
+			URL:      directStreamURL + ".webm",
+			MimeType: &mimeWebm,
+			Label:    &labelWebm,
+		},
+		{
+			URL:      directStreamURL + ".m3u8",
+			MimeType: &mimeHLS,
+			Label:    &labelHLS,
+		},
+	}
+
+	ret = append(ret, defaultStreams...)
+
+	// TODO - at some point, look at streaming at various resolutions
+
+	return ret, nil
+}
+
+// HasTranscode returns true if a transcoded video exists for the provided
+// scene. It will check using the OSHash of the scene first, then fall back
+// to the checksum.
+func HasTranscode(scene *models.Scene, fileNamingAlgo models.HashAlgorithm) bool {
+	if scene == nil {
+		return false
+	}
+
+	sceneHash := scene.GetHash(fileNamingAlgo)
+	if sceneHash == "" {
+		return false
+	}
+
+	transcodePath := instance.Paths.Scene.GetTranscodePath(sceneHash)
+	ret, _ := utils.FileExists(transcodePath)
+	return ret
 }

@@ -64,7 +64,7 @@ const MultiSet: React.FunctionComponent<IMultiSetProps> = (
       <InputGroup.Prepend>
         <Button
           size="sm"
-          variant="secondary"
+          variant="primary"
           onClick={() => props.onSetMode(nextMode())}
           title={getModeText()}
           disabled={props.disabled}

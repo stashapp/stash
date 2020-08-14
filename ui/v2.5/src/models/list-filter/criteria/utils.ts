@@ -14,6 +14,8 @@ import {
   SceneIsMissingCriterion,
   GalleryIsMissingCriterion,
   TagIsMissingCriterion,
+  StudioIsMissingCriterion,
+  MovieIsMissingCriterion,
 } from "./is-missing";
 import { NoneCriterion } from "./none";
 import { PerformersCriterion } from "./performers";
@@ -50,6 +52,10 @@ export function makeCriteria(type: CriterionType = "none") {
       return new GalleryIsMissingCriterion();
     case "tagIsMissing":
       return new TagIsMissingCriterion();
+    case "studioIsMissing":
+      return new StudioIsMissingCriterion();
+    case "movieIsMissing":
+      return new MovieIsMissingCriterion();
     case "tags":
       return new TagsCriterion("tags");
     case "sceneTags":

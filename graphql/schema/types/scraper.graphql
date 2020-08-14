@@ -20,6 +20,8 @@ type Scraper {
     performer: ScraperSpec
     """Details for scene scraper"""
     scene: ScraperSpec
+    """Details for movie scraper"""
+    movie: ScraperSpec
 }
 
 

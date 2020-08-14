@@ -51,12 +51,18 @@ interface IListHookOperation<T> {
     filter: ListFilterModel,
     selectedIds: Set<string>
   ) => void;
+  isDisplayed?: (
+    result: T,
+    filter: ListFilterModel,
+    selectedIds: Set<string>
+  ) => boolean;
 }
 
 interface IListHookOptions<T, E> {
   subComponent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
+  selectable?: boolean;
   defaultZoomIndex?: number;
   otherOperations?: IListHookOperation<T>[];
   renderContent: (
@@ -346,6 +352,13 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
           onClick: () => {
             o.onClick(result, filter, selectedIds);
           },
+          isDisplayed: () => {
+            if (o.isDisplayed) {
+              return o.isDisplayed(result, filter, selectedIds);
+            }
+
+            return true;
+          },
         };
       })
     : undefined;
@@ -414,8 +427,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       <ListFilter
         subComponent={options.subComponent}
         onFilterUpdate={updateQueryParams}
-        onSelectAll={onSelectAll}
-        onSelectNone={onSelectNone}
+        onSelectAll={options.selectable ? onSelectAll : undefined}
+        onSelectNone={options.selectable ? onSelectNone : undefined}
         zoomIndex={options.zoomable ? zoomIndex : undefined}
         onChangeZoom={options.zoomable ? onChangeZoom : undefined}
         otherOperations={otherOperations}
@@ -594,3 +607,11 @@ export const useTagsList = (
     getSelectedData: (result: FindTagsQueryResult, selectedIds: Set<string>) =>
       getSelectedData(result?.data?.findTags?.tags ?? [], selectedIds),
   });
+
+export const showWhenSelected = (
+  result: FindScenesQueryResult,
+  filter: ListFilterModel,
+  selectedIds: Set<string>
+) => {
+  return selectedIds.size > 0;
+};

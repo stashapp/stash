@@ -35,6 +35,8 @@ import {
   SceneIsMissingCriterionOption,
   GalleryIsMissingCriterionOption,
   TagIsMissingCriterionOption,
+  StudioIsMissingCriterionOption,
+  MovieIsMissingCriterionOption,
 } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import {
@@ -136,7 +138,13 @@ export class ListFilterModel {
         break;
       case FilterMode.Performers: {
         this.sortBy = "name";
-        this.sortByOptions = ["name", "height", "birthdate", "scenes_count"];
+        this.sortByOptions = [
+          "name",
+          "height",
+          "birthdate",
+          "scenes_count",
+          "random",
+        ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
 
         const numberCriteria: CriterionType[] = ["birth_year", "age"];
@@ -172,6 +180,7 @@ export class ListFilterModel {
         this.criterionOptions = [
           new NoneCriterionOption(),
           new ParentStudiosCriterionOption(),
+          new StudioIsMissingCriterionOption(),
         ];
         break;
       case FilterMode.Movies:
@@ -181,6 +190,7 @@ export class ListFilterModel {
         this.criterionOptions = [
           new NoneCriterionOption(),
           new StudiosCriterionOption(),
+          new MovieIsMissingCriterionOption(),
         ];
         break;
       case FilterMode.Galleries:
@@ -604,6 +614,8 @@ export class ListFilterModel {
           };
           break;
         }
+        case "movieIsMissing":
+          result.is_missing = (criterion as IsMissingCriterion).value;
         // no default
       }
     });
@@ -622,6 +634,8 @@ export class ListFilterModel {
           };
           break;
         }
+        case "studioIsMissing":
+          result.is_missing = (criterion as IsMissingCriterion).value;
         // no default
       }
     });

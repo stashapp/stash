@@ -3,7 +3,12 @@ import Jimp from "jimp";
 
 const readImage = (file: File, onLoadEnd: (imageData: string) => void) => {
   const reader: FileReader = new FileReader();
-  reader.onloadend = () => onLoadEnd(reader.result as string);
+  reader.onloadend = () => {
+    // only proceed if no error encountered
+    if (!reader.error) {
+      onLoadEnd(reader.result as string);
+    }
+  };
   reader.readAsDataURL(file);
 };
 

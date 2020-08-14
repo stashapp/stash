@@ -4,6 +4,7 @@ enum GenderEnum {
   TRANSGENDER_MALE
   TRANSGENDER_FEMALE
   INTERSEX
+  NON_BINARY
 }
 
 type Performer {

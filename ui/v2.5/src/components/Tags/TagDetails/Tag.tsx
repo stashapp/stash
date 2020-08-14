@@ -34,7 +34,7 @@ export const Tag: React.FC = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing tag state
-  const [image, setImage] = useState<string>();
+  const [image, setImage] = useState<string | null>();
   const [name, setName] = useState<string>();
 
   // Tag state
@@ -172,6 +172,13 @@ export const Tag: React.FC = () => {
     updateTagData(tag);
   }
 
+  function onClearImage() {
+    setImage(null);
+    setImagePreview(
+      tag.image_path ? `${tag.image_path}?default=true` : undefined
+    );
+  }
+
   return (
     <div className="row">
       <div
@@ -205,6 +212,9 @@ export const Tag: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChangeHandler}
+          onClearImage={() => {
+            onClearImage();
+          }}
           onAutoTag={onAutoTag}
           onDelete={onDelete}
           acceptSVG

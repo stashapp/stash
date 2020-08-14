@@ -2,9 +2,9 @@ package jsonschema
 
 import (
 	"fmt"
-	"github.com/json-iterator/go"
 	"os"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -36,6 +36,8 @@ type SceneMovie struct {
 
 type Scene struct {
 	Title      string          `json:"title,omitempty"`
+	Checksum   string          `json:"checksum,omitempty"`
+	OSHash     string          `json:"oshash,omitempty"`
 	Studio     string          `json:"studio,omitempty"`
 	URL        string          `json:"url,omitempty"`
 	Date       string          `json:"date,omitempty"`

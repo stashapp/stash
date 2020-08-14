@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"path/filepath"
 	"strconv"
 
@@ -80,6 +81,24 @@ func (qb *GalleryQueryBuilder) Find(id int) (*Gallery, error) {
 	query := "SELECT * FROM galleries WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryGallery(query, args, nil)
+}
+
+func (qb *GalleryQueryBuilder) FindMany(ids []int) ([]*Gallery, error) {
+	var galleries []*Gallery
+	for _, id := range ids {
+		gallery, err := qb.Find(id)
+		if err != nil {
+			return nil, err
+		}
+
+		if gallery == nil {
+			return nil, fmt.Errorf("gallery with id %d not found", id)
+		}
+
+		galleries = append(galleries, gallery)
+	}
+
+	return galleries, nil
 }
 
 func (qb *GalleryQueryBuilder) FindByChecksum(checksum string, tx *sqlx.Tx) (*Gallery, error) {

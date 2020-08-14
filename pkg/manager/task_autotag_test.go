@@ -200,7 +200,7 @@ func createScenes(tx *sqlx.Tx) error {
 
 func makeScene(name string, expectedResult bool) *models.Scene {
 	scene := &models.Scene{
-		Checksum: utils.MD5FromString(name),
+		Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
 		Path:     name,
 	}
 

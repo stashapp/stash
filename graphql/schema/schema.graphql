@@ -2,10 +2,15 @@
 type Query {
   """Find a scene by ID or Checksum"""
   findScene(id: ID, checksum: String): Scene
+  findSceneByHash(input: SceneHashInput!): Scene
+  
   """A function which queries Scene objects"""
   findScenes(scene_filter: SceneFilterType, scene_ids: [Int!], filter: FindFilterType): FindScenesResultType!
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
+
+  """Return valid stream paths"""
+  sceneStreams(id: ID): [SceneStreamEndpoint!]!
 
   parseSceneFilenames(filter: FindFilterType, config: SceneParserInput!): SceneParserResultType!
 
@@ -54,6 +59,7 @@ type Query {
   """List available scrapers"""
   listPerformerScrapers: [Scraper!]!
   listSceneScrapers: [Scraper!]!
+  listMovieScrapers: [Scraper!]!
 
   """Scrape a list of performers based on name"""
   scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
@@ -65,11 +71,20 @@ type Query {
   scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
   """Scrapes a complete performer record based on a URL"""
   scrapeSceneURL(url: String!): ScrapedScene
+  """Scrapes a complete movie record based on a URL"""
+  scrapeMovieURL(url: String!): ScrapedMovie
 
   """Scrape a performer using Freeones"""
   scrapeFreeones(performer_name: String!): ScrapedPerformer
   """Scrape a list of performers from a query"""
   scrapeFreeonesPerformerList(query: String!): [String!]!
+
+  # Plugins
+  """List loaded plugins"""
+  plugins: [Plugin!]
+  """List available plugin operations"""
+  pluginTasks: [PluginTask!]
+
 
   # Config
   """Returns the current, complete configuration"""
@@ -155,9 +170,15 @@ type Mutation {
   metadataAutoTag(input: AutoTagMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
   metadataClean: String!
+  """Migrate generated files for the current hash naming"""
+  migrateHashNaming: String!
 
   """Reload scrapers"""
   reloadScrapers: Boolean!
+
+  """Run plugin task. Returns the job ID"""
+  runPluginTask(plugin_id: ID!, task_name: String!, args: [PluginArgInput!]): String!
+  reloadPlugins: Boolean!
 
   stopJob: Boolean!
 }

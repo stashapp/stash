@@ -35,14 +35,14 @@ export const Studio: React.FC = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing studio state
-  const [image, setImage] = useState<string>();
+  const [image, setImage] = useState<string | null>();
   const [name, setName] = useState<string>();
   const [url, setUrl] = useState<string>();
   const [parentStudioId, setParentStudioId] = useState<string>();
 
   // Studio state
   const [studio, setStudio] = useState<Partial<GQL.StudioDataFragment>>({});
-  const [imagePreview, setImagePreview] = useState<string>();
+  const [imagePreview, setImagePreview] = useState<string | null>();
 
   const { data, error, loading } = useFindStudio(id);
   const [updateStudio] = useStudioUpdate(
@@ -185,6 +185,13 @@ export const Studio: React.FC = () => {
     updateStudioData(studio);
   }
 
+  function onClearImage() {
+    setImage(null);
+    setImagePreview(
+      studio.image_path ? `${studio.image_path}?default=true` : undefined
+    );
+  }
+
   return (
     <div className="row">
       <div
@@ -197,8 +204,10 @@ export const Studio: React.FC = () => {
         <div className="text-center">
           {imageEncoding ? (
             <LoadingIndicator message="Encoding image..." />
-          ) : (
+          ) : imagePreview ? (
             <img className="logo" alt={name} src={imagePreview} />
+          ) : (
+            ""
           )}
         </div>
         <Table>
@@ -238,6 +247,9 @@ export const Studio: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChangeHandler}
+          onClearImage={() => {
+            onClearImage();
+          }}
           onAutoTag={onAutoTag}
           onDelete={onDelete}
           acceptSVG

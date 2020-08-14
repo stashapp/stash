@@ -46,6 +46,7 @@ export class PerformerIsMissingCriterion extends IsMissingCriterion {
     "aliases",
     "gender",
     "scenes",
+    "image",
   ];
 }
 
@@ -72,4 +73,24 @@ export class TagIsMissingCriterion extends IsMissingCriterion {
 export class TagIsMissingCriterionOption implements ICriterionOption {
   public label: string = Criterion.getLabel("tagIsMissing");
   public value: CriterionType = "tagIsMissing";
+}
+
+export class StudioIsMissingCriterion extends IsMissingCriterion {
+  public type: CriterionType = "studioIsMissing";
+  public options: string[] = ["image"];
+}
+
+export class StudioIsMissingCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("studioIsMissing");
+  public value: CriterionType = "studioIsMissing";
+}
+
+export class MovieIsMissingCriterion extends IsMissingCriterion {
+  public type: CriterionType = "movieIsMissing";
+  public options: string[] = ["front_image", "back_image"];
+}
+
+export class MovieIsMissingCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("movieIsMissing");
+  public value: CriterionType = "movieIsMissing";
 }

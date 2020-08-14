@@ -7,6 +7,8 @@ import {
   useMovieUpdate,
   useMovieCreate,
   useMovieDestroy,
+  queryScrapeMovieURL,
+  useListMovieScrapers,
 } from "src/core/StashService";
 import { useParams, useHistory } from "react-router-dom";
 import {
@@ -14,6 +16,7 @@ import {
   LoadingIndicator,
   Modal,
   StudioSelect,
+  Icon,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { Table, Form, Modal as BSModal, Button } from "react-bootstrap";
@@ -22,8 +25,11 @@ import {
   ImageUtils,
   EditableTextUtils,
   TextUtils,
+  DurationUtils,
 } from "src/utils";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { MovieScenesPanel } from "./MovieScenesPanel";
+import { MovieScrapeDialog } from "./MovieScrapeDialog";
 
 export const Movie: React.FC = () => {
   const history = useHistory();
@@ -37,8 +43,12 @@ export const Movie: React.FC = () => {
   const [isImageAlertOpen, setIsImageAlertOpen] = useState<boolean>(false);
 
   // Editing movie state
-  const [frontImage, setFrontImage] = useState<string | undefined>(undefined);
-  const [backImage, setBackImage] = useState<string | undefined>(undefined);
+  const [frontImage, setFrontImage] = useState<string | undefined | null>(
+    undefined
+  );
+  const [backImage, setBackImage] = useState<string | undefined | null>(
+    undefined
+  );
   const [name, setName] = useState<string | undefined>(undefined);
   const [aliases, setAliases] = useState<string | undefined>(undefined);
   const [duration, setDuration] = useState<number | undefined>(undefined);
@@ -64,11 +74,17 @@ export const Movie: React.FC = () => {
 
   // Network state
   const { data, error, loading } = useFindMovie(id);
+  const [isLoading, setIsLoading] = useState(false);
   const [updateMovie] = useMovieUpdate(getMovieInput() as GQL.MovieUpdateInput);
   const [createMovie] = useMovieCreate(getMovieInput() as GQL.MovieCreateInput);
   const [deleteMovie] = useMovieDestroy(
     getMovieInput() as GQL.MovieDestroyInput
   );
+
+  const Scrapers = useListMovieScrapers();
+  const [scrapedMovie, setScrapedMovie] = useState<
+    GQL.ScrapedMovie | undefined
+  >();
 
   const intl = useIntl();
 
@@ -138,7 +154,7 @@ export const Movie: React.FC = () => {
     }
   }, [data, updateMovieData]);
 
-  function onImageLoad(imageData: string) {
+  function showImageAlert(imageData: string) {
     setImageClipboard(imageData);
     setIsImageAlertOpen(true);
   }
@@ -161,7 +177,12 @@ export const Movie: React.FC = () => {
     setBackImage(imageData);
   }
 
-  const encodingImage = ImageUtils.usePasteImage(onImageLoad, isEditing);
+  function onFrontImageLoad(imageData: string) {
+    setImagePreview(imageData);
+    setFrontImage(imageData);
+  }
+
+  const encodingImage = ImageUtils.usePasteImage(showImageAlert, isEditing);
 
   if (!isNew && !isEditing) {
     if (!data || !data.findMovie || loading) return <LoadingIndicator />;
@@ -222,8 +243,8 @@ export const Movie: React.FC = () => {
     history.push(`/movies`);
   }
 
-  function onImageChange(event: React.FormEvent<HTMLInputElement>) {
-    ImageUtils.onImageChange(event, onImageLoad);
+  function onFrontImageChange(event: React.FormEvent<HTMLInputElement>) {
+    ImageUtils.onImageChange(event, onFrontImageLoad);
   }
 
   function onBackImageChange(event: React.FormEvent<HTMLInputElement>) {
@@ -284,6 +305,157 @@ export const Movie: React.FC = () => {
       </BSModal>
     );
   }
+
+  function updateMovieEditStateFromScraper(
+    state: Partial<GQL.ScrapedMovieDataFragment>
+  ) {
+    if (state.name) {
+      setName(state.name);
+    }
+
+    if (state.aliases) {
+      setAliases(state.aliases ?? undefined);
+    }
+
+    if (state.duration) {
+      setDuration(DurationUtils.stringToSeconds(state.duration) ?? undefined);
+    }
+
+    if (state.date) {
+      setDate(state.date ?? undefined);
+    }
+
+    if (state.studio && state.studio.id) {
+      setStudioId(state.studio.id ?? undefined);
+    }
+
+    if (state.director) {
+      setDirector(state.director ?? undefined);
+    }
+    if (state.synopsis) {
+      setSynopsis(state.synopsis ?? undefined);
+    }
+    if (state.url) {
+      setUrl(state.url ?? undefined);
+    }
+
+    // image is a base64 string
+    // #404: don't overwrite image if it has been modified by the user
+    // overwrite if not new since it came from a dialog
+    // otherwise follow existing behaviour
+    if (
+      (!isNew || frontImage === undefined) &&
+      (state as GQL.ScrapedMovieDataFragment).front_image !== undefined
+    ) {
+      const imageStr = (state as GQL.ScrapedMovieDataFragment).front_image;
+      setFrontImage(imageStr ?? undefined);
+      setImagePreview(imageStr ?? undefined);
+    }
+
+    if (
+      (!isNew || backImage === undefined) &&
+      (state as GQL.ScrapedMovieDataFragment).back_image !== undefined
+    ) {
+      const imageStr = (state as GQL.ScrapedMovieDataFragment).back_image;
+      setBackImage(imageStr ?? undefined);
+      setBackImagePreview(imageStr ?? undefined);
+    }
+  }
+
+  async function onScrapeMovieURL() {
+    if (!url) return;
+    setIsLoading(true);
+
+    try {
+      const result = await queryScrapeMovieURL(url);
+      if (!result.data || !result.data.scrapeMovieURL) {
+        return;
+      }
+
+      // if this is a new movie, just dump the data
+      if (isNew) {
+        updateMovieEditStateFromScraper(result.data.scrapeMovieURL);
+      } else {
+        setScrapedMovie(result.data.scrapeMovieURL);
+      }
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function urlScrapable(scrapedUrl: string) {
+    return (
+      !!scrapedUrl &&
+      (Scrapers?.data?.listMovieScrapers ?? []).some((s) =>
+        (s?.movie?.urls ?? []).some((u) => scrapedUrl.includes(u))
+      )
+    );
+  }
+
+  function maybeRenderScrapeButton() {
+    if (!url || !isEditing || !urlScrapable(url)) {
+      return undefined;
+    }
+    return (
+      <Button
+        className="minimal scrape-url-button"
+        onClick={() => onScrapeMovieURL()}
+      >
+        <Icon icon="file-upload" />
+      </Button>
+    );
+  }
+
+  function maybeRenderScrapeDialog() {
+    if (!scrapedMovie) {
+      return;
+    }
+
+    const currentMovie = getMovieInput();
+
+    // Get image paths for scrape gui
+    currentMovie.front_image = movie.front_image_path;
+    currentMovie.back_image = movie.back_image_path;
+
+    return (
+      <MovieScrapeDialog
+        movie={currentMovie}
+        scraped={scrapedMovie}
+        onClose={(m) => {
+          onScrapeDialogClosed(m);
+        }}
+      />
+    );
+  }
+
+  function onScrapeDialogClosed(p?: GQL.ScrapedMovieDataFragment) {
+    if (p) {
+      updateMovieEditStateFromScraper(p);
+    }
+    setScrapedMovie(undefined);
+  }
+
+  function onClearFrontImage() {
+    setFrontImage(null);
+    setImagePreview(
+      movie.front_image_path
+        ? `${movie.front_image_path}?default=true`
+        : undefined
+    );
+  }
+
+  function onClearBackImage() {
+    setBackImage(null);
+    setBackImagePreview(
+      movie.back_image_path
+        ? `${movie.back_image_path}?default=true`
+        : undefined
+    );
+  }
+
+  if (isLoading) return <LoadingIndicator />;
 
   // TODO: CSS class
   return (
@@ -346,19 +518,21 @@ export const Movie: React.FC = () => {
               isEditing,
               onChange: setDirector,
             })}
-            {TableUtils.renderHtmlSelect({
-              title: "Rating",
-              value: rating ?? "",
-              isEditing,
-              onChange: (value: string) =>
-                setRating(Number.parseInt(value, 10)),
-              selectOptions: ["", "1", "2", "3", "4", "5"],
-            })}
+            <tr>
+              <td>Rating</td>
+              <td>
+                <RatingStars
+                  value={rating}
+                  disabled={!isEditing}
+                  onSetRating={(value) => setRating(value)}
+                />
+              </td>
+            </tr>
           </tbody>
         </Table>
 
         <Form.Group controlId="url">
-          <Form.Label>URL</Form.Label>
+          <Form.Label>URL {maybeRenderScrapeButton()}</Form.Label>
           <div>
             {EditableTextUtils.renderInputGroup({
               isEditing,
@@ -388,8 +562,10 @@ export const Movie: React.FC = () => {
           isEditing={isEditing}
           onToggleEdit={onToggleEdit}
           onSave={onSave}
-          onImageChange={onImageChange}
+          onImageChange={onFrontImageChange}
+          onClearImage={onClearFrontImage}
           onBackImageChange={onBackImageChange}
+          onClearBackImage={onClearBackImage}
           onDelete={onDelete}
         />
       </div>
@@ -400,6 +576,7 @@ export const Movie: React.FC = () => {
       )}
       {renderDeleteAlert()}
       {renderImageAlert()}
+      {maybeRenderScrapeDialog()}
     </div>
   );
 };

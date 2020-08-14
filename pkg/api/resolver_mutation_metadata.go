@@ -23,7 +23,7 @@ func (r *mutationResolver) MetadataExport(ctx context.Context) (string, error) {
 }
 
 func (r *mutationResolver) MetadataGenerate(ctx context.Context, input models.GenerateMetadataInput) (string, error) {
-	manager.GetInstance().Generate(input.Sprites, input.Previews, input.PreviewPreset, input.ImagePreviews, input.Markers, input.Transcodes, input.Thumbnails)
+	manager.GetInstance().Generate(input)
 	return "todo", nil
 }
 
@@ -34,6 +34,11 @@ func (r *mutationResolver) MetadataAutoTag(ctx context.Context, input models.Aut
 
 func (r *mutationResolver) MetadataClean(ctx context.Context) (string, error) {
 	manager.GetInstance().Clean()
+	return "todo", nil
+}
+
+func (r *mutationResolver) MigrateHashNaming(ctx context.Context) (string, error) {
+	manager.GetInstance().MigrateHash()
 	return "todo", nil
 }
 

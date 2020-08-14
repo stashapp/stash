@@ -25,7 +25,8 @@ type SceneMovie {
 
 type Scene {
   id: ID!
-  checksum: String!
+  checksum: String
+  oshash: String
   title: String
   details: String
   url: String
@@ -36,7 +37,6 @@ type Scene {
 
   file: SceneFileType! # Resolver
   paths: ScenePathsType! # Resolver
-  is_streamable: Boolean! # Resolver
 
   scene_markers: [SceneMarker!]!
   gallery: Gallery
@@ -138,4 +138,15 @@ type SceneParserResult {
 type SceneParserResultType {
   count: Int!
   results: [SceneParserResult!]!
+}
+
+input SceneHashInput {
+  checksum: String
+  oshash: String
+}
+
+type SceneStreamEndpoint {
+  url: String!
+  mime_type: String
+  label: String
 }

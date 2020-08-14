@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -40,6 +41,16 @@ WHERE scenes_tags.tag_id = ?
 GROUP BY scenes_tags.scene_id
 `
 
+var countScenesForMissingChecksumQuery = `
+SELECT id FROM scenes
+WHERE scenes.checksum is null
+`
+
+var countScenesForMissingOSHashQuery = `
+SELECT id FROM scenes
+WHERE scenes.oshash is null
+`
+
 type SceneQueryBuilder struct{}
 
 func NewSceneQueryBuilder() SceneQueryBuilder {
@@ -49,9 +60,9 @@ func NewSceneQueryBuilder() SceneQueryBuilder {
 func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO scenes (checksum, path, title, details, url, date, rating, o_counter, size, duration, video_codec,
+		`INSERT INTO scenes (oshash, checksum, path, title, details, url, date, rating, o_counter, size, duration, video_codec,
                     			    audio_codec, format, width, height, framerate, bitrate, studio_id, created_at, updated_at)
-				VALUES (:checksum, :path, :title, :details, :url, :date, :rating, :o_counter, :size, :duration, :video_codec,
+				VALUES (:oshash, :checksum, :path, :title, :details, :url, :date, :rating, :o_counter, :size, :duration, :video_codec,
 					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :created_at, :updated_at)
 		`,
 		newScene,
@@ -147,6 +158,24 @@ func (qb *SceneQueryBuilder) Find(id int) (*Scene, error) {
 	return qb.find(id, nil)
 }
 
+func (qb *SceneQueryBuilder) FindMany(ids []int) ([]*Scene, error) {
+	var scenes []*Scene
+	for _, id := range ids {
+		scene, err := qb.Find(id)
+		if err != nil {
+			return nil, err
+		}
+
+		if scene == nil {
+			return nil, fmt.Errorf("scene with id %d not found", id)
+		}
+
+		scenes = append(scenes, scene)
+	}
+
+	return scenes, nil
+}
+
 func (qb *SceneQueryBuilder) find(id int, tx *sqlx.Tx) (*Scene, error) {
 	query := selectAll(sceneTable) + "WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
@@ -156,6 +185,12 @@ func (qb *SceneQueryBuilder) find(id int, tx *sqlx.Tx) (*Scene, error) {
 func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*Scene, error) {
 	query := "SELECT * FROM scenes WHERE checksum = ? LIMIT 1"
 	args := []interface{}{checksum}
+	return qb.queryScene(query, args, nil)
+}
+
+func (qb *SceneQueryBuilder) FindByOSHash(oshash string) (*Scene, error) {
+	query := "SELECT * FROM scenes WHERE oshash = ? LIMIT 1"
+	args := []interface{}{oshash}
 	return qb.queryScene(query, args, nil)
 }
 
@@ -212,6 +247,16 @@ func (qb *SceneQueryBuilder) CountByTagID(tagID int) (int, error) {
 	return runCountQuery(buildCountQuery(countScenesForTagQuery), args)
 }
 
+// CountMissingChecksum returns the number of scenes missing a checksum value.
+func (qb *SceneQueryBuilder) CountMissingChecksum() (int, error) {
+	return runCountQuery(buildCountQuery(countScenesForMissingChecksumQuery), []interface{}{})
+}
+
+// CountMissingOSHash returns the number of scenes missing an oshash value.
+func (qb *SceneQueryBuilder) CountMissingOSHash() (int, error) {
+	return runCountQuery(buildCountQuery(countScenesForMissingOSHashQuery), []interface{}{})
+}
+
 func (qb *SceneQueryBuilder) Wall(q *string) ([]*Scene, error) {
 	s := ""
 	if q != nil {
@@ -248,7 +293,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"scenes.title", "scenes.details", "scenes.path", "scenes.checksum", "scene_markers.title"}
+		searchColumns := []string{"scenes.title", "scenes.details", "scenes.path", "scenes.oshash", "scenes.checksum", "scene_markers.title"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
 		query.addArg(thisArgs...)
@@ -516,6 +561,32 @@ func (qb *SceneQueryBuilder) UpdateFormat(id int, format string, tx *sqlx.Tx) er
 	_, err := tx.Exec(
 		`UPDATE scenes SET format = ? WHERE scenes.id = ? `,
 		format, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *SceneQueryBuilder) UpdateOSHash(id int, oshash string, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET oshash = ? WHERE scenes.id = ? `,
+		oshash, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *SceneQueryBuilder) UpdateChecksum(id int, checksum string, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET checksum = ? WHERE scenes.id = ? `,
+		checksum, id,
 	)
 	if err != nil {
 		return err
