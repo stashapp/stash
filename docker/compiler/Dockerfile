@@ -20,6 +20,8 @@ RUN apt-get update && \
     patch make tar xz-utils bzip2 gzip sed cpio \
 	gcc-6-multilib g++-6-multilib gcc-mingw-w64 g++-mingw-w64 clang llvm-dev \
 	gcc-arm-linux-gnueabi libc-dev-armel-cross linux-libc-dev-armel-cross \
+    gcc-arm-linux-gnueabihf libc-dev-armhf-cross \
+    gcc-aarch64-linux-gnu libc-dev-arm64-cross \
 	nodejs yarn --no-install-recommends || exit 1; \
 	rm -rf /var/lib/apt/lists/*;
 
