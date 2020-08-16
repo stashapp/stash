@@ -56,6 +56,7 @@ export const SceneList: React.FC<ISceneList> = ({
 
   const listData = useScenesList({
     zoomable: true,
+    selectable: true,
     otherOperations,
     renderContent,
     renderEditDialog: renderEditScenesDialog,

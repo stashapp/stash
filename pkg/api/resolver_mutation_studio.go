@@ -80,6 +80,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	}
 
 	var imageData []byte
+	imageIncluded := wasFieldIncluded(ctx, "image")
 	if input.Image != nil {
 		var err error
 		_, imageData, err = utils.ProcessBase64Image(*input.Image)
@@ -123,7 +124,13 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	// update image table
 	if len(imageData) > 0 {
 		if err := qb.UpdateStudioImage(studio.ID, imageData, tx); err != nil {
-			_ = tx.Rollback()
+			tx.Rollback()
+			return nil, err
+		}
+	} else if imageIncluded {
+		// must be unsetting
+		if err := qb.DestroyStudioImage(studio.ID, tx); err != nil {
+			tx.Rollback()
 			return nil, err
 		}
 	}

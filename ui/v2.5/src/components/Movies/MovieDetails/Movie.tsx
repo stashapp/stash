@@ -27,6 +27,7 @@ import {
   TextUtils,
   DurationUtils,
 } from "src/utils";
+import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 import { MovieScrapeDialog } from "./MovieScrapeDialog";
 
@@ -42,8 +43,12 @@ export const Movie: React.FC = () => {
   const [isImageAlertOpen, setIsImageAlertOpen] = useState<boolean>(false);
 
   // Editing movie state
-  const [frontImage, setFrontImage] = useState<string | undefined>(undefined);
-  const [backImage, setBackImage] = useState<string | undefined>(undefined);
+  const [frontImage, setFrontImage] = useState<string | undefined | null>(
+    undefined
+  );
+  const [backImage, setBackImage] = useState<string | undefined | null>(
+    undefined
+  );
   const [name, setName] = useState<string | undefined>(undefined);
   const [aliases, setAliases] = useState<string | undefined>(undefined);
   const [duration, setDuration] = useState<number | undefined>(undefined);
@@ -432,6 +437,24 @@ export const Movie: React.FC = () => {
     setScrapedMovie(undefined);
   }
 
+  function onClearFrontImage() {
+    setFrontImage(null);
+    setImagePreview(
+      movie.front_image_path
+        ? `${movie.front_image_path}?default=true`
+        : undefined
+    );
+  }
+
+  function onClearBackImage() {
+    setBackImage(null);
+    setBackImagePreview(
+      movie.back_image_path
+        ? `${movie.back_image_path}?default=true`
+        : undefined
+    );
+  }
+
   if (isLoading) return <LoadingIndicator />;
 
   // TODO: CSS class
@@ -495,14 +518,16 @@ export const Movie: React.FC = () => {
               isEditing,
               onChange: setDirector,
             })}
-            {TableUtils.renderHtmlSelect({
-              title: "Rating",
-              value: rating ?? "",
-              isEditing,
-              onChange: (value: string) =>
-                setRating(Number.parseInt(value, 10)),
-              selectOptions: ["", "1", "2", "3", "4", "5"],
-            })}
+            <tr>
+              <td>Rating</td>
+              <td>
+                <RatingStars
+                  value={rating}
+                  disabled={!isEditing}
+                  onSetRating={(value) => setRating(value)}
+                />
+              </td>
+            </tr>
           </tbody>
         </Table>
 
@@ -538,7 +563,9 @@ export const Movie: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onFrontImageChange}
+          onClearImage={onClearFrontImage}
           onBackImageChange={onBackImageChange}
+          onClearBackImage={onClearBackImage}
           onDelete={onDelete}
         />
       </div>

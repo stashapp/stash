@@ -77,11 +77,14 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 		checksum := utils.MD5FromString(performerJSON.Name)
 
 		// Process the base 64 encoded image string
-		_, imageData, err := utils.ProcessBase64Image(performerJSON.Image)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[performers] <%s> invalid image: %s", mappingJSON.Checksum, err.Error())
-			return
+		var imageData []byte
+		if len(performerJSON.Image) > 0 {
+			_, imageData, err = utils.ProcessBase64Image(performerJSON.Image)
+			if err != nil {
+				_ = tx.Rollback()
+				logger.Errorf("[performers] <%s> invalid image: %s", mappingJSON.Checksum, err.Error())
+				return
+			}
 		}
 
 		// Populate a new performer from the input
@@ -219,9 +222,13 @@ func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent m
 	checksum := utils.MD5FromString(studioJSON.Name)
 
 	// Process the base 64 encoded image string
-	_, imageData, err := utils.ProcessBase64Image(studioJSON.Image)
-	if err != nil {
-		return fmt.Errorf("invalid image: %s", err.Error())
+	var imageData []byte
+	var err error
+	if len(studioJSON.Image) > 0 {
+		_, imageData, err = utils.ProcessBase64Image(studioJSON.Image)
+		if err != nil {
+			return fmt.Errorf("invalid image: %s", err.Error())
+		}
 	}
 
 	// Populate a new studio from the input
@@ -306,17 +313,23 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 		checksum := utils.MD5FromString(movieJSON.Name)
 
 		// Process the base 64 encoded image string
-		_, frontimageData, err := utils.ProcessBase64Image(movieJSON.FrontImage)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[movies] <%s> invalid front_image: %s", mappingJSON.Checksum, err.Error())
-			return
+		var frontimageData []byte
+		var backimageData []byte
+		if len(movieJSON.FrontImage) > 0 {
+			_, frontimageData, err = utils.ProcessBase64Image(movieJSON.FrontImage)
+			if err != nil {
+				_ = tx.Rollback()
+				logger.Errorf("[movies] <%s> invalid front_image: %s", mappingJSON.Checksum, err.Error())
+				return
+			}
 		}
-		_, backimageData, err := utils.ProcessBase64Image(movieJSON.BackImage)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[movies] <%s> invalid back_image: %s", mappingJSON.Checksum, err.Error())
-			return
+		if len(movieJSON.BackImage) > 0 {
+			_, backimageData, err = utils.ProcessBase64Image(movieJSON.BackImage)
+			if err != nil {
+				_ = tx.Rollback()
+				logger.Errorf("[movies] <%s> invalid back_image: %s", mappingJSON.Checksum, err.Error())
+				return
+			}
 		}
 
 		// Populate a new movie from the input
@@ -359,7 +372,7 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 			return
 		}
 
-		// Add the performer image if set
+		// Add the movie images if set
 		if len(frontimageData) > 0 {
 			if err := qb.UpdateMovieImages(createdMovie.ID, frontimageData, backimageData, tx); err != nil {
 				_ = tx.Rollback()

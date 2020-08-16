@@ -27,6 +27,12 @@ func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	studio := r.Context().Value(studioKey).(*models.Studio)
 	qb := models.NewStudioQueryBuilder()
 	image, _ := qb.GetStudioImage(studio.ID, nil)
+
+	defaultParam := r.URL.Query().Get("default")
+	if len(image) == 0 || defaultParam == "true" {
+		_, image, _ = utils.ProcessBase64Image(models.DefaultStudioImage)
+	}
+
 	utils.ServeImage(image, w, r)
 }
 

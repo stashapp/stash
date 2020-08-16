@@ -178,6 +178,10 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		switch *isMissingFilter {
 		case "scenes":
 			query.addWhere("scenes_join.scene_id IS NULL")
+		case "image":
+			query.body += `left join performers_image on performers_image.performer_id = performers.id
+			`
+			query.addWhere("performers_image.performer_id IS NULL")
 		default:
 			query.addWhere("performers." + *isMissingFilter + " IS NULL")
 		}
