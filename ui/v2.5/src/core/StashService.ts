@@ -405,7 +405,7 @@ export const queryScrapeFreeones = (performerName: string) =>
     variables: {
       performer_name: performerName,
     },
-    fetchPolicy: "network-only"
+    fetchPolicy: "network-only",
   });
 
 export const queryScrapePerformer = (
@@ -418,7 +418,7 @@ export const queryScrapePerformer = (
       scraper_id: scraperId,
       scraped_performer: scrapedPerformer,
     },
-    fetchPolicy: "network-only"
+    fetchPolicy: "network-only",
   });
 
 export const queryScrapePerformerURL = (url: string) =>
@@ -427,7 +427,7 @@ export const queryScrapePerformerURL = (url: string) =>
     variables: {
       url,
     },
-    fetchPolicy: "network-only"
+    fetchPolicy: "network-only",
   });
 
 export const queryScrapeSceneURL = (url: string) =>
@@ -436,7 +436,7 @@ export const queryScrapeSceneURL = (url: string) =>
     variables: {
       url,
     },
-    fetchPolicy: "network-only"
+    fetchPolicy: "network-only",
   });
 
 export const queryScrapeMovieURL = (url: string) =>
@@ -445,7 +445,7 @@ export const queryScrapeMovieURL = (url: string) =>
     variables: {
       url,
     },
-    fetchPolicy: "network-only"
+    fetchPolicy: "network-only",
   });
 
 export const queryScrapeScene = (
@@ -458,7 +458,7 @@ export const queryScrapeScene = (
       scraper_id: scraperId,
       scene,
     },
-    fetchPolicy: "network-only"
+    fetchPolicy: "network-only",
   });
 
 export const mutateReloadScrapers = () =>

@@ -47,7 +47,7 @@ export class ScrapeResult<T> {
   }
 }
 
-interface HasName {
+interface IHasName {
   name: string;
 }
 
@@ -55,7 +55,8 @@ interface IScrapedFieldProps<T> {
   result: ScrapeResult<T>;
 }
 
-interface IScrapedRowProps<T, V extends HasName> extends IScrapedFieldProps<T> {
+interface IScrapedRowProps<T, V extends IHasName>
+  extends IScrapedFieldProps<T> {
   title: string;
   renderOriginalField: (result: ScrapeResult<T>) => JSX.Element | undefined;
   renderNewField: (result: ScrapeResult<T>) => JSX.Element | undefined;
@@ -75,7 +76,9 @@ function renderButtonIcon(selected: boolean) {
   );
 }
 
-export const ScrapeDialogRow = <T,V extends HasName>(props: IScrapedRowProps<T,V>) => {
+export const ScrapeDialogRow = <T, V extends IHasName>(
+  props: IScrapedRowProps<T, V>
+) => {
   function handleSelectClick(isNew: boolean) {
     const ret = _.clone(props.result);
     ret.useNewValue = isNew;
@@ -97,7 +100,7 @@ export const ScrapeDialogRow = <T,V extends HasName>(props: IScrapedRowProps<T,V
 
     return (
       <>
-        {props.newValues!.map(t => (
+        {props.newValues!.map((t) => (
           <InputGroup className="my-1" key={t.name}>
             <Button variant="secondary" onClick={() => props.onCreateNew!(t)}>
               <Icon className="fa-fw" icon="plus" />
