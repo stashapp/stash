@@ -35,6 +35,7 @@ export class ScrapeResult<T> {
 
     ret.newValue = value;
     ret.useNewValue = !_.isEqual(ret.newValue, ret.originalValue);
+    ret.scraped = ret.useNewValue;
 
     return ret;
   }
@@ -54,13 +55,13 @@ interface IScrapedFieldProps<T> {
   result: ScrapeResult<T>;
 }
 
-interface IScrapedRowProps<T> extends IScrapedFieldProps<T> {
+interface IScrapedRowProps<T, V extends HasName> extends IScrapedFieldProps<T> {
   title: string;
   renderOriginalField: (result: ScrapeResult<T>) => JSX.Element | undefined;
   renderNewField: (result: ScrapeResult<T>) => JSX.Element | undefined;
   onChange: (value: ScrapeResult<T>) => void;
-  newValues?: HasName[];
-  onCreateNew?: (newValue: HasName) => void;
+  newValues?: V[];
+  onCreateNew?: (newValue: V) => void;
 }
 
 function renderButtonIcon(selected: boolean) {
@@ -74,7 +75,7 @@ function renderButtonIcon(selected: boolean) {
   );
 }
 
-export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
+export const ScrapeDialogRow = <T,V extends HasName>(props: IScrapedRowProps<T,V>) => {
   function handleSelectClick(isNew: boolean) {
     const ret = _.clone(props.result);
     ret.useNewValue = isNew;
@@ -97,7 +98,7 @@ export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
     return (
       <>
         {props.newValues!.map(t => (
-          <InputGroup className="my-1">
+          <InputGroup className="my-1" key={t.name}>
             <Button variant="secondary" onClick={() => props.onCreateNew!(t)}>
               <Icon className="fa-fw" icon="plus" />
             </Button>
