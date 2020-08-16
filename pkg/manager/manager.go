@@ -145,10 +145,12 @@ The FFMPEG and FFProbe binaries should be placed in %s
 The error was: %s
 `
 			logger.Fatalf(msg, configDirectory, err)
+		} else {
+			// After download get new paths for ffmpeg and ffprobe
+			ffmpegPath, ffprobePath = ffmpeg.GetPaths(configDirectory)
 		}
 	}
 
-	// TODO: is this valid after download?
 	instance.FFMPEGPath = ffmpegPath
 	instance.FFProbePath = ffprobePath
 }
