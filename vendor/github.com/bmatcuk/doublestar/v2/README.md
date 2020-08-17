@@ -8,6 +8,8 @@ Path pattern matching and globbing supporting `doublestar` (`**`) patterns.
 
 ## About
 
+#### [Updating from v1 to v2?](UPGRADING.md)
+
 **doublestar** is a [golang](http://golang.org/) implementation of path pattern
 matching and globbing with support for "doublestar" (aka globstar: `**`)
 patterns.
@@ -38,13 +40,13 @@ only match directories.
 **doublestar** can be installed via `go get`:
 
 ```bash
-go get github.com/bmatcuk/doublestar
+go get github.com/bmatcuk/doublestar/v2
 ```
 
 To use it in your code, you must import it:
 
 ```go
-import "github.com/bmatcuk/doublestar"
+import "github.com/bmatcuk/doublestar/v2"
 ```
 
 ## Usage

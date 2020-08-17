@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bmatcuk/doublestar"
+	"github.com/bmatcuk/doublestar/v2"
 	"github.com/disintegration/imaging"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
