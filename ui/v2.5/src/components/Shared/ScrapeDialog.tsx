@@ -6,6 +6,7 @@ import {
   InputGroup,
   Button,
   FormControl,
+  Badge,
 } from "react-bootstrap";
 import { Icon, Modal } from "src/components/Shared";
 import _ from "lodash";
@@ -101,16 +102,17 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
     return (
       <>
         {props.newValues!.map((t) => (
-          <InputGroup className="my-1" key={t.name}>
-            <Button variant="secondary" onClick={() => props.onCreateNew!(t)}>
+          <Badge
+            className="tag-item"
+            variant="secondary"
+            key={t.name}
+            onClick={() => props.onCreateNew!(t)}
+          >
+            {t.name}
+            <Button className="minimal ml-2">
               <Icon className="fa-fw" icon="plus" />
             </Button>
-            <FormControl
-              value={t.name}
-              readOnly
-              className="bg-secondary text-white border-secondary"
-            />
-          </InputGroup>
+          </Badge>
         ))}
       </>
     );
