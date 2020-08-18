@@ -120,7 +120,11 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
     const minCollapseLength = 10;
 
     if (props.newValues!.length >= minCollapseLength) {
-      return <CollapseButton text="Missing">{ret}</CollapseButton>;
+      return (
+        <CollapseButton text={`Missing (${props.newValues!.length})`}>
+          {ret}
+        </CollapseButton>
+      );
     }
 
     return ret;
