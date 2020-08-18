@@ -1,0 +1,9 @@
+type StashBox {
+    endpoint: String!
+    api_key: String!
+}
+
+input StashBoxInput {
+    endpoint: String!
+    api_key: String!
+}

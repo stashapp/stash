@@ -69,6 +69,8 @@ input ConfigGeneralInput {
   scraperUserAgent: String
   """Scraper CDP path. Path to chrome executable or remote address"""
   scraperCDPPath: String
+  """Stash-box instances used for tagging"""
+  stashBoxes: [StashBoxInput!]!
 }
 
 type ConfigGeneralResult {
@@ -118,6 +120,8 @@ type ConfigGeneralResult {
   scraperUserAgent: String
   """Scraper CDP path. Path to chrome executable or remote address"""
   scraperCDPPath: String
+  """Stash-box instances used for tagging"""
+  stashBoxes: [StashBox!]!
 }
 
 input ConfigInterfaceInput {
