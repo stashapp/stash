@@ -2,10 +2,14 @@ package api
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
 	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
 // deprecated
@@ -71,4 +75,25 @@ func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models
 
 func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
 	return manager.GetInstance().ScraperCache.ScrapeMovieURL(url)
+}
+
+func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.StashBoxQueryInput) ([]*models.ScrapedScene, error) {
+	boxes := config.GetStashBoxes()
+
+	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
+		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+	}
+
+	client := stashbox.NewClient(*boxes[input.StashBoxIndex])
+
+	if input.SceneID != nil {
+		idInt, _ := strconv.Atoi(*input.SceneID)
+		return client.FindStashBoxSceneByFingerprint(idInt)
+	}
+
+	if input.Q != nil {
+		return client.QueryStashBoxScene(*input.Q)
+	}
+
+	return nil, nil
 }
