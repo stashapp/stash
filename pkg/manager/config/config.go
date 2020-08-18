@@ -67,6 +67,9 @@ const ScrapersPath = "scrapers_path"
 const ScraperUserAgent = "scraper_user_agent"
 const ScraperCDPPath = "scraper_cdp_path"
 
+// stash-box options
+const StashBoxes = "stash_boxes"
+
 // plugin options
 const PluginsPath = "plugins_path"
 
@@ -196,6 +199,12 @@ func GetScraperUserAgent() string {
 // to an instance of Chrome.
 func GetScraperCDPPath() string {
 	return viper.GetString(ScraperCDPPath)
+}
+
+func GetStashBoxes() []*models.StashBox {
+	var boxes []*models.StashBox
+	_ = viper.UnmarshalKey(StashBoxes, &boxes)
+	return boxes
 }
 
 func GetDefaultPluginsPath() string {
