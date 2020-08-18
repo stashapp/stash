@@ -35,7 +35,7 @@
 					{{- end }}
 				{{- else if eq ($type.GO | ref) "map[string]interface{}" }}
 					return v.(map[string]interface{}), nil
-				{{- else if $type.IsMarshaler -}}
+				{{- else if $type.IsMarshaler }}
 					var res {{ $type.GO | ref }}
 					return res, res.UnmarshalGQL(v)
 				{{- else }}
@@ -50,7 +50,7 @@
 			{{- if $type.IsNilable }}
 				if v == nil {
 					{{- if $type.GQL.NonNull }}
-						if !ec.HasError(graphql.GetResolverContext(ctx)) {
+						if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 							ec.Errorf(ctx, "must not be null")
 						}
 					{{- end }}
@@ -75,11 +75,11 @@
 				for i := range v {
 					{{- if not $type.IsScalar }}
 						i := i
-						rctx := &graphql.ResolverContext{
+						fc := &graphql.FieldContext{
 							Index: &i,
 							Result: &v[i],
 						}
-						ctx := graphql.WithResolverContext(ctx, rctx)
+						ctx := graphql.WithFieldContext(ctx, fc)
 						f := func(i int) {
 							defer func() {
                         		if r := recover(); r != nil {
@@ -113,7 +113,7 @@
 					{{- else if $type.GQL.NonNull }}
 							res := {{ $type.Marshaler | call }}({{- if $type.CastType }}{{ $type.CastType | ref }}(v){{else}}v{{- end }})
 							if res == graphql.Null {
-								if !ec.HasError(graphql.GetResolverContext(ctx)) {
+								if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 									ec.Errorf(ctx, "must not be null")
 								}
 							}

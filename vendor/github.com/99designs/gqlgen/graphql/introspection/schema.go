@@ -3,7 +3,7 @@ package introspection
 import (
 	"strings"
 
-	"github.com/vektah/gqlparser/ast"
+	"github.com/vektah/gqlparser/v2/ast"
 )
 
 type Schema struct {
@@ -11,7 +11,7 @@ type Schema struct {
 }
 
 func (s *Schema) Types() []Type {
-	var types []Type
+	types := make([]Type, 0, len(s.schema.Types))
 	for _, typ := range s.schema.Types {
 		if strings.HasPrefix(typ.Name, "__") {
 			continue
@@ -34,7 +34,7 @@ func (s *Schema) SubscriptionType() *Type {
 }
 
 func (s *Schema) Directives() []Directive {
-	var res []Directive
+	res := make([]Directive, 0, len(s.schema.Directives))
 
 	for _, d := range s.schema.Directives {
 		res = append(res, s.directiveFromDef(d))
@@ -44,19 +44,19 @@ func (s *Schema) Directives() []Directive {
 }
 
 func (s *Schema) directiveFromDef(d *ast.DirectiveDefinition) Directive {
-	var locs []string
-	for _, loc := range d.Locations {
-		locs = append(locs, string(loc))
+	locs := make([]string, len(d.Locations))
+	for i, loc := range d.Locations {
+		locs[i] = string(loc)
 	}
 
-	var args []InputValue
-	for _, arg := range d.Arguments {
-		args = append(args, InputValue{
+	args := make([]InputValue, len(d.Arguments))
+	for i, arg := range d.Arguments {
+		args[i] = InputValue{
 			Name:         arg.Name,
 			Description:  arg.Description,
 			DefaultValue: defaultValue(arg.DefaultValue),
 			Type:         WrapTypeFromType(s.schema, arg.Type),
-		})
+		}
 	}
 
 	return Directive{

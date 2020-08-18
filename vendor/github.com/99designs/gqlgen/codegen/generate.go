@@ -11,5 +11,6 @@ func GenerateCode(data *Data) error {
 		Data:            data,
 		RegionTags:      true,
 		GeneratedHeader: true,
+		Packages:        data.Config.Packages,
 	})
 }

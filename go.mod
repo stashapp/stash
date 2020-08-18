@@ -1,7 +1,8 @@
 module github.com/stashapp/stash
 
 require (
-	github.com/99designs/gqlgen v0.9.0
+	github.com/99designs/gqlgen v0.11.3
+	github.com/Yamashou/gqlgenc v0.0.0-20200720023742-62053aec03dc
 	github.com/antchfx/htmlquery v1.2.3
 	github.com/bmatcuk/doublestar/v2 v2.0.1
 	github.com/chromedp/cdproto v0.0.0-20200608134039-8a80cdaf865c
@@ -27,11 +28,14 @@ require (
 	github.com/spf13/viper v1.4.0
 	github.com/stretchr/testify v1.5.1
 	github.com/tidwall/gjson v1.6.0
+	github.com/urfave/cli v1.20.0 // indirect
 	github.com/vektah/gqlparser v1.1.2
-	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
+	github.com/vektah/gqlparser/v2 v2.0.1
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2
 	golang.org/x/net v0.0.0-20200602114024-627f9648deb9
-	gopkg.in/yaml.v2 v2.2.2
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	gopkg.in/yaml.v2 v2.3.0
 )
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
