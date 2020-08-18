@@ -8,7 +8,7 @@ import {
   FormControl,
   Badge,
 } from "react-bootstrap";
-import { Icon, Modal } from "src/components/Shared";
+import { CollapseButton, Icon, Modal } from "src/components/Shared";
 import _ from "lodash";
 
 export class ScrapeResult<T> {
@@ -99,7 +99,7 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
       return;
     }
 
-    return (
+    const ret = (
       <>
         {props.newValues!.map((t) => (
           <Badge
@@ -116,6 +116,14 @@ export const ScrapeDialogRow = <T, V extends IHasName>(
         ))}
       </>
     );
+
+    const minCollapseLength = 10;
+
+    if (props.newValues!.length >= minCollapseLength) {
+      return <CollapseButton text="Missing">{ret}</CollapseButton>;
+    }
+
+    return ret;
   }
 
   return (
