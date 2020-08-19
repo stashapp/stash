@@ -42,7 +42,11 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 
 	var ret []*models.ScrapedScene
 	for _, s := range sceneFragments {
-		ret = append(ret, sceneFragmentToScrapedScene(s))
+		ss, err := sceneFragmentToScrapedScene(s)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, ss)
 	}
 
 	return ret, nil
@@ -89,7 +93,11 @@ func (c Client) findStashBoxSceneByFingerprint(hash string, algoType graphql.Fin
 
 	var ret []*models.ScrapedScene
 	for _, s := range sceneFragments {
-		ret = append(ret, sceneFragmentToScrapedScene(s))
+		ss, err := sceneFragmentToScrapedScene(s)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, ss)
 	}
 
 	return ret, nil
@@ -198,7 +206,7 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 	return sp
 }
 
-func sceneFragmentToScrapedScene(s *graphql.SceneFragment) *models.ScrapedScene {
+func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene, error) {
 	ss := &models.ScrapedScene{
 		Title:   s.Title,
 		Date:    s.Date,
@@ -213,17 +221,36 @@ func sceneFragmentToScrapedScene(s *graphql.SceneFragment) *models.ScrapedScene 
 			Name: s.Studio.Name,
 			URL:  findURL(s.Studio.Urls, "HOME"),
 		}
+
+		err := models.MatchScrapedSceneStudio(ss.Studio)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	for _, p := range s.Performers {
-		ss.Performers = append(ss.Performers, performerFragmentToScrapedScenePerformer(p.Performer))
+		sp := performerFragmentToScrapedScenePerformer(p.Performer)
+
+		err := models.MatchScrapedScenePerformer(sp)
+		if err != nil {
+			return nil, err
+		}
+
+		ss.Performers = append(ss.Performers, sp)
 	}
 
 	for _, t := range s.Tags {
-		ss.Tags = append(ss.Tags, &models.ScrapedSceneTag{
+		st := &models.ScrapedSceneTag{
 			Name: t.Name,
-		})
+		}
+
+		err := models.MatchScrapedSceneTag(st)
+		if err != nil {
+			return nil, err
+		}
+
+		ss.Tags = append(ss.Tags, st)
 	}
 
-	return ss
+	return ss, nil
 }
