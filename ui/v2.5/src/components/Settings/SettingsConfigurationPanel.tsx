@@ -5,7 +5,9 @@ import { useConfiguration, useConfigureGeneral } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
-import StashBoxConfiguration from "./StashBoxConfiguration";
+import StashBoxConfiguration, {
+  IStashBoxInstance,
+} from "./StashBoxConfiguration";
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const Toast = useToast();
@@ -55,7 +57,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [scraperCDPPath, setScraperCDPPath] = useState<string | undefined>(
     undefined
   );
-  const [stashBoxes, setStashBoxes] = useState<GQL.StashBoxInput[]>([]);
+  const [stashBoxes, setStashBoxes] = useState<IStashBoxInstance[]>([]);
 
   const { data, error, loading } = useConfiguration();
 
@@ -84,7 +86,21 @@ export const SettingsConfigurationPanel: React.FC = () => {
     excludes,
     scraperUserAgent,
     scraperCDPPath,
-    stashBoxes,
+    stashBoxes: stashBoxes
+      .map(
+        (b) =>
+          ({
+            name: b?.name,
+            api_key: b?.api_key,
+            endpoint: b?.endpoint,
+          } as GQL.StashBoxInput)
+      )
+      .filter(
+        (b) =>
+          b.api_key &&
+          b.endpoint &&
+          (stashBoxes.length < 2 || (b?.name?.length ?? 0) > 0)
+      ),
   });
 
   useEffect(() => {
@@ -118,9 +134,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
       setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
       setStashBoxes(
-        conf.general.stashBoxes.map((box) => ({
+        conf.general.stashBoxes.map((box, i) => ({
+          name: box?.name ?? undefined,
           endpoint: box.endpoint,
           api_key: box.api_key,
+          index: i,
         })) ?? []
       );
     }

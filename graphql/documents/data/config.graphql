@@ -23,6 +23,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   scraperUserAgent
   scraperCDPPath
   stashBoxes {
+    name
     endpoint
     api_key
   }
