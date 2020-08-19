@@ -267,6 +267,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
       if (result.data.queryStashBoxScene.length > 0) {
         setScrapedScene(result.data.queryStashBoxScene[0]);
+      } else {
+        Toast.success({
+          content: "No scenes found"
+        });
       }
     } catch (e) {
       Toast.error(e);
@@ -275,13 +279,20 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   }
 
+  function onStashBoxQueryClicked(stashBoxIndex: number) {
+    // TODO
+  }
+
   async function onScrapeClicked(scraper: GQL.Scraper) {
     setIsLoading(true);
     try {
       const result = await queryScrapeScene(scraper.id, getSceneInput());
       if (!result.data || !result.data.scrapeScene) {
+        Toast.success({
+          content: "No scenes found"
+        });
         return;
-      }
+      } 
       setScrapedScene(result.data.scrapeScene);
     } catch (e) {
       Toast.error(e);
@@ -337,7 +348,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
     // TODO - change name based on stashbox configuration
     return (
-      <DropdownButton id="scene-scrape" title="Scrape with...">
+      <DropdownButton className="d-inline-block" id="scene-scrape" title="Scrape with...">
         {stashBoxes.map((s, index) => (
           <Dropdown.Item key={s.endpoint} onClick={() => onScrapeStashBoxClicked(index)}>
             stash-box
@@ -355,6 +366,48 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           <span>Reload scrapers</span>
         </Dropdown.Item>
       </DropdownButton>
+    );
+  }
+
+  function maybeRenderStashboxQueryButton() {
+    const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
+
+    if (stashBoxes.length === 0) {
+      return;
+    }
+
+    // TODO - hide this button for now, with the view to add it when we get
+    // the query dialog going
+    if (true) {
+      return;
+    }
+
+    if (stashBoxes.length === 1) {
+      return (
+        <Button
+          className="mr-1"
+          onClick={() => onStashBoxQueryClicked(0)}
+          title="Query"
+        >
+          <Icon className="fa-fw" icon="search" />
+        </Button>
+      );
+    }
+
+    // TODO - change name based on stashbox configuration
+    return (
+      <Dropdown className="d-inline-block mr-1">
+        <Dropdown.Toggle id="stashbox-query-dropdown">
+          <Icon className="fa-fw" icon="search" />
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          {stashBoxes.map((s, index) => (
+            <Dropdown.Item key={s.endpoint} onClick={() => onStashBoxQueryClicked(index)}>
+              stash-box
+            </Dropdown.Item>
+          ))}
+        </Dropdown.Menu>
+      </Dropdown>
     );
   }
 
@@ -464,7 +517,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     <div id="scene-edit-details">
       {maybeRenderScrapeDialog()}
       <div className="form-container row px-3 pt-3">
-        <div className="col edit-buttons mb-3 pl-0">
+        <div className="col-6 edit-buttons mb-3 pl-0">
           <Button className="edit-button" variant="primary" onClick={onSave}>
             Save
           </Button>
@@ -476,7 +529,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             Delete
           </Button>
         </div>
-        {renderScraperMenu()}
+        <Col xs={6} className="text-right">
+          {maybeRenderStashboxQueryButton()}
+          {renderScraperMenu()}
+        </Col>
       </div>
       <div className="form-container row px-3">
         <div className="col-12 col-lg-6 col-xl-12">
