@@ -3,15 +3,23 @@ package stashbox
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Yamashou/gqlgenc/client"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
+	"github.com/stashapp/stash/pkg/utils"
 )
+
+// Timeout to get the image. Includes transfer time. May want to make this
+// configurable at some point.
+const imageGetTimeout = time.Second * 30
 
 // Client represents the client interface to a stash-box server instance.
 type Client struct {
@@ -169,6 +177,39 @@ func formatBodyModifications(m []*graphql.BodyModificationFragment) *string {
 	return &ret
 }
 
+func fetchImage(url string) (*string, error) {
+	client := &http.Client{
+		Timeout: imageGetTimeout,
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	// determine the image type and set the base64 type
+	contentType := resp.Header.Get("Content-Type")
+	if contentType == "" {
+		contentType = http.DetectContentType(body)
+	}
+
+	img := "data:" + contentType + ";base64," + utils.GetBase64StringFromData(body)
+	return &img, nil
+}
+
 func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *models.ScrapedScenePerformer {
 	sp := &models.ScrapedScenePerformer{
 		Name:         p.Name,
@@ -178,7 +219,8 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		Tattoos:      formatBodyModifications(p.Tattoos),
 		Piercings:    formatBodyModifications(p.Piercings),
 		Twitter:      findURL(p.Urls, "TWITTER"),
-		// TODO - Image
+		// TODO - Image - should be returned as a set of URLs. Will need a
+		// graphql schema change to accommodate this. Leave off for now.
 	}
 
 	if p.Height != nil {
@@ -210,6 +252,15 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 	return sp
 }
 
+func getFirstImage(images []*graphql.ImageFragment) *string {
+	ret, err := fetchImage(images[0].URL)
+	if err != nil {
+		logger.Warnf("Error fetching image %s: %s", images[0].URL, err.Error())
+	}
+
+	return ret
+}
+
 func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene, error) {
 	ss := &models.ScrapedScene{
 		Title:   s.Title,
@@ -218,6 +269,12 @@ func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene
 		URL:     findURL(s.Urls, "STUDIO"),
 		// Image
 		// stash_id
+	}
+
+	if len(s.Images) > 0 {
+		// TODO - #454 code sorts images by aspect ratio according to a wanted
+		// orientation. I'm just grabbing the first for now
+		ss.Image = getFirstImage(s.Images)
 	}
 
 	if s.Studio != nil {
