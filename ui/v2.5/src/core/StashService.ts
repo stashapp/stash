@@ -455,16 +455,13 @@ export const queryScrapeScene = (
     },
   });
 
-export const queryStashBoxScene = (
-  stashBoxIndex: number,
-  sceneID: string
-) =>
+export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
   client.query<GQL.QueryStashBoxSceneQuery>({
     query: GQL.QueryStashBoxSceneDocument,
     variables: {
       input: {
         stash_box_index: stashBoxIndex,
-        scene_id: sceneID
+        scene_id: sceneID,
       },
     },
   });

@@ -269,7 +269,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
         setScrapedScene(result.data.queryStashBoxScene[0]);
       } else {
         Toast.success({
-          content: "No scenes found"
+          content: "No scenes found",
         });
       }
     } catch (e) {
@@ -279,7 +279,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   }
 
-  function onStashBoxQueryClicked(stashBoxIndex: number) {
+  function onStashBoxQueryClicked(/* stashBoxIndex: number */) {
     // TODO
   }
 
@@ -289,10 +289,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       const result = await queryScrapeScene(scraper.id, getSceneInput());
       if (!result.data || !result.data.scrapeScene) {
         Toast.success({
-          content: "No scenes found"
+          content: "No scenes found",
         });
         return;
-      } 
+      }
       setScrapedScene(result.data.scrapeScene);
     } catch (e) {
       Toast.error(e);
@@ -348,9 +348,16 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
     // TODO - change name based on stashbox configuration
     return (
-      <DropdownButton className="d-inline-block" id="scene-scrape" title="Scrape with...">
+      <DropdownButton
+        className="d-inline-block"
+        id="scene-scrape"
+        title="Scrape with..."
+      >
         {stashBoxes.map((s, index) => (
-          <Dropdown.Item key={s.endpoint} onClick={() => onScrapeStashBoxClicked(index)}>
+          <Dropdown.Item
+            key={s.endpoint}
+            onClick={() => onScrapeStashBoxClicked(index)}
+          >
             stash-box
           </Dropdown.Item>
         ))}
@@ -378,7 +385,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
 
     // TODO - hide this button for now, with the view to add it when we get
     // the query dialog going
-    if (true) {
+    if (stashBoxes.length !== 0) {
       return;
     }
 
@@ -402,7 +409,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
         </Dropdown.Toggle>
         <Dropdown.Menu>
           {stashBoxes.map((s, index) => (
-            <Dropdown.Item key={s.endpoint} onClick={() => onStashBoxQueryClicked(index)}>
+            <Dropdown.Item
+              key={s.endpoint}
+              onClick={() => onStashBoxQueryClicked(index)}
+            >
               stash-box
             </Dropdown.Item>
           ))}
