@@ -13,6 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 )
 
+// Client represents the client interface to a stash-box server instance.
 type Client struct {
 	client *graphql.Client
 }
@@ -32,6 +33,7 @@ func NewClient(box models.StashBox) *Client {
 	}
 }
 
+// QueryStashBoxScene queries stash-box for scenes using a query string.
 func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, error) {
 	scenes, err := c.client.SearchScene(context.TODO(), queryStr)
 	if err != nil {
@@ -52,6 +54,8 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 	return ret, nil
 }
 
+// FindStashBoxSceneByFingerprint queries stash-box for scenes using the
+// scene's MD5 checksum and/or oshash.
 func (c Client) FindStashBoxSceneByFingerprint(sceneID int) ([]*models.ScrapedScene, error) {
 	// find the scene hash
 	qb := models.NewSceneQueryBuilder()
