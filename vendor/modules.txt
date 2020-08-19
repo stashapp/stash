@@ -27,8 +27,13 @@ github.com/99designs/gqlgen/plugin/servergen
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
 # github.com/Yamashou/gqlgenc v0.0.0-20200720023742-62053aec03dc
+github.com/Yamashou/gqlgenc
 github.com/Yamashou/gqlgenc/client
+github.com/Yamashou/gqlgenc/clientgen
+github.com/Yamashou/gqlgenc/config
+github.com/Yamashou/gqlgenc/generator
 github.com/Yamashou/gqlgenc/graphqljson
+github.com/Yamashou/gqlgenc/introspection
 # github.com/agnivade/levenshtein v1.0.3
 github.com/agnivade/levenshtein
 # github.com/antchfx/htmlquery v1.2.3
@@ -267,17 +272,10 @@ github.com/urfave/cli/v2
 # github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e
 github.com/vektah/dataloaden
 github.com/vektah/dataloaden/pkg/generator
-# github.com/vektah/gqlparser v1.1.2
-github.com/vektah/gqlparser
-github.com/vektah/gqlparser/ast
-github.com/vektah/gqlparser/gqlerror
-github.com/vektah/gqlparser/lexer
-github.com/vektah/gqlparser/parser
-github.com/vektah/gqlparser/validator
-github.com/vektah/gqlparser/validator/rules
 # github.com/vektah/gqlparser/v2 v2.0.1
 github.com/vektah/gqlparser/v2
 github.com/vektah/gqlparser/v2/ast
+github.com/vektah/gqlparser/v2/formatter
 github.com/vektah/gqlparser/v2/gqlerror
 github.com/vektah/gqlparser/v2/lexer
 github.com/vektah/gqlparser/v2/parser

@@ -29,7 +29,7 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/tidwall/gjson v1.6.0
 	github.com/urfave/cli v1.20.0 // indirect
-	github.com/vektah/gqlparser v1.1.2
+	github.com/vektah/gqlparser v1.1.2 // indirect
 	github.com/vektah/gqlparser/v2 v2.0.1
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2
