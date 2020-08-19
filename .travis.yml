@@ -44,6 +44,8 @@ deploy:
     - dist/stash-osx
     - dist/stash-win.exe
     - dist/stash-linux
+    - dist/stash-linux-arm64v8
+    - dist/stash-linux-arm32v7
     - dist/stash-pi
     skip_cleanup: true
     overwrite: true
@@ -61,12 +63,14 @@ deploy:
     - dist/stash-osx
     - dist/stash-win.exe
     - dist/stash-linux
+    - dist/stash-linux-arm64v8
+    - dist/stash-linux-arm32v7
     - dist/stash-pi
     # make the release a draft so the maintainers can confirm before releasing
     draft: true
     skip_cleanup: true
     overwrite: true
-    # don't write the body. To be done manually for now. In future we might 
+    # don't write the body. To be done manually for now. In future we might
     # want to generate the changelog or get it from a file
     name: ${STASH_VERSION}
     on:
