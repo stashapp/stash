@@ -455,6 +455,20 @@ export const queryScrapeScene = (
     },
   });
 
+export const queryStashBoxScene = (
+  stashBoxIndex: number,
+  sceneID: string
+) =>
+  client.query<GQL.QueryStashBoxSceneQuery>({
+    query: GQL.QueryStashBoxSceneDocument,
+    variables: {
+      input: {
+        stash_box_index: stashBoxIndex,
+        scene_id: sceneID
+      },
+    },
+  });
+
 export const mutateReloadScrapers = () =>
   client.mutate<GQL.ReloadScrapersMutation>({
     mutation: GQL.ReloadScrapersDocument,

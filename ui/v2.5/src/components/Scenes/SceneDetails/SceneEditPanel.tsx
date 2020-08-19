@@ -16,6 +16,8 @@ import {
   useListSceneScrapers,
   useSceneUpdate,
   mutateReloadScrapers,
+  useConfiguration,
+  queryStashBoxScene,
 } from "src/core/StashService";
 import {
   PerformerSelect,
@@ -63,6 +65,8 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
 
   const [coverImagePreview, setCoverImagePreview] = useState<string>();
+
+  const stashConfig = useConfiguration();
 
   // Network state
   const [isLoading, setIsLoading] = useState(true);
@@ -119,7 +123,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     );
 
     setQueryableScrapers(newQueryableScrapers);
-  }, [Scrapers]);
+  }, [Scrapers, stashConfig]);
 
   useEffect(() => {
     let changed = false;
@@ -253,6 +257,24 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     ImageUtils.onImageChange(event, onImageLoad);
   }
 
+  async function onScrapeStashBoxClicked(stashBoxIndex: number) {
+    setIsLoading(true);
+    try {
+      const result = await queryStashBoxScene(stashBoxIndex, props.scene.id);
+      if (!result.data || !result.data.queryStashBoxScene) {
+        return;
+      }
+
+      if (result.data.queryStashBoxScene.length > 0) {
+        setScrapedScene(result.data.queryStashBoxScene[0]);
+      }
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   async function onScrapeClicked(scraper: GQL.Scraper) {
     setIsLoading(true);
     try {
@@ -311,8 +333,16 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   }
 
   function renderScraperMenu() {
+    const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
+
+    // TODO - change name based on stashbox configuration
     return (
       <DropdownButton id="scene-scrape" title="Scrape with...">
+        {stashBoxes.map((s, index) => (
+          <Dropdown.Item key={s.endpoint} onClick={() => onScrapeStashBoxClicked(index)}>
+            stash-box
+          </Dropdown.Item>
+        ))}
         {queryableScrapers.map((s) => (
           <Dropdown.Item key={s.name} onClick={() => onScrapeClicked(s)}>
             {s.name}
