@@ -132,9 +132,9 @@ func formatCareerLength(start, end *int) *string {
 	var ret string
 	if end == nil {
 		ret = fmt.Sprintf("%d -", *start)
+	} else {
+		ret = fmt.Sprintf("%d - %d", *start, *end)
 	}
-
-	ret = fmt.Sprintf("%d - %d", *start, *end)
 
 	return &ret
 }
@@ -160,11 +160,7 @@ func formatBodyModifications(m []*graphql.BodyModificationFragment) *string {
 func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *models.ScrapedScenePerformer {
 	sp := &models.ScrapedScenePerformer{
 		Name:         p.Name,
-		Gender:       enumToStringPtr(p.Gender),
 		Country:      p.Country,
-		Ethnicity:    enumToStringPtr(p.Ethnicity),
-		EyeColor:     enumToStringPtr(p.EyeColor),
-		FakeTits:     enumToStringPtr(p.BreastType),
 		Measurements: formatMeasurements(p.Measurements),
 		CareerLength: formatCareerLength(p.CareerStartYear, p.CareerEndYear),
 		Tattoos:      formatBodyModifications(p.Tattoos),
@@ -181,6 +177,22 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 	if p.Birthdate != nil {
 		b := p.Birthdate.Date
 		sp.Birthdate = &b
+	}
+
+	if p.Gender != nil {
+		sp.Gender = enumToStringPtr(p.Gender)
+	}
+
+	if p.Ethnicity != nil {
+		sp.Ethnicity = enumToStringPtr(p.Ethnicity)
+	}
+
+	if p.EyeColor != nil {
+		sp.EyeColor = enumToStringPtr(p.EyeColor)
+	}
+
+	if p.BreastType != nil {
+		sp.FakeTits = enumToStringPtr(p.BreastType)
 	}
 
 	return sp
