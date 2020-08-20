@@ -6,7 +6,7 @@ import { PerformerList } from "./PerformerList";
 const Performers = () => (
   <Switch>
     <Route exact path="/performers" component={PerformerList} />
-    <Route path="/performers/:id" component={Performer} />
+    <Route path="/performers/:id/:tab?" component={Performer} />
   </Switch>
 );
 

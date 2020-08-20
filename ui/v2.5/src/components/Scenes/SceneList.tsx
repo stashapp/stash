@@ -18,14 +18,10 @@ import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { SceneGenerateDialog } from "./SceneGenerateDialog";
 
 interface ISceneList {
-  subComponent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
-export const SceneList: React.FC<ISceneList> = ({
-  subComponent,
-  filterHook,
-}) => {
+export const SceneList: React.FC<ISceneList> = ({ filterHook }) => {
   const history = useHistory();
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
@@ -61,7 +57,6 @@ export const SceneList: React.FC<ISceneList> = ({
     renderContent,
     renderEditDialog: renderEditScenesDialog,
     renderDeleteDialog: renderDeleteScenesDialog,
-    subComponent,
     filterHook,
     addKeybinds,
   });

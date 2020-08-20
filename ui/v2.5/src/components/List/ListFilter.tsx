@@ -29,7 +29,6 @@ interface IListFilterOperation {
 }
 
 interface IListFilterProps {
-  subComponent?: boolean;
   onFilterUpdate: (newFilter: ListFilterModel) => void;
   zoomIndex?: number;
   onChangeZoom?: (zoomIndex: number) => void;
@@ -105,7 +104,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
     Mousetrap.bind("s a", () => onSelectAll());
     Mousetrap.bind("s n", () => onSelectNone());
 
-    if (!props.subComponent && props.itemsSelected) {
+    if (props.itemsSelected) {
       Mousetrap.bind("e", () => {
         if (props.onEdit) {
           props.onEdit();
@@ -130,7 +129,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
       Mousetrap.unbind("s a");
       Mousetrap.unbind("s n");
 
-      if (!props.subComponent && props.itemsSelected) {
+      if (props.itemsSelected) {
         Mousetrap.unbind("e");
         Mousetrap.unbind("d d");
       }

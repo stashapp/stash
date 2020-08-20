@@ -26,7 +26,7 @@ import { TagMarkersPanel } from "./TagMarkersPanel";
 export const Tag: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { id = "new" } = useParams();
+  const { tab = "scenes", id = "new" } = useParams();
   const isNew = id === "new";
 
   // Editing state
@@ -45,6 +45,14 @@ export const Tag: React.FC = () => {
   const [updateTag] = useTagUpdate(getTagInput() as GQL.TagUpdateInput);
   const [createTag] = useTagCreate(getTagInput() as GQL.TagUpdateInput);
   const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
+
+  const activeTabKey = tab === "markers" ? tab : "scenes";
+  const setActiveTabKey = (newTab: string) => {
+    if (tab !== newTab) {
+      const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
+      history.push(`/tags/${id}${tabParam}`);
+    }
+  };
 
   // set up hotkeys
   useEffect(() => {
@@ -222,11 +230,16 @@ export const Tag: React.FC = () => {
       </div>
       {!isNew && (
         <div className="col col-md-8">
-          <Tabs id="tag-tabs" mountOnEnter>
-            <Tab eventKey="tag-scenes-panel" title="Scenes">
+          <Tabs
+            id="tag-tabs"
+            mountOnEnter
+            activeKey={activeTabKey}
+            onSelect={setActiveTabKey}
+          >
+            <Tab eventKey="scenes" title="Scenes">
               <TagScenesPanel tag={tag} />
             </Tab>
-            <Tab eventKey="tag-markers-panel" title="Markers">
+            <Tab eventKey="markers" title="Markers">
               <TagMarkersPanel tag={tag} />
             </Tab>
           </Tabs>

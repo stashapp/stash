@@ -10,14 +10,10 @@ import { DisplayMode } from "src/models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
 
 interface ISceneMarkerList {
-  subComponent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
 }
 
-export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
-  subComponent,
-  filterHook,
-}) => {
+export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
   const history = useHistory();
   const otherOperations = [
     {
@@ -42,7 +38,6 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({
   const listData = useSceneMarkersList({
     otherOperations,
     renderContent,
-    subComponent,
     filterHook,
     addKeybinds,
   });

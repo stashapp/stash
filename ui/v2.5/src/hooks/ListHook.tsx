@@ -59,7 +59,6 @@ interface IListHookOperation<T> {
 }
 
 interface IListHookOptions<T, E> {
-  subComponent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
   selectable?: boolean;
@@ -112,10 +111,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const history = useHistory();
   const location = useLocation();
   const [filter, setFilter] = useState<ListFilterModel>(
-    new ListFilterModel(
-      options.filterMode,
-      options.subComponent ? undefined : queryString.parse(location.search)
-    )
+    new ListFilterModel(options.filterMode, queryString.parse(location.search))
   );
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -197,9 +193,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     if (interfaceState.loading) return;
     if (!forageInitialised) setForageInitialised(true);
 
-    // Don't use query parameters for sub-components
-    if (options.subComponent) return;
-
     const storedQuery = interfaceState.data?.queries?.[options.filterMode];
     if (!storedQuery) return;
 
@@ -236,7 +229,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     interfaceState.loading,
     history,
     location.search,
-    options.subComponent,
     options.filterMode,
     forageInitialised,
     updateInterfaceConfig,
@@ -254,12 +246,10 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
   function updateQueryParams(listFilter: ListFilterModel) {
     setFilter(listFilter);
-    if (!options.subComponent) {
-      const newLocation = { ...location };
-      newLocation.search = listFilter.makeQueryParameters();
-      history.replace(newLocation);
-      updateInterfaceConfig(listFilter);
-    }
+    const newLocation = { ...location };
+    newLocation.search = listFilter.makeQueryParameters();
+    history.replace(newLocation);
+    updateInterfaceConfig(listFilter);
   }
 
   function onChangePage(page: number) {
@@ -425,7 +415,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const template = (
     <div>
       <ListFilter
-        subComponent={options.subComponent}
         onFilterUpdate={updateQueryParams}
         onSelectAll={options.selectable ? onSelectAll : undefined}
         onSelectNone={options.selectable ? onSelectNone : undefined}
