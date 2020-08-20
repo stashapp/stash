@@ -86,21 +86,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
     excludes,
     scraperUserAgent,
     scraperCDPPath,
-    stashBoxes: stashBoxes
-      .map(
-        (b) =>
-          ({
-            name: b?.name,
-            api_key: b?.api_key,
-            endpoint: b?.endpoint,
-          } as GQL.StashBoxInput)
-      )
-      .filter(
-        (b) =>
-          b.api_key &&
-          b.endpoint &&
-          (stashBoxes.length < 2 || (b?.name?.length ?? 0) > 0)
-      ),
+    stashBoxes: stashBoxes.map(
+      (b) =>
+        ({
+          name: b?.name ?? "",
+          api_key: b?.api_key ?? "",
+          endpoint: b?.endpoint ?? "",
+        } as GQL.StashBoxInput)
+    ),
   });
 
   useEffect(() => {
