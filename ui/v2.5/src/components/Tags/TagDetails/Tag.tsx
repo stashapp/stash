@@ -1,5 +1,3 @@
-/* eslint-disable react/no-this-in-sfc */
-
 import { Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";

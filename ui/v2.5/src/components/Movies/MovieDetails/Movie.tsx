@@ -1,4 +1,3 @@
-/* eslint-disable react/no-this-in-sfc */
 import React, { useEffect, useState, useCallback } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";

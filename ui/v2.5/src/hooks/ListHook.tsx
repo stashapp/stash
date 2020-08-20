@@ -1,6 +1,6 @@
 import _ from "lodash";
 import queryString from "query-string";
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import { ApolloError } from "apollo-client";
 import { useHistory, useLocation } from "react-router-dom";
 import {
@@ -120,6 +120,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const [zoomIndex, setZoomIndex] = useState<number>(
     options.defaultZoomIndex ?? 1
   );
+  // Store initial pathname to prevent hooks from operating outside this page
+  const originalPathName = useRef(location.pathname);
 
   const result = options.useData(getFilter());
   const totalCount = options.getCount(result);
@@ -190,7 +192,12 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   );
 
   useEffect(() => {
-    if (interfaceState.loading) return;
+    if (
+      interfaceState.loading ||
+      // Only update query params on page the hook was mounted on
+      history.location.pathname !== originalPathName.current
+    )
+      return;
     if (!forageInitialised) setForageInitialised(true);
 
     const storedQuery = interfaceState.data?.queries?.[options.filterMode];
