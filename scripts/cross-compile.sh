@@ -14,4 +14,5 @@ LINUX_ARM32v6="echo '=== Building Linux (armv6 | Raspberry Pi 1) binary ==='; $S
 
 COMMAND="$SETUP $WINDOWS $DARWIN $LINUX_AMD64 $LINUX_ARM64v8 $LINUX_ARM32v7 $LINUX_ARM32v6 echo '=== Build complete ==='"
 
+# compiler:develop is built by docker hub automatically
 docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash stashapp/compiler:latest /bin/bash -c "$COMMAND"
