@@ -158,6 +158,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
         />
         <ScrapedInputGroupRow
           title="Date"
+          placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
         />
