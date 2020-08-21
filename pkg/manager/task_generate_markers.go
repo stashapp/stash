@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"os"
 	"path/filepath"
 	"strconv"
 	"sync"
@@ -96,7 +95,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		if err := encoder.SceneMarkerVideo(*videoFile, options); err != nil {
 			logger.Errorf("[generator] failed to generate marker video: %s", err)
 		} else {
-			_ = os.Rename(options.OutputPath, videoPath)
+			_ = utils.SafeMove(options.OutputPath, videoPath)
 			logger.Debug("created marker video: ", videoPath)
 		}
 	}
@@ -109,7 +108,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 		if err := encoder.SceneMarkerImage(*videoFile, options); err != nil {
 			logger.Errorf("[generator] failed to generate marker image: %s", err)
 		} else {
-			_ = os.Rename(options.OutputPath, imagePath)
+			_ = utils.SafeMove(options.OutputPath, imagePath)
 			logger.Debug("created marker image: ", imagePath)
 		}
 	}

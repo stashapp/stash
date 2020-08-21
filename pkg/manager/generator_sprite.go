@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"io/ioutil"
 	"math"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -120,13 +121,15 @@ func (g *SpriteGenerator) generateSpriteVTT(encoder *ffmpeg.Encoder) error {
 	}
 	logger.Infof("[generator] generating sprite vtt for %s", g.Info.VideoFile.Path)
 
-	spriteImage, err := imaging.Open(g.ImageOutputPath)
+	spriteImage, err := os.Open(g.ImageOutputPath)
 	if err != nil {
 		return err
 	}
+	defer spriteImage.Close()
 	spriteImageName := filepath.Base(g.ImageOutputPath)
-	width := spriteImage.Bounds().Size().X / g.Columns
-	height := spriteImage.Bounds().Size().Y / g.Rows
+	image, _, err := image.DecodeConfig(spriteImage)
+	width := image.Width / g.Columns
+	height := image.Height / g.Rows
 
 	stepSize := float64(g.Info.NthFrame) / g.Info.FrameRate
 
