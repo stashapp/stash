@@ -139,7 +139,7 @@ func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
 	if err := encoder.ScenePreviewVideoToImage(g.Info.VideoFile, 640, videoPreviewPath, tmpOutputPath); err != nil {
 		return err
 	}
-	if err := os.Rename(tmpOutputPath, outputPath); err != nil {
+	if err := utils.SafeMove(tmpOutputPath, outputPath); err != nil {
 		return err
 	}
 	logger.Debug("created video preview image: ", outputPath)
