@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
+import cx from "classnames";
 import { Icon } from "src/components/Shared";
 
 interface IInstanceProps {
@@ -25,10 +26,10 @@ const Instance: React.FC<IInstanceProps> = ({
 
   return (
     <Form.Group className="row no-gutters">
-      <InputGroup className="col-6">
+      <InputGroup className="col">
         <Form.Control
           placeholder="Name"
-          className="text-input"
+          className="text-input col-3 stash-box-name"
           value={instance?.name}
           isValid={!isMulti || (instance?.name?.length ?? 0) > 0}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -37,7 +38,7 @@ const Instance: React.FC<IInstanceProps> = ({
         />
         <Form.Control
           placeholder="GraphQL endpoint"
-          className="text-input"
+          className="text-input col-3 stash-box-endpoint"
           value={instance?.endpoint}
           isValid={(instance?.endpoint?.length ?? 0) > 0}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -46,7 +47,7 @@ const Instance: React.FC<IInstanceProps> = ({
         />
         <Form.Control
           placeholder="API key"
-          className="text-input"
+          className="text-input col-3 stash-box-apikey"
           value={instance?.api_key}
           isValid={(instance?.api_key?.length ?? 0) > 0}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -100,17 +101,22 @@ export const StashBoxConfiguration: React.FC<IStashBoxConfigurationProps> = ({
   return (
     <Form.Group>
       <h4>Stash-box integration</h4>
-      <div className="">
-        {boxes.map((instance) => (
-          <Instance
-            instance={instance}
-            onSave={handleSave}
-            onDelete={handleDelete}
-            key={instance.index}
-            isMulti={boxes.length > 1}
-          />
-        ))}
-      </div>
+      {boxes.length > 0 && (
+        <div className="row no-gutters">
+          <h6 className="col-3 ml-1">Name</h6>
+          <h6 className="col-3 ml-1">Endpoint</h6>
+          <h6 className="col-3 ml-1">API Key</h6>
+        </div>
+      )}
+      {boxes.map((instance) => (
+        <Instance
+          instance={instance}
+          onSave={handleSave}
+          onDelete={handleDelete}
+          key={instance.index}
+          isMulti={boxes.length > 1}
+        />
+      ))}
       <Button
         className="minimal"
         title="Add stash-box instance"
@@ -121,6 +127,9 @@ export const StashBoxConfiguration: React.FC<IStashBoxConfigurationProps> = ({
       <Form.Text className="text-muted">
         Stash-box facilitates automated tagging of scenes and performers based
         on fingerprints and filenames.
+        <br />
+        Endpoint and API key can be found on your account page on the stash-box
+        instance. Names are required when more than one instance is added.
       </Form.Text>
     </Form.Group>
   );
