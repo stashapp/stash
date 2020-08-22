@@ -48,17 +48,16 @@ ui/v2.5/src/core/generated-*.tsx
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
-# Goland Junk
-pkg/pkg
-
 ####
 # Random
 ####
 
-node_modules
+ui/v2.5/node_modules
+ui/v2.5/build
 
 *.db
 
 stash
 dist
-.DS_Store
+
+docker

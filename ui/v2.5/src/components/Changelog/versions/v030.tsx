@@ -19,6 +19,8 @@ const markup = `
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
+*  Improve sprite generation performance.
+*  Make preview generation more fault-tolerant.
 *  Allow clearing of images and querying on missing images.
 *  Allow free-editing of scene movie number.
 *  Allow adding performers and studios from selectors.
@@ -42,6 +44,8 @@ const markup = `
 *  Add reload scrapers button.
 
 ### 🐛 Bug fixes
+*  Fix directories with video name extensions being detected as files to be scanned.
+*  Fix issues moving generated files between file systems.
 *  Fix formatted dates using incorrect timezone.
 
 `;

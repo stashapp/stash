@@ -3,6 +3,7 @@ package utils
 import (
 	"archive/zip"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/h2non/filetype"
 	"github.com/h2non/filetype/types"
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 // FileType uses the filetype package to determine the given file path's type
@@ -129,6 +131,43 @@ func GetHomeDirectory() string {
 		panic(err)
 	}
 	return currentUser.HomeDir
+}
+
+func SafeMove(src, dst string) error {
+	err := os.Rename(src, dst)
+
+	if err != nil {
+		logger.Errorf("[Util] unable to rename: \"%s\" due to %s. Falling back to copying.", src, err.Error())
+
+		in, err := os.Open(src)
+		if err != nil {
+			return err
+		}
+		defer in.Close()
+
+		out, err := os.Create(dst)
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+
+		_, err = io.Copy(out, in)
+		if err != nil {
+			return err
+		}
+
+		err = out.Close()
+		if err != nil {
+			return err
+		}
+
+		err = os.Remove(src)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // IsZipFileUnmcompressed returns true if zip file in path is using 0 compression level
