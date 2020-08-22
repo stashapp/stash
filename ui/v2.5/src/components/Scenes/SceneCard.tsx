@@ -102,7 +102,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (props.scene.performers.length <= 0) return;
 
     const popoverContent = props.scene.performers.map((performer) => (
-      <div className="performer-tag-container row" key="performer">
+      <div className="performer-tag-container row" key={performer.id}>
         <Link
           to={`/performers/${performer.id}`}
           className="performer-tag col m-auto zoom-2"
@@ -151,7 +151,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        placement="bottom"
+        content={popoverContent}
+        className="tag-tooltip"
+      >
         <Button className="minimal">
           <Icon icon="film" />
           <span>{props.scene.movies.length}</span>
