@@ -351,39 +351,39 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       setUrl(scene.url);
     }
 
-    if (scene.studio && scene.studio.id) {
-      setStudioId(scene.studio.id);
+    if (scene.studio && scene.studio.stored_id) {
+      setStudioId(scene.studio.stored_id);
     }
 
     if (scene.performers && scene.performers.length > 0) {
       const idPerfs = scene.performers.filter((p) => {
-        return p.id !== undefined && p.id !== null;
+        return p.stored_id !== undefined && p.stored_id !== null;
       });
 
       if (idPerfs.length > 0) {
-        const newIds = idPerfs.map((p) => p.id);
+        const newIds = idPerfs.map((p) => p.stored_id);
         setPerformerIds(newIds as string[]);
       }
     }
 
     if (scene.movies && scene.movies.length > 0) {
       const idMovis = scene.movies.filter((p) => {
-        return p.id !== undefined && p.id !== null;
+        return p.stored_id !== undefined && p.stored_id !== null;
       });
 
       if (idMovis.length > 0) {
-        const newIds = idMovis.map((p) => p.id);
+        const newIds = idMovis.map((p) => p.stored_id);
         setMovieIds(newIds as string[]);
       }
     }
 
     if (scene?.tags?.length) {
       const idTags = scene.tags.filter((p) => {
-        return p.id !== undefined && p.id !== null;
+        return p.stored_id !== undefined && p.stored_id !== null;
       });
 
       if (idTags.length > 0) {
-        const newIds = idTags.map((p) => p.id);
+        const newIds = idTags.map((p) => p.stored_id);
         setTagIds(newIds as string[]);
       }
     }

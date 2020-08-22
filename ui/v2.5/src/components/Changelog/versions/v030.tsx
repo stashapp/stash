@@ -5,6 +5,7 @@ const markup = `
 #### 💥 **Note: After upgrading, the next scan will populate all scenes with oshash hashes. MD5 calculation can be disabled after populating the oshash for all scenes. See \`Hashing Algorithms\` in the \`Configuration\` section of the manual for details. **
 
 ### ✨ New Features
+*  Show and allow creation of unknown performers/tags/studios/movies in the scraper dialog.
 *  Add support for scraping movie details.
 *  Add support for JSON scrapers.
 *  Add support for plugin tasks.
