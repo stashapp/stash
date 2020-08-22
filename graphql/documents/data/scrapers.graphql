@@ -19,7 +19,7 @@ fragment ScrapedPerformerData on ScrapedPerformer {
 }
 
 fragment ScrapedScenePerformerData on ScrapedScenePerformer {
-  id
+  stored_id
   name
   gender
   url
@@ -62,7 +62,7 @@ fragment ScrapedMovieData on ScrapedMovie {
 }
 
 fragment ScrapedSceneMovieData on ScrapedSceneMovie {
-  id
+  stored_id
   name
   aliases
   duration
@@ -74,13 +74,13 @@ fragment ScrapedSceneMovieData on ScrapedSceneMovie {
 }
 
 fragment ScrapedSceneStudioData on ScrapedSceneStudio {
-  id
+  stored_id
   name
   url
 }
 
 fragment ScrapedSceneTagData on ScrapedSceneTag {
-  id
+  stored_id
   name
 }
 

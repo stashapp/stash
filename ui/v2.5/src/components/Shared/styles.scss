@@ -119,3 +119,12 @@
   overflow-y: auto;
   padding-right: 15px;
 }
+
+button.collapse-button.btn-primary:not(:disabled):not(.disabled):hover,
+button.collapse-button.btn-primary:not(:disabled):not(.disabled):focus,
+button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: #f5f8fa;
+}
