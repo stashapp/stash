@@ -8,6 +8,7 @@ import { MovieCard } from "./MovieCard";
 export const MovieList: React.FC = () => {
   const listData = useMoviesList({
     renderContent,
+    persistState: true,
   });
 
   function renderContent(

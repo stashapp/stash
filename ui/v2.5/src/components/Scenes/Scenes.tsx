@@ -6,7 +6,11 @@ import { SceneMarkerList } from "./SceneMarkerList";
 
 const Scenes = () => (
   <Switch>
-    <Route exact path="/scenes" component={SceneList} />
+    <Route
+      exact
+      path="/scenes"
+      render={(props) => <SceneList persistState {...props} />}
+    />
     <Route exact path="/scenes/markers" component={SceneMarkerList} />
     <Route path="/scenes/:id" component={Scene} />
   </Switch>

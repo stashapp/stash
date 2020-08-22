@@ -19,9 +19,13 @@ import { SceneGenerateDialog } from "./SceneGenerateDialog";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  persistState?: boolean;
 }
 
-export const SceneList: React.FC<ISceneList> = ({ filterHook }) => {
+export const SceneList: React.FC<ISceneList> = ({
+  filterHook,
+  persistState,
+}) => {
   const history = useHistory();
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
@@ -59,6 +63,7 @@ export const SceneList: React.FC<ISceneList> = ({ filterHook }) => {
     renderDeleteDialog: renderDeleteScenesDialog,
     filterHook,
     addKeybinds,
+    persistState,
   });
 
   async function playRandom(

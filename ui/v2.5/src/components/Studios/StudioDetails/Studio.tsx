@@ -194,7 +194,7 @@ export const Studio: React.FC = () => {
   const setActiveTabKey = (newTab: string) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
-      history.push(`/studios/${id}${tabParam}`);
+      history.replace(`/studios/${id}${tabParam}`);
     }
   };
 

@@ -35,6 +35,7 @@ export const PerformerList: React.FC = () => {
     otherOperations,
     renderContent,
     addKeybinds,
+    persistState: true,
   });
 
   async function getRandom(

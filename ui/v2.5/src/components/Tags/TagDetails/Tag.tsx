@@ -48,7 +48,7 @@ export const Tag: React.FC = () => {
   const setActiveTabKey = (newTab: string) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
-      history.push(`/tags/${id}${tabParam}`);
+      history.replace(`/tags/${id}${tabParam}`);
     }
   };
 

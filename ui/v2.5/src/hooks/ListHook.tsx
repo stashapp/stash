@@ -59,6 +59,7 @@ interface IListHookOperation<T> {
 }
 
 interface IListHookOptions<T, E> {
+  persistState?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
   selectable?: boolean;
@@ -200,6 +201,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
       return;
     if (!forageInitialised) setForageInitialised(true);
 
+    if (!options.persistState) return;
+
     const storedQuery = interfaceState.data?.queries?.[options.filterMode];
     if (!storedQuery) return;
 
@@ -239,6 +242,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     options.filterMode,
     forageInitialised,
     updateInterfaceConfig,
+    options.persistState,
   ]);
 
   function getFilter() {
@@ -256,7 +260,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     const newLocation = { ...location };
     newLocation.search = listFilter.makeQueryParameters();
     history.replace(newLocation);
-    updateInterfaceConfig(listFilter);
+    if (options.persistState) {
+      updateInterfaceConfig(listFilter);
+    }
   }
 
   function onChangePage(page: number) {
