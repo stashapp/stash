@@ -6,7 +6,7 @@ import { TagList } from "./TagList";
 const Tags = () => (
   <Switch>
     <Route exact path="/tags" component={TagList} />
-    <Route path="/tags/:id" component={Tag} />
+    <Route path="/tags/:id/:tab?" component={Tag} />
   </Switch>
 );
 
