@@ -289,6 +289,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         }}
       />
 
+      {maybeRenderSceneStudioOverlay()}
       <Link
         to={`/scenes/${props.scene.id}`}
         className="scene-card-link"
@@ -298,7 +299,6 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         draggable={props.selecting}
       >
         {maybeRenderRatingBanner()}
-        {maybeRenderSceneStudioOverlay()}
         {maybeRenderSceneSpecsOverlay()}
         <video
           loop

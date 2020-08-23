@@ -132,10 +132,10 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
                 <Nav variant="pills" className="flex-column">
                   {content.map((c) => {
                     return (
-                      <Nav.Item key={c.key}>
+                      <Nav.Item key={`${c.key}-nav`}>
                         <Nav.Link
                           className={c.className}
-                          eventKey={`${c.key}-nav`}
+                          eventKey={c.key}
                         >
                           {c.title}
                         </Nav.Link>
