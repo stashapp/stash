@@ -1,6 +1,6 @@
 import _ from "lodash";
 import queryString from "query-string";
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import { ApolloError } from "apollo-client";
 import { useHistory, useLocation } from "react-router-dom";
 import {
@@ -59,7 +59,7 @@ interface IListHookOperation<T> {
 }
 
 interface IListHookOptions<T, E> {
-  subComponent?: boolean;
+  persistState?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
   selectable?: boolean;
@@ -112,10 +112,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const history = useHistory();
   const location = useLocation();
   const [filter, setFilter] = useState<ListFilterModel>(
-    new ListFilterModel(
-      options.filterMode,
-      options.subComponent ? undefined : queryString.parse(location.search)
-    )
+    new ListFilterModel(options.filterMode, queryString.parse(location.search))
   );
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -124,6 +121,8 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const [zoomIndex, setZoomIndex] = useState<number>(
     options.defaultZoomIndex ?? 1
   );
+  // Store initial pathname to prevent hooks from operating outside this page
+  const originalPathName = useRef(location.pathname);
 
   const result = options.useData(getFilter());
   const totalCount = options.getCount(result);
@@ -194,11 +193,15 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   );
 
   useEffect(() => {
-    if (interfaceState.loading) return;
+    if (
+      interfaceState.loading ||
+      // Only update query params on page the hook was mounted on
+      history.location.pathname !== originalPathName.current
+    )
+      return;
     if (!forageInitialised) setForageInitialised(true);
 
-    // Don't use query parameters for sub-components
-    if (options.subComponent) return;
+    if (!options.persistState) return;
 
     const storedQuery = interfaceState.data?.queries?.[options.filterMode];
     if (!storedQuery) return;
@@ -236,10 +239,10 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     interfaceState.loading,
     history,
     location.search,
-    options.subComponent,
     options.filterMode,
     forageInitialised,
     updateInterfaceConfig,
+    options.persistState,
   ]);
 
   function getFilter() {
@@ -254,10 +257,10 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
   function updateQueryParams(listFilter: ListFilterModel) {
     setFilter(listFilter);
-    if (!options.subComponent) {
-      const newLocation = { ...location };
-      newLocation.search = listFilter.makeQueryParameters();
-      history.replace(newLocation);
+    const newLocation = { ...location };
+    newLocation.search = listFilter.makeQueryParameters();
+    history.replace(newLocation);
+    if (options.persistState) {
       updateInterfaceConfig(listFilter);
     }
   }
@@ -425,7 +428,6 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const template = (
     <div>
       <ListFilter
-        subComponent={options.subComponent}
         onFilterUpdate={updateQueryParams}
         onSelectAll={options.selectable ? onSelectAll : undefined}
         onSelectNone={options.selectable ? onSelectNone : undefined}

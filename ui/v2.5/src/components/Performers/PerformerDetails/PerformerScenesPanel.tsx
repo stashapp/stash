@@ -43,5 +43,5 @@ export const PerformerScenesPanel: React.FC<IPerformerDetailsProps> = ({
     return filter;
   }
 
-  return <SceneList subComponent filterHook={filterHook} />;
+  return <SceneList filterHook={filterHook} />;
 };

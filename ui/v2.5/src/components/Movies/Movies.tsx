@@ -6,7 +6,7 @@ import { MovieList } from "./MovieList";
 const Movies = () => (
   <Switch>
     <Route exact path="/movies" component={MovieList} />
-    <Route path="/movies/:id" component={Movie} />
+    <Route path="/movies/:id/:tab?" component={Movie} />
   </Switch>
 );
 
