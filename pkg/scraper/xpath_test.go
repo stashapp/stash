@@ -138,7 +138,7 @@ const htmlDoc1 = `
 								<b>Piercings:</b>
 							</td>
 							<td class="paramvalue">
-								None&nbsp;
+								<!-- None -->;
 							</td>
 						</tr>
 						<tr>
@@ -193,7 +193,7 @@ func makeXPathConfig() mappedPerformerScraperConfig {
 	config.mappedConfig["Measurements"] = makeSimpleAttrConfig(makeCommonXPath("Measurements:"))
 	config.mappedConfig["FakeTits"] = makeSimpleAttrConfig(makeCommonXPath("Fake boobs:"))
 	config.mappedConfig["Tattoos"] = makeSimpleAttrConfig(makeCommonXPath("Tattoos:"))
-	config.mappedConfig["Piercings"] = makeSimpleAttrConfig(makeCommonXPath("Piercings:"))
+	config.mappedConfig["Piercings"] = makeSimpleAttrConfig(makeCommonXPath("Piercings:") + "/comment()")
 
 	// special handling for birthdate
 	birthdateAttrConfig := makeSimpleAttrConfig(makeCommonXPath("Date of Birth:"))
@@ -295,7 +295,8 @@ func TestScrapePerformerXPath(t *testing.T) {
 	const measurements = "34C-26-36"
 	const fakeTits = "No"
 	const careerLength = "2012 - 2019"
-	const tattoosPiercings = "None"
+	const tattoos = "None"
+	const piercings = "<!-- None -->"
 	const gender = "Female"
 	const height = "170"
 
@@ -313,8 +314,8 @@ func TestScrapePerformerXPath(t *testing.T) {
 
 	verifyField(t, careerLength, performer.CareerLength, "CareerLength")
 
-	verifyField(t, tattoosPiercings, performer.Tattoos, "Tattoos")
-	verifyField(t, tattoosPiercings, performer.Piercings, "Piercings")
+	verifyField(t, tattoos, performer.Tattoos, "Tattoos")
+	verifyField(t, piercings, performer.Piercings, "Piercings")
 	verifyField(t, height, performer.Height, "Height")
 }
 
