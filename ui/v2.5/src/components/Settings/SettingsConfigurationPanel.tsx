@@ -456,7 +456,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             type="number"
             value={previewSegments.toString()}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setPreviewSegments(Number.parseInt(e.currentTarget.value || '0', 10))
+              setPreviewSegments(
+                Number.parseInt(e.currentTarget.value || "0", 10)
+              )
             }
           />
           <Form.Text className="text-muted">
@@ -472,7 +474,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
             value={previewSegmentDuration.toString()}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setPreviewSegmentDuration(
-                Number.parseFloat(e.currentTarget.value || '0')
+                Number.parseFloat(e.currentTarget.value || "0")
               )
             }
           />
@@ -584,7 +586,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             type="number"
             value={maxSessionAge.toString()}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setMaxSessionAge(Number.parseInt(e.currentTarget.value || '0', 10))
+              setMaxSessionAge(
+                Number.parseInt(e.currentTarget.value || "0", 10)
+              )
             }
           />
           <Form.Text className="text-muted">

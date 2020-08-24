@@ -133,10 +133,7 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
                   {content.map((c) => {
                     return (
                       <Nav.Item key={`${c.key}-nav`}>
-                        <Nav.Link
-                          className={c.className}
-                          eventKey={c.key}
-                        >
+                        <Nav.Link className={c.className} eventKey={c.key}>
                           {c.title}
                         </Nav.Link>
                       </Nav.Item>

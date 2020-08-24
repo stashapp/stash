@@ -126,7 +126,10 @@ interface IRenderListProps {
   updateQueryParams: (filter: ListFilterModel) => void;
 }
 
-const RenderList = <QueryResult extends IQueryResult, QueryData extends IDataItem>({
+const RenderList = <
+  QueryResult extends IQueryResult,
+  QueryData extends IDataItem
+>({
   defaultZoomIndex,
   filter,
   onChangePage,
@@ -143,8 +146,7 @@ const RenderList = <QueryResult extends IQueryResult, QueryData extends IDataIte
   updateQueryParams,
 }: IListHookOptions<QueryResult, QueryData> &
   IQuery<QueryResult, QueryData> &
-  IRenderListProps
-) => {
+  IRenderListProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -278,7 +280,9 @@ const RenderList = <QueryResult extends IQueryResult, QueryData extends IDataIte
     setZoomIndex(newZoomIndex);
   }
 
-  const operations = otherOperations && otherOperations.map((o) => ({
+  const operations =
+    otherOperations &&
+    otherOperations.map((o) => ({
       text: o.text,
       onClick: () => {
         o.onClick(result, filter, selectedIds);
@@ -290,8 +294,7 @@ const RenderList = <QueryResult extends IQueryResult, QueryData extends IDataIte
 
         return true;
       },
-    }
-  ));
+    }));
 
   function onEdit() {
     setIsEditDialogOpen(true);
@@ -350,18 +353,18 @@ const RenderList = <QueryResult extends IQueryResult, QueryData extends IDataIte
           onDelete={renderDeleteDialog ? onDelete : undefined}
           filter={filter}
         />
-        {isEditDialogOpen && renderEditDialog
-          && renderEditDialog(
-              getSelectedData(getData(result), selectedIds),
-              (applied) => onEditDialogClosed(applied)
-            )
-        }
-        {isDeleteDialogOpen && renderDeleteDialog
-          && renderDeleteDialog(
-              getSelectedData(getData(result), selectedIds),
-              (deleted) => onDeleteDialogClosed(deleted)
-            )
-        }
+        {isEditDialogOpen &&
+          renderEditDialog &&
+          renderEditDialog(
+            getSelectedData(getData(result), selectedIds),
+            (applied) => onEditDialogClosed(applied)
+          )}
+        {isDeleteDialogOpen &&
+          renderDeleteDialog &&
+          renderDeleteDialog(
+            getSelectedData(getData(result), selectedIds),
+            (deleted) => onDeleteDialogClosed(deleted)
+          )}
         {renderPagination()}
         {renderContent(result, filter, selectedIds, zoomIndex)}
         <PaginationIndex
@@ -375,7 +378,7 @@ const RenderList = <QueryResult extends IQueryResult, QueryData extends IDataIte
   }
 
   return { contentTemplate: content, onSelectChange };
-}
+};
 
 const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   options: IListHookOptions<QueryResult, QueryData> &
@@ -385,7 +388,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   const location = useLocation();
   const [interfaceState, setInterfaceState] = useInterfaceLocalForage();
   // If persistState is false we don't care about forage and consider it initialised
-  const [forageInitialised, setForageInitialised] = useState(!options.persistState);
+  const [forageInitialised, setForageInitialised] = useState(
+    !options.persistState
+  );
   // Store initial pathname to prevent hooks from operating outside this page
   const originalPathName = useRef(location.pathname);
 
@@ -478,9 +483,11 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     const newFilter = _.cloneDeep(filter);
     newFilter.currentPage = page;
     updateQueryParams(newFilter);
-  }
+  };
 
-  const renderFilter = !options.filterHook ? filter : options.filterHook(_.cloneDeep(filter));
+  const renderFilter = !options.filterHook
+    ? filter
+    : options.filterHook(_.cloneDeep(filter));
 
   const { contentTemplate, onSelectChange } = RenderList({
     ...options,
@@ -489,12 +496,16 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     updateQueryParams,
   });
 
-  const template = !forageInitialised ? <LoadingIndicator /> : <>{contentTemplate}</> ;
+  const template = !forageInitialised ? (
+    <LoadingIndicator />
+  ) : (
+    <>{contentTemplate}</>
+  );
 
   return {
     filter,
     template,
-    onSelectChange
+    onSelectChange,
   };
 };
 
