@@ -289,26 +289,28 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         }}
       />
 
-      {maybeRenderSceneStudioOverlay()}
-      <Link
-        to={`/scenes/${props.scene.id}`}
-        className="scene-card-link"
-        onClick={handleSceneClick}
-        onDragStart={handleDrag}
-        onDragOver={handleDragOver}
-        draggable={props.selecting}
-      >
-        {maybeRenderRatingBanner()}
-        {maybeRenderSceneSpecsOverlay()}
-        <video
-          loop
-          className={cx("scene-card-video", { portrait: isPortrait() })}
-          poster={props.scene.paths.screenshot || ""}
-          ref={hoverHandler.videoEl}
+      <div className="video-section">
+        <Link
+          to={`/scenes/${props.scene.id}`}
+          className="scene-card-link"
+          onClick={handleSceneClick}
+          onDragStart={handleDrag}
+          onDragOver={handleDragOver}
+          draggable={props.selecting}
         >
-          {previewPath ? <source src={previewPath} /> : ""}
-        </video>
-      </Link>
+          {maybeRenderRatingBanner()}
+          {maybeRenderSceneSpecsOverlay()}
+          <video
+            loop
+            className={cx("scene-card-video", { portrait: isPortrait() })}
+            poster={props.scene.paths.screenshot || ""}
+            ref={hoverHandler.videoEl}
+          >
+            {previewPath ? <source src={previewPath} /> : ""}
+          </video>
+        </Link>
+        {maybeRenderSceneStudioOverlay()}
+      </div>
       <div className="card-section">
         <h5 className="card-section-title">
           {props.scene.title
