@@ -1,4 +1,4 @@
-package tag
+package movie
 
 import (
 	"database/sql"

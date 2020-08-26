@@ -15,6 +15,8 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/movie"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -426,47 +428,23 @@ func (t *ExportTask) ExportStudios(ctx context.Context, workers int) {
 func exportStudio(wg *sync.WaitGroup, jobChan <-chan *models.Studio) {
 	defer wg.Done()
 
-	studioQB := models.NewStudioQueryBuilder()
+	studioReader := models.NewStudioReaderWriter(nil)
 
-	for studio := range jobChan {
+	for s := range jobChan {
+		newStudioJSON, err := studio.ToJSON(studioReader, s)
 
-		newStudioJSON := jsonschema.Studio{
-			CreatedAt: models.JSONTime{Time: studio.CreatedAt.Timestamp},
-			UpdatedAt: models.JSONTime{Time: studio.UpdatedAt.Timestamp},
-		}
-
-		if studio.Name.Valid {
-			newStudioJSON.Name = studio.Name.String
-		}
-		if studio.URL.Valid {
-			newStudioJSON.URL = studio.URL.String
-		}
-		if studio.ParentID.Valid {
-			parent, _ := studioQB.Find(int(studio.ParentID.Int64), nil)
-			if parent != nil {
-				newStudioJSON.ParentStudio = parent.Name.String
-			}
-		}
-
-		image, err := studioQB.GetStudioImage(studio.ID, nil)
 		if err != nil {
-			logger.Errorf("[studios] <%s> error getting studio image: %s", studio.Checksum, err.Error())
+			logger.Errorf("[studios] <%s> error getting studio JSON: %s", s.Checksum, err.Error())
 			continue
 		}
 
-		if len(image) > 0 {
-			newStudioJSON.Image = utils.GetBase64StringFromData(image)
-		}
-
-		studioJSON, err := instance.JSON.getStudio(studio.Checksum)
-		if err != nil {
-			logger.Debugf("[studios] error reading studio json: %s", err.Error())
-		} else if jsonschema.CompareJSON(*studioJSON, newStudioJSON) {
+		studioJSON, err := instance.JSON.getStudio(s.Checksum)
+		if err == nil && jsonschema.CompareJSON(*studioJSON, *newStudioJSON) {
 			continue
 		}
 
-		if err := instance.JSON.saveStudio(studio.Checksum, &newStudioJSON); err != nil {
-			logger.Errorf("[studios] <%s> failed to save json: %s", studio.Checksum, err.Error())
+		if err := instance.JSON.saveStudio(s.Checksum, newStudioJSON); err != nil {
+			logger.Errorf("[studios] <%s> failed to save json: %s", s.Checksum, err.Error())
 		}
 	}
 }
@@ -524,7 +502,7 @@ func exportTag(wg *sync.WaitGroup, jobChan <-chan *models.Tag) {
 		checksum := utils.MD5FromString(thisTag.Name)
 
 		tagJSON, err := instance.JSON.getTag(checksum)
-		if err == nil && jsonschema.CompareJSON(*tagJSON, newTagJSON) {
+		if err == nil && jsonschema.CompareJSON(*tagJSON, *newTagJSON) {
 			continue
 		}
 
@@ -570,79 +548,26 @@ func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
 func exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movie) {
 	defer wg.Done()
 
-	movieQB := models.NewMovieQueryBuilder()
-	studioQB := models.NewStudioQueryBuilder()
+	movieReader := models.NewMovieReaderWriter(nil)
+	studioReader := models.NewStudioReaderWriter(nil)
 
-	for movie := range jobChan {
-		newMovieJSON := jsonschema.Movie{
-			CreatedAt: models.JSONTime{Time: movie.CreatedAt.Timestamp},
-			UpdatedAt: models.JSONTime{Time: movie.UpdatedAt.Timestamp},
-		}
+	for m := range jobChan {
+		newMovieJSON, err := movie.ToJSON(movieReader, studioReader, m)
 
-		if movie.Name.Valid {
-			newMovieJSON.Name = movie.Name.String
-		}
-		if movie.Aliases.Valid {
-			newMovieJSON.Aliases = movie.Aliases.String
-		}
-		if movie.Date.Valid {
-			newMovieJSON.Date = utils.GetYMDFromDatabaseDate(movie.Date.String)
-		}
-		if movie.Rating.Valid {
-			newMovieJSON.Rating = int(movie.Rating.Int64)
-		}
-		if movie.Duration.Valid {
-			newMovieJSON.Duration = int(movie.Duration.Int64)
-		}
-
-		if movie.Director.Valid {
-			newMovieJSON.Director = movie.Director.String
-		}
-
-		if movie.Synopsis.Valid {
-			newMovieJSON.Synopsis = movie.Synopsis.String
-		}
-
-		if movie.URL.Valid {
-			newMovieJSON.URL = movie.URL.String
-		}
-
-		if movie.StudioID.Valid {
-			studio, _ := studioQB.Find(int(movie.StudioID.Int64), nil)
-			if studio != nil {
-				newMovieJSON.Studio = studio.Name.String
-			}
-		}
-
-		frontImage, err := movieQB.GetFrontImage(movie.ID, nil)
 		if err != nil {
-			logger.Errorf("[movies] <%s> error getting movie front image: %s", movie.Checksum, err.Error())
+			logger.Errorf("[movies] <%s> error getting tag JSON: %s", m.Name, err.Error())
 			continue
 		}
 
-		if len(frontImage) > 0 {
-			newMovieJSON.FrontImage = utils.GetBase64StringFromData(frontImage)
-		}
-
-		backImage, err := movieQB.GetBackImage(movie.ID, nil)
-		if err != nil {
-			logger.Errorf("[movies] <%s> error getting movie back image: %s", movie.Checksum, err.Error())
-			continue
-		}
-
-		if len(backImage) > 0 {
-			newMovieJSON.BackImage = utils.GetBase64StringFromData(backImage)
-		}
-
-		movieJSON, err := instance.JSON.getMovie(movie.Checksum)
+		movieJSON, err := instance.JSON.getMovie(m.Checksum)
 		if err != nil {
 			logger.Debugf("[movies] error reading movie json: %s", err.Error())
-		} else if jsonschema.CompareJSON(*movieJSON, newMovieJSON) {
+		} else if jsonschema.CompareJSON(*movieJSON, *newMovieJSON) {
 			continue
 		}
 
-		if err := instance.JSON.saveMovie(movie.Checksum, &newMovieJSON); err != nil {
-			logger.Errorf("[movies] <%s> failed to save json: %s", movie.Checksum, err.Error())
+		if err := instance.JSON.saveMovie(m.Checksum, newMovieJSON); err != nil {
+			logger.Errorf("[movies] <%s> failed to save json: %s", m.Checksum, err.Error())
 		}
 	}
 }

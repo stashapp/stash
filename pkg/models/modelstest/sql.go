@@ -8,3 +8,10 @@ func NullString(v string) sql.NullString {
 		Valid:  true,
 	}
 }
+
+func NullInt64(v int64) sql.NullInt64 {
+	return sql.NullInt64{
+		Int64: v,
+		Valid: true,
+	}
+}

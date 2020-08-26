@@ -88,16 +88,16 @@ func TestToJSON(t *testing.T) {
 	mockTagReader.On("GetTagImage", noImageID).Return(nil, nil).Once()
 	mockTagReader.On("GetTagImage", errImageID).Return(nil, imageErr).Once()
 
-	for _, s := range scenarios {
+	for i, s := range scenarios {
 		tag := s.tag
 		json, err := ToJSON(mockTagReader, &tag)
 
 		if !s.err && err != nil {
-			t.Errorf("unexpected error: %s", err.Error())
+			t.Errorf("[%d] unexpected error: %s", i, err.Error())
 		} else if s.err && err == nil {
-			t.Error("expected error not returned")
+			t.Errorf("[%d] expected error not returned", i)
 		} else {
-			assert.Equal(t, s.expected, json)
+			assert.Equal(t, s.expected, json, "[%d]", i)
 		}
 	}
 
