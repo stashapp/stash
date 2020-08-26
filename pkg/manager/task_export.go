@@ -15,6 +15,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -509,37 +510,25 @@ func (t *ExportTask) ExportTags(ctx context.Context, workers int) {
 func exportTag(wg *sync.WaitGroup, jobChan <-chan *models.Tag) {
 	defer wg.Done()
 
-	tagQB := models.NewTagQueryBuilder()
+	tagReader := models.NewTagReaderWriter(nil)
 
-	for tag := range jobChan {
+	for thisTag := range jobChan {
+		newTagJSON, err := tag.ToJSON(tagReader, thisTag)
 
-		newTagJSON := jsonschema.Tag{
-			Name:      tag.Name,
-			CreatedAt: models.JSONTime{Time: tag.CreatedAt.Timestamp},
-			UpdatedAt: models.JSONTime{Time: tag.UpdatedAt.Timestamp},
-		}
-
-		image, err := tagQB.GetTagImage(tag.ID, nil)
 		if err != nil {
-			logger.Errorf("[tags] <%s> error getting tag image: %s", tag.Name, err.Error())
+			logger.Errorf("[tags] <%s> error getting tag JSON: %s", thisTag.Name, err.Error())
 			continue
-		}
-
-		if len(image) > 0 {
-			newTagJSON.Image = utils.GetBase64StringFromData(image)
 		}
 
 		// generate checksum on the fly by name, since we don't store it
-		checksum := utils.MD5FromString(tag.Name)
+		checksum := utils.MD5FromString(thisTag.Name)
 
 		tagJSON, err := instance.JSON.getTag(checksum)
-		if err != nil {
-			logger.Debugf("[tags] error reading tag json: %s", err.Error())
-		} else if jsonschema.CompareJSON(*tagJSON, newTagJSON) {
+		if err == nil && jsonschema.CompareJSON(*tagJSON, newTagJSON) {
 			continue
 		}
 
-		if err := instance.JSON.saveTag(checksum, &newTagJSON); err != nil {
+		if err := instance.JSON.saveTag(checksum, newTagJSON); err != nil {
 			logger.Errorf("[tags] <%s> failed to save json: %s", checksum, err.Error())
 		}
 	}
