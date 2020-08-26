@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/movie"
+	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
@@ -309,85 +310,25 @@ func (t *ExportTask) ExportPerformers(ctx context.Context, workers int) {
 func exportPerformer(wg *sync.WaitGroup, jobChan <-chan *models.Performer) {
 	defer wg.Done()
 
-	performerQB := models.NewPerformerQueryBuilder()
+	performerReader := models.NewPerformerReaderWriter(nil)
 
-	for performer := range jobChan {
-		newPerformerJSON := jsonschema.Performer{
-			CreatedAt: models.JSONTime{Time: performer.CreatedAt.Timestamp},
-			UpdatedAt: models.JSONTime{Time: performer.UpdatedAt.Timestamp},
-		}
+	for p := range jobChan {
+		newPerformerJSON, err := performer.ToJSON(performerReader, p)
 
-		if performer.Name.Valid {
-			newPerformerJSON.Name = performer.Name.String
-		}
-		if performer.Gender.Valid {
-			newPerformerJSON.Gender = performer.Gender.String
-		}
-		if performer.URL.Valid {
-			newPerformerJSON.URL = performer.URL.String
-		}
-		if performer.Birthdate.Valid {
-			newPerformerJSON.Birthdate = utils.GetYMDFromDatabaseDate(performer.Birthdate.String)
-		}
-		if performer.Ethnicity.Valid {
-			newPerformerJSON.Ethnicity = performer.Ethnicity.String
-		}
-		if performer.Country.Valid {
-			newPerformerJSON.Country = performer.Country.String
-		}
-		if performer.EyeColor.Valid {
-			newPerformerJSON.EyeColor = performer.EyeColor.String
-		}
-		if performer.Height.Valid {
-			newPerformerJSON.Height = performer.Height.String
-		}
-		if performer.Measurements.Valid {
-			newPerformerJSON.Measurements = performer.Measurements.String
-		}
-		if performer.FakeTits.Valid {
-			newPerformerJSON.FakeTits = performer.FakeTits.String
-		}
-		if performer.CareerLength.Valid {
-			newPerformerJSON.CareerLength = performer.CareerLength.String
-		}
-		if performer.Tattoos.Valid {
-			newPerformerJSON.Tattoos = performer.Tattoos.String
-		}
-		if performer.Piercings.Valid {
-			newPerformerJSON.Piercings = performer.Piercings.String
-		}
-		if performer.Aliases.Valid {
-			newPerformerJSON.Aliases = performer.Aliases.String
-		}
-		if performer.Twitter.Valid {
-			newPerformerJSON.Twitter = performer.Twitter.String
-		}
-		if performer.Instagram.Valid {
-			newPerformerJSON.Instagram = performer.Instagram.String
-		}
-		if performer.Favorite.Valid {
-			newPerformerJSON.Favorite = performer.Favorite.Bool
-		}
-
-		image, err := performerQB.GetPerformerImage(performer.ID, nil)
 		if err != nil {
-			logger.Errorf("[performers] <%s> error getting performers image: %s", performer.Checksum, err.Error())
+			logger.Errorf("[performers] <%s> error getting performer JSON: %s", p.Checksum, err.Error())
 			continue
 		}
 
-		if len(image) > 0 {
-			newPerformerJSON.Image = utils.GetBase64StringFromData(image)
-		}
-
-		performerJSON, err := instance.JSON.getPerformer(performer.Checksum)
+		performerJSON, err := instance.JSON.getPerformer(p.Checksum)
 		if err != nil {
 			logger.Debugf("[performers] error reading performer json: %s", err.Error())
-		} else if jsonschema.CompareJSON(*performerJSON, newPerformerJSON) {
+		} else if jsonschema.CompareJSON(*performerJSON, *newPerformerJSON) {
 			continue
 		}
 
-		if err := instance.JSON.savePerformer(performer.Checksum, &newPerformerJSON); err != nil {
-			logger.Errorf("[performers] <%s> failed to save json: %s", performer.Checksum, err.Error())
+		if err := instance.JSON.savePerformer(p.Checksum, newPerformerJSON); err != nil {
+			logger.Errorf("[performers] <%s> failed to save json: %s", p.Checksum, err.Error())
 		}
 	}
 }
