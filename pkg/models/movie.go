@@ -5,7 +5,7 @@ import (
 )
 
 type MovieReader interface {
-	// Find(id int) (*Movie, error)
+	Find(id int) (*Movie, error)
 	// FindBySceneID(sceneID int) ([]*Movie, error)
 	// FindByName(name string, nocase bool) (*Movie, error)
 	// FindByNames(names []string, nocase bool) ([]*Movie, error)
@@ -39,6 +39,10 @@ func NewMovieReaderWriter(tx *sqlx.Tx) MovieReaderWriter {
 type movieReaderWriter struct {
 	tx *sqlx.Tx
 	qb MovieQueryBuilder
+}
+
+func (t *movieReaderWriter) Find(id int) (*Movie, error) {
+	return t.qb.Find(id, t.tx)
 }
 
 func (t *movieReaderWriter) GetFrontImage(movieID int) ([]byte, error) {

@@ -7,7 +7,7 @@ import (
 type PerformerReader interface {
 	// Find(id int) (*Performer, error)
 	// FindBySceneID(sceneID int) ([]*Performer, error)
-	// FindNameBySceneID(sceneID int) ([]*Performer, error)
+	FindNamesBySceneID(sceneID int) ([]*Performer, error)
 	// FindByNames(names []string, nocase bool) ([]*Performer, error)
 	// Count() (int, error)
 	// All() ([]*Performer, error)
@@ -43,4 +43,8 @@ type performerReaderWriter struct {
 
 func (t *performerReaderWriter) GetPerformerImage(performerID int) ([]byte, error) {
 	return t.qb.GetPerformerImage(performerID, t.tx)
+}
+
+func (t *performerReaderWriter) FindNamesBySceneID(sceneID int) ([]*Performer, error) {
+	return t.qb.FindNameBySceneID(sceneID, t.tx)
 }

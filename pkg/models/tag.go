@@ -5,9 +5,9 @@ import (
 )
 
 type TagReader interface {
-	// Find(id int) (*Tag, error)
-	// FindBySceneID(sceneID int) ([]*Tag, error)
-	// FindBySceneMarkerID(sceneMarkerID int) ([]*Tag, error)
+	Find(id int) (*Tag, error)
+	FindBySceneID(sceneID int) ([]*Tag, error)
+	FindBySceneMarkerID(sceneMarkerID int) ([]*Tag, error)
 	// FindByName(name string, nocase bool) (*Tag, error)
 	// FindByNames(names []string, nocase bool) ([]*Tag, error)
 	// Count() (int, error)
@@ -42,6 +42,18 @@ type tagReaderWriter struct {
 	qb TagQueryBuilder
 }
 
+func (t *tagReaderWriter) Find(id int) (*Tag, error) {
+	return t.qb.Find(id, t.tx)
+}
+
+func (t *tagReaderWriter) FindBySceneMarkerID(sceneMarkerID int) ([]*Tag, error) {
+	return t.qb.FindBySceneMarkerID(sceneMarkerID, t.tx)
+}
+
 func (t *tagReaderWriter) GetTagImage(tagID int) ([]byte, error) {
 	return t.qb.GetTagImage(tagID, t.tx)
+}
+
+func (t *tagReaderWriter) FindBySceneID(sceneID int) ([]*Tag, error) {
+	return t.qb.FindBySceneID(sceneID, t.tx)
 }

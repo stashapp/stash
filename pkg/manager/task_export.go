@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
@@ -17,6 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
@@ -73,7 +73,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
 
 	for w := 0; w < workers; w++ { // create export Scene workers
 		scenesWg.Add(1)
-		go exportScene(&scenesWg, jobCh, t, nil) // no db data is changed so tx is set to nil
+		go exportScene(&scenesWg, jobCh, t)
 	}
 
 	for i, scene := range scenes {
@@ -91,170 +91,72 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
 
 	logger.Infof("[scenes] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
-func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask, tx *sqlx.Tx) {
+
+func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask) {
 	defer wg.Done()
-	sceneQB := models.NewSceneQueryBuilder()
-	studioQB := models.NewStudioQueryBuilder()
-	movieQB := models.NewMovieQueryBuilder()
-	galleryQB := models.NewGalleryQueryBuilder()
-	performerQB := models.NewPerformerQueryBuilder()
-	tagQB := models.NewTagQueryBuilder()
-	sceneMarkerQB := models.NewSceneMarkerQueryBuilder()
-	joinQB := models.NewJoinsQueryBuilder()
+	sceneReader := models.NewSceneReaderWriter(nil)
+	studioReader := models.NewStudioReaderWriter(nil)
+	movieReader := models.NewMovieReaderWriter(nil)
+	galleryReader := models.NewGalleryReaderWriter(nil)
+	performerReader := models.NewPerformerReaderWriter(nil)
+	tagReader := models.NewTagReaderWriter(nil)
+	sceneMarkerReader := models.NewSceneMarkerReaderWriter(nil)
+	joinReader := models.NewJoinReaderWriter(nil)
 
-	for scene := range jobChan {
-		newSceneJSON := jsonschema.Scene{
-			CreatedAt: models.JSONTime{Time: scene.CreatedAt.Timestamp},
-			UpdatedAt: models.JSONTime{Time: scene.UpdatedAt.Timestamp},
-		}
+	for s := range jobChan {
+		sceneHash := s.GetHash(t.fileNamingAlgorithm)
 
-		if scene.Checksum.Valid {
-			newSceneJSON.Checksum = scene.Checksum.String
-		}
-
-		if scene.OSHash.Valid {
-			newSceneJSON.OSHash = scene.OSHash.String
-		}
-
-		var studioName string
-		if scene.StudioID.Valid {
-			studio, _ := studioQB.Find(int(scene.StudioID.Int64), tx)
-			if studio != nil {
-				studioName = studio.Name.String
-			}
-		}
-
-		var galleryChecksum string
-		gallery, _ := galleryQB.FindBySceneID(scene.ID, tx)
-		if gallery != nil {
-			galleryChecksum = gallery.Checksum
-		}
-
-		performers, _ := performerQB.FindNameBySceneID(scene.ID, tx)
-		sceneMovies, _ := joinQB.GetSceneMovies(scene.ID, tx)
-		tags, _ := tagQB.FindBySceneID(scene.ID, tx)
-		sceneMarkers, _ := sceneMarkerQB.FindBySceneID(scene.ID, tx)
-
-		if scene.Title.Valid {
-			newSceneJSON.Title = scene.Title.String
-		}
-		if studioName != "" {
-			newSceneJSON.Studio = studioName
-		}
-		if scene.URL.Valid {
-			newSceneJSON.URL = scene.URL.String
-		}
-		if scene.Date.Valid {
-			newSceneJSON.Date = utils.GetYMDFromDatabaseDate(scene.Date.String)
-		}
-		if scene.Rating.Valid {
-			newSceneJSON.Rating = int(scene.Rating.Int64)
-		}
-
-		newSceneJSON.OCounter = scene.OCounter
-
-		if scene.Details.Valid {
-			newSceneJSON.Details = scene.Details.String
-		}
-		if galleryChecksum != "" {
-			newSceneJSON.Gallery = galleryChecksum
-		}
-
-		newSceneJSON.Performers = t.getPerformerNames(performers)
-		newSceneJSON.Tags = t.getTagNames(tags)
-
-		sceneHash := scene.GetHash(t.fileNamingAlgorithm)
-
-		for _, sceneMarker := range sceneMarkers {
-			primaryTag, err := tagQB.Find(sceneMarker.PrimaryTagID, tx)
-			if err != nil {
-				logger.Errorf("[scenes] <%s> invalid primary tag for scene marker: %s", sceneHash, err.Error())
-				continue
-			}
-			sceneMarkerTags, err := tagQB.FindBySceneMarkerID(sceneMarker.ID, tx)
-			if err != nil {
-				logger.Errorf("[scenes] <%s> invalid tags for scene marker: %s", sceneHash, err.Error())
-				continue
-			}
-			if sceneMarker.Seconds == 0 || primaryTag.Name == "" {
-				logger.Errorf("[scenes] invalid scene marker: %v", sceneMarker)
-			}
-
-			sceneMarkerJSON := jsonschema.SceneMarker{
-				Title:      sceneMarker.Title,
-				Seconds:    t.getDecimalString(sceneMarker.Seconds),
-				PrimaryTag: primaryTag.Name,
-				Tags:       t.getTagNames(sceneMarkerTags),
-				CreatedAt:  models.JSONTime{Time: sceneMarker.CreatedAt.Timestamp},
-				UpdatedAt:  models.JSONTime{Time: sceneMarker.UpdatedAt.Timestamp},
-			}
-
-			newSceneJSON.Markers = append(newSceneJSON.Markers, sceneMarkerJSON)
-		}
-
-		for _, sceneMovie := range sceneMovies {
-			movie, _ := movieQB.Find(sceneMovie.MovieID, tx)
-
-			if movie.Name.Valid {
-				sceneMovieJSON := jsonschema.SceneMovie{
-					MovieName:  movie.Name.String,
-					SceneIndex: int(sceneMovie.SceneIndex.Int64),
-				}
-				newSceneJSON.Movies = append(newSceneJSON.Movies, sceneMovieJSON)
-			}
-		}
-
-		newSceneJSON.File = &jsonschema.SceneFile{}
-		if scene.Size.Valid {
-			newSceneJSON.File.Size = scene.Size.String
-		}
-		if scene.Duration.Valid {
-			newSceneJSON.File.Duration = t.getDecimalString(scene.Duration.Float64)
-		}
-		if scene.VideoCodec.Valid {
-			newSceneJSON.File.VideoCodec = scene.VideoCodec.String
-		}
-		if scene.AudioCodec.Valid {
-			newSceneJSON.File.AudioCodec = scene.AudioCodec.String
-		}
-		if scene.Format.Valid {
-			newSceneJSON.File.Format = scene.Format.String
-		}
-		if scene.Width.Valid {
-			newSceneJSON.File.Width = int(scene.Width.Int64)
-		}
-		if scene.Height.Valid {
-			newSceneJSON.File.Height = int(scene.Height.Int64)
-		}
-		if scene.Framerate.Valid {
-			newSceneJSON.File.Framerate = t.getDecimalString(scene.Framerate.Float64)
-		}
-		if scene.Bitrate.Valid {
-			newSceneJSON.File.Bitrate = int(scene.Bitrate.Int64)
-		}
-
-		cover, err := sceneQB.GetSceneCover(scene.ID, tx)
+		newSceneJSON, err := scene.ToBasicJSON(sceneReader, s)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene cover: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene JSON: %s", sceneHash, err.Error())
 			continue
 		}
 
-		if len(cover) > 0 {
-			newSceneJSON.Cover = utils.GetBase64StringFromData(cover)
+		newSceneJSON.Studio, err = scene.GetStudioName(studioReader, s)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene studio name: %s", sceneHash, err.Error())
+			continue
+		}
+
+		newSceneJSON.Gallery, err = scene.GetGalleryChecksum(galleryReader, s)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene gallery checksum: %s", sceneHash, err.Error())
+			continue
+		}
+
+		newSceneJSON.Performers, err = scene.GetPerformerNames(performerReader, s)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene performer names: %s", sceneHash, err.Error())
+			continue
+		}
+
+		newSceneJSON.Tags, err = scene.GetTagNames(tagReader, s)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene tag names: %s", sceneHash, err.Error())
+			continue
+		}
+
+		newSceneJSON.Markers, err = scene.GetSceneMarkersJSON(sceneMarkerReader, tagReader, s)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene markers JSON: %s", sceneHash, err.Error())
+			continue
+		}
+
+		newSceneJSON.Movies, err = scene.GetSceneMoviesJSON(movieReader, joinReader, s)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene movies JSON: %s", sceneHash, err.Error())
+			continue
 		}
 
 		sceneJSON, err := instance.JSON.getScene(sceneHash)
-		if err != nil {
-			logger.Debugf("[scenes] error reading scene json: %s", err.Error())
-		} else if jsonschema.CompareJSON(*sceneJSON, newSceneJSON) {
+		if err == nil && jsonschema.CompareJSON(*sceneJSON, *newSceneJSON) {
 			continue
 		}
 
-		if err := instance.JSON.saveScene(sceneHash, &newSceneJSON); err != nil {
+		if err := instance.JSON.saveScene(sceneHash, newSceneJSON); err != nil {
 			logger.Errorf("[scenes] <%s> failed to save json: %s", sceneHash, err.Error())
 		}
 	}
-
 }
 
 func (t *ExportTask) ExportGalleries(ctx context.Context) {
