@@ -10,6 +10,70 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+type dependencies struct {
+	PerformerIDs []int
+	GalleryID    *int
+	StudioID     *int
+	TagIDs       []int
+	MovieIDs     []int
+}
+
+func GetDependencies(galleries models.GalleryReader, tags models.TagReader, joins models.JoinReader, performers models.PerformerReader, markerReader models.SceneMarkerReader, scene *models.Scene) (*dependencies, error) {
+	ret := &dependencies{}
+
+	if scene.StudioID.Valid {
+		s := int(scene.StudioID.Int64)
+		ret.StudioID = &s
+	}
+
+	g, err := galleries.FindBySceneID(scene.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if g != nil {
+		gID := g.ID
+		ret.GalleryID = &gID
+	}
+
+	t, err := tags.FindBySceneID(scene.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, tt := range t {
+		ret.TagIDs = append(ret.TagIDs, tt.ID)
+	}
+
+	m, err := joins.GetSceneMovies(scene.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, mm := range m {
+		ret.MovieIDs = append(ret.MovieIDs, mm.MovieID)
+	}
+
+	sm, err := markerReader.FindBySceneID(scene.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, smm := range sm {
+		ret.TagIDs = append(ret.TagIDs, smm.PrimaryTagID)
+		smmt, err := tags.FindBySceneMarkerID(smm.ID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid tags for scene marker: %s", err.Error())
+		}
+
+		for _, smmtt := range smmt {
+			ret.TagIDs = append(ret.TagIDs, smmtt.ID)
+		}
+	}
+
+	return ret, nil
+}
+
 // ToBasicJSON converts a scene object into its JSON object equivalent. It
 // does not convert the relationships to other objects, with the exception
 // of cover image.

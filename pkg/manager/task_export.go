@@ -52,7 +52,7 @@ type exportSpec struct {
 
 func newExportSpec(input *models.ExportObjectTypeInput) *exportSpec {
 	if input == nil {
-		return nil
+		return &exportSpec{}
 	}
 
 	ret := &exportSpec{
@@ -82,7 +82,6 @@ func CreateExportTask(a models.HashAlgorithm, input models.ExportObjectsInput) *
 		galleries:           newExportSpec(input.Galleries),
 		includeDependencies: includeDeps,
 	}
-	//ioutil.TempDir(baseDir, "export")
 }
 
 func (t *ExportTask) GetStatus() JobStatus {
@@ -263,6 +262,24 @@ func (t *ExportTask) ExportScenes(workers int) {
 	logger.Infof("[scenes] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
+func addDependentID(ids []int, toAdd int) []int {
+	for _, id := range ids {
+		if id == toAdd {
+			return ids
+		}
+	}
+
+	return append(ids, toAdd)
+}
+
+func addDependentIDs(ids []int, toAdd []int) []int {
+	for _, a := range toAdd {
+		ids = addDependentID(ids, a)
+	}
+
+	return ids
+}
+
 func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask) {
 	defer wg.Done()
 	sceneReader := models.NewSceneReaderWriter(nil)
@@ -317,6 +334,24 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene movies JSON: %s", sceneHash, err.Error())
 			continue
+		}
+
+		if t.includeDependencies {
+			d, err := scene.GetDependencies(galleryReader, tagReader, joinReader, performerReader, sceneMarkerReader, s)
+			if err != nil {
+				logger.Errorf("[scenes] <%s> error getting scene dependencies: %s", err.Error())
+				continue
+			}
+
+			if d.StudioID != nil {
+				t.studios.IDs = addDependentID(t.studios.IDs, *d.StudioID)
+			}
+			if d.GalleryID != nil {
+				t.galleries.IDs = addDependentID(t.galleries.IDs, *d.GalleryID)
+			}
+			t.tags.IDs = addDependentIDs(t.tags.IDs, d.TagIDs)
+			t.performers.IDs = addDependentIDs(t.performers.IDs, d.PerformerIDs)
+			t.movies.IDs = addDependentIDs(t.movies.IDs, d.MovieIDs)
 		}
 
 		sceneJSON, err := t.json.getScene(sceneHash)

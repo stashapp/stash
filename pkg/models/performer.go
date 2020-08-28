@@ -7,7 +7,7 @@ import (
 type PerformerReader interface {
 	// Find(id int) (*Performer, error)
 	FindMany(ids []int) ([]*Performer, error)
-	// FindBySceneID(sceneID int) ([]*Performer, error)
+	FindBySceneID(sceneID int) ([]*Performer, error)
 	FindNamesBySceneID(sceneID int) ([]*Performer, error)
 	// FindByNames(names []string, nocase bool) ([]*Performer, error)
 	// Count() (int, error)
@@ -52,6 +52,10 @@ func (t *performerReaderWriter) All() ([]*Performer, error) {
 
 func (t *performerReaderWriter) GetPerformerImage(performerID int) ([]byte, error) {
 	return t.qb.GetPerformerImage(performerID, t.tx)
+}
+
+func (t *performerReaderWriter) FindBySceneID(id int) ([]*Performer, error) {
+	return t.qb.FindBySceneID(id, t.tx)
 }
 
 func (t *performerReaderWriter) FindNamesBySceneID(sceneID int) ([]*Performer, error) {
