@@ -517,6 +517,12 @@ export const mutateMetadataExport = () =>
     mutation: GQL.MetadataExportDocument,
   });
 
+export const mutateExportObjects = (input: GQL.ExportObjectsInput) =>
+  client.mutate<GQL.ExportObjectsMutation>({
+    mutation: GQL.ExportObjectsDocument,
+    variables: { input },
+  });
+
 export const mutateMetadataImport = () =>
   client.mutate<GQL.MetadataImportMutation>({
     mutation: GQL.MetadataImportDocument,
