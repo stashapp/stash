@@ -6,10 +6,11 @@ import (
 
 type MovieReader interface {
 	Find(id int) (*Movie, error)
+	FindMany(ids []int) ([]*Movie, error)
 	// FindBySceneID(sceneID int) ([]*Movie, error)
 	// FindByName(name string, nocase bool) (*Movie, error)
 	// FindByNames(names []string, nocase bool) ([]*Movie, error)
-	// All() ([]*Movie, error)
+	All() ([]*Movie, error)
 	// AllSlim() ([]*Movie, error)
 	// Query(movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int)
 	GetFrontImage(movieID int) ([]byte, error)
@@ -43,6 +44,14 @@ type movieReaderWriter struct {
 
 func (t *movieReaderWriter) Find(id int) (*Movie, error) {
 	return t.qb.Find(id, t.tx)
+}
+
+func (t *movieReaderWriter) FindMany(ids []int) ([]*Movie, error) {
+	return t.qb.FindMany(ids)
+}
+
+func (t *movieReaderWriter) All() ([]*Movie, error) {
+	return t.qb.All()
 }
 
 func (t *movieReaderWriter) GetFrontImage(movieID int) ([]byte, error) {

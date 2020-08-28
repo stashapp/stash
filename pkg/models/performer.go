@@ -6,11 +6,12 @@ import (
 
 type PerformerReader interface {
 	// Find(id int) (*Performer, error)
+	FindMany(ids []int) ([]*Performer, error)
 	// FindBySceneID(sceneID int) ([]*Performer, error)
 	FindNamesBySceneID(sceneID int) ([]*Performer, error)
 	// FindByNames(names []string, nocase bool) ([]*Performer, error)
 	// Count() (int, error)
-	// All() ([]*Performer, error)
+	All() ([]*Performer, error)
 	// AllSlim() ([]*Performer, error)
 	// Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int)
 	GetPerformerImage(performerID int) ([]byte, error)
@@ -39,6 +40,14 @@ func NewPerformerReaderWriter(tx *sqlx.Tx) PerformerReaderWriter {
 type performerReaderWriter struct {
 	tx *sqlx.Tx
 	qb PerformerQueryBuilder
+}
+
+func (t *performerReaderWriter) FindMany(ids []int) ([]*Performer, error) {
+	return t.qb.FindMany(ids)
+}
+
+func (t *performerReaderWriter) All() ([]*Performer, error) {
+	return t.qb.All()
 }
 
 func (t *performerReaderWriter) GetPerformerImage(performerID int) ([]byte, error) {
