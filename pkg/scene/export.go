@@ -10,70 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type dependencies struct {
-	PerformerIDs []int
-	GalleryID    *int
-	StudioID     *int
-	TagIDs       []int
-	MovieIDs     []int
-}
-
-func GetDependencies(galleries models.GalleryReader, tags models.TagReader, joins models.JoinReader, performers models.PerformerReader, markerReader models.SceneMarkerReader, scene *models.Scene) (*dependencies, error) {
-	ret := &dependencies{}
-
-	if scene.StudioID.Valid {
-		s := int(scene.StudioID.Int64)
-		ret.StudioID = &s
-	}
-
-	g, err := galleries.FindBySceneID(scene.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	if g != nil {
-		gID := g.ID
-		ret.GalleryID = &gID
-	}
-
-	t, err := tags.FindBySceneID(scene.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, tt := range t {
-		ret.TagIDs = append(ret.TagIDs, tt.ID)
-	}
-
-	m, err := joins.GetSceneMovies(scene.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, mm := range m {
-		ret.MovieIDs = append(ret.MovieIDs, mm.MovieID)
-	}
-
-	sm, err := markerReader.FindBySceneID(scene.ID)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, smm := range sm {
-		ret.TagIDs = append(ret.TagIDs, smm.PrimaryTagID)
-		smmt, err := tags.FindBySceneMarkerID(smm.ID)
-		if err != nil {
-			return nil, fmt.Errorf("invalid tags for scene marker: %s", err.Error())
-		}
-
-		for _, smmtt := range smmt {
-			ret.TagIDs = append(ret.TagIDs, smmtt.ID)
-		}
-	}
-
-	return ret, nil
-}
-
 // ToBasicJSON converts a scene object into its JSON object equivalent. It
 // does not convert the relationships to other objects, with the exception
 // of cover image.
@@ -201,6 +137,21 @@ func GetGalleryChecksum(reader models.GalleryReader, scene *models.Scene) (strin
 	return "", nil
 }
 
+// GetGalleryID returns the ID of the gallery for the provided scene. It
+// returns nil if there is no gallery assigned to the scene.
+func GetGalleryID(reader models.GalleryReader, scene *models.Scene) (*int, error) {
+	gallery, err := reader.FindBySceneID(scene.ID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting scene gallery: %s", err.Error())
+	}
+
+	if gallery != nil {
+		return &gallery.ID, nil
+	}
+
+	return nil, nil
+}
+
 // GetPerformerNames returns a slice of performer names corresponding to the
 // provided scene's performers.
 func GetPerformerNames(reader models.PerformerReader, scene *models.Scene) ([]string, error) {
@@ -241,6 +192,39 @@ func getTagNames(tags []*models.Tag) []string {
 	return results
 }
 
+// GetDependentTagIDs returns a slice of unique tag IDs that this scene references.
+func GetDependentTagIDs(tags models.TagReader, joins models.JoinReader, markerReader models.SceneMarkerReader, scene *models.Scene) ([]int, error) {
+	var ret []int
+
+	t, err := tags.FindBySceneID(scene.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, tt := range t {
+		ret = utils.IntAppendUnique(ret, tt.ID)
+	}
+
+	sm, err := markerReader.FindBySceneID(scene.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, smm := range sm {
+		ret = utils.IntAppendUnique(ret, smm.PrimaryTagID)
+		smmt, err := tags.FindBySceneMarkerID(smm.ID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid tags for scene marker: %s", err.Error())
+		}
+
+		for _, smmtt := range smmt {
+			ret = utils.IntAppendUnique(ret, smmtt.ID)
+		}
+	}
+
+	return ret, nil
+}
+
 // GetSceneMoviesJSON returns a slice of SceneMovie JSON representation objects
 // corresponding to the provided scene's scene movie relationships.
 func GetSceneMoviesJSON(movieReader models.MovieReader, joinReader models.JoinReader, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
@@ -266,6 +250,22 @@ func GetSceneMoviesJSON(movieReader models.MovieReader, joinReader models.JoinRe
 	}
 
 	return results, nil
+}
+
+// GetDependentMovieIDs returns a slice of movie IDs that this scene references.
+func GetDependentMovieIDs(joins models.JoinReader, scene *models.Scene) ([]int, error) {
+	var ret []int
+
+	m, err := joins.GetSceneMovies(scene.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, mm := range m {
+		ret = append(ret, mm.MovieID)
+	}
+
+	return ret, nil
 }
 
 // GetSceneMarkersJSON returns a slice of SceneMarker JSON representation

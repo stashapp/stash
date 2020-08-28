@@ -262,24 +262,6 @@ func (t *ExportTask) ExportScenes(workers int) {
 	logger.Infof("[scenes] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
-func addDependentID(ids []int, toAdd int) []int {
-	for _, id := range ids {
-		if id == toAdd {
-			return ids
-		}
-	}
-
-	return append(ids, toAdd)
-}
-
-func addDependentIDs(ids []int, toAdd []int) []int {
-	for _, a := range toAdd {
-		ids = addDependentID(ids, a)
-	}
-
-	return ids
-}
-
 func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask) {
 	defer wg.Done()
 	sceneReader := models.NewSceneReaderWriter(nil)
@@ -306,17 +288,23 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 			continue
 		}
 
-		newSceneJSON.Gallery, err = scene.GetGalleryChecksum(galleryReader, s)
+		sceneGallery, err := galleryReader.FindBySceneID(s.ID)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene gallery checksum: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene gallery: %s", sceneHash, err.Error())
 			continue
 		}
 
-		newSceneJSON.Performers, err = scene.GetPerformerNames(performerReader, s)
+		if sceneGallery != nil {
+			newSceneJSON.Gallery = sceneGallery.Checksum
+		}
+
+		performers, err := performerReader.FindBySceneID(s.ID)
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene performer names: %s", sceneHash, err.Error())
 			continue
 		}
+
+		newSceneJSON.Performers = performer.GetNames(performers)
 
 		newSceneJSON.Tags, err = scene.GetTagNames(tagReader, s)
 		if err != nil {
@@ -337,21 +325,29 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 		}
 
 		if t.includeDependencies {
-			d, err := scene.GetDependencies(galleryReader, tagReader, joinReader, performerReader, sceneMarkerReader, s)
-			if err != nil {
-				logger.Errorf("[scenes] <%s> error getting scene dependencies: %s", err.Error())
-				continue
+			if s.StudioID.Valid {
+				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
 			}
 
-			if d.StudioID != nil {
-				t.studios.IDs = addDependentID(t.studios.IDs, *d.StudioID)
+			if sceneGallery != nil {
+				t.galleries.IDs = utils.IntAppendUnique(t.galleries.IDs, sceneGallery.ID)
 			}
-			if d.GalleryID != nil {
-				t.galleries.IDs = addDependentID(t.galleries.IDs, *d.GalleryID)
+
+			tagIDs, err := scene.GetDependentTagIDs(tagReader, joinReader, sceneMarkerReader, s)
+			if err != nil {
+				logger.Errorf("[scenes] <%s> error getting scene tags: %s", err.Error())
+				continue
 			}
-			t.tags.IDs = addDependentIDs(t.tags.IDs, d.TagIDs)
-			t.performers.IDs = addDependentIDs(t.performers.IDs, d.PerformerIDs)
-			t.movies.IDs = addDependentIDs(t.movies.IDs, d.MovieIDs)
+			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tagIDs)
+
+			movieIDs, err := scene.GetDependentMovieIDs(joinReader, s)
+			if err != nil {
+				logger.Errorf("[scenes] <%s> error getting scene movies: %s", err.Error())
+				continue
+			}
+			t.movies.IDs = utils.IntAppendUniques(t.movies.IDs, movieIDs)
+
+			t.performers.IDs = utils.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
 
 		sceneJSON, err := t.json.getScene(sceneHash)

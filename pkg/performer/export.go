@@ -78,3 +78,23 @@ func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonsc
 
 	return &newPerformerJSON, nil
 }
+
+func GetIDs(performers []*models.Performer) []int {
+	var results []int
+	for _, performer := range performers {
+		results = append(results, performer.ID)
+	}
+
+	return results
+}
+
+func GetNames(performers []*models.Performer) []string {
+	var results []string
+	for _, performer := range performers {
+		if performer.Name.Valid {
+			results = append(results, performer.Name.String)
+		}
+	}
+
+	return results
+}
