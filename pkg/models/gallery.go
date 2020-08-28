@@ -6,13 +6,13 @@ import (
 
 type GalleryReader interface {
 	// Find(id int) (*Gallery, error)
-	// FindMany(ids []int) ([]*Gallery, error)
+	FindMany(ids []int) ([]*Gallery, error)
 	// FindByChecksum(checksum string) (*Gallery, error)
 	// FindByPath(path string) (*Gallery, error)
 	FindBySceneID(sceneID int) (*Gallery, error)
 	// ValidGalleriesForScenePath(scenePath string) ([]*Gallery, error)
 	// Count() (int, error)
-	// All() ([]*Gallery, error)
+	All() ([]*Gallery, error)
 	// Query(galleryFilter *GalleryFilterType, findFilter *FindFilterType) ([]*Gallery, int)
 }
 
@@ -38,6 +38,14 @@ func NewGalleryReaderWriter(tx *sqlx.Tx) GalleryReaderWriter {
 type galleryReaderWriter struct {
 	tx *sqlx.Tx
 	qb GalleryQueryBuilder
+}
+
+func (t *galleryReaderWriter) FindMany(ids []int) ([]*Gallery, error) {
+	return t.qb.FindMany(ids)
+}
+
+func (t *galleryReaderWriter) All() ([]*Gallery, error) {
+	return t.qb.All()
 }
 
 func (t *galleryReaderWriter) FindBySceneID(sceneID int) (*Gallery, error) {

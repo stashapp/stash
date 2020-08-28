@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -74,6 +75,24 @@ func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
 		return nil, err
 	}
 	return results[0], nil
+}
+
+func (qb *PerformerQueryBuilder) FindMany(ids []int) ([]*Performer, error) {
+	var performers []*Performer
+	for _, id := range ids {
+		performer, err := qb.Find(id)
+		if err != nil {
+			return nil, err
+		}
+
+		if performer == nil {
+			return nil, fmt.Errorf("performer with id %d not found", id)
+		}
+
+		performers = append(performers, performer)
+	}
+
+	return performers, nil
 }
 
 func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {

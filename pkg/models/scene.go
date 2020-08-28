@@ -6,7 +6,7 @@ import (
 
 type SceneReader interface {
 	// Find(id int) (*Scene, error)
-	// FindMany(ids []int) ([]*Scene, error)
+	FindMany(ids []int) ([]*Scene, error)
 	// FindByChecksum(checksum string) (*Scene, error)
 	// FindByOSHash(oshash string) (*Scene, error)
 	// FindByPath(path string) (*Scene, error)
@@ -22,7 +22,7 @@ type SceneReader interface {
 	// CountMissingChecksum() (int, error)
 	// CountMissingOSHash() (int, error)
 	// Wall(q *string) ([]*Scene, error)
-	// All() ([]*Scene, error)
+	All() ([]*Scene, error)
 	// Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]*Scene, int)
 	// QueryAllByPathRegex(regex string) ([]*Scene, error)
 	// QueryByPathRegex(findFilter *FindFilterType) ([]*Scene, int)
@@ -58,6 +58,14 @@ func NewSceneReaderWriter(tx *sqlx.Tx) SceneReaderWriter {
 type sceneReaderWriter struct {
 	tx *sqlx.Tx
 	qb SceneQueryBuilder
+}
+
+func (t *sceneReaderWriter) FindMany(ids []int) ([]*Scene, error) {
+	return t.qb.FindMany(ids)
+}
+
+func (t *sceneReaderWriter) All() ([]*Scene, error) {
+	return t.qb.All()
 }
 
 func (t *sceneReaderWriter) GetSceneCover(sceneID int) ([]byte, error) {
