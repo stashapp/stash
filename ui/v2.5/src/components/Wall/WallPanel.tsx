@@ -8,7 +8,6 @@ interface IWallPanelProps {
   clickHandler?: (
     item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment
   ) => void;
-  disableZoom?: boolean;
 }
 
 const calculateClass = (index: number, count: number) => {
@@ -43,7 +42,6 @@ export const WallPanel: React.FC<IWallPanelProps> = (
       scene={scene}
       clickHandler={props.clickHandler}
       className={calculateClass(index, sceneArray.length)}
-      disableZoom={props.disableZoom ?? false}
     />
   ));
 
@@ -55,7 +53,6 @@ export const WallPanel: React.FC<IWallPanelProps> = (
       sceneMarker={marker}
       clickHandler={props.clickHandler}
       className={calculateClass(index, markerArray.length)}
-      disableZoom={props.disableZoom ?? false}
     />
   ));
 
