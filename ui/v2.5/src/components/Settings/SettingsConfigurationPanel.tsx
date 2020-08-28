@@ -455,8 +455,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
             className="col col-sm-6 text-input"
             type="number"
             value={previewSegments.toString()}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setPreviewSegments(Number.parseInt(e.currentTarget.value, 10))
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewSegments(
+                Number.parseInt(e.currentTarget.value || "0", 10)
+              )
             }
           />
           <Form.Text className="text-muted">
@@ -470,9 +472,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             className="col col-sm-6 text-input"
             type="number"
             value={previewSegmentDuration.toString()}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setPreviewSegmentDuration(
-                Number.parseFloat(e.currentTarget.value)
+                Number.parseFloat(e.currentTarget.value || "0")
               )
             }
           />
@@ -583,8 +585,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
             className="col col-sm-6 text-input"
             type="number"
             value={maxSessionAge.toString()}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setMaxSessionAge(Number.parseInt(e.currentTarget.value, 10))
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setMaxSessionAge(
+                Number.parseInt(e.currentTarget.value || "0", 10)
+              )
             }
           />
           <Form.Text className="text-muted">

@@ -102,7 +102,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (props.scene.performers.length <= 0) return;
 
     const popoverContent = props.scene.performers.map((performer) => (
-      <div className="performer-tag-container row" key="performer">
+      <div className="performer-tag-container row" key={performer.id}>
         <Link
           to={`/performers/${performer.id}`}
           className="performer-tag col m-auto zoom-2"
@@ -151,7 +151,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        placement="bottom"
+        content={popoverContent}
+        className="tag-tooltip"
+      >
         <Button className="minimal">
           <Icon icon="film" />
           <span>{props.scene.movies.length}</span>
@@ -285,26 +289,28 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         }}
       />
 
-      <Link
-        to={`/scenes/${props.scene.id}`}
-        className="scene-card-link"
-        onClick={handleSceneClick}
-        onDragStart={handleDrag}
-        onDragOver={handleDragOver}
-        draggable={props.selecting}
-      >
-        {maybeRenderRatingBanner()}
-        {maybeRenderSceneStudioOverlay()}
-        {maybeRenderSceneSpecsOverlay()}
-        <video
-          loop
-          className={cx("scene-card-video", { portrait: isPortrait() })}
-          poster={props.scene.paths.screenshot || ""}
-          ref={hoverHandler.videoEl}
+      <div className="video-section">
+        <Link
+          to={`/scenes/${props.scene.id}`}
+          className="scene-card-link"
+          onClick={handleSceneClick}
+          onDragStart={handleDrag}
+          onDragOver={handleDragOver}
+          draggable={props.selecting}
         >
-          {previewPath ? <source src={previewPath} /> : ""}
-        </video>
-      </Link>
+          {maybeRenderRatingBanner()}
+          {maybeRenderSceneSpecsOverlay()}
+          <video
+            loop
+            className={cx("scene-card-video", { portrait: isPortrait() })}
+            poster={props.scene.paths.screenshot || ""}
+            ref={hoverHandler.videoEl}
+          >
+            {previewPath ? <source src={previewPath} /> : ""}
+          </video>
+        </Link>
+        {maybeRenderSceneStudioOverlay()}
+      </div>
       <div className="card-section">
         <h5 className="card-section-title">
           {props.scene.title
