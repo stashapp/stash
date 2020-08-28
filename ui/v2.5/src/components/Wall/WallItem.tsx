@@ -12,6 +12,7 @@ interface IWallItemProps {
     item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment
   ) => void;
   className: string;
+  disableZoom?: boolean;
 }
 
 interface IPreviews {
@@ -175,7 +176,7 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
           <Preview
             previews={previews}
             config={config.data?.configuration}
-            active={active}
+            active={props.disableZoom ? false : active}
           />
           {renderText()}
         </Link>
