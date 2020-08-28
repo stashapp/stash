@@ -64,7 +64,6 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
         />
       </div>
       <WallPanel
-        disableZoom
         sceneMarkers={props.scene.scene_markers}
         clickHandler={(marker) => {
           window.scrollTo(0, 0);
