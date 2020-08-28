@@ -12,6 +12,29 @@ type TagReaderWriter struct {
 	mock.Mock
 }
 
+// All provides a mock function with given fields:
+func (_m *TagReaderWriter) All() ([]*models.Tag, error) {
+	ret := _m.Called()
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func() []*models.Tag); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Find provides a mock function with given fields: id
 func (_m *TagReaderWriter) Find(id int) (*models.Tag, error) {
 	ret := _m.Called(id)
@@ -74,6 +97,29 @@ func (_m *TagReaderWriter) FindBySceneMarkerID(sceneMarkerID int) ([]*models.Tag
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
 		r1 = rf(sceneMarkerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindMany provides a mock function with given fields: ids
+func (_m *TagReaderWriter) FindMany(ids []int) ([]*models.Tag, error) {
+	ret := _m.Called(ids)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func([]int) []*models.Tag); ok {
+		r0 = rf(ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]int) error); ok {
+		r1 = rf(ids)
 	} else {
 		r1 = ret.Error(1)
 	}

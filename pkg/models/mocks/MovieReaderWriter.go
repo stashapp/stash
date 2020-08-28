@@ -12,6 +12,29 @@ type MovieReaderWriter struct {
 	mock.Mock
 }
 
+// All provides a mock function with given fields:
+func (_m *MovieReaderWriter) All() ([]*models.Movie, error) {
+	ret := _m.Called()
+
+	var r0 []*models.Movie
+	if rf, ok := ret.Get(0).(func() []*models.Movie); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Movie)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Find provides a mock function with given fields: id
 func (_m *MovieReaderWriter) Find(id int) (*models.Movie, error) {
 	ret := _m.Called(id)
@@ -28,6 +51,29 @@ func (_m *MovieReaderWriter) Find(id int) (*models.Movie, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
 		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindMany provides a mock function with given fields: ids
+func (_m *MovieReaderWriter) FindMany(ids []int) ([]*models.Movie, error) {
+	ret := _m.Called(ids)
+
+	var r0 []*models.Movie
+	if rf, ok := ret.Get(0).(func([]int) []*models.Movie); ok {
+		r0 = rf(ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Movie)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]int) error); ok {
+		r1 = rf(ids)
 	} else {
 		r1 = ret.Error(1)
 	}

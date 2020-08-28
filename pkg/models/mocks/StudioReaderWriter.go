@@ -12,6 +12,29 @@ type StudioReaderWriter struct {
 	mock.Mock
 }
 
+// All provides a mock function with given fields:
+func (_m *StudioReaderWriter) All() ([]*models.Studio, error) {
+	ret := _m.Called()
+
+	var r0 []*models.Studio
+	if rf, ok := ret.Get(0).(func() []*models.Studio); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Studio)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Find provides a mock function with given fields: id
 func (_m *StudioReaderWriter) Find(id int) (*models.Studio, error) {
 	ret := _m.Called(id)
@@ -28,6 +51,29 @@ func (_m *StudioReaderWriter) Find(id int) (*models.Studio, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
 		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindMany provides a mock function with given fields: ids
+func (_m *StudioReaderWriter) FindMany(ids []int) ([]*models.Studio, error) {
+	ret := _m.Called(ids)
+
+	var r0 []*models.Studio
+	if rf, ok := ret.Get(0).(func([]int) []*models.Studio); ok {
+		r0 = rf(ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Studio)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]int) error); ok {
+		r1 = rf(ids)
 	} else {
 		r1 = ret.Error(1)
 	}
