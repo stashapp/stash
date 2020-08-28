@@ -610,8 +610,8 @@ export const useTagsList = (
       getSelectedData(result?.data?.findTags?.tags ?? [], selectedIds),
   });
 
-export const showWhenSelected = (
-  result: FindScenesQueryResult,
+export const showWhenSelected = <T extends IQueryResult>(
+  result: T,
   filter: ListFilterModel,
   selectedIds: Set<string>
 ) => {
