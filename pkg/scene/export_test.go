@@ -84,7 +84,7 @@ var names = []string{
 	"name2",
 }
 
-var imageBytes []byte = []byte("imageBytes")
+var imageBytes = []byte("imageBytes")
 
 const image = "aW1hZ2VCeXRlcw=="
 
@@ -190,7 +190,7 @@ type basicTestScenario struct {
 	err      bool
 }
 
-var scenarios []basicTestScenario = []basicTestScenario{
+var scenarios = []basicTestScenario{
 	{
 		createFullScene(sceneID),
 		createFullJSONScene(image),
@@ -245,7 +245,7 @@ type stringTestScenario struct {
 	err      bool
 }
 
-var getStudioScenarios []stringTestScenario = []stringTestScenario{
+var getStudioScenarios = []stringTestScenario{
 	{
 		createStudioScene(studioID),
 		studioName,
@@ -290,7 +290,7 @@ func TestGetStudioName(t *testing.T) {
 	mockStudioReader.AssertExpectations(t)
 }
 
-var getGalleryChecksumScenarios []stringTestScenario = []stringTestScenario{
+var getGalleryChecksumScenarios = []stringTestScenario{
 	{
 		createEmptyScene(sceneID),
 		galleryChecksum,
@@ -341,7 +341,7 @@ type stringSliceTestScenario struct {
 	err      bool
 }
 
-var getPerformerNamesScenarios []stringSliceTestScenario = []stringSliceTestScenario{
+var getPerformerNamesScenarios = []stringSliceTestScenario{
 	{
 		createEmptyScene(sceneID),
 		names,
@@ -395,7 +395,7 @@ func TestGetPerformerNames(t *testing.T) {
 	mockPerformerReader.AssertExpectations(t)
 }
 
-var getTagNamesScenarios []stringSliceTestScenario = []stringSliceTestScenario{
+var getTagNamesScenarios = []stringSliceTestScenario{
 	{
 		createEmptyScene(sceneID),
 		names,
@@ -455,7 +455,7 @@ type sceneMoviesTestScenario struct {
 	err      bool
 }
 
-var getSceneMoviesJSONScenarios []sceneMoviesTestScenario = []sceneMoviesTestScenario{
+var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
 	{
 		createEmptyScene(sceneID),
 		[]jsonschema.SceneMovie{
@@ -572,7 +572,7 @@ type sceneMarkersTestScenario struct {
 	err      bool
 }
 
-var getSceneMarkersJSONScenarios []sceneMarkersTestScenario = []sceneMarkersTestScenario{
+var getSceneMarkersJSONScenarios = []sceneMarkersTestScenario{
 	{
 		createEmptyScene(sceneID),
 		[]jsonschema.SceneMarker{

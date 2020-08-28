@@ -38,7 +38,7 @@ const (
 	twitter       = "twitter"
 )
 
-var imageBytes []byte = []byte("imageBytes")
+var imageBytes = []byte("imageBytes")
 
 const image = "aW1hZ2VCeXRlcw=="
 

@@ -48,8 +48,8 @@ const studioName = "studio"
 const frontImage = "ZnJvbnRJbWFnZUJ5dGVz"
 const backImage = "YmFja0ltYWdlQnl0ZXM="
 
-var frontImageBytes []byte = []byte("frontImageBytes")
-var backImageBytes []byte = []byte("backImageBytes")
+var frontImageBytes = []byte("frontImageBytes")
+var backImageBytes = []byte("backImageBytes")
 
 var studio models.Studio = models.Studio{
 	Name: modelstest.NullString(studioName),

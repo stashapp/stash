@@ -34,7 +34,7 @@ var parentStudio models.Studio = models.Studio{
 	Name: modelstest.NullString(parentStudioName),
 }
 
-var imageBytes []byte = []byte("imageBytes")
+var imageBytes = []byte("imageBytes")
 
 const image = "aW1hZ2VCeXRlcw=="
 
