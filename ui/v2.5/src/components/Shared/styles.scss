@@ -128,3 +128,8 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   box-shadow: none;
   color: #f5f8fa;
 }
+
+.hover-popover-content {
+  max-width: 32rem;
+  text-align: center;
+}

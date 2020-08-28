@@ -1,6 +1,7 @@
 import { Badge } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
+import cx from "classnames";
 import {
   PerformerDataFragment,
   SceneMarkerDataFragment,
@@ -43,7 +44,7 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
       : TextUtils.fileNameFromPath(props.scene.path ?? "");
   }
   return (
-    <Badge className={`tag-item ${props.className}`} variant="secondary">
+    <Badge className={cx("tag-item", props.className)} variant="secondary">
       <Link to={link}>{title}</Link>
     </Badge>
   );

@@ -102,7 +102,7 @@ export const Studio: React.FC = () => {
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   if (!isNew && !isEditing) {
-    if (!data?.findStudio || loading) return <LoadingIndicator />;
+    if (!data?.findStudio || loading || !studio.id) return <LoadingIndicator />;
     if (error) return <div>{error.message}</div>;
   }
 
