@@ -335,14 +335,14 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 
 			tagIDs, err := scene.GetDependentTagIDs(tagReader, joinReader, sceneMarkerReader, s)
 			if err != nil {
-				logger.Errorf("[scenes] <%s> error getting scene tags: %s", err.Error())
+				logger.Errorf("[scenes] <%s> error getting scene tags: %s", sceneHash, err.Error())
 				continue
 			}
 			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tagIDs)
 
 			movieIDs, err := scene.GetDependentMovieIDs(joinReader, s)
 			if err != nil {
-				logger.Errorf("[scenes] <%s> error getting scene movies: %s", err.Error())
+				logger.Errorf("[scenes] <%s> error getting scene movies: %s", sceneHash, err.Error())
 				continue
 			}
 			t.movies.IDs = utils.IntAppendUniques(t.movies.IDs, movieIDs)
@@ -641,7 +641,7 @@ func (t *ExportTask) exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movi
 		newMovieJSON, err := movie.ToJSON(movieReader, studioReader, m)
 
 		if err != nil {
-			logger.Errorf("[movies] <%s> error getting tag JSON: %s", m.Name, err.Error())
+			logger.Errorf("[movies] <%s> error getting tag JSON: %s", m.Checksum, err.Error())
 			continue
 		}
 

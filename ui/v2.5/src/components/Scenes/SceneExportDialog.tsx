@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Form } from "react-bootstrap";
-import {
-  mutateExportObjects,
-} from "src/core/StashService";
+import { mutateExportObjects } from "src/core/StashService";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { downloadFile } from "src/utils";
@@ -28,12 +26,12 @@ export const SceneExportDialog: React.FC<ISceneExportDialogProps> = (
       setIsRunning(true);
       const ret = await mutateExportObjects({
         scenes: {
-            ids: props.selectedIds,
-            all: props.all,
+          ids: props.selectedIds,
+          all: props.all,
         },
         includeDependencies,
       });
-      
+
       // download the result
       if (ret.data && ret.data.exportObjects) {
         const link = ret.data.exportObjects;
