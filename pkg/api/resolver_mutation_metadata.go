@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -20,6 +21,27 @@ func (r *mutationResolver) MetadataImport(ctx context.Context) (string, error) {
 func (r *mutationResolver) MetadataExport(ctx context.Context) (string, error) {
 	manager.GetInstance().Export()
 	return "todo", nil
+}
+
+func (r *mutationResolver) ExportObjects(ctx context.Context, input models.ExportObjectsInput) (*string, error) {
+	// generate temporary directory to export to
+	manager.GetInstance().Paths.Generated.TempDir("export")
+
+	t := manager.CreateExportTask(config.GetVideoFileNamingAlgorithm(), input)
+	wg, err := manager.GetInstance().RunSingleTask(t)
+	if err != nil {
+		return nil, err
+	}
+
+	wg.Wait()
+
+	if t.DownloadHash != "" {
+		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+		ret := baseURL + "/downloads/" + t.DownloadHash + "/export.zip"
+		return &ret, nil
+	}
+
+	return nil, nil
 }
 
 func (r *mutationResolver) MetadataGenerate(ctx context.Context, input models.GenerateMetadataInput) (string, error) {

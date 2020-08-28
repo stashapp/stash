@@ -50,3 +50,18 @@ type MetadataUpdateStatus {
   status: String!
   message: String!
 }
+
+input ExportObjectTypeInput {
+  ids: [String!]
+  all: Boolean
+}
+
+input ExportObjectsInput {
+  scenes: ExportObjectTypeInput
+  studios: ExportObjectTypeInput
+  performers: ExportObjectTypeInput
+  tags: ExportObjectTypeInput
+  movies: ExportObjectTypeInput
+  galleries: ExportObjectTypeInput
+  includeDependencies: Boolean
+}

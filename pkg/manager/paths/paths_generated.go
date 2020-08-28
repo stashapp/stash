@@ -1,9 +1,11 @@
 package paths
 
 import (
+	"io/ioutil"
+	"path/filepath"
+
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/utils"
-	"path/filepath"
 )
 
 type generatedPaths struct {
@@ -11,6 +13,7 @@ type generatedPaths struct {
 	Vtt         string
 	Markers     string
 	Transcodes  string
+	Downloads   string
 	Tmp         string
 }
 
@@ -20,6 +23,7 @@ func newGeneratedPaths() *generatedPaths {
 	gp.Vtt = filepath.Join(config.GetGeneratedPath(), "vtt")
 	gp.Markers = filepath.Join(config.GetGeneratedPath(), "markers")
 	gp.Transcodes = filepath.Join(config.GetGeneratedPath(), "transcodes")
+	gp.Downloads = filepath.Join(config.GetGeneratedPath(), "downloads")
 	gp.Tmp = filepath.Join(config.GetGeneratedPath(), "tmp")
 	return &gp
 }
@@ -29,13 +33,25 @@ func (gp *generatedPaths) GetTmpPath(fileName string) string {
 }
 
 func (gp *generatedPaths) EnsureTmpDir() {
-	_ = utils.EnsureDir(gp.Tmp)
+	utils.EnsureDir(gp.Tmp)
 }
 
 func (gp *generatedPaths) EmptyTmpDir() {
-	_ = utils.EmptyDir(gp.Tmp)
+	utils.EmptyDir(gp.Tmp)
 }
 
 func (gp *generatedPaths) RemoveTmpDir() {
-	_ = utils.RemoveDir(gp.Tmp)
+	utils.RemoveDir(gp.Tmp)
+}
+
+func (gp *generatedPaths) TempDir(pattern string) (string, error) {
+	gp.EnsureTmpDir()
+	ret, err := ioutil.TempDir(gp.Tmp, pattern)
+	if err != nil {
+		return "", err
+	}
+
+	utils.EmptyDir(ret)
+
+	return ret, nil
 }
