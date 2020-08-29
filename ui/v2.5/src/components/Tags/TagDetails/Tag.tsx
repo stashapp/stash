@@ -36,7 +36,7 @@ export const Tag: React.FC = () => {
   const [name, setName] = useState<string>();
 
   // Tag state
-  const [tag, setTag] = useState<Partial<GQL.TagDataFragment>>({});
+  const [tag, setTag] = useState<GQL.TagDataFragment | undefined>();
   const [imagePreview, setImagePreview] = useState<string>();
 
   const { data, error, loading } = useFindTag(id);
@@ -71,11 +71,11 @@ export const Tag: React.FC = () => {
     };
   });
 
-  function updateTagEditState(state: Partial<GQL.TagDataFragment>) {
+  function updateTagEditState(state: GQL.TagDataFragment) {
     setName(state.name);
   }
 
-  function updateTagData(tagData: Partial<GQL.TagDataFragment>) {
+  function updateTagData(tagData: GQL.TagDataFragment) {
     setImage(undefined);
     updateTagEditState(tagData);
     setImagePreview(tagData.image_path ?? undefined);
@@ -104,15 +104,17 @@ export const Tag: React.FC = () => {
   }
 
   function getTagInput() {
-    const input: Partial<GQL.TagCreateInput | GQL.TagUpdateInput> = {
+    if (!isNew) {
+      return {
+        id,
+        name,
+        image,
+      };
+    }
+    return {
       name,
       image,
     };
-
-    if (!isNew) {
-      (input as GQL.TagUpdateInput).id = id;
-    }
-    return input;
   }
 
   async function onSave() {
@@ -136,7 +138,7 @@ export const Tag: React.FC = () => {
   }
 
   async function onAutoTag() {
-    if (!tag.id) return;
+    if (!tag?.id) return;
     try {
       await mutateMetadataAutoTag({ tags: [tag.id] });
       Toast.success({ content: "Started auto tagging" });
@@ -175,13 +177,15 @@ export const Tag: React.FC = () => {
 
   function onToggleEdit() {
     setIsEditing(!isEditing);
-    updateTagData(tag);
+    if (tag) {
+      updateTagData(tag);
+    }
   }
 
   function onClearImage() {
     setImage(null);
     setImagePreview(
-      tag.image_path ? `${tag.image_path}?default=true` : undefined
+      tag?.image_path ? `${tag.image_path}?default=true` : undefined
     );
   }
 
@@ -226,7 +230,7 @@ export const Tag: React.FC = () => {
           acceptSVG
         />
       </div>
-      {!isNew && (
+      {!isNew && tag && (
         <div className="col col-md-8">
           <Tabs
             id="tag-tabs"

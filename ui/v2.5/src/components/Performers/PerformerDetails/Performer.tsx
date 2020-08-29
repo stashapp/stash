@@ -285,6 +285,10 @@ export const Performer: React.FC = () => {
 
   const photos = [{ src: activeImage, caption: "Image" }];
 
+  if (!performer.id) {
+    return <LoadingIndicator />;
+  }
+
   return (
     <div id="performer-page" className="row">
       <div className="image-container col-md-4 text-center">

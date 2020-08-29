@@ -132,7 +132,7 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
                 <Nav variant="pills" className="flex-column">
                   {content.map((c) => {
                     return (
-                      <Nav.Item>
+                      <Nav.Item key={`${c.key}-nav`}>
                         <Nav.Link className={c.className} eventKey={c.key}>
                           {c.title}
                         </Nav.Link>
@@ -146,7 +146,11 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
                 <Tab.Content>
                   {content.map((c) => {
                     return (
-                      <Tab.Pane eventKey={c.key} onClick={interceptLinkClick}>
+                      <Tab.Pane
+                        eventKey={c.key}
+                        key={`${c.key}-pane`}
+                        onClick={interceptLinkClick}
+                      >
                         <Page page={c.content} />
                       </Tab.Pane>
                     );

@@ -99,57 +99,77 @@ textarea.text-input {
   .zoom-0 {
     width: 240px;
 
-    .scene-card-video,
+    .scene-card-video {
+      height: 135px;
+    }
+
+    .portrait {
+      height: 180px;
+    }
+
     .gallery-card-image,
     .tag-card-image {
       max-height: 180px;
-    }
-
-    .previewable.portrait {
-      height: 180px;
     }
   }
 
   .zoom-1 {
     width: 320px;
 
-    .scene-card-video,
+    .scene-card-video {
+      height: 180px;
+    }
+
+    .portrait {
+      height: 240px;
+    }
+
     .gallery-card-image,
     .tag-card-image {
       max-height: 240px;
-    }
-
-    .previewable.portrait {
-      height: 240px;
     }
   }
 
   .zoom-2 {
     width: 480px;
 
-    .scene-card-video,
+    .scene-card-video {
+      height: 270px;
+    }
+
+    .portrait {
+      height: 360px;
+    }
+
     .gallery-card-image,
     .tag-card-image {
       max-height: 360px;
-    }
-
-    .previewable.portrait {
-      height: 360px;
     }
   }
 
   .zoom-3 {
     width: 640px;
 
-    .scene-card-video,
-    .gallery-card-image,
-    .tag-card-image {
-      max-height: 480px;
+    .scene-card-video {
+      height: 360px;
     }
 
     .portrait {
       height: 480px;
     }
+
+    .tag-card-image,
+    .gallery-card-image {
+      max-height: 480px;
+    }
+  }
+}
+
+.scene-card-video {
+  object-fit: cover;
+
+  &.portrait {
+    object-fit: contain;
   }
 }
 
