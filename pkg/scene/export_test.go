@@ -26,9 +26,6 @@ const (
 	noGalleryID  = 7
 	errGalleryID = 8
 
-	noPerformersID  = 9
-	errPerformersID = 10
-
 	noTagsID  = 11
 	errTagsID = 12
 
@@ -339,60 +336,6 @@ type stringSliceTestScenario struct {
 	input    models.Scene
 	expected []string
 	err      bool
-}
-
-var getPerformerNamesScenarios = []stringSliceTestScenario{
-	{
-		createEmptyScene(sceneID),
-		names,
-		false,
-	},
-	{
-		createEmptyScene(noPerformersID),
-		nil,
-		false,
-	},
-	{
-		createEmptyScene(errPerformersID),
-		nil,
-		true,
-	},
-}
-
-func getPerformers(names []string) []*models.Performer {
-	var ret []*models.Performer
-	for _, n := range names {
-		ret = append(ret, &models.Performer{
-			Name: modelstest.NullString(n),
-		})
-	}
-
-	return ret
-}
-
-func TestGetPerformerNames(t *testing.T) {
-	mockPerformerReader := &mocks.PerformerReaderWriter{}
-
-	performerErr := errors.New("error getting performer")
-
-	mockPerformerReader.On("FindNamesBySceneID", sceneID).Return(getPerformers(names), nil).Once()
-	mockPerformerReader.On("FindNamesBySceneID", noPerformersID).Return(nil, nil).Once()
-	mockPerformerReader.On("FindNamesBySceneID", errPerformersID).Return(nil, performerErr).Once()
-
-	for i, s := range getPerformerNamesScenarios {
-		scene := s.input
-		json, err := GetPerformerNames(mockPerformerReader, &scene)
-
-		if !s.err && err != nil {
-			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
-			t.Errorf("[%d] expected error not returned", i)
-		} else {
-			assert.Equal(t, s.expected, json, "[%d]", i)
-		}
-	}
-
-	mockPerformerReader.AssertExpectations(t)
 }
 
 var getTagNamesScenarios = []stringSliceTestScenario{

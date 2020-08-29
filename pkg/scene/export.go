@@ -137,39 +137,6 @@ func GetGalleryChecksum(reader models.GalleryReader, scene *models.Scene) (strin
 	return "", nil
 }
 
-// GetGalleryID returns the ID of the gallery for the provided scene. It
-// returns nil if there is no gallery assigned to the scene.
-func GetGalleryID(reader models.GalleryReader, scene *models.Scene) (*int, error) {
-	gallery, err := reader.FindBySceneID(scene.ID)
-	if err != nil {
-		return nil, fmt.Errorf("error getting scene gallery: %s", err.Error())
-	}
-
-	if gallery != nil {
-		return &gallery.ID, nil
-	}
-
-	return nil, nil
-}
-
-// GetPerformerNames returns a slice of performer names corresponding to the
-// provided scene's performers.
-func GetPerformerNames(reader models.PerformerReader, scene *models.Scene) ([]string, error) {
-	performers, err := reader.FindNamesBySceneID(scene.ID)
-	if err != nil {
-		return nil, fmt.Errorf("error getting scene performers: %s", err.Error())
-	}
-
-	var results []string
-	for _, performer := range performers {
-		if performer.Name.Valid {
-			results = append(results, performer.Name.String)
-		}
-	}
-
-	return results, nil
-}
-
 // GetTagNames returns a slice of tag names corresponding to the provided
 // scene's tags.
 func GetTagNames(reader models.TagReader, scene *models.Scene) ([]string, error) {
