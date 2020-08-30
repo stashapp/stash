@@ -58,15 +58,6 @@
   }
 }
 
-.marker-container {
-  display: "flex";
-  flex-wrap: "nowrap";
-  margin-bottom: "20px";
-  overflow-x: "scroll";
-  overflow-y: "hidden";
-  white-space: "nowrap";
-}
-
 .studio-logo {
   margin-top: 1rem;
   max-height: 8rem;
@@ -302,5 +293,27 @@ textarea.scene-description {
   .scrape-url-button {
     color: $text-color;
     margin-right: 0;
+  }
+}
+
+.scene-markers-panel {
+  .wall-item {
+    height: inherit;
+    min-height: 14rem;
+    width: calc(100% - 2rem);
+
+    &-missing {
+      font-size: 1.5rem;
+    }
+
+    &::before {
+      display: none;
+    }
+
+    &:hover {
+      .wall-item-container {
+        transform: scale(1);
+      }
+    }
   }
 }
