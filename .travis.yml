@@ -55,6 +55,12 @@ deploy:
     on:
       repo: stashapp/stash
       branch: develop
+  # docker image build for develop release
+  - provider: script
+    script: bash ./docker/ci/x86_64/docker_push.sh development-x86_64
+    on:
+      repo: stashapp/stash
+      branch: develop
   # official master release - only build when tagged
   - provider: releases
     api_key:
@@ -73,6 +79,14 @@ deploy:
     # don't write the body. To be done manually for now. In future we might
     # want to generate the changelog or get it from a file
     name: ${STASH_VERSION}
+    on:
+      repo: stashapp/stash
+      tags: true
+      # make sure we don't release using the latest_develop tag
+      condition: $TRAVIS_TAG != latest_develop
+  # docker image build for master release
+  - provider: script
+    script: bash ./docker/ci/x86_64/docker_push.sh latest
     on:
       repo: stashapp/stash
       tags: true
