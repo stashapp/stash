@@ -24,9 +24,6 @@ func (r *mutationResolver) MetadataExport(ctx context.Context) (string, error) {
 }
 
 func (r *mutationResolver) ExportObjects(ctx context.Context, input models.ExportObjectsInput) (*string, error) {
-	// generate temporary directory to export to
-	manager.GetInstance().Paths.Generated.TempDir("export")
-
 	t := manager.CreateExportTask(config.GetVideoFileNamingAlgorithm(), input)
 	wg, err := manager.GetInstance().RunSingleTask(t)
 	if err != nil {

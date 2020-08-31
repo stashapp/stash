@@ -107,7 +107,12 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 			return
 		}
 
-		defer utils.RemoveDir(t.baseDir)
+		defer func() {
+			err := utils.RemoveDir(t.baseDir)
+			if err != nil {
+				logger.Errorf("error removing directory %s: %s", t.baseDir, err.Error())
+			}
+		}()
 	}
 
 	t.json = jsonUtils{
