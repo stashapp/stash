@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"time"
 
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -34,7 +35,10 @@ func (r *mutationResolver) ExportObjects(ctx context.Context, input models.Expor
 
 	if t.DownloadHash != "" {
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-		ret := baseURL + "/downloads/" + t.DownloadHash + "/export.zip"
+
+		// generate timestamp
+		suffix := time.Now().Format("20060102-150405")
+		ret := baseURL + "/downloads/" + t.DownloadHash + "/export" + suffix + ".zip"
 		return &ret, nil
 	}
 
