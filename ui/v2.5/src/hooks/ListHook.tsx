@@ -333,38 +333,13 @@ const RenderList = <
     />
   );
 
-  let content;
-  if (result.loading) {
-    content = <LoadingIndicator />;
-  } else if (result.error) {
-    content = <h1>{result.error.message}</h1>;
-  } else {
-    content = (
-      <div>
-        <ListFilter
-          onFilterUpdate={updateQueryParams}
-          onSelectAll={selectable ? onSelectAll : undefined}
-          onSelectNone={selectable ? onSelectNone : undefined}
-          zoomIndex={zoomable ? zoomIndex : undefined}
-          onChangeZoom={zoomable ? onChangeZoom : undefined}
-          otherOperations={operations}
-          itemsSelected={selectedIds.size > 0}
-          onEdit={renderEditDialog ? onEdit : undefined}
-          onDelete={renderDeleteDialog ? onDelete : undefined}
-          filter={filter}
-        />
-        {isEditDialogOpen &&
-          renderEditDialog &&
-          renderEditDialog(
-            getSelectedData(getData(result), selectedIds),
-            (applied) => onEditDialogClosed(applied)
-          )}
-        {isDeleteDialogOpen &&
-          renderDeleteDialog &&
-          renderDeleteDialog(
-            getSelectedData(getData(result), selectedIds),
-            (deleted) => onDeleteDialogClosed(deleted)
-          )}
+  function maybeRenderContent() {
+    if (result.loading || result.error) {
+      return;
+    }
+
+    return (
+      <>
         {renderPagination()}
         {renderContent(result, filter, selectedIds, zoomIndex)}
         <PaginationIndex
@@ -373,9 +348,41 @@ const RenderList = <
           totalItems={totalCount}
         />
         {renderPagination()}
-      </div>
+      </>
     );
   }
+
+  const content = (
+    <div>
+      <ListFilter
+        onFilterUpdate={updateQueryParams}
+        onSelectAll={selectable ? onSelectAll : undefined}
+        onSelectNone={selectable ? onSelectNone : undefined}
+        zoomIndex={zoomable ? zoomIndex : undefined}
+        onChangeZoom={zoomable ? onChangeZoom : undefined}
+        otherOperations={operations}
+        itemsSelected={selectedIds.size > 0}
+        onEdit={renderEditDialog ? onEdit : undefined}
+        onDelete={renderDeleteDialog ? onDelete : undefined}
+        filter={filter}
+      />
+      {isEditDialogOpen &&
+        renderEditDialog &&
+        renderEditDialog(
+          getSelectedData(getData(result), selectedIds),
+          (applied) => onEditDialogClosed(applied)
+        )}
+      {isDeleteDialogOpen &&
+        renderDeleteDialog &&
+        renderDeleteDialog(
+          getSelectedData(getData(result), selectedIds),
+          (deleted) => onDeleteDialogClosed(deleted)
+        )}
+      {result.loading ? <LoadingIndicator /> : undefined}
+      {result.error ? <h1>{result.error.message}</h1> : undefined}
+      {maybeRenderContent()}
+    </div>
+  );
 
   return { contentTemplate: content, onSelectChange };
 };
