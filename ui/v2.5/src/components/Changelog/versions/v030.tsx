@@ -20,6 +20,7 @@ const markup = `
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
+*  Support cbz galleries.
 *  Improve sprite generation performance.
 *  Make preview generation more fault-tolerant.
 *  Allow clearing of images and querying on missing images.
