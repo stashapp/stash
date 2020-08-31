@@ -229,6 +229,7 @@ func verifyScenesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInp
 }
 
 func verifyInt(t *testing.T, value int, criterion models.IntCriterionInput) {
+	t.Helper()
 	assert := assert.New(t)
 	if criterion.Modifier == models.CriterionModifierEquals {
 		assert.Equal(criterion.Value, value)

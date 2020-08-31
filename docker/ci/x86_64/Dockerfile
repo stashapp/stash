@@ -1,5 +1,8 @@
+
+# must be built from /dist directory
+
 FROM ubuntu:18.04 as prep
-LABEL MAINTAINER="leopere [at] nixc [dot] us"
+LABEL MAINTAINER="https://discord.gg/Uz29ny"
 
 RUN apt-get update && \
     apt-get -y install curl xz-utils && \
@@ -8,10 +11,6 @@ RUN apt-get update && \
 WORKDIR /
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# added " to end of stash-linux clause so that it doesn't pick up the arm builds
-RUN curl -L -o /stash $(curl -s https://api.github.com/repos/stashapp/stash/releases/latest | awk '/browser_download_url/ && /stash-linux/"' | sed -e 's/.*: "\(.*\)"/\1/') && \
-    chmod +x /stash
-    
 RUN curl --http1.1 -o /ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz && \
     tar xf /ffmpeg.tar.xz && \
     rm ffmpeg.tar.xz && \
@@ -19,6 +18,8 @@ RUN curl --http1.1 -o /ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/f
 
 FROM ubuntu:18.04 as app
 RUN apt-get update && apt-get -y install ca-certificates
-COPY --from=prep /stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
+COPY --from=prep /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
+COPY /stash-linux /usr/bin/stash
+
 EXPOSE 9999
 CMD ["stash"]

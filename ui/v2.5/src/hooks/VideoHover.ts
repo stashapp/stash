@@ -26,10 +26,7 @@ export const useVideoHover = (options: IVideoHoverHookOptions) => {
       return;
     }
     if (videoTag.paused && !isPlaying.current) {
-      videoTag.play().catch((error) => {
-        // eslint-disable-next-line no-console
-        console.log(error.message);
-      });
+      videoTag.play().catch(() => {});
     }
   };
 

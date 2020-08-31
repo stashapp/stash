@@ -5,12 +5,12 @@ import { SceneList } from "src/components/Scenes/SceneList";
 import { TagsCriterion } from "src/models/list-filter/criteria/tags";
 
 interface ITagScenesPanel {
-  tag: Partial<GQL.TagDataFragment>;
+  tag: GQL.TagDataFragment;
 }
 
 export const TagScenesPanel: React.FC<ITagScenesPanel> = ({ tag }) => {
   function filterHook(filter: ListFilterModel) {
-    const tagValue = { id: tag.id!, label: tag.name! };
+    const tagValue = { id: tag.id, label: tag.name };
     // if tag is already present, then we modify it, otherwise add
     let tagCriterion = filter.criteria.find((c) => {
       return c.type === "tags";
@@ -41,5 +41,5 @@ export const TagScenesPanel: React.FC<ITagScenesPanel> = ({ tag }) => {
     return filter;
   }
 
-  return <SceneList subComponent filterHook={filterHook} />;
+  return <SceneList filterHook={filterHook} />;
 };

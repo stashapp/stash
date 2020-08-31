@@ -31,7 +31,7 @@ func (qb queryBuilder) executeFind() ([]int, int) {
 func (qb *queryBuilder) addWhere(clauses ...string) {
 	for _, clause := range clauses {
 		if len(clause) > 0 {
-			qb.whereClauses = append(qb.whereClauses, clauses...)
+			qb.whereClauses = append(qb.whereClauses, clause)
 		}
 	}
 }

@@ -6,8 +6,9 @@ import {
   InputGroup,
   Button,
   FormControl,
+  Badge,
 } from "react-bootstrap";
-import { Icon, Modal } from "src/components/Shared";
+import { CollapseButton, Icon, Modal } from "src/components/Shared";
 import _ from "lodash";
 
 export class ScrapeResult<T> {
@@ -35,6 +36,7 @@ export class ScrapeResult<T> {
 
     ret.newValue = value;
     ret.useNewValue = !_.isEqual(ret.newValue, ret.originalValue);
+    ret.scraped = ret.useNewValue;
 
     return ret;
   }
@@ -46,15 +48,22 @@ export class ScrapeResult<T> {
   }
 }
 
+interface IHasName {
+  name: string;
+}
+
 interface IScrapedFieldProps<T> {
   result: ScrapeResult<T>;
 }
 
-interface IScrapedRowProps<T> extends IScrapedFieldProps<T> {
+interface IScrapedRowProps<T, V extends IHasName>
+  extends IScrapedFieldProps<T> {
   title: string;
   renderOriginalField: (result: ScrapeResult<T>) => JSX.Element | undefined;
   renderNewField: (result: ScrapeResult<T>) => JSX.Element | undefined;
   onChange: (value: ScrapeResult<T>) => void;
+  newValues?: V[];
+  onCreateNew?: (newValue: V) => void;
 }
 
 function renderButtonIcon(selected: boolean) {
@@ -68,15 +77,57 @@ function renderButtonIcon(selected: boolean) {
   );
 }
 
-export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
+export const ScrapeDialogRow = <T, V extends IHasName>(
+  props: IScrapedRowProps<T, V>
+) => {
   function handleSelectClick(isNew: boolean) {
     const ret = _.clone(props.result);
     ret.useNewValue = isNew;
     props.onChange(ret);
   }
 
-  if (!props.result.scraped) {
+  function hasNewValues() {
+    return props.newValues && props.newValues.length > 0 && props.onCreateNew;
+  }
+
+  if (!props.result.scraped && !hasNewValues()) {
     return <></>;
+  }
+
+  function renderNewValues() {
+    if (!hasNewValues()) {
+      return;
+    }
+
+    const ret = (
+      <>
+        {props.newValues!.map((t) => (
+          <Badge
+            className="tag-item"
+            variant="secondary"
+            key={t.name}
+            onClick={() => props.onCreateNew!(t)}
+          >
+            {t.name}
+            <Button className="minimal ml-2">
+              <Icon className="fa-fw" icon="plus" />
+            </Button>
+          </Badge>
+        ))}
+      </>
+    );
+
+    const minCollapseLength = 10;
+
+    if (props.newValues!.length >= minCollapseLength) {
+      return (
+        <CollapseButton text={`Missing (${props.newValues!.length})`}>
+          {ret}
+        </CollapseButton>
+      );
+    }
+
+    return ret;
   }
 
   return (
@@ -112,6 +163,7 @@ export const ScrapeDialogRow = <T,>(props: IScrapedRowProps<T>) => {
               </InputGroup.Prepend>
               {props.renderNewField(props.result)}
             </InputGroup>
+            {renderNewValues()}
           </Col>
         </Row>
       </Col>

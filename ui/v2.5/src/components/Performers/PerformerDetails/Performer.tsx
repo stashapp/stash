@@ -20,7 +20,7 @@ import { PerformerScenesPanel } from "./PerformerScenesPanel";
 export const Performer: React.FC = () => {
   const Toast = useToast();
   const history = useHistory();
-  const { id = "new" } = useParams();
+  const { tab = "details", id = "new" } = useParams();
   const isNew = id === "new";
 
   // Performer state
@@ -42,12 +42,21 @@ export const Performer: React.FC = () => {
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const [activeTabKey, setActiveTabKey] = useState("details");
-
   const { data, error } = useFindPerformer(id);
   const [updatePerformer] = usePerformerUpdate();
   const [createPerformer] = usePerformerCreate();
   const [deletePerformer] = usePerformerDestroy();
+
+  const activeTabKey =
+    tab === "scenes" || tab === "edit" || tab === "operations"
+      ? tab
+      : "details";
+  const setActiveTabKey = (newTab: string) => {
+    if (tab !== newTab) {
+      const tabParam = newTab === "details" ? "" : `/${newTab}`;
+      history.replace(`/performers/${id}${tabParam}`);
+    }
+  };
 
   useEffect(() => {
     setIsLoading(false);
@@ -128,7 +137,7 @@ export const Performer: React.FC = () => {
   const renderTabs = () => (
     <Tabs
       activeKey={activeTabKey}
-      onSelect={(k: string) => setActiveTabKey(k)}
+      onSelect={setActiveTabKey}
       id="performer-details"
       unmountOnExit
     >
@@ -275,6 +284,10 @@ export const Performer: React.FC = () => {
     );
 
   const photos = [{ src: activeImage, caption: "Image" }];
+
+  if (!performer.id) {
+    return <LoadingIndicator />;
+  }
 
   return (
     <div id="performer-page" className="row">

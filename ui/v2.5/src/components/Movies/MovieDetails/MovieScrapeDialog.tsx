@@ -6,6 +6,7 @@ import {
   ScrapedInputGroupRow,
   ScrapedImageRow,
   ScrapeDialogRow,
+  ScrapedTextAreaRow,
 } from "src/components/Shared/ScrapeDialog";
 import { StudioSelect } from "src/components/Shared";
 import { DurationUtils } from "src/utils";
@@ -157,6 +158,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
         />
         <ScrapedInputGroupRow
           title="Date"
+          placeholder="YYYY-MM-DD"
           result={date}
           onChange={(value) => setDate(value)}
         />
@@ -165,7 +167,7 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
           result={director}
           onChange={(value) => setDirector(value)}
         />
-        <ScrapedInputGroupRow
+        <ScrapedTextAreaRow
           title="Synopsis"
           result={synopsis}
           onChange={(value) => setSynopsis(value)}

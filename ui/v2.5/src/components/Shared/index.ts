@@ -10,6 +10,7 @@ export {
 
 export { default as Icon } from "./Icon";
 export { default as Modal } from "./Modal";
+export { CollapseButton } from "./CollapseButton";
 export { DetailsEditNavbar } from "./DetailsEditNavbar";
 export { DurationInput } from "./DurationInput";
 export { TagLink } from "./TagLink";
