@@ -340,14 +340,14 @@ const RenderList = <
 
     return (
       <>
-      {renderPagination()}
-      {renderContent(result, filter, selectedIds, zoomIndex)}
-      <PaginationIndex
-        itemsPerPage={filter.itemsPerPage}
-        currentPage={filter.currentPage}
-        totalItems={totalCount}
-      />
-      {renderPagination()}
+        {renderPagination()}
+        {renderContent(result, filter, selectedIds, zoomIndex)}
+        <PaginationIndex
+          itemsPerPage={filter.itemsPerPage}
+          currentPage={filter.currentPage}
+          totalItems={totalCount}
+        />
+        {renderPagination()}
       </>
     );
   }
@@ -379,9 +379,7 @@ const RenderList = <
           (deleted) => onDeleteDialogClosed(deleted)
         )}
       {result.loading ? <LoadingIndicator /> : undefined}
-      {result.error ? (
-        <h1>{result.error.message}</h1>
-      ) : undefined}
+      {result.error ? <h1>{result.error.message}</h1> : undefined}
       {maybeRenderContent()}
     </div>
   );
