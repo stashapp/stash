@@ -1,7 +1,7 @@
 
 # must be built from /dist directory
 
-FROM ubuntu:18.04 as prep
+FROM ubuntu:20.04 as prep
 LABEL MAINTAINER="https://discord.gg/Uz29ny"
 
 RUN apt-get update && \
@@ -16,7 +16,7 @@ RUN curl --http1.1 -o /ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/f
     rm ffmpeg.tar.xz && \
     mv /ffmpeg*/ /ffmpeg/
 
-FROM ubuntu:18.04 as app
+FROM ubuntu:20.04 as app
 RUN apt-get update && apt-get -y install ca-certificates
 COPY --from=prep /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/
 COPY /stash-linux /usr/bin/stash

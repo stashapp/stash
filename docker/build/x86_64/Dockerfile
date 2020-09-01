@@ -5,7 +5,7 @@
 FROM golang:1.13.15 as compiler
 
 RUN apt-get update && apt-get install -y apt-transport-https
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 
 # prevent caching of the key
 ADD https://dl.yarnpkg.com/debian/pubkey.gpg yarn.gpg
@@ -48,7 +48,7 @@ RUN make generate
 RUN make ui 
 RUN make build
 
-FROM ubuntu:19.10 as app
+FROM ubuntu:20.04 as app
 
 RUN apt-get update && apt-get -y install ca-certificates
 COPY --from=compiler /stash/stash /ffmpeg/ffmpeg /ffmpeg/ffprobe /usr/bin/

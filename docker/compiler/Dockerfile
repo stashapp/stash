@@ -9,7 +9,7 @@ ENV PACKR2_DOWNLOAD_URL=https://github.com/gobuffalo/packr/releases/download/v${
 
 # Install tools
 RUN apt-get update && apt-get install -y apt-transport-https
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 
 # prevent caching of the key
 ADD https://dl.yarnpkg.com/debian/pubkey.gpg yarn.gpg
