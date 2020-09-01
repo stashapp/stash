@@ -7,11 +7,11 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func EnsureTagNameUnique(name string, tx *sqlx.Tx) error {
+func EnsureTagNameUnique(name string, tx *sqlx.Tx, nocase bool) error {
 	qb := models.NewTagQueryBuilder()
 
 	// ensure name is unique
-	sameNameTag, err := qb.FindByName(name, tx, true)
+	sameNameTag, err := qb.FindByName(name, tx, nocase)
 	if err != nil {
 		_ = tx.Rollback()
 		return err
