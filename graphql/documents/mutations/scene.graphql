@@ -80,6 +80,10 @@ mutation SceneDestroy($id: ID!, $delete_file: Boolean, $delete_generated : Boole
   sceneDestroy(input: {id: $id, delete_file: $delete_file, delete_generated: $delete_generated})
 }
 
+mutation ScenesDestroy($ids: [ID!]!, $delete_file: Boolean, $delete_generated : Boolean) {
+  scenesDestroy(input: {ids: $ids, delete_file: $delete_file, delete_generated: $delete_generated})
+}
+
 mutation SceneGenerateScreenshot($id: ID!, $at: Float) {
   sceneGenerateScreenshot(id: $id, at: $at)
 }

@@ -6,9 +6,10 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 )
 
-const freeonesScraperID = "builtin_freeones"
+// FreeonesScraperID is the scraper ID for the built-in Freeones scraper
+const FreeonesScraperID = "builtin_freeones"
 
-// 537: stolen from: https://github.com/stashapp/CommunityScrapers/blob/master/scrapers/NewFreeones.yml
+// 537: stolen from: https://github.com/stashapp/CommunityScrapers/blob/master/scrapers/FreeonesCommunity.yml
 const freeonesScraperConfig = `
 name: Freeones
 performerByName:
@@ -41,8 +42,8 @@ xPathScrapers:
         replace:
           - regex: ^
             with: https://www.freeones.xxx
-      Twitter: //div[p[text()='Follow On']]//div//a[@class='d-flex align-items-center justify-content-center mr-2 social-icons color-twitter']/@href
-      Instagram: //div[p[text()='Follow On']]//div//a[@class='d-flex align-items-center justify-content-center mr-2 social-icons color-telegram']/@href
+      Twitter: //div[p[text()='Follow On']]//div//a[@class='d-flex align-items-center justify-content-center m-2 social-icons color-twitter']/@href
+      Instagram: //div[p[text()='Follow On']]//div//a[@class='d-flex align-items-center justify-content-center m-2 social-icons color-telegram']/@href
       Birthdate:
         selector: //div[p[text()='Personal Information']]//div//p/a/span[contains(text(),'Born On')]
         replace:
@@ -63,14 +64,15 @@ xPathScrapers:
           - regex: Latin
             with: "hispanic"
       Country: //div[p[text()='Personal Information']]//div//p//a[@data-test="link-country"]
-      EyeColor: //div[p[text()='Eye Color']]//div//p//a//span
+      EyeColor: //span[@data-test="link_span_eye_color"]
       Height:
-        selector: //div[p[text()='Height']]//div//p//a//span
+        selector: //span[@data-test="link_span_height"]
         replace:
           - regex: \D+[\s\S]+
             with: ""
       Measurements:
-        selector: //div[p[text()='Measurements']]//div[@class='p-3']//p
+        selector: //span[@data-test="p-measurements"]//a/span
+        concat: " - "
         replace:
           - regex: Unknown
             with:
@@ -90,16 +92,22 @@ xPathScrapers:
           - regex: -\w+-\w+-\w+-\w+-\w+$
             with: ""
       Aliases: //div[p[text()='Aliases']]//div//p[@class='mb-0 text-center']
-      Tattoos: //div[p[text()='Tattoos']]//div//p[@class='mb-0 text-center']
-      Piercings: //div[p[text()='Piercings']]//div//p[@class='mb-0 text-center']
+      Tattoos: //span[@data-test="p_has_tattoos"]|//span[@cdata-test="p_has_tattoos"]
+      Piercings: //span[@data-test="p_has_piercings"]
       Image:
-        selector: //div[@class='profile-image-large']//a/img/@src
+        selector: //div[@class='profile-image-container']//a/img/@src
+      Gender:
+        selector: //meta[@name="language"]/@name
+        replace:
+          - regex: language
+            with: "Female"
+# Last updated June 15, 2020
 `
 
-func GetFreeonesScraper() scraperConfig {
+func getFreeonesScraper() config {
 	yml := freeonesScraperConfig
 
-	scraper, err := loadScraperFromYAML(freeonesScraperID, strings.NewReader(yml))
+	scraper, err := loadScraperFromYAML(FreeonesScraperID, strings.NewReader(yml))
 	if err != nil {
 		logger.Fatalf("Error loading builtin freeones scraper: %s", err.Error())
 	}

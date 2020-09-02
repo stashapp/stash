@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type movieRoutes struct{}
@@ -25,12 +26,28 @@ func (rs movieRoutes) Routes() chi.Router {
 
 func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	movie := r.Context().Value(movieKey).(*models.Movie)
-	_, _ = w.Write(movie.FrontImage)
+	qb := models.NewMovieQueryBuilder()
+	image, _ := qb.GetFrontImage(movie.ID, nil)
+
+	defaultParam := r.URL.Query().Get("default")
+	if len(image) == 0 || defaultParam == "true" {
+		_, image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+	}
+
+	utils.ServeImage(image, w, r)
 }
 
 func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	movie := r.Context().Value(movieKey).(*models.Movie)
-	_, _ = w.Write(movie.BackImage)
+	qb := models.NewMovieQueryBuilder()
+	image, _ := qb.GetBackImage(movie.ID, nil)
+
+	defaultParam := r.URL.Query().Get("default")
+	if len(image) == 0 || defaultParam == "true" {
+		_, image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+	}
+
+	utils.ServeImage(image, w, r)
 }
 
 func MovieCtx(next http.Handler) http.Handler {

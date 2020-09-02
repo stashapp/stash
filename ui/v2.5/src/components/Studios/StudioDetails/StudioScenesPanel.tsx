@@ -41,5 +41,5 @@ export const StudioScenesPanel: React.FC<IStudioScenesPanel> = ({ studio }) => {
     return filter;
   }
 
-  return <SceneList subComponent filterHook={filterHook} />;
+  return <SceneList filterHook={filterHook} />;
 };

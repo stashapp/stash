@@ -18,9 +18,24 @@ export const PerformerList: React.FC = () => {
     },
   ];
 
+  const addKeybinds = (
+    result: FindPerformersQueryResult,
+    filter: ListFilterModel
+  ) => {
+    Mousetrap.bind("p r", () => {
+      getRandom(result, filter);
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  };
+
   const listData = usePerformersList({
     otherOperations,
     renderContent,
+    addKeybinds,
+    persistState: true,
   });
 
   async function getRandom(

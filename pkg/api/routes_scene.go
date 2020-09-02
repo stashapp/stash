@@ -2,9 +2,7 @@ package api
 
 import (
 	"context"
-	"io"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
@@ -24,8 +22,15 @@ func (rs sceneRoutes) Routes() chi.Router {
 
 	r.Route("/{sceneId}", func(r chi.Router) {
 		r.Use(SceneCtx)
-		r.Get("/stream", rs.Stream)
-		r.Get("/stream.mp4", rs.Stream)
+
+		// streaming endpoints
+		r.Get("/stream", rs.StreamDirect)
+		r.Get("/stream.mkv", rs.StreamMKV)
+		r.Get("/stream.webm", rs.StreamWebM)
+		r.Get("/stream.m3u8", rs.StreamHLS)
+		r.Get("/stream.ts", rs.StreamTS)
+		r.Get("/stream.mp4", rs.StreamMp4)
+
 		r.Get("/screenshot", rs.Screenshot)
 		r.Get("/preview", rs.Preview)
 		r.Get("/webp", rs.Webp)
@@ -42,41 +47,95 @@ func (rs sceneRoutes) Routes() chi.Router {
 
 // region Handlers
 
-func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
-
-	scene := r.Context().Value(sceneKey).(*models.Scene)
-
-	container := ""
+func getSceneFileContainer(scene *models.Scene) ffmpeg.Container {
+	var container ffmpeg.Container
 	if scene.Format.Valid {
-		container = scene.Format.String
+		container = ffmpeg.Container(scene.Format.String)
 	} else { // container isn't in the DB
 		// shouldn't happen, fallback to ffprobe
 		tmpVideoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path)
 		if err != nil {
 			logger.Errorf("[transcode] error reading video file: %s", err.Error())
-			return
+			return ffmpeg.Container("")
 		}
 
-		container = string(ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path))
+		container = ffmpeg.MatchContainer(tmpVideoFile.Container, scene.Path)
 	}
 
-	// detect if not a streamable file and try to transcode it instead
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.Checksum)
-	videoCodec := scene.VideoCodec.String
-	audioCodec := ffmpeg.MissingUnsupported
-	if scene.AudioCodec.Valid {
-		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
-	}
-	hasTranscode, _ := manager.HasTranscode(scene)
-	if ffmpeg.IsValidCodec(videoCodec) && ffmpeg.IsValidCombo(videoCodec, ffmpeg.Container(container)) && ffmpeg.IsValidAudioForContainer(audioCodec, ffmpeg.Container(container)) || hasTranscode {
-		manager.RegisterStream(filepath, &w)
-		http.ServeFile(w, r, filepath)
-		manager.WaitAndDeregisterStream(filepath, &w, r)
+	return container
+}
 
+func (rs sceneRoutes) StreamDirect(w http.ResponseWriter, r *http.Request) {
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+
+	filepath := manager.GetInstance().Paths.Scene.GetStreamPath(scene.Path, scene.GetHash(fileNamingAlgo))
+	manager.RegisterStream(filepath, &w)
+	http.ServeFile(w, r, filepath)
+	manager.WaitAndDeregisterStream(filepath, &w, r)
+}
+
+func (rs sceneRoutes) StreamMKV(w http.ResponseWriter, r *http.Request) {
+	// only allow mkv streaming if the scene container is an mkv already
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+
+	container := getSceneFileContainer(scene)
+	if container != ffmpeg.Matroska {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("not an mkv file"))
 		return
 	}
 
+	rs.streamTranscode(w, r, ffmpeg.CodecMKVAudio)
+}
+
+func (rs sceneRoutes) StreamWebM(w http.ResponseWriter, r *http.Request) {
+	rs.streamTranscode(w, r, ffmpeg.CodecVP9)
+}
+
+func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
+	rs.streamTranscode(w, r, ffmpeg.CodecH264)
+}
+
+func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+
+	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path)
+	if err != nil {
+		logger.Errorf("[stream] error reading video file: %s", err.Error())
+		return
+	}
+
+	logger.Debug("Returning HLS playlist")
+
+	// getting the playlist manifest only
+	w.Header().Set("Content-Type", ffmpeg.MimeHLS)
+	var str strings.Builder
+
+	ffmpeg.WriteHLSPlaylist(*videoFile, r.URL.String(), &str)
+
+	requestByteRange := utils.CreateByteRange(r.Header.Get("Range"))
+	if requestByteRange.RawString != "" {
+		logger.Debugf("Requested range: %s", requestByteRange.RawString)
+	}
+
+	ret := requestByteRange.Apply([]byte(str.String()))
+	rangeStr := requestByteRange.ToHeaderValue(int64(str.Len()))
+	w.Header().Set("Content-Range", rangeStr)
+
+	w.Write(ret)
+}
+
+func (rs sceneRoutes) StreamTS(w http.ResponseWriter, r *http.Request) {
+	rs.streamTranscode(w, r, ffmpeg.CodecHLS)
+}
+
+func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, videoCodec ffmpeg.Codec) {
+	logger.Debugf("Streaming as %s", videoCodec.MimeType)
+	scene := r.Context().Value(sceneKey).(*models.Scene)
+
 	// needs to be transcoded
+
 	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path)
 	if err != nil {
 		logger.Errorf("[stream] error reading video file: %s", err.Error())
@@ -87,82 +146,54 @@ func (rs sceneRoutes) Stream(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	startTime := r.Form.Get("start")
 
-	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
+	var stream *ffmpeg.Stream
 
-	var stream io.ReadCloser
-	var process *os.Process
-	mimeType := ffmpeg.MimeWebm
-
-	if audioCodec == ffmpeg.MissingUnsupported {
-		//ffmpeg fails if it trys to transcode a non supported audio codec
-		stream, process, err = encoder.StreamTranscodeVideo(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
-	} else {
-		copyVideo := false // try to be smart if the video to be transcoded is in a Matroska container
-		//  mp4 has always supported audio so it doesn't need to be checked
-		//  while mpeg_ts has seeking issues if we don't reencode the video
-
-		if config.GetForceMKV() { // If MKV is forced as supported and video codec is also supported then only transcode audio
-			if ffmpeg.Container(container) == ffmpeg.Matroska {
-				switch videoCodec {
-				case ffmpeg.H264, ffmpeg.Vp9, ffmpeg.Vp8:
-					copyVideo = true
-				case ffmpeg.Hevc:
-					if config.GetForceHEVC() {
-						copyVideo = true
-					}
-
-				}
-			}
-		}
-
-		if copyVideo { // copy video stream instead of transcoding it
-			stream, process, err = encoder.StreamMkvTranscodeAudio(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
-			mimeType = ffmpeg.MimeMkv
-
-		} else {
-			stream, process, err = encoder.StreamTranscode(*videoFile, startTime, config.GetMaxStreamingTranscodeSize())
-		}
+	audioCodec := ffmpeg.MissingUnsupported
+	if scene.AudioCodec.Valid {
+		audioCodec = ffmpeg.AudioCodec(scene.AudioCodec.String)
 	}
+
+	options := ffmpeg.GetTranscodeStreamOptions(*videoFile, videoCodec, audioCodec)
+	options.StartTime = startTime
+	options.MaxTranscodeSize = config.GetMaxStreamingTranscodeSize()
+
+	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
+	stream, err = encoder.GetTranscodeStream(options)
 
 	if err != nil {
 		logger.Errorf("[stream] error transcoding video file: %s", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", mimeType)
-
-	logger.Infof("[stream] transcoding video file to %s", mimeType)
-
-	// handle if client closes the connection
-	notify := r.Context().Done()
-	go func() {
-		<-notify
-		logger.Info("[stream] client closed the connection. Killing stream process.")
-		process.Kill()
-	}()
-
-	_, err = io.Copy(w, stream)
-	if err != nil {
-		logger.Errorf("[stream] error serving transcoded video file: %s", err.Error())
-	}
+	stream.Serve(w, r)
 }
 
 func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetScreenshotPath(scene.Checksum)
-	http.ServeFile(w, r, filepath)
+	filepath := manager.GetInstance().Paths.Scene.GetScreenshotPath(scene.GetHash(config.GetVideoFileNamingAlgorithm()))
+
+	// fall back to the scene image blob if the file isn't present
+	screenshotExists, _ := utils.FileExists(filepath)
+	if screenshotExists {
+		http.ServeFile(w, r, filepath)
+	} else {
+		qb := models.NewSceneQueryBuilder()
+		cover, _ := qb.GetSceneCover(scene.ID, nil)
+		utils.ServeImage(cover, w, r)
+	}
 }
 
 func (rs sceneRoutes) Preview(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewPath(scene.Checksum)
-	http.ServeFile(w, r, filepath)
+	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewPath(scene.GetHash(config.GetVideoFileNamingAlgorithm()))
+	utils.ServeFileNoCache(w, r, filepath)
 }
 
 func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewImagePath(scene.Checksum)
+	filepath := manager.GetInstance().Paths.Scene.GetStreamPreviewImagePath(scene.GetHash(config.GetVideoFileNamingAlgorithm()))
 	http.ServeFile(w, r, filepath)
 }
 
@@ -218,14 +249,14 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) VttThumbs(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	w.Header().Set("Content-Type", "text/vtt")
-	filepath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.Checksum)
+	filepath := manager.GetInstance().Paths.Scene.GetSpriteVttFilePath(scene.GetHash(config.GetVideoFileNamingAlgorithm()))
 	http.ServeFile(w, r, filepath)
 }
 
 func (rs sceneRoutes) VttSprite(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	w.Header().Set("Content-Type", "image/jpeg")
-	filepath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.Checksum)
+	filepath := manager.GetInstance().Paths.Scene.GetSpriteImageFilePath(scene.GetHash(config.GetVideoFileNamingAlgorithm()))
 	http.ServeFile(w, r, filepath)
 }
 
@@ -239,7 +270,7 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, http.StatusText(404), 404)
 		return
 	}
-	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPath(scene.Checksum, int(sceneMarker.Seconds))
+	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(config.GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 	http.ServeFile(w, r, filepath)
 }
 
@@ -253,7 +284,7 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 		http.Error(w, http.StatusText(404), 404)
 		return
 	}
-	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.Checksum, int(sceneMarker.Seconds))
+	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(config.GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
 
 	// If the image doesn't exist, send the placeholder
 	exists, _ := utils.FileExists(filepath)
@@ -275,15 +306,19 @@ func SceneCtx(next http.Handler) http.Handler {
 		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
 
 		var scene *models.Scene
-		var err error
 		qb := models.NewSceneQueryBuilder()
 		if sceneID == 0 {
-			scene, err = qb.FindByChecksum(sceneIdentifierQueryParam)
+			// determine checksum/os by the length of the query param
+			if len(sceneIdentifierQueryParam) == 32 {
+				scene, _ = qb.FindByChecksum(sceneIdentifierQueryParam)
+			} else {
+				scene, _ = qb.FindByOSHash(sceneIdentifierQueryParam)
+			}
 		} else {
-			scene, err = qb.Find(sceneID)
+			scene, _ = qb.Find(sceneID)
 		}
 
-		if err != nil {
+		if scene == nil {
 			http.Error(w, http.StatusText(404), 404)
 			return
 		}

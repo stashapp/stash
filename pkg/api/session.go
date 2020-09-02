@@ -1,12 +1,14 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"net/http"
 
 	"github.com/stashapp/stash/pkg/manager/config"
 
+	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )
 
@@ -124,4 +126,27 @@ func getSessionUserID(w http.ResponseWriter, r *http.Request) (string, error) {
 	}
 
 	return "", nil
+}
+
+func getCurrentUserID(ctx context.Context) *string {
+	userCtxVal := ctx.Value(ContextUser)
+	if userCtxVal != nil {
+		currentUser := userCtxVal.(string)
+		return &currentUser
+	}
+
+	return nil
+}
+
+func createSessionCookie(username string) (*http.Cookie, error) {
+	session := sessions.NewSession(sessionStore, cookieName)
+	session.Values[userIDKey] = username
+
+	encoded, err := securecookie.EncodeMulti(session.Name(), session.Values,
+		sessionStore.Codecs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return sessions.NewCookie(session.Name(), encoded, session.Options), nil
 }

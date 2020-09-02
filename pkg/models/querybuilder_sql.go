@@ -31,7 +31,7 @@ func (qb queryBuilder) executeFind() ([]int, int) {
 func (qb *queryBuilder) addWhere(clauses ...string) {
 	for _, clause := range clauses {
 		if len(clause) > 0 {
-			qb.whereClauses = append(qb.whereClauses, clauses...)
+			qb.whereClauses = append(qb.whereClauses, clause)
 		}
 	}
 }
@@ -104,7 +104,7 @@ func getSort(sort string, direction string, tableName string) string {
 	const randomSeedPrefix = "random_"
 
 	if strings.HasSuffix(sort, "_count") {
-		var relationTableName = strings.Split(sort, "_")[0] // TODO: pluralize?
+		var relationTableName = strings.TrimSuffix(sort, "_count") // TODO: pluralize?
 		colName := getColumn(relationTableName, "id")
 		return " ORDER BY COUNT(distinct " + colName + ") " + direction
 	} else if strings.Compare(sort, "filesize") == 0 {
@@ -239,6 +239,29 @@ func getIntCriterionWhereClause(column string, input IntCriterionInput) (string,
 	return column + " " + binding, count
 }
 
+// returns where clause and having clause
+func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, foreignFK string, criterion *MultiCriterionInput) (string, string) {
+	whereClause := ""
+	havingClause := ""
+	if criterion.Modifier == CriterionModifierIncludes {
+		// includes any of the provided ids
+		whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierIncludesAll {
+		// includes all of the provided ids
+		whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
+		havingClause = "count(distinct " + foreignTable + ".id) IS " + strconv.Itoa(len(criterion.Value))
+	} else if criterion.Modifier == CriterionModifierExcludes {
+		// excludes all of the provided ids
+		if joinTable != "" {
+			whereClause = "not exists (select " + joinTable + "." + primaryFK + " from " + joinTable + " where " + joinTable + "." + primaryFK + " = " + primaryTable + ".id and " + joinTable + "." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
+		} else {
+			whereClause = "not exists (select s.id from " + primaryTable + " as s where s.id = " + primaryTable + ".id and s." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
+		}
+	}
+
+	return whereClause, havingClause
+}
+
 func runIdsQuery(query string, args []interface{}) ([]int, error) {
 	var result []struct {
 		Int int `db:"id"`
@@ -288,9 +311,12 @@ func executeFindQuery(tableName string, body string, args []interface{}, sortAnd
 	}
 
 	countQuery := buildCountQuery(body)
-	countResult, countErr := runCountQuery(countQuery, args)
-
 	idsQuery := body + sortAndPagination
+
+	// Perform query and fetch result
+	logger.Tracef("SQL: %s, args: %v", idsQuery, args)
+
+	countResult, countErr := runCountQuery(countQuery, args)
 	idsResult, idsErr := runIdsQuery(idsQuery, args)
 
 	if countErr != nil {
@@ -394,4 +420,32 @@ func sqlGenKeys(i interface{}, partial bool) string {
 		}
 	}
 	return strings.Join(query, ", ")
+}
+
+func getImage(tx *sqlx.Tx, query string, args ...interface{}) ([]byte, error) {
+	var rows *sqlx.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.Queryx(query, args...)
+	} else {
+		rows, err = database.DB.Queryx(query, args...)
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ret []byte
+	if rows.Next() {
+		if err := rows.Scan(&ret); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

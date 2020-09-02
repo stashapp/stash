@@ -3,12 +3,13 @@ package database
 import (
 	"bytes"
 	"fmt"
-	"github.com/gobuffalo/packr/v2"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/source"
 	"io"
 	"io/ioutil"
 	"os"
+
+	"github.com/gobuffalo/packr/v2"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/source"
 )
 
 type Packr2Source struct {
@@ -72,7 +73,7 @@ func (s *Packr2Source) ReadUp(version uint) (r io.ReadCloser, identifier string,
 	if migration, ok := s.Migrations.Up(version); !ok {
 		return nil, "", os.ErrNotExist
 	} else {
-		b := s.Box.Bytes(migration.Raw)
+		b, _ := s.Box.Find(migration.Raw)
 		return ioutil.NopCloser(bytes.NewBuffer(b)),
 			migration.Identifier,
 			nil
@@ -83,7 +84,7 @@ func (s *Packr2Source) ReadDown(version uint) (r io.ReadCloser, identifier strin
 	if migration, ok := s.Migrations.Down(version); !ok {
 		return nil, "", migrate.ErrNilVersion
 	} else {
-		b := s.Box.Bytes(migration.Raw)
+		b, _ := s.Box.Find(migration.Raw)
 		return ioutil.NopCloser(bytes.NewBuffer(b)),
 			migration.Identifier,
 			nil

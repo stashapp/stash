@@ -51,7 +51,7 @@ const renderInputGroup = (options: {
   value: string | undefined;
   isEditing: boolean;
   url?: string;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
 }) => {
   if (options.url && !options.isEditing) {
     return (
@@ -68,9 +68,11 @@ const renderInputGroup = (options: {
       plaintext={!options.isEditing}
       value={options.value ?? ""}
       placeholder={options.placeholder ?? options.title}
-      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-        options.onChange(event.currentTarget.value)
-      }
+      onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        if (options.onChange) {
+          options.onChange(event.currentTarget.value);
+        }
+      }}
     />
   );
 };

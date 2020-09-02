@@ -4,17 +4,18 @@ import (
 	"archive/zip"
 	"bytes"
 	"database/sql"
-	"github.com/disintegration/imaging"
-	"github.com/stashapp/stash/pkg/api/urlbuilders"
-	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/utils"
-	_ "golang.org/x/image/webp"
 	"image"
 	"image/jpeg"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/disintegration/imaging"
+	"github.com/stashapp/stash/pkg/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/utils"
+	_ "golang.org/x/image/webp"
 )
 
 type Gallery struct {
@@ -27,6 +28,16 @@ type Gallery struct {
 }
 
 const DefaultGthumbWidth int = 200
+
+func (g *Gallery) CountFiles() int {
+	filteredFiles, readCloser, err := g.listZipContents()
+	if err != nil {
+		return 0
+	}
+	defer readCloser.Close()
+
+	return len(filteredFiles)
+}
 
 func (g *Gallery) GetFiles(baseURL string) []*GalleryFilesType {
 	var galleryFiles []*GalleryFilesType

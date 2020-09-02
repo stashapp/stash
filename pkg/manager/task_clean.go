@@ -15,8 +15,9 @@ import (
 )
 
 type CleanTask struct {
-	Scene   *models.Scene
-	Gallery *models.Gallery
+	Scene               *models.Scene
+	Gallery             *models.Gallery
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *CleanTask) Start(wg *sync.WaitGroup) {
@@ -26,13 +27,19 @@ func (t *CleanTask) Start(wg *sync.WaitGroup) {
 		t.deleteScene(t.Scene.ID)
 	}
 
-	if t.Gallery != nil && t.shouldClean(t.Gallery.Path) {
+	if t.Gallery != nil && t.shouldCleanGallery(t.Gallery) {
 		t.deleteGallery(t.Gallery.ID)
 	}
 }
 
 func (t *CleanTask) shouldClean(path string) bool {
-	if t.fileExists(path) && t.pathInStash(path) {
+	fileExists, err := t.fileExists(path)
+	if err != nil {
+		logger.Errorf("Error checking existence of %s: %s", path, err.Error())
+		return false
+	}
+
+	if fileExists && t.pathInStash(path) {
 		logger.Debugf("File Found: %s", path)
 		if matchFile(path, config.GetExcludes()) {
 			logger.Infof("File matched regex. Cleaning: \"%s\"", path)
@@ -40,6 +47,19 @@ func (t *CleanTask) shouldClean(path string) bool {
 		}
 	} else {
 		logger.Infof("File not found. Cleaning: \"%s\"", path)
+		return true
+	}
+
+	return false
+}
+
+func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
+	if t.shouldClean(g.Path) {
+		return true
+	}
+
+	if t.Gallery.CountFiles() == 0 {
+		logger.Infof("Gallery has 0 images. Cleaning: \"%s\"", g.Path)
 		return true
 	}
 
@@ -65,7 +85,7 @@ func (t *CleanTask) deleteScene(sceneID int) {
 		return
 	}
 
-	DeleteGeneratedSceneFiles(scene)
+	DeleteGeneratedSceneFiles(scene, t.fileNamingAlgorithm)
 }
 
 func (t *CleanTask) deleteGallery(galleryID int) {
@@ -92,12 +112,18 @@ func (t *CleanTask) deleteGallery(galleryID int) {
 	}
 }
 
-func (t *CleanTask) fileExists(filename string) bool {
+func (t *CleanTask) fileExists(filename string) (bool, error) {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
-		return false
+		return false, nil
 	}
-	return !info.IsDir()
+
+	// handle if error is something else
+	if err != nil {
+		return false, err
+	}
+
+	return !info.IsDir(), nil
 }
 
 func (t *CleanTask) pathInStash(pathToCheck string) bool {

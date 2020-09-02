@@ -1,32 +1,39 @@
-/* eslint-disable react/no-this-in-sfc */
-
 import React, { useEffect, useState } from "react";
-import { Button, Dropdown, DropdownButton, Form, Table } from "react-bootstrap";
+import {
+  Button,
+  Dropdown,
+  DropdownButton,
+  Form,
+  Col,
+  Row,
+} from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryScrapeScene,
   queryScrapeSceneURL,
   useListSceneScrapers,
   useSceneUpdate,
-  useSceneDestroy,
+  mutateReloadScrapers,
 } from "src/core/StashService";
 import {
   PerformerSelect,
   TagSelect,
   StudioSelect,
   SceneGallerySelect,
-  Modal,
   Icon,
   LoadingIndicator,
   ImageInput,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { ImageUtils, TableUtils } from "src/utils";
+import { ImageUtils, FormUtils, EditableTextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
+import { RatingStars } from "./RatingStars";
+import { SceneScrapeDialog } from "./SceneScrapeDialog";
 
 interface IProps {
   scene: GQL.SceneDataFragment;
+  isVisible: boolean;
   onUpdate: (scene: GQL.SceneDataFragment) => void;
   onDelete: () => void;
 }
@@ -51,9 +58,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const Scrapers = useListSceneScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
 
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-  const [deleteFile, setDeleteFile] = useState<boolean>(false);
-  const [deleteGenerated, setDeleteGenerated] = useState<boolean>(true);
+  const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
 
   const [coverImagePreview, setCoverImagePreview] = useState<string>();
 
@@ -61,7 +66,48 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [updateScene] = useSceneUpdate(getSceneInput());
-  const [deleteScene] = useSceneDestroy(getSceneDeleteInput());
+
+  useEffect(() => {
+    if (props.isVisible) {
+      Mousetrap.bind("s s", () => {
+        onSave();
+      });
+      Mousetrap.bind("d d", () => {
+        props.onDelete();
+      });
+
+      // numeric keypresses get caught by jwplayer, so blur the element
+      // if the rating sequence is started
+      Mousetrap.bind("r", () => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+
+        Mousetrap.bind("0", () => setRating(NaN));
+        Mousetrap.bind("1", () => setRating(1));
+        Mousetrap.bind("2", () => setRating(2));
+        Mousetrap.bind("3", () => setRating(3));
+        Mousetrap.bind("4", () => setRating(4));
+        Mousetrap.bind("5", () => setRating(5));
+
+        setTimeout(() => {
+          Mousetrap.unbind("0");
+          Mousetrap.unbind("1");
+          Mousetrap.unbind("2");
+          Mousetrap.unbind("3");
+          Mousetrap.unbind("4");
+          Mousetrap.unbind("5");
+        }, 1000);
+      });
+
+      return () => {
+        Mousetrap.unbind("s s");
+        Mousetrap.unbind("d d");
+
+        Mousetrap.unbind("r");
+      };
+    }
+  });
 
   useEffect(() => {
     const newQueryableScrapers = (
@@ -185,27 +231,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setIsLoading(false);
   }
 
-  function getSceneDeleteInput(): GQL.SceneDestroyInput {
-    return {
-      id: props.scene.id,
-      delete_file: deleteFile,
-      delete_generated: deleteGenerated,
-    };
-  }
-
-  async function onDelete() {
-    setIsDeleteAlertOpen(false);
-    setIsLoading(true);
-    try {
-      await deleteScene();
-      Toast.success({ content: "Deleted scene" });
-    } catch (e) {
-      Toast.error(e);
-    }
-    setIsLoading(false);
-    props.onDelete();
-  }
-
   function renderTableMovies() {
     return (
       <SceneMovieTable
@@ -214,35 +239,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
           setMovieSceneIndexes(items);
         }}
       />
-    );
-  }
-
-  function renderDeleteAlert() {
-    return (
-      <Modal
-        show={isDeleteAlertOpen}
-        icon="trash-alt"
-        header="Delete Scene?"
-        accept={{ variant: "danger", onClick: onDelete, text: "Delete" }}
-        cancel={{ onClick: () => setIsDeleteAlertOpen(false), text: "Cancel" }}
-      >
-        <p>
-          Are you sure you want to delete this scene? Unless the file is also
-          deleted, this scene will be re-added when scan is performed.
-        </p>
-        <Form>
-          <Form.Check
-            checked={deleteFile}
-            label="Delete file"
-            onChange={() => setDeleteFile(!deleteFile)}
-          />
-          <Form.Check
-            checked={deleteGenerated}
-            label="Delete generated supporting files"
-            onChange={() => setDeleteGenerated(!deleteGenerated)}
-          />
-        </Form>
-      </Modal>
     );
   }
 
@@ -262,7 +258,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       if (!result.data || !result.data.scrapeScene) {
         return;
       }
-      updateSceneFromScrapedScene(result.data.scrapeScene);
+      setScrapedScene(result.data.scrapeScene);
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -270,11 +266,49 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   }
 
-  function renderScraperMenu() {
-    if (!queryableScrapers || queryableScrapers.length === 0) {
+  async function onReloadScrapers() {
+    setIsLoading(true);
+    try {
+      await mutateReloadScrapers();
+
+      // reload the performer scrapers
+      await Scrapers.refetch();
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function onScrapeDialogClosed(scene?: GQL.ScrapedSceneDataFragment) {
+    if (scene) {
+      updateSceneFromScrapedScene(scene);
+    }
+    setScrapedScene(undefined);
+  }
+
+  function maybeRenderScrapeDialog() {
+    if (!scrapedScene) {
       return;
     }
 
+    const currentScene = getSceneInput();
+    if (!currentScene.cover_image) {
+      currentScene.cover_image = props.scene.paths.screenshot;
+    }
+
+    return (
+      <SceneScrapeDialog
+        scene={currentScene}
+        scraped={scrapedScene}
+        onClose={(scene) => {
+          onScrapeDialogClosed(scene);
+        }}
+      />
+    );
+  }
+
+  function renderScraperMenu() {
     return (
       <DropdownButton id="scene-scrape" title="Scrape with...">
         {queryableScrapers.map((s) => (
@@ -282,6 +316,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             {s.name}
           </Dropdown.Item>
         ))}
+        <Dropdown.Item onClick={() => onReloadScrapers()}>
+          <span className="fa-icon">
+            <Icon icon="sync-alt" />
+          </span>
+          <span>Reload scrapers</span>
+        </Dropdown.Item>
       </DropdownButton>
     );
   }
@@ -293,63 +333,55 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   }
 
   function updateSceneFromScrapedScene(scene: GQL.ScrapedSceneDataFragment) {
-    if (!title && scene.title) {
+    if (scene.title) {
       setTitle(scene.title);
     }
 
-    if (!details && scene.details) {
+    if (scene.details) {
       setDetails(scene.details);
     }
 
-    if (!date && scene.date) {
+    if (scene.date) {
       setDate(scene.date);
     }
 
-    if (!url && scene.url) {
+    if (scene.url) {
       setUrl(scene.url);
     }
 
-    if (!studioId && scene.studio && scene.studio.id) {
-      setStudioId(scene.studio.id);
+    if (scene.studio && scene.studio.stored_id) {
+      setStudioId(scene.studio.stored_id);
     }
 
-    if (
-      (!performerIds || performerIds.length === 0) &&
-      scene.performers &&
-      scene.performers.length > 0
-    ) {
+    if (scene.performers && scene.performers.length > 0) {
       const idPerfs = scene.performers.filter((p) => {
-        return p.id !== undefined && p.id !== null;
+        return p.stored_id !== undefined && p.stored_id !== null;
       });
 
       if (idPerfs.length > 0) {
-        const newIds = idPerfs.map((p) => p.id);
+        const newIds = idPerfs.map((p) => p.stored_id);
         setPerformerIds(newIds as string[]);
       }
     }
 
-    if (
-      (!movieIds || movieIds.length === 0) &&
-      scene.movies &&
-      scene.movies.length > 0
-    ) {
+    if (scene.movies && scene.movies.length > 0) {
       const idMovis = scene.movies.filter((p) => {
-        return p.id !== undefined && p.id !== null;
+        return p.stored_id !== undefined && p.stored_id !== null;
       });
 
       if (idMovis.length > 0) {
-        const newIds = idMovis.map((p) => p.id);
+        const newIds = idMovis.map((p) => p.stored_id);
         setMovieIds(newIds as string[]);
       }
     }
 
-    if (!tagIds?.length && scene?.tags?.length) {
+    if (scene?.tags?.length) {
       const idTags = scene.tags.filter((p) => {
-        return p.id !== undefined && p.id !== null;
+        return p.stored_id !== undefined && p.stored_id !== null;
       });
 
       if (idTags.length > 0) {
-        const newIds = idTags.map((p) => p.id);
+        const newIds = idTags.map((p) => p.stored_id);
         setTagIds(newIds as string[]);
       }
     }
@@ -371,7 +403,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       if (!result.data || !result.data.scrapeSceneURL) {
         return;
       }
-      updateSceneFromScrapedScene(result.data.scrapeSceneURL);
+      setScrapedScene(result.data.scrapeSceneURL);
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -384,8 +416,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       return undefined;
     }
     return (
-      <Button id="scrape-url-button" onClick={onScrapeSceneURL}>
-        <Icon icon="file-download" />
+      <Button
+        className="minimal scrape-url-button"
+        onClick={onScrapeSceneURL}
+        title="Scrape"
+      >
+        <Icon className="fa-fw" icon="file-download" />
       </Button>
     );
   }
@@ -393,147 +429,178 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   if (isLoading) return <LoadingIndicator />;
 
   return (
-    <div className="form-container row">
-      <div className="col-12 col-lg-6">
-        <Table id="scene-edit-details">
-          <tbody>
-            {TableUtils.renderInputGroup({
-              title: "Title",
-              value: title,
-              onChange: setTitle,
-              isEditing: true,
-            })}
-            <tr>
-              <td>URL</td>
-              <td>
-                <Form.Control
-                  onChange={(newValue: React.ChangeEvent<HTMLInputElement>) =>
-                    setUrl(newValue.currentTarget.value)
-                  }
-                  value={url}
-                  placeholder="URL"
-                  className="text-input"
-                />
-                {maybeRenderScrapeButton()}
-              </td>
-            </tr>
-            {TableUtils.renderInputGroup({
-              title: "Date",
-              value: date,
-              isEditing: true,
-              onChange: setDate,
-              placeholder: "YYYY-MM-DD",
-            })}
-            {TableUtils.renderHtmlSelect({
-              title: "Rating",
-              value: rating,
-              isEditing: true,
-              onChange: (value: string) =>
-                setRating(Number.parseInt(value, 10)),
-              selectOptions: ["", 1, 2, 3, 4, 5],
-            })}
-            <tr>
-              <td>Gallery</td>
-              <td>
-                <SceneGallerySelect
-                  sceneId={props.scene.id}
-                  initialId={galleryId}
-                  onSelect={(item) => setGalleryId(item ? item.id : undefined)}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Studio</td>
-              <td>
-                <StudioSelect
-                  onSelect={(items) =>
-                    setStudioId(items.length > 0 ? items[0]?.id : undefined)
-                  }
-                  ids={studioId ? [studioId] : []}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Performers</td>
-              <td>
-                <PerformerSelect
-                  isMulti
-                  onSelect={(items) =>
-                    setPerformerIds(items.map((item) => item.id))
-                  }
-                  ids={performerIds}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Movies/Scenes</td>
-              <td>
-                <MovieSelect
-                  isMulti
-                  onSelect={(items) =>
-                    setMovieIds(items.map((item) => item.id))
-                  }
-                  ids={movieIds}
-                />
-                {renderTableMovies()}
-              </td>
-            </tr>
-            <tr>
-              <td>Tags</td>
-              <td>
-                <TagSelect
-                  isMulti
-                  onSelect={(items) => setTagIds(items.map((item) => item.id))}
-                  ids={tagIds}
-                />
-              </td>
-            </tr>
-          </tbody>
-        </Table>
+    <div id="scene-edit-details">
+      {maybeRenderScrapeDialog()}
+      <div className="form-container row px-3 pt-3">
+        <div className="col edit-buttons mb-3 pl-0">
+          <Button className="edit-button" variant="primary" onClick={onSave}>
+            Save
+          </Button>
+          <Button
+            className="edit-button"
+            variant="danger"
+            onClick={() => props.onDelete()}
+          >
+            Delete
+          </Button>
+        </div>
+        {renderScraperMenu()}
       </div>
-      <div className="col-12 col-lg-6">
-        <Form.Group controlId="details">
-          <Form.Label>Details</Form.Label>
-          <Form.Control
-            as="textarea"
-            className="scene-description text-input"
-            onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setDetails(newValue.currentTarget.value)
-            }
-            value={details}
-          />
-        </Form.Group>
-
-        <div>
-          <Form.Group className="test" controlId="cover">
-            <Form.Label>Cover Image</Form.Label>
-            {imageEncoding ? (
-              <LoadingIndicator message="Encoding image..." />
-            ) : (
-              <img
-                className="scene-cover"
-                src={coverImagePreview}
-                alt="Scene cover"
+      <div className="form-container row px-3">
+        <div className="col-12 col-lg-6 col-xl-12">
+          {FormUtils.renderInputGroup({
+            title: "Title",
+            value: title,
+            onChange: setTitle,
+            isEditing: true,
+          })}
+          <Form.Group controlId="url" as={Row}>
+            <Col xs={3} className="pr-0 url-label">
+              <Form.Label className="col-form-label">URL</Form.Label>
+              <div className="float-right scrape-button-container">
+                {maybeRenderScrapeButton()}
+              </div>
+            </Col>
+            <Col xs={9}>
+              {EditableTextUtils.renderInputGroup({
+                title: "URL",
+                value: url,
+                onChange: setUrl,
+                isEditing: true,
+              })}
+            </Col>
+          </Form.Group>
+          {FormUtils.renderInputGroup({
+            title: "Date",
+            value: date,
+            isEditing: true,
+            onChange: setDate,
+            placeholder: "YYYY-MM-DD",
+          })}
+          <Form.Group controlId="rating" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Rating",
+            })}
+            <Col xs={9}>
+              <RatingStars
+                value={rating}
+                onSetRating={(value) => setRating(value)}
               />
-            )}
-            <ImageInput isEditing onImageChange={onCoverImageChange} />
+            </Col>
+          </Form.Group>
+          <Form.Group controlId="gallery" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Gallery",
+            })}
+            <Col xs={9}>
+              <SceneGallerySelect
+                sceneId={props.scene.id}
+                initialId={galleryId}
+                onSelect={(item) => setGalleryId(item ? item.id : undefined)}
+              />
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId="studio" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Studio",
+            })}
+            <Col xs={9}>
+              <StudioSelect
+                onSelect={(items) =>
+                  setStudioId(items.length > 0 ? items[0]?.id : undefined)
+                }
+                ids={studioId ? [studioId] : []}
+              />
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId="performers" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Performers",
+              labelProps: {
+                column: true,
+                sm: 3,
+                xl: 12,
+              },
+            })}
+            <Col sm={9} xl={12}>
+              <PerformerSelect
+                isMulti
+                onSelect={(items) =>
+                  setPerformerIds(items.map((item) => item.id))
+                }
+                ids={performerIds}
+              />
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId="moviesScenes" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Movies/Scenes",
+              labelProps: {
+                column: true,
+                sm: 3,
+                xl: 12,
+              },
+            })}
+            <Col sm={9} xl={12}>
+              <MovieSelect
+                isMulti
+                onSelect={(items) => setMovieIds(items.map((item) => item.id))}
+                ids={movieIds}
+              />
+              {renderTableMovies()}
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId="tags" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Tags",
+              labelProps: {
+                column: true,
+                sm: 3,
+                xl: 12,
+              },
+            })}
+            <Col sm={9} xl={12}>
+              <TagSelect
+                isMulti
+                onSelect={(items) => setTagIds(items.map((item) => item.id))}
+                ids={tagIds}
+              />
+            </Col>
           </Form.Group>
         </div>
+        <div className="col-12 col-lg-6 col-xl-12">
+          <Form.Group controlId="details">
+            <Form.Label>Details</Form.Label>
+            <Form.Control
+              as="textarea"
+              className="scene-description text-input"
+              onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setDetails(newValue.currentTarget.value)
+              }
+              value={details}
+            />
+          </Form.Group>
+          <div>
+            <Form.Group controlId="cover">
+              <Form.Label>Cover Image</Form.Label>
+              {imageEncoding ? (
+                <LoadingIndicator message="Encoding image..." />
+              ) : (
+                <img
+                  className="scene-cover"
+                  src={coverImagePreview}
+                  alt="Scene cover"
+                />
+              )}
+              <ImageInput isEditing onImageChange={onCoverImageChange} />
+            </Form.Group>
+          </div>
+        </div>
       </div>
-      <div className="col edit-buttons">
-        <Button className="edit-button" variant="primary" onClick={onSave}>
-          Save
-        </Button>
-        <Button
-          className="edit-button"
-          variant="danger"
-          onClick={() => setIsDeleteAlertOpen(true)}
-        >
-          Delete
-        </Button>
-      </div>
-      {renderScraperMenu()}
-      {renderDeleteAlert()}
     </div>
   );
 };

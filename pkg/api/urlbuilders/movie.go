@@ -3,13 +3,13 @@ package urlbuilders
 import "strconv"
 
 type MovieURLBuilder struct {
-	BaseURL  string
+	BaseURL string
 	MovieID string
 }
 
 func NewMovieURLBuilder(baseURL string, movieID int) MovieURLBuilder {
 	return MovieURLBuilder{
-		BaseURL:  baseURL,
+		BaseURL: baseURL,
 		MovieID: strconv.Itoa(movieID),
 	}
 }
@@ -21,4 +21,3 @@ func (b MovieURLBuilder) GetMovieFrontImageURL() string {
 func (b MovieURLBuilder) GetMovieBackImageURL() string {
 	return b.BaseURL + "/movie/" + b.MovieID + "/backimage"
 }
-

@@ -13,7 +13,12 @@ import (
 
 func main() {
 	manager.Initialize()
-	database.Initialize(config.GetDatabasePath())
+
+	// perform the post-migration for new databases
+	if database.Initialize(config.GetDatabasePath()) {
+		manager.GetInstance().PostMigrate()
+	}
+
 	api.Start()
 	blockForever()
 }

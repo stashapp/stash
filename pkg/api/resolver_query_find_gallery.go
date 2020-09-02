@@ -2,8 +2,9 @@ package api
 
 import (
 	"context"
-	"github.com/stashapp/stash/pkg/models"
 	"strconv"
+
+	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *queryResolver) FindGallery(ctx context.Context, id string) (*models.Gallery, error) {
@@ -12,9 +13,9 @@ func (r *queryResolver) FindGallery(ctx context.Context, id string) (*models.Gal
 	return qb.Find(idInt)
 }
 
-func (r *queryResolver) FindGalleries(ctx context.Context, filter *models.FindFilterType) (*models.FindGalleriesResultType, error) {
+func (r *queryResolver) FindGalleries(ctx context.Context, galleryFilter *models.GalleryFilterType, filter *models.FindFilterType) (*models.FindGalleriesResultType, error) {
 	qb := models.NewGalleryQueryBuilder()
-	galleries, total := qb.Query(filter)
+	galleries, total := qb.Query(galleryFilter, filter)
 	return &models.FindGalleriesResultType{
 		Count:     total,
 		Galleries: galleries,

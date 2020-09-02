@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
 import {
@@ -9,35 +9,61 @@ import { queryFindScenes } from "src/core/StashService";
 import { useScenesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import { showWhenSelected } from "src/hooks/ListHook";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
-import { SceneSelectedOptions } from "./SceneSelectedOptions";
+import { EditScenesDialog } from "./EditScenesDialog";
+import { DeleteScenesDialog } from "./DeleteScenesDialog";
+import { SceneGenerateDialog } from "./SceneGenerateDialog";
 
 interface ISceneList {
-  subComponent?: boolean;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
+  persistState?: boolean;
 }
 
 export const SceneList: React.FC<ISceneList> = ({
-  subComponent,
   filterHook,
+  persistState,
 }) => {
   const history = useHistory();
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+
   const otherOperations = [
     {
       text: "Play Random",
       onClick: playRandom,
     },
+    {
+      text: "Generate...",
+      onClick: generate,
+      isDisplayed: showWhenSelected,
+    },
   ];
+
+  const addKeybinds = (
+    result: FindScenesQueryResult,
+    filter: ListFilterModel
+  ) => {
+    Mousetrap.bind("p r", () => {
+      playRandom(result, filter);
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  };
 
   const listData = useScenesList({
     zoomable: true,
+    selectable: true,
     otherOperations,
     renderContent,
-    renderSelectedOptions,
-    subComponent,
+    renderEditDialog: renderEditScenesDialog,
+    renderDeleteDialog: renderDeleteScenesDialog,
     filterHook,
+    addKeybinds,
+    persistState,
   });
 
   async function playRandom(
@@ -66,32 +92,43 @@ export const SceneList: React.FC<ISceneList> = ({
     }
   }
 
-  function renderSelectedOptions(
-    result: FindScenesQueryResult,
-    selectedIds: Set<string>
-  ) {
-    // find the selected items from the ids
-    if (!result.data || !result.data.findScenes) {
-      return undefined;
+  async function generate() {
+    setIsGenerateDialogOpen(true);
+  }
+
+  function maybeRenderSceneGenerateDialog(selectedIds: Set<string>) {
+    if (isGenerateDialogOpen) {
+      return (
+        <>
+          <SceneGenerateDialog
+            selectedIds={Array.from(selectedIds.values())}
+            onClose={() => {
+              setIsGenerateDialogOpen(false);
+            }}
+          />
+        </>
+      );
     }
+  }
 
-    const { scenes } = result.data.findScenes;
-
-    const selectedScenes: SlimSceneDataFragment[] = [];
-    selectedIds.forEach((id) => {
-      const scene = scenes.find((s) => s.id === id);
-
-      if (scene) {
-        selectedScenes.push(scene);
-      }
-    });
-
+  function renderEditScenesDialog(
+    selectedScenes: SlimSceneDataFragment[],
+    onClose: (applied: boolean) => void
+  ) {
     return (
       <>
-        <SceneSelectedOptions
-          selected={selectedScenes}
-          onScenesUpdated={() => {}}
-        />
+        <EditScenesDialog selected={selectedScenes} onClose={onClose} />
+      </>
+    );
+  }
+
+  function renderDeleteScenesDialog(
+    selectedScenes: SlimSceneDataFragment[],
+    onClose: (confirmed: boolean) => void
+  ) {
+    return (
+      <>
+        <DeleteScenesDialog selected={selectedScenes} onClose={onClose} />
       </>
     );
   }
@@ -106,6 +143,7 @@ export const SceneList: React.FC<ISceneList> = ({
         key={scene.id}
         scene={scene}
         zoomIndex={zoomIndex}
+        selecting={selectedIds.size > 0}
         selected={selectedIds.has(scene.id)}
         onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
           listData.onSelectChange(scene.id, selected, shiftKey)
@@ -114,7 +152,7 @@ export const SceneList: React.FC<ISceneList> = ({
     );
   }
 
-  function renderContent(
+  function renderScenes(
     result: FindScenesQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
@@ -138,6 +176,20 @@ export const SceneList: React.FC<ISceneList> = ({
     if (filter.displayMode === DisplayMode.Wall) {
       return <WallPanel scenes={result.data.findScenes.scenes} />;
     }
+  }
+
+  function renderContent(
+    result: FindScenesQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>,
+    zoomIndex: number
+  ) {
+    return (
+      <>
+        {maybeRenderSceneGenerateDialog(selectedIds)}
+        {renderScenes(result, filter, selectedIds, zoomIndex)}
+      </>
+    );
   }
 
   return listData.template;

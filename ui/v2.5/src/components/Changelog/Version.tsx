@@ -36,7 +36,7 @@ const Version: React.FC<IVersionProps> = ({
             <Icon icon={open ? "angle-up" : "angle-down"} className="mr-3" />
             {version} (
             {date ? (
-              <FormattedDate value={new Date(Date.parse(date))} />
+              <FormattedDate value={date} timeZone="utc" />
             ) : (
               <FormattedMessage
                 defaultMessage="Development Version"
@@ -49,7 +49,7 @@ const Version: React.FC<IVersionProps> = ({
       </Card.Header>
       <Card.Body>
         <Collapse in={open}>
-          <div className="changelog-version-body">{children}</div>
+          <div className="changelog-version-body markdown">{children}</div>
         </Collapse>
       </Card.Body>
     </Card>

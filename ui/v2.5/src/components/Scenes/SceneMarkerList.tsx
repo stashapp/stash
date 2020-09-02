@@ -9,7 +9,11 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { WallPanel } from "../Wall/WallPanel";
 
-export const SceneMarkerList: React.FC = () => {
+interface ISceneMarkerList {
+  filterHook?: (filter: ListFilterModel) => ListFilterModel;
+}
+
+export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
   const history = useHistory();
   const otherOperations = [
     {
@@ -18,9 +22,24 @@ export const SceneMarkerList: React.FC = () => {
     },
   ];
 
+  const addKeybinds = (
+    result: FindSceneMarkersQueryResult,
+    filter: ListFilterModel
+  ) => {
+    Mousetrap.bind("p r", () => {
+      playRandom(result, filter);
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  };
+
   const listData = useSceneMarkersList({
     otherOperations,
     renderContent,
+    filterHook,
+    addKeybinds,
   });
 
   async function playRandom(
