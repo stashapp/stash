@@ -1,6 +1,4 @@
-/* eslint-disable react/no-this-in-sfc */
-
-import { Table } from "react-bootstrap";
+import { Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
@@ -18,14 +16,16 @@ import {
   DetailsEditNavbar,
   Modal,
   LoadingIndicator,
+  StudioSelect,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { StudioScenesPanel } from "./StudioScenesPanel";
+import { StudioChildrenPanel } from "./StudioChildrenPanel";
 
 export const Studio: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { id = "new" } = useParams();
+  const { tab = "details", id = "new" } = useParams();
   const isNew = id === "new";
 
   // Editing state
@@ -33,13 +33,14 @@ export const Studio: React.FC = () => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing studio state
-  const [image, setImage] = useState<string>();
+  const [image, setImage] = useState<string | null>();
   const [name, setName] = useState<string>();
   const [url, setUrl] = useState<string>();
+  const [parentStudioId, setParentStudioId] = useState<string>();
 
   // Studio state
   const [studio, setStudio] = useState<Partial<GQL.StudioDataFragment>>({});
-  const [imagePreview, setImagePreview] = useState<string>();
+  const [imagePreview, setImagePreview] = useState<string | null>();
 
   const { data, error, loading } = useFindStudio(id);
   const [updateStudio] = useStudioUpdate(
@@ -55,6 +56,7 @@ export const Studio: React.FC = () => {
   function updateStudioEditState(state: Partial<GQL.StudioDataFragment>) {
     setName(state.name);
     setUrl(state.url ?? undefined);
+    setParentStudioId(state?.parent_studio?.id ?? undefined);
   }
 
   function updateStudioData(studioData: Partial<GQL.StudioDataFragment>) {
@@ -63,6 +65,25 @@ export const Studio: React.FC = () => {
     setImagePreview(studioData.image_path ?? undefined);
     setStudio(studioData);
   }
+
+  // set up hotkeys
+  useEffect(() => {
+    if (isEditing) {
+      Mousetrap.bind("s s", () => onSave());
+    }
+
+    Mousetrap.bind("e", () => setIsEditing(true));
+    Mousetrap.bind("d d", () => onDelete());
+
+    return () => {
+      if (isEditing) {
+        Mousetrap.unbind("s s");
+      }
+
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("d d");
+    };
+  });
 
   useEffect(() => {
     if (data && data.findStudio) {
@@ -81,7 +102,7 @@ export const Studio: React.FC = () => {
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   if (!isNew && !isEditing) {
-    if (!data?.findStudio || loading) return <LoadingIndicator />;
+    if (!data?.findStudio || loading || !studio.id) return <LoadingIndicator />;
     if (error) return <div>{error.message}</div>;
   }
 
@@ -89,6 +110,7 @@ export const Studio: React.FC = () => {
     const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
       name,
       url,
+      parent_id: parentStudioId,
       image,
     };
 
@@ -161,20 +183,39 @@ export const Studio: React.FC = () => {
     updateStudioData(studio);
   }
 
+  function onClearImage() {
+    setImage(null);
+    setImagePreview(
+      studio.image_path ? `${studio.image_path}?default=true` : undefined
+    );
+  }
+
+  const activeTabKey = tab === "childstudios" ? tab : "scenes";
+  const setActiveTabKey = (newTab: string) => {
+    if (tab !== newTab) {
+      const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
+      history.replace(`/studios/${id}${tabParam}`);
+    }
+  };
+
   return (
     <div className="row">
       <div
         className={cx("studio-details", {
-          "col ml-sm-5": !isNew,
+          "col-md-4": !isNew,
           "col-8": isNew,
         })}
       >
         {isNew && <h2>Add Studio</h2>}
-        {imageEncoding ? (
-          <LoadingIndicator message="Encoding image..." />
-        ) : (
-          <img className="logo w-100" alt={name} src={imagePreview} />
-        )}
+        <div className="text-center">
+          {imageEncoding ? (
+            <LoadingIndicator message="Encoding image..." />
+          ) : imagePreview ? (
+            <img className="logo" alt={name} src={imagePreview} />
+          ) : (
+            ""
+          )}
+        </div>
         <Table>
           <tbody>
             {TableUtils.renderInputGroup({
@@ -189,6 +230,20 @@ export const Studio: React.FC = () => {
               isEditing: !!isEditing,
               onChange: setUrl,
             })}
+            <tr>
+              <td>Parent Studio</td>
+              <td>
+                <StudioSelect
+                  onSelect={(items) =>
+                    setParentStudioId(
+                      items.length > 0 ? items[0]?.id : undefined
+                    )
+                  }
+                  ids={parentStudioId ? [parentStudioId] : []}
+                  isDisabled={!isEditing}
+                />
+              </td>
+            </tr>
           </tbody>
         </Table>
         <DetailsEditNavbar
@@ -198,14 +253,30 @@ export const Studio: React.FC = () => {
           onToggleEdit={onToggleEdit}
           onSave={onSave}
           onImageChange={onImageChangeHandler}
+          onClearImage={() => {
+            onClearImage();
+          }}
           onAutoTag={onAutoTag}
           onDelete={onDelete}
           acceptSVG
         />
       </div>
       {!isNew && (
-        <div className="col-12 col-sm-8">
-          <StudioScenesPanel studio={studio} />
+        <div className="col col-md-8">
+          <Tabs
+            id="studio-tabs"
+            mountOnEnter
+            unmountOnExit
+            activeKey={activeTabKey}
+            onSelect={setActiveTabKey}
+          >
+            <Tab eventKey="scenes" title="Scenes">
+              <StudioScenesPanel studio={studio} />
+            </Tab>
+            <Tab eventKey="childstudios" title="Child Studios">
+              <StudioChildrenPanel studio={studio} />
+            </Tab>
+          </Tabs>
         </div>
       )}
       {renderDeleteAlert()}

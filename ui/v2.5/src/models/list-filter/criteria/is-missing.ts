@@ -46,10 +46,51 @@ export class PerformerIsMissingCriterion extends IsMissingCriterion {
     "aliases",
     "gender",
     "scenes",
+    "image",
   ];
 }
 
 export class PerformerIsMissingCriterionOption implements ICriterionOption {
   public label: string = Criterion.getLabel("performerIsMissing");
   public value: CriterionType = "performerIsMissing";
+}
+
+export class GalleryIsMissingCriterion extends IsMissingCriterion {
+  public type: CriterionType = "galleryIsMissing";
+  public options: string[] = ["scene"];
+}
+
+export class GalleryIsMissingCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("galleryIsMissing");
+  public value: CriterionType = "galleryIsMissing";
+}
+
+export class TagIsMissingCriterion extends IsMissingCriterion {
+  public type: CriterionType = "tagIsMissing";
+  public options: string[] = ["image"];
+}
+
+export class TagIsMissingCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("tagIsMissing");
+  public value: CriterionType = "tagIsMissing";
+}
+
+export class StudioIsMissingCriterion extends IsMissingCriterion {
+  public type: CriterionType = "studioIsMissing";
+  public options: string[] = ["image"];
+}
+
+export class StudioIsMissingCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("studioIsMissing");
+  public value: CriterionType = "studioIsMissing";
+}
+
+export class MovieIsMissingCriterion extends IsMissingCriterion {
+  public type: CriterionType = "movieIsMissing";
+  public options: string[] = ["front_image", "back_image"];
+}
+
+export class MovieIsMissingCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("movieIsMissing");
+  public value: CriterionType = "movieIsMissing";
 }

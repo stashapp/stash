@@ -10,6 +10,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -80,13 +81,15 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 	if input.Date != nil {
 		updatedScene.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
 	}
+
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error
 		_, coverImageData, err = utils.ProcessBase64Image(*input.CoverImage)
 		if err != nil {
 			return nil, err
 		}
-		updatedScene.Cover = &coverImageData
+
+		// update the cover after updating the scene
 	}
 
 	if input.Rating != nil {
@@ -109,6 +112,13 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 	scene, err := qb.Update(updatedScene, tx)
 	if err != nil {
 		return nil, err
+	}
+
+	// update cover table
+	if len(coverImageData) > 0 {
+		if err := qb.UpdateSceneCover(sceneID, coverImageData, tx); err != nil {
+			return nil, err
+		}
 	}
 
 	// Clear the existing gallery value
@@ -188,8 +198,7 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 
 	// only update the cover image if provided and everything else was successful
 	if coverImageData != nil {
-
-		err = manager.SetSceneScreenshot(scene.Checksum, coverImageData)
+		err = manager.SetSceneScreenshot(scene.GetHash(config.GetVideoFileNamingAlgorithm()), coverImageData)
 		if err != nil {
 			return nil, err
 		}
@@ -409,13 +418,55 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 	// if delete generated is true, then delete the generated files
 	// for the scene
 	if input.DeleteGenerated != nil && *input.DeleteGenerated {
-		manager.DeleteGeneratedSceneFiles(scene)
+		manager.DeleteGeneratedSceneFiles(scene, config.GetVideoFileNamingAlgorithm())
 	}
 
 	// if delete file is true, then delete the file as well
 	// if it fails, just log a message
 	if input.DeleteFile != nil && *input.DeleteFile {
 		manager.DeleteSceneFile(scene)
+	}
+
+	return true, nil
+}
+
+func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.ScenesDestroyInput) (bool, error) {
+	qb := models.NewSceneQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	var scenes []*models.Scene
+	for _, id := range input.Ids {
+		sceneID, _ := strconv.Atoi(id)
+
+		scene, err := qb.Find(sceneID)
+		if scene != nil {
+			scenes = append(scenes, scene)
+		}
+		err = manager.DestroyScene(sceneID, tx)
+
+		if err != nil {
+			tx.Rollback()
+			return false, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return false, err
+	}
+
+	fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+	for _, scene := range scenes {
+		// if delete generated is true, then delete the generated files
+		// for the scene
+		if input.DeleteGenerated != nil && *input.DeleteGenerated {
+			manager.DeleteGeneratedSceneFiles(scene, fileNamingAlgo)
+		}
+
+		// if delete file is true, then delete the file as well
+		// if it fails, just log a message
+		if input.DeleteFile != nil && *input.DeleteFile {
+			manager.DeleteSceneFile(scene)
+		}
 	}
 
 	return true, nil
@@ -479,7 +530,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 
 	if scene != nil {
 		seconds := int(marker.Seconds)
-		manager.DeleteSceneMarkerFiles(scene, seconds)
+		manager.DeleteSceneMarkerFiles(scene, seconds, config.GetVideoFileNamingAlgorithm())
 	}
 
 	return true, nil
@@ -548,7 +599,7 @@ func changeMarker(ctx context.Context, changeType int, changedMarker models.Scen
 
 		if scene != nil {
 			seconds := int(existingMarker.Seconds)
-			manager.DeleteSceneMarkerFiles(scene, seconds)
+			manager.DeleteSceneMarkerFiles(scene, seconds, config.GetVideoFileNamingAlgorithm())
 		}
 	}
 

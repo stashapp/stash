@@ -2,10 +2,15 @@
 type Query {
   """Find a scene by ID or Checksum"""
   findScene(id: ID, checksum: String): Scene
+  findSceneByHash(input: SceneHashInput!): Scene
+  
   """A function which queries Scene objects"""
   findScenes(scene_filter: SceneFilterType, scene_ids: [Int!], filter: FindFilterType): FindScenesResultType!
 
   findScenesByPathRegex(filter: FindFilterType): FindScenesResultType!
+
+  """Return valid stream paths"""
+  sceneStreams(id: ID): [SceneStreamEndpoint!]!
 
   parseSceneFilenames(filter: FindFilterType, config: SceneParserInput!): SceneParserResultType!
 
@@ -20,7 +25,7 @@ type Query {
   """Find a studio by ID"""
   findStudio(id: ID!): Studio
   """A function which queries Studio objects"""
-  findStudios(filter: FindFilterType): FindStudiosResultType!
+  findStudios(studio_filter: StudioFilterType, filter: FindFilterType): FindStudiosResultType!
 
    """Find a movie by ID"""
   findMovie(id: ID!): Movie
@@ -28,9 +33,10 @@ type Query {
   findMovies(movie_filter: MovieFilterType, filter: FindFilterType): FindMoviesResultType!
 
   findGallery(id: ID!): Gallery
-  findGalleries(filter: FindFilterType): FindGalleriesResultType!
+  findGalleries(gallery_filter: GalleryFilterType, filter: FindFilterType): FindGalleriesResultType!
 
   findTag(id: ID!): Tag
+  findTags(tag_filter: TagFilterType, filter: FindFilterType): FindTagsResultType!
 
   """Retrieve random scene markers for the wall"""
   markerWall(q: String): [SceneMarker!]!
@@ -53,6 +59,8 @@ type Query {
   """List available scrapers"""
   listPerformerScrapers: [Scraper!]!
   listSceneScrapers: [Scraper!]!
+  listMovieScrapers: [Scraper!]!
+
   """Scrape a list of performers based on name"""
   scrapePerformerList(scraper_id: ID!, query: String!): [ScrapedPerformer!]!
   """Scrapes a complete performer record based on a scrapePerformerList result"""
@@ -63,11 +71,20 @@ type Query {
   scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
   """Scrapes a complete performer record based on a URL"""
   scrapeSceneURL(url: String!): ScrapedScene
+  """Scrapes a complete movie record based on a URL"""
+  scrapeMovieURL(url: String!): ScrapedMovie
 
   """Scrape a performer using Freeones"""
   scrapeFreeones(performer_name: String!): ScrapedPerformer
   """Scrape a list of performers from a query"""
   scrapeFreeonesPerformerList(query: String!): [String!]!
+
+  # Plugins
+  """List loaded plugins"""
+  plugins: [Plugin!]
+  """List available plugin operations"""
+  pluginTasks: [PluginTask!]
+
 
   # Config
   """Returns the current, complete configuration"""
@@ -104,6 +121,7 @@ type Mutation {
   sceneUpdate(input: SceneUpdateInput!): Scene
   bulkSceneUpdate(input: BulkSceneUpdateInput!): [Scene!]
   sceneDestroy(input: SceneDestroyInput!): Boolean!
+  scenesDestroy(input: ScenesDestroyInput!): Boolean!
   scenesUpdate(input: [SceneUpdateInput!]!): [Scene]
 
   """Increments the o-counter for a scene. Returns the new value"""
@@ -152,6 +170,15 @@ type Mutation {
   metadataAutoTag(input: AutoTagMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
   metadataClean: String!
+  """Migrate generated files for the current hash naming"""
+  migrateHashNaming: String!
+
+  """Reload scrapers"""
+  reloadScrapers: Boolean!
+
+  """Run plugin task. Returns the job ID"""
+  runPluginTask(plugin_id: ID!, task_name: String!, args: [PluginArgInput!]): String!
+  reloadPlugins: Boolean!
 
   stopJob: Boolean!
 }

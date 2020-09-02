@@ -1,11 +1,13 @@
 import { Badge } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
+import cx from "classnames";
 import {
   PerformerDataFragment,
   SceneMarkerDataFragment,
   TagDataFragment,
   MovieDataFragment,
+  SceneDataFragment,
 } from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 
@@ -14,6 +16,7 @@ interface IProps {
   performer?: Partial<PerformerDataFragment>;
   marker?: Partial<SceneMarkerDataFragment>;
   movie?: Partial<MovieDataFragment>;
+  scene?: Partial<SceneDataFragment>;
   className?: string;
 }
 
@@ -34,9 +37,14 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     title = `${props.marker.title} - ${TextUtils.secondsToTimestamp(
       props.marker.seconds || 0
     )}`;
+  } else if (props.scene) {
+    link = `/scenes/${props.scene.id}`;
+    title = props.scene.title
+      ? props.scene.title
+      : TextUtils.fileNameFromPath(props.scene.path ?? "");
   }
   return (
-    <Badge className={`tag-item ${props.className}`} variant="secondary">
+    <Badge className={cx("tag-item", props.className)} variant="secondary">
       <Link to={link}>{title}</Link>
     </Badge>
   );

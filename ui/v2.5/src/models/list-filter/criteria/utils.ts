@@ -12,12 +12,16 @@ import { HasMarkersCriterion } from "./has-markers";
 import {
   PerformerIsMissingCriterion,
   SceneIsMissingCriterion,
+  GalleryIsMissingCriterion,
+  TagIsMissingCriterion,
+  StudioIsMissingCriterion,
+  MovieIsMissingCriterion,
 } from "./is-missing";
 import { NoneCriterion } from "./none";
 import { PerformersCriterion } from "./performers";
 import { RatingCriterion } from "./rating";
 import { ResolutionCriterion } from "./resolution";
-import { StudiosCriterion } from "./studios";
+import { StudiosCriterion, ParentStudiosCriterion } from "./studios";
 import { TagsCriterion } from "./tags";
 import { GenderCriterion } from "./gender";
 import { MoviesCriterion } from "./movies";
@@ -29,6 +33,8 @@ export function makeCriteria(type: CriterionType = "none") {
     case "rating":
       return new RatingCriterion();
     case "o_counter":
+    case "scene_count":
+    case "marker_count":
       return new NumberCriterion(type, type);
     case "resolution":
       return new ResolutionCriterion();
@@ -42,6 +48,14 @@ export function makeCriteria(type: CriterionType = "none") {
       return new SceneIsMissingCriterion();
     case "performerIsMissing":
       return new PerformerIsMissingCriterion();
+    case "galleryIsMissing":
+      return new GalleryIsMissingCriterion();
+    case "tagIsMissing":
+      return new TagIsMissingCriterion();
+    case "studioIsMissing":
+      return new StudioIsMissingCriterion();
+    case "movieIsMissing":
+      return new MovieIsMissingCriterion();
     case "tags":
       return new TagsCriterion("tags");
     case "sceneTags":
@@ -50,6 +64,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new PerformersCriterion();
     case "studios":
       return new StudiosCriterion();
+    case "parent_studios":
+      return new ParentStudiosCriterion();
     case "movies":
       return new MoviesCriterion();
     case "birth_year":

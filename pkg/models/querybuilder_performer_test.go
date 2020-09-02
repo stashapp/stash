@@ -3,12 +3,17 @@
 package models_test
 
 import (
+	"context"
+	"database/sql"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestPerformerFindBySceneID(t *testing.T) {
@@ -101,6 +106,146 @@ func TestPerformerFindByNames(t *testing.T) {
 	assert.Equal(t, performerNames[performerIdx1WithDupName], performers[2].Name.String)
 	assert.Equal(t, performerNames[performerIdxWithDupName], performers[3].Name.String)
 
+}
+
+func TestPerformerUpdatePerformerImage(t *testing.T) {
+	qb := models.NewPerformerQueryBuilder()
+
+	// create performer to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestPerformerUpdatePerformerImage"
+	performer := models.Performer{
+		Name:     sql.NullString{String: name, Valid: true},
+		Checksum: utils.MD5FromString(name),
+		Favorite: sql.NullBool{Bool: false, Valid: true},
+	}
+	created, err := qb.Create(performer, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating performer: %s", err.Error())
+	}
+
+	image := []byte("image")
+	err = qb.UpdatePerformerImage(created.ID, image, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating performer image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// ensure image set
+	storedImage, err := qb.GetPerformerImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting image: %s", err.Error())
+	}
+	assert.Equal(t, storedImage, image)
+
+	// set nil image
+	tx = database.DB.MustBeginTx(ctx, nil)
+	err = qb.UpdatePerformerImage(created.ID, nil, tx)
+	if err == nil {
+		t.Fatalf("Expected error setting nil image")
+	}
+
+	tx.Rollback()
+}
+
+func TestPerformerDestroyPerformerImage(t *testing.T) {
+	qb := models.NewPerformerQueryBuilder()
+
+	// create performer to test against
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	const name = "TestPerformerDestroyPerformerImage"
+	performer := models.Performer{
+		Name:     sql.NullString{String: name, Valid: true},
+		Checksum: utils.MD5FromString(name),
+		Favorite: sql.NullBool{Bool: false, Valid: true},
+	}
+	created, err := qb.Create(performer, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error creating performer: %s", err.Error())
+	}
+
+	image := []byte("image")
+	err = qb.UpdatePerformerImage(created.ID, image, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error updating performer image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	tx = database.DB.MustBeginTx(ctx, nil)
+
+	err = qb.DestroyPerformerImage(created.ID, tx)
+	if err != nil {
+		tx.Rollback()
+		t.Fatalf("Error destroying performer image: %s", err.Error())
+	}
+
+	if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		t.Fatalf("Error committing: %s", err.Error())
+	}
+
+	// image should be nil
+	storedImage, err := qb.GetPerformerImage(created.ID, nil)
+	if err != nil {
+		t.Fatalf("Error getting image: %s", err.Error())
+	}
+	assert.Nil(t, storedImage)
+}
+
+func TestPerformerQueryAge(t *testing.T) {
+	const age = 19
+	ageCriterion := models.IntCriterionInput{
+		Value:    age,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyPerformerAge(t, ageCriterion)
+
+	ageCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformerAge(t, ageCriterion)
+
+	ageCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyPerformerAge(t, ageCriterion)
+
+	ageCriterion.Modifier = models.CriterionModifierLessThan
+	verifyPerformerAge(t, ageCriterion)
+}
+
+func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
+	qb := models.NewPerformerQueryBuilder()
+	performerFilter := models.PerformerFilterType{
+		Age: &ageCriterion,
+	}
+
+	performers, _ := qb.Query(&performerFilter, nil)
+
+	now := time.Now()
+	for _, performer := range performers {
+		bd := performer.Birthdate.String
+		d, _ := time.Parse("2006-01-02", bd)
+		age := now.Year() - d.Year()
+		if now.YearDay() < d.YearDay() {
+			age = age - 1
+		}
+
+		verifyInt(t, age, ageCriterion)
+	}
 }
 
 // TODO Update

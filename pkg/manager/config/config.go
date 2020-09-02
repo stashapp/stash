@@ -27,8 +27,30 @@ const Database = "database"
 
 const Exclude = "exclude"
 
+// CalculateMD5 is the config key used to determine if MD5 should be calculated
+// for video files.
+const CalculateMD5 = "calculate_md5"
+
+// VideoFileNamingAlgorithm is the config key used to determine what hash
+// should be used when generating and using generated files for scenes.
+const VideoFileNamingAlgorithm = "video_file_naming_algorithm"
+
+const PreviewPreset = "preview_preset"
+
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
+
+const PreviewSegmentDuration = "preview_segment_duration"
+const previewSegmentDurationDefault = 0.75
+
+const PreviewSegments = "preview_segments"
+const previewSegmentsDefault = 12
+
+const PreviewExcludeStart = "preview_exclude_start"
+const previewExcludeStartDefault = "0"
+
+const PreviewExcludeEnd = "preview_exclude_end"
+const previewExcludeEndDefault = "0"
 
 const Host = "host"
 const Port = "port"
@@ -43,9 +65,17 @@ const SessionStoreKey = "session_store_key"
 // scraping options
 const ScrapersPath = "scrapers_path"
 const ScraperUserAgent = "scraper_user_agent"
+const ScraperCDPPath = "scraper_cdp_path"
+
+// plugin options
+const PluginsPath = "plugins_path"
 
 // i18n
 const Language = "language"
+
+// served directories
+// this should be manually configured only
+const CustomServedFolders = "custom_served_folders"
 
 // Interface options
 const SoundOnPreview = "sound_on_preview"
@@ -55,10 +85,6 @@ const AutostartVideo = "autostart_video"
 const ShowStudioAsText = "show_studio_as_text"
 const CSSEnabled = "cssEnabled"
 const WallPlayback = "wall_playback"
-
-// Playback force codec,container
-const ForceMKV = "forceMKV"
-const ForceHEVC = "forceHEVC"
 
 // Logging options
 const LogFile = "logFile"
@@ -81,6 +107,11 @@ func SetPassword(value string) {
 
 func Write() error {
 	return viper.WriteConfig()
+}
+
+func GetConfigPath() string {
+	configFileUsed := viper.ConfigFileUsed()
+	return filepath.Dir(configFileUsed)
 }
 
 func GetStashPaths() []string {
@@ -113,10 +144,8 @@ func GetSessionStoreKey() []byte {
 
 func GetDefaultScrapersPath() string {
 	// default to the same directory as the config file
-	configFileUsed := viper.ConfigFileUsed()
-	configDir := filepath.Dir(configFileUsed)
 
-	fn := filepath.Join(configDir, "scrapers")
+	fn := filepath.Join(GetConfigPath(), "scrapers")
 
 	return fn
 }
@@ -136,12 +165,48 @@ func GetLanguage() string {
 	return ret
 }
 
+// IsCalculateMD5 returns true if MD5 checksums should be generated for
+// scene video files.
+func IsCalculateMD5() bool {
+	return viper.GetBool(CalculateMD5)
+}
+
+// GetVideoFileNamingAlgorithm returns what hash algorithm should be used for
+// naming generated scene video files.
+func GetVideoFileNamingAlgorithm() models.HashAlgorithm {
+	ret := viper.GetString(VideoFileNamingAlgorithm)
+
+	// default to oshash
+	if ret == "" {
+		return models.HashAlgorithmOshash
+	}
+
+	return models.HashAlgorithm(ret)
+}
+
 func GetScrapersPath() string {
 	return viper.GetString(ScrapersPath)
 }
 
 func GetScraperUserAgent() string {
 	return viper.GetString(ScraperUserAgent)
+}
+
+// GetScraperCDPPath gets the path to the Chrome executable or remote address
+// to an instance of Chrome.
+func GetScraperCDPPath() string {
+	return viper.GetString(ScraperCDPPath)
+}
+
+func GetDefaultPluginsPath() string {
+	// default to the same directory as the config file
+	fn := filepath.Join(GetConfigPath(), "plugins")
+
+	return fn
+}
+
+func GetPluginsPath() string {
+	return viper.GetString(PluginsPath)
 }
 
 func GetHost() string {
@@ -154,6 +219,49 @@ func GetPort() int {
 
 func GetExternalHost() string {
 	return viper.GetString(ExternalHost)
+}
+
+// GetPreviewSegmentDuration returns the duration of a single segment in a
+// scene preview file, in seconds.
+func GetPreviewSegmentDuration() float64 {
+	return viper.GetFloat64(PreviewSegmentDuration)
+}
+
+// GetPreviewSegments returns the amount of segments in a scene preview file.
+func GetPreviewSegments() int {
+	return viper.GetInt(PreviewSegments)
+}
+
+// GetPreviewExcludeStart returns the configuration setting string for
+// excluding the start of scene videos for preview generation. This can
+// be in two possible formats. A float value is interpreted as the amount
+// of seconds to exclude from the start of the video before it is included
+// in the preview. If the value is suffixed with a '%' character (for example
+// '2%'), then it is interpreted as a proportion of the total video duration.
+func GetPreviewExcludeStart() string {
+	return viper.GetString(PreviewExcludeStart)
+}
+
+// GetPreviewExcludeEnd returns the configuration setting string for
+// excluding the end of scene videos for preview generation. A float value
+// is interpreted as the amount of seconds to exclude from the end of the video
+// when generating previews. If the value is suffixed with a '%' character,
+// then it is interpreted as a proportion of the total video duration.
+func GetPreviewExcludeEnd() string {
+	return viper.GetString(PreviewExcludeEnd)
+}
+
+// GetPreviewPreset returns the preset when generating previews. Defaults to
+// Slow.
+func GetPreviewPreset() models.PreviewPreset {
+	ret := viper.GetString(PreviewPreset)
+
+	// default to slow
+	if ret == "" {
+		return models.PreviewPresetSlow
+	}
+
+	return models.PreviewPreset(ret)
 }
 
 func GetMaxTranscodeSize() models.StreamingResolutionEnum {
@@ -231,6 +339,12 @@ func GetMaxSessionAge() int {
 	return viper.GetInt(MaxSessionAge)
 }
 
+// GetCustomServedFolders gets the map of custom paths to their applicable
+// filesystem locations
+func GetCustomServedFolders() URLMap {
+	return viper.GetStringMapString(CustomServedFolders)
+}
+
 // Interface options
 func GetSoundOnPreview() bool {
 	viper.SetDefault(SoundOnPreview, true)
@@ -301,15 +415,6 @@ func GetCSSEnabled() bool {
 	return viper.GetBool(CSSEnabled)
 }
 
-// force codec,container
-func GetForceMKV() bool {
-	return viper.GetBool(ForceMKV)
-}
-
-func GetForceHEVC() bool {
-	return viper.GetBool(ForceHEVC)
-}
-
 // GetLogFile returns the filename of the file to output logs to.
 // An empty string means that file logging will be disabled.
 func GetLogFile() string {
@@ -334,7 +439,7 @@ func GetLogLevel() string {
 	const defaultValue = "Info"
 
 	value := viper.GetString(LogLevel)
-	if value != "Debug" && value != "Info" && value != "Warning" && value != "Error" {
+	if value != "Debug" && value != "Info" && value != "Warning" && value != "Error" && value != "Trace" {
 		value = defaultValue
 	}
 
@@ -359,6 +464,13 @@ func IsValid() bool {
 	return setPaths
 }
 
+func setDefaultValues() {
+	viper.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
+	viper.SetDefault(PreviewSegments, previewSegmentsDefault)
+	viper.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)
+	viper.SetDefault(PreviewExcludeEnd, previewExcludeEndDefault)
+}
+
 // SetInitialConfig fills in missing required config fields
 func SetInitialConfig() error {
 	// generate some api keys
@@ -373,6 +485,8 @@ func SetInitialConfig() error {
 		sessionStoreKey := utils.GenerateRandomKey(apiKeyLength)
 		Set(SessionStoreKey, sessionStoreKey)
 	}
+
+	setDefaultValues()
 
 	return Write()
 }

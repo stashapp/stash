@@ -18,7 +18,7 @@ func NewSceneURLBuilder(baseURL string, sceneID int) SceneURLBuilder {
 }
 
 func (b SceneURLBuilder) GetStreamURL() string {
-	return b.BaseURL + "/scene/" + b.SceneID + "/stream.mp4"
+	return b.BaseURL + "/scene/" + b.SceneID + "/stream"
 }
 
 func (b SceneURLBuilder) GetStreamPreviewURL() string {

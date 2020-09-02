@@ -10,6 +10,8 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
+	"github.com/stashapp/stash/pkg/plugin"
+	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -20,6 +22,9 @@ type singleton struct {
 
 	FFMPEGPath  string
 	FFProbePath string
+
+	PluginCache  *plugin.Cache
+	ScraperCache *scraper.Cache
 }
 
 var instance *singleton
@@ -47,6 +52,9 @@ func Initialize() *singleton {
 			Status: TaskStatus{Status: Idle, Progress: -1},
 			Paths:  paths.NewPaths(),
 			JSON:   &jsonUtils{},
+
+			PluginCache:  initPluginCache(),
+			ScraperCache: initScraperCache(),
 		}
 
 		instance.RefreshConfig()
@@ -76,13 +84,16 @@ func initConfig() {
 	}
 	logger.Infof("using config file: %s", viper.ConfigFileUsed())
 
+	config.SetInitialConfig()
+
 	viper.SetDefault(config.Database, paths.GetDefaultDatabaseFilePath())
 
 	// Set generated to the metadata path for backwards compat
 	viper.SetDefault(config.Generated, viper.GetString(config.Metadata))
 
-	// Set default scrapers path
+	// Set default scrapers and plugins paths
 	viper.SetDefault(config.ScrapersPath, config.GetDefaultScrapersPath())
+	viper.SetDefault(config.PluginsPath, config.GetDefaultPluginsPath())
 
 	// Disabling config watching due to race condition issue
 	// See: https://github.com/spf13/viper/issues/174
@@ -134,16 +145,44 @@ The FFMPEG and FFProbe binaries should be placed in %s
 The error was: %s
 `
 			logger.Fatalf(msg, configDirectory, err)
+		} else {
+			// After download get new paths for ffmpeg and ffprobe
+			ffmpegPath, ffprobePath = ffmpeg.GetPaths(configDirectory)
 		}
 	}
 
-	// TODO: is this valid after download?
 	instance.FFMPEGPath = ffmpegPath
 	instance.FFProbePath = ffprobePath
 }
 
 func initLog() {
 	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
+}
+
+func initPluginCache() *plugin.Cache {
+	ret, err := plugin.NewCache(config.GetPluginsPath())
+
+	if err != nil {
+		logger.Errorf("Error reading plugin configs: %s", err.Error())
+	}
+
+	return ret
+}
+
+// initScraperCache initializes a new scraper cache and returns it.
+func initScraperCache() *scraper.Cache {
+	scraperConfig := scraper.GlobalConfig{
+		Path:      config.GetScrapersPath(),
+		UserAgent: config.GetScraperUserAgent(),
+		CDPPath:   config.GetScraperCDPPath(),
+	}
+	ret, err := scraper.NewCache(scraperConfig)
+
+	if err != nil {
+		logger.Errorf("Error reading scraper configs: %s", err.Error())
+	}
+
+	return ret
 }
 
 func (s *singleton) RefreshConfig() {
@@ -156,4 +195,10 @@ func (s *singleton) RefreshConfig() {
 
 		paths.EnsureJSONDirs()
 	}
+}
+
+// RefreshScraperCache refreshes the scraper cache. Call this when scraper
+// configuration changes.
+func (s *singleton) RefreshScraperCache() {
+	s.ScraperCache = initScraperCache()
 }

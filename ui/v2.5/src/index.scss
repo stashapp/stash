@@ -3,6 +3,7 @@
 @import "styles/scrollbars";
 @import "src/components/Changelog/styles.scss";
 @import "src/components/Galleries/styles.scss";
+@import "src/components/Help/styles.scss";
 @import "src/components/List/styles.scss";
 @import "src/components/Movies/styles.scss";
 @import "src/components/Performers/styles.scss";
@@ -99,11 +100,16 @@ textarea.text-input {
     width: 240px;
 
     .scene-card-video {
-      max-height: 180px;
+      height: 135px;
     }
 
-    .previewable.portrait {
+    .portrait {
       height: 180px;
+    }
+
+    .gallery-card-image,
+    .tag-card-image {
+      max-height: 180px;
     }
   }
 
@@ -111,11 +117,16 @@ textarea.text-input {
     width: 320px;
 
     .scene-card-video {
-      max-height: 240px;
+      height: 180px;
     }
 
-    .previewable.portrait {
+    .portrait {
       height: 240px;
+    }
+
+    .gallery-card-image,
+    .tag-card-image {
+      max-height: 240px;
     }
   }
 
@@ -123,11 +134,16 @@ textarea.text-input {
     width: 480px;
 
     .scene-card-video {
-      max-height: 360px;
+      height: 270px;
     }
 
-    .previewable.portrait {
+    .portrait {
       height: 360px;
+    }
+
+    .gallery-card-image,
+    .tag-card-image {
+      max-height: 360px;
     }
   }
 
@@ -135,16 +151,31 @@ textarea.text-input {
     width: 640px;
 
     .scene-card-video {
-      max-height: 480px;
+      height: 360px;
     }
 
     .portrait {
       height: 480px;
     }
+
+    .tag-card-image,
+    .gallery-card-image {
+      max-height: 480px;
+    }
   }
 }
 
 .scene-card-video {
+  object-fit: cover;
+
+  &.portrait {
+    object-fit: contain;
+  }
+}
+
+.scene-card-video,
+.gallery-card-image,
+.tag-card-image {
   height: auto;
   width: 100%;
 }
@@ -205,35 +236,14 @@ div.dropdown-menu {
   }
 }
 
-/* we don't want to override this for dialogs, which are light colored */
-.modal {
-  div.react-select__control {
-    background-color: #fff;
-    border-color: inherit;
-    color: $dark-text;
+/* fix for react-select in input-group */
+.input-group .react-select {
+  border: 0;
+  height: 100%;
+  padding: 0;
 
-    .react-select__single-value,
-    .react-select__input {
-      color: $dark-text;
-    }
-
-    .react-select__multi-value {
-      background-color: #fff;
-      color: $dark-text;
-    }
-  }
-
-  div.react-select__menu {
-    background-color: #fff;
-    color: $text-color;
-
-    .react-select__option {
-      color: $dark-text;
-    }
-
-    .react-select__option--is-focused {
-      background-color: rgba(167, 182, 194, 0.3);
-    }
+  .react-select__control {
+    border-radius: 0;
   }
 }
 
@@ -244,12 +254,6 @@ div.dropdown-menu {
   min-width: 50px;
   object-fit: cover;
   object-position: top;
-}
-
-.card-image {
-  height: 30rem;
-  min-width: 11.25rem;
-  width: 20rem;
 }
 
 .edit-button {
@@ -359,7 +363,7 @@ div.dropdown-menu {
   max-width: 350px;
   position: fixed;
   top: 2rem;
-  z-index: 1031;
+  z-index: 1051;
 
   .success {
     background-color: $success;
@@ -424,6 +428,11 @@ div.dropdown-menu {
   }
 }
 
+.popover-body .btn .fa-icon,
+.dropdown-item .fa-icon {
+  margin-left: 0;
+}
+
 .brand-icon {
   padding: 3px 6px;
 
@@ -463,6 +472,10 @@ div.dropdown-menu {
   white-space: "pre-wrap";
 }
 
+.btn-toolbar .form-control {
+  width: inherit;
+}
+
 .stats {
   &-element {
     flex-grow: 1;
@@ -482,4 +495,111 @@ div.dropdown-menu {
     text-align: center;
     text-transform: uppercase;
   }
+}
+
+.pre {
+  white-space: pre-line;
+}
+
+.markdown {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-bottom: 16px;
+    margin-top: 24px;
+  }
+
+  & > h1:first-child,
+  & > h2:first-child,
+  & > h3:first-child,
+  & > h4:first-child,
+  & > h5:first-child,
+  & > h6:first-child {
+    margin-top: 0;
+  }
+
+  h1,
+  h2 {
+    padding-bottom: 0.3em;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.83rem;
+  }
+
+  h3 {
+    font-size: 1.67rem;
+  }
+
+  h4 {
+    font-size: 1.5rem;
+  }
+
+  h5 {
+    font-size: 1.33rem;
+  }
+
+  code {
+    background-color: darken($color: #30404d, $amount: 3);
+    color: $text-color;
+    padding: 0.2em 0.4em;
+  }
+
+  blockquote {
+    p {
+      margin-bottom: 0;
+      vertical-align: middle;
+    }
+  }
+
+  blockquote,
+  pre {
+    code {
+      padding: 0;
+    }
+
+    background-color: darken($color: #30404d, $amount: 3);
+    border-radius: 3px;
+    padding: 16px;
+  }
+
+  pre {
+    font-size: 85%;
+    line-height: 1.45;
+    overflow: auto;
+  }
+
+  table {
+    display: block;
+    margin-bottom: 16px;
+    overflow: auto;
+    width: 100%;
+
+    tr {
+      border-top: 1px solid darken($color: #201d1a, $amount: 3);
+    }
+
+    tr:nth-child(2n) {
+      background-color: darken($color: #30404d, $amount: 2);
+    }
+
+    td,
+    th {
+      border: 1px solid darken($color: #201d1a, $amount: 3);
+      padding: 6px 13px;
+    }
+  }
+}
+
+.no-focus:focus {
+  background-color: inherit;
+  border-color: inherit;
+  box-shadow: inherit;
 }

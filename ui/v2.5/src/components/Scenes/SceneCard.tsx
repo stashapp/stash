@@ -10,6 +10,7 @@ import { TextUtils } from "src/utils";
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
+  selecting?: boolean;
   selected: boolean | undefined;
   zoomIndex: number;
   onSelectedChanged: (selected: boolean, shiftKey: boolean) => void;
@@ -101,7 +102,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (props.scene.performers.length <= 0) return;
 
     const popoverContent = props.scene.performers.map((performer) => (
-      <div className="performer-tag-container row" key="performer">
+      <div className="performer-tag-container row" key={performer.id}>
         <Link
           to={`/performers/${performer.id}`}
           className="performer-tag col m-auto zoom-2"
@@ -150,7 +151,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        placement="bottom"
+        content={popoverContent}
+        className="tag-tooltip"
+      >
         <Button className="minimal">
           <Icon icon="film" />
           <span>{props.scene.movies.length}</span>
@@ -203,7 +208,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       return (
         <>
           <hr />
-          <ButtonGroup className="scene-popovers">
+          <ButtonGroup className="card-popovers">
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderMoviePopoverButton()}
@@ -221,9 +226,40 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
     hoverHandler.onMouseEnter();
   }
+
   function onMouseLeave() {
     hoverHandler.onMouseLeave();
     setPreviewPath("");
+  }
+
+  function handleSceneClick(
+    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
+  ) {
+    const { shiftKey } = event;
+
+    if (props.selecting) {
+      props.onSelectedChanged(!props.selected, shiftKey);
+      event.preventDefault();
+    }
+  }
+
+  function handleDrag(event: React.DragEvent<HTMLAnchorElement>) {
+    if (props.selecting) {
+      event.dataTransfer.setData("text/plain", "");
+      event.dataTransfer.setDragImage(new Image(), 0, 0);
+    }
+  }
+
+  function handleDragOver(event: React.DragEvent<HTMLAnchorElement>) {
+    const ev = event;
+    const shiftKey = false;
+
+    if (props.selecting && !props.selected) {
+      props.onSelectedChanged(true, shiftKey);
+    }
+
+    ev.dataTransfer.dropEffect = "move";
+    ev.preventDefault();
   }
 
   function isPortrait() {
@@ -243,7 +279,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     >
       <Form.Control
         type="checkbox"
-        className="scene-card-check d-none d-sm-block"
+        className="scene-card-check"
         checked={props.selected}
         onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
         onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
@@ -253,19 +289,28 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         }}
       />
 
-      <Link to={`/scenes/${props.scene.id}`} className="scene-card-link">
-        {maybeRenderRatingBanner()}
-        {maybeRenderSceneStudioOverlay()}
-        {maybeRenderSceneSpecsOverlay()}
-        <video
-          loop
-          className={cx("scene-card-video", { portrait: isPortrait() })}
-          poster={props.scene.paths.screenshot || ""}
-          ref={hoverHandler.videoEl}
+      <div className="video-section">
+        <Link
+          to={`/scenes/${props.scene.id}`}
+          className="scene-card-link"
+          onClick={handleSceneClick}
+          onDragStart={handleDrag}
+          onDragOver={handleDragOver}
+          draggable={props.selecting}
         >
-          {previewPath ? <source src={previewPath} /> : ""}
-        </video>
-      </Link>
+          {maybeRenderRatingBanner()}
+          {maybeRenderSceneSpecsOverlay()}
+          <video
+            loop
+            className={cx("scene-card-video", { portrait: isPortrait() })}
+            poster={props.scene.paths.screenshot || ""}
+            ref={hoverHandler.videoEl}
+          >
+            {previewPath ? <source src={previewPath} /> : ""}
+          </video>
+        </Link>
+        {maybeRenderSceneStudioOverlay()}
+      </div>
       <div className="card-section">
         <h5 className="card-section-title">
           {props.scene.title

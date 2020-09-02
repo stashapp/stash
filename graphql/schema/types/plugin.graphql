@@ -1,0 +1,35 @@
+
+type Plugin {
+    id: ID!
+    name: String!
+    description: String
+    url: String
+    version: String
+
+    tasks: [PluginTask!]
+}
+
+type PluginTask {
+    name: String!
+    description: String
+    plugin: Plugin!
+}
+
+type PluginResult {
+    error: String
+    result: String
+}
+
+input PluginArgInput {
+    key: String!
+    value: PluginValueInput
+}
+
+input PluginValueInput {
+    str: String
+    i: Int
+    b: Boolean
+    f: Float
+    o: [PluginArgInput!]
+    a: [PluginValueInput!]
+}

@@ -1,10 +1,13 @@
 import React from "react";
 import { Button, Table } from "react-bootstrap";
 import { LoadingIndicator } from "src/components/Shared";
-import { useVersion, useLatestVersion } from "src/core/StashService";
+import { useLatestVersion } from "src/core/StashService";
 
 export const SettingsAboutPanel: React.FC = () => {
-  const { data, error, loading } = useVersion();
+  const gitHash = process.env.REACT_APP_GITHASH;
+  const stashVersion = process.env.REACT_APP_STASH_VERSION;
+  const buildTime = process.env.REACT_APP_DATE;
+
   const {
     data: dataLatest,
     error: errorLatest,
@@ -14,13 +17,13 @@ export const SettingsAboutPanel: React.FC = () => {
   } = useLatestVersion();
 
   function maybeRenderTag() {
-    if (!data || !data.version || !data.version.version) {
+    if (!stashVersion) {
       return;
     }
     return (
       <tr>
         <td>Version:</td>
-        <td>{data.version.version}</td>
+        <td>{stashVersion}</td>
       </tr>
     );
   }
@@ -32,11 +35,8 @@ export const SettingsAboutPanel: React.FC = () => {
     ) {
       return;
     }
-    if (!data || !data.version || !data.version.hash) {
-      return <>{dataLatest.latestversion.shorthash}</>;
-    }
 
-    if (data.version.hash !== dataLatest.latestversion.shorthash) {
+    if (gitHash !== dataLatest.latestversion.shorthash) {
       return (
         <>
           <strong>{dataLatest.latestversion.shorthash} [NEW] </strong>
@@ -49,9 +49,6 @@ export const SettingsAboutPanel: React.FC = () => {
   }
 
   function renderLatestVersion() {
-    if (!data || !data.version || !data.version.version) {
-      return;
-    } // if there is no "version" latest version check is obviously not supported
     return (
       <Table>
         <tbody>
@@ -70,9 +67,6 @@ export const SettingsAboutPanel: React.FC = () => {
   }
 
   function renderVersion() {
-    if (!data || !data.version) {
-      return;
-    }
     return (
       <>
         <Table>
@@ -80,11 +74,11 @@ export const SettingsAboutPanel: React.FC = () => {
             {maybeRenderTag()}
             <tr>
               <td>Build hash:</td>
-              <td>{data.version.hash}</td>
+              <td>{gitHash}</td>
             </tr>
             <tr>
               <td>Build time:</td>
-              <td>{data.version.build_time}</td>
+              <td>{buildTime}</td>
             </tr>
           </tbody>
         </Table>
@@ -148,8 +142,6 @@ export const SettingsAboutPanel: React.FC = () => {
           </tr>
         </tbody>
       </Table>
-      {!data || loading ? <LoadingIndicator inline /> : ""}
-      {error && <span>{error.message}</span>}
       {errorLatest && <span>{errorLatest.message}</span>}
       {renderVersion()}
       {!dataLatest || loadingLatest || networkStatus === 4 ? (

@@ -2,7 +2,6 @@ package ffmpeg
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -101,6 +100,7 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 	}
 
 	buf := make([]byte, 80)
+	lastProgress := 0.0
 	var errBuilder strings.Builder
 	for {
 		n, err := stderr.Read(buf)
@@ -109,7 +109,11 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 			time := GetTimeFromRegex(data)
 			if time > 0 && probeResult.Duration > 0 {
 				progress := time / probeResult.Duration
-				logger.Infof("Progress %.2f", progress)
+
+				if progress > lastProgress+0.01 {
+					logger.Infof("Progress %.2f", progress)
+					lastProgress = progress
+				}
 			}
 
 			errBuilder.WriteString(data)
@@ -132,22 +136,4 @@ func (e *Encoder) run(probeResult VideoFile, args []string) (string, error) {
 	}
 
 	return stdoutString, nil
-}
-
-func (e *Encoder) stream(probeResult VideoFile, args []string) (io.ReadCloser, *os.Process, error) {
-	cmd := exec.Command(e.Path, args...)
-
-	stdout, err := cmd.StdoutPipe()
-	if nil != err {
-		logger.Error("FFMPEG stdout not available: " + err.Error())
-	}
-
-	if err = cmd.Start(); err != nil {
-		return nil, nil, err
-	}
-
-	registerRunningEncoder(probeResult.Path, cmd.Process)
-	go waitAndDeregister(probeResult.Path, cmd)
-
-	return stdout, cmd.Process, nil
 }

@@ -14,6 +14,10 @@ export type CriterionType =
   | "hasMarkers"
   | "sceneIsMissing"
   | "performerIsMissing"
+  | "galleryIsMissing"
+  | "tagIsMissing"
+  | "studioIsMissing"
+  | "movieIsMissing"
   | "tags"
   | "sceneTags"
   | "performers"
@@ -31,7 +35,10 @@ export type CriterionType =
   | "tattoos"
   | "piercings"
   | "aliases"
-  | "gender";
+  | "gender"
+  | "parent_studios"
+  | "scene_count"
+  | "marker_count";
 
 type Option = string | number | IOptionType;
 export type CriterionValue = string | number | ILabeledId[];
@@ -54,8 +61,11 @@ export abstract class Criterion {
       case "hasMarkers":
         return "Has Markers";
       case "sceneIsMissing":
-        return "Is Missing";
       case "performerIsMissing":
+      case "galleryIsMissing":
+      case "tagIsMissing":
+      case "studioIsMissing":
+      case "movieIsMissing":
         return "Is Missing";
       case "tags":
         return "Tags";
@@ -93,6 +103,12 @@ export abstract class Criterion {
         return "Aliases";
       case "gender":
         return "Gender";
+      case "parent_studios":
+        return "Parent Studios";
+      case "scene_count":
+        return "Scene Count";
+      case "marker_count":
+        return "Marker Count";
     }
   }
 

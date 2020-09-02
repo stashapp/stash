@@ -19,7 +19,7 @@ import (
 
 var DB *sqlx.DB
 var dbPath string
-var appSchemaVersion uint = 8
+var appSchemaVersion uint = 12
 var databaseSchemaVersion uint
 
 const sqlite3Driver = "sqlite3ex"
@@ -29,7 +29,11 @@ func init() {
 	registerCustomDriver()
 }
 
-func Initialize(databasePath string) {
+// Initialize initializes the database. If the database is new, then it
+// performs a full migration to the latest schema version. Otherwise, any
+// necessary migrations must be run separately using RunMigrations.
+// Returns true if the database is new.
+func Initialize(databasePath string) bool {
 	dbPath = databasePath
 
 	if err := getDatabaseSchemaVersion(); err != nil {
@@ -42,7 +46,7 @@ func Initialize(databasePath string) {
 			panic(err)
 		}
 		// RunMigrations calls Initialise. Just return
-		return
+		return true
 	} else {
 		if databaseSchemaVersion > appSchemaVersion {
 			panic(fmt.Sprintf("Database schema version %d is incompatible with required schema version %d", databaseSchemaVersion, appSchemaVersion))
@@ -51,12 +55,14 @@ func Initialize(databasePath string) {
 		// if migration is needed, then don't open the connection
 		if NeedsMigration() {
 			logger.Warnf("Database schema version %d does not match required schema version %d.", databaseSchemaVersion, appSchemaVersion)
-			return
+			return false
 		}
 	}
 
 	const disableForeignKeys = false
 	DB = open(databasePath, disableForeignKeys)
+
+	return false
 }
 
 func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
@@ -100,6 +106,7 @@ func Backup(backupPath string) error {
 	}
 	defer db.Close()
 
+	logger.Infof("Backing up database into: %s", backupPath)
 	_, err = db.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
 		return fmt.Errorf("Vacuum failed: %s", err)
@@ -109,6 +116,7 @@ func Backup(backupPath string) error {
 }
 
 func RestoreFromBackup(backupPath string) error {
+	logger.Infof("Restoring backup database %s into %s", backupPath, dbPath)
 	return os.Rename(backupPath, dbPath)
 }
 
@@ -177,17 +185,27 @@ func RunMigrations() error {
 	databaseSchemaVersion, _, _ = m.Version()
 	stepNumber := appSchemaVersion - databaseSchemaVersion
 	if stepNumber != 0 {
+		logger.Infof("Migrating database from version %d to %d", databaseSchemaVersion, appSchemaVersion)
 		err = m.Steps(int(stepNumber))
 		if err != nil {
 			// migration failed
+			logger.Errorf("Error migrating database: %s", err.Error())
 			m.Close()
 			return err
 		}
 	}
+
 	m.Close()
 
 	// re-initialise the database
 	Initialize(dbPath)
+
+	// run a vacuum on the database
+	logger.Info("Performing vacuum on database")
+	_, err = DB.Exec("VACUUM")
+	if err != nil {
+		logger.Warnf("error while performing post-migration vacuum: %s", err.Error())
+	}
 
 	return nil
 }

@@ -1,15 +1,52 @@
-ifeq ($(OS),Windows_NT)
-  SEPARATOR := &&
-  SET := set
+IS_WIN =
+ifeq (${SHELL}, sh.exe)
+  IS_WIN = true
+endif
+ifeq (${SHELL}, cmd)
+  IS_WIN = true
 endif
 
-release: generate ui build
+ifdef IS_WIN
+  SEPARATOR := &&
+  SET := set
+else 
+  SEPARATOR := ;
+  SET := export
+endif
 
-build:
-	$(eval DATE := $(shell go run scripts/getDate.go))
+# set LDFLAGS environment variable to any extra ldflags required
+# set OUTPUT to generate a specific binary name
+
+LDFLAGS := $(LDFLAGS)
+ifdef OUTPUT
+  OUTPUT := -o $(OUTPUT)
+endif
+
+.PHONY: release pre-build install clean 
+
+release: generate ui build-release
+
+pre-build:
+ifndef BUILD_DATE
+	$(eval BUILD_DATE := $(shell go run -mod=vendor scripts/getDate.go))
+endif
+
+ifndef GITHASH
 	$(eval GITHASH := $(shell git rev-parse --short HEAD))
+endif
+
+ifndef STASH_VERSION
 	$(eval STASH_VERSION := $(shell git describe --tags --exclude latest_develop))
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build -mod=vendor -v -ldflags "-X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)'"
+endif
+
+build: pre-build
+	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build $(OUTPUT) -mod=vendor -v -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
+
+# strips debug symbols from the release build
+# consider -trimpath in go build if we move to go 1.13+
+build-release: EXTRA_LDFLAGS := -s -w
+build-release: build
 
 install:
 	packr2 install
@@ -58,11 +95,25 @@ it:
 pre-ui:
 	cd ui/v2.5 && yarn install --frozen-lockfile
 
-.PHONY: ui
-ui:
+.PHONY: ui-only
+ui-only: pre-build
+	$(SET) REACT_APP_DATE="$(BUILD_DATE)" $(SEPARATOR) \
+	$(SET) REACT_APP_GITHASH=$(GITHASH) $(SEPARATOR) \
+	$(SET) REACT_APP_STASH_VERSION=$(STASH_VERSION) $(SEPARATOR) \
 	cd ui/v2.5 && yarn build
+
+.PHONY: ui
+ui: ui-only
 	packr2
 
+.PHONY: ui-start
+ui-start: pre-build
+	$(SET) REACT_APP_DATE="$(BUILD_DATE)" $(SEPARATOR) \
+	$(SET) REACT_APP_GITHASH=$(GITHASH) $(SEPARATOR) \
+	$(SET) REACT_APP_STASH_VERSION=$(STASH_VERSION) $(SEPARATOR) \
+	cd ui/v2.5 && yarn start
+
+.PHONY: fmt-ui
 fmt-ui:
 	cd ui/v2.5 && yarn format
 

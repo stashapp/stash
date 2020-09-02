@@ -1,21 +1,24 @@
 package manager
 
 import (
+	"sync"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"sync"
 )
 
 type GenerateSpriteTask struct {
-	Scene models.Scene
+	Scene               models.Scene
+	Overwrite           bool
+	fileNamingAlgorithm models.HashAlgorithm
 }
 
 func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	if t.doesSpriteExist(t.Scene.Checksum) {
+	if !t.Overwrite && !t.required() {
 		return
 	}
 
@@ -25,13 +28,15 @@ func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	imagePath := instance.Paths.Scene.GetSpriteImageFilePath(t.Scene.Checksum)
-	vttPath := instance.Paths.Scene.GetSpriteVttFilePath(t.Scene.Checksum)
+	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
+	imagePath := instance.Paths.Scene.GetSpriteImageFilePath(sceneHash)
+	vttPath := instance.Paths.Scene.GetSpriteVttFilePath(sceneHash)
 	generator, err := NewSpriteGenerator(*videoFile, imagePath, vttPath, 9, 9)
 	if err != nil {
 		logger.Errorf("error creating sprite generator: %s", err.Error())
 		return
 	}
+	generator.Overwrite = t.Overwrite
 
 	if err := generator.Generate(); err != nil {
 		logger.Errorf("error generating sprite: %s", err.Error())
@@ -39,7 +44,17 @@ func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 	}
 }
 
+// required returns true if the sprite needs to be generated
+func (t GenerateSpriteTask) required() bool {
+	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
+	return !t.doesSpriteExist(sceneHash)
+}
+
 func (t *GenerateSpriteTask) doesSpriteExist(sceneChecksum string) bool {
+	if sceneChecksum == "" {
+		return false
+	}
+
 	imageExists, _ := utils.FileExists(instance.Paths.Scene.GetSpriteImageFilePath(sceneChecksum))
 	vttExists, _ := utils.FileExists(instance.Paths.Scene.GetSpriteVttFilePath(sceneChecksum))
 	return imageExists && vttExists

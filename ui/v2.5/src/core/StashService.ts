@@ -11,7 +11,7 @@ export const getClient = () => client;
 const invalidateQueries = (queries: string[]) => {
   if (cache) {
     const keyMatchers = queries.map((query) => {
-      return new RegExp(`^${query}`);
+      return new RegExp(`^${query}`, "i");
     });
 
     // TODO: Hack to invalidate, manipulating private data
@@ -33,6 +33,7 @@ export const useFindGalleries = (filter: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
     variables: {
       filter: filter.makeFindFilter(),
+      gallery_filter: filter.makeGalleryFilter(),
     },
   });
 
@@ -74,6 +75,7 @@ export const useFindStudios = (filter: ListFilterModel) =>
   GQL.useFindStudiosQuery({
     variables: {
       filter: filter.makeFindFilter(),
+      studio_filter: filter.makeStudioFilter(),
     },
   });
 
@@ -93,6 +95,14 @@ export const useFindPerformers = (filter: ListFilterModel) =>
     },
   });
 
+export const useFindTags = (filter: ListFilterModel) =>
+  GQL.useFindTagsQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeTagFilter(),
+    },
+  });
+
 export const queryFindPerformers = (filter: ListFilterModel) =>
   client.query<GQL.FindPerformersQuery>({
     query: GQL.FindPerformersDocument,
@@ -106,6 +116,9 @@ export const useFindGallery = (id: string) =>
   GQL.useFindGalleryQuery({ variables: { id } });
 export const useFindScene = (id: string) =>
   GQL.useFindSceneQuery({ variables: { id } });
+export const useSceneStreams = (id: string) =>
+  GQL.useSceneStreamsQuery({ variables: { id } });
+
 export const useFindPerformer = (id: string) => {
   const skip = id === "new";
   return GQL.useFindPerformerQuery({ variables: { id }, skip });
@@ -117,6 +130,10 @@ export const useFindStudio = (id: string) => {
 export const useFindMovie = (id: string) => {
   const skip = id === "new";
   return GQL.useFindMovieQuery({ variables: { id }, skip });
+};
+export const useFindTag = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindTagQuery({ variables: { id }, skip });
 };
 
 // TODO - scene marker manipulation functions are handled differently
@@ -151,8 +168,14 @@ export const useScrapePerformer = (
 
 export const useListSceneScrapers = () => GQL.useListSceneScrapersQuery();
 
+export const useListMovieScrapers = () => GQL.useListMovieScrapersQuery();
+
 export const useScrapeFreeonesPerformers = (q: string) =>
   GQL.useScrapeFreeonesPerformersQuery({ variables: { q } });
+
+export const usePlugins = () => GQL.usePluginsQuery();
+export const usePluginTasks = () => GQL.usePluginTasksQuery();
+
 export const useMarkerStrings = () => GQL.useMarkerStringsQuery();
 export const useAllTags = () => GQL.useAllTagsQuery();
 export const useAllTagsForFilter = () => GQL.useAllTagsForFilterQuery();
@@ -177,22 +200,26 @@ export const useDirectory = (path?: string) =>
   GQL.useDirectoryQuery({ variables: { path } });
 
 export const performerMutationImpactedQueries = [
-  "findPerformers",
-  "findScenes",
-  "findSceneMarkers",
-  "allPerformers",
+  "FindPerformers",
+  "FindScenes",
+  "FindSceneMarkers",
+  "AllPerformers",
+  "AllPerformersForFilter",
 ];
 
 export const usePerformerCreate = () =>
   GQL.usePerformerCreateMutation({
+    refetchQueries: performerMutationImpactedQueries,
     update: () => invalidateQueries(performerMutationImpactedQueries),
   });
 export const usePerformerUpdate = () =>
   GQL.usePerformerUpdateMutation({
+    refetchQueries: performerMutationImpactedQueries,
     update: () => invalidateQueries(performerMutationImpactedQueries),
   });
 export const usePerformerDestroy = () =>
   GQL.usePerformerDestroyMutation({
+    refetchQueries: performerMutationImpactedQueries,
     update: () => invalidateQueries(performerMutationImpactedQueries),
   });
 
@@ -253,20 +280,28 @@ export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
     update: () => invalidateQueries(sceneMutationImpactedQueries),
   });
 
+export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
+  GQL.useScenesDestroyMutation({
+    variables: input,
+    update: () => invalidateQueries(sceneMutationImpactedQueries),
+  });
+
 export const useSceneGenerateScreenshot = () =>
   GQL.useSceneGenerateScreenshotMutation({
     update: () => invalidateQueries(["findScenes"]),
   });
 
 export const studioMutationImpactedQueries = [
-  "findStudios",
-  "findScenes",
-  "allStudios",
+  "FindStudios",
+  "FindScenes",
+  "AllStudios",
+  "AllStudiosForFilter",
 ];
 
 export const useStudioCreate = (input: GQL.StudioCreateInput) =>
   GQL.useStudioCreateMutation({
     variables: input,
+    refetchQueries: studioMutationImpactedQueries,
     update: () => invalidateQueries(studioMutationImpactedQueries),
   });
 
@@ -311,23 +346,25 @@ export const tagMutationImpactedQueries = [
   "findSceneMarkers",
   "sceneMarkerTags",
   "allTags",
+  "findTags",
 ];
 
 export const useTagCreate = (input: GQL.TagCreateInput) =>
   GQL.useTagCreateMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter"],
-    // update: () => StashService.invalidateQueries(StashService.tagMutationImpactedQueries)
+    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
+    update: () => invalidateQueries(tagMutationImpactedQueries),
   });
 export const useTagUpdate = (input: GQL.TagUpdateInput) =>
   GQL.useTagUpdateMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter"],
+    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
+    update: () => invalidateQueries(tagMutationImpactedQueries),
   });
 export const useTagDestroy = (input: GQL.TagDestroyInput) =>
   GQL.useTagDestroyMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter"],
+    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
     update: () => invalidateQueries(tagMutationImpactedQueries),
   });
 
@@ -368,6 +405,7 @@ export const queryScrapeFreeones = (performerName: string) =>
     variables: {
       performer_name: performerName,
     },
+    fetchPolicy: "network-only",
   });
 
 export const queryScrapePerformer = (
@@ -380,6 +418,7 @@ export const queryScrapePerformer = (
       scraper_id: scraperId,
       scraped_performer: scrapedPerformer,
     },
+    fetchPolicy: "network-only",
   });
 
 export const queryScrapePerformerURL = (url: string) =>
@@ -388,6 +427,7 @@ export const queryScrapePerformerURL = (url: string) =>
     variables: {
       url,
     },
+    fetchPolicy: "network-only",
   });
 
 export const queryScrapeSceneURL = (url: string) =>
@@ -396,6 +436,16 @@ export const queryScrapeSceneURL = (url: string) =>
     variables: {
       url,
     },
+    fetchPolicy: "network-only",
+  });
+
+export const queryScrapeMovieURL = (url: string) =>
+  client.query<GQL.ScrapeMovieUrlQuery>({
+    query: GQL.ScrapeMovieUrlDocument,
+    variables: {
+      url,
+    },
+    fetchPolicy: "network-only",
   });
 
 export const queryScrapeScene = (
@@ -408,6 +458,30 @@ export const queryScrapeScene = (
       scraper_id: scraperId,
       scene,
     },
+    fetchPolicy: "network-only",
+  });
+
+export const mutateReloadScrapers = () =>
+  client.mutate<GQL.ReloadScrapersMutation>({
+    mutation: GQL.ReloadScrapersDocument,
+  });
+
+const reloadPluginsMutationImpactedQueries = ["plugins", "pluginTasks"];
+
+export const mutateReloadPlugins = () =>
+  client.mutate<GQL.ReloadPluginsMutation>({
+    mutation: GQL.ReloadPluginsDocument,
+    update: () => invalidateQueries(reloadPluginsMutationImpactedQueries),
+  });
+
+export const mutateRunPluginTask = (
+  pluginId: string,
+  taskName: string,
+  args?: GQL.PluginArgInput[]
+) =>
+  client.mutate<GQL.RunPluginTaskMutation>({
+    mutation: GQL.RunPluginTaskDocument,
+    variables: { plugin_id: pluginId, task_name: taskName, args },
   });
 
 export const mutateMetadataScan = (input: GQL.ScanMetadataInput) =>
@@ -431,6 +505,11 @@ export const mutateMetadataGenerate = (input: GQL.GenerateMetadataInput) =>
 export const mutateMetadataClean = () =>
   client.mutate<GQL.MetadataCleanMutation>({
     mutation: GQL.MetadataCleanDocument,
+  });
+
+export const mutateMigrateHashNaming = () =>
+  client.mutate<GQL.MigrateHashNamingMutation>({
+    mutation: GQL.MigrateHashNamingDocument,
   });
 
 export const mutateMetadataExport = () =>
@@ -465,6 +544,7 @@ export const stringGenderMap = new Map<string, GQL.GenderEnum>([
   ["Transgender Male", GQL.GenderEnum.TransgenderMale],
   ["Transgender Female", GQL.GenderEnum.TransgenderFemale],
   ["Intersex", GQL.GenderEnum.Intersex],
+  ["Non-Binary", GQL.GenderEnum.NonBinary],
 ]);
 
 export const genderToString = (value?: GQL.GenderEnum) => {
