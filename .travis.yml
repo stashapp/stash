@@ -32,7 +32,7 @@ before_deploy:
 - export RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')
 - export STASH_VERSION=$(git describe --tags --exclude latest_develop)
 # set TRAVIS_TAG explcitly to the version so that it doesn't pick up latest_develop
-- if [ "$TRAVIS_BRANCH" = "master"]; then export TRAVIS_TAG=${STASH_VERSION}; fi
+- if [ "$TRAVIS_BRANCH" = "master" ]; then export TRAVIS_TAG=${STASH_VERSION}; fi
 deploy:
   # latest develop release
   - provider: releases
