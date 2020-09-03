@@ -69,7 +69,10 @@ const Preview: React.FC<{
       className={cx("wall-item-media", {
         "wall-item-preview": previewType !== "video",
       })}
-      onError={() => setIsMissing(true)}
+      onError={(error: React.SyntheticEvent<HTMLVideoElement>) => {
+        // Error code 4 indicates media not found or unsupported
+        setIsMissing(error.currentTarget.error?.code === 4);
+      }}
       ref={videoElement}
     />
   );
