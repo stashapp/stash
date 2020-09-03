@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Button, Form, InputGroup } from "react-bootstrap";
-import cx from "classnames";
 import { Icon } from "src/components/Shared";
 
 interface IInstanceProps {
