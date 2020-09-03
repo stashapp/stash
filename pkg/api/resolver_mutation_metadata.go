@@ -19,6 +19,11 @@ func (r *mutationResolver) MetadataImport(ctx context.Context) (string, error) {
 	return "todo", nil
 }
 
+func (r *mutationResolver) ImportObjects(ctx context.Context, input models.ImportObjectsInput) (string, error) {
+
+	return "todo", nil
+}
+
 func (r *mutationResolver) MetadataExport(ctx context.Context) (string, error) {
 	manager.GetInstance().Export()
 	return "todo", nil
