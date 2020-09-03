@@ -8,6 +8,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
 	"github.com/stashapp/stash/pkg/models/modelstest"
+	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/assert"
 
 	"testing"
@@ -46,13 +47,14 @@ var birthDate = models.SQLiteDate{
 	String: "2001-01-01",
 	Valid:  true,
 }
-var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
-var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.Local)
+var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
 
-func createFullPerformer(id int) models.Performer {
-	return models.Performer{
+func createFullPerformer(id int, name string) *models.Performer {
+	return &models.Performer{
 		ID:           id,
-		Name:         modelstest.NullString(performerName),
+		Name:         modelstest.NullString(name),
+		Checksum:     utils.MD5FromString(name),
 		URL:          modelstest.NullString(url),
 		Aliases:      modelstest.NullString(aliases),
 		Birthdate:    birthDate,
@@ -93,9 +95,9 @@ func createEmptyPerformer(id int) models.Performer {
 	}
 }
 
-func createFullJSONPerformer(image string) *jsonschema.Performer {
+func createFullJSONPerformer(name string, image string) *jsonschema.Performer {
 	return &jsonschema.Performer{
-		Name:         performerName,
+		Name:         name,
 		URL:          url,
 		Aliases:      aliases,
 		Birthdate:    birthDate.String,
@@ -144,8 +146,8 @@ var scenarios []testScenario
 func initTestTable() {
 	scenarios = []testScenario{
 		testScenario{
-			createFullPerformer(performerID),
-			createFullJSONPerformer(image),
+			*createFullPerformer(performerID, performerName),
+			createFullJSONPerformer(performerName, image),
 			false,
 		},
 		testScenario{
@@ -154,7 +156,7 @@ func initTestTable() {
 			false,
 		},
 		testScenario{
-			createFullPerformer(errImageID),
+			*createFullPerformer(errImageID, performerName),
 			nil,
 			true,
 		},

@@ -2,10 +2,13 @@ package models
 
 import (
 	"fmt"
-	"github.com/stashapp/stash/pkg/utils"
 	"strings"
 	"time"
+
+	"github.com/stashapp/stash/pkg/utils"
 )
+
+var currentLocation = time.Now().Location()
 
 type JSONTime struct {
 	time.Time
@@ -27,4 +30,20 @@ func (jt *JSONTime) MarshalJSON() ([]byte, error) {
 		return []byte("null"), nil
 	}
 	return []byte(fmt.Sprintf("\"%s\"", jt.Time.Format(time.RFC3339))), nil
+}
+
+func (jt JSONTime) GetTime() time.Time {
+	if currentLocation != nil {
+		if jt.IsZero() {
+			return time.Now().In(currentLocation)
+		} else {
+			return jt.Time.In(currentLocation)
+		}
+	} else {
+		if jt.IsZero() {
+			return time.Now()
+		} else {
+			return jt.Time
+		}
+	}
 }
