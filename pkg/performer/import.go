@@ -10,58 +10,30 @@ import (
 )
 
 type Importer struct {
-	ReaderWriter       models.PerformerReaderWriter
-	DuplicateBehaviour models.ImportDuplicateEnum
+	ReaderWriter models.PerformerReaderWriter
+	Input        jsonschema.Performer
+
+	performer models.Performer
+	imageData []byte
 }
 
-func (i Importer) Import(performerJSON *jsonschema.Performer) error {
-	p := performerJSONToPerformer(performerJSON)
+func (i *Importer) PreImport() error {
+	i.performer = performerJSONToPerformer(i.Input)
 
-	var imageData []byte
 	var err error
-	if len(performerJSON.Image) > 0 {
-		_, imageData, err = utils.ProcessBase64Image(performerJSON.Image)
+	if len(i.Input.Image) > 0 {
+		_, i.imageData, err = utils.ProcessBase64Image(i.Input.Image)
 		if err != nil {
 			return fmt.Errorf("invalid image: %s", err.Error())
 		}
 	}
 
-	// try to find an existing performer with the same name
-	const nocase = false
-	existing, err := i.ReaderWriter.FindByNames([]string{p.Name.String}, nocase)
-	if err != nil {
-		return fmt.Errorf("error finding existing performers: %s", err.Error())
-	}
+	return nil
+}
 
-	var id int
-
-	if len(existing) > 0 {
-		if i.DuplicateBehaviour == models.ImportDuplicateEnumFail {
-			return fmt.Errorf("existing performer with name '%s'", p.Name.String)
-		} else if i.DuplicateBehaviour == models.ImportDuplicateEnumIgnore {
-			return nil
-		}
-
-		// must be overwriting
-		p.ID = existing[0].ID
-		id = p.ID
-		_, err := i.ReaderWriter.Update(*p)
-		if err != nil {
-			return fmt.Errorf("error updating existing performer: %s", err.Error())
-		}
-	} else {
-		// creating
-		created, err := i.ReaderWriter.Create(*p)
-		if err != nil {
-			return fmt.Errorf("error creating performer: %s", err.Error())
-		}
-
-		id = created.ID
-	}
-
-	// regardless of whether we created or updated, update the image if provided
-	if len(imageData) > 0 {
-		if err := i.ReaderWriter.UpdatePerformerImage(id, imageData); err != nil {
+func (i *Importer) PostImport(id int) error {
+	if len(i.imageData) > 0 {
+		if err := i.ReaderWriter.UpdatePerformerImage(id, i.imageData); err != nil {
 			return fmt.Errorf("error setting performer image: %s", err.Error())
 		}
 	}
@@ -69,7 +41,47 @@ func (i Importer) Import(performerJSON *jsonschema.Performer) error {
 	return nil
 }
 
-func performerJSONToPerformer(performerJSON *jsonschema.Performer) *models.Performer {
+func (i *Importer) Name() string {
+	return i.Input.Name
+}
+
+func (i *Importer) FindExistingID() (*int, error) {
+	const nocase = false
+	existing, err := i.ReaderWriter.FindByNames([]string{i.Name()}, nocase)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(existing) > 0 {
+		id := existing[0].ID
+		return &id, nil
+	}
+
+	return nil, nil
+}
+
+func (i *Importer) Create() (*int, error) {
+	created, err := i.ReaderWriter.Create(i.performer)
+	if err != nil {
+		return nil, fmt.Errorf("error creating performer: %s", err.Error())
+	}
+
+	id := created.ID
+	return &id, nil
+}
+
+func (i *Importer) Update(id int) error {
+	performer := i.performer
+	performer.ID = id
+	_, err := i.ReaderWriter.Update(performer)
+	if err != nil {
+		return fmt.Errorf("error updating existing performer: %s", err.Error())
+	}
+
+	return nil
+}
+
+func performerJSONToPerformer(performerJSON jsonschema.Performer) models.Performer {
 	checksum := utils.MD5FromString(performerJSON.Name)
 
 	newPerformer := models.Performer{
@@ -128,5 +140,5 @@ func performerJSONToPerformer(performerJSON *jsonschema.Performer) *models.Perfo
 		newPerformer.Instagram = sql.NullString{String: performerJSON.Instagram, Valid: true}
 	}
 
-	return &newPerformer
+	return newPerformer
 }

@@ -95,15 +95,20 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 
 		tx := database.DB.MustBeginTx(ctx, nil)
 		readerWriter := models.NewPerformerReaderWriter(tx)
-		importer := performer.Importer{
-			ReaderWriter:       readerWriter,
-			DuplicateBehaviour: t.DuplicateBehaviour,
+		importer := &performer.Importer{
+			ReaderWriter: readerWriter,
+			Input:        *performerJSON,
 		}
 
-		if err := importer.Import(performerJSON); err != nil {
+		if err := performImport(importer, t.DuplicateBehaviour); err != nil {
 			tx.Rollback()
 			logger.Errorf("[performers] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
 			continue
+		}
+
+		if err := tx.Commit(); err != nil {
+			tx.Rollback()
+			logger.Errorf("[performers] <%s> import failed to commit: %s", mappingJSON.Checksum, err.Error())
 		}
 
 		if err := tx.Commit(); err != nil {

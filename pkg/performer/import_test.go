@@ -6,6 +6,9 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/models/modelstest"
+	"github.com/stashapp/stash/pkg/utils"
+	"github.com/stretchr/testify/assert"
 
 	"testing"
 )
@@ -13,144 +16,169 @@ import (
 const invalidImage = "aW1hZ2VCeXRlcw&&"
 
 const (
-	existingPerformerName       = "existingPerformerName"
-	errExistingPerformerName    = "errExistingPerformerName"
-	errCreatePerformerName      = "errCreatePerformerName"
-	errUpdatePerformerName      = "errUpdatePerformerName"
-	errUpdateImagePerformerName = "errUpdateImagePerformerName"
+	existingPerformerID = 100
+
+	existingPerformerName = "existingPerformerName"
+	performerNameErr      = "performerNameErr"
 )
 
-type importTestScenario struct {
-	input              *jsonschema.Performer
-	duplicateBehaviour models.ImportDuplicateEnum
-	created            *models.Performer
-	updated            *models.Performer
-	err                bool
+func TestImporterName(t *testing.T) {
+	i := Importer{
+		Input: jsonschema.Performer{
+			Name: performerName,
+		},
+	}
+
+	assert.Equal(t, performerName, i.Name())
 }
 
-var importScenarios = []importTestScenario{
-	// create scenario
-	importTestScenario{
-		createFullJSONPerformer(performerName, image),
-		models.ImportDuplicateEnumIgnore,
-		createFullPerformer(performerID, performerName),
-		nil,
-		false,
-	},
-	// existing scenarios
-	importTestScenario{
-		createFullJSONPerformer(existingPerformerName, image),
-		models.ImportDuplicateEnumIgnore,
-		nil,
-		nil,
-		false,
-	},
-	importTestScenario{
-		createFullJSONPerformer(existingPerformerName, image),
-		models.ImportDuplicateEnumFail,
-		nil,
-		nil,
-		true,
-	},
-	importTestScenario{
-		createFullJSONPerformer(existingPerformerName, image),
-		models.ImportDuplicateEnumOverwrite,
-		nil,
-		createFullPerformer(performerID, existingPerformerName),
-		false,
-	},
-	// find by names error failure
-	importTestScenario{
-		createFullJSONPerformer(errExistingPerformerName, image),
-		models.ImportDuplicateEnumIgnore,
-		nil,
-		nil,
-		true,
-	},
-	// invalid image test case
-	importTestScenario{
-		createFullJSONPerformer(performerName, invalidImage),
-		models.ImportDuplicateEnumIgnore,
-		createFullPerformer(performerID, performerName),
-		nil,
-		true,
-	},
-	importTestScenario{
-		createFullJSONPerformer(errCreatePerformerName, image),
-		models.ImportDuplicateEnumIgnore,
-		createFullPerformer(0, errCreatePerformerName),
-		nil,
-		true,
-	},
-	importTestScenario{
-		createFullJSONPerformer(errUpdatePerformerName, image),
-		models.ImportDuplicateEnumOverwrite,
-		nil,
-		createFullPerformer(performerID, errUpdatePerformerName),
-		true,
-	},
-	importTestScenario{
-		createFullJSONPerformer(errUpdateImagePerformerName, image),
-		models.ImportDuplicateEnumIgnore,
-		createFullPerformer(performerID, errUpdateImagePerformerName),
-		nil,
-		true,
-	},
+func TestImporterPreImport(t *testing.T) {
+	i := Importer{
+		Input: jsonschema.Performer{
+			Name:  performerName,
+			Image: invalidImage,
+		},
+	}
+
+	err := i.PreImport()
+
+	assert.NotNil(t, err)
+
+	i.Input = *createFullJSONPerformer(performerName, image)
+
+	err = i.PreImport()
+
+	assert.Nil(t, err)
+	expectedPerformer := *createFullPerformer(0, performerName)
+	expectedPerformer.Checksum = utils.MD5FromString(performerName)
+	assert.Equal(t, expectedPerformer, i.performer)
 }
 
-func TestImport(t *testing.T) {
-	mockPerformer := &models.Performer{
+func TestImporterPostImport(t *testing.T) {
+	readerWriter := &mocks.PerformerReaderWriter{}
+
+	i := Importer{
+		ReaderWriter: readerWriter,
+		imageData:    imageBytes,
+	}
+
+	updatePerformerImageErr := errors.New("UpdatePerformerImage error")
+
+	readerWriter.On("UpdatePerformerImage", performerID, imageBytes).Return(nil).Once()
+	readerWriter.On("UpdatePerformerImage", errImageID, imageBytes).Return(updatePerformerImageErr).Once()
+
+	err := i.PostImport(performerID)
+	assert.Nil(t, err)
+
+	err = i.PostImport(errImageID)
+	assert.NotNil(t, err)
+
+	readerWriter.AssertExpectations(t)
+}
+
+func TestImporterFindExistingID(t *testing.T) {
+	readerWriter := &mocks.PerformerReaderWriter{}
+
+	i := Importer{
+		ReaderWriter: readerWriter,
+		Input: jsonschema.Performer{
+			Name: performerName,
+		},
+	}
+
+	errFindByNames := errors.New("FindByNames error")
+	readerWriter.On("FindByNames", []string{performerName}, false).Return(nil, nil).Once()
+	readerWriter.On("FindByNames", []string{existingPerformerName}, false).Return([]*models.Performer{
+		{
+			ID: existingPerformerID,
+		},
+	}, nil).Once()
+	readerWriter.On("FindByNames", []string{performerNameErr}, false).Return(nil, errFindByNames).Once()
+
+	id, err := i.FindExistingID()
+	assert.Nil(t, id)
+	assert.Nil(t, err)
+
+	i.Input.Name = existingPerformerName
+	id, err = i.FindExistingID()
+	assert.Equal(t, existingPerformerID, *id)
+	assert.Nil(t, err)
+
+	i.Input.Name = performerNameErr
+	id, err = i.FindExistingID()
+	assert.Nil(t, id)
+	assert.NotNil(t, err)
+
+	readerWriter.AssertExpectations(t)
+}
+
+func TestCreate(t *testing.T) {
+	readerWriter := &mocks.PerformerReaderWriter{}
+
+	performer := models.Performer{
+		Name: modelstest.NullString(performerName),
+	}
+
+	performerErr := models.Performer{
+		Name: modelstest.NullString(performerNameErr),
+	}
+
+	i := Importer{
+		ReaderWriter: readerWriter,
+		performer:    performer,
+	}
+
+	errCreate := errors.New("Create error")
+	readerWriter.On("Create", performer).Return(&models.Performer{
 		ID: performerID,
+	}, nil).Once()
+	readerWriter.On("Create", performerErr).Return(nil, errCreate).Once()
+
+	id, err := i.Create()
+	assert.Equal(t, performerID, *id)
+	assert.Nil(t, err)
+
+	i.performer = performerErr
+	id, err = i.Create()
+	assert.Nil(t, id)
+	assert.NotNil(t, err)
+
+	readerWriter.AssertExpectations(t)
+}
+
+func TestUpdate(t *testing.T) {
+	readerWriter := &mocks.PerformerReaderWriter{}
+
+	performer := models.Performer{
+		Name: modelstest.NullString(performerName),
 	}
 
-	imageErr := errors.New("error getting image")
-
-	for i, s := range importScenarios {
-		mockPerformerReader := &mocks.PerformerReaderWriter{}
-
-		mockPerformerReader.On("FindByNames", []string{performerName}, false).Return(nil, nil)
-		mockPerformerReader.On("FindByNames", []string{existingPerformerName}, false).Return([]*models.Performer{
-			mockPerformer,
-		}, nil)
-		mockPerformerReader.On("FindByNames", []string{errExistingPerformerName}, false).Return(nil, errors.New("FindByNames error"))
-		mockPerformerReader.On("FindByNames", []string{errCreatePerformerName}, false).Return(nil, nil)
-		mockPerformerReader.On("FindByNames", []string{errUpdatePerformerName}, false).Return([]*models.Performer{
-			mockPerformer,
-		}, nil)
-		mockPerformerReader.On("FindByNames", []string{errUpdateImagePerformerName}, false).Return(nil, nil)
-
-		importer := Importer{
-			ReaderWriter:       mockPerformerReader,
-			DuplicateBehaviour: s.duplicateBehaviour,
-		}
-
-		input := s.input
-		if input.Name == errCreatePerformerName {
-			mockPerformerReader.On("Create", *s.created).Return(nil, errors.New("Create error"))
-		} else if input.Name == errUpdatePerformerName {
-			mockPerformerReader.On("Update", *s.updated).Return(nil, errors.New("Update error"))
-		} else {
-			if s.created != nil {
-				created := *s.created
-				created.ID = 0
-				mockPerformerReader.On("Create", created).Return(s.created, nil).Once()
-			} else if s.updated != nil {
-				mockPerformerReader.On("Update", *s.updated).Return(nil, nil).Once()
-			}
-
-			if input.Name == errUpdateImagePerformerName {
-				mockPerformerReader.On("UpdatePerformerImage", performerID, imageBytes).Return(imageErr)
-			} else {
-				mockPerformerReader.On("UpdatePerformerImage", performerID, imageBytes).Return(nil)
-			}
-		}
-
-		err := importer.Import(input)
-
-		if !s.err && err != nil {
-			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
-			t.Errorf("[%d] expected error not returned", i)
-		}
+	performerErr := models.Performer{
+		Name: modelstest.NullString(performerNameErr),
 	}
+
+	i := Importer{
+		ReaderWriter: readerWriter,
+		performer:    performer,
+	}
+
+	errUpdate := errors.New("Update error")
+
+	// id needs to be set for the mock input
+	performer.ID = performerID
+	readerWriter.On("Update", performer).Return(nil, nil).Once()
+
+	err := i.Update(performerID)
+	assert.Nil(t, err)
+
+	i.performer = performerErr
+
+	// need to set id separately
+	performerErr.ID = errImageID
+	readerWriter.On("Update", performerErr).Return(nil, errUpdate).Once()
+
+	err = i.Update(errImageID)
+	assert.NotNil(t, err)
+
+	readerWriter.AssertExpectations(t)
 }
