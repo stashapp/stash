@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -121,9 +122,9 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 }
 
 func (t *ImportTask) ImportStudios(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-
 	pendingParent := make(map[string][]*jsonschema.Studio)
+
+	logger.Info("[studios] importing")
 
 	for i, mappingJSON := range t.mappings.Studios {
 		index := i + 1
@@ -132,16 +133,30 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 			logger.Errorf("[studios] failed to read json: %s", err.Error())
 			continue
 		}
-		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || studioJSON == nil {
-			return
-		}
 
 		logger.Progressf("[studios] %d of %d", index, len(t.mappings.Studios))
 
+		tx := database.DB.MustBeginTx(ctx, nil)
+
+		// fail on missing parent studio to begin with
 		if err := t.ImportStudio(studioJSON, pendingParent, tx); err != nil {
 			tx.Rollback()
-			logger.Errorf("[studios] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
-			return
+
+			if err == studio.ErrParentStudioNotExist {
+				// add to the pending parent list so that it is created after the parent
+				s := pendingParent[studioJSON.ParentStudio]
+				s = append(s, studioJSON)
+				pendingParent[studioJSON.ParentStudio] = s
+				continue
+			} else {
+				logger.Errorf("[studios] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
+				continue
+			}
+		}
+
+		if err := tx.Commit(); err != nil {
+			logger.Errorf("[studios] import failed to commit: %s", err.Error())
+			continue
 		}
 	}
 
@@ -151,82 +166,40 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 
 		for _, s := range pendingParent {
 			for _, orphanStudioJSON := range s {
+				tx := database.DB.MustBeginTx(ctx, nil)
+
 				if err := t.ImportStudio(orphanStudioJSON, nil, tx); err != nil {
 					tx.Rollback()
 					logger.Errorf("[studios] <%s> failed to create: %s", orphanStudioJSON.Name, err.Error())
-					return
+					continue
+				}
+
+				if err := tx.Commit(); err != nil {
+					logger.Errorf("[studios] import failed to commit: %s", err.Error())
+					continue
 				}
 			}
 		}
 	}
 
-	logger.Info("[studios] importing")
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("[studios] import failed to commit: %s", err.Error())
-	}
 	logger.Info("[studios] import complete")
 }
 
 func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, tx *sqlx.Tx) error {
-	qb := models.NewStudioQueryBuilder()
-
-	// generate checksum from studio name rather than image
-	checksum := utils.MD5FromString(studioJSON.Name)
-
-	// Process the base 64 encoded image string
-	var imageData []byte
-	var err error
-	if len(studioJSON.Image) > 0 {
-		_, imageData, err = utils.ProcessBase64Image(studioJSON.Image)
-		if err != nil {
-			return fmt.Errorf("invalid image: %s", err.Error())
-		}
+	readerWriter := models.NewStudioReaderWriter(tx)
+	importer := &studio.Importer{
+		ReaderWriter:        readerWriter,
+		Input:               *studioJSON,
+		MissingRefBehaviour: t.MissingRefBehaviour,
 	}
 
-	// Populate a new studio from the input
-	newStudio := models.Studio{
-		Checksum:  checksum,
-		Name:      sql.NullString{String: studioJSON.Name, Valid: true},
-		URL:       sql.NullString{String: studioJSON.URL, Valid: true},
-		CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(studioJSON.CreatedAt)},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(studioJSON.UpdatedAt)},
+	// first phase: return error if parent does not exist
+	if pendingParent != nil {
+		importer.MissingRefBehaviour = models.ImportMissingRefEnumFail
 	}
 
-	// Populate the parent ID
-	if studioJSON.ParentStudio != "" {
-		studio, err := qb.FindByName(studioJSON.ParentStudio, tx, false)
-		if err != nil {
-			return fmt.Errorf("error finding studio by name <%s>: %s", studioJSON.ParentStudio, err.Error())
-		}
-
-		if studio == nil {
-			// its possible that the parent hasn't been created yet
-			// do it after it is created
-			if pendingParent == nil {
-				logger.Warnf("[studios] studio <%s> does not exist", studioJSON.ParentStudio)
-			} else {
-				// add to the pending parent list so that it is created after the parent
-				s := pendingParent[studioJSON.ParentStudio]
-				s = append(s, studioJSON)
-				pendingParent[studioJSON.ParentStudio] = s
-
-				// skip
-				return nil
-			}
-		} else {
-			newStudio.ParentID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
-		}
-	}
-
-	createdStudio, err := qb.Create(newStudio, tx)
-	if err != nil {
+	if err := performImport(importer, t.DuplicateBehaviour); err != nil {
 		return err
-	}
-
-	if len(imageData) > 0 {
-		if err := qb.UpdateStudioImage(createdStudio.ID, imageData, tx); err != nil {
-			return fmt.Errorf("error setting studio image: %s", err.Error())
-		}
 	}
 
 	// now create the studios pending this studios creation
@@ -241,7 +214,7 @@ func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent m
 	// delete the entry from the map so that we know its not left over
 	delete(pendingParent, studioJSON.Name)
 
-	return err
+	return nil
 }
 
 func (t *ImportTask) ImportMovies(ctx context.Context) {
