@@ -16,6 +16,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -99,7 +100,7 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 			DuplicateBehaviour: t.DuplicateBehaviour,
 		}
 
-		if err := importer.Import(mappingJSON); err != nil {
+		if err := importer.Import(performerJSON); err != nil {
 			tx.Rollback()
 			logger.Errorf("[performers] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
 			continue
@@ -372,8 +373,7 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 }
 
 func (t *ImportTask) ImportTags(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewTagQueryBuilder()
+	logger.Info("[tags] importing")
 
 	for i, mappingJSON := range t.mappings.Tags {
 		index := i + 1
@@ -382,51 +382,29 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 			logger.Errorf("[tags] failed to read json: %s", err.Error())
 			continue
 		}
-		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || tagJSON == nil {
-			return
-		}
 
 		logger.Progressf("[tags] %d of %d", index, len(t.mappings.Tags))
 
-		// Process the base 64 encoded image string
-		var imageData []byte
-		if len(tagJSON.Image) > 0 {
-			_, imageData, err = utils.ProcessBase64Image(tagJSON.Image)
-			if err != nil {
-				_ = tx.Rollback()
-				logger.Errorf("[tags] <%s> invalid image: %s", mappingJSON.Checksum, err.Error())
-				return
-			}
+		tx := database.DB.MustBeginTx(ctx, nil)
+		readerWriter := models.NewTagReaderWriter(tx)
+
+		tagImporter := &tag.Importer{
+			ReaderWriter: readerWriter,
+			Input:        *tagJSON,
 		}
 
-		// Populate a new tag from the input
-		newTag := models.Tag{
-			Name:      tagJSON.Name,
-			CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(tagJSON.CreatedAt)},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(tagJSON.UpdatedAt)},
+		if err := performImport(tagImporter, t.DuplicateBehaviour); err != nil {
+			tx.Rollback()
+			logger.Errorf("[tags] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
+			continue
 		}
 
-		createdTag, err := qb.Create(newTag, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[tags] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
-			return
-		}
-
-		// Add the tag image if set
-		if len(imageData) > 0 {
-			if err := qb.UpdateTagImage(createdTag.ID, imageData, tx); err != nil {
-				_ = tx.Rollback()
-				logger.Errorf("[tags] <%s> error setting tag image: %s", mappingJSON.Checksum, err.Error())
-				return
-			}
+		if err := tx.Commit(); err != nil {
+			tx.Rollback()
+			logger.Errorf("[tags] <%s> import failed to commit: %s", mappingJSON.Checksum, err.Error())
 		}
 	}
 
-	logger.Info("[tags] importing")
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("[tags] import failed to commit: %s", err.Error())
-	}
 	logger.Info("[tags] import complete")
 }
 
