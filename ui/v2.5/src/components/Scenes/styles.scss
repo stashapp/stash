@@ -169,7 +169,7 @@ textarea.scene-description {
     padding: 0;
   }
 
-  .scene-card-check {
+  &-check {
     left: 0.5rem;
     margin-top: -12px;
     opacity: 0;
@@ -190,6 +190,33 @@ textarea.scene-description {
     transition: opacity 0.5s;
   }
 
+  &-preview {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+    position: relative;
+
+    &-image {
+      object-fit: cover;
+    }
+
+    &.portrait .scene-card-preview-image {
+      object-fit: contain;
+    }
+
+    &-image,
+    &-video {
+      height: 100%;
+      width: 100%;
+    }
+
+    &-video {
+      display: none;
+      position: absolute;
+      top: 0;
+    }
+  }
+
   &:hover {
     .scene-specs-overlay,
     .rating-banner,
@@ -206,6 +233,10 @@ textarea.scene-description {
     .scene-card-check {
       opacity: 0.75;
       transition: opacity 0.5s;
+    }
+
+    .scene-card-preview-video {
+      display: block;
     }
   }
 }
