@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
@@ -83,13 +82,7 @@ func (i *Importer) populateParentStudio() error {
 }
 
 func (i *Importer) createParentStudio(name string) (int, error) {
-	currentTime := time.Now()
-	newStudio := models.Studio{
-		Checksum:  utils.MD5FromString(name),
-		Name:      sql.NullString{String: name, Valid: true},
-		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-	}
+	newStudio := *models.NewStudio(name)
 
 	created, err := i.ReaderWriter.Create(newStudio)
 	if err != nil {

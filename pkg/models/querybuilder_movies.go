@@ -49,6 +49,19 @@ func (qb *MovieQueryBuilder) Update(updatedMovie MoviePartial, tx *sqlx.Tx) (*Mo
 	return qb.Find(updatedMovie.ID, tx)
 }
 
+func (qb *MovieQueryBuilder) UpdateFull(updatedMovie Movie, tx *sqlx.Tx) (*Movie, error) {
+	ensureTx(tx)
+	_, err := tx.NamedExec(
+		`UPDATE movies SET `+SQLGenKeys(updatedMovie)+` WHERE movies.id = :id`,
+		updatedMovie,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return qb.Find(updatedMovie.ID, tx)
+}
+
 func (qb *MovieQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	// delete movie from movies_scenes
 

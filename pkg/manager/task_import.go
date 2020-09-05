@@ -15,6 +15,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
@@ -218,8 +219,7 @@ func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent m
 }
 
 func (t *ImportTask) ImportMovies(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewMovieQueryBuilder()
+	logger.Info("[movies] importing")
 
 	for i, mappingJSON := range t.mappings.Movies {
 		index := i + 1
@@ -228,89 +228,33 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 			logger.Errorf("[movies] failed to read json: %s", err.Error())
 			continue
 		}
-		if mappingJSON.Checksum == "" || mappingJSON.Name == "" || movieJSON == nil {
-			return
-		}
 
 		logger.Progressf("[movies] %d of %d", index, len(t.mappings.Movies))
 
-		// generate checksum from movie name rather than image
-		checksum := utils.MD5FromString(movieJSON.Name)
+		tx := database.DB.MustBeginTx(ctx, nil)
+		readerWriter := models.NewMovieReaderWriter(tx)
+		studioReaderWriter := models.NewStudioReaderWriter(tx)
 
-		// Process the base 64 encoded image string
-		var frontimageData []byte
-		var backimageData []byte
-		if len(movieJSON.FrontImage) > 0 {
-			_, frontimageData, err = utils.ProcessBase64Image(movieJSON.FrontImage)
-			if err != nil {
-				_ = tx.Rollback()
-				logger.Errorf("[movies] <%s> invalid front_image: %s", mappingJSON.Checksum, err.Error())
-				return
-			}
-		}
-		if len(movieJSON.BackImage) > 0 {
-			_, backimageData, err = utils.ProcessBase64Image(movieJSON.BackImage)
-			if err != nil {
-				_ = tx.Rollback()
-				logger.Errorf("[movies] <%s> invalid back_image: %s", mappingJSON.Checksum, err.Error())
-				return
-			}
+		movieImporter := &movie.Importer{
+			ReaderWriter:        readerWriter,
+			StudioWriter:        studioReaderWriter,
+			Input:               *movieJSON,
+			MissingRefBehaviour: t.MissingRefBehaviour,
 		}
 
-		// Populate a new movie from the input
-		newMovie := models.Movie{
-			Checksum:  checksum,
-			Name:      sql.NullString{String: movieJSON.Name, Valid: true},
-			Aliases:   sql.NullString{String: movieJSON.Aliases, Valid: true},
-			Date:      models.SQLiteDate{String: movieJSON.Date, Valid: true},
-			Director:  sql.NullString{String: movieJSON.Director, Valid: true},
-			Synopsis:  sql.NullString{String: movieJSON.Synopsis, Valid: true},
-			URL:       sql.NullString{String: movieJSON.URL, Valid: true},
-			CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.CreatedAt)},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(movieJSON.UpdatedAt)},
+		if err := performImport(movieImporter, t.DuplicateBehaviour); err != nil {
+			tx.Rollback()
+			logger.Errorf("[movies] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
+			continue
 		}
 
-		if movieJSON.Rating != 0 {
-			newMovie.Rating = sql.NullInt64{Int64: int64(movieJSON.Rating), Valid: true}
-		}
-		if movieJSON.Duration != 0 {
-			newMovie.Duration = sql.NullInt64{Int64: int64(movieJSON.Duration), Valid: true}
-		}
-
-		// Populate the studio ID
-		if movieJSON.Studio != "" {
-			sqb := models.NewStudioQueryBuilder()
-			studio, err := sqb.FindByName(movieJSON.Studio, tx, false)
-			if err != nil {
-				logger.Warnf("[movies] error getting studio <%s>: %s", movieJSON.Studio, err.Error())
-			} else if studio == nil {
-				logger.Warnf("[movies] studio <%s> does not exist", movieJSON.Studio)
-			} else {
-				newMovie.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
-			}
-		}
-
-		createdMovie, err := qb.Create(newMovie, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[movies] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
-			return
-		}
-
-		// Add the movie images if set
-		if len(frontimageData) > 0 {
-			if err := qb.UpdateMovieImages(createdMovie.ID, frontimageData, backimageData, tx); err != nil {
-				_ = tx.Rollback()
-				logger.Errorf("[movies] <%s> error setting movie images: %s", mappingJSON.Checksum, err.Error())
-				return
-			}
+		if err := tx.Commit(); err != nil {
+			tx.Rollback()
+			logger.Errorf("[movies] <%s> import failed to commit: %s", mappingJSON.Checksum, err.Error())
+			continue
 		}
 	}
 
-	logger.Info("[movies] importing")
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("[movies] import failed to commit: %s", err.Error())
-	}
 	logger.Info("[movies] import complete")
 }
 
