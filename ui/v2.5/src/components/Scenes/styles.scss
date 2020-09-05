@@ -196,24 +196,25 @@ textarea.scene-description {
     margin-bottom: 5px;
     position: relative;
 
-    &-image {
-      object-fit: cover;
-    }
-
-    &.portrait .scene-card-preview-image {
-      object-fit: contain;
-    }
-
     &-image,
     &-video {
       height: 100%;
+      object-fit: cover;
       width: 100%;
     }
 
     &-video {
-      display: none;
+      top: -9999px;
+      transition: top 0s;
+      transition-delay: 0s;
       position: absolute;
-      top: 0;
+    }
+
+    &.portrait {
+      .scene-card-preview-image,
+      .scene-card-preview-video {
+        object-fit: contain;
+      }
     }
   }
 
@@ -236,7 +237,8 @@ textarea.scene-description {
     }
 
     .scene-card-preview-video {
-      display: block;
+      top: 0px;
+      transition-delay: 0.2s;
     }
   }
 }

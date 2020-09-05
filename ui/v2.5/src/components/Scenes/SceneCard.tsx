@@ -42,6 +42,7 @@ const ScenePreview: React.FC<IScenePreviewProps> = ({
       <video
         className="scene-card-preview-video"
         loop
+        preload="none"
         ref={videoEl}
         src={video}
       />
