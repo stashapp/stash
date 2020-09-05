@@ -204,10 +204,10 @@ textarea.scene-description {
     }
 
     &-video {
+      position: absolute;
       top: -9999px;
       transition: top 0s;
       transition-delay: 0s;
-      position: absolute;
     }
 
     &.portrait {
@@ -237,7 +237,7 @@ textarea.scene-description {
     }
 
     .scene-card-preview-video {
-      top: 0px;
+      top: 0;
       transition-delay: 0.2s;
     }
   }
