@@ -10,6 +10,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
@@ -259,38 +260,34 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 }
 
 func (t *ImportTask) ImportGalleries(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewGalleryQueryBuilder()
+	logger.Info("[galleries] importing")
 
 	for i, mappingJSON := range t.mappings.Galleries {
 		index := i + 1
-		if mappingJSON.Checksum == "" || mappingJSON.Path == "" {
-			return
-		}
 
 		logger.Progressf("[galleries] %d of %d", index, len(t.mappings.Galleries))
 
-		// Populate a new gallery from the input
-		currentTime := time.Now()
-		newGallery := models.Gallery{
-			Checksum:  mappingJSON.Checksum,
-			Path:      mappingJSON.Path,
-			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		tx := database.DB.MustBeginTx(ctx, nil)
+		readerWriter := models.NewGalleryReaderWriter(tx)
+
+		galleryImporter := &gallery.Importer{
+			ReaderWriter: readerWriter,
+			Input:        mappingJSON,
 		}
 
-		_, err := qb.Create(newGallery, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[galleries] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
-			return
+		if err := performImport(galleryImporter, t.DuplicateBehaviour); err != nil {
+			tx.Rollback()
+			logger.Errorf("[galleries] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
+			continue
+		}
+
+		if err := tx.Commit(); err != nil {
+			tx.Rollback()
+			logger.Errorf("[galleries] <%s> import failed to commit: %s", mappingJSON.Checksum, err.Error())
+			continue
 		}
 	}
 
-	logger.Info("[galleries] importing")
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("[galleries] import failed to commit: %s", err.Error())
-	}
 	logger.Info("[galleries] import complete")
 }
 
