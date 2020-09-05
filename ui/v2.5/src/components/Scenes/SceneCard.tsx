@@ -13,22 +13,27 @@ interface IScenePreviewProps {
   video?: string;
 }
 
-const ScenePreview: React.FC<IScenePreviewProps> = ({ image, video, isPortrait }) => {
+const ScenePreview: React.FC<IScenePreviewProps> = ({
+  image,
+  video,
+  isPortrait,
+}) => {
   const videoEl = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.intersectionRatio > 0)
-          // Catch is necessary due to DOMException if user hovers before clicking on page
-          videoEl.current?.play().catch(() => {});
-        else
-          videoEl.current?.pause();
-      });
-    }, { root: document.documentElement });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.intersectionRatio > 0)
+            // Catch is necessary due to DOMException if user hovers before clicking on page
+            videoEl.current?.play().catch(() => {});
+          else videoEl.current?.pause();
+        });
+      },
+      { root: document.documentElement }
+    );
 
-    if (videoEl.current)
-      observer.observe(videoEl.current);
+    if (videoEl.current) observer.observe(videoEl.current);
   });
 
   return (
@@ -42,7 +47,7 @@ const ScenePreview: React.FC<IScenePreviewProps> = ({ image, video, isPortrait }
       />
     </div>
   );
-}
+};
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
@@ -291,9 +296,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   let shiftKey = false;
 
   return (
-    <Card
-      className={`scene-card zoom-${props.zoomIndex}`}
-    >
+    <Card className={`scene-card zoom-${props.zoomIndex}`}>
       <Form.Control
         type="checkbox"
         className="scene-card-check"
