@@ -1,7 +1,7 @@
 import _ from "lodash";
 import queryString from "query-string";
 import React, { useCallback, useRef, useState, useEffect } from "react";
-import { ApolloError } from "apollo-client";
+import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import {
   SlimSceneDataFragment,
