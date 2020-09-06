@@ -30,10 +30,14 @@ import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 import { MovieScrapeDialog } from "./MovieScrapeDialog";
 
+interface IMovieParams {
+  id?: string;
+}
+
 export const Movie: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { id = "new" } = useParams();
+  const { id = "new" } = useParams<IMovieParams>();
   const isNew = id === "new";
 
   // Editing state

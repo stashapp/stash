@@ -15,9 +15,12 @@ import {
   mutateRunPluginTask,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
+import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
-import { Plugin, PluginTask } from "src/core/generated-graphql";
 import { GenerateButton } from "./GenerateButton";
+
+type Plugin = Pick<GQL.Plugin, "id">;
+type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
 
 export const SettingsTasksPanel: React.FC = () => {
   const Toast = useToast();
@@ -200,15 +203,15 @@ export const SettingsTasksPanel: React.FC = () => {
   }
 
   async function onPluginTaskClicked(
-    plugin: Partial<Plugin>,
-    operation: Partial<PluginTask>
+    plugin: Plugin,
+    operation: PluginTask
   ) {
-    await mutateRunPluginTask(plugin.id!, operation.name!);
+    await mutateRunPluginTask(plugin.id, operation.name);
   }
 
   function renderPluginTasks(
-    plugin: Partial<Plugin>,
-    pluginTasks: Partial<PluginTask>[] | undefined
+    plugin: Plugin,
+    pluginTasks: PluginTask[]
   ) {
     if (!pluginTasks) {
       return;

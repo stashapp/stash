@@ -26,8 +26,12 @@ import { SceneMoviePanel } from "./SceneMoviePanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { SceneGenerateDialog } from "../SceneGenerateDialog";
 
+interface ISceneParams {
+  id?: string;
+}
+
 export const Scene: React.FC = () => {
-  const { id = "new" } = useParams();
+  const { id = "new" } = useParams<ISceneParams>();
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();

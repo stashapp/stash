@@ -22,10 +22,15 @@ import { useToast } from "src/hooks";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
 
+interface IStudioParams {
+  id?: string;
+  tab?: string;
+}
+
 export const Studio: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { tab = "details", id = "new" } = useParams();
+  const { tab = "details", id = "new" } = useParams<IStudioParams>();
   const isNew = id === "new";
 
   // Editing state

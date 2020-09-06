@@ -2,13 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
 import { mutateReloadPlugins, usePlugins } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
-import { Icon, LoadingIndicator } from "../Shared";
+import { Icon, LoadingIndicator } from "src/components/Shared";
 
 export const SettingsPluginsPanel: React.FC = () => {
   const Toast = useToast();
-
   const plugins = usePlugins();
 
   // Network state
@@ -34,12 +32,12 @@ export const SettingsPluginsPanel: React.FC = () => {
     }
   }
 
-  function renderLink(plugin: GQL.Plugin) {
-    if (plugin.url) {
+  function renderLink(url?: string) {
+    if (url) {
       return (
         <Button className="minimal">
           <a
-            href={TextUtils.sanitiseURL(plugin.url)}
+            href={TextUtils.sanitiseURL(url)}
             className="link"
             target="_blank"
             rel="noopener noreferrer"
@@ -51,27 +49,21 @@ export const SettingsPluginsPanel: React.FC = () => {
     }
   }
 
-  function renderPlugin(plugin: GQL.Plugin) {
-    return (
+  function renderPlugins() {
+    const elements = (plugins.data?.plugins ?? []).map(plugin => (
       <div key={plugin.id}>
         <h5>
           {plugin.name} {plugin.version ? `(${plugin.version})` : undefined}{" "}
-          {renderLink(plugin)}
+          {renderLink(plugin.url ?? undefined)}
         </h5>
         {plugin.description ? (
           <small className="text-muted">{plugin.description}</small>
         ) : undefined}
         <hr />
       </div>
-    );
-  }
+    ));
 
-  function renderPlugins() {
-    if (!plugins.data || !plugins.data.plugins) {
-      return;
-    }
-
-    return <div>{plugins.data?.plugins.map(renderPlugin)}</div>;
+    return <div>{elements}</div>;
   }
 
   if (isLoading) return <LoadingIndicator />;

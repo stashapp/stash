@@ -21,10 +21,15 @@ import { useToast } from "src/hooks";
 import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
 
+interface ITabParams {
+  id?: string;
+  tab?: string;
+}
+
 export const Tag: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { tab = "scenes", id = "new" } = useParams();
+  const { tab = "scenes", id = "new" } = useParams<ITabParams>();
   const isNew = id === "new";
 
   // Editing state

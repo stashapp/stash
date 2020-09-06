@@ -17,10 +17,15 @@ import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 
+interface IPerformerParams {
+  id?: string;
+  tab?: string;
+}
+
 export const Performer: React.FC = () => {
   const Toast = useToast();
   const history = useHistory();
-  const { tab = "details", id = "new" } = useParams();
+  const { tab = "details", id = "new" } = useParams<IPerformerParams>();
   const isNew = id === "new";
 
   // Performer state
