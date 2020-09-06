@@ -58,7 +58,7 @@ const getSelectedData = <I extends IDataItem>(
 
 interface IListHookData {
   filter: ListFilterModel;
-  template: JSX.Element;
+  template: React.ReactElement;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
@@ -88,15 +88,15 @@ interface IListHookOptions<T, E> {
     filter: ListFilterModel,
     selectedIds: Set<string>,
     zoomIndex: number
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   renderEditDialog?: (
     selected: E[],
     onClose: (applied: boolean) => void
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   renderDeleteDialog?: (
     selected: E[],
     onClose: (confirmed: boolean) => void
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   addKeybinds?: (
     result: T,
     filter: ListFilterModel,

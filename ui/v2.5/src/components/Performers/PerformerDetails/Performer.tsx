@@ -56,7 +56,7 @@ export const Performer: React.FC = () => {
     tab === "scenes" || tab === "edit" || tab === "operations"
       ? tab
       : "details";
-  const setActiveTabKey = (newTab: string) => {
+  const setActiveTabKey = (newTab: string|null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "details" ? "" : `/${newTab}`;
       history.replace(`/performers/${id}${tabParam}`);

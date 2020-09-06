@@ -10,7 +10,8 @@ const useFocus = () => {
     }
   };
 
-  return [htmlElRef, setFocus] as const;
+  // eslint-disable-next-line no-undef
+  return [htmlElRef, setFocus] as const ;
 };
 
 export default useFocus;
