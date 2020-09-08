@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/scene"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
@@ -376,17 +376,10 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 }
 
 func (t *ImportTask) ImportScenes(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	logger.Info("[scenes] importing")
 
 	for i, mappingJSON := range t.mappings.Scenes {
 		index := i + 1
-		if mappingJSON.Checksum == "" || mappingJSON.Path == "" {
-			_ = tx.Rollback()
-			logger.Warn("[scenes] scene mapping without checksum or path: ", mappingJSON)
-			return
-		}
 
 		logger.Progressf("[scenes] %d of %d", index, len(t.mappings.Scenes))
 
@@ -398,244 +391,68 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 		sceneHash := mappingJSON.Checksum
 
-		newScene := models.Scene{
-			Checksum: sql.NullString{String: sceneJSON.Checksum, Valid: sceneJSON.Checksum != ""},
-			OSHash:   sql.NullString{String: sceneJSON.OSHash, Valid: sceneJSON.OSHash != ""},
-			Path:     mappingJSON.Path,
+		tx := database.DB.MustBeginTx(ctx, nil)
+		readerWriter := models.NewSceneReaderWriter(tx)
+		tagWriter := models.NewTagReaderWriter(tx)
+		galleryWriter := models.NewGalleryReaderWriter(tx)
+		joinWriter := models.NewJoinReaderWriter(tx)
+		movieWriter := models.NewMovieReaderWriter(tx)
+		performerWriter := models.NewPerformerReaderWriter(tx)
+		studioWriter := models.NewStudioReaderWriter(tx)
+		markerWriter := models.NewSceneMarkerReaderWriter(tx)
+
+		sceneImporter := &scene.Importer{
+			ReaderWriter: readerWriter,
+			Input:        *sceneJSON,
+			Path:         mappingJSON.Path,
+
+			FileNamingAlgorithm: t.fileNamingAlgorithm,
+			MissingRefBehaviour: t.MissingRefBehaviour,
+
+			GalleryWriter:   galleryWriter,
+			JoinWriter:      joinWriter,
+			MovieWriter:     movieWriter,
+			PerformerWriter: performerWriter,
+			StudioWriter:    studioWriter,
+			TagWriter:       tagWriter,
 		}
 
-		// Process the base 64 encoded cover image string
-		var coverImageData []byte
-		if sceneJSON.Cover != "" {
-			_, coverImageData, err = utils.ProcessBase64Image(sceneJSON.Cover)
-			if err != nil {
-				logger.Warnf("[scenes] <%s> invalid cover image: %s", sceneHash, err.Error())
-			}
-			if len(coverImageData) > 0 {
-				if err = SetSceneScreenshot(sceneHash, coverImageData); err != nil {
-					logger.Warnf("[scenes] <%s> failed to create cover image: %s", sceneHash, err.Error())
-				}
-
-				// write the cover image data after creating the scene
-			}
+		if err := performImport(sceneImporter, t.DuplicateBehaviour); err != nil {
+			tx.Rollback()
+			logger.Errorf("[scenes] <%s> failed to import: %s", sceneHash, err.Error())
+			continue
 		}
 
-		// Populate scene fields
-		if sceneJSON != nil {
-			if sceneJSON.Title != "" {
-				newScene.Title = sql.NullString{String: sceneJSON.Title, Valid: true}
-			}
-			if sceneJSON.Details != "" {
-				newScene.Details = sql.NullString{String: sceneJSON.Details, Valid: true}
-			}
-			if sceneJSON.URL != "" {
-				newScene.URL = sql.NullString{String: sceneJSON.URL, Valid: true}
-			}
-			if sceneJSON.Date != "" {
-				newScene.Date = models.SQLiteDate{String: sceneJSON.Date, Valid: true}
-			}
-			if sceneJSON.Rating != 0 {
-				newScene.Rating = sql.NullInt64{Int64: int64(sceneJSON.Rating), Valid: true}
+		// import the scene markers
+		failedMarkers := false
+		for _, m := range sceneJSON.Markers {
+			markerImporter := &scene.MarkerImporter{
+				SceneID:             sceneImporter.Scene.ID,
+				Input:               m,
+				MissingRefBehaviour: t.MissingRefBehaviour,
+				ReaderWriter:        markerWriter,
+				JoinWriter:          joinWriter,
+				TagWriter:           tagWriter,
 			}
 
-			newScene.OCounter = sceneJSON.OCounter
-			newScene.CreatedAt = models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(sceneJSON.CreatedAt)}
-			newScene.UpdatedAt = models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(sceneJSON.UpdatedAt)}
-
-			if sceneJSON.File != nil {
-				if sceneJSON.File.Size != "" {
-					newScene.Size = sql.NullString{String: sceneJSON.File.Size, Valid: true}
-				}
-				if sceneJSON.File.Duration != "" {
-					duration, _ := strconv.ParseFloat(sceneJSON.File.Duration, 64)
-					newScene.Duration = sql.NullFloat64{Float64: duration, Valid: true}
-				}
-				if sceneJSON.File.VideoCodec != "" {
-					newScene.VideoCodec = sql.NullString{String: sceneJSON.File.VideoCodec, Valid: true}
-				}
-				if sceneJSON.File.AudioCodec != "" {
-					newScene.AudioCodec = sql.NullString{String: sceneJSON.File.AudioCodec, Valid: true}
-				}
-				if sceneJSON.File.Format != "" {
-					newScene.Format = sql.NullString{String: sceneJSON.File.Format, Valid: true}
-				}
-				if sceneJSON.File.Width != 0 {
-					newScene.Width = sql.NullInt64{Int64: int64(sceneJSON.File.Width), Valid: true}
-				}
-				if sceneJSON.File.Height != 0 {
-					newScene.Height = sql.NullInt64{Int64: int64(sceneJSON.File.Height), Valid: true}
-				}
-				if sceneJSON.File.Framerate != "" {
-					framerate, _ := strconv.ParseFloat(sceneJSON.File.Framerate, 64)
-					newScene.Framerate = sql.NullFloat64{Float64: framerate, Valid: true}
-				}
-				if sceneJSON.File.Bitrate != 0 {
-					newScene.Bitrate = sql.NullInt64{Int64: int64(sceneJSON.File.Bitrate), Valid: true}
-				}
-			} else {
-				// TODO: Get FFMPEG data?
+			if err := performImport(markerImporter, t.DuplicateBehaviour); err != nil {
+				failedMarkers = true
+				logger.Errorf("[scenes] <%s> failed to import markers: %s", sceneHash, err.Error())
+				break
 			}
 		}
 
-		// Populate the studio ID
-		if sceneJSON.Studio != "" {
-			sqb := models.NewStudioQueryBuilder()
-			studio, err := sqb.FindByName(sceneJSON.Studio, tx, false)
-			if err != nil {
-				logger.Warnf("[scenes] error getting studio <%s>: %s", sceneJSON.Studio, err.Error())
-			} else if studio == nil {
-				logger.Warnf("[scenes] studio <%s> does not exist", sceneJSON.Studio)
-			} else {
-				newScene.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
-			}
+		if failedMarkers {
+			tx.Rollback()
+			continue
 		}
 
-		// Create the scene in the DB
-		scene, err := qb.Create(newScene, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			logger.Errorf("[scenes] <%s> failed to create: %s", sceneHash, err.Error())
-			return
-		}
-		if scene.ID == 0 {
-			_ = tx.Rollback()
-			logger.Errorf("[scenes] <%s> invalid id after scene creation", sceneHash)
-			return
-		}
-
-		// Add the scene cover if set
-		if len(coverImageData) > 0 {
-			if err := qb.UpdateSceneCover(scene.ID, coverImageData, tx); err != nil {
-				_ = tx.Rollback()
-				logger.Errorf("[scenes] <%s> error setting scene cover: %s", sceneHash, err.Error())
-				return
-			}
-		}
-
-		// Relate the scene to the gallery
-		if sceneJSON.Gallery != "" {
-			gqb := models.NewGalleryQueryBuilder()
-			gallery, err := gqb.FindByChecksum(sceneJSON.Gallery, tx)
-			if err != nil {
-				logger.Warnf("[scenes] gallery <%s> does not exist: %s", sceneJSON.Gallery, err.Error())
-			} else {
-				gallery.SceneID = sql.NullInt64{Int64: int64(scene.ID), Valid: true}
-				_, err := gqb.Update(*gallery, tx)
-				if err != nil {
-					logger.Errorf("[scenes] <%s> failed to update gallery: %s", sceneHash, err.Error())
-				}
-			}
-		}
-
-		// Relate the scene to the performers
-		if len(sceneJSON.Performers) > 0 {
-			performers, err := t.getPerformers(sceneJSON.Performers, tx)
-			if err != nil {
-				logger.Warnf("[scenes] <%s> failed to fetch performers: %s", sceneHash, err.Error())
-			} else {
-				var performerJoins []models.PerformersScenes
-				for _, performer := range performers {
-					join := models.PerformersScenes{
-						PerformerID: performer.ID,
-						SceneID:     scene.ID,
-					}
-					performerJoins = append(performerJoins, join)
-				}
-				if err := jqb.CreatePerformersScenes(performerJoins, tx); err != nil {
-					logger.Errorf("[scenes] <%s> failed to associate performers: %s", sceneHash, err.Error())
-				}
-			}
-		}
-
-		// Relate the scene to the movies
-		if len(sceneJSON.Movies) > 0 {
-			moviesScenes, err := t.getMoviesScenes(sceneJSON.Movies, scene.ID, tx)
-			if err != nil {
-				logger.Warnf("[scenes] <%s> failed to fetch movies: %s", sceneHash, err.Error())
-			} else {
-				if err := jqb.CreateMoviesScenes(moviesScenes, tx); err != nil {
-					logger.Errorf("[scenes] <%s> failed to associate movies: %s", sceneHash, err.Error())
-				}
-			}
-		}
-
-		// Relate the scene to the tags
-		if len(sceneJSON.Tags) > 0 {
-			tags, err := t.getTags(sceneHash, sceneJSON.Tags, tx)
-			if err != nil {
-				logger.Warnf("[scenes] <%s> failed to fetch tags: %s", sceneHash, err.Error())
-			} else {
-				var tagJoins []models.ScenesTags
-				for _, tag := range tags {
-					join := models.ScenesTags{
-						SceneID: scene.ID,
-						TagID:   tag.ID,
-					}
-					tagJoins = append(tagJoins, join)
-				}
-				if err := jqb.CreateScenesTags(tagJoins, tx); err != nil {
-					logger.Errorf("[scenes] <%s> failed to associate tags: %s", sceneHash, err.Error())
-				}
-			}
-		}
-
-		// Relate the scene to the scene markers
-		if len(sceneJSON.Markers) > 0 {
-			smqb := models.NewSceneMarkerQueryBuilder()
-			tqb := models.NewTagQueryBuilder()
-			for _, marker := range sceneJSON.Markers {
-				seconds, _ := strconv.ParseFloat(marker.Seconds, 64)
-				newSceneMarker := models.SceneMarker{
-					Title:     marker.Title,
-					Seconds:   seconds,
-					SceneID:   sql.NullInt64{Int64: int64(scene.ID), Valid: true},
-					CreatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(marker.CreatedAt)},
-					UpdatedAt: models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(marker.UpdatedAt)},
-				}
-
-				primaryTag, err := tqb.FindByName(marker.PrimaryTag, tx, false)
-				if err != nil {
-					logger.Errorf("[scenes] <%s> failed to find primary tag for marker: %s", sceneHash, err.Error())
-				} else {
-					newSceneMarker.PrimaryTagID = primaryTag.ID
-				}
-
-				// Create the scene marker in the DB
-				sceneMarker, err := smqb.Create(newSceneMarker, tx)
-				if err != nil {
-					logger.Warnf("[scenes] <%s> failed to create scene marker: %s", sceneHash, err.Error())
-					continue
-				}
-				if sceneMarker.ID == 0 {
-					logger.Warnf("[scenes] <%s> invalid scene marker id after scene marker creation", sceneHash)
-					continue
-				}
-
-				// Get the scene marker tags and create the joins
-				tags, err := t.getTags(sceneHash, marker.Tags, tx)
-				if err != nil {
-					logger.Warnf("[scenes] <%s> failed to fetch scene marker tags: %s", sceneHash, err.Error())
-				} else {
-					var tagJoins []models.SceneMarkersTags
-					for _, tag := range tags {
-						join := models.SceneMarkersTags{
-							SceneMarkerID: sceneMarker.ID,
-							TagID:         tag.ID,
-						}
-						tagJoins = append(tagJoins, join)
-					}
-					if err := jqb.CreateSceneMarkersTags(tagJoins, tx); err != nil {
-						logger.Errorf("[scenes] <%s> failed to associate scene marker tags: %s", sceneHash, err.Error())
-					}
-				}
-			}
+		if err := tx.Commit(); err != nil {
+			tx.Rollback()
+			logger.Errorf("[scenes] <%s> import failed to commit: %s", sceneHash, err.Error())
 		}
 	}
 
-	logger.Info("[scenes] importing")
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("[scenes] import failed to commit: %s", err.Error())
-	}
 	logger.Info("[scenes] import complete")
 }
 

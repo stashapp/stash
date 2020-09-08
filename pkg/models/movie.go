@@ -9,7 +9,7 @@ type MovieReader interface {
 	FindMany(ids []int) ([]*Movie, error)
 	// FindBySceneID(sceneID int) ([]*Movie, error)
 	FindByName(name string, nocase bool) (*Movie, error)
-	// FindByNames(names []string, nocase bool) ([]*Movie, error)
+	FindByNames(names []string, nocase bool) ([]*Movie, error)
 	All() ([]*Movie, error)
 	// AllSlim() ([]*Movie, error)
 	// Query(movieFilter *MovieFilterType, findFilter *FindFilterType) ([]*Movie, int)
@@ -53,6 +53,10 @@ func (t *movieReaderWriter) FindMany(ids []int) ([]*Movie, error) {
 
 func (t *movieReaderWriter) FindByName(name string, nocase bool) (*Movie, error) {
 	return t.qb.FindByName(name, t.tx, nocase)
+}
+
+func (t *movieReaderWriter) FindByNames(names []string, nocase bool) ([]*Movie, error) {
+	return t.qb.FindByNames(names, t.tx, nocase)
 }
 
 func (t *movieReaderWriter) All() ([]*Movie, error) {

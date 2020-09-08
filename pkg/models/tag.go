@@ -10,7 +10,7 @@ type TagReader interface {
 	FindBySceneID(sceneID int) ([]*Tag, error)
 	FindBySceneMarkerID(sceneMarkerID int) ([]*Tag, error)
 	FindByName(name string, nocase bool) (*Tag, error)
-	// FindByNames(names []string, nocase bool) ([]*Tag, error)
+	FindByNames(names []string, nocase bool) ([]*Tag, error)
 	// Count() (int, error)
 	All() ([]*Tag, error)
 	// AllSlim() ([]*Tag, error)
@@ -61,6 +61,10 @@ func (t *tagReaderWriter) FindBySceneMarkerID(sceneMarkerID int) ([]*Tag, error)
 
 func (t *tagReaderWriter) FindByName(name string, nocase bool) (*Tag, error) {
 	return t.qb.FindByName(name, t.tx, nocase)
+}
+
+func (t *tagReaderWriter) FindByNames(names []string, nocase bool) ([]*Tag, error) {
+	return t.qb.FindByNames(names, t.tx, nocase)
 }
 
 func (t *tagReaderWriter) GetTagImage(tagID int) ([]byte, error) {

@@ -58,6 +58,29 @@ func (_m *GalleryReaderWriter) Create(newGallery models.Gallery) (*models.Galler
 	return r0, r1
 }
 
+// FindByChecksum provides a mock function with given fields: checksum
+func (_m *GalleryReaderWriter) FindByChecksum(checksum string) (*models.Gallery, error) {
+	ret := _m.Called(checksum)
+
+	var r0 *models.Gallery
+	if rf, ok := ret.Get(0).(func(string) *models.Gallery); ok {
+		r0 = rf(checksum)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Gallery)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(checksum)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByPath provides a mock function with given fields: path
 func (_m *GalleryReaderWriter) FindByPath(path string) (*models.Gallery, error) {
 	ret := _m.Called(path)

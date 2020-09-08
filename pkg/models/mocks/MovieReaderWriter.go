@@ -104,6 +104,29 @@ func (_m *MovieReaderWriter) FindByName(name string, nocase bool) (*models.Movie
 	return r0, r1
 }
 
+// FindByNames provides a mock function with given fields: names, nocase
+func (_m *MovieReaderWriter) FindByNames(names []string, nocase bool) ([]*models.Movie, error) {
+	ret := _m.Called(names, nocase)
+
+	var r0 []*models.Movie
+	if rf, ok := ret.Get(0).(func([]string, bool) []*models.Movie); ok {
+		r0 = rf(names, nocase)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Movie)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]string, bool) error); ok {
+		r1 = rf(names, nocase)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindMany provides a mock function with given fields: ids
 func (_m *MovieReaderWriter) FindMany(ids []int) ([]*models.Movie, error) {
 	ret := _m.Called(ids)

@@ -7,7 +7,7 @@ import (
 type GalleryReader interface {
 	// Find(id int) (*Gallery, error)
 	FindMany(ids []int) ([]*Gallery, error)
-	// FindByChecksum(checksum string) (*Gallery, error)
+	FindByChecksum(checksum string) (*Gallery, error)
 	FindByPath(path string) (*Gallery, error)
 	FindBySceneID(sceneID int) (*Gallery, error)
 	// ValidGalleriesForScenePath(scenePath string) ([]*Gallery, error)
@@ -42,6 +42,10 @@ type galleryReaderWriter struct {
 
 func (t *galleryReaderWriter) FindMany(ids []int) ([]*Gallery, error) {
 	return t.qb.FindMany(ids)
+}
+
+func (t *galleryReaderWriter) FindByChecksum(checksum string) (*Gallery, error) {
+	return t.qb.FindByChecksum(checksum, t.tx)
 }
 
 func (t *galleryReaderWriter) All() ([]*Gallery, error) {

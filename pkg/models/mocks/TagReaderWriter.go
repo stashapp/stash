@@ -104,6 +104,29 @@ func (_m *TagReaderWriter) FindByName(name string, nocase bool) (*models.Tag, er
 	return r0, r1
 }
 
+// FindByNames provides a mock function with given fields: names, nocase
+func (_m *TagReaderWriter) FindByNames(names []string, nocase bool) ([]*models.Tag, error) {
+	ret := _m.Called(names, nocase)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func([]string, bool) []*models.Tag); ok {
+		r0 = rf(names, nocase)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]string, bool) error); ok {
+		r1 = rf(names, nocase)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindBySceneID provides a mock function with given fields: sceneID
 func (_m *TagReaderWriter) FindBySceneID(sceneID int) ([]*models.Tag, error) {
 	ret := _m.Called(sceneID)
