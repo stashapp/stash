@@ -1,33 +1,17 @@
+import { ApolloCache, DocumentNode } from "@apollo/client";
+import { isField, resultKeyNameFromField, getQueryDefinition, getOperationName } from "@apollo/client/utilities";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
 
 import { createClient } from "./createClient";
 
-const { client, cache } = createClient();
+const { client } = createClient();
+
+const getQueryNames = (queries: DocumentNode[]) => {
+  return queries.map(q => getOperationName(q) ?? '').filter(q => q !== '');
+};
 
 export const getClient = () => client;
-
-// TODO: Invalidation should happen through apollo client, rather than rewriting cache directly
-const invalidateQueries = (queries: string[]) => {
-  if (cache) {
-    const keyMatchers = queries.map((query) => {
-      return new RegExp(`^${query}`, "i");
-    });
-
-    // TODO: Hack to invalidate, manipulating private data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rootQuery = (cache as any).data.data.ROOT_QUERY;
-    Object.keys(rootQuery).forEach((key) => {
-      if (
-        keyMatchers.some((matcher) => {
-          return !!key.match(matcher);
-        })
-      ) {
-        delete rootQuery[key];
-      }
-    });
-  }
-};
 
 export const useFindGalleries = (filter: ListFilterModel) =>
   GQL.useFindGalleriesQuery({
@@ -136,20 +120,19 @@ export const useFindTag = (id: string) => {
   return GQL.useFindTagQuery({ variables: { id }, skip });
 };
 
-// TODO - scene marker manipulation functions are handled differently
-export const sceneMarkerMutationImpactedQueries = [
-  "findSceneMarkers",
-  "findScenes",
-  "markerStrings",
-  "sceneMarkerTags",
+const sceneMarkerMutationImpactedQueries = [
+  GQL.refetchFindSceneQuery(),
+  GQL.refetchFindScenesQuery(),
+  GQL.refetchFindSceneMarkersQuery(),
+  GQL.refetchMarkerStringsQuery(),
 ];
 
 export const useSceneMarkerCreate = () =>
-  GQL.useSceneMarkerCreateMutation({ refetchQueries: ["FindScene"] });
+  GQL.useSceneMarkerCreateMutation({ refetchQueries: sceneMarkerMutationImpactedQueries });
 export const useSceneMarkerUpdate = () =>
-  GQL.useSceneMarkerUpdateMutation({ refetchQueries: ["FindScene"] });
+  GQL.useSceneMarkerUpdateMutation({ refetchQueries: sceneMarkerMutationImpactedQueries });
 export const useSceneMarkerDestroy = () =>
-  GQL.useSceneMarkerDestroyMutation({ refetchQueries: ["FindScene"] });
+  GQL.useSceneMarkerDestroyMutation({ refetchQueries: sceneMarkerMutationImpactedQueries });
 
 export const useListPerformerScrapers = () =>
   GQL.useListPerformerScrapersQuery();
@@ -199,61 +182,81 @@ export const useConfiguration = () => GQL.useConfigurationQuery();
 export const useDirectory = (path?: string) =>
   GQL.useDirectoryQuery({ variables: { path } });
 
-export const performerMutationImpactedQueries = [
-  "FindPerformers",
-  "FindScenes",
-  "FindSceneMarkers",
-  "AllPerformers",
-  "AllPerformersForFilter",
+const performerMutationImpactedQueries = [
+  GQL.refetchFindPerformersQuery(),
+  GQL.refetchFindSceneQuery(),
+  GQL.refetchFindScenesQuery(),
+  GQL.refetchFindSceneMarkersQuery(),
+  GQL.refetchAllPerformersForFilterQuery(),
 ];
 
 export const usePerformerCreate = () =>
   GQL.usePerformerCreateMutation({
     refetchQueries: performerMutationImpactedQueries,
-    update: () => invalidateQueries(performerMutationImpactedQueries),
   });
 export const usePerformerUpdate = () =>
   GQL.usePerformerUpdateMutation({
     refetchQueries: performerMutationImpactedQueries,
-    update: () => invalidateQueries(performerMutationImpactedQueries),
   });
 export const usePerformerDestroy = () =>
   GQL.usePerformerDestroyMutation({
     refetchQueries: performerMutationImpactedQueries,
-    update: () => invalidateQueries(performerMutationImpactedQueries),
   });
 
-export const sceneMutationImpactedQueries = [
-  "findPerformers",
-  "findScenes",
-  "findSceneMarkers",
-  "findStudios",
-  "findMovies",
-  "allTags",
-  // TODO - add "findTags" when it is implemented
+const sceneMutationImpactedQueries = [
+  GQL.FindPerformerDocument,
+  GQL.FindPerformersDocument,
+  GQL.FindScenesDocument,
+  GQL.FindSceneMarkersDocument,
+  GQL.FindStudioDocument,
+  GQL.FindStudiosDocument,
+  GQL.FindMovieDocument,
+  GQL.FindMoviesDocument,
+  GQL.FindTagDocument,
+  GQL.FindTagsDocument,
+  GQL.AllTagsDocument,
 ];
+
+const deleteCache = (queries: DocumentNode[]) => {
+  const names = queries.map(q => {
+      const field = getQueryDefinition(q).selectionSet.selections[0];
+      return (isField(field) && resultKeyNameFromField(field)) ?? "Unknown";
+  }).reduce((fields, name) => ({ ...fields, [name ?? ""]: (_, { DELETE }) => DELETE }), {});
+
+
+  return (cache: ApolloCache<any>) => (
+    cache.modify({
+      id: "ROOT_QUERY",
+      fields
+    })
+  );
+}
 
 export const useSceneUpdate = (input: GQL.SceneUpdateInput) =>
   GQL.useSceneUpdateMutation({
     variables: input,
-    update: () => invalidateQueries(sceneMutationImpactedQueries),
-    refetchQueries: ["AllTagsForFilter"],
+    update: (cache) => {
+      cache.modify({
+        id: "ROOT_QUERY",
+        fields: {
+          findPerformer(_items, { DELETE }) {
+            return DELETE;
+          },
+          findPerformers(_items, { DELETE }) {
+            return DELETE;
+          },
+          findScenes(_items, { DELETE }) {
+            return DELETE;
+          }
+        }
+      })
+    }
   });
-
-// remove findScenes for bulk scene update so that we don't lose
-// existing results
-export const sceneBulkMutationImpactedQueries = [
-  "findPerformers",
-  "findSceneMarkers",
-  "findStudios",
-  "findMovies",
-  "allTags",
-];
 
 export const useBulkSceneUpdate = (input: GQL.BulkSceneUpdateInput) =>
   GQL.useBulkSceneUpdateMutation({
     variables: input,
-    update: () => invalidateQueries(sceneBulkMutationImpactedQueries),
+    refetchQueries: getQueryNames(sceneMutationImpactedQueries),
   });
 
 export const useScenesUpdate = (input: GQL.SceneUpdateInput[]) =>
@@ -277,107 +280,105 @@ export const useSceneResetO = (id: string) =>
 export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
   GQL.useSceneDestroyMutation({
     variables: input,
-    update: () => invalidateQueries(sceneMutationImpactedQueries),
+    refetchQueries: getQueryNames(sceneMutationImpactedQueries),
   });
 
 export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
   GQL.useScenesDestroyMutation({
     variables: input,
-    update: () => invalidateQueries(sceneMutationImpactedQueries),
+    refetchQueries: getQueryNames(sceneMutationImpactedQueries),
   });
 
 export const useSceneGenerateScreenshot = () =>
   GQL.useSceneGenerateScreenshotMutation({
-    update: () => invalidateQueries(["findScenes"]),
+    refetchQueries: [GQL.refetchFindScenesQuery()],
   });
 
 export const studioMutationImpactedQueries = [
-  "FindStudios",
-  "FindScenes",
-  "AllStudios",
-  "AllStudiosForFilter",
+  GQL.refetchFindStudiosQuery(),
+  GQL.refetchFindSceneQuery(),
+  GQL.refetchFindScenesQuery(),
+  GQL.refetchAllStudiosForFilterQuery(),
 ];
 
 export const useStudioCreate = (input: GQL.StudioCreateInput) =>
   GQL.useStudioCreateMutation({
     variables: input,
     refetchQueries: studioMutationImpactedQueries,
-    update: () => invalidateQueries(studioMutationImpactedQueries),
   });
 
 export const useStudioUpdate = (input: GQL.StudioUpdateInput) =>
   GQL.useStudioUpdateMutation({
     variables: input,
-    update: () => invalidateQueries(studioMutationImpactedQueries),
+    refetchQueries: studioMutationImpactedQueries,
   });
 
 export const useStudioDestroy = (input: GQL.StudioDestroyInput) =>
   GQL.useStudioDestroyMutation({
     variables: input,
-    update: () => invalidateQueries(studioMutationImpactedQueries),
+    refetchQueries: studioMutationImpactedQueries,
   });
 
 export const movieMutationImpactedQueries = [
-  "findMovies",
-  "findScenes",
-  "allMovies",
+  GQL.refetchFindSceneQuery(),
+  GQL.refetchFindScenesQuery(),
+  GQL.refetchFindMoviesQuery(),
+  GQL.refetchAllMoviesForFilterQuery(),
 ];
 
 export const useMovieCreate = (input: GQL.MovieCreateInput) =>
   GQL.useMovieCreateMutation({
     variables: input,
-    update: () => invalidateQueries(movieMutationImpactedQueries),
+    refetchQueries: movieMutationImpactedQueries,
   });
 
 export const useMovieUpdate = (input: GQL.MovieUpdateInput) =>
   GQL.useMovieUpdateMutation({
     variables: input,
-    update: () => invalidateQueries(movieMutationImpactedQueries),
+    refetchQueries: movieMutationImpactedQueries,
   });
 
 export const useMovieDestroy = (input: GQL.MovieDestroyInput) =>
   GQL.useMovieDestroyMutation({
     variables: input,
-    update: () => invalidateQueries(movieMutationImpactedQueries),
+    refetchQueries: movieMutationImpactedQueries,
   });
 
 export const tagMutationImpactedQueries = [
-  "findScenes",
-  "findSceneMarkers",
-  "sceneMarkerTags",
-  "allTags",
-  "findTags",
+  GQL.refetchFindSceneQuery(),
+  GQL.refetchFindScenesQuery(),
+  GQL.refetchFindSceneMarkersQuery(),
+  GQL.refetchAllTagsQuery(),
+  GQL.refetchAllTagsForFilterQuery(),
+  GQL.refetchFindTagsQuery(),
 ];
 
 export const useTagCreate = (input: GQL.TagCreateInput) =>
   GQL.useTagCreateMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
-    update: () => invalidateQueries(tagMutationImpactedQueries),
+    refetchQueries: tagMutationImpactedQueries,
   });
 export const useTagUpdate = (input: GQL.TagUpdateInput) =>
   GQL.useTagUpdateMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
-    update: () => invalidateQueries(tagMutationImpactedQueries),
+    refetchQueries: tagMutationImpactedQueries,
   });
 export const useTagDestroy = (input: GQL.TagDestroyInput) =>
   GQL.useTagDestroyMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
-    update: () => invalidateQueries(tagMutationImpactedQueries),
+    refetchQueries: tagMutationImpactedQueries,
   });
 
 export const useConfigureGeneral = (input: GQL.ConfigGeneralInput) =>
   GQL.useConfigureGeneralMutation({
     variables: { input },
-    refetchQueries: ["Configuration"],
+    refetchQueries: [GQL.refetchConfigurationQuery()],
   });
 
 export const useConfigureInterface = (input: GQL.ConfigInterfaceInput) =>
   GQL.useConfigureInterfaceMutation({
     variables: { input },
-    refetchQueries: ["Configuration"],
+    refetchQueries: [GQL.refetchConfigurationQuery()],
   });
 
 export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
@@ -466,12 +467,15 @@ export const mutateReloadScrapers = () =>
     mutation: GQL.ReloadScrapersDocument,
   });
 
-const reloadPluginsMutationImpactedQueries = ["plugins", "pluginTasks"];
+const reloadPluginsMutationImpactedQueries = [
+  GQL.refetchPluginsQuery(),
+  GQL.refetchPluginTasksQuery(),
+];
 
 export const mutateReloadPlugins = () =>
   client.mutate<GQL.ReloadPluginsMutation>({
     mutation: GQL.ReloadPluginsDocument,
-    update: () => invalidateQueries(reloadPluginsMutationImpactedQueries),
+    refetchQueries: reloadPluginsMutationImpactedQueries,
   });
 
 export const mutateRunPluginTask = (
