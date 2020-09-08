@@ -50,7 +50,7 @@ export const SettingsPluginsPanel: React.FC = () => {
   }
 
   function renderPlugins() {
-    const elements = (plugins.data?.plugins ?? []).map(plugin => (
+    const elements = (plugins.data?.plugins ?? []).map((plugin) => (
       <div key={plugin.id}>
         <h5>
           {plugin.name} {plugin.version ? `(${plugin.version})` : undefined}{" "}

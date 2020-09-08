@@ -50,7 +50,7 @@ export const Tag: React.FC = () => {
   const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
 
   const activeTabKey = tab === "markers" ? tab : "scenes";
-  const setActiveTabKey = (newTab: string|null) => {
+  const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
       history.replace(`/tags/${id}${tabParam}`);

@@ -202,17 +202,11 @@ export const SettingsTasksPanel: React.FC = () => {
     );
   }
 
-  async function onPluginTaskClicked(
-    plugin: Plugin,
-    operation: PluginTask
-  ) {
+  async function onPluginTaskClicked(plugin: Plugin, operation: PluginTask) {
     await mutateRunPluginTask(plugin.id, operation.name);
   }
 
-  function renderPluginTasks(
-    plugin: Plugin,
-    pluginTasks: PluginTask[]
-  ) {
+  function renderPluginTasks(plugin: Plugin, pluginTasks: PluginTask[]) {
     if (!pluginTasks) {
       return;
     }
