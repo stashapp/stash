@@ -18,7 +18,7 @@ export const Gallery: React.FC = () => {
   if (error) return <div>{error.message}</div>;
 
   return (
-    <div className="col-9 m-auto">
+    <div className="col col-lg-9 m-auto">
       <GalleryViewer gallery={gallery} />
     </div>
   );
