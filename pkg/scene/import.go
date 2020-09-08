@@ -39,6 +39,22 @@ func (i *Importer) PreImport() error {
 		return err
 	}
 
+	if err := i.populateGallery(); err != nil {
+		return err
+	}
+
+	if err := i.populatePerformers(); err != nil {
+		return err
+	}
+
+	if err := i.populateTags(); err != nil {
+		return err
+	}
+
+	if err := i.populateMovies(); err != nil {
+		return err
+	}
+
 	var err error
 	if len(i.Input.Cover) > 0 {
 		_, i.coverImageData, err = utils.ProcessBase64Image(i.Input.Cover)
@@ -173,6 +189,8 @@ func (i *Importer) populateGallery() error {
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumIgnore || i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
 				return nil
 			}
+		} else {
+			i.gallery = gallery
 		}
 	}
 
@@ -337,8 +355,8 @@ func (i *Importer) PostImport(id int) error {
 	}
 
 	if len(i.movies) > 0 {
-		for _, join := range i.movies {
-			join.SceneID = id
+		for index := range i.movies {
+			i.movies[index].SceneID = id
 		}
 		if err := i.JoinWriter.UpdateMoviesScenes(id, i.movies); err != nil {
 			return fmt.Errorf("failed to associate movies: %s", err.Error())

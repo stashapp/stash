@@ -83,7 +83,7 @@ func (i *MarkerImporter) PostImport(id int) error {
 }
 
 func (i *MarkerImporter) Name() string {
-	return fmt.Sprintf("%s (%f)", i.marker.Title, i.marker.Seconds)
+	return fmt.Sprintf("%s (%s)", i.Input.Title, i.Input.Seconds)
 }
 
 func (i *MarkerImporter) FindExistingID() (*int, error) {
