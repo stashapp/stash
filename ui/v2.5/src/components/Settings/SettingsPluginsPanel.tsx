@@ -7,29 +7,10 @@ import { Icon, LoadingIndicator } from "src/components/Shared";
 
 export const SettingsPluginsPanel: React.FC = () => {
   const Toast = useToast();
-  const plugins = usePlugins();
-
-  // Network state
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (plugins) {
-      setIsLoading(false);
-    }
-  }, [plugins]);
+  const { data, loading } = usePlugins();
 
   async function onReloadPlugins() {
-    setIsLoading(true);
-    try {
-      await mutateReloadPlugins();
-
-      // reload the performer scrapers
-      await plugins.refetch();
-    } catch (e) {
-      Toast.error(e);
-    } finally {
-      setIsLoading(false);
-    }
+    await mutateReloadPlugins().catch((e) => Toast.error(e));
   }
 
   function renderLink(url?: string) {
@@ -50,7 +31,7 @@ export const SettingsPluginsPanel: React.FC = () => {
   }
 
   function renderPlugins() {
-    const elements = (plugins.data?.plugins ?? []).map((plugin) => (
+    const elements = (data?.plugins ?? []).map((plugin) => (
       <div key={plugin.id}>
         <h5>
           {plugin.name} {plugin.version ? `(${plugin.version})` : undefined}{" "}
@@ -66,7 +47,7 @@ export const SettingsPluginsPanel: React.FC = () => {
     return <div>{elements}</div>;
   }
 
-  if (isLoading) return <LoadingIndicator />;
+  if (loading) return <LoadingIndicator />;
 
   return (
     <>

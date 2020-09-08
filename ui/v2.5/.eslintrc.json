@@ -30,7 +30,7 @@
         "custom": {
           "regex": "^I[A-Z]",
           "match": true
-        }
+         }
         }
       ],
       "lines-between-class-members": "off",

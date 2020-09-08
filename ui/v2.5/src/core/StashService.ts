@@ -3,6 +3,7 @@ import {
   isField,
   resultKeyNameFromField,
   getQueryDefinition,
+  getOperationName,
 } from "@apollo/client/utilities";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
@@ -12,6 +13,9 @@ import { createClient } from "./createClient";
 const { client } = createClient();
 
 export const getClient = () => client;
+
+const getQueryNames = (queries: DocumentNode[]): string[] =>
+  queries.map((q) => getOperationName(q)).filter((n) => n !== null) as string[];
 
 // Will delete the entire cache for any queries passed in
 const deleteCache = (queries: DocumentNode[]) => {
@@ -154,14 +158,17 @@ const sceneMarkerMutationImpactedQueries = [
 
 export const useSceneMarkerCreate = () =>
   GQL.useSceneMarkerCreateMutation({
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
     update: deleteCache(sceneMarkerMutationImpactedQueries),
   });
 export const useSceneMarkerUpdate = () =>
   GQL.useSceneMarkerUpdateMutation({
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
     update: deleteCache(sceneMarkerMutationImpactedQueries),
   });
 export const useSceneMarkerDestroy = () =>
   GQL.useSceneMarkerDestroyMutation({
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
     update: deleteCache(sceneMarkerMutationImpactedQueries),
   });
 
@@ -222,6 +229,10 @@ const performerMutationImpactedQueries = [
 
 export const usePerformerCreate = () =>
   GQL.usePerformerCreateMutation({
+    refetchQueries: getQueryNames([
+      GQL.FindPerformersDocument,
+      GQL.AllPerformersForFilterDocument,
+    ]),
     update: deleteCache([
       GQL.FindPerformersDocument,
       GQL.AllPerformersForFilterDocument,
@@ -233,6 +244,10 @@ export const usePerformerUpdate = () =>
   });
 export const usePerformerDestroy = () =>
   GQL.usePerformerDestroyMutation({
+    refetchQueries: getQueryNames([
+      GQL.FindPerformersDocument,
+      GQL.AllPerformersForFilterDocument,
+    ]),
     update: deleteCache(performerMutationImpactedQueries),
   });
 
@@ -307,6 +322,7 @@ export const studioMutationImpactedQueries = [
 export const useStudioCreate = (input: GQL.StudioCreateInput) =>
   GQL.useStudioCreateMutation({
     variables: input,
+    refetchQueries: getQueryNames([GQL.AllStudiosForFilterDocument]),
     update: deleteCache([
       GQL.FindStudiosDocument,
       GQL.AllStudiosForFilterDocument,
@@ -365,6 +381,11 @@ export const tagMutationImpactedQueries = [
 export const useTagCreate = (input: GQL.TagCreateInput) =>
   GQL.useTagCreateMutation({
     variables: input,
+    refetchQueries: getQueryNames([
+      GQL.AllTagsDocument,
+      GQL.AllTagsForFilterDocument,
+      GQL.FindTagsDocument,
+    ]),
     update: deleteCache([
       GQL.FindTagsDocument,
       GQL.AllTagsDocument,
@@ -385,12 +406,14 @@ export const useTagDestroy = (input: GQL.TagDestroyInput) =>
 export const useConfigureGeneral = (input: GQL.ConfigGeneralInput) =>
   GQL.useConfigureGeneralMutation({
     variables: { input },
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
 export const useConfigureInterface = (input: GQL.ConfigInterfaceInput) =>
   GQL.useConfigureInterfaceMutation({
     variables: { input },
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
     update: deleteCache([GQL.ConfigurationDocument]),
   });
 
@@ -480,15 +503,10 @@ export const mutateReloadScrapers = () =>
     mutation: GQL.ReloadScrapersDocument,
   });
 
-const reloadPluginsMutationImpactedQueries = [
-  GQL.PluginsDocument,
-  GQL.PluginTasksDocument,
-];
-
 export const mutateReloadPlugins = () =>
   client.mutate<GQL.ReloadPluginsMutation>({
     mutation: GQL.ReloadPluginsDocument,
-    update: deleteCache(reloadPluginsMutationImpactedQueries),
+    refetchQueries: [GQL.refetchPluginsQuery(), GQL.refetchPluginTasksQuery()],
   });
 
 export const mutateRunPluginTask = (
