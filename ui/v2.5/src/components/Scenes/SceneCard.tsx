@@ -11,12 +11,14 @@ interface IScenePreviewProps {
   isPortrait: boolean;
   image?: string;
   video?: string;
+  soundActive: boolean;
 }
 
 const ScenePreview: React.FC<IScenePreviewProps> = ({
   image,
   video,
   isPortrait,
+  soundActive,
 }) => {
   const videoEl = useRef<HTMLVideoElement>(null);
 
@@ -35,6 +37,11 @@ const ScenePreview: React.FC<IScenePreviewProps> = ({
 
     if (videoEl.current) observer.observe(videoEl.current);
   });
+
+  useEffect(() => {
+    if (videoEl?.current?.volume)
+      videoEl.current.volume = soundActive ? 0.05 : 0;
+  }, [soundActive]);
 
   return (
     <div className={cx("scene-card-preview", { portrait: isPortrait })}>
@@ -323,6 +330,9 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             image={props.scene.paths.screenshot ?? undefined}
             video={props.scene.paths.preview ?? undefined}
             isPortrait={isPortrait()}
+            soundActive={
+              config.data?.configuration?.interface?.soundOnPreview ?? false
+            }
           />
           {maybeRenderRatingBanner()}
           {maybeRenderSceneSpecsOverlay()}
