@@ -38,8 +38,10 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       <div className="card-section">
         <h5 className="text-truncate">{performer.name}</h5>
         {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
+        <Link to={NavUtils.makePerformersCountryUrl(performer)}>
         <CountryFlag country={performer.country} />
-        <div className="text-muted">
+        </Link>
+          <div className="text-muted">
           Stars in&nbsp;
           <FormattedNumber value={performer.scene_count ?? 0} />
           &nbsp;
