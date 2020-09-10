@@ -197,13 +197,29 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
+  function maybeRenderGallery() {
+    if (props.scene.gallery) {
+      
+      return (
+        <div>
+          <Link to={`/galleries/${props.scene.gallery.id}`}>
+            <Button className="minimal">
+               <Icon icon="image" />
+            </Button>
+          </Link>
+        </div>
+      );
+    }
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       props.scene.tags.length > 0 ||
       props.scene.performers.length > 0 ||
       props.scene.movies.length > 0 ||
       props.scene.scene_markers.length > 0 ||
-      props.scene?.o_counter
+      props.scene?.o_counter ||
+      props.scene.gallery
     ) {
       return (
         <>
@@ -214,6 +230,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             {maybeRenderMoviePopoverButton()}
             {maybeRenderSceneMarkerPopoverButton()}
             {maybeRenderOCounter()}
+            {maybeRenderGallery()}
           </ButtonGroup>
         </>
       );
