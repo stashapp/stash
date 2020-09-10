@@ -23,7 +23,7 @@ script:
 #- make lint
 - make fmt-check vet it
 after_success:
-- docker pull stashapp/compiler:develop
+- docker pull stashapp/compiler:3
 - sh ./scripts/cross-compile.sh
 - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then sh ./scripts/upload-pull-request.sh; fi'
 before_deploy:
