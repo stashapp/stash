@@ -72,15 +72,14 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       </td>
       <td>{renderMovies(scene.movies)}</td>
       <td>
-      
-          {scene.gallery && (
+        {scene.gallery && (
           <Button className="minimal">
             <Link to={`/galleries/${scene.gallery.id}`}>
                 <Icon icon="image" />
             </Link>
           </Button>
           )}
-          </td>
+      </td>
       
     </tr>
   );
