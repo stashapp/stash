@@ -17,6 +17,7 @@ export const StudioList: React.FC<IStudioList> = ({
   const listData = useStudiosList({
     renderContent,
     filterHook,
+    persistState: !fromParent,
   });
 
   function renderContent(

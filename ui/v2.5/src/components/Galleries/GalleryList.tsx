@@ -11,6 +11,7 @@ export const GalleryList: React.FC = () => {
   const listData = useGalleriesList({
     zoomable: true,
     renderContent,
+    persistState: true,
   });
 
   function renderContent(
