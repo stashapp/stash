@@ -17,6 +17,10 @@
 @import "src/components/Wall/styles.scss";
 @import "../node_modules/flag-icon-css/css/flag-icon.min.css";
 
+#root {
+  position: relative !important;
+}
+
 html {
   font-size: 14px;
 }
