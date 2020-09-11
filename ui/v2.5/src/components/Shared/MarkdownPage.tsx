@@ -7,7 +7,7 @@ interface IPageProps {
   page: any;
 }
 
-export const Page: React.FC<IPageProps> = ({ page }) => {
+export const MarkdownPage: React.FC<IPageProps> = ({ page }) => {
   const [markdown, setMarkdown] = useState("");
 
   useEffect(() => {
