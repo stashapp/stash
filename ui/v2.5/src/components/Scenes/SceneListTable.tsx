@@ -70,7 +70,7 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
           </Link>
         )}
       </td>
-      <td>{renderMovies(scene.movies)}</td>
+      <td>{renderMovies(scene)}</td>
       <td>
         {scene.gallery && (
           <Button className="minimal">
