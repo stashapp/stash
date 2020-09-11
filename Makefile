@@ -41,12 +41,15 @@ endif
 
 build: pre-build
 	$(eval LDFLAGS := $(LDFLAGS) -X 'github.com/stashapp/stash/pkg/api.version=$(STASH_VERSION)' -X 'github.com/stashapp/stash/pkg/api.buildstamp=$(BUILD_DATE)' -X 'github.com/stashapp/stash/pkg/api.githash=$(GITHASH)')
-	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" -ldflags="-extldflags=-static $(LDFLAGS) $(EXTRA_LDFLAGS)"
+	$(SET) CGO_ENABLED=1 $(SEPARATOR) go build $(OUTPUT) -mod=vendor -v -tags "sqlite_omit_load_extension osusergo netgo" -ldflags "$(LDFLAGS) $(EXTRA_LDFLAGS)"
 
 # strips debug symbols from the release build
 # consider -trimpath in go build if we move to go 1.13+
 build-release: EXTRA_LDFLAGS := -s -w
 build-release: build
+
+build-release-static: EXTRA_LDFLAGS := -extldflags=-static -s -w
+build-release-static: build
 
 install:
 	packr2 install
