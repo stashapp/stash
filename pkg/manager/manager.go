@@ -25,7 +25,7 @@ type singleton struct {
 	PluginCache  *plugin.Cache
 	ScraperCache *scraper.Cache
 
-	DownloadStore DownloadStore
+	DownloadStore *DownloadStore
 }
 
 var instance *singleton

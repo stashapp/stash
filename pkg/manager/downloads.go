@@ -3,22 +3,31 @@ package manager
 import (
 	"net/http"
 	"os"
+	"sync"
+	"time"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 // DownloadStore manages single-use generated files for the UI to download.
-type DownloadStore map[string]storeFile
+type DownloadStore struct {
+	m     map[string]*storeFile
+	mutex sync.Mutex
+}
 
 type storeFile struct {
 	path        string
 	contentType string
 	keep        bool
+	wg          sync.WaitGroup
+	once        sync.Once
 }
 
-func NewDownloadStore() DownloadStore {
-	return make(DownloadStore)
+func NewDownloadStore() *DownloadStore {
+	return &DownloadStore{
+		m: make(map[string]*storeFile),
+	}
 }
 
 func (s *DownloadStore) RegisterFile(fp string, contentType string, keep bool) string {
@@ -31,47 +40,70 @@ func (s *DownloadStore) RegisterFile(fp string, contentType string, keep bool) s
 	generate := true
 	a := 0
 
+	s.mutex.Lock()
 	for generate && a < attempts {
 		hash = utils.GenerateRandomKey(keyLength)
-		_, generate = (*s)[hash]
+		_, generate = s.m[hash]
 		a = a + 1
 	}
 
-	(*s)[hash] = storeFile{
+	s.m[hash] = &storeFile{
 		path:        fp,
 		contentType: contentType,
 		keep:        keep,
 	}
+	s.mutex.Unlock()
 
 	return hash
 }
 
 func (s *DownloadStore) Serve(hash string, w http.ResponseWriter, r *http.Request) {
-	f, ok := (*s)[hash]
-	delete(*s, hash)
+	s.mutex.Lock()
+	f, ok := s.m[hash]
 
 	if !ok {
+		s.mutex.Unlock()
 		http.NotFound(w, r)
 		return
 	}
+
+	if !f.keep {
+		s.waitAndRemoveFile(hash, &w, r)
+	}
+
+	s.mutex.Unlock()
 
 	if f.contentType != "" {
 		w.Header().Add("Content-Type", f.contentType)
 	}
 	http.ServeFile(w, r, f.path)
-
-	if !f.keep {
-		s.waitAndRemoveFile(f.path, &w, r)
-	}
 }
 
-func (s *DownloadStore) waitAndRemoveFile(filepath string, w *http.ResponseWriter, r *http.Request) {
+func (s *DownloadStore) waitAndRemoveFile(hash string, w *http.ResponseWriter, r *http.Request) {
+	f := s.m[hash]
 	notify := r.Context().Done()
+	f.wg.Add(1)
+
 	go func() {
 		<-notify
-		err := os.Remove(filepath)
-		if err != nil {
-			logger.Errorf("error removing %s after downloading: %s", filepath, err.Error())
-		}
+		s.mutex.Lock()
+		defer s.mutex.Unlock()
+
+		f.wg.Done()
 	}()
+
+	go f.once.Do(func() {
+		// leave it up for 30 seconds after the first request to allow for multiple requests
+		time.Sleep(30 * time.Second)
+
+		f.wg.Wait()
+		s.mutex.Lock()
+		defer s.mutex.Unlock()
+
+		delete(s.m, hash)
+		err := os.Remove(f.path)
+		if err != nil {
+			logger.Errorf("error removing %s after downloading: %s", f.path, err.Error())
+		}
+	})
 }
