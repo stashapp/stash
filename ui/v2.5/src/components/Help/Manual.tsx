@@ -124,7 +124,7 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
         <Container className="manual-container">
           <Tab.Container
             activeKey={activeTab}
-            onSelect={(k) => setActiveTab(k)}
+            onSelect={(k) => k && setActiveTab(k)}
             id="manual-tabs"
           >
             <Row>
