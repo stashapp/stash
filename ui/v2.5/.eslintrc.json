@@ -1,4 +1,10 @@
 {
+  "env": {
+    "browser": true
+  },
+  "globals": {
+    "Mousetrap": "readonly"
+  },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": "./tsconfig.json"
@@ -16,11 +22,18 @@
   "rules": {
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/no-explicit-any": 2,
-      "lines-between-class-members": "off",
-      "@typescript-eslint/interface-name-prefix": [
-        "warn",
-        { "prefixWithI": "always" }
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+        "selector": "interface",
+        "format": ["PascalCase"],
+        "custom": {
+          "regex": "^I[A-Z]",
+          "match": true
+         }
+        }
       ],
+      "lines-between-class-members": "off",
       "import/extensions": [
         "error",
         "ignorePackages",
@@ -46,6 +59,7 @@
       "@typescript-eslint/indent": "off",
       "react/prop-types": "off",
       "react/destructuring-assignment": "off",
+      "react/require-default-props": "off",
       "react/jsx-props-no-spreading": "off",
       "react/style-prop-object": ["error", {
         "allow": ["FormattedNumber"]

@@ -14,4 +14,4 @@ LINUX_ARM32v6="echo '=== Building Linux (armv6 | Raspberry Pi 1) binary ==='; $S
 
 COMMAND="$SETUP $WINDOWS $DARWIN $LINUX_AMD64 $LINUX_ARM64v8 $LINUX_ARM32v7 $LINUX_ARM32v6 echo '=== Build complete ==='"
 
-docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash stashapp/compiler:develop /bin/bash -c "$COMMAND"
+docker run --rm --mount type=bind,source="$(pwd)",target=/stash -w /stash stashapp/compiler:4 /bin/bash -c "$COMMAND"

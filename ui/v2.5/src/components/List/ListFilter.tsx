@@ -9,7 +9,6 @@ import {
   Form,
   OverlayTrigger,
   Tooltip,
-  SafeAnchorProps,
   InputGroup,
   FormControl,
   ButtonToolbar,
@@ -160,11 +159,9 @@ export const ListFilter: React.FC<IListFilterProps> = (
     props.onFilterUpdate(newFilter);
   }
 
-  function onChangeSortBy(event: React.MouseEvent<SafeAnchorProps>) {
-    const target = event.currentTarget as HTMLAnchorElement;
-
+  function onChangeSortBy(event: React.MouseEvent<HTMLAnchorElement>) {
     const newFilter = _.cloneDeep(props.filter);
-    newFilter.sortBy = target.text;
+    newFilter.sortBy = event.currentTarget.text;
     newFilter.currentPage = 1;
     props.onFilterUpdate(newFilter);
   }
