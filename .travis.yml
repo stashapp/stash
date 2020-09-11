@@ -5,7 +5,7 @@ git:
   depth: false
 language: go
 go:
-- 1.11.x
+- 1.13.x
 services:
 - docker
 env:
@@ -23,7 +23,7 @@ script:
 #- make lint
 - make fmt-check vet it
 after_success:
-- docker pull stashapp/compiler:develop
+- docker pull stashapp/compiler:4
 - sh ./scripts/cross-compile.sh
 - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then sh ./scripts/upload-pull-request.sh; fi'
 before_deploy:
