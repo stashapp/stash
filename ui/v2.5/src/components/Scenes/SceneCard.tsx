@@ -199,12 +199,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
 
   function maybeRenderGallery() {
     if (props.scene.gallery) {
-      
       return (
         <div>
           <Link to={`/galleries/${props.scene.gallery.id}`}>
             <Button className="minimal">
-               <Icon icon="image" />
+              <Icon icon="image" />
             </Button>
           </Link>
         </div>
