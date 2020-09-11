@@ -2,6 +2,8 @@ import React from "react";
 import { useChangelogStorage } from "src/hooks";
 import Version from "./Version";
 import { V010, V011, V020, V021, V030 } from "./versions";
+import V040 from "./versions/V040.md";
+import { MarkdownPage } from "../Shared/MarkdownPage";
 
 const Changelog: React.FC = () => {
   const [{ data, loading }, setOpenState] = useChangelogStorage();
@@ -30,11 +32,19 @@ const Changelog: React.FC = () => {
     <>
       <h1 className="mb-4">Changelog:</h1>
       <Version
-        version={stashVersion || "v0.3.0"}
+        version={stashVersion || "v0.4.0"}
         date={buildDate}
         openState={openState}
         setOpenState={setVersionOpenState}
         defaultOpen
+      >
+        <MarkdownPage page={V040} />
+      </Version>
+      <Version
+        version="v0.3.0"
+        date="2020-09-02"
+        openState={openState}
+        setOpenState={setVersionOpenState}
       >
         <V030 />
       </Version>
