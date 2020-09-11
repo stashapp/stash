@@ -21,7 +21,7 @@ export const Settings: React.FC = () => {
       <Tab.Container
         defaultActiveKey={defaultTab}
         id="configuration-tabs"
-        onSelect={onSelect}
+        onSelect={(tab) => tab && onSelect(tab)}
       >
         <Row>
           <Col sm={3} md={2}>

@@ -129,7 +129,7 @@ export const SceneFilenameParser: React.FC = () => {
 
     queryParseSceneFilenames(parserFilter, parserInputData)
       .then((response) => {
-        const result = response.data.parseSceneFilenames;
+        const result = response?.data?.parseSceneFilenames;
         if (result) {
           parseResults(result.results);
           setTotalItems(result.count);

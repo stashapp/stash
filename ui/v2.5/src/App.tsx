@@ -5,8 +5,8 @@ import { ToastProvider } from "src/hooks/Toast";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import "@formatjs/intl-numberformat/polyfill";
-import "@formatjs/intl-numberformat/dist/locale-data/en";
-import "@formatjs/intl-numberformat/dist/locale-data/en-GB";
+import "@formatjs/intl-numberformat/locale-data/en";
+import "@formatjs/intl-numberformat/locale-data/en-GB";
 
 import locales from "src/locale";
 import { useConfiguration } from "src/core/StashService";
