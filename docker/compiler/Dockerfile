@@ -1,4 +1,4 @@
-FROM golang:1.13.15-stretch
+FROM golang:1.13.15
 
 LABEL maintainer="stashappdev@gmail.com"
 
