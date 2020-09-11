@@ -12,7 +12,7 @@ import {
 import { CountryFlag, Icon, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
-import Lightbox from "react-images";
+import FsLightbox from "fslightbox-react";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
@@ -34,7 +34,7 @@ export const Performer: React.FC = () => {
   >({});
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
-  const [lightboxIsOpen, setLightboxIsOpen] = useState(false);
+  const [lightboxToggle, setLightboxToggle] = useState(false);
 
   // if undefined then get the existing image
   // if null then get the default (no) image
@@ -288,8 +288,6 @@ export const Performer: React.FC = () => {
       </div>
     );
 
-  const photos = [{ src: activeImage, caption: "Image" }];
-
   if (!performer.id) {
     return <LoadingIndicator />;
   }
@@ -300,7 +298,10 @@ export const Performer: React.FC = () => {
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
-          <Button variant="link" onClick={() => setLightboxIsOpen(true)}>
+          <Button
+            variant="link"
+            onClick={() => setLightboxToggle(!lightboxToggle)}
+          >
             <img className="performer" src={activeImage} alt="Performer" />
           </Button>
         )}
@@ -321,14 +322,7 @@ export const Performer: React.FC = () => {
           <div className="performer-tabs">{renderTabs()}</div>
         </div>
       </div>
-      <Lightbox
-        images={photos}
-        onClose={() => setLightboxIsOpen(false)}
-        currentImage={0}
-        isOpen={lightboxIsOpen}
-        onClickImage={() => window.open(activeImage, "_blank")}
-        width={9999}
-      />
+      <FsLightbox toggler={lightboxToggle} sources={[activeImage]} />
     </div>
   );
 };
