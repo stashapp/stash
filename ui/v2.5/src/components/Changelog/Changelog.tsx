@@ -1,8 +1,12 @@
 import React from "react";
 import { useChangelogStorage } from "src/hooks";
 import Version from "./Version";
-import { V010, V011, V020, V021, V030 } from "./versions";
-import V040 from "./versions/V040.md";
+import V010 from "./versions/v010.md";
+import V011 from "./versions/v011.md";
+import V020 from "./versions/v020.md";
+import V021 from "./versions/v021.md";
+import V030 from "./versions/v030.md";
+import V040 from "./versions/v040.md";
 import { MarkdownPage } from "../Shared/MarkdownPage";
 
 const Changelog: React.FC = () => {
@@ -46,7 +50,7 @@ const Changelog: React.FC = () => {
         openState={openState}
         setOpenState={setVersionOpenState}
       >
-        <V030 />
+        <MarkdownPage page={V030} />
       </Version>
       <Version
         version="v0.2.1"
@@ -54,7 +58,7 @@ const Changelog: React.FC = () => {
         openState={openState}
         setOpenState={setVersionOpenState}
       >
-        <V021 />
+        <MarkdownPage page={V021} />
       </Version>
       <Version
         version="v0.2.0"
@@ -62,7 +66,7 @@ const Changelog: React.FC = () => {
         openState={openState}
         setOpenState={setVersionOpenState}
       >
-        <V020 />
+        <MarkdownPage page={V020} />
       </Version>
       <Version
         version="v0.1.1"
@@ -70,7 +74,7 @@ const Changelog: React.FC = () => {
         openState={openState}
         setOpenState={setVersionOpenState}
       >
-        <V011 />
+        <MarkdownPage page={V011} />
       </Version>
       <Version
         version="v0.1.0"
@@ -78,7 +82,7 @@ const Changelog: React.FC = () => {
         openState={openState}
         setOpenState={setVersionOpenState}
       >
-        <V010 />
+        <MarkdownPage page={V010} />
       </Version>
     </>
   );
