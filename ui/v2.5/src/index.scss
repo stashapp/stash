@@ -17,6 +17,12 @@
 @import "src/components/Wall/styles.scss";
 @import "../node_modules/flag-icon-css/css/flag-icon.min.css";
 
+/* stylelint-disable */
+#root {
+  position: relative !important;
+}
+/* stylelint-enable */
+
 html {
   font-size: 14px;
 }
