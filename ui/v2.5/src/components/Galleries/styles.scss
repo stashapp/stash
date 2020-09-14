@@ -1,16 +1,20 @@
-/* stylelint-disable selector-class-pattern */
-.react-photo-gallery--gallery {
-  img {
-    object-fit: contain;
-  }
-}
-/* stylelint-enable selector-class-pattern */
-
 .gallery-card {
-  padding: 0.5rem;
+  &.card {
+    padding: 0;
+    padding-bottom: 1rem;
+  }
+
+  .card-section {
+    margin-top: auto;
+  }
 
   &-image {
     object-fit: contain;
-    vertical-align: middle;
+  }
+}
+
+.gallery-image {
+  &:hover {
+    cursor: pointer;
   }
 }

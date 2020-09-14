@@ -30,6 +30,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     filterHook,
     zoomable: true,
     defaultZoomIndex: 0,
+    persistState: true,
   });
 
   function getDeleteTagInput() {

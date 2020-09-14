@@ -1,5 +1,3 @@
-/* eslint-disable react/no-this-in-sfc */
-
 import { Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
@@ -24,10 +22,15 @@ import { useToast } from "src/hooks";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
 
+interface IStudioParams {
+  id?: string;
+  tab?: string;
+}
+
 export const Studio: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { id = "new" } = useParams();
+  const { tab = "details", id = "new" } = useParams<IStudioParams>();
   const isNew = id === "new";
 
   // Editing state
@@ -104,7 +107,7 @@ export const Studio: React.FC = () => {
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
 
   if (!isNew && !isEditing) {
-    if (!data?.findStudio || loading) return <LoadingIndicator />;
+    if (!data?.findStudio || loading || !studio.id) return <LoadingIndicator />;
     if (error) return <div>{error.message}</div>;
   }
 
@@ -192,6 +195,14 @@ export const Studio: React.FC = () => {
     );
   }
 
+  const activeTabKey = tab === "childstudios" ? tab : "scenes";
+  const setActiveTabKey = (newTab: string | null) => {
+    if (tab !== newTab) {
+      const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
+      history.replace(`/studios/${id}${tabParam}`);
+    }
+  };
+
   return (
     <div className="row">
       <div
@@ -257,11 +268,17 @@ export const Studio: React.FC = () => {
       </div>
       {!isNew && (
         <div className="col col-md-8">
-          <Tabs id="studio-tabs" mountOnEnter>
-            <Tab eventKey="studio-scenes-panel" title="Scenes">
+          <Tabs
+            id="studio-tabs"
+            mountOnEnter
+            unmountOnExit
+            activeKey={activeTabKey}
+            onSelect={setActiveTabKey}
+          >
+            <Tab eventKey="scenes" title="Scenes">
               <StudioScenesPanel studio={studio} />
             </Tab>
-            <Tab eventKey="studio-children-panel" title="Child Studios">
+            <Tab eventKey="childstudios" title="Child Studios">
               <StudioChildrenPanel studio={studio} />
             </Tab>
           </Tabs>

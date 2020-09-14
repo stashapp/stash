@@ -37,7 +37,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 	qb := models.NewTagQueryBuilder()
 
 	// ensure name is unique
-	if err := manager.EnsureTagNameUnique(newTag.Name, tx); err != nil {
+	if err := manager.EnsureTagNameUnique(newTag, tx); err != nil {
 		tx.Rollback()
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	}
 
 	if existing.Name != updatedTag.Name {
-		if err := manager.EnsureTagNameUnique(updatedTag.Name, tx); err != nil {
+		if err := manager.EnsureTagNameUnique(updatedTag, tx); err != nil {
 			tx.Rollback()
 			return nil, err
 		}

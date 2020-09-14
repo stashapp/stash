@@ -27,7 +27,7 @@ type Scraper {
 
 type ScrapedScenePerformer {
   """Set if performer matched"""
-  id: ID
+  stored_id: ID
   name: String!
   gender: String
   url: String
@@ -48,7 +48,7 @@ type ScrapedScenePerformer {
 
 type ScrapedSceneMovie {
   """Set if movie matched"""
-  id: ID
+  stored_id: ID
   name: String!
   aliases: String
   duration: String
@@ -61,14 +61,14 @@ type ScrapedSceneMovie {
 
 type ScrapedSceneStudio {
   """Set if studio matched"""
-  id: ID
+  stored_id: ID
   name: String!
   url: String
 }
 
 type ScrapedSceneTag {
   """Set if tag matched"""
-  id: ID
+  stored_id: ID
   name: String!
 }
 

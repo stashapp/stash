@@ -12,15 +12,20 @@ import {
 import { CountryFlag, Icon, LoadingIndicator } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
-import Lightbox from "react-images";
+import FsLightbox from "fslightbox-react";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
 
+interface IPerformerParams {
+  id?: string;
+  tab?: string;
+}
+
 export const Performer: React.FC = () => {
   const Toast = useToast();
   const history = useHistory();
-  const { id = "new" } = useParams();
+  const { tab = "details", id = "new" } = useParams<IPerformerParams>();
   const isNew = id === "new";
 
   // Performer state
@@ -29,7 +34,7 @@ export const Performer: React.FC = () => {
   >({});
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
-  const [lightboxIsOpen, setLightboxIsOpen] = useState(false);
+  const [lightboxToggle, setLightboxToggle] = useState(false);
 
   // if undefined then get the existing image
   // if null then get the default (no) image
@@ -42,12 +47,21 @@ export const Performer: React.FC = () => {
   // Network state
   const [isLoading, setIsLoading] = useState(false);
 
-  const [activeTabKey, setActiveTabKey] = useState("details");
-
   const { data, error } = useFindPerformer(id);
   const [updatePerformer] = usePerformerUpdate();
   const [createPerformer] = usePerformerCreate();
   const [deletePerformer] = usePerformerDestroy();
+
+  const activeTabKey =
+    tab === "scenes" || tab === "edit" || tab === "operations"
+      ? tab
+      : "details";
+  const setActiveTabKey = (newTab: string | null) => {
+    if (tab !== newTab) {
+      const tabParam = newTab === "details" ? "" : `/${newTab}`;
+      history.replace(`/performers/${id}${tabParam}`);
+    }
+  };
 
   useEffect(() => {
     setIsLoading(false);
@@ -128,7 +142,7 @@ export const Performer: React.FC = () => {
   const renderTabs = () => (
     <Tabs
       activeKey={activeTabKey}
-      onSelect={(k: string) => setActiveTabKey(k)}
+      onSelect={setActiveTabKey}
       id="performer-details"
       unmountOnExit
     >
@@ -274,7 +288,9 @@ export const Performer: React.FC = () => {
       </div>
     );
 
-  const photos = [{ src: activeImage, caption: "Image" }];
+  if (!performer.id) {
+    return <LoadingIndicator />;
+  }
 
   return (
     <div id="performer-page" className="row">
@@ -282,7 +298,10 @@ export const Performer: React.FC = () => {
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
-          <Button variant="link" onClick={() => setLightboxIsOpen(true)}>
+          <Button
+            variant="link"
+            onClick={() => setLightboxToggle(!lightboxToggle)}
+          >
             <img className="performer" src={activeImage} alt="Performer" />
           </Button>
         )}
@@ -303,14 +322,7 @@ export const Performer: React.FC = () => {
           <div className="performer-tabs">{renderTabs()}</div>
         </div>
       </div>
-      <Lightbox
-        images={photos}
-        onClose={() => setLightboxIsOpen(false)}
-        currentImage={0}
-        isOpen={lightboxIsOpen}
-        onClickImage={() => window.open(activeImage, "_blank")}
-        width={9999}
-      />
+      <FsLightbox toggler={lightboxToggle} sources={[activeImage]} />
     </div>
   );
 };

@@ -13,6 +13,10 @@
   }
 }
 
+.video-section {
+  position: relative;
+}
+
 .card-section {
   margin-bottom: 0;
   padding: 0.5rem 1rem 0 1rem;
@@ -52,15 +56,6 @@
   .apply-operation {
     margin-top: 2rem;
   }
-}
-
-.marker-container {
-  display: "flex";
-  flex-wrap: "nowrap";
-  margin-bottom: "20px";
-  overflow-x: "scroll";
-  overflow-y: "hidden";
-  white-space: "nowrap";
 }
 
 .studio-logo {
@@ -174,11 +169,7 @@ textarea.scene-description {
     padding: 0;
   }
 
-  &-link {
-    position: relative;
-  }
-
-  .scene-card-check {
+  &-check {
     left: 0.5rem;
     margin-top: -12px;
     opacity: 0;
@@ -199,6 +190,34 @@ textarea.scene-description {
     transition: opacity 0.5s;
   }
 
+  &-preview {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+    position: relative;
+
+    &-image,
+    &-video {
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+
+    &-video {
+      position: absolute;
+      top: -9999px;
+      transition: top 0s;
+      transition-delay: 0s;
+    }
+
+    &.portrait {
+      .scene-card-preview-image,
+      .scene-card-preview-video {
+        object-fit: contain;
+      }
+    }
+  }
+
   &:hover {
     .scene-specs-overlay,
     .rating-banner,
@@ -215,6 +234,11 @@ textarea.scene-description {
     .scene-card-check {
       opacity: 0.75;
       transition: opacity 0.5s;
+    }
+
+    .scene-card-preview-video {
+      top: 0;
+      transition-delay: 0.2s;
     }
   }
 }
@@ -302,5 +326,27 @@ textarea.scene-description {
   .scrape-url-button {
     color: $text-color;
     margin-right: 0;
+  }
+}
+
+.scene-markers-panel {
+  .wall-item {
+    height: inherit;
+    min-height: 14rem;
+    width: calc(100% - 2rem);
+
+    &-missing {
+      font-size: 1.5rem;
+    }
+
+    &::before {
+      display: none;
+    }
+
+    &:hover {
+      .wall-item-container {
+        transform: scale(1);
+      }
+    }
   }
 }

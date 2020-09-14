@@ -189,8 +189,9 @@ func (q *xpathQuery) nodeText(n *html.Node) string {
 	var ret string
 	if n != nil && n.Type == html.CommentNode {
 		ret = htmlquery.OutputHTML(n, true)
+	} else {
+		ret = htmlquery.InnerText(n)
 	}
-	ret = htmlquery.InnerText(n)
 
 	// trim all leading and trailing whitespace
 	ret = strings.TrimSpace(ret)

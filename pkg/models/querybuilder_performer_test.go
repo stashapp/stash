@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -205,6 +206,46 @@ func TestPerformerDestroyPerformerImage(t *testing.T) {
 		t.Fatalf("Error getting image: %s", err.Error())
 	}
 	assert.Nil(t, storedImage)
+}
+
+func TestPerformerQueryAge(t *testing.T) {
+	const age = 19
+	ageCriterion := models.IntCriterionInput{
+		Value:    age,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyPerformerAge(t, ageCriterion)
+
+	ageCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyPerformerAge(t, ageCriterion)
+
+	ageCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyPerformerAge(t, ageCriterion)
+
+	ageCriterion.Modifier = models.CriterionModifierLessThan
+	verifyPerformerAge(t, ageCriterion)
+}
+
+func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
+	qb := models.NewPerformerQueryBuilder()
+	performerFilter := models.PerformerFilterType{
+		Age: &ageCriterion,
+	}
+
+	performers, _ := qb.Query(&performerFilter, nil)
+
+	now := time.Now()
+	for _, performer := range performers {
+		bd := performer.Birthdate.String
+		d, _ := time.Parse("2006-01-02", bd)
+		age := now.Year() - d.Year()
+		if now.YearDay() < d.YearDay() {
+			age = age - 1
+		}
+
+		verifyInt(t, age, ageCriterion)
+	}
 }
 
 // TODO Update

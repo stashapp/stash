@@ -1,5 +1,3 @@
-/* eslint-disable react/no-this-in-sfc */
-
 import React, { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 import { Button, Popover, OverlayTrigger, Table } from "react-bootstrap";
