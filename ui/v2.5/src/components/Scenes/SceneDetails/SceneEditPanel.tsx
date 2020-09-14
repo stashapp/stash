@@ -387,36 +387,36 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       return;
     }
 
-    if (stashBoxes.length === 1) {
-      return (
-        <Button
-          className="mr-1"
-          onClick={() => onStashBoxQueryClicked(0)}
-          title="Query"
-        >
-          <Icon className="fa-fw" icon="search" />
-        </Button>
-      );
-    }
+    // if (stashBoxes.length === 1) {
+    //   return (
+    //     <Button
+    //       className="mr-1"
+    //       onClick={() => onStashBoxQueryClicked(0)}
+    //       title="Query"
+    //     >
+    //       <Icon className="fa-fw" icon="search" />
+    //     </Button>
+    //   );
+    // }
 
-    // TODO - change name based on stashbox configuration
-    return (
-      <Dropdown className="d-inline-block mr-1">
-        <Dropdown.Toggle id="stashbox-query-dropdown">
-          <Icon className="fa-fw" icon="search" />
-        </Dropdown.Toggle>
-        <Dropdown.Menu>
-          {stashBoxes.map((s, index) => (
-            <Dropdown.Item
-              key={s.endpoint}
-              onClick={() => onStashBoxQueryClicked(index)}
-            >
-              stash-box
-            </Dropdown.Item>
-          ))}
-        </Dropdown.Menu>
-      </Dropdown>
-    );
+    // // TODO - change name based on stashbox configuration
+    // return (
+    //   <Dropdown className="d-inline-block mr-1">
+    //     <Dropdown.Toggle id="stashbox-query-dropdown">
+    //       <Icon className="fa-fw" icon="search" />
+    //     </Dropdown.Toggle>
+    //     <Dropdown.Menu>
+    //       {stashBoxes.map((s, index) => (
+    //         <Dropdown.Item
+    //           key={s.endpoint}
+    //           onClick={() => onStashBoxQueryClicked(index)}
+    //         >
+    //           stash-box
+    //         </Dropdown.Item>
+    //       ))}
+    //     </Dropdown.Menu>
+    //   </Dropdown>
+    // );
   }
 
   function urlScrapable(scrapedUrl: string): boolean {
