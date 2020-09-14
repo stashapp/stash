@@ -162,6 +162,10 @@ func (qb *MovieQueryBuilder) Query(movieFilter *MovieFilterType, findFilter *Fin
 			body += `left join movies_images on movies_images.movie_id = movies.id
 			`
 			whereClauses = appendClause(whereClauses, "movies_images.back_image IS NULL")
+		case "scenes":
+			body += `left join movies_scenes on movies_scenes.movie_id = movies.id
+			`
+			whereClauses = appendClause(whereClauses, "movies_scenes.scene_id IS NULL")
 		default:
 			whereClauses = appendClause(whereClauses, "movies."+*isMissingFilter+" IS NULL")
 		}
