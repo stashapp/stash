@@ -87,7 +87,7 @@ export class StudioIsMissingCriterionOption implements ICriterionOption {
 
 export class MovieIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "movieIsMissing";
-  public options: string[] = ["front_image", "back_image"];
+  public options: string[] = ["front_image", "back_image", "scenes"];
 }
 
 export class MovieIsMissingCriterionOption implements ICriterionOption {
