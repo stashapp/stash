@@ -76,6 +76,22 @@ func Download(configDirectory string) error {
 		if err := unzip(archivePath, configDirectory); err != nil {
 			return err
 		}
+
+		// On OSX or Linux set downloaded files permissions
+		if runtime.GOOS == "darwin" || runtime.GOOS == "linux" {
+			if err := os.Chmod(filepath.Join(configDirectory, "ffmpeg"), 0755); err != nil {
+				return err
+			}
+
+			if err := os.Chmod(filepath.Join(configDirectory, "ffprobe"), 0755); err != nil {
+				return err
+			}
+
+			// TODO: In future possible clear xattr to allow running on osx without user intervention
+			// TODO: this however may not be required.
+			// xattr -c /path/to/binary -- xattr.Remove(path, "com.apple.quarantine")
+		}
+
 	} else {
 		return fmt.Errorf("ffmpeg was downloaded to %s", archivePath)
 	}
