@@ -1,13 +1,12 @@
 package manager
 
 import (
-	"os"
-	"sync"
-
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
+	"sync"
 )
 
 type GenerateTranscodeTask struct {
@@ -79,7 +78,7 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 		}
 	}
 
-	if err := os.Rename(outputPath, instance.Paths.Scene.GetTranscodePath(sceneHash)); err != nil {
+	if err := utils.SafeMove(outputPath, instance.Paths.Scene.GetTranscodePath(sceneHash)); err != nil {
 		logger.Errorf("[transcode] error generating transcode: %s", err.Error())
 		return
 	}

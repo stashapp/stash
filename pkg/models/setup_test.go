@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 
@@ -370,6 +371,13 @@ func getPerformerBoolValue(index int) bool {
 	return index == 1
 }
 
+func getPerformerBirthdate(index int) string {
+	const minAge = 18
+	birthdate := time.Now()
+	birthdate = birthdate.AddDate(-minAge-index, -1, -1)
+	return birthdate.Format("2006-01-02")
+}
+
 //createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(tx *sqlx.Tx, n int, o int) error {
 	pqb := models.NewPerformerQueryBuilder()
@@ -391,6 +399,10 @@ func createPerformers(tx *sqlx.Tx, n int, o int) error {
 			Name:     sql.NullString{String: getPerformerStringValue(index, name), Valid: true},
 			Checksum: getPerformerStringValue(i, checksumField),
 			Favorite: sql.NullBool{Bool: getPerformerBoolValue(i), Valid: true},
+			Birthdate: models.SQLiteDate{
+				String: getPerformerBirthdate(i),
+				Valid:  true,
+			},
 		}
 
 		created, err := pqb.Create(performer, tx)

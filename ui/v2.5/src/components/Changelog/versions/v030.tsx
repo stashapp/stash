@@ -5,6 +5,7 @@ const markup = `
 #### 💥 **Note: After upgrading, the next scan will populate all scenes with oshash hashes. MD5 calculation can be disabled after populating the oshash for all scenes. See \`Hashing Algorithms\` in the \`Configuration\` section of the manual for details. **
 
 ### ✨ New Features
+*  Show and allow creation of unknown performers/tags/studios/movies in the scraper dialog.
 *  Add support for scraping movie details.
 *  Add support for JSON scrapers.
 *  Add support for plugin tasks.
@@ -19,6 +20,8 @@ const markup = `
 *  Add support for parent/child studios.
 
 ### 🎨 Improvements
+*  Support cbz galleries.
+*  Improve sprite generation performance.
 *  Make preview generation more fault-tolerant.
 *  Allow clearing of images and querying on missing images.
 *  Allow free-editing of scene movie number.
@@ -43,6 +46,8 @@ const markup = `
 *  Add reload scrapers button.
 
 ### 🐛 Bug fixes
+*  Fix directories with video name extensions being detected as files to be scanned.
+*  Fix issues moving generated files between file systems.
 *  Fix formatted dates using incorrect timezone.
 
 `;

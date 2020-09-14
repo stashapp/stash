@@ -135,7 +135,7 @@ const formatDate = (intl: IntlShape, date?: string) => {
     return "";
   }
 
-  return intl.formatDate(date, { format: "long" });
+  return intl.formatDate(date, { format: "long", timeZone: "utc" });
 };
 
 const TextUtils = {

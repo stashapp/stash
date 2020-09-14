@@ -1,12 +1,61 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Button, ButtonGroup, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
-import { useVideoHover } from "src/hooks";
 import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
 import { TextUtils } from "src/utils";
+
+interface IScenePreviewProps {
+  isPortrait: boolean;
+  image?: string;
+  video?: string;
+  soundActive: boolean;
+}
+
+const ScenePreview: React.FC<IScenePreviewProps> = ({
+  image,
+  video,
+  isPortrait,
+  soundActive,
+}) => {
+  const videoEl = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.intersectionRatio > 0)
+            // Catch is necessary due to DOMException if user hovers before clicking on page
+            videoEl.current?.play().catch(() => {});
+          else videoEl.current?.pause();
+        });
+      },
+      { root: document.documentElement }
+    );
+
+    if (videoEl.current) observer.observe(videoEl.current);
+  });
+
+  useEffect(() => {
+    if (videoEl?.current?.volume)
+      videoEl.current.volume = soundActive ? 0.05 : 0;
+  }, [soundActive]);
+
+  return (
+    <div className={cx("scene-card-preview", { portrait: isPortrait })}>
+      <img className="scene-card-preview-image" src={image} alt="" />
+      <video
+        className="scene-card-preview-video"
+        loop
+        preload="none"
+        ref={videoEl}
+        src={video}
+      />
+    </div>
+  );
+};
 
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
@@ -19,11 +68,6 @@ interface ISceneCardProps {
 export const SceneCard: React.FC<ISceneCardProps> = (
   props: ISceneCardProps
 ) => {
-  const [previewPath, setPreviewPath] = useState<string>();
-  const hoverHandler = useVideoHover({
-    resetOnMouseLeave: false,
-  });
-
   const config = useConfiguration();
   const showStudioAsText =
     config?.data?.configuration.interface.showStudioAsText ?? false;
@@ -102,7 +146,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     if (props.scene.performers.length <= 0) return;
 
     const popoverContent = props.scene.performers.map((performer) => (
-      <div className="performer-tag-container row" key="performer">
+      <div className="performer-tag-container row" key={performer.id}>
         <Link
           to={`/performers/${performer.id}`}
           className="performer-tag col m-auto zoom-2"
@@ -151,7 +195,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     ));
 
     return (
-      <HoverPopover placement="bottom" content={popoverContent}>
+      <HoverPopover
+        placement="bottom"
+        content={popoverContent}
+        className="tag-tooltip"
+      >
         <Button className="minimal">
           <Icon icon="film" />
           <span>{props.scene.movies.length}</span>
@@ -193,13 +241,28 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
+  function maybeRenderGallery() {
+    if (props.scene.gallery) {
+      return (
+        <div>
+          <Link to={`/galleries/${props.scene.gallery.id}`}>
+            <Button className="minimal">
+              <Icon icon="image" />
+            </Button>
+          </Link>
+        </div>
+      );
+    }
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       props.scene.tags.length > 0 ||
       props.scene.performers.length > 0 ||
       props.scene.movies.length > 0 ||
       props.scene.scene_markers.length > 0 ||
-      props.scene?.o_counter
+      props.scene?.o_counter ||
+      props.scene.gallery
     ) {
       return (
         <>
@@ -210,22 +273,11 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             {maybeRenderMoviePopoverButton()}
             {maybeRenderSceneMarkerPopoverButton()}
             {maybeRenderOCounter()}
+            {maybeRenderGallery()}
           </ButtonGroup>
         </>
       );
     }
-  }
-
-  function onMouseEnter() {
-    if (!previewPath || previewPath === "") {
-      setPreviewPath(props.scene.paths.preview || "");
-    }
-    hoverHandler.onMouseEnter();
-  }
-
-  function onMouseLeave() {
-    hoverHandler.onMouseLeave();
-    setPreviewPath("");
   }
 
   function handleSceneClick(
@@ -268,11 +320,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   let shiftKey = false;
 
   return (
-    <Card
-      className={`scene-card zoom-${props.zoomIndex}`}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
+    <Card className={`scene-card zoom-${props.zoomIndex}`}>
       <Form.Control
         type="checkbox"
         className="scene-card-check"
@@ -285,26 +333,28 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         }}
       />
 
-      <Link
-        to={`/scenes/${props.scene.id}`}
-        className="scene-card-link"
-        onClick={handleSceneClick}
-        onDragStart={handleDrag}
-        onDragOver={handleDragOver}
-        draggable={props.selecting}
-      >
-        {maybeRenderRatingBanner()}
-        {maybeRenderSceneStudioOverlay()}
-        {maybeRenderSceneSpecsOverlay()}
-        <video
-          loop
-          className={cx("scene-card-video", { portrait: isPortrait() })}
-          poster={props.scene.paths.screenshot || ""}
-          ref={hoverHandler.videoEl}
+      <div className="video-section">
+        <Link
+          to={`/scenes/${props.scene.id}`}
+          className="scene-card-link"
+          onClick={handleSceneClick}
+          onDragStart={handleDrag}
+          onDragOver={handleDragOver}
+          draggable={props.selecting}
         >
-          {previewPath ? <source src={previewPath} /> : ""}
-        </video>
-      </Link>
+          <ScenePreview
+            image={props.scene.paths.screenshot ?? undefined}
+            video={props.scene.paths.preview ?? undefined}
+            isPortrait={isPortrait()}
+            soundActive={
+              config.data?.configuration?.interface?.soundOnPreview ?? false
+            }
+          />
+          {maybeRenderRatingBanner()}
+          {maybeRenderSceneSpecsOverlay()}
+        </Link>
+        {maybeRenderSceneStudioOverlay()}
+      </div>
       <div className="card-section">
         <h5 className="card-section-title">
           {props.scene.title

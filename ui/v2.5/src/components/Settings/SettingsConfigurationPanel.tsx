@@ -5,7 +5,9 @@ import { useConfiguration, useConfigureGeneral } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
-import StashBoxConfiguration from "./StashBoxConfiguration";
+import StashBoxConfiguration, {
+  IStashBoxInstance,
+} from "./StashBoxConfiguration";
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const Toast = useToast();
@@ -55,7 +57,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [scraperCDPPath, setScraperCDPPath] = useState<string | undefined>(
     undefined
   );
-  const [stashBoxes, setStashBoxes] = useState<GQL.StashBoxInput[]>([]);
+  const [stashBoxes, setStashBoxes] = useState<IStashBoxInstance[]>([]);
 
   const { data, error, loading } = useConfiguration();
 
@@ -84,7 +86,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
     excludes,
     scraperUserAgent,
     scraperCDPPath,
-    stashBoxes,
+    stashBoxes: stashBoxes.map(
+      (b) =>
+        ({
+          name: b?.name ?? "",
+          api_key: b?.api_key ?? "",
+          endpoint: b?.endpoint ?? "",
+        } as GQL.StashBoxInput)
+    ),
   });
 
   useEffect(() => {
@@ -118,9 +127,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
       setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
       setStashBoxes(
-        conf.general.stashBoxes.map((box) => ({
+        conf.general.stashBoxes.map((box, i) => ({
+          name: box?.name ?? undefined,
           endpoint: box.endpoint,
           api_key: box.api_key,
+          index: i,
         })) ?? []
       );
     }
@@ -464,8 +475,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
             className="col col-sm-6 text-input"
             type="number"
             value={previewSegments.toString()}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setPreviewSegments(Number.parseInt(e.currentTarget.value, 10))
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setPreviewSegments(
+                Number.parseInt(e.currentTarget.value || "0", 10)
+              )
             }
           />
           <Form.Text className="text-muted">
@@ -479,9 +492,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             className="col col-sm-6 text-input"
             type="number"
             value={previewSegmentDuration.toString()}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setPreviewSegmentDuration(
-                Number.parseFloat(e.currentTarget.value)
+                Number.parseFloat(e.currentTarget.value || "0")
               )
             }
           />
@@ -555,7 +568,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </Form.Group>
 
       <hr />
-      <StashBoxConfiguration boxes={stashBoxes} saveBoxes={setStashBoxes} />
+      <Form.Group>
+        <h4>Stash-box integration</h4>
+        <StashBoxConfiguration boxes={stashBoxes} saveBoxes={setStashBoxes} />
+      </Form.Group>
       <hr />
 
       <Form.Group>
@@ -594,8 +610,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
             className="col col-sm-6 text-input"
             type="number"
             value={maxSessionAge.toString()}
-            onInput={(e: React.FormEvent<HTMLInputElement>) =>
-              setMaxSessionAge(Number.parseInt(e.currentTarget.value, 10))
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setMaxSessionAge(
+                Number.parseInt(e.currentTarget.value || "0", 10)
+              )
             }
           />
           <Form.Text className="text-muted">

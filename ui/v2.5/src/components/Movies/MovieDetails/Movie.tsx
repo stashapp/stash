@@ -1,4 +1,3 @@
-/* eslint-disable react/no-this-in-sfc */
 import React, { useEffect, useState, useCallback } from "react";
 import { useIntl } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
@@ -31,10 +30,14 @@ import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { MovieScenesPanel } from "./MovieScenesPanel";
 import { MovieScrapeDialog } from "./MovieScrapeDialog";
 
+interface IMovieParams {
+  id?: string;
+}
+
 export const Movie: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { id = "new" } = useParams();
+  const { id = "new" } = useParams<IMovieParams>();
   const isNew = id === "new";
 
   // Editing state

@@ -3,6 +3,7 @@ package config
 import (
 	"golang.org/x/crypto/bcrypt"
 
+	"errors"
 	"io/ioutil"
 	"path/filepath"
 
@@ -339,6 +340,21 @@ func ValidateCredentials(username string, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(authPWHash), []byte(password))
 
 	return username == authUser && err == nil
+}
+
+func ValidateStashBoxes(boxes []*models.StashBoxInput) error {
+	isMulti := len(boxes) > 1
+
+	for _, box := range boxes {
+		if box.APIKey == "" {
+			return errors.New("Stash-box API Key cannot be blank")
+		} else if box.Endpoint == "" {
+			return errors.New("Stash-box Endpoint cannot be blank")
+		} else if isMulti && box.Name == "" {
+			return errors.New("Stash-box Name cannot be blank")
+		}
+	}
+	return nil
 }
 
 // GetMaxSessionAge gets the maximum age for session cookies, in seconds.

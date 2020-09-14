@@ -54,7 +54,7 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
     );
 
   return (
-    <>
+    <div className="scene-markers-panel">
       <Button onClick={() => onOpenEditor()}>Create Marker</Button>
       <div className="container">
         <PrimaryTags
@@ -63,15 +63,13 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
           onEdit={onOpenEditor}
         />
       </div>
-      <div className="row">
-        <WallPanel
-          sceneMarkers={props.scene.scene_markers}
-          clickHandler={(marker) => {
-            window.scrollTo(0, 0);
-            onClickMarker(marker as GQL.SceneMarkerDataFragment);
-          }}
-        />
-      </div>
-    </>
+      <WallPanel
+        sceneMarkers={props.scene.scene_markers}
+        clickHandler={(marker) => {
+          window.scrollTo(0, 0);
+          onClickMarker(marker as GQL.SceneMarkerDataFragment);
+        }}
+      />
+    </div>
   );
 };

@@ -131,6 +131,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	}
 
 	if input.StashBoxes != nil {
+		if err := config.ValidateStashBoxes(input.StashBoxes); err != nil {
+			return nil, err
+		}
 		config.Set(config.StashBoxes, input.StashBoxes)
 	}
 

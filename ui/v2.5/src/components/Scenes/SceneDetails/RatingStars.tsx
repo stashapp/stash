@@ -99,6 +99,7 @@ export const RatingStars: React.FC<IRatingStarsProps> = (
       onFocus={() => onMouseOver(rating)}
       onBlur={() => onMouseOut(rating)}
       title={getTooltip(rating)}
+      key={`star-${rating}`}
     >
       <Icon
         icon={[getIconPrefix(rating), "star"]}

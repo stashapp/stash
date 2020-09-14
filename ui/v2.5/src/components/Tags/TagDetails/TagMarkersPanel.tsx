@@ -41,5 +41,5 @@ export const TagMarkersPanel: React.FC<ITagMarkersPanel> = ({ tag }) => {
     return filter;
   }
 
-  return <SceneMarkerList subComponent filterHook={filterHook} />;
+  return <SceneMarkerList filterHook={filterHook} />;
 };
