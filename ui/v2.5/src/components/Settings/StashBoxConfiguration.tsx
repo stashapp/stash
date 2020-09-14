@@ -99,7 +99,7 @@ export const StashBoxConfiguration: React.FC<IStashBoxConfigurationProps> = ({
 
   return (
     <Form.Group>
-      <h4>Stash-box integration</h4>
+      <h6>Stash-box Endpoints</h6>
       {boxes.length > 0 && (
         <div className="row no-gutters">
           <h6 className="col-3 ml-1">Name</h6>
