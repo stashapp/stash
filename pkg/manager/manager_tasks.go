@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"errors"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -170,10 +171,30 @@ func (s *singleton) Export() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		task := ExportTask{fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm()}
+		task := ExportTask{full: true, fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm()}
 		go task.Start(&wg)
 		wg.Wait()
 	}()
+}
+
+func (s *singleton) RunSingleTask(t Task) (*sync.WaitGroup, error) {
+	if s.Status.Status != Idle {
+		return nil, errors.New("task already running")
+	}
+
+	s.Status.SetStatus(t.GetStatus())
+	s.Status.indefiniteProgress()
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		defer s.returnToIdleState()
+
+		go t.Start(&wg)
+		wg.Wait()
+	}()
+
+	return &wg, nil
 }
 
 func setGeneratePreviewOptionsInput(optionsInput *models.GeneratePreviewOptionsInput) {

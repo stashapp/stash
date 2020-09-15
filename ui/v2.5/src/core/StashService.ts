@@ -1,32 +1,45 @@
+import { ApolloCache, DocumentNode } from "@apollo/client";
+import {
+  isField,
+  resultKeyNameFromField,
+  getQueryDefinition,
+  getOperationName,
+} from "@apollo/client/utilities";
 import { ListFilterModel } from "../models/list-filter/filter";
 import * as GQL from "./generated-graphql";
 
 import { createClient } from "./createClient";
 
-const { client, cache } = createClient();
+const { client } = createClient();
 
 export const getClient = () => client;
 
-// TODO: Invalidation should happen through apollo client, rather than rewriting cache directly
-const invalidateQueries = (queries: string[]) => {
-  if (cache) {
-    const keyMatchers = queries.map((query) => {
-      return new RegExp(`^${query}`, "i");
-    });
+const getQueryNames = (queries: DocumentNode[]): string[] =>
+  queries.map((q) => getOperationName(q)).filter((n) => n !== null) as string[];
 
-    // TODO: Hack to invalidate, manipulating private data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rootQuery = (cache as any).data.data.ROOT_QUERY;
-    Object.keys(rootQuery).forEach((key) => {
-      if (
-        keyMatchers.some((matcher) => {
-          return !!key.match(matcher);
-        })
-      ) {
-        delete rootQuery[key];
-      }
+// Will delete the entire cache for any queries passed in
+const deleteCache = (queries: DocumentNode[]) => {
+  const fields = queries
+    .map((q) => {
+      const field = getQueryDefinition(q).selectionSet.selections[0];
+      return isField(field) ? resultKeyNameFromField(field) : "";
+    })
+    .filter((name) => name !== "")
+    .reduce(
+      (prevFields, name) => ({
+        ...prevFields,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [name]: (_items: any, { DELETE }: any) => DELETE,
+      }),
+      {}
+    );
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (cache: ApolloCache<any>) =>
+    cache.modify({
+      id: "ROOT_QUERY",
+      fields,
     });
-  }
 };
 
 export const useFindGalleries = (filter: ListFilterModel) =>
@@ -136,20 +149,28 @@ export const useFindTag = (id: string) => {
   return GQL.useFindTagQuery({ variables: { id }, skip });
 };
 
-// TODO - scene marker manipulation functions are handled differently
-export const sceneMarkerMutationImpactedQueries = [
-  "findSceneMarkers",
-  "findScenes",
-  "markerStrings",
-  "sceneMarkerTags",
+const sceneMarkerMutationImpactedQueries = [
+  GQL.FindSceneDocument,
+  GQL.FindScenesDocument,
+  GQL.FindSceneMarkersDocument,
+  GQL.MarkerStringsDocument,
 ];
 
 export const useSceneMarkerCreate = () =>
-  GQL.useSceneMarkerCreateMutation({ refetchQueries: ["FindScene"] });
+  GQL.useSceneMarkerCreateMutation({
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+    update: deleteCache(sceneMarkerMutationImpactedQueries),
+  });
 export const useSceneMarkerUpdate = () =>
-  GQL.useSceneMarkerUpdateMutation({ refetchQueries: ["FindScene"] });
+  GQL.useSceneMarkerUpdateMutation({
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+    update: deleteCache(sceneMarkerMutationImpactedQueries),
+  });
 export const useSceneMarkerDestroy = () =>
-  GQL.useSceneMarkerDestroyMutation({ refetchQueries: ["FindScene"] });
+  GQL.useSceneMarkerDestroyMutation({
+    refetchQueries: getQueryNames([GQL.FindSceneDocument]),
+    update: deleteCache(sceneMarkerMutationImpactedQueries),
+  });
 
 export const useListPerformerScrapers = () =>
   GQL.useListPerformerScrapersQuery();
@@ -199,61 +220,61 @@ export const useConfiguration = () => GQL.useConfigurationQuery();
 export const useDirectory = (path?: string) =>
   GQL.useDirectoryQuery({ variables: { path } });
 
-export const performerMutationImpactedQueries = [
-  "FindPerformers",
-  "FindScenes",
-  "FindSceneMarkers",
-  "AllPerformers",
-  "AllPerformersForFilter",
+const performerMutationImpactedQueries = [
+  GQL.FindPerformersDocument,
+  GQL.FindSceneDocument,
+  GQL.FindScenesDocument,
+  GQL.AllPerformersForFilterDocument,
 ];
 
 export const usePerformerCreate = () =>
   GQL.usePerformerCreateMutation({
-    refetchQueries: performerMutationImpactedQueries,
-    update: () => invalidateQueries(performerMutationImpactedQueries),
+    refetchQueries: getQueryNames([
+      GQL.FindPerformersDocument,
+      GQL.AllPerformersForFilterDocument,
+    ]),
+    update: deleteCache([
+      GQL.FindPerformersDocument,
+      GQL.AllPerformersForFilterDocument,
+    ]),
   });
 export const usePerformerUpdate = () =>
   GQL.usePerformerUpdateMutation({
-    refetchQueries: performerMutationImpactedQueries,
-    update: () => invalidateQueries(performerMutationImpactedQueries),
+    update: deleteCache(performerMutationImpactedQueries),
   });
 export const usePerformerDestroy = () =>
   GQL.usePerformerDestroyMutation({
-    refetchQueries: performerMutationImpactedQueries,
-    update: () => invalidateQueries(performerMutationImpactedQueries),
+    refetchQueries: getQueryNames([
+      GQL.FindPerformersDocument,
+      GQL.AllPerformersForFilterDocument,
+    ]),
+    update: deleteCache(performerMutationImpactedQueries),
   });
 
-export const sceneMutationImpactedQueries = [
-  "findPerformers",
-  "findScenes",
-  "findSceneMarkers",
-  "findStudios",
-  "findMovies",
-  "allTags",
-  // TODO - add "findTags" when it is implemented
+const sceneMutationImpactedQueries = [
+  GQL.FindPerformerDocument,
+  GQL.FindPerformersDocument,
+  GQL.FindScenesDocument,
+  GQL.FindSceneMarkersDocument,
+  GQL.FindStudioDocument,
+  GQL.FindStudiosDocument,
+  GQL.FindMovieDocument,
+  GQL.FindMoviesDocument,
+  GQL.FindTagDocument,
+  GQL.FindTagsDocument,
+  GQL.AllTagsDocument,
 ];
 
 export const useSceneUpdate = (input: GQL.SceneUpdateInput) =>
   GQL.useSceneUpdateMutation({
     variables: input,
-    update: () => invalidateQueries(sceneMutationImpactedQueries),
-    refetchQueries: ["AllTagsForFilter"],
+    update: deleteCache(sceneMutationImpactedQueries),
   });
-
-// remove findScenes for bulk scene update so that we don't lose
-// existing results
-export const sceneBulkMutationImpactedQueries = [
-  "findPerformers",
-  "findSceneMarkers",
-  "findStudios",
-  "findMovies",
-  "allTags",
-];
 
 export const useBulkSceneUpdate = (input: GQL.BulkSceneUpdateInput) =>
   GQL.useBulkSceneUpdateMutation({
     variables: input,
-    update: () => invalidateQueries(sceneBulkMutationImpactedQueries),
+    update: deleteCache(sceneMutationImpactedQueries),
   });
 
 export const useScenesUpdate = (input: GQL.SceneUpdateInput[]) =>
@@ -277,107 +298,123 @@ export const useSceneResetO = (id: string) =>
 export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
   GQL.useSceneDestroyMutation({
     variables: input,
-    update: () => invalidateQueries(sceneMutationImpactedQueries),
+    update: deleteCache(sceneMutationImpactedQueries),
   });
 
 export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
   GQL.useScenesDestroyMutation({
     variables: input,
-    update: () => invalidateQueries(sceneMutationImpactedQueries),
+    update: deleteCache(sceneMutationImpactedQueries),
   });
 
 export const useSceneGenerateScreenshot = () =>
   GQL.useSceneGenerateScreenshotMutation({
-    update: () => invalidateQueries(["findScenes"]),
+    update: deleteCache([GQL.FindScenesDocument]),
   });
 
 export const studioMutationImpactedQueries = [
-  "FindStudios",
-  "FindScenes",
-  "AllStudios",
-  "AllStudiosForFilter",
+  GQL.FindStudiosDocument,
+  GQL.FindSceneDocument,
+  GQL.FindScenesDocument,
+  GQL.AllStudiosForFilterDocument,
 ];
 
 export const useStudioCreate = (input: GQL.StudioCreateInput) =>
   GQL.useStudioCreateMutation({
     variables: input,
-    refetchQueries: studioMutationImpactedQueries,
-    update: () => invalidateQueries(studioMutationImpactedQueries),
+    refetchQueries: getQueryNames([GQL.AllStudiosForFilterDocument]),
+    update: deleteCache([
+      GQL.FindStudiosDocument,
+      GQL.AllStudiosForFilterDocument,
+    ]),
   });
 
 export const useStudioUpdate = (input: GQL.StudioUpdateInput) =>
   GQL.useStudioUpdateMutation({
     variables: input,
-    update: () => invalidateQueries(studioMutationImpactedQueries),
+    update: deleteCache(studioMutationImpactedQueries),
   });
 
 export const useStudioDestroy = (input: GQL.StudioDestroyInput) =>
   GQL.useStudioDestroyMutation({
     variables: input,
-    update: () => invalidateQueries(studioMutationImpactedQueries),
+    update: deleteCache(studioMutationImpactedQueries),
   });
 
 export const movieMutationImpactedQueries = [
-  "findMovies",
-  "findScenes",
-  "allMovies",
+  GQL.FindSceneDocument,
+  GQL.FindScenesDocument,
+  GQL.FindMoviesDocument,
+  GQL.AllMoviesForFilterDocument,
 ];
 
 export const useMovieCreate = (input: GQL.MovieCreateInput) =>
   GQL.useMovieCreateMutation({
     variables: input,
-    update: () => invalidateQueries(movieMutationImpactedQueries),
+    update: deleteCache([
+      GQL.FindMoviesDocument,
+      GQL.AllMoviesForFilterDocument,
+    ]),
   });
 
 export const useMovieUpdate = (input: GQL.MovieUpdateInput) =>
   GQL.useMovieUpdateMutation({
     variables: input,
-    update: () => invalidateQueries(movieMutationImpactedQueries),
+    update: deleteCache(movieMutationImpactedQueries),
   });
 
 export const useMovieDestroy = (input: GQL.MovieDestroyInput) =>
   GQL.useMovieDestroyMutation({
     variables: input,
-    update: () => invalidateQueries(movieMutationImpactedQueries),
+    update: deleteCache(movieMutationImpactedQueries),
   });
 
 export const tagMutationImpactedQueries = [
-  "findScenes",
-  "findSceneMarkers",
-  "sceneMarkerTags",
-  "allTags",
-  "findTags",
+  GQL.FindSceneDocument,
+  GQL.FindScenesDocument,
+  GQL.FindSceneMarkersDocument,
+  GQL.AllTagsDocument,
+  GQL.AllTagsForFilterDocument,
+  GQL.FindTagsDocument,
 ];
 
 export const useTagCreate = (input: GQL.TagCreateInput) =>
   GQL.useTagCreateMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
-    update: () => invalidateQueries(tagMutationImpactedQueries),
+    refetchQueries: getQueryNames([
+      GQL.AllTagsDocument,
+      GQL.AllTagsForFilterDocument,
+      GQL.FindTagsDocument,
+    ]),
+    update: deleteCache([
+      GQL.FindTagsDocument,
+      GQL.AllTagsDocument,
+      GQL.AllTagsForFilterDocument,
+    ]),
   });
 export const useTagUpdate = (input: GQL.TagUpdateInput) =>
   GQL.useTagUpdateMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
-    update: () => invalidateQueries(tagMutationImpactedQueries),
+    update: deleteCache(tagMutationImpactedQueries),
   });
 export const useTagDestroy = (input: GQL.TagDestroyInput) =>
   GQL.useTagDestroyMutation({
     variables: input,
-    refetchQueries: ["AllTags", "AllTagsForFilter", "FindTags"],
-    update: () => invalidateQueries(tagMutationImpactedQueries),
+    update: deleteCache(tagMutationImpactedQueries),
   });
 
 export const useConfigureGeneral = (input: GQL.ConfigGeneralInput) =>
   GQL.useConfigureGeneralMutation({
     variables: { input },
-    refetchQueries: ["Configuration"],
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
   });
 
 export const useConfigureInterface = (input: GQL.ConfigInterfaceInput) =>
   GQL.useConfigureInterfaceMutation({
     variables: { input },
-    refetchQueries: ["Configuration"],
+    refetchQueries: getQueryNames([GQL.ConfigurationDocument]),
+    update: deleteCache([GQL.ConfigurationDocument]),
   });
 
 export const useMetadataUpdate = () => GQL.useMetadataUpdateSubscription();
@@ -466,12 +503,10 @@ export const mutateReloadScrapers = () =>
     mutation: GQL.ReloadScrapersDocument,
   });
 
-const reloadPluginsMutationImpactedQueries = ["plugins", "pluginTasks"];
-
 export const mutateReloadPlugins = () =>
   client.mutate<GQL.ReloadPluginsMutation>({
     mutation: GQL.ReloadPluginsDocument,
-    update: () => invalidateQueries(reloadPluginsMutationImpactedQueries),
+    refetchQueries: [GQL.refetchPluginsQuery(), GQL.refetchPluginTasksQuery()],
   });
 
 export const mutateRunPluginTask = (
@@ -515,6 +550,12 @@ export const mutateMigrateHashNaming = () =>
 export const mutateMetadataExport = () =>
   client.mutate<GQL.MetadataExportMutation>({
     mutation: GQL.MetadataExportDocument,
+  });
+
+export const mutateExportObjects = (input: GQL.ExportObjectsInput) =>
+  client.mutate<GQL.ExportObjectsMutation>({
+    mutation: GQL.ExportObjectsDocument,
+    variables: { input },
   });
 
 export const mutateMetadataImport = () =>

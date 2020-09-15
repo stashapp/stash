@@ -1,5 +1,5 @@
 import React, { useState, CSSProperties } from "react";
-import Select, { ValueType } from "react-select";
+import Select, { ValueType, Props } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { debounce } from "lodash";
 
@@ -388,15 +388,13 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
       ...base,
       color: "#000",
     }),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    container: (base: CSSProperties, state: any) => ({
+    container: (base: CSSProperties, props: Props) => ({
       ...base,
-      zIndex: state.isFocused ? 10 : base.zIndex,
+      zIndex: props.isFocused ? 10 : base.zIndex,
     }),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    multiValueRemove: (base: CSSProperties, state: any) => ({
+    multiValueRemove: (base: CSSProperties, props: Props) => ({
       ...base,
-      color: state.isFocused ? base.color : "#333333",
+      color: props.isFocused ? base.color : "#333333",
     }),
   };
 

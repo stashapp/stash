@@ -1,0 +1,667 @@
+package scene
+
+import (
+	"database/sql"
+	"errors"
+
+	"github.com/stashapp/stash/pkg/manager/jsonschema"
+	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/mocks"
+	"github.com/stashapp/stash/pkg/models/modelstest"
+	"github.com/stretchr/testify/assert"
+
+	"testing"
+	"time"
+)
+
+const (
+	sceneID    = 1
+	noImageID  = 2
+	errImageID = 3
+
+	studioID        = 4
+	missingStudioID = 5
+	errStudioID     = 6
+
+	noGalleryID  = 7
+	errGalleryID = 8
+
+	noTagsID  = 11
+	errTagsID = 12
+
+	noMoviesID     = 13
+	errMoviesID    = 14
+	errFindMovieID = 15
+
+	noMarkersID         = 16
+	errMarkersID        = 17
+	errFindPrimaryTagID = 18
+	errFindByMarkerID   = 19
+)
+
+const (
+	url          = "url"
+	checksum     = "checksum"
+	oshash       = "oshash"
+	title        = "title"
+	date         = "2001-01-01"
+	rating       = 5
+	ocounter     = 2
+	details      = "details"
+	size         = "size"
+	duration     = 1.23
+	durationStr  = "1.23"
+	videoCodec   = "videoCodec"
+	audioCodec   = "audioCodec"
+	format       = "format"
+	width        = 100
+	height       = 100
+	framerate    = 3.21
+	framerateStr = "3.21"
+	bitrate      = 1
+)
+
+const (
+	studioName      = "studioName"
+	galleryChecksum = "galleryChecksum"
+
+	validMovie1  = 1
+	validMovie2  = 2
+	invalidMovie = 3
+
+	movie1Name = "movie1Name"
+	movie2Name = "movie2Name"
+
+	movie1Scene = 1
+	movie2Scene = 2
+)
+
+var names = []string{
+	"name1",
+	"name2",
+}
+
+var imageBytes = []byte("imageBytes")
+
+const image = "aW1hZ2VCeXRlcw=="
+
+var createTime time.Time = time.Date(2001, 01, 01, 0, 0, 0, 0, time.UTC)
+var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
+
+func createFullScene(id int) models.Scene {
+	return models.Scene{
+		ID:         id,
+		Title:      modelstest.NullString(title),
+		AudioCodec: modelstest.NullString(audioCodec),
+		Bitrate:    modelstest.NullInt64(bitrate),
+		Checksum:   modelstest.NullString(checksum),
+		Date: models.SQLiteDate{
+			String: date,
+			Valid:  true,
+		},
+		Details: modelstest.NullString(details),
+		Duration: sql.NullFloat64{
+			Float64: duration,
+			Valid:   true,
+		},
+		Format: modelstest.NullString(format),
+		Framerate: sql.NullFloat64{
+			Float64: framerate,
+			Valid:   true,
+		},
+		Height:     modelstest.NullInt64(height),
+		OCounter:   ocounter,
+		OSHash:     modelstest.NullString(oshash),
+		Rating:     modelstest.NullInt64(rating),
+		Size:       modelstest.NullString(size),
+		VideoCodec: modelstest.NullString(videoCodec),
+		Width:      modelstest.NullInt64(width),
+		URL:        modelstest.NullString(url),
+		CreatedAt: models.SQLiteTimestamp{
+			Timestamp: createTime,
+		},
+		UpdatedAt: models.SQLiteTimestamp{
+			Timestamp: updateTime,
+		},
+	}
+}
+
+func createEmptyScene(id int) models.Scene {
+	return models.Scene{
+		ID: id,
+		CreatedAt: models.SQLiteTimestamp{
+			Timestamp: createTime,
+		},
+		UpdatedAt: models.SQLiteTimestamp{
+			Timestamp: updateTime,
+		},
+	}
+}
+
+func createFullJSONScene(image string) *jsonschema.Scene {
+	return &jsonschema.Scene{
+		Title:    title,
+		Checksum: checksum,
+		Date:     date,
+		Details:  details,
+		OCounter: ocounter,
+		OSHash:   oshash,
+		Rating:   rating,
+		URL:      url,
+		File: &jsonschema.SceneFile{
+			AudioCodec: audioCodec,
+			Bitrate:    bitrate,
+			Duration:   durationStr,
+			Format:     format,
+			Framerate:  framerateStr,
+			Height:     height,
+			Size:       size,
+			VideoCodec: videoCodec,
+			Width:      width,
+		},
+		CreatedAt: models.JSONTime{
+			Time: createTime,
+		},
+		UpdatedAt: models.JSONTime{
+			Time: updateTime,
+		},
+		Cover: image,
+	}
+}
+
+func createEmptyJSONScene() *jsonschema.Scene {
+	return &jsonschema.Scene{
+		File: &jsonschema.SceneFile{},
+		CreatedAt: models.JSONTime{
+			Time: createTime,
+		},
+		UpdatedAt: models.JSONTime{
+			Time: updateTime,
+		},
+	}
+}
+
+type basicTestScenario struct {
+	input    models.Scene
+	expected *jsonschema.Scene
+	err      bool
+}
+
+var scenarios = []basicTestScenario{
+	{
+		createFullScene(sceneID),
+		createFullJSONScene(image),
+		false,
+	},
+	{
+		createEmptyScene(noImageID),
+		createEmptyJSONScene(),
+		false,
+	},
+	{
+		createFullScene(errImageID),
+		nil,
+		true,
+	},
+}
+
+func TestToJSON(t *testing.T) {
+	mockSceneReader := &mocks.SceneReaderWriter{}
+
+	imageErr := errors.New("error getting image")
+
+	mockSceneReader.On("GetSceneCover", sceneID).Return(imageBytes, nil).Once()
+	mockSceneReader.On("GetSceneCover", noImageID).Return(nil, nil).Once()
+	mockSceneReader.On("GetSceneCover", errImageID).Return(nil, imageErr).Once()
+
+	for i, s := range scenarios {
+		scene := s.input
+		json, err := ToBasicJSON(mockSceneReader, &scene)
+
+		if !s.err && err != nil {
+			t.Errorf("[%d] unexpected error: %s", i, err.Error())
+		} else if s.err && err == nil {
+			t.Errorf("[%d] expected error not returned", i)
+		} else {
+			assert.Equal(t, s.expected, json, "[%d]", i)
+		}
+	}
+
+	mockSceneReader.AssertExpectations(t)
+}
+
+func createStudioScene(studioID int) models.Scene {
+	return models.Scene{
+		StudioID: modelstest.NullInt64(int64(studioID)),
+	}
+}
+
+type stringTestScenario struct {
+	input    models.Scene
+	expected string
+	err      bool
+}
+
+var getStudioScenarios = []stringTestScenario{
+	{
+		createStudioScene(studioID),
+		studioName,
+		false,
+	},
+	{
+		createStudioScene(missingStudioID),
+		"",
+		false,
+	},
+	{
+		createStudioScene(errStudioID),
+		"",
+		true,
+	},
+}
+
+func TestGetStudioName(t *testing.T) {
+	mockStudioReader := &mocks.StudioReaderWriter{}
+
+	studioErr := errors.New("error getting image")
+
+	mockStudioReader.On("Find", studioID).Return(&models.Studio{
+		Name: modelstest.NullString(studioName),
+	}, nil).Once()
+	mockStudioReader.On("Find", missingStudioID).Return(nil, nil).Once()
+	mockStudioReader.On("Find", errStudioID).Return(nil, studioErr).Once()
+
+	for i, s := range getStudioScenarios {
+		scene := s.input
+		json, err := GetStudioName(mockStudioReader, &scene)
+
+		if !s.err && err != nil {
+			t.Errorf("[%d] unexpected error: %s", i, err.Error())
+		} else if s.err && err == nil {
+			t.Errorf("[%d] expected error not returned", i)
+		} else {
+			assert.Equal(t, s.expected, json, "[%d]", i)
+		}
+	}
+
+	mockStudioReader.AssertExpectations(t)
+}
+
+var getGalleryChecksumScenarios = []stringTestScenario{
+	{
+		createEmptyScene(sceneID),
+		galleryChecksum,
+		false,
+	},
+	{
+		createEmptyScene(noGalleryID),
+		"",
+		false,
+	},
+	{
+		createEmptyScene(errGalleryID),
+		"",
+		true,
+	},
+}
+
+func TestGetGalleryChecksum(t *testing.T) {
+	mockGalleryReader := &mocks.GalleryReaderWriter{}
+
+	galleryErr := errors.New("error getting gallery")
+
+	mockGalleryReader.On("FindBySceneID", sceneID).Return(&models.Gallery{
+		Checksum: galleryChecksum,
+	}, nil).Once()
+	mockGalleryReader.On("FindBySceneID", noGalleryID).Return(nil, nil).Once()
+	mockGalleryReader.On("FindBySceneID", errGalleryID).Return(nil, galleryErr).Once()
+
+	for i, s := range getGalleryChecksumScenarios {
+		scene := s.input
+		json, err := GetGalleryChecksum(mockGalleryReader, &scene)
+
+		if !s.err && err != nil {
+			t.Errorf("[%d] unexpected error: %s", i, err.Error())
+		} else if s.err && err == nil {
+			t.Errorf("[%d] expected error not returned", i)
+		} else {
+			assert.Equal(t, s.expected, json, "[%d]", i)
+		}
+	}
+
+	mockGalleryReader.AssertExpectations(t)
+}
+
+type stringSliceTestScenario struct {
+	input    models.Scene
+	expected []string
+	err      bool
+}
+
+var getTagNamesScenarios = []stringSliceTestScenario{
+	{
+		createEmptyScene(sceneID),
+		names,
+		false,
+	},
+	{
+		createEmptyScene(noTagsID),
+		nil,
+		false,
+	},
+	{
+		createEmptyScene(errTagsID),
+		nil,
+		true,
+	},
+}
+
+func getTags(names []string) []*models.Tag {
+	var ret []*models.Tag
+	for _, n := range names {
+		ret = append(ret, &models.Tag{
+			Name: n,
+		})
+	}
+
+	return ret
+}
+
+func TestGetTagNames(t *testing.T) {
+	mockTagReader := &mocks.TagReaderWriter{}
+
+	tagErr := errors.New("error getting tag")
+
+	mockTagReader.On("FindBySceneID", sceneID).Return(getTags(names), nil).Once()
+	mockTagReader.On("FindBySceneID", noTagsID).Return(nil, nil).Once()
+	mockTagReader.On("FindBySceneID", errTagsID).Return(nil, tagErr).Once()
+
+	for i, s := range getTagNamesScenarios {
+		scene := s.input
+		json, err := GetTagNames(mockTagReader, &scene)
+
+		if !s.err && err != nil {
+			t.Errorf("[%d] unexpected error: %s", i, err.Error())
+		} else if s.err && err == nil {
+			t.Errorf("[%d] expected error not returned", i)
+		} else {
+			assert.Equal(t, s.expected, json, "[%d]", i)
+		}
+	}
+
+	mockTagReader.AssertExpectations(t)
+}
+
+type sceneMoviesTestScenario struct {
+	input    models.Scene
+	expected []jsonschema.SceneMovie
+	err      bool
+}
+
+var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
+	{
+		createEmptyScene(sceneID),
+		[]jsonschema.SceneMovie{
+			{
+				MovieName:  movie1Name,
+				SceneIndex: movie1Scene,
+			},
+			{
+				MovieName:  movie2Name,
+				SceneIndex: movie2Scene,
+			},
+		},
+		false,
+	},
+	{
+		createEmptyScene(noMoviesID),
+		nil,
+		false,
+	},
+	{
+		createEmptyScene(errMoviesID),
+		nil,
+		true,
+	},
+	{
+		createEmptyScene(errFindMovieID),
+		nil,
+		true,
+	},
+}
+
+var validMovies = []models.MoviesScenes{
+	{
+		MovieID:    validMovie1,
+		SceneIndex: modelstest.NullInt64(movie1Scene),
+	},
+	{
+		MovieID:    validMovie2,
+		SceneIndex: modelstest.NullInt64(movie2Scene),
+	},
+}
+
+var invalidMovies = []models.MoviesScenes{
+	{
+		MovieID:    invalidMovie,
+		SceneIndex: modelstest.NullInt64(movie1Scene),
+	},
+}
+
+func TestGetSceneMoviesJSON(t *testing.T) {
+	mockMovieReader := &mocks.MovieReaderWriter{}
+	mockJoinReader := &mocks.JoinReaderWriter{}
+
+	joinErr := errors.New("error getting scene movies")
+	movieErr := errors.New("error getting movie")
+
+	mockJoinReader.On("GetSceneMovies", sceneID).Return(validMovies, nil).Once()
+	mockJoinReader.On("GetSceneMovies", noMoviesID).Return(nil, nil).Once()
+	mockJoinReader.On("GetSceneMovies", errMoviesID).Return(nil, joinErr).Once()
+	mockJoinReader.On("GetSceneMovies", errFindMovieID).Return(invalidMovies, nil).Once()
+
+	mockMovieReader.On("Find", validMovie1).Return(&models.Movie{
+		Name: modelstest.NullString(movie1Name),
+	}, nil).Once()
+	mockMovieReader.On("Find", validMovie2).Return(&models.Movie{
+		Name: modelstest.NullString(movie2Name),
+	}, nil).Once()
+	mockMovieReader.On("Find", invalidMovie).Return(nil, movieErr).Once()
+
+	for i, s := range getSceneMoviesJSONScenarios {
+		scene := s.input
+		json, err := GetSceneMoviesJSON(mockMovieReader, mockJoinReader, &scene)
+
+		if !s.err && err != nil {
+			t.Errorf("[%d] unexpected error: %s", i, err.Error())
+		} else if s.err && err == nil {
+			t.Errorf("[%d] expected error not returned", i)
+		} else {
+			assert.Equal(t, s.expected, json, "[%d]", i)
+		}
+	}
+
+	mockMovieReader.AssertExpectations(t)
+}
+
+const (
+	validMarkerID1 = 1
+	validMarkerID2 = 2
+
+	invalidMarkerID1 = 3
+	invalidMarkerID2 = 4
+
+	validTagID1 = 1
+	validTagID2 = 2
+
+	validTagName1 = "validTagName1"
+	validTagName2 = "validTagName2"
+
+	invalidTagID = 3
+
+	markerTitle1 = "markerTitle1"
+	markerTitle2 = "markerTitle2"
+
+	markerSeconds1 = 1.0
+	markerSeconds2 = 2.3
+
+	markerSeconds1Str = "1.0"
+	markerSeconds2Str = "2.3"
+)
+
+type sceneMarkersTestScenario struct {
+	input    models.Scene
+	expected []jsonschema.SceneMarker
+	err      bool
+}
+
+var getSceneMarkersJSONScenarios = []sceneMarkersTestScenario{
+	{
+		createEmptyScene(sceneID),
+		[]jsonschema.SceneMarker{
+			{
+				Title:      markerTitle1,
+				PrimaryTag: validTagName1,
+				Seconds:    markerSeconds1Str,
+				Tags: []string{
+					validTagName1,
+					validTagName2,
+				},
+				CreatedAt: models.JSONTime{
+					Time: createTime,
+				},
+				UpdatedAt: models.JSONTime{
+					Time: updateTime,
+				},
+			},
+			{
+				Title:      markerTitle2,
+				PrimaryTag: validTagName2,
+				Seconds:    markerSeconds2Str,
+				Tags: []string{
+					validTagName2,
+				},
+				CreatedAt: models.JSONTime{
+					Time: createTime,
+				},
+				UpdatedAt: models.JSONTime{
+					Time: updateTime,
+				},
+			},
+		},
+		false,
+	},
+	{
+		createEmptyScene(noMarkersID),
+		nil,
+		false,
+	},
+	{
+		createEmptyScene(errMarkersID),
+		nil,
+		true,
+	},
+	{
+		createEmptyScene(errFindPrimaryTagID),
+		nil,
+		true,
+	},
+	{
+		createEmptyScene(errFindByMarkerID),
+		nil,
+		true,
+	},
+}
+
+var validMarkers = []*models.SceneMarker{
+	{
+		ID:           validMarkerID1,
+		Title:        markerTitle1,
+		PrimaryTagID: validTagID1,
+		Seconds:      markerSeconds1,
+		CreatedAt: models.SQLiteTimestamp{
+			Timestamp: createTime,
+		},
+		UpdatedAt: models.SQLiteTimestamp{
+			Timestamp: updateTime,
+		},
+	},
+	{
+		ID:           validMarkerID2,
+		Title:        markerTitle2,
+		PrimaryTagID: validTagID2,
+		Seconds:      markerSeconds2,
+		CreatedAt: models.SQLiteTimestamp{
+			Timestamp: createTime,
+		},
+		UpdatedAt: models.SQLiteTimestamp{
+			Timestamp: updateTime,
+		},
+	},
+}
+
+var invalidMarkers1 = []*models.SceneMarker{
+	{
+		ID:           invalidMarkerID1,
+		PrimaryTagID: invalidTagID,
+	},
+}
+
+var invalidMarkers2 = []*models.SceneMarker{
+	{
+		ID:           invalidMarkerID2,
+		PrimaryTagID: validTagID1,
+	},
+}
+
+func TestGetSceneMarkersJSON(t *testing.T) {
+	mockTagReader := &mocks.TagReaderWriter{}
+	mockMarkerReader := &mocks.SceneMarkerReaderWriter{}
+
+	markersErr := errors.New("error getting scene markers")
+	tagErr := errors.New("error getting tags")
+
+	mockMarkerReader.On("FindBySceneID", sceneID).Return(validMarkers, nil).Once()
+	mockMarkerReader.On("FindBySceneID", noMarkersID).Return(nil, nil).Once()
+	mockMarkerReader.On("FindBySceneID", errMarkersID).Return(nil, markersErr).Once()
+	mockMarkerReader.On("FindBySceneID", errFindPrimaryTagID).Return(invalidMarkers1, nil).Once()
+	mockMarkerReader.On("FindBySceneID", errFindByMarkerID).Return(invalidMarkers2, nil).Once()
+
+	mockTagReader.On("Find", validTagID1).Return(&models.Tag{
+		Name: validTagName1,
+	}, nil)
+	mockTagReader.On("Find", validTagID2).Return(&models.Tag{
+		Name: validTagName2,
+	}, nil)
+	mockTagReader.On("Find", invalidTagID).Return(nil, tagErr)
+
+	mockTagReader.On("FindBySceneMarkerID", validMarkerID1).Return([]*models.Tag{
+		{
+			Name: validTagName1,
+		},
+		{
+			Name: validTagName2,
+		},
+	}, nil)
+	mockTagReader.On("FindBySceneMarkerID", validMarkerID2).Return([]*models.Tag{
+		{
+			Name: validTagName2,
+		},
+	}, nil)
+	mockTagReader.On("FindBySceneMarkerID", invalidMarkerID2).Return(nil, tagErr).Once()
+
+	for i, s := range getSceneMarkersJSONScenarios {
+		scene := s.input
+		json, err := GetSceneMarkersJSON(mockMarkerReader, mockTagReader, &scene)
+
+		if !s.err && err != nil {
+			t.Errorf("[%d] unexpected error: %s", i, err.Error())
+		} else if s.err && err == nil {
+			t.Errorf("[%d] expected error not returned", i)
+		} else {
+			assert.Equal(t, s.expected, json, "[%d]", i)
+		}
+	}
+
+	mockTagReader.AssertExpectations(t)
+}

@@ -1,7 +1,7 @@
 import _ from "lodash";
 import queryString from "query-string";
 import React, { useCallback, useRef, useState, useEffect } from "react";
-import { ApolloError } from "apollo-client";
+import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import {
   SlimSceneDataFragment,
@@ -58,7 +58,7 @@ const getSelectedData = <I extends IDataItem>(
 
 interface IListHookData {
   filter: ListFilterModel;
-  template: JSX.Element;
+  template: React.ReactElement;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
@@ -88,15 +88,15 @@ interface IListHookOptions<T, E> {
     filter: ListFilterModel,
     selectedIds: Set<string>,
     zoomIndex: number
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   renderEditDialog?: (
     selected: E[],
     onClose: (applied: boolean) => void
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   renderDeleteDialog?: (
     selected: E[],
     onClose: (confirmed: boolean) => void
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   addKeybinds?: (
     result: T,
     filter: ListFilterModel,
@@ -607,8 +607,8 @@ export const useTagsList = (
       result?.data?.findTags?.count ?? 0,
   });
 
-export const showWhenSelected = (
-  _result: FindScenesQueryResult,
+export const showWhenSelected = <T extends IQueryResult>(
+  _result: T,
   _filter: ListFilterModel,
   selectedIds: Set<string>
 ) => {

@@ -1,5 +1,6 @@
 import * as GQL from "src/core/generated-graphql";
 import { PerformersCriterion } from "src/models/list-filter/criteria/performers";
+import { CountryCriterion } from "src/models/list-filter/criteria/country";
 import {
   StudiosCriterion,
   ParentStudiosCriterion,
@@ -20,6 +21,17 @@ const makePerformerScenesUrl = (
   ];
   filter.criteria.push(criterion);
   return `/scenes?${filter.makeQueryParameters()}`;
+};
+
+const makePerformersCountryUrl = (
+  performer: Partial<GQL.PerformerDataFragment>
+) => {
+  if (!performer.id) return "#";
+  const filter = new ListFilterModel(FilterMode.Performers);
+  const criterion = new CountryCriterion();
+  criterion.value = `${performer.country}`;
+  filter.criteria.push(criterion);
+  return `/performers?${filter.makeQueryParameters()}`;
 };
 
 const makeStudioScenesUrl = (studio: Partial<GQL.StudioDataFragment>) => {
@@ -82,6 +94,7 @@ const makeSceneMarkerUrl = (
 
 export default {
   makePerformerScenesUrl,
+  makePerformersCountryUrl,
   makeStudioScenesUrl,
   makeTagSceneMarkersUrl,
   makeTagScenesUrl,
