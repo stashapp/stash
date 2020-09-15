@@ -20,6 +20,11 @@ func (r *mutationResolver) MetadataImport(ctx context.Context) (string, error) {
 }
 
 func (r *mutationResolver) ImportObjects(ctx context.Context, input models.ImportObjectsInput) (string, error) {
+	t := manager.CreateImportTask(config.GetVideoFileNamingAlgorithm(), input)
+	_, err := manager.GetInstance().RunSingleTask(t)
+	if err != nil {
+		return "", err
+	}
 
 	return "todo", nil
 }

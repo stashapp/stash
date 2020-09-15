@@ -1,9 +1,13 @@
 package manager
 
 import (
+	"archive/zip"
 	"context"
 	"database/sql"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -27,6 +31,7 @@ type ImportTask struct {
 	json jsonUtils
 
 	BaseDir             string
+	ZipFile             io.Reader
 	Reset               bool
 	DuplicateBehaviour  models.ImportDuplicateEnum
 	MissingRefBehaviour models.ImportMissingRefEnum
@@ -36,8 +41,44 @@ type ImportTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
+func CreateImportTask(a models.HashAlgorithm, input models.ImportObjectsInput) *ImportTask {
+	return &ImportTask{
+		ZipFile:             input.File.File,
+		Reset:               false,
+		DuplicateBehaviour:  input.DuplicateBehaviour,
+		MissingRefBehaviour: input.MissingRefBehaviour,
+		fileNamingAlgorithm: a,
+	}
+}
+
+func (t *ImportTask) GetStatus() JobStatus {
+	return Import
+}
+
 func (t *ImportTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
+
+	if t.ZipFile != nil {
+		// unzip the file and defer remove the temp directory
+		var err error
+		t.BaseDir, err = instance.Paths.Generated.TempDir("import")
+		if err != nil {
+			logger.Errorf("error creating temporary directory for import: %s", err.Error())
+			return
+		}
+
+		defer func() {
+			err := utils.RemoveDir(t.BaseDir)
+			if err != nil {
+				logger.Errorf("error removing directory %s: %s", t.BaseDir, err.Error())
+			}
+		}()
+
+		if err := t.unzipFile(); err != nil {
+			logger.Errorf("error unzipping provided file for import: %s", err.Error())
+			return
+		}
+	}
 
 	t.json = jsonUtils{
 		json: *paths.GetJSONPaths(t.BaseDir),
@@ -81,6 +122,67 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 
 	t.ImportScrapedItems(ctx)
 	t.ImportScenes(ctx)
+}
+
+func (t *ImportTask) unzipFile() error {
+	// copy the zip file to the temporary directory
+	tmpZip := filepath.Join(t.BaseDir, "import.zip")
+	out, err := os.Create(tmpZip)
+	if err != nil {
+		return err
+	}
+
+	if _, err := io.Copy(out, t.ZipFile); err != nil {
+		out.Close()
+		return err
+	}
+
+	out.Close()
+
+	defer func() {
+		err := os.Remove(tmpZip)
+		if err != nil {
+			logger.Errorf("error removing temporary zip file %s: %s", tmpZip, err.Error())
+		}
+	}()
+
+	// now we can read the zip file
+	r, err := zip.OpenReader(tmpZip)
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+
+	for _, f := range r.File {
+		fn := filepath.Join(t.BaseDir, f.Name)
+
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(fn, os.ModePerm)
+			continue
+		}
+
+		if err := os.MkdirAll(filepath.Dir(fn), os.ModePerm); err != nil {
+			return err
+		}
+
+		o, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			return err
+		}
+		defer o.Close()
+
+		i, err := f.Open()
+		if err != nil {
+			return err
+		}
+		defer i.Close()
+
+		if _, err := io.Copy(o, i); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (t *ImportTask) ImportPerformers(ctx context.Context) {
