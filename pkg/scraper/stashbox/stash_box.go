@@ -62,66 +62,44 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 	return ret, nil
 }
 
-// FindStashBoxScenesByFingerprints queries stash-box for each scene using the
+// FindStashBoxScenesByFingerprints queries stash-box for scenes using every
 // scene's MD5 checksum and/or oshash.
 func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.ScrapedScene, error) {
-	var ret []*models.ScrapedScene
+	qb := models.NewSceneQueryBuilder()
+
+	var fingerprints []string
+
 	for _, sceneID := range sceneIDs {
 		idInt, _ := strconv.Atoi(sceneID)
-		s, err := c.FindStashBoxSceneByFingerprint(idInt)
+		scene, err := qb.Find(idInt)
 		if err != nil {
 			return nil, err
 		}
 
-		if len(s) > 0 {
-			// just add the first result from each id
-			ret = append(ret, s[0])
+		if scene == nil {
+			return nil, fmt.Errorf("scene with id %d not found", idInt)
+		}
+
+		if scene.Checksum.Valid {
+			fingerprints = append(fingerprints, scene.Checksum.String)
+		}
+
+		if scene.OSHash.Valid {
+			fingerprints = append(fingerprints, scene.OSHash.String)
 		}
 	}
 
-	return ret, nil
+	return c.findStashBoxScenesByFingerprints(fingerprints)
 }
 
-// FindStashBoxSceneByFingerprint queries stash-box for scenes using the
-// scene's MD5 checksum and/or oshash.
-func (c Client) FindStashBoxSceneByFingerprint(sceneID int) ([]*models.ScrapedScene, error) {
-	// find the scene hash
-	qb := models.NewSceneQueryBuilder()
-	scene, err := qb.Find(sceneID)
-	if err != nil {
-		return nil, err
-	}
-
-	// try MD5 first, otherwise try oshash
-	var ret []*models.ScrapedScene
-	if scene.Checksum.Valid {
-		ret, err = c.findStashBoxSceneByFingerprint(scene.Checksum.String, graphql.FingerprintAlgorithmMd5)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if ret == nil && scene.OSHash.Valid {
-		ret, err = c.findStashBoxSceneByFingerprint(scene.OSHash.String, graphql.FingerprintAlgorithmOshash)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return ret, nil
-}
-
-func (c Client) findStashBoxSceneByFingerprint(hash string, algoType graphql.FingerprintAlgorithm) ([]*models.ScrapedScene, error) {
-	scenes, err := c.client.FindSceneByFingerprint(context.TODO(), graphql.FingerprintQueryInput{
-		Hash:      hash,
-		Algorithm: algoType,
-	})
+func (c Client) findStashBoxScenesByFingerprints(fingerprints []string) ([]*models.ScrapedScene, error) {
+	scenes, err := c.client.FindScenesByFingerprints(context.TODO(), fingerprints)
 
 	if err != nil {
 		return nil, err
 	}
 
-	sceneFragments := scenes.FindSceneByFingerprint
+	sceneFragments := scenes.FindScenesByFingerprints
 
 	var ret []*models.ScrapedScene
 	for _, s := range sceneFragments {

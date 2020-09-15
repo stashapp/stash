@@ -504,7 +504,7 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
     variables: {
       input: {
         stash_box_index: stashBoxIndex,
-        scene_id: sceneID,
+        scene_ids: [sceneID],
       },
     },
   });
