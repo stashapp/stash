@@ -36,6 +36,7 @@ func NewPerformer(name string) *Performer {
 	return &Performer{
 		Checksum:  utils.MD5FromString(name),
 		Name:      sql.NullString{String: name, Valid: true},
+		Favorite:  sql.NullBool{Bool: false, Valid: true},
 		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: SQLiteTimestamp{Timestamp: currentTime},
 	}
