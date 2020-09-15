@@ -116,6 +116,7 @@ export const ImportDialog: React.FC<IImportDialogProps> = (props: IImportDialogP
         text: "Cancel",
         variant: "secondary",
       }}
+      disabled={!file}
       isRunning={isRunning}
     >
       <div className="dialog-container">
