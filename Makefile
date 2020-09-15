@@ -67,8 +67,6 @@ generate:
 .PHONY: generate-stash-box-client
 generate-stash-box-client:
 	go run -mod=vendor github.com/Yamashou/gqlgenc
-	@echo "WARNING: generated_client.go is generated without json/graphql tags for fields with _ in them."
-	@echo "These will need to be added back manually."
 
 # Runs gofmt -w on the project's source code, modifying any files that do not match its style.
 .PHONY: fmt

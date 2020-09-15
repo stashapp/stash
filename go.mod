@@ -30,7 +30,7 @@ require (
 	github.com/tidwall/gjson v1.6.0
 	github.com/urfave/cli v1.20.0 // indirect
 	github.com/vektah/gqlparser v1.3.1
-	github.com/vektah/gqlparser/v2 v2.0.1 // indirect
+	github.com/vektah/gqlparser/v2 v2.0.1
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/image v0.0.0-20190118043309-183bebdce1b2
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
