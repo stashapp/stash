@@ -277,9 +277,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   }
 
-  function onStashBoxQueryClicked(/* stashBoxIndex: number */) {
-    // TODO
-  }
+  // function onStashBoxQueryClicked(/* stashBoxIndex: number */) {
+  // TODO
+  // }
 
   async function onScrapeClicked(scraper: GQL.Scraper) {
     setIsLoading(true);
@@ -375,18 +375,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   }
 
   function maybeRenderStashboxQueryButton() {
-    const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
-
-    if (stashBoxes.length === 0) {
-      return;
-    }
-
+    // const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
+    // if (stashBoxes.length === 0) {
+    //   return;
+    // }
     // TODO - hide this button for now, with the view to add it when we get
     // the query dialog going
-    if (stashBoxes.length !== 0) {
-      return;
-    }
-
     // if (stashBoxes.length === 1) {
     //   return (
     //     <Button
@@ -398,7 +392,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     //     </Button>
     //   );
     // }
-
     // // TODO - change name based on stashbox configuration
     // return (
     //   <Dropdown className="d-inline-block mr-1">
