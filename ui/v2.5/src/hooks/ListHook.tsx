@@ -607,8 +607,8 @@ export const useTagsList = (
       result?.data?.findTags?.count ?? 0,
   });
 
-export const showWhenSelected = (
-  _result: FindScenesQueryResult,
+export const showWhenSelected = <T extends IQueryResult>(
+  _result: T,
   _filter: ListFilterModel,
   selectedIds: Set<string>
 ) => {

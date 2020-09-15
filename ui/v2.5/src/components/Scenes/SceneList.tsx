@@ -16,6 +16,7 @@ import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { SceneGenerateDialog } from "./SceneGenerateDialog";
+import { SceneExportDialog } from "./SceneExportDialog";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -28,6 +29,8 @@ export const SceneList: React.FC<ISceneList> = ({
 }) => {
   const history = useHistory();
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [isExportAll, setIsExportAll] = useState(false);
 
   const otherOperations = [
     {
@@ -38,6 +41,15 @@ export const SceneList: React.FC<ISceneList> = ({
       text: "Generate...",
       onClick: generate,
       isDisplayed: showWhenSelected,
+    },
+    {
+      text: "Export...",
+      onClick: onExport,
+      isDisplayed: showWhenSelected,
+    },
+    {
+      text: "Export all...",
+      onClick: onExportAll,
     },
   ];
 
@@ -96,6 +108,16 @@ export const SceneList: React.FC<ISceneList> = ({
     setIsGenerateDialogOpen(true);
   }
 
+  async function onExport() {
+    setIsExportAll(false);
+    setIsExportDialogOpen(true);
+  }
+
+  async function onExportAll() {
+    setIsExportAll(true);
+    setIsExportDialogOpen(true);
+  }
+
   function maybeRenderSceneGenerateDialog(selectedIds: Set<string>) {
     if (isGenerateDialogOpen) {
       return (
@@ -104,6 +126,22 @@ export const SceneList: React.FC<ISceneList> = ({
             selectedIds={Array.from(selectedIds.values())}
             onClose={() => {
               setIsGenerateDialogOpen(false);
+            }}
+          />
+        </>
+      );
+    }
+  }
+
+  function maybeRenderSceneExportDialog(selectedIds: Set<string>) {
+    if (isExportDialogOpen) {
+      return (
+        <>
+          <SceneExportDialog
+            selectedIds={Array.from(selectedIds.values())}
+            all={isExportAll}
+            onClose={() => {
+              setIsExportDialogOpen(false);
             }}
           />
         </>
@@ -187,6 +225,7 @@ export const SceneList: React.FC<ISceneList> = ({
     return (
       <>
         {maybeRenderSceneGenerateDialog(selectedIds)}
+        {maybeRenderSceneExportDialog(selectedIds)}
         {renderScenes(result, filter, selectedIds, zoomIndex)}
       </>
     );

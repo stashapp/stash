@@ -92,6 +92,11 @@ test:
 it:
 	go test -mod=vendor -tags=integration ./...
 
+# generates test mocks
+.PHONY: generate-test-mocks
+generate-test-mocks:
+	go run -mod=vendor github.com/vektra/mockery/v2 --dir ./pkg/models --name '.*ReaderWriter' --outpkg mocks --output ./pkg/models/mocks
+
 # installs UI dependencies. Run when first cloning repository, or if UI 
 # dependencies have changed
 .PHONY: pre-ui
