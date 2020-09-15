@@ -62,6 +62,26 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 	return ret, nil
 }
 
+// FindStashBoxScenesByFingerprints queries stash-box for each scene using the
+// scene's MD5 checksum and/or oshash.
+func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.ScrapedScene, error) {
+	var ret []*models.ScrapedScene
+	for _, sceneID := range sceneIDs {
+		idInt, _ := strconv.Atoi(sceneID)
+		s, err := c.FindStashBoxSceneByFingerprint(idInt)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(s) > 0 {
+			// just add the first result from each id
+			ret = append(ret, s[0])
+		}
+	}
+
+	return ret, nil
+}
+
 // FindStashBoxSceneByFingerprint queries stash-box for scenes using the
 // scene's MD5 checksum and/or oshash.
 func (c Client) FindStashBoxSceneByFingerprint(sceneID int) ([]*models.ScrapedScene, error) {

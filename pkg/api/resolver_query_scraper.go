@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -86,9 +85,8 @@ func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.Sta
 
 	client := stashbox.NewClient(*boxes[input.StashBoxIndex])
 
-	if input.SceneID != nil {
-		idInt, _ := strconv.Atoi(*input.SceneID)
-		return client.FindStashBoxSceneByFingerprint(idInt)
+	if len(input.SceneIds) > 0 {
+		return client.FindStashBoxScenesByFingerprints(input.SceneIds)
 	}
 
 	if input.Q != nil {

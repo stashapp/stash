@@ -92,7 +92,7 @@ input StashBoxQueryInput {
   """Index of the configured stash-box instance to use"""
   stash_box_index: Int!
   """Instructs query by scene fingerprints"""
-  scene_id: ID
+  scene_ids: [ID!]
   """Query by query string"""
   q: String
 }
