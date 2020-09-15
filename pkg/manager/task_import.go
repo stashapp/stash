@@ -247,10 +247,10 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 				s = append(s, studioJSON)
 				pendingParent[studioJSON.ParentStudio] = s
 				continue
-			} else {
-				logger.Errorf("[studios] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
-				continue
 			}
+
+			logger.Errorf("[studios] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
+			continue
 		}
 
 		if err := tx.Commit(); err != nil {

@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import {
-  Form,
-} from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { mutateImportObjects } from "src/core/StashService";
 import { Modal } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
@@ -11,7 +9,9 @@ interface IImportDialogProps {
   onClose: () => void;
 }
 
-export const ImportDialog: React.FC<IImportDialogProps> = (props: IImportDialogProps) => {
+export const ImportDialog: React.FC<IImportDialogProps> = (
+  props: IImportDialogProps
+) => {
   const [duplicateBehaviour, setDuplicateBehaviour] = useState<string>(
     duplicateHandlingToString(GQL.ImportDuplicateEnum.Ignore)
   );
@@ -27,7 +27,9 @@ export const ImportDialog: React.FC<IImportDialogProps> = (props: IImportDialogP
 
   const Toast = useToast();
 
-  function duplicateHandlingToString(value: GQL.ImportDuplicateEnum | undefined) {
+  function duplicateHandlingToString(
+    value: GQL.ImportDuplicateEnum | undefined
+  ) {
     switch (value) {
       case GQL.ImportDuplicateEnum.Fail:
         return "Fail";
@@ -52,7 +54,9 @@ export const ImportDialog: React.FC<IImportDialogProps> = (props: IImportDialogP
     return GQL.ImportDuplicateEnum.Ignore;
   }
 
-  function missingRefHandlingToString(value: GQL.ImportMissingRefEnum | undefined) {
+  function missingRefHandlingToString(
+    value: GQL.ImportMissingRefEnum | undefined
+  ) {
     switch (value) {
       case GQL.ImportMissingRefEnum.Fail:
         return "Fail";
@@ -78,7 +82,11 @@ export const ImportDialog: React.FC<IImportDialogProps> = (props: IImportDialogP
   }
 
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    if (event.target.validity.valid && event.target.files && event.target.files.length > 0) { 
+    if (
+      event.target.validity.valid &&
+      event.target.files &&
+      event.target.files.length > 0
+    ) {
       setFile(event.target.files[0]);
     }
   }
@@ -123,11 +131,7 @@ export const ImportDialog: React.FC<IImportDialogProps> = (props: IImportDialogP
         <Form>
           <Form.Group id="import-file">
             <h6>Import zip file</h6>
-            <Form.File
-              onChange={onFileChange}
-              accept=".zip"
-              >
-            </Form.File>
+            <Form.File onChange={onFileChange} accept=".zip" />
           </Form.Group>
           <Form.Group id="duplicate-handling">
             <h6>Duplicate object handling</h6>
@@ -140,9 +144,7 @@ export const ImportDialog: React.FC<IImportDialogProps> = (props: IImportDialogP
               }
             >
               {Object.values(GQL.ImportDuplicateEnum).map((p) => (
-                <option key={p}>
-                  {duplicateHandlingToString(p)}
-                </option>
+                <option key={p}>{duplicateHandlingToString(p)}</option>
               ))}
             </Form.Control>
           </Form.Group>
@@ -158,9 +160,7 @@ export const ImportDialog: React.FC<IImportDialogProps> = (props: IImportDialogP
               }
             >
               {Object.values(GQL.ImportMissingRefEnum).map((p) => (
-                <option key={p}>
-                  {missingRefHandlingToString(p)}
-                </option>
+                <option key={p}>{missingRefHandlingToString(p)}</option>
               ))}
             </Form.Control>
           </Form.Group>

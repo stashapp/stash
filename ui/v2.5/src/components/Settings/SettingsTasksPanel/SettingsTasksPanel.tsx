@@ -142,9 +142,7 @@ export const SettingsTasksPanel: React.FC = () => {
       return;
     }
 
-    return (
-      <ImportDialog onClose={() => setIsImportDialogOpen(false)}></ImportDialog>
-    );
+    return <ImportDialog onClose={() => setIsImportDialogOpen(false)} />;
   }
 
   async function onScan() {
@@ -368,7 +366,8 @@ export const SettingsTasksPanel: React.FC = () => {
           Full Export
         </Button>
         <Form.Text className="text-muted">
-          Exports the database content into JSON format in the metadata directory.
+          Exports the database content into JSON format in the metadata
+          directory.
         </Form.Text>
       </Form.Group>
 
@@ -381,7 +380,8 @@ export const SettingsTasksPanel: React.FC = () => {
           Full Import
         </Button>
         <Form.Text className="text-muted">
-          Import from exported JSON in the metadata directory. Wipes the existing database.
+          Import from exported JSON in the metadata directory. Wipes the
+          existing database.
         </Form.Text>
       </Form.Group>
 

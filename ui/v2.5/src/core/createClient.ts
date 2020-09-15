@@ -67,7 +67,7 @@ export const createClient = () => {
       );
     },
     wsLink,
-    //@ts-ignore
+    // @ts-ignore
     httpLink
   );
 
