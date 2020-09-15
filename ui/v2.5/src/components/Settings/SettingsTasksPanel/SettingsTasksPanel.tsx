@@ -18,11 +18,13 @@ import { useToast } from "src/hooks";
 import { Modal } from "src/components/Shared";
 import { Plugin, PluginTask } from "src/core/generated-graphql";
 import { GenerateButton } from "./GenerateButton";
+import { ImportDialog } from "./ImportDialog";
 
 export const SettingsTasksPanel: React.FC = () => {
   const Toast = useToast();
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState<boolean>(false);
   const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
   const [status, setStatus] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
@@ -129,6 +131,16 @@ export const SettingsTasksPanel: React.FC = () => {
           found in the filesystem.
         </p>
       </Modal>
+    );
+  }
+
+  function renderImportDialog() {
+    if (!isImportDialogOpen) {
+      return;
+    }
+
+    return (
+      <ImportDialog onClose={() => setIsImportDialogOpen(false)}></ImportDialog>
     );
   }
 
@@ -259,6 +271,7 @@ export const SettingsTasksPanel: React.FC = () => {
     <>
       {renderImportAlert()}
       {renderCleanAlert()}
+      {renderImportDialog()}
 
       <h4>Running Jobs</h4>
 
@@ -355,10 +368,10 @@ export const SettingsTasksPanel: React.FC = () => {
             })
           }
         >
-          Export
+          Full Export
         </Button>
         <Form.Text className="text-muted">
-          Export the database content into JSON format.
+          Exports the database content into JSON format in the metadata directory.
         </Form.Text>
       </Form.Group>
 
@@ -368,10 +381,23 @@ export const SettingsTasksPanel: React.FC = () => {
           variant="danger"
           onClick={() => setIsImportAlertOpen(true)}
         >
-          Import
+          Full Import
         </Button>
         <Form.Text className="text-muted">
-          Import from exported JSON. This is a destructive action.
+          Import from exported JSON in the metadata directory. Wipes the existing database.
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group>
+        <Button
+          id="partial-import"
+          variant="danger"
+          onClick={() => setIsImportDialogOpen(true)}
+        >
+          Import from file
+        </Button>
+        <Form.Text className="text-muted">
+          Incremental import from a supplied export zip file.
         </Form.Text>
       </Form.Group>
 
