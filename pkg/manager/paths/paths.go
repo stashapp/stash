@@ -1,13 +1,13 @@
 package paths
 
 import (
-	"github.com/stashapp/stash/pkg/utils"
 	"path/filepath"
+
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type Paths struct {
 	Generated *generatedPaths
-	JSON      *jsonPaths
 
 	Gallery      *galleryPaths
 	Scene        *scenePaths
@@ -17,7 +17,6 @@ type Paths struct {
 func NewPaths() *Paths {
 	p := Paths{}
 	p.Generated = newGeneratedPaths()
-	p.JSON = newJSONPaths()
 
 	p.Gallery = newGalleryPaths()
 	p.Scene = newScenePaths(p)

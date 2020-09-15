@@ -3,11 +3,10 @@ package paths
 import (
 	"path/filepath"
 
-	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type jsonPaths struct {
+type JSONPaths struct {
 	Metadata string
 
 	MappingsFile string
@@ -21,27 +20,27 @@ type jsonPaths struct {
 	Movies     string
 }
 
-func newJSONPaths() *jsonPaths {
-	jp := jsonPaths{}
-	jp.Metadata = config.GetMetadataPath()
-	jp.MappingsFile = filepath.Join(config.GetMetadataPath(), "mappings.json")
-	jp.ScrapedFile = filepath.Join(config.GetMetadataPath(), "scraped.json")
-	jp.Performers = filepath.Join(config.GetMetadataPath(), "performers")
-	jp.Scenes = filepath.Join(config.GetMetadataPath(), "scenes")
-	jp.Galleries = filepath.Join(config.GetMetadataPath(), "galleries")
-	jp.Studios = filepath.Join(config.GetMetadataPath(), "studios")
-	jp.Movies = filepath.Join(config.GetMetadataPath(), "movies")
-	jp.Tags = filepath.Join(config.GetMetadataPath(), "tags")
+func newJSONPaths(baseDir string) *JSONPaths {
+	jp := JSONPaths{}
+	jp.Metadata = baseDir
+	jp.MappingsFile = filepath.Join(baseDir, "mappings.json")
+	jp.ScrapedFile = filepath.Join(baseDir, "scraped.json")
+	jp.Performers = filepath.Join(baseDir, "performers")
+	jp.Scenes = filepath.Join(baseDir, "scenes")
+	jp.Galleries = filepath.Join(baseDir, "galleries")
+	jp.Studios = filepath.Join(baseDir, "studios")
+	jp.Movies = filepath.Join(baseDir, "movies")
+	jp.Tags = filepath.Join(baseDir, "tags")
 	return &jp
 }
 
-func GetJSONPaths() *jsonPaths {
-	jp := newJSONPaths()
+func GetJSONPaths(baseDir string) *JSONPaths {
+	jp := newJSONPaths(baseDir)
 	return jp
 }
 
-func EnsureJSONDirs() {
-	jsonPaths := GetJSONPaths()
+func EnsureJSONDirs(baseDir string) {
+	jsonPaths := GetJSONPaths(baseDir)
 	utils.EnsureDir(jsonPaths.Metadata)
 	utils.EnsureDir(jsonPaths.Scenes)
 	utils.EnsureDir(jsonPaths.Galleries)
@@ -51,22 +50,22 @@ func EnsureJSONDirs() {
 	utils.EnsureDir(jsonPaths.Tags)
 }
 
-func (jp *jsonPaths) PerformerJSONPath(checksum string) string {
+func (jp *JSONPaths) PerformerJSONPath(checksum string) string {
 	return filepath.Join(jp.Performers, checksum+".json")
 }
 
-func (jp *jsonPaths) SceneJSONPath(checksum string) string {
+func (jp *JSONPaths) SceneJSONPath(checksum string) string {
 	return filepath.Join(jp.Scenes, checksum+".json")
 }
 
-func (jp *jsonPaths) StudioJSONPath(checksum string) string {
+func (jp *JSONPaths) StudioJSONPath(checksum string) string {
 	return filepath.Join(jp.Studios, checksum+".json")
 }
 
-func (jp *jsonPaths) TagJSONPath(checksum string) string {
+func (jp *JSONPaths) TagJSONPath(checksum string) string {
 	return filepath.Join(jp.Tags, checksum+".json")
 }
 
-func (jp *jsonPaths) MovieJSONPath(checksum string) string {
+func (jp *JSONPaths) MovieJSONPath(checksum string) string {
 	return filepath.Join(jp.Movies, checksum+".json")
 }

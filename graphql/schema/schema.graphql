@@ -158,6 +158,9 @@ type Mutation {
   configureGeneral(input: ConfigGeneralInput!): ConfigGeneralResult!
   configureInterface(input: ConfigInterfaceInput!): ConfigInterfaceResult!
 
+  """Returns a link to download the result"""
+  exportObjects(input: ExportObjectsInput!): String
+
   """Start an import. Returns the job ID"""
   metadataImport: String!
   """Start an export. Returns the job ID"""

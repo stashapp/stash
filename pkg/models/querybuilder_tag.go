@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -87,6 +88,24 @@ func (qb *TagQueryBuilder) Find(id int, tx *sqlx.Tx) (*Tag, error) {
 	query := "SELECT * FROM tags WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryTag(query, args, tx)
+}
+
+func (qb *TagQueryBuilder) FindMany(ids []int) ([]*Tag, error) {
+	var tags []*Tag
+	for _, id := range ids {
+		tag, err := qb.Find(id, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if tag == nil {
+			return nil, fmt.Errorf("tag with id %d not found", id)
+		}
+
+		tags = append(tags, tag)
+	}
+
+	return tags, nil
 }
 
 func (qb *TagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Tag, error) {

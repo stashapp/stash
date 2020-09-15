@@ -1,27 +1,91 @@
 package manager
 
 import (
-	"context"
+	"archive/zip"
 	"fmt"
-	"math"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"runtime"
-	"strconv"
 	"sync"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/movie"
+	"github.com/stashapp/stash/pkg/performer"
+	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/studio"
+	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ExportTask struct {
+	full bool
+
+	baseDir string
+	json    jsonUtils
+
 	Mappings            *jsonschema.Mappings
-	Scraped             []jsonschema.ScrapedItem
 	fileNamingAlgorithm models.HashAlgorithm
+
+	scenes     *exportSpec
+	performers *exportSpec
+	movies     *exportSpec
+	tags       *exportSpec
+	studios    *exportSpec
+	galleries  *exportSpec
+
+	includeDependencies bool
+
+	DownloadHash string
+}
+
+type exportSpec struct {
+	IDs []int
+	all bool
+}
+
+func newExportSpec(input *models.ExportObjectTypeInput) *exportSpec {
+	if input == nil {
+		return &exportSpec{}
+	}
+
+	ret := &exportSpec{
+		IDs: utils.StringSliceToIntSlice(input.Ids),
+	}
+
+	if input.All != nil {
+		ret.all = *input.All
+	}
+
+	return ret
+}
+
+func CreateExportTask(a models.HashAlgorithm, input models.ExportObjectsInput) *ExportTask {
+	includeDeps := false
+	if input.IncludeDependencies != nil {
+		includeDeps = *input.IncludeDependencies
+	}
+
+	return &ExportTask{
+		fileNamingAlgorithm: a,
+		scenes:              newExportSpec(input.Scenes),
+		performers:          newExportSpec(input.Performers),
+		movies:              newExportSpec(input.Movies),
+		tags:                newExportSpec(input.Tags),
+		studios:             newExportSpec(input.Studios),
+		galleries:           newExportSpec(input.Galleries),
+		includeDependencies: includeDeps,
+	}
+}
+
+func (t *ExportTask) GetStatus() JobStatus {
+	return Export
 }
 
 func (t *ExportTask) Start(wg *sync.WaitGroup) {
@@ -30,36 +94,151 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	workerCount := runtime.GOMAXPROCS(0) // set worker count to number of cpus available
 
 	t.Mappings = &jsonschema.Mappings{}
-	t.Scraped = []jsonschema.ScrapedItem{}
 
-	ctx := context.TODO()
 	startTime := time.Now()
 
-	paths.EnsureJSONDirs()
+	if t.full {
+		t.baseDir = config.GetMetadataPath()
+	} else {
+		var err error
+		t.baseDir, err = instance.Paths.Generated.TempDir("export")
+		if err != nil {
+			logger.Errorf("error creating temporary directory for export: %s", err.Error())
+			return
+		}
 
-	t.ExportScenes(ctx, workerCount)
-	t.ExportGalleries(ctx)
-	t.ExportPerformers(ctx, workerCount)
-	t.ExportStudios(ctx, workerCount)
-	t.ExportMovies(ctx, workerCount)
-	t.ExportTags(ctx, workerCount)
+		defer func() {
+			err := utils.RemoveDir(t.baseDir)
+			if err != nil {
+				logger.Errorf("error removing directory %s: %s", t.baseDir, err.Error())
+			}
+		}()
+	}
 
-	if err := instance.JSON.saveMappings(t.Mappings); err != nil {
+	t.json = jsonUtils{
+		json: *paths.GetJSONPaths(t.baseDir),
+	}
+
+	paths.EnsureJSONDirs(t.baseDir)
+
+	t.ExportScenes(workerCount)
+	t.ExportGalleries()
+	t.ExportPerformers(workerCount)
+	t.ExportStudios(workerCount)
+	t.ExportMovies(workerCount)
+	t.ExportTags(workerCount)
+
+	if err := t.json.saveMappings(t.Mappings); err != nil {
 		logger.Errorf("[mappings] failed to save json: %s", err.Error())
 	}
 
-	t.ExportScrapedItems(ctx)
+	if t.full {
+		t.ExportScrapedItems()
+	} else {
+		err := t.generateDownload()
+		if err != nil {
+			logger.Errorf("error generating download link: %s", err.Error())
+			return
+		}
+	}
 	logger.Infof("Export complete in %s.", time.Since(startTime))
 }
 
-func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
+func (t *ExportTask) generateDownload() error {
+	// zip the files and register a download link
+	utils.EnsureDir(instance.Paths.Generated.Downloads)
+	z, err := ioutil.TempFile(instance.Paths.Generated.Downloads, "export*.zip")
+	if err != nil {
+		return err
+	}
+	defer z.Close()
+
+	err = t.zipFiles(z)
+	if err != nil {
+		return err
+	}
+
+	t.DownloadHash = instance.DownloadStore.RegisterFile(z.Name(), "", false)
+	logger.Debugf("Generated zip file %s with hash %s", z.Name(), t.DownloadHash)
+	return nil
+}
+
+func (t *ExportTask) zipFiles(w io.Writer) error {
+	z := zip.NewWriter(w)
+	defer z.Close()
+
+	u := jsonUtils{
+		json: *paths.GetJSONPaths(""),
+	}
+
+	// write the mappings file
+	err := t.zipFile(t.json.json.MappingsFile, "", z)
+	if err != nil {
+		return err
+	}
+
+	filepath.Walk(t.json.json.Tags, t.zipWalkFunc(u.json.Tags, z))
+	filepath.Walk(t.json.json.Galleries, t.zipWalkFunc(u.json.Galleries, z))
+	filepath.Walk(t.json.json.Performers, t.zipWalkFunc(u.json.Performers, z))
+	filepath.Walk(t.json.json.Studios, t.zipWalkFunc(u.json.Studios, z))
+	filepath.Walk(t.json.json.Movies, t.zipWalkFunc(u.json.Movies, z))
+	filepath.Walk(t.json.json.Scenes, t.zipWalkFunc(u.json.Scenes, z))
+
+	return nil
+}
+
+func (t *ExportTask) zipWalkFunc(outDir string, z *zip.Writer) filepath.WalkFunc {
+	return func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		return t.zipFile(path, outDir, z)
+	}
+}
+
+func (t *ExportTask) zipFile(fn, outDir string, z *zip.Writer) error {
+	bn := filepath.Base(fn)
+
+	f, err := z.Create(filepath.Join(outDir, bn))
+	if err != nil {
+		return fmt.Errorf("error creating zip entry for %s: %s", fn, err.Error())
+	}
+
+	i, err := os.Open(fn)
+	if err != nil {
+		return fmt.Errorf("error opening %s: %s", fn, err.Error())
+	}
+
+	defer i.Close()
+
+	if _, err := io.Copy(f, i); err != nil {
+		return fmt.Errorf("error writing %s to zip: %s", fn, err.Error())
+	}
+
+	return nil
+}
+
+func (t *ExportTask) ExportScenes(workers int) {
 	var scenesWg sync.WaitGroup
 
-	qb := models.NewSceneQueryBuilder()
+	sceneReader := models.NewSceneReaderWriter(nil)
 
-	scenes, err := qb.All()
+	var scenes []*models.Scene
+	var err error
+	all := t.full || (t.scenes != nil && t.scenes.all)
+	if all {
+		scenes, err = sceneReader.All()
+	} else if t.scenes != nil && len(t.scenes.IDs) > 0 {
+		scenes, err = sceneReader.FindMany(t.scenes.IDs)
+	}
+
 	if err != nil {
-		logger.Errorf("[scenes] failed to fetch all scenes: %s", err.Error())
+		logger.Errorf("[scenes] failed to fetch scenes: %s", err.Error())
 	}
 
 	jobCh := make(chan *models.Scene, workers*2) // make a buffered channel to feed workers
@@ -69,7 +248,7 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
 
 	for w := 0; w < workers; w++ { // create export Scene workers
 		scenesWg.Add(1)
-		go exportScene(&scenesWg, jobCh, t, nil) // no db data is changed so tx is set to nil
+		go exportScene(&scenesWg, jobCh, t)
 	}
 
 	for i, scene := range scenes {
@@ -87,177 +266,120 @@ func (t *ExportTask) ExportScenes(ctx context.Context, workers int) {
 
 	logger.Infof("[scenes] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
-func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask, tx *sqlx.Tx) {
+
+func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask) {
 	defer wg.Done()
-	sceneQB := models.NewSceneQueryBuilder()
-	studioQB := models.NewStudioQueryBuilder()
-	movieQB := models.NewMovieQueryBuilder()
-	galleryQB := models.NewGalleryQueryBuilder()
-	performerQB := models.NewPerformerQueryBuilder()
-	tagQB := models.NewTagQueryBuilder()
-	sceneMarkerQB := models.NewSceneMarkerQueryBuilder()
-	joinQB := models.NewJoinsQueryBuilder()
+	sceneReader := models.NewSceneReaderWriter(nil)
+	studioReader := models.NewStudioReaderWriter(nil)
+	movieReader := models.NewMovieReaderWriter(nil)
+	galleryReader := models.NewGalleryReaderWriter(nil)
+	performerReader := models.NewPerformerReaderWriter(nil)
+	tagReader := models.NewTagReaderWriter(nil)
+	sceneMarkerReader := models.NewSceneMarkerReaderWriter(nil)
+	joinReader := models.NewJoinReaderWriter(nil)
 
-	for scene := range jobChan {
-		newSceneJSON := jsonschema.Scene{
-			CreatedAt: models.JSONTime{Time: scene.CreatedAt.Timestamp},
-			UpdatedAt: models.JSONTime{Time: scene.UpdatedAt.Timestamp},
-		}
+	for s := range jobChan {
+		sceneHash := s.GetHash(t.fileNamingAlgorithm)
 
-		if scene.Checksum.Valid {
-			newSceneJSON.Checksum = scene.Checksum.String
-		}
-
-		if scene.OSHash.Valid {
-			newSceneJSON.OSHash = scene.OSHash.String
-		}
-
-		var studioName string
-		if scene.StudioID.Valid {
-			studio, _ := studioQB.Find(int(scene.StudioID.Int64), tx)
-			if studio != nil {
-				studioName = studio.Name.String
-			}
-		}
-
-		var galleryChecksum string
-		gallery, _ := galleryQB.FindBySceneID(scene.ID, tx)
-		if gallery != nil {
-			galleryChecksum = gallery.Checksum
-		}
-
-		performers, _ := performerQB.FindNameBySceneID(scene.ID, tx)
-		sceneMovies, _ := joinQB.GetSceneMovies(scene.ID, tx)
-		tags, _ := tagQB.FindBySceneID(scene.ID, tx)
-		sceneMarkers, _ := sceneMarkerQB.FindBySceneID(scene.ID, tx)
-
-		if scene.Title.Valid {
-			newSceneJSON.Title = scene.Title.String
-		}
-		if studioName != "" {
-			newSceneJSON.Studio = studioName
-		}
-		if scene.URL.Valid {
-			newSceneJSON.URL = scene.URL.String
-		}
-		if scene.Date.Valid {
-			newSceneJSON.Date = utils.GetYMDFromDatabaseDate(scene.Date.String)
-		}
-		if scene.Rating.Valid {
-			newSceneJSON.Rating = int(scene.Rating.Int64)
-		}
-
-		newSceneJSON.OCounter = scene.OCounter
-
-		if scene.Details.Valid {
-			newSceneJSON.Details = scene.Details.String
-		}
-		if galleryChecksum != "" {
-			newSceneJSON.Gallery = galleryChecksum
-		}
-
-		newSceneJSON.Performers = t.getPerformerNames(performers)
-		newSceneJSON.Tags = t.getTagNames(tags)
-
-		sceneHash := scene.GetHash(t.fileNamingAlgorithm)
-
-		for _, sceneMarker := range sceneMarkers {
-			primaryTag, err := tagQB.Find(sceneMarker.PrimaryTagID, tx)
-			if err != nil {
-				logger.Errorf("[scenes] <%s> invalid primary tag for scene marker: %s", sceneHash, err.Error())
-				continue
-			}
-			sceneMarkerTags, err := tagQB.FindBySceneMarkerID(sceneMarker.ID, tx)
-			if err != nil {
-				logger.Errorf("[scenes] <%s> invalid tags for scene marker: %s", sceneHash, err.Error())
-				continue
-			}
-			if sceneMarker.Seconds == 0 || primaryTag.Name == "" {
-				logger.Errorf("[scenes] invalid scene marker: %v", sceneMarker)
-			}
-
-			sceneMarkerJSON := jsonschema.SceneMarker{
-				Title:      sceneMarker.Title,
-				Seconds:    t.getDecimalString(sceneMarker.Seconds),
-				PrimaryTag: primaryTag.Name,
-				Tags:       t.getTagNames(sceneMarkerTags),
-				CreatedAt:  models.JSONTime{Time: sceneMarker.CreatedAt.Timestamp},
-				UpdatedAt:  models.JSONTime{Time: sceneMarker.UpdatedAt.Timestamp},
-			}
-
-			newSceneJSON.Markers = append(newSceneJSON.Markers, sceneMarkerJSON)
-		}
-
-		for _, sceneMovie := range sceneMovies {
-			movie, _ := movieQB.Find(sceneMovie.MovieID, tx)
-
-			if movie.Name.Valid {
-				sceneMovieJSON := jsonschema.SceneMovie{
-					MovieName:  movie.Name.String,
-					SceneIndex: int(sceneMovie.SceneIndex.Int64),
-				}
-				newSceneJSON.Movies = append(newSceneJSON.Movies, sceneMovieJSON)
-			}
-		}
-
-		newSceneJSON.File = &jsonschema.SceneFile{}
-		if scene.Size.Valid {
-			newSceneJSON.File.Size = scene.Size.String
-		}
-		if scene.Duration.Valid {
-			newSceneJSON.File.Duration = t.getDecimalString(scene.Duration.Float64)
-		}
-		if scene.VideoCodec.Valid {
-			newSceneJSON.File.VideoCodec = scene.VideoCodec.String
-		}
-		if scene.AudioCodec.Valid {
-			newSceneJSON.File.AudioCodec = scene.AudioCodec.String
-		}
-		if scene.Format.Valid {
-			newSceneJSON.File.Format = scene.Format.String
-		}
-		if scene.Width.Valid {
-			newSceneJSON.File.Width = int(scene.Width.Int64)
-		}
-		if scene.Height.Valid {
-			newSceneJSON.File.Height = int(scene.Height.Int64)
-		}
-		if scene.Framerate.Valid {
-			newSceneJSON.File.Framerate = t.getDecimalString(scene.Framerate.Float64)
-		}
-		if scene.Bitrate.Valid {
-			newSceneJSON.File.Bitrate = int(scene.Bitrate.Int64)
-		}
-
-		cover, err := sceneQB.GetSceneCover(scene.ID, tx)
+		newSceneJSON, err := scene.ToBasicJSON(sceneReader, s)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene cover: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene JSON: %s", sceneHash, err.Error())
 			continue
 		}
 
-		if len(cover) > 0 {
-			newSceneJSON.Cover = utils.GetBase64StringFromData(cover)
-		}
-
-		sceneJSON, err := instance.JSON.getScene(sceneHash)
+		newSceneJSON.Studio, err = scene.GetStudioName(studioReader, s)
 		if err != nil {
-			logger.Debugf("[scenes] error reading scene json: %s", err.Error())
-		} else if jsonschema.CompareJSON(*sceneJSON, newSceneJSON) {
+			logger.Errorf("[scenes] <%s> error getting scene studio name: %s", sceneHash, err.Error())
 			continue
 		}
 
-		if err := instance.JSON.saveScene(sceneHash, &newSceneJSON); err != nil {
+		sceneGallery, err := galleryReader.FindBySceneID(s.ID)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene gallery: %s", sceneHash, err.Error())
+			continue
+		}
+
+		if sceneGallery != nil {
+			newSceneJSON.Gallery = sceneGallery.Checksum
+		}
+
+		performers, err := performerReader.FindBySceneID(s.ID)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene performer names: %s", sceneHash, err.Error())
+			continue
+		}
+
+		newSceneJSON.Performers = performer.GetNames(performers)
+
+		newSceneJSON.Tags, err = scene.GetTagNames(tagReader, s)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene tag names: %s", sceneHash, err.Error())
+			continue
+		}
+
+		newSceneJSON.Markers, err = scene.GetSceneMarkersJSON(sceneMarkerReader, tagReader, s)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene markers JSON: %s", sceneHash, err.Error())
+			continue
+		}
+
+		newSceneJSON.Movies, err = scene.GetSceneMoviesJSON(movieReader, joinReader, s)
+		if err != nil {
+			logger.Errorf("[scenes] <%s> error getting scene movies JSON: %s", sceneHash, err.Error())
+			continue
+		}
+
+		if t.includeDependencies {
+			if s.StudioID.Valid {
+				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
+			}
+
+			if sceneGallery != nil {
+				t.galleries.IDs = utils.IntAppendUnique(t.galleries.IDs, sceneGallery.ID)
+			}
+
+			tagIDs, err := scene.GetDependentTagIDs(tagReader, joinReader, sceneMarkerReader, s)
+			if err != nil {
+				logger.Errorf("[scenes] <%s> error getting scene tags: %s", sceneHash, err.Error())
+				continue
+			}
+			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tagIDs)
+
+			movieIDs, err := scene.GetDependentMovieIDs(joinReader, s)
+			if err != nil {
+				logger.Errorf("[scenes] <%s> error getting scene movies: %s", sceneHash, err.Error())
+				continue
+			}
+			t.movies.IDs = utils.IntAppendUniques(t.movies.IDs, movieIDs)
+
+			t.performers.IDs = utils.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+		}
+
+		sceneJSON, err := t.json.getScene(sceneHash)
+		if err == nil && jsonschema.CompareJSON(*sceneJSON, *newSceneJSON) {
+			continue
+		}
+
+		if err := t.json.saveScene(sceneHash, newSceneJSON); err != nil {
 			logger.Errorf("[scenes] <%s> failed to save json: %s", sceneHash, err.Error())
 		}
 	}
-
 }
 
-func (t *ExportTask) ExportGalleries(ctx context.Context) {
-	qb := models.NewGalleryQueryBuilder()
-	galleries, err := qb.All()
+func (t *ExportTask) ExportGalleries() {
+	reader := models.NewGalleryReaderWriter(nil)
+
+	var galleries []*models.Gallery
+	var err error
+	all := t.full || (t.galleries != nil && t.galleries.all)
+	if all {
+		galleries, err = reader.All()
+	} else if t.galleries != nil && len(t.galleries.IDs) > 0 {
+		galleries, err = reader.FindMany(t.galleries.IDs)
+	}
+
 	if err != nil {
-		logger.Errorf("[galleries] failed to fetch all galleries: %s", err.Error())
+		logger.Errorf("[galleries] failed to fetch galleries: %s", err.Error())
 	}
 
 	logger.Info("[galleries] exporting")
@@ -271,13 +393,21 @@ func (t *ExportTask) ExportGalleries(ctx context.Context) {
 	logger.Infof("[galleries] export complete")
 }
 
-func (t *ExportTask) ExportPerformers(ctx context.Context, workers int) {
+func (t *ExportTask) ExportPerformers(workers int) {
 	var performersWg sync.WaitGroup
 
-	qb := models.NewPerformerQueryBuilder()
-	performers, err := qb.All()
+	reader := models.NewPerformerReaderWriter(nil)
+	var performers []*models.Performer
+	var err error
+	all := t.full || (t.performers != nil && t.performers.all)
+	if all {
+		performers, err = reader.All()
+	} else if t.performers != nil && len(t.performers.IDs) > 0 {
+		performers, err = reader.FindMany(t.performers.IDs)
+	}
+
 	if err != nil {
-		logger.Errorf("[performers] failed to fetch all performers: %s", err.Error())
+		logger.Errorf("[performers] failed to fetch performers: %s", err.Error())
 	}
 	jobCh := make(chan *models.Performer, workers*2) // make a buffered channel to feed workers
 
@@ -286,7 +416,7 @@ func (t *ExportTask) ExportPerformers(ctx context.Context, workers int) {
 
 	for w := 0; w < workers; w++ { // create export Performer workers
 		performersWg.Add(1)
-		go exportPerformer(&performersWg, jobCh)
+		go t.exportPerformer(&performersWg, jobCh)
 	}
 
 	for i, performer := range performers {
@@ -303,99 +433,47 @@ func (t *ExportTask) ExportPerformers(ctx context.Context, workers int) {
 	logger.Infof("[performers] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
-func exportPerformer(wg *sync.WaitGroup, jobChan <-chan *models.Performer) {
+func (t *ExportTask) exportPerformer(wg *sync.WaitGroup, jobChan <-chan *models.Performer) {
 	defer wg.Done()
 
-	performerQB := models.NewPerformerQueryBuilder()
+	performerReader := models.NewPerformerReaderWriter(nil)
 
-	for performer := range jobChan {
-		newPerformerJSON := jsonschema.Performer{
-			CreatedAt: models.JSONTime{Time: performer.CreatedAt.Timestamp},
-			UpdatedAt: models.JSONTime{Time: performer.UpdatedAt.Timestamp},
-		}
+	for p := range jobChan {
+		newPerformerJSON, err := performer.ToJSON(performerReader, p)
 
-		if performer.Name.Valid {
-			newPerformerJSON.Name = performer.Name.String
-		}
-		if performer.Gender.Valid {
-			newPerformerJSON.Gender = performer.Gender.String
-		}
-		if performer.URL.Valid {
-			newPerformerJSON.URL = performer.URL.String
-		}
-		if performer.Birthdate.Valid {
-			newPerformerJSON.Birthdate = utils.GetYMDFromDatabaseDate(performer.Birthdate.String)
-		}
-		if performer.Ethnicity.Valid {
-			newPerformerJSON.Ethnicity = performer.Ethnicity.String
-		}
-		if performer.Country.Valid {
-			newPerformerJSON.Country = performer.Country.String
-		}
-		if performer.EyeColor.Valid {
-			newPerformerJSON.EyeColor = performer.EyeColor.String
-		}
-		if performer.Height.Valid {
-			newPerformerJSON.Height = performer.Height.String
-		}
-		if performer.Measurements.Valid {
-			newPerformerJSON.Measurements = performer.Measurements.String
-		}
-		if performer.FakeTits.Valid {
-			newPerformerJSON.FakeTits = performer.FakeTits.String
-		}
-		if performer.CareerLength.Valid {
-			newPerformerJSON.CareerLength = performer.CareerLength.String
-		}
-		if performer.Tattoos.Valid {
-			newPerformerJSON.Tattoos = performer.Tattoos.String
-		}
-		if performer.Piercings.Valid {
-			newPerformerJSON.Piercings = performer.Piercings.String
-		}
-		if performer.Aliases.Valid {
-			newPerformerJSON.Aliases = performer.Aliases.String
-		}
-		if performer.Twitter.Valid {
-			newPerformerJSON.Twitter = performer.Twitter.String
-		}
-		if performer.Instagram.Valid {
-			newPerformerJSON.Instagram = performer.Instagram.String
-		}
-		if performer.Favorite.Valid {
-			newPerformerJSON.Favorite = performer.Favorite.Bool
-		}
-
-		image, err := performerQB.GetPerformerImage(performer.ID, nil)
 		if err != nil {
-			logger.Errorf("[performers] <%s> error getting performers image: %s", performer.Checksum, err.Error())
+			logger.Errorf("[performers] <%s> error getting performer JSON: %s", p.Checksum, err.Error())
 			continue
 		}
 
-		if len(image) > 0 {
-			newPerformerJSON.Image = utils.GetBase64StringFromData(image)
-		}
-
-		performerJSON, err := instance.JSON.getPerformer(performer.Checksum)
+		performerJSON, err := t.json.getPerformer(p.Checksum)
 		if err != nil {
 			logger.Debugf("[performers] error reading performer json: %s", err.Error())
-		} else if jsonschema.CompareJSON(*performerJSON, newPerformerJSON) {
+		} else if jsonschema.CompareJSON(*performerJSON, *newPerformerJSON) {
 			continue
 		}
 
-		if err := instance.JSON.savePerformer(performer.Checksum, &newPerformerJSON); err != nil {
-			logger.Errorf("[performers] <%s> failed to save json: %s", performer.Checksum, err.Error())
+		if err := t.json.savePerformer(p.Checksum, newPerformerJSON); err != nil {
+			logger.Errorf("[performers] <%s> failed to save json: %s", p.Checksum, err.Error())
 		}
 	}
 }
 
-func (t *ExportTask) ExportStudios(ctx context.Context, workers int) {
+func (t *ExportTask) ExportStudios(workers int) {
 	var studiosWg sync.WaitGroup
 
-	qb := models.NewStudioQueryBuilder()
-	studios, err := qb.All()
+	reader := models.NewStudioReaderWriter(nil)
+	var studios []*models.Studio
+	var err error
+	all := t.full || (t.studios != nil && t.studios.all)
+	if all {
+		studios, err = reader.All()
+	} else if t.studios != nil && len(t.studios.IDs) > 0 {
+		studios, err = reader.FindMany(t.studios.IDs)
+	}
+
 	if err != nil {
-		logger.Errorf("[studios] failed to fetch all studios: %s", err.Error())
+		logger.Errorf("[studios] failed to fetch studios: %s", err.Error())
 	}
 
 	logger.Info("[studios] exporting")
@@ -405,7 +483,7 @@ func (t *ExportTask) ExportStudios(ctx context.Context, workers int) {
 
 	for w := 0; w < workers; w++ { // create export Studio workers
 		studiosWg.Add(1)
-		go exportStudio(&studiosWg, jobCh)
+		go t.exportStudio(&studiosWg, jobCh)
 	}
 
 	for i, studio := range studios {
@@ -422,61 +500,45 @@ func (t *ExportTask) ExportStudios(ctx context.Context, workers int) {
 	logger.Infof("[studios] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
-func exportStudio(wg *sync.WaitGroup, jobChan <-chan *models.Studio) {
+func (t *ExportTask) exportStudio(wg *sync.WaitGroup, jobChan <-chan *models.Studio) {
 	defer wg.Done()
 
-	studioQB := models.NewStudioQueryBuilder()
+	studioReader := models.NewStudioReaderWriter(nil)
 
-	for studio := range jobChan {
+	for s := range jobChan {
+		newStudioJSON, err := studio.ToJSON(studioReader, s)
 
-		newStudioJSON := jsonschema.Studio{
-			CreatedAt: models.JSONTime{Time: studio.CreatedAt.Timestamp},
-			UpdatedAt: models.JSONTime{Time: studio.UpdatedAt.Timestamp},
-		}
-
-		if studio.Name.Valid {
-			newStudioJSON.Name = studio.Name.String
-		}
-		if studio.URL.Valid {
-			newStudioJSON.URL = studio.URL.String
-		}
-		if studio.ParentID.Valid {
-			parent, _ := studioQB.Find(int(studio.ParentID.Int64), nil)
-			if parent != nil {
-				newStudioJSON.ParentStudio = parent.Name.String
-			}
-		}
-
-		image, err := studioQB.GetStudioImage(studio.ID, nil)
 		if err != nil {
-			logger.Errorf("[studios] <%s> error getting studio image: %s", studio.Checksum, err.Error())
+			logger.Errorf("[studios] <%s> error getting studio JSON: %s", s.Checksum, err.Error())
 			continue
 		}
 
-		if len(image) > 0 {
-			newStudioJSON.Image = utils.GetBase64StringFromData(image)
-		}
-
-		studioJSON, err := instance.JSON.getStudio(studio.Checksum)
-		if err != nil {
-			logger.Debugf("[studios] error reading studio json: %s", err.Error())
-		} else if jsonschema.CompareJSON(*studioJSON, newStudioJSON) {
+		studioJSON, err := t.json.getStudio(s.Checksum)
+		if err == nil && jsonschema.CompareJSON(*studioJSON, *newStudioJSON) {
 			continue
 		}
 
-		if err := instance.JSON.saveStudio(studio.Checksum, &newStudioJSON); err != nil {
-			logger.Errorf("[studios] <%s> failed to save json: %s", studio.Checksum, err.Error())
+		if err := t.json.saveStudio(s.Checksum, newStudioJSON); err != nil {
+			logger.Errorf("[studios] <%s> failed to save json: %s", s.Checksum, err.Error())
 		}
 	}
 }
 
-func (t *ExportTask) ExportTags(ctx context.Context, workers int) {
+func (t *ExportTask) ExportTags(workers int) {
 	var tagsWg sync.WaitGroup
 
-	qb := models.NewTagQueryBuilder()
-	tags, err := qb.All()
+	reader := models.NewTagReaderWriter(nil)
+	var tags []*models.Tag
+	var err error
+	all := t.full || (t.tags != nil && t.tags.all)
+	if all {
+		tags, err = reader.All()
+	} else if t.tags != nil && len(t.tags.IDs) > 0 {
+		tags, err = reader.FindMany(t.tags.IDs)
+	}
+
 	if err != nil {
-		logger.Errorf("[tags] failed to fetch all tags: %s", err.Error())
+		logger.Errorf("[tags] failed to fetch tags: %s", err.Error())
 	}
 
 	logger.Info("[tags] exporting")
@@ -486,7 +548,7 @@ func (t *ExportTask) ExportTags(ctx context.Context, workers int) {
 
 	for w := 0; w < workers; w++ { // create export Tag workers
 		tagsWg.Add(1)
-		go exportTag(&tagsWg, jobCh)
+		go t.exportTag(&tagsWg, jobCh)
 	}
 
 	for i, tag := range tags {
@@ -506,52 +568,48 @@ func (t *ExportTask) ExportTags(ctx context.Context, workers int) {
 	logger.Infof("[tags] export complete in %s. %d workers used.", time.Since(startTime), workers)
 }
 
-func exportTag(wg *sync.WaitGroup, jobChan <-chan *models.Tag) {
+func (t *ExportTask) exportTag(wg *sync.WaitGroup, jobChan <-chan *models.Tag) {
 	defer wg.Done()
 
-	tagQB := models.NewTagQueryBuilder()
+	tagReader := models.NewTagReaderWriter(nil)
 
-	for tag := range jobChan {
+	for thisTag := range jobChan {
+		newTagJSON, err := tag.ToJSON(tagReader, thisTag)
 
-		newTagJSON := jsonschema.Tag{
-			Name:      tag.Name,
-			CreatedAt: models.JSONTime{Time: tag.CreatedAt.Timestamp},
-			UpdatedAt: models.JSONTime{Time: tag.UpdatedAt.Timestamp},
-		}
-
-		image, err := tagQB.GetTagImage(tag.ID, nil)
 		if err != nil {
-			logger.Errorf("[tags] <%s> error getting tag image: %s", tag.Name, err.Error())
+			logger.Errorf("[tags] <%s> error getting tag JSON: %s", thisTag.Name, err.Error())
 			continue
-		}
-
-		if len(image) > 0 {
-			newTagJSON.Image = utils.GetBase64StringFromData(image)
 		}
 
 		// generate checksum on the fly by name, since we don't store it
-		checksum := utils.MD5FromString(tag.Name)
+		checksum := utils.MD5FromString(thisTag.Name)
 
-		tagJSON, err := instance.JSON.getTag(checksum)
-		if err != nil {
-			logger.Debugf("[tags] error reading tag json: %s", err.Error())
-		} else if jsonschema.CompareJSON(*tagJSON, newTagJSON) {
+		tagJSON, err := t.json.getTag(checksum)
+		if err == nil && jsonschema.CompareJSON(*tagJSON, *newTagJSON) {
 			continue
 		}
 
-		if err := instance.JSON.saveTag(checksum, &newTagJSON); err != nil {
+		if err := t.json.saveTag(checksum, newTagJSON); err != nil {
 			logger.Errorf("[tags] <%s> failed to save json: %s", checksum, err.Error())
 		}
 	}
 }
 
-func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
+func (t *ExportTask) ExportMovies(workers int) {
 	var moviesWg sync.WaitGroup
 
-	qb := models.NewMovieQueryBuilder()
-	movies, err := qb.All()
+	reader := models.NewMovieReaderWriter(nil)
+	var movies []*models.Movie
+	var err error
+	all := t.full || (t.movies != nil && t.movies.all)
+	if all {
+		movies, err = reader.All()
+	} else if t.movies != nil && len(t.movies.IDs) > 0 {
+		movies, err = reader.FindMany(t.movies.IDs)
+	}
+
 	if err != nil {
-		logger.Errorf("[movies] failed to fetch all movies: %s", err.Error())
+		logger.Errorf("[movies] failed to fetch movies: %s", err.Error())
 	}
 
 	logger.Info("[movies] exporting")
@@ -561,7 +619,7 @@ func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
 
 	for w := 0; w < workers; w++ { // create export Studio workers
 		moviesWg.Add(1)
-		go exportMovie(&moviesWg, jobCh)
+		go t.exportMovie(&moviesWg, jobCh)
 	}
 
 	for i, movie := range movies {
@@ -578,89 +636,34 @@ func (t *ExportTask) ExportMovies(ctx context.Context, workers int) {
 	logger.Infof("[movies] export complete in %s. %d workers used.", time.Since(startTime), workers)
 
 }
-func exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movie) {
+func (t *ExportTask) exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movie) {
 	defer wg.Done()
 
-	movieQB := models.NewMovieQueryBuilder()
-	studioQB := models.NewStudioQueryBuilder()
+	movieReader := models.NewMovieReaderWriter(nil)
+	studioReader := models.NewStudioReaderWriter(nil)
 
-	for movie := range jobChan {
-		newMovieJSON := jsonschema.Movie{
-			CreatedAt: models.JSONTime{Time: movie.CreatedAt.Timestamp},
-			UpdatedAt: models.JSONTime{Time: movie.UpdatedAt.Timestamp},
-		}
+	for m := range jobChan {
+		newMovieJSON, err := movie.ToJSON(movieReader, studioReader, m)
 
-		if movie.Name.Valid {
-			newMovieJSON.Name = movie.Name.String
-		}
-		if movie.Aliases.Valid {
-			newMovieJSON.Aliases = movie.Aliases.String
-		}
-		if movie.Date.Valid {
-			newMovieJSON.Date = utils.GetYMDFromDatabaseDate(movie.Date.String)
-		}
-		if movie.Rating.Valid {
-			newMovieJSON.Rating = int(movie.Rating.Int64)
-		}
-		if movie.Duration.Valid {
-			newMovieJSON.Duration = int(movie.Duration.Int64)
-		}
-
-		if movie.Director.Valid {
-			newMovieJSON.Director = movie.Director.String
-		}
-
-		if movie.Synopsis.Valid {
-			newMovieJSON.Synopsis = movie.Synopsis.String
-		}
-
-		if movie.URL.Valid {
-			newMovieJSON.URL = movie.URL.String
-		}
-
-		if movie.StudioID.Valid {
-			studio, _ := studioQB.Find(int(movie.StudioID.Int64), nil)
-			if studio != nil {
-				newMovieJSON.Studio = studio.Name.String
-			}
-		}
-
-		frontImage, err := movieQB.GetFrontImage(movie.ID, nil)
 		if err != nil {
-			logger.Errorf("[movies] <%s> error getting movie front image: %s", movie.Checksum, err.Error())
+			logger.Errorf("[movies] <%s> error getting tag JSON: %s", m.Checksum, err.Error())
 			continue
 		}
 
-		if len(frontImage) > 0 {
-			newMovieJSON.FrontImage = utils.GetBase64StringFromData(frontImage)
-		}
-
-		backImage, err := movieQB.GetBackImage(movie.ID, nil)
-		if err != nil {
-			logger.Errorf("[movies] <%s> error getting movie back image: %s", movie.Checksum, err.Error())
-			continue
-		}
-
-		if len(backImage) > 0 {
-			newMovieJSON.BackImage = utils.GetBase64StringFromData(backImage)
-		}
-
-		movieJSON, err := instance.JSON.getMovie(movie.Checksum)
+		movieJSON, err := t.json.getMovie(m.Checksum)
 		if err != nil {
 			logger.Debugf("[movies] error reading movie json: %s", err.Error())
-		} else if jsonschema.CompareJSON(*movieJSON, newMovieJSON) {
+		} else if jsonschema.CompareJSON(*movieJSON, *newMovieJSON) {
 			continue
 		}
 
-		if err := instance.JSON.saveMovie(movie.Checksum, &newMovieJSON); err != nil {
-			logger.Errorf("[movies] <%s> failed to save json: %s", movie.Checksum, err.Error())
+		if err := t.json.saveMovie(m.Checksum, newMovieJSON); err != nil {
+			logger.Errorf("[movies] <%s> failed to save json: %s", m.Checksum, err.Error())
 		}
 	}
 }
 
-func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	defer tx.Commit()
+func (t *ExportTask) ExportScrapedItems() {
 	qb := models.NewScrapedItemQueryBuilder()
 	sqb := models.NewStudioQueryBuilder()
 	scrapedItems, err := qb.All()
@@ -670,13 +673,15 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
 
 	logger.Info("[scraped sites] exporting")
 
+	scraped := []jsonschema.ScrapedItem{}
+
 	for i, scrapedItem := range scrapedItems {
 		index := i + 1
 		logger.Progressf("[scraped sites] %d of %d", index, len(scrapedItems))
 
 		var studioName string
 		if scrapedItem.StudioID.Valid {
-			studio, _ := sqb.Find(int(scrapedItem.StudioID.Int64), tx)
+			studio, _ := sqb.Find(int(scrapedItem.StudioID.Int64), nil)
 			if studio != nil {
 				studioName = studio.Name.String
 			}
@@ -725,74 +730,18 @@ func (t *ExportTask) ExportScrapedItems(ctx context.Context) {
 		updatedAt := models.JSONTime{Time: scrapedItem.UpdatedAt.Timestamp} // TODO keeping ruby format
 		newScrapedItemJSON.UpdatedAt = updatedAt
 
-		t.Scraped = append(t.Scraped, newScrapedItemJSON)
+		scraped = append(scraped, newScrapedItemJSON)
 	}
 
-	scrapedJSON, err := instance.JSON.getScraped()
+	scrapedJSON, err := t.json.getScraped()
 	if err != nil {
 		logger.Debugf("[scraped sites] error reading json: %s", err.Error())
 	}
-	if !jsonschema.CompareJSON(scrapedJSON, t.Scraped) {
-		if err := instance.JSON.saveScaped(t.Scraped); err != nil {
+	if !jsonschema.CompareJSON(scrapedJSON, scraped) {
+		if err := t.json.saveScaped(scraped); err != nil {
 			logger.Errorf("[scraped sites] failed to save json: %s", err.Error())
 		}
 	}
 
 	logger.Infof("[scraped sites] export complete")
-}
-
-func (t *ExportTask) getPerformerNames(performers []*models.Performer) []string {
-	if len(performers) == 0 {
-		return nil
-	}
-
-	var results []string
-	for _, performer := range performers {
-		if performer.Name.Valid {
-			results = append(results, performer.Name.String)
-		}
-	}
-
-	return results
-}
-
-func (t *ExportTask) getTagNames(tags []*models.Tag) []string {
-	if len(tags) == 0 {
-		return nil
-	}
-
-	var results []string
-	for _, tag := range tags {
-		if tag.Name != "" {
-			results = append(results, tag.Name)
-		}
-	}
-
-	return results
-}
-
-func (t *ExportTask) getDecimalString(num float64) string {
-	if num == 0 {
-		return ""
-	}
-
-	precision := getPrecision(num)
-	if precision == 0 {
-		precision = 1
-	}
-	return fmt.Sprintf("%."+strconv.Itoa(precision)+"f", num)
-}
-
-func getPrecision(num float64) int {
-	if num == 0 {
-		return 0
-	}
-
-	e := 1.0
-	p := 0
-	for (math.Round(num*e) / e) != num {
-		e *= 10
-		p++
-	}
-	return p
 }

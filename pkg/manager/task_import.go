@@ -13,11 +13,14 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
+	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImportTask struct {
+	json jsonUtils
+
 	Mappings            *jsonschema.Mappings
 	Scraped             []jsonschema.ScrapedItem
 	fileNamingAlgorithm models.HashAlgorithm
@@ -26,12 +29,18 @@ type ImportTask struct {
 func (t *ImportTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	t.Mappings, _ = instance.JSON.getMappings()
+	baseDir := config.GetMetadataPath()
+
+	t.json = jsonUtils{
+		json: *paths.GetJSONPaths(baseDir),
+	}
+
+	t.Mappings, _ = t.json.getMappings()
 	if t.Mappings == nil {
 		logger.Error("missing mappings json")
 		return
 	}
-	scraped, _ := instance.JSON.getScraped()
+	scraped, _ := t.json.getScraped()
 	if scraped == nil {
 		logger.Warn("missing scraped json")
 	}
@@ -62,7 +71,7 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 
 	for i, mappingJSON := range t.Mappings.Performers {
 		index := i + 1
-		performerJSON, err := instance.JSON.getPerformer(mappingJSON.Checksum)
+		performerJSON, err := t.json.getPerformer(mappingJSON.Checksum)
 		if err != nil {
 			logger.Errorf("[performers] failed to read json: %s", err.Error())
 			continue
@@ -175,7 +184,7 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 
 	for i, mappingJSON := range t.Mappings.Studios {
 		index := i + 1
-		studioJSON, err := instance.JSON.getStudio(mappingJSON.Checksum)
+		studioJSON, err := t.json.getStudio(mappingJSON.Checksum)
 		if err != nil {
 			logger.Errorf("[studios] failed to read json: %s", err.Error())
 			continue
@@ -298,7 +307,7 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 
 	for i, mappingJSON := range t.Mappings.Movies {
 		index := i + 1
-		movieJSON, err := instance.JSON.getMovie(mappingJSON.Checksum)
+		movieJSON, err := t.json.getMovie(mappingJSON.Checksum)
 		if err != nil {
 			logger.Errorf("[movies] failed to read json: %s", err.Error())
 			continue
@@ -431,7 +440,7 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 
 	for i, mappingJSON := range t.Mappings.Tags {
 		index := i + 1
-		tagJSON, err := instance.JSON.getTag(mappingJSON.Checksum)
+		tagJSON, err := t.json.getTag(mappingJSON.Checksum)
 		if err != nil {
 			logger.Errorf("[tags] failed to read json: %s", err.Error())
 			continue
@@ -547,7 +556,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 		logger.Progressf("[scenes] %d of %d", index, len(t.Mappings.Scenes))
 
-		sceneJSON, err := instance.JSON.getScene(mappingJSON.Checksum)
+		sceneJSON, err := t.json.getScene(mappingJSON.Checksum)
 		if err != nil {
 			logger.Infof("[scenes] <%s> json parse failure: %s", mappingJSON.Checksum, err.Error())
 			continue
