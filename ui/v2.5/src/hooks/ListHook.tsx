@@ -1,7 +1,7 @@
 import _ from "lodash";
 import queryString from "query-string";
 import React, { useCallback, useRef, useState, useEffect } from "react";
-import { ApolloError } from "apollo-client";
+import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import {
   SlimSceneDataFragment,
@@ -58,7 +58,7 @@ const getSelectedData = <I extends IDataItem>(
 
 interface IListHookData {
   filter: ListFilterModel;
-  template: JSX.Element;
+  template: React.ReactElement;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
@@ -88,15 +88,15 @@ interface IListHookOptions<T, E> {
     filter: ListFilterModel,
     selectedIds: Set<string>,
     zoomIndex: number
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   renderEditDialog?: (
     selected: E[],
     onClose: (applied: boolean) => void
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   renderDeleteDialog?: (
     selected: E[],
     onClose: (confirmed: boolean) => void
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   addKeybinds?: (
     result: T,
     filter: ListFilterModel,
@@ -333,38 +333,13 @@ const RenderList = <
     />
   );
 
-  let content;
-  if (result.loading) {
-    content = <LoadingIndicator />;
-  } else if (result.error) {
-    content = <h1>{result.error.message}</h1>;
-  } else {
-    content = (
-      <div>
-        <ListFilter
-          onFilterUpdate={updateQueryParams}
-          onSelectAll={selectable ? onSelectAll : undefined}
-          onSelectNone={selectable ? onSelectNone : undefined}
-          zoomIndex={zoomable ? zoomIndex : undefined}
-          onChangeZoom={zoomable ? onChangeZoom : undefined}
-          otherOperations={operations}
-          itemsSelected={selectedIds.size > 0}
-          onEdit={renderEditDialog ? onEdit : undefined}
-          onDelete={renderDeleteDialog ? onDelete : undefined}
-          filter={filter}
-        />
-        {isEditDialogOpen &&
-          renderEditDialog &&
-          renderEditDialog(
-            getSelectedData(getData(result), selectedIds),
-            (applied) => onEditDialogClosed(applied)
-          )}
-        {isDeleteDialogOpen &&
-          renderDeleteDialog &&
-          renderDeleteDialog(
-            getSelectedData(getData(result), selectedIds),
-            (deleted) => onDeleteDialogClosed(deleted)
-          )}
+  function maybeRenderContent() {
+    if (result.loading || result.error) {
+      return;
+    }
+
+    return (
+      <>
         {renderPagination()}
         {renderContent(result, filter, selectedIds, zoomIndex)}
         <PaginationIndex
@@ -373,9 +348,41 @@ const RenderList = <
           totalItems={totalCount}
         />
         {renderPagination()}
-      </div>
+      </>
     );
   }
+
+  const content = (
+    <div>
+      <ListFilter
+        onFilterUpdate={updateQueryParams}
+        onSelectAll={selectable ? onSelectAll : undefined}
+        onSelectNone={selectable ? onSelectNone : undefined}
+        zoomIndex={zoomable ? zoomIndex : undefined}
+        onChangeZoom={zoomable ? onChangeZoom : undefined}
+        otherOperations={operations}
+        itemsSelected={selectedIds.size > 0}
+        onEdit={renderEditDialog ? onEdit : undefined}
+        onDelete={renderDeleteDialog ? onDelete : undefined}
+        filter={filter}
+      />
+      {isEditDialogOpen &&
+        renderEditDialog &&
+        renderEditDialog(
+          getSelectedData(getData(result), selectedIds),
+          (applied) => onEditDialogClosed(applied)
+        )}
+      {isDeleteDialogOpen &&
+        renderDeleteDialog &&
+        renderDeleteDialog(
+          getSelectedData(getData(result), selectedIds),
+          (deleted) => onDeleteDialogClosed(deleted)
+        )}
+      {result.loading ? <LoadingIndicator /> : undefined}
+      {result.error ? <h1>{result.error.message}</h1> : undefined}
+      {maybeRenderContent()}
+    </div>
+  );
 
   return { contentTemplate: content, onSelectChange };
 };

@@ -5,6 +5,9 @@ import { useConfiguration, useConfigureGeneral } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
+import StashBoxConfiguration, {
+  IStashBoxInstance,
+} from "./StashBoxConfiguration";
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const Toast = useToast();
@@ -54,6 +57,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [scraperCDPPath, setScraperCDPPath] = useState<string | undefined>(
     undefined
   );
+  const [stashBoxes, setStashBoxes] = useState<IStashBoxInstance[]>([]);
 
   const { data, error, loading } = useConfiguration();
 
@@ -82,6 +86,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
     excludes,
     scraperUserAgent,
     scraperCDPPath,
+    stashBoxes: stashBoxes.map(
+      (b) =>
+        ({
+          name: b?.name ?? "",
+          api_key: b?.api_key ?? "",
+          endpoint: b?.endpoint ?? "",
+        } as GQL.StashBoxInput)
+    ),
   });
 
   useEffect(() => {
@@ -114,6 +126,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setExcludes(conf.general.excludes);
       setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
       setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
+      setStashBoxes(
+        conf.general.stashBoxes.map((box, i) => ({
+          name: box?.name ?? undefined,
+          endpoint: box.endpoint,
+          api_key: box.api_key,
+          index: i,
+        })) ?? []
+      );
     }
   }, [data, error]);
 
@@ -547,6 +567,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
       </Form.Group>
 
+      <hr />
+      <Form.Group>
+        <h4>Stash-box integration</h4>
+        <StashBoxConfiguration boxes={stashBoxes} saveBoxes={setStashBoxes} />
+      </Form.Group>
       <hr />
 
       <Form.Group>

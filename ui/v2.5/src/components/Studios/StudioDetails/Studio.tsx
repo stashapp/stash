@@ -22,10 +22,15 @@ import { useToast } from "src/hooks";
 import { StudioScenesPanel } from "./StudioScenesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
 
+interface IStudioParams {
+  id?: string;
+  tab?: string;
+}
+
 export const Studio: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { tab = "details", id = "new" } = useParams();
+  const { tab = "details", id = "new" } = useParams<IStudioParams>();
   const isNew = id === "new";
 
   // Editing state
@@ -191,7 +196,7 @@ export const Studio: React.FC = () => {
   }
 
   const activeTabKey = tab === "childstudios" ? tab : "scenes";
-  const setActiveTabKey = (newTab: string) => {
+  const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
       history.replace(`/studios/${id}${tabParam}`);

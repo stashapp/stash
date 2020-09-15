@@ -26,8 +26,12 @@ import { SceneMoviePanel } from "./SceneMoviePanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { SceneGenerateDialog } from "../SceneGenerateDialog";
 
+interface ISceneParams {
+  id?: string;
+}
+
 export const Scene: React.FC = () => {
-  const { id = "new" } = useParams();
+  const { id = "new" } = useParams<ISceneParams>();
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
@@ -210,7 +214,7 @@ export const Scene: React.FC = () => {
     return (
       <Tab.Container
         activeKey={activeTabKey}
-        onSelect={(k) => setActiveTabKey(k)}
+        onSelect={(k) => k && setActiveTabKey(k)}
       >
         <div>
           <Nav variant="tabs" className="mr-auto">

@@ -15,8 +15,8 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-var extensionsToScan = []string{"zip", "m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
-var extensionsGallery = []string{"zip"}
+var extensionsToScan = []string{"zip", "cbz", "m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
+var extensionsGallery = []string{"zip", "cbz"}
 
 func constructGlob() string { // create a sequence for glob doublestar from our extensions
 	var extList []string

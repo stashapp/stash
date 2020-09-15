@@ -22,6 +22,11 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   excludes
   scraperUserAgent
   scraperCDPPath
+  stashBoxes {
+    name
+    endpoint
+    api_key
+  }
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {

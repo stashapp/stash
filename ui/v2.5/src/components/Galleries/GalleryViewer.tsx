@@ -1,58 +1,46 @@
-import React, { FunctionComponent, useState } from "react";
-import Lightbox from "react-images";
-import Gallery from "react-photo-gallery";
+import React, { useState } from "react";
 import * as GQL from "src/core/generated-graphql";
+import FsLightbox from "fslightbox-react";
+import "flexbin/flexbin.css";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
 }
 
-export const GalleryViewer: FunctionComponent<IProps> = ({ gallery }) => {
-  const [currentImage, setCurrentImage] = useState<number>(0);
-  const [lightboxIsOpen, setLightboxIsOpen] = useState<boolean>(false);
+export const GalleryViewer: React.FC<IProps> = ({ gallery }) => {
+  const [lightboxToggle, setLightboxToggle] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  function openLightbox(
-    _event: React.MouseEvent<Element>,
-    obj: { index: number }
-  ) {
-    setCurrentImage(obj.index);
-    setLightboxIsOpen(true);
-  }
-  function closeLightbox() {
-    setCurrentImage(0);
-    setLightboxIsOpen(false);
-  }
-  function gotoPrevious() {
-    setCurrentImage(currentImage - 1);
-  }
-  function gotoNext() {
-    setCurrentImage(currentImage + 1);
-  }
+  const openImage = (index: number) => {
+    setCurrentIndex(index);
+    setLightboxToggle(!lightboxToggle);
+  };
 
-  const photos = gallery.files.map((file) => ({
-    src: file.path ?? "",
-    caption: file.name ?? "",
-  }));
-  const thumbs = gallery.files.map((file) => ({
-    src: `${file.path}?thumb=true` || "",
-    width: 1,
-    height: 1,
-  }));
+  const photos = gallery.files.map((file) => file.path ?? "");
+  const thumbs = gallery.files.map((file, index) => (
+    <div
+      role="link"
+      tabIndex={index}
+      key={file.index}
+      onClick={() => openImage(index)}
+      onKeyPress={() => openImage(index)}
+    >
+      <img
+        src={`${file.path}?thumb=600` || ""}
+        loading="lazy"
+        className="gallery-image"
+        alt={file.name ?? index.toString()}
+      />
+    </div>
+  ));
 
   return (
-    <div>
-      <Gallery photos={thumbs} columns={15} onClick={openLightbox} />
-      <Lightbox
-        images={photos}
-        onClose={closeLightbox}
-        onClickPrev={gotoPrevious}
-        onClickNext={gotoNext}
-        currentImage={currentImage}
-        onClickImage={() =>
-          window.open(photos[currentImage].src ?? "", "_blank")
-        }
-        isOpen={lightboxIsOpen}
-        width={9999}
+    <div className="gallery">
+      <div className="flexbin">{thumbs}</div>
+      <FsLightbox
+        sourceIndex={currentIndex}
+        toggler={lightboxToggle}
+        sources={photos}
       />
     </div>
   );

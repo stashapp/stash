@@ -4,8 +4,12 @@ import { useFindGallery } from "src/core/StashService";
 import { LoadingIndicator } from "src/components/Shared";
 import { GalleryViewer } from "./GalleryViewer";
 
+interface IGalleryParams {
+  id: string;
+}
+
 export const Gallery: React.FC = () => {
-  const { id = "" } = useParams();
+  const { id } = useParams<IGalleryParams>();
 
   const { data, error, loading } = useFindGallery(id);
   const gallery = data?.findGallery;
@@ -14,7 +18,7 @@ export const Gallery: React.FC = () => {
   if (error) return <div>{error.message}</div>;
 
   return (
-    <div className="col-9 m-auto">
+    <div className="col col-lg-9 m-auto">
       <GalleryViewer gallery={gallery} />
     </div>
   );

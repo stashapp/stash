@@ -17,6 +17,12 @@
 @import "src/components/Wall/styles.scss";
 @import "../node_modules/flag-icon-css/css/flag-icon.min.css";
 
+/* stylelint-disable */
+#root {
+  position: relative !important;
+}
+/* stylelint-enable */
+
 html {
   font-size: 14px;
 }
@@ -99,7 +105,7 @@ textarea.text-input {
   .zoom-0 {
     width: 240px;
 
-    .scene-card-video {
+    .scene-card-preview {
       height: 135px;
     }
 
@@ -116,7 +122,7 @@ textarea.text-input {
   .zoom-1 {
     width: 320px;
 
-    .scene-card-video {
+    .scene-card-preview {
       height: 180px;
     }
 
@@ -133,7 +139,7 @@ textarea.text-input {
   .zoom-2 {
     width: 480px;
 
-    .scene-card-video {
+    .scene-card-preview {
       height: 270px;
     }
 
@@ -150,7 +156,7 @@ textarea.text-input {
   .zoom-3 {
     width: 640px;
 
-    .scene-card-video {
+    .scene-card-preview {
       height: 360px;
     }
 
@@ -165,15 +171,7 @@ textarea.text-input {
   }
 }
 
-.scene-card-video {
-  object-fit: cover;
-
-  &.portrait {
-    object-fit: contain;
-  }
-}
-
-.scene-card-video,
+.scene-card-preview,
 .gallery-card-image,
 .tag-card-image {
   height: auto;
