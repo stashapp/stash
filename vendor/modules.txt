@@ -92,7 +92,7 @@ github.com/chromedp/cdproto/webauthn
 github.com/chromedp/chromedp
 github.com/chromedp/chromedp/device
 github.com/chromedp/chromedp/kb
-# github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d
+# github.com/cpuguy83/go-md2man/v2 v2.0.0
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
@@ -238,13 +238,13 @@ github.com/rogpeppe/go-internal/module
 github.com/rogpeppe/go-internal/semver
 # github.com/rs/cors v1.6.0
 github.com/rs/cors
-# github.com/russross/blackfriday/v2 v2.0.1
-github.com/russross/blackfriday/v2
 # github.com/rs/zerolog v1.18.0
 github.com/rs/zerolog
 github.com/rs/zerolog/internal/cbor
 github.com/rs/zerolog/internal/json
 github.com/rs/zerolog/log
+# github.com/russross/blackfriday/v2 v2.0.1
+github.com/russross/blackfriday/v2
 # github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
 github.com/shurcooL/graphql
 github.com/shurcooL/graphql/ident
@@ -284,14 +284,6 @@ github.com/urfave/cli/v2
 # github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e
 github.com/vektah/dataloaden
 github.com/vektah/dataloaden/pkg/generator
-# github.com/vektah/gqlparser v1.3.1
-github.com/vektah/gqlparser
-github.com/vektah/gqlparser/ast
-github.com/vektah/gqlparser/gqlerror
-github.com/vektah/gqlparser/lexer
-github.com/vektah/gqlparser/parser
-github.com/vektah/gqlparser/validator
-github.com/vektah/gqlparser/validator/rules
 # github.com/vektah/gqlparser/v2 v2.0.1
 github.com/vektah/gqlparser/v2
 github.com/vektah/gqlparser/v2/ast
@@ -301,14 +293,13 @@ github.com/vektah/gqlparser/v2/lexer
 github.com/vektah/gqlparser/v2/parser
 github.com/vektah/gqlparser/v2/validator
 github.com/vektah/gqlparser/v2/validator/rules
-# golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 # github.com/vektra/mockery/v2 v2.2.1
 github.com/vektra/mockery/v2
 github.com/vektra/mockery/v2/cmd
 github.com/vektra/mockery/v2/pkg
 github.com/vektra/mockery/v2/pkg/config
 github.com/vektra/mockery/v2/pkg/logging
-# golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
+# golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/ssh/terminal
@@ -372,11 +363,7 @@ golang.org/x/tools/internal/typesinternal
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# gopkg.in/yaml.v2 v2.3.0
-# golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
-golang.org/x/xerrors
-golang.org/x/xerrors/internal
 # gopkg.in/ini.v1 v1.51.0
 gopkg.in/ini.v1
-# gopkg.in/yaml.v2 v2.2.4
+# gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2
