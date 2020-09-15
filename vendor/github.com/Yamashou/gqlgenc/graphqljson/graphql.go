@@ -300,6 +300,7 @@ func (d *Decoder) decode() error {
 			return xerrors.New("unexpected token in JSON input")
 		}
 	}
+
 	return nil
 }
 
@@ -319,6 +320,7 @@ func (d *Decoder) state() json.Delim {
 	if len(d.parseState) == 0 {
 		return 0
 	}
+
 	return d.parseState[len(d.parseState)-1]
 }
 
@@ -346,6 +348,7 @@ func fieldByGraphQLName(v reflect.Value, name string) reflect.Value {
 			return v.Field(i)
 		}
 	}
+
 	return reflect.Value{}
 }
 
@@ -368,6 +371,7 @@ func hasGraphQLName(f reflect.StructField, name string) bool {
 	if i := strings.Index(value, ":"); i != -1 {
 		value = value[:i]
 	}
+
 	return strings.TrimSpace(value) == name
 }
 
@@ -378,6 +382,7 @@ func isGraphQLFragment(f reflect.StructField) bool {
 		return false
 	}
 	value = strings.TrimSpace(value) // TODO: Parse better.
+
 	return strings.HasPrefix(value, "...")
 }
 
@@ -389,6 +394,7 @@ func unmarshalValue(value json.Token, v reflect.Value) error {
 	if err != nil {
 		return xerrors.Errorf(": %w", err)
 	}
+
 	return json.Unmarshal(b, v.Addr().Interface())
 }
 

@@ -79,7 +79,7 @@ func (m *Plugin) generateSingleFile(data *codegen.Data) error {
 }
 
 func (m *Plugin) generatePerSchema(data *codegen.Data) error {
-	rewriter, err := rewrite.New(data.Config.Resolver.ImportPath())
+	rewriter, err := rewrite.New(data.Config.Resolver.Dir())
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func (m *Plugin) generatePerSchema(data *codegen.Data) error {
 
 	for _, o := range data.Objects {
 		if o.HasResolvers() {
-			fn := gqlToResolverName(data.Config.Resolver.Dir(), o.Position.Src.Name)
+			fn := gqlToResolverName(data.Config.Resolver.Dir(), o.Position.Src.Name, data.Config.Resolver.FilenameTemplate)
 			if files[fn] == nil {
 				files[fn] = &File{}
 			}
@@ -109,7 +109,7 @@ func (m *Plugin) generatePerSchema(data *codegen.Data) error {
 			}
 
 			resolver := Resolver{o, f, implementation}
-			fn := gqlToResolverName(data.Config.Resolver.Dir(), f.Position.Src.Name)
+			fn := gqlToResolverName(data.Config.Resolver.Dir(), f.Position.Src.Name, data.Config.Resolver.FilenameTemplate)
 			if files[fn] == nil {
 				files[fn] = &File{}
 			}
@@ -196,9 +196,12 @@ type Resolver struct {
 	Implementation string
 }
 
-func gqlToResolverName(base string, gqlname string) string {
+func gqlToResolverName(base string, gqlname, filenameTmpl string) string {
 	gqlname = filepath.Base(gqlname)
 	ext := filepath.Ext(gqlname)
-
-	return filepath.Join(base, strings.TrimSuffix(gqlname, ext)+".resolvers.go")
+	if filenameTmpl == "" {
+		filenameTmpl = "{name}.resolvers.go"
+	}
+	filename := strings.ReplaceAll(filenameTmpl, "{name}", strings.TrimSuffix(gqlname, ext))
+	return filepath.Join(base, filename)
 }

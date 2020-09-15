@@ -27,6 +27,8 @@ func (h GET) Supports(r *http.Request) bool {
 }
 
 func (h GET) Do(w http.ResponseWriter, r *http.Request, exec graphql.GraphExecutor) {
+	w.Header().Set("Content-Type", "application/json")
+
 	raw := &graphql.RawParams{
 		Query:         r.URL.Query().Get("query"),
 		OperationName: r.URL.Query().Get("operationName"),

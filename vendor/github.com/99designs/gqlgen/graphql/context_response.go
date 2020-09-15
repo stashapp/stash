@@ -67,8 +67,12 @@ func HasFieldError(ctx context.Context, rctx *FieldContext) bool {
 
 	c.errorsMu.Lock()
 	defer c.errorsMu.Unlock()
-	path := rctx.Path()
 
+	if len(c.errors) == 0 {
+		return false
+	}
+
+	path := rctx.Path()
 	for _, err := range c.errors {
 		if equalPath(err.Path, path) {
 			return true
@@ -83,8 +87,12 @@ func GetFieldErrors(ctx context.Context, rctx *FieldContext) gqlerror.List {
 
 	c.errorsMu.Lock()
 	defer c.errorsMu.Unlock()
-	path := rctx.Path()
 
+	if len(c.errors) == 0 {
+		return nil
+	}
+
+	path := rctx.Path()
 	var errs gqlerror.List
 	for _, err := range c.errors {
 		if equalPath(err.Path, path) {

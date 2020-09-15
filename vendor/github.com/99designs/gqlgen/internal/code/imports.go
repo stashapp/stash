@@ -80,6 +80,7 @@ func goModuleRoot(dir string) (string, bool) {
 // ImportPathForDir takes a path and returns a golang import path for the package
 func ImportPathForDir(dir string) (res string) {
 	dir, err := filepath.Abs(dir)
+
 	if err != nil {
 		panic(err)
 	}
@@ -99,4 +100,4 @@ func ImportPathForDir(dir string) (res string) {
 	return ""
 }
 
-var modregex = regexp.MustCompile("module (.*)\n")
+var modregex = regexp.MustCompile(`module ([^\s]*)`)

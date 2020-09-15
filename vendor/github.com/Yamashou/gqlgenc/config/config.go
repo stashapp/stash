@@ -7,16 +7,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"golang.org/x/xerrors"
-
-	"github.com/vektah/gqlparser/v2/validator"
-
-	"github.com/vektah/gqlparser/v2/ast"
-
+	"github.com/99designs/gqlgen/codegen/config"
 	"github.com/Yamashou/gqlgenc/client"
 	"github.com/Yamashou/gqlgenc/introspection"
-
-	"github.com/99designs/gqlgen/codegen/config"
+	"github.com/vektah/gqlparser/v2/ast"
+	"github.com/vektah/gqlparser/v2/validator"
+	"golang.org/x/xerrors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -53,6 +49,7 @@ func findCfg(fileName string) (string, error) {
 
 func findCfgInDir(dir, fileName string) string {
 	path := filepath.Join(dir, fileName)
+
 	return path
 }
 
@@ -107,6 +104,7 @@ func (c *Config) LoadSchema(ctx context.Context) error {
 	}
 
 	c.GQLConfig.Schema = schema
+
 	return nil
 }
 

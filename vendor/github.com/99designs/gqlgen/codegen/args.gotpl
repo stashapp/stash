@@ -5,6 +5,7 @@ func (ec *executionContext) {{ $name }}(ctx context.Context, rawArgs map[string]
 	{{- range $i, $arg := . }}
 		var arg{{$i}} {{ $arg.TypeReference.GO | ref}}
 		if tmp, ok := rawArgs[{{$arg.Name|quote}}]; ok {
+			ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField({{$arg.Name|quote}}))
 			{{- if $arg.ImplDirectives }}
 				directive0 := func(ctx context.Context) (interface{}, error) { return ec.{{ $arg.TypeReference.UnmarshalFunc }}(ctx, tmp) }
 				{{ template "implDirectives" $arg }}

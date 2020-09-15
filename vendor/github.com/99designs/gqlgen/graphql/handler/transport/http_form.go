@@ -64,7 +64,7 @@ func (f MultipartForm) Do(w http.ResponseWriter, r *http.Request, exec graphql.G
 		return
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, f.maxUploadSize())
-	if err = r.ParseMultipartForm(f.maxUploadSize()); err != nil {
+	if err = r.ParseMultipartForm(f.maxMemory()); err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		if strings.Contains(err.Error(), "request body too large") {
 			writeJsonError(w, "failed to parse multipart form, request body too large")

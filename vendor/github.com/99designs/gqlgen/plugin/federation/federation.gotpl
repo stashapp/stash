@@ -34,29 +34,31 @@ func (ec *executionContext) __resolve_entities(ctx context.Context, representati
 		}
 		switch typeName {
 		{{ range .Entities }}
-		case "{{.Def.Name}}":
-			{{ range $i, $keyField := .KeyFields -}}
-				id{{$i}}, err := ec.{{.TypeReference.UnmarshalFunc}}(ctx, rep["{{$keyField.Field.Name}}"])
-				if err != nil {
-					return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "{{$keyField.Field.Name}}"))
-				}
-			{{end}}
-
-			entity, err := ec.resolvers.Entity().{{.ResolverName | go}}(ctx,
-				{{ range $i, $_ := .KeyFields -}} id{{$i}}, {{end}})
-			if err != nil {
-				return nil, err
-			}
-
-			{{ range .Requires }}
-				{{ range .Fields}}
-					entity.{{.NameGo}}, err = ec.{{.TypeReference.UnmarshalFunc}}(ctx, rep["{{.Name}}"])
+			{{ if .ResolverName }}
+			case "{{.Def.Name}}":
+				{{ range $i, $keyField := .KeyFields -}}
+					id{{$i}}, err := ec.{{.TypeReference.UnmarshalFunc}}(ctx, rep["{{$keyField.Field.Name}}"])
 					if err != nil {
-						return nil, err
+						return nil, errors.New(fmt.Sprintf("Field %s undefined in schema.", "{{$keyField.Field.Name}}"))
 					}
+				{{end}}
+	
+				entity, err := ec.resolvers.Entity().{{.ResolverName | go}}(ctx,
+					{{ range $i, $_ := .KeyFields -}} id{{$i}}, {{end}})
+				if err != nil {
+					return nil, err
+				}
+	
+				{{ range .Requires }}
+					{{ range .Fields}}
+						entity.{{.NameGo}}, err = ec.{{.TypeReference.UnmarshalFunc}}(ctx, rep["{{.Name}}"])
+						if err != nil {
+							return nil, err
+						}
+					{{ end }}
 				{{ end }}
+				list = append(list, entity)
 			{{ end }}
-			list = append(list, entity)
 		{{ end }}
 		default:
 			return nil, errors.New("unknown type: "+typeName)

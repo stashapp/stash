@@ -54,6 +54,7 @@ func QueryDocumentsByOperations(schema *ast.Schema, operations ast.OperationList
 func fragmentsInOperationDefinition(operation *ast.OperationDefinition) ast.FragmentDefinitionList {
 	fragments := fragmentsInOperationWalker(operation.SelectionSet)
 	uniqueFragments := fragmentsUnique(fragments)
+
 	return uniqueFragments
 }
 

@@ -5,22 +5,21 @@ import (
 	"fmt"
 	"go/types"
 
-	"golang.org/x/xerrors"
-
 	"github.com/99designs/gqlgen/codegen/templates"
-
-	"github.com/vektah/gqlparser/v2/formatter"
-
 	"github.com/vektah/gqlparser/v2/ast"
+	"github.com/vektah/gqlparser/v2/formatter"
+	"golang.org/x/xerrors"
 )
 
 type Source struct {
+	schema          *ast.Schema
 	queryDocument   *ast.QueryDocument
 	sourceGenerator *SourceGenerator
 }
 
-func NewSource(queryDocument *ast.QueryDocument, sourceGenerator *SourceGenerator) *Source {
+func NewSource(schema *ast.Schema, queryDocument *ast.QueryDocument, sourceGenerator *SourceGenerator) *Source {
 	return &Source{
+		schema:          schema,
 		queryDocument:   queryDocument,
 		sourceGenerator: sourceGenerator,
 	}
@@ -31,7 +30,7 @@ type Fragment struct {
 	Type types.Type
 }
 
-func (s *Source) fragments() ([]*Fragment, error) {
+func (s *Source) Fragments() ([]*Fragment, error) {
 	fragments := make([]*Fragment, 0, len(s.queryDocument.Fragments))
 	for _, fragment := range s.queryDocument.Fragments {
 		responseFields := s.sourceGenerator.NewResponseFields(fragment.SelectionSet)
@@ -76,7 +75,7 @@ func NewOperation(operation *ast.OperationDefinition, queryDocument *ast.QueryDo
 	}
 }
 
-func (s *Source) operations(queryDocuments []*ast.QueryDocument) []*Operation {
+func (s *Source) Operations(queryDocuments []*ast.QueryDocument) []*Operation {
 	operations := make([]*Operation, 0, len(s.queryDocument.Operations))
 
 	queryDocumentsMap := queryDocumentMapByOperationName(queryDocuments)
@@ -117,6 +116,7 @@ func queryString(queryDocument *ast.QueryDocument) string {
 	var buf bytes.Buffer
 	astFormatter := formatter.NewFormatter(&buf)
 	astFormatter.FormatQueryDocument(queryDocument)
+
 	return buf.String()
 }
 
@@ -125,7 +125,7 @@ type OperationResponse struct {
 	Type types.Type
 }
 
-func (s *Source) operationResponses() ([]*OperationResponse, error) {
+func (s *Source) OperationResponses() ([]*OperationResponse, error) {
 	operationResponse := make([]*OperationResponse, 0, len(s.queryDocument.Operations))
 	for _, operation := range s.queryDocument.Operations {
 		responseFields := s.sourceGenerator.NewResponseFields(operation.SelectionSet)
@@ -150,9 +150,44 @@ func (s *Source) operationResponses() ([]*OperationResponse, error) {
 	return operationResponse, nil
 }
 
+type Query struct {
+	Name string
+	Type types.Type
+}
+
+func (s *Source) Query() (*Query, error) {
+	fields, err := s.sourceGenerator.NewResponseFieldsByDefinition(s.schema.Query)
+	if err != nil {
+		return nil, xerrors.Errorf("generate failed for query struct type : %w", err)
+	}
+
+	return &Query{
+		Name: s.schema.Query.Name,
+		Type: fields.StructType(),
+	}, nil
+}
+
+type Mutation struct {
+	Name string
+	Type types.Type
+}
+
+func (s *Source) Mutation() (*Mutation, error) {
+	fields, err := s.sourceGenerator.NewResponseFieldsByDefinition(s.schema.Mutation)
+	if err != nil {
+		return nil, xerrors.Errorf("generate failed for mutation struct type : %w", err)
+	}
+
+	return &Mutation{
+		Name: s.schema.Mutation.Name,
+		Type: fields.StructType(),
+	}, nil
+}
+
 func getResponseStructName(operation *ast.OperationDefinition) string {
 	if operation.Operation == ast.Mutation {
 		return fmt.Sprintf("%sPayload", operation.Name)
 	}
+
 	return operation.Name
 }

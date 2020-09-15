@@ -27,8 +27,10 @@ var genCmd = &cli.Command{
 		} else {
 			cfg, err = config.LoadConfigFromDefaultLocations()
 			if os.IsNotExist(errors.Cause(err)) {
-				cfg = config.DefaultConfig()
-			} else if err != nil {
+				cfg, err = config.LoadDefaultConfig()
+			}
+
+			if err != nil {
 				return err
 			}
 		}

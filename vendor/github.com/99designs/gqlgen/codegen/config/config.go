@@ -49,6 +49,25 @@ func DefaultConfig() *Config {
 	}
 }
 
+// LoadDefaultConfig loads the default config so that it is ready to be used
+func LoadDefaultConfig() (*Config, error) {
+	config := DefaultConfig()
+
+	for _, filename := range config.SchemaFilename {
+		filename = filepath.ToSlash(filename)
+		var err error
+		var schemaRaw []byte
+		schemaRaw, err = ioutil.ReadFile(filename)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to open schema")
+		}
+
+		config.Sources = append(config.Sources, &ast.Source{Name: filename, Input: string(schemaRaw)})
+	}
+
+	return config, nil
+}
+
 // LoadConfigFromDefaultLocations looks for a config file in the current directory, and all parent directories
 // walking up the tree. The closest config file will be returned.
 func LoadConfigFromDefaultLocations() (*Config, error) {

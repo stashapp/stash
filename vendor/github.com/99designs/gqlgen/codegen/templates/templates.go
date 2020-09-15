@@ -233,6 +233,7 @@ var pkgReplacer = strings.NewReplacer(
 	"/", "ᚋ",
 	".", "ᚗ",
 	"-", "ᚑ",
+	"~", "א",
 )
 
 func TypeIdentifier(t types.Type) string {
@@ -459,6 +460,7 @@ var commonInitialisms = map[string]bool{
 	"IP":    true,
 	"JSON":  true,
 	"LHS":   true,
+	"PGP":   true,
 	"QPS":   true,
 	"RAM":   true,
 	"RHS":   true,

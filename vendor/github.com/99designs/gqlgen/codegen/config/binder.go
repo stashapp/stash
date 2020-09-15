@@ -166,7 +166,8 @@ func (b *Binder) PointerTo(ref *TypeReference) *TypeReference {
 type TypeReference struct {
 	Definition  *ast.Definition
 	GQL         *ast.Type
-	GO          types.Type
+	GO          types.Type  // Type of the field being bound. Could be a pointer or a value type of Target.
+	Target      types.Type  // The actual type that we know how to bind to. May require pointer juggling when traversing to fields.
 	CastType    types.Type  // Before calling marshalling functions cast from/to this base type
 	Marshaler   *types.Func // When using external marshalling functions this will point to the Marshal function
 	Unmarshaler *types.Func // When using external marshalling functions this will point to the Unmarshal function
@@ -177,6 +178,7 @@ func (ref *TypeReference) Elem() *TypeReference {
 	if p, isPtr := ref.GO.(*types.Pointer); isPtr {
 		return &TypeReference{
 			GO:          p.Elem(),
+			Target:      ref.Target,
 			GQL:         ref.GQL,
 			CastType:    ref.CastType,
 			Definition:  ref.Definition,
@@ -189,6 +191,7 @@ func (ref *TypeReference) Elem() *TypeReference {
 	if ref.IsSlice() {
 		return &TypeReference{
 			GO:          ref.GO.(*types.Slice).Elem(),
+			Target:      ref.Target,
 			GQL:         ref.GQL.Elem,
 			CastType:    ref.CastType,
 			Definition:  ref.Definition,
@@ -264,6 +267,10 @@ func (t *TypeReference) UnmarshalFunc() string {
 	}
 
 	return "unmarshal" + t.UniquenessKey()
+}
+
+func (t *TypeReference) IsTargetNilable() bool {
+	return IsNilable(t.Target)
 }
 
 func (b *Binder) PushRef(ret *TypeReference) {
@@ -350,7 +357,7 @@ func (b *Binder) TypeReference(schemaType *ast.Type, bindTarget types.Type) (ret
 			ref.GO = obj.Type()
 			ref.IsMarshaler = true
 		} else if underlying := basicUnderlying(obj.Type()); def.IsLeafType() && underlying != nil && underlying.Kind() == types.String {
-			// Special case for named types wrapping strings. Used by default enum implementations.
+			// TODO delete before v1. Backwards compatibility case for named types wrapping strings (see #595)
 
 			ref.GO = obj.Type()
 			ref.CastType = underlying
@@ -366,6 +373,7 @@ func (b *Binder) TypeReference(schemaType *ast.Type, bindTarget types.Type) (ret
 			ref.GO = obj.Type()
 		}
 
+		ref.Target = ref.GO
 		ref.GO = b.CopyModifiersFromAst(schemaType, ref.GO)
 
 		if bindTarget != nil {
@@ -412,12 +420,14 @@ func (b *Binder) CopyModifiersFromAst(t *ast.Type, base types.Type) types.Type {
 
 func IsNilable(t types.Type) bool {
 	if namedType, isNamed := t.(*types.Named); isNamed {
-		t = namedType.Underlying()
+		return IsNilable(namedType.Underlying())
 	}
 	_, isPtr := t.(*types.Pointer)
 	_, isMap := t.(*types.Map)
 	_, isInterface := t.(*types.Interface)
-	return isPtr || isMap || isInterface
+	_, isSlice := t.(*types.Slice)
+	_, isChan := t.(*types.Chan)
+	return isPtr || isMap || isInterface || isSlice || isChan
 }
 
 func hasMethod(it types.Type, name string) bool {

@@ -78,7 +78,6 @@ func (m *Plugin) MutateConfig(cfg *config.Config) error {
 		PackageName: cfg.Model.Package,
 	}
 
-	hasEntity := false
 	for _, schemaType := range cfg.Schema.Types {
 		if cfg.Models.UserDefined(schemaType.Name) {
 			continue
@@ -189,13 +188,6 @@ func (m *Plugin) MutateConfig(cfg *config.Config) error {
 		case ast.Scalar:
 			b.Scalars = append(b.Scalars, schemaType.Name)
 		}
-	}
-	if hasEntity {
-		it := &Interface{
-			Description: "_Entity represents all types with @key",
-			Name:        "_Entity",
-		}
-		b.Interfaces = append(b.Interfaces, it)
 	}
 	sort.Slice(b.Enums, func(i, j int) bool { return b.Enums[i].Name < b.Enums[j].Name })
 	sort.Slice(b.Models, func(i, j int) bool { return b.Models[i].Name < b.Models[j].Name })

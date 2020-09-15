@@ -8,7 +8,7 @@
 {{ reserveImport "errors"  }}
 {{ reserveImport "bytes"  }}
 
-{{ reserveImport "github.com/vektah/gqlparser/v2" }}
+{{ reserveImport "github.com/vektah/gqlparser/v2" "gqlparser" }}
 {{ reserveImport "github.com/vektah/gqlparser/v2/ast" }}
 {{ reserveImport "github.com/99designs/gqlgen/graphql" }}
 {{ reserveImport "github.com/99designs/gqlgen/graphql/introspection" }}
@@ -208,7 +208,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 {{- range $source := .Config.Sources }}
-	&ast.Source{Name: {{$source.Name|quote}}, Input: {{$source.Input|rawQuote}}, BuiltIn: {{$source.BuiltIn}}},
+	{Name: {{$source.Name|quote}}, Input: {{$source.Input|rawQuote}}, BuiltIn: {{$source.BuiltIn}}},
 {{- end }}
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)

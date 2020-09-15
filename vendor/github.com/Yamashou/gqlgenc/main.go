@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Yamashou/gqlgenc/generator"
-
 	"github.com/99designs/gqlgen/api"
-
 	"github.com/Yamashou/gqlgenc/clientgen"
 	"github.com/Yamashou/gqlgenc/config"
+	"github.com/Yamashou/gqlgenc/generator"
 )
 
 func main() {

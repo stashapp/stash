@@ -16,6 +16,8 @@
 			{{- range $field := .Fields }}
 			case {{$field.Name|quote}}:
 				var err error
+
+				ctx := graphql.WithFieldInputContext(ctx, graphql.NewFieldInputWithField({{$field.Name|quote}}))
 				{{- if $field.ImplDirectives }}
 					directive0 := func(ctx context.Context) (interface{}, error) { return ec.{{ $field.TypeReference.UnmarshalFunc }}(ctx, v) }
 					{{ template "implDirectives" $field }}

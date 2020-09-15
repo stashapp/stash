@@ -6,11 +6,13 @@ import (
 	"golang.org/x/xerrors"
 )
 
-func RenderTemplate(cfg *config.Config, fragments []*Fragment, operations []*Operation, operationResponses []*OperationResponse, client config.PackageConfig) error {
+func RenderTemplate(cfg *config.Config, query *Query, mutation *Mutation, fragments []*Fragment, operations []*Operation, operationResponses []*OperationResponse, client config.PackageConfig) error {
 	if err := templates.Render(templates.Options{
 		PackageName: client.Package,
 		Filename:    client.Filename,
 		Data: map[string]interface{}{
+			"Query":             query,
+			"Mutation":          mutation,
 			"Fragment":          fragments,
 			"Operation":         operations,
 			"OperationResponse": operationResponses,

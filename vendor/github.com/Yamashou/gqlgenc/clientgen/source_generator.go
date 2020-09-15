@@ -5,10 +5,10 @@ import (
 	"go/types"
 	"strings"
 
-	"github.com/99designs/gqlgen/codegen/templates"
-
 	"github.com/99designs/gqlgen/codegen/config"
+	"github.com/99designs/gqlgen/codegen/templates"
 	"github.com/vektah/gqlparser/v2/ast"
+	"golang.org/x/xerrors"
 )
 
 type Argument struct {
@@ -86,6 +86,31 @@ func (r *SourceGenerator) NewResponseFields(selectionSet ast.SelectionSet) Respo
 	return responseFields
 }
 
+func (r *SourceGenerator) NewResponseFieldsByDefinition(definition *ast.Definition) (ResponseFieldList, error) {
+	fields := make(ResponseFieldList, 0, len(definition.Fields))
+	for _, field := range definition.Fields {
+		if field.Type.Name() == "__Schema" || field.Type.Name() == "__Type" {
+			continue
+		}
+		typ, err := r.binder.FindTypeFromName(r.cfg.Models[field.Type.Name()].Model[0])
+		if err != nil {
+			return nil, xerrors.Errorf("not found type: %w", err)
+		}
+		tags := []string{
+			fmt.Sprintf(`json:"%s"`, field.Name),
+			fmt.Sprintf(`graphql:"%s"`, field.Name),
+		}
+
+		fields = append(fields, &ResponseField{
+			Name: field.Name,
+			Type: r.binder.CopyModifiersFromAst(field.Type, typ),
+			Tags: tags,
+		})
+	}
+
+	return fields, nil
+}
+
 func (r *SourceGenerator) NewResponseField(selection ast.Selection) *ResponseField {
 	switch selection := selection.(type) {
 	case *ast.Field:
@@ -97,20 +122,23 @@ func (r *SourceGenerator) NewResponseField(selection ast.Selection) *ResponseFie
 			baseType = r.Type(selection.Definition.Type.Name())
 		case fieldsResponseFields.IsFragment():
 			// 子フィールドがFragmentの場合はこのFragmentがフィールドの型になる
+			// if a child field is fragment, this field type became fragment.
 			baseType = fieldsResponseFields[0].Type
 		case fieldsResponseFields.IsStructType():
 			baseType = fieldsResponseFields.StructType()
 		default:
 			// ここにきたらバグ
+			// here is bug
 			panic("not match type")
 		}
 
-		// GraphQLの定義がオプショナルのはtypのポインタ型が返り、配列の定義場合はポインタのスライスの型になって返ってきます
+		// GraphQLの定義がオプショナルのはtypeのポインタ型が返り、配列の定義場合はポインタのスライスの型になって返ってきます
+		// return pointer type then optional type or slice pointer then slice type of definition in GraphQL.
 		typ := r.binder.CopyModifiersFromAst(selection.Definition.Type, baseType)
 
-		var tags []string
-		if strings.HasPrefix(selection.Name, "__") {
-			tags = append(tags, fmt.Sprintf(`graphql:"%s"`, selection.Name))
+		tags := []string{
+			fmt.Sprintf(`json:"%s"`, selection.Alias),
+			fmt.Sprintf(`graphql:"%s"`, selection.Alias),
 		}
 
 		return &ResponseField{
@@ -128,6 +156,7 @@ func (r *SourceGenerator) NewResponseField(selection ast.Selection) *ResponseFie
 			fieldsResponseFields.StructType(),
 			nil,
 		)
+
 		return &ResponseField{
 			Name:             selection.Name,
 			Type:             typ,
@@ -138,6 +167,7 @@ func (r *SourceGenerator) NewResponseField(selection ast.Selection) *ResponseFie
 	case *ast.InlineFragment:
 		// InlineFragmentは子要素をそのままstructとしてもつので、ここで、構造体の型を作成します
 		fieldsResponseFields := r.NewResponseFields(selection.SelectionSet)
+
 		return &ResponseField{
 			Name:             selection.TypeCondition,
 			Type:             fieldsResponseFields.StructType(),

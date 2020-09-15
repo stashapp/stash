@@ -6,6 +6,10 @@ levenshtein [![Build Status](https://travis-ci.org/agnivade/levenshtein.svg?bran
 The library is fully capable of working with non-ascii strings. But the strings are not normalized. That is left as a user-dependant use case. Please normalize the strings before passing it to the library if you have such a requirement.
 - https://blog.golang.org/normalization
 
+#### Limitation
+
+As a performance optimization, the library can handle strings only up to 65536 characters (runes). This is only available on tip, and is not part of a tagged release yet. If you require such an optimization, please use the version at tip.
+
 Install
 -------
 
@@ -38,10 +42,10 @@ Benchmarks
 
 ```
 name              time/op
-Simple/ASCII-4     365ns ± 1%
-Simple/French-4    680ns ± 2%
-Simple/Nordic-4   1.33µs ± 2%
-Simple/Tibetan-4  1.15µs ± 2%
+Simple/ASCII-4     330ns ± 2%
+Simple/French-4    617ns ± 2%
+Simple/Nordic-4   1.16µs ± 4%
+Simple/Tibetan-4  1.05µs ± 1%
 
 name              alloc/op
 Simple/ASCII-4     96.0B ± 0%

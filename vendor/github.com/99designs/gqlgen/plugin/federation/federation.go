@@ -95,11 +95,13 @@ func (f *federation) InjectSourceLate(schema *ast.Schema) *ast.Source {
 		}
 		entities += e.Name
 
-		resolverArgs := ""
-		for _, field := range e.KeyFields {
-			resolverArgs += fmt.Sprintf("%s: %s,", field.Field.Name, field.Field.Type.String())
+		if e.ResolverName != "" {
+			resolverArgs := ""
+			for _, field := range e.KeyFields {
+				resolverArgs += fmt.Sprintf("%s: %s,", field.Field.Name, field.Field.Type.String())
+			}
+			resolvers += fmt.Sprintf("\t%s(%s): %s!\n", e.ResolverName, resolverArgs, e.Def.Name)
 		}
-		resolvers += fmt.Sprintf("\t%s(%s): %s!\n", e.ResolverName, resolverArgs, e.Def.Name)
 
 	}
 
@@ -109,18 +111,24 @@ func (f *federation) InjectSourceLate(schema *ast.Schema) *ast.Source {
 		return nil
 	}
 
+	// resolvers can be empty if a service defines only "empty
+	// extend" types.  This should be rare.
+	if resolvers != "" {
+		resolvers = `
+# fake type to build resolver interfaces for users to implement
+type Entity {
+	` + resolvers + `
+}
+`
+	}
+
 	return &ast.Source{
 		Name:    "federation/entity.graphql",
 		BuiltIn: true,
 		Input: `
 # a union of all types that use the @key directive
 union _Entity = ` + entities + `
-
-# fake type to build resolver interfaces for users to implement
-type Entity {
-	` + resolvers + `
-}
-
+` + resolvers + `
 type _Service {
   sdl: String
 }
@@ -162,9 +170,20 @@ type RequireField struct {
 	TypeReference *config.TypeReference // The Go representation of that field type
 }
 
+func (e *Entity) allFieldsAreExternal() bool {
+	for _, field := range e.Def.Fields {
+		if field.Directives.ForName("external") == nil {
+			return false
+		}
+	}
+	return true
+}
+
 func (f *federation) GenerateCode(data *codegen.Data) error {
 	if len(f.Entities) > 0 {
-		data.Objects.ByName("Entity").Root = true
+		if data.Objects.ByName("Entity") != nil {
+			data.Objects.ByName("Entity").Root = true
+		}
 		for _, e := range f.Entities {
 			obj := data.Objects.ByName(e.Def.Name)
 			for _, field := range obj.Fields {
@@ -251,13 +270,36 @@ func (f *federation) setEntities(schema *ast.Schema) {
 
 				}
 
-				f.Entities = append(f.Entities, &Entity{
+				e := &Entity{
 					Name:         schemaType.Name,
 					KeyFields:    keyFields,
 					Def:          schemaType,
 					ResolverName: resolverName,
 					Requires:     requires,
-				})
+				}
+				// If our schema has a field with a type defined in
+				// another service, then we need to define an "empty
+				// extend" of that type in this service, so this service
+				// knows what the type is like.  But the graphql-server
+				// will never ask us to actually resolve this "empty
+				// extend", so we don't require a resolver function for
+				// it.  (Well, it will never ask in practice; it's
+				// unclear whether the spec guarantees this.  See
+				// https://github.com/apollographql/apollo-server/issues/3852
+				// ).  Example:
+				//    type MyType {
+				//       myvar: TypeDefinedInOtherService
+				//    }
+				//    // Federation needs this type, but
+				//    // it doesn't need a resolver for it!
+				//    extend TypeDefinedInOtherService @key(fields: "id") {
+				//       id: ID @external
+				//    }
+				if e.allFieldsAreExternal() {
+					e.ResolverName = ""
+				}
+
+				f.Entities = append(f.Entities, e)
 			}
 		}
 	}

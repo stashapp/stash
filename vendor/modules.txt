@@ -1,4 +1,4 @@
-# github.com/99designs/gqlgen v0.11.3
+# github.com/99designs/gqlgen v0.12.2
 github.com/99designs/gqlgen
 github.com/99designs/gqlgen/api
 github.com/99designs/gqlgen/cmd
@@ -26,7 +26,7 @@ github.com/99designs/gqlgen/plugin/resolvergen
 github.com/99designs/gqlgen/plugin/servergen
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
-# github.com/Yamashou/gqlgenc v0.0.0-20200720023742-62053aec03dc
+# github.com/Yamashou/gqlgenc v0.0.0-20200902035953-4dbef3551953
 github.com/Yamashou/gqlgenc
 github.com/Yamashou/gqlgenc/client
 github.com/Yamashou/gqlgenc/clientgen
@@ -34,7 +34,7 @@ github.com/Yamashou/gqlgenc/config
 github.com/Yamashou/gqlgenc/generator
 github.com/Yamashou/gqlgenc/graphqljson
 github.com/Yamashou/gqlgenc/introspection
-# github.com/agnivade/levenshtein v1.0.3
+# github.com/agnivade/levenshtein v1.1.0
 github.com/agnivade/levenshtein
 # github.com/antchfx/htmlquery v1.2.3
 github.com/antchfx/htmlquery
@@ -158,7 +158,7 @@ github.com/golang/groupcache/lru
 github.com/gorilla/securecookie
 # github.com/gorilla/sessions v1.2.0
 github.com/gorilla/sessions
-# github.com/gorilla/websocket v1.4.0
+# github.com/gorilla/websocket v1.4.2
 github.com/gorilla/websocket
 # github.com/h2non/filetype v1.0.8
 github.com/h2non/filetype
@@ -272,6 +272,14 @@ github.com/urfave/cli/v2
 # github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e
 github.com/vektah/dataloaden
 github.com/vektah/dataloaden/pkg/generator
+# github.com/vektah/gqlparser v1.3.1
+github.com/vektah/gqlparser
+github.com/vektah/gqlparser/ast
+github.com/vektah/gqlparser/gqlerror
+github.com/vektah/gqlparser/lexer
+github.com/vektah/gqlparser/parser
+github.com/vektah/gqlparser/validator
+github.com/vektah/gqlparser/validator/rules
 # github.com/vektah/gqlparser/v2 v2.0.1
 github.com/vektah/gqlparser/v2
 github.com/vektah/gqlparser/v2/ast
@@ -281,7 +289,7 @@ github.com/vektah/gqlparser/v2/lexer
 github.com/vektah/gqlparser/v2/parser
 github.com/vektah/gqlparser/v2/validator
 github.com/vektah/gqlparser/v2/validator/rules
-# golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
+# golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/ssh/terminal
@@ -293,7 +301,10 @@ golang.org/x/image/tiff/lzw
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
 golang.org/x/image/webp
-# golang.org/x/net v0.0.0-20200602114024-627f9648deb9
+# golang.org/x/mod v0.3.0
+golang.org/x/mod/module
+golang.org/x/mod/semver
+# golang.org/x/net v0.0.0-20200822124328-c89045814202
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
 golang.org/x/net/html/atom
@@ -321,18 +332,23 @@ golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
-# golang.org/x/tools v0.0.0-20200114235610-7ae403b6b589
+# golang.org/x/tools v0.0.0-20200915031644-64986481280e
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/gcimporter
 golang.org/x/tools/go/internal/packagesdriver
 golang.org/x/tools/go/packages
 golang.org/x/tools/imports
+golang.org/x/tools/internal/event
+golang.org/x/tools/internal/event/core
+golang.org/x/tools/internal/event/keys
+golang.org/x/tools/internal/event/label
 golang.org/x/tools/internal/fastwalk
+golang.org/x/tools/internal/gocommand
 golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/imports
-golang.org/x/tools/internal/module
-golang.org/x/tools/internal/semver
+golang.org/x/tools/internal/packagesinternal
+golang.org/x/tools/internal/typesinternal
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 golang.org/x/xerrors
 golang.org/x/xerrors/internal

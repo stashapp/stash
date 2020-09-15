@@ -32,7 +32,7 @@ func collectFields(reqCtx *OperationContext, selSet ast.SelectionSet, satisfies 
 			if !shouldIncludeNode(sel.Directives, reqCtx.Variables) {
 				continue
 			}
-			f := getOrCreateAndAppendField(&groupedFields, sel.Alias, func() CollectedField {
+			f := getOrCreateAndAppendField(&groupedFields, sel.Alias, sel.ObjectDefinition, func() CollectedField {
 				return CollectedField{Field: sel}
 			})
 
@@ -45,7 +45,7 @@ func collectFields(reqCtx *OperationContext, selSet ast.SelectionSet, satisfies 
 				continue
 			}
 			for _, childField := range collectFields(reqCtx, sel.SelectionSet, satisfies, visited) {
-				f := getOrCreateAndAppendField(&groupedFields, childField.Name, func() CollectedField { return childField })
+				f := getOrCreateAndAppendField(&groupedFields, childField.Name, childField.ObjectDefinition, func() CollectedField { return childField })
 				f.Selections = append(f.Selections, childField.Selections...)
 			}
 
@@ -70,7 +70,7 @@ func collectFields(reqCtx *OperationContext, selSet ast.SelectionSet, satisfies 
 			}
 
 			for _, childField := range collectFields(reqCtx, fragment.SelectionSet, satisfies, visited) {
-				f := getOrCreateAndAppendField(&groupedFields, childField.Name, func() CollectedField { return childField })
+				f := getOrCreateAndAppendField(&groupedFields, childField.Name, childField.ObjectDefinition, func() CollectedField { return childField })
 				f.Selections = append(f.Selections, childField.Selections...)
 			}
 		default:
@@ -96,9 +96,9 @@ func instanceOf(val string, satisfies []string) bool {
 	return false
 }
 
-func getOrCreateAndAppendField(c *[]CollectedField, name string, creator func() CollectedField) *CollectedField {
+func getOrCreateAndAppendField(c *[]CollectedField, name string, objectDefinition *ast.Definition, creator func() CollectedField) *CollectedField {
 	for i, cf := range *c {
-		if cf.Alias == name {
+		if cf.Alias == name && (cf.ObjectDefinition == objectDefinition || (cf.ObjectDefinition != nil && objectDefinition != nil && cf.ObjectDefinition.Name == objectDefinition.Name)) {
 			return &(*c)[i]
 		}
 	}

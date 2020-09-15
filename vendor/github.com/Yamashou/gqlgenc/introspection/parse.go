@@ -38,6 +38,7 @@ func parseOperationTypeDefinitionForQuery(fullType *FullType) *ast.OperationType
 	var op ast.OperationTypeDefinition
 	op.Operation = ast.Query
 	op.Type = *fullType.Name
+
 	return &op
 }
 
@@ -45,6 +46,7 @@ func parseOperationTypeDefinitionForMutation(fullType *FullType) *ast.OperationT
 	var op ast.OperationTypeDefinition
 	op.Operation = ast.Mutation
 	op.Type = *fullType.Name
+
 	return &op
 }
 
@@ -279,6 +281,7 @@ func getType(typeRef *TypeRef) *ast.Type {
 		}
 		nullableType := getType(nullableRef)
 		nullableType.NonNull = true
+
 		return nullableType
 	}
 

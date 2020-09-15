@@ -136,7 +136,10 @@ func (c *wsConnection) run() {
 	// We create a cancellation that will shutdown the keep-alive when we leave
 	// this function.
 	ctx, cancel := context.WithCancel(c.ctx)
-	defer cancel()
+	defer func() {
+		cancel()
+		c.close(websocket.CloseAbnormalClosure, "unexpected closure")
+	}()
 
 	// Create a timer that will fire every interval to keep the connection alive.
 	if c.KeepAlivePingInterval != 0 {
