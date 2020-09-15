@@ -24,7 +24,8 @@ type Importer struct {
 	MissingRefBehaviour models.ImportMissingRefEnum
 	FileNamingAlgorithm models.HashAlgorithm
 
-	Scene          models.Scene
+	ID             int
+	scene          models.Scene
 	gallery        *models.Gallery
 	performers     []*models.Performer
 	movies         []models.MoviesScenes
@@ -33,7 +34,7 @@ type Importer struct {
 }
 
 func (i *Importer) PreImport() error {
-	i.Scene = i.sceneJSONToScene(i.Input)
+	i.scene = i.sceneJSONToScene(i.Input)
 
 	if err := i.populateStudio(); err != nil {
 		return err
@@ -149,13 +150,13 @@ func (i *Importer) populateStudio() error {
 				if err != nil {
 					return err
 				}
-				i.Scene.StudioID = sql.NullInt64{
+				i.scene.StudioID = sql.NullInt64{
 					Int64: int64(studioID),
 					Valid: true,
 				}
 			}
 		} else {
-			i.Scene.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			i.scene.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
 		}
 	}
 
@@ -408,18 +409,20 @@ func (i *Importer) FindExistingID() (*int, error) {
 }
 
 func (i *Importer) Create() (*int, error) {
-	created, err := i.ReaderWriter.Create(i.Scene)
+	created, err := i.ReaderWriter.Create(i.scene)
 	if err != nil {
 		return nil, fmt.Errorf("error creating scene: %s", err.Error())
 	}
 
 	id := created.ID
+	i.ID = id
 	return &id, nil
 }
 
 func (i *Importer) Update(id int) error {
-	scene := i.Scene
+	scene := i.scene
 	scene.ID = id
+	i.ID = id
 	_, err := i.ReaderWriter.UpdateFull(scene)
 	if err != nil {
 		return fmt.Errorf("error updating existing scene: %s", err.Error())

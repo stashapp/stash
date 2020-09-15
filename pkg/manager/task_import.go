@@ -113,11 +113,6 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 			tx.Rollback()
 			logger.Errorf("[performers] <%s> import failed to commit: %s", mappingJSON.Checksum, err.Error())
 		}
-
-		if err := tx.Commit(); err != nil {
-			tx.Rollback()
-			logger.Errorf("[performers] <%s> import failed to commit: %s", mappingJSON.Checksum, err.Error())
-		}
 	}
 
 	logger.Info("[performers] import complete")
@@ -427,7 +422,7 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		failedMarkers := false
 		for _, m := range sceneJSON.Markers {
 			markerImporter := &scene.MarkerImporter{
-				SceneID:             sceneImporter.Scene.ID,
+				SceneID:             sceneImporter.ID,
 				Input:               m,
 				MissingRefBehaviour: t.MissingRefBehaviour,
 				ReaderWriter:        markerWriter,

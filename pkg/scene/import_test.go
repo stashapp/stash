@@ -99,7 +99,7 @@ func TestImporterPreImportWithStudio(t *testing.T) {
 
 	err := i.PreImport()
 	assert.Nil(t, err)
-	assert.Equal(t, int64(existingStudioID), i.Scene.StudioID.Int64)
+	assert.Equal(t, int64(existingStudioID), i.scene.StudioID.Int64)
 
 	i.Input.Studio = existingStudioErr
 	err = i.PreImport()
@@ -135,7 +135,7 @@ func TestImporterPreImportWithMissingStudio(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport()
 	assert.Nil(t, err)
-	assert.Equal(t, int64(existingStudioID), i.Scene.StudioID.Int64)
+	assert.Equal(t, int64(existingStudioID), i.scene.StudioID.Int64)
 
 	studioReaderWriter.AssertExpectations(t)
 }
@@ -700,7 +700,7 @@ func TestCreate(t *testing.T) {
 
 	i := Importer{
 		ReaderWriter: readerWriter,
-		Scene:        scene,
+		scene:        scene,
 	}
 
 	errCreate := errors.New("Create error")
@@ -712,8 +712,9 @@ func TestCreate(t *testing.T) {
 	id, err := i.Create()
 	assert.Equal(t, sceneID, *id)
 	assert.Nil(t, err)
+	assert.Equal(t, sceneID, i.ID)
 
-	i.Scene = sceneErr
+	i.scene = sceneErr
 	id, err = i.Create()
 	assert.Nil(t, id)
 	assert.NotNil(t, err)
@@ -734,7 +735,7 @@ func TestUpdate(t *testing.T) {
 
 	i := Importer{
 		ReaderWriter: readerWriter,
-		Scene:        scene,
+		scene:        scene,
 	}
 
 	errUpdate := errors.New("Update error")
@@ -745,8 +746,9 @@ func TestUpdate(t *testing.T) {
 
 	err := i.Update(sceneID)
 	assert.Nil(t, err)
+	assert.Equal(t, sceneID, i.ID)
 
-	i.Scene = sceneErr
+	i.scene = sceneErr
 
 	// need to set id separately
 	sceneErr.ID = errImageID
