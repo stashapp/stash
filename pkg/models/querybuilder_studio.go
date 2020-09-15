@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -72,6 +73,24 @@ func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*Studio, error) {
 	query := "SELECT * FROM studios WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryStudio(query, args, tx)
+}
+
+func (qb *StudioQueryBuilder) FindMany(ids []int) ([]*Studio, error) {
+	var studios []*Studio
+	for _, id := range ids {
+		studio, err := qb.Find(id, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if studio == nil {
+			return nil, fmt.Errorf("studio with id %d not found", id)
+		}
+
+		studios = append(studios, studio)
+	}
+
+	return studios, nil
 }
 
 func (qb *StudioQueryBuilder) FindChildren(id int, tx *sqlx.Tx) ([]*Studio, error) {

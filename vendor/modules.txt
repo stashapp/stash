@@ -200,7 +200,7 @@ github.com/karrick/godirwalk
 github.com/knq/sysutil
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/magiconair/properties v1.8.0
+# github.com/magiconair/properties v1.8.1
 github.com/magiconair/properties
 # github.com/mailru/easyjson v0.7.1
 github.com/mailru/easyjson
@@ -216,11 +216,13 @@ github.com/matryer/moq
 github.com/matryer/moq/pkg/moq
 # github.com/mattn/go-sqlite3 v1.13.0
 github.com/mattn/go-sqlite3
+# github.com/mitchellh/go-homedir v1.1.0
+github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.1.2
 github.com/mitchellh/mapstructure
-# github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421
+# github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 github.com/modern-go/concurrent
-# github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742
+# github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
 # github.com/natefinch/pie v0.0.0-20170715172608-9a0d72014007
 github.com/natefinch/pie
@@ -230,7 +232,7 @@ github.com/pelletier/go-toml
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/rogpeppe/go-internal v1.2.2
+# github.com/rogpeppe/go-internal v1.3.0
 github.com/rogpeppe/go-internal/modfile
 github.com/rogpeppe/go-internal/module
 github.com/rogpeppe/go-internal/semver
@@ -238,6 +240,11 @@ github.com/rogpeppe/go-internal/semver
 github.com/rs/cors
 # github.com/russross/blackfriday/v2 v2.0.1
 github.com/russross/blackfriday/v2
+# github.com/rs/zerolog v1.18.0
+github.com/rs/zerolog
+github.com/rs/zerolog/internal/cbor
+github.com/rs/zerolog/internal/json
+github.com/rs/zerolog/log
 # github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
 github.com/shurcooL/graphql
 github.com/shurcooL/graphql/ident
@@ -251,16 +258,21 @@ github.com/spf13/afero
 github.com/spf13/afero/mem
 # github.com/spf13/cast v1.3.0
 github.com/spf13/cast
-# github.com/spf13/cobra v0.0.3
+# github.com/spf13/cobra v1.0.0
 github.com/spf13/cobra
 # github.com/spf13/jwalterweatherman v1.0.0
 github.com/spf13/jwalterweatherman
 # github.com/spf13/pflag v1.0.3
 github.com/spf13/pflag
-# github.com/spf13/viper v1.4.0
+# github.com/spf13/viper v1.7.0
 github.com/spf13/viper
+# github.com/stretchr/objx v0.1.1
+github.com/stretchr/objx
 # github.com/stretchr/testify v1.5.1
 github.com/stretchr/testify/assert
+github.com/stretchr/testify/mock
+# github.com/subosito/gotenv v1.2.0
+github.com/subosito/gotenv
 # github.com/tidwall/gjson v1.6.0
 github.com/tidwall/gjson
 # github.com/tidwall/match v1.0.1
@@ -290,11 +302,19 @@ github.com/vektah/gqlparser/v2/parser
 github.com/vektah/gqlparser/v2/validator
 github.com/vektah/gqlparser/v2/validator/rules
 # golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+# github.com/vektra/mockery/v2 v2.2.1
+github.com/vektra/mockery/v2
+github.com/vektra/mockery/v2/cmd
+github.com/vektra/mockery/v2/pkg
+github.com/vektra/mockery/v2/pkg/config
+github.com/vektra/mockery/v2/pkg/logging
+# golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/image v0.0.0-20190118043309-183bebdce1b2
+# golang.org/x/image v0.0.0-20190802002840-cff245a6509b
 golang.org/x/image/bmp
+golang.org/x/image/ccitt
 golang.org/x/image/riff
 golang.org/x/image/tiff
 golang.org/x/image/tiff/lzw
@@ -353,4 +373,10 @@ golang.org/x/tools/internal/typesinternal
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # gopkg.in/yaml.v2 v2.3.0
+# golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+golang.org/x/xerrors
+golang.org/x/xerrors/internal
+# gopkg.in/ini.v1 v1.51.0
+gopkg.in/ini.v1
+# gopkg.in/yaml.v2 v2.2.4
 gopkg.in/yaml.v2
