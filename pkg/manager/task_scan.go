@@ -3,6 +3,7 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -26,7 +28,7 @@ type ScanTask struct {
 func (t *ScanTask) Start(wg *sync.WaitGroup) {
 	if isGallery(t.FilePath) {
 		t.scanGallery()
-	} else {
+	} else if isVideo(t.FilePath) {
 		t.scanScene()
 	}
 
@@ -110,7 +112,8 @@ func (t *ScanTask) associateGallery(wg *sync.WaitGroup) {
 	if !gallery.SceneID.Valid { // gallery has no SceneID
 		basename := strings.TrimSuffix(t.FilePath, filepath.Ext(t.FilePath))
 		var relatedFiles []string
-		for _, ext := range extensionsToScan { // make a list of media files that can be related to the gallery
+		gExt := config.GetGalleryExtensions()
+		for _, ext := range gExt { // make a list of media files that can be related to the gallery
 			related := basename + "." + ext
 			if !isGallery(related) { //exclude gallery extensions from the related files
 				relatedFiles = append(relatedFiles, related)
@@ -381,18 +384,49 @@ func (t *ScanTask) calculateChecksum() (string, error) {
 }
 
 func (t *ScanTask) doesPathExist() bool {
-	if filepath.Ext(t.FilePath) == ".zip" {
+	vidExt := config.GetVideoExtensions()
+	//imgExt := config.GetImageExtensions()
+	gExt := config.GetGalleryExtensions()
+
+	if matchExtension(t.FilePath, gExt) {
 		qb := models.NewGalleryQueryBuilder()
 		gallery, _ := qb.FindByPath(t.FilePath)
 		if gallery != nil {
 			return true
 		}
-	} else {
+	} else if matchExtension(t.FilePath, vidExt) {
 		qb := models.NewSceneQueryBuilder()
 		scene, _ := qb.FindByPath(t.FilePath)
 		if scene != nil {
 			return true
 		}
 	}
+
 	return false
+}
+
+func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
+	vidExt := config.GetVideoExtensions()
+	imgExt := config.GetImageExtensions()
+	gExt := config.GetGalleryExtensions()
+	excludeVid := config.GetExcludes()
+	excludeImg := config.GetImageExcludes()
+
+	return filepath.Walk(s.Path, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+
+		if !s.ExcludeVideo && matchExtension(path, vidExt) && !matchFile(path, excludeVid) {
+			return f(path, info, err)
+		}
+
+		if !s.ExcludeImage {
+			if (matchExtension(path, imgExt) || matchExtension(path, gExt)) && !matchFile(path, excludeImg) {
+				return f(path, info, err)
+			}
+		}
+
+		return nil
+	})
 }

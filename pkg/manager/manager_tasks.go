@@ -2,38 +2,25 @@ package manager
 
 import (
 	"errors"
-	"path/filepath"
+	"os"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/bmatcuk/doublestar/v2"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-var extensionsToScan = []string{"zip", "cbz", "m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
-var extensionsGallery = []string{"zip", "cbz"}
-
-func constructGlob() string { // create a sequence for glob doublestar from our extensions
-	var extList []string
-	for _, ext := range extensionsToScan {
-		extList = append(extList, strings.ToLower(ext))
-		extList = append(extList, strings.ToUpper(ext))
-	}
-	return "{" + strings.Join(extList, ",") + "}"
+func isGallery(pathname string) bool {
+	gExt := config.GetGalleryExtensions()
+	return matchExtension(pathname, gExt)
 }
 
-func isGallery(pathname string) bool {
-	for _, ext := range extensionsGallery {
-		if strings.ToLower(filepath.Ext(pathname)) == "."+strings.ToLower(ext) {
-			return true
-		}
-	}
-	return false
+func isVideo(pathname string) bool {
+	vidExt := config.GetVideoExtensions()
+	return matchExtension(pathname, vidExt)
 }
 
 type TaskStatus struct {
@@ -86,6 +73,55 @@ func (t *TaskStatus) updated() {
 	t.LastUpdate = time.Now()
 }
 
+func (s *singleton) neededScan() (total *int, newFiles *int) {
+	const timeout = 90 * time.Second
+
+	// create a control channel through which to signal the counting loop when the timeout is reached
+	chTimeout := time.After(timeout)
+
+	logger.Infof("Counting files to scan...")
+
+	t := 0
+	n := 0
+
+	timeoutErr := errors.New("timed out")
+
+	for _, sp := range config.GetStashPaths() {
+		err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+			t++
+			task := ScanTask{FilePath: path}
+			if !task.doesPathExist() {
+				n++
+			}
+
+			//check for timeout
+			select {
+			case <-chTimeout:
+				return timeoutErr
+			default:
+			}
+
+			// check stop
+			if s.Status.stopping {
+				return timeoutErr
+			}
+
+			return nil
+		})
+
+		if err == timeoutErr {
+			break
+		}
+
+		if err != nil {
+			logger.Errorf("Error encountered counting files to scan: %s", err.Error())
+			return nil, nil
+		}
+	}
+
+	return &t, &n
+}
+
 func (s *singleton) Scan(useFileMetadata bool) {
 	if s.Status.Status != Idle {
 		return
@@ -96,11 +132,61 @@ func (s *singleton) Scan(useFileMetadata bool) {
 	go func() {
 		defer s.returnToIdleState()
 
-		var results []string
-		for _, s := range config.GetStashPaths() {
-			globPath := filepath.Join(s.Path, "**/*."+constructGlob())
-			globResults, _ := doublestar.Glob(globPath)
-			results = append(results, globResults...)
+		total, newFiles := s.neededScan()
+
+		if s.Status.stopping {
+			logger.Info("Stopping due to user request")
+			return
+		}
+
+		if total == nil || newFiles == nil {
+			logger.Infof("Taking too long to count content. Skipping...")
+			logger.Infof("Starting scan")
+		} else {
+			logger.Infof("Starting scan of %d files. %d New files found", *total, *newFiles)
+		}
+
+		var wg sync.WaitGroup
+		s.Status.Progress = 0
+		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
+		calculateMD5 := config.IsCalculateMD5()
+
+		i := 0
+		stoppingErr := errors.New("stopping")
+
+		var galleries []string
+
+		for _, sp := range config.GetStashPaths() {
+			err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+				if total != nil {
+					s.Status.setProgress(i, *total)
+					i++
+				}
+
+				if s.Status.stopping {
+					return stoppingErr
+				}
+
+				if isGallery(path) {
+					galleries = append(galleries, path)
+				}
+
+				wg.Add(1)
+				task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5}
+				go task.Start(&wg)
+				wg.Wait()
+
+				return nil
+			})
+
+			if err == stoppingErr {
+				break
+			}
+
+			if err != nil {
+				logger.Errorf("Error encountered scanning files: %s", err.Error())
+				return
+			}
 		}
 
 		if s.Status.stopping {
@@ -108,34 +194,12 @@ func (s *singleton) Scan(useFileMetadata bool) {
 			return
 		}
 
-		results, _ = excludeFiles(results, config.GetExcludes())
-		total := len(results)
-		logger.Infof("Starting scan of %d files. %d New files found", total, s.neededScan(results))
-
-		var wg sync.WaitGroup
-		s.Status.Progress = 0
-		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
-		calculateMD5 := config.IsCalculateMD5()
-		for i, path := range results {
-			s.Status.setProgress(i, total)
-			if s.Status.stopping {
-				logger.Info("Stopping due to user request")
-				return
-			}
-			wg.Add(1)
-			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5}
-			go task.Start(&wg)
-			wg.Wait()
-		}
-
 		logger.Info("Finished scan")
-		for _, path := range results {
-			if isGallery(path) {
-				wg.Add(1)
-				task := ScanTask{FilePath: path, UseFileMetadata: false}
-				go task.associateGallery(&wg)
-				wg.Wait()
-			}
+		for _, path := range galleries {
+			wg.Add(1)
+			task := ScanTask{FilePath: path, UseFileMetadata: false}
+			go task.associateGallery(&wg)
+			wg.Wait()
 		}
 		logger.Info("Finished gallery association")
 	}()
@@ -756,18 +820,6 @@ func (s *singleton) returnToIdleState() {
 	s.Status.SetStatus(Idle)
 	s.Status.indefiniteProgress()
 	s.Status.stopping = false
-}
-
-func (s *singleton) neededScan(paths []string) int64 {
-	var neededScans int64
-
-	for _, path := range paths {
-		task := ScanTask{FilePath: path}
-		if !task.doesPathExist() {
-			neededScans++
-		}
-	}
-	return neededScans
 }
 
 type totalsGenerate struct {

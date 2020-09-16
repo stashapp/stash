@@ -23,7 +23,7 @@ type CleanTask struct {
 func (t *CleanTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	if t.Scene != nil && t.shouldClean(t.Scene.Path) {
+	if t.Scene != nil && t.shouldCleanScene(t.Scene) {
 		t.deleteScene(t.Scene.ID)
 	}
 
@@ -53,8 +53,26 @@ func (t *CleanTask) shouldClean(path string) bool {
 	return false
 }
 
+func (t *CleanTask) shouldCleanScene(s *models.Scene) bool {
+	if t.shouldClean(s.Path) {
+		return true
+	}
+
+	if !matchExtension(s.Path, config.GetVideoExtensions()) {
+		logger.Infof("File extension does not match video extensions. Cleaning: \"%s\"", s.Path)
+		return true
+	}
+
+	return false
+}
+
 func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 	if t.shouldClean(g.Path) {
+		return true
+	}
+
+	if !matchExtension(g.Path, config.GetGalleryExtensions()) {
+		logger.Infof("File extension does not match gallery extensions. Cleaning: \"%s\"", g.Path)
 		return true
 	}
 
