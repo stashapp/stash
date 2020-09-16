@@ -97,8 +97,8 @@ func (s *singleton) Scan(useFileMetadata bool) {
 		defer s.returnToIdleState()
 
 		var results []string
-		for _, path := range config.GetStashPaths() {
-			globPath := filepath.Join(path, "**/*."+constructGlob())
+		for _, s := range config.GetStashPaths() {
+			globPath := filepath.Join(s.Path, "**/*."+constructGlob())
 			globResults, _ := doublestar.Glob(globPath)
 			results = append(results, globResults...)
 		}

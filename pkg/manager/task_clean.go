@@ -127,13 +127,13 @@ func (t *CleanTask) fileExists(filename string) (bool, error) {
 }
 
 func (t *CleanTask) pathInStash(pathToCheck string) bool {
-	for _, path := range config.GetStashPaths() {
+	for _, s := range config.GetStashPaths() {
 
-		rel, error := filepath.Rel(path, filepath.Dir(pathToCheck))
+		rel, error := filepath.Rel(s.Path, filepath.Dir(pathToCheck))
 
 		if error == nil {
 			if !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-				logger.Debugf("File %s belongs to stash path %s", pathToCheck, path)
+				logger.Debugf("File %s belongs to stash path %s", pathToCheck, s.Path)
 				return true
 			}
 		}
