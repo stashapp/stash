@@ -58,6 +58,7 @@ input ExportObjectTypeInput {
 
 input ExportObjectsInput {
   scenes: ExportObjectTypeInput
+  images: ExportObjectTypeInput
   studios: ExportObjectTypeInput
   performers: ExportObjectTypeInput
   tags: ExportObjectTypeInput

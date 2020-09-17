@@ -5,8 +5,9 @@ import { WallItem } from "./WallItem";
 interface IWallPanelProps {
   scenes?: GQL.SlimSceneDataFragment[];
   sceneMarkers?: GQL.SceneMarkerDataFragment[];
+  images?: GQL.SlimImageDataFragment[];
   clickHandler?: (
-    item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment
+    item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment | GQL.SlimImageDataFragment
   ) => void;
 }
 
@@ -56,11 +57,21 @@ export const WallPanel: React.FC<IWallPanelProps> = (
     />
   ));
 
+  const images = (props.images ?? []).map((image, index, imageArray) => (
+    <WallItem
+      key={image.id}
+      image={image}
+      clickHandler={props.clickHandler}
+      className={calculateClass(index, imageArray.length)}
+    />
+  ));
+
   return (
     <div className="row">
       <div className="wall w-100 row justify-content-center">
         {scenes}
         {sceneMarkers}
+        {images}
       </div>
     </div>
   );

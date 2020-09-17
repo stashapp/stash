@@ -16,6 +16,7 @@ import {
   TagIsMissingCriterion,
   StudioIsMissingCriterion,
   MovieIsMissingCriterion,
+  ImageIsMissingCriterion,
 } from "./is-missing";
 import { NoneCriterion } from "./none";
 import { PerformersCriterion } from "./performers";
@@ -46,6 +47,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new HasMarkersCriterion();
     case "sceneIsMissing":
       return new SceneIsMissingCriterion();
+    case "imageIsMissing":
+      return new ImageIsMissingCriterion();
     case "performerIsMissing":
       return new PerformerIsMissingCriterion();
     case "galleryIsMissing":

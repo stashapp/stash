@@ -166,7 +166,7 @@ func (t *CleanTask) deleteImage(imageID int) {
 		return
 	}
 
-	pathErr := os.Remove(paths.GetImageThumbPath(t.Image.Checksum, models.DefaultGthumbWidth)) // remove cache dir of gallery
+	pathErr := os.Remove(GetInstance().Paths.Image.GetThumbnailPath(t.Image.Checksum, models.DefaultGthumbWidth)) // remove cache dir of gallery
 	if pathErr != nil {
 		logger.Errorf("Error deleting thumbnail image from cache: %s", pathErr)
 	}

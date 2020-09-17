@@ -1,0 +1,252 @@
+import { Tab, Nav, Dropdown } from "react-bootstrap";
+import queryString from "query-string";
+import React, { useEffect, useState } from "react";
+import { useParams, useLocation, useHistory, Link } from "react-router-dom";
+import * as GQL from "src/core/generated-graphql";
+import {
+  useFindImage,
+  useImageIncrementO,
+  useImageDecrementO,
+  useImageResetO,
+} from "src/core/StashService";
+import { LoadingIndicator, Icon } from "src/components/Shared";
+import { useToast } from "src/hooks";
+import { TextUtils } from "src/utils";
+import * as Mousetrap from "mousetrap";
+import { ImageFileInfoPanel } from "./ImageFileInfoPanel";
+import { ImageEditPanel } from "./ImageEditPanel";
+import { ImageDetailPanel } from "./ImageDetailPanel";
+import { DeleteImagesDialog } from "../DeleteImagesDialog";
+import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
+
+interface IImageParams {
+  id?: string;
+}
+
+export const Image: React.FC = () => {
+  const { id = "new" } = useParams<IImageParams>();
+  const location = useLocation();
+  const history = useHistory();
+  const Toast = useToast();
+
+  const [image, setImage] = useState<GQL.ImageDataFragment | undefined>();
+  const { data, error, loading } = useFindImage(id);
+  const [oLoading, setOLoading] = useState(false);
+  const [incrementO] = useImageIncrementO(image?.id ?? "0");
+  const [decrementO] = useImageDecrementO(image?.id ?? "0");
+  const [resetO] = useImageResetO(image?.id ?? "0");
+
+  const [activeTabKey, setActiveTabKey] = useState("image-details-panel");
+
+  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (data?.findImage) setImage(data.findImage);
+  }, [data]);
+
+  const updateOCounter = (newValue: number) => {
+    const modifiedImage = { ...image } as GQL.ImageDataFragment;
+    modifiedImage.o_counter = newValue;
+    setImage(modifiedImage);
+  };
+
+  const onIncrementClick = async () => {
+    try {
+      setOLoading(true);
+      const result = await incrementO();
+      if (result.data) updateOCounter(result.data.imageIncrementO);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOLoading(false);
+    }
+  };
+
+  const onDecrementClick = async () => {
+    try {
+      setOLoading(true);
+      const result = await decrementO();
+      if (result.data) updateOCounter(result.data.imageDecrementO);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOLoading(false);
+    }
+  };
+
+  const onResetClick = async () => {
+    try {
+      setOLoading(true);
+      const result = await resetO();
+      if (result.data) updateOCounter(result.data.imageResetO);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOLoading(false);
+    }
+  };
+
+  function onDeleteDialogClosed(deleted: boolean) {
+    setIsDeleteAlertOpen(false);
+    if (deleted) {
+      history.push("/images");
+    }
+  }
+
+  function maybeRenderDeleteDialog() {
+    if (isDeleteAlertOpen && image) {
+      return (
+        <DeleteImagesDialog selected={[image]} onClose={onDeleteDialogClosed} />
+      );
+    }
+  }
+
+  function renderOperations() {
+    return (
+      <Dropdown>
+        <Dropdown.Toggle
+          variant="secondary"
+          id="operation-menu"
+          className="minimal"
+          title="Operations"
+        >
+          <Icon icon="ellipsis-v" />
+        </Dropdown.Toggle>
+        <Dropdown.Menu className="bg-secondary text-white">
+          <Dropdown.Item
+            key="delete-image"
+            className="bg-secondary text-white"
+            onClick={() => setIsDeleteAlertOpen(true)}
+          >
+            Delete Image
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    );
+  }
+
+  function renderTabs() {
+    if (!image) {
+      return;
+    }
+
+    return (
+      <Tab.Container
+        activeKey={activeTabKey}
+        onSelect={(k) => k && setActiveTabKey(k)}
+      >
+        <div>
+          <Nav variant="tabs" className="mr-auto">
+            <Nav.Item>
+              <Nav.Link eventKey="image-details-panel">Details</Nav.Link>
+            </Nav.Item>
+            {/* {image.gallery ? (
+              <Nav.Item>
+                <Nav.Link eventKey="image-gallery-panel">Gallery</Nav.Link>
+              </Nav.Item>
+            ) : (
+              ""
+            )} */}
+            <Nav.Item>
+              <Nav.Link eventKey="image-file-info-panel">File Info</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="image-edit-panel">Edit</Nav.Link>
+            </Nav.Item>
+            <Nav.Item className="ml-auto">
+              <OCounterButton
+                loading={oLoading}
+                value={image.o_counter || 0}
+                onIncrement={onIncrementClick}
+                onDecrement={onDecrementClick}
+                onReset={onResetClick}
+              />
+            </Nav.Item>
+            <Nav.Item>{renderOperations()}</Nav.Item>
+          </Nav>
+        </div>
+
+        <Tab.Content>
+          <Tab.Pane eventKey="image-details-panel" title="Details">
+            <ImageDetailPanel image={image} />
+          </Tab.Pane>
+          {/* {image.gallery ? (
+            <Tab.Pane eventKey="image-gallery-panel" title="Gallery">
+              <GalleryViewer gallery={image.gallery} />
+            </Tab.Pane>
+          ) : (
+            ""
+          )} */}
+          <Tab.Pane
+            className="file-info-panel"
+            eventKey="image-file-info-panel"
+            title="File Info"
+          >
+            <ImageFileInfoPanel image={image} />
+          </Tab.Pane>
+          <Tab.Pane eventKey="image-edit-panel" title="Edit">
+            <ImageEditPanel
+              isVisible={activeTabKey === "image-edit-panel"}
+              image={image}
+              onUpdate={(newImage) => setImage(newImage)}
+              onDelete={() => setIsDeleteAlertOpen(true)}
+            />
+          </Tab.Pane>
+        </Tab.Content>
+      </Tab.Container>
+    );
+  }
+
+  // set up hotkeys
+  useEffect(() => {
+    Mousetrap.bind("a", () => setActiveTabKey("image-details-panel"));
+    Mousetrap.bind("e", () => setActiveTabKey("image-edit-panel"));
+    Mousetrap.bind("f", () => setActiveTabKey("image-file-info-panel"));
+    Mousetrap.bind("o", () => onIncrementClick());
+
+    return () => {
+      Mousetrap.unbind("a");
+      Mousetrap.unbind("e");
+      Mousetrap.unbind("f");
+      Mousetrap.unbind("o");
+    };
+  });
+
+  if (loading || !image || !data?.findImage) {
+    return <LoadingIndicator />;
+  }
+
+  if (error) return <div>{error.message}</div>;
+
+  return (
+    <div className="row">
+      {maybeRenderDeleteDialog()}
+      <div className="image-tabs order-xl-first order-last">
+        <div className="d-none d-xl-block">
+          {image.studio && (
+            <h1 className="text-center">
+              <Link to={`/studios/${image.studio.id}`}>
+                <img
+                  src={image.studio.image_path ?? ""}
+                  alt={`${image.studio.name} logo`}
+                  className="studio-logo"
+                />
+              </Link>
+            </h1>
+          )}
+          <h3 className="image-header">
+            {image.title ?? TextUtils.fileNameFromPath(image.path)}
+          </h3>
+        </div>
+        {renderTabs()}
+      </div>
+      <div className="image-container">
+        <img
+          className="m-sm-auto no-gutter image-image"
+          alt={image.title ?? ''}
+          src={image.paths.image ?? ''}
+        />
+      </div>
+    </div>
+  );
+};

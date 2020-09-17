@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -33,17 +34,13 @@ func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*models.Im
 }
 
 func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*models.ImagePathsType, error) {
-	//baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	// builder := urlbuilders.NewSceneURLBuilder(baseURL, obj.ID)
-	// screenshotPath := builder.GetScreenshotURL(obj.UpdatedAt.Timestamp)
-	// previewPath := builder.GetStreamPreviewURL()
-	// streamPath := builder.GetStreamURL()
-	// webpPath := builder.GetStreamPreviewImageURL()
-	// vttPath := builder.GetSpriteVTTURL()
-	// chaptersVttPath := builder.GetChaptersVTTURL()
+	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
+	builder := urlbuilders.NewImageURLBuilder(baseURL, obj.ID)
+	thumbnailPath := builder.GetThumbnailURL()
+	imagePath := builder.GetImageURL()
 	return &models.ImagePathsType{
-		Image:     nil,
-		Thumbnail: nil,
+		Image:     &imagePath,
+		Thumbnail: &thumbnailPath,
 	}, nil
 }
 

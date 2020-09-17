@@ -18,6 +18,8 @@ import {
   MovieDataFragment,
   FindTagsQueryResult,
   TagDataFragment,
+  FindImagesQueryResult,
+  SlimImageDataFragment,
 } from "src/core/generated-graphql";
 import {
   useInterfaceLocalForage,
@@ -29,6 +31,7 @@ import { Pagination, PaginationIndex } from "src/components/List/Pagination";
 import {
   useFindScenes,
   useFindSceneMarkers,
+  useFindImages,
   useFindMovies,
   useFindStudios,
   useFindGalleries,
@@ -542,6 +545,19 @@ export const useSceneMarkersList = (
       result?.data?.findSceneMarkers?.count ?? 0,
   });
 
+export const useImagesList = (
+  props: IListHookOptions<FindImagesQueryResult, SlimImageDataFragment>
+) =>
+  useList<FindImagesQueryResult, SlimImageDataFragment>({
+    ...props,
+    filterMode: FilterMode.Images,
+    useData: useFindImages,
+    getData: (result: FindImagesQueryResult) =>
+      result?.data?.findImages?.images ?? [],
+    getCount: (result: FindImagesQueryResult) =>
+      result?.data?.findImages?.count ?? 0,
+  });
+  
 export const useGalleriesList = (
   props: IListHookOptions<FindGalleriesQueryResult, GalleryDataFragment>
 ) =>

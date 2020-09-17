@@ -15,7 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
-	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -448,7 +447,7 @@ func (t *ScanTask) scanImage() {
 }
 
 func (t *ScanTask) generateThumbnail(i *models.Image) {
-	thumbPath := paths.GetImageThumbPath(i.Checksum, models.DefaultGthumbWidth)
+	thumbPath := GetInstance().Paths.Image.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
 	exists, _ := utils.FileExists(thumbPath)
 	if exists {
 		logger.Debug("Thumbnail already exists for this path... skipping")

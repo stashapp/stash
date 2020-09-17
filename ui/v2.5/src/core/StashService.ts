@@ -84,6 +84,23 @@ export const queryFindSceneMarkers = (filter: ListFilterModel) =>
     },
   });
 
+export const useFindImages = (filter: ListFilterModel) =>
+  GQL.useFindImagesQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      image_filter: filter.makeImageFilter(),
+    },
+  });
+
+export const queryFindImages = (filter: ListFilterModel) =>
+  client.query<GQL.FindImagesQuery>({
+    query: GQL.FindImagesDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      image_filter: filter.makeImageFilter(),
+    },
+  });
+
 export const useFindStudios = (filter: ListFilterModel) =>
   GQL.useFindStudiosQuery({
     variables: {
@@ -131,6 +148,9 @@ export const useFindScene = (id: string) =>
   GQL.useFindSceneQuery({ variables: { id } });
 export const useSceneStreams = (id: string) =>
   GQL.useSceneStreamsQuery({ variables: { id } });
+
+export const useFindImage = (id: string) =>
+  GQL.useFindImageQuery({ variables: { id } });
 
 export const useFindPerformer = (id: string) => {
   const skip = id === "new";
@@ -310,6 +330,52 @@ export const useScenesDestroy = (input: GQL.ScenesDestroyInput) =>
 export const useSceneGenerateScreenshot = () =>
   GQL.useSceneGenerateScreenshotMutation({
     update: deleteCache([GQL.FindScenesDocument]),
+  });
+
+const imageMutationImpactedQueries = [
+  GQL.FindPerformerDocument,
+  GQL.FindPerformersDocument,
+  GQL.FindImagesDocument,
+  GQL.FindStudioDocument,
+  GQL.FindStudiosDocument,
+  GQL.FindTagDocument,
+  GQL.FindTagsDocument,
+  GQL.AllTagsDocument,
+  GQL.FindGalleryDocument,
+  GQL.FindGalleriesDocument,
+];
+
+export const useImageUpdate = (input: GQL.ImageUpdateInput) =>
+  GQL.useImageUpdateMutation({
+    variables: input,
+    update: deleteCache(imageMutationImpactedQueries),
+  });
+
+export const useBulkImageUpdate = (input: GQL.BulkImageUpdateInput) =>
+  GQL.useBulkImageUpdateMutation({
+    variables: input,
+    update: deleteCache(imageMutationImpactedQueries),
+  });
+
+export const useImagesDestroy = (input: GQL.ImagesDestroyInput) =>
+  GQL.useImagesDestroyMutation({
+    variables: input,
+    update: deleteCache(imageMutationImpactedQueries),
+  });
+
+  export const useImageIncrementO = (id: string) =>
+  GQL.useImageIncrementOMutation({
+    variables: { id },
+  });
+
+export const useImageDecrementO = (id: string) =>
+  GQL.useImageDecrementOMutation({
+    variables: { id },
+  });
+
+export const useImageResetO = (id: string) =>
+  GQL.useImageResetOMutation({
+    variables: { id },
   });
 
 export const studioMutationImpactedQueries = [

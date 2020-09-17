@@ -13,6 +13,7 @@ export type CriterionType =
   | "favorite"
   | "hasMarkers"
   | "sceneIsMissing"
+  | "imageIsMissing"
   | "performerIsMissing"
   | "galleryIsMissing"
   | "tagIsMissing"
@@ -61,6 +62,7 @@ export abstract class Criterion {
       case "hasMarkers":
         return "Has Markers";
       case "sceneIsMissing":
+      case "imageIsMissing":
       case "performerIsMissing":
       case "galleryIsMissing":
       case "tagIsMissing":
