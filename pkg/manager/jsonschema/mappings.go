@@ -24,6 +24,7 @@ type Mappings struct {
 	Movies     []NameMapping `json:"movies"`
 	Galleries  []PathMapping `json:"galleries"`
 	Scenes     []PathMapping `json:"scenes"`
+	Images     []PathMapping `json:"images"`
 }
 
 func LoadMappingsFile(filePath string) (*Mappings, error) {

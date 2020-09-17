@@ -14,6 +14,7 @@ type JSONPaths struct {
 
 	Performers string
 	Scenes     string
+	Images     string
 	Galleries  string
 	Studios    string
 	Tags       string
@@ -27,6 +28,7 @@ func newJSONPaths(baseDir string) *JSONPaths {
 	jp.ScrapedFile = filepath.Join(baseDir, "scraped.json")
 	jp.Performers = filepath.Join(baseDir, "performers")
 	jp.Scenes = filepath.Join(baseDir, "scenes")
+	jp.Images = filepath.Join(baseDir, "images")
 	jp.Galleries = filepath.Join(baseDir, "galleries")
 	jp.Studios = filepath.Join(baseDir, "studios")
 	jp.Movies = filepath.Join(baseDir, "movies")
@@ -43,6 +45,7 @@ func EnsureJSONDirs(baseDir string) {
 	jsonPaths := GetJSONPaths(baseDir)
 	utils.EnsureDir(jsonPaths.Metadata)
 	utils.EnsureDir(jsonPaths.Scenes)
+	utils.EnsureDir(jsonPaths.Images)
 	utils.EnsureDir(jsonPaths.Galleries)
 	utils.EnsureDir(jsonPaths.Performers)
 	utils.EnsureDir(jsonPaths.Studios)
@@ -56,6 +59,10 @@ func (jp *JSONPaths) PerformerJSONPath(checksum string) string {
 
 func (jp *JSONPaths) SceneJSONPath(checksum string) string {
 	return filepath.Join(jp.Scenes, checksum+".json")
+}
+
+func (jp *JSONPaths) ImageJSONPath(checksum string) string {
+	return filepath.Join(jp.Images, checksum+".json")
 }
 
 func (jp *JSONPaths) StudioJSONPath(checksum string) string {

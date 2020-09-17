@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
@@ -34,6 +35,7 @@ type ExportTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 
 	scenes     *exportSpec
+	images     *exportSpec
 	performers *exportSpec
 	movies     *exportSpec
 	tags       *exportSpec
@@ -75,6 +77,7 @@ func CreateExportTask(a models.HashAlgorithm, input models.ExportObjectsInput) *
 	return &ExportTask{
 		fileNamingAlgorithm: a,
 		scenes:              newExportSpec(input.Scenes),
+		images:              newExportSpec(input.Images),
 		performers:          newExportSpec(input.Performers),
 		movies:              newExportSpec(input.Movies),
 		tags:                newExportSpec(input.Tags),
@@ -122,6 +125,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	paths.EnsureJSONDirs(t.baseDir)
 
 	t.ExportScenes(workerCount)
+	t.ExportImages(workerCount)
 	t.ExportGalleries()
 	t.ExportPerformers(workerCount)
 	t.ExportStudios(workerCount)
@@ -183,6 +187,7 @@ func (t *ExportTask) zipFiles(w io.Writer) error {
 	filepath.Walk(t.json.json.Studios, t.zipWalkFunc(u.json.Studios, z))
 	filepath.Walk(t.json.json.Movies, t.zipWalkFunc(u.json.Movies, z))
 	filepath.Walk(t.json.json.Scenes, t.zipWalkFunc(u.json.Scenes, z))
+	filepath.Walk(t.json.json.Images, t.zipWalkFunc(u.json.Images, z))
 
 	return nil
 }
@@ -362,6 +367,119 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 
 		if err := t.json.saveScene(sceneHash, newSceneJSON); err != nil {
 			logger.Errorf("[scenes] <%s> failed to save json: %s", sceneHash, err.Error())
+		}
+	}
+}
+
+func (t *ExportTask) ExportImages(workers int) {
+	var imagesWg sync.WaitGroup
+
+	imageReader := models.NewImageReaderWriter(nil)
+
+	var images []*models.Image
+	var err error
+	all := t.full || (t.images != nil && t.images.all)
+	if all {
+		images, err = imageReader.All()
+	} else if t.images != nil && len(t.images.IDs) > 0 {
+		images, err = imageReader.FindMany(t.images.IDs)
+	}
+
+	if err != nil {
+		logger.Errorf("[images] failed to fetch images: %s", err.Error())
+	}
+
+	jobCh := make(chan *models.Image, workers*2) // make a buffered channel to feed workers
+
+	logger.Info("[images] exporting")
+	startTime := time.Now()
+
+	for w := 0; w < workers; w++ { // create export Image workers
+		imagesWg.Add(1)
+		go exportImage(&imagesWg, jobCh, t)
+	}
+
+	for i, image := range images {
+		index := i + 1
+
+		if (i % 100) == 0 { // make progress easier to read
+			logger.Progressf("[images] %d of %d", index, len(images))
+		}
+		t.Mappings.Images = append(t.Mappings.Images, jsonschema.PathMapping{Path: image.Path, Checksum: image.Checksum})
+		jobCh <- image // feed workers
+	}
+
+	close(jobCh) // close channel so that workers will know no more jobs are available
+	imagesWg.Wait()
+
+	logger.Infof("[images] export complete in %s. %d workers used.", time.Since(startTime), workers)
+}
+
+func exportImage(wg *sync.WaitGroup, jobChan <-chan *models.Image, t *ExportTask) {
+	defer wg.Done()
+	studioReader := models.NewStudioReaderWriter(nil)
+	// galleryReader := models.NewGalleryReaderWriter(nil)
+	performerReader := models.NewPerformerReaderWriter(nil)
+	tagReader := models.NewTagReaderWriter(nil)
+
+	for s := range jobChan {
+		imageHash := s.Checksum
+
+		newImageJSON := image.ToBasicJSON(s)
+
+		var err error
+		newImageJSON.Studio, err = image.GetStudioName(studioReader, s)
+		if err != nil {
+			logger.Errorf("[images] <%s> error getting image studio name: %s", imageHash, err.Error())
+			continue
+		}
+
+		// imageGallery, err := galleryReader.FindByImageID(s.ID)
+		// if err != nil {
+		// 	logger.Errorf("[images] <%s> error getting image gallery: %s", imageHash, err.Error())
+		// 	continue
+		// }
+
+		// if imageGallery != nil {
+		// 	newImageJSON.Gallery = imageGallery.Checksum
+		// }
+
+		performers, err := performerReader.FindByImageID(s.ID)
+		if err != nil {
+			logger.Errorf("[images] <%s> error getting image performer names: %s", imageHash, err.Error())
+			continue
+		}
+
+		newImageJSON.Performers = performer.GetNames(performers)
+
+		tags, err := tagReader.FindByImageID(s.ID)
+		if err != nil {
+			logger.Errorf("[images] <%s> error getting image tag names: %s", imageHash, err.Error())
+			continue
+		}
+
+		newImageJSON.Tags = tag.GetNames(tags)
+
+		if t.includeDependencies {
+			if s.StudioID.Valid {
+				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
+			}
+
+			// if imageGallery != nil {
+			// 	t.galleries.IDs = utils.IntAppendUnique(t.galleries.IDs, imageGallery.ID)
+			// }
+
+			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
+			t.performers.IDs = utils.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+		}
+
+		imageJSON, err := t.json.getImage(imageHash)
+		if err == nil && jsonschema.CompareJSON(*imageJSON, *newImageJSON) {
+			continue
+		}
+
+		if err := t.json.saveImage(imageHash, newImageJSON); err != nil {
+			logger.Errorf("[images] <%s> failed to save json: %s", imageHash, err.Error())
 		}
 	}
 }

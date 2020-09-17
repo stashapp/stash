@@ -64,3 +64,11 @@ func (jp *jsonUtils) getScene(checksum string) (*jsonschema.Scene, error) {
 func (jp *jsonUtils) saveScene(checksum string, scene *jsonschema.Scene) error {
 	return jsonschema.SaveSceneFile(jp.json.SceneJSONPath(checksum), scene)
 }
+
+func (jp *jsonUtils) getImage(checksum string) (*jsonschema.Image, error) {
+	return jsonschema.LoadImageFile(jp.json.ImageJSONPath(checksum))
+}
+
+func (jp *jsonUtils) saveImage(checksum string, image *jsonschema.Image) error {
+	return jsonschema.SaveImageFile(jp.json.ImageJSONPath(checksum), image)
+}
