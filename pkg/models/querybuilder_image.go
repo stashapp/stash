@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -146,8 +147,8 @@ func (qb *ImageQueryBuilder) ResetOCounter(id int, tx *sqlx.Tx) (int, error) {
 	return image.OCounter, nil
 }
 
-func (qb *ImageQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
-	return executeDeleteQuery("images", id, tx)
+func (qb *ImageQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
+	return executeDeleteQuery("images", strconv.Itoa(id), tx)
 }
 func (qb *ImageQueryBuilder) Find(id int) (*Image, error) {
 	return qb.find(id, nil)

@@ -23,6 +23,11 @@ func isVideo(pathname string) bool {
 	return matchExtension(pathname, vidExt)
 }
 
+func isImage(pathname string) bool {
+	imgExt := config.GetImageExtensions()
+	return matchExtension(pathname, imgExt)
+}
+
 type TaskStatus struct {
 	Status     JobStatus
 	Progress   float64

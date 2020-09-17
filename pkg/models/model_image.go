@@ -13,7 +13,7 @@ type Image struct {
 	Title     sql.NullString  `db:"title" json:"title"`
 	Rating    sql.NullInt64   `db:"rating" json:"rating"`
 	OCounter  int             `db:"o_counter" json:"o_counter"`
-	Size      sql.NullString  `db:"size" json:"size"`
+	Size      sql.NullInt64   `db:"size" json:"size"`
 	Width     sql.NullInt64   `db:"width" json:"width"`
 	Height    sql.NullInt64   `db:"height" json:"height"`
 	StudioID  sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
@@ -29,7 +29,7 @@ type ImagePartial struct {
 	Path      *string          `db:"path" json:"path"`
 	Title     *sql.NullString  `db:"title" json:"title"`
 	Rating    *sql.NullInt64   `db:"rating" json:"rating"`
-	Size      *sql.NullString  `db:"size" json:"size"`
+	Size      *sql.NullInt64   `db:"size" json:"size"`
 	Width     *sql.NullInt64   `db:"width" json:"width"`
 	Height    *sql.NullInt64   `db:"height" json:"height"`
 	StudioID  *sql.NullInt64   `db:"studio_id,omitempty" json:"studio_id"`
@@ -49,7 +49,7 @@ func (s Image) GetTitle() string {
 
 // ImageFileType represents the file metadata for an image.
 type ImageFileType struct {
-	Size   *string `graphql:"size" json:"size"`
-	Width  *int    `graphql:"width" json:"width"`
-	Height *int    `graphql:"height" json:"height"`
+	Size   *int `graphql:"size" json:"size"`
+	Width  *int `graphql:"width" json:"width"`
+	Height *int `graphql:"height" json:"height"`
 }

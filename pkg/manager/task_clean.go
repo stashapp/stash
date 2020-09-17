@@ -17,6 +17,7 @@ import (
 type CleanTask struct {
 	Scene               *models.Scene
 	Gallery             *models.Gallery
+	Image               *models.Image
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
@@ -29,6 +30,10 @@ func (t *CleanTask) Start(wg *sync.WaitGroup) {
 
 	if t.Gallery != nil && t.shouldCleanGallery(t.Gallery) {
 		t.deleteGallery(t.Gallery.ID)
+	}
+
+	if t.Image != nil && t.shouldCleanImage(t.Image) {
+		t.deleteImage(t.Image.ID)
 	}
 }
 
@@ -84,6 +89,19 @@ func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 	return false
 }
 
+func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
+	if t.shouldClean(s.Path) {
+		return true
+	}
+
+	if !matchExtension(s.Path, config.GetImageExtensions()) {
+		logger.Infof("File extension does not match image extensions. Cleaning: \"%s\"", s.Path)
+		return true
+	}
+
+	return false
+}
+
 func (t *CleanTask) deleteScene(sceneID int) {
 	ctx := context.TODO()
 	qb := models.NewSceneQueryBuilder()
@@ -127,6 +145,30 @@ func (t *CleanTask) deleteGallery(galleryID int) {
 	pathErr := os.RemoveAll(paths.GetGthumbDir(t.Gallery.Checksum)) // remove cache dir of gallery
 	if pathErr != nil {
 		logger.Errorf("Error deleting gallery directory from cache: %s", pathErr)
+	}
+}
+
+func (t *CleanTask) deleteImage(imageID int) {
+	ctx := context.TODO()
+	qb := models.NewImageQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+
+	err := qb.Destroy(imageID, tx)
+
+	if err != nil {
+		logger.Errorf("Error deleting image from database: %s", err.Error())
+		tx.Rollback()
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		logger.Errorf("Error deleting image from database: %s", err.Error())
+		return
+	}
+
+	pathErr := os.Remove(paths.GetImageThumbPath(t.Image.Checksum, models.DefaultGthumbWidth)) // remove cache dir of gallery
+	if pathErr != nil {
+		logger.Errorf("Error deleting thumbnail image from cache: %s", pathErr)
 	}
 }
 

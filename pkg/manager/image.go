@@ -2,7 +2,6 @@ package manager
 
 import (
 	"os"
-	"strconv"
 
 	"github.com/jmoiron/sqlx"
 
@@ -33,7 +32,7 @@ func DestroyImage(imageID int, tx *sqlx.Tx) error {
 		return err
 	}
 
-	if err := qb.Destroy(strconv.Itoa(imageID), tx); err != nil {
+	if err := qb.Destroy(imageID, tx); err != nil {
 		return err
 	}
 

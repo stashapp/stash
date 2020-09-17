@@ -323,7 +323,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 
 	imageID, _ := strconv.Atoi(input.ID)
 	image, err := qb.Find(imageID)
-	err = qb.Destroy(input.ID, tx)
+	err = qb.Destroy(imageID, tx)
 
 	if err != nil {
 		tx.Rollback()
@@ -361,7 +361,7 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 		if image != nil {
 			images = append(images, image)
 		}
-		err = qb.Destroy(id, tx)
+		err = qb.Destroy(imageID, tx)
 
 		if err != nil {
 			tx.Rollback()

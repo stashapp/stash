@@ -4,7 +4,7 @@ CREATE TABLE `images` (
   `checksum` varchar(255) not null,
   `title` varchar(255),
   `rating` tinyint,
-  `size` varchar(255),
+  `size` integer,
   `width` tinyint,
   `height` tinyint,
   `studio_id` integer,

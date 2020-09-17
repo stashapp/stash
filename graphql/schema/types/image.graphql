@@ -16,7 +16,7 @@ type Image {
 }
 
 type ImageFileType {
-  size: String
+  size: Int
   width: Int
   height: Int
 }

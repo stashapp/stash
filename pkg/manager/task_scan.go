@@ -12,8 +12,10 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
+	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -30,6 +32,8 @@ func (t *ScanTask) Start(wg *sync.WaitGroup) {
 		t.scanGallery()
 	} else if isVideo(t.FilePath) {
 		t.scanScene()
+	} else if isImage(t.FilePath) {
+		t.scanImage()
 	}
 
 	wg.Done()
@@ -373,6 +377,102 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 	}
 }
 
+func (t *ScanTask) scanImage() {
+	qb := models.NewImageQueryBuilder()
+	i, _ := qb.FindByPath(t.FilePath)
+	if i != nil {
+		// We already have this item in the database
+		// check for thumbnails
+		t.generateThumbnail(i)
+
+		return
+	}
+
+	// Ignore directories.
+	if isDir, _ := utils.DirExists(t.FilePath); isDir {
+		return
+	}
+
+	var checksum string
+
+	logger.Infof("%s not found.  Calculating checksum...", t.FilePath)
+	checksum, err := t.calculateChecksum()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
+	// check for scene by checksum and oshash - MD5 should be
+	// redundant, but check both
+	i, _ = qb.FindByChecksum(checksum)
+
+	ctx := context.TODO()
+	tx := database.DB.MustBeginTx(ctx, nil)
+	if i != nil {
+		exists, _ := utils.FileExists(i.Path)
+		if exists {
+			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, i.Path)
+		} else {
+			logger.Infof("%s already exists.  Updating path...", t.FilePath)
+			imagePartial := models.ImagePartial{
+				ID:   i.ID,
+				Path: &t.FilePath,
+			}
+			_, err = qb.Update(imagePartial, tx)
+		}
+	} else {
+		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
+		currentTime := time.Now()
+		newImage := models.Image{
+			Checksum:  checksum,
+			Path:      t.FilePath,
+			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		}
+		err = image.SetFileDetails(&newImage)
+		if err == nil {
+			i, err = qb.Create(newImage, tx)
+		}
+	}
+
+	if err != nil {
+		logger.Error(err.Error())
+		_ = tx.Rollback()
+		return
+	} else if err := tx.Commit(); err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
+	t.generateThumbnail(i)
+}
+
+func (t *ScanTask) generateThumbnail(i *models.Image) {
+	thumbPath := paths.GetImageThumbPath(i.Checksum, models.DefaultGthumbWidth)
+	exists, _ := utils.FileExists(thumbPath)
+	if exists {
+		logger.Debug("Thumbnail already exists for this path... skipping")
+		return
+	}
+
+	srcImage, err := image.GetSourceImage(i)
+	if err != nil {
+		logger.Errorf("error reading image %s: %s", i.Path, err.Error())
+		return
+	}
+
+	data, err := image.GetThumbnail(srcImage, models.DefaultGthumbWidth)
+	if err != nil {
+		logger.Errorf("error getting thumbnail for image %s: %s", i.Path, err.Error())
+		return
+	}
+
+	err = utils.WriteFile(thumbPath, data)
+	if err != nil {
+		logger.Errorf("error writing thumbnail for image %s: %s", i.Path, err)
+	}
+}
+
 func (t *ScanTask) calculateChecksum() (string, error) {
 	logger.Infof("Calculating checksum for %s...", t.FilePath)
 	checksum, err := utils.MD5FromFilePath(t.FilePath)
@@ -385,7 +485,7 @@ func (t *ScanTask) calculateChecksum() (string, error) {
 
 func (t *ScanTask) doesPathExist() bool {
 	vidExt := config.GetVideoExtensions()
-	//imgExt := config.GetImageExtensions()
+	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
 
 	if matchExtension(t.FilePath, gExt) {
@@ -398,6 +498,12 @@ func (t *ScanTask) doesPathExist() bool {
 		qb := models.NewSceneQueryBuilder()
 		scene, _ := qb.FindByPath(t.FilePath)
 		if scene != nil {
+			return true
+		}
+	} else if matchExtension(t.FilePath, imgExt) {
+		qb := models.NewImageQueryBuilder()
+		i, _ := qb.FindByPath(t.FilePath)
+		if i != nil {
 			return true
 		}
 	}

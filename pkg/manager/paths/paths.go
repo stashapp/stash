@@ -10,6 +10,7 @@ type Paths struct {
 	Generated *generatedPaths
 
 	Gallery      *galleryPaths
+	Image        *imagePaths
 	Scene        *scenePaths
 	SceneMarkers *sceneMarkerPaths
 }
@@ -19,6 +20,7 @@ func NewPaths() *Paths {
 	p.Generated = newGeneratedPaths()
 
 	p.Gallery = newGalleryPaths()
+	p.Image = newImagePaths()
 	p.Scene = newScenePaths(p)
 	p.SceneMarkers = newSceneMarkerPaths(p)
 	return &p
