@@ -35,6 +35,29 @@ func (_m *PerformerReaderWriter) All() ([]*models.Performer, error) {
 	return r0, r1
 }
 
+// FindByImageID provides a mock function with given fields: imageID
+func (_m *PerformerReaderWriter) FindByImageID(imageID int) ([]*models.Performer, error) {
+	ret := _m.Called(imageID)
+
+	var r0 []*models.Performer
+	if rf, ok := ret.Get(0).(func(int) []*models.Performer); ok {
+		r0 = rf(imageID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Performer)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(imageID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindBySceneID provides a mock function with given fields: sceneID
 func (_m *PerformerReaderWriter) FindBySceneID(sceneID int) ([]*models.Performer, error) {
 	ret := _m.Called(sceneID)
