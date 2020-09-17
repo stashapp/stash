@@ -33,6 +33,7 @@
     "@fortawesome/react-fontawesome": "^0.1.11",
     "@types/mousetrap": "^1.6.3",
     "axios": "0.20.0",
+    "base64-blob": "^1.4.1",
     "bootstrap": "^4.5.2",
     "classnames": "^2.2.6",
     "flag-icon-css": "^3.5.0",

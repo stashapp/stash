@@ -111,8 +111,8 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		var stashIDJoins []models.StashID
 		for _, stashID := range input.StashIds {
 			newJoin := models.StashID{
-				StashID:     stashID.StashID,
-				Endpoint:    stashID.Endpoint,
+				StashID:  stashID.StashID,
+				Endpoint: stashID.Endpoint,
 			}
 			stashIDJoins = append(stashIDJoins, newJoin)
 		}
@@ -233,8 +233,8 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		var stashIDJoins []models.StashID
 		for _, stashID := range input.StashIds {
 			newJoin := models.StashID{
-				StashID:     stashID.StashID,
-				Endpoint:    stashID.Endpoint,
+				StashID:  stashID.StashID,
+				Endpoint: stashID.Endpoint,
 			}
 			stashIDJoins = append(stashIDJoins, newJoin)
 		}

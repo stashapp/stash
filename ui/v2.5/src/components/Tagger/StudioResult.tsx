@@ -121,14 +121,12 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
         </div>
         <div className="row">
           <strong className="col-2">URL:</strong>
-          <span className="col-10">
-            {studio?.url ?? ''}
-          </span>
+          <span className="col-10">{studio?.url ?? ""}</span>
         </div>
         <div className="row">
           <strong className="col-2">Logo:</strong>
           <span className="col-10">
-            <img src={studio?.image ?? ''} alt="" />
+            <img src={studio?.image ?? ""} alt="" />
           </span>
         </div>
       </Modal>

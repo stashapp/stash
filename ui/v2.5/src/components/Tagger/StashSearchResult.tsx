@@ -1,27 +1,14 @@
 import React, { useCallback, useState } from "react";
-import { ApolloClient } from "apollo-client";
-import { NormalizedCacheObject } from "apollo-cache-inmemory";
-import { blobToBase64 } from "base64-blob";
-import { loader } from "graphql.macro";
 import cx from "classnames";
 import { Button } from "react-bootstrap";
 import { uniq } from "lodash";
+import { blobToBase64 } from "base64-blob";
 
-import { FingerprintAlgorithm } from "src/definitions-box/globalTypes";
-import { getCountryByISO } from "src/utils/country";
 import * as GQL from "src/core/generated-graphql";
-import {
-  SubmitFingerprintVariables,
-  SubmitFingerprint,
-} from "src/definitions-box/SubmitFingerprint";
 import { LoadingIndicator, SuccessIcon } from "src/components/Shared";
 import PerformerResult, { IPerformerOperation } from "./PerformerResult";
 import StudioResult, { IStudioOperation } from "./StudioResult";
-import {
-  IStashBoxScene,
-  IStashBoxPerformer,
-  IStashBoxStudio,
-} from "./utils";
+import { IStashBoxScene, IStashBoxPerformer, IStashBoxStudio } from "./utils";
 import {
   useCreateTag,
   useCreatePerformer,
@@ -29,8 +16,6 @@ import {
   useUpdatePerformerStashID,
   useUpdateStudioStashID,
 } from "./queries";
-
-const SubmitFingerprintMutation = loader("src/queries/submitFingerprint.gql");
 
 const getDurationStatus = (
   scene: IStashBoxScene,
@@ -52,7 +37,10 @@ const getDurationStatus = (
   return <div>Duration off by {Math.floor(diff)}s</div>;
 };
 
-const getFingerprintStatus = (scene: IStashBoxScene, stashChecksum?: string) => {
+const getFingerprintStatus = (
+  scene: IStashBoxScene,
+  stashChecksum?: string
+) => {
   if (scene.fingerprints.some((f) => f.hash === stashChecksum))
     return (
       <div className="font-weight-bold">
@@ -64,24 +52,15 @@ const getFingerprintStatus = (scene: IStashBoxScene, stashChecksum?: string) => 
 
 interface IStashSearchResultProps {
   scene: IStashBoxScene;
-  stashScene: Partial<GQL.Scene>;
+  stashScene: GQL.SlimSceneDataFragment;
   isActive: boolean;
   setActive: () => void;
   showMales: boolean;
-  setScene: (scene: Partial<GQL.Scene>) => void;
+  setScene: (scene: GQL.SlimSceneDataFragment) => void;
   setCoverImage: boolean;
   tagOperation: string;
-  client?: ApolloClient<NormalizedCacheObject>;
   endpoint: string;
 }
-
-const titleCase = (str?: string) => {
-  if (!str) return "";
-  return (str ?? "")
-    .split(" ")
-    .map((w) => w[0].toUpperCase() + w.substr(1).toLowerCase())
-    .join(" ");
-};
 
 const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   scene,
@@ -92,7 +71,6 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   setScene,
   setCoverImage,
   tagOperation,
-  client,
   endpoint,
 }) => {
   const [studio, setStudio] = useState<IStudioOperation>();
@@ -375,8 +353,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
   const saveEnabled =
     Object.keys(performers ?? []).length ===
-      scene.performers.filter((p) => p.gender !== "MALE" || showMales)
-        .length &&
+      scene.performers.filter((p) => p.gender !== "MALE" || showMales).length &&
     Object.keys(performers ?? []).every(
       (id) =>
         performers?.[id].create ||
@@ -408,8 +385,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               {scene?.studio?.name} • {scene?.date}
             </h5>
             <div>
-              Performers:{" "}
-              {scene?.performers?.map((p) => p.name).join(", ")}
+              Performers: {scene?.performers?.map((p) => p.name).join(", ")}
             </div>
             {getDurationStatus(scene, stashScene.file?.duration)}
             {getFingerprintStatus(

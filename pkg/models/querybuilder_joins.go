@@ -367,7 +367,7 @@ func (qb *JoinsQueryBuilder) DestroyScenesMarkers(sceneID int, tx *sqlx.Tx) erro
 }
 
 func (qb *JoinsQueryBuilder) CreateStashIDs(entityName string, entityID int, newJoins []StashID, tx *sqlx.Tx) error {
-  query := "INSERT INTO "+entityName+"_stash_ids ("+entityName+"_id, endpoint, stash_id) VALUES (?, ?, ?)"
+	query := "INSERT INTO " + entityName + "_stash_ids (" + entityName + "_id, endpoint, stash_id) VALUES (?, ?, ?)"
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.Exec(query, entityID, join.Endpoint, join.StashID)

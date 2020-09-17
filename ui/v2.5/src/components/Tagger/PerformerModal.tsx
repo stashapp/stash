@@ -109,9 +109,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           {performer?.gender !== GQL.GenderEnum.Male && (
             <div className="row no-gutters">
               <strong className="col-6">Fake Tits:</strong>
-              <span className="col-6 text-truncate">
-                {performer.fake_tits}
-              </span>
+              <span className="col-6 text-truncate">{performer.fake_tits}</span>
             </div>
           )}
           <div className="row no-gutters">
@@ -122,15 +120,11 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Tattoos:</strong>
-            <span className="col-6 text-truncate">
-              {performer.tattoos}
-            </span>
+            <span className="col-6 text-truncate">{performer.tattoos}</span>
           </div>
           <div className="row no-gutters ">
             <strong className="col-6">Piercings:</strong>
-            <span className="col-6 text-truncate">
-              {performer.piercings}
-            </span>
+            <span className="col-6 text-truncate">{performer.piercings}</span>
           </div>
         </div>
         {images.length > 0 && (

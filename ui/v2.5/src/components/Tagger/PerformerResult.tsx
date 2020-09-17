@@ -5,7 +5,7 @@ import cx from "classnames";
 import { SuccessIcon, PerformerSelect } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { ValidTypes } from "src/components/Shared/Select";
-import { sortImageURLs, IStashBoxPerformer } from "./utils";
+import { IStashBoxPerformer } from "./utils";
 
 import PerformerModal from "./PerformerModal";
 

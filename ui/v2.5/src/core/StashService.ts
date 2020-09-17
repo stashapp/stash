@@ -635,10 +635,22 @@ export const stringToGender = (value?: string, caseInsensitive?: boolean) => {
 
 export const getGenderStrings = () => Array.from(stringGenderMap.keys());
 
-export const stashBoxQuery = (searchVal: string, stashBoxIndex: number) => (
-	client
-		?.query<GQL.QueryStashBoxSceneQuery, GQL.QueryStashBoxSceneQueryVariables>({
-			query: GQL.QueryStashBoxSceneDocument,
-			variables: { input: { q: searchVal, stash_box_index: stashBoxIndex } },
-		})
-);
+export const stashBoxQuery = (searchVal: string, stashBoxIndex: number) =>
+  client?.query<
+    GQL.QueryStashBoxSceneQuery,
+    GQL.QueryStashBoxSceneQueryVariables
+  >({
+    query: GQL.QueryStashBoxSceneDocument,
+    variables: { input: { q: searchVal, stash_box_index: stashBoxIndex } },
+  });
+
+export const stashBoxBatchQuery = (sceneIds: string[], stashBoxIndex: number) =>
+  client?.query<
+    GQL.QueryStashBoxSceneQuery,
+    GQL.QueryStashBoxSceneQueryVariables
+  >({
+    query: GQL.QueryStashBoxSceneDocument,
+    variables: {
+      input: { scene_ids: sceneIds, stash_box_index: stashBoxIndex },
+    },
+  });

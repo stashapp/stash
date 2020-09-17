@@ -9,3 +9,12 @@ input StashBoxInput {
     api_key: String!
     name: String!
 }
+type StashID {
+  endpoint: String!
+  stash_id: String!
+}
+
+input StashIDInput {
+  endpoint: String!
+  stash_id: String!
+}

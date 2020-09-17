@@ -21,7 +21,8 @@ import { useToast } from "src/hooks";
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
   | GQL.Tag
-  | GQL.SlimStudioDataFragment;
+  | GQL.SlimStudioDataFragment
+  | GQL.SlimMovieDataFragment;
 type Option = { value: string; label: string };
 
 interface ITypeProps {

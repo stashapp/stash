@@ -9,24 +9,16 @@ import {
 } from "react-bootstrap";
 import localForage from "localforage";
 
-import { FingerprintAlgorithm } from "src/definitions-box/globalTypes";
 import * as GQL from "src/core/generated-graphql";
 import { Icon, LoadingIndicator } from "src/components/Shared";
-import { stashBoxQuery, useConfiguration } from "src/core/StashService";
-
 import {
-  FindSceneByFingerprintVariables,
-  FindSceneByFingerprint,
-  FindSceneByFingerprint_findSceneByFingerprint as FingerprintResult,
-} from "src/definitions-box/FindSceneByFingerprint";
-import { Me } from "src/definitions-box/Me";
-import { loader } from "graphql.macro";
-import StashSearchResult from "./StashSearchResult";
-import { useStashBoxClient } from "./client";
-import { parsePath, selectScenes, IStashBoxScene } from "./utils";
+  stashBoxQuery,
+  stashBoxBatchQuery,
+  useConfiguration,
+} from "src/core/StashService";
 
-const FindSceneByFingerprintQuery = loader("src/queries/searchFingerprint.gql");
-const MeQuery = loader("src/queries/me.gql");
+import StashSearchResult from "./StashSearchResult";
+import { parsePath, selectScenes, IStashBoxScene } from "./utils";
 
 const DEFAULT_BLACKLIST = [
   "\\sXXX\\s",
@@ -117,14 +109,18 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
   const [taggedScenes, setTaggedScenes] = useState<
     Record<string, Partial<GQL.SlimSceneDataFragment>>
   >({});
-  const [fingerprints, setFingerprints] = useState<
-    Record<string, FingerprintResult | null>
-  >({});
   const [loadingFingerprints, setLoadingFingerprints] = useState(false);
+  const [fingerprints, setFingerprints] = useState<
+    Record<string, GQL.ScrapedScene | null>
+  >({});
   const [showConfig, setShowConfig] = useState(false);
-  const [user, setUser] = useState<Me | null | undefined>();
   const [credentials, setCredentials] = useState({ endpoint: "", api_key: "" });
-  const authFailure = user === undefined;
+
+  const selectedEndpointIndex = stashConfig.data?.configuration.general.stashBoxes.findIndex(
+    (s) => s.endpoint === credentials.endpoint
+  );
+  const authFailure =
+    selectedEndpointIndex === undefined || selectedEndpointIndex === -1;
 
   const [config, setConfig] = useState<ITaggerConfig>({
     blacklist: DEFAULT_BLACKLIST,
@@ -179,34 +175,18 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
     }
   };
 
-  const client = useStashBoxClient(credentials?.endpoint, credentials?.api_key);
-  useEffect(() => {
-    if (client)
-      client
-        .query<Me>({
-          query: MeQuery,
-          errorPolicy: "ignore",
-          fetchPolicy: "no-cache",
-        })
-        .then((result) => setUser(result.data))
-        .catch(() => setUser(null));
-  }, [client]);
-
-
-  const selectedEndpointIndex = stashConfig.data?.configuration.general.stashBoxes.findIndex(s => s.endpoint === credentials.endpoint);
-
   const doBoxSearch = (sceneID: string, searchVal: string) => {
-    if (selectedEndpointIndex === undefined || selectedEndpointIndex === -1) return;
+    if (selectedEndpointIndex === undefined || selectedEndpointIndex === -1)
+      return;
 
-		stashBoxQuery(searchVal, selectedEndpointIndex)
-      .then((queryData) => {
-        const s = selectScenes(queryData.data.queryStashBoxScene);
-        setSearchResults({
-          ...searchResults,
-          [sceneID]: s
-        });
-        setLoading(false);
+    stashBoxQuery(searchVal, selectedEndpointIndex).then((queryData) => {
+      const s = selectScenes(queryData.data?.queryStashBoxScene);
+      setSearchResults({
+        ...searchResults,
+        [sceneID]: s,
       });
+      setLoading(false);
+    });
 
     setLoading(true);
   };
@@ -237,44 +217,23 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
   };
 
   const handleFingerprintSearch = async () => {
+    if (selectedEndpointIndex === undefined || selectedEndpointIndex === -1)
+      return;
+
     setLoadingFingerprints(true);
     const newFingerprints = { ...fingerprints };
 
-    await Promise.all(
-      scenes
-        .filter(
-          (s) => fingerprints[s.id] === undefined && s.stash_ids.length === 0
-        )
-        .map((s) => {
-          let hash: string;
-          let algorithm: FingerprintAlgorithm;
-          if (s.oshash) {
-            hash = s.oshash;
-            algorithm = FingerprintAlgorithm.OSHASH;
-          } else if (s.checksum) {
-            hash = s.checksum;
-            algorithm = FingerprintAlgorithm.MD5;
-          } else {
-            return null;
-          }
-          return client
-            ?.query<FindSceneByFingerprint, FindSceneByFingerprintVariables>({
-              query: FindSceneByFingerprintQuery,
-              variables: {
-                fingerprint: {
-                  hash,
-                  algorithm,
-                },
-              },
-            })
-            .then((res) => {
-              newFingerprints[s.id] =
-                res.data.findSceneByFingerprint.length > 0
-                  ? res.data.findSceneByFingerprint[0]
-                  : null;
-            });
-        })
-    );
+    const sceneIDs = scenes
+      .filter(
+        (s) => fingerprints[s.id] === undefined && s.stash_ids.length === 0
+      )
+      .map((s) => s.id);
+
+    stashBoxBatchQuery(sceneIDs, selectedEndpointIndex).then((results) => {
+      results.data?.queryStashBoxScene.forEach((_scene) => {
+        // TODO: Set scene in fingerprintDict based on fingerprint or id
+      });
+    });
 
     setFingerprints(newFingerprints);
     setLoadingFingerprints(false);
@@ -453,22 +412,6 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
                   )}
                 </Form.Control>
               </Form.Group>
-
-              <div className="row">
-                {user?.me?.id ? (
-                  <h5 className="text-success col">
-                    Connection successful. You are logged in as{" "}
-                    <b>{user.me.name}</b>.
-                  </h5>
-                ) : (
-                  <h5 className="text-danger col">
-                    Connection failed.{" "}
-                    <a href="/settings?tab=configuration">
-                      Please check that the endpoint and API key are correct.
-                    </a>
-                  </h5>
-                )}
-              </div>
             </div>
           </div>
         </Card>
@@ -581,7 +524,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
                 </div>
               </div>
               {searchResults[scene.id] === null && <div>No results found.</div>}
-              { /*
+              {/*
               TODO
               {fingerprintMatch &&
                 credentials.endpoint &&
@@ -648,7 +591,6 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
                               setCoverImage={config.setCoverImage}
                               tagOperation={config.tagOperation}
                               setScene={handleTaggedScene}
-                              client={client}
                               endpoint={credentials.endpoint}
                             />
                           )
