@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/facebookgo/symwalk"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/image"
@@ -517,7 +519,7 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 	excludeVid := config.GetExcludes()
 	excludeImg := config.GetImageExcludes()
 
-	return filepath.Walk(s.Path, func(path string, info os.FileInfo, err error) error {
+	return symwalk.Walk(s.Path, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
