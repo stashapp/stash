@@ -16,8 +16,7 @@
     "format": "prettier --write \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\"",
     "format-check": "prettier --check \"src/**/!(generated-graphql).{js,jsx,ts,tsx,scss}\"",
     "gqlgen": "gql-gen --config codegen.yml",
-    "extract": "NODE_ENV=development extract-messages -l=en,de -o src/locale -d en --flat false 'src/**/!(*.test).tsx'",
-    "generate": "apollo client:codegen --target typescript --outputFlat src/definitions-box --no-addTypename --includes src/queries/*"
+    "extract": "NODE_ENV=development extract-messages -l=en,de -o src/locale -d en --flat false 'src/**/!(*.test).tsx'"
   },
   "browserslist": [
     ">0.2%",
