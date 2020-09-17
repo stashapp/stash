@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/types"
 	"strconv"
+	"strings"
 
 	"github.com/99designs/gqlgen/internal/code"
 )
@@ -15,12 +16,13 @@ type Import struct {
 }
 
 type Imports struct {
-	imports []*Import
-	destDir string
+	imports  []*Import
+	destDir  string
+	packages *code.Packages
 }
 
 func (i *Import) String() string {
-	if i.Alias == i.Name {
+	if strings.HasSuffix(i.Path, i.Alias) {
 		return strconv.Quote(i.Path)
 	}
 
@@ -48,7 +50,7 @@ func (s *Imports) Reserve(path string, aliases ...string) (string, error) {
 		return "", nil
 	}
 
-	name := code.NameForPackage(path)
+	name := s.packages.NameForPackage(path)
 	var alias string
 	if len(aliases) != 1 {
 		alias = name
@@ -93,7 +95,7 @@ func (s *Imports) Lookup(path string) string {
 	}
 
 	imp := &Import{
-		Name: code.NameForPackage(path),
+		Name: s.packages.NameForPackage(path),
 		Path: path,
 	}
 	s.imports = append(s.imports, imp)
