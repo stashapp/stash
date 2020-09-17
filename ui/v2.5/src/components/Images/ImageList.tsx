@@ -10,11 +10,57 @@ import { useImagesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { showWhenSelected } from "src/hooks/ListHook";
-import { WallPanel } from "../Wall/WallPanel";
 import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import { ImageExportDialog } from "./ImageExportDialog";
+import FsLightbox from "fslightbox-react";
+import "flexbin/flexbin.css";
+import * as GQL from "src/core/generated-graphql";
+import { TextUtils } from "src/utils";
+
+interface IImageWallProps {
+  images: GQL.SlimImageDataFragment[]
+}
+
+const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
+  const [lightboxToggle, setLightboxToggle] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const openImage = (index: number) => {
+    setCurrentIndex(index);
+    setLightboxToggle(!lightboxToggle);
+  };
+
+  const photos = images.map((image) => image.paths.image ?? "");
+  const thumbs = images.map((image, index) => (
+    <div
+      role="link"
+      tabIndex={index}
+      key={index}
+      onClick={() => openImage(index)}
+      onKeyPress={() => openImage(index)}
+    >
+      <img
+        src={image.paths.thumbnail ?? ""}
+        loading="lazy"
+        className="gallery-image"
+        alt={image.title ?? TextUtils.fileNameFromPath(image.path)}
+      />
+    </div>
+  ));
+
+  return (
+    <div className="gallery">
+      <div className="flexbin">{thumbs}</div>
+      <FsLightbox
+        sourceIndex={currentIndex}
+        toggler={lightboxToggle}
+        sources={photos}
+      />
+    </div>
+  );
+};
 
 interface IImageList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -185,7 +231,7 @@ export const ImageList: React.FC<IImageList> = ({
     //   return <ImageListTable images={result.data.findImages.images} />;
     // }
     if (filter.displayMode === DisplayMode.Wall) {
-      return <WallPanel images={result.data.findImages.images} />;
+      return <ImageWall images={result.data.findImages.images} />;
     }
   }
 
