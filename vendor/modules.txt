@@ -1,4 +1,4 @@
-# github.com/99designs/gqlgen v0.9.0
+# github.com/99designs/gqlgen v0.12.2
 github.com/99designs/gqlgen
 github.com/99designs/gqlgen/api
 github.com/99designs/gqlgen/cmd
@@ -7,17 +7,34 @@ github.com/99designs/gqlgen/codegen/config
 github.com/99designs/gqlgen/codegen/templates
 github.com/99designs/gqlgen/complexity
 github.com/99designs/gqlgen/graphql
+github.com/99designs/gqlgen/graphql/errcode
+github.com/99designs/gqlgen/graphql/executor
+github.com/99designs/gqlgen/graphql/handler
+github.com/99designs/gqlgen/graphql/handler/extension
+github.com/99designs/gqlgen/graphql/handler/lru
+github.com/99designs/gqlgen/graphql/handler/transport
 github.com/99designs/gqlgen/graphql/introspection
+github.com/99designs/gqlgen/graphql/playground
 github.com/99designs/gqlgen/handler
 github.com/99designs/gqlgen/internal/code
 github.com/99designs/gqlgen/internal/imports
+github.com/99designs/gqlgen/internal/rewrite
 github.com/99designs/gqlgen/plugin
+github.com/99designs/gqlgen/plugin/federation
 github.com/99designs/gqlgen/plugin/modelgen
 github.com/99designs/gqlgen/plugin/resolvergen
 github.com/99designs/gqlgen/plugin/servergen
 # github.com/BurntSushi/toml v0.3.1
 github.com/BurntSushi/toml
-# github.com/agnivade/levenshtein v1.0.1
+# github.com/Yamashou/gqlgenc v0.0.0-20200902035953-4dbef3551953
+github.com/Yamashou/gqlgenc
+github.com/Yamashou/gqlgenc/client
+github.com/Yamashou/gqlgenc/clientgen
+github.com/Yamashou/gqlgenc/config
+github.com/Yamashou/gqlgenc/generator
+github.com/Yamashou/gqlgenc/graphqljson
+github.com/Yamashou/gqlgenc/introspection
+# github.com/agnivade/levenshtein v1.1.0
 github.com/agnivade/levenshtein
 # github.com/antchfx/htmlquery v1.2.3
 github.com/antchfx/htmlquery
@@ -75,6 +92,8 @@ github.com/chromedp/cdproto/webauthn
 github.com/chromedp/chromedp
 github.com/chromedp/chromedp/device
 github.com/chromedp/chromedp/kb
+# github.com/cpuguy83/go-md2man/v2 v2.0.0
+github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/disintegration/imaging v1.6.0
@@ -192,6 +211,9 @@ github.com/mailru/easyjson/jwriter
 github.com/markbates/oncer
 # github.com/markbates/safe v1.0.1
 github.com/markbates/safe
+# github.com/matryer/moq v0.0.0-20200106131100-75d0ddfc0007
+github.com/matryer/moq
+github.com/matryer/moq/pkg/moq
 # github.com/mattn/go-sqlite3 v1.13.0
 github.com/mattn/go-sqlite3
 # github.com/mitchellh/go-homedir v1.1.0
@@ -206,7 +228,7 @@ github.com/modern-go/reflect2
 github.com/natefinch/pie
 # github.com/pelletier/go-toml v1.2.0
 github.com/pelletier/go-toml
-# github.com/pkg/errors v0.8.1
+# github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
@@ -221,10 +243,14 @@ github.com/rs/zerolog
 github.com/rs/zerolog/internal/cbor
 github.com/rs/zerolog/internal/json
 github.com/rs/zerolog/log
+# github.com/russross/blackfriday/v2 v2.0.1
+github.com/russross/blackfriday/v2
 # github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
 github.com/shurcooL/graphql
 github.com/shurcooL/graphql/ident
 github.com/shurcooL/graphql/internal/jsonutil
+# github.com/shurcooL/sanitized_anchor_name v1.0.0
+github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
 # github.com/spf13/afero v1.2.0
@@ -253,26 +279,27 @@ github.com/tidwall/gjson
 github.com/tidwall/match
 # github.com/tidwall/pretty v1.0.0
 github.com/tidwall/pretty
-# github.com/urfave/cli v1.20.0
-github.com/urfave/cli
+# github.com/urfave/cli/v2 v2.1.1
+github.com/urfave/cli/v2
 # github.com/vektah/dataloaden v0.2.1-0.20190515034641-a19b9a6e7c9e
 github.com/vektah/dataloaden
 github.com/vektah/dataloaden/pkg/generator
-# github.com/vektah/gqlparser v1.1.2
-github.com/vektah/gqlparser
-github.com/vektah/gqlparser/ast
-github.com/vektah/gqlparser/gqlerror
-github.com/vektah/gqlparser/lexer
-github.com/vektah/gqlparser/parser
-github.com/vektah/gqlparser/validator
-github.com/vektah/gqlparser/validator/rules
+# github.com/vektah/gqlparser/v2 v2.0.1
+github.com/vektah/gqlparser/v2
+github.com/vektah/gqlparser/v2/ast
+github.com/vektah/gqlparser/v2/formatter
+github.com/vektah/gqlparser/v2/gqlerror
+github.com/vektah/gqlparser/v2/lexer
+github.com/vektah/gqlparser/v2/parser
+github.com/vektah/gqlparser/v2/validator
+github.com/vektah/gqlparser/v2/validator/rules
 # github.com/vektra/mockery/v2 v2.2.1
 github.com/vektra/mockery/v2
 github.com/vektra/mockery/v2/cmd
 github.com/vektra/mockery/v2/pkg
 github.com/vektra/mockery/v2/pkg/config
 github.com/vektra/mockery/v2/pkg/logging
-# golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
+# golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/ssh/terminal
@@ -285,10 +312,10 @@ golang.org/x/image/tiff/lzw
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
 golang.org/x/image/webp
-# golang.org/x/mod v0.2.0
+# golang.org/x/mod v0.3.0
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20200602114024-627f9648deb9
+# golang.org/x/net v0.0.0-20200822124328-c89045814202
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
 golang.org/x/net/html/atom
@@ -316,22 +343,27 @@ golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
-# golang.org/x/tools v0.0.0-20200323144430-8dcfad9e016e
+# golang.org/x/tools v0.0.0-20200915031644-64986481280e
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/gcimporter
 golang.org/x/tools/go/internal/packagesdriver
 golang.org/x/tools/go/packages
 golang.org/x/tools/imports
+golang.org/x/tools/internal/event
+golang.org/x/tools/internal/event/core
+golang.org/x/tools/internal/event/keys
+golang.org/x/tools/internal/event/label
 golang.org/x/tools/internal/fastwalk
 golang.org/x/tools/internal/gocommand
 golang.org/x/tools/internal/gopathwalk
 golang.org/x/tools/internal/imports
 golang.org/x/tools/internal/packagesinternal
-# golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
+golang.org/x/tools/internal/typesinternal
+# golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # gopkg.in/ini.v1 v1.51.0
 gopkg.in/ini.v1
-# gopkg.in/yaml.v2 v2.2.4
+# gopkg.in/yaml.v2 v2.3.0
 gopkg.in/yaml.v2

@@ -1,0 +1,65 @@
+# See https://github.com/golangci/golangci-lint/blob/master/.golangci.example.yml
+run:
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - shadow
+  unused:
+    check-exported: true
+  unparam:
+    check-exported: true
+  varcheck:
+    exported-fields: true
+  structcheck:
+    exported-fields: true
+  nakedret:
+    max-func-lines: 1
+
+linters:
+  enable-all: true
+  disable:
+    - testpackage
+    - nestif
+    - godot
+    - wsl
+    - lll
+    - dupl
+    - funlen
+    - gochecknoinits
+    - gochecknoglobals
+    - godox
+    - maligned
+    - gocognit
+    - gocyclo
+    - interfacer
+    - gomnd
+    - goerr113
+  fast: false
+
+issues:
+  exclude-rules:
+    # Test
+    - path: _test\.go
+      text: "Using the variable on range scope `tt` in function literal"
+      linters:
+        - scopelint
+    - path: _test\.go
+      linters:
+        - unused
+        - structcheck
+    - path: introspection/type.go
+      linters:
+        - structcheck # These types fits IntrospectionQuery
+    - path: config/config.go
+      text: "`Query` is unused" # used in main.go
+      linters:
+        - structcheck
+    - path: graphqljson/graphql.go
+      text: "`Extensions` is unused" # used in line 48
+      linters:
+        - structcheck
+    - path: introspection/query.go
+      text: "`Introspection` is unused" # used in config/config.go
+      linters:
+        - varcheck

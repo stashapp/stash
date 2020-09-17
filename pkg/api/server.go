@@ -129,16 +129,12 @@ func Start() {
 		message := fmt.Sprintf("Internal system error. Error <%v>", err)
 		return errors.New(message)
 	})
-	requestMiddleware := handler.RequestMiddleware(func(ctx context.Context, next func(ctx context.Context) []byte) []byte {
-		//api.GetRequestContext(ctx).Variables[]
-		return next(ctx)
-	})
 	websocketUpgrader := handler.WebsocketUpgrader(websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},
 	})
-	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}), recoverFunc, requestMiddleware, websocketUpgrader)
+	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}), recoverFunc, websocketUpgrader)
 
 	r.Handle("/graphql", gqlHandler)
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))

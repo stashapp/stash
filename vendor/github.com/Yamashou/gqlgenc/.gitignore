@@ -1,0 +1,7 @@
+/.gqlgenc.yml
+/models_gen.go
+/**/.graphqlconfig
+/schema.graphql
+/client.go
+/query/
+/.idea/

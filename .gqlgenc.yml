@@ -1,0 +1,13 @@
+model:
+  filename: ./pkg/scraper/stashbox/graphql/generated_models.go
+client:
+  filename: ./pkg/scraper/stashbox/graphql/generated_client.go
+models:
+  Date:
+    model: github.com/99designs/gqlgen/graphql.String
+endpoint:
+  # This points to stashdb.org currently, but can be directed at any stash-box 
+  # instance. It is used for generation only.
+  url: https://stashdb.org/graphql
+query:  
+   - "./graphql/stash-box/*.graphql"
