@@ -1,14 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Form,
-  Col,
-  Row,
-} from "react-bootstrap";
+import { Button, Form, Col, Row } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import {
-  useImageUpdate,
-} from "src/core/StashService";
+import { useImageUpdate } from "src/core/StashService";
 import {
   PerformerSelect,
   TagSelect,
@@ -30,7 +23,7 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
   const Toast = useToast();
   const [title, setTitle] = useState<string>();
   const [rating, setRating] = useState<number>();
-  //const [galleryId, setGalleryId] = useState<string>();
+  // const [galleryId, setGalleryId] = useState<string>();
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [tagIds, setTagIds] = useState<string[]>();
@@ -88,7 +81,7 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
 
     setTitle(state.title ?? undefined);
     setRating(state.rating === null ? NaN : state.rating);
-    //setGalleryId(state?.gallery?.id ?? undefined);
+    // setGalleryId(state?.gallery?.id ?? undefined);
     setStudioId(state?.studio?.id ?? undefined);
     setPerformerIds(perfIds);
     setTagIds(tIds);
@@ -104,7 +97,7 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
       id: props.image.id,
       title,
       rating,
-      //gallery_id: galleryId,
+      // gallery_id: galleryId,
       studio_id: studioId,
       performer_ids: performerIds,
       tag_ids: tagIds,

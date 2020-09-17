@@ -1,7 +1,6 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
-import queryString from "query-string";
 import React, { useEffect, useState } from "react";
-import { useParams, useLocation, useHistory, Link } from "react-router-dom";
+import { useParams, useHistory, Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindImage,
@@ -13,11 +12,11 @@ import { LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
+import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import { ImageFileInfoPanel } from "./ImageFileInfoPanel";
 import { ImageEditPanel } from "./ImageEditPanel";
 import { ImageDetailPanel } from "./ImageDetailPanel";
 import { DeleteImagesDialog } from "../DeleteImagesDialog";
-import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 
 interface IImageParams {
   id?: string;
@@ -25,7 +24,6 @@ interface IImageParams {
 
 export const Image: React.FC = () => {
   const { id = "new" } = useParams<IImageParams>();
-  const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
 
@@ -243,8 +241,8 @@ export const Image: React.FC = () => {
       <div className="image-container">
         <img
           className="m-sm-auto no-gutter image-image"
-          alt={image.title ?? ''}
-          src={image.paths.image ?? ''}
+          alt={image.title ?? ""}
+          src={image.paths.image ?? ""}
         />
       </div>
     </div>

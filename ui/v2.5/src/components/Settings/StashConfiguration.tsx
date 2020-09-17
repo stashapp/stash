@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, Row, Col } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { Row } from "react-bootstrap";
-import { Col } from "react-bootstrap";
 import { FolderSelect } from "../Shared/FolderSelect/FolderSelect";
 
 interface IStashProps {
@@ -13,12 +11,8 @@ interface IStashProps {
   onDelete: () => void;
 }
 
-const Stash: React.FC<IStashProps> = ({
-  index,
-  stash,
-  onSave,
-  onDelete,
-}) => {
+const Stash: React.FC<IStashProps> = ({ index, stash, onSave, onDelete }) => {
+  // eslint-disable-next-line
   const handleInput = (key: string, value: any) => {
     const newObj = {
       ...stash,
@@ -41,7 +35,7 @@ const Stash: React.FC<IStashProps> = ({
           onChange={() => handleInput("excludeVideo", !stash.excludeVideo)}
         />
       </Col>
-      
+
       <Col xs={3}>
         <Form.Check
           id="stash-exclude-image"
@@ -59,7 +53,7 @@ const Stash: React.FC<IStashProps> = ({
           <Icon icon="minus" />
         </Button>
       </Col>
-    </Row>  
+    </Row>
   );
 };
 
@@ -75,23 +69,24 @@ export const StashConfiguration: React.FC<IStashConfigurationProps> = ({
   const [isDisplayingDialog, setIsDisplayingDialog] = useState<boolean>(false);
 
   const handleSave = (index: number, stash: GQL.StashConfig) =>
-    setStashes(
-      stashes.map((s, i) => (i === index ? stash : s))
-    );
+    setStashes(stashes.map((s, i) => (i === index ? stash : s)));
   const handleDelete = (index: number) =>
     setStashes(stashes.filter((s, i) => i !== index));
   const handleAdd = (folder?: string) => {
     setIsDisplayingDialog(false);
-    
+
     if (!folder) {
       return;
     }
 
-    setStashes([...stashes, {
-      path: folder,
-      excludeImage: false,
-      excludeVideo: false,
-    }]);
+    setStashes([
+      ...stashes,
+      {
+        path: folder,
+        excludeImage: false,
+        excludeVideo: false,
+      },
+    ]);
   };
 
   function maybeRenderDialog() {
@@ -99,33 +94,37 @@ export const StashConfiguration: React.FC<IStashConfigurationProps> = ({
       return;
     }
 
-    return <FolderSelect onClose={handleAdd} />
+    return <FolderSelect onClose={handleAdd} />;
   }
 
   return (
     <>
-    {maybeRenderDialog()}
-    <Form.Group>
-      {stashes.length > 0 && (
-        <Row>
-          <h6 className="col-4">Path</h6>
-          <h6 className="col-3">Exclude Video</h6>
-          <h6 className="col-3">Exclude Image</h6>
-        </Row>
-      )}
-      {stashes.map((stash, index) => (
-        <Stash
-          index={index}
-          stash={stash}
-          onSave={(s) => handleSave(index, s)}
-          onDelete={() => handleDelete(index)}
-          key={index}
-        />
-      ))}
-      <Button className="mt-2" variant="secondary" onClick={() => setIsDisplayingDialog(true)}>
-        Add Directory
-      </Button>
-    </Form.Group>
+      {maybeRenderDialog()}
+      <Form.Group>
+        {stashes.length > 0 && (
+          <Row>
+            <h6 className="col-4">Path</h6>
+            <h6 className="col-3">Exclude Video</h6>
+            <h6 className="col-3">Exclude Image</h6>
+          </Row>
+        )}
+        {stashes.map((stash, index) => (
+          <Stash
+            index={index}
+            stash={stash}
+            onSave={(s) => handleSave(index, s)}
+            onDelete={() => handleDelete(index)}
+            key={stash.path}
+          />
+        ))}
+        <Button
+          className="mt-2"
+          variant="secondary"
+          onClick={() => setIsDisplayingDialog(true)}
+        >
+          Add Directory
+        </Button>
+      </Form.Group>
     </>
   );
 };

@@ -363,7 +363,7 @@ export const useImagesDestroy = (input: GQL.ImagesDestroyInput) =>
     update: deleteCache(imageMutationImpactedQueries),
   });
 
-  export const useImageIncrementO = (id: string) =>
+export const useImageIncrementO = (id: string) =>
   GQL.useImageIncrementOMutation({
     variables: { id },
   });

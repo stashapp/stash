@@ -33,11 +33,7 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
   ) : null;
 
   return (
-    <Modal
-      show
-      onHide={() => props.onClose()}
-      title=""
-    >
+    <Modal show onHide={() => props.onClose()} title="">
       <Modal.Header>Select Directory</Modal.Header>
       <Modal.Body>
         <div className="dialog-content">
@@ -77,7 +73,10 @@ export const FolderSelect: React.FC<IProps> = (props: IProps) => {
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="success" onClick={() => props.onClose(currentDirectory)}>
+        <Button
+          variant="success"
+          onClick={() => props.onClose(currentDirectory)}
+        >
           Add
         </Button>
       </Modal.Footer>

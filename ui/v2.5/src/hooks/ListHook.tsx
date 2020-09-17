@@ -557,7 +557,7 @@ export const useImagesList = (
     getCount: (result: FindImagesQueryResult) =>
       result?.data?.findImages?.count ?? 0,
   });
-  
+
 export const useGalleriesList = (
   props: IListHookOptions<FindGalleriesQueryResult, GalleryDataFragment>
 ) =>

@@ -10,7 +10,10 @@ interface IWallItemProps {
   sceneMarker?: GQL.SceneMarkerDataFragment;
   image?: GQL.SlimImageDataFragment;
   clickHandler?: (
-    item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment | GQL.SlimImageDataFragment
+    item:
+      | GQL.SlimSceneDataFragment
+      | GQL.SceneMarkerDataFragment
+      | GQL.SlimImageDataFragment
   ) => void;
   className: string;
 }
@@ -108,10 +111,10 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
         animation: props.scene?.paths.webp ?? undefined,
         image: props.scene?.paths.screenshot ?? undefined,
       }
-    : props.image ? 
-    {
-      image: props.image?.paths.thumbnail ?? undefined,
-    }
+    : props.image
+    ? {
+        image: props.image?.paths.thumbnail ?? undefined,
+      }
     : undefined;
 
   const setInactive = () => setActive(false);

@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
+import FsLightbox from "fslightbox-react";
 import {
   FindImagesQueryResult,
   SlimImageDataFragment,
 } from "src/core/generated-graphql";
+import * as GQL from "src/core/generated-graphql";
 import { queryFindImages } from "src/core/StashService";
 import { useImagesList } from "src/hooks";
+import { TextUtils } from "src/utils";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { showWhenSelected } from "src/hooks/ListHook";
@@ -14,13 +17,10 @@ import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
 import { ImageExportDialog } from "./ImageExportDialog";
-import FsLightbox from "fslightbox-react";
 import "flexbin/flexbin.css";
-import * as GQL from "src/core/generated-graphql";
-import { TextUtils } from "src/utils";
 
 interface IImageWallProps {
-  images: GQL.SlimImageDataFragment[]
+  images: GQL.SlimImageDataFragment[];
 }
 
 const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
@@ -37,7 +37,7 @@ const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
     <div
       role="link"
       tabIndex={index}
-      key={index}
+      key={image.id}
       onClick={() => openImage(index)}
       onKeyPress={() => openImage(index)}
     >

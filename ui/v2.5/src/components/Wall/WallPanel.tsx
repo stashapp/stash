@@ -7,7 +7,10 @@ interface IWallPanelProps {
   sceneMarkers?: GQL.SceneMarkerDataFragment[];
   images?: GQL.SlimImageDataFragment[];
   clickHandler?: (
-    item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment | GQL.SlimImageDataFragment
+    item:
+      | GQL.SlimSceneDataFragment
+      | GQL.SceneMarkerDataFragment
+      | GQL.SlimImageDataFragment
   ) => void;
 }
 

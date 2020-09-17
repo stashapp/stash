@@ -27,10 +27,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
   function renderPerformers() {
     if (props.image.performers.length === 0) return;
     const cards = props.image.performers.map((performer) => (
-      <PerformerCard
-        key={performer.id}
-        performer={performer}
-      />
+      <PerformerCard key={performer.id} performer={performer} />
     ));
 
     return (

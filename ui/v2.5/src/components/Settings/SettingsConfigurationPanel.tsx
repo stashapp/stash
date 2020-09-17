@@ -38,34 +38,31 @@ const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
 
   return (
     <>
-    <Form.Group>
-      {props.excludes &&
-        props.excludes.map((regexp, i) => (
-          <InputGroup>
-            <Form.Control
-              className="col col-sm-6 text-input"
-              value={regexp}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                excludeRegexChanged(i, e.currentTarget.value)
-              }
-            />
-            <InputGroup.Append>
-              <Button
-                variant="danger"
-                onClick={() => excludeRemoveRegex(i)}
-              >
-                <Icon icon="minus" />
-              </Button>
-            </InputGroup.Append>
-          </InputGroup>
-        ))}
-    </Form.Group>
-    <Button className="minimal" onClick={() => excludeAddRegex()}>
-      <Icon icon="plus" />
-    </Button>
+      <Form.Group>
+        {props.excludes &&
+          props.excludes.map((regexp, i) => (
+            <InputGroup>
+              <Form.Control
+                className="col col-sm-6 text-input"
+                value={regexp}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  excludeRegexChanged(i, e.currentTarget.value)
+                }
+              />
+              <InputGroup.Append>
+                <Button variant="danger" onClick={() => excludeRemoveRegex(i)}>
+                  <Icon icon="minus" />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+          ))}
+      </Form.Group>
+      <Button className="minimal" onClick={() => excludeAddRegex()}>
+        <Icon icon="plus" />
+      </Button>
     </>
   );
-}
+};
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const Toast = useToast();
@@ -111,8 +108,12 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   const [videoExtensions, setVideoExtensions] = useState<string | undefined>();
   const [imageExtensions, setImageExtensions] = useState<string | undefined>();
-  const [galleryExtensions, setGalleryExtensions] = useState<string | undefined>();
-  const [createGalleriesFromFolders, setCreateGalleriesFromFolders] = useState<boolean>(false);
+  const [galleryExtensions, setGalleryExtensions] = useState<
+    string | undefined
+  >();
+  const [createGalleriesFromFolders, setCreateGalleriesFromFolders] = useState<
+    boolean
+  >(false);
 
   const [excludes, setExcludes] = useState<string[]>([]);
   const [imageExcludes, setImageExcludes] = useState<string[]>([]);
@@ -127,13 +128,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const { data, error, loading } = useConfiguration();
 
   const [updateGeneralConfig] = useConfigureGeneral({
-    stashes: stashes.map((s) => (
-      {
-        path: s.path,
-        excludeVideo: s.excludeVideo,
-        excludeImage: s.excludeImage,
-      }
-    )),
+    stashes: stashes.map((s) => ({
+      path: s.path,
+      excludeVideo: s.excludeVideo,
+      excludeImage: s.excludeImage,
+    })),
     databasePath,
     generatedPath,
     cachePath,
@@ -202,9 +201,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setCreateGalleriesFromFolders(conf.general.createGalleriesFromFolders);
       setVideoExtensions(listToCommaDelimited(conf.general.videoExtensions));
       setImageExtensions(listToCommaDelimited(conf.general.imageExtensions));
-      setGalleryExtensions(listToCommaDelimited(conf.general.galleryExtensions));
+      setGalleryExtensions(
+        listToCommaDelimited(conf.general.galleryExtensions)
+      );
       setExcludes(conf.general.excludes);
-      setImageExcludes(conf.general.imageExcludes)
+      setImageExcludes(conf.general.imageExcludes);
       setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
       setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
       setStashBoxes(
@@ -220,7 +221,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
   function commaDelimitedToList(value: string | undefined) {
     if (value) {
-      return value.split(",").map(s => s.trim());
+      return value.split(",").map((s) => s.trim());
     }
   }
 
@@ -229,7 +230,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       return value.join(", ");
     }
   }
-  
+
   async function onSave() {
     try {
       const result = await updateGeneralConfig();
@@ -315,7 +316,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
     return GQL.HashAlgorithm.Md5;
   }
 
-
   if (error) return <h1>{error.message}</h1>;
   if (!data?.configuration || loading) return <LoadingIndicator />;
 
@@ -325,7 +325,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <Form.Group>
         <Form.Group id="stashes">
           <h6>Stashes</h6>
-          <StashConfiguration stashes={stashes} setStashes={(s) => setStashes(s)} />
+          <StashConfiguration
+            stashes={stashes}
+            setStashes={(s) => setStashes(s)}
+          />
           <Form.Text className="text-muted">
             Directory locations to your content
           </Form.Text>
@@ -384,7 +387,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Comma-delimited list of file extensions that will be identified as videos.
+            Comma-delimited list of file extensions that will be identified as
+            videos.
           </Form.Text>
         </Form.Group>
 
@@ -398,7 +402,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Comma-delimited list of file extensions that will be identified as images.
+            Comma-delimited list of file extensions that will be identified as
+            images.
           </Form.Text>
         </Form.Group>
 
@@ -412,7 +417,8 @@ export const SettingsConfigurationPanel: React.FC = () => {
             }
           />
           <Form.Text className="text-muted">
-            Comma-delimited list of file extensions that will be identified as gallery zip files.
+            Comma-delimited list of file extensions that will be identified as
+            gallery zip files.
           </Form.Text>
         </Form.Group>
 
@@ -433,9 +439,13 @@ export const SettingsConfigurationPanel: React.FC = () => {
 
         <Form.Group>
           <h6>Excluded Image/Gallery Patterns</h6>
-          <ExclusionPatterns excludes={imageExcludes} setExcludes={setImageExcludes} />
+          <ExclusionPatterns
+            excludes={imageExcludes}
+            setExcludes={setImageExcludes}
+          />
           <Form.Text className="text-muted">
-            Regexps of image and gallery files/paths to exclude from Scan and add to Clean
+            Regexps of image and gallery files/paths to exclude from Scan and
+            add to Clean
             <a
               href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
               rel="noopener noreferrer"
@@ -451,7 +461,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
             id="log-terminal"
             checked={createGalleriesFromFolders}
             label="Create galleries from folders containing images"
-            onChange={() => setCreateGalleriesFromFolders(!createGalleriesFromFolders)}
+            onChange={() =>
+              setCreateGalleriesFromFolders(!createGalleriesFromFolders)
+            }
           />
           <Form.Text className="text-muted">
             If true, creates galleries from folders containing images.

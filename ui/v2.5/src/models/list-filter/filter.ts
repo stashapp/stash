@@ -148,10 +148,7 @@ export class ListFilterModel {
           "filesize",
           "random",
         ];
-        this.displayModeOptions = [
-          DisplayMode.Grid,
-          DisplayMode.Wall,
-        ];
+        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
         this.criterionOptions = [
           new NoneCriterionOption(),
           new RatingCriterionOption(),

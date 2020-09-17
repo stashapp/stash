@@ -38,9 +38,7 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
       return;
     }
 
-    const { size, unit } = TextUtils.fileSize(
-      props.image.file.size ?? 0
-    );
+    const { size, unit } = TextUtils.fileSize(props.image.file.size ?? 0);
 
     return (
       <div className="row">
