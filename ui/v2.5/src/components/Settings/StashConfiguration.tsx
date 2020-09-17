@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Form, InputGroup } from "react-bootstrap";
+import { Button, Form } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { Row } from "react-bootstrap";

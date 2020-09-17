@@ -3,10 +3,21 @@ fragment GalleryData on Gallery {
   checksum
   path
   title
+  rating
   files {
     index
     name
     path
+  }
+  studio {
+    ...StudioData
+  }
+  tags {
+    ...TagData
+  }
+
+  performers {
+    ...PerformerData
   }
   scene {
     id

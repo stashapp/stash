@@ -17,6 +17,11 @@ type Query {
   """A function which queries SceneMarker objects"""
   findSceneMarkers(scene_marker_filter: SceneMarkerFilterType filter: FindFilterType): FindSceneMarkersResultType!
 
+  findImage(id: ID, checksum: String): Image
+  
+  """A function which queries Scene objects"""
+  findImages(image_filter: ImageFilterType, image_ids: [Int!], filter: FindFilterType): FindImagesResultType!
+
   """Find a performer by ID"""
   findPerformer(id: ID!): Performer
   """A function which queries Performer objects"""
@@ -137,6 +142,19 @@ type Mutation {
   sceneMarkerCreate(input: SceneMarkerCreateInput!): SceneMarker
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
   sceneMarkerDestroy(id: ID!): Boolean!
+
+  imageUpdate(input: ImageUpdateInput!): Image
+  bulkImageUpdate(input: BulkImageUpdateInput!): [Image!]
+  imageDestroy(input: ImageDestroyInput!): Boolean!
+  imagesDestroy(input: ImagesDestroyInput!): Boolean!
+  imagesUpdate(input: [ImageUpdateInput!]!): [Image]
+
+  """Increments the o-counter for a scene. Returns the new value"""
+  imageIncrementO(id: ID!): Int!
+  """Decrements the o-counter for a scene. Returns the new value"""
+  imageDecrementO(id: ID!): Int!
+  """Resets the o-counter for a scene to 0. Returns the new value"""
+  imageResetO(id: ID!): Int!
 
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer

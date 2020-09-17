@@ -104,6 +104,24 @@ func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Per
 	return qb.queryPerformers(query, args, tx)
 }
 
+func (qb *PerformerQueryBuilder) FindByImageID(imageID int, tx *sqlx.Tx) ([]*Performer, error) {
+	query := selectAll("performers") + `
+		LEFT JOIN performers_images as images_join on images_join.performer_id = performers.id
+		WHERE images_join.image_id = ?
+	`
+	args := []interface{}{imageID}
+	return qb.queryPerformers(query, args, tx)
+}
+
+func (qb *PerformerQueryBuilder) FindByGalleryID(galleryID int, tx *sqlx.Tx) ([]*Performer, error) {
+	query := selectAll("performers") + `
+		LEFT JOIN performers_galleries as galleries_join on galleries_join.performer_id = performers.id
+		WHERE galleries_join.gallery_id = ?
+	`
+	args := []interface{}{galleryID}
+	return qb.queryPerformers(query, args, tx)
+}
+
 func (qb *PerformerQueryBuilder) FindNameBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {
 	query := `
 		SELECT performers.name FROM performers

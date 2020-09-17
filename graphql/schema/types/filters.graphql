@@ -116,6 +116,23 @@ input TagFilterType {
   marker_count: IntCriterionInput
 }
 
+input ImageFilterType {
+  """Filter by rating"""
+  rating: IntCriterionInput
+  """Filter by o-counter"""
+  o_counter: IntCriterionInput
+  """Filter by resolution"""
+  resolution: ResolutionEnum
+  """Filter to only include images missing this property"""
+  is_missing: String
+  """Filter to only include images with this studio"""
+  studios: MultiCriterionInput
+  """Filter to only include images with these tags"""
+  tags: MultiCriterionInput
+  """Filter to only include images with these performers"""
+  performers: MultiCriterionInput
+}
+
 enum CriterionModifier {
   """="""
   EQUALS,

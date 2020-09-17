@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, InputGroup, Row } from "react-bootstrap";
+import { Button, Form, InputGroup } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { useConfiguration, useConfigureGeneral } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
-import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 import StashBoxConfiguration, {
   IStashBoxInstance,
 } from "./StashBoxConfiguration";
@@ -231,16 +230,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
     }
   }
   
-  function onStashesChanged(directories: string[]) {
-    setStashes(directories.map((d) => {
-      return {
-        path: d,
-        excludeImage: false,
-        excludeVideo: false,
-      };
-    }));
-  }
-
   async function onSave() {
     try {
       const result = await updateGeneralConfig();

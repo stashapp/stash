@@ -22,3 +22,18 @@ type SceneMarkersTags struct {
 	SceneMarkerID int `db:"scene_marker_id" json:"scene_marker_id"`
 	TagID         int `db:"tag_id" json:"tag_id"`
 }
+
+type PerformersImages struct {
+	PerformerID int `db:"performer_id" json:"performer_id"`
+	ImageID     int `db:"image_id" json:"image_id"`
+}
+
+type ImagesTags struct {
+	ImageID int `db:"image_id" json:"image_id"`
+	TagID   int `db:"tag_id" json:"tag_id"`
+}
+
+type GalleriesImages struct {
+	GalleryID int `db:"gallery_id" json:"gallery_id"`
+	ImageID   int `db:"image_id" json:"image_id"`
+}
