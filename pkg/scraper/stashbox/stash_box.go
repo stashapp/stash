@@ -209,6 +209,11 @@ func fetchImage(url string) (*string, error) {
 }
 
 func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *models.ScrapedScenePerformer {
+	id := p.ID
+	images := []string{}
+	for _, image := range p.Images {
+		images = append(images, image.URL)
+	}
 	sp := &models.ScrapedScenePerformer{
 		Name:         p.Name,
 		Country:      p.Country,
@@ -217,6 +222,8 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		Tattoos:      formatBodyModifications(p.Tattoos),
 		Piercings:    formatBodyModifications(p.Piercings),
 		Twitter:      findURL(p.Urls, "TWITTER"),
+		SiteID:       &id,
+		Images:       images,
 		// TODO - Image - should be returned as a set of URLs. Will need a
 		// graphql schema change to accommodate this. Leave off for now.
 	}
@@ -259,12 +266,29 @@ func getFirstImage(images []*graphql.ImageFragment) *string {
 	return ret
 }
 
+func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint {
+	fingerprints := []*models.StashBoxFingerprint{}
+	for _, fp := range scene.Fingerprints {
+		fingerprint := models.StashBoxFingerprint{
+			Algorithm: fp.Algorithm.String(),
+			Hash:      fp.Hash,
+			Duration:  fp.Duration,
+		}
+		fingerprints = append(fingerprints, &fingerprint)
+	}
+	return fingerprints
+}
+
 func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene, error) {
+	stashID := s.ID
 	ss := &models.ScrapedScene{
-		Title:   s.Title,
-		Date:    s.Date,
-		Details: s.Details,
-		URL:     findURL(s.Urls, "STUDIO"),
+		Title:        s.Title,
+		Date:         s.Date,
+		Details:      s.Details,
+		URL:          findURL(s.Urls, "STUDIO"),
+		Duration:     s.Duration,
+		SiteID:       &stashID,
+		Fingerprints: getFingerprints(s),
 		// Image
 		// stash_id
 	}
@@ -276,9 +300,11 @@ func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene
 	}
 
 	if s.Studio != nil {
+		studioID := s.Studio.ID
 		ss.Studio = &models.ScrapedSceneStudio{
-			Name: s.Studio.Name,
-			URL:  findURL(s.Studio.Urls, "HOME"),
+			Name:   s.Studio.Name,
+			URL:    findURL(s.Studio.Urls, "HOME"),
+			SiteID: &studioID,
 		}
 
 		err := models.MatchScrapedSceneStudio(ss.Studio)

@@ -36,6 +36,8 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   tattoos
   piercings
   aliases
+  site_id
+  images
 }
 
 fragment ScrapedMovieStudioData on ScrapedMovieStudio {
@@ -77,6 +79,7 @@ fragment ScrapedSceneStudioData on ScrapedSceneStudio {
   stored_id
   name
   url
+  site_id
 }
 
 fragment ScrapedSceneTagData on ScrapedSceneTag {
@@ -90,6 +93,8 @@ fragment ScrapedSceneData on ScrapedScene {
   url
   date
   image
+  site_id
+  duration
 
   file {
     size
