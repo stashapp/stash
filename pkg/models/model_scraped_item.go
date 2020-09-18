@@ -64,16 +64,19 @@ type ScrapedPerformerStash struct {
 }
 
 type ScrapedScene struct {
-	Title      *string                  `graphql:"title" json:"title"`
-	Details    *string                  `graphql:"details" json:"details"`
-	URL        *string                  `graphql:"url" json:"url"`
-	Date       *string                  `graphql:"date" json:"date"`
-	Image      *string                  `graphql:"image" json:"image"`
-	File       *SceneFileType           `graphql:"file" json:"file"`
-	Studio     *ScrapedSceneStudio      `graphql:"studio" json:"studio"`
-	Movies     []*ScrapedSceneMovie     `graphql:"movies" json:"movies"`
-	Tags       []*ScrapedSceneTag       `graphql:"tags" json:"tags"`
-	Performers []*ScrapedScenePerformer `graphql:"performers" json:"performers"`
+	Title        *string                  `graphql:"title" json:"title"`
+	Details      *string                  `graphql:"details" json:"details"`
+	URL          *string                  `graphql:"url" json:"url"`
+	Date         *string                  `graphql:"date" json:"date"`
+	Image        *string                  `graphql:"image" json:"image"`
+	SiteID       *string                  `graphql:"site_id" json:"site_id"`
+	Duration     *int                     `graphql:"duration" json:"duration"`
+	File         *SceneFileType           `graphql:"file" json:"file"`
+	Fingerprints []*StashBoxFingerprint   `graphql:"fingerprints" json:"fingerprints"`
+	Studio       *ScrapedSceneStudio      `graphql:"studio" json:"studio"`
+	Movies       []*ScrapedSceneMovie     `graphql:"movies" json:"movies"`
+	Tags         []*ScrapedSceneTag       `graphql:"tags" json:"tags"`
+	Performers   []*ScrapedScenePerformer `graphql:"performers" json:"performers"`
 }
 
 // stash doesn't return image, and we need id
@@ -91,30 +94,33 @@ type ScrapedSceneStash struct {
 
 type ScrapedScenePerformer struct {
 	// Set if performer matched
-	ID           *string `graphql:"id" json:"id"`
-	Name         string  `graphql:"name" json:"name"`
-	Gender       *string `graphql:"gender" json:"gender"`
-	URL          *string `graphql:"url" json:"url"`
-	Twitter      *string `graphql:"twitter" json:"twitter"`
-	Instagram    *string `graphql:"instagram" json:"instagram"`
-	Birthdate    *string `graphql:"birthdate" json:"birthdate"`
-	Ethnicity    *string `graphql:"ethnicity" json:"ethnicity"`
-	Country      *string `graphql:"country" json:"country"`
-	EyeColor     *string `graphql:"eye_color" json:"eye_color"`
-	Height       *string `graphql:"height" json:"height"`
-	Measurements *string `graphql:"measurements" json:"measurements"`
-	FakeTits     *string `graphql:"fake_tits" json:"fake_tits"`
-	CareerLength *string `graphql:"career_length" json:"career_length"`
-	Tattoos      *string `graphql:"tattoos" json:"tattoos"`
-	Piercings    *string `graphql:"piercings" json:"piercings"`
-	Aliases      *string `graphql:"aliases" json:"aliases"`
+	ID           *string  `graphql:"id" json:"id"`
+	Name         string   `graphql:"name" json:"name"`
+	Gender       *string  `graphql:"gender" json:"gender"`
+	URL          *string  `graphql:"url" json:"url"`
+	Twitter      *string  `graphql:"twitter" json:"twitter"`
+	Instagram    *string  `graphql:"instagram" json:"instagram"`
+	Birthdate    *string  `graphql:"birthdate" json:"birthdate"`
+	Ethnicity    *string  `graphql:"ethnicity" json:"ethnicity"`
+	Country      *string  `graphql:"country" json:"country"`
+	EyeColor     *string  `graphql:"eye_color" json:"eye_color"`
+	Height       *string  `graphql:"height" json:"height"`
+	Measurements *string  `graphql:"measurements" json:"measurements"`
+	FakeTits     *string  `graphql:"fake_tits" json:"fake_tits"`
+	CareerLength *string  `graphql:"career_length" json:"career_length"`
+	Tattoos      *string  `graphql:"tattoos" json:"tattoos"`
+	Piercings    *string  `graphql:"piercings" json:"piercings"`
+	Aliases      *string  `graphql:"aliases" json:"aliases"`
+	SiteID       *string  `graphql:"site_id" json:"site_id"`
+	Images       []string `graphql:"images" json:"images"`
 }
 
 type ScrapedSceneStudio struct {
 	// Set if studio matched
-	ID   *string `graphql:"id" json:"id"`
-	Name string  `graphql:"name" json:"name"`
-	URL  *string `graphql:"url" json:"url"`
+	ID     *string `graphql:"id" json:"id"`
+	Name   string  `graphql:"name" json:"name"`
+	URL    *string `graphql:"url" json:"url"`
+	SiteID *string `graphql:"site_id" json:"site_id"`
 }
 
 type ScrapedSceneMovie struct {

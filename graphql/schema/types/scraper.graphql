@@ -43,6 +43,9 @@ type ScrapedScenePerformer {
   tattoos: String
   piercings: String
   aliases: String
+
+  site_id: String
+  images: [String!]
 }
 
 type ScrapedSceneMovie {
@@ -63,6 +66,8 @@ type ScrapedSceneStudio {
   stored_id: ID
   name: String!
   url: String
+
+  site_id: String
 }
 
 type ScrapedSceneTag {
@@ -86,6 +91,10 @@ type ScrapedScene {
   tags: [ScrapedSceneTag!]
   performers: [ScrapedScenePerformer!]
   movies: [ScrapedSceneMovie!]
+
+  site_id: String
+  duration: Int
+  fingerprints: [StashBoxFingerprint!]
 }
 
 input StashBoxQueryInput {
@@ -95,4 +104,10 @@ input StashBoxQueryInput {
   scene_ids: [ID!]
   """Query by query string"""
   q: String
+}
+
+type StashBoxFingerprint {
+  algorithm: String!
+  hash: String!
+  duration: Int!
 }
