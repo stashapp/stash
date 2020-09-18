@@ -83,7 +83,9 @@ const selectStudio = (
   url: studio?.url ?? undefined,
 });
 
-const selectFingerprints = (): IStashBoxFingerprint[] => [];
+const selectFingerprints = (scene: GQL.ScrapedScene|null): IStashBoxFingerprint[] => (
+  scene?.fingerprints ?? []
+);
 
 const selectTags = (tags: GQL.ScrapedSceneTag[]): IStashBoxTag[] =>
   tags.map((t) => ({
@@ -95,7 +97,7 @@ const selectPerformers = (
   performers: GQL.ScrapedScenePerformer[]
 ): IStashBoxPerformer[] =>
   performers.map((p) => ({
-    id: p.stored_id ?? "",
+    id: p.site_id ?? "",
     name: p.name ?? "",
     gender: (p.gender ?? GQL.GenderEnum.Female) as GQL.GenderEnum,
     url: p.url ?? undefined,
@@ -112,7 +114,7 @@ const selectPerformers = (
     tattoos: p.tattoos ?? undefined,
     piercings: p.piercings ?? undefined,
     aliases: p.aliases ?? undefined,
-    images: [],
+    images: p.images ?? [],
   }));
 
 export const selectScenes = (
@@ -123,15 +125,15 @@ export const selectScenes = (
     .map(
       (s) =>
         ({
-          id: "ID",
+          id: s?.site_id ?? "",
           title: s?.title ?? "",
           date: s?.date ?? "",
-          duration: 0,
+          duration: s?.duration ?? 0,
           details: s?.details,
           url: s?.url,
           images: s?.image ? [s.image] : [],
           studio: selectStudio(s?.studio),
-          fingerprints: selectFingerprints(),
+          fingerprints: selectFingerprints(s),
           performers: selectPerformers(s?.performers ?? []),
           tags: selectTags(s?.tags ?? []),
         } as IStashBoxScene)
