@@ -208,12 +208,15 @@ func fetchImage(url string) (*string, error) {
 	return &img, nil
 }
 
-func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *models.ScrapedScenePerformer {
-	id := p.ID
-	images := []string{}
+func getPerformerImages(p graphql.PerformerFragment) (images []string) {
 	for _, image := range p.Images {
 		images = append(images, image.URL)
 	}
+	return
+}
+
+func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *models.ScrapedScenePerformer {
+	id := p.ID
 	sp := &models.ScrapedScenePerformer{
 		Name:         p.Name,
 		Country:      p.Country,
@@ -223,9 +226,7 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		Piercings:    formatBodyModifications(p.Piercings),
 		Twitter:      findURL(p.Urls, "TWITTER"),
 		SiteID:       &id,
-		Images:       images,
-		// TODO - Image - should be returned as a set of URLs. Will need a
-		// graphql schema change to accommodate this. Leave off for now.
+		Images:       getPerformerImages(p),
 	}
 
 	if p.Height != nil {
