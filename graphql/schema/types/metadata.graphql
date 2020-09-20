@@ -1,3 +1,5 @@
+scalar Upload
+
 input GenerateMetadataInput {
   sprites: Boolean!
   previews: Boolean!
@@ -64,4 +66,22 @@ input ExportObjectsInput {
   movies: ExportObjectTypeInput
   galleries: ExportObjectTypeInput
   includeDependencies: Boolean
+}
+
+enum ImportDuplicateEnum {
+  IGNORE
+  OVERWRITE
+  FAIL
+}
+
+enum ImportMissingRefEnum {
+  IGNORE
+  FAIL
+  CREATE
+}
+
+input ImportObjectsInput {
+  file: Upload!
+  duplicateBehaviour: ImportDuplicateEnum!
+  missingRefBehaviour: ImportMissingRefEnum!
 }

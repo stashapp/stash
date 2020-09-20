@@ -35,6 +35,29 @@ func (_m *TagReaderWriter) All() ([]*models.Tag, error) {
 	return r0, r1
 }
 
+// Create provides a mock function with given fields: newTag
+func (_m *TagReaderWriter) Create(newTag models.Tag) (*models.Tag, error) {
+	ret := _m.Called(newTag)
+
+	var r0 *models.Tag
+	if rf, ok := ret.Get(0).(func(models.Tag) *models.Tag); ok {
+		r0 = rf(newTag)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.Tag) error); ok {
+		r1 = rf(newTag)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Find provides a mock function with given fields: id
 func (_m *TagReaderWriter) Find(id int) (*models.Tag, error) {
 	ret := _m.Called(id)
@@ -51,6 +74,52 @@ func (_m *TagReaderWriter) Find(id int) (*models.Tag, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
 		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByName provides a mock function with given fields: name, nocase
+func (_m *TagReaderWriter) FindByName(name string, nocase bool) (*models.Tag, error) {
+	ret := _m.Called(name, nocase)
+
+	var r0 *models.Tag
+	if rf, ok := ret.Get(0).(func(string, bool) *models.Tag); ok {
+		r0 = rf(name, nocase)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
+		r1 = rf(name, nocase)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByNames provides a mock function with given fields: names, nocase
+func (_m *TagReaderWriter) FindByNames(names []string, nocase bool) ([]*models.Tag, error) {
+	ret := _m.Called(names, nocase)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func([]string, bool) []*models.Tag); ok {
+		r0 = rf(names, nocase)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]string, bool) error); ok {
+		r1 = rf(names, nocase)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -148,4 +217,41 @@ func (_m *TagReaderWriter) GetTagImage(tagID int) ([]byte, error) {
 	}
 
 	return r0, r1
+}
+
+// Update provides a mock function with given fields: updatedTag
+func (_m *TagReaderWriter) Update(updatedTag models.Tag) (*models.Tag, error) {
+	ret := _m.Called(updatedTag)
+
+	var r0 *models.Tag
+	if rf, ok := ret.Get(0).(func(models.Tag) *models.Tag); ok {
+		r0 = rf(updatedTag)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.Tag) error); ok {
+		r1 = rf(updatedTag)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateTagImage provides a mock function with given fields: tagID, image
+func (_m *TagReaderWriter) UpdateTagImage(tagID int, image []byte) error {
+	ret := _m.Called(tagID, image)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []byte) error); ok {
+		r0 = rf(tagID, image)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }

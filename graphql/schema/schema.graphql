@@ -164,9 +164,12 @@ type Mutation {
   """Returns a link to download the result"""
   exportObjects(input: ExportObjectsInput!): String
 
-  """Start an import. Returns the job ID"""
+  """Performs an incremental import. Returns the job ID"""
+  importObjects(input: ImportObjectsInput!): String!
+
+  """Start an full import. Completely wipes the database and imports from the metadata directory. Returns the job ID"""
   metadataImport: String!
-  """Start an export. Returns the job ID"""
+  """Start a full export. Outputs to the metadata directory. Returns the job ID"""
   metadataExport: String!
   """Start a scan. Returns the job ID"""
   metadataScan(input: ScanMetadataInput!): String!

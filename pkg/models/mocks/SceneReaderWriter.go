@@ -35,6 +35,75 @@ func (_m *SceneReaderWriter) All() ([]*models.Scene, error) {
 	return r0, r1
 }
 
+// Create provides a mock function with given fields: newScene
+func (_m *SceneReaderWriter) Create(newScene models.Scene) (*models.Scene, error) {
+	ret := _m.Called(newScene)
+
+	var r0 *models.Scene
+	if rf, ok := ret.Get(0).(func(models.Scene) *models.Scene); ok {
+		r0 = rf(newScene)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.Scene) error); ok {
+		r1 = rf(newScene)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByChecksum provides a mock function with given fields: checksum
+func (_m *SceneReaderWriter) FindByChecksum(checksum string) (*models.Scene, error) {
+	ret := _m.Called(checksum)
+
+	var r0 *models.Scene
+	if rf, ok := ret.Get(0).(func(string) *models.Scene); ok {
+		r0 = rf(checksum)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(checksum)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByOSHash provides a mock function with given fields: oshash
+func (_m *SceneReaderWriter) FindByOSHash(oshash string) (*models.Scene, error) {
+	ret := _m.Called(oshash)
+
+	var r0 *models.Scene
+	if rf, ok := ret.Get(0).(func(string) *models.Scene); ok {
+		r0 = rf(oshash)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(oshash)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindMany provides a mock function with given fields: ids
 func (_m *SceneReaderWriter) FindMany(ids []int) ([]*models.Scene, error) {
 	ret := _m.Called(ids)
@@ -79,4 +148,64 @@ func (_m *SceneReaderWriter) GetSceneCover(sceneID int) ([]byte, error) {
 	}
 
 	return r0, r1
+}
+
+// Update provides a mock function with given fields: updatedScene
+func (_m *SceneReaderWriter) Update(updatedScene models.ScenePartial) (*models.Scene, error) {
+	ret := _m.Called(updatedScene)
+
+	var r0 *models.Scene
+	if rf, ok := ret.Get(0).(func(models.ScenePartial) *models.Scene); ok {
+		r0 = rf(updatedScene)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.ScenePartial) error); ok {
+		r1 = rf(updatedScene)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateFull provides a mock function with given fields: updatedScene
+func (_m *SceneReaderWriter) UpdateFull(updatedScene models.Scene) (*models.Scene, error) {
+	ret := _m.Called(updatedScene)
+
+	var r0 *models.Scene
+	if rf, ok := ret.Get(0).(func(models.Scene) *models.Scene); ok {
+		r0 = rf(updatedScene)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.Scene) error); ok {
+		r1 = rf(updatedScene)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateSceneCover provides a mock function with given fields: sceneID, cover
+func (_m *SceneReaderWriter) UpdateSceneCover(sceneID int, cover []byte) error {
+	ret := _m.Called(sceneID, cover)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []byte) error); ok {
+		r0 = rf(sceneID, cover)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }

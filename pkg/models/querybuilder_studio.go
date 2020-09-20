@@ -53,6 +53,23 @@ func (qb *StudioQueryBuilder) Update(updatedStudio StudioPartial, tx *sqlx.Tx) (
 	return &ret, nil
 }
 
+func (qb *StudioQueryBuilder) UpdateFull(updatedStudio Studio, tx *sqlx.Tx) (*Studio, error) {
+	ensureTx(tx)
+	_, err := tx.NamedExec(
+		`UPDATE studios SET `+SQLGenKeys(updatedStudio)+` WHERE studios.id = :id`,
+		updatedStudio,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret Studio
+	if err := tx.Get(&ret, `SELECT * FROM studios WHERE id = ? LIMIT 1`, updatedStudio.ID); err != nil {
+		return nil, err
+	}
+	return &ret, nil
+}
+
 func (qb *StudioQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	// remove studio from scenes
 	_, err := tx.Exec("UPDATE scenes SET studio_id = null WHERE studio_id = ?", id)
