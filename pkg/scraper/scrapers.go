@@ -214,106 +214,30 @@ func (c Cache) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) 
 	return nil, nil
 }
 
-func matchPerformer(p *models.ScrapedScenePerformer) error {
-	qb := models.NewPerformerQueryBuilder()
-
-	performers, err := qb.FindByNames([]string{p.Name}, nil, true)
-
-	if err != nil {
-		return err
-	}
-
-	if len(performers) != 1 {
-		// ignore - cannot match
-		return nil
-	}
-
-	id := strconv.Itoa(performers[0].ID)
-	p.ID = &id
-	return nil
-}
-
-func matchStudio(s *models.ScrapedSceneStudio) error {
-	qb := models.NewStudioQueryBuilder()
-
-	studio, err := qb.FindByName(s.Name, nil, true)
-
-	if err != nil {
-		return err
-	}
-
-	if studio == nil {
-		// ignore - cannot match
-		return nil
-	}
-
-	id := strconv.Itoa(studio.ID)
-	s.ID = &id
-	return nil
-}
-
-func matchMovie(m *models.ScrapedSceneMovie) error {
-	qb := models.NewMovieQueryBuilder()
-
-	movies, err := qb.FindByNames([]string{m.Name}, nil, true)
-
-	if err != nil {
-		return err
-	}
-
-	if len(movies) != 1 {
-		// ignore - cannot match
-		return nil
-	}
-
-	id := strconv.Itoa(movies[0].ID)
-	m.ID = &id
-	return nil
-}
-
-func matchTag(s *models.ScrapedSceneTag) error {
-	qb := models.NewTagQueryBuilder()
-
-	tag, err := qb.FindByName(s.Name, nil, true)
-
-	if err != nil {
-		return err
-	}
-
-	if tag == nil {
-		// ignore - cannot match
-		return nil
-	}
-
-	id := strconv.Itoa(tag.ID)
-	s.ID = &id
-	return nil
-}
-
 func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 	for _, p := range ret.Performers {
-		err := matchPerformer(p)
+		err := models.MatchScrapedScenePerformer(p)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, p := range ret.Movies {
-		err := matchMovie(p)
+		err := models.MatchScrapedSceneMovie(p)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, t := range ret.Tags {
-		err := matchTag(t)
+		err := models.MatchScrapedSceneTag(t)
 		if err != nil {
 			return err
 		}
 	}
 
 	if ret.Studio != nil {
-		err := matchStudio(ret.Studio)
+		err := models.MatchScrapedSceneStudio(ret.Studio)
 		if err != nil {
 			return err
 		}

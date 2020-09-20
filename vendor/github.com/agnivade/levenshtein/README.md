@@ -6,6 +6,10 @@ levenshtein [![Build Status](https://travis-ci.org/agnivade/levenshtein.svg?bran
 The library is fully capable of working with non-ascii strings. But the strings are not normalized. That is left as a user-dependant use case. Please normalize the strings before passing it to the library if you have such a requirement.
 - https://blog.golang.org/normalization
 
+#### Limitation
+
+As a performance optimization, the library can handle strings only up to 65536 characters (runes). This is only available on tip, and is not part of a tagged release yet. If you require such an optimization, please use the version at tip.
+
 Install
 -------
 
@@ -38,10 +42,10 @@ Benchmarks
 
 ```
 name              time/op
-Simple/ASCII-4     537ns ± 2%
-Simple/French-4    956ns ± 0%
-Simple/Nordic-4   1.95µs ± 1%
-Simple/Tibetan-4  1.53µs ± 2%
+Simple/ASCII-4     330ns ± 2%
+Simple/French-4    617ns ± 2%
+Simple/Nordic-4   1.16µs ± 4%
+Simple/Tibetan-4  1.05µs ± 1%
 
 name              alloc/op
 Simple/ASCII-4     96.0B ± 0%
@@ -54,4 +58,23 @@ Simple/ASCII-4      1.00 ± 0%
 Simple/French-4     1.00 ± 0%
 Simple/Nordic-4     1.00 ± 0%
 Simple/Tibetan-4    1.00 ± 0%
+```
+
+Comparisons with other libraries
+--------------------------------
+
+```
+name                     time/op
+Leven/ASCII/agniva-4      353ns ± 1%
+Leven/ASCII/arbovm-4      485ns ± 1%
+Leven/ASCII/dgryski-4     395ns ± 0%
+Leven/French/agniva-4     648ns ± 1%
+Leven/French/arbovm-4     791ns ± 0%
+Leven/French/dgryski-4    682ns ± 0%
+Leven/Nordic/agniva-4    1.28µs ± 1%
+Leven/Nordic/arbovm-4    1.52µs ± 1%
+Leven/Nordic/dgryski-4   1.32µs ± 1%
+Leven/Tibetan/agniva-4   1.12µs ± 1%
+Leven/Tibetan/arbovm-4   1.31µs ± 0%
+Leven/Tibetan/dgryski-4  1.16µs ± 0%
 ```
