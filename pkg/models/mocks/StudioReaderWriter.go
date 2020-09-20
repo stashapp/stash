@@ -35,6 +35,29 @@ func (_m *StudioReaderWriter) All() ([]*models.Studio, error) {
 	return r0, r1
 }
 
+// Create provides a mock function with given fields: newStudio
+func (_m *StudioReaderWriter) Create(newStudio models.Studio) (*models.Studio, error) {
+	ret := _m.Called(newStudio)
+
+	var r0 *models.Studio
+	if rf, ok := ret.Get(0).(func(models.Studio) *models.Studio); ok {
+		r0 = rf(newStudio)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Studio)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.Studio) error); ok {
+		r1 = rf(newStudio)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Find provides a mock function with given fields: id
 func (_m *StudioReaderWriter) Find(id int) (*models.Studio, error) {
 	ret := _m.Called(id)
@@ -51,6 +74,29 @@ func (_m *StudioReaderWriter) Find(id int) (*models.Studio, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
 		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByName provides a mock function with given fields: name, nocase
+func (_m *StudioReaderWriter) FindByName(name string, nocase bool) (*models.Studio, error) {
+	ret := _m.Called(name, nocase)
+
+	var r0 *models.Studio
+	if rf, ok := ret.Get(0).(func(string, bool) *models.Studio); ok {
+		r0 = rf(name, nocase)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Studio)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
+		r1 = rf(name, nocase)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -102,4 +148,64 @@ func (_m *StudioReaderWriter) GetStudioImage(studioID int) ([]byte, error) {
 	}
 
 	return r0, r1
+}
+
+// Update provides a mock function with given fields: updatedStudio
+func (_m *StudioReaderWriter) Update(updatedStudio models.StudioPartial) (*models.Studio, error) {
+	ret := _m.Called(updatedStudio)
+
+	var r0 *models.Studio
+	if rf, ok := ret.Get(0).(func(models.StudioPartial) *models.Studio); ok {
+		r0 = rf(updatedStudio)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Studio)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.StudioPartial) error); ok {
+		r1 = rf(updatedStudio)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateFull provides a mock function with given fields: updatedStudio
+func (_m *StudioReaderWriter) UpdateFull(updatedStudio models.Studio) (*models.Studio, error) {
+	ret := _m.Called(updatedStudio)
+
+	var r0 *models.Studio
+	if rf, ok := ret.Get(0).(func(models.Studio) *models.Studio); ok {
+		r0 = rf(updatedStudio)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Studio)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.Studio) error); ok {
+		r1 = rf(updatedStudio)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateStudioImage provides a mock function with given fields: studioID, image
+func (_m *StudioReaderWriter) UpdateStudioImage(studioID int, image []byte) error {
+	ret := _m.Called(studioID, image)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []byte) error); ok {
+		r0 = rf(studioID, image)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }

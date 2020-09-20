@@ -15,8 +15,8 @@ type SceneMarkerReader interface {
 }
 
 type SceneMarkerWriter interface {
-	// Create(newSceneMarker SceneMarker) (*SceneMarker, error)
-	// Update(updatedSceneMarker SceneMarker) (*SceneMarker, error)
+	Create(newSceneMarker SceneMarker) (*SceneMarker, error)
+	Update(updatedSceneMarker SceneMarker) (*SceneMarker, error)
 	// Destroy(id string) error
 }
 
@@ -39,4 +39,12 @@ type sceneMarkerReaderWriter struct {
 
 func (t *sceneMarkerReaderWriter) FindBySceneID(sceneID int) ([]*SceneMarker, error) {
 	return t.qb.FindBySceneID(sceneID, t.tx)
+}
+
+func (t *sceneMarkerReaderWriter) Create(newSceneMarker SceneMarker) (*SceneMarker, error) {
+	return t.qb.Create(newSceneMarker, t.tx)
+}
+
+func (t *sceneMarkerReaderWriter) Update(updatedSceneMarker SceneMarker) (*SceneMarker, error) {
+	return t.qb.Update(updatedSceneMarker, t.tx)
 }

@@ -574,6 +574,12 @@ export const mutateMetadataImport = () =>
     mutation: GQL.MetadataImportDocument,
   });
 
+export const mutateImportObjects = (input: GQL.ImportObjectsInput) =>
+  client.mutate<GQL.ImportObjectsMutation>({
+    mutation: GQL.ImportObjectsDocument,
+    variables: { input },
+  });
+
 export const querySceneByPathRegex = (filter: GQL.FindFilterType) =>
   client.query<GQL.FindScenesByPathRegexQuery>({
     query: GQL.FindScenesByPathRegexDocument,
