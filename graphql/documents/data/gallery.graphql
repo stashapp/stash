@@ -3,6 +3,8 @@ fragment GalleryData on Gallery {
   checksum
   path
   title
+  url
+  details
   rating
   files {
     index

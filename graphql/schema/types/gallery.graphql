@@ -4,6 +4,8 @@ type Gallery {
   checksum: String!
   path: String!
   title: String
+  url: String
+  details: String
   rating: Int
   scene: Scene
   studio: Studio

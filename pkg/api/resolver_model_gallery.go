@@ -25,6 +25,13 @@ func (r *galleryResolver) URL(ctx context.Context, obj *models.Gallery) (*string
 	return nil, nil
 }
 
+func (r *galleryResolver) Details(ctx context.Context, obj *models.Gallery) (*string, error) {
+	if obj.Details.Valid {
+		return &obj.Details.String, nil
+	}
+	return nil, nil
+}
+
 func (r *galleryResolver) Rating(ctx context.Context, obj *models.Gallery) (*int, error) {
 	if obj.Rating.Valid {
 		rating := int(obj.Rating.Int64)

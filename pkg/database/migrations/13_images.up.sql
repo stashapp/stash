@@ -45,6 +45,7 @@ CREATE TABLE `galleries` (
   `checksum` varchar(255) not null,
   `title` varchar(255),
   `url` varchar(255),
+  `details` text,
   `studio_id` integer,
   `rating` tinyint,
   `scene_id` integer,
