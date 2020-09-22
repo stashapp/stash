@@ -264,7 +264,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
         </Button>
       </div>
 
-      <Collapse in={showConfig || authFailure}>
+      <Collapse in={showConfig}>
         <Card>
           <div className="row">
             <h4 className="col-12">Configuration</h4>
