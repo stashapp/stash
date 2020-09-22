@@ -60,9 +60,9 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           ) : (
             ""
           )}
-          {props.image.file.height && (
+          {props.image.file.height ? (
             <h6>Resolution: {TextUtils.resolution(props.image.file.height)}</h6>
-          )}
+          ) : ""}
         </div>
         {props.image.studio && (
           <div className="col-3 d-xl-none">

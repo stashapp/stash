@@ -58,14 +58,16 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
   }
 
   function renderDimensions() {
-    return (
-      <div className="row">
-        <span className="col-4">Dimensions</span>
-        <span className="col-8 text-truncate">
-          {props.image.file.width} x {props.image.file.height}
-        </span>
-      </div>
-    );
+    if (props.image.file.height && props.image.file.width) {
+      return (
+        <div className="row">
+          <span className="col-4">Dimensions</span>
+          <span className="col-8 text-truncate">
+            {props.image.file.width} x {props.image.file.height}
+          </span>
+        </div>
+      );
+    }
   }
 
   return (
