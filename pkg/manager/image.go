@@ -62,13 +62,12 @@ func DeleteImageFile(image *models.Image) {
 	}
 }
 
-func countImagesInZip(path string) int {
+func walkGalleryZip(path string, walkFunc func(file *zip.File) error) error {
 	readCloser, err := zip.OpenReader(path)
 	if err != nil {
-		return 0
+		return err
 	}
 
-	ret := 0
 	for _, file := range readCloser.File {
 		if file.FileInfo().IsDir() {
 			continue
@@ -82,8 +81,21 @@ func countImagesInZip(path string) int {
 			continue
 		}
 
-		ret++
+		err := walkFunc(file)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
+}
+
+func countImagesInZip(path string) int {
+	ret := 0
+	walkGalleryZip(path, func(file *zip.File) error {
+		ret++
+		return nil
+	})
 
 	return ret
 }

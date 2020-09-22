@@ -59,6 +59,9 @@ func (t *ScanTask) scanGallery() {
 
 		if images == 0 {
 			t.scanZipImages(gallery)
+		} else {
+			// in case thumbnails have been deleted, regenerate them
+			t.regenerateZipImages(gallery)
 		}
 		return
 	}
@@ -403,25 +406,7 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 }
 
 func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
-	readCloser, err := zip.OpenReader(zipGallery.Path)
-	if err != nil {
-		logger.Warnf("failed to read zip file %s", zipGallery.Path)
-		return
-	}
-
-	for _, file := range readCloser.File {
-		if file.FileInfo().IsDir() {
-			continue
-		}
-
-		if strings.Contains(file.Name, "__MACOSX") {
-			continue
-		}
-
-		if !isImage(file.Name) {
-			continue
-		}
-
+	err := walkGalleryZip(zipGallery.Path, func(file *zip.File) error {
 		// copy this task and change the filename
 		subTask := *t
 
@@ -433,6 +418,24 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 		var wg sync.WaitGroup
 		wg.Add(1)
 		subTask.Start(&wg)
+		return nil
+	})
+	if err != nil {
+		logger.Warnf("failed to scan zip file images for %s: %s", zipGallery.Path, err.Error())
+	}
+}
+
+func (t *ScanTask) regenerateZipImages(zipGallery *models.Gallery) {
+	iqb := models.NewImageQueryBuilder()
+
+	images, err := iqb.FindByGalleryID(zipGallery.ID)
+	if err != nil {
+		logger.Warnf("failed to find gallery images: %s", err.Error())
+		return
+	}
+
+	for _, img := range images {
+		t.generateThumbnail(img)
 	}
 }
 
@@ -526,15 +529,17 @@ func (t *ScanTask) generateThumbnail(i *models.Image) {
 		return
 	}
 
-	data, err := image.GetThumbnail(srcImage, models.DefaultGthumbWidth)
-	if err != nil {
-		logger.Errorf("error getting thumbnail for image %s: %s", i.Path, err.Error())
-		return
-	}
+	if image.ThumbnailNeeded(srcImage, models.DefaultGthumbWidth) {
+		data, err := image.GetThumbnail(srcImage, models.DefaultGthumbWidth)
+		if err != nil {
+			logger.Errorf("error getting thumbnail for image %s: %s", i.Path, err.Error())
+			return
+		}
 
-	err = utils.WriteFile(thumbPath, data)
-	if err != nil {
-		logger.Errorf("error writing thumbnail for image %s: %s", i.Path, err)
+		err = utils.WriteFile(thumbPath, data)
+		if err != nil {
+			logger.Errorf("error writing thumbnail for image %s: %s", i.Path, err)
+		}
 	}
 }
 
