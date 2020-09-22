@@ -102,7 +102,7 @@ func (t *ScanTask) scanGallery() {
 		}
 
 		// don't create gallery if it has no images
-		if newGallery.CountFiles() > 0 {
+		if countImagesInZip(t.FilePath) > 0 {
 			logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 			gallery, err = qb.Create(newGallery, tx)
 		}
@@ -513,7 +513,7 @@ func (t *ScanTask) scanImage() {
 }
 
 func (t *ScanTask) generateThumbnail(i *models.Image) {
-	thumbPath := GetInstance().Paths.Image.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
+	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
 	exists, _ := utils.FileExists(thumbPath)
 	if exists {
 		logger.Debug("Thumbnail already exists for this path... skipping")
@@ -549,7 +549,7 @@ func (t *ScanTask) calculateChecksum() (string, error) {
 }
 
 func (t *ScanTask) calculateImageChecksum() (string, error) {
-	logger.Infof("Calculating checksum for %s...", t.FilePath)
+	logger.Infof("Calculating checksum for %s...", image.PathDisplayName(t.FilePath))
 	// uses image.CalculateMD5 to read files in zips
 	checksum, err := image.CalculateMD5(t.FilePath)
 	if err != nil {

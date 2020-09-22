@@ -11,7 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
-	"github.com/stashapp/stash/pkg/manager/paths"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -91,7 +90,7 @@ func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 		return true
 	}
 
-	if t.Gallery.CountFiles() == 0 {
+	if countImagesInZip(g.Path) == 0 {
 		logger.Infof("Gallery has 0 images. Cleaning: \"%s\"", g.Path)
 		return true
 	}
@@ -157,11 +156,6 @@ func (t *CleanTask) deleteGallery(galleryID int) {
 		logger.Errorf("Error deleting gallery from database: %s", err.Error())
 		return
 	}
-
-	pathErr := os.RemoveAll(paths.GetGthumbDir(t.Gallery.Checksum)) // remove cache dir of gallery
-	if pathErr != nil {
-		logger.Errorf("Error deleting gallery directory from cache: %s", pathErr)
-	}
 }
 
 func (t *CleanTask) deleteImage(imageID int) {
@@ -182,7 +176,7 @@ func (t *CleanTask) deleteImage(imageID int) {
 		return
 	}
 
-	pathErr := os.Remove(GetInstance().Paths.Image.GetThumbnailPath(t.Image.Checksum, models.DefaultGthumbWidth)) // remove cache dir of gallery
+	pathErr := os.Remove(GetInstance().Paths.Generated.GetThumbnailPath(t.Image.Checksum, models.DefaultGthumbWidth)) // remove cache dir of gallery
 	if pathErr != nil {
 		logger.Errorf("Error deleting thumbnail image from cache: %s", pathErr)
 	}

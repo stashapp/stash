@@ -149,7 +149,6 @@ func Start() {
 
 	r.Get(loginEndPoint, getLoginHandler)
 
-	r.Mount("/gallery", galleryRoutes{}.Routes())
 	r.Mount("/performer", performerRoutes{}.Routes())
 	r.Mount("/scene", sceneRoutes{}.Routes())
 	r.Mount("/image", imageRoutes{}.Routes())
@@ -252,8 +251,6 @@ func Start() {
 
 		http.Redirect(w, r, "/", 301)
 	})
-
-	startThumbCache()
 
 	// Serve static folders
 	customServedFolders := config.GetCustomServedFolders()

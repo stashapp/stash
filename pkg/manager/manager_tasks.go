@@ -301,13 +301,11 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
-	qg := models.NewGalleryQueryBuilder()
 	mqb := models.NewSceneMarkerQueryBuilder()
 
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
 
-	galleryIDs := utils.StringSliceToIntSlice(input.GalleryIDs)
 	sceneIDs := utils.StringSliceToIntSlice(input.SceneIDs)
 	markerIDs := utils.StringSliceToIntSlice(input.MarkerIDs)
 
@@ -334,21 +332,6 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 		s.Status.Progress = 0
 		lenScenes := len(scenes)
 		total := lenScenes
-
-		var galleries []*models.Gallery
-		if input.Thumbnails {
-			if len(galleryIDs) > 0 {
-				galleries, err = qg.FindMany(galleryIDs)
-			} else {
-				galleries, err = qg.All()
-			}
-
-			if err != nil {
-				logger.Errorf("failed to get galleries for generate")
-				return
-			}
-			total += len(galleries)
-		}
 
 		var markers []*models.SceneMarker
 		if len(markerIDs) > 0 {
@@ -431,29 +414,8 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			wg.Wait()
 		}
 
-		if input.Thumbnails {
-			logger.Infof("Generating thumbnails for the galleries")
-			for i, gallery := range galleries {
-				s.Status.setProgress(lenScenes+i, total)
-				if s.Status.stopping {
-					logger.Info("Stopping due to user request")
-					return
-				}
-
-				if gallery == nil {
-					logger.Errorf("nil gallery, skipping generate")
-					continue
-				}
-
-				wg.Add(1)
-				task := GenerateGthumbsTask{Gallery: *gallery, Overwrite: overwrite}
-				go task.Start(&wg)
-				wg.Wait()
-			}
-		}
-
 		for i, marker := range markers {
-			s.Status.setProgress(lenScenes+len(galleries)+i, total)
+			s.Status.setProgress(lenScenes+i, total)
 			if s.Status.stopping {
 				logger.Info("Stopping due to user request")
 				return

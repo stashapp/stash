@@ -126,18 +126,18 @@ func SetFileDetails(i *models.Image) error {
 	}
 
 	src, _ := GetSourceImage(i)
-	if err != nil {
-		return err
+
+	if src != nil {
+		i.Width = sql.NullInt64{
+			Int64: int64(src.Bounds().Max.X),
+			Valid: true,
+		}
+		i.Height = sql.NullInt64{
+			Int64: int64(src.Bounds().Max.Y),
+			Valid: true,
+		}
 	}
 
-	i.Width = sql.NullInt64{
-		Int64: int64(src.Bounds().Max.X),
-		Valid: true,
-	}
-	i.Height = sql.NullInt64{
-		Int64: int64(src.Bounds().Max.Y),
-		Valid: true,
-	}
 	i.Size = sql.NullInt64{
 		Int64: int64(f.Size()),
 		Valid: true,

@@ -1,12 +1,15 @@
 package manager
 
 import (
+	"archive/zip"
 	"os"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 // DestroyImage deletes an image and its associated relationships from the
@@ -41,14 +44,14 @@ func DestroyImage(imageID int, tx *sqlx.Tx) error {
 
 // DeleteGeneratedImageFiles deletes generated files for the provided image.
 func DeleteGeneratedImageFiles(image *models.Image) {
-	// thumbPath := GetInstance().Paths.Scene.GetThumbnailScreenshotPath(sceneHash)
-	// exists, _ = utils.FileExists(thumbPath)
-	// if exists {
-	// 	err := os.Remove(thumbPath)
-	// 	if err != nil {
-	// 		logger.Warnf("Could not delete file %s: %s", thumbPath, err.Error())
-	// 	}
-	// }
+	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
+	exists, _ := utils.FileExists(thumbPath)
+	if exists {
+		err := os.Remove(thumbPath)
+		if err != nil {
+			logger.Warnf("Could not delete file %s: %s", thumbPath, err.Error())
+		}
+	}
 }
 
 // DeleteImageFile deletes the image file from the filesystem.
@@ -57,4 +60,30 @@ func DeleteImageFile(image *models.Image) {
 	if err != nil {
 		logger.Warnf("Could not delete file %s: %s", image.Path, err.Error())
 	}
+}
+
+func countImagesInZip(path string) int {
+	readCloser, err := zip.OpenReader(path)
+	if err != nil {
+		return 0
+	}
+
+	ret := 0
+	for _, file := range readCloser.File {
+		if file.FileInfo().IsDir() {
+			continue
+		}
+
+		if strings.Contains(file.Name, "__MACOSX") {
+			continue
+		}
+
+		if !isImage(file.Name) {
+			continue
+		}
+
+		ret++
+	}
+
+	return ret
 }

@@ -31,7 +31,7 @@ func (rs imageRoutes) Routes() chi.Router {
 
 func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	image := r.Context().Value(imageKey).(*models.Image)
-	filepath := manager.GetInstance().Paths.Image.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
+	filepath := manager.GetInstance().Paths.Generated.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
 
 	// if the thumbnail doesn't exist, fall back to the original file
 	exists, _ := utils.FileExists(filepath)
