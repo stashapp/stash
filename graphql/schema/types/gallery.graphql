@@ -12,8 +12,9 @@ type Gallery {
   tags: [Tag!]!
   performers: [Performer!]!
 
-  """The files in the gallery"""
-  files: [GalleryFilesType!]! # Resolver
+  """The images in the gallery"""
+  images: [Image!]! # Resolver
+  cover: Image
 }
 
 type GalleryFilesType {

@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -13,9 +14,33 @@ func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*stri
 	return nil, nil
 }
 
-func (r *galleryResolver) Files(ctx context.Context, obj *models.Gallery) ([]*models.GalleryFilesType, error) {
-	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
-	return obj.GetFiles(baseURL), nil
+func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) ([]*models.Image, error) {
+	qb := models.NewImageQueryBuilder()
+
+	return qb.FindByGalleryID(obj.ID)
+}
+
+func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (*models.Image, error) {
+	qb := models.NewImageQueryBuilder()
+
+	imgs, err := qb.FindByGalleryID(obj.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret *models.Image
+	if len(imgs) > 0 {
+		ret = imgs[0]
+	}
+
+	for _, img := range imgs {
+		if image.IsCover(img) {
+			ret = img
+			break
+		}
+	}
+
+	return ret, nil
 }
 
 func (r *galleryResolver) URL(ctx context.Context, obj *models.Gallery) (*string, error) {

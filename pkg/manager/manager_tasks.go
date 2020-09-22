@@ -698,6 +698,7 @@ func (s *singleton) Clean() {
 	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
+	iqb := models.NewImageQueryBuilder()
 	gqb := models.NewGalleryQueryBuilder()
 	go func() {
 		defer s.returnToIdleState()
@@ -706,6 +707,12 @@ func (s *singleton) Clean() {
 		scenes, err := qb.All()
 		if err != nil {
 			logger.Errorf("failed to fetch list of scenes for cleaning")
+			return
+		}
+
+		images, err := iqb.All()
+		if err != nil {
+			logger.Errorf("failed to fetch list of images for cleaning")
 			return
 		}
 
@@ -722,7 +729,7 @@ func (s *singleton) Clean() {
 
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
-		total := len(scenes) + len(galleries)
+		total := len(scenes) + len(images) + len(galleries)
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
@@ -743,8 +750,27 @@ func (s *singleton) Clean() {
 			wg.Wait()
 		}
 
-		for i, gallery := range galleries {
+		for i, img := range images {
 			s.Status.setProgress(len(scenes)+i, total)
+			if s.Status.stopping {
+				logger.Info("Stopping due to user request")
+				return
+			}
+
+			if img == nil {
+				logger.Errorf("nil image, skipping Clean")
+				continue
+			}
+
+			wg.Add(1)
+
+			task := CleanTask{Image: img}
+			go task.Start(&wg)
+			wg.Wait()
+		}
+
+		for i, gallery := range galleries {
+			s.Status.setProgress(len(scenes)+len(galleries)+i, total)
 			if s.Status.stopping {
 				logger.Info("Stopping due to user request")
 				return

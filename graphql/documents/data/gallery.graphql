@@ -6,10 +6,11 @@ fragment GalleryData on Gallery {
   url
   details
   rating
-  files {
-    index
-    name
-    path
+  images {
+    ...SlimImageData
+  }
+  cover {
+    ...SlimImageData
   }
   studio {
     ...StudioData

@@ -41,14 +41,16 @@ WHERE images_tags.tag_id = ?
 GROUP BY images_tags.image_id
 `
 
-var countImagesForMissingChecksumQuery = `
-SELECT id FROM images
-WHERE images.checksum is null
+var imagesForGalleryQuery = selectAll(imageTable) + `
+LEFT JOIN galleries_images as galleries_join on galleries_join.image_id = images.id
+WHERE galleries_join.gallery_id = ?
+GROUP BY images.id
 `
 
-var countImagesForMissingOSHashQuery = `
-SELECT id FROM images
-WHERE images.oshash is null
+var countImagesForGalleryQuery = `
+SELECT gallery_id FROM galleries_images
+WHERE gallery_id = ?
+GROUP BY image_id
 `
 
 type ImageQueryBuilder struct{}
@@ -203,6 +205,16 @@ func (qb *ImageQueryBuilder) CountByPerformerID(performerID int) (int, error) {
 func (qb *ImageQueryBuilder) FindByStudioID(studioID int) ([]*Image, error) {
 	args := []interface{}{studioID}
 	return qb.queryImages(imagesForStudioQuery, args, nil)
+}
+
+func (qb *ImageQueryBuilder) FindByGalleryID(galleryID int) ([]*Image, error) {
+	args := []interface{}{galleryID}
+	return qb.queryImages(imagesForGalleryQuery, args, nil)
+}
+
+func (qb *ImageQueryBuilder) CountByGalleryID(galleryID int) (int, error) {
+	args := []interface{}{galleryID}
+	return runCountQuery(buildCountQuery(countImagesForGalleryQuery), args)
 }
 
 func (qb *ImageQueryBuilder) Count() (int, error) {

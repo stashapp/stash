@@ -19,8 +19,8 @@ CREATE INDEX `index_images_on_studio_id` on `images` (`studio_id`);
 CREATE TABLE `performers_images` (
   `performer_id` integer,
   `image_id` integer,
-  foreign key(`performer_id`) references `performers`(`id`),
-  foreign key(`image_id`) references `images`(`id`)
+  foreign key(`performer_id`) references `performers`(`id`) on delete CASCADE,
+  foreign key(`image_id`) references `images`(`id`) on delete CASCADE
 );
 
 CREATE INDEX `index_performers_images_on_image_id` on `performers_images` (`image_id`);
@@ -30,7 +30,7 @@ CREATE TABLE `images_tags` (
   `image_id` integer,
   `tag_id` integer,
   foreign key(`image_id`) references `images`(`id`) on delete CASCADE,
-  foreign key(`tag_id`) references `tags`(`id`)
+  foreign key(`tag_id`) references `tags`(`id`) on delete CASCADE
 );
 
 CREATE INDEX `index_images_tags_on_tag_id` on `images_tags` (`tag_id`);
@@ -51,8 +51,8 @@ CREATE TABLE `galleries` (
   `scene_id` integer,
   `created_at` datetime not null,
   `updated_at` datetime not null,
-  foreign key(`scene_id`) references `scenes`(`id`),
-  foreign key(`studio_id`) references `studios`(`id`)
+  foreign key(`scene_id`) references `scenes`(`id`) on delete SET NULL,
+  foreign key(`studio_id`) references `studios`(`id`) on delete SET NULL
 );
 
 DROP INDEX IF EXISTS `index_galleries_on_scene_id`;
@@ -67,8 +67,8 @@ CREATE INDEX `index_galleries_on_studio_id` on `galleries` (`studio_id`);
 CREATE TABLE `galleries_images` (
   `gallery_id` integer,
   `image_id` integer,
-  foreign key(`gallery_id`) references `galleries`(`id`),
-  foreign key(`image_id`) references `images`(`id`)
+  foreign key(`gallery_id`) references `galleries`(`id`) on delete CASCADE,
+  foreign key(`image_id`) references `images`(`id`) on delete CASCADE
 );
 
 CREATE INDEX `index_galleries_images_on_image_id` on `galleries_images` (`image_id`);
@@ -77,8 +77,8 @@ CREATE INDEX `index_galleries_images_on_gallery_id` on `galleries_images` (`gall
 CREATE TABLE `performers_galleries` (
   `performer_id` integer,
   `gallery_id` integer,
-  foreign key(`performer_id`) references `performers`(`id`),
-  foreign key(`gallery_id`) references `galleries`(`id`)
+  foreign key(`performer_id`) references `performers`(`id`) on delete CASCADE,
+  foreign key(`gallery_id`) references `galleries`(`id`) on delete CASCADE
 );
 
 CREATE INDEX `index_performers_galleries_on_gallery_id` on `performers_galleries` (`gallery_id`);
@@ -88,7 +88,7 @@ CREATE TABLE `galleries_tags` (
   `gallery_id` integer,
   `tag_id` integer,
   foreign key(`gallery_id`) references `galleries`(`id`) on delete CASCADE,
-  foreign key(`tag_id`) references `tags`(`id`)
+  foreign key(`tag_id`) references `tags`(`id`) on delete CASCADE
 );
 
 CREATE INDEX `index_galleries_tags_on_tag_id` on `galleries_tags` (`tag_id`);

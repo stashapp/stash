@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
-	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 	_ "golang.org/x/image/webp"
@@ -42,28 +41,6 @@ func (g *Gallery) CountFiles() int {
 	defer readCloser.Close()
 
 	return len(filteredFiles)
-}
-
-func (g *Gallery) GetFiles(baseURL string) []*GalleryFilesType {
-	var galleryFiles []*GalleryFilesType
-	filteredFiles, readCloser, err := g.listZipContents()
-	if err != nil {
-		return nil
-	}
-	defer readCloser.Close()
-
-	builder := urlbuilders.NewGalleryURLBuilder(baseURL, g.ID)
-	for i, file := range filteredFiles {
-		galleryURL := builder.GetGalleryImageURL(i)
-		galleryFile := GalleryFilesType{
-			Index: i,
-			Name:  &file.Name,
-			Path:  &galleryURL,
-		}
-		galleryFiles = append(galleryFiles, &galleryFile)
-	}
-
-	return galleryFiles
 }
 
 func (g *Gallery) GetImage(index int) []byte {

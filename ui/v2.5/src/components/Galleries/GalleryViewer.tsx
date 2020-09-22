@@ -16,20 +16,20 @@ export const GalleryViewer: React.FC<IProps> = ({ gallery }) => {
     setLightboxToggle(!lightboxToggle);
   };
 
-  const photos = gallery.files.map((file) => file.path ?? "");
-  const thumbs = gallery.files.map((file, index) => (
+  const photos = gallery.images.map((file) => file.paths.image ?? "");
+  const thumbs = gallery.images.map((file, index) => (
     <div
       role="link"
       tabIndex={index}
-      key={file.index}
+      key={file.checksum ?? index}
       onClick={() => openImage(index)}
       onKeyPress={() => openImage(index)}
     >
       <img
-        src={`${file.path}?thumb=600` || ""}
+        src={file.paths.thumbnail ?? ''}
         loading="lazy"
         className="gallery-image"
-        alt={file.name ?? index.toString()}
+        alt={file.title ?? index.toString()}
       />
     </div>
   ));

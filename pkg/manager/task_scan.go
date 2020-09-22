@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"archive/zip"
 	"context"
 	"database/sql"
 	"os"
@@ -26,6 +27,8 @@ type ScanTask struct {
 	UseFileMetadata     bool
 	calculateMD5        bool
 	fileNamingAlgorithm models.HashAlgorithm
+
+	zipGallery *models.Gallery
 }
 
 func (t *ScanTask) Start(wg *sync.WaitGroup) {
@@ -46,6 +49,17 @@ func (t *ScanTask) scanGallery() {
 
 	if gallery != nil {
 		// We already have this item in the database, keep going
+
+		// scan the zip files if the gallery has no images
+		iqb := models.NewImageQueryBuilder()
+		images, err := iqb.CountByGalleryID(gallery.ID)
+		if err != nil {
+			logger.Errorf("error getting images for zip gallery %s: %s", t.FilePath, err.Error())
+		}
+
+		if images == 0 {
+			t.scanZipImages(gallery)
+		}
 		return
 	}
 
@@ -75,7 +89,7 @@ func (t *ScanTask) scanGallery() {
 
 			logger.Infof("%s already exists.  Updating path...", t.FilePath)
 			gallery.Path = t.FilePath
-			_, err = qb.Update(*gallery, tx)
+			gallery, err = qb.Update(*gallery, tx)
 		}
 	} else {
 		currentTime := time.Now()
@@ -90,15 +104,25 @@ func (t *ScanTask) scanGallery() {
 		// don't create gallery if it has no images
 		if newGallery.CountFiles() > 0 {
 			logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
-			_, err = qb.Create(newGallery, tx)
+			gallery, err = qb.Create(newGallery, tx)
 		}
 	}
 
 	if err != nil {
 		logger.Error(err.Error())
-		_ = tx.Rollback()
-	} else if err := tx.Commit(); err != nil {
+		tx.Rollback()
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
 		logger.Error(err.Error())
+		return
+	}
+
+	// if the gallery has no associated images, then scan the zip for images
+	if gallery != nil {
+		t.scanZipImages(gallery)
 	}
 }
 
@@ -378,6 +402,40 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 	}
 }
 
+func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
+	readCloser, err := zip.OpenReader(zipGallery.Path)
+	if err != nil {
+		logger.Warnf("failed to read zip file %s", zipGallery.Path)
+		return
+	}
+
+	for _, file := range readCloser.File {
+		if file.FileInfo().IsDir() {
+			continue
+		}
+
+		if strings.Contains(file.Name, "__MACOSX") {
+			continue
+		}
+
+		if !isImage(file.Name) {
+			continue
+		}
+
+		// copy this task and change the filename
+		subTask := *t
+
+		// filepath is the zip file and the internal file name, separated by a null byte
+		subTask.FilePath = image.ZipFilename(zipGallery.Path, file.Name)
+		subTask.zipGallery = zipGallery
+
+		// run the subtask and wait for it to complete
+		var wg sync.WaitGroup
+		wg.Add(1)
+		subTask.Start(&wg)
+	}
+}
+
 func (t *ScanTask) scanImage() {
 	qb := models.NewImageQueryBuilder()
 	i, _ := qb.FindByPath(t.FilePath)
@@ -397,9 +455,9 @@ func (t *ScanTask) scanImage() {
 	var checksum string
 
 	logger.Infof("%s not found.  Calculating checksum...", t.FilePath)
-	checksum, err := t.calculateChecksum()
+	checksum, err := t.calculateImageChecksum()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Errorf("error calculating checksum for %s: %s", t.FilePath, err.Error())
 		return
 	}
 
@@ -410,11 +468,11 @@ func (t *ScanTask) scanImage() {
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
 	if i != nil {
-		exists, _ := utils.FileExists(i.Path)
+		exists := image.FileExists(i.Path)
 		if exists {
-			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, i.Path)
+			logger.Infof("%s already exists.  Duplicate of %s ", image.PathDisplayName(t.FilePath), image.PathDisplayName(i.Path))
 		} else {
-			logger.Infof("%s already exists.  Updating path...", t.FilePath)
+			logger.Infof("%s already exists.  Updating path...", image.PathDisplayName(t.FilePath))
 			imagePartial := models.ImagePartial{
 				ID:   i.ID,
 				Path: &t.FilePath,
@@ -422,7 +480,7 @@ func (t *ScanTask) scanImage() {
 			_, err = qb.Update(imagePartial, tx)
 		}
 	} else {
-		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
+		logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(t.FilePath))
 		currentTime := time.Now()
 		newImage := models.Image{
 			Checksum:  checksum,
@@ -434,6 +492,12 @@ func (t *ScanTask) scanImage() {
 		if err == nil {
 			i, err = qb.Create(newImage, tx)
 		}
+	}
+
+	if err == nil && t.zipGallery != nil {
+		// associate with gallery
+		jqb := models.NewJoinsQueryBuilder()
+		_, err = jqb.AddImageGallery(i.ID, t.zipGallery.ID, tx)
 	}
 
 	if err != nil {
@@ -477,6 +541,17 @@ func (t *ScanTask) generateThumbnail(i *models.Image) {
 func (t *ScanTask) calculateChecksum() (string, error) {
 	logger.Infof("Calculating checksum for %s...", t.FilePath)
 	checksum, err := utils.MD5FromFilePath(t.FilePath)
+	if err != nil {
+		return "", err
+	}
+	logger.Debugf("Checksum calculated: %s", checksum)
+	return checksum, nil
+}
+
+func (t *ScanTask) calculateImageChecksum() (string, error) {
+	logger.Infof("Calculating checksum for %s...", t.FilePath)
+	// uses image.CalculateMD5 to read files in zips
+	checksum, err := image.CalculateMD5(t.FilePath)
 	if err != nil {
 		return "", err
 	}

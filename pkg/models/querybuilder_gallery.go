@@ -125,6 +125,24 @@ func (qb *GalleryQueryBuilder) ValidGalleriesForScenePath(scenePath string) ([]*
 	return qb.queryGalleries(query, nil, nil)
 }
 
+func (qb *GalleryQueryBuilder) FindByImageID(imageID int) ([]*Gallery, error) {
+	query := selectAll(galleryTable) + `
+	LEFT JOIN galleries_images as images_join on images_join.gallery_id = galleries.id
+	WHERE images_join.image_id = ?
+	GROUP BY galleries.id
+	`
+	args := []interface{}{imageID}
+	return qb.queryGalleries(query, args, nil)
+}
+
+func (qb *GalleryQueryBuilder) CountByImageID(imageID int) (int, error) {
+	query := `SELECT image_id FROM galleries_images
+	WHERE image_id = ?
+	GROUP BY gallery_id`
+	args := []interface{}{imageID}
+	return runCountQuery(buildCountQuery(query), args)
+}
+
 func (qb *GalleryQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT galleries.id FROM galleries"), nil)
 }

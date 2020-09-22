@@ -50,19 +50,19 @@ export const GalleryList: React.FC = () => {
               <tr key={gallery.id}>
                 <td>
                   <Link to={`/galleries/${gallery.id}`}>
-                    {gallery.files.length > 0 ? (
+                    {gallery.cover ? (
                       <img
                         alt={gallery.title ?? ""}
                         className="w-100 w-sm-auto"
-                        src={`${gallery.files[0].path}?thumb=true`}
+                        src={`${gallery.cover.paths.thumbnail}`}
                       />
                     ) : undefined}
                   </Link>
                 </td>
                 <td className="d-none d-sm-block">
                   <Link to={`/galleries/${gallery.id}`}>
-                    {gallery.path} ({gallery.files.length}{" "}
-                    {gallery.files.length === 1 ? "image" : "images"})
+                    {gallery.path} ({gallery.images.length}{" "}
+                    {gallery.images.length === 1 ? "image" : "images"})
                   </Link>
                 </td>
               </tr>

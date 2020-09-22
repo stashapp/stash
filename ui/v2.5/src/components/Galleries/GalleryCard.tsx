@@ -45,20 +45,20 @@ export const GalleryCard: React.FC<IProps> = ({ gallery, zoomIndex }) => {
   return (
     <Card className={`gallery-card zoom-${zoomIndex}`}>
       <Link to={`/galleries/${gallery.id}`} className="gallery-card-header">
-        {gallery.files.length > 0 ? (
+        {gallery.cover ? (
           <img
             className="gallery-card-image"
             alt={gallery.path}
-            src={`${gallery.files[0].path}?thumb=true`}
+            src={`${gallery.cover.paths.thumbnail}`}
           />
         ) : undefined}
       </Link>
       <div className="card-section">
         <h5 className="card-section-title">{gallery.path}</h5>
         <span>
-          {gallery.files.length}&nbsp;
+          {gallery.images.length}&nbsp;
           <FormattedPlural
-            value={gallery.files.length ?? 0}
+            value={gallery.images.length ?? 0}
             one="image"
             other="images"
           />

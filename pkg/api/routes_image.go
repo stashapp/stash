@@ -6,8 +6,10 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type imageRoutes struct{}
@@ -31,12 +33,20 @@ func (rs imageRoutes) Thumbnail(w http.ResponseWriter, r *http.Request) {
 	image := r.Context().Value(imageKey).(*models.Image)
 	filepath := manager.GetInstance().Paths.Image.GetThumbnailPath(image.Checksum, models.DefaultGthumbWidth)
 
-	http.ServeFile(w, r, filepath)
+	// if the thumbnail doesn't exist, fall back to the original file
+	exists, _ := utils.FileExists(filepath)
+	if exists {
+		http.ServeFile(w, r, filepath)
+	} else {
+		rs.Image(w, r)
+	}
 }
 
 func (rs imageRoutes) Image(w http.ResponseWriter, r *http.Request) {
-	image := r.Context().Value(imageKey).(*models.Image)
-	http.ServeFile(w, r, image.Path)
+	i := r.Context().Value(imageKey).(*models.Image)
+
+	// if image is in a zip file, we need to serve it specifically
+	image.Serve(w, r, i.Path)
 }
 
 // endregion

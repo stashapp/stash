@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
@@ -38,13 +39,10 @@ func (t *CleanTask) Start(wg *sync.WaitGroup) {
 }
 
 func (t *CleanTask) shouldClean(path string) bool {
-	fileExists, err := t.fileExists(path)
-	if err != nil {
-		logger.Errorf("Error checking existence of %s: %s", path, err.Error())
-		return false
-	}
+	// use image.FileExists for zip file checking
+	fileExists := image.FileExists(path)
 
-	if fileExists && t.pathInStash(path) {
+	if fileExists && t.getStashFromPath(path) != nil {
 		logger.Debugf("File Found: %s", path)
 		if matchFile(path, config.GetExcludes()) {
 			logger.Infof("File matched regex. Cleaning: \"%s\"", path)
@@ -63,6 +61,12 @@ func (t *CleanTask) shouldCleanScene(s *models.Scene) bool {
 		return true
 	}
 
+	stash := t.getStashFromPath(s.Path)
+	if stash.ExcludeVideo {
+		logger.Infof("File in stash library that excludes video. Cleaning: \"%s\"", s.Path)
+		return true
+	}
+
 	if !matchExtension(s.Path, config.GetVideoExtensions()) {
 		logger.Infof("File extension does not match video extensions. Cleaning: \"%s\"", s.Path)
 		return true
@@ -73,6 +77,12 @@ func (t *CleanTask) shouldCleanScene(s *models.Scene) bool {
 
 func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 	if t.shouldClean(g.Path) {
+		return true
+	}
+
+	stash := t.getStashFromPath(g.Path)
+	if stash.ExcludeImage {
+		logger.Infof("File in stash library that excludes images. Cleaning: \"%s\"", g.Path)
 		return true
 	}
 
@@ -91,6 +101,12 @@ func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 
 func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 	if t.shouldClean(s.Path) {
+		return true
+	}
+
+	stash := t.getStashFromPath(s.Path)
+	if stash.ExcludeImage {
+		logger.Infof("File in stash library that excludes images. Cleaning: \"%s\"", s.Path)
 		return true
 	}
 
@@ -186,19 +202,17 @@ func (t *CleanTask) fileExists(filename string) (bool, error) {
 	return !info.IsDir(), nil
 }
 
-func (t *CleanTask) pathInStash(pathToCheck string) bool {
+func (t *CleanTask) getStashFromPath(pathToCheck string) *models.StashConfig {
 	for _, s := range config.GetStashPaths() {
 
 		rel, error := filepath.Rel(s.Path, filepath.Dir(pathToCheck))
 
 		if error == nil {
 			if !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-				logger.Debugf("File %s belongs to stash path %s", pathToCheck, s.Path)
-				return true
+				return s
 			}
 		}
 
 	}
-	logger.Debugf("File %s is out from stash path", pathToCheck)
-	return false
+	return nil
 }

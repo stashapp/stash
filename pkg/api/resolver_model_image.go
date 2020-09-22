@@ -4,14 +4,13 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
 )
 
 func (r *imageResolver) Title(ctx context.Context, obj *models.Image) (*string, error) {
-	if obj.Title.Valid {
-		return &obj.Title.String, nil
-	}
-	return nil, nil
+	ret := image.GetTitle(obj)
+	return &ret, nil
 }
 
 func (r *imageResolver) Rating(ctx context.Context, obj *models.Image) (*int, error) {
@@ -45,9 +44,8 @@ func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*models.I
 }
 
 func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) ([]*models.Gallery, error) {
-	// qb := models.NewGalleryQueryBuilder()
-	// return qb.FindBySceneID(obj.ID, nil)
-	return nil, nil
+	qb := models.NewGalleryQueryBuilder()
+	return qb.FindByImageID(obj.ID)
 }
 
 func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (*models.Studio, error) {
