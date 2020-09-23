@@ -10,7 +10,7 @@ import (
 func (r *queryResolver) FindGallery(ctx context.Context, id string) (*models.Gallery, error) {
 	qb := models.NewGalleryQueryBuilder()
 	idInt, _ := strconv.Atoi(id)
-	return qb.Find(idInt)
+	return qb.Find(idInt, nil)
 }
 
 func (r *queryResolver) FindGalleries(ctx context.Context, galleryFilter *models.GalleryFilterType, filter *models.FindFilterType) (*models.FindGalleriesResultType, error) {

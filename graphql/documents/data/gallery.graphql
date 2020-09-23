@@ -3,6 +3,7 @@ fragment GalleryData on Gallery {
   checksum
   path
   title
+  date
   url
   details
   rating

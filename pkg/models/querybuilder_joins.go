@@ -651,11 +651,237 @@ func (qb *JoinsQueryBuilder) AddImageGallery(imageID int, galleryID int, tx *sql
 	return err == nil, err
 }
 
+// RemoveImageGallery removes a gallery from an image. Returns true if the join
+// was removed.
+func (qb *JoinsQueryBuilder) RemoveImageGallery(imageID int, galleryID int, tx *sqlx.Tx) (bool, error) {
+	ensureTx(tx)
+
+	existingGalleries, err := qb.GetImageGalleries(imageID, tx)
+
+	if err != nil {
+		return false, err
+	}
+
+	// remove the join
+	var updatedJoins []GalleriesImages
+	found := false
+	for _, p := range existingGalleries {
+		if p.GalleryID == galleryID && p.ImageID == imageID {
+			found = true
+			continue
+		}
+
+		updatedJoins = append(updatedJoins, p)
+	}
+
+	if found {
+		err = qb.UpdateGalleriesImages(imageID, updatedJoins, tx)
+	}
+
+	return found && err == nil, err
+}
+
 func (qb *JoinsQueryBuilder) DestroyImageGalleries(imageID int, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins
 	_, err := tx.Exec("DELETE FROM galleries_images WHERE image_id = ?", imageID)
+
+	return err
+}
+
+func (qb *JoinsQueryBuilder) GetGalleryPerformers(galleryID int, tx *sqlx.Tx) ([]PerformersGalleries, error) {
+	ensureTx(tx)
+
+	// Delete the existing joins and then create new ones
+	query := `SELECT * from performers_galleries WHERE gallery_id = ?`
+
+	var rows *sqlx.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.Queryx(query, galleryID)
+	} else {
+		rows, err = database.DB.Queryx(query, galleryID)
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	performerGalleries := make([]PerformersGalleries, 0)
+	for rows.Next() {
+		performerGallery := PerformersGalleries{}
+		if err := rows.StructScan(&performerGallery); err != nil {
+			return nil, err
+		}
+		performerGalleries = append(performerGalleries, performerGallery)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return performerGalleries, nil
+}
+
+func (qb *JoinsQueryBuilder) CreatePerformersGalleries(newJoins []PerformersGalleries, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	for _, join := range newJoins {
+		_, err := tx.NamedExec(
+			`INSERT INTO performers_galleries (performer_id, gallery_id) VALUES (:performer_id, :gallery_id)`,
+			join,
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// AddPerformerGallery adds a performer to a gallery. It does not make any change
+// if the performer already exists on the gallery. It returns true if gallery
+// performer was added.
+func (qb *JoinsQueryBuilder) AddPerformerGallery(galleryID int, performerID int, tx *sqlx.Tx) (bool, error) {
+	ensureTx(tx)
+
+	existingPerformers, err := qb.GetGalleryPerformers(galleryID, tx)
+
+	if err != nil {
+		return false, err
+	}
+
+	// ensure not already present
+	for _, p := range existingPerformers {
+		if p.PerformerID == performerID && p.GalleryID == galleryID {
+			return false, nil
+		}
+	}
+
+	performerJoin := PerformersGalleries{
+		PerformerID: performerID,
+		GalleryID:   galleryID,
+	}
+	performerJoins := append(existingPerformers, performerJoin)
+
+	err = qb.UpdatePerformersGalleries(galleryID, performerJoins, tx)
+
+	return err == nil, err
+}
+
+func (qb *JoinsQueryBuilder) UpdatePerformersGalleries(galleryID int, updatedJoins []PerformersGalleries, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins and then create new ones
+	_, err := tx.Exec("DELETE FROM performers_galleries WHERE gallery_id = ?", galleryID)
+	if err != nil {
+		return err
+	}
+	return qb.CreatePerformersGalleries(updatedJoins, tx)
+}
+
+func (qb *JoinsQueryBuilder) DestroyPerformersGalleries(galleryID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins
+	_, err := tx.Exec("DELETE FROM performers_galleries WHERE gallery_id = ?", galleryID)
+	return err
+}
+
+func (qb *JoinsQueryBuilder) GetGalleryTags(galleryID int, tx *sqlx.Tx) ([]GalleriesTags, error) {
+	ensureTx(tx)
+
+	// Delete the existing joins and then create new ones
+	query := `SELECT * from galleries_tags WHERE gallery_id = ?`
+
+	var rows *sqlx.Rows
+	var err error
+	if tx != nil {
+		rows, err = tx.Queryx(query, galleryID)
+	} else {
+		rows, err = database.DB.Queryx(query, galleryID)
+	}
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	galleryTags := make([]GalleriesTags, 0)
+	for rows.Next() {
+		galleryTag := GalleriesTags{}
+		if err := rows.StructScan(&galleryTag); err != nil {
+			return nil, err
+		}
+		galleryTags = append(galleryTags, galleryTag)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return galleryTags, nil
+}
+
+func (qb *JoinsQueryBuilder) CreateGalleriesTags(newJoins []GalleriesTags, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	for _, join := range newJoins {
+		_, err := tx.NamedExec(
+			`INSERT INTO galleries_tags (gallery_id, tag_id) VALUES (:gallery_id, :tag_id)`,
+			join,
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (qb *JoinsQueryBuilder) UpdateGalleriesTags(galleryID int, updatedJoins []GalleriesTags, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins and then create new ones
+	_, err := tx.Exec("DELETE FROM galleries_tags WHERE gallery_id = ?", galleryID)
+	if err != nil {
+		return err
+	}
+	return qb.CreateGalleriesTags(updatedJoins, tx)
+}
+
+// AddGalleryTag adds a tag to a gallery. It does not make any change if the tag
+// already exists on the gallery. It returns true if gallery tag was added.
+func (qb *JoinsQueryBuilder) AddGalleryTag(galleryID int, tagID int, tx *sqlx.Tx) (bool, error) {
+	ensureTx(tx)
+
+	existingTags, err := qb.GetGalleryTags(galleryID, tx)
+
+	if err != nil {
+		return false, err
+	}
+
+	// ensure not already present
+	for _, p := range existingTags {
+		if p.TagID == tagID && p.GalleryID == galleryID {
+			return false, nil
+		}
+	}
+
+	tagJoin := GalleriesTags{
+		TagID:     tagID,
+		GalleryID: galleryID,
+	}
+	tagJoins := append(existingTags, tagJoin)
+
+	err = qb.UpdateGalleriesTags(galleryID, tagJoins, tx)
+
+	return err == nil, err
+}
+
+func (qb *JoinsQueryBuilder) DestroyGalleriesTags(galleryID int, tx *sqlx.Tx) error {
+	ensureTx(tx)
+
+	// Delete the existing joins
+	_, err := tx.Exec("DELETE FROM galleries_tags WHERE gallery_id = ?", galleryID)
 
 	return err
 }

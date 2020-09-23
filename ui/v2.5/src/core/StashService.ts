@@ -50,6 +50,15 @@ export const useFindGalleries = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindGalleries = (filter: ListFilterModel) =>
+  client.query<GQL.FindGalleriesQuery>({
+    query: GQL.FindGalleriesDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      gallery_filter: filter.makeImageFilter(),
+    },
+  });
+
 export const useFindScenes = (filter: ListFilterModel) =>
   GQL.useFindScenesQuery({
     variables: {
@@ -376,6 +385,55 @@ export const useImageDecrementO = (id: string) =>
 export const useImageResetO = (id: string) =>
   GQL.useImageResetOMutation({
     variables: { id },
+  });
+
+const galleryMutationImpactedQueries = [
+  GQL.FindPerformerDocument,
+  GQL.FindPerformersDocument,
+  GQL.FindImagesDocument,
+  GQL.FindStudioDocument,
+  GQL.FindStudiosDocument,
+  GQL.FindTagDocument,
+  GQL.FindTagsDocument,
+  GQL.AllTagsDocument,
+  GQL.FindGalleryDocument,
+  GQL.FindGalleriesDocument,
+];
+
+export const useGalleryCreate = (input: GQL.GalleryCreateInput) =>
+  GQL.useGalleryCreateMutation({
+    variables: input,
+    update: deleteCache(galleryMutationImpactedQueries),
+  });
+
+export const useGalleryUpdate = (input: GQL.GalleryUpdateInput) =>
+  GQL.useGalleryUpdateMutation({
+    variables: input,
+    update: deleteCache(galleryMutationImpactedQueries),
+  });
+
+export const useBulkGalleryUpdate = (input: GQL.BulkGalleryUpdateInput) =>
+  GQL.useBulkGalleryUpdateMutation({
+    variables: input,
+    update: deleteCache(galleryMutationImpactedQueries),
+  });
+
+export const useGalleryDestroy = (input: GQL.GalleryDestroyInput) =>
+  GQL.useGalleryDestroyMutation({
+    variables: input,
+    update: deleteCache(galleryMutationImpactedQueries),
+  });
+
+export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
+  client.mutate<GQL.AddGalleryImagesMutation>({
+    mutation: GQL.AddGalleryImagesDocument,
+    variables: input,
+  });
+
+export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
+  client.mutate<GQL.RemoveGalleryImagesMutation>({
+    mutation: GQL.RemoveGalleryImagesDocument,
+    variables: input,
   });
 
 export const studioMutationImpactedQueries = [

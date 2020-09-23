@@ -4,7 +4,7 @@ import FsLightbox from "fslightbox-react";
 import "flexbin/flexbin.css";
 
 interface IProps {
-  gallery: GQL.GalleryDataFragment;
+  gallery: Partial<GQL.GalleryDataFragment>;
 }
 
 export const GalleryViewer: React.FC<IProps> = ({ gallery }) => {
@@ -16,8 +16,8 @@ export const GalleryViewer: React.FC<IProps> = ({ gallery }) => {
     setLightboxToggle(!lightboxToggle);
   };
 
-  const photos = gallery.images.map((file) => file.paths.image ?? "");
-  const thumbs = gallery.images.map((file, index) => (
+  const photos = !gallery.images ? [] : gallery.images.map((file) => file.paths.image ?? "");
+  const thumbs = !gallery.images ? [] : gallery.images.map((file, index) => (
     <div
       role="link"
       tabIndex={index}
@@ -41,6 +41,7 @@ export const GalleryViewer: React.FC<IProps> = ({ gallery }) => {
         sourceIndex={currentIndex}
         toggler={lightboxToggle}
         sources={photos}
+        key={gallery.id!}
       />
     </div>
   );

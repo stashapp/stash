@@ -505,7 +505,8 @@ func (t *ExportTask) ExportGalleries() {
 	for i, gallery := range galleries {
 		index := i + 1
 		logger.Progressf("[galleries] %d of %d", index, len(galleries))
-		t.Mappings.Galleries = append(t.Mappings.Galleries, jsonschema.PathMapping{Path: gallery.Path, Checksum: gallery.Checksum})
+
+		t.Mappings.Galleries = append(t.Mappings.Galleries, jsonschema.PathMapping{Path: gallery.Path.String, Checksum: gallery.Checksum})
 	}
 
 	logger.Infof("[galleries] export complete")

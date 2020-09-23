@@ -26,6 +26,7 @@ import { StudiosCriterion, ParentStudiosCriterion } from "./studios";
 import { TagsCriterion } from "./tags";
 import { GenderCriterion } from "./gender";
 import { MoviesCriterion } from "./movies";
+import { GalleriesCriterion } from "./galleries";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
@@ -71,6 +72,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new ParentStudiosCriterion();
     case "movies":
       return new MoviesCriterion();
+    case "galleries":
+      return new GalleriesCriterion();
     case "birth_year":
       return new NumberCriterion(type, type);
     case "age": {

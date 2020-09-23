@@ -329,6 +329,17 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 		query.addHaving(havingClause)
 	}
 
+	if galleriesFilter := imageFilter.Galleries; galleriesFilter != nil && len(galleriesFilter.Value) > 0 {
+		for _, galleryID := range galleriesFilter.Value {
+			query.addArg(galleryID)
+		}
+
+		query.body += " LEFT JOIN galleries ON galleries_join.gallery_id = galleries.id"
+		whereClause, havingClause := getMultiCriterionClause("images", "galleries", "galleries_images", "image_id", "gallery_id", galleriesFilter)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
+	}
+
 	if performersFilter := imageFilter.Performers; performersFilter != nil && len(performersFilter.Value) > 0 {
 		for _, performerID := range performersFilter.Value {
 			query.addArg(performerID)

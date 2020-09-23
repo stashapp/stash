@@ -146,6 +146,8 @@ export const MainNavbar: React.FC = () => {
       ? "/movies/new"
       : location.pathname === "/tags"
       ? "/tags/new"
+      : location.pathname === "/galleries"
+      ? "/galleries/new"
       : null;
   const newButton =
     newPath === null ? (

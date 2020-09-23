@@ -75,23 +75,29 @@ func (t *CleanTask) shouldCleanScene(s *models.Scene) bool {
 }
 
 func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
-	if t.shouldClean(g.Path) {
+	// never clean manually created galleries
+	if !g.Path.Valid {
+		return false
+	}
+
+	path := g.Path.String
+	if t.shouldClean(path) {
 		return true
 	}
 
-	stash := t.getStashFromPath(g.Path)
+	stash := t.getStashFromPath(path)
 	if stash.ExcludeImage {
-		logger.Infof("File in stash library that excludes images. Cleaning: \"%s\"", g.Path)
+		logger.Infof("File in stash library that excludes images. Cleaning: \"%s\"", path)
 		return true
 	}
 
-	if !matchExtension(g.Path, config.GetGalleryExtensions()) {
-		logger.Infof("File extension does not match gallery extensions. Cleaning: \"%s\"", g.Path)
+	if !matchExtension(path, config.GetGalleryExtensions()) {
+		logger.Infof("File extension does not match gallery extensions. Cleaning: \"%s\"", path)
 		return true
 	}
 
-	if countImagesInZip(g.Path) == 0 {
-		logger.Infof("Gallery has 0 images. Cleaning: \"%s\"", g.Path)
+	if countImagesInZip(path) == 0 {
+		logger.Infof("Gallery has 0 images. Cleaning: \"%s\"", path)
 		return true
 	}
 

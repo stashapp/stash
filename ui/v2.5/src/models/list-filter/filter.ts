@@ -65,6 +65,7 @@ import { makeCriteria } from "./criteria/utils";
 import { DisplayMode, FilterMode } from "./types";
 import { GenderCriterionOption, GenderCriterion } from "./criteria/gender";
 import { MoviesCriterionOption, MoviesCriterion } from "./criteria/movies";
+import { GalleriesCriterion } from "./criteria/galleries";
 
 interface IQueryParameters {
   perPage?: string;
@@ -316,7 +317,10 @@ export class ListFilterModel {
       }
 
       jsonParameters.forEach((jsonString) => {
-        const encodedCriterion = JSON.parse(jsonString);
+        // make sure we escape \
+        const escaped = jsonString.replaceAll("\\", "\\\\")
+
+        const encodedCriterion = JSON.parse(escaped);
         const criterion = makeCriteria(encodedCriterion.type);
         // it's possible that we have unsupported criteria. Just skip if so.
         if (criterion) {
@@ -680,7 +684,7 @@ export class ListFilterModel {
         }
         case "performers": {
           const perfCrit = criterion as PerformersCriterion;
-          result.performers = {
+          result.galleries = {
             value: perfCrit.value.map((perf) => perf.id),
             modifier: perfCrit.modifier,
           };
@@ -691,6 +695,14 @@ export class ListFilterModel {
           result.studios = {
             value: studCrit.value.map((studio) => studio.id),
             modifier: studCrit.modifier,
+          };
+          break;
+        }
+        case "galleries": {
+          const perfCrit = criterion as GalleriesCriterion;
+          result.galleries = {
+            value: perfCrit.value.map((gallery) => gallery.id),
+            modifier: perfCrit.modifier,
           };
           break;
         }

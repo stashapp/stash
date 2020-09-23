@@ -41,10 +41,11 @@ ALTER TABLE `galleries` rename to `_galleries_old`;
 
 CREATE TABLE `galleries` (
   `id` integer not null primary key autoincrement,
-  `path` varchar(510) not null,
+  `path` varchar(510),
   `checksum` varchar(255) not null,
   `title` varchar(255),
   `url` varchar(255),
+  `date` date,
   `details` text,
   `studio_id` integer,
   `rating` tinyint,

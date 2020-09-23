@@ -55,6 +55,19 @@ func (qb *GalleryQueryBuilder) Update(updatedGallery Gallery, tx *sqlx.Tx) (*Gal
 	return &updatedGallery, nil
 }
 
+func (qb *GalleryQueryBuilder) UpdatePartial(updatedGallery GalleryPartial, tx *sqlx.Tx) (*Gallery, error) {
+	ensureTx(tx)
+	_, err := tx.NamedExec(
+		`UPDATE galleries SET `+SQLGenKeysPartial(updatedGallery)+` WHERE galleries.id = :id`,
+		updatedGallery,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return qb.Find(updatedGallery.ID, tx)
+}
+
 func (qb *GalleryQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
 	return executeDeleteQuery("galleries", strconv.Itoa(id), tx)
 }
@@ -77,16 +90,16 @@ func (qb *GalleryQueryBuilder) ClearGalleryId(sceneID int, tx *sqlx.Tx) error {
 	return err
 }
 
-func (qb *GalleryQueryBuilder) Find(id int) (*Gallery, error) {
+func (qb *GalleryQueryBuilder) Find(id int, tx *sqlx.Tx) (*Gallery, error) {
 	query := "SELECT * FROM galleries WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
-	return qb.queryGallery(query, args, nil)
+	return qb.queryGallery(query, args, tx)
 }
 
 func (qb *GalleryQueryBuilder) FindMany(ids []int) ([]*Gallery, error) {
 	var galleries []*Gallery
 	for _, id := range ids {
-		gallery, err := qb.Find(id)
+		gallery, err := qb.Find(id, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -184,7 +197,7 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 
 	var galleries []*Gallery
 	for _, id := range idsResult {
-		gallery, _ := qb.Find(id)
+		gallery, _ := qb.Find(id, nil)
 		galleries = append(galleries, gallery)
 	}
 

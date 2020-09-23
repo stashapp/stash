@@ -1,20 +1,148 @@
+.gallery-image {
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.gallery-header {
+  flex-basis: auto;
+  margin-top: 30px;
+}
+
+#gallery-details-container {
+  .tab-content {
+    min-height: 15rem;
+  }
+
+  .gallery-description {
+    width: 100%;
+  }
+}
+
 .gallery-card {
   &.card {
+    overflow: hidden;
     padding: 0;
     padding-bottom: 1rem;
   }
 
   .card-section {
     margin-top: auto;
+
+    a:hover {
+      text-decoration: none;
+    }
+  }
+
+  .card-section-title {
+    color: $text-color;
   }
 
   &-image {
     object-fit: contain;
   }
+
+  &-check {
+    left: 0.5rem;
+    margin-top: -12px;
+    opacity: 0;
+    padding-left: 15px;
+    position: absolute;
+    top: 0.7rem;
+    width: 1.2rem;
+    z-index: 1;
+
+    &:checked {
+      opacity: 0.75;
+    }
+  }
+
+  .rating-banner {
+    transition: opacity 0.5s;
+  }
+
+  &-preview {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+    position: relative;
+
+    &-gallery {
+      height: 100%;
+      object-fit: cover;
+      width: 100%;
+    }
+
+    &.portrait {
+      .gallery-card-preview-gallery {
+        object-fit: contain;
+      }
+    }
+  }
+
+  &:hover {
+    .rating-banner {
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .gallery-card-check {
+      opacity: 0.75;
+      transition: opacity 0.5s;
+    }
+  }
 }
 
-.gallery-image {
-  &:hover {
-    cursor: pointer;
+.gallery-tabs {
+  max-height: calc(100vh - 4rem);
+
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+$galleryTabWidth: 450px;
+
+@media (min-width: 1200px) {
+  .gallery-tabs {
+    flex: 0 0 $galleryTabWidth;
+    max-width: $galleryTabWidth;
+    overflow: auto;
+  }
+
+  .gallery-container {
+    flex: 0 0 calc(100% - #{$galleryTabWidth});
+    max-width: calc(100% - #{$galleryTabWidth});
+  }
+}
+
+.gallery-tabs,
+.gallery-container {
+  padding-left: 15px;
+  padding-right: 15px;
+  position: relative;
+  width: 100%;
+}
+
+.gallery-container {
+  height: calc(100vh - 4rem);
+  overflow: auto;
+}
+
+@media (min-width: 1200px), (max-width: 575px) {
+  .gallery-performers {
+    .performer-card {
+      width: 15rem;
+
+      &-gallery {
+        height: 22.5rem;
+      }
+    }
+  }
+}
+
+#gallery-edit-details {
+  .rating-stars {
+    font-size: 1.3em;
+    height: calc(1.5em + 0.75rem + 2px);
   }
 }

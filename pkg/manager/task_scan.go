@@ -85,21 +85,27 @@ func (t *ScanTask) scanGallery() {
 	tx := database.DB.MustBeginTx(ctx, nil)
 	gallery, _ = qb.FindByChecksum(checksum, tx)
 	if gallery != nil {
-		exists, _ := utils.FileExists(gallery.Path)
+		exists, _ := utils.FileExists(gallery.Path.String)
 		if exists {
-			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, gallery.Path)
+			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, gallery.Path.String)
 		} else {
 
 			logger.Infof("%s already exists.  Updating path...", t.FilePath)
-			gallery.Path = t.FilePath
+			gallery.Path = sql.NullString{
+				String: t.FilePath,
+				Valid:  true,
+			}
 			gallery, err = qb.Update(*gallery, tx)
 		}
 	} else {
 		currentTime := time.Now()
 
 		newGallery := models.Gallery{
-			Checksum:  checksum,
-			Path:      t.FilePath,
+			Checksum: checksum,
+			Path: sql.NullString{
+				String: t.FilePath,
+				Valid:  true,
+			},
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
@@ -406,12 +412,12 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 }
 
 func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
-	err := walkGalleryZip(zipGallery.Path, func(file *zip.File) error {
+	err := walkGalleryZip(zipGallery.Path.String, func(file *zip.File) error {
 		// copy this task and change the filename
 		subTask := *t
 
 		// filepath is the zip file and the internal file name, separated by a null byte
-		subTask.FilePath = image.ZipFilename(zipGallery.Path, file.Name)
+		subTask.FilePath = image.ZipFilename(zipGallery.Path.String, file.Name)
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete
@@ -421,7 +427,7 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 		return nil
 	})
 	if err != nil {
-		logger.Warnf("failed to scan zip file images for %s: %s", zipGallery.Path, err.Error())
+		logger.Warnf("failed to scan zip file images for %s: %s", zipGallery.Path.String, err.Error())
 	}
 }
 

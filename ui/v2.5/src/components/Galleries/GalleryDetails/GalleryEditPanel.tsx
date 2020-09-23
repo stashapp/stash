@@ -1,7 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Col, Row } from "react-bootstrap";
+import {
+  Button,
+  Form,
+  Col,
+  Row,
+} from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { useImageUpdate } from "src/core/StashService";
+import {
+  useGalleryCreate,
+  useGalleryUpdate,
+} from "src/core/StashService";
 import {
   PerformerSelect,
   TagSelect,
@@ -9,19 +17,23 @@ import {
   LoadingIndicator,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { FormUtils } from "src/utils";
+import { FormUtils, EditableTextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 
 interface IProps {
-  image: GQL.ImageDataFragment;
+  gallery: Partial<GQL.GalleryDataFragment>;
   isVisible: boolean;
-  onUpdate: (image: GQL.ImageDataFragment) => void;
+  isNew?: boolean;
+  onUpdate: (gallery: GQL.GalleryDataFragment) => void;
   onDelete: () => void;
 }
 
-export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
+export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
   const Toast = useToast();
   const [title, setTitle] = useState<string>();
+  const [details, setDetails] = useState<string>();
+  const [url, setUrl] = useState<string>();
+  const [date, setDate] = useState<string>();
   const [rating, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
@@ -30,7 +42,8 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
   // Network state
   const [isLoading, setIsLoading] = useState(true);
 
-  const [updateImage] = useImageUpdate(getImageInput());
+  const [createGallery] = useGalleryCreate(getGalleryInput() as GQL.GalleryCreateInput);
+  const [updateGallery] = useGalleryUpdate(getGalleryInput() as GQL.GalleryUpdateInput);
 
   useEffect(() => {
     if (props.isVisible) {
@@ -74,27 +87,32 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   });
 
-  function updateImageEditState(state: Partial<GQL.ImageDataFragment>) {
+  function updateGalleryEditState(state: Partial<GQL.GalleryDataFragment>) {
     const perfIds = state.performers?.map((performer) => performer.id);
     const tIds = state.tags ? state.tags.map((tag) => tag.id) : undefined;
 
     setTitle(state.title ?? undefined);
+    setDetails(state.details ?? undefined);
+    setUrl(state.url ?? undefined);
+    setDate(state.date ?? undefined);
     setRating(state.rating === null ? NaN : state.rating);
-    // setGalleryId(state?.gallery?.id ?? undefined);
     setStudioId(state?.studio?.id ?? undefined);
     setPerformerIds(perfIds);
     setTagIds(tIds);
   }
 
   useEffect(() => {
-    updateImageEditState(props.image);
+    updateGalleryEditState(props.gallery);
     setIsLoading(false);
-  }, [props.image]);
+  }, [props.gallery]);
 
-  function getImageInput(): GQL.ImageUpdateInput {
+  function getGalleryInput() {
     return {
-      id: props.image.id,
+      id: props.isNew ? undefined : props.gallery.id!,
       title,
+      details,
+      url,
+      date,
       rating,
       studio_id: studioId,
       performer_ids: performerIds,
@@ -105,10 +123,18 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
   async function onSave() {
     setIsLoading(true);
     try {
-      const result = await updateImage();
-      if (result.data?.imageUpdate) {
-        props.onUpdate(result.data.imageUpdate);
-        Toast.success({ content: "Updated image" });
+      if (props.isNew) {
+        const result = await createGallery();
+        if (result.data?.galleryCreate) {
+          props.onUpdate(result.data.galleryCreate);
+          Toast.success({ content: "Created gallery" });
+        }
+      } else {
+        const result = await updateGallery();
+        if (result.data?.galleryUpdate) {
+          props.onUpdate(result.data.galleryUpdate);
+          Toast.success({ content: "Updated gallery" });
+        }
       }
     } catch (e) {
       Toast.error(e);
@@ -119,7 +145,7 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
   if (isLoading) return <LoadingIndicator />;
 
   return (
-    <div id="image-edit-details">
+    <div id="gallery-edit-details">
       <div className="form-container row px-3 pt-3">
         <div className="col edit-buttons mb-3 pl-0">
           <Button className="edit-button" variant="primary" onClick={onSave}>
@@ -141,6 +167,26 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
             value: title,
             onChange: setTitle,
             isEditing: true,
+          })}
+          <Form.Group controlId="url" as={Row}>
+            <Col xs={3} className="pr-0 url-label">
+              <Form.Label className="col-form-label">URL</Form.Label>
+            </Col>
+            <Col xs={9}>
+              {EditableTextUtils.renderInputGroup({
+                title: "URL",
+                value: url,
+                onChange: setUrl,
+                isEditing: true,
+              })}
+            </Col>
+          </Form.Group>
+          {FormUtils.renderInputGroup({
+            title: "Date",
+            value: date,
+            isEditing: true,
+            onChange: setDate,
+            placeholder: "YYYY-MM-DD",
           })}
           <Form.Group controlId="rating" as={Row}>
             {FormUtils.renderLabel({
@@ -204,6 +250,19 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
                 ids={tagIds}
               />
             </Col>
+          </Form.Group>
+        </div>
+        <div className="col-12 col-lg-6 col-xl-12">
+          <Form.Group controlId="details">
+            <Form.Label>Details</Form.Label>
+            <Form.Control
+              as="textarea"
+              className="gallery-description text-input"
+              onChange={(newValue: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setDetails(newValue.currentTarget.value)
+              }
+              value={details}
+            />
           </Form.Group>
         </div>
       </div>

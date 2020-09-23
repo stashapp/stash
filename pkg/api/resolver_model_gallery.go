@@ -5,7 +5,15 @@ import (
 
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
+
+func (r *galleryResolver) Path(ctx context.Context, obj *models.Gallery) (*string, error) {
+	if obj.Path.Valid {
+		return &obj.Path.String, nil
+	}
+	return nil, nil
+}
 
 func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*string, error) {
 	if obj.Title.Valid {
@@ -41,6 +49,14 @@ func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (*mode
 	}
 
 	return ret, nil
+}
+
+func (r *galleryResolver) Date(ctx context.Context, obj *models.Gallery) (*string, error) {
+	if obj.Date.Valid {
+		result := utils.GetYMDFromDatabaseDate(obj.Date.String)
+		return &result, nil
+	}
+	return nil, nil
 }
 
 func (r *galleryResolver) URL(ctx context.Context, obj *models.Gallery) (*string, error) {

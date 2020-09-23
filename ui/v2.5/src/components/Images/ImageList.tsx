@@ -12,7 +12,7 @@ import { useImagesList } from "src/hooks";
 import { TextUtils } from "src/utils";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { showWhenSelected } from "src/hooks/ListHook";
+import { IListHookOperation, showWhenSelected } from "src/hooks/ListHook";
 import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
@@ -65,17 +65,19 @@ const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
 interface IImageList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   persistState?: boolean;
+  extraOperations?: IListHookOperation<FindImagesQueryResult>[];
 }
 
 export const ImageList: React.FC<IImageList> = ({
   filterHook,
   persistState,
+  extraOperations,
 }) => {
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
 
-  const otherOperations = [
+  const otherOperations = (extraOperations ?? []).concat([
     {
       text: "View Random",
       onClick: viewRandom,
@@ -89,7 +91,7 @@ export const ImageList: React.FC<IImageList> = ({
       text: "Export all...",
       onClick: onExportAll,
     },
-  ];
+  ]);
 
   const addKeybinds = (
     result: FindImagesQueryResult,
@@ -137,7 +139,7 @@ export const ImageList: React.FC<IImageList> = ({
       ) {
         const { id } = singleResult!.data!.findImages!.images[0];
         // navigate to the image player page
-        history.push(`/images/${id}?autoplay=true`);
+        history.push(`/images/${id}`);
       }
     }
   }

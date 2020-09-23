@@ -413,8 +413,11 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 		// Populate a new gallery from the input
 		currentTime := time.Now()
 		newGallery := models.Gallery{
-			Checksum:  mappingJSON.Checksum,
-			Path:      mappingJSON.Path,
+			Checksum: mappingJSON.Checksum,
+			Path: sql.NullString{
+				String: mappingJSON.Path,
+				Valid:  true,
+			},
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
