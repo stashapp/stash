@@ -3,17 +3,17 @@ package manager
 import (
 	"context"
 	"database/sql"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
-
+	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type ScanTask struct {
@@ -21,13 +21,55 @@ type ScanTask struct {
 	UseFileMetadata     bool
 	calculateMD5        bool
 	fileNamingAlgorithm models.HashAlgorithm
+	GenerateSprite      bool
+	GeneratePreview     bool
 }
 
-func (t *ScanTask) Start(wg *sync.WaitGroup) {
+func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	if isGallery(t.FilePath) {
 		t.scanGallery()
 	} else {
-		t.scanScene()
+		scene := t.scanScene()
+
+		if scene != nil {
+			iwg := sizedwaitgroup.New(2)
+
+			if t.GenerateSprite {
+				iwg.Add()
+				taskSprite := GenerateSpriteTask{Scene: *scene, Overwrite: false, fileNamingAlgorithm: t.fileNamingAlgorithm}
+				go taskSprite.Start(&iwg)
+			}
+
+			if t.GeneratePreview {
+				iwg.Add()
+
+				var previewSegmentDuration = config.GetPreviewSegmentDuration()
+				var previewSegments = config.GetPreviewSegments()
+				var previewExcludeStart = config.GetPreviewExcludeStart()
+				var previewExcludeEnd = config.GetPreviewExcludeEnd()
+				var previewPresent = config.GetPreviewPreset()
+
+				// NOTE: the reuse of this model like this is painful.
+				previewOptions := models.GeneratePreviewOptionsInput{
+					PreviewSegments:        &previewSegments,
+					PreviewSegmentDuration: &previewSegmentDuration,
+					PreviewExcludeStart:    &previewExcludeStart,
+					PreviewExcludeEnd:      &previewExcludeEnd,
+					PreviewPreset:          &previewPresent,
+				}
+
+				taskPreview := GeneratePreviewTask{
+					Scene:               *scene,
+					ImagePreview:        true, // TODO: Determine ImagePreview/PreviewPreset
+					Options:             previewOptions,
+					Overwrite:           false,
+					fileNamingAlgorithm: t.fileNamingAlgorithm,
+				}
+				go taskPreview.Start(&iwg)
+			}
+
+			iwg.Wait()
+		}
 	}
 
 	wg.Done()
@@ -96,7 +138,7 @@ func (t *ScanTask) scanGallery() {
 }
 
 // associates a gallery to a scene with the same basename
-func (t *ScanTask) associateGallery(wg *sync.WaitGroup) {
+func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 	qb := models.NewGalleryQueryBuilder()
 	gallery, _ := qb.FindByPath(t.FilePath)
 	if gallery == nil {
@@ -146,7 +188,7 @@ func (t *ScanTask) associateGallery(wg *sync.WaitGroup) {
 	wg.Done()
 }
 
-func (t *ScanTask) scanScene() {
+func (t *ScanTask) scanScene() *models.Scene {
 	qb := models.NewSceneQueryBuilder()
 	scene, _ := qb.FindByPath(t.FilePath)
 	if scene != nil {
@@ -159,7 +201,7 @@ func (t *ScanTask) scanScene() {
 			videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
 			if err != nil {
 				logger.Error(err.Error())
-				return
+				return nil
 			}
 			container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
 			logger.Infof("Adding container %s to file %s", container, t.FilePath)
@@ -181,14 +223,14 @@ func (t *ScanTask) scanScene() {
 			oshash, err := utils.OSHashFromFilePath(t.FilePath)
 			if err != nil {
 				logger.Error(err.Error())
-				return
+				return nil
 			}
 
 			// check if oshash clashes with existing scene
 			dupe, _ := qb.FindByOSHash(oshash)
 			if dupe != nil {
 				logger.Errorf("OSHash for file %s is the same as that of %s", t.FilePath, dupe.Path)
-				return
+				return nil
 			}
 
 			ctx := context.TODO()
@@ -197,7 +239,7 @@ func (t *ScanTask) scanScene() {
 			if err != nil {
 				logger.Error(err.Error())
 				tx.Rollback()
-				return
+				return nil
 			} else if err := tx.Commit(); err != nil {
 				logger.Error(err.Error())
 			}
@@ -208,14 +250,14 @@ func (t *ScanTask) scanScene() {
 			checksum, err := t.calculateChecksum()
 			if err != nil {
 				logger.Error(err.Error())
-				return
+				return nil
 			}
 
 			// check if checksum clashes with existing scene
 			dupe, _ := qb.FindByChecksum(checksum)
 			if dupe != nil {
 				logger.Errorf("MD5 for file %s is the same as that of %s", t.FilePath, dupe.Path)
-				return
+				return nil
 			}
 
 			ctx := context.TODO()
@@ -229,18 +271,18 @@ func (t *ScanTask) scanScene() {
 			}
 		}
 
-		return
+		return nil
 	}
 
 	// Ignore directories.
 	if isDir, _ := utils.DirExists(t.FilePath); isDir {
-		return
+		return nil
 	}
 
 	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
 	if err != nil {
 		logger.Error(err.Error())
-		return
+		return nil
 	}
 	container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
 
@@ -255,14 +297,14 @@ func (t *ScanTask) scanScene() {
 	oshash, err := utils.OSHashFromFilePath(t.FilePath)
 	if err != nil {
 		logger.Error(err.Error())
-		return
+		return nil
 	}
 
 	if t.fileNamingAlgorithm == models.HashAlgorithmMd5 || t.calculateMD5 {
 		checksum, err = t.calculateChecksum()
 		if err != nil {
 			logger.Error(err.Error())
-			return
+			return nil
 		}
 	}
 
@@ -283,6 +325,9 @@ func (t *ScanTask) scanScene() {
 	}
 
 	t.makeScreenshots(videoFile, sceneHash)
+
+	var new_scene *models.Scene
+	scene, _ = qb.FindByChecksum(checksum)
 
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
@@ -323,15 +368,21 @@ func (t *ScanTask) scanScene() {
 			newScene.Details = sql.NullString{String: videoFile.Comment, Valid: true}
 			newScene.Date = models.SQLiteDate{String: videoFile.CreationTime.Format("2006-01-02")}
 		}
-		_, err = qb.Create(newScene, tx)
+
+		new_scene, err = qb.Create(newScene, tx)
 	}
 
 	if err != nil {
 		logger.Error(err.Error())
 		_ = tx.Rollback()
+		return nil
+
 	} else if err := tx.Commit(); err != nil {
 		logger.Error(err.Error())
+		return nil
 	}
+
+	return new_scene
 }
 
 func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum string) {
