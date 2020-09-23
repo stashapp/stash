@@ -512,6 +512,7 @@ func (t *ScanTask) scanImage() {
 			_, err = jqb.AddImageGallery(i.ID, t.zipGallery.ID, tx)
 		} else if config.GetCreateGalleriesFromFolders() {
 			// create gallery from folder or associate with existing gallery
+			logger.Infof("Associating image %s with folder gallery", i.Path)
 			err = t.associateImageWithFolderGallery(i.ID, tx)
 		}
 	}
@@ -547,13 +548,14 @@ func (t *ScanTask) associateImageWithFolderGallery(imageID int, tx *sqlx.Tx) err
 		newGallery := models.Gallery{
 			Checksum: checksum,
 			Path: sql.NullString{
-				String: t.FilePath,
+				String: path,
 				Valid:  true,
 			},
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
 
+		logger.Infof("Creating gallery for folder %s", path)
 		g, err = gqb.Create(newGallery, tx)
 		if err != nil {
 			return err

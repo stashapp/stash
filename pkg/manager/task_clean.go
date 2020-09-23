@@ -76,7 +76,7 @@ func (t *CleanTask) shouldCleanScene(s *models.Scene) bool {
 
 func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 	// never clean manually created galleries
-	if !g.Path.Valid {
+	if !g.Zip {
 		return false
 	}
 
