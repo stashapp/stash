@@ -15,9 +15,12 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
   gallery,
 }) => {
   const Toast = useToast();
-  
+
   function filterHook(filter: ListFilterModel) {
-    const galleryValue = { id: gallery.id!, label: gallery.title ?? gallery.path ?? "" };
+    const galleryValue = {
+      id: gallery.id!,
+      label: gallery.title ?? gallery.path ?? "",
+    };
     // if galleries is already present, then we modify it, otherwise add
     let galleryCriterion = filter.criteria.find((c) => {
       return c.type === "galleries";
@@ -51,14 +54,15 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
   async function removeImages(
     result: GQL.FindImagesQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>) {
+    selectedIds: Set<string>
+  ) {
     try {
       await mutateRemoveGalleryImages({
         gallery_id: gallery.id!,
         image_ids: Array.from(selectedIds.values()),
       });
       Toast.success({
-        content: "Added images"
+        content: "Added images",
       });
     } catch (e) {
       Toast.error(e);
@@ -71,8 +75,14 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
       onClick: removeImages,
       isDisplayed: showWhenSelected,
       postRefetch: true,
-    }
+    },
   ];
 
-  return <ImageList filterHook={filterHook} extraOperations={otherOperations} persistState={false}/>;
+  return (
+    <ImageList
+      filterHook={filterHook}
+      extraOperations={otherOperations}
+      persistState={false}
+    />
+  );
 };

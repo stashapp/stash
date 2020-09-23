@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Form,
-  Col,
-  Row,
-} from "react-bootstrap";
+import { Button, Form, Col, Row } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import {
-  useGalleryCreate,
-  useGalleryUpdate,
-} from "src/core/StashService";
+import { useGalleryCreate, useGalleryUpdate } from "src/core/StashService";
 import {
   PerformerSelect,
   TagSelect,
@@ -42,8 +34,12 @@ export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
   // Network state
   const [isLoading, setIsLoading] = useState(true);
 
-  const [createGallery] = useGalleryCreate(getGalleryInput() as GQL.GalleryCreateInput);
-  const [updateGallery] = useGalleryUpdate(getGalleryInput() as GQL.GalleryUpdateInput);
+  const [createGallery] = useGalleryCreate(
+    getGalleryInput() as GQL.GalleryCreateInput
+  );
+  const [updateGallery] = useGalleryUpdate(
+    getGalleryInput() as GQL.GalleryUpdateInput
+  );
 
   useEffect(() => {
     if (props.isVisible) {

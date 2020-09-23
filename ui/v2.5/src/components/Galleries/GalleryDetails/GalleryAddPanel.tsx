@@ -11,13 +11,14 @@ interface IGalleryAddProps {
   gallery: Partial<GQL.GalleryDataFragment>;
 }
 
-export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({
-  gallery,
-}) => {
+export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
   const Toast = useToast();
-  
+
   function filterHook(filter: ListFilterModel) {
-    const galleryValue = { id: gallery.id!, label: gallery.title ?? gallery.path ?? "" };
+    const galleryValue = {
+      id: gallery.id!,
+      label: gallery.title ?? gallery.path ?? "",
+    };
     // if galleries is already present, then we modify it, otherwise add
     let galleryCriterion = filter.criteria.find((c) => {
       return c.type === "galleries";
@@ -25,7 +26,7 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({
 
     if (
       galleryCriterion &&
-      (galleryCriterion.modifier === GQL.CriterionModifier.Excludes)
+      galleryCriterion.modifier === GQL.CriterionModifier.Excludes
     ) {
       // add the gallery if not present
       if (
@@ -51,14 +52,15 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({
   async function addImages(
     result: GQL.FindImagesQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>) {
+    selectedIds: Set<string>
+  ) {
     try {
       await mutateAddGalleryImages({
         gallery_id: gallery.id!,
         image_ids: Array.from(selectedIds.values()),
       });
       Toast.success({
-        content: "Added images"
+        content: "Added images",
       });
     } catch (e) {
       Toast.error(e);
@@ -71,8 +73,14 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({
       onClick: addImages,
       isDisplayed: showWhenSelected,
       postRefetch: true,
-    }
+    },
   ];
 
-  return <ImageList filterHook={filterHook} extraOperations={otherOperations} persistState={false}/>;
+  return (
+    <ImageList
+      filterHook={filterHook}
+      extraOperations={otherOperations}
+      persistState={false}
+    />
+  );
 };

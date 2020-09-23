@@ -318,7 +318,7 @@ export class ListFilterModel {
 
       jsonParameters.forEach((jsonString) => {
         // make sure we escape \
-        const escaped = jsonString.replaceAll("\\", "\\\\")
+        const escaped = jsonString.replaceAll("\\", "\\\\");
 
         const encodedCriterion = JSON.parse(escaped);
         const criterion = makeCriteria(encodedCriterion.type);

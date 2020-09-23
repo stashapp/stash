@@ -284,7 +284,7 @@ const RenderList = <
     setZoomIndex(newZoomIndex);
   }
 
-  async function onOperationClicked(o : IListHookOperation<QueryResult>) {
+  async function onOperationClicked(o: IListHookOperation<QueryResult>) {
     await o.onClick(result, filter, selectedIds);
     if (o.postRefetch) {
       result.refetch();

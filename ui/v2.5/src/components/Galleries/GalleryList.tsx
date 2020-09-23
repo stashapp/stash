@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import _ from "lodash";
-import { useHistory } from "react-router-dom";
 import { Table } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import { FindGalleriesQueryResult, GalleryDataFragment } from "src/core/generated-graphql";
+import { Link, useHistory } from "react-router-dom";
+import {
+  FindGalleriesQueryResult,
+  GalleryDataFragment,
+} from "src/core/generated-graphql";
 import { useGalleriesList } from "src/hooks";
 import { showWhenSelected } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { GalleryCard } from "./GalleryCard";
 import { queryFindGalleries } from "src/core/StashService";
+import { GalleryCard } from "./GalleryCard";
 import { GalleryExportDialog } from "./GalleryExportDialog";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";

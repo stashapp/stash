@@ -17,6 +17,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -378,7 +379,7 @@ func createGalleries(tx *sqlx.Tx, n int) error {
 
 	for i := 0; i < n; i++ {
 		gallery := models.Gallery{
-			Path:     getGalleryStringValue(i, pathField),
+			Path:     modelstest.NullString(getGalleryStringValue(i, pathField)),
 			Checksum: getGalleryStringValue(i, checksumField),
 		}
 
@@ -662,7 +663,7 @@ func linkScenePerformer(tx *sqlx.Tx, sceneIndex, performerIndex int) error {
 func linkSceneGallery(tx *sqlx.Tx, sceneIndex, galleryIndex int) error {
 	gqb := models.NewGalleryQueryBuilder()
 
-	gallery, err := gqb.Find(galleryIDs[galleryIndex])
+	gallery, err := gqb.Find(galleryIDs[galleryIndex], nil)
 
 	if err != nil {
 		return fmt.Errorf("error finding gallery: %s", err.Error())

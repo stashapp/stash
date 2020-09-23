@@ -36,7 +36,8 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = (props) => {
   }
 
   function renderPerformers() {
-    if (!props.gallery.performers || props.gallery.performers.length === 0) return;
+    if (!props.gallery.performers || props.gallery.performers.length === 0)
+      return;
     const cards = props.gallery.performers.map((performer) => (
       <PerformerCard
         key={performer.id}

@@ -91,8 +91,8 @@ export const GalleryCard: React.FC<IProps> = (props) => {
         }}
       />
 
-      <Link 
-        to={`/galleries/${props.gallery.id}`} 
+      <Link
+        to={`/galleries/${props.gallery.id}`}
         className="gallery-card-header"
         onClick={handleImageClick}
         onDragStart={handleDrag}
@@ -108,7 +108,11 @@ export const GalleryCard: React.FC<IProps> = (props) => {
         ) : undefined}
       </Link>
       <div className="card-section">
-      <Link to={`/galleries/${props.gallery.id}`}><h5 className="card-section-title">{props.gallery.title ?? props.gallery.path}</h5></Link>
+        <Link to={`/galleries/${props.gallery.id}`}>
+          <h5 className="card-section-title">
+            {props.gallery.title ?? props.gallery.path}
+          </h5>
+        </Link>
         <span>
           {props.gallery.images.length}&nbsp;
           <FormattedPlural

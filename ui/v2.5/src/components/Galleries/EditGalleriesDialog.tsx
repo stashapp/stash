@@ -175,7 +175,9 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
 
     state.forEach((gallery: GQL.GalleryDataFragment) => {
       if (first) {
-        ret = gallery.performers ? gallery.performers.map((p) => p.id).sort() : [];
+        ret = gallery.performers
+          ? gallery.performers.map((p) => p.id).sort()
+          : [];
         first = false;
       } else {
         const perfIds = gallery.performers

@@ -2,16 +2,13 @@ import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import {
-  useFindGallery,
-} from "src/core/StashService";
+import { useFindGallery } from "src/core/StashService";
 import { LoadingIndicator, Icon } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
 import { GalleryEditPanel } from "./GalleryEditPanel";
 import { GalleryDetailPanel } from "./GalleryDetailPanel";
 import { DeleteGalleriesDialog } from "../DeleteGalleriesDialog";
-import { GalleryViewer } from "../GalleryViewer";
 import { GalleryImagesPanel } from "./GalleryImagesPanel";
 import { GalleryAddPanel } from "./GalleryAddPanel";
 
@@ -29,10 +26,7 @@ export const Gallery: React.FC = () => {
   const { data, error, loading } = useFindGallery(id);
 
   const [activeTabKey, setActiveTabKey] = useState("gallery-details-panel");
-  const activeRightTabKey =
-    tab === "images" || tab === "add"
-      ? tab
-      : "images";
+  const activeRightTabKey = tab === "images" || tab === "add" ? tab : "images";
   const setActiveRightTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "images" ? "" : `/${newTab}`;
@@ -56,7 +50,10 @@ export const Gallery: React.FC = () => {
   function maybeRenderDeleteDialog() {
     if (isDeleteAlertOpen && gallery) {
       return (
-        <DeleteGalleriesDialog selected={[gallery]} onClose={onDeleteDialogClosed} />
+        <DeleteGalleriesDialog
+          selected={[gallery]}
+          onClose={onDeleteDialogClosed}
+        />
       );
     }
   }
@@ -110,8 +107,7 @@ export const Gallery: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="gallery-edit-panel">Edit</Nav.Link>
             </Nav.Item>
-            <Nav.Item className="ml-auto"></Nav.Item>
-            <Nav.Item>{renderOperations()}</Nav.Item>
+            <Nav.Item className="ml-auto">{renderOperations()}</Nav.Item>
           </Nav>
         </div>
 
@@ -163,10 +159,10 @@ export const Gallery: React.FC = () => {
         <Tab.Content>
           <Tab.Pane eventKey="images" title="Images">
             {/* <GalleryViewer gallery={gallery} /> */}
-            <GalleryImagesPanel gallery={gallery}></GalleryImagesPanel>
+            <GalleryImagesPanel gallery={gallery} />
           </Tab.Pane>
           <Tab.Pane eventKey="add" title="Add">
-            <GalleryAddPanel gallery={gallery}></GalleryAddPanel>
+            <GalleryAddPanel gallery={gallery} />
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
@@ -230,9 +226,7 @@ export const Gallery: React.FC = () => {
         </div>
         {renderTabs()}
       </div>
-      <div className="gallery-container">
-        {renderRightTabs()}
-      </div>
+      <div className="gallery-container">{renderRightTabs()}</div>
     </div>
   );
 };
