@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/facebookgo/symwalk"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
@@ -102,6 +103,7 @@ func (t *ScanTask) scanGallery() {
 
 		newGallery := models.Gallery{
 			Checksum: checksum,
+			Zip:      true,
 			Path: sql.NullString{
 				String: t.FilePath,
 				Valid:  true,
@@ -503,10 +505,15 @@ func (t *ScanTask) scanImage() {
 		}
 	}
 
-	if err == nil && t.zipGallery != nil {
-		// associate with gallery
+	if err == nil {
 		jqb := models.NewJoinsQueryBuilder()
-		_, err = jqb.AddImageGallery(i.ID, t.zipGallery.ID, tx)
+		if t.zipGallery != nil {
+			// associate with gallery
+			_, err = jqb.AddImageGallery(i.ID, t.zipGallery.ID, tx)
+		} else if config.GetCreateGalleriesFromFolders() {
+			// create gallery from folder or associate with existing gallery
+			err = t.associateImageWithFolderGallery(i.ID, tx)
+		}
 	}
 
 	if err != nil {
@@ -519,6 +526,43 @@ func (t *ScanTask) scanImage() {
 	}
 
 	t.generateThumbnail(i)
+}
+
+func (t *ScanTask) associateImageWithFolderGallery(imageID int, tx *sqlx.Tx) error {
+	// find a gallery with the path specified
+	path := filepath.Dir(t.FilePath)
+	gqb := models.NewGalleryQueryBuilder()
+	jqb := models.NewJoinsQueryBuilder()
+	g, err := gqb.FindByPath(path)
+	if err != nil {
+		return err
+	}
+
+	if g == nil {
+		checksum := utils.MD5FromString(path)
+
+		// create the gallery
+		currentTime := time.Now()
+
+		newGallery := models.Gallery{
+			Checksum: checksum,
+			Path: sql.NullString{
+				String: t.FilePath,
+				Valid:  true,
+			},
+			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+		}
+
+		g, err = gqb.Create(newGallery, tx)
+		if err != nil {
+			return err
+		}
+	}
+
+	// associate image with gallery
+	_, err = jqb.AddImageGallery(imageID, g.ID, tx)
+	return err
 }
 
 func (t *ScanTask) generateThumbnail(i *models.Image) {

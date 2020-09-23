@@ -8,6 +8,7 @@ type Gallery struct {
 	ID        int             `db:"id" json:"id"`
 	Path      sql.NullString  `db:"path" json:"path"`
 	Checksum  string          `db:"checksum" json:"checksum"`
+	Zip       bool            `db:"zip" json:"zip"`
 	Title     sql.NullString  `db:"title" json:"title"`
 	URL       sql.NullString  `db:"url" json:"url"`
 	Date      SQLiteDate      `db:"date" json:"date"`

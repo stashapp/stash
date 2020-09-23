@@ -43,6 +43,7 @@ CREATE TABLE `galleries` (
   `id` integer not null primary key autoincrement,
   `path` varchar(510),
   `checksum` varchar(255) not null,
+  `zip` boolean not null default '0',
   `title` varchar(255),
   `url` varchar(255),
   `date` date,

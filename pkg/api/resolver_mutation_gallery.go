@@ -491,7 +491,7 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input models.Ga
 		return false, errors.New("gallery not found")
 	}
 
-	if gallery.Path.Valid {
+	if gallery.Zip {
 		return false, errors.New("cannot modify zip gallery images")
 	}
 
@@ -526,7 +526,7 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input models
 		return false, errors.New("gallery not found")
 	}
 
-	if gallery.Path.Valid {
+	if gallery.Zip {
 		return false, errors.New("cannot modify zip gallery images")
 	}
 

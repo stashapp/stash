@@ -21,8 +21,8 @@ func NewGalleryQueryBuilder() GalleryQueryBuilder {
 func (qb *GalleryQueryBuilder) Create(newGallery Gallery, tx *sqlx.Tx) (*Gallery, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO galleries (path, checksum, title, url, studio_id, rating, scene_id, created_at, updated_at)
-				VALUES (:path, :checksum, :title, :url, :studio_id, :rating, :scene_id, :created_at, :updated_at)
+		`INSERT INTO galleries (path, checksum, zip, title, url, studio_id, rating, scene_id, created_at, updated_at)
+				VALUES (:path, :checksum, :zip, :title, :url, :studio_id, :rating, :scene_id, :created_at, :updated_at)
 		`,
 		newGallery,
 	)
@@ -177,6 +177,11 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 	}
 
 	query.body = selectDistinctIDs("galleries")
+	query.body += `
+		left join performers_galleries as performers_join on performers_join.gallery_id = galleries.id
+		left join studios as studio on studio.id = galleries.studio_id
+		left join galleries_tags as tags_join on tags_join.gallery_id = galleries.id
+	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"galleries.path", "galleries.checksum"}
@@ -185,11 +190,63 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 		query.addArg(thisArgs...)
 	}
 
+	if zipFilter := galleryFilter.IsZip; zipFilter != nil {
+		var favStr string
+		if *zipFilter == true {
+			favStr = "1"
+		} else {
+			favStr = "0"
+		}
+		query.addWhere("galleries.zip = " + favStr)
+	}
+
 	if isMissingFilter := galleryFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "scene":
 			query.addWhere("galleries.scene_id IS NULL")
+		case "studio":
+			query.addWhere("galleries.studio_id IS NULL")
+		case "performers":
+			query.addWhere("performers_join.gallery_id IS NULL")
+		case "date":
+			query.addWhere("galleries.date IS \"\" OR galleries.date IS \"0001-01-01\"")
+		case "tags":
+			query.addWhere("tags_join.gallery_id IS NULL")
+		default:
+			query.addWhere("galleries." + *isMissingFilter + " IS NULL")
 		}
+	}
+
+	if tagsFilter := galleryFilter.Tags; tagsFilter != nil && len(tagsFilter.Value) > 0 {
+		for _, tagID := range tagsFilter.Value {
+			query.addArg(tagID)
+		}
+
+		query.body += " LEFT JOIN tags on tags_join.tag_id = tags.id"
+		whereClause, havingClause := getMultiCriterionClause("galleries", "tags", "tags_join", "gallery_id", "tag_id", tagsFilter)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
+	}
+
+	if performersFilter := galleryFilter.Performers; performersFilter != nil && len(performersFilter.Value) > 0 {
+		for _, performerID := range performersFilter.Value {
+			query.addArg(performerID)
+		}
+
+		query.body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
+		whereClause, havingClause := getMultiCriterionClause("galleries", "performers", "performers_join", "gallery_id", "performer_id", performersFilter)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
+	}
+
+	if studiosFilter := galleryFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
+		for _, studioID := range studiosFilter.Value {
+			query.addArg(studioID)
+		}
+
+		whereClause, havingClause := getMultiCriterionClause("galleries", "studio", "", "", "studio_id", studiosFilter)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
 	}
 
 	query.sortAndPagination = qb.getGallerySort(findFilter) + getPagination(findFilter)

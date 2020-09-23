@@ -5,6 +5,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { ImageList } from "src/components/Images/ImageList";
 import { showWhenSelected } from "src/hooks/ListHook";
 import { mutateAddGalleryImages } from "src/core/StashService";
+import { useToast } from "src/hooks";
 
 interface IGalleryAddProps {
   gallery: Partial<GQL.GalleryDataFragment>;
@@ -13,6 +14,8 @@ interface IGalleryAddProps {
 export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({
   gallery,
 }) => {
+  const Toast = useToast();
+  
   function filterHook(filter: ListFilterModel) {
     const galleryValue = { id: gallery.id!, label: gallery.title ?? gallery.path ?? "" };
     // if galleries is already present, then we modify it, otherwise add
@@ -49,10 +52,17 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({
     result: GQL.FindImagesQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>) {
-    await mutateAddGalleryImages({
-      gallery_id: gallery.id!,
-      image_ids: Array.from(selectedIds.values()),
-    });
+    try {
+      await mutateAddGalleryImages({
+        gallery_id: gallery.id!,
+        image_ids: Array.from(selectedIds.values()),
+      });
+      Toast.success({
+        content: "Added images"
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   const otherOperations = [
