@@ -41,56 +41,6 @@
   &-image {
     object-fit: contain;
   }
-
-  &-check {
-    left: 0.5rem;
-    margin-top: -12px;
-    opacity: 0;
-    padding-left: 15px;
-    position: absolute;
-    top: 0.7rem;
-    width: 1.2rem;
-    z-index: 1;
-
-    &:checked {
-      opacity: 0.75;
-    }
-  }
-
-  .rating-banner {
-    transition: opacity 0.5s;
-  }
-
-  &-preview {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 5px;
-    position: relative;
-
-    &-gallery {
-      height: 100%;
-      object-fit: cover;
-      width: 100%;
-    }
-
-    &.portrait {
-      .gallery-card-preview-gallery {
-        object-fit: contain;
-      }
-    }
-  }
-
-  &:hover {
-    .rating-banner {
-      opacity: 0;
-      transition: opacity 0.5s;
-    }
-
-    .gallery-card-check {
-      opacity: 0.75;
-      transition: opacity 0.5s;
-    }
-  }
 }
 
 .gallery-tabs {
