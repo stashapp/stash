@@ -149,11 +149,11 @@ type Mutation {
   imagesDestroy(input: ImagesDestroyInput!): Boolean!
   imagesUpdate(input: [ImageUpdateInput!]!): [Image]
 
-  """Increments the o-counter for a scene. Returns the new value"""
+  """Increments the o-counter for an image. Returns the new value"""
   imageIncrementO(id: ID!): Int!
-  """Decrements the o-counter for a scene. Returns the new value"""
+  """Decrements the o-counter for an image. Returns the new value"""
   imageDecrementO(id: ID!): Int!
-  """Resets the o-counter for a scene to 0. Returns the new value"""
+  """Resets the o-counter for a image to 0. Returns the new value"""
   imageResetO(id: ID!): Int!
 
   galleryCreate(input: GalleryCreateInput!): Gallery
