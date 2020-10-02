@@ -4,7 +4,7 @@
   ],
   "extends": "stylelint-config-prettier",
   "rules": {
-    "indentation": 2,
+    "indentation": null,
     "at-rule-empty-line-before": [ "always", {
       except: ["after-same-name", "first-nested" ],
       ignore: ["after-comment"],
