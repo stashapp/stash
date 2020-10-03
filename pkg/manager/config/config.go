@@ -41,6 +41,9 @@ const PreviewPreset = "preview_preset"
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
+const ParallelTasks = "parallel_tasks"
+const parallelTasksDefault = 1
+
 const PreviewSegmentDuration = "preview_segment_duration"
 const previewSegmentDurationDefault = 0.75
 
@@ -235,6 +238,12 @@ func GetExternalHost() string {
 // scene preview file, in seconds.
 func GetPreviewSegmentDuration() float64 {
 	return viper.GetFloat64(PreviewSegmentDuration)
+}
+
+// GetParallelTasks returns the number of parallel tasks that should be started
+// by scan or generate task.
+func GetParallelTasks() int {
+	return viper.GetInt(ParallelTasks)
 }
 
 // GetPreviewSegments returns the amount of segments in a scene preview file.
@@ -490,6 +499,7 @@ func IsValid() bool {
 }
 
 func setDefaultValues() {
+	viper.SetDefault(ParallelTasks, parallelTasksDefault)
 	viper.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
 	viper.SetDefault(PreviewSegments, previewSegmentsDefault)
 	viper.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)

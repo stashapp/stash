@@ -61,6 +61,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	config.Set(config.CalculateMD5, input.CalculateMd5)
 
+	if input.ParallelTasks != nil {
+		config.Set(config.ParallelTasks, *input.ParallelTasks)
+	}
 	if input.PreviewSegments != nil {
 		config.Set(config.PreviewSegments, *input.PreviewSegments)
 	}

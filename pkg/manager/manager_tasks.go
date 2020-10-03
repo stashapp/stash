@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -87,7 +88,7 @@ func (t *TaskStatus) updated() {
 	t.LastUpdate = time.Now()
 }
 
-func (s *singleton) Scan(useFileMetadata bool) {
+func (s *singleton) Scan(useFileMetadata bool, scanGeneratePreviews bool, scanGenerateImagePreviews bool, scanGenerateSprites bool) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -114,7 +115,13 @@ func (s *singleton) Scan(useFileMetadata bool) {
 		logger.Infof("Starting scan of %d files. %d New files found", total, s.neededScan(results))
 
 		start := time.Now()
-		wg := sizedwaitgroup.New(1) // TODO: CHANGEME This should be a configuration option - runtime.NumCPU()
+		parallelTasks := config.GetParallelTasks()
+		if parallelTasks <= 0 {
+			parallelTasks = (runtime.NumCPU() / 4) + 1
+		}
+
+		logger.Infof("Scan started with %d parallel tasks", parallelTasks)
+		wg := sizedwaitgroup.New(parallelTasks)
 
 		s.Status.Progress = 0
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
@@ -128,8 +135,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 			instance.Paths.Generated.EnsureTmpDir()
 
 			wg.Add()
-			// TODO: CHANGEME GenerateSprite & GeneratePreview both should be GUI options.
-			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5, GeneratePreview: false, GenerateSprite: false}
+			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5, GeneratePreview: scanGeneratePreviews, GenerateImagePreview: scanGenerateImagePreviews, GenerateSprite: scanGenerateSprites}
 			go task.Start(&wg)
 		}
 		wg.Wait()
@@ -273,7 +279,13 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			return
 		}
 
-		wg := sizedwaitgroup.New(1) // TODO: CHANGEME This should be a configuration option -- runtime.NumCPU()
+		parallelTasks := config.GetParallelTasks()
+		if parallelTasks <= 0 {
+			parallelTasks = (runtime.NumCPU() / 4) + 1
+		}
+
+		logger.Infof("Generate started with %d parallel tasks", parallelTasks)
+		wg := sizedwaitgroup.New(parallelTasks)
 
 		s.Status.Progress = 0
 		lenScenes := len(scenes)

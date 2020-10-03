@@ -24,6 +24,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [videoFileNamingAlgorithm, setVideoFileNamingAlgorithm] = useState<
     GQL.HashAlgorithm | undefined
   >(undefined);
+  const [parallelTasks, setParallelTasks] = useState<number>(0);
   const [previewSegments, setPreviewSegments] = useState<number>(0);
   const [previewSegmentDuration, setPreviewSegmentDuration] = useState<number>(
     0
@@ -69,6 +70,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
     calculateMD5,
     videoFileNamingAlgorithm:
       (videoFileNamingAlgorithm as GQL.HashAlgorithm) ?? undefined,
+    parallelTasks,
     previewSegments,
     previewSegmentDuration,
     previewExcludeStart,
@@ -107,6 +109,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setCachePath(conf.general.cachePath);
       setVideoFileNamingAlgorithm(conf.general.videoFileNamingAlgorithm);
       setCalculateMD5(conf.general.calculateMD5);
+      setParallelTasks(conf.general.parallelTasks);
       setPreviewSegments(conf.general.previewSegments);
       setPreviewSegmentDuration(conf.general.previewSegmentDuration);
       setPreviewExcludeStart(conf.general.previewExcludeStart);
@@ -438,6 +441,31 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Control>
           <Form.Text className="text-muted">
             Maximum size for transcoded streams
+          </Form.Text>
+        </Form.Group>
+      </Form.Group>
+
+      <hr />
+
+      <Form.Group>
+        <h4>Parallel Scan/Generation</h4>
+
+        <Form.Group id="parallel-tasks">
+          <h6>Number of parallel task for scan/generation</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            type="number"
+            value={parallelTasks}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setParallelTasks(
+                Number.parseInt(e.currentTarget.value || "0", 10)
+              )
+            }
+          />
+          <Form.Text className="text-muted">
+            Set to 0 for auto-detection. Warning running more tasks than is
+            required to achieve 100% cpu utilisation will decrease performance
+            and potentially cause other issues.
           </Form.Text>
         </Form.Group>
       </Form.Group>

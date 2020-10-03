@@ -17,12 +17,13 @@ import (
 )
 
 type ScanTask struct {
-	FilePath            string
-	UseFileMetadata     bool
-	calculateMD5        bool
-	fileNamingAlgorithm models.HashAlgorithm
-	GenerateSprite      bool
-	GeneratePreview     bool
+	FilePath             string
+	UseFileMetadata      bool
+	calculateMD5         bool
+	fileNamingAlgorithm  models.HashAlgorithm
+	GenerateSprite       bool
+	GeneratePreview      bool
+	GenerateImagePreview bool
 }
 
 func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
@@ -60,7 +61,7 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 
 				taskPreview := GeneratePreviewTask{
 					Scene:               *scene,
-					ImagePreview:        true, // TODO: Determine ImagePreview/PreviewPreset
+					ImagePreview:        t.GenerateImagePreview,
 					Options:             previewOptions,
 					Overwrite:           false,
 					fileNamingAlgorithm: t.fileNamingAlgorithm,

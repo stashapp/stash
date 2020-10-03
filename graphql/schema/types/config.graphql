@@ -35,6 +35,8 @@ input ConfigGeneralInput {
   calculateMD5: Boolean!
   """Hash algorithm to use for generated file naming"""
   videoFileNamingAlgorithm: HashAlgorithm!
+  """Number of parallel tasks to start during scan/generate"""
+  parallelTasks: Int
   """Number of segments in a preview file"""
   previewSegments: Int
   """Preview segment duration, in seconds"""
@@ -86,6 +88,8 @@ type ConfigGeneralResult {
   calculateMD5: Boolean!
   """Hash algorithm to use for generated file naming"""
   videoFileNamingAlgorithm: HashAlgorithm!
+  """Number of parallel tasks to start during scan/generate"""
+  parallelTasks: Int!
   """Number of segments in a preview file"""
   previewSegments: Int!
   """Preview segment duration, in seconds"""
