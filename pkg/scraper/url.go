@@ -151,7 +151,7 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 	defer cancel()
 
 	// adding timeout to make sure we won't wait forever
-	// chromedb.Click seems to timeout if it doesnt find the requested button to click
+	// chromedp.Click seems to timeout if it doesnt find the requested button to click
 	ctx, cancel = context.WithTimeout(ctx, downloadTimeout*time.Second+sleepDuration)
 	defer cancel()
 
