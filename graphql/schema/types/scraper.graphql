@@ -24,7 +24,6 @@ type Scraper {
     movie: ScraperSpec
 }
 
-
 type ScrapedScenePerformer {
   """Set if performer matched"""
   stored_id: ID
@@ -87,4 +86,13 @@ type ScrapedScene {
   tags: [ScrapedSceneTag!]
   performers: [ScrapedScenePerformer!]
   movies: [ScrapedSceneMovie!]
+}
+
+input StashBoxQueryInput {
+  """Index of the configured stash-box instance to use"""
+  stash_box_index: Int!
+  """Instructs query by scene fingerprints"""
+  scene_ids: [ID!]
+  """Query by query string"""
+  q: String
 }

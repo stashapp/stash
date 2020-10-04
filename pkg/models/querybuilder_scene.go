@@ -93,6 +93,19 @@ func (qb *SceneQueryBuilder) Update(updatedScene ScenePartial, tx *sqlx.Tx) (*Sc
 	return qb.find(updatedScene.ID, tx)
 }
 
+func (qb *SceneQueryBuilder) UpdateFull(updatedScene Scene, tx *sqlx.Tx) (*Scene, error) {
+	ensureTx(tx)
+	_, err := tx.NamedExec(
+		`UPDATE scenes SET `+SQLGenKeys(updatedScene)+` WHERE scenes.id = :id`,
+		updatedScene,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return qb.find(updatedScene.ID, tx)
+}
+
 func (qb *SceneQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error) {
 	ensureTx(tx)
 	_, err := tx.Exec(

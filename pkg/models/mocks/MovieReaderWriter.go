@@ -35,6 +35,29 @@ func (_m *MovieReaderWriter) All() ([]*models.Movie, error) {
 	return r0, r1
 }
 
+// Create provides a mock function with given fields: newMovie
+func (_m *MovieReaderWriter) Create(newMovie models.Movie) (*models.Movie, error) {
+	ret := _m.Called(newMovie)
+
+	var r0 *models.Movie
+	if rf, ok := ret.Get(0).(func(models.Movie) *models.Movie); ok {
+		r0 = rf(newMovie)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Movie)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.Movie) error); ok {
+		r1 = rf(newMovie)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Find provides a mock function with given fields: id
 func (_m *MovieReaderWriter) Find(id int) (*models.Movie, error) {
 	ret := _m.Called(id)
@@ -51,6 +74,52 @@ func (_m *MovieReaderWriter) Find(id int) (*models.Movie, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
 		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByName provides a mock function with given fields: name, nocase
+func (_m *MovieReaderWriter) FindByName(name string, nocase bool) (*models.Movie, error) {
+	ret := _m.Called(name, nocase)
+
+	var r0 *models.Movie
+	if rf, ok := ret.Get(0).(func(string, bool) *models.Movie); ok {
+		r0 = rf(name, nocase)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Movie)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
+		r1 = rf(name, nocase)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByNames provides a mock function with given fields: names, nocase
+func (_m *MovieReaderWriter) FindByNames(names []string, nocase bool) ([]*models.Movie, error) {
+	ret := _m.Called(names, nocase)
+
+	var r0 []*models.Movie
+	if rf, ok := ret.Get(0).(func([]string, bool) []*models.Movie); ok {
+		r0 = rf(names, nocase)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Movie)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]string, bool) error); ok {
+		r1 = rf(names, nocase)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -125,4 +194,64 @@ func (_m *MovieReaderWriter) GetFrontImage(movieID int) ([]byte, error) {
 	}
 
 	return r0, r1
+}
+
+// Update provides a mock function with given fields: updatedMovie
+func (_m *MovieReaderWriter) Update(updatedMovie models.MoviePartial) (*models.Movie, error) {
+	ret := _m.Called(updatedMovie)
+
+	var r0 *models.Movie
+	if rf, ok := ret.Get(0).(func(models.MoviePartial) *models.Movie); ok {
+		r0 = rf(updatedMovie)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Movie)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.MoviePartial) error); ok {
+		r1 = rf(updatedMovie)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateFull provides a mock function with given fields: updatedMovie
+func (_m *MovieReaderWriter) UpdateFull(updatedMovie models.Movie) (*models.Movie, error) {
+	ret := _m.Called(updatedMovie)
+
+	var r0 *models.Movie
+	if rf, ok := ret.Get(0).(func(models.Movie) *models.Movie); ok {
+		r0 = rf(updatedMovie)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Movie)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.Movie) error); ok {
+		r1 = rf(updatedMovie)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateMovieImages provides a mock function with given fields: movieID, frontImage, backImage
+func (_m *MovieReaderWriter) UpdateMovieImages(movieID int, frontImage []byte, backImage []byte) error {
+	ret := _m.Called(movieID, frontImage, backImage)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []byte, []byte) error); ok {
+		r0 = rf(movieID, frontImage, backImage)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }

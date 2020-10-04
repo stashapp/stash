@@ -1,5 +1,3 @@
-// THIS CODE IS A STARTING POINT ONLY. IT WILL NOT BE UPDATED WITH SCHEMA CHANGES.
-
 {{ reserveImport "context"  }}
 {{ reserveImport "fmt"  }}
 {{ reserveImport "io"  }}
@@ -9,32 +7,39 @@
 {{ reserveImport "errors"  }}
 {{ reserveImport "bytes"  }}
 
-{{ reserveImport "github.com/99designs/gqlgen/handler" }}
-{{ reserveImport "github.com/vektah/gqlparser" }}
-{{ reserveImport "github.com/vektah/gqlparser/ast" }}
+{{ reserveImport "github.com/vektah/gqlparser/v2" }}
+{{ reserveImport "github.com/vektah/gqlparser/v2/ast" }}
 {{ reserveImport "github.com/99designs/gqlgen/graphql" }}
 {{ reserveImport "github.com/99designs/gqlgen/graphql/introspection" }}
 
-type {{.ResolverType}} struct {}
+{{ .Imports }}
 
-{{ range $object := .Objects -}}
-	{{- if $object.HasResolvers -}}
-		func (r *{{$.ResolverType}}) {{$object.Name}}() {{ $object.ResolverInterface | ref }} {
-			return &{{lcFirst $object.Name}}Resolver{r}
-		}
-	{{ end -}}
+{{ if .HasRoot }}
+	type {{.ResolverType}} struct {}
+{{ end }}
+
+{{ range $resolver := .Resolvers -}}
+	func (r *{{lcFirst $resolver.Object.Name}}{{ucFirst $.ResolverType}}) {{$resolver.Field.GoFieldName}}{{ $resolver.Field.ShortResolverDeclaration }} {
+		{{ $resolver.Implementation }}
+	}
+
 {{ end }}
 
 {{ range $object := .Objects -}}
-	{{- if $object.HasResolvers -}}
-		type {{lcFirst $object.Name}}Resolver struct { *Resolver }
+	// {{$object.Name}} returns {{ $object.ResolverInterface | ref }} implementation.
+	func (r *{{$.ResolverType}}) {{$object.Name}}() {{ $object.ResolverInterface | ref }} { return &{{lcFirst $object.Name}}{{ucFirst $.ResolverType}}{r} }
+{{ end }}
 
-		{{ range $field := $object.Fields -}}
-			{{- if $field.IsResolver -}}
-			func (r *{{lcFirst $object.Name}}Resolver) {{$field.GoFieldName}}{{ $field.ShortResolverDeclaration }} {
-				panic("not implemented")
-			}
-			{{ end -}}
-		{{ end -}}
-	{{ end -}}
+{{ range $object := .Objects -}}
+	type {{lcFirst $object.Name}}{{ucFirst $.ResolverType}} struct { *{{$.ResolverType}} }
+{{ end }}
+
+{{ if (ne .RemainingSource "") }}
+    // !!! WARNING !!!
+    // The code below was going to be deleted when updating resolvers. It has been copied here so you have
+    // one last chance to move it out of harms way if you want. There are two reasons this happens:
+	//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+	//    it when you're done.
+	//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+	{{ .RemainingSource }}
 {{ end }}

@@ -222,7 +222,13 @@ func (s *singleton) Import() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		task := ImportTask{fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm()}
+		task := ImportTask{
+			BaseDir:             config.GetMetadataPath(),
+			Reset:               true,
+			DuplicateBehaviour:  models.ImportDuplicateEnumFail,
+			MissingRefBehaviour: models.ImportMissingRefEnumFail,
+			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
+		}
 		go task.Start(&wg)
 		wg.Wait()
 	}()

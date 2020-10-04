@@ -4,11 +4,11 @@ import {
   split,
   from,
   ServerError,
-  HttpLink,
 } from "@apollo/client";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { onError } from "@apollo/client/link/error";
 import { getMainDefinition } from "@apollo/client/utilities";
+import { createUploadLink } from "apollo-upload-client";
 
 export const getPlatformURL = (ws?: boolean) => {
   const platformUrl = new URL(window.location.origin);
@@ -39,7 +39,7 @@ export const createClient = () => {
   const url = `${platformUrl.toString().slice(0, -1)}/graphql`;
   const wsUrl = `${wsPlatformUrl.toString().slice(0, -1)}/graphql`;
 
-  const httpLink = new HttpLink({
+  const httpLink = createUploadLink({
     uri: url,
   });
 
@@ -67,6 +67,7 @@ export const createClient = () => {
       );
     },
     wsLink,
+    // @ts-ignore
     httpLink
   );
 

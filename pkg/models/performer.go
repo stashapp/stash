@@ -10,7 +10,7 @@ type PerformerReader interface {
 	FindBySceneID(sceneID int) ([]*Performer, error)
 	FindNamesBySceneID(sceneID int) ([]*Performer, error)
 	FindByImageID(imageID int) ([]*Performer, error)
-	// FindByNames(names []string, nocase bool) ([]*Performer, error)
+	FindByNames(names []string, nocase bool) ([]*Performer, error)
 	// Count() (int, error)
 	All() ([]*Performer, error)
 	// AllSlim() ([]*Performer, error)
@@ -19,10 +19,10 @@ type PerformerReader interface {
 }
 
 type PerformerWriter interface {
-	// Create(newPerformer Performer) (*Performer, error)
-	// Update(updatedPerformer Performer) (*Performer, error)
+	Create(newPerformer Performer) (*Performer, error)
+	Update(updatedPerformer Performer) (*Performer, error)
 	// Destroy(id string) error
-	// UpdatePerformerImage(performerID int, image []byte) error
+	UpdatePerformerImage(performerID int, image []byte) error
 	// DestroyPerformerImage(performerID int) error
 }
 
@@ -47,6 +47,10 @@ func (t *performerReaderWriter) FindMany(ids []int) ([]*Performer, error) {
 	return t.qb.FindMany(ids)
 }
 
+func (t *performerReaderWriter) FindByNames(names []string, nocase bool) ([]*Performer, error) {
+	return t.qb.FindByNames(names, t.tx, nocase)
+}
+
 func (t *performerReaderWriter) All() ([]*Performer, error) {
 	return t.qb.All()
 }
@@ -65,4 +69,16 @@ func (t *performerReaderWriter) FindNamesBySceneID(sceneID int) ([]*Performer, e
 
 func (t *performerReaderWriter) FindByImageID(id int) ([]*Performer, error) {
 	return t.qb.FindByImageID(id, t.tx)
+}
+
+func (t *performerReaderWriter) Create(newPerformer Performer) (*Performer, error) {
+	return t.qb.Create(newPerformer, t.tx)
+}
+
+func (t *performerReaderWriter) Update(updatedPerformer Performer) (*Performer, error) {
+	return t.qb.Update(updatedPerformer, t.tx)
+}
+
+func (t *performerReaderWriter) UpdatePerformerImage(performerID int, image []byte) error {
+	return t.qb.UpdatePerformerImage(performerID, image, t.tx)
 }

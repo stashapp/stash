@@ -8,7 +8,7 @@ import (
 	"github.com/99designs/gqlgen/codegen/config"
 	"github.com/99designs/gqlgen/codegen/templates"
 	"github.com/pkg/errors"
-	"github.com/vektah/gqlparser/ast"
+	"github.com/vektah/gqlparser/v2/ast"
 )
 
 type ArgSet struct {
@@ -24,6 +24,22 @@ type FieldArgument struct {
 	Default       interface{} // The default value
 	Directives    []*Directive
 	Value         interface{} // value set in Data
+}
+
+//ImplDirectives get not Builtin and location ARGUMENT_DEFINITION directive
+func (f *FieldArgument) ImplDirectives() []*Directive {
+	d := make([]*Directive, 0)
+	for i := range f.Directives {
+		if !f.Directives[i].Builtin && f.Directives[i].IsLocation(ast.LocationArgumentDefinition) {
+			d = append(d, f.Directives[i])
+		}
+	}
+
+	return d
+}
+
+func (f *FieldArgument) DirectiveObjName() string {
+	return "rawArgs"
 }
 
 func (f *FieldArgument) Stream() bool {

@@ -3,8 +3,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedPlural } from "react-intl";
-import { HoverPopover, Icon, TagLink } from "../Shared";
 import { useConfiguration } from "src/core/StashService";
+import { HoverPopover, Icon, TagLink } from "../Shared";
 
 interface IProps {
   gallery: GQL.GalleryDataFragment;
@@ -18,7 +18,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   const config = useConfiguration();
   const showStudioAsText =
     config?.data?.configuration.interface.showStudioAsText ?? false;
-    
+
   function maybeRenderScenePopoverButton() {
     if (!props.gallery.scene) return;
 
@@ -104,7 +104,11 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   }
 
   function maybeRenderPopoverButtonGroup() {
-    if (props.gallery.scene || props.gallery.performers.length > 0 || props.gallery.tags.length > 0) {
+    if (
+      props.gallery.scene ||
+      props.gallery.performers.length > 0 ||
+      props.gallery.tags.length > 0
+    ) {
       return (
         <>
           <hr />

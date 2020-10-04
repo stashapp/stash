@@ -622,6 +622,17 @@ export const queryScrapeScene = (
     fetchPolicy: "network-only",
   });
 
+export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
+  client.query<GQL.QueryStashBoxSceneQuery>({
+    query: GQL.QueryStashBoxSceneDocument,
+    variables: {
+      input: {
+        stash_box_index: stashBoxIndex,
+        scene_ids: [sceneID],
+      },
+    },
+  });
+
 export const mutateReloadScrapers = () =>
   client.mutate<GQL.ReloadScrapersMutation>({
     mutation: GQL.ReloadScrapersDocument,
@@ -685,6 +696,12 @@ export const mutateExportObjects = (input: GQL.ExportObjectsInput) =>
 export const mutateMetadataImport = () =>
   client.mutate<GQL.MetadataImportMutation>({
     mutation: GQL.MetadataImportDocument,
+  });
+
+export const mutateImportObjects = (input: GQL.ImportObjectsInput) =>
+  client.mutate<GQL.ImportObjectsMutation>({
+    mutation: GQL.ImportObjectsDocument,
+    variables: { input },
   });
 
 export const querySceneByPathRegex = (filter: GQL.FindFilterType) =>
