@@ -151,8 +151,9 @@ type scraperDebugOptions struct {
 }
 
 type scraperDriverOptions struct {
-	UseCDP bool `yaml:"useCDP"`
-	Sleep  int  `yaml:"sleep"`
+	UseCDP bool   `yaml:"useCDP"`
+	Sleep  int    `yaml:"sleep"`
+	Click  string `yaml:"click"`
 }
 
 func loadScraperFromYAML(id string, reader io.Reader) (*config, error) {

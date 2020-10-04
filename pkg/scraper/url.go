@@ -97,6 +97,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 // else it will look for google-chrome in path
 func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig GlobalConfig) (io.Reader, error) {
 	const defaultSleep = 2
+	const downloadTimeout = 45
 
 	if !driverOptions.UseCDP {
 		return nil, fmt.Errorf("Url shouldn't be feetched through CDP")
@@ -149,11 +150,16 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 	ctx, cancel := chromedp.NewContext(act)
 	defer cancel()
 
+	// adding timeout to make sure we won't wait forever
+	// chromedb.Click seems to timeout if it doesnt find the requested button to click
+	ctx, cancel = context.WithTimeout(ctx, downloadTimeout*time.Second+sleepDuration)
+	defer cancel()
+
 	var res string
 	err := chromedp.Run(ctx,
 		network.Enable(),
 		chromedp.Navigate(url),
-		chromedp.Sleep(sleepDuration),
+		Click(driverOptions.Click, sleepDuration),
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			node, err := dom.GetDocument().Do(ctx)
 			if err != nil {
@@ -163,11 +169,29 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 			return err
 		}),
 	)
+
 	if err != nil {
 		return nil, err
 	}
 
 	return strings.NewReader(res), nil
+}
+
+// Click returns a Click chromedp Task ( a Sleep one if the clickButton is empty )
+// clickButton is an xPath string that contains the button to click
+func Click(clickButton string, sleep time.Duration) chromedp.Tasks {
+	if clickButton != "" {
+		logger.Debugf("Clicking %s", clickButton)
+		return chromedp.Tasks{
+			chromedp.Sleep(sleep),
+			chromedp.Click(clickButton),
+			chromedp.Sleep(sleep),
+		}
+	}
+	return chromedp.Tasks{
+		chromedp.Sleep(sleep),
+	}
+
 }
 
 // getRemoteCDPWSAddress returns the complete remote address that is required to access the cdp instance
