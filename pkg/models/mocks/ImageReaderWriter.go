@@ -35,6 +35,52 @@ func (_m *ImageReaderWriter) All() ([]*models.Image, error) {
 	return r0, r1
 }
 
+// Create provides a mock function with given fields: newImage
+func (_m *ImageReaderWriter) Create(newImage models.Image) (*models.Image, error) {
+	ret := _m.Called(newImage)
+
+	var r0 *models.Image
+	if rf, ok := ret.Get(0).(func(models.Image) *models.Image); ok {
+		r0 = rf(newImage)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Image)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.Image) error); ok {
+		r1 = rf(newImage)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByChecksum provides a mock function with given fields: checksum
+func (_m *ImageReaderWriter) FindByChecksum(checksum string) (*models.Image, error) {
+	ret := _m.Called(checksum)
+
+	var r0 *models.Image
+	if rf, ok := ret.Get(0).(func(string) *models.Image); ok {
+		r0 = rf(checksum)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Image)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(checksum)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindMany provides a mock function with given fields: ids
 func (_m *ImageReaderWriter) FindMany(ids []int) ([]*models.Image, error) {
 	ret := _m.Called(ids)
@@ -51,6 +97,52 @@ func (_m *ImageReaderWriter) FindMany(ids []int) ([]*models.Image, error) {
 	var r1 error
 	if rf, ok := ret.Get(1).(func([]int) error); ok {
 		r1 = rf(ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Update provides a mock function with given fields: updatedImage
+func (_m *ImageReaderWriter) Update(updatedImage models.ImagePartial) (*models.Image, error) {
+	ret := _m.Called(updatedImage)
+
+	var r0 *models.Image
+	if rf, ok := ret.Get(0).(func(models.ImagePartial) *models.Image); ok {
+		r0 = rf(updatedImage)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Image)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.ImagePartial) error); ok {
+		r1 = rf(updatedImage)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateFull provides a mock function with given fields: updatedImage
+func (_m *ImageReaderWriter) UpdateFull(updatedImage models.Image) (*models.Image, error) {
+	ret := _m.Called(updatedImage)
+
+	var r0 *models.Image
+	if rf, ok := ret.Get(0).(func(models.Image) *models.Image); ok {
+		r0 = rf(updatedImage)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Image)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.Image) error); ok {
+		r1 = rf(updatedImage)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -14,6 +14,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/gallery"
+	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
@@ -122,6 +123,7 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 
 	t.ImportScrapedItems(ctx)
 	t.ImportScenes(ctx)
+	t.ImportImages(ctx)
 }
 
 func (t *ImportTask) unzipFile() error {
@@ -565,6 +567,59 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 	}
 
 	logger.Info("[scenes] import complete")
+}
+
+func (t *ImportTask) ImportImages(ctx context.Context) {
+	logger.Info("[images] importing")
+
+	for i, mappingJSON := range t.mappings.Images {
+		index := i + 1
+
+		logger.Progressf("[images] %d of %d", index, len(t.mappings.Images))
+
+		imageJSON, err := t.json.getImage(mappingJSON.Checksum)
+		if err != nil {
+			logger.Infof("[images] <%s> json parse failure: %s", mappingJSON.Checksum, err.Error())
+			continue
+		}
+
+		imageHash := mappingJSON.Checksum
+
+		tx := database.DB.MustBeginTx(ctx, nil)
+		readerWriter := models.NewImageReaderWriter(tx)
+		tagWriter := models.NewTagReaderWriter(tx)
+		galleryWriter := models.NewGalleryReaderWriter(tx)
+		joinWriter := models.NewJoinReaderWriter(tx)
+		performerWriter := models.NewPerformerReaderWriter(tx)
+		studioWriter := models.NewStudioReaderWriter(tx)
+
+		imageImporter := &image.Importer{
+			ReaderWriter: readerWriter,
+			Input:        *imageJSON,
+			Path:         mappingJSON.Path,
+
+			MissingRefBehaviour: t.MissingRefBehaviour,
+
+			GalleryWriter:   galleryWriter,
+			JoinWriter:      joinWriter,
+			PerformerWriter: performerWriter,
+			StudioWriter:    studioWriter,
+			TagWriter:       tagWriter,
+		}
+
+		if err := performImport(imageImporter, t.DuplicateBehaviour); err != nil {
+			tx.Rollback()
+			logger.Errorf("[images] <%s> failed to import: %s", imageHash, err.Error())
+			continue
+		}
+
+		if err := tx.Commit(); err != nil {
+			tx.Rollback()
+			logger.Errorf("[images] <%s> import failed to commit: %s", imageHash, err.Error())
+		}
+	}
+
+	logger.Info("[images] import complete")
 }
 
 func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Performer, error) {

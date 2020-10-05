@@ -95,6 +95,19 @@ func (qb *ImageQueryBuilder) Update(updatedImage ImagePartial, tx *sqlx.Tx) (*Im
 	return qb.find(updatedImage.ID, tx)
 }
 
+func (qb *ImageQueryBuilder) UpdateFull(updatedImage Image, tx *sqlx.Tx) (*Image, error) {
+	ensureTx(tx)
+	_, err := tx.NamedExec(
+		`UPDATE images SET `+SQLGenKeys(updatedImage)+` WHERE images.id = :id`,
+		updatedImage,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return qb.find(updatedImage.ID, tx)
+}
+
 func (qb *ImageQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error) {
 	ensureTx(tx)
 	_, err := tx.Exec(
