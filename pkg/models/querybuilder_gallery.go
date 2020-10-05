@@ -21,8 +21,8 @@ func NewGalleryQueryBuilder() GalleryQueryBuilder {
 func (qb *GalleryQueryBuilder) Create(newGallery Gallery, tx *sqlx.Tx) (*Gallery, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO galleries (path, checksum, zip, title, url, studio_id, rating, scene_id, created_at, updated_at)
-				VALUES (:path, :checksum, :zip, :title, :url, :studio_id, :rating, :scene_id, :created_at, :updated_at)
+		`INSERT INTO galleries (path, checksum, zip, title, date, details, url, studio_id, rating, scene_id, created_at, updated_at)
+				VALUES (:path, :checksum, :zip, :title, :date, :details, :url, :studio_id, :rating, :scene_id, :created_at, :updated_at)
 		`,
 		newGallery,
 	)

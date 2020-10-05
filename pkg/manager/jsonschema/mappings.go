@@ -7,24 +7,20 @@ import (
 	jsoniter "github.com/json-iterator/go"
 )
 
-type NameMapping struct {
-	Name     string `json:"name"`
-	Checksum string `json:"checksum"`
-}
-
-type PathMapping struct {
-	Path     string `json:"path"`
+type PathNameMapping struct {
+	Path     string `json:"path,omitempty"`
+	Name     string `json:"name,omitempty"`
 	Checksum string `json:"checksum"`
 }
 
 type Mappings struct {
-	Tags       []NameMapping `json:"tags"`
-	Performers []NameMapping `json:"performers"`
-	Studios    []NameMapping `json:"studios"`
-	Movies     []NameMapping `json:"movies"`
-	Galleries  []PathMapping `json:"galleries"`
-	Scenes     []PathMapping `json:"scenes"`
-	Images     []PathMapping `json:"images"`
+	Tags       []PathNameMapping `json:"tags"`
+	Performers []PathNameMapping `json:"performers"`
+	Studios    []PathNameMapping `json:"studios"`
+	Movies     []PathNameMapping `json:"movies"`
+	Galleries  []PathNameMapping `json:"galleries"`
+	Scenes     []PathNameMapping `json:"scenes"`
+	Images     []PathNameMapping `json:"images"`
 }
 
 func LoadMappingsFile(filePath string) (*Mappings, error) {

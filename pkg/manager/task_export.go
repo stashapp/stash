@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -126,7 +127,7 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 
 	t.ExportScenes(workerCount)
 	t.ExportImages(workerCount)
-	t.ExportGalleries()
+	t.ExportGalleries(workerCount)
 	t.ExportPerformers(workerCount)
 	t.ExportStudios(workerCount)
 	t.ExportMovies(workerCount)
@@ -262,7 +263,7 @@ func (t *ExportTask) ExportScenes(workers int) {
 		if (i % 100) == 0 { // make progress easier to read
 			logger.Progressf("[scenes] %d of %d", index, len(scenes))
 		}
-		t.Mappings.Scenes = append(t.Mappings.Scenes, jsonschema.PathMapping{Path: scene.Path, Checksum: scene.GetHash(t.fileNamingAlgorithm)})
+		t.Mappings.Scenes = append(t.Mappings.Scenes, jsonschema.PathNameMapping{Path: scene.Path, Checksum: scene.GetHash(t.fileNamingAlgorithm)})
 		jobCh <- scene // feed workers
 	}
 
@@ -405,7 +406,7 @@ func (t *ExportTask) ExportImages(workers int) {
 		if (i % 100) == 0 { // make progress easier to read
 			logger.Progressf("[images] %d of %d", index, len(images))
 		}
-		t.Mappings.Images = append(t.Mappings.Images, jsonschema.PathMapping{Path: image.Path, Checksum: image.Checksum})
+		t.Mappings.Images = append(t.Mappings.Images, jsonschema.PathNameMapping{Path: image.Path, Checksum: image.Checksum})
 		jobCh <- image // feed workers
 	}
 
@@ -484,7 +485,9 @@ func exportImage(wg *sync.WaitGroup, jobChan <-chan *models.Image, t *ExportTask
 	}
 }
 
-func (t *ExportTask) ExportGalleries() {
+func (t *ExportTask) ExportGalleries(workers int) {
+	var galleriesWg sync.WaitGroup
+
 	reader := models.NewGalleryReaderWriter(nil)
 
 	var galleries []*models.Gallery
@@ -500,16 +503,92 @@ func (t *ExportTask) ExportGalleries() {
 		logger.Errorf("[galleries] failed to fetch galleries: %s", err.Error())
 	}
 
+	jobCh := make(chan *models.Gallery, workers*2) // make a buffered channel to feed workers
+
 	logger.Info("[galleries] exporting")
+	startTime := time.Now()
+
+	for w := 0; w < workers; w++ { // create export Scene workers
+		galleriesWg.Add(1)
+		go exportGallery(&galleriesWg, jobCh, t)
+	}
 
 	for i, gallery := range galleries {
 		index := i + 1
-		logger.Progressf("[galleries] %d of %d", index, len(galleries))
 
-		t.Mappings.Galleries = append(t.Mappings.Galleries, jsonschema.PathMapping{Path: gallery.Path.String, Checksum: gallery.Checksum})
+		if (i % 100) == 0 { // make progress easier to read
+			logger.Progressf("[galleries] %d of %d", index, len(galleries))
+		}
+
+		t.Mappings.Galleries = append(t.Mappings.Galleries, jsonschema.PathNameMapping{
+			Path:     gallery.Path.String,
+			Name:     gallery.Title.String,
+			Checksum: gallery.Checksum,
+		})
+		jobCh <- gallery
 	}
 
-	logger.Infof("[galleries] export complete")
+	close(jobCh) // close channel so that workers will know no more jobs are available
+	galleriesWg.Wait()
+
+	logger.Infof("[galleries] export complete in %s. %d workers used.", time.Since(startTime), workers)
+}
+
+func exportGallery(wg *sync.WaitGroup, jobChan <-chan *models.Gallery, t *ExportTask) {
+	defer wg.Done()
+	studioReader := models.NewStudioReaderWriter(nil)
+	performerReader := models.NewPerformerReaderWriter(nil)
+	tagReader := models.NewTagReaderWriter(nil)
+
+	for g := range jobChan {
+		galleryHash := g.Checksum
+
+		newGalleryJSON, err := gallery.ToBasicJSON(g)
+		if err != nil {
+			logger.Errorf("[galleries] <%s> error getting gallery JSON: %s", galleryHash, err.Error())
+			continue
+		}
+
+		newGalleryJSON.Studio, err = gallery.GetStudioName(studioReader, g)
+		if err != nil {
+			logger.Errorf("[galleries] <%s> error getting gallery studio name: %s", galleryHash, err.Error())
+			continue
+		}
+
+		performers, err := performerReader.FindByGalleryID(g.ID)
+		if err != nil {
+			logger.Errorf("[galleries] <%s> error getting gallery performer names: %s", galleryHash, err.Error())
+			continue
+		}
+
+		newGalleryJSON.Performers = performer.GetNames(performers)
+
+		tags, err := tagReader.FindByGalleryID(g.ID)
+		if err != nil {
+			logger.Errorf("[galleries] <%s> error getting gallery tag names: %s", galleryHash, err.Error())
+			continue
+		}
+
+		newGalleryJSON.Tags = tag.GetNames(tags)
+
+		if t.includeDependencies {
+			if g.StudioID.Valid {
+				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(g.StudioID.Int64))
+			}
+
+			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
+			t.performers.IDs = utils.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
+		}
+
+		galleryJSON, err := t.json.getGallery(galleryHash)
+		if err == nil && jsonschema.CompareJSON(*galleryJSON, *newGalleryJSON) {
+			continue
+		}
+
+		if err := t.json.saveGallery(galleryHash, newGalleryJSON); err != nil {
+			logger.Errorf("[galleries] <%s> failed to save json: %s", galleryHash, err.Error())
+		}
+	}
 }
 
 func (t *ExportTask) ExportPerformers(workers int) {
@@ -542,7 +621,7 @@ func (t *ExportTask) ExportPerformers(workers int) {
 		index := i + 1
 		logger.Progressf("[performers] %d of %d", index, len(performers))
 
-		t.Mappings.Performers = append(t.Mappings.Performers, jsonschema.NameMapping{Name: performer.Name.String, Checksum: performer.Checksum})
+		t.Mappings.Performers = append(t.Mappings.Performers, jsonschema.PathNameMapping{Name: performer.Name.String, Checksum: performer.Checksum})
 		jobCh <- performer // feed workers
 	}
 
@@ -609,7 +688,7 @@ func (t *ExportTask) ExportStudios(workers int) {
 		index := i + 1
 		logger.Progressf("[studios] %d of %d", index, len(studios))
 
-		t.Mappings.Studios = append(t.Mappings.Studios, jsonschema.NameMapping{Name: studio.Name.String, Checksum: studio.Checksum})
+		t.Mappings.Studios = append(t.Mappings.Studios, jsonschema.PathNameMapping{Name: studio.Name.String, Checksum: studio.Checksum})
 		jobCh <- studio // feed workers
 	}
 
@@ -677,7 +756,7 @@ func (t *ExportTask) ExportTags(workers int) {
 		// generate checksum on the fly by name, since we don't store it
 		checksum := utils.MD5FromString(tag.Name)
 
-		t.Mappings.Tags = append(t.Mappings.Tags, jsonschema.NameMapping{Name: tag.Name, Checksum: checksum})
+		t.Mappings.Tags = append(t.Mappings.Tags, jsonschema.PathNameMapping{Name: tag.Name, Checksum: checksum})
 		jobCh <- tag // feed workers
 	}
 
@@ -745,7 +824,7 @@ func (t *ExportTask) ExportMovies(workers int) {
 		index := i + 1
 		logger.Progressf("[movies] %d of %d", index, len(movies))
 
-		t.Mappings.Movies = append(t.Mappings.Movies, jsonschema.NameMapping{Name: movie.Name.String, Checksum: movie.Checksum})
+		t.Mappings.Movies = append(t.Mappings.Movies, jsonschema.PathNameMapping{Name: movie.Name.String, Checksum: movie.Checksum})
 		jobCh <- movie // feed workers
 	}
 

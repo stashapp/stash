@@ -58,6 +58,29 @@ func (_m *PerformerReaderWriter) Create(newPerformer models.Performer) (*models.
 	return r0, r1
 }
 
+// FindByGalleryID provides a mock function with given fields: galleryID
+func (_m *PerformerReaderWriter) FindByGalleryID(galleryID int) ([]*models.Performer, error) {
+	ret := _m.Called(galleryID)
+
+	var r0 []*models.Performer
+	if rf, ok := ret.Get(0).(func(int) []*models.Performer); ok {
+		r0 = rf(galleryID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Performer)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(galleryID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByImageID provides a mock function with given fields: imageID
 func (_m *PerformerReaderWriter) FindByImageID(imageID int) ([]*models.Performer, error) {
 	ret := _m.Called(imageID)

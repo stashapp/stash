@@ -65,6 +65,10 @@ func (jp *JSONPaths) ImageJSONPath(checksum string) string {
 	return filepath.Join(jp.Images, checksum+".json")
 }
 
+func (jp *JSONPaths) GalleryJSONPath(checksum string) string {
+	return filepath.Join(jp.Galleries, checksum+".json")
+}
+
 func (jp *JSONPaths) StudioJSONPath(checksum string) string {
 	return filepath.Join(jp.Studios, checksum+".json")
 }

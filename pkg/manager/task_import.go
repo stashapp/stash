@@ -361,15 +361,29 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 
 	for i, mappingJSON := range t.mappings.Galleries {
 		index := i + 1
+		galleryJSON, err := t.json.getGallery(mappingJSON.Checksum)
+		if err != nil {
+			logger.Errorf("[galleries] failed to read json: %s", err.Error())
+			continue
+		}
 
 		logger.Progressf("[galleries] %d of %d", index, len(t.mappings.Galleries))
 
 		tx := database.DB.MustBeginTx(ctx, nil)
 		readerWriter := models.NewGalleryReaderWriter(tx)
+		tagWriter := models.NewTagReaderWriter(tx)
+		joinWriter := models.NewJoinReaderWriter(tx)
+		performerWriter := models.NewPerformerReaderWriter(tx)
+		studioWriter := models.NewStudioReaderWriter(tx)
 
 		galleryImporter := &gallery.Importer{
-			ReaderWriter: readerWriter,
-			Input:        mappingJSON,
+			ReaderWriter:        readerWriter,
+			PerformerWriter:     performerWriter,
+			StudioWriter:        studioWriter,
+			TagWriter:           tagWriter,
+			JoinWriter:          joinWriter,
+			Input:               *galleryJSON,
+			MissingRefBehaviour: t.MissingRefBehaviour,
 		}
 
 		if err := performImport(galleryImporter, t.DuplicateBehaviour); err != nil {

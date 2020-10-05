@@ -10,6 +10,7 @@ type PerformerReader interface {
 	FindBySceneID(sceneID int) ([]*Performer, error)
 	FindNamesBySceneID(sceneID int) ([]*Performer, error)
 	FindByImageID(imageID int) ([]*Performer, error)
+	FindByGalleryID(galleryID int) ([]*Performer, error)
 	FindByNames(names []string, nocase bool) ([]*Performer, error)
 	// Count() (int, error)
 	All() ([]*Performer, error)
@@ -69,6 +70,10 @@ func (t *performerReaderWriter) FindNamesBySceneID(sceneID int) ([]*Performer, e
 
 func (t *performerReaderWriter) FindByImageID(id int) ([]*Performer, error) {
 	return t.qb.FindByImageID(id, t.tx)
+}
+
+func (t *performerReaderWriter) FindByGalleryID(id int) ([]*Performer, error) {
+	return t.qb.FindByGalleryID(id, t.tx)
 }
 
 func (t *performerReaderWriter) Create(newPerformer Performer) (*Performer, error) {
