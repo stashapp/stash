@@ -428,12 +428,14 @@ export const mutateAddGalleryImages = (input: GQL.GalleryAddInput) =>
   client.mutate<GQL.AddGalleryImagesMutation>({
     mutation: GQL.AddGalleryImagesDocument,
     variables: input,
+    update: deleteCache(galleryMutationImpactedQueries),
   });
 
 export const mutateRemoveGalleryImages = (input: GQL.GalleryRemoveInput) =>
   client.mutate<GQL.RemoveGalleryImagesMutation>({
     mutation: GQL.RemoveGalleryImagesDocument,
     variables: input,
+    update: deleteCache(galleryMutationImpactedQueries),
   });
 
 export const studioMutationImpactedQueries = [
