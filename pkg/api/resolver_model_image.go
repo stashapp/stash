@@ -45,7 +45,7 @@ func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*models.I
 
 func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) ([]*models.Gallery, error) {
 	qb := models.NewGalleryQueryBuilder()
-	return qb.FindByImageID(obj.ID)
+	return qb.FindByImageID(obj.ID, nil)
 }
 
 func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (*models.Studio, error) {

@@ -138,14 +138,14 @@ func (qb *GalleryQueryBuilder) ValidGalleriesForScenePath(scenePath string) ([]*
 	return qb.queryGalleries(query, nil, nil)
 }
 
-func (qb *GalleryQueryBuilder) FindByImageID(imageID int) ([]*Gallery, error) {
+func (qb *GalleryQueryBuilder) FindByImageID(imageID int, tx *sqlx.Tx) ([]*Gallery, error) {
 	query := selectAll(galleryTable) + `
 	LEFT JOIN galleries_images as images_join on images_join.gallery_id = galleries.id
 	WHERE images_join.image_id = ?
 	GROUP BY galleries.id
 	`
 	args := []interface{}{imageID}
-	return qb.queryGalleries(query, args, nil)
+	return qb.queryGalleries(query, args, tx)
 }
 
 func (qb *GalleryQueryBuilder) CountByImageID(imageID int) (int, error) {

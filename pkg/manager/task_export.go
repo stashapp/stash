@@ -419,7 +419,7 @@ func (t *ExportTask) ExportImages(workers int) {
 func exportImage(wg *sync.WaitGroup, jobChan <-chan *models.Image, t *ExportTask) {
 	defer wg.Done()
 	studioReader := models.NewStudioReaderWriter(nil)
-	// galleryReader := models.NewGalleryReaderWriter(nil)
+	galleryReader := models.NewGalleryReaderWriter(nil)
 	performerReader := models.NewPerformerReaderWriter(nil)
 	tagReader := models.NewTagReaderWriter(nil)
 
@@ -435,15 +435,13 @@ func exportImage(wg *sync.WaitGroup, jobChan <-chan *models.Image, t *ExportTask
 			continue
 		}
 
-		// imageGallery, err := galleryReader.FindByImageID(s.ID)
-		// if err != nil {
-		// 	logger.Errorf("[images] <%s> error getting image gallery: %s", imageHash, err.Error())
-		// 	continue
-		// }
+		imageGalleries, err := galleryReader.FindByImageID(s.ID)
+		if err != nil {
+			logger.Errorf("[images] <%s> error getting image galleries: %s", imageHash, err.Error())
+			continue
+		}
 
-		// if imageGallery != nil {
-		// 	newImageJSON.Gallery = imageGallery.Checksum
-		// }
+		newImageJSON.Galleries = t.getGalleryChecksums(imageGalleries)
 
 		performers, err := performerReader.FindByImageID(s.ID)
 		if err != nil {
@@ -483,6 +481,13 @@ func exportImage(wg *sync.WaitGroup, jobChan <-chan *models.Image, t *ExportTask
 			logger.Errorf("[images] <%s> failed to save json: %s", imageHash, err.Error())
 		}
 	}
+}
+
+func (t *ExportTask) getGalleryChecksums(galleries []*models.Gallery) (ret []string) {
+	for _, g := range galleries {
+		ret = append(ret, g.Checksum)
+	}
+	return
 }
 
 func (t *ExportTask) ExportGalleries(workers int) {
