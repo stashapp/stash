@@ -91,19 +91,7 @@ func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, tx *sqlx.T
 		return nil, err
 	}
 
-	// Save the galleries
-	var galleryJoins []models.GalleriesImages
-	for _, pid := range input.GalleryIds {
-		galleryID, _ := strconv.Atoi(pid)
-		galleryJoin := models.GalleriesImages{
-			GalleryID: galleryID,
-			ImageID:   imageID,
-		}
-		galleryJoins = append(galleryJoins, galleryJoin)
-	}
-	if err := jqb.UpdateGalleriesImages(imageID, galleryJoins, tx); err != nil {
-		return nil, err
-	}
+	// don't set the galleries directly. Use add/remove gallery images interface instead
 
 	// Save the performers
 	var performerJoins []models.PerformersImages
