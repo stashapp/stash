@@ -81,6 +81,29 @@ func (_m *GalleryReaderWriter) FindByChecksum(checksum string) (*models.Gallery,
 	return r0, r1
 }
 
+// FindByImageID provides a mock function with given fields: imageID
+func (_m *GalleryReaderWriter) FindByImageID(imageID int) ([]*models.Gallery, error) {
+	ret := _m.Called(imageID)
+
+	var r0 []*models.Gallery
+	if rf, ok := ret.Get(0).(func(int) []*models.Gallery); ok {
+		r0 = rf(imageID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Gallery)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(imageID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByPath provides a mock function with given fields: path
 func (_m *GalleryReaderWriter) FindByPath(path string) (*models.Gallery, error) {
 	ret := _m.Called(path)
