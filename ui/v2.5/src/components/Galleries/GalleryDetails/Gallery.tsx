@@ -143,7 +143,7 @@ export const Gallery: React.FC = () => {
     return (
       <Tab.Container
         activeKey={activeRightTabKey}
-        unmountOnExit={true}
+        unmountOnExit
         onSelect={(k) => k && setActiveRightTabKey(k)}
       >
         <div>

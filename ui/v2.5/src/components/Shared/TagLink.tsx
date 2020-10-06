@@ -8,7 +8,7 @@ import {
   TagDataFragment,
   MovieDataFragment,
   SceneDataFragment,
-  GalleryDataFragment
+  GalleryDataFragment,
 } from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 
@@ -41,7 +41,9 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     )}`;
   } else if (props.gallery) {
     link = `/galleries/${props.gallery.id}`;
-    title = props.gallery.title ? props.gallery.title : TextUtils.fileNameFromPath(props.gallery.path ?? "");
+    title = props.gallery.title
+      ? props.gallery.title
+      : TextUtils.fileNameFromPath(props.gallery.path ?? "");
   } else if (props.scene) {
     link = `/scenes/${props.scene.id}`;
     title = props.scene.title
