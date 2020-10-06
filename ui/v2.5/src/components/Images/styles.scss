@@ -102,10 +102,17 @@ $imageTabWidth: 450px;
 
 .image-container {
   display: flex;
-  height: calc(100vh - 4rem);
 
   img {
     max-height: calc(100vh - 4rem);
+    max-width: 100%;
+    object-fit: contain;
+  }
+}
+
+@media (min-width: 1200px) {
+  .image-container {
+    height: calc(100vh - 4rem);
   }
 }
 

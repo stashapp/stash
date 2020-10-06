@@ -208,7 +208,7 @@ export const Gallery: React.FC = () => {
   return (
     <div className="row">
       {maybeRenderDeleteDialog()}
-      <div className="gallery-tabs order-xl-first order-last">
+      <div className="gallery-tabs">
         <div className="d-none d-xl-block">
           {gallery.studio && (
             <h1 className="text-center">
