@@ -138,13 +138,6 @@ export const Image: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="image-details-panel">Details</Nav.Link>
             </Nav.Item>
-            {/* {image.gallery ? (
-              <Nav.Item>
-                <Nav.Link eventKey="image-gallery-panel">Gallery</Nav.Link>
-              </Nav.Item>
-            ) : (
-              ""
-            )} */}
             <Nav.Item>
               <Nav.Link eventKey="image-file-info-panel">File Info</Nav.Link>
             </Nav.Item>
@@ -168,13 +161,6 @@ export const Image: React.FC = () => {
           <Tab.Pane eventKey="image-details-panel" title="Details">
             <ImageDetailPanel image={image} />
           </Tab.Pane>
-          {/* {image.gallery ? (
-            <Tab.Pane eventKey="image-gallery-panel" title="Gallery">
-              <GalleryViewer gallery={image.gallery} />
-            </Tab.Pane>
-          ) : (
-            ""
-          )} */}
           <Tab.Pane
             className="file-info-panel"
             eventKey="image-file-info-panel"

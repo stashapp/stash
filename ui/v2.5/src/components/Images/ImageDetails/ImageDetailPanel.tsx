@@ -40,6 +40,19 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
     );
   }
 
+  function renderGalleries() {
+    if (props.image.galleries.length === 0) return;
+    const tags = props.image.galleries.map((gallery) => (
+      <TagLink key={gallery.id} gallery={gallery} />
+    ));
+    return (
+      <>
+        <h6>Galleries</h6>
+        {tags}
+      </>
+    );
+  }
+
   // filename should use entire row if there is no studio
   const imageDetailsWidth = props.image.studio ? "col-9" : "col-12";
 
@@ -60,6 +73,7 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
           ) : (
             ""
           )}
+          {renderGalleries()}
           {props.image.file.height ? (
             <h6>Resolution: {TextUtils.resolution(props.image.file.height)}</h6>
           ) : (

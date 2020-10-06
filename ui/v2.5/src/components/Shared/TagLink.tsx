@@ -8,6 +8,7 @@ import {
   TagDataFragment,
   MovieDataFragment,
   SceneDataFragment,
+  GalleryDataFragment
 } from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 
@@ -17,6 +18,7 @@ interface IProps {
   marker?: Partial<SceneMarkerDataFragment>;
   movie?: Partial<MovieDataFragment>;
   scene?: Partial<SceneDataFragment>;
+  gallery?: Partial<GalleryDataFragment>;
   className?: string;
 }
 
@@ -37,6 +39,9 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
     title = `${props.marker.title} - ${TextUtils.secondsToTimestamp(
       props.marker.seconds || 0
     )}`;
+  } else if (props.gallery) {
+    link = `/galleries/${props.gallery.id}`;
+    title = props.gallery.title ? props.gallery.title : TextUtils.fileNameFromPath(props.gallery.path ?? "");
   } else if (props.scene) {
     link = `/scenes/${props.scene.id}`;
     title = props.scene.title
