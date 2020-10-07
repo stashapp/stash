@@ -149,20 +149,24 @@ func (t *ScanTask) associateGallery(wg *sync.WaitGroup) {
 		return
 	}
 
-	if !gallery.SceneID.Valid { // gallery has no SceneID
+	// gallery has no SceneID
+	if !gallery.SceneID.Valid {
 		basename := strings.TrimSuffix(t.FilePath, filepath.Ext(t.FilePath))
 		var relatedFiles []string
-		gExt := config.GetGalleryExtensions()
-		for _, ext := range gExt { // make a list of media files that can be related to the gallery
+		vExt := config.GetVideoExtensions()
+		// make a list of media files that can be related to the gallery
+		for _, ext := range vExt {
 			related := basename + "." + ext
-			if !isGallery(related) { //exclude gallery extensions from the related files
+			// exclude gallery extensions from the related files
+			if !isGallery(related) {
 				relatedFiles = append(relatedFiles, related)
 			}
 		}
 		for _, scenePath := range relatedFiles {
 			qbScene := models.NewSceneQueryBuilder()
 			scene, _ := qbScene.FindByPath(scenePath)
-			if scene != nil { // found related Scene
+			// found related Scene
+			if scene != nil {
 				logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
 
 				gallery.SceneID.Int64 = int64(scene.ID)
@@ -179,12 +183,11 @@ func (t *ScanTask) associateGallery(wg *sync.WaitGroup) {
 					logger.Error(err.Error())
 				}
 
-				break // since a gallery can have only one related scene
+				// since a gallery can have only one related scene
 				// only first found is associated
+				break
 			}
-
 		}
-
 	}
 	wg.Done()
 }
