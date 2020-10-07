@@ -215,13 +215,7 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, tx *sq
 		updatedGallery.StudioID = &sql.NullInt64{Valid: false}
 	}
 
-	if input.SceneID != nil {
-		sceneID, _ := strconv.ParseInt(*input.SceneID, 10, 64)
-		updatedGallery.SceneID = &sql.NullInt64{Int64: sceneID, Valid: true}
-	} else {
-		// studio must be nullable
-		updatedGallery.SceneID = &sql.NullInt64{Valid: false}
-	}
+	// gallery scene is set from the scene only
 
 	jqb := models.NewJoinsQueryBuilder()
 	gallery, err := qb.UpdatePartial(updatedGallery, tx)
