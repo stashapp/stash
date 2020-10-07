@@ -402,7 +402,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function maybeRenderZoom() {
-    if (props.onChangeZoom) {
+    if (props.onChangeZoom && props.filter.displayMode === DisplayMode.Grid) {
       return (
         <div className="align-middle">
           <Form.Control
