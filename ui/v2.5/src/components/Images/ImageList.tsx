@@ -50,6 +50,9 @@ const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
     </div>
   ));
 
+  // FsLightbox doesn't update unless the key updates
+  const key = images.map(i => i.id).join(",");
+
   return (
     <div className="gallery">
       <div className="flexbin">{thumbs}</div>
@@ -57,6 +60,7 @@ const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
         sourceIndex={currentIndex}
         toggler={lightboxToggle}
         sources={photos}
+        key={key}
       />
     </div>
   );
