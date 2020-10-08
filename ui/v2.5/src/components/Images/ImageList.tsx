@@ -51,7 +51,7 @@ const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
   ));
 
   // FsLightbox doesn't update unless the key updates
-  const key = images.map(i => i.id).join(",");
+  const key = images.map((i) => i.id).join(",");
 
   return (
     <div className="gallery">
