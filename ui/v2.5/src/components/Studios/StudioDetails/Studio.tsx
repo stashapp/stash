@@ -208,9 +208,7 @@ export const Studio: React.FC = () => {
       return (
         <StudioSelect
           onSelect={(items) =>
-            setParentStudioId(
-              items.length > 0 ? items[0]?.id : undefined
-            )
+            setParentStudioId(items.length > 0 ? items[0]?.id : undefined)
           }
           ids={parentStudioId ? [parentStudioId] : []}
           isDisabled={!isEditing}
@@ -261,9 +259,7 @@ export const Studio: React.FC = () => {
             })}
             <tr>
               <td>Parent Studio</td>
-              <td>
-                {renderStudio()}
-              </td>
+              <td>{renderStudio()}</td>
             </tr>
           </tbody>
         </Table>
