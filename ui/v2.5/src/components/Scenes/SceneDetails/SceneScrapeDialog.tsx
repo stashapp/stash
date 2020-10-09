@@ -18,6 +18,7 @@ import {
   useTagCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
+import { DurationUtils } from "src/utils";
 
 function renderScrapedStudio(
   result: ScrapeResult<string>,
@@ -395,6 +396,20 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
     let movieInput: GQL.MovieCreateInput = { name: "" };
     try {
       movieInput = Object.assign(movieInput, toCreate);
+
+      // #788 - convert duration and rating to the correct type
+      movieInput.duration = DurationUtils.stringToSeconds(
+        toCreate.duration ?? undefined
+      );
+      if (!movieInput.duration) {
+        movieInput.duration = undefined;
+      }
+
+      movieInput.rating = parseInt(toCreate.rating ?? "0", 10);
+      if (!movieInput.rating || Number.isNaN(movieInput.rating)) {
+        movieInput.rating = undefined;
+      }
+
       const result = await createMovie({
         variables: movieInput,
       });
