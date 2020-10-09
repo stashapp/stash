@@ -6,9 +6,9 @@ import { blobToBase64 } from "base64-blob";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, SuccessIcon } from "src/components/Shared";
-import PerformerResult, { IPerformerOperation } from "./PerformerResult";
-import StudioResult, { IStudioOperation } from "./StudioResult";
-import { IStashBoxScene, IStashBoxPerformer, IStashBoxStudio } from "./utils";
+import PerformerResult, { PerformerOperation } from "./PerformerResult";
+import StudioResult, { StudioOperation } from "./StudioResult";
+import { IStashBoxScene } from "./utils";
 import {
   useCreateTag,
   useCreatePerformer,
@@ -60,6 +60,7 @@ interface IStashSearchResultProps {
   setCoverImage: boolean;
   tagOperation: string;
   endpoint: string;
+  queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
 }
 
 const StashSearchResult: React.FC<IStashSearchResultProps> = ({
@@ -72,10 +73,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   setCoverImage,
   tagOperation,
   endpoint,
+  queueFingerprintSubmission
 }) => {
-  const [studio, setStudio] = useState<IStudioOperation>();
+  const [studio, setStudio] = useState<StudioOperation>();
   const [performers, setPerformers] = useState<
-    Record<string, IPerformerOperation>
+    Record<string, PerformerOperation>
   >({});
   const [saveState, setSaveState] = useState<string>("");
   const [error, setError] = useState<{ message?: string; details?: string }>(
@@ -93,7 +95,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   const { data: allTags } = GQL.useAllTagsForFilterQuery();
 
   const setPerformer = useCallback(
-    (performerData: IPerformerOperation, performerID: string) =>
+    (performerData: PerformerOperation, performerID: string) =>
       setPerformers({ ...performers, [performerID]: performerData }),
     [performers]
   );
@@ -101,30 +103,26 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   const handleSave = async () => {
     setError({});
     let performerIDs = [];
-    let studioData:
-      | IStashBoxStudio
-      | GQL.StudioDataFragment
-      | GQL.SlimStudioDataFragment;
-    if (studio?.create) studioData = studio.create;
-    else if (studio?.existing) studioData = studio.existing;
-    else if (studio?.update) studioData = studio.update;
-    else return;
+    let studioID = null
 
-    if (studio?.create) {
+    if (!studio)
+      return;
+
+    if (studio.type === 'create') {
       setSaveState("Creating studio");
       const newStudio = {
-        name: studioData.name,
+        name: studio.data.name,
         stash_ids: [
           {
             endpoint,
-            stash_id: scene.studio.id,
+            stash_id: scene.studio.stash_id,
           },
         ],
-        url: studio.create.url,
+        url: studio.data.url,
       };
       const studioCreateResult = await createStudio(
         newStudio,
-        scene.studio!.id
+        scene.studio.stash_id
       );
 
       if (!studioCreateResult?.data?.studioCreate) {
@@ -134,41 +132,37 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         });
         return setSaveState("");
       }
-      studioData = studioCreateResult.data?.studioCreate;
+      studioID = studioCreateResult.data.studioCreate.id;
     }
-
-    if (studio.update) {
+    else if (studio.type === 'update') {
       setSaveState("Saving studio stashID");
-      const res = await updateStudioStashID(studio.update.id, [
-        ...studio.update.stash_ids,
-        { stash_id: scene.studio!.id, endpoint },
+      const res = await updateStudioStashID(studio.data.id, [
+        ...studio.data.stash_ids,
+        { stash_id: scene.studio.stash_id, endpoint },
       ]);
       if (!res?.data?.studioUpdate) {
         setError({
-          message: `Failed to save stashID to studio "${studio.update.name}"`,
+          message: `Failed to save stashID to studio "${studio.data.name}"`,
           details: res?.errors?.[0].message,
         });
         return setSaveState("");
       }
+      studioID = res.data.studioUpdate.id;
+    }
+    else if (studio.type === 'existing') {
+      studioID = studio.data.id;
     }
 
     setSaveState("Saving performers");
     performerIDs = await Promise.all(
       Object.keys(performers).map(async (stashID) => {
         const performer = performers[stashID];
-        if (performer.skip) return "Skip";
+        if (performer.type ===  'skip') return "Skip";
 
-        let performerData:
-          | IStashBoxPerformer
-          | GQL.PerformerDataFragment
-          | GQL.SlimPerformerDataFragment;
-        if (performer?.create) performerData = performer.create;
-        else if (performer?.existing) performerData = performer.existing;
-        else if (performer?.update) performerData = performer.update;
-        else return;
+        let performerID = performer.data.id;
 
-        if (performer.create) {
-          const imgurl = performer.create.images[0];
+        if (performer.type === 'create') {
+          const imgurl = performer.data.images[0];
           let imgData = null;
           if (imgurl) {
             const img = await fetch(imgurl, {
@@ -182,20 +176,20 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           }
 
           const performerInput = {
-            name: performerData.name,
-            gender: performer.create.gender,
-            country: performer.create.country,
-            height: performer.create.height,
-            ethnicity: performer.create.ethnicity,
-            birthdate: performer.create.birthdate,
-            eye_color: performer.create.eye_color,
-            fake_tits: performer.create.fake_tits,
-            measurements: performer.create.measurements,
-            career_length: performer.create.career_length,
-            tattoos: performer.create.tattoos,
-            piercings: performer.create.piercings,
-            twitter: performer.create.twitter,
-            instagram: performer.create.instagram,
+            name: performer.data.name,
+            gender: performer.data.gender,
+            country: performer.data.country,
+            height: performer.data.height,
+            ethnicity: performer.data.ethnicity,
+            birthdate: performer.data.birthdate,
+            eye_color: performer.data.eye_color,
+            fake_tits: performer.data.fake_tits,
+            measurements: performer.data.measurements,
+            career_length: performer.data.career_length,
+            tattoos: performer.data.tattoos,
+            piercings: performer.data.piercings,
+            twitter: performer.data.twitter,
+            instagram: performer.data.instagram,
             image: imgData,
             stash_ids: [
               {
@@ -213,25 +207,23 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             });
             return null;
           }
-          performerData = res.data?.performerCreate;
+          performerID = res.data?.performerCreate.id;
         }
 
-        if (performer.update) {
-          const stashIDs = (performerData as
-            | GQL.SlimPerformerDataFragment
-            | GQL.PerformerDataFragment).stash_ids;
-          await updatePerformerStashID(performerData.id, [
+        if (performer.type === 'update') {
+          const stashIDs = performer.data.stash_ids;
+          await updatePerformerStashID(performer.data.id, [
             ...stashIDs,
             { stash_id: stashID, endpoint },
           ]);
         }
 
-        return performerData.id;
+        return performerID;
       })
     );
 
-    setSaveState("Updating scene");
-    if (studioData && !performerIDs.some((id) => !id)) {
+    if (!performerIDs.some((id) => !id)) {
+      setSaveState("Updating scene");
       const imgurl = scene.images[0];
       let imgData = null;
       if (imgurl && setCoverImage) {
@@ -277,7 +269,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           details: scene.details,
           date: scene.date,
           performer_ids: performerIDs.filter((id) => id !== "Skip") as string[],
-          studio_id: studioData.id,
+          studio_id: studioID,
           cover_image: imgData,
           url: scene.url,
           ...(tagIDs ? { tag_ids: uniq(tagIDs) } : {}),
@@ -285,7 +277,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             ...(stashScene?.stash_ids ?? []),
             {
               endpoint,
-              stash_id: scene.id,
+              stash_id: scene.stash_id,
             },
           ],
         },
@@ -299,38 +291,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       } else if (sceneUpdateResult.data?.sceneUpdate)
         setScene(sceneUpdateResult.data.sceneUpdate);
 
-      // TODO: Fingerprint submission
-      /*
-      if (stashScene.checksum && stashScene.file?.duration)
-        client?.mutate<SubmitFingerprint, SubmitFingerprintVariables>({
-          mutation: SubmitFingerprintMutation,
-          variables: {
-            input: {
-              scene_id: scene.id,
-              fingerprint: {
-                hash: stashScene.checksum,
-                algorithm: FingerprintAlgorithm.MD5,
-                duration: Math.floor(stashScene.file?.duration),
-              },
-            },
-          },
-        });
-      if (stashScene.oshash && stashScene.file?.duration)
-        client?.mutate<SubmitFingerprint, SubmitFingerprintVariables>({
-          mutation: SubmitFingerprintMutation,
-          variables: {
-            input: {
-              scene_id: scene.id,
-              fingerprint: {
-                hash: stashScene.oshash,
-                algorithm: FingerprintAlgorithm.OSHASH,
-                duration: Math.floor(stashScene.file?.duration),
-              },
-            },
-          },
-        });
-         */
+      queueFingerprintSubmission(stashScene.id, endpoint);
     }
+
     setSaveState("");
   };
 
@@ -355,11 +318,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     Object.keys(performers ?? []).length ===
       scene.performers.filter((p) => p.gender !== "MALE" || showMales).length &&
     Object.keys(performers ?? []).every(
-      (id) =>
-        performers?.[id].create ||
-        performers?.[id].update ||
-        performers?.[id].existing ||
-        performers?.[id].skip
+      (id) => performers?.[id].type
     ) &&
     saveState === "";
 
@@ -367,7 +326,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <li
       className={classname}
-      key={scene?.id}
+      key={scene.stash_id}
       onClick={() => !isActive && setActive()}
     >
       <div className="col-6">
@@ -403,10 +362,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             .map((performer) => (
               <PerformerResult
                 performer={performer}
-                setPerformer={(data: IPerformerOperation) =>
-                  setPerformer(data, performer.id)
+                setPerformer={(data: PerformerOperation) =>
+                  setPerformer(data, performer.stash_id)
                 }
-                key={`${scene.id}${performer.id}`}
+                key={`${scene.stash_id}${performer.stash_id}`}
               />
             ))}
           <div className="row no-gutters mt-2 align-items-center justify-content-end">

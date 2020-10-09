@@ -186,6 +186,9 @@ type Mutation {
   reloadPlugins: Boolean!
 
   stopJob: Boolean!
+
+  """ Submit fingerprints to stash-box instance """
+  submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): Boolean!
 }
 
 type Subscription {

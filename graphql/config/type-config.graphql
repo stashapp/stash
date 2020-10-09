@@ -1,0 +1,177 @@
+enum StreamingResolutionEnum {
+  "240p", LOW
+  "480p", STANDARD
+  "720p", STANDARD_HD
+  "1080p", FULL_HD
+  "4k", FOUR_K
+  "Original", ORIGINAL
+}
+
+enum PreviewPreset {
+  "X264_ULTRAFAST", ultrafast
+  "X264_VERYFAST", veryfast
+  "X264_FAST", fast
+  "X264_MEDIUM", medium
+  "X264_SLOW", slow
+  "X264_SLOWER", slower
+  "X264_VERYSLOW", veryslow
+}
+
+enum HashAlgorithm {
+  MD5
+  "oshash", OSHASH
+}
+
+input ConfigGeneralInput {
+  """Array of file paths to content"""
+  stashes: [String!]
+  """Path to the SQLite database"""
+  databasePath: String
+  """Path to generated files"""
+  generatedPath: String
+  """Path to cache"""
+  cachePath: String
+  """Whether to calculate MD5 checksums for scene video files"""
+  calculateMD5: Boolean!
+  """Hash algorithm to use for generated file naming"""
+  videoFileNamingAlgorithm: HashAlgorithm!
+  """Number of segments in a preview file"""
+  previewSegments: Int
+  """Preview segment duration, in seconds"""
+  previewSegmentDuration: Float
+  """Duration of start of video to exclude when generating previews"""
+  previewExcludeStart: String
+  """Duration of end of video to exclude when generating previews"""
+  previewExcludeEnd: String
+  """Preset when generating preview"""
+  previewPreset: PreviewPreset
+  """Max generated transcode size"""
+  maxTranscodeSize: StreamingResolutionEnum
+  """Max streaming transcode size"""
+  maxStreamingTranscodeSize: StreamingResolutionEnum
+  """Username"""
+  username: String
+  """Password"""
+  password: String
+  """Maximum session cookie age"""
+  maxSessionAge: Int
+  """Name of the log file"""
+  logFile: String
+  """Whether to also output to stderr"""
+  logOut: Boolean!
+  """Minimum log level"""
+  logLevel: String!
+  """Whether to log http access"""
+  logAccess: Boolean!
+  """Array of file regexp to exclude from Scan"""
+  excludes: [String!]
+  """Scraper user agent string"""
+  scraperUserAgent: String
+  """Scraper CDP path. Path to chrome executable or remote address"""
+  scraperCDPPath: String
+  """Stash-box instances used for tagging"""
+  stashBoxes: [StashBoxInput!]!
+}
+
+type ConfigGeneralResult {
+  """Array of file paths to content"""
+  stashes: [String!]!
+  """Path to the SQLite database"""
+  databasePath: String!
+  """Path to generated files"""
+  generatedPath: String!
+  """Path to cache"""
+  cachePath: String!
+  """Whether to calculate MD5 checksums for scene video files"""
+  calculateMD5: Boolean!
+  """Hash algorithm to use for generated file naming"""
+  videoFileNamingAlgorithm: HashAlgorithm!
+  """Number of segments in a preview file"""
+  previewSegments: Int!
+  """Preview segment duration, in seconds"""
+  previewSegmentDuration: Float!
+  """Duration of start of video to exclude when generating previews"""
+  previewExcludeStart: String!
+  """Duration of end of video to exclude when generating previews"""
+  previewExcludeEnd: String!
+  """Preset when generating preview"""
+  previewPreset: PreviewPreset!
+  """Max generated transcode size"""
+  maxTranscodeSize: StreamingResolutionEnum
+  """Max streaming transcode size"""
+  maxStreamingTranscodeSize: StreamingResolutionEnum
+  """Username"""
+  username: String!
+  """Password"""
+  password: String!
+  """Maximum session cookie age"""
+  maxSessionAge: Int!
+  """Name of the log file"""
+  logFile: String
+  """Whether to also output to stderr"""
+  logOut: Boolean!
+  """Minimum log level"""
+  logLevel: String!
+  """Whether to log http access"""
+  logAccess: Boolean!
+  """Array of file regexp to exclude from Scan"""
+  excludes: [String!]!
+  """Scraper user agent string"""
+  scraperUserAgent: String
+  """Scraper CDP path. Path to chrome executable or remote address"""
+  scraperCDPPath: String
+  """Stash-box instances used for tagging"""
+  stashBoxes: [StashBox!]!
+}
+
+input ConfigInterfaceInput {
+  """Enable sound on mouseover previews"""
+  soundOnPreview: Boolean
+  """Show title and tags in wall view"""
+  wallShowTitle: Boolean
+  """Wall playback type"""
+  wallPlayback: String
+  """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
+  maximumLoopDuration: Int
+  """If true, video will autostart on load in the scene player"""
+  autostartVideo: Boolean
+  """If true, studio overlays will be shown as text instead of logo images"""
+  showStudioAsText: Boolean
+  """Custom CSS"""
+  css: String
+  cssEnabled: Boolean
+  language: String
+}
+
+type ConfigInterfaceResult {
+  """Enable sound on mouseover previews"""
+  soundOnPreview: Boolean
+  """Show title and tags in wall view"""
+  wallShowTitle: Boolean
+  """Wall playback type"""
+  wallPlayback: String
+  """Maximum duration (in seconds) in which a scene video will loop in the scene player"""
+  maximumLoopDuration: Int
+  """If true, video will autostart on load in the scene player"""
+  autostartVideo: Boolean
+   """If true, studio overlays will be shown as text instead of logo images"""
+  showStudioAsText: Boolean
+  """Custom CSS"""
+  css: String
+  cssEnabled: Boolean
+  """Interface language"""
+  language: String
+}
+
+"""All configuration settings"""
+type ConfigResult {
+  general: ConfigGeneralResult!
+  interface: ConfigInterfaceResult!
+}
+
+"""Directory structure of a path"""
+type Directory {
+    path: String!
+    parent: String
+    directories: [String!]!
+}

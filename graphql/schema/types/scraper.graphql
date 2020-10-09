@@ -44,7 +44,7 @@ type ScrapedScenePerformer {
   piercings: String
   aliases: String
 
-  site_id: String
+  remote_site_id: String
   images: [String!]
 }
 
@@ -67,7 +67,7 @@ type ScrapedSceneStudio {
   name: String!
   url: String
 
-  site_id: String
+  remote_site_id: String
 }
 
 type ScrapedSceneTag {
@@ -92,7 +92,7 @@ type ScrapedScene {
   performers: [ScrapedScenePerformer!]
   movies: [ScrapedSceneMovie!]
 
-  site_id: String
+  remote_site_id: String
   duration: Int
   fingerprints: [StashBoxFingerprint!]
 }

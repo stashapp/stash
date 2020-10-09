@@ -58,6 +58,7 @@
     "react-photo-gallery": "^8.0.0",
     "react-router-bootstrap": "^0.25.0",
     "react-router-dom": "^5.2.0",
+    "react-router-hash-link": "^2.1.0",
     "react-select": "^3.1.0",
     "subscriptions-transport-ws": "^0.9.18",
     "universal-cookie": "^4.0.3"
@@ -78,6 +79,7 @@
     "@types/react-images": "^0.5.3",
     "@types/react-router-bootstrap": "^0.24.5",
     "@types/react-router-dom": "5.1.5",
+    "@types/react-router-hash-link": "^1.2.1",
     "@types/react-select": "3.0.19",
     "@typescript-eslint/eslint-plugin": "^2.30.0",
     "@typescript-eslint/parser": "^2.30.0",

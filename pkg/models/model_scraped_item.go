@@ -69,7 +69,7 @@ type ScrapedScene struct {
 	URL          *string                  `graphql:"url" json:"url"`
 	Date         *string                  `graphql:"date" json:"date"`
 	Image        *string                  `graphql:"image" json:"image"`
-	SiteID       *string                  `graphql:"site_id" json:"site_id"`
+	RemoteSiteID *string                  `graphql:"remote_site_id" json:"remote_site_id"`
 	Duration     *int                     `graphql:"duration" json:"duration"`
 	File         *SceneFileType           `graphql:"file" json:"file"`
 	Fingerprints []*StashBoxFingerprint   `graphql:"fingerprints" json:"fingerprints"`
@@ -111,16 +111,16 @@ type ScrapedScenePerformer struct {
 	Tattoos      *string  `graphql:"tattoos" json:"tattoos"`
 	Piercings    *string  `graphql:"piercings" json:"piercings"`
 	Aliases      *string  `graphql:"aliases" json:"aliases"`
-	SiteID       *string  `graphql:"site_id" json:"site_id"`
+	RemoteSiteID *string  `graphql:"remote_site_id" json:"remote_site_id"`
 	Images       []string `graphql:"images" json:"images"`
 }
 
 type ScrapedSceneStudio struct {
 	// Set if studio matched
-	ID     *string `graphql:"id" json:"id"`
-	Name   string  `graphql:"name" json:"name"`
-	URL    *string `graphql:"url" json:"url"`
-	SiteID *string `graphql:"site_id" json:"site_id"`
+	ID           *string `graphql:"id" json:"id"`
+	Name         string  `graphql:"name" json:"name"`
+	URL          *string `graphql:"url" json:"url"`
+	RemoteSiteID *string `graphql:"remote_site_id" json:"remote_site_id"`
 }
 
 type ScrapedSceneMovie struct {

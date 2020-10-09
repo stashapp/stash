@@ -9,16 +9,15 @@ import { IStashBoxPerformer } from "./utils";
 
 import PerformerModal from "./PerformerModal";
 
-export interface IPerformerOperation {
-  create?: IStashBoxPerformer;
-  update?: GQL.PerformerDataFragment | GQL.SlimPerformerDataFragment;
-  existing?: GQL.PerformerDataFragment;
-  skip?: boolean;
-}
+export type PerformerOperation =
+  | { type: 'create', data: IStashBoxPerformer }
+  | { type: 'update', data: GQL.SlimPerformerDataFragment }
+  | { type: 'existing', data: GQL.PerformerDataFragment }
+  | { type: 'skip' };
 
 interface IPerformerResultProps {
   performer: IStashBoxPerformer;
-  setPerformer: (data: IPerformerOperation) => void;
+  setPerformer: (data: PerformerOperation) => void;
 }
 
 const PerformerResult: React.FC<IPerformerResultProps> = ({
@@ -30,48 +29,44 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
     "create" | "existing" | "skip" | undefined
   >();
   const [modalVisible, showModal] = useState(false);
+  const { data: performerData } = GQL.useFindPerformerQuery({
+    variables: { id: performer.id ?? '' },
+    skip: !performer.id
+    });
   const { data: stashData, loading: stashLoading } = GQL.useFindPerformersQuery(
     {
       variables: {
         performer_filter: {
-          stash_id: performer.id,
+          stash_id: performer.stash_id,
         },
       },
     }
   );
-  const { loading } = GQL.useFindPerformersQuery({
-    variables: {
-      filter: {
-        q: `"${performer.name}"`,
-      },
-    },
-    onCompleted: (data) => {
-      const performerResult = data.findPerformers?.performers?.[0];
-      if (performerResult) {
-        setSelectedPerformer(performerResult.id);
-        setSelectedSource("existing");
-        setPerformer({
-          update: performerResult,
-        });
-      }
-    },
-  });
 
   useEffect(() => {
-    if (!stashData?.findPerformers.performers.length) return;
-
-    setPerformer({
-      existing: stashData.findPerformers.performers[0],
-    });
+    if (stashData?.findPerformers.performers.length)
+      setPerformer({
+        type: 'existing',
+        data: stashData.findPerformers.performers[0],
+      });
+    else if (performerData?.findPerformer) {
+      setSelectedPerformer(performerData.findPerformer.id);
+      setSelectedSource("existing");
+      setPerformer({
+        type: 'update',
+        data: performerData.findPerformer,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stashData]);
+  }, [stashData, performerData]);
 
   const handlePerformerSelect = (performers: ValidTypes[]) => {
     if (performers.length) {
       setSelectedSource("existing");
       setSelectedPerformer(performers[0].id);
       setPerformer({
-        update: performers[0] as GQL.SlimPerformerDataFragment,
+        type: 'update',
+        data: performers[0] as GQL.SlimPerformerDataFragment,
       });
     } else {
       setSelectedSource(undefined);
@@ -80,25 +75,14 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   };
 
   const handlePerformerCreate = (imageIndex: number) => {
-    // TODO
-    /*
-    const images = sortImageURLs(performer.images, "portrait");
-    const imageURLs = images.length
-      ? [
-          {
-            url: images[imageIndex].url,
-            id: images[imageIndex].id,
-            width: null,
-            height: null,
-          },
-        ]
-      : [];
-     */
+    const selectedImage = performer.images[imageIndex];
+    const images = selectedImage ? [selectedImage] : [];
     setSelectedSource("create");
     setPerformer({
-      create: {
+      type: 'create',
+      data: {
         ...performer,
-        images: [],
+        images
       },
     });
     showModal(false);
@@ -107,11 +91,11 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   const handlePerformerSkip = () => {
     setSelectedSource("skip");
     setPerformer({
-      skip: true,
+      type: 'skip',
     });
   };
 
-  if (stashLoading || loading) return <div>Loading performer</div>;
+  if (stashLoading) return <div>Loading performer</div>;
 
   if (stashData?.findPerformers.performers?.[0]?.id) {
     return (

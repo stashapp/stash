@@ -113,6 +113,76 @@ func (c Client) findStashBoxScenesByFingerprints(fingerprints []string) ([]*mode
 	return ret, nil
 }
 
+func (c Client) SubmitStashBoxFingerprints(sceneIDs []string, endpoint string) (bool, error) {
+	qb := models.NewSceneQueryBuilder()
+	jqb := models.NewJoinsQueryBuilder()
+
+	var fingerprints []graphql.FingerprintSubmission
+
+	for _, sceneID := range sceneIDs {
+		idInt, _ := strconv.Atoi(sceneID)
+		scene, err := qb.Find(idInt)
+		if err != nil {
+			return false, err
+		}
+
+		if scene == nil {
+			return false, fmt.Errorf("scene with id %d not found", idInt)
+		}
+
+		stashIDs, err := jqb.GetSceneStashIDs(idInt)
+		if err != nil {
+			return false, err
+		}
+
+		sceneStashID := ""
+		for _, stashID := range stashIDs {
+			if stashID.Endpoint == endpoint {
+				sceneStashID = stashID.StashID
+			}
+		}
+
+		if sceneStashID != "" {
+			if scene.Checksum.Valid && scene.Duration.Valid {
+				fingerprint := graphql.FingerprintInput{
+					Hash:      scene.Checksum.String,
+					Algorithm: graphql.FingerprintAlgorithmMd5,
+					Duration:  int(scene.Duration.Float64),
+				}
+				fingerprints = append(fingerprints, graphql.FingerprintSubmission{
+					SceneID:     sceneStashID,
+					Fingerprint: &fingerprint,
+				})
+			}
+
+			if scene.OSHash.Valid && scene.Duration.Valid {
+				fingerprint := graphql.FingerprintInput{
+					Hash:      scene.OSHash.String,
+					Algorithm: graphql.FingerprintAlgorithmOshash,
+					Duration:  int(scene.Duration.Float64),
+				}
+				fingerprints = append(fingerprints, graphql.FingerprintSubmission{
+					SceneID:     sceneStashID,
+					Fingerprint: &fingerprint,
+				})
+			}
+		}
+	}
+
+	return c.submitStashBoxFingerprints(fingerprints)
+}
+
+func (c Client) submitStashBoxFingerprints(fingerprints []graphql.FingerprintSubmission) (bool, error) {
+	for _, fingerprint := range fingerprints {
+		_, err := c.client.SubmitFingerprint(context.TODO(), fingerprint)
+		if err != nil {
+			return false, err
+		}
+	}
+
+	return true, nil
+}
+
 func findURL(urls []*graphql.URLFragment, urlType string) *string {
 	for _, u := range urls {
 		if u.Type == urlType {
@@ -222,13 +292,13 @@ func performerFragmentToScrapedScenePerformer(p graphql.PerformerFragment) *mode
 		Tattoos:      formatBodyModifications(p.Tattoos),
 		Piercings:    formatBodyModifications(p.Piercings),
 		Twitter:      findURL(p.Urls, "TWITTER"),
-		SiteID:       &id,
+		RemoteSiteID: &id,
 		Images:       images,
 		// TODO - Image - should be returned as a set of URLs. Will need a
 		// graphql schema change to accommodate this. Leave off for now.
 	}
 
-	if p.Height != nil {
+	if p.Height != nil && *p.Height > 0 {
 		hs := strconv.Itoa(*p.Height)
 		sp.Height = &hs
 	}
@@ -287,7 +357,7 @@ func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene
 		Details:      s.Details,
 		URL:          findURL(s.Urls, "STUDIO"),
 		Duration:     s.Duration,
-		SiteID:       &stashID,
+		RemoteSiteID: &stashID,
 		Fingerprints: getFingerprints(s),
 		// Image
 		// stash_id
@@ -302,9 +372,9 @@ func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene
 	if s.Studio != nil {
 		studioID := s.Studio.ID
 		ss.Studio = &models.ScrapedSceneStudio{
-			Name:   s.Studio.Name,
-			URL:    findURL(s.Studio.Urls, "HOME"),
-			SiteID: &studioID,
+			Name:         s.Studio.Name,
+			URL:          findURL(s.Studio.Urls, "HOME"),
+			RemoteSiteID: &studioID,
 		}
 
 		err := models.MatchScrapedSceneStudio(ss.Studio)
