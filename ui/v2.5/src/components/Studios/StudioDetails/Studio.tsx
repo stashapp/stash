@@ -1,6 +1,6 @@
 import { Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, Link } from "react-router-dom";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
@@ -203,6 +203,30 @@ export const Studio: React.FC = () => {
     }
   };
 
+  function renderStudio() {
+    if (isEditing || !parentStudioId) {
+      return (
+        <StudioSelect
+          onSelect={(items) =>
+            setParentStudioId(
+              items.length > 0 ? items[0]?.id : undefined
+            )
+          }
+          ids={parentStudioId ? [parentStudioId] : []}
+          isDisabled={!isEditing}
+        />
+      );
+    }
+
+    if (studio.parent_studio) {
+      return (
+        <Link to={`/studios/${studio.parent_studio.id}`}>
+          {studio.parent_studio.name}
+        </Link>
+      );
+    }
+  }
+
   return (
     <div className="row">
       <div
@@ -238,15 +262,7 @@ export const Studio: React.FC = () => {
             <tr>
               <td>Parent Studio</td>
               <td>
-                <StudioSelect
-                  onSelect={(items) =>
-                    setParentStudioId(
-                      items.length > 0 ? items[0]?.id : undefined
-                    )
-                  }
-                  ids={parentStudioId ? [parentStudioId] : []}
-                  isDisabled={!isEditing}
-                />
+                {renderStudio()}
               </td>
             </tr>
           </tbody>
