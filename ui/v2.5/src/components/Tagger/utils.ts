@@ -4,9 +4,9 @@ import { getCountryByISO } from "src/utils/country";
 const toTitleCase = (phrase: string) => {
   return phrase
     .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
 export const parsePath = (filePath: string) => {
@@ -86,18 +86,16 @@ export interface IStashBoxScene {
   fingerprints: IStashBoxFingerprint[];
 }
 
-const selectStudio = (
-  studio: GQL.ScrapedSceneStudio
-): IStashBoxStudio => ({
+const selectStudio = (studio: GQL.ScrapedSceneStudio): IStashBoxStudio => ({
   id: studio?.stored_id ?? undefined,
   stash_id: studio.remote_site_id!,
   name: studio.name,
   url: studio.url ?? undefined,
 });
 
-const selectFingerprints = (scene: GQL.ScrapedScene|null): IStashBoxFingerprint[] => (
-  scene?.fingerprints ?? []
-);
+const selectFingerprints = (
+  scene: GQL.ScrapedScene | null
+): IStashBoxFingerprint[] => scene?.fingerprints ?? [];
 
 const selectTags = (tags: GQL.ScrapedSceneTag[]): IStashBoxTag[] =>
   tags.map((t) => ({
@@ -155,16 +153,15 @@ export const selectScenes = (
   return result;
 };
 
-export const sortScenesByDuration = (scenes: IStashBoxScene[], targetDuration?: number) => (
+export const sortScenesByDuration = (
+  scenes: IStashBoxScene[],
+  targetDuration?: number
+) =>
   scenes.sort((a, b) => {
     const adur =
-      a?.duration ??
-      a?.fingerprints.map((f) => f.duration)?.[0] ??
-      null;
+      a?.duration ?? a?.fingerprints.map((f) => f.duration)?.[0] ?? null;
     const bdur =
-      b?.duration ??
-      b?.fingerprints.map((f) => f.duration)?.[0] ??
-      null;
+      b?.duration ?? b?.fingerprints.map((f) => f.duration)?.[0] ?? null;
     if (!adur && !bdur) return 0;
     if (adur && !bdur) return -1;
     if (!adur && bdur) return 1;
@@ -177,7 +174,4 @@ export const sortScenesByDuration = (scenes: IStashBoxScene[], targetDuration?: 
     if (aDiff < bDiff) return -1;
     if (aDiff > bDiff) return 1;
     return 0;
-  })
-);
-
-
+  });

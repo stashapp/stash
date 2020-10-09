@@ -73,7 +73,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   setCoverImage,
   tagOperation,
   endpoint,
-  queueFingerprintSubmission
+  queueFingerprintSubmission,
 }) => {
   const [studio, setStudio] = useState<StudioOperation>();
   const [performers, setPerformers] = useState<
@@ -103,12 +103,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   const handleSave = async () => {
     setError({});
     let performerIDs = [];
-    let studioID = null
+    let studioID = null;
 
-    if (!studio)
-      return;
+    if (!studio) return;
 
-    if (studio.type === 'create') {
+    if (studio.type === "create") {
       setSaveState("Creating studio");
       const newStudio = {
         name: studio.data.name,
@@ -133,8 +132,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         return setSaveState("");
       }
       studioID = studioCreateResult.data.studioCreate.id;
-    }
-    else if (studio.type === 'update') {
+    } else if (studio.type === "update") {
       setSaveState("Saving studio stashID");
       const res = await updateStudioStashID(studio.data.id, [
         ...studio.data.stash_ids,
@@ -148,8 +146,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         return setSaveState("");
       }
       studioID = res.data.studioUpdate.id;
-    }
-    else if (studio.type === 'existing') {
+    } else if (studio.type === "existing") {
       studioID = studio.data.id;
     }
 
@@ -157,11 +154,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     performerIDs = await Promise.all(
       Object.keys(performers).map(async (stashID) => {
         const performer = performers[stashID];
-        if (performer.type ===  'skip') return "Skip";
+        if (performer.type === "skip") return "Skip";
 
         let performerID = performer.data.id;
 
-        if (performer.type === 'create') {
+        if (performer.type === "create") {
           const imgurl = performer.data.images[0];
           let imgData = null;
           if (imgurl) {
@@ -210,7 +207,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           performerID = res.data?.performerCreate.id;
         }
 
-        if (performer.type === 'update') {
+        if (performer.type === "update") {
           const stashIDs = performer.data.stash_ids;
           await updatePerformerStashID(performer.data.id, [
             ...stashIDs,
@@ -317,9 +314,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   const saveEnabled =
     Object.keys(performers ?? []).length ===
       scene.performers.filter((p) => p.gender !== "MALE" || showMales).length &&
-    Object.keys(performers ?? []).every(
-      (id) => performers?.[id].type
-    ) &&
+    Object.keys(performers ?? []).every((id) => performers?.[id].type) &&
     saveState === "";
 
   return (

@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  Button,
-  Card,
-  Form,
-  InputGroup,
-} from "react-bootstrap";
+import { Button, Card, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 
@@ -18,7 +13,12 @@ import {
 
 import StashSearchResult from "./StashSearchResult";
 import Config, { ITaggerConfig, initialConfig, ParseMode } from "./Config";
-import { parsePath, selectScenes, IStashBoxScene, sortScenesByDuration } from "./utils";
+import {
+  parsePath,
+  selectScenes,
+  IStashBoxScene,
+  sortScenesByDuration,
+} from "./utils";
 
 const dateRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
 function prepareQueryString(
@@ -63,13 +63,19 @@ function prepareQueryString(
 
 interface ITaggerListProps {
   scenes: GQL.SlimSceneDataFragment[];
-  selectedEndpoint: { endpoint: string, index: number };
+  selectedEndpoint: { endpoint: string; index: number };
   config: ITaggerConfig;
   queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
   clearSubmissionQueue: (endpoint: string) => void;
 }
 
-const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, config, queueFingerprintSubmission, clearSubmissionQueue }) => {
+const TaggerList: React.FC<ITaggerListProps> = ({
+  scenes,
+  selectedEndpoint,
+  config,
+  queueFingerprintSubmission,
+  clearSubmissionQueue,
+}) => {
   const [loading, setLoading] = useState(false);
   const [queryString, setQueryString] = useState<Record<string, string>>({});
 
@@ -86,7 +92,8 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
   const [fingerprints, setFingerprints] = useState<
     Record<string, IStashBoxScene>
   >({});
-  const fingerprintQueue = config.fingerprintQueue[selectedEndpoint.endpoint] ?? [];
+  const fingerprintQueue =
+    config.fingerprintQueue[selectedEndpoint.endpoint] ?? [];
 
   const doBoxSearch = (sceneID: string, searchVal: string) => {
     stashBoxQuery(searchVal, selectedEndpoint.index).then((queryData) => {
@@ -101,11 +108,14 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
     setLoading(true);
   };
 
-  const [submitFingerPrints, { loading: submittingFingerprints }] = GQL.useSubmitStashBoxFingerprintsMutation({
+  const [
+    submitFingerPrints,
+    { loading: submittingFingerprints },
+  ] = GQL.useSubmitStashBoxFingerprintsMutation({
     onCompleted: (result) => {
       if (result.submitStashBoxFingerprints)
         clearSubmissionQueue(selectedEndpoint.endpoint);
-    }
+    },
   });
 
   const handleFingerprintSubmission = () => {
@@ -113,11 +123,11 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
       variables: {
         input: {
           stash_box_index: selectedEndpoint.index,
-          scene_ids: fingerprintQueue
-        }
+          scene_ids: fingerprintQueue,
+        },
       },
     });
-  }
+  };
 
   const handleTaggedScene = (scene: Partial<GQL.SlimSceneDataFragment>) => {
     setTaggedScenes({
@@ -138,7 +148,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
 
     const results = await stashBoxBatchQuery(sceneIDs, selectedEndpoint.index);
     selectScenes(results.data?.queryStashBoxScene).forEach((scene) => {
-      scene.fingerprints?.forEach(f => {
+      scene.fingerprints?.forEach((f) => {
         newFingerprints[f.hash] = scene;
       });
     });
@@ -159,7 +169,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
     return `${count > 0 ? count : "No"} new fingerprint matches found`;
   };
 
-  const renderScenes = () => (
+  const renderScenes = () =>
     scenes.map((scene) => {
       const { paths, file, ext } = parsePath(scene.path);
       const originalDir = scene.path.slice(
@@ -174,19 +184,19 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
         config.blacklist
       );
       const modifiedQuery = queryString[scene.id];
-      const fingerprintMatch = fingerprints[scene.checksum ?? ""]  ?? fingerprints[scene.oshash ?? ""] ?? null;
-      const isTagged  = taggedScenes[scene.id];
+      const fingerprintMatch =
+        fingerprints[scene.checksum ?? ""] ??
+        fingerprints[scene.oshash ?? ""] ??
+        null;
+      const isTagged = taggedScenes[scene.id];
       const hasStashIDs = scene.stash_ids.length > 0;
 
       let maincontent;
       if (!isTagged && hasStashIDs) {
         maincontent = (
-          <h5 className="text-right text-bold">
-            Scene already tagged
-          </h5>
+          <h5 className="text-right text-bold">Scene already tagged</h5>
         );
-      }
-      else if(!isTagged && !hasStashIDs) {
+      } else if (!isTagged && !hasStashIDs) {
         maincontent = (
           <InputGroup>
             <Form.Control
@@ -197,9 +207,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
                   [scene.id]: e.currentTarget.value,
                 })
               }
-              onKeyPress={(
-                e: React.KeyboardEvent<HTMLInputElement>
-              ) =>
+              onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) =>
                 e.key === "Enter" &&
                 doBoxSearch(
                   scene.id,
@@ -238,7 +246,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
 
       let searchResult;
       if (searchResults[scene.id]?.length === 0)
-        searchResult = <div className="text-danger font-weight-bold">No results found.</div>;
+        searchResult = (
+          <div className="text-danger font-weight-bold">No results found.</div>
+        );
       else if (fingerprintMatch && !isTagged && !hasStashIDs) {
         searchResult = (
           <StashSearchResult
@@ -254,34 +264,32 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
             queueFingerprintSubmission={queueFingerprintSubmission}
           />
         );
-      }
-      else if(searchResults[scene.id] && !isTagged && !fingerprintMatch) {
+      } else if (searchResults[scene.id] && !isTagged && !fingerprintMatch) {
         searchResult = (
           <ul className="pl-0 mt-4">
-            {sortScenesByDuration(searchResults[scene.id])
-              .map(
-                (sceneResult, i) =>
-                  sceneResult && (
-                    <StashSearchResult
-                      key={sceneResult.stash_id}
-                      showMales={config.showMales}
-                      stashScene={scene}
-                      scene={sceneResult}
-                      isActive={(selectedResult?.[scene.id] ?? 0) === i}
-                      setActive={() =>
-                        setSelectedResult({
-                          ...selectedResult,
-                          [scene.id]: i,
-                        })
-                      }
-                      setCoverImage={config.setCoverImage}
-                      tagOperation={config.tagOperation}
-                      setScene={handleTaggedScene}
-                      endpoint={selectedEndpoint.endpoint}
-                      queueFingerprintSubmission={queueFingerprintSubmission}
-                    />
-                  )
-              )}
+            {sortScenesByDuration(searchResults[scene.id]).map(
+              (sceneResult, i) =>
+                sceneResult && (
+                  <StashSearchResult
+                    key={sceneResult.stash_id}
+                    showMales={config.showMales}
+                    stashScene={scene}
+                    scene={sceneResult}
+                    isActive={(selectedResult?.[scene.id] ?? 0) === i}
+                    setActive={() =>
+                      setSelectedResult({
+                        ...selectedResult,
+                        [scene.id]: i,
+                      })
+                    }
+                    setCoverImage={config.setCoverImage}
+                    tagOperation={config.tagOperation}
+                    setScene={handleTaggedScene}
+                    endpoint={selectedEndpoint.endpoint}
+                    queueFingerprintSubmission={queueFingerprintSubmission}
+                  />
+                )
+            )}
           </ul>
         );
       }
@@ -300,16 +308,12 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
                 {`${file}.${ext}`}
               </Link>
             </div>
-            <div className="col-6">
-              {maincontent}
-            </div>
+            <div className="col-6">{maincontent}</div>
           </div>
-          { searchResult }
-
+          {searchResult}
         </div>
       );
-    })
-  );
+    });
 
   return (
     <Card className="tagger-table">
@@ -321,7 +325,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
           <b>Query</b>
         </div>
         <div className="ml-auto mr-2">
-          { fingerprintQueue.length > 0 && (
+          {fingerprintQueue.length > 0 && (
             <Button
               onClick={handleFingerprintSubmission}
               disabled={submittingFingerprints}
@@ -329,7 +333,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
               {submittingFingerprints ? (
                 <LoadingIndicator message="" inline small />
               ) : (
-                <span>Submit <b>{ fingerprintQueue.length }</b> Fingerprints</span>
+                <span>
+                  Submit <b>{fingerprintQueue.length}</b> Fingerprints
+                </span>
               )}
             </Button>
           )}
@@ -347,10 +353,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({ scenes, selectedEndpoint, conf
           </Button>
         </div>
       </div>
-      { renderScenes() }
+      {renderScenes()}
     </Card>
   );
-}
+};
 
 interface ITaggerProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -361,45 +367,44 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
   const [config, setConfig] = useState<ITaggerConfig>(initialConfig);
   const [showConfig, setShowConfig] = useState(false);
 
-  const savedEndpointIndex = stashConfig.data?.configuration.general.stashBoxes.findIndex(
-    (s) => s.endpoint === config.selectedEndpoint
-  ) ?? -1;
-  const selectedEndpointIndex = savedEndpointIndex === -1 && stashConfig.data?.configuration.general.stashBoxes.length ? 0 : savedEndpointIndex;
-  const selectedEndpoint = stashConfig.data?.configuration.general.stashBoxes[selectedEndpointIndex];
+  const savedEndpointIndex =
+    stashConfig.data?.configuration.general.stashBoxes.findIndex(
+      (s) => s.endpoint === config.selectedEndpoint
+    ) ?? -1;
+  const selectedEndpointIndex =
+    savedEndpointIndex === -1 &&
+    stashConfig.data?.configuration.general.stashBoxes.length
+      ? 0
+      : savedEndpointIndex;
+  const selectedEndpoint =
+    stashConfig.data?.configuration.general.stashBoxes[selectedEndpointIndex];
 
   const queueFingerprintSubmission = (sceneId: string, endpoint: string) => {
     setConfig({
       ...config,
       fingerprintQueue: {
         ...config.fingerprintQueue,
-        [endpoint]: [
-          ...(config.fingerprintQueue[endpoint] ?? []),
-          sceneId
-        ]
-      }
-    })
-  }
+        [endpoint]: [...(config.fingerprintQueue[endpoint] ?? []), sceneId],
+      },
+    });
+  };
 
   const clearSubmissionQueue = (endpoint: string) => {
     setConfig({
       ...config,
       fingerprintQueue: {
         ...config.fingerprintQueue,
-        [endpoint]: []
-      }
-    })
-  }
+        [endpoint]: [],
+      },
+    });
+  };
 
   return (
     <div className="tagger-container mx-auto">
-
-      { selectedEndpointIndex !== -1 && selectedEndpoint ? (
+      {selectedEndpointIndex !== -1 && selectedEndpoint ? (
         <>
           <div className="row mb-2 no-gutters">
-            <Button
-              onClick={() => setShowConfig(!showConfig)}
-              variant="link"
-            >
+            <Button onClick={() => setShowConfig(!showConfig)} variant="link">
               {showConfig ? "Hide" : "Show"} Configuration
             </Button>
           </div>
@@ -408,15 +413,30 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
           <TaggerList
             scenes={scenes}
             config={config}
-            selectedEndpoint={{ endpoint: selectedEndpoint.endpoint, index: selectedEndpointIndex }}
+            selectedEndpoint={{
+              endpoint: selectedEndpoint.endpoint,
+              index: selectedEndpointIndex,
+            }}
             queueFingerprintSubmission={queueFingerprintSubmission}
             clearSubmissionQueue={clearSubmissionQueue}
           />
         </>
       ) : (
         <div className="my-4">
-          <h3 className="text-center mt-4">To use the scene tagger a stash-box instance needs to be configured.</h3>
-          <h5 className="text-center">Please see <HashLink to="/settings?tab=configuration#stashbox" scroll={el => el.scrollIntoView({ behavior: 'smooth', block: 'center' }) }>Settings.</HashLink></h5>
+          <h3 className="text-center mt-4">
+            To use the scene tagger a stash-box instance needs to be configured.
+          </h3>
+          <h5 className="text-center">
+            Please see{" "}
+            <HashLink
+              to="/settings?tab=configuration#stashbox"
+              scroll={(el) =>
+                el.scrollIntoView({ behavior: "smooth", block: "center" })
+              }
+            >
+              Settings.
+            </HashLink>
+          </h5>
         </div>
       )}
     </div>

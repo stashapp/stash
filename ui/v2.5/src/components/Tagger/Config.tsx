@@ -1,11 +1,16 @@
 import React, { Dispatch, useEffect, useState } from "react";
-import { Badge, Button, Card, Collapse, Form, InputGroup } from "react-bootstrap";
+import {
+  Badge,
+  Button,
+  Card,
+  Collapse,
+  Form,
+  InputGroup,
+} from "react-bootstrap";
 import { Icon } from "src/components/Shared";
 import localForage from "localforage";
 
-import {
-  useConfiguration,
-} from "src/core/StashService";
+import { useConfiguration } from "src/core/StashService";
 
 const DEFAULT_BLACKLIST = [
   "\\sXXX\\s",
@@ -105,7 +110,6 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
   };
 
   const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
-
 
   return (
     <Collapse in={show}>
@@ -212,9 +216,8 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
             </InputGroup>
             <div>
               Blacklist items are excluded from queries. Note that they are
-              regular expressions and also case-insensitive. Certain
-              characters must be escaped with a backslash:{" "}
-              <code>[\^$.|?*+()</code>
+              regular expressions and also case-insensitive. Certain characters
+              must be escaped with a backslash: <code>[\^$.|?*+()</code>
             </div>
             {config.blacklist.map((item, index) => (
               <Badge
@@ -247,13 +250,11 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                 onChange={handleInstanceSelect}
               >
                 {!stashBoxes.length && <option>No instances found</option>}
-                {stashConfig.data?.configuration.general.stashBoxes.map(
-                  (i) => (
-                    <option value={i.endpoint} key={i.endpoint}>
-                      {i.endpoint}
-                    </option>
-                  )
-                )}
+                {stashConfig.data?.configuration.general.stashBoxes.map((i) => (
+                  <option value={i.endpoint} key={i.endpoint}>
+                    {i.endpoint}
+                  </option>
+                ))}
               </Form.Control>
             </Form.Group>
           </div>
@@ -261,6 +262,6 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
       </Card>
     </Collapse>
   );
-}
+};
 
 export default Config;

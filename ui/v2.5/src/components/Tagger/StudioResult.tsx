@@ -8,14 +8,14 @@ import { ValidTypes } from "src/components/Shared/Select";
 import { IStashBoxStudio } from "./utils";
 
 export type StudioOperation =
-  | { type: 'create', data: IStashBoxStudio }
-  | { type: 'update', data: GQL.SlimStudioDataFragment }
-  | { type: 'existing', data: GQL.StudioDataFragment }
-  | { type: 'skip' };
+  | { type: "create"; data: IStashBoxStudio }
+  | { type: "update"; data: GQL.SlimStudioDataFragment }
+  | { type: "existing"; data: GQL.StudioDataFragment }
+  | { type: "skip" };
 
 interface IStudioResultProps {
   studio: IStashBoxStudio | null;
-  setStudio: Dispatch<SetStateAction<StudioOperation|undefined>>;
+  setStudio: Dispatch<SetStateAction<StudioOperation | undefined>>;
 }
 
 const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
@@ -25,9 +25,9 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
     "create" | "existing" | "skip" | undefined
   >();
   const { data: studioData } = GQL.useFindStudioQuery({
-    variables: { id: studio?.id ?? '' },
-    skip: !studio?.id
-    });
+    variables: { id: studio?.id ?? "" },
+    skip: !studio?.id,
+  });
   const {
     data: stashIDData,
     loading: loadingStashID,
@@ -42,14 +42,14 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
   useEffect(() => {
     if (stashIDData?.findStudios.studios?.[0])
       setStudio({
-        type: 'existing',
+        type: "existing",
         data: stashIDData.findStudios.studios[0],
       });
     else if (studioData?.findStudio) {
       setSelectedSource("existing");
       setSelectedStudio(studioData.findStudio.id);
       setStudio({
-        type: 'update',
+        type: "update",
         data: studioData.findStudio,
       });
     }
@@ -61,7 +61,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
       setSelectedSource("existing");
       setSelectedStudio(newStudio[0].id);
       setStudio({
-        type: 'update',
+        type: "update",
         data: newStudio[0] as GQL.SlimStudioDataFragment,
       });
     } else {
@@ -74,7 +74,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
     if (!studio) return;
     setSelectedSource("create");
     setStudio({
-      type: 'create',
+      type: "create",
       data: studio,
     });
     showModal(false);
@@ -82,7 +82,7 @@ const StudioResult: React.FC<IStudioResultProps> = ({ studio, setStudio }) => {
 
   const handleStudioSkip = () => {
     setSelectedSource("skip");
-    setStudio({ type: 'skip' });
+    setStudio({ type: "skip" });
   };
 
   if (loadingStashID) return <div>Loading studio</div>;
