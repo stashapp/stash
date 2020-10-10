@@ -512,18 +512,18 @@ export const ListFilter: React.FC<IListFilterProps> = (
             </Dropdown>
           </div>
 
-            <Form.Control
-              as="select"
-              onChange={onChangePageSize}
-              value={props.filter.itemsPerPage.toString()}
-              className="btn-secondary mx-1"
-            >
-              {PAGE_SIZE_OPTIONS.map((s) => (
-                <option value={s} key={s}>
-                  {s}
-                </option>
-              ))}
-            </Form.Control>
+          <Form.Control
+            as="select"
+            onChange={onChangePageSize}
+            value={props.filter.itemsPerPage.toString()}
+            className="btn-secondary mx-1"
+          >
+            {PAGE_SIZE_OPTIONS.map((s) => (
+              <option value={s} key={s}>
+                {s}
+              </option>
+            ))}
+          </Form.Control>
 
           <ButtonGroup className="mx-3 my-1">
             {maybeRenderSelectedButtons()}
