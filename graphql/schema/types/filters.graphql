@@ -66,6 +66,8 @@ input SceneMarkerFilterType {
 input SceneFilterType {
   """Filter by rating"""
   rating: IntCriterionInput
+    """Filter by organized"""
+  organized: Boolean
   """Filter by o-counter"""
   o_counter: IntCriterionInput
   """Filter by resolution"""

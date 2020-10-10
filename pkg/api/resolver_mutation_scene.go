@@ -82,6 +82,12 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, tx *sqlx.T
 		updatedScene.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
 	}
 
+	if input.Organized != nil {
+		updatedScene.Organized = sql.NullBool{Bool: *input.Organized, Valid: true}
+	} else {
+		updatedScene.Organized = sql.NullBool{Bool: false, Valid: true}
+	}
+
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error
 		_, coverImageData, err = utils.ProcessBase64Image(*input.CoverImage)
@@ -230,6 +236,11 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 	}
 	if input.Date != nil {
 		updatedScene.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
+	}
+	if input.Organized != nil {
+		updatedScene.Organized = sql.NullBool{Bool: *input.Organized, Valid: true}
+	} else {
+		updatedScene.Organized = sql.NullBool{Bool: false, Valid: true}
 	}
 	if input.Rating != nil {
 		// a rating of 0 means unset the rating

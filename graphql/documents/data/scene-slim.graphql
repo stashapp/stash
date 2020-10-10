@@ -8,6 +8,7 @@ fragment SlimSceneData on Scene {
   date
   rating
   o_counter
+  organized
   path
 
   file {

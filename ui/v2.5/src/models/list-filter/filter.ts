@@ -26,6 +26,10 @@ import {
   FavoriteCriterionOption,
 } from "./criteria/favorite";
 import {
+  OrganizedCriterion,
+  OrganizedCriterionOption,
+} from "./criteria/organized";
+import {
   HasMarkersCriterion,
   HasMarkersCriterionOption,
 } from "./criteria/has-markers";
@@ -109,6 +113,7 @@ export class ListFilterModel {
           "title",
           "path",
           "rating",
+          "organized",
           "o_counter",
           "date",
           "filesize",
@@ -125,6 +130,7 @@ export class ListFilterModel {
         this.criterionOptions = [
           new NoneCriterionOption(),
           new RatingCriterionOption(),
+          new OrganizedCriterionOption(),
           ListFilterModel.createCriterionOption("o_counter"),
           new ResolutionCriterionOption(),
           ListFilterModel.createCriterionOption("duration"),
@@ -386,6 +392,10 @@ export class ListFilterModel {
             value: ratingCrit.value,
             modifier: ratingCrit.modifier,
           };
+          break;
+        }
+        case "organized": {
+          result.organized = (criterion as OrganizedCriterion).value === "true";
           break;
         }
         case "o_counter": {

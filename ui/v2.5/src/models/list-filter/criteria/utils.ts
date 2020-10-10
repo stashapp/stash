@@ -7,6 +7,7 @@ import {
   NumberCriterion,
   DurationCriterion,
 } from "./criterion";
+import { OrganizedCriterion } from "./organized";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
 import {
@@ -32,6 +33,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new NoneCriterion();
     case "rating":
       return new RatingCriterion();
+    case "organized":
+      return new OrganizedCriterion();
     case "o_counter":
     case "scene_count":
     case "marker_count":

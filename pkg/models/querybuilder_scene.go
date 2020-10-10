@@ -60,9 +60,9 @@ func NewSceneQueryBuilder() SceneQueryBuilder {
 func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO scenes (oshash, checksum, path, title, details, url, date, rating, o_counter, size, duration, video_codec,
+		`INSERT INTO scenes (oshash, checksum, path, title, details, url, date, rating, organized, o_counter, size, duration, video_codec,
                     			    audio_codec, format, width, height, framerate, bitrate, studio_id, created_at, updated_at)
-				VALUES (:oshash, :checksum, :path, :title, :details, :url, :date, :rating, :o_counter, :size, :duration, :video_codec,
+				VALUES (:oshash, :checksum, :path, :title, :details, :url, :date, :rating, :organized, :o_counter, :size, :duration, :video_codec,
 					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :created_at, :updated_at)
 		`,
 		newScene,
@@ -326,6 +326,16 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		if count == 1 {
 			query.addArg(sceneFilter.OCounter.Value)
 		}
+	}
+
+	if Organized := sceneFilter.Organized; Organized != nil {
+		var organized string
+		if *Organized == true {
+			organized = "1"
+		} else {
+			organized = "0"
+		}
+		query.addWhere("scenes.organized = " + organized)
 	}
 
 	if durationFilter := sceneFilter.Duration; durationFilter != nil {

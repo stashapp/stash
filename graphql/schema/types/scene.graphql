@@ -32,6 +32,7 @@ type Scene {
   url: String
   date: String
   rating: Int
+  organized: Boolean!
   o_counter: Int
   path: String!
 
@@ -59,6 +60,7 @@ input SceneUpdateInput {
   url: String
   date: String
   rating: Int
+  organized: Boolean
   studio_id: ID
   gallery_id: ID
   performer_ids: [ID!]
@@ -87,6 +89,7 @@ input BulkSceneUpdateInput {
   url: String
   date: String
   rating: Int
+  organized: Boolean
   studio_id: ID
   gallery_id: ID
   performer_ids: BulkUpdateIds

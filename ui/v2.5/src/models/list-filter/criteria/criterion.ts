@@ -7,6 +7,7 @@ import { ILabeledId, ILabeledValue, IOptionType } from "../types";
 export type CriterionType =
   | "none"
   | "rating"
+  | "organized"
   | "o_counter"
   | "resolution"
   | "duration"
@@ -50,6 +51,8 @@ export abstract class Criterion {
         return "None";
       case "rating":
         return "Rating";
+      case "organized":
+        return "Organized";
       case "o_counter":
         return "O-Counter";
       case "resolution":

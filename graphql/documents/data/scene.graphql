@@ -8,6 +8,7 @@ fragment SceneData on Scene {
   date
   rating
   o_counter
+  organized
   path
 
   file {
