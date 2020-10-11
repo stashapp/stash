@@ -5,7 +5,7 @@ version: 1.0
 url: http://www.github.com/stashapp/stash
 exec:
   - python
-  - {pluginDir}/pyplugin.py
+  - "{pluginDir}/pyplugin.py"
 interface: raw
 tasks:
   - name: Add hawwwwt tag to random scene
