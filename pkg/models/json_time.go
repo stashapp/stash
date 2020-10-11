@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -14,15 +15,21 @@ type JSONTime struct {
 	time.Time
 }
 
-func (jt *JSONTime) UnmarshalJSON(b []byte) (err error) {
+func (jt *JSONTime) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), "\"")
 	if s == "null" {
 		jt.Time = time.Time{}
-		return
+		return nil
 	}
 
+	// #731 - returning an error here causes the entire JSON parse to fail for ffprobe.
+	// Changing so that it logs a warning instead.
+	var err error
 	jt.Time, err = utils.ParseDateStringAsTime(s)
-	return
+	if err != nil {
+		logger.Warnf("error unmarshalling JSONTime: %s", err.Error())
+	}
+	return nil
 }
 
 func (jt *JSONTime) MarshalJSON() ([]byte, error) {

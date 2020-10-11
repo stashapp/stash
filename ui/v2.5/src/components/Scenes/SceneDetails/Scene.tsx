@@ -1,4 +1,4 @@
-import { Tab, Nav, Dropdown } from "react-bootstrap";
+import { Tab, Nav, Dropdown, Button } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
@@ -37,6 +37,7 @@ export const Scene: React.FC = () => {
   const Toast = useToast();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
+  const [collapsed, setCollapsed] = useState(false);
 
   const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
@@ -315,6 +316,10 @@ export const Scene: React.FC = () => {
     };
   });
 
+  function getCollapseButtonText() {
+    return collapsed ? ">" : "<";
+  }
+
   if (loading || streamableLoading || !scene || !data?.findScene) {
     return <LoadingIndicator />;
   }
@@ -326,7 +331,11 @@ export const Scene: React.FC = () => {
     <div className="row">
       {maybeRenderSceneGenerateDialog()}
       {maybeRenderDeleteDialog()}
-      <div className="scene-tabs order-xl-first order-last">
+      <div
+        className={`scene-tabs order-xl-first order-last ${
+          collapsed ? "collapsed" : ""
+        }`}
+      >
         <div className="d-none d-xl-block">
           {scene.studio && (
             <h1 className="text-center">
@@ -345,7 +354,16 @@ export const Scene: React.FC = () => {
         </div>
         {renderTabs()}
       </div>
-      <div className="scene-player-container">
+      <div className="scene-divider d-none d-xl-block">
+        <Button
+          onClick={() => {
+            setCollapsed(!collapsed);
+          }}
+        >
+          {getCollapseButtonText()}
+        </Button>
+      </div>
+      <div className={`scene-player-container ${collapsed ? "expanded" : ""}`}>
         <ScenePlayer
           className="w-100 m-sm-auto no-gutter"
           scene={scene}
