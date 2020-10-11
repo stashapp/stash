@@ -154,6 +154,8 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 		query.addArg(thisArgs...)
 	}
 
+	query.handleStringCriterionInput(galleryFilter.Path, "galleries.path")
+
 	if isMissingFilter := galleryFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "scene":
