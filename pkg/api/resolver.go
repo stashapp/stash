@@ -27,6 +27,9 @@ func (r *Resolver) Query() models.QueryResolver {
 func (r *Resolver) Scene() models.SceneResolver {
 	return &sceneResolver{r}
 }
+func (r *Resolver) Image() models.ImageResolver {
+	return &imageResolver{r}
+}
 func (r *Resolver) SceneMarker() models.SceneMarkerResolver {
 	return &sceneMarkerResolver{r}
 }
@@ -67,6 +70,7 @@ type galleryResolver struct{ *Resolver }
 type performerResolver struct{ *Resolver }
 type sceneResolver struct{ *Resolver }
 type sceneMarkerResolver struct{ *Resolver }
+type imageResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }

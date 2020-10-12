@@ -14,6 +14,7 @@ export enum FilterMode {
   SceneMarkers,
   Movies,
   Tags,
+  Images,
 }
 
 export interface ILabeledId {
