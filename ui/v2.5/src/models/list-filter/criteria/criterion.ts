@@ -14,6 +14,7 @@ export type CriterionType =
   | "favorite"
   | "hasMarkers"
   | "sceneIsMissing"
+  | "imageIsMissing"
   | "performerIsMissing"
   | "galleryIsMissing"
   | "tagIsMissing"
@@ -24,6 +25,7 @@ export type CriterionType =
   | "performers"
   | "studios"
   | "movies"
+  | "galleries"
   | "birth_year"
   | "age"
   | "ethnicity"
@@ -64,6 +66,7 @@ export abstract class Criterion {
       case "hasMarkers":
         return "Has Markers";
       case "sceneIsMissing":
+      case "imageIsMissing":
       case "performerIsMissing":
       case "galleryIsMissing":
       case "tagIsMissing":
@@ -80,6 +83,8 @@ export abstract class Criterion {
         return "Studios";
       case "movies":
         return "Movies";
+      case "galleries":
+        return "Galleries";
       case "birth_year":
         return "Birth Year";
       case "age":

@@ -64,7 +64,6 @@ export const SceneGenerateDialog: React.FC<ISceneGenerateDialogProps> = (
         imagePreviews: previews && imagePreviews,
         markers,
         transcodes,
-        thumbnails: false,
         overwrite,
         sceneIDs: props.selectedIds,
         previewOptions: {

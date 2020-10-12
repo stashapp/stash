@@ -81,6 +81,52 @@ func (_m *TagReaderWriter) Find(id int) (*models.Tag, error) {
 	return r0, r1
 }
 
+// FindByGalleryID provides a mock function with given fields: galleryID
+func (_m *TagReaderWriter) FindByGalleryID(galleryID int) ([]*models.Tag, error) {
+	ret := _m.Called(galleryID)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func(int) []*models.Tag); ok {
+		r0 = rf(galleryID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(galleryID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// FindByImageID provides a mock function with given fields: imageID
+func (_m *TagReaderWriter) FindByImageID(imageID int) ([]*models.Tag, error) {
+	ret := _m.Called(imageID)
+
+	var r0 []*models.Tag
+	if rf, ok := ret.Get(0).(func(int) []*models.Tag); ok {
+		r0 = rf(imageID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Tag)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(imageID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByName provides a mock function with given fields: name, nocase
 func (_m *TagReaderWriter) FindByName(name string, nocase bool) (*models.Tag, error) {
 	ret := _m.Called(name, nocase)

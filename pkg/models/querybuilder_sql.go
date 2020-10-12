@@ -418,6 +418,8 @@ func sqlGenKeys(i interface{}, partial bool) string {
 			if partial || t != 0 {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
+		case bool:
+			query = append(query, fmt.Sprintf("%s=:%s", key, key))
 		case SQLiteTimestamp:
 			if partial || !t.Timestamp.IsZero() {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))

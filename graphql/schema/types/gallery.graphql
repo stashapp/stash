@@ -2,12 +2,20 @@
 type Gallery {
   id: ID!
   checksum: String!
-  path: String!
+  path: String
   title: String
+  url: String
+  date: String
+  details: String
+  rating: Int
   scene: Scene
+  studio: Studio
+  tags: [Tag!]!
+  performers: [Performer!]!
 
-  """The files in the gallery"""
-  files: [GalleryFilesType!]! # Resolver
+  """The images in the gallery"""
+  images: [Image!]! # Resolver
+  cover: Image
 }
 
 type GalleryFilesType {
@@ -16,7 +24,62 @@ type GalleryFilesType {
   path: String
 }
 
+input GalleryCreateInput {
+  title: String!
+  url: String
+  date: String
+  details: String
+  rating: Int
+  scene_id: ID
+  studio_id: ID
+  tag_ids: [ID!]
+  performer_ids: [ID!]
+}
+
+input GalleryUpdateInput {
+  clientMutationId: String
+  id: ID!
+  title: String
+  url: String
+  date: String
+  details: String
+  rating: Int
+  scene_id: ID
+  studio_id: ID
+  tag_ids: [ID!]
+  performer_ids: [ID!]
+}
+
+input BulkGalleryUpdateInput {
+  clientMutationId: String
+  ids: [ID!]
+  url: String
+  date: String
+  details: String
+  rating: Int
+  scene_id: ID
+  studio_id: ID
+  tag_ids: BulkUpdateIds
+  performer_ids: BulkUpdateIds
+}
+
+input GalleryDestroyInput {
+  ids: [ID!]!
+  delete_file: Boolean
+  delete_generated: Boolean
+}
+
 type FindGalleriesResultType {
   count: Int!
   galleries: [Gallery!]!
+}
+
+input GalleryAddInput {
+  gallery_id: ID!
+  image_ids: [ID!]!
+}
+
+input GalleryRemoveInput {
+  gallery_id: ID!
+  image_ids: [ID!]!
 }

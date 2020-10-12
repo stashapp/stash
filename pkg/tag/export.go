@@ -27,3 +27,21 @@ func ToJSON(reader models.TagReader, tag *models.Tag) (*jsonschema.Tag, error) {
 
 	return &newTagJSON, nil
 }
+
+func GetIDs(tags []*models.Tag) []int {
+	var results []int
+	for _, tag := range tags {
+		results = append(results, tag.ID)
+	}
+
+	return results
+}
+
+func GetNames(tags []*models.Tag) []string {
+	var results []string
+	for _, tag := range tags {
+		results = append(results, tag.Name)
+	}
+
+	return results
+}

@@ -1,5 +1,9 @@
 fragment ConfigGeneralData on ConfigGeneralResult {
-  stashes
+  stashes {
+    path
+    excludeVideo
+    excludeImage 
+  }
   databasePath
   generatedPath
   cachePath
@@ -19,7 +23,12 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logOut
   logLevel
   logAccess
+  createGalleriesFromFolders
+  videoExtensions
+  imageExtensions
+  galleryExtensions
   excludes
+  imageExcludes
   scraperUserAgent
   scraperCDPPath
   stashBoxes {

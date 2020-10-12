@@ -163,12 +163,8 @@ textarea.scene-description {
   text-transform: uppercase;
 }
 
-.scene-card {
-  &.card {
-    overflow: hidden;
-    padding: 0;
-  }
-
+.scene-card,
+.gallery-card {
   &-check {
     left: 0.5rem;
     margin-top: -12px;
@@ -241,6 +237,11 @@ textarea.scene-description {
       transition-delay: 0.2s;
     }
   }
+}
+
+.scene-card.card {
+  overflow: hidden;
+  padding: 0;
 }
 
 .scene-cover {

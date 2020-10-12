@@ -116,7 +116,7 @@ func TestTagQueryIsMissingImage(t *testing.T) {
 		IsMissing: &isMissing,
 	}
 
-	q := getTagStringValue(tagIdxWithImage, "name")
+	q := getTagStringValue(tagIdxWithCoverImage, "name")
 	findFilter := models.FindFilterType{
 		Q: &q,
 	}
@@ -130,7 +130,7 @@ func TestTagQueryIsMissingImage(t *testing.T) {
 
 	// ensure non of the ids equal the one with image
 	for _, tag := range tags {
-		assert.NotEqual(t, tagIDs[tagIdxWithImage], tag.ID)
+		assert.NotEqual(t, tagIDs[tagIdxWithCoverImage], tag.ID)
 	}
 }
 
