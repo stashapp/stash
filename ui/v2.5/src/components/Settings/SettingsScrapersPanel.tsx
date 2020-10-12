@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 import {
   mutateReloadScrapers,
@@ -10,6 +10,60 @@ import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import { Icon, LoadingIndicator } from "src/components/Shared";
 import { ScrapeType } from "src/core/generated-graphql";
+
+interface IURLList {
+  urls: string[];
+}
+
+const URLList: React.FC<IURLList> = ({ urls }) => {
+  const maxCollapsedItems = 5;
+  const [expanded, setExpanded] = useState<boolean>(false);
+
+  function linkSite(url: string) {
+    const u = new URL(url);
+    return `${u.protocol}//${u.host}`;
+  }
+
+  function renderLink(url?: string) {
+    if (url) {
+      const sanitised = TextUtils.sanitiseURL(url);
+      const siteURL = linkSite(sanitised!);
+
+      return (
+        <a
+          href={siteURL}
+          className="link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {sanitised}
+        </a>
+      );
+    }
+  }
+
+  function getListItems() {
+    const items = urls.map((u) => <li key={u}>{renderLink(u)}</li>);
+
+    if (items.length > maxCollapsedItems) {
+      if (!expanded) {
+        items.length = maxCollapsedItems;
+      }
+
+      items.push(
+        <li key="expand/collapse">
+          <Button onClick={() => setExpanded(!expanded)} variant="link">
+            {expanded ? "less" : "more"}
+          </Button>
+        </li>
+      );
+    }
+
+    return items;
+  }
+
+  return <ul>{getListItems()}</ul>;
+};
 
 export const SettingsScrapersPanel: React.FC = () => {
   const Toast = useToast();
@@ -28,22 +82,6 @@ export const SettingsScrapersPanel: React.FC = () => {
 
   async function onReloadScrapers() {
     await mutateReloadScrapers().catch((e) => Toast.error(e));
-  }
-
-  function renderLink(url?: string) {
-    if (url) {
-      const sanitised = TextUtils.sanitiseURL(url);
-      return (
-        <a
-          href={sanitised}
-          className="link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {sanitised}
-        </a>
-      );
-    }
   }
 
   function renderPerformerScrapeTypes(types: ScrapeType[]) {
@@ -106,13 +144,7 @@ export const SettingsScrapersPanel: React.FC = () => {
   }
 
   function renderURLs(urls: string[]) {
-    return (
-      <ul>
-        {urls.map((u) => (
-          <li key={u}>{renderLink(u)}</li>
-        ))}
-      </ul>
-    );
+    return <URLList urls={urls} />;
   }
 
   function renderSceneScrapers() {
