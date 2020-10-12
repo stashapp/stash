@@ -125,6 +125,34 @@ func galleryQueryQ(t *testing.T, qb models.GalleryQueryBuilder, q string, expect
 	assert.Len(t, galleries, totalGalleries)
 }
 
+func TestGalleryQueryPath(t *testing.T) {
+	const galleryIdx = 1
+	galleryPath := getGalleryStringValue(galleryIdx, "Path")
+
+	pathCriterion := models.StringCriterionInput{
+		Value:    galleryPath,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyGalleriesPath(t, pathCriterion)
+
+	pathCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleriesPath(t, pathCriterion)
+}
+
+func verifyGalleriesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
+	sqb := models.NewGalleryQueryBuilder()
+	galleryFilter := models.GalleryFilterType{
+		Path: &pathCriterion,
+	}
+
+	galleries, _ := sqb.Query(&galleryFilter, nil)
+
+	for _, gallery := range galleries {
+		verifyString(t, gallery.Path, pathCriterion)
+	}
+}
+
 func TestGalleryQueryIsMissingScene(t *testing.T) {
 	qb := models.NewGalleryQueryBuilder()
 	isMissing := "scene"

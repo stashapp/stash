@@ -6,6 +6,7 @@ import {
   StringCriterion,
   NumberCriterion,
   DurationCriterion,
+  MandatoryStringCriterion,
 } from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
@@ -32,6 +33,8 @@ export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
     case "none":
       return new NoneCriterion();
+    case "path":
+      return new MandatoryStringCriterion(type, type);
     case "rating":
       return new RatingCriterion();
     case "o_counter":

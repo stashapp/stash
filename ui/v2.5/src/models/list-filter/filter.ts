@@ -21,6 +21,7 @@ import {
   NumberCriterion,
   StringCriterion,
   DurationCriterion,
+  MandatoryStringCriterion,
 } from "./criteria/criterion";
 import {
   FavoriteCriterion,
@@ -127,6 +128,7 @@ export class ListFilterModel {
         ];
         this.criterionOptions = [
           new NoneCriterionOption(),
+          ListFilterModel.createCriterionOption("path"),
           new RatingCriterionOption(),
           ListFilterModel.createCriterionOption("o_counter"),
           new ResolutionCriterionOption(),
@@ -224,6 +226,7 @@ export class ListFilterModel {
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),
+          ListFilterModel.createCriterionOption("path"),
           new GalleryIsMissingCriterionOption(),
         ];
         break;
@@ -408,6 +411,14 @@ export class ListFilterModel {
     const result: SceneFilterType = {};
     this.criteria.forEach((criterion) => {
       switch (criterion.type) {
+        case "path": {
+          const pathCrit = criterion as MandatoryStringCriterion;
+          result.path = {
+            value: pathCrit.value,
+            modifier: pathCrit.modifier,
+          };
+          break;
+        }
         case "rating": {
           const ratingCrit = criterion as RatingCriterion;
           result.rating = {
@@ -757,6 +768,14 @@ export class ListFilterModel {
     const result: GalleryFilterType = {};
     this.criteria.forEach((criterion) => {
       switch (criterion.type) {
+        case "path": {
+          const pathCrit = criterion as MandatoryStringCriterion;
+          result.path = {
+            value: pathCrit.value,
+            modifier: pathCrit.modifier,
+          };
+          break;
+        }
         case "galleryIsMissing":
           result.is_missing = (criterion as IsMissingCriterion).value;
           break;

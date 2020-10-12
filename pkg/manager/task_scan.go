@@ -72,10 +72,6 @@ func (t *ScanTask) scanGallery() {
 		return
 	}
 
-	ok, err := utils.IsZipFileUncompressed(t.FilePath)
-	if err == nil && !ok {
-		logger.Warnf("%s is using above store (0) level compression.", t.FilePath)
-	}
 	checksum, err := t.calculateChecksum()
 	if err != nil {
 		logger.Error(err.Error())
@@ -114,6 +110,12 @@ func (t *ScanTask) scanGallery() {
 
 		// don't create gallery if it has no images
 		if countImagesInZip(t.FilePath) > 0 {
+			// only warn when creating the gallery
+			ok, err := utils.IsZipFileUncompressed(t.FilePath)
+			if err == nil && !ok {
+				logger.Warnf("%s is using above store (0) level compression.", t.FilePath)
+			}
+
 			logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
 			gallery, err = qb.Create(newGallery, tx)
 		}
@@ -297,7 +299,7 @@ func (t *ScanTask) scanScene() {
 
 	var checksum string
 
-	logger.Infof("%s not found.  Calculating oshash...", t.FilePath)
+	logger.Infof("%s not found. Calculating oshash...", t.FilePath)
 	oshash, err := utils.OSHashFromFilePath(t.FilePath)
 	if err != nil {
 		logger.Error(err.Error())
@@ -335,9 +337,9 @@ func (t *ScanTask) scanScene() {
 	if scene != nil {
 		exists, _ := utils.FileExists(scene.Path)
 		if exists {
-			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, scene.Path)
+			logger.Infof("%s already exists. Duplicate of %s", t.FilePath, scene.Path)
 		} else {
-			logger.Infof("%s already exists.  Updating path...", t.FilePath)
+			logger.Infof("%s already exists. Updating path...", t.FilePath)
 			scenePartial := models.ScenePartial{
 				ID:   scene.ID,
 				Path: &t.FilePath,
@@ -345,7 +347,7 @@ func (t *ScanTask) scanScene() {
 			_, err = qb.Update(scenePartial, tx)
 		}
 	} else {
-		logger.Infof("%s doesn't exist.  Creating new item...", t.FilePath)
+		logger.Infof("%s doesn't exist. Creating new item...", t.FilePath)
 		currentTime := time.Now()
 		newScene := models.Scene{
 			Checksum:   sql.NullString{String: checksum, Valid: checksum != ""},
@@ -388,7 +390,6 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 	normalExists, _ := utils.FileExists(normalPath)
 
 	if thumbExists && normalExists {
-		logger.Debug("Screenshots already exist for this path... skipping")
 		return
 	}
 
