@@ -149,7 +149,7 @@ func verifyGalleriesPath(t *testing.T, pathCriterion models.StringCriterionInput
 	galleries, _ := sqb.Query(&galleryFilter, nil)
 
 	for _, gallery := range galleries {
-		verifyString(t, gallery.Path, pathCriterion)
+		verifyNullString(t, gallery.Path, pathCriterion)
 	}
 }
 
