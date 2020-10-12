@@ -8,8 +8,12 @@ import cx from "classnames";
 interface IWallItemProps {
   scene?: GQL.SlimSceneDataFragment;
   sceneMarker?: GQL.SceneMarkerDataFragment;
+  image?: GQL.SlimImageDataFragment;
   clickHandler?: (
-    item: GQL.SlimSceneDataFragment | GQL.SceneMarkerDataFragment
+    item:
+      | GQL.SlimSceneDataFragment
+      | GQL.SceneMarkerDataFragment
+      | GQL.SlimImageDataFragment
   ) => void;
   className: string;
 }
@@ -101,11 +105,17 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
         video: props.sceneMarker.stream,
         animation: props.sceneMarker.preview,
       }
-    : {
+    : props.scene
+    ? {
         video: props.scene?.paths.preview ?? undefined,
         animation: props.scene?.paths.webp ?? undefined,
         image: props.scene?.paths.screenshot ?? undefined,
-      };
+      }
+    : props.image
+    ? {
+        image: props.image?.paths.thumbnail ?? undefined,
+      }
+    : undefined;
 
   const setInactive = () => setActive(false);
   const toggleActive = (e: TransitionEvent) => {
@@ -136,6 +146,9 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
     if (props.sceneMarker) {
       props?.clickHandler?.(props.sceneMarker);
     }
+    if (props.image) {
+      props?.clickHandler?.(props.image);
+    }
   };
 
   let linkSrc: string = "#";
@@ -144,6 +157,8 @@ export const WallItem: React.FC<IWallItemProps> = (props: IWallItemProps) => {
       linkSrc = `/scenes/${props.scene.id}`;
     } else if (props.sceneMarker) {
       linkSrc = NavUtils.makeSceneMarkerUrl(props.sceneMarker);
+    } else if (props.image) {
+      linkSrc = `/images/${props.image.id}`;
     }
   }
 

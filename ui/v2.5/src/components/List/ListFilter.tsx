@@ -402,7 +402,7 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function maybeRenderZoom() {
-    if (props.onChangeZoom) {
+    if (props.onChangeZoom && props.filter.displayMode === DisplayMode.Grid) {
       return (
         <div className="align-middle">
           <Form.Control
@@ -452,14 +452,14 @@ export const ListFilter: React.FC<IListFilterProps> = (
     return (
       <>
         <ButtonToolbar className="align-items-center justify-content-center">
-          <ButtonGroup className="mr-3 my-1">
-            <InputGroup className="mr-2">
+          <div className="my-1 d-flex">
+            <InputGroup className="mr-2 flex-grow-1">
               <FormControl
                 ref={queryRef}
                 placeholder="Search..."
                 defaultValue={props.filter.searchTerm}
                 onInput={onChangeQuery}
-                className="bg-secondary text-white border-secondary"
+                className="bg-secondary text-white border-secondary w-50"
               />
 
               <InputGroup.Append>
@@ -510,33 +510,33 @@ export const ListFilter: React.FC<IListFilterProps> = (
                 </OverlayTrigger>
               )}
             </Dropdown>
+          </div>
 
-            <Form.Control
-              as="select"
-              onChange={onChangePageSize}
-              value={props.filter.itemsPerPage.toString()}
-              className="btn-secondary mr-1"
-            >
-              {PAGE_SIZE_OPTIONS.map((s) => (
-                <option value={s} key={s}>
-                  {s}
-                </option>
-              ))}
-            </Form.Control>
-          </ButtonGroup>
+          <Form.Control
+            as="select"
+            onChange={onChangePageSize}
+            value={props.filter.itemsPerPage.toString()}
+            className="btn-secondary mx-1"
+          >
+            {PAGE_SIZE_OPTIONS.map((s) => (
+              <option value={s} key={s}>
+                {s}
+              </option>
+            ))}
+          </Form.Control>
 
-          <ButtonGroup className="mr-3 my-1">
+          <ButtonGroup className="mx-3 my-1">
             {maybeRenderSelectedButtons()}
             {renderMore()}
           </ButtonGroup>
 
           <ButtonGroup className="my-1">
             {renderDisplayModeOptions()}
-            {maybeRenderZoom()}
           </ButtonGroup>
+          {maybeRenderZoom()}
         </ButtonToolbar>
 
-        <div className="d-flex justify-content-center">
+        <div className="d-flex justify-content-center mt-1">
           {renderFilterTags()}
         </div>
       </>

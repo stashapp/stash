@@ -19,7 +19,7 @@ import (
 
 var DB *sqlx.DB
 var dbPath string
-var appSchemaVersion uint = 12
+var appSchemaVersion uint = 13
 var databaseSchemaVersion uint
 
 const sqlite3Driver = "sqlite3ex"

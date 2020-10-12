@@ -1,0 +1,97 @@
+mutation GalleryCreate(
+  $title: String!,
+  $details: String,
+  $url: String,
+  $date: String,
+  $rating: Int,
+  $scene_id: ID,
+  $studio_id: ID,
+  $performer_ids: [ID!] = [],
+  $tag_ids: [ID!] = []) {
+
+  galleryCreate(input: {
+    title: $title,
+    details: $details,
+    url: $url,
+    date: $date,
+    rating: $rating,
+    scene_id: $scene_id,
+    studio_id: $studio_id,
+    tag_ids: $tag_ids,
+    performer_ids: $performer_ids
+    }) {
+      ...GalleryData
+  }
+}
+
+mutation GalleryUpdate(
+  $id: ID!,
+  $title: String,
+  $details: String,
+  $url: String,
+  $date: String,
+  $rating: Int,
+  $scene_id: ID,
+  $studio_id: ID,
+  $performer_ids: [ID!] = [],
+  $tag_ids: [ID!] = []) {
+
+  galleryUpdate(input: {
+                        id: $id,
+                        title: $title,
+                        details: $details,
+                        url: $url,
+                        date: $date,
+                        rating: $rating,
+                        scene_id: $scene_id,
+                        studio_id: $studio_id,
+                        tag_ids: $tag_ids,
+                        performer_ids: $performer_ids
+                      }) {
+      ...GalleryData
+  }
+}
+
+mutation BulkGalleryUpdate(
+  $ids: [ID!] = [],
+  $url: String,
+  $date: String,
+  $details: String,
+  $rating: Int,
+  $scene_id: ID,
+  $studio_id: ID,
+  $tag_ids: BulkUpdateIds,
+  $performer_ids: BulkUpdateIds) {
+
+  bulkGalleryUpdate(input: {
+                        ids: $ids,
+                        details: $details,
+                        url: $url,
+                        date: $date,
+                        rating: $rating,
+                        scene_id: $scene_id,
+                        studio_id: $studio_id,
+                        tag_ids: $tag_ids,
+                        performer_ids: $performer_ids
+                      }) {
+      ...GalleryData
+  }
+}
+
+mutation GalleriesUpdate($input : [GalleryUpdateInput!]!) {
+  galleriesUpdate(input: $input) {
+    ...GalleryData
+  }
+}
+
+mutation GalleryDestroy($ids: [ID!]!, $delete_file: Boolean, $delete_generated : Boolean) {
+  galleryDestroy(input: {ids: $ids, delete_file: $delete_file, delete_generated: $delete_generated})
+}
+
+mutation AddGalleryImages($gallery_id: ID!, $image_ids: [ID!]!) {
+  addGalleryImages(input: {gallery_id: $gallery_id, image_ids: $image_ids})
+}
+
+mutation RemoveGalleryImages($gallery_id: ID!, $image_ids: [ID!]!) {
+  removeGalleryImages(input: {gallery_id: $gallery_id, image_ids: $image_ids})
+}

@@ -9,7 +9,6 @@ import (
 type Paths struct {
 	Generated *generatedPaths
 
-	Gallery      *galleryPaths
 	Scene        *scenePaths
 	SceneMarkers *sceneMarkerPaths
 }
@@ -18,7 +17,6 @@ func NewPaths() *Paths {
 	p := Paths{}
 	p.Generated = newGeneratedPaths()
 
-	p.Gallery = newGalleryPaths()
 	p.Scene = newScenePaths(p)
 	p.SceneMarkers = newSceneMarkerPaths(p)
 	return &p
