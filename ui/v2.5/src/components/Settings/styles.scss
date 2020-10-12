@@ -70,3 +70,24 @@
     list-style: none;
   }
 }
+
+.warnings-table {
+  table-layout: fixed;
+
+  &-scene {
+    width: 40%;
+  }
+
+  &-type {
+    width: 12rem;
+  }
+
+  &-details {
+    -webkit-box-orient: vertical;
+    /* stylelint-disable */
+    display: -webkit-box;
+    /* stylelint-enable */
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+}
