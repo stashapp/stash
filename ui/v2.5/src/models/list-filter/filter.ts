@@ -695,7 +695,7 @@ export class ListFilterModel {
         }
         case "performers": {
           const perfCrit = criterion as PerformersCriterion;
-          result.galleries = {
+          result.performers = {
             value: perfCrit.value.map((perf) => perf.id),
             modifier: perfCrit.modifier,
           };
