@@ -3,11 +3,11 @@ import * as GQL from "src/core/generated-graphql";
 import { ImageList } from "src/components/Images/ImageList";
 import { performerFilterHook } from "src/core/performers";
 
-interface IPerformerDetailsProps {
+interface IPerformerImagesPanel {
   performer: Partial<GQL.PerformerDataFragment>;
 }
 
-export const PerformerImagesPanel: React.FC<IPerformerDetailsProps> = ({
+export const PerformerImagesPanel: React.FC<IPerformerImagesPanel> = ({
   performer,
 }) => {
   return <ImageList filterHook={performerFilterHook(performer)} />;
