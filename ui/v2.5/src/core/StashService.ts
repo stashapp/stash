@@ -638,6 +638,11 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
 export const mutateReloadScrapers = () =>
   client.mutate<GQL.ReloadScrapersMutation>({
     mutation: GQL.ReloadScrapersDocument,
+    refetchQueries: [
+      GQL.refetchListMovieScrapersQuery(),
+      GQL.refetchListPerformerScrapersQuery(),
+      GQL.refetchListSceneScrapersQuery(),
+    ],
   });
 
 export const mutateReloadPlugins = () =>
