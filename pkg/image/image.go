@@ -45,10 +45,11 @@ func CalculateMD5(path string) (string, error) {
 }
 
 func FileExists(path string) bool {
-	_, err := openSourceImage(path)
+	f, err := openSourceImage(path)
 	if err != nil {
 		return false
 	}
+	defer f.Close()
 
 	return true
 }
