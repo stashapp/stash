@@ -656,6 +656,11 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 	excludeImg := config.GetImageExcludes()
 
 	return symwalk.Walk(s.Path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			logger.Debugf("error scanning %s: %s", path, err.Error())
+			return nil
+		}
+
 		if info.IsDir() {
 			return nil
 		}
