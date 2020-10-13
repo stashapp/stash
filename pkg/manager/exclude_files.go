@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -78,5 +79,16 @@ func matchFileSimple(file string, regExps []*regexp.Regexp) bool {
 			return true
 		}
 	}
+	return false
+}
+
+func matchExtension(path string, extensions []string) bool {
+	ext := filepath.Ext(path)
+	for _, e := range extensions {
+		if strings.ToLower(ext) == strings.ToLower("."+e) {
+			return true
+		}
+	}
+
 	return false
 }

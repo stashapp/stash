@@ -312,21 +312,9 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		query.addArg(thisArgs...)
 	}
 
-	if rating := sceneFilter.Rating; rating != nil {
-		clause, count := getIntCriterionWhereClause("scenes.rating", *sceneFilter.Rating)
-		query.addWhere(clause)
-		if count == 1 {
-			query.addArg(sceneFilter.Rating.Value)
-		}
-	}
-
-	if oCounter := sceneFilter.OCounter; oCounter != nil {
-		clause, count := getIntCriterionWhereClause("scenes.o_counter", *sceneFilter.OCounter)
-		query.addWhere(clause)
-		if count == 1 {
-			query.addArg(sceneFilter.OCounter.Value)
-		}
-	}
+	query.handleStringCriterionInput(sceneFilter.Path, "scenes.path")
+	query.handleIntCriterionInput(sceneFilter.Rating, "scenes.rating")
+	query.handleIntCriterionInput(sceneFilter.OCounter, "scenes.o_counter")
 
 	if durationFilter := sceneFilter.Duration; durationFilter != nil {
 		clause, thisArgs := getDurationWhereClause(*durationFilter)

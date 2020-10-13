@@ -23,6 +23,7 @@ import Studios from "./components/Studios/Studios";
 import { SceneFilenameParser } from "./components/SceneFilenameParser/SceneFilenameParser";
 import Movies from "./components/Movies/Movies";
 import Tags from "./components/Tags/Tags";
+import Images from "./components/Images/Images";
 
 // Set fontawesome/free-solid-svg as default fontawesome icons
 library.add(fas);
@@ -49,6 +50,7 @@ export const App: React.FC = () => {
             <Switch>
               <Route exact path="/" component={Stats} />
               <Route path="/scenes" component={Scenes} />
+              <Route path="/images" component={Images} />
               <Route path="/galleries" component={Galleries} />
               <Route path="/performers" component={Performers} />
               <Route path="/tags" component={Tags} />

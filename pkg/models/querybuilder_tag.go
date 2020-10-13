@@ -120,6 +120,30 @@ func (qb *TagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Tag, erro
 	return qb.queryTags(query, args, tx)
 }
 
+func (qb *TagQueryBuilder) FindByImageID(imageID int, tx *sqlx.Tx) ([]*Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN images_tags as images_join on images_join.tag_id = tags.id
+		WHERE images_join.image_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getTagSort(nil)
+	args := []interface{}{imageID}
+	return qb.queryTags(query, args, tx)
+}
+
+func (qb *TagQueryBuilder) FindByGalleryID(galleryID int, tx *sqlx.Tx) ([]*Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN galleries_tags as galleries_join on galleries_join.tag_id = tags.id
+		WHERE galleries_join.gallery_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getTagSort(nil)
+	args := []interface{}{galleryID}
+	return qb.queryTags(query, args, tx)
+}
+
 func (qb *TagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int, tx *sqlx.Tx) ([]*Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
