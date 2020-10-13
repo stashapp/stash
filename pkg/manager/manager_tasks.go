@@ -3,16 +3,16 @@ package manager
 import (
 	"errors"
 	"fmt"
-	"os"
-	"runtime"
-	"strconv"
-	"sync"
-	"time"
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"os"
+	"runtime"
+	"strconv"
+	"sync"
+	"time"
 )
 
 func isGallery(pathname string) bool {

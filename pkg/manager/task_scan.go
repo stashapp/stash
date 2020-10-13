@@ -4,11 +4,6 @@ import (
 	"archive/zip"
 	"context"
 	"database/sql"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
 	"github.com/facebookgo/symwalk"
 	"github.com/jmoiron/sqlx"
 	"github.com/remeh/sizedwaitgroup"
@@ -19,6 +14,11 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type ScanTask struct {
@@ -29,7 +29,7 @@ type ScanTask struct {
 	GenerateSprite       bool
 	GeneratePreview      bool
 	GenerateImagePreview bool
-	zipGallery 			 *models.Gallery
+	zipGallery           *models.Gallery
 }
 
 func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
