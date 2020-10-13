@@ -40,3 +40,33 @@
 #configuration-tabs-tabpane-tasks h5 {
   margin-bottom: 1em;
 }
+
+.scraper-table {
+  display: block;
+  margin-bottom: 16px;
+  overflow: auto;
+  width: 100%;
+
+  tr {
+    border-top: 1px solid #181513;
+
+    &:nth-child(2n) {
+      background-color: #2c3b47;
+    }
+  }
+
+  th,
+  td {
+    border: 1px solid #181513;
+    padding: 6px 13px;
+  }
+
+  ul {
+    margin-bottom: 0;
+    padding-left: 0;
+  }
+
+  li {
+    list-style: none;
+  }
+}
