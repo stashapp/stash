@@ -657,7 +657,7 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 
 	return symwalk.Walk(s.Path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			logger.Debugf("error scanning %s: %s", path, err.Error())
+			logger.Warnf("error scanning %s: %s", path, err.Error())
 			return nil
 		}
 
