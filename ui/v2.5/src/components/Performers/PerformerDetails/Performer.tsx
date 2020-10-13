@@ -16,6 +16,7 @@ import FsLightbox from "fslightbox-react";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
+import { PerformerImagesPanel } from "./PerformerImagesPanel";
 
 interface IPerformerParams {
   id?: string;
@@ -53,7 +54,7 @@ export const Performer: React.FC = () => {
   const [deletePerformer] = usePerformerDestroy();
 
   const activeTabKey =
-    tab === "scenes" || tab === "edit" || tab === "operations"
+    tab === "scenes" || tab === "images" || tab === "edit" || tab === "operations"
       ? tab
       : "details";
   const setActiveTabKey = (newTab: string | null) => {
@@ -155,6 +156,9 @@ export const Performer: React.FC = () => {
       </Tab>
       <Tab eventKey="scenes" title="Scenes">
         <PerformerScenesPanel performer={performer} />
+      </Tab>
+      <Tab eventKey="images" title="Images">
+        <PerformerImagesPanel performer={performer} />
       </Tab>
       <Tab eventKey="edit" title="Edit">
         <PerformerDetailsPanel
