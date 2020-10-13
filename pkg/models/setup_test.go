@@ -17,21 +17,24 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 const totalScenes = 12
-const performersNameCase = 3
+const totalImages = 6
+const performersNameCase = 6
 const performersNameNoCase = 2
 const moviesNameCase = 2
 const moviesNameNoCase = 1
-const totalGalleries = 2
+const totalGalleries = 3
 const tagsNameNoCase = 2
-const tagsNameCase = 6
-const studiosNameCase = 4
+const tagsNameCase = 9
+const studiosNameCase = 5
 const studiosNameNoCase = 1
 
 var sceneIDs []int
+var imageIDs []int
 var performerIDs []int
 var movieIDs []int
 var galleryIDs []int
@@ -53,13 +56,23 @@ const sceneIdxWithTwoTags = 5
 const sceneIdxWithStudio = 6
 const sceneIdxWithMarker = 7
 
+const imageIdxWithGallery = 0
+const imageIdxWithPerformer = 1
+const imageIdxWithTwoPerformers = 2
+const imageIdxWithTag = 3
+const imageIdxWithTwoTags = 4
+const imageIdxWithStudio = 5
+
 const performerIdxWithScene = 0
 const performerIdx1WithScene = 1
 const performerIdx2WithScene = 2
+const performerIdxWithImage = 3
+const performerIdx1WithImage = 4
+const performerIdx2WithImage = 5
 
 // performers with dup names start from the end
-const performerIdx1WithDupName = 3
-const performerIdxWithDupName = 4
+const performerIdx1WithDupName = 6
+const performerIdxWithDupName = 7
 
 const movieIdxWithScene = 0
 const movieIdxWithStudio = 1
@@ -68,25 +81,30 @@ const movieIdxWithStudio = 1
 const movieIdxWithDupName = 2
 
 const galleryIdxWithScene = 0
+const galleryIdxWithImage = 1
 
 const tagIdxWithScene = 0
 const tagIdx1WithScene = 1
 const tagIdx2WithScene = 2
 const tagIdxWithPrimaryMarker = 3
 const tagIdxWithMarker = 4
-const tagIdxWithImage = 5
+const tagIdxWithCoverImage = 5
+const tagIdxWithImage = 6
+const tagIdx1WithImage = 7
+const tagIdx2WithImage = 8
 
 // tags with dup names start from the end
-const tagIdx1WithDupName = 6
-const tagIdxWithDupName = 7
+const tagIdx1WithDupName = 9
+const tagIdxWithDupName = 10
 
 const studioIdxWithScene = 0
 const studioIdxWithMovie = 1
 const studioIdxWithChildStudio = 2
 const studioIdxWithParentStudio = 3
+const studioIdxWithImage = 4
 
 // studios with dup names start from the end
-const studioIdxWithDupName = 4
+const studioIdxWithDupName = 5
 
 const markerIdxWithScene = 0
 
@@ -144,6 +162,11 @@ func populateDB() error {
 		return err
 	}
 
+	if err := createImages(tx, totalImages); err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	if err := createGalleries(tx, totalGalleries); err != nil {
 		tx.Rollback()
 		return err
@@ -164,7 +187,7 @@ func populateDB() error {
 		return err
 	}
 
-	if err := addTagImage(tx, tagIdxWithImage); err != nil {
+	if err := addTagImage(tx, tagIdxWithCoverImage); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -207,6 +230,26 @@ func populateDB() error {
 		return err
 	}
 
+	if err := linkImageGallery(tx, imageIdxWithGallery, galleryIdxWithImage); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := linkImagePerformers(tx); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := linkImageTags(tx); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := linkImageStudio(tx, imageIdxWithStudio, studioIdxWithImage); err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	if err := linkMovieStudio(tx, movieIdxWithStudio, studioIdxWithMovie); err != nil {
 		tx.Rollback()
 		return err
@@ -233,12 +276,12 @@ func getSceneStringValue(index int, field string) string {
 	return fmt.Sprintf("scene_%04d_%s", index, field)
 }
 
-func getSceneRating(index int) sql.NullInt64 {
+func getRating(index int) sql.NullInt64 {
 	rating := index % 6
 	return sql.NullInt64{Int64: int64(rating), Valid: rating > 0}
 }
 
-func getSceneOCounter(index int) int {
+func getOCounter(index int) int {
 	return index % 3
 }
 
@@ -252,7 +295,7 @@ func getSceneDuration(index int) sql.NullFloat64 {
 	}
 }
 
-func getSceneHeight(index int) sql.NullInt64 {
+func getHeight(index int) sql.NullInt64 {
 	heights := []int64{0, 200, 240, 300, 480, 700, 720, 800, 1080, 1500, 2160, 3000}
 	height := heights[index%len(heights)]
 	return sql.NullInt64{
@@ -279,10 +322,10 @@ func createScenes(tx *sqlx.Tx, n int) error {
 			Title:    sql.NullString{String: getSceneStringValue(i, titleField), Valid: true},
 			Checksum: sql.NullString{String: getSceneStringValue(i, checksumField), Valid: true},
 			Details:  sql.NullString{String: getSceneStringValue(i, "Details"), Valid: true},
-			Rating:   getSceneRating(i),
-			OCounter: getSceneOCounter(i),
+			Rating:   getRating(i),
+			OCounter: getOCounter(i),
 			Duration: getSceneDuration(i),
-			Height:   getSceneHeight(i),
+			Height:   getHeight(i),
 			Date:     getSceneDate(i),
 		}
 
@@ -298,6 +341,35 @@ func createScenes(tx *sqlx.Tx, n int) error {
 	return nil
 }
 
+func getImageStringValue(index int, field string) string {
+	return fmt.Sprintf("image_%04d_%s", index, field)
+}
+
+func createImages(tx *sqlx.Tx, n int) error {
+	qb := models.NewImageQueryBuilder()
+
+	for i := 0; i < n; i++ {
+		image := models.Image{
+			Path:     getImageStringValue(i, pathField),
+			Title:    sql.NullString{String: getImageStringValue(i, titleField), Valid: true},
+			Checksum: getImageStringValue(i, checksumField),
+			Rating:   getRating(i),
+			OCounter: getOCounter(i),
+			Height:   getHeight(i),
+		}
+
+		created, err := qb.Create(image, tx)
+
+		if err != nil {
+			return fmt.Errorf("Error creating image %v+: %s", image, err.Error())
+		}
+
+		imageIDs = append(imageIDs, created.ID)
+	}
+
+	return nil
+}
+
 func getGalleryStringValue(index int, field string) string {
 	return "gallery_" + strconv.FormatInt(int64(index), 10) + "_" + field
 }
@@ -307,7 +379,7 @@ func createGalleries(tx *sqlx.Tx, n int) error {
 
 	for i := 0; i < n; i++ {
 		gallery := models.Gallery{
-			Path:     getGalleryStringValue(i, pathField),
+			Path:     modelstest.NullString(getGalleryStringValue(i, pathField)),
 			Checksum: getGalleryStringValue(i, checksumField),
 		}
 
@@ -591,7 +663,7 @@ func linkScenePerformer(tx *sqlx.Tx, sceneIndex, performerIndex int) error {
 func linkSceneGallery(tx *sqlx.Tx, sceneIndex, galleryIndex int) error {
 	gqb := models.NewGalleryQueryBuilder()
 
-	gallery, err := gqb.Find(galleryIDs[galleryIndex])
+	gallery, err := gqb.Find(galleryIDs[galleryIndex], nil)
 
 	if err != nil {
 		return fmt.Errorf("error finding gallery: %s", err.Error())
@@ -637,6 +709,68 @@ func linkSceneStudio(tx *sqlx.Tx, sceneIndex, studioIndex int) error {
 	}
 	_, err := sqb.Update(scene, tx)
 
+	return err
+}
+
+func linkImageGallery(tx *sqlx.Tx, imageIndex, galleryIndex int) error {
+	jqb := models.NewJoinsQueryBuilder()
+
+	_, err := jqb.AddImageGallery(imageIDs[imageIndex], galleryIDs[galleryIndex], tx)
+
+	return err
+}
+
+func linkImageTags(tx *sqlx.Tx) error {
+	if err := linkImageTag(tx, imageIdxWithTag, tagIdxWithImage); err != nil {
+		return err
+	}
+	if err := linkImageTag(tx, imageIdxWithTwoTags, tagIdx1WithImage); err != nil {
+		return err
+	}
+	if err := linkImageTag(tx, imageIdxWithTwoTags, tagIdx2WithImage); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func linkImageTag(tx *sqlx.Tx, imageIndex, tagIndex int) error {
+	jqb := models.NewJoinsQueryBuilder()
+
+	_, err := jqb.AddImageTag(imageIDs[imageIndex], tagIDs[tagIndex], tx)
+	return err
+}
+
+func linkImageStudio(tx *sqlx.Tx, imageIndex, studioIndex int) error {
+	sqb := models.NewImageQueryBuilder()
+
+	image := models.ImagePartial{
+		ID:       imageIDs[imageIndex],
+		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
+	}
+	_, err := sqb.Update(image, tx)
+
+	return err
+}
+
+func linkImagePerformers(tx *sqlx.Tx) error {
+	if err := linkImagePerformer(tx, imageIdxWithPerformer, performerIdxWithImage); err != nil {
+		return err
+	}
+	if err := linkImagePerformer(tx, imageIdxWithTwoPerformers, performerIdx1WithImage); err != nil {
+		return err
+	}
+	if err := linkImagePerformer(tx, imageIdxWithTwoPerformers, performerIdx2WithImage); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func linkImagePerformer(tx *sqlx.Tx, imageIndex, performerIndex int) error {
+	jqb := models.NewJoinsQueryBuilder()
+
+	_, err := jqb.AddPerformerImage(imageIDs[imageIndex], performerIDs[performerIndex], tx)
 	return err
 }
 

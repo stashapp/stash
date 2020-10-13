@@ -95,7 +95,7 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
   const items = (galleries.length > 0
     ? [{ path: "None", id: "0" }, ...galleries]
     : []
-  ).map((g) => ({ label: g.path, value: g.id }));
+  ).map((g) => ({ label: g.title ?? "", value: g.id }));
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedItem = getSelectedValues(selectedItems)[0];

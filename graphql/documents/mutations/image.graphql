@@ -1,0 +1,69 @@
+mutation ImageUpdate(
+  $id: ID!,
+  $title: String,
+  $rating: Int,
+  $studio_id: ID,
+  $gallery_ids: [ID!] = [],
+  $performer_ids: [ID!] = [],
+  $tag_ids: [ID!] = []) {
+
+  imageUpdate(input: {
+                        id: $id,
+                        title: $title,
+                        rating: $rating,
+                        studio_id: $studio_id,
+                        gallery_ids: $gallery_ids,
+                        performer_ids: $performer_ids,
+                        tag_ids: $tag_ids
+                      }) {
+      ...ImageData
+  }
+}
+
+mutation BulkImageUpdate(
+  $ids: [ID!] = [],
+  $title: String,
+  $rating: Int,
+  $studio_id: ID,
+  $gallery_ids: BulkUpdateIds,
+  $performer_ids: BulkUpdateIds,
+  $tag_ids: BulkUpdateIds) {
+
+  bulkImageUpdate(input: {
+                        ids: $ids,
+                        title: $title,
+                        rating: $rating,
+                        studio_id: $studio_id,
+                        gallery_ids: $gallery_ids,
+                        performer_ids: $performer_ids,
+                        tag_ids: $tag_ids
+                      }) {
+      ...ImageData
+  }
+}
+
+mutation ImagesUpdate($input : [ImageUpdateInput!]!) {
+  imagesUpdate(input: $input) {
+    ...ImageData
+  }
+}
+
+mutation ImageIncrementO($id: ID!) {
+  imageIncrementO(id: $id) 
+}
+
+mutation ImageDecrementO($id: ID!) {
+  imageDecrementO(id: $id)
+}
+
+mutation ImageResetO($id: ID!) {
+  imageResetO(id: $id)
+}
+
+mutation ImageDestroy($id: ID!, $delete_file: Boolean, $delete_generated : Boolean) {
+  imageDestroy(input: {id: $id, delete_file: $delete_file, delete_generated: $delete_generated})
+}
+
+mutation ImagesDestroy($ids: [ID!]!, $delete_file: Boolean, $delete_generated : Boolean) {
+  imagesDestroy(input: {ids: $ids, delete_file: $delete_file, delete_generated: $delete_generated})
+}

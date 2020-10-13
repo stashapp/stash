@@ -236,7 +236,7 @@ func NewVideoFile(ffprobePath string, videoPath string) (*VideoFile, error) {
 
 	probeJSON := &FFProbeJSON{}
 	if err := json.Unmarshal(out, probeJSON); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error unmarshalling video data for <%s>: %s", videoPath, err.Error())
 	}
 
 	return parse(videoPath, probeJSON)
@@ -244,7 +244,7 @@ func NewVideoFile(ffprobePath string, videoPath string) (*VideoFile, error) {
 
 func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 	if probeJSON == nil {
-		return nil, fmt.Errorf("failed to get ffprobe json")
+		return nil, fmt.Errorf("failed to get ffprobe json for <%s>", filePath)
 	}
 
 	result := &VideoFile{}
@@ -273,7 +273,7 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 	result.Duration = math.Round(duration*100) / 100
 	fileStat, err := os.Stat(filePath)
 	if err != nil {
-		logger.Errorf("Error statting file: %v", err)
+		logger.Errorf("Error statting file <%s>: %s", filePath, err.Error())
 		return nil, err
 	}
 	result.Size = fileStat.Size()

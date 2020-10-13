@@ -3,39 +3,31 @@ package manager
 import (
 	"errors"
 	"fmt"
-	"github.com/bmatcuk/doublestar/v2"
+	"os"
+	"runtime"
+	"strconv"
+	"sync"
+	"time"
 	"github.com/remeh/sizedwaitgroup"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"path/filepath"
-	"runtime"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
-var extensionsToScan = []string{"zip", "cbz", "m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
-var extensionsGallery = []string{"zip", "cbz"}
-
-func constructGlob() string { // create a sequence for glob doublestar from our extensions
-	var extList []string
-	for _, ext := range extensionsToScan {
-		extList = append(extList, strings.ToLower(ext))
-		extList = append(extList, strings.ToUpper(ext))
-	}
-	return "{" + strings.Join(extList, ",") + "}"
+func isGallery(pathname string) bool {
+	gExt := config.GetGalleryExtensions()
+	return matchExtension(pathname, gExt)
 }
 
-func isGallery(pathname string) bool {
-	for _, ext := range extensionsGallery {
-		if strings.ToLower(filepath.Ext(pathname)) == "."+strings.ToLower(ext) {
-			return true
-		}
-	}
-	return false
+func isVideo(pathname string) bool {
+	vidExt := config.GetVideoExtensions()
+	return matchExtension(pathname, vidExt)
+}
+
+func isImage(pathname string) bool {
+	imgExt := config.GetImageExtensions()
+	return matchExtension(pathname, imgExt)
 }
 
 type TaskStatus struct {
@@ -88,6 +80,55 @@ func (t *TaskStatus) updated() {
 	t.LastUpdate = time.Now()
 }
 
+func (s *singleton) neededScan() (total *int, newFiles *int) {
+	const timeout = 90 * time.Second
+
+	// create a control channel through which to signal the counting loop when the timeout is reached
+	chTimeout := time.After(timeout)
+
+	logger.Infof("Counting files to scan...")
+
+	t := 0
+	n := 0
+
+	timeoutErr := errors.New("timed out")
+
+	for _, sp := range config.GetStashPaths() {
+		err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+			t++
+			task := ScanTask{FilePath: path}
+			if !task.doesPathExist() {
+				n++
+			}
+
+			//check for timeout
+			select {
+			case <-chTimeout:
+				return timeoutErr
+			default:
+			}
+
+			// check stop
+			if s.Status.stopping {
+				return timeoutErr
+			}
+
+			return nil
+		})
+
+		if err == timeoutErr {
+			break
+		}
+
+		if err != nil {
+			logger.Errorf("Error encountered counting files to scan: %s", err.Error())
+			return nil, nil
+		}
+	}
+
+	return &t, &n
+}
+
 func (s *singleton) Scan(useFileMetadata bool, scanGeneratePreviews bool, scanGenerateImagePreviews bool, scanGenerateSprites bool) {
 	if s.Status.Status != Idle {
 		return
@@ -98,21 +139,19 @@ func (s *singleton) Scan(useFileMetadata bool, scanGeneratePreviews bool, scanGe
 	go func() {
 		defer s.returnToIdleState()
 
-		var results []string
-		for _, path := range config.GetStashPaths() {
-			globPath := filepath.Join(path, "**/*."+constructGlob())
-			globResults, _ := doublestar.Glob(globPath)
-			results = append(results, globResults...)
-		}
+		total, newFiles := s.neededScan()
 
 		if s.Status.stopping {
 			logger.Info("Stopping due to user request")
 			return
 		}
 
-		results, _ = excludeFiles(results, config.GetExcludes())
-		total := len(results)
-		logger.Infof("Starting scan of %d files. %d New files found", total, s.neededScan(results))
+		if total == nil || newFiles == nil {
+			logger.Infof("Taking too long to count content. Skipping...")
+			logger.Infof("Starting scan")
+		} else {
+			logger.Infof("Starting scan of %d files. %d New files found", *total, *newFiles)
+		}
 
 		start := time.Now()
 		parallelTasks := config.GetParallelTasks()
@@ -126,30 +165,61 @@ func (s *singleton) Scan(useFileMetadata bool, scanGeneratePreviews bool, scanGe
 		s.Status.Progress = 0
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 		calculateMD5 := config.IsCalculateMD5()
-		for i, path := range results {
-			s.Status.setProgress(i, total)
-			if s.Status.stopping {
-				logger.Info("Stopping due to user request")
+
+		i := 0
+		stoppingErr := errors.New("stopping")
+
+		var galleries []string
+
+		for _, sp := range config.GetStashPaths() {
+			err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
+				if total != nil {
+					s.Status.setProgress(i, *total)
+					i++
+				}
+
+				if s.Status.stopping {
+					return stoppingErr
+				}
+
+				if isGallery(path) {
+					galleries = append(galleries, path)
+				}
+
+				instance.Paths.Generated.EnsureTmpDir()
+
+				wg.Add()
+				task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5, GeneratePreview: scanGeneratePreviews, GenerateImagePreview: scanGenerateImagePreviews, GenerateSprite: scanGenerateSprites}
+				go task.Start(&wg)
+
+				return nil
+			})
+
+			if err == stoppingErr {
+				break
+			}
+
+			if err != nil {
+				logger.Errorf("Error encountered scanning files: %s", err.Error())
 				return
 			}
-			instance.Paths.Generated.EnsureTmpDir()
-
-			wg.Add()
-			task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5, GeneratePreview: scanGeneratePreviews, GenerateImagePreview: scanGenerateImagePreviews, GenerateSprite: scanGenerateSprites}
-			go task.Start(&wg)
 		}
+
+		if s.Status.stopping {
+			logger.Info("Stopping due to user request")
+			return
+		}
+
 		wg.Wait()
 		instance.Paths.Generated.EmptyTmpDir()
 
 		elapsed := time.Since(start)
 		logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
-		for _, path := range results {
-			if isGallery(path) {
-				wg.Add()
-				task := ScanTask{FilePath: path, UseFileMetadata: false}
-				go task.associateGallery(&wg)
-				wg.Wait()
-			}
+		for _, path := range galleries {
+			wg.Add()
+			task := ScanTask{FilePath: path, UseFileMetadata: false}
+			go task.associateGallery(&wg)
+			wg.Wait()
 		}
 		logger.Info("Finished gallery association")
 	}()
@@ -252,13 +322,11 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
-	qg := models.NewGalleryQueryBuilder()
 	mqb := models.NewSceneMarkerQueryBuilder()
 
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
 
-	galleryIDs := utils.StringSliceToIntSlice(input.GalleryIDs)
 	sceneIDs := utils.StringSliceToIntSlice(input.SceneIDs)
 	markerIDs := utils.StringSliceToIntSlice(input.MarkerIDs)
 
@@ -290,21 +358,6 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 		s.Status.Progress = 0
 		lenScenes := len(scenes)
 		total := lenScenes
-
-		var galleries []*models.Gallery
-		if input.Thumbnails {
-			if len(galleryIDs) > 0 {
-				galleries, err = qg.FindMany(galleryIDs)
-			} else {
-				galleries, err = qg.All()
-			}
-
-			if err != nil {
-				logger.Errorf("failed to get galleries for generate")
-				return
-			}
-			total += len(galleries)
-		}
 
 		var markers []*models.SceneMarker
 		if len(markerIDs) > 0 {
@@ -388,30 +441,8 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 
 		wg.Wait()
 
-		if input.Thumbnails {
-			logger.Infof("Generating thumbnails for the galleries")
-			for i, gallery := range galleries {
-				s.Status.setProgress(lenScenes+i, total)
-				if s.Status.stopping {
-					logger.Info("Stopping due to user request")
-					return
-				}
-
-				if gallery == nil {
-					logger.Errorf("nil gallery, skipping generate")
-					continue
-				}
-
-				wg.Add()
-				task := GenerateGthumbsTask{Gallery: *gallery, Overwrite: overwrite}
-				go task.Start(&wg)
-			}
-		}
-
-		wg.Wait()
-
 		for i, marker := range markers {
-			s.Status.setProgress(lenScenes+len(galleries)+i, total)
+			s.Status.setProgress(lenScenes+i, total)
 			if s.Status.stopping {
 				logger.Info("Stopping due to user request")
 				return
@@ -660,6 +691,7 @@ func (s *singleton) Clean() {
 	s.Status.indefiniteProgress()
 
 	qb := models.NewSceneQueryBuilder()
+	iqb := models.NewImageQueryBuilder()
 	gqb := models.NewGalleryQueryBuilder()
 	go func() {
 		defer s.returnToIdleState()
@@ -668,6 +700,12 @@ func (s *singleton) Clean() {
 		scenes, err := qb.All()
 		if err != nil {
 			logger.Errorf("failed to fetch list of scenes for cleaning")
+			return
+		}
+
+		images, err := iqb.All()
+		if err != nil {
+			logger.Errorf("failed to fetch list of images for cleaning")
 			return
 		}
 
@@ -684,7 +722,7 @@ func (s *singleton) Clean() {
 
 		var wg sync.WaitGroup
 		s.Status.Progress = 0
-		total := len(scenes) + len(galleries)
+		total := len(scenes) + len(images) + len(galleries)
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
@@ -705,8 +743,27 @@ func (s *singleton) Clean() {
 			wg.Wait()
 		}
 
-		for i, gallery := range galleries {
+		for i, img := range images {
 			s.Status.setProgress(len(scenes)+i, total)
+			if s.Status.stopping {
+				logger.Info("Stopping due to user request")
+				return
+			}
+
+			if img == nil {
+				logger.Errorf("nil image, skipping Clean")
+				continue
+			}
+
+			wg.Add(1)
+
+			task := CleanTask{Image: img}
+			go task.Start(&wg)
+			wg.Wait()
+		}
+
+		for i, gallery := range galleries {
+			s.Status.setProgress(len(scenes)+len(galleries)+i, total)
 			if s.Status.stopping {
 				logger.Info("Stopping due to user request")
 				return
@@ -787,18 +844,6 @@ func (s *singleton) returnToIdleState() {
 	s.Status.SetStatus(Idle)
 	s.Status.indefiniteProgress()
 	s.Status.stopping = false
-}
-
-func (s *singleton) neededScan(paths []string) int64 {
-	var neededScans int64
-
-	for _, path := range paths {
-		task := ScanTask{FilePath: path}
-		if !task.doesPathExist() {
-			neededScans++
-		}
-	}
-	return neededScans
 }
 
 type totalsGenerate struct {

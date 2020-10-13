@@ -63,6 +63,48 @@ func (_m *JoinReaderWriter) GetSceneMovies(sceneID int) ([]models.MoviesScenes, 
 	return r0, r1
 }
 
+// UpdateGalleriesImages provides a mock function with given fields: imageID, updatedJoins
+func (_m *JoinReaderWriter) UpdateGalleriesImages(imageID int, updatedJoins []models.GalleriesImages) error {
+	ret := _m.Called(imageID, updatedJoins)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []models.GalleriesImages) error); ok {
+		r0 = rf(imageID, updatedJoins)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateGalleriesTags provides a mock function with given fields: galleryID, updatedJoins
+func (_m *JoinReaderWriter) UpdateGalleriesTags(galleryID int, updatedJoins []models.GalleriesTags) error {
+	ret := _m.Called(galleryID, updatedJoins)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []models.GalleriesTags) error); ok {
+		r0 = rf(galleryID, updatedJoins)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdateImagesTags provides a mock function with given fields: imageID, updatedJoins
+func (_m *JoinReaderWriter) UpdateImagesTags(imageID int, updatedJoins []models.ImagesTags) error {
+	ret := _m.Called(imageID, updatedJoins)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []models.ImagesTags) error); ok {
+		r0 = rf(imageID, updatedJoins)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // UpdateMoviesScenes provides a mock function with given fields: sceneID, updatedJoins
 func (_m *JoinReaderWriter) UpdateMoviesScenes(sceneID int, updatedJoins []models.MoviesScenes) error {
 	ret := _m.Called(sceneID, updatedJoins)
@@ -70,6 +112,34 @@ func (_m *JoinReaderWriter) UpdateMoviesScenes(sceneID int, updatedJoins []model
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int, []models.MoviesScenes) error); ok {
 		r0 = rf(sceneID, updatedJoins)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdatePerformersGalleries provides a mock function with given fields: galleryID, updatedJoins
+func (_m *JoinReaderWriter) UpdatePerformersGalleries(galleryID int, updatedJoins []models.PerformersGalleries) error {
+	ret := _m.Called(galleryID, updatedJoins)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []models.PerformersGalleries) error); ok {
+		r0 = rf(galleryID, updatedJoins)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdatePerformersImages provides a mock function with given fields: imageID, updatedJoins
+func (_m *JoinReaderWriter) UpdatePerformersImages(imageID int, updatedJoins []models.PerformersImages) error {
+	ret := _m.Called(imageID, updatedJoins)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []models.PerformersImages) error); ok {
+		r0 = rf(imageID, updatedJoins)
 	} else {
 		r0 = ret.Error(0)
 	}

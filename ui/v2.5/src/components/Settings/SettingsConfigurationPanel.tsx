@@ -4,15 +4,70 @@ import * as GQL from "src/core/generated-graphql";
 import { useConfiguration, useConfigureGeneral } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { Icon, LoadingIndicator } from "src/components/Shared";
-import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 import StashBoxConfiguration, {
   IStashBoxInstance,
 } from "./StashBoxConfiguration";
+import StashConfiguration from "./StashConfiguration";
+
+interface IExclusionPatternsProps {
+  excludes: string[];
+  setExcludes: (value: string[]) => void;
+}
+
+const ExclusionPatterns: React.FC<IExclusionPatternsProps> = (props) => {
+  function excludeRegexChanged(idx: number, value: string) {
+    const newExcludes = props.excludes.map((regex, i) => {
+      const ret = idx !== i ? regex : value;
+      return ret;
+    });
+    props.setExcludes(newExcludes);
+  }
+
+  function excludeRemoveRegex(idx: number) {
+    const newExcludes = props.excludes.filter((_regex, i) => i !== idx);
+
+    props.setExcludes(newExcludes);
+  }
+
+  function excludeAddRegex() {
+    const demo = "sample\\.mp4$";
+    const newExcludes = props.excludes.concat(demo);
+
+    props.setExcludes(newExcludes);
+  }
+
+  return (
+    <>
+      <Form.Group>
+        {props.excludes &&
+          props.excludes.map((regexp, i) => (
+            <InputGroup>
+              <Form.Control
+                className="col col-sm-6 text-input"
+                value={regexp}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  excludeRegexChanged(i, e.currentTarget.value)
+                }
+              />
+              <InputGroup.Append>
+                <Button variant="danger" onClick={() => excludeRemoveRegex(i)}>
+                  <Icon icon="minus" />
+                </Button>
+              </InputGroup.Append>
+            </InputGroup>
+          ))}
+      </Form.Group>
+      <Button className="minimal" onClick={() => excludeAddRegex()}>
+        <Icon icon="plus" />
+      </Button>
+    </>
+  );
+};
 
 export const SettingsConfigurationPanel: React.FC = () => {
   const Toast = useToast();
   // Editing config state
-  const [stashes, setStashes] = useState<string[]>([]);
+  const [stashes, setStashes] = useState<GQL.StashConfig[]>([]);
   const [databasePath, setDatabasePath] = useState<string | undefined>(
     undefined
   );
@@ -51,7 +106,18 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [logOut, setLogOut] = useState<boolean>(true);
   const [logLevel, setLogLevel] = useState<string>("Info");
   const [logAccess, setLogAccess] = useState<boolean>(true);
+
+  const [videoExtensions, setVideoExtensions] = useState<string | undefined>();
+  const [imageExtensions, setImageExtensions] = useState<string | undefined>();
+  const [galleryExtensions, setGalleryExtensions] = useState<
+    string | undefined
+  >();
+  const [createGalleriesFromFolders, setCreateGalleriesFromFolders] = useState<
+    boolean
+  >(false);
+
   const [excludes, setExcludes] = useState<string[]>([]);
+  const [imageExcludes, setImageExcludes] = useState<string[]>([]);
   const [scraperUserAgent, setScraperUserAgent] = useState<string | undefined>(
     undefined
   );
@@ -63,7 +129,11 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const { data, error, loading } = useConfiguration();
 
   const [updateGeneralConfig] = useConfigureGeneral({
-    stashes,
+    stashes: stashes.map((s) => ({
+      path: s.path,
+      excludeVideo: s.excludeVideo,
+      excludeImage: s.excludeImage,
+    })),
     databasePath,
     generatedPath,
     cachePath,
@@ -85,7 +155,12 @@ export const SettingsConfigurationPanel: React.FC = () => {
     logOut,
     logLevel,
     logAccess,
+    createGalleriesFromFolders,
+    videoExtensions: commaDelimitedToList(videoExtensions),
+    imageExtensions: commaDelimitedToList(imageExtensions),
+    galleryExtensions: commaDelimitedToList(galleryExtensions),
     excludes,
+    imageExcludes,
     scraperUserAgent,
     scraperCDPPath,
     stashBoxes: stashBoxes.map(
@@ -126,7 +201,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setLogOut(conf.general.logOut);
       setLogLevel(conf.general.logLevel);
       setLogAccess(conf.general.logAccess);
+      setCreateGalleriesFromFolders(conf.general.createGalleriesFromFolders);
+      setVideoExtensions(listToCommaDelimited(conf.general.videoExtensions));
+      setImageExtensions(listToCommaDelimited(conf.general.imageExtensions));
+      setGalleryExtensions(
+        listToCommaDelimited(conf.general.galleryExtensions)
+      );
       setExcludes(conf.general.excludes);
+      setImageExcludes(conf.general.imageExcludes);
       setScraperUserAgent(conf.general.scraperUserAgent ?? undefined);
       setScraperCDPPath(conf.general.scraperCDPPath ?? undefined);
       setStashBoxes(
@@ -140,29 +222,16 @@ export const SettingsConfigurationPanel: React.FC = () => {
     }
   }, [data, error]);
 
-  function onStashesChanged(directories: string[]) {
-    setStashes(directories);
+  function commaDelimitedToList(value: string | undefined) {
+    if (value) {
+      return value.split(",").map((s) => s.trim());
+    }
   }
 
-  function excludeRegexChanged(idx: number, value: string) {
-    const newExcludes = excludes.map((regex, i) => {
-      const ret = idx !== i ? regex : value;
-      return ret;
-    });
-    setExcludes(newExcludes);
-  }
-
-  function excludeRemoveRegex(idx: number) {
-    const newExcludes = excludes.filter((_regex, i) => i !== idx);
-
-    setExcludes(newExcludes);
-  }
-
-  function excludeAddRegex() {
-    const demo = "sample\\.mp4$";
-    const newExcludes = excludes.concat(demo);
-
-    setExcludes(newExcludes);
+  function listToCommaDelimited(value: string[] | undefined) {
+    if (value) {
+      return value.join(", ");
+    }
   }
 
   async function onSave() {
@@ -259,9 +328,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
       <Form.Group>
         <Form.Group id="stashes">
           <h6>Stashes</h6>
-          <FolderSelect
-            directories={stashes}
-            onDirectoriesChanged={onStashesChanged}
+          <StashConfiguration
+            stashes={stashes}
+            setStashes={(s) => setStashes(s)}
           />
           <Form.Text className="text-muted">
             Directory locations to your content
@@ -311,35 +380,56 @@ export const SettingsConfigurationPanel: React.FC = () => {
           </Form.Text>
         </Form.Group>
 
+        <Form.Group id="video-extensions">
+          <h6>Video Extensions</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={videoExtensions}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setVideoExtensions(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Comma-delimited list of file extensions that will be identified as
+            videos.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="image-extensions">
+          <h6>Image Extensions</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={imageExtensions}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setImageExtensions(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Comma-delimited list of file extensions that will be identified as
+            images.
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group id="gallery-extensions">
+          <h6>Gallery zip Extensions</h6>
+          <Form.Control
+            className="col col-sm-6 text-input"
+            defaultValue={galleryExtensions}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setGalleryExtensions(e.currentTarget.value)
+            }
+          />
+          <Form.Text className="text-muted">
+            Comma-delimited list of file extensions that will be identified as
+            gallery zip files.
+          </Form.Text>
+        </Form.Group>
+
         <Form.Group>
           <h6>Excluded Patterns</h6>
-          <Form.Group>
-            {excludes &&
-              excludes.map((regexp, i) => (
-                <InputGroup>
-                  <Form.Control
-                    className="col col-sm-6 text-input"
-                    value={regexp}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      excludeRegexChanged(i, e.currentTarget.value)
-                    }
-                  />
-                  <InputGroup.Append>
-                    <Button
-                      variant="danger"
-                      onClick={() => excludeRemoveRegex(i)}
-                    >
-                      <Icon icon="minus" />
-                    </Button>
-                  </InputGroup.Append>
-                </InputGroup>
-              ))}
-          </Form.Group>
-          <Button className="minimal" onClick={() => excludeAddRegex()}>
-            <Icon icon="plus" />
-          </Button>
+          <ExclusionPatterns excludes={excludes} setExcludes={setExcludes} />
           <Form.Text className="text-muted">
-            Regexps of files/paths to exclude from Scan and add to Clean
+            Regexps of video files/paths to exclude from Scan and add to Clean
             <a
               href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
               rel="noopener noreferrer"
@@ -347,6 +437,39 @@ export const SettingsConfigurationPanel: React.FC = () => {
             >
               <Icon icon="question-circle" />
             </a>
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <h6>Excluded Image/Gallery Patterns</h6>
+          <ExclusionPatterns
+            excludes={imageExcludes}
+            setExcludes={setImageExcludes}
+          />
+          <Form.Text className="text-muted">
+            Regexps of image and gallery files/paths to exclude from Scan and
+            add to Clean
+            <a
+              href="https://github.com/stashapp/stash/wiki/Exclude-file-configuration"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Icon icon="question-circle" />
+            </a>
+          </Form.Text>
+        </Form.Group>
+
+        <Form.Group>
+          <Form.Check
+            id="log-terminal"
+            checked={createGalleriesFromFolders}
+            label="Create galleries from folders containing images"
+            onChange={() =>
+              setCreateGalleriesFromFolders(!createGalleriesFromFolders)
+            }
+          />
+          <Form.Text className="text-muted">
+            If true, creates galleries from folders containing images.
           </Form.Text>
         </Form.Group>
       </Form.Group>

@@ -26,8 +26,12 @@ func MD5FromFilePath(filePath string) (string, error) {
 	}
 	defer f.Close()
 
+	return MD5FromReader(f)
+}
+
+func MD5FromReader(src io.Reader) (string, error) {
 	h := md5.New()
-	if _, err := io.Copy(h, f); err != nil {
+	if _, err := io.Copy(h, src); err != nil {
 		return "", err
 	}
 	checksum := h.Sum(nil)

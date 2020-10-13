@@ -28,6 +28,11 @@ type JoinWriter interface {
 	// DestroySceneMarkersTags(sceneMarkerID int, updatedJoins []SceneMarkersTags) error
 	// DestroyScenesGalleries(sceneID int) error
 	// DestroyScenesMarkers(sceneID int) error
+	UpdatePerformersGalleries(galleryID int, updatedJoins []PerformersGalleries) error
+	UpdateGalleriesTags(galleryID int, updatedJoins []GalleriesTags) error
+	UpdateGalleriesImages(imageID int, updatedJoins []GalleriesImages) error
+	UpdatePerformersImages(imageID int, updatedJoins []PerformersImages) error
+	UpdateImagesTags(imageID int, updatedJoins []ImagesTags) error
 }
 
 type JoinReaderWriter interface {
@@ -73,4 +78,24 @@ func (t *joinReaderWriter) UpdateScenesTags(sceneID int, updatedJoins []ScenesTa
 
 func (t *joinReaderWriter) UpdateSceneMarkersTags(sceneMarkerID int, updatedJoins []SceneMarkersTags) error {
 	return t.qb.UpdateSceneMarkersTags(sceneMarkerID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdatePerformersGalleries(galleryID int, updatedJoins []PerformersGalleries) error {
+	return t.qb.UpdatePerformersGalleries(galleryID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdateGalleriesTags(galleryID int, updatedJoins []GalleriesTags) error {
+	return t.qb.UpdateGalleriesTags(galleryID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdateGalleriesImages(imageID int, updatedJoins []GalleriesImages) error {
+	return t.qb.UpdateGalleriesImages(imageID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdatePerformersImages(imageID int, updatedJoins []PerformersImages) error {
+	return t.qb.UpdatePerformersImages(imageID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdateImagesTags(imageID int, updatedJoins []ImagesTags) error {
+	return t.qb.UpdateImagesTags(imageID, updatedJoins, t.tx)
 }

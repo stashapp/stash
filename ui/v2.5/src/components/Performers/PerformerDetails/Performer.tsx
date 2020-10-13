@@ -294,7 +294,7 @@ export const Performer: React.FC = () => {
 
   return (
     <div id="performer-page" className="row">
-      <div className="image-container col-md-4 text-center">
+      <div className="performer-image-container col-md-4 text-center">
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
