@@ -372,8 +372,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	t.makeScreenshots(videoFile, sceneHash)
 
-	var new_scene *models.Scene
-	scene, _ = qb.FindByChecksum(checksum)
+	var retScene *models.Scene
 
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
@@ -415,7 +414,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 			newScene.Date = models.SQLiteDate{String: videoFile.CreationTime.Format("2006-01-02")}
 		}
 
-		new_scene, err = qb.Create(newScene, tx)
+		retScene, err = qb.Create(newScene, tx)
 	}
 
 	if err != nil {
@@ -428,7 +427,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 		return nil
 	}
 
-	return new_scene
+	return retScene
 }
 
 func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum string) {
