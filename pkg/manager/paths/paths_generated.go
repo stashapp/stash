@@ -1,6 +1,7 @@
 package paths
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 
@@ -8,8 +9,12 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
+const thumbDirDepth int = 2
+const thumbDirLength int = 2 // thumbDirDepth * thumbDirLength must be smaller than the length of checksum
+
 type generatedPaths struct {
 	Screenshots string
+	Thumbnails  string
 	Vtt         string
 	Markers     string
 	Transcodes  string
@@ -20,6 +25,7 @@ type generatedPaths struct {
 func newGeneratedPaths() *generatedPaths {
 	gp := generatedPaths{}
 	gp.Screenshots = filepath.Join(config.GetGeneratedPath(), "screenshots")
+	gp.Thumbnails = filepath.Join(config.GetGeneratedPath(), "thumbnails")
 	gp.Vtt = filepath.Join(config.GetGeneratedPath(), "vtt")
 	gp.Markers = filepath.Join(config.GetGeneratedPath(), "markers")
 	gp.Transcodes = filepath.Join(config.GetGeneratedPath(), "transcodes")
@@ -54,4 +60,9 @@ func (gp *generatedPaths) TempDir(pattern string) (string, error) {
 	utils.EmptyDir(ret)
 
 	return ret, nil
+}
+
+func (gp *generatedPaths) GetThumbnailPath(checksum string, width int) string {
+	fname := fmt.Sprintf("%s_%d.jpg", checksum, width)
+	return filepath.Join(gp.Thumbnails, utils.GetIntraDir(checksum, thumbDirDepth, thumbDirLength), fname)
 }

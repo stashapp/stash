@@ -10,6 +10,7 @@ type GalleryReader interface {
 	FindByChecksum(checksum string) (*Gallery, error)
 	FindByPath(path string) (*Gallery, error)
 	FindBySceneID(sceneID int) (*Gallery, error)
+	FindByImageID(imageID int) ([]*Gallery, error)
 	// ValidGalleriesForScenePath(scenePath string) ([]*Gallery, error)
 	// Count() (int, error)
 	All() ([]*Gallery, error)
@@ -58,6 +59,10 @@ func (t *galleryReaderWriter) FindByPath(path string) (*Gallery, error) {
 
 func (t *galleryReaderWriter) FindBySceneID(sceneID int) (*Gallery, error) {
 	return t.qb.FindBySceneID(sceneID, t.tx)
+}
+
+func (t *galleryReaderWriter) FindByImageID(imageID int) ([]*Gallery, error) {
+	return t.qb.FindByImageID(imageID, t.tx)
 }
 
 func (t *galleryReaderWriter) Create(newGallery Gallery) (*Gallery, error) {

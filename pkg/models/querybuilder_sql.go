@@ -48,6 +48,37 @@ func (qb *queryBuilder) addArg(args ...interface{}) {
 	qb.args = append(qb.args, args...)
 }
 
+func (qb *queryBuilder) handleIntCriterionInput(c *IntCriterionInput, column string) {
+	if c != nil {
+		clause, count := getIntCriterionWhereClause(column, *c)
+		qb.addWhere(clause)
+		if count == 1 {
+			qb.addArg(c.Value)
+		}
+	}
+}
+
+func (qb *queryBuilder) handleStringCriterionInput(c *StringCriterionInput, column string) {
+	if c != nil {
+		if modifier := c.Modifier.String(); c.Modifier.IsValid() {
+			switch modifier {
+			case "EQUALS":
+				clause, thisArgs := getSearchBinding([]string{column}, c.Value, false)
+				qb.addWhere(clause)
+				qb.addArg(thisArgs...)
+			case "NOT_EQUALS":
+				clause, thisArgs := getSearchBinding([]string{column}, c.Value, true)
+				qb.addWhere(clause)
+				qb.addArg(thisArgs...)
+			case "IS_NULL":
+				qb.addWhere(column + " IS NULL")
+			case "NOT_NULL":
+				qb.addWhere(column + " IS NOT NULL")
+			}
+		}
+	}
+}
+
 var randomSortFloat = rand.Float64()
 
 func selectAll(tableName string) string {
@@ -387,6 +418,8 @@ func sqlGenKeys(i interface{}, partial bool) string {
 			if partial || t != 0 {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
 			}
+		case bool:
+			query = append(query, fmt.Sprintf("%s=:%s", key, key))
 		case SQLiteTimestamp:
 			if partial || !t.Timestamp.IsZero() {
 				query = append(query, fmt.Sprintf("%s=:%s", key, key))
