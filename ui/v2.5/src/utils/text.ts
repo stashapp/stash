@@ -46,8 +46,8 @@ const fileSize = (bytes: number = 0) => {
 
 const formatFileSizeUnit = (u: Unit) => {
   const i = Units.indexOf(u);
-  return shortUnits[i]; 
-}
+  return shortUnits[i];
+};
 
 const secondsToTimestamp = (seconds: number) => {
   let ret = new Date(seconds * 1000).toISOString().substr(11, 8);
