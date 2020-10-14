@@ -283,6 +283,8 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 		query.addArg(thisArgs...)
 	}
 
+	query.handleStringCriterionInput(imageFilter.Path, "images.path")
+
 	if rating := imageFilter.Rating; rating != nil {
 		clause, count := getIntCriterionWhereClause("images.rating", *imageFilter.Rating)
 		query.addWhere(clause)

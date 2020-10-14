@@ -133,6 +133,8 @@ input TagFilterType {
 }
 
 input ImageFilterType {
+  """Filter by path"""
+  path: StringCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
   """Filter by o-counter"""

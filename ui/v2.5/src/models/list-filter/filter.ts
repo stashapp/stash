@@ -154,6 +154,7 @@ export class ListFilterModel {
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
         this.criterionOptions = [
           new NoneCriterionOption(),
+          ListFilterModel.createCriterionOption("path"),
           new RatingCriterionOption(),
           ListFilterModel.createCriterionOption("o_counter"),
           new ResolutionCriterionOption(),
@@ -645,6 +646,14 @@ export class ListFilterModel {
     const result: ImageFilterType = {};
     this.criteria.forEach((criterion) => {
       switch (criterion.type) {
+        case "path": {
+          const pathCrit = criterion as MandatoryStringCriterion;
+          result.path = {
+            value: pathCrit.value,
+            modifier: pathCrit.modifier,
+          };
+          break;
+        }
         case "rating": {
           const ratingCrit = criterion as RatingCriterion;
           result.rating = {
