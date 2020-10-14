@@ -220,7 +220,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 			`
 			query.addWhere("performers_image.performer_id IS NULL")
 		default:
-			query.addWhere("performers." + *isMissingFilter + " IS NULL")
+			query.addWhere("performers." + *isMissingFilter + " IS NULL OR TRIM(performers." + *isMissingFilter + ") = ''")
 		}
 	}
 
