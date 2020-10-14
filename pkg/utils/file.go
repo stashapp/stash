@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"math"
 	"net/http"
 	"os"
 	"os/user"
@@ -186,29 +185,6 @@ func IsZipFileUncompressed(path string) (bool, error) {
 		}
 	}
 	return false, nil
-}
-
-// humanize code taken from https://github.com/dustin/go-humanize and adjusted
-
-func logn(n, b float64) float64 {
-	return math.Log(n) / math.Log(b)
-}
-
-// HumanizeBytes returns a human readable bytes string of a uint
-func HumanizeBytes(s uint64) string {
-	sizes := []string{"B", "KB", "MB", "GB", "TB", "PB", "EB"}
-	if s < 10 {
-		return fmt.Sprintf("%d B", s)
-	}
-	e := math.Floor(logn(float64(s), 1024))
-	suffix := sizes[int(e)]
-	val := math.Floor(float64(s)/math.Pow(1024, e)*10+0.5) / 10
-	f := "%.0f %s"
-	if val < 10 {
-		f = "%.1f %s"
-	}
-
-	return fmt.Sprintf(f, val, suffix)
 }
 
 // WriteFile writes file to path creating parent directories if needed

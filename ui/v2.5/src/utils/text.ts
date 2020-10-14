@@ -16,6 +16,7 @@ const Units: Unit[] = [
   "terabyte",
   "petabyte",
 ];
+const shortUnits = ["B", "KB", "MB", "GB", "TB", "PB"];
 
 const truncate = (
   value?: string,
@@ -32,7 +33,7 @@ const fileSize = (bytes: number = 0) => {
 
   let unit = 0;
   let count = bytes;
-  while (count >= 1024) {
+  while (count >= 1024 && unit + 1 < Units.length) {
     count /= 1024;
     unit++;
   }
@@ -42,6 +43,11 @@ const fileSize = (bytes: number = 0) => {
     unit: Units[unit],
   };
 };
+
+const formatFileSizeUnit = (u: Unit) => {
+  const i = Units.indexOf(u);
+  return shortUnits[i]; 
+}
 
 const secondsToTimestamp = (seconds: number) => {
   let ret = new Date(seconds * 1000).toISOString().substr(11, 8);
@@ -141,6 +147,7 @@ const formatDate = (intl: IntlShape, date?: string) => {
 const TextUtils = {
   truncate,
   fileSize,
+  formatFileSizeUnit,
   secondsToTimestamp,
   fileNameFromPath,
   age: getAge,

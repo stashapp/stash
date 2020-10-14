@@ -7,7 +7,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const sceneTable = "scenes"
@@ -242,12 +241,8 @@ func (qb *SceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *SceneQueryBuilder) SizeCount() (string, error) {
-	sum, err := runSumQuery("SELECT SUM(size) as sum FROM scenes", nil)
-	if err != nil {
-		return "0 B", err
-	}
-	return utils.HumanizeBytes(sum), err
+func (qb *SceneQueryBuilder) Size() (uint64, error) {
+	return runSumQuery("SELECT SUM(size) as sum FROM scenes", nil)
 }
 
 func (qb *SceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
