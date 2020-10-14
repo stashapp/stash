@@ -33,5 +33,5 @@ export const tagFilterHook = (tag: GQL.TagDataFragment) => {
     }
 
     return filter;
-  }
-}
+  };
+};

@@ -54,7 +54,10 @@ export const Performer: React.FC = () => {
   const [deletePerformer] = usePerformerDestroy();
 
   const activeTabKey =
-    tab === "scenes" || tab === "images" || tab === "edit" || tab === "operations"
+    tab === "scenes" ||
+    tab === "images" ||
+    tab === "edit" ||
+    tab === "operations"
       ? tab
       : "details";
   const setActiveTabKey = (newTab: string | null) => {

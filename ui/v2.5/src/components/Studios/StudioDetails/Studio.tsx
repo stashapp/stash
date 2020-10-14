@@ -196,7 +196,8 @@ export const Studio: React.FC = () => {
     );
   }
 
-  const activeTabKey = tab === "childstudios" || tab === "images" ? tab : "scenes";
+  const activeTabKey =
+    tab === "childstudios" || tab === "images" ? tab : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
