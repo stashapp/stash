@@ -222,7 +222,7 @@ export class ListFilterModel {
         break;
       case FilterMode.Galleries:
         this.sortBy = "path";
-        this.sortByOptions = ["path"];
+        this.sortByOptions = ["path", "images_count"];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),

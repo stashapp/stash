@@ -181,6 +181,8 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 		left join performers_galleries as performers_join on performers_join.gallery_id = galleries.id
 		left join studios as studio on studio.id = galleries.studio_id
 		left join galleries_tags as tags_join on tags_join.gallery_id = galleries.id
+		left join galleries_images as images_join on images_join.gallery_id = galleries.id
+		left join images on images_join.image_id = images.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
