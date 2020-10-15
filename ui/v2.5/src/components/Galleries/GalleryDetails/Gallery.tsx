@@ -22,7 +22,7 @@ export const Gallery: React.FC = () => {
   const history = useHistory();
   const isNew = id === "new";
 
-  const [gallery, setGallery] = useState<Partial<GQL.GalleryDataFragment>>({});
+  const [gallery, setGallery] = useState<GQL.GalleryDataFragment>();
   const { data, error, loading } = useFindGallery(id);
 
   const [activeTabKey, setActiveTabKey] = useState("gallery-details-panel");
@@ -183,6 +183,12 @@ export const Gallery: React.FC = () => {
     };
   });
 
+  if (loading || !gallery || !data?.findGallery) {
+    return <LoadingIndicator />;
+  }
+
+  if (error) return <div>{error.message}</div>;
+
   if (isNew)
     return (
       <div className="row new-view">
@@ -198,12 +204,6 @@ export const Gallery: React.FC = () => {
         </div>
       </div>
     );
-
-  if (loading || !gallery || !data?.findGallery) {
-    return <LoadingIndicator />;
-  }
-
-  if (error) return <div>{error.message}</div>;
 
   return (
     <div className="row">

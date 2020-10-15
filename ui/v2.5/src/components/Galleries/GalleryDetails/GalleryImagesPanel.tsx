@@ -8,7 +8,7 @@ import { showWhenSelected } from "src/hooks/ListHook";
 import { useToast } from "src/hooks";
 
 interface IGalleryDetailsProps {
-  gallery: Partial<GQL.GalleryDataFragment>;
+  gallery: GQL.GalleryDataFragment;
 }
 
 export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
 import { Button, Form, Col, Row } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { useGalleryCreate, useGalleryUpdate } from "src/core/StashService";
@@ -13,7 +14,7 @@ import { FormUtils, EditableTextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 
 interface IProps {
-  gallery: Partial<GQL.GalleryDataFragment>;
+  gallery: GQL.GalleryDataFragment;
   isVisible: boolean;
   isNew?: boolean;
   onUpdate: (gallery: GQL.GalleryDataFragment) => void;
@@ -22,6 +23,7 @@ interface IProps {
 
 export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
   const Toast = useToast();
+  const history = useHistory();
   const [title, setTitle] = useState<string>();
   const [details, setDetails] = useState<string>();
   const [url, setUrl] = useState<string>();
@@ -123,6 +125,7 @@ export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
         const result = await createGallery();
         if (result.data?.galleryCreate) {
           props.onUpdate(result.data.galleryCreate);
+          history.push(`/galleries/${result.data.galleryCreate.id}`);
           Toast.success({ content: "Created gallery" });
         }
       } else {
