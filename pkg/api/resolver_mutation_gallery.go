@@ -411,10 +411,13 @@ func adjustGalleryTagIDs(tx *sqlx.Tx, galleryID int, ids models.BulkUpdateIds) (
 
 func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.GalleryDestroyInput) (bool, error) {
 	qb := models.NewGalleryQueryBuilder()
+	iqb := models.NewImageQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	var galleries []*models.Gallery
 	var imgsToPostProcess []*models.Image
+	var imgsToDelete []*models.Image
+
 	for _, id := range input.Ids {
 		galleryID, _ := strconv.Atoi(id)
 
@@ -430,8 +433,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 		}
 
 		// if this is a zip-based gallery, delete the images as well
-		if gallery.Path.Valid {
-			iqb := models.NewImageQueryBuilder()
+		if gallery.Zip {
 			imgs, err := iqb.FindByGalleryID(galleryID)
 			if err != nil {
 				tx.Rollback()
@@ -439,13 +441,39 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 			}
 
 			for _, img := range imgs {
-				err = qb.Destroy(img.ID, tx)
+				err = iqb.Destroy(img.ID, tx)
 				if err != nil {
 					tx.Rollback()
 					return false, err
 				}
 
 				imgsToPostProcess = append(imgsToPostProcess, img)
+			}
+		} else if input.DeleteFile != nil && *input.DeleteFile {
+			// Delete image if it is only attached to this gallery
+			imgs, err := iqb.FindByGalleryID(galleryID)
+			if err != nil {
+				tx.Rollback()
+				return false, err
+			}
+
+			for _, img := range imgs {
+				imgGalleries, err := qb.FindByImageID(img.ID, tx)
+				if err != nil {
+					tx.Rollback()
+					return false, err
+				}
+
+				if len(imgGalleries) == 0 {
+					err = iqb.Destroy(img.ID, tx)
+					if err != nil {
+						tx.Rollback()
+						return false, err
+					}
+
+					imgsToDelete = append(imgsToDelete, img)
+					imgsToPostProcess = append(imgsToPostProcess, img)
+				}
 			}
 		}
 	}
@@ -459,6 +487,10 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 	if input.DeleteFile != nil && *input.DeleteFile {
 		for _, gallery := range galleries {
 			manager.DeleteGalleryFile(gallery)
+		}
+
+		for _, img := range imgsToDelete {
+			manager.DeleteImageFile(img)
 		}
 	}
 
