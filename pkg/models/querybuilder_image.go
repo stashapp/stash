@@ -222,7 +222,7 @@ func (qb *ImageQueryBuilder) FindByStudioID(studioID int) ([]*Image, error) {
 
 func (qb *ImageQueryBuilder) FindByGalleryID(galleryID int) ([]*Image, error) {
 	args := []interface{}{galleryID}
-	return qb.queryImages(imagesForGalleryQuery, args, nil)
+	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(nil), args, nil)
 }
 
 func (qb *ImageQueryBuilder) CountByGalleryID(galleryID int) (int, error) {
