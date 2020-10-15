@@ -46,14 +46,6 @@ const Preview: React.FC<{
 
   if (!previews) return <div />;
 
-  if (isMissing) {
-    return (
-      <div className="wall-item-media wall-item-missing">
-        Pending preview generation
-      </div>
-    );
-  }
-
   const image = (
     <img
       alt=""
@@ -80,6 +72,19 @@ const Preview: React.FC<{
       ref={videoElement}
     />
   );
+
+  if (isMissing) {
+    // show the image if the video preview is unavailable
+    if (previews.image) {
+      return image;
+    }
+
+    return (
+      <div className="wall-item-media wall-item-missing">
+        Pending preview generation
+      </div>
+    );
+  }
 
   if (previewType === "video") {
     return video;
