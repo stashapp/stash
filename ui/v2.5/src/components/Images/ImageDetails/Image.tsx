@@ -8,7 +8,7 @@ import {
   useImageDecrementO,
   useImageResetO,
 } from "src/core/StashService";
-import { LoadingIndicator, Icon } from "src/components/Shared";
+import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
@@ -196,11 +196,16 @@ export const Image: React.FC = () => {
     };
   });
 
-  if (loading || !image || !data?.findImage) {
+  if (loading) {
     return <LoadingIndicator />;
   }
 
-  if (error) return <div>{error.message}</div>;
+  if (error)
+    return <ErrorMessage error={error.message} />
+
+  if (!image || !data?.findImage) {
+    return <ErrorMessage error={<>No image found for id <i>{id}</i></>} />
+  }
 
   return (
     <div className="row">

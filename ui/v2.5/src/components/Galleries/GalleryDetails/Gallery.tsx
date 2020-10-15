@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { useFindGallery } from "src/core/StashService";
-import { LoadingIndicator, Icon } from "src/components/Shared";
+import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
 import { GalleryEditPanel } from "./GalleryEditPanel";
@@ -125,6 +125,7 @@ export const Gallery: React.FC = () => {
           <Tab.Pane eventKey="gallery-edit-panel" title="Edit">
             <GalleryEditPanel
               isVisible={activeTabKey === "gallery-edit-panel"}
+              isNew={false}
               gallery={gallery}
               onUpdate={(newGallery) => setGallery(newGallery)}
               onDelete={() => setIsDeleteAlertOpen(true)}
@@ -183,11 +184,12 @@ export const Gallery: React.FC = () => {
     };
   });
 
-  if (loading || !gallery || !data?.findGallery) {
+  if (loading) {
     return <LoadingIndicator />;
   }
 
-  if (error) return <div>{error.message}</div>;
+  if (error)
+    return <ErrorMessage error={error.message} />
 
   if (isNew)
     return (
@@ -195,15 +197,18 @@ export const Gallery: React.FC = () => {
         <div className="col-6">
           <h2>Create Gallery</h2>
           <GalleryEditPanel
-            gallery={gallery}
+            isNew
+            gallery={undefined}
             isVisible
-            isNew={isNew}
             onUpdate={(newGallery) => setGallery(newGallery)}
             onDelete={() => setIsDeleteAlertOpen(true)}
           />
         </div>
       </div>
     );
+
+  if (!gallery || !data?.findGallery)
+    return <ErrorMessage error={<>No gallery with id <i>{id}</i> found.</>} />
 
   return (
     <div className="row">
