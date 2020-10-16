@@ -309,10 +309,13 @@ export const useBulkSceneUpdate = (input: GQL.BulkSceneUpdateInput) =>
 export const useScenesUpdate = (input: GQL.SceneUpdateInput[]) =>
   GQL.useScenesUpdateMutation({ variables: { input } });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SceneOMutation =
+  | GQL.SceneIncrementOMutation
+  | GQL.SceneDecrementOMutation
+  | GQL.SceneResetOMutation;
 const updateSceneO = (
   id: string,
-  cache: ApolloCache<any>,
+  cache: ApolloCache<SceneOMutation>,
   updatedOCount?: number
 ) => {
   const scene = cache.readQuery<
@@ -405,10 +408,13 @@ export const useImagesDestroy = (input: GQL.ImagesDestroyInput) =>
     update: deleteCache(imageMutationImpactedQueries),
   });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ImageOMutation =
+  | GQL.ImageIncrementOMutation
+  | GQL.ImageDecrementOMutation
+  | GQL.ImageResetOMutation;
 const updateImageO = (
   id: string,
-  cache: ApolloCache<any>,
+  cache: ApolloCache<ImageOMutation>,
   updatedOCount?: number
 ) => {
   const image = cache.readQuery<
