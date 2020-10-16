@@ -133,3 +133,13 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   max-width: 32rem;
   text-align: center;
 }
+
+.ErrorMessage {
+  align-items: center;
+  height: 20rem;
+  justify-content: center;
+
+  &-content {
+    display: inline-block;
+  }
+}

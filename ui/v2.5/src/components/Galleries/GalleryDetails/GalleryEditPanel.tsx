@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
 import { Button, Form, Col, Row } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
 import { useGalleryCreate, useGalleryUpdate } from "src/core/StashService";
@@ -13,15 +14,25 @@ import { FormUtils, EditableTextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 
 interface IProps {
-  gallery: Partial<GQL.GalleryDataFragment>;
   isVisible: boolean;
-  isNew?: boolean;
-  onUpdate: (gallery: GQL.GalleryDataFragment) => void;
   onDelete: () => void;
 }
 
-export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
+interface INewProps {
+  isNew: true;
+  gallery: undefined;
+}
+
+interface IExistingProps {
+  isNew: false;
+  gallery: GQL.GalleryDataFragment;
+}
+
+export const GalleryEditPanel: React.FC<
+  IProps & (INewProps | IExistingProps)
+> = (props) => {
   const Toast = useToast();
+  const history = useHistory();
   const [title, setTitle] = useState<string>();
   const [details, setDetails] = useState<string>();
   const [url, setUrl] = useState<string>();
@@ -83,15 +94,15 @@ export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   });
 
-  function updateGalleryEditState(state: Partial<GQL.GalleryDataFragment>) {
-    const perfIds = state.performers?.map((performer) => performer.id);
-    const tIds = state.tags ? state.tags.map((tag) => tag.id) : undefined;
+  function updateGalleryEditState(state?: GQL.GalleryDataFragment) {
+    const perfIds = state?.performers?.map((performer) => performer.id);
+    const tIds = state?.tags ? state?.tags.map((tag) => tag.id) : undefined;
 
-    setTitle(state.title ?? undefined);
-    setDetails(state.details ?? undefined);
-    setUrl(state.url ?? undefined);
-    setDate(state.date ?? undefined);
-    setRating(state.rating === null ? NaN : state.rating);
+    setTitle(state?.title ?? undefined);
+    setDetails(state?.details ?? undefined);
+    setUrl(state?.url ?? undefined);
+    setDate(state?.date ?? undefined);
+    setRating(state?.rating === null ? NaN : state?.rating);
     setStudioId(state?.studio?.id ?? undefined);
     setPerformerIds(perfIds);
     setTagIds(tIds);
@@ -104,7 +115,7 @@ export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
 
   function getGalleryInput() {
     return {
-      id: props.isNew ? undefined : props.gallery.id!,
+      id: props.isNew ? undefined : props.gallery.id,
       title,
       details,
       url,
@@ -122,13 +133,12 @@ export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
       if (props.isNew) {
         const result = await createGallery();
         if (result.data?.galleryCreate) {
-          props.onUpdate(result.data.galleryCreate);
+          history.push(`/galleries/${result.data.galleryCreate.id}`);
           Toast.success({ content: "Created gallery" });
         }
       } else {
         const result = await updateGallery();
         if (result.data?.galleryUpdate) {
-          props.onUpdate(result.data.galleryUpdate);
           Toast.success({ content: "Updated gallery" });
         }
       }

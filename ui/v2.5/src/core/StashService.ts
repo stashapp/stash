@@ -309,19 +309,55 @@ export const useBulkSceneUpdate = (input: GQL.BulkSceneUpdateInput) =>
 export const useScenesUpdate = (input: GQL.SceneUpdateInput[]) =>
   GQL.useScenesUpdateMutation({ variables: { input } });
 
+type SceneOMutation =
+  | GQL.SceneIncrementOMutation
+  | GQL.SceneDecrementOMutation
+  | GQL.SceneResetOMutation;
+const updateSceneO = (
+  id: string,
+  cache: ApolloCache<SceneOMutation>,
+  updatedOCount?: number
+) => {
+  const scene = cache.readQuery<
+    GQL.FindSceneQuery,
+    GQL.FindSceneQueryVariables
+  >({
+    query: GQL.FindSceneDocument,
+    variables: { id },
+  });
+  if (updatedOCount === undefined || !scene?.findScene) return;
+
+  cache.writeQuery<GQL.FindSceneQuery, GQL.FindSceneQueryVariables>({
+    query: GQL.FindSceneDocument,
+    variables: { id },
+    data: {
+      ...scene,
+      findScene: {
+        ...scene.findScene,
+        o_counter: updatedOCount,
+      },
+    },
+  });
+};
+
 export const useSceneIncrementO = (id: string) =>
   GQL.useSceneIncrementOMutation({
     variables: { id },
+    update: (cache, data) =>
+      updateSceneO(id, cache, data.data?.sceneIncrementO),
   });
 
 export const useSceneDecrementO = (id: string) =>
   GQL.useSceneDecrementOMutation({
     variables: { id },
+    update: (cache, data) =>
+      updateSceneO(id, cache, data.data?.sceneDecrementO),
   });
 
 export const useSceneResetO = (id: string) =>
   GQL.useSceneResetOMutation({
     variables: { id },
+    update: (cache, data) => updateSceneO(id, cache, data.data?.sceneResetO),
   });
 
 export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
@@ -372,19 +408,54 @@ export const useImagesDestroy = (input: GQL.ImagesDestroyInput) =>
     update: deleteCache(imageMutationImpactedQueries),
   });
 
+type ImageOMutation =
+  | GQL.ImageIncrementOMutation
+  | GQL.ImageDecrementOMutation
+  | GQL.ImageResetOMutation;
+const updateImageO = (
+  id: string,
+  cache: ApolloCache<ImageOMutation>,
+  updatedOCount?: number
+) => {
+  const image = cache.readQuery<
+    GQL.FindImageQuery,
+    GQL.FindImageQueryVariables
+  >({
+    query: GQL.FindImageDocument,
+    variables: { id },
+  });
+  if (updatedOCount === undefined || !image?.findImage) return;
+
+  cache.writeQuery<GQL.FindImageQuery, GQL.FindImageQueryVariables>({
+    query: GQL.FindImageDocument,
+    variables: { id },
+    data: {
+      findImage: {
+        ...image.findImage,
+        o_counter: updatedOCount,
+      },
+    },
+  });
+};
+
 export const useImageIncrementO = (id: string) =>
   GQL.useImageIncrementOMutation({
     variables: { id },
+    update: (cache, data) =>
+      updateImageO(id, cache, data.data?.imageIncrementO),
   });
 
 export const useImageDecrementO = (id: string) =>
   GQL.useImageDecrementOMutation({
     variables: { id },
+    update: (cache, data) =>
+      updateImageO(id, cache, data.data?.imageDecrementO),
   });
 
 export const useImageResetO = (id: string) =>
   GQL.useImageResetOMutation({
     variables: { id },
+    update: (cache, data) => updateImageO(id, cache, data.data?.imageResetO),
   });
 
 const galleryMutationImpactedQueries = [
