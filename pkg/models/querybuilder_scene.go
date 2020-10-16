@@ -362,7 +362,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		case "tags":
 			query.addWhere("tags_join.scene_id IS NULL")
 		default:
-			query.addWhere("scenes." + *isMissingFilter + " IS NULL")
+			query.addWhere("scenes." + *isMissingFilter + " IS NULL OR TRIM(scenes." + *isMissingFilter + ") = ''")
 		}
 	}
 
