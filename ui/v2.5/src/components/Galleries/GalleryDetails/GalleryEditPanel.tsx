@@ -15,7 +15,6 @@ import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 
 interface IProps {
   isVisible: boolean;
-  onUpdate: (gallery: GQL.GalleryDataFragment) => void;
   onDelete: () => void;
 }
 
@@ -132,14 +131,12 @@ export const GalleryEditPanel: React.FC<IProps & (INewProps|IExistingProps)> = (
       if (props.isNew) {
         const result = await createGallery();
         if (result.data?.galleryCreate) {
-          props.onUpdate(result.data.galleryCreate);
           history.push(`/galleries/${result.data.galleryCreate.id}`);
           Toast.success({ content: "Created gallery" });
         }
       } else {
         const result = await updateGallery();
         if (result.data?.galleryUpdate) {
-          props.onUpdate(result.data.galleryUpdate);
           Toast.success({ content: "Updated gallery" });
         }
       }

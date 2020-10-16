@@ -1,7 +1,6 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
-import * as GQL from "src/core/generated-graphql";
 import { useFindGallery } from "src/core/StashService";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { TextUtils } from "src/utils";
@@ -22,8 +21,8 @@ export const Gallery: React.FC = () => {
   const history = useHistory();
   const isNew = id === "new";
 
-  const [gallery, setGallery] = useState<GQL.GalleryDataFragment>();
   const { data, error, loading } = useFindGallery(id);
+  const gallery = data?.findGallery;
 
   const [activeTabKey, setActiveTabKey] = useState("gallery-details-panel");
   const activeRightTabKey = tab === "images" || tab === "add" ? tab : "images";
@@ -35,10 +34,6 @@ export const Gallery: React.FC = () => {
   };
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (data?.findGallery) setGallery(data.findGallery);
-  }, [data]);
 
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
@@ -127,7 +122,6 @@ export const Gallery: React.FC = () => {
               isVisible={activeTabKey === "gallery-edit-panel"}
               isNew={false}
               gallery={gallery}
-              onUpdate={(newGallery) => setGallery(newGallery)}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
@@ -200,14 +194,13 @@ export const Gallery: React.FC = () => {
             isNew
             gallery={undefined}
             isVisible
-            onUpdate={(newGallery) => setGallery(newGallery)}
             onDelete={() => setIsDeleteAlertOpen(true)}
           />
         </div>
       </div>
     );
 
-  if (!gallery || !data?.findGallery)
+  if (!gallery)
     return <ErrorMessage error={<>No gallery with id <i>{id}</i> found.</>} />
 
   return (

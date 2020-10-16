@@ -1,7 +1,6 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
-import * as GQL from "src/core/generated-graphql";
 import {
   useFindImage,
   useImageIncrementO,
@@ -27,8 +26,8 @@ export const Image: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
 
-  const [image, setImage] = useState<GQL.ImageDataFragment | undefined>();
   const { data, error, loading } = useFindImage(id);
+  const image = data?.findImage;
   const [oLoading, setOLoading] = useState(false);
   const [incrementO] = useImageIncrementO(image?.id ?? "0");
   const [decrementO] = useImageDecrementO(image?.id ?? "0");
@@ -38,21 +37,10 @@ export const Image: React.FC = () => {
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (data?.findImage) setImage(data.findImage);
-  }, [data]);
-
-  const updateOCounter = (newValue: number) => {
-    const modifiedImage = { ...image } as GQL.ImageDataFragment;
-    modifiedImage.o_counter = newValue;
-    setImage(modifiedImage);
-  };
-
   const onIncrementClick = async () => {
     try {
       setOLoading(true);
-      const result = await incrementO();
-      if (result.data) updateOCounter(result.data.imageIncrementO);
+      await incrementO();
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -63,8 +51,7 @@ export const Image: React.FC = () => {
   const onDecrementClick = async () => {
     try {
       setOLoading(true);
-      const result = await decrementO();
-      if (result.data) updateOCounter(result.data.imageDecrementO);
+      await decrementO();
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -75,8 +62,7 @@ export const Image: React.FC = () => {
   const onResetClick = async () => {
     try {
       setOLoading(true);
-      const result = await resetO();
-      if (result.data) updateOCounter(result.data.imageResetO);
+      await resetO();
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -172,7 +158,6 @@ export const Image: React.FC = () => {
             <ImageEditPanel
               isVisible={activeTabKey === "image-edit-panel"}
               image={image}
-              onUpdate={(newImage) => setImage(newImage)}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
@@ -203,7 +188,7 @@ export const Image: React.FC = () => {
   if (error)
     return <ErrorMessage error={error.message} />
 
-  if (!image || !data?.findImage) {
+  if (!image) {
     return <ErrorMessage error={<>No image found for id <i>{id}</i></>} />
   }
 
