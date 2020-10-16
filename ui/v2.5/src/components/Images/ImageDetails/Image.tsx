@@ -185,11 +185,18 @@ export const Image: React.FC = () => {
     return <LoadingIndicator />;
   }
 
-  if (error)
-    return <ErrorMessage error={error.message} />
+  if (error) return <ErrorMessage error={error.message} />;
 
   if (!image) {
-    return <ErrorMessage error={<>No image found for id <i>{id}</i></>} />
+    return (
+      <ErrorMessage
+        error={
+          <>
+            No image found for id <i>{id}</i>
+          </>
+        }
+      />
+    );
   }
 
   return (

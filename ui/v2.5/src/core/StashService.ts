@@ -310,13 +310,19 @@ export const useScenesUpdate = (input: GQL.SceneUpdateInput[]) =>
   GQL.useScenesUpdateMutation({ variables: { input } });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const updateSceneO = (id: string, cache: ApolloCache<any>, updatedOCount?: number) => {
-  const scene = cache.readQuery<GQL.FindSceneQuery, GQL.FindSceneQueryVariables>({
+const updateSceneO = (
+  id: string,
+  cache: ApolloCache<any>,
+  updatedOCount?: number
+) => {
+  const scene = cache.readQuery<
+    GQL.FindSceneQuery,
+    GQL.FindSceneQueryVariables
+  >({
     query: GQL.FindSceneDocument,
-    variables: { id }
+    variables: { id },
   });
-  if (updatedOCount === undefined || !scene?.findScene)
-    return;
+  if (updatedOCount === undefined || !scene?.findScene) return;
 
   cache.writeQuery<GQL.FindSceneQuery, GQL.FindSceneQueryVariables>({
     query: GQL.FindSceneDocument,
@@ -325,28 +331,30 @@ const updateSceneO = (id: string, cache: ApolloCache<any>, updatedOCount?: numbe
       ...scene,
       findScene: {
         ...scene.findScene,
-        o_counter: updatedOCount
-      }
-    }
+        o_counter: updatedOCount,
+      },
+    },
   });
-}
+};
 
 export const useSceneIncrementO = (id: string) =>
   GQL.useSceneIncrementOMutation({
     variables: { id },
-    update: (cache, data) => updateSceneO(id, cache, data.data?.sceneIncrementO)
+    update: (cache, data) =>
+      updateSceneO(id, cache, data.data?.sceneIncrementO),
   });
 
 export const useSceneDecrementO = (id: string) =>
   GQL.useSceneDecrementOMutation({
     variables: { id },
-    update: (cache, data) => updateSceneO(id, cache, data.data?.sceneDecrementO)
+    update: (cache, data) =>
+      updateSceneO(id, cache, data.data?.sceneDecrementO),
   });
 
 export const useSceneResetO = (id: string) =>
   GQL.useSceneResetOMutation({
     variables: { id },
-    update: (cache, data) => updateSceneO(id, cache, data.data?.sceneResetO)
+    update: (cache, data) => updateSceneO(id, cache, data.data?.sceneResetO),
   });
 
 export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
@@ -398,13 +406,19 @@ export const useImagesDestroy = (input: GQL.ImagesDestroyInput) =>
   });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const updateImageO = (id: string, cache: ApolloCache<any>, updatedOCount?: number) => {
-  const image = cache.readQuery<GQL.FindImageQuery, GQL.FindImageQueryVariables>({
+const updateImageO = (
+  id: string,
+  cache: ApolloCache<any>,
+  updatedOCount?: number
+) => {
+  const image = cache.readQuery<
+    GQL.FindImageQuery,
+    GQL.FindImageQueryVariables
+  >({
     query: GQL.FindImageDocument,
-    variables: { id }
+    variables: { id },
   });
-  if (updatedOCount === undefined || !image?.findImage)
-    return;
+  if (updatedOCount === undefined || !image?.findImage) return;
 
   cache.writeQuery<GQL.FindImageQuery, GQL.FindImageQueryVariables>({
     query: GQL.FindImageDocument,
@@ -412,28 +426,30 @@ const updateImageO = (id: string, cache: ApolloCache<any>, updatedOCount?: numbe
     data: {
       findImage: {
         ...image.findImage,
-        o_counter: updatedOCount
-      }
-    }
+        o_counter: updatedOCount,
+      },
+    },
   });
-}
+};
 
 export const useImageIncrementO = (id: string) =>
   GQL.useImageIncrementOMutation({
     variables: { id },
-    update: (cache, data) => updateImageO(id, cache, data.data?.imageIncrementO)
+    update: (cache, data) =>
+      updateImageO(id, cache, data.data?.imageIncrementO),
   });
 
 export const useImageDecrementO = (id: string) =>
   GQL.useImageDecrementOMutation({
     variables: { id },
-    update: (cache, data) => updateImageO(id, cache, data.data?.imageDecrementO)
+    update: (cache, data) =>
+      updateImageO(id, cache, data.data?.imageDecrementO),
   });
 
 export const useImageResetO = (id: string) =>
   GQL.useImageResetOMutation({
     variables: { id },
-    update: (cache, data) => updateImageO(id, cache, data.data?.imageResetO)
+    update: (cache, data) => updateImageO(id, cache, data.data?.imageResetO),
   });
 
 const galleryMutationImpactedQueries = [

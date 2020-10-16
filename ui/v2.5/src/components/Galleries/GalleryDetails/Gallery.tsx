@@ -182,8 +182,7 @@ export const Gallery: React.FC = () => {
     return <LoadingIndicator />;
   }
 
-  if (error)
-    return <ErrorMessage error={error.message} />
+  if (error) return <ErrorMessage error={error.message} />;
 
   if (isNew)
     return (
@@ -201,7 +200,15 @@ export const Gallery: React.FC = () => {
     );
 
   if (!gallery)
-    return <ErrorMessage error={<>No gallery with id <i>{id}</i> found.</>} />
+    return (
+      <ErrorMessage
+        error={
+          <>
+            No gallery with id <i>{id}</i> found.
+          </>
+        }
+      />
+    );
 
   return (
     <div className="row">

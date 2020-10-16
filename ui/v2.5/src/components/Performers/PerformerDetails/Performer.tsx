@@ -9,7 +9,12 @@ import {
   usePerformerCreate,
   usePerformerDestroy,
 } from "src/core/StashService";
-import { CountryFlag, ErrorMessage, Icon, LoadingIndicator } from "src/components/Shared";
+import {
+  CountryFlag,
+  ErrorMessage,
+  Icon,
+  LoadingIndicator,
+} from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import FsLightbox from "fslightbox-react";
@@ -33,7 +38,7 @@ export const Performer: React.FC = () => {
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
   const [lightboxToggle, setLightboxToggle] = useState(false);
   const { data, loading: performerLoading, error } = useFindPerformer(id);
-  const performer = data?.findPerformer || {} as Partial<GQL.Performer>;
+  const performer = data?.findPerformer || ({} as Partial<GQL.Performer>);
 
   // if undefined then get the existing image
   // if null then get the default (no) image
@@ -85,7 +90,8 @@ export const Performer: React.FC = () => {
 
   if (isLoading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;
-  if (!performer.id && !isNew) return <ErrorMessage error={`No performer found with id ${id}.`} />
+  if (!performer.id && !isNew)
+    return <ErrorMessage error={`No performer found with id ${id}.`} />;
 
   async function onSave(
     performerInput:

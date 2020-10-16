@@ -309,7 +309,16 @@ export const Scene: React.FC = () => {
   if (loading || streamableLoading) return <LoadingIndicator />;
   if (error) return <ErrorMessage error={error.message} />;
   if (streamableError) return <ErrorMessage error={streamableError.message} />;
-  if (!scene) return <ErrorMessage error={<>No scene found with id <i>{id}</i></>} />
+  if (!scene)
+    return (
+      <ErrorMessage
+        error={
+          <>
+            No scene found with id <i>{id}</i>
+          </>
+        }
+      />
+    );
 
   return (
     <div className="row">

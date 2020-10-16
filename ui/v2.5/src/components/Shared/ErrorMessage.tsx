@@ -1,7 +1,7 @@
 import React, { ReactNode } from "react";
 
 interface IProps {
-  error: string|ReactNode;
+  error: string | ReactNode;
 }
 
 const ErrorMessage: React.FC<IProps> = ({ error }) => (

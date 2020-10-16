@@ -21,14 +21,16 @@ interface IProps {
 interface INewProps {
   isNew: true;
   gallery: undefined;
-};
+}
 
 interface IExistingProps {
   isNew: false;
   gallery: GQL.GalleryDataFragment;
-};
+}
 
-export const GalleryEditPanel: React.FC<IProps & (INewProps|IExistingProps)> = (props) => {
+export const GalleryEditPanel: React.FC<
+  IProps & (INewProps | IExistingProps)
+> = (props) => {
   const Toast = useToast();
   const history = useHistory();
   const [title, setTitle] = useState<string>();
