@@ -111,6 +111,8 @@ input GalleryFilterType {
   is_zip: Boolean
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by average image resolution"""
+  average_resolution: ResolutionEnum
   """Filter to only include scenes with this studio"""
   studios: MultiCriterionInput
   """Filter to only include scenes with these tags"""

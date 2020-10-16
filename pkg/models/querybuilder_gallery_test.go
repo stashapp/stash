@@ -153,6 +153,44 @@ func verifyGalleriesPath(t *testing.T, pathCriterion models.StringCriterionInput
 	}
 }
 
+func TestGalleryQueryRating(t *testing.T) {
+	const rating = 3
+	ratingCriterion := models.IntCriterionInput{
+		Value:    rating,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyGalleriesRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleriesRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyGalleriesRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierLessThan
+	verifyGalleriesRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierIsNull
+	verifyGalleriesRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotNull
+	verifyGalleriesRating(t, ratingCriterion)
+}
+
+func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
+	sqb := models.NewGalleryQueryBuilder()
+	galleryFilter := models.GalleryFilterType{
+		Rating: &ratingCriterion,
+	}
+
+	galleries, _ := sqb.Query(&galleryFilter, nil)
+
+	for _, gallery := range galleries {
+		verifyInt64(t, gallery.Rating, ratingCriterion)
+	}
+}
+
 func TestGalleryQueryIsMissingScene(t *testing.T) {
 	qb := models.NewGalleryQueryBuilder()
 	isMissing := "scene"
