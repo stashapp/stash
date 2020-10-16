@@ -185,7 +185,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
   );
   const [newStudio, setNewStudio] = useState<
     GQL.ScrapedSceneStudio | undefined
-    >(
+  >(
     props.scraped.studio && !props.scraped.studio.stored_id
       ? props.scraped.studio
       : undefined
@@ -237,7 +237,7 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
   );
   const [newPerformers, setNewPerformers] = useState<
     GQL.ScrapedScenePerformer[]
-    >(props.scraped.performers?.filter((t) => !t.stored_id) ?? []);
+  >(props.scraped.performers?.filter((t) => !t.stored_id) ?? []);
 
   const [tags, setTags] = useState<ScrapeResult<string[]>>(
     new ScrapeResult<string[]>(
@@ -373,9 +373,9 @@ export const GalleryScrapeDialog: React.FC<IGalleryScrapeDialogProps> = (
       date: date.getNewValue(),
       studio: newStudioValue
         ? {
-          stored_id: newStudioValue,
-          name: "",
-        }
+            stored_id: newStudioValue,
+            name: "",
+          }
         : undefined,
       performers: performers.getNewValue()?.map((p) => {
         return {

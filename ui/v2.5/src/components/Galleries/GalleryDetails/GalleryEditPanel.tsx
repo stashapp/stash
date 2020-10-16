@@ -6,7 +6,7 @@ import {
   queryScrapeGalleryURL,
   useGalleryCreate,
   useGalleryUpdate,
-  useListGalleryScrapers
+  useListGalleryScrapers,
 } from "src/core/StashService";
 import {
   PerformerSelect,
@@ -51,7 +51,10 @@ export const GalleryEditPanel: React.FC<
 
   const Scrapers = useListGalleryScrapers();
 
-  const [scrapedGallery, setScrapedGallery] = useState<GQL.ScrapedGallery | null>();
+  const [
+    scrapedGallery,
+    setScrapedGallery,
+  ] = useState<GQL.ScrapedGallery | null>();
 
   // Network state
   const [isLoading, setIsLoading] = useState(true);
@@ -181,7 +184,7 @@ export const GalleryEditPanel: React.FC<
           onScrapeDialogClosed(gallery);
         }}
       />
-    )
+    );
   }
 
   function urlScrapable(scrapedUrl: string): boolean {
@@ -190,7 +193,9 @@ export const GalleryEditPanel: React.FC<
     );
   }
 
-  function updateGalleryFromScrapedGallery(gallery: GQL.ScrapedGalleryDataFragment) {
+  function updateGalleryFromScrapedGallery(
+    gallery: GQL.ScrapedGalleryDataFragment
+  ) {
     if (gallery.title) {
       setTitle(gallery.title);
     }
@@ -264,7 +269,7 @@ export const GalleryEditPanel: React.FC<
       >
         <Icon className="fa-fw" icon="file-download" />
       </Button>
-    )
+    );
   }
 
   if (isLoading) return <LoadingIndicator />;
