@@ -218,6 +218,8 @@ export const useScrapePerformer = (
 
 export const useListSceneScrapers = () => GQL.useListSceneScrapersQuery();
 
+export const useListGalleryScrapers = () => GQL.useListGalleryScrapersQuery();
+
 export const useListMovieScrapers = () => GQL.useListMovieScrapersQuery();
 
 export const useScrapeFreeonesPerformers = (q: string) =>
@@ -673,6 +675,15 @@ export const queryScrapeSceneURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
+export const queryScrapeGalleryURL = (url: string) =>
+  client.query<GQL.ScrapeGalleryUrlQuery>({
+    query: GQL.ScrapeGalleryUrlDocument,
+    variables: {
+      url,
+    },
+    fetchPolicy: "network-only",
+  });
+
 export const queryScrapeMovieURL = (url: string) =>
   client.query<GQL.ScrapeMovieUrlQuery>({
     query: GQL.ScrapeMovieUrlDocument,
@@ -704,6 +715,19 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
         scene_ids: [sceneID],
       },
     },
+  });
+
+export const queryScrapeGallery = (
+  scraperId: string,
+  scene: GQL.GalleryUpdateInput
+) =>
+  client.query<GQL.ScrapeGalleryQuery>({
+    query: GQL.ScrapeGalleryDocument,
+    variables: {
+      scraper_id: scraperId,
+      scene,
+    },
+    fetchPolicy: "network-only",
   });
 
 export const mutateReloadScrapers = () =>

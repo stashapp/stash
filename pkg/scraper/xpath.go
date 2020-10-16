@@ -69,6 +69,16 @@ func (s *xpathScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error
 	return scraper.scrapeScene(q)
 }
 
+func (s *xpathScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, error) {
+	doc, scraper, err := s.scrapeURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getXPathQuery(doc)
+	return scraper.scrapeGallery(q)
+}
+
 func (s *xpathScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
 	doc, scraper, err := s.scrapeURL(url)
 	if err != nil {
@@ -135,6 +145,35 @@ func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 
 	q := s.getXPathQuery(doc)
 	return scraper.scrapeScene(q)
+}
+
+func (s *xpathScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
+	storedGallery, err := galleryFromUpdateFragment(gallery)
+	if err != nil {
+		return nil, err
+	}
+
+	if storedGallery == nil {
+		return nil, errors.New("no scene found")
+	}
+
+	// construct the URL
+	url := constructGalleryURL(s.scraper.QueryURL, storedGallery)
+
+	scraper := s.getXpathScraper()
+
+	if scraper == nil {
+		return nil, errors.New("xpath scraper with name " + s.scraper.Scraper + " not found in config")
+	}
+
+	doc, err := s.loadURL(url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getXPathQuery(doc)
+	return scraper.scrapeGallery(q)
 }
 
 func (s *xpathScraper) loadURL(url string) (*html.Node, error) {

@@ -313,3 +313,52 @@ func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene
 
 	return ss, nil
 }
+
+func galleryFragmentToScrapedGallery(s *graphql.GalleryFragment) (*models.ScrapedGallery, error) {
+	ss := &models.ScrapedGallery{
+		Title:   s.Title,
+		Date:    s.Date,
+		Details: s.Details,
+		URL:     findURL(s.Urls, "STUDIO"),
+		// Image
+		// stash_id
+	}
+
+	if s.Studio != nil {
+		ss.Studio = &models.ScrapedSceneStudio{
+			Name: s.Studio.Name,
+			URL:  findURL(s.Studio.Urls, "HOME"),
+		}
+
+		err := models.MatchScrapedSceneStudio(ss.Studio)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	for _, p := range s.Performers {
+		sp := performerFragmentToScrapedScenePerformer(p.Performer)
+
+		err := models.MatchScrapedScenePerformer(sp)
+		if err != nil {
+			return nil, err
+		}
+
+		ss.Performers = append(ss.Performers, sp)
+	}
+
+	for _, t := range s.Tags {
+		st := &models.ScrapedSceneTag{
+			Name: t.Name,
+		}
+
+		err := models.MatchScrapedSceneTag(st)
+		if err != nil {
+			return nil, err
+		}
+
+		ss.Tags = append(ss.Tags, st)
+	}
+
+	return ss, nil
+}
