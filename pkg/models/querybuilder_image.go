@@ -221,7 +221,7 @@ func (qb *ImageQueryBuilder) FindByStudioID(studioID int) ([]*Image, error) {
 
 func (qb *ImageQueryBuilder) FindByGalleryID(galleryID int) ([]*Image, error) {
 	args := []interface{}{galleryID}
-	return qb.queryImages(imagesForGalleryQuery, args, nil)
+	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(nil), args, nil)
 }
 
 func (qb *ImageQueryBuilder) CountByGalleryID(galleryID int) (int, error) {
@@ -324,7 +324,7 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 		case "tags":
 			query.addWhere("tags_join.image_id IS NULL")
 		default:
-			query.addWhere("images." + *isMissingFilter + " IS NULL")
+			query.addWhere("images." + *isMissingFilter + " IS NULL OR TRIM(images." + *isMissingFilter + ") = ''")
 		}
 	}
 
