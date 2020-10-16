@@ -200,15 +200,7 @@ export const Gallery: React.FC = () => {
     );
 
   if (!gallery)
-    return (
-      <ErrorMessage
-        error={
-          <>
-            No gallery with id <i>{id}</i> found.
-          </>
-        }
-      />
-    );
+    return <ErrorMessage error={`No gallery with id ${id} found.`} />;
 
   return (
     <div className="row">

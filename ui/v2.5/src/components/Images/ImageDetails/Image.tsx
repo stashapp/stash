@@ -188,15 +188,7 @@ export const Image: React.FC = () => {
   if (error) return <ErrorMessage error={error.message} />;
 
   if (!image) {
-    return (
-      <ErrorMessage
-        error={
-          <>
-            No image found for id <i>{id}</i>
-          </>
-        }
-      />
-    );
+    return <ErrorMessage error={`No image found with id ${id}.`} />;
   }
 
   return (
