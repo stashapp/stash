@@ -5,7 +5,11 @@ import { GalleryList } from "./GalleryList";
 
 const Galleries = () => (
   <Switch>
-    <Route exact path="/galleries" render={(props) => <GalleryList {...props} persistState />} />
+    <Route
+      exact
+      path="/galleries"
+      render={(props) => <GalleryList {...props} persistState />}
+    />
     <Route path="/galleries/:id/:tab?" component={Gallery} />
   </Switch>
 );
