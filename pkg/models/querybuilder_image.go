@@ -7,7 +7,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const imageTable = "images"
@@ -234,12 +233,8 @@ func (qb *ImageQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT images.id FROM images"), nil)
 }
 
-func (qb *ImageQueryBuilder) SizeCount() (string, error) {
-	sum, err := runSumQuery("SELECT SUM(size) as sum FROM images", nil)
-	if err != nil {
-		return "0 B", err
-	}
-	return utils.HumanizeBytes(sum), err
+func (qb *ImageQueryBuilder) Size() (uint64, error) {
+	return runSumQuery("SELECT SUM(size) as sum FROM images", nil)
 }
 
 func (qb *ImageQueryBuilder) CountByStudioID(studioID int) (int, error) {
@@ -282,6 +277,8 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 		query.addWhere(clause)
 		query.addArg(thisArgs...)
 	}
+
+	query.handleStringCriterionInput(imageFilter.Path, "images.path")
 
 	if rating := imageFilter.Rating; rating != nil {
 		clause, count := getIntCriterionWhereClause("images.rating", *imageFilter.Rating)
