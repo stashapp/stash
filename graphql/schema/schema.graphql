@@ -64,6 +64,7 @@ type Query {
   """List available scrapers"""
   listPerformerScrapers: [Scraper!]!
   listSceneScrapers: [Scraper!]!
+  listGalleryScrapers: [Scraper!]!
   listMovieScrapers: [Scraper!]!
 
   """Scrape a list of performers based on name"""
@@ -76,6 +77,10 @@ type Query {
   scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
   """Scrapes a complete performer record based on a URL"""
   scrapeSceneURL(url: String!): ScrapedScene
+  """Scrapes a complete gallery record based on an existing gallery"""
+  scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery
+  """Scrapes a complete gallery record based on a URL"""
+  scrapeGalleryURL(url: String!): ScrapedGallery
   """Scrapes a complete movie record based on a URL"""
   scrapeMovieURL(url: String!): ScrapedMovie
 

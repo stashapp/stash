@@ -155,6 +155,60 @@ func (s *mappedSceneScraperConfig) UnmarshalYAML(unmarshal func(interface{}) err
 	return nil
 }
 
+type mappedGalleryScraperConfig struct {
+	mappedConfig
+
+	Tags       mappedConfig `yaml:"Tags"`
+	Performers mappedConfig `yaml:"Performers"`
+	Studio     mappedConfig `yaml:"Studio"`
+}
+type _mappedGalleryScraperConfig mappedGalleryScraperConfig
+
+func (s *mappedGalleryScraperConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	// HACK - unmarshal to map first, then remove known scene sub-fields, then
+	// remarshal to yaml and pass that down to the base map
+	parentMap := make(map[string]interface{})
+	if err := unmarshal(parentMap); err != nil {
+		return err
+	}
+
+	// move the known sub-fields to a separate map
+	thisMap := make(map[string]interface{})
+
+	thisMap[mappedScraperConfigSceneTags] = parentMap[mappedScraperConfigSceneTags]
+	thisMap[mappedScraperConfigScenePerformers] = parentMap[mappedScraperConfigScenePerformers]
+	thisMap[mappedScraperConfigSceneStudio] = parentMap[mappedScraperConfigSceneStudio]
+
+	delete(parentMap, mappedScraperConfigSceneTags)
+	delete(parentMap, mappedScraperConfigScenePerformers)
+	delete(parentMap, mappedScraperConfigSceneStudio)
+
+	// re-unmarshal the sub-fields
+	yml, err := yaml.Marshal(thisMap)
+	if err != nil {
+		return err
+	}
+
+	// needs to be a different type to prevent infinite recursion
+	c := _mappedGalleryScraperConfig{}
+	if err := yaml.Unmarshal(yml, &c); err != nil {
+		return err
+	}
+
+	*s = mappedGalleryScraperConfig(c)
+
+	yml, err = yaml.Marshal(parentMap)
+	if err != nil {
+		return err
+	}
+
+	if err := yaml.Unmarshal(yml, &s.mappedConfig); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type mappedPerformerScraperConfig struct {
 	mappedConfig
 }
@@ -540,6 +594,7 @@ type mappedScrapers map[string]*mappedScraper
 type mappedScraper struct {
 	Common    commonMappedConfig            `yaml:"common"`
 	Scene     *mappedSceneScraperConfig     `yaml:"scene"`
+	Gallery   *mappedGalleryScraperConfig   `yaml:"gallery"`
 	Performer *mappedPerformerScraperConfig `yaml:"performer"`
 	Movie     *mappedMovieScraperConfig     `yaml:"movie"`
 }
@@ -681,6 +736,62 @@ func (s mappedScraper) scrapeScene(q mappedQuery) (*models.ScrapedScene, error) 
 				ret.Movies = append(ret.Movies, movie)
 			}
 
+		}
+	}
+
+	return &ret, nil
+}
+
+func (s mappedScraper) scrapeGallery(q mappedQuery) (*models.ScrapedGallery, error) {
+	var ret models.ScrapedGallery
+
+	galleryScraperConfig := s.Gallery
+	galleryMap := galleryScraperConfig.mappedConfig
+	if galleryMap == nil {
+		return nil, nil
+	}
+
+	galleryPerformersMap := galleryScraperConfig.Performers
+	galleryTagsMap := galleryScraperConfig.Tags
+	galleryStudioMap := galleryScraperConfig.Studio
+
+	logger.Debug(`Processing gallery:`)
+	results := galleryMap.process(q, s.Common)
+	if len(results) > 0 {
+		results[0].apply(&ret)
+
+		// now apply the performers and tags
+		if galleryPerformersMap != nil {
+			logger.Debug(`Processing gallery performers:`)
+			performerResults := galleryPerformersMap.process(q, s.Common)
+
+			for _, p := range performerResults {
+				performer := &models.ScrapedScenePerformer{}
+				p.apply(performer)
+				ret.Performers = append(ret.Performers, performer)
+			}
+		}
+
+		if galleryTagsMap != nil {
+			logger.Debug(`Processing gallery tags:`)
+			tagResults := galleryTagsMap.process(q, s.Common)
+
+			for _, p := range tagResults {
+				tag := &models.ScrapedSceneTag{}
+				p.apply(tag)
+				ret.Tags = append(ret.Tags, tag)
+			}
+		}
+
+		if galleryStudioMap != nil {
+			logger.Debug(`Processing gallery studio:`)
+			studioResults := galleryStudioMap.process(q, s.Common)
+
+			if len(studioResults) > 0 {
+				studio := &models.ScrapedSceneStudio{}
+				studioResults[0].apply(studio)
+				ret.Studio = studio
+			}
 		}
 	}
 

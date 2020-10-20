@@ -146,14 +146,33 @@ type SceneFragment struct {
 	Performers   []*PerformerAppearanceFragment "json:\"performers\" graphql:\"performers\""
 	Fingerprints []*FingerprintFragment         "json:\"fingerprints\" graphql:\"fingerprints\""
 }
+type GalleryFragment struct {
+	ID           string                         "json:\"id\" graphql:\"id\""
+	Title        *string                        "json:\"title\" graphql:\"title\""
+	Details      *string                        "json:\"details\" graphql:\"details\""
+	Duration     *int                           "json:\"duration\" graphql:\"duration\""
+	Date         *string                        "json:\"date\" graphql:\"date\""
+	Urls         []*URLFragment                 "json:\"urls\" graphql:\"urls\""
+	Images       []*ImageFragment               "json:\"images\" graphql:\"images\""
+	Studio       *StudioFragment                "json:\"studio\" graphql:\"studio\""
+	Tags         []*TagFragment                 "json:\"tags\" graphql:\"tags\""
+	Performers   []*PerformerAppearanceFragment "json:\"performers\" graphql:\"performers\""
+	Fingerprints []*FingerprintFragment         "json:\"fingerprints\" graphql:\"fingerprints\""
+}
 type FindSceneByFingerprint struct {
 	FindSceneByFingerprint []*SceneFragment "json:\"findSceneByFingerprint\" graphql:\"findSceneByFingerprint\""
 }
 type FindScenesByFingerprints struct {
 	FindScenesByFingerprints []*SceneFragment "json:\"findScenesByFingerprints\" graphql:\"findScenesByFingerprints\""
 }
+type FindGalleriesByFingerprints struct {
+	FindGalleriesByFingerprints []*GalleryFragment `json:"findGalleriesByFingerprints" graphql:"findGalleriesByFingerprints"`
+}
 type SearchScene struct {
 	SearchScene []*SceneFragment "json:\"searchScene\" graphql:\"searchScene\""
+}
+type SearchGallery struct {
+	SearchGallery []*GalleryFragment `json:"searchScene" graphql:"searchScene"`
 }
 type SubmitFingerprintPayload struct {
 	SubmitFingerprint bool "json:\"submitFingerprint\" graphql:\"submitFingerprint\""
@@ -527,6 +546,133 @@ fragment BodyModificationFragment on BodyModification {
 }
 `
 
+func (c *Client) FindGalleriesByFingerprints(ctx context.Context, fingerprints []string, httpRequestOptions ...client.HTTPRequestOption) (*FindGalleriesByFingerprints, error) {
+	vars := map[string]interface{}{
+		"fingerprints": fingerprints,
+	}
+
+	var res FindGalleriesByFingerprints
+	if err := c.Client.Post(ctx, FindScenesByFingerprintsQuery, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+const SearchGalleryQuery = `query SearchGallery ($term: String!) {
+	searchGallery(term: $term) {
+		... GalleryFragment
+	}
+}
+fragment FuzzyDateFragment on FuzzyDate {
+	date
+	accuracy
+}
+fragment MeasurementsFragment on Measurements {
+	band_size
+	cup_size
+	waist
+	hip
+}
+fragment FingerprintFragment on Fingerprint {
+	algorithm
+	hash
+	duration
+}
+fragment GalleryFragment on Gallery {
+	id
+	title
+	details
+	duration
+	date
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+	studio {
+		... StudioFragment
+	}
+	tags {
+		... TagFragment
+	}
+	performers {
+		... PerformerAppearanceFragment
+	}
+	fingerprints {
+		... FingerprintFragment
+	}
+}
+fragment TagFragment on Tag {
+	name
+	id
+}
+fragment PerformerAppearanceFragment on PerformerAppearance {
+	as
+	performer {
+		... PerformerFragment
+	}
+}
+fragment PerformerFragment on Performer {
+	id
+	name
+	disambiguation
+	aliases
+	gender
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+	birthdate {
+		... FuzzyDateFragment
+	}
+	ethnicity
+	country
+	eye_color
+	hair_color
+	height
+	measurements {
+		... MeasurementsFragment
+	}
+	breast_type
+	career_start_year
+	career_end_year
+	tattoos {
+		... BodyModificationFragment
+	}
+	piercings {
+		... BodyModificationFragment
+	}
+}
+fragment URLFragment on URL {
+	url
+	type
+}
+fragment ImageFragment on Image {
+	id
+	url
+	width
+	height
+}
+fragment StudioFragment on Studio {
+	name
+	id
+	urls {
+		... URLFragment
+	}
+	images {
+		... ImageFragment
+	}
+}
+fragment BodyModificationFragment on BodyModification {
+	location
+	description
+}
+`
+
 func (c *Client) SearchScene(ctx context.Context, term string, httpRequestOptions ...client.HTTPRequestOption) (*SearchScene, error) {
 	vars := map[string]interface{}{
 		"term": term,
@@ -534,6 +680,19 @@ func (c *Client) SearchScene(ctx context.Context, term string, httpRequestOption
 
 	var res SearchScene
 	if err := c.Client.Post(ctx, SearchSceneQuery, &res, vars, httpRequestOptions...); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
+}
+
+func (c *Client) SearchGallery(ctx context.Context, term string, httpRequestOptions ...client.HTTPRequestOption) (*SearchGallery, error) {
+	vars := map[string]interface{}{
+		"term": term,
+	}
+
+	var res SearchGallery
+	if err := c.Client.Post(ctx, SearchGalleryQuery, &res, vars, httpRequestOptions...); err != nil {
 		return nil, err
 	}
 
