@@ -160,6 +160,15 @@ export const useFindTags = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindTags = (filter: ListFilterModel) =>
+  client.query<GQL.FindTagsQuery>({
+    query: GQL.FindTagsDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeTagFilter(),
+    },
+  });
+
 export const queryFindPerformers = (filter: ListFilterModel) =>
   client.query<GQL.FindPerformersQuery>({
     query: GQL.FindPerformersDocument,
