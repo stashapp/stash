@@ -126,6 +126,15 @@ export const useFindMovies = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindMovies = (filter: ListFilterModel) =>
+  client.query<GQL.FindMoviesQuery>({
+    query: GQL.FindMoviesDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      movie_filter: filter.makeMovieFilter(),
+    },
+  });
+
 export const useFindPerformers = (filter: ListFilterModel) =>
   GQL.useFindPerformersQuery({
     variables: {
