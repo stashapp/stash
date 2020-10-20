@@ -128,9 +128,9 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 	t.ExportScenes(workerCount)
 	t.ExportImages(workerCount)
 	t.ExportGalleries(workerCount)
+	t.ExportMovies(workerCount)
 	t.ExportPerformers(workerCount)
 	t.ExportStudios(workerCount)
-	t.ExportMovies(workerCount)
 	t.ExportTags(workerCount)
 
 	if err := t.json.saveMappings(t.Mappings); err != nil {
@@ -851,6 +851,12 @@ func (t *ExportTask) exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movi
 		if err != nil {
 			logger.Errorf("[movies] <%s> error getting tag JSON: %s", m.Checksum, err.Error())
 			continue
+		}
+
+		if t.includeDependencies {
+			if m.StudioID.Valid {
+				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(m.StudioID.Int64))
+			}
 		}
 
 		movieJSON, err := t.json.getMovie(m.Checksum)
