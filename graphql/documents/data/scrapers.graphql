@@ -118,3 +118,22 @@ fragment ScrapedSceneData on ScrapedScene {
     ...ScrapedSceneMovieData
   }
 }
+
+fragment ScrapedGalleryData on ScrapedGallery {
+  title
+  details
+  url
+  date
+
+  studio {
+    ...ScrapedSceneStudioData
+  }
+
+  tags {
+    ...ScrapedSceneTagData
+  }
+
+  performers {
+    ...ScrapedScenePerformerData
+  }
+}

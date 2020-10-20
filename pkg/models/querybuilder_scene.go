@@ -7,7 +7,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const sceneTable = "scenes"
@@ -242,12 +241,8 @@ func (qb *SceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *SceneQueryBuilder) SizeCount() (string, error) {
-	sum, err := runSumQuery("SELECT SUM(size) as sum FROM scenes", nil)
-	if err != nil {
-		return "0 B", err
-	}
-	return utils.HumanizeBytes(sum), err
+func (qb *SceneQueryBuilder) Size() (uint64, error) {
+	return runSumQuery("SELECT SUM(size) as sum FROM scenes", nil)
 }
 
 func (qb *SceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
@@ -312,21 +307,9 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		query.addArg(thisArgs...)
 	}
 
-	if rating := sceneFilter.Rating; rating != nil {
-		clause, count := getIntCriterionWhereClause("scenes.rating", *sceneFilter.Rating)
-		query.addWhere(clause)
-		if count == 1 {
-			query.addArg(sceneFilter.Rating.Value)
-		}
-	}
-
-	if oCounter := sceneFilter.OCounter; oCounter != nil {
-		clause, count := getIntCriterionWhereClause("scenes.o_counter", *sceneFilter.OCounter)
-		query.addWhere(clause)
-		if count == 1 {
-			query.addArg(sceneFilter.OCounter.Value)
-		}
-	}
+	query.handleStringCriterionInput(sceneFilter.Path, "scenes.path")
+	query.handleIntCriterionInput(sceneFilter.Rating, "scenes.rating")
+	query.handleIntCriterionInput(sceneFilter.OCounter, "scenes.o_counter")
 
 	if durationFilter := sceneFilter.Duration; durationFilter != nil {
 		clause, thisArgs := getDurationWhereClause(*durationFilter)
@@ -374,7 +357,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		case "tags":
 			query.addWhere("tags_join.scene_id IS NULL")
 		default:
-			query.addWhere("scenes." + *isMissingFilter + " IS NULL")
+			query.addWhere("scenes." + *isMissingFilter + " IS NULL OR TRIM(scenes." + *isMissingFilter + ") = ''")
 		}
 	}
 

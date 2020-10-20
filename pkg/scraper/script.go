@@ -137,10 +137,34 @@ func (s *scriptScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*m
 	return &ret, err
 }
 
+func (s *scriptScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
+	inString, err := json.Marshal(gallery)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var ret models.ScrapedGallery
+
+	err = s.runScraperScript(string(inString), &ret)
+
+	return &ret, err
+}
+
 func (s *scriptScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error) {
 	inString := `{"url": "` + url + `"}`
 
 	var ret models.ScrapedScene
+
+	err := s.runScraperScript(string(inString), &ret)
+
+	return &ret, err
+}
+
+func (s *scriptScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, error) {
+	inString := `{"url": "` + url + `"}`
+
+	var ret models.ScrapedGallery
 
 	err := s.runScraperScript(string(inString), &ret)
 

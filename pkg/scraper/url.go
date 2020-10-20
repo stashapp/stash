@@ -38,6 +38,17 @@ func constructSceneURL(url string, scene *models.Scene) string {
 	return ret
 }
 
+func constructGalleryURL(url string, gallery *models.Gallery) string {
+	// support checksum, title and filename
+	ret := strings.Replace(url, "{checksum}", gallery.Checksum, -1)
+	if gallery.Path.Valid {
+		ret = strings.Replace(url, "{filename}", filepath.Base(gallery.Path.String), -1)
+	}
+	ret = strings.Replace(url, "{title}", gallery.Title.String, -1)
+
+	return ret
+}
+
 func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := scraperConfig.DriverOptions
 	if driverOptions != nil && driverOptions.UseCDP {

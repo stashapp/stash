@@ -6,6 +6,7 @@ import {
   StringCriterion,
   NumberCriterion,
   DurationCriterion,
+  MandatoryStringCriterion,
 } from "./criterion";
 import { FavoriteCriterion } from "./favorite";
 import { HasMarkersCriterion } from "./has-markers";
@@ -16,20 +17,24 @@ import {
   TagIsMissingCriterion,
   StudioIsMissingCriterion,
   MovieIsMissingCriterion,
+  ImageIsMissingCriterion,
 } from "./is-missing";
 import { NoneCriterion } from "./none";
 import { PerformersCriterion } from "./performers";
 import { RatingCriterion } from "./rating";
-import { ResolutionCriterion } from "./resolution";
+import { AverageResolutionCriterion, ResolutionCriterion } from "./resolution";
 import { StudiosCriterion, ParentStudiosCriterion } from "./studios";
 import { TagsCriterion } from "./tags";
 import { GenderCriterion } from "./gender";
 import { MoviesCriterion } from "./movies";
+import { GalleriesCriterion } from "./galleries";
 
 export function makeCriteria(type: CriterionType = "none") {
   switch (type) {
     case "none":
       return new NoneCriterion();
+    case "path":
+      return new MandatoryStringCriterion(type, type);
     case "rating":
       return new RatingCriterion();
     case "o_counter":
@@ -38,6 +43,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new NumberCriterion(type, type);
     case "resolution":
       return new ResolutionCriterion();
+    case "average_resolution":
+      return new AverageResolutionCriterion();
     case "duration":
       return new DurationCriterion(type, type);
     case "favorite":
@@ -46,6 +53,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new HasMarkersCriterion();
     case "sceneIsMissing":
       return new SceneIsMissingCriterion();
+    case "imageIsMissing":
+      return new ImageIsMissingCriterion();
     case "performerIsMissing":
       return new PerformerIsMissingCriterion();
     case "galleryIsMissing":
@@ -68,6 +77,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new ParentStudiosCriterion();
     case "movies":
       return new MoviesCriterion();
+    case "galleries":
+      return new GalleriesCriterion();
     case "birth_year":
       return new NumberCriterion(type, type);
     case "age": {

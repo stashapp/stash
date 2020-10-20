@@ -28,6 +28,22 @@ export class SceneIsMissingCriterionOption implements ICriterionOption {
   public value: CriterionType = "sceneIsMissing";
 }
 
+export class ImageIsMissingCriterion extends IsMissingCriterion {
+  public type: CriterionType = "imageIsMissing";
+  public options: string[] = [
+    "title",
+    "galleries",
+    "studio",
+    "performers",
+    "tags",
+  ];
+}
+
+export class ImageIsMissingCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("imageIsMissing");
+  public value: CriterionType = "imageIsMissing";
+}
+
 export class PerformerIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "performerIsMissing";
   public options: string[] = [
@@ -57,7 +73,16 @@ export class PerformerIsMissingCriterionOption implements ICriterionOption {
 
 export class GalleryIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "galleryIsMissing";
-  public options: string[] = ["scene"];
+  public options: string[] = [
+    "title",
+    "details",
+    "url",
+    "date",
+    "studio",
+    "performers",
+    "tags",
+    "scene",
+  ];
 }
 
 export class GalleryIsMissingCriterionOption implements ICriterionOption {

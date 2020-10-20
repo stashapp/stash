@@ -52,6 +52,7 @@ var (
 	}
 	ProgressLevel = Level{
 		char: 'p',
+		Name: "progress",
 	}
 	NoneLevel = Level{
 		Name: "none",
