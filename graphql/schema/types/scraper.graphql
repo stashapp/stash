@@ -20,6 +20,8 @@ type Scraper {
     performer: ScraperSpec
     """Details for scene scraper"""
     scene: ScraperSpec
+    """Details for gallery scraper"""
+    gallery: ScraperSpec
     """Details for movie scraper"""
     movie: ScraperSpec
 }
@@ -86,6 +88,17 @@ type ScrapedScene {
   tags: [ScrapedSceneTag!]
   performers: [ScrapedScenePerformer!]
   movies: [ScrapedSceneMovie!]
+}
+
+type ScrapedGallery {
+  title: String
+  details: String
+  url: String
+  date: String
+
+  studio: ScrapedSceneStudio
+  tags: [ScrapedSceneTag!]
+  performers: [ScrapedScenePerformer!]
 }
 
 input StashBoxQueryInput {

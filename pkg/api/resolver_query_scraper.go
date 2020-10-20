@@ -44,6 +44,10 @@ func (r *queryResolver) ListSceneScrapers(ctx context.Context) ([]*models.Scrape
 	return manager.GetInstance().ScraperCache.ListSceneScrapers(), nil
 }
 
+func (r *queryResolver) ListGalleryScrapers(ctx context.Context) ([]*models.Scraper, error) {
+	return manager.GetInstance().ScraperCache.ListGalleryScrapers(), nil
+}
+
 func (r *queryResolver) ListMovieScrapers(ctx context.Context) ([]*models.Scraper, error) {
 	return manager.GetInstance().ScraperCache.ListMovieScrapers(), nil
 }
@@ -70,6 +74,14 @@ func (r *queryResolver) ScrapeScene(ctx context.Context, scraperID string, scene
 
 func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models.ScrapedScene, error) {
 	return manager.GetInstance().ScraperCache.ScrapeSceneURL(url)
+}
+
+func (r *queryResolver) ScrapeGallery(ctx context.Context, scraperID string, gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
+	return manager.GetInstance().ScraperCache.ScrapeGallery(scraperID, gallery)
+}
+
+func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
+	return manager.GetInstance().ScraperCache.ScrapeGalleryURL(url)
 }
 
 func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
