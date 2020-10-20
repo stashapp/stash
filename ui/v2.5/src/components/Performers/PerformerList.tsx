@@ -1,20 +1,34 @@
 import _ from "lodash";
-import React from "react";
+import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { FindPerformersQueryResult } from "src/core/generated-graphql";
 import { queryFindPerformers } from "src/core/StashService";
 import { usePerformersList } from "src/hooks";
+import { showWhenSelected } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
+import { ExportDialog } from "src/components/Shared/ExportDialog";
 
 export const PerformerList: React.FC = () => {
   const history = useHistory();
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [isExportAll, setIsExportAll] = useState(false);
+  
   const otherOperations = [
     {
       text: "Open Random",
       onClick: getRandom,
+    },
+    {
+      text: "Export...",
+      onClick: onExport,
+      isDisplayed: showWhenSelected,
+    },
+    {
+      text: "Export all...",
+      onClick: onExportAll,
     },
   ];
 
@@ -31,10 +45,41 @@ export const PerformerList: React.FC = () => {
     };
   };
 
+  async function onExport() {
+    setIsExportAll(false);
+    setIsExportDialogOpen(true);
+  }
+
+  async function onExportAll() {
+    setIsExportAll(true);
+    setIsExportDialogOpen(true);
+  }
+
+  function maybeRenderPerformerExportDialog(selectedIds: Set<string>) {
+    if (isExportDialogOpen) {
+      return (
+        <>
+          <ExportDialog
+            exportInput={{
+              performers: {
+                ids: Array.from(selectedIds.values()),
+                all: isExportAll,
+              },
+            }}
+            onClose={() => {
+              setIsExportDialogOpen(false);
+            }}
+          />
+        </>
+      );
+    }
+  }
+
   const listData = usePerformersList({
     otherOperations,
     renderContent,
     addKeybinds,
+    selectable: true,
     persistState: true,
   });
 
@@ -63,18 +108,29 @@ export const PerformerList: React.FC = () => {
 
   function renderContent(
     result: FindPerformersQueryResult,
-    filter: ListFilterModel
+    filter: ListFilterModel,
+    selectedIds: Set<string>
   ) {
     if (!result.data?.findPerformers) {
       return;
     }
     if (filter.displayMode === DisplayMode.Grid) {
       return (
+        <>
+        {maybeRenderPerformerExportDialog(selectedIds)}
         <div className="row justify-content-center">
           {result.data.findPerformers.performers.map((p) => (
-            <PerformerCard key={p.id} performer={p} />
+            <PerformerCard 
+              key={p.id} 
+              performer={p} 
+              selecting={selectedIds.size > 0}
+              selected={selectedIds.has(p.id)}
+              onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
+                listData.onSelectChange(p.id, selected, shiftKey)
+              } />
           ))}
         </div>
+        </>
       );
     }
     if (filter.displayMode === DisplayMode.List) {
