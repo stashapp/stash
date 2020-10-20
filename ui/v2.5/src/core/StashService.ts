@@ -118,6 +118,15 @@ export const useFindStudios = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindStudios = (filter: ListFilterModel) =>
+  client.query<GQL.FindStudiosQuery>({
+    query: GQL.FindStudiosDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      studio_filter: filter.makeStudioFilter(),
+    },
+  });
+
 export const useFindMovies = (filter: ListFilterModel) =>
   GQL.useFindMoviesQuery({
     variables: {

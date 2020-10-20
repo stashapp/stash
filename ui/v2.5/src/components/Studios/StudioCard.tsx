@@ -4,10 +4,14 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedPlural } from "react-intl";
 import { NavUtils } from "src/utils";
+import { BasicCard } from "../Shared/BasicCard";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
   hideParent?: boolean;
+  selecting?: boolean;
+  selected?: boolean;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
 function maybeRenderParent(
@@ -41,17 +45,27 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   }
 }
 
-export const StudioCard: React.FC<IProps> = ({ studio, hideParent }) => {
+export const StudioCard: React.FC<IProps> = ({ 
+  studio, 
+  hideParent,
+  selecting,
+  selected,
+  onSelectedChanged,
+}) => {
   return (
-    <Card className="studio-card">
-      <Link to={`/studios/${studio.id}`} className="studio-card-header">
+    <BasicCard
+      className="studio-card"
+      url={`/studios/${studio.id}`}
+      linkClassName="studio-card-header"
+      image={(
         <img
           className="studio-card-image"
           alt={studio.name}
           src={studio.image_path ?? ""}
         />
-      </Link>
-      <div className="card-section">
+      )}
+      details={(
+        <>
         <h5 className="text-truncate">{studio.name}</h5>
         <span>
           {studio.scene_count}&nbsp;
@@ -64,7 +78,11 @@ export const StudioCard: React.FC<IProps> = ({ studio, hideParent }) => {
         </span>
         {maybeRenderParent(studio, hideParent)}
         {maybeRenderChildren(studio)}
-      </div>
-    </Card>
+        </>
+      )}
+      selected={selected}
+      selecting={selecting}
+      onSelectedChanged={onSelectedChanged}
+    />
   );
 };
