@@ -7,7 +7,7 @@ import { downloadFile } from "src/utils";
 import { ExportObjectsInput } from "src/core/generated-graphql";
 
 interface IExportDialogProps {
-  exportInput: ExportObjectsInput
+  exportInput: ExportObjectsInput;
   onClose: () => void;
 }
 
@@ -25,8 +25,8 @@ export const ExportDialog: React.FC<IExportDialogProps> = (
     try {
       setIsRunning(true);
       const ret = await mutateExportObjects({
-          ...props.exportInput,
-          includeDependencies,
+        ...props.exportInput,
+        includeDependencies,
       });
 
       // download the result

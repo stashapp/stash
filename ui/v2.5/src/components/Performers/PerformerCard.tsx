@@ -35,38 +35,38 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     <BasicCard
       className="performer-card"
       url={`/performers/${performer.id}`}
-      image={(
+      image={
         <>
-        <img
-          className="performer-card-image"
-          alt={performer.name ?? ""}
-          src={performer.image_path ?? ""}
-        />
-        {maybeRenderFavoriteBanner()}
+          <img
+            className="performer-card-image"
+            alt={performer.name ?? ""}
+            src={performer.image_path ?? ""}
+          />
+          {maybeRenderFavoriteBanner()}
         </>
-      )}
-      details={(
+      }
+      details={
         <>
-        <h5 className="text-truncate">{performer.name}</h5>
-        {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
-        <Link to={NavUtils.makePerformersCountryUrl(performer)}>
-          <CountryFlag country={performer.country} />
-        </Link>
-        <div className="text-muted">
-          Stars in&nbsp;
-          <FormattedNumber value={performer.scene_count ?? 0} />
-          &nbsp;
-          <Link to={NavUtils.makePerformerScenesUrl(performer)}>
-            <FormattedPlural
-              value={performer.scene_count ?? 0}
-              one="scene"
-              other="scenes"
-            />
+          <h5 className="text-truncate">{performer.name}</h5>
+          {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
+          <Link to={NavUtils.makePerformersCountryUrl(performer)}>
+            <CountryFlag country={performer.country} />
           </Link>
-          .
-        </div>
+          <div className="text-muted">
+            Stars in&nbsp;
+            <FormattedNumber value={performer.scene_count ?? 0} />
+            &nbsp;
+            <Link to={NavUtils.makePerformerScenesUrl(performer)}>
+              <FormattedPlural
+                value={performer.scene_count ?? 0}
+                one="scene"
+                other="scenes"
+              />
+            </Link>
+            .
+          </div>
         </>
-      )}
+      }
       selected={selected}
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}

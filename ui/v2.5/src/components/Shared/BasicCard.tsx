@@ -93,9 +93,7 @@ export const BasicCard: React.FC<IBasicCardProps> = (
         </Link>
         {props.overlays}
       </div>
-      <div className="card-section">
-        {props.details}
-      </div>
+      <div className="card-section">{props.details}</div>
 
       {props.popovers}
     </Card>

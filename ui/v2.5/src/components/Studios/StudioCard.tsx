@@ -1,4 +1,3 @@
-import { Card } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -45,8 +44,8 @@ function maybeRenderChildren(studio: GQL.StudioDataFragment) {
   }
 }
 
-export const StudioCard: React.FC<IProps> = ({ 
-  studio, 
+export const StudioCard: React.FC<IProps> = ({
+  studio,
   hideParent,
   selecting,
   selected,
@@ -57,29 +56,29 @@ export const StudioCard: React.FC<IProps> = ({
       className="studio-card"
       url={`/studios/${studio.id}`}
       linkClassName="studio-card-header"
-      image={(
+      image={
         <img
           className="studio-card-image"
           alt={studio.name}
           src={studio.image_path ?? ""}
         />
-      )}
-      details={(
+      }
+      details={
         <>
-        <h5 className="text-truncate">{studio.name}</h5>
-        <span>
-          {studio.scene_count}&nbsp;
-          <FormattedPlural
-            value={studio.scene_count ?? 0}
-            one="scene"
-            other="scenes"
-          />
-          .
-        </span>
-        {maybeRenderParent(studio, hideParent)}
-        {maybeRenderChildren(studio)}
+          <h5 className="text-truncate">{studio.name}</h5>
+          <span>
+            {studio.scene_count}&nbsp;
+            <FormattedPlural
+              value={studio.scene_count ?? 0}
+              one="scene"
+              other="scenes"
+            />
+            .
+          </span>
+          {maybeRenderParent(studio, hideParent)}
+          {maybeRenderChildren(studio)}
         </>
-      )}
+      }
       selected={selected}
       selecting={selecting}
       onSelectedChanged={onSelectedChanged}

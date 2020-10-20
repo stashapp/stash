@@ -5,15 +5,15 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindMovies } from "src/core/StashService";
 import { showWhenSelected, useMoviesList } from "src/hooks/ListHook";
-import { MovieCard } from "./MovieCard";
 import { useHistory } from "react-router-dom";
+import { MovieCard } from "./MovieCard";
 import { ExportDialog } from "../Shared/ExportDialog";
 
 export const MovieList: React.FC = () => {
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
-  
+
   const otherOperations = [
     {
       text: "View Random",
@@ -118,19 +118,20 @@ export const MovieList: React.FC = () => {
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <>
-        {maybeRenderMovieExportDialog(selectedIds)}
-        <div className="row justify-content-center">
-          {result.data.findMovies.movies.map((p) => (
-            <MovieCard 
-              key={p.id} 
-              movie={p}
-              selecting={selectedIds.size > 0}
-              selected={selectedIds.has(p.id)}
-              onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                listData.onSelectChange(p.id, selected, shiftKey)
-              } />
-          ))}
-        </div>
+          {maybeRenderMovieExportDialog(selectedIds)}
+          <div className="row justify-content-center">
+            {result.data.findMovies.movies.map((p) => (
+              <MovieCard
+                key={p.id}
+                movie={p}
+                selecting={selectedIds.size > 0}
+                selected={selectedIds.has(p.id)}
+                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
+                  listData.onSelectChange(p.id, selected, shiftKey)
+                }
+              />
+            ))}
+          </div>
         </>
       );
     }

@@ -6,9 +6,9 @@ import { useStudiosList } from "src/hooks";
 import { showWhenSelected } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import { queryFindStudios } from "src/core/StashService";
 import { ExportDialog } from "../Shared/ExportDialog";
 import { StudioCard } from "./StudioCard";
-import { queryFindStudios } from "src/core/StashService";
 
 interface IStudioList {
   fromParent?: boolean;
@@ -107,7 +107,7 @@ export const StudioList: React.FC<IStudioList> = ({
       );
     }
   }
-  
+
   const listData = useStudiosList({
     renderContent,
     filterHook,
@@ -120,7 +120,7 @@ export const StudioList: React.FC<IStudioList> = ({
   function renderStudios(
     result: FindStudiosQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>,
+    selectedIds: Set<string>
   ) {
     if (!result.data?.findStudios) return;
 
@@ -153,7 +153,7 @@ export const StudioList: React.FC<IStudioList> = ({
   function renderContent(
     result: FindStudiosQueryResult,
     filter: ListFilterModel,
-    selectedIds: Set<string>,
+    selectedIds: Set<string>
   ) {
     return (
       <>

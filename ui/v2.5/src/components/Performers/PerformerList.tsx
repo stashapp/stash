@@ -7,15 +7,15 @@ import { usePerformersList } from "src/hooks";
 import { showWhenSelected } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import { ExportDialog } from "src/components/Shared/ExportDialog";
 import { PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
-import { ExportDialog } from "src/components/Shared/ExportDialog";
 
 export const PerformerList: React.FC = () => {
   const history = useHistory();
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [isExportAll, setIsExportAll] = useState(false);
-  
+
   const otherOperations = [
     {
       text: "Open Random",
@@ -117,19 +117,20 @@ export const PerformerList: React.FC = () => {
     if (filter.displayMode === DisplayMode.Grid) {
       return (
         <>
-        {maybeRenderPerformerExportDialog(selectedIds)}
-        <div className="row justify-content-center">
-          {result.data.findPerformers.performers.map((p) => (
-            <PerformerCard 
-              key={p.id} 
-              performer={p} 
-              selecting={selectedIds.size > 0}
-              selected={selectedIds.has(p.id)}
-              onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-                listData.onSelectChange(p.id, selected, shiftKey)
-              } />
-          ))}
-        </div>
+          {maybeRenderPerformerExportDialog(selectedIds)}
+          <div className="row justify-content-center">
+            {result.data.findPerformers.performers.map((p) => (
+              <PerformerCard
+                key={p.id}
+                performer={p}
+                selecting={selectedIds.size > 0}
+                selected={selectedIds.has(p.id)}
+                onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
+                  listData.onSelectChange(p.id, selected, shiftKey)
+                }
+              />
+            ))}
+          </div>
         </>
       );
     }

@@ -7,14 +7,17 @@ import { showWhenSelected, useTagsList } from "src/hooks/ListHook";
 import { Button } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { mutateMetadataAutoTag, useTagDestroy } from "src/core/StashService";
+import {
+  queryFindTags,
+  mutateMetadataAutoTag,
+  useTagDestroy,
+} from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { FormattedNumber } from "react-intl";
 import { NavUtils } from "src/utils";
 import { Icon, Modal } from "src/components/Shared";
 import { TagCard } from "./TagCard";
 import { ExportDialog } from "../Shared/ExportDialog";
-import { queryFindTags } from "src/core/StashService";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -168,9 +171,9 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
       return (
         <div className="row px-xl-5 justify-content-center">
           {result.data.findTags.tags.map((tag) => (
-            <TagCard 
-              key={tag.id} 
-              tag={tag} 
+            <TagCard
+              key={tag.id}
+              tag={tag}
               zoomIndex={zoomIndex}
               selecting={selectedIds.size > 0}
               selected={selectedIds.has(tag.id)}

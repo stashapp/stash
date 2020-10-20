@@ -1,4 +1,4 @@
-import { Card, Button, ButtonGroup, Form } from "react-bootstrap";
+import { Button, ButtonGroup } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -143,37 +143,37 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       className={`gallery-card zoom-${props.zoomIndex}`}
       url={`/galleries/${props.gallery.id}`}
       linkClassName="gallery-card-header"
-      image={(
+      image={
         <>
-        {props.gallery.cover ? (
-          <img
-            className="gallery-card-image"
-            alt={props.gallery.title ?? ""}
-            src={`${props.gallery.cover.paths.thumbnail}`}
-          />
-        ) : undefined}
-        {maybeRenderRatingBanner()}
+          {props.gallery.cover ? (
+            <img
+              className="gallery-card-image"
+              alt={props.gallery.title ?? ""}
+              src={`${props.gallery.cover.paths.thumbnail}`}
+            />
+          ) : undefined}
+          {maybeRenderRatingBanner()}
         </>
-      )}
+      }
       overlays={maybeRenderSceneStudioOverlay()}
-      details={(
+      details={
         <>
-        <Link to={`/galleries/${props.gallery.id}`}>
-           <h5 className="card-section-title">
-             {props.gallery.title ?? props.gallery.path}
-           </h5>
-         </Link>
-         <span>
-           {props.gallery.images.length}&nbsp;
-           <FormattedPlural
-             value={props.gallery.images.length ?? 0}
-             one="image"
-             other="images"
-           />
-           .
-         </span>
+          <Link to={`/galleries/${props.gallery.id}`}>
+            <h5 className="card-section-title">
+              {props.gallery.title ?? props.gallery.path}
+            </h5>
+          </Link>
+          <span>
+            {props.gallery.images.length}&nbsp;
+            <FormattedPlural
+              value={props.gallery.images.length ?? 0}
+              one="image"
+              other="images"
+            />
+            .
+          </span>
         </>
-      )}
+      }
       popovers={maybeRenderPopoverButtonGroup()}
       selected={props.selected}
       selecting={props.selecting}

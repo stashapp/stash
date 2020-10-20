@@ -1,4 +1,4 @@
-import { Card, Button, ButtonGroup } from "react-bootstrap";
+import { Button, ButtonGroup } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
@@ -14,8 +14,8 @@ interface IProps {
   onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
-export const TagCard: React.FC<IProps> = ({ 
-  tag, 
+export const TagCard: React.FC<IProps> = ({
+  tag,
   zoomIndex,
   selecting,
   selected,
@@ -66,16 +66,14 @@ export const TagCard: React.FC<IProps> = ({
       className={`tag-card zoom-${zoomIndex}`}
       url={`/tags/${tag.id}`}
       linkClassName="tag-card-header"
-      image={(
+      image={
         <img
           className="tag-card-image"
           alt={tag.name}
           src={tag.image_path ?? ""}
         />
-      )}
-      details={(
-        <h5 className="text-truncate">{tag.name}</h5>
-      )}
+      }
+      details={<h5 className="text-truncate">{tag.name}</h5>}
       popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}
       selecting={selecting}

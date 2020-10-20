@@ -1,7 +1,5 @@
-import { Card, Form } from "react-bootstrap";
 import React, { FunctionComponent } from "react";
 import { FormattedPlural } from "react-intl";
-import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { BasicCard } from "../Shared/BasicCard";
 
@@ -51,22 +49,22 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
       className="movie-card"
       url={`/movies/${props.movie.id}`}
       linkClassName="movie-card-header"
-      image={(
+      image={
         <>
-        <img
-          className="movie-card-image"
-          alt={props.movie.name ?? ""}
-          src={props.movie.front_image_path ?? ""}
-        />
-        {maybeRenderRatingBanner()}
+          <img
+            className="movie-card-image"
+            alt={props.movie.name ?? ""}
+            src={props.movie.front_image_path ?? ""}
+          />
+          {maybeRenderRatingBanner()}
         </>
-      )}
-      details={(
+      }
+      details={
         <>
-        <h5 className="text-truncate">{props.movie.name}</h5>
-        {maybeRenderSceneNumber()}
+          <h5 className="text-truncate">{props.movie.name}</h5>
+          {maybeRenderSceneNumber()}
         </>
-      )}
+      }
       selected={props.selected}
       selecting={props.selecting}
       onSelectedChanged={props.onSelectedChanged}
