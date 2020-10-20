@@ -4,15 +4,15 @@ import { mutateExportObjects } from "src/core/StashService";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { downloadFile } from "src/utils";
+import { ExportObjectsInput } from "src/core/generated-graphql";
 
-interface IMovieExportDialogProps {
-  selectedIds?: string[];
-  all?: boolean;
+interface IExportDialogProps {
+  exportInput: ExportObjectsInput
   onClose: () => void;
 }
 
-export const MovieExportDialog: React.FC<IMovieExportDialogProps> = (
-  props: IMovieExportDialogProps
+export const ExportDialog: React.FC<IExportDialogProps> = (
+  props: IExportDialogProps
 ) => {
   const [includeDependencies, setIncludeDependencies] = useState(true);
 
@@ -25,11 +25,8 @@ export const MovieExportDialog: React.FC<IMovieExportDialogProps> = (
     try {
       setIsRunning(true);
       const ret = await mutateExportObjects({
-        movies: {
-          ids: props.selectedIds,
-          all: props.all,
-        },
-        includeDependencies,
+          ...props.exportInput,
+          includeDependencies,
       });
 
       // download the result
@@ -63,7 +60,7 @@ export const MovieExportDialog: React.FC<IMovieExportDialogProps> = (
           <Form.Check
             id="include-dependencies"
             checked={includeDependencies}
-            label="Include related studio in export"
+            label="Include related objects in export"
             onChange={() => setIncludeDependencies(!includeDependencies)}
           />
         </Form.Group>

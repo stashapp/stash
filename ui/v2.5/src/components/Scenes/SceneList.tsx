@@ -16,7 +16,7 @@ import { SceneListTable } from "./SceneListTable";
 import { EditScenesDialog } from "./EditScenesDialog";
 import { DeleteScenesDialog } from "./DeleteScenesDialog";
 import { SceneGenerateDialog } from "./SceneGenerateDialog";
-import { SceneExportDialog } from "./SceneExportDialog";
+import { ExportDialog } from "../Shared/ExportDialog";
 
 interface ISceneList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -137,9 +137,13 @@ export const SceneList: React.FC<ISceneList> = ({
     if (isExportDialogOpen) {
       return (
         <>
-          <SceneExportDialog
-            selectedIds={Array.from(selectedIds.values())}
-            all={isExportAll}
+          <ExportDialog
+            exportInput={{
+              scenes: {
+                ids: Array.from(selectedIds.values()),
+                all: isExportAll,
+              },
+            }}
             onClose={() => {
               setIsExportDialogOpen(false);
             }}

@@ -7,7 +7,7 @@ import { queryFindMovies } from "src/core/StashService";
 import { showWhenSelected, useMoviesList } from "src/hooks/ListHook";
 import { MovieCard } from "./MovieCard";
 import { useHistory } from "react-router-dom";
-import { MovieExportDialog } from "./MovieExportDialog";
+import { ExportDialog } from "../Shared/ExportDialog";
 
 export const MovieList: React.FC = () => {
   const history = useHistory();
@@ -91,9 +91,13 @@ export const MovieList: React.FC = () => {
     if (isExportDialogOpen) {
       return (
         <>
-          <MovieExportDialog
-            selectedIds={Array.from(selectedIds.values())}
-            all={isExportAll}
+          <ExportDialog
+            exportInput={{
+              movies: {
+                ids: Array.from(selectedIds.values()),
+                all: isExportAll,
+              },
+            }}
             onClose={() => {
               setIsExportDialogOpen(false);
             }}
