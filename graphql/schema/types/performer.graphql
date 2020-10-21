@@ -34,7 +34,7 @@ type Performer {
 }
 
 input PerformerCreateInput {
-  name: String
+  name: String!
   url: String
   gender: GenderEnum
   birthdate: String
