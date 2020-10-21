@@ -148,7 +148,11 @@ func (s *jsonScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mod
 	}
 
 	// construct the URL
-	url := constructSceneURL(s.scraper.QueryURL, storedScene)
+	queryURL := queryURLParametersFromScene(storedScene)
+	if s.scraper.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	}
+	url := queryURL.constructURL(s.scraper.QueryURL)
 
 	scraper := s.getJsonScraper()
 
@@ -176,7 +180,12 @@ func (s *jsonScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput)
 		return nil, errors.New("no scene found")
 	}
 
-	url := constructGalleryURL(s.scraper.QueryURL, storedGallery)
+	// construct the URL
+	queryURL := queryURLParametersFromGallery(storedGallery)
+	if s.scraper.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	}
+	url := queryURL.constructURL(s.scraper.QueryURL)
 
 	scraper := s.getJsonScraper()
 
