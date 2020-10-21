@@ -66,6 +66,8 @@ input SceneMarkerFilterType {
 }
 
 input SceneFilterType {
+  """Filter by path"""
+  path: StringCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
   """Filter by o-counter"""
@@ -107,8 +109,24 @@ input StudioFilterType {
 }
 
 input GalleryFilterType {
+  """Filter by path"""
+  path: StringCriterionInput
   """Filter to only include galleries missing this property"""
   is_missing: String
+  """Filter to include/exclude galleries that were created from zip"""
+  is_zip: Boolean
+  """Filter by rating"""
+  rating: IntCriterionInput
+  """Filter by average image resolution"""
+  average_resolution: ResolutionEnum
+  """Filter to only include scenes with this studio"""
+  studios: MultiCriterionInput
+  """Filter to only include scenes with these tags"""
+  tags: MultiCriterionInput
+  """Filter to only include scenes with these performers"""
+  performers: MultiCriterionInput
+  """Filter by number of images in this gallery"""
+  image_count: IntCriterionInput
 }
 
 input TagFilterType {
@@ -120,6 +138,27 @@ input TagFilterType {
 
   """Filter by number of markers with this tag"""
   marker_count: IntCriterionInput
+}
+
+input ImageFilterType {
+  """Filter by path"""
+  path: StringCriterionInput
+  """Filter by rating"""
+  rating: IntCriterionInput
+  """Filter by o-counter"""
+  o_counter: IntCriterionInput
+  """Filter by resolution"""
+  resolution: ResolutionEnum
+  """Filter to only include images missing this property"""
+  is_missing: String
+  """Filter to only include images with this studio"""
+  studios: MultiCriterionInput
+  """Filter to only include images with these tags"""
+  tags: MultiCriterionInput
+  """Filter to only include images with these performers"""
+  performers: MultiCriterionInput
+  """Filter to only include images with these galleries"""
+  galleries: MultiCriterionInput
 }
 
 enum CriterionModifier {

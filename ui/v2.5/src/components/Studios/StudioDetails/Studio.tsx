@@ -1,6 +1,6 @@
 import { Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, Link } from "react-router-dom";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
@@ -20,6 +20,7 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { StudioScenesPanel } from "./StudioScenesPanel";
+import { StudioImagesPanel } from "./StudioImagesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
 
 interface IStudioParams {
@@ -230,13 +231,36 @@ export const Studio: React.FC = () => {
     );
   }
 
-  const activeTabKey = tab === "childstudios" ? tab : "scenes";
+  const activeTabKey =
+    tab === "childstudios" || tab === "images" ? tab : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
       history.replace(`/studios/${id}${tabParam}`);
     }
   };
+
+  function renderStudio() {
+    if (isEditing || !parentStudioId) {
+      return (
+        <StudioSelect
+          onSelect={(items) =>
+            setParentStudioId(items.length > 0 ? items[0]?.id : undefined)
+          }
+          ids={parentStudioId ? [parentStudioId] : []}
+          isDisabled={!isEditing}
+        />
+      );
+    }
+
+    if (studio.parent_studio) {
+      return (
+        <Link to={`/studios/${studio.parent_studio.id}`}>
+          {studio.parent_studio.name}
+        </Link>
+      );
+    }
+  }
 
   return (
     <div className="row">
@@ -272,17 +296,7 @@ export const Studio: React.FC = () => {
             })}
             <tr>
               <td>Parent Studio</td>
-              <td>
-                <StudioSelect
-                  onSelect={(items) =>
-                    setParentStudioId(
-                      items.length > 0 ? items[0]?.id : undefined
-                    )
-                  }
-                  ids={parentStudioId ? [parentStudioId] : []}
-                  isDisabled={!isEditing}
-                />
-              </td>
+              <td>{renderStudio()}</td>
             </tr>
             {!isEditing && renderStashIDs()}
           </tbody>
@@ -313,6 +327,9 @@ export const Studio: React.FC = () => {
           >
             <Tab eventKey="scenes" title="Scenes">
               <StudioScenesPanel studio={studio} />
+            </Tab>
+            <Tab eventKey="images" title="Images">
+              <StudioImagesPanel studio={studio} />
             </Tab>
             <Tab eventKey="childstudios" title="Child Studios">
               <StudioChildrenPanel studio={studio} />

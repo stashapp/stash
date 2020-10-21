@@ -88,6 +88,16 @@ func (s *jsonScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error)
 	return scraper.scrapeScene(q)
 }
 
+func (s *jsonScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, error) {
+	doc, scraper, err := s.scrapeURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getJsonQuery(doc)
+	return scraper.scrapeGallery(q)
+}
+
 func (s *jsonScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
 	doc, scraper, err := s.scrapeURL(url)
 	if err != nil {
@@ -154,6 +164,34 @@ func (s *jsonScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mod
 
 	q := s.getJsonQuery(doc)
 	return scraper.scrapeScene(q)
+}
+
+func (s *jsonScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
+	storedGallery, err := galleryFromUpdateFragment(gallery)
+	if err != nil {
+		return nil, err
+	}
+
+	if storedGallery == nil {
+		return nil, errors.New("no scene found")
+	}
+
+	url := constructGalleryURL(s.scraper.QueryURL, storedGallery)
+
+	scraper := s.getJsonScraper()
+
+	if scraper == nil {
+		return nil, errors.New("json scraper with name " + s.scraper.Scraper + " not found in config")
+	}
+
+	doc, err := s.loadURL(url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	q := s.getJsonQuery(doc)
+	return scraper.scrapeGallery(q)
 }
 
 func (s *jsonScraper) getJsonQuery(doc string) *jsonQuery {

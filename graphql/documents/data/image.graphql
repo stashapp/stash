@@ -1,0 +1,35 @@
+fragment ImageData on Image {
+  id
+  checksum
+  title
+  rating
+  o_counter
+  path
+
+  file {
+    size
+    width
+    height
+  }
+
+  paths {
+    thumbnail
+    image
+  }
+
+  galleries {
+    ...GalleryData
+  }
+
+  studio {
+    ...StudioData
+  }
+  
+  tags {
+    ...TagData
+  }
+
+  performers {
+    ...PerformerData
+  }
+}

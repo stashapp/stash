@@ -4,6 +4,7 @@
 @import "src/components/Changelog/styles.scss";
 @import "src/components/Galleries/styles.scss";
 @import "src/components/Help/styles.scss";
+@import "src/components/Images/styles.scss";
 @import "src/components/List/styles.scss";
 @import "src/components/Movies/styles.scss";
 @import "src/components/Performers/styles.scss";
@@ -132,7 +133,8 @@ textarea.text-input {
     }
 
     .gallery-card-image,
-    .tag-card-image {
+    .tag-card-image,
+    .image-card-preview {
       max-height: 240px;
     }
   }
@@ -149,7 +151,8 @@ textarea.text-input {
     }
 
     .gallery-card-image,
-    .tag-card-image {
+    .tag-card-image,
+    .image-card-preview {
       max-height: 360px;
     }
   }
@@ -166,7 +169,8 @@ textarea.text-input {
     }
 
     .tag-card-image,
-    .gallery-card-image {
+    .gallery-card-image,
+    .image-card-preview {
       max-height: 480px;
     }
   }
@@ -174,7 +178,8 @@ textarea.text-input {
 
 .scene-card-preview,
 .gallery-card-image,
-.tag-card-image {
+.tag-card-image,
+.image-card-preview {
   height: auto;
   width: 100%;
 }

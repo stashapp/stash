@@ -9,13 +9,19 @@ import {
   usePerformerCreate,
   usePerformerDestroy,
 } from "src/core/StashService";
-import { CountryFlag, Icon, LoadingIndicator } from "src/components/Shared";
+import {
+  CountryFlag,
+  ErrorMessage,
+  Icon,
+  LoadingIndicator,
+} from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import FsLightbox from "fslightbox-react";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
+import { PerformerImagesPanel } from "./PerformerImagesPanel";
 
 interface IPerformerParams {
   id?: string;
@@ -29,12 +35,11 @@ export const Performer: React.FC = () => {
   const isNew = id === "new";
 
   // Performer state
-  const [performer, setPerformer] = useState<
-    Partial<GQL.PerformerDataFragment>
-  >({});
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
   const [lightboxToggle, setLightboxToggle] = useState(false);
+  const { data, loading: performerLoading, error } = useFindPerformer(id);
+  const performer = data?.findPerformer || ({} as Partial<GQL.Performer>);
 
   // if undefined then get the existing image
   // if null then get the default (no) image
@@ -45,15 +50,18 @@ export const Performer: React.FC = () => {
       : imagePreview ?? `${performer.image_path}?default=true`;
 
   // Network state
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setIsLoading] = useState(false);
+  const isLoading = performerLoading || loading;
 
-  const { data, error } = useFindPerformer(id);
   const [updatePerformer] = usePerformerUpdate();
   const [createPerformer] = usePerformerCreate();
   const [deletePerformer] = usePerformerDestroy();
 
   const activeTabKey =
-    tab === "scenes" || tab === "edit" || tab === "operations"
+    tab === "scenes" ||
+    tab === "images" ||
+    tab === "edit" ||
+    tab === "operations"
       ? tab
       : "details";
   const setActiveTabKey = (newTab: string | null) => {
@@ -62,11 +70,6 @@ export const Performer: React.FC = () => {
       history.replace(`/performers/${id}${tabParam}`);
     }
   };
-
-  useEffect(() => {
-    setIsLoading(false);
-    if (data?.findPerformer) setPerformer(data.findPerformer);
-  }, [data]);
 
   const onImageChange = (image?: string | null) => setImagePreview(image);
 
@@ -89,10 +92,10 @@ export const Performer: React.FC = () => {
     };
   });
 
-  if ((!isNew && (!data || !data.findPerformer)) || isLoading)
-    return <LoadingIndicator />;
-
-  if (error) return <div>{error.message}</div>;
+  if (isLoading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+  if (!performer.id && !isNew)
+    return <ErrorMessage error={`No performer found with id ${id}.`} />;
 
   async function onSave(
     performerInput:
@@ -102,21 +105,18 @@ export const Performer: React.FC = () => {
     setIsLoading(true);
     try {
       if (!isNew) {
-        const result = await updatePerformer({
+        await updatePerformer({
           variables: performerInput as GQL.PerformerUpdateInput,
         });
         if (performerInput.image) {
           // Refetch image to bust browser cache
-          await fetch(`/performer/${performer.id}/image`, { cache: "reload" });
+          await fetch(`/performer/${id}/image`, { cache: "reload" });
         }
-        if (result.data?.performerUpdate)
-          setPerformer(result.data?.performerUpdate);
       } else {
         const result = await createPerformer({
           variables: performerInput as GQL.PerformerCreateInput,
         });
         if (result.data?.performerCreate) {
-          setPerformer(result.data.performerCreate);
           history.push(`/performers/${result.data.performerCreate.id}`);
         }
       }
@@ -155,6 +155,9 @@ export const Performer: React.FC = () => {
       </Tab>
       <Tab eventKey="scenes" title="Scenes">
         <PerformerScenesPanel performer={performer} />
+      </Tab>
+      <Tab eventKey="images" title="Images">
+        <PerformerImagesPanel performer={performer} />
       </Tab>
       <Tab eventKey="edit" title="Edit">
         <PerformerDetailsPanel
@@ -199,8 +202,7 @@ export const Performer: React.FC = () => {
   }
 
   function setFavorite(v: boolean) {
-    performer.favorite = v;
-    onSave(performer);
+    onSave({ ...performer, favorite: v });
   }
 
   const renderIcons = () => (
@@ -294,7 +296,7 @@ export const Performer: React.FC = () => {
 
   return (
     <div id="performer-page" className="row">
-      <div className="image-container col-md-4 text-center">
+      <div className="performer-image-container col-md-4 text-center">
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (

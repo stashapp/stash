@@ -31,7 +31,9 @@
     "@fortawesome/free-regular-svg-icons": "^5.14.0",
     "@fortawesome/free-solid-svg-icons": "^5.14.0",
     "@fortawesome/react-fontawesome": "^0.1.11",
+    "@types/apollo-upload-client": "^14.1.0",
     "@types/mousetrap": "^1.6.3",
+    "apollo-upload-client": "^14.1.2",
     "axios": "0.20.0",
     "base64-blob": "^1.4.1",
     "bootstrap": "^4.5.2",
@@ -60,6 +62,7 @@
     "react-router-dom": "^5.2.0",
     "react-router-hash-link": "^2.1.0",
     "react-select": "^3.1.0",
+    "string.prototype.replaceall": "^1.0.3",
     "subscriptions-transport-ws": "^0.9.18",
     "universal-cookie": "^4.0.3"
   },

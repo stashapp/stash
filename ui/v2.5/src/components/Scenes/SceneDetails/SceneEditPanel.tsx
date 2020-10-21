@@ -36,7 +36,6 @@ import { SceneScrapeDialog } from "./SceneScrapeDialog";
 interface IProps {
   scene: GQL.SceneDataFragment;
   isVisible: boolean;
-  onUpdate: (scene: GQL.SceneDataFragment) => void;
   onDelete: () => void;
 }
 
@@ -232,7 +231,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     try {
       const result = await updateScene();
       if (result.data?.sceneUpdate) {
-        props.onUpdate(result.data.sceneUpdate);
         Toast.success({ content: "Updated scene" });
       }
     } catch (e) {

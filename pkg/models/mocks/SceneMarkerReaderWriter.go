@@ -12,6 +12,29 @@ type SceneMarkerReaderWriter struct {
 	mock.Mock
 }
 
+// Create provides a mock function with given fields: newSceneMarker
+func (_m *SceneMarkerReaderWriter) Create(newSceneMarker models.SceneMarker) (*models.SceneMarker, error) {
+	ret := _m.Called(newSceneMarker)
+
+	var r0 *models.SceneMarker
+	if rf, ok := ret.Get(0).(func(models.SceneMarker) *models.SceneMarker); ok {
+		r0 = rf(newSceneMarker)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.SceneMarker)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.SceneMarker) error); ok {
+		r1 = rf(newSceneMarker)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindBySceneID provides a mock function with given fields: sceneID
 func (_m *SceneMarkerReaderWriter) FindBySceneID(sceneID int) ([]*models.SceneMarker, error) {
 	ret := _m.Called(sceneID)
@@ -28,6 +51,29 @@ func (_m *SceneMarkerReaderWriter) FindBySceneID(sceneID int) ([]*models.SceneMa
 	var r1 error
 	if rf, ok := ret.Get(1).(func(int) error); ok {
 		r1 = rf(sceneID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Update provides a mock function with given fields: updatedSceneMarker
+func (_m *SceneMarkerReaderWriter) Update(updatedSceneMarker models.SceneMarker) (*models.SceneMarker, error) {
+	ret := _m.Called(updatedSceneMarker)
+
+	var r0 *models.SceneMarker
+	if rf, ok := ret.Get(0).(func(models.SceneMarker) *models.SceneMarker); ok {
+		r0 = rf(updatedSceneMarker)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.SceneMarker)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.SceneMarker) error); ok {
+		r1 = rf(updatedSceneMarker)
 	} else {
 		r1 = ret.Error(1)
 	}

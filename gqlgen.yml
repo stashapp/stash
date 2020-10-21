@@ -16,6 +16,10 @@ struct_tag: gqlgen
 models:
   Gallery:
     model: github.com/stashapp/stash/pkg/models.Gallery
+  Image:
+    model: github.com/stashapp/stash/pkg/models.Image
+  ImageFileType:
+    model: github.com/stashapp/stash/pkg/models.ImageFileType
   Performer:
     model: github.com/stashapp/stash/pkg/models.Performer
   Scene:

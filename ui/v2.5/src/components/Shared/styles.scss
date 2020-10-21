@@ -92,7 +92,7 @@
 
     .btn-link {
       border: none;
-      color: black;
+      color: white;
       font-weight: 400;
       padding: 0;
     }
@@ -138,4 +138,14 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
 .hover-popover-content {
   max-width: 32rem;
   text-align: center;
+}
+
+.ErrorMessage {
+  align-items: center;
+  height: 20rem;
+  justify-content: center;
+
+  &-content {
+    display: inline-block;
+  }
 }
