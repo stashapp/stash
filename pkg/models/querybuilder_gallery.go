@@ -68,6 +68,19 @@ func (qb *GalleryQueryBuilder) UpdatePartial(updatedGallery GalleryPartial, tx *
 	return qb.Find(updatedGallery.ID, tx)
 }
 
+func (qb *GalleryQueryBuilder) UpdateChecksum(id int, checksum string, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE galleries SET checksum = ? WHERE scenes.id = ? `,
+		checksum, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (qb *GalleryQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
 	return executeDeleteQuery("galleries", strconv.Itoa(id), tx)
 }

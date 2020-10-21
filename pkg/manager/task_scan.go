@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"context"
 	"database/sql"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -50,6 +51,47 @@ func (t *ScanTask) scanGallery() {
 	if gallery != nil {
 		// We already have this item in the database, keep going
 
+		// if the mod time of the zip file is newer than that of the associated
+		// gallery, then recalculate the checksum
+		modified, err := t.isFileModified(gallery.UpdatedAt)
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+
+		if modified {
+			logger.Infof("file modification time of %s is later than the gallery modification time, rescanning", t.FilePath)
+
+			// update the checksum and the modification time
+			checksum, err := t.calculateChecksum()
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+
+			currentTime := time.Now()
+			galleryPartial := models.GalleryPartial{
+				ID:        gallery.ID,
+				Checksum:  &checksum,
+				UpdatedAt: &models.SQLiteTimestamp{Timestamp: currentTime},
+			}
+
+			ctx := context.TODO()
+			tx := database.DB.MustBeginTx(ctx, nil)
+			_, err = qb.UpdatePartial(galleryPartial, tx)
+			if err != nil {
+				tx.Rollback()
+				logger.Error(err.Error())
+				return
+			}
+
+			err = tx.Commit()
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
 		// scan the zip files if the gallery has no images
 		iqb := models.NewImageQueryBuilder()
 		images, err := iqb.CountByGalleryID(gallery.ID)
@@ -57,7 +99,7 @@ func (t *ScanTask) scanGallery() {
 			logger.Errorf("error getting images for zip gallery %s: %s", t.FilePath, err.Error())
 		}
 
-		if images == 0 {
+		if images == 0 || modified {
 			t.scanZipImages(gallery)
 		} else {
 			// in case thumbnails have been deleted, regenerate them
@@ -85,7 +127,6 @@ func (t *ScanTask) scanGallery() {
 		if exists {
 			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, gallery.Path.String)
 		} else {
-
 			logger.Infof("%s already exists.  Updating path...", t.FilePath)
 			gallery.Path = sql.NullString{
 				String: t.FilePath,
@@ -136,6 +177,15 @@ func (t *ScanTask) scanGallery() {
 	if gallery != nil {
 		t.scanZipImages(gallery)
 	}
+}
+
+func (t *ScanTask) isFileModified(updatedAt models.SQLiteTimestamp) (bool, error) {
+	fi, err := os.Stat(t.FilePath)
+	if err != nil {
+		return false, fmt.Errorf("error performing stat on %s: %s", t.FilePath, err.Error())
+	}
+
+	return updatedAt.Timestamp.Before(fi.ModTime()), nil
 }
 
 // associates a gallery to a scene with the same basename
