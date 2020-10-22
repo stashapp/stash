@@ -6,6 +6,14 @@ mutation MetadataExport {
   metadataExport
 }
 
+mutation ExportObjects($input: ExportObjectsInput!) {
+  exportObjects(input: $input)
+}
+
+mutation ImportObjects($input: ImportObjectsInput!) {
+  importObjects(input: $input)
+}
+
 mutation MetadataScan($input: ScanMetadataInput!) {
   metadataScan(input: $input)
 }

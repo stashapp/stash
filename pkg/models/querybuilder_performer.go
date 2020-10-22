@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -76,12 +77,48 @@ func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
 	return results[0], nil
 }
 
+func (qb *PerformerQueryBuilder) FindMany(ids []int) ([]*Performer, error) {
+	var performers []*Performer
+	for _, id := range ids {
+		performer, err := qb.Find(id)
+		if err != nil {
+			return nil, err
+		}
+
+		if performer == nil {
+			return nil, fmt.Errorf("performer with id %d not found", id)
+		}
+
+		performers = append(performers, performer)
+	}
+
+	return performers, nil
+}
+
 func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {
 	query := selectAll("performers") + `
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		WHERE scenes_join.scene_id = ?
 	`
 	args := []interface{}{sceneID}
+	return qb.queryPerformers(query, args, tx)
+}
+
+func (qb *PerformerQueryBuilder) FindByImageID(imageID int, tx *sqlx.Tx) ([]*Performer, error) {
+	query := selectAll("performers") + `
+		LEFT JOIN performers_images as images_join on images_join.performer_id = performers.id
+		WHERE images_join.image_id = ?
+	`
+	args := []interface{}{imageID}
+	return qb.queryPerformers(query, args, tx)
+}
+
+func (qb *PerformerQueryBuilder) FindByGalleryID(galleryID int, tx *sqlx.Tx) ([]*Performer, error) {
+	query := selectAll("performers") + `
+		LEFT JOIN performers_galleries as galleries_join on galleries_join.performer_id = performers.id
+		WHERE galleries_join.gallery_id = ?
+	`
+	args := []interface{}{galleryID}
 	return qb.queryPerformers(query, args, tx)
 }
 
@@ -183,22 +220,22 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 			`
 			query.addWhere("performers_image.performer_id IS NULL")
 		default:
-			query.addWhere("performers." + *isMissingFilter + " IS NULL")
+			query.addWhere("performers." + *isMissingFilter + " IS NULL OR TRIM(performers." + *isMissingFilter + ") = ''")
 		}
 	}
 
-	handleStringCriterion(tableName+".ethnicity", performerFilter.Ethnicity, &query)
-	handleStringCriterion(tableName+".country", performerFilter.Country, &query)
-	handleStringCriterion(tableName+".eye_color", performerFilter.EyeColor, &query)
-	handleStringCriterion(tableName+".height", performerFilter.Height, &query)
-	handleStringCriterion(tableName+".measurements", performerFilter.Measurements, &query)
-	handleStringCriterion(tableName+".fake_tits", performerFilter.FakeTits, &query)
-	handleStringCriterion(tableName+".career_length", performerFilter.CareerLength, &query)
-	handleStringCriterion(tableName+".tattoos", performerFilter.Tattoos, &query)
-	handleStringCriterion(tableName+".piercings", performerFilter.Piercings, &query)
+	query.handleStringCriterionInput(performerFilter.Ethnicity, tableName+".ethnicity")
+	query.handleStringCriterionInput(performerFilter.Country, tableName+".country")
+	query.handleStringCriterionInput(performerFilter.EyeColor, tableName+".eye_color")
+	query.handleStringCriterionInput(performerFilter.Height, tableName+".height")
+	query.handleStringCriterionInput(performerFilter.Measurements, tableName+".measurements")
+	query.handleStringCriterionInput(performerFilter.FakeTits, tableName+".fake_tits")
+	query.handleStringCriterionInput(performerFilter.CareerLength, tableName+".career_length")
+	query.handleStringCriterionInput(performerFilter.Tattoos, tableName+".tattoos")
+	query.handleStringCriterionInput(performerFilter.Piercings, tableName+".piercings")
 
 	// TODO - need better handling of aliases
-	handleStringCriterion(tableName+".aliases", performerFilter.Aliases, &query)
+	query.handleStringCriterionInput(performerFilter.Aliases, tableName+".aliases")
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := query.executeFind()
@@ -210,27 +247,6 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	}
 
 	return performers, countResult
-}
-
-func handleStringCriterion(column string, value *StringCriterionInput, query *queryBuilder) {
-	if value != nil {
-		if modifier := value.Modifier.String(); value.Modifier.IsValid() {
-			switch modifier {
-			case "EQUALS":
-				clause, thisArgs := getSearchBinding([]string{column}, value.Value, false)
-				query.addWhere(clause)
-				query.addArg(thisArgs...)
-			case "NOT_EQUALS":
-				clause, thisArgs := getSearchBinding([]string{column}, value.Value, true)
-				query.addWhere(clause)
-				query.addArg(thisArgs...)
-			case "IS_NULL":
-				query.addWhere(column + " IS NULL")
-			case "NOT_NULL":
-				query.addWhere(column + " IS NOT NULL")
-			}
-		}
-	}
 }
 
 func getBirthYearFilterClause(criterionModifier CriterionModifier, value int) ([]string, []interface{}) {

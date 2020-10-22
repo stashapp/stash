@@ -39,14 +39,24 @@ func GetPaths(configDirectory string) (string, string) {
 }
 
 func Download(configDirectory string) error {
-	url := getFFMPEGURL()
+	for _, url := range getFFMPEGURL() {
+		err := DownloadSingle(configDirectory, url)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func DownloadSingle(configDirectory, url string) error {
 	if url == "" {
 		return fmt.Errorf("no ffmpeg url for this platform")
 	}
 
 	// Configure where we want to download the archive
 	urlExt := path.Ext(url)
-	archivePath := filepath.Join(configDirectory, "ffmpeg"+urlExt)
+	urlBase := path.Base(url)
+	archivePath := filepath.Join(configDirectory, urlBase)
 	_ = os.Remove(archivePath) // remove archive if it already exists
 	out, err := os.Create(archivePath)
 	if err != nil {
@@ -76,6 +86,22 @@ func Download(configDirectory string) error {
 		if err := unzip(archivePath, configDirectory); err != nil {
 			return err
 		}
+
+		// On OSX or Linux set downloaded files permissions
+		if runtime.GOOS == "darwin" || runtime.GOOS == "linux" {
+			if err := os.Chmod(filepath.Join(configDirectory, "ffmpeg"), 0755); err != nil {
+				return err
+			}
+
+			if err := os.Chmod(filepath.Join(configDirectory, "ffprobe"), 0755); err != nil {
+				return err
+			}
+
+			// TODO: In future possible clear xattr to allow running on osx without user intervention
+			// TODO: this however may not be required.
+			// xattr -c /path/to/binary -- xattr.Remove(path, "com.apple.quarantine")
+		}
+
 	} else {
 		return fmt.Errorf("ffmpeg was downloaded to %s", archivePath)
 	}
@@ -83,19 +109,21 @@ func Download(configDirectory string) error {
 	return nil
 }
 
-func getFFMPEGURL() string {
+func getFFMPEGURL() []string {
+	urls := []string{""}
 	switch runtime.GOOS {
 	case "darwin":
-		return "https://ffmpeg.zeranoe.com/builds/macos64/static/ffmpeg-4.1-macos64-static.zip"
+		urls = []string{"https://evermeet.cx/ffmpeg/ffmpeg-4.3.1.zip", "https://evermeet.cx/ffmpeg/ffprobe-4.3.1.zip"}
 	case "linux":
-		// TODO: untar this
-		//return "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz"
-		return ""
+		// TODO: get appropriate arch (arm,arm64,amd64) and xz untar from https://johnvansickle.com/ffmpeg/
+		//       or get the ffmpeg,ffprobe zip repackaged ones from  https://ffbinaries.com/downloads
+		urls = []string{""}
 	case "windows":
-		return "https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-4.1-win64-static.zip"
+		urls = []string{"https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"}
 	default:
-		return ""
+		urls = []string{""}
 	}
+	return urls
 }
 
 func getFFMPEGFilename() string {

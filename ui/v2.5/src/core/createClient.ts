@@ -1,11 +1,14 @@
-import ApolloClient from "apollo-client";
-import { InMemoryCache } from "apollo-cache-inmemory";
-import { WebSocketLink } from "apollo-link-ws";
-import { HttpLink } from "apollo-link-http";
-import { onError } from "apollo-link-error";
-import { ServerError } from "apollo-link-http-common";
-import { split, from } from "apollo-link";
-import { getMainDefinition } from "apollo-utilities";
+import {
+  ApolloClient,
+  InMemoryCache,
+  split,
+  from,
+  ServerError,
+} from "@apollo/client";
+import { WebSocketLink } from "@apollo/client/link/ws";
+import { onError } from "@apollo/client/link/error";
+import { getMainDefinition } from "@apollo/client/utilities";
+import { createUploadLink } from "apollo-upload-client";
 
 export const getPlatformURL = (ws?: boolean) => {
   const platformUrl = new URL(window.location.origin);
@@ -36,7 +39,7 @@ export const createClient = () => {
   const url = `${platformUrl.toString().slice(0, -1)}/graphql`;
   const wsUrl = `${wsPlatformUrl.toString().slice(0, -1)}/graphql`;
 
-  const httpLink = new HttpLink({
+  const httpLink = createUploadLink({
     uri: url,
   });
 
@@ -64,6 +67,7 @@ export const createClient = () => {
       );
     },
     wsLink,
+    // @ts-ignore
     httpLink
   );
 

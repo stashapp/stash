@@ -21,8 +21,8 @@ func NewGalleryQueryBuilder() GalleryQueryBuilder {
 func (qb *GalleryQueryBuilder) Create(newGallery Gallery, tx *sqlx.Tx) (*Gallery, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO galleries (path, checksum, scene_id, created_at, updated_at)
-				VALUES (:path, :checksum, :scene_id, :created_at, :updated_at)
+		`INSERT INTO galleries (path, checksum, zip, title, date, details, url, studio_id, rating, scene_id, created_at, updated_at)
+				VALUES (:path, :checksum, :zip, :title, :date, :details, :url, :studio_id, :rating, :scene_id, :created_at, :updated_at)
 		`,
 		newGallery,
 	)
@@ -55,6 +55,19 @@ func (qb *GalleryQueryBuilder) Update(updatedGallery Gallery, tx *sqlx.Tx) (*Gal
 	return &updatedGallery, nil
 }
 
+func (qb *GalleryQueryBuilder) UpdatePartial(updatedGallery GalleryPartial, tx *sqlx.Tx) (*Gallery, error) {
+	ensureTx(tx)
+	_, err := tx.NamedExec(
+		`UPDATE galleries SET `+SQLGenKeysPartial(updatedGallery)+` WHERE galleries.id = :id`,
+		updatedGallery,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return qb.Find(updatedGallery.ID, tx)
+}
+
 func (qb *GalleryQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
 	return executeDeleteQuery("galleries", strconv.Itoa(id), tx)
 }
@@ -77,16 +90,16 @@ func (qb *GalleryQueryBuilder) ClearGalleryId(sceneID int, tx *sqlx.Tx) error {
 	return err
 }
 
-func (qb *GalleryQueryBuilder) Find(id int) (*Gallery, error) {
+func (qb *GalleryQueryBuilder) Find(id int, tx *sqlx.Tx) (*Gallery, error) {
 	query := "SELECT * FROM galleries WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
-	return qb.queryGallery(query, args, nil)
+	return qb.queryGallery(query, args, tx)
 }
 
 func (qb *GalleryQueryBuilder) FindMany(ids []int) ([]*Gallery, error) {
 	var galleries []*Gallery
 	for _, id := range ids {
-		gallery, err := qb.Find(id)
+		gallery, err := qb.Find(id, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -125,6 +138,24 @@ func (qb *GalleryQueryBuilder) ValidGalleriesForScenePath(scenePath string) ([]*
 	return qb.queryGalleries(query, nil, nil)
 }
 
+func (qb *GalleryQueryBuilder) FindByImageID(imageID int, tx *sqlx.Tx) ([]*Gallery, error) {
+	query := selectAll(galleryTable) + `
+	LEFT JOIN galleries_images as images_join on images_join.gallery_id = galleries.id
+	WHERE images_join.image_id = ?
+	GROUP BY galleries.id
+	`
+	args := []interface{}{imageID}
+	return qb.queryGalleries(query, args, tx)
+}
+
+func (qb *GalleryQueryBuilder) CountByImageID(imageID int) (int, error) {
+	query := `SELECT image_id FROM galleries_images
+	WHERE image_id = ?
+	GROUP BY gallery_id`
+	args := []interface{}{imageID}
+	return runCountQuery(buildCountQuery(query), args)
+}
+
 func (qb *GalleryQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT galleries.id FROM galleries"), nil)
 }
@@ -146,6 +177,13 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 	}
 
 	query.body = selectDistinctIDs("galleries")
+	query.body += `
+		left join performers_galleries as performers_join on performers_join.gallery_id = galleries.id
+		left join studios as studio on studio.id = galleries.studio_id
+		left join galleries_tags as tags_join on tags_join.gallery_id = galleries.id
+		left join galleries_images as images_join on images_join.gallery_id = galleries.id
+		left join images on images_join.image_id = images.id
+	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"galleries.path", "galleries.checksum"}
@@ -154,11 +192,67 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 		query.addArg(thisArgs...)
 	}
 
+	if zipFilter := galleryFilter.IsZip; zipFilter != nil {
+		var favStr string
+		if *zipFilter == true {
+			favStr = "1"
+		} else {
+			favStr = "0"
+		}
+		query.addWhere("galleries.zip = " + favStr)
+	}
+
+	query.handleStringCriterionInput(galleryFilter.Path, "galleries.path")
+	query.handleIntCriterionInput(galleryFilter.Rating, "galleries.rating")
+	qb.handleAverageResolutionFilter(&query, galleryFilter.AverageResolution)
+
 	if isMissingFilter := galleryFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "scene":
 			query.addWhere("galleries.scene_id IS NULL")
+		case "studio":
+			query.addWhere("galleries.studio_id IS NULL")
+		case "performers":
+			query.addWhere("performers_join.gallery_id IS NULL")
+		case "date":
+			query.addWhere("galleries.date IS \"\" OR galleries.date IS \"0001-01-01\"")
+		case "tags":
+			query.addWhere("tags_join.gallery_id IS NULL")
+		default:
+			query.addWhere("galleries." + *isMissingFilter + " IS NULL")
 		}
+	}
+
+	if tagsFilter := galleryFilter.Tags; tagsFilter != nil && len(tagsFilter.Value) > 0 {
+		for _, tagID := range tagsFilter.Value {
+			query.addArg(tagID)
+		}
+
+		query.body += " LEFT JOIN tags on tags_join.tag_id = tags.id"
+		whereClause, havingClause := getMultiCriterionClause("galleries", "tags", "tags_join", "gallery_id", "tag_id", tagsFilter)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
+	}
+
+	if performersFilter := galleryFilter.Performers; performersFilter != nil && len(performersFilter.Value) > 0 {
+		for _, performerID := range performersFilter.Value {
+			query.addArg(performerID)
+		}
+
+		query.body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
+		whereClause, havingClause := getMultiCriterionClause("galleries", "performers", "performers_join", "gallery_id", "performer_id", performersFilter)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
+	}
+
+	if studiosFilter := galleryFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
+		for _, studioID := range studiosFilter.Value {
+			query.addArg(studioID)
+		}
+
+		whereClause, havingClause := getMultiCriterionClause("galleries", "studio", "", "", "studio_id", studiosFilter)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
 	}
 
 	query.sortAndPagination = qb.getGallerySort(findFilter) + getPagination(findFilter)
@@ -166,11 +260,53 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 
 	var galleries []*Gallery
 	for _, id := range idsResult {
-		gallery, _ := qb.Find(id)
+		gallery, _ := qb.Find(id, nil)
 		galleries = append(galleries, gallery)
 	}
 
 	return galleries, countResult
+}
+
+func (qb *GalleryQueryBuilder) handleAverageResolutionFilter(query *queryBuilder, resolutionFilter *ResolutionEnum) {
+	if resolutionFilter == nil {
+		return
+	}
+
+	if resolution := resolutionFilter.String(); resolutionFilter.IsValid() {
+		var low int
+		var high int
+
+		switch resolution {
+		case "LOW":
+			high = 480
+		case "STANDARD":
+			low = 480
+			high = 720
+		case "STANDARD_HD":
+			low = 720
+			high = 1080
+		case "FULL_HD":
+			low = 1080
+			high = 2160
+		case "FOUR_K":
+			low = 2160
+		}
+
+		havingClause := ""
+		if low != 0 {
+			havingClause = "avg(images.height) >= " + strconv.Itoa(low)
+		}
+		if high != 0 {
+			if havingClause != "" {
+				havingClause += " AND "
+			}
+			havingClause += "avg(images.height) < " + strconv.Itoa(high)
+		}
+
+		if havingClause != "" {
+			query.addHaving(havingClause)
+		}
+	}
 }
 
 func (qb *GalleryQueryBuilder) getGallerySort(findFilter *FindFilterType) string {

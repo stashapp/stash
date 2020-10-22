@@ -40,6 +40,7 @@ export const SceneMarkerList: React.FC<ISceneMarkerList> = ({ filterHook }) => {
     renderContent,
     filterHook,
     addKeybinds,
+    persistState: true,
   });
 
   async function playRandom(

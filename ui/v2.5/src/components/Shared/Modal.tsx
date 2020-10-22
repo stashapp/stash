@@ -17,6 +17,7 @@ interface IModal {
   cancel?: IButton;
   accept?: IButton;
   isRunning?: boolean;
+  disabled?: boolean;
   modalProps?: ModalProps;
 }
 
@@ -29,6 +30,7 @@ const ModalComponent: React.FC<IModal> = ({
   accept,
   onHide,
   isRunning,
+  disabled,
   modalProps,
 }) => (
   <Modal keyboard={false} onHide={onHide} show={show} {...modalProps}>
@@ -51,9 +53,10 @@ const ModalComponent: React.FC<IModal> = ({
           ""
         )}
         <Button
-          disabled={isRunning}
+          disabled={isRunning || disabled}
           variant={accept?.variant ?? "primary"}
           onClick={accept?.onClick}
+          className="ml-2"
         >
           {isRunning ? (
             <Spinner animation="border" role="status" size="sm" />

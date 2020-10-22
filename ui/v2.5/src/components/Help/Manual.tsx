@@ -13,7 +13,7 @@ import Contributing from "src/docs/en/Contributing.md";
 import SceneFilenameParser from "src/docs/en/SceneFilenameParser.md";
 import KeyboardShortcuts from "src/docs/en/KeyboardShortcuts.md";
 import Help from "src/docs/en/Help.md";
-import { Page } from "./Page";
+import { MarkdownPage } from "../Shared/MarkdownPage";
 
 interface IManualProps {
   show: boolean;
@@ -124,7 +124,7 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
         <Container className="manual-container">
           <Tab.Container
             activeKey={activeTab}
-            onSelect={(k) => setActiveTab(k)}
+            onSelect={(k) => k && setActiveTab(k)}
             id="manual-tabs"
           >
             <Row>
@@ -151,7 +151,7 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
                         key={`${c.key}-pane`}
                         onClick={interceptLinkClick}
                       >
-                        <Page page={c.content} />
+                        <MarkdownPage page={c.content} />
                       </Tab.Pane>
                     );
                   })}

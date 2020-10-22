@@ -1,5 +1,5 @@
 import React, { useState, CSSProperties } from "react";
-import Select, { ValueType } from "react-select";
+import Select, { ValueType, Props } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { debounce } from "lodash";
 
@@ -11,12 +11,14 @@ import {
   useAllPerformersForFilter,
   useMarkerStrings,
   useScrapePerformerList,
-  useValidGalleriesForScene,
   useTagCreate,
   useStudioCreate,
   usePerformerCreate,
+  useFindGalleries,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { FilterMode } from "src/models/list-filter/types";
 
 type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -90,12 +92,24 @@ const getSelectedValues = (selectedItems: ValueType<Option>) =>
     : [];
 
 export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
-  const { data, loading } = useValidGalleriesForScene(props.sceneId);
-  const galleries = data?.validGalleriesForScene ?? [];
-  const items = (galleries.length > 0
-    ? [{ path: "None", id: "0" }, ...galleries]
-    : []
-  ).map((g) => ({ label: g.path, value: g.id }));
+  const [query, setQuery] = React.useState<string>("");
+  const { data, loading } = useFindGalleries(getFilter());
+
+  const galleries = data?.findGalleries.galleries ?? [];
+  const items = galleries.map((g) => ({
+    label: g.title ?? g.path ?? "",
+    value: g.id,
+  }));
+
+  function getFilter() {
+    const ret = new ListFilterModel(FilterMode.Galleries);
+    ret.searchTerm = query;
+    return ret;
+  }
+
+  const onInputChange = debounce((input: string) => {
+    setQuery(input);
+  }, 500);
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedItem = getSelectedValues(selectedItems)[0];
@@ -110,8 +124,8 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
 
   return (
     <SelectComponent
-      className="input-control"
       onChange={onChange}
+      onInputChange={onInputChange}
       isLoading={loading}
       items={items}
       selectedOptions={selectedOptions}
@@ -388,15 +402,13 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
       ...base,
       color: "#000",
     }),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    container: (base: CSSProperties, state: any) => ({
+    container: (base: CSSProperties, props: Props) => ({
       ...base,
-      zIndex: state.isFocused ? 10 : base.zIndex,
+      zIndex: props.isFocused ? 10 : base.zIndex,
     }),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    multiValueRemove: (base: CSSProperties, state: any) => ({
+    multiValueRemove: (base: CSSProperties, props: Props) => ({
       ...base,
-      color: state.isFocused ? base.color : "#333333",
+      color: props.isFocused ? base.color : "#333333",
     }),
   };
 

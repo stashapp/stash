@@ -15,8 +15,8 @@ import (
 
 func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.ConfigGeneralInput) (*models.ConfigGeneralResult, error) {
 	if len(input.Stashes) > 0 {
-		for _, stashPath := range input.Stashes {
-			exists, err := utils.DirExists(stashPath)
+		for _, s := range input.Stashes {
+			exists, err := utils.DirExists(s.Path)
 			if !exists {
 				return makeConfigGeneralResult(), err
 			}
@@ -119,6 +119,24 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 		config.Set(config.Exclude, input.Excludes)
 	}
 
+	if input.ImageExcludes != nil {
+		config.Set(config.ImageExclude, input.ImageExcludes)
+	}
+
+	if input.VideoExtensions != nil {
+		config.Set(config.VideoExtensions, input.VideoExtensions)
+	}
+
+	if input.ImageExtensions != nil {
+		config.Set(config.ImageExtensions, input.ImageExtensions)
+	}
+
+	if input.GalleryExtensions != nil {
+		config.Set(config.GalleryExtensions, input.GalleryExtensions)
+	}
+
+	config.Set(config.CreateGalleriesFromFolders, input.CreateGalleriesFromFolders)
+
 	refreshScraperCache := false
 	if input.ScraperUserAgent != nil {
 		config.Set(config.ScraperUserAgent, input.ScraperUserAgent)
@@ -128,6 +146,13 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 	if input.ScraperCDPPath != nil {
 		config.Set(config.ScraperCDPPath, input.ScraperCDPPath)
 		refreshScraperCache = true
+	}
+
+	if input.StashBoxes != nil {
+		if err := config.ValidateStashBoxes(input.StashBoxes); err != nil {
+			return nil, err
+		}
+		config.Set(config.StashBoxes, input.StashBoxes)
 	}
 
 	if err := config.Write(); err != nil {

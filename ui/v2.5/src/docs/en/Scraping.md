@@ -216,14 +216,22 @@ For `sceneByFragment`, the `queryURL` field must also be present. This field is 
 * `{filename}` - the base filename of the scene
 * `{title}` - the title of the scene
 
+These placeholder field values may be manipulated with regex replacements by adding a `queryURLReplace` section, containing a map of placeholder field to regex configuration which uses the same format as the `replace` post-process action covered below.
+
 For example:
 
 ```
 sceneByFragment:
   action: scrapeJson
-  queryURL: https://metadataapi.net/api/scenes?parse={filename}&limit=1
   scraper: sceneQueryScraper
+  queryURL: https://metadataapi.net/api/scenes?parse={filename}&limit=1
+  queryURLReplace:
+    filename:
+      - regex: <some regex>
+        with: <replacement>
 ```
+
+The above configuration would scrape from the value of `queryURL`, replacing `{filename}` with the base filename of the scene, after it has been manipulated by the regex replacements.
 
 ### Xpath and JSON scrapers configuration
 

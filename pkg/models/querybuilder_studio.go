@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -52,6 +53,23 @@ func (qb *StudioQueryBuilder) Update(updatedStudio StudioPartial, tx *sqlx.Tx) (
 	return &ret, nil
 }
 
+func (qb *StudioQueryBuilder) UpdateFull(updatedStudio Studio, tx *sqlx.Tx) (*Studio, error) {
+	ensureTx(tx)
+	_, err := tx.NamedExec(
+		`UPDATE studios SET `+SQLGenKeys(updatedStudio)+` WHERE studios.id = :id`,
+		updatedStudio,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret Studio
+	if err := tx.Get(&ret, `SELECT * FROM studios WHERE id = ? LIMIT 1`, updatedStudio.ID); err != nil {
+		return nil, err
+	}
+	return &ret, nil
+}
+
 func (qb *StudioQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	// remove studio from scenes
 	_, err := tx.Exec("UPDATE scenes SET studio_id = null WHERE studio_id = ?", id)
@@ -72,6 +90,24 @@ func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*Studio, error) {
 	query := "SELECT * FROM studios WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryStudio(query, args, tx)
+}
+
+func (qb *StudioQueryBuilder) FindMany(ids []int) ([]*Studio, error) {
+	var studios []*Studio
+	for _, id := range ids {
+		studio, err := qb.Find(id, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if studio == nil {
+			return nil, fmt.Errorf("studio with id %d not found", id)
+		}
+
+		studios = append(studios, studio)
+	}
+
+	return studios, nil
 }
 
 func (qb *StudioQueryBuilder) FindChildren(id int, tx *sqlx.Tx) ([]*Studio, error) {

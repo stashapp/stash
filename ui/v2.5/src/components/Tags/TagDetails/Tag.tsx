@@ -20,11 +20,17 @@ import {
 import { useToast } from "src/hooks";
 import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
+import { TagImagesPanel } from "./TagImagesPanel";
+
+interface ITabParams {
+  id?: string;
+  tab?: string;
+}
 
 export const Tag: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { tab = "scenes", id = "new" } = useParams();
+  const { tab = "scenes", id = "new" } = useParams<ITabParams>();
   const isNew = id === "new";
 
   // Editing state
@@ -44,8 +50,8 @@ export const Tag: React.FC = () => {
   const [createTag] = useTagCreate(getTagInput() as GQL.TagUpdateInput);
   const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
 
-  const activeTabKey = tab === "markers" ? tab : "scenes";
-  const setActiveTabKey = (newTab: string) => {
+  const activeTabKey = tab === "markers" || tab === "images" ? tab : "scenes";
+  const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
       history.replace(`/tags/${id}${tabParam}`);
@@ -240,6 +246,9 @@ export const Tag: React.FC = () => {
           >
             <Tab eventKey="scenes" title="Scenes">
               <TagScenesPanel tag={tag} />
+            </Tab>
+            <Tab eventKey="images" title="Images">
+              <TagImagesPanel tag={tag} />
             </Tab>
             <Tab eventKey="markers" title="Markers">
               <TagMarkersPanel tag={tag} />
