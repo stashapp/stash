@@ -239,8 +239,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   });
 
   useEffect(() => {
-    if (!isNew)
-      updatePerformerEditState(performer);
+    if (!isNew) updatePerformerEditState(performer);
   }, [isNew, performer]);
 
   useEffect(() => {
