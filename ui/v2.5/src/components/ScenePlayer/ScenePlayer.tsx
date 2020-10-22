@@ -113,7 +113,9 @@ export class ScenePlayerImpl extends React.Component<
         // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
         const currentFile = this.player.getPlaylistItem().file;
         if (currentFile != null && !currentFile.includes("m3u8")) {
-          this.handleError(false);
+          const state = this.player.getState();
+          const play = state === "buffering" || state === "playing";
+          this.handleError(play);
         }
       }
     });
