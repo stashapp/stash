@@ -302,370 +302,180 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
     }
   }
 
-  function renderBlur() {
+  interface ISliderProps {
+    title: string
+    className?: string
+    range: SliderRange
+    value: number
+    setValue: (value: React.SetStateAction<number>) => void
+    displayValue: string
+  }
+
+  function renderSlider(props: ISliderProps) {
     return (
       <div className="row form-group">
-        <span className="col-3">Blur</span>
-        <span className="col-7">
+        <span className="col-sm-3">{props.title}</span>
+        <span className="col-sm-7">
           <Form.Control
-            className="filter-slider d-none d-sm-inline-flex ml-3"
+            className={`filter-slider d-inline-flex ml-sm-3 ${props.className}`}
             type="range"
-            min={blurRange.min}
-            max={blurRange.max}
-            value={blurValue}
+            min={props.range.min}
+            max={props.range.max}
+            value={props.value}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setBlurValue(Number.parseInt(e.currentTarget.value, 10))
+              props.setValue(Number.parseInt(e.currentTarget.value, 10))
             }
           />
         </span>
         <span
-          className="col-2 text-truncate"
+          className="col-sm-2 text-truncate"
           role="presentation"
-          onClick={() => setBlurValue(blurRange.default)}
-          onKeyPress={() => setBlurValue(blurRange.default)}
+          onClick={() => props.setValue(props.range.default)}
+          onKeyPress={() => props.setValue(props.range.default)}
         >
-          {blurValue / blurRange.divider}px
+          {props.displayValue}
         </span>
       </div>
     );
+  }
+
+  function renderBlur() {
+    return renderSlider({
+      title: "Blur",
+      range: blurRange,
+      value: blurValue,
+      setValue: setBlurValue,
+      displayValue: `${blurValue / blurRange.divider}px`
+    });
   }
 
   function renderContrast() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Contrast</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider contrast-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={contrastRange.min}
-            max={contrastRange.max}
-            value={contrastValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setContrastValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setContrastValue(contrastRange.default)}
-          onKeyPress={() => setContrastValue(contrastRange.default)}
-        >
-          {contrastValue / brightnessRange.divider}%
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Contrast",
+      className: "contrast-slider",
+      range: contrastRange,
+      value: contrastValue,
+      setValue: setContrastValue,
+      displayValue: `${contrastValue / brightnessRange.divider}%`
+    });
   }
 
   function renderBrightness() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Brightness</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider brightness-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={brightnessRange.min}
-            max={brightnessRange.max}
-            value={brightnessValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setBrightnessValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setBrightnessValue(brightnessRange.default)}
-          onKeyPress={() => setBrightnessValue(brightnessRange.default)}
-        >
-          {brightnessValue / brightnessRange.divider}%
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Brightness",
+      className: "brightness-slider",
+      range: brightnessRange,
+      value: brightnessValue,
+      setValue: setBrightnessValue,
+      displayValue: `${brightnessValue / brightnessRange.divider}%`
+    });
   }
 
   function renderGammaSlider() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Gamma</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider gamma-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={gammaRange.min}
-            max={gammaRange.max}
-            value={gammaValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setGammaValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setGammaValue(gammaRange.default)}
-          onKeyPress={() => setGammaValue(gammaRange.default)}
-        >
-          {(gammaValue - gammaRange.default) / gammaRange.divider}
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Gamma",
+      className: "gamma-slider",
+      range: gammaRange,
+      value: gammaValue,
+      setValue: setGammaValue,
+      displayValue: `${(gammaValue - gammaRange.default) / gammaRange.divider}`
+    });
   }
 
   function renderSaturate() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Saturation</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider saturation-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={saturateRange.min}
-            max={saturateRange.max}
-            value={saturateValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSaturateValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setSaturateValue(saturateRange.default)}
-          onKeyPress={() => setSaturateValue(saturateRange.default)}
-        >
-          {saturateValue / saturateRange.divider}%
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Saturation",
+      className: "saturation-slider",
+      range: saturateRange,
+      value: saturateValue,
+      setValue: setSaturateValue,
+      displayValue: `${saturateValue / saturateRange.divider}%`
+    });
   }
 
   function renderHueRotateSlider() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Hue</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider hue-rotate-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={hueRotateRange.min}
-            max={hueRotateRange.max}
-            value={hueRotateValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setHueRotateValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setHueRotateValue(hueRotateRange.default)}
-          onKeyPress={() => setHueRotateValue(hueRotateRange.default)}
-        >
-          {hueRotateValue / hueRotateRange.divider}&deg;
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Hue",
+      className: "hue-rotate-slider",
+      range: hueRotateRange,
+      value: hueRotateValue,
+      setValue: setHueRotateValue,
+      displayValue: `${hueRotateValue / hueRotateRange.divider}\xB0`
+    });
   }
 
   function renderWhiteBalance() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Warmth</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider white-balance-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={whiteBalanceRange.min}
-            max={whiteBalanceRange.max}
-            value={whiteBalanceValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setWhiteBalanceValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setWhiteBalanceValue(whiteBalanceRange.default)}
-          onKeyPress={() => setWhiteBalanceValue(whiteBalanceRange.default)}
-        >
-          {(whiteBalanceValue - whiteBalanceRange.default) /
-            whiteBalanceRange.divider}
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Warmth",
+      className: "white-balance-slider",
+      range: whiteBalanceRange,
+      value: whiteBalanceValue,
+      setValue: setWhiteBalanceValue,
+      displayValue: `${(whiteBalanceValue - whiteBalanceRange.default) / whiteBalanceRange.divider}`
+    });
   }
 
   function renderRedSlider() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Red</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider red-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={colourRange.min}
-            max={colourRange.max}
-            value={redValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setRedValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setRedValue(colourRange.default)}
-          onKeyPress={() => setRedValue(colourRange.default)}
-        >
-          {(redValue - colourRange.default) / colourRange.divider}%
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Red",
+      className: "red-slider",
+      range: colourRange,
+      value: redValue,
+      setValue: setRedValue,
+      displayValue: `${(redValue - colourRange.default) / colourRange.divider}%`
+    });
   }
 
   function renderGreenSlider() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Green</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider green-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={colourRange.min}
-            max={colourRange.max}
-            value={greenValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setGreenValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setGreenValue(colourRange.default)}
-          onKeyPress={() => setGreenValue(colourRange.default)}
-        >
-          {(greenValue - colourRange.default) / colourRange.divider}%
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Green",
+      className: "green-slider",
+      range: colourRange,
+      value: greenValue,
+      setValue: setGreenValue,
+      displayValue: `${(greenValue - colourRange.default) / colourRange.divider}%`
+    });
   }
 
   function renderBlueSlider() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Blue</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider blue-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={colourRange.min}
-            max={colourRange.max}
-            value={blueValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setBlueValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setBlueValue(colourRange.default)}
-          onKeyPress={() => setBlueValue(colourRange.default)}
-        >
-          {(blueValue - colourRange.default) / colourRange.divider}%
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Blue",
+      className: "blue-slider",
+      range: colourRange,
+      value: blueValue,
+      setValue: setBlueValue,
+      displayValue: `${(blueValue - colourRange.default) / colourRange.divider}%`
+    });
   }
 
   function renderRotate() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Rotate</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={rotateRange.min}
-            max={rotateRange.max}
-            value={rotateValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setRotateValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setRotateValue(rotateRange.default)}
-          onKeyPress={() => setRotateValue(rotateRange.default)}
-        >
-          {(rotateValue - rotateRange.default) / rotateRange.divider}&deg;
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Rotate",
+      range: rotateRange,
+      value: rotateValue,
+      setValue: setRotateValue,
+      displayValue: `${(rotateValue - rotateRange.default) / rotateRange.divider}\xB0`
+    });
   }
 
   function renderScale() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Scale</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={scaleRange.min}
-            max={scaleRange.max}
-            value={scaleValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setScaleValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setScaleValue(scaleRange.default)}
-          onKeyPress={() => setScaleValue(scaleRange.default)}
-        >
-          {scaleValue / scaleRange.divider}%
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Scale",
+      range: scaleRange,
+      value: scaleValue,
+      setValue: setScaleValue,
+      displayValue: `${scaleValue / scaleRange.divider}%`
+    });
   }
 
   function renderAspectRatio() {
-    return (
-      <div className="row form-group">
-        <span className="col-3">Aspect</span>
-        <span className="col-7">
-          <Form.Control
-            className="filter-slider d-none d-sm-inline-flex ml-3"
-            type="range"
-            min={aspectRatioRange.min}
-            max={aspectRatioRange.max}
-            value={aspectRatioValue}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setAspectRatioValue(Number.parseInt(e.currentTarget.value, 10))
-            }
-          />
-        </span>
-        <span
-          className="col-2 text-truncate"
-          role="presentation"
-          onClick={() => setAspectRatioValue(aspectRatioRange.default)}
-          onKeyPress={() => setAspectRatioValue(aspectRatioRange.default)}
-        >
-          {(aspectRatioValue - aspectRatioRange.default) /
-            aspectRatioRange.divider}
-        </span>
-      </div>
-    );
+    return renderSlider({
+      title: "Aspect",
+      range: aspectRatioRange,
+      value: aspectRatioValue,
+      setValue: setAspectRatioValue,
+      displayValue: `${(aspectRatioValue - aspectRatioRange.default) / aspectRatioRange.divider}`
+    });
   }
 
   function onRotateAndScale(direction: number) {
