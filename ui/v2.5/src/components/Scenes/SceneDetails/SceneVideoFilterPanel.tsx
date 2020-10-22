@@ -836,15 +836,6 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       </div>
       {renderRotateAndScale()}
       {renderResetButton()}
-      <div className="row form-group">
-        <span className="col-12">
-          <i>
-            Note: Filters is a beta level feature and all functions may not work
-            in all browsers equally. Chrome seems best but isn&apos;t without
-            issues.
-          </i>
-        </span>
-      </div>
       {renderFilterContainer()}
     </div>
   );
