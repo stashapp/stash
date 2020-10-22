@@ -303,37 +303,37 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
   }
 
   interface ISliderProps {
-    title: string
-    className?: string
-    range: SliderRange
-    value: number
-    setValue: (value: React.SetStateAction<number>) => void
-    displayValue: string
+    title: string;
+    className?: string;
+    range: SliderRange;
+    value: number;
+    setValue: (value: React.SetStateAction<number>) => void;
+    displayValue: string;
   }
 
-  function renderSlider(props: ISliderProps) {
+  function renderSlider(sliderProps: ISliderProps) {
     return (
       <div className="row form-group">
-        <span className="col-sm-3">{props.title}</span>
+        <span className="col-sm-3">{sliderProps.title}</span>
         <span className="col-sm-7">
           <Form.Control
-            className={`filter-slider d-inline-flex ml-sm-3 ${props.className}`}
+            className={`filter-slider d-inline-flex ml-sm-3 ${sliderProps.className}`}
             type="range"
-            min={props.range.min}
-            max={props.range.max}
-            value={props.value}
+            min={sliderProps.range.min}
+            max={sliderProps.range.max}
+            value={sliderProps.value}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              props.setValue(Number.parseInt(e.currentTarget.value, 10))
+              sliderProps.setValue(Number.parseInt(e.currentTarget.value, 10))
             }
           />
         </span>
         <span
           className="col-sm-2 text-truncate"
           role="presentation"
-          onClick={() => props.setValue(props.range.default)}
-          onKeyPress={() => props.setValue(props.range.default)}
+          onClick={() => sliderProps.setValue(sliderProps.range.default)}
+          onKeyPress={() => sliderProps.setValue(sliderProps.range.default)}
         >
-          {props.displayValue}
+          {sliderProps.displayValue}
         </span>
       </div>
     );
@@ -345,7 +345,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: blurRange,
       value: blurValue,
       setValue: setBlurValue,
-      displayValue: `${blurValue / blurRange.divider}px`
+      displayValue: `${blurValue / blurRange.divider}px`,
     });
   }
 
@@ -356,7 +356,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: contrastRange,
       value: contrastValue,
       setValue: setContrastValue,
-      displayValue: `${contrastValue / brightnessRange.divider}%`
+      displayValue: `${contrastValue / brightnessRange.divider}%`,
     });
   }
 
@@ -367,7 +367,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: brightnessRange,
       value: brightnessValue,
       setValue: setBrightnessValue,
-      displayValue: `${brightnessValue / brightnessRange.divider}%`
+      displayValue: `${brightnessValue / brightnessRange.divider}%`,
     });
   }
 
@@ -378,7 +378,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: gammaRange,
       value: gammaValue,
       setValue: setGammaValue,
-      displayValue: `${(gammaValue - gammaRange.default) / gammaRange.divider}`
+      displayValue: `${(gammaValue - gammaRange.default) / gammaRange.divider}`,
     });
   }
 
@@ -389,7 +389,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: saturateRange,
       value: saturateValue,
       setValue: setSaturateValue,
-      displayValue: `${saturateValue / saturateRange.divider}%`
+      displayValue: `${saturateValue / saturateRange.divider}%`,
     });
   }
 
@@ -400,7 +400,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: hueRotateRange,
       value: hueRotateValue,
       setValue: setHueRotateValue,
-      displayValue: `${hueRotateValue / hueRotateRange.divider}\xB0`
+      displayValue: `${hueRotateValue / hueRotateRange.divider}\xB0`,
     });
   }
 
@@ -411,7 +411,10 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: whiteBalanceRange,
       value: whiteBalanceValue,
       setValue: setWhiteBalanceValue,
-      displayValue: `${(whiteBalanceValue - whiteBalanceRange.default) / whiteBalanceRange.divider}`
+      displayValue: `${
+        (whiteBalanceValue - whiteBalanceRange.default) /
+        whiteBalanceRange.divider
+      }`,
     });
   }
 
@@ -422,7 +425,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: colourRange,
       value: redValue,
       setValue: setRedValue,
-      displayValue: `${(redValue - colourRange.default) / colourRange.divider}%`
+      displayValue: `${
+        (redValue - colourRange.default) / colourRange.divider
+      }%`,
     });
   }
 
@@ -433,7 +438,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: colourRange,
       value: greenValue,
       setValue: setGreenValue,
-      displayValue: `${(greenValue - colourRange.default) / colourRange.divider}%`
+      displayValue: `${
+        (greenValue - colourRange.default) / colourRange.divider
+      }%`,
     });
   }
 
@@ -444,7 +451,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: colourRange,
       value: blueValue,
       setValue: setBlueValue,
-      displayValue: `${(blueValue - colourRange.default) / colourRange.divider}%`
+      displayValue: `${
+        (blueValue - colourRange.default) / colourRange.divider
+      }%`,
     });
   }
 
@@ -454,7 +463,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: rotateRange,
       value: rotateValue,
       setValue: setRotateValue,
-      displayValue: `${(rotateValue - rotateRange.default) / rotateRange.divider}\xB0`
+      displayValue: `${
+        (rotateValue - rotateRange.default) / rotateRange.divider
+      }\xB0`,
     });
   }
 
@@ -464,7 +475,7 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: scaleRange,
       value: scaleValue,
       setValue: setScaleValue,
-      displayValue: `${scaleValue / scaleRange.divider}%`
+      displayValue: `${scaleValue / scaleRange.divider}%`,
     });
   }
 
@@ -474,7 +485,9 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
       range: aspectRatioRange,
       value: aspectRatioValue,
       setValue: setAspectRatioValue,
-      displayValue: `${(aspectRatioValue - aspectRatioRange.default) / aspectRatioRange.divider}`
+      displayValue: `${
+        (aspectRatioValue - aspectRatioRange.default) / aspectRatioRange.divider
+      }`,
     });
   }
 
