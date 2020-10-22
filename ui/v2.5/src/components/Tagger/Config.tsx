@@ -117,7 +117,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
         <div className="row">
           <h4 className="col-12">Configuration</h4>
           <hr className="w-100" />
-          <Form className="col-6">
+          <Form className="col-md-6">
             <Form.Group controlId="tag-males" className="align-items-center">
               <Form.Check
                 label="Show male performers"
@@ -156,7 +156,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                 />
                 <Form.Control
                   id="tag-operation"
-                  className="col-2"
+                  className="col-md-2 col-3 input-control"
                   as="select"
                   value={config.tagOperation}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -182,7 +182,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
                 <Form.Label className="mr-4 mt-1">Query Mode:</Form.Label>
                 <Form.Control
                   as="select"
-                  className="col-2"
+                  className="col-md-2 col-3 input-control"
                   value={config.mode}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                     setConfig({
@@ -201,10 +201,11 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
               <Form.Text>{ModeDesc[config.mode]}</Form.Text>
             </Form.Group>
           </Form>
-          <div className="col-6">
+          <div className="col-md-6">
             <h5>Blacklist</h5>
             <InputGroup>
               <Form.Control
+                className="text-input"
                 value={blacklistInput}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setBlacklistInput(e.currentTarget.value)
@@ -245,7 +246,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
               <Form.Control
                 as="select"
                 value={config.selectedEndpoint}
-                className="col-4"
+                className="col-md-4 col-6 input-control"
                 disabled={!stashBoxes.length}
                 onChange={handleInstanceSelect}
               >

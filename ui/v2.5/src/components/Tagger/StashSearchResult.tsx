@@ -324,7 +324,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       key={scene.stash_id}
       onClick={() => !isActive && setActive()}
     >
-      <div className="col-6">
+      <div className="col-lg-6">
         <div className="row">
           <img
             src={scene.images[0]}
@@ -350,7 +350,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         </div>
       </div>
       {isActive && (
-        <div className="col-6">
+        <div className="col-lg-6">
           <StudioResult studio={scene.studio} setStudio={setStudio} />
           {scene.performers
             .filter((p) => p.gender !== "MALE" || showMales)

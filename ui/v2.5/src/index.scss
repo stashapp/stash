@@ -68,8 +68,13 @@ code,
 }
 
 .input-control,
-.input-control:focus {
+.input-control:focus,
+.input-control:disabled {
   background-color: $secondary;
+}
+
+.input-control:disabled {
+  opacity: 0.8;
 }
 
 textarea.text-input {

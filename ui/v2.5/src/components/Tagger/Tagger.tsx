@@ -200,6 +200,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         maincontent = (
           <InputGroup>
             <Form.Control
+              className="text-input"
               value={modifiedQuery || defaultQueryString}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setQueryString({
@@ -297,7 +298,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       return (
         <div key={scene.id} className="my-2 search-item">
           <div className="row">
-            <div className="col-6 text-truncate align-self-center">
+            <div className="col-md-6 my-1 text-truncate align-self-center">
               <Link
                 to={`/scenes/${scene.id}`}
                 className="scene-link"
@@ -308,7 +309,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                 {`${file}.${ext}`}
               </Link>
             </div>
-            <div className="col-6">{maincontent}</div>
+            <div className="col-md-6 my-1">{maincontent}</div>
           </div>
           {searchResult}
         </div>
@@ -318,10 +319,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   return (
     <Card className="tagger-table">
       <div className="tagger-table-header row mb-4">
-        <div className="col-6">
+        <div className="col-md-6">
           <b>Path</b>
         </div>
-        <div className="col-2">
+        <div className="col-md-2">
           <b>Query</b>
         </div>
         <div className="ml-auto mr-2">
