@@ -48,6 +48,8 @@ import {
 } from "./criteria/performers";
 import { RatingCriterion, RatingCriterionOption } from "./criteria/rating";
 import {
+  AverageResolutionCriterion,
+  AverageResolutionCriterionOption,
   ResolutionCriterion,
   ResolutionCriterionOption,
 } from "./criteria/resolution";
@@ -154,6 +156,7 @@ export class ListFilterModel {
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
         this.criterionOptions = [
           new NoneCriterionOption(),
+          ListFilterModel.createCriterionOption("path"),
           new RatingCriterionOption(),
           ListFilterModel.createCriterionOption("o_counter"),
           new ResolutionCriterionOption(),
@@ -222,12 +225,17 @@ export class ListFilterModel {
         break;
       case FilterMode.Galleries:
         this.sortBy = "path";
-        this.sortByOptions = ["path"];
+        this.sortByOptions = ["path", "images_count"];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),
           ListFilterModel.createCriterionOption("path"),
+          new RatingCriterionOption(),
+          new AverageResolutionCriterionOption(),
           new GalleryIsMissingCriterionOption(),
+          new TagsCriterionOption(),
+          new PerformersCriterionOption(),
+          new StudiosCriterionOption(),
         ];
         break;
       case FilterMode.SceneMarkers:
@@ -645,6 +653,14 @@ export class ListFilterModel {
     const result: ImageFilterType = {};
     this.criteria.forEach((criterion) => {
       switch (criterion.type) {
+        case "path": {
+          const pathCrit = criterion as MandatoryStringCriterion;
+          result.path = {
+            value: pathCrit.value,
+            modifier: pathCrit.modifier,
+          };
+          break;
+        }
         case "rating": {
           const ratingCrit = criterion as RatingCriterion;
           result.rating = {
@@ -695,7 +711,7 @@ export class ListFilterModel {
         }
         case "performers": {
           const perfCrit = criterion as PerformersCriterion;
-          result.galleries = {
+          result.performers = {
             value: perfCrit.value.map((perf) => perf.id),
             modifier: perfCrit.modifier,
           };
@@ -776,9 +792,62 @@ export class ListFilterModel {
           };
           break;
         }
+        case "rating": {
+          const ratingCrit = criterion as RatingCriterion;
+          result.rating = {
+            value: ratingCrit.value,
+            modifier: ratingCrit.modifier,
+          };
+          break;
+        }
+        case "average_resolution": {
+          switch ((criterion as AverageResolutionCriterion).value) {
+            case "240p":
+              result.average_resolution = ResolutionEnum.Low;
+              break;
+            case "480p":
+              result.average_resolution = ResolutionEnum.Standard;
+              break;
+            case "720p":
+              result.average_resolution = ResolutionEnum.StandardHd;
+              break;
+            case "1080p":
+              result.average_resolution = ResolutionEnum.FullHd;
+              break;
+            case "4k":
+              result.average_resolution = ResolutionEnum.FourK;
+              break;
+            // no default
+          }
+          break;
+        }
         case "galleryIsMissing":
           result.is_missing = (criterion as IsMissingCriterion).value;
           break;
+        case "tags": {
+          const tagsCrit = criterion as TagsCriterion;
+          result.tags = {
+            value: tagsCrit.value.map((tag) => tag.id),
+            modifier: tagsCrit.modifier,
+          };
+          break;
+        }
+        case "performers": {
+          const perfCrit = criterion as PerformersCriterion;
+          result.performers = {
+            value: perfCrit.value.map((perf) => perf.id),
+            modifier: perfCrit.modifier,
+          };
+          break;
+        }
+        case "studios": {
+          const studCrit = criterion as StudiosCriterion;
+          result.studios = {
+            value: studCrit.value.map((studio) => studio.id),
+            modifier: studCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });

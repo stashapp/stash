@@ -10,6 +10,7 @@ export type CriterionType =
   | "rating"
   | "o_counter"
   | "resolution"
+  | "average_resolution"
   | "duration"
   | "favorite"
   | "hasMarkers"
@@ -59,6 +60,8 @@ export abstract class Criterion {
         return "O-Counter";
       case "resolution":
         return "Resolution";
+      case "average_resolution":
+        return "Average Resolution";
       case "duration":
         return "Duration";
       case "favorite":

@@ -13,7 +13,7 @@ import (
 
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
 	// generate checksum from performer name rather than image
-	checksum := utils.MD5FromString(*input.Name)
+	checksum := utils.MD5FromString(input.Name)
 
 	var imageData []byte
 	var err error
@@ -33,9 +33,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
-	if input.Name != nil {
-		newPerformer.Name = sql.NullString{String: *input.Name, Valid: true}
-	}
+	newPerformer.Name = sql.NullString{String: input.Name, Valid: true}
 	if input.URL != nil {
 		newPerformer.URL = sql.NullString{String: *input.URL, Valid: true}
 	}

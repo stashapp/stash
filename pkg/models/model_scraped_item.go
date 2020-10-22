@@ -89,6 +89,18 @@ type ScrapedSceneStash struct {
 	Performers []*ScrapedScenePerformer `graphql:"performers" json:"performers"`
 }
 
+type ScrapedGalleryStash struct {
+	ID         string                   `graphql:"id" json:"id"`
+	Title      *string                  `graphql:"title" json:"title"`
+	Details    *string                  `graphql:"details" json:"details"`
+	URL        *string                  `graphql:"url" json:"url"`
+	Date       *string                  `graphql:"date" json:"date"`
+	File       *SceneFileType           `graphql:"file" json:"file"`
+	Studio     *ScrapedSceneStudio      `graphql:"studio" json:"studio"`
+	Tags       []*ScrapedSceneTag       `graphql:"tags" json:"tags"`
+	Performers []*ScrapedScenePerformer `graphql:"performers" json:"performers"`
+}
+
 type ScrapedScenePerformer struct {
 	// Set if performer matched
 	ID           *string `graphql:"id" json:"id"`

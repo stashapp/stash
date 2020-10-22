@@ -56,6 +56,7 @@ const ModalComponent: React.FC<IModal> = ({
           disabled={isRunning || disabled}
           variant={accept?.variant ?? "primary"}
           onClick={accept?.onClick}
+          className="ml-2"
         >
           {isRunning ? (
             <Spinner animation="border" role="status" size="sm" />

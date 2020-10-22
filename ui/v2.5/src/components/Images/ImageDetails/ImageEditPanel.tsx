@@ -15,7 +15,6 @@ import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 interface IProps {
   image: GQL.ImageDataFragment;
   isVisible: boolean;
-  onUpdate: (image: GQL.ImageDataFragment) => void;
   onDelete: () => void;
 }
 
@@ -107,7 +106,6 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
     try {
       const result = await updateImage();
       if (result.data?.imageUpdate) {
-        props.onUpdate(result.data.imageUpdate);
         Toast.success({ content: "Updated image" });
       }
     } catch (e) {

@@ -1,5 +1,5 @@
 mutation PerformerCreate(
-  $name: String,
+  $name: String!,
   $url: String,
   $gender: GenderEnum,
   $birthdate: String,
