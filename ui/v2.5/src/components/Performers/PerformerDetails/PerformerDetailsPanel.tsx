@@ -243,8 +243,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   });
 
   useEffect(() => {
-    updatePerformerEditState(performer);
-  }, [performer]);
+    if (!isNew) updatePerformerEditState(performer);
+  }, [isNew, performer]);
 
   useEffect(() => {
     if (onImageChange) {
@@ -570,7 +570,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           />
           {isEditing ? (
             <Button
-              className="mr-2"
+              className="mx-2"
               variant="danger"
               onClick={() => setImage(null)}
             >

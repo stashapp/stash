@@ -358,7 +358,7 @@ export const SceneScrapeDialog: React.FC<ISceneScrapeDialogProps> = (
   }
 
   async function createNewPerformer(toCreate: GQL.ScrapedScenePerformer) {
-    let performerInput: GQL.PerformerCreateInput = {};
+    let performerInput: GQL.PerformerCreateInput = { name: "" };
     try {
       performerInput = Object.assign(performerInput, toCreate);
       const result = await createPerformer({

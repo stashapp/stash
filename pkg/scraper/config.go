@@ -114,7 +114,8 @@ type scraperTypeConfig struct {
 	Scraper string        `yaml:"scraper"`
 
 	// for xpath name scraper only
-	QueryURL string `yaml:"queryURL"`
+	QueryURL             string               `yaml:"queryURL"`
+	QueryURLReplacements queryURLReplacements `yaml:"queryURLReplace"`
 }
 
 func (c scraperTypeConfig) validate() error {

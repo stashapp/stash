@@ -129,7 +129,11 @@ func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 	}
 
 	// construct the URL
-	url := constructSceneURL(s.scraper.QueryURL, storedScene)
+	queryURL := queryURLParametersFromScene(storedScene)
+	if s.scraper.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	}
+	url := queryURL.constructURL(s.scraper.QueryURL)
 
 	scraper := s.getXpathScraper()
 
@@ -158,7 +162,11 @@ func (s *xpathScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput
 	}
 
 	// construct the URL
-	url := constructGalleryURL(s.scraper.QueryURL, storedGallery)
+	queryURL := queryURLParametersFromGallery(storedGallery)
+	if s.scraper.QueryURLReplacements != nil {
+		queryURL.applyReplacements(s.scraper.QueryURLReplacements)
+	}
+	url := queryURL.constructURL(s.scraper.QueryURL)
 
 	scraper := s.getXpathScraper()
 
