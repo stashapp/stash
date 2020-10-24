@@ -2,6 +2,7 @@ package manager
 
 import (
 	"github.com/remeh/sizedwaitgroup"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"

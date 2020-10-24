@@ -3,16 +3,17 @@ package manager
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strconv"
+	"sync"
+	"time"
+
 	"github.com/remeh/sizedwaitgroup"
+
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"os"
-	"runtime"
-	"strconv"
-	"sync"
-	"time"
 )
 
 func isGallery(pathname string) bool {
@@ -154,11 +155,7 @@ func (s *singleton) Scan(useFileMetadata bool, scanGeneratePreviews bool, scanGe
 		}
 
 		start := time.Now()
-		parallelTasks := config.GetParallelTasks()
-		if parallelTasks <= 0 {
-			parallelTasks = (runtime.NumCPU() / 4) + 1
-		}
-
+		parallelTasks := config.GetParallelTasksWithAutoDetection()
 		logger.Infof("Scan started with %d parallel tasks", parallelTasks)
 		wg := sizedwaitgroup.New(parallelTasks)
 
@@ -215,6 +212,7 @@ func (s *singleton) Scan(useFileMetadata bool, scanGeneratePreviews bool, scanGe
 
 		elapsed := time.Since(start)
 		logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+
 		for _, path := range galleries {
 			wg.Add()
 			task := ScanTask{FilePath: path, UseFileMetadata: false}
@@ -347,10 +345,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			return
 		}
 
-		parallelTasks := config.GetParallelTasks()
-		if parallelTasks <= 0 {
-			parallelTasks = (runtime.NumCPU() / 4) + 1
-		}
+		parallelTasks := config.GetParallelTasksWithAutoDetection()
 
 		logger.Infof("Generate started with %d parallel tasks", parallelTasks)
 		wg := sizedwaitgroup.New(parallelTasks)
@@ -456,7 +451,6 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			wg.Add()
 			task := GenerateMarkersTask{Marker: marker, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 			go task.Start(&wg)
-			wg.Wait() // TODO check the safety of this operation in parallel with itself
 		}
 
 		wg.Wait()

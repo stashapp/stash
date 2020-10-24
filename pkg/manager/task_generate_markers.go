@@ -1,13 +1,15 @@
 package manager
 
 import (
+	"path/filepath"
+	"strconv"
+
 	"github.com/remeh/sizedwaitgroup"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"path/filepath"
-	"strconv"
 )
 
 type GenerateMarkersTask struct {

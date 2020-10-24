@@ -4,9 +4,16 @@ import (
 	"archive/zip"
 	"context"
 	"database/sql"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/facebookgo/symwalk"
 	"github.com/jmoiron/sqlx"
 	"github.com/remeh/sizedwaitgroup"
+
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/image"
@@ -14,11 +21,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type ScanTask struct {
@@ -475,7 +477,6 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 		subTask.zipGallery = zipGallery
 
 		// run the subtask and wait for it to complete
-		// tylerj check this.
 		iwg := sizedwaitgroup.New(1)
 		iwg.Add()
 		subTask.Start(&iwg)

@@ -2,6 +2,7 @@ package config
 
 import (
 	"golang.org/x/crypto/bcrypt"
+	"runtime"
 
 	"errors"
 	"io/ioutil"
@@ -304,6 +305,14 @@ func GetPreviewSegmentDuration() float64 {
 // by scan or generate task.
 func GetParallelTasks() int {
 	return viper.GetInt(ParallelTasks)
+}
+
+func GetParallelTasksWithAutoDetection() int {
+	parallelTasks := viper.GetInt(ParallelTasks)
+	if parallelTasks <= 0 {
+		parallelTasks = (runtime.NumCPU() / 4) + 1
+	}
+	return parallelTasks
 }
 
 // GetPreviewSegments returns the amount of segments in a scene preview file.
