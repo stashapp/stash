@@ -19,14 +19,12 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	var imageData []byte
 	var err error
 
-	if input.Image == nil {
-		input.Image = &models.DefaultStudioImage
-	}
-
 	// Process the base 64 encoded image string
-	_, imageData, err = utils.ProcessBase64Image(*input.Image)
-	if err != nil {
-		return nil, err
+	if input.Image != nil {
+		_, imageData, err = utils.ProcessBase64Image(*input.Image)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Populate a new studio from the input
