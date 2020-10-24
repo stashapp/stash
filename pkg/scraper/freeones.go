@@ -14,12 +14,13 @@ const freeonesScraperConfig = `
 name: Freeones
 performerByName:
   action: scrapeXPath
-  queryURL: https://www.freeones.xxx/babes?q={}&v=teasers&s=relevance&l=96&m%5BcanPreviewFeatures%5D=0
+  queryURL: https://www.freeones.com/babes?q={}&v=teasers&s=relevance&l=96&m%5BcanPreviewFeatures%5D=0
   scraper: performerSearch
 performerByURL:
   - action: scrapeXPath
     url:
       - freeones.xxx
+      - freeones.com
     scraper: performerScraper
 
 xPathScrapers:
@@ -31,7 +32,7 @@ xPathScrapers:
         postProcess:
           - replace:
             - regex: ^
-              with: https://www.freeones.xxx
+              with: https://www.freeones.com
             - regex: $
               with: /profile
 
@@ -48,7 +49,7 @@ xPathScrapers:
         postProcess:
           - replace:
             - regex: ^
-              with: https://www.freeones.xxx
+              with: https://www.freeones.com
       Twitter: //a[contains(@href,'twitter.com/')]/@href
       Instagram: //a[contains(@href,'instagram.com/')]/@href
       Birthdate:
@@ -98,7 +99,7 @@ xPathScrapers:
       Image:
         selector: //div[@class='profile-image-container']//a/img/@src
       Gender:
-        fixed: Female
+        fixed: "Female"
 # Last updated October 21, 2020
 `
 
