@@ -53,6 +53,10 @@ const messages = defineMessages({
     id: "galleries",
     defaultMessage: "Galleries",
   },
+  sceneTagger: {
+    id: "sceneTagger",
+    defaultMessage: "Scene Tagger",
+  },
 });
 
 const menuItems: IMenuItem[] = [

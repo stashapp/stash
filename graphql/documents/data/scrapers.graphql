@@ -36,6 +36,8 @@ fragment ScrapedScenePerformerData on ScrapedScenePerformer {
   tattoos
   piercings
   aliases
+  remote_site_id
+  images
 }
 
 fragment ScrapedMovieStudioData on ScrapedMovieStudio {
@@ -77,6 +79,7 @@ fragment ScrapedSceneStudioData on ScrapedSceneStudio {
   stored_id
   name
   url
+  remote_site_id
 }
 
 fragment ScrapedSceneTagData on ScrapedSceneTag {
@@ -135,5 +138,48 @@ fragment ScrapedGalleryData on ScrapedGallery {
 
   performers {
     ...ScrapedScenePerformerData
+  }
+}
+
+fragment ScrapedStashBoxSceneData on ScrapedScene {
+  title
+  details
+  url
+  date
+  image
+  remote_site_id
+  duration
+
+  file {
+    size
+    duration
+    video_codec
+    audio_codec
+    width
+    height
+    framerate
+    bitrate
+  }
+
+  fingerprints {
+    hash
+    algorithm
+    duration
+  }
+
+  studio {
+    ...ScrapedSceneStudioData
+  }
+
+  tags {
+    ...ScrapedSceneTagData
+  }
+
+  performers {
+    ...ScrapedScenePerformerData
+  }
+
+  movies {
+    ...ScrapedSceneMovieData
   }
 }

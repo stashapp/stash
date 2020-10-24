@@ -98,7 +98,6 @@ type Query {
   """List available plugin operations"""
   pluginTasks: [PluginTask!]
 
-
   # Config
   """Returns the current, complete configuration"""
   configuration: ConfigResult!
@@ -222,6 +221,9 @@ type Mutation {
   reloadPlugins: Boolean!
 
   stopJob: Boolean!
+
+  """ Submit fingerprints to stash-box instance """
+  submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): Boolean!
 }
 
 type Subscription {
