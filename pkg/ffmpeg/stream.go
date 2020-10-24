@@ -67,7 +67,7 @@ var CodecH264 = Codec{
 	format:   "mp4",
 	MimeType: MimeMp4,
 	extraArgs: []string{
-		"-movflags", "frag_keyframe",
+		"-movflags", "frag_keyframe+empty_moov",
 		"-pix_fmt", "yuv420p",
 		"-preset", "veryfast",
 		"-crf", "25",

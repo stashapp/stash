@@ -1,4 +1,4 @@
-import { Tab, Nav, Dropdown, Button } from "react-bootstrap";
+import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
@@ -25,6 +25,7 @@ import { OCounterButton } from "./OCounterButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { SceneGenerateDialog } from "../SceneGenerateDialog";
+import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
 
 interface ISceneParams {
   id?: string;
@@ -227,21 +228,26 @@ export const Scene: React.FC = () => {
               ""
             )}
             <Nav.Item>
+              <Nav.Link eventKey="scene-video-filter-panel">Filters</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
               <Nav.Link eventKey="scene-file-info-panel">File Info</Nav.Link>
             </Nav.Item>
             <Nav.Item>
               <Nav.Link eventKey="scene-edit-panel">Edit</Nav.Link>
             </Nav.Item>
-            <Nav.Item className="ml-auto">
-              <OCounterButton
-                loading={oLoading}
-                value={scene.o_counter || 0}
-                onIncrement={onIncrementClick}
-                onDecrement={onDecrementClick}
-                onReset={onResetClick}
-              />
-            </Nav.Item>
-            <Nav.Item>{renderOperations()}</Nav.Item>
+            <ButtonGroup className="ml-auto">
+              <Nav.Item className="ml-auto">
+                <OCounterButton
+                  loading={oLoading}
+                  value={scene.o_counter || 0}
+                  onIncrement={onIncrementClick}
+                  onDecrement={onDecrementClick}
+                  onReset={onResetClick}
+                />
+              </Nav.Item>
+              <Nav.Item>{renderOperations()}</Nav.Item>
+            </ButtonGroup>
           </Nav>
         </div>
 
@@ -266,6 +272,9 @@ export const Scene: React.FC = () => {
           ) : (
             ""
           )}
+          <Tab.Pane eventKey="scene-video-filter-panel" title="Filter">
+            <SceneVideoFilterPanel scene={scene} />
+          </Tab.Pane>
           <Tab.Pane
             className="file-info-panel"
             eventKey="scene-file-info-panel"
