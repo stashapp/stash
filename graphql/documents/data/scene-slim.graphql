@@ -68,4 +68,9 @@ fragment SlimSceneData on Scene {
     favorite
     image_path
   }
+
+  stash_ids {
+    endpoint
+    stash_id
+  }
 }

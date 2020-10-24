@@ -23,6 +23,11 @@ type SceneMarkersTags struct {
 	TagID         int `db:"tag_id" json:"tag_id"`
 }
 
+type StashID struct {
+	StashID  string `db:"stash_id" json:"stash_id"`
+	Endpoint string `db:"endpoint" json:"endpoint"`
+}
+
 type PerformersImages struct {
 	PerformerID int `db:"performer_id" json:"performer_id"`
 	ImageID     int `db:"image_id" json:"image_id"`

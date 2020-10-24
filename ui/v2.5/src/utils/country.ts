@@ -27,4 +27,10 @@ const getISOCountry = (country: string | null | undefined) => {
   };
 };
 
+export const getCountryByISO = (iso: string | null | undefined) => {
+  if (!iso) return null;
+
+  return Countries.getName(iso, "en") ?? null;
+};
+
 export default getISOCountry;

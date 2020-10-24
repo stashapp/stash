@@ -10,6 +10,7 @@ mutation SceneUpdate(
   $performer_ids: [ID!] = [],
   $movies: [SceneMovieInput!] = [],
   $tag_ids: [ID!] = [],
+  $stash_ids: [StashIDInput!],
   $cover_image: String) {
 
   sceneUpdate(input: {
@@ -24,6 +25,7 @@ mutation SceneUpdate(
                         performer_ids: $performer_ids,
                         movies: $movies,
                         tag_ids: $tag_ids,
+                        stash_ids: $stash_ids,
                         cover_image: $cover_image
                       }) {
       ...SceneData

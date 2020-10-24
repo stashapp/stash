@@ -21,4 +21,8 @@ fragment StudioData on Studio {
   }
   image_path
   scene_count
+  stash_ids {
+    stash_id
+    endpoint
+  }
 }

@@ -691,10 +691,12 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </Form.Group>
 
       <hr />
-      <Form.Group>
+
+      <Form.Group id="stashbox">
         <h4>Stash-box integration</h4>
         <StashBoxConfiguration boxes={stashBoxes} saveBoxes={setStashBoxes} />
       </Form.Group>
+
       <hr />
 
       <Form.Group>
