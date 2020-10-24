@@ -59,6 +59,7 @@ interface IStashSearchResultProps {
   setScene: (scene: GQL.SlimSceneDataFragment) => void;
   setCoverImage: boolean;
   tagOperation: string;
+  setTags: boolean;
   endpoint: string;
   queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
 }
@@ -72,6 +73,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   setScene,
   setCoverImage,
   tagOperation,
+  setTags,
   endpoint,
   queueFingerprintSubmission,
 }) => {
@@ -234,29 +236,33 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         }
       }
 
-      const tagIDs: string[] =
-        tagOperation === "merge"
-          ? stashScene?.tags?.map((t) => t.id) ?? []
-          : [];
-      const tags = scene.tags ?? [];
-      if (tags.length > 0) {
-        const tagDict: Record<string, string> = (allTags?.allTagsSlim ?? [])
-          .filter((t) => t.name)
-          .reduce((dict, t) => ({ ...dict, [t.name.toLowerCase()]: t.id }), {});
-        const newTags: string[] = [];
-        tags.forEach((tag) => {
-          if (tagDict[tag.name.toLowerCase()])
-            tagIDs.push(tagDict[tag.name.toLowerCase()]);
-          else newTags.push(tag.name);
-        });
+      let updatedTags = stashScene?.tags?.map((t) => t.id) ?? [];
+      if (setTags) {
+        const newTagIDs = tagOperation === "merge" ? updatedTags : [];
+        const tags = scene.tags ?? [];
+        if (tags.length > 0) {
+          const tagDict: Record<string, string> = (allTags?.allTagsSlim ?? [])
+            .filter((t) => t.name)
+            .reduce(
+              (dict, t) => ({ ...dict, [t.name.toLowerCase()]: t.id }),
+              {}
+            );
+          const newTags: string[] = [];
+          tags.forEach((tag) => {
+            if (tagDict[tag.name.toLowerCase()])
+              newTagIDs.push(tagDict[tag.name.toLowerCase()]);
+            else newTags.push(tag.name);
+          });
 
-        const createdTags = await Promise.all(
-          newTags.map((tag) => createTag(tag))
-        );
-        createdTags.forEach((createdTag) => {
-          if (createdTag?.data?.tagCreate?.id)
-            tagIDs.push(createdTag.data.tagCreate.id);
-        });
+          const createdTags = await Promise.all(
+            newTags.map((tag) => createTag(tag))
+          );
+          createdTags.forEach((createdTag) => {
+            if (createdTag?.data?.tagCreate?.id)
+              newTagIDs.push(createdTag.data.tagCreate.id);
+          });
+        }
+        updatedTags = uniq(newTagIDs);
       }
 
       const sceneUpdateResult = await updateScene({
@@ -269,7 +275,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           studio_id: studioID,
           cover_image: imgData,
           url: scene.url,
-          ...(tagIDs ? { tag_ids: uniq(tagIDs) } : {}),
+          tag_ids: updatedTags,
           stash_ids: [
             ...(stashScene?.stash_ids ?? []),
             {

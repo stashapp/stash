@@ -260,6 +260,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
             setScene={handleTaggedScene}
             scene={fingerprintMatch}
             setCoverImage={config.setCoverImage}
+            setTags={config.setTags}
             tagOperation={config.tagOperation}
             endpoint={selectedEndpoint.endpoint}
             queueFingerprintSubmission={queueFingerprintSubmission}
@@ -285,6 +286,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                     }
                     setCoverImage={config.setCoverImage}
                     tagOperation={config.tagOperation}
+                    setTags={config.setTags}
                     setScene={handleTaggedScene}
                     endpoint={selectedEndpoint.endpoint}
                     queueFingerprintSubmission={queueFingerprintSubmission}
