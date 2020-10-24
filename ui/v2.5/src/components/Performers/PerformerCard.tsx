@@ -22,10 +22,11 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     if (performer.favorite === false) {
       return;
     }
-    return <div className="rating-banner rating-5">
-      <FormattedMessage id="favourite"
-                  defaultMessage="Favourite" />
-    </div>;
+    return (
+      <div className="rating-banner rating-5">
+        <FormattedMessage id="favourite" defaultMessage="Favourite" />
+      </div>
+    );
   }
 
   return (

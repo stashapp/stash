@@ -41,7 +41,7 @@ const intlFormats = {
 export const App: React.FC = () => {
   const config = useConfiguration();
   const language = config.data?.configuration?.interface?.language ?? "en-GB";
-  const messageLanguage = language.replace(/-/, '');
+  const messageLanguage = language.replace(/-/, "");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const messages = flattenMessages((locales as any)[messageLanguage]);
 
