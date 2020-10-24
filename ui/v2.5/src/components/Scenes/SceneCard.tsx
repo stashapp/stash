@@ -320,7 +320,14 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   let shiftKey = false;
 
   return (
-    <Card className={`scene-card zoom-${props.zoomIndex}`}>
+    <Card
+      className={`scene-card zoom-${props.zoomIndex}`}
+      title={
+        props.scene.title
+          ? props.scene.title
+          : TextUtils.fileNameFromPath(props.scene.path)
+      }
+    >
       <Form.Control
         type="checkbox"
         className="scene-card-check"
