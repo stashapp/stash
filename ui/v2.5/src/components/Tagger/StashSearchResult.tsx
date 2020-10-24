@@ -236,9 +236,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         }
       }
 
-      let tag_ids = stashScene?.tags?.map((t) => t.id) ?? [];
+      let updatedTags = stashScene?.tags?.map((t) => t.id) ?? [];
       if (setTags) {
-        const newTagIDs: string[] = tagOperation === "merge" ? tag_ids : [];
+        const newTagIDs = tagOperation === "merge" ? updatedTags : [];
         const tags = scene.tags ?? [];
         if (tags.length > 0) {
           const tagDict: Record<string, string> = (allTags?.allTagsSlim ?? [])
@@ -262,7 +262,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
               newTagIDs.push(createdTag.data.tagCreate.id);
           });
         }
-        tag_ids = uniq(newTagIDs);
+        updatedTags = uniq(newTagIDs);
       }
 
       const sceneUpdateResult = await updateScene({
@@ -275,7 +275,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           studio_id: studioID,
           cover_image: imgData,
           url: scene.url,
-          tag_ids,
+          tag_ids: updatedTags,
           stash_ids: [
             ...(stashScene?.stash_ids ?? []),
             {
