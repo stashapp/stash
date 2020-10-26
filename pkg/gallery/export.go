@@ -20,6 +20,10 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 		newGalleryJSON.Path = gallery.Path.String
 	}
 
+	if gallery.FileModTime.Valid {
+		newGalleryJSON.FileModTime = models.JSONTime{Time: gallery.FileModTime.Timestamp}
+	}
+
 	if gallery.Title.Valid {
 		newGalleryJSON.Title = gallery.Title.String
 	}
