@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -19,7 +18,6 @@ import (
 	"github.com/chromedp/chromedp"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/stashapp/stash/pkg/logger"
-	"github.com/stashapp/stash/pkg/models"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/net/publicsuffix"
 )
@@ -27,27 +25,6 @@ import (
 // Timeout for the scrape http request. Includes transfer time. May want to make this
 // configurable at some point.
 const scrapeGetTimeout = time.Second * 30
-
-func constructSceneURL(url string, scene *models.Scene) string {
-	// support checksum, title and filename
-	ret := strings.Replace(url, "{checksum}", scene.Checksum.String, -1)
-	ret = strings.Replace(url, "{oshash}", scene.OSHash.String, -1)
-	ret = strings.Replace(ret, "{filename}", filepath.Base(scene.Path), -1)
-	ret = strings.Replace(ret, "{title}", scene.Title.String, -1)
-
-	return ret
-}
-
-func constructGalleryURL(url string, gallery *models.Gallery) string {
-	// support checksum, title and filename
-	ret := strings.Replace(url, "{checksum}", gallery.Checksum, -1)
-	if gallery.Path.Valid {
-		ret = strings.Replace(url, "{filename}", filepath.Base(gallery.Path.String), -1)
-	}
-	ret = strings.Replace(url, "{title}", gallery.Title.String, -1)
-
-	return ret
-}
 
 func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Reader, error) {
 	driverOptions := scraperConfig.DriverOptions

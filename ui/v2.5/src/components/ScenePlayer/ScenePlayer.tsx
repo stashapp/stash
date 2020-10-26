@@ -32,13 +32,8 @@ export class ScenePlayerImpl extends React.Component<
       return false;
     }
 
-    const startIndex = src.lastIndexOf("?start=");
-    let srcCopy = src;
-    if (startIndex !== -1) {
-      srcCopy = srcCopy.substring(0, startIndex);
-    }
-
-    return srcCopy.endsWith("/stream");
+    const url = new URL(src);
+    return url.pathname.endsWith("/stream");
   }
 
   // Typings for jwplayer are, unfortunately, very lacking
@@ -59,6 +54,9 @@ export class ScenePlayerImpl extends React.Component<
       scrubberPosition: 0,
       config: this.makeJWPlayerConfig(props.scene),
     };
+
+    // Default back to Direct Streaming
+    localStorage.removeItem("jwplayer.qualityLabel");
   }
 
   public UNSAFE_componentWillReceiveProps(props: IScenePlayerProps) {
@@ -98,18 +96,27 @@ export class ScenePlayerImpl extends React.Component<
 
     this.player.on("error", (err: any) => {
       if (err && err.code === 224003) {
-        this.handleError();
+        // When jwplayer has been requested to play but the browser doesn't support the video format.
+        this.handleError(true);
       }
     });
 
+    //
     this.player.on("meta", (metadata: any) => {
       if (
         metadata.metadataType === "media" &&
         !metadata.width &&
         !metadata.height
       ) {
-        // treat this as a decoding error and try the next source
-        this.handleError();
+        // Occurs during preload when videos with supported audio/unsupported video are preloaded.
+        // Treat this as a decoding error and try the next source without playing.
+        // However on Safari we get an media event when m3u8 is loaded which needs to be ignored.
+        const currentFile = this.player.getPlaylistItem().file;
+        if (currentFile != null && !currentFile.includes("m3u8")) {
+          const state = this.player.getState();
+          const play = state === "buffering" || state === "playing";
+          this.handleError(play);
+        }
       }
     });
 
@@ -143,7 +150,7 @@ export class ScenePlayerImpl extends React.Component<
     this.player.pause();
   }
 
-  private handleError() {
+  private handleError(play: boolean) {
     const currentFile = this.player.getPlaylistItem();
     if (currentFile) {
       // eslint-disable-next-line no-console
@@ -152,8 +159,13 @@ export class ScenePlayerImpl extends React.Component<
 
     if (this.tryNextStream()) {
       // eslint-disable-next-line no-console
-      console.log("Trying next source in playlist");
+      console.log(
+        `Trying next source in playlist: ${this.playlist.sources[0].file}`
+      );
       this.player.load(this.playlist);
+      if (play) {
+        this.player.play();
+      }
     }
   }
 
@@ -211,28 +223,30 @@ export class ScenePlayerImpl extends React.Component<
     };
 
     const seekHook = (seekToPosition: number, _videoTag: HTMLVideoElement) => {
-      if (
-        !_videoTag.src ||
-        ScenePlayerImpl.isDirectStream(_videoTag.src) ||
-        _videoTag.src.endsWith(".m3u8")
-      ) {
+      if (!_videoTag.src || _videoTag.src.endsWith(".m3u8")) {
+        return false;
+      }
+
+      if (ScenePlayerImpl.isDirectStream(_videoTag.src)) {
+        if (_videoTag.dataset.start) {
+          /* eslint-disable-next-line no-param-reassign */
+          _videoTag.dataset.start = "0";
+        }
+
         // direct stream - fall back to default
         return false;
       }
 
       // remove the start parameter
-      let { src } = _videoTag;
-
-      const startIndex = src.lastIndexOf("?start=");
-      if (startIndex !== -1) {
-        src = src.substring(0, startIndex);
-      }
+      const srcUrl = new URL(_videoTag.src);
+      srcUrl.searchParams.delete("start");
 
       /* eslint-disable no-param-reassign */
       _videoTag.dataset.start = seekToPosition.toString();
-
-      _videoTag.src = `${src}?start=${seekToPosition}`;
+      srcUrl.searchParams.append("start", seekToPosition.toString());
+      _videoTag.src = srcUrl.toString();
       /* eslint-enable no-param-reassign */
+
       _videoTag.play();
 
       // return true to indicate not to fall through to default

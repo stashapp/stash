@@ -400,7 +400,7 @@ func ConfigCheckMiddleware(next http.Handler) http.Handler {
 		if !config.IsValid() && shouldRedirect {
 			// #539 - don't redirect if loading login page
 			if !strings.HasPrefix(r.URL.Path, setupEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) {
-				http.Redirect(w, r, setupEndPoint, 301)
+				http.Redirect(w, r, setupEndPoint, http.StatusFound)
 				return
 			}
 		}
@@ -416,7 +416,7 @@ func DatabaseCheckMiddleware(next http.Handler) http.Handler {
 			// #451 - don't redirect if loading login page
 			// #539 - or setup page
 			if !strings.HasPrefix(r.URL.Path, migrateEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) && !strings.HasPrefix(r.URL.Path, setupEndPoint) {
-				http.Redirect(w, r, migrateEndPoint, 301)
+				http.Redirect(w, r, migrateEndPoint, http.StatusFound)
 				return
 			}
 		}
