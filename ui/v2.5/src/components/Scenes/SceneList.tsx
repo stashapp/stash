@@ -10,6 +10,7 @@ import { useScenesList } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { showWhenSelected } from "src/hooks/ListHook";
+import Tagger from "src/components/Tagger";
 import { WallPanel } from "../Wall/WallPanel";
 import { SceneCard } from "./SceneCard";
 import { SceneListTable } from "./SceneListTable";
@@ -217,6 +218,9 @@ export const SceneList: React.FC<ISceneList> = ({
     }
     if (filter.displayMode === DisplayMode.Wall) {
       return <WallPanel scenes={result.data.findScenes.scenes} />;
+    }
+    if (filter.displayMode === DisplayMode.Tagger) {
+      return <Tagger scenes={result.data.findScenes.scenes} />;
     }
   }
 

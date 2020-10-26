@@ -56,4 +56,9 @@ fragment SceneData on Scene {
   performers {
     ...PerformerData
   }
+
+  stash_ids {
+    endpoint
+    stash_id
+  }
 }

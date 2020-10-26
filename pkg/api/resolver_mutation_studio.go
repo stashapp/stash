@@ -48,6 +48,8 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	// Start the transaction and save the studio
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewStudioQueryBuilder()
+	jqb := models.NewJoinsQueryBuilder()
+
 	studio, err := qb.Create(newStudio, tx)
 	if err != nil {
 		_ = tx.Rollback()
@@ -58,6 +60,21 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	if len(imageData) > 0 {
 		if err := qb.UpdateStudioImage(studio.ID, imageData, tx); err != nil {
 			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
+	// Save the stash_ids
+	if input.StashIds != nil {
+		var stashIDJoins []models.StashID
+		for _, stashID := range input.StashIds {
+			newJoin := models.StashID{
+				StashID:  stashID.StashID,
+				Endpoint: stashID.Endpoint,
+			}
+			stashIDJoins = append(stashIDJoins, newJoin)
+		}
+		if err := jqb.UpdateStudioStashIDs(studio.ID, stashIDJoins, tx); err != nil {
 			return nil, err
 		}
 	}
@@ -109,6 +126,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	// Start the transaction and save the studio
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewStudioQueryBuilder()
+	jqb := models.NewJoinsQueryBuilder()
 
 	if err := manager.ValidateModifyStudio(updatedStudio, tx); err != nil {
 		tx.Rollback()
@@ -131,6 +149,21 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		// must be unsetting
 		if err := qb.DestroyStudioImage(studio.ID, tx); err != nil {
 			tx.Rollback()
+			return nil, err
+		}
+	}
+
+	// Save the stash_ids
+	if input.StashIds != nil {
+		var stashIDJoins []models.StashID
+		for _, stashID := range input.StashIds {
+			newJoin := models.StashID{
+				StashID:  stashID.StashID,
+				Endpoint: stashID.Endpoint,
+			}
+			stashIDJoins = append(stashIDJoins, newJoin)
+		}
+		if err := jqb.UpdateStudioStashIDs(studioID, stashIDJoins, tx); err != nil {
 			return nil, err
 		}
 	}

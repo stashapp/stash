@@ -40,6 +40,9 @@ type scraper interface {
 	scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error)
 	scrapeSceneByURL(url string) (*models.ScrapedScene, error)
 
+	scrapeGalleryByFragment(scene models.GalleryUpdateInput) (*models.ScrapedGallery, error)
+	scrapeGalleryByURL(url string) (*models.ScrapedGallery, error)
+
 	scrapeMovieByURL(url string) (*models.ScrapedMovie, error)
 }
 

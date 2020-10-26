@@ -31,10 +31,11 @@ type Performer {
   image_path: String # Resolver
   scene_count: Int # Resolver
   scenes: [Scene!]!
+  stash_ids: [StashID!]!
 }
 
 input PerformerCreateInput {
-  name: String
+  name: String!
   url: String
   gender: GenderEnum
   birthdate: String
@@ -53,6 +54,7 @@ input PerformerCreateInput {
   favorite: Boolean
   """This should be base64 encoded"""
   image: String
+  stash_ids: [StashIDInput!]
 }
 
 input PerformerUpdateInput {
@@ -76,6 +78,7 @@ input PerformerUpdateInput {
   favorite: Boolean
   """This should be base64 encoded"""
   image: String
+  stash_ids: [StashIDInput!]
 }
 
 input PerformerDestroyInput {

@@ -145,6 +145,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	// start stream based on query param, if provided
 	r.ParseForm()
 	startTime := r.Form.Get("start")
+	requestedSize := r.Form.Get("resolution")
 
 	var stream *ffmpeg.Stream
 
@@ -156,6 +157,9 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 	options := ffmpeg.GetTranscodeStreamOptions(*videoFile, videoCodec, audioCodec)
 	options.StartTime = startTime
 	options.MaxTranscodeSize = config.GetMaxStreamingTranscodeSize()
+	if requestedSize != "" {
+		options.MaxTranscodeSize = models.StreamingResolutionEnum(requestedSize)
+	}
 
 	encoder := ffmpeg.NewEncoder(manager.GetInstance().FFMPEGPath)
 	stream, err = encoder.GetTranscodeStream(options)

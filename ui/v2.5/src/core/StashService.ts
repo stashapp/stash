@@ -245,6 +245,8 @@ export const useScrapePerformer = (
 
 export const useListSceneScrapers = () => GQL.useListSceneScrapersQuery();
 
+export const useListGalleryScrapers = () => GQL.useListGalleryScrapersQuery();
+
 export const useListMovieScrapers = () => GQL.useListMovieScrapersQuery();
 
 export const useScrapeFreeonesPerformers = (q: string) =>
@@ -700,6 +702,15 @@ export const queryScrapeSceneURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
+export const queryScrapeGalleryURL = (url: string) =>
+  client.query<GQL.ScrapeGalleryUrlQuery>({
+    query: GQL.ScrapeGalleryUrlDocument,
+    variables: {
+      url,
+    },
+    fetchPolicy: "network-only",
+  });
+
 export const queryScrapeMovieURL = (url: string) =>
   client.query<GQL.ScrapeMovieUrlQuery>({
     query: GQL.ScrapeMovieUrlDocument,
@@ -731,6 +742,19 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
         scene_ids: [sceneID],
       },
     },
+  });
+
+export const queryScrapeGallery = (
+  scraperId: string,
+  scene: GQL.GalleryUpdateInput
+) =>
+  client.query<GQL.ScrapeGalleryQuery>({
+    query: GQL.ScrapeGalleryDocument,
+    variables: {
+      scraper_id: scraperId,
+      scene,
+    },
+    fetchPolicy: "network-only",
   });
 
 export const mutateReloadScrapers = () =>
@@ -869,3 +893,23 @@ export const stringToGender = (value?: string, caseInsensitive?: boolean) => {
 };
 
 export const getGenderStrings = () => Array.from(stringGenderMap.keys());
+
+export const stashBoxQuery = (searchVal: string, stashBoxIndex: number) =>
+  client?.query<
+    GQL.QueryStashBoxSceneQuery,
+    GQL.QueryStashBoxSceneQueryVariables
+  >({
+    query: GQL.QueryStashBoxSceneDocument,
+    variables: { input: { q: searchVal, stash_box_index: stashBoxIndex } },
+  });
+
+export const stashBoxBatchQuery = (sceneIds: string[], stashBoxIndex: number) =>
+  client?.query<
+    GQL.QueryStashBoxSceneQuery,
+    GQL.QueryStashBoxSceneQueryVariables
+  >({
+    query: GQL.QueryStashBoxSceneDocument,
+    variables: {
+      input: { scene_ids: sceneIds, stash_box_index: stashBoxIndex },
+    },
+  });
