@@ -4,6 +4,7 @@ export enum DisplayMode {
   Grid,
   List,
   Wall,
+  Tagger,
 }
 
 export enum FilterMode {

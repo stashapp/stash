@@ -701,8 +701,8 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
-	excludeVid := config.GetExcludes()
-	excludeImg := config.GetImageExcludes()
+	excludeVidRegex := generateRegexps(config.GetExcludes())
+	excludeImgRegex := generateRegexps(config.GetImageExcludes())
 
 	return utils.SymWalk(s.Path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -714,12 +714,12 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 			return nil
 		}
 
-		if !s.ExcludeVideo && matchExtension(path, vidExt) && !matchFile(path, excludeVid) {
+		if !s.ExcludeVideo && matchExtension(path, vidExt) && !matchFileRegex(path, excludeVidRegex) {
 			return f(path, info, err)
 		}
 
 		if !s.ExcludeImage {
-			if (matchExtension(path, imgExt) || matchExtension(path, gExt)) && !matchFile(path, excludeImg) {
+			if (matchExtension(path, imgExt) || matchExtension(path, gExt)) && !matchFileRegex(path, excludeImgRegex) {
 				return f(path, info, err)
 			}
 		}

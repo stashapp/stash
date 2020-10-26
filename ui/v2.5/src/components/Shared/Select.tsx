@@ -20,10 +20,11 @@ import { useToast } from "src/hooks";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { FilterMode } from "src/models/list-filter/types";
 
-type ValidTypes =
+export type ValidTypes =
   | GQL.SlimPerformerDataFragment
   | GQL.Tag
-  | GQL.SlimStudioDataFragment;
+  | GQL.SlimStudioDataFragment
+  | GQL.SlimMovieDataFragment;
 type Option = { value: string; label: string };
 
 interface ITypeProps {
@@ -63,13 +64,9 @@ interface ISelectProps {
   groupHeader?: string;
   closeMenuOnSelect?: boolean;
 }
-interface IFilterItem {
-  id: string;
-  name?: string | null;
-}
 interface IFilterComponentProps extends IFilterProps {
-  items: Array<IFilterItem>;
-  onCreate?: (name: string) => Promise<{ item: IFilterItem; message: string }>;
+  items: Array<ValidTypes>;
+  onCreate?: (name: string) => Promise<{ item: ValidTypes; message: string }>;
 }
 interface IFilterSelectProps
   extends Omit<ISelectProps, "onChange" | "items" | "onCreateOption"> {}

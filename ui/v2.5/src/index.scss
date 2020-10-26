@@ -17,6 +17,7 @@
 @import "src/components/Tags/styles.scss";
 @import "src/components/Wall/styles.scss";
 @import "../node_modules/flag-icon-css/css/flag-icon.min.css";
+@import "src/components/Tagger/styles.scss";
 
 /* stylelint-disable */
 #root {
@@ -67,8 +68,13 @@ code,
 }
 
 .input-control,
-.input-control:focus {
+.input-control:focus,
+.input-control:disabled {
   background-color: $secondary;
+}
+
+.input-control:disabled {
+  opacity: 0.8;
 }
 
 textarea.text-input {
@@ -228,14 +234,6 @@ div.dropdown-menu {
 
   .dropdown-item {
     display: flex;
-
-    & > :not(:last-child) {
-      margin-right: 7px;
-    }
-
-    & > :last-child {
-      margin-right: 0;
-    }
   }
 }
 
