@@ -13,7 +13,7 @@ type SceneReader interface {
 	// FindByPerformerID(performerID int) ([]*Scene, error)
 	// CountByPerformerID(performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Scene, error)
-	// FindByMovieID(movieID int) ([]*Scene, error)
+	FindByMovieID(movieID int) ([]*Scene, error)
 	// CountByMovieID(movieID int) (int, error)
 	// Count() (int, error)
 	// SizeCount() (string, error)
@@ -71,6 +71,10 @@ func (t *sceneReaderWriter) FindByChecksum(checksum string) (*Scene, error) {
 
 func (t *sceneReaderWriter) FindByOSHash(oshash string) (*Scene, error) {
 	return t.qb.FindByOSHash(oshash)
+}
+
+func (t *sceneReaderWriter) FindByMovieID(movieID int) ([]*Scene, error) {
+	return t.qb.FindByMovieID(movieID)
 }
 
 func (t *sceneReaderWriter) All() ([]*Scene, error) {
