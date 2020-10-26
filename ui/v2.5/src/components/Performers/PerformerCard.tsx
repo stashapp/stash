@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { FormattedNumber, FormattedPlural } from "react-intl";
+import { FormattedNumber, FormattedPlural, FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
 import { CountryFlag } from "src/components/Shared";
@@ -22,7 +22,11 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
     if (performer.favorite === false) {
       return;
     }
-    return <div className="rating-banner rating-5">FAVORITE</div>;
+    return (
+      <div className="rating-banner rating-5">
+        <FormattedMessage id="favourite" defaultMessage="Favourite" />
+      </div>
+    );
   }
 
   return (

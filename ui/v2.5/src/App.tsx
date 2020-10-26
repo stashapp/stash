@@ -40,8 +40,8 @@ const intlFormats = {
 
 export const App: React.FC = () => {
   const config = useConfiguration();
-  const language = config.data?.configuration?.interface?.language ?? "en-US";
-  const messageLanguage = language.slice(0, 2);
+  const language = config.data?.configuration?.interface?.language ?? "en-GB";
+  const messageLanguage = language.replace(/-/, "");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const messages = flattenMessages((locales as any)[messageLanguage]);
 
