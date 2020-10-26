@@ -32,7 +32,7 @@ The stash community maintains a number of custom scraper configuration files tha
 
 ## Basic scraper configuration file structure
 
-```
+```yaml
 name: <site>
 performerByName:
   <single scraper config>
@@ -71,7 +71,7 @@ URL-based scraping accepts multiple scrape configurations, and each configuratio
 
 Executes a script to perform the scrape. The `script` field is required for this action and accepts a list of string arguments. For example:
 
-```
+```yaml
 action: script
 script:
   - python
@@ -98,7 +98,7 @@ For `performerByName`, only `name` is required in the returned performer fragmen
 
 As an example, the following python code snippet can be used to scrape a performer:
 
-```
+```python
 import json
 import sys
 import string
@@ -166,7 +166,7 @@ This action scrapes a web page using an xpath configuration to parse. This actio
 
 This action requires that the top-level `xPathScrapers` configuration is populated. The `scraper` field is required and must match the name of a scraper name configured in `xPathScrapers`. For example:
 
-```
+```yaml
 sceneByURL:
 - action: scrapeXPath
   url: 
@@ -188,7 +188,7 @@ JSON scraping configurations specify the mapping between object fields and a GJS
 
 For `performerByName`, the `queryURL` field must be present also. This field is used to perform a search query URL for performer names. The placeholder string sequence `{}` is replaced with the performer name search string. For the subsequent performer scrape to work, the `URL` field must be filled in with the URL of the performer page that matches a URL given in a `performerByURL` scraping configuration. For example:
 
-```
+```yaml
 name: Boobpedia
 performerByName:
   action: scrapeXPath
@@ -220,7 +220,7 @@ These placeholder field values may be manipulated with regex replacements by add
 
 For example:
 
-```
+```yaml
 sceneByFragment:
   action: scrapeJson
   scraper: sceneQueryScraper
@@ -247,7 +247,7 @@ Within the `performer`/`scene` field are key/value pairs corresponding to the go
 
 The values of these may be either a simple selector value, which tells the system where to get the value of the field from, or a more advanced configuration (see below). For example, for an xpath configuration:
 
-```
+```yaml
 performer:
   Name: //h1[@itemprop="name"]
 ```
@@ -256,14 +256,14 @@ This will set the `Name` attribute of the returned performer to the text content
 
 For a json configuration:
 
-```
+```yaml
 performer:
   Name: data.name
 ```
 
 The value may also be a sub-object. If it is a sub-object, then the selector must be set to the `selector` key of the sub-object. For example, using the same xpath as above:
 
-```
+```yaml
 performer:
   Name: 
     selector: //h1[@itemprop="name"]
@@ -275,7 +275,7 @@ performer:
 
 Alternatively, an attribute value may be set to a fixed value, rather than scraping it from the webpage. This can be done by replacing `selector` with `fixed`. For example:
 
-```
+```yaml
 performer:
   Gender: 
     fixed: Female
@@ -285,7 +285,7 @@ performer:
 
 The `common` field is used to configure selector fragments that can be referenced in the selector strings. These are key-value pairs where the key is the string to reference the fragment, and the value is the string that the fragment will be replaced with. For example:
 
-```
+```yaml
 common:
   $infoPiece: //div[@class="infoPiece"]/span
 performer:
@@ -301,7 +301,7 @@ Post-processing operations are contained in the `postProcess` key. Post-processi
 * `map`: contains a map of input values to output values. Where a value matches one of the input values, it is replaced with the matching output value. If no value is matched, then value is unmodified.
 
 Example:
-```
+```yaml
 performer:
   Gender:
     selector: //div[class="example element"]
@@ -317,7 +317,7 @@ Gets the contents of the selected div element, and sets the returned value to `F
 * `replace`: contains an array of sub-objects. Each sub-object must have a `regex` and `with` field. The `regex` field is the regex pattern to replace, and `with` is the string to replace it with. `$` is used to reference capture groups - `$1` is the first capture group, `$2` the second and so on. Replacements are performed in order of the array.
 
 Example:
-```
+```yaml
 CareerLength: 
   selector: $infoPiece[text() = 'Career Start and End:']/../span[@class="smallInfo"]
     postProcess:
@@ -342,7 +342,7 @@ Post-processing on attribute post-process is done in the following order: `conca
 Some websites deliver content that cannot be scraped using the raw html file alone. These websites use javascript to dynamically load the content. As such, direct xpath scraping will not work on these websites. There is an option to use Chrome DevTools Protocol to load the webpage using an instance of Chrome, then scrape the result.
 
 Chrome CDP support can be enabled for a specific scraping configuration by adding the following to the root of the yml configuration:
-```
+```yaml
 driver:
   useCDP: true
 ```
@@ -357,7 +357,7 @@ When `useCDP` is set to true, stash will execute or connect to an instance of Ch
 
 A performer and scene xpath scraper is shown as an example below:
 
-```
+```yaml
 name: Pornhub
 performerByURL:
   - action: scrapeXPath
@@ -419,7 +419,7 @@ See also [#333](https://github.com/stashapp/stash/pull/333) for more examples.
 
 A performer and scene scraper for ThePornDB is shown below:
 
-```
+```yaml
 name: ThePornDB
 performerByName:
   action: scrapeJson
@@ -578,7 +578,7 @@ A different stash server can be configured as a scraping source. This action app
 
 An example stash scrape configuration is below:
 
-```
+```yaml
 name: stash
 performerByName:
   action: stash
@@ -592,7 +592,7 @@ stashServer:
 
 ### Debugging support
 To print the received html/json from a scraper request to the log file, add the following to your scraper yml file:
-```
+```yaml
 debug:
   printHTML: true
 ```
