@@ -297,7 +297,7 @@ export class StringCriterion extends Criterion {
         modifierString = "excludes";
         break;
       default:
-        return this.getLabel();
+        return super.getLabel();
     }
 
     const valueString = this.getLabelValue();
