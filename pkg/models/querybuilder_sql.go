@@ -117,8 +117,9 @@ func getPagination(findFilter *FindFilterType) string {
 	} else {
 		perPage = *findFilter.PerPage
 	}
-	if perPage > 120 {
-		perPage = 120
+
+	if perPage > 1000 {
+		perPage = 1000
 	} else if perPage < 1 {
 		perPage = 1
 	}
