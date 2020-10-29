@@ -138,9 +138,12 @@ textarea.text-input {
     }
 
     .gallery-card-image,
-    .tag-card-image,
-    .image-card-preview {
+    .tag-card-image {
       max-height: 240px;
+    }
+
+    .image-card-preview {
+      height: 240px;
     }
   }
 
@@ -156,9 +159,12 @@ textarea.text-input {
     }
 
     .gallery-card-image,
-    .tag-card-image,
-    .image-card-preview {
+    .tag-card-image {
       max-height: 360px;
+    }
+
+    .image-card-preview {
+      height: 360px;
     }
   }
 
@@ -174,9 +180,12 @@ textarea.text-input {
     }
 
     .tag-card-image,
-    .gallery-card-image,
-    .image-card-preview {
+    .gallery-card-image {
       max-height: 480px;
+    }
+
+    .image-card-preview {
+      height: 480px;
     }
   }
 }
