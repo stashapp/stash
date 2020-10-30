@@ -81,6 +81,29 @@ func (_m *SceneReaderWriter) FindByChecksum(checksum string) (*models.Scene, err
 	return r0, r1
 }
 
+// FindByMovieID provides a mock function with given fields: movieID
+func (_m *SceneReaderWriter) FindByMovieID(movieID int) ([]*models.Scene, error) {
+	ret := _m.Called(movieID)
+
+	var r0 []*models.Scene
+	if rf, ok := ret.Get(0).(func(int) []*models.Scene); ok {
+		r0 = rf(movieID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Scene)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(movieID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByOSHash provides a mock function with given fields: oshash
 func (_m *SceneReaderWriter) FindByOSHash(oshash string) (*models.Scene, error) {
 	ret := _m.Called(oshash)
