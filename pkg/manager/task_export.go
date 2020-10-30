@@ -125,12 +125,25 @@ func (t *ExportTask) Start(wg *sync.WaitGroup) {
 
 	paths.EnsureJSONDirs(t.baseDir)
 
+	// include movie scenes and gallery images
+	if !t.full {
+		// only include movie scenes if includeDependencies is also set
+		if !t.scenes.all && t.includeDependencies {
+			t.populateMovieScenes()
+		}
+
+		// always export gallery images
+		if !t.images.all {
+			t.populateGalleryImages()
+		}
+	}
+
 	t.ExportScenes(workerCount)
 	t.ExportImages(workerCount)
 	t.ExportGalleries(workerCount)
+	t.ExportMovies(workerCount)
 	t.ExportPerformers(workerCount)
 	t.ExportStudios(workerCount)
-	t.ExportMovies(workerCount)
 	t.ExportTags(workerCount)
 
 	if err := t.json.saveMappings(t.Mappings); err != nil {
@@ -227,6 +240,66 @@ func (t *ExportTask) zipFile(fn, outDir string, z *zip.Writer) error {
 	}
 
 	return nil
+}
+
+func (t *ExportTask) populateMovieScenes() {
+	reader := models.NewMovieReaderWriter(nil)
+	sceneReader := models.NewSceneReaderWriter(nil)
+
+	var movies []*models.Movie
+	var err error
+	all := t.full || (t.movies != nil && t.movies.all)
+	if all {
+		movies, err = reader.All()
+	} else if t.movies != nil && len(t.movies.IDs) > 0 {
+		movies, err = reader.FindMany(t.movies.IDs)
+	}
+
+	if err != nil {
+		logger.Errorf("[movies] failed to fetch movies: %s", err.Error())
+	}
+
+	for _, m := range movies {
+		scenes, err := sceneReader.FindByMovieID(m.ID)
+		if err != nil {
+			logger.Errorf("[movies] <%s> failed to fetch scenes for movie: %s", m.Checksum, err.Error())
+			continue
+		}
+
+		for _, s := range scenes {
+			t.scenes.IDs = utils.IntAppendUnique(t.scenes.IDs, s.ID)
+		}
+	}
+}
+
+func (t *ExportTask) populateGalleryImages() {
+	reader := models.NewGalleryReaderWriter(nil)
+	imageReader := models.NewImageReaderWriter(nil)
+
+	var galleries []*models.Gallery
+	var err error
+	all := t.full || (t.galleries != nil && t.galleries.all)
+	if all {
+		galleries, err = reader.All()
+	} else if t.galleries != nil && len(t.galleries.IDs) > 0 {
+		galleries, err = reader.FindMany(t.galleries.IDs)
+	}
+
+	if err != nil {
+		logger.Errorf("[galleries] failed to fetch galleries: %s", err.Error())
+	}
+
+	for _, g := range galleries {
+		images, err := imageReader.FindByGalleryID(g.ID)
+		if err != nil {
+			logger.Errorf("[galleries] <%s> failed to fetch images for gallery: %s", g.Checksum, err.Error())
+			continue
+		}
+
+		for _, i := range images {
+			t.images.IDs = utils.IntAppendUnique(t.images.IDs, i.ID)
+		}
+	}
 }
 
 func (t *ExportTask) ExportScenes(workers int) {
@@ -464,10 +537,7 @@ func exportImage(wg *sync.WaitGroup, jobChan <-chan *models.Image, t *ExportTask
 				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
 			}
 
-			// if imageGallery != nil {
-			// 	t.galleries.IDs = utils.IntAppendUnique(t.galleries.IDs, imageGallery.ID)
-			// }
-
+			t.galleries.IDs = utils.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(imageGalleries))
 			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tag.GetIDs(tags))
 			t.performers.IDs = utils.IntAppendUniques(t.performers.IDs, performer.GetIDs(performers))
 		}
@@ -851,6 +921,12 @@ func (t *ExportTask) exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movi
 		if err != nil {
 			logger.Errorf("[movies] <%s> error getting tag JSON: %s", m.Checksum, err.Error())
 			continue
+		}
+
+		if t.includeDependencies {
+			if m.StudioID.Valid {
+				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(m.StudioID.Int64))
+			}
 		}
 
 		movieJSON, err := t.json.getMovie(m.Checksum)
