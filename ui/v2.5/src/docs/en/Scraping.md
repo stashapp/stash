@@ -585,7 +585,7 @@ performerByName:
 performerByFragment:
   action: stash
 sceneByFragment:
-  - action: stash
+  action: stash
 stashServer:
   url: http://stashserver.com:9999
 ```
