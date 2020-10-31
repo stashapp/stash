@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useState, useReducer } from "react";
 import cx from "classnames";
 import { Button } from "react-bootstrap";
 import { uniq } from "lodash";
@@ -64,6 +64,16 @@ interface IStashSearchResultProps {
   queueFingerprintSubmission: (sceneId: string, endpoint: string) => void;
 }
 
+interface IPerformerReducerAction {
+  id: string;
+  data: PerformerOperation;
+}
+
+const performerReducer = (
+  state: Record<string, PerformerOperation>,
+  action: IPerformerReducerAction
+) => ({ ...state, [action.id]: action.data });
+
 const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   scene,
   stashScene,
@@ -78,9 +88,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   queueFingerprintSubmission,
 }) => {
   const [studio, setStudio] = useState<StudioOperation>();
-  const [performers, setPerformers] = useState<
-    Record<string, PerformerOperation>
-  >({});
+  const [performers, dispatch] = useReducer(performerReducer, {});
   const [saveState, setSaveState] = useState<string>("");
   const [error, setError] = useState<{ message?: string; details?: string }>(
     {}
@@ -96,11 +104,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   });
   const { data: allTags } = GQL.useAllTagsForFilterQuery();
 
-  const setPerformer = useCallback(
-    (performerData: PerformerOperation, performerID: string) =>
-      setPerformers({ ...performers, [performerID]: performerData }),
-    [performers]
-  );
+  const setPerformer = (
+    performerData: PerformerOperation,
+    performerID: string
+  ) => dispatch({ id: performerID, data: performerData });
 
   const handleSave = async () => {
     setError({});

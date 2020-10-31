@@ -141,9 +141,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     const newFingerprints = { ...fingerprints };
 
     const sceneIDs = scenes
-      .filter(
-        (s) => fingerprints[s.id] === undefined && s.stash_ids.length === 0
-      )
+      .filter((s) => s.stash_ids.length === 0)
       .map((s) => s.id);
 
     const results = await stashBoxBatchQuery(sceneIDs, selectedEndpoint.index);
@@ -151,6 +149,11 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       scene.fingerprints?.forEach((f) => {
         newFingerprints[f.hash] = scene;
       });
+    });
+
+    // Null any ids that are still undefined since it means they weren't found
+    sceneIDs.forEach((id) => {
+      newFingerprints[id] = newFingerprints[id] ?? null;
     });
 
     setFingerprints(newFingerprints);
@@ -164,7 +167,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
   const getFingerprintCount = () => {
     const count = scenes.filter(
-      (s) => s.stash_ids.length === 0 && fingerprints[s.id]
+      (s) =>
+        s.stash_ids.length === 0 &&
+        ((s.checksum && fingerprints[s.checksum]) ||
+          (s.oshash && fingerprints[s.oshash]))
     ).length;
     return `${count > 0 ? count : "No"} new fingerprint matches found`;
   };
@@ -269,7 +275,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       } else if (searchResults[scene.id] && !isTagged && !fingerprintMatch) {
         searchResult = (
           <ul className="pl-0 mt-4">
-            {sortScenesByDuration(searchResults[scene.id]).map(
+            {sortScenesByDuration(
+              searchResults[scene.id],
+              scene.file.duration ?? undefined
+            ).map(
               (sceneResult, i) =>
                 sceneResult && (
                   <StashSearchResult
