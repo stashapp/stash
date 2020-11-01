@@ -108,7 +108,10 @@ export const Performer: React.FC = () => {
         await updatePerformer({
           variables: {
             ...performerInput,
-            stash_ids: (performerInput?.stash_ids ?? []).map(s => ({ endpoint: s.endpoint, stash_id: s.stash_id })),
+            stash_ids: (performerInput?.stash_ids ?? []).map((s) => ({
+              endpoint: s.endpoint,
+              stash_id: s.stash_id,
+            })),
           } as GQL.PerformerUpdateInput,
         });
         if (performerInput.image) {
