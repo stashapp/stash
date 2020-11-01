@@ -88,6 +88,141 @@ const getSelectedValues = (selectedItems: ValueType<Option>) =>
       )
     : [];
 
+const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
+  type,
+  initialIds,
+  onChange,
+  className,
+  items,
+  selectedOptions,
+  isLoading,
+  isDisabled = false,
+  onCreateOption,
+  isClearable = true,
+  creatable = false,
+  isMulti = false,
+  onInputChange,
+  placeholder,
+  showDropdown = true,
+  groupHeader,
+  closeMenuOnSelect = true,
+}) => {
+  const defaultValue =
+    items.filter((item) => initialIds?.indexOf(item.value) !== -1) ?? null;
+
+  const options = groupHeader
+    ? [
+        {
+          label: groupHeader,
+          options: items,
+        },
+      ]
+    : items;
+
+  const styles = {
+    option: (base: CSSProperties) => ({
+      ...base,
+      color: "#000",
+    }),
+    container: (base: CSSProperties, props: Props) => ({
+      ...base,
+      zIndex: props.isFocused ? 10 : base.zIndex,
+    }),
+    multiValueRemove: (base: CSSProperties, props: Props) => ({
+      ...base,
+      color: props.isFocused ? base.color : "#333333",
+    }),
+  };
+
+  const props = {
+    options,
+    value: selectedOptions,
+    className,
+    classNamePrefix: "react-select",
+    onChange,
+    isMulti,
+    isClearable,
+    defaultValue,
+    noOptionsMessage: () => (type !== "tags" ? "None" : null),
+    placeholder: isDisabled ? "" : placeholder,
+    onInputChange,
+    isDisabled,
+    isLoading,
+    styles,
+    closeMenuOnSelect,
+    components: {
+      IndicatorSeparator: () => null,
+      ...((!showDropdown || isDisabled) && { DropdownIndicator: () => null }),
+      ...(isDisabled && { MultiValueRemove: () => null }),
+    },
+  };
+
+  return creatable ? (
+    <CreatableSelect
+      {...props}
+      isDisabled={isLoading || isDisabled}
+      onCreateOption={onCreateOption}
+    />
+  ) : (
+    <Select {...props} />
+  );
+};
+
+const FilterSelectComponent: React.FC<
+  IFilterComponentProps & ITypeProps & IFilterSelectProps
+> = (props) => {
+  const [loading, setLoading] = useState(false);
+  const selectedIds = props.ids ?? [];
+  const Toast = useToast();
+
+  const { items } = props;
+  const options = items.map((i) => ({
+    value: i.id,
+    label: i.name ?? "",
+  }));
+  const selectedOptions = options.filter((option) =>
+    selectedIds.includes(option.value)
+  );
+
+  const onChange = (selectedItems: ValueType<Option>) => {
+    const selectedValues = getSelectedValues(selectedItems);
+    props.onSelect?.(items.filter((item) => selectedValues.includes(item.id)));
+  };
+
+  const onCreate = async (name: string) => {
+    try {
+      setLoading(true);
+      const { item: newItem, message } = await props.onCreate!(name);
+      props.onSelect?.([
+        ...items.filter((item) => selectedIds.includes(item.id)),
+        newItem,
+      ]);
+      setLoading(false);
+      Toast.success({
+        content: (
+          <span>
+            {message}: <b>{name}</b>
+          </span>
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
+  };
+
+  return (
+    <SelectComponent
+      {...(props as ITypeProps)}
+      {...(props as IFilterSelectProps)}
+      isLoading={props.isLoading || loading}
+      onChange={onChange}
+      items={options}
+      selectedOptions={selectedOptions}
+      onCreateOption={props.creatable ? onCreate : undefined}
+    />
+  );
+};
+
 export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
   const [query, setQuery] = React.useState<string>("");
   const { data, loading } = useFindGalleries(getFilter());
@@ -201,16 +336,6 @@ export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = (props) => {
     />
   );
 };
-export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
-  props.type === "performers" ? (
-    <PerformerSelect {...(props as IFilterProps)} />
-  ) : props.type === "studios" || props.type === "parent_studios" ? (
-    <StudioSelect {...(props as IFilterProps)} />
-  ) : props.type === "movies" ? (
-    <MovieSelect {...(props as IFilterProps)} />
-  ) : (
-    <TagSelect {...(props as IFilterProps)} />
-  );
 
 export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   const { data, loading } = useAllPerformersForFilter();
@@ -308,137 +433,13 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
   );
 };
 
-const FilterSelectComponent: React.FC<
-  IFilterComponentProps & ITypeProps & IFilterSelectProps
-> = (props) => {
-  const [loading, setLoading] = useState(false);
-  const selectedIds = props.ids ?? [];
-  const Toast = useToast();
-
-  const { items } = props;
-  const options = items.map((i) => ({
-    value: i.id,
-    label: i.name ?? "",
-  }));
-  const selectedOptions = options.filter((option) =>
-    selectedIds.includes(option.value)
-  );
-
-  const onChange = (selectedItems: ValueType<Option>) => {
-    const selectedValues = getSelectedValues(selectedItems);
-    props.onSelect?.(items.filter((item) => selectedValues.includes(item.id)));
-  };
-
-  const onCreate = async (name: string) => {
-    try {
-      setLoading(true);
-      const { item: newItem, message } = await props.onCreate!(name);
-      props.onSelect?.([
-        ...items.filter((item) => selectedIds.includes(item.id)),
-        newItem,
-      ]);
-      setLoading(false);
-      Toast.success({
-        content: (
-          <span>
-            {message}: <b>{name}</b>
-          </span>
-        ),
-      });
-    } catch (e) {
-      Toast.error(e);
-    }
-  };
-
-  return (
-    <SelectComponent
-      {...(props as ITypeProps)}
-      {...(props as IFilterSelectProps)}
-      isLoading={props.isLoading || loading}
-      onChange={onChange}
-      items={options}
-      selectedOptions={selectedOptions}
-      onCreateOption={props.creatable ? onCreate : undefined}
-    />
-  );
-};
-
-const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
-  type,
-  initialIds,
-  onChange,
-  className,
-  items,
-  selectedOptions,
-  isLoading,
-  isDisabled = false,
-  onCreateOption,
-  isClearable = true,
-  creatable = false,
-  isMulti = false,
-  onInputChange,
-  placeholder,
-  showDropdown = true,
-  groupHeader,
-  closeMenuOnSelect = true,
-}) => {
-  const defaultValue =
-    items.filter((item) => initialIds?.indexOf(item.value) !== -1) ?? null;
-
-  const options = groupHeader
-    ? [
-        {
-          label: groupHeader,
-          options: items,
-        },
-      ]
-    : items;
-
-  const styles = {
-    option: (base: CSSProperties) => ({
-      ...base,
-      color: "#000",
-    }),
-    container: (base: CSSProperties, props: Props) => ({
-      ...base,
-      zIndex: props.isFocused ? 10 : base.zIndex,
-    }),
-    multiValueRemove: (base: CSSProperties, props: Props) => ({
-      ...base,
-      color: props.isFocused ? base.color : "#333333",
-    }),
-  };
-
-  const props = {
-    options,
-    value: selectedOptions,
-    className,
-    classNamePrefix: "react-select",
-    onChange,
-    isMulti,
-    isClearable,
-    defaultValue,
-    noOptionsMessage: () => (type !== "tags" ? "None" : null),
-    placeholder: isDisabled ? "" : placeholder,
-    onInputChange,
-    isDisabled,
-    isLoading,
-    styles,
-    closeMenuOnSelect,
-    components: {
-      IndicatorSeparator: () => null,
-      ...((!showDropdown || isDisabled) && { DropdownIndicator: () => null }),
-      ...(isDisabled && { MultiValueRemove: () => null }),
-    },
-  };
-
-  return creatable ? (
-    <CreatableSelect
-      {...props}
-      isDisabled={isLoading || isDisabled}
-      onCreateOption={onCreateOption}
-    />
+export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
+  props.type === "performers" ? (
+    <PerformerSelect {...(props as IFilterProps)} />
+  ) : props.type === "studios" || props.type === "parent_studios" ? (
+    <StudioSelect {...(props as IFilterProps)} />
+  ) : props.type === "movies" ? (
+    <MovieSelect {...(props as IFilterProps)} />
   ) : (
-    <Select {...props} />
+    <TagSelect {...(props as IFilterProps)} />
   );
-};
