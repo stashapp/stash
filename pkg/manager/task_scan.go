@@ -73,7 +73,7 @@ func (t *ScanTask) scanGallery() {
 			}
 		}
 
-		// if the mod time of the zip file is newer than that of the associated
+		// if the mod time of the zip file is different than that of the associated
 		// gallery, then recalculate the checksum
 		modified := t.isFileModified(fileModTime, gallery.FileModTime)
 		if modified {
@@ -233,7 +233,7 @@ func (t *ScanTask) getFileModTime() (time.Time, error) {
 }
 
 func (t *ScanTask) isFileModified(fileModTime time.Time, modTime models.NullSQLiteTimestamp) bool {
-	return modTime.Timestamp.Before(fileModTime)
+	return modTime.Timestamp != fileModTime
 }
 
 // associates a gallery to a scene with the same basename
@@ -315,7 +315,7 @@ func (t *ScanTask) scanScene() {
 			}
 		}
 
-		// if the mod time of the file is newer than that of the associated
+		// if the mod time of the file is different than that of the associated
 		// scene, then recalculate the checksum and regenerate the thumbnail
 		modified := t.isFileModified(fileModTime, scene.FileModTime)
 		if modified {
@@ -673,7 +673,7 @@ func (t *ScanTask) scanImage() {
 			}
 		}
 
-		// if the mod time of the file is newer than that of the associated
+		// if the mod time of the file is different than that of the associated
 		// image, then recalculate the checksum and regenerate the thumbnail
 		modified := t.isFileModified(fileModTime, i.FileModTime)
 		if modified {
