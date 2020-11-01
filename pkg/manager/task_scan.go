@@ -306,7 +306,7 @@ func (t *ScanTask) scanScene() {
 		if !scene.FileModTime.Valid {
 			t.updateFileModTime(scene.ID, fileModTime, &qb)
 
-			// update our copy of the gallery
+			// update our copy of the scene
 			var err error
 			scene, err = qb.Find(scene.ID)
 			if err != nil {
