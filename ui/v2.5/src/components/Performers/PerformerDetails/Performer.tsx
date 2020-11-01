@@ -106,7 +106,10 @@ export const Performer: React.FC = () => {
     try {
       if (!isNew) {
         await updatePerformer({
-          variables: performerInput as GQL.PerformerUpdateInput,
+          variables: {
+            ...performerInput,
+            stash_ids: (performerInput?.stash_ids ?? []).map(s => ({ endpoint: s.endpoint, stash_id: s.stash_id })),
+          } as GQL.PerformerUpdateInput,
         });
         if (performerInput.image) {
           // Refetch image to bust browser cache
