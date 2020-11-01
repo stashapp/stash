@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
+import Mousetrap from 'mousetrap';
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindPerformer,

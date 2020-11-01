@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
+import Mousetrap from 'mousetrap';
 import {
   FindScenesQueryResult,
   SlimSceneDataFragment,

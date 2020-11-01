@@ -9,8 +9,9 @@ import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
 import { Link, NavLink, useLocation, useHistory } from "react-router-dom";
-import { SessionUtils } from "src/utils";
+import Mousetrap from 'mousetrap';
 
+import { SessionUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
 import { Manual } from "./Help/Manual";
 

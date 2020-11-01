@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import _ from "lodash";
+import Mousetrap from 'mousetrap';
 import { FindTagsQueryResult } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";

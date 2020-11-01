@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 import { Button, Popover, OverlayTrigger, Table } from "react-bootstrap";
+import Mousetrap from 'mousetrap';
 import * as GQL from "src/core/generated-graphql";
 import {
   getGenderStrings,
