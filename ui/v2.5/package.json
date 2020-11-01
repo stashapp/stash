@@ -76,7 +76,7 @@
     "@types/lodash": "^4.14.164",
     "@types/mousetrap": "^1.6.4",
     "@types/node": "14.14.6",
-    "@types/react": "16.9.43",
+    "@types/react": "16.9.55",
     "@types/react-dom": "^16.9.8",
     "@types/react-router-bootstrap": "^0.24.5",
     "@types/react-router-dom": "5.1.6",
