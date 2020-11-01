@@ -58,7 +58,10 @@ func (t *ScanTask) scanGallery() {
 		// We already have this item in the database, keep going
 
 		// if file mod time is not set, set it now
+		// we will also need to rescan the zip contents
+		updateModTime := false
 		if !gallery.FileModTime.Valid {
+			updateModTime = true
 			t.updateFileModTime(gallery.ID, fileModTime, &qb)
 
 			// update our copy of the gallery
@@ -111,7 +114,7 @@ func (t *ScanTask) scanGallery() {
 			logger.Errorf("error getting images for zip gallery %s: %s", t.FilePath, err.Error())
 		}
 
-		if images == 0 || modified {
+		if images == 0 || modified || updateModTime {
 			t.scanZipImages(gallery)
 		} else {
 			// in case thumbnails have been deleted, regenerate them
