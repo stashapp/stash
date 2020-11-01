@@ -6,7 +6,7 @@ uploadFile()
     FILE=$1
     BASENAME="$(basename "${FILE}")"
     # abort if it takes more than two minutes to upload
-    uploadedTo=`curl -m 120 --upload-file $FILE "https://oshi.at/$BASENAME/10000"`
+    uploadedTo=`curl -m 120 --upload-file $FILE "https://oshi.at/$BASENAME/20160"`
     CDN=`echo "$uploadedTo"|grep CDN`
     echo "$BASENAME uploaded to url: $CDN"
 }
