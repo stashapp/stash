@@ -239,7 +239,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         });
         if (img.status === 200) {
           const blob = await img.blob();
-          imgData = await blobToBase64(blob);
+          // Sanity check on image size since bad images will fail
+          if (blob.size > 10000)
+            imgData = await blobToBase64(blob);
         }
       }
 
