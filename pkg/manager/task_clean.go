@@ -43,10 +43,6 @@ func (t *CleanTask) shouldClean(path string) bool {
 
 	if fileExists && t.getStashFromPath(path) != nil {
 		logger.Debugf("File Found: %s", path)
-		if matchFile(path, config.GetExcludes()) {
-			logger.Infof("File matched regex. Cleaning: \"%s\"", path)
-			return true
-		}
 	} else {
 		logger.Infof("File not found. Cleaning: \"%s\"", path)
 		return true
@@ -57,6 +53,11 @@ func (t *CleanTask) shouldClean(path string) bool {
 
 func (t *CleanTask) shouldCleanScene(s *models.Scene) bool {
 	if t.shouldClean(s.Path) {
+		return true
+	}
+
+	if matchFile(s.Path, config.GetExcludes()) {
+		logger.Infof("File matched regex. Cleaning: \"%s\"", s.Path)
 		return true
 	}
 
@@ -85,6 +86,11 @@ func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 		return true
 	}
 
+	if matchFile(path, config.GetImageExcludes()) {
+		logger.Infof("File matched regex. Cleaning: \"%s\"", path)
+		return true
+	}
+
 	stash := t.getStashFromPath(path)
 	if stash.ExcludeImage {
 		logger.Infof("File in stash library that excludes images. Cleaning: \"%s\"", path)
@@ -106,6 +112,11 @@ func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 
 func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 	if t.shouldClean(s.Path) {
+		return true
+	}
+
+	if matchFile(s.Path, config.GetImageExcludes()) {
+		logger.Infof("File matched regex. Cleaning: \"%s\"", s.Path)
 		return true
 	}
 
