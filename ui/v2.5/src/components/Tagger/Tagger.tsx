@@ -76,6 +76,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   queueFingerprintSubmission,
   clearSubmissionQueue,
 }) => {
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [queryString, setQueryString] = useState<Record<string, string>>({});
 
@@ -96,16 +97,22 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     config.fingerprintQueue[selectedEndpoint.endpoint] ?? [];
 
   const doBoxSearch = (sceneID: string, searchVal: string) => {
-    stashBoxQuery(searchVal, selectedEndpoint.index).then((queryData) => {
-      const s = selectScenes(queryData.data?.queryStashBoxScene);
-      setSearchResults({
-        ...searchResults,
-        [sceneID]: s,
+    stashBoxQuery(searchVal, selectedEndpoint.index)
+      .then((queryData) => {
+        const s = selectScenes(queryData.data?.queryStashBoxScene);
+        setSearchResults({
+          ...searchResults,
+          [sceneID]: s,
+        });
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+        setError("Network Error");
       });
-      setLoading(false);
-    });
 
     setLoading(true);
+    setError("");
   };
 
   const [
@@ -115,6 +122,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     onCompleted: (result) => {
       if (result.submitStashBoxFingerprints)
         clearSubmissionQueue(selectedEndpoint.endpoint);
+    },
+    onError: () => {
+      setError("Network Error");
     },
   });
 
@@ -144,7 +154,15 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       .filter((s) => s.stash_ids.length === 0)
       .map((s) => s.id);
 
-    const results = await stashBoxBatchQuery(sceneIDs, selectedEndpoint.index);
+    const results = await stashBoxBatchQuery(
+      sceneIDs,
+      selectedEndpoint.index
+    ).catch(() => {
+      setLoadingFingerprints(false);
+      setError("Network Error");
+    });
+    if (!results) return;
+
     selectScenes(results.data?.queryStashBoxScene).forEach((scene) => {
       scene.fingerprints?.forEach((f) => {
         newFingerprints[f.hash] = scene;
@@ -158,6 +176,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
     setFingerprints(newFingerprints);
     setLoadingFingerprints(false);
+    setError("");
   };
 
   const canFingerprintSearch = () =>
@@ -329,14 +348,15 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
   return (
     <Card className="tagger-table">
-      <div className="tagger-table-header row mb-4">
+      <div className="tagger-table-header row flex-nowrap mb-4 align-items-center">
         <div className="col-md-6">
           <b>Path</b>
         </div>
         <div className="col-md-2">
           <b>Query</b>
         </div>
-        <div className="ml-auto mr-2">
+        <b className="ml-auto mr-2 text-danger">{error}</b>
+        <div className="mr-2">
           {fingerprintQueue.length > 0 && (
             <Button
               onClick={handleFingerprintSubmission}
