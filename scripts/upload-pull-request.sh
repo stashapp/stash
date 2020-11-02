@@ -10,12 +10,13 @@ uploadFile()
     # abort if it takes more than two minutes to upload
     uploadedTo=$(curl -m 120 -F "email=stash@example.com" -F "file=@$FILE" "https://$server.gofile.io/uploadFile")
     resp=$(echo "$uploadedTo" | cut -d "\"" -f 4)
-    URL=$(echo "$uploadedTo"|cut -d "," -f 2 | cut -d "\"" -f 6)
     if [ $resp = "ok" ] ; then
-	    echo "$BASENAME uploaded to url: \"https://gofile.io/d/$URL\""
-	    # print an extra newline
-	    echo
+	URL=$(echo "$uploadedTo"|cut -d "," -f 2 | cut -d "\"" -f 6)
+	echo "$BASENAME uploaded to url: \"https://gofile.io/d/$URL\""
     fi
+    # print an extra newline
+    echo
+
 }
 
 uploadFile "dist/stash-osx"
