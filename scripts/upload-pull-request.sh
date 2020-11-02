@@ -12,11 +12,12 @@ uploadFile()
     resp=$(echo "$uploadedTo" | cut -d "\"" -f 4)
     URL=$(echo "$uploadedTo"|cut -d "," -f 2 | cut -d "\"" -f 6)
     if [ $resp = "ok" ] ; then
-	    echo -e "$BASENAME uploaded to url: \"https://gofile.io/d/$URL\"\n\n"
+	    echo "$BASENAME uploaded to url: \"https://gofile.io/d/$URL\""
+	    # print an extra newline
+	    echo
     fi
 }
 
 uploadFile "dist/stash-osx"
 uploadFile "dist/stash-win.exe"
 uploadFile "dist/stash-linux"
-
