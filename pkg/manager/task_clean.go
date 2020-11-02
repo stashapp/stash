@@ -41,13 +41,7 @@ func (t *CleanTask) shouldClean(path string) bool {
 	// use image.FileExists for zip file checking
 	fileExists := image.FileExists(path)
 
-	if fileExists && t.getStashFromPath(path) != nil {
-		logger.Debugf("File Found: %s", path)
-		if matchFile(path, config.GetExcludes()) {
-			logger.Infof("File matched regex. Cleaning: \"%s\"", path)
-			return true
-		}
-	} else {
+	if !fileExists || t.getStashFromPath(path) == nil {
 		logger.Infof("File not found. Cleaning: \"%s\"", path)
 		return true
 	}
@@ -68,6 +62,11 @@ func (t *CleanTask) shouldCleanScene(s *models.Scene) bool {
 
 	if !matchExtension(s.Path, config.GetVideoExtensions()) {
 		logger.Infof("File extension does not match video extensions. Cleaning: \"%s\"", s.Path)
+		return true
+	}
+
+	if matchFile(s.Path, config.GetExcludes()) {
+		logger.Infof("File matched regex. Cleaning: \"%s\"", s.Path)
 		return true
 	}
 
@@ -96,6 +95,11 @@ func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 		return true
 	}
 
+	if matchFile(path, config.GetImageExcludes()) {
+		logger.Infof("File matched regex. Cleaning: \"%s\"", path)
+		return true
+	}
+
 	if countImagesInZip(path) == 0 {
 		logger.Infof("Gallery has 0 images. Cleaning: \"%s\"", path)
 		return true
@@ -117,6 +121,11 @@ func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 
 	if !matchExtension(s.Path, config.GetImageExtensions()) {
 		logger.Infof("File extension does not match image extensions. Cleaning: \"%s\"", s.Path)
+		return true
+	}
+
+	if matchFile(s.Path, config.GetImageExcludes()) {
+		logger.Infof("File matched regex. Cleaning: \"%s\"", s.Path)
 		return true
 	}
 
