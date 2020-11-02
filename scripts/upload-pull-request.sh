@@ -6,11 +6,16 @@ uploadFile()
     FILE=$1
     BASENAME="$(basename "${FILE}")"
     # abort if it takes more than two minutes to upload
-    uploadedTo=`curl -m 120 --upload-file $FILE "https://oshi.at/$BASENAME/20160"`
-    CDN=`echo "$uploadedTo"|grep CDN`
-    echo "$BASENAME uploaded to url: $CDN"
+    server=$(curl https://apiv2.gofile.io/getServer |cut -d "," -f 2  | cut -d "\"" -f 6)
+    uploadedTo=$(curl -m 120 -F "email=stash@example.com" -F "file=@$FILE" "https://$server.gofile.io/uploadFile")
+    resp=$(echo "$uploadedTo" | cut -d "\"" -f 4)
+    URL=$(echo "$uploadedTo"|cut -d "," -f 2 | cut -d "\"" -f 6)
+    if [ $resp = "ok" ] ; then
+	    echo -e "$BASENAME uploaded to url: \"https://gofile.io/d/$URL\"\n\n"
+    fi
 }
 
 uploadFile "dist/stash-osx"
 uploadFile "dist/stash-win.exe"
 uploadFile "dist/stash-linux"
+
