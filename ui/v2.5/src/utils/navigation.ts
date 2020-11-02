@@ -29,7 +29,7 @@ const makePerformersCountryUrl = (
   if (!performer.id) return "#";
   const filter = new ListFilterModel(FilterMode.Performers);
   const criterion = new CountryCriterion();
-  criterion.value = `${performer.country}`;
+  criterion.value = `"${performer.country}"`;
   filter.criteria.push(criterion);
   return `/performers?${filter.makeQueryParameters()}`;
 };
