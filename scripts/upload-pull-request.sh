@@ -8,7 +8,7 @@ uploadFile()
     # get available server from gofile api
     server=$(curl https://apiv2.gofile.io/getServer |cut -d "," -f 2  | cut -d "\"" -f 6)
     # abort if it takes more than two minutes to upload
-    uploadedTo=$(curl -m 120 -F "email=stash@example.com" -F "file=@$FILE" "https://$server.gofile.io/uploadFile")
+    uploadedTo=$(curl -m 120 -F "email=stash@stashapp.cc" -F "file=@$FILE" "https://$server.gofile.io/uploadFile")
     resp=$(echo "$uploadedTo" | cut -d "\"" -f 4)
     if [ $resp = "ok" ] ; then
 	URL=$(echo "$uploadedTo"|cut -d "," -f 2 | cut -d "\"" -f 6)
