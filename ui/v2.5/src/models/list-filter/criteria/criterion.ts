@@ -250,6 +250,8 @@ export class StringCriterion extends Criterion {
   public modifierOptions = [
     StringCriterion.getModifierOption(CriterionModifier.Equals),
     StringCriterion.getModifierOption(CriterionModifier.NotEquals),
+    StringCriterion.getModifierOption(CriterionModifier.Includes),
+    StringCriterion.getModifierOption(CriterionModifier.Excludes),
     StringCriterion.getModifierOption(CriterionModifier.IsNull),
     StringCriterion.getModifierOption(CriterionModifier.NotNull),
   ];
@@ -272,36 +274,6 @@ export class StringCriterion extends Criterion {
     } else {
       this.parameterName = type;
     }
-  }
-
-  public static getModifierOption(
-    modifier: CriterionModifier = CriterionModifier.Equals
-  ): ILabeledValue {
-    switch (modifier) {
-      case CriterionModifier.Equals:
-        return { value: CriterionModifier.Equals, label: "Includes" };
-      case CriterionModifier.NotEquals:
-        return { value: CriterionModifier.NotEquals, label: "Excludes" };
-      default:
-        return super.getModifierOption(modifier);
-    }
-  }
-
-  public getLabel(): string {
-    let modifierString: string;
-    switch (this.modifier) {
-      case CriterionModifier.Equals:
-        modifierString = "includes";
-        break;
-      case CriterionModifier.NotEquals:
-        modifierString = "excludes";
-        break;
-      default:
-        return super.getLabel();
-    }
-
-    const valueString = this.getLabelValue();
-    return `${Criterion.getLabel(this.type)} ${modifierString} ${valueString}`;
   }
 }
 
