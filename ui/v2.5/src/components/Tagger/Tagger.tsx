@@ -83,6 +83,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   const [searchResults, setSearchResults] = useState<
     Record<string, IStashBoxScene[]>
   >({});
+  const [searchErrors, setSearchErrors] = useState<
+    Record<string, string | undefined>
+  >({});
   const [selectedResult, setSelectedResult] = useState<
     Record<string, number>
   >();
@@ -104,11 +107,22 @@ const TaggerList: React.FC<ITaggerListProps> = ({
           ...searchResults,
           [sceneID]: s,
         });
+        setSearchErrors({
+          ...searchErrors,
+          [sceneID]: undefined,
+        });
         setLoading(false);
       })
       .catch(() => {
         setLoading(false);
-        setError("Network Error");
+        setSearchResults({
+          ...searchResults,
+          [sceneID]: [],
+        });
+        setSearchErrors({
+          ...searchErrors,
+          [sceneID]: "Network Error",
+        });
       });
 
     setLoading(true);
@@ -153,6 +167,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     const sceneIDs = scenes
       .filter((s) => s.stash_ids.length === 0)
       .map((s) => s.id);
+
+    // clear search errors
+    setSearchErrors({});
 
     const results = await stashBoxBatchQuery(
       sceneIDs,
@@ -271,11 +288,13 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       }
 
       let searchResult;
-      if (searchResults[scene.id]?.length === 0)
+      if (searchErrors[scene.id]) {
         searchResult = (
-          <div className="text-danger font-weight-bold">No results found.</div>
+          <div className="text-danger font-weight-bold">
+            {searchErrors[scene.id]}
+          </div>
         );
-      else if (fingerprintMatch && !isTagged && !hasStashIDs) {
+      } else if (fingerprintMatch && !isTagged && !hasStashIDs) {
         searchResult = (
           <StashSearchResult
             showMales={config.showMales}
@@ -291,7 +310,11 @@ const TaggerList: React.FC<ITaggerListProps> = ({
             queueFingerprintSubmission={queueFingerprintSubmission}
           />
         );
-      } else if (searchResults[scene.id] && !isTagged && !fingerprintMatch) {
+      } else if (
+        searchResults[scene.id]?.length > 0 &&
+        !isTagged &&
+        !fingerprintMatch
+      ) {
         searchResult = (
           <ul className="pl-0 mt-4">
             {sortScenesByDuration(
@@ -322,6 +345,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                 )
             )}
           </ul>
+        );
+      } else if (searchResults[scene.id]?.length === 0) {
+        searchResult = (
+          <div className="text-danger font-weight-bold">No results found.</div>
         );
       }
 
