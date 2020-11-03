@@ -76,7 +76,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   queueFingerprintSubmission,
   clearSubmissionQueue,
 }) => {
-  const [error, setError] = useState("");
+  const [fingerprintError, setFingerprintError] = useState("");
   const [loading, setLoading] = useState(false);
   const [queryString, setQueryString] = useState<Record<string, string>>({});
 
@@ -137,7 +137,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         clearSubmissionQueue(selectedEndpoint.endpoint);
     },
     onError: () => {
-      setError("Network Error");
+      setFingerprintError("Network Error");
     },
   });
 
@@ -172,7 +172,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       selectedEndpoint.index
     ).catch(() => {
       setLoadingFingerprints(false);
-      setError("Network Error");
+      setFingerprintError("Network Error");
     });
     if (!results) return;
 
@@ -189,7 +189,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
     setFingerprints(newFingerprints);
     setLoadingFingerprints(false);
-    setError("");
+    setFingerprintError("");
   };
 
   const canFingerprintSearch = () =>
@@ -378,7 +378,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         <div className="col-md-2">
           <b>Query</b>
         </div>
-        <b className="ml-auto mr-2 text-danger">{error}</b>
+        <b className="ml-auto mr-2 text-danger">{fingerprintError}</b>
         <div className="mr-2">
           {fingerprintQueue.length > 0 && (
             <Button
