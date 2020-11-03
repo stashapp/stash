@@ -126,7 +126,6 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       });
 
     setLoading(true);
-    setError("");
   };
 
   const [
@@ -167,9 +166,6 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     const sceneIDs = scenes
       .filter((s) => s.stash_ids.length === 0)
       .map((s) => s.id);
-
-    // clear search errors
-    setSearchErrors({});
 
     const results = await stashBoxBatchQuery(
       sceneIDs,
