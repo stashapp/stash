@@ -331,10 +331,7 @@ export class ListFilterModel {
       }
 
       jsonParameters.forEach((jsonString) => {
-        // make sure we escape \
-        const escaped = jsonString.replaceAll("\\", "\\\\");
-
-        const encodedCriterion = JSON.parse(escaped);
+        const encodedCriterion = JSON.parse(jsonString);
         const criterion = makeCriteria(encodedCriterion.type);
         // it's possible that we have unsupported criteria. Just skip if so.
         if (criterion) {

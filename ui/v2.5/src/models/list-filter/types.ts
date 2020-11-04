@@ -29,7 +29,9 @@ export interface ILabeledValue {
 }
 
 export function encodeILabeledId(o: ILabeledId) {
-  return { ...o, label: encodeURIComponent(o.label) };
+  // escape \ to \\ so that it encodes to JSON correctly
+  const adjustedLabel = o.label.replaceAll("\\", "\\\\");
+  return { ...o, label: encodeURIComponent(adjustedLabel) };
 }
 
 export interface IOptionType {

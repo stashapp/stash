@@ -118,8 +118,26 @@ export const useFindStudios = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindStudios = (filter: ListFilterModel) =>
+  client.query<GQL.FindStudiosQuery>({
+    query: GQL.FindStudiosDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      studio_filter: filter.makeStudioFilter(),
+    },
+  });
+
 export const useFindMovies = (filter: ListFilterModel) =>
   GQL.useFindMoviesQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      movie_filter: filter.makeMovieFilter(),
+    },
+  });
+
+export const queryFindMovies = (filter: ListFilterModel) =>
+  client.query<GQL.FindMoviesQuery>({
+    query: GQL.FindMoviesDocument,
     variables: {
       filter: filter.makeFindFilter(),
       movie_filter: filter.makeMovieFilter(),
@@ -136,6 +154,15 @@ export const useFindPerformers = (filter: ListFilterModel) =>
 
 export const useFindTags = (filter: ListFilterModel) =>
   GQL.useFindTagsQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeTagFilter(),
+    },
+  });
+
+export const queryFindTags = (filter: ListFilterModel) =>
+  client.query<GQL.FindTagsQuery>({
+    query: GQL.FindTagsDocument,
     variables: {
       filter: filter.makeFindFilter(),
       tag_filter: filter.makeTagFilter(),

@@ -63,3 +63,12 @@ func GetStudioName(reader models.StudioReader, gallery *models.Gallery) (string,
 
 	return "", nil
 }
+
+func GetIDs(galleries []*models.Gallery) []int {
+	var results []int
+	for _, gallery := range galleries {
+		results = append(results, gallery.ID)
+	}
+
+	return results
+}

@@ -311,6 +311,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		left join studios as studio on studio.id = scenes.studio_id
 		left join galleries as gallery on gallery.scene_id = scenes.id
 		left join scenes_tags as tags_join on tags_join.scene_id = scenes.id
+		left join scene_stash_ids on scene_stash_ids.scene_id = scenes.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -369,6 +370,8 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 			query.addWhere("scenes.date IS \"\" OR scenes.date IS \"0001-01-01\"")
 		case "tags":
 			query.addWhere("tags_join.scene_id IS NULL")
+		case "stash_id":
+			query.addWhere("scene_stash_ids.scene_id IS NULL")
 		default:
 			query.addWhere("scenes." + *isMissingFilter + " IS NULL OR TRIM(scenes." + *isMissingFilter + ") = ''")
 		}
@@ -418,9 +421,6 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	}
 
 	if stashIDFilter := sceneFilter.StashID; stashIDFilter != nil {
-		query.body += `
-			JOIN scene_stash_ids on scene_stash_ids.scene_id = scenes.id
-		`
 		query.addWhere("scene_stash_ids.stash_id = ?")
 		query.addArg(stashIDFilter)
 	}
