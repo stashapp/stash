@@ -115,6 +115,8 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       })
       .catch(() => {
         setLoading(false);
+        const { [sceneID]: undefined, ...results } = searchResults;
+        setSearchResults(results);
         setSearchErrors({
           ...searchErrors,
           [sceneID]: "Network Error",
