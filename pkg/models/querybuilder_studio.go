@@ -158,6 +158,7 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 	body := selectDistinctIDs("studios")
 	body += `
 		left join scenes on studios.id = scenes.studio_id		
+		left join studio_stash_ids on studio_stash_ids.studio_id = studios.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -183,9 +184,6 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 	}
 
 	if stashIDFilter := studioFilter.StashID; stashIDFilter != nil {
-		body += `
-			JOIN studio_stash_ids on studio_stash_ids.studio_id = studios.id
-		`
 		whereClauses = append(whereClauses, "studio_stash_ids.stash_id = ?")
 		args = append(args, stashIDFilter)
 	}
@@ -196,6 +194,8 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 			body += `left join studios_image on studios_image.studio_id = studios.id
 			`
 			whereClauses = appendClause(whereClauses, "studios_image.studio_id IS NULL")
+		case "stash_id":
+			whereClauses = appendClause(whereClauses, "studio_stash_ids.studio_id IS NULL")
 		default:
 			whereClauses = appendClause(whereClauses, "studios."+*isMissingFilter+" IS NULL")
 		}
