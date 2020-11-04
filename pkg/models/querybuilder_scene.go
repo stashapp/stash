@@ -60,9 +60,9 @@ func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error)
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scenes (oshash, checksum, path, title, details, url, date, rating, o_counter, size, duration, video_codec,
-                    			    audio_codec, format, width, height, framerate, bitrate, studio_id, created_at, updated_at)
+                    			    audio_codec, format, width, height, framerate, bitrate, studio_id, file_mod_time, created_at, updated_at)
 				VALUES (:oshash, :checksum, :path, :title, :details, :url, :date, :rating, :o_counter, :size, :duration, :video_codec,
-					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :created_at, :updated_at)
+					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :file_mod_time, :created_at, :updated_at)
 		`,
 		newScene,
 	)
@@ -103,6 +103,19 @@ func (qb *SceneQueryBuilder) UpdateFull(updatedScene Scene, tx *sqlx.Tx) (*Scene
 	}
 
 	return qb.find(updatedScene.ID, tx)
+}
+
+func (qb *SceneQueryBuilder) UpdateFileModTime(id int, modTime NullSQLiteTimestamp, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET file_mod_time = ? WHERE scenes.id = ? `,
+		modTime, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (qb *SceneQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error) {
