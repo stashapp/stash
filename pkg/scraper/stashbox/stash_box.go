@@ -133,7 +133,7 @@ func (c Client) SubmitStashBoxFingerprints(sceneIDs []string, endpoint string) (
 		}
 
 		if scene == nil {
-			return false, fmt.Errorf("scene with id %d not found", idInt)
+			continue
 		}
 
 		stashIDs, err := jqb.GetSceneStashIDs(idInt)
