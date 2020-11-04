@@ -5,8 +5,19 @@ uploadFile()
 {
     FILE=$1
     BASENAME="$(basename "${FILE}")"
+    
     # get available server from gofile api
-    server=$(curl https://apiv2.gofile.io/getServer |cut -d "," -f 2  | cut -d "\"" -f 6)
+    serverApi=$(curl https://apiv2.gofile.io/getServer)
+    resp=$(echo "$serverApi" | cut -d "\"" -f 4)
+    
+    # if no server is available abort
+    if [ $resp != "ok" ] ; then
+	echo "Upload of $BASENAME failed! Server not available."
+	echo
+	return
+    fi
+    server=$(echo "$serverApi" | cut -d "," -f 2  | cut -d "\"" -f 6)
+
     # abort if it takes more than two minutes to upload
     uploadedTo=$(curl -m 120 -F "email=stash@stashapp.cc" -F "file=@$FILE" "https://$server.gofile.io/uploadFile")
     resp=$(echo "$uploadedTo" | cut -d "\"" -f 4)
