@@ -7,7 +7,7 @@ uploadFile()
     BASENAME="$(basename "${FILE}")"
     
     # get available server from gofile api
-    serverApi=$(curl https://apiv2.gofile.io/getServer)
+    serverApi=$(curl -m 15 https://apiv2.gofile.io/getServer)
     resp=$(echo "$serverApi" | cut -d "\"" -f 4)
     
     # if no server is available abort
