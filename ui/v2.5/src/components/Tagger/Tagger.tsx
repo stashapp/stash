@@ -115,7 +115,8 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       })
       .catch(() => {
         setLoading(false);
-        const { [sceneID]: undefined, ...results } = searchResults;
+        // Destructure to remove existing result
+        const { [sceneID]: unassign, ...results } = searchResults;
         setSearchResults(results);
         setSearchErrors({
           ...searchErrors,
