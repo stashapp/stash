@@ -115,7 +115,8 @@ func (s *singleton) neededScan() (total *int, newFiles *int) {
 		})
 
 		if err == timeoutErr {
-			break
+			// timeout should return nil counts
+			return nil, nil
 		}
 
 		if err != nil {

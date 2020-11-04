@@ -220,8 +220,16 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 			`
 			query.addWhere("performers_image.performer_id IS NULL")
 		default:
-			query.addWhere("performers." + *isMissingFilter + " IS NULL")
+			query.addWhere("performers." + *isMissingFilter + " IS NULL OR TRIM(performers." + *isMissingFilter + ") = ''")
 		}
+	}
+
+	if stashIDFilter := performerFilter.StashID; stashIDFilter != nil {
+		query.body += `
+			JOIN performer_stash_ids on performer_stash_ids.performer_id = performers.id
+		`
+		query.addWhere("performer_stash_ids.stash_id = ?")
+		query.addArg(stashIDFilter)
 	}
 
 	query.handleStringCriterionInput(performerFilter.Ethnicity, tableName+".ethnicity")

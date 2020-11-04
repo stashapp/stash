@@ -3,26 +3,27 @@ import { useStats } from "src/core/StashService";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { LoadingIndicator } from "src/components/Shared";
 import Changelog from "src/components/Changelog/Changelog";
+import { TextUtils } from "src/utils";
 
 export const Stats: React.FC = () => {
   const { data, error, loading } = useStats();
 
+  if (error) return <span>{error.message}</span>;
   if (loading || !data) return <LoadingIndicator />;
 
-  if (error) return <span>error.message</span>;
-
-  const size = data.stats.scene_size_count.split(" ");
+  const scenesSize = TextUtils.fileSize(data.stats.scenes_size);
+  const imagesSize = TextUtils.fileSize(data.stats.images_size);
 
   return (
     <div className="mt-5">
       <div className="col col-sm-8 m-sm-auto row stats">
         <div className="stats-element">
           <p className="title">
-            <FormattedNumber value={parseFloat(size[0])} />
-            {` ${size[1]}`}
+            <FormattedNumber value={Math.floor(scenesSize.size)} />
+            {` ${TextUtils.formatFileSizeUnit(scenesSize.unit)}`}
           </p>
           <p className="heading">
-            <FormattedMessage id="library-size" defaultMessage="Library size" />
+            <FormattedMessage id="scenes-size" defaultMessage="Scenes size" />
           </p>
         </div>
         <div className="stats-element">
@@ -33,6 +34,25 @@ export const Stats: React.FC = () => {
             <FormattedMessage id="scenes" defaultMessage="Scenes" />
           </p>
         </div>
+        <div className="stats-element">
+          <p className="title">
+            <FormattedNumber value={Math.floor(imagesSize.size)} />
+            {` ${TextUtils.formatFileSizeUnit(imagesSize.unit)}`}
+          </p>
+          <p className="heading">
+            <FormattedMessage id="images-size" defaultMessage="Images size" />
+          </p>
+        </div>
+        <div className="stats-element">
+          <p className="title">
+            <FormattedNumber value={data.stats.image_count} />
+          </p>
+          <p className="heading">
+            <FormattedMessage id="images" defaultMessage="Images" />
+          </p>
+        </div>
+      </div>
+      <div className="col col-sm-8 m-sm-auto row stats">
         <div className="stats-element">
           <p className="title">
             <FormattedNumber value={data.stats.movie_count} />

@@ -50,6 +50,8 @@ input PerformerFilterType {
   gender: GenderCriterionInput
   """Filter to only include performers missing this property"""
   is_missing: String
+  """Filter by StashID"""
+  stash_id: String
 }
 
 input SceneMarkerFilterType {
@@ -86,6 +88,8 @@ input SceneFilterType {
   tags: MultiCriterionInput
   """Filter to only include scenes with these performers"""
   performers: MultiCriterionInput
+  """Filter by StashID"""
+  stash_id: String
 }
 
 input MovieFilterType {
@@ -98,6 +102,8 @@ input MovieFilterType {
 input StudioFilterType {
   """Filter to only include studios with this parent studio"""
   parents: MultiCriterionInput
+  """Filter by StashID"""
+  stash_id: String
   """Filter to only include studios missing this property"""
   is_missing: String
 }
@@ -111,6 +117,8 @@ input GalleryFilterType {
   is_zip: Boolean
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by average image resolution"""
+  average_resolution: ResolutionEnum
   """Filter to only include scenes with this studio"""
   studios: MultiCriterionInput
   """Filter to only include scenes with these tags"""
@@ -133,6 +141,8 @@ input TagFilterType {
 }
 
 input ImageFilterType {
+  """Filter by path"""
+  path: StringCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
   """Filter by o-counter"""

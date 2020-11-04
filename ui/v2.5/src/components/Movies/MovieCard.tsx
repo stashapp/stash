@@ -1,12 +1,14 @@
-import { Card } from "react-bootstrap";
 import React, { FunctionComponent } from "react";
 import { FormattedPlural } from "react-intl";
-import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
+import { BasicCard } from "../Shared/BasicCard";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
   sceneIndex?: number;
+  selecting?: boolean;
+  selected?: boolean;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
 export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
@@ -43,19 +45,29 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
   }
 
   return (
-    <Card className="movie-card">
-      <Link to={`/movies/${props.movie.id}`} className="movie-card-header">
-        <img
-          className="movie-card-image"
-          alt={props.movie.name ?? ""}
-          src={props.movie.front_image_path ?? ""}
-        />
-        {maybeRenderRatingBanner()}
-      </Link>
-      <div className="card-section">
-        <h5 className="text-truncate">{props.movie.name}</h5>
-        {maybeRenderSceneNumber()}
-      </div>
-    </Card>
+    <BasicCard
+      className="movie-card"
+      url={`/movies/${props.movie.id}`}
+      linkClassName="movie-card-header"
+      image={
+        <>
+          <img
+            className="movie-card-image"
+            alt={props.movie.name ?? ""}
+            src={props.movie.front_image_path ?? ""}
+          />
+          {maybeRenderRatingBanner()}
+        </>
+      }
+      details={
+        <>
+          <h5 className="text-truncate">{props.movie.name}</h5>
+          {maybeRenderSceneNumber()}
+        </>
+      }
+      selected={props.selected}
+      selecting={props.selecting}
+      onSelectedChanged={props.onSelectedChanged}
+    />
   );
 };

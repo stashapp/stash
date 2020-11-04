@@ -118,8 +118,26 @@ export const useFindStudios = (filter: ListFilterModel) =>
     },
   });
 
+export const queryFindStudios = (filter: ListFilterModel) =>
+  client.query<GQL.FindStudiosQuery>({
+    query: GQL.FindStudiosDocument,
+    variables: {
+      filter: filter.makeFindFilter(),
+      studio_filter: filter.makeStudioFilter(),
+    },
+  });
+
 export const useFindMovies = (filter: ListFilterModel) =>
   GQL.useFindMoviesQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      movie_filter: filter.makeMovieFilter(),
+    },
+  });
+
+export const queryFindMovies = (filter: ListFilterModel) =>
+  client.query<GQL.FindMoviesQuery>({
+    query: GQL.FindMoviesDocument,
     variables: {
       filter: filter.makeFindFilter(),
       movie_filter: filter.makeMovieFilter(),
@@ -136,6 +154,15 @@ export const useFindPerformers = (filter: ListFilterModel) =>
 
 export const useFindTags = (filter: ListFilterModel) =>
   GQL.useFindTagsQuery({
+    variables: {
+      filter: filter.makeFindFilter(),
+      tag_filter: filter.makeTagFilter(),
+    },
+  });
+
+export const queryFindTags = (filter: ListFilterModel) =>
+  client.query<GQL.FindTagsQuery>({
+    query: GQL.FindTagsDocument,
     variables: {
       filter: filter.makeFindFilter(),
       tag_filter: filter.makeTagFilter(),
@@ -217,6 +244,8 @@ export const useScrapePerformer = (
   });
 
 export const useListSceneScrapers = () => GQL.useListSceneScrapersQuery();
+
+export const useListGalleryScrapers = () => GQL.useListGalleryScrapersQuery();
 
 export const useListMovieScrapers = () => GQL.useListMovieScrapersQuery();
 
@@ -309,19 +338,55 @@ export const useBulkSceneUpdate = (input: GQL.BulkSceneUpdateInput) =>
 export const useScenesUpdate = (input: GQL.SceneUpdateInput[]) =>
   GQL.useScenesUpdateMutation({ variables: { input } });
 
+type SceneOMutation =
+  | GQL.SceneIncrementOMutation
+  | GQL.SceneDecrementOMutation
+  | GQL.SceneResetOMutation;
+const updateSceneO = (
+  id: string,
+  cache: ApolloCache<SceneOMutation>,
+  updatedOCount?: number
+) => {
+  const scene = cache.readQuery<
+    GQL.FindSceneQuery,
+    GQL.FindSceneQueryVariables
+  >({
+    query: GQL.FindSceneDocument,
+    variables: { id },
+  });
+  if (updatedOCount === undefined || !scene?.findScene) return;
+
+  cache.writeQuery<GQL.FindSceneQuery, GQL.FindSceneQueryVariables>({
+    query: GQL.FindSceneDocument,
+    variables: { id },
+    data: {
+      ...scene,
+      findScene: {
+        ...scene.findScene,
+        o_counter: updatedOCount,
+      },
+    },
+  });
+};
+
 export const useSceneIncrementO = (id: string) =>
   GQL.useSceneIncrementOMutation({
     variables: { id },
+    update: (cache, data) =>
+      updateSceneO(id, cache, data.data?.sceneIncrementO),
   });
 
 export const useSceneDecrementO = (id: string) =>
   GQL.useSceneDecrementOMutation({
     variables: { id },
+    update: (cache, data) =>
+      updateSceneO(id, cache, data.data?.sceneDecrementO),
   });
 
 export const useSceneResetO = (id: string) =>
   GQL.useSceneResetOMutation({
     variables: { id },
+    update: (cache, data) => updateSceneO(id, cache, data.data?.sceneResetO),
   });
 
 export const useSceneDestroy = (input: GQL.SceneDestroyInput) =>
@@ -372,19 +437,54 @@ export const useImagesDestroy = (input: GQL.ImagesDestroyInput) =>
     update: deleteCache(imageMutationImpactedQueries),
   });
 
+type ImageOMutation =
+  | GQL.ImageIncrementOMutation
+  | GQL.ImageDecrementOMutation
+  | GQL.ImageResetOMutation;
+const updateImageO = (
+  id: string,
+  cache: ApolloCache<ImageOMutation>,
+  updatedOCount?: number
+) => {
+  const image = cache.readQuery<
+    GQL.FindImageQuery,
+    GQL.FindImageQueryVariables
+  >({
+    query: GQL.FindImageDocument,
+    variables: { id },
+  });
+  if (updatedOCount === undefined || !image?.findImage) return;
+
+  cache.writeQuery<GQL.FindImageQuery, GQL.FindImageQueryVariables>({
+    query: GQL.FindImageDocument,
+    variables: { id },
+    data: {
+      findImage: {
+        ...image.findImage,
+        o_counter: updatedOCount,
+      },
+    },
+  });
+};
+
 export const useImageIncrementO = (id: string) =>
   GQL.useImageIncrementOMutation({
     variables: { id },
+    update: (cache, data) =>
+      updateImageO(id, cache, data.data?.imageIncrementO),
   });
 
 export const useImageDecrementO = (id: string) =>
   GQL.useImageDecrementOMutation({
     variables: { id },
+    update: (cache, data) =>
+      updateImageO(id, cache, data.data?.imageDecrementO),
   });
 
 export const useImageResetO = (id: string) =>
   GQL.useImageResetOMutation({
     variables: { id },
+    update: (cache, data) => updateImageO(id, cache, data.data?.imageResetO),
   });
 
 const galleryMutationImpactedQueries = [
@@ -602,6 +702,15 @@ export const queryScrapeSceneURL = (url: string) =>
     fetchPolicy: "network-only",
   });
 
+export const queryScrapeGalleryURL = (url: string) =>
+  client.query<GQL.ScrapeGalleryUrlQuery>({
+    query: GQL.ScrapeGalleryUrlDocument,
+    variables: {
+      url,
+    },
+    fetchPolicy: "network-only",
+  });
+
 export const queryScrapeMovieURL = (url: string) =>
   client.query<GQL.ScrapeMovieUrlQuery>({
     query: GQL.ScrapeMovieUrlDocument,
@@ -633,6 +742,19 @@ export const queryStashBoxScene = (stashBoxIndex: number, sceneID: string) =>
         scene_ids: [sceneID],
       },
     },
+  });
+
+export const queryScrapeGallery = (
+  scraperId: string,
+  scene: GQL.GalleryUpdateInput
+) =>
+  client.query<GQL.ScrapeGalleryQuery>({
+    query: GQL.ScrapeGalleryDocument,
+    variables: {
+      scraper_id: scraperId,
+      scene,
+    },
+    fetchPolicy: "network-only",
   });
 
 export const mutateReloadScrapers = () =>
@@ -771,3 +893,23 @@ export const stringToGender = (value?: string, caseInsensitive?: boolean) => {
 };
 
 export const getGenderStrings = () => Array.from(stringGenderMap.keys());
+
+export const stashBoxQuery = (searchVal: string, stashBoxIndex: number) =>
+  client?.query<
+    GQL.QueryStashBoxSceneQuery,
+    GQL.QueryStashBoxSceneQueryVariables
+  >({
+    query: GQL.QueryStashBoxSceneDocument,
+    variables: { input: { q: searchVal, stash_box_index: stashBoxIndex } },
+  });
+
+export const stashBoxBatchQuery = (sceneIds: string[], stashBoxIndex: number) =>
+  client?.query<
+    GQL.QueryStashBoxSceneQuery,
+    GQL.QueryStashBoxSceneQueryVariables
+  >({
+    query: GQL.QueryStashBoxSceneDocument,
+    variables: {
+      input: { scene_ids: sceneIds, stash_box_index: stashBoxIndex },
+    },
+  });

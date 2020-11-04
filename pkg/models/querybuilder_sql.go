@@ -60,20 +60,28 @@ func (qb *queryBuilder) handleIntCriterionInput(c *IntCriterionInput, column str
 
 func (qb *queryBuilder) handleStringCriterionInput(c *StringCriterionInput, column string) {
 	if c != nil {
-		if modifier := c.Modifier.String(); c.Modifier.IsValid() {
+		if modifier := c.Modifier; c.Modifier.IsValid() {
 			switch modifier {
-			case "EQUALS":
+			case CriterionModifierIncludes:
 				clause, thisArgs := getSearchBinding([]string{column}, c.Value, false)
 				qb.addWhere(clause)
 				qb.addArg(thisArgs...)
-			case "NOT_EQUALS":
+			case CriterionModifierExcludes:
 				clause, thisArgs := getSearchBinding([]string{column}, c.Value, true)
 				qb.addWhere(clause)
 				qb.addArg(thisArgs...)
-			case "IS_NULL":
-				qb.addWhere(column + " IS NULL")
-			case "NOT_NULL":
-				qb.addWhere(column + " IS NOT NULL")
+			case CriterionModifierEquals:
+				qb.addWhere(column + " LIKE ?")
+				qb.addArg(c.Value)
+			case CriterionModifierNotEquals:
+				qb.addWhere(column + " NOT LIKE ?")
+				qb.addArg(c.Value)
+			default:
+				clause, count := getSimpleCriterionClause(modifier, "?")
+				qb.addWhere(column + " " + clause)
+				if count == 1 {
+					qb.addArg(c.Value)
+				}
 			}
 		}
 	}
@@ -117,8 +125,9 @@ func getPagination(findFilter *FindFilterType) string {
 	} else {
 		perPage = *findFilter.PerPage
 	}
-	if perPage > 120 {
-		perPage = 120
+
+	if perPage > 1000 {
+		perPage = 1000
 	} else if perPage < 1 {
 		perPage = 1
 	}

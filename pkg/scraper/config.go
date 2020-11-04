@@ -32,8 +32,14 @@ type config struct {
 	// Configuration for querying scenes by a Scene fragment
 	SceneByFragment *scraperTypeConfig `yaml:"sceneByFragment"`
 
+	// Configuration for querying gallery by a Gallery fragment
+	GalleryByFragment *scraperTypeConfig `yaml:"galleryByFragment"`
+
 	// Configuration for querying a scene by a URL
 	SceneByURL []*scrapeByURLConfig `yaml:"sceneByURL"`
+
+	// Configuration for querying a gallery by a URL
+	GalleryByURL []*scrapeByURLConfig `yaml:"galleryByURL"`
 
 	// Configuration for querying a movie by a URL
 	MovieByURL []*scrapeByURLConfig `yaml:"movieByURL"`
@@ -108,7 +114,8 @@ type scraperTypeConfig struct {
 	Scraper string        `yaml:"scraper"`
 
 	// for xpath name scraper only
-	QueryURL string `yaml:"queryURL"`
+	QueryURL             string               `yaml:"queryURL"`
+	QueryURLReplacements queryURLReplacements `yaml:"queryURLReplace"`
 }
 
 func (c scraperTypeConfig) validate() error {
@@ -235,6 +242,21 @@ func (c config) toScraper() *models.Scraper {
 		ret.Scene = &scene
 	}
 
+	gallery := models.ScraperSpec{}
+	if c.GalleryByFragment != nil {
+		gallery.SupportedScrapes = append(gallery.SupportedScrapes, models.ScrapeTypeFragment)
+	}
+	if len(c.GalleryByURL) > 0 {
+		gallery.SupportedScrapes = append(gallery.SupportedScrapes, models.ScrapeTypeURL)
+		for _, v := range c.GalleryByURL {
+			gallery.Urls = append(gallery.Urls, v.URL...)
+		}
+	}
+
+	if len(gallery.SupportedScrapes) > 0 {
+		ret.Gallery = &gallery
+	}
+
 	movie := models.ScraperSpec{}
 	if len(c.MovieByURL) > 0 {
 		movie.SupportedScrapes = append(movie.SupportedScrapes, models.ScrapeTypeURL)
@@ -309,6 +331,10 @@ func (c config) supportsScenes() bool {
 	return c.SceneByFragment != nil || len(c.SceneByURL) > 0
 }
 
+func (c config) supportsGalleries() bool {
+	return c.GalleryByFragment != nil || len(c.GalleryByURL) > 0
+}
+
 func (c config) matchesSceneURL(url string) bool {
 	for _, scraper := range c.SceneByURL {
 		if scraper.matchesURL(url) {
@@ -316,6 +342,15 @@ func (c config) matchesSceneURL(url string) bool {
 		}
 	}
 
+	return false
+}
+
+func (c config) matchesGalleryURL(url string) bool {
+	for _, scraper := range c.GalleryByURL {
+		if scraper.matchesURL(url) {
+			return true
+		}
+	}
 	return false
 }
 
@@ -347,6 +382,33 @@ func (c config) ScrapeSceneURL(url string, globalConfig GlobalConfig) (*models.S
 		if scraper.matchesURL(url) {
 			s := getScraper(scraper.scraperTypeConfig, c, globalConfig)
 			ret, err := s.scrapeSceneByURL(url)
+			if err != nil {
+				return nil, err
+			}
+
+			if ret != nil {
+				return ret, nil
+			}
+		}
+	}
+
+	return nil, nil
+}
+
+func (c config) ScrapeGallery(gallery models.GalleryUpdateInput, globalConfig GlobalConfig) (*models.ScrapedGallery, error) {
+	if c.GalleryByFragment != nil {
+		s := getScraper(*c.GalleryByFragment, c, globalConfig)
+		return s.scrapeGalleryByFragment(gallery)
+	}
+
+	return nil, nil
+}
+
+func (c config) ScrapeGalleryURL(url string, globalConfig GlobalConfig) (*models.ScrapedGallery, error) {
+	for _, scraper := range c.GalleryByURL {
+		if scraper.matchesURL(url) {
+			s := getScraper(scraper.scraperTypeConfig, c, globalConfig)
+			ret, err := s.scrapeGalleryByURL(url)
 			if err != nil {
 				return nil, err
 			}

@@ -47,7 +47,9 @@ query ValidGalleriesForScene($scene_id: ID!) {
 query Stats {
   stats {
     scene_count,
-    scene_size_count,
+    scenes_size,
+    image_count,
+    images_size,
     gallery_count,
     performer_count,
     studio_count,

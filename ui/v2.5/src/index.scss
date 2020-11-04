@@ -17,6 +17,7 @@
 @import "src/components/Tags/styles.scss";
 @import "src/components/Wall/styles.scss";
 @import "../node_modules/flag-icon-css/css/flag-icon.min.css";
+@import "src/components/Tagger/styles.scss";
 
 /* stylelint-disable */
 #root {
@@ -67,8 +68,13 @@ code,
 }
 
 .input-control,
-.input-control:focus {
+.input-control:focus,
+.input-control:disabled {
   background-color: $secondary;
+}
+
+.input-control:disabled {
+  opacity: 0.8;
 }
 
 textarea.text-input {
@@ -132,9 +138,12 @@ textarea.text-input {
     }
 
     .gallery-card-image,
-    .tag-card-image,
-    .image-card-preview {
+    .tag-card-image {
       max-height: 240px;
+    }
+
+    .image-card-preview {
+      height: 240px;
     }
   }
 
@@ -150,9 +159,12 @@ textarea.text-input {
     }
 
     .gallery-card-image,
-    .tag-card-image,
-    .image-card-preview {
+    .tag-card-image {
       max-height: 360px;
+    }
+
+    .image-card-preview {
+      height: 360px;
     }
   }
 
@@ -168,9 +180,12 @@ textarea.text-input {
     }
 
     .tag-card-image,
-    .gallery-card-image,
-    .image-card-preview {
+    .gallery-card-image {
       max-height: 480px;
+    }
+
+    .image-card-preview {
+      height: 480px;
     }
   }
 }
@@ -228,14 +243,6 @@ div.dropdown-menu {
 
   .dropdown-item {
     display: flex;
-
-    & > :not(:last-child) {
-      margin-right: 7px;
-    }
-
-    & > :last-child {
-      margin-right: 0;
-    }
   }
 }
 

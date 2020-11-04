@@ -36,7 +36,6 @@ import { SceneScrapeDialog } from "./SceneScrapeDialog";
 interface IProps {
   scene: GQL.SceneDataFragment;
   isVisible: boolean;
-  onUpdate: (scene: GQL.SceneDataFragment) => void;
   onDelete: () => void;
 }
 
@@ -56,6 +55,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   >(new Map());
   const [tagIds, setTagIds] = useState<string[]>();
   const [coverImage, setCoverImage] = useState<string>();
+  const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>([]);
 
   const Scrapers = useListSceneScrapers();
   const [queryableScrapers, setQueryableScrapers] = useState<GQL.Scraper[]>([]);
@@ -175,6 +175,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setMovieSceneIndexes(movieSceneIdx);
     setPerformerIds(perfIds);
     setTagIds(tIds);
+    setStashIDs(state?.stash_ids ?? []);
   }
 
   useEffect(() => {
@@ -199,6 +200,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       movies: makeMovieInputs(),
       tag_ids: tagIds,
       cover_image: coverImage,
+      stash_ids: stashIDs.map((s) => ({
+        stash_id: s.stash_id,
+        endpoint: s.endpoint,
+      })),
     };
   }
 
@@ -226,7 +231,6 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     try {
       const result = await updateScene();
       if (result.data?.sceneUpdate) {
-        props.onUpdate(result.data.sceneUpdate);
         Toast.success({ content: "Updated scene" });
       }
     } catch (e) {
@@ -234,6 +238,15 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     }
     setIsLoading(false);
   }
+
+  const removeStashID = (stashID: GQL.StashIdInput) => {
+    setStashIDs(
+      stashIDs.filter(
+        (s) =>
+          !(s.endpoint === stashID.endpoint && s.stash_id === stashID.stash_id)
+      )
+    );
+  };
 
   function renderTableMovies() {
     return (
@@ -659,6 +672,40 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
                 ids={tagIds}
               />
             </Col>
+          </Form.Group>
+        </div>
+        <div className="col-12 col-lg-6 col-xl-12">
+          <Form.Group controlId="details">
+            <Form.Label>StashIDs</Form.Label>
+            <ul className="pl-0">
+              {stashIDs.map((stashID) => {
+                const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+                const link = base ? (
+                  <a
+                    href={`${base}scenes/${stashID.stash_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {stashID.stash_id}
+                  </a>
+                ) : (
+                  stashID.stash_id
+                );
+                return (
+                  <li key={stashID.stash_id} className="row no-gutters">
+                    <Button
+                      variant="danger"
+                      className="mr-2 py-0"
+                      title="Delete StashID"
+                      onClick={() => removeStashID(stashID)}
+                    >
+                      <Icon icon="trash-alt" />
+                    </Button>
+                    {link}
+                  </li>
+                );
+              })}
+            </ul>
           </Form.Group>
         </div>
         <div className="col-12 col-lg-6 col-xl-12">

@@ -106,6 +106,34 @@ func imageQueryQ(t *testing.T, sqb models.ImageQueryBuilder, q string, expectedI
 	assert.Len(t, images, totalImages)
 }
 
+func TestImageQueryPath(t *testing.T) {
+	const imageIdx = 1
+	imagePath := getImageStringValue(imageIdx, "Path")
+
+	pathCriterion := models.StringCriterionInput{
+		Value:    imagePath,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyImagePath(t, pathCriterion)
+
+	pathCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyImagePath(t, pathCriterion)
+}
+
+func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput) {
+	sqb := models.NewImageQueryBuilder()
+	imageFilter := models.ImageFilterType{
+		Path: &pathCriterion,
+	}
+
+	images, _ := sqb.Query(&imageFilter, nil)
+
+	for _, image := range images {
+		verifyString(t, image.Path, pathCriterion)
+	}
+}
+
 func TestImageQueryRating(t *testing.T) {
 	const rating = 3
 	ratingCriterion := models.IntCriterionInput{

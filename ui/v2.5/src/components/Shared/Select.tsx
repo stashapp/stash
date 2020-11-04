@@ -11,17 +11,20 @@ import {
   useAllPerformersForFilter,
   useMarkerStrings,
   useScrapePerformerList,
-  useValidGalleriesForScene,
   useTagCreate,
   useStudioCreate,
   usePerformerCreate,
+  useFindGalleries,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
+import { ListFilterModel } from "src/models/list-filter/filter";
+import { FilterMode } from "src/models/list-filter/types";
 
-type ValidTypes =
+export type ValidTypes =
   | GQL.SlimPerformerDataFragment
   | GQL.Tag
-  | GQL.SlimStudioDataFragment;
+  | GQL.SlimStudioDataFragment
+  | GQL.SlimMovieDataFragment;
 type Option = { value: string; label: string };
 
 interface ITypeProps {
@@ -61,13 +64,9 @@ interface ISelectProps {
   groupHeader?: string;
   closeMenuOnSelect?: boolean;
 }
-interface IFilterItem {
-  id: string;
-  name?: string | null;
-}
 interface IFilterComponentProps extends IFilterProps {
-  items: Array<IFilterItem>;
-  onCreate?: (name: string) => Promise<{ item: IFilterItem; message: string }>;
+  items: Array<ValidTypes>;
+  onCreate?: (name: string) => Promise<{ item: ValidTypes; message: string }>;
 }
 interface IFilterSelectProps
   extends Omit<ISelectProps, "onChange" | "items" | "onCreateOption"> {}
@@ -90,12 +89,24 @@ const getSelectedValues = (selectedItems: ValueType<Option>) =>
     : [];
 
 export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
-  const { data, loading } = useValidGalleriesForScene(props.sceneId);
-  const galleries = data?.validGalleriesForScene ?? [];
-  const items = (galleries.length > 0
-    ? [{ path: "None", id: "0" }, ...galleries]
-    : []
-  ).map((g) => ({ label: g.title ?? "", value: g.id }));
+  const [query, setQuery] = React.useState<string>("");
+  const { data, loading } = useFindGalleries(getFilter());
+
+  const galleries = data?.findGalleries.galleries ?? [];
+  const items = galleries.map((g) => ({
+    label: g.title ?? g.path ?? "",
+    value: g.id,
+  }));
+
+  function getFilter() {
+    const ret = new ListFilterModel(FilterMode.Galleries);
+    ret.searchTerm = query;
+    return ret;
+  }
+
+  const onInputChange = debounce((input: string) => {
+    setQuery(input);
+  }, 500);
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedItem = getSelectedValues(selectedItems)[0];
@@ -110,8 +121,8 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
 
   return (
     <SelectComponent
-      className="input-control"
       onChange={onChange}
+      onInputChange={onInputChange}
       isLoading={loading}
       items={items}
       selectedOptions={selectedOptions}
