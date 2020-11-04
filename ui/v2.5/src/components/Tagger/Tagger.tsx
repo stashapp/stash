@@ -132,6 +132,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     { loading: submittingFingerprints },
   ] = GQL.useSubmitStashBoxFingerprintsMutation({
     onCompleted: (result) => {
+      setFingerprintError("");
       if (result.submitStashBoxFingerprints)
         clearSubmissionQueue(selectedEndpoint.endpoint);
     },
