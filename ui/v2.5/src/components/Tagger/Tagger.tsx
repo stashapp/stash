@@ -115,10 +115,6 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       })
       .catch(() => {
         setLoading(false);
-        setSearchResults({
-          ...searchResults,
-          [sceneID]: [],
-        });
         setSearchErrors({
           ...searchErrors,
           [sceneID]: "Network Error",
@@ -174,7 +170,11 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       setLoadingFingerprints(false);
       setFingerprintError("Network Error");
     });
+
     if (!results) return;
+
+    // clear search errors
+    setSearchErrors({});
 
     selectScenes(results.data?.queryStashBoxScene).forEach((scene) => {
       scene.fingerprints?.forEach((f) => {
