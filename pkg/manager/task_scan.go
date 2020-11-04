@@ -777,7 +777,7 @@ func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.
 	oldChecksum := i.Checksum
 
 	// update the checksum and the modification time
-	checksum, err := t.calculateChecksum()
+	checksum, err := t.calculateImageChecksum()
 	if err != nil {
 		return nil, err
 	}
