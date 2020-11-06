@@ -46,6 +46,10 @@ sceneByURL:
   <multiple scraper URL configs>
 movieByURL:
   <multiple scraper URL configs>
+galleryByFragment:
+  <single scraper config>
+galleryByURL:
+  <multiple scraper URL configs>
 <other configurations>
 ```
 
@@ -62,6 +66,8 @@ The scraping types and their required fields are outlined in the following table
 | Scraper in `Scrape...` dropdown button in Scene Edit page | Valid `sceneByFragment` configuration. |
 | Scrape scene from URL | Valid `sceneByURL` configuration with matching URL. |
 | Scrape movie from URL | Valid `movieByURL` configuration with matching URL. |
+| Scraper in `Scrape...` dropdown button in Gallery Edit page | Valid `galleryByFragment` configuration. |
+| Scrape gallery from URL | Valid `galleryByURL` configuration with matching URL. |
 
 URL-based scraping accepts multiple scrape configurations, and each configuration requires a `url` field. stash iterates through these configurations, attempting to match the entered URL against the `url` fields in the configuration. It executes the first scraping configuration where the entered URL contains the value of the `url` field. 
 
@@ -93,6 +99,8 @@ The script is sent input and expects output based on the scraping type, as detai
 | `sceneByFragment` | JSON-encoded scene fragment | JSON-encoded scene fragment |
 | `sceneByURL` | `{"url": "<url>"}` | JSON-encoded scene fragment |
 | `movieByURL` | `{"url": "<url>"}` | JSON-encoded movie fragment |
+| `galleryByFragment` | JSON-encoded gallery fragment | JSON-encoded gallery fragment |
+| `galleryByURL` | `{"url": "<url>"}` | JSON-encoded gallery fragment |
 
 For `performerByName`, only `name` is required in the returned performer fragments. One entire object is sent back to `performerByFragment` to scrape a specific performer, so the other fields may be included to assist in scraping a performer. For example, the `url` field may be filled in for the specific performer page, then `performerByFragment` can extract by using its value.
 
@@ -162,7 +170,7 @@ elif sys.argv[1] == "scrapeURL":
 
 ### scrapeXPath
 
-This action scrapes a web page using an xpath configuration to parse. This action is valid for `performerByName`, `performerByURL` and `sceneByURL` only.
+This action scrapes a web page using an xpath configuration to parse. This action is **not valid** for `performerByFragment`.
 
 This action requires that the top-level `xPathScrapers` configuration is populated. The `scraper` field is required and must match the name of a scraper name configured in `xPathScrapers`. For example:
 
@@ -180,7 +188,7 @@ XPath scraping configurations specify the mapping between object fields and an x
 
 ### scrapeJson
 
-This action works in the same way as `scrapeXPath`, but uses a mapped json configuration to parse. It uses the top-level `jsonScrapers` configuration. This action is valid for `performerByName`, `performerByURL`, `sceneByFragment` and `sceneByURL`.
+This action works in the same way as `scrapeXPath`, but uses a mapped json configuration to parse. It uses the top-level `jsonScrapers` configuration. This action is **not valid** for `performerByFragment`.
 
 JSON scraping configurations specify the mapping between object fields and a GJSON selector. The JSON scraper scrapes the applicable URL and uses [GJSON](https://github.com/tidwall/gjson/blob/master/SYNTAX.md) to parse the returned JSON object and populate the object fields.
 
@@ -241,9 +249,9 @@ Likewise, the top-level `jsonScrapers` field contains json scraping configuratio
 
 Collectively, these configurations are known as mapped scraping configurations. 
 
-A mapped scraping configuration may contain a `common` field, and must contain `performer` or `scene` depending on the scraping type it is configured for. 
+A mapped scraping configuration may contain a `common` field, and must contain `performer`, `scene`, `movie` or `gallery` depending on the scraping type it is configured for. 
 
-Within the `performer`/`scene` field are key/value pairs corresponding to the golang fields (see below) on the performer/scene object. These fields are case-sensitive. 
+Within the `performer`/`scene`/`movie`/`gallery` field are key/value pairs corresponding to the golang fields (see below) on the performer/scene object. These fields are case-sensitive. 
 
 The values of these may be either a simple selector value, which tells the system where to get the value of the field from, or a more advanced configuration (see below). For example, for an xpath configuration:
 
@@ -568,6 +576,18 @@ Synopsis
 URL
 FrontImage
 BackImage
+```
+
+##### Gallery
+```
+Title
+Details
+URL
+Date
+Rating
+Studio (see Studio Fields)
+Tags (see Tag fields)
+Performers (list of Performer fields)
 ```
 
 ### Stash
