@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
 import FsLightbox from "fslightbox-react";
-import Mousetrap from 'mousetrap';
+import Mousetrap from "mousetrap";
 import {
   FindImagesQueryResult,
   SlimImageDataFragment,

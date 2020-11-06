@@ -149,7 +149,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     isDisabled,
     isLoading,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    styles: (styles as any), // TODO: Typing error, remove at some point
+    styles: styles as any, // TODO: Typing error, remove at some point
     closeMenuOnSelect,
     components: {
       IndicatorSeparator: () => null,

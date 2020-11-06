@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import _ from "lodash";
 import { Table } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
-import Mousetrap from 'mousetrap';
+import Mousetrap from "mousetrap";
 import {
   FindGalleriesQueryResult,
   GalleryDataFragment,

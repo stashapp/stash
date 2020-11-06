@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
-import Mousetrap from 'mousetrap';
+import Mousetrap from "mousetrap";
 import { FindStudiosQueryResult } from "src/core/generated-graphql";
 import { useStudiosList } from "src/hooks";
 import { showWhenSelected } from "src/hooks/ListHook";

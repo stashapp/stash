@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Button, Form, Col, Row } from "react-bootstrap";
-import Mousetrap from 'mousetrap';
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryScrapeGalleryURL,

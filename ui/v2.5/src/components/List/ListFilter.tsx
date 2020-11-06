@@ -1,6 +1,6 @@
 import _, { debounce } from "lodash";
 import React, { useState, useEffect } from "react";
-import Mousetrap from 'mousetrap';
+import Mousetrap from "mousetrap";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
   Badge,

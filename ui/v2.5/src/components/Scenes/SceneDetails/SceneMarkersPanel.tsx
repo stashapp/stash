@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
-import Mousetrap from 'mousetrap';
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import { WallPanel } from "src/components/Wall/WallPanel";
 import { PrimaryTags } from "./PrimaryTags";

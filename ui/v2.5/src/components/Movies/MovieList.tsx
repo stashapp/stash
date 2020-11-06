@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import _ from "lodash";
-import Mousetrap from 'mousetrap';
+import Mousetrap from "mousetrap";
 import { FindMoviesQueryResult } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
