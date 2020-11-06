@@ -10,7 +10,6 @@ import {
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
-import * as Mousetrap from "mousetrap";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
 import { ImageFileInfoPanel } from "./ImageFileInfoPanel";
 import { ImageEditPanel } from "./ImageEditPanel";

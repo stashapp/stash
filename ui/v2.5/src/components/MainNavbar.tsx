@@ -14,6 +14,8 @@ import { SessionUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
 import { Manual } from "./Help/Manual";
 
+const Mousetrap = require("mousetrap-pause")(require("mousetrap"));
+
 interface IMenuItem {
   message: MessageDescriptor;
   href: string;

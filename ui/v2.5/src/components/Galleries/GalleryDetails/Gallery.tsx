@@ -4,7 +4,6 @@ import { useParams, useHistory, Link } from "react-router-dom";
 import { useFindGallery } from "src/core/StashService";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { TextUtils } from "src/utils";
-import * as Mousetrap from "mousetrap";
 import { GalleryEditPanel } from "./GalleryEditPanel";
 import { GalleryDetailPanel } from "./GalleryDetailPanel";
 import { DeleteGalleriesDialog } from "../DeleteGalleriesDialog";
