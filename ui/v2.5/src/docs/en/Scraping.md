@@ -241,7 +241,27 @@ sceneByFragment:
 
 The above configuration would scrape from the value of `queryURL`, replacing `{filename}` with the base filename of the scene, after it has been manipulated by the regex replacements.
 
-### Xpath and JSON scrapers configuration
+### Stash
+
+A different stash server can be configured as a scraping source. This action applies only to `performerByName`, `performerByFragment`, and `sceneByFragment` types. This action requires that the top-level `stashServer` field is configured.
+
+`stashServer` contains a single `url` field for the remote stash server. The username and password can be embedded in this string using `username:password@host`.
+
+An example stash scrape configuration is below:
+
+```yaml
+name: stash
+performerByName:
+  action: stash
+performerByFragment:
+  action: stash
+sceneByFragment:
+  action: stash
+stashServer:
+  url: http://stashserver.com:9999
+```
+
+## Xpath and JSON scrapers configuration
 
 The top-level `xPathScrapers` field contains xpath scraping configurations, freely named. These are referenced in the `scraper` field for `scrapeXPath` scrapers. 
 
@@ -279,7 +299,7 @@ performer:
       # post-processing config values
 ```
 
-#### Fixed attribute values
+### Fixed attribute values
 
 Alternatively, an attribute value may be set to a fixed value, rather than scraping it from the webpage. This can be done by replacing `selector` with `fixed`. For example:
 
@@ -289,7 +309,7 @@ performer:
     fixed: Female
 ```
 
-##### Common fragments
+### Common fragments
 
 The `common` field is used to configure selector fragments that can be referenced in the selector strings. These are key-value pairs where the key is the string to reference the fragment, and the value is the string that the fragment will be replaced with. For example:
 
@@ -302,7 +322,7 @@ performer:
 
 The `Measurements` xpath string will replace `$infoPiece` with `//div[@class="infoPiece"]/span`, resulting in: `//div[@class="infoPiece"]/span[text() = 'Measurements:']/../span[@class="smallInfo"]`.
 
-##### Post-processing options
+### Post-processing options
 
 Post-processing operations are contained in the `postProcess` key. Post-processing operations are performed in the order they are specified. The following post-processing operations are available:
 * `feetToCm`: converts a string containing feet and inches numbers into centimetres. Looks for up to two separate integers and interprets the first as the number of feet, and the second as the number of inches. The numbers can be separated by any non-numeric character including the `.` character. It does not handle decimal numbers. For example `6.3` and `6ft3.3` would both be interpreted as 6 feet, 3 inches before converting into centimetres.
@@ -345,7 +365,23 @@ For backwards compatibility, `replace`, `subscraper` and `parseDate` are also al
 
 Post-processing on attribute post-process is done in the following order: `concat`, `replace`, `subscraper`, `parseDate` and then `split`.
 
-##### CDP support
+### XPath resources:
+
+- Test XPaths in Firefox: https://addons.mozilla.org/en-US/firefox/addon/try-xpath/
+- XPath cheatsheet: https://devhints.io/xpath
+
+### GJSON resources:
+
+- GJSON Path Syntax: https://github.com/tidwall/gjson/blob/master/SYNTAX.md
+
+### Debugging support
+To print the received html/json from a scraper request to the log file, add the following to your scraper yml file:
+```yaml
+debug:
+  printHTML: true
+```
+
+### CDP support
 
 Some websites deliver content that cannot be scraped using the raw html file alone. These websites use javascript to dynamically load the content. As such, direct xpath scraping will not work on these websites. There is an option to use Chrome DevTools Protocol to load the webpage using an instance of Chrome, then scrape the result.
 
@@ -361,7 +397,7 @@ When `useCDP` is set to true, stash will execute or connect to an instance of Ch
 
 `Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`).
 
-##### XPath scraper example
+### XPath scraper example
 
 A performer and scene xpath scraper is shown as an example below:
 
@@ -423,7 +459,7 @@ xPathScrapers:
 
 See also [#333](https://github.com/stashapp/stash/pull/333) for more examples.
 
-##### JSON scraper example
+### JSON scraper example
 
 A performer and scene scraper for ThePornDB is shown below:
 
@@ -506,17 +542,8 @@ jsonScrapers:
         Name: $data.tags.#.tag  
 ```
 
-#### XPath resources:
-
-- Test XPaths in Firefox: https://addons.mozilla.org/en-US/firefox/addon/try-xpath/
-- XPath cheatsheet: https://devhints.io/xpath
-
-#### GJSON resources:
-
-- GJSON Path Syntax: https://github.com/tidwall/gjson/blob/master/SYNTAX.md
-
-#### Object fields
-##### Performer
+## Object fields
+### Performer
 
 ```
 Name
@@ -540,7 +567,7 @@ Image
 
 *Note:*  - `Gender` must be one of `male`, `female`, `transgender_male`, `transgender_female`, `intersex`, `non_binary` (case insensitive).
 
-##### Scene
+### Scene
 ```
 Title
 Details
@@ -552,18 +579,18 @@ Movies (see Movie Fields)
 Tags (see Tag fields)
 Performers (list of Performer fields)
 ```
-##### Studio
+### Studio
 ```
 Name
 URL
 ```
 
-##### Tag
+### Tag
 ```
 Name
 ```
 
-##### Movie
+### Movie
 ```
 Name
 Aliases
@@ -578,7 +605,7 @@ FrontImage
 BackImage
 ```
 
-##### Gallery
+### Gallery
 ```
 Title
 Details
@@ -588,31 +615,4 @@ Rating
 Studio (see Studio Fields)
 Tags (see Tag fields)
 Performers (list of Performer fields)
-```
-
-### Stash
-
-A different stash server can be configured as a scraping source. This action applies only to `performerByName`, `performerByFragment`, and `sceneByFragment` types. This action requires that the top-level `stashServer` field is configured.
-
-`stashServer` contains a single `url` field for the remote stash server. The username and password can be embedded in this string using `username:password@host`.
-
-An example stash scrape configuration is below:
-
-```yaml
-name: stash
-performerByName:
-  action: stash
-performerByFragment:
-  action: stash
-sceneByFragment:
-  action: stash
-stashServer:
-  url: http://stashserver.com:9999
-```
-
-### Debugging support
-To print the received html/json from a scraper request to the log file, add the following to your scraper yml file:
-```yaml
-debug:
-  printHTML: true
 ```
