@@ -143,7 +143,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       studioID = studioCreateResult.data.studioCreate.id;
     } else if (studio.type === "update") {
       setSaveState("Saving studio stashID");
-      const res = await updateStudioStashID(studio.data.id, [
+      const res = await updateStudioStashID(studio.data, [
         ...studio.data.stash_ids,
         { stash_id: scene.studio.stash_id, endpoint },
       ]);
@@ -284,6 +284,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           cover_image: imgData,
           url: scene.url,
           tag_ids: updatedTags,
+          rating: stashScene.rating,
           stash_ids: [
             ...(stashScene?.stash_ids ?? []),
             {
