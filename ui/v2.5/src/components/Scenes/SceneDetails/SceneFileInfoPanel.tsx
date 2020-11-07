@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedNumber } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
-import { TruncatedText } from 'src/components/Shared';
+import { TruncatedText } from "src/components/Shared";
 
 interface ISceneFileInfoPanelProps {
   scene: GQL.SceneDataFragment;
@@ -91,7 +91,10 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Duration</span>
-        <TruncatedText className="col-8" text={TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)} />
+        <TruncatedText
+          className="col-8"
+          text={TextUtils.secondsToTimestamp(props.scene.file.duration ?? 0)}
+        />
       </div>
     );
   }
@@ -103,7 +106,10 @@ export const SceneFileInfoPanel: React.FC<ISceneFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Dimensions</span>
-        <TruncatedText className="col-8" text={`${props.scene.file.width} x ${props.scene.file.height}`} />
+        <TruncatedText
+          className="col-8"
+          text={`${props.scene.file.width} x ${props.scene.file.height}`}
+        />
       </div>
     );
   }

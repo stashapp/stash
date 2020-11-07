@@ -73,7 +73,11 @@ export const TagCard: React.FC<IProps> = ({
           src={tag.image_path ?? ""}
         />
       }
-      details={<h5><TruncatedText text={tag.name} /></h5>}
+      details={
+        <h5>
+          <TruncatedText text={tag.name} />
+        </h5>
+      }
       popovers={maybeRenderPopoverButtonGroup()}
       selected={selected}
       selecting={selecting}

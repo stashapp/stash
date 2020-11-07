@@ -62,7 +62,12 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
         <div className={`${imageDetailsWidth} col-xl-12 image-details`}>
           <div className="image-header d-xl-none">
             <h3>
-              <TruncatedText text={props.image.title ?? TextUtils.fileNameFromPath(props.image.path)} />
+              <TruncatedText
+                text={
+                  props.image.title ??
+                  TextUtils.fileNameFromPath(props.image.path)
+                }
+              />
             </h3>
           </div>
           {props.image.rating ? (

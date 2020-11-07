@@ -1,6 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
-import { TruncatedText } from 'src/components/Shared';
+import { TruncatedText } from "src/components/Shared";
 
 interface IGalleryFileInfoPanelProps {
   gallery: GQL.GalleryDataFragment;

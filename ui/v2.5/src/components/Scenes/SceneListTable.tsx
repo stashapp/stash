@@ -51,7 +51,9 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       <td className="text-left">
         <Link to={`/scenes/${scene.id}`}>
           <h5>
-            <TruncatedText text={scene.title ?? TextUtils.fileNameFromPath(scene.path)} />
+            <TruncatedText
+              text={scene.title ?? TextUtils.fileNameFromPath(scene.path)}
+            />
           </h5>
         </Link>
       </td>

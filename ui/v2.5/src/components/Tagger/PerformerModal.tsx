@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 import cx from "classnames";
 
-import { LoadingIndicator, Icon, Modal, TruncatedText } from "src/components/Shared";
+import {
+  LoadingIndicator,
+  Icon,
+  Modal,
+  TruncatedText,
+} from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { genderToString } from "src/core/StashService";
 import { IStashBoxPerformer } from "./utils";
@@ -68,15 +73,24 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Gender:</strong>
-            <TruncatedText className="col-6 text-capitalize" text={performer.gender && genderToString(performer.gender)} />
+            <TruncatedText
+              className="col-6 text-capitalize"
+              text={performer.gender && genderToString(performer.gender)}
+            />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Birthdate:</strong>
-            <TruncatedText className="col-6" text={performer.birthdate ?? "Unknown"} />
+            <TruncatedText
+              className="col-6"
+              text={performer.birthdate ?? "Unknown"}
+            />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Ethnicity:</strong>
-            <TruncatedText className="col-6 text-capitalize" text={performer.ethnicity} />
+            <TruncatedText
+              className="col-6 text-capitalize"
+              text={performer.ethnicity}
+            />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Country:</strong>
@@ -84,7 +98,10 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Eye Color:</strong>
-            <TruncatedText className="col-6 text-capitalize" text={performer.eye_color} />
+            <TruncatedText
+              className="col-6 text-capitalize"
+              text={performer.eye_color}
+            />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Height:</strong>

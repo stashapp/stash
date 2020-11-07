@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { TruncatedText } from 'src/components/Shared';
+import { TruncatedText } from "src/components/Shared";
 import { JWUtils } from "src/utils";
 import * as GQL from "src/core/generated-graphql";
 

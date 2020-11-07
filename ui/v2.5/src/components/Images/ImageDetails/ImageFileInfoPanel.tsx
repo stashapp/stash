@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedNumber } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
-import { TruncatedText } from 'src/components/Shared';
+import { TruncatedText } from "src/components/Shared";
 
 interface IImageFileInfoPanelProps {
   image: GQL.ImageDataFragment;

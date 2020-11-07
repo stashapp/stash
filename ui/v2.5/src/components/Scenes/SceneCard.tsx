@@ -4,7 +4,13 @@ import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
-import { Icon, TagLink, HoverPopover, SweatDrops, TruncatedText } from "src/components/Shared";
+import {
+  Icon,
+  TagLink,
+  HoverPopover,
+  SweatDrops,
+  TruncatedText,
+} from "src/components/Shared";
 import { TextUtils } from "src/utils";
 
 interface IScenePreviewProps {
