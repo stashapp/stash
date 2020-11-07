@@ -18,15 +18,6 @@ const Units: Unit[] = [
 ];
 const shortUnits = ["B", "KB", "MB", "GB", "TB", "PB"];
 
-const truncate = (
-  value?: string,
-  limit: number = 100,
-  tail: string = "..."
-) => {
-  if (!value) return "";
-  return value.length > limit ? value.substring(0, limit) + tail : value;
-};
-
 const fileSize = (bytes: number = 0) => {
   if (Number.isNaN(parseFloat(String(bytes))) || !Number.isFinite(bytes))
     return { size: 0, unit: Units[0] };
@@ -145,7 +136,6 @@ const formatDate = (intl: IntlShape, date?: string) => {
 };
 
 const TextUtils = {
-  truncate,
   fileSize,
   formatFileSizeUnit,
   secondsToTimestamp,

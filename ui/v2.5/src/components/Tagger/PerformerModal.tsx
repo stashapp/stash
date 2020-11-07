@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "react-bootstrap";
 import cx from "classnames";
 
-import { LoadingIndicator, Icon, Modal } from "src/components/Shared";
+import { LoadingIndicator, Icon, Modal, TruncatedText } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
 import { genderToString } from "src/core/StashService";
 import { IStashBoxPerformer } from "./utils";
@@ -64,67 +64,53 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Name:</strong>
-            <span className="col-6 text-truncate">{performer.name}</span>
+            <TruncatedText className="col-6" text={performer.name} />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Gender:</strong>
-            <span className="col-6 text-truncate text-capitalize">
-              {performer.gender && genderToString(performer.gender)}
-            </span>
+            <TruncatedText className="col-6 text-capitalize" text={performer.gender && genderToString(performer.gender)} />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Birthdate:</strong>
-            <span className="col-6 text-truncate">
-              {performer.birthdate ?? "Unknown"}
-            </span>
+            <TruncatedText className="col-6" text={performer.birthdate ?? "Unknown"} />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Ethnicity:</strong>
-            <span className="col-6 text-truncate text-capitalize">
-              {performer.ethnicity}
-            </span>
+            <TruncatedText className="col-6 text-capitalize" text={performer.ethnicity} />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Country:</strong>
-            <span className="col-6 text-truncate">
-              {performer.country ?? ""}
-            </span>
+            <TruncatedText className="col-6" text={performer.country ?? ""} />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Eye Color:</strong>
-            <span className="col-6 text-truncate text-capitalize">
-              {performer.eye_color}
-            </span>
+            <TruncatedText className="col-6 text-capitalize" text={performer.eye_color} />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Height:</strong>
-            <span className="col-6 text-truncate">{performer.height}</span>
+            <TruncatedText className="col-6" text={performer.height} />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Measurements:</strong>
-            <span className="col-6 text-truncate">
-              {performer.measurements}
-            </span>
+            <TruncatedText className="col-6" text={performer.measurements} />
           </div>
           {performer?.gender !== GQL.GenderEnum.Male && (
             <div className="row no-gutters">
               <strong className="col-6">Fake Tits:</strong>
-              <span className="col-6 text-truncate">{performer.fake_tits}</span>
+              <TruncatedText className="col-6" text={performer.fake_tits} />
             </div>
           )}
           <div className="row no-gutters">
             <strong className="col-6">Career Length:</strong>
-            <span className="col-6 text-truncate">
-              {performer.career_length}
-            </span>
+            <TruncatedText className="col-6" text={performer.career_length} />
           </div>
           <div className="row no-gutters">
             <strong className="col-6">Tattoos:</strong>
-            <span className="col-6 text-truncate">{performer.tattoos}</span>
+            <TruncatedText className="col-6" text={performer.tattoos} />
           </div>
           <div className="row no-gutters ">
             <strong className="col-6">Piercings:</strong>
-            <span className="col-6 text-truncate">{performer.piercings}</span>
+            <TruncatedText className="col-6" text={performer.piercings} />
           </div>
         </div>
         {images.length > 0 && (

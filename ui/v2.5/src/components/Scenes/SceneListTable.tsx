@@ -5,7 +5,7 @@ import { Table, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
-import { Icon } from "src/components/Shared";
+import { Icon, TruncatedText } from "src/components/Shared";
 
 interface ISceneListTableProps {
   scenes: GQL.SlimSceneDataFragment[];
@@ -50,8 +50,8 @@ export const SceneListTable: React.FC<ISceneListTableProps> = (
       </td>
       <td className="text-left">
         <Link to={`/scenes/${scene.id}`}>
-          <h5 className="text-truncate">
-            {scene.title ?? TextUtils.fileNameFromPath(scene.path)}
+          <h5>
+            <TruncatedText text={scene.title ?? TextUtils.fileNameFromPath(scene.path)} />
           </h5>
         </Link>
       </td>

@@ -2,6 +2,7 @@ import React from "react";
 import { FormattedNumber } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
+import { TruncatedText } from 'src/components/Shared';
 
 interface IImageFileInfoPanelProps {
   image: GQL.ImageDataFragment;
@@ -14,7 +15,7 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Checksum</span>
-        <span className="col-8 text-truncate">{props.image.checksum}</span>
+        <TruncatedText className="col-8" text={props.image.checksum} />
       </div>
     );
   }
@@ -26,9 +27,9 @@ export const ImageFileInfoPanel: React.FC<IImageFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Path</span>
-        <span className="col-8 text-truncate">
-          <a href={`file://${path}`}>{`file://${props.image.path}`}</a>{" "}
-        </span>
+        <a href={`file://${path}`} className="col-8">
+          <TruncatedText text={`file://${props.image.path}`} />
+        </a>{" "}
       </div>
     );
   }

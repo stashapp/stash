@@ -5,7 +5,7 @@ import { HashLink } from "react-router-hash-link";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
 
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator, TruncatedText } from "src/components/Shared";
 import {
   stashBoxQuery,
   stashBoxBatchQuery,
@@ -396,12 +396,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
               </div>
               <Link
                 to={`/scenes/${scene.id}`}
-                className="scene-link text-truncate w-100"
+                className="scene-link w-100"
                 title={scene.path}
               >
-                {originalDir}
-                <wbr />
-                {`${file}.${ext}`}
+                <TruncatedText text={`${originalDir}{file}.${ext}`} lineCount={2} />
               </Link>
             </div>
             <div className="col-md-6 my-1 align-self-center">

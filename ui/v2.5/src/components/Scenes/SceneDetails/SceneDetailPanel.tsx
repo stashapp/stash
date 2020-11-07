@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FormattedDate } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
-import { TagLink } from "src/components/Shared";
+import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingStars } from "./RatingStars";
 
@@ -63,9 +63,8 @@ export const SceneDetailPanel: React.FC<ISceneDetailProps> = (props) => {
       <div className="row">
         <div className={`${sceneDetailsWidth} col-xl-12 scene-details`}>
           <div className="scene-header d-xl-none">
-            <h3 className="text-truncate">
-              {props.scene.title ??
-                TextUtils.fileNameFromPath(props.scene.path)}
+            <h3>
+              <TruncatedText text={props.scene.title ?? TextUtils.fileNameFromPath(props.scene.path)} />
             </h3>
           </div>
           {props.scene.date ? (

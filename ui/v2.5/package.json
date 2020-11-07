@@ -52,7 +52,7 @@
     "mousetrap-pause": "^1.0.0",
     "query-string": "6.13.1",
     "react": "16.13.1",
-    "react-bootstrap": "1.3.0",
+    "react-bootstrap": "1.4.0",
     "react-dom": "16.13.1",
     "react-images": "0.5.19",
     "react-intl": "^5.8.0",

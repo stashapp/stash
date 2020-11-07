@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
 import { useConfiguration } from "src/core/StashService";
-import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
+import { Icon, TagLink, HoverPopover, SweatDrops, TruncatedText } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 
 interface IScenePreviewProps {
@@ -363,8 +363,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         </h5>
         <span>{props.scene.date}</span>
         <p>
-          {props.scene.details &&
-            TextUtils.truncate(props.scene.details, 100, "... (continued)")}
+          <TruncatedText text={props.scene.details} lineCount={3} />
         </p>
       </div>
 
