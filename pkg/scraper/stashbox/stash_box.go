@@ -93,21 +93,27 @@ func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.S
 }
 
 func (c Client) findStashBoxScenesByFingerprints(fingerprints []string) ([]*models.ScrapedScene, error) {
-	scenes, err := c.client.FindScenesByFingerprints(context.TODO(), fingerprints)
-
-	if err != nil {
-		return nil, err
-	}
-
-	sceneFragments := scenes.FindScenesByFingerprints
-
 	var ret []*models.ScrapedScene
-	for _, s := range sceneFragments {
-		ss, err := sceneFragmentToScrapedScene(s)
+	for i := 0; i < len(fingerprints); i += 100 {
+		end := i + 100
+		if end > len(fingerprints) {
+			end = len(fingerprints)
+		}
+		scenes, err := c.client.FindScenesByFingerprints(context.TODO(), fingerprints[i:end])
+
 		if err != nil {
 			return nil, err
 		}
-		ret = append(ret, ss)
+
+		sceneFragments := scenes.FindScenesByFingerprints
+
+		for _, s := range sceneFragments {
+			ss, err := sceneFragmentToScrapedScene(s)
+			if err != nil {
+				return nil, err
+			}
+			ret = append(ret, ss)
+		}
 	}
 
 	return ret, nil
@@ -127,7 +133,7 @@ func (c Client) SubmitStashBoxFingerprints(sceneIDs []string, endpoint string) (
 		}
 
 		if scene == nil {
-			return false, fmt.Errorf("scene with id %d not found", idInt)
+			continue
 		}
 
 		stashIDs, err := jqb.GetSceneStashIDs(idInt)

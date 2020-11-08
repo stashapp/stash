@@ -66,6 +66,10 @@ func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Sc
 func getSceneFileJSON(scene *models.Scene) *jsonschema.SceneFile {
 	ret := &jsonschema.SceneFile{}
 
+	if scene.FileModTime.Valid {
+		ret.ModTime = models.JSONTime{Time: scene.FileModTime.Timestamp}
+	}
+
 	if scene.Size.Valid {
 		ret.Size = scene.Size.String
 	}

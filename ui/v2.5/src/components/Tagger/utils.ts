@@ -159,9 +159,9 @@ export const sortScenesByDuration = (
 ) =>
   scenes.sort((a, b) => {
     const adur =
-      a?.duration ?? a?.fingerprints.map((f) => f.duration)?.[0] ?? null;
+      a?.duration || (a?.fingerprints.map((f) => f.duration)?.[0] ?? null);
     const bdur =
-      b?.duration ?? b?.fingerprints.map((f) => f.duration)?.[0] ?? null;
+      b?.duration || (b?.fingerprints.map((f) => f.duration)?.[0] ?? null);
     if (!adur && !bdur) return 0;
     if (adur && !bdur) return -1;
     if (!adur && bdur) return 1;

@@ -33,6 +33,10 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 func getImageFileJSON(image *models.Image) *jsonschema.ImageFile {
 	ret := &jsonschema.ImageFile{}
 
+	if image.FileModTime.Valid {
+		ret.ModTime = models.JSONTime{Time: image.FileModTime.Timestamp}
+	}
+
 	if image.Size.Valid {
 		ret.Size = int(image.Size.Int64)
 	}

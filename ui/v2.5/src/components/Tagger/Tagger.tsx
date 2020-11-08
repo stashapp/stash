@@ -76,11 +76,15 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   queueFingerprintSubmission,
   clearSubmissionQueue,
 }) => {
+  const [fingerprintError, setFingerprintError] = useState("");
   const [loading, setLoading] = useState(false);
   const [queryString, setQueryString] = useState<Record<string, string>>({});
 
   const [searchResults, setSearchResults] = useState<
     Record<string, IStashBoxScene[]>
+  >({});
+  const [searchErrors, setSearchErrors] = useState<
+    Record<string, string | undefined>
   >({});
   const [selectedResult, setSelectedResult] = useState<
     Record<string, number>
@@ -96,14 +100,29 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     config.fingerprintQueue[selectedEndpoint.endpoint] ?? [];
 
   const doBoxSearch = (sceneID: string, searchVal: string) => {
-    stashBoxQuery(searchVal, selectedEndpoint.index).then((queryData) => {
-      const s = selectScenes(queryData.data?.queryStashBoxScene);
-      setSearchResults({
-        ...searchResults,
-        [sceneID]: s,
+    stashBoxQuery(searchVal, selectedEndpoint.index)
+      .then((queryData) => {
+        const s = selectScenes(queryData.data?.queryStashBoxScene);
+        setSearchResults({
+          ...searchResults,
+          [sceneID]: s,
+        });
+        setSearchErrors({
+          ...searchErrors,
+          [sceneID]: undefined,
+        });
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+        // Destructure to remove existing result
+        const { [sceneID]: unassign, ...results } = searchResults;
+        setSearchResults(results);
+        setSearchErrors({
+          ...searchErrors,
+          [sceneID]: "Network Error",
+        });
       });
-      setLoading(false);
-    });
 
     setLoading(true);
   };
@@ -113,8 +132,12 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     { loading: submittingFingerprints },
   ] = GQL.useSubmitStashBoxFingerprintsMutation({
     onCompleted: (result) => {
+      setFingerprintError("");
       if (result.submitStashBoxFingerprints)
         clearSubmissionQueue(selectedEndpoint.endpoint);
+    },
+    onError: () => {
+      setFingerprintError("Network Error");
     },
   });
 
@@ -141,20 +164,36 @@ const TaggerList: React.FC<ITaggerListProps> = ({
     const newFingerprints = { ...fingerprints };
 
     const sceneIDs = scenes
-      .filter(
-        (s) => fingerprints[s.id] === undefined && s.stash_ids.length === 0
-      )
+      .filter((s) => s.stash_ids.length === 0)
       .map((s) => s.id);
 
-    const results = await stashBoxBatchQuery(sceneIDs, selectedEndpoint.index);
+    const results = await stashBoxBatchQuery(
+      sceneIDs,
+      selectedEndpoint.index
+    ).catch(() => {
+      setLoadingFingerprints(false);
+      setFingerprintError("Network Error");
+    });
+
+    if (!results) return;
+
+    // clear search errors
+    setSearchErrors({});
+
     selectScenes(results.data?.queryStashBoxScene).forEach((scene) => {
       scene.fingerprints?.forEach((f) => {
         newFingerprints[f.hash] = scene;
       });
     });
 
+    // Null any ids that are still undefined since it means they weren't found
+    sceneIDs.forEach((id) => {
+      newFingerprints[id] = newFingerprints[id] ?? null;
+    });
+
     setFingerprints(newFingerprints);
     setLoadingFingerprints(false);
+    setFingerprintError("");
   };
 
   const canFingerprintSearch = () =>
@@ -164,7 +203,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
   const getFingerprintCount = () => {
     const count = scenes.filter(
-      (s) => s.stash_ids.length === 0 && fingerprints[s.id]
+      (s) =>
+        s.stash_ids.length === 0 &&
+        ((s.checksum && fingerprints[s.checksum]) ||
+          (s.oshash && fingerprints[s.oshash]))
     ).length;
     return `${count > 0 ? count : "No"} new fingerprint matches found`;
   };
@@ -246,11 +288,13 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       }
 
       let searchResult;
-      if (searchResults[scene.id]?.length === 0)
+      if (searchErrors[scene.id]) {
         searchResult = (
-          <div className="text-danger font-weight-bold">No results found.</div>
+          <div className="text-danger font-weight-bold">
+            {searchErrors[scene.id]}
+          </div>
         );
-      else if (fingerprintMatch && !isTagged && !hasStashIDs) {
+      } else if (fingerprintMatch && !isTagged && !hasStashIDs) {
         searchResult = (
           <StashSearchResult
             showMales={config.showMales}
@@ -266,10 +310,17 @@ const TaggerList: React.FC<ITaggerListProps> = ({
             queueFingerprintSubmission={queueFingerprintSubmission}
           />
         );
-      } else if (searchResults[scene.id] && !isTagged && !fingerprintMatch) {
+      } else if (
+        searchResults[scene.id]?.length > 0 &&
+        !isTagged &&
+        !fingerprintMatch
+      ) {
         searchResult = (
           <ul className="pl-0 mt-4">
-            {sortScenesByDuration(searchResults[scene.id]).map(
+            {sortScenesByDuration(
+              searchResults[scene.id],
+              scene.file.duration ?? undefined
+            ).map(
               (sceneResult, i) =>
                 sceneResult && (
                   <StashSearchResult
@@ -294,6 +345,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                 )
             )}
           </ul>
+        );
+      } else if (searchResults[scene.id]?.length === 0) {
+        searchResult = (
+          <div className="text-danger font-weight-bold">No results found.</div>
         );
       }
 
@@ -320,14 +375,15 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
   return (
     <Card className="tagger-table">
-      <div className="tagger-table-header row mb-4">
+      <div className="tagger-table-header row flex-nowrap mb-4 align-items-center">
         <div className="col-md-6">
           <b>Path</b>
         </div>
         <div className="col-md-2">
           <b>Query</b>
         </div>
-        <div className="ml-auto mr-2">
+        <b className="ml-auto mr-2 text-danger">{fingerprintError}</b>
+        <div className="mr-2">
           {fingerprintQueue.length > 0 && (
             <Button
               onClick={handleFingerprintSubmission}

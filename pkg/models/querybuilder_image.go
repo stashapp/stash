@@ -62,9 +62,9 @@ func (qb *ImageQueryBuilder) Create(newImage Image, tx *sqlx.Tx) (*Image, error)
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO images (checksum, path, title, rating, o_counter, size,
-                    			    width, height, studio_id, created_at, updated_at)
+                    			    width, height, studio_id, file_mod_time, created_at, updated_at)
 				VALUES (:checksum, :path, :title, :rating, :o_counter, :size,
-					:width, :height, :studio_id, :created_at, :updated_at)
+					:width, :height, :studio_id, :file_mod_time, :created_at, :updated_at)
 		`,
 		newImage,
 	)
@@ -105,6 +105,19 @@ func (qb *ImageQueryBuilder) UpdateFull(updatedImage Image, tx *sqlx.Tx) (*Image
 	}
 
 	return qb.find(updatedImage.ID, tx)
+}
+
+func (qb *ImageQueryBuilder) UpdateFileModTime(id int, modTime NullSQLiteTimestamp, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE images SET file_mod_time = ? WHERE images.id = ? `,
+		modTime, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (qb *ImageQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error) {

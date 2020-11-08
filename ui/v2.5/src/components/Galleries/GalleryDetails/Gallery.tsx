@@ -10,6 +10,7 @@ import { GalleryDetailPanel } from "./GalleryDetailPanel";
 import { DeleteGalleriesDialog } from "../DeleteGalleriesDialog";
 import { GalleryImagesPanel } from "./GalleryImagesPanel";
 import { GalleryAddPanel } from "./GalleryAddPanel";
+import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
 
 interface IGalleryParams {
   id?: string;
@@ -92,13 +93,13 @@ export const Gallery: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="gallery-details-panel">Details</Nav.Link>
             </Nav.Item>
-            {/* {gallery.gallery ? (
+            {gallery.path ? (
               <Nav.Item>
-                <Nav.Link eventKey="gallery-gallery-panel">Gallery</Nav.Link>
+                <Nav.Link eventKey="gallery-file-info-panel">
+                  File Info
+                </Nav.Link>
               </Nav.Item>
-            ) : (
-              ""
-            )} */}
+            ) : undefined}
             <Nav.Item>
               <Nav.Link eventKey="gallery-edit-panel">Edit</Nav.Link>
             </Nav.Item>
@@ -110,13 +111,13 @@ export const Gallery: React.FC = () => {
           <Tab.Pane eventKey="gallery-details-panel" title="Details">
             <GalleryDetailPanel gallery={gallery} />
           </Tab.Pane>
-          {/* {gallery.gallery ? (
-            <Tab.Pane eventKey="gallery-gallery-panel" title="Gallery">
-              <GalleryViewer gallery={gallery.gallery} />
-            </Tab.Pane>
-          ) : (
-            ""
-          )} */}
+          <Tab.Pane
+            className="file-info-panel"
+            eventKey="gallery-file-info-panel"
+            title="File Info"
+          >
+            <GalleryFileInfoPanel gallery={gallery} />
+          </Tab.Pane>
           <Tab.Pane eventKey="gallery-edit-panel" title="Edit">
             <GalleryEditPanel
               isVisible={activeTabKey === "gallery-edit-panel"}
