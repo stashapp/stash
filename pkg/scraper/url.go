@@ -17,9 +17,10 @@ import (
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/stashapp/stash/pkg/logger"
 	"golang.org/x/net/html/charset"
 	"golang.org/x/net/publicsuffix"
+
+	"github.com/stashapp/stash/pkg/logger"
 )
 
 // Timeout for the scrape http request. Includes transfer time. May want to make this
@@ -41,6 +42,8 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 	if er != nil {
 		return nil, er
 	}
+
+	setCookies(jar, scraperConfig)
 
 	client := &http.Client{
 		Timeout: scrapeGetTimeout,
@@ -140,6 +143,8 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 	var res string
 	err := chromedp.Run(ctx,
 		network.Enable(),
+		setCDPCookies(driverOptions),
+		printCDPCookies(driverOptions),
 		chromedp.Navigate(url),
 		chromedp.Sleep(sleepDuration),
 		chromedp.ActionFunc(func(ctx context.Context) error {
