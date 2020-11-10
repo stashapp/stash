@@ -67,6 +67,7 @@ func walkGalleryZip(path string, walkFunc func(file *zip.File) error) error {
 	if err != nil {
 		return err
 	}
+	defer readCloser.Close()
 
 	for _, file := range readCloser.File {
 		if file.FileInfo().IsDir() {
