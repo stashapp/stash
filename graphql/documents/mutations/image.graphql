@@ -16,7 +16,7 @@ mutation ImageUpdate(
                         performer_ids: $performer_ids,
                         tag_ids: $tag_ids
                       }) {
-      ...ImageData
+      ...SlimImageData
   }
 }
 
@@ -38,13 +38,13 @@ mutation BulkImageUpdate(
                         performer_ids: $performer_ids,
                         tag_ids: $tag_ids
                       }) {
-      ...ImageData
+      ...SlimImageData
   }
 }
 
 mutation ImagesUpdate($input : [ImageUpdateInput!]!) {
   imagesUpdate(input: $input) {
-    ...ImageData
+    ...SlimImageData
   }
 }
 
