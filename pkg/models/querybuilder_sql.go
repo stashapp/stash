@@ -60,20 +60,28 @@ func (qb *queryBuilder) handleIntCriterionInput(c *IntCriterionInput, column str
 
 func (qb *queryBuilder) handleStringCriterionInput(c *StringCriterionInput, column string) {
 	if c != nil {
-		if modifier := c.Modifier.String(); c.Modifier.IsValid() {
+		if modifier := c.Modifier; c.Modifier.IsValid() {
 			switch modifier {
-			case "EQUALS":
+			case CriterionModifierIncludes:
 				clause, thisArgs := getSearchBinding([]string{column}, c.Value, false)
 				qb.addWhere(clause)
 				qb.addArg(thisArgs...)
-			case "NOT_EQUALS":
+			case CriterionModifierExcludes:
 				clause, thisArgs := getSearchBinding([]string{column}, c.Value, true)
 				qb.addWhere(clause)
 				qb.addArg(thisArgs...)
-			case "IS_NULL":
-				qb.addWhere(column + " IS NULL")
-			case "NOT_NULL":
-				qb.addWhere(column + " IS NOT NULL")
+			case CriterionModifierEquals:
+				qb.addWhere(column + " LIKE ?")
+				qb.addArg(c.Value)
+			case CriterionModifierNotEquals:
+				qb.addWhere(column + " NOT LIKE ?")
+				qb.addArg(c.Value)
+			default:
+				clause, count := getSimpleCriterionClause(modifier, "?")
+				qb.addWhere(column + " " + clause)
+				if count == 1 {
+					qb.addArg(c.Value)
+				}
 			}
 		}
 	}
@@ -117,8 +125,9 @@ func getPagination(findFilter *FindFilterType) string {
 	} else {
 		perPage = *findFilter.PerPage
 	}
-	if perPage > 120 {
-		perPage = 120
+
+	if perPage > 1000 {
+		perPage = 1000
 	} else if perPage < 1 {
 		perPage = 1
 	}
@@ -405,51 +414,39 @@ func sqlGenKeys(i interface{}, partial bool) string {
 		if key == "id" {
 			continue
 		}
+
+		var add bool
 		switch t := v.Field(i).Interface().(type) {
 		case string:
-			if partial || t != "" {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			add = partial || t != ""
 		case int:
-			if partial || t != 0 {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			add = partial || t != 0
 		case float64:
-			if partial || t != 0 {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			add = partial || t != 0
 		case bool:
-			query = append(query, fmt.Sprintf("%s=:%s", key, key))
+			add = true
 		case SQLiteTimestamp:
-			if partial || !t.Timestamp.IsZero() {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			add = partial || !t.Timestamp.IsZero()
+		case NullSQLiteTimestamp:
+			add = partial || t.Valid
 		case SQLiteDate:
-			if partial || t.Valid {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			add = partial || t.Valid
 		case sql.NullString:
-			if partial || t.Valid {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			add = partial || t.Valid
 		case sql.NullBool:
-			if partial || t.Valid {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			add = partial || t.Valid
 		case sql.NullInt64:
-			if partial || t.Valid {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			add = partial || t.Valid
 		case sql.NullFloat64:
-			if partial || t.Valid {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			add = partial || t.Valid
 		default:
 			reflectValue := reflect.ValueOf(t)
 			isNil := reflectValue.IsNil()
-			if !isNil {
-				query = append(query, fmt.Sprintf("%s=:%s", key, key))
-			}
+			add = !isNil
+		}
+
+		if add {
+			query = append(query, fmt.Sprintf("%s=:%s", key, key))
 		}
 	}
 	return strings.Join(query, ", ")

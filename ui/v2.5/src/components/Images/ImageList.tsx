@@ -16,8 +16,8 @@ import { IListHookOperation, showWhenSelected } from "src/hooks/ListHook";
 import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
-import { ImageExportDialog } from "./ImageExportDialog";
 import "flexbin/flexbin.css";
+import { ExportDialog } from "../Shared/ExportDialog";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
@@ -53,6 +53,18 @@ const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
   // FsLightbox doesn't update unless the key updates
   const key = images.map((i) => i.id).join(",");
 
+  function onLightboxOpen() {
+    // disable mousetrap
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (Mousetrap as any).pause();
+  }
+
+  function onLightboxClose() {
+    // re-enable mousetrap
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (Mousetrap as any).unpause();
+  }
+
   return (
     <div className="gallery">
       <div className="flexbin">{thumbs}</div>
@@ -61,6 +73,8 @@ const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
         toggler={lightboxToggle}
         sources={photos}
         key={key}
+        onOpen={onLightboxOpen}
+        onClose={onLightboxClose}
       />
     </div>
   );
@@ -162,9 +176,13 @@ export const ImageList: React.FC<IImageList> = ({
     if (isExportDialogOpen) {
       return (
         <>
-          <ImageExportDialog
-            selectedIds={Array.from(selectedIds.values())}
-            all={isExportAll}
+          <ExportDialog
+            exportInput={{
+              images: {
+                ids: Array.from(selectedIds.values()),
+                all: isExportAll,
+              },
+            }}
             onClose={() => {
               setIsExportDialogOpen(false);
             }}

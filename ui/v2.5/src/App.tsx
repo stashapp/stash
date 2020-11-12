@@ -7,10 +7,13 @@ import { fas } from "@fortawesome/free-solid-svg-icons";
 import "@formatjs/intl-numberformat/polyfill";
 import "@formatjs/intl-numberformat/locale-data/en";
 import "@formatjs/intl-numberformat/locale-data/en-GB";
+import replaceAll from "string.prototype.replaceall";
 
 import locales from "src/locale";
 import { useConfiguration } from "src/core/StashService";
 import { flattenMessages } from "src/utils";
+import Mousetrap from "mousetrap";
+import MousetrapPause from "mousetrap-pause";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Galleries from "./components/Galleries/Galleries";
 import { MainNavbar } from "./components/MainNavbar";
@@ -25,6 +28,11 @@ import Movies from "./components/Movies/Movies";
 import Tags from "./components/Tags/Tags";
 import Images from "./components/Images/Images";
 
+MousetrapPause(Mousetrap);
+
+// Required for browsers older than August 2020ish. Can be removed at some point.
+replaceAll.shim();
+
 // Set fontawesome/free-solid-svg as default fontawesome icons
 library.add(fas);
 
@@ -36,8 +44,8 @@ const intlFormats = {
 
 export const App: React.FC = () => {
   const config = useConfiguration();
-  const language = config.data?.configuration?.interface?.language ?? "en-US";
-  const messageLanguage = language.slice(0, 2);
+  const language = config.data?.configuration?.interface?.language ?? "en-GB";
+  const messageLanguage = language.replace(/-/, "");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const messages = flattenMessages((locales as any)[messageLanguage]);
 

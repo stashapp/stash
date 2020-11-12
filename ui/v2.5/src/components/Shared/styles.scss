@@ -16,7 +16,13 @@
   }
 
   &.inline {
-    height: inherit;
+    display: inline;
+    margin-left: 0.5rem;
+  }
+
+  &.small .spinner-border {
+    height: 1rem;
+    width: 1rem;
   }
 }
 
@@ -132,4 +138,36 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
 .hover-popover-content {
   max-width: 32rem;
   text-align: center;
+}
+
+.ErrorMessage {
+  align-items: center;
+  height: 20rem;
+  justify-content: center;
+
+  &-content {
+    display: inline-block;
+  }
+}
+
+.card {
+  .card-check {
+    left: 0.5rem;
+    margin-top: -12px;
+    opacity: 0;
+    padding-left: 15px;
+    position: absolute;
+    top: 0.7rem;
+    width: 1.2rem;
+    z-index: 1;
+
+    &:checked {
+      opacity: 0.75;
+    }
+  }
+
+  &:hover .card-check {
+    opacity: 0.75;
+    transition: opacity 0.5s;
+  }
 }

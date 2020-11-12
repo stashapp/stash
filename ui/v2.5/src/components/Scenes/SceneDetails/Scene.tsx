@@ -1,4 +1,4 @@
-import { Tab, Nav, Dropdown, Button } from "react-bootstrap";
+import { Tab, Nav, Dropdown, Button, ButtonGroup } from "react-bootstrap";
 import queryString from "query-string";
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useHistory, Link } from "react-router-dom";
@@ -12,7 +12,7 @@ import {
   useSceneGenerateScreenshot,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
-import { LoadingIndicator, Icon } from "src/components/Shared";
+import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
@@ -25,6 +25,7 @@ import { OCounterButton } from "./OCounterButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { SceneGenerateDialog } from "../SceneGenerateDialog";
+import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
 
 interface ISceneParams {
   id?: string;
@@ -39,8 +40,8 @@ export const Scene: React.FC = () => {
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [collapsed, setCollapsed] = useState(false);
 
-  const [scene, setScene] = useState<GQL.SceneDataFragment | undefined>();
   const { data, error, loading } = useFindScene(id);
+  const scene = data?.findScene;
   const {
     data: sceneStreams,
     error: streamableError,
@@ -59,10 +60,6 @@ export const Scene: React.FC = () => {
   const queryParams = queryString.parse(location.search);
   const autoplay = queryParams?.autoplay === "true";
 
-  useEffect(() => {
-    if (data?.findScene) setScene(data.findScene);
-  }, [data]);
-
   function getInitialTimestamp() {
     const params = queryString.parse(location.search);
     const initialTimestamp = params?.t ?? "0";
@@ -72,17 +69,10 @@ export const Scene: React.FC = () => {
     );
   }
 
-  const updateOCounter = (newValue: number) => {
-    const modifiedScene = { ...scene } as GQL.SceneDataFragment;
-    modifiedScene.o_counter = newValue;
-    setScene(modifiedScene);
-  };
-
   const onIncrementClick = async () => {
     try {
       setOLoading(true);
-      const result = await incrementO();
-      if (result.data) updateOCounter(result.data.sceneIncrementO);
+      await incrementO();
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -93,8 +83,7 @@ export const Scene: React.FC = () => {
   const onDecrementClick = async () => {
     try {
       setOLoading(true);
-      const result = await decrementO();
-      if (result.data) updateOCounter(result.data.sceneDecrementO);
+      await decrementO();
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -105,8 +94,7 @@ export const Scene: React.FC = () => {
   const onResetClick = async () => {
     try {
       setOLoading(true);
-      const result = await resetO();
-      if (result.data) updateOCounter(result.data.sceneResetO);
+      await resetO();
     } catch (e) {
       Toast.error(e);
     } finally {
@@ -240,21 +228,26 @@ export const Scene: React.FC = () => {
               ""
             )}
             <Nav.Item>
+              <Nav.Link eventKey="scene-video-filter-panel">Filters</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
               <Nav.Link eventKey="scene-file-info-panel">File Info</Nav.Link>
             </Nav.Item>
             <Nav.Item>
               <Nav.Link eventKey="scene-edit-panel">Edit</Nav.Link>
             </Nav.Item>
-            <Nav.Item className="ml-auto">
-              <OCounterButton
-                loading={oLoading}
-                value={scene.o_counter || 0}
-                onIncrement={onIncrementClick}
-                onDecrement={onDecrementClick}
-                onReset={onResetClick}
-              />
-            </Nav.Item>
-            <Nav.Item>{renderOperations()}</Nav.Item>
+            <ButtonGroup className="ml-auto">
+              <Nav.Item className="ml-auto">
+                <OCounterButton
+                  loading={oLoading}
+                  value={scene.o_counter || 0}
+                  onIncrement={onIncrementClick}
+                  onDecrement={onDecrementClick}
+                  onReset={onResetClick}
+                />
+              </Nav.Item>
+              <Nav.Item>{renderOperations()}</Nav.Item>
+            </ButtonGroup>
           </Nav>
         </div>
 
@@ -279,6 +272,9 @@ export const Scene: React.FC = () => {
           ) : (
             ""
           )}
+          <Tab.Pane eventKey="scene-video-filter-panel" title="Filter">
+            <SceneVideoFilterPanel scene={scene} />
+          </Tab.Pane>
           <Tab.Pane
             className="file-info-panel"
             eventKey="scene-file-info-panel"
@@ -290,7 +286,6 @@ export const Scene: React.FC = () => {
             <SceneEditPanel
               isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}
-              onUpdate={(newScene) => setScene(newScene)}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
@@ -320,12 +315,10 @@ export const Scene: React.FC = () => {
     return collapsed ? ">" : "<";
   }
 
-  if (loading || streamableLoading || !scene || !data?.findScene) {
-    return <LoadingIndicator />;
-  }
-
-  if (error) return <div>{error.message}</div>;
-  if (streamableError) return <div>{streamableError.message}</div>;
+  if (loading || streamableLoading) return <LoadingIndicator />;
+  if (error) return <ErrorMessage error={error.message} />;
+  if (streamableError) return <ErrorMessage error={streamableError.message} />;
+  if (!scene) return <ErrorMessage error={`No scene found with id ${id}.`} />;
 
   return (
     <div className="row">

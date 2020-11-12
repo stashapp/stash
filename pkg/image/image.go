@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -45,10 +46,11 @@ func CalculateMD5(path string) (string, error) {
 }
 
 func FileExists(path string) bool {
-	_, err := openSourceImage(path)
+	f, err := openSourceImage(path)
 	if err != nil {
 		return false
 	}
+	defer f.Close()
 
 	return true
 }
@@ -88,11 +90,15 @@ func openSourceImage(path string) (io.ReadCloser, error) {
 			return nil, err
 		}
 
+		// defer closing of zip to the calling function, unless an error
+		// is returned, in which case it should be closed immediately
+
 		// find the file matching the filename
 		for _, f := range r.File {
 			if f.Name == filename {
 				src, err := f.Open()
 				if err != nil {
+					r.Close()
 					return nil, err
 				}
 				return &imageReadCloser{
@@ -102,6 +108,7 @@ func openSourceImage(path string) (io.ReadCloser, error) {
 			}
 		}
 
+		r.Close()
 		return nil, fmt.Errorf("file with name '%s' not found in zip file '%s'", filename, zipFilename)
 	}
 
@@ -117,6 +124,21 @@ func getFilePath(path string) (zipFilename, filename string) {
 		filename = path
 	}
 	return
+}
+
+// GetFileDetails returns a pointer to an Image object with the
+// width, height and size populated.
+func GetFileDetails(path string) (*models.Image, error) {
+	i := &models.Image{
+		Path: path,
+	}
+
+	err := SetFileDetails(i)
+	if err != nil {
+		return nil, err
+	}
+
+	return i, nil
 }
 
 func SetFileDetails(i *models.Image) error {
@@ -144,6 +166,20 @@ func SetFileDetails(i *models.Image) error {
 	}
 
 	return nil
+}
+
+// GetFileModTime gets the file modification time, handling files in zip files.
+func GetFileModTime(path string) (time.Time, error) {
+	fi, err := stat(path)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("error performing stat on %s: %s", path, err.Error())
+	}
+
+	ret := fi.ModTime()
+	// truncate to seconds, since we don't store beyond that in the database
+	ret = ret.Truncate(time.Second)
+
+	return ret, nil
 }
 
 func stat(path string) (os.FileInfo, error) {

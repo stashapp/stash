@@ -98,8 +98,6 @@ github.com/cpuguy83/go-md2man/v2/md2man
 github.com/davecgh/go-spew/spew
 # github.com/disintegration/imaging v1.6.0
 github.com/disintegration/imaging
-# github.com/facebookgo/symwalk v0.0.0-20150726040526-42004b9f3222
-github.com/facebookgo/symwalk
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
 # github.com/go-chi/chi v4.0.2+incompatible

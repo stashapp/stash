@@ -175,6 +175,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	query.body += `
 		left join performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		left join scenes on scenes_join.scene_id = scenes.id
+		left join performer_stash_ids on performer_stash_ids.performer_id = performers.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -219,9 +220,16 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 			query.body += `left join performers_image on performers_image.performer_id = performers.id
 			`
 			query.addWhere("performers_image.performer_id IS NULL")
+		case "stash_id":
+			query.addWhere("performer_stash_ids.performer_id IS NULL")
 		default:
-			query.addWhere("performers." + *isMissingFilter + " IS NULL")
+			query.addWhere("performers." + *isMissingFilter + " IS NULL OR TRIM(performers." + *isMissingFilter + ") = ''")
 		}
+	}
+
+	if stashIDFilter := performerFilter.StashID; stashIDFilter != nil {
+		query.addWhere("performer_stash_ids.stash_id = ?")
+		query.addArg(stashIDFilter)
 	}
 
 	query.handleStringCriterionInput(performerFilter.Ethnicity, tableName+".ethnicity")

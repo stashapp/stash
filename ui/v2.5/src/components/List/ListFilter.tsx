@@ -40,7 +40,7 @@ interface IListFilterProps {
   itemsSelected?: boolean;
 }
 
-const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
+const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120", "250", "500", "1000"];
 const minZoom = 0;
 const maxZoom = 3;
 
@@ -254,6 +254,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
           return "list";
         case DisplayMode.Wall:
           return "square";
+        case DisplayMode.Tagger:
+          return "tags";
       }
     }
     function getLabel(option: DisplayMode) {
@@ -264,6 +266,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
           return "List";
         case DisplayMode.Wall:
           return "Wall";
+        case DisplayMode.Tagger:
+          return "Tagger";
       }
     }
 

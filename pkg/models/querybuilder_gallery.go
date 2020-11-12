@@ -21,8 +21,8 @@ func NewGalleryQueryBuilder() GalleryQueryBuilder {
 func (qb *GalleryQueryBuilder) Create(newGallery Gallery, tx *sqlx.Tx) (*Gallery, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO galleries (path, checksum, zip, title, date, details, url, studio_id, rating, scene_id, created_at, updated_at)
-				VALUES (:path, :checksum, :zip, :title, :date, :details, :url, :studio_id, :rating, :scene_id, :created_at, :updated_at)
+		`INSERT INTO galleries (path, checksum, zip, title, date, details, url, studio_id, rating, scene_id, file_mod_time, created_at, updated_at)
+				VALUES (:path, :checksum, :zip, :title, :date, :details, :url, :studio_id, :rating, :scene_id, :file_mod_time, :created_at, :updated_at)
 		`,
 		newGallery,
 	)
@@ -66,6 +66,32 @@ func (qb *GalleryQueryBuilder) UpdatePartial(updatedGallery GalleryPartial, tx *
 	}
 
 	return qb.Find(updatedGallery.ID, tx)
+}
+
+func (qb *GalleryQueryBuilder) UpdateChecksum(id int, checksum string, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE galleries SET checksum = ? WHERE galleries.id = ? `,
+		checksum, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *GalleryQueryBuilder) UpdateFileModTime(id int, modTime NullSQLiteTimestamp, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE galleries SET file_mod_time = ? WHERE galleries.id = ? `,
+		modTime, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (qb *GalleryQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
@@ -181,6 +207,8 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 		left join performers_galleries as performers_join on performers_join.gallery_id = galleries.id
 		left join studios as studio on studio.id = galleries.studio_id
 		left join galleries_tags as tags_join on tags_join.gallery_id = galleries.id
+		left join galleries_images as images_join on images_join.gallery_id = galleries.id
+		left join images on images_join.image_id = images.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -201,6 +229,8 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 	}
 
 	query.handleStringCriterionInput(galleryFilter.Path, "galleries.path")
+	query.handleIntCriterionInput(galleryFilter.Rating, "galleries.rating")
+	qb.handleAverageResolutionFilter(&query, galleryFilter.AverageResolution)
 
 	if isMissingFilter := galleryFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
@@ -261,6 +291,48 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 	}
 
 	return galleries, countResult
+}
+
+func (qb *GalleryQueryBuilder) handleAverageResolutionFilter(query *queryBuilder, resolutionFilter *ResolutionEnum) {
+	if resolutionFilter == nil {
+		return
+	}
+
+	if resolution := resolutionFilter.String(); resolutionFilter.IsValid() {
+		var low int
+		var high int
+
+		switch resolution {
+		case "LOW":
+			high = 480
+		case "STANDARD":
+			low = 480
+			high = 720
+		case "STANDARD_HD":
+			low = 720
+			high = 1080
+		case "FULL_HD":
+			low = 1080
+			high = 2160
+		case "FOUR_K":
+			low = 2160
+		}
+
+		havingClause := ""
+		if low != 0 {
+			havingClause = "avg(images.height) >= " + strconv.Itoa(low)
+		}
+		if high != 0 {
+			if havingClause != "" {
+				havingClause += " AND "
+			}
+			havingClause += "avg(images.height) < " + strconv.Itoa(high)
+		}
+
+		if havingClause != "" {
+			query.addHaving(havingClause)
+		}
+	}
 }
 
 func (qb *GalleryQueryBuilder) getGallerySort(findFilter *FindFilterType) string {

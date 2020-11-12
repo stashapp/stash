@@ -20,6 +20,7 @@ export class SceneIsMissingCriterion extends IsMissingCriterion {
     "movie",
     "performers",
     "tags",
+    "stash_id",
   ];
 }
 
@@ -63,6 +64,7 @@ export class PerformerIsMissingCriterion extends IsMissingCriterion {
     "gender",
     "scenes",
     "image",
+    "stash_id",
   ];
 }
 
@@ -73,7 +75,16 @@ export class PerformerIsMissingCriterionOption implements ICriterionOption {
 
 export class GalleryIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "galleryIsMissing";
-  public options: string[] = ["scene"];
+  public options: string[] = [
+    "title",
+    "details",
+    "url",
+    "date",
+    "studio",
+    "performers",
+    "tags",
+    "scene",
+  ];
 }
 
 export class GalleryIsMissingCriterionOption implements ICriterionOption {
@@ -93,7 +104,7 @@ export class TagIsMissingCriterionOption implements ICriterionOption {
 
 export class StudioIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "studioIsMissing";
-  public options: string[] = ["image"];
+  public options: string[] = ["image", "stash_id"];
 }
 
 export class StudioIsMissingCriterionOption implements ICriterionOption {

@@ -1,27 +1,45 @@
 import React, { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
 import { Button, Form, Col, Row } from "react-bootstrap";
 import * as GQL from "src/core/generated-graphql";
-import { useGalleryCreate, useGalleryUpdate } from "src/core/StashService";
+import {
+  queryScrapeGalleryURL,
+  useGalleryCreate,
+  useGalleryUpdate,
+  useListGalleryScrapers,
+} from "src/core/StashService";
 import {
   PerformerSelect,
   TagSelect,
   StudioSelect,
+  Icon,
   LoadingIndicator,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { FormUtils, EditableTextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
+import { GalleryScrapeDialog } from "./GalleryScrapeDialog";
 
 interface IProps {
-  gallery: Partial<GQL.GalleryDataFragment>;
   isVisible: boolean;
-  isNew?: boolean;
-  onUpdate: (gallery: GQL.GalleryDataFragment) => void;
   onDelete: () => void;
 }
 
-export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
+interface INewProps {
+  isNew: true;
+  gallery: undefined;
+}
+
+interface IExistingProps {
+  isNew: false;
+  gallery: GQL.GalleryDataFragment;
+}
+
+export const GalleryEditPanel: React.FC<
+  IProps & (INewProps | IExistingProps)
+> = (props) => {
   const Toast = useToast();
+  const history = useHistory();
   const [title, setTitle] = useState<string>();
   const [details, setDetails] = useState<string>();
   const [url, setUrl] = useState<string>();
@@ -30,6 +48,13 @@ export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [tagIds, setTagIds] = useState<string[]>();
+
+  const Scrapers = useListGalleryScrapers();
+
+  const [
+    scrapedGallery,
+    setScrapedGallery,
+  ] = useState<GQL.ScrapedGallery | null>();
 
   // Network state
   const [isLoading, setIsLoading] = useState(true);
@@ -83,15 +108,15 @@ export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   });
 
-  function updateGalleryEditState(state: Partial<GQL.GalleryDataFragment>) {
-    const perfIds = state.performers?.map((performer) => performer.id);
-    const tIds = state.tags ? state.tags.map((tag) => tag.id) : undefined;
+  function updateGalleryEditState(state?: GQL.GalleryDataFragment) {
+    const perfIds = state?.performers?.map((performer) => performer.id);
+    const tIds = state?.tags ? state?.tags.map((tag) => tag.id) : undefined;
 
-    setTitle(state.title ?? undefined);
-    setDetails(state.details ?? undefined);
-    setUrl(state.url ?? undefined);
-    setDate(state.date ?? undefined);
-    setRating(state.rating === null ? NaN : state.rating);
+    setTitle(state?.title ?? undefined);
+    setDetails(state?.details ?? undefined);
+    setUrl(state?.url ?? undefined);
+    setDate(state?.date ?? undefined);
+    setRating(state?.rating === null ? NaN : state?.rating);
     setStudioId(state?.studio?.id ?? undefined);
     setPerformerIds(perfIds);
     setTagIds(tIds);
@@ -104,7 +129,7 @@ export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
 
   function getGalleryInput() {
     return {
-      id: props.isNew ? undefined : props.gallery.id!,
+      id: props.isNew ? undefined : props.gallery.id,
       title,
       details,
       url,
@@ -122,13 +147,12 @@ export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
       if (props.isNew) {
         const result = await createGallery();
         if (result.data?.galleryCreate) {
-          props.onUpdate(result.data.galleryCreate);
+          history.push(`/galleries/${result.data.galleryCreate.id}`);
           Toast.success({ content: "Created gallery" });
         }
       } else {
         const result = await updateGallery();
         if (result.data?.galleryUpdate) {
-          props.onUpdate(result.data.galleryUpdate);
           Toast.success({ content: "Updated gallery" });
         }
       }
@@ -138,10 +162,121 @@ export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
     setIsLoading(false);
   }
 
+  function onScrapeDialogClosed(gallery?: GQL.ScrapedGalleryDataFragment) {
+    if (gallery) {
+      updateGalleryFromScrapedGallery(gallery);
+    }
+    setScrapedGallery(undefined);
+  }
+
+  function maybeRenderScrapeDialog() {
+    if (!scrapedGallery) {
+      return;
+    }
+
+    const currentGallery = getGalleryInput();
+
+    return (
+      <GalleryScrapeDialog
+        gallery={currentGallery}
+        scraped={scrapedGallery}
+        onClose={(gallery) => {
+          onScrapeDialogClosed(gallery);
+        }}
+      />
+    );
+  }
+
+  function urlScrapable(scrapedUrl: string): boolean {
+    return (Scrapers?.data?.listGalleryScrapers ?? []).some((s) =>
+      (s?.gallery?.urls ?? []).some((u) => scrapedUrl.includes(u))
+    );
+  }
+
+  function updateGalleryFromScrapedGallery(
+    gallery: GQL.ScrapedGalleryDataFragment
+  ) {
+    if (gallery.title) {
+      setTitle(gallery.title);
+    }
+
+    if (gallery.details) {
+      setDetails(gallery.details);
+    }
+
+    if (gallery.date) {
+      setDate(gallery.date);
+    }
+
+    if (gallery.url) {
+      setUrl(gallery.url);
+    }
+
+    if (gallery.studio && gallery.studio.stored_id) {
+      setStudioId(gallery.studio.stored_id);
+    }
+
+    if (gallery.performers && gallery.performers.length > 0) {
+      const idPerfs = gallery.performers.filter((p) => {
+        return p.stored_id !== undefined && p.stored_id !== null;
+      });
+
+      if (idPerfs.length > 0) {
+        const newIds = idPerfs.map((p) => p.stored_id);
+        setPerformerIds(newIds as string[]);
+      }
+    }
+
+    if (gallery?.tags?.length) {
+      const idTags = gallery.tags.filter((p) => {
+        return p.stored_id !== undefined && p.stored_id !== null;
+      });
+
+      if (idTags.length > 0) {
+        const newIds = idTags.map((p) => p.stored_id);
+        setTagIds(newIds as string[]);
+      }
+    }
+  }
+
+  async function onScrapeGalleryURL() {
+    if (!url) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const result = await queryScrapeGalleryURL(url);
+      if (!result || !result.data || !result.data.scrapeGalleryURL) {
+        return;
+      }
+      setScrapedGallery(result.data.scrapeGalleryURL);
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function maybeRenderScrapeButton() {
+    if (!url || !urlScrapable(url)) {
+      return undefined;
+    }
+    return (
+      <Button
+        className="minimal scrape-url-button"
+        onClick={onScrapeGalleryURL}
+        title="Scrape"
+      >
+        <Icon className="fa-fw" icon="file-download" />
+      </Button>
+    );
+  }
+
   if (isLoading) return <LoadingIndicator />;
 
   return (
     <div id="gallery-edit-details">
+      {maybeRenderScrapeDialog()}
       <div className="form-container row px-3 pt-3">
         <div className="col edit-buttons mb-3 pl-0">
           <Button className="edit-button" variant="primary" onClick={onSave}>
@@ -167,6 +302,9 @@ export const GalleryEditPanel: React.FC<IProps> = (props: IProps) => {
           <Form.Group controlId="url" as={Row}>
             <Col xs={3} className="pr-0 url-label">
               <Form.Label className="col-form-label">URL</Form.Label>
+              <div className="float-right scrape-button-container">
+                {maybeRenderScrapeButton()}
+              </div>
             </Col>
             <Col xs={9}>
               {EditableTextUtils.renderInputGroup({

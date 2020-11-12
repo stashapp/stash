@@ -7,7 +7,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const imageTable = "images"
@@ -63,9 +62,9 @@ func (qb *ImageQueryBuilder) Create(newImage Image, tx *sqlx.Tx) (*Image, error)
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO images (checksum, path, title, rating, o_counter, size,
-                    			    width, height, studio_id, created_at, updated_at)
+                    			    width, height, studio_id, file_mod_time, created_at, updated_at)
 				VALUES (:checksum, :path, :title, :rating, :o_counter, :size,
-					:width, :height, :studio_id, :created_at, :updated_at)
+					:width, :height, :studio_id, :file_mod_time, :created_at, :updated_at)
 		`,
 		newImage,
 	)
@@ -106,6 +105,19 @@ func (qb *ImageQueryBuilder) UpdateFull(updatedImage Image, tx *sqlx.Tx) (*Image
 	}
 
 	return qb.find(updatedImage.ID, tx)
+}
+
+func (qb *ImageQueryBuilder) UpdateFileModTime(id int, modTime NullSQLiteTimestamp, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE images SET file_mod_time = ? WHERE images.id = ? `,
+		modTime, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (qb *ImageQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error) {
@@ -222,7 +234,7 @@ func (qb *ImageQueryBuilder) FindByStudioID(studioID int) ([]*Image, error) {
 
 func (qb *ImageQueryBuilder) FindByGalleryID(galleryID int) ([]*Image, error) {
 	args := []interface{}{galleryID}
-	return qb.queryImages(imagesForGalleryQuery, args, nil)
+	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(nil), args, nil)
 }
 
 func (qb *ImageQueryBuilder) CountByGalleryID(galleryID int) (int, error) {
@@ -234,12 +246,8 @@ func (qb *ImageQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT images.id FROM images"), nil)
 }
 
-func (qb *ImageQueryBuilder) SizeCount() (string, error) {
-	sum, err := runSumQuery("SELECT SUM(size) as sum FROM images", nil)
-	if err != nil {
-		return "0 B", err
-	}
-	return utils.HumanizeBytes(sum), err
+func (qb *ImageQueryBuilder) Size() (uint64, error) {
+	return runSumQuery("SELECT SUM(size) as sum FROM images", nil)
 }
 
 func (qb *ImageQueryBuilder) CountByStudioID(studioID int) (int, error) {
@@ -282,6 +290,8 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 		query.addWhere(clause)
 		query.addArg(thisArgs...)
 	}
+
+	query.handleStringCriterionInput(imageFilter.Path, "images.path")
 
 	if rating := imageFilter.Rating; rating != nil {
 		clause, count := getIntCriterionWhereClause("images.rating", *imageFilter.Rating)
@@ -327,7 +337,7 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 		case "tags":
 			query.addWhere("tags_join.image_id IS NULL")
 		default:
-			query.addWhere("images." + *isMissingFilter + " IS NULL")
+			query.addWhere("images." + *isMissingFilter + " IS NULL OR TRIM(images." + *isMissingFilter + ") = ''")
 		}
 	}
 

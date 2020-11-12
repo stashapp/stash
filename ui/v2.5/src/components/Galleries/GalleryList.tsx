@@ -12,9 +12,9 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindGalleries } from "src/core/StashService";
 import { GalleryCard } from "./GalleryCard";
-import { GalleryExportDialog } from "./GalleryExportDialog";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
+import { ExportDialog } from "../Shared/ExportDialog";
 
 interface IGalleryList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -110,9 +110,13 @@ export const GalleryList: React.FC<IGalleryList> = ({
     if (isExportDialogOpen) {
       return (
         <>
-          <GalleryExportDialog
-            selectedIds={Array.from(selectedIds.values())}
-            all={isExportAll}
+          <ExportDialog
+            exportInput={{
+              galleries: {
+                ids: Array.from(selectedIds.values()),
+                all: isExportAll,
+              },
+            }}
             onClose={() => {
               setIsExportDialogOpen(false);
             }}

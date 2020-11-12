@@ -1,9 +1,8 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
-import * as GQL from "src/core/generated-graphql";
 import { useFindGallery } from "src/core/StashService";
-import { LoadingIndicator, Icon } from "src/components/Shared";
+import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
 import { GalleryEditPanel } from "./GalleryEditPanel";
@@ -11,6 +10,7 @@ import { GalleryDetailPanel } from "./GalleryDetailPanel";
 import { DeleteGalleriesDialog } from "../DeleteGalleriesDialog";
 import { GalleryImagesPanel } from "./GalleryImagesPanel";
 import { GalleryAddPanel } from "./GalleryAddPanel";
+import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
 
 interface IGalleryParams {
   id?: string;
@@ -22,8 +22,8 @@ export const Gallery: React.FC = () => {
   const history = useHistory();
   const isNew = id === "new";
 
-  const [gallery, setGallery] = useState<Partial<GQL.GalleryDataFragment>>({});
   const { data, error, loading } = useFindGallery(id);
+  const gallery = data?.findGallery;
 
   const [activeTabKey, setActiveTabKey] = useState("gallery-details-panel");
   const activeRightTabKey = tab === "images" || tab === "add" ? tab : "images";
@@ -35,10 +35,6 @@ export const Gallery: React.FC = () => {
   };
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (data?.findGallery) setGallery(data.findGallery);
-  }, [data]);
 
   function onDeleteDialogClosed(deleted: boolean) {
     setIsDeleteAlertOpen(false);
@@ -97,13 +93,13 @@ export const Gallery: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="gallery-details-panel">Details</Nav.Link>
             </Nav.Item>
-            {/* {gallery.gallery ? (
+            {gallery.path ? (
               <Nav.Item>
-                <Nav.Link eventKey="gallery-gallery-panel">Gallery</Nav.Link>
+                <Nav.Link eventKey="gallery-file-info-panel">
+                  File Info
+                </Nav.Link>
               </Nav.Item>
-            ) : (
-              ""
-            )} */}
+            ) : undefined}
             <Nav.Item>
               <Nav.Link eventKey="gallery-edit-panel">Edit</Nav.Link>
             </Nav.Item>
@@ -115,18 +111,18 @@ export const Gallery: React.FC = () => {
           <Tab.Pane eventKey="gallery-details-panel" title="Details">
             <GalleryDetailPanel gallery={gallery} />
           </Tab.Pane>
-          {/* {gallery.gallery ? (
-            <Tab.Pane eventKey="gallery-gallery-panel" title="Gallery">
-              <GalleryViewer gallery={gallery.gallery} />
-            </Tab.Pane>
-          ) : (
-            ""
-          )} */}
+          <Tab.Pane
+            className="file-info-panel"
+            eventKey="gallery-file-info-panel"
+            title="File Info"
+          >
+            <GalleryFileInfoPanel gallery={gallery} />
+          </Tab.Pane>
           <Tab.Pane eventKey="gallery-edit-panel" title="Edit">
             <GalleryEditPanel
               isVisible={activeTabKey === "gallery-edit-panel"}
+              isNew={false}
               gallery={gallery}
-              onUpdate={(newGallery) => setGallery(newGallery)}
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
@@ -183,27 +179,29 @@ export const Gallery: React.FC = () => {
     };
   });
 
+  if (loading) {
+    return <LoadingIndicator />;
+  }
+
+  if (error) return <ErrorMessage error={error.message} />;
+
   if (isNew)
     return (
       <div className="row new-view">
         <div className="col-6">
           <h2>Create Gallery</h2>
           <GalleryEditPanel
-            gallery={gallery}
+            isNew
+            gallery={undefined}
             isVisible
-            isNew={isNew}
-            onUpdate={(newGallery) => setGallery(newGallery)}
             onDelete={() => setIsDeleteAlertOpen(true)}
           />
         </div>
       </div>
     );
 
-  if (loading || !gallery || !data?.findGallery) {
-    return <LoadingIndicator />;
-  }
-
-  if (error) return <div>{error.message}</div>;
+  if (!gallery)
+    return <ErrorMessage error={`No gallery with id ${id} found.`} />;
 
   return (
     <div className="row">

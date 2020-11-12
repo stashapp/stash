@@ -4,13 +4,13 @@ import (
 	"archive/zip"
 	"context"
 	"database/sql"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/facebookgo/symwalk"
 	"github.com/jmoiron/sqlx"
 	"github.com/remeh/sizedwaitgroup"
 
@@ -90,8 +90,64 @@ func (t *ScanTask) scanGallery() {
 	qb := models.NewGalleryQueryBuilder()
 	gallery, _ := qb.FindByPath(t.FilePath)
 
+	fileModTime, err := t.getFileModTime()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
 	if gallery != nil {
 		// We already have this item in the database, keep going
+
+		// if file mod time is not set, set it now
+		// we will also need to rescan the zip contents
+		updateModTime := false
+		if !gallery.FileModTime.Valid {
+			updateModTime = true
+			t.updateFileModTime(gallery.ID, fileModTime, &qb)
+
+			// update our copy of the gallery
+			var err error
+			gallery, err = qb.Find(gallery.ID, nil)
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
+		// if the mod time of the zip file is different than that of the associated
+		// gallery, then recalculate the checksum
+		modified := t.isFileModified(fileModTime, gallery.FileModTime)
+		if modified {
+			logger.Infof("%s has been updated: rescanning", t.FilePath)
+
+			// update the checksum and the modification time
+			checksum, err := t.calculateChecksum()
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+
+			currentTime := time.Now()
+			galleryPartial := models.GalleryPartial{
+				ID:       gallery.ID,
+				Checksum: &checksum,
+				FileModTime: &models.NullSQLiteTimestamp{
+					Timestamp: fileModTime,
+					Valid:     true,
+				},
+				UpdatedAt: &models.SQLiteTimestamp{Timestamp: currentTime},
+			}
+
+			err = database.WithTxn(func(tx *sqlx.Tx) error {
+				_, err := qb.UpdatePartial(galleryPartial, tx)
+				return err
+			})
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
 
 		// scan the zip files if the gallery has no images
 		iqb := models.NewImageQueryBuilder()
@@ -100,7 +156,7 @@ func (t *ScanTask) scanGallery() {
 			logger.Errorf("error getting images for zip gallery %s: %s", t.FilePath, err.Error())
 		}
 
-		if images == 0 {
+		if images == 0 || modified || updateModTime {
 			t.scanZipImages(gallery)
 		} else {
 			// in case thumbnails have been deleted, regenerate them
@@ -128,7 +184,6 @@ func (t *ScanTask) scanGallery() {
 		if exists {
 			logger.Infof("%s already exists.  Duplicate of %s ", t.FilePath, gallery.Path.String)
 		} else {
-
 			logger.Infof("%s already exists.  Updating path...", t.FilePath)
 			gallery.Path = sql.NullString{
 				String: t.FilePath,
@@ -145,6 +200,10 @@ func (t *ScanTask) scanGallery() {
 			Path: sql.NullString{
 				String: t.FilePath,
 				Valid:  true,
+			},
+			FileModTime: models.NullSQLiteTimestamp{
+				Timestamp: fileModTime,
+				Valid:     true,
 			},
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
@@ -179,6 +238,44 @@ func (t *ScanTask) scanGallery() {
 	if gallery != nil {
 		t.scanZipImages(gallery)
 	}
+}
+
+type fileModTimeUpdater interface {
+	UpdateFileModTime(id int, modTime models.NullSQLiteTimestamp, tx *sqlx.Tx) error
+}
+
+func (t *ScanTask) updateFileModTime(id int, fileModTime time.Time, updater fileModTimeUpdater) error {
+	logger.Infof("setting file modification time on %s", t.FilePath)
+
+	err := database.WithTxn(func(tx *sqlx.Tx) error {
+		return updater.UpdateFileModTime(id, models.NullSQLiteTimestamp{
+			Timestamp: fileModTime,
+			Valid:     true,
+		}, tx)
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *ScanTask) getFileModTime() (time.Time, error) {
+	fi, err := os.Stat(t.FilePath)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("error performing stat on %s: %s", t.FilePath, err.Error())
+	}
+
+	ret := fi.ModTime()
+	// truncate to seconds, since we don't store beyond that in the database
+	ret = ret.Truncate(time.Second)
+
+	return ret, nil
+}
+
+func (t *ScanTask) isFileModified(fileModTime time.Time, modTime models.NullSQLiteTimestamp) bool {
+	return !modTime.Timestamp.Equal(fileModTime)
 }
 
 // associates a gallery to a scene with the same basename
@@ -239,7 +336,38 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 func (t *ScanTask) scanScene() *models.Scene {
 	qb := models.NewSceneQueryBuilder()
 	scene, _ := qb.FindByPath(t.FilePath)
+
+	fileModTime, err := t.getFileModTime()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
 	if scene != nil {
+		// if file mod time is not set, set it now
+		if !scene.FileModTime.Valid {
+			t.updateFileModTime(scene.ID, fileModTime, &qb)
+
+			// update our copy of the scene
+			var err error
+			scene, err = qb.Find(scene.ID)
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
+		// if the mod time of the file is different than that of the associated
+		// scene, then recalculate the checksum and regenerate the thumbnail
+		modified := t.isFileModified(fileModTime, scene.FileModTime)
+		if modified {
+			scene, err = t.rescanScene(scene, fileModTime)
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
 		// We already have this item in the database
 		// check for thumbnails,screenshots
 		t.makeScreenshots(nil, scene.GetHash(t.fileNamingAlgorithm))
@@ -407,8 +535,12 @@ func (t *ScanTask) scanScene() *models.Scene {
 			Framerate:  sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true},
 			Bitrate:    sql.NullInt64{Int64: videoFile.Bitrate, Valid: true},
 			Size:       sql.NullString{String: strconv.Itoa(int(videoFile.Size)), Valid: true},
-			CreatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt:  models.SQLiteTimestamp{Timestamp: currentTime},
+			FileModTime: models.NullSQLiteTimestamp{
+				Timestamp: fileModTime,
+				Valid:     true,
+			},
+			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
 
 		if t.UseFileMetadata {
@@ -432,6 +564,77 @@ func (t *ScanTask) scanScene() *models.Scene {
 	return retScene
 }
 
+func (t *ScanTask) rescanScene(scene *models.Scene, fileModTime time.Time) (*models.Scene, error) {
+	logger.Infof("%s has been updated: rescanning", t.FilePath)
+
+	// update the oshash/checksum and the modification time
+	logger.Infof("Calculating oshash for existing file %s ...", t.FilePath)
+	oshash, err := utils.OSHashFromFilePath(t.FilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var checksum *sql.NullString
+	if t.calculateMD5 {
+		cs, err := t.calculateChecksum()
+		if err != nil {
+			return nil, err
+		}
+
+		checksum = &sql.NullString{
+			String: cs,
+			Valid:  true,
+		}
+	}
+
+	// regenerate the file details as well
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
+	if err != nil {
+		return nil, err
+	}
+	container := ffmpeg.MatchContainer(videoFile.Container, t.FilePath)
+
+	currentTime := time.Now()
+	scenePartial := models.ScenePartial{
+		ID:       scene.ID,
+		Checksum: checksum,
+		OSHash: &sql.NullString{
+			String: oshash,
+			Valid:  true,
+		},
+		Duration:   &sql.NullFloat64{Float64: videoFile.Duration, Valid: true},
+		VideoCodec: &sql.NullString{String: videoFile.VideoCodec, Valid: true},
+		AudioCodec: &sql.NullString{String: videoFile.AudioCodec, Valid: true},
+		Format:     &sql.NullString{String: string(container), Valid: true},
+		Width:      &sql.NullInt64{Int64: int64(videoFile.Width), Valid: true},
+		Height:     &sql.NullInt64{Int64: int64(videoFile.Height), Valid: true},
+		Framerate:  &sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true},
+		Bitrate:    &sql.NullInt64{Int64: videoFile.Bitrate, Valid: true},
+		Size:       &sql.NullString{String: strconv.Itoa(int(videoFile.Size)), Valid: true},
+		FileModTime: &models.NullSQLiteTimestamp{
+			Timestamp: fileModTime,
+			Valid:     true,
+		},
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: currentTime},
+	}
+
+	var ret *models.Scene
+	err = database.WithTxn(func(tx *sqlx.Tx) error {
+		qb := models.NewSceneQueryBuilder()
+		var txnErr error
+		ret, txnErr = qb.Update(scenePartial, tx)
+		return txnErr
+	})
+	if err != nil {
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	// leave the generated files as is - the scene file may have been moved
+	// elsewhere
+
+	return ret, nil
+}
 func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum string) {
 	thumbPath := instance.Paths.Scene.GetThumbnailScreenshotPath(checksum)
 	normalPath := instance.Paths.Scene.GetScreenshotPath(checksum)
@@ -504,7 +707,38 @@ func (t *ScanTask) regenerateZipImages(zipGallery *models.Gallery) {
 func (t *ScanTask) scanImage() {
 	qb := models.NewImageQueryBuilder()
 	i, _ := qb.FindByPath(t.FilePath)
+
+	fileModTime, err := image.GetFileModTime(t.FilePath)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
 	if i != nil {
+		// if file mod time is not set, set it now
+		if !i.FileModTime.Valid {
+			t.updateFileModTime(i.ID, fileModTime, &qb)
+
+			// update our copy of the gallery
+			var err error
+			i, err = qb.Find(i.ID)
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
+		// if the mod time of the file is different than that of the associated
+		// image, then recalculate the checksum and regenerate the thumbnail
+		modified := t.isFileModified(fileModTime, i.FileModTime)
+		if modified {
+			i, err = t.rescanImage(i, fileModTime)
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
 		// We already have this item in the database
 		// check for thumbnails
 		t.generateThumbnail(i)
@@ -520,7 +754,7 @@ func (t *ScanTask) scanImage() {
 	var checksum string
 
 	logger.Infof("%s not found.  Calculating checksum...", t.FilePath)
-	checksum, err := t.calculateImageChecksum()
+	checksum, err = t.calculateImageChecksum()
 	if err != nil {
 		logger.Errorf("error calculating checksum for %s: %s", t.FilePath, err.Error())
 		return
@@ -548,8 +782,12 @@ func (t *ScanTask) scanImage() {
 		logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(t.FilePath))
 		currentTime := time.Now()
 		newImage := models.Image{
-			Checksum:  checksum,
-			Path:      t.FilePath,
+			Checksum: checksum,
+			Path:     t.FilePath,
+			FileModTime: models.NullSQLiteTimestamp{
+				Timestamp: fileModTime,
+				Valid:     true,
+			},
 			CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 			UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		}
@@ -581,6 +819,59 @@ func (t *ScanTask) scanImage() {
 	}
 
 	t.generateThumbnail(i)
+}
+
+func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.Image, error) {
+	logger.Infof("%s has been updated: rescanning", t.FilePath)
+
+	oldChecksum := i.Checksum
+
+	// update the checksum and the modification time
+	checksum, err := t.calculateImageChecksum()
+	if err != nil {
+		return nil, err
+	}
+
+	// regenerate the file details as well
+	fileDetails, err := image.GetFileDetails(t.FilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	currentTime := time.Now()
+	imagePartial := models.ImagePartial{
+		ID:       i.ID,
+		Checksum: &checksum,
+		Width:    &fileDetails.Width,
+		Height:   &fileDetails.Height,
+		Size:     &fileDetails.Size,
+		FileModTime: &models.NullSQLiteTimestamp{
+			Timestamp: fileModTime,
+			Valid:     true,
+		},
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: currentTime},
+	}
+
+	var ret *models.Image
+	err = database.WithTxn(func(tx *sqlx.Tx) error {
+		qb := models.NewImageQueryBuilder()
+		var txnErr error
+		ret, txnErr = qb.Update(imagePartial, tx)
+		return txnErr
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// remove the old thumbnail if the checksum changed - we'll regenerate it
+	if oldChecksum != checksum {
+		err = os.Remove(GetInstance().Paths.Generated.GetThumbnailPath(oldChecksum, models.DefaultGthumbWidth)) // remove cache dir of gallery
+		if err != nil {
+			logger.Errorf("Error deleting thumbnail image: %s", err)
+		}
+	}
+
+	return ret, nil
 }
 
 func (t *ScanTask) associateImageWithFolderGallery(imageID int, tx *sqlx.Tx) error {
@@ -625,7 +916,6 @@ func (t *ScanTask) generateThumbnail(i *models.Image) {
 	thumbPath := GetInstance().Paths.Generated.GetThumbnailPath(i.Checksum, models.DefaultGthumbWidth)
 	exists, _ := utils.FileExists(thumbPath)
 	if exists {
-		logger.Debug("Thumbnail already exists for this path... skipping")
 		return
 	}
 
@@ -702,20 +992,25 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 	vidExt := config.GetVideoExtensions()
 	imgExt := config.GetImageExtensions()
 	gExt := config.GetGalleryExtensions()
-	excludeVid := config.GetExcludes()
-	excludeImg := config.GetImageExcludes()
+	excludeVidRegex := generateRegexps(config.GetExcludes())
+	excludeImgRegex := generateRegexps(config.GetImageExcludes())
 
-	return symwalk.Walk(s.Path, func(path string, info os.FileInfo, err error) error {
+	return utils.SymWalk(s.Path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			logger.Warnf("error scanning %s: %s", path, err.Error())
+			return nil
+		}
+
 		if info.IsDir() {
 			return nil
 		}
 
-		if !s.ExcludeVideo && matchExtension(path, vidExt) && !matchFile(path, excludeVid) {
+		if !s.ExcludeVideo && matchExtension(path, vidExt) && !matchFileRegex(path, excludeVidRegex) {
 			return f(path, info, err)
 		}
 
 		if !s.ExcludeImage {
-			if (matchExtension(path, imgExt) || matchExtension(path, gExt)) && !matchFile(path, excludeImg) {
+			if (matchExtension(path, imgExt) || matchExtension(path, gExt)) && !matchFileRegex(path, excludeImgRegex) {
 				return f(path, info, err)
 			}
 		}

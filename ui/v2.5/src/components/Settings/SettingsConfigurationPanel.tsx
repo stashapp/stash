@@ -426,7 +426,7 @@ export const SettingsConfigurationPanel: React.FC = () => {
         </Form.Group>
 
         <Form.Group>
-          <h6>Excluded Patterns</h6>
+          <h6>Excluded Video Patterns</h6>
           <ExclusionPatterns excludes={excludes} setExcludes={setExcludes} />
           <Form.Text className="text-muted">
             Regexps of video files/paths to exclude from Scan and add to Clean
@@ -719,10 +719,12 @@ export const SettingsConfigurationPanel: React.FC = () => {
       </Form.Group>
 
       <hr />
-      <Form.Group>
+
+      <Form.Group id="stashbox">
         <h4>Stash-box integration</h4>
         <StashBoxConfiguration boxes={stashBoxes} saveBoxes={setStashBoxes} />
       </Form.Group>
+
       <hr />
 
       <Form.Group>

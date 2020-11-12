@@ -22,7 +22,7 @@ import {
 import { NoneCriterion } from "./none";
 import { PerformersCriterion } from "./performers";
 import { RatingCriterion } from "./rating";
-import { ResolutionCriterion } from "./resolution";
+import { AverageResolutionCriterion, ResolutionCriterion } from "./resolution";
 import { StudiosCriterion, ParentStudiosCriterion } from "./studios";
 import { TagsCriterion } from "./tags";
 import { GenderCriterion } from "./gender";
@@ -43,6 +43,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new NumberCriterion(type, type);
     case "resolution":
       return new ResolutionCriterion();
+    case "average_resolution":
+      return new AverageResolutionCriterion();
     case "duration":
       return new DurationCriterion(type, type);
     case "favorite":

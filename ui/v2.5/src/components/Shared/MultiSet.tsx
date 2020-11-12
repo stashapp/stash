@@ -8,7 +8,8 @@ import { FilterSelect } from "./Select";
 type ValidTypes =
   | GQL.SlimPerformerDataFragment
   | GQL.Tag
-  | GQL.SlimStudioDataFragment;
+  | GQL.SlimStudioDataFragment
+  | GQL.SlimMovieDataFragment;
 
 interface IMultiSetProps {
   type: "performers" | "studios" | "tags";

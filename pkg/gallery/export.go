@@ -20,6 +20,10 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 		newGalleryJSON.Path = gallery.Path.String
 	}
 
+	if gallery.FileModTime.Valid {
+		newGalleryJSON.FileModTime = models.JSONTime{Time: gallery.FileModTime.Timestamp}
+	}
+
 	if gallery.Title.Valid {
 		newGalleryJSON.Title = gallery.Title.String
 	}
@@ -58,4 +62,13 @@ func GetStudioName(reader models.StudioReader, gallery *models.Gallery) (string,
 	}
 
 	return "", nil
+}
+
+func GetIDs(galleries []*models.Gallery) []int {
+	var results []int
+	for _, gallery := range galleries {
+		results = append(results, gallery.ID)
+	}
+
+	return results
 }
