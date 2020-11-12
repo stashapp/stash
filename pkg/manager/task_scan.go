@@ -340,7 +340,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 	fileModTime, err := t.getFileModTime()
 	if err != nil {
 		logger.Error(err.Error())
-		return
+		return nil
 	}
 
 	if scene != nil {
@@ -353,7 +353,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 			scene, err = qb.Find(scene.ID)
 			if err != nil {
 				logger.Error(err.Error())
-				return
+				return nil
 			}
 		}
 
@@ -364,7 +364,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 			scene, err = t.rescanScene(scene, fileModTime)
 			if err != nil {
 				logger.Error(err.Error())
-				return
+				return nil
 			}
 		}
 
