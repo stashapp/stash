@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button, Card, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
+import { ScenePreview } from "src/components/Scenes/SceneCard";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator } from "src/components/Shared";
@@ -232,6 +233,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         null;
       const isTagged = taggedScenes[scene.id];
       const hasStashIDs = scene.stash_ids.length > 0;
+      const width = scene.file.width ? scene.file.width : 0;
+      const height = scene.file.height ? scene.file.height : 0;
+      const isPortrait = height > width;
 
       let maincontent;
       if (!isTagged && hasStashIDs) {
@@ -355,7 +359,17 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       return (
         <div key={scene.id} className="my-2 search-item">
           <div className="row">
-            <div className="col-md-6 my-1 text-truncate align-self-center">
+            <div className="col-md-2 scene-card">
+              <Link to={`/scenes/${scene.id}`}>
+                <ScenePreview
+                  image={scene.paths.screenshot ?? undefined}
+                  video={scene.paths.preview ?? undefined}
+                  isPortrait={isPortrait}
+                  soundActive={false}
+                />
+              </Link>
+            </div>
+            <div className="col-md-5 my-1 text-truncate align-self-center">
               <Link
                 to={`/scenes/${scene.id}`}
                 className="scene-link"
@@ -366,7 +380,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                 {`${file}.${ext}`}
               </Link>
             </div>
-            <div className="col-md-6 my-1">{maincontent}</div>
+            <div className="col-md-5 my-1 align-self-center">{maincontent}</div>
           </div>
           {searchResult}
         </div>
