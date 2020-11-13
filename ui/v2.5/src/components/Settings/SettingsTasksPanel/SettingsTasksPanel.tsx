@@ -165,7 +165,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   async function onScan(paths?: string[]) {
     try {
-      await mutateMetadataScan({ 
+      await mutateMetadataScan({
         useFileMetadata,
         paths,
       });
@@ -306,10 +306,19 @@ export const SettingsTasksPanel: React.FC = () => {
         />
       </Form.Group>
       <Form.Group>
-        <Button className="mr-2" variant="secondary" type="submit" onClick={() => onScan()}>
+        <Button
+          className="mr-2"
+          variant="secondary"
+          type="submit"
+          onClick={() => onScan()}
+        >
           Scan
         </Button>
-        <Button variant="secondary" type="submit" onClick={() => setIsScanDialogOpen(true)}>
+        <Button
+          variant="secondary"
+          type="submit"
+          onClick={() => setIsScanDialogOpen(true)}
+        >
           Selective Scan
         </Button>
         <Form.Text className="text-muted">

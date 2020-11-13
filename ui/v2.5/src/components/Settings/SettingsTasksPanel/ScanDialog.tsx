@@ -13,13 +13,13 @@ export const ScanDialog: React.FC<IScanDialogProps> = (
 ) => {
   const { data } = useConfiguration();
 
-  const libraryPaths = data?.configuration.general.stashes.map(s => s.path);
+  const libraryPaths = data?.configuration.general.stashes.map((s) => s.path);
 
   const [paths, setPaths] = useState<string[]>([]);
   const [currentDirectory, setCurrentDirectory] = useState<string>("");
 
   function removePath(p: string) {
-    setPaths(paths.filter(path => path !== p));
+    setPaths(paths.filter((path) => path !== p));
   }
 
   function addPath(p: string) {
@@ -47,7 +47,7 @@ export const ScanDialog: React.FC<IScanDialogProps> = (
       }}
     >
       <div className="dialog-container">
-        {paths.map(p => (
+        {paths.map((p) => (
           <Row className="align-items-center mb-1">
             <Form.Label column xs={10}>
               {p}
@@ -70,11 +70,14 @@ export const ScanDialog: React.FC<IScanDialogProps> = (
           currentDirectory={currentDirectory}
           setCurrentDirectory={(v) => setCurrentDirectory(v)}
           defaultDirectories={libraryPaths}
-          appendButton={(
-            <Button variant="secondary" onClick={() => addPath(currentDirectory)}>
+          appendButton={
+            <Button
+              variant="secondary"
+              onClick={() => addPath(currentDirectory)}
+            >
               <Icon icon="plus" />
             </Button>
-          )}
+          }
         />
       </div>
     </Modal>
