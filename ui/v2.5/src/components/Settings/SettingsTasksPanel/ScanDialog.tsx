@@ -23,7 +23,7 @@ export const ScanDialog: React.FC<IScanDialogProps> = (
   }
 
   function addPath(p: string) {
-    if (!paths.includes(p)) {
+    if (p && !paths.includes(p)) {
       setPaths(paths.concat(p));
     }
   }
