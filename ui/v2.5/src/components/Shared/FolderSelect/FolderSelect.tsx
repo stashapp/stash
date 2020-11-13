@@ -26,13 +26,19 @@ export const FolderSelect: React.FC<IProps> = ({
       setCurrentDirectory(data.directory.path);
   }, [currentDirectory, setCurrentDirectory, data, defaultDirectories]);
 
+  function goUp() {
+    if (defaultDirectories?.includes(currentDirectory)) {
+      setCurrentDirectory("");
+    } else if (data?.directory.parent) {
+      setCurrentDirectory(data.directory.parent);
+    }
+  }
+
   const topDirectory = currentDirectory && data?.directory?.parent ? (
     <li className="folder-list-parent folder-list-item">
       <Button
         variant="link"
-        onClick={() =>
-          data.directory.parent && setCurrentDirectory(data.directory.parent)
-        }
+        onClick={() => goUp()}
       >
         <FormattedMessage defaultMessage="Up a directory" id="up-dir" />
       </Button>
