@@ -21,8 +21,8 @@ func NewGalleryQueryBuilder() GalleryQueryBuilder {
 func (qb *GalleryQueryBuilder) Create(newGallery Gallery, tx *sqlx.Tx) (*Gallery, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO galleries (path, checksum, zip, title, date, details, url, studio_id, rating, scene_id, created_at, updated_at)
-				VALUES (:path, :checksum, :zip, :title, :date, :details, :url, :studio_id, :rating, :scene_id, :created_at, :updated_at)
+		`INSERT INTO galleries (path, checksum, zip, title, date, details, url, studio_id, rating, scene_id, file_mod_time, created_at, updated_at)
+				VALUES (:path, :checksum, :zip, :title, :date, :details, :url, :studio_id, :rating, :scene_id, :file_mod_time, :created_at, :updated_at)
 		`,
 		newGallery,
 	)
@@ -66,6 +66,32 @@ func (qb *GalleryQueryBuilder) UpdatePartial(updatedGallery GalleryPartial, tx *
 	}
 
 	return qb.Find(updatedGallery.ID, tx)
+}
+
+func (qb *GalleryQueryBuilder) UpdateChecksum(id int, checksum string, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE galleries SET checksum = ? WHERE galleries.id = ? `,
+		checksum, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (qb *GalleryQueryBuilder) UpdateFileModTime(id int, modTime NullSQLiteTimestamp, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE galleries SET file_mod_time = ? WHERE galleries.id = ? `,
+		modTime, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (qb *GalleryQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {

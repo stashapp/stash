@@ -9,9 +9,10 @@ import (
 )
 
 type ImageFile struct {
-	Size   int `json:"size"`
-	Width  int `json:"width"`
-	Height int `json:"height"`
+	ModTime models.JSONTime `json:"mod_time,omitempty"`
+	Size    int             `json:"size"`
+	Width   int             `json:"width"`
+	Height  int             `json:"height"`
 }
 
 type Image struct {
