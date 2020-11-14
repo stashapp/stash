@@ -4,7 +4,7 @@ import { Table } from "react-bootstrap";
 import { Link, useHistory } from "react-router-dom";
 import {
   FindGalleriesQueryResult,
-  GalleryDataFragment,
+  GallerySlimDataFragment,
 } from "src/core/generated-graphql";
 import { useGalleriesList } from "src/hooks";
 import { showWhenSelected } from "src/hooks/ListHook";
@@ -127,7 +127,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
   }
 
   function renderEditGalleriesDialog(
-    selectedImages: GalleryDataFragment[],
+    selectedImages: GallerySlimDataFragment[],
     onClose: (applied: boolean) => void
   ) {
     return (
@@ -138,7 +138,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
   }
 
   function renderDeleteGalleriesDialog(
-    selectedImages: GalleryDataFragment[],
+    selectedImages: GallerySlimDataFragment[],
     onClose: (confirmed: boolean) => void
   ) {
     return (
@@ -200,8 +200,8 @@ export const GalleryList: React.FC<IGalleryList> = ({
                 </td>
                 <td className="d-none d-sm-block">
                   <Link to={`/galleries/${gallery.id}`}>
-                    {gallery.title ?? gallery.path} ({gallery.images.length}{" "}
-                    {gallery.images.length === 1 ? "image" : "images"})
+                    {gallery.title ?? gallery.path} ({gallery.image_count}{" "}
+                    {gallery.image_count === 1 ? "image" : "images"})
                   </Link>
                 </td>
               </tr>

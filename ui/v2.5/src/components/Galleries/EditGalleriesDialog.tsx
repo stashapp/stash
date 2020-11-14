@@ -10,7 +10,7 @@ import MultiSet from "../Shared/MultiSet";
 import { RatingStars } from "../Scenes/SceneDetails/RatingStars";
 
 interface IListOperationProps {
-  selected: GQL.GalleryDataFragment[];
+  selected: GQL.GallerySlimDataFragment[];
   onClose: (applied: boolean) => void;
 }
 
@@ -134,11 +134,11 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     setIsUpdating(false);
   }
 
-  function getRating(state: GQL.GalleryDataFragment[]) {
+  function getRating(state: GQL.GallerySlimDataFragment[]) {
     let ret: number | undefined;
     let first = true;
 
-    state.forEach((gallery: GQL.GalleryDataFragment) => {
+    state.forEach((gallery) => {
       if (first) {
         ret = gallery.rating ?? undefined;
         first = false;
@@ -150,11 +150,11 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     return ret;
   }
 
-  function getStudioId(state: GQL.GalleryDataFragment[]) {
+  function getStudioId(state: GQL.GallerySlimDataFragment[]) {
     let ret: string | undefined;
     let first = true;
 
-    state.forEach((gallery: GQL.GalleryDataFragment) => {
+    state.forEach((gallery) => {
       if (first) {
         ret = gallery?.studio?.id;
         first = false;
@@ -169,11 +169,11 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     return ret;
   }
 
-  function getPerformerIds(state: GQL.GalleryDataFragment[]) {
+  function getPerformerIds(state: GQL.GallerySlimDataFragment[]) {
     let ret: string[] = [];
     let first = true;
 
-    state.forEach((gallery: GQL.GalleryDataFragment) => {
+    state.forEach((gallery) => {
       if (first) {
         ret = gallery.performers
           ? gallery.performers.map((p) => p.id).sort()
@@ -193,11 +193,11 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     return ret;
   }
 
-  function getTagIds(state: GQL.GalleryDataFragment[]) {
+  function getTagIds(state: GQL.GallerySlimDataFragment[]) {
     let ret: string[] = [];
     let first = true;
 
-    state.forEach((gallery: GQL.GalleryDataFragment) => {
+    state.forEach((gallery) => {
       if (first) {
         ret = gallery.tags ? gallery.tags.map((t) => t.id).sort() : [];
         first = false;
@@ -221,7 +221,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     let updateTagIds: string[] = [];
     let first = true;
 
-    state.forEach((gallery: GQL.GalleryDataFragment) => {
+    state.forEach((gallery: GQL.GallerySlimDataFragment) => {
       const galleryRating = gallery.rating;
       const GalleriestudioID = gallery?.studio?.id;
       const galleryPerformerIDs = (gallery.performers ?? [])

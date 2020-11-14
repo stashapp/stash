@@ -8,7 +8,7 @@ import { HoverPopover, Icon, TagLink } from "../Shared";
 import { BasicCard } from "../Shared/BasicCard";
 
 interface IProps {
-  gallery: GQL.GalleryDataFragment;
+  gallery: GQL.GallerySlimDataFragment;
   selecting?: boolean;
   selected: boolean | undefined;
   zoomIndex: number;
@@ -164,9 +164,9 @@ export const GalleryCard: React.FC<IProps> = (props) => {
             </h5>
           </Link>
           <span>
-            {props.gallery.images.length}&nbsp;
+            {props.gallery.image_count}&nbsp;
             <FormattedPlural
-              value={props.gallery.images.length ?? 0}
+              value={props.gallery.image_count}
               one="image"
               other="images"
             />
