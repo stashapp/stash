@@ -200,7 +200,7 @@ textarea.scene-description {
     }
 
     &-video {
-      position: fixed;
+      position: absolute;
       top: -9999px;
       transition: top 0s;
       transition-delay: 0s;
@@ -233,7 +233,6 @@ textarea.scene-description {
     }
 
     .scene-card-preview-video {
-      position: absolute;
       top: 0;
       transition-delay: 0.2s;
     }

@@ -240,7 +240,26 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       let maincontent;
       if (!isTagged && hasStashIDs) {
         maincontent = (
-          <h5 className="text-right text-bold">Scene already tagged</h5>
+          <div className="text-right">
+            <h5 className="text-bold">Scene already tagged</h5>
+            {scene.stash_ids.map((stashID) => {
+              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+              const link = base ? (
+                <a
+                  className="small"
+                  href={`${base}scenes/${stashID.stash_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {stashID.stash_id}
+                </a>
+              ) : (
+                <div className="small">{stashID.stash_id}</div>
+              );
+
+              return link;
+            })}
+          </div>
         );
       } else if (!isTagged && !hasStashIDs) {
         maincontent = (
