@@ -359,7 +359,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       return (
         <div key={scene.id} className="my-2 search-item">
           <div className="row">
-            <div className="col col-lg-7 text-truncate align-items-center d-flex">
+            <div className="col col-lg-6 text-truncate align-items-center d-flex">
               <div className="scene-card mr-3">
                 <Link to={`/scenes/${scene.id}`}>
                   <ScenePreview
@@ -380,7 +380,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                 {`${file}.${ext}`}
               </Link>
             </div>
-            <div className="col-md-5 my-1 align-self-center">{maincontent}</div>
+            <div className="col-md-6 my-1 align-self-center">{maincontent}</div>
           </div>
           {searchResult}
         </div>
@@ -390,7 +390,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   return (
     <Card className="tagger-table">
       <div className="tagger-table-header d-flex flex-nowrap align-items-center">
-        <div className="col-md-7 pl-0">
+        <div className="col-md-6 pl-0">
           <b>Scene</b>
         </div>
         <div className="col-md-2">
