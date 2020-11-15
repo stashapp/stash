@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 // GlobalConfig contains the global scraper options.
@@ -58,7 +59,7 @@ func loadScrapers(path string) ([]config, error) {
 
 	logger.Debugf("Reading scraper configs from %s", path)
 	scraperFiles := []string{}
-	err := filepath.Walk(path, func(fp string, f os.FileInfo, err error) error {
+	err := utils.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
 		if filepath.Ext(fp) == ".yml" {
 			scraperFiles = append(scraperFiles, fp)
 		}
