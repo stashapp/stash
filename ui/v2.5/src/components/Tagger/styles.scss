@@ -1,6 +1,12 @@
 .tagger-container {
-  max-width: 1400px;
-  // min-width: 1200px;
+  max-width: 1600px;
+
+  .scene-card-preview {
+    border-radius: 3px;
+    margin-bottom: 0;
+    overflow: hidden;
+    width: 150px;
+  }
 }
 
 .tagger-table {
@@ -9,8 +15,7 @@
 
 .search-item {
   background-color: #495b68;
-  margin-left: -20px;
-  margin-right: -20px;
+  border-radius: 3px;
   overflow: hidden;
   padding: 1rem;
 }
@@ -96,11 +101,5 @@
 
   .LoadingIndicator {
     height: 100%;
-  }
-}
-
-.tagger-container {
-  .scene-card-preview {
-    height: 100px;
   }
 }

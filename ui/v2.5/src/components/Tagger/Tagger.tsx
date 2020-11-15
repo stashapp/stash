@@ -339,7 +339,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         !fingerprintMatch
       ) {
         searchResult = (
-          <ul className="pl-0 mt-4">
+          <ul className="pl-0 mt-3 mb-0">
             {sortScenesByDuration(
               searchResults[scene.id],
               scene.file.duration ?? undefined
@@ -378,17 +378,17 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       return (
         <div key={scene.id} className="my-2 search-item">
           <div className="row">
-            <div className="col-md-2 scene-card">
-              <Link to={`/scenes/${scene.id}`}>
-                <ScenePreview
-                  image={scene.paths.screenshot ?? undefined}
-                  video={scene.paths.preview ?? undefined}
-                  isPortrait={isPortrait}
-                  soundActive={false}
-                />
-              </Link>
-            </div>
-            <div className="col-md-5 my-1 text-truncate align-self-center">
+            <div className="col col-lg-6 text-truncate align-items-center d-flex">
+              <div className="scene-card mr-3">
+                <Link to={`/scenes/${scene.id}`}>
+                  <ScenePreview
+                    image={scene.paths.screenshot ?? undefined}
+                    video={scene.paths.preview ?? undefined}
+                    isPortrait={isPortrait}
+                    soundActive={false}
+                  />
+                </Link>
+              </div>
               <Link
                 to={`/scenes/${scene.id}`}
                 className="scene-link"
@@ -399,7 +399,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                 {`${file}.${ext}`}
               </Link>
             </div>
-            <div className="col-md-5 my-1 align-self-center">{maincontent}</div>
+            <div className="col-md-6 my-1 align-self-center">{maincontent}</div>
           </div>
           {searchResult}
         </div>
@@ -408,9 +408,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
 
   return (
     <Card className="tagger-table">
-      <div className="tagger-table-header row flex-nowrap mb-4 align-items-center">
-        <div className="col-md-6">
-          <b>Path</b>
+      <div className="tagger-table-header d-flex flex-nowrap align-items-center">
+        <div className="col-md-6 pl-0">
+          <b>Scene</b>
         </div>
         <div className="col-md-2">
           <b>Query</b>
@@ -432,18 +432,14 @@ const TaggerList: React.FC<ITaggerListProps> = ({
             </Button>
           )}
         </div>
-        <div className="mr-2">
-          <Button
-            onClick={handleFingerprintSearch}
-            disabled={!canFingerprintSearch() && !loadingFingerprints}
-          >
-            {canFingerprintSearch() && <span>Match Fingerprints</span>}
-            {!canFingerprintSearch() && getFingerprintCount()}
-            {loadingFingerprints && (
-              <LoadingIndicator message="" inline small />
-            )}
-          </Button>
-        </div>
+        <Button
+          onClick={handleFingerprintSearch}
+          disabled={!canFingerprintSearch() && !loadingFingerprints}
+        >
+          {canFingerprintSearch() && <span>Match Fingerprints</span>}
+          {!canFingerprintSearch() && getFingerprintCount()}
+          {loadingFingerprints && <LoadingIndicator message="" inline small />}
+        </Button>
       </div>
       {renderScenes()}
     </Card>
