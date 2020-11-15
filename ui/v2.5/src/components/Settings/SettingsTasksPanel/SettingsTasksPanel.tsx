@@ -19,6 +19,7 @@ import * as GQL from "src/core/generated-graphql";
 import { Modal } from "src/components/Shared";
 import { GenerateButton } from "./GenerateButton";
 import { ImportDialog } from "./ImportDialog";
+import { ScanDialog } from "./ScanDialog";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
@@ -28,6 +29,7 @@ export const SettingsTasksPanel: React.FC = () => {
   const [isImportAlertOpen, setIsImportAlertOpen] = useState<boolean>(false);
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState<boolean>(false);
+  const [isScanDialogOpen, setIsScanDialogOpen] = useState<boolean>(false);
   const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
   const [scanGeneratePreviews, setScanGeneratePreviews] = useState<boolean>(
     false
@@ -155,9 +157,26 @@ export const SettingsTasksPanel: React.FC = () => {
     return <ImportDialog onClose={() => setIsImportDialogOpen(false)} />;
   }
 
-  async function onScan() {
+  function renderScanDialog() {
+    if (!isScanDialogOpen) {
+      return;
+    }
+
+    return <ScanDialog onClose={onScanDialogClosed} />;
+  }
+
+  function onScanDialogClosed(paths?: string[]) {
+    if (paths) {
+      onScan(paths);
+    }
+
+    setIsScanDialogOpen(false);
+  }
+
+  async function onScan(paths?: string[]) {
     try {
       await mutateMetadataScan({
+        paths,
         useFileMetadata,
         scanGeneratePreviews,
         scanGenerateImagePreviews,
@@ -282,6 +301,7 @@ export const SettingsTasksPanel: React.FC = () => {
       {renderImportAlert()}
       {renderCleanAlert()}
       {renderImportDialog()}
+      {renderScanDialog()}
 
       <h4>Running Jobs</h4>
 
@@ -324,8 +344,20 @@ export const SettingsTasksPanel: React.FC = () => {
         />
       </Form.Group>
       <Form.Group>
-        <Button variant="secondary" type="submit" onClick={() => onScan()}>
+        <Button
+          className="mr-2"
+          variant="secondary"
+          type="submit"
+          onClick={() => onScan()}
+        >
           Scan
+        </Button>
+        <Button
+          variant="secondary"
+          type="submit"
+          onClick={() => setIsScanDialogOpen(true)}
+        >
+          Selective Scan
         </Button>
         <Form.Text className="text-muted">
           Scan for new content and add it to the database.

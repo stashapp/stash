@@ -16,7 +16,8 @@
   }
 
   &.inline {
-    display: inline;
+    display: inline-block;
+    height: auto;
     margin-left: 0.5rem;
   }
 
