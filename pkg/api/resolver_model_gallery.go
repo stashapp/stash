@@ -108,3 +108,8 @@ func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (
 	qb := models.NewPerformerQueryBuilder()
 	return qb.FindByGalleryID(obj.ID, nil)
 }
+
+func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (int, error) {
+	qb := models.NewImageQueryBuilder()
+	return qb.CountByGalleryID(obj.ID)
+}
