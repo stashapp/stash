@@ -309,7 +309,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     setSaveState("");
   };
 
-  const classname = cx("row mt-2 search-result", {
+  const classname = cx("row mx-0 mt-2 search-result", {
     "selected-result": isActive,
   });
 

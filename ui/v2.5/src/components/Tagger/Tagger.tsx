@@ -347,7 +347,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         !fingerprintMatch
       ) {
         searchResult = (
-          <ul className="px-3 mt-3 mb-0">
+          <ul className="pl-0 mt-3 mb-0">
             {sortScenesByDuration(
               searchResults[scene.id],
               scene.file.duration ?? undefined
