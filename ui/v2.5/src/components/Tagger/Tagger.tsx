@@ -237,32 +237,15 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       const height = scene.file.height ? scene.file.height : 0;
       const isPortrait = height > width;
 
-      let maincontent;
+      let mainContent;
       if (!isTagged && hasStashIDs) {
-        maincontent = (
+        mainContent = (
           <div className="text-right">
             <h5 className="text-bold">Scene already tagged</h5>
-            {scene.stash_ids.map((stashID) => {
-              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
-              const link = base ? (
-                <a
-                  className="small"
-                  href={`${base}scenes/${stashID.stash_id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {stashID.stash_id}
-                </a>
-              ) : (
-                <div className="small">{stashID.stash_id}</div>
-              );
-
-              return link;
-            })}
           </div>
         );
       } else if (!isTagged && !hasStashIDs) {
-        maincontent = (
+        mainContent = (
           <InputGroup>
             <Form.Control
               className="text-input"
@@ -297,27 +280,52 @@ const TaggerList: React.FC<ITaggerListProps> = ({
           </InputGroup>
         );
       } else if (isTagged) {
-        maincontent = (
-          <h5 className="row no-gutters">
-            <b className="col-4">Scene successfully tagged:</b>
-            <Link
-              className="offset-1 col-7 text-right"
-              to={`/scenes/${scene.id}`}
-            >
-              {taggedScenes[scene.id].title}
-            </Link>
-          </h5>
+        mainContent = (
+          <div className="d-flex flex-column text-right">
+            <h5>Scene successfully tagged:</h5>
+            <h6>
+              <Link className="bold" to={`/scenes/${scene.id}`}>
+                {taggedScenes[scene.id].title}
+              </Link>
+            </h6>
+          </div>
         );
       }
 
-      let searchResult;
-      if (searchErrors[scene.id]) {
-        searchResult = (
+      let subContent;
+      if (scene.stash_ids.length > 0) {
+        const stashLinks = scene.stash_ids.map((stashID) => {
+          const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+          const link = base ? (
+            <a
+              className="small d-block"
+              href={`${base}scenes/${stashID.stash_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {stashID.stash_id}
+            </a>
+          ) : (
+            <div className="small">{stashID.stash_id}</div>
+          );
+
+          return link;
+        });
+        subContent = <>{stashLinks}</>;
+      } else if (searchErrors[scene.id]) {
+        subContent = (
           <div className="text-danger font-weight-bold">
             {searchErrors[scene.id]}
           </div>
         );
-      } else if (fingerprintMatch && !isTagged && !hasStashIDs) {
+      } else if (searchResults[scene.id]?.length === 0) {
+        subContent = (
+          <div className="text-danger font-weight-bold">No results found.</div>
+        );
+      }
+
+      let searchResult;
+      if (fingerprintMatch && !isTagged && !hasStashIDs) {
         searchResult = (
           <StashSearchResult
             showMales={config.showMales}
@@ -339,7 +347,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
         !fingerprintMatch
       ) {
         searchResult = (
-          <ul className="pl-0 mt-3 mb-0">
+          <ul className="px-3 mt-3 mb-0">
             {sortScenesByDuration(
               searchResults[scene.id],
               scene.file.duration ?? undefined
@@ -369,16 +377,12 @@ const TaggerList: React.FC<ITaggerListProps> = ({
             )}
           </ul>
         );
-      } else if (searchResults[scene.id]?.length === 0) {
-        searchResult = (
-          <div className="text-danger font-weight-bold">No results found.</div>
-        );
       }
 
       return (
         <div key={scene.id} className="my-2 search-item">
           <div className="row">
-            <div className="col col-lg-6 text-truncate align-items-center d-flex">
+            <div className="col col-lg-6 overflow-hidden align-items-center d-flex">
               <div className="scene-card mr-3">
                 <Link to={`/scenes/${scene.id}`}>
                   <ScenePreview
@@ -391,7 +395,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
               </div>
               <Link
                 to={`/scenes/${scene.id}`}
-                className="scene-link"
+                className="scene-link text-truncate"
                 title={scene.path}
               >
                 {originalDir}
@@ -399,7 +403,10 @@ const TaggerList: React.FC<ITaggerListProps> = ({
                 {`${file}.${ext}`}
               </Link>
             </div>
-            <div className="col-md-6 my-1 align-self-center">{maincontent}</div>
+            <div className="col-md-6 my-1 align-self-center">
+              {mainContent}
+              <div className="sub-content text-right">{subContent}</div>
+            </div>
           </div>
           {searchResult}
         </div>

@@ -309,7 +309,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     setSaveState("");
   };
 
-  const classname = cx("row no-gutters mt-2 search-result", {
+  const classname = cx("row mt-2 search-result", {
     "selected-result": isActive,
   });
 
@@ -332,6 +332,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     Object.keys(performers ?? []).every((id) => performers?.[id].type) &&
     saveState === "";
 
+  const endpointBase = endpoint.match(/https?:\/\/.*?\//)?.[0];
+  const stashBoxURL = endpointBase
+    ? `${endpointBase}scenes/${scene.stash_id}`
+    : "";
+
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <li
@@ -339,13 +344,15 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       key={scene.stash_id}
       onClick={() => !isActive && setActive()}
     >
-      <div className="col-lg-7">
+      <div className="col-lg-6">
         <div className="row">
-          <img
-            src={scene.images[0]}
-            alt=""
-            className="align-self-center scene-image"
-          />
+          <a href={stashBoxURL} target="_blank" rel="noopener noreferrer">
+            <img
+              src={scene.images[0]}
+              alt=""
+              className="align-self-center scene-image"
+            />
+          </a>
           <div className="d-flex flex-column justify-content-center scene-metadata">
             <h4 className="text-truncate" title={scene?.title ?? ""}>
               {sceneTitle}
@@ -365,7 +372,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         </div>
       </div>
       {isActive && (
-        <div className="col-lg-5">
+        <div className="col-lg-6">
           <StudioResult studio={scene.studio} setStudio={setStudio} />
           {scene.performers
             .filter((p) => p.gender !== "MALE" || showMales)

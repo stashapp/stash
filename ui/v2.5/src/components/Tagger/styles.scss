@@ -4,8 +4,17 @@
   .scene-card-preview {
     border-radius: 3px;
     margin-bottom: 0;
+    max-height: 100px;
     overflow: hidden;
     width: 150px;
+
+    &-video {
+      background-color: #495b68;
+    }
+  }
+
+  .sub-content {
+    min-height: 1.5rem;
   }
 }
 
@@ -16,13 +25,12 @@
 .search-item {
   background-color: #495b68;
   border-radius: 3px;
-  overflow: hidden;
   padding: 1rem;
 }
 
 .search-result {
   background-color: rgba(61, 80, 92, 0.3);
-  padding: 0.5rem 1rem;
+  padding: 1rem 0;
 
   &:hover {
     background-color: hsl(204, 20, 30);
@@ -49,6 +57,7 @@
   max-height: 10rem;
   max-width: 14rem;
   min-width: 168px;
+  object-fit: contain;
   padding: 0 1rem;
 }
 
