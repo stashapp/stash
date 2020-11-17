@@ -78,7 +78,29 @@ func (t *TaskStatus) updated() {
 	t.LastUpdate = time.Now()
 }
 
-func (s *singleton) neededScan() (total *int, newFiles *int) {
+func getScanPaths(inputPaths []string) []*models.StashConfig {
+	if len(inputPaths) == 0 {
+		return config.GetStashPaths()
+	}
+
+	var ret []*models.StashConfig
+	for _, p := range inputPaths {
+		s := getStashFromDirPath(p)
+		if s == nil {
+			logger.Warnf("%s is not in the configured stash paths", p)
+			continue
+		}
+
+		// make a copy, changing the path
+		ss := *s
+		ss.Path = p
+		ret = append(ret, &ss)
+	}
+
+	return ret
+}
+
+func (s *singleton) neededScan(paths []*models.StashConfig) (total *int, newFiles *int) {
 	const timeout = 90 * time.Second
 
 	// create a control channel through which to signal the counting loop when the timeout is reached
@@ -91,7 +113,7 @@ func (s *singleton) neededScan() (total *int, newFiles *int) {
 
 	timeoutErr := errors.New("timed out")
 
-	for _, sp := range config.GetStashPaths() {
+	for _, sp := range paths {
 		err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
 			t++
 			task := ScanTask{FilePath: path}
@@ -128,7 +150,7 @@ func (s *singleton) neededScan() (total *int, newFiles *int) {
 	return &t, &n
 }
 
-func (s *singleton) Scan(useFileMetadata bool) {
+func (s *singleton) Scan(input models.ScanMetadataInput) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -138,7 +160,9 @@ func (s *singleton) Scan(useFileMetadata bool) {
 	go func() {
 		defer s.returnToIdleState()
 
-		total, newFiles := s.neededScan()
+		paths := getScanPaths(input.Paths)
+
+		total, newFiles := s.neededScan(paths)
 
 		if s.Status.stopping {
 			logger.Info("Stopping due to user request")
@@ -162,7 +186,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 
 		var galleries []string
 
-		for _, sp := range config.GetStashPaths() {
+		for _, sp := range paths {
 			err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
 				if total != nil {
 					s.Status.setProgress(i, *total)
@@ -178,7 +202,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 				}
 
 				wg.Add(1)
-				task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5}
+				task := ScanTask{FilePath: path, UseFileMetadata: input.UseFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5}
 				go task.Start(&wg)
 				wg.Wait()
 
