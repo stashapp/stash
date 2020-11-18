@@ -50,17 +50,31 @@ func setCookies(jar *cookiejar.Jar, scraperConfig config) {
 			}
 
 		}
-		logger.Debugf("Jar cookies set from scraper")
-		printCookies(jar, foundURLs)
+	}
+}
+
+// print all cookies from the jar of the native http client
+func printCookies(jar *cookiejar.Jar, scraperConfig config) {
+	driverOptions := scraperConfig.DriverOptions
+	if driverOptions != nil && !driverOptions.UseCDP {
+		var foundURLs []*url.URL
+
+		for _, ckURL := range driverOptions.Cookies { // go through all cookies
+			url, err := url.Parse(ckURL.CookieURL) // CookieURL must be valid, include schema
+			if err == nil {
+				foundURLs = append(foundURLs, url)
+			}
+		}
+		printJarCookies(jar, foundURLs)
 	}
 }
 
 // print all cookies from the jar of the native http client for given urls
-func printCookies(jar *cookiejar.Jar, urls []*url.URL) {
+func printJarCookies(jar *cookiejar.Jar, urls []*url.URL) {
 	for _, url := range urls {
 		logger.Debugf("Jar cookies for %s", url.String())
 		for i, cookie := range jar.Cookies(url) {
-			logger.Debugf("[%d]: Name: \"%s\" Value: \"%s\"  Domain: \"%s\"", i, cookie.Name, cookie.Value, cookie.Domain)
+			logger.Debugf("[%d]: Name: \"%s\" Value: \"%s\"", i, cookie.Name, cookie.Value)
 		}
 	}
 }

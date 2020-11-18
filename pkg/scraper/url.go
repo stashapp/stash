@@ -44,6 +44,8 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 	}
 
 	setCookies(jar, scraperConfig)
+	logger.Debugf("Jar cookies set from scraper")
+	printCookies(jar, scraperConfig)
 
 	client := &http.Client{
 		Timeout: scrapeGetTimeout,
@@ -79,6 +81,8 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 	}
 
 	bodyReader := bytes.NewReader(body)
+	logger.Debugf("Jar cookies found for scraper urls")
+	printCookies(jar, scraperConfig)
 
 	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
 }
@@ -155,6 +159,7 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 			res, err = dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
 			return err
 		}),
+		printCDPCookies(driverOptions),
 	)
 	if err != nil {
 		return nil, err
