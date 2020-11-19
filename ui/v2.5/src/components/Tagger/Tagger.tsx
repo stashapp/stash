@@ -462,7 +462,11 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
 
   return (
     <>
-      <Manual show={showManual} onClose={() => setShowManual(false)} defaultActiveTab="Tagger.md" />
+      <Manual
+        show={showManual}
+        onClose={() => setShowManual(false)}
+        defaultActiveTab="Tagger.md"
+      />
       <div className="tagger-container mx-auto">
         {selectedEndpointIndex !== -1 && selectedEndpoint ? (
           <>
@@ -470,12 +474,14 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
               <Button onClick={() => setShowConfig(!showConfig)} variant="link">
                 {showConfig ? "Hide" : "Show"} Configuration
               </Button>
-            <Button
-              className="ml-auto"
-              onClick={() => setShowManual(true)}
-              title="Help"
-              variant="link"
-            >Help</Button>
+              <Button
+                className="ml-auto"
+                onClick={() => setShowManual(true)}
+                title="Help"
+                variant="link"
+              >
+                Help
+              </Button>
             </div>
 
             <Config config={config} setConfig={setConfig} show={showConfig} />
@@ -493,7 +499,8 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
         ) : (
           <div className="my-4">
             <h3 className="text-center mt-4">
-              To use the scene tagger a stash-box instance needs to be configured.
+              To use the scene tagger a stash-box instance needs to be
+              configured.
             </h3>
             <h5 className="text-center">
               Please see{" "}

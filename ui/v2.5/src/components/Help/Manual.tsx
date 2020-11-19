@@ -22,7 +22,11 @@ interface IManualProps {
   defaultActiveTab?: string;
 }
 
-export const Manual: React.FC<IManualProps> = ({ show, onClose, defaultActiveTab }) => {
+export const Manual: React.FC<IManualProps> = ({
+  show,
+  onClose,
+  defaultActiveTab,
+}) => {
   const content = [
     {
       key: "Introduction.md",
@@ -99,7 +103,9 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose, defaultActiveTab
     },
   ];
 
-  const [activeTab, setActiveTab] = useState(defaultActiveTab ?? content[0].key);
+  const [activeTab, setActiveTab] = useState(
+    defaultActiveTab ?? content[0].key
+  );
 
   // links to other manual pages are specified as "/help/page.md"
   // intercept clicks to these pages and set the tab accordingly
