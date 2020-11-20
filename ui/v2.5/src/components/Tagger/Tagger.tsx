@@ -382,7 +382,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       return (
         <div key={scene.id} className="my-2 search-item">
           <div className="row">
-            <div className="col col-lg-6 overflow-hidden align-items-center d-flex">
+            <div className="col col-lg-6 overflow-hidden align-items-center d-flex flex-column flex-sm-row">
               <div className="scene-card mr-3">
                 <Link to={`/scenes/${scene.id}`}>
                   <ScenePreview
@@ -395,7 +395,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
               </div>
               <Link
                 to={`/scenes/${scene.id}`}
-                className="scene-link text-truncate"
+                className="scene-link text-truncate w-100"
                 title={scene.path}
               >
                 {originalDir}
@@ -495,7 +495,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
   };
 
   return (
-    <div className="tagger-container mx-auto">
+    <div className="tagger-container row mx-md-auto">
       {selectedEndpointIndex !== -1 && selectedEndpoint ? (
         <>
           <div className="row mb-2 no-gutters">
