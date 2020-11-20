@@ -31,6 +31,7 @@ input GeneratePreviewOptionsInput {
 }
 
 input ScanMetadataInput {
+  paths: [String!]
   useFileMetadata: Boolean!
 }
 

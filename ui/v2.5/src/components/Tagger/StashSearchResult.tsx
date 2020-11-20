@@ -285,6 +285,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
           url: scene.url,
           tag_ids: updatedTags,
           rating: stashScene.rating,
+          movies: stashScene.movies.map((m) => ({
+            movie_id: m.movie.id,
+            scene_index: m.scene_index,
+          })),
           stash_ids: [
             ...(stashScene?.stash_ids ?? []),
             {

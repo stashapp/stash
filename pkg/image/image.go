@@ -90,11 +90,15 @@ func openSourceImage(path string) (io.ReadCloser, error) {
 			return nil, err
 		}
 
+		// defer closing of zip to the calling function, unless an error
+		// is returned, in which case it should be closed immediately
+
 		// find the file matching the filename
 		for _, f := range r.File {
 			if f.Name == filename {
 				src, err := f.Open()
 				if err != nil {
+					r.Close()
 					return nil, err
 				}
 				return &imageReadCloser{
@@ -104,6 +108,7 @@ func openSourceImage(path string) (io.ReadCloser, error) {
 			}
 		}
 
+		r.Close()
 		return nil, fmt.Errorf("file with name '%s' not found in zip file '%s'", filename, zipFilename)
 	}
 

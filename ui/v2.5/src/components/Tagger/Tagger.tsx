@@ -11,6 +11,7 @@ import {
   stashBoxBatchQuery,
   useConfiguration,
 } from "src/core/StashService";
+import { Manual } from "src/components/Help/Manual";
 
 import StashSearchResult from "./StashSearchResult";
 import Config, { ITaggerConfig, initialConfig, ParseMode } from "./Config";
@@ -461,6 +462,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
   const stashConfig = useConfiguration();
   const [config, setConfig] = useState<ITaggerConfig>(initialConfig);
   const [showConfig, setShowConfig] = useState(false);
+  const [showManual, setShowManual] = useState(false);
 
   const savedEndpointIndex =
     stashConfig.data?.configuration.general.stashBoxes.findIndex(
@@ -495,45 +497,61 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
   };
 
   return (
-    <div className="tagger-container row mx-md-auto">
-      {selectedEndpointIndex !== -1 && selectedEndpoint ? (
-        <>
-          <div className="row mb-2 no-gutters">
-            <Button onClick={() => setShowConfig(!showConfig)} variant="link">
-              {showConfig ? "Hide" : "Show"} Configuration
-            </Button>
-          </div>
+    <>
+      <Manual
+        show={showManual}
+        onClose={() => setShowManual(false)}
+        defaultActiveTab="Tagger.md"
+      />
+      <div className="tagger-container row mx-md-auto">
+        {selectedEndpointIndex !== -1 && selectedEndpoint ? (
+          <>
+            <div className="row mb-2 no-gutters">
+              <Button onClick={() => setShowConfig(!showConfig)} variant="link">
+                {showConfig ? "Hide" : "Show"} Configuration
+              </Button>
+              <Button
+                className="ml-auto"
+                onClick={() => setShowManual(true)}
+                title="Help"
+                variant="link"
+              >
+                Help
+              </Button>
+            </div>
 
-          <Config config={config} setConfig={setConfig} show={showConfig} />
-          <TaggerList
-            scenes={scenes}
-            config={config}
-            selectedEndpoint={{
-              endpoint: selectedEndpoint.endpoint,
-              index: selectedEndpointIndex,
-            }}
-            queueFingerprintSubmission={queueFingerprintSubmission}
-            clearSubmissionQueue={clearSubmissionQueue}
-          />
-        </>
-      ) : (
-        <div className="my-4">
-          <h3 className="text-center mt-4">
-            To use the scene tagger a stash-box instance needs to be configured.
-          </h3>
-          <h5 className="text-center">
-            Please see{" "}
-            <HashLink
-              to="/settings?tab=configuration#stashbox"
-              scroll={(el) =>
-                el.scrollIntoView({ behavior: "smooth", block: "center" })
-              }
-            >
-              Settings.
-            </HashLink>
-          </h5>
-        </div>
-      )}
-    </div>
+            <Config config={config} setConfig={setConfig} show={showConfig} />
+            <TaggerList
+              scenes={scenes}
+              config={config}
+              selectedEndpoint={{
+                endpoint: selectedEndpoint.endpoint,
+                index: selectedEndpointIndex,
+              }}
+              queueFingerprintSubmission={queueFingerprintSubmission}
+              clearSubmissionQueue={clearSubmissionQueue}
+            />
+          </>
+        ) : (
+          <div className="my-4">
+            <h3 className="text-center mt-4">
+              To use the scene tagger a stash-box instance needs to be
+              configured.
+            </h3>
+            <h5 className="text-center">
+              Please see{" "}
+              <HashLink
+                to="/settings?tab=configuration#stashbox"
+                scroll={(el) =>
+                  el.scrollIntoView({ behavior: "smooth", block: "center" })
+                }
+              >
+                Settings.
+              </HashLink>
+            </h5>
+          </div>
+        )}
+      </div>
+    </>
   );
 };

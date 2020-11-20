@@ -10,6 +10,7 @@ type Gallery {
   rating: Int
   scene: Scene
   studio: Studio
+  image_count: Int!
   tags: [Tag!]!
   performers: [Performer!]!
 

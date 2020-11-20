@@ -131,10 +131,14 @@ func initEnvs() {
 	viper.BindEnv("host")          // STASH_HOST
 	viper.BindEnv("port")          // STASH_PORT
 	viper.BindEnv("external_host") // STASH_EXTERNAL_HOST
-	viper.BindEnv("stash")         // STASH_STASH
 	viper.BindEnv("generated")     // STASH_GENERATED
 	viper.BindEnv("metadata")      // STASH_METADATA
 	viper.BindEnv("cache")         // STASH_CACHE
+
+	// only set stash config flag if not already set
+	if config.GetStashPaths() == nil {
+		viper.BindEnv("stash") // STASH_STASH
+	}
 }
 
 func initFFMPEG() {
