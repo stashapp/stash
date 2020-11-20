@@ -36,8 +36,8 @@ const Changelog: React.FC = () => {
     <>
       <h1 className="mb-4">Changelog:</h1>
       <Version
-        version={stashVersion || "v0.4.0"}
-        date={buildDate}
+        version={"v0.4.0"}
+        date="2020-11-20"
         openState={openState}
         setOpenState={setVersionOpenState}
         defaultOpen
