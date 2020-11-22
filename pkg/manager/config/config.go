@@ -3,6 +3,7 @@ package config
 import (
 	"golang.org/x/crypto/bcrypt"
 
+	"errors"
 	"io/ioutil"
 	"path/filepath"
 
@@ -26,6 +27,21 @@ const DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 const Database = "database"
 
 const Exclude = "exclude"
+const ImageExclude = "image_exclude"
+
+const VideoExtensions = "video_extensions"
+
+var defaultVideoExtensions = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
+
+const ImageExtensions = "image_extensions"
+
+var defaultImageExtensions = []string{"png", "jpg", "jpeg", "gif", "webp"}
+
+const GalleryExtensions = "gallery_extensions"
+
+var defaultGalleryExtensions = []string{"zip", "cbz"}
+
+const CreateGalleriesFromFolders = "create_galleries_from_folders"
 
 // CalculateMD5 is the config key used to determine if MD5 should be calculated
 // for video files.
@@ -66,6 +82,9 @@ const SessionStoreKey = "session_store_key"
 const ScrapersPath = "scrapers_path"
 const ScraperUserAgent = "scraper_user_agent"
 const ScraperCDPPath = "scraper_cdp_path"
+
+// stash-box options
+const StashBoxes = "stash_boxes"
 
 // plugin options
 const PluginsPath = "plugins_path"
@@ -114,8 +133,21 @@ func GetConfigPath() string {
 	return filepath.Dir(configFileUsed)
 }
 
-func GetStashPaths() []string {
-	return viper.GetStringSlice(Stash)
+func GetStashPaths() []*models.StashConfig {
+	var ret []*models.StashConfig
+	if err := viper.UnmarshalKey(Stash, &ret); err != nil || len(ret) == 0 {
+		// fallback to legacy format
+		ss := viper.GetStringSlice(Stash)
+		ret = nil
+		for _, path := range ss {
+			toAdd := &models.StashConfig{
+				Path: path,
+			}
+			ret = append(ret, toAdd)
+		}
+	}
+
+	return ret
 }
 
 func GetCachePath() string {
@@ -152,6 +184,38 @@ func GetDefaultScrapersPath() string {
 
 func GetExcludes() []string {
 	return viper.GetStringSlice(Exclude)
+}
+
+func GetImageExcludes() []string {
+	return viper.GetStringSlice(ImageExclude)
+}
+
+func GetVideoExtensions() []string {
+	ret := viper.GetStringSlice(VideoExtensions)
+	if ret == nil {
+		ret = defaultVideoExtensions
+	}
+	return ret
+}
+
+func GetImageExtensions() []string {
+	ret := viper.GetStringSlice(ImageExtensions)
+	if ret == nil {
+		ret = defaultImageExtensions
+	}
+	return ret
+}
+
+func GetGalleryExtensions() []string {
+	ret := viper.GetStringSlice(GalleryExtensions)
+	if ret == nil {
+		ret = defaultGalleryExtensions
+	}
+	return ret
+}
+
+func GetCreateGalleriesFromFolders() bool {
+	return viper.GetBool(CreateGalleriesFromFolders)
 }
 
 func GetLanguage() string {
@@ -196,6 +260,12 @@ func GetScraperUserAgent() string {
 // to an instance of Chrome.
 func GetScraperCDPPath() string {
 	return viper.GetString(ScraperCDPPath)
+}
+
+func GetStashBoxes() []*models.StashBox {
+	var boxes []*models.StashBox
+	viper.UnmarshalKey(StashBoxes, &boxes)
+	return boxes
 }
 
 func GetDefaultPluginsPath() string {
@@ -330,6 +400,21 @@ func ValidateCredentials(username string, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(authPWHash), []byte(password))
 
 	return username == authUser && err == nil
+}
+
+func ValidateStashBoxes(boxes []*models.StashBoxInput) error {
+	isMulti := len(boxes) > 1
+
+	for _, box := range boxes {
+		if box.APIKey == "" {
+			return errors.New("Stash-box API Key cannot be blank")
+		} else if box.Endpoint == "" {
+			return errors.New("Stash-box Endpoint cannot be blank")
+		} else if isMulti && box.Name == "" {
+			return errors.New("Stash-box Name cannot be blank")
+		}
+	}
+	return nil
 }
 
 // GetMaxSessionAge gets the maximum age for session cookies, in seconds.

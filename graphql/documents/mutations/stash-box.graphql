@@ -1,0 +1,3 @@
+mutation SubmitStashBoxFingerprints($input: StashBoxFingerprintSubmissionInput!) {
+  submitStashBoxFingerprints(input: $input)
+}

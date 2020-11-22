@@ -38,7 +38,7 @@ function useLocalForage<T>(
     async function runAsync() {
       try {
         const serialized = await localForage.getItem<string>(key);
-        const parsed = JSON.parse(serialized);
+        const parsed = JSON.parse(serialized ?? "null");
         if (!Object.is(parsed, null)) {
           setData(parsed);
           Cache[key] = parsed;

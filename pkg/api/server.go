@@ -129,16 +129,12 @@ func Start() {
 		message := fmt.Sprintf("Internal system error. Error <%v>", err)
 		return errors.New(message)
 	})
-	requestMiddleware := handler.RequestMiddleware(func(ctx context.Context, next func(ctx context.Context) []byte) []byte {
-		//api.GetRequestContext(ctx).Variables[]
-		return next(ctx)
-	})
 	websocketUpgrader := handler.WebsocketUpgrader(websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},
 	})
-	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}), recoverFunc, requestMiddleware, websocketUpgrader)
+	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}), recoverFunc, websocketUpgrader)
 
 	r.Handle("/graphql", gqlHandler)
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
@@ -149,12 +145,13 @@ func Start() {
 
 	r.Get(loginEndPoint, getLoginHandler)
 
-	r.Mount("/gallery", galleryRoutes{}.Routes())
 	r.Mount("/performer", performerRoutes{}.Routes())
 	r.Mount("/scene", sceneRoutes{}.Routes())
+	r.Mount("/image", imageRoutes{}.Routes())
 	r.Mount("/studio", studioRoutes{}.Routes())
 	r.Mount("/movie", movieRoutes{}.Routes())
 	r.Mount("/tag", tagRoutes{}.Routes())
+	r.Mount("/downloads", downloadsRoutes{}.Routes())
 
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css")
@@ -250,8 +247,6 @@ func Start() {
 
 		http.Redirect(w, r, "/", 301)
 	})
-
-	startThumbCache()
 
 	// Serve static folders
 	customServedFolders := config.GetCustomServedFolders()
@@ -405,7 +400,7 @@ func ConfigCheckMiddleware(next http.Handler) http.Handler {
 		if !config.IsValid() && shouldRedirect {
 			// #539 - don't redirect if loading login page
 			if !strings.HasPrefix(r.URL.Path, setupEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) {
-				http.Redirect(w, r, setupEndPoint, 301)
+				http.Redirect(w, r, setupEndPoint, http.StatusFound)
 				return
 			}
 		}
@@ -421,7 +416,7 @@ func DatabaseCheckMiddleware(next http.Handler) http.Handler {
 			// #451 - don't redirect if loading login page
 			// #539 - or setup page
 			if !strings.HasPrefix(r.URL.Path, migrateEndPoint) && !strings.HasPrefix(r.URL.Path, loginEndPoint) && !strings.HasPrefix(r.URL.Path, setupEndPoint) {
-				http.Redirect(w, r, migrateEndPoint, 301)
+				http.Redirect(w, r, migrateEndPoint, http.StatusFound)
 				return
 			}
 		}

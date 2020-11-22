@@ -2,10 +2,11 @@ package jsonschema
 
 import (
 	"bytes"
-	"github.com/json-iterator/go"
 
 	"io/ioutil"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 var nilTime = (time.Time{}).UnixNano()

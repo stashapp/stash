@@ -6,9 +6,10 @@ import (
 )
 
 type Upload struct {
-	File     io.Reader
-	Filename string
-	Size     int64
+	File        io.Reader
+	Filename    string
+	Size        int64
+	ContentType string
 }
 
 func MarshalUpload(f Upload) Marshaler {

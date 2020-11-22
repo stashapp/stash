@@ -27,6 +27,9 @@ func (r *Resolver) Query() models.QueryResolver {
 func (r *Resolver) Scene() models.SceneResolver {
 	return &sceneResolver{r}
 }
+func (r *Resolver) Image() models.ImageResolver {
+	return &imageResolver{r}
+}
 func (r *Resolver) SceneMarker() models.SceneMarkerResolver {
 	return &sceneMarkerResolver{r}
 }
@@ -67,6 +70,7 @@ type galleryResolver struct{ *Resolver }
 type performerResolver struct{ *Resolver }
 type sceneResolver struct{ *Resolver }
 type sceneMarkerResolver struct{ *Resolver }
+type imageResolver struct{ *Resolver }
 type studioResolver struct{ *Resolver }
 type movieResolver struct{ *Resolver }
 type tagResolver struct{ *Resolver }
@@ -113,7 +117,10 @@ func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *st
 func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, error) {
 	scenesQB := models.NewSceneQueryBuilder()
 	scenesCount, _ := scenesQB.Count()
-	scenesSizeCount, _ := scenesQB.SizeCount()
+	scenesSize, _ := scenesQB.Size()
+	imageQB := models.NewImageQueryBuilder()
+	imageCount, _ := imageQB.Count()
+	imageSize, _ := imageQB.Size()
 	galleryQB := models.NewGalleryQueryBuilder()
 	galleryCount, _ := galleryQB.Count()
 	performersQB := models.NewPerformerQueryBuilder()
@@ -126,7 +133,9 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 	tagsCount, _ := tagsQB.Count()
 	return &models.StatsResultType{
 		SceneCount:     scenesCount,
-		SceneSizeCount: scenesSizeCount,
+		ScenesSize:     int(scenesSize),
+		ImageCount:     imageCount,
+		ImagesSize:     int(imageSize),
 		GalleryCount:   galleryCount,
 		PerformerCount: performersCount,
 		StudioCount:    studiosCount,

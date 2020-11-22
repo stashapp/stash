@@ -3,7 +3,7 @@ import { Toast } from "react-bootstrap";
 
 interface IToast {
   header?: string;
-  content: JSX.Element | string;
+  content: React.ReactNode | string;
   delay?: number;
   variant?: "success" | "danger" | "warning";
 }

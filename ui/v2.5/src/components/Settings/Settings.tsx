@@ -8,6 +8,7 @@ import { SettingsInterfacePanel } from "./SettingsInterfacePanel";
 import { SettingsLogsPanel } from "./SettingsLogsPanel";
 import { SettingsTasksPanel } from "./SettingsTasksPanel/SettingsTasksPanel";
 import { SettingsPluginsPanel } from "./SettingsPluginsPanel";
+import { SettingsScrapersPanel } from "./SettingsScrapersPanel";
 
 export const Settings: React.FC = () => {
   const location = useLocation();
@@ -21,7 +22,7 @@ export const Settings: React.FC = () => {
       <Tab.Container
         defaultActiveKey={defaultTab}
         id="configuration-tabs"
-        onSelect={onSelect}
+        onSelect={(tab) => tab && onSelect(tab)}
       >
         <Row>
           <Col sm={3} md={2}>
@@ -34,6 +35,9 @@ export const Settings: React.FC = () => {
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="tasks">Tasks</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="scrapers">Scrapers</Nav.Link>
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="plugins">Plugins</Nav.Link>
@@ -57,6 +61,9 @@ export const Settings: React.FC = () => {
               </Tab.Pane>
               <Tab.Pane eventKey="tasks">
                 <SettingsTasksPanel />
+              </Tab.Pane>
+              <Tab.Pane eventKey="scrapers">
+                <SettingsScrapersPanel />
               </Tab.Pane>
               <Tab.Pane eventKey="plugins">
                 <SettingsPluginsPanel />

@@ -20,10 +20,11 @@ type Scraper {
     performer: ScraperSpec
     """Details for scene scraper"""
     scene: ScraperSpec
+    """Details for gallery scraper"""
+    gallery: ScraperSpec
     """Details for movie scraper"""
     movie: ScraperSpec
 }
-
 
 type ScrapedScenePerformer {
   """Set if performer matched"""
@@ -44,6 +45,9 @@ type ScrapedScenePerformer {
   tattoos: String
   piercings: String
   aliases: String
+
+  remote_site_id: String
+  images: [String!]
 }
 
 type ScrapedSceneMovie {
@@ -64,6 +68,8 @@ type ScrapedSceneStudio {
   stored_id: ID
   name: String!
   url: String
+
+  remote_site_id: String
 }
 
 type ScrapedSceneTag {
@@ -87,4 +93,34 @@ type ScrapedScene {
   tags: [ScrapedSceneTag!]
   performers: [ScrapedScenePerformer!]
   movies: [ScrapedSceneMovie!]
+
+  remote_site_id: String
+  duration: Int
+  fingerprints: [StashBoxFingerprint!]
+}
+
+type ScrapedGallery {
+  title: String
+  details: String
+  url: String
+  date: String
+
+  studio: ScrapedSceneStudio
+  tags: [ScrapedSceneTag!]
+  performers: [ScrapedScenePerformer!]
+}
+
+input StashBoxQueryInput {
+  """Index of the configured stash-box instance to use"""
+  stash_box_index: Int!
+  """Instructs query by scene fingerprints"""
+  scene_ids: [ID!]
+  """Query by query string"""
+  q: String
+}
+
+type StashBoxFingerprint {
+  algorithm: String!
+  hash: String!
+  duration: Int!
 }

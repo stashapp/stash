@@ -184,12 +184,78 @@ func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 	return &ret, nil
 }
 
+func (s *stashScraper) scrapeGalleryByFragment(scene models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
+	// query by MD5
+	// assumes that the gallery exists in the database
+	qb := models.NewGalleryQueryBuilder()
+	id, err := strconv.Atoi(scene.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	storedGallery, err := qb.Find(id, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var q struct {
+		FindGallery *models.ScrapedGalleryStash `graphql:"findGalleryByHash(input: $c)"`
+	}
+
+	type GalleryHashInput struct {
+		Checksum *string `graphql:"checksum" json:"checksum"`
+	}
+
+	input := GalleryHashInput{
+		Checksum: &storedGallery.Checksum,
+	}
+
+	vars := map[string]interface{}{
+		"c": &input,
+	}
+
+	client := s.getStashClient()
+	err = client.Query(context.Background(), &q, vars)
+	if err != nil {
+		return nil, err
+	}
+
+	if q.FindGallery != nil {
+		// the ids of the studio, performers and tags must be nilled
+		if q.FindGallery.Studio != nil {
+			q.FindGallery.Studio.ID = nil
+		}
+
+		for _, p := range q.FindGallery.Performers {
+			p.ID = nil
+		}
+
+		for _, t := range q.FindGallery.Tags {
+			t.ID = nil
+		}
+	}
+
+	// need to copy back to a scraped scene
+	ret := models.ScrapedGallery{}
+	err = copier.Copy(&ret, q.FindGallery)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
 func (s *stashScraper) scrapePerformerByURL(url string) (*models.ScrapedPerformer, error) {
 	return nil, errors.New("scrapePerformerByURL not supported for stash scraper")
 }
 
 func (s *stashScraper) scrapeSceneByURL(url string) (*models.ScrapedScene, error) {
 	return nil, errors.New("scrapeSceneByURL not supported for stash scraper")
+}
+
+func (s *stashScraper) scrapeGalleryByURL(url string) (*models.ScrapedGallery, error) {
+	return nil, errors.New("scrapeGalleryByURL not supported for stash scraper")
 }
 
 func (s *stashScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error) {
@@ -205,4 +271,14 @@ func sceneFromUpdateFragment(scene models.SceneUpdateInput) (*models.Scene, erro
 
 	// TODO - should we modify it with the input?
 	return qb.Find(id)
+}
+
+func galleryFromUpdateFragment(gallery models.GalleryUpdateInput) (*models.Gallery, error) {
+	qb := models.NewGalleryQueryBuilder()
+	id, err := strconv.Atoi(gallery.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return qb.Find(id, nil)
 }

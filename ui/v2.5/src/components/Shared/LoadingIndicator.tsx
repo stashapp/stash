@@ -5,6 +5,7 @@ import cx from "classnames";
 interface ILoadingProps {
   message?: string;
   inline?: boolean;
+  small?: boolean;
 }
 
 const CLASSNAME = "LoadingIndicator";
@@ -13,12 +14,15 @@ const CLASSNAME_MESSAGE = `${CLASSNAME}-message`;
 const LoadingIndicator: React.FC<ILoadingProps> = ({
   message,
   inline = false,
+  small = false,
 }) => (
-  <div className={cx(CLASSNAME, { inline })}>
-    <Spinner animation="border" role="status">
+  <div className={cx(CLASSNAME, { inline, small })}>
+    <Spinner animation="border" role="status" size={small ? "sm" : undefined}>
       <span className="sr-only">Loading...</span>
     </Spinner>
-    <h4 className={CLASSNAME_MESSAGE}>{message ?? "Loading..."}</h4>
+    {message !== "" && (
+      <h4 className={CLASSNAME_MESSAGE}>{message ?? "Loading..."}</h4>
+    )}
   </div>
 );
 

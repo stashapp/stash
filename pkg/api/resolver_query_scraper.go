@@ -2,10 +2,13 @@ package api
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/stashapp/stash/pkg/manager"
+	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/scraper/stashbox"
 )
 
 // deprecated
@@ -41,6 +44,10 @@ func (r *queryResolver) ListSceneScrapers(ctx context.Context) ([]*models.Scrape
 	return manager.GetInstance().ScraperCache.ListSceneScrapers(), nil
 }
 
+func (r *queryResolver) ListGalleryScrapers(ctx context.Context) ([]*models.Scraper, error) {
+	return manager.GetInstance().ScraperCache.ListGalleryScrapers(), nil
+}
+
 func (r *queryResolver) ListMovieScrapers(ctx context.Context) ([]*models.Scraper, error) {
 	return manager.GetInstance().ScraperCache.ListMovieScrapers(), nil
 }
@@ -69,6 +76,34 @@ func (r *queryResolver) ScrapeSceneURL(ctx context.Context, url string) (*models
 	return manager.GetInstance().ScraperCache.ScrapeSceneURL(url)
 }
 
+func (r *queryResolver) ScrapeGallery(ctx context.Context, scraperID string, gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
+	return manager.GetInstance().ScraperCache.ScrapeGallery(scraperID, gallery)
+}
+
+func (r *queryResolver) ScrapeGalleryURL(ctx context.Context, url string) (*models.ScrapedGallery, error) {
+	return manager.GetInstance().ScraperCache.ScrapeGalleryURL(url)
+}
+
 func (r *queryResolver) ScrapeMovieURL(ctx context.Context, url string) (*models.ScrapedMovie, error) {
 	return manager.GetInstance().ScraperCache.ScrapeMovieURL(url)
+}
+
+func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.StashBoxQueryInput) ([]*models.ScrapedScene, error) {
+	boxes := config.GetStashBoxes()
+
+	if input.StashBoxIndex < 0 || input.StashBoxIndex >= len(boxes) {
+		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
+	}
+
+	client := stashbox.NewClient(*boxes[input.StashBoxIndex])
+
+	if len(input.SceneIds) > 0 {
+		return client.FindStashBoxScenesByFingerprints(input.SceneIds)
+	}
+
+	if input.Q != nil {
+		return client.QueryStashBoxScene(*input.Q)
+	}
+
+	return nil, nil
 }
