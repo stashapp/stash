@@ -24,7 +24,7 @@ enum HashAlgorithm {
 
 input ConfigGeneralInput {
   """Array of file paths to content"""
-  stashes: [String!]
+  stashes: [StashConfigInput!]
   """Path to the SQLite database"""
   databasePath: String
   """Path to generated files"""
@@ -63,17 +63,29 @@ input ConfigGeneralInput {
   logLevel: String!
   """Whether to log http access"""
   logAccess: Boolean!
-  """Array of file regexp to exclude from Scan"""
+  """True if galleries should be created from folders with images"""
+  createGalleriesFromFolders: Boolean!
+  """Array of video file extensions"""
+  videoExtensions: [String!]
+  """Array of image file extensions"""
+  imageExtensions: [String!]
+  """Array of gallery zip file extensions"""
+  galleryExtensions: [String!]
+  """Array of file regexp to exclude from Video Scans"""
   excludes: [String!]
+  """Array of file regexp to exclude from Image Scans"""
+  imageExcludes: [String!]
   """Scraper user agent string"""
   scraperUserAgent: String
   """Scraper CDP path. Path to chrome executable or remote address"""
   scraperCDPPath: String
+  """Stash-box instances used for tagging"""
+  stashBoxes: [StashBoxInput!]!
 }
 
 type ConfigGeneralResult {
   """Array of file paths to content"""
-  stashes: [String!]!
+  stashes: [StashConfig!]!
   """Path to the SQLite database"""
   databasePath: String!
   """Path to generated files"""
@@ -112,12 +124,24 @@ type ConfigGeneralResult {
   logLevel: String!
   """Whether to log http access"""
   logAccess: Boolean!
-  """Array of file regexp to exclude from Scan"""
+  """Array of video file extensions"""
+  videoExtensions: [String!]!
+  """Array of image file extensions"""
+  imageExtensions: [String!]!
+  """Array of gallery zip file extensions"""
+  galleryExtensions: [String!]!
+  """True if galleries should be created from folders with images"""
+  createGalleriesFromFolders: Boolean!
+  """Array of file regexp to exclude from Video Scans"""
   excludes: [String!]!
+  """Array of file regexp to exclude from Image Scans"""
+  imageExcludes: [String!]!
   """Scraper user agent string"""
   scraperUserAgent: String
   """Scraper CDP path. Path to chrome executable or remote address"""
   scraperCDPPath: String
+  """Stash-box instances used for tagging"""
+  stashBoxes: [StashBox!]!
 }
 
 input ConfigInterfaceInput {
@@ -170,4 +194,17 @@ type Directory {
     path: String!
     parent: String
     directories: [String!]!
+}
+
+"""Stash configuration details"""
+input StashConfigInput {
+  path: String!
+  excludeVideo: Boolean!
+  excludeImage: Boolean!
+}
+
+type StashConfig {
+  path: String!
+  excludeVideo: Boolean!
+  excludeImage: Boolean!
 }

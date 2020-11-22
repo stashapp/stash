@@ -12,4 +12,6 @@ const (
 	movieKey     key = 4
 	ContextUser  key = 5
 	tagKey       key = 6
+	downloadKey  key = 7
+	imageKey     key = 8
 )

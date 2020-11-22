@@ -2,6 +2,9 @@ package models
 
 import (
 	"database/sql"
+	"time"
+
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type Performer struct {
@@ -26,4 +29,15 @@ type Performer struct {
 	Favorite     sql.NullBool    `db:"favorite" json:"favorite"`
 	CreatedAt    SQLiteTimestamp `db:"created_at" json:"created_at"`
 	UpdatedAt    SQLiteTimestamp `db:"updated_at" json:"updated_at"`
+}
+
+func NewPerformer(name string) *Performer {
+	currentTime := time.Now()
+	return &Performer{
+		Checksum:  utils.MD5FromString(name),
+		Name:      sql.NullString{String: name, Valid: true},
+		Favorite:  sql.NullBool{Bool: false, Valid: true},
+		CreatedAt: SQLiteTimestamp{Timestamp: currentTime},
+		UpdatedAt: SQLiteTimestamp{Timestamp: currentTime},
+	}
 }

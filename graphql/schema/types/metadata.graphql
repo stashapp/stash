@@ -1,3 +1,5 @@
+scalar Upload
+
 input GenerateMetadataInput {
   sprites: Boolean!
   previews: Boolean!
@@ -5,15 +7,11 @@ input GenerateMetadataInput {
   previewOptions: GeneratePreviewOptionsInput
   markers: Boolean!
   transcodes: Boolean!
-  """gallery thumbnails for cache usage"""
-  thumbnails: Boolean!
 
   """scene ids to generate for"""
   sceneIDs: [ID!]
   """marker ids to generate for"""
   markerIDs: [ID!]
-  """gallery ids to generate for"""
-  galleryIDs: [ID!]
 
   """overwrite existing media"""
   overwrite: Boolean
@@ -33,6 +31,7 @@ input GeneratePreviewOptionsInput {
 }
 
 input ScanMetadataInput {
+  paths: [String!]
   useFileMetadata: Boolean!
 }
 
@@ -49,4 +48,38 @@ type MetadataUpdateStatus {
   progress: Float!
   status: String!
   message: String!
+}
+
+input ExportObjectTypeInput {
+  ids: [String!]
+  all: Boolean
+}
+
+input ExportObjectsInput {
+  scenes: ExportObjectTypeInput
+  images: ExportObjectTypeInput
+  studios: ExportObjectTypeInput
+  performers: ExportObjectTypeInput
+  tags: ExportObjectTypeInput
+  movies: ExportObjectTypeInput
+  galleries: ExportObjectTypeInput
+  includeDependencies: Boolean
+}
+
+enum ImportDuplicateEnum {
+  IGNORE
+  OVERWRITE
+  FAIL
+}
+
+enum ImportMissingRefEnum {
+  IGNORE
+  FAIL
+  CREATE
+}
+
+input ImportObjectsInput {
+  file: Upload!
+  duplicateBehaviour: ImportDuplicateEnum!
+  missingRefBehaviour: ImportMissingRefEnum!
 }

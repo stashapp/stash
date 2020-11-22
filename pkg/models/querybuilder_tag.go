@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -89,6 +90,24 @@ func (qb *TagQueryBuilder) Find(id int, tx *sqlx.Tx) (*Tag, error) {
 	return qb.queryTag(query, args, tx)
 }
 
+func (qb *TagQueryBuilder) FindMany(ids []int) ([]*Tag, error) {
+	var tags []*Tag
+	for _, id := range ids {
+		tag, err := qb.Find(id, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if tag == nil {
+			return nil, fmt.Errorf("tag with id %d not found", id)
+		}
+
+		tags = append(tags, tag)
+	}
+
+	return tags, nil
+}
+
 func (qb *TagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
@@ -98,6 +117,30 @@ func (qb *TagQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Tag, erro
 	`
 	query += qb.getTagSort(nil)
 	args := []interface{}{sceneID}
+	return qb.queryTags(query, args, tx)
+}
+
+func (qb *TagQueryBuilder) FindByImageID(imageID int, tx *sqlx.Tx) ([]*Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN images_tags as images_join on images_join.tag_id = tags.id
+		WHERE images_join.image_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getTagSort(nil)
+	args := []interface{}{imageID}
+	return qb.queryTags(query, args, tx)
+}
+
+func (qb *TagQueryBuilder) FindByGalleryID(galleryID int, tx *sqlx.Tx) ([]*Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN galleries_tags as galleries_join on galleries_join.tag_id = tags.id
+		WHERE galleries_join.gallery_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getTagSort(nil)
+	args := []interface{}{galleryID}
 	return qb.queryTags(query, args, tx)
 }
 

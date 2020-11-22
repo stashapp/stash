@@ -9,18 +9,24 @@ import Interface from "src/docs/en/Interface.md";
 import Galleries from "src/docs/en/Galleries.md";
 import Scraping from "src/docs/en/Scraping.md";
 import Plugins from "src/docs/en/Plugins.md";
+import Tagger from "src/docs/en/Tagger.md";
 import Contributing from "src/docs/en/Contributing.md";
 import SceneFilenameParser from "src/docs/en/SceneFilenameParser.md";
 import KeyboardShortcuts from "src/docs/en/KeyboardShortcuts.md";
 import Help from "src/docs/en/Help.md";
-import { Page } from "./Page";
+import { MarkdownPage } from "../Shared/MarkdownPage";
 
 interface IManualProps {
   show: boolean;
   onClose: () => void;
+  defaultActiveTab?: string;
 }
 
-export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
+export const Manual: React.FC<IManualProps> = ({
+  show,
+  onClose,
+  defaultActiveTab,
+}) => {
   const content = [
     {
       key: "Introduction.md",
@@ -76,6 +82,11 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
       content: Plugins,
     },
     {
+      key: "Tagger.md",
+      title: "Scene Tagger",
+      content: Tagger,
+    },
+    {
       key: "KeyboardShortcuts.md",
       title: "Keyboard Shortcuts",
       content: KeyboardShortcuts,
@@ -92,7 +103,9 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
     },
   ];
 
-  const [activeTab, setActiveTab] = useState(content[0].key);
+  const [activeTab, setActiveTab] = useState(
+    defaultActiveTab ?? content[0].key
+  );
 
   // links to other manual pages are specified as "/help/page.md"
   // intercept clicks to these pages and set the tab accordingly
@@ -124,7 +137,7 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
         <Container className="manual-container">
           <Tab.Container
             activeKey={activeTab}
-            onSelect={(k) => setActiveTab(k)}
+            onSelect={(k) => k && setActiveTab(k)}
             id="manual-tabs"
           >
             <Row>
@@ -151,7 +164,7 @@ export const Manual: React.FC<IManualProps> = ({ show, onClose }) => {
                         key={`${c.key}-pane`}
                         onClick={interceptLinkClick}
                       >
-                        <Page page={c.content} />
+                        <MarkdownPage page={c.content} />
                       </Tab.Pane>
                     );
                   })}

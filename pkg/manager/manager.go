@@ -18,13 +18,14 @@ import (
 type singleton struct {
 	Status TaskStatus
 	Paths  *paths.Paths
-	JSON   *jsonUtils
 
 	FFMPEGPath  string
 	FFProbePath string
 
 	PluginCache  *plugin.Cache
 	ScraperCache *scraper.Cache
+
+	DownloadStore *DownloadStore
 }
 
 var instance *singleton
@@ -51,13 +52,18 @@ func Initialize() *singleton {
 		instance = &singleton{
 			Status: TaskStatus{Status: Idle, Progress: -1},
 			Paths:  paths.NewPaths(),
-			JSON:   &jsonUtils{},
 
 			PluginCache:  initPluginCache(),
 			ScraperCache: initScraperCache(),
+
+			DownloadStore: NewDownloadStore(),
 		}
 
 		instance.RefreshConfig()
+
+		// clear the downloads and tmp directories
+		utils.EmptyDir(instance.Paths.Generated.Downloads)
+		utils.EmptyDir(instance.Paths.Generated.Tmp)
 
 		initFFMPEG()
 	})
@@ -125,10 +131,14 @@ func initEnvs() {
 	viper.BindEnv("host")          // STASH_HOST
 	viper.BindEnv("port")          // STASH_PORT
 	viper.BindEnv("external_host") // STASH_EXTERNAL_HOST
-	viper.BindEnv("stash")         // STASH_STASH
 	viper.BindEnv("generated")     // STASH_GENERATED
 	viper.BindEnv("metadata")      // STASH_METADATA
 	viper.BindEnv("cache")         // STASH_CACHE
+
+	// only set stash config flag if not already set
+	if config.GetStashPaths() == nil {
+		viper.BindEnv("stash") // STASH_STASH
+	}
 }
 
 func initFFMPEG() {
@@ -188,12 +198,12 @@ func initScraperCache() *scraper.Cache {
 func (s *singleton) RefreshConfig() {
 	s.Paths = paths.NewPaths()
 	if config.IsValid() {
-		_ = utils.EnsureDir(s.Paths.Generated.Screenshots)
-		_ = utils.EnsureDir(s.Paths.Generated.Vtt)
-		_ = utils.EnsureDir(s.Paths.Generated.Markers)
-		_ = utils.EnsureDir(s.Paths.Generated.Transcodes)
-
-		paths.EnsureJSONDirs()
+		utils.EnsureDir(s.Paths.Generated.Screenshots)
+		utils.EnsureDir(s.Paths.Generated.Vtt)
+		utils.EnsureDir(s.Paths.Generated.Markers)
+		utils.EnsureDir(s.Paths.Generated.Transcodes)
+		utils.EnsureDir(s.Paths.Generated.Downloads)
+		paths.EnsureJSONDirs(config.GetMetadataPath())
 	}
 }
 

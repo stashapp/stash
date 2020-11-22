@@ -13,7 +13,7 @@ import (
 
 func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.PerformerCreateInput) (*models.Performer, error) {
 	// generate checksum from performer name rather than image
-	checksum := utils.MD5FromString(*input.Name)
+	checksum := utils.MD5FromString(input.Name)
 
 	var imageData []byte
 	var err error
@@ -33,9 +33,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 		CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 		UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
 	}
-	if input.Name != nil {
-		newPerformer.Name = sql.NullString{String: *input.Name, Valid: true}
-	}
+	newPerformer.Name = sql.NullString{String: input.Name, Valid: true}
 	if input.URL != nil {
 		newPerformer.URL = sql.NullString{String: *input.URL, Valid: true}
 	}
@@ -90,6 +88,8 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	// Start the transaction and save the performer
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewPerformerQueryBuilder()
+	jqb := models.NewJoinsQueryBuilder()
+
 	performer, err := qb.Create(newPerformer, tx)
 	if err != nil {
 		_ = tx.Rollback()
@@ -100,6 +100,21 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	if len(imageData) > 0 {
 		if err := qb.UpdatePerformerImage(performer.ID, imageData, tx); err != nil {
 			_ = tx.Rollback()
+			return nil, err
+		}
+	}
+
+	// Save the stash_ids
+	if input.StashIds != nil {
+		var stashIDJoins []models.StashID
+		for _, stashID := range input.StashIds {
+			newJoin := models.StashID{
+				StashID:  stashID.StashID,
+				Endpoint: stashID.Endpoint,
+			}
+			stashIDJoins = append(stashIDJoins, newJoin)
+		}
+		if err := jqb.UpdatePerformerStashIDs(performer.ID, stashIDJoins, tx); err != nil {
 			return nil, err
 		}
 	}
@@ -189,6 +204,8 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	// Start the transaction and save the performer
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := models.NewPerformerQueryBuilder()
+	jqb := models.NewJoinsQueryBuilder()
+
 	performer, err := qb.Update(updatedPerformer, tx)
 	if err != nil {
 		tx.Rollback()
@@ -205,6 +222,21 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 		// must be unsetting
 		if err := qb.DestroyPerformerImage(performer.ID, tx); err != nil {
 			tx.Rollback()
+			return nil, err
+		}
+	}
+
+	// Save the stash_ids
+	if input.StashIds != nil {
+		var stashIDJoins []models.StashID
+		for _, stashID := range input.StashIds {
+			newJoin := models.StashID{
+				StashID:  stashID.StashID,
+				Endpoint: stashID.Endpoint,
+			}
+			stashIDJoins = append(stashIDJoins, newJoin)
+		}
+		if err := jqb.UpdatePerformerStashIDs(performerID, stashIDJoins, tx); err != nil {
 			return nil, err
 		}
 	}

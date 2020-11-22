@@ -17,7 +17,9 @@ interface IModal {
   cancel?: IButton;
   accept?: IButton;
   isRunning?: boolean;
+  disabled?: boolean;
   modalProps?: ModalProps;
+  dialogClassName?: string;
 }
 
 const ModalComponent: React.FC<IModal> = ({
@@ -29,9 +31,17 @@ const ModalComponent: React.FC<IModal> = ({
   accept,
   onHide,
   isRunning,
+  disabled,
   modalProps,
+  dialogClassName,
 }) => (
-  <Modal keyboard={false} onHide={onHide} show={show} {...modalProps}>
+  <Modal
+    keyboard={false}
+    onHide={onHide}
+    show={show}
+    dialogClassName={dialogClassName}
+    {...modalProps}
+  >
     <Modal.Header>
       {icon ? <Icon icon={icon} /> : ""}
       <span>{header ?? ""}</span>
@@ -44,6 +54,7 @@ const ModalComponent: React.FC<IModal> = ({
             disabled={isRunning}
             variant={cancel.variant ?? "primary"}
             onClick={cancel.onClick}
+            className="mr-2"
           >
             {cancel.text ?? "Cancel"}
           </Button>
@@ -51,9 +62,10 @@ const ModalComponent: React.FC<IModal> = ({
           ""
         )}
         <Button
-          disabled={isRunning}
+          disabled={isRunning || disabled}
           variant={accept?.variant ?? "primary"}
           onClick={accept?.onClick}
+          className="ml-2"
         >
           {isRunning ? (
             <Spinner animation="border" role="status" size="sm" />

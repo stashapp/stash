@@ -1,6 +1,6 @@
 import { Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, Link } from "react-router-dom";
 import cx from "classnames";
 
 import * as GQL from "src/core/generated-graphql";
@@ -20,12 +20,18 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { StudioScenesPanel } from "./StudioScenesPanel";
+import { StudioImagesPanel } from "./StudioImagesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
+
+interface IStudioParams {
+  id?: string;
+  tab?: string;
+}
 
 export const Studio: React.FC = () => {
   const history = useHistory();
   const Toast = useToast();
-  const { tab = "details", id = "new" } = useParams();
+  const { tab = "details", id = "new" } = useParams<IStudioParams>();
   const isNew = id === "new";
 
   // Editing state
@@ -178,6 +184,41 @@ export const Studio: React.FC = () => {
     );
   }
 
+  function renderStashIDs() {
+    if (!studio.stash_ids?.length) {
+      return;
+    }
+
+    return (
+      <tr>
+        <td>StashIDs</td>
+        <td>
+          <ul className="pl-0">
+            {studio.stash_ids.map((stashID) => {
+              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+              const link = base ? (
+                <a
+                  href={`${base}studios/${stashID.stash_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {stashID.stash_id}
+                </a>
+              ) : (
+                stashID.stash_id
+              );
+              return (
+                <li key={stashID.stash_id} className="row no-gutters">
+                  {link}
+                </li>
+              );
+            })}
+          </ul>
+        </td>
+      </tr>
+    );
+  }
+
   function onToggleEdit() {
     setIsEditing(!isEditing);
     updateStudioData(studio);
@@ -190,13 +231,36 @@ export const Studio: React.FC = () => {
     );
   }
 
-  const activeTabKey = tab === "childstudios" ? tab : "scenes";
-  const setActiveTabKey = (newTab: string) => {
+  const activeTabKey =
+    tab === "childstudios" || tab === "images" ? tab : "scenes";
+  const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
       history.replace(`/studios/${id}${tabParam}`);
     }
   };
+
+  function renderStudio() {
+    if (isEditing || !parentStudioId) {
+      return (
+        <StudioSelect
+          onSelect={(items) =>
+            setParentStudioId(items.length > 0 ? items[0]?.id : undefined)
+          }
+          ids={parentStudioId ? [parentStudioId] : []}
+          isDisabled={!isEditing}
+        />
+      );
+    }
+
+    if (studio.parent_studio) {
+      return (
+        <Link to={`/studios/${studio.parent_studio.id}`}>
+          {studio.parent_studio.name}
+        </Link>
+      );
+    }
+  }
 
   return (
     <div className="row">
@@ -232,18 +296,9 @@ export const Studio: React.FC = () => {
             })}
             <tr>
               <td>Parent Studio</td>
-              <td>
-                <StudioSelect
-                  onSelect={(items) =>
-                    setParentStudioId(
-                      items.length > 0 ? items[0]?.id : undefined
-                    )
-                  }
-                  ids={parentStudioId ? [parentStudioId] : []}
-                  isDisabled={!isEditing}
-                />
-              </td>
+              <td>{renderStudio()}</td>
             </tr>
+            {!isEditing && renderStashIDs()}
           </tbody>
         </Table>
         <DetailsEditNavbar
@@ -272,6 +327,9 @@ export const Studio: React.FC = () => {
           >
             <Tab eventKey="scenes" title="Scenes">
               <StudioScenesPanel studio={studio} />
+            </Tab>
+            <Tab eventKey="images" title="Images">
+              <StudioImagesPanel studio={studio} />
             </Tab>
             <Tab eventKey="childstudios" title="Child Studios">
               <StudioChildrenPanel studio={studio} />

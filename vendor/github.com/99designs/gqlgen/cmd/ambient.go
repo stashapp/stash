@@ -5,6 +5,6 @@ import (
 	// don't prune unused code for us. Both lists should be kept in sync.
 	_ "github.com/99designs/gqlgen/graphql"
 	_ "github.com/99designs/gqlgen/graphql/introspection"
-	_ "github.com/vektah/gqlparser"
-	_ "github.com/vektah/gqlparser/ast"
+	_ "github.com/vektah/gqlparser/v2"
+	_ "github.com/vektah/gqlparser/v2/ast"
 )

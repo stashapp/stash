@@ -6,13 +6,16 @@ import { ILabeledId, ILabeledValue, IOptionType } from "../types";
 
 export type CriterionType =
   | "none"
+  | "path"
   | "rating"
   | "o_counter"
   | "resolution"
+  | "average_resolution"
   | "duration"
   | "favorite"
   | "hasMarkers"
   | "sceneIsMissing"
+  | "imageIsMissing"
   | "performerIsMissing"
   | "galleryIsMissing"
   | "tagIsMissing"
@@ -23,6 +26,7 @@ export type CriterionType =
   | "performers"
   | "studios"
   | "movies"
+  | "galleries"
   | "birth_year"
   | "age"
   | "ethnicity"
@@ -48,12 +52,16 @@ export abstract class Criterion {
     switch (type) {
       case "none":
         return "None";
+      case "path":
+        return "Path";
       case "rating":
         return "Rating";
       case "o_counter":
         return "O-Counter";
       case "resolution":
         return "Resolution";
+      case "average_resolution":
+        return "Average Resolution";
       case "duration":
         return "Duration";
       case "favorite":
@@ -61,6 +69,7 @@ export abstract class Criterion {
       case "hasMarkers":
         return "Has Markers";
       case "sceneIsMissing":
+      case "imageIsMissing":
       case "performerIsMissing":
       case "galleryIsMissing":
       case "tagIsMissing":
@@ -77,6 +86,8 @@ export abstract class Criterion {
         return "Studios";
       case "movies":
         return "Movies";
+      case "galleries":
+        return "Galleries";
       case "birth_year":
         return "Birth Year";
       case "age":
@@ -237,10 +248,12 @@ export class StringCriterion extends Criterion {
   public parameterName: string;
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [
-    Criterion.getModifierOption(CriterionModifier.Equals),
-    Criterion.getModifierOption(CriterionModifier.NotEquals),
-    Criterion.getModifierOption(CriterionModifier.IsNull),
-    Criterion.getModifierOption(CriterionModifier.NotNull),
+    StringCriterion.getModifierOption(CriterionModifier.Equals),
+    StringCriterion.getModifierOption(CriterionModifier.NotEquals),
+    StringCriterion.getModifierOption(CriterionModifier.Includes),
+    StringCriterion.getModifierOption(CriterionModifier.Excludes),
+    StringCriterion.getModifierOption(CriterionModifier.IsNull),
+    StringCriterion.getModifierOption(CriterionModifier.NotNull),
   ];
   public options: string[] | undefined;
   public value: string = "";
@@ -262,6 +275,13 @@ export class StringCriterion extends Criterion {
       this.parameterName = type;
     }
   }
+}
+
+export class MandatoryStringCriterion extends StringCriterion {
+  public modifierOptions = [
+    StringCriterion.getModifierOption(CriterionModifier.Equals),
+    StringCriterion.getModifierOption(CriterionModifier.NotEquals),
+  ];
 }
 
 export class NumberCriterion extends Criterion {

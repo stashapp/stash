@@ -1,0 +1,28 @@
+fragment GallerySlimData on Gallery {
+  id
+  checksum
+  path
+  title
+  date
+  url
+  details
+  rating
+  image_count
+  cover {
+    ...SlimImageData
+  }
+  studio {
+    ...StudioData
+  }
+  tags {
+    ...TagData
+  }
+  performers {
+    ...PerformerData
+  }
+  scene {
+    id
+    title
+    path
+  }
+}

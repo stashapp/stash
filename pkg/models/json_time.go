@@ -2,24 +2,34 @@ package models
 
 import (
 	"fmt"
-	"github.com/stashapp/stash/pkg/utils"
 	"strings"
 	"time"
+
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/utils"
 )
+
+var currentLocation = time.Now().Location()
 
 type JSONTime struct {
 	time.Time
 }
 
-func (jt *JSONTime) UnmarshalJSON(b []byte) (err error) {
+func (jt *JSONTime) UnmarshalJSON(b []byte) error {
 	s := strings.Trim(string(b), "\"")
 	if s == "null" {
 		jt.Time = time.Time{}
-		return
+		return nil
 	}
 
+	// #731 - returning an error here causes the entire JSON parse to fail for ffprobe.
+	// Changing so that it logs a warning instead.
+	var err error
 	jt.Time, err = utils.ParseDateStringAsTime(s)
-	return
+	if err != nil {
+		logger.Warnf("error unmarshalling JSONTime: %s", err.Error())
+	}
+	return nil
 }
 
 func (jt *JSONTime) MarshalJSON() ([]byte, error) {
@@ -27,4 +37,20 @@ func (jt *JSONTime) MarshalJSON() ([]byte, error) {
 		return []byte("null"), nil
 	}
 	return []byte(fmt.Sprintf("\"%s\"", jt.Time.Format(time.RFC3339))), nil
+}
+
+func (jt JSONTime) GetTime() time.Time {
+	if currentLocation != nil {
+		if jt.IsZero() {
+			return time.Now().In(currentLocation)
+		} else {
+			return jt.Time.In(currentLocation)
+		}
+	} else {
+		if jt.IsZero() {
+			return time.Now()
+		} else {
+			return jt.Time
+		}
+	}
 }

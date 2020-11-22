@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -17,7 +18,7 @@ func (qb *StudioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, er
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO studios (checksum, name, url, parent_id, created_at, updated_at)
-				VALUES (:checksum, :name, :url, :parent_id, :created_at, :updated_at)
+            VALUES (:checksum, :name, :url, :parent_id, :created_at, :updated_at)
 		`,
 		newStudio,
 	)
@@ -52,6 +53,23 @@ func (qb *StudioQueryBuilder) Update(updatedStudio StudioPartial, tx *sqlx.Tx) (
 	return &ret, nil
 }
 
+func (qb *StudioQueryBuilder) UpdateFull(updatedStudio Studio, tx *sqlx.Tx) (*Studio, error) {
+	ensureTx(tx)
+	_, err := tx.NamedExec(
+		`UPDATE studios SET `+SQLGenKeys(updatedStudio)+` WHERE studios.id = :id`,
+		updatedStudio,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret Studio
+	if err := tx.Get(&ret, `SELECT * FROM studios WHERE id = ? LIMIT 1`, updatedStudio.ID); err != nil {
+		return nil, err
+	}
+	return &ret, nil
+}
+
 func (qb *StudioQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	// remove studio from scenes
 	_, err := tx.Exec("UPDATE scenes SET studio_id = null WHERE studio_id = ?", id)
@@ -72,6 +90,24 @@ func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*Studio, error) {
 	query := "SELECT * FROM studios WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryStudio(query, args, tx)
+}
+
+func (qb *StudioQueryBuilder) FindMany(ids []int) ([]*Studio, error) {
+	var studios []*Studio
+	for _, id := range ids {
+		studio, err := qb.Find(id, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if studio == nil {
+			return nil, fmt.Errorf("studio with id %d not found", id)
+		}
+
+		studios = append(studios, studio)
+	}
+
+	return studios, nil
 }
 
 func (qb *StudioQueryBuilder) FindChildren(id int, tx *sqlx.Tx) ([]*Studio, error) {
@@ -122,6 +158,7 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 	body := selectDistinctIDs("studios")
 	body += `
 		left join scenes on studios.id = scenes.studio_id		
+		left join studio_stash_ids on studio_stash_ids.studio_id = studios.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -146,12 +183,19 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
+	if stashIDFilter := studioFilter.StashID; stashIDFilter != nil {
+		whereClauses = append(whereClauses, "studio_stash_ids.stash_id = ?")
+		args = append(args, stashIDFilter)
+	}
+
 	if isMissingFilter := studioFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "image":
 			body += `left join studios_image on studios_image.studio_id = studios.id
 			`
 			whereClauses = appendClause(whereClauses, "studios_image.studio_id IS NULL")
+		case "stash_id":
+			whereClauses = appendClause(whereClauses, "studio_stash_ids.studio_id IS NULL")
 		default:
 			whereClauses = appendClause(whereClauses, "studios."+*isMissingFilter+" IS NULL")
 		}

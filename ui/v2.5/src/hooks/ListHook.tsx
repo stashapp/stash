@@ -1,12 +1,12 @@
 import _ from "lodash";
 import queryString from "query-string";
 import React, { useCallback, useRef, useState, useEffect } from "react";
-import { ApolloError } from "apollo-client";
+import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
 import {
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
-  GalleryDataFragment,
+  GallerySlimDataFragment,
   StudioDataFragment,
   PerformerDataFragment,
   FindScenesQueryResult,
@@ -18,6 +18,8 @@ import {
   MovieDataFragment,
   FindTagsQueryResult,
   TagDataFragment,
+  FindImagesQueryResult,
+  SlimImageDataFragment,
 } from "src/core/generated-graphql";
 import {
   useInterfaceLocalForage,
@@ -29,6 +31,7 @@ import { Pagination, PaginationIndex } from "src/components/List/Pagination";
 import {
   useFindScenes,
   useFindSceneMarkers,
+  useFindImages,
   useFindMovies,
   useFindStudios,
   useFindGalleries,
@@ -58,11 +61,11 @@ const getSelectedData = <I extends IDataItem>(
 
 interface IListHookData {
   filter: ListFilterModel;
-  template: JSX.Element;
+  template: React.ReactElement;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
 }
 
-interface IListHookOperation<T> {
+export interface IListHookOperation<T> {
   text: string;
   onClick: (
     result: T,
@@ -74,6 +77,7 @@ interface IListHookOperation<T> {
     filter: ListFilterModel,
     selectedIds: Set<string>
   ) => boolean;
+  postRefetch?: boolean;
 }
 
 interface IListHookOptions<T, E> {
@@ -88,15 +92,15 @@ interface IListHookOptions<T, E> {
     filter: ListFilterModel,
     selectedIds: Set<string>,
     zoomIndex: number
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   renderEditDialog?: (
     selected: E[],
     onClose: (applied: boolean) => void
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   renderDeleteDialog?: (
     selected: E[],
     onClose: (confirmed: boolean) => void
-  ) => JSX.Element | undefined;
+  ) => React.ReactNode;
   addKeybinds?: (
     result: T,
     filter: ListFilterModel,
@@ -280,12 +284,19 @@ const RenderList = <
     setZoomIndex(newZoomIndex);
   }
 
+  async function onOperationClicked(o: IListHookOperation<QueryResult>) {
+    await o.onClick(result, filter, selectedIds);
+    if (o.postRefetch) {
+      result.refetch();
+    }
+  }
+
   const operations =
     otherOperations &&
     otherOperations.map((o) => ({
       text: o.text,
       onClick: () => {
-        o.onClick(result, filter, selectedIds);
+        onOperationClicked(o);
       },
       isDisplayed: () => {
         if (o.isDisplayed) {
@@ -542,10 +553,23 @@ export const useSceneMarkersList = (
       result?.data?.findSceneMarkers?.count ?? 0,
   });
 
-export const useGalleriesList = (
-  props: IListHookOptions<FindGalleriesQueryResult, GalleryDataFragment>
+export const useImagesList = (
+  props: IListHookOptions<FindImagesQueryResult, SlimImageDataFragment>
 ) =>
-  useList<FindGalleriesQueryResult, GalleryDataFragment>({
+  useList<FindImagesQueryResult, SlimImageDataFragment>({
+    ...props,
+    filterMode: FilterMode.Images,
+    useData: useFindImages,
+    getData: (result: FindImagesQueryResult) =>
+      result?.data?.findImages?.images ?? [],
+    getCount: (result: FindImagesQueryResult) =>
+      result?.data?.findImages?.count ?? 0,
+  });
+
+export const useGalleriesList = (
+  props: IListHookOptions<FindGalleriesQueryResult, GallerySlimDataFragment>
+) =>
+  useList<FindGalleriesQueryResult, GallerySlimDataFragment>({
     ...props,
     filterMode: FilterMode.Galleries,
     useData: useFindGalleries,
@@ -607,8 +631,8 @@ export const useTagsList = (
       result?.data?.findTags?.count ?? 0,
   });
 
-export const showWhenSelected = (
-  _result: FindScenesQueryResult,
+export const showWhenSelected = <T extends IQueryResult>(
+  _result: T,
   _filter: ListFilterModel,
   selectedIds: Set<string>
 ) => {

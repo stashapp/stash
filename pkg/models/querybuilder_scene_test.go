@@ -135,6 +135,62 @@ func sceneQueryQ(t *testing.T, sqb models.SceneQueryBuilder, q string, expectedS
 	assert.Len(t, scenes, totalScenes)
 }
 
+func TestSceneQueryPath(t *testing.T) {
+	const sceneIdx = 1
+	scenePath := getSceneStringValue(sceneIdx, "Path")
+
+	pathCriterion := models.StringCriterionInput{
+		Value:    scenePath,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyScenesPath(t, pathCriterion)
+
+	pathCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyScenesPath(t, pathCriterion)
+}
+
+func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
+	sqb := models.NewSceneQueryBuilder()
+	sceneFilter := models.SceneFilterType{
+		Path: &pathCriterion,
+	}
+
+	scenes, _ := sqb.Query(&sceneFilter, nil)
+
+	for _, scene := range scenes {
+		verifyString(t, scene.Path, pathCriterion)
+	}
+}
+
+func verifyNullString(t *testing.T, value sql.NullString, criterion models.StringCriterionInput) {
+	t.Helper()
+	assert := assert.New(t)
+	if criterion.Modifier == models.CriterionModifierIsNull {
+		assert.False(value.Valid, "expect is null values to be null")
+	}
+	if criterion.Modifier == models.CriterionModifierNotNull {
+		assert.True(value.Valid, "expect is null values to be null")
+	}
+	if criterion.Modifier == models.CriterionModifierEquals {
+		assert.Equal(criterion.Value, value.String)
+	}
+	if criterion.Modifier == models.CriterionModifierNotEquals {
+		assert.NotEqual(criterion.Value, value.String)
+	}
+}
+
+func verifyString(t *testing.T, value string, criterion models.StringCriterionInput) {
+	t.Helper()
+	assert := assert.New(t)
+	if criterion.Modifier == models.CriterionModifierEquals {
+		assert.Equal(criterion.Value, value)
+	}
+	if criterion.Modifier == models.CriterionModifierNotEquals {
+		assert.NotEqual(criterion.Value, value)
+	}
+}
+
 func TestSceneQueryRating(t *testing.T) {
 	const rating = 3
 	ratingCriterion := models.IntCriterionInput{

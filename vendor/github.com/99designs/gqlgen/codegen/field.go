@@ -11,7 +11,7 @@ import (
 	"github.com/99designs/gqlgen/codegen/config"
 	"github.com/99designs/gqlgen/codegen/templates"
 	"github.com/pkg/errors"
-	"github.com/vektah/gqlparser/ast"
+	"github.com/vektah/gqlparser/v2/ast"
 )
 
 type Field struct {
@@ -27,6 +27,7 @@ type Field struct {
 	NoErr            bool             // If this is bound to a go method, does that method have an error as the second argument
 	Object           *Object          // A link back to the parent object
 	Default          interface{}      // The default value
+	Stream           bool             // does this field return a channel?
 	Directives       []*Directive
 }
 
@@ -73,16 +74,25 @@ func (b *builder) buildField(obj *Object, field *ast.FieldDefinition) (*Field, e
 	return &f, nil
 }
 
-func (b *builder) bindField(obj *Object, f *Field) error {
+func (b *builder) bindField(obj *Object, f *Field) (errret error) {
 	defer func() {
 		if f.TypeReference == nil {
 			tr, err := b.Binder.TypeReference(f.Type, nil)
 			if err != nil {
-				panic(err)
+				errret = err
 			}
 			f.TypeReference = tr
 		}
+		if f.TypeReference != nil {
+			dirs, err := b.getDirectives(f.TypeReference.Definition.Directives)
+			if err != nil {
+				errret = err
+			}
+			f.Directives = append(dirs, f.Directives...)
+		}
 	}()
+
+	f.Stream = obj.Stream
 
 	switch {
 	case f.Name == "__schema":
@@ -94,6 +104,18 @@ func (b *builder) bindField(obj *Object, f *Field) error {
 		f.GoFieldType = GoFieldMethod
 		f.GoReceiverName = "ec"
 		f.GoFieldName = "introspectType"
+		return nil
+	case f.Name == "_entities":
+		f.GoFieldType = GoFieldMethod
+		f.GoReceiverName = "ec"
+		f.GoFieldName = "__resolve_entities"
+		f.MethodHasContext = true
+		return nil
+	case f.Name == "_service":
+		f.GoFieldType = GoFieldMethod
+		f.GoReceiverName = "ec"
+		f.GoFieldName = "__resolve__service"
+		f.MethodHasContext = true
 		return nil
 	case obj.Root:
 		f.IsResolver = true
@@ -181,75 +203,155 @@ func (b *builder) bindField(obj *Object, f *Field) error {
 	}
 }
 
-// findField attempts to match the name to a struct field with the following
-// priorites:
-// 1. Any method with a matching name
-// 2. Any Fields with a struct tag (see config.StructTag)
-// 3. Any fields with a matching name
-// 4. Same logic again for embedded fields
-func (b *builder) findBindTarget(named *types.Named, name string) (types.Object, error) {
-	for i := 0; i < named.NumMethods(); i++ {
-		method := named.Method(i)
-		if !method.Exported() {
-			continue
-		}
-
-		if !strings.EqualFold(method.Name(), name) {
-			continue
-		}
-
-		return method, nil
+// findBindTarget attempts to match the name to a field or method on a Type
+// with the following priorites:
+// 1. Any Fields with a struct tag (see config.StructTag). Errors if more than one match is found
+// 2. Any method or field with a matching name. Errors if more than one match is found
+// 3. Same logic again for embedded fields
+func (b *builder) findBindTarget(t types.Type, name string) (types.Object, error) {
+	// NOTE: a struct tag will override both methods and fields
+	// Bind to struct tag
+	found, err := b.findBindStructTagTarget(t, name)
+	if found != nil || err != nil {
+		return found, err
 	}
 
-	strukt, ok := named.Underlying().(*types.Struct)
-	if !ok {
-		return nil, fmt.Errorf("not a struct")
+	// Search for a method to bind to
+	foundMethod, err := b.findBindMethodTarget(t, name)
+	if err != nil {
+		return nil, err
 	}
-	return b.findBindStructTarget(strukt, name)
+
+	// Search for a field to bind to
+	foundField, err := b.findBindFieldTarget(t, name)
+	if err != nil {
+		return nil, err
+	}
+
+	switch {
+	case foundField == nil && foundMethod != nil:
+		// Bind to method
+		return foundMethod, nil
+	case foundField != nil && foundMethod == nil:
+		// Bind to field
+		return foundField, nil
+	case foundField != nil && foundMethod != nil:
+		// Error
+		return nil, errors.Errorf("found more than one way to bind for %s", name)
+	}
+
+	// Search embeds
+	return b.findBindEmbedsTarget(t, name)
 }
 
-func (b *builder) findBindStructTarget(strukt *types.Struct, name string) (types.Object, error) {
-	// struct tags have the highest priority
-	if b.Config.StructTag != "" {
-		var foundField *types.Var
-		for i := 0; i < strukt.NumFields(); i++ {
-			field := strukt.Field(i)
-			if !field.Exported() {
+func (b *builder) findBindStructTagTarget(in types.Type, name string) (types.Object, error) {
+	if b.Config.StructTag == "" {
+		return nil, nil
+	}
+
+	switch t := in.(type) {
+	case *types.Named:
+		return b.findBindStructTagTarget(t.Underlying(), name)
+	case *types.Struct:
+		var found types.Object
+		for i := 0; i < t.NumFields(); i++ {
+			field := t.Field(i)
+			if !field.Exported() || field.Embedded() {
 				continue
 			}
-			tags := reflect.StructTag(strukt.Tag(i))
+			tags := reflect.StructTag(t.Tag(i))
 			if val, ok := tags.Lookup(b.Config.StructTag); ok && equalFieldName(val, name) {
-				if foundField != nil {
+				if found != nil {
 					return nil, errors.Errorf("tag %s is ambigious; multiple fields have the same tag value of %s", b.Config.StructTag, val)
 				}
 
-				foundField = field
+				found = field
 			}
 		}
-		if foundField != nil {
-			return foundField, nil
-		}
+
+		return found, nil
 	}
 
-	// Then matching field names
-	for i := 0; i < strukt.NumFields(); i++ {
-		field := strukt.Field(i)
-		if !field.Exported() {
-			continue
+	return nil, nil
+}
+
+func (b *builder) findBindMethodTarget(in types.Type, name string) (types.Object, error) {
+	switch t := in.(type) {
+	case *types.Named:
+		if _, ok := t.Underlying().(*types.Interface); ok {
+			return b.findBindMethodTarget(t.Underlying(), name)
 		}
-		if equalFieldName(field.Name(), name) { // aqui!
-			return field, nil
-		}
+
+		return b.findBindMethoderTarget(t.Method, t.NumMethods(), name)
+	case *types.Interface:
+		// FIX-ME: Should use ExplicitMethod here? What's the difference?
+		return b.findBindMethoderTarget(t.Method, t.NumMethods(), name)
 	}
 
-	// Then look in embedded structs
-	for i := 0; i < strukt.NumFields(); i++ {
-		field := strukt.Field(i)
-		if !field.Exported() {
+	return nil, nil
+}
+
+func (b *builder) findBindMethoderTarget(methodFunc func(i int) *types.Func, methodCount int, name string) (types.Object, error) {
+	var found types.Object
+	for i := 0; i < methodCount; i++ {
+		method := methodFunc(i)
+		if !method.Exported() || !strings.EqualFold(method.Name(), name) {
 			continue
 		}
 
-		if !field.Anonymous() {
+		if found != nil {
+			return nil, errors.Errorf("found more than one matching method to bind for %s", name)
+		}
+
+		found = method
+	}
+
+	return found, nil
+}
+
+func (b *builder) findBindFieldTarget(in types.Type, name string) (types.Object, error) {
+	switch t := in.(type) {
+	case *types.Named:
+		return b.findBindFieldTarget(t.Underlying(), name)
+	case *types.Struct:
+		var found types.Object
+		for i := 0; i < t.NumFields(); i++ {
+			field := t.Field(i)
+			if !field.Exported() || !equalFieldName(field.Name(), name) {
+				continue
+			}
+
+			if found != nil {
+				return nil, errors.Errorf("found more than one matching field to bind for %s", name)
+			}
+
+			found = field
+		}
+
+		return found, nil
+	}
+
+	return nil, nil
+}
+
+func (b *builder) findBindEmbedsTarget(in types.Type, name string) (types.Object, error) {
+	switch t := in.(type) {
+	case *types.Named:
+		return b.findBindEmbedsTarget(t.Underlying(), name)
+	case *types.Struct:
+		return b.findBindStructEmbedsTarget(t, name)
+	case *types.Interface:
+		return b.findBindInterfaceEmbedsTarget(t, name)
+	}
+
+	return nil, nil
+}
+
+func (b *builder) findBindStructEmbedsTarget(strukt *types.Struct, name string) (types.Object, error) {
+	var found types.Object
+	for i := 0; i < strukt.NumFields(); i++ {
+		field := strukt.Field(i)
+		if !field.Embedded() {
 			continue
 		}
 
@@ -258,33 +360,68 @@ func (b *builder) findBindStructTarget(strukt *types.Struct, name string) (types
 			fieldType = ptr.Elem()
 		}
 
-		switch fieldType := fieldType.(type) {
-		case *types.Named:
-			f, err := b.findBindTarget(fieldType, name)
-			if err != nil {
-				return nil, err
-			}
-			if f != nil {
-				return f, nil
-			}
-		case *types.Struct:
-			f, err := b.findBindStructTarget(fieldType, name)
-			if err != nil {
-				return nil, err
-			}
-			if f != nil {
-				return f, nil
-			}
-		default:
-			panic(fmt.Errorf("unknown embedded field type %T", field.Type()))
+		f, err := b.findBindTarget(fieldType, name)
+		if err != nil {
+			return nil, err
+		}
+
+		if f != nil && found != nil {
+			return nil, errors.Errorf("found more than one way to bind for %s", name)
+		}
+
+		if f != nil {
+			found = f
 		}
 	}
 
-	return nil, nil
+	return found, nil
+}
+
+func (b *builder) findBindInterfaceEmbedsTarget(iface *types.Interface, name string) (types.Object, error) {
+	var found types.Object
+	for i := 0; i < iface.NumEmbeddeds(); i++ {
+		embeddedType := iface.EmbeddedType(i)
+
+		f, err := b.findBindTarget(embeddedType, name)
+		if err != nil {
+			return nil, err
+		}
+
+		if f != nil && found != nil {
+			return nil, errors.Errorf("found more than one way to bind for %s", name)
+		}
+
+		if f != nil {
+			found = f
+		}
+	}
+
+	return found, nil
 }
 
 func (f *Field) HasDirectives() bool {
-	return len(f.Directives) > 0
+	return len(f.ImplDirectives()) > 0
+}
+
+func (f *Field) DirectiveObjName() string {
+	if f.Object.Root {
+		return "nil"
+	}
+	return f.GoReceiverName
+}
+
+func (f *Field) ImplDirectives() []*Directive {
+	var d []*Directive
+	loc := ast.LocationFieldDefinition
+	if f.Object.IsInputType() {
+		loc = ast.LocationInputFieldDefinition
+	}
+	for i := range f.Directives {
+		if !f.Directives[i].Builtin && f.Directives[i].IsLocation(loc, ast.LocationObject) {
+			d = append(d, f.Directives[i])
+		}
+	}
+	return d
 }
 
 func (f *Field) IsReserved() bool {
@@ -338,7 +475,7 @@ func (f *Field) ShortResolverDeclaration() string {
 	res := "(ctx context.Context"
 
 	if !f.Object.Root {
-		res += fmt.Sprintf(", obj *%s", templates.CurrentImports.LookupType(f.Object.Type))
+		res += fmt.Sprintf(", obj %s", templates.CurrentImports.LookupType(f.Object.Reference()))
 	}
 	for _, arg := range f.Args {
 		res += fmt.Sprintf(", %s %s", arg.VarName, templates.CurrentImports.LookupType(arg.TypeReference.GO))
@@ -354,7 +491,7 @@ func (f *Field) ShortResolverDeclaration() string {
 }
 
 func (f *Field) ComplexitySignature() string {
-	res := fmt.Sprintf("func(childComplexity int")
+	res := "func(childComplexity int"
 	for _, arg := range f.Args {
 		res += fmt.Sprintf(", %s %s", arg.VarName, templates.CurrentImports.LookupType(arg.TypeReference.GO))
 	}
@@ -363,16 +500,16 @@ func (f *Field) ComplexitySignature() string {
 }
 
 func (f *Field) ComplexityArgs() string {
-	var args []string
-	for _, arg := range f.Args {
-		args = append(args, "args["+strconv.Quote(arg.Name)+"].("+templates.CurrentImports.LookupType(arg.TypeReference.GO)+")")
+	args := make([]string, len(f.Args))
+	for i, arg := range f.Args {
+		args[i] = "args[" + strconv.Quote(arg.Name) + "].(" + templates.CurrentImports.LookupType(arg.TypeReference.GO) + ")"
 	}
 
 	return strings.Join(args, ", ")
 }
 
 func (f *Field) CallArgs() string {
-	var args []string
+	args := make([]string, 0, len(f.Args)+2)
 
 	if f.IsResolver {
 		args = append(args, "rctx")
@@ -380,10 +517,8 @@ func (f *Field) CallArgs() string {
 		if !f.Object.Root {
 			args = append(args, "obj")
 		}
-	} else {
-		if f.MethodHasContext {
-			args = append(args, "ctx")
-		}
+	} else if f.MethodHasContext {
+		args = append(args, "ctx")
 	}
 
 	for _, arg := range f.Args {

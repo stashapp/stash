@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -48,6 +49,19 @@ func (qb *MovieQueryBuilder) Update(updatedMovie MoviePartial, tx *sqlx.Tx) (*Mo
 	return qb.Find(updatedMovie.ID, tx)
 }
 
+func (qb *MovieQueryBuilder) UpdateFull(updatedMovie Movie, tx *sqlx.Tx) (*Movie, error) {
+	ensureTx(tx)
+	_, err := tx.NamedExec(
+		`UPDATE movies SET `+SQLGenKeys(updatedMovie)+` WHERE movies.id = :id`,
+		updatedMovie,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return qb.Find(updatedMovie.ID, tx)
+}
+
 func (qb *MovieQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	// delete movie from movies_scenes
 
@@ -69,6 +83,24 @@ func (qb *MovieQueryBuilder) Find(id int, tx *sqlx.Tx) (*Movie, error) {
 	query := "SELECT * FROM movies WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryMovie(query, args, tx)
+}
+
+func (qb *MovieQueryBuilder) FindMany(ids []int) ([]*Movie, error) {
+	var movies []*Movie
+	for _, id := range ids {
+		movie, err := qb.Find(id, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if movie == nil {
+			return nil, fmt.Errorf("movie with id %d not found", id)
+		}
+
+		movies = append(movies, movie)
+	}
+
+	return movies, nil
 }
 
 func (qb *MovieQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Movie, error) {
@@ -162,6 +194,10 @@ func (qb *MovieQueryBuilder) Query(movieFilter *MovieFilterType, findFilter *Fin
 			body += `left join movies_images on movies_images.movie_id = movies.id
 			`
 			whereClauses = appendClause(whereClauses, "movies_images.back_image IS NULL")
+		case "scenes":
+			body += `left join movies_scenes on movies_scenes.movie_id = movies.id
+			`
+			whereClauses = appendClause(whereClauses, "movies_scenes.scene_id IS NULL")
 		default:
 			whereClauses = appendClause(whereClauses, "movies."+*isMissingFilter+" IS NULL")
 		}

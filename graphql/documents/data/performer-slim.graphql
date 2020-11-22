@@ -3,4 +3,8 @@ fragment SlimPerformerData on Performer {
   name
   gender
   image_path
+  stash_ids {
+    endpoint
+    stash_id
+  }
 }

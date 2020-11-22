@@ -20,12 +20,29 @@ export class SceneIsMissingCriterion extends IsMissingCriterion {
     "movie",
     "performers",
     "tags",
+    "stash_id",
   ];
 }
 
 export class SceneIsMissingCriterionOption implements ICriterionOption {
   public label: string = Criterion.getLabel("sceneIsMissing");
   public value: CriterionType = "sceneIsMissing";
+}
+
+export class ImageIsMissingCriterion extends IsMissingCriterion {
+  public type: CriterionType = "imageIsMissing";
+  public options: string[] = [
+    "title",
+    "galleries",
+    "studio",
+    "performers",
+    "tags",
+  ];
+}
+
+export class ImageIsMissingCriterionOption implements ICriterionOption {
+  public label: string = Criterion.getLabel("imageIsMissing");
+  public value: CriterionType = "imageIsMissing";
 }
 
 export class PerformerIsMissingCriterion extends IsMissingCriterion {
@@ -47,6 +64,7 @@ export class PerformerIsMissingCriterion extends IsMissingCriterion {
     "gender",
     "scenes",
     "image",
+    "stash_id",
   ];
 }
 
@@ -57,7 +75,16 @@ export class PerformerIsMissingCriterionOption implements ICriterionOption {
 
 export class GalleryIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "galleryIsMissing";
-  public options: string[] = ["scene"];
+  public options: string[] = [
+    "title",
+    "details",
+    "url",
+    "date",
+    "studio",
+    "performers",
+    "tags",
+    "scene",
+  ];
 }
 
 export class GalleryIsMissingCriterionOption implements ICriterionOption {
@@ -77,7 +104,7 @@ export class TagIsMissingCriterionOption implements ICriterionOption {
 
 export class StudioIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "studioIsMissing";
-  public options: string[] = ["image"];
+  public options: string[] = ["image", "stash_id"];
 }
 
 export class StudioIsMissingCriterionOption implements ICriterionOption {
@@ -87,7 +114,7 @@ export class StudioIsMissingCriterionOption implements ICriterionOption {
 
 export class MovieIsMissingCriterion extends IsMissingCriterion {
   public type: CriterionType = "movieIsMissing";
-  public options: string[] = ["front_image", "back_image"];
+  public options: string[] = ["front_image", "back_image", "scenes"];
 }
 
 export class MovieIsMissingCriterionOption implements ICriterionOption {
