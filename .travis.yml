@@ -11,13 +11,18 @@ services:
 env:
   global:
   - GO111MODULE=on
+  - DOCKER_CLI_EXPERIMENTAL=enabled
 before_install:
 - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
 - nvm install 12
 - travis_retry make pre-ui
 - make generate
 - CI=false make ui-validate ui-only
-#- go get -v github.com/mgechev/revive
+- docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+- docker buildx create --use --name mybuild node-amd64
+- docker buildx create --append --name mybuild node-arm64
+
+  #- go get -v github.com/mgechev/revive
 script:
 # left lint off to avoid getting extra dependency
 #- make lint
