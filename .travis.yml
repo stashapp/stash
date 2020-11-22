@@ -1,6 +1,6 @@
 if: tag != latest_develop # dont build for the latest_develop tagged version
 
-dist: xenial
+dist: focal
 sudo: required
 git:
   depth: false
@@ -12,22 +12,18 @@ services:
 env:
   global:
   - GO111MODULE=on
-  - DOCKER_CLI_EXPERIMENTAL=enabled
 before_install:
 - echo -e "machine github.com\n  login $CI_USER_TOKEN" > ~/.netrc
 - nvm install 12
 - travis_retry make pre-ui
 - make generate
 - CI=false make ui-validate ui-only
-- docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-- docker buildx create --use --name mybuild node-amd64
-- docker buildx create --append --name mybuild node-arm64
-- echo '{"experimental":"enabled"}' | sudo tee /etc/docker/daemon.json
-- mkdir -p $HOME/.docker
-- echo '{"experimental":"enabled"}' | sudo tee $HOME/.docker/config.json
-- sudo service docker start
-- docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+- mkdir -vp ~/.docker/cli-plugins/
+- curl --silent -L "https://github.com/docker/buildx/releases/download/v0.3.0/buildx-v0.3.0.linux-amd64" > ~/.docker/cli-plugins/docker-buildx
+- chmod a+x ~/.docker/cli-plugins/docker-buildx
 - docker buildx create --name xbuilder --use
+
+
 
   #- go get -v github.com/mgechev/revive
 script:
