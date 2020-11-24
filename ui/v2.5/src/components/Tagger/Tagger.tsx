@@ -396,10 +396,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
               </div>
               <Link
                 to={`/scenes/${scene.id}`}
-                className="scene-link w-100"
-                title={scene.path}
+                className="scene-link overflow-hidden"
               >
-                <TruncatedText text={`${originalDir}{file}.${ext}`} lineCount={2} />
+                <TruncatedText text={`${originalDir}\u200B${file}${ext}`} lineCount={2} />
               </Link>
             </div>
             <div className="col-md-6 my-1 align-self-center">
