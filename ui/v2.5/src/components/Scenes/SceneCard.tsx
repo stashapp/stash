@@ -14,7 +14,7 @@ interface IScenePreviewProps {
   soundActive: boolean;
 }
 
-const ScenePreview: React.FC<IScenePreviewProps> = ({
+export const ScenePreview: React.FC<IScenePreviewProps> = ({
   image,
   video,
   isPortrait,
