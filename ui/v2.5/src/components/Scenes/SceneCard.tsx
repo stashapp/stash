@@ -73,8 +73,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     config?.data?.configuration.interface.showStudioAsText ?? false;
 
   const title = props.scene.title
-            ? props.scene.title
-            : TextUtils.fileNameFromPath(props.scene.path);
+    ? props.scene.title
+    : TextUtils.fileNameFromPath(props.scene.path);
 
   function maybeRenderRatingBanner() {
     if (!props.scene.rating) {

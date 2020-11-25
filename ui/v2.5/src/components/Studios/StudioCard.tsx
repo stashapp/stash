@@ -65,7 +65,9 @@ export const StudioCard: React.FC<IProps> = ({
       }
       details={
         <>
-          <h5 className="text-truncate" title={studio.name}>{studio.name}</h5>
+          <h5 className="text-truncate" title={studio.name}>
+            {studio.name}
+          </h5>
           <span>
             {studio.scene_count}&nbsp;
             <FormattedPlural

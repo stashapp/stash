@@ -18,8 +18,8 @@ export const ImageCard: React.FC<IImageCardProps> = (
   props: IImageCardProps
 ) => {
   const title = props.image.title
-            ? props.image.title
-            : TextUtils.fileNameFromPath(props.image.path);
+    ? props.image.title
+    : TextUtils.fileNameFromPath(props.image.path);
 
   function maybeRenderRatingBanner() {
     if (!props.image.rating) {

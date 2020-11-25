@@ -51,7 +51,9 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       }
       details={
         <>
-          <h5 className="text-truncate" title={performer.name ?? ""}>{performer.name}</h5>
+          <h5 className="text-truncate" title={performer.name ?? ""}>
+            {performer.name}
+          </h5>
           {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
           <Link to={NavUtils.makePerformersCountryUrl(performer)}>
             <CountryFlag country={performer.country} />
