@@ -1,13 +1,14 @@
-import { Card, Button, ButtonGroup, Form } from "react-bootstrap";
+import { Button, ButtonGroup } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedPlural } from "react-intl";
 import { useConfiguration } from "src/core/StashService";
 import { HoverPopover, Icon, TagLink } from "../Shared";
+import { BasicCard } from "../Shared/BasicCard";
 
 interface IProps {
-  gallery: GQL.GalleryDataFragment;
+  gallery: GQL.GallerySlimDataFragment;
   selecting?: boolean;
   selected: boolean | undefined;
   zoomIndex: number;
@@ -137,61 +138,13 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     );
   }
 
-  function handleImageClick(
-    event: React.MouseEvent<HTMLAnchorElement, MouseEvent>
-  ) {
-    const { shiftKey } = event;
-
-    if (props.selecting) {
-      props.onSelectedChanged(!props.selected, shiftKey);
-      event.preventDefault();
-    }
-  }
-
-  function handleDrag(event: React.DragEvent<HTMLAnchorElement>) {
-    if (props.selecting) {
-      event.dataTransfer.setData("text/plain", "");
-      event.dataTransfer.setDragImage(new Image(), 0, 0);
-    }
-  }
-
-  function handleDragOver(event: React.DragEvent<HTMLAnchorElement>) {
-    const ev = event;
-    const shiftKey = false;
-
-    if (props.selecting && !props.selected) {
-      props.onSelectedChanged(true, shiftKey);
-    }
-
-    ev.dataTransfer.dropEffect = "move";
-    ev.preventDefault();
-  }
-
-  let shiftKey = false;
-
   return (
-    <Card className={`gallery-card zoom-${props.zoomIndex}`}>
-      <Form.Control
-        type="checkbox"
-        className="gallery-card-check"
-        checked={props.selected}
-        onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
-        onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-          // eslint-disable-next-line prefer-destructuring
-          shiftKey = event.shiftKey;
-          event.stopPropagation();
-        }}
-      />
-
-      <div className="gallery-section">
-        <Link
-          to={`/galleries/${props.gallery.id}`}
-          className="gallery-card-header"
-          onClick={handleImageClick}
-          onDragStart={handleDrag}
-          onDragOver={handleDragOver}
-          draggable={props.selecting}
-        >
+    <BasicCard
+      className={`gallery-card zoom-${props.zoomIndex}`}
+      url={`/galleries/${props.gallery.id}`}
+      linkClassName="gallery-card-header"
+      image={
+        <>
           {props.gallery.cover ? (
             <img
               className="gallery-card-image"
@@ -200,26 +153,31 @@ export const GalleryCard: React.FC<IProps> = (props) => {
             />
           ) : undefined}
           {maybeRenderRatingBanner()}
-        </Link>
-        {maybeRenderSceneStudioOverlay()}
-      </div>
-      <div className="card-section">
-        <Link to={`/galleries/${props.gallery.id}`}>
-          <h5 className="card-section-title">
-            {props.gallery.title ?? props.gallery.path}
-          </h5>
-        </Link>
-        <span>
-          {props.gallery.images.length}&nbsp;
-          <FormattedPlural
-            value={props.gallery.images.length ?? 0}
-            one="image"
-            other="images"
-          />
-          .
-        </span>
-      </div>
-      {maybeRenderPopoverButtonGroup()}
-    </Card>
+        </>
+      }
+      overlays={maybeRenderSceneStudioOverlay()}
+      details={
+        <>
+          <Link to={`/galleries/${props.gallery.id}`}>
+            <h5 className="card-section-title">
+              {props.gallery.title ?? props.gallery.path}
+            </h5>
+          </Link>
+          <span>
+            {props.gallery.image_count}&nbsp;
+            <FormattedPlural
+              value={props.gallery.image_count}
+              one="image"
+              other="images"
+            />
+            .
+          </span>
+        </>
+      }
+      popovers={maybeRenderPopoverButtonGroup()}
+      selected={props.selected}
+      selecting={props.selecting}
+      onSelectedChanged={props.onSelectedChanged}
+    />
   );
 };

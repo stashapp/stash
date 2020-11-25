@@ -38,15 +38,20 @@ func excludeFiles(files []string, patterns []string) ([]string, int) {
 	}
 }
 
+func matchFileRegex(file string, fileRegexps []*regexp.Regexp) bool {
+	for _, regPattern := range fileRegexps {
+		if regPattern.MatchString(strings.ToLower(file)) {
+			return true
+		}
+	}
+	return false
+}
+
 func matchFile(file string, patterns []string) bool {
 	if patterns != nil {
 		fileRegexps := generateRegexps(patterns)
 
-		for _, regPattern := range fileRegexps {
-			if regPattern.MatchString(strings.ToLower(file)) {
-				return true
-			}
-		}
+		return matchFileRegex(file, fileRegexps)
 	}
 
 	return false

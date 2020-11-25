@@ -97,10 +97,10 @@ xPathScrapers:
       Tattoos: //span[text()='Tattoos']/following-sibling::span/span
       Piercings: //span[text()='Piercings']/following-sibling::span/span
       Image:
-        selector: //div[@class='profile-image-container']//a/img/@src
+        selector: //div[contains(@class,'image-container')]//a/img/@src
       Gender:
         fixed: "Female"
-# Last updated October 21, 2020
+# Last updated November 06, 2020
 `
 
 func getFreeonesScraper() config {

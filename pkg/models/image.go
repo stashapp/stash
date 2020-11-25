@@ -8,6 +8,7 @@ type ImageReader interface {
 	// Find(id int) (*Image, error)
 	FindMany(ids []int) ([]*Image, error)
 	FindByChecksum(checksum string) (*Image, error)
+	FindByGalleryID(galleryID int) ([]*Image, error)
 	// FindByPath(path string) (*Image, error)
 	// FindByPerformerID(performerID int) ([]*Image, error)
 	// CountByPerformerID(performerID int) (int, error)
@@ -53,6 +54,10 @@ func (t *imageReaderWriter) FindMany(ids []int) ([]*Image, error) {
 
 func (t *imageReaderWriter) FindByChecksum(checksum string) (*Image, error) {
 	return t.qb.FindByChecksum(checksum)
+}
+
+func (t *imageReaderWriter) FindByGalleryID(galleryID int) ([]*Image, error) {
+	return t.qb.FindByGalleryID(galleryID)
 }
 
 func (t *imageReaderWriter) All() ([]*Image, error) {

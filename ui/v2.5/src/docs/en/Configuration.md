@@ -19,7 +19,7 @@ Some examples
 
 For the config file you need the following added
 ```
-exclude: 
+exclude:
 - "sample\\.mp4$"
 - "/\\.[[:word:]]+/"
 - "c:\\\\stash\\\\videos\\\\exclude"
@@ -40,11 +40,11 @@ Stash identifies video files by calculating a hash of the file. There are two al
 
 The hash is used to name the generated files such as preview images and videos, and sprite images.
 
-By default, new systems have MD5 calculation disabled for optimal performance. Existing systems that are upgraded will have the oshash populated for each scene on the next scan. 
+By default, new systems have MD5 calculation disabled for optimal performance. Existing systems that are upgraded will have the oshash populated for each scene on the next scan.
 
 ### Changing the hashing algorithm
 
-To change the file naming hash to oshash, all scenes must have their oshash values populated. oshash population is done automatically when scanning. 
+To change the file naming hash to oshash, all scenes must have their oshash values populated. oshash population is done automatically when scanning.
 
 To change the file naming hash to `MD5`, the MD5 must be populated for all scenes. To do this, `Calculate MD5` for videos must be enabled and the library must be rescanned.
 
@@ -60,7 +60,22 @@ These instructions are for existing users whose systems will be defaulted to use
 2. In Settings -> Configuration page, untick `Calculate MD5` and select `oshash` as file naming hash. Save the configuration.
 3. In Settings -> Tasks page, click on the `Rename generated files` migration button.
 
-## Scraping 
+
+## Parallel Scan/Generation
+
+#### Number of parallel task for scan/generation
+
+This setting controls how many sub-tasks will be run in parallel during scanning and generation tasks. (See Tasks)
+
+Auto-detection can be enabled by setting this to zero. This will calculate the number of parallel tasks to be cpu_cores/4 + 1.
+
+This setting can be used to increase/decrease overall CPU utilisation in two scenarios:
+1) High performance 4+ core cpus.
+2) Media files stored on remote/cloud filesystem.
+
+Note: If this is set too high it will decrease overall performance and causes failures (out of memory).
+
+## Scraping
 
 ### User Agent string
 
@@ -68,7 +83,7 @@ Some websites require a legitimate User-Agent string when receiving requests, or
 
 ### Chrome CDP path
 
-Some scrapers require a Chrome instance to function correctly. If left empty, stash will attempt to find the Chrome executable in the path environment, and will fail if it cannot find one. 
+Some scrapers require a Chrome instance to function correctly. If left empty, stash will attempt to find the Chrome executable in the path environment, and will fail if it cannot find one.
 
 `Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`).
 

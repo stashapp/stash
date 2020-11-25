@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindPerformer,
@@ -106,7 +107,13 @@ export const Performer: React.FC = () => {
     try {
       if (!isNew) {
         await updatePerformer({
-          variables: performerInput as GQL.PerformerUpdateInput,
+          variables: {
+            ...performerInput,
+            stash_ids: (performerInput?.stash_ids ?? []).map((s) => ({
+              endpoint: s.endpoint,
+              stash_id: s.stash_id,
+            })),
+          } as GQL.PerformerUpdateInput,
         });
         if (performerInput.image) {
           // Refetch image to bust browser cache

@@ -1,5 +1,6 @@
 import _, { debounce } from "lodash";
 import React, { useState, useEffect } from "react";
+import Mousetrap from "mousetrap";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
   Badge,
@@ -40,7 +41,7 @@ interface IListFilterProps {
   itemsSelected?: boolean;
 }
 
-const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120"];
+const PAGE_SIZE_OPTIONS = ["20", "40", "60", "120", "250", "500", "1000"];
 const minZoom = 0;
 const maxZoom = 3;
 

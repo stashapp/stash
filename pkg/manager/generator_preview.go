@@ -14,6 +14,7 @@ import (
 type PreviewGenerator struct {
 	Info *GeneratorInfo
 
+	VideoChecksum   string
 	VideoFilename   string
 	ImageFilename   string
 	OutputDirectory string
@@ -26,7 +27,7 @@ type PreviewGenerator struct {
 	Overwrite bool
 }
 
-func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, imageFilename string, outputDirectory string, generateVideo bool, generateImage bool, previewPreset string) (*PreviewGenerator, error) {
+func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoChecksum string, videoFilename string, imageFilename string, outputDirectory string, generateVideo bool, generateImage bool, previewPreset string) (*PreviewGenerator, error) {
 	exists, err := utils.FileExists(videoFile.Path)
 	if !exists {
 		return nil, err
@@ -39,6 +40,7 @@ func NewPreviewGenerator(videoFile ffmpeg.VideoFile, videoFilename string, image
 
 	return &PreviewGenerator{
 		Info:            generator,
+		VideoChecksum:   videoChecksum,
 		VideoFilename:   videoFilename,
 		ImageFilename:   imageFilename,
 		OutputDirectory: outputDirectory,
@@ -87,7 +89,7 @@ func (g *PreviewGenerator) generateConcatFile() error {
 	w := bufio.NewWriter(f)
 	for i := 0; i < g.Info.ChunkCount; i++ {
 		num := fmt.Sprintf("%.3d", i)
-		filename := "preview" + num + ".mp4"
+		filename := "preview_" + g.VideoChecksum + "_" + num + ".mp4"
 		_, _ = w.WriteString(fmt.Sprintf("file '%s'\n", filename))
 	}
 	return w.Flush()
@@ -105,7 +107,7 @@ func (g *PreviewGenerator) generateVideo(encoder *ffmpeg.Encoder, fallback bool)
 	for i := 0; i < g.Info.ChunkCount; i++ {
 		time := offset + (float64(i) * stepSize)
 		num := fmt.Sprintf("%.3d", i)
-		filename := "preview" + num + ".mp4"
+		filename := "preview_" + g.VideoChecksum + "_" + num + ".mp4"
 		chunkOutputPath := instance.Paths.Generated.GetTmpPath(filename)
 
 		options := ffmpeg.ScenePreviewChunkOptions{
@@ -148,5 +150,5 @@ func (g *PreviewGenerator) generateImage(encoder *ffmpeg.Encoder) error {
 }
 
 func (g *PreviewGenerator) getConcatFilePath() string {
-	return instance.Paths.Generated.GetTmpPath("files.txt")
+	return instance.Paths.Generated.GetTmpPath(fmt.Sprintf("files_%s.txt", g.VideoChecksum))
 }

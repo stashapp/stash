@@ -24,7 +24,8 @@
     "baseUrl": ".",
     "sourceMap": true,
     "allowJs": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "src/**/*"
