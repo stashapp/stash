@@ -114,11 +114,7 @@ func ListDir(path string) []string {
 		if !file.IsDir() {
 			continue
 		}
-		abs, err := filepath.Abs(path)
-		if err != nil {
-			continue
-		}
-		dirPaths = append(dirPaths, filepath.Join(abs, file.Name()))
+		dirPaths = append(dirPaths, filepath.Join(path, file.Name()))
 	}
 	return dirPaths
 }
@@ -220,11 +216,7 @@ func GetDir(path string) string {
 		path = GetHomeDirectory()
 	}
 
-	absolutePath, err := filepath.Abs(path)
-	if err == nil {
-		path = absolutePath
-	}
-	return absolutePath
+	return path
 }
 
 func GetParent(path string) *string {

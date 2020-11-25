@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, Form, Row, Col } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
 import * as GQL from "src/core/generated-graphql";
-import { FolderSelect } from "../Shared/FolderSelect/FolderSelect";
+import { FolderSelectDialog } from "../Shared/FolderSelect/FolderSelectDialog";
 
 interface IStashProps {
   index: number;
@@ -94,7 +94,7 @@ export const StashConfiguration: React.FC<IStashConfigurationProps> = ({
       return;
     }
 
-    return <FolderSelect onClose={handleAdd} />;
+    return <FolderSelectDialog onClose={handleAdd} />;
   }
 
   return (

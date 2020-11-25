@@ -111,10 +111,14 @@ export const useUpdateStudioStashID = () => {
     onError: (errors) => errors,
   });
 
-  const handleUpdate = (studioID: string, stashIDs: GQL.StashIdInput[]) =>
+  const handleUpdate = (
+    studio: GQL.SlimStudioDataFragment,
+    stashIDs: GQL.StashIdInput[]
+  ) =>
     updateStudio({
       variables: {
-        id: studioID,
+        id: studio.id,
+        parent_id: studio.parent_studio?.id,
         stash_ids: stashIDs.map((s) => ({
           stash_id: s.stash_id,
           endpoint: s.endpoint,

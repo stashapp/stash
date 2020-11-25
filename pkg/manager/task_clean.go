@@ -41,13 +41,7 @@ func (t *CleanTask) shouldClean(path string) bool {
 	// use image.FileExists for zip file checking
 	fileExists := image.FileExists(path)
 
-	if fileExists && t.getStashFromPath(path) != nil {
-		logger.Debugf("File Found: %s", path)
-		if matchFile(path, config.GetExcludes()) {
-			logger.Infof("File matched regex. Cleaning: \"%s\"", path)
-			return true
-		}
-	} else {
+	if !fileExists || getStashFromPath(path) == nil {
 		logger.Infof("File not found. Cleaning: \"%s\"", path)
 		return true
 	}
@@ -60,7 +54,7 @@ func (t *CleanTask) shouldCleanScene(s *models.Scene) bool {
 		return true
 	}
 
-	stash := t.getStashFromPath(s.Path)
+	stash := getStashFromPath(s.Path)
 	if stash.ExcludeVideo {
 		logger.Infof("File in stash library that excludes video. Cleaning: \"%s\"", s.Path)
 		return true
@@ -68,6 +62,11 @@ func (t *CleanTask) shouldCleanScene(s *models.Scene) bool {
 
 	if !matchExtension(s.Path, config.GetVideoExtensions()) {
 		logger.Infof("File extension does not match video extensions. Cleaning: \"%s\"", s.Path)
+		return true
+	}
+
+	if matchFile(s.Path, config.GetExcludes()) {
+		logger.Infof("File matched regex. Cleaning: \"%s\"", s.Path)
 		return true
 	}
 
@@ -85,7 +84,7 @@ func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 		return true
 	}
 
-	stash := t.getStashFromPath(path)
+	stash := getStashFromPath(path)
 	if stash.ExcludeImage {
 		logger.Infof("File in stash library that excludes images. Cleaning: \"%s\"", path)
 		return true
@@ -93,6 +92,11 @@ func (t *CleanTask) shouldCleanGallery(g *models.Gallery) bool {
 
 	if !matchExtension(path, config.GetGalleryExtensions()) {
 		logger.Infof("File extension does not match gallery extensions. Cleaning: \"%s\"", path)
+		return true
+	}
+
+	if matchFile(path, config.GetImageExcludes()) {
+		logger.Infof("File matched regex. Cleaning: \"%s\"", path)
 		return true
 	}
 
@@ -109,7 +113,7 @@ func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 		return true
 	}
 
-	stash := t.getStashFromPath(s.Path)
+	stash := getStashFromPath(s.Path)
 	if stash.ExcludeImage {
 		logger.Infof("File in stash library that excludes images. Cleaning: \"%s\"", s.Path)
 		return true
@@ -117,6 +121,11 @@ func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 
 	if !matchExtension(s.Path, config.GetImageExtensions()) {
 		logger.Infof("File extension does not match image extensions. Cleaning: \"%s\"", s.Path)
+		return true
+	}
+
+	if matchFile(s.Path, config.GetImageExcludes()) {
+		logger.Infof("File matched regex. Cleaning: \"%s\"", s.Path)
 		return true
 	}
 
@@ -202,10 +211,23 @@ func (t *CleanTask) fileExists(filename string) (bool, error) {
 	return !info.IsDir(), nil
 }
 
-func (t *CleanTask) getStashFromPath(pathToCheck string) *models.StashConfig {
+func getStashFromPath(pathToCheck string) *models.StashConfig {
 	for _, s := range config.GetStashPaths() {
-
 		rel, error := filepath.Rel(s.Path, filepath.Dir(pathToCheck))
+
+		if error == nil {
+			if !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+				return s
+			}
+		}
+
+	}
+	return nil
+}
+
+func getStashFromDirPath(pathToCheck string) *models.StashConfig {
+	for _, s := range config.GetStashPaths() {
+		rel, error := filepath.Rel(s.Path, pathToCheck)
 
 		if error == nil {
 			if !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {

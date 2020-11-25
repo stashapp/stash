@@ -2,10 +2,13 @@ package manager
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/remeh/sizedwaitgroup"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -78,7 +81,29 @@ func (t *TaskStatus) updated() {
 	t.LastUpdate = time.Now()
 }
 
-func (s *singleton) neededScan() (total *int, newFiles *int) {
+func getScanPaths(inputPaths []string) []*models.StashConfig {
+	if len(inputPaths) == 0 {
+		return config.GetStashPaths()
+	}
+
+	var ret []*models.StashConfig
+	for _, p := range inputPaths {
+		s := getStashFromDirPath(p)
+		if s == nil {
+			logger.Warnf("%s is not in the configured stash paths", p)
+			continue
+		}
+
+		// make a copy, changing the path
+		ss := *s
+		ss.Path = p
+		ret = append(ret, &ss)
+	}
+
+	return ret
+}
+
+func (s *singleton) neededScan(paths []*models.StashConfig) (total *int, newFiles *int) {
 	const timeout = 90 * time.Second
 
 	// create a control channel through which to signal the counting loop when the timeout is reached
@@ -91,7 +116,7 @@ func (s *singleton) neededScan() (total *int, newFiles *int) {
 
 	timeoutErr := errors.New("timed out")
 
-	for _, sp := range config.GetStashPaths() {
+	for _, sp := range paths {
 		err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
 			t++
 			task := ScanTask{FilePath: path}
@@ -128,7 +153,7 @@ func (s *singleton) neededScan() (total *int, newFiles *int) {
 	return &t, &n
 }
 
-func (s *singleton) Scan(useFileMetadata bool) {
+func (s *singleton) Scan(input models.ScanMetadataInput) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -138,7 +163,9 @@ func (s *singleton) Scan(useFileMetadata bool) {
 	go func() {
 		defer s.returnToIdleState()
 
-		total, newFiles := s.neededScan()
+		paths := getScanPaths(input.Paths)
+
+		total, newFiles := s.neededScan(paths)
 
 		if s.Status.stopping {
 			logger.Info("Stopping due to user request")
@@ -152,7 +179,11 @@ func (s *singleton) Scan(useFileMetadata bool) {
 			logger.Infof("Starting scan of %d files. %d New files found", *total, *newFiles)
 		}
 
-		var wg sync.WaitGroup
+		start := time.Now()
+		parallelTasks := config.GetParallelTasksWithAutoDetection()
+		logger.Infof("Scan started with %d parallel tasks", parallelTasks)
+		wg := sizedwaitgroup.New(parallelTasks)
+
 		s.Status.Progress = 0
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 		calculateMD5 := config.IsCalculateMD5()
@@ -162,7 +193,7 @@ func (s *singleton) Scan(useFileMetadata bool) {
 
 		var galleries []string
 
-		for _, sp := range config.GetStashPaths() {
+		for _, sp := range paths {
 			err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
 				if total != nil {
 					s.Status.setProgress(i, *total)
@@ -177,10 +208,11 @@ func (s *singleton) Scan(useFileMetadata bool) {
 					galleries = append(galleries, path)
 				}
 
-				wg.Add(1)
-				task := ScanTask{FilePath: path, UseFileMetadata: useFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5}
+				instance.Paths.Generated.EnsureTmpDir()
+
+				wg.Add()
+				task := ScanTask{FilePath: path, UseFileMetadata: input.UseFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5, GeneratePreview: input.ScanGeneratePreviews, GenerateImagePreview: input.ScanGenerateImagePreviews, GenerateSprite: input.ScanGenerateSprites}
 				go task.Start(&wg)
-				wg.Wait()
 
 				return nil
 			})
@@ -200,9 +232,14 @@ func (s *singleton) Scan(useFileMetadata bool) {
 			return
 		}
 
-		logger.Info("Finished scan")
+		wg.Wait()
+		instance.Paths.Generated.EmptyTmpDir()
+
+		elapsed := time.Since(start)
+		logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+
 		for _, path := range galleries {
-			wg.Add(1)
+			wg.Add()
 			task := ScanTask{FilePath: path, UseFileMetadata: false}
 			go task.associateGallery(&wg)
 			wg.Wait()
@@ -333,8 +370,10 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			return
 		}
 
-		delta := utils.Btoi(input.Sprites) + utils.Btoi(input.Previews) + utils.Btoi(input.Markers) + utils.Btoi(input.Transcodes)
-		var wg sync.WaitGroup
+		parallelTasks := config.GetParallelTasksWithAutoDetection()
+
+		logger.Infof("Generate started with %d parallel tasks", parallelTasks)
+		wg := sizedwaitgroup.New(parallelTasks)
 
 		s.Status.Progress = 0
 		lenScenes := len(scenes)
@@ -373,6 +412,10 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 		}
 		setGeneratePreviewOptionsInput(generatePreviewOptions)
 
+		// Start measuring how long the scan has taken. (consider moving this up)
+		start := time.Now()
+		instance.Paths.Generated.EnsureTmpDir()
+
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -385,15 +428,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 				continue
 			}
 
-			wg.Add(delta)
-
-			// Clear the tmp directory for each scene
-			if input.Sprites || input.Previews || input.Markers {
-				instance.Paths.Generated.EmptyTmpDir()
-			}
-
 			if input.Sprites {
 				task := GenerateSpriteTask{Scene: *scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
+				wg.Add()
 				go task.Start(&wg)
 			}
 
@@ -405,21 +442,24 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
+				wg.Add()
 				go task.Start(&wg)
 			}
 
 			if input.Markers {
+				wg.Add()
 				task := GenerateMarkersTask{Scene: scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 				go task.Start(&wg)
 			}
 
 			if input.Transcodes {
+				wg.Add()
 				task := GenerateTranscodeTask{Scene: *scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 				go task.Start(&wg)
 			}
-
-			wg.Wait()
 		}
+
+		wg.Wait()
 
 		for i, marker := range markers {
 			s.Status.setProgress(lenScenes+i, total)
@@ -433,13 +473,16 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 				continue
 			}
 
-			wg.Add(1)
+			wg.Add()
 			task := GenerateMarkersTask{Marker: marker, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 			go task.Start(&wg)
-			wg.Wait()
 		}
 
-		logger.Infof("Generate finished")
+		wg.Wait()
+
+		instance.Paths.Generated.EmptyTmpDir()
+		elapsed := time.Since(start)
+		logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 	}()
 }
 

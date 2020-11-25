@@ -54,6 +54,18 @@ const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
   // FsLightbox doesn't update unless the key updates
   const key = images.map((i) => i.id).join(",");
 
+  function onLightboxOpen() {
+    // disable mousetrap
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (Mousetrap as any).pause();
+  }
+
+  function onLightboxClose() {
+    // re-enable mousetrap
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (Mousetrap as any).unpause();
+  }
+
   return (
     <div className="gallery">
       <div className="flexbin">{thumbs}</div>
@@ -62,6 +74,8 @@ const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
         toggler={lightboxToggle}
         sources={photos}
         key={key}
+        onOpen={onLightboxOpen}
+        onClose={onLightboxClose}
       />
     </div>
   );

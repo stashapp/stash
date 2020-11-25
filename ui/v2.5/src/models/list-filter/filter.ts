@@ -118,6 +118,7 @@ export class ListFilterModel {
           "o_counter",
           "date",
           "filesize",
+          "file_mod_time",
           "duration",
           "framerate",
           "bitrate",
@@ -152,6 +153,7 @@ export class ListFilterModel {
           "rating",
           "o_counter",
           "filesize",
+          "file_mod_time",
           "random",
         ];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
@@ -226,7 +228,7 @@ export class ListFilterModel {
         break;
       case FilterMode.Galleries:
         this.sortBy = "path";
-        this.sortByOptions = ["path", "images_count"];
+        this.sortByOptions = ["path", "file_mod_time", "images_count"];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),
@@ -329,10 +331,7 @@ export class ListFilterModel {
       }
 
       jsonParameters.forEach((jsonString) => {
-        // make sure we escape \
-        const escaped = jsonString.replaceAll("\\", "\\\\");
-
-        const encodedCriterion = JSON.parse(escaped);
+        const encodedCriterion = JSON.parse(jsonString);
         const criterion = makeCriteria(encodedCriterion.type);
         // it's possible that we have unsupported criteria. Just skip if so.
         if (criterion) {

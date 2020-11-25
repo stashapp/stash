@@ -6,4 +6,7 @@ fragment SlimStudioData on Studio {
     endpoint
     stash_id
   }
+  parent_studio {
+    id
+  }
 }
