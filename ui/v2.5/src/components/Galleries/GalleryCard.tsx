@@ -19,6 +19,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   const config = useConfiguration();
   const showStudioAsText =
     config?.data?.configuration.interface.showStudioAsText ?? false;
+  const title = props.gallery.title ?? props.gallery.path ?? undefined;
 
   function maybeRenderScenePopoverButton() {
     if (!props.gallery.scene) return;
@@ -159,8 +160,8 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       details={
         <>
           <Link to={`/galleries/${props.gallery.id}`}>
-            <h5 className="card-section-title">
-              {props.gallery.title ?? props.gallery.path}
+            <h5 className="card-section-title" title={title}>
+              {title}
             </h5>
           </Link>
           <span>

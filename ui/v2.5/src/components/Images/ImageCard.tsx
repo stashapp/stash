@@ -17,6 +17,10 @@ interface IImageCardProps {
 export const ImageCard: React.FC<IImageCardProps> = (
   props: IImageCardProps
 ) => {
+  const title = props.image.title
+            ? props.image.title
+            : TextUtils.fileNameFromPath(props.image.path);
+
   function maybeRenderRatingBanner() {
     if (!props.image.rating) {
       return;
@@ -185,10 +189,8 @@ export const ImageCard: React.FC<IImageCardProps> = (
         </Link>
       </div>
       <div className="card-section">
-        <h5 className="card-section-title">
-          {props.image.title
-            ? props.image.title
-            : TextUtils.fileNameFromPath(props.image.path)}
+        <h5 className="card-section-title" title={title}>
+          {title}
         </h5>
       </div>
 
