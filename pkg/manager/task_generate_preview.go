@@ -1,7 +1,7 @@
 package manager
 
 import (
-	"sync"
+	"github.com/remeh/sizedwaitgroup"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
@@ -19,11 +19,13 @@ type GeneratePreviewTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
+func (t *GeneratePreviewTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	defer wg.Done()
 
 	videoFilename := t.videoFilename()
+	videoChecksum := t.Scene.GetHash(t.fileNamingAlgorithm)
 	imageFilename := t.imageFilename()
+
 	if !t.Overwrite && !t.required() {
 		return
 	}
@@ -35,7 +37,8 @@ func (t *GeneratePreviewTask) Start(wg *sync.WaitGroup) {
 	}
 
 	const generateVideo = true
-	generator, err := NewPreviewGenerator(*videoFile, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, generateVideo, t.ImagePreview, t.Options.PreviewPreset.String())
+	generator, err := NewPreviewGenerator(*videoFile, videoChecksum, videoFilename, imageFilename, instance.Paths.Generated.Screenshots, generateVideo, t.ImagePreview, t.Options.PreviewPreset.String())
+
 	if err != nil {
 		logger.Errorf("error creating preview generator: %s", err.Error())
 		return

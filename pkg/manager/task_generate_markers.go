@@ -3,7 +3,8 @@ package manager
 import (
 	"path/filepath"
 	"strconv"
-	"sync"
+
+	"github.com/remeh/sizedwaitgroup"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
@@ -18,7 +19,7 @@ type GenerateMarkersTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GenerateMarkersTask) Start(wg *sync.WaitGroup) {
+func (t *GenerateMarkersTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	defer wg.Done()
 
 	if t.Scene != nil {
