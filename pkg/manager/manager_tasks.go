@@ -2,10 +2,13 @@ package manager
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/remeh/sizedwaitgroup"
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -176,7 +179,11 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 			logger.Infof("Starting scan of %d files. %d New files found", *total, *newFiles)
 		}
 
-		var wg sync.WaitGroup
+		start := time.Now()
+		parallelTasks := config.GetParallelTasksWithAutoDetection()
+		logger.Infof("Scan started with %d parallel tasks", parallelTasks)
+		wg := sizedwaitgroup.New(parallelTasks)
+
 		s.Status.Progress = 0
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 		calculateMD5 := config.IsCalculateMD5()
@@ -201,10 +208,11 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 					galleries = append(galleries, path)
 				}
 
-				wg.Add(1)
-				task := ScanTask{FilePath: path, UseFileMetadata: input.UseFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5}
+				instance.Paths.Generated.EnsureTmpDir()
+
+				wg.Add()
+				task := ScanTask{FilePath: path, UseFileMetadata: input.UseFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5, GeneratePreview: input.ScanGeneratePreviews, GenerateImagePreview: input.ScanGenerateImagePreviews, GenerateSprite: input.ScanGenerateSprites}
 				go task.Start(&wg)
-				wg.Wait()
 
 				return nil
 			})
@@ -224,9 +232,14 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 			return
 		}
 
-		logger.Info("Finished scan")
+		wg.Wait()
+		instance.Paths.Generated.EmptyTmpDir()
+
+		elapsed := time.Since(start)
+		logger.Info(fmt.Sprintf("Scan finished (%s)", elapsed))
+
 		for _, path := range galleries {
-			wg.Add(1)
+			wg.Add()
 			task := ScanTask{FilePath: path, UseFileMetadata: false}
 			go task.associateGallery(&wg)
 			wg.Wait()
@@ -357,8 +370,10 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			return
 		}
 
-		delta := utils.Btoi(input.Sprites) + utils.Btoi(input.Previews) + utils.Btoi(input.Markers) + utils.Btoi(input.Transcodes)
-		var wg sync.WaitGroup
+		parallelTasks := config.GetParallelTasksWithAutoDetection()
+
+		logger.Infof("Generate started with %d parallel tasks", parallelTasks)
+		wg := sizedwaitgroup.New(parallelTasks)
 
 		s.Status.Progress = 0
 		lenScenes := len(scenes)
@@ -397,6 +412,10 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 		}
 		setGeneratePreviewOptionsInput(generatePreviewOptions)
 
+		// Start measuring how long the scan has taken. (consider moving this up)
+		start := time.Now()
+		instance.Paths.Generated.EnsureTmpDir()
+
 		for i, scene := range scenes {
 			s.Status.setProgress(i, total)
 			if s.Status.stopping {
@@ -409,15 +428,9 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 				continue
 			}
 
-			wg.Add(delta)
-
-			// Clear the tmp directory for each scene
-			if input.Sprites || input.Previews || input.Markers {
-				instance.Paths.Generated.EmptyTmpDir()
-			}
-
 			if input.Sprites {
 				task := GenerateSpriteTask{Scene: *scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
+				wg.Add()
 				go task.Start(&wg)
 			}
 
@@ -429,21 +442,24 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,
 				}
+				wg.Add()
 				go task.Start(&wg)
 			}
 
 			if input.Markers {
+				wg.Add()
 				task := GenerateMarkersTask{Scene: scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 				go task.Start(&wg)
 			}
 
 			if input.Transcodes {
+				wg.Add()
 				task := GenerateTranscodeTask{Scene: *scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 				go task.Start(&wg)
 			}
-
-			wg.Wait()
 		}
+
+		wg.Wait()
 
 		for i, marker := range markers {
 			s.Status.setProgress(lenScenes+i, total)
@@ -457,13 +473,16 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 				continue
 			}
 
-			wg.Add(1)
+			wg.Add()
 			task := GenerateMarkersTask{Marker: marker, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
 			go task.Start(&wg)
-			wg.Wait()
 		}
 
-		logger.Infof("Generate finished")
+		wg.Wait()
+
+		instance.Paths.Generated.EmptyTmpDir()
+		elapsed := time.Since(start)
+		logger.Info(fmt.Sprintf("Generate finished (%s)", elapsed))
 	}()
 }
 

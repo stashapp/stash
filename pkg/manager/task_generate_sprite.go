@@ -1,7 +1,7 @@
 package manager
 
 import (
-	"sync"
+	"github.com/remeh/sizedwaitgroup"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
@@ -15,7 +15,7 @@ type GenerateSpriteTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
+func (t *GenerateSpriteTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	defer wg.Done()
 
 	if !t.Overwrite && !t.required() {
@@ -31,7 +31,8 @@ func (t *GenerateSpriteTask) Start(wg *sync.WaitGroup) {
 	sceneHash := t.Scene.GetHash(t.fileNamingAlgorithm)
 	imagePath := instance.Paths.Scene.GetSpriteImageFilePath(sceneHash)
 	vttPath := instance.Paths.Scene.GetSpriteVttFilePath(sceneHash)
-	generator, err := NewSpriteGenerator(*videoFile, imagePath, vttPath, 9, 9)
+	generator, err := NewSpriteGenerator(*videoFile, sceneHash, imagePath, vttPath, 9, 9)
+
 	if err != nil {
 		logger.Errorf("error creating sprite generator: %s", err.Error())
 		return
