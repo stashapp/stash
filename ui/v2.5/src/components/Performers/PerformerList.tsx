@@ -1,6 +1,7 @@
 import _ from "lodash";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
+import Mousetrap from "mousetrap";
 import { FindPerformersQueryResult } from "src/core/generated-graphql";
 import { queryFindPerformers } from "src/core/StashService";
 import { usePerformersList } from "src/hooks";
