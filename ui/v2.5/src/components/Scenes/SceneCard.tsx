@@ -72,6 +72,10 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   const showStudioAsText =
     config?.data?.configuration.interface.showStudioAsText ?? false;
 
+  const title = props.scene.title
+            ? props.scene.title
+            : TextUtils.fileNameFromPath(props.scene.path);
+
   function maybeRenderRatingBanner() {
     if (!props.scene.rating) {
       return;
@@ -320,14 +324,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   let shiftKey = false;
 
   return (
-    <Card
-      className={`scene-card zoom-${props.zoomIndex}`}
-      title={
-        props.scene.title
-          ? props.scene.title
-          : TextUtils.fileNameFromPath(props.scene.path)
-      }
-    >
+    <Card className={`scene-card zoom-${props.zoomIndex}`}>
       <Form.Control
         type="checkbox"
         className="scene-card-check"
@@ -363,10 +360,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         {maybeRenderSceneStudioOverlay()}
       </div>
       <div className="card-section">
-        <h5 className="card-section-title">
-          {props.scene.title
-            ? props.scene.title
-            : TextUtils.fileNameFromPath(props.scene.path)}
+        <h5 className="card-section-title" title={title}>
+          {title}
         </h5>
         <span>{props.scene.date}</span>
         <p>
