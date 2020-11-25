@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useIntl } from "react-intl";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindMovie,

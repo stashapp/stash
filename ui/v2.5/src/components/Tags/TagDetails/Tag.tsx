@@ -2,6 +2,7 @@ import { Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
+import Mousetrap from "mousetrap";
 
 import * as GQL from "src/core/generated-graphql";
 import {

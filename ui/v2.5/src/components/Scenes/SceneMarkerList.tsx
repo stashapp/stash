@@ -1,6 +1,7 @@
 import _ from "lodash";
 import React from "react";
 import { useHistory } from "react-router-dom";
+import Mousetrap from "mousetrap";
 import { FindSceneMarkersQueryResult } from "src/core/generated-graphql";
 import { queryFindSceneMarkers } from "src/core/StashService";
 import { NavUtils } from "src/utils";
