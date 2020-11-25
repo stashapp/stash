@@ -1,12 +1,13 @@
 package manager
 
 import (
+	"github.com/remeh/sizedwaitgroup"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"sync"
 )
 
 type GenerateTranscodeTask struct {
@@ -15,7 +16,7 @@ type GenerateTranscodeTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
+func (t *GenerateTranscodeTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	defer wg.Done()
 
 	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
