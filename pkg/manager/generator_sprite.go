@@ -8,10 +8,12 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v2"
 	"github.com/disintegration/imaging"
+	"github.com/fvbommel/sortorder"
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
@@ -89,7 +91,7 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 	// Combine all of the thumbnails into a sprite image
 	globPath := filepath.Join(instance.Paths.Generated.Tmp, fmt.Sprintf("thumbnail_%s_*.jpg", g.VideoChecksum))
 	imagePaths, _ := doublestar.Glob(globPath)
-	utils.NaturalSort(imagePaths)
+	sort.Sort(sortorder.Natural(imagePaths))
 	var images []image.Image
 	for _, imagePath := range imagePaths {
 		img, err := imaging.Open(imagePath)
