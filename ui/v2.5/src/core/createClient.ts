@@ -4,11 +4,70 @@ import {
   split,
   from,
   ServerError,
+  TypePolicies,
 } from "@apollo/client";
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { onError } from "@apollo/client/link/error";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createUploadLink } from "apollo-upload-client";
+
+// Policies that tell apollo what the type of the returned object will be.
+// In many cases this allows it to return from cache immediately rather than fetching.
+const typePolicies: TypePolicies = {
+  Query: {
+    fields: {
+      findImage: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Image",
+            id: args?.id,
+          }),
+      },
+      findPerformer: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Performer",
+            id: args?.id,
+          }),
+      },
+      findStudio: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Studio",
+            id: args?.id,
+          }),
+      },
+      findMovie: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Movie",
+            id: args?.id,
+          }),
+      },
+      findGallery: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Gallery",
+            id: args?.id,
+          }),
+      },
+      findScene: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Scene",
+            id: args?.id,
+          }),
+      },
+      findTag: {
+        read: (_, { args, toReference }) =>
+          toReference({
+            __typename: "Tag",
+            id: args?.id,
+          }),
+      },
+    },
+  },
+};
 
 export const getPlatformURL = (ws?: boolean) => {
   const platformUrl = new URL(window.location.origin);
@@ -73,7 +132,7 @@ export const createClient = () => {
 
   const link = from([errorLink, splitLink]);
 
-  const cache = new InMemoryCache();
+  const cache = new InMemoryCache({ typePolicies });
   const client = new ApolloClient({
     link,
     cache,

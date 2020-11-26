@@ -296,3 +296,12 @@ func (qb *StudioQueryBuilder) GetStudioImage(studioID int, tx *sqlx.Tx) ([]byte,
 	query := `SELECT image from studios_image WHERE studio_id = ?`
 	return getImage(tx, query, studioID)
 }
+
+func (qb *StudioQueryBuilder) HasStudioImage(studioID int) (bool, error) {
+	ret, err := runCountQuery(buildCountQuery("SELECT studio_id from studios_image WHERE studio_id = ?"), []interface{}{studioID})
+	if err != nil {
+		return false, err
+	}
+
+	return ret == 1, nil
+}

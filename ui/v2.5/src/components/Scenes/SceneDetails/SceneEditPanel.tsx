@@ -7,6 +7,7 @@ import {
   Col,
   Row,
 } from "react-bootstrap";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryScrapeScene,

@@ -173,6 +173,9 @@ func getSort(sort string, direction string, tableName string) string {
 		if strings.Compare(sort, "name") == 0 {
 			return " ORDER BY " + colName + " COLLATE NOCASE " + direction + additional
 		}
+		if strings.Compare(sort, "title") == 0 {
+			return " ORDER BY " + colName + " COLLATE NATURAL_CS " + direction + additional
+		}
 
 		return " ORDER BY " + colName + " " + direction + additional
 	}
