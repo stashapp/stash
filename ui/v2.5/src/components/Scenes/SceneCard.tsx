@@ -363,9 +363,14 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       </div>
       <div className="card-section">
         <h5 className="card-section-title">
-          {props.scene.title
-            ? props.scene.title
-            : TextUtils.fileNameFromPath(props.scene.path)}
+          <TruncatedText
+            text={
+              props.scene.title
+                ? props.scene.title
+                : TextUtils.fileNameFromPath(props.scene.path)
+            }
+            lineCount={2}
+          />
         </h5>
         <span>{props.scene.date}</span>
         <p>
