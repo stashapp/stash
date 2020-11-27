@@ -541,3 +541,13 @@ input[type="range"].blue-slider {
     }
   }
 }
+
+.organized-button {
+  &.not-organized {
+    color: rgba(191, 204, 214, 0.5);
+  }
+
+  &.organized {
+    color: #ff7373;
+  }
+}

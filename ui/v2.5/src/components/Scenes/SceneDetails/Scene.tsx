@@ -10,6 +10,7 @@ import {
   useSceneResetO,
   useSceneStreams,
   useSceneGenerateScreenshot,
+  useSceneUpdate
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
@@ -26,6 +27,7 @@ import { SceneMoviePanel } from "./SceneMoviePanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { SceneGenerateDialog } from "../SceneGenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
+import { OrganizedButton } from "./OrganizedButton";
 
 interface ISceneParams {
   id?: string;
@@ -36,6 +38,7 @@ export const Scene: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
+  const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [collapsed, setCollapsed] = useState(false);
@@ -51,6 +54,8 @@ export const Scene: React.FC = () => {
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
   const [resetO] = useSceneResetO(scene?.id ?? "0");
+
+  const [organizedLoading, setOrganizedLoading] = useState(false);
 
   const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
 
@@ -68,6 +73,22 @@ export const Scene: React.FC = () => {
       10
     );
   }
+
+  const onOrganizedClick = async () => {
+    try {
+      setOrganizedLoading(true);
+      await updateScene({
+        variables: {
+          id: scene?.id ?? "",
+          organized: !scene?.organized,
+        }
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOrganizedLoading(false);
+    }
+  };
 
   const onIncrementClick = async () => {
     try {
@@ -244,6 +265,13 @@ export const Scene: React.FC = () => {
                   onIncrement={onIncrementClick}
                   onDecrement={onDecrementClick}
                   onReset={onResetClick}
+                />
+              </Nav.Item>
+              <Nav.Item>
+                <OrganizedButton
+                  loading={organizedLoading}
+                  organized={scene.organized}
+                  onClick={onOrganizedClick}
                 />
               </Nav.Item>
               <Nav.Item>{renderOperations()}</Nav.Item>
