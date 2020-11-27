@@ -14,15 +14,15 @@ func TestGalleryFind(t *testing.T) {
 	gqb := models.NewGalleryQueryBuilder()
 
 	const galleryIdx = 0
-	gallery, err := gqb.Find(galleryIDs[galleryIdx])
+	gallery, err := gqb.Find(galleryIDs[galleryIdx], nil)
 
 	if err != nil {
 		t.Fatalf("Error finding gallery: %s", err.Error())
 	}
 
-	assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), gallery.Path)
+	assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), gallery.Path.String)
 
-	gallery, err = gqb.Find(0)
+	gallery, err = gqb.Find(0, nil)
 
 	if err != nil {
 		t.Fatalf("Error finding gallery: %s", err.Error())
@@ -42,7 +42,7 @@ func TestGalleryFindByChecksum(t *testing.T) {
 		t.Fatalf("Error finding gallery: %s", err.Error())
 	}
 
-	assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), gallery.Path)
+	assert.Equal(t, getGalleryStringValue(galleryIdx, "Path"), gallery.Path.String)
 
 	galleryChecksum = "not exist"
 	gallery, err = gqb.FindByChecksum(galleryChecksum, nil)
@@ -65,7 +65,7 @@ func TestGalleryFindByPath(t *testing.T) {
 		t.Fatalf("Error finding gallery: %s", err.Error())
 	}
 
-	assert.Equal(t, galleryPath, gallery.Path)
+	assert.Equal(t, galleryPath, gallery.Path.String)
 
 	galleryPath = "not exist"
 	gallery, err = gqb.FindByPath(galleryPath)
@@ -87,7 +87,7 @@ func TestGalleryFindBySceneID(t *testing.T) {
 		t.Fatalf("Error finding gallery: %s", err.Error())
 	}
 
-	assert.Equal(t, getGalleryStringValue(galleryIdxWithScene, "Path"), gallery.Path)
+	assert.Equal(t, getGalleryStringValue(galleryIdxWithScene, "Path"), gallery.Path.String)
 
 	gallery, err = gqb.FindBySceneID(0, nil)
 
@@ -123,6 +123,72 @@ func galleryQueryQ(t *testing.T, qb models.GalleryQueryBuilder, q string, expect
 	galleries, _ = qb.Query(nil, &filter)
 
 	assert.Len(t, galleries, totalGalleries)
+}
+
+func TestGalleryQueryPath(t *testing.T) {
+	const galleryIdx = 1
+	galleryPath := getGalleryStringValue(galleryIdx, "Path")
+
+	pathCriterion := models.StringCriterionInput{
+		Value:    galleryPath,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyGalleriesPath(t, pathCriterion)
+
+	pathCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleriesPath(t, pathCriterion)
+}
+
+func verifyGalleriesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
+	sqb := models.NewGalleryQueryBuilder()
+	galleryFilter := models.GalleryFilterType{
+		Path: &pathCriterion,
+	}
+
+	galleries, _ := sqb.Query(&galleryFilter, nil)
+
+	for _, gallery := range galleries {
+		verifyNullString(t, gallery.Path, pathCriterion)
+	}
+}
+
+func TestGalleryQueryRating(t *testing.T) {
+	const rating = 3
+	ratingCriterion := models.IntCriterionInput{
+		Value:    rating,
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	verifyGalleriesRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotEquals
+	verifyGalleriesRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierGreaterThan
+	verifyGalleriesRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierLessThan
+	verifyGalleriesRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierIsNull
+	verifyGalleriesRating(t, ratingCriterion)
+
+	ratingCriterion.Modifier = models.CriterionModifierNotNull
+	verifyGalleriesRating(t, ratingCriterion)
+}
+
+func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
+	sqb := models.NewGalleryQueryBuilder()
+	galleryFilter := models.GalleryFilterType{
+		Rating: &ratingCriterion,
+	}
+
+	galleries, _ := sqb.Query(&galleryFilter, nil)
+
+	for _, gallery := range galleries {
+		verifyInt64(t, gallery.Rating, ratingCriterion)
+	}
 }
 
 func TestGalleryQueryIsMissingScene(t *testing.T) {

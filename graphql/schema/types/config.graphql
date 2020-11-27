@@ -24,7 +24,7 @@ enum HashAlgorithm {
 
 input ConfigGeneralInput {
   """Array of file paths to content"""
-  stashes: [String!]
+  stashes: [StashConfigInput!]
   """Path to the SQLite database"""
   databasePath: String
   """Path to generated files"""
@@ -35,6 +35,8 @@ input ConfigGeneralInput {
   calculateMD5: Boolean!
   """Hash algorithm to use for generated file naming"""
   videoFileNamingAlgorithm: HashAlgorithm!
+  """Number of parallel tasks to start during scan/generate"""
+  parallelTasks: Int
   """Number of segments in a preview file"""
   previewSegments: Int
   """Preview segment duration, in seconds"""
@@ -63,8 +65,18 @@ input ConfigGeneralInput {
   logLevel: String!
   """Whether to log http access"""
   logAccess: Boolean!
-  """Array of file regexp to exclude from Scan"""
+  """True if galleries should be created from folders with images"""
+  createGalleriesFromFolders: Boolean!
+  """Array of video file extensions"""
+  videoExtensions: [String!]
+  """Array of image file extensions"""
+  imageExtensions: [String!]
+  """Array of gallery zip file extensions"""
+  galleryExtensions: [String!]
+  """Array of file regexp to exclude from Video Scans"""
   excludes: [String!]
+  """Array of file regexp to exclude from Image Scans"""
+  imageExcludes: [String!]
   """Scraper user agent string"""
   scraperUserAgent: String
   """Scraper CDP path. Path to chrome executable or remote address"""
@@ -75,7 +87,7 @@ input ConfigGeneralInput {
 
 type ConfigGeneralResult {
   """Array of file paths to content"""
-  stashes: [String!]!
+  stashes: [StashConfig!]!
   """Path to the SQLite database"""
   databasePath: String!
   """Path to generated files"""
@@ -86,6 +98,8 @@ type ConfigGeneralResult {
   calculateMD5: Boolean!
   """Hash algorithm to use for generated file naming"""
   videoFileNamingAlgorithm: HashAlgorithm!
+  """Number of parallel tasks to start during scan/generate"""
+  parallelTasks: Int!
   """Number of segments in a preview file"""
   previewSegments: Int!
   """Preview segment duration, in seconds"""
@@ -114,8 +128,18 @@ type ConfigGeneralResult {
   logLevel: String!
   """Whether to log http access"""
   logAccess: Boolean!
-  """Array of file regexp to exclude from Scan"""
+  """Array of video file extensions"""
+  videoExtensions: [String!]!
+  """Array of image file extensions"""
+  imageExtensions: [String!]!
+  """Array of gallery zip file extensions"""
+  galleryExtensions: [String!]!
+  """True if galleries should be created from folders with images"""
+  createGalleriesFromFolders: Boolean!
+  """Array of file regexp to exclude from Video Scans"""
   excludes: [String!]!
+  """Array of file regexp to exclude from Image Scans"""
+  imageExcludes: [String!]!
   """Scraper user agent string"""
   scraperUserAgent: String
   """Scraper CDP path. Path to chrome executable or remote address"""
@@ -174,4 +198,17 @@ type Directory {
     path: String!
     parent: String
     directories: [String!]!
+}
+
+"""Stash configuration details"""
+input StashConfigInput {
+  path: String!
+  excludeVideo: Boolean!
+  excludeImage: Boolean!
+}
+
+type StashConfig {
+  path: String!
+  excludeVideo: Boolean!
+  excludeImage: Boolean!
 }

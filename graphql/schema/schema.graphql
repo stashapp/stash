@@ -17,6 +17,11 @@ type Query {
   """A function which queries SceneMarker objects"""
   findSceneMarkers(scene_marker_filter: SceneMarkerFilterType filter: FindFilterType): FindSceneMarkersResultType!
 
+  findImage(id: ID, checksum: String): Image
+  
+  """A function which queries Scene objects"""
+  findImages(image_filter: ImageFilterType, image_ids: [Int!], filter: FindFilterType): FindImagesResultType!
+
   """Find a performer by ID"""
   findPerformer(id: ID!): Performer
   """A function which queries Performer objects"""
@@ -59,6 +64,7 @@ type Query {
   """List available scrapers"""
   listPerformerScrapers: [Scraper!]!
   listSceneScrapers: [Scraper!]!
+  listGalleryScrapers: [Scraper!]!
   listMovieScrapers: [Scraper!]!
 
   """Scrape a list of performers based on name"""
@@ -71,6 +77,10 @@ type Query {
   scrapeScene(scraper_id: ID!, scene: SceneUpdateInput!): ScrapedScene
   """Scrapes a complete performer record based on a URL"""
   scrapeSceneURL(url: String!): ScrapedScene
+  """Scrapes a complete gallery record based on an existing gallery"""
+  scrapeGallery(scraper_id: ID!, gallery: GalleryUpdateInput!): ScrapedGallery
+  """Scrapes a complete gallery record based on a URL"""
+  scrapeGalleryURL(url: String!): ScrapedGallery
   """Scrapes a complete movie record based on a URL"""
   scrapeMovieURL(url: String!): ScrapedMovie
 
@@ -87,7 +97,6 @@ type Query {
   plugins: [Plugin!]
   """List available plugin operations"""
   pluginTasks: [PluginTask!]
-
 
   # Config
   """Returns the current, complete configuration"""
@@ -141,6 +150,28 @@ type Mutation {
   sceneMarkerUpdate(input: SceneMarkerUpdateInput!): SceneMarker
   sceneMarkerDestroy(id: ID!): Boolean!
 
+  imageUpdate(input: ImageUpdateInput!): Image
+  bulkImageUpdate(input: BulkImageUpdateInput!): [Image!]
+  imageDestroy(input: ImageDestroyInput!): Boolean!
+  imagesDestroy(input: ImagesDestroyInput!): Boolean!
+  imagesUpdate(input: [ImageUpdateInput!]!): [Image]
+
+  """Increments the o-counter for an image. Returns the new value"""
+  imageIncrementO(id: ID!): Int!
+  """Decrements the o-counter for an image. Returns the new value"""
+  imageDecrementO(id: ID!): Int!
+  """Resets the o-counter for a image to 0. Returns the new value"""
+  imageResetO(id: ID!): Int!
+
+  galleryCreate(input: GalleryCreateInput!): Gallery
+  galleryUpdate(input: GalleryUpdateInput!): Gallery
+  bulkGalleryUpdate(input: BulkGalleryUpdateInput!): [Gallery!]
+  galleryDestroy(input: GalleryDestroyInput!): Boolean!
+  galleriesUpdate(input: [GalleryUpdateInput!]!): [Gallery]
+
+  addGalleryImages(input: GalleryAddInput!): Boolean!
+  removeGalleryImages(input: GalleryRemoveInput!): Boolean!
+
   performerCreate(input: PerformerCreateInput!): Performer
   performerUpdate(input: PerformerUpdateInput!): Performer
   performerDestroy(input: PerformerDestroyInput!): Boolean!
@@ -190,6 +221,9 @@ type Mutation {
   reloadPlugins: Boolean!
 
   stopJob: Boolean!
+
+  """ Submit fingerprints to stash-box instance """
+  submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): Boolean!
 }
 
 type Subscription {

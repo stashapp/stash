@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 import { Button, Popover, OverlayTrigger, Table } from "react-bootstrap";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   getGenderStrings,
@@ -82,6 +83,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const [twitter, setTwitter] = useState<string>();
   const [instagram, setInstagram] = useState<string>();
   const [gender, setGender] = useState<string | undefined>(undefined);
+  const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>([]);
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -121,6 +123,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     setGender(
       genderToString((state as GQL.PerformerDataFragment).gender ?? undefined)
     );
+    if ((state as GQL.PerformerDataFragment).stash_ids !== undefined) {
+      setStashIDs((state as GQL.PerformerDataFragment).stash_ids);
+    }
   }
 
   function translateScrapedGender(scrapedGender?: string) {
@@ -239,8 +244,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   });
 
   useEffect(() => {
-    updatePerformerEditState(performer);
-  }, [performer]);
+    if (!isNew) updatePerformerEditState(performer);
+  }, [isNew, performer]);
 
   useEffect(() => {
     if (onImageChange) {
@@ -288,6 +293,10 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       instagram,
       image,
       gender: stringToGender(gender),
+      stash_ids: stashIDs.map((s) => ({
+        stash_id: s.stash_id,
+        endpoint: s.endpoint,
+      })),
     };
 
     if (!isNew) {
@@ -562,7 +571,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
           />
           {isEditing ? (
             <Button
-              className="mr-2"
+              className="mx-2"
               variant="danger"
               onClick={() => setImage(null)}
             >
@@ -621,6 +630,60 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       onChange: (value: string) => setGender(value),
       selectOptions: [""].concat(getGenderStrings()),
     });
+  }
+
+  const removeStashID = (stashID: GQL.StashIdInput) => {
+    setStashIDs(
+      stashIDs.filter(
+        (s) =>
+          !(s.endpoint === stashID.endpoint && s.stash_id === stashID.stash_id)
+      )
+    );
+  };
+
+  function renderStashIDs() {
+    if (!performer.stash_ids?.length) {
+      return;
+    }
+
+    return (
+      <tr>
+        <td>StashIDs</td>
+        <td>
+          <ul className="pl-0">
+            {stashIDs.map((stashID) => {
+              const base = stashID.endpoint.match(/https?:\/\/.*?\//)?.[0];
+              const link = base ? (
+                <a
+                  href={`${base}performers/${stashID.stash_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {stashID.stash_id}
+                </a>
+              ) : (
+                stashID.stash_id
+              );
+              return (
+                <li key={stashID.stash_id} className="row no-gutters">
+                  {isEditing && (
+                    <Button
+                      variant="danger"
+                      className="mr-2 py-0"
+                      title="Delete StashID"
+                      onClick={() => removeStashID(stashID)}
+                    >
+                      <Icon icon="trash-alt" />
+                    </Button>
+                  )}
+                  {link}
+                </li>
+              );
+            })}
+          </ul>
+        </td>
+      </tr>
+    );
   }
 
   const formatHeight = () => {
@@ -720,6 +783,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
             isEditing: !!isEditing,
             onChange: setInstagram,
           })}
+          {renderStashIDs()}
         </tbody>
       </Table>
 

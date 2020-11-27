@@ -45,6 +45,7 @@ type Scene {
   movies: [SceneMovie!]!
   tags: [Tag!]!
   performers: [Performer!]!
+  stash_ids: [StashID!]!
 }
 
 input SceneMovieInput {
@@ -68,6 +69,7 @@ input SceneUpdateInput {
   tag_ids: [ID!]
   """This should be base64 encoded"""
   cover_image: String
+  stash_ids: [StashIDInput!]
 }
 
 enum BulkUpdateIdMode {

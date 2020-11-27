@@ -14,12 +14,13 @@ const freeonesScraperConfig = `
 name: Freeones
 performerByName:
   action: scrapeXPath
-  queryURL: https://www.freeones.xxx/babes?q={}&v=teasers&s=relevance&l=96&m%5BcanPreviewFeatures%5D=0
+  queryURL: https://www.freeones.com/babes?q={}&v=teasers&s=relevance&l=96&m%5BcanPreviewFeatures%5D=0
   scraper: performerSearch
 performerByURL:
   - action: scrapeXPath
     url:
-      - https://www.freeones.xxx
+      - freeones.xxx
+      - freeones.com
     scraper: performerScraper
 
 xPathScrapers:
@@ -28,80 +29,78 @@ xPathScrapers:
       Name: //div[@id="search-result"]//p[@data-test="subject-name"]/text()
       URL:
         selector: //div[@id="search-result"]//div[@data-test="teaser-subject"]/a/@href
-        replace:
-          - regex: ^
-            with: https://www.freeones.xxx
-          - regex: $
-            with: /profile
+        postProcess:
+          - replace:
+            - regex: ^
+              with: https://www.freeones.com
+            - regex: $
+              with: /profile
 
   performerScraper:
     performer:
-      Name: //h1
+      Name: 
+        selector: //h1
+        postProcess:
+          - replace:
+            - regex: \sBio\s*$
+              with: ""
       URL:
         selector: //a[span[text()="Profile"]]/@href
-        replace:
-          - regex: ^
-            with: https://www.freeones.xxx
-      Twitter: //div[p[text()='Follow On']]//div//a[@class='d-flex align-items-center justify-content-center m-2 social-icons color-twitter']/@href
-      Instagram: //div[p[text()='Follow On']]//div//a[@class='d-flex align-items-center justify-content-center m-2 social-icons color-telegram']/@href
+        postProcess:
+          - replace:
+            - regex: ^
+              with: https://www.freeones.com
+      Twitter: //a[contains(@href,'twitter.com/')]/@href
+      Instagram: //a[contains(@href,'instagram.com/')]/@href
       Birthdate:
-        selector: //div[p[text()='Personal Information']]//div//p/a/span[contains(text(),'Born On')]
-        replace:
-          - regex: Born On
-            with:
-          - regex: ","
-            with:
-        parseDate: January 2 2006
+        selector: //div[p[text()='Personal Information']]//span[contains(text(),'Born On')]
+        postProcess:
+          - replace:
+            - regex: Born On
+              with:
+          - parseDate: January 2, 2006
       Ethnicity:
-        selector: //div[p[text()='Ethnicity']]//div//p[@class='mb-0 text-center']
-        replace:
-          - regex: Asian
-            with: "asian"
-          - regex: Caucasian
-            with: "white"
-          - regex: Black
-            with: "black"
-          - regex: Latin
-            with: "hispanic"
-      Country: //div[p[text()='Personal Information']]//div//p//a[@data-test="link-country"]
-      EyeColor: //span[@data-test="link_span_eye_color"]
+        selector: //div[p[text()='Ethnicity']]//a[@data-test="link_ethnicity"]
+        postProcess:
+          - map:
+              Asian: asian
+              Caucasian: white
+              Black: black
+              Latin: hispanic
+      Country: //div[p[text()='Personal Information']]//a[@data-test="link-country"]
+      EyeColor: //span[text()='Eye Color']/following-sibling::span/a
       Height:
-        selector: //span[@data-test="link_span_height"]
-        replace:
-          - regex: \D+[\s\S]+
-            with: ""
+        selector: //span[text()='Height']/following-sibling::span/a
+        postProcess:
+          - replace:
+            - regex: \D+[\s\S]+
+              with: ""
+          - map:
+              Unknown: ""
       Measurements:
-        selector: //span[@data-test="p-measurements"]//a/span
+        selector: //span[text()='Measurements']/following-sibling::span/span/a
         concat: " - "
-        replace:
-          - regex: Unknown
-            with:
+        postProcess:
+          - map:
+              Unknown: ""
       FakeTits:
-        selector: //span[@data-test='link_span_boobs']
-        replace:
-          - regex: Unknown
-            with:
-          - regex: Fake
-            with: "Yes"
-          - regex: Natural
-            with: "No"
+        selector: //span[text()='Boobs']/following-sibling::span/a
+        postProcess:
+          - map:
+              Unknown: ""
+              Fake: Yes
+              Natural: No
       CareerLength:
-        selector: //div[p[text()='career']]//div//div[@class='timeline-horizontal mb-3']//div//p[@class='m-0']
+        selector: //div[p[text()='career']]//div[contains(@class,'timeline-horizontal')]//p[@class='m-0']
         concat: "-"
-        replace:
-          - regex: -\w+-\w+-\w+-\w+-\w+$
-            with: ""
-      Aliases: //div[p[text()='Aliases']]//div//p[@class='mb-0 text-center']
-      Tattoos: //span[@data-test="p_has_tattoos"]|//span[@cdata-test="p_has_tattoos"]
-      Piercings: //span[@data-test="p_has_piercings"]
+      Aliases: //p[text()='Aliases']/following-sibling::div/p
+      Tattoos: //span[text()='Tattoos']/following-sibling::span/span
+      Piercings: //span[text()='Piercings']/following-sibling::span/span
       Image:
-        selector: //div[@class='profile-image-container']//a/img/@src
+        selector: //div[contains(@class,'image-container')]//a/img/@src
       Gender:
-        selector: //meta[@name="language"]/@name
-        replace:
-          - regex: language
-            with: "Female"
-# Last updated June 15, 2020
+        fixed: "Female"
+# Last updated November 06, 2020
 `
 
 func getFreeonesScraper() config {

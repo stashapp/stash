@@ -7,7 +7,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 const sceneTable = "scenes"
@@ -61,9 +60,9 @@ func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error)
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scenes (oshash, checksum, path, title, details, url, date, rating, organized, o_counter, size, duration, video_codec,
-                    			    audio_codec, format, width, height, framerate, bitrate, studio_id, created_at, updated_at)
+                    			    audio_codec, format, width, height, framerate, bitrate, studio_id, file_mod_time, created_at, updated_at)
 				VALUES (:oshash, :checksum, :path, :title, :details, :url, :date, :rating, :organized, :o_counter, :size, :duration, :video_codec,
-					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :created_at, :updated_at)
+					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :file_mod_time, :created_at, :updated_at)
 		`,
 		newScene,
 	)
@@ -104,6 +103,19 @@ func (qb *SceneQueryBuilder) UpdateFull(updatedScene Scene, tx *sqlx.Tx) (*Scene
 	}
 
 	return qb.find(updatedScene.ID, tx)
+}
+
+func (qb *SceneQueryBuilder) UpdateFileModTime(id int, modTime NullSQLiteTimestamp, tx *sqlx.Tx) error {
+	ensureTx(tx)
+	_, err := tx.Exec(
+		`UPDATE scenes SET file_mod_time = ? WHERE scenes.id = ? `,
+		modTime, id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (qb *SceneQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error) {
@@ -242,12 +254,8 @@ func (qb *SceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *SceneQueryBuilder) SizeCount() (string, error) {
-	sum, err := runSumQuery("SELECT SUM(size) as sum FROM scenes", nil)
-	if err != nil {
-		return "0 B", err
-	}
-	return utils.HumanizeBytes(sum), err
+func (qb *SceneQueryBuilder) Size() (uint64, error) {
+	return runSumQuery("SELECT SUM(size) as sum FROM scenes", nil)
 }
 
 func (qb *SceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
@@ -303,6 +311,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		left join studios as studio on studio.id = scenes.studio_id
 		left join galleries as gallery on gallery.scene_id = scenes.id
 		left join scenes_tags as tags_join on tags_join.scene_id = scenes.id
+		left join scene_stash_ids on scene_stash_ids.scene_id = scenes.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -312,21 +321,9 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		query.addArg(thisArgs...)
 	}
 
-	if rating := sceneFilter.Rating; rating != nil {
-		clause, count := getIntCriterionWhereClause("scenes.rating", *sceneFilter.Rating)
-		query.addWhere(clause)
-		if count == 1 {
-			query.addArg(sceneFilter.Rating.Value)
-		}
-	}
-
-	if oCounter := sceneFilter.OCounter; oCounter != nil {
-		clause, count := getIntCriterionWhereClause("scenes.o_counter", *sceneFilter.OCounter)
-		query.addWhere(clause)
-		if count == 1 {
-			query.addArg(sceneFilter.OCounter.Value)
-		}
-	}
+	query.handleStringCriterionInput(sceneFilter.Path, "scenes.path")
+	query.handleIntCriterionInput(sceneFilter.Rating, "scenes.rating")
+	query.handleIntCriterionInput(sceneFilter.OCounter, "scenes.o_counter")
 
 	if Organized := sceneFilter.Organized; Organized != nil {
 		var organized string
@@ -383,8 +380,10 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 			query.addWhere("scenes.date IS \"\" OR scenes.date IS \"0001-01-01\"")
 		case "tags":
 			query.addWhere("tags_join.scene_id IS NULL")
+		case "stash_id":
+			query.addWhere("scene_stash_ids.scene_id IS NULL")
 		default:
-			query.addWhere("scenes." + *isMissingFilter + " IS NULL")
+			query.addWhere("scenes." + *isMissingFilter + " IS NULL OR TRIM(scenes." + *isMissingFilter + ") = ''")
 		}
 	}
 
@@ -429,6 +428,11 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		whereClause, havingClause := getMultiCriterionClause("scenes", "movies", "movies_scenes", "scene_id", "movie_id", moviesFilter)
 		query.addWhere(whereClause)
 		query.addHaving(havingClause)
+	}
+
+	if stashIDFilter := sceneFilter.StashID; stashIDFilter != nil {
+		query.addWhere("scene_stash_ids.stash_id = ?")
+		query.addArg(stashIDFilter)
 	}
 
 	query.sortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)

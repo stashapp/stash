@@ -66,6 +66,10 @@ func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Sc
 func getSceneFileJSON(scene *models.Scene) *jsonschema.SceneFile {
 	ret := &jsonschema.SceneFile{}
 
+	if scene.FileModTime.Valid {
+		ret.ModTime = models.JSONTime{Time: scene.FileModTime.Timestamp}
+	}
+
 	if scene.Size.Valid {
 		ret.Size = scene.Size.String
 	}
@@ -122,7 +126,7 @@ func GetStudioName(reader models.StudioReader, scene *models.Scene) (string, err
 	return "", nil
 }
 
-// GetGalleryChecksum returns the checksum of the provided scene. It returns an
+// GetGalleryChecksum returns the checksum of the provided gallery. It returns an
 // empty string if there is no gallery assigned to the scene.
 func GetGalleryChecksum(reader models.GalleryReader, scene *models.Scene) (string, error) {
 	gallery, err := reader.FindBySceneID(scene.ID)

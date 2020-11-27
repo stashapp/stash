@@ -9,8 +9,9 @@ import { Nav, Navbar, Button } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
 import { Link, NavLink, useLocation, useHistory } from "react-router-dom";
-import { SessionUtils } from "src/utils";
+import Mousetrap from "mousetrap";
 
+import { SessionUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
 import { Manual } from "./Help/Manual";
 
@@ -24,6 +25,10 @@ const messages = defineMessages({
   scenes: {
     id: "scenes",
     defaultMessage: "Scenes",
+  },
+  images: {
+    id: "images",
+    defaultMessage: "Images",
   },
   movies: {
     id: "movies",
@@ -49,6 +54,10 @@ const messages = defineMessages({
     id: "galleries",
     defaultMessage: "Galleries",
   },
+  sceneTagger: {
+    id: "sceneTagger",
+    defaultMessage: "Scene Tagger",
+  },
 });
 
 const menuItems: IMenuItem[] = [
@@ -56,6 +65,11 @@ const menuItems: IMenuItem[] = [
     icon: "play-circle",
     message: messages.scenes,
     href: "/scenes",
+  },
+  {
+    icon: "image",
+    message: messages.images,
+    href: "/images",
   },
   {
     href: "/movies",
@@ -137,6 +151,8 @@ export const MainNavbar: React.FC = () => {
       ? "/movies/new"
       : location.pathname === "/tags"
       ? "/tags/new"
+      : location.pathname === "/galleries"
+      ? "/galleries/new"
       : null;
   const newButton =
     newPath === null ? (
@@ -153,6 +169,7 @@ export const MainNavbar: React.FC = () => {
   useEffect(() => {
     Mousetrap.bind("?", () => setShowManual(!showManual));
     Mousetrap.bind("g s", () => goto("/scenes"));
+    Mousetrap.bind("g i", () => goto("/images"));
     Mousetrap.bind("g v", () => goto("/movies"));
     Mousetrap.bind("g k", () => goto("/scenes/markers"));
     Mousetrap.bind("g l", () => goto("/galleries"));

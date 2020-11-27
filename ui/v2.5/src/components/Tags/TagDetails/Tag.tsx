@@ -2,6 +2,7 @@ import { Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
+import Mousetrap from "mousetrap";
 
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -20,6 +21,7 @@ import {
 import { useToast } from "src/hooks";
 import { TagScenesPanel } from "./TagScenesPanel";
 import { TagMarkersPanel } from "./TagMarkersPanel";
+import { TagImagesPanel } from "./TagImagesPanel";
 
 interface ITabParams {
   id?: string;
@@ -49,7 +51,7 @@ export const Tag: React.FC = () => {
   const [createTag] = useTagCreate(getTagInput() as GQL.TagUpdateInput);
   const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
 
-  const activeTabKey = tab === "markers" ? tab : "scenes";
+  const activeTabKey = tab === "markers" || tab === "images" ? tab : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
@@ -245,6 +247,9 @@ export const Tag: React.FC = () => {
           >
             <Tab eventKey="scenes" title="Scenes">
               <TagScenesPanel tag={tag} />
+            </Tab>
+            <Tab eventKey="images" title="Images">
+              <TagImagesPanel tag={tag} />
             </Tab>
             <Tab eventKey="markers" title="Markers">
               <TagMarkersPanel tag={tag} />

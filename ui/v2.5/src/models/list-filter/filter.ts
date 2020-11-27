@@ -10,6 +10,7 @@ import {
   StudioFilterType,
   GalleryFilterType,
   TagFilterType,
+  ImageFilterType,
 } from "src/core/generated-graphql";
 import { stringToGender } from "src/core/StashService";
 import {
@@ -20,6 +21,7 @@ import {
   NumberCriterion,
   StringCriterion,
   DurationCriterion,
+  MandatoryStringCriterion,
 } from "./criteria/criterion";
 import {
   FavoriteCriterion,
@@ -41,6 +43,7 @@ import {
   TagIsMissingCriterionOption,
   StudioIsMissingCriterionOption,
   MovieIsMissingCriterionOption,
+  ImageIsMissingCriterionOption,
 } from "./criteria/is-missing";
 import { NoneCriterionOption } from "./criteria/none";
 import {
@@ -49,6 +52,8 @@ import {
 } from "./criteria/performers";
 import { RatingCriterion, RatingCriterionOption } from "./criteria/rating";
 import {
+  AverageResolutionCriterion,
+  AverageResolutionCriterionOption,
   ResolutionCriterion,
   ResolutionCriterionOption,
 } from "./criteria/resolution";
@@ -67,6 +72,7 @@ import { makeCriteria } from "./criteria/utils";
 import { DisplayMode, FilterMode } from "./types";
 import { GenderCriterionOption, GenderCriterion } from "./criteria/gender";
 import { MoviesCriterionOption, MoviesCriterion } from "./criteria/movies";
+import { GalleriesCriterion } from "./criteria/galleries";
 
 interface IQueryParameters {
   perPage?: string;
@@ -117,6 +123,7 @@ export class ListFilterModel {
           "o_counter",
           "date",
           "filesize",
+          "file_mod_time",
           "duration",
           "framerate",
           "bitrate",
@@ -126,9 +133,11 @@ export class ListFilterModel {
           DisplayMode.Grid,
           DisplayMode.List,
           DisplayMode.Wall,
+          DisplayMode.Tagger,
         ];
         this.criterionOptions = [
           new NoneCriterionOption(),
+          ListFilterModel.createCriterionOption("path"),
           new RatingCriterionOption(),
           new OrganizedCriterionOption(),
           ListFilterModel.createCriterionOption("o_counter"),
@@ -140,6 +149,30 @@ export class ListFilterModel {
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
           new MoviesCriterionOption(),
+        ];
+        break;
+      case FilterMode.Images:
+        this.sortBy = "path";
+        this.sortByOptions = [
+          "title",
+          "path",
+          "rating",
+          "o_counter",
+          "filesize",
+          "file_mod_time",
+          "random",
+        ];
+        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.Wall];
+        this.criterionOptions = [
+          new NoneCriterionOption(),
+          ListFilterModel.createCriterionOption("path"),
+          new RatingCriterionOption(),
+          ListFilterModel.createCriterionOption("o_counter"),
+          new ResolutionCriterionOption(),
+          new ImageIsMissingCriterionOption(),
+          new TagsCriterionOption(),
+          new PerformersCriterionOption(),
+          new StudiosCriterionOption(),
         ];
         break;
       case FilterMode.Performers: {
@@ -201,11 +234,17 @@ export class ListFilterModel {
         break;
       case FilterMode.Galleries:
         this.sortBy = "path";
-        this.sortByOptions = ["path"];
+        this.sortByOptions = ["path", "file_mod_time", "images_count"];
         this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
         this.criterionOptions = [
           new NoneCriterionOption(),
+          ListFilterModel.createCriterionOption("path"),
+          new RatingCriterionOption(),
+          new AverageResolutionCriterionOption(),
           new GalleryIsMissingCriterionOption(),
+          new TagsCriterionOption(),
+          new PerformersCriterionOption(),
+          new StudiosCriterionOption(),
         ];
         break;
       case FilterMode.SceneMarkers:
@@ -386,6 +425,14 @@ export class ListFilterModel {
     const result: SceneFilterType = {};
     this.criteria.forEach((criterion) => {
       switch (criterion.type) {
+        case "path": {
+          const pathCrit = criterion as MandatoryStringCriterion;
+          result.path = {
+            value: pathCrit.value,
+            modifier: pathCrit.modifier,
+          };
+          break;
+        }
         case "rating": {
           const ratingCrit = criterion as RatingCriterion;
           result.rating = {
@@ -612,6 +659,96 @@ export class ListFilterModel {
     return result;
   }
 
+  public makeImageFilter(): ImageFilterType {
+    const result: ImageFilterType = {};
+    this.criteria.forEach((criterion) => {
+      switch (criterion.type) {
+        case "path": {
+          const pathCrit = criterion as MandatoryStringCriterion;
+          result.path = {
+            value: pathCrit.value,
+            modifier: pathCrit.modifier,
+          };
+          break;
+        }
+        case "rating": {
+          const ratingCrit = criterion as RatingCriterion;
+          result.rating = {
+            value: ratingCrit.value,
+            modifier: ratingCrit.modifier,
+          };
+          break;
+        }
+        case "o_counter": {
+          const oCounterCrit = criterion as NumberCriterion;
+          result.o_counter = {
+            value: oCounterCrit.value,
+            modifier: oCounterCrit.modifier,
+          };
+          break;
+        }
+        case "resolution": {
+          switch ((criterion as ResolutionCriterion).value) {
+            case "240p":
+              result.resolution = ResolutionEnum.Low;
+              break;
+            case "480p":
+              result.resolution = ResolutionEnum.Standard;
+              break;
+            case "720p":
+              result.resolution = ResolutionEnum.StandardHd;
+              break;
+            case "1080p":
+              result.resolution = ResolutionEnum.FullHd;
+              break;
+            case "4k":
+              result.resolution = ResolutionEnum.FourK;
+              break;
+            // no default
+          }
+          break;
+        }
+        case "imageIsMissing":
+          result.is_missing = (criterion as IsMissingCriterion).value;
+          break;
+        case "tags": {
+          const tagsCrit = criterion as TagsCriterion;
+          result.tags = {
+            value: tagsCrit.value.map((tag) => tag.id),
+            modifier: tagsCrit.modifier,
+          };
+          break;
+        }
+        case "performers": {
+          const perfCrit = criterion as PerformersCriterion;
+          result.performers = {
+            value: perfCrit.value.map((perf) => perf.id),
+            modifier: perfCrit.modifier,
+          };
+          break;
+        }
+        case "studios": {
+          const studCrit = criterion as StudiosCriterion;
+          result.studios = {
+            value: studCrit.value.map((studio) => studio.id),
+            modifier: studCrit.modifier,
+          };
+          break;
+        }
+        case "galleries": {
+          const perfCrit = criterion as GalleriesCriterion;
+          result.galleries = {
+            value: perfCrit.value.map((gallery) => gallery.id),
+            modifier: perfCrit.modifier,
+          };
+          break;
+        }
+        // no default
+      }
+    });
+    return result;
+  }
+
   public makeMovieFilter(): MovieFilterType {
     const result: MovieFilterType = {};
     this.criteria.forEach((criterion) => {
@@ -657,9 +794,70 @@ export class ListFilterModel {
     const result: GalleryFilterType = {};
     this.criteria.forEach((criterion) => {
       switch (criterion.type) {
+        case "path": {
+          const pathCrit = criterion as MandatoryStringCriterion;
+          result.path = {
+            value: pathCrit.value,
+            modifier: pathCrit.modifier,
+          };
+          break;
+        }
+        case "rating": {
+          const ratingCrit = criterion as RatingCriterion;
+          result.rating = {
+            value: ratingCrit.value,
+            modifier: ratingCrit.modifier,
+          };
+          break;
+        }
+        case "average_resolution": {
+          switch ((criterion as AverageResolutionCriterion).value) {
+            case "240p":
+              result.average_resolution = ResolutionEnum.Low;
+              break;
+            case "480p":
+              result.average_resolution = ResolutionEnum.Standard;
+              break;
+            case "720p":
+              result.average_resolution = ResolutionEnum.StandardHd;
+              break;
+            case "1080p":
+              result.average_resolution = ResolutionEnum.FullHd;
+              break;
+            case "4k":
+              result.average_resolution = ResolutionEnum.FourK;
+              break;
+            // no default
+          }
+          break;
+        }
         case "galleryIsMissing":
           result.is_missing = (criterion as IsMissingCriterion).value;
           break;
+        case "tags": {
+          const tagsCrit = criterion as TagsCriterion;
+          result.tags = {
+            value: tagsCrit.value.map((tag) => tag.id),
+            modifier: tagsCrit.modifier,
+          };
+          break;
+        }
+        case "performers": {
+          const perfCrit = criterion as PerformersCriterion;
+          result.performers = {
+            value: perfCrit.value.map((perf) => perf.id),
+            modifier: perfCrit.modifier,
+          };
+          break;
+        }
+        case "studios": {
+          const studCrit = criterion as StudiosCriterion;
+          result.studios = {
+            value: studCrit.value.map((studio) => studio.id),
+            modifier: studCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });

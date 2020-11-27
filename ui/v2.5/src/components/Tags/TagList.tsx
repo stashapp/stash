@@ -1,17 +1,24 @@
 import React, { useState } from "react";
+import _ from "lodash";
+import Mousetrap from "mousetrap";
 import { FindTagsQueryResult } from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { useTagsList } from "src/hooks/ListHook";
+import { showWhenSelected, useTagsList } from "src/hooks/ListHook";
 import { Button } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { mutateMetadataAutoTag, useTagDestroy } from "src/core/StashService";
+import {
+  queryFindTags,
+  mutateMetadataAutoTag,
+  useTagDestroy,
+} from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { FormattedNumber } from "react-intl";
 import { NavUtils } from "src/utils";
 import { Icon, Modal } from "src/components/Shared";
 import { TagCard } from "./TagCard";
+import { ExportDialog } from "../Shared/ExportDialog";
 
 interface ITagList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
@@ -25,9 +32,101 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
 
   const [deleteTag] = useTagDestroy(getDeleteTagInput() as GQL.TagDestroyInput);
 
+  const history = useHistory();
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [isExportAll, setIsExportAll] = useState(false);
+
+  const otherOperations = [
+    {
+      text: "View Random",
+      onClick: viewRandom,
+    },
+    {
+      text: "Export...",
+      onClick: onExport,
+      isDisplayed: showWhenSelected,
+    },
+    {
+      text: "Export all...",
+      onClick: onExportAll,
+    },
+  ];
+
+  const addKeybinds = (
+    result: FindTagsQueryResult,
+    filter: ListFilterModel
+  ) => {
+    Mousetrap.bind("p r", () => {
+      viewRandom(result, filter);
+    });
+
+    return () => {
+      Mousetrap.unbind("p r");
+    };
+  };
+
+  async function viewRandom(
+    result: FindTagsQueryResult,
+    filter: ListFilterModel
+  ) {
+    // query for a random tag
+    if (result.data && result.data.findTags) {
+      const { count } = result.data.findTags;
+
+      const index = Math.floor(Math.random() * count);
+      const filterCopy = _.cloneDeep(filter);
+      filterCopy.itemsPerPage = 1;
+      filterCopy.currentPage = index + 1;
+      const singleResult = await queryFindTags(filterCopy);
+      if (
+        singleResult &&
+        singleResult.data &&
+        singleResult.data.findTags &&
+        singleResult.data.findTags.tags.length === 1
+      ) {
+        const { id } = singleResult!.data!.findTags!.tags[0];
+        // navigate to the tag page
+        history.push(`/tags/${id}`);
+      }
+    }
+  }
+
+  async function onExport() {
+    setIsExportAll(false);
+    setIsExportDialogOpen(true);
+  }
+
+  async function onExportAll() {
+    setIsExportAll(true);
+    setIsExportDialogOpen(true);
+  }
+
+  function maybeRenderExportDialog(selectedIds: Set<string>) {
+    if (isExportDialogOpen) {
+      return (
+        <>
+          <ExportDialog
+            exportInput={{
+              tags: {
+                ids: Array.from(selectedIds.values()),
+                all: isExportAll,
+              },
+            }}
+            onClose={() => {
+              setIsExportDialogOpen(false);
+            }}
+          />
+        </>
+      );
+    }
+  }
+
   const listData = useTagsList({
     renderContent,
     filterHook,
+    addKeybinds,
+    otherOperations,
+    selectable: true,
     zoomable: true,
     defaultZoomIndex: 0,
     persistState: true,
@@ -61,7 +160,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     }
   }
 
-  function renderContent(
+  function renderTags(
     result: FindTagsQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
@@ -73,7 +172,16 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
       return (
         <div className="row px-xl-5 justify-content-center">
           {result.data.findTags.tags.map((tag) => (
-            <TagCard key={tag.id} tag={tag} zoomIndex={zoomIndex} />
+            <TagCard
+              key={tag.id}
+              tag={tag}
+              zoomIndex={zoomIndex}
+              selecting={selectedIds.size > 0}
+              selected={selectedIds.has(tag.id)}
+              onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
+                listData.onSelectChange(tag.id, selected, shiftKey)
+              }
+            />
           ))}
         </div>
       );
@@ -147,6 +255,20 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     if (filter.displayMode === DisplayMode.Wall) {
       return <h1>TODO</h1>;
     }
+  }
+
+  function renderContent(
+    result: FindTagsQueryResult,
+    filter: ListFilterModel,
+    selectedIds: Set<string>,
+    zoomIndex: number
+  ) {
+    return (
+      <>
+        {maybeRenderExportDialog(selectedIds)}
+        {renderTags(result, filter, selectedIds, zoomIndex)}
+      </>
+    );
   }
 
   return listData.template;

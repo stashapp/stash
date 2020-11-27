@@ -2,6 +2,7 @@ package config
 
 import (
 	"golang.org/x/crypto/bcrypt"
+	"runtime"
 
 	"errors"
 	"io/ioutil"
@@ -27,6 +28,21 @@ const DefaultMaxSessionAge = 60 * 60 * 1 // 1 hours
 const Database = "database"
 
 const Exclude = "exclude"
+const ImageExclude = "image_exclude"
+
+const VideoExtensions = "video_extensions"
+
+var defaultVideoExtensions = []string{"m4v", "mp4", "mov", "wmv", "avi", "mpg", "mpeg", "rmvb", "rm", "flv", "asf", "mkv", "webm"}
+
+const ImageExtensions = "image_extensions"
+
+var defaultImageExtensions = []string{"png", "jpg", "jpeg", "gif", "webp"}
+
+const GalleryExtensions = "gallery_extensions"
+
+var defaultGalleryExtensions = []string{"zip", "cbz"}
+
+const CreateGalleriesFromFolders = "create_galleries_from_folders"
 
 // CalculateMD5 is the config key used to determine if MD5 should be calculated
 // for video files.
@@ -40,6 +56,9 @@ const PreviewPreset = "preview_preset"
 
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
+
+const ParallelTasks = "parallel_tasks"
+const parallelTasksDefault = 1
 
 const PreviewSegmentDuration = "preview_segment_duration"
 const previewSegmentDurationDefault = 0.75
@@ -118,8 +137,21 @@ func GetConfigPath() string {
 	return filepath.Dir(configFileUsed)
 }
 
-func GetStashPaths() []string {
-	return viper.GetStringSlice(Stash)
+func GetStashPaths() []*models.StashConfig {
+	var ret []*models.StashConfig
+	if err := viper.UnmarshalKey(Stash, &ret); err != nil || len(ret) == 0 {
+		// fallback to legacy format
+		ss := viper.GetStringSlice(Stash)
+		ret = nil
+		for _, path := range ss {
+			toAdd := &models.StashConfig{
+				Path: path,
+			}
+			ret = append(ret, toAdd)
+		}
+	}
+
+	return ret
 }
 
 func GetCachePath() string {
@@ -156,6 +188,38 @@ func GetDefaultScrapersPath() string {
 
 func GetExcludes() []string {
 	return viper.GetStringSlice(Exclude)
+}
+
+func GetImageExcludes() []string {
+	return viper.GetStringSlice(ImageExclude)
+}
+
+func GetVideoExtensions() []string {
+	ret := viper.GetStringSlice(VideoExtensions)
+	if ret == nil {
+		ret = defaultVideoExtensions
+	}
+	return ret
+}
+
+func GetImageExtensions() []string {
+	ret := viper.GetStringSlice(ImageExtensions)
+	if ret == nil {
+		ret = defaultImageExtensions
+	}
+	return ret
+}
+
+func GetGalleryExtensions() []string {
+	ret := viper.GetStringSlice(GalleryExtensions)
+	if ret == nil {
+		ret = defaultGalleryExtensions
+	}
+	return ret
+}
+
+func GetCreateGalleriesFromFolders() bool {
+	return viper.GetBool(CreateGalleriesFromFolders)
 }
 
 func GetLanguage() string {
@@ -204,7 +268,7 @@ func GetScraperCDPPath() string {
 
 func GetStashBoxes() []*models.StashBox {
 	var boxes []*models.StashBox
-	_ = viper.UnmarshalKey(StashBoxes, &boxes)
+	viper.UnmarshalKey(StashBoxes, &boxes)
 	return boxes
 }
 
@@ -235,6 +299,20 @@ func GetExternalHost() string {
 // scene preview file, in seconds.
 func GetPreviewSegmentDuration() float64 {
 	return viper.GetFloat64(PreviewSegmentDuration)
+}
+
+// GetParallelTasks returns the number of parallel tasks that should be started
+// by scan or generate task.
+func GetParallelTasks() int {
+	return viper.GetInt(ParallelTasks)
+}
+
+func GetParallelTasksWithAutoDetection() int {
+	parallelTasks := viper.GetInt(ParallelTasks)
+	if parallelTasks <= 0 {
+		parallelTasks = (runtime.NumCPU() / 4) + 1
+	}
+	return parallelTasks
 }
 
 // GetPreviewSegments returns the amount of segments in a scene preview file.
@@ -490,6 +568,7 @@ func IsValid() bool {
 }
 
 func setDefaultValues() {
+	viper.SetDefault(ParallelTasks, parallelTasksDefault)
 	viper.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
 	viper.SetDefault(PreviewSegments, previewSegmentsDefault)
 	viper.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)

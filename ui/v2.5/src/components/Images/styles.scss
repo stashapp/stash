@@ -1,0 +1,135 @@
+.image-header {
+  flex-basis: auto;
+  margin-top: 30px;
+}
+
+#image-details-container {
+  .tab-content {
+    min-height: 15rem;
+  }
+
+  .image-description {
+    width: 100%;
+  }
+}
+
+.image-card {
+  &.card {
+    overflow: hidden;
+    padding: 0;
+  }
+
+  &-check {
+    left: 0.5rem;
+    margin-top: -12px;
+    opacity: 0;
+    padding-left: 15px;
+    position: absolute;
+    top: 0.7rem;
+    width: 1.2rem;
+    z-index: 1;
+
+    &:checked {
+      opacity: 0.75;
+    }
+  }
+
+  .rating-banner {
+    transition: opacity 0.5s;
+  }
+
+  &-preview {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 5px;
+    position: relative;
+
+    &-image {
+      height: 100%;
+      object-fit: contain;
+      width: 100%;
+    }
+
+    &.portrait {
+      .image-card-preview-image {
+        object-fit: contain;
+      }
+    }
+  }
+
+  &:hover {
+    .rating-banner {
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .image-card-check {
+      opacity: 0.75;
+      transition: opacity 0.5s;
+    }
+  }
+}
+
+.image-tabs {
+  max-height: calc(100vh - 4rem);
+
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+$imageTabWidth: 450px;
+
+@media (min-width: 1200px) {
+  .image-tabs {
+    flex: 0 0 $imageTabWidth;
+    max-width: $imageTabWidth;
+    overflow: auto;
+  }
+
+  .image-container {
+    flex: 0 0 calc(100% - #{$imageTabWidth});
+    max-width: calc(100% - #{$imageTabWidth});
+  }
+}
+
+.image-tabs,
+.image-container {
+  padding-left: 15px;
+  padding-right: 15px;
+  position: relative;
+  width: 100%;
+}
+
+.image-container {
+  display: flex;
+
+  img {
+    max-height: calc(100vh - 4rem);
+    max-width: 100%;
+    object-fit: contain;
+  }
+}
+
+@media (min-width: 1200px) {
+  .image-container {
+    height: calc(100vh - 4rem);
+  }
+}
+@media (min-width: 1200px), (max-width: 575px) {
+  .image-performers {
+    .performer-card {
+      width: 15rem;
+
+      &-image {
+        height: 22.5rem;
+      }
+    }
+  }
+}
+
+#image-edit-details {
+  .rating-stars {
+    font-size: 1.3em;
+    height: calc(1.5em + 0.75rem + 2px);
+  }
+}

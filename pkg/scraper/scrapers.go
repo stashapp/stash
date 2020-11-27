@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 // GlobalConfig contains the global scraper options.
@@ -58,7 +59,7 @@ func loadScrapers(path string) ([]config, error) {
 
 	logger.Debugf("Reading scraper configs from %s", path)
 	scraperFiles := []string{}
-	err := filepath.Walk(path, func(fp string, f os.FileInfo, err error) error {
+	err := utils.SymWalk(path, func(fp string, f os.FileInfo, err error) error {
 		if filepath.Ext(fp) == ".yml" {
 			scraperFiles = append(scraperFiles, fp)
 		}
@@ -125,6 +126,20 @@ func (c Cache) ListSceneScrapers() []*models.Scraper {
 	for _, s := range c.scrapers {
 		// filter on type
 		if s.supportsScenes() {
+			ret = append(ret, s.toScraper())
+		}
+	}
+
+	return ret
+}
+
+// ListGalleryScrapers returns a list of scrapers that are capable of
+// scraping galleries.
+func (c Cache) ListGalleryScrapers() []*models.Scraper {
+	var ret []*models.Scraper
+	for _, s := range c.scrapers {
+		// filter on type
+		if s.supportsGalleries() {
 			ret = append(ret, s.toScraper())
 		}
 	}
@@ -251,6 +266,31 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 	return nil
 }
 
+func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
+	for _, p := range ret.Performers {
+		err := models.MatchScrapedScenePerformer(p)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, t := range ret.Tags {
+		err := models.MatchScrapedSceneTag(t)
+		if err != nil {
+			return err
+		}
+	}
+
+	if ret.Studio != nil {
+		err := models.MatchScrapedSceneStudio(ret.Studio)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ScrapeScene uses the scraper with the provided ID to scrape a scene.
 func (c Cache) ScrapeScene(scraperID string, scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	// find scraper with the provided id
@@ -288,6 +328,53 @@ func (c Cache) ScrapeSceneURL(url string) (*models.ScrapedScene, error) {
 			}
 
 			err = c.postScrapeScene(ret)
+			if err != nil {
+				return nil, err
+			}
+
+			return ret, nil
+		}
+	}
+
+	return nil, nil
+}
+
+// ScrapeGallery uses the scraper with the provided ID to scrape a scene.
+func (c Cache) ScrapeGallery(scraperID string, gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
+	s := c.findScraper(scraperID)
+	if s != nil {
+		ret, err := s.ScrapeGallery(gallery, c.globalConfig)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if ret != nil {
+			err = c.postScrapeGallery(ret)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return ret, nil
+	}
+
+	return nil, errors.New("Scraped with ID " + scraperID + " not found")
+}
+
+// ScrapeGalleryURL uses the first scraper it finds that matches the URL
+// provided to scrape a scene. If no scrapers are found that matches
+// the URL, then nil is returned.
+func (c Cache) ScrapeGalleryURL(url string) (*models.ScrapedGallery, error) {
+	for _, s := range c.scrapers {
+		if s.matchesGalleryURL(url) {
+			ret, err := s.ScrapeGalleryURL(url, c.globalConfig)
+
+			if err != nil {
+				return nil, err
+			}
+
+			err = c.postScrapeGallery(ret)
 			if err != nil {
 				return nil, err
 			}

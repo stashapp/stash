@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/fvbommel/sortorder"
 	"github.com/gobuffalo/packr/v2"
 	"github.com/golang-migrate/migrate/v4"
 	sqlite3mig "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -19,7 +20,7 @@ import (
 
 var DB *sqlx.DB
 var dbPath string
-var appSchemaVersion uint = 13
+var appSchemaVersion uint = 16
 var databaseSchemaVersion uint
 
 const sqlite3Driver = "sqlite3ex"
@@ -223,6 +224,19 @@ func registerCustomDriver() {
 					if err := conn.RegisterFunc(name, fn, true); err != nil {
 						return fmt.Errorf("Error registering function %s: %s", name, err.Error())
 					}
+				}
+
+				// COLLATE NATURAL_CS - Case sensitive natural sort
+				err := conn.RegisterCollation("NATURAL_CS", func(s string, s2 string) int {
+					if sortorder.NaturalLess(s, s2) {
+						return -1
+					} else {
+						return 1
+					}
+				})
+
+				if err != nil {
+					return fmt.Errorf("Error registering natural sort collation: %s", err.Error())
 				}
 
 				return nil

@@ -14,7 +14,7 @@ interface IScenePreviewProps {
   soundActive: boolean;
 }
 
-const ScenePreview: React.FC<IScenePreviewProps> = ({
+export const ScenePreview: React.FC<IScenePreviewProps> = ({
   image,
   video,
   isPortrait,
@@ -69,8 +69,14 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   props: ISceneCardProps
 ) => {
   const config = useConfiguration();
+
+  // studio image is missing if it uses the default
+  const missingStudioImage = props.scene.studio?.image_path?.endsWith(
+    "?default=true"
+  );
   const showStudioAsText =
-    config?.data?.configuration.interface.showStudioAsText ?? false;
+    missingStudioImage ||
+    (config?.data?.configuration.interface.showStudioAsText ?? false);
 
   function maybeRenderRatingBanner() {
     if (!props.scene.rating) {

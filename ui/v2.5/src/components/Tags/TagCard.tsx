@@ -1,16 +1,26 @@
-import { Card, Button, ButtonGroup } from "react-bootstrap";
+import { Button, ButtonGroup } from "react-bootstrap";
 import React from "react";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils } from "src/utils";
 import { Icon } from "../Shared";
+import { BasicCard } from "../Shared/BasicCard";
 
 interface IProps {
   tag: GQL.TagDataFragment;
   zoomIndex: number;
+  selecting?: boolean;
+  selected?: boolean;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
-export const TagCard: React.FC<IProps> = ({ tag, zoomIndex }) => {
+export const TagCard: React.FC<IProps> = ({
+  tag,
+  zoomIndex,
+  selecting,
+  selected,
+  onSelectedChanged,
+}) => {
   function maybeRenderScenesPopoverButton() {
     if (!tag.scene_count) return;
 
@@ -52,18 +62,22 @@ export const TagCard: React.FC<IProps> = ({ tag, zoomIndex }) => {
   }
 
   return (
-    <Card className={`tag-card zoom-${zoomIndex}`}>
-      <Link to={`/tags/${tag.id}`} className="tag-card-header">
+    <BasicCard
+      className={`tag-card zoom-${zoomIndex}`}
+      url={`/tags/${tag.id}`}
+      linkClassName="tag-card-header"
+      image={
         <img
           className="tag-card-image"
           alt={tag.name}
           src={tag.image_path ?? ""}
         />
-      </Link>
-      <div className="card-section">
-        <h5 className="text-truncate">{tag.name}</h5>
-      </div>
-      {maybeRenderPopoverButtonGroup()}
-    </Card>
+      }
+      details={<h5 className="text-truncate">{tag.name}</h5>}
+      popovers={maybeRenderPopoverButtonGroup()}
+      selected={selected}
+      selecting={selecting}
+      onSelectedChanged={onSelectedChanged}
+    />
   );
 };

@@ -24,6 +24,19 @@ func (r *studioResolver) URL(ctx context.Context, obj *models.Studio) (*string, 
 func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*string, error) {
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	imagePath := urlbuilders.NewStudioURLBuilder(baseURL, obj.ID).GetStudioImageURL()
+
+	qb := models.NewStudioQueryBuilder()
+	hasImage, err := qb.HasStudioImage(obj.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// indicate that image is missing by setting default query param to true
+	if !hasImage {
+		imagePath = imagePath + "?default=true"
+	}
+
 	return &imagePath, nil
 }
 
@@ -45,4 +58,9 @@ func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]*models.Studio, error) {
 	qb := models.NewStudioQueryBuilder()
 	return qb.FindChildren(obj.ID, nil)
+}
+
+func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) ([]*models.StashID, error) {
+	qb := models.NewJoinsQueryBuilder()
+	return qb.GetStudioStashIDs(obj.ID)
 }

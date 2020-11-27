@@ -4,15 +4,15 @@ import { mutateExportObjects } from "src/core/StashService";
 import { Modal } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { downloadFile } from "src/utils";
+import { ExportObjectsInput } from "src/core/generated-graphql";
 
-interface ISceneExportDialogProps {
-  selectedIds?: string[];
-  all?: boolean;
+interface IExportDialogProps {
+  exportInput: ExportObjectsInput;
   onClose: () => void;
 }
 
-export const SceneExportDialog: React.FC<ISceneExportDialogProps> = (
-  props: ISceneExportDialogProps
+export const ExportDialog: React.FC<IExportDialogProps> = (
+  props: IExportDialogProps
 ) => {
   const [includeDependencies, setIncludeDependencies] = useState(true);
 
@@ -25,10 +25,7 @@ export const SceneExportDialog: React.FC<ISceneExportDialogProps> = (
     try {
       setIsRunning(true);
       const ret = await mutateExportObjects({
-        scenes: {
-          ids: props.selectedIds,
-          all: props.all,
-        },
+        ...props.exportInput,
         includeDependencies,
       });
 
@@ -49,7 +46,7 @@ export const SceneExportDialog: React.FC<ISceneExportDialogProps> = (
     <Modal
       show
       icon="cogs"
-      header="Generate"
+      header="Export"
       accept={{ onClick: onExport, text: "Export" }}
       cancel={{
         onClick: () => props.onClose(),
@@ -63,7 +60,7 @@ export const SceneExportDialog: React.FC<ISceneExportDialogProps> = (
           <Form.Check
             id="include-dependencies"
             checked={includeDependencies}
-            label="Include related performers/movies/tags/studio in export"
+            label="Include related objects in export"
             onChange={() => setIncludeDependencies(!includeDependencies)}
           />
         </Form.Group>

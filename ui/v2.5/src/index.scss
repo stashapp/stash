@@ -4,6 +4,7 @@
 @import "src/components/Changelog/styles.scss";
 @import "src/components/Galleries/styles.scss";
 @import "src/components/Help/styles.scss";
+@import "src/components/Images/styles.scss";
 @import "src/components/List/styles.scss";
 @import "src/components/Movies/styles.scss";
 @import "src/components/Performers/styles.scss";
@@ -16,6 +17,7 @@
 @import "src/components/Tags/styles.scss";
 @import "src/components/Wall/styles.scss";
 @import "../node_modules/flag-icon-css/css/flag-icon.min.css";
+@import "src/components/Tagger/styles.scss";
 
 /* stylelint-disable */
 #root {
@@ -66,8 +68,13 @@ code,
 }
 
 .input-control,
-.input-control:focus {
+.input-control:focus,
+.input-control:disabled {
   background-color: $secondary;
+}
+
+.input-control:disabled {
+  opacity: 0.8;
 }
 
 textarea.text-input {
@@ -134,6 +141,10 @@ textarea.text-input {
     .tag-card-image {
       max-height: 240px;
     }
+
+    .image-card-preview {
+      height: 240px;
+    }
   }
 
   .zoom-2 {
@@ -150,6 +161,10 @@ textarea.text-input {
     .gallery-card-image,
     .tag-card-image {
       max-height: 360px;
+    }
+
+    .image-card-preview {
+      height: 360px;
     }
   }
 
@@ -168,12 +183,17 @@ textarea.text-input {
     .gallery-card-image {
       max-height: 480px;
     }
+
+    .image-card-preview {
+      height: 480px;
+    }
   }
 }
 
 .scene-card-preview,
 .gallery-card-image,
-.tag-card-image {
+.tag-card-image,
+.image-card-preview {
   height: auto;
   width: 100%;
 }
@@ -223,14 +243,6 @@ div.dropdown-menu {
 
   .dropdown-item {
     display: flex;
-
-    & > :not(:last-child) {
-      margin-right: 7px;
-    }
-
-    & > :last-child {
-      margin-right: 0;
-    }
   }
 }
 

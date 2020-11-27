@@ -180,13 +180,13 @@ export const MovieScrapeDialog: React.FC<IMovieScrapeDialogProps> = (
         />
         <ScrapedImageRow
           title="Front Image"
-          className="front-image"
+          className="movie-image"
           result={frontImage}
           onChange={(value) => setFrontImage(value)}
         />
         <ScrapedImageRow
           title="Back Image"
-          className="front-image"
+          className="movie-image"
           result={backImage}
           onChange={(value) => setBackImage(value)}
         />

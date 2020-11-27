@@ -18,7 +18,7 @@ func (qb *StudioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, er
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO studios (checksum, name, url, parent_id, created_at, updated_at)
-				VALUES (:checksum, :name, :url, :parent_id, :created_at, :updated_at)
+            VALUES (:checksum, :name, :url, :parent_id, :created_at, :updated_at)
 		`,
 		newStudio,
 	)
@@ -158,6 +158,7 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 	body := selectDistinctIDs("studios")
 	body += `
 		left join scenes on studios.id = scenes.studio_id		
+		left join studio_stash_ids on studio_stash_ids.studio_id = studios.id
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
@@ -182,12 +183,19 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 		havingClauses = appendClause(havingClauses, havingClause)
 	}
 
+	if stashIDFilter := studioFilter.StashID; stashIDFilter != nil {
+		whereClauses = append(whereClauses, "studio_stash_ids.stash_id = ?")
+		args = append(args, stashIDFilter)
+	}
+
 	if isMissingFilter := studioFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "image":
 			body += `left join studios_image on studios_image.studio_id = studios.id
 			`
 			whereClauses = appendClause(whereClauses, "studios_image.studio_id IS NULL")
+		case "stash_id":
+			whereClauses = appendClause(whereClauses, "studio_stash_ids.studio_id IS NULL")
 		default:
 			whereClauses = appendClause(whereClauses, "studios."+*isMissingFilter+" IS NULL")
 		}
@@ -287,4 +295,13 @@ func (qb *StudioQueryBuilder) DestroyStudioImage(studioID int, tx *sqlx.Tx) erro
 func (qb *StudioQueryBuilder) GetStudioImage(studioID int, tx *sqlx.Tx) ([]byte, error) {
 	query := `SELECT image from studios_image WHERE studio_id = ?`
 	return getImage(tx, query, studioID)
+}
+
+func (qb *StudioQueryBuilder) HasStudioImage(studioID int) (bool, error) {
+	ret, err := runCountQuery(buildCountQuery("SELECT studio_id from studios_image WHERE studio_id = ?"), []interface{}{studioID})
+	if err != nil {
+		return false, err
+	}
+
+	return ret == 1, nil
 }

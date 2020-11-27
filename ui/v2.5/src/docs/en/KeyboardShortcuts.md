@@ -11,6 +11,7 @@
 | Keyboard sequence | Target page |
 |-------------------|--------|
 | `g s` | Scenes |
+| `g i` | Images |
 | `g v` | Movies |
 | `g k` | Markers |
 | `g l` | Galleries |
