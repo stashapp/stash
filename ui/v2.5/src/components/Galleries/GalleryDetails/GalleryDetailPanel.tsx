@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { FormattedDate } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { TextUtils } from "src/utils";
-import { TagLink } from "src/components/Shared";
+import { TagLink, TruncatedText } from "src/components/Shared";
 import { PerformerCard } from "src/components/Performers/PerformerCard";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 
@@ -58,17 +58,16 @@ export const GalleryDetailPanel: React.FC<IGalleryDetailProps> = (props) => {
 
   // filename should use entire row if there is no studio
   const galleryDetailsWidth = props.gallery.studio ? "col-9" : "col-12";
+  const title =
+    props.gallery.title ?? TextUtils.fileNameFromPath(props.gallery.path ?? "");
 
   return (
     <>
       <div className="row">
         <div className={`${galleryDetailsWidth} col-xl-12 gallery-details`}>
-          <div className="gallery-header d-xl-none">
-            <h3 className="text-truncate">
-              {props.gallery.title ??
-                TextUtils.fileNameFromPath(props.gallery.path ?? "")}
-            </h3>
-          </div>
+          <h3 className="gallery-header d-xl-none">
+            <TruncatedText text={title} />
+          </h3>
           {props.gallery.date ? (
             <h5>
               <FormattedDate
