@@ -333,7 +333,9 @@ export const useSceneUpdate = (input: GQL.SceneUpdateInput) =>
 
 export const useBulkSceneUpdate = (input: GQL.BulkSceneUpdateInput) =>
   GQL.useBulkSceneUpdateMutation({
-    variables: input,
+    variables: {
+      input,
+    },
     update: deleteCache(sceneMutationImpactedQueries),
   });
 

@@ -61,8 +61,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     if (rating === undefined) {
       // and all scenes have the same rating, then we are unsetting the rating.
       if (aggregateRating) {
-        // an undefined rating is ignored in the server, so set it to 0 instead
-        sceneInput.rating = 0;
+        // null rating unsets it
+        sceneInput.rating = null;
       }
       // otherwise not setting the rating
     } else {
@@ -75,8 +75,8 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
       // and all scenes have the same studioId,
       // then unset the studioId, otherwise ignoring studioId
       if (aggregateStudioId) {
-        // an undefined studio_id is ignored in the server, so set it to empty string instead
-        sceneInput.studio_id = "";
+        // null studio_id unsets it
+        sceneInput.studio_id = null;
       }
     } else {
       // if studioId is set, then we are setting it
