@@ -252,37 +252,36 @@ export const Scene: React.FC = () => {
         </div>
 
         <Tab.Content>
-          <Tab.Pane eventKey="scene-details-panel" title="Details">
+          <Tab.Pane eventKey="scene-details-panel">
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-markers-panel" title="Markers">
+          <Tab.Pane eventKey="scene-markers-panel">
             <SceneMarkersPanel
               scene={scene}
               onClickMarker={onClickMarker}
               isVisible={activeTabKey === "scene-markers-panel"}
             />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-movie-panel" title="Movies">
+          <Tab.Pane eventKey="scene-movie-panel">
             <SceneMoviePanel scene={scene} />
           </Tab.Pane>
           {scene.gallery ? (
-            <Tab.Pane eventKey="scene-gallery-panel" title="Gallery">
+            <Tab.Pane eventKey="scene-gallery-panel">
               <GalleryViewer gallery={scene.gallery} />
             </Tab.Pane>
           ) : (
             ""
           )}
-          <Tab.Pane eventKey="scene-video-filter-panel" title="Filter">
+          <Tab.Pane eventKey="scene-video-filter-panel">
             <SceneVideoFilterPanel scene={scene} />
           </Tab.Pane>
           <Tab.Pane
             className="file-info-panel"
             eventKey="scene-file-info-panel"
-            title="File Info"
           >
             <SceneFileInfoPanel scene={scene} />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-edit-panel" title="Edit">
+          <Tab.Pane eventKey="scene-edit-panel">
             <SceneEditPanel
               isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}

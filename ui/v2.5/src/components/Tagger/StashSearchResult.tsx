@@ -5,7 +5,11 @@ import { uniq } from "lodash";
 import { blobToBase64 } from "base64-blob";
 
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator, SuccessIcon } from "src/components/Shared";
+import {
+  LoadingIndicator,
+  SuccessIcon,
+  TruncatedText,
+} from "src/components/Shared";
 import PerformerResult, { PerformerOperation } from "./PerformerResult";
 import StudioResult, { StudioOperation } from "./StudioResult";
 import { IStashBoxScene } from "./utils";
@@ -324,10 +328,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       rel="noopener noreferrer"
       className="scene-link"
     >
-      {scene?.title}
+      <TruncatedText text={scene?.title} />
     </a>
   ) : (
-    <span>{scene?.title}</span>
+    <TruncatedText text={scene?.title} />
   );
 
   const saveEnabled =
@@ -358,9 +362,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             />
           </a>
           <div className="d-flex flex-column justify-content-center scene-metadata">
-            <h4 className="text-truncate" title={scene?.title ?? ""}>
-              {sceneTitle}
-            </h4>
+            <h4>{sceneTitle}</h4>
             <h5>
               {scene?.studio?.name} • {scene?.date}
             </h5>
