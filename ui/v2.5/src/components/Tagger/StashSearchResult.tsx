@@ -275,27 +275,24 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
       const sceneUpdateResult = await updateScene({
         variables: {
-          id: stashScene.id ?? "",
-          title: scene.title,
-          details: scene.details,
-          date: scene.date,
-          performer_ids: performerIDs.filter((id) => id !== "Skip") as string[],
-          studio_id: studioID,
-          cover_image: imgData,
-          url: scene.url,
-          tag_ids: updatedTags,
-          rating: stashScene.rating,
-          movies: stashScene.movies.map((m) => ({
-            movie_id: m.movie.id,
-            scene_index: m.scene_index,
-          })),
-          stash_ids: [
-            ...(stashScene?.stash_ids ?? []),
-            {
-              endpoint,
-              stash_id: scene.stash_id,
-            },
-          ],
+          input: {
+            id: stashScene.id ?? "",
+            title: scene.title,
+            details: scene.details,
+            date: scene.date,
+            performer_ids: performerIDs.filter((id) => id !== "Skip") as string[],
+            studio_id: studioID,
+            cover_image: imgData,
+            url: scene.url,
+            tag_ids: updatedTags,
+            stash_ids: [
+              ...(stashScene?.stash_ids ?? []),
+              {
+                endpoint,
+                stash_id: scene.stash_id,
+              },
+            ],
+          },
         },
       });
 

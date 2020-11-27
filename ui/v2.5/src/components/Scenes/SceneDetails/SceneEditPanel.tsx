@@ -194,7 +194,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       details,
       url,
       date,
-      rating,
+      rating: rating ?? null,
       gallery_id: galleryId,
       studio_id: studioId,
       performer_ids: performerIds,

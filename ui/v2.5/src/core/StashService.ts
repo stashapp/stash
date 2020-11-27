@@ -325,7 +325,9 @@ const sceneMutationImpactedQueries = [
 
 export const useSceneUpdate = (input: GQL.SceneUpdateInput) =>
   GQL.useSceneUpdateMutation({
-    variables: input,
+    variables: {
+      input,
+    },
     update: deleteCache(sceneMutationImpactedQueries),
   });
 
