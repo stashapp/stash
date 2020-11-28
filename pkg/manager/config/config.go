@@ -101,6 +101,7 @@ const Language = "language"
 const CustomServedFolders = "custom_served_folders"
 
 // Interface options
+const MenuItems = "menu_items"
 const SoundOnPreview = "sound_on_preview"
 const WallShowTitle = "wall_show_title"
 const MaximumLoopDuration = "maximum_loop_duration"
@@ -449,6 +450,11 @@ func GetCustomServedFolders() URLMap {
 }
 
 // Interface options
+func GetMenuItems() []string {
+	viper.SetDefault(MenuItems, []string{"scenes", "images", "movies", "markers", "performers", "studios", "tags"})
+	return viper.GetStringSlice(MenuItems)
+}
+
 func GetSoundOnPreview() bool {
 	viper.SetDefault(SoundOnPreview, true)
 	return viper.GetBool(SoundOnPreview)
