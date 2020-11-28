@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import { FormattedNumber, FormattedPlural, FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
-import { CountryFlag } from "src/components/Shared";
-import { BasicCard } from "../Shared/BasicCard";
+import { BasicCard, CountryFlag, TruncatedText } from "src/components/Shared";
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
@@ -51,7 +50,9 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
       }
       details={
         <>
-          <h5 className="text-truncate">{performer.name}</h5>
+          <h5>
+            <TruncatedText text={performer.name} />
+          </h5>
           {age !== 0 ? <div className="text-muted">{ageString}</div> : ""}
           <Link to={NavUtils.makePerformersCountryUrl(performer)}>
             <CountryFlag country={performer.country} />

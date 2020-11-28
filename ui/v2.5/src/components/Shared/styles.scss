@@ -172,3 +172,13 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     transition: opacity 0.5s;
   }
 }
+
+.TruncatedText {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  overflow: hidden;
+
+  &-tooltip .tooltip-inner {
+    max-width: 300px;
+  }
+}
