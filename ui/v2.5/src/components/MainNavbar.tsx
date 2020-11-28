@@ -5,7 +5,7 @@ import {
   MessageDescriptor,
   useIntl,
 } from "react-intl";
-import { Nav, Navbar, Button } from "react-bootstrap";
+import { Nav, Navbar, Button, Fade } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
 import { Link, NavLink, useLocation, useHistory } from "react-router-dom";
@@ -117,7 +117,7 @@ export const MainNavbar: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
   const { data: config, loading } = useConfiguration();
-  
+
   // Show all menu items by default, unless config says otherwise
   const [menuItems, setMenuItems] = useState<IMenuItem[]>(allMenuItems);
 
@@ -265,20 +265,20 @@ export const MainNavbar: React.FC = () => {
         </Navbar.Brand>
         <Navbar.Toggle className="order-0" />
         <Navbar.Collapse className="order-3 order-md-1">
-          <Nav className="mr-md-auto">
-            {loading
-              ? null
-              : menuItems.map((i) => (
-                  <Nav.Link eventKey={i.href} as="div" key={i.href}>
-                    <LinkContainer activeClassName="active" exact to={i.href}>
-                      <Button className="minimal w-100">
-                        <Icon icon={i.icon} />
-                        <span>{intl.formatMessage(i.message)}</span>
-                      </Button>
-                    </LinkContainer>
-                  </Nav.Link>
-                ))}
-          </Nav>
+          <Fade in={!loading}>
+            <Nav className="mr-md-auto">
+              {menuItems.map((i) => (
+                <Nav.Link eventKey={i.href} as="div" key={i.href}>
+                  <LinkContainer activeClassName="active" exact to={i.href}>
+                    <Button className="minimal w-100">
+                      <Icon icon={i.icon} />
+                      <span>{intl.formatMessage(i.message)}</span>
+                    </Button>
+                  </LinkContainer>
+                </Nav.Link>
+              ))}
+            </Nav>
+          </Fade>
         </Navbar.Collapse>
         <Nav className="order-2 flex-row">
           <div className="d-none d-sm-block">{newButton}</div>
