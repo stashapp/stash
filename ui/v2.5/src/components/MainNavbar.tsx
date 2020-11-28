@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   defineMessages,
   FormattedMessage,
@@ -116,7 +116,7 @@ const allMenuItems: IMenuItem[] = [
 export const MainNavbar: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
-  const { data: config } = useConfiguration();
+  const { data: config, loading } = useConfiguration();
   
   // Show all menu items by default, unless config says otherwise
   const [menuItems, setMenuItems] = useState<IMenuItem[]>(allMenuItems);
@@ -124,7 +124,7 @@ export const MainNavbar: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
   const [showManual, setShowManual] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const iCfg = config?.configuration?.interface;
     if (iCfg?.menuItems) {
       setMenuItems(
@@ -266,16 +266,18 @@ export const MainNavbar: React.FC = () => {
         <Navbar.Toggle className="order-0" />
         <Navbar.Collapse className="order-3 order-md-1">
           <Nav className="mr-md-auto">
-            {menuItems.map((i) => (
-              <Nav.Link eventKey={i.href} as="div" key={i.href}>
-                <LinkContainer activeClassName="active" exact to={i.href}>
-                  <Button className="minimal w-100">
-                    <Icon icon={i.icon} />
-                    <span>{intl.formatMessage(i.message)}</span>
-                  </Button>
-                </LinkContainer>
-              </Nav.Link>
-            ))}
+            {loading
+              ? null
+              : menuItems.map((i) => (
+                  <Nav.Link eventKey={i.href} as="div" key={i.href}>
+                    <LinkContainer activeClassName="active" exact to={i.href}>
+                      <Button className="minimal w-100">
+                        <Icon icon={i.icon} />
+                        <span>{intl.formatMessage(i.message)}</span>
+                      </Button>
+                    </LinkContainer>
+                  </Nav.Link>
+                ))}
           </Nav>
         </Navbar.Collapse>
         <Nav className="order-2 flex-row">
