@@ -21,6 +21,7 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { StudioScenesPanel } from "./StudioScenesPanel";
+import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
 
@@ -233,7 +234,9 @@ export const Studio: React.FC = () => {
   }
 
   const activeTabKey =
-    tab === "childstudios" || tab === "images" ? tab : "scenes";
+    tab === "childstudios" || tab === "images" || tab === "galleries"
+      ? tab
+      : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
@@ -328,6 +331,9 @@ export const Studio: React.FC = () => {
           >
             <Tab eventKey="scenes" title="Scenes">
               <StudioScenesPanel studio={studio} />
+            </Tab>
+            <Tab eventKey="galleries" title="Galleries">
+              <StudioGalleriesPanel studio={studio} />
             </Tab>
             <Tab eventKey="images" title="Images">
               <StudioImagesPanel studio={studio} />
