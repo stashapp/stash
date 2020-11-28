@@ -454,6 +454,7 @@ driver:
 When developing a scraper you can have a look at the cookies set by a site by adding
 * a `CookieURL` if you use the direct xpath scraper
 * a `Domain` if you use the CDP scraper
+
 and having a look at the log / console in debug mode.
 
 ### XPath scraper example
