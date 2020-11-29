@@ -44,8 +44,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 	}
 
 	setCookies(jar, scraperConfig)
-	logger.Debugf("Jar cookies set from scraper")
-	printCookies(jar, scraperConfig)
+	printCookies(jar, scraperConfig, "Jar cookies set from scraper")
 
 	client := &http.Client{
 		Timeout: scrapeGetTimeout,
@@ -81,8 +80,7 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 	}
 
 	bodyReader := bytes.NewReader(body)
-	logger.Debugf("Jar cookies found for scraper urls")
-	printCookies(jar, scraperConfig)
+	printCookies(jar, scraperConfig, "Jar cookies found for scraper urls")
 
 	return charset.NewReader(bodyReader, resp.Header.Get("Content-Type"))
 }
@@ -148,7 +146,7 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 	err := chromedp.Run(ctx,
 		network.Enable(),
 		setCDPCookies(driverOptions),
-		printCDPCookies(driverOptions),
+		printCDPCookies(driverOptions, "Cookies found"),
 		chromedp.Navigate(url),
 		chromedp.Sleep(sleepDuration),
 		chromedp.ActionFunc(func(ctx context.Context) error {
@@ -159,7 +157,7 @@ func urlFromCDP(url string, driverOptions scraperDriverOptions, globalConfig Glo
 			res, err = dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
 			return err
 		}),
-		printCDPCookies(driverOptions),
+		printCDPCookies(driverOptions, "Cookies set"),
 	)
 	if err != nil {
 		return nil, err

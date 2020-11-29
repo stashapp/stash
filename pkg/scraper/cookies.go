@@ -54,7 +54,7 @@ func setCookies(jar *cookiejar.Jar, scraperConfig config) {
 }
 
 // print all cookies from the jar of the native http client
-func printCookies(jar *cookiejar.Jar, scraperConfig config) {
+func printCookies(jar *cookiejar.Jar, scraperConfig config, msg string) {
 	driverOptions := scraperConfig.DriverOptions
 	if driverOptions != nil && !driverOptions.UseCDP {
 		var foundURLs []*url.URL
@@ -65,7 +65,11 @@ func printCookies(jar *cookiejar.Jar, scraperConfig config) {
 				foundURLs = append(foundURLs, url)
 			}
 		}
-		printJarCookies(jar, foundURLs)
+		if len(foundURLs) > 0 {
+			logger.Debugf("%s\n", msg)
+			printJarCookies(jar, foundURLs)
+
+		}
 	}
 }
 
@@ -110,7 +114,7 @@ func setCDPCookies(driverOptions scraperDriverOptions) chromedp.Tasks {
 }
 
 // print cookies whose domain is included in the scraper  config
-func printCDPCookies(driverOptions scraperDriverOptions) chromedp.Action {
+func printCDPCookies(driverOptions scraperDriverOptions, msg string) chromedp.Action {
 	return chromedp.ActionFunc(func(ctx context.Context) error {
 		chromeCookies, err := network.GetAllCookies().Do(ctx)
 		if err != nil {
@@ -125,7 +129,7 @@ func printCDPCookies(driverOptions scraperDriverOptions) chromedp.Action {
 		}
 
 		if len(scraperDomains) > 0 { // only print the cookies if they are listed in the scraper
-			logger.Debugf("Chrome cookies found for scraper")
+			logger.Debugf("%s\n", msg)
 			for i, cookie := range chromeCookies {
 				_, ok := scraperDomains[cookie.Domain]
 				if ok {
