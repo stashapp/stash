@@ -4,7 +4,7 @@ import { Form, Row, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator } from "src/components/Shared";
+import { LoadingIndicator, TruncatedText } from "src/components/Shared";
 
 export const SettingsWarningsPanel: React.FC = () => {
   const { data, loading } = GQL.useGetSceneErrorsQuery();
@@ -84,7 +84,7 @@ export const SettingsWarningsPanel: React.FC = () => {
                       {e.related_scene.path}
                     </Link>
                   ) : (
-                    e.details
+                    <TruncatedText text={e.details} lineCount={3} />
                   )}
                 </td>
               </tr>

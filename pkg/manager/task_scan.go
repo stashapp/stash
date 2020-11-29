@@ -552,7 +552,9 @@ func (t *ScanTask) scanScene() *models.Scene {
 		retScene, err = qb.Create(newScene, tx)
 	}
 
-	t.makeScreenshots(videoFile, sceneHash, retScene.ID)
+	if retScene != nil {
+		t.makeScreenshots(videoFile, sceneHash, retScene.ID)
+	}
 
 	if err != nil {
 		logger.Error(err.Error())
