@@ -117,3 +117,18 @@ func (t changesetTranslator) nullInt64FromString(value *string, field string) *s
 
 	return ret
 }
+
+func (t changesetTranslator) nullBool(value *bool, field string) *sql.NullBool {
+	if !t.hasField(field) {
+		return nil
+	}
+
+	ret := &sql.NullBool{}
+
+	if value != nil {
+		ret.Bool = *value
+		ret.Valid = true
+	}
+
+	return ret
+}

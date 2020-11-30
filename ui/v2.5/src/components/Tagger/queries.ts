@@ -12,11 +12,13 @@ export const useUpdatePerformerStashID = () => {
   ) =>
     updatePerformer({
       variables: {
-        id: performerID,
-        stash_ids: stashIDs.map((s) => ({
-          stash_id: s.stash_id,
-          endpoint: s.endpoint,
-        })),
+        input: {
+          id: performerID,
+          stash_ids: stashIDs.map((s) => ({
+            stash_id: s.stash_id,
+            endpoint: s.endpoint,
+          })),
+        },
       },
       update: (store, updatedPerformer) => {
         if (!updatedPerformer.data?.performerUpdate) return;

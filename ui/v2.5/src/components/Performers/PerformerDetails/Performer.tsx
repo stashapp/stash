@@ -108,12 +108,14 @@ export const Performer: React.FC = () => {
       if (!isNew) {
         await updatePerformer({
           variables: {
-            ...performerInput,
-            stash_ids: (performerInput?.stash_ids ?? []).map((s) => ({
-              endpoint: s.endpoint,
-              stash_id: s.stash_id,
-            })),
-          } as GQL.PerformerUpdateInput,
+            input: {
+              ...performerInput,
+              stash_ids: performerInput?.stash_ids?.map((s) => ({
+                endpoint: s.endpoint,
+                stash_id: s.stash_id,
+              }))
+            } as GQL.PerformerUpdateInput,
+          },
         });
         if (performerInput.image) {
           // Refetch image to bust browser cache
@@ -209,7 +211,10 @@ export const Performer: React.FC = () => {
   }
 
   function setFavorite(v: boolean) {
-    onSave({ ...performer, favorite: v });
+    onSave({
+      id: performer.id,
+      favorite: v 
+    });
   }
 
   const renderIcons = () => (
