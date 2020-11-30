@@ -134,7 +134,7 @@ export const GalleryEditPanel: React.FC<
       url,
       date,
       rating: rating ?? null,
-      studio_id: studioId,
+      studio_id: studioId ?? null,
       performer_ids: performerIds,
       tag_ids: tagIds,
     };
