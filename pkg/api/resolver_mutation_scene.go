@@ -82,7 +82,7 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 	updatedScene.Title = translator.nullString(input.Title, "title")
 	updatedScene.Details = translator.nullString(input.Details, "details")
 	updatedScene.URL = translator.nullString(input.URL, "url")
-	updatedScene.Date = translator.sqlDate(input.Date, "date")
+	updatedScene.Date = translator.sqliteDate(input.Date, "date")
 	updatedScene.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 
@@ -239,7 +239,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 	updatedScene.Title = translator.nullString(input.Title, "title")
 	updatedScene.Details = translator.nullString(input.Details, "details")
 	updatedScene.URL = translator.nullString(input.URL, "url")
-	updatedScene.Date = translator.sqlDate(input.Date, "date")
+	updatedScene.Date = translator.sqliteDate(input.Date, "date")
 	updatedScene.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 

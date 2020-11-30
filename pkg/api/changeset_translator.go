@@ -73,7 +73,7 @@ func (t changesetTranslator) nullString(value *string, field string) *sql.NullSt
 	return ret
 }
 
-func (t changesetTranslator) sqlDate(value *string, field string) *models.SQLiteDate {
+func (t changesetTranslator) sqliteDate(value *string, field string) *models.SQLiteDate {
 	if !t.hasField(field) {
 		return nil
 	}

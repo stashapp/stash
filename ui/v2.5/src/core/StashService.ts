@@ -510,15 +510,13 @@ export const useGalleryCreate = (input: GQL.GalleryCreateInput) =>
     update: deleteCache(galleryMutationImpactedQueries),
   });
 
-export const useGalleryUpdate = (input: GQL.GalleryUpdateInput) =>
+export const useGalleryUpdate = () =>
   GQL.useGalleryUpdateMutation({
-    variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
   });
 
-export const useBulkGalleryUpdate = (input: GQL.BulkGalleryUpdateInput) =>
+export const useBulkGalleryUpdate = () =>
   GQL.useBulkGalleryUpdateMutation({
-    variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
   });
 
