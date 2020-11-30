@@ -423,15 +423,13 @@ const imageMutationImpactedQueries = [
   GQL.FindGalleriesDocument,
 ];
 
-export const useImageUpdate = (input: GQL.ImageUpdateInput) =>
+export const useImageUpdate = () =>
   GQL.useImageUpdateMutation({
-    variables: input,
     update: deleteCache(imageMutationImpactedQueries),
   });
 
-export const useBulkImageUpdate = (input: GQL.BulkImageUpdateInput) =>
+export const useBulkImageUpdate = () =>
   GQL.useBulkImageUpdateMutation({
-    variables: input,
     update: deleteCache(imageMutationImpactedQueries),
   });
 

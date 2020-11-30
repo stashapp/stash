@@ -30,7 +30,7 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
   // Network state
   const [isLoading, setIsLoading] = useState(true);
 
-  const [updateImage] = useImageUpdate(getImageInput());
+  const [updateImage] = useImageUpdate();
 
   useEffect(() => {
     if (props.isVisible) {
@@ -95,8 +95,8 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
     return {
       id: props.image.id,
       title,
-      rating,
-      studio_id: studioId,
+      rating: rating ?? null,
+      studio_id: studioId ?? null,
       performer_ids: performerIds,
       tag_ids: tagIds,
     };
@@ -105,7 +105,11 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
   async function onSave() {
     setIsLoading(true);
     try {
-      const result = await updateImage();
+      const result = await updateImage({
+        variables: {
+          input: getImageInput(),
+        }
+      });
       if (result.data?.imageUpdate) {
         Toast.success({ content: "Updated image" });
       }

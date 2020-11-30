@@ -29,7 +29,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
   );
   const [tagIds, setTagIds] = useState<string[]>();
 
-  const [updateImages] = useBulkImageUpdate(getImageInput());
+  const [updateImages] = useBulkImageUpdate();
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
@@ -61,8 +61,8 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     if (rating === undefined) {
       // and all images have the same rating, then we are unsetting the rating.
       if (aggregateRating) {
-        // an undefined rating is ignored in the server, so set it to 0 instead
-        imageInput.rating = 0;
+        // null rating to unset it
+        imageInput.rating = null;
       }
       // otherwise not setting the rating
     } else {
@@ -75,8 +75,8 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
       // and all images have the same studioId,
       // then unset the studioId, otherwise ignoring studioId
       if (aggregateStudioId) {
-        // an undefined studio_id is ignored in the server, so set it to empty string instead
-        imageInput.studio_id = "";
+        // null studio_id to unset it
+        imageInput.studio_id = null;
       }
     } else {
       // if studioId is set, then we are setting it
@@ -125,7 +125,11 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
   async function onSave() {
     setIsUpdating(true);
     try {
-      await updateImages();
+      await updateImages({
+        variables: {
+          input: getImageInput(),
+        }
+      });
       Toast.success({ content: "Updated images" });
       props.onClose(true);
     } catch (e) {
