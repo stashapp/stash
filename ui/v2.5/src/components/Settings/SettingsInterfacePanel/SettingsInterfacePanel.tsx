@@ -3,10 +3,23 @@ import { Button, Form } from "react-bootstrap";
 import { DurationInput, LoadingIndicator } from "src/components/Shared";
 import { useConfiguration, useConfigureInterface } from "src/core/StashService";
 import { useToast } from "src/hooks";
+import { CheckboxGroup } from "./CheckboxGroup";
+
+const allMenuItems = [
+  { id: "scenes", label: "Scenes" },
+  { id: "images", label: "Images" },
+  { id: "movies", label: "Movies" },
+  { id: "markers", label: "Markers" },
+  { id: "galleries", label: "Galleries" },
+  { id: "performers", label: "Performers" },
+  { id: "studios", label: "Studios" },
+  { id: "tags", label: "Tags" },
+];
 
 export const SettingsInterfacePanel: React.FC = () => {
   const Toast = useToast();
   const { data: config, error, loading } = useConfiguration();
+  const [menuItemIds, setMenuItemIds] = useState<string[]>(allMenuItems.map(item => item.id));
   const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
   const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
   const [wallPlayback, setWallPlayback] = useState<string>("video");
@@ -18,6 +31,7 @@ export const SettingsInterfacePanel: React.FC = () => {
   const [language, setLanguage] = useState<string>("en");
 
   const [updateInterfaceConfig] = useConfigureInterface({
+    menuItems: menuItemIds,
     soundOnPreview,
     wallShowTitle,
     wallPlayback,
@@ -31,6 +45,7 @@ export const SettingsInterfacePanel: React.FC = () => {
 
   useEffect(() => {
     const iCfg = config?.configuration?.interface;
+    setMenuItemIds(iCfg?.menuItems ?? allMenuItems.map(item => item.id));
     setSoundOnPreview(iCfg?.soundOnPreview ?? true);
     setWallShowTitle(iCfg?.wallShowTitle ?? true);
     setWallPlayback(iCfg?.wallPlayback ?? "video");
@@ -60,7 +75,7 @@ export const SettingsInterfacePanel: React.FC = () => {
     <>
       <h4>User Interface</h4>
       <Form.Group controlId="language">
-        <h6>Language</h6>
+        <h5>Language</h5>
         <Form.Control
           as="select"
           className="col-4 input-control"
@@ -72,6 +87,18 @@ export const SettingsInterfacePanel: React.FC = () => {
           <option value="en-US">English (United States)</option>
           <option value="en-GB">English (United Kingdom)</option>
         </Form.Control>
+      </Form.Group>
+      <Form.Group>
+        <h5>Content types</h5>
+        <CheckboxGroup
+          groupId="content-types"
+          items={allMenuItems}
+          checkedIds={menuItemIds}
+          onChange={setMenuItemIds}
+        />
+        <Form.Text className="text-muted">
+          Show or hide different types of content
+        </Form.Text>
       </Form.Group>
       <Form.Group>
         <h5>Scene / Marker Wall</h5>
