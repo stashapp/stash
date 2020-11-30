@@ -149,7 +149,7 @@ type ConfigGeneralResult {
 }
 
 input ConfigInterfaceInput {
-  """Ordered list of items that should be shown in the navigation menu"""
+  """Ordered list of items that should be shown in the menu"""
   menuItems: [String!]
   """Enable sound on mouseover previews"""
   soundOnPreview: Boolean
@@ -171,7 +171,7 @@ input ConfigInterfaceInput {
 }
 
 type ConfigInterfaceResult {
-  """Ordered list of items that should be shown in the navigation menu"""
+  """Ordered list of items that should be shown in the menu"""
   menuItems: [String!]
   """Enable sound on mouseover previews"""
   soundOnPreview: Boolean
