@@ -19,7 +19,9 @@ const allMenuItems = [
 export const SettingsInterfacePanel: React.FC = () => {
   const Toast = useToast();
   const { data: config, error, loading } = useConfiguration();
-  const [menuItemIds, setMenuItemIds] = useState<string[]>(allMenuItems.map(item => item.id));
+  const [menuItemIds, setMenuItemIds] = useState<string[]>(
+    allMenuItems.map((item) => item.id)
+  );
   const [soundOnPreview, setSoundOnPreview] = useState<boolean>(true);
   const [wallShowTitle, setWallShowTitle] = useState<boolean>(true);
   const [wallPlayback, setWallPlayback] = useState<string>("video");
@@ -45,7 +47,7 @@ export const SettingsInterfacePanel: React.FC = () => {
 
   useEffect(() => {
     const iCfg = config?.configuration?.interface;
-    setMenuItemIds(iCfg?.menuItems ?? allMenuItems.map(item => item.id));
+    setMenuItemIds(iCfg?.menuItems ?? allMenuItems.map((item) => item.id));
     setSoundOnPreview(iCfg?.soundOnPreview ?? true);
     setWallShowTitle(iCfg?.wallShowTitle ?? true);
     setWallPlayback(iCfg?.wallPlayback ?? "video");
