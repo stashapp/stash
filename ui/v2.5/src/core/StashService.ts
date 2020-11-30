@@ -583,9 +583,8 @@ export const useMovieCreate = (input: GQL.MovieCreateInput) =>
     ]),
   });
 
-export const useMovieUpdate = (input: GQL.MovieUpdateInput) =>
+export const useMovieUpdate = () =>
   GQL.useMovieUpdateMutation({
-    variables: input,
     update: deleteCache(movieMutationImpactedQueries),
   });
 
