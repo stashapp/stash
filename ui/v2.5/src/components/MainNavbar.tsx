@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   defineMessages,
   FormattedMessage,
@@ -124,7 +124,7 @@ export const MainNavbar: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
   const [showManual, setShowManual] = useState(false);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const iCfg = config?.configuration?.interface;
     if (iCfg?.menuItems) {
       setMenuItems(
