@@ -89,15 +89,15 @@ export const SettingsInterfacePanel: React.FC = () => {
         </Form.Control>
       </Form.Group>
       <Form.Group>
-        <h5>Content types</h5>
+        <h5>Menu items</h5>
         <CheckboxGroup
-          groupId="content-types"
+          groupId="menu-items"
           items={allMenuItems}
           checkedIds={menuItemIds}
           onChange={setMenuItemIds}
         />
         <Form.Text className="text-muted">
-          Show or hide different types of content
+          Show or hide different types of content on the navigation bar
         </Form.Text>
       </Form.Group>
       <Form.Group>
