@@ -5,6 +5,7 @@ import {
   useListMovieScrapers,
   useListPerformerScrapers,
   useListSceneScrapers,
+  useListGalleryScrapers,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
@@ -76,6 +77,10 @@ export const SettingsScrapersPanel: React.FC = () => {
     loading: loadingScenes,
   } = useListSceneScrapers();
   const {
+    data: galleryScrapers,
+    loading: loadingGalleries,
+  } = useListGalleryScrapers();
+  const {
     data: movieScrapers,
     loading: loadingMovies,
   } = useListMovieScrapers();
@@ -110,6 +115,25 @@ export const SettingsScrapersPanel: React.FC = () => {
       switch (t) {
         case ScrapeType.Fragment:
           return "Scene Metadata";
+        default:
+          return t;
+      }
+    });
+
+    return (
+      <ul>
+        {typeStrings.map((t) => (
+          <li key={t}>{t}</li>
+        ))}
+      </ul>
+    );
+  }
+
+  function renderGalleryScrapeTypes(types: ScrapeType[]) {
+    const typeStrings = types.map((t) => {
+      switch (t) {
+        case ScrapeType.Fragment:
+          return "Gallery Metadata";
         default:
           return t;
       }
@@ -159,6 +183,22 @@ export const SettingsScrapersPanel: React.FC = () => {
     ));
 
     return renderTable("Scene scrapers", elements);
+  }
+
+  function renderGalleryScrapers() {
+    const elements = (galleryScrapers?.listGalleryScrapers ?? []).map(
+      (scraper) => (
+        <tr key={scraper.id}>
+          <td>{scraper.name}</td>
+          <td>
+            {renderGalleryScrapeTypes(scraper.gallery?.supported_scrapes ?? [])}
+          </td>
+          <td>{renderURLs(scraper.gallery?.urls ?? [])}</td>
+        </tr>
+      )
+    );
+
+    return renderTable("Gallery Scrapers", elements);
   }
 
   function renderPerformerScrapers() {
@@ -213,7 +253,7 @@ export const SettingsScrapersPanel: React.FC = () => {
     }
   }
 
-  if (loadingScenes || loadingPerformers || loadingMovies)
+  if (loadingScenes || loadingGalleries || loadingPerformers || loadingMovies)
     return <LoadingIndicator />;
 
   return (
@@ -230,6 +270,7 @@ export const SettingsScrapersPanel: React.FC = () => {
 
       <div>
         {renderSceneScrapers()}
+        {renderGalleryScrapers()}
         {renderPerformerScrapers()}
         {renderMovieScrapers()}
       </div>
