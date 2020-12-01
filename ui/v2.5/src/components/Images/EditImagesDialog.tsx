@@ -128,7 +128,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
       await updateImages({
         variables: {
           input: getImageInput(),
-        }
+        },
       });
       Toast.success({ content: "Updated images" });
       props.onClose(true);

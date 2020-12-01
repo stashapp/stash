@@ -131,7 +131,7 @@ export const Studio: React.FC = () => {
         const result = await updateStudio({
           variables: {
             input: getStudioInput() as GQL.StudioUpdateInput,
-          }
+          },
         });
         if (result.data?.studioUpdate) {
           updateStudioData(result.data.studioUpdate);

@@ -108,7 +108,7 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
       const result = await updateImage({
         variables: {
           input: getImageInput(),
-        }
+        },
       });
       if (result.data?.imageUpdate) {
         Toast.success({ content: "Updated image" });

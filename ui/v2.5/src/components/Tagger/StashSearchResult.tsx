@@ -280,7 +280,9 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
             title: scene.title,
             details: scene.details,
             date: scene.date,
-            performer_ids: performerIDs.filter((id) => id !== "Skip") as string[],
+            performer_ids: performerIDs.filter(
+              (id) => id !== "Skip"
+            ) as string[],
             studio_id: studioID,
             cover_image: imgData,
             url: scene.url,

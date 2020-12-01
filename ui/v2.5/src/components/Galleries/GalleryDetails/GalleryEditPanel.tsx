@@ -153,7 +153,7 @@ export const GalleryEditPanel: React.FC<
         const result = await updateGallery({
           variables: {
             input: getGalleryInput() as GQL.GalleryUpdateInput,
-          }
+          },
         });
         if (result.data?.galleryUpdate) {
           Toast.success({ content: "Updated gallery" });

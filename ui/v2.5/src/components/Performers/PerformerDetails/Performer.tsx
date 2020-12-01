@@ -113,7 +113,7 @@ export const Performer: React.FC = () => {
               stash_ids: performerInput?.stash_ids?.map((s) => ({
                 endpoint: s.endpoint,
                 stash_id: s.stash_id,
-              }))
+              })),
             } as GQL.PerformerUpdateInput,
           },
         });
@@ -213,7 +213,7 @@ export const Performer: React.FC = () => {
   function setFavorite(v: boolean) {
     onSave({
       id: performer.id,
-      favorite: v 
+      favorite: v,
     });
   }
 

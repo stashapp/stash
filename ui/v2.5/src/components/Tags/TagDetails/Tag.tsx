@@ -130,7 +130,7 @@ export const Tag: React.FC = () => {
         const result = await updateTag({
           variables: {
             input: getTagInput() as GQL.TagUpdateInput,
-          }
+          },
         });
         if (result.data?.tagUpdate) {
           updateTagData(result.data.tagUpdate);

@@ -222,7 +222,7 @@ export const Movie: React.FC = () => {
         const result = await updateMovie({
           variables: {
             input: getMovieInput() as GQL.MovieUpdateInput,
-          }
+          },
         });
         if (result.data?.movieUpdate) {
           updateMovieData(result.data.movieUpdate);

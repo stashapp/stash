@@ -125,7 +125,7 @@ export const useUpdateStudioStashID = () => {
             stash_id: s.stash_id,
             endpoint: s.endpoint,
           })),
-        }
+        },
       },
       update: (store, result) => {
         if (!result.data?.studioUpdate) return;

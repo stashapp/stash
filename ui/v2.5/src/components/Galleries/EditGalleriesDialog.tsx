@@ -125,9 +125,11 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   async function onSave() {
     setIsUpdating(true);
     try {
-      await updateGalleries({variables: {
-        input: getGalleryInput(),
-      }});
+      await updateGalleries({
+        variables: {
+          input: getGalleryInput(),
+        },
+      });
       Toast.success({ content: "Updated galleries" });
       props.onClose(true);
     } catch (e) {
