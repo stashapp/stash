@@ -47,7 +47,7 @@
     "localforage": "1.9.0",
     "lodash": "^4.17.20",
     "mousetrap": "^1.6.5",
-    "mousetrap-pause": "^1.0.0",    
+    "mousetrap-pause": "^1.0.0",
     "query-string": "6.13.6",
     "react": "17.0.1",
     "react-bootstrap": "1.4.0",
@@ -61,6 +61,7 @@
     "react-router-dom": "^5.2.0",
     "react-router-hash-link": "^2.2.2",
     "react-select": "^3.1.0",
+    "remark-gfm": "^1.0.0",
     "string.prototype.replaceall": "^1.0.3",
     "subscriptions-transport-ws": "^0.9.18",
     "universal-cookie": "^4.0.4"
