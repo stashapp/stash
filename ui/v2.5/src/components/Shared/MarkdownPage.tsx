@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import GFM from "remark-gfm";
 
 interface IPageProps {
   // page is a markdown module
@@ -18,5 +19,5 @@ export const MarkdownPage: React.FC<IPageProps> = ({ page }) => {
     }
   }, [page, markdown]);
 
-  return <ReactMarkdown className="markdown" source={markdown} />;
+  return <ReactMarkdown plugins={[GFM]} className="markdown" source={markdown} />;
 };
