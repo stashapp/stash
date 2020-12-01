@@ -555,9 +555,8 @@ export const useStudioCreate = (input: GQL.StudioCreateInput) =>
     ]),
   });
 
-export const useStudioUpdate = (input: GQL.StudioUpdateInput) =>
+export const useStudioUpdate = () =>
   GQL.useStudioUpdateMutation({
-    variables: input,
     update: deleteCache(studioMutationImpactedQueries),
   });
 

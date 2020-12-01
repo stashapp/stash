@@ -50,9 +50,7 @@ export const Studio: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>();
 
   const { data, error, loading } = useFindStudio(id);
-  const [updateStudio] = useStudioUpdate(
-    getStudioInput() as GQL.StudioUpdateInput
-  );
+  const [updateStudio] = useStudioUpdate();
   const [createStudio] = useStudioCreate(
     getStudioInput() as GQL.StudioCreateInput
   );
@@ -117,8 +115,8 @@ export const Studio: React.FC = () => {
     const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
       name,
       url,
-      parent_id: parentStudioId,
-      image,
+      parent_id: parentStudioId ?? null,
+      image: image ?? null,
     };
 
     if (!isNew) {
@@ -130,7 +128,11 @@ export const Studio: React.FC = () => {
   async function onSave() {
     try {
       if (!isNew) {
-        const result = await updateStudio();
+        const result = await updateStudio({
+          variables: {
+            input: getStudioInput() as GQL.StudioUpdateInput,
+          }
+        });
         if (result.data?.studioUpdate) {
           updateStudioData(result.data.studioUpdate);
           setIsEditing(false);
