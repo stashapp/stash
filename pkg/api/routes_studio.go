@@ -26,10 +26,14 @@ func (rs studioRoutes) Routes() chi.Router {
 func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	studio := r.Context().Value(studioKey).(*models.Studio)
 	qb := models.NewStudioQueryBuilder()
-	image, _ := qb.GetStudioImage(studio.ID, nil)
-
+	var image []byte
 	defaultParam := r.URL.Query().Get("default")
-	if len(image) == 0 || defaultParam == "true" {
+
+	if defaultParam != "true" {
+		image, _ = qb.GetStudioImage(studio.ID, nil)
+	}
+
+	if len(image) == 0 {
 		_, image, _ = utils.ProcessBase64Image(models.DefaultStudioImage)
 	}
 

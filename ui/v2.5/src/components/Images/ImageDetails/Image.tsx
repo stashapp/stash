@@ -144,17 +144,16 @@ export const Image: React.FC = () => {
         </div>
 
         <Tab.Content>
-          <Tab.Pane eventKey="image-details-panel" title="Details">
+          <Tab.Pane eventKey="image-details-panel">
             <ImageDetailPanel image={image} />
           </Tab.Pane>
           <Tab.Pane
             className="file-info-panel"
             eventKey="image-file-info-panel"
-            title="File Info"
           >
             <ImageFileInfoPanel image={image} />
           </Tab.Pane>
-          <Tab.Pane eventKey="image-edit-panel" title="Edit">
+          <Tab.Pane eventKey="image-edit-panel">
             <ImageEditPanel
               isVisible={activeTabKey === "image-edit-panel"}
               image={image}
