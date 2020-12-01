@@ -616,9 +616,8 @@ export const useTagCreate = (input: GQL.TagCreateInput) =>
       GQL.AllTagsForFilterDocument,
     ]),
   });
-export const useTagUpdate = (input: GQL.TagUpdateInput) =>
+export const useTagUpdate = () =>
   GQL.useTagUpdateMutation({
-    variables: input,
     update: deleteCache(tagMutationImpactedQueries),
   });
 export const useTagDestroy = (input: GQL.TagDestroyInput) =>

@@ -47,7 +47,7 @@ export const Tag: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string>();
 
   const { data, error, loading } = useFindTag(id);
-  const [updateTag] = useTagUpdate(getTagInput() as GQL.TagUpdateInput);
+  const [updateTag] = useTagUpdate();
   const [createTag] = useTagCreate(getTagInput() as GQL.TagUpdateInput);
   const [deleteTag] = useTagDestroy(getTagInput() as GQL.TagUpdateInput);
 
@@ -127,7 +127,11 @@ export const Tag: React.FC = () => {
   async function onSave() {
     try {
       if (!isNew) {
-        const result = await updateTag();
+        const result = await updateTag({
+          variables: {
+            input: getTagInput() as GQL.TagUpdateInput,
+          }
+        });
         if (result.data?.tagUpdate) {
           updateTagData(result.data.tagUpdate);
           setIsEditing(false);
