@@ -117,16 +117,21 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 		ID:        movieID,
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
 	var frontimageData []byte
 	var err error
-	frontImageIncluded := wasFieldIncluded(ctx, "front_image")
+	frontImageIncluded := translator.hasField("front_image")
 	if input.FrontImage != nil {
 		_, frontimageData, err = utils.ProcessBase64Image(*input.FrontImage)
 		if err != nil {
 			return nil, err
 		}
 	}
-	backImageIncluded := wasFieldIncluded(ctx, "back_image")
+	backImageIncluded := translator.hasField("back_image")
 	var backimageData []byte
 	if input.BackImage != nil {
 		_, backimageData, err = utils.ProcessBase64Image(*input.BackImage)
@@ -142,45 +147,14 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 		updatedMovie.Checksum = &checksum
 	}
 
-	if input.Aliases != nil {
-		updatedMovie.Aliases = &sql.NullString{String: *input.Aliases, Valid: true}
-	}
-	if input.Duration != nil {
-		duration := int64(*input.Duration)
-		updatedMovie.Duration = &sql.NullInt64{Int64: duration, Valid: true}
-	}
-
-	if input.Date != nil {
-		updatedMovie.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
-	}
-
-	if input.Rating != nil {
-		rating := int64(*input.Rating)
-		updatedMovie.Rating = &sql.NullInt64{Int64: rating, Valid: true}
-	} else {
-		// rating must be nullable
-		updatedMovie.Rating = &sql.NullInt64{Valid: false}
-	}
-
-	if input.StudioID != nil {
-		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-		updatedMovie.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
-	} else {
-		// studio must be nullable
-		updatedMovie.StudioID = &sql.NullInt64{Valid: false}
-	}
-
-	if input.Director != nil {
-		updatedMovie.Director = &sql.NullString{String: *input.Director, Valid: true}
-	}
-
-	if input.Synopsis != nil {
-		updatedMovie.Synopsis = &sql.NullString{String: *input.Synopsis, Valid: true}
-	}
-
-	if input.URL != nil {
-		updatedMovie.URL = &sql.NullString{String: *input.URL, Valid: true}
-	}
+	updatedMovie.Aliases = translator.nullString(input.Aliases, "aliases")
+	updatedMovie.Duration = translator.nullInt64(input.Duration, "duration")
+	updatedMovie.Date = translator.sqliteDate(input.Date, "date")
+	updatedMovie.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedMovie.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
+	updatedMovie.Director = translator.nullString(input.Director, "director")
+	updatedMovie.Synopsis = translator.nullString(input.Synopsis, "synopsis")
+	updatedMovie.URL = translator.nullString(input.URL, "url")
 
 	// Start the transaction and save the movie
 	tx := database.DB.MustBeginTx(ctx, nil)
