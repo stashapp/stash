@@ -22,6 +22,7 @@ import FsLightbox from "fslightbox-react";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
+import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
 
 interface IPerformerParams {
@@ -60,6 +61,7 @@ export const Performer: React.FC = () => {
 
   const activeTabKey =
     tab === "scenes" ||
+    tab === "galleries" ||
     tab === "images" ||
     tab === "edit" ||
     tab === "operations"
@@ -81,6 +83,7 @@ export const Performer: React.FC = () => {
     Mousetrap.bind("a", () => setActiveTabKey("details"));
     Mousetrap.bind("e", () => setActiveTabKey("edit"));
     Mousetrap.bind("c", () => setActiveTabKey("scenes"));
+    Mousetrap.bind("g", () => setActiveTabKey("galleries"));
     Mousetrap.bind("o", () => setActiveTabKey("operations"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
 
@@ -108,12 +111,14 @@ export const Performer: React.FC = () => {
       if (!isNew) {
         await updatePerformer({
           variables: {
-            ...performerInput,
-            stash_ids: (performerInput?.stash_ids ?? []).map((s) => ({
-              endpoint: s.endpoint,
-              stash_id: s.stash_id,
-            })),
-          } as GQL.PerformerUpdateInput,
+            input: {
+              ...performerInput,
+              stash_ids: performerInput?.stash_ids?.map((s) => ({
+                endpoint: s.endpoint,
+                stash_id: s.stash_id,
+              })),
+            } as GQL.PerformerUpdateInput,
+          },
         });
         if (performerInput.image) {
           // Refetch image to bust browser cache
@@ -163,6 +168,9 @@ export const Performer: React.FC = () => {
       <Tab eventKey="scenes" title="Scenes">
         <PerformerScenesPanel performer={performer} />
       </Tab>
+      <Tab eventKey="galleries" title="Galleries">
+        <PerformerGalleriesPanel performer={performer} />
+      </Tab>
       <Tab eventKey="images" title="Images">
         <PerformerImagesPanel performer={performer} />
       </Tab>
@@ -209,7 +217,10 @@ export const Performer: React.FC = () => {
   }
 
   function setFavorite(v: boolean) {
-    onSave({ ...performer, favorite: v });
+    onSave({
+      id: performer.id,
+      favorite: v,
+    });
   }
 
   const renderIcons = () => (

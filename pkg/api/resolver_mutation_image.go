@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"database/sql"
 	"strconv"
 	"time"
 
@@ -17,7 +16,11 @@ func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUp
 	// Start the transaction and save the image
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-	ret, err := r.imageUpdate(input, tx)
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	ret, err := r.imageUpdate(input, translator, tx)
 
 	if err != nil {
 		_ = tx.Rollback()
@@ -35,11 +38,16 @@ func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUp
 func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.ImageUpdateInput) ([]*models.Image, error) {
 	// Start the transaction and save the image
 	tx := database.DB.MustBeginTx(ctx, nil)
+	inputMaps := getUpdateInputMaps(ctx)
 
 	var ret []*models.Image
 
-	for _, image := range input {
-		thisImage, err := r.imageUpdate(*image, tx)
+	for i, image := range input {
+		translator := changesetTranslator{
+			inputMap: inputMaps[i],
+		}
+
+		thisImage, err := r.imageUpdate(*image, translator, tx)
 		ret = append(ret, thisImage)
 
 		if err != nil {
@@ -56,7 +64,7 @@ func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.Ima
 	return ret, nil
 }
 
-func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, tx *sqlx.Tx) (*models.Image, error) {
+func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, translator changesetTranslator, tx *sqlx.Tx) (*models.Image, error) {
 	// Populate image from the input
 	imageID, _ := strconv.Atoi(input.ID)
 
@@ -65,24 +73,10 @@ func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, tx *sqlx.T
 		ID:        imageID,
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
-	if input.Title != nil {
-		updatedImage.Title = &sql.NullString{String: *input.Title, Valid: true}
-	}
 
-	if input.Rating != nil {
-		updatedImage.Rating = &sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
-	} else {
-		// rating must be nullable
-		updatedImage.Rating = &sql.NullInt64{Valid: false}
-	}
-
-	if input.StudioID != nil {
-		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-		updatedImage.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
-	} else {
-		// studio must be nullable
-		updatedImage.StudioID = &sql.NullInt64{Valid: false}
-	}
+	updatedImage.Title = translator.nullString(input.Title, "title")
+	updatedImage.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 
 	qb := models.NewImageQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
@@ -94,31 +88,35 @@ func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, tx *sqlx.T
 	// don't set the galleries directly. Use add/remove gallery images interface instead
 
 	// Save the performers
-	var performerJoins []models.PerformersImages
-	for _, pid := range input.PerformerIds {
-		performerID, _ := strconv.Atoi(pid)
-		performerJoin := models.PerformersImages{
-			PerformerID: performerID,
-			ImageID:     imageID,
+	if translator.hasField("performer_ids") {
+		var performerJoins []models.PerformersImages
+		for _, pid := range input.PerformerIds {
+			performerID, _ := strconv.Atoi(pid)
+			performerJoin := models.PerformersImages{
+				PerformerID: performerID,
+				ImageID:     imageID,
+			}
+			performerJoins = append(performerJoins, performerJoin)
 		}
-		performerJoins = append(performerJoins, performerJoin)
-	}
-	if err := jqb.UpdatePerformersImages(imageID, performerJoins, tx); err != nil {
-		return nil, err
+		if err := jqb.UpdatePerformersImages(imageID, performerJoins, tx); err != nil {
+			return nil, err
+		}
 	}
 
 	// Save the tags
-	var tagJoins []models.ImagesTags
-	for _, tid := range input.TagIds {
-		tagID, _ := strconv.Atoi(tid)
-		tagJoin := models.ImagesTags{
-			ImageID: imageID,
-			TagID:   tagID,
+	if translator.hasField("tag_ids") {
+		var tagJoins []models.ImagesTags
+		for _, tid := range input.TagIds {
+			tagID, _ := strconv.Atoi(tid)
+			tagJoin := models.ImagesTags{
+				ImageID: imageID,
+				TagID:   tagID,
+			}
+			tagJoins = append(tagJoins, tagJoin)
 		}
-		tagJoins = append(tagJoins, tagJoin)
-	}
-	if err := jqb.UpdateImagesTags(imageID, tagJoins, tx); err != nil {
-		return nil, err
+		if err := jqb.UpdateImagesTags(imageID, tagJoins, tx); err != nil {
+			return nil, err
+		}
 	}
 
 	return image, nil
@@ -136,26 +134,14 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 	updatedImage := models.ImagePartial{
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
-	if input.Title != nil {
-		updatedImage.Title = &sql.NullString{String: *input.Title, Valid: true}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
 	}
-	if input.Rating != nil {
-		// a rating of 0 means unset the rating
-		if *input.Rating == 0 {
-			updatedImage.Rating = &sql.NullInt64{Int64: 0, Valid: false}
-		} else {
-			updatedImage.Rating = &sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
-		}
-	}
-	if input.StudioID != nil {
-		// empty string means unset the studio
-		if *input.StudioID == "" {
-			updatedImage.StudioID = &sql.NullInt64{Int64: 0, Valid: false}
-		} else {
-			studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-			updatedImage.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
-		}
-	}
+
+	updatedImage.Title = translator.nullString(input.Title, "title")
+	updatedImage.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 
 	ret := []*models.Image{}
 
@@ -172,7 +158,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 		ret = append(ret, image)
 
 		// Save the galleries
-		if wasFieldIncluded(ctx, "gallery_ids") {
+		if translator.hasField("gallery_ids") {
 			galleryIDs, err := adjustImageGalleryIDs(tx, imageID, *input.GalleryIds)
 			if err != nil {
 				_ = tx.Rollback()
@@ -193,7 +179,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 		}
 
 		// Save the performers
-		if wasFieldIncluded(ctx, "performer_ids") {
+		if translator.hasField("performer_ids") {
 			performerIDs, err := adjustImagePerformerIDs(tx, imageID, *input.PerformerIds)
 			if err != nil {
 				_ = tx.Rollback()
@@ -215,7 +201,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 		}
 
 		// Save the tags
-		if wasFieldIncluded(ctx, "tag_ids") {
+		if translator.hasField("tag_ids") {
 			tagIDs, err := adjustImageTagIDs(tx, imageID, *input.TagIds)
 			if err != nil {
 				_ = tx.Rollback()

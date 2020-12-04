@@ -220,7 +220,30 @@ func (_m *PerformerReaderWriter) GetPerformerImage(performerID int) ([]byte, err
 }
 
 // Update provides a mock function with given fields: updatedPerformer
-func (_m *PerformerReaderWriter) Update(updatedPerformer models.Performer) (*models.Performer, error) {
+func (_m *PerformerReaderWriter) Update(updatedPerformer models.PerformerPartial) (*models.Performer, error) {
+	ret := _m.Called(updatedPerformer)
+
+	var r0 *models.Performer
+	if rf, ok := ret.Get(0).(func(models.PerformerPartial) *models.Performer); ok {
+		r0 = rf(updatedPerformer)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Performer)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(models.PerformerPartial) error); ok {
+		r1 = rf(updatedPerformer)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// UpdateFull provides a mock function with given fields: updatedPerformer
+func (_m *PerformerReaderWriter) UpdateFull(updatedPerformer models.Performer) (*models.Performer, error) {
 	ret := _m.Called(updatedPerformer)
 
 	var r0 *models.Performer

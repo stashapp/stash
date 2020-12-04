@@ -108,17 +108,16 @@ export const Gallery: React.FC = () => {
         </div>
 
         <Tab.Content>
-          <Tab.Pane eventKey="gallery-details-panel" title="Details">
+          <Tab.Pane eventKey="gallery-details-panel">
             <GalleryDetailPanel gallery={gallery} />
           </Tab.Pane>
           <Tab.Pane
             className="file-info-panel"
             eventKey="gallery-file-info-panel"
-            title="File Info"
           >
             <GalleryFileInfoPanel gallery={gallery} />
           </Tab.Pane>
-          <Tab.Pane eventKey="gallery-edit-panel" title="Edit">
+          <Tab.Pane eventKey="gallery-edit-panel">
             <GalleryEditPanel
               isVisible={activeTabKey === "gallery-edit-panel"}
               isNew={false}
@@ -154,11 +153,11 @@ export const Gallery: React.FC = () => {
         </div>
 
         <Tab.Content>
-          <Tab.Pane eventKey="images" title="Images">
+          <Tab.Pane eventKey="images">
             {/* <GalleryViewer gallery={gallery} /> */}
             <GalleryImagesPanel gallery={gallery} />
           </Tab.Pane>
-          <Tab.Pane eventKey="add" title="Add">
+          <Tab.Pane eventKey="add">
             <GalleryAddPanel gallery={gallery} />
           </Tab.Pane>
         </Tab.Content>

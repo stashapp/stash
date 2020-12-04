@@ -29,7 +29,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   );
   const [tagIds, setTagIds] = useState<string[]>();
 
-  const [updateGalleries] = useBulkGalleryUpdate(getGalleryInput());
+  const [updateGalleries] = useBulkGalleryUpdate();
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
@@ -61,8 +61,8 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     if (rating === undefined) {
       // and all galleries have the same rating, then we are unsetting the rating.
       if (aggregateRating) {
-        // an undefined rating is ignored in the server, so set it to 0 instead
-        galleryInput.rating = 0;
+        // null to unset rating
+        galleryInput.rating = null;
       }
       // otherwise not setting the rating
     } else {
@@ -75,8 +75,8 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
       // and all galleries have the same studioId,
       // then unset the studioId, otherwise ignoring studioId
       if (aggregateStudioId) {
-        // an undefined studio_id is ignored in the server, so set it to empty string instead
-        galleryInput.studio_id = "";
+        // null to unset studio_id
+        galleryInput.studio_id = null;
       }
     } else {
       // if studioId is set, then we are setting it
@@ -125,7 +125,11 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
   async function onSave() {
     setIsUpdating(true);
     try {
-      await updateGalleries();
+      await updateGalleries({
+        variables: {
+          input: getGalleryInput(),
+        },
+      });
       Toast.success({ content: "Updated galleries" });
       props.onClose(true);
     } catch (e) {

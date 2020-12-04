@@ -25,55 +25,17 @@ mutation GalleryCreate(
 }
 
 mutation GalleryUpdate(
-  $id: ID!,
-  $title: String,
-  $details: String,
-  $url: String,
-  $date: String,
-  $rating: Int,
-  $scene_id: ID,
-  $studio_id: ID,
-  $performer_ids: [ID!] = [],
-  $tag_ids: [ID!] = []) {
+  $input: GalleryUpdateInput!) {
 
-  galleryUpdate(input: {
-                        id: $id,
-                        title: $title,
-                        details: $details,
-                        url: $url,
-                        date: $date,
-                        rating: $rating,
-                        scene_id: $scene_id,
-                        studio_id: $studio_id,
-                        tag_ids: $tag_ids,
-                        performer_ids: $performer_ids
-                      }) {
+  galleryUpdate(input: $input) {
       ...GalleryData
   }
 }
 
 mutation BulkGalleryUpdate(
-  $ids: [ID!] = [],
-  $url: String,
-  $date: String,
-  $details: String,
-  $rating: Int,
-  $scene_id: ID,
-  $studio_id: ID,
-  $tag_ids: BulkUpdateIds,
-  $performer_ids: BulkUpdateIds) {
+  $input: BulkGalleryUpdateInput!) {
 
-  bulkGalleryUpdate(input: {
-                        ids: $ids,
-                        details: $details,
-                        url: $url,
-                        date: $date,
-                        rating: $rating,
-                        scene_id: $scene_id,
-                        studio_id: $studio_id,
-                        tag_ids: $tag_ids,
-                        performer_ids: $performer_ids
-                      }) {
+  bulkGalleryUpdate(input: $input) {
       ...GalleryData
   }
 }

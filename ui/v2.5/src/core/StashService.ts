@@ -330,7 +330,9 @@ export const useSceneUpdate = () =>
 
 export const useBulkSceneUpdate = (input: GQL.BulkSceneUpdateInput) =>
   GQL.useBulkSceneUpdateMutation({
-    variables: input,
+    variables: {
+      input,
+    },
     update: deleteCache(sceneMutationImpactedQueries),
   });
 
@@ -418,15 +420,13 @@ const imageMutationImpactedQueries = [
   GQL.FindGalleriesDocument,
 ];
 
-export const useImageUpdate = (input: GQL.ImageUpdateInput) =>
+export const useImageUpdate = () =>
   GQL.useImageUpdateMutation({
-    variables: input,
     update: deleteCache(imageMutationImpactedQueries),
   });
 
-export const useBulkImageUpdate = (input: GQL.BulkImageUpdateInput) =>
+export const useBulkImageUpdate = () =>
   GQL.useBulkImageUpdateMutation({
-    variables: input,
     update: deleteCache(imageMutationImpactedQueries),
   });
 
@@ -505,15 +505,13 @@ export const useGalleryCreate = (input: GQL.GalleryCreateInput) =>
     update: deleteCache(galleryMutationImpactedQueries),
   });
 
-export const useGalleryUpdate = (input: GQL.GalleryUpdateInput) =>
+export const useGalleryUpdate = () =>
   GQL.useGalleryUpdateMutation({
-    variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
   });
 
-export const useBulkGalleryUpdate = (input: GQL.BulkGalleryUpdateInput) =>
+export const useBulkGalleryUpdate = () =>
   GQL.useBulkGalleryUpdateMutation({
-    variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
   });
 
@@ -554,9 +552,8 @@ export const useStudioCreate = (input: GQL.StudioCreateInput) =>
     ]),
   });
 
-export const useStudioUpdate = (input: GQL.StudioUpdateInput) =>
+export const useStudioUpdate = () =>
   GQL.useStudioUpdateMutation({
-    variables: input,
     update: deleteCache(studioMutationImpactedQueries),
   });
 
@@ -582,9 +579,8 @@ export const useMovieCreate = (input: GQL.MovieCreateInput) =>
     ]),
   });
 
-export const useMovieUpdate = (input: GQL.MovieUpdateInput) =>
+export const useMovieUpdate = () =>
   GQL.useMovieUpdateMutation({
-    variables: input,
     update: deleteCache(movieMutationImpactedQueries),
   });
 
@@ -617,9 +613,8 @@ export const useTagCreate = (input: GQL.TagCreateInput) =>
       GQL.AllTagsForFilterDocument,
     ]),
   });
-export const useTagUpdate = (input: GQL.TagUpdateInput) =>
+export const useTagUpdate = () =>
   GQL.useTagUpdateMutation({
-    variables: input,
     update: deleteCache(tagMutationImpactedQueries),
   });
 export const useTagDestroy = (input: GQL.TagDestroyInput) =>
