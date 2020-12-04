@@ -267,6 +267,18 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     }
   }
 
+  function maybeRenderOrganized() {
+    if (props.scene.organized) {
+      return (
+        <div>
+          <Button className="minimal">
+            <Icon icon="box" />
+          </Button>
+        </div>
+      )
+    }
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       props.scene.tags.length > 0 ||
@@ -274,7 +286,8 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       props.scene.movies.length > 0 ||
       props.scene.scene_markers.length > 0 ||
       props.scene?.o_counter ||
-      props.scene.gallery
+      props.scene.gallery || 
+      props.scene.organized
     ) {
       return (
         <>
@@ -286,6 +299,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             {maybeRenderSceneMarkerPopoverButton()}
             {maybeRenderOCounter()}
             {maybeRenderGallery()}
+            {maybeRenderOrganized()}
           </ButtonGroup>
         </>
       );

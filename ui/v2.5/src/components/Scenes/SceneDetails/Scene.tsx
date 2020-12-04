@@ -79,8 +79,10 @@ export const Scene: React.FC = () => {
       setOrganizedLoading(true);
       await updateScene({
         variables: {
-          id: scene?.id ?? "",
-          organized: !scene?.organized,
+          input: {
+            id: scene?.id ?? "",
+            organized: !scene?.organized,
+          }
         }
       });
     } catch (e) {
