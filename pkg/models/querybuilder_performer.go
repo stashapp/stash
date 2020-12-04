@@ -42,7 +42,24 @@ func (qb *PerformerQueryBuilder) Create(newPerformer Performer, tx *sqlx.Tx) (*P
 	return &newPerformer, nil
 }
 
-func (qb *PerformerQueryBuilder) Update(updatedPerformer Performer, tx *sqlx.Tx) (*Performer, error) {
+func (qb *PerformerQueryBuilder) Update(updatedPerformer PerformerPartial, tx *sqlx.Tx) (*Performer, error) {
+	ensureTx(tx)
+	_, err := tx.NamedExec(
+		`UPDATE performers SET `+SQLGenKeysPartial(updatedPerformer)+` WHERE performers.id = :id`,
+		updatedPerformer,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret Performer
+	if err := tx.Get(&ret, `SELECT * FROM performers WHERE id = ? LIMIT 1`, updatedPerformer.ID); err != nil {
+		return nil, err
+	}
+	return &ret, nil
+}
+
+func (qb *PerformerQueryBuilder) UpdateFull(updatedPerformer Performer, tx *sqlx.Tx) (*Performer, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
 		`UPDATE performers SET `+SQLGenKeys(updatedPerformer)+` WHERE performers.id = :id`,

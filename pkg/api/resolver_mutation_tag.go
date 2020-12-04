@@ -76,7 +76,11 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 	var imageData []byte
 	var err error
 
-	imageIncluded := wasFieldIncluded(ctx, "image")
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
+	imageIncluded := translator.hasField("image")
 	if input.Image != nil {
 		_, imageData, err = utils.ProcessBase64Image(*input.Image)
 

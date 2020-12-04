@@ -21,7 +21,8 @@ type PerformerReader interface {
 
 type PerformerWriter interface {
 	Create(newPerformer Performer) (*Performer, error)
-	Update(updatedPerformer Performer) (*Performer, error)
+	Update(updatedPerformer PerformerPartial) (*Performer, error)
+	UpdateFull(updatedPerformer Performer) (*Performer, error)
 	// Destroy(id string) error
 	UpdatePerformerImage(performerID int, image []byte) error
 	// DestroyPerformerImage(performerID int) error
@@ -80,8 +81,12 @@ func (t *performerReaderWriter) Create(newPerformer Performer) (*Performer, erro
 	return t.qb.Create(newPerformer, t.tx)
 }
 
-func (t *performerReaderWriter) Update(updatedPerformer Performer) (*Performer, error) {
+func (t *performerReaderWriter) Update(updatedPerformer PerformerPartial) (*Performer, error) {
 	return t.qb.Update(updatedPerformer, t.tx)
+}
+
+func (t *performerReaderWriter) UpdateFull(updatedPerformer Performer) (*Performer, error) {
+	return t.qb.UpdateFull(updatedPerformer, t.tx)
 }
 
 func (t *performerReaderWriter) UpdatePerformerImage(performerID int, image []byte) error {
