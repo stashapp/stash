@@ -102,7 +102,9 @@ const CustomServedFolders = "custom_served_folders"
 
 // Interface options
 const MenuItems = "menu_items"
+
 var defaultMenuItems = []string{"scenes", "images", "movies", "markers", "galleries", "performers", "studios", "tags"}
+
 const SoundOnPreview = "sound_on_preview"
 const WallShowTitle = "wall_show_title"
 const MaximumLoopDuration = "maximum_loop_duration"
