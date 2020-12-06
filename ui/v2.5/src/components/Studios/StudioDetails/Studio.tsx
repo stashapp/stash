@@ -116,8 +116,8 @@ export const Studio: React.FC = () => {
     const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
       name,
       url,
+      image,
       parent_id: parentStudioId ?? null,
-      image: image ?? null,
     };
 
     if (!isNew) {
