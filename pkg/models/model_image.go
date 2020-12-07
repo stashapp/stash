@@ -11,6 +11,7 @@ type Image struct {
 	Path        string              `db:"path" json:"path"`
 	Title       sql.NullString      `db:"title" json:"title"`
 	Rating      sql.NullInt64       `db:"rating" json:"rating"`
+	Organized   sql.NullBool        `db:"organized" json:"organized"`
 	OCounter    int                 `db:"o_counter" json:"o_counter"`
 	Size        sql.NullInt64       `db:"size" json:"size"`
 	Width       sql.NullInt64       `db:"width" json:"width"`
@@ -29,6 +30,7 @@ type ImagePartial struct {
 	Path        *string              `db:"path" json:"path"`
 	Title       *sql.NullString      `db:"title" json:"title"`
 	Rating      *sql.NullInt64       `db:"rating" json:"rating"`
+	Organized   *sql.NullBool        `db:"organized" json:"organized"`
 	Size        *sql.NullInt64       `db:"size" json:"size"`
 	Width       *sql.NullInt64       `db:"width" json:"width"`
 	Height      *sql.NullInt64       `db:"height" json:"height"`

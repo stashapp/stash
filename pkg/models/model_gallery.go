@@ -14,6 +14,7 @@ type Gallery struct {
 	Date        SQLiteDate          `db:"date" json:"date"`
 	Details     sql.NullString      `db:"details" json:"details"`
 	Rating      sql.NullInt64       `db:"rating" json:"rating"`
+	Organized   sql.NullBool        `db:"organized" json:"organized"`
 	StudioID    sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
 	SceneID     sql.NullInt64       `db:"scene_id,omitempty" json:"scene_id"`
 	FileModTime NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
@@ -32,6 +33,7 @@ type GalleryPartial struct {
 	Date        *SQLiteDate          `db:"date" json:"date"`
 	Details     *sql.NullString      `db:"details" json:"details"`
 	Rating      *sql.NullInt64       `db:"rating" json:"rating"`
+	Organized   *sql.NullBool        `db:"organized" json:"organized"`
 	StudioID    *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
 	SceneID     *sql.NullInt64       `db:"scene_id,omitempty" json:"scene_id"`
 	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`

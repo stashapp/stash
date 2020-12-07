@@ -61,9 +61,9 @@ func NewImageQueryBuilder() ImageQueryBuilder {
 func (qb *ImageQueryBuilder) Create(newImage Image, tx *sqlx.Tx) (*Image, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO images (checksum, path, title, rating, o_counter, size,
+		`INSERT INTO images (checksum, path, title, rating, organized, o_counter, size,
                     			    width, height, studio_id, file_mod_time, created_at, updated_at)
-				VALUES (:checksum, :path, :title, :rating, :o_counter, :size,
+				VALUES (:checksum, :path, :title, :rating, :organized, :o_counter, :size,
 					:width, :height, :studio_id, :file_mod_time, :created_at, :updated_at)
 		`,
 		newImage,
@@ -307,6 +307,16 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 		if count == 1 {
 			query.addArg(imageFilter.OCounter.Value)
 		}
+	}
+
+	if Organized := imageFilter.Organized; Organized != nil {
+		var organized string
+		if *Organized == true {
+			organized = "1"
+		} else {
+			organized = "0"
+		}
+		query.addWhere("images.organized = " + organized)
 	}
 
 	if resolutionFilter := imageFilter.Resolution; resolutionFilter != nil {

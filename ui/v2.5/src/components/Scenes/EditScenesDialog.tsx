@@ -277,7 +277,7 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
     if (checkboxRef.current) {
       checkboxRef.current.indeterminate = organized === undefined;
     }
-  }, [organized, checkboxRef])
+  }, [organized, checkboxRef]);
 
   function renderMultiSelect(
     type: "performers" | "tags",
@@ -382,16 +382,16 @@ export const EditScenesDialog: React.FC<IListOperationProps> = (
             {renderMultiSelect("performers", performerIds)}
           </Form.Group>
 
-          <Form.Group controlId="performers">
+          <Form.Group controlId="tags">
             <Form.Label>Tags</Form.Label>
             {renderMultiSelect("tags", tagIds)}
           </Form.Group>
 
           <Form.Group controlId="organized">
-            <Form.Check 
-              type="checkbox" 
-              label="Organized" 
-              checked={organized} 
+            <Form.Check
+              type="checkbox"
+              label="Organized"
+              checked={organized}
               ref={checkboxRef}
               onChange={() => cycleOrganized()}
             />

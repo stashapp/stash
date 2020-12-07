@@ -167,6 +167,7 @@ export class ListFilterModel {
           new NoneCriterionOption(),
           ListFilterModel.createCriterionOption("path"),
           new RatingCriterionOption(),
+          new OrganizedCriterionOption(),
           ListFilterModel.createCriterionOption("o_counter"),
           new ResolutionCriterionOption(),
           new ImageIsMissingCriterionOption(),
@@ -240,6 +241,7 @@ export class ListFilterModel {
           new NoneCriterionOption(),
           ListFilterModel.createCriterionOption("path"),
           new RatingCriterionOption(),
+          new OrganizedCriterionOption(),
           new AverageResolutionCriterionOption(),
           new GalleryIsMissingCriterionOption(),
           new TagsCriterionOption(),
@@ -679,6 +681,10 @@ export class ListFilterModel {
           };
           break;
         }
+        case "organized": {
+          result.organized = (criterion as OrganizedCriterion).value === "true";
+          break;
+        }
         case "o_counter": {
           const oCounterCrit = criterion as NumberCriterion;
           result.o_counter = {
@@ -808,6 +814,10 @@ export class ListFilterModel {
             value: ratingCrit.value,
             modifier: ratingCrit.modifier,
           };
+          break;
+        }
+        case "organized": {
+          result.organized = (criterion as OrganizedCriterion).value === "true";
           break;
         }
         case "average_resolution": {

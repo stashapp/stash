@@ -6,12 +6,14 @@ import {
   useImageIncrementO,
   useImageDecrementO,
   useImageResetO,
+  useImageUpdate,
 } from "src/core/StashService";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
 import { OCounterButton } from "src/components/Scenes/SceneDetails/OCounterButton";
+import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { ImageFileInfoPanel } from "./ImageFileInfoPanel";
 import { ImageEditPanel } from "./ImageEditPanel";
 import { ImageDetailPanel } from "./ImageDetailPanel";
@@ -33,9 +35,31 @@ export const Image: React.FC = () => {
   const [decrementO] = useImageDecrementO(image?.id ?? "0");
   const [resetO] = useImageResetO(image?.id ?? "0");
 
+  const [updateImage] = useImageUpdate();
+
+  const [organizedLoading, setOrganizedLoading] = useState(false);
+
   const [activeTabKey, setActiveTabKey] = useState("image-details-panel");
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+
+  const onOrganizedClick = async () => {
+    try {
+      setOrganizedLoading(true);
+      await updateImage({
+        variables: {
+          input: {
+            id: image?.id ?? "",
+            organized: !image?.organized,
+          },
+        },
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOrganizedLoading(false);
+    }
+  };
 
   const onIncrementClick = async () => {
     try {
@@ -137,6 +161,13 @@ export const Image: React.FC = () => {
                 onIncrement={onIncrementClick}
                 onDecrement={onDecrementClick}
                 onReset={onResetClick}
+              />
+            </Nav.Item>
+            <Nav.Item>
+              <OrganizedButton
+                loading={organizedLoading}
+                organized={image.organized}
+                onClick={onOrganizedClick}
               />
             </Nav.Item>
             <Nav.Item>{renderOperations()}</Nav.Item>

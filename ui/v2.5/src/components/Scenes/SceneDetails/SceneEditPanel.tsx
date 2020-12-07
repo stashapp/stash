@@ -233,7 +233,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       const result = await updateScene({
         variables: {
           input: getSceneInput(),
-        }
+        },
       });
       if (result.data?.sceneUpdate) {
         Toast.success({ content: "Updated scene" });

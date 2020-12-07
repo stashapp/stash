@@ -85,12 +85,7 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 	updatedScene.Date = translator.sqliteDate(input.Date, "date")
 	updatedScene.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-
-	if input.Organized != nil {
-		updatedScene.Organized = &sql.NullBool{Bool: *input.Organized, Valid: true}
-	} else {
-		updatedScene.Organized = &sql.NullBool{Bool: false, Valid: true}
-	}
+	updatedScene.Organized = translator.nullBool(input.Organized, "organized")
 
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error

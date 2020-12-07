@@ -21,6 +21,13 @@ func (r *imageResolver) Rating(ctx context.Context, obj *models.Image) (*int, er
 	return nil, nil
 }
 
+func (r *imageResolver) Organized(ctx context.Context, obj *models.Image) (bool, error) {
+	if obj.Organized.Valid {
+		return obj.Organized.Bool, nil
+	}
+	return false, nil
+}
+
 func (r *imageResolver) File(ctx context.Context, obj *models.Image) (*models.ImageFileType, error) {
 	width := int(obj.Width.Int64)
 	height := int(obj.Height.Int64)

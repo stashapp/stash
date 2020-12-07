@@ -10,7 +10,7 @@ import {
   useSceneResetO,
   useSceneStreams,
   useSceneGenerateScreenshot,
-  useSceneUpdate
+  useSceneUpdate,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
@@ -82,8 +82,8 @@ export const Scene: React.FC = () => {
           input: {
             id: scene?.id ?? "",
             organized: !scene?.organized,
-          }
-        }
+          },
+        },
       });
     } catch (e) {
       Toast.error(e);

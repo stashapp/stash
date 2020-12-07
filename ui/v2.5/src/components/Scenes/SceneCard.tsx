@@ -275,7 +275,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
             <Icon icon="box" />
           </Button>
         </div>
-      )
+      );
     }
   }
 
@@ -286,7 +286,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       props.scene.movies.length > 0 ||
       props.scene.scene_markers.length > 0 ||
       props.scene?.o_counter ||
-      props.scene.gallery || 
+      props.scene.gallery ||
       props.scene.organized
     ) {
       return (

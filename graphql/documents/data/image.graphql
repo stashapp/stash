@@ -3,6 +3,7 @@ fragment ImageData on Image {
   checksum
   title
   rating
+  organized
   o_counter
   path
 

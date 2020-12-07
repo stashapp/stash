@@ -3,6 +3,7 @@ fragment SlimImageData on Image {
   checksum
   title
   rating
+  organized
   o_counter
   path
 

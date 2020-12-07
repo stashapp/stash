@@ -77,6 +77,7 @@ func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, translator
 	updatedImage.Title = translator.nullString(input.Title, "title")
 	updatedImage.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
+	updatedImage.Organized = translator.nullBool(input.Organized, "organized")
 
 	qb := models.NewImageQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
@@ -142,6 +143,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 	updatedImage.Title = translator.nullString(input.Title, "title")
 	updatedImage.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
+	updatedImage.Organized = translator.nullBool(input.Organized, "organized")
 
 	ret := []*models.Image{}
 

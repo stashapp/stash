@@ -18,9 +18,9 @@ export const OrganizedButton: React.FC<IOrganizedButtonProps> = (
     organized: {
       id: "organized",
       defaultMessage: "Organized",
-    }
+    },
   });
-  
+
   if (props.loading) return <Spinner animation="border" role="status" />;
 
   return (
