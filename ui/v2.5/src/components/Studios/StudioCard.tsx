@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedPlural } from "react-intl";
 import { NavUtils } from "src/utils";
-import { BasicCard } from "../Shared/BasicCard";
+import { BasicCard, TruncatedText } from "src/components/Shared";
 
 interface IProps {
   studio: GQL.StudioDataFragment;
@@ -65,7 +65,9 @@ export const StudioCard: React.FC<IProps> = ({
       }
       details={
         <>
-          <h5 className="text-truncate">{studio.name}</h5>
+          <h5>
+            <TruncatedText text={studio.name} />
+          </h5>
           <span>
             {studio.scene_count}&nbsp;
             <FormattedPlural

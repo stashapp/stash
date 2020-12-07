@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { JWUtils } from "../../../utils";
-import * as GQL from "../../../core/generated-graphql";
+import { TruncatedText } from "src/components/Shared";
+import { JWUtils } from "src/utils";
+import * as GQL from "src/core/generated-graphql";
 
 interface ISceneVideoFilterPanelProps {
   scene: GQL.SceneDataFragment;
@@ -328,12 +329,12 @@ export const SceneVideoFilterPanel: React.FC<ISceneVideoFilterPanelProps> = (
           />
         </span>
         <span
-          className="col-sm-2 text-truncate"
+          className="col-sm-2"
           role="presentation"
           onClick={() => sliderProps.setValue(sliderProps.range.default)}
           onKeyPress={() => sliderProps.setValue(sliderProps.range.default)}
         >
-          {sliderProps.displayValue}
+          <TruncatedText text={sliderProps.displayValue} />
         </span>
       </div>
     );

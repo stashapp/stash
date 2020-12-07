@@ -1,50 +1,22 @@
 mutation ImageUpdate(
-  $id: ID!,
-  $title: String,
-  $rating: Int,
-  $studio_id: ID,
-  $gallery_ids: [ID!] = [],
-  $performer_ids: [ID!] = [],
-  $tag_ids: [ID!] = []) {
+  $input: ImageUpdateInput!) {
 
-  imageUpdate(input: {
-                        id: $id,
-                        title: $title,
-                        rating: $rating,
-                        studio_id: $studio_id,
-                        gallery_ids: $gallery_ids,
-                        performer_ids: $performer_ids,
-                        tag_ids: $tag_ids
-                      }) {
-      ...ImageData
+  imageUpdate(input: $input) {
+      ...SlimImageData
   }
 }
 
 mutation BulkImageUpdate(
-  $ids: [ID!] = [],
-  $title: String,
-  $rating: Int,
-  $studio_id: ID,
-  $gallery_ids: BulkUpdateIds,
-  $performer_ids: BulkUpdateIds,
-  $tag_ids: BulkUpdateIds) {
+  $input: BulkImageUpdateInput!) {
 
-  bulkImageUpdate(input: {
-                        ids: $ids,
-                        title: $title,
-                        rating: $rating,
-                        studio_id: $studio_id,
-                        gallery_ids: $gallery_ids,
-                        performer_ids: $performer_ids,
-                        tag_ids: $tag_ids
-                      }) {
-      ...ImageData
+  bulkImageUpdate(input: $input) {
+      ...SlimImageData
   }
 }
 
 mutation ImagesUpdate($input : [ImageUpdateInput!]!) {
   imagesUpdate(input: $input) {
-    ...ImageData
+    ...SlimImageData
   }
 }
 

@@ -100,7 +100,7 @@ func getImage(url string, globalConfig GlobalConfig) (*string, error) {
 
 	// set the host of the URL as the referer
 	if req.URL.Scheme != "" {
-		req.Header.Set("Referer", req.URL.Scheme+"://"+req.Host)
+		req.Header.Set("Referer", req.URL.Scheme+"://"+req.Host+"/")
 	}
 
 	resp, err := client.Do(req)

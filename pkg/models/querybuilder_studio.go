@@ -141,7 +141,7 @@ func (qb *StudioQueryBuilder) All() ([]*Studio, error) {
 }
 
 func (qb *StudioQueryBuilder) AllSlim() ([]*Studio, error) {
-	return qb.queryStudios("SELECT studios.id, studios.name FROM studios "+qb.getStudioSort(nil), nil, nil)
+	return qb.queryStudios("SELECT studios.id, studios.name, studios.parent_id FROM studios "+qb.getStudioSort(nil), nil, nil)
 }
 
 func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int) {
@@ -295,4 +295,13 @@ func (qb *StudioQueryBuilder) DestroyStudioImage(studioID int, tx *sqlx.Tx) erro
 func (qb *StudioQueryBuilder) GetStudioImage(studioID int, tx *sqlx.Tx) ([]byte, error) {
 	query := `SELECT image from studios_image WHERE studio_id = ?`
 	return getImage(tx, query, studioID)
+}
+
+func (qb *StudioQueryBuilder) HasStudioImage(studioID int) (bool, error) {
+	ret, err := runCountQuery(buildCountQuery("SELECT studio_id from studios_image WHERE studio_id = ?"), []interface{}{studioID})
+	if err != nil {
+		return false, err
+	}
+
+	return ret == 1, nil
 }

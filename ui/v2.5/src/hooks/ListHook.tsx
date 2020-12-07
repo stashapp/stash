@@ -3,10 +3,11 @@ import queryString from "query-string";
 import React, { useCallback, useRef, useState, useEffect } from "react";
 import { ApolloError } from "@apollo/client";
 import { useHistory, useLocation } from "react-router-dom";
+import Mousetrap from "mousetrap";
 import {
   SlimSceneDataFragment,
   SceneMarkerDataFragment,
-  GalleryDataFragment,
+  GallerySlimDataFragment,
   StudioDataFragment,
   PerformerDataFragment,
   FindScenesQueryResult,
@@ -567,9 +568,9 @@ export const useImagesList = (
   });
 
 export const useGalleriesList = (
-  props: IListHookOptions<FindGalleriesQueryResult, GalleryDataFragment>
+  props: IListHookOptions<FindGalleriesQueryResult, GallerySlimDataFragment>
 ) =>
-  useList<FindGalleriesQueryResult, GalleryDataFragment>({
+  useList<FindGalleriesQueryResult, GallerySlimDataFragment>({
     ...props,
     filterMode: FilterMode.Galleries,
     useData: useFindGalleries,

@@ -9,6 +9,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   cachePath
   calculateMD5
   videoFileNamingAlgorithm
+  parallelTasks
   previewSegments
   previewSegmentDuration
   previewExcludeStart

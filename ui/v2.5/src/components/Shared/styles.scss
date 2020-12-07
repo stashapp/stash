@@ -16,7 +16,8 @@
   }
 
   &.inline {
-    display: inline;
+    display: inline-block;
+    height: auto;
     margin-left: 0.5rem;
   }
 
@@ -169,5 +170,15 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
   &:hover .card-check {
     opacity: 0.75;
     transition: opacity 0.5s;
+  }
+}
+
+.TruncatedText {
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  overflow: hidden;
+
+  &-tooltip .tooltip-inner {
+    max-width: 300px;
   }
 }

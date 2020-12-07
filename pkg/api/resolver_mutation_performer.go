@@ -130,76 +130,57 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
 	// Populate performer from the input
 	performerID, _ := strconv.Atoi(input.ID)
-	updatedPerformer := models.Performer{
+	updatedPerformer := models.PerformerPartial{
 		ID:        performerID,
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
 	var imageData []byte
 	var err error
-	imageIncluded := wasFieldIncluded(ctx, "image")
+	imageIncluded := translator.hasField("image")
 	if input.Image != nil {
 		_, imageData, err = utils.ProcessBase64Image(*input.Image)
 		if err != nil {
 			return nil, err
 		}
 	}
+
 	if input.Name != nil {
 		// generate checksum from performer name rather than image
 		checksum := utils.MD5FromString(*input.Name)
 
-		updatedPerformer.Name = sql.NullString{String: *input.Name, Valid: true}
-		updatedPerformer.Checksum = checksum
+		updatedPerformer.Name = &sql.NullString{String: *input.Name, Valid: true}
+		updatedPerformer.Checksum = &checksum
 	}
-	if input.URL != nil {
-		updatedPerformer.URL = sql.NullString{String: *input.URL, Valid: true}
+
+	updatedPerformer.URL = translator.nullString(input.URL, "url")
+
+	if translator.hasField("gender") {
+		if input.Gender != nil {
+			updatedPerformer.Gender = &sql.NullString{String: input.Gender.String(), Valid: true}
+		} else {
+			updatedPerformer.Gender = &sql.NullString{String: "", Valid: false}
+		}
 	}
-	if input.Gender != nil {
-		updatedPerformer.Gender = sql.NullString{String: input.Gender.String(), Valid: true}
-	}
-	if input.Birthdate != nil {
-		updatedPerformer.Birthdate = models.SQLiteDate{String: *input.Birthdate, Valid: true}
-	}
-	if input.Ethnicity != nil {
-		updatedPerformer.Ethnicity = sql.NullString{String: *input.Ethnicity, Valid: true}
-	}
-	if input.Country != nil {
-		updatedPerformer.Country = sql.NullString{String: *input.Country, Valid: true}
-	}
-	if input.EyeColor != nil {
-		updatedPerformer.EyeColor = sql.NullString{String: *input.EyeColor, Valid: true}
-	}
-	if input.Height != nil {
-		updatedPerformer.Height = sql.NullString{String: *input.Height, Valid: true}
-	}
-	if input.Measurements != nil {
-		updatedPerformer.Measurements = sql.NullString{String: *input.Measurements, Valid: true}
-	}
-	if input.FakeTits != nil {
-		updatedPerformer.FakeTits = sql.NullString{String: *input.FakeTits, Valid: true}
-	}
-	if input.CareerLength != nil {
-		updatedPerformer.CareerLength = sql.NullString{String: *input.CareerLength, Valid: true}
-	}
-	if input.Tattoos != nil {
-		updatedPerformer.Tattoos = sql.NullString{String: *input.Tattoos, Valid: true}
-	}
-	if input.Piercings != nil {
-		updatedPerformer.Piercings = sql.NullString{String: *input.Piercings, Valid: true}
-	}
-	if input.Aliases != nil {
-		updatedPerformer.Aliases = sql.NullString{String: *input.Aliases, Valid: true}
-	}
-	if input.Twitter != nil {
-		updatedPerformer.Twitter = sql.NullString{String: *input.Twitter, Valid: true}
-	}
-	if input.Instagram != nil {
-		updatedPerformer.Instagram = sql.NullString{String: *input.Instagram, Valid: true}
-	}
-	if input.Favorite != nil {
-		updatedPerformer.Favorite = sql.NullBool{Bool: *input.Favorite, Valid: true}
-	} else {
-		updatedPerformer.Favorite = sql.NullBool{Bool: false, Valid: true}
-	}
+
+	updatedPerformer.Birthdate = translator.sqliteDate(input.Birthdate, "birthdate")
+	updatedPerformer.Country = translator.nullString(input.Country, "country")
+	updatedPerformer.EyeColor = translator.nullString(input.EyeColor, "eye_color")
+	updatedPerformer.Measurements = translator.nullString(input.Measurements, "measurements")
+	updatedPerformer.Height = translator.nullString(input.Height, "height")
+	updatedPerformer.Ethnicity = translator.nullString(input.Ethnicity, "ethnicity")
+	updatedPerformer.FakeTits = translator.nullString(input.FakeTits, "fake_tits")
+	updatedPerformer.CareerLength = translator.nullString(input.CareerLength, "career_length")
+	updatedPerformer.Tattoos = translator.nullString(input.Tattoos, "tattoos")
+	updatedPerformer.Piercings = translator.nullString(input.Piercings, "piercings")
+	updatedPerformer.Aliases = translator.nullString(input.Aliases, "aliases")
+	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
+	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
+	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
 
 	// Start the transaction and save the performer
 	tx := database.DB.MustBeginTx(ctx, nil)
@@ -227,7 +208,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	}
 
 	// Save the stash_ids
-	if input.StashIds != nil {
+	if translator.hasField("stash_ids") {
 		var stashIDJoins []models.StashID
 		for _, stashID := range input.StashIds {
 			newJoin := models.StashID{

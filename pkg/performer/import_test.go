@@ -166,7 +166,7 @@ func TestUpdate(t *testing.T) {
 
 	// id needs to be set for the mock input
 	performer.ID = performerID
-	readerWriter.On("Update", performer).Return(nil, nil).Once()
+	readerWriter.On("UpdateFull", performer).Return(nil, nil).Once()
 
 	err := i.Update(performerID)
 	assert.Nil(t, err)
@@ -175,7 +175,7 @@ func TestUpdate(t *testing.T) {
 
 	// need to set id separately
 	performerErr.ID = errImageID
-	readerWriter.On("Update", performerErr).Return(nil, errUpdate).Once()
+	readerWriter.On("UpdateFull", performerErr).Return(nil, errUpdate).Once()
 
 	err = i.Update(errImageID)
 	assert.NotNil(t, err)

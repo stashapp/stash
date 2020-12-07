@@ -7,6 +7,7 @@ import {
   Col,
   Row,
 } from "react-bootstrap";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryScrapeScene,
@@ -193,9 +194,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       details,
       url,
       date,
-      rating,
-      gallery_id: galleryId,
-      studio_id: studioId,
+      rating: rating ?? null,
+      gallery_id: galleryId ?? null,
+      studio_id: studioId ?? null,
       performer_ids: performerIds,
       movies: makeMovieInputs(),
       tag_ids: tagIds,

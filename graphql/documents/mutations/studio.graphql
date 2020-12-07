@@ -11,14 +11,9 @@ mutation StudioCreate(
 }
 
 mutation StudioUpdate(
-  $id: ID!
-  $name: String,
-  $url: String,
-  $image: String,
-  $stash_ids: [StashIDInput!],
-  $parent_id: ID) {
+  $input: StudioUpdateInput!) {
 
-  studioUpdate(input: { id: $id, name: $name, url: $url, image: $image, stash_ids: $stash_ids, parent_id: $parent_id }) {
+  studioUpdate(input: $input) {
     ...StudioData
   }
 }

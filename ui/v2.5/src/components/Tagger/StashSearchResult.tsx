@@ -5,7 +5,11 @@ import { uniq } from "lodash";
 import { blobToBase64 } from "base64-blob";
 
 import * as GQL from "src/core/generated-graphql";
-import { LoadingIndicator, SuccessIcon } from "src/components/Shared";
+import {
+  LoadingIndicator,
+  SuccessIcon,
+  TruncatedText,
+} from "src/components/Shared";
 import PerformerResult, { PerformerOperation } from "./PerformerResult";
 import StudioResult, { StudioOperation } from "./StudioResult";
 import { IStashBoxScene } from "./utils";
@@ -275,23 +279,26 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
 
       const sceneUpdateResult = await updateScene({
         variables: {
-          id: stashScene.id ?? "",
-          title: scene.title,
-          details: scene.details,
-          date: scene.date,
-          performer_ids: performerIDs.filter((id) => id !== "Skip") as string[],
-          studio_id: studioID,
-          cover_image: imgData,
-          url: scene.url,
-          tag_ids: updatedTags,
-          rating: stashScene.rating,
-          stash_ids: [
-            ...(stashScene?.stash_ids ?? []),
-            {
-              endpoint,
-              stash_id: scene.stash_id,
-            },
-          ],
+          input: {
+            id: stashScene.id ?? "",
+            title: scene.title,
+            details: scene.details,
+            date: scene.date,
+            performer_ids: performerIDs.filter(
+              (id) => id !== "Skip"
+            ) as string[],
+            studio_id: studioID,
+            cover_image: imgData,
+            url: scene.url,
+            tag_ids: updatedTags,
+            stash_ids: [
+              ...(stashScene?.stash_ids ?? []),
+              {
+                endpoint,
+                stash_id: scene.stash_id,
+              },
+            ],
+          },
         },
       });
 
@@ -309,7 +316,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     setSaveState("");
   };
 
-  const classname = cx("row no-gutters mt-2 search-result", {
+  const classname = cx("row mx-0 mt-2 search-result", {
     "selected-result": isActive,
   });
 
@@ -320,10 +327,10 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       rel="noopener noreferrer"
       className="scene-link"
     >
-      {scene?.title}
+      <TruncatedText text={scene?.title} />
     </a>
   ) : (
-    <span>{scene?.title}</span>
+    <TruncatedText text={scene?.title} />
   );
 
   const saveEnabled =
@@ -331,6 +338,11 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
       scene.performers.filter((p) => p.gender !== "MALE" || showMales).length &&
     Object.keys(performers ?? []).every((id) => performers?.[id].type) &&
     saveState === "";
+
+  const endpointBase = endpoint.match(/https?:\/\/.*?\//)?.[0];
+  const stashBoxURL = endpointBase
+    ? `${endpointBase}scenes/${scene.stash_id}`
+    : "";
 
   return (
     // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
@@ -341,15 +353,15 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
     >
       <div className="col-lg-6">
         <div className="row">
-          <img
-            src={scene.images[0]}
-            alt=""
-            className="align-self-center scene-image"
-          />
+          <a href={stashBoxURL} target="_blank" rel="noopener noreferrer">
+            <img
+              src={scene.images[0]}
+              alt=""
+              className="align-self-center scene-image"
+            />
+          </a>
           <div className="d-flex flex-column justify-content-center scene-metadata">
-            <h4 className="text-truncate" title={scene?.title ?? ""}>
-              {sceneTitle}
-            </h4>
+            <h4>{sceneTitle}</h4>
             <h5>
               {scene?.studio?.name} • {scene?.date}
             </h5>

@@ -8,6 +8,7 @@ require (
 	github.com/chromedp/cdproto v0.0.0-20200608134039-8a80cdaf865c
 	github.com/chromedp/chromedp v0.5.3
 	github.com/disintegration/imaging v1.6.0
+	github.com/fvbommel/sortorder v1.0.2
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/gobuffalo/packr/v2 v2.0.2
 	github.com/golang-migrate/migrate/v4 v4.3.1
@@ -20,6 +21,7 @@ require (
 	github.com/json-iterator/go v1.1.9
 	github.com/mattn/go-sqlite3 v1.13.0
 	github.com/natefinch/pie v0.0.0-20170715172608-9a0d72014007
+	github.com/remeh/sizedwaitgroup v1.0.0
 	github.com/rs/cors v1.6.0
 	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
 	github.com/sirupsen/logrus v1.4.2

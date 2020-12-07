@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { Button, Form, Col, Row } from "react-bootstrap";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   queryScrapeGalleryURL,
@@ -62,9 +63,7 @@ export const GalleryEditPanel: React.FC<
   const [createGallery] = useGalleryCreate(
     getGalleryInput() as GQL.GalleryCreateInput
   );
-  const [updateGallery] = useGalleryUpdate(
-    getGalleryInput() as GQL.GalleryUpdateInput
-  );
+  const [updateGallery] = useGalleryUpdate();
 
   useEffect(() => {
     if (props.isVisible) {
@@ -134,8 +133,8 @@ export const GalleryEditPanel: React.FC<
       details,
       url,
       date,
-      rating,
-      studio_id: studioId,
+      rating: rating ?? null,
+      studio_id: studioId ?? null,
       performer_ids: performerIds,
       tag_ids: tagIds,
     };
@@ -151,7 +150,11 @@ export const GalleryEditPanel: React.FC<
           Toast.success({ content: "Created gallery" });
         }
       } else {
-        const result = await updateGallery();
+        const result = await updateGallery({
+          variables: {
+            input: getGalleryInput() as GQL.GalleryUpdateInput,
+          },
+        });
         if (result.data?.galleryUpdate) {
           Toast.success({ content: "Updated gallery" });
         }

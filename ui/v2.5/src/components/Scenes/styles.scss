@@ -20,12 +20,6 @@
 .card-section {
   margin-bottom: 0;
   padding: 0.5rem 1rem 0 1rem;
-
-  &-title {
-    overflow: hidden;
-    overflow-wrap: normal;
-    text-overflow: ellipsis;
-  }
 }
 
 .performer-tag-container,
@@ -196,6 +190,7 @@ textarea.scene-description {
     &-video {
       height: 100%;
       object-fit: cover;
+      object-position: top;
       width: 100%;
     }
 
@@ -248,6 +243,10 @@ textarea.scene-description {
   display: block;
   margin-bottom: 10px;
   margin-top: 10px;
+  max-width: 100%;
+}
+
+.movie-image {
   max-width: 100%;
 }
 

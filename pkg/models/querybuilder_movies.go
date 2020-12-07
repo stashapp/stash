@@ -225,6 +225,12 @@ func (qb *MovieQueryBuilder) getMovieSort(findFilter *FindFilterType) string {
 		sort = findFilter.GetSort("name")
 		direction = findFilter.GetDirection()
 	}
+
+	// #943 - override name sorting to use natural sort
+	if sort == "name" {
+		return " ORDER BY " + getColumn("movies", sort) + " COLLATE NATURAL_CS " + direction
+	}
+
 	return getSort(sort, direction, "movies")
 }
 
