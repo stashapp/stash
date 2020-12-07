@@ -25,14 +25,15 @@ const (
 )
 
 const (
-	path     = "path"
-	zip      = true
-	url      = "url"
-	checksum = "checksum"
-	title    = "title"
-	date     = "2001-01-01"
-	rating   = 5
-	details  = "details"
+	path      = "path"
+	zip       = true
+	url       = "url"
+	checksum  = "checksum"
+	title     = "title"
+	date      = "2001-01-01"
+	rating    = 5
+	organized = true
+	details   = "details"
 )
 
 const (
@@ -58,9 +59,10 @@ func createFullGallery(id int) models.Gallery {
 			String: date,
 			Valid:  true,
 		},
-		Details: modelstest.NullString(details),
-		Rating:  modelstest.NullInt64(rating),
-		URL:     modelstest.NullString(url),
+		Details:   modelstest.NullString(details),
+		Rating:    modelstest.NullInt64(rating),
+		Organized: modelstest.NullBool(organized),
+		URL:       modelstest.NullString(url),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},
@@ -84,14 +86,15 @@ func createEmptyGallery(id int) models.Gallery {
 
 func createFullJSONGallery() *jsonschema.Gallery {
 	return &jsonschema.Gallery{
-		Title:    title,
-		Path:     path,
-		Zip:      zip,
-		Checksum: checksum,
-		Date:     date,
-		Details:  details,
-		Rating:   rating,
-		URL:      url,
+		Title:     title,
+		Path:      path,
+		Zip:       zip,
+		Checksum:  checksum,
+		Date:      date,
+		Details:   details,
+		Rating:    rating,
+		Organized: organized,
+		URL:       url,
 		CreatedAt: models.JSONTime{
 			Time: createTime,
 		},

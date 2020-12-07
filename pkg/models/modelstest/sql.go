@@ -15,3 +15,10 @@ func NullInt64(v int64) sql.NullInt64 {
 		Valid: true,
 	}
 }
+
+func NullBool(v bool) sql.NullBool {
+	return sql.NullBool{
+		Bool:  v,
+		Valid: true,
+	}
+}

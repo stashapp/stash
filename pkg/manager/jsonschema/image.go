@@ -20,6 +20,7 @@ type Image struct {
 	Checksum   string          `json:"checksum,omitempty"`
 	Studio     string          `json:"studio,omitempty"`
 	Rating     int             `json:"rating,omitempty"`
+	Organized  bool            `json:"organized,omitempty"`
 	OCounter   int             `json:"o_counter,omitempty"`
 	Galleries  []string        `json:"galleries,omitempty"`
 	Performers []string        `json:"performers,omitempty"`
