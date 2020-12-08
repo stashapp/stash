@@ -37,7 +37,8 @@ func (t *AutoTagPerformerTask) autoTagPerformer() {
 
 	regex := getQueryRegex(t.performer.Name.String)
 
-	scenes, err := qb.QueryAllByPathRegex(regex)
+	const ignoreOrganized = true
+	scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
 
 	if err != nil {
 		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
@@ -82,7 +83,8 @@ func (t *AutoTagStudioTask) autoTagStudio() {
 
 	regex := getQueryRegex(t.studio.Name.String)
 
-	scenes, err := qb.QueryAllByPathRegex(regex)
+	const ignoreOrganized = true
+	scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
 
 	if err != nil {
 		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
@@ -139,7 +141,8 @@ func (t *AutoTagTagTask) autoTagTag() {
 
 	regex := getQueryRegex(t.tag.Name)
 
-	scenes, err := qb.QueryAllByPathRegex(regex)
+	const ignoreOrganized = true
+	scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
 
 	if err != nil {
 		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
