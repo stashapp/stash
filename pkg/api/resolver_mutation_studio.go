@@ -89,13 +89,17 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	// Populate studio from the input
 	studioID, _ := strconv.Atoi(input.ID)
 
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
 	updatedStudio := models.StudioPartial{
 		ID:        studioID,
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 
 	var imageData []byte
-	imageIncluded := wasFieldIncluded(ctx, "image")
+	imageIncluded := translator.hasField("image")
 	if input.Image != nil {
 		var err error
 		_, imageData, err = utils.ProcessBase64Image(*input.Image)
@@ -109,17 +113,9 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 		updatedStudio.Name = &sql.NullString{String: *input.Name, Valid: true}
 		updatedStudio.Checksum = &checksum
 	}
-	if input.URL != nil {
-		updatedStudio.URL = &sql.NullString{String: *input.URL, Valid: true}
-	}
 
-	if input.ParentID != nil {
-		parentID, _ := strconv.ParseInt(*input.ParentID, 10, 64)
-		updatedStudio.ParentID = &sql.NullInt64{Int64: parentID, Valid: true}
-	} else {
-		// parent studio must be nullable
-		updatedStudio.ParentID = &sql.NullInt64{Valid: false}
-	}
+	updatedStudio.URL = translator.nullString(input.URL, "url")
+	updatedStudio.ParentID = translator.nullInt64FromString(input.ParentID, "parent_id")
 
 	// Start the transaction and save the studio
 	tx := database.DB.MustBeginTx(ctx, nil)
@@ -152,7 +148,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	}
 
 	// Save the stash_ids
-	if input.StashIds != nil {
+	if translator.hasField("stash_ids") {
 		var stashIDJoins []models.StashID
 		for _, stashID := range input.StashIds {
 			newJoin := models.StashID{

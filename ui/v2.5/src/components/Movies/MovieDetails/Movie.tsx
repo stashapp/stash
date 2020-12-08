@@ -79,7 +79,7 @@ export const Movie: React.FC = () => {
   // Network state
   const { data, error, loading } = useFindMovie(id);
   const [isLoading, setIsLoading] = useState(false);
-  const [updateMovie] = useMovieUpdate(getMovieInput() as GQL.MovieUpdateInput);
+  const [updateMovie] = useMovieUpdate();
   const [createMovie] = useMovieCreate(getMovieInput() as GQL.MovieCreateInput);
   const [deleteMovie] = useMovieDestroy(
     getMovieInput() as GQL.MovieDestroyInput
@@ -201,8 +201,8 @@ export const Movie: React.FC = () => {
       aliases,
       duration,
       date,
-      rating,
-      studio_id: studioId,
+      rating: rating ?? null,
+      studio_id: studioId ?? null,
       director,
       synopsis,
       url,
@@ -219,7 +219,11 @@ export const Movie: React.FC = () => {
   async function onSave() {
     try {
       if (!isNew) {
-        const result = await updateMovie();
+        const result = await updateMovie({
+          variables: {
+            input: getMovieInput() as GQL.MovieUpdateInput,
+          },
+        });
         if (result.data?.movieUpdate) {
           updateMovieData(result.data.movieUpdate);
           setIsEditing(false);

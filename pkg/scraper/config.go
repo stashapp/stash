@@ -157,9 +157,22 @@ type scraperDebugOptions struct {
 	PrintHTML bool `yaml:"printHTML"`
 }
 
+type scraperCookies struct {
+	Name   string `yaml:"Name"`
+	Value  string `yaml:"Value"`
+	Domain string `yaml:"Domain"`
+	Path   string `yaml:"Path"`
+}
+
+type cookieOptions struct {
+	CookieURL string            `yaml:"CookieURL"`
+	Cookies   []*scraperCookies `yaml:"Cookies"`
+}
+
 type scraperDriverOptions struct {
-	UseCDP bool `yaml:"useCDP"`
-	Sleep  int  `yaml:"sleep"`
+	UseCDP  bool             `yaml:"useCDP"`
+	Sleep   int              `yaml:"sleep"`
+	Cookies []*cookieOptions `yaml:"cookies"`
 }
 
 func loadScraperFromYAML(id string, reader io.Reader) (*config, error) {

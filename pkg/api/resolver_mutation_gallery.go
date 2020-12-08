@@ -119,7 +119,10 @@ func (r *mutationResolver) GalleryUpdate(ctx context.Context, input models.Galle
 	// Start the transaction and save the gallery
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-	ret, err := r.galleryUpdate(input, tx)
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+	ret, err := r.galleryUpdate(input, translator, tx)
 
 	if err != nil {
 		_ = tx.Rollback()
@@ -137,11 +140,16 @@ func (r *mutationResolver) GalleryUpdate(ctx context.Context, input models.Galle
 func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.GalleryUpdateInput) ([]*models.Gallery, error) {
 	// Start the transaction and save the gallery
 	tx := database.DB.MustBeginTx(ctx, nil)
+	inputMaps := getUpdateInputMaps(ctx)
 
 	var ret []*models.Gallery
 
-	for _, gallery := range input {
-		thisGallery, err := r.galleryUpdate(*gallery, tx)
+	for i, gallery := range input {
+		translator := changesetTranslator{
+			inputMap: inputMaps[i],
+		}
+
+		thisGallery, err := r.galleryUpdate(*gallery, translator, tx)
 		ret = append(ret, thisGallery)
 
 		if err != nil {
@@ -158,7 +166,7 @@ func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.
 	return ret, nil
 }
 
-func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, tx *sqlx.Tx) (*models.Gallery, error) {
+func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, translator changesetTranslator, tx *sqlx.Tx) (*models.Gallery, error) {
 	qb := models.NewGalleryQueryBuilder()
 	// Populate gallery from the input
 	galleryID, _ := strconv.Atoi(input.ID)
@@ -176,6 +184,7 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, tx *sq
 		ID:        galleryID,
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
+
 	if input.Title != nil {
 		// ensure title is not empty
 		if *input.Title == "" {
@@ -190,30 +199,12 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, tx *sq
 
 		updatedGallery.Title = &sql.NullString{String: *input.Title, Valid: true}
 	}
-	if input.Details != nil {
-		updatedGallery.Details = &sql.NullString{String: *input.Details, Valid: true}
-	}
-	if input.URL != nil {
-		updatedGallery.URL = &sql.NullString{String: *input.URL, Valid: true}
-	}
-	if input.Date != nil {
-		updatedGallery.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
-	}
 
-	if input.Rating != nil {
-		updatedGallery.Rating = &sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
-	} else {
-		// rating must be nullable
-		updatedGallery.Rating = &sql.NullInt64{Valid: false}
-	}
-
-	if input.StudioID != nil {
-		studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-		updatedGallery.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
-	} else {
-		// studio must be nullable
-		updatedGallery.StudioID = &sql.NullInt64{Valid: false}
-	}
+	updatedGallery.Details = translator.nullString(input.Details, "details")
+	updatedGallery.URL = translator.nullString(input.URL, "url")
+	updatedGallery.Date = translator.sqliteDate(input.Date, "date")
+	updatedGallery.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedGallery.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 
 	// gallery scene is set from the scene only
 
@@ -224,31 +215,35 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, tx *sq
 	}
 
 	// Save the performers
-	var performerJoins []models.PerformersGalleries
-	for _, pid := range input.PerformerIds {
-		performerID, _ := strconv.Atoi(pid)
-		performerJoin := models.PerformersGalleries{
-			PerformerID: performerID,
-			GalleryID:   galleryID,
+	if translator.hasField("performer_ids") {
+		var performerJoins []models.PerformersGalleries
+		for _, pid := range input.PerformerIds {
+			performerID, _ := strconv.Atoi(pid)
+			performerJoin := models.PerformersGalleries{
+				PerformerID: performerID,
+				GalleryID:   galleryID,
+			}
+			performerJoins = append(performerJoins, performerJoin)
 		}
-		performerJoins = append(performerJoins, performerJoin)
-	}
-	if err := jqb.UpdatePerformersGalleries(galleryID, performerJoins, tx); err != nil {
-		return nil, err
+		if err := jqb.UpdatePerformersGalleries(galleryID, performerJoins, tx); err != nil {
+			return nil, err
+		}
 	}
 
 	// Save the tags
-	var tagJoins []models.GalleriesTags
-	for _, tid := range input.TagIds {
-		tagID, _ := strconv.Atoi(tid)
-		tagJoin := models.GalleriesTags{
-			GalleryID: galleryID,
-			TagID:     tagID,
+	if translator.hasField("tag_ids") {
+		var tagJoins []models.GalleriesTags
+		for _, tid := range input.TagIds {
+			tagID, _ := strconv.Atoi(tid)
+			tagJoin := models.GalleriesTags{
+				GalleryID: galleryID,
+				TagID:     tagID,
+			}
+			tagJoins = append(tagJoins, tagJoin)
 		}
-		tagJoins = append(tagJoins, tagJoin)
-	}
-	if err := jqb.UpdateGalleriesTags(galleryID, tagJoins, tx); err != nil {
-		return nil, err
+		if err := jqb.UpdateGalleriesTags(galleryID, tagJoins, tx); err != nil {
+			return nil, err
+		}
 	}
 
 	return gallery, nil
@@ -263,44 +258,20 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 	qb := models.NewGalleryQueryBuilder()
 	jqb := models.NewJoinsQueryBuilder()
 
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
 	updatedGallery := models.GalleryPartial{
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
 	}
-	if input.Details != nil {
-		updatedGallery.Details = &sql.NullString{String: *input.Details, Valid: true}
-	}
-	if input.URL != nil {
-		updatedGallery.URL = &sql.NullString{String: *input.URL, Valid: true}
-	}
-	if input.Date != nil {
-		updatedGallery.Date = &models.SQLiteDate{String: *input.Date, Valid: true}
-	}
-	if input.Rating != nil {
-		// a rating of 0 means unset the rating
-		if *input.Rating == 0 {
-			updatedGallery.Rating = &sql.NullInt64{Int64: 0, Valid: false}
-		} else {
-			updatedGallery.Rating = &sql.NullInt64{Int64: int64(*input.Rating), Valid: true}
-		}
-	}
-	if input.StudioID != nil {
-		// empty string means unset the studio
-		if *input.StudioID == "" {
-			updatedGallery.StudioID = &sql.NullInt64{Int64: 0, Valid: false}
-		} else {
-			studioID, _ := strconv.ParseInt(*input.StudioID, 10, 64)
-			updatedGallery.StudioID = &sql.NullInt64{Int64: studioID, Valid: true}
-		}
-	}
-	if input.SceneID != nil {
-		// empty string means unset the studio
-		if *input.SceneID == "" {
-			updatedGallery.SceneID = &sql.NullInt64{Int64: 0, Valid: false}
-		} else {
-			sceneID, _ := strconv.ParseInt(*input.SceneID, 10, 64)
-			updatedGallery.SceneID = &sql.NullInt64{Int64: sceneID, Valid: true}
-		}
-	}
+
+	updatedGallery.Details = translator.nullString(input.Details, "details")
+	updatedGallery.URL = translator.nullString(input.URL, "url")
+	updatedGallery.Date = translator.sqliteDate(input.Date, "date")
+	updatedGallery.Rating = translator.nullInt64(input.Rating, "rating")
+	updatedGallery.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
+	updatedGallery.SceneID = translator.nullInt64FromString(input.SceneID, "scene_id")
 
 	ret := []*models.Gallery{}
 
@@ -317,7 +288,7 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 		ret = append(ret, gallery)
 
 		// Save the performers
-		if wasFieldIncluded(ctx, "performer_ids") {
+		if translator.hasField("performer_ids") {
 			performerIDs, err := adjustGalleryPerformerIDs(tx, galleryID, *input.PerformerIds)
 			if err != nil {
 				_ = tx.Rollback()
@@ -339,7 +310,7 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 		}
 
 		// Save the tags
-		if wasFieldIncluded(ctx, "tag_ids") {
+		if translator.hasField("tag_ids") {
 			tagIDs, err := adjustGalleryTagIDs(tx, galleryID, *input.TagIds)
 			if err != nil {
 				_ = tx.Rollback()

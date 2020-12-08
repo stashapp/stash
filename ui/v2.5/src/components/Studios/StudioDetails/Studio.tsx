@@ -21,6 +21,7 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { StudioScenesPanel } from "./StudioScenesPanel";
+import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
 
@@ -50,9 +51,7 @@ export const Studio: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>();
 
   const { data, error, loading } = useFindStudio(id);
-  const [updateStudio] = useStudioUpdate(
-    getStudioInput() as GQL.StudioUpdateInput
-  );
+  const [updateStudio] = useStudioUpdate();
   const [createStudio] = useStudioCreate(
     getStudioInput() as GQL.StudioCreateInput
   );
@@ -117,8 +116,8 @@ export const Studio: React.FC = () => {
     const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
       name,
       url,
-      parent_id: parentStudioId,
       image,
+      parent_id: parentStudioId ?? null,
     };
 
     if (!isNew) {
@@ -130,7 +129,11 @@ export const Studio: React.FC = () => {
   async function onSave() {
     try {
       if (!isNew) {
-        const result = await updateStudio();
+        const result = await updateStudio({
+          variables: {
+            input: getStudioInput() as GQL.StudioUpdateInput,
+          },
+        });
         if (result.data?.studioUpdate) {
           updateStudioData(result.data.studioUpdate);
           setIsEditing(false);
@@ -233,7 +236,9 @@ export const Studio: React.FC = () => {
   }
 
   const activeTabKey =
-    tab === "childstudios" || tab === "images" ? tab : "scenes";
+    tab === "childstudios" || tab === "images" || tab === "galleries"
+      ? tab
+      : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
@@ -328,6 +333,9 @@ export const Studio: React.FC = () => {
           >
             <Tab eventKey="scenes" title="Scenes">
               <StudioScenesPanel studio={studio} />
+            </Tab>
+            <Tab eventKey="galleries" title="Galleries">
+              <StudioGalleriesPanel studio={studio} />
             </Tab>
             <Tab eventKey="images" title="Images">
               <StudioImagesPanel studio={studio} />

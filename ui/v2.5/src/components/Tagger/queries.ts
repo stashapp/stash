@@ -12,11 +12,13 @@ export const useUpdatePerformerStashID = () => {
   ) =>
     updatePerformer({
       variables: {
-        id: performerID,
-        stash_ids: stashIDs.map((s) => ({
-          stash_id: s.stash_id,
-          endpoint: s.endpoint,
-        })),
+        input: {
+          id: performerID,
+          stash_ids: stashIDs.map((s) => ({
+            stash_id: s.stash_id,
+            endpoint: s.endpoint,
+          })),
+        },
       },
       update: (store, updatedPerformer) => {
         if (!updatedPerformer.data?.performerUpdate) return;
@@ -117,12 +119,13 @@ export const useUpdateStudioStashID = () => {
   ) =>
     updateStudio({
       variables: {
-        id: studio.id,
-        parent_id: studio.parent_studio?.id,
-        stash_ids: stashIDs.map((s) => ({
-          stash_id: s.stash_id,
-          endpoint: s.endpoint,
-        })),
+        input: {
+          id: studio.id,
+          stash_ids: stashIDs.map((s) => ({
+            stash_id: s.stash_id,
+            endpoint: s.endpoint,
+          })),
+        },
       },
       update: (store, result) => {
         if (!result.data?.studioUpdate) return;
