@@ -61,7 +61,7 @@ func createFullGallery(id int) models.Gallery {
 		},
 		Details:   modelstest.NullString(details),
 		Rating:    modelstest.NullInt64(rating),
-		Organized: modelstest.NullBool(organized),
+		Organized: organized,
 		URL:       modelstest.NullString(url),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,

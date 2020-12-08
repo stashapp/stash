@@ -483,9 +483,13 @@ func getDurationWhereClause(durationFilter IntCriterionInput) (string, []interfa
 	return clause, args
 }
 
-func (qb *SceneQueryBuilder) QueryAllByPathRegex(regex string) ([]*Scene, error) {
+func (qb *SceneQueryBuilder) QueryAllByPathRegex(regex string, ignoreOrganized bool) ([]*Scene, error) {
 	var args []interface{}
 	body := selectDistinctIDs("scenes") + " WHERE scenes.path regexp ?"
+
+	if ignoreOrganized {
+		body += " AND scenes.organized = 0"
+	}
 
 	args = append(args, "(?i)"+regex)
 

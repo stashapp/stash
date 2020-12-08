@@ -68,11 +68,7 @@ func (i *Importer) galleryJSONToGallery(galleryJSON jsonschema.Gallery) models.G
 		newGallery.Rating = sql.NullInt64{Int64: int64(galleryJSON.Rating), Valid: true}
 	}
 
-	newGallery.Organized = sql.NullBool{
-		Bool:  galleryJSON.Organized,
-		Valid: true,
-	}
-
+	newGallery.Organized = galleryJSON.Organized
 	newGallery.CreatedAt = models.SQLiteTimestamp{Timestamp: galleryJSON.CreatedAt.GetTime()}
 	newGallery.UpdatedAt = models.SQLiteTimestamp{Timestamp: galleryJSON.UpdatedAt.GetTime()}
 

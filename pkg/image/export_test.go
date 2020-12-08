@@ -70,7 +70,7 @@ func createFullImage(id int) models.Image {
 		Height:    modelstest.NullInt64(height),
 		OCounter:  ocounter,
 		Rating:    modelstest.NullInt64(rating),
-		Organized: modelstest.NullBool(organized),
+		Organized: organized,
 		Size:      modelstest.NullInt64(int64(size)),
 		Width:     modelstest.NullInt64(width),
 		CreatedAt: models.SQLiteTimestamp{

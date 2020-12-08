@@ -114,7 +114,7 @@ func createFullScene(id int) models.Scene {
 		OCounter:   ocounter,
 		OSHash:     modelstest.NullString(oshash),
 		Rating:     modelstest.NullInt64(rating),
-		Organized:  modelstest.NullBool(organized),
+		Organized:  organized,
 		Size:       modelstest.NullString(size),
 		VideoCodec: modelstest.NullString(videoCodec),
 		Width:      modelstest.NullInt64(width),

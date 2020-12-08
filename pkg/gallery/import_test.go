@@ -86,7 +86,7 @@ func TestImporterPreImport(t *testing.T) {
 		},
 		Details:   modelstest.NullString(details),
 		Rating:    modelstest.NullInt64(rating),
-		Organized: modelstest.NullBool(organized),
+		Organized: organized,
 		URL:       modelstest.NullString(url),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createdAt,

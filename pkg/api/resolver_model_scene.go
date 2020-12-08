@@ -36,13 +36,6 @@ func (r *sceneResolver) Details(ctx context.Context, obj *models.Scene) (*string
 	return nil, nil
 }
 
-func (r *sceneResolver) Organized(ctx context.Context, obj *models.Scene) (bool, error) {
-	if obj.Organized.Valid {
-		return obj.Organized.Bool, nil
-	}
-	return false, nil
-}
-
 func (r *sceneResolver) URL(ctx context.Context, obj *models.Scene) (*string, error) {
 	if obj.URL.Valid {
 		return &obj.URL.String, nil

@@ -85,7 +85,7 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 	updatedScene.Date = translator.sqliteDate(input.Date, "date")
 	updatedScene.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedScene.Organized = translator.nullBool(input.Organized, "organized")
+	updatedScene.Organized = input.Organized
 
 	if input.CoverImage != nil && *input.CoverImage != "" {
 		var err error
@@ -243,7 +243,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 	updatedScene.Date = translator.sqliteDate(input.Date, "date")
 	updatedScene.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedScene.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedScene.Organized = translator.nullBool(input.Organized, "organized")
+	updatedScene.Organized = input.Organized
 
 	ret := []*models.Scene{}
 

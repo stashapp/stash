@@ -22,13 +22,6 @@ func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*stri
 	return nil, nil
 }
 
-func (r *galleryResolver) Organized(ctx context.Context, obj *models.Gallery) (bool, error) {
-	if obj.Organized.Valid {
-		return obj.Organized.Bool, nil
-	}
-	return false, nil
-}
-
 func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) ([]*models.Image, error) {
 	qb := models.NewImageQueryBuilder()
 
