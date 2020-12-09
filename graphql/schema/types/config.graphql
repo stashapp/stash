@@ -149,6 +149,8 @@ type ConfigGeneralResult {
 }
 
 input ConfigInterfaceInput {
+  """Ordered list of items that should be shown in the menu"""
+  menuItems: [String!]
   """Enable sound on mouseover previews"""
   soundOnPreview: Boolean
   """Show title and tags in wall view"""
@@ -164,10 +166,13 @@ input ConfigInterfaceInput {
   """Custom CSS"""
   css: String
   cssEnabled: Boolean
+  """Interface language"""
   language: String
 }
 
 type ConfigInterfaceResult {
+  """Ordered list of items that should be shown in the menu"""
+  menuItems: [String!]
   """Enable sound on mouseover previews"""
   soundOnPreview: Boolean
   """Show title and tags in wall view"""
@@ -178,7 +183,7 @@ type ConfigInterfaceResult {
   maximumLoopDuration: Int
   """If true, video will autostart on load in the scene player"""
   autostartVideo: Boolean
-   """If true, studio overlays will be shown as text instead of logo images"""
+  """If true, studio overlays will be shown as text instead of logo images"""
   showStudioAsText: Boolean
   """Custom CSS"""
   css: String

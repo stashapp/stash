@@ -171,6 +171,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 }
 
 func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.ConfigInterfaceInput) (*models.ConfigInterfaceResult, error) {
+	if input.MenuItems != nil {
+		config.Set(config.MenuItems, input.MenuItems)
+	}
+
 	if input.SoundOnPreview != nil {
 		config.Set(config.SoundOnPreview, *input.SoundOnPreview)
 	}
