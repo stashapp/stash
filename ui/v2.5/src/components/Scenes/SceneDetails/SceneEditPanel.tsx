@@ -598,7 +598,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             <Col xs={9}>
               <SceneGallerySelect
                 sceneId={props.scene.id}
-                initialId={galleryId}
+                gallery={props.scene.gallery ?? undefined}
                 onSelect={(item) => setGalleryId(item ? item.id : undefined)}
               />
             </Col>
