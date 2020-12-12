@@ -1,9 +1,11 @@
-package models
+package sqlite
 
 import (
 	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type ScrapedItemQueryBuilder struct{}
@@ -12,7 +14,7 @@ func NewScrapedItemQueryBuilder() ScrapedItemQueryBuilder {
 	return ScrapedItemQueryBuilder{}
 }
 
-func (qb *ScrapedItemQueryBuilder) Create(newScrapedItem ScrapedItem, tx *sqlx.Tx) (*ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) Create(newScrapedItem models.ScrapedItem, tx *sqlx.Tx) (*models.ScrapedItem, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO scraped_items (title, description, url, date, rating, tags, models, episode, gallery_filename,
@@ -35,7 +37,7 @@ func (qb *ScrapedItemQueryBuilder) Create(newScrapedItem ScrapedItem, tx *sqlx.T
 	return &newScrapedItem, nil
 }
 
-func (qb *ScrapedItemQueryBuilder) Update(updatedScrapedItem ScrapedItem, tx *sqlx.Tx) (*ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) Update(updatedScrapedItem models.ScrapedItem, tx *sqlx.Tx) (*models.ScrapedItem, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
 		`UPDATE scraped_items SET `+SQLGenKeys(updatedScrapedItem)+` WHERE scraped_items.id = :id`,
@@ -51,17 +53,17 @@ func (qb *ScrapedItemQueryBuilder) Update(updatedScrapedItem ScrapedItem, tx *sq
 	return &updatedScrapedItem, nil
 }
 
-func (qb *ScrapedItemQueryBuilder) Find(id int) (*ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) Find(id int) (*models.ScrapedItem, error) {
 	query := "SELECT * FROM scraped_items WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryScrapedItem(query, args, nil)
 }
 
-func (qb *ScrapedItemQueryBuilder) All() ([]*ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) All() ([]*models.ScrapedItem, error) {
 	return qb.queryScrapedItems(selectAll("scraped_items")+qb.getScrapedItemsSort(nil), nil, nil)
 }
 
-func (qb *ScrapedItemQueryBuilder) getScrapedItemsSort(findFilter *FindFilterType) string {
+func (qb *ScrapedItemQueryBuilder) getScrapedItemsSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -74,7 +76,7 @@ func (qb *ScrapedItemQueryBuilder) getScrapedItemsSort(findFilter *FindFilterTyp
 	return getSort(sort, direction, "scraped_items")
 }
 
-func (qb *ScrapedItemQueryBuilder) queryScrapedItem(query string, args []interface{}, tx *sqlx.Tx) (*ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) queryScrapedItem(query string, args []interface{}, tx *sqlx.Tx) (*models.ScrapedItem, error) {
 	results, err := qb.queryScrapedItems(query, args, tx)
 	if err != nil || len(results) < 1 {
 		return nil, err
@@ -82,7 +84,7 @@ func (qb *ScrapedItemQueryBuilder) queryScrapedItem(query string, args []interfa
 	return results[0], nil
 }
 
-func (qb *ScrapedItemQueryBuilder) queryScrapedItems(query string, args []interface{}, tx *sqlx.Tx) ([]*ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) queryScrapedItems(query string, args []interface{}, tx *sqlx.Tx) ([]*models.ScrapedItem, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {
@@ -96,9 +98,9 @@ func (qb *ScrapedItemQueryBuilder) queryScrapedItems(query string, args []interf
 	}
 	defer rows.Close()
 
-	scrapedItems := make([]*ScrapedItem, 0)
+	scrapedItems := make([]*models.ScrapedItem, 0)
 	for rows.Next() {
-		scrapedItem := ScrapedItem{}
+		scrapedItem := models.ScrapedItem{}
 		if err := rows.StructScan(&scrapedItem); err != nil {
 			return nil, err
 		}

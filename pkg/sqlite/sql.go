@@ -1,4 +1,4 @@
-package modelstest
+package sqlite
 
 import "database/sql"
 

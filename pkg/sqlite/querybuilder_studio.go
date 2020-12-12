@@ -1,4 +1,4 @@
-package models
+package sqlite
 
 import (
 	"database/sql"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type StudioQueryBuilder struct{}
@@ -14,7 +15,7 @@ func NewStudioQueryBuilder() StudioQueryBuilder {
 	return StudioQueryBuilder{}
 }
 
-func (qb *StudioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) Create(newStudio models.Studio, tx *sqlx.Tx) (*models.Studio, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO studios (checksum, name, url, parent_id, created_at, updated_at)
@@ -36,7 +37,7 @@ func (qb *StudioQueryBuilder) Create(newStudio Studio, tx *sqlx.Tx) (*Studio, er
 	return &newStudio, nil
 }
 
-func (qb *StudioQueryBuilder) Update(updatedStudio StudioPartial, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) Update(updatedStudio models.StudioPartial, tx *sqlx.Tx) (*models.Studio, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
 		`UPDATE studios SET `+SQLGenKeysPartial(updatedStudio)+` WHERE studios.id = :id`,
@@ -46,14 +47,14 @@ func (qb *StudioQueryBuilder) Update(updatedStudio StudioPartial, tx *sqlx.Tx) (
 		return nil, err
 	}
 
-	var ret Studio
+	var ret models.Studio
 	if err := tx.Get(&ret, `SELECT * FROM studios WHERE id = ? LIMIT 1`, updatedStudio.ID); err != nil {
 		return nil, err
 	}
 	return &ret, nil
 }
 
-func (qb *StudioQueryBuilder) UpdateFull(updatedStudio Studio, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) UpdateFull(updatedStudio models.Studio, tx *sqlx.Tx) (*models.Studio, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
 		`UPDATE studios SET `+SQLGenKeys(updatedStudio)+` WHERE studios.id = :id`,
@@ -63,7 +64,7 @@ func (qb *StudioQueryBuilder) UpdateFull(updatedStudio Studio, tx *sqlx.Tx) (*St
 		return nil, err
 	}
 
-	var ret Studio
+	var ret models.Studio
 	if err := tx.Get(&ret, `SELECT * FROM studios WHERE id = ? LIMIT 1`, updatedStudio.ID); err != nil {
 		return nil, err
 	}
@@ -86,14 +87,14 @@ func (qb *StudioQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 	return executeDeleteQuery("studios", id, tx)
 }
 
-func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Studio, error) {
 	query := "SELECT * FROM studios WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryStudio(query, args, tx)
 }
 
-func (qb *StudioQueryBuilder) FindMany(ids []int) ([]*Studio, error) {
-	var studios []*Studio
+func (qb *StudioQueryBuilder) FindMany(ids []int) ([]*models.Studio, error) {
+	var studios []*models.Studio
 	for _, id := range ids {
 		studio, err := qb.Find(id, nil)
 		if err != nil {
@@ -110,19 +111,19 @@ func (qb *StudioQueryBuilder) FindMany(ids []int) ([]*Studio, error) {
 	return studios, nil
 }
 
-func (qb *StudioQueryBuilder) FindChildren(id int, tx *sqlx.Tx) ([]*Studio, error) {
+func (qb *StudioQueryBuilder) FindChildren(id int, tx *sqlx.Tx) ([]*models.Studio, error) {
 	query := "SELECT studios.* FROM studios WHERE studios.parent_id = ?"
 	args := []interface{}{id}
 	return qb.queryStudios(query, args, tx)
 }
 
-func (qb *StudioQueryBuilder) FindBySceneID(sceneID int) (*Studio, error) {
+func (qb *StudioQueryBuilder) FindBySceneID(sceneID int) (*models.Studio, error) {
 	query := "SELECT studios.* FROM studios JOIN scenes ON studios.id = scenes.studio_id WHERE scenes.id = ? LIMIT 1"
 	args := []interface{}{sceneID}
 	return qb.queryStudio(query, args, nil)
 }
 
-func (qb *StudioQueryBuilder) FindByName(name string, tx *sqlx.Tx, nocase bool) (*Studio, error) {
+func (qb *StudioQueryBuilder) FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Studio, error) {
 	query := "SELECT * FROM studios WHERE name = ?"
 	if nocase {
 		query += " COLLATE NOCASE"
@@ -136,20 +137,20 @@ func (qb *StudioQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
-func (qb *StudioQueryBuilder) All() ([]*Studio, error) {
+func (qb *StudioQueryBuilder) All() ([]*models.Studio, error) {
 	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil, nil)
 }
 
-func (qb *StudioQueryBuilder) AllSlim() ([]*Studio, error) {
+func (qb *StudioQueryBuilder) AllSlim() ([]*models.Studio, error) {
 	return qb.queryStudios("SELECT studios.id, studios.name, studios.parent_id FROM studios "+qb.getStudioSort(nil), nil, nil)
 }
 
-func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int) {
+func (qb *StudioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int) {
 	if studioFilter == nil {
-		studioFilter = &StudioFilterType{}
+		studioFilter = &models.StudioFilterType{}
 	}
 	if findFilter == nil {
-		findFilter = &FindFilterType{}
+		findFilter = &models.FindFilterType{}
 	}
 
 	var whereClauses []string
@@ -204,7 +205,7 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 	sortAndPagination := qb.getStudioSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := executeFindQuery("studios", body, args, sortAndPagination, whereClauses, havingClauses)
 
-	var studios []*Studio
+	var studios []*models.Studio
 	for _, id := range idsResult {
 		studio, _ := qb.Find(id, nil)
 		studios = append(studios, studio)
@@ -213,7 +214,7 @@ func (qb *StudioQueryBuilder) Query(studioFilter *StudioFilterType, findFilter *
 	return studios, countResult
 }
 
-func (qb *StudioQueryBuilder) getStudioSort(findFilter *FindFilterType) string {
+func (qb *StudioQueryBuilder) getStudioSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -226,7 +227,7 @@ func (qb *StudioQueryBuilder) getStudioSort(findFilter *FindFilterType) string {
 	return getSort(sort, direction, "studios")
 }
 
-func (qb *StudioQueryBuilder) queryStudio(query string, args []interface{}, tx *sqlx.Tx) (*Studio, error) {
+func (qb *StudioQueryBuilder) queryStudio(query string, args []interface{}, tx *sqlx.Tx) (*models.Studio, error) {
 	results, err := qb.queryStudios(query, args, tx)
 	if err != nil || len(results) < 1 {
 		return nil, err
@@ -234,7 +235,7 @@ func (qb *StudioQueryBuilder) queryStudio(query string, args []interface{}, tx *
 	return results[0], nil
 }
 
-func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}, tx *sqlx.Tx) ([]*Studio, error) {
+func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Studio, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {
@@ -248,9 +249,9 @@ func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}, tx 
 	}
 	defer rows.Close()
 
-	studios := make([]*Studio, 0)
+	studios := make([]*models.Studio, 0)
 	for rows.Next() {
-		studio := Studio{}
+		studio := models.Studio{}
 		if err := rows.StructScan(&studio); err != nil {
 			return nil, err
 		}
@@ -304,4 +305,52 @@ func (qb *StudioQueryBuilder) HasStudioImage(studioID int) (bool, error) {
 	}
 
 	return ret == 1, nil
+}
+
+func NewStudioReaderWriter(tx *sqlx.Tx) *studioReaderWriter {
+	return &studioReaderWriter{
+		tx: tx,
+		qb: NewStudioQueryBuilder(),
+	}
+}
+
+type studioReaderWriter struct {
+	tx *sqlx.Tx
+	qb StudioQueryBuilder
+}
+
+func (t *studioReaderWriter) Find(id int) (*models.Studio, error) {
+	return t.qb.Find(id, t.tx)
+}
+
+func (t *studioReaderWriter) FindMany(ids []int) ([]*models.Studio, error) {
+	return t.qb.FindMany(ids)
+}
+
+func (t *studioReaderWriter) FindByName(name string, nocase bool) (*models.Studio, error) {
+	return t.qb.FindByName(name, t.tx, nocase)
+}
+
+func (t *studioReaderWriter) All() ([]*models.Studio, error) {
+	return t.qb.All()
+}
+
+func (t *studioReaderWriter) GetStudioImage(studioID int) ([]byte, error) {
+	return t.qb.GetStudioImage(studioID, t.tx)
+}
+
+func (t *studioReaderWriter) Create(newStudio models.Studio) (*models.Studio, error) {
+	return t.qb.Create(newStudio, t.tx)
+}
+
+func (t *studioReaderWriter) Update(updatedStudio models.StudioPartial) (*models.Studio, error) {
+	return t.qb.Update(updatedStudio, t.tx)
+}
+
+func (t *studioReaderWriter) UpdateFull(updatedStudio models.Studio) (*models.Studio, error) {
+	return t.qb.UpdateFull(updatedStudio, t.tx)
+}
+
+func (t *studioReaderWriter) UpdateStudioImage(studioID int, image []byte) error {
+	return t.qb.UpdateStudioImage(studioID, image, t.tx)
 }

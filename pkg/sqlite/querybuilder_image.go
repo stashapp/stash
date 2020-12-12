@@ -1,4 +1,4 @@
-package models
+package sqlite
 
 import (
 	"database/sql"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 const imageTable = "images"
@@ -58,7 +59,7 @@ func NewImageQueryBuilder() ImageQueryBuilder {
 	return ImageQueryBuilder{}
 }
 
-func (qb *ImageQueryBuilder) Create(newImage Image, tx *sqlx.Tx) (*Image, error) {
+func (qb *ImageQueryBuilder) Create(newImage models.Image, tx *sqlx.Tx) (*models.Image, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
 		`INSERT INTO images (checksum, path, title, rating, organized, o_counter, size,
@@ -81,7 +82,7 @@ func (qb *ImageQueryBuilder) Create(newImage Image, tx *sqlx.Tx) (*Image, error)
 	return &newImage, nil
 }
 
-func (qb *ImageQueryBuilder) Update(updatedImage ImagePartial, tx *sqlx.Tx) (*Image, error) {
+func (qb *ImageQueryBuilder) Update(updatedImage models.ImagePartial, tx *sqlx.Tx) (*models.Image, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
 		`UPDATE images SET `+SQLGenKeysPartial(updatedImage)+` WHERE images.id = :id`,
@@ -94,7 +95,7 @@ func (qb *ImageQueryBuilder) Update(updatedImage ImagePartial, tx *sqlx.Tx) (*Im
 	return qb.find(updatedImage.ID, tx)
 }
 
-func (qb *ImageQueryBuilder) UpdateFull(updatedImage Image, tx *sqlx.Tx) (*Image, error) {
+func (qb *ImageQueryBuilder) UpdateFull(updatedImage models.Image, tx *sqlx.Tx) (*models.Image, error) {
 	ensureTx(tx)
 	_, err := tx.NamedExec(
 		`UPDATE images SET `+SQLGenKeys(updatedImage)+` WHERE images.id = :id`,
@@ -107,7 +108,7 @@ func (qb *ImageQueryBuilder) UpdateFull(updatedImage Image, tx *sqlx.Tx) (*Image
 	return qb.find(updatedImage.ID, tx)
 }
 
-func (qb *ImageQueryBuilder) UpdateFileModTime(id int, modTime NullSQLiteTimestamp, tx *sqlx.Tx) error {
+func (qb *ImageQueryBuilder) UpdateFileModTime(id int, modTime models.NullSQLiteTimestamp, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	_, err := tx.Exec(
 		`UPDATE images SET file_mod_time = ? WHERE images.id = ? `,
@@ -177,12 +178,12 @@ func (qb *ImageQueryBuilder) ResetOCounter(id int, tx *sqlx.Tx) (int, error) {
 func (qb *ImageQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
 	return executeDeleteQuery("images", strconv.Itoa(id), tx)
 }
-func (qb *ImageQueryBuilder) Find(id int) (*Image, error) {
+func (qb *ImageQueryBuilder) Find(id int) (*models.Image, error) {
 	return qb.find(id, nil)
 }
 
-func (qb *ImageQueryBuilder) FindMany(ids []int) ([]*Image, error) {
-	var images []*Image
+func (qb *ImageQueryBuilder) FindMany(ids []int) ([]*models.Image, error) {
+	var images []*models.Image
 	for _, id := range ids {
 		image, err := qb.Find(id)
 		if err != nil {
@@ -199,25 +200,25 @@ func (qb *ImageQueryBuilder) FindMany(ids []int) ([]*Image, error) {
 	return images, nil
 }
 
-func (qb *ImageQueryBuilder) find(id int, tx *sqlx.Tx) (*Image, error) {
+func (qb *ImageQueryBuilder) find(id int, tx *sqlx.Tx) (*models.Image, error) {
 	query := selectAll(imageTable) + "WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	return qb.queryImage(query, args, tx)
 }
 
-func (qb *ImageQueryBuilder) FindByChecksum(checksum string) (*Image, error) {
+func (qb *ImageQueryBuilder) FindByChecksum(checksum string) (*models.Image, error) {
 	query := "SELECT * FROM images WHERE checksum = ? LIMIT 1"
 	args := []interface{}{checksum}
 	return qb.queryImage(query, args, nil)
 }
 
-func (qb *ImageQueryBuilder) FindByPath(path string) (*Image, error) {
+func (qb *ImageQueryBuilder) FindByPath(path string) (*models.Image, error) {
 	query := selectAll(imageTable) + "WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
 	return qb.queryImage(query, args, nil)
 }
 
-func (qb *ImageQueryBuilder) FindByPerformerID(performerID int) ([]*Image, error) {
+func (qb *ImageQueryBuilder) FindByPerformerID(performerID int) ([]*models.Image, error) {
 	args := []interface{}{performerID}
 	return qb.queryImages(imagesForPerformerQuery, args, nil)
 }
@@ -227,12 +228,12 @@ func (qb *ImageQueryBuilder) CountByPerformerID(performerID int) (int, error) {
 	return runCountQuery(buildCountQuery(countImagesForPerformerQuery), args)
 }
 
-func (qb *ImageQueryBuilder) FindByStudioID(studioID int) ([]*Image, error) {
+func (qb *ImageQueryBuilder) FindByStudioID(studioID int) ([]*models.Image, error) {
 	args := []interface{}{studioID}
 	return qb.queryImages(imagesForStudioQuery, args, nil)
 }
 
-func (qb *ImageQueryBuilder) FindByGalleryID(galleryID int) ([]*Image, error) {
+func (qb *ImageQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Image, error) {
 	args := []interface{}{galleryID}
 	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(nil), args, nil)
 }
@@ -260,16 +261,16 @@ func (qb *ImageQueryBuilder) CountByTagID(tagID int) (int, error) {
 	return runCountQuery(buildCountQuery(countImagesForTagQuery), args)
 }
 
-func (qb *ImageQueryBuilder) All() ([]*Image, error) {
+func (qb *ImageQueryBuilder) All() ([]*models.Image, error) {
 	return qb.queryImages(selectAll(imageTable)+qb.getImageSort(nil), nil, nil)
 }
 
-func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *FindFilterType) ([]*Image, int) {
+func (qb *ImageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int) {
 	if imageFilter == nil {
-		imageFilter = &ImageFilterType{}
+		imageFilter = &models.ImageFilterType{}
 	}
 	if findFilter == nil {
-		findFilter = &FindFilterType{}
+		findFilter = &models.FindFilterType{}
 	}
 
 	query := queryBuilder{
@@ -397,7 +398,7 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 	query.sortAndPagination = qb.getImageSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult := query.executeFind()
 
-	var images []*Image
+	var images []*models.Image
 	for _, id := range idsResult {
 		image, _ := qb.Find(id)
 		images = append(images, image)
@@ -406,7 +407,7 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 	return images, countResult
 }
 
-func (qb *ImageQueryBuilder) getImageSort(findFilter *FindFilterType) string {
+func (qb *ImageQueryBuilder) getImageSort(findFilter *models.FindFilterType) string {
 	if findFilter == nil {
 		return " ORDER BY images.path ASC "
 	}
@@ -415,7 +416,7 @@ func (qb *ImageQueryBuilder) getImageSort(findFilter *FindFilterType) string {
 	return getSort(sort, direction, "images")
 }
 
-func (qb *ImageQueryBuilder) queryImage(query string, args []interface{}, tx *sqlx.Tx) (*Image, error) {
+func (qb *ImageQueryBuilder) queryImage(query string, args []interface{}, tx *sqlx.Tx) (*models.Image, error) {
 	results, err := qb.queryImages(query, args, tx)
 	if err != nil || len(results) < 1 {
 		return nil, err
@@ -423,7 +424,7 @@ func (qb *ImageQueryBuilder) queryImage(query string, args []interface{}, tx *sq
 	return results[0], nil
 }
 
-func (qb *ImageQueryBuilder) queryImages(query string, args []interface{}, tx *sqlx.Tx) ([]*Image, error) {
+func (qb *ImageQueryBuilder) queryImages(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Image, error) {
 	var rows *sqlx.Rows
 	var err error
 	if tx != nil {
@@ -437,9 +438,9 @@ func (qb *ImageQueryBuilder) queryImages(query string, args []interface{}, tx *s
 	}
 	defer rows.Close()
 
-	images := make([]*Image, 0)
+	images := make([]*models.Image, 0)
 	for rows.Next() {
-		image := Image{}
+		image := models.Image{}
 		if err := rows.StructScan(&image); err != nil {
 			return nil, err
 		}
@@ -451,4 +452,44 @@ func (qb *ImageQueryBuilder) queryImages(query string, args []interface{}, tx *s
 	}
 
 	return images, nil
+}
+
+func NewImageReaderWriter(tx *sqlx.Tx) *imageReaderWriter {
+	return &imageReaderWriter{
+		tx: tx,
+		qb: NewImageQueryBuilder(),
+	}
+}
+
+type imageReaderWriter struct {
+	tx *sqlx.Tx
+	qb ImageQueryBuilder
+}
+
+func (t *imageReaderWriter) FindMany(ids []int) ([]*models.Image, error) {
+	return t.qb.FindMany(ids)
+}
+
+func (t *imageReaderWriter) FindByChecksum(checksum string) (*models.Image, error) {
+	return t.qb.FindByChecksum(checksum)
+}
+
+func (t *imageReaderWriter) FindByGalleryID(galleryID int) ([]*models.Image, error) {
+	return t.qb.FindByGalleryID(galleryID)
+}
+
+func (t *imageReaderWriter) All() ([]*models.Image, error) {
+	return t.qb.All()
+}
+
+func (t *imageReaderWriter) Create(newImage models.Image) (*models.Image, error) {
+	return t.qb.Create(newImage, t.tx)
+}
+
+func (t *imageReaderWriter) Update(updatedImage models.ImagePartial) (*models.Image, error) {
+	return t.qb.Update(updatedImage, t.tx)
+}
+
+func (t *imageReaderWriter) UpdateFull(updatedImage models.Image) (*models.Image, error) {
+	return t.qb.UpdateFull(updatedImage, t.tx)
 }

@@ -1,6 +1,6 @@
 // +build integration
 
-package models_test
+package sqlite_test
 
 import (
 	"context"
@@ -12,12 +12,13 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestSceneFind(t *testing.T) {
 	// assume that the first scene is sceneWithGalleryPath
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	const sceneIdx = 0
 	sceneID := sceneIDs[sceneIdx]
@@ -40,7 +41,7 @@ func TestSceneFind(t *testing.T) {
 }
 
 func TestSceneFindByPath(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	const sceneIdx = 1
 	scenePath := getSceneStringValue(sceneIdx, "Path")
@@ -64,7 +65,7 @@ func TestSceneFindByPath(t *testing.T) {
 }
 
 func TestSceneCountByPerformerID(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	count, err := sqb.CountByPerformerID(performerIDs[performerIdxWithScene])
 
 	if err != nil {
@@ -83,7 +84,7 @@ func TestSceneCountByPerformerID(t *testing.T) {
 }
 
 func TestSceneWall(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	const sceneIdx = 2
 	wallQuery := getSceneStringValue(sceneIdx, "Details")
@@ -113,12 +114,12 @@ func TestSceneQueryQ(t *testing.T) {
 
 	q := getSceneStringValue(sceneIdx, titleField)
 
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	sceneQueryQ(t, sqb, q, sceneIdx)
 }
 
-func sceneQueryQ(t *testing.T, sqb models.SceneQueryBuilder, q string, expectedSceneIdx int) {
+func sceneQueryQ(t *testing.T, sqb sqlite.SceneQueryBuilder, q string, expectedSceneIdx int) {
 	filter := models.FindFilterType{
 		Q: &q,
 	}
@@ -151,7 +152,7 @@ func TestSceneQueryPath(t *testing.T) {
 }
 
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	sceneFilter := models.SceneFilterType{
 		Path: &pathCriterion,
 	}
@@ -217,7 +218,7 @@ func TestSceneQueryRating(t *testing.T) {
 }
 
 func verifyScenesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	sceneFilter := models.SceneFilterType{
 		Rating: &ratingCriterion,
 	}
@@ -272,7 +273,7 @@ func TestSceneQueryOCounter(t *testing.T) {
 }
 
 func verifyScenesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInput) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	sceneFilter := models.SceneFilterType{
 		OCounter: &oCounterCriterion,
 	}
@@ -327,7 +328,7 @@ func TestSceneQueryDuration(t *testing.T) {
 }
 
 func verifyScenesDuration(t *testing.T, durationCriterion models.IntCriterionInput) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	sceneFilter := models.SceneFilterType{
 		Duration: &durationCriterion,
 	}
@@ -377,7 +378,7 @@ func TestSceneQueryResolution(t *testing.T) {
 }
 
 func verifyScenesResolution(t *testing.T, resolution models.ResolutionEnum) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	sceneFilter := models.SceneFilterType{
 		Resolution: &resolution,
 	}
@@ -408,7 +409,7 @@ func verifySceneResolution(t *testing.T, height sql.NullInt64, resolution models
 }
 
 func TestSceneQueryHasMarkers(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	hasMarkers := "true"
 	sceneFilter := models.SceneFilterType{
 		HasMarkers: &hasMarkers,
@@ -440,7 +441,7 @@ func TestSceneQueryHasMarkers(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingGallery(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	isMissing := "gallery"
 	sceneFilter := models.SceneFilterType{
 		IsMissing: &isMissing,
@@ -465,7 +466,7 @@ func TestSceneQueryIsMissingGallery(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingStudio(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	isMissing := "studio"
 	sceneFilter := models.SceneFilterType{
 		IsMissing: &isMissing,
@@ -490,7 +491,7 @@ func TestSceneQueryIsMissingStudio(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingMovies(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	isMissing := "movie"
 	sceneFilter := models.SceneFilterType{
 		IsMissing: &isMissing,
@@ -515,7 +516,7 @@ func TestSceneQueryIsMissingMovies(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingPerformers(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	isMissing := "performers"
 	sceneFilter := models.SceneFilterType{
 		IsMissing: &isMissing,
@@ -542,7 +543,7 @@ func TestSceneQueryIsMissingPerformers(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingDate(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	isMissing := "date"
 	sceneFilter := models.SceneFilterType{
 		IsMissing: &isMissing,
@@ -559,7 +560,7 @@ func TestSceneQueryIsMissingDate(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingTags(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	isMissing := "tags"
 	sceneFilter := models.SceneFilterType{
 		IsMissing: &isMissing,
@@ -581,7 +582,7 @@ func TestSceneQueryIsMissingTags(t *testing.T) {
 }
 
 func TestSceneQueryIsMissingRating(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	isMissing := "rating"
 	sceneFilter := models.SceneFilterType{
 		IsMissing: &isMissing,
@@ -598,7 +599,7 @@ func TestSceneQueryIsMissingRating(t *testing.T) {
 }
 
 func TestSceneQueryPerformers(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	performerCriterion := models.MultiCriterionInput{
 		Value: []string{
 			strconv.Itoa(performerIDs[performerIdxWithScene]),
@@ -650,7 +651,7 @@ func TestSceneQueryPerformers(t *testing.T) {
 }
 
 func TestSceneQueryTags(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	tagCriterion := models.MultiCriterionInput{
 		Value: []string{
 			strconv.Itoa(tagIDs[tagIdxWithScene]),
@@ -702,7 +703,7 @@ func TestSceneQueryTags(t *testing.T) {
 }
 
 func TestSceneQueryStudio(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	studioCriterion := models.MultiCriterionInput{
 		Value: []string{
 			strconv.Itoa(studioIDs[studioIdxWithScene]),
@@ -738,7 +739,7 @@ func TestSceneQueryStudio(t *testing.T) {
 }
 
 func TestSceneQueryMovies(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	movieCriterion := models.MultiCriterionInput{
 		Value: []string{
 			strconv.Itoa(movieIDs[movieIdxWithScene]),
@@ -781,7 +782,7 @@ func TestSceneQuerySorting(t *testing.T) {
 		Direction: &direction,
 	}
 
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	scenes, _ := sqb.Query(nil, &findFilter)
 
 	// scenes should be in same order as indexes
@@ -808,7 +809,7 @@ func TestSceneQueryPagination(t *testing.T) {
 		PerPage: &perPage,
 	}
 
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	scenes, _ := sqb.Query(nil, &findFilter)
 
 	assert.Len(t, scenes, 1)
@@ -833,7 +834,7 @@ func TestSceneQueryPagination(t *testing.T) {
 }
 
 func TestSceneCountByTagID(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	sceneCount, err := sqb.CountByTagID(tagIDs[tagIdxWithScene])
 
@@ -853,7 +854,7 @@ func TestSceneCountByTagID(t *testing.T) {
 }
 
 func TestSceneCountByMovieID(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	sceneCount, err := sqb.CountByMovieID(movieIDs[movieIdxWithScene])
 
@@ -873,7 +874,7 @@ func TestSceneCountByMovieID(t *testing.T) {
 }
 
 func TestSceneCountByStudioID(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	sceneCount, err := sqb.CountByStudioID(studioIDs[studioIdxWithScene])
 
@@ -893,7 +894,7 @@ func TestSceneCountByStudioID(t *testing.T) {
 }
 
 func TestFindByMovieID(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	scenes, err := sqb.FindByMovieID(movieIDs[movieIdxWithScene])
 
@@ -914,7 +915,7 @@ func TestFindByMovieID(t *testing.T) {
 }
 
 func TestFindByPerformerID(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	scenes, err := sqb.FindByPerformerID(performerIDs[performerIdxWithScene])
 
@@ -935,7 +936,7 @@ func TestFindByPerformerID(t *testing.T) {
 }
 
 func TestFindByStudioID(t *testing.T) {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	scenes, err := sqb.FindByStudioID(performerIDs[studioIdxWithScene])
 
@@ -956,7 +957,7 @@ func TestFindByStudioID(t *testing.T) {
 }
 
 func TestSceneUpdateSceneCover(t *testing.T) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 
 	// create performer to test against
 	ctx := context.TODO()
@@ -1003,7 +1004,7 @@ func TestSceneUpdateSceneCover(t *testing.T) {
 }
 
 func TestSceneDestroySceneCover(t *testing.T) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 
 	// create performer to test against
 	ctx := context.TODO()

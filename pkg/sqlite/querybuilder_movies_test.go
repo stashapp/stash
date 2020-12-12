@@ -1,6 +1,6 @@
 // +build integration
 
-package models_test
+package sqlite_test
 
 import (
 	"context"
@@ -13,11 +13,12 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestMovieFindBySceneID(t *testing.T) {
-	mqb := models.NewMovieQueryBuilder()
+	mqb := sqlite.NewMovieQueryBuilder()
 	sceneID := sceneIDs[sceneIdxWithMovie]
 
 	movies, err := mqb.FindBySceneID(sceneID, nil)
@@ -42,7 +43,7 @@ func TestMovieFindBySceneID(t *testing.T) {
 
 func TestMovieFindByName(t *testing.T) {
 
-	mqb := models.NewMovieQueryBuilder()
+	mqb := sqlite.NewMovieQueryBuilder()
 
 	name := movieNames[movieIdxWithScene] // find a movie by name
 
@@ -71,7 +72,7 @@ func TestMovieFindByName(t *testing.T) {
 func TestMovieFindByNames(t *testing.T) {
 	var names []string
 
-	mqb := models.NewMovieQueryBuilder()
+	mqb := sqlite.NewMovieQueryBuilder()
 
 	names = append(names, movieNames[movieIdxWithScene]) // find movies by names
 
@@ -92,7 +93,7 @@ func TestMovieFindByNames(t *testing.T) {
 }
 
 func TestMovieQueryStudio(t *testing.T) {
-	mqb := models.NewMovieQueryBuilder()
+	mqb := sqlite.NewMovieQueryBuilder()
 	studioCriterion := models.MultiCriterionInput{
 		Value: []string{
 			strconv.Itoa(studioIDs[studioIdxWithMovie]),
@@ -128,7 +129,7 @@ func TestMovieQueryStudio(t *testing.T) {
 }
 
 func TestMovieUpdateMovieImages(t *testing.T) {
-	mqb := models.NewMovieQueryBuilder()
+	mqb := sqlite.NewMovieQueryBuilder()
 
 	// create movie to test against
 	ctx := context.TODO()
@@ -209,7 +210,7 @@ func TestMovieUpdateMovieImages(t *testing.T) {
 }
 
 func TestMovieDestroyMovieImages(t *testing.T) {
-	mqb := models.NewMovieQueryBuilder()
+	mqb := sqlite.NewMovieQueryBuilder()
 
 	// create movie to test against
 	ctx := context.TODO()

@@ -1,9 +1,5 @@
 package models
 
-import (
-	"github.com/jmoiron/sqlx"
-)
-
 type StudioReader interface {
 	Find(id int) (*Studio, error)
 	FindMany(ids []int) ([]*Studio, error)
@@ -29,52 +25,4 @@ type StudioWriter interface {
 type StudioReaderWriter interface {
 	StudioReader
 	StudioWriter
-}
-
-func NewStudioReaderWriter(tx *sqlx.Tx) StudioReaderWriter {
-	return &studioReaderWriter{
-		tx: tx,
-		qb: NewStudioQueryBuilder(),
-	}
-}
-
-type studioReaderWriter struct {
-	tx *sqlx.Tx
-	qb StudioQueryBuilder
-}
-
-func (t *studioReaderWriter) Find(id int) (*Studio, error) {
-	return t.qb.Find(id, t.tx)
-}
-
-func (t *studioReaderWriter) FindMany(ids []int) ([]*Studio, error) {
-	return t.qb.FindMany(ids)
-}
-
-func (t *studioReaderWriter) FindByName(name string, nocase bool) (*Studio, error) {
-	return t.qb.FindByName(name, t.tx, nocase)
-}
-
-func (t *studioReaderWriter) All() ([]*Studio, error) {
-	return t.qb.All()
-}
-
-func (t *studioReaderWriter) GetStudioImage(studioID int) ([]byte, error) {
-	return t.qb.GetStudioImage(studioID, t.tx)
-}
-
-func (t *studioReaderWriter) Create(newStudio Studio) (*Studio, error) {
-	return t.qb.Create(newStudio, t.tx)
-}
-
-func (t *studioReaderWriter) Update(updatedStudio StudioPartial) (*Studio, error) {
-	return t.qb.Update(updatedStudio, t.tx)
-}
-
-func (t *studioReaderWriter) UpdateFull(updatedStudio Studio) (*Studio, error) {
-	return t.qb.UpdateFull(updatedStudio, t.tx)
-}
-
-func (t *studioReaderWriter) UpdateStudioImage(studioID int, image []byte) error {
-	return t.qb.UpdateStudioImage(studioID, image, t.tx)
 }

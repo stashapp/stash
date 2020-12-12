@@ -1,6 +1,6 @@
 // +build integration
 
-package models_test
+package sqlite_test
 
 import (
 	"context"
@@ -13,11 +13,12 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestPerformerFindBySceneID(t *testing.T) {
-	pqb := models.NewPerformerQueryBuilder()
+	pqb := sqlite.NewPerformerQueryBuilder()
 	sceneID := sceneIDs[sceneIdxWithPerformer]
 
 	performers, err := pqb.FindBySceneID(sceneID, nil)
@@ -41,7 +42,7 @@ func TestPerformerFindBySceneID(t *testing.T) {
 }
 
 func TestPerformerFindNameBySceneID(t *testing.T) {
-	pqb := models.NewPerformerQueryBuilder()
+	pqb := sqlite.NewPerformerQueryBuilder()
 	sceneID := sceneIDs[sceneIdxWithPerformer]
 
 	performers, err := pqb.FindNameBySceneID(sceneID, nil)
@@ -67,7 +68,7 @@ func TestPerformerFindNameBySceneID(t *testing.T) {
 func TestPerformerFindByNames(t *testing.T) {
 	var names []string
 
-	pqb := models.NewPerformerQueryBuilder()
+	pqb := sqlite.NewPerformerQueryBuilder()
 
 	names = append(names, performerNames[performerIdxWithScene]) // find performers by names
 
@@ -109,7 +110,7 @@ func TestPerformerFindByNames(t *testing.T) {
 }
 
 func TestPerformerUpdatePerformerImage(t *testing.T) {
-	qb := models.NewPerformerQueryBuilder()
+	qb := sqlite.NewPerformerQueryBuilder()
 
 	// create performer to test against
 	ctx := context.TODO()
@@ -157,7 +158,7 @@ func TestPerformerUpdatePerformerImage(t *testing.T) {
 }
 
 func TestPerformerDestroyPerformerImage(t *testing.T) {
-	qb := models.NewPerformerQueryBuilder()
+	qb := sqlite.NewPerformerQueryBuilder()
 
 	// create performer to test against
 	ctx := context.TODO()
@@ -228,7 +229,7 @@ func TestPerformerQueryAge(t *testing.T) {
 }
 
 func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
-	qb := models.NewPerformerQueryBuilder()
+	qb := sqlite.NewPerformerQueryBuilder()
 	performerFilter := models.PerformerFilterType{
 		Age: &ageCriterion,
 	}

@@ -1,17 +1,16 @@
 // +build integration
 
-package models_test
+package sqlite_test
 
 import (
 	"testing"
 
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/stashapp/stash/pkg/models"
 )
 
 func TestMarkerFindBySceneID(t *testing.T) {
-	mqb := models.NewSceneMarkerQueryBuilder()
+	mqb := sqlite.NewSceneMarkerQueryBuilder()
 
 	sceneID := sceneIDs[sceneIdxWithMarker]
 	markers, err := mqb.FindBySceneID(sceneID, nil)
@@ -33,7 +32,7 @@ func TestMarkerFindBySceneID(t *testing.T) {
 }
 
 func TestMarkerCountByTagID(t *testing.T) {
-	mqb := models.NewSceneMarkerQueryBuilder()
+	mqb := sqlite.NewSceneMarkerQueryBuilder()
 
 	markerCount, err := mqb.CountByTagID(tagIDs[tagIdxWithPrimaryMarker])
 

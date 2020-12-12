@@ -1,4 +1,4 @@
-package models
+package sqlite
 
 import (
 	"database/sql"
@@ -11,6 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type queryBuilder struct {
@@ -48,7 +49,7 @@ func (qb *queryBuilder) addArg(args ...interface{}) {
 	qb.args = append(qb.args, args...)
 }
 
-func (qb *queryBuilder) handleIntCriterionInput(c *IntCriterionInput, column string) {
+func (qb *queryBuilder) handleIntCriterionInput(c *models.IntCriterionInput, column string) {
 	if c != nil {
 		clause, count := getIntCriterionWhereClause(column, *c)
 		qb.addWhere(clause)
@@ -58,22 +59,22 @@ func (qb *queryBuilder) handleIntCriterionInput(c *IntCriterionInput, column str
 	}
 }
 
-func (qb *queryBuilder) handleStringCriterionInput(c *StringCriterionInput, column string) {
+func (qb *queryBuilder) handleStringCriterionInput(c *models.StringCriterionInput, column string) {
 	if c != nil {
 		if modifier := c.Modifier; c.Modifier.IsValid() {
 			switch modifier {
-			case CriterionModifierIncludes:
+			case models.CriterionModifierIncludes:
 				clause, thisArgs := getSearchBinding([]string{column}, c.Value, false)
 				qb.addWhere(clause)
 				qb.addArg(thisArgs...)
-			case CriterionModifierExcludes:
+			case models.CriterionModifierExcludes:
 				clause, thisArgs := getSearchBinding([]string{column}, c.Value, true)
 				qb.addWhere(clause)
 				qb.addArg(thisArgs...)
-			case CriterionModifierEquals:
+			case models.CriterionModifierEquals:
 				qb.addWhere(column + " LIKE ?")
 				qb.addArg(c.Value)
-			case CriterionModifierNotEquals:
+			case models.CriterionModifierNotEquals:
 				qb.addWhere(column + " NOT LIKE ?")
 				qb.addArg(c.Value)
 			default:
@@ -107,7 +108,7 @@ func getColumn(tableName string, columnName string) string {
 	return tableName + "." + columnName
 }
 
-func getPagination(findFilter *FindFilterType) string {
+func getPagination(findFilter *models.FindFilterType) string {
 	if findFilter == nil {
 		panic("nil find filter for pagination")
 	}
@@ -227,7 +228,7 @@ func getInBinding(length int) string {
 	return "(" + bindings + ")"
 }
 
-func getCriterionModifierBinding(criterionModifier CriterionModifier, value interface{}) (string, int) {
+func getCriterionModifierBinding(criterionModifier models.CriterionModifier, value interface{}) (string, int) {
 	var length int
 	switch x := value.(type) {
 	case []string:
@@ -253,7 +254,7 @@ func getCriterionModifierBinding(criterionModifier CriterionModifier, value inte
 	return "= ?", 1 // TODO
 }
 
-func getSimpleCriterionClause(criterionModifier CriterionModifier, rhs string) (string, int) {
+func getSimpleCriterionClause(criterionModifier models.CriterionModifier, rhs string) (string, int) {
 	if modifier := criterionModifier.String(); criterionModifier.IsValid() {
 		switch modifier {
 		case "EQUALS":
@@ -277,23 +278,23 @@ func getSimpleCriterionClause(criterionModifier CriterionModifier, rhs string) (
 	return "= ?", 1 // TODO
 }
 
-func getIntCriterionWhereClause(column string, input IntCriterionInput) (string, int) {
+func getIntCriterionWhereClause(column string, input models.IntCriterionInput) (string, int) {
 	binding, count := getCriterionModifierBinding(input.Modifier, input.Value)
 	return column + " " + binding, count
 }
 
 // returns where clause and having clause
-func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, foreignFK string, criterion *MultiCriterionInput) (string, string) {
+func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, foreignFK string, criterion *models.MultiCriterionInput) (string, string) {
 	whereClause := ""
 	havingClause := ""
-	if criterion.Modifier == CriterionModifierIncludes {
+	if criterion.Modifier == models.CriterionModifierIncludes {
 		// includes any of the provided ids
 		whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
-	} else if criterion.Modifier == CriterionModifierIncludesAll {
+	} else if criterion.Modifier == models.CriterionModifierIncludesAll {
 		// includes all of the provided ids
 		whereClause = foreignTable + ".id IN " + getInBinding(len(criterion.Value))
 		havingClause = "count(distinct " + foreignTable + ".id) IS " + strconv.Itoa(len(criterion.Value))
-	} else if criterion.Modifier == CriterionModifierExcludes {
+	} else if criterion.Modifier == models.CriterionModifierExcludes {
 		// excludes all of the provided ids
 		if joinTable != "" {
 			whereClause = "not exists (select " + joinTable + "." + primaryFK + " from " + joinTable + " where " + joinTable + "." + primaryFK + " = " + primaryTable + ".id and " + joinTable + "." + foreignFK + " in " + getInBinding(len(criterion.Value)) + ")"
@@ -428,11 +429,11 @@ func sqlGenKeys(i interface{}, partial bool) string {
 			add = partial || t != 0
 		case bool:
 			add = true
-		case SQLiteTimestamp:
+		case models.SQLiteTimestamp:
 			add = partial || !t.Timestamp.IsZero()
-		case NullSQLiteTimestamp:
+		case models.NullSQLiteTimestamp:
 			add = partial || t.Valid
-		case SQLiteDate:
+		case models.SQLiteDate:
 			add = partial || t.Valid
 		case sql.NullString:
 			add = partial || t.Valid

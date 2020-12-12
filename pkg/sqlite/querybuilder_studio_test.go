@@ -1,6 +1,6 @@
 // +build integration
 
-package models_test
+package sqlite_test
 
 import (
 	"context"
@@ -11,12 +11,13 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestStudioFindByName(t *testing.T) {
 
-	sqb := models.NewStudioQueryBuilder()
+	sqb := sqlite.NewStudioQueryBuilder()
 
 	name := studioNames[studioIdxWithScene] // find a studio by name
 
@@ -44,7 +45,7 @@ func TestStudioFindByName(t *testing.T) {
 }
 
 func TestStudioQueryParent(t *testing.T) {
-	sqb := models.NewStudioQueryBuilder()
+	sqb := sqlite.NewStudioQueryBuilder()
 	studioCriterion := models.MultiCriterionInput{
 		Value: []string{
 			strconv.Itoa(studioIDs[studioIdxWithChildStudio]),
@@ -105,7 +106,7 @@ func TestStudioDestroyParent(t *testing.T) {
 		t.Fatalf("Error committing: %s", err.Error())
 	}
 
-	sqb := models.NewStudioQueryBuilder()
+	sqb := sqlite.NewStudioQueryBuilder()
 
 	// destroy the parent
 	tx = database.DB.MustBeginTx(ctx, nil)
@@ -137,7 +138,7 @@ func TestStudioDestroyParent(t *testing.T) {
 }
 
 func TestStudioFindChildren(t *testing.T) {
-	sqb := models.NewStudioQueryBuilder()
+	sqb := sqlite.NewStudioQueryBuilder()
 
 	studios, err := sqb.FindChildren(studioIDs[studioIdxWithChildStudio], nil)
 
@@ -183,7 +184,7 @@ func TestStudioUpdateClearParent(t *testing.T) {
 		t.Fatalf("Error committing: %s", err.Error())
 	}
 
-	sqb := models.NewStudioQueryBuilder()
+	sqb := sqlite.NewStudioQueryBuilder()
 
 	// clear the parent id from the child
 	tx = database.DB.MustBeginTx(ctx, nil)
@@ -211,7 +212,7 @@ func TestStudioUpdateClearParent(t *testing.T) {
 }
 
 func TestStudioUpdateStudioImage(t *testing.T) {
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 
 	// create performer to test against
 	ctx := context.TODO()
@@ -254,7 +255,7 @@ func TestStudioUpdateStudioImage(t *testing.T) {
 }
 
 func TestStudioDestroyStudioImage(t *testing.T) {
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 
 	// create performer to test against
 	ctx := context.TODO()

@@ -1,10 +1,11 @@
-package models
+package sqlite
 
 import (
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type JoinsQueryBuilder struct{}
@@ -13,7 +14,7 @@ func NewJoinsQueryBuilder() JoinsQueryBuilder {
 	return JoinsQueryBuilder{}
 }
 
-func (qb *JoinsQueryBuilder) GetScenePerformers(sceneID int, tx *sqlx.Tx) ([]PerformersScenes, error) {
+func (qb *JoinsQueryBuilder) GetScenePerformers(sceneID int, tx *sqlx.Tx) ([]models.PerformersScenes, error) {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -32,9 +33,9 @@ func (qb *JoinsQueryBuilder) GetScenePerformers(sceneID int, tx *sqlx.Tx) ([]Per
 	}
 	defer rows.Close()
 
-	performerScenes := make([]PerformersScenes, 0)
+	performerScenes := make([]models.PerformersScenes, 0)
 	for rows.Next() {
-		performerScene := PerformersScenes{}
+		performerScene := models.PerformersScenes{}
 		if err := rows.StructScan(&performerScene); err != nil {
 			return nil, err
 		}
@@ -48,7 +49,7 @@ func (qb *JoinsQueryBuilder) GetScenePerformers(sceneID int, tx *sqlx.Tx) ([]Per
 	return performerScenes, nil
 }
 
-func (qb *JoinsQueryBuilder) CreatePerformersScenes(newJoins []PerformersScenes, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreatePerformersScenes(newJoins []models.PerformersScenes, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -81,7 +82,7 @@ func (qb *JoinsQueryBuilder) AddPerformerScene(sceneID int, performerID int, tx 
 		}
 	}
 
-	performerJoin := PerformersScenes{
+	performerJoin := models.PerformersScenes{
 		PerformerID: performerID,
 		SceneID:     sceneID,
 	}
@@ -92,7 +93,7 @@ func (qb *JoinsQueryBuilder) AddPerformerScene(sceneID int, performerID int, tx 
 	return err == nil, err
 }
 
-func (qb *JoinsQueryBuilder) UpdatePerformersScenes(sceneID int, updatedJoins []PerformersScenes, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdatePerformersScenes(sceneID int, updatedJoins []models.PerformersScenes, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -111,7 +112,7 @@ func (qb *JoinsQueryBuilder) DestroyPerformersScenes(sceneID int, tx *sqlx.Tx) e
 	return err
 }
 
-func (qb *JoinsQueryBuilder) GetSceneMovies(sceneID int, tx *sqlx.Tx) ([]MoviesScenes, error) {
+func (qb *JoinsQueryBuilder) GetSceneMovies(sceneID int, tx *sqlx.Tx) ([]models.MoviesScenes, error) {
 	query := `SELECT * from movies_scenes WHERE scene_id = ?`
 
 	var rows *sqlx.Rows
@@ -127,9 +128,9 @@ func (qb *JoinsQueryBuilder) GetSceneMovies(sceneID int, tx *sqlx.Tx) ([]MoviesS
 	}
 	defer rows.Close()
 
-	movieScenes := make([]MoviesScenes, 0)
+	movieScenes := make([]models.MoviesScenes, 0)
 	for rows.Next() {
-		movieScene := MoviesScenes{}
+		movieScene := models.MoviesScenes{}
 		if err := rows.StructScan(&movieScene); err != nil {
 			return nil, err
 		}
@@ -143,7 +144,7 @@ func (qb *JoinsQueryBuilder) GetSceneMovies(sceneID int, tx *sqlx.Tx) ([]MoviesS
 	return movieScenes, nil
 }
 
-func (qb *JoinsQueryBuilder) CreateMoviesScenes(newJoins []MoviesScenes, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreateMoviesScenes(newJoins []models.MoviesScenes, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -177,7 +178,7 @@ func (qb *JoinsQueryBuilder) AddMoviesScene(sceneID int, movieID int, sceneIdx *
 		}
 	}
 
-	movieJoin := MoviesScenes{
+	movieJoin := models.MoviesScenes{
 		MovieID: movieID,
 		SceneID: sceneID,
 	}
@@ -195,7 +196,7 @@ func (qb *JoinsQueryBuilder) AddMoviesScene(sceneID int, movieID int, sceneIdx *
 	return err == nil, err
 }
 
-func (qb *JoinsQueryBuilder) UpdateMoviesScenes(sceneID int, updatedJoins []MoviesScenes, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateMoviesScenes(sceneID int, updatedJoins []models.MoviesScenes, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -214,7 +215,7 @@ func (qb *JoinsQueryBuilder) DestroyMoviesScenes(sceneID int, tx *sqlx.Tx) error
 	return err
 }
 
-func (qb *JoinsQueryBuilder) GetSceneTags(sceneID int, tx *sqlx.Tx) ([]ScenesTags, error) {
+func (qb *JoinsQueryBuilder) GetSceneTags(sceneID int, tx *sqlx.Tx) ([]models.ScenesTags, error) {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -233,9 +234,9 @@ func (qb *JoinsQueryBuilder) GetSceneTags(sceneID int, tx *sqlx.Tx) ([]ScenesTag
 	}
 	defer rows.Close()
 
-	sceneTags := make([]ScenesTags, 0)
+	sceneTags := make([]models.ScenesTags, 0)
 	for rows.Next() {
-		sceneTag := ScenesTags{}
+		sceneTag := models.ScenesTags{}
 		if err := rows.StructScan(&sceneTag); err != nil {
 			return nil, err
 		}
@@ -249,7 +250,7 @@ func (qb *JoinsQueryBuilder) GetSceneTags(sceneID int, tx *sqlx.Tx) ([]ScenesTag
 	return sceneTags, nil
 }
 
-func (qb *JoinsQueryBuilder) CreateScenesTags(newJoins []ScenesTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreateScenesTags(newJoins []models.ScenesTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -263,7 +264,7 @@ func (qb *JoinsQueryBuilder) CreateScenesTags(newJoins []ScenesTags, tx *sqlx.Tx
 	return nil
 }
 
-func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int, updatedJoins []ScenesTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateScenesTags(sceneID int, updatedJoins []models.ScenesTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -292,7 +293,7 @@ func (qb *JoinsQueryBuilder) AddSceneTag(sceneID int, tagID int, tx *sqlx.Tx) (b
 		}
 	}
 
-	tagJoin := ScenesTags{
+	tagJoin := models.ScenesTags{
 		TagID:   tagID,
 		SceneID: sceneID,
 	}
@@ -312,7 +313,7 @@ func (qb *JoinsQueryBuilder) DestroyScenesTags(sceneID int, tx *sqlx.Tx) error {
 	return err
 }
 
-func (qb *JoinsQueryBuilder) CreateSceneMarkersTags(newJoins []SceneMarkersTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreateSceneMarkersTags(newJoins []models.SceneMarkersTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -326,7 +327,7 @@ func (qb *JoinsQueryBuilder) CreateSceneMarkersTags(newJoins []SceneMarkersTags,
 	return nil
 }
 
-func (qb *JoinsQueryBuilder) UpdateSceneMarkersTags(sceneMarkerID int, updatedJoins []SceneMarkersTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateSceneMarkersTags(sceneMarkerID int, updatedJoins []models.SceneMarkersTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -337,7 +338,7 @@ func (qb *JoinsQueryBuilder) UpdateSceneMarkersTags(sceneMarkerID int, updatedJo
 	return qb.CreateSceneMarkersTags(updatedJoins, tx)
 }
 
-func (qb *JoinsQueryBuilder) DestroySceneMarkersTags(sceneMarkerID int, updatedJoins []SceneMarkersTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) DestroySceneMarkersTags(sceneMarkerID int, updatedJoins []models.SceneMarkersTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins
@@ -366,7 +367,7 @@ func (qb *JoinsQueryBuilder) DestroyScenesMarkers(sceneID int, tx *sqlx.Tx) erro
 	return err
 }
 
-func (qb *JoinsQueryBuilder) CreateStashIDs(entityName string, entityID int, newJoins []StashID, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreateStashIDs(entityName string, entityID int, newJoins []models.StashID, tx *sqlx.Tx) error {
 	query := "INSERT INTO " + entityName + "_stash_ids (" + entityName + "_id, endpoint, stash_id) VALUES (?, ?, ?)"
 	ensureTx(tx)
 	for _, join := range newJoins {
@@ -378,7 +379,7 @@ func (qb *JoinsQueryBuilder) CreateStashIDs(entityName string, entityID int, new
 	return nil
 }
 
-func (qb *JoinsQueryBuilder) GetImagePerformers(imageID int, tx *sqlx.Tx) ([]PerformersImages, error) {
+func (qb *JoinsQueryBuilder) GetImagePerformers(imageID int, tx *sqlx.Tx) ([]models.PerformersImages, error) {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -397,9 +398,9 @@ func (qb *JoinsQueryBuilder) GetImagePerformers(imageID int, tx *sqlx.Tx) ([]Per
 	}
 	defer rows.Close()
 
-	performerImages := make([]PerformersImages, 0)
+	performerImages := make([]models.PerformersImages, 0)
 	for rows.Next() {
-		performerImage := PerformersImages{}
+		performerImage := models.PerformersImages{}
 		if err := rows.StructScan(&performerImage); err != nil {
 			return nil, err
 		}
@@ -413,7 +414,7 @@ func (qb *JoinsQueryBuilder) GetImagePerformers(imageID int, tx *sqlx.Tx) ([]Per
 	return performerImages, nil
 }
 
-func (qb *JoinsQueryBuilder) CreatePerformersImages(newJoins []PerformersImages, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreatePerformersImages(newJoins []models.PerformersImages, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -446,7 +447,7 @@ func (qb *JoinsQueryBuilder) AddPerformerImage(imageID int, performerID int, tx 
 		}
 	}
 
-	performerJoin := PerformersImages{
+	performerJoin := models.PerformersImages{
 		PerformerID: performerID,
 		ImageID:     imageID,
 	}
@@ -457,7 +458,7 @@ func (qb *JoinsQueryBuilder) AddPerformerImage(imageID int, performerID int, tx 
 	return err == nil, err
 }
 
-func (qb *JoinsQueryBuilder) UpdatePerformersImages(imageID int, updatedJoins []PerformersImages, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdatePerformersImages(imageID int, updatedJoins []models.PerformersImages, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -476,7 +477,7 @@ func (qb *JoinsQueryBuilder) DestroyPerformersImages(imageID int, tx *sqlx.Tx) e
 	return err
 }
 
-func (qb *JoinsQueryBuilder) GetImageTags(imageID int, tx *sqlx.Tx) ([]ImagesTags, error) {
+func (qb *JoinsQueryBuilder) GetImageTags(imageID int, tx *sqlx.Tx) ([]models.ImagesTags, error) {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -495,9 +496,9 @@ func (qb *JoinsQueryBuilder) GetImageTags(imageID int, tx *sqlx.Tx) ([]ImagesTag
 	}
 	defer rows.Close()
 
-	imageTags := make([]ImagesTags, 0)
+	imageTags := make([]models.ImagesTags, 0)
 	for rows.Next() {
-		imageTag := ImagesTags{}
+		imageTag := models.ImagesTags{}
 		if err := rows.StructScan(&imageTag); err != nil {
 			return nil, err
 		}
@@ -511,7 +512,7 @@ func (qb *JoinsQueryBuilder) GetImageTags(imageID int, tx *sqlx.Tx) ([]ImagesTag
 	return imageTags, nil
 }
 
-func (qb *JoinsQueryBuilder) CreateImagesTags(newJoins []ImagesTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreateImagesTags(newJoins []models.ImagesTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -525,7 +526,7 @@ func (qb *JoinsQueryBuilder) CreateImagesTags(newJoins []ImagesTags, tx *sqlx.Tx
 	return nil
 }
 
-func (qb *JoinsQueryBuilder) UpdateImagesTags(imageID int, updatedJoins []ImagesTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateImagesTags(imageID int, updatedJoins []models.ImagesTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -554,7 +555,7 @@ func (qb *JoinsQueryBuilder) AddImageTag(imageID int, tagID int, tx *sqlx.Tx) (b
 		}
 	}
 
-	tagJoin := ImagesTags{
+	tagJoin := models.ImagesTags{
 		TagID:   tagID,
 		ImageID: imageID,
 	}
@@ -574,7 +575,7 @@ func (qb *JoinsQueryBuilder) DestroyImagesTags(imageID int, tx *sqlx.Tx) error {
 	return err
 }
 
-func (qb *JoinsQueryBuilder) GetImageGalleries(imageID int, tx *sqlx.Tx) ([]GalleriesImages, error) {
+func (qb *JoinsQueryBuilder) GetImageGalleries(imageID int, tx *sqlx.Tx) ([]models.GalleriesImages, error) {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -593,9 +594,9 @@ func (qb *JoinsQueryBuilder) GetImageGalleries(imageID int, tx *sqlx.Tx) ([]Gall
 	}
 	defer rows.Close()
 
-	galleryImages := make([]GalleriesImages, 0)
+	galleryImages := make([]models.GalleriesImages, 0)
 	for rows.Next() {
-		galleriesImages := GalleriesImages{}
+		galleriesImages := models.GalleriesImages{}
 		if err := rows.StructScan(&galleriesImages); err != nil {
 			return nil, err
 		}
@@ -609,7 +610,7 @@ func (qb *JoinsQueryBuilder) GetImageGalleries(imageID int, tx *sqlx.Tx) ([]Gall
 	return galleryImages, nil
 }
 
-func (qb *JoinsQueryBuilder) CreateGalleriesImages(newJoins []GalleriesImages, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreateGalleriesImages(newJoins []models.GalleriesImages, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -623,7 +624,7 @@ func (qb *JoinsQueryBuilder) CreateGalleriesImages(newJoins []GalleriesImages, t
 	return nil
 }
 
-func (qb *JoinsQueryBuilder) UpdateGalleriesImages(imageID int, updatedJoins []GalleriesImages, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateGalleriesImages(imageID int, updatedJoins []models.GalleriesImages, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -652,7 +653,7 @@ func (qb *JoinsQueryBuilder) AddImageGallery(imageID int, galleryID int, tx *sql
 		}
 	}
 
-	galleryJoin := GalleriesImages{
+	galleryJoin := models.GalleriesImages{
 		GalleryID: galleryID,
 		ImageID:   imageID,
 	}
@@ -675,7 +676,7 @@ func (qb *JoinsQueryBuilder) RemoveImageGallery(imageID int, galleryID int, tx *
 	}
 
 	// remove the join
-	var updatedJoins []GalleriesImages
+	var updatedJoins []models.GalleriesImages
 	found := false
 	for _, p := range existingGalleries {
 		if p.GalleryID == galleryID && p.ImageID == imageID {
@@ -702,7 +703,7 @@ func (qb *JoinsQueryBuilder) DestroyImageGalleries(imageID int, tx *sqlx.Tx) err
 	return err
 }
 
-func (qb *JoinsQueryBuilder) GetGalleryPerformers(galleryID int, tx *sqlx.Tx) ([]PerformersGalleries, error) {
+func (qb *JoinsQueryBuilder) GetGalleryPerformers(galleryID int, tx *sqlx.Tx) ([]models.PerformersGalleries, error) {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -721,9 +722,9 @@ func (qb *JoinsQueryBuilder) GetGalleryPerformers(galleryID int, tx *sqlx.Tx) ([
 	}
 	defer rows.Close()
 
-	performerGalleries := make([]PerformersGalleries, 0)
+	performerGalleries := make([]models.PerformersGalleries, 0)
 	for rows.Next() {
-		performerGallery := PerformersGalleries{}
+		performerGallery := models.PerformersGalleries{}
 		if err := rows.StructScan(&performerGallery); err != nil {
 			return nil, err
 		}
@@ -737,7 +738,7 @@ func (qb *JoinsQueryBuilder) GetGalleryPerformers(galleryID int, tx *sqlx.Tx) ([
 	return performerGalleries, nil
 }
 
-func (qb *JoinsQueryBuilder) CreatePerformersGalleries(newJoins []PerformersGalleries, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreatePerformersGalleries(newJoins []models.PerformersGalleries, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -770,7 +771,7 @@ func (qb *JoinsQueryBuilder) AddPerformerGallery(galleryID int, performerID int,
 		}
 	}
 
-	performerJoin := PerformersGalleries{
+	performerJoin := models.PerformersGalleries{
 		PerformerID: performerID,
 		GalleryID:   galleryID,
 	}
@@ -781,7 +782,7 @@ func (qb *JoinsQueryBuilder) AddPerformerGallery(galleryID int, performerID int,
 	return err == nil, err
 }
 
-func (qb *JoinsQueryBuilder) UpdatePerformersGalleries(galleryID int, updatedJoins []PerformersGalleries, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdatePerformersGalleries(galleryID int, updatedJoins []models.PerformersGalleries, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -800,7 +801,7 @@ func (qb *JoinsQueryBuilder) DestroyPerformersGalleries(galleryID int, tx *sqlx.
 	return err
 }
 
-func (qb *JoinsQueryBuilder) GetGalleryTags(galleryID int, tx *sqlx.Tx) ([]GalleriesTags, error) {
+func (qb *JoinsQueryBuilder) GetGalleryTags(galleryID int, tx *sqlx.Tx) ([]models.GalleriesTags, error) {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -819,9 +820,9 @@ func (qb *JoinsQueryBuilder) GetGalleryTags(galleryID int, tx *sqlx.Tx) ([]Galle
 	}
 	defer rows.Close()
 
-	galleryTags := make([]GalleriesTags, 0)
+	galleryTags := make([]models.GalleriesTags, 0)
 	for rows.Next() {
-		galleryTag := GalleriesTags{}
+		galleryTag := models.GalleriesTags{}
 		if err := rows.StructScan(&galleryTag); err != nil {
 			return nil, err
 		}
@@ -835,7 +836,7 @@ func (qb *JoinsQueryBuilder) GetGalleryTags(galleryID int, tx *sqlx.Tx) ([]Galle
 	return galleryTags, nil
 }
 
-func (qb *JoinsQueryBuilder) CreateGalleriesTags(newJoins []GalleriesTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) CreateGalleriesTags(newJoins []models.GalleriesTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 	for _, join := range newJoins {
 		_, err := tx.NamedExec(
@@ -849,7 +850,7 @@ func (qb *JoinsQueryBuilder) CreateGalleriesTags(newJoins []GalleriesTags, tx *s
 	return nil
 }
 
-func (qb *JoinsQueryBuilder) UpdateGalleriesTags(galleryID int, updatedJoins []GalleriesTags, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateGalleriesTags(galleryID int, updatedJoins []models.GalleriesTags, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins and then create new ones
@@ -878,7 +879,7 @@ func (qb *JoinsQueryBuilder) AddGalleryTag(galleryID int, tagID int, tx *sqlx.Tx
 		}
 	}
 
-	tagJoin := GalleriesTags{
+	tagJoin := models.GalleriesTags{
 		TagID:     tagID,
 		GalleryID: galleryID,
 	}
@@ -898,7 +899,7 @@ func (qb *JoinsQueryBuilder) DestroyGalleriesTags(galleryID int, tx *sqlx.Tx) er
 	return err
 }
 
-func (qb *JoinsQueryBuilder) GetSceneStashIDs(sceneID int) ([]*StashID, error) {
+func (qb *JoinsQueryBuilder) GetSceneStashIDs(sceneID int) ([]*models.StashID, error) {
 	rows, err := database.DB.Queryx(`SELECT stash_id, endpoint from scene_stash_ids WHERE scene_id = ?`, sceneID)
 
 	if err != nil && err != sql.ErrNoRows {
@@ -906,9 +907,9 @@ func (qb *JoinsQueryBuilder) GetSceneStashIDs(sceneID int) ([]*StashID, error) {
 	}
 	defer rows.Close()
 
-	stashIDs := []*StashID{}
+	stashIDs := []*models.StashID{}
 	for rows.Next() {
-		stashID := StashID{}
+		stashID := models.StashID{}
 		if err := rows.StructScan(&stashID); err != nil {
 			return nil, err
 		}
@@ -922,7 +923,7 @@ func (qb *JoinsQueryBuilder) GetSceneStashIDs(sceneID int) ([]*StashID, error) {
 	return stashIDs, nil
 }
 
-func (qb *JoinsQueryBuilder) GetPerformerStashIDs(performerID int) ([]*StashID, error) {
+func (qb *JoinsQueryBuilder) GetPerformerStashIDs(performerID int) ([]*models.StashID, error) {
 	rows, err := database.DB.Queryx(`SELECT stash_id, endpoint from performer_stash_ids WHERE performer_id = ?`, performerID)
 
 	if err != nil && err != sql.ErrNoRows {
@@ -930,9 +931,9 @@ func (qb *JoinsQueryBuilder) GetPerformerStashIDs(performerID int) ([]*StashID, 
 	}
 	defer rows.Close()
 
-	stashIDs := []*StashID{}
+	stashIDs := []*models.StashID{}
 	for rows.Next() {
-		stashID := StashID{}
+		stashID := models.StashID{}
 		if err := rows.StructScan(&stashID); err != nil {
 			return nil, err
 		}
@@ -946,7 +947,7 @@ func (qb *JoinsQueryBuilder) GetPerformerStashIDs(performerID int) ([]*StashID, 
 	return stashIDs, nil
 }
 
-func (qb *JoinsQueryBuilder) GetStudioStashIDs(studioID int) ([]*StashID, error) {
+func (qb *JoinsQueryBuilder) GetStudioStashIDs(studioID int) ([]*models.StashID, error) {
 	rows, err := database.DB.Queryx(`SELECT stash_id, endpoint from studio_stash_ids WHERE studio_id = ?`, studioID)
 
 	if err != nil && err != sql.ErrNoRows {
@@ -954,9 +955,9 @@ func (qb *JoinsQueryBuilder) GetStudioStashIDs(studioID int) ([]*StashID, error)
 	}
 	defer rows.Close()
 
-	stashIDs := []*StashID{}
+	stashIDs := []*models.StashID{}
 	for rows.Next() {
-		stashID := StashID{}
+		stashID := models.StashID{}
 		if err := rows.StructScan(&stashID); err != nil {
 			return nil, err
 		}
@@ -970,7 +971,7 @@ func (qb *JoinsQueryBuilder) GetStudioStashIDs(studioID int) ([]*StashID, error)
 	return stashIDs, nil
 }
 
-func (qb *JoinsQueryBuilder) UpdateSceneStashIDs(sceneID int, updatedJoins []StashID, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateSceneStashIDs(sceneID int, updatedJoins []models.StashID, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	_, err := tx.Exec("DELETE FROM scene_stash_ids WHERE scene_id = ?", sceneID)
@@ -980,7 +981,7 @@ func (qb *JoinsQueryBuilder) UpdateSceneStashIDs(sceneID int, updatedJoins []Sta
 	return qb.CreateStashIDs("scene", sceneID, updatedJoins, tx)
 }
 
-func (qb *JoinsQueryBuilder) UpdatePerformerStashIDs(performerID int, updatedJoins []StashID, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdatePerformerStashIDs(performerID int, updatedJoins []models.StashID, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	_, err := tx.Exec("DELETE FROM performer_stash_ids WHERE performer_id = ?", performerID)
@@ -990,7 +991,7 @@ func (qb *JoinsQueryBuilder) UpdatePerformerStashIDs(performerID int, updatedJoi
 	return qb.CreateStashIDs("performer", performerID, updatedJoins, tx)
 }
 
-func (qb *JoinsQueryBuilder) UpdateStudioStashIDs(studioID int, updatedJoins []StashID, tx *sqlx.Tx) error {
+func (qb *JoinsQueryBuilder) UpdateStudioStashIDs(studioID int, updatedJoins []models.StashID, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	_, err := tx.Exec("DELETE FROM studio_stash_ids WHERE studio_id = ?", studioID)
@@ -998,4 +999,64 @@ func (qb *JoinsQueryBuilder) UpdateStudioStashIDs(studioID int, updatedJoins []S
 		return err
 	}
 	return qb.CreateStashIDs("studio", studioID, updatedJoins, tx)
+}
+
+func NewJoinReaderWriter(tx *sqlx.Tx) models.JoinReaderWriter {
+	return &joinReaderWriter{
+		tx: tx,
+		qb: NewJoinsQueryBuilder(),
+	}
+}
+
+type joinReaderWriter struct {
+	tx *sqlx.Tx
+	qb JoinsQueryBuilder
+}
+
+func (t *joinReaderWriter) GetSceneMovies(sceneID int) ([]models.MoviesScenes, error) {
+	return t.qb.GetSceneMovies(sceneID, t.tx)
+}
+
+func (t *joinReaderWriter) CreatePerformersScenes(newJoins []models.PerformersScenes) error {
+	return t.qb.CreatePerformersScenes(newJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdatePerformersScenes(sceneID int, updatedJoins []models.PerformersScenes) error {
+	return t.qb.UpdatePerformersScenes(sceneID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) CreateMoviesScenes(newJoins []models.MoviesScenes) error {
+	return t.qb.CreateMoviesScenes(newJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdateMoviesScenes(sceneID int, updatedJoins []models.MoviesScenes) error {
+	return t.qb.UpdateMoviesScenes(sceneID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdateScenesTags(sceneID int, updatedJoins []models.ScenesTags) error {
+	return t.qb.UpdateScenesTags(sceneID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdateSceneMarkersTags(sceneMarkerID int, updatedJoins []models.SceneMarkersTags) error {
+	return t.qb.UpdateSceneMarkersTags(sceneMarkerID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdatePerformersGalleries(galleryID int, updatedJoins []models.PerformersGalleries) error {
+	return t.qb.UpdatePerformersGalleries(galleryID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdateGalleriesTags(galleryID int, updatedJoins []models.GalleriesTags) error {
+	return t.qb.UpdateGalleriesTags(galleryID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdateGalleriesImages(imageID int, updatedJoins []models.GalleriesImages) error {
+	return t.qb.UpdateGalleriesImages(imageID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdatePerformersImages(imageID int, updatedJoins []models.PerformersImages) error {
+	return t.qb.UpdatePerformersImages(imageID, updatedJoins, t.tx)
+}
+
+func (t *joinReaderWriter) UpdateImagesTags(imageID int, updatedJoins []models.ImagesTags) error {
+	return t.qb.UpdateImagesTags(imageID, updatedJoins, t.tx)
 }

@@ -1,6 +1,6 @@
 // +build integration
 
-package models_test
+package sqlite_test
 
 import (
 	"database/sql"
@@ -10,11 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func TestImageFind(t *testing.T) {
 	// assume that the first image is imageWithGalleryPath
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 
 	const imageIdx = 0
 	imageID := imageIDs[imageIdx]
@@ -37,7 +38,7 @@ func TestImageFind(t *testing.T) {
 }
 
 func TestImageFindByPath(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 
 	const imageIdx = 1
 	imagePath := getImageStringValue(imageIdx, "Path")
@@ -61,7 +62,7 @@ func TestImageFindByPath(t *testing.T) {
 }
 
 func TestImageCountByPerformerID(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	count, err := sqb.CountByPerformerID(performerIDs[performerIdxWithImage])
 
 	if err != nil {
@@ -84,12 +85,12 @@ func TestImageQueryQ(t *testing.T) {
 
 	q := getImageStringValue(imageIdx, titleField)
 
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 
 	imageQueryQ(t, sqb, q, imageIdx)
 }
 
-func imageQueryQ(t *testing.T, sqb models.ImageQueryBuilder, q string, expectedImageIdx int) {
+func imageQueryQ(t *testing.T, sqb sqlite.ImageQueryBuilder, q string, expectedImageIdx int) {
 	filter := models.FindFilterType{
 		Q: &q,
 	}
@@ -122,7 +123,7 @@ func TestImageQueryPath(t *testing.T) {
 }
 
 func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	imageFilter := models.ImageFilterType{
 		Path: &pathCriterion,
 	}
@@ -160,7 +161,7 @@ func TestImageQueryRating(t *testing.T) {
 }
 
 func verifyImagesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	imageFilter := models.ImageFilterType{
 		Rating: &ratingCriterion,
 	}
@@ -192,7 +193,7 @@ func TestImageQueryOCounter(t *testing.T) {
 }
 
 func verifyImagesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInput) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	imageFilter := models.ImageFilterType{
 		OCounter: &oCounterCriterion,
 	}
@@ -214,7 +215,7 @@ func TestImageQueryResolution(t *testing.T) {
 }
 
 func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	imageFilter := models.ImageFilterType{
 		Resolution: &resolution,
 	}
@@ -245,7 +246,7 @@ func verifyImageResolution(t *testing.T, height sql.NullInt64, resolution models
 }
 
 func TestImageQueryIsMissingGalleries(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	isMissing := "galleries"
 	imageFilter := models.ImageFilterType{
 		IsMissing: &isMissing,
@@ -270,7 +271,7 @@ func TestImageQueryIsMissingGalleries(t *testing.T) {
 }
 
 func TestImageQueryIsMissingStudio(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	isMissing := "studio"
 	imageFilter := models.ImageFilterType{
 		IsMissing: &isMissing,
@@ -295,7 +296,7 @@ func TestImageQueryIsMissingStudio(t *testing.T) {
 }
 
 func TestImageQueryIsMissingPerformers(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	isMissing := "performers"
 	imageFilter := models.ImageFilterType{
 		IsMissing: &isMissing,
@@ -322,7 +323,7 @@ func TestImageQueryIsMissingPerformers(t *testing.T) {
 }
 
 func TestImageQueryIsMissingTags(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	isMissing := "tags"
 	imageFilter := models.ImageFilterType{
 		IsMissing: &isMissing,
@@ -344,7 +345,7 @@ func TestImageQueryIsMissingTags(t *testing.T) {
 }
 
 func TestImageQueryIsMissingRating(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	isMissing := "rating"
 	imageFilter := models.ImageFilterType{
 		IsMissing: &isMissing,
@@ -361,7 +362,7 @@ func TestImageQueryIsMissingRating(t *testing.T) {
 }
 
 func TestImageQueryPerformers(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	performerCriterion := models.MultiCriterionInput{
 		Value: []string{
 			strconv.Itoa(performerIDs[performerIdxWithImage]),
@@ -413,7 +414,7 @@ func TestImageQueryPerformers(t *testing.T) {
 }
 
 func TestImageQueryTags(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	tagCriterion := models.MultiCriterionInput{
 		Value: []string{
 			strconv.Itoa(tagIDs[tagIdxWithImage]),
@@ -465,7 +466,7 @@ func TestImageQueryTags(t *testing.T) {
 }
 
 func TestImageQueryStudio(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	studioCriterion := models.MultiCriterionInput{
 		Value: []string{
 			strconv.Itoa(studioIDs[studioIdxWithImage]),
@@ -508,7 +509,7 @@ func TestImageQuerySorting(t *testing.T) {
 		Direction: &direction,
 	}
 
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	images, _ := sqb.Query(nil, &findFilter)
 
 	// images should be in same order as indexes
@@ -535,7 +536,7 @@ func TestImageQueryPagination(t *testing.T) {
 		PerPage: &perPage,
 	}
 
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 	images, _ := sqb.Query(nil, &findFilter)
 
 	assert.Len(t, images, 1)
@@ -560,7 +561,7 @@ func TestImageQueryPagination(t *testing.T) {
 }
 
 func TestImageCountByTagID(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 
 	imageCount, err := sqb.CountByTagID(tagIDs[tagIdxWithImage])
 
@@ -580,7 +581,7 @@ func TestImageCountByTagID(t *testing.T) {
 }
 
 func TestImageCountByStudioID(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 
 	imageCount, err := sqb.CountByStudioID(studioIDs[studioIdxWithImage])
 
@@ -600,7 +601,7 @@ func TestImageCountByStudioID(t *testing.T) {
 }
 
 func TestImageFindByPerformerID(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 
 	images, err := sqb.FindByPerformerID(performerIDs[performerIdxWithImage])
 
@@ -621,7 +622,7 @@ func TestImageFindByPerformerID(t *testing.T) {
 }
 
 func TestImageFindByStudioID(t *testing.T) {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 
 	images, err := sqb.FindByStudioID(performerIDs[studioIdxWithImage])
 

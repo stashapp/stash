@@ -1,6 +1,6 @@
 // +build integration
 
-package models_test
+package sqlite_test
 
 import (
 	"testing"
@@ -8,10 +8,11 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func TestGalleryFind(t *testing.T) {
-	gqb := models.NewGalleryQueryBuilder()
+	gqb := sqlite.NewGalleryQueryBuilder()
 
 	const galleryIdx = 0
 	gallery, err := gqb.Find(galleryIDs[galleryIdx], nil)
@@ -32,7 +33,7 @@ func TestGalleryFind(t *testing.T) {
 }
 
 func TestGalleryFindByChecksum(t *testing.T) {
-	gqb := models.NewGalleryQueryBuilder()
+	gqb := sqlite.NewGalleryQueryBuilder()
 
 	const galleryIdx = 0
 	galleryChecksum := getGalleryStringValue(galleryIdx, "Checksum")
@@ -55,7 +56,7 @@ func TestGalleryFindByChecksum(t *testing.T) {
 }
 
 func TestGalleryFindByPath(t *testing.T) {
-	gqb := models.NewGalleryQueryBuilder()
+	gqb := sqlite.NewGalleryQueryBuilder()
 
 	const galleryIdx = 0
 	galleryPath := getGalleryStringValue(galleryIdx, "Path")
@@ -78,7 +79,7 @@ func TestGalleryFindByPath(t *testing.T) {
 }
 
 func TestGalleryFindBySceneID(t *testing.T) {
-	gqb := models.NewGalleryQueryBuilder()
+	gqb := sqlite.NewGalleryQueryBuilder()
 
 	sceneID := sceneIDs[sceneIdxWithGallery]
 	gallery, err := gqb.FindBySceneID(sceneID, nil)
@@ -103,12 +104,12 @@ func TestGalleryQueryQ(t *testing.T) {
 
 	q := getGalleryStringValue(galleryIdx, pathField)
 
-	sqb := models.NewGalleryQueryBuilder()
+	sqb := sqlite.NewGalleryQueryBuilder()
 
 	galleryQueryQ(t, sqb, q, galleryIdx)
 }
 
-func galleryQueryQ(t *testing.T, qb models.GalleryQueryBuilder, q string, expectedGalleryIdx int) {
+func galleryQueryQ(t *testing.T, qb sqlite.GalleryQueryBuilder, q string, expectedGalleryIdx int) {
 	filter := models.FindFilterType{
 		Q: &q,
 	}
@@ -141,7 +142,7 @@ func TestGalleryQueryPath(t *testing.T) {
 }
 
 func verifyGalleriesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
-	sqb := models.NewGalleryQueryBuilder()
+	sqb := sqlite.NewGalleryQueryBuilder()
 	galleryFilter := models.GalleryFilterType{
 		Path: &pathCriterion,
 	}
@@ -179,7 +180,7 @@ func TestGalleryQueryRating(t *testing.T) {
 }
 
 func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	sqb := models.NewGalleryQueryBuilder()
+	sqb := sqlite.NewGalleryQueryBuilder()
 	galleryFilter := models.GalleryFilterType{
 		Rating: &ratingCriterion,
 	}
@@ -192,7 +193,7 @@ func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInpu
 }
 
 func TestGalleryQueryIsMissingScene(t *testing.T) {
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	isMissing := "scene"
 	galleryFilter := models.GalleryFilterType{
 		IsMissing: &isMissing,

@@ -1,9 +1,5 @@
 package models
 
-import (
-	"github.com/jmoiron/sqlx"
-)
-
 type SceneReader interface {
 	// Find(id int) (*Scene, error)
 	FindMany(ids []int) ([]*Scene, error)
@@ -47,56 +43,4 @@ type SceneWriter interface {
 type SceneReaderWriter interface {
 	SceneReader
 	SceneWriter
-}
-
-func NewSceneReaderWriter(tx *sqlx.Tx) SceneReaderWriter {
-	return &sceneReaderWriter{
-		tx: tx,
-		qb: NewSceneQueryBuilder(),
-	}
-}
-
-type sceneReaderWriter struct {
-	tx *sqlx.Tx
-	qb SceneQueryBuilder
-}
-
-func (t *sceneReaderWriter) FindMany(ids []int) ([]*Scene, error) {
-	return t.qb.FindMany(ids)
-}
-
-func (t *sceneReaderWriter) FindByChecksum(checksum string) (*Scene, error) {
-	return t.qb.FindByChecksum(checksum)
-}
-
-func (t *sceneReaderWriter) FindByOSHash(oshash string) (*Scene, error) {
-	return t.qb.FindByOSHash(oshash)
-}
-
-func (t *sceneReaderWriter) FindByMovieID(movieID int) ([]*Scene, error) {
-	return t.qb.FindByMovieID(movieID)
-}
-
-func (t *sceneReaderWriter) All() ([]*Scene, error) {
-	return t.qb.All()
-}
-
-func (t *sceneReaderWriter) GetSceneCover(sceneID int) ([]byte, error) {
-	return t.qb.GetSceneCover(sceneID, t.tx)
-}
-
-func (t *sceneReaderWriter) Create(newScene Scene) (*Scene, error) {
-	return t.qb.Create(newScene, t.tx)
-}
-
-func (t *sceneReaderWriter) Update(updatedScene ScenePartial) (*Scene, error) {
-	return t.qb.Update(updatedScene, t.tx)
-}
-
-func (t *sceneReaderWriter) UpdateFull(updatedScene Scene) (*Scene, error) {
-	return t.qb.UpdateFull(updatedScene, t.tx)
-}
-
-func (t *sceneReaderWriter) UpdateSceneCover(sceneID int, cover []byte) error {
-	return t.qb.UpdateSceneCover(sceneID, cover, t.tx)
 }

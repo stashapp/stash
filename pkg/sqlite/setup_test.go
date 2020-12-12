@@ -1,6 +1,6 @@
 // +build integration
 
-package models_test
+package sqlite_test
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/models/modelstest"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -314,7 +314,7 @@ func getSceneDate(index int) models.SQLiteDate {
 }
 
 func createScenes(tx *sqlx.Tx, n int) error {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	for i := 0; i < n; i++ {
 		scene := models.Scene{
@@ -346,7 +346,7 @@ func getImageStringValue(index int, field string) string {
 }
 
 func createImages(tx *sqlx.Tx, n int) error {
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 
 	for i := 0; i < n; i++ {
 		image := models.Image{
@@ -375,11 +375,11 @@ func getGalleryStringValue(index int, field string) string {
 }
 
 func createGalleries(tx *sqlx.Tx, n int) error {
-	gqb := models.NewGalleryQueryBuilder()
+	gqb := sqlite.NewGalleryQueryBuilder()
 
 	for i := 0; i < n; i++ {
 		gallery := models.Gallery{
-			Path:     modelstest.NullString(getGalleryStringValue(i, pathField)),
+			Path:     sqlite.NullString(getGalleryStringValue(i, pathField)),
 			Checksum: getGalleryStringValue(i, checksumField),
 		}
 
@@ -401,7 +401,7 @@ func getMovieStringValue(index int, field string) string {
 
 //createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
 func createMovies(tx *sqlx.Tx, n int, o int) error {
-	mqb := models.NewMovieQueryBuilder()
+	mqb := sqlite.NewMovieQueryBuilder()
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -452,7 +452,7 @@ func getPerformerBirthdate(index int) string {
 
 //createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
 func createPerformers(tx *sqlx.Tx, n int, o int) error {
-	pqb := models.NewPerformerQueryBuilder()
+	pqb := sqlite.NewPerformerQueryBuilder()
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -512,7 +512,7 @@ func getTagMarkerCount(id int) int {
 
 //createTags creates n tags with plain Name and o tags with camel cased NaMe included
 func createTags(tx *sqlx.Tx, n int, o int) error {
-	tqb := models.NewTagQueryBuilder()
+	tqb := sqlite.NewTagQueryBuilder()
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -549,7 +549,7 @@ func getStudioStringValue(index int, field string) string {
 }
 
 func createStudio(tx *sqlx.Tx, name string, parentID *int64) (*models.Studio, error) {
-	sqb := models.NewStudioQueryBuilder()
+	sqb := sqlite.NewStudioQueryBuilder()
 	studio := models.Studio{
 		Name:     sql.NullString{String: name, Valid: true},
 		Checksum: utils.MD5FromString(name),
@@ -598,7 +598,7 @@ func createStudios(tx *sqlx.Tx, n int, o int) error {
 }
 
 func createMarker(tx *sqlx.Tx, sceneIdx, primaryTagIdx int, tagIdxs []int) error {
-	mqb := models.NewSceneMarkerQueryBuilder()
+	mqb := sqlite.NewSceneMarkerQueryBuilder()
 
 	marker := models.SceneMarker{
 		SceneID:      sql.NullInt64{Int64: int64(sceneIDs[sceneIdx]), Valid: true},
@@ -613,7 +613,7 @@ func createMarker(tx *sqlx.Tx, sceneIdx, primaryTagIdx int, tagIdxs []int) error
 
 	markerIDs = append(markerIDs, created.ID)
 
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	joins := []models.SceneMarkersTags{}
 
@@ -633,7 +633,7 @@ func createMarker(tx *sqlx.Tx, sceneIdx, primaryTagIdx int, tagIdxs []int) error
 }
 
 func linkSceneMovie(tx *sqlx.Tx, sceneIndex, movieIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	_, err := jqb.AddMoviesScene(sceneIDs[sceneIndex], movieIDs[movieIndex], nil, tx)
 	return err
@@ -654,14 +654,14 @@ func linkScenePerformers(tx *sqlx.Tx) error {
 }
 
 func linkScenePerformer(tx *sqlx.Tx, sceneIndex, performerIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	_, err := jqb.AddPerformerScene(sceneIDs[sceneIndex], performerIDs[performerIndex], tx)
 	return err
 }
 
 func linkSceneGallery(tx *sqlx.Tx, sceneIndex, galleryIndex int) error {
-	gqb := models.NewGalleryQueryBuilder()
+	gqb := sqlite.NewGalleryQueryBuilder()
 
 	gallery, err := gqb.Find(galleryIDs[galleryIndex], nil)
 
@@ -694,14 +694,14 @@ func linkSceneTags(tx *sqlx.Tx) error {
 }
 
 func linkSceneTag(tx *sqlx.Tx, sceneIndex, tagIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	_, err := jqb.AddSceneTag(sceneIDs[sceneIndex], tagIDs[tagIndex], tx)
 	return err
 }
 
 func linkSceneStudio(tx *sqlx.Tx, sceneIndex, studioIndex int) error {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	scene := models.ScenePartial{
 		ID:       sceneIDs[sceneIndex],
@@ -713,7 +713,7 @@ func linkSceneStudio(tx *sqlx.Tx, sceneIndex, studioIndex int) error {
 }
 
 func linkImageGallery(tx *sqlx.Tx, imageIndex, galleryIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	_, err := jqb.AddImageGallery(imageIDs[imageIndex], galleryIDs[galleryIndex], tx)
 
@@ -735,14 +735,14 @@ func linkImageTags(tx *sqlx.Tx) error {
 }
 
 func linkImageTag(tx *sqlx.Tx, imageIndex, tagIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	_, err := jqb.AddImageTag(imageIDs[imageIndex], tagIDs[tagIndex], tx)
 	return err
 }
 
 func linkImageStudio(tx *sqlx.Tx, imageIndex, studioIndex int) error {
-	sqb := models.NewImageQueryBuilder()
+	sqb := sqlite.NewImageQueryBuilder()
 
 	image := models.ImagePartial{
 		ID:       imageIDs[imageIndex],
@@ -768,14 +768,14 @@ func linkImagePerformers(tx *sqlx.Tx) error {
 }
 
 func linkImagePerformer(tx *sqlx.Tx, imageIndex, performerIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	_, err := jqb.AddPerformerImage(imageIDs[imageIndex], performerIDs[performerIndex], tx)
 	return err
 }
 
 func linkMovieStudio(tx *sqlx.Tx, movieIndex, studioIndex int) error {
-	mqb := models.NewMovieQueryBuilder()
+	mqb := sqlite.NewMovieQueryBuilder()
 
 	movie := models.MoviePartial{
 		ID:       movieIDs[movieIndex],
@@ -787,7 +787,7 @@ func linkMovieStudio(tx *sqlx.Tx, movieIndex, studioIndex int) error {
 }
 
 func linkStudioParent(tx *sqlx.Tx, parentIndex, childIndex int) error {
-	sqb := models.NewStudioQueryBuilder()
+	sqb := sqlite.NewStudioQueryBuilder()
 
 	studio := models.StudioPartial{
 		ID:       studioIDs[childIndex],
@@ -799,7 +799,7 @@ func linkStudioParent(tx *sqlx.Tx, parentIndex, childIndex int) error {
 }
 
 func addTagImage(tx *sqlx.Tx, tagIndex int) error {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 
 	return qb.UpdateTagImage(tagIDs[tagIndex], models.DefaultTagImage, tx)
 }

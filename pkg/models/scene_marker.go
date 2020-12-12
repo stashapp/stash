@@ -1,9 +1,5 @@
 package models
 
-import (
-	"github.com/jmoiron/sqlx"
-)
-
 type SceneMarkerReader interface {
 	// Find(id int) (*SceneMarker, error)
 	// FindMany(ids []int) ([]*SceneMarker, error)
@@ -23,28 +19,4 @@ type SceneMarkerWriter interface {
 type SceneMarkerReaderWriter interface {
 	SceneMarkerReader
 	SceneMarkerWriter
-}
-
-func NewSceneMarkerReaderWriter(tx *sqlx.Tx) SceneMarkerReaderWriter {
-	return &sceneMarkerReaderWriter{
-		tx: tx,
-		qb: NewSceneMarkerQueryBuilder(),
-	}
-}
-
-type sceneMarkerReaderWriter struct {
-	tx *sqlx.Tx
-	qb SceneMarkerQueryBuilder
-}
-
-func (t *sceneMarkerReaderWriter) FindBySceneID(sceneID int) ([]*SceneMarker, error) {
-	return t.qb.FindBySceneID(sceneID, t.tx)
-}
-
-func (t *sceneMarkerReaderWriter) Create(newSceneMarker SceneMarker) (*SceneMarker, error) {
-	return t.qb.Create(newSceneMarker, t.tx)
-}
-
-func (t *sceneMarkerReaderWriter) Update(updatedSceneMarker SceneMarker) (*SceneMarker, error) {
-	return t.qb.Update(updatedSceneMarker, t.tx)
 }

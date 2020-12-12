@@ -1,6 +1,6 @@
 // +build integration
 
-package models_test
+package sqlite_test
 
 import (
 	"context"
@@ -10,11 +10,12 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMarkerFindBySceneMarkerID(t *testing.T) {
-	tqb := models.NewTagQueryBuilder()
+	tqb := sqlite.NewTagQueryBuilder()
 
 	markerID := markerIDs[markerIdxWithScene]
 
@@ -38,7 +39,7 @@ func TestMarkerFindBySceneMarkerID(t *testing.T) {
 
 func TestTagFindByName(t *testing.T) {
 
-	tqb := models.NewTagQueryBuilder()
+	tqb := sqlite.NewTagQueryBuilder()
 
 	name := tagNames[tagIdxWithScene] // find a tag by name
 
@@ -68,7 +69,7 @@ func TestTagFindByName(t *testing.T) {
 func TestTagFindByNames(t *testing.T) {
 	var names []string
 
-	tqb := models.NewTagQueryBuilder()
+	tqb := sqlite.NewTagQueryBuilder()
 
 	names = append(names, tagNames[tagIdxWithScene]) // find tags by names
 
@@ -110,7 +111,7 @@ func TestTagFindByNames(t *testing.T) {
 }
 
 func TestTagQueryIsMissingImage(t *testing.T) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	isMissing := "image"
 	tagFilter := models.TagFilterType{
 		IsMissing: &isMissing,
@@ -154,7 +155,7 @@ func TestTagQuerySceneCount(t *testing.T) {
 }
 
 func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	tagFilter := models.TagFilterType{
 		SceneCount: &sceneCountCriterion,
 	}
@@ -191,7 +192,7 @@ func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 // }
 
 func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterionInput) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	tagFilter := models.TagFilterType{
 		MarkerCount: &markerCountCriterion,
 	}
@@ -207,7 +208,7 @@ func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterion
 }
 
 func TestTagUpdateTagImage(t *testing.T) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 
 	// create tag to test against
 	ctx := context.TODO()
@@ -253,7 +254,7 @@ func TestTagUpdateTagImage(t *testing.T) {
 }
 
 func TestTagDestroyTagImage(t *testing.T) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 
 	// create performer to test against
 	ctx := context.TODO()

@@ -1,10 +1,14 @@
-package models
+package sqlite
 
-import "strconv"
+import (
+	"strconv"
+
+	"github.com/stashapp/stash/pkg/models"
+)
 
 // MatchScrapedScenePerformer matches the provided performer with the
 // performers in the database and sets the ID field if one is found.
-func MatchScrapedScenePerformer(p *ScrapedScenePerformer) error {
+func MatchScrapedScenePerformer(p *models.ScrapedScenePerformer) error {
 	qb := NewPerformerQueryBuilder()
 
 	performers, err := qb.FindByNames([]string{p.Name}, nil, true)
@@ -25,7 +29,7 @@ func MatchScrapedScenePerformer(p *ScrapedScenePerformer) error {
 
 // MatchScrapedSceneStudio matches the provided studio with the studios
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneStudio(s *ScrapedSceneStudio) error {
+func MatchScrapedSceneStudio(s *models.ScrapedSceneStudio) error {
 	qb := NewStudioQueryBuilder()
 
 	studio, err := qb.FindByName(s.Name, nil, true)
@@ -46,7 +50,7 @@ func MatchScrapedSceneStudio(s *ScrapedSceneStudio) error {
 
 // MatchScrapedSceneMovie matches the provided movie with the movies
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneMovie(m *ScrapedSceneMovie) error {
+func MatchScrapedSceneMovie(m *models.ScrapedSceneMovie) error {
 	qb := NewMovieQueryBuilder()
 
 	movies, err := qb.FindByNames([]string{m.Name}, nil, true)
@@ -67,7 +71,7 @@ func MatchScrapedSceneMovie(m *ScrapedSceneMovie) error {
 
 // MatchScrapedSceneTag matches the provided tag with the tags
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneTag(s *ScrapedSceneTag) error {
+func MatchScrapedSceneTag(s *models.ScrapedSceneTag) error {
 	qb := NewTagQueryBuilder()
 
 	tag, err := qb.FindByName(s.Name, nil, true)
