@@ -11,78 +11,72 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+const performerTable = "performers"
+
 type PerformerQueryBuilder struct{}
 
 func NewPerformerQueryBuilder() PerformerQueryBuilder {
 	return PerformerQueryBuilder{}
 }
 
-func (qb *PerformerQueryBuilder) Create(newPerformer models.Performer, tx *sqlx.Tx) (*models.Performer, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO performers (checksum, name, url, gender, twitter, instagram, birthdate, ethnicity, country,
-                        				eye_color, height, measurements, fake_tits, career_length, tattoos, piercings,
-                        				aliases, favorite, created_at, updated_at)
-				VALUES (:checksum, :name, :url, :gender, :twitter, :instagram, :birthdate, :ethnicity, :country,
-                        :eye_color, :height, :measurements, :fake_tits, :career_length, :tattoos, :piercings,
-                        :aliases, :favorite, :created_at, :updated_at)
-		`,
-		newPerformer,
-	)
-	if err != nil {
-		return nil, err
-	}
-	performerID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := tx.Get(&newPerformer, `SELECT * FROM performers WHERE id = ? LIMIT 1`, performerID); err != nil {
-		return nil, err
-	}
-	return &newPerformer, nil
+func performerConstructor() interface{} {
+	return &models.Performer{}
 }
 
-func (qb *PerformerQueryBuilder) Update(updatedPerformer models.PerformerPartial, tx *sqlx.Tx) (*models.Performer, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE performers SET `+SQLGenKeysPartial(updatedPerformer)+` WHERE performers.id = :id`,
-		updatedPerformer,
-	)
-	if err != nil {
+func (qb *PerformerQueryBuilder) repository(tx *sqlx.Tx) *repository {
+	return &repository{
+		tx:          tx,
+		tableName:   performerTable,
+		idColumn:    idColumn,
+		constructor: performerConstructor,
+	}
+}
+
+func (qb *PerformerQueryBuilder) Create(newObject models.Performer, tx *sqlx.Tx) (*models.Performer, error) {
+	var ret models.Performer
+	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (qb *PerformerQueryBuilder) Update(updatedObject models.PerformerPartial, tx *sqlx.Tx) (*models.Performer, error) {
+	const partial = true
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
 	var ret models.Performer
-	if err := tx.Get(&ret, `SELECT * FROM performers WHERE id = ? LIMIT 1`, updatedPerformer.ID); err != nil {
+	if err := qb.repository(tx).get(updatedObject.ID, &ret); err != nil {
 		return nil, err
 	}
+
 	return &ret, nil
 }
 
-func (qb *PerformerQueryBuilder) UpdateFull(updatedPerformer models.Performer, tx *sqlx.Tx) (*models.Performer, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE performers SET `+SQLGenKeys(updatedPerformer)+` WHERE performers.id = :id`,
-		updatedPerformer,
-	)
-	if err != nil {
+func (qb *PerformerQueryBuilder) UpdateFull(updatedObject models.Performer, tx *sqlx.Tx) (*models.Performer, error) {
+	const partial = false
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	if err := tx.Get(&updatedPerformer, `SELECT * FROM performers WHERE id = ? LIMIT 1`, updatedPerformer.ID); err != nil {
+	var ret models.Performer
+	if err := qb.repository(tx).get(updatedObject.ID, &ret); err != nil {
 		return nil, err
 	}
-	return &updatedPerformer, nil
+
+	return &ret, nil
 }
 
-func (qb *PerformerQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
+func (qb *PerformerQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
+	// TODO - add on delete cascade to performers_scenes
 	_, err := tx.Exec("DELETE FROM performers_scenes WHERE performer_id = ?", id)
 	if err != nil {
 		return err
 	}
 
-	return executeDeleteQuery("performers", id, tx)
+	return qb.repository(tx).destroyExisting([]int{id})
 }
 
 func (qb *PerformerQueryBuilder) Find(id int) (*models.Performer, error) {

@@ -9,75 +9,56 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+const movieTable = "movies"
+
 type MovieQueryBuilder struct{}
 
 func NewMovieQueryBuilder() MovieQueryBuilder {
 	return MovieQueryBuilder{}
 }
 
-func (qb *MovieQueryBuilder) Create(newMovie models.Movie, tx *sqlx.Tx) (*models.Movie, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO movies (checksum, name, aliases, duration, date, rating, studio_id, director, synopsis, url, created_at, updated_at)
-				VALUES (:checksum, :name, :aliases, :duration, :date, :rating, :studio_id, :director, :synopsis, :url, :created_at, :updated_at)
-		`,
-		newMovie,
-	)
-	if err != nil {
-		return nil, err
-	}
-	movieID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := tx.Get(&newMovie, `SELECT * FROM movies WHERE id = ? LIMIT 1`, movieID); err != nil {
-		return nil, err
-	}
-	return &newMovie, nil
+func movieConstructor() interface{} {
+	return &models.Movie{}
 }
 
-func (qb *MovieQueryBuilder) Update(updatedMovie models.MoviePartial, tx *sqlx.Tx) (*models.Movie, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE movies SET `+SQLGenKeysPartial(updatedMovie)+` WHERE movies.id = :id`,
-		updatedMovie,
-	)
-	if err != nil {
+func (qb *MovieQueryBuilder) repository(tx *sqlx.Tx) *repository {
+	return &repository{
+		tx:          tx,
+		tableName:   movieTable,
+		idColumn:    idColumn,
+		constructor: movieConstructor,
+	}
+}
+
+func (qb *MovieQueryBuilder) Create(newObject models.Movie, tx *sqlx.Tx) (*models.Movie, error) {
+	var ret models.Movie
+	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
-	return qb.Find(updatedMovie.ID, tx)
+	return &ret, nil
 }
 
-func (qb *MovieQueryBuilder) UpdateFull(updatedMovie models.Movie, tx *sqlx.Tx) (*models.Movie, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE movies SET `+SQLGenKeys(updatedMovie)+` WHERE movies.id = :id`,
-		updatedMovie,
-	)
-	if err != nil {
+func (qb *MovieQueryBuilder) Update(updatedObject models.MoviePartial, tx *sqlx.Tx) (*models.Movie, error) {
+	const partial = true
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.Find(updatedMovie.ID, tx)
+	return qb.Find(updatedObject.ID, tx)
 }
 
-func (qb *MovieQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
-	// delete movie from movies_scenes
-
-	_, err := tx.Exec("DELETE FROM movies_scenes WHERE movie_id = ?", id)
-	if err != nil {
-		return err
+func (qb *MovieQueryBuilder) UpdateFull(updatedObject models.Movie, tx *sqlx.Tx) (*models.Movie, error) {
+	const partial = false
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
 	}
 
-	// // remove movie from scraped items
-	// _, err = tx.Exec("UPDATE scraped_items SET movie_id = null WHERE movie_id = ?", id)
-	// if err != nil {
-	// 	return err
-	// }
+	return qb.Find(updatedObject.ID, tx)
+}
 
-	return executeDeleteQuery("movies", id, tx)
+func (qb *MovieQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
+	return qb.repository(tx).destroyExisting([]int{id})
 }
 
 func (qb *MovieQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Movie, error) {

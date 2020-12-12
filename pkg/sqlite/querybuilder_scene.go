@@ -57,66 +57,50 @@ func NewSceneQueryBuilder() SceneQueryBuilder {
 	return SceneQueryBuilder{}
 }
 
-func (qb *SceneQueryBuilder) Create(newScene models.Scene, tx *sqlx.Tx) (*models.Scene, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO scenes (oshash, checksum, path, title, details, url, date, rating, organized, o_counter, size, duration, video_codec,
-                    			    audio_codec, format, width, height, framerate, bitrate, studio_id, file_mod_time, created_at, updated_at)
-				VALUES (:oshash, :checksum, :path, :title, :details, :url, :date, :rating, :organized, :o_counter, :size, :duration, :video_codec,
-					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :file_mod_time, :created_at, :updated_at)
-		`,
-		newScene,
-	)
-	if err != nil {
-		return nil, err
-	}
-	sceneID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-	if err := tx.Get(&newScene, `SELECT * FROM scenes WHERE id = ? LIMIT 1`, sceneID); err != nil {
-		return nil, err
-	}
-	return &newScene, nil
+func sceneConstructor() interface{} {
+	return &models.Scene{}
 }
 
-func (qb *SceneQueryBuilder) Update(updatedScene models.ScenePartial, tx *sqlx.Tx) (*models.Scene, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE scenes SET `+SQLGenKeysPartial(updatedScene)+` WHERE scenes.id = :id`,
-		updatedScene,
-	)
-	if err != nil {
-		return nil, err
+func (qb *SceneQueryBuilder) repository(tx *sqlx.Tx) *repository {
+	return &repository{
+		tx:          tx,
+		tableName:   sceneTable,
+		idColumn:    idColumn,
+		constructor: sceneConstructor,
 	}
-
-	return qb.find(updatedScene.ID, tx)
 }
 
-func (qb *SceneQueryBuilder) UpdateFull(updatedScene models.Scene, tx *sqlx.Tx) (*models.Scene, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE scenes SET `+SQLGenKeys(updatedScene)+` WHERE scenes.id = :id`,
-		updatedScene,
-	)
-	if err != nil {
+func (qb *SceneQueryBuilder) Create(newObject models.Scene, tx *sqlx.Tx) (*models.Scene, error) {
+	var ret models.Scene
+	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
-	return qb.find(updatedScene.ID, tx)
+	return &ret, nil
+}
+
+func (qb *SceneQueryBuilder) Update(updatedObject models.ScenePartial, tx *sqlx.Tx) (*models.Scene, error) {
+	const partial = true
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	return qb.find(updatedObject.ID, tx)
+}
+
+func (qb *SceneQueryBuilder) UpdateFull(updatedObject models.Scene, tx *sqlx.Tx) (*models.Scene, error) {
+	const partial = false
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	return qb.find(updatedObject.ID, tx)
 }
 
 func (qb *SceneQueryBuilder) UpdateFileModTime(id int, modTime models.NullSQLiteTimestamp, tx *sqlx.Tx) error {
-	ensureTx(tx)
-	_, err := tx.Exec(
-		`UPDATE scenes SET file_mod_time = ? WHERE scenes.id = ? `,
-		modTime, id,
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return qb.repository(tx).updateMap(id, map[string]interface{}{
+		"file_mod_time": modTime,
+	})
 }
 
 func (qb *SceneQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error) {
@@ -173,13 +157,10 @@ func (qb *SceneQueryBuilder) ResetOCounter(id int, tx *sqlx.Tx) (int, error) {
 	return scene.OCounter, nil
 }
 
-func (qb *SceneQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
-	_, err := tx.Exec("DELETE FROM movies_scenes WHERE scene_id = ?", id)
-	if err != nil {
-		return err
-	}
-	return executeDeleteQuery("scenes", id, tx)
+func (qb *SceneQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
+	return qb.repository(tx).destroyExisting([]int{id})
 }
+
 func (qb *SceneQueryBuilder) Find(id int) (*models.Scene, error) {
 	return qb.find(id, nil)
 }

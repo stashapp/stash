@@ -174,7 +174,8 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {
 	qb := sqlite.NewStudioQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
-	if err := qb.Destroy(input.ID, tx); err != nil {
+	id, _ := strconv.Atoi(input.ID)
+	if err := qb.Destroy(id, tx); err != nil {
 		_ = tx.Rollback()
 		return false, err
 	}

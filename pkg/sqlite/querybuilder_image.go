@@ -3,7 +3,6 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
@@ -59,72 +58,58 @@ func NewImageQueryBuilder() ImageQueryBuilder {
 	return ImageQueryBuilder{}
 }
 
-func (qb *ImageQueryBuilder) Create(newImage models.Image, tx *sqlx.Tx) (*models.Image, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO images (checksum, path, title, rating, organized, o_counter, size,
-                    			    width, height, studio_id, file_mod_time, created_at, updated_at)
-				VALUES (:checksum, :path, :title, :rating, :organized, :o_counter, :size,
-					:width, :height, :studio_id, :file_mod_time, :created_at, :updated_at)
-		`,
-		newImage,
-	)
-	if err != nil {
-		return nil, err
-	}
-	imageID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-	if err := tx.Get(&newImage, `SELECT * FROM images WHERE id = ? LIMIT 1`, imageID); err != nil {
-		return nil, err
-	}
-	return &newImage, nil
+func imageConstructor() interface{} {
+	return &models.Image{}
 }
 
-func (qb *ImageQueryBuilder) Update(updatedImage models.ImagePartial, tx *sqlx.Tx) (*models.Image, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE images SET `+SQLGenKeysPartial(updatedImage)+` WHERE images.id = :id`,
-		updatedImage,
-	)
-	if err != nil {
-		return nil, err
+func (qb *ImageQueryBuilder) repository(tx *sqlx.Tx) *repository {
+	return &repository{
+		tx:          tx,
+		tableName:   imageTable,
+		idColumn:    idColumn,
+		constructor: imageConstructor,
 	}
-
-	return qb.find(updatedImage.ID, tx)
 }
 
-func (qb *ImageQueryBuilder) UpdateFull(updatedImage models.Image, tx *sqlx.Tx) (*models.Image, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE images SET `+SQLGenKeys(updatedImage)+` WHERE images.id = :id`,
-		updatedImage,
-	)
-	if err != nil {
+func (qb *ImageQueryBuilder) Create(newObject models.Image, tx *sqlx.Tx) (*models.Image, error) {
+	var ret models.Image
+	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
-	return qb.find(updatedImage.ID, tx)
+	return &ret, nil
+}
+
+func (qb *ImageQueryBuilder) Update(updatedObject models.ImagePartial, tx *sqlx.Tx) (*models.Image, error) {
+	const partial = true
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	return qb.find(updatedObject.ID, tx)
+}
+
+func (qb *ImageQueryBuilder) UpdateFull(updatedObject models.Image, tx *sqlx.Tx) (*models.Image, error) {
+	const partial = false
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	return qb.find(updatedObject.ID, tx)
 }
 
 func (qb *ImageQueryBuilder) UpdateFileModTime(id int, modTime models.NullSQLiteTimestamp, tx *sqlx.Tx) error {
 	ensureTx(tx)
-	_, err := tx.Exec(
-		`UPDATE images SET file_mod_time = ? WHERE images.id = ? `,
-		modTime, id,
-	)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return qb.repository(tx).updateMap(id, map[string]interface{}{
+		"file_mod_time": modTime,
+	})
 }
 
 func (qb *ImageQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error) {
 	ensureTx(tx)
 	_, err := tx.Exec(
-		`UPDATE images SET o_counter = o_counter + 1 WHERE images.id = ?`,
+		`UPDATE `+imageTable+` SET o_counter = o_counter + 1 WHERE `+imageTable+`.id = ?`,
 		id,
 	)
 	if err != nil {
@@ -142,7 +127,7 @@ func (qb *ImageQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error)
 func (qb *ImageQueryBuilder) DecrementOCounter(id int, tx *sqlx.Tx) (int, error) {
 	ensureTx(tx)
 	_, err := tx.Exec(
-		`UPDATE images SET o_counter = o_counter - 1 WHERE images.id = ? and images.o_counter > 0`,
+		`UPDATE `+imageTable+` SET o_counter = o_counter - 1 WHERE `+imageTable+`.id = ? and `+imageTable+`.o_counter > 0`,
 		id,
 	)
 	if err != nil {
@@ -160,7 +145,7 @@ func (qb *ImageQueryBuilder) DecrementOCounter(id int, tx *sqlx.Tx) (int, error)
 func (qb *ImageQueryBuilder) ResetOCounter(id int, tx *sqlx.Tx) (int, error) {
 	ensureTx(tx)
 	_, err := tx.Exec(
-		`UPDATE images SET o_counter = 0 WHERE images.id = ?`,
+		`UPDATE `+imageTable+` SET o_counter = 0 WHERE `+imageTable+`.id = ?`,
 		id,
 	)
 	if err != nil {
@@ -176,8 +161,9 @@ func (qb *ImageQueryBuilder) ResetOCounter(id int, tx *sqlx.Tx) (int, error) {
 }
 
 func (qb *ImageQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
-	return executeDeleteQuery("images", strconv.Itoa(id), tx)
+	return qb.repository(tx).destroyExisting([]int{id})
 }
+
 func (qb *ImageQueryBuilder) Find(id int) (*models.Image, error) {
 	return qb.find(id, nil)
 }

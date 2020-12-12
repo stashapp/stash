@@ -111,7 +111,7 @@ func TestStudioDestroyParent(t *testing.T) {
 	// destroy the parent
 	tx = database.DB.MustBeginTx(ctx, nil)
 
-	err = sqb.Destroy(strconv.Itoa(createdParent.ID), tx)
+	err = sqb.Destroy(createdParent.ID, tx)
 	if err != nil {
 		tx.Rollback()
 		t.Fatalf("Error destroying parent studio: %s", err.Error())
@@ -125,7 +125,7 @@ func TestStudioDestroyParent(t *testing.T) {
 	// destroy the child
 	tx = database.DB.MustBeginTx(ctx, nil)
 
-	err = sqb.Destroy(strconv.Itoa(createdChild.ID), tx)
+	err = sqb.Destroy(createdChild.ID, tx)
 	if err != nil {
 		tx.Rollback()
 		t.Fatalf("Error destroying child studio: %s", err.Error())

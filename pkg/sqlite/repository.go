@@ -62,6 +62,22 @@ func (r *repository) update(id int, obj interface{}, partial bool) error {
 	return err
 }
 
+func (r *repository) updateMap(id int, m map[string]interface{}) error {
+	exists, err := r.exists(id)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return fmt.Errorf("%s %d does not exist in %s", r.idColumn, id, r.tableName)
+	}
+
+	stmt := fmt.Sprintf("UPDATE %s SET %s WHERE %s.%s = :id", r.tableName, updateSetMap(m), r.tableName, r.idColumn)
+	_, err = r.tx.NamedExec(stmt, m)
+
+	return err
+}
+
 func (r *repository) destroyExisting(ids []int) error {
 	for _, id := range ids {
 		exists, err := r.exists(id)
@@ -227,17 +243,10 @@ func updateSet(i interface{}, partial bool) string {
 	return strings.Join(query, ", ")
 }
 
-func updateSetPartial(i interface{}) string {
+func updateSetMap(m map[string]interface{}) string {
 	var query []string
-	v := reflect.ValueOf(i)
-	for i := 0; i < v.NumField(); i++ {
-		//get key for struct tag
-		rawKey := v.Type().Field(i).Tag.Get("db")
-		key := strings.Split(rawKey, ",")[0]
-		if key == "id" {
-			continue
-		}
-
+	for k := range m {
+		query = append(query, fmt.Sprintf("%s=:%s", k, k))
 	}
 	return strings.Join(query, ", ")
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/jmoiron/sqlx"
 
@@ -43,7 +42,7 @@ func DestroyScene(sceneID int, tx *sqlx.Tx) error {
 		return err
 	}
 
-	if err := qb.Destroy(strconv.Itoa(sceneID), tx); err != nil {
+	if err := qb.Destroy(sceneID, tx); err != nil {
 		return err
 	}
 

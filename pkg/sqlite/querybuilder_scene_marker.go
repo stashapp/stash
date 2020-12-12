@@ -10,6 +10,8 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+const sceneMarkerTable = "scene_markers"
+
 const countSceneMarkersForTagQuery = `
 SELECT scene_markers.id FROM scene_markers
 LEFT JOIN scene_markers_tags as tags_join on tags_join.scene_marker_id = scene_markers.id
@@ -23,46 +25,44 @@ func NewSceneMarkerQueryBuilder() SceneMarkerQueryBuilder {
 	return SceneMarkerQueryBuilder{}
 }
 
-func (qb *SceneMarkerQueryBuilder) Create(newSceneMarker models.SceneMarker, tx *sqlx.Tx) (*models.SceneMarker, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO scene_markers (title, seconds, primary_tag_id, scene_id, created_at, updated_at)
-				VALUES (:title, :seconds, :primary_tag_id, :scene_id, :created_at, :updated_at)
-		`,
-		newSceneMarker,
-	)
-	if err != nil {
-		return nil, err
-	}
-	sceneMarkerID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := tx.Get(&newSceneMarker, `SELECT * FROM scene_markers WHERE id = ? LIMIT 1`, sceneMarkerID); err != nil {
-		return nil, err
-	}
-	return &newSceneMarker, nil
+func sceneMarkerConstructor() interface{} {
+	return &models.SceneMarker{}
 }
 
-func (qb *SceneMarkerQueryBuilder) Update(updatedSceneMarker models.SceneMarker, tx *sqlx.Tx) (*models.SceneMarker, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE scene_markers SET `+SQLGenKeys(updatedSceneMarker)+` WHERE scene_markers.id = :id`,
-		updatedSceneMarker,
-	)
-	if err != nil {
-		return nil, err
+func (qb *SceneMarkerQueryBuilder) repository(tx *sqlx.Tx) *repository {
+	return &repository{
+		tx:          tx,
+		tableName:   sceneMarkerTable,
+		idColumn:    idColumn,
+		constructor: sceneMarkerConstructor,
 	}
-
-	if err := tx.Get(&updatedSceneMarker, `SELECT * FROM scene_markers WHERE id = ? LIMIT 1`, updatedSceneMarker.ID); err != nil {
-		return nil, err
-	}
-	return &updatedSceneMarker, nil
 }
 
-func (qb *SceneMarkerQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
-	return executeDeleteQuery("scene_markers", id, tx)
+func (qb *SceneMarkerQueryBuilder) Create(newObject models.SceneMarker, tx *sqlx.Tx) (*models.SceneMarker, error) {
+	var ret models.SceneMarker
+	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (qb *SceneMarkerQueryBuilder) Update(updatedObject models.SceneMarker, tx *sqlx.Tx) (*models.SceneMarker, error) {
+	const partial = false
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	var ret models.SceneMarker
+	if err := qb.repository(tx).get(updatedObject.ID, &ret); err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (qb *SceneMarkerQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
+	return qb.repository(tx).destroyExisting([]int{id})
 }
 
 func (qb *SceneMarkerQueryBuilder) Find(id int) (*models.SceneMarker, error) {

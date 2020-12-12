@@ -18,53 +18,46 @@ func NewTagQueryBuilder() TagQueryBuilder {
 	return TagQueryBuilder{}
 }
 
-func (qb *TagQueryBuilder) Create(newTag models.Tag, tx *sqlx.Tx) (*models.Tag, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO tags (name, created_at, updated_at)
-				VALUES (:name, :created_at, :updated_at)
-		`,
-		newTag,
-	)
-	if err != nil {
-		return nil, err
-	}
-	studioID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := tx.Get(&newTag, `SELECT * FROM tags WHERE id = ? LIMIT 1`, studioID); err != nil {
-		return nil, err
-	}
-
-	return &newTag, nil
+func tagConstructor() interface{} {
+	return &models.Tag{}
 }
 
-func (qb *TagQueryBuilder) Update(updatedTag models.Tag, tx *sqlx.Tx) (*models.Tag, error) {
-	ensureTx(tx)
-	query := `UPDATE tags SET ` + SQLGenKeys(updatedTag) + ` WHERE tags.id = :id`
-	_, err := tx.NamedExec(
-		query,
-		updatedTag,
-	)
-	if err != nil {
-		return nil, err
+func (qb *TagQueryBuilder) repository(tx *sqlx.Tx) *repository {
+	return &repository{
+		tx:          tx,
+		tableName:   tagTable,
+		idColumn:    idColumn,
+		constructor: tagConstructor,
 	}
-
-	if err := tx.Get(&updatedTag, `SELECT * FROM tags WHERE id = ? LIMIT 1`, updatedTag.ID); err != nil {
-		return nil, err
-	}
-	return &updatedTag, nil
 }
 
-func (qb *TagQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
+func (qb *TagQueryBuilder) Create(newObject models.Tag, tx *sqlx.Tx) (*models.Tag, error) {
+	var ret models.Tag
+	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (qb *TagQueryBuilder) Update(updatedObject models.Tag, tx *sqlx.Tx) (*models.Tag, error) {
+	const partial = false
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	return qb.Find(updatedObject.ID, tx)
+}
+
+func (qb *TagQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
+	// TODO - add delete cascade to foreign key
 	// delete tag from scenes and markers first
 	_, err := tx.Exec("DELETE FROM scenes_tags WHERE tag_id = ?", id)
 	if err != nil {
 		return err
 	}
 
+	// TODO - add delete cascade to foreign key
 	_, err = tx.Exec("DELETE FROM scene_markers_tags WHERE tag_id = ?", id)
 	if err != nil {
 		return err
@@ -82,7 +75,7 @@ func (qb *TagQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
 		return errors.New("Cannot delete tag used as a primary tag in scene markers")
 	}
 
-	return executeDeleteQuery("tags", id, tx)
+	return qb.repository(tx).destroyExisting([]int{id})
 }
 
 func (qb *TagQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Tag, error) {

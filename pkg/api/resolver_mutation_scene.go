@@ -516,7 +516,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 		return false, err
 	}
 
-	if err := qb.Destroy(id, tx); err != nil {
+	if err := qb.Destroy(markerID, tx); err != nil {
 		_ = tx.Rollback()
 		return false, err
 	}

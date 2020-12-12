@@ -144,7 +144,8 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestroyInput) (bool, error) {
 	qb := sqlite.NewTagQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
-	if err := qb.Destroy(input.ID, tx); err != nil {
+	id, _ := strconv.Atoi(input.ID)
+	if err := qb.Destroy(id, tx); err != nil {
 		_ = tx.Rollback()
 		return false, err
 	}

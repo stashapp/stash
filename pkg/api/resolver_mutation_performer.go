@@ -234,7 +234,8 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
 	qb := sqlite.NewPerformerQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
-	if err := qb.Destroy(input.ID, tx); err != nil {
+	id, _ := strconv.Atoi(input.ID)
+	if err := qb.Destroy(id, tx); err != nil {
 		_ = tx.Rollback()
 		return false, err
 	}

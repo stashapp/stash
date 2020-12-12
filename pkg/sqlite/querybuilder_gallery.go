@@ -19,84 +19,60 @@ func NewGalleryQueryBuilder() GalleryQueryBuilder {
 	return GalleryQueryBuilder{}
 }
 
-func (qb *GalleryQueryBuilder) Create(newGallery models.Gallery, tx *sqlx.Tx) (*models.Gallery, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO galleries (path, checksum, zip, title, date, details, url, studio_id, rating, organized, scene_id, file_mod_time, created_at, updated_at)
-				VALUES (:path, :checksum, :zip, :title, :date, :details, :url, :studio_id, :rating, :organized, :scene_id, :file_mod_time, :created_at, :updated_at)
-		`,
-		newGallery,
-	)
-	if err != nil {
-		return nil, err
-	}
-	galleryID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-	if err := tx.Get(&newGallery, `SELECT * FROM galleries WHERE id = ? LIMIT 1`, galleryID); err != nil {
-		return nil, err
-	}
-	return &newGallery, nil
+func galleryConstructor() interface{} {
+	return &models.Gallery{}
 }
 
-func (qb *GalleryQueryBuilder) Update(updatedGallery models.Gallery, tx *sqlx.Tx) (*models.Gallery, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE galleries SET `+SQLGenKeys(updatedGallery)+` WHERE galleries.id = :id`,
-		updatedGallery,
-	)
-	if err != nil {
-		return nil, err
+func (qb *GalleryQueryBuilder) repository(tx *sqlx.Tx) *repository {
+	return &repository{
+		tx:          tx,
+		tableName:   galleryTable,
+		idColumn:    idColumn,
+		constructor: galleryConstructor,
 	}
-
-	if err := tx.Get(&updatedGallery, `SELECT * FROM galleries WHERE id = ? LIMIT 1`, updatedGallery.ID); err != nil {
-		return nil, err
-	}
-	return &updatedGallery, nil
 }
 
-func (qb *GalleryQueryBuilder) UpdatePartial(updatedGallery models.GalleryPartial, tx *sqlx.Tx) (*models.Gallery, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE galleries SET `+SQLGenKeysPartial(updatedGallery)+` WHERE galleries.id = :id`,
-		updatedGallery,
-	)
-	if err != nil {
+func (qb *GalleryQueryBuilder) Create(newObject models.Gallery, tx *sqlx.Tx) (*models.Gallery, error) {
+	var ret models.Gallery
+	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
-	return qb.Find(updatedGallery.ID, tx)
+	return &ret, nil
+}
+
+func (qb *GalleryQueryBuilder) Update(updatedObject models.Gallery, tx *sqlx.Tx) (*models.Gallery, error) {
+	const partial = false
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	return qb.Find(updatedObject.ID, tx)
+}
+
+func (qb *GalleryQueryBuilder) UpdatePartial(updatedObject models.GalleryPartial, tx *sqlx.Tx) (*models.Gallery, error) {
+	const partial = true
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	return qb.Find(updatedObject.ID, tx)
 }
 
 func (qb *GalleryQueryBuilder) UpdateChecksum(id int, checksum string, tx *sqlx.Tx) error {
-	ensureTx(tx)
-	_, err := tx.Exec(
-		`UPDATE galleries SET checksum = ? WHERE galleries.id = ? `,
-		checksum, id,
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return qb.repository(tx).updateMap(id, map[string]interface{}{
+		"checksum": checksum,
+	})
 }
 
 func (qb *GalleryQueryBuilder) UpdateFileModTime(id int, modTime models.NullSQLiteTimestamp, tx *sqlx.Tx) error {
-	ensureTx(tx)
-	_, err := tx.Exec(
-		`UPDATE galleries SET file_mod_time = ? WHERE galleries.id = ? `,
-		modTime, id,
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return qb.repository(tx).updateMap(id, map[string]interface{}{
+		"file_mod_time": modTime,
+	})
 }
 
 func (qb *GalleryQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
-	return executeDeleteQuery("galleries", strconv.Itoa(id), tx)
+	return qb.repository(tx).destroyExisting([]int{id})
 }
 
 type GalleryNullSceneID struct {

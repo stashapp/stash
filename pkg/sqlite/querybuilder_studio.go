@@ -9,82 +9,63 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+const studioTable = "studios"
+
 type StudioQueryBuilder struct{}
 
 func NewStudioQueryBuilder() StudioQueryBuilder {
 	return StudioQueryBuilder{}
 }
 
-func (qb *StudioQueryBuilder) Create(newStudio models.Studio, tx *sqlx.Tx) (*models.Studio, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO studios (checksum, name, url, parent_id, created_at, updated_at)
-            VALUES (:checksum, :name, :url, :parent_id, :created_at, :updated_at)
-		`,
-		newStudio,
-	)
-	if err != nil {
-		return nil, err
-	}
-	studioID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := tx.Get(&newStudio, `SELECT * FROM studios WHERE id = ? LIMIT 1`, studioID); err != nil {
-		return nil, err
-	}
-	return &newStudio, nil
+func studioConstructor() interface{} {
+	return &models.Studio{}
 }
 
-func (qb *StudioQueryBuilder) Update(updatedStudio models.StudioPartial, tx *sqlx.Tx) (*models.Studio, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE studios SET `+SQLGenKeysPartial(updatedStudio)+` WHERE studios.id = :id`,
-		updatedStudio,
-	)
-	if err != nil {
+func (qb *StudioQueryBuilder) repository(tx *sqlx.Tx) *repository {
+	return &repository{
+		tx:          tx,
+		tableName:   studioTable,
+		idColumn:    idColumn,
+		constructor: studioConstructor,
+	}
+}
+
+func (qb *StudioQueryBuilder) Create(newObject models.Studio, tx *sqlx.Tx) (*models.Studio, error) {
+	var ret models.Studio
+	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
-	var ret models.Studio
-	if err := tx.Get(&ret, `SELECT * FROM studios WHERE id = ? LIMIT 1`, updatedStudio.ID); err != nil {
-		return nil, err
-	}
 	return &ret, nil
 }
 
-func (qb *StudioQueryBuilder) UpdateFull(updatedStudio models.Studio, tx *sqlx.Tx) (*models.Studio, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE studios SET `+SQLGenKeys(updatedStudio)+` WHERE studios.id = :id`,
-		updatedStudio,
-	)
-	if err != nil {
+func (qb *StudioQueryBuilder) Update(updatedObject models.StudioPartial, tx *sqlx.Tx) (*models.Studio, error) {
+	const partial = true
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	var ret models.Studio
-	if err := tx.Get(&ret, `SELECT * FROM studios WHERE id = ? LIMIT 1`, updatedStudio.ID); err != nil {
-		return nil, err
-	}
-	return &ret, nil
+	return qb.Find(updatedObject.ID, tx)
 }
 
-func (qb *StudioQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
-	// remove studio from scenes
-	_, err := tx.Exec("UPDATE scenes SET studio_id = null WHERE studio_id = ?", id)
-	if err != nil {
-		return err
+func (qb *StudioQueryBuilder) UpdateFull(updatedObject models.Studio, tx *sqlx.Tx) (*models.Studio, error) {
+	const partial = false
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
 	}
 
+	return qb.Find(updatedObject.ID, tx)
+}
+
+func (qb *StudioQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
+	// TODO - set null on foreign key in scraped items
 	// remove studio from scraped items
-	_, err = tx.Exec("UPDATE scraped_items SET studio_id = null WHERE studio_id = ?", id)
+	_, err := tx.Exec("UPDATE scraped_items SET studio_id = null WHERE studio_id = ?", id)
 	if err != nil {
 		return err
 	}
 
-	return executeDeleteQuery("studios", id, tx)
+	return qb.repository(tx).destroyExisting([]int{id})
 }
 
 func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Studio, error) {

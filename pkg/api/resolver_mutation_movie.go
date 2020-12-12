@@ -214,7 +214,8 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 func (r *mutationResolver) MovieDestroy(ctx context.Context, input models.MovieDestroyInput) (bool, error) {
 	qb := sqlite.NewMovieQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
-	if err := qb.Destroy(input.ID, tx); err != nil {
+	id, _ := strconv.Atoi(input.ID)
+	if err := qb.Destroy(id, tx); err != nil {
 		_ = tx.Rollback()
 		return false, err
 	}

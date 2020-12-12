@@ -8,55 +8,53 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
+const scrapedItemTable = "scraped_items"
+
 type ScrapedItemQueryBuilder struct{}
 
 func NewScrapedItemQueryBuilder() ScrapedItemQueryBuilder {
 	return ScrapedItemQueryBuilder{}
 }
 
-func (qb *ScrapedItemQueryBuilder) Create(newScrapedItem models.ScrapedItem, tx *sqlx.Tx) (*models.ScrapedItem, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO scraped_items (title, description, url, date, rating, tags, models, episode, gallery_filename,
-                    			    	   gallery_url, video_filename, video_url, studio_id, created_at, updated_at)
-				VALUES (:title, :description, :url, :date, :rating, :tags, :models, :episode, :gallery_filename,
-                    	:gallery_url, :video_filename, :video_url, :studio_id, :created_at, :updated_at)
-		`,
-		newScrapedItem,
-	)
-	if err != nil {
-		return nil, err
-	}
-	scrapedItemID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-	if err := tx.Get(&newScrapedItem, `SELECT * FROM scraped_items WHERE id = ? LIMIT 1`, scrapedItemID); err != nil {
-		return nil, err
-	}
-	return &newScrapedItem, nil
+func scrapedItemConstructor() interface{} {
+	return &models.ScrapedItem{}
 }
 
-func (qb *ScrapedItemQueryBuilder) Update(updatedScrapedItem models.ScrapedItem, tx *sqlx.Tx) (*models.ScrapedItem, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE scraped_items SET `+SQLGenKeys(updatedScrapedItem)+` WHERE scraped_items.id = :id`,
-		updatedScrapedItem,
-	)
-	if err != nil {
+func (qb *ScrapedItemQueryBuilder) repository(tx *sqlx.Tx) *repository {
+	return &repository{
+		tx:          tx,
+		tableName:   scrapedItemTable,
+		idColumn:    idColumn,
+		constructor: scrapedItemConstructor,
+	}
+}
+
+func (qb *ScrapedItemQueryBuilder) Create(newObject models.ScrapedItem, tx *sqlx.Tx) (*models.ScrapedItem, error) {
+	var ret models.ScrapedItem
+	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
-	if err := tx.Get(&updatedScrapedItem, `SELECT * FROM scraped_items WHERE id = ? LIMIT 1`, updatedScrapedItem.ID); err != nil {
+	return &ret, nil
+}
+
+func (qb *ScrapedItemQueryBuilder) Update(updatedObject models.ScrapedItem, tx *sqlx.Tx) (*models.ScrapedItem, error) {
+	const partial = false
+	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
-	return &updatedScrapedItem, nil
+
+	return qb.find(updatedObject.ID, tx)
 }
 
 func (qb *ScrapedItemQueryBuilder) Find(id int) (*models.ScrapedItem, error) {
+	return qb.find(id, nil)
+}
+
+func (qb *ScrapedItemQueryBuilder) find(id int, tx *sqlx.Tx) (*models.ScrapedItem, error) {
 	query := "SELECT * FROM scraped_items WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
-	return qb.queryScrapedItem(query, args, nil)
+	return qb.queryScrapedItem(query, args, tx)
 }
 
 func (qb *ScrapedItemQueryBuilder) All() ([]*models.ScrapedItem, error) {
