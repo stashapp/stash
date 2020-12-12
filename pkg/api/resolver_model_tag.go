@@ -5,10 +5,11 @@ import (
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (*int, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	if obj == nil {
 		return nil, nil
 	}
@@ -17,7 +18,7 @@ func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (*int, er
 }
 
 func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (*int, error) {
-	qb := models.NewSceneMarkerQueryBuilder()
+	qb := sqlite.NewSceneMarkerQueryBuilder()
 	if obj == nil {
 		return nil, nil
 	}

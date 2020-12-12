@@ -5,16 +5,17 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *queryResolver) FindTag(ctx context.Context, id string) (*models.Tag, error) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	idInt, _ := strconv.Atoi(id)
 	return qb.Find(idInt, nil)
 }
 
 func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilterType, filter *models.FindFilterType) (*models.FindTagsResultType, error) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	tags, total := qb.Query(tagFilter, filter)
 	return &models.FindTagsResultType{
 		Count: total,
@@ -23,11 +24,11 @@ func (r *queryResolver) FindTags(ctx context.Context, tagFilter *models.TagFilte
 }
 
 func (r *queryResolver) AllTags(ctx context.Context) ([]*models.Tag, error) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	return qb.All()
 }
 
 func (r *queryResolver) AllTagsSlim(ctx context.Context) ([]*models.Tag, error) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	return qb.AllSlim()
 }

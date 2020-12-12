@@ -6,10 +6,11 @@ import (
 
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *string) (*models.Scene, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	var scene *models.Scene
 	var err error
 	if id != nil {
@@ -22,7 +23,7 @@ func (r *queryResolver) FindScene(ctx context.Context, id *string, checksum *str
 }
 
 func (r *queryResolver) FindSceneByHash(ctx context.Context, input models.SceneHashInput) (*models.Scene, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	var scene *models.Scene
 	var err error
 
@@ -44,7 +45,7 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input models.SceneH
 }
 
 func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIds []int, filter *models.FindFilterType) (*models.FindScenesResultType, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	scenes, total := qb.Query(sceneFilter, filter)
 	return &models.FindScenesResultType{
 		Count:  total,
@@ -53,7 +54,7 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 }
 
 func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *models.FindFilterType) (*models.FindScenesResultType, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 
 	scenes, total := qb.QueryByPathRegex(filter)
 	return &models.FindScenesResultType{

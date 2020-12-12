@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -45,8 +46,8 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 	// Start the transaction and save the studio
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewStudioQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	studio, err := qb.Create(newStudio, tx)
 	if err != nil {
@@ -119,8 +120,8 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 
 	// Start the transaction and save the studio
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewStudioQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	if err := manager.ValidateModifyStudio(updatedStudio, tx); err != nil {
 		tx.Rollback()
@@ -171,7 +172,7 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 }
 
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 	if err := qb.Destroy(input.ID, tx); err != nil {
 		_ = tx.Rollback()

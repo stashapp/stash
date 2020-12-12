@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -97,8 +98,8 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 		// update the cover after updating the scene
 	}
 
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	scene, err := qb.Update(updatedScene, tx)
 	if err != nil {
 		return nil, err
@@ -113,7 +114,7 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 
 	// Clear the existing gallery value
 	if translator.hasField("gallery_id") {
-		gqb := models.NewGalleryQueryBuilder()
+		gqb := sqlite.NewGalleryQueryBuilder()
 		err = gqb.ClearGalleryId(sceneID, tx)
 		if err != nil {
 			return nil, err
@@ -127,7 +128,7 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 				SceneID:   sql.NullInt64{Int64: int64(sceneID), Valid: true},
 				UpdatedAt: models.SQLiteTimestamp{Timestamp: updatedTime},
 			}
-			gqb := models.NewGalleryQueryBuilder()
+			gqb := sqlite.NewGalleryQueryBuilder()
 			_, err := gqb.Update(updatedGallery, tx)
 			if err != nil {
 				return nil, err
@@ -230,8 +231,8 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 
 	// Start the transaction and save the scene marker
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	updatedScene := models.ScenePartial{
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
@@ -270,7 +271,7 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 				SceneID:   sql.NullInt64{Int64: int64(sceneID), Valid: true},
 				UpdatedAt: models.SQLiteTimestamp{Timestamp: updatedTime},
 			}
-			gqb := models.NewGalleryQueryBuilder()
+			gqb := sqlite.NewGalleryQueryBuilder()
 			_, err := gqb.Update(updatedGallery, tx)
 			if err != nil {
 				_ = tx.Rollback()
@@ -360,7 +361,7 @@ func adjustIDs(existingIDs []int, updateIDs models.BulkUpdateIds) []int {
 func adjustScenePerformerIDs(tx *sqlx.Tx, sceneID int, ids models.BulkUpdateIds) ([]int, error) {
 	var ret []int
 
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
 		// adding to the joins
 		performerJoins, err := jqb.GetScenePerformers(sceneID, tx)
@@ -380,7 +381,7 @@ func adjustScenePerformerIDs(tx *sqlx.Tx, sceneID int, ids models.BulkUpdateIds)
 func adjustSceneTagIDs(tx *sqlx.Tx, sceneID int, ids models.BulkUpdateIds) ([]int, error) {
 	var ret []int
 
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
 		// adding to the joins
 		tagJoins, err := jqb.GetSceneTags(sceneID, tx)
@@ -398,7 +399,7 @@ func adjustSceneTagIDs(tx *sqlx.Tx, sceneID int, ids models.BulkUpdateIds) ([]in
 }
 
 func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneDestroyInput) (bool, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	sceneID, _ := strconv.Atoi(input.ID)
@@ -430,7 +431,7 @@ func (r *mutationResolver) SceneDestroy(ctx context.Context, input models.SceneD
 }
 
 func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.ScenesDestroyInput) (bool, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	var scenes []*models.Scene
@@ -505,7 +506,7 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
-	qb := models.NewSceneMarkerQueryBuilder()
+	qb := sqlite.NewSceneMarkerQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	markerID, _ := strconv.Atoi(id)
@@ -524,7 +525,7 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 	}
 
 	// delete the preview for the marker
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	scene, _ := sqb.Find(int(marker.SceneID.Int64))
 
 	if scene != nil {
@@ -538,8 +539,8 @@ func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (b
 func changeMarker(ctx context.Context, changeType int, changedMarker models.SceneMarker, tagIds []string) (*models.SceneMarker, error) {
 	// Start the transaction and save the scene marker
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneMarkerQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewSceneMarkerQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	var existingMarker *models.SceneMarker
 	var sceneMarker *models.SceneMarker
@@ -592,7 +593,7 @@ func changeMarker(ctx context.Context, changeType int, changedMarker models.Scen
 
 	// remove the marker preview if the timestamp was changed
 	if existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
-		sqb := models.NewSceneQueryBuilder()
+		sqb := sqlite.NewSceneQueryBuilder()
 
 		scene, _ := sqb.Find(int(existingMarker.SceneID.Int64))
 
@@ -609,7 +610,7 @@ func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (int,
 	sceneID, _ := strconv.Atoi(id)
 
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 
 	newVal, err := qb.IncrementOCounter(sceneID, tx)
 	if err != nil {
@@ -629,7 +630,7 @@ func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (int,
 	sceneID, _ := strconv.Atoi(id)
 
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 
 	newVal, err := qb.DecrementOCounter(sceneID, tx)
 	if err != nil {
@@ -649,7 +650,7 @@ func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (int, err
 	sceneID, _ := strconv.Atoi(id)
 
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 
 	newVal, err := qb.ResetOCounter(sceneID, tx)
 	if err != nil {

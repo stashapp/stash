@@ -6,6 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func ValidateModifyStudio(studio models.StudioPartial, tx *sqlx.Tx) error {
@@ -15,7 +16,7 @@ func ValidateModifyStudio(studio models.StudioPartial, tx *sqlx.Tx) error {
 
 	// ensure there is no cyclic dependency
 	thisID := studio.ID
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 
 	currentParentID := *studio.ParentID
 

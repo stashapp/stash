@@ -14,6 +14,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -65,7 +66,7 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 // FindStashBoxScenesByFingerprints queries stash-box for scenes using every
 // scene's MD5 checksum and/or oshash.
 func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.ScrapedScene, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 
 	var fingerprints []string
 
@@ -120,8 +121,8 @@ func (c Client) findStashBoxScenesByFingerprints(fingerprints []string) ([]*mode
 }
 
 func (c Client) SubmitStashBoxFingerprints(sceneIDs []string, endpoint string) (bool, error) {
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	var fingerprints []graphql.FingerprintSubmission
 
@@ -383,7 +384,7 @@ func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene
 			RemoteSiteID: &studioID,
 		}
 
-		err := models.MatchScrapedSceneStudio(ss.Studio)
+		err := sqlite.MatchScrapedSceneStudio(ss.Studio)
 		if err != nil {
 			return nil, err
 		}
@@ -392,7 +393,7 @@ func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene
 	for _, p := range s.Performers {
 		sp := performerFragmentToScrapedScenePerformer(p.Performer)
 
-		err := models.MatchScrapedScenePerformer(sp)
+		err := sqlite.MatchScrapedScenePerformer(sp)
 		if err != nil {
 			return nil, err
 		}
@@ -405,7 +406,7 @@ func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene
 			Name: t.Name,
 		}
 
-		err := models.MatchScrapedSceneTag(st)
+		err := sqlite.MatchScrapedSceneTag(st)
 		if err != nil {
 			return nil, err
 		}

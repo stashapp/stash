@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -71,8 +72,8 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input models.Galle
 
 	// Start the transaction and save the performer
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewGalleryQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	gallery, err := qb.Create(newGallery, tx)
 	if err != nil {
 		_ = tx.Rollback()
@@ -167,7 +168,7 @@ func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.
 }
 
 func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, translator changesetTranslator, tx *sqlx.Tx) (*models.Gallery, error) {
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	// Populate gallery from the input
 	galleryID, _ := strconv.Atoi(input.ID)
 	originalGallery, err := qb.Find(galleryID, nil)
@@ -209,7 +210,7 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, transl
 
 	// gallery scene is set from the scene only
 
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	gallery, err := qb.UpdatePartial(updatedGallery, tx)
 	if err != nil {
 		return nil, err
@@ -256,8 +257,8 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 
 	// Start the transaction and save the gallery marker
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewGalleryQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
@@ -345,7 +346,7 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 func adjustGalleryPerformerIDs(tx *sqlx.Tx, galleryID int, ids models.BulkUpdateIds) ([]int, error) {
 	var ret []int
 
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
 		// adding to the joins
 		performerJoins, err := jqb.GetGalleryPerformers(galleryID, tx)
@@ -365,7 +366,7 @@ func adjustGalleryPerformerIDs(tx *sqlx.Tx, galleryID int, ids models.BulkUpdate
 func adjustGalleryTagIDs(tx *sqlx.Tx, galleryID int, ids models.BulkUpdateIds) ([]int, error) {
 	var ret []int
 
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
 		// adding to the joins
 		tagJoins, err := jqb.GetGalleryTags(galleryID, tx)
@@ -383,8 +384,8 @@ func adjustGalleryTagIDs(tx *sqlx.Tx, galleryID int, ids models.BulkUpdateIds) (
 }
 
 func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.GalleryDestroyInput) (bool, error) {
-	qb := models.NewGalleryQueryBuilder()
-	iqb := models.NewImageQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
+	iqb := sqlite.NewImageQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	var galleries []*models.Gallery
@@ -480,7 +481,7 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 
 func (r *mutationResolver) AddGalleryImages(ctx context.Context, input models.GalleryAddInput) (bool, error) {
 	galleryID, _ := strconv.Atoi(input.GalleryID)
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	gallery, err := qb.Find(galleryID, nil)
 	if err != nil {
 		return false, err
@@ -494,7 +495,7 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input models.Ga
 		return false, errors.New("cannot modify zip gallery images")
 	}
 
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	for _, id := range input.ImageIds {
@@ -515,7 +516,7 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input models.Ga
 
 func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input models.GalleryRemoveInput) (bool, error) {
 	galleryID, _ := strconv.Atoi(input.GalleryID)
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	gallery, err := qb.Find(galleryID, nil)
 	if err != nil {
 		return false, err
@@ -529,7 +530,7 @@ func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input models
 		return false, errors.New("cannot modify zip gallery images")
 	}
 
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	for _, id := range input.ImageIds {

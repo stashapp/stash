@@ -6,6 +6,7 @@ import (
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *imageResolver) Title(ctx context.Context, obj *models.Image) (*string, error) {
@@ -44,7 +45,7 @@ func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*models.I
 }
 
 func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) ([]*models.Gallery, error) {
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	return qb.FindByImageID(obj.ID, nil)
 }
 
@@ -53,16 +54,16 @@ func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (*models.
 		return nil, nil
 	}
 
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 	return qb.Find(int(obj.StudioID.Int64), nil)
 }
 
 func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) ([]*models.Tag, error) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	return qb.FindByImageID(obj.ID, nil)
 }
 
 func (r *imageResolver) Performers(ctx context.Context, obj *models.Image) ([]*models.Performer, error) {
-	qb := models.NewPerformerQueryBuilder()
+	qb := sqlite.NewPerformerQueryBuilder()
 	return qb.FindByImageID(obj.ID, nil)
 }

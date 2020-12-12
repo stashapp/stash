@@ -8,6 +8,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -87,8 +88,8 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 
 	// Start the transaction and save the performer
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewPerformerQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewPerformerQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	performer, err := qb.Create(newPerformer, tx)
 	if err != nil {
@@ -184,8 +185,8 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 
 	// Start the transaction and save the performer
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewPerformerQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewPerformerQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	performer, err := qb.Update(updatedPerformer, tx)
 	if err != nil {
@@ -231,7 +232,7 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 }
 
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
-	qb := models.NewPerformerQueryBuilder()
+	qb := sqlite.NewPerformerQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 	if err := qb.Destroy(input.ID, tx); err != nil {
 		_ = tx.Rollback()

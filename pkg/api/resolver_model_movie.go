@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -54,7 +55,7 @@ func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*int, er
 }
 
 func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (*models.Studio, error) {
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 	if obj.StudioID.Valid {
 		return qb.Find(int(obj.StudioID.Int64), nil)
 	}
@@ -89,7 +90,7 @@ func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*
 }
 
 func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (*int, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	res, err := qb.CountByMovieID(obj.ID)
 	return &res, err
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -27,7 +28,7 @@ func (t *GenerateMarkersTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	}
 
 	if t.Marker != nil {
-		qb := models.NewSceneQueryBuilder()
+		qb := sqlite.NewSceneQueryBuilder()
 		scene, err := qb.Find(int(t.Marker.SceneID.Int64))
 		if err != nil {
 			logger.Errorf("error finding scene for marker: %s", err.Error())
@@ -45,7 +46,7 @@ func (t *GenerateMarkersTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 }
 
 func (t *GenerateMarkersTask) generateSceneMarkers() {
-	qb := models.NewSceneMarkerQueryBuilder()
+	qb := sqlite.NewSceneMarkerQueryBuilder()
 	sceneMarkers, _ := qb.FindBySceneID(t.Scene.ID, nil)
 	if len(sceneMarkers) == 0 {
 		return
@@ -117,7 +118,7 @@ func (t *GenerateMarkersTask) generateMarker(videoFile *ffmpeg.VideoFile, scene 
 
 func (t *GenerateMarkersTask) isMarkerNeeded() int {
 	markers := 0
-	qb := models.NewSceneMarkerQueryBuilder()
+	qb := sqlite.NewSceneMarkerQueryBuilder()
 	sceneMarkers, _ := qb.FindBySceneID(t.Scene.ID, nil)
 	if len(sceneMarkers) == 0 {
 		return 0

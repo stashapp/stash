@@ -8,6 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 type Resolver struct{}
@@ -80,17 +81,17 @@ type scrapedScenePerformerResolver struct{ *Resolver }
 type scrapedSceneStudioResolver struct{ *Resolver }
 
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) ([]*models.SceneMarker, error) {
-	qb := models.NewSceneMarkerQueryBuilder()
+	qb := sqlite.NewSceneMarkerQueryBuilder()
 	return qb.Wall(q)
 }
 
 func (r *queryResolver) SceneWall(ctx context.Context, q *string) ([]*models.Scene, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	return qb.Wall(q)
 }
 
 func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
-	qb := models.NewSceneMarkerQueryBuilder()
+	qb := sqlite.NewSceneMarkerQueryBuilder()
 	return qb.GetMarkerStrings(q, sort)
 }
 
@@ -99,13 +100,13 @@ func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *st
 		panic("nil scene id") // TODO make scene_id mandatory
 	}
 	sceneID, _ := strconv.Atoi(*scene_id)
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	scene, err := sqb.Find(sceneID)
 	if err != nil {
 		return nil, err
 	}
 
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	validGalleries, err := qb.ValidGalleriesForScenePath(scene.Path)
 	sceneGallery, _ := qb.FindBySceneID(sceneID, nil)
 	if sceneGallery != nil {
@@ -115,21 +116,21 @@ func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *st
 }
 
 func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, error) {
-	scenesQB := models.NewSceneQueryBuilder()
+	scenesQB := sqlite.NewSceneQueryBuilder()
 	scenesCount, _ := scenesQB.Count()
 	scenesSize, _ := scenesQB.Size()
-	imageQB := models.NewImageQueryBuilder()
+	imageQB := sqlite.NewImageQueryBuilder()
 	imageCount, _ := imageQB.Count()
 	imageSize, _ := imageQB.Size()
-	galleryQB := models.NewGalleryQueryBuilder()
+	galleryQB := sqlite.NewGalleryQueryBuilder()
 	galleryCount, _ := galleryQB.Count()
-	performersQB := models.NewPerformerQueryBuilder()
+	performersQB := sqlite.NewPerformerQueryBuilder()
 	performersCount, _ := performersQB.Count()
-	studiosQB := models.NewStudioQueryBuilder()
+	studiosQB := sqlite.NewStudioQueryBuilder()
 	studiosCount, _ := studiosQB.Count()
-	moviesQB := models.NewMovieQueryBuilder()
+	moviesQB := sqlite.NewMovieQueryBuilder()
 	moviesCount, _ := moviesQB.Count()
-	tagsQB := models.NewTagQueryBuilder()
+	tagsQB := sqlite.NewTagQueryBuilder()
 	tagsCount, _ := tagsQB.Count()
 	return &models.StatsResultType{
 		SceneCount:     scenesCount,
@@ -172,7 +173,7 @@ func (r *queryResolver) Latestversion(ctx context.Context) (*models.ShortVersion
 // Get scene marker tags which show up under the video.
 func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([]*models.SceneMarkerTag, error) {
 	sceneID, _ := strconv.Atoi(scene_id)
-	sqb := models.NewSceneMarkerQueryBuilder()
+	sqb := sqlite.NewSceneMarkerQueryBuilder()
 	sceneMarkers, err := sqb.FindBySceneID(sceneID, nil)
 	if err != nil {
 		return nil, err
@@ -180,7 +181,7 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 
 	tags := make(map[int]*models.SceneMarkerTag)
 	var keys []int
-	tqb := models.NewTagQueryBuilder()
+	tqb := sqlite.NewTagQueryBuilder()
 	for _, sceneMarker := range sceneMarkers {
 		markerPrimaryTag, err := tqb.Find(sceneMarker.PrimaryTagID, nil)
 		if err != nil {

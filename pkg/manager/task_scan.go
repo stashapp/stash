@@ -20,6 +20,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -87,7 +88,7 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 }
 
 func (t *ScanTask) scanGallery() {
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	gallery, _ := qb.FindByPath(t.FilePath)
 
 	fileModTime, err := t.getFileModTime()
@@ -150,7 +151,7 @@ func (t *ScanTask) scanGallery() {
 		}
 
 		// scan the zip files if the gallery has no images
-		iqb := models.NewImageQueryBuilder()
+		iqb := sqlite.NewImageQueryBuilder()
 		images, err := iqb.CountByGalleryID(gallery.ID)
 		if err != nil {
 			logger.Errorf("error getting images for zip gallery %s: %s", t.FilePath, err.Error())
@@ -280,7 +281,7 @@ func (t *ScanTask) isFileModified(fileModTime time.Time, modTime models.NullSQLi
 
 // associates a gallery to a scene with the same basename
 func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	gallery, _ := qb.FindByPath(t.FilePath)
 	if gallery == nil {
 		// associate is run after scan is finished
@@ -304,7 +305,7 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 			}
 		}
 		for _, scenePath := range relatedFiles {
-			qbScene := models.NewSceneQueryBuilder()
+			qbScene := sqlite.NewSceneQueryBuilder()
 			scene, _ := qbScene.FindByPath(scenePath)
 			// found related Scene
 			if scene != nil {
@@ -334,7 +335,7 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 }
 
 func (t *ScanTask) scanScene() *models.Scene {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	scene, _ := qb.FindByPath(t.FilePath)
 
 	fileModTime, err := t.getFileModTime()
@@ -620,7 +621,7 @@ func (t *ScanTask) rescanScene(scene *models.Scene, fileModTime time.Time) (*mod
 
 	var ret *models.Scene
 	err = database.WithTxn(func(tx *sqlx.Tx) error {
-		qb := models.NewSceneQueryBuilder()
+		qb := sqlite.NewSceneQueryBuilder()
 		var txnErr error
 		ret, txnErr = qb.Update(scenePartial, tx)
 		return txnErr
@@ -691,7 +692,7 @@ func (t *ScanTask) scanZipImages(zipGallery *models.Gallery) {
 }
 
 func (t *ScanTask) regenerateZipImages(zipGallery *models.Gallery) {
-	iqb := models.NewImageQueryBuilder()
+	iqb := sqlite.NewImageQueryBuilder()
 
 	images, err := iqb.FindByGalleryID(zipGallery.ID)
 	if err != nil {
@@ -705,7 +706,7 @@ func (t *ScanTask) regenerateZipImages(zipGallery *models.Gallery) {
 }
 
 func (t *ScanTask) scanImage() {
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 	i, _ := qb.FindByPath(t.FilePath)
 
 	fileModTime, err := image.GetFileModTime(t.FilePath)
@@ -798,7 +799,7 @@ func (t *ScanTask) scanImage() {
 	}
 
 	if err == nil {
-		jqb := models.NewJoinsQueryBuilder()
+		jqb := sqlite.NewJoinsQueryBuilder()
 		if t.zipGallery != nil {
 			// associate with gallery
 			_, err = jqb.AddImageGallery(i.ID, t.zipGallery.ID, tx)
@@ -854,7 +855,7 @@ func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.
 
 	var ret *models.Image
 	err = database.WithTxn(func(tx *sqlx.Tx) error {
-		qb := models.NewImageQueryBuilder()
+		qb := sqlite.NewImageQueryBuilder()
 		var txnErr error
 		ret, txnErr = qb.Update(imagePartial, tx)
 		return txnErr
@@ -877,8 +878,8 @@ func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.
 func (t *ScanTask) associateImageWithFolderGallery(imageID int, tx *sqlx.Tx) error {
 	// find a gallery with the path specified
 	path := filepath.Dir(t.FilePath)
-	gqb := models.NewGalleryQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	gqb := sqlite.NewGalleryQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	g, err := gqb.FindByPath(path)
 	if err != nil {
 		return err
@@ -966,19 +967,19 @@ func (t *ScanTask) doesPathExist() bool {
 	gExt := config.GetGalleryExtensions()
 
 	if matchExtension(t.FilePath, gExt) {
-		qb := models.NewGalleryQueryBuilder()
+		qb := sqlite.NewGalleryQueryBuilder()
 		gallery, _ := qb.FindByPath(t.FilePath)
 		if gallery != nil {
 			return true
 		}
 	} else if matchExtension(t.FilePath, vidExt) {
-		qb := models.NewSceneQueryBuilder()
+		qb := sqlite.NewSceneQueryBuilder()
 		scene, _ := qb.FindByPath(t.FilePath)
 		if scene != nil {
 			return true
 		}
 	} else if matchExtension(t.FilePath, imgExt) {
-		qb := models.NewImageQueryBuilder()
+		qb := sqlite.NewImageQueryBuilder()
 		i, _ := qb.FindByPath(t.FilePath)
 		if i != nil {
 			return true

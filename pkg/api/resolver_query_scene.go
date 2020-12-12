@@ -8,11 +8,12 @@ import (
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*models.SceneStreamEndpoint, error) {
 	// find the scene
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	idInt, _ := strconv.Atoi(*id)
 	scene, err := qb.Find(idInt)
 

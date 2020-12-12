@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -23,13 +24,13 @@ func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*stri
 }
 
 func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) ([]*models.Image, error) {
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 
 	return qb.FindByGalleryID(obj.ID)
 }
 
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (*models.Image, error) {
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 
 	imgs, err := qb.FindByGalleryID(obj.ID)
 	if err != nil {
@@ -86,7 +87,7 @@ func (r *galleryResolver) Scene(ctx context.Context, obj *models.Gallery) (*mode
 		return nil, nil
 	}
 
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	return qb.Find(int(obj.SceneID.Int64))
 }
 
@@ -95,21 +96,21 @@ func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (*mod
 		return nil, nil
 	}
 
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 	return qb.Find(int(obj.StudioID.Int64), nil)
 }
 
 func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) ([]*models.Tag, error) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	return qb.FindByGalleryID(obj.ID, nil)
 }
 
 func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) ([]*models.Performer, error) {
-	qb := models.NewPerformerQueryBuilder()
+	qb := sqlite.NewPerformerQueryBuilder()
 	return qb.FindByGalleryID(obj.ID, nil)
 }
 
 func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (int, error) {
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 	return qb.CountByGalleryID(obj.ID)
 }

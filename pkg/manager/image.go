@@ -9,14 +9,15 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 // DestroyImage deletes an image and its associated relationships from the
 // database.
 func DestroyImage(imageID int, tx *sqlx.Tx) error {
-	qb := models.NewImageQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	_, err := qb.Find(imageID)
 	if err != nil {

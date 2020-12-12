@@ -5,10 +5,11 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *string) (*models.Image, error) {
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 	var image *models.Image
 	var err error
 	if id != nil {
@@ -21,7 +22,7 @@ func (r *queryResolver) FindImage(ctx context.Context, id *string, checksum *str
 }
 
 func (r *queryResolver) FindImages(ctx context.Context, imageFilter *models.ImageFilterType, imageIds []int, filter *models.FindFilterType) (*models.FindImagesResultType, error) {
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 	images, total := qb.Query(imageFilter, filter)
 	return &models.FindImagesResultType{
 		Count:  total,

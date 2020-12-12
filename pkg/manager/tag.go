@@ -5,10 +5,11 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func EnsureTagNameUnique(tag models.Tag, tx *sqlx.Tx) error {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 
 	// ensure name is unique
 	sameNameTag, err := qb.FindByName(tag.Name, tx, true)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -25,7 +26,7 @@ func (rs performerRoutes) Routes() chi.Router {
 
 func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	performer := r.Context().Value(performerKey).(*models.Performer)
-	qb := models.NewPerformerQueryBuilder()
+	qb := sqlite.NewPerformerQueryBuilder()
 	image, _ := qb.GetPerformerImage(performer.ID, nil)
 
 	defaultParam := r.URL.Query().Get("default")
@@ -44,7 +45,7 @@ func PerformerCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		qb := models.NewPerformerQueryBuilder()
+		qb := sqlite.NewPerformerQueryBuilder()
 		performer, err := qb.Find(performerID)
 		if err != nil {
 			http.Error(w, http.StatusText(404), 404)

@@ -14,6 +14,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -108,7 +109,7 @@ func TestMain(m *testing.M) {
 
 func createPerformer(tx *sqlx.Tx) error {
 	// create the performer
-	pqb := models.NewPerformerQueryBuilder()
+	pqb := sqlite.NewPerformerQueryBuilder()
 
 	performer := models.Performer{
 		Checksum: testName,
@@ -126,7 +127,7 @@ func createPerformer(tx *sqlx.Tx) error {
 
 func createStudio(tx *sqlx.Tx, name string) (*models.Studio, error) {
 	// create the studio
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 
 	studio := models.Studio{
 		Checksum: name,
@@ -138,7 +139,7 @@ func createStudio(tx *sqlx.Tx, name string) (*models.Studio, error) {
 
 func createTag(tx *sqlx.Tx) error {
 	// create the studio
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 
 	tag := models.Tag{
 		Name: testName,
@@ -153,7 +154,7 @@ func createTag(tx *sqlx.Tx) error {
 }
 
 func createScenes(tx *sqlx.Tx) error {
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	// create the scenes
 	var scenePatterns []string
@@ -222,7 +223,7 @@ func makeScene(name string, expectedResult bool) *models.Scene {
 	return scene
 }
 
-func createScene(sqb models.SceneQueryBuilder, tx *sqlx.Tx, scene *models.Scene) error {
+func createScene(sqb sqlite.SceneQueryBuilder, tx *sqlx.Tx, scene *models.Scene) error {
 	_, err := sqb.Create(*scene, tx)
 
 	if err != nil {
@@ -272,7 +273,7 @@ func populateDB() error {
 }
 
 func TestParsePerformers(t *testing.T) {
-	pqb := models.NewPerformerQueryBuilder()
+	pqb := sqlite.NewPerformerQueryBuilder()
 	performers, err := pqb.All()
 
 	if err != nil {
@@ -289,7 +290,7 @@ func TestParsePerformers(t *testing.T) {
 	task.Start(&wg)
 
 	// verify that scenes were tagged correctly
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	scenes, err := sqb.All()
 
@@ -311,7 +312,7 @@ func TestParsePerformers(t *testing.T) {
 }
 
 func TestParseStudios(t *testing.T) {
-	studioQuery := models.NewStudioQueryBuilder()
+	studioQuery := sqlite.NewStudioQueryBuilder()
 	studios, err := studioQuery.All()
 
 	if err != nil {
@@ -328,7 +329,7 @@ func TestParseStudios(t *testing.T) {
 	task.Start(&wg)
 
 	// verify that scenes were tagged correctly
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	scenes, err := sqb.All()
 
@@ -350,7 +351,7 @@ func TestParseStudios(t *testing.T) {
 }
 
 func TestParseTags(t *testing.T) {
-	tagQuery := models.NewTagQueryBuilder()
+	tagQuery := sqlite.NewTagQueryBuilder()
 	tags, err := tagQuery.All()
 
 	if err != nil {
@@ -367,7 +368,7 @@ func TestParseTags(t *testing.T) {
 	task.Start(&wg)
 
 	// verify that scenes were tagged correctly
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 
 	scenes, err := sqb.All()
 

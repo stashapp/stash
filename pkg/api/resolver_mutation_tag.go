@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -34,7 +35,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 
 	// Start the transaction and save the tag
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 
 	// ensure name is unique
 	if err := manager.EnsureTagNameUnique(newTag, tx); err != nil {
@@ -91,7 +92,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 
 	// Start the transaction and save the tag
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 
 	// ensure name is unique
 	existing, err := qb.Find(tagID, tx)
@@ -141,7 +142,7 @@ func (r *mutationResolver) TagUpdate(ctx context.Context, input models.TagUpdate
 }
 
 func (r *mutationResolver) TagDestroy(ctx context.Context, input models.TagDestroyInput) (bool, error) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 	if err := qb.Destroy(input.ID, tx); err != nil {
 		_ = tx.Rollback()

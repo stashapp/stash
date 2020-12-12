@@ -8,6 +8,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -86,7 +87,7 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 
 	// Start the transaction and save the movie
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewMovieQueryBuilder()
+	qb := sqlite.NewMovieQueryBuilder()
 	movie, err := qb.Create(newMovie, tx)
 	if err != nil {
 		_ = tx.Rollback()
@@ -158,7 +159,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 
 	// Start the transaction and save the movie
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewMovieQueryBuilder()
+	qb := sqlite.NewMovieQueryBuilder()
 	movie, err := qb.Update(updatedMovie, tx)
 	if err != nil {
 		_ = tx.Rollback()
@@ -211,7 +212,7 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 }
 
 func (r *mutationResolver) MovieDestroy(ctx context.Context, input models.MovieDestroyInput) (bool, error) {
-	qb := models.NewMovieQueryBuilder()
+	qb := sqlite.NewMovieQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 	if err := qb.Destroy(input.ID, tx); err != nil {
 		_ = tx.Rollback()

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -455,19 +456,19 @@ func NewSceneFilenameParser(filter *models.FindFilterType, config models.ScenePa
 
 	p.initWhiteSpaceRegex()
 
-	performerQuery := models.NewPerformerQueryBuilder()
+	performerQuery := sqlite.NewPerformerQueryBuilder()
 	p.performerQuery = &performerQuery
 
-	sceneQuery := models.NewSceneQueryBuilder()
+	sceneQuery := sqlite.NewSceneQueryBuilder()
 	p.sceneQuery = &sceneQuery
 
-	tagQuery := models.NewTagQueryBuilder()
+	tagQuery := sqlite.NewTagQueryBuilder()
 	p.tagQuery = &tagQuery
 
-	studioQuery := models.NewStudioQueryBuilder()
+	studioQuery := sqlite.NewStudioQueryBuilder()
 	p.studioQuery = &studioQuery
 
-	movieQuery := models.NewMovieQueryBuilder()
+	movieQuery := sqlite.NewMovieQueryBuilder()
 	p.movieQuery = &movieQuery
 
 	return p

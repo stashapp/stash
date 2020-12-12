@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -57,7 +58,7 @@ func ImageCtx(next http.Handler) http.Handler {
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		qb := models.NewImageQueryBuilder()
+		qb := sqlite.NewImageQueryBuilder()
 		if imageID == 0 {
 			image, _ = qb.FindByChecksum(imageIdentifierQueryParam)
 		} else {

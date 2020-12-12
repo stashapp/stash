@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *studioResolver) Name(ctx context.Context, obj *models.Studio) (string, error) {
@@ -25,7 +26,7 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	imagePath := urlbuilders.NewStudioURLBuilder(baseURL, obj.ID).GetStudioImageURL()
 
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 	hasImage, err := qb.HasStudioImage(obj.ID)
 
 	if err != nil {
@@ -41,7 +42,7 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 }
 
 func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio) (*int, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	res, err := qb.CountByStudioID(obj.ID)
 	return &res, err
 }
@@ -51,16 +52,16 @@ func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (
 		return nil, nil
 	}
 
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 	return qb.Find(int(obj.ParentID.Int64), nil)
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]*models.Studio, error) {
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 	return qb.FindChildren(obj.ID, nil)
 }
 
 func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) ([]*models.StashID, error) {
-	qb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewJoinsQueryBuilder()
 	return qb.GetStudioStashIDs(obj.ID)
 }

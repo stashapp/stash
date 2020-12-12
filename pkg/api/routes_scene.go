@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -183,7 +184,7 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	if screenshotExists {
 		http.ServeFile(w, r, filepath)
 	} else {
-		qb := models.NewSceneQueryBuilder()
+		qb := sqlite.NewSceneQueryBuilder()
 		cover, _ := qb.GetSceneCover(scene.ID, nil)
 		utils.ServeImage(cover, w, r)
 	}
@@ -206,7 +207,7 @@ func getChapterVttTitle(marker *models.SceneMarker) string {
 		return marker.Title
 	}
 
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	primaryTag, err := qb.Find(marker.PrimaryTagID, nil)
 	if err != nil {
 		// should not happen
@@ -230,7 +231,7 @@ func getChapterVttTitle(marker *models.SceneMarker) string {
 
 func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	qb := models.NewSceneMarkerQueryBuilder()
+	qb := sqlite.NewSceneMarkerQueryBuilder()
 	sceneMarkers, err := qb.FindBySceneID(scene.ID, nil)
 	if err != nil {
 		panic("invalid scene markers for chapter vtt")
@@ -267,7 +268,7 @@ func (rs sceneRoutes) VttSprite(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
-	qb := models.NewSceneMarkerQueryBuilder()
+	qb := sqlite.NewSceneMarkerQueryBuilder()
 	sceneMarker, err := qb.Find(sceneMarkerID)
 	if err != nil {
 		logger.Warn("Error when getting scene marker for stream")
@@ -281,7 +282,7 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
-	qb := models.NewSceneMarkerQueryBuilder()
+	qb := sqlite.NewSceneMarkerQueryBuilder()
 	sceneMarker, err := qb.Find(sceneMarkerID)
 	if err != nil {
 		logger.Warn("Error when getting scene marker for stream")
@@ -310,7 +311,7 @@ func SceneCtx(next http.Handler) http.Handler {
 		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
 
 		var scene *models.Scene
-		qb := models.NewSceneQueryBuilder()
+		qb := sqlite.NewSceneQueryBuilder()
 		if sceneID == 0 {
 			// determine checksum/os by the length of the query param
 			if len(sceneIdentifierQueryParam) == 32 {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -25,7 +26,7 @@ func (rs studioRoutes) Routes() chi.Router {
 
 func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	studio := r.Context().Value(studioKey).(*models.Studio)
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 	var image []byte
 	defaultParam := r.URL.Query().Get("default")
 
@@ -48,7 +49,7 @@ func StudioCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		qb := models.NewStudioQueryBuilder()
+		qb := sqlite.NewStudioQueryBuilder()
 		studio, err := qb.Find(studioID, nil)
 		if err != nil {
 			http.Error(w, http.StatusText(404), 404)

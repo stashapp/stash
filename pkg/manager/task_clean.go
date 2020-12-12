@@ -12,6 +12,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 type CleanTask struct {
@@ -134,7 +135,7 @@ func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 
 func (t *CleanTask) deleteScene(sceneID int) {
 	ctx := context.TODO()
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	scene, err := qb.Find(sceneID)
@@ -156,7 +157,7 @@ func (t *CleanTask) deleteScene(sceneID int) {
 
 func (t *CleanTask) deleteGallery(galleryID int) {
 	ctx := context.TODO()
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	err := qb.Destroy(galleryID, tx)
@@ -175,7 +176,7 @@ func (t *CleanTask) deleteGallery(galleryID int) {
 
 func (t *CleanTask) deleteImage(imageID int) {
 	ctx := context.TODO()
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	err := qb.Destroy(imageID, tx)

@@ -13,6 +13,7 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -344,8 +345,8 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 	s.Status.SetStatus(Generate)
 	s.Status.indefiniteProgress()
 
-	qb := models.NewSceneQueryBuilder()
-	mqb := models.NewSceneMarkerQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
+	mqb := sqlite.NewSceneMarkerQueryBuilder()
 
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
@@ -502,7 +503,7 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 	s.Status.SetStatus(Generate)
 	s.Status.indefiniteProgress()
 
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	instance.Paths.Generated.EnsureTmpDir()
 
 	go func() {
@@ -551,9 +552,9 @@ func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []
 		studioCount := len(studioIds)
 		tagCount := len(tagIds)
 
-		performerQuery := models.NewPerformerQueryBuilder()
-		studioQuery := models.NewTagQueryBuilder()
-		tagQuery := models.NewTagQueryBuilder()
+		performerQuery := sqlite.NewPerformerQueryBuilder()
+		studioQuery := sqlite.NewTagQueryBuilder()
+		tagQuery := sqlite.NewTagQueryBuilder()
 
 		const wildcard = "*"
 		var err error
@@ -586,7 +587,7 @@ func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []
 }
 
 func (s *singleton) autoTagPerformers(performerIds []string) {
-	performerQuery := models.NewPerformerQueryBuilder()
+	performerQuery := sqlite.NewPerformerQueryBuilder()
 
 	var wg sync.WaitGroup
 	for _, performerId := range performerIds {
@@ -625,7 +626,7 @@ func (s *singleton) autoTagPerformers(performerIds []string) {
 }
 
 func (s *singleton) autoTagStudios(studioIds []string) {
-	studioQuery := models.NewStudioQueryBuilder()
+	studioQuery := sqlite.NewStudioQueryBuilder()
 
 	var wg sync.WaitGroup
 	for _, studioId := range studioIds {
@@ -664,7 +665,7 @@ func (s *singleton) autoTagStudios(studioIds []string) {
 }
 
 func (s *singleton) autoTagTags(tagIds []string) {
-	tagQuery := models.NewTagQueryBuilder()
+	tagQuery := sqlite.NewTagQueryBuilder()
 
 	var wg sync.WaitGroup
 	for _, tagId := range tagIds {
@@ -709,9 +710,9 @@ func (s *singleton) Clean() {
 	s.Status.SetStatus(Clean)
 	s.Status.indefiniteProgress()
 
-	qb := models.NewSceneQueryBuilder()
-	iqb := models.NewImageQueryBuilder()
-	gqb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
+	iqb := sqlite.NewImageQueryBuilder()
+	gqb := sqlite.NewGalleryQueryBuilder()
 	go func() {
 		defer s.returnToIdleState()
 
@@ -811,7 +812,7 @@ func (s *singleton) MigrateHash() {
 	s.Status.SetStatus(Migrate)
 	s.Status.indefiniteProgress()
 
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 
 	go func() {
 		defer s.returnToIdleState()

@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *performerResolver) Name(ctx context.Context, obj *models.Performer) (*string, error) {
@@ -139,17 +140,17 @@ func (r *performerResolver) ImagePath(ctx context.Context, obj *models.Performer
 }
 
 func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (*int, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	res, err := qb.CountByPerformerID(obj.ID)
 	return &res, err
 }
 
 func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) ([]*models.Scene, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	return qb.FindByPerformerID(obj.ID)
 }
 
 func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer) ([]*models.StashID, error) {
-	qb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewJoinsQueryBuilder()
 	return qb.GetPerformerStashIDs(obj.ID)
 }

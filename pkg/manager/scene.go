@@ -12,14 +12,15 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 // DestroyScene deletes a scene and its associated relationships from the
 // database.
 func DestroyScene(sceneID int, tx *sqlx.Tx) error {
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	_, err := qb.Find(sceneID)
 	if err != nil {

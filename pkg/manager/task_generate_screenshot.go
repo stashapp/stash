@@ -11,6 +11,7 @@ import (
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 type GenerateScreenshotTask struct {
@@ -63,7 +64,7 @@ func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
 	ctx := context.TODO()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	updatedTime := time.Now()
 	updatedScene := models.ScenePartial{
 		ID:        t.Scene.ID,

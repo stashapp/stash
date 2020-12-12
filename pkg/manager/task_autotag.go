@@ -9,6 +9,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 type AutoTagPerformerTask struct {
@@ -32,8 +33,8 @@ func getQueryRegex(name string) string {
 }
 
 func (t *AutoTagPerformerTask) autoTagPerformer() {
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	regex := getQueryRegex(t.performer.Name.String)
 
@@ -79,7 +80,7 @@ func (t *AutoTagStudioTask) Start(wg *sync.WaitGroup) {
 }
 
 func (t *AutoTagStudioTask) autoTagStudio() {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 
 	regex := getQueryRegex(t.studio.Name.String)
 
@@ -136,8 +137,8 @@ func (t *AutoTagTagTask) Start(wg *sync.WaitGroup) {
 }
 
 func (t *AutoTagTagTask) autoTagTag() {
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	regex := getQueryRegex(t.tag.Name)
 

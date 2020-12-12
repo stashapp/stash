@@ -10,6 +10,7 @@ import (
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUpdateInput) (*models.Image, error) {
@@ -79,8 +80,8 @@ func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, translator
 	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedImage.Organized = input.Organized
 
-	qb := models.NewImageQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	image, err := qb.Update(updatedImage, tx)
 	if err != nil {
 		return nil, err
@@ -129,8 +130,8 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 
 	// Start the transaction and save the image marker
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewImageQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 
 	updatedImage := models.ImagePartial{
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
@@ -236,7 +237,7 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 func adjustImageGalleryIDs(tx *sqlx.Tx, imageID int, ids models.BulkUpdateIds) ([]int, error) {
 	var ret []int
 
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
 		// adding to the joins
 		galleryJoins, err := jqb.GetImageGalleries(imageID, tx)
@@ -256,7 +257,7 @@ func adjustImageGalleryIDs(tx *sqlx.Tx, imageID int, ids models.BulkUpdateIds) (
 func adjustImagePerformerIDs(tx *sqlx.Tx, imageID int, ids models.BulkUpdateIds) ([]int, error) {
 	var ret []int
 
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
 		// adding to the joins
 		performerJoins, err := jqb.GetImagePerformers(imageID, tx)
@@ -276,7 +277,7 @@ func adjustImagePerformerIDs(tx *sqlx.Tx, imageID int, ids models.BulkUpdateIds)
 func adjustImageTagIDs(tx *sqlx.Tx, imageID int, ids models.BulkUpdateIds) ([]int, error) {
 	var ret []int
 
-	jqb := models.NewJoinsQueryBuilder()
+	jqb := sqlite.NewJoinsQueryBuilder()
 	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
 		// adding to the joins
 		tagJoins, err := jqb.GetImageTags(imageID, tx)
@@ -294,7 +295,7 @@ func adjustImageTagIDs(tx *sqlx.Tx, imageID int, ids models.BulkUpdateIds) ([]in
 }
 
 func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageDestroyInput) (bool, error) {
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	imageID, _ := strconv.Atoi(input.ID)
@@ -326,7 +327,7 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 }
 
 func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.ImagesDestroyInput) (bool, error) {
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
 
 	var images []*models.Image
@@ -370,7 +371,7 @@ func (r *mutationResolver) ImageIncrementO(ctx context.Context, id string) (int,
 	imageID, _ := strconv.Atoi(id)
 
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 
 	newVal, err := qb.IncrementOCounter(imageID, tx)
 	if err != nil {
@@ -390,7 +391,7 @@ func (r *mutationResolver) ImageDecrementO(ctx context.Context, id string) (int,
 	imageID, _ := strconv.Atoi(id)
 
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 
 	newVal, err := qb.DecrementOCounter(imageID, tx)
 	if err != nil {
@@ -410,7 +411,7 @@ func (r *mutationResolver) ImageResetO(ctx context.Context, id string) (int, err
 	imageID, _ := strconv.Atoi(id)
 
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewImageQueryBuilder()
+	qb := sqlite.NewImageQueryBuilder()
 
 	newVal, err := qb.ResetOCounter(imageID, tx)
 	if err != nil {

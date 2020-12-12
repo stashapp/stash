@@ -23,6 +23,7 @@ import (
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
@@ -201,7 +202,7 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 		logger.Progressf("[performers] %d of %d", index, len(t.mappings.Performers))
 
 		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := models.NewPerformerReaderWriter(tx)
+		readerWriter := sqlite.NewPerformerReaderWriter(tx)
 		importer := &performer.Importer{
 			ReaderWriter: readerWriter,
 			Input:        *performerJSON,
@@ -287,7 +288,7 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 }
 
 func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, tx *sqlx.Tx) error {
-	readerWriter := models.NewStudioReaderWriter(tx)
+	readerWriter := sqlite.NewStudioReaderWriter(tx)
 	importer := &studio.Importer{
 		ReaderWriter:        readerWriter,
 		Input:               *studioJSON,
@@ -332,8 +333,8 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 		logger.Progressf("[movies] %d of %d", index, len(t.mappings.Movies))
 
 		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := models.NewMovieReaderWriter(tx)
-		studioReaderWriter := models.NewStudioReaderWriter(tx)
+		readerWriter := sqlite.NewMovieReaderWriter(tx)
+		studioReaderWriter := sqlite.NewStudioReaderWriter(tx)
 
 		movieImporter := &movie.Importer{
 			ReaderWriter:        readerWriter,
@@ -372,11 +373,11 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 		logger.Progressf("[galleries] %d of %d", index, len(t.mappings.Galleries))
 
 		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := models.NewGalleryReaderWriter(tx)
-		tagWriter := models.NewTagReaderWriter(tx)
-		joinWriter := models.NewJoinReaderWriter(tx)
-		performerWriter := models.NewPerformerReaderWriter(tx)
-		studioWriter := models.NewStudioReaderWriter(tx)
+		readerWriter := sqlite.NewGalleryReaderWriter(tx)
+		tagWriter := sqlite.NewTagReaderWriter(tx)
+		joinWriter := sqlite.NewJoinReaderWriter(tx)
+		performerWriter := sqlite.NewPerformerReaderWriter(tx)
+		studioWriter := sqlite.NewStudioReaderWriter(tx)
 
 		galleryImporter := &gallery.Importer{
 			ReaderWriter:        readerWriter,
@@ -418,7 +419,7 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 		logger.Progressf("[tags] %d of %d", index, len(t.mappings.Tags))
 
 		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := models.NewTagReaderWriter(tx)
+		readerWriter := sqlite.NewTagReaderWriter(tx)
 
 		tagImporter := &tag.Importer{
 			ReaderWriter: readerWriter,
@@ -442,8 +443,8 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 
 func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewScrapedItemQueryBuilder()
-	sqb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewScrapedItemQueryBuilder()
+	sqb := sqlite.NewStudioQueryBuilder()
 	currentTime := time.Now()
 
 	for i, mappingJSON := range t.scraped {
@@ -505,14 +506,14 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		sceneHash := mappingJSON.Checksum
 
 		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := models.NewSceneReaderWriter(tx)
-		tagWriter := models.NewTagReaderWriter(tx)
-		galleryWriter := models.NewGalleryReaderWriter(tx)
-		joinWriter := models.NewJoinReaderWriter(tx)
-		movieWriter := models.NewMovieReaderWriter(tx)
-		performerWriter := models.NewPerformerReaderWriter(tx)
-		studioWriter := models.NewStudioReaderWriter(tx)
-		markerWriter := models.NewSceneMarkerReaderWriter(tx)
+		readerWriter := sqlite.NewSceneReaderWriter(tx)
+		tagWriter := sqlite.NewTagReaderWriter(tx)
+		galleryWriter := sqlite.NewGalleryReaderWriter(tx)
+		joinWriter := sqlite.NewJoinReaderWriter(tx)
+		movieWriter := sqlite.NewMovieReaderWriter(tx)
+		performerWriter := sqlite.NewPerformerReaderWriter(tx)
+		studioWriter := sqlite.NewStudioReaderWriter(tx)
+		markerWriter := sqlite.NewSceneMarkerReaderWriter(tx)
 
 		sceneImporter := &scene.Importer{
 			ReaderWriter: readerWriter,
@@ -586,12 +587,12 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 		imageHash := mappingJSON.Checksum
 
 		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := models.NewImageReaderWriter(tx)
-		tagWriter := models.NewTagReaderWriter(tx)
-		galleryWriter := models.NewGalleryReaderWriter(tx)
-		joinWriter := models.NewJoinReaderWriter(tx)
-		performerWriter := models.NewPerformerReaderWriter(tx)
-		studioWriter := models.NewStudioReaderWriter(tx)
+		readerWriter := sqlite.NewImageReaderWriter(tx)
+		tagWriter := sqlite.NewTagReaderWriter(tx)
+		galleryWriter := sqlite.NewGalleryReaderWriter(tx)
+		joinWriter := sqlite.NewJoinReaderWriter(tx)
+		performerWriter := sqlite.NewPerformerReaderWriter(tx)
+		studioWriter := sqlite.NewStudioReaderWriter(tx)
 
 		imageImporter := &image.Importer{
 			ReaderWriter: readerWriter,
@@ -623,7 +624,7 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 }
 
 func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Performer, error) {
-	pqb := models.NewPerformerQueryBuilder()
+	pqb := sqlite.NewPerformerQueryBuilder()
 	performers, err := pqb.FindByNames(names, tx, false)
 	if err != nil {
 		return nil, err
@@ -649,7 +650,7 @@ func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Perfo
 }
 
 func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int, tx *sqlx.Tx) ([]models.MoviesScenes, error) {
-	mqb := models.NewMovieQueryBuilder()
+	mqb := sqlite.NewMovieQueryBuilder()
 
 	var movies []models.MoviesScenes
 	for _, inputMovie := range input {
@@ -681,7 +682,7 @@ func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int,
 }
 
 func (t *ImportTask) getTags(sceneChecksum string, names []string, tx *sqlx.Tx) ([]*models.Tag, error) {
-	tqb := models.NewTagQueryBuilder()
+	tqb := sqlite.NewTagQueryBuilder()
 	tags, err := tqb.FindByNames(names, tx, false)
 	if err != nil {
 		return nil, err

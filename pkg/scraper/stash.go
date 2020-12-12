@@ -9,6 +9,7 @@ import (
 	"github.com/shurcooL/graphql"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 type stashScraper struct {
@@ -117,7 +118,7 @@ func (s *stashScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	// query by MD5
 	// assumes that the scene exists in the database
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
 		return nil, err
@@ -187,7 +188,7 @@ func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 func (s *stashScraper) scrapeGalleryByFragment(scene models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
 	// query by MD5
 	// assumes that the gallery exists in the database
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
 		return nil, err
@@ -263,7 +264,7 @@ func (s *stashScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error
 }
 
 func sceneFromUpdateFragment(scene models.SceneUpdateInput) (*models.Scene, error) {
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
 		return nil, err
@@ -274,7 +275,7 @@ func sceneFromUpdateFragment(scene models.SceneUpdateInput) (*models.Scene, erro
 }
 
 func galleryFromUpdateFragment(gallery models.GalleryUpdateInput) (*models.Gallery, error) {
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	id, err := strconv.Atoi(gallery.ID)
 	if err != nil {
 		return nil, err

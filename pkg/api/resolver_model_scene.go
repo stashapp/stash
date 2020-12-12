@@ -5,6 +5,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -95,23 +96,23 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 }
 
 func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) ([]*models.SceneMarker, error) {
-	qb := models.NewSceneMarkerQueryBuilder()
+	qb := sqlite.NewSceneMarkerQueryBuilder()
 	return qb.FindBySceneID(obj.ID, nil)
 }
 
 func (r *sceneResolver) Gallery(ctx context.Context, obj *models.Scene) (*models.Gallery, error) {
-	qb := models.NewGalleryQueryBuilder()
+	qb := sqlite.NewGalleryQueryBuilder()
 	return qb.FindBySceneID(obj.ID, nil)
 }
 
 func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.Studio, error) {
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 	return qb.FindBySceneID(obj.ID)
 }
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*models.SceneMovie, error) {
-	joinQB := models.NewJoinsQueryBuilder()
-	qb := models.NewMovieQueryBuilder()
+	joinQB := sqlite.NewJoinsQueryBuilder()
+	qb := sqlite.NewMovieQueryBuilder()
 
 	sceneMovies, err := joinQB.GetSceneMovies(obj.ID, nil)
 	if err != nil {
@@ -142,16 +143,16 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*model
 }
 
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	return qb.FindBySceneID(obj.ID, nil)
 }
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.Performer, error) {
-	qb := models.NewPerformerQueryBuilder()
+	qb := sqlite.NewPerformerQueryBuilder()
 	return qb.FindBySceneID(obj.ID, nil)
 }
 
 func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) ([]*models.StashID, error) {
-	qb := models.NewJoinsQueryBuilder()
+	qb := sqlite.NewJoinsQueryBuilder()
 	return qb.GetSceneStashIDs(obj.ID)
 }

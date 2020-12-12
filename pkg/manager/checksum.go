@@ -7,13 +7,14 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func setInitialMD5Config() {
 	// if there are no scene files in the database, then default the
 	// VideoFileNamingAlgorithm config setting to oshash and calculateMD5 to
 	// false, otherwise set them to true for backwards compatibility purposes
-	sqb := models.NewSceneQueryBuilder()
+	sqb := sqlite.NewSceneQueryBuilder()
 	count, err := sqb.Count()
 	if err != nil {
 		logger.Errorf("Error while counting scenes: %s", err.Error())
@@ -45,7 +46,7 @@ func setInitialMD5Config() {
 // will ensure that all oshash values are set on all scenes.
 func ValidateVideoFileNamingAlgorithm(newValue models.HashAlgorithm) error {
 	// if algorithm is being set to MD5, then all checksums must be present
-	qb := models.NewSceneQueryBuilder()
+	qb := sqlite.NewSceneQueryBuilder()
 	if newValue == models.HashAlgorithmMd5 {
 		missingMD5, err := qb.CountMissingChecksum()
 		if err != nil {

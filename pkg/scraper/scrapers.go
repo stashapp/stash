@@ -9,6 +9,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -231,28 +232,28 @@ func (c Cache) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) 
 
 func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 	for _, p := range ret.Performers {
-		err := models.MatchScrapedScenePerformer(p)
+		err := sqlite.MatchScrapedScenePerformer(p)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, p := range ret.Movies {
-		err := models.MatchScrapedSceneMovie(p)
+		err := sqlite.MatchScrapedSceneMovie(p)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, t := range ret.Tags {
-		err := models.MatchScrapedSceneTag(t)
+		err := sqlite.MatchScrapedSceneTag(t)
 		if err != nil {
 			return err
 		}
 	}
 
 	if ret.Studio != nil {
-		err := models.MatchScrapedSceneStudio(ret.Studio)
+		err := sqlite.MatchScrapedSceneStudio(ret.Studio)
 		if err != nil {
 			return err
 		}
@@ -268,21 +269,21 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 
 func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
 	for _, p := range ret.Performers {
-		err := models.MatchScrapedScenePerformer(p)
+		err := sqlite.MatchScrapedScenePerformer(p)
 		if err != nil {
 			return err
 		}
 	}
 
 	for _, t := range ret.Tags {
-		err := models.MatchScrapedSceneTag(t)
+		err := sqlite.MatchScrapedSceneTag(t)
 		if err != nil {
 			return err
 		}
 	}
 
 	if ret.Studio != nil {
-		err := models.MatchScrapedSceneStudio(ret.Studio)
+		err := sqlite.MatchScrapedSceneStudio(ret.Studio)
 		if err != nil {
 			return err
 		}
@@ -387,7 +388,7 @@ func (c Cache) ScrapeGalleryURL(url string) (*models.ScrapedGallery, error) {
 }
 
 func matchMovieStudio(s *models.ScrapedMovieStudio) error {
-	qb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewStudioQueryBuilder()
 
 	studio, err := qb.FindByName(s.Name, nil, true)
 

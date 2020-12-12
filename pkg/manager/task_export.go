@@ -21,6 +21,7 @@ import (
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
@@ -243,8 +244,8 @@ func (t *ExportTask) zipFile(fn, outDir string, z *zip.Writer) error {
 }
 
 func (t *ExportTask) populateMovieScenes() {
-	reader := models.NewMovieReaderWriter(nil)
-	sceneReader := models.NewSceneReaderWriter(nil)
+	reader := sqlite.NewMovieReaderWriter(nil)
+	sceneReader := sqlite.NewSceneReaderWriter(nil)
 
 	var movies []*models.Movie
 	var err error
@@ -273,8 +274,8 @@ func (t *ExportTask) populateMovieScenes() {
 }
 
 func (t *ExportTask) populateGalleryImages() {
-	reader := models.NewGalleryReaderWriter(nil)
-	imageReader := models.NewImageReaderWriter(nil)
+	reader := sqlite.NewGalleryReaderWriter(nil)
+	imageReader := sqlite.NewImageReaderWriter(nil)
 
 	var galleries []*models.Gallery
 	var err error
@@ -305,7 +306,7 @@ func (t *ExportTask) populateGalleryImages() {
 func (t *ExportTask) ExportScenes(workers int) {
 	var scenesWg sync.WaitGroup
 
-	sceneReader := models.NewSceneReaderWriter(nil)
+	sceneReader := sqlite.NewSceneReaderWriter(nil)
 
 	var scenes []*models.Scene
 	var err error
@@ -348,14 +349,14 @@ func (t *ExportTask) ExportScenes(workers int) {
 
 func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask) {
 	defer wg.Done()
-	sceneReader := models.NewSceneReaderWriter(nil)
-	studioReader := models.NewStudioReaderWriter(nil)
-	movieReader := models.NewMovieReaderWriter(nil)
-	galleryReader := models.NewGalleryReaderWriter(nil)
-	performerReader := models.NewPerformerReaderWriter(nil)
-	tagReader := models.NewTagReaderWriter(nil)
-	sceneMarkerReader := models.NewSceneMarkerReaderWriter(nil)
-	joinReader := models.NewJoinReaderWriter(nil)
+	sceneReader := sqlite.NewSceneReaderWriter(nil)
+	studioReader := sqlite.NewStudioReaderWriter(nil)
+	movieReader := sqlite.NewMovieReaderWriter(nil)
+	galleryReader := sqlite.NewGalleryReaderWriter(nil)
+	performerReader := sqlite.NewPerformerReaderWriter(nil)
+	tagReader := sqlite.NewTagReaderWriter(nil)
+	sceneMarkerReader := sqlite.NewSceneMarkerReaderWriter(nil)
+	joinReader := sqlite.NewJoinReaderWriter(nil)
 
 	for s := range jobChan {
 		sceneHash := s.GetHash(t.fileNamingAlgorithm)
@@ -448,7 +449,7 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 func (t *ExportTask) ExportImages(workers int) {
 	var imagesWg sync.WaitGroup
 
-	imageReader := models.NewImageReaderWriter(nil)
+	imageReader := sqlite.NewImageReaderWriter(nil)
 
 	var images []*models.Image
 	var err error
@@ -491,10 +492,10 @@ func (t *ExportTask) ExportImages(workers int) {
 
 func exportImage(wg *sync.WaitGroup, jobChan <-chan *models.Image, t *ExportTask) {
 	defer wg.Done()
-	studioReader := models.NewStudioReaderWriter(nil)
-	galleryReader := models.NewGalleryReaderWriter(nil)
-	performerReader := models.NewPerformerReaderWriter(nil)
-	tagReader := models.NewTagReaderWriter(nil)
+	studioReader := sqlite.NewStudioReaderWriter(nil)
+	galleryReader := sqlite.NewGalleryReaderWriter(nil)
+	performerReader := sqlite.NewPerformerReaderWriter(nil)
+	tagReader := sqlite.NewTagReaderWriter(nil)
 
 	for s := range jobChan {
 		imageHash := s.Checksum
@@ -563,7 +564,7 @@ func (t *ExportTask) getGalleryChecksums(galleries []*models.Gallery) (ret []str
 func (t *ExportTask) ExportGalleries(workers int) {
 	var galleriesWg sync.WaitGroup
 
-	reader := models.NewGalleryReaderWriter(nil)
+	reader := sqlite.NewGalleryReaderWriter(nil)
 
 	var galleries []*models.Gallery
 	var err error
@@ -611,9 +612,9 @@ func (t *ExportTask) ExportGalleries(workers int) {
 
 func exportGallery(wg *sync.WaitGroup, jobChan <-chan *models.Gallery, t *ExportTask) {
 	defer wg.Done()
-	studioReader := models.NewStudioReaderWriter(nil)
-	performerReader := models.NewPerformerReaderWriter(nil)
-	tagReader := models.NewTagReaderWriter(nil)
+	studioReader := sqlite.NewStudioReaderWriter(nil)
+	performerReader := sqlite.NewPerformerReaderWriter(nil)
+	tagReader := sqlite.NewTagReaderWriter(nil)
 
 	for g := range jobChan {
 		galleryHash := g.Checksum
@@ -669,7 +670,7 @@ func exportGallery(wg *sync.WaitGroup, jobChan <-chan *models.Gallery, t *Export
 func (t *ExportTask) ExportPerformers(workers int) {
 	var performersWg sync.WaitGroup
 
-	reader := models.NewPerformerReaderWriter(nil)
+	reader := sqlite.NewPerformerReaderWriter(nil)
 	var performers []*models.Performer
 	var err error
 	all := t.full || (t.performers != nil && t.performers.all)
@@ -709,7 +710,7 @@ func (t *ExportTask) ExportPerformers(workers int) {
 func (t *ExportTask) exportPerformer(wg *sync.WaitGroup, jobChan <-chan *models.Performer) {
 	defer wg.Done()
 
-	performerReader := models.NewPerformerReaderWriter(nil)
+	performerReader := sqlite.NewPerformerReaderWriter(nil)
 
 	for p := range jobChan {
 		newPerformerJSON, err := performer.ToJSON(performerReader, p)
@@ -735,7 +736,7 @@ func (t *ExportTask) exportPerformer(wg *sync.WaitGroup, jobChan <-chan *models.
 func (t *ExportTask) ExportStudios(workers int) {
 	var studiosWg sync.WaitGroup
 
-	reader := models.NewStudioReaderWriter(nil)
+	reader := sqlite.NewStudioReaderWriter(nil)
 	var studios []*models.Studio
 	var err error
 	all := t.full || (t.studios != nil && t.studios.all)
@@ -776,7 +777,7 @@ func (t *ExportTask) ExportStudios(workers int) {
 func (t *ExportTask) exportStudio(wg *sync.WaitGroup, jobChan <-chan *models.Studio) {
 	defer wg.Done()
 
-	studioReader := models.NewStudioReaderWriter(nil)
+	studioReader := sqlite.NewStudioReaderWriter(nil)
 
 	for s := range jobChan {
 		newStudioJSON, err := studio.ToJSON(studioReader, s)
@@ -800,7 +801,7 @@ func (t *ExportTask) exportStudio(wg *sync.WaitGroup, jobChan <-chan *models.Stu
 func (t *ExportTask) ExportTags(workers int) {
 	var tagsWg sync.WaitGroup
 
-	reader := models.NewTagReaderWriter(nil)
+	reader := sqlite.NewTagReaderWriter(nil)
 	var tags []*models.Tag
 	var err error
 	all := t.full || (t.tags != nil && t.tags.all)
@@ -844,7 +845,7 @@ func (t *ExportTask) ExportTags(workers int) {
 func (t *ExportTask) exportTag(wg *sync.WaitGroup, jobChan <-chan *models.Tag) {
 	defer wg.Done()
 
-	tagReader := models.NewTagReaderWriter(nil)
+	tagReader := sqlite.NewTagReaderWriter(nil)
 
 	for thisTag := range jobChan {
 		newTagJSON, err := tag.ToJSON(tagReader, thisTag)
@@ -871,7 +872,7 @@ func (t *ExportTask) exportTag(wg *sync.WaitGroup, jobChan <-chan *models.Tag) {
 func (t *ExportTask) ExportMovies(workers int) {
 	var moviesWg sync.WaitGroup
 
-	reader := models.NewMovieReaderWriter(nil)
+	reader := sqlite.NewMovieReaderWriter(nil)
 	var movies []*models.Movie
 	var err error
 	all := t.full || (t.movies != nil && t.movies.all)
@@ -912,8 +913,8 @@ func (t *ExportTask) ExportMovies(workers int) {
 func (t *ExportTask) exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movie) {
 	defer wg.Done()
 
-	movieReader := models.NewMovieReaderWriter(nil)
-	studioReader := models.NewStudioReaderWriter(nil)
+	movieReader := sqlite.NewMovieReaderWriter(nil)
+	studioReader := sqlite.NewStudioReaderWriter(nil)
 
 	for m := range jobChan {
 		newMovieJSON, err := movie.ToJSON(movieReader, studioReader, m)
@@ -943,8 +944,8 @@ func (t *ExportTask) exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movi
 }
 
 func (t *ExportTask) ExportScrapedItems() {
-	qb := models.NewScrapedItemQueryBuilder()
-	sqb := models.NewStudioQueryBuilder()
+	qb := sqlite.NewScrapedItemQueryBuilder()
+	sqb := sqlite.NewStudioQueryBuilder()
 	scrapedItems, err := qb.All()
 	if err != nil {
 		logger.Errorf("[scraped sites] failed to fetch all items: %s", err.Error())

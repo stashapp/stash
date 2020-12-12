@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -25,7 +26,7 @@ func (rs tagRoutes) Routes() chi.Router {
 
 func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	tag := r.Context().Value(tagKey).(*models.Tag)
-	qb := models.NewTagQueryBuilder()
+	qb := sqlite.NewTagQueryBuilder()
 	image, _ := qb.GetTagImage(tag.ID, nil)
 
 	// use default image if not present
@@ -45,7 +46,7 @@ func TagCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		qb := models.NewTagQueryBuilder()
+		qb := sqlite.NewTagQueryBuilder()
 		tag, err := qb.Find(tagID, nil)
 		if err != nil {
 			http.Error(w, http.StatusText(404), 404)
