@@ -278,33 +278,12 @@ func (qb *SceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *models.FindFil
 }
 
 func (qb *SceneMarkerQueryBuilder) querySceneMarkers(query string, args []interface{}, tx *sqlx.Tx) ([]*models.SceneMarker, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	sceneMarkers := make([]*models.SceneMarker, 0)
-	for rows.Next() {
-		sceneMarker := models.SceneMarker{}
-		if err := rows.StructScan(&sceneMarker); err != nil {
-			return nil, err
-		}
-		sceneMarkers = append(sceneMarkers, &sceneMarker)
-	}
-
-	if err := rows.Err(); err != nil {
+	var ret models.SceneMarkers
+	if err := qb.repository(tx).query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return sceneMarkers, nil
+	return []*models.SceneMarker(ret), nil
 }
 
 func (qb *SceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {

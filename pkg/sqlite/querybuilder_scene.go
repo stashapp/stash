@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -184,9 +183,14 @@ func (qb *SceneQueryBuilder) FindMany(ids []int) ([]*models.Scene, error) {
 }
 
 func (qb *SceneQueryBuilder) find(id int, tx *sqlx.Tx) (*models.Scene, error) {
-	query := selectAll(sceneTable) + "WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	return qb.queryScene(query, args, tx)
+	var ret models.Scene
+	if err := qb.repository(tx).get(id, &ret); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &ret, nil
 }
 
 func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*models.Scene, error) {
@@ -540,33 +544,12 @@ func (qb *SceneQueryBuilder) queryScene(query string, args []interface{}, tx *sq
 }
 
 func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Scene, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	scenes := make([]*models.Scene, 0)
-	for rows.Next() {
-		scene := models.Scene{}
-		if err := rows.StructScan(&scene); err != nil {
-			return nil, err
-		}
-		scenes = append(scenes, &scene)
-	}
-
-	if err := rows.Err(); err != nil {
+	var ret models.Scenes
+	if err := qb.repository(tx).query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return scenes, nil
+	return []*models.Scene(ret), nil
 }
 
 func (qb *SceneQueryBuilder) UpdateFormat(id int, format string, tx *sqlx.Tx) error {

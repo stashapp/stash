@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -52,9 +51,14 @@ func (qb *ScrapedItemQueryBuilder) Find(id int) (*models.ScrapedItem, error) {
 }
 
 func (qb *ScrapedItemQueryBuilder) find(id int, tx *sqlx.Tx) (*models.ScrapedItem, error) {
-	query := "SELECT * FROM scraped_items WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	return qb.queryScrapedItem(query, args, tx)
+	var ret models.ScrapedItem
+	if err := qb.repository(tx).get(id, &ret); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &ret, nil
 }
 
 func (qb *ScrapedItemQueryBuilder) All() ([]*models.ScrapedItem, error) {
@@ -83,31 +87,10 @@ func (qb *ScrapedItemQueryBuilder) queryScrapedItem(query string, args []interfa
 }
 
 func (qb *ScrapedItemQueryBuilder) queryScrapedItems(query string, args []interface{}, tx *sqlx.Tx) ([]*models.ScrapedItem, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	scrapedItems := make([]*models.ScrapedItem, 0)
-	for rows.Next() {
-		scrapedItem := models.ScrapedItem{}
-		if err := rows.StructScan(&scrapedItem); err != nil {
-			return nil, err
-		}
-		scrapedItems = append(scrapedItems, &scrapedItem)
-	}
-
-	if err := rows.Err(); err != nil {
+	var ret models.ScrapedItems
+	if err := qb.repository(tx).query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return scrapedItems, nil
+	return []*models.ScrapedItem(ret), nil
 }

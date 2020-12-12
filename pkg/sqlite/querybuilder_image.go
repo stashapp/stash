@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -187,9 +186,14 @@ func (qb *ImageQueryBuilder) FindMany(ids []int) ([]*models.Image, error) {
 }
 
 func (qb *ImageQueryBuilder) find(id int, tx *sqlx.Tx) (*models.Image, error) {
-	query := selectAll(imageTable) + "WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	return qb.queryImage(query, args, tx)
+	var ret models.Image
+	if err := qb.repository(tx).get(id, &ret); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &ret, nil
 }
 
 func (qb *ImageQueryBuilder) FindByChecksum(checksum string) (*models.Image, error) {
@@ -411,33 +415,12 @@ func (qb *ImageQueryBuilder) queryImage(query string, args []interface{}, tx *sq
 }
 
 func (qb *ImageQueryBuilder) queryImages(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Image, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	images := make([]*models.Image, 0)
-	for rows.Next() {
-		image := models.Image{}
-		if err := rows.StructScan(&image); err != nil {
-			return nil, err
-		}
-		images = append(images, &image)
-	}
-
-	if err := rows.Err(); err != nil {
+	var ret models.Images
+	if err := qb.repository(tx).query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return images, nil
+	return []*models.Image(ret), nil
 }
 
 func NewImageReaderWriter(tx *sqlx.Tx) *imageReaderWriter {

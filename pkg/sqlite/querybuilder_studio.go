@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -69,9 +68,14 @@ func (qb *StudioQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
 }
 
 func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Studio, error) {
-	query := "SELECT * FROM studios WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	return qb.queryStudio(query, args, tx)
+	var ret models.Studio
+	if err := qb.repository(tx).get(id, &ret); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &ret, nil
 }
 
 func (qb *StudioQueryBuilder) FindMany(ids []int) ([]*models.Studio, error) {
@@ -217,33 +221,12 @@ func (qb *StudioQueryBuilder) queryStudio(query string, args []interface{}, tx *
 }
 
 func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Studio, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	studios := make([]*models.Studio, 0)
-	for rows.Next() {
-		studio := models.Studio{}
-		if err := rows.StructScan(&studio); err != nil {
-			return nil, err
-		}
-		studios = append(studios, &studio)
-	}
-
-	if err := rows.Err(); err != nil {
+	var ret models.Studios
+	if err := qb.repository(tx).query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return studios, nil
+	return []*models.Studio(ret), nil
 }
 
 func (qb *StudioQueryBuilder) UpdateStudioImage(studioID int, image []byte, tx *sqlx.Tx) error {

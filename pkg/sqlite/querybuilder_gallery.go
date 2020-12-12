@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -94,9 +93,14 @@ func (qb *GalleryQueryBuilder) ClearGalleryId(sceneID int, tx *sqlx.Tx) error {
 }
 
 func (qb *GalleryQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Gallery, error) {
-	query := "SELECT * FROM galleries WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	return qb.queryGallery(query, args, tx)
+	var ret models.Gallery
+	if err := qb.repository(tx).get(id, &ret); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &ret, nil
 }
 
 func (qb *GalleryQueryBuilder) FindMany(ids []int) ([]*models.Gallery, error) {
@@ -344,33 +348,12 @@ func (qb *GalleryQueryBuilder) queryGallery(query string, args []interface{}, tx
 }
 
 func (qb *GalleryQueryBuilder) queryGalleries(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Gallery, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	galleries := make([]*models.Gallery, 0)
-	for rows.Next() {
-		gallery := models.Gallery{}
-		if err := rows.StructScan(&gallery); err != nil {
-			return nil, err
-		}
-		galleries = append(galleries, &gallery)
-	}
-
-	if err := rows.Err(); err != nil {
+	var ret models.Galleries
+	if err := qb.repository(tx).query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return galleries, nil
+	return []*models.Gallery(ret), nil
 }
 
 func NewGalleryReaderWriter(tx *sqlx.Tx) *galleryReaderWriter {

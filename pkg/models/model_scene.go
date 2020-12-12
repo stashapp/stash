@@ -95,3 +95,9 @@ type SceneFileType struct {
 	Framerate  *float64 `graphql:"framerate" json:"framerate"`
 	Bitrate    *int     `graphql:"bitrate" json:"bitrate"`
 }
+
+type Scenes []*Scene
+
+func (g *Scenes) Append(o interface{}) {
+	*g = append(*g, o.(*Scene))
+}

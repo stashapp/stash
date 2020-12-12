@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -79,9 +78,14 @@ func (qb *TagQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
 }
 
 func (qb *TagQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Tag, error) {
-	query := "SELECT * FROM tags WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	return qb.queryTag(query, args, tx)
+	var ret models.Tag
+	if err := qb.repository(tx).get(id, &ret); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &ret, nil
 }
 
 func (qb *TagQueryBuilder) FindMany(ids []int) ([]*models.Tag, error) {
@@ -283,33 +287,12 @@ func (qb *TagQueryBuilder) queryTag(query string, args []interface{}, tx *sqlx.T
 }
 
 func (qb *TagQueryBuilder) queryTags(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Tag, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	tags := make([]*models.Tag, 0)
-	for rows.Next() {
-		tag := models.Tag{}
-		if err := rows.StructScan(&tag); err != nil {
-			return nil, err
-		}
-		tags = append(tags, &tag)
-	}
-
-	if err := rows.Err(); err != nil {
+	var ret models.Tags
+	if err := qb.repository(tx).query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return tags, nil
+	return []*models.Tag(ret), nil
 }
 
 func (qb *TagQueryBuilder) UpdateTagImage(tagID int, image []byte, tx *sqlx.Tx) error {

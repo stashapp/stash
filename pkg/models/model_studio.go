@@ -38,3 +38,9 @@ func NewStudio(name string) *Studio {
 		UpdatedAt: SQLiteTimestamp{Timestamp: currentTime},
 	}
 }
+
+type Studios []*Studio
+
+func (g *Studios) Append(o interface{}) {
+	*g = append(*g, o.(*Studio))
+}

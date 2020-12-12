@@ -42,3 +42,9 @@ type GalleryPartial struct {
 }
 
 const DefaultGthumbWidth int = 640
+
+type Galleries []*Gallery
+
+func (g *Galleries) Append(o interface{}) {
+	*g = append(*g, o.(*Gallery))
+}

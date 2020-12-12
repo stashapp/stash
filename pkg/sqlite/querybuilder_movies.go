@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -62,9 +61,14 @@ func (qb *MovieQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
 }
 
 func (qb *MovieQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Movie, error) {
-	query := "SELECT * FROM movies WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	return qb.queryMovie(query, args, tx)
+	var ret models.Movie
+	if err := qb.repository(tx).get(id, &ret); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &ret, nil
 }
 
 func (qb *MovieQueryBuilder) FindMany(ids []int) ([]*models.Movie, error) {
@@ -225,33 +229,12 @@ func (qb *MovieQueryBuilder) queryMovie(query string, args []interface{}, tx *sq
 }
 
 func (qb *MovieQueryBuilder) queryMovies(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Movie, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	movies := make([]*models.Movie, 0)
-	for rows.Next() {
-		movie := models.Movie{}
-		if err := rows.StructScan(&movie); err != nil {
-			return nil, err
-		}
-		movies = append(movies, &movie)
-	}
-
-	if err := rows.Err(); err != nil {
+	var ret models.Movies
+	if err := qb.repository(tx).query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return movies, nil
+	return []*models.Movie(ret), nil
 }
 
 func (qb *MovieQueryBuilder) UpdateMovieImages(movieID int, frontImage []byte, backImage []byte, tx *sqlx.Tx) error {

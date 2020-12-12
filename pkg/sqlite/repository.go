@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
+
+	"github.com/stashapp/stash/pkg/database"
 )
 
 const idColumn = "id"
@@ -24,9 +26,30 @@ type repository struct {
 	constructor objectConstructor
 }
 
+// TODO - this is a workaround for functions that accept nil transactions.
+// This ensures that a transaction is created. In future, this should be
+// removed and tx should always be non-nil.
+func (r *repository) wrapReadOnly(f func() error) error {
+	if r.tx == nil {
+		return database.WithTxn(func(tx *sqlx.Tx) error {
+			r.tx = tx
+			err := f()
+			r.tx = nil
+			return err
+		})
+	}
+
+	return f()
+}
+
 func (r *repository) get(id int, dest interface{}) error {
 	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT 1", r.tableName, r.idColumn)
-	return r.tx.Get(dest, stmt, id)
+
+	return r.wrapReadOnly(func() error {
+		err := r.tx.Get(dest, stmt, id)
+
+		return err
+	})
 }
 
 func (r *repository) insert(obj interface{}) (sql.Result, error) {
@@ -105,10 +128,20 @@ func (r *repository) destroy(ids []int) error {
 }
 
 func (r *repository) exists(id int) (bool, error) {
+	var c int
 	stmt := fmt.Sprintf("SELECT %s FROM %s WHERE %s = ? LIMIT 1", r.idColumn, r.tableName, r.idColumn)
 	stmt = r.buildCountQuery(stmt)
 
-	c, err := r.runCountQuery(stmt, []interface{}{id})
+	err := r.wrapReadOnly(func() error {
+		var err error
+		c, err = r.runCountQuery(stmt, []interface{}{id})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		return false, err
 	}
@@ -121,11 +154,16 @@ func (r *repository) buildCountQuery(query string) string {
 }
 
 func (r *repository) runCountQuery(query string, args []interface{}) (int, error) {
-	// Perform query and fetch result
 	result := struct {
 		Int int `db:"count"`
 	}{0}
-	if err := r.tx.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
+
+	err := r.wrapReadOnly(func() error {
+		// Perform query and fetch result
+		return r.tx.Get(&result, query, args...)
+	})
+
+	if err != nil && err != sql.ErrNoRows {
 		return 0, err
 	}
 
@@ -136,7 +174,12 @@ func (r *repository) runIdsQuery(query string, args []interface{}) ([]int, error
 	var result []struct {
 		Int int `db:"id"`
 	}
-	if err := r.tx.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
+
+	err := r.wrapReadOnly(func() error {
+		return r.tx.Select(&result, query, args...)
+	})
+
+	if err != nil && err != sql.ErrNoRows {
 		return []int{}, err
 	}
 
@@ -148,29 +191,30 @@ func (r *repository) runIdsQuery(query string, args []interface{}) ([]int, error
 }
 
 func (r *repository) query(query string, args []interface{}, out objectList) error {
-	var rows *sqlx.Rows
-	var err error
+	return r.wrapReadOnly(func() error {
+		var rows *sqlx.Rows
+		var err error
+		rows, err = r.tx.Queryx(query, args...)
 
-	rows, err = r.tx.Queryx(query, args...)
-
-	if err != nil && err != sql.ErrNoRows {
-		return err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		object := r.constructor()
-		if err := rows.StructScan(object); err != nil {
+		if err != nil && err != sql.ErrNoRows {
 			return err
 		}
-		out.Append(object)
-	}
+		defer rows.Close()
 
-	if err := rows.Err(); err != nil {
-		return err
-	}
+		for rows.Next() {
+			object := r.constructor()
+			if err := rows.StructScan(object); err != nil {
+				return err
+			}
+			out.Append(object)
+		}
 
-	return nil
+		if err := rows.Err(); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int, int, error) {
@@ -188,14 +232,27 @@ func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPa
 	// Perform query and fetch result
 	//logger.Tracef("SQL: %s, args: %v", idsQuery, args)
 
-	countResult, countErr := r.runCountQuery(countQuery, args)
-	idsResult, idsErr := r.runIdsQuery(idsQuery, args)
+	var countResult int
+	var countErr error
+	var idsResult []int
+	var idsErr error
 
-	if countErr != nil {
-		return nil, 0, fmt.Errorf("Error executing count query with SQL: %s, args: %v, error: %s", countQuery, args, countErr.Error())
-	}
-	if idsErr != nil {
-		return nil, 0, fmt.Errorf("Error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
+	err := r.wrapReadOnly(func() error {
+		countResult, countErr = r.runCountQuery(countQuery, args)
+		idsResult, idsErr = r.runIdsQuery(idsQuery, args)
+
+		if countErr != nil {
+			return fmt.Errorf("Error executing count query with SQL: %s, args: %v, error: %s", countQuery, args, countErr.Error())
+		}
+		if idsErr != nil {
+			return fmt.Errorf("Error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return idsResult, countResult, nil

@@ -50,3 +50,9 @@ func NewMovie(name string) *Movie {
 		UpdatedAt: SQLiteTimestamp{Timestamp: currentTime},
 	}
 }
+
+type Movies []*Movie
+
+func (g *Movies) Append(o interface{}) {
+	*g = append(*g, o.(*Movie))
+}

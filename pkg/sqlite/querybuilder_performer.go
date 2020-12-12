@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -80,13 +79,15 @@ func (qb *PerformerQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
 }
 
 func (qb *PerformerQueryBuilder) Find(id int) (*models.Performer, error) {
-	query := "SELECT * FROM performers WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	results, err := qb.queryPerformers(query, args, nil)
-	if err != nil || len(results) < 1 {
+	var ret models.Performer
+	// TODO - this should accept a tx
+	if err := qb.repository(nil).get(id, &ret); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
-	return results[0], nil
+	return &ret, nil
 }
 
 func (qb *PerformerQueryBuilder) FindMany(ids []int) ([]*models.Performer, error) {
@@ -354,33 +355,12 @@ func (qb *PerformerQueryBuilder) getPerformerSort(findFilter *models.FindFilterT
 }
 
 func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Performer, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	performers := make([]*models.Performer, 0)
-	for rows.Next() {
-		performer := models.Performer{}
-		if err := rows.StructScan(&performer); err != nil {
-			return nil, err
-		}
-		performers = append(performers, &performer)
-	}
-
-	if err := rows.Err(); err != nil {
+	var ret models.Performers
+	if err := qb.repository(tx).query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return performers, nil
+	return []*models.Performer(ret), nil
 }
 
 func (qb *PerformerQueryBuilder) UpdatePerformerImage(performerID int, image []byte, tx *sqlx.Tx) error {
