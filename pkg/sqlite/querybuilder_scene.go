@@ -554,41 +554,26 @@ func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *s
 
 func (qb *SceneQueryBuilder) UpdateFormat(id int, format string, tx *sqlx.Tx) error {
 	ensureTx(tx)
-	_, err := tx.Exec(
-		`UPDATE scenes SET format = ? WHERE scenes.id = ? `,
-		format, id,
-	)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return qb.repository(tx).updateMap(id, map[string]interface{}{
+		"format": format,
+	})
 }
 
 func (qb *SceneQueryBuilder) UpdateOSHash(id int, oshash string, tx *sqlx.Tx) error {
 	ensureTx(tx)
-	_, err := tx.Exec(
-		`UPDATE scenes SET oshash = ? WHERE scenes.id = ? `,
-		oshash, id,
-	)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return qb.repository(tx).updateMap(id, map[string]interface{}{
+		"oshash": oshash,
+	})
 }
 
 func (qb *SceneQueryBuilder) UpdateChecksum(id int, checksum string, tx *sqlx.Tx) error {
 	ensureTx(tx)
-	_, err := tx.Exec(
-		`UPDATE scenes SET checksum = ? WHERE scenes.id = ? `,
-		checksum, id,
-	)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return qb.repository(tx).updateMap(id, map[string]interface{}{
+		"checksum": checksum,
+	})
 }
 
 func (qb *SceneQueryBuilder) UpdateSceneCover(sceneID int, cover []byte, tx *sqlx.Tx) error {
