@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"context"
 	"net"
 	"sync"
 
@@ -10,8 +11,10 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -211,4 +214,11 @@ func (s *singleton) RefreshConfig() {
 // configuration changes.
 func (s *singleton) RefreshScraperCache() {
 	s.ScraperCache = initScraperCache()
+}
+
+func (s *singleton) WithTxn(ctx context.Context, fn func(r models.Repository) error) error {
+	txn := sqlite.Transaction{
+		Ctx: ctx,
+	}
+	return models.WithTxn(&txn, fn)
 }

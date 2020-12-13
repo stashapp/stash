@@ -11,7 +11,9 @@ import (
 	"github.com/stashapp/stash/pkg/sqlite"
 )
 
-type Resolver struct{}
+type Resolver struct {
+	txnManager models.TransactionManager
+}
 
 func (r *Resolver) Gallery() models.GalleryResolver {
 	return &galleryResolver{r}
@@ -79,6 +81,10 @@ type scrapedSceneTagResolver struct{ *Resolver }
 type scrapedSceneMovieResolver struct{ *Resolver }
 type scrapedScenePerformerResolver struct{ *Resolver }
 type scrapedSceneStudioResolver struct{ *Resolver }
+
+func (r *Resolver) withTxn(ctx context.Context, fn func(r models.Repository) error) error {
+	return r.txnManager.WithTxn(ctx, fn)
+}
 
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) ([]*models.SceneMarker, error) {
 	qb := sqlite.NewSceneMarkerQueryBuilder()
