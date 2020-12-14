@@ -15,6 +15,7 @@ const galleryTable = "galleries"
 const performersGalleriesTable = "performers_galleries"
 const galleriesTagsTable = "galleries_tags"
 const galleriesImagesTable = "galleries_images"
+const galleryIDColumn = "gallery_id"
 
 type GalleryQueryBuilder struct{}
 
@@ -365,7 +366,7 @@ func (qb *GalleryQueryBuilder) performersRepository(tx *sqlx.Tx) *joinRepository
 		repository: repository{
 			tx:        tx,
 			tableName: performersGalleriesTable,
-			idColumn:  "gallery_id",
+			idColumn:  galleryIDColumn,
 		},
 		fkColumn: "performer_id",
 	}
@@ -385,7 +386,7 @@ func (qb *GalleryQueryBuilder) tagsRepository(tx *sqlx.Tx) *joinRepository {
 		repository: repository{
 			tx:        tx,
 			tableName: galleriesTagsTable,
-			idColumn:  "gallery_id",
+			idColumn:  galleryIDColumn,
 		},
 		fkColumn: "tag_id",
 	}
@@ -405,7 +406,7 @@ func (qb *GalleryQueryBuilder) imagesRepository(tx *sqlx.Tx) *joinRepository {
 		repository: repository{
 			tx:        tx,
 			tableName: galleriesImagesTable,
-			idColumn:  "gallery_id",
+			idColumn:  galleryIDColumn,
 		},
 		fkColumn: "image_id",
 	}

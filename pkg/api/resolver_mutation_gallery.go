@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -294,24 +295,18 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 }
 
 func adjustGalleryPerformerIDs(qb models.GalleryReader, galleryID int, ids models.BulkUpdateIds) (ret []int, err error) {
-	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
-		// adding to the joins
-		ret, err = qb.GetPerformerIDs(galleryID)
-		if err != nil {
-			return nil, err
-		}
+	ret, err = qb.GetPerformerIDs(galleryID)
+	if err != nil {
+		return nil, err
 	}
 
 	return adjustIDs(ret, ids), nil
 }
 
 func adjustGalleryTagIDs(qb models.GalleryReader, galleryID int, ids models.BulkUpdateIds) (ret []int, err error) {
-	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
-		// adding to the joins
-		ret, err = qb.GetTagIDs(galleryID)
-		if err != nil {
-			return nil, err
-		}
+	ret, err = qb.GetTagIDs(galleryID)
+	if err != nil {
+		return nil, err
 	}
 
 	return adjustIDs(ret, ids), nil
@@ -337,9 +332,11 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 				return err
 			}
 
-			if gallery != nil {
-				galleries = append(galleries, gallery)
+			if gallery == nil {
+				return fmt.Errorf("gallery with id %d not found", id)
 			}
+
+			galleries = append(galleries, gallery)
 
 			// if this is a zip-based gallery, delete the images as well first
 			if gallery.Zip {

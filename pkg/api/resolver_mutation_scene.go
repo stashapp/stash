@@ -333,6 +333,17 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 }
 
 func adjustIDs(existingIDs []int, updateIDs models.BulkUpdateIds) []int {
+	// if we are setting the ids, just return the ids
+	if updateIDs.Mode == models.BulkUpdateIDModeSet {
+		existingIDs = []int{}
+		for _, idStr := range updateIDs.Ids {
+			id, _ := strconv.Atoi(idStr)
+			existingIDs = append(existingIDs, id)
+		}
+
+		return existingIDs
+	}
+
 	for _, idStr := range updateIDs.Ids {
 		id, _ := strconv.Atoi(idStr)
 

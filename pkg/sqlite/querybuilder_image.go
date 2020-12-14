@@ -9,6 +9,9 @@ import (
 )
 
 const imageTable = "images"
+const imageIDColumn = "image_id"
+const performersImagesTable = "performers_images"
+const imagesTagsTable = "images_tags"
 
 var imagesForPerformerQuery = selectAll(imageTable) + `
 LEFT JOIN performers_images as performers_join on performers_join.image_id = images.id
@@ -423,6 +426,66 @@ func (qb *ImageQueryBuilder) queryImages(query string, args []interface{}, tx *s
 	return []*models.Image(ret), nil
 }
 
+func (qb *ImageQueryBuilder) galleriesRepository(tx *sqlx.Tx) *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: galleriesImagesTable,
+			idColumn:  imageIDColumn,
+		},
+		fkColumn: galleryIDColumn,
+	}
+}
+
+func (qb *ImageQueryBuilder) GetGalleryIDs(imageID int, tx *sqlx.Tx) ([]int, error) {
+	return qb.galleriesRepository(tx).getIDs(imageID)
+}
+
+func (qb *ImageQueryBuilder) UpdateGalleries(imageID int, galleryIDs []int, tx *sqlx.Tx) error {
+	// Delete the existing joins and then create new ones
+	return qb.galleriesRepository(tx).replace(imageID, galleryIDs)
+}
+
+func (qb *ImageQueryBuilder) performersRepository(tx *sqlx.Tx) *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: performersImagesTable,
+			idColumn:  imageIDColumn,
+		},
+		fkColumn: "performer_id",
+	}
+}
+
+func (qb *ImageQueryBuilder) GetPerformerIDs(imageID int, tx *sqlx.Tx) ([]int, error) {
+	return qb.performersRepository(tx).getIDs(imageID)
+}
+
+func (qb *ImageQueryBuilder) UpdatePerformers(imageID int, performerIDs []int, tx *sqlx.Tx) error {
+	// Delete the existing joins and then create new ones
+	return qb.performersRepository(tx).replace(imageID, performerIDs)
+}
+
+func (qb *ImageQueryBuilder) tagsRepository(tx *sqlx.Tx) *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: imagesTagsTable,
+			idColumn:  imageIDColumn,
+		},
+		fkColumn: "tag_id",
+	}
+}
+
+func (qb *ImageQueryBuilder) GetTagIDs(imageID int, tx *sqlx.Tx) ([]int, error) {
+	return qb.tagsRepository(tx).getIDs(imageID)
+}
+
+func (qb *ImageQueryBuilder) UpdateTags(imageID int, tagIDs []int, tx *sqlx.Tx) error {
+	// Delete the existing joins and then create new ones
+	return qb.tagsRepository(tx).replace(imageID, tagIDs)
+}
+
 func NewImageReaderWriter(tx *sqlx.Tx) *imageReaderWriter {
 	return &imageReaderWriter{
 		tx: tx,
@@ -437,6 +500,10 @@ type imageReaderWriter struct {
 
 func (t *imageReaderWriter) CountByGalleryID(galleryID int) (int, error) {
 	return t.qb.CountByGalleryID(galleryID)
+}
+
+func (t *imageReaderWriter) Find(id int) (*models.Image, error) {
+	return t.qb.Find(id)
 }
 
 func (t *imageReaderWriter) FindMany(ids []int) ([]*models.Image, error) {
@@ -469,4 +536,40 @@ func (t *imageReaderWriter) Destroy(id int) error {
 
 func (t *imageReaderWriter) UpdateFull(updatedImage models.Image) (*models.Image, error) {
 	return t.qb.UpdateFull(updatedImage, t.tx)
+}
+
+func (t *imageReaderWriter) IncrementOCounter(id int) (int, error) {
+	return t.qb.IncrementOCounter(id, t.tx)
+}
+
+func (t *imageReaderWriter) DecrementOCounter(id int) (int, error) {
+	return t.qb.DecrementOCounter(id, t.tx)
+}
+
+func (t *imageReaderWriter) ResetOCounter(id int) (int, error) {
+	return t.qb.ResetOCounter(id, t.tx)
+}
+
+func (t *imageReaderWriter) GetGalleryIDs(imageID int) ([]int, error) {
+	return t.qb.GetGalleryIDs(imageID, t.tx)
+}
+
+func (t *imageReaderWriter) UpdateGalleries(imageID int, tagIDs []int) error {
+	return t.qb.UpdateGalleries(imageID, tagIDs, t.tx)
+}
+
+func (t *imageReaderWriter) GetPerformerIDs(imageID int) ([]int, error) {
+	return t.qb.GetPerformerIDs(imageID, t.tx)
+}
+
+func (t *imageReaderWriter) UpdatePerformers(imageID int, performerIDs []int) error {
+	return t.qb.UpdatePerformers(imageID, performerIDs, t.tx)
+}
+
+func (t *imageReaderWriter) GetTagIDs(imageID int) ([]int, error) {
+	return t.qb.GetTagIDs(imageID, t.tx)
+}
+
+func (t *imageReaderWriter) UpdateTags(imageID int, tagIDs []int) error {
+	return t.qb.UpdateTags(imageID, tagIDs, t.tx)
 }
