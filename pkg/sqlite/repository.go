@@ -9,6 +9,8 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 const idColumn = "id"
@@ -192,9 +194,7 @@ func (r *repository) runIdsQuery(query string, args []interface{}) ([]int, error
 
 func (r *repository) query(query string, args []interface{}, out objectList) error {
 	return r.wrapReadOnly(func() error {
-		var rows *sqlx.Rows
-		var err error
-		rows, err = r.tx.Queryx(query, args...)
+		rows, err := r.tx.Queryx(query, args...)
 
 		if err != nil && err != sql.ErrNoRows {
 			return err
@@ -207,6 +207,29 @@ func (r *repository) query(query string, args []interface{}, out objectList) err
 				return err
 			}
 			out.Append(object)
+		}
+
+		if err := rows.Err(); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func (r *repository) querySimple(query string, args []interface{}, out interface{}) error {
+	return r.wrapReadOnly(func() error {
+		rows, err := r.tx.Queryx(query, args...)
+
+		if err != nil && err != sql.ErrNoRows {
+			return err
+		}
+		defer rows.Close()
+
+		if rows.Next() {
+			if err := rows.Scan(out); err != nil {
+				return err
+			}
 		}
 
 		if err := rows.Err(); err != nil {
@@ -230,7 +253,7 @@ func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPa
 	idsQuery := body + sortAndPagination
 
 	// Perform query and fetch result
-	//logger.Tracef("SQL: %s, args: %v", idsQuery, args)
+	logger.Tracef("SQL: %s, args: %v", idsQuery, args)
 
 	var countResult int
 	var countErr error
@@ -284,6 +307,61 @@ func (r *joinRepository) replace(id int, foreignIDs []int) error {
 		}
 	}
 
+	return nil
+}
+
+type imageRepository struct {
+	repository
+	imageColumn string
+}
+
+func (r *imageRepository) get(id int) ([]byte, error) {
+	query := fmt.Sprintf("SELECT %s from %s WHERE %s = ?", r.imageColumn, r.tableName, r.idColumn)
+	var ret []byte
+	err := r.querySimple(query, []interface{}{id}, &ret)
+	return ret, err
+}
+
+func (r *imageRepository) replace(id int, image []byte) error {
+	if err := r.destroy([]int{id}); err != nil {
+		return err
+	}
+
+	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?)", r.tableName, r.idColumn, r.imageColumn)
+	_, err := r.tx.Exec(stmt, id, image)
+
+	return err
+}
+
+type stashIDRepository struct {
+	repository
+}
+
+type stashIDs []*models.StashID
+
+func (s *stashIDs) Append(o interface{}) {
+	*s = append(*s, o.(*models.StashID))
+}
+
+func (r *stashIDRepository) get(id int) ([]*models.StashID, error) {
+	query := fmt.Sprintf("SELECT stash_id, endpoint from %s WHERE %s = ?", r.tableName, r.idColumn)
+	var ret stashIDs
+	err := r.query(query, []interface{}{id}, &ret)
+	return []*models.StashID(ret), err
+}
+
+func (r *stashIDRepository) replace(id int, newIDs []models.StashID) error {
+	if err := r.destroy([]int{id}); err != nil {
+		return err
+	}
+
+	query := fmt.Sprintf("INSERT INTO %s (%s, endpoint, stash_id) VALUES (?, ?, ?)", r.tableName, r.idColumn)
+	for _, stashID := range newIDs {
+		_, err := r.tx.Exec(query, id, stashID.Endpoint, stashID.StashID)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

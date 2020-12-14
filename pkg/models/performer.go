@@ -12,16 +12,18 @@ type PerformerReader interface {
 	All() ([]*Performer, error)
 	// AllSlim() ([]*Performer, error)
 	// Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int)
-	GetPerformerImage(performerID int) ([]byte, error)
+	GetImage(performerID int) ([]byte, error)
+	GetStashIDs(performerID int) ([]*StashID, error)
 }
 
 type PerformerWriter interface {
 	Create(newPerformer Performer) (*Performer, error)
 	Update(updatedPerformer PerformerPartial) (*Performer, error)
 	UpdateFull(updatedPerformer Performer) (*Performer, error)
-	// Destroy(id string) error
-	UpdatePerformerImage(performerID int, image []byte) error
-	// DestroyPerformerImage(performerID int) error
+	Destroy(id int) error
+	UpdateImage(performerID int, image []byte) error
+	DestroyImage(performerID int) error
+	UpdateStashIDs(performerID int, stashIDs []StashID) error
 }
 
 type PerformerReaderWriter interface {

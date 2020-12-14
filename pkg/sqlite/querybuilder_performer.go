@@ -11,6 +11,7 @@ import (
 )
 
 const performerTable = "performers"
+const performerIDColumn = "performer_id"
 
 type PerformerQueryBuilder struct{}
 
@@ -363,37 +364,45 @@ func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{
 	return []*models.Performer(ret), nil
 }
 
-func (qb *PerformerQueryBuilder) UpdatePerformerImage(performerID int, image []byte, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
-	// Delete the existing cover and then create new
-	if err := qb.DestroyPerformerImage(performerID, tx); err != nil {
-		return err
+func (qb *PerformerQueryBuilder) performerImageRepository(tx *sqlx.Tx) *imageRepository {
+	return &imageRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: "performers_image",
+			idColumn:  performerIDColumn,
+		},
+		imageColumn: "image",
 	}
-
-	_, err := tx.Exec(
-		`INSERT INTO performers_image (performer_id, image) VALUES (?, ?)`,
-		performerID,
-		image,
-	)
-
-	return err
 }
 
-func (qb *PerformerQueryBuilder) DestroyPerformerImage(performerID int, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
-	// Delete the existing joins
-	_, err := tx.Exec("DELETE FROM performers_image WHERE performer_id = ?", performerID)
-	if err != nil {
-		return err
-	}
-	return err
+func (qb *PerformerQueryBuilder) GetImage(performerID int, tx *sqlx.Tx) ([]byte, error) {
+	return qb.performerImageRepository(tx).get(performerID)
 }
 
-func (qb *PerformerQueryBuilder) GetPerformerImage(performerID int, tx *sqlx.Tx) ([]byte, error) {
-	query := `SELECT image from performers_image WHERE performer_id = ?`
-	return getImage(tx, query, performerID)
+func (qb *PerformerQueryBuilder) UpdateImage(performerID int, image []byte, tx *sqlx.Tx) error {
+	return qb.performerImageRepository(tx).replace(performerID, image)
+}
+
+func (qb *PerformerQueryBuilder) DestroyImage(performerID int, tx *sqlx.Tx) error {
+	return qb.performerImageRepository(tx).destroy([]int{performerID})
+}
+
+func (qb *PerformerQueryBuilder) stashIDRepository(tx *sqlx.Tx) *stashIDRepository {
+	return &stashIDRepository{
+		repository{
+			tx:        tx,
+			tableName: "performer_stash_ids",
+			idColumn:  performerIDColumn,
+		},
+	}
+}
+
+func (qb *PerformerQueryBuilder) GetStashIDs(performerID int, tx *sqlx.Tx) ([]*models.StashID, error) {
+	return qb.stashIDRepository(tx).get(performerID)
+}
+
+func (qb *PerformerQueryBuilder) UpdateStashIDs(performerID int, stashIDs []models.StashID, tx *sqlx.Tx) error {
+	return qb.stashIDRepository(tx).replace(performerID, stashIDs)
 }
 
 func NewPerformerReaderWriter(tx *sqlx.Tx) *performerReaderWriter {
@@ -420,8 +429,8 @@ func (t *performerReaderWriter) All() ([]*models.Performer, error) {
 	return t.qb.All()
 }
 
-func (t *performerReaderWriter) GetPerformerImage(performerID int) ([]byte, error) {
-	return t.qb.GetPerformerImage(performerID, t.tx)
+func (t *performerReaderWriter) GetImage(performerID int) ([]byte, error) {
+	return t.qb.GetImage(performerID, t.tx)
 }
 
 func (t *performerReaderWriter) FindBySceneID(id int) ([]*models.Performer, error) {
@@ -448,10 +457,26 @@ func (t *performerReaderWriter) Update(updatedPerformer models.PerformerPartial)
 	return t.qb.Update(updatedPerformer, t.tx)
 }
 
+func (t *performerReaderWriter) Destroy(id int) error {
+	return t.qb.Destroy(id, t.tx)
+}
+
 func (t *performerReaderWriter) UpdateFull(updatedPerformer models.Performer) (*models.Performer, error) {
 	return t.qb.UpdateFull(updatedPerformer, t.tx)
 }
 
-func (t *performerReaderWriter) UpdatePerformerImage(performerID int, image []byte) error {
-	return t.qb.UpdatePerformerImage(performerID, image, t.tx)
+func (t *performerReaderWriter) UpdateImage(performerID int, image []byte) error {
+	return t.qb.UpdateImage(performerID, image, t.tx)
+}
+
+func (t *performerReaderWriter) DestroyImage(performerID int) error {
+	return t.qb.DestroyImage(performerID, t.tx)
+}
+
+func (t *performerReaderWriter) GetStashIDs(performerID int) ([]*models.StashID, error) {
+	return t.qb.GetStashIDs(performerID, t.tx)
+}
+
+func (t *performerReaderWriter) UpdateStashIDs(performerID int, stashIDs []models.StashID) error {
+	return t.qb.UpdateStashIDs(performerID, stashIDs, t.tx)
 }

@@ -27,7 +27,7 @@ func (rs performerRoutes) Routes() chi.Router {
 func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	performer := r.Context().Value(performerKey).(*models.Performer)
 	qb := sqlite.NewPerformerQueryBuilder()
-	image, _ := qb.GetPerformerImage(performer.ID, nil)
+	image, _ := qb.GetImage(performer.ID, nil)
 
 	defaultParam := r.URL.Query().Get("default")
 	if len(image) == 0 || defaultParam == "true" {
