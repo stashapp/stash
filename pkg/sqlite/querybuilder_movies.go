@@ -237,11 +237,11 @@ func (qb *MovieQueryBuilder) queryMovies(query string, args []interface{}, tx *s
 	return []*models.Movie(ret), nil
 }
 
-func (qb *MovieQueryBuilder) UpdateMovieImages(movieID int, frontImage []byte, backImage []byte, tx *sqlx.Tx) error {
+func (qb *MovieQueryBuilder) UpdateImages(movieID int, frontImage []byte, backImage []byte, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing cover and then create new
-	if err := qb.DestroyMovieImages(movieID, tx); err != nil {
+	if err := qb.DestroyImages(movieID, tx); err != nil {
 		return err
 	}
 
@@ -255,7 +255,7 @@ func (qb *MovieQueryBuilder) UpdateMovieImages(movieID int, frontImage []byte, b
 	return err
 }
 
-func (qb *MovieQueryBuilder) DestroyMovieImages(movieID int, tx *sqlx.Tx) error {
+func (qb *MovieQueryBuilder) DestroyImages(movieID int, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
 	// Delete the existing joins
@@ -324,10 +324,18 @@ func (t *movieReaderWriter) Update(updatedMovie models.MoviePartial) (*models.Mo
 	return t.qb.Update(updatedMovie, t.tx)
 }
 
+func (t *movieReaderWriter) Destroy(id int) error {
+	return t.qb.Destroy(id, t.tx)
+}
+
 func (t *movieReaderWriter) UpdateFull(updatedMovie models.Movie) (*models.Movie, error) {
 	return t.qb.UpdateFull(updatedMovie, t.tx)
 }
 
-func (t *movieReaderWriter) UpdateMovieImages(movieID int, frontImage []byte, backImage []byte) error {
-	return t.qb.UpdateMovieImages(movieID, frontImage, backImage, t.tx)
+func (t *movieReaderWriter) UpdateImages(movieID int, frontImage []byte, backImage []byte) error {
+	return t.qb.UpdateImages(movieID, frontImage, backImage, t.tx)
+}
+
+func (t *movieReaderWriter) DestroyImages(movieID int) error {
+	return t.qb.DestroyImages(movieID, t.tx)
 }

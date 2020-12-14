@@ -17,9 +17,9 @@ type MovieWriter interface {
 	Create(newMovie Movie) (*Movie, error)
 	Update(updatedMovie MoviePartial) (*Movie, error)
 	UpdateFull(updatedMovie Movie) (*Movie, error)
-	// Destroy(id string) error
-	UpdateMovieImages(movieID int, frontImage []byte, backImage []byte) error
-	// DestroyMovieImages(movieID int) error
+	Destroy(id int) error
+	UpdateImages(movieID int, frontImage []byte, backImage []byte) error
+	DestroyImages(movieID int) error
 }
 
 type MovieReaderWriter interface {
