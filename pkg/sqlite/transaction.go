@@ -86,6 +86,11 @@ func (t *Transaction) Movie() models.MovieReaderWriter {
 	return NewMovieReaderWriter(t.tx)
 }
 
+func (t *Transaction) Performer() models.PerformerReaderWriter {
+	t.ensureTx()
+	return NewPerformerReaderWriter(t.tx)
+}
+
 func (t *Transaction) SceneMarker() models.SceneMarkerReaderWriter {
 	t.ensureTx()
 	return NewSceneMarkerReaderWriter(t.tx)
