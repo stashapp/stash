@@ -12,6 +12,10 @@ import (
 
 const galleryTable = "galleries"
 
+const performersGalleriesTable = "performers_galleries"
+const galleriesTagsTable = "galleries_tags"
+const galleriesImagesTable = "galleries_images"
+
 type GalleryQueryBuilder struct{}
 
 func NewGalleryQueryBuilder() GalleryQueryBuilder {
@@ -356,6 +360,66 @@ func (qb *GalleryQueryBuilder) queryGalleries(query string, args []interface{}, 
 	return []*models.Gallery(ret), nil
 }
 
+func (qb *GalleryQueryBuilder) performersRepository(tx *sqlx.Tx) *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: performersGalleriesTable,
+			idColumn:  "gallery_id",
+		},
+		fkColumn: "performer_id",
+	}
+}
+
+func (qb *GalleryQueryBuilder) GetPerformerIDs(galleryID int, tx *sqlx.Tx) ([]int, error) {
+	return qb.performersRepository(tx).getIDs(galleryID)
+}
+
+func (qb *GalleryQueryBuilder) UpdatePerformers(galleryID int, performerIDs []int, tx *sqlx.Tx) error {
+	// Delete the existing joins and then create new ones
+	return qb.performersRepository(tx).replace(galleryID, performerIDs)
+}
+
+func (qb *GalleryQueryBuilder) tagsRepository(tx *sqlx.Tx) *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: galleriesTagsTable,
+			idColumn:  "gallery_id",
+		},
+		fkColumn: "tag_id",
+	}
+}
+
+func (qb *GalleryQueryBuilder) GetTagIDs(galleryID int, tx *sqlx.Tx) ([]int, error) {
+	return qb.tagsRepository(tx).getIDs(galleryID)
+}
+
+func (qb *GalleryQueryBuilder) UpdateTags(galleryID int, tagIDs []int, tx *sqlx.Tx) error {
+	// Delete the existing joins and then create new ones
+	return qb.tagsRepository(tx).replace(galleryID, tagIDs)
+}
+
+func (qb *GalleryQueryBuilder) imagesRepository(tx *sqlx.Tx) *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: galleriesImagesTable,
+			idColumn:  "gallery_id",
+		},
+		fkColumn: "image_id",
+	}
+}
+
+func (qb *GalleryQueryBuilder) GetImageIDs(galleryID int, tx *sqlx.Tx) ([]int, error) {
+	return qb.imagesRepository(tx).getIDs(galleryID)
+}
+
+func (qb *GalleryQueryBuilder) UpdateImages(galleryID int, imageIDs []int, tx *sqlx.Tx) error {
+	// Delete the existing joins and then create new ones
+	return qb.imagesRepository(tx).replace(galleryID, imageIDs)
+}
+
 func NewGalleryReaderWriter(tx *sqlx.Tx) *galleryReaderWriter {
 	return &galleryReaderWriter{
 		tx: tx,
@@ -366,6 +430,10 @@ func NewGalleryReaderWriter(tx *sqlx.Tx) *galleryReaderWriter {
 type galleryReaderWriter struct {
 	tx *sqlx.Tx
 	qb GalleryQueryBuilder
+}
+
+func (t *galleryReaderWriter) Find(id int) (*models.Gallery, error) {
+	return t.qb.Find(id, t.tx)
 }
 
 func (t *galleryReaderWriter) FindMany(ids []int) ([]*models.Gallery, error) {
@@ -398,4 +466,36 @@ func (t *galleryReaderWriter) Create(newGallery models.Gallery) (*models.Gallery
 
 func (t *galleryReaderWriter) Update(updatedGallery models.Gallery) (*models.Gallery, error) {
 	return t.qb.Update(updatedGallery, t.tx)
+}
+
+func (t *galleryReaderWriter) UpdatePartial(updatedGallery models.GalleryPartial) (*models.Gallery, error) {
+	return t.qb.UpdatePartial(updatedGallery, t.tx)
+}
+
+func (t *galleryReaderWriter) Destroy(id int) error {
+	return t.qb.Destroy(id, t.tx)
+}
+
+func (t *galleryReaderWriter) GetPerformerIDs(galleryID int) ([]int, error) {
+	return t.qb.GetPerformerIDs(galleryID, t.tx)
+}
+
+func (t *galleryReaderWriter) UpdatePerformers(galleryID int, performerIDs []int) error {
+	return t.qb.UpdatePerformers(galleryID, performerIDs, t.tx)
+}
+
+func (t *galleryReaderWriter) GetTagIDs(galleryID int) ([]int, error) {
+	return t.qb.GetTagIDs(galleryID, t.tx)
+}
+
+func (t *galleryReaderWriter) UpdateTags(galleryID int, tagIDs []int) error {
+	return t.qb.UpdateTags(galleryID, tagIDs, t.tx)
+}
+
+func (t *galleryReaderWriter) GetImageIDs(galleryID int) ([]int, error) {
+	return t.qb.GetImageIDs(galleryID, t.tx)
+}
+
+func (t *galleryReaderWriter) UpdateImages(galleryID int, imageIDs []int) error {
+	return t.qb.UpdateImages(galleryID, imageIDs, t.tx)
 }

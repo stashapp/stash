@@ -463,6 +463,10 @@ func (t *imageReaderWriter) Update(updatedImage models.ImagePartial) (*models.Im
 	return t.qb.Update(updatedImage, t.tx)
 }
 
+func (t *imageReaderWriter) Destroy(id int) error {
+	return t.qb.Destroy(id, t.tx)
+}
+
 func (t *imageReaderWriter) UpdateFull(updatedImage models.Image) (*models.Image, error) {
 	return t.qb.UpdateFull(updatedImage, t.tx)
 }

@@ -25,7 +25,7 @@ type ImageWriter interface {
 	// IncrementOCounter(id int) (int, error)
 	// DecrementOCounter(id int) (int, error)
 	// ResetOCounter(id int) (int, error)
-	// Destroy(id string) error
+	Destroy(id int) error
 }
 
 type ImageReaderWriter interface {

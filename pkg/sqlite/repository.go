@@ -258,6 +258,35 @@ func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPa
 	return idsResult, countResult, nil
 }
 
+type joinRepository struct {
+	repository
+	fkColumn string
+}
+
+func (r *joinRepository) getIDs(id int) ([]int, error) {
+	query := fmt.Sprintf(`SELECT %s from %s WHERE %s = ?`, r.fkColumn, r.tableName, r.idColumn)
+	return r.runIdsQuery(query, []interface{}{id})
+}
+
+func (r *joinRepository) insert(id, foreignID int) (sql.Result, error) {
+	stmt := fmt.Sprintf("INSERT INTO %s (%s, %s) VALUES (?, ?)", r.tableName, r.idColumn, r.fkColumn)
+	return r.tx.Exec(stmt, id, foreignID)
+}
+
+func (r *joinRepository) replace(id int, foreignIDs []int) error {
+	if err := r.destroy([]int{id}); err != nil {
+		return err
+	}
+
+	for _, fk := range foreignIDs {
+		if _, err := r.insert(id, fk); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func listKeys(i interface{}, addPrefix bool) string {
 	var query []string
 	v := reflect.ValueOf(i)
