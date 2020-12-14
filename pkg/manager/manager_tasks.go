@@ -351,8 +351,14 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
 
-	sceneIDs := utils.StringSliceToIntSlice(input.SceneIDs)
-	markerIDs := utils.StringSliceToIntSlice(input.MarkerIDs)
+	sceneIDs, err := utils.StringSliceToIntSlice(input.SceneIDs)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	markerIDs, err := utils.StringSliceToIntSlice(input.MarkerIDs)
+	if err != nil {
+		logger.Error(err.Error())
+	}
 
 	go func() {
 		defer s.returnToIdleState()

@@ -59,8 +59,10 @@ func newExportSpec(input *models.ExportObjectTypeInput) *exportSpec {
 		return &exportSpec{}
 	}
 
+	ids, _ := utils.StringSliceToIntSlice(input.Ids)
+
 	ret := &exportSpec{
-		IDs: utils.StringSliceToIntSlice(input.Ids),
+		IDs: ids,
 	}
 
 	if input.All != nil {
