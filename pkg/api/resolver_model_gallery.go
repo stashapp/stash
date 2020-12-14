@@ -5,7 +5,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -23,30 +22,39 @@ func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*stri
 	return nil, nil
 }
 
-func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) ([]*models.Image, error) {
-	qb := sqlite.NewImageQueryBuilder()
-
-	return qb.FindByGalleryID(obj.ID)
-}
-
-func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (*models.Image, error) {
-	qb := sqlite.NewImageQueryBuilder()
-
-	imgs, err := qb.FindByGalleryID(obj.ID)
-	if err != nil {
+func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret []*models.Image, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		var err error
+		ret, err = r.Image().FindByGalleryID(obj.ID)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
-	var ret *models.Image
-	if len(imgs) > 0 {
-		ret = imgs[0]
-	}
+	return ret, nil
+}
 
-	for _, img := range imgs {
-		if image.IsCover(img) {
-			ret = img
-			break
+func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		imgs, err := r.Image().FindByGalleryID(obj.ID)
+		if err != nil {
+			return err
 		}
+
+		if len(imgs) > 0 {
+			ret = imgs[0]
+		}
+
+		for _, img := range imgs {
+			if image.IsCover(img) {
+				ret = img
+				break
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	return ret, nil
@@ -82,35 +90,71 @@ func (r *galleryResolver) Rating(ctx context.Context, obj *models.Gallery) (*int
 	return nil, nil
 }
 
-func (r *galleryResolver) Scene(ctx context.Context, obj *models.Gallery) (*models.Scene, error) {
+func (r *galleryResolver) Scene(ctx context.Context, obj *models.Gallery) (ret *models.Scene, err error) {
 	if !obj.SceneID.Valid {
 		return nil, nil
 	}
 
-	qb := sqlite.NewSceneQueryBuilder()
-	return qb.Find(int(obj.SceneID.Int64))
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		var err error
+		ret, err = r.Scene().Find(int(obj.SceneID.Int64))
+
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (*models.Studio, error) {
+func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret *models.Studio, err error) {
 	if !obj.StudioID.Valid {
 		return nil, nil
 	}
 
-	qb := sqlite.NewStudioQueryBuilder()
-	return qb.Find(int(obj.StudioID.Int64), nil)
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		var err error
+		ret, err = r.Studio().Find(int(obj.StudioID.Int64))
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) ([]*models.Tag, error) {
-	qb := sqlite.NewTagQueryBuilder()
-	return qb.FindByGalleryID(obj.ID, nil)
+func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []*models.Tag, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		var err error
+		ret, err = r.Tag().FindByGalleryID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) ([]*models.Performer, error) {
-	qb := sqlite.NewPerformerQueryBuilder()
-	return qb.FindByGalleryID(obj.ID, nil)
+func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (ret []*models.Performer, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		var err error
+		ret, err = r.Performer().FindByGalleryID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (int, error) {
-	qb := sqlite.NewImageQueryBuilder()
-	return qb.CountByGalleryID(obj.ID)
+func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (ret int, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		var err error
+		ret, err = r.Image().CountByGalleryID(obj.ID)
+		return err
+	}); err != nil {
+		return 0, err
+	}
+
+	return ret, nil
 }

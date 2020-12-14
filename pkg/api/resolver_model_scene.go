@@ -95,19 +95,41 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 	}, nil
 }
 
-func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) ([]*models.SceneMarker, error) {
-	qb := sqlite.NewSceneMarkerQueryBuilder()
-	return qb.FindBySceneID(obj.ID, nil)
+func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (ret []*models.SceneMarker, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.SceneMarker().FindBySceneID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *sceneResolver) Gallery(ctx context.Context, obj *models.Scene) (*models.Gallery, error) {
-	qb := sqlite.NewGalleryQueryBuilder()
-	return qb.FindBySceneID(obj.ID, nil)
+func (r *sceneResolver) Gallery(ctx context.Context, obj *models.Scene) (ret *models.Gallery, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Gallery().FindBySceneID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (*models.Studio, error) {
-	qb := sqlite.NewStudioQueryBuilder()
-	return qb.FindBySceneID(obj.ID)
+func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *models.Studio, err error) {
+	if !obj.StudioID.Valid {
+		return nil, nil
+	}
+
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Studio().Find(int(obj.StudioID.Int64))
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*models.SceneMovie, error) {
@@ -142,14 +164,26 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*model
 	return ret, nil
 }
 
-func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) ([]*models.Tag, error) {
-	qb := sqlite.NewTagQueryBuilder()
-	return qb.FindBySceneID(obj.ID, nil)
+func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*models.Tag, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Tag().FindBySceneID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) ([]*models.Performer, error) {
-	qb := sqlite.NewPerformerQueryBuilder()
-	return qb.FindBySceneID(obj.ID, nil)
+func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret []*models.Performer, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Performer().FindBySceneID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) ([]*models.StashID, error) {

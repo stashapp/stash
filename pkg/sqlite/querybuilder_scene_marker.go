@@ -325,6 +325,10 @@ func (t *sceneMarkerReaderWriter) FindBySceneID(sceneID int) ([]*models.SceneMar
 	return t.qb.FindBySceneID(sceneID, t.tx)
 }
 
+func (t *sceneMarkerReaderWriter) CountByTagID(tagID int) (int, error) {
+	return t.qb.CountByTagID(tagID)
+}
+
 func (t *sceneMarkerReaderWriter) Create(newSceneMarker models.SceneMarker) (*models.SceneMarker, error) {
 	return t.qb.Create(newSceneMarker, t.tx)
 }

@@ -621,6 +621,10 @@ type sceneReaderWriter struct {
 	qb SceneQueryBuilder
 }
 
+func (t *sceneReaderWriter) Find(id int) (*models.Scene, error) {
+	return t.qb.Find(id)
+}
+
 func (t *sceneReaderWriter) FindMany(ids []int) ([]*models.Scene, error) {
 	return t.qb.FindMany(ids)
 }
@@ -635,6 +639,26 @@ func (t *sceneReaderWriter) FindByOSHash(oshash string) (*models.Scene, error) {
 
 func (t *sceneReaderWriter) FindByMovieID(movieID int) ([]*models.Scene, error) {
 	return t.qb.FindByMovieID(movieID)
+}
+
+func (t *sceneReaderWriter) CountByMovieID(movieID int) (int, error) {
+	return t.qb.CountByMovieID(movieID)
+}
+
+func (t *sceneReaderWriter) FindByPerformerID(performerID int) ([]*models.Scene, error) {
+	return t.qb.FindByPerformerID(performerID)
+}
+
+func (t *sceneReaderWriter) CountByPerformerID(performerID int) (int, error) {
+	return t.qb.CountByPerformerID(performerID)
+}
+
+func (t *sceneReaderWriter) CountByStudioID(studioID int) (int, error) {
+	return t.qb.CountByStudioID(studioID)
+}
+
+func (t *sceneReaderWriter) CountByTagID(tagID int) (int, error) {
+	return t.qb.CountByTagID(tagID)
 }
 
 func (t *sceneReaderWriter) All() ([]*models.Scene, error) {

@@ -295,12 +295,20 @@ func (t *studioReaderWriter) FindByName(name string, nocase bool) (*models.Studi
 	return t.qb.FindByName(name, t.tx, nocase)
 }
 
+func (t *studioReaderWriter) FindChildren(id int) ([]*models.Studio, error) {
+	return t.qb.FindChildren(id, t.tx)
+}
+
 func (t *studioReaderWriter) All() ([]*models.Studio, error) {
 	return t.qb.All()
 }
 
 func (t *studioReaderWriter) GetStudioImage(studioID int) ([]byte, error) {
 	return t.qb.GetStudioImage(studioID, t.tx)
+}
+
+func (t *studioReaderWriter) HasStudioImage(studioID int) (bool, error) {
+	return t.qb.HasStudioImage(studioID)
 }
 
 func (t *studioReaderWriter) Create(newStudio models.Studio) (*models.Studio, error) {

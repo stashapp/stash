@@ -435,6 +435,10 @@ type imageReaderWriter struct {
 	qb ImageQueryBuilder
 }
 
+func (t *imageReaderWriter) CountByGalleryID(galleryID int) (int, error) {
+	return t.qb.CountByGalleryID(galleryID)
+}
+
 func (t *imageReaderWriter) FindMany(ids []int) ([]*models.Image, error) {
 	return t.qb.FindMany(ids)
 }

@@ -139,15 +139,27 @@ func (r *performerResolver) ImagePath(ctx context.Context, obj *models.Performer
 	return &imagePath, nil
 }
 
-func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (*int, error) {
-	qb := sqlite.NewSceneQueryBuilder()
-	res, err := qb.CountByPerformerID(obj.ID)
-	return &res, err
+func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
+	var res int
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		res, err = r.Scene().CountByPerformerID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
-func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) ([]*models.Scene, error) {
-	qb := sqlite.NewSceneQueryBuilder()
-	return qb.FindByPerformerID(obj.ID)
+func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (ret []*models.Scene, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Scene().FindByPerformerID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer) ([]*models.StashID, error) {

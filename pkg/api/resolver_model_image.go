@@ -6,7 +6,6 @@ import (
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *imageResolver) Title(ctx context.Context, obj *models.Image) (*string, error) {
@@ -44,26 +43,51 @@ func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*models.I
 	}, nil
 }
 
-func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) ([]*models.Gallery, error) {
-	qb := sqlite.NewGalleryQueryBuilder()
-	return qb.FindByImageID(obj.ID, nil)
+func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) (ret []*models.Gallery, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		var err error
+		ret, err = r.Gallery().FindByImageID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (*models.Studio, error) {
+func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *models.Studio, err error) {
 	if !obj.StudioID.Valid {
 		return nil, nil
 	}
 
-	qb := sqlite.NewStudioQueryBuilder()
-	return qb.Find(int(obj.StudioID.Int64), nil)
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Studio().Find(int(obj.StudioID.Int64))
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) ([]*models.Tag, error) {
-	qb := sqlite.NewTagQueryBuilder()
-	return qb.FindByImageID(obj.ID, nil)
+func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) (ret []*models.Tag, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Tag().FindByImageID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *imageResolver) Performers(ctx context.Context, obj *models.Image) ([]*models.Performer, error) {
-	qb := sqlite.NewPerformerQueryBuilder()
-	return qb.FindByImageID(obj.ID, nil)
+func (r *imageResolver) Performers(ctx context.Context, obj *models.Image) (ret []*models.Performer, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Performer().FindByImageID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

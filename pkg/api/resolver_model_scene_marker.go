@@ -5,28 +5,44 @@ import (
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
-func (r *sceneMarkerResolver) Scene(ctx context.Context, obj *models.SceneMarker) (*models.Scene, error) {
+func (r *sceneMarkerResolver) Scene(ctx context.Context, obj *models.SceneMarker) (ret *models.Scene, err error) {
 	if !obj.SceneID.Valid {
 		panic("Invalid scene id")
 	}
-	qb := sqlite.NewSceneQueryBuilder()
-	sceneID := int(obj.SceneID.Int64)
-	scene, err := qb.Find(sceneID)
-	return scene, err
+
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		sceneID := int(obj.SceneID.Int64)
+		ret, err = r.Scene().Find(sceneID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *sceneMarkerResolver) PrimaryTag(ctx context.Context, obj *models.SceneMarker) (*models.Tag, error) {
-	qb := sqlite.NewTagQueryBuilder()
-	tag, err := qb.Find(obj.PrimaryTagID, nil)
-	return tag, err
+func (r *sceneMarkerResolver) PrimaryTag(ctx context.Context, obj *models.SceneMarker) (ret *models.Tag, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Tag().Find(obj.PrimaryTagID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, err
 }
 
-func (r *sceneMarkerResolver) Tags(ctx context.Context, obj *models.SceneMarker) ([]*models.Tag, error) {
-	qb := sqlite.NewTagQueryBuilder()
-	return qb.FindBySceneMarkerID(obj.ID, nil)
+func (r *sceneMarkerResolver) Tags(ctx context.Context, obj *models.SceneMarker) (ret []*models.Tag, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Tag().FindBySceneMarkerID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, err
 }
 
 func (r *sceneMarkerResolver) Stream(ctx context.Context, obj *models.SceneMarker) (string, error) {

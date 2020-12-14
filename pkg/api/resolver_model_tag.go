@@ -5,24 +5,29 @@ import (
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
-func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (*int, error) {
-	qb := sqlite.NewSceneQueryBuilder()
-	if obj == nil {
-		return nil, nil
+func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
+	var count int
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		count, err = r.Scene().CountByTagID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
 	}
-	count, err := qb.CountByTagID(obj.ID)
+
 	return &count, err
 }
 
-func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (*int, error) {
-	qb := sqlite.NewSceneMarkerQueryBuilder()
-	if obj == nil {
-		return nil, nil
+func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
+	var count int
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		count, err = r.SceneMarker().CountByTagID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
 	}
-	count, err := qb.CountByTagID(obj.ID)
+
 	return &count, err
 }
 

@@ -26,10 +26,12 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 	baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 	imagePath := urlbuilders.NewStudioURLBuilder(baseURL, obj.ID).GetStudioImageURL()
 
-	qb := sqlite.NewStudioQueryBuilder()
-	hasImage, err := qb.HasStudioImage(obj.ID)
-
-	if err != nil {
+	var hasImage bool
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		var err error
+		hasImage, err = r.Studio().HasStudioImage(obj.ID)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
@@ -41,24 +43,42 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 	return &imagePath, nil
 }
 
-func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio) (*int, error) {
-	qb := sqlite.NewSceneQueryBuilder()
-	res, err := qb.CountByStudioID(obj.ID)
+func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio) (ret *int, err error) {
+	var res int
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		res, err = r.Scene().CountByStudioID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
 	return &res, err
 }
 
-func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (*models.Studio, error) {
+func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (ret *models.Studio, err error) {
 	if !obj.ParentID.Valid {
 		return nil, nil
 	}
 
-	qb := sqlite.NewStudioQueryBuilder()
-	return qb.Find(int(obj.ParentID.Int64), nil)
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Studio().Find(int(obj.ParentID.Int64))
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) ([]*models.Studio, error) {
-	qb := sqlite.NewStudioQueryBuilder()
-	return qb.FindChildren(obj.ID, nil)
+func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (ret []*models.Studio, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Studio().FindChildren(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) ([]*models.StashID, error) {
