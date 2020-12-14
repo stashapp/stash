@@ -133,9 +133,9 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 	tagsCount, _ := tagsQB.Count()
 	return &models.StatsResultType{
 		SceneCount:     scenesCount,
-		ScenesSize:     float64(scenesSize),
+		ScenesSize:     scenesSize,
 		ImageCount:     imageCount,
-		ImagesSize:     float64(imageSize),
+		ImagesSize:     imageSize,
 		GalleryCount:   galleryCount,
 		PerformerCount: performersCount,
 		StudioCount:    studiosCount,

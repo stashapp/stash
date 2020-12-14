@@ -246,8 +246,8 @@ func (qb *ImageQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT images.id FROM images"), nil)
 }
 
-func (qb *ImageQueryBuilder) Size() (uint64, error) {
-	return runSumQuery("SELECT SUM(size) as sum FROM images", nil)
+func (qb *ImageQueryBuilder) Size() (float64, error) {
+	return runSumQuery("SELECT SUM(cast(size as double)) as sum FROM images", nil)
 }
 
 func (qb *ImageQueryBuilder) CountByStudioID(studioID int) (int, error) {
