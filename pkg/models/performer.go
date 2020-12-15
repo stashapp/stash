@@ -1,17 +1,17 @@
 package models
 
 type PerformerReader interface {
-	// Find(id int) (*Performer, error)
+	Find(id int) (*Performer, error)
 	FindMany(ids []int) ([]*Performer, error)
 	FindBySceneID(sceneID int) ([]*Performer, error)
 	FindNamesBySceneID(sceneID int) ([]*Performer, error)
 	FindByImageID(imageID int) ([]*Performer, error)
 	FindByGalleryID(galleryID int) ([]*Performer, error)
 	FindByNames(names []string, nocase bool) ([]*Performer, error)
-	// Count() (int, error)
+	Count() (int, error)
 	All() ([]*Performer, error)
-	// AllSlim() ([]*Performer, error)
-	// Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int)
+	AllSlim() ([]*Performer, error)
+	Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int, error)
 	GetImage(performerID int) ([]byte, error)
 	GetStashIDs(performerID int) ([]*StashID, error)
 }

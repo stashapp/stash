@@ -343,6 +343,10 @@ func (t *tagReaderWriter) FindMany(ids []int) ([]*models.Tag, error) {
 	return t.qb.FindMany(ids)
 }
 
+func (t *tagReaderWriter) Count() (int, error) {
+	return t.qb.Count()
+}
+
 func (t *tagReaderWriter) All() ([]*models.Tag, error) {
 	return t.qb.All()
 }

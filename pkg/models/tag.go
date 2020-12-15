@@ -9,7 +9,7 @@ type TagReader interface {
 	FindByGalleryID(galleryID int) ([]*Tag, error)
 	FindByName(name string, nocase bool) (*Tag, error)
 	FindByNames(names []string, nocase bool) ([]*Tag, error)
-	// Count() (int, error)
+	Count() (int, error)
 	All() ([]*Tag, error)
 	// AllSlim() ([]*Tag, error)
 	// Query(tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)

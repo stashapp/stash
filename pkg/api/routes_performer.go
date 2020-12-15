@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -26,10 +26,16 @@ func (rs performerRoutes) Routes() chi.Router {
 
 func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	performer := r.Context().Value(performerKey).(*models.Performer)
-	qb := sqlite.NewPerformerQueryBuilder()
-	image, _ := qb.GetImage(performer.ID, nil)
-
 	defaultParam := r.URL.Query().Get("default")
+
+	var image []byte
+	if defaultParam != "true" {
+		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			image, _ = repo.Performer().GetImage(performer.ID)
+			return nil
+		})
+	}
+
 	if len(image) == 0 || defaultParam == "true" {
 		image, _ = getRandomPerformerImageUsingName(performer.Name.String, performer.Gender.String)
 	}
@@ -45,9 +51,12 @@ func PerformerCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		qb := sqlite.NewPerformerQueryBuilder()
-		performer, err := qb.Find(performerID)
-		if err != nil {
+		var performer *models.Performer
+		if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			var err error
+			performer, err = repo.Performer().Find(performerID)
+			return err
+		}); err != nil {
 			http.Error(w, http.StatusText(404), 404)
 			return
 		}

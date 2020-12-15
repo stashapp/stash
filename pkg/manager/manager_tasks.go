@@ -559,29 +559,36 @@ func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []
 		studioCount := len(studioIds)
 		tagCount := len(tagIds)
 
-		performerQuery := sqlite.NewPerformerQueryBuilder()
-		studioQuery := sqlite.NewTagQueryBuilder()
-		tagQuery := sqlite.NewTagQueryBuilder()
+		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			performerQuery := r.Performer()
+			studioQuery := r.Studio()
+			tagQuery := r.Tag()
 
-		const wildcard = "*"
-		var err error
-		if performerCount == 1 && performerIds[0] == wildcard {
-			performerCount, err = performerQuery.Count()
-			if err != nil {
-				logger.Errorf("Error getting performer count: %s", err.Error())
+			const wildcard = "*"
+			var err error
+			if performerCount == 1 && performerIds[0] == wildcard {
+				performerCount, err = performerQuery.Count()
+				if err != nil {
+					return fmt.Errorf("Error getting performer count: %s", err.Error())
+				}
 			}
-		}
-		if studioCount == 1 && studioIds[0] == wildcard {
-			studioCount, err = studioQuery.Count()
-			if err != nil {
-				logger.Errorf("Error getting studio count: %s", err.Error())
+			if studioCount == 1 && studioIds[0] == wildcard {
+				studioCount, err = studioQuery.Count()
+				if err != nil {
+					return fmt.Errorf("Error getting studio count: %s", err.Error())
+				}
 			}
-		}
-		if tagCount == 1 && tagIds[0] == wildcard {
-			tagCount, err = tagQuery.Count()
-			if err != nil {
-				logger.Errorf("Error getting tag count: %s", err.Error())
+			if tagCount == 1 && tagIds[0] == wildcard {
+				tagCount, err = tagQuery.Count()
+				if err != nil {
+					return fmt.Errorf("Error getting tag count: %s", err.Error())
+				}
 			}
+
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
+			return
 		}
 
 		total := performerCount + studioCount + tagCount
@@ -594,31 +601,36 @@ func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []
 }
 
 func (s *singleton) autoTagPerformers(performerIds []string) {
-	performerQuery := sqlite.NewPerformerQueryBuilder()
-
 	var wg sync.WaitGroup
 	for _, performerId := range performerIds {
 		var performers []*models.Performer
-		if performerId == "*" {
-			var err error
-			performers, err = performerQuery.All()
-			if err != nil {
-				logger.Errorf("Error querying performers: %s", err.Error())
-				continue
-			}
-		} else {
-			performerIdInt, err := strconv.Atoi(performerId)
-			if err != nil {
-				logger.Errorf("Error parsing performer id %s: %s", performerId, err.Error())
-				continue
+
+		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			performerQuery := r.Performer()
+
+			if performerId == "*" {
+				var err error
+				performers, err = performerQuery.All()
+				if err != nil {
+					return fmt.Errorf("Error querying performers: %s", err.Error())
+				}
+			} else {
+				performerIdInt, err := strconv.Atoi(performerId)
+				if err != nil {
+					return fmt.Errorf("Error parsing performer id %s: %s", performerId, err.Error())
+				}
+
+				performer, err := performerQuery.Find(performerIdInt)
+				if err != nil {
+					return fmt.Errorf("Error finding performer id %s: %s", performerId, err.Error())
+				}
+				performers = append(performers, performer)
 			}
 
-			performer, err := performerQuery.Find(performerIdInt)
-			if err != nil {
-				logger.Errorf("Error finding performer id %s: %s", performerId, err.Error())
-				continue
-			}
-			performers = append(performers, performer)
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
+			continue
 		}
 
 		for _, performer := range performers {

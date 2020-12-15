@@ -303,6 +303,10 @@ func (t *studioReaderWriter) FindChildren(id int) ([]*models.Studio, error) {
 	return t.qb.FindChildren(id, t.tx)
 }
 
+func (t *studioReaderWriter) Count() (int, error) {
+	return t.qb.Count()
+}
+
 func (t *studioReaderWriter) All() ([]*models.Studio, error) {
 	return t.qb.All()
 }

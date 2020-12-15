@@ -5,7 +5,7 @@ type StudioReader interface {
 	FindMany(ids []int) ([]*Studio, error)
 	FindChildren(id int) ([]*Studio, error)
 	FindByName(name string, nocase bool) (*Studio, error)
-	// Count() (int, error)
+	Count() (int, error)
 	All() ([]*Studio, error)
 	// AllSlim() ([]*Studio, error)
 	// Query(studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int)

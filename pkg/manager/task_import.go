@@ -623,9 +623,8 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 	logger.Info("[images] import complete")
 }
 
-func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Performer, error) {
-	pqb := sqlite.NewPerformerQueryBuilder()
-	performers, err := pqb.FindByNames(names, tx, false)
+func (t *ImportTask) getPerformers(names []string, qb models.PerformerReader) ([]*models.Performer, error) {
+	performers, err := qb.FindByNames(names, false)
 	if err != nil {
 		return nil, err
 	}
