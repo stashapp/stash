@@ -5,7 +5,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *performerResolver) Name(ctx context.Context, obj *models.Performer) (*string, error) {
@@ -162,7 +161,13 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (
 	return ret, nil
 }
 
-func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer) ([]*models.StashID, error) {
-	qb := sqlite.NewJoinsQueryBuilder()
-	return qb.GetPerformerStashIDs(obj.ID)
+func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer) (ret []*models.StashID, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Performer().GetStashIDs(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

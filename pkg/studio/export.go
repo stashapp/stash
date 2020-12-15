@@ -34,7 +34,7 @@ func ToJSON(reader models.StudioReader, studio *models.Studio) (*jsonschema.Stud
 		}
 	}
 
-	image, err := reader.GetStudioImage(studio.ID)
+	image, err := reader.GetImage(studio.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting studio image: %s", err.Error())
 	}

@@ -9,6 +9,7 @@ import (
 )
 
 const studioTable = "studios"
+const studioIDColumn = "studio_id"
 
 type StudioQueryBuilder struct{}
 
@@ -229,46 +230,49 @@ func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}, tx 
 	return []*models.Studio(ret), nil
 }
 
-func (qb *StudioQueryBuilder) UpdateStudioImage(studioID int, image []byte, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
-	// Delete the existing cover and then create new
-	if err := qb.DestroyStudioImage(studioID, tx); err != nil {
-		return err
+func (qb *StudioQueryBuilder) imageRepository(tx *sqlx.Tx) *imageRepository {
+	return &imageRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: "studios_image",
+			idColumn:  studioIDColumn,
+		},
+		imageColumn: "image",
 	}
-
-	_, err := tx.Exec(
-		`INSERT INTO studios_image (studio_id, image) VALUES (?, ?)`,
-		studioID,
-		image,
-	)
-
-	return err
 }
 
-func (qb *StudioQueryBuilder) DestroyStudioImage(studioID int, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
-	// Delete the existing joins
-	_, err := tx.Exec("DELETE FROM studios_image WHERE studio_id = ?", studioID)
-	if err != nil {
-		return err
-	}
-	return err
+func (qb *StudioQueryBuilder) GetImage(studioID int, tx *sqlx.Tx) ([]byte, error) {
+	return qb.imageRepository(tx).get(studioID)
 }
 
-func (qb *StudioQueryBuilder) GetStudioImage(studioID int, tx *sqlx.Tx) ([]byte, error) {
-	query := `SELECT image from studios_image WHERE studio_id = ?`
-	return getImage(tx, query, studioID)
+func (qb *StudioQueryBuilder) HasImage(studioID int, tx *sqlx.Tx) (bool, error) {
+	return qb.imageRepository(tx).exists(studioID)
 }
 
-func (qb *StudioQueryBuilder) HasStudioImage(studioID int) (bool, error) {
-	ret, err := runCountQuery(buildCountQuery("SELECT studio_id from studios_image WHERE studio_id = ?"), []interface{}{studioID})
-	if err != nil {
-		return false, err
-	}
+func (qb *StudioQueryBuilder) UpdateImage(studioID int, image []byte, tx *sqlx.Tx) error {
+	return qb.imageRepository(tx).replace(studioID, image)
+}
 
-	return ret == 1, nil
+func (qb *StudioQueryBuilder) DestroyImage(studioID int, tx *sqlx.Tx) error {
+	return qb.imageRepository(tx).destroy([]int{studioID})
+}
+
+func (qb *StudioQueryBuilder) stashIDRepository(tx *sqlx.Tx) *stashIDRepository {
+	return &stashIDRepository{
+		repository{
+			tx:        tx,
+			tableName: "studio_stash_ids",
+			idColumn:  studioIDColumn,
+		},
+	}
+}
+
+func (qb *StudioQueryBuilder) GetStashIDs(studioID int, tx *sqlx.Tx) ([]*models.StashID, error) {
+	return qb.stashIDRepository(tx).get(studioID)
+}
+
+func (qb *StudioQueryBuilder) UpdateStashIDs(studioID int, stashIDs []models.StashID, tx *sqlx.Tx) error {
+	return qb.stashIDRepository(tx).replace(studioID, stashIDs)
 }
 
 func NewStudioReaderWriter(tx *sqlx.Tx) *studioReaderWriter {
@@ -303,12 +307,12 @@ func (t *studioReaderWriter) All() ([]*models.Studio, error) {
 	return t.qb.All()
 }
 
-func (t *studioReaderWriter) GetStudioImage(studioID int) ([]byte, error) {
-	return t.qb.GetStudioImage(studioID, t.tx)
+func (t *studioReaderWriter) GetImage(studioID int) ([]byte, error) {
+	return t.qb.GetImage(studioID, t.tx)
 }
 
-func (t *studioReaderWriter) HasStudioImage(studioID int) (bool, error) {
-	return t.qb.HasStudioImage(studioID)
+func (t *studioReaderWriter) HasImage(studioID int) (bool, error) {
+	return t.qb.HasImage(studioID, t.tx)
 }
 
 func (t *studioReaderWriter) Create(newStudio models.Studio) (*models.Studio, error) {
@@ -323,6 +327,22 @@ func (t *studioReaderWriter) UpdateFull(updatedStudio models.Studio) (*models.St
 	return t.qb.UpdateFull(updatedStudio, t.tx)
 }
 
-func (t *studioReaderWriter) UpdateStudioImage(studioID int, image []byte) error {
-	return t.qb.UpdateStudioImage(studioID, image, t.tx)
+func (t *studioReaderWriter) Destroy(id int) error {
+	return t.qb.Destroy(id, t.tx)
+}
+
+func (t *studioReaderWriter) UpdateImage(studioID int, image []byte) error {
+	return t.qb.UpdateImage(studioID, image, t.tx)
+}
+
+func (t *studioReaderWriter) DestroyImage(studioID int) error {
+	return t.qb.DestroyImage(studioID, t.tx)
+}
+
+func (t *studioReaderWriter) GetStashIDs(studioID int) ([]*models.StashID, error) {
+	return t.qb.GetStashIDs(studioID, t.tx)
+}
+
+func (t *studioReaderWriter) UpdateStashIDs(studioID int, stashIDs []models.StashID) error {
+	return t.qb.UpdateStashIDs(studioID, stashIDs, t.tx)
 }

@@ -9,17 +9,19 @@ type StudioReader interface {
 	All() ([]*Studio, error)
 	// AllSlim() ([]*Studio, error)
 	// Query(studioFilter *StudioFilterType, findFilter *FindFilterType) ([]*Studio, int)
-	GetStudioImage(studioID int) ([]byte, error)
-	HasStudioImage(studioID int) (bool, error)
+	GetImage(studioID int) ([]byte, error)
+	HasImage(studioID int) (bool, error)
+	GetStashIDs(studioID int) ([]*StashID, error)
 }
 
 type StudioWriter interface {
 	Create(newStudio Studio) (*Studio, error)
 	Update(updatedStudio StudioPartial) (*Studio, error)
 	UpdateFull(updatedStudio Studio) (*Studio, error)
-	// Destroy(id string) error
-	UpdateStudioImage(studioID int, image []byte) error
-	// DestroyStudioImage(studioID int) error
+	Destroy(id int) error
+	UpdateImage(studioID int, image []byte) error
+	DestroyImage(studioID int) error
+	UpdateStashIDs(studioID int, stashIDs []StashID) error
 }
 
 type StudioReaderWriter interface {

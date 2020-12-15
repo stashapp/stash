@@ -103,14 +103,7 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 
 		// Save the stash_ids
 		if input.StashIds != nil {
-			var stashIDJoins []models.StashID
-			for _, stashID := range input.StashIds {
-				newJoin := models.StashID{
-					StashID:  stashID.StashID,
-					Endpoint: stashID.Endpoint,
-				}
-				stashIDJoins = append(stashIDJoins, newJoin)
-			}
+			stashIDJoins := models.StashIDsFromInput(input.StashIds)
 			if err := qb.UpdateStashIDs(performer.ID, stashIDJoins); err != nil {
 				return err
 			}

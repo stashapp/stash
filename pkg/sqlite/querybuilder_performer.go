@@ -364,7 +364,7 @@ func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{
 	return []*models.Performer(ret), nil
 }
 
-func (qb *PerformerQueryBuilder) performerImageRepository(tx *sqlx.Tx) *imageRepository {
+func (qb *PerformerQueryBuilder) imageRepository(tx *sqlx.Tx) *imageRepository {
 	return &imageRepository{
 		repository: repository{
 			tx:        tx,
@@ -376,15 +376,15 @@ func (qb *PerformerQueryBuilder) performerImageRepository(tx *sqlx.Tx) *imageRep
 }
 
 func (qb *PerformerQueryBuilder) GetImage(performerID int, tx *sqlx.Tx) ([]byte, error) {
-	return qb.performerImageRepository(tx).get(performerID)
+	return qb.imageRepository(tx).get(performerID)
 }
 
 func (qb *PerformerQueryBuilder) UpdateImage(performerID int, image []byte, tx *sqlx.Tx) error {
-	return qb.performerImageRepository(tx).replace(performerID, image)
+	return qb.imageRepository(tx).replace(performerID, image)
 }
 
 func (qb *PerformerQueryBuilder) DestroyImage(performerID int, tx *sqlx.Tx) error {
-	return qb.performerImageRepository(tx).destroy([]int{performerID})
+	return qb.imageRepository(tx).destroy([]int{performerID})
 }
 
 func (qb *PerformerQueryBuilder) stashIDRepository(tx *sqlx.Tx) *stashIDRepository {
