@@ -360,7 +360,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 		// if the mod time of the file is different than that of the associated
 		// scene, then recalculate the checksum and regenerate the thumbnail
 		modified := t.isFileModified(fileModTime, scene.FileModTime)
-		if modified {
+		if modified || !scene.Size.Valid {
 			scene, err = t.rescanScene(scene, fileModTime)
 			if err != nil {
 				logger.Error(err.Error())
@@ -534,7 +534,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 			Height:     sql.NullInt64{Int64: int64(videoFile.Height), Valid: true},
 			Framerate:  sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true},
 			Bitrate:    sql.NullInt64{Int64: videoFile.Bitrate, Valid: true},
-			Size:       sql.NullString{String: strconv.Itoa(int(videoFile.Size)), Valid: true},
+			Size:       sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true},
 			FileModTime: models.NullSQLiteTimestamp{
 				Timestamp: fileModTime,
 				Valid:     true,
@@ -610,7 +610,7 @@ func (t *ScanTask) rescanScene(scene *models.Scene, fileModTime time.Time) (*mod
 		Height:     &sql.NullInt64{Int64: int64(videoFile.Height), Valid: true},
 		Framerate:  &sql.NullFloat64{Float64: videoFile.FrameRate, Valid: true},
 		Bitrate:    &sql.NullInt64{Int64: videoFile.Bitrate, Valid: true},
-		Size:       &sql.NullString{String: strconv.Itoa(int(videoFile.Size)), Valid: true},
+		Size:       &sql.NullString{String: strconv.FormatInt(videoFile.Size, 10), Valid: true},
 		FileModTime: &models.NullSQLiteTimestamp{
 			Timestamp: fileModTime,
 			Valid:     true,
