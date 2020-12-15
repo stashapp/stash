@@ -296,37 +296,31 @@ func (qb *TagQueryBuilder) queryTags(query string, args []interface{}, tx *sqlx.
 	return []*models.Tag(ret), nil
 }
 
-func (qb *TagQueryBuilder) UpdateTagImage(tagID int, image []byte, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
-	// Delete the existing cover and then create new
-	if err := qb.DestroyTagImage(tagID, tx); err != nil {
-		return err
+func (qb *TagQueryBuilder) imageRepository(tx *sqlx.Tx) *imageRepository {
+	return &imageRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: "tags_image",
+			idColumn:  tagIDColumn,
+		},
+		imageColumn: "image",
 	}
-
-	_, err := tx.Exec(
-		`INSERT INTO tags_image (tag_id, image) VALUES (?, ?)`,
-		tagID,
-		image,
-	)
-
-	return err
 }
 
-func (qb *TagQueryBuilder) DestroyTagImage(tagID int, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
-	// Delete the existing joins
-	_, err := tx.Exec("DELETE FROM tags_image WHERE tag_id = ?", tagID)
-	if err != nil {
-		return err
-	}
-	return err
+func (qb *TagQueryBuilder) GetImage(tagID int, tx *sqlx.Tx) ([]byte, error) {
+	return qb.imageRepository(tx).get(tagID)
 }
 
-func (qb *TagQueryBuilder) GetTagImage(tagID int, tx *sqlx.Tx) ([]byte, error) {
-	query := `SELECT image from tags_image WHERE tag_id = ?`
-	return getImage(tx, query, tagID)
+func (qb *TagQueryBuilder) HasImage(tagID int, tx *sqlx.Tx) (bool, error) {
+	return qb.imageRepository(tx).exists(tagID)
+}
+
+func (qb *TagQueryBuilder) UpdateImage(tagID int, image []byte, tx *sqlx.Tx) error {
+	return qb.imageRepository(tx).replace(tagID, image)
+}
+
+func (qb *TagQueryBuilder) DestroyImage(tagID int, tx *sqlx.Tx) error {
+	return qb.imageRepository(tx).destroy([]int{tagID})
 }
 
 func NewTagReaderWriter(tx *sqlx.Tx) *tagReaderWriter {
@@ -365,8 +359,8 @@ func (t *tagReaderWriter) FindByNames(names []string, nocase bool) ([]*models.Ta
 	return t.qb.FindByNames(names, t.tx, nocase)
 }
 
-func (t *tagReaderWriter) GetTagImage(tagID int) ([]byte, error) {
-	return t.qb.GetTagImage(tagID, t.tx)
+func (t *tagReaderWriter) GetImage(tagID int) ([]byte, error) {
+	return t.qb.GetImage(tagID, t.tx)
 }
 
 func (t *tagReaderWriter) FindBySceneID(sceneID int) ([]*models.Tag, error) {
@@ -389,6 +383,14 @@ func (t *tagReaderWriter) Update(updatedTag models.Tag) (*models.Tag, error) {
 	return t.qb.Update(updatedTag, t.tx)
 }
 
-func (t *tagReaderWriter) UpdateTagImage(tagID int, image []byte) error {
-	return t.qb.UpdateTagImage(tagID, image, t.tx)
+func (t *tagReaderWriter) Destroy(id int) error {
+	return t.qb.Destroy(id, t.tx)
+}
+
+func (t *tagReaderWriter) UpdateImage(tagID int, image []byte) error {
+	return t.qb.UpdateImage(tagID, image, t.tx)
+}
+
+func (t *tagReaderWriter) DestroyImage(tagID int) error {
+	return t.qb.DestroyImage(tagID, t.tx)
 }

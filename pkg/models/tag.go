@@ -13,15 +13,15 @@ type TagReader interface {
 	All() ([]*Tag, error)
 	// AllSlim() ([]*Tag, error)
 	// Query(tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
-	GetTagImage(tagID int) ([]byte, error)
+	GetImage(tagID int) ([]byte, error)
 }
 
 type TagWriter interface {
 	Create(newTag Tag) (*Tag, error)
 	Update(updatedTag Tag) (*Tag, error)
-	// Destroy(id string) error
-	UpdateTagImage(tagID int, image []byte) error
-	// DestroyTagImage(tagID int) error
+	Destroy(id int) error
+	UpdateImage(tagID int, image []byte) error
+	DestroyImage(tagID int) error
 }
 
 type TagReaderWriter interface {
