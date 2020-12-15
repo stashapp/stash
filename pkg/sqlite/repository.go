@@ -54,6 +54,14 @@ func (r *repository) get(id int, dest interface{}) error {
 	})
 }
 
+func (r *repository) getAll(id int, f func(rows *sqlx.Rows) error) error {
+	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", r.tableName, r.idColumn)
+
+	return r.wrapReadOnly(func() error {
+		return r.queryFunc(stmt, []interface{}{id}, f)
+	})
+}
+
 func (r *repository) insert(obj interface{}) (sql.Result, error) {
 	stmt := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s)", r.tableName, listKeys(obj, false), listKeys(obj, true))
 	return r.tx.NamedExec(stmt, obj)
@@ -190,6 +198,29 @@ func (r *repository) runIdsQuery(query string, args []interface{}) ([]int, error
 		vsm[i] = v.Int
 	}
 	return vsm, nil
+}
+
+func (r *repository) queryFunc(query string, args []interface{}, f func(rows *sqlx.Rows) error) error {
+	return r.wrapReadOnly(func() error {
+		rows, err := r.tx.Queryx(query, args...)
+
+		if err != nil && err != sql.ErrNoRows {
+			return err
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			if err := f(rows); err != nil {
+				return err
+			}
+		}
+
+		if err := rows.Err(); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (r *repository) query(query string, args []interface{}, out objectList) error {

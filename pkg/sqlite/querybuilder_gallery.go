@@ -477,6 +477,10 @@ func (t *galleryReaderWriter) Destroy(id int) error {
 	return t.qb.Destroy(id, t.tx)
 }
 
+func (t *galleryReaderWriter) ClearGalleryId(sceneID int) error {
+	return t.qb.ClearGalleryId(sceneID, t.tx)
+}
+
 func (t *galleryReaderWriter) GetPerformerIDs(galleryID int) ([]int, error) {
 	return t.qb.GetPerformerIDs(galleryID, t.tx)
 }

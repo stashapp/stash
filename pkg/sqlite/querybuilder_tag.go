@@ -10,6 +10,7 @@ import (
 )
 
 const tagTable = "tags"
+const tagIDColumn = "tag_id"
 
 type TagQueryBuilder struct{}
 

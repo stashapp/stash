@@ -13,7 +13,7 @@ type SceneMarkerReader interface {
 type SceneMarkerWriter interface {
 	Create(newSceneMarker SceneMarker) (*SceneMarker, error)
 	Update(updatedSceneMarker SceneMarker) (*SceneMarker, error)
-	// Destroy(id string) error
+	Destroy(id int) error
 }
 
 type SceneMarkerReaderWriter interface {

@@ -336,3 +336,7 @@ func (t *sceneMarkerReaderWriter) Create(newSceneMarker models.SceneMarker) (*mo
 func (t *sceneMarkerReaderWriter) Update(updatedSceneMarker models.SceneMarker) (*models.SceneMarker, error) {
 	return t.qb.Update(updatedSceneMarker, t.tx)
 }
+
+func (t *sceneMarkerReaderWriter) Destroy(id int) error {
+	return t.qb.Destroy(id, t.tx)
+}

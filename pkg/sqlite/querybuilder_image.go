@@ -453,7 +453,7 @@ func (qb *ImageQueryBuilder) performersRepository(tx *sqlx.Tx) *joinRepository {
 			tableName: performersImagesTable,
 			idColumn:  imageIDColumn,
 		},
-		fkColumn: "performer_id",
+		fkColumn: performerIDColumn,
 	}
 }
 
@@ -473,7 +473,7 @@ func (qb *ImageQueryBuilder) tagsRepository(tx *sqlx.Tx) *joinRepository {
 			tableName: imagesTagsTable,
 			idColumn:  imageIDColumn,
 		},
-		fkColumn: "tag_id",
+		fkColumn: tagIDColumn,
 	}
 }
 

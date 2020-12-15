@@ -21,7 +21,7 @@ type GalleryWriter interface {
 	Update(updatedGallery Gallery) (*Gallery, error)
 	UpdatePartial(updatedGallery GalleryPartial) (*Gallery, error)
 	Destroy(id int) error
-	// ClearGalleryId(sceneID int) error
+	ClearGalleryId(sceneID int) error
 	UpdatePerformers(galleryID int, performerIDs []int) error
 	UpdateTags(galleryID int, tagIDs []int) error
 	UpdateImages(galleryID int, imageIDs []int) error

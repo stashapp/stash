@@ -135,22 +135,24 @@ func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 
 func (t *CleanTask) deleteScene(sceneID int) {
 	ctx := context.TODO()
-	qb := sqlite.NewSceneQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
+	var postCommitFunc func()
+	var scene *models.Scene
+	if err := GetInstance().WithTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
 
-	scene, err := qb.Find(sceneID)
-	err = DestroyScene(sceneID, tx)
-
-	if err != nil {
+		var err error
+		scene, err = qb.Find(sceneID)
+		if err != nil {
+			return err
+		}
+		postCommitFunc, err = DestroyScene(scene, repo)
+		return err
+	}); err != nil {
 		logger.Errorf("Error deleting scene from database: %s", err.Error())
-		tx.Rollback()
 		return
 	}
 
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("Error deleting scene from database: %s", err.Error())
-		return
-	}
+	postCommitFunc()
 
 	DeleteGeneratedSceneFiles(scene, t.fileNamingAlgorithm)
 }

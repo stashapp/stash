@@ -23,21 +23,29 @@ type SceneReader interface {
 	// QueryAllByPathRegex(regex string) ([]*Scene, error)
 	// QueryByPathRegex(findFilter *FindFilterType) ([]*Scene, int)
 	GetSceneCover(sceneID int) ([]byte, error)
+	GetMovies(sceneID int) ([]MoviesScenes, error)
+	GetTagIDs(imageID int) ([]int, error)
+	GetPerformerIDs(imageID int) ([]int, error)
+	GetStashIDs(performerID int) ([]*StashID, error)
 }
 
 type SceneWriter interface {
 	Create(newScene Scene) (*Scene, error)
 	Update(updatedScene ScenePartial) (*Scene, error)
 	UpdateFull(updatedScene Scene) (*Scene, error)
-	// IncrementOCounter(id int) (int, error)
-	// DecrementOCounter(id int) (int, error)
-	// ResetOCounter(id int) (int, error)
-	// Destroy(id string) error
+	IncrementOCounter(id int) (int, error)
+	DecrementOCounter(id int) (int, error)
+	ResetOCounter(id int) (int, error)
+	Destroy(id int) error
 	// UpdateFormat(id int, format string) error
 	// UpdateOSHash(id int, oshash string) error
 	// UpdateChecksum(id int, checksum string) error
 	UpdateSceneCover(sceneID int, cover []byte) error
 	// DestroySceneCover(sceneID int) error
+	UpdatePerformers(sceneID int, performerIDs []int) error
+	UpdateTags(sceneID int, tagIDs []int) error
+	UpdateMovies(sceneID int, movies []MoviesScenes) error
+	UpdateStashIDs(sceneID int, stashIDs []StashID) error
 }
 
 type SceneReaderWriter interface {

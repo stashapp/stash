@@ -10,6 +10,10 @@ import (
 )
 
 const sceneTable = "scenes"
+const sceneIDColumn = "scene_id"
+const performersScenesTable = "performers_scenes"
+const scenesTagsTable = "scenes_tags"
+const moviesScenesTable = "movies_scenes"
 
 var scenesForPerformerQuery = selectAll(sceneTable) + `
 LEFT JOIN performers_scenes as performers_join on performers_join.scene_id = scenes.id
@@ -157,6 +161,15 @@ func (qb *SceneQueryBuilder) ResetOCounter(id int, tx *sqlx.Tx) (int, error) {
 }
 
 func (qb *SceneQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
+	// delete all related table rows
+	// TODO - this should be handled by a delete cascade
+	if err := qb.performersRepository(tx).destroy([]int{id}); err != nil {
+		return err
+	}
+
+	// scene markers should be handled prior to calling destroy
+	// galleries should be handled prior to calling destroy
+
 	return qb.repository(tx).destroyExisting([]int{id})
 }
 
@@ -609,6 +622,105 @@ func (qb *SceneQueryBuilder) GetSceneCover(sceneID int, tx *sqlx.Tx) ([]byte, er
 	return getImage(tx, query, sceneID)
 }
 
+func (qb *SceneQueryBuilder) moviesRepository(tx *sqlx.Tx) *repository {
+	return &repository{
+		tx:        tx,
+		tableName: moviesScenesTable,
+		idColumn:  sceneIDColumn,
+	}
+}
+
+func (qb *SceneQueryBuilder) GetMovies(id int, tx *sqlx.Tx) (ret []models.MoviesScenes, err error) {
+	if err := qb.moviesRepository(tx).getAll(id, func(rows *sqlx.Rows) error {
+		var ms models.MoviesScenes
+		if err := rows.StructScan(&ms); err != nil {
+			return err
+		}
+
+		ret = append(ret, ms)
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
+}
+
+func (qb *SceneQueryBuilder) UpdateMovies(sceneID int, movies []models.MoviesScenes, tx *sqlx.Tx) error {
+	// destroy existing joins
+	r := qb.moviesRepository(tx)
+	if err := r.destroy([]int{sceneID}); err != nil {
+		return err
+	}
+
+	for _, m := range movies {
+		m.SceneID = sceneID
+		if _, err := r.insert(m); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (qb *SceneQueryBuilder) performersRepository(tx *sqlx.Tx) *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: performersScenesTable,
+			idColumn:  sceneIDColumn,
+		},
+		fkColumn: performerIDColumn,
+	}
+}
+
+func (qb *SceneQueryBuilder) GetPerformerIDs(id int, tx *sqlx.Tx) ([]int, error) {
+	return qb.performersRepository(tx).getIDs(id)
+}
+
+func (qb *SceneQueryBuilder) UpdatePerformers(id int, performerIDs []int, tx *sqlx.Tx) error {
+	// Delete the existing joins and then create new ones
+	return qb.performersRepository(tx).replace(id, performerIDs)
+}
+
+func (qb *SceneQueryBuilder) tagsRepository(tx *sqlx.Tx) *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: scenesTagsTable,
+			idColumn:  sceneIDColumn,
+		},
+		fkColumn: tagIDColumn,
+	}
+}
+
+func (qb *SceneQueryBuilder) GetTagIDs(id int, tx *sqlx.Tx) ([]int, error) {
+	return qb.tagsRepository(tx).getIDs(id)
+}
+
+func (qb *SceneQueryBuilder) UpdateTags(id int, tagIDs []int, tx *sqlx.Tx) error {
+	// Delete the existing joins and then create new ones
+	return qb.tagsRepository(tx).replace(id, tagIDs)
+}
+
+func (qb *SceneQueryBuilder) stashIDRepository(tx *sqlx.Tx) *stashIDRepository {
+	return &stashIDRepository{
+		repository{
+			tx:        tx,
+			tableName: "scene_stash_ids",
+			idColumn:  sceneIDColumn,
+		},
+	}
+}
+
+func (qb *SceneQueryBuilder) GetStashIDs(sceneID int, tx *sqlx.Tx) ([]*models.StashID, error) {
+	return qb.stashIDRepository(tx).get(sceneID)
+}
+
+func (qb *SceneQueryBuilder) UpdateStashIDs(sceneID int, stashIDs []models.StashID, tx *sqlx.Tx) error {
+	return qb.stashIDRepository(tx).replace(sceneID, stashIDs)
+}
+
 func NewSceneReaderWriter(tx *sqlx.Tx) *sceneReaderWriter {
 	return &sceneReaderWriter{
 		tx: tx,
@@ -681,6 +793,54 @@ func (t *sceneReaderWriter) UpdateFull(updatedScene models.Scene) (*models.Scene
 	return t.qb.UpdateFull(updatedScene, t.tx)
 }
 
+func (t *sceneReaderWriter) Destroy(id int) error {
+	return t.qb.Destroy(id, t.tx)
+}
+
+func (t *sceneReaderWriter) IncrementOCounter(id int) (int, error) {
+	return t.qb.IncrementOCounter(id, t.tx)
+}
+
+func (t *sceneReaderWriter) DecrementOCounter(id int) (int, error) {
+	return t.qb.DecrementOCounter(id, t.tx)
+}
+
+func (t *sceneReaderWriter) ResetOCounter(id int) (int, error) {
+	return t.qb.ResetOCounter(id, t.tx)
+}
+
 func (t *sceneReaderWriter) UpdateSceneCover(sceneID int, cover []byte) error {
 	return t.qb.UpdateSceneCover(sceneID, cover, t.tx)
+}
+
+func (t *sceneReaderWriter) GetMovies(sceneID int) ([]models.MoviesScenes, error) {
+	return t.qb.GetMovies(sceneID, t.tx)
+}
+
+func (t *sceneReaderWriter) UpdateMovies(sceneID int, movies []models.MoviesScenes) error {
+	return t.qb.UpdateMovies(sceneID, movies, t.tx)
+}
+
+func (t *sceneReaderWriter) GetPerformerIDs(sceneID int) ([]int, error) {
+	return t.qb.GetPerformerIDs(sceneID, t.tx)
+}
+
+func (t *sceneReaderWriter) UpdatePerformers(sceneID int, performerIDs []int) error {
+	return t.qb.UpdatePerformers(sceneID, performerIDs, t.tx)
+}
+
+func (t *sceneReaderWriter) GetTagIDs(sceneID int) ([]int, error) {
+	return t.qb.GetTagIDs(sceneID, t.tx)
+}
+
+func (t *sceneReaderWriter) UpdateTags(sceneID int, tagIDs []int) error {
+	return t.qb.UpdateTags(sceneID, tagIDs, t.tx)
+}
+
+func (t *sceneReaderWriter) GetStashIDs(sceneID int) ([]*models.StashID, error) {
+	return t.qb.GetStashIDs(sceneID, t.tx)
+}
+
+func (t *sceneReaderWriter) UpdateStashIDs(sceneID int, stashIDs []models.StashID) error {
+	return t.qb.UpdateStashIDs(sceneID, stashIDs, t.tx)
 }

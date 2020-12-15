@@ -5,7 +5,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -132,34 +131,39 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 	return ret, nil
 }
 
-func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) ([]*models.SceneMovie, error) {
-	joinQB := sqlite.NewJoinsQueryBuilder()
-	qb := sqlite.NewMovieQueryBuilder()
+func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*models.SceneMovie, err error) {
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
+		mqb := repo.Movie()
 
-	sceneMovies, err := joinQB.GetSceneMovies(obj.ID, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var ret []*models.SceneMovie
-	for _, sm := range sceneMovies {
-		movie, err := qb.Find(sm.MovieID, nil)
+		sceneMovies, err := qb.GetMovies(obj.ID)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		sceneIdx := sm.SceneIndex
-		sceneMovie := &models.SceneMovie{
-			Movie: movie,
+		for _, sm := range sceneMovies {
+			movie, err := mqb.Find(sm.MovieID)
+			if err != nil {
+				return err
+			}
+
+			sceneIdx := sm.SceneIndex
+			sceneMovie := &models.SceneMovie{
+				Movie: movie,
+			}
+
+			if sceneIdx.Valid {
+				var idx int
+				idx = int(sceneIdx.Int64)
+				sceneMovie.SceneIndex = &idx
+			}
+
+			ret = append(ret, sceneMovie)
 		}
 
-		if sceneIdx.Valid {
-			var idx int
-			idx = int(sceneIdx.Int64)
-			sceneMovie.SceneIndex = &idx
-		}
-
-		ret = append(ret, sceneMovie)
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 	return ret, nil
 }
@@ -186,7 +190,13 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret 
 	return ret, nil
 }
 
-func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) ([]*models.StashID, error) {
-	qb := sqlite.NewJoinsQueryBuilder()
-	return qb.GetSceneStashIDs(obj.ID)
+func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []*models.StashID, err error) {
+	if err := r.withTxn(ctx, func(r models.Repository) error {
+		ret, err = r.Scene().GetStashIDs(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
