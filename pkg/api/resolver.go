@@ -144,7 +144,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 	var ret models.StatsResultType
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		scenesQB := sqlite.NewSceneQueryBuilder()
-		imageQB := sqlite.NewImageQueryBuilder()
+		imageQB := repo.Image()
 		galleryQB := repo.Gallery()
 		studiosQB := sqlite.NewStudioQueryBuilder()
 		performersQB := sqlite.NewPerformerQueryBuilder()

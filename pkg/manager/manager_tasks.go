@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -716,29 +717,38 @@ func (s *singleton) Clean() {
 	s.Status.SetStatus(Clean)
 	s.Status.indefiniteProgress()
 
-	// TODO - do this in txn
-	qb := sqlite.NewSceneQueryBuilder()
-	iqb := sqlite.NewImageQueryBuilder()
-	gqb := sqlite.NewGalleryReaderWriter(nil)
 	go func() {
 		defer s.returnToIdleState()
 
-		logger.Infof("Starting cleaning of tracked files")
-		scenes, err := qb.All()
-		if err != nil {
-			logger.Errorf("failed to fetch list of scenes for cleaning")
-			return
-		}
+		var scenes []*models.Scene
+		var images []*models.Image
+		var galleries []*models.Gallery
 
-		images, err := iqb.All()
-		if err != nil {
-			logger.Errorf("failed to fetch list of images for cleaning")
-			return
-		}
+		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			qb := r.Scene()
+			iqb := r.Image()
+			gqb := r.Gallery()
 
-		galleries, err := gqb.All()
-		if err != nil {
-			logger.Errorf("failed to fetch list of galleries for cleaning")
+			logger.Infof("Starting cleaning of tracked files")
+			var err error
+			scenes, err = qb.All()
+			if err != nil {
+				return errors.New("failed to fetch list of scenes for cleaning")
+			}
+
+			images, err = iqb.All()
+			if err != nil {
+				return errors.New("failed to fetch list of images for cleaning")
+			}
+
+			galleries, err = gqb.All()
+			if err != nil {
+				return errors.New("failed to fetch list of galleries for cleaning")
+			}
+
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
 			return
 		}
 

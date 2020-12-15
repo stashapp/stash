@@ -7,15 +7,14 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 type CleanTask struct {
+	TxnManager          models.TransactionManager
 	Scene               *models.Scene
 	Gallery             *models.Gallery
 	Image               *models.Image
@@ -134,10 +133,9 @@ func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 }
 
 func (t *CleanTask) deleteScene(sceneID int) {
-	ctx := context.TODO()
 	var postCommitFunc func()
 	var scene *models.Scene
-	if err := GetInstance().WithTxn(ctx, func(repo models.Repository) error {
+	if err := t.TxnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
 		qb := repo.Scene()
 
 		var err error
@@ -158,38 +156,22 @@ func (t *CleanTask) deleteScene(sceneID int) {
 }
 
 func (t *CleanTask) deleteGallery(galleryID int) {
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := sqlite.NewGalleryReaderWriter(tx)
-
-	err := qb.Destroy(galleryID)
-
-	if err != nil {
-		logger.Errorf("Error deleting gallery from database: %s", err.Error())
-		tx.Rollback()
-		return
-	}
-
-	if err := tx.Commit(); err != nil {
+	if err := t.TxnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
+		qb := repo.Gallery()
+		return qb.Destroy(galleryID)
+	}); err != nil {
 		logger.Errorf("Error deleting gallery from database: %s", err.Error())
 		return
 	}
 }
 
 func (t *CleanTask) deleteImage(imageID int) {
-	ctx := context.TODO()
-	qb := sqlite.NewImageQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
 
-	err := qb.Destroy(imageID, tx)
+	if err := t.TxnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
+		qb := repo.Image()
 
-	if err != nil {
-		logger.Errorf("Error deleting image from database: %s", err.Error())
-		tx.Rollback()
-		return
-	}
-
-	if err := tx.Commit(); err != nil {
+		return qb.Destroy(imageID)
+	}); err != nil {
 		logger.Errorf("Error deleting image from database: %s", err.Error())
 		return
 	}
