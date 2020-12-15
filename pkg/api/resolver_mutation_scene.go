@@ -7,11 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -445,8 +443,16 @@ func (r *mutationResolver) ScenesDestroy(ctx context.Context, input models.Scene
 }
 
 func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.SceneMarkerCreateInput) (*models.SceneMarker, error) {
-	primaryTagID, _ := strconv.Atoi(input.PrimaryTagID)
-	sceneID, _ := strconv.Atoi(input.SceneID)
+	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
+	if err != nil {
+		return nil, err
+	}
+
+	sceneID, err := strconv.Atoi(input.SceneID)
+	if err != nil {
+		return nil, err
+	}
+
 	currentTime := time.Now()
 	newSceneMarker := models.SceneMarker{
 		Title:        input.Title,
@@ -457,14 +463,31 @@ func (r *mutationResolver) SceneMarkerCreate(ctx context.Context, input models.S
 		UpdatedAt:    models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
-	return changeMarker(ctx, create, newSceneMarker, input.TagIds)
+	tagIDs, err := utils.StringSliceToIntSlice(input.TagIds)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.changeMarker(ctx, create, newSceneMarker, tagIDs)
 }
 
 func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.SceneMarkerUpdateInput) (*models.SceneMarker, error) {
 	// Populate scene marker from the input
-	sceneMarkerID, _ := strconv.Atoi(input.ID)
-	sceneID, _ := strconv.Atoi(input.SceneID)
-	primaryTagID, _ := strconv.Atoi(input.PrimaryTagID)
+	sceneMarkerID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	primaryTagID, err := strconv.Atoi(input.PrimaryTagID)
+	if err != nil {
+		return nil, err
+	}
+
+	sceneID, err := strconv.Atoi(input.SceneID)
+	if err != nil {
+		return nil, err
+	}
+
 	updatedSceneMarker := models.SceneMarker{
 		ID:           sceneMarkerID,
 		Title:        input.Title,
@@ -474,168 +497,151 @@ func (r *mutationResolver) SceneMarkerUpdate(ctx context.Context, input models.S
 		UpdatedAt:    models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
 
-	return changeMarker(ctx, update, updatedSceneMarker, input.TagIds)
+	tagIDs, err := utils.StringSliceToIntSlice(input.TagIds)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.changeMarker(ctx, update, updatedSceneMarker, tagIDs)
 }
 
 func (r *mutationResolver) SceneMarkerDestroy(ctx context.Context, id string) (bool, error) {
-	qb := sqlite.NewSceneMarkerQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	markerID, _ := strconv.Atoi(id)
-	marker, err := qb.Find(markerID)
-
+	markerID, err := strconv.Atoi(id)
 	if err != nil {
 		return false, err
 	}
 
-	if err := qb.Destroy(markerID, tx); err != nil {
-		_ = tx.Rollback()
-		return false, err
-	}
-	if err := tx.Commit(); err != nil {
+	var postCommitFunc func()
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.SceneMarker()
+		sqb := repo.Scene()
+
+		marker, err := qb.Find(markerID)
+
+		if err != nil {
+			return err
+		}
+
+		if marker == nil {
+			return fmt.Errorf("scene marker with id %d not found", markerID)
+		}
+
+		scene, err := sqb.Find(int(marker.SceneID.Int64))
+		if err != nil {
+			return err
+		}
+
+		postCommitFunc, err = manager.DestroySceneMarker(scene, marker, qb)
+		return err
+	}); err != nil {
 		return false, err
 	}
 
-	// delete the preview for the marker
-	sqb := sqlite.NewSceneQueryBuilder()
-	scene, _ := sqb.Find(int(marker.SceneID.Int64))
-
-	if scene != nil {
-		seconds := int(marker.Seconds)
-		manager.DeleteSceneMarkerFiles(scene, seconds, config.GetVideoFileNamingAlgorithm())
-	}
+	postCommitFunc()
 
 	return true, nil
 }
 
-func changeMarker(ctx context.Context, changeType int, changedMarker models.SceneMarker, tagIds []string) (*models.SceneMarker, error) {
-	// Start the transaction and save the scene marker
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := sqlite.NewSceneMarkerQueryBuilder()
-	jqb := sqlite.NewJoinsQueryBuilder()
-
+func (r *mutationResolver) changeMarker(ctx context.Context, changeType int, changedMarker models.SceneMarker, tagIDs []int) (*models.SceneMarker, error) {
 	var existingMarker *models.SceneMarker
 	var sceneMarker *models.SceneMarker
-	var err error
-	switch changeType {
-	case create:
-		sceneMarker, err = qb.Create(changedMarker, tx)
-	case update:
-		// check to see if timestamp was changed
-		existingMarker, err = qb.Find(changedMarker.ID)
-		if err == nil {
-			sceneMarker, err = qb.Update(changedMarker, tx)
-		}
-	}
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
+	var scene *models.Scene
 
-	// Save the marker tags
-	var markerTagJoins []models.SceneMarkersTags
-	for _, tid := range tagIds {
-		tagID, _ := strconv.Atoi(tid)
-		if tagID == changedMarker.PrimaryTagID {
-			continue // If this tag is the primary tag, then let's not add it.
-		}
-		markerTag := models.SceneMarkersTags{
-			SceneMarkerID: sceneMarker.ID,
-			TagID:         tagID,
-		}
-		markerTagJoins = append(markerTagJoins, markerTag)
-	}
-	switch changeType {
-	case create:
-		if err := jqb.CreateSceneMarkersTags(markerTagJoins, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
-	case update:
-		if err := jqb.UpdateSceneMarkersTags(changedMarker.ID, markerTagJoins, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
-	}
+	// Start the transaction and save the scene marker
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.SceneMarker()
+		sqb := repo.Scene()
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		var err error
+		switch changeType {
+		case create:
+			sceneMarker, err = qb.Create(changedMarker)
+		case update:
+			// check to see if timestamp was changed
+			existingMarker, err = qb.Find(changedMarker.ID)
+			if err != nil {
+				return err
+			}
+			sceneMarker, err = qb.Update(changedMarker)
+			if err != nil {
+				return err
+			}
+
+			scene, err = sqb.Find(int(existingMarker.SceneID.Int64))
+		}
+		if err != nil {
+			return err
+		}
+
+		// Save the marker tags
+		// If this tag is the primary tag, then let's not add it.
+		tagIDs = utils.IntExclude(tagIDs, []int{changedMarker.PrimaryTagID})
+		return qb.UpdateTags(sceneMarker.ID, tagIDs)
+	}); err != nil {
 		return nil, err
 	}
 
 	// remove the marker preview if the timestamp was changed
-	if existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
-		sqb := sqlite.NewSceneQueryBuilder()
-
-		scene, _ := sqb.Find(int(existingMarker.SceneID.Int64))
-
-		if scene != nil {
-			seconds := int(existingMarker.Seconds)
-			manager.DeleteSceneMarkerFiles(scene, seconds, config.GetVideoFileNamingAlgorithm())
-		}
+	if scene != nil && existingMarker != nil && existingMarker.Seconds != changedMarker.Seconds {
+		seconds := int(existingMarker.Seconds)
+		manager.DeleteSceneMarkerFiles(scene, seconds, config.GetVideoFileNamingAlgorithm())
 	}
 
 	return sceneMarker, nil
 }
 
-func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (int, error) {
-	sceneID, _ := strconv.Atoi(id)
-
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := sqlite.NewSceneQueryBuilder()
-
-	newVal, err := qb.IncrementOCounter(sceneID, tx)
+func (r *mutationResolver) SceneIncrementO(ctx context.Context, id string) (ret int, err error) {
+	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		_ = tx.Rollback()
 		return 0, err
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
+
+		ret, err = qb.IncrementOCounter(sceneID)
+		return err
+	}); err != nil {
 		return 0, err
 	}
 
-	return newVal, nil
+	return ret, nil
 }
 
-func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (int, error) {
-	sceneID, _ := strconv.Atoi(id)
-
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := sqlite.NewSceneQueryBuilder()
-
-	newVal, err := qb.DecrementOCounter(sceneID, tx)
+func (r *mutationResolver) SceneDecrementO(ctx context.Context, id string) (ret int, err error) {
+	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		_ = tx.Rollback()
 		return 0, err
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
+
+		ret, err = qb.DecrementOCounter(sceneID)
+		return err
+	}); err != nil {
 		return 0, err
 	}
 
-	return newVal, nil
+	return ret, nil
 }
 
-func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (int, error) {
-	sceneID, _ := strconv.Atoi(id)
-
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := sqlite.NewSceneQueryBuilder()
-
-	newVal, err := qb.ResetOCounter(sceneID, tx)
+func (r *mutationResolver) SceneResetO(ctx context.Context, id string) (ret int, err error) {
+	sceneID, err := strconv.Atoi(id)
 	if err != nil {
-		_ = tx.Rollback()
 		return 0, err
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Scene()
+
+		ret, err = qb.ResetOCounter(sceneID)
+		return err
+	}); err != nil {
 		return 0, err
 	}
 
-	return newVal, nil
+	return ret, nil
 }
 
 func (r *mutationResolver) SceneGenerateScreenshot(ctx context.Context, id string, at *float64) (string, error) {

@@ -309,6 +309,26 @@ func (qb *SceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, ar
 	return markerStrings, nil
 }
 
+func (qb *SceneMarkerQueryBuilder) tagsRepository(tx *sqlx.Tx) *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        tx,
+			tableName: "scene_markers_tags",
+			idColumn:  "scene_marker_id",
+		},
+		fkColumn: tagIDColumn,
+	}
+}
+
+func (qb *SceneMarkerQueryBuilder) GetTagIDs(id int, tx *sqlx.Tx) ([]int, error) {
+	return qb.tagsRepository(tx).getIDs(id)
+}
+
+func (qb *SceneMarkerQueryBuilder) UpdateTags(id int, tagIDs []int, tx *sqlx.Tx) error {
+	// Delete the existing joins and then create new ones
+	return qb.tagsRepository(tx).replace(id, tagIDs)
+}
+
 func NewSceneMarkerReaderWriter(tx *sqlx.Tx) *sceneMarkerReaderWriter {
 	return &sceneMarkerReaderWriter{
 		tx: tx,
@@ -319,6 +339,10 @@ func NewSceneMarkerReaderWriter(tx *sqlx.Tx) *sceneMarkerReaderWriter {
 type sceneMarkerReaderWriter struct {
 	tx *sqlx.Tx
 	qb SceneMarkerQueryBuilder
+}
+
+func (t *sceneMarkerReaderWriter) Find(id int) (*models.SceneMarker, error) {
+	return t.qb.Find(id)
 }
 
 func (t *sceneMarkerReaderWriter) FindBySceneID(sceneID int) ([]*models.SceneMarker, error) {
@@ -339,4 +363,12 @@ func (t *sceneMarkerReaderWriter) Update(updatedSceneMarker models.SceneMarker) 
 
 func (t *sceneMarkerReaderWriter) Destroy(id int) error {
 	return t.qb.Destroy(id, t.tx)
+}
+
+func (t *sceneMarkerReaderWriter) GetTagIDs(markerID int) ([]int, error) {
+	return t.qb.GetTagIDs(markerID, t.tx)
+}
+
+func (t *sceneMarkerReaderWriter) UpdateTags(markerID int, tagIDs []int) error {
+	return t.qb.UpdateTags(markerID, tagIDs, t.tx)
 }
