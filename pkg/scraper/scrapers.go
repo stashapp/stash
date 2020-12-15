@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -35,6 +36,7 @@ func (c GlobalConfig) isCDPPathWS() bool {
 type Cache struct {
 	scrapers     []config
 	globalConfig GlobalConfig
+	txnManager   models.TransactionManager
 }
 
 // NewCache returns a new Cache loading scraper configurations from the
@@ -43,7 +45,7 @@ type Cache struct {
 //
 // Scraper configurations are loaded from yml files in the provided scrapers
 // directory and any subdirectories.
-func NewCache(globalConfig GlobalConfig) (*Cache, error) {
+func NewCache(globalConfig GlobalConfig, txnManager models.TransactionManager) (*Cache, error) {
 	scrapers, err := loadScrapers(globalConfig.Path)
 	if err != nil {
 		return nil, err
@@ -52,6 +54,7 @@ func NewCache(globalConfig GlobalConfig) (*Cache, error) {
 	return &Cache{
 		globalConfig: globalConfig,
 		scrapers:     scrapers,
+		txnManager:   txnManager,
 	}, nil
 }
 
@@ -231,32 +234,43 @@ func (c Cache) ScrapePerformerURL(url string) (*models.ScrapedPerformer, error) 
 }
 
 func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
-	for _, p := range ret.Performers {
-		err := sqlite.MatchScrapedScenePerformer(p)
-		if err != nil {
-			return err
-		}
-	}
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		pqb := r.Performer()
+		mqb := r.Movie()
+		tqb := r.Tag()
+		sqb := r.Studio()
 
-	for _, p := range ret.Movies {
-		err := sqlite.MatchScrapedSceneMovie(p)
-		if err != nil {
-			return err
+		for _, p := range ret.Performers {
+			err := MatchScrapedScenePerformer(pqb, p)
+			if err != nil {
+				return err
+			}
 		}
-	}
 
-	for _, t := range ret.Tags {
-		err := sqlite.MatchScrapedSceneTag(t)
-		if err != nil {
-			return err
+		for _, p := range ret.Movies {
+			err := MatchScrapedSceneMovie(mqb, p)
+			if err != nil {
+				return err
+			}
 		}
-	}
 
-	if ret.Studio != nil {
-		err := sqlite.MatchScrapedSceneStudio(ret.Studio)
-		if err != nil {
-			return err
+		for _, t := range ret.Tags {
+			err := MatchScrapedSceneTag(tqb, t)
+			if err != nil {
+				return err
+			}
 		}
+
+		if ret.Studio != nil {
+			err := MatchScrapedSceneStudio(sqb, ret.Studio)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return err
 	}
 
 	// post-process - set the image if applicable
@@ -268,25 +282,35 @@ func (c Cache) postScrapeScene(ret *models.ScrapedScene) error {
 }
 
 func (c Cache) postScrapeGallery(ret *models.ScrapedGallery) error {
-	for _, p := range ret.Performers {
-		err := sqlite.MatchScrapedScenePerformer(p)
-		if err != nil {
-			return err
-		}
-	}
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		pqb := r.Performer()
+		tqb := r.Tag()
+		sqb := r.Studio()
 
-	for _, t := range ret.Tags {
-		err := sqlite.MatchScrapedSceneTag(t)
-		if err != nil {
-			return err
+		for _, p := range ret.Performers {
+			err := MatchScrapedScenePerformer(pqb, p)
+			if err != nil {
+				return err
+			}
 		}
-	}
 
-	if ret.Studio != nil {
-		err := sqlite.MatchScrapedSceneStudio(ret.Studio)
-		if err != nil {
-			return err
+		for _, t := range ret.Tags {
+			err := MatchScrapedSceneTag(tqb, t)
+			if err != nil {
+				return err
+			}
 		}
+
+		if ret.Studio != nil {
+			err := MatchScrapedSceneStudio(sqb, ret.Studio)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return err
 	}
 
 	return nil

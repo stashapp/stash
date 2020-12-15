@@ -10,59 +10,57 @@ import (
 
 const movieTable = "movies"
 
-type MovieQueryBuilder struct{}
-
-func NewMovieQueryBuilder() MovieQueryBuilder {
-	return MovieQueryBuilder{}
+type MovieQueryBuilder struct {
+	repository
 }
 
-func movieConstructor() interface{} {
-	return &models.Movie{}
-}
-
-func (qb *MovieQueryBuilder) repository(tx *sqlx.Tx) *repository {
-	return &repository{
-		tx:          tx,
-		tableName:   movieTable,
-		idColumn:    idColumn,
-		constructor: movieConstructor,
+func NewMovieReaderWriter(tx *sqlx.Tx) *MovieQueryBuilder {
+	return &MovieQueryBuilder{
+		repository{
+			tx:        tx,
+			tableName: movieTable,
+			idColumn:  idColumn,
+			constructor: func() interface{} {
+				return &models.Movie{}
+			},
+		},
 	}
 }
 
-func (qb *MovieQueryBuilder) Create(newObject models.Movie, tx *sqlx.Tx) (*models.Movie, error) {
+func (qb *MovieQueryBuilder) Create(newObject models.Movie) (*models.Movie, error) {
 	var ret models.Movie
-	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
+	if err := qb.insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
 }
 
-func (qb *MovieQueryBuilder) Update(updatedObject models.MoviePartial, tx *sqlx.Tx) (*models.Movie, error) {
+func (qb *MovieQueryBuilder) Update(updatedObject models.MoviePartial) (*models.Movie, error) {
 	const partial = true
-	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.Find(updatedObject.ID, tx)
+	return qb.Find(updatedObject.ID)
 }
 
-func (qb *MovieQueryBuilder) UpdateFull(updatedObject models.Movie, tx *sqlx.Tx) (*models.Movie, error) {
+func (qb *MovieQueryBuilder) UpdateFull(updatedObject models.Movie) (*models.Movie, error) {
 	const partial = false
-	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.Find(updatedObject.ID, tx)
+	return qb.Find(updatedObject.ID)
 }
 
-func (qb *MovieQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
-	return qb.repository(tx).destroyExisting([]int{id})
+func (qb *MovieQueryBuilder) Destroy(id int) error {
+	return qb.destroyExisting([]int{id})
 }
 
-func (qb *MovieQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Movie, error) {
+func (qb *MovieQueryBuilder) Find(id int) (*models.Movie, error) {
 	var ret models.Movie
-	if err := qb.repository(tx).get(id, &ret); err != nil {
+	if err := qb.get(id, &ret); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -74,7 +72,7 @@ func (qb *MovieQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Movie, error) {
 func (qb *MovieQueryBuilder) FindMany(ids []int) ([]*models.Movie, error) {
 	var movies []*models.Movie
 	for _, id := range ids {
-		movie, err := qb.Find(id, nil)
+		movie, err := qb.Find(id)
 		if err != nil {
 			return nil, err
 		}
@@ -89,7 +87,7 @@ func (qb *MovieQueryBuilder) FindMany(ids []int) ([]*models.Movie, error) {
 	return movies, nil
 }
 
-func (qb *MovieQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*models.Movie, error) {
+func (qb *MovieQueryBuilder) FindBySceneID(sceneID int) ([]*models.Movie, error) {
 	query := `
 		SELECT movies.* FROM movies
 		LEFT JOIN movies_scenes as scenes_join on scenes_join.movie_id = movies.id
@@ -97,20 +95,20 @@ func (qb *MovieQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*models.
 		GROUP BY movies.id
 	`
 	args := []interface{}{sceneID}
-	return qb.queryMovies(query, args, tx)
+	return qb.queryMovies(query, args)
 }
 
-func (qb *MovieQueryBuilder) FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Movie, error) {
+func (qb *MovieQueryBuilder) FindByName(name string, nocase bool) (*models.Movie, error) {
 	query := "SELECT * FROM movies WHERE name = ?"
 	if nocase {
 		query += " COLLATE NOCASE"
 	}
 	query += " LIMIT 1"
 	args := []interface{}{name}
-	return qb.queryMovie(query, args, tx)
+	return qb.queryMovie(query, args)
 }
 
-func (qb *MovieQueryBuilder) FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*models.Movie, error) {
+func (qb *MovieQueryBuilder) FindByNames(names []string, nocase bool) ([]*models.Movie, error) {
 	query := "SELECT * FROM movies WHERE name"
 	if nocase {
 		query += " COLLATE NOCASE"
@@ -120,7 +118,7 @@ func (qb *MovieQueryBuilder) FindByNames(names []string, tx *sqlx.Tx, nocase boo
 	for _, name := range names {
 		args = append(args, name)
 	}
-	return qb.queryMovies(query, args, tx)
+	return qb.queryMovies(query, args)
 }
 
 func (qb *MovieQueryBuilder) Count() (int, error) {
@@ -128,14 +126,14 @@ func (qb *MovieQueryBuilder) Count() (int, error) {
 }
 
 func (qb *MovieQueryBuilder) All() ([]*models.Movie, error) {
-	return qb.queryMovies(selectAll("movies")+qb.getMovieSort(nil), nil, nil)
+	return qb.queryMovies(selectAll("movies")+qb.getMovieSort(nil), nil)
 }
 
 func (qb *MovieQueryBuilder) AllSlim() ([]*models.Movie, error) {
-	return qb.queryMovies("SELECT movies.id, movies.name FROM movies "+qb.getMovieSort(nil), nil, nil)
+	return qb.queryMovies("SELECT movies.id, movies.name FROM movies "+qb.getMovieSort(nil), nil)
 }
 
-func (qb *MovieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int) {
+func (qb *MovieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
 	if findFilter == nil {
 		findFilter = &models.FindFilterType{}
 	}
@@ -190,15 +188,22 @@ func (qb *MovieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilt
 	}
 
 	sortAndPagination := qb.getMovieSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := executeFindQuery("movies", body, args, sortAndPagination, whereClauses, havingClauses)
+	idsResult, countResult, err := qb.executeFindQuery(body, args, sortAndPagination, whereClauses, havingClauses)
+	if err != nil {
+		return nil, 0, err
+	}
 
 	var movies []*models.Movie
 	for _, id := range idsResult {
-		movie, _ := qb.Find(id, nil)
+		movie, err := qb.Find(id)
+		if err != nil {
+			return nil, 0, err
+		}
+
 		movies = append(movies, movie)
 	}
 
-	return movies, countResult
+	return movies, countResult, nil
 }
 
 func (qb *MovieQueryBuilder) getMovieSort(findFilter *models.FindFilterType) string {
@@ -220,32 +225,30 @@ func (qb *MovieQueryBuilder) getMovieSort(findFilter *models.FindFilterType) str
 	return getSort(sort, direction, "movies")
 }
 
-func (qb *MovieQueryBuilder) queryMovie(query string, args []interface{}, tx *sqlx.Tx) (*models.Movie, error) {
-	results, err := qb.queryMovies(query, args, tx)
+func (qb *MovieQueryBuilder) queryMovie(query string, args []interface{}) (*models.Movie, error) {
+	results, err := qb.queryMovies(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
 	return results[0], nil
 }
 
-func (qb *MovieQueryBuilder) queryMovies(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Movie, error) {
+func (qb *MovieQueryBuilder) queryMovies(query string, args []interface{}) ([]*models.Movie, error) {
 	var ret models.Movies
-	if err := qb.repository(tx).query(query, args, &ret); err != nil {
+	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
 	return []*models.Movie(ret), nil
 }
 
-func (qb *MovieQueryBuilder) UpdateImages(movieID int, frontImage []byte, backImage []byte, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
+func (qb *MovieQueryBuilder) UpdateImages(movieID int, frontImage []byte, backImage []byte) error {
 	// Delete the existing cover and then create new
-	if err := qb.DestroyImages(movieID, tx); err != nil {
+	if err := qb.DestroyImages(movieID); err != nil {
 		return err
 	}
 
-	_, err := tx.Exec(
+	_, err := qb.tx.Exec(
 		`INSERT INTO movies_images (movie_id, front_image, back_image) VALUES (?, ?, ?)`,
 		movieID,
 		frontImage,
@@ -255,87 +258,21 @@ func (qb *MovieQueryBuilder) UpdateImages(movieID int, frontImage []byte, backIm
 	return err
 }
 
-func (qb *MovieQueryBuilder) DestroyImages(movieID int, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
+func (qb *MovieQueryBuilder) DestroyImages(movieID int) error {
 	// Delete the existing joins
-	_, err := tx.Exec("DELETE FROM movies_images WHERE movie_id = ?", movieID)
+	_, err := qb.tx.Exec("DELETE FROM movies_images WHERE movie_id = ?", movieID)
 	if err != nil {
 		return err
 	}
 	return err
 }
 
-func (qb *MovieQueryBuilder) GetFrontImage(movieID int, tx *sqlx.Tx) ([]byte, error) {
+func (qb *MovieQueryBuilder) GetFrontImage(movieID int) ([]byte, error) {
 	query := `SELECT front_image from movies_images WHERE movie_id = ?`
-	return getImage(tx, query, movieID)
+	return getImage(qb.tx, query, movieID)
 }
 
-func (qb *MovieQueryBuilder) GetBackImage(movieID int, tx *sqlx.Tx) ([]byte, error) {
+func (qb *MovieQueryBuilder) GetBackImage(movieID int) ([]byte, error) {
 	query := `SELECT back_image from movies_images WHERE movie_id = ?`
-	return getImage(tx, query, movieID)
-}
-
-func NewMovieReaderWriter(tx *sqlx.Tx) *movieReaderWriter {
-	return &movieReaderWriter{
-		tx: tx,
-		qb: NewMovieQueryBuilder(),
-	}
-}
-
-type movieReaderWriter struct {
-	tx *sqlx.Tx
-	qb MovieQueryBuilder
-}
-
-func (t *movieReaderWriter) Find(id int) (*models.Movie, error) {
-	return t.qb.Find(id, t.tx)
-}
-
-func (t *movieReaderWriter) FindMany(ids []int) ([]*models.Movie, error) {
-	return t.qb.FindMany(ids)
-}
-
-func (t *movieReaderWriter) FindByName(name string, nocase bool) (*models.Movie, error) {
-	return t.qb.FindByName(name, t.tx, nocase)
-}
-
-func (t *movieReaderWriter) FindByNames(names []string, nocase bool) ([]*models.Movie, error) {
-	return t.qb.FindByNames(names, t.tx, nocase)
-}
-
-func (t *movieReaderWriter) All() ([]*models.Movie, error) {
-	return t.qb.All()
-}
-
-func (t *movieReaderWriter) GetFrontImage(movieID int) ([]byte, error) {
-	return t.qb.GetFrontImage(movieID, t.tx)
-}
-
-func (t *movieReaderWriter) GetBackImage(movieID int) ([]byte, error) {
-	return t.qb.GetBackImage(movieID, t.tx)
-}
-
-func (t *movieReaderWriter) Create(newMovie models.Movie) (*models.Movie, error) {
-	return t.qb.Create(newMovie, t.tx)
-}
-
-func (t *movieReaderWriter) Update(updatedMovie models.MoviePartial) (*models.Movie, error) {
-	return t.qb.Update(updatedMovie, t.tx)
-}
-
-func (t *movieReaderWriter) Destroy(id int) error {
-	return t.qb.Destroy(id, t.tx)
-}
-
-func (t *movieReaderWriter) UpdateFull(updatedMovie models.Movie) (*models.Movie, error) {
-	return t.qb.UpdateFull(updatedMovie, t.tx)
-}
-
-func (t *movieReaderWriter) UpdateImages(movieID int, frontImage []byte, backImage []byte) error {
-	return t.qb.UpdateImages(movieID, frontImage, backImage, t.tx)
-}
-
-func (t *movieReaderWriter) DestroyImages(movieID int) error {
-	return t.qb.DestroyImages(movieID, t.tx)
+	return getImage(qb.tx, query, movieID)
 }

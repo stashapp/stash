@@ -56,11 +56,11 @@ func Initialize() *singleton {
 			Status: TaskStatus{Status: Idle, Progress: -1},
 			Paths:  paths.NewPaths(),
 
-			PluginCache:  initPluginCache(),
-			ScraperCache: initScraperCache(),
+			PluginCache: initPluginCache(),
 
 			DownloadStore: NewDownloadStore(),
 		}
+		instance.ScraperCache = instance.initScraperCache()
 
 		instance.RefreshConfig()
 
@@ -183,13 +183,13 @@ func initPluginCache() *plugin.Cache {
 }
 
 // initScraperCache initializes a new scraper cache and returns it.
-func initScraperCache() *scraper.Cache {
+func (s *singleton) initScraperCache() *scraper.Cache {
 	scraperConfig := scraper.GlobalConfig{
 		Path:      config.GetScrapersPath(),
 		UserAgent: config.GetScraperUserAgent(),
 		CDPPath:   config.GetScraperCDPPath(),
 	}
-	ret, err := scraper.NewCache(scraperConfig)
+	ret, err := scraper.NewCache(scraperConfig, s)
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
@@ -213,7 +213,7 @@ func (s *singleton) RefreshConfig() {
 // RefreshScraperCache refreshes the scraper cache. Call this when scraper
 // configuration changes.
 func (s *singleton) RefreshScraperCache() {
-	s.ScraperCache = initScraperCache()
+	s.ScraperCache = s.initScraperCache()
 }
 
 func (s *singleton) WithTxn(ctx context.Context, fn func(r models.Repository) error) error {

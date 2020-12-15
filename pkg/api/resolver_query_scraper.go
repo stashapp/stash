@@ -95,7 +95,7 @@ func (r *queryResolver) QueryStashBoxScene(ctx context.Context, input models.Sta
 		return nil, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex])
+	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
 
 	if len(input.SceneIds) > 0 {
 		return client.FindStashBoxScenesByFingerprints(input.SceneIds)

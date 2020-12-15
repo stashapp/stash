@@ -649,12 +649,10 @@ func (t *ImportTask) getPerformers(names []string, tx *sqlx.Tx) ([]*models.Perfo
 	return performers, nil
 }
 
-func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int, tx *sqlx.Tx) ([]models.MoviesScenes, error) {
-	mqb := sqlite.NewMovieQueryBuilder()
-
+func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int, mqb models.MovieReader) ([]models.MoviesScenes, error) {
 	var movies []models.MoviesScenes
 	for _, inputMovie := range input {
-		movie, err := mqb.FindByName(inputMovie.MovieName, tx, false)
+		movie, err := mqb.FindByName(inputMovie.MovieName, false)
 		if err != nil {
 			return nil, err
 		}

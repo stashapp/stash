@@ -63,17 +63,25 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 	}, nil
 }
 
-func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config models.SceneParserInput) (*models.SceneParserResultType, error) {
+func (r *queryResolver) ParseSceneFilenames(ctx context.Context, filter *models.FindFilterType, config models.SceneParserInput) (ret *models.SceneParserResultType, err error) {
 	parser := manager.NewSceneFilenameParser(filter, config)
 
-	result, count, err := parser.Parse()
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		result, count, err := parser.Parse(repo)
 
-	if err != nil {
+		if err != nil {
+			return err
+		}
+
+		ret = &models.SceneParserResultType{
+			Count:   count,
+			Results: result,
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
-	return &models.SceneParserResultType{
-		Count:   count,
-		Results: result,
-	}, nil
+	return ret, nil
 }

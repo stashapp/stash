@@ -8,7 +8,6 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -70,11 +69,10 @@ func MovieCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		qb := sqlite.NewMovieQueryBuilder()
 		var movie *models.Movie
 		if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			var err error
-			movie, err = qb.Find(movieID, nil)
+			movie, err = repo.Movie().Find(movieID)
 			return err
 		}); err != nil {
 			http.Error(w, http.StatusText(404), 404)

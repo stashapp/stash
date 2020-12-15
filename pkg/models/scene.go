@@ -21,7 +21,7 @@ type SceneReader interface {
 	All() ([]*Scene, error)
 	// Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]*Scene, int)
 	// QueryAllByPathRegex(regex string) ([]*Scene, error)
-	// QueryByPathRegex(findFilter *FindFilterType) ([]*Scene, int)
+	QueryByPathRegex(findFilter *FindFilterType) ([]*Scene, int)
 	GetSceneCover(sceneID int) ([]byte, error)
 	GetMovies(sceneID int) ([]MoviesScenes, error)
 	GetTagIDs(imageID int) ([]int, error)

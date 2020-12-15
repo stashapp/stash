@@ -5,30 +5,62 @@ import (
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
-func (r *queryResolver) FindMovie(ctx context.Context, id string) (*models.Movie, error) {
-	qb := sqlite.NewMovieQueryBuilder()
-	idInt, _ := strconv.Atoi(id)
-	return qb.Find(idInt, nil)
+func (r *queryResolver) FindMovie(ctx context.Context, id string) (ret *models.Movie, err error) {
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Movie().Find(idInt)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.MovieFilterType, filter *models.FindFilterType) (*models.FindMoviesResultType, error) {
-	qb := sqlite.NewMovieQueryBuilder()
-	movies, total := qb.Query(movieFilter, filter)
-	return &models.FindMoviesResultType{
-		Count:  total,
-		Movies: movies,
-	}, nil
+func (r *queryResolver) FindMovies(ctx context.Context, movieFilter *models.MovieFilterType, filter *models.FindFilterType) (ret *models.FindMoviesResultType, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		movies, total, err := repo.Movie().Query(movieFilter, filter)
+		if err != nil {
+			return err
+		}
+
+		ret = &models.FindMoviesResultType{
+			Count:  total,
+			Movies: movies,
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *queryResolver) AllMovies(ctx context.Context) ([]*models.Movie, error) {
-	qb := sqlite.NewMovieQueryBuilder()
-	return qb.All()
+func (r *queryResolver) AllMovies(ctx context.Context) (ret []*models.Movie, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Movie().All()
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *queryResolver) AllMoviesSlim(ctx context.Context) ([]*models.Movie, error) {
-	qb := sqlite.NewMovieQueryBuilder()
-	return qb.AllSlim()
+func (r *queryResolver) AllMoviesSlim(ctx context.Context) (ret []*models.Movie, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Movie().AllSlim()
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

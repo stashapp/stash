@@ -1,4 +1,4 @@
-package sqlite
+package scraper
 
 import (
 	"strconv"
@@ -8,10 +8,8 @@ import (
 
 // MatchScrapedScenePerformer matches the provided performer with the
 // performers in the database and sets the ID field if one is found.
-func MatchScrapedScenePerformer(p *models.ScrapedScenePerformer) error {
-	qb := NewPerformerQueryBuilder()
-
-	performers, err := qb.FindByNames([]string{p.Name}, nil, true)
+func MatchScrapedScenePerformer(qb models.PerformerReader, p *models.ScrapedScenePerformer) error {
+	performers, err := qb.FindByNames([]string{p.Name}, true)
 
 	if err != nil {
 		return err
@@ -29,10 +27,8 @@ func MatchScrapedScenePerformer(p *models.ScrapedScenePerformer) error {
 
 // MatchScrapedSceneStudio matches the provided studio with the studios
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneStudio(s *models.ScrapedSceneStudio) error {
-	qb := NewStudioQueryBuilder()
-
-	studio, err := qb.FindByName(s.Name, nil, true)
+func MatchScrapedSceneStudio(qb models.StudioReader, s *models.ScrapedSceneStudio) error {
+	studio, err := qb.FindByName(s.Name, true)
 
 	if err != nil {
 		return err
@@ -50,10 +46,8 @@ func MatchScrapedSceneStudio(s *models.ScrapedSceneStudio) error {
 
 // MatchScrapedSceneMovie matches the provided movie with the movies
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneMovie(m *models.ScrapedSceneMovie) error {
-	qb := NewMovieQueryBuilder()
-
-	movies, err := qb.FindByNames([]string{m.Name}, nil, true)
+func MatchScrapedSceneMovie(qb models.MovieReader, m *models.ScrapedSceneMovie) error {
+	movies, err := qb.FindByNames([]string{m.Name}, true)
 
 	if err != nil {
 		return err
@@ -71,10 +65,8 @@ func MatchScrapedSceneMovie(m *models.ScrapedSceneMovie) error {
 
 // MatchScrapedSceneTag matches the provided tag with the tags
 // in the database and sets the ID field if one is found.
-func MatchScrapedSceneTag(s *models.ScrapedSceneTag) error {
-	qb := NewTagQueryBuilder()
-
-	tag, err := qb.FindByName(s.Name, nil, true)
+func MatchScrapedSceneTag(qb models.TagReader, s *models.ScrapedSceneTag) error {
+	tag, err := qb.FindByName(s.Name, true)
 
 	if err != nil {
 		return err

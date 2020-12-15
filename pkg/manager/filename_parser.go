@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -434,12 +433,6 @@ type SceneFilenameParser struct {
 	studioCache    map[string]*models.Studio
 	movieCache     map[string]*models.Movie
 	tagCache       map[string]*models.Tag
-
-	performerQuery performerQueryer
-	sceneQuery     sceneQueryer
-	tagQuery       tagQueryer
-	studioQuery    studioQueryer
-	movieQuery     movieQueryer
 }
 
 func NewSceneFilenameParser(filter *models.FindFilterType, config models.SceneParserInput) *SceneFilenameParser {
@@ -455,21 +448,6 @@ func NewSceneFilenameParser(filter *models.FindFilterType, config models.ScenePa
 	p.tagCache = make(map[string]*models.Tag)
 
 	p.initWhiteSpaceRegex()
-
-	performerQuery := sqlite.NewPerformerQueryBuilder()
-	p.performerQuery = &performerQuery
-
-	sceneQuery := sqlite.NewSceneQueryBuilder()
-	p.sceneQuery = &sceneQuery
-
-	tagQuery := sqlite.NewTagQueryBuilder()
-	p.tagQuery = &tagQuery
-
-	studioQuery := sqlite.NewStudioQueryBuilder()
-	p.studioQuery = &studioQuery
-
-	movieQuery := sqlite.NewMovieQueryBuilder()
-	p.movieQuery = &movieQuery
 
 	return p
 }
@@ -490,7 +468,7 @@ func (p *SceneFilenameParser) initWhiteSpaceRegex() {
 	}
 }
 
-func (p *SceneFilenameParser) Parse() ([]*models.SceneParserResult, int, error) {
+func (p *SceneFilenameParser) Parse(repo models.ReaderRepository) ([]*models.SceneParserResult, int, error) {
 	// perform the query to find the scenes
 	mapper, err := newParseMapper(p.Pattern, p.ParserInput.IgnoreWords)
 
@@ -500,14 +478,14 @@ func (p *SceneFilenameParser) Parse() ([]*models.SceneParserResult, int, error) 
 
 	p.Filter.Q = &mapper.regexString
 
-	scenes, total := p.sceneQuery.QueryByPathRegex(p.Filter)
+	scenes, total := repo.Scene().QueryByPathRegex(p.Filter)
 
-	ret := p.parseScenes(scenes, mapper)
+	ret := p.parseScenes(repo, scenes, mapper)
 
 	return ret, total, nil
 }
 
-func (p *SceneFilenameParser) parseScenes(scenes []*models.Scene, mapper *parseMapper) []*models.SceneParserResult {
+func (p *SceneFilenameParser) parseScenes(repo models.ReaderRepository, scenes []*models.Scene, mapper *parseMapper) []*models.SceneParserResult {
 	var ret []*models.SceneParserResult
 	for _, scene := range scenes {
 		sceneHolder := mapper.parse(scene)
@@ -516,7 +494,7 @@ func (p *SceneFilenameParser) parseScenes(scenes []*models.Scene, mapper *parseM
 			r := &models.SceneParserResult{
 				Scene: scene,
 			}
-			p.setParserResult(*sceneHolder, r)
+			p.setParserResult(repo, *sceneHolder, r)
 
 			if r != nil {
 				ret = append(ret, r)
@@ -537,7 +515,7 @@ func (p SceneFilenameParser) replaceWhitespaceCharacters(value string) string {
 	return value
 }
 
-func (p *SceneFilenameParser) queryPerformer(performerName string) *models.Performer {
+func (p *SceneFilenameParser) queryPerformer(qb models.PerformerReader, performerName string) *models.Performer {
 	// massage the performer name
 	performerName = delimiterRE.ReplaceAllString(performerName, " ")
 
@@ -547,7 +525,7 @@ func (p *SceneFilenameParser) queryPerformer(performerName string) *models.Perfo
 	}
 
 	// perform an exact match and grab the first
-	performers, _ := p.performerQuery.FindByNames([]string{performerName}, nil, true)
+	performers, _ := qb.FindByNames([]string{performerName}, true)
 
 	var ret *models.Performer
 	if len(performers) > 0 {
@@ -560,7 +538,7 @@ func (p *SceneFilenameParser) queryPerformer(performerName string) *models.Perfo
 	return ret
 }
 
-func (p *SceneFilenameParser) queryStudio(studioName string) *models.Studio {
+func (p *SceneFilenameParser) queryStudio(qb models.StudioReader, studioName string) *models.Studio {
 	// massage the performer name
 	studioName = delimiterRE.ReplaceAllString(studioName, " ")
 
@@ -569,7 +547,7 @@ func (p *SceneFilenameParser) queryStudio(studioName string) *models.Studio {
 		return ret
 	}
 
-	ret, _ := p.studioQuery.FindByName(studioName, nil, true)
+	ret, _ := qb.FindByName(studioName, true)
 
 	// add result to cache
 	p.studioCache[studioName] = ret
@@ -577,7 +555,7 @@ func (p *SceneFilenameParser) queryStudio(studioName string) *models.Studio {
 	return ret
 }
 
-func (p *SceneFilenameParser) queryMovie(movieName string) *models.Movie {
+func (p *SceneFilenameParser) queryMovie(qb models.MovieReader, movieName string) *models.Movie {
 	// massage the movie name
 	movieName = delimiterRE.ReplaceAllString(movieName, " ")
 
@@ -586,7 +564,7 @@ func (p *SceneFilenameParser) queryMovie(movieName string) *models.Movie {
 		return ret
 	}
 
-	ret, _ := p.movieQuery.FindByName(movieName, nil, true)
+	ret, _ := qb.FindByName(movieName, true)
 
 	// add result to cache
 	p.movieCache[movieName] = ret
@@ -594,7 +572,7 @@ func (p *SceneFilenameParser) queryMovie(movieName string) *models.Movie {
 	return ret
 }
 
-func (p *SceneFilenameParser) queryTag(tagName string) *models.Tag {
+func (p *SceneFilenameParser) queryTag(qb models.TagReader, tagName string) *models.Tag {
 	// massage the performer name
 	tagName = delimiterRE.ReplaceAllString(tagName, " ")
 
@@ -604,7 +582,7 @@ func (p *SceneFilenameParser) queryTag(tagName string) *models.Tag {
 	}
 
 	// match tag name exactly
-	ret, _ := p.tagQuery.FindByName(tagName, nil, true)
+	ret, _ := qb.FindByName(tagName, true)
 
 	// add result to cache
 	p.tagCache[tagName] = ret
@@ -612,12 +590,12 @@ func (p *SceneFilenameParser) queryTag(tagName string) *models.Tag {
 	return ret
 }
 
-func (p *SceneFilenameParser) setPerformers(h sceneHolder, result *models.SceneParserResult) {
+func (p *SceneFilenameParser) setPerformers(qb models.PerformerReader, h sceneHolder, result *models.SceneParserResult) {
 	// query for each performer
 	performersSet := make(map[int]bool)
 	for _, performerName := range h.performers {
 		if performerName != "" {
-			performer := p.queryPerformer(performerName)
+			performer := p.queryPerformer(qb, performerName)
 			if performer != nil {
 				if _, found := performersSet[performer.ID]; !found {
 					result.PerformerIds = append(result.PerformerIds, strconv.Itoa(performer.ID))
@@ -628,12 +606,12 @@ func (p *SceneFilenameParser) setPerformers(h sceneHolder, result *models.SceneP
 	}
 }
 
-func (p *SceneFilenameParser) setTags(h sceneHolder, result *models.SceneParserResult) {
+func (p *SceneFilenameParser) setTags(qb models.TagReader, h sceneHolder, result *models.SceneParserResult) {
 	// query for each performer
 	tagsSet := make(map[int]bool)
 	for _, tagName := range h.tags {
 		if tagName != "" {
-			tag := p.queryTag(tagName)
+			tag := p.queryTag(qb, tagName)
 			if tag != nil {
 				if _, found := tagsSet[tag.ID]; !found {
 					result.TagIds = append(result.TagIds, strconv.Itoa(tag.ID))
@@ -644,23 +622,23 @@ func (p *SceneFilenameParser) setTags(h sceneHolder, result *models.SceneParserR
 	}
 }
 
-func (p *SceneFilenameParser) setStudio(h sceneHolder, result *models.SceneParserResult) {
+func (p *SceneFilenameParser) setStudio(qb models.StudioReader, h sceneHolder, result *models.SceneParserResult) {
 	// query for each performer
 	if h.studio != "" {
-		studio := p.queryStudio(h.studio)
+		studio := p.queryStudio(qb, h.studio)
 		if studio != nil {
-			studioId := strconv.Itoa(studio.ID)
-			result.StudioID = &studioId
+			studioID := strconv.Itoa(studio.ID)
+			result.StudioID = &studioID
 		}
 	}
 }
 
-func (p *SceneFilenameParser) setMovies(h sceneHolder, result *models.SceneParserResult) {
+func (p *SceneFilenameParser) setMovies(qb models.MovieReader, h sceneHolder, result *models.SceneParserResult) {
 	// query for each movie
 	moviesSet := make(map[int]bool)
 	for _, movieName := range h.movies {
 		if movieName != "" {
-			movie := p.queryMovie(movieName)
+			movie := p.queryMovie(qb, movieName)
 			if movie != nil {
 				if _, found := moviesSet[movie.ID]; !found {
 					result.Movies = append(result.Movies, &models.SceneMovieID{
@@ -673,7 +651,7 @@ func (p *SceneFilenameParser) setMovies(h sceneHolder, result *models.SceneParse
 	}
 }
 
-func (p *SceneFilenameParser) setParserResult(h sceneHolder, result *models.SceneParserResult) {
+func (p *SceneFilenameParser) setParserResult(repo models.ReaderRepository, h sceneHolder, result *models.SceneParserResult) {
 	if h.result.Title.Valid {
 		title := h.result.Title.String
 		title = p.replaceWhitespaceCharacters(title)
@@ -695,15 +673,15 @@ func (p *SceneFilenameParser) setParserResult(h sceneHolder, result *models.Scen
 	}
 
 	if len(h.performers) > 0 {
-		p.setPerformers(h, result)
+		p.setPerformers(repo.Performer(), h, result)
 	}
 	if len(h.tags) > 0 {
-		p.setTags(h, result)
+		p.setTags(repo.Tag(), h, result)
 	}
-	p.setStudio(h, result)
+	p.setStudio(repo.Studio(), h, result)
 
 	if len(h.movies) > 0 {
-		p.setMovies(h, result)
+		p.setMovies(repo.Movie(), h, result)
 	}
 
 }

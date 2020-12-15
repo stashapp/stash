@@ -757,6 +757,10 @@ func (t *sceneReaderWriter) All() ([]*models.Scene, error) {
 	return t.qb.All()
 }
 
+func (t *sceneReaderWriter) QueryByPathRegex(findFilter *models.FindFilterType) ([]*models.Scene, int) {
+	return t.qb.QueryByPathRegex(findFilter)
+}
+
 func (t *sceneReaderWriter) GetSceneCover(sceneID int) ([]byte, error) {
 	return t.qb.GetSceneCover(sceneID, t.tx)
 }

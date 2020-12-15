@@ -148,7 +148,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 		galleryQB := repo.Gallery()
 		studiosQB := sqlite.NewStudioQueryBuilder()
 		performersQB := sqlite.NewPerformerQueryBuilder()
-		moviesQB := sqlite.NewMovieQueryBuilder()
+		moviesQB := repo.Movie()
 		tagsQB := sqlite.NewTagQueryBuilder()
 		scenesCount, _ := scenesQB.Count()
 		scenesSize, _ := scenesQB.Size()

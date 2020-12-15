@@ -13,6 +13,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
@@ -24,11 +25,12 @@ const imageGetTimeout = time.Second * 30
 
 // Client represents the client interface to a stash-box server instance.
 type Client struct {
-	client *graphql.Client
+	client     *graphql.Client
+	txnManager models.TransactionManager
 }
 
 // NewClient returns a new instance of a stash-box client.
-func NewClient(box models.StashBox) *Client {
+func NewClient(box models.StashBox, txnManager models.TransactionManager) *Client {
 	authHeader := func(req *http.Request) {
 		req.Header.Set("ApiKey", box.APIKey)
 	}
@@ -38,7 +40,8 @@ func NewClient(box models.StashBox) *Client {
 	}
 
 	return &Client{
-		client: client,
+		client:     client,
+		txnManager: txnManager,
 	}
 }
 
@@ -53,7 +56,7 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 
 	var ret []*models.ScrapedScene
 	for _, s := range sceneFragments {
-		ss, err := sceneFragmentToScrapedScene(s)
+		ss, err := sceneFragmentToScrapedScene(c.txnManager, s)
 		if err != nil {
 			return nil, err
 		}
@@ -109,7 +112,7 @@ func (c Client) findStashBoxScenesByFingerprints(fingerprints []string) ([]*mode
 		sceneFragments := scenes.FindScenesByFingerprints
 
 		for _, s := range sceneFragments {
-			ss, err := sceneFragmentToScrapedScene(s)
+			ss, err := sceneFragmentToScrapedScene(c.txnManager, s)
 			if err != nil {
 				return nil, err
 			}
@@ -356,7 +359,7 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 	return fingerprints
 }
 
-func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene, error) {
+func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphql.SceneFragment) (*models.ScrapedScene, error) {
 	stashID := s.ID
 	ss := &models.ScrapedScene{
 		Title:        s.Title,
@@ -376,42 +379,51 @@ func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene
 		ss.Image = getFirstImage(s.Images)
 	}
 
-	if s.Studio != nil {
-		studioID := s.Studio.ID
-		ss.Studio = &models.ScrapedSceneStudio{
-			Name:         s.Studio.Name,
-			URL:          findURL(s.Studio.Urls, "HOME"),
-			RemoteSiteID: &studioID,
+	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		pqb := r.Performer()
+		tqb := r.Tag()
+
+		if s.Studio != nil {
+			studioID := s.Studio.ID
+			ss.Studio = &models.ScrapedSceneStudio{
+				Name:         s.Studio.Name,
+				URL:          findURL(s.Studio.Urls, "HOME"),
+				RemoteSiteID: &studioID,
+			}
+
+			err := scraper.MatchScrapedSceneStudio(r.Studio(), ss.Studio)
+			if err != nil {
+				return err
+			}
 		}
 
-		err := sqlite.MatchScrapedSceneStudio(ss.Studio)
-		if err != nil {
-			return nil, err
-		}
-	}
+		for _, p := range s.Performers {
+			sp := performerFragmentToScrapedScenePerformer(p.Performer)
 
-	for _, p := range s.Performers {
-		sp := performerFragmentToScrapedScenePerformer(p.Performer)
+			err := scraper.MatchScrapedScenePerformer(pqb, sp)
+			if err != nil {
+				return err
+			}
 
-		err := sqlite.MatchScrapedScenePerformer(sp)
-		if err != nil {
-			return nil, err
+			ss.Performers = append(ss.Performers, sp)
 		}
 
-		ss.Performers = append(ss.Performers, sp)
-	}
+		for _, t := range s.Tags {
+			st := &models.ScrapedSceneTag{
+				Name: t.Name,
+			}
 
-	for _, t := range s.Tags {
-		st := &models.ScrapedSceneTag{
-			Name: t.Name,
+			err := scraper.MatchScrapedSceneTag(tqb, st)
+			if err != nil {
+				return err
+			}
+
+			ss.Tags = append(ss.Tags, st)
 		}
 
-		err := sqlite.MatchScrapedSceneTag(st)
-		if err != nil {
-			return nil, err
-		}
-
-		ss.Tags = append(ss.Tags, st)
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	return ss, nil
