@@ -110,3 +110,56 @@ func (t *Transaction) Tag() models.TagReaderWriter {
 	t.ensureTx()
 	return NewTagReaderWriter(t.tx)
 }
+
+type ReadTransaction struct {
+	Transaction
+}
+
+func (t *ReadTransaction) Repository() models.ReaderRepository {
+	return t
+}
+
+func (t *ReadTransaction) Gallery() models.GalleryReader {
+	t.ensureTx()
+	return NewGalleryReaderWriter(t.tx)
+}
+
+func (t *ReadTransaction) Image() models.ImageReader {
+	t.ensureTx()
+	return NewImageReaderWriter(t.tx)
+}
+
+func (t *ReadTransaction) Join() models.JoinReader {
+	t.ensureTx()
+	return NewJoinReaderWriter(t.tx)
+}
+
+func (t *ReadTransaction) Movie() models.MovieReader {
+	t.ensureTx()
+	return NewMovieReaderWriter(t.tx)
+}
+
+func (t *ReadTransaction) Performer() models.PerformerReader {
+	t.ensureTx()
+	return NewPerformerReaderWriter(t.tx)
+}
+
+func (t *ReadTransaction) SceneMarker() models.SceneMarkerReader {
+	t.ensureTx()
+	return NewSceneMarkerReaderWriter(t.tx)
+}
+
+func (t *ReadTransaction) Scene() models.SceneReader {
+	t.ensureTx()
+	return NewSceneReaderWriter(t.tx)
+}
+
+func (t *ReadTransaction) Studio() models.StudioReader {
+	t.ensureTx()
+	return NewStudioReaderWriter(t.tx)
+}
+
+func (t *ReadTransaction) Tag() models.TagReader {
+	t.ensureTx()
+	return NewTagReaderWriter(t.tx)
+}

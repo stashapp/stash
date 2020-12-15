@@ -222,3 +222,12 @@ func (s *singleton) WithTxn(ctx context.Context, fn func(r models.Repository) er
 	}
 	return models.WithTxn(&txn, fn)
 }
+
+func (s *singleton) WithReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {
+	txn := sqlite.ReadTransaction{
+		sqlite.Transaction{
+			Ctx: ctx,
+		},
+	}
+	return models.WithROTxn(&txn, fn)
+}

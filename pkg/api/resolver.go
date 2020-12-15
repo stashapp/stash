@@ -86,6 +86,10 @@ func (r *Resolver) withTxn(ctx context.Context, fn func(r models.Repository) err
 	return r.txnManager.WithTxn(ctx, fn)
 }
 
+func (r *Resolver) withReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {
+	return r.txnManager.WithReadTxn(ctx, fn)
+}
+
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) ([]*models.SceneMarker, error) {
 	qb := sqlite.NewSceneMarkerQueryBuilder()
 	return qb.Wall(q)

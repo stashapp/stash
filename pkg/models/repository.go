@@ -11,3 +11,15 @@ type Repository interface {
 	Studio() StudioReaderWriter
 	Tag() TagReaderWriter
 }
+
+type ReaderRepository interface {
+	Gallery() GalleryReader
+	Image() ImageReader
+	Join() JoinReader
+	Movie() MovieReader
+	Performer() PerformerReader
+	SceneMarker() SceneMarkerReader
+	Scene() SceneReader
+	Studio() StudioReader
+	Tag() TagReader
+}

@@ -23,7 +23,7 @@ func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*stri
 }
 
 func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret []*models.Image, err error) {
-	if err := r.withTxn(ctx, func(r models.Repository) error {
+	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		ret, err = r.Image().FindByGalleryID(obj.ID)
 		return err
@@ -35,7 +35,7 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 }
 
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
-	if err := r.withTxn(ctx, func(r models.Repository) error {
+	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
 		imgs, err := r.Image().FindByGalleryID(obj.ID)
 		if err != nil {
 			return err
@@ -95,7 +95,7 @@ func (r *galleryResolver) Scene(ctx context.Context, obj *models.Gallery) (ret *
 		return nil, nil
 	}
 
-	if err := r.withTxn(ctx, func(r models.Repository) error {
+	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		ret, err = r.Scene().Find(int(obj.SceneID.Int64))
 
@@ -112,7 +112,7 @@ func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret 
 		return nil, nil
 	}
 
-	if err := r.withTxn(ctx, func(r models.Repository) error {
+	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		ret, err = r.Studio().Find(int(obj.StudioID.Int64))
 		return err
@@ -124,7 +124,7 @@ func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret 
 }
 
 func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []*models.Tag, err error) {
-	if err := r.withTxn(ctx, func(r models.Repository) error {
+	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		ret, err = r.Tag().FindByGalleryID(obj.ID)
 		return err
@@ -136,7 +136,7 @@ func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []
 }
 
 func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (ret []*models.Performer, err error) {
-	if err := r.withTxn(ctx, func(r models.Repository) error {
+	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		ret, err = r.Performer().FindByGalleryID(obj.ID)
 		return err
@@ -148,7 +148,7 @@ func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (
 }
 
 func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (ret int, err error) {
-	if err := r.withTxn(ctx, func(r models.Repository) error {
+	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
 		var err error
 		ret, err = r.Image().CountByGalleryID(obj.ID)
 		return err

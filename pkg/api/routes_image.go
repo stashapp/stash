@@ -9,7 +9,6 @@ import (
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -58,12 +57,16 @@ func ImageCtx(next http.Handler) http.Handler {
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		qb := sqlite.NewImageQueryBuilder()
-		if imageID == 0 {
-			image, _ = qb.FindByChecksum(imageIdentifierQueryParam)
-		} else {
-			image, _ = qb.Find(imageID)
-		}
+		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			qb := repo.Image()
+			if imageID == 0 {
+				image, _ = qb.FindByChecksum(imageIdentifierQueryParam)
+			} else {
+				image, _ = qb.Find(imageID)
+			}
+
+			return nil
+		})
 
 		if image == nil {
 			http.Error(w, http.StatusText(404), 404)

@@ -12,7 +12,7 @@ func (r *sceneMarkerResolver) Scene(ctx context.Context, obj *models.SceneMarker
 		panic("Invalid scene id")
 	}
 
-	if err := r.withTxn(ctx, func(r models.Repository) error {
+	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
 		sceneID := int(obj.SceneID.Int64)
 		ret, err = r.Scene().Find(sceneID)
 		return err
@@ -24,7 +24,7 @@ func (r *sceneMarkerResolver) Scene(ctx context.Context, obj *models.SceneMarker
 }
 
 func (r *sceneMarkerResolver) PrimaryTag(ctx context.Context, obj *models.SceneMarker) (ret *models.Tag, err error) {
-	if err := r.withTxn(ctx, func(r models.Repository) error {
+	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
 		ret, err = r.Tag().Find(obj.PrimaryTagID)
 		return err
 	}); err != nil {
@@ -35,7 +35,7 @@ func (r *sceneMarkerResolver) PrimaryTag(ctx context.Context, obj *models.SceneM
 }
 
 func (r *sceneMarkerResolver) Tags(ctx context.Context, obj *models.SceneMarker) (ret []*models.Tag, err error) {
-	if err := r.withTxn(ctx, func(r models.Repository) error {
+	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
 		ret, err = r.Tag().FindBySceneMarkerID(obj.ID)
 		return err
 	}); err != nil {
