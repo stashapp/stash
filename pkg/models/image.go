@@ -6,7 +6,7 @@ type ImageReader interface {
 	FindByChecksum(checksum string) (*Image, error)
 	FindByGalleryID(galleryID int) ([]*Image, error)
 	CountByGalleryID(galleryID int) (int, error)
-	// FindByPath(path string) (*Image, error)
+	FindByPath(path string) (*Image, error)
 	// FindByPerformerID(performerID int) ([]*Image, error)
 	// CountByPerformerID(performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Image, error)

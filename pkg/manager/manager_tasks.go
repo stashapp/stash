@@ -716,9 +716,10 @@ func (s *singleton) Clean() {
 	s.Status.SetStatus(Clean)
 	s.Status.indefiniteProgress()
 
+	// TODO - do this in txn
 	qb := sqlite.NewSceneQueryBuilder()
 	iqb := sqlite.NewImageQueryBuilder()
-	gqb := sqlite.NewGalleryQueryBuilder()
+	gqb := sqlite.NewGalleryReaderWriter(nil)
 	go func() {
 		defer s.returnToIdleState()
 

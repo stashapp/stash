@@ -7,10 +7,10 @@ type GalleryReader interface {
 	FindByPath(path string) (*Gallery, error)
 	FindBySceneID(sceneID int) (*Gallery, error)
 	FindByImageID(imageID int) ([]*Gallery, error)
-	// ValidGalleriesForScenePath(scenePath string) ([]*Gallery, error)
-	// Count() (int, error)
+	ValidGalleriesForScenePath(scenePath string) ([]*Gallery, error)
+	Count() (int, error)
 	All() ([]*Gallery, error)
-	// Query(galleryFilter *GalleryFilterType, findFilter *FindFilterType) ([]*Gallery, int)
+	Query(galleryFilter *GalleryFilterType, findFilter *FindFilterType) ([]*Gallery, int, error)
 	GetPerformerIDs(galleryID int) ([]int, error)
 	GetTagIDs(galleryID int) ([]int, error)
 	GetImageIDs(galleryID int) ([]int, error)
@@ -20,6 +20,7 @@ type GalleryWriter interface {
 	Create(newGallery Gallery) (*Gallery, error)
 	Update(updatedGallery Gallery) (*Gallery, error)
 	UpdatePartial(updatedGallery GalleryPartial) (*Gallery, error)
+	UpdateFileModTime(id int, modTime NullSQLiteTimestamp) error
 	Destroy(id int) error
 	ClearGalleryId(sceneID int) error
 	UpdatePerformers(galleryID int, performerIDs []int) error

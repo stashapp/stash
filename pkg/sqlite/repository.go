@@ -312,6 +312,12 @@ func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPa
 	return idsResult, countResult, nil
 }
 
+func (r *repository) newQuery() repositoryQueryBuilder {
+	return repositoryQueryBuilder{
+		repository: r,
+	}
+}
+
 type joinRepository struct {
 	repository
 	fkColumn string

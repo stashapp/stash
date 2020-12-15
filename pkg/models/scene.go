@@ -5,7 +5,7 @@ type SceneReader interface {
 	FindMany(ids []int) ([]*Scene, error)
 	FindByChecksum(checksum string) (*Scene, error)
 	FindByOSHash(oshash string) (*Scene, error)
-	// FindByPath(path string) (*Scene, error)
+	FindByPath(path string) (*Scene, error)
 	FindByPerformerID(performerID int) ([]*Scene, error)
 	CountByPerformerID(performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Scene, error)
@@ -36,10 +36,8 @@ type SceneWriter interface {
 	IncrementOCounter(id int) (int, error)
 	DecrementOCounter(id int) (int, error)
 	ResetOCounter(id int) (int, error)
+	UpdateFileModTime(id int, modTime NullSQLiteTimestamp) error
 	Destroy(id int) error
-	// UpdateFormat(id int, format string) error
-	// UpdateOSHash(id int, oshash string) error
-	// UpdateChecksum(id int, checksum string) error
 	UpdateSceneCover(sceneID int, cover []byte) error
 	// DestroySceneCover(sceneID int) error
 	UpdatePerformers(sceneID int, performerIDs []int) error

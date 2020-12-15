@@ -188,13 +188,14 @@ func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 func (s *stashScraper) scrapeGalleryByFragment(scene models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
 	// query by MD5
 	// assumes that the gallery exists in the database
-	qb := sqlite.NewGalleryQueryBuilder()
+	// TODO - use transaction
+	qb := sqlite.NewGalleryReaderWriter(nil)
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	storedGallery, err := qb.Find(id, nil)
+	storedGallery, err := qb.Find(id)
 
 	if err != nil {
 		return nil, err
@@ -275,11 +276,12 @@ func sceneFromUpdateFragment(scene models.SceneUpdateInput) (*models.Scene, erro
 }
 
 func galleryFromUpdateFragment(gallery models.GalleryUpdateInput) (*models.Gallery, error) {
-	qb := sqlite.NewGalleryQueryBuilder()
+	// TODO - use transaction
+	qb := sqlite.NewGalleryReaderWriter(nil)
 	id, err := strconv.Atoi(gallery.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	return qb.Find(id, nil)
+	return qb.Find(id)
 }

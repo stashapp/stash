@@ -510,6 +510,10 @@ func (t *imageReaderWriter) FindMany(ids []int) ([]*models.Image, error) {
 	return t.qb.FindMany(ids)
 }
 
+func (t *imageReaderWriter) FindByPath(path string) (*models.Image, error) {
+	return t.qb.FindByPath(path)
+}
+
 func (t *imageReaderWriter) FindByChecksum(checksum string) (*models.Image, error) {
 	return t.qb.FindByChecksum(checksum)
 }
@@ -548,6 +552,10 @@ func (t *imageReaderWriter) DecrementOCounter(id int) (int, error) {
 
 func (t *imageReaderWriter) ResetOCounter(id int) (int, error) {
 	return t.qb.ResetOCounter(id, t.tx)
+}
+
+func (t *imageReaderWriter) UpdateFileModTime(id int, modTime models.NullSQLiteTimestamp) error {
+	return t.qb.UpdateFileModTime(id, modTime, t.tx)
 }
 
 func (t *imageReaderWriter) GetGalleryIDs(imageID int) ([]int, error) {

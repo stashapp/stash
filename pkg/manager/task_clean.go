@@ -159,10 +159,10 @@ func (t *CleanTask) deleteScene(sceneID int) {
 
 func (t *CleanTask) deleteGallery(galleryID int) {
 	ctx := context.TODO()
-	qb := sqlite.NewGalleryQueryBuilder()
 	tx := database.DB.MustBeginTx(ctx, nil)
+	qb := sqlite.NewGalleryReaderWriter(tx)
 
-	err := qb.Destroy(galleryID, tx)
+	err := qb.Destroy(galleryID)
 
 	if err != nil {
 		logger.Errorf("Error deleting gallery from database: %s", err.Error())

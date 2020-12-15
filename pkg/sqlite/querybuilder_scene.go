@@ -565,30 +565,6 @@ func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}, tx *s
 	return []*models.Scene(ret), nil
 }
 
-func (qb *SceneQueryBuilder) UpdateFormat(id int, format string, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
-	return qb.repository(tx).updateMap(id, map[string]interface{}{
-		"format": format,
-	})
-}
-
-func (qb *SceneQueryBuilder) UpdateOSHash(id int, oshash string, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
-	return qb.repository(tx).updateMap(id, map[string]interface{}{
-		"oshash": oshash,
-	})
-}
-
-func (qb *SceneQueryBuilder) UpdateChecksum(id int, checksum string, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
-	return qb.repository(tx).updateMap(id, map[string]interface{}{
-		"checksum": checksum,
-	})
-}
-
 func (qb *SceneQueryBuilder) UpdateSceneCover(sceneID int, cover []byte, tx *sqlx.Tx) error {
 	ensureTx(tx)
 
@@ -741,6 +717,10 @@ func (t *sceneReaderWriter) FindMany(ids []int) ([]*models.Scene, error) {
 	return t.qb.FindMany(ids)
 }
 
+func (t *sceneReaderWriter) FindByPath(path string) (*models.Scene, error) {
+	return t.qb.FindByPath(path)
+}
+
 func (t *sceneReaderWriter) FindByChecksum(checksum string) (*models.Scene, error) {
 	return t.qb.FindByChecksum(checksum)
 }
@@ -807,6 +787,10 @@ func (t *sceneReaderWriter) DecrementOCounter(id int) (int, error) {
 
 func (t *sceneReaderWriter) ResetOCounter(id int) (int, error) {
 	return t.qb.ResetOCounter(id, t.tx)
+}
+
+func (t *sceneReaderWriter) UpdateFileModTime(id int, modTime models.NullSQLiteTimestamp) error {
+	return t.qb.UpdateFileModTime(id, modTime, t.tx)
 }
 
 func (t *sceneReaderWriter) UpdateSceneCover(sceneID int, cover []byte) error {

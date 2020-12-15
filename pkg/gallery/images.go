@@ -4,6 +4,7 @@ import (
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func GetFiles(g *models.Gallery, baseURL string) []*models.GalleryFilesType {
@@ -28,4 +29,14 @@ func GetFiles(g *models.Gallery, baseURL string) []*models.GalleryFilesType {
 	}
 
 	return galleryFiles
+}
+
+func AddImage(qb models.GalleryReaderWriter, galleryID int, imageID int) error {
+	imageIDs, err := qb.GetImageIDs(galleryID)
+	if err != nil {
+		return err
+	}
+
+	imageIDs = utils.IntAppendUnique(imageIDs, imageID)
+	return qb.UpdateImages(galleryID, imageIDs)
 }

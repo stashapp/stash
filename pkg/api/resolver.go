@@ -109,16 +109,31 @@ func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *st
 	if scene_id == nil {
 		panic("nil scene id") // TODO make scene_id mandatory
 	}
-	sceneID, _ := strconv.Atoi(*scene_id)
-	sqb := sqlite.NewSceneQueryBuilder()
-	scene, err := sqb.Find(sceneID)
+	sceneID, err := strconv.Atoi(*scene_id)
 	if err != nil {
 		return nil, err
 	}
 
-	qb := sqlite.NewGalleryQueryBuilder()
-	validGalleries, err := qb.ValidGalleriesForScenePath(scene.Path)
-	sceneGallery, _ := qb.FindBySceneID(sceneID, nil)
+	var validGalleries []*models.Gallery
+	var sceneGallery *models.Gallery
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		sqb := sqlite.NewSceneQueryBuilder()
+		scene, err := sqb.Find(sceneID)
+		if err != nil {
+			return err
+		}
+
+		qb := repo.Gallery()
+		validGalleries, err = qb.ValidGalleriesForScenePath(scene.Path)
+		if err != nil {
+			return err
+		}
+		sceneGallery, err = qb.FindBySceneID(sceneID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
 	if sceneGallery != nil {
 		validGalleries = append(validGalleries, sceneGallery)
 	}
@@ -126,33 +141,43 @@ func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *st
 }
 
 func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, error) {
-	scenesQB := sqlite.NewSceneQueryBuilder()
-	scenesCount, _ := scenesQB.Count()
-	scenesSize, _ := scenesQB.Size()
-	imageQB := sqlite.NewImageQueryBuilder()
-	imageCount, _ := imageQB.Count()
-	imageSize, _ := imageQB.Size()
-	galleryQB := sqlite.NewGalleryQueryBuilder()
-	galleryCount, _ := galleryQB.Count()
-	performersQB := sqlite.NewPerformerQueryBuilder()
-	performersCount, _ := performersQB.Count()
-	studiosQB := sqlite.NewStudioQueryBuilder()
-	studiosCount, _ := studiosQB.Count()
-	moviesQB := sqlite.NewMovieQueryBuilder()
-	moviesCount, _ := moviesQB.Count()
-	tagsQB := sqlite.NewTagQueryBuilder()
-	tagsCount, _ := tagsQB.Count()
-	return &models.StatsResultType{
-		SceneCount:     scenesCount,
-		ScenesSize:     scenesSize,
-		ImageCount:     imageCount,
-		ImagesSize:     imageSize,
-		GalleryCount:   galleryCount,
-		PerformerCount: performersCount,
-		StudioCount:    studiosCount,
-		MovieCount:     moviesCount,
-		TagCount:       tagsCount,
-	}, nil
+	var ret models.StatsResultType
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		scenesQB := sqlite.NewSceneQueryBuilder()
+		imageQB := sqlite.NewImageQueryBuilder()
+		galleryQB := repo.Gallery()
+		studiosQB := sqlite.NewStudioQueryBuilder()
+		performersQB := sqlite.NewPerformerQueryBuilder()
+		moviesQB := sqlite.NewMovieQueryBuilder()
+		tagsQB := sqlite.NewTagQueryBuilder()
+		scenesCount, _ := scenesQB.Count()
+		scenesSize, _ := scenesQB.Size()
+		imageCount, _ := imageQB.Count()
+		imageSize, _ := imageQB.Size()
+		galleryCount, _ := galleryQB.Count()
+		performersCount, _ := performersQB.Count()
+		studiosCount, _ := studiosQB.Count()
+		moviesCount, _ := moviesQB.Count()
+		tagsCount, _ := tagsQB.Count()
+
+		ret = models.StatsResultType{
+			SceneCount:     scenesCount,
+			ScenesSize:     scenesSize,
+			ImageCount:     imageCount,
+			ImagesSize:     imageSize,
+			GalleryCount:   galleryCount,
+			PerformerCount: performersCount,
+			StudioCount:    studiosCount,
+			MovieCount:     moviesCount,
+			TagCount:       tagsCount,
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
 }
 
 func (r *queryResolver) Version(ctx context.Context) (*models.Version, error) {

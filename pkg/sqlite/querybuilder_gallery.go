@@ -17,75 +17,72 @@ const galleriesTagsTable = "galleries_tags"
 const galleriesImagesTable = "galleries_images"
 const galleryIDColumn = "gallery_id"
 
-type GalleryQueryBuilder struct{}
-
-func NewGalleryQueryBuilder() GalleryQueryBuilder {
-	return GalleryQueryBuilder{}
+type GalleryQueryBuilder struct {
+	repository
 }
 
-func galleryConstructor() interface{} {
-	return &models.Gallery{}
-}
-
-func (qb *GalleryQueryBuilder) repository(tx *sqlx.Tx) *repository {
-	return &repository{
-		tx:          tx,
-		tableName:   galleryTable,
-		idColumn:    idColumn,
-		constructor: galleryConstructor,
+func NewGalleryReaderWriter(tx *sqlx.Tx) *GalleryQueryBuilder {
+	return &GalleryQueryBuilder{
+		repository{
+			tx:        tx,
+			tableName: galleryTable,
+			idColumn:  idColumn,
+			constructor: func() interface{} {
+				return &models.Gallery{}
+			},
+		},
 	}
 }
 
-func (qb *GalleryQueryBuilder) Create(newObject models.Gallery, tx *sqlx.Tx) (*models.Gallery, error) {
+func (qb *GalleryQueryBuilder) Create(newObject models.Gallery) (*models.Gallery, error) {
 	var ret models.Gallery
-	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
+	if err := qb.insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
 }
 
-func (qb *GalleryQueryBuilder) Update(updatedObject models.Gallery, tx *sqlx.Tx) (*models.Gallery, error) {
+func (qb *GalleryQueryBuilder) Update(updatedObject models.Gallery) (*models.Gallery, error) {
 	const partial = false
-	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.Find(updatedObject.ID, tx)
+	return qb.Find(updatedObject.ID)
 }
 
-func (qb *GalleryQueryBuilder) UpdatePartial(updatedObject models.GalleryPartial, tx *sqlx.Tx) (*models.Gallery, error) {
+func (qb *GalleryQueryBuilder) UpdatePartial(updatedObject models.GalleryPartial) (*models.Gallery, error) {
 	const partial = true
-	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.Find(updatedObject.ID, tx)
+	return qb.Find(updatedObject.ID)
 }
 
-func (qb *GalleryQueryBuilder) UpdateChecksum(id int, checksum string, tx *sqlx.Tx) error {
-	return qb.repository(tx).updateMap(id, map[string]interface{}{
+func (qb *GalleryQueryBuilder) UpdateChecksum(id int, checksum string) error {
+	return qb.updateMap(id, map[string]interface{}{
 		"checksum": checksum,
 	})
 }
 
-func (qb *GalleryQueryBuilder) UpdateFileModTime(id int, modTime models.NullSQLiteTimestamp, tx *sqlx.Tx) error {
-	return qb.repository(tx).updateMap(id, map[string]interface{}{
+func (qb *GalleryQueryBuilder) UpdateFileModTime(id int, modTime models.NullSQLiteTimestamp) error {
+	return qb.updateMap(id, map[string]interface{}{
 		"file_mod_time": modTime,
 	})
 }
 
-func (qb *GalleryQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
-	return qb.repository(tx).destroyExisting([]int{id})
+func (qb *GalleryQueryBuilder) Destroy(id int) error {
+	return qb.destroyExisting([]int{id})
 }
 
 type GalleryNullSceneID struct {
 	SceneID sql.NullInt64
 }
 
-func (qb *GalleryQueryBuilder) ClearGalleryId(sceneID int, tx *sqlx.Tx) error {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
+func (qb *GalleryQueryBuilder) ClearGalleryId(sceneID int) error {
+	_, err := qb.tx.NamedExec(
 		`UPDATE galleries SET scene_id = null WHERE scene_id = :sceneid`,
 		GalleryNullSceneID{
 			SceneID: sql.NullInt64{
@@ -97,9 +94,9 @@ func (qb *GalleryQueryBuilder) ClearGalleryId(sceneID int, tx *sqlx.Tx) error {
 	return err
 }
 
-func (qb *GalleryQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Gallery, error) {
+func (qb *GalleryQueryBuilder) Find(id int) (*models.Gallery, error) {
 	var ret models.Gallery
-	if err := qb.repository(tx).get(id, &ret); err != nil {
+	if err := qb.get(id, &ret); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -111,7 +108,7 @@ func (qb *GalleryQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Gallery, error
 func (qb *GalleryQueryBuilder) FindMany(ids []int) ([]*models.Gallery, error) {
 	var galleries []*models.Gallery
 	for _, id := range ids {
-		gallery, err := qb.Find(id, nil)
+		gallery, err := qb.Find(id)
 		if err != nil {
 			return nil, err
 		}
@@ -126,38 +123,38 @@ func (qb *GalleryQueryBuilder) FindMany(ids []int) ([]*models.Gallery, error) {
 	return galleries, nil
 }
 
-func (qb *GalleryQueryBuilder) FindByChecksum(checksum string, tx *sqlx.Tx) (*models.Gallery, error) {
+func (qb *GalleryQueryBuilder) FindByChecksum(checksum string) (*models.Gallery, error) {
 	query := "SELECT * FROM galleries WHERE checksum = ? LIMIT 1"
 	args := []interface{}{checksum}
-	return qb.queryGallery(query, args, tx)
+	return qb.queryGallery(query, args)
 }
 
 func (qb *GalleryQueryBuilder) FindByPath(path string) (*models.Gallery, error) {
 	query := "SELECT * FROM galleries WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
-	return qb.queryGallery(query, args, nil)
+	return qb.queryGallery(query, args)
 }
 
-func (qb *GalleryQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) (*models.Gallery, error) {
+func (qb *GalleryQueryBuilder) FindBySceneID(sceneID int) (*models.Gallery, error) {
 	query := "SELECT galleries.* FROM galleries WHERE galleries.scene_id = ? LIMIT 1"
 	args := []interface{}{sceneID}
-	return qb.queryGallery(query, args, tx)
+	return qb.queryGallery(query, args)
 }
 
 func (qb *GalleryQueryBuilder) ValidGalleriesForScenePath(scenePath string) ([]*models.Gallery, error) {
 	sceneDirPath := filepath.Dir(scenePath)
 	query := "SELECT galleries.* FROM galleries WHERE galleries.scene_id IS NULL AND galleries.path LIKE '" + sceneDirPath + "%' ORDER BY path ASC"
-	return qb.queryGalleries(query, nil, nil)
+	return qb.queryGalleries(query, nil)
 }
 
-func (qb *GalleryQueryBuilder) FindByImageID(imageID int, tx *sqlx.Tx) ([]*models.Gallery, error) {
+func (qb *GalleryQueryBuilder) FindByImageID(imageID int) ([]*models.Gallery, error) {
 	query := selectAll(galleryTable) + `
 	LEFT JOIN galleries_images as images_join on images_join.gallery_id = galleries.id
 	WHERE images_join.image_id = ?
 	GROUP BY galleries.id
 	`
 	args := []interface{}{imageID}
-	return qb.queryGalleries(query, args, tx)
+	return qb.queryGalleries(query, args)
 }
 
 func (qb *GalleryQueryBuilder) CountByImageID(imageID int) (int, error) {
@@ -165,18 +162,18 @@ func (qb *GalleryQueryBuilder) CountByImageID(imageID int) (int, error) {
 	WHERE image_id = ?
 	GROUP BY gallery_id`
 	args := []interface{}{imageID}
-	return runCountQuery(buildCountQuery(query), args)
+	return qb.runCountQuery(buildCountQuery(query), args)
 }
 
 func (qb *GalleryQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT galleries.id FROM galleries"), nil)
+	return qb.runCountQuery(buildCountQuery("SELECT galleries.id FROM galleries"), nil)
 }
 
 func (qb *GalleryQueryBuilder) All() ([]*models.Gallery, error) {
-	return qb.queryGalleries(selectAll("galleries")+qb.getGallerySort(nil), nil, nil)
+	return qb.queryGalleries(selectAll("galleries")+qb.getGallerySort(nil), nil)
 }
 
-func (qb *GalleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) ([]*models.Gallery, int) {
+func (qb *GalleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) ([]*models.Gallery, int, error) {
 	if galleryFilter == nil {
 		galleryFilter = &models.GalleryFilterType{}
 	}
@@ -184,9 +181,7 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 		findFilter = &models.FindFilterType{}
 	}
 
-	query := queryBuilder{
-		tableName: galleryTable,
-	}
+	query := qb.newQuery()
 
 	query.body = selectDistinctIDs("galleries")
 	query.body += `
@@ -216,7 +211,7 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 
 	query.handleStringCriterionInput(galleryFilter.Path, "galleries.path")
 	query.handleIntCriterionInput(galleryFilter.Rating, "galleries.rating")
-	qb.handleAverageResolutionFilter(&query, galleryFilter.AverageResolution)
+	qb.handleAverageResolutionFilter(&query.queryBuilder, galleryFilter.AverageResolution)
 
 	if Organized := galleryFilter.Organized; Organized != nil {
 		var organized string
@@ -278,15 +273,22 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 	}
 
 	query.sortAndPagination = qb.getGallerySort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := query.executeFind()
+	idsResult, countResult, err := query.executeFind()
+	if err != nil {
+		return nil, 0, err
+	}
 
 	var galleries []*models.Gallery
 	for _, id := range idsResult {
-		gallery, _ := qb.Find(id, nil)
+		gallery, err := qb.Find(id)
+		if err != nil {
+			return nil, 0, err
+		}
+
 		galleries = append(galleries, gallery)
 	}
 
-	return galleries, countResult
+	return galleries, countResult, nil
 }
 
 func (qb *GalleryQueryBuilder) handleAverageResolutionFilter(query *queryBuilder, resolutionFilter *models.ResolutionEnum) {
@@ -344,27 +346,27 @@ func (qb *GalleryQueryBuilder) getGallerySort(findFilter *models.FindFilterType)
 	return getSort(sort, direction, "galleries")
 }
 
-func (qb *GalleryQueryBuilder) queryGallery(query string, args []interface{}, tx *sqlx.Tx) (*models.Gallery, error) {
-	results, err := qb.queryGalleries(query, args, tx)
+func (qb *GalleryQueryBuilder) queryGallery(query string, args []interface{}) (*models.Gallery, error) {
+	results, err := qb.queryGalleries(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
 	return results[0], nil
 }
 
-func (qb *GalleryQueryBuilder) queryGalleries(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Gallery, error) {
+func (qb *GalleryQueryBuilder) queryGalleries(query string, args []interface{}) ([]*models.Gallery, error) {
 	var ret models.Galleries
-	if err := qb.repository(tx).query(query, args, &ret); err != nil {
+	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
 	return []*models.Gallery(ret), nil
 }
 
-func (qb *GalleryQueryBuilder) performersRepository(tx *sqlx.Tx) *joinRepository {
+func (qb *GalleryQueryBuilder) performersRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
-			tx:        tx,
+			tx:        qb.tx,
 			tableName: performersGalleriesTable,
 			idColumn:  galleryIDColumn,
 		},
@@ -372,19 +374,19 @@ func (qb *GalleryQueryBuilder) performersRepository(tx *sqlx.Tx) *joinRepository
 	}
 }
 
-func (qb *GalleryQueryBuilder) GetPerformerIDs(galleryID int, tx *sqlx.Tx) ([]int, error) {
-	return qb.performersRepository(tx).getIDs(galleryID)
+func (qb *GalleryQueryBuilder) GetPerformerIDs(galleryID int) ([]int, error) {
+	return qb.performersRepository().getIDs(galleryID)
 }
 
-func (qb *GalleryQueryBuilder) UpdatePerformers(galleryID int, performerIDs []int, tx *sqlx.Tx) error {
+func (qb *GalleryQueryBuilder) UpdatePerformers(galleryID int, performerIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.performersRepository(tx).replace(galleryID, performerIDs)
+	return qb.performersRepository().replace(galleryID, performerIDs)
 }
 
-func (qb *GalleryQueryBuilder) tagsRepository(tx *sqlx.Tx) *joinRepository {
+func (qb *GalleryQueryBuilder) tagsRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
-			tx:        tx,
+			tx:        qb.tx,
 			tableName: galleriesTagsTable,
 			idColumn:  galleryIDColumn,
 		},
@@ -392,19 +394,19 @@ func (qb *GalleryQueryBuilder) tagsRepository(tx *sqlx.Tx) *joinRepository {
 	}
 }
 
-func (qb *GalleryQueryBuilder) GetTagIDs(galleryID int, tx *sqlx.Tx) ([]int, error) {
-	return qb.tagsRepository(tx).getIDs(galleryID)
+func (qb *GalleryQueryBuilder) GetTagIDs(galleryID int) ([]int, error) {
+	return qb.tagsRepository().getIDs(galleryID)
 }
 
-func (qb *GalleryQueryBuilder) UpdateTags(galleryID int, tagIDs []int, tx *sqlx.Tx) error {
+func (qb *GalleryQueryBuilder) UpdateTags(galleryID int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.tagsRepository(tx).replace(galleryID, tagIDs)
+	return qb.tagsRepository().replace(galleryID, tagIDs)
 }
 
-func (qb *GalleryQueryBuilder) imagesRepository(tx *sqlx.Tx) *joinRepository {
+func (qb *GalleryQueryBuilder) imagesRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
-			tx:        tx,
+			tx:        qb.tx,
 			tableName: galleriesImagesTable,
 			idColumn:  galleryIDColumn,
 		},
@@ -412,95 +414,11 @@ func (qb *GalleryQueryBuilder) imagesRepository(tx *sqlx.Tx) *joinRepository {
 	}
 }
 
-func (qb *GalleryQueryBuilder) GetImageIDs(galleryID int, tx *sqlx.Tx) ([]int, error) {
-	return qb.imagesRepository(tx).getIDs(galleryID)
+func (qb *GalleryQueryBuilder) GetImageIDs(galleryID int) ([]int, error) {
+	return qb.imagesRepository().getIDs(galleryID)
 }
 
-func (qb *GalleryQueryBuilder) UpdateImages(galleryID int, imageIDs []int, tx *sqlx.Tx) error {
+func (qb *GalleryQueryBuilder) UpdateImages(galleryID int, imageIDs []int) error {
 	// Delete the existing joins and then create new ones
-	return qb.imagesRepository(tx).replace(galleryID, imageIDs)
-}
-
-func NewGalleryReaderWriter(tx *sqlx.Tx) *galleryReaderWriter {
-	return &galleryReaderWriter{
-		tx: tx,
-		qb: NewGalleryQueryBuilder(),
-	}
-}
-
-type galleryReaderWriter struct {
-	tx *sqlx.Tx
-	qb GalleryQueryBuilder
-}
-
-func (t *galleryReaderWriter) Find(id int) (*models.Gallery, error) {
-	return t.qb.Find(id, t.tx)
-}
-
-func (t *galleryReaderWriter) FindMany(ids []int) ([]*models.Gallery, error) {
-	return t.qb.FindMany(ids)
-}
-
-func (t *galleryReaderWriter) FindByChecksum(checksum string) (*models.Gallery, error) {
-	return t.qb.FindByChecksum(checksum, t.tx)
-}
-
-func (t *galleryReaderWriter) All() ([]*models.Gallery, error) {
-	return t.qb.All()
-}
-
-func (t *galleryReaderWriter) FindByPath(path string) (*models.Gallery, error) {
-	return t.qb.FindByPath(path)
-}
-
-func (t *galleryReaderWriter) FindBySceneID(sceneID int) (*models.Gallery, error) {
-	return t.qb.FindBySceneID(sceneID, t.tx)
-}
-
-func (t *galleryReaderWriter) FindByImageID(imageID int) ([]*models.Gallery, error) {
-	return t.qb.FindByImageID(imageID, t.tx)
-}
-
-func (t *galleryReaderWriter) Create(newGallery models.Gallery) (*models.Gallery, error) {
-	return t.qb.Create(newGallery, t.tx)
-}
-
-func (t *galleryReaderWriter) Update(updatedGallery models.Gallery) (*models.Gallery, error) {
-	return t.qb.Update(updatedGallery, t.tx)
-}
-
-func (t *galleryReaderWriter) UpdatePartial(updatedGallery models.GalleryPartial) (*models.Gallery, error) {
-	return t.qb.UpdatePartial(updatedGallery, t.tx)
-}
-
-func (t *galleryReaderWriter) Destroy(id int) error {
-	return t.qb.Destroy(id, t.tx)
-}
-
-func (t *galleryReaderWriter) ClearGalleryId(sceneID int) error {
-	return t.qb.ClearGalleryId(sceneID, t.tx)
-}
-
-func (t *galleryReaderWriter) GetPerformerIDs(galleryID int) ([]int, error) {
-	return t.qb.GetPerformerIDs(galleryID, t.tx)
-}
-
-func (t *galleryReaderWriter) UpdatePerformers(galleryID int, performerIDs []int) error {
-	return t.qb.UpdatePerformers(galleryID, performerIDs, t.tx)
-}
-
-func (t *galleryReaderWriter) GetTagIDs(galleryID int) ([]int, error) {
-	return t.qb.GetTagIDs(galleryID, t.tx)
-}
-
-func (t *galleryReaderWriter) UpdateTags(galleryID int, tagIDs []int) error {
-	return t.qb.UpdateTags(galleryID, tagIDs, t.tx)
-}
-
-func (t *galleryReaderWriter) GetImageIDs(galleryID int) ([]int, error) {
-	return t.qb.GetImageIDs(galleryID, t.tx)
-}
-
-func (t *galleryReaderWriter) UpdateImages(galleryID int, imageIDs []int) error {
-	return t.qb.UpdateImages(galleryID, imageIDs, t.tx)
+	return qb.imagesRepository().replace(galleryID, imageIDs)
 }
