@@ -14,7 +14,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -696,31 +695,34 @@ func (s *singleton) autoTagStudios(studioIds []string) {
 }
 
 func (s *singleton) autoTagTags(tagIds []string) {
-	tagQuery := sqlite.NewTagQueryBuilder()
-
 	var wg sync.WaitGroup
 	for _, tagId := range tagIds {
 		var tags []*models.Tag
-		if tagId == "*" {
-			var err error
-			tags, err = tagQuery.All()
-			if err != nil {
-				logger.Errorf("Error querying tags: %s", err.Error())
-				continue
-			}
-		} else {
-			tagIdInt, err := strconv.Atoi(tagId)
-			if err != nil {
-				logger.Errorf("Error parsing tag id %s: %s", tagId, err.Error())
-				continue
+		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			tagQuery := r.Tag()
+			if tagId == "*" {
+				var err error
+				tags, err = tagQuery.All()
+				if err != nil {
+					return fmt.Errorf("Error querying tags: %s", err.Error())
+				}
+			} else {
+				tagIdInt, err := strconv.Atoi(tagId)
+				if err != nil {
+					return fmt.Errorf("Error parsing tag id %s: %s", tagId, err.Error())
+				}
+
+				tag, err := tagQuery.Find(tagIdInt)
+				if err != nil {
+					return fmt.Errorf("Error finding tag id %s: %s", tagId, err.Error())
+				}
+				tags = append(tags, tag)
 			}
 
-			tag, err := tagQuery.Find(tagIdInt, nil)
-			if err != nil {
-				logger.Errorf("Error finding tag id %s: %s", tagId, err.Error())
-				continue
-			}
-			tags = append(tags, tag)
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
+			continue
 		}
 
 		for _, tag := range tags {

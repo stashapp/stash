@@ -7,7 +7,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 type Resolver struct {
@@ -165,7 +164,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 		studiosQB := repo.Studio()
 		performersQB := repo.Performer()
 		moviesQB := repo.Movie()
-		tagsQB := sqlite.NewTagQueryBuilder()
+		tagsQB := repo.Tag()
 		scenesCount, _ := scenesQB.Count()
 		scenesSize, _ := scenesQB.Size()
 		imageCount, _ := imageQB.Count()

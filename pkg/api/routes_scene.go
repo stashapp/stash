@@ -12,7 +12,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -205,28 +204,33 @@ func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, filepath)
 }
 
-func getChapterVttTitle(marker *models.SceneMarker) string {
+func getChapterVttTitle(ctx context.Context, marker *models.SceneMarker) string {
 	if marker.Title != "" {
 		return marker.Title
 	}
 
-	qb := sqlite.NewTagQueryBuilder()
-	primaryTag, err := qb.Find(marker.PrimaryTagID, nil)
-	if err != nil {
-		// should not happen
+	var ret string
+	if err := manager.GetInstance().WithReadTxn(ctx, func(repo models.ReaderRepository) error {
+		qb := repo.Tag()
+		primaryTag, err := qb.Find(marker.PrimaryTagID)
+		if err != nil {
+			return err
+		}
+
+		ret = primaryTag.Name
+
+		tags, err := qb.FindBySceneMarkerID(marker.ID)
+		if err != nil {
+			return err
+		}
+
+		for _, t := range tags {
+			ret += ", " + t.Name
+		}
+
+		return nil
+	}); err != nil {
 		panic(err)
-	}
-
-	ret := primaryTag.Name
-
-	tags, err := qb.FindBySceneMarkerID(marker.ID, nil)
-	if err != nil {
-		// should not happen
-		panic(err)
-	}
-
-	for _, t := range tags {
-		ret += ", " + t.Name
 	}
 
 	return ret
@@ -249,7 +253,7 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 		vttLines = append(vttLines, strconv.Itoa(i+1))
 		time := utils.GetVTTTime(marker.Seconds)
 		vttLines = append(vttLines, time+" --> "+time)
-		vttLines = append(vttLines, getChapterVttTitle(marker))
+		vttLines = append(vttLines, getChapterVttTitle(r.Context(), marker))
 		vttLines = append(vttLines, "")
 	}
 	vtt := strings.Join(vttLines, "\n")

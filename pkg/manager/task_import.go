@@ -678,9 +678,8 @@ func (t *ImportTask) getMoviesScenes(input []jsonschema.SceneMovie, sceneID int,
 	return movies, nil
 }
 
-func (t *ImportTask) getTags(sceneChecksum string, names []string, tx *sqlx.Tx) ([]*models.Tag, error) {
-	tqb := sqlite.NewTagQueryBuilder()
-	tags, err := tqb.FindByNames(names, tx, false)
+func (t *ImportTask) getTags(sceneChecksum string, names []string, tqb models.TagReader) ([]*models.Tag, error) {
+	tags, err := tqb.FindByNames(names, false)
 	if err != nil {
 		return nil, err
 	}

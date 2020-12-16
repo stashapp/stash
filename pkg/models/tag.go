@@ -11,8 +11,8 @@ type TagReader interface {
 	FindByNames(names []string, nocase bool) ([]*Tag, error)
 	Count() (int, error)
 	All() ([]*Tag, error)
-	// AllSlim() ([]*Tag, error)
-	// Query(tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
+	AllSlim() ([]*Tag, error)
+	Query(tagFilter *TagFilterType, findFilter *FindFilterType) ([]*Tag, int, error)
 	GetImage(tagID int) ([]byte, error)
 }
 
