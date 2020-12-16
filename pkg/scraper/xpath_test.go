@@ -807,7 +807,7 @@ xPathScrapers:
 
 	globalConfig := GlobalConfig{}
 
-	performer, err := c.ScrapePerformerURL(ts.URL, globalConfig)
+	performer, err := c.ScrapePerformerURL(ts.URL, nil, globalConfig)
 
 	if err != nil {
 		t.Errorf("Error scraping performer: %s", err.Error())

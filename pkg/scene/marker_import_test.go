@@ -71,10 +71,10 @@ func TestMarkerImporterPreImportWithTag(t *testing.T) {
 }
 
 func TestMarkerImporterPostImportUpdateTags(t *testing.T) {
-	joinReaderWriter := &mocks.JoinReaderWriter{}
+	sceneMarkerReaderWriter := &mocks.SceneMarkerReaderWriter{}
 
 	i := MarkerImporter{
-		JoinWriter: joinReaderWriter,
+		ReaderWriter: sceneMarkerReaderWriter,
 		tags: []*models.Tag{
 			{
 				ID: existingTagID,
@@ -82,15 +82,10 @@ func TestMarkerImporterPostImportUpdateTags(t *testing.T) {
 		},
 	}
 
-	updateErr := errors.New("UpdateSceneMarkersTags error")
+	updateErr := errors.New("UpdateTags error")
 
-	joinReaderWriter.On("UpdateSceneMarkersTags", sceneID, []models.SceneMarkersTags{
-		{
-			TagID:         existingTagID,
-			SceneMarkerID: sceneID,
-		},
-	}).Return(nil).Once()
-	joinReaderWriter.On("UpdateSceneMarkersTags", errTagsID, mock.AnythingOfType("[]models.SceneMarkersTags")).Return(updateErr).Once()
+	sceneMarkerReaderWriter.On("UpdateTags", sceneID, []int{existingTagID}).Return(nil).Once()
+	sceneMarkerReaderWriter.On("UpdateTags", errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
 
 	err := i.PostImport(sceneID)
 	assert.Nil(t, err)
@@ -98,7 +93,7 @@ func TestMarkerImporterPostImportUpdateTags(t *testing.T) {
 	err = i.PostImport(errTagsID)
 	assert.NotNil(t, err)
 
-	joinReaderWriter.AssertExpectations(t)
+	sceneMarkerReaderWriter.AssertExpectations(t)
 }
 
 func TestMarkerImporterFindExistingID(t *testing.T) {

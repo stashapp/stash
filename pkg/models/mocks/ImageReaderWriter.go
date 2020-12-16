@@ -392,14 +392,14 @@ func (_m *ImageReaderWriter) ResetOCounter(id int) (int, error) {
 }
 
 // Size provides a mock function with given fields:
-func (_m *ImageReaderWriter) Size() (uint64, error) {
+func (_m *ImageReaderWriter) Size() (float64, error) {
 	ret := _m.Called()
 
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func() uint64); ok {
+	var r0 float64
+	if rf, ok := ret.Get(0).(func() float64); ok {
 		r0 = rf()
 	} else {
-		r0 = ret.Get(0).(uint64)
+		r0 = ret.Get(0).(float64)
 	}
 
 	var r1 error

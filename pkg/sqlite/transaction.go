@@ -163,3 +163,17 @@ func (t *ReadTransaction) Tag() models.TagReader {
 	t.ensureTx()
 	return NewTagReaderWriter(t.tx)
 }
+
+type TransactionManager struct{}
+
+func (t *TransactionManager) WithTxn(ctx context.Context, fn func(r models.Repository) error) error {
+	return models.WithTxn(&Transaction{Ctx: ctx}, fn)
+}
+
+func (t *TransactionManager) WithReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {
+	return models.WithROTxn(&ReadTransaction{
+		Transaction{
+			Ctx: ctx,
+		},
+	}, fn)
+}

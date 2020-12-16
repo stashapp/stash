@@ -198,21 +198,6 @@ func (qb *ImageQueryBuilder) FindByPath(path string) (*models.Image, error) {
 	return qb.queryImage(query, args)
 }
 
-func (qb *ImageQueryBuilder) FindByPerformerID(performerID int) ([]*models.Image, error) {
-	args := []interface{}{performerID}
-	return qb.queryImages(imagesForPerformerQuery, args)
-}
-
-func (qb *ImageQueryBuilder) CountByPerformerID(performerID int) (int, error) {
-	args := []interface{}{performerID}
-	return qb.runCountQuery(qb.buildCountQuery(countImagesForPerformerQuery), args)
-}
-
-func (qb *ImageQueryBuilder) FindByStudioID(studioID int) ([]*models.Image, error) {
-	args := []interface{}{studioID}
-	return qb.queryImages(imagesForStudioQuery, args)
-}
-
 func (qb *ImageQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Image, error) {
 	args := []interface{}{galleryID}
 	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(nil), args)
@@ -229,16 +214,6 @@ func (qb *ImageQueryBuilder) Count() (int, error) {
 
 func (qb *ImageQueryBuilder) Size() (float64, error) {
 	return qb.runSumQuery("SELECT SUM(cast(size as double)) as sum FROM images", nil)
-}
-
-func (qb *ImageQueryBuilder) CountByStudioID(studioID int) (int, error) {
-	args := []interface{}{studioID}
-	return qb.runCountQuery(qb.buildCountQuery(imagesForStudioQuery), args)
-}
-
-func (qb *ImageQueryBuilder) CountByTagID(tagID int) (int, error) {
-	args := []interface{}{tagID}
-	return qb.runCountQuery(qb.buildCountQuery(countImagesForTagQuery), args)
 }
 
 func (qb *ImageQueryBuilder) All() ([]*models.Image, error) {

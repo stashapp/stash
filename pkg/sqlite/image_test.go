@@ -10,91 +10,86 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func TestImageFind(t *testing.T) {
-	// assume that the first image is imageWithGalleryPath
-	sqb := sqlite.NewImageQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		// assume that the first image is imageWithGalleryPath
+		sqb := r.Image()
 
-	const imageIdx = 0
-	imageID := imageIDs[imageIdx]
-	image, err := sqb.Find(imageID)
+		const imageIdx = 0
+		imageID := imageIDs[imageIdx]
+		image, err := sqb.Find(imageID)
 
-	if err != nil {
-		t.Fatalf("Error finding image: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding image: %s", err.Error())
+		}
 
-	assert.Equal(t, getImageStringValue(imageIdx, "Path"), image.Path)
+		assert.Equal(t, getImageStringValue(imageIdx, "Path"), image.Path)
 
-	imageID = 0
-	image, err = sqb.Find(imageID)
+		imageID = 0
+		image, err = sqb.Find(imageID)
 
-	if err != nil {
-		t.Fatalf("Error finding image: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding image: %s", err.Error())
+		}
 
-	assert.Nil(t, image)
+		assert.Nil(t, image)
+
+		return nil
+	})
 }
 
 func TestImageFindByPath(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
 
-	const imageIdx = 1
-	imagePath := getImageStringValue(imageIdx, "Path")
-	image, err := sqb.FindByPath(imagePath)
+		const imageIdx = 1
+		imagePath := getImageStringValue(imageIdx, "Path")
+		image, err := sqb.FindByPath(imagePath)
 
-	if err != nil {
-		t.Fatalf("Error finding image: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding image: %s", err.Error())
+		}
 
-	assert.Equal(t, imageIDs[imageIdx], image.ID)
-	assert.Equal(t, imagePath, image.Path)
+		assert.Equal(t, imageIDs[imageIdx], image.ID)
+		assert.Equal(t, imagePath, image.Path)
 
-	imagePath = "not exist"
-	image, err = sqb.FindByPath(imagePath)
+		imagePath = "not exist"
+		image, err = sqb.FindByPath(imagePath)
 
-	if err != nil {
-		t.Fatalf("Error finding image: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding image: %s", err.Error())
+		}
 
-	assert.Nil(t, image)
-}
+		assert.Nil(t, image)
 
-func TestImageCountByPerformerID(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-	count, err := sqb.CountByPerformerID(performerIDs[performerIdxWithImage])
-
-	if err != nil {
-		t.Fatalf("Error counting images: %s", err.Error())
-	}
-
-	assert.Equal(t, 1, count)
-
-	count, err = sqb.CountByPerformerID(0)
-
-	if err != nil {
-		t.Fatalf("Error counting images: %s", err.Error())
-	}
-
-	assert.Equal(t, 0, count)
+		return nil
+	})
 }
 
 func TestImageQueryQ(t *testing.T) {
-	const imageIdx = 2
+	withTxn(func(r models.Repository) error {
+		const imageIdx = 2
 
-	q := getImageStringValue(imageIdx, titleField)
+		q := getImageStringValue(imageIdx, titleField)
 
-	sqb := sqlite.NewImageQueryBuilder()
+		sqb := r.Image()
 
-	imageQueryQ(t, sqb, q, imageIdx)
+		imageQueryQ(t, sqb, q, imageIdx)
+
+		return nil
+	})
 }
 
-func imageQueryQ(t *testing.T, sqb sqlite.ImageQueryBuilder, q string, expectedImageIdx int) {
+func imageQueryQ(t *testing.T, sqb models.ImageReader, q string, expectedImageIdx int) {
 	filter := models.FindFilterType{
 		Q: &q,
 	}
-	images, _ := sqb.Query(nil, &filter)
+	images, _, err := sqb.Query(nil, &filter)
+	if err != nil {
+		t.Errorf("Error querying image: %s", err.Error())
+	}
 
 	assert.Len(t, images, 1)
 	image := images[0]
@@ -102,7 +97,10 @@ func imageQueryQ(t *testing.T, sqb sqlite.ImageQueryBuilder, q string, expectedI
 
 	// no Q should return all results
 	filter.Q = nil
-	images, _ = sqb.Query(nil, &filter)
+	images, _, err = sqb.Query(nil, &filter)
+	if err != nil {
+		t.Errorf("Error querying image: %s", err.Error())
+	}
 
 	assert.Len(t, images, totalImages)
 }
@@ -123,16 +121,23 @@ func TestImageQueryPath(t *testing.T) {
 }
 
 func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput) {
-	sqb := sqlite.NewImageQueryBuilder()
-	imageFilter := models.ImageFilterType{
-		Path: &pathCriterion,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		imageFilter := models.ImageFilterType{
+			Path: &pathCriterion,
+		}
 
-	images, _ := sqb.Query(&imageFilter, nil)
+		images, _, err := sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	for _, image := range images {
-		verifyString(t, image.Path, pathCriterion)
-	}
+		for _, image := range images {
+			verifyString(t, image.Path, pathCriterion)
+		}
+
+		return nil
+	})
 }
 
 func TestImageQueryRating(t *testing.T) {
@@ -161,16 +166,23 @@ func TestImageQueryRating(t *testing.T) {
 }
 
 func verifyImagesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	sqb := sqlite.NewImageQueryBuilder()
-	imageFilter := models.ImageFilterType{
-		Rating: &ratingCriterion,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		imageFilter := models.ImageFilterType{
+			Rating: &ratingCriterion,
+		}
 
-	images, _ := sqb.Query(&imageFilter, nil)
+		images, _, err := sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	for _, image := range images {
-		verifyInt64(t, image.Rating, ratingCriterion)
-	}
+		for _, image := range images {
+			verifyInt64(t, image.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
 }
 
 func TestImageQueryOCounter(t *testing.T) {
@@ -193,16 +205,23 @@ func TestImageQueryOCounter(t *testing.T) {
 }
 
 func verifyImagesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInput) {
-	sqb := sqlite.NewImageQueryBuilder()
-	imageFilter := models.ImageFilterType{
-		OCounter: &oCounterCriterion,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		imageFilter := models.ImageFilterType{
+			OCounter: &oCounterCriterion,
+		}
 
-	images, _ := sqb.Query(&imageFilter, nil)
+		images, _, err := sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	for _, image := range images {
-		verifyInt(t, image.OCounter, oCounterCriterion)
-	}
+		for _, image := range images {
+			verifyInt(t, image.OCounter, oCounterCriterion)
+		}
+
+		return nil
+	})
 }
 
 func TestImageQueryResolution(t *testing.T) {
@@ -215,16 +234,23 @@ func TestImageQueryResolution(t *testing.T) {
 }
 
 func verifyImagesResolution(t *testing.T, resolution models.ResolutionEnum) {
-	sqb := sqlite.NewImageQueryBuilder()
-	imageFilter := models.ImageFilterType{
-		Resolution: &resolution,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		imageFilter := models.ImageFilterType{
+			Resolution: &resolution,
+		}
 
-	images, _ := sqb.Query(&imageFilter, nil)
+		images, _, err := sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	for _, image := range images {
-		verifyImageResolution(t, image.Height, resolution)
-	}
+		for _, image := range images {
+			verifyImageResolution(t, image.Height, resolution)
+		}
+
+		return nil
+	})
 }
 
 func verifyImageResolution(t *testing.T, height sql.NullInt64, resolution models.ResolutionEnum) {
@@ -246,400 +272,424 @@ func verifyImageResolution(t *testing.T, height sql.NullInt64, resolution models
 }
 
 func TestImageQueryIsMissingGalleries(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-	isMissing := "galleries"
-	imageFilter := models.ImageFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		isMissing := "galleries"
+		imageFilter := models.ImageFilterType{
+			IsMissing: &isMissing,
+		}
 
-	q := getImageStringValue(imageIdxWithGallery, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getImageStringValue(imageIdxWithGallery, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	images, _ := sqb.Query(&imageFilter, &findFilter)
+		images, _, err := sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.Len(t, images, 0)
+		assert.Len(t, images, 0)
 
-	findFilter.Q = nil
-	images, _ = sqb.Query(&imageFilter, &findFilter)
+		findFilter.Q = nil
+		images, _, err = sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	// ensure non of the ids equal the one with gallery
-	for _, image := range images {
-		assert.NotEqual(t, imageIDs[imageIdxWithGallery], image.ID)
-	}
+		// ensure non of the ids equal the one with gallery
+		for _, image := range images {
+			assert.NotEqual(t, imageIDs[imageIdxWithGallery], image.ID)
+		}
+
+		return nil
+	})
 }
 
 func TestImageQueryIsMissingStudio(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-	isMissing := "studio"
-	imageFilter := models.ImageFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		isMissing := "studio"
+		imageFilter := models.ImageFilterType{
+			IsMissing: &isMissing,
+		}
 
-	q := getImageStringValue(imageIdxWithStudio, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getImageStringValue(imageIdxWithStudio, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	images, _ := sqb.Query(&imageFilter, &findFilter)
+		images, _, err := sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.Len(t, images, 0)
+		assert.Len(t, images, 0)
 
-	findFilter.Q = nil
-	images, _ = sqb.Query(&imageFilter, &findFilter)
+		findFilter.Q = nil
+		images, _, err = sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	// ensure non of the ids equal the one with studio
-	for _, image := range images {
-		assert.NotEqual(t, imageIDs[imageIdxWithStudio], image.ID)
-	}
+		// ensure non of the ids equal the one with studio
+		for _, image := range images {
+			assert.NotEqual(t, imageIDs[imageIdxWithStudio], image.ID)
+		}
+
+		return nil
+	})
 }
 
 func TestImageQueryIsMissingPerformers(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-	isMissing := "performers"
-	imageFilter := models.ImageFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		isMissing := "performers"
+		imageFilter := models.ImageFilterType{
+			IsMissing: &isMissing,
+		}
 
-	q := getImageStringValue(imageIdxWithPerformer, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getImageStringValue(imageIdxWithPerformer, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	images, _ := sqb.Query(&imageFilter, &findFilter)
+		images, _, err := sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.Len(t, images, 0)
+		assert.Len(t, images, 0)
 
-	findFilter.Q = nil
-	images, _ = sqb.Query(&imageFilter, &findFilter)
+		findFilter.Q = nil
+		images, _, err = sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.True(t, len(images) > 0)
+		assert.True(t, len(images) > 0)
 
-	// ensure non of the ids equal the one with movies
-	for _, image := range images {
-		assert.NotEqual(t, imageIDs[imageIdxWithPerformer], image.ID)
-	}
+		// ensure non of the ids equal the one with movies
+		for _, image := range images {
+			assert.NotEqual(t, imageIDs[imageIdxWithPerformer], image.ID)
+		}
+
+		return nil
+	})
 }
 
 func TestImageQueryIsMissingTags(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-	isMissing := "tags"
-	imageFilter := models.ImageFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		isMissing := "tags"
+		imageFilter := models.ImageFilterType{
+			IsMissing: &isMissing,
+		}
 
-	q := getImageStringValue(imageIdxWithTwoTags, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getImageStringValue(imageIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	images, _ := sqb.Query(&imageFilter, &findFilter)
+		images, _, err := sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.Len(t, images, 0)
+		assert.Len(t, images, 0)
 
-	findFilter.Q = nil
-	images, _ = sqb.Query(&imageFilter, &findFilter)
+		findFilter.Q = nil
+		images, _, err = sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.True(t, len(images) > 0)
+		assert.True(t, len(images) > 0)
+
+		return nil
+	})
 }
 
 func TestImageQueryIsMissingRating(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-	isMissing := "rating"
-	imageFilter := models.ImageFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		isMissing := "rating"
+		imageFilter := models.ImageFilterType{
+			IsMissing: &isMissing,
+		}
 
-	images, _ := sqb.Query(&imageFilter, nil)
+		images, _, err := sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.True(t, len(images) > 0)
+		assert.True(t, len(images) > 0)
 
-	// ensure date is null, empty or "0001-01-01"
-	for _, image := range images {
-		assert.True(t, !image.Rating.Valid)
-	}
+		// ensure date is null, empty or "0001-01-01"
+		for _, image := range images {
+			assert.True(t, !image.Rating.Valid)
+		}
+
+		return nil
+	})
 }
 
 func TestImageQueryPerformers(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-	performerCriterion := models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(performerIDs[performerIdxWithImage]),
-			strconv.Itoa(performerIDs[performerIdx1WithImage]),
-		},
-		Modifier: models.CriterionModifierIncludes,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		performerCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(performerIDs[performerIdxWithImage]),
+				strconv.Itoa(performerIDs[performerIdx1WithImage]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
 
-	imageFilter := models.ImageFilterType{
-		Performers: &performerCriterion,
-	}
+		imageFilter := models.ImageFilterType{
+			Performers: &performerCriterion,
+		}
 
-	images, _ := sqb.Query(&imageFilter, nil)
+		images, _, err := sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.Len(t, images, 2)
+		assert.Len(t, images, 2)
 
-	// ensure ids are correct
-	for _, image := range images {
-		assert.True(t, image.ID == imageIDs[imageIdxWithPerformer] || image.ID == imageIDs[imageIdxWithTwoPerformers])
-	}
+		// ensure ids are correct
+		for _, image := range images {
+			assert.True(t, image.ID == imageIDs[imageIdxWithPerformer] || image.ID == imageIDs[imageIdxWithTwoPerformers])
+		}
 
-	performerCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(performerIDs[performerIdx1WithImage]),
-			strconv.Itoa(performerIDs[performerIdx2WithImage]),
-		},
-		Modifier: models.CriterionModifierIncludesAll,
-	}
+		performerCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(performerIDs[performerIdx1WithImage]),
+				strconv.Itoa(performerIDs[performerIdx2WithImage]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
 
-	images, _ = sqb.Query(&imageFilter, nil)
+		images, _, err = sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.Len(t, images, 1)
-	assert.Equal(t, imageIDs[imageIdxWithTwoPerformers], images[0].ID)
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithTwoPerformers], images[0].ID)
 
-	performerCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(performerIDs[performerIdx1WithImage]),
-		},
-		Modifier: models.CriterionModifierExcludes,
-	}
+		performerCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(performerIDs[performerIdx1WithImage]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
 
-	q := getImageStringValue(imageIdxWithTwoPerformers, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getImageStringValue(imageIdxWithTwoPerformers, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	images, _ = sqb.Query(&imageFilter, &findFilter)
-	assert.Len(t, images, 0)
+		images, _, err = sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+		assert.Len(t, images, 0)
+
+		return nil
+	})
 }
 
 func TestImageQueryTags(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-	tagCriterion := models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(tagIDs[tagIdxWithImage]),
-			strconv.Itoa(tagIDs[tagIdx1WithImage]),
-		},
-		Modifier: models.CriterionModifierIncludes,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithImage]),
+				strconv.Itoa(tagIDs[tagIdx1WithImage]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
 
-	imageFilter := models.ImageFilterType{
-		Tags: &tagCriterion,
-	}
+		imageFilter := models.ImageFilterType{
+			Tags: &tagCriterion,
+		}
 
-	images, _ := sqb.Query(&imageFilter, nil)
+		images, _, err := sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.Len(t, images, 2)
+		assert.Len(t, images, 2)
 
-	// ensure ids are correct
-	for _, image := range images {
-		assert.True(t, image.ID == imageIDs[imageIdxWithTag] || image.ID == imageIDs[imageIdxWithTwoTags])
-	}
+		// ensure ids are correct
+		for _, image := range images {
+			assert.True(t, image.ID == imageIDs[imageIdxWithTag] || image.ID == imageIDs[imageIdxWithTwoTags])
+		}
 
-	tagCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(tagIDs[tagIdx1WithImage]),
-			strconv.Itoa(tagIDs[tagIdx2WithImage]),
-		},
-		Modifier: models.CriterionModifierIncludesAll,
-	}
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithImage]),
+				strconv.Itoa(tagIDs[tagIdx2WithImage]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
 
-	images, _ = sqb.Query(&imageFilter, nil)
+		images, _, err = sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.Len(t, images, 1)
-	assert.Equal(t, imageIDs[imageIdxWithTwoTags], images[0].ID)
+		assert.Len(t, images, 1)
+		assert.Equal(t, imageIDs[imageIdxWithTwoTags], images[0].ID)
 
-	tagCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(tagIDs[tagIdx1WithImage]),
-		},
-		Modifier: models.CriterionModifierExcludes,
-	}
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithImage]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
 
-	q := getImageStringValue(imageIdxWithTwoTags, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getImageStringValue(imageIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	images, _ = sqb.Query(&imageFilter, &findFilter)
-	assert.Len(t, images, 0)
+		images, _, err = sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+		assert.Len(t, images, 0)
+
+		return nil
+	})
 }
 
 func TestImageQueryStudio(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-	studioCriterion := models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(studioIDs[studioIdxWithImage]),
-		},
-		Modifier: models.CriterionModifierIncludes,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Image()
+		studioCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithImage]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
 
-	imageFilter := models.ImageFilterType{
-		Studios: &studioCriterion,
-	}
+		imageFilter := models.ImageFilterType{
+			Studios: &studioCriterion,
+		}
 
-	images, _ := sqb.Query(&imageFilter, nil)
+		images, _, err := sqb.Query(&imageFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.Len(t, images, 1)
+		assert.Len(t, images, 1)
 
-	// ensure id is correct
-	assert.Equal(t, imageIDs[imageIdxWithStudio], images[0].ID)
+		// ensure id is correct
+		assert.Equal(t, imageIDs[imageIdxWithStudio], images[0].ID)
 
-	studioCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(studioIDs[studioIdxWithImage]),
-		},
-		Modifier: models.CriterionModifierExcludes,
-	}
+		studioCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithImage]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
 
-	q := getImageStringValue(imageIdxWithStudio, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getImageStringValue(imageIdxWithStudio, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	images, _ = sqb.Query(&imageFilter, &findFilter)
-	assert.Len(t, images, 0)
+		images, _, err = sqb.Query(&imageFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+		assert.Len(t, images, 0)
+
+		return nil
+	})
 }
 
 func TestImageQuerySorting(t *testing.T) {
-	sort := titleField
-	direction := models.SortDirectionEnumAsc
-	findFilter := models.FindFilterType{
-		Sort:      &sort,
-		Direction: &direction,
-	}
+	withTxn(func(r models.Repository) error {
+		sort := titleField
+		direction := models.SortDirectionEnumAsc
+		findFilter := models.FindFilterType{
+			Sort:      &sort,
+			Direction: &direction,
+		}
 
-	sqb := sqlite.NewImageQueryBuilder()
-	images, _ := sqb.Query(nil, &findFilter)
+		sqb := r.Image()
+		images, _, err := sqb.Query(nil, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	// images should be in same order as indexes
-	firstImage := images[0]
-	lastImage := images[len(images)-1]
+		// images should be in same order as indexes
+		firstImage := images[0]
+		lastImage := images[len(images)-1]
 
-	assert.Equal(t, imageIDs[0], firstImage.ID)
-	assert.Equal(t, imageIDs[len(imageIDs)-1], lastImage.ID)
+		assert.Equal(t, imageIDs[0], firstImage.ID)
+		assert.Equal(t, imageIDs[len(imageIDs)-1], lastImage.ID)
 
-	// sort in descending order
-	direction = models.SortDirectionEnumDesc
+		// sort in descending order
+		direction = models.SortDirectionEnumDesc
 
-	images, _ = sqb.Query(nil, &findFilter)
-	firstImage = images[0]
-	lastImage = images[len(images)-1]
+		images, _, err = sqb.Query(nil, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+		firstImage = images[0]
+		lastImage = images[len(images)-1]
 
-	assert.Equal(t, imageIDs[len(imageIDs)-1], firstImage.ID)
-	assert.Equal(t, imageIDs[0], lastImage.ID)
+		assert.Equal(t, imageIDs[len(imageIDs)-1], firstImage.ID)
+		assert.Equal(t, imageIDs[0], lastImage.ID)
+
+		return nil
+	})
 }
 
 func TestImageQueryPagination(t *testing.T) {
-	perPage := 1
-	findFilter := models.FindFilterType{
-		PerPage: &perPage,
-	}
+	withTxn(func(r models.Repository) error {
+		perPage := 1
+		findFilter := models.FindFilterType{
+			PerPage: &perPage,
+		}
 
-	sqb := sqlite.NewImageQueryBuilder()
-	images, _ := sqb.Query(nil, &findFilter)
+		sqb := r.Image()
+		images, _, err := sqb.Query(nil, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.Len(t, images, 1)
+		assert.Len(t, images, 1)
 
-	firstID := images[0].ID
+		firstID := images[0].ID
 
-	page := 2
-	findFilter.Page = &page
-	images, _ = sqb.Query(nil, &findFilter)
+		page := 2
+		findFilter.Page = &page
+		images, _, err = sqb.Query(nil, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
 
-	assert.Len(t, images, 1)
-	secondID := images[0].ID
-	assert.NotEqual(t, firstID, secondID)
+		assert.Len(t, images, 1)
+		secondID := images[0].ID
+		assert.NotEqual(t, firstID, secondID)
 
-	perPage = 2
-	page = 1
+		perPage = 2
+		page = 1
 
-	images, _ = sqb.Query(nil, &findFilter)
-	assert.Len(t, images, 2)
-	assert.Equal(t, firstID, images[0].ID)
-	assert.Equal(t, secondID, images[1].ID)
-}
+		images, _, err = sqb.Query(nil, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying image: %s", err.Error())
+		}
+		assert.Len(t, images, 2)
+		assert.Equal(t, firstID, images[0].ID)
+		assert.Equal(t, secondID, images[1].ID)
 
-func TestImageCountByTagID(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-
-	imageCount, err := sqb.CountByTagID(tagIDs[tagIdxWithImage])
-
-	if err != nil {
-		t.Fatalf("error calling CountByTagID: %s", err.Error())
-	}
-
-	assert.Equal(t, 1, imageCount)
-
-	imageCount, err = sqb.CountByTagID(0)
-
-	if err != nil {
-		t.Fatalf("error calling CountByTagID: %s", err.Error())
-	}
-
-	assert.Equal(t, 0, imageCount)
-}
-
-func TestImageCountByStudioID(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-
-	imageCount, err := sqb.CountByStudioID(studioIDs[studioIdxWithImage])
-
-	if err != nil {
-		t.Fatalf("error calling CountByStudioID: %s", err.Error())
-	}
-
-	assert.Equal(t, 1, imageCount)
-
-	imageCount, err = sqb.CountByStudioID(0)
-
-	if err != nil {
-		t.Fatalf("error calling CountByStudioID: %s", err.Error())
-	}
-
-	assert.Equal(t, 0, imageCount)
-}
-
-func TestImageFindByPerformerID(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-
-	images, err := sqb.FindByPerformerID(performerIDs[performerIdxWithImage])
-
-	if err != nil {
-		t.Fatalf("error calling FindByPerformerID: %s", err.Error())
-	}
-
-	assert.Len(t, images, 1)
-	assert.Equal(t, imageIDs[imageIdxWithPerformer], images[0].ID)
-
-	images, err = sqb.FindByPerformerID(0)
-
-	if err != nil {
-		t.Fatalf("error calling FindByPerformerID: %s", err.Error())
-	}
-
-	assert.Len(t, images, 0)
-}
-
-func TestImageFindByStudioID(t *testing.T) {
-	sqb := sqlite.NewImageQueryBuilder()
-
-	images, err := sqb.FindByStudioID(performerIDs[studioIdxWithImage])
-
-	if err != nil {
-		t.Fatalf("error calling FindByStudioID: %s", err.Error())
-	}
-
-	assert.Len(t, images, 1)
-	assert.Equal(t, imageIDs[imageIdxWithStudio], images[0].ID)
-
-	images, err = sqb.FindByStudioID(0)
-
-	if err != nil {
-		t.Fatalf("error calling FindByStudioID: %s", err.Error())
-	}
-
-	assert.Len(t, images, 0)
+		return nil
+	})
 }
 
 // TODO Update

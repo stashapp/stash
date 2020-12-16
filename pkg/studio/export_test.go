@@ -6,7 +6,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stretchr/testify/assert"
 
 	"testing"
@@ -31,7 +30,7 @@ const url = "url"
 const parentStudioName = "parentStudio"
 
 var parentStudio models.Studio = models.Studio{
-	Name: modelstest.NullString(parentStudioName),
+	Name: models.NullString(parentStudioName),
 }
 
 var imageBytes = []byte("imageBytes")
@@ -44,9 +43,9 @@ var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 func createFullStudio(id int, parentID int) models.Studio {
 	return models.Studio{
 		ID:       id,
-		Name:     modelstest.NullString(studioName),
-		URL:      modelstest.NullString(url),
-		ParentID: modelstest.NullInt64(int64(parentID)),
+		Name:     models.NullString(studioName),
+		URL:      models.NullString(url),
+		ParentID: models.NullInt64(int64(parentID)),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},
@@ -139,11 +138,11 @@ func TestToJSON(t *testing.T) {
 
 	imageErr := errors.New("error getting image")
 
-	mockStudioReader.On("GetStudioImage", studioID).Return(imageBytes, nil).Once()
-	mockStudioReader.On("GetStudioImage", noImageID).Return(nil, nil).Once()
-	mockStudioReader.On("GetStudioImage", errImageID).Return(nil, imageErr).Once()
-	mockStudioReader.On("GetStudioImage", missingParentStudioID).Return(imageBytes, nil).Maybe()
-	mockStudioReader.On("GetStudioImage", errStudioID).Return(imageBytes, nil).Maybe()
+	mockStudioReader.On("GetImage", studioID).Return(imageBytes, nil).Once()
+	mockStudioReader.On("GetImage", noImageID).Return(nil, nil).Once()
+	mockStudioReader.On("GetImage", errImageID).Return(nil, imageErr).Once()
+	mockStudioReader.On("GetImage", missingParentStudioID).Return(imageBytes, nil).Maybe()
+	mockStudioReader.On("GetImage", errStudioID).Return(imageBytes, nil).Maybe()
 
 	parentStudioErr := errors.New("error getting parent studio")
 

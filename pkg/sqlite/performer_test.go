@@ -3,210 +3,172 @@
 package sqlite_test
 
 import (
-	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestPerformerFindBySceneID(t *testing.T) {
-	pqb := sqlite.NewPerformerQueryBuilder()
-	sceneID := sceneIDs[sceneIdxWithPerformer]
+	withTxn(func(r models.Repository) error {
+		pqb := r.Performer()
+		sceneID := sceneIDs[sceneIdxWithPerformer]
 
-	performers, err := pqb.FindBySceneID(sceneID, nil)
+		performers, err := pqb.FindBySceneID(sceneID)
 
-	if err != nil {
-		t.Fatalf("Error finding performer: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding performer: %s", err.Error())
+		}
 
-	assert.Equal(t, 1, len(performers))
-	performer := performers[0]
+		assert.Equal(t, 1, len(performers))
+		performer := performers[0]
 
-	assert.Equal(t, getPerformerStringValue(performerIdxWithScene, "Name"), performer.Name.String)
+		assert.Equal(t, getPerformerStringValue(performerIdxWithScene, "Name"), performer.Name.String)
 
-	performers, err = pqb.FindBySceneID(0, nil)
+		performers, err = pqb.FindBySceneID(0)
 
-	if err != nil {
-		t.Fatalf("Error finding performer: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding performer: %s", err.Error())
+		}
 
-	assert.Equal(t, 0, len(performers))
-}
+		assert.Equal(t, 0, len(performers))
 
-func TestPerformerFindNameBySceneID(t *testing.T) {
-	pqb := sqlite.NewPerformerQueryBuilder()
-	sceneID := sceneIDs[sceneIdxWithPerformer]
-
-	performers, err := pqb.FindNameBySceneID(sceneID, nil)
-
-	if err != nil {
-		t.Fatalf("Error finding performer: %s", err.Error())
-	}
-
-	assert.Equal(t, 1, len(performers))
-	performer := performers[0]
-
-	assert.Equal(t, getPerformerStringValue(performerIdxWithScene, "Name"), performer.Name.String)
-
-	performers, err = pqb.FindBySceneID(0, nil)
-
-	if err != nil {
-		t.Fatalf("Error finding performer: %s", err.Error())
-	}
-
-	assert.Equal(t, 0, len(performers))
+		return nil
+	})
 }
 
 func TestPerformerFindByNames(t *testing.T) {
-	var names []string
+	withTxn(func(r models.Repository) error {
+		var names []string
 
-	pqb := sqlite.NewPerformerQueryBuilder()
+		pqb := r.Performer()
 
-	names = append(names, performerNames[performerIdxWithScene]) // find performers by names
+		names = append(names, performerNames[performerIdxWithScene]) // find performers by names
 
-	performers, err := pqb.FindByNames(names, nil, false)
-	if err != nil {
-		t.Fatalf("Error finding performers: %s", err.Error())
-	}
-	assert.Len(t, performers, 1)
-	assert.Equal(t, performerNames[performerIdxWithScene], performers[0].Name.String)
+		performers, err := pqb.FindByNames(names, false)
+		if err != nil {
+			t.Errorf("Error finding performers: %s", err.Error())
+		}
+		assert.Len(t, performers, 1)
+		assert.Equal(t, performerNames[performerIdxWithScene], performers[0].Name.String)
 
-	performers, err = pqb.FindByNames(names, nil, true) // find performers by names nocase
-	if err != nil {
-		t.Fatalf("Error finding performers: %s", err.Error())
-	}
-	assert.Len(t, performers, 2) // performerIdxWithScene and performerIdxWithDupName
-	assert.Equal(t, strings.ToLower(performerNames[performerIdxWithScene]), strings.ToLower(performers[0].Name.String))
-	assert.Equal(t, strings.ToLower(performerNames[performerIdxWithScene]), strings.ToLower(performers[1].Name.String))
+		performers, err = pqb.FindByNames(names, true) // find performers by names nocase
+		if err != nil {
+			t.Errorf("Error finding performers: %s", err.Error())
+		}
+		assert.Len(t, performers, 2) // performerIdxWithScene and performerIdxWithDupName
+		assert.Equal(t, strings.ToLower(performerNames[performerIdxWithScene]), strings.ToLower(performers[0].Name.String))
+		assert.Equal(t, strings.ToLower(performerNames[performerIdxWithScene]), strings.ToLower(performers[1].Name.String))
 
-	names = append(names, performerNames[performerIdx1WithScene]) // find performers by names ( 2 names )
+		names = append(names, performerNames[performerIdx1WithScene]) // find performers by names ( 2 names )
 
-	performers, err = pqb.FindByNames(names, nil, false)
-	if err != nil {
-		t.Fatalf("Error finding performers: %s", err.Error())
-	}
-	assert.Len(t, performers, 2) // performerIdxWithScene and performerIdx1WithScene
-	assert.Equal(t, performerNames[performerIdxWithScene], performers[0].Name.String)
-	assert.Equal(t, performerNames[performerIdx1WithScene], performers[1].Name.String)
+		performers, err = pqb.FindByNames(names, false)
+		if err != nil {
+			t.Errorf("Error finding performers: %s", err.Error())
+		}
+		assert.Len(t, performers, 2) // performerIdxWithScene and performerIdx1WithScene
+		assert.Equal(t, performerNames[performerIdxWithScene], performers[0].Name.String)
+		assert.Equal(t, performerNames[performerIdx1WithScene], performers[1].Name.String)
 
-	performers, err = pqb.FindByNames(names, nil, true) // find performers by names ( 2 names nocase)
-	if err != nil {
-		t.Fatalf("Error finding performers: %s", err.Error())
-	}
-	assert.Len(t, performers, 4) // performerIdxWithScene and performerIdxWithDupName , performerIdx1WithScene and performerIdx1WithDupName
-	assert.Equal(t, performerNames[performerIdxWithScene], performers[0].Name.String)
-	assert.Equal(t, performerNames[performerIdx1WithScene], performers[1].Name.String)
-	assert.Equal(t, performerNames[performerIdx1WithDupName], performers[2].Name.String)
-	assert.Equal(t, performerNames[performerIdxWithDupName], performers[3].Name.String)
+		performers, err = pqb.FindByNames(names, true) // find performers by names ( 2 names nocase)
+		if err != nil {
+			t.Errorf("Error finding performers: %s", err.Error())
+		}
+		assert.Len(t, performers, 4) // performerIdxWithScene and performerIdxWithDupName , performerIdx1WithScene and performerIdx1WithDupName
+		assert.Equal(t, performerNames[performerIdxWithScene], performers[0].Name.String)
+		assert.Equal(t, performerNames[performerIdx1WithScene], performers[1].Name.String)
+		assert.Equal(t, performerNames[performerIdx1WithDupName], performers[2].Name.String)
+		assert.Equal(t, performerNames[performerIdxWithDupName], performers[3].Name.String)
 
+		return nil
+	})
 }
 
 func TestPerformerUpdatePerformerImage(t *testing.T) {
-	qb := sqlite.NewPerformerQueryBuilder()
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Performer()
 
-	// create performer to test against
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+		// create performer to test against
+		const name = "TestPerformerUpdatePerformerImage"
+		performer := models.Performer{
+			Name:     sql.NullString{String: name, Valid: true},
+			Checksum: utils.MD5FromString(name),
+			Favorite: sql.NullBool{Bool: false, Valid: true},
+		}
+		created, err := qb.Create(performer)
+		if err != nil {
+			return fmt.Errorf("Error creating performer: %s", err.Error())
+		}
 
-	const name = "TestPerformerUpdatePerformerImage"
-	performer := models.Performer{
-		Name:     sql.NullString{String: name, Valid: true},
-		Checksum: utils.MD5FromString(name),
-		Favorite: sql.NullBool{Bool: false, Valid: true},
+		image := []byte("image")
+		err = qb.UpdateImage(created.ID, image)
+		if err != nil {
+			return fmt.Errorf("Error updating performer image: %s", err.Error())
+		}
+
+		// ensure image set
+		storedImage, err := qb.GetImage(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting image: %s", err.Error())
+		}
+		assert.Equal(t, storedImage, image)
+
+		// set nil image
+		err = qb.UpdateImage(created.ID, nil)
+		if err == nil {
+			return fmt.Errorf("Expected error setting nil image")
+		}
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
 	}
-	created, err := qb.Create(performer, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating performer: %s", err.Error())
-	}
-
-	image := []byte("image")
-	err = qb.UpdatePerformerImage(created.ID, image, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error updating performer image: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	// ensure image set
-	storedImage, err := qb.GetPerformerImage(created.ID, nil)
-	if err != nil {
-		t.Fatalf("Error getting image: %s", err.Error())
-	}
-	assert.Equal(t, storedImage, image)
-
-	// set nil image
-	tx = database.DB.MustBeginTx(ctx, nil)
-	err = qb.UpdatePerformerImage(created.ID, nil, tx)
-	if err == nil {
-		t.Fatalf("Expected error setting nil image")
-	}
-
-	tx.Rollback()
 }
 
 func TestPerformerDestroyPerformerImage(t *testing.T) {
-	qb := sqlite.NewPerformerQueryBuilder()
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Performer()
 
-	// create performer to test against
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+		// create performer to test against
+		const name = "TestPerformerDestroyPerformerImage"
+		performer := models.Performer{
+			Name:     sql.NullString{String: name, Valid: true},
+			Checksum: utils.MD5FromString(name),
+			Favorite: sql.NullBool{Bool: false, Valid: true},
+		}
+		created, err := qb.Create(performer)
+		if err != nil {
+			return fmt.Errorf("Error creating performer: %s", err.Error())
+		}
 
-	const name = "TestPerformerDestroyPerformerImage"
-	performer := models.Performer{
-		Name:     sql.NullString{String: name, Valid: true},
-		Checksum: utils.MD5FromString(name),
-		Favorite: sql.NullBool{Bool: false, Valid: true},
+		image := []byte("image")
+		err = qb.UpdateImage(created.ID, image)
+		if err != nil {
+			return fmt.Errorf("Error updating performer image: %s", err.Error())
+		}
+
+		err = qb.DestroyImage(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error destroying performer image: %s", err.Error())
+		}
+
+		// image should be nil
+		storedImage, err := qb.GetImage(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting image: %s", err.Error())
+		}
+		assert.Nil(t, storedImage)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
 	}
-	created, err := qb.Create(performer, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating performer: %s", err.Error())
-	}
-
-	image := []byte("image")
-	err = qb.UpdatePerformerImage(created.ID, image, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error updating performer image: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	tx = database.DB.MustBeginTx(ctx, nil)
-
-	err = qb.DestroyPerformerImage(created.ID, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error destroying performer image: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	// image should be nil
-	storedImage, err := qb.GetPerformerImage(created.ID, nil)
-	if err != nil {
-		t.Fatalf("Error getting image: %s", err.Error())
-	}
-	assert.Nil(t, storedImage)
 }
 
 func TestPerformerQueryAge(t *testing.T) {
@@ -229,24 +191,31 @@ func TestPerformerQueryAge(t *testing.T) {
 }
 
 func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
-	qb := sqlite.NewPerformerQueryBuilder()
-	performerFilter := models.PerformerFilterType{
-		Age: &ageCriterion,
-	}
-
-	performers, _ := qb.Query(&performerFilter, nil)
-
-	now := time.Now()
-	for _, performer := range performers {
-		bd := performer.Birthdate.String
-		d, _ := time.Parse("2006-01-02", bd)
-		age := now.Year() - d.Year()
-		if now.YearDay() < d.YearDay() {
-			age = age - 1
+	withTxn(func(r models.Repository) error {
+		qb := r.Performer()
+		performerFilter := models.PerformerFilterType{
+			Age: &ageCriterion,
 		}
 
-		verifyInt(t, age, ageCriterion)
-	}
+		performers, _, err := qb.Query(&performerFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying performer: %s", err.Error())
+		}
+
+		now := time.Now()
+		for _, performer := range performers {
+			bd := performer.Birthdate.String
+			d, _ := time.Parse("2006-01-02", bd)
+			age := now.Year() - d.Year()
+			if now.YearDay() < d.YearDay() {
+				age = age - 1
+			}
+
+			verifyInt(t, age, ageCriterion)
+		}
+
+		return nil
+	})
 }
 
 // TODO Update

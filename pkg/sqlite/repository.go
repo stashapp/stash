@@ -341,7 +341,7 @@ type joinRepository struct {
 }
 
 func (r *joinRepository) getIDs(id int) ([]int, error) {
-	query := fmt.Sprintf(`SELECT %s from %s WHERE %s = ?`, r.fkColumn, r.tableName, r.idColumn)
+	query := fmt.Sprintf(`SELECT %s as id from %s WHERE %s = ?`, r.fkColumn, r.tableName, r.idColumn)
 	return r.runIdsQuery(query, []interface{}{id})
 }
 

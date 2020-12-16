@@ -44,7 +44,7 @@ func UpdateFileModTime(qb models.SceneWriter, id int, modTime models.NullSQLiteT
 	})
 }
 
-func AddScenePerformer(qb models.SceneReaderWriter, id int, performerID int) (bool, error) {
+func AddPerformer(qb models.SceneReaderWriter, id int, performerID int) (bool, error) {
 	performerIDs, err := qb.GetPerformerIDs(id)
 	if err != nil {
 		return false, err
@@ -64,7 +64,7 @@ func AddScenePerformer(qb models.SceneReaderWriter, id int, performerID int) (bo
 	return false, nil
 }
 
-func AddSceneTag(qb models.SceneReaderWriter, id int, tagID int) (bool, error) {
+func AddTag(qb models.SceneReaderWriter, id int, tagID int) (bool, error) {
 	tagIDs, err := qb.GetTagIDs(id)
 	if err != nil {
 		return false, err

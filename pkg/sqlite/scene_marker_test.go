@@ -5,58 +5,66 @@ package sqlite_test
 import (
 	"testing"
 
-	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMarkerFindBySceneID(t *testing.T) {
-	mqb := sqlite.NewSceneMarkerQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		mqb := r.SceneMarker()
 
-	sceneID := sceneIDs[sceneIdxWithMarker]
-	markers, err := mqb.FindBySceneID(sceneID, nil)
+		sceneID := sceneIDs[sceneIdxWithMarker]
+		markers, err := mqb.FindBySceneID(sceneID)
 
-	if err != nil {
-		t.Fatalf("Error finding markers: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding markers: %s", err.Error())
+		}
 
-	assert.Len(t, markers, 1)
-	assert.Equal(t, markerIDs[markerIdxWithScene], markers[0].ID)
+		assert.Len(t, markers, 1)
+		assert.Equal(t, markerIDs[markerIdxWithScene], markers[0].ID)
 
-	markers, err = mqb.FindBySceneID(0, nil)
+		markers, err = mqb.FindBySceneID(0)
 
-	if err != nil {
-		t.Fatalf("Error finding marker: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding marker: %s", err.Error())
+		}
 
-	assert.Len(t, markers, 0)
+		assert.Len(t, markers, 0)
+
+		return nil
+	})
 }
 
 func TestMarkerCountByTagID(t *testing.T) {
-	mqb := sqlite.NewSceneMarkerQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		mqb := r.SceneMarker()
 
-	markerCount, err := mqb.CountByTagID(tagIDs[tagIdxWithPrimaryMarker])
+		markerCount, err := mqb.CountByTagID(tagIDs[tagIdxWithPrimaryMarker])
 
-	if err != nil {
-		t.Fatalf("error calling CountByTagID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling CountByTagID: %s", err.Error())
+		}
 
-	assert.Equal(t, 1, markerCount)
+		assert.Equal(t, 1, markerCount)
 
-	markerCount, err = mqb.CountByTagID(tagIDs[tagIdxWithMarker])
+		markerCount, err = mqb.CountByTagID(tagIDs[tagIdxWithMarker])
 
-	if err != nil {
-		t.Fatalf("error calling CountByTagID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling CountByTagID: %s", err.Error())
+		}
 
-	assert.Equal(t, 1, markerCount)
+		assert.Equal(t, 1, markerCount)
 
-	markerCount, err = mqb.CountByTagID(0)
+		markerCount, err = mqb.CountByTagID(0)
 
-	if err != nil {
-		t.Fatalf("error calling CountByTagID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling CountByTagID: %s", err.Error())
+		}
 
-	assert.Equal(t, 0, markerCount)
+		assert.Equal(t, 0, markerCount)
+
+		return nil
+	})
 }
 
 // TODO Update

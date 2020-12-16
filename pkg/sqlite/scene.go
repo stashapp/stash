@@ -229,11 +229,6 @@ func (qb *SceneQueryBuilder) CountByPerformerID(performerID int) (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery(countScenesForPerformerQuery), args)
 }
 
-func (qb *SceneQueryBuilder) FindByStudioID(studioID int) ([]*models.Scene, error) {
-	args := []interface{}{studioID}
-	return qb.queryScenes(scenesForStudioQuery, args)
-}
-
 func (qb *SceneQueryBuilder) FindByMovieID(movieID int) ([]*models.Scene, error) {
 	args := []interface{}{movieID}
 	return qb.queryScenes(scenesForMovieQuery, args)

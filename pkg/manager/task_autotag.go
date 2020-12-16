@@ -46,7 +46,7 @@ func (t *AutoTagPerformerTask) autoTagPerformer() {
 		}
 
 		for _, s := range scenes {
-			added, err := scene.AddScenePerformer(qb, s.ID, t.performer.ID)
+			added, err := scene.AddPerformer(qb, s.ID, t.performer.ID)
 
 			if err != nil {
 				return fmt.Errorf("Error adding performer '%s' to scene '%s': %s", t.performer.Name.String, s.GetTitle(), err.Error())
@@ -137,7 +137,7 @@ func (t *AutoTagTagTask) autoTagTag() {
 		}
 
 		for _, s := range scenes {
-			added, err := scene.AddSceneTag(qb, s.ID, t.tag.ID)
+			added, err := scene.AddTag(qb, s.ID, t.tag.ID)
 
 			if err != nil {
 				return fmt.Errorf("Error adding tag '%s' to scene '%s': %s", t.tag.Name, s.GetTitle(), err.Error())

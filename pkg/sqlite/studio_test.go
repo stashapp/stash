@@ -3,81 +3,92 @@
 package sqlite_test
 
 import (
-	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestStudioFindByName(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
 
-	sqb := sqlite.NewStudioQueryBuilder()
+		name := studioNames[studioIdxWithScene] // find a studio by name
 
-	name := studioNames[studioIdxWithScene] // find a studio by name
+		studio, err := sqb.FindByName(name, false)
 
-	studio, err := sqb.FindByName(name, nil, false)
+		if err != nil {
+			t.Errorf("Error finding studios: %s", err.Error())
+		}
 
-	if err != nil {
-		t.Fatalf("Error finding studios: %s", err.Error())
-	}
+		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name.String)
 
-	assert.Equal(t, studioNames[studioIdxWithScene], studio.Name.String)
+		name = studioNames[studioIdxWithDupName] // find a studio by name nocase
 
-	name = studioNames[studioIdxWithDupName] // find a studio by name nocase
+		studio, err = sqb.FindByName(name, true)
 
-	studio, err = sqb.FindByName(name, nil, true)
+		if err != nil {
+			t.Errorf("Error finding studios: %s", err.Error())
+		}
+		// studioIdxWithDupName and studioIdxWithScene should have similar names ( only diff should be Name vs NaMe)
+		//studio.Name should match with studioIdxWithScene since its ID is before studioIdxWithDupName
+		assert.Equal(t, studioNames[studioIdxWithScene], studio.Name.String)
+		//studio.Name should match with studioIdxWithDupName if the check is not case sensitive
+		assert.Equal(t, strings.ToLower(studioNames[studioIdxWithDupName]), strings.ToLower(studio.Name.String))
 
-	if err != nil {
-		t.Fatalf("Error finding studios: %s", err.Error())
-	}
-	// studioIdxWithDupName and studioIdxWithScene should have similar names ( only diff should be Name vs NaMe)
-	//studio.Name should match with studioIdxWithScene since its ID is before studioIdxWithDupName
-	assert.Equal(t, studioNames[studioIdxWithScene], studio.Name.String)
-	//studio.Name should match with studioIdxWithDupName if the check is not case sensitive
-	assert.Equal(t, strings.ToLower(studioNames[studioIdxWithDupName]), strings.ToLower(studio.Name.String))
-
+		return nil
+	})
 }
 
 func TestStudioQueryParent(t *testing.T) {
-	sqb := sqlite.NewStudioQueryBuilder()
-	studioCriterion := models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(studioIDs[studioIdxWithChildStudio]),
-		},
-		Modifier: models.CriterionModifierIncludes,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
+		studioCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithChildStudio]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
 
-	studioFilter := models.StudioFilterType{
-		Parents: &studioCriterion,
-	}
+		studioFilter := models.StudioFilterType{
+			Parents: &studioCriterion,
+		}
 
-	studios, _ := sqb.Query(&studioFilter, nil)
+		studios, _, err := sqb.Query(&studioFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying studio: %s", err.Error())
+		}
 
-	assert.Len(t, studios, 1)
+		assert.Len(t, studios, 1)
 
-	// ensure id is correct
-	assert.Equal(t, sceneIDs[studioIdxWithParentStudio], studios[0].ID)
+		// ensure id is correct
+		assert.Equal(t, sceneIDs[studioIdxWithParentStudio], studios[0].ID)
 
-	studioCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(studioIDs[studioIdxWithChildStudio]),
-		},
-		Modifier: models.CriterionModifierExcludes,
-	}
+		studioCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithChildStudio]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
 
-	q := getStudioStringValue(studioIdxWithParentStudio, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getStudioStringValue(studioIdxWithParentStudio, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	studios, _ = sqb.Query(&studioFilter, &findFilter)
-	assert.Len(t, studios, 0)
+		studios, _, err = sqb.Query(&studioFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying studio: %s", err.Error())
+		}
+		assert.Len(t, studios, 0)
+
+		return nil
+	})
 }
 
 func TestStudioDestroyParent(t *testing.T) {
@@ -85,77 +96,61 @@ func TestStudioDestroyParent(t *testing.T) {
 	const childName = "child"
 
 	// create parent and child studios
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+	if err := withTxn(func(r models.Repository) error {
+		createdParent, err := createStudio(r.Studio(), parentName, nil)
+		if err != nil {
+			return fmt.Errorf("Error creating parent studio: %s", err.Error())
+		}
 
-	createdParent, err := createStudio(tx, parentName, nil)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating parent studio: %s", err.Error())
-	}
+		parentID := int64(createdParent.ID)
+		createdChild, err := createStudio(r.Studio(), childName, &parentID)
+		if err != nil {
+			return fmt.Errorf("Error creating child studio: %s", err.Error())
+		}
 
-	parentID := int64(createdParent.ID)
-	createdChild, err := createStudio(tx, childName, &parentID)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating child studio: %s", err.Error())
-	}
+		sqb := r.Studio()
 
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
+		// destroy the parent
+		err = sqb.Destroy(createdParent.ID)
+		if err != nil {
+			return fmt.Errorf("Error destroying parent studio: %s", err.Error())
+		}
 
-	sqb := sqlite.NewStudioQueryBuilder()
+		// destroy the child
+		err = sqb.Destroy(createdChild.ID)
+		if err != nil {
+			return fmt.Errorf("Error destroying child studio: %s", err.Error())
+		}
 
-	// destroy the parent
-	tx = database.DB.MustBeginTx(ctx, nil)
-
-	err = sqb.Destroy(createdParent.ID, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error destroying parent studio: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	// destroy the child
-	tx = database.DB.MustBeginTx(ctx, nil)
-
-	err = sqb.Destroy(createdChild.ID, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error destroying child studio: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
 	}
 }
 
 func TestStudioFindChildren(t *testing.T) {
-	sqb := sqlite.NewStudioQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		sqb := r.Studio()
 
-	studios, err := sqb.FindChildren(studioIDs[studioIdxWithChildStudio], nil)
+		studios, err := sqb.FindChildren(studioIDs[studioIdxWithChildStudio])
 
-	if err != nil {
-		t.Fatalf("error calling FindChildren: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling FindChildren: %s", err.Error())
+		}
 
-	assert.Len(t, studios, 1)
-	assert.Equal(t, studioIDs[studioIdxWithParentStudio], studios[0].ID)
+		assert.Len(t, studios, 1)
+		assert.Equal(t, studioIDs[studioIdxWithParentStudio], studios[0].ID)
 
-	studios, err = sqb.FindChildren(0, nil)
+		studios, err = sqb.FindChildren(0)
 
-	if err != nil {
-		t.Fatalf("error calling FindChildren: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling FindChildren: %s", err.Error())
+		}
 
-	assert.Len(t, studios, 0)
+		assert.Len(t, studios, 0)
+
+		return nil
+	})
 }
 
 func TestStudioUpdateClearParent(t *testing.T) {
@@ -163,142 +158,111 @@ func TestStudioUpdateClearParent(t *testing.T) {
 	const childName = "clearParent_child"
 
 	// create parent and child studios
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+	if err := withTxn(func(r models.Repository) error {
+		createdParent, err := createStudio(r.Studio(), parentName, nil)
+		if err != nil {
+			return fmt.Errorf("Error creating parent studio: %s", err.Error())
+		}
 
-	createdParent, err := createStudio(tx, parentName, nil)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating parent studio: %s", err.Error())
-	}
+		parentID := int64(createdParent.ID)
+		createdChild, err := createStudio(r.Studio(), childName, &parentID)
+		if err != nil {
+			return fmt.Errorf("Error creating child studio: %s", err.Error())
+		}
 
-	parentID := int64(createdParent.ID)
-	createdChild, err := createStudio(tx, childName, &parentID)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating child studio: %s", err.Error())
-	}
+		sqb := r.Studio()
 
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
+		// clear the parent id from the child
+		updatePartial := models.StudioPartial{
+			ID:       createdChild.ID,
+			ParentID: &sql.NullInt64{Valid: false},
+		}
 
-	sqb := sqlite.NewStudioQueryBuilder()
+		updatedStudio, err := sqb.Update(updatePartial)
 
-	// clear the parent id from the child
-	tx = database.DB.MustBeginTx(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("Error updated studio: %s", err.Error())
+		}
 
-	updatePartial := models.StudioPartial{
-		ID:       createdChild.ID,
-		ParentID: &sql.NullInt64{Valid: false},
-	}
+		if updatedStudio.ParentID.Valid {
+			return errors.New("updated studio has parent ID set")
+		}
 
-	updatedStudio, err := sqb.Update(updatePartial, tx)
-
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error updated studio: %s", err.Error())
-	}
-
-	if updatedStudio.ParentID.Valid {
-		t.Error("updated studio has parent ID set")
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
 	}
 }
 
 func TestStudioUpdateStudioImage(t *testing.T) {
-	qb := sqlite.NewStudioQueryBuilder()
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Studio()
 
-	// create performer to test against
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+		// create performer to test against
+		const name = "TestStudioUpdateStudioImage"
+		created, err := createStudio(r.Studio(), name, nil)
+		if err != nil {
+			return fmt.Errorf("Error creating studio: %s", err.Error())
+		}
 
-	const name = "TestStudioUpdateStudioImage"
-	created, err := createStudio(tx, name, nil)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating studio: %s", err.Error())
+		image := []byte("image")
+		err = qb.UpdateImage(created.ID, image)
+		if err != nil {
+			return fmt.Errorf("Error updating studio image: %s", err.Error())
+		}
+
+		// ensure image set
+		storedImage, err := qb.GetImage(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting image: %s", err.Error())
+		}
+		assert.Equal(t, storedImage, image)
+
+		// set nil image
+		err = qb.UpdateImage(created.ID, nil)
+		if err == nil {
+			return fmt.Errorf("Expected error setting nil image")
+		}
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
 	}
-
-	image := []byte("image")
-	err = qb.UpdateStudioImage(created.ID, image, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error updating studio image: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	// ensure image set
-	storedImage, err := qb.GetStudioImage(created.ID, nil)
-	if err != nil {
-		t.Fatalf("Error getting image: %s", err.Error())
-	}
-	assert.Equal(t, storedImage, image)
-
-	// set nil image
-	tx = database.DB.MustBeginTx(ctx, nil)
-	err = qb.UpdateStudioImage(created.ID, nil, tx)
-	if err == nil {
-		t.Fatalf("Expected error setting nil image")
-	}
-
-	tx.Rollback()
 }
 
 func TestStudioDestroyStudioImage(t *testing.T) {
-	qb := sqlite.NewStudioQueryBuilder()
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Studio()
 
-	// create performer to test against
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+		// create performer to test against
+		const name = "TestStudioDestroyStudioImage"
+		created, err := createStudio(r.Studio(), name, nil)
+		if err != nil {
+			return fmt.Errorf("Error creating studio: %s", err.Error())
+		}
 
-	const name = "TestStudioDestroyStudioImage"
-	created, err := createStudio(tx, name, nil)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating studio: %s", err.Error())
+		image := []byte("image")
+		err = qb.UpdateImage(created.ID, image)
+		if err != nil {
+			return fmt.Errorf("Error updating studio image: %s", err.Error())
+		}
+
+		err = qb.DestroyImage(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error destroying studio image: %s", err.Error())
+		}
+
+		// image should be nil
+		storedImage, err := qb.GetImage(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting image: %s", err.Error())
+		}
+		assert.Nil(t, storedImage)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
 	}
-
-	image := []byte("image")
-	err = qb.UpdateStudioImage(created.ID, image, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error updating studio image: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	tx = database.DB.MustBeginTx(ctx, nil)
-
-	err = qb.DestroyStudioImage(created.ID, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error destroying studio image: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	// image should be nil
-	storedImage, err := qb.GetStudioImage(created.ID, nil)
-	if err != nil {
-		t.Fatalf("Error getting image: %s", err.Error())
-	}
-	assert.Nil(t, storedImage)
 }
 
 // TODO Create

@@ -3,110 +3,124 @@
 package sqlite_test
 
 import (
-	"context"
 	"database/sql"
+	"fmt"
 	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 func TestSceneFind(t *testing.T) {
-	// assume that the first scene is sceneWithGalleryPath
-	sqb := sqlite.NewSceneQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		// assume that the first scene is sceneWithGalleryPath
+		sqb := r.Scene()
 
-	const sceneIdx = 0
-	sceneID := sceneIDs[sceneIdx]
-	scene, err := sqb.Find(sceneID)
+		const sceneIdx = 0
+		sceneID := sceneIDs[sceneIdx]
+		scene, err := sqb.Find(sceneID)
 
-	if err != nil {
-		t.Fatalf("Error finding scene: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding scene: %s", err.Error())
+		}
 
-	assert.Equal(t, getSceneStringValue(sceneIdx, "Path"), scene.Path)
+		assert.Equal(t, getSceneStringValue(sceneIdx, "Path"), scene.Path)
 
-	sceneID = 0
-	scene, err = sqb.Find(sceneID)
+		sceneID = 0
+		scene, err = sqb.Find(sceneID)
 
-	if err != nil {
-		t.Fatalf("Error finding scene: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding scene: %s", err.Error())
+		}
 
-	assert.Nil(t, scene)
+		assert.Nil(t, scene)
+
+		return nil
+	})
 }
 
 func TestSceneFindByPath(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
 
-	const sceneIdx = 1
-	scenePath := getSceneStringValue(sceneIdx, "Path")
-	scene, err := sqb.FindByPath(scenePath)
+		const sceneIdx = 1
+		scenePath := getSceneStringValue(sceneIdx, "Path")
+		scene, err := sqb.FindByPath(scenePath)
 
-	if err != nil {
-		t.Fatalf("Error finding scene: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding scene: %s", err.Error())
+		}
 
-	assert.Equal(t, sceneIDs[sceneIdx], scene.ID)
-	assert.Equal(t, scenePath, scene.Path)
+		assert.Equal(t, sceneIDs[sceneIdx], scene.ID)
+		assert.Equal(t, scenePath, scene.Path)
 
-	scenePath = "not exist"
-	scene, err = sqb.FindByPath(scenePath)
+		scenePath = "not exist"
+		scene, err = sqb.FindByPath(scenePath)
 
-	if err != nil {
-		t.Fatalf("Error finding scene: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding scene: %s", err.Error())
+		}
 
-	assert.Nil(t, scene)
+		assert.Nil(t, scene)
+
+		return nil
+	})
 }
 
 func TestSceneCountByPerformerID(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	count, err := sqb.CountByPerformerID(performerIDs[performerIdxWithScene])
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		count, err := sqb.CountByPerformerID(performerIDs[performerIdxWithScene])
 
-	if err != nil {
-		t.Fatalf("Error counting scenes: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error counting scenes: %s", err.Error())
+		}
 
-	assert.Equal(t, 1, count)
+		assert.Equal(t, 1, count)
 
-	count, err = sqb.CountByPerformerID(0)
+		count, err = sqb.CountByPerformerID(0)
 
-	if err != nil {
-		t.Fatalf("Error counting scenes: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error counting scenes: %s", err.Error())
+		}
 
-	assert.Equal(t, 0, count)
+		assert.Equal(t, 0, count)
+
+		return nil
+	})
 }
 
 func TestSceneWall(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
 
-	const sceneIdx = 2
-	wallQuery := getSceneStringValue(sceneIdx, "Details")
-	scenes, err := sqb.Wall(&wallQuery)
+		const sceneIdx = 2
+		wallQuery := getSceneStringValue(sceneIdx, "Details")
+		scenes, err := sqb.Wall(&wallQuery)
 
-	if err != nil {
-		t.Fatalf("Error finding scenes: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding scenes: %s", err.Error())
+		}
 
-	assert.Len(t, scenes, 1)
-	scene := scenes[0]
-	assert.Equal(t, sceneIDs[sceneIdx], scene.ID)
-	assert.Equal(t, getSceneStringValue(sceneIdx, "Path"), scene.Path)
+		assert.Len(t, scenes, 1)
+		scene := scenes[0]
+		assert.Equal(t, sceneIDs[sceneIdx], scene.ID)
+		assert.Equal(t, getSceneStringValue(sceneIdx, "Path"), scene.Path)
 
-	wallQuery = "not exist"
-	scenes, err = sqb.Wall(&wallQuery)
+		wallQuery = "not exist"
+		scenes, err = sqb.Wall(&wallQuery)
 
-	if err != nil {
-		t.Fatalf("Error finding scene: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding scene: %s", err.Error())
+		}
 
-	assert.Len(t, scenes, 0)
+		assert.Len(t, scenes, 0)
+
+		return nil
+	})
 }
 
 func TestSceneQueryQ(t *testing.T) {
@@ -114,16 +128,29 @@ func TestSceneQueryQ(t *testing.T) {
 
 	q := getSceneStringValue(sceneIdx, titleField)
 
-	sqb := sqlite.NewSceneQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
 
-	sceneQueryQ(t, sqb, q, sceneIdx)
+		sceneQueryQ(t, sqb, q, sceneIdx)
+
+		return nil
+	})
 }
 
-func sceneQueryQ(t *testing.T, sqb sqlite.SceneQueryBuilder, q string, expectedSceneIdx int) {
+func queryScene(t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) []*models.Scene {
+	scenes, _, err := sqb.Query(sceneFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying scene: %s", err.Error())
+	}
+
+	return scenes
+}
+
+func sceneQueryQ(t *testing.T, sqb models.SceneReader, q string, expectedSceneIdx int) {
 	filter := models.FindFilterType{
 		Q: &q,
 	}
-	scenes, _ := sqb.Query(nil, &filter)
+	scenes := queryScene(t, sqb, nil, &filter)
 
 	assert.Len(t, scenes, 1)
 	scene := scenes[0]
@@ -131,7 +158,7 @@ func sceneQueryQ(t *testing.T, sqb sqlite.SceneQueryBuilder, q string, expectedS
 
 	// no Q should return all results
 	filter.Q = nil
-	scenes, _ = sqb.Query(nil, &filter)
+	scenes = queryScene(t, sqb, nil, &filter)
 
 	assert.Len(t, scenes, totalScenes)
 }
@@ -152,16 +179,20 @@ func TestSceneQueryPath(t *testing.T) {
 }
 
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	sceneFilter := models.SceneFilterType{
-		Path: &pathCriterion,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		sceneFilter := models.SceneFilterType{
+			Path: &pathCriterion,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, nil)
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
 
-	for _, scene := range scenes {
-		verifyString(t, scene.Path, pathCriterion)
-	}
+		for _, scene := range scenes {
+			verifyString(t, scene.Path, pathCriterion)
+		}
+
+		return nil
+	})
 }
 
 func verifyNullString(t *testing.T, value sql.NullString, criterion models.StringCriterionInput) {
@@ -218,16 +249,20 @@ func TestSceneQueryRating(t *testing.T) {
 }
 
 func verifyScenesRating(t *testing.T, ratingCriterion models.IntCriterionInput) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	sceneFilter := models.SceneFilterType{
-		Rating: &ratingCriterion,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		sceneFilter := models.SceneFilterType{
+			Rating: &ratingCriterion,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, nil)
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
 
-	for _, scene := range scenes {
-		verifyInt64(t, scene.Rating, ratingCriterion)
-	}
+		for _, scene := range scenes {
+			verifyInt64(t, scene.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
 }
 
 func verifyInt64(t *testing.T, value sql.NullInt64, criterion models.IntCriterionInput) {
@@ -273,16 +308,20 @@ func TestSceneQueryOCounter(t *testing.T) {
 }
 
 func verifyScenesOCounter(t *testing.T, oCounterCriterion models.IntCriterionInput) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	sceneFilter := models.SceneFilterType{
-		OCounter: &oCounterCriterion,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		sceneFilter := models.SceneFilterType{
+			OCounter: &oCounterCriterion,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, nil)
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
 
-	for _, scene := range scenes {
-		verifyInt(t, scene.OCounter, oCounterCriterion)
-	}
+		for _, scene := range scenes {
+			verifyInt(t, scene.OCounter, oCounterCriterion)
+		}
+
+		return nil
+	})
 }
 
 func verifyInt(t *testing.T, value int, criterion models.IntCriterionInput) {
@@ -328,22 +367,26 @@ func TestSceneQueryDuration(t *testing.T) {
 }
 
 func verifyScenesDuration(t *testing.T, durationCriterion models.IntCriterionInput) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	sceneFilter := models.SceneFilterType{
-		Duration: &durationCriterion,
-	}
-
-	scenes, _ := sqb.Query(&sceneFilter, nil)
-
-	for _, scene := range scenes {
-		if durationCriterion.Modifier == models.CriterionModifierEquals {
-			assert.True(t, scene.Duration.Float64 >= float64(durationCriterion.Value) && scene.Duration.Float64 < float64(durationCriterion.Value+1))
-		} else if durationCriterion.Modifier == models.CriterionModifierNotEquals {
-			assert.True(t, scene.Duration.Float64 < float64(durationCriterion.Value) || scene.Duration.Float64 >= float64(durationCriterion.Value+1))
-		} else {
-			verifyFloat64(t, scene.Duration, durationCriterion)
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		sceneFilter := models.SceneFilterType{
+			Duration: &durationCriterion,
 		}
-	}
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+
+		for _, scene := range scenes {
+			if durationCriterion.Modifier == models.CriterionModifierEquals {
+				assert.True(t, scene.Duration.Float64 >= float64(durationCriterion.Value) && scene.Duration.Float64 < float64(durationCriterion.Value+1))
+			} else if durationCriterion.Modifier == models.CriterionModifierNotEquals {
+				assert.True(t, scene.Duration.Float64 < float64(durationCriterion.Value) || scene.Duration.Float64 >= float64(durationCriterion.Value+1))
+			} else {
+				verifyFloat64(t, scene.Duration, durationCriterion)
+			}
+		}
+
+		return nil
+	})
 }
 
 func verifyFloat64(t *testing.T, value sql.NullFloat64, criterion models.IntCriterionInput) {
@@ -378,16 +421,20 @@ func TestSceneQueryResolution(t *testing.T) {
 }
 
 func verifyScenesResolution(t *testing.T, resolution models.ResolutionEnum) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	sceneFilter := models.SceneFilterType{
-		Resolution: &resolution,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		sceneFilter := models.SceneFilterType{
+			Resolution: &resolution,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, nil)
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
 
-	for _, scene := range scenes {
-		verifySceneResolution(t, scene.Height, resolution)
-	}
+		for _, scene := range scenes {
+			verifySceneResolution(t, scene.Height, resolution)
+		}
+
+		return nil
+	})
 }
 
 func verifySceneResolution(t *testing.T, height sql.NullInt64, resolution models.ResolutionEnum) {
@@ -409,369 +456,416 @@ func verifySceneResolution(t *testing.T, height sql.NullInt64, resolution models
 }
 
 func TestSceneQueryHasMarkers(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	hasMarkers := "true"
-	sceneFilter := models.SceneFilterType{
-		HasMarkers: &hasMarkers,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		hasMarkers := "true"
+		sceneFilter := models.SceneFilterType{
+			HasMarkers: &hasMarkers,
+		}
 
-	q := getSceneStringValue(sceneIdxWithMarker, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getSceneStringValue(sceneIdxWithMarker, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, &findFilter)
+		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	assert.Len(t, scenes, 1)
-	assert.Equal(t, sceneIDs[sceneIdxWithMarker], scenes[0].ID)
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, sceneIDs[sceneIdxWithMarker], scenes[0].ID)
 
-	hasMarkers = "false"
-	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
-	assert.Len(t, scenes, 0)
+		hasMarkers = "false"
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
 
-	findFilter.Q = nil
-	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
+		findFilter.Q = nil
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	assert.NotEqual(t, 0, len(scenes))
+		assert.NotEqual(t, 0, len(scenes))
 
-	// ensure non of the ids equal the one with gallery
-	for _, scene := range scenes {
-		assert.NotEqual(t, sceneIDs[sceneIdxWithMarker], scene.ID)
-	}
+		// ensure non of the ids equal the one with gallery
+		for _, scene := range scenes {
+			assert.NotEqual(t, sceneIDs[sceneIdxWithMarker], scene.ID)
+		}
+
+		return nil
+	})
 }
 
 func TestSceneQueryIsMissingGallery(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	isMissing := "gallery"
-	sceneFilter := models.SceneFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		isMissing := "gallery"
+		sceneFilter := models.SceneFilterType{
+			IsMissing: &isMissing,
+		}
 
-	q := getSceneStringValue(sceneIdxWithGallery, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getSceneStringValue(sceneIdxWithGallery, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, &findFilter)
+		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	assert.Len(t, scenes, 0)
+		assert.Len(t, scenes, 0)
 
-	findFilter.Q = nil
-	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
+		findFilter.Q = nil
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	// ensure non of the ids equal the one with gallery
-	for _, scene := range scenes {
-		assert.NotEqual(t, sceneIDs[sceneIdxWithGallery], scene.ID)
-	}
+		// ensure non of the ids equal the one with gallery
+		for _, scene := range scenes {
+			assert.NotEqual(t, sceneIDs[sceneIdxWithGallery], scene.ID)
+		}
+
+		return nil
+	})
 }
 
 func TestSceneQueryIsMissingStudio(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	isMissing := "studio"
-	sceneFilter := models.SceneFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		isMissing := "studio"
+		sceneFilter := models.SceneFilterType{
+			IsMissing: &isMissing,
+		}
 
-	q := getSceneStringValue(sceneIdxWithStudio, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getSceneStringValue(sceneIdxWithStudio, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, &findFilter)
+		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	assert.Len(t, scenes, 0)
+		assert.Len(t, scenes, 0)
 
-	findFilter.Q = nil
-	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
+		findFilter.Q = nil
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	// ensure non of the ids equal the one with studio
-	for _, scene := range scenes {
-		assert.NotEqual(t, sceneIDs[sceneIdxWithStudio], scene.ID)
-	}
+		// ensure non of the ids equal the one with studio
+		for _, scene := range scenes {
+			assert.NotEqual(t, sceneIDs[sceneIdxWithStudio], scene.ID)
+		}
+
+		return nil
+	})
 }
 
 func TestSceneQueryIsMissingMovies(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	isMissing := "movie"
-	sceneFilter := models.SceneFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		isMissing := "movie"
+		sceneFilter := models.SceneFilterType{
+			IsMissing: &isMissing,
+		}
 
-	q := getSceneStringValue(sceneIdxWithMovie, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getSceneStringValue(sceneIdxWithMovie, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, &findFilter)
+		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	assert.Len(t, scenes, 0)
+		assert.Len(t, scenes, 0)
 
-	findFilter.Q = nil
-	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
+		findFilter.Q = nil
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	// ensure non of the ids equal the one with movies
-	for _, scene := range scenes {
-		assert.NotEqual(t, sceneIDs[sceneIdxWithMovie], scene.ID)
-	}
+		// ensure non of the ids equal the one with movies
+		for _, scene := range scenes {
+			assert.NotEqual(t, sceneIDs[sceneIdxWithMovie], scene.ID)
+		}
+
+		return nil
+	})
 }
 
 func TestSceneQueryIsMissingPerformers(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	isMissing := "performers"
-	sceneFilter := models.SceneFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		isMissing := "performers"
+		sceneFilter := models.SceneFilterType{
+			IsMissing: &isMissing,
+		}
 
-	q := getSceneStringValue(sceneIdxWithPerformer, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getSceneStringValue(sceneIdxWithPerformer, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, &findFilter)
+		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	assert.Len(t, scenes, 0)
+		assert.Len(t, scenes, 0)
 
-	findFilter.Q = nil
-	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
+		findFilter.Q = nil
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	assert.True(t, len(scenes) > 0)
+		assert.True(t, len(scenes) > 0)
 
-	// ensure non of the ids equal the one with movies
-	for _, scene := range scenes {
-		assert.NotEqual(t, sceneIDs[sceneIdxWithPerformer], scene.ID)
-	}
+		// ensure non of the ids equal the one with movies
+		for _, scene := range scenes {
+			assert.NotEqual(t, sceneIDs[sceneIdxWithPerformer], scene.ID)
+		}
+
+		return nil
+	})
 }
 
 func TestSceneQueryIsMissingDate(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	isMissing := "date"
-	sceneFilter := models.SceneFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		isMissing := "date"
+		sceneFilter := models.SceneFilterType{
+			IsMissing: &isMissing,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, nil)
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
 
-	assert.True(t, len(scenes) > 0)
+		assert.True(t, len(scenes) > 0)
 
-	// ensure date is null, empty or "0001-01-01"
-	for _, scene := range scenes {
-		assert.True(t, !scene.Date.Valid || scene.Date.String == "" || scene.Date.String == "0001-01-01")
-	}
+		// ensure date is null, empty or "0001-01-01"
+		for _, scene := range scenes {
+			assert.True(t, !scene.Date.Valid || scene.Date.String == "" || scene.Date.String == "0001-01-01")
+		}
+
+		return nil
+	})
 }
 
 func TestSceneQueryIsMissingTags(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	isMissing := "tags"
-	sceneFilter := models.SceneFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		isMissing := "tags"
+		sceneFilter := models.SceneFilterType{
+			IsMissing: &isMissing,
+		}
 
-	q := getSceneStringValue(sceneIdxWithTwoTags, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getSceneStringValue(sceneIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, &findFilter)
+		scenes := queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	assert.Len(t, scenes, 0)
+		assert.Len(t, scenes, 0)
 
-	findFilter.Q = nil
-	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
+		findFilter.Q = nil
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
 
-	assert.True(t, len(scenes) > 0)
+		assert.True(t, len(scenes) > 0)
+
+		return nil
+	})
 }
 
 func TestSceneQueryIsMissingRating(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	isMissing := "rating"
-	sceneFilter := models.SceneFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		isMissing := "rating"
+		sceneFilter := models.SceneFilterType{
+			IsMissing: &isMissing,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, nil)
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
 
-	assert.True(t, len(scenes) > 0)
+		assert.True(t, len(scenes) > 0)
 
-	// ensure date is null, empty or "0001-01-01"
-	for _, scene := range scenes {
-		assert.True(t, !scene.Rating.Valid)
-	}
+		// ensure date is null, empty or "0001-01-01"
+		for _, scene := range scenes {
+			assert.True(t, !scene.Rating.Valid)
+		}
+
+		return nil
+	})
 }
 
 func TestSceneQueryPerformers(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	performerCriterion := models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(performerIDs[performerIdxWithScene]),
-			strconv.Itoa(performerIDs[performerIdx1WithScene]),
-		},
-		Modifier: models.CriterionModifierIncludes,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		performerCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(performerIDs[performerIdxWithScene]),
+				strconv.Itoa(performerIDs[performerIdx1WithScene]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
 
-	sceneFilter := models.SceneFilterType{
-		Performers: &performerCriterion,
-	}
+		sceneFilter := models.SceneFilterType{
+			Performers: &performerCriterion,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, nil)
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
 
-	assert.Len(t, scenes, 2)
+		assert.Len(t, scenes, 2)
 
-	// ensure ids are correct
-	for _, scene := range scenes {
-		assert.True(t, scene.ID == sceneIDs[sceneIdxWithPerformer] || scene.ID == sceneIDs[sceneIdxWithTwoPerformers])
-	}
+		// ensure ids are correct
+		for _, scene := range scenes {
+			assert.True(t, scene.ID == sceneIDs[sceneIdxWithPerformer] || scene.ID == sceneIDs[sceneIdxWithTwoPerformers])
+		}
 
-	performerCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(performerIDs[performerIdx1WithScene]),
-			strconv.Itoa(performerIDs[performerIdx2WithScene]),
-		},
-		Modifier: models.CriterionModifierIncludesAll,
-	}
+		performerCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(performerIDs[performerIdx1WithScene]),
+				strconv.Itoa(performerIDs[performerIdx2WithScene]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
 
-	scenes, _ = sqb.Query(&sceneFilter, nil)
+		scenes = queryScene(t, sqb, &sceneFilter, nil)
 
-	assert.Len(t, scenes, 1)
-	assert.Equal(t, sceneIDs[sceneIdxWithTwoPerformers], scenes[0].ID)
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, sceneIDs[sceneIdxWithTwoPerformers], scenes[0].ID)
 
-	performerCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(performerIDs[performerIdx1WithScene]),
-		},
-		Modifier: models.CriterionModifierExcludes,
-	}
+		performerCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(performerIDs[performerIdx1WithScene]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
 
-	q := getSceneStringValue(sceneIdxWithTwoPerformers, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getSceneStringValue(sceneIdxWithTwoPerformers, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
-	assert.Len(t, scenes, 0)
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
+
+		return nil
+	})
 }
 
 func TestSceneQueryTags(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	tagCriterion := models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(tagIDs[tagIdxWithScene]),
-			strconv.Itoa(tagIDs[tagIdx1WithScene]),
-		},
-		Modifier: models.CriterionModifierIncludes,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithScene]),
+				strconv.Itoa(tagIDs[tagIdx1WithScene]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
 
-	sceneFilter := models.SceneFilterType{
-		Tags: &tagCriterion,
-	}
+		sceneFilter := models.SceneFilterType{
+			Tags: &tagCriterion,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, nil)
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+		assert.Len(t, scenes, 2)
 
-	assert.Len(t, scenes, 2)
+		// ensure ids are correct
+		for _, scene := range scenes {
+			assert.True(t, scene.ID == sceneIDs[sceneIdxWithTag] || scene.ID == sceneIDs[sceneIdxWithTwoTags])
+		}
 
-	// ensure ids are correct
-	for _, scene := range scenes {
-		assert.True(t, scene.ID == sceneIDs[sceneIdxWithTag] || scene.ID == sceneIDs[sceneIdxWithTwoTags])
-	}
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithScene]),
+				strconv.Itoa(tagIDs[tagIdx2WithScene]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
 
-	tagCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(tagIDs[tagIdx1WithScene]),
-			strconv.Itoa(tagIDs[tagIdx2WithScene]),
-		},
-		Modifier: models.CriterionModifierIncludesAll,
-	}
+		scenes = queryScene(t, sqb, &sceneFilter, nil)
 
-	scenes, _ = sqb.Query(&sceneFilter, nil)
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, sceneIDs[sceneIdxWithTwoTags], scenes[0].ID)
 
-	assert.Len(t, scenes, 1)
-	assert.Equal(t, sceneIDs[sceneIdxWithTwoTags], scenes[0].ID)
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithScene]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
 
-	tagCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(tagIDs[tagIdx1WithScene]),
-		},
-		Modifier: models.CriterionModifierExcludes,
-	}
+		q := getSceneStringValue(sceneIdxWithTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	q := getSceneStringValue(sceneIdxWithTwoTags, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
 
-	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
-	assert.Len(t, scenes, 0)
+		return nil
+	})
 }
 
 func TestSceneQueryStudio(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	studioCriterion := models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(studioIDs[studioIdxWithScene]),
-		},
-		Modifier: models.CriterionModifierIncludes,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		studioCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithScene]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
 
-	sceneFilter := models.SceneFilterType{
-		Studios: &studioCriterion,
-	}
+		sceneFilter := models.SceneFilterType{
+			Studios: &studioCriterion,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, nil)
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
 
-	assert.Len(t, scenes, 1)
+		assert.Len(t, scenes, 1)
 
-	// ensure id is correct
-	assert.Equal(t, sceneIDs[sceneIdxWithStudio], scenes[0].ID)
+		// ensure id is correct
+		assert.Equal(t, sceneIDs[sceneIdxWithStudio], scenes[0].ID)
 
-	studioCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(studioIDs[studioIdxWithScene]),
-		},
-		Modifier: models.CriterionModifierExcludes,
-	}
+		studioCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(studioIDs[studioIdxWithScene]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
 
-	q := getSceneStringValue(sceneIdxWithStudio, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getSceneStringValue(sceneIdxWithStudio, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
-	assert.Len(t, scenes, 0)
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
+
+		return nil
+	})
 }
 
 func TestSceneQueryMovies(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-	movieCriterion := models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(movieIDs[movieIdxWithScene]),
-		},
-		Modifier: models.CriterionModifierIncludes,
-	}
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		movieCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(movieIDs[movieIdxWithScene]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
 
-	sceneFilter := models.SceneFilterType{
-		Movies: &movieCriterion,
-	}
+		sceneFilter := models.SceneFilterType{
+			Movies: &movieCriterion,
+		}
 
-	scenes, _ := sqb.Query(&sceneFilter, nil)
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
 
-	assert.Len(t, scenes, 1)
+		assert.Len(t, scenes, 1)
 
-	// ensure id is correct
-	assert.Equal(t, sceneIDs[sceneIdxWithMovie], scenes[0].ID)
+		// ensure id is correct
+		assert.Equal(t, sceneIDs[sceneIdxWithMovie], scenes[0].ID)
 
-	movieCriterion = models.MultiCriterionInput{
-		Value: []string{
-			strconv.Itoa(movieIDs[movieIdxWithScene]),
-		},
-		Modifier: models.CriterionModifierExcludes,
-	}
+		movieCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(movieIDs[movieIdxWithScene]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
 
-	q := getSceneStringValue(sceneIdxWithMovie, titleField)
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getSceneStringValue(sceneIdxWithMovie, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	scenes, _ = sqb.Query(&sceneFilter, &findFilter)
-	assert.Len(t, scenes, 0)
+		scenes = queryScene(t, sqb, &sceneFilter, &findFilter)
+		assert.Len(t, scenes, 0)
+
+		return nil
+	})
 }
 
 func TestSceneQuerySorting(t *testing.T) {
@@ -782,25 +876,29 @@ func TestSceneQuerySorting(t *testing.T) {
 		Direction: &direction,
 	}
 
-	sqb := sqlite.NewSceneQueryBuilder()
-	scenes, _ := sqb.Query(nil, &findFilter)
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		scenes := queryScene(t, sqb, nil, &findFilter)
 
-	// scenes should be in same order as indexes
-	firstScene := scenes[0]
-	lastScene := scenes[len(scenes)-1]
+		// scenes should be in same order as indexes
+		firstScene := scenes[0]
+		lastScene := scenes[len(scenes)-1]
 
-	assert.Equal(t, sceneIDs[0], firstScene.ID)
-	assert.Equal(t, sceneIDs[len(sceneIDs)-1], lastScene.ID)
+		assert.Equal(t, sceneIDs[0], firstScene.ID)
+		assert.Equal(t, sceneIDs[len(sceneIDs)-1], lastScene.ID)
 
-	// sort in descending order
-	direction = models.SortDirectionEnumDesc
+		// sort in descending order
+		direction = models.SortDirectionEnumDesc
 
-	scenes, _ = sqb.Query(nil, &findFilter)
-	firstScene = scenes[0]
-	lastScene = scenes[len(scenes)-1]
+		scenes = queryScene(t, sqb, nil, &findFilter)
+		firstScene = scenes[0]
+		lastScene = scenes[len(scenes)-1]
 
-	assert.Equal(t, sceneIDs[len(sceneIDs)-1], firstScene.ID)
-	assert.Equal(t, sceneIDs[0], lastScene.ID)
+		assert.Equal(t, sceneIDs[len(sceneIDs)-1], firstScene.ID)
+		assert.Equal(t, sceneIDs[0], lastScene.ID)
+
+		return nil
+	})
 }
 
 func TestSceneQueryPagination(t *testing.T) {
@@ -809,249 +907,233 @@ func TestSceneQueryPagination(t *testing.T) {
 		PerPage: &perPage,
 	}
 
-	sqb := sqlite.NewSceneQueryBuilder()
-	scenes, _ := sqb.Query(nil, &findFilter)
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+		scenes := queryScene(t, sqb, nil, &findFilter)
 
-	assert.Len(t, scenes, 1)
+		assert.Len(t, scenes, 1)
 
-	firstID := scenes[0].ID
+		firstID := scenes[0].ID
 
-	page := 2
-	findFilter.Page = &page
-	scenes, _ = sqb.Query(nil, &findFilter)
+		page := 2
+		findFilter.Page = &page
+		scenes = queryScene(t, sqb, nil, &findFilter)
 
-	assert.Len(t, scenes, 1)
-	secondID := scenes[0].ID
-	assert.NotEqual(t, firstID, secondID)
+		assert.Len(t, scenes, 1)
+		secondID := scenes[0].ID
+		assert.NotEqual(t, firstID, secondID)
 
-	perPage = 2
-	page = 1
+		perPage = 2
+		page = 1
 
-	scenes, _ = sqb.Query(nil, &findFilter)
-	assert.Len(t, scenes, 2)
-	assert.Equal(t, firstID, scenes[0].ID)
-	assert.Equal(t, secondID, scenes[1].ID)
+		scenes = queryScene(t, sqb, nil, &findFilter)
+		assert.Len(t, scenes, 2)
+		assert.Equal(t, firstID, scenes[0].ID)
+		assert.Equal(t, secondID, scenes[1].ID)
+
+		return nil
+	})
 }
 
 func TestSceneCountByTagID(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
 
-	sceneCount, err := sqb.CountByTagID(tagIDs[tagIdxWithScene])
+		sceneCount, err := sqb.CountByTagID(tagIDs[tagIdxWithScene])
 
-	if err != nil {
-		t.Fatalf("error calling CountByTagID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling CountByTagID: %s", err.Error())
+		}
 
-	assert.Equal(t, 1, sceneCount)
+		assert.Equal(t, 1, sceneCount)
 
-	sceneCount, err = sqb.CountByTagID(0)
+		sceneCount, err = sqb.CountByTagID(0)
 
-	if err != nil {
-		t.Fatalf("error calling CountByTagID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling CountByTagID: %s", err.Error())
+		}
 
-	assert.Equal(t, 0, sceneCount)
+		assert.Equal(t, 0, sceneCount)
+
+		return nil
+	})
 }
 
 func TestSceneCountByMovieID(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
 
-	sceneCount, err := sqb.CountByMovieID(movieIDs[movieIdxWithScene])
+		sceneCount, err := sqb.CountByMovieID(movieIDs[movieIdxWithScene])
 
-	if err != nil {
-		t.Fatalf("error calling CountByMovieID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling CountByMovieID: %s", err.Error())
+		}
 
-	assert.Equal(t, 1, sceneCount)
+		assert.Equal(t, 1, sceneCount)
 
-	sceneCount, err = sqb.CountByMovieID(0)
+		sceneCount, err = sqb.CountByMovieID(0)
 
-	if err != nil {
-		t.Fatalf("error calling CountByMovieID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling CountByMovieID: %s", err.Error())
+		}
 
-	assert.Equal(t, 0, sceneCount)
+		assert.Equal(t, 0, sceneCount)
+
+		return nil
+	})
 }
 
 func TestSceneCountByStudioID(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
 
-	sceneCount, err := sqb.CountByStudioID(studioIDs[studioIdxWithScene])
+		sceneCount, err := sqb.CountByStudioID(studioIDs[studioIdxWithScene])
 
-	if err != nil {
-		t.Fatalf("error calling CountByStudioID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling CountByStudioID: %s", err.Error())
+		}
 
-	assert.Equal(t, 1, sceneCount)
+		assert.Equal(t, 1, sceneCount)
 
-	sceneCount, err = sqb.CountByStudioID(0)
+		sceneCount, err = sqb.CountByStudioID(0)
 
-	if err != nil {
-		t.Fatalf("error calling CountByStudioID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling CountByStudioID: %s", err.Error())
+		}
 
-	assert.Equal(t, 0, sceneCount)
+		assert.Equal(t, 0, sceneCount)
+
+		return nil
+	})
 }
 
 func TestFindByMovieID(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
 
-	scenes, err := sqb.FindByMovieID(movieIDs[movieIdxWithScene])
+		scenes, err := sqb.FindByMovieID(movieIDs[movieIdxWithScene])
 
-	if err != nil {
-		t.Fatalf("error calling FindByMovieID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling FindByMovieID: %s", err.Error())
+		}
 
-	assert.Len(t, scenes, 1)
-	assert.Equal(t, sceneIDs[sceneIdxWithMovie], scenes[0].ID)
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, sceneIDs[sceneIdxWithMovie], scenes[0].ID)
 
-	scenes, err = sqb.FindByMovieID(0)
+		scenes, err = sqb.FindByMovieID(0)
 
-	if err != nil {
-		t.Fatalf("error calling FindByMovieID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling FindByMovieID: %s", err.Error())
+		}
 
-	assert.Len(t, scenes, 0)
+		assert.Len(t, scenes, 0)
+
+		return nil
+	})
 }
 
 func TestFindByPerformerID(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
 
-	scenes, err := sqb.FindByPerformerID(performerIDs[performerIdxWithScene])
+		scenes, err := sqb.FindByPerformerID(performerIDs[performerIdxWithScene])
 
-	if err != nil {
-		t.Fatalf("error calling FindByPerformerID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling FindByPerformerID: %s", err.Error())
+		}
 
-	assert.Len(t, scenes, 1)
-	assert.Equal(t, sceneIDs[sceneIdxWithPerformer], scenes[0].ID)
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, sceneIDs[sceneIdxWithPerformer], scenes[0].ID)
 
-	scenes, err = sqb.FindByPerformerID(0)
+		scenes, err = sqb.FindByPerformerID(0)
 
-	if err != nil {
-		t.Fatalf("error calling FindByPerformerID: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("error calling FindByPerformerID: %s", err.Error())
+		}
 
-	assert.Len(t, scenes, 0)
-}
+		assert.Len(t, scenes, 0)
 
-func TestFindByStudioID(t *testing.T) {
-	sqb := sqlite.NewSceneQueryBuilder()
-
-	scenes, err := sqb.FindByStudioID(performerIDs[studioIdxWithScene])
-
-	if err != nil {
-		t.Fatalf("error calling FindByStudioID: %s", err.Error())
-	}
-
-	assert.Len(t, scenes, 1)
-	assert.Equal(t, sceneIDs[sceneIdxWithStudio], scenes[0].ID)
-
-	scenes, err = sqb.FindByStudioID(0)
-
-	if err != nil {
-		t.Fatalf("error calling FindByStudioID: %s", err.Error())
-	}
-
-	assert.Len(t, scenes, 0)
+		return nil
+	})
 }
 
 func TestSceneUpdateSceneCover(t *testing.T) {
-	qb := sqlite.NewSceneQueryBuilder()
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Scene()
 
-	// create performer to test against
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+		// create performer to test against
+		const name = "TestSceneUpdateSceneCover"
+		scene := models.Scene{
+			Path:     name,
+			Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
+		}
+		created, err := qb.Create(scene)
+		if err != nil {
+			return fmt.Errorf("Error creating scene: %s", err.Error())
+		}
 
-	const name = "TestSceneUpdateSceneCover"
-	scene := models.Scene{
-		Path:     name,
-		Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
+		image := []byte("image")
+		err = qb.UpdateCover(created.ID, image)
+		if err != nil {
+			return fmt.Errorf("Error updating scene cover: %s", err.Error())
+		}
+
+		// ensure image set
+		storedImage, err := qb.GetCover(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting image: %s", err.Error())
+		}
+		assert.Equal(t, storedImage, image)
+
+		// set nil image
+		err = qb.UpdateCover(created.ID, nil)
+		if err == nil {
+			return fmt.Errorf("Expected error setting nil image")
+		}
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
 	}
-	created, err := qb.Create(scene, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating scene: %s", err.Error())
-	}
-
-	image := []byte("image")
-	err = qb.UpdateSceneCover(created.ID, image, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error updating scene cover: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	// ensure image set
-	storedImage, err := qb.GetSceneCover(created.ID, nil)
-	if err != nil {
-		t.Fatalf("Error getting image: %s", err.Error())
-	}
-	assert.Equal(t, storedImage, image)
-
-	// set nil image
-	tx = database.DB.MustBeginTx(ctx, nil)
-	err = qb.UpdateSceneCover(created.ID, nil, tx)
-	if err == nil {
-		t.Fatalf("Expected error setting nil image")
-	}
-
-	tx.Rollback()
 }
 
 func TestSceneDestroySceneCover(t *testing.T) {
-	qb := sqlite.NewSceneQueryBuilder()
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Scene()
 
-	// create performer to test against
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+		// create performer to test against
+		const name = "TestSceneDestroySceneCover"
+		scene := models.Scene{
+			Path:     name,
+			Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
+		}
+		created, err := qb.Create(scene)
+		if err != nil {
+			return fmt.Errorf("Error creating scene: %s", err.Error())
+		}
 
-	const name = "TestSceneDestroySceneCover"
-	scene := models.Scene{
-		Path:     name,
-		Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
+		image := []byte("image")
+		err = qb.UpdateCover(created.ID, image)
+		if err != nil {
+			return fmt.Errorf("Error updating scene image: %s", err.Error())
+		}
+
+		err = qb.DestroyCover(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error destroying scene cover: %s", err.Error())
+		}
+
+		// image should be nil
+		storedImage, err := qb.GetCover(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting image: %s", err.Error())
+		}
+		assert.Nil(t, storedImage)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
 	}
-	created, err := qb.Create(scene, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating scene: %s", err.Error())
-	}
-
-	image := []byte("image")
-	err = qb.UpdateSceneCover(created.ID, image, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error updating scene image: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	tx = database.DB.MustBeginTx(ctx, nil)
-
-	err = qb.DestroySceneCover(created.ID, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error destroying scene cover: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	// image should be nil
-	storedImage, err := qb.GetSceneCover(created.ID, nil)
-	if err != nil {
-		t.Fatalf("Error getting image: %s", err.Error())
-	}
-	assert.Nil(t, storedImage)
 }
 
 // TODO Update

@@ -581,13 +581,13 @@ func (_m *SceneReaderWriter) Query(sceneFilter *models.SceneFilterType, findFilt
 	return r0, r1, r2
 }
 
-// QueryAllByPathRegex provides a mock function with given fields: regex
-func (_m *SceneReaderWriter) QueryAllByPathRegex(regex string) ([]*models.Scene, error) {
-	ret := _m.Called(regex)
+// QueryAllByPathRegex provides a mock function with given fields: regex, ignoreOrganized
+func (_m *SceneReaderWriter) QueryAllByPathRegex(regex string, ignoreOrganized bool) ([]*models.Scene, error) {
+	ret := _m.Called(regex, ignoreOrganized)
 
 	var r0 []*models.Scene
-	if rf, ok := ret.Get(0).(func(string) []*models.Scene); ok {
-		r0 = rf(regex)
+	if rf, ok := ret.Get(0).(func(string, bool) []*models.Scene); ok {
+		r0 = rf(regex, ignoreOrganized)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Scene)
@@ -595,8 +595,8 @@ func (_m *SceneReaderWriter) QueryAllByPathRegex(regex string) ([]*models.Scene,
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(regex)
+	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
+		r1 = rf(regex, ignoreOrganized)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -656,14 +656,14 @@ func (_m *SceneReaderWriter) ResetOCounter(id int) (int, error) {
 }
 
 // Size provides a mock function with given fields:
-func (_m *SceneReaderWriter) Size() (uint64, error) {
+func (_m *SceneReaderWriter) Size() (float64, error) {
 	ret := _m.Called()
 
-	var r0 uint64
-	if rf, ok := ret.Get(0).(func() uint64); ok {
+	var r0 float64
+	if rf, ok := ret.Get(0).(func() float64); ok {
 		r0 = rf()
 	} else {
-		r0 = ret.Get(0).(uint64)
+		r0 = ret.Get(0).(float64)
 	}
 
 	var r1 error

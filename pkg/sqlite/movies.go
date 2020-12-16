@@ -87,17 +87,6 @@ func (qb *MovieQueryBuilder) FindMany(ids []int) ([]*models.Movie, error) {
 	return movies, nil
 }
 
-func (qb *MovieQueryBuilder) FindBySceneID(sceneID int) ([]*models.Movie, error) {
-	query := `
-		SELECT movies.* FROM movies
-		LEFT JOIN movies_scenes as scenes_join on scenes_join.movie_id = movies.id
-		WHERE scenes_join.scene_id = ?
-		GROUP BY movies.id
-	`
-	args := []interface{}{sceneID}
-	return qb.queryMovies(query, args)
-}
-
 func (qb *MovieQueryBuilder) FindByName(name string, nocase bool) (*models.Movie, error) {
 	query := "SELECT * FROM movies WHERE name = ?"
 	if nocase {

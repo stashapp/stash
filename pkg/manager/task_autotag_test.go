@@ -114,7 +114,7 @@ func createPerformer(pqb models.PerformerWriter) error {
 		Favorite: sql.NullBool{Valid: true, Bool: false},
 	}
 
-	_, err := pqb.Create(performer, tx)
+	_, err := pqb.Create(performer)
 	if err != nil {
 		return err
 	}
@@ -129,18 +129,16 @@ func createStudio(qb models.StudioWriter, name string) (*models.Studio, error) {
 		Name:     sql.NullString{Valid: true, String: testName},
 	}
 
-	return qb.Create(studio, tx)
+	return qb.Create(studio)
 }
 
 func createTag(qb models.TagWriter) error {
 	// create the studio
-	qb := sqlite.NewTagQueryBuilder()
-
 	tag := models.Tag{
 		Name: testName,
 	}
 
-	_, err := qb.Create(tag, tx)
+	_, err := qb.Create(tag)
 	if err != nil {
 		return err
 	}
@@ -149,8 +147,6 @@ func createTag(qb models.TagWriter) error {
 }
 
 func createScenes(sqb models.SceneReaderWriter) error {
-	sqb := sqlite.NewSceneQueryBuilder()
-
 	// create the scenes
 	var scenePatterns []string
 	var falseScenePatterns []string
@@ -171,13 +167,13 @@ func createScenes(sqb models.SceneReaderWriter) error {
 	}
 
 	for _, fn := range scenePatterns {
-		err := createScene(sqb, tx, makeScene(fn, true))
+		err := createScene(sqb, makeScene(fn, true))
 		if err != nil {
 			return err
 		}
 	}
 	for _, fn := range falseScenePatterns {
-		err := createScene(sqb, tx, makeScene(fn, false))
+		err := createScene(sqb, makeScene(fn, false))
 		if err != nil {
 			return err
 		}
@@ -187,7 +183,7 @@ func createScenes(sqb models.SceneReaderWriter) error {
 	for _, fn := range scenePatterns {
 		s := makeScene("organized"+fn, false)
 		s.Organized = true
-		err := createScene(sqb, tx, s)
+		err := createScene(sqb, s)
 		if err != nil {
 			return err
 		}
@@ -196,7 +192,7 @@ func createScenes(sqb models.SceneReaderWriter) error {
 	// create scene with existing studio io
 	studioScene := makeScene(existingStudioSceneName, true)
 	studioScene.StudioID = sql.NullInt64{Valid: true, Int64: int64(existingStudioID)}
-	err := createScene(sqb, tx, studioScene)
+	err := createScene(sqb, studioScene)
 	if err != nil {
 		return err
 	}
@@ -228,39 +224,43 @@ func createScene(sqb models.SceneWriter, scene *models.Scene) error {
 	return nil
 }
 
+func withTxn(f func(r models.Repository) error) error {
+	t := &sqlite.TransactionManager{}
+	return t.WithTxn(context.TODO(), f)
+}
+
 func populateDB() error {
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+	if err := withTxn(func(r models.Repository) error {
+		err := createPerformer(r.Performer())
+		if err != nil {
+			return err
+		}
 
-	err := createPerformer(tx)
-	if err != nil {
-		return err
-	}
+		_, err = createStudio(r.Studio(), testName)
+		if err != nil {
+			return err
+		}
 
-	_, err = createStudio(tx, testName)
-	if err != nil {
-		return err
-	}
+		// create existing studio
+		existingStudio, err := createStudio(r.Studio(), existingStudioName)
+		if err != nil {
+			return err
+		}
 
-	// create existing studio
-	existingStudio, err := createStudio(tx, existingStudioName)
-	if err != nil {
-		return err
-	}
+		existingStudioID = existingStudio.ID
 
-	existingStudioID = existingStudio.ID
+		err = createTag(r.Tag())
+		if err != nil {
+			return err
+		}
 
-	err = createTag(tx)
-	if err != nil {
-		return err
-	}
+		err = createScenes(r.Scene())
+		if err != nil {
+			return err
+		}
 
-	err = createScenes(tx)
-	if err != nil {
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return err
 	}
 
@@ -268,16 +268,19 @@ func populateDB() error {
 }
 
 func TestParsePerformers(t *testing.T) {
-	pqb := sqlite.NewPerformerQueryBuilder()
-	performers, err := pqb.All()
-
-	if err != nil {
+	var performers []*models.Performer
+	if err := withTxn(func(r models.Repository) error {
+		var err error
+		performers, err = r.Performer().All()
+		return err
+	}); err != nil {
 		t.Errorf("Error getting performer: %s", err)
 		return
 	}
 
 	task := AutoTagPerformerTask{
-		performer: performers[0],
+		performer:  performers[0],
+		txnManager: &sqlite.TransactionManager{},
 	}
 
 	var wg sync.WaitGroup
@@ -285,38 +288,47 @@ func TestParsePerformers(t *testing.T) {
 	task.Start(&wg)
 
 	// verify that scenes were tagged correctly
-	sqb := sqlite.NewSceneQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		pqb := r.Performer()
 
-	scenes, err := sqb.All()
-
-	for _, scene := range scenes {
-		performers, err := pqb.FindBySceneID(scene.ID, nil)
-
+		scenes, err := r.Scene().All()
 		if err != nil {
-			t.Errorf("Error getting scene performers: %s", err.Error())
-			return
+			t.Error(err.Error())
 		}
 
-		// title is only set on scenes where we expect performer to be set
-		if scene.Title.String == scene.Path && len(performers) == 0 {
-			t.Errorf("Did not set performer '%s' for path '%s'", testName, scene.Path)
-		} else if scene.Title.String != scene.Path && len(performers) > 0 {
-			t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, scene.Path)
+		for _, scene := range scenes {
+			performers, err := pqb.FindBySceneID(scene.ID)
+
+			if err != nil {
+				t.Errorf("Error getting scene performers: %s", err.Error())
+			}
+
+			// title is only set on scenes where we expect performer to be set
+			if scene.Title.String == scene.Path && len(performers) == 0 {
+				t.Errorf("Did not set performer '%s' for path '%s'", testName, scene.Path)
+			} else if scene.Title.String != scene.Path && len(performers) > 0 {
+				t.Errorf("Incorrectly set performer '%s' for path '%s'", testName, scene.Path)
+			}
 		}
-	}
+
+		return nil
+	})
 }
 
 func TestParseStudios(t *testing.T) {
-	studioQuery := sqlite.NewStudioQueryBuilder()
-	studios, err := studioQuery.All()
-
-	if err != nil {
+	var studios []*models.Studio
+	if err := withTxn(func(r models.Repository) error {
+		var err error
+		studios, err = r.Studio().All()
+		return err
+	}); err != nil {
 		t.Errorf("Error getting studio: %s", err)
 		return
 	}
 
 	task := AutoTagStudioTask{
-		studio: studios[0],
+		studio:     studios[0],
+		txnManager: &sqlite.TransactionManager{},
 	}
 
 	var wg sync.WaitGroup
@@ -324,38 +336,46 @@ func TestParseStudios(t *testing.T) {
 	task.Start(&wg)
 
 	// verify that scenes were tagged correctly
-	sqb := sqlite.NewSceneQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		scenes, err := r.Scene().All()
+		if err != nil {
+			t.Error(err.Error())
+		}
 
-	scenes, err := sqb.All()
-
-	for _, scene := range scenes {
-		// check for existing studio id scene first
-		if scene.Path == existingStudioSceneName {
-			if scene.StudioID.Int64 != int64(existingStudioID) {
-				t.Error("Incorrectly overwrote studio ID for scene with existing studio ID")
-			}
-		} else {
-			// title is only set on scenes where we expect studio to be set
-			if scene.Title.String == scene.Path && scene.StudioID.Int64 != int64(studios[0].ID) {
-				t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
-			} else if scene.Title.String != scene.Path && scene.StudioID.Int64 == int64(studios[0].ID) {
-				t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
+		for _, scene := range scenes {
+			// check for existing studio id scene first
+			if scene.Path == existingStudioSceneName {
+				if scene.StudioID.Int64 != int64(existingStudioID) {
+					t.Error("Incorrectly overwrote studio ID for scene with existing studio ID")
+				}
+			} else {
+				// title is only set on scenes where we expect studio to be set
+				if scene.Title.String == scene.Path && scene.StudioID.Int64 != int64(studios[0].ID) {
+					t.Errorf("Did not set studio '%s' for path '%s'", testName, scene.Path)
+				} else if scene.Title.String != scene.Path && scene.StudioID.Int64 == int64(studios[0].ID) {
+					t.Errorf("Incorrectly set studio '%s' for path '%s'", testName, scene.Path)
+				}
 			}
 		}
-	}
+
+		return nil
+	})
 }
 
 func TestParseTags(t *testing.T) {
-	tagQuery := sqlite.NewTagQueryBuilder()
-	tags, err := tagQuery.All()
-
-	if err != nil {
+	var tags []*models.Tag
+	if err := withTxn(func(r models.Repository) error {
+		var err error
+		tags, err = r.Tag().All()
+		return err
+	}); err != nil {
 		t.Errorf("Error getting performer: %s", err)
 		return
 	}
 
 	task := AutoTagTagTask{
-		tag: tags[0],
+		tag:        tags[0],
+		txnManager: &sqlite.TransactionManager{},
 	}
 
 	var wg sync.WaitGroup
@@ -363,23 +383,29 @@ func TestParseTags(t *testing.T) {
 	task.Start(&wg)
 
 	// verify that scenes were tagged correctly
-	sqb := sqlite.NewSceneQueryBuilder()
-
-	scenes, err := sqb.All()
-
-	for _, scene := range scenes {
-		tags, err := tagQuery.FindBySceneID(scene.ID, nil)
-
+	withTxn(func(r models.Repository) error {
+		scenes, err := r.Scene().All()
 		if err != nil {
-			t.Errorf("Error getting scene tags: %s", err.Error())
-			return
+			t.Error(err.Error())
 		}
 
-		// title is only set on scenes where we expect performer to be set
-		if scene.Title.String == scene.Path && len(tags) == 0 {
-			t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path)
-		} else if scene.Title.String != scene.Path && len(tags) > 0 {
-			t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, scene.Path)
+		tqb := r.Tag()
+
+		for _, scene := range scenes {
+			tags, err := tqb.FindBySceneID(scene.ID)
+
+			if err != nil {
+				t.Errorf("Error getting scene tags: %s", err.Error())
+			}
+
+			// title is only set on scenes where we expect performer to be set
+			if scene.Title.String == scene.Path && len(tags) == 0 {
+				t.Errorf("Did not set tag '%s' for path '%s'", testName, scene.Path)
+			} else if scene.Title.String != scene.Path && len(tags) > 0 {
+				t.Errorf("Incorrectly set tag '%s' for path '%s'", testName, scene.Path)
+			}
 		}
-	}
+
+		return nil
+	})
 }

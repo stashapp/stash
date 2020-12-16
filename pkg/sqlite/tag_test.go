@@ -3,136 +3,153 @@
 package sqlite_test
 
 import (
-	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMarkerFindBySceneMarkerID(t *testing.T) {
-	tqb := sqlite.NewTagQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		tqb := r.Tag()
 
-	markerID := markerIDs[markerIdxWithScene]
+		markerID := markerIDs[markerIdxWithScene]
 
-	tags, err := tqb.FindBySceneMarkerID(markerID, nil)
+		tags, err := tqb.FindBySceneMarkerID(markerID)
 
-	if err != nil {
-		t.Fatalf("Error finding tags: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
 
-	assert.Len(t, tags, 1)
-	assert.Equal(t, tagIDs[tagIdxWithMarker], tags[0].ID)
+		assert.Len(t, tags, 1)
+		assert.Equal(t, tagIDs[tagIdxWithMarker], tags[0].ID)
 
-	tags, err = tqb.FindBySceneMarkerID(0, nil)
+		tags, err = tqb.FindBySceneMarkerID(0)
 
-	if err != nil {
-		t.Fatalf("Error finding tags: %s", err.Error())
-	}
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
 
-	assert.Len(t, tags, 0)
+		assert.Len(t, tags, 0)
+
+		return nil
+	})
 }
 
 func TestTagFindByName(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		tqb := r.Tag()
 
-	tqb := sqlite.NewTagQueryBuilder()
+		name := tagNames[tagIdxWithScene] // find a tag by name
 
-	name := tagNames[tagIdxWithScene] // find a tag by name
+		tag, err := tqb.FindByName(name, false)
 
-	tag, err := tqb.FindByName(name, nil, false)
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
 
-	if err != nil {
-		t.Fatalf("Error finding tags: %s", err.Error())
-	}
+		assert.Equal(t, tagNames[tagIdxWithScene], tag.Name)
 
-	assert.Equal(t, tagNames[tagIdxWithScene], tag.Name)
+		name = tagNames[tagIdxWithDupName] // find a tag by name nocase
 
-	name = tagNames[tagIdxWithDupName] // find a tag by name nocase
+		tag, err = tqb.FindByName(name, true)
 
-	tag, err = tqb.FindByName(name, nil, true)
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+		// tagIdxWithDupName and tagIdxWithScene should have similar names ( only diff should be Name vs NaMe)
+		//tag.Name should match with tagIdxWithScene since its ID is before tagIdxWithDupName
+		assert.Equal(t, tagNames[tagIdxWithScene], tag.Name)
+		//tag.Name should match with tagIdxWithDupName if the check is not case sensitive
+		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithDupName]), strings.ToLower(tag.Name))
 
-	if err != nil {
-		t.Fatalf("Error finding tags: %s", err.Error())
-	}
-	// tagIdxWithDupName and tagIdxWithScene should have similar names ( only diff should be Name vs NaMe)
-	//tag.Name should match with tagIdxWithScene since its ID is before tagIdxWithDupName
-	assert.Equal(t, tagNames[tagIdxWithScene], tag.Name)
-	//tag.Name should match with tagIdxWithDupName if the check is not case sensitive
-	assert.Equal(t, strings.ToLower(tagNames[tagIdxWithDupName]), strings.ToLower(tag.Name))
-
+		return nil
+	})
 }
 
 func TestTagFindByNames(t *testing.T) {
 	var names []string
 
-	tqb := sqlite.NewTagQueryBuilder()
+	withTxn(func(r models.Repository) error {
+		tqb := r.Tag()
 
-	names = append(names, tagNames[tagIdxWithScene]) // find tags by names
+		names = append(names, tagNames[tagIdxWithScene]) // find tags by names
 
-	tags, err := tqb.FindByNames(names, nil, false)
-	if err != nil {
-		t.Fatalf("Error finding tags: %s", err.Error())
-	}
-	assert.Len(t, tags, 1)
-	assert.Equal(t, tagNames[tagIdxWithScene], tags[0].Name)
+		tags, err := tqb.FindByNames(names, false)
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+		assert.Len(t, tags, 1)
+		assert.Equal(t, tagNames[tagIdxWithScene], tags[0].Name)
 
-	tags, err = tqb.FindByNames(names, nil, true) // find tags by names nocase
-	if err != nil {
-		t.Fatalf("Error finding tags: %s", err.Error())
-	}
-	assert.Len(t, tags, 2) // tagIdxWithScene and tagIdxWithDupName
-	assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[0].Name))
-	assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[1].Name))
+		tags, err = tqb.FindByNames(names, true) // find tags by names nocase
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+		assert.Len(t, tags, 2) // tagIdxWithScene and tagIdxWithDupName
+		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[0].Name))
+		assert.Equal(t, strings.ToLower(tagNames[tagIdxWithScene]), strings.ToLower(tags[1].Name))
 
-	names = append(names, tagNames[tagIdx1WithScene]) // find tags by names ( 2 names )
+		names = append(names, tagNames[tagIdx1WithScene]) // find tags by names ( 2 names )
 
-	tags, err = tqb.FindByNames(names, nil, false)
-	if err != nil {
-		t.Fatalf("Error finding tags: %s", err.Error())
-	}
-	assert.Len(t, tags, 2) // tagIdxWithScene and tagIdx1WithScene
-	assert.Equal(t, tagNames[tagIdxWithScene], tags[0].Name)
-	assert.Equal(t, tagNames[tagIdx1WithScene], tags[1].Name)
+		tags, err = tqb.FindByNames(names, false)
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+		assert.Len(t, tags, 2) // tagIdxWithScene and tagIdx1WithScene
+		assert.Equal(t, tagNames[tagIdxWithScene], tags[0].Name)
+		assert.Equal(t, tagNames[tagIdx1WithScene], tags[1].Name)
 
-	tags, err = tqb.FindByNames(names, nil, true) // find tags by names ( 2 names nocase)
-	if err != nil {
-		t.Fatalf("Error finding tags: %s", err.Error())
-	}
-	assert.Len(t, tags, 4) // tagIdxWithScene and tagIdxWithDupName , tagIdx1WithScene and tagIdx1WithDupName
-	assert.Equal(t, tagNames[tagIdxWithScene], tags[0].Name)
-	assert.Equal(t, tagNames[tagIdx1WithScene], tags[1].Name)
-	assert.Equal(t, tagNames[tagIdx1WithDupName], tags[2].Name)
-	assert.Equal(t, tagNames[tagIdxWithDupName], tags[3].Name)
+		tags, err = tqb.FindByNames(names, true) // find tags by names ( 2 names nocase)
+		if err != nil {
+			t.Errorf("Error finding tags: %s", err.Error())
+		}
+		assert.Len(t, tags, 4) // tagIdxWithScene and tagIdxWithDupName , tagIdx1WithScene and tagIdx1WithDupName
+		assert.Equal(t, tagNames[tagIdxWithScene], tags[0].Name)
+		assert.Equal(t, tagNames[tagIdx1WithScene], tags[1].Name)
+		assert.Equal(t, tagNames[tagIdx1WithDupName], tags[2].Name)
+		assert.Equal(t, tagNames[tagIdxWithDupName], tags[3].Name)
 
+		return nil
+	})
 }
 
 func TestTagQueryIsMissingImage(t *testing.T) {
-	qb := sqlite.NewTagQueryBuilder()
-	isMissing := "image"
-	tagFilter := models.TagFilterType{
-		IsMissing: &isMissing,
-	}
+	withTxn(func(r models.Repository) error {
+		qb := r.Tag()
+		isMissing := "image"
+		tagFilter := models.TagFilterType{
+			IsMissing: &isMissing,
+		}
 
-	q := getTagStringValue(tagIdxWithCoverImage, "name")
-	findFilter := models.FindFilterType{
-		Q: &q,
-	}
+		q := getTagStringValue(tagIdxWithCoverImage, "name")
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
 
-	tags, _ := qb.Query(&tagFilter, &findFilter)
+		tags, _, err := qb.Query(&tagFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying tag: %s", err.Error())
+		}
 
-	assert.Len(t, tags, 0)
+		assert.Len(t, tags, 0)
 
-	findFilter.Q = nil
-	tags, _ = qb.Query(&tagFilter, &findFilter)
+		findFilter.Q = nil
+		tags, _, err = qb.Query(&tagFilter, &findFilter)
+		if err != nil {
+			t.Errorf("Error querying tag: %s", err.Error())
+		}
 
-	// ensure non of the ids equal the one with image
-	for _, tag := range tags {
-		assert.NotEqual(t, tagIDs[tagIdxWithCoverImage], tag.ID)
-	}
+		// ensure non of the ids equal the one with image
+		for _, tag := range tags {
+			assert.NotEqual(t, tagIDs[tagIdxWithCoverImage], tag.ID)
+		}
+
+		return nil
+	})
 }
 
 func TestTagQuerySceneCount(t *testing.T) {
@@ -155,19 +172,26 @@ func TestTagQuerySceneCount(t *testing.T) {
 }
 
 func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionInput) {
-	qb := sqlite.NewTagQueryBuilder()
-	tagFilter := models.TagFilterType{
-		SceneCount: &sceneCountCriterion,
-	}
+	withTxn(func(r models.Repository) error {
+		qb := r.Tag()
+		tagFilter := models.TagFilterType{
+			SceneCount: &sceneCountCriterion,
+		}
 
-	tags, _ := qb.Query(&tagFilter, nil)
+		tags, _, err := qb.Query(&tagFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying tag: %s", err.Error())
+		}
 
-	for _, tag := range tags {
-		verifyInt64(t, sql.NullInt64{
-			Int64: int64(getTagSceneCount(tag.ID)),
-			Valid: true,
-		}, sceneCountCriterion)
-	}
+		for _, tag := range tags {
+			verifyInt64(t, sql.NullInt64{
+				Int64: int64(getTagSceneCount(tag.ID)),
+				Valid: true,
+			}, sceneCountCriterion)
+		}
+
+		return nil
+	})
 }
 
 // disabled due to performance issues
@@ -192,115 +216,103 @@ func verifyTagSceneCount(t *testing.T, sceneCountCriterion models.IntCriterionIn
 // }
 
 func verifyTagMarkerCount(t *testing.T, markerCountCriterion models.IntCriterionInput) {
-	qb := sqlite.NewTagQueryBuilder()
-	tagFilter := models.TagFilterType{
-		MarkerCount: &markerCountCriterion,
-	}
+	withTxn(func(r models.Repository) error {
+		qb := r.Tag()
+		tagFilter := models.TagFilterType{
+			MarkerCount: &markerCountCriterion,
+		}
 
-	tags, _ := qb.Query(&tagFilter, nil)
+		tags, _, err := qb.Query(&tagFilter, nil)
+		if err != nil {
+			t.Errorf("Error querying tag: %s", err.Error())
+		}
 
-	for _, tag := range tags {
-		verifyInt64(t, sql.NullInt64{
-			Int64: int64(getTagMarkerCount(tag.ID)),
-			Valid: true,
-		}, markerCountCriterion)
-	}
+		for _, tag := range tags {
+			verifyInt64(t, sql.NullInt64{
+				Int64: int64(getTagMarkerCount(tag.ID)),
+				Valid: true,
+			}, markerCountCriterion)
+		}
+
+		return nil
+	})
 }
 
 func TestTagUpdateTagImage(t *testing.T) {
-	qb := sqlite.NewTagQueryBuilder()
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Tag()
 
-	// create tag to test against
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+		// create tag to test against
+		const name = "TestTagUpdateTagImage"
+		tag := models.Tag{
+			Name: name,
+		}
+		created, err := qb.Create(tag)
+		if err != nil {
+			return fmt.Errorf("Error creating tag: %s", err.Error())
+		}
 
-	const name = "TestTagUpdateTagImage"
-	tag := models.Tag{
-		Name: name,
+		image := []byte("image")
+		err = qb.UpdateImage(created.ID, image)
+		if err != nil {
+			return fmt.Errorf("Error updating studio image: %s", err.Error())
+		}
+
+		// ensure image set
+		storedImage, err := qb.GetImage(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting image: %s", err.Error())
+		}
+		assert.Equal(t, storedImage, image)
+
+		// set nil image
+		err = qb.UpdateImage(created.ID, nil)
+		if err == nil {
+			return fmt.Errorf("Expected error setting nil image")
+		}
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
 	}
-	created, err := qb.Create(tag, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating tag: %s", err.Error())
-	}
-
-	image := []byte("image")
-	err = qb.UpdateTagImage(created.ID, image, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error updating studio image: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	// ensure image set
-	storedImage, err := qb.GetTagImage(created.ID, nil)
-	if err != nil {
-		t.Fatalf("Error getting image: %s", err.Error())
-	}
-	assert.Equal(t, storedImage, image)
-
-	// set nil image
-	tx = database.DB.MustBeginTx(ctx, nil)
-	err = qb.UpdateTagImage(created.ID, nil, tx)
-	if err == nil {
-		t.Fatalf("Expected error setting nil image")
-	}
-
-	tx.Rollback()
 }
 
 func TestTagDestroyTagImage(t *testing.T) {
-	qb := sqlite.NewTagQueryBuilder()
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Tag()
 
-	// create performer to test against
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+		// create performer to test against
+		const name = "TestTagDestroyTagImage"
+		tag := models.Tag{
+			Name: name,
+		}
+		created, err := qb.Create(tag)
+		if err != nil {
+			return fmt.Errorf("Error creating tag: %s", err.Error())
+		}
 
-	const name = "TestTagDestroyTagImage"
-	tag := models.Tag{
-		Name: name,
+		image := []byte("image")
+		err = qb.UpdateImage(created.ID, image)
+		if err != nil {
+			return fmt.Errorf("Error updating studio image: %s", err.Error())
+		}
+
+		err = qb.DestroyImage(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error destroying studio image: %s", err.Error())
+		}
+
+		// image should be nil
+		storedImage, err := qb.GetImage(created.ID)
+		if err != nil {
+			return fmt.Errorf("Error getting image: %s", err.Error())
+		}
+		assert.Nil(t, storedImage)
+
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
 	}
-	created, err := qb.Create(tag, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error creating tag: %s", err.Error())
-	}
-
-	image := []byte("image")
-	err = qb.UpdateTagImage(created.ID, image, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error updating studio image: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	tx = database.DB.MustBeginTx(ctx, nil)
-
-	err = qb.DestroyTagImage(created.ID, tx)
-	if err != nil {
-		tx.Rollback()
-		t.Fatalf("Error destroying studio image: %s", err.Error())
-	}
-
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		t.Fatalf("Error committing: %s", err.Error())
-	}
-
-	// image should be nil
-	storedImage, err := qb.GetTagImage(created.ID, nil)
-	if err != nil {
-		t.Fatalf("Error getting image: %s", err.Error())
-	}
-	assert.Nil(t, storedImage)
 }
 
 // TODO Create
