@@ -44,6 +44,7 @@ type ImportTask struct {
 
 func CreateImportTask(a models.HashAlgorithm, input models.ImportObjectsInput) *ImportTask {
 	return &ImportTask{
+		txnManager:          GetInstance().TxnManager,
 		ZipFile:             input.File.File,
 		Reset:               false,
 		DuplicateBehaviour:  input.DuplicateBehaviour,

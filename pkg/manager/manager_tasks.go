@@ -120,7 +120,7 @@ func (s *singleton) neededScan(paths []*models.StashConfig) (total *int, newFile
 	for _, sp := range paths {
 		err := walkFilesToScan(sp, func(path string, info os.FileInfo, err error) error {
 			t++
-			task := ScanTask{FilePath: path}
+			task := ScanTask{FilePath: path, TxnManager: s.TxnManager}
 			if !task.doesPathExist() {
 				n++
 			}
@@ -212,7 +212,16 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 				instance.Paths.Generated.EnsureTmpDir()
 
 				wg.Add()
-				task := ScanTask{FilePath: path, UseFileMetadata: input.UseFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5, GeneratePreview: input.ScanGeneratePreviews, GenerateImagePreview: input.ScanGenerateImagePreviews, GenerateSprite: input.ScanGenerateSprites}
+				task := ScanTask{
+					TxnManager:           s.TxnManager,
+					FilePath:             path,
+					UseFileMetadata:      input.UseFileMetadata,
+					fileNamingAlgorithm:  fileNamingAlgo,
+					calculateMD5:         calculateMD5,
+					GeneratePreview:      input.ScanGeneratePreviews,
+					GenerateImagePreview: input.ScanGenerateImagePreviews,
+					GenerateSprite:       input.ScanGenerateSprites,
+				}
 				go task.Start(&wg)
 
 				return nil
@@ -241,7 +250,11 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 
 		for _, path := range galleries {
 			wg.Add()
-			task := ScanTask{FilePath: path, UseFileMetadata: false}
+			task := ScanTask{
+				TxnManager:      s.TxnManager,
+				FilePath:        path,
+				UseFileMetadata: false,
+			}
 			go task.associateGallery(&wg)
 			wg.Wait()
 		}
@@ -262,6 +275,7 @@ func (s *singleton) Import() {
 		var wg sync.WaitGroup
 		wg.Add(1)
 		task := ImportTask{
+			txnManager:          s.TxnManager,
 			BaseDir:             config.GetMetadataPath(),
 			Reset:               true,
 			DuplicateBehaviour:  models.ImportDuplicateEnumFail,
@@ -285,7 +299,11 @@ func (s *singleton) Export() {
 
 		var wg sync.WaitGroup
 		wg.Add(1)
-		task := ExportTask{full: true, fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm()}
+		task := ExportTask{
+			txnManager:          s.TxnManager,
+			full:                true,
+			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
+		}
 		go task.Start(&wg)
 		wg.Wait()
 	}()
@@ -441,7 +459,11 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			}
 
 			if input.Sprites {
-				task := GenerateSpriteTask{Scene: *scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
+				task := GenerateSpriteTask{
+					Scene:               *scene,
+					Overwrite:           overwrite,
+					fileNamingAlgorithm: fileNamingAlgo,
+				}
 				wg.Add()
 				go task.Start(&wg)
 			}
@@ -460,13 +482,22 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 
 			if input.Markers {
 				wg.Add()
-				task := GenerateMarkersTask{Scene: scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
+				task := GenerateMarkersTask{
+					TxnManager:          s.TxnManager,
+					Scene:               scene,
+					Overwrite:           overwrite,
+					fileNamingAlgorithm: fileNamingAlgo,
+				}
 				go task.Start(&wg)
 			}
 
 			if input.Transcodes {
 				wg.Add()
-				task := GenerateTranscodeTask{Scene: *scene, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
+				task := GenerateTranscodeTask{
+					Scene:               *scene,
+					Overwrite:           overwrite,
+					fileNamingAlgorithm: fileNamingAlgo,
+				}
 				go task.Start(&wg)
 			}
 		}
@@ -486,7 +517,12 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 			}
 
 			wg.Add()
-			task := GenerateMarkersTask{Marker: marker, Overwrite: overwrite, fileNamingAlgorithm: fileNamingAlgo}
+			task := GenerateMarkersTask{
+				TxnManager:          s.TxnManager,
+				Marker:              marker,
+				Overwrite:           overwrite,
+				fileNamingAlgorithm: fileNamingAlgo,
+			}
 			go task.Start(&wg)
 		}
 
@@ -536,6 +572,7 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 		}
 
 		task := GenerateScreenshotTask{
+			txnManager:          s.TxnManager,
 			Scene:               *scene,
 			ScreenshotAt:        at,
 			fileNamingAlgorithm: config.GetVideoFileNamingAlgorithm(),
@@ -642,7 +679,10 @@ func (s *singleton) autoTagPerformers(performerIds []string) {
 
 		for _, performer := range performers {
 			wg.Add(1)
-			task := AutoTagPerformerTask{performer: performer}
+			task := AutoTagPerformerTask{
+				txnManager: s.TxnManager,
+				performer:  performer,
+			}
 			go task.Start(&wg)
 			wg.Wait()
 
@@ -730,7 +770,10 @@ func (s *singleton) autoTagTags(tagIds []string) {
 
 		for _, tag := range tags {
 			wg.Add(1)
-			task := AutoTagTagTask{tag: tag}
+			task := AutoTagTagTask{
+				txnManager: s.TxnManager,
+				tag:        tag,
+			}
 			go task.Start(&wg)
 			wg.Wait()
 
@@ -804,7 +847,11 @@ func (s *singleton) Clean() {
 
 			wg.Add(1)
 
-			task := CleanTask{Scene: scene, fileNamingAlgorithm: fileNamingAlgo}
+			task := CleanTask{
+				TxnManager:          s.TxnManager,
+				Scene:               scene,
+				fileNamingAlgorithm: fileNamingAlgo,
+			}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -823,7 +870,10 @@ func (s *singleton) Clean() {
 
 			wg.Add(1)
 
-			task := CleanTask{Image: img}
+			task := CleanTask{
+				TxnManager: s.TxnManager,
+				Image:      img,
+			}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -842,7 +892,10 @@ func (s *singleton) Clean() {
 
 			wg.Add(1)
 
-			task := CleanTask{Gallery: gallery}
+			task := CleanTask{
+				TxnManager: s.TxnManager,
+				Gallery:    gallery,
+			}
 			go task.Start(&wg)
 			wg.Wait()
 		}
@@ -975,6 +1028,7 @@ func (s *singleton) neededGenerate(scenes []*models.Scene, input models.Generate
 
 			if input.Markers {
 				task := GenerateMarkersTask{
+					TxnManager:          s.TxnManager,
 					Scene:               scene,
 					Overwrite:           overwrite,
 					fileNamingAlgorithm: fileNamingAlgo,

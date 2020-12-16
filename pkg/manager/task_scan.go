@@ -46,7 +46,11 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 
 			if t.GenerateSprite {
 				iwg.Add()
-				taskSprite := GenerateSpriteTask{Scene: *s, Overwrite: false, fileNamingAlgorithm: t.fileNamingAlgorithm}
+				taskSprite := GenerateSpriteTask{
+					Scene:               *s,
+					Overwrite:           false,
+					fileNamingAlgorithm: t.fileNamingAlgorithm,
+				}
 				go taskSprite.Start(&iwg)
 			}
 
