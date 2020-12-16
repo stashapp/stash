@@ -653,31 +653,35 @@ func (s *singleton) autoTagPerformers(performerIds []string) {
 }
 
 func (s *singleton) autoTagStudios(studioIds []string) {
-	studioQuery := sqlite.NewStudioQueryBuilder()
-
 	var wg sync.WaitGroup
 	for _, studioId := range studioIds {
 		var studios []*models.Studio
-		if studioId == "*" {
-			var err error
-			studios, err = studioQuery.All()
-			if err != nil {
-				logger.Errorf("Error querying studios: %s", err.Error())
-				continue
-			}
-		} else {
-			studioIdInt, err := strconv.Atoi(studioId)
-			if err != nil {
-				logger.Errorf("Error parsing studio id %s: %s", studioId, err.Error())
-				continue
+
+		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			studioQuery := r.Studio()
+			if studioId == "*" {
+				var err error
+				studios, err = studioQuery.All()
+				if err != nil {
+					return fmt.Errorf("Error querying studios: %s", err.Error())
+				}
+			} else {
+				studioIdInt, err := strconv.Atoi(studioId)
+				if err != nil {
+					return fmt.Errorf("Error parsing studio id %s: %s", studioId, err.Error())
+				}
+
+				studio, err := studioQuery.Find(studioIdInt)
+				if err != nil {
+					return fmt.Errorf("Error finding studio id %s: %s", studioId, err.Error())
+				}
+				studios = append(studios, studio)
 			}
 
-			studio, err := studioQuery.Find(studioIdInt, nil)
-			if err != nil {
-				logger.Errorf("Error finding studio id %s: %s", studioId, err.Error())
-				continue
-			}
-			studios = append(studios, studio)
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
+			continue
 		}
 
 		for _, studio := range studios {

@@ -947,7 +947,7 @@ func (t *ExportTask) exportMovie(wg *sync.WaitGroup, jobChan <-chan *models.Movi
 
 func (t *ExportTask) ExportScrapedItems() {
 	qb := sqlite.NewScrapedItemQueryBuilder()
-	sqb := sqlite.NewStudioQueryBuilder()
+	sqb := sqlite.NewStudioReaderWriter(nil)
 	scrapedItems, err := qb.All()
 	if err != nil {
 		logger.Errorf("[scraped sites] failed to fetch all items: %s", err.Error())
@@ -963,7 +963,7 @@ func (t *ExportTask) ExportScrapedItems() {
 
 		var studioName string
 		if scrapedItem.StudioID.Valid {
-			studio, _ := sqb.Find(int(scrapedItem.StudioID.Int64), nil)
+			studio, _ := sqb.Find(int(scrapedItem.StudioID.Int64))
 			if studio != nil {
 				studioName = studio.Name.String
 			}

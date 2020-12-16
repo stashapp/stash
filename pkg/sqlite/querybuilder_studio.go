@@ -11,66 +11,64 @@ import (
 const studioTable = "studios"
 const studioIDColumn = "studio_id"
 
-type StudioQueryBuilder struct{}
-
-func NewStudioQueryBuilder() StudioQueryBuilder {
-	return StudioQueryBuilder{}
+type StudioQueryBuilder struct {
+	repository
 }
 
-func studioConstructor() interface{} {
-	return &models.Studio{}
-}
-
-func (qb *StudioQueryBuilder) repository(tx *sqlx.Tx) *repository {
-	return &repository{
-		tx:          tx,
-		tableName:   studioTable,
-		idColumn:    idColumn,
-		constructor: studioConstructor,
+func NewStudioReaderWriter(tx *sqlx.Tx) *StudioQueryBuilder {
+	return &StudioQueryBuilder{
+		repository{
+			tx:        tx,
+			tableName: studioTable,
+			idColumn:  idColumn,
+			constructor: func() interface{} {
+				return &models.Studio{}
+			},
+		},
 	}
 }
 
-func (qb *StudioQueryBuilder) Create(newObject models.Studio, tx *sqlx.Tx) (*models.Studio, error) {
+func (qb *StudioQueryBuilder) Create(newObject models.Studio) (*models.Studio, error) {
 	var ret models.Studio
-	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
+	if err := qb.insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
 }
 
-func (qb *StudioQueryBuilder) Update(updatedObject models.StudioPartial, tx *sqlx.Tx) (*models.Studio, error) {
+func (qb *StudioQueryBuilder) Update(updatedObject models.StudioPartial) (*models.Studio, error) {
 	const partial = true
-	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.Find(updatedObject.ID, tx)
+	return qb.Find(updatedObject.ID)
 }
 
-func (qb *StudioQueryBuilder) UpdateFull(updatedObject models.Studio, tx *sqlx.Tx) (*models.Studio, error) {
+func (qb *StudioQueryBuilder) UpdateFull(updatedObject models.Studio) (*models.Studio, error) {
 	const partial = false
-	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.Find(updatedObject.ID, tx)
+	return qb.Find(updatedObject.ID)
 }
 
-func (qb *StudioQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
+func (qb *StudioQueryBuilder) Destroy(id int) error {
 	// TODO - set null on foreign key in scraped items
 	// remove studio from scraped items
-	_, err := tx.Exec("UPDATE scraped_items SET studio_id = null WHERE studio_id = ?", id)
+	_, err := qb.tx.Exec("UPDATE scraped_items SET studio_id = null WHERE studio_id = ?", id)
 	if err != nil {
 		return err
 	}
 
-	return qb.repository(tx).destroyExisting([]int{id})
+	return qb.destroyExisting([]int{id})
 }
 
-func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Studio, error) {
+func (qb *StudioQueryBuilder) Find(id int) (*models.Studio, error) {
 	var ret models.Studio
-	if err := qb.repository(tx).get(id, &ret); err != nil {
+	if err := qb.get(id, &ret); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -82,7 +80,7 @@ func (qb *StudioQueryBuilder) Find(id int, tx *sqlx.Tx) (*models.Studio, error) 
 func (qb *StudioQueryBuilder) FindMany(ids []int) ([]*models.Studio, error) {
 	var studios []*models.Studio
 	for _, id := range ids {
-		studio, err := qb.Find(id, nil)
+		studio, err := qb.Find(id)
 		if err != nil {
 			return nil, err
 		}
@@ -97,26 +95,26 @@ func (qb *StudioQueryBuilder) FindMany(ids []int) ([]*models.Studio, error) {
 	return studios, nil
 }
 
-func (qb *StudioQueryBuilder) FindChildren(id int, tx *sqlx.Tx) ([]*models.Studio, error) {
+func (qb *StudioQueryBuilder) FindChildren(id int) ([]*models.Studio, error) {
 	query := "SELECT studios.* FROM studios WHERE studios.parent_id = ?"
 	args := []interface{}{id}
-	return qb.queryStudios(query, args, tx)
+	return qb.queryStudios(query, args)
 }
 
 func (qb *StudioQueryBuilder) FindBySceneID(sceneID int) (*models.Studio, error) {
 	query := "SELECT studios.* FROM studios JOIN scenes ON studios.id = scenes.studio_id WHERE scenes.id = ? LIMIT 1"
 	args := []interface{}{sceneID}
-	return qb.queryStudio(query, args, nil)
+	return qb.queryStudio(query, args)
 }
 
-func (qb *StudioQueryBuilder) FindByName(name string, tx *sqlx.Tx, nocase bool) (*models.Studio, error) {
+func (qb *StudioQueryBuilder) FindByName(name string, nocase bool) (*models.Studio, error) {
 	query := "SELECT * FROM studios WHERE name = ?"
 	if nocase {
 		query += " COLLATE NOCASE"
 	}
 	query += " LIMIT 1"
 	args := []interface{}{name}
-	return qb.queryStudio(query, args, tx)
+	return qb.queryStudio(query, args)
 }
 
 func (qb *StudioQueryBuilder) Count() (int, error) {
@@ -124,14 +122,14 @@ func (qb *StudioQueryBuilder) Count() (int, error) {
 }
 
 func (qb *StudioQueryBuilder) All() ([]*models.Studio, error) {
-	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil, nil)
+	return qb.queryStudios(selectAll("studios")+qb.getStudioSort(nil), nil)
 }
 
 func (qb *StudioQueryBuilder) AllSlim() ([]*models.Studio, error) {
-	return qb.queryStudios("SELECT studios.id, studios.name, studios.parent_id FROM studios "+qb.getStudioSort(nil), nil, nil)
+	return qb.queryStudios("SELECT studios.id, studios.name, studios.parent_id FROM studios "+qb.getStudioSort(nil), nil)
 }
 
-func (qb *StudioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int) {
+func (qb *StudioQueryBuilder) Query(studioFilter *models.StudioFilterType, findFilter *models.FindFilterType) ([]*models.Studio, int, error) {
 	if studioFilter == nil {
 		studioFilter = &models.StudioFilterType{}
 	}
@@ -189,15 +187,22 @@ func (qb *StudioQueryBuilder) Query(studioFilter *models.StudioFilterType, findF
 	}
 
 	sortAndPagination := qb.getStudioSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := executeFindQuery("studios", body, args, sortAndPagination, whereClauses, havingClauses)
+	idsResult, countResult, err := qb.executeFindQuery(body, args, sortAndPagination, whereClauses, havingClauses)
+	if err != nil {
+		return nil, 0, err
+	}
 
 	var studios []*models.Studio
 	for _, id := range idsResult {
-		studio, _ := qb.Find(id, nil)
+		studio, err := qb.Find(id)
+		if err != nil {
+			return nil, 0, err
+		}
+
 		studios = append(studios, studio)
 	}
 
-	return studios, countResult
+	return studios, countResult, nil
 }
 
 func (qb *StudioQueryBuilder) getStudioSort(findFilter *models.FindFilterType) string {
@@ -213,27 +218,27 @@ func (qb *StudioQueryBuilder) getStudioSort(findFilter *models.FindFilterType) s
 	return getSort(sort, direction, "studios")
 }
 
-func (qb *StudioQueryBuilder) queryStudio(query string, args []interface{}, tx *sqlx.Tx) (*models.Studio, error) {
-	results, err := qb.queryStudios(query, args, tx)
+func (qb *StudioQueryBuilder) queryStudio(query string, args []interface{}) (*models.Studio, error) {
+	results, err := qb.queryStudios(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
 	return results[0], nil
 }
 
-func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}, tx *sqlx.Tx) ([]*models.Studio, error) {
+func (qb *StudioQueryBuilder) queryStudios(query string, args []interface{}) ([]*models.Studio, error) {
 	var ret models.Studios
-	if err := qb.repository(tx).query(query, args, &ret); err != nil {
+	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
 	return []*models.Studio(ret), nil
 }
 
-func (qb *StudioQueryBuilder) imageRepository(tx *sqlx.Tx) *imageRepository {
+func (qb *StudioQueryBuilder) imageRepository() *imageRepository {
 	return &imageRepository{
 		repository: repository{
-			tx:        tx,
+			tx:        qb.tx,
 			tableName: "studios_image",
 			idColumn:  studioIDColumn,
 		},
@@ -241,112 +246,36 @@ func (qb *StudioQueryBuilder) imageRepository(tx *sqlx.Tx) *imageRepository {
 	}
 }
 
-func (qb *StudioQueryBuilder) GetImage(studioID int, tx *sqlx.Tx) ([]byte, error) {
-	return qb.imageRepository(tx).get(studioID)
+func (qb *StudioQueryBuilder) GetImage(studioID int) ([]byte, error) {
+	return qb.imageRepository().get(studioID)
 }
 
-func (qb *StudioQueryBuilder) HasImage(studioID int, tx *sqlx.Tx) (bool, error) {
-	return qb.imageRepository(tx).exists(studioID)
+func (qb *StudioQueryBuilder) HasImage(studioID int) (bool, error) {
+	return qb.imageRepository().exists(studioID)
 }
 
-func (qb *StudioQueryBuilder) UpdateImage(studioID int, image []byte, tx *sqlx.Tx) error {
-	return qb.imageRepository(tx).replace(studioID, image)
+func (qb *StudioQueryBuilder) UpdateImage(studioID int, image []byte) error {
+	return qb.imageRepository().replace(studioID, image)
 }
 
-func (qb *StudioQueryBuilder) DestroyImage(studioID int, tx *sqlx.Tx) error {
-	return qb.imageRepository(tx).destroy([]int{studioID})
+func (qb *StudioQueryBuilder) DestroyImage(studioID int) error {
+	return qb.imageRepository().destroy([]int{studioID})
 }
 
-func (qb *StudioQueryBuilder) stashIDRepository(tx *sqlx.Tx) *stashIDRepository {
+func (qb *StudioQueryBuilder) stashIDRepository() *stashIDRepository {
 	return &stashIDRepository{
 		repository{
-			tx:        tx,
+			tx:        qb.tx,
 			tableName: "studio_stash_ids",
 			idColumn:  studioIDColumn,
 		},
 	}
 }
 
-func (qb *StudioQueryBuilder) GetStashIDs(studioID int, tx *sqlx.Tx) ([]*models.StashID, error) {
-	return qb.stashIDRepository(tx).get(studioID)
+func (qb *StudioQueryBuilder) GetStashIDs(studioID int) ([]*models.StashID, error) {
+	return qb.stashIDRepository().get(studioID)
 }
 
-func (qb *StudioQueryBuilder) UpdateStashIDs(studioID int, stashIDs []models.StashID, tx *sqlx.Tx) error {
-	return qb.stashIDRepository(tx).replace(studioID, stashIDs)
-}
-
-func NewStudioReaderWriter(tx *sqlx.Tx) *studioReaderWriter {
-	return &studioReaderWriter{
-		tx: tx,
-		qb: NewStudioQueryBuilder(),
-	}
-}
-
-type studioReaderWriter struct {
-	tx *sqlx.Tx
-	qb StudioQueryBuilder
-}
-
-func (t *studioReaderWriter) Find(id int) (*models.Studio, error) {
-	return t.qb.Find(id, t.tx)
-}
-
-func (t *studioReaderWriter) FindMany(ids []int) ([]*models.Studio, error) {
-	return t.qb.FindMany(ids)
-}
-
-func (t *studioReaderWriter) FindByName(name string, nocase bool) (*models.Studio, error) {
-	return t.qb.FindByName(name, t.tx, nocase)
-}
-
-func (t *studioReaderWriter) FindChildren(id int) ([]*models.Studio, error) {
-	return t.qb.FindChildren(id, t.tx)
-}
-
-func (t *studioReaderWriter) Count() (int, error) {
-	return t.qb.Count()
-}
-
-func (t *studioReaderWriter) All() ([]*models.Studio, error) {
-	return t.qb.All()
-}
-
-func (t *studioReaderWriter) GetImage(studioID int) ([]byte, error) {
-	return t.qb.GetImage(studioID, t.tx)
-}
-
-func (t *studioReaderWriter) HasImage(studioID int) (bool, error) {
-	return t.qb.HasImage(studioID, t.tx)
-}
-
-func (t *studioReaderWriter) Create(newStudio models.Studio) (*models.Studio, error) {
-	return t.qb.Create(newStudio, t.tx)
-}
-
-func (t *studioReaderWriter) Update(updatedStudio models.StudioPartial) (*models.Studio, error) {
-	return t.qb.Update(updatedStudio, t.tx)
-}
-
-func (t *studioReaderWriter) UpdateFull(updatedStudio models.Studio) (*models.Studio, error) {
-	return t.qb.UpdateFull(updatedStudio, t.tx)
-}
-
-func (t *studioReaderWriter) Destroy(id int) error {
-	return t.qb.Destroy(id, t.tx)
-}
-
-func (t *studioReaderWriter) UpdateImage(studioID int, image []byte) error {
-	return t.qb.UpdateImage(studioID, image, t.tx)
-}
-
-func (t *studioReaderWriter) DestroyImage(studioID int) error {
-	return t.qb.DestroyImage(studioID, t.tx)
-}
-
-func (t *studioReaderWriter) GetStashIDs(studioID int) ([]*models.StashID, error) {
-	return t.qb.GetStashIDs(studioID, t.tx)
-}
-
-func (t *studioReaderWriter) UpdateStashIDs(studioID int, stashIDs []models.StashID) error {
-	return t.qb.UpdateStashIDs(studioID, stashIDs, t.tx)
+func (qb *StudioQueryBuilder) UpdateStashIDs(studioID int, stashIDs []models.StashID) error {
+	return qb.stashIDRepository().replace(studioID, stashIDs)
 }

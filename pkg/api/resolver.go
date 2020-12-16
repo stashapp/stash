@@ -162,7 +162,7 @@ func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, err
 		scenesQB := repo.Scene()
 		imageQB := repo.Image()
 		galleryQB := repo.Gallery()
-		studiosQB := sqlite.NewStudioQueryBuilder()
+		studiosQB := repo.Studio()
 		performersQB := repo.Performer()
 		moviesQB := repo.Movie()
 		tagsQB := sqlite.NewTagQueryBuilder()

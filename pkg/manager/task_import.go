@@ -444,7 +444,7 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 	tx := database.DB.MustBeginTx(ctx, nil)
 	qb := sqlite.NewScrapedItemQueryBuilder()
-	sqb := sqlite.NewStudioQueryBuilder()
+	sqb := sqlite.NewStudioReaderWriter(tx)
 	currentTime := time.Now()
 
 	for i, mappingJSON := range t.scraped {
@@ -468,7 +468,7 @@ func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
 			UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
 		}
 
-		studio, err := sqb.FindByName(mappingJSON.Studio, tx, false)
+		studio, err := sqb.FindByName(mappingJSON.Studio, false)
 		if err != nil {
 			logger.Errorf("[scraped sites] failed to fetch studio: %s", err.Error())
 		}

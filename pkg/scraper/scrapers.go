@@ -10,7 +10,6 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -411,10 +410,8 @@ func (c Cache) ScrapeGalleryURL(url string) (*models.ScrapedGallery, error) {
 	return nil, nil
 }
 
-func matchMovieStudio(s *models.ScrapedMovieStudio) error {
-	qb := sqlite.NewStudioQueryBuilder()
-
-	studio, err := qb.FindByName(s.Name, nil, true)
+func matchMovieStudio(qb models.StudioReader, s *models.ScrapedMovieStudio) error {
+	studio, err := qb.FindByName(s.Name, true)
 
 	if err != nil {
 		return err
@@ -442,8 +439,9 @@ func (c Cache) ScrapeMovieURL(url string) (*models.ScrapedMovie, error) {
 			}
 
 			if ret.Studio != nil {
-				err := matchMovieStudio(ret.Studio)
-				if err != nil {
+				if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+					return matchMovieStudio(r.Studio(), ret.Studio)
+				}); err != nil {
 					return nil, err
 				}
 			}
