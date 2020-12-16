@@ -73,6 +73,4 @@ func ValidateVideoFileNamingAlgorithm(txnManager models.TransactionManager, newV
 
 		return nil
 	})
-
-	return nil
 }
