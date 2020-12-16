@@ -5,8 +5,9 @@ type Repository interface {
 	Image() ImageReaderWriter
 	Movie() MovieReaderWriter
 	Performer() PerformerReaderWriter
-	SceneMarker() SceneMarkerReaderWriter
 	Scene() SceneReaderWriter
+	SceneMarker() SceneMarkerReaderWriter
+	ScrapedItem() ScrapedItemReaderWriter
 	Studio() StudioReaderWriter
 	Tag() TagReaderWriter
 }
@@ -16,8 +17,9 @@ type ReaderRepository interface {
 	Image() ImageReader
 	Movie() MovieReader
 	Performer() PerformerReader
-	SceneMarker() SceneMarkerReader
 	Scene() SceneReader
+	SceneMarker() SceneMarkerReader
+	ScrapedItem() ScrapedItemReader
 	Studio() StudioReader
 	Tag() TagReader
 }

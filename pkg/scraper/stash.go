@@ -9,7 +9,6 @@ import (
 	"github.com/shurcooL/graphql"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 type stashScraper struct {
@@ -190,18 +189,21 @@ func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 }
 
 func (s *stashScraper) scrapeGalleryByFragment(scene models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
-	// query by MD5
-	// assumes that the gallery exists in the database
-	// TODO - use transaction
-	qb := sqlite.NewGalleryReaderWriter(nil)
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	storedGallery, err := qb.Find(id)
+	// query by MD5
+	// assumes that the gallery exists in the database
+	var storedGallery *models.Gallery
+	if err := s.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		qb := r.Gallery()
 
-	if err != nil {
+		var err error
+		storedGallery, err = qb.Find(id)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
@@ -286,13 +288,18 @@ func sceneFromUpdateFragment(scene models.SceneUpdateInput, txnManager models.Tr
 	return ret, nil
 }
 
-func galleryFromUpdateFragment(gallery models.GalleryUpdateInput) (*models.Gallery, error) {
-	// TODO - use transaction
-	qb := sqlite.NewGalleryReaderWriter(nil)
+func galleryFromUpdateFragment(gallery models.GalleryUpdateInput, txnManager models.TransactionManager) (ret *models.Gallery, err error) {
 	id, err := strconv.Atoi(gallery.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	return qb.Find(id)
+	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		ret, err = r.Gallery().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

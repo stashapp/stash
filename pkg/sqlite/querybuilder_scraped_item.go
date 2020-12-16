@@ -9,50 +9,48 @@ import (
 
 const scrapedItemTable = "scraped_items"
 
-type ScrapedItemQueryBuilder struct{}
-
-func NewScrapedItemQueryBuilder() ScrapedItemQueryBuilder {
-	return ScrapedItemQueryBuilder{}
+type ScrapedItemQueryBuilder struct {
+	repository
 }
 
-func scrapedItemConstructor() interface{} {
-	return &models.ScrapedItem{}
-}
-
-func (qb *ScrapedItemQueryBuilder) repository(tx *sqlx.Tx) *repository {
-	return &repository{
-		tx:          tx,
-		tableName:   scrapedItemTable,
-		idColumn:    idColumn,
-		constructor: scrapedItemConstructor,
+func NewScrapedItemReaderWriter(tx *sqlx.Tx) *ScrapedItemQueryBuilder {
+	return &ScrapedItemQueryBuilder{
+		repository{
+			tx:        tx,
+			tableName: scrapedItemTable,
+			idColumn:  idColumn,
+			constructor: func() interface{} {
+				return &models.ScrapedItem{}
+			},
+		},
 	}
 }
 
-func (qb *ScrapedItemQueryBuilder) Create(newObject models.ScrapedItem, tx *sqlx.Tx) (*models.ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) Create(newObject models.ScrapedItem) (*models.ScrapedItem, error) {
 	var ret models.ScrapedItem
-	if err := qb.repository(tx).insertObject(newObject, &ret); err != nil {
+	if err := qb.insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
 	return &ret, nil
 }
 
-func (qb *ScrapedItemQueryBuilder) Update(updatedObject models.ScrapedItem, tx *sqlx.Tx) (*models.ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) Update(updatedObject models.ScrapedItem) (*models.ScrapedItem, error) {
 	const partial = false
-	if err := qb.repository(tx).update(updatedObject.ID, updatedObject, partial); err != nil {
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.find(updatedObject.ID, tx)
+	return qb.find(updatedObject.ID)
 }
 
 func (qb *ScrapedItemQueryBuilder) Find(id int) (*models.ScrapedItem, error) {
-	return qb.find(id, nil)
+	return qb.find(id)
 }
 
-func (qb *ScrapedItemQueryBuilder) find(id int, tx *sqlx.Tx) (*models.ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) find(id int) (*models.ScrapedItem, error) {
 	var ret models.ScrapedItem
-	if err := qb.repository(tx).get(id, &ret); err != nil {
+	if err := qb.get(id, &ret); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
@@ -62,7 +60,7 @@ func (qb *ScrapedItemQueryBuilder) find(id int, tx *sqlx.Tx) (*models.ScrapedIte
 }
 
 func (qb *ScrapedItemQueryBuilder) All() ([]*models.ScrapedItem, error) {
-	return qb.queryScrapedItems(selectAll("scraped_items")+qb.getScrapedItemsSort(nil), nil, nil)
+	return qb.queryScrapedItems(selectAll("scraped_items")+qb.getScrapedItemsSort(nil), nil)
 }
 
 func (qb *ScrapedItemQueryBuilder) getScrapedItemsSort(findFilter *models.FindFilterType) string {
@@ -78,17 +76,17 @@ func (qb *ScrapedItemQueryBuilder) getScrapedItemsSort(findFilter *models.FindFi
 	return getSort(sort, direction, "scraped_items")
 }
 
-func (qb *ScrapedItemQueryBuilder) queryScrapedItem(query string, args []interface{}, tx *sqlx.Tx) (*models.ScrapedItem, error) {
-	results, err := qb.queryScrapedItems(query, args, tx)
+func (qb *ScrapedItemQueryBuilder) queryScrapedItem(query string, args []interface{}) (*models.ScrapedItem, error) {
+	results, err := qb.queryScrapedItems(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
 	return results[0], nil
 }
 
-func (qb *ScrapedItemQueryBuilder) queryScrapedItems(query string, args []interface{}, tx *sqlx.Tx) ([]*models.ScrapedItem, error) {
+func (qb *ScrapedItemQueryBuilder) queryScrapedItems(query string, args []interface{}) ([]*models.ScrapedItem, error) {
 	var ret models.ScrapedItems
-	if err := qb.repository(tx).query(query, args, &ret); err != nil {
+	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
 	}
 

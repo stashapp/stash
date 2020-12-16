@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/image"
@@ -23,14 +22,14 @@ import (
 	"github.com/stashapp/stash/pkg/movie"
 	"github.com/stashapp/stash/pkg/performer"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/studio"
 	"github.com/stashapp/stash/pkg/tag"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
 type ImportTask struct {
-	json jsonUtils
+	txnManager models.TransactionManager
+	json       jsonUtils
 
 	BaseDir             string
 	ZipFile             io.Reader
@@ -201,22 +200,16 @@ func (t *ImportTask) ImportPerformers(ctx context.Context) {
 
 		logger.Progressf("[performers] %d of %d", index, len(t.mappings.Performers))
 
-		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := sqlite.NewPerformerReaderWriter(tx)
-		importer := &performer.Importer{
-			ReaderWriter: readerWriter,
-			Input:        *performerJSON,
-		}
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Performer()
+			importer := &performer.Importer{
+				ReaderWriter: readerWriter,
+				Input:        *performerJSON,
+			}
 
-		if err := performImport(importer, t.DuplicateBehaviour); err != nil {
-			tx.Rollback()
-			logger.Errorf("[performers] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
-			continue
-		}
-
-		if err := tx.Commit(); err != nil {
-			tx.Rollback()
-			logger.Errorf("[performers] <%s> import failed to commit: %s", mappingJSON.Checksum, err.Error())
+			return performImport(importer, t.DuplicateBehaviour)
+		}); err != nil {
+			logger.Errorf("[performers] <%s> import failed: %s", mappingJSON.Checksum, err.Error())
 		}
 	}
 
@@ -238,12 +231,9 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 
 		logger.Progressf("[studios] %d of %d", index, len(t.mappings.Studios))
 
-		tx := database.DB.MustBeginTx(ctx, nil)
-
-		// fail on missing parent studio to begin with
-		if err := t.ImportStudio(studioJSON, pendingParent, tx); err != nil {
-			tx.Rollback()
-
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			return t.ImportStudio(studioJSON, pendingParent, r.Studio())
+		}); err != nil {
 			if err == studio.ErrParentStudioNotExist {
 				// add to the pending parent list so that it is created after the parent
 				s := pendingParent[studioJSON.ParentStudio]
@@ -255,11 +245,6 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 			logger.Errorf("[studios] <%s> failed to create: %s", mappingJSON.Checksum, err.Error())
 			continue
 		}
-
-		if err := tx.Commit(); err != nil {
-			logger.Errorf("[studios] import failed to commit: %s", err.Error())
-			continue
-		}
 	}
 
 	// create the leftover studios, warning for missing parents
@@ -268,16 +253,10 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 
 		for _, s := range pendingParent {
 			for _, orphanStudioJSON := range s {
-				tx := database.DB.MustBeginTx(ctx, nil)
-
-				if err := t.ImportStudio(orphanStudioJSON, nil, tx); err != nil {
-					tx.Rollback()
+				if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+					return t.ImportStudio(orphanStudioJSON, nil, r.Studio())
+				}); err != nil {
 					logger.Errorf("[studios] <%s> failed to create: %s", orphanStudioJSON.Name, err.Error())
-					continue
-				}
-
-				if err := tx.Commit(); err != nil {
-					logger.Errorf("[studios] import failed to commit: %s", err.Error())
 					continue
 				}
 			}
@@ -287,8 +266,7 @@ func (t *ImportTask) ImportStudios(ctx context.Context) {
 	logger.Info("[studios] import complete")
 }
 
-func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, tx *sqlx.Tx) error {
-	readerWriter := sqlite.NewStudioReaderWriter(tx)
+func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent map[string][]*jsonschema.Studio, readerWriter models.StudioReaderWriter) error {
 	importer := &studio.Importer{
 		ReaderWriter:        readerWriter,
 		Input:               *studioJSON,
@@ -308,7 +286,7 @@ func (t *ImportTask) ImportStudio(studioJSON *jsonschema.Studio, pendingParent m
 	s := pendingParent[studioJSON.Name]
 	for _, childStudioJSON := range s {
 		// map is nil since we're not checking parent studios at this point
-		if err := t.ImportStudio(childStudioJSON, nil, tx); err != nil {
+		if err := t.ImportStudio(childStudioJSON, nil, readerWriter); err != nil {
 			return fmt.Errorf("failed to create child studio <%s>: %s", childStudioJSON.Name, err.Error())
 		}
 	}
@@ -332,26 +310,20 @@ func (t *ImportTask) ImportMovies(ctx context.Context) {
 
 		logger.Progressf("[movies] %d of %d", index, len(t.mappings.Movies))
 
-		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := sqlite.NewMovieReaderWriter(tx)
-		studioReaderWriter := sqlite.NewStudioReaderWriter(tx)
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Movie()
+			studioReaderWriter := r.Studio()
 
-		movieImporter := &movie.Importer{
-			ReaderWriter:        readerWriter,
-			StudioWriter:        studioReaderWriter,
-			Input:               *movieJSON,
-			MissingRefBehaviour: t.MissingRefBehaviour,
-		}
+			movieImporter := &movie.Importer{
+				ReaderWriter:        readerWriter,
+				StudioWriter:        studioReaderWriter,
+				Input:               *movieJSON,
+				MissingRefBehaviour: t.MissingRefBehaviour,
+			}
 
-		if err := performImport(movieImporter, t.DuplicateBehaviour); err != nil {
-			tx.Rollback()
-			logger.Errorf("[movies] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
-			continue
-		}
-
-		if err := tx.Commit(); err != nil {
-			tx.Rollback()
-			logger.Errorf("[movies] <%s> import failed to commit: %s", mappingJSON.Checksum, err.Error())
+			return performImport(movieImporter, t.DuplicateBehaviour)
+		}); err != nil {
+			logger.Errorf("[movies] <%s> import failed: %s", mappingJSON.Checksum, err.Error())
 			continue
 		}
 	}
@@ -372,29 +344,23 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 
 		logger.Progressf("[galleries] %d of %d", index, len(t.mappings.Galleries))
 
-		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := sqlite.NewGalleryReaderWriter(tx)
-		tagWriter := sqlite.NewTagReaderWriter(tx)
-		performerWriter := sqlite.NewPerformerReaderWriter(tx)
-		studioWriter := sqlite.NewStudioReaderWriter(tx)
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Gallery()
+			tagWriter := r.Tag()
+			performerWriter := r.Performer()
+			studioWriter := r.Studio()
 
-		galleryImporter := &gallery.Importer{
-			ReaderWriter:        readerWriter,
-			PerformerWriter:     performerWriter,
-			StudioWriter:        studioWriter,
-			TagWriter:           tagWriter,
-			Input:               *galleryJSON,
-			MissingRefBehaviour: t.MissingRefBehaviour,
-		}
+			galleryImporter := &gallery.Importer{
+				ReaderWriter:        readerWriter,
+				PerformerWriter:     performerWriter,
+				StudioWriter:        studioWriter,
+				TagWriter:           tagWriter,
+				Input:               *galleryJSON,
+				MissingRefBehaviour: t.MissingRefBehaviour,
+			}
 
-		if err := performImport(galleryImporter, t.DuplicateBehaviour); err != nil {
-			tx.Rollback()
-			logger.Errorf("[galleries] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
-			continue
-		}
-
-		if err := tx.Commit(); err != nil {
-			tx.Rollback()
+			return performImport(galleryImporter, t.DuplicateBehaviour)
+		}); err != nil {
 			logger.Errorf("[galleries] <%s> import failed to commit: %s", mappingJSON.Checksum, err.Error())
 			continue
 		}
@@ -416,23 +382,18 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 
 		logger.Progressf("[tags] %d of %d", index, len(t.mappings.Tags))
 
-		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := sqlite.NewTagReaderWriter(tx)
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Tag()
 
-		tagImporter := &tag.Importer{
-			ReaderWriter: readerWriter,
-			Input:        *tagJSON,
-		}
+			tagImporter := &tag.Importer{
+				ReaderWriter: readerWriter,
+				Input:        *tagJSON,
+			}
 
-		if err := performImport(tagImporter, t.DuplicateBehaviour); err != nil {
-			tx.Rollback()
+			return performImport(tagImporter, t.DuplicateBehaviour)
+		}); err != nil {
 			logger.Errorf("[tags] <%s> failed to import: %s", mappingJSON.Checksum, err.Error())
 			continue
-		}
-
-		if err := tx.Commit(); err != nil {
-			tx.Rollback()
-			logger.Errorf("[tags] <%s> import failed to commit: %s", mappingJSON.Checksum, err.Error())
 		}
 	}
 
@@ -440,50 +401,52 @@ func (t *ImportTask) ImportTags(ctx context.Context) {
 }
 
 func (t *ImportTask) ImportScrapedItems(ctx context.Context) {
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := sqlite.NewScrapedItemQueryBuilder()
-	sqb := sqlite.NewStudioReaderWriter(tx)
-	currentTime := time.Now()
+	if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+		logger.Info("[scraped sites] importing")
+		qb := r.ScrapedItem()
+		sqb := r.Studio()
+		currentTime := time.Now()
 
-	for i, mappingJSON := range t.scraped {
-		index := i + 1
-		logger.Progressf("[scraped sites] %d of %d", index, len(t.mappings.Scenes))
+		for i, mappingJSON := range t.scraped {
+			index := i + 1
+			logger.Progressf("[scraped sites] %d of %d", index, len(t.mappings.Scenes))
 
-		newScrapedItem := models.ScrapedItem{
-			Title:           sql.NullString{String: mappingJSON.Title, Valid: true},
-			Description:     sql.NullString{String: mappingJSON.Description, Valid: true},
-			URL:             sql.NullString{String: mappingJSON.URL, Valid: true},
-			Date:            models.SQLiteDate{String: mappingJSON.Date, Valid: true},
-			Rating:          sql.NullString{String: mappingJSON.Rating, Valid: true},
-			Tags:            sql.NullString{String: mappingJSON.Tags, Valid: true},
-			Models:          sql.NullString{String: mappingJSON.Models, Valid: true},
-			Episode:         sql.NullInt64{Int64: int64(mappingJSON.Episode), Valid: true},
-			GalleryFilename: sql.NullString{String: mappingJSON.GalleryFilename, Valid: true},
-			GalleryURL:      sql.NullString{String: mappingJSON.GalleryURL, Valid: true},
-			VideoFilename:   sql.NullString{String: mappingJSON.VideoFilename, Valid: true},
-			VideoURL:        sql.NullString{String: mappingJSON.VideoURL, Valid: true},
-			CreatedAt:       models.SQLiteTimestamp{Timestamp: currentTime},
-			UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
+			newScrapedItem := models.ScrapedItem{
+				Title:           sql.NullString{String: mappingJSON.Title, Valid: true},
+				Description:     sql.NullString{String: mappingJSON.Description, Valid: true},
+				URL:             sql.NullString{String: mappingJSON.URL, Valid: true},
+				Date:            models.SQLiteDate{String: mappingJSON.Date, Valid: true},
+				Rating:          sql.NullString{String: mappingJSON.Rating, Valid: true},
+				Tags:            sql.NullString{String: mappingJSON.Tags, Valid: true},
+				Models:          sql.NullString{String: mappingJSON.Models, Valid: true},
+				Episode:         sql.NullInt64{Int64: int64(mappingJSON.Episode), Valid: true},
+				GalleryFilename: sql.NullString{String: mappingJSON.GalleryFilename, Valid: true},
+				GalleryURL:      sql.NullString{String: mappingJSON.GalleryURL, Valid: true},
+				VideoFilename:   sql.NullString{String: mappingJSON.VideoFilename, Valid: true},
+				VideoURL:        sql.NullString{String: mappingJSON.VideoURL, Valid: true},
+				CreatedAt:       models.SQLiteTimestamp{Timestamp: currentTime},
+				UpdatedAt:       models.SQLiteTimestamp{Timestamp: t.getTimeFromJSONTime(mappingJSON.UpdatedAt)},
+			}
+
+			studio, err := sqb.FindByName(mappingJSON.Studio, false)
+			if err != nil {
+				logger.Errorf("[scraped sites] failed to fetch studio: %s", err.Error())
+			}
+			if studio != nil {
+				newScrapedItem.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
+			}
+
+			_, err = qb.Create(newScrapedItem)
+			if err != nil {
+				logger.Errorf("[scraped sites] <%s> failed to create: %s", newScrapedItem.Title.String, err.Error())
+			}
 		}
 
-		studio, err := sqb.FindByName(mappingJSON.Studio, false)
-		if err != nil {
-			logger.Errorf("[scraped sites] failed to fetch studio: %s", err.Error())
-		}
-		if studio != nil {
-			newScrapedItem.StudioID = sql.NullInt64{Int64: int64(studio.ID), Valid: true}
-		}
-
-		_, err = qb.Create(newScrapedItem, tx)
-		if err != nil {
-			logger.Errorf("[scraped sites] <%s> failed to create: %s", newScrapedItem.Title.String, err.Error())
-		}
-	}
-
-	logger.Info("[scraped sites] importing")
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		logger.Errorf("[scraped sites] import failed to commit: %s", err.Error())
 	}
+
 	logger.Info("[scraped sites] import complete")
 }
 
@@ -503,62 +466,52 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 
 		sceneHash := mappingJSON.Checksum
 
-		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := sqlite.NewSceneReaderWriter(tx)
-		tagWriter := sqlite.NewTagReaderWriter(tx)
-		galleryWriter := sqlite.NewGalleryReaderWriter(tx)
-		movieWriter := sqlite.NewMovieReaderWriter(tx)
-		performerWriter := sqlite.NewPerformerReaderWriter(tx)
-		studioWriter := sqlite.NewStudioReaderWriter(tx)
-		markerWriter := sqlite.NewSceneMarkerReaderWriter(tx)
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Scene()
+			tagWriter := r.Tag()
+			galleryWriter := r.Gallery()
+			movieWriter := r.Movie()
+			performerWriter := r.Performer()
+			studioWriter := r.Studio()
+			markerWriter := r.SceneMarker()
 
-		sceneImporter := &scene.Importer{
-			ReaderWriter: readerWriter,
-			Input:        *sceneJSON,
-			Path:         mappingJSON.Path,
+			sceneImporter := &scene.Importer{
+				ReaderWriter: readerWriter,
+				Input:        *sceneJSON,
+				Path:         mappingJSON.Path,
 
-			FileNamingAlgorithm: t.fileNamingAlgorithm,
-			MissingRefBehaviour: t.MissingRefBehaviour,
-
-			GalleryWriter:   galleryWriter,
-			MovieWriter:     movieWriter,
-			PerformerWriter: performerWriter,
-			StudioWriter:    studioWriter,
-			TagWriter:       tagWriter,
-		}
-
-		if err := performImport(sceneImporter, t.DuplicateBehaviour); err != nil {
-			tx.Rollback()
-			logger.Errorf("[scenes] <%s> failed to import: %s", sceneHash, err.Error())
-			continue
-		}
-
-		// import the scene markers
-		failedMarkers := false
-		for _, m := range sceneJSON.Markers {
-			markerImporter := &scene.MarkerImporter{
-				SceneID:             sceneImporter.ID,
-				Input:               m,
+				FileNamingAlgorithm: t.fileNamingAlgorithm,
 				MissingRefBehaviour: t.MissingRefBehaviour,
-				ReaderWriter:        markerWriter,
-				TagWriter:           tagWriter,
+
+				GalleryWriter:   galleryWriter,
+				MovieWriter:     movieWriter,
+				PerformerWriter: performerWriter,
+				StudioWriter:    studioWriter,
+				TagWriter:       tagWriter,
 			}
 
-			if err := performImport(markerImporter, t.DuplicateBehaviour); err != nil {
-				failedMarkers = true
-				logger.Errorf("[scenes] <%s> failed to import markers: %s", sceneHash, err.Error())
-				break
+			if err := performImport(sceneImporter, t.DuplicateBehaviour); err != nil {
+				return err
 			}
-		}
 
-		if failedMarkers {
-			tx.Rollback()
-			continue
-		}
+			// import the scene markers
+			for _, m := range sceneJSON.Markers {
+				markerImporter := &scene.MarkerImporter{
+					SceneID:             sceneImporter.ID,
+					Input:               m,
+					MissingRefBehaviour: t.MissingRefBehaviour,
+					ReaderWriter:        markerWriter,
+					TagWriter:           tagWriter,
+				}
 
-		if err := tx.Commit(); err != nil {
-			tx.Rollback()
-			logger.Errorf("[scenes] <%s> import failed to commit: %s", sceneHash, err.Error())
+				if err := performImport(markerImporter, t.DuplicateBehaviour); err != nil {
+					return err
+				}
+			}
+
+			return nil
+		}); err != nil {
+			logger.Errorf("[scenes] <%s> import failed: %s", sceneHash, err.Error())
 		}
 	}
 
@@ -581,35 +534,29 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 
 		imageHash := mappingJSON.Checksum
 
-		tx := database.DB.MustBeginTx(ctx, nil)
-		readerWriter := sqlite.NewImageReaderWriter(tx)
-		tagWriter := sqlite.NewTagReaderWriter(tx)
-		galleryWriter := sqlite.NewGalleryReaderWriter(tx)
-		performerWriter := sqlite.NewPerformerReaderWriter(tx)
-		studioWriter := sqlite.NewStudioReaderWriter(tx)
+		if err := t.txnManager.WithTxn(ctx, func(r models.Repository) error {
+			readerWriter := r.Image()
+			tagWriter := r.Tag()
+			galleryWriter := r.Gallery()
+			performerWriter := r.Performer()
+			studioWriter := r.Studio()
 
-		imageImporter := &image.Importer{
-			ReaderWriter: readerWriter,
-			Input:        *imageJSON,
-			Path:         mappingJSON.Path,
+			imageImporter := &image.Importer{
+				ReaderWriter: readerWriter,
+				Input:        *imageJSON,
+				Path:         mappingJSON.Path,
 
-			MissingRefBehaviour: t.MissingRefBehaviour,
+				MissingRefBehaviour: t.MissingRefBehaviour,
 
-			GalleryWriter:   galleryWriter,
-			PerformerWriter: performerWriter,
-			StudioWriter:    studioWriter,
-			TagWriter:       tagWriter,
-		}
+				GalleryWriter:   galleryWriter,
+				PerformerWriter: performerWriter,
+				StudioWriter:    studioWriter,
+				TagWriter:       tagWriter,
+			}
 
-		if err := performImport(imageImporter, t.DuplicateBehaviour); err != nil {
-			tx.Rollback()
-			logger.Errorf("[images] <%s> failed to import: %s", imageHash, err.Error())
-			continue
-		}
-
-		if err := tx.Commit(); err != nil {
-			tx.Rollback()
-			logger.Errorf("[images] <%s> import failed to commit: %s", imageHash, err.Error())
+			return performImport(imageImporter, t.DuplicateBehaviour)
+		}); err != nil {
+			logger.Errorf("[images] <%s> import failed: %s", imageHash, err.Error())
 		}
 	}
 

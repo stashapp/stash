@@ -19,7 +19,6 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/jmoiron/sqlx"
 )
 
 const testName = "Foo's Bar"
@@ -107,10 +106,8 @@ func TestMain(m *testing.M) {
 	os.Exit(ret)
 }
 
-func createPerformer(tx *sqlx.Tx) error {
+func createPerformer(pqb models.PerformerWriter) error {
 	// create the performer
-	pqb := sqlite.NewPerformerQueryBuilder()
-
 	performer := models.Performer{
 		Checksum: testName,
 		Name:     sql.NullString{Valid: true, String: testName},
@@ -125,10 +122,8 @@ func createPerformer(tx *sqlx.Tx) error {
 	return nil
 }
 
-func createStudio(tx *sqlx.Tx, name string) (*models.Studio, error) {
+func createStudio(qb models.StudioWriter, name string) (*models.Studio, error) {
 	// create the studio
-	qb := sqlite.NewStudioQueryBuilder()
-
 	studio := models.Studio{
 		Checksum: name,
 		Name:     sql.NullString{Valid: true, String: testName},
@@ -137,7 +132,7 @@ func createStudio(tx *sqlx.Tx, name string) (*models.Studio, error) {
 	return qb.Create(studio, tx)
 }
 
-func createTag(tx *sqlx.Tx) error {
+func createTag(qb models.TagWriter) error {
 	// create the studio
 	qb := sqlite.NewTagQueryBuilder()
 
@@ -153,7 +148,7 @@ func createTag(tx *sqlx.Tx) error {
 	return nil
 }
 
-func createScenes(tx *sqlx.Tx) error {
+func createScenes(sqb models.SceneReaderWriter) error {
 	sqb := sqlite.NewSceneQueryBuilder()
 
 	// create the scenes
@@ -223,8 +218,8 @@ func makeScene(name string, expectedResult bool) *models.Scene {
 	return scene
 }
 
-func createScene(sqb sqlite.SceneQueryBuilder, tx *sqlx.Tx, scene *models.Scene) error {
-	_, err := sqb.Create(*scene, tx)
+func createScene(sqb models.SceneWriter, scene *models.Scene) error {
+	_, err := sqb.Create(*scene)
 
 	if err != nil {
 		return fmt.Errorf("Failed to create scene with name '%s': %s", scene.Path, err.Error())

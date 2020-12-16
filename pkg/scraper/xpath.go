@@ -154,7 +154,7 @@ func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 }
 
 func (s *xpathScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
-	storedGallery, err := galleryFromUpdateFragment(gallery)
+	storedGallery, err := galleryFromUpdateFragment(gallery, s.txnManager)
 	if err != nil {
 		return nil, err
 	}

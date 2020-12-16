@@ -173,7 +173,7 @@ func (s *jsonScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mod
 }
 
 func (s *jsonScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
-	storedGallery, err := galleryFromUpdateFragment(gallery)
+	storedGallery, err := galleryFromUpdateFragment(gallery, s.txnManager)
 	if err != nil {
 		return nil, err
 	}

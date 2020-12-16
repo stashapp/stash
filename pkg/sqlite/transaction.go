@@ -96,6 +96,11 @@ func (t *Transaction) Scene() models.SceneReaderWriter {
 	return NewSceneReaderWriter(t.tx)
 }
 
+func (t *Transaction) ScrapedItem() models.ScrapedItemReaderWriter {
+	t.ensureTx()
+	return NewScrapedItemReaderWriter(t.tx)
+}
+
 func (t *Transaction) Studio() models.StudioReaderWriter {
 	t.ensureTx()
 	return NewStudioReaderWriter(t.tx)
@@ -142,6 +147,11 @@ func (t *ReadTransaction) SceneMarker() models.SceneMarkerReader {
 func (t *ReadTransaction) Scene() models.SceneReader {
 	t.ensureTx()
 	return NewSceneReaderWriter(t.tx)
+}
+
+func (t *ReadTransaction) ScrapedItem() models.ScrapedItemReader {
+	t.ensureTx()
+	return NewScrapedItemReaderWriter(t.tx)
 }
 
 func (t *ReadTransaction) Studio() models.StudioReader {
