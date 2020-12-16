@@ -12,7 +12,9 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type imageRoutes struct{}
+type imageRoutes struct {
+	txnManager models.TransactionManager
+}
 
 func (rs imageRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
@@ -57,7 +59,7 @@ func ImageCtx(next http.Handler) http.Handler {
 		imageID, _ := strconv.Atoi(imageIdentifierQueryParam)
 
 		var image *models.Image
-		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			qb := repo.Image()
 			if imageID == 0 {
 				image, _ = qb.FindByChecksum(imageIdentifierQueryParam)

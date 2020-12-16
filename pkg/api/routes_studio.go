@@ -11,7 +11,9 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type studioRoutes struct{}
+type studioRoutes struct {
+	txnManager models.TransactionManager
+}
 
 func (rs studioRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
@@ -30,7 +32,7 @@ func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			image, _ = repo.Studio().GetImage(studio.ID)
 			return nil
 		})
@@ -52,7 +54,7 @@ func StudioCtx(next http.Handler) http.Handler {
 		}
 
 		var studio *models.Studio
-		if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		if err := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			var err error
 			studio, err = repo.Studio().Find(studioID)
 			return err

@@ -11,7 +11,9 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type movieRoutes struct{}
+type movieRoutes struct {
+	txnManager models.TransactionManager
+}
 
 func (rs movieRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
@@ -30,7 +32,7 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			image, _ = repo.Movie().GetFrontImage(movie.ID)
 			return nil
 		})
@@ -48,7 +50,7 @@ func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	defaultParam := r.URL.Query().Get("default")
 	var image []byte
 	if defaultParam != "true" {
-		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			image, _ = repo.Movie().GetBackImage(movie.ID)
 			return nil
 		})
@@ -70,7 +72,7 @@ func MovieCtx(next http.Handler) http.Handler {
 		}
 
 		var movie *models.Movie
-		if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		if err := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			var err error
 			movie, err = repo.Movie().Find(movieID)
 			return err

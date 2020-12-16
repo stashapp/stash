@@ -11,7 +11,9 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type performerRoutes struct{}
+type performerRoutes struct {
+	txnManager models.TransactionManager
+}
 
 func (rs performerRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
@@ -30,7 +32,7 @@ func (rs performerRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			image, _ = repo.Performer().GetImage(performer.ID)
 			return nil
 		})
@@ -52,7 +54,7 @@ func PerformerCtx(next http.Handler) http.Handler {
 		}
 
 		var performer *models.Performer
-		if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		if err := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			var err error
 			performer, err = repo.Performer().Find(performerID)
 			return err

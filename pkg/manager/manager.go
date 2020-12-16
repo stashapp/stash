@@ -1,7 +1,6 @@
 package manager
 
 import (
-	"context"
 	"net"
 	"sync"
 
@@ -29,6 +28,8 @@ type singleton struct {
 	ScraperCache *scraper.Cache
 
 	DownloadStore *DownloadStore
+
+	TxnManager models.TransactionManager
 }
 
 var instance *singleton
@@ -59,6 +60,7 @@ func Initialize() *singleton {
 			PluginCache: initPluginCache(),
 
 			DownloadStore: NewDownloadStore(),
+			TxnManager:    &sqlite.TransactionManager{},
 		}
 		instance.ScraperCache = instance.initScraperCache()
 
@@ -189,7 +191,7 @@ func (s *singleton) initScraperCache() *scraper.Cache {
 		UserAgent: config.GetScraperUserAgent(),
 		CDPPath:   config.GetScraperCDPPath(),
 	}
-	ret, err := scraper.NewCache(scraperConfig, s)
+	ret, err := scraper.NewCache(scraperConfig, s.TxnManager)
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
@@ -214,20 +216,4 @@ func (s *singleton) RefreshConfig() {
 // configuration changes.
 func (s *singleton) RefreshScraperCache() {
 	s.ScraperCache = s.initScraperCache()
-}
-
-func (s *singleton) WithTxn(ctx context.Context, fn func(r models.Repository) error) error {
-	txn := sqlite.Transaction{
-		Ctx: ctx,
-	}
-	return models.WithTxn(&txn, fn)
-}
-
-func (s *singleton) WithReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {
-	txn := sqlite.ReadTransaction{
-		sqlite.Transaction{
-			Ctx: ctx,
-		},
-	}
-	return models.WithROTxn(&txn, fn)
 }

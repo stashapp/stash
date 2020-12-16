@@ -11,7 +11,9 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type tagRoutes struct{}
+type tagRoutes struct {
+	txnManager models.TransactionManager
+}
 
 func (rs tagRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
@@ -30,7 +32,7 @@ func (rs tagRoutes) Image(w http.ResponseWriter, r *http.Request) {
 
 	var image []byte
 	if defaultParam != "true" {
-		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			image, _ = repo.Tag().GetImage(tag.ID)
 			return nil
 		})
@@ -52,7 +54,7 @@ func TagCtx(next http.Handler) http.Handler {
 		}
 
 		var tag *models.Tag
-		if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		if err := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			var err error
 			tag, err = repo.Tag().Find(tagID)
 			return err

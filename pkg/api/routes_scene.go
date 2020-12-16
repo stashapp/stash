@@ -15,7 +15,9 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type sceneRoutes struct{}
+type sceneRoutes struct {
+	txnManager models.TransactionManager
+}
 
 func (rs sceneRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
@@ -184,7 +186,7 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath)
 	} else {
 		var cover []byte
-		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			cover, _ = repo.Scene().GetCover(scene.ID)
 			return nil
 		})
@@ -204,13 +206,13 @@ func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, filepath)
 }
 
-func getChapterVttTitle(ctx context.Context, marker *models.SceneMarker) string {
+func (rs sceneRoutes) getChapterVttTitle(ctx context.Context, marker *models.SceneMarker) string {
 	if marker.Title != "" {
 		return marker.Title
 	}
 
 	var ret string
-	if err := manager.GetInstance().WithReadTxn(ctx, func(repo models.ReaderRepository) error {
+	if err := rs.txnManager.WithReadTxn(ctx, func(repo models.ReaderRepository) error {
 		qb := repo.Tag()
 		primaryTag, err := qb.Find(marker.PrimaryTagID)
 		if err != nil {
@@ -239,7 +241,7 @@ func getChapterVttTitle(ctx context.Context, marker *models.SceneMarker) string 
 func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	var sceneMarkers []*models.SceneMarker
-	if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 		var err error
 		sceneMarkers, err = repo.SceneMarker().FindBySceneID(scene.ID)
 		return err
@@ -253,7 +255,7 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 		vttLines = append(vttLines, strconv.Itoa(i+1))
 		time := utils.GetVTTTime(marker.Seconds)
 		vttLines = append(vttLines, time+" --> "+time)
-		vttLines = append(vttLines, getChapterVttTitle(r.Context(), marker))
+		vttLines = append(vttLines, rs.getChapterVttTitle(r.Context(), marker))
 		vttLines = append(vttLines, "")
 	}
 	vtt := strings.Join(vttLines, "\n")
@@ -280,7 +282,7 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 		var err error
 		sceneMarker, err = repo.SceneMarker().Find(sceneMarkerID)
 		return err
@@ -297,7 +299,7 @@ func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request)
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
 	var sceneMarker *models.SceneMarker
-	if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 		var err error
 		sceneMarker, err = repo.SceneMarker().Find(sceneMarkerID)
 		return err
@@ -328,7 +330,7 @@ func SceneCtx(next http.Handler) http.Handler {
 		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
 
 		var scene *models.Scene
-		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
 			qb := repo.Scene()
 			if sceneID == 0 {
 				// determine checksum/os by the length of the query param

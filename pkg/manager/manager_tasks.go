@@ -364,7 +364,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 		var err error
 		var markers []*models.SceneMarker
 
-		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			qb := r.Scene()
 			if len(sceneIDs) > 0 {
 				scenes, err = qb.FindMany(sceneIDs)
@@ -526,7 +526,7 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 		}
 
 		var scene *models.Scene
-		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			var err error
 			scene, err = r.Scene().Find(sceneIdInt)
 			return err
@@ -566,7 +566,7 @@ func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []
 		studioCount := len(studioIds)
 		tagCount := len(tagIds)
 
-		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			performerQuery := r.Performer()
 			studioQuery := r.Studio()
 			tagQuery := r.Tag()
@@ -612,7 +612,7 @@ func (s *singleton) autoTagPerformers(performerIds []string) {
 	for _, performerId := range performerIds {
 		var performers []*models.Performer
 
-		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			performerQuery := r.Performer()
 
 			if performerId == "*" {
@@ -656,7 +656,7 @@ func (s *singleton) autoTagStudios(studioIds []string) {
 	for _, studioId := range studioIds {
 		var studios []*models.Studio
 
-		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			studioQuery := r.Studio()
 			if studioId == "*" {
 				var err error
@@ -685,7 +685,10 @@ func (s *singleton) autoTagStudios(studioIds []string) {
 
 		for _, studio := range studios {
 			wg.Add(1)
-			task := AutoTagStudioTask{studio: studio}
+			task := AutoTagStudioTask{
+				studio:     studio,
+				txnManager: s.TxnManager,
+			}
 			go task.Start(&wg)
 			wg.Wait()
 
@@ -698,7 +701,7 @@ func (s *singleton) autoTagTags(tagIds []string) {
 	var wg sync.WaitGroup
 	for _, tagId := range tagIds {
 		var tags []*models.Tag
-		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			tagQuery := r.Tag()
 			if tagId == "*" {
 				var err error
@@ -750,7 +753,7 @@ func (s *singleton) Clean() {
 		var images []*models.Image
 		var galleries []*models.Gallery
 
-		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			qb := r.Scene()
 			iqb := r.Image()
 			gqb := r.Gallery()
@@ -862,7 +865,7 @@ func (s *singleton) MigrateHash() {
 		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
 
 		var scenes []*models.Scene
-		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		if err := s.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 			var err error
 			scenes, err = r.Scene().All()
 			return err
