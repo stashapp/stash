@@ -231,10 +231,14 @@ func getChapterVttTitle(marker *models.SceneMarker) string {
 
 func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	qb := sqlite.NewSceneMarkerQueryBuilder()
-	sceneMarkers, err := qb.FindBySceneID(scene.ID, nil)
-	if err != nil {
-		panic("invalid scene markers for chapter vtt")
+	var sceneMarkers []*models.SceneMarker
+	if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		var err error
+		sceneMarkers, err = repo.SceneMarker().FindBySceneID(scene.ID)
+		return err
+	}); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	vttLines := []string{"WEBVTT", ""}
@@ -268,11 +272,14 @@ func (rs sceneRoutes) VttSprite(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
-	qb := sqlite.NewSceneMarkerQueryBuilder()
-	sceneMarker, err := qb.Find(sceneMarkerID)
-	if err != nil {
-		logger.Warn("Error when getting scene marker for stream")
-		http.Error(w, http.StatusText(404), 404)
+	var sceneMarker *models.SceneMarker
+	if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		var err error
+		sceneMarker, err = repo.SceneMarker().Find(sceneMarkerID)
+		return err
+	}); err != nil {
+		logger.Warnf("Error when getting scene marker for stream: %s", err.Error())
+		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(config.GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
@@ -282,11 +289,14 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
-	qb := sqlite.NewSceneMarkerQueryBuilder()
-	sceneMarker, err := qb.Find(sceneMarkerID)
-	if err != nil {
-		logger.Warn("Error when getting scene marker for stream")
-		http.Error(w, http.StatusText(404), 404)
+	var sceneMarker *models.SceneMarker
+	if err := manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		var err error
+		sceneMarker, err = repo.SceneMarker().Find(sceneMarkerID)
+		return err
+	}); err != nil {
+		logger.Warnf("Error when getting scene marker for stream: %s", err.Error())
+		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(config.GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))

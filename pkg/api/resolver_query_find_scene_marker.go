@@ -4,14 +4,23 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
-func (r *queryResolver) FindSceneMarkers(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, filter *models.FindFilterType) (*models.FindSceneMarkersResultType, error) {
-	qb := sqlite.NewSceneMarkerQueryBuilder()
-	sceneMarkers, total := qb.Query(sceneMarkerFilter, filter)
-	return &models.FindSceneMarkersResultType{
-		Count:        total,
-		SceneMarkers: sceneMarkers,
-	}, nil
+func (r *queryResolver) FindSceneMarkers(ctx context.Context, sceneMarkerFilter *models.SceneMarkerFilterType, filter *models.FindFilterType) (ret *models.FindSceneMarkersResultType, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		sceneMarkers, total, err := repo.SceneMarker().Query(sceneMarkerFilter, filter)
+		if err != nil {
+			return err
+		}
+		ret = &models.FindSceneMarkersResultType{
+			Count:        total,
+			SceneMarkers: sceneMarkers,
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

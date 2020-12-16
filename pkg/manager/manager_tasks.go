@@ -347,7 +347,6 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 	s.Status.indefiniteProgress()
 
 	qb := sqlite.NewSceneQueryBuilder()
-	mqb := sqlite.NewSceneMarkerQueryBuilder()
 
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
@@ -389,7 +388,14 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 
 		var markers []*models.SceneMarker
 		if len(markerIDs) > 0 {
-			markers, err = mqb.FindMany(markerIDs)
+			if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+				var err error
+				markers, err = r.SceneMarker().FindMany(markerIDs)
+				return err
+			}); err != nil {
+				logger.Errorf("error finding scene markers: %s", err.Error())
+				return
+			}
 
 			total += len(markers)
 		}

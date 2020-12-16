@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/sqlite"
@@ -90,9 +89,14 @@ func (r *Resolver) withReadTxn(ctx context.Context, fn func(r models.ReaderRepos
 	return r.txnManager.WithReadTxn(ctx, fn)
 }
 
-func (r *queryResolver) MarkerWall(ctx context.Context, q *string) ([]*models.SceneMarker, error) {
-	qb := sqlite.NewSceneMarkerQueryBuilder()
-	return qb.Wall(q)
+func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*models.SceneMarker, err error) {
+	if err := r.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		ret, err = r.SceneMarker().Wall(q)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
 func (r *queryResolver) SceneWall(ctx context.Context, q *string) ([]*models.Scene, error) {
@@ -100,9 +104,15 @@ func (r *queryResolver) SceneWall(ctx context.Context, q *string) ([]*models.Sce
 	return qb.Wall(q)
 }
 
-func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
-	qb := sqlite.NewSceneMarkerQueryBuilder()
-	return qb.GetMarkerStrings(q, sort)
+func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *string) (ret []*models.MarkerStringsResultType, err error) {
+	if err := r.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		ret, err = r.SceneMarker().GetMarkerStrings(q, sort)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *string) ([]*models.Gallery, error) {
@@ -207,31 +217,41 @@ func (r *queryResolver) Latestversion(ctx context.Context) (*models.ShortVersion
 
 // Get scene marker tags which show up under the video.
 func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([]*models.SceneMarkerTag, error) {
-	sceneID, _ := strconv.Atoi(scene_id)
-	sqb := sqlite.NewSceneMarkerQueryBuilder()
-	sceneMarkers, err := sqb.FindBySceneID(sceneID, nil)
+	sceneID, err := strconv.Atoi(scene_id)
 	if err != nil {
 		return nil, err
 	}
 
-	tags := make(map[int]*models.SceneMarkerTag)
 	var keys []int
-	tqb := sqlite.NewTagQueryBuilder()
-	for _, sceneMarker := range sceneMarkers {
-		markerPrimaryTag, err := tqb.Find(sceneMarker.PrimaryTagID, nil)
+	tags := make(map[int]*models.SceneMarkerTag)
+
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		sceneMarkers, err := repo.SceneMarker().FindBySceneID(sceneID)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		_, hasKey := tags[markerPrimaryTag.ID]
-		var sceneMarkerTag *models.SceneMarkerTag
-		if !hasKey {
-			sceneMarkerTag = &models.SceneMarkerTag{Tag: markerPrimaryTag}
-			tags[markerPrimaryTag.ID] = sceneMarkerTag
-			keys = append(keys, markerPrimaryTag.ID)
-		} else {
-			sceneMarkerTag = tags[markerPrimaryTag.ID]
+
+		tqb := repo.Tag()
+		for _, sceneMarker := range sceneMarkers {
+			markerPrimaryTag, err := tqb.Find(sceneMarker.PrimaryTagID)
+			if err != nil {
+				return err
+			}
+			_, hasKey := tags[markerPrimaryTag.ID]
+			var sceneMarkerTag *models.SceneMarkerTag
+			if !hasKey {
+				sceneMarkerTag = &models.SceneMarkerTag{Tag: markerPrimaryTag}
+				tags[markerPrimaryTag.ID] = sceneMarkerTag
+				keys = append(keys, markerPrimaryTag.ID)
+			} else {
+				sceneMarkerTag = tags[markerPrimaryTag.ID]
+			}
+			tags[markerPrimaryTag.ID].SceneMarkers = append(tags[markerPrimaryTag.ID].SceneMarkers, sceneMarker)
 		}
-		tags[markerPrimaryTag.ID].SceneMarkers = append(tags[markerPrimaryTag.ID].SceneMarkers, sceneMarker)
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	// Sort so that primary tags that show up earlier in the video are first.
@@ -247,14 +267,4 @@ func (r *queryResolver) SceneMarkerTags(ctx context.Context, scene_id string) ([
 	}
 
 	return result, nil
-}
-
-// wasFieldIncluded returns true if the given field was included in the request.
-// Slices are unmarshalled to empty slices even if the field was omitted. This
-// method determines if it was omitted altogether.
-func wasFieldIncluded(ctx context.Context, field string) bool {
-	rctx := graphql.GetRequestContext(ctx)
-
-	_, ret := rctx.Variables[field]
-	return ret
 }

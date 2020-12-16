@@ -2,12 +2,12 @@ package models
 
 type SceneMarkerReader interface {
 	Find(id int) (*SceneMarker, error)
-	// FindMany(ids []int) ([]*SceneMarker, error)
+	FindMany(ids []int) ([]*SceneMarker, error)
 	FindBySceneID(sceneID int) ([]*SceneMarker, error)
 	CountByTagID(tagID int) (int, error)
-	// GetMarkerStrings(q *string, sort *string) ([]*MarkerStringsResultType, error)
-	// Wall(q *string) ([]*SceneMarker, error)
-	// Query(sceneMarkerFilter *SceneMarkerFilterType, findFilter *FindFilterType) ([]*SceneMarker, int)
+	GetMarkerStrings(q *string, sort *string) ([]*MarkerStringsResultType, error)
+	Wall(q *string) ([]*SceneMarker, error)
+	Query(sceneMarkerFilter *SceneMarkerFilterType, findFilter *FindFilterType) ([]*SceneMarker, int, error)
 	GetTagIDs(imageID int) ([]int, error)
 }
 
