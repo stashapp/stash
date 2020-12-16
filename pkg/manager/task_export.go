@@ -358,7 +358,6 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 	performerReader := sqlite.NewPerformerReaderWriter(nil)
 	tagReader := sqlite.NewTagReaderWriter(nil)
 	sceneMarkerReader := sqlite.NewSceneMarkerReaderWriter(nil)
-	joinReader := sqlite.NewJoinReaderWriter(nil)
 
 	for s := range jobChan {
 		sceneHash := s.GetHash(t.fileNamingAlgorithm)
@@ -405,7 +404,7 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 			continue
 		}
 
-		newSceneJSON.Movies, err = scene.GetSceneMoviesJSON(movieReader, joinReader, s)
+		newSceneJSON.Movies, err = scene.GetSceneMoviesJSON(movieReader, sceneReader, s)
 		if err != nil {
 			logger.Errorf("[scenes] <%s> error getting scene movies JSON: %s", sceneHash, err.Error())
 			continue
@@ -420,14 +419,14 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, t *ExportTask
 				t.galleries.IDs = utils.IntAppendUnique(t.galleries.IDs, sceneGallery.ID)
 			}
 
-			tagIDs, err := scene.GetDependentTagIDs(tagReader, joinReader, sceneMarkerReader, s)
+			tagIDs, err := scene.GetDependentTagIDs(tagReader, sceneMarkerReader, s)
 			if err != nil {
 				logger.Errorf("[scenes] <%s> error getting scene tags: %s", sceneHash, err.Error())
 				continue
 			}
 			t.tags.IDs = utils.IntAppendUniques(t.tags.IDs, tagIDs)
 
-			movieIDs, err := scene.GetDependentMovieIDs(joinReader, s)
+			movieIDs, err := scene.GetDependentMovieIDs(sceneReader, s)
 			if err != nil {
 				logger.Errorf("[scenes] <%s> error getting scene movies: %s", sceneHash, err.Error())
 				continue

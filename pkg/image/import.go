@@ -16,7 +16,6 @@ type Importer struct {
 	GalleryWriter       models.GalleryReaderWriter
 	PerformerWriter     models.PerformerReaderWriter
 	TagWriter           models.TagReaderWriter
-	JoinWriter          models.JoinReaderWriter
 	Input               jsonschema.Image
 	Path                string
 	MissingRefBehaviour models.ImportMissingRefEnum
@@ -227,43 +226,33 @@ func (i *Importer) populateTags() error {
 
 func (i *Importer) PostImport(id int) error {
 	if len(i.galleries) > 0 {
-		var galleryJoins []models.GalleriesImages
-		for _, gallery := range i.galleries {
-			join := models.GalleriesImages{
-				GalleryID: gallery.ID,
-				ImageID:   id,
-			}
-			galleryJoins = append(galleryJoins, join)
+		var galleryIDs []int
+		for _, g := range i.galleries {
+			galleryIDs = append(galleryIDs, g.ID)
 		}
-		if err := i.JoinWriter.UpdateGalleriesImages(id, galleryJoins); err != nil {
+
+		if err := i.ReaderWriter.UpdateGalleries(id, galleryIDs); err != nil {
 			return fmt.Errorf("failed to associate galleries: %s", err.Error())
 		}
 	}
 
 	if len(i.performers) > 0 {
-		var performerJoins []models.PerformersImages
+		var performerIDs []int
 		for _, performer := range i.performers {
-			join := models.PerformersImages{
-				PerformerID: performer.ID,
-				ImageID:     id,
-			}
-			performerJoins = append(performerJoins, join)
+			performerIDs = append(performerIDs, performer.ID)
 		}
-		if err := i.JoinWriter.UpdatePerformersImages(id, performerJoins); err != nil {
+
+		if err := i.ReaderWriter.UpdatePerformers(id, performerIDs); err != nil {
 			return fmt.Errorf("failed to associate performers: %s", err.Error())
 		}
 	}
 
 	if len(i.tags) > 0 {
-		var tagJoins []models.ImagesTags
-		for _, tag := range i.tags {
-			join := models.ImagesTags{
-				ImageID: id,
-				TagID:   tag.ID,
-			}
-			tagJoins = append(tagJoins, join)
+		var tagIDs []int
+		for _, t := range i.tags {
+			tagIDs = append(tagIDs, t.ID)
 		}
-		if err := i.JoinWriter.UpdateImagesTags(id, tagJoins); err != nil {
+		if err := i.ReaderWriter.UpdateTags(id, tagIDs); err != nil {
 			return fmt.Errorf("failed to associate tags: %s", err.Error())
 		}
 	}

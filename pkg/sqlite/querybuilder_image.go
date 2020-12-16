@@ -99,7 +99,6 @@ func (qb *ImageQueryBuilder) UpdateFull(updatedObject models.Image) (*models.Ima
 }
 
 func (qb *ImageQueryBuilder) IncrementOCounter(id int) (int, error) {
-	ensureTx(qb.tx)
 	_, err := qb.tx.Exec(
 		`UPDATE `+imageTable+` SET o_counter = o_counter + 1 WHERE `+imageTable+`.id = ?`,
 		id,
@@ -117,7 +116,6 @@ func (qb *ImageQueryBuilder) IncrementOCounter(id int) (int, error) {
 }
 
 func (qb *ImageQueryBuilder) DecrementOCounter(id int) (int, error) {
-	ensureTx(qb.tx)
 	_, err := qb.tx.Exec(
 		`UPDATE `+imageTable+` SET o_counter = o_counter - 1 WHERE `+imageTable+`.id = ? and `+imageTable+`.o_counter > 0`,
 		id,
@@ -135,7 +133,6 @@ func (qb *ImageQueryBuilder) DecrementOCounter(id int) (int, error) {
 }
 
 func (qb *ImageQueryBuilder) ResetOCounter(id int) (int, error) {
-	ensureTx(qb.tx)
 	_, err := qb.tx.Exec(
 		`UPDATE `+imageTable+` SET o_counter = 0 WHERE `+imageTable+`.id = ?`,
 		id,
@@ -208,7 +205,7 @@ func (qb *ImageQueryBuilder) FindByPerformerID(performerID int) ([]*models.Image
 
 func (qb *ImageQueryBuilder) CountByPerformerID(performerID int) (int, error) {
 	args := []interface{}{performerID}
-	return runCountQuery(buildCountQuery(countImagesForPerformerQuery), args)
+	return qb.runCountQuery(qb.buildCountQuery(countImagesForPerformerQuery), args)
 }
 
 func (qb *ImageQueryBuilder) FindByStudioID(studioID int) ([]*models.Image, error) {
@@ -223,25 +220,25 @@ func (qb *ImageQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Image, er
 
 func (qb *ImageQueryBuilder) CountByGalleryID(galleryID int) (int, error) {
 	args := []interface{}{galleryID}
-	return runCountQuery(buildCountQuery(countImagesForGalleryQuery), args)
+	return qb.runCountQuery(qb.buildCountQuery(countImagesForGalleryQuery), args)
 }
 
 func (qb *ImageQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT images.id FROM images"), nil)
+	return qb.runCountQuery(qb.buildCountQuery("SELECT images.id FROM images"), nil)
 }
 
 func (qb *ImageQueryBuilder) Size() (float64, error) {
-	return runSumQuery("SELECT SUM(cast(size as double)) as sum FROM images", nil)
+	return qb.runSumQuery("SELECT SUM(cast(size as double)) as sum FROM images", nil)
 }
 
 func (qb *ImageQueryBuilder) CountByStudioID(studioID int) (int, error) {
 	args := []interface{}{studioID}
-	return runCountQuery(buildCountQuery(imagesForStudioQuery), args)
+	return qb.runCountQuery(qb.buildCountQuery(imagesForStudioQuery), args)
 }
 
 func (qb *ImageQueryBuilder) CountByTagID(tagID int) (int, error) {
 	args := []interface{}{tagID}
-	return runCountQuery(buildCountQuery(countImagesForTagQuery), args)
+	return qb.runCountQuery(qb.buildCountQuery(countImagesForTagQuery), args)
 }
 
 func (qb *ImageQueryBuilder) All() ([]*models.Image, error) {

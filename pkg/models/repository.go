@@ -3,7 +3,6 @@ package models
 type Repository interface {
 	Gallery() GalleryReaderWriter
 	Image() ImageReaderWriter
-	Join() JoinReaderWriter
 	Movie() MovieReaderWriter
 	Performer() PerformerReaderWriter
 	SceneMarker() SceneMarkerReaderWriter
@@ -15,7 +14,6 @@ type Repository interface {
 type ReaderRepository interface {
 	Gallery() GalleryReader
 	Image() ImageReader
-	Join() JoinReader
 	Movie() MovieReader
 	Performer() PerformerReader
 	SceneMarker() SceneMarkerReader

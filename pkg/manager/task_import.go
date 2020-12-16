@@ -375,7 +375,6 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 		tx := database.DB.MustBeginTx(ctx, nil)
 		readerWriter := sqlite.NewGalleryReaderWriter(tx)
 		tagWriter := sqlite.NewTagReaderWriter(tx)
-		joinWriter := sqlite.NewJoinReaderWriter(tx)
 		performerWriter := sqlite.NewPerformerReaderWriter(tx)
 		studioWriter := sqlite.NewStudioReaderWriter(tx)
 
@@ -384,7 +383,6 @@ func (t *ImportTask) ImportGalleries(ctx context.Context) {
 			PerformerWriter:     performerWriter,
 			StudioWriter:        studioWriter,
 			TagWriter:           tagWriter,
-			JoinWriter:          joinWriter,
 			Input:               *galleryJSON,
 			MissingRefBehaviour: t.MissingRefBehaviour,
 		}
@@ -509,7 +507,6 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 		readerWriter := sqlite.NewSceneReaderWriter(tx)
 		tagWriter := sqlite.NewTagReaderWriter(tx)
 		galleryWriter := sqlite.NewGalleryReaderWriter(tx)
-		joinWriter := sqlite.NewJoinReaderWriter(tx)
 		movieWriter := sqlite.NewMovieReaderWriter(tx)
 		performerWriter := sqlite.NewPerformerReaderWriter(tx)
 		studioWriter := sqlite.NewStudioReaderWriter(tx)
@@ -524,7 +521,6 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 			MissingRefBehaviour: t.MissingRefBehaviour,
 
 			GalleryWriter:   galleryWriter,
-			JoinWriter:      joinWriter,
 			MovieWriter:     movieWriter,
 			PerformerWriter: performerWriter,
 			StudioWriter:    studioWriter,
@@ -545,7 +541,6 @@ func (t *ImportTask) ImportScenes(ctx context.Context) {
 				Input:               m,
 				MissingRefBehaviour: t.MissingRefBehaviour,
 				ReaderWriter:        markerWriter,
-				JoinWriter:          joinWriter,
 				TagWriter:           tagWriter,
 			}
 
@@ -590,7 +585,6 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 		readerWriter := sqlite.NewImageReaderWriter(tx)
 		tagWriter := sqlite.NewTagReaderWriter(tx)
 		galleryWriter := sqlite.NewGalleryReaderWriter(tx)
-		joinWriter := sqlite.NewJoinReaderWriter(tx)
 		performerWriter := sqlite.NewPerformerReaderWriter(tx)
 		studioWriter := sqlite.NewStudioReaderWriter(tx)
 
@@ -602,7 +596,6 @@ func (t *ImportTask) ImportImages(ctx context.Context) {
 			MissingRefBehaviour: t.MissingRefBehaviour,
 
 			GalleryWriter:   galleryWriter,
-			JoinWriter:      joinWriter,
 			PerformerWriter: performerWriter,
 			StudioWriter:    studioWriter,
 			TagWriter:       tagWriter,

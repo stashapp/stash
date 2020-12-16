@@ -226,7 +226,7 @@ func (qb *SceneQueryBuilder) FindByPerformerID(performerID int) ([]*models.Scene
 
 func (qb *SceneQueryBuilder) CountByPerformerID(performerID int) (int, error) {
 	args := []interface{}{performerID}
-	return runCountQuery(buildCountQuery(countScenesForPerformerQuery), args)
+	return qb.runCountQuery(qb.buildCountQuery(countScenesForPerformerQuery), args)
 }
 
 func (qb *SceneQueryBuilder) FindByStudioID(studioID int) ([]*models.Scene, error) {
@@ -241,35 +241,35 @@ func (qb *SceneQueryBuilder) FindByMovieID(movieID int) ([]*models.Scene, error)
 
 func (qb *SceneQueryBuilder) CountByMovieID(movieID int) (int, error) {
 	args := []interface{}{movieID}
-	return runCountQuery(buildCountQuery(scenesForMovieQuery), args)
+	return qb.runCountQuery(qb.buildCountQuery(scenesForMovieQuery), args)
 }
 
 func (qb *SceneQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT scenes.id FROM scenes"), nil)
+	return qb.runCountQuery(qb.buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
 func (qb *SceneQueryBuilder) Size() (float64, error) {
-	return runSumQuery("SELECT SUM(cast(size as double)) as sum FROM scenes", nil)
+	return qb.runSumQuery("SELECT SUM(cast(size as double)) as sum FROM scenes", nil)
 }
 
 func (qb *SceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
 	args := []interface{}{studioID}
-	return runCountQuery(buildCountQuery(scenesForStudioQuery), args)
+	return qb.runCountQuery(qb.buildCountQuery(scenesForStudioQuery), args)
 }
 
 func (qb *SceneQueryBuilder) CountByTagID(tagID int) (int, error) {
 	args := []interface{}{tagID}
-	return runCountQuery(buildCountQuery(countScenesForTagQuery), args)
+	return qb.runCountQuery(qb.buildCountQuery(countScenesForTagQuery), args)
 }
 
 // CountMissingChecksum returns the number of scenes missing a checksum value.
 func (qb *SceneQueryBuilder) CountMissingChecksum() (int, error) {
-	return runCountQuery(buildCountQuery(countScenesForMissingChecksumQuery), []interface{}{})
+	return qb.runCountQuery(qb.buildCountQuery(countScenesForMissingChecksumQuery), []interface{}{})
 }
 
 // CountMissingOSHash returns the number of scenes missing an oshash value.
 func (qb *SceneQueryBuilder) CountMissingOSHash() (int, error) {
-	return runCountQuery(buildCountQuery(countScenesForMissingOSHashQuery), []interface{}{})
+	return qb.runCountQuery(qb.buildCountQuery(countScenesForMissingOSHashQuery), []interface{}{})
 }
 
 func (qb *SceneQueryBuilder) Wall(q *string) ([]*models.Scene, error) {
@@ -491,7 +491,7 @@ func (qb *SceneQueryBuilder) QueryAllByPathRegex(regex string, ignoreOrganized b
 
 	args = append(args, "(?i)"+regex)
 
-	idsResult, err := runIdsQuery(body, args)
+	idsResult, err := qb.runIdsQuery(body, args)
 
 	if err != nil {
 		return nil, err

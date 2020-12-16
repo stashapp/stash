@@ -13,7 +13,6 @@ type MarkerImporter struct {
 	SceneID             int
 	ReaderWriter        models.SceneMarkerReaderWriter
 	TagWriter           models.TagReaderWriter
-	JoinWriter          models.JoinReaderWriter
 	Input               jsonschema.SceneMarker
 	MissingRefBehaviour models.ImportMissingRefEnum
 
@@ -66,15 +65,11 @@ func (i *MarkerImporter) populateTags() error {
 
 func (i *MarkerImporter) PostImport(id int) error {
 	if len(i.tags) > 0 {
-		var tagJoins []models.SceneMarkersTags
-		for _, tag := range i.tags {
-			join := models.SceneMarkersTags{
-				SceneMarkerID: id,
-				TagID:         tag.ID,
-			}
-			tagJoins = append(tagJoins, join)
+		var tagIDs []int
+		for _, t := range i.tags {
+			tagIDs = append(tagIDs, t.ID)
 		}
-		if err := i.JoinWriter.UpdateSceneMarkersTags(id, tagJoins); err != nil {
+		if err := i.ReaderWriter.UpdateTags(id, tagIDs); err != nil {
 			return fmt.Errorf("failed to associate tags: %s", err.Error())
 		}
 	}

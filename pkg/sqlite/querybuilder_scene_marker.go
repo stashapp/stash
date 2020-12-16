@@ -104,7 +104,7 @@ func (qb *SceneMarkerQueryBuilder) FindBySceneID(sceneID int) ([]*models.SceneMa
 
 func (qb *SceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
 	args := []interface{}{tagID, tagID}
-	return runCountQuery(buildCountQuery(countSceneMarkersForTagQuery), args)
+	return qb.runCountQuery(qb.buildCountQuery(countSceneMarkersForTagQuery), args)
 }
 
 func (qb *SceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]*models.MarkerStringsResultType, error) {

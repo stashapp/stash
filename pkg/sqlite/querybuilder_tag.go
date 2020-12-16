@@ -64,7 +64,7 @@ func (qb *TagQueryBuilder) Destroy(id int) error {
 	// cannot unset primary_tag_id in scene_markers because it is not nullable
 	countQuery := "SELECT COUNT(*) as count FROM scene_markers where primary_tag_id = ?"
 	args := []interface{}{id}
-	primaryMarkers, err := runCountQuery(countQuery, args)
+	primaryMarkers, err := qb.runCountQuery(countQuery, args)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func (qb *TagQueryBuilder) FindByNames(names []string, nocase bool) ([]*models.T
 }
 
 func (qb *TagQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT tags.id FROM tags"), nil)
+	return qb.runCountQuery(qb.buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
 
 func (qb *TagQueryBuilder) All() ([]*models.Tag, error) {

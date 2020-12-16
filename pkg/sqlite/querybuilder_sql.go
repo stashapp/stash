@@ -2,9 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
-	"fmt"
 	"math/rand"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -13,80 +11,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
-
-type queryBuilder struct {
-	tableName string
-	body      string
-
-	whereClauses  []string
-	havingClauses []string
-	args          []interface{}
-
-	sortAndPagination string
-}
-
-func (qb queryBuilder) executeFind() ([]int, int) {
-	return executeFindQuery(qb.tableName, qb.body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
-}
-
-func (qb *queryBuilder) addWhere(clauses ...string) {
-	for _, clause := range clauses {
-		if len(clause) > 0 {
-			qb.whereClauses = append(qb.whereClauses, clause)
-		}
-	}
-}
-
-func (qb *queryBuilder) addHaving(clauses ...string) {
-	for _, clause := range clauses {
-		if len(clause) > 0 {
-			qb.havingClauses = append(qb.havingClauses, clause)
-		}
-	}
-}
-
-func (qb *queryBuilder) addArg(args ...interface{}) {
-	qb.args = append(qb.args, args...)
-}
-
-func (qb *queryBuilder) handleIntCriterionInput(c *models.IntCriterionInput, column string) {
-	if c != nil {
-		clause, count := getIntCriterionWhereClause(column, *c)
-		qb.addWhere(clause)
-		if count == 1 {
-			qb.addArg(c.Value)
-		}
-	}
-}
-
-func (qb *queryBuilder) handleStringCriterionInput(c *models.StringCriterionInput, column string) {
-	if c != nil {
-		if modifier := c.Modifier; c.Modifier.IsValid() {
-			switch modifier {
-			case models.CriterionModifierIncludes:
-				clause, thisArgs := getSearchBinding([]string{column}, c.Value, false)
-				qb.addWhere(clause)
-				qb.addArg(thisArgs...)
-			case models.CriterionModifierExcludes:
-				clause, thisArgs := getSearchBinding([]string{column}, c.Value, true)
-				qb.addWhere(clause)
-				qb.addArg(thisArgs...)
-			case models.CriterionModifierEquals:
-				qb.addWhere(column + " LIKE ?")
-				qb.addArg(c.Value)
-			case models.CriterionModifierNotEquals:
-				qb.addWhere(column + " NOT LIKE ?")
-				qb.addArg(c.Value)
-			default:
-				clause, count := getSimpleCriterionClause(modifier, "?")
-				qb.addWhere(column + " " + clause)
-				if count == 1 {
-					qb.addArg(c.Value)
-				}
-			}
-		}
-	}
-}
 
 var randomSortFloat = rand.Float64()
 
@@ -98,10 +22,6 @@ func selectAll(tableName string) string {
 func selectDistinctIDs(tableName string) string {
 	idColumn := getColumn(tableName, "id")
 	return "SELECT DISTINCT " + idColumn + " FROM " + tableName + " "
-}
-
-func buildCountQuery(query string) string {
-	return "SELECT COUNT(*) as count FROM (" + query + ") as temp"
 }
 
 func getColumn(tableName string, columnName string) string {
@@ -306,154 +226,10 @@ func getMultiCriterionClause(primaryTable, foreignTable, joinTable, primaryFK, f
 	return whereClause, havingClause
 }
 
-func runIdsQuery(query string, args []interface{}) ([]int, error) {
-	var result []struct {
-		Int int `db:"id"`
-	}
-	if err := database.DB.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
-		return []int{}, err
-	}
-
-	vsm := make([]int, len(result))
-	for i, v := range result {
-		vsm[i] = v.Int
-	}
-	return vsm, nil
-}
-
-func runCountQuery(query string, args []interface{}) (int, error) {
-	// Perform query and fetch result
-	result := struct {
-		Int int `db:"count"`
-	}{0}
-	if err := database.DB.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
-		return 0, err
-	}
-
-	return result.Int, nil
-}
-
-func runSumQuery(query string, args []interface{}) (float64, error) {
-	// Perform query and fetch result
-	result := struct {
-		Float64 float64 `db:"sum"`
-	}{0}
-	if err := database.DB.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
-		return 0, err
-	}
-
-	return result.Float64, nil
-}
-
-func executeFindQuery(tableName string, body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int, int) {
-	if len(whereClauses) > 0 {
-		body = body + " WHERE " + strings.Join(whereClauses, " AND ") // TODO handle AND or OR
-	}
-	body = body + " GROUP BY " + tableName + ".id "
-	if len(havingClauses) > 0 {
-		body = body + " HAVING " + strings.Join(havingClauses, " AND ") // TODO handle AND or OR
-	}
-
-	countQuery := buildCountQuery(body)
-	idsQuery := body + sortAndPagination
-
-	// Perform query and fetch result
-	logger.Tracef("SQL: %s, args: %v", idsQuery, args)
-
-	countResult, countErr := runCountQuery(countQuery, args)
-	idsResult, idsErr := runIdsQuery(idsQuery, args)
-
-	if countErr != nil {
-		logger.Errorf("Error executing count query with SQL: %s, args: %v, error: %s", countQuery, args, countErr.Error())
-		panic(countErr)
-	}
-	if idsErr != nil {
-		logger.Errorf("Error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
-		panic(idsErr)
-	}
-
-	return idsResult, countResult
-}
-
-func executeDeleteQuery(tableName string, id string, tx *sqlx.Tx) error {
-	if tx == nil {
-		panic("must use a transaction")
-	}
-	idColumnName := getColumn(tableName, "id")
-	_, err := tx.Exec(
-		`DELETE FROM `+tableName+` WHERE `+idColumnName+` = ?`,
-		id,
-	)
-	return err
-}
-
 func ensureTx(tx *sqlx.Tx) {
 	if tx == nil {
 		panic("must use a transaction")
 	}
-}
-
-// https://github.com/jmoiron/sqlx/issues/410
-// sqlGenKeys is used for passing a struct and returning a string
-// of keys for non empty key:values. These keys are formated
-// keyname=:keyname with a comma seperating them
-func SQLGenKeys(i interface{}) string {
-	return sqlGenKeys(i, false)
-}
-
-// support a partial interface. When a partial interface is provided,
-// keys will always be included if the value is not null. The partial
-// interface must therefore consist of pointers
-func SQLGenKeysPartial(i interface{}) string {
-	return sqlGenKeys(i, true)
-}
-
-func sqlGenKeys(i interface{}, partial bool) string {
-	var query []string
-	v := reflect.ValueOf(i)
-	for i := 0; i < v.NumField(); i++ {
-		//get key for struct tag
-		rawKey := v.Type().Field(i).Tag.Get("db")
-		key := strings.Split(rawKey, ",")[0]
-		if key == "id" {
-			continue
-		}
-
-		var add bool
-		switch t := v.Field(i).Interface().(type) {
-		case string:
-			add = partial || t != ""
-		case int:
-			add = partial || t != 0
-		case float64:
-			add = partial || t != 0
-		case bool:
-			add = true
-		case models.SQLiteTimestamp:
-			add = partial || !t.Timestamp.IsZero()
-		case models.NullSQLiteTimestamp:
-			add = partial || t.Valid
-		case models.SQLiteDate:
-			add = partial || t.Valid
-		case sql.NullString:
-			add = partial || t.Valid
-		case sql.NullBool:
-			add = partial || t.Valid
-		case sql.NullInt64:
-			add = partial || t.Valid
-		case sql.NullFloat64:
-			add = partial || t.Valid
-		default:
-			reflectValue := reflect.ValueOf(t)
-			isNil := reflectValue.IsNil()
-			add = !isNil
-		}
-
-		if add {
-			query = append(query, fmt.Sprintf("%s=:%s", key, key))
-		}
-	}
-	return strings.Join(query, ", ")
 }
 
 func getImage(tx *sqlx.Tx, query string, args ...interface{}) ([]byte, error) {

@@ -122,7 +122,7 @@ func (qb *MovieQueryBuilder) FindByNames(names []string, nocase bool) ([]*models
 }
 
 func (qb *MovieQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT movies.id FROM movies"), nil)
+	return qb.runCountQuery(qb.buildCountQuery("SELECT movies.id FROM movies"), nil)
 }
 
 func (qb *MovieQueryBuilder) All() ([]*models.Movie, error) {

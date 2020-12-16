@@ -118,7 +118,7 @@ func (qb *StudioQueryBuilder) FindByName(name string, nocase bool) (*models.Stud
 }
 
 func (qb *StudioQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT studios.id FROM studios"), nil)
+	return qb.runCountQuery(qb.buildCountQuery("SELECT studios.id FROM studios"), nil)
 }
 
 func (qb *StudioQueryBuilder) All() ([]*models.Studio, error) {

@@ -76,11 +76,6 @@ func (t *Transaction) Image() models.ImageReaderWriter {
 	return NewImageReaderWriter(t.tx)
 }
 
-func (t *Transaction) Join() models.JoinReaderWriter {
-	t.ensureTx()
-	return NewJoinReaderWriter(t.tx)
-}
-
 func (t *Transaction) Movie() models.MovieReaderWriter {
 	t.ensureTx()
 	return NewMovieReaderWriter(t.tx)
@@ -127,11 +122,6 @@ func (t *ReadTransaction) Gallery() models.GalleryReader {
 func (t *ReadTransaction) Image() models.ImageReader {
 	t.ensureTx()
 	return NewImageReaderWriter(t.tx)
-}
-
-func (t *ReadTransaction) Join() models.JoinReader {
-	t.ensureTx()
-	return NewJoinReaderWriter(t.tx)
 }
 
 func (t *ReadTransaction) Movie() models.MovieReader {

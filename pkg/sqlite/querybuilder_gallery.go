@@ -162,11 +162,11 @@ func (qb *GalleryQueryBuilder) CountByImageID(imageID int) (int, error) {
 	WHERE image_id = ?
 	GROUP BY gallery_id`
 	args := []interface{}{imageID}
-	return qb.runCountQuery(buildCountQuery(query), args)
+	return qb.runCountQuery(qb.buildCountQuery(query), args)
 }
 
 func (qb *GalleryQueryBuilder) Count() (int, error) {
-	return qb.runCountQuery(buildCountQuery("SELECT galleries.id FROM galleries"), nil)
+	return qb.runCountQuery(qb.buildCountQuery("SELECT galleries.id FROM galleries"), nil)
 }
 
 func (qb *GalleryQueryBuilder) All() ([]*models.Gallery, error) {
@@ -211,7 +211,7 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 
 	query.handleStringCriterionInput(galleryFilter.Path, "galleries.path")
 	query.handleIntCriterionInput(galleryFilter.Rating, "galleries.rating")
-	qb.handleAverageResolutionFilter(&query.queryBuilder, galleryFilter.AverageResolution)
+	qb.handleAverageResolutionFilter(&query, galleryFilter.AverageResolution)
 
 	if Organized := galleryFilter.Organized; Organized != nil {
 		var organized string

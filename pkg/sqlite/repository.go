@@ -200,6 +200,23 @@ func (r *repository) runIdsQuery(query string, args []interface{}) ([]int, error
 	return vsm, nil
 }
 
+func (r *repository) runSumQuery(query string, args []interface{}) (float64, error) {
+	// Perform query and fetch result
+	result := struct {
+		Float64 float64 `db:"sum"`
+	}{0}
+	err := r.wrapReadOnly(func() error {
+		// Perform query and fetch result
+		return r.tx.Get(&result, query, args...)
+	})
+
+	if err != nil && err != sql.ErrNoRows {
+		return 0, err
+	}
+
+	return result.Float64, nil
+}
+
 func (r *repository) queryFunc(query string, args []interface{}, f func(rows *sqlx.Rows) error) error {
 	return r.wrapReadOnly(func() error {
 		rows, err := r.tx.Queryx(query, args...)
@@ -312,8 +329,8 @@ func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPa
 	return idsResult, countResult, nil
 }
 
-func (r *repository) newQuery() repositoryQueryBuilder {
-	return repositoryQueryBuilder{
+func (r *repository) newQuery() queryBuilder {
+	return queryBuilder{
 		repository: r,
 	}
 }

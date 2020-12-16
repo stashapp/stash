@@ -158,7 +158,7 @@ func (qb *PerformerQueryBuilder) FindByNames(names []string, nocase bool) ([]*mo
 }
 
 func (qb *PerformerQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT performers.id FROM performers"), nil)
+	return qb.runCountQuery(qb.buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
 func (qb *PerformerQueryBuilder) All() ([]*models.Performer, error) {
