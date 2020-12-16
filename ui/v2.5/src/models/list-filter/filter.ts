@@ -248,6 +248,11 @@ export class ListFilterModel {
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
         ];
+        this.displayModeOptions = [
+          DisplayMode.Grid,
+          DisplayMode.List,
+          DisplayMode.Wall,
+        ];
         break;
       case FilterMode.SceneMarkers:
         this.sortBy = "title";

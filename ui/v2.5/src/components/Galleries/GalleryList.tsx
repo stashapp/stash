@@ -13,6 +13,7 @@ import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindGalleries } from "src/core/StashService";
 import { GalleryCard } from "./GalleryCard";
+import GalleryWallCard from "./GalleryWallCard";
 import { EditGalleriesDialog } from "./EditGalleriesDialog";
 import { DeleteGalleriesDialog } from "./DeleteGalleriesDialog";
 import { ExportDialog } from "../Shared/ExportDialog";
@@ -212,7 +213,16 @@ export const GalleryList: React.FC<IGalleryList> = ({
       );
     }
     if (filter.displayMode === DisplayMode.Wall) {
-      return <h1>TODO</h1>;
+      return (
+        <div className="flexbin">
+          {result.data.findGalleries.galleries.map((gallery) => (
+            <GalleryWallCard
+              key={gallery.id}
+              gallery={gallery}
+            />
+          ))}
+        </div>
+      );
     }
   }
 
