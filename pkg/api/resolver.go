@@ -99,9 +99,15 @@ func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*model
 	return ret, nil
 }
 
-func (r *queryResolver) SceneWall(ctx context.Context, q *string) ([]*models.Scene, error) {
-	qb := sqlite.NewSceneQueryBuilder()
-	return qb.Wall(q)
+func (r *queryResolver) SceneWall(ctx context.Context, q *string) (ret []*models.Scene, err error) {
+	if err := r.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
+		ret, err = r.Scene().Wall(q)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
 func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *string) (ret []*models.MarkerStringsResultType, err error) {
@@ -127,7 +133,7 @@ func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *st
 	var validGalleries []*models.Gallery
 	var sceneGallery *models.Gallery
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		sqb := sqlite.NewSceneQueryBuilder()
+		sqb := repo.Scene()
 		scene, err := sqb.Find(sceneID)
 		if err != nil {
 			return err
@@ -153,7 +159,7 @@ func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *st
 func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, error) {
 	var ret models.StatsResultType
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		scenesQB := sqlite.NewSceneQueryBuilder()
+		scenesQB := repo.Scene()
 		imageQB := repo.Image()
 		galleryQB := repo.Gallery()
 		studiosQB := sqlite.NewStudioQueryBuilder()

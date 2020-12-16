@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 func UpdateFormat(qb models.SceneWriter, id int, format string) (*models.Scene, error) {
@@ -41,4 +42,44 @@ func UpdateFileModTime(qb models.SceneWriter, id int, modTime models.NullSQLiteT
 		ID:          id,
 		FileModTime: &modTime,
 	})
+}
+
+func AddScenePerformer(qb models.SceneReaderWriter, id int, performerID int) (bool, error) {
+	performerIDs, err := qb.GetPerformerIDs(id)
+	if err != nil {
+		return false, err
+	}
+
+	oldLen := len(performerIDs)
+	performerIDs = utils.IntAppendUnique(performerIDs, performerID)
+
+	if len(performerIDs) != oldLen {
+		if err := qb.UpdatePerformers(id, performerIDs); err != nil {
+			return false, err
+		}
+
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func AddSceneTag(qb models.SceneReaderWriter, id int, tagID int) (bool, error) {
+	tagIDs, err := qb.GetTagIDs(id)
+	if err != nil {
+		return false, err
+	}
+
+	oldLen := len(tagIDs)
+	tagIDs = utils.IntAppendUnique(tagIDs, tagID)
+
+	if len(tagIDs) != oldLen {
+		if err := qb.UpdateTags(id, tagIDs); err != nil {
+			return false, err
+		}
+
+		return true, nil
+	}
+
+	return false, nil
 }

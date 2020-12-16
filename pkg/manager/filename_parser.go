@@ -478,7 +478,10 @@ func (p *SceneFilenameParser) Parse(repo models.ReaderRepository) ([]*models.Sce
 
 	p.Filter.Q = &mapper.regexString
 
-	scenes, total := repo.Scene().QueryByPathRegex(p.Filter)
+	scenes, total, err := repo.Scene().QueryByPathRegex(p.Filter)
+	if err != nil {
+		return nil, 0, err
+	}
 
 	ret := p.parseScenes(repo, scenes, mapper)
 

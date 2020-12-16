@@ -346,8 +346,6 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 	s.Status.SetStatus(Generate)
 	s.Status.indefiniteProgress()
 
-	qb := sqlite.NewSceneQueryBuilder()
-
 	//this.job.total = await ObjectionUtils.getCount(Scene);
 	instance.Paths.Generated.EnsureTmpDir()
 
@@ -365,15 +363,30 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 
 		var scenes []*models.Scene
 		var err error
+		var markers []*models.SceneMarker
 
-		if len(sceneIDs) > 0 {
-			scenes, err = qb.FindMany(sceneIDs)
-		} else {
-			scenes, err = qb.All()
-		}
+		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			qb := r.Scene()
+			if len(sceneIDs) > 0 {
+				scenes, err = qb.FindMany(sceneIDs)
+			} else {
+				scenes, err = qb.All()
+			}
 
-		if err != nil {
-			logger.Errorf("failed to get scenes for generate")
+			if err != nil {
+				return err
+			}
+
+			if len(markerIDs) > 0 {
+				markers, err = r.SceneMarker().FindMany(markerIDs)
+				if err != nil {
+					return err
+				}
+			}
+
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
 			return
 		}
 
@@ -384,21 +397,7 @@ func (s *singleton) Generate(input models.GenerateMetadataInput) {
 
 		s.Status.Progress = 0
 		lenScenes := len(scenes)
-		total := lenScenes
-
-		var markers []*models.SceneMarker
-		if len(markerIDs) > 0 {
-			if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
-				var err error
-				markers, err = r.SceneMarker().FindMany(markerIDs)
-				return err
-			}); err != nil {
-				logger.Errorf("error finding scene markers: %s", err.Error())
-				return
-			}
-
-			total += len(markers)
-		}
+		total := lenScenes + len(markers)
 
 		if s.Status.stopping {
 			logger.Info("Stopping due to user request")
@@ -516,7 +515,6 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 	s.Status.SetStatus(Generate)
 	s.Status.indefiniteProgress()
 
-	qb := sqlite.NewSceneQueryBuilder()
 	instance.Paths.Generated.EnsureTmpDir()
 
 	go func() {
@@ -528,9 +526,13 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 			return
 		}
 
-		scene, err := qb.Find(sceneIdInt)
-		if err != nil || scene == nil {
-			logger.Errorf("failed to get scene for generate")
+		var scene *models.Scene
+		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			var err error
+			scene, err = r.Scene().Find(sceneIdInt)
+			return err
+		}); err != nil || scene == nil {
+			logger.Errorf("failed to get scene for generate: %s", err.Error())
 			return
 		}
 
@@ -847,17 +849,19 @@ func (s *singleton) MigrateHash() {
 	s.Status.SetStatus(Migrate)
 	s.Status.indefiniteProgress()
 
-	qb := sqlite.NewSceneQueryBuilder()
-
 	go func() {
 		defer s.returnToIdleState()
 
 		fileNamingAlgo := config.GetVideoFileNamingAlgorithm()
 		logger.Infof("Migrating generated files for %s naming hash", fileNamingAlgo.String())
 
-		scenes, err := qb.All()
-		if err != nil {
-			logger.Errorf("failed to fetch list of scenes for migration")
+		var scenes []*models.Scene
+		if err := s.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			var err error
+			scenes, err = r.Scene().All()
+			return err
+		}); err != nil {
+			logger.Errorf("failed to fetch list of scenes for migration: %s", err.Error())
 			return
 		}
 

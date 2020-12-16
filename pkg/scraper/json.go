@@ -15,13 +15,15 @@ type jsonScraper struct {
 	scraper      scraperTypeConfig
 	config       config
 	globalConfig GlobalConfig
+	txnManager   models.TransactionManager
 }
 
-func newJsonScraper(scraper scraperTypeConfig, config config, globalConfig GlobalConfig) *jsonScraper {
+func newJsonScraper(scraper scraperTypeConfig, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *jsonScraper {
 	return &jsonScraper{
 		scraper:      scraper,
 		config:       config,
 		globalConfig: globalConfig,
+		txnManager:   txnManager,
 	}
 }
 
@@ -138,7 +140,7 @@ func (s *jsonScraper) scrapePerformerByFragment(scrapedPerformer models.ScrapedP
 }
 
 func (s *jsonScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
-	storedScene, err := sceneFromUpdateFragment(scene)
+	storedScene, err := sceneFromUpdateFragment(scene, s.txnManager)
 	if err != nil {
 		return nil, err
 	}

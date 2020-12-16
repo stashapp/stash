@@ -96,7 +96,7 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 
 	// update cover table
 	if len(coverImageData) > 0 {
-		if err := qb.UpdateSceneCover(sceneID, coverImageData); err != nil {
+		if err := qb.UpdateCover(sceneID, coverImageData); err != nil {
 			return nil, err
 		}
 	}

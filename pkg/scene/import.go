@@ -329,7 +329,7 @@ func (i *Importer) populateTags() error {
 
 func (i *Importer) PostImport(id int) error {
 	if len(i.coverImageData) > 0 {
-		if err := i.ReaderWriter.UpdateSceneCover(id, i.coverImageData); err != nil {
+		if err := i.ReaderWriter.UpdateCover(id, i.coverImageData); err != nil {
 			return fmt.Errorf("error setting scene images: %s", err.Error())
 		}
 	}

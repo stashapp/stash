@@ -184,8 +184,11 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	if screenshotExists {
 		http.ServeFile(w, r, filepath)
 	} else {
-		qb := sqlite.NewSceneQueryBuilder()
-		cover, _ := qb.GetSceneCover(scene.ID, nil)
+		var cover []byte
+		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			cover, _ = repo.Scene().GetCover(scene.ID)
+			return nil
+		})
 		utils.ServeImage(cover, w, r)
 	}
 }
@@ -321,17 +324,21 @@ func SceneCtx(next http.Handler) http.Handler {
 		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
 
 		var scene *models.Scene
-		qb := sqlite.NewSceneQueryBuilder()
-		if sceneID == 0 {
-			// determine checksum/os by the length of the query param
-			if len(sceneIdentifierQueryParam) == 32 {
-				scene, _ = qb.FindByChecksum(sceneIdentifierQueryParam)
+		manager.GetInstance().WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			qb := repo.Scene()
+			if sceneID == 0 {
+				// determine checksum/os by the length of the query param
+				if len(sceneIdentifierQueryParam) == 32 {
+					scene, _ = qb.FindByChecksum(sceneIdentifierQueryParam)
+				} else {
+					scene, _ = qb.FindByOSHash(sceneIdentifierQueryParam)
+				}
 			} else {
-				scene, _ = qb.FindByOSHash(sceneIdentifierQueryParam)
+				scene, _ = qb.Find(sceneID)
 			}
-		} else {
-			scene, _ = qb.Find(sceneID)
-		}
+
+			return nil
+		})
 
 		if scene == nil {
 			http.Error(w, http.StatusText(404), 404)

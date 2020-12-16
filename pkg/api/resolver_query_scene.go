@@ -8,16 +8,17 @@ import (
 	"github.com/stashapp/stash/pkg/api/urlbuilders"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
 )
 
 func (r *queryResolver) SceneStreams(ctx context.Context, id *string) ([]*models.SceneStreamEndpoint, error) {
 	// find the scene
-	qb := sqlite.NewSceneQueryBuilder()
-	idInt, _ := strconv.Atoi(*id)
-	scene, err := qb.Find(idInt)
-
-	if err != nil {
+	var scene *models.Scene
+	if err := manager.GetInstance().WithReadTxn(ctx, func(repo models.ReaderRepository) error {
+		idInt, _ := strconv.Atoi(*id)
+		var err error
+		scene, err = repo.Scene().Find(idInt)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 

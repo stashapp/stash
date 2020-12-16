@@ -11,7 +11,7 @@ type ImageReader interface {
 	// CountByPerformerID(performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Image, error)
 	Count() (int, error)
-	Size() (uint64, error)
+	Size() (float64, error)
 	// SizeCount() (string, error)
 	// CountByStudioID(studioID int) (int, error)
 	// CountByTagID(tagID int) (int, error)

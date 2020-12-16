@@ -16,13 +16,15 @@ type stashScraper struct {
 	scraper      scraperTypeConfig
 	config       config
 	globalConfig GlobalConfig
+	txnManager   models.TransactionManager
 }
 
-func newStashScraper(scraper scraperTypeConfig, config config, globalConfig GlobalConfig) *stashScraper {
+func newStashScraper(scraper scraperTypeConfig, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *stashScraper {
 	return &stashScraper{
 		scraper:      scraper,
 		config:       config,
 		globalConfig: globalConfig,
+		txnManager:   txnManager,
 	}
 }
 
@@ -118,15 +120,17 @@ func (s *stashScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	// query by MD5
 	// assumes that the scene exists in the database
-	qb := sqlite.NewSceneQueryBuilder()
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	storedScene, err := qb.Find(id)
-
-	if err != nil {
+	var storedScene *models.Scene
+	if err := s.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		var err error
+		storedScene, err = r.Scene().Find(id)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
@@ -264,15 +268,22 @@ func (s *stashScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error
 	return nil, errors.New("scrapeMovieByURL not supported for stash scraper")
 }
 
-func sceneFromUpdateFragment(scene models.SceneUpdateInput) (*models.Scene, error) {
-	qb := sqlite.NewSceneQueryBuilder()
+func sceneFromUpdateFragment(scene models.SceneUpdateInput, txnManager models.TransactionManager) (*models.Scene, error) {
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	// TODO - should we modify it with the input?
-	return qb.Find(id)
+	var ret *models.Scene
+	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		var err error
+		ret, err = r.Scene().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
 func galleryFromUpdateFragment(gallery models.GalleryUpdateInput) (*models.Gallery, error) {

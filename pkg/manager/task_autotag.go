@@ -3,17 +3,18 @@ package manager
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 	"sync"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/sqlite"
+	"github.com/stashapp/stash/pkg/scene"
 )
 
 type AutoTagPerformerTask struct {
-	performer *models.Performer
+	performer  *models.Performer
+	txnManager models.TransactionManager
 }
 
 func (t *AutoTagPerformerTask) Start(wg *sync.WaitGroup) {
@@ -33,44 +34,38 @@ func getQueryRegex(name string) string {
 }
 
 func (t *AutoTagPerformerTask) autoTagPerformer() {
-	qb := sqlite.NewSceneQueryBuilder()
-	jqb := sqlite.NewJoinsQueryBuilder()
-
 	regex := getQueryRegex(t.performer.Name.String)
 
-	const ignoreOrganized = true
-	scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
-
-	if err != nil {
-		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
-		return
-	}
-
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	for _, scene := range scenes {
-		added, err := jqb.AddPerformerScene(scene.ID, t.performer.ID, tx)
+	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		qb := r.Scene()
+		const ignoreOrganized = true
+		scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
 
 		if err != nil {
-			logger.Infof("Error adding performer '%s' to scene '%s': %s", t.performer.Name.String, scene.GetTitle(), err.Error())
-			tx.Rollback()
-			return
+			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
 		}
 
-		if added {
-			logger.Infof("Added performer '%s' to scene '%s'", t.performer.Name.String, scene.GetTitle())
-		}
-	}
+		for _, s := range scenes {
+			added, err := scene.AddScenePerformer(qb, s.ID, t.performer.ID)
 
-	if err := tx.Commit(); err != nil {
-		logger.Infof("Error adding performer to scene: %s", err.Error())
-		return
+			if err != nil {
+				return fmt.Errorf("Error adding performer '%s' to scene '%s': %s", t.performer.Name.String, s.GetTitle(), err.Error())
+			}
+
+			if added {
+				logger.Infof("Added performer '%s' to scene '%s'", t.performer.Name.String, s.GetTitle())
+			}
+		}
+
+		return nil
+	}); err != nil {
+		logger.Error(err.Error())
 	}
 }
 
 type AutoTagStudioTask struct {
-	studio *models.Studio
+	studio     *models.Studio
+	txnManager models.TransactionManager
 }
 
 func (t *AutoTagStudioTask) Start(wg *sync.WaitGroup) {
@@ -80,54 +75,47 @@ func (t *AutoTagStudioTask) Start(wg *sync.WaitGroup) {
 }
 
 func (t *AutoTagStudioTask) autoTagStudio() {
-	qb := sqlite.NewSceneQueryBuilder()
-
 	regex := getQueryRegex(t.studio.Name.String)
 
-	const ignoreOrganized = true
-	scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
-
-	if err != nil {
-		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
-		return
-	}
-
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	for _, scene := range scenes {
-		// #306 - don't overwrite studio if already present
-		if scene.StudioID.Valid {
-			// don't modify
-			continue
-		}
-
-		logger.Infof("Adding studio '%s' to scene '%s'", t.studio.Name.String, scene.GetTitle())
-
-		// set the studio id
-		studioID := sql.NullInt64{Int64: int64(t.studio.ID), Valid: true}
-		scenePartial := models.ScenePartial{
-			ID:       scene.ID,
-			StudioID: &studioID,
-		}
-
-		_, err := qb.Update(scenePartial, tx)
+	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		qb := r.Scene()
+		const ignoreOrganized = true
+		scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
 
 		if err != nil {
-			logger.Infof("Error adding studio to scene: %s", err.Error())
-			tx.Rollback()
-			return
+			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
 		}
-	}
 
-	if err := tx.Commit(); err != nil {
-		logger.Infof("Error adding studio to scene: %s", err.Error())
-		return
+		for _, scene := range scenes {
+			// #306 - don't overwrite studio if already present
+			if scene.StudioID.Valid {
+				// don't modify
+				continue
+			}
+
+			logger.Infof("Adding studio '%s' to scene '%s'", t.studio.Name.String, scene.GetTitle())
+
+			// set the studio id
+			studioID := sql.NullInt64{Int64: int64(t.studio.ID), Valid: true}
+			scenePartial := models.ScenePartial{
+				ID:       scene.ID,
+				StudioID: &studioID,
+			}
+
+			if _, err := qb.Update(scenePartial); err != nil {
+				return fmt.Errorf("Error adding studio to scene: %s", err.Error())
+			}
+		}
+
+		return nil
+	}); err != nil {
+		logger.Error(err.Error())
 	}
 }
 
 type AutoTagTagTask struct {
-	tag *models.Tag
+	tag        *models.Tag
+	txnManager models.TransactionManager
 }
 
 func (t *AutoTagTagTask) Start(wg *sync.WaitGroup) {
@@ -137,38 +125,31 @@ func (t *AutoTagTagTask) Start(wg *sync.WaitGroup) {
 }
 
 func (t *AutoTagTagTask) autoTagTag() {
-	qb := sqlite.NewSceneQueryBuilder()
-	jqb := sqlite.NewJoinsQueryBuilder()
-
 	regex := getQueryRegex(t.tag.Name)
 
-	const ignoreOrganized = true
-	scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
-
-	if err != nil {
-		logger.Infof("Error querying scenes with regex '%s': %s", regex, err.Error())
-		return
-	}
-
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	for _, scene := range scenes {
-		added, err := jqb.AddSceneTag(scene.ID, t.tag.ID, tx)
+	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		qb := r.Scene()
+		const ignoreOrganized = true
+		scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
 
 		if err != nil {
-			logger.Infof("Error adding tag '%s' to scene '%s': %s", t.tag.Name, scene.GetTitle(), err.Error())
-			tx.Rollback()
-			return
+			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
 		}
 
-		if added {
-			logger.Infof("Added tag '%s' to scene '%s'", t.tag.Name, scene.GetTitle())
-		}
-	}
+		for _, s := range scenes {
+			added, err := scene.AddSceneTag(qb, s.ID, t.tag.ID)
 
-	if err := tx.Commit(); err != nil {
-		logger.Infof("Error adding tag to scene: %s", err.Error())
-		return
+			if err != nil {
+				return fmt.Errorf("Error adding tag '%s' to scene '%s': %s", t.tag.Name, s.GetTitle(), err.Error())
+			}
+
+			if added {
+				logger.Infof("Added tag '%s' to scene '%s'", t.tag.Name, s.GetTitle())
+			}
+		}
+
+		return nil
+	}); err != nil {
+		logger.Error(err.Error())
 	}
 }

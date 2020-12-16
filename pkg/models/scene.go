@@ -11,18 +11,19 @@ type SceneReader interface {
 	// FindByStudioID(studioID int) ([]*Scene, error)
 	FindByMovieID(movieID int) ([]*Scene, error)
 	CountByMovieID(movieID int) (int, error)
-	// Count() (int, error)
+	Count() (int, error)
+	Size() (float64, error)
 	// SizeCount() (string, error)
 	CountByStudioID(studioID int) (int, error)
 	CountByTagID(tagID int) (int, error)
-	// CountMissingChecksum() (int, error)
-	// CountMissingOSHash() (int, error)
-	// Wall(q *string) ([]*Scene, error)
+	CountMissingChecksum() (int, error)
+	CountMissingOSHash() (int, error)
+	Wall(q *string) ([]*Scene, error)
 	All() ([]*Scene, error)
-	// Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]*Scene, int)
-	// QueryAllByPathRegex(regex string) ([]*Scene, error)
-	QueryByPathRegex(findFilter *FindFilterType) ([]*Scene, int)
-	GetSceneCover(sceneID int) ([]byte, error)
+	Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]*Scene, int, error)
+	QueryAllByPathRegex(regex string, ignoreOrganized bool) ([]*Scene, error)
+	QueryByPathRegex(findFilter *FindFilterType) ([]*Scene, int, error)
+	GetCover(sceneID int) ([]byte, error)
 	GetMovies(sceneID int) ([]MoviesScenes, error)
 	GetTagIDs(imageID int) ([]int, error)
 	GetPerformerIDs(imageID int) ([]int, error)
@@ -38,8 +39,8 @@ type SceneWriter interface {
 	ResetOCounter(id int) (int, error)
 	UpdateFileModTime(id int, modTime NullSQLiteTimestamp) error
 	Destroy(id int) error
-	UpdateSceneCover(sceneID int, cover []byte) error
-	// DestroySceneCover(sceneID int) error
+	UpdateCover(sceneID int, cover []byte) error
+	DestroyCover(sceneID int) error
 	UpdatePerformers(sceneID int, performerIDs []int) error
 	UpdateTags(sceneID int, tagIDs []int) error
 	UpdateMovies(sceneID int, movies []MoviesScenes) error

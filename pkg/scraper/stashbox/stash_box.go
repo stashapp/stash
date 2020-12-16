@@ -15,7 +15,6 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
-	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -69,28 +68,38 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 // FindStashBoxScenesByFingerprints queries stash-box for scenes using every
 // scene's MD5 checksum and/or oshash.
 func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.ScrapedScene, error) {
-	qb := sqlite.NewSceneQueryBuilder()
+	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	if err != nil {
+		return nil, err
+	}
 
 	var fingerprints []string
 
-	for _, sceneID := range sceneIDs {
-		idInt, _ := strconv.Atoi(sceneID)
-		scene, err := qb.Find(idInt)
-		if err != nil {
-			return nil, err
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		qb := r.Scene()
+
+		for _, sceneID := range ids {
+			scene, err := qb.Find(sceneID)
+			if err != nil {
+				return err
+			}
+
+			if scene == nil {
+				return fmt.Errorf("scene with id %d not found", sceneID)
+			}
+
+			if scene.Checksum.Valid {
+				fingerprints = append(fingerprints, scene.Checksum.String)
+			}
+
+			if scene.OSHash.Valid {
+				fingerprints = append(fingerprints, scene.OSHash.String)
+			}
 		}
 
-		if scene == nil {
-			return nil, fmt.Errorf("scene with id %d not found", idInt)
-		}
-
-		if scene.Checksum.Valid {
-			fingerprints = append(fingerprints, scene.Checksum.String)
-		}
-
-		if scene.OSHash.Valid {
-			fingerprints = append(fingerprints, scene.OSHash.String)
-		}
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	return c.findStashBoxScenesByFingerprints(fingerprints)
@@ -124,59 +133,68 @@ func (c Client) findStashBoxScenesByFingerprints(fingerprints []string) ([]*mode
 }
 
 func (c Client) SubmitStashBoxFingerprints(sceneIDs []string, endpoint string) (bool, error) {
-	qb := sqlite.NewSceneQueryBuilder()
-	jqb := sqlite.NewJoinsQueryBuilder()
+	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	if err != nil {
+		return false, err
+	}
 
 	var fingerprints []graphql.FingerprintSubmission
 
-	for _, sceneID := range sceneIDs {
-		idInt, _ := strconv.Atoi(sceneID)
-		scene, err := qb.Find(idInt)
-		if err != nil {
-			return false, err
-		}
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		qb := r.Scene()
 
-		if scene == nil {
-			continue
-		}
-
-		stashIDs, err := jqb.GetSceneStashIDs(idInt)
-		if err != nil {
-			return false, err
-		}
-
-		sceneStashID := ""
-		for _, stashID := range stashIDs {
-			if stashID.Endpoint == endpoint {
-				sceneStashID = stashID.StashID
+		for _, sceneID := range ids {
+			scene, err := qb.Find(sceneID)
+			if err != nil {
+				return err
 			}
-		}
 
-		if sceneStashID != "" {
-			if scene.Checksum.Valid && scene.Duration.Valid {
-				fingerprint := graphql.FingerprintInput{
-					Hash:      scene.Checksum.String,
-					Algorithm: graphql.FingerprintAlgorithmMd5,
-					Duration:  int(scene.Duration.Float64),
+			if scene == nil {
+				continue
+			}
+
+			stashIDs, err := qb.GetStashIDs(sceneID)
+			if err != nil {
+				return err
+			}
+
+			sceneStashID := ""
+			for _, stashID := range stashIDs {
+				if stashID.Endpoint == endpoint {
+					sceneStashID = stashID.StashID
 				}
-				fingerprints = append(fingerprints, graphql.FingerprintSubmission{
-					SceneID:     sceneStashID,
-					Fingerprint: &fingerprint,
-				})
 			}
 
-			if scene.OSHash.Valid && scene.Duration.Valid {
-				fingerprint := graphql.FingerprintInput{
-					Hash:      scene.OSHash.String,
-					Algorithm: graphql.FingerprintAlgorithmOshash,
-					Duration:  int(scene.Duration.Float64),
+			if sceneStashID != "" {
+				if scene.Checksum.Valid && scene.Duration.Valid {
+					fingerprint := graphql.FingerprintInput{
+						Hash:      scene.Checksum.String,
+						Algorithm: graphql.FingerprintAlgorithmMd5,
+						Duration:  int(scene.Duration.Float64),
+					}
+					fingerprints = append(fingerprints, graphql.FingerprintSubmission{
+						SceneID:     sceneStashID,
+						Fingerprint: &fingerprint,
+					})
 				}
-				fingerprints = append(fingerprints, graphql.FingerprintSubmission{
-					SceneID:     sceneStashID,
-					Fingerprint: &fingerprint,
-				})
+
+				if scene.OSHash.Valid && scene.Duration.Valid {
+					fingerprint := graphql.FingerprintInput{
+						Hash:      scene.OSHash.String,
+						Algorithm: graphql.FingerprintAlgorithmOshash,
+						Duration:  int(scene.Duration.Float64),
+					}
+					fingerprints = append(fingerprints, graphql.FingerprintSubmission{
+						SceneID:     sceneStashID,
+						Fingerprint: &fingerprint,
+					})
+				}
 			}
 		}
+
+		return nil
+	}); err != nil {
+		return false, err
 	}
 
 	return c.submitStashBoxFingerprints(fingerprints)

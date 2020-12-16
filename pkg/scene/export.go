@@ -52,7 +52,7 @@ func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Sc
 
 	newSceneJSON.File = getSceneFileJSON(scene)
 
-	cover, err := reader.GetSceneCover(scene.ID)
+	cover, err := reader.GetCover(scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene cover: %s", err.Error())
 	}
