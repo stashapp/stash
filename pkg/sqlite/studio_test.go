@@ -265,6 +265,24 @@ func TestStudioDestroyStudioImage(t *testing.T) {
 	}
 }
 
+func TestStudioStashIDs(t *testing.T) {
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Studio()
+
+		// create studio to test against
+		const name = "TestStudioStashIDs"
+		created, err := createStudio(r.Studio(), name, nil)
+		if err != nil {
+			return fmt.Errorf("Error creating studio: %s", err.Error())
+		}
+
+		testStashIDReaderWriter(t, qb, created.ID)
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
 // TODO Create
 // TODO Update
 // TODO Destroy

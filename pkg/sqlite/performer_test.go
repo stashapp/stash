@@ -218,6 +218,29 @@ func verifyPerformerAge(t *testing.T, ageCriterion models.IntCriterionInput) {
 	})
 }
 
+func TestPerformerStashIDs(t *testing.T) {
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Performer()
+
+		// create performer to test against
+		const name = "TestStashIDs"
+		performer := models.Performer{
+			Name:     sql.NullString{String: name, Valid: true},
+			Checksum: utils.MD5FromString(name),
+			Favorite: sql.NullBool{Bool: false, Valid: true},
+		}
+		created, err := qb.Create(performer)
+		if err != nil {
+			return fmt.Errorf("Error creating performer: %s", err.Error())
+		}
+
+		testStashIDReaderWriter(t, qb, created.ID)
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
 // TODO Update
 // TODO Destroy
 // TODO Find

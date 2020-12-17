@@ -1136,6 +1136,28 @@ func TestSceneDestroySceneCover(t *testing.T) {
 	}
 }
 
+func TestSceneStashIDs(t *testing.T) {
+	if err := withTxn(func(r models.Repository) error {
+		qb := r.Scene()
+
+		// create scene to test against
+		const name = "TestSceneStashIDs"
+		scene := models.Scene{
+			Path:     name,
+			Checksum: sql.NullString{String: utils.MD5FromString(name), Valid: true},
+		}
+		created, err := qb.Create(scene)
+		if err != nil {
+			return fmt.Errorf("Error creating scene: %s", err.Error())
+		}
+
+		testStashIDReaderWriter(t, qb, created.ID)
+		return nil
+	}); err != nil {
+		t.Error(err.Error())
+	}
+}
+
 // TODO Update
 // TODO IncrementOCounter
 // TODO DecrementOCounter
