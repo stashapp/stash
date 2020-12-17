@@ -214,13 +214,15 @@ export const GalleryList: React.FC<IGalleryList> = ({
     }
     if (filter.displayMode === DisplayMode.Wall) {
       return (
-        <div className="flexbin">
-          {result.data.findGalleries.galleries.map((gallery) => (
-            <GalleryWallCard
-              key={gallery.id}
-              gallery={gallery}
-            />
-          ))}
+        <div className="row">
+          <div className="GalleryWall">
+            {result.data.findGalleries.galleries.map((gallery) => (
+              <GalleryWallCard
+                key={gallery.id}
+                gallery={gallery}
+              />
+            ))}
+          </div>
         </div>
       );
     }
