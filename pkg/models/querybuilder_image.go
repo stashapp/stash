@@ -337,7 +337,7 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 		case "tags":
 			query.addWhere("tags_join.image_id IS NULL")
 		default:
-			query.addWhere("images." + *isMissingFilter + " IS NULL OR TRIM(images." + *isMissingFilter + ") = ''")
+			query.addWhere("(images." + *isMissingFilter + " IS NULL OR TRIM(images." + *isMissingFilter + ") = '')")
 		}
 	}
 
