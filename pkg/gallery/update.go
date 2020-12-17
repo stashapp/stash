@@ -1,10 +1,9 @@
 package gallery
 
 import (
-	"github.com/stashapp/stash/pkg/models"	
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
-
 
 func UpdateFileModTime(qb models.GalleryWriter, id int, modTime models.NullSQLiteTimestamp) (*models.Gallery, error) {
 	return qb.UpdatePartial(models.GalleryPartial{
