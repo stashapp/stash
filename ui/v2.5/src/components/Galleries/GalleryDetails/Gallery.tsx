@@ -1,10 +1,12 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
-import { useFindGallery } from "src/core/StashService";
+import { useFindGallery, useGalleryUpdate } from "src/core/StashService";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
+import { useToast } from "src/hooks";
+import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { GalleryEditPanel } from "./GalleryEditPanel";
 import { GalleryDetailPanel } from "./GalleryDetailPanel";
 import { DeleteGalleriesDialog } from "../DeleteGalleriesDialog";
@@ -20,6 +22,7 @@ interface IGalleryParams {
 export const Gallery: React.FC = () => {
   const { tab = "images", id = "new" } = useParams<IGalleryParams>();
   const history = useHistory();
+  const Toast = useToast();
   const isNew = id === "new";
 
   const { data, error, loading } = useFindGallery(id);
@@ -31,6 +34,28 @@ export const Gallery: React.FC = () => {
     if (tab !== newTab) {
       const tabParam = newTab === "images" ? "" : `/${newTab}`;
       history.replace(`/galleries/${id}${tabParam}`);
+    }
+  };
+
+  const [updateGallery] = useGalleryUpdate();
+
+  const [organizedLoading, setOrganizedLoading] = useState(false);
+
+  const onOrganizedClick = async () => {
+    try {
+      setOrganizedLoading(true);
+      await updateGallery({
+        variables: {
+          input: {
+            id: gallery?.id ?? "",
+            organized: !gallery?.organized,
+          },
+        },
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOrganizedLoading(false);
     }
   };
 
@@ -103,7 +128,14 @@ export const Gallery: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="gallery-edit-panel">Edit</Nav.Link>
             </Nav.Item>
-            <Nav.Item className="ml-auto">{renderOperations()}</Nav.Item>
+            <Nav.Item className="ml-auto">
+              <OrganizedButton
+                loading={organizedLoading}
+                organized={gallery.organized}
+                onClick={onOrganizedClick}
+              />
+            </Nav.Item>
+            <Nav.Item>{renderOperations()}</Nav.Item>
           </Nav>
         </div>
 

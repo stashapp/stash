@@ -205,6 +205,7 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, transl
 	updatedGallery.Date = translator.sqliteDate(input.Date, "date")
 	updatedGallery.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedGallery.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
+	updatedGallery.Organized = input.Organized
 
 	// gallery scene is set from the scene only
 
@@ -272,6 +273,7 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 	updatedGallery.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedGallery.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedGallery.SceneID = translator.nullInt64FromString(input.SceneID, "scene_id")
+	updatedGallery.Organized = input.Organized
 
 	ret := []*models.Gallery{}
 

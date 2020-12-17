@@ -43,6 +43,7 @@ func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Sc
 		newSceneJSON.Rating = int(scene.Rating.Int64)
 	}
 
+	newSceneJSON.Organized = scene.Organized
 	newSceneJSON.OCounter = scene.OCounter
 
 	if scene.Details.Valid {

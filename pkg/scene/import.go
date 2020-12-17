@@ -90,6 +90,7 @@ func (i *Importer) sceneJSONToScene(sceneJSON jsonschema.Scene) models.Scene {
 		newScene.Rating = sql.NullInt64{Int64: int64(sceneJSON.Rating), Valid: true}
 	}
 
+	newScene.Organized = sceneJSON.Organized
 	newScene.OCounter = sceneJSON.OCounter
 	newScene.CreatedAt = models.SQLiteTimestamp{Timestamp: sceneJSON.CreatedAt.GetTime()}
 	newScene.UpdatedAt = models.SQLiteTimestamp{Timestamp: sceneJSON.UpdatedAt.GetTime()}

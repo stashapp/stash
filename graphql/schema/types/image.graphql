@@ -4,6 +4,7 @@ type Image {
   title: String
   rating: Int
   o_counter: Int
+  organized: Boolean!
   path: String!
 
   file: ImageFileType! # Resolver
@@ -31,6 +32,7 @@ input ImageUpdateInput {
   id: ID!
   title: String
   rating: Int
+  organized: Boolean
   
   studio_id: ID
   performer_ids: [ID!]
@@ -43,6 +45,7 @@ input BulkImageUpdateInput {
   ids: [ID!]
   title: String
   rating: Int
+  organized: Boolean
   
   studio_id: ID
   performer_ids: BulkUpdateIds

@@ -59,9 +59,9 @@ func NewSceneQueryBuilder() SceneQueryBuilder {
 func (qb *SceneQueryBuilder) Create(newScene Scene, tx *sqlx.Tx) (*Scene, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO scenes (oshash, checksum, path, title, details, url, date, rating, o_counter, size, duration, video_codec,
+		`INSERT INTO scenes (oshash, checksum, path, title, details, url, date, rating, organized, o_counter, size, duration, video_codec,
                     			    audio_codec, format, width, height, framerate, bitrate, studio_id, file_mod_time, created_at, updated_at)
-				VALUES (:oshash, :checksum, :path, :title, :details, :url, :date, :rating, :o_counter, :size, :duration, :video_codec,
+				VALUES (:oshash, :checksum, :path, :title, :details, :url, :date, :rating, :organized, :o_counter, :size, :duration, :video_codec,
 					:audio_codec, :format, :width, :height, :framerate, :bitrate, :studio_id, :file_mod_time, :created_at, :updated_at)
 		`,
 		newScene,
@@ -325,6 +325,16 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 	query.handleIntCriterionInput(sceneFilter.Rating, "scenes.rating")
 	query.handleIntCriterionInput(sceneFilter.OCounter, "scenes.o_counter")
 
+	if Organized := sceneFilter.Organized; Organized != nil {
+		var organized string
+		if *Organized == true {
+			organized = "1"
+		} else {
+			organized = "0"
+		}
+		query.addWhere("scenes.organized = " + organized)
+	}
+
 	if durationFilter := sceneFilter.Duration; durationFilter != nil {
 		clause, thisArgs := getDurationWhereClause(*durationFilter)
 		query.addWhere(clause)
@@ -473,9 +483,13 @@ func getDurationWhereClause(durationFilter IntCriterionInput) (string, []interfa
 	return clause, args
 }
 
-func (qb *SceneQueryBuilder) QueryAllByPathRegex(regex string) ([]*Scene, error) {
+func (qb *SceneQueryBuilder) QueryAllByPathRegex(regex string, ignoreOrganized bool) ([]*Scene, error) {
 	var args []interface{}
 	body := selectDistinctIDs("scenes") + " WHERE scenes.path regexp ?"
+
+	if ignoreOrganized {
+		body += " AND scenes.organized = 0"
+	}
 
 	args = append(args, "(?i)"+regex)
 

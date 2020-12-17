@@ -39,13 +39,14 @@ const (
 )
 
 const (
-	checksum = "checksum"
-	title    = "title"
-	rating   = 5
-	ocounter = 2
-	size     = 123
-	width    = 100
-	height   = 100
+	checksum  = "checksum"
+	title     = "title"
+	rating    = 5
+	organized = true
+	ocounter  = 2
+	size      = 123
+	width     = 100
+	height    = 100
 )
 
 const (
@@ -63,14 +64,15 @@ var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 
 func createFullImage(id int) models.Image {
 	return models.Image{
-		ID:       id,
-		Title:    modelstest.NullString(title),
-		Checksum: checksum,
-		Height:   modelstest.NullInt64(height),
-		OCounter: ocounter,
-		Rating:   modelstest.NullInt64(rating),
-		Size:     modelstest.NullInt64(int64(size)),
-		Width:    modelstest.NullInt64(width),
+		ID:        id,
+		Title:     modelstest.NullString(title),
+		Checksum:  checksum,
+		Height:    modelstest.NullInt64(height),
+		OCounter:  ocounter,
+		Rating:    modelstest.NullInt64(rating),
+		Organized: organized,
+		Size:      modelstest.NullInt64(int64(size)),
+		Width:     modelstest.NullInt64(width),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},
@@ -94,10 +96,11 @@ func createEmptyImage(id int) models.Image {
 
 func createFullJSONImage() *jsonschema.Image {
 	return &jsonschema.Image{
-		Title:    title,
-		Checksum: checksum,
-		OCounter: ocounter,
-		Rating:   rating,
+		Title:     title,
+		Checksum:  checksum,
+		OCounter:  ocounter,
+		Rating:    rating,
+		Organized: organized,
 		File: &jsonschema.ImageFile{
 			Height: height,
 			Size:   size,
