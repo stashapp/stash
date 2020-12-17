@@ -5,7 +5,7 @@ import {
   MessageDescriptor,
   useIntl,
 } from "react-intl";
-import { Nav, Navbar, Button } from "react-bootstrap";
+import { Nav, Navbar, Button, Fade } from "react-bootstrap";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { LinkContainer } from "react-router-bootstrap";
 import { Link, NavLink, useLocation, useHistory } from "react-router-dom";
@@ -14,8 +14,10 @@ import Mousetrap from "mousetrap";
 import { SessionUtils } from "src/utils";
 import { Icon } from "src/components/Shared";
 import { Manual } from "./Help/Manual";
+import { useConfiguration } from "../core/StashService";
 
 interface IMenuItem {
+  name: string;
   message: MessageDescriptor;
   href: string;
   icon: IconName;
@@ -60,54 +62,78 @@ const messages = defineMessages({
   },
 });
 
-const menuItems: IMenuItem[] = [
+const allMenuItems: IMenuItem[] = [
   {
-    icon: "play-circle",
+    name: "scenes",
     message: messages.scenes,
     href: "/scenes",
+    icon: "play-circle",
   },
   {
-    icon: "image",
+    name: "images",
     message: messages.images,
     href: "/images",
+    icon: "image",
   },
   {
+    name: "movies",
+    message: messages.movies,
     href: "/movies",
     icon: "film",
-    message: messages.movies,
   },
   {
+    name: "markers",
+    message: messages.markers,
     href: "/scenes/markers",
     icon: "map-marker-alt",
-    message: messages.markers,
   },
   {
+    name: "galleries",
+    message: messages.galleries,
     href: "/galleries",
     icon: "image",
-    message: messages.galleries,
   },
   {
+    name: "performers",
+    message: messages.performers,
     href: "/performers",
     icon: "user",
-    message: messages.performers,
   },
   {
+    name: "studios",
+    message: messages.studios,
     href: "/studios",
     icon: "video",
-    message: messages.studios,
   },
   {
+    name: "tags",
+    message: messages.tags,
     href: "/tags",
     icon: "tag",
-    message: messages.tags,
   },
 ];
 
 export const MainNavbar: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
+  const { data: config, loading } = useConfiguration();
+
+  // Show all menu items by default, unless config says otherwise
+  const [menuItems, setMenuItems] = useState<IMenuItem[]>(allMenuItems);
+
   const [expanded, setExpanded] = useState(false);
   const [showManual, setShowManual] = useState(false);
+
+  useEffect(() => {
+    const iCfg = config?.configuration?.interface;
+    if (iCfg?.menuItems) {
+      setMenuItems(
+        allMenuItems.filter((menuItem) =>
+          iCfg.menuItems!.includes(menuItem.name)
+        )
+      );
+    }
+  }, [config]);
 
   // react-bootstrap typing bug
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -239,18 +265,20 @@ export const MainNavbar: React.FC = () => {
         </Navbar.Brand>
         <Navbar.Toggle className="order-0" />
         <Navbar.Collapse className="order-3 order-md-1">
-          <Nav className="mr-md-auto">
-            {menuItems.map((i) => (
-              <Nav.Link eventKey={i.href} as="div" key={i.href}>
-                <LinkContainer activeClassName="active" exact to={i.href}>
-                  <Button className="minimal w-100">
-                    <Icon icon={i.icon} />
-                    <span>{intl.formatMessage(i.message)}</span>
-                  </Button>
-                </LinkContainer>
-              </Nav.Link>
-            ))}
-          </Nav>
+          <Fade in={!loading}>
+            <Nav className="mr-md-auto">
+              {menuItems.map((i) => (
+                <Nav.Link eventKey={i.href} as="div" key={i.href}>
+                  <LinkContainer activeClassName="active" exact to={i.href}>
+                    <Button className="minimal w-100">
+                      <Icon icon={i.icon} />
+                      <span>{intl.formatMessage(i.message)}</span>
+                    </Button>
+                  </LinkContainer>
+                </Nav.Link>
+              ))}
+            </Nav>
+          </Fade>
         </Navbar.Collapse>
         <Nav className="order-2 flex-row">
           <div className="d-none d-sm-block">{newButton}</div>

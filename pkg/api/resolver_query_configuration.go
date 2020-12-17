@@ -77,6 +77,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 }
 
 func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
+	menuItems := config.GetMenuItems()
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
 	wallPlayback := config.GetWallPlayback()
@@ -88,6 +89,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	language := config.GetLanguage()
 
 	return &models.ConfigInterfaceResult{
+		MenuItems:           menuItems,
 		SoundOnPreview:      &soundOnPreview,
 		WallShowTitle:       &wallShowTitle,
 		WallPlayback:        &wallPlayback,

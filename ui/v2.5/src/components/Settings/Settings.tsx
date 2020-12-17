@@ -4,7 +4,7 @@ import { Card, Tab, Nav, Row, Col } from "react-bootstrap";
 import { useHistory, useLocation } from "react-router-dom";
 import { SettingsAboutPanel } from "./SettingsAboutPanel";
 import { SettingsConfigurationPanel } from "./SettingsConfigurationPanel";
-import { SettingsInterfacePanel } from "./SettingsInterfacePanel";
+import { SettingsInterfacePanel } from "./SettingsInterfacePanel/SettingsInterfacePanel";
 import { SettingsLogsPanel } from "./SettingsLogsPanel";
 import { SettingsTasksPanel } from "./SettingsTasksPanel/SettingsTasksPanel";
 import { SettingsPluginsPanel } from "./SettingsPluginsPanel";
