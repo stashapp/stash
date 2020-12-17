@@ -8,6 +8,7 @@ export type CriterionType =
   | "none"
   | "path"
   | "rating"
+  | "organized"
   | "o_counter"
   | "resolution"
   | "average_resolution"
@@ -56,6 +57,8 @@ export abstract class Criterion {
         return "Path";
       case "rating":
         return "Rating";
+      case "organized":
+        return "Organized";
       case "o_counter":
         return "O-Counter";
       case "resolution":
@@ -281,6 +284,8 @@ export class MandatoryStringCriterion extends StringCriterion {
   public modifierOptions = [
     StringCriterion.getModifierOption(CriterionModifier.Equals),
     StringCriterion.getModifierOption(CriterionModifier.NotEquals),
+    StringCriterion.getModifierOption(CriterionModifier.Includes),
+    StringCriterion.getModifierOption(CriterionModifier.Excludes),
   ];
 }
 

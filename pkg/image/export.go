@@ -23,6 +23,7 @@ func ToBasicJSON(image *models.Image) *jsonschema.Image {
 		newImageJSON.Rating = int(image.Rating.Int64)
 	}
 
+	newImageJSON.Organized = image.Organized
 	newImageJSON.OCounter = image.OCounter
 
 	newImageJSON.File = getImageFileJSON(image)

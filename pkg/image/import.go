@@ -63,6 +63,7 @@ func (i *Importer) imageJSONToImage(imageJSON jsonschema.Image) models.Image {
 		newImage.Rating = sql.NullInt64{Int64: int64(imageJSON.Rating), Valid: true}
 	}
 
+	newImage.Organized = imageJSON.Organized
 	newImage.OCounter = imageJSON.OCounter
 	newImage.CreatedAt = models.SQLiteTimestamp{Timestamp: imageJSON.CreatedAt.GetTime()}
 	newImage.UpdatedAt = models.SQLiteTimestamp{Timestamp: imageJSON.UpdatedAt.GetTime()}

@@ -4,6 +4,7 @@ mutation GalleryCreate(
   $url: String,
   $date: String,
   $rating: Int,
+  $organized: Boolean,
   $scene_id: ID,
   $studio_id: ID,
   $performer_ids: [ID!] = [],

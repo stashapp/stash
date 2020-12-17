@@ -56,13 +56,14 @@ func TestImporterName(t *testing.T) {
 func TestImporterPreImport(t *testing.T) {
 	i := Importer{
 		Input: jsonschema.Gallery{
-			Path:     path,
-			Checksum: checksum,
-			Title:    title,
-			Date:     date,
-			Details:  details,
-			Rating:   rating,
-			URL:      url,
+			Path:      path,
+			Checksum:  checksum,
+			Title:     title,
+			Date:      date,
+			Details:   details,
+			Rating:    rating,
+			Organized: organized,
+			URL:       url,
 			CreatedAt: models.JSONTime{
 				Time: createdAt,
 			},
@@ -83,9 +84,10 @@ func TestImporterPreImport(t *testing.T) {
 			String: date,
 			Valid:  true,
 		},
-		Details: modelstest.NullString(details),
-		Rating:  modelstest.NullInt64(rating),
-		URL:     modelstest.NullString(url),
+		Details:   modelstest.NullString(details),
+		Rating:    modelstest.NullInt64(rating),
+		Organized: organized,
+		URL:       modelstest.NullString(url),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createdAt,
 		},

@@ -28,11 +28,14 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     GQL.BulkUpdateIdMode.Add
   );
   const [tagIds, setTagIds] = useState<string[]>();
+  const [organized, setOrganized] = useState<boolean | undefined>();
 
   const [updateGalleries] = useBulkGalleryUpdate();
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const checkboxRef = React.createRef<HTMLInputElement>();
 
   function makeBulkUpdateIds(
     ids: string[],
@@ -117,6 +120,10 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     } else {
       // if tagIds non-empty, then we are setting them
       galleryInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
+    }
+
+    if (organized !== undefined) {
+      galleryInput.organized = organized;
     }
 
     return galleryInput;
@@ -223,6 +230,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     let updateStudioID: string | undefined;
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
+    let updateOrganized: boolean | undefined;
     let first = true;
 
     state.forEach((gallery: GQL.GallerySlimDataFragment) => {
@@ -238,6 +246,7 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
         updateStudioID = GalleriestudioID;
         updatePerformerIds = galleryPerformerIDs;
         updateTagIds = galleryTagIDs;
+        updateOrganized = gallery.organized;
         first = false;
       } else {
         if (galleryRating !== updateRating) {
@@ -252,6 +261,9 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
         if (!_.isEqual(galleryTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
+        if (gallery.organized !== updateOrganized) {
+          updateOrganized = undefined;
+        }
       }
     });
 
@@ -264,7 +276,15 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
     if (tagMode === GQL.BulkUpdateIdMode.Set) {
       setTagIds(updateTagIds);
     }
+
+    setOrganized(updateOrganized);
   }, [props.selected, performerMode, tagMode]);
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = organized === undefined;
+    }
+  }, [organized, checkboxRef]);
 
   function renderMultiSelect(
     type: "performers" | "tags",
@@ -309,6 +329,16 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
         mode={mode}
       />
     );
+  }
+
+  function cycleOrganized() {
+    if (organized) {
+      setOrganized(undefined);
+    } else if (organized === undefined) {
+      setOrganized(false);
+    } else {
+      setOrganized(true);
+    }
   }
 
   function render() {
@@ -359,9 +389,19 @@ export const EditGalleriesDialog: React.FC<IListOperationProps> = (
             {renderMultiSelect("performers", performerIds)}
           </Form.Group>
 
-          <Form.Group controlId="performers">
+          <Form.Group controlId="tags">
             <Form.Label>Tags</Form.Label>
             {renderMultiSelect("tags", tagIds)}
+          </Form.Group>
+
+          <Form.Group controlId="organized">
+            <Form.Check
+              type="checkbox"
+              label="Organized"
+              checked={organized}
+              ref={checkboxRef}
+              onChange={() => cycleOrganized()}
+            />
           </Form.Group>
         </Form>
       </Modal>

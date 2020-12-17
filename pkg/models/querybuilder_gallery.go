@@ -21,8 +21,8 @@ func NewGalleryQueryBuilder() GalleryQueryBuilder {
 func (qb *GalleryQueryBuilder) Create(newGallery Gallery, tx *sqlx.Tx) (*Gallery, error) {
 	ensureTx(tx)
 	result, err := tx.NamedExec(
-		`INSERT INTO galleries (path, checksum, zip, title, date, details, url, studio_id, rating, scene_id, file_mod_time, created_at, updated_at)
-				VALUES (:path, :checksum, :zip, :title, :date, :details, :url, :studio_id, :rating, :scene_id, :file_mod_time, :created_at, :updated_at)
+		`INSERT INTO galleries (path, checksum, zip, title, date, details, url, studio_id, rating, organized, scene_id, file_mod_time, created_at, updated_at)
+				VALUES (:path, :checksum, :zip, :title, :date, :details, :url, :studio_id, :rating, :organized, :scene_id, :file_mod_time, :created_at, :updated_at)
 		`,
 		newGallery,
 	)
@@ -231,6 +231,16 @@ func (qb *GalleryQueryBuilder) Query(galleryFilter *GalleryFilterType, findFilte
 	query.handleStringCriterionInput(galleryFilter.Path, "galleries.path")
 	query.handleIntCriterionInput(galleryFilter.Rating, "galleries.rating")
 	qb.handleAverageResolutionFilter(&query, galleryFilter.AverageResolution)
+
+	if Organized := galleryFilter.Organized; Organized != nil {
+		var organized string
+		if *Organized == true {
+			organized = "1"
+		} else {
+			organized = "0"
+		}
+		query.addWhere("galleries.organized = " + organized)
+	}
 
 	if isMissingFilter := galleryFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {

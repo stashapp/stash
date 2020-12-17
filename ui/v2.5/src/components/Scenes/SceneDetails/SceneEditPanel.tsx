@@ -70,7 +70,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   // Network state
   const [isLoading, setIsLoading] = useState(true);
 
-  const [updateScene] = useSceneUpdate(getSceneInput());
+  const [updateScene] = useSceneUpdate();
 
   useEffect(() => {
     if (props.isVisible) {
@@ -230,7 +230,11 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   async function onSave() {
     setIsLoading(true);
     try {
-      const result = await updateScene();
+      const result = await updateScene({
+        variables: {
+          input: getSceneInput(),
+        },
+      });
       if (result.data?.sceneUpdate) {
         Toast.success({ content: "Updated scene" });
       }
@@ -598,7 +602,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
             <Col xs={9}>
               <SceneGallerySelect
                 sceneId={props.scene.id}
-                initialId={galleryId}
+                gallery={props.scene.gallery ?? undefined}
                 onSelect={(item) => setGalleryId(item ? item.id : undefined)}
               />
             </Col>

@@ -7,6 +7,7 @@ fragment GallerySlimData on Gallery {
   url
   details
   rating
+  organized
   image_count
   cover {
     ...SlimImageData

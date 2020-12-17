@@ -17,6 +17,7 @@ type Gallery struct {
 	Date        string          `json:"date,omitempty"`
 	Details     string          `json:"details,omitempty"`
 	Rating      int             `json:"rating,omitempty"`
+	Organized   bool            `json:"organized,omitempty"`
 	Studio      string          `json:"studio,omitempty"`
 	Performers  []string        `json:"performers,omitempty"`
 	Tags        []string        `json:"tags,omitempty"`

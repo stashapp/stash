@@ -70,6 +70,8 @@ input SceneFilterType {
   path: StringCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by organized"""
+  organized: Boolean
   """Filter by o-counter"""
   o_counter: IntCriterionInput
   """Filter by resolution"""
@@ -117,6 +119,8 @@ input GalleryFilterType {
   is_zip: Boolean
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by organized"""
+  organized: Boolean
   """Filter by average image resolution"""
   average_resolution: ResolutionEnum
   """Filter to only include scenes with this studio"""
@@ -145,6 +149,8 @@ input ImageFilterType {
   path: StringCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by organized"""
+  organized: Boolean
   """Filter by o-counter"""
   o_counter: IntCriterionInput
   """Filter by resolution"""

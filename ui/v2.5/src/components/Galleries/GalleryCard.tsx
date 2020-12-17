@@ -104,11 +104,24 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     );
   }
 
+  function maybeRenderOrganized() {
+    if (props.gallery.organized) {
+      return (
+        <div>
+          <Button className="minimal">
+            <Icon icon="box" />
+          </Button>
+        </div>
+      );
+    }
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       props.gallery.scene ||
       props.gallery.performers.length > 0 ||
-      props.gallery.tags.length > 0
+      props.gallery.tags.length > 0 ||
+      props.gallery.organized
     ) {
       return (
         <>
@@ -117,6 +130,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderScenePopoverButton()}
+            {maybeRenderOrganized()}
           </ButtonGroup>
         </>
       );

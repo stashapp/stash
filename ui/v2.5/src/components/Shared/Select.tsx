@@ -72,7 +72,7 @@ interface IFilterSelectProps
   extends Omit<ISelectProps, "onChange" | "items" | "onCreateOption"> {}
 
 interface ISceneGallerySelect {
-  initialId?: string;
+  gallery?: Pick<GQL.Gallery, "title" | "path" | "id">;
   sceneId: string;
   onSelect: (
     item:
@@ -225,8 +225,9 @@ const FilterSelectComponent: React.FC<
 };
 
 export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
-  const [query, setQuery] = React.useState<string>("");
+  const [query, setQuery] = useState<string>("");
   const { data, loading } = useFindGalleries(getFilter());
+  const [selectedOption, setSelectedOption] = useState<Option>();
 
   const galleries = data?.findGalleries.galleries ?? [];
   const items = galleries.map((g) => ({
@@ -246,14 +247,22 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
 
   const onChange = (selectedItems: ValueType<Option>) => {
     const selectedItem = getSelectedValues(selectedItems)[0];
+    setSelectedOption(
+      Array.isArray(selectedItems) ? selectedItems[0] : selectedItems
+    );
     props.onSelect(
       selectedItem ? galleries.find((g) => g.id === selectedItem) : undefined
     );
   };
 
-  const selectedOptions: Option[] = props.initialId
-    ? items.filter((item) => props.initialId?.indexOf(item.value) !== -1)
-    : [];
+  const selectedOptions: Option[] = [];
+  if (selectedOption !== undefined) selectedOptions.push(selectedOption);
+  else if (props.gallery) {
+    selectedOptions.push({
+      value: props.gallery.id,
+      label: props.gallery.title ?? props.gallery.path ?? "Unknown",
+    });
+  }
 
   return (
     <SelectComponent
@@ -274,7 +283,7 @@ interface IScrapePerformerSuggestProps {
 export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = (
   props
 ) => {
-  const [query, setQuery] = React.useState<string>("");
+  const [query, setQuery] = useState<string>("");
   const { data, loading } = useScrapePerformerList(props.scraperId, query);
 
   const performers = data?.scrapePerformerList ?? [];
