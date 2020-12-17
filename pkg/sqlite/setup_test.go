@@ -118,9 +118,8 @@ func TestMain(m *testing.M) {
 }
 
 func withTxn(f func(r models.Repository) error) error {
-	return models.WithTxn(&sqlite.Transaction{
-		Ctx: context.TODO(),
-	}, f)
+	t := &sqlite.TransactionManager{}
+	return t.WithTxn(context.TODO(), f)
 }
 
 func testTeardown(databaseFile string) {
