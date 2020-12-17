@@ -373,7 +373,7 @@ func (qb *SceneQueryBuilder) Query(sceneFilter *SceneFilterType, findFilter *Fin
 		case "stash_id":
 			query.addWhere("scene_stash_ids.scene_id IS NULL")
 		default:
-			query.addWhere("scenes." + *isMissingFilter + " IS NULL OR TRIM(scenes." + *isMissingFilter + ") = ''")
+			query.addWhere("(scenes." + *isMissingFilter + " IS NULL OR TRIM(scenes." + *isMissingFilter + ") = '')")
 		}
 	}
 
