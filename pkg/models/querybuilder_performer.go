@@ -240,7 +240,7 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 		case "stash_id":
 			query.addWhere("performer_stash_ids.performer_id IS NULL")
 		default:
-			query.addWhere("performers." + *isMissingFilter + " IS NULL OR TRIM(performers." + *isMissingFilter + ") = ''")
+			query.addWhere("(performers." + *isMissingFilter + " IS NULL OR TRIM(performers." + *isMissingFilter + ") = '')")
 		}
 	}
 
