@@ -140,8 +140,8 @@ func (r *performerResolver) ImagePath(ctx context.Context, obj *models.Performer
 
 func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performer) (ret *int, err error) {
 	var res int
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		res, err = r.Scene().CountByPerformerID(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		res, err = repo.Scene().CountByPerformerID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -151,8 +151,8 @@ func (r *performerResolver) SceneCount(ctx context.Context, obj *models.Performe
 }
 
 func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (ret []*models.Scene, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.Scene().FindByPerformerID(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Scene().FindByPerformerID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -162,8 +162,8 @@ func (r *performerResolver) Scenes(ctx context.Context, obj *models.Performer) (
 }
 
 func (r *performerResolver) StashIds(ctx context.Context, obj *models.Performer) (ret []*models.StashID, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.Performer().GetStashIDs(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Performer().GetStashIDs(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

@@ -23,9 +23,9 @@ func (r *galleryResolver) Title(ctx context.Context, obj *models.Gallery) (*stri
 }
 
 func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret []*models.Image, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var err error
-		ret, err = r.Image().FindByGalleryID(obj.ID)
+		ret, err = repo.Image().FindByGalleryID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -35,8 +35,8 @@ func (r *galleryResolver) Images(ctx context.Context, obj *models.Gallery) (ret 
 }
 
 func (r *galleryResolver) Cover(ctx context.Context, obj *models.Gallery) (ret *models.Image, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		imgs, err := r.Image().FindByGalleryID(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		imgs, err := repo.Image().FindByGalleryID(obj.ID)
 		if err != nil {
 			return err
 		}
@@ -95,9 +95,9 @@ func (r *galleryResolver) Scene(ctx context.Context, obj *models.Gallery) (ret *
 		return nil, nil
 	}
 
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var err error
-		ret, err = r.Scene().Find(int(obj.SceneID.Int64))
+		ret, err = repo.Scene().Find(int(obj.SceneID.Int64))
 
 		return err
 	}); err != nil {
@@ -112,9 +112,9 @@ func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret 
 		return nil, nil
 	}
 
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var err error
-		ret, err = r.Studio().Find(int(obj.StudioID.Int64))
+		ret, err = repo.Studio().Find(int(obj.StudioID.Int64))
 		return err
 	}); err != nil {
 		return nil, err
@@ -124,9 +124,9 @@ func (r *galleryResolver) Studio(ctx context.Context, obj *models.Gallery) (ret 
 }
 
 func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []*models.Tag, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var err error
-		ret, err = r.Tag().FindByGalleryID(obj.ID)
+		ret, err = repo.Tag().FindByGalleryID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -136,9 +136,9 @@ func (r *galleryResolver) Tags(ctx context.Context, obj *models.Gallery) (ret []
 }
 
 func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (ret []*models.Performer, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var err error
-		ret, err = r.Performer().FindByGalleryID(obj.ID)
+		ret, err = repo.Performer().FindByGalleryID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -148,9 +148,9 @@ func (r *galleryResolver) Performers(ctx context.Context, obj *models.Gallery) (
 }
 
 func (r *galleryResolver) ImageCount(ctx context.Context, obj *models.Gallery) (ret int, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var err error
-		ret, err = r.Image().CountByGalleryID(obj.ID)
+		ret, err = repo.Image().CountByGalleryID(obj.ID)
 		return err
 	}); err != nil {
 		return 0, err

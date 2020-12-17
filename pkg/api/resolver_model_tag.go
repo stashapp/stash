@@ -9,8 +9,8 @@ import (
 
 func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
 	var count int
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		count, err = r.Scene().CountByTagID(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		count, err = repo.Scene().CountByTagID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -21,8 +21,8 @@ func (r *tagResolver) SceneCount(ctx context.Context, obj *models.Tag) (ret *int
 
 func (r *tagResolver) SceneMarkerCount(ctx context.Context, obj *models.Tag) (ret *int, err error) {
 	var count int
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		count, err = r.SceneMarker().CountByTagID(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		count, err = repo.SceneMarker().CountByTagID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

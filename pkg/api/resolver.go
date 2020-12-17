@@ -89,8 +89,8 @@ func (r *Resolver) withReadTxn(ctx context.Context, fn func(r models.ReaderRepos
 }
 
 func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*models.SceneMarker, err error) {
-	if err := r.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.SceneMarker().Wall(q)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.SceneMarker().Wall(q)
 		return err
 	}); err != nil {
 		return nil, err
@@ -99,8 +99,8 @@ func (r *queryResolver) MarkerWall(ctx context.Context, q *string) (ret []*model
 }
 
 func (r *queryResolver) SceneWall(ctx context.Context, q *string) (ret []*models.Scene, err error) {
-	if err := r.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.Scene().Wall(q)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Scene().Wall(q)
 		return err
 	}); err != nil {
 		return nil, err
@@ -110,8 +110,8 @@ func (r *queryResolver) SceneWall(ctx context.Context, q *string) (ret []*models
 }
 
 func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *string) (ret []*models.MarkerStringsResultType, err error) {
-	if err := r.txnManager.WithReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.SceneMarker().GetMarkerStrings(q, sort)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.SceneMarker().GetMarkerStrings(q, sort)
 		return err
 	}); err != nil {
 		return nil, err

@@ -95,8 +95,8 @@ func (r *sceneResolver) Paths(ctx context.Context, obj *models.Scene) (*models.S
 }
 
 func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (ret []*models.SceneMarker, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.SceneMarker().FindBySceneID(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.SceneMarker().FindBySceneID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -106,8 +106,8 @@ func (r *sceneResolver) SceneMarkers(ctx context.Context, obj *models.Scene) (re
 }
 
 func (r *sceneResolver) Gallery(ctx context.Context, obj *models.Scene) (ret *models.Gallery, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.Gallery().FindBySceneID(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Gallery().FindBySceneID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -121,8 +121,8 @@ func (r *sceneResolver) Studio(ctx context.Context, obj *models.Scene) (ret *mod
 		return nil, nil
 	}
 
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.Studio().Find(int(obj.StudioID.Int64))
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Studio().Find(int(obj.StudioID.Int64))
 		return err
 	}); err != nil {
 		return nil, err
@@ -169,8 +169,8 @@ func (r *sceneResolver) Movies(ctx context.Context, obj *models.Scene) (ret []*m
 }
 
 func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*models.Tag, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.Tag().FindBySceneID(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Tag().FindBySceneID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -180,8 +180,8 @@ func (r *sceneResolver) Tags(ctx context.Context, obj *models.Scene) (ret []*mod
 }
 
 func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret []*models.Performer, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.Performer().FindBySceneID(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Performer().FindBySceneID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -191,8 +191,8 @@ func (r *sceneResolver) Performers(ctx context.Context, obj *models.Scene) (ret 
 }
 
 func (r *sceneResolver) StashIds(ctx context.Context, obj *models.Scene) (ret []*models.StashID, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.Scene().GetStashIDs(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Scene().GetStashIDs(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err

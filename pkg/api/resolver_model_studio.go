@@ -26,9 +26,9 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 	imagePath := urlbuilders.NewStudioURLBuilder(baseURL, obj.ID).GetStudioImageURL()
 
 	var hasImage bool
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var err error
-		hasImage, err = r.Studio().HasImage(obj.ID)
+		hasImage, err = repo.Studio().HasImage(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -44,8 +44,8 @@ func (r *studioResolver) ImagePath(ctx context.Context, obj *models.Studio) (*st
 
 func (r *studioResolver) SceneCount(ctx context.Context, obj *models.Studio) (ret *int, err error) {
 	var res int
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		res, err = r.Scene().CountByStudioID(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		res, err = repo.Scene().CountByStudioID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -59,8 +59,8 @@ func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (
 		return nil, nil
 	}
 
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.Studio().Find(int(obj.ParentID.Int64))
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Studio().Find(int(obj.ParentID.Int64))
 		return err
 	}); err != nil {
 		return nil, err
@@ -70,8 +70,8 @@ func (r *studioResolver) ParentStudio(ctx context.Context, obj *models.Studio) (
 }
 
 func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (ret []*models.Studio, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.Studio().FindChildren(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Studio().FindChildren(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
@@ -81,8 +81,8 @@ func (r *studioResolver) ChildStudios(ctx context.Context, obj *models.Studio) (
 }
 
 func (r *studioResolver) StashIds(ctx context.Context, obj *models.Studio) (ret []*models.StashID, err error) {
-	if err := r.withReadTxn(ctx, func(r models.ReaderRepository) error {
-		ret, err = r.Studio().GetStashIDs(obj.ID)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Studio().GetStashIDs(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
