@@ -93,11 +93,24 @@ export const ImageCard: React.FC<IImageCardProps> = (
     }
   }
 
+  function maybeRenderOrganized() {
+    if (props.image.organized) {
+      return (
+        <div>
+          <Button className="minimal">
+            <Icon icon="box" />
+          </Button>
+        </div>
+      );
+    }
+  }
+
   function maybeRenderPopoverButtonGroup() {
     if (
       props.image.tags.length > 0 ||
       props.image.performers.length > 0 ||
-      props.image?.o_counter
+      props.image.o_counter ||
+      props.image.organized
     ) {
       return (
         <>
@@ -106,6 +119,7 @@ export const ImageCard: React.FC<IImageCardProps> = (
             {maybeRenderTagPopoverButton()}
             {maybeRenderPerformerPopoverButton()}
             {maybeRenderOCounter()}
+            {maybeRenderOrganized()}
           </ButtonGroup>
         </>
       );

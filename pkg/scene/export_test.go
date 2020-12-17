@@ -47,6 +47,7 @@ const (
 	date         = "2001-01-01"
 	rating       = 5
 	ocounter     = 2
+	organized    = true
 	details      = "details"
 	size         = "size"
 	duration     = 1.23
@@ -113,6 +114,7 @@ func createFullScene(id int) models.Scene {
 		OCounter:   ocounter,
 		OSHash:     modelstest.NullString(oshash),
 		Rating:     modelstest.NullInt64(rating),
+		Organized:  organized,
 		Size:       modelstest.NullString(size),
 		VideoCodec: modelstest.NullString(videoCodec),
 		Width:      modelstest.NullInt64(width),
@@ -140,14 +142,15 @@ func createEmptyScene(id int) models.Scene {
 
 func createFullJSONScene(image string) *jsonschema.Scene {
 	return &jsonschema.Scene{
-		Title:    title,
-		Checksum: checksum,
-		Date:     date,
-		Details:  details,
-		OCounter: ocounter,
-		OSHash:   oshash,
-		Rating:   rating,
-		URL:      url,
+		Title:     title,
+		Checksum:  checksum,
+		Date:      date,
+		Details:   details,
+		OCounter:  ocounter,
+		OSHash:    oshash,
+		Rating:    rating,
+		Organized: organized,
+		URL:       url,
 		File: &jsonschema.SceneFile{
 			AudioCodec: audioCodec,
 			Bitrate:    bitrate,

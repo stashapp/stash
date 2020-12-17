@@ -40,6 +40,8 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 		newGalleryJSON.Rating = int(gallery.Rating.Int64)
 	}
 
+	newGalleryJSON.Organized = gallery.Organized
+
 	if gallery.Details.Valid {
 		newGalleryJSON.Details = gallery.Details.String
 	}

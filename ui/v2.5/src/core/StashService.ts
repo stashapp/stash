@@ -323,11 +323,8 @@ const sceneMutationImpactedQueries = [
   GQL.AllTagsDocument,
 ];
 
-export const useSceneUpdate = (input: GQL.SceneUpdateInput) =>
+export const useSceneUpdate = () =>
   GQL.useSceneUpdateMutation({
-    variables: {
-      input,
-    },
     update: deleteCache(sceneMutationImpactedQueries),
   });
 

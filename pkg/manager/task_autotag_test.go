@@ -187,6 +187,16 @@ func createScenes(tx *sqlx.Tx) error {
 		}
 	}
 
+	// add organized scenes
+	for _, fn := range scenePatterns {
+		s := makeScene("organized"+fn, false)
+		s.Organized = true
+		err := createScene(sqb, tx, s)
+		if err != nil {
+			return err
+		}
+	}
+
 	// create scene with existing studio io
 	studioScene := makeScene(existingStudioSceneName, true)
 	studioScene.StudioID = sql.NullInt64{Valid: true, Int64: int64(existingStudioID)}
