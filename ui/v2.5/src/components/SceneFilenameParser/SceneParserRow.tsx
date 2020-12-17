@@ -85,12 +85,8 @@ export class SceneParserResult {
       title: this.title.isSet ? this.title.value : undefined,
       date: this.date.isSet ? this.date.value : undefined,
       studio_id: this.studio.isSet ? this.studio.value : undefined,
-      performer_ids: this.performers.isSet
-        ? this.performers.value
-        : undefined,
-      tag_ids: this.tags.isSet
-        ? this.tags.value
-        : undefined,
+      performer_ids: this.performers.isSet ? this.performers.value : undefined,
+      tag_ids: this.tags.isSet ? this.tags.value : undefined,
     };
   }
 }
