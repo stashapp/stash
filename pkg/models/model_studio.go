@@ -41,6 +41,10 @@ func NewStudio(name string) *Studio {
 
 type Studios []*Studio
 
-func (g *Studios) Append(o interface{}) {
-	*g = append(*g, o.(*Studio))
+func (s *Studios) Append(o interface{}) {
+	*s = append(*s, o.(*Studio))
+}
+
+func (s *Studios) New() interface{} {
+	return &Studio{}
 }

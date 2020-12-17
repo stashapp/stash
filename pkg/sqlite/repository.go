@@ -15,17 +15,15 @@ import (
 
 const idColumn = "id"
 
-type objectConstructor func() interface{}
-
 type objectList interface {
 	Append(o interface{})
+	New() interface{}
 }
 
 type repository struct {
-	tx          *sqlx.Tx
-	tableName   string
-	idColumn    string
-	constructor objectConstructor
+	tx        *sqlx.Tx
+	tableName string
+	idColumn  string
 }
 
 // TODO - this is a workaround for functions that accept nil transactions.
@@ -250,7 +248,7 @@ func (r *repository) query(query string, args []interface{}, out objectList) err
 		defer rows.Close()
 
 		for rows.Next() {
-			object := r.constructor()
+			object := out.New()
 			if err := rows.StructScan(object); err != nil {
 				return err
 			}
@@ -395,6 +393,10 @@ type stashIDs []*models.StashID
 
 func (s *stashIDs) Append(o interface{}) {
 	*s = append(*s, o.(*models.StashID))
+}
+
+func (s *stashIDs) New() interface{} {
+	return &models.StashID{}
 }
 
 func (r *stashIDRepository) get(id int) ([]*models.StashID, error) {

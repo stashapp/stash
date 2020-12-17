@@ -27,9 +27,6 @@ func NewGalleryReaderWriter(tx *sqlx.Tx) *GalleryQueryBuilder {
 			tx:        tx,
 			tableName: galleryTable,
 			idColumn:  idColumn,
-			constructor: func() interface{} {
-				return &models.Gallery{}
-			},
 		},
 	}
 }

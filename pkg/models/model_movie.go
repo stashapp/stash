@@ -53,6 +53,10 @@ func NewMovie(name string) *Movie {
 
 type Movies []*Movie
 
-func (g *Movies) Append(o interface{}) {
-	*g = append(*g, o.(*Movie))
+func (m *Movies) Append(o interface{}) {
+	*m = append(*m, o.(*Movie))
+}
+
+func (m *Movies) New() interface{} {
+	return &Movie{}
 }

@@ -64,9 +64,6 @@ func NewImageReaderWriter(tx *sqlx.Tx) *ImageQueryBuilder {
 			tx:        tx,
 			tableName: imageTable,
 			idColumn:  idColumn,
-			constructor: func() interface{} {
-				return &models.Image{}
-			},
 		},
 	}
 }

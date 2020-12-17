@@ -20,9 +20,6 @@ func NewMovieReaderWriter(tx *sqlx.Tx) *MovieQueryBuilder {
 			tx:        tx,
 			tableName: movieTable,
 			idColumn:  idColumn,
-			constructor: func() interface{} {
-				return &models.Movie{}
-			},
 		},
 	}
 }

@@ -21,9 +21,6 @@ func NewStudioReaderWriter(tx *sqlx.Tx) *StudioQueryBuilder {
 			tx:        tx,
 			tableName: studioTable,
 			idColumn:  idColumn,
-			constructor: func() interface{} {
-				return &models.Studio{}
-			},
 		},
 	}
 }

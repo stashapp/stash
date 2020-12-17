@@ -29,9 +29,6 @@ func NewSceneMarkerReaderWriter(tx *sqlx.Tx) *SceneMarkerQueryBuilder {
 			tx:        tx,
 			tableName: sceneMarkerTable,
 			idColumn:  idColumn,
-			constructor: func() interface{} {
-				return &models.SceneMarker{}
-			},
 		},
 	}
 }

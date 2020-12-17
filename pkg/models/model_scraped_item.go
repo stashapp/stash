@@ -177,6 +177,10 @@ type ScrapedMovieStudio struct {
 
 type ScrapedItems []*ScrapedItem
 
-func (g *ScrapedItems) Append(o interface{}) {
-	*g = append(*g, o.(*ScrapedItem))
+func (s *ScrapedItems) Append(o interface{}) {
+	*s = append(*s, o.(*ScrapedItem))
+}
+
+func (s *ScrapedItems) New() interface{} {
+	return &ScrapedItem{}
 }

@@ -19,9 +19,6 @@ func NewScrapedItemReaderWriter(tx *sqlx.Tx) *ScrapedItemQueryBuilder {
 			tx:        tx,
 			tableName: scrapedItemTable,
 			idColumn:  idColumn,
-			constructor: func() interface{} {
-				return &models.ScrapedItem{}
-			},
 		},
 	}
 }

@@ -64,9 +64,6 @@ func NewSceneReaderWriter(tx *sqlx.Tx) *SceneQueryBuilder {
 			tx:        tx,
 			tableName: sceneTable,
 			idColumn:  idColumn,
-			constructor: func() interface{} {
-				return &models.Scene{}
-			},
 		},
 	}
 }

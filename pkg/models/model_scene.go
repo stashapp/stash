@@ -98,6 +98,10 @@ type SceneFileType struct {
 
 type Scenes []*Scene
 
-func (g *Scenes) Append(o interface{}) {
-	*g = append(*g, o.(*Scene))
+func (s *Scenes) Append(o interface{}) {
+	*s = append(*s, o.(*Scene))
+}
+
+func (m *Scenes) New() interface{} {
+	return &Scene{}
 }

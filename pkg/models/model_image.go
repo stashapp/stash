@@ -49,6 +49,10 @@ type ImageFileType struct {
 
 type Images []*Image
 
-func (g *Images) Append(o interface{}) {
-	*g = append(*g, o.(*Image))
+func (i *Images) Append(o interface{}) {
+	*i = append(*i, o.(*Image))
+}
+
+func (i *Images) New() interface{} {
+	return &Image{}
 }

@@ -16,6 +16,10 @@ type SceneMarker struct {
 
 type SceneMarkers []*SceneMarker
 
-func (g *SceneMarkers) Append(o interface{}) {
-	*g = append(*g, o.(*SceneMarker))
+func (m *SceneMarkers) Append(o interface{}) {
+	*m = append(*m, o.(*SceneMarker))
+}
+
+func (m *SceneMarkers) New() interface{} {
+	return &SceneMarker{}
 }

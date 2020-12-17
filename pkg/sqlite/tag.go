@@ -22,9 +22,6 @@ func NewTagReaderWriter(tx *sqlx.Tx) *TagQueryBuilder {
 			tx:        tx,
 			tableName: tagTable,
 			idColumn:  idColumn,
-			constructor: func() interface{} {
-				return &models.Tag{}
-			},
 		},
 	}
 }

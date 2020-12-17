@@ -23,9 +23,6 @@ func NewPerformerReaderWriter(tx *sqlx.Tx) *PerformerQueryBuilder {
 			tx:        tx,
 			tableName: performerTable,
 			idColumn:  idColumn,
-			constructor: func() interface{} {
-				return &models.Performer{}
-			},
 		},
 	}
 }

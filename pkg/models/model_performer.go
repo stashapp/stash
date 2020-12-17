@@ -68,6 +68,10 @@ func NewPerformer(name string) *Performer {
 
 type Performers []*Performer
 
-func (g *Performers) Append(o interface{}) {
-	*g = append(*g, o.(*Performer))
+func (p *Performers) Append(o interface{}) {
+	*p = append(*p, o.(*Performer))
+}
+
+func (p *Performers) New() interface{} {
+	return &Performer{}
 }
