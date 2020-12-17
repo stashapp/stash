@@ -19,12 +19,12 @@ WHERE tags_join.tag_id = ? OR scene_markers.primary_tag_id = ?
 GROUP BY scene_markers.id
 `
 
-type SceneMarkerQueryBuilder struct {
+type sceneMarkerQueryBuilder struct {
 	repository
 }
 
-func NewSceneMarkerReaderWriter(tx *sqlx.Tx) *SceneMarkerQueryBuilder {
-	return &SceneMarkerQueryBuilder{
+func NewSceneMarkerReaderWriter(tx *sqlx.Tx) *sceneMarkerQueryBuilder {
+	return &sceneMarkerQueryBuilder{
 		repository{
 			tx:        tx,
 			tableName: sceneMarkerTable,
@@ -33,7 +33,7 @@ func NewSceneMarkerReaderWriter(tx *sqlx.Tx) *SceneMarkerQueryBuilder {
 	}
 }
 
-func (qb *SceneMarkerQueryBuilder) Create(newObject models.SceneMarker) (*models.SceneMarker, error) {
+func (qb *sceneMarkerQueryBuilder) Create(newObject models.SceneMarker) (*models.SceneMarker, error) {
 	var ret models.SceneMarker
 	if err := qb.insertObject(newObject, &ret); err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (qb *SceneMarkerQueryBuilder) Create(newObject models.SceneMarker) (*models
 	return &ret, nil
 }
 
-func (qb *SceneMarkerQueryBuilder) Update(updatedObject models.SceneMarker) (*models.SceneMarker, error) {
+func (qb *sceneMarkerQueryBuilder) Update(updatedObject models.SceneMarker) (*models.SceneMarker, error) {
 	const partial = false
 	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
@@ -56,11 +56,11 @@ func (qb *SceneMarkerQueryBuilder) Update(updatedObject models.SceneMarker) (*mo
 	return &ret, nil
 }
 
-func (qb *SceneMarkerQueryBuilder) Destroy(id int) error {
+func (qb *sceneMarkerQueryBuilder) Destroy(id int) error {
 	return qb.destroyExisting([]int{id})
 }
 
-func (qb *SceneMarkerQueryBuilder) Find(id int) (*models.SceneMarker, error) {
+func (qb *sceneMarkerQueryBuilder) Find(id int) (*models.SceneMarker, error) {
 	query := "SELECT * FROM scene_markers WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
 	results, err := qb.querySceneMarkers(query, args)
@@ -70,7 +70,7 @@ func (qb *SceneMarkerQueryBuilder) Find(id int) (*models.SceneMarker, error) {
 	return results[0], nil
 }
 
-func (qb *SceneMarkerQueryBuilder) FindMany(ids []int) ([]*models.SceneMarker, error) {
+func (qb *sceneMarkerQueryBuilder) FindMany(ids []int) ([]*models.SceneMarker, error) {
 	var markers []*models.SceneMarker
 	for _, id := range ids {
 		marker, err := qb.Find(id)
@@ -88,7 +88,7 @@ func (qb *SceneMarkerQueryBuilder) FindMany(ids []int) ([]*models.SceneMarker, e
 	return markers, nil
 }
 
-func (qb *SceneMarkerQueryBuilder) FindBySceneID(sceneID int) ([]*models.SceneMarker, error) {
+func (qb *sceneMarkerQueryBuilder) FindBySceneID(sceneID int) ([]*models.SceneMarker, error) {
 	query := `
 		SELECT scene_markers.* FROM scene_markers
 		WHERE scene_markers.scene_id = ?
@@ -99,12 +99,12 @@ func (qb *SceneMarkerQueryBuilder) FindBySceneID(sceneID int) ([]*models.SceneMa
 	return qb.querySceneMarkers(query, args)
 }
 
-func (qb *SceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
+func (qb *sceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
 	args := []interface{}{tagID, tagID}
 	return qb.runCountQuery(qb.buildCountQuery(countSceneMarkersForTagQuery), args)
 }
 
-func (qb *SceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
+func (qb *sceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
 	query := "SELECT count(*) as `count`, scene_markers.id as id, scene_markers.title as title FROM scene_markers"
 	if q != nil {
 		query = query + " WHERE title LIKE '%" + *q + "%'"
@@ -119,7 +119,7 @@ func (qb *SceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]
 	return qb.queryMarkerStringsResultType(query, args)
 }
 
-func (qb *SceneMarkerQueryBuilder) Wall(q *string) ([]*models.SceneMarker, error) {
+func (qb *sceneMarkerQueryBuilder) Wall(q *string) ([]*models.SceneMarker, error) {
 	s := ""
 	if q != nil {
 		s = *q
@@ -128,7 +128,7 @@ func (qb *SceneMarkerQueryBuilder) Wall(q *string) ([]*models.SceneMarker, error
 	return qb.querySceneMarkers(query, nil)
 }
 
-func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) ([]*models.SceneMarker, int, error) {
+func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) ([]*models.SceneMarker, int, error) {
 	if sceneMarkerFilter == nil {
 		sceneMarkerFilter = &models.SceneMarkerFilterType{}
 	}
@@ -268,7 +268,7 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFi
 	return sceneMarkers, countResult, nil
 }
 
-func (qb *SceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *models.FindFilterType) string {
+func (qb *sceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *models.FindFilterType) string {
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
 	tableName := "scene_markers"
@@ -279,7 +279,7 @@ func (qb *SceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *models.FindFil
 	return getSort(sort, direction, tableName)
 }
 
-func (qb *SceneMarkerQueryBuilder) querySceneMarkers(query string, args []interface{}) ([]*models.SceneMarker, error) {
+func (qb *sceneMarkerQueryBuilder) querySceneMarkers(query string, args []interface{}) ([]*models.SceneMarker, error) {
 	var ret models.SceneMarkers
 	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
@@ -288,7 +288,7 @@ func (qb *SceneMarkerQueryBuilder) querySceneMarkers(query string, args []interf
 	return []*models.SceneMarker(ret), nil
 }
 
-func (qb *SceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {
+func (qb *sceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {
 	rows, err := database.DB.Queryx(query, args...)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
@@ -311,7 +311,7 @@ func (qb *SceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, ar
 	return markerStrings, nil
 }
 
-func (qb *SceneMarkerQueryBuilder) tagsRepository() *joinRepository {
+func (qb *sceneMarkerQueryBuilder) tagsRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
 			tx:        qb.tx,
@@ -322,11 +322,11 @@ func (qb *SceneMarkerQueryBuilder) tagsRepository() *joinRepository {
 	}
 }
 
-func (qb *SceneMarkerQueryBuilder) GetTagIDs(id int) ([]int, error) {
+func (qb *sceneMarkerQueryBuilder) GetTagIDs(id int) ([]int, error) {
 	return qb.tagsRepository().getIDs(id)
 }
 
-func (qb *SceneMarkerQueryBuilder) UpdateTags(id int, tagIDs []int) error {
+func (qb *sceneMarkerQueryBuilder) UpdateTags(id int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.tagsRepository().replace(id, tagIDs)
 }

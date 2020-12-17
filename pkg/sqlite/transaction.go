@@ -9,12 +9,12 @@ import (
 	"github.com/stashapp/stash/pkg/models"
 )
 
-type Transaction struct {
+type transaction struct {
 	Ctx context.Context
 	tx  *sqlx.Tx
 }
 
-func (t *Transaction) Begin() error {
+func (t *transaction) Begin() error {
 	if t.tx != nil {
 		return errors.New("transaction already begun")
 	}
@@ -28,7 +28,7 @@ func (t *Transaction) Begin() error {
 	return nil
 }
 
-func (t *Transaction) Rollback() error {
+func (t *transaction) Rollback() error {
 	if t.tx == nil {
 		return errors.New("not in transaction")
 	}
@@ -42,7 +42,7 @@ func (t *Transaction) Rollback() error {
 	return nil
 }
 
-func (t *Transaction) Commit() error {
+func (t *transaction) Commit() error {
 	if t.tx == nil {
 		return errors.New("not in transaction")
 	}
@@ -56,63 +56,63 @@ func (t *Transaction) Commit() error {
 	return nil
 }
 
-func (t *Transaction) Repository() models.Repository {
+func (t *transaction) Repository() models.Repository {
 	return t
 }
 
-func (t *Transaction) ensureTx() {
+func (t *transaction) ensureTx() {
 	if t.tx == nil {
 		panic("tx is nil")
 	}
 }
 
-func (t *Transaction) Gallery() models.GalleryReaderWriter {
+func (t *transaction) Gallery() models.GalleryReaderWriter {
 	t.ensureTx()
 	return NewGalleryReaderWriter(t.tx)
 }
 
-func (t *Transaction) Image() models.ImageReaderWriter {
+func (t *transaction) Image() models.ImageReaderWriter {
 	t.ensureTx()
 	return NewImageReaderWriter(t.tx)
 }
 
-func (t *Transaction) Movie() models.MovieReaderWriter {
+func (t *transaction) Movie() models.MovieReaderWriter {
 	t.ensureTx()
 	return NewMovieReaderWriter(t.tx)
 }
 
-func (t *Transaction) Performer() models.PerformerReaderWriter {
+func (t *transaction) Performer() models.PerformerReaderWriter {
 	t.ensureTx()
 	return NewPerformerReaderWriter(t.tx)
 }
 
-func (t *Transaction) SceneMarker() models.SceneMarkerReaderWriter {
+func (t *transaction) SceneMarker() models.SceneMarkerReaderWriter {
 	t.ensureTx()
 	return NewSceneMarkerReaderWriter(t.tx)
 }
 
-func (t *Transaction) Scene() models.SceneReaderWriter {
+func (t *transaction) Scene() models.SceneReaderWriter {
 	t.ensureTx()
 	return NewSceneReaderWriter(t.tx)
 }
 
-func (t *Transaction) ScrapedItem() models.ScrapedItemReaderWriter {
+func (t *transaction) ScrapedItem() models.ScrapedItemReaderWriter {
 	t.ensureTx()
 	return NewScrapedItemReaderWriter(t.tx)
 }
 
-func (t *Transaction) Studio() models.StudioReaderWriter {
+func (t *transaction) Studio() models.StudioReaderWriter {
 	t.ensureTx()
 	return NewStudioReaderWriter(t.tx)
 }
 
-func (t *Transaction) Tag() models.TagReaderWriter {
+func (t *transaction) Tag() models.TagReaderWriter {
 	t.ensureTx()
 	return NewTagReaderWriter(t.tx)
 }
 
 type ReadTransaction struct {
-	Transaction
+	transaction
 }
 
 func (t *ReadTransaction) Repository() models.ReaderRepository {
@@ -167,12 +167,12 @@ func (t *ReadTransaction) Tag() models.TagReader {
 type TransactionManager struct{}
 
 func (t *TransactionManager) WithTxn(ctx context.Context, fn func(r models.Repository) error) error {
-	return models.WithTxn(&Transaction{Ctx: ctx}, fn)
+	return models.WithTxn(&transaction{Ctx: ctx}, fn)
 }
 
 func (t *TransactionManager) WithReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {
 	return models.WithROTxn(&ReadTransaction{
-		Transaction{
+		transaction{
 			Ctx: ctx,
 		},
 	}, fn)

@@ -10,12 +10,12 @@ import (
 
 const movieTable = "movies"
 
-type MovieQueryBuilder struct {
+type movieQueryBuilder struct {
 	repository
 }
 
-func NewMovieReaderWriter(tx *sqlx.Tx) *MovieQueryBuilder {
-	return &MovieQueryBuilder{
+func NewMovieReaderWriter(tx *sqlx.Tx) *movieQueryBuilder {
+	return &movieQueryBuilder{
 		repository{
 			tx:        tx,
 			tableName: movieTable,
@@ -24,7 +24,7 @@ func NewMovieReaderWriter(tx *sqlx.Tx) *MovieQueryBuilder {
 	}
 }
 
-func (qb *MovieQueryBuilder) Create(newObject models.Movie) (*models.Movie, error) {
+func (qb *movieQueryBuilder) Create(newObject models.Movie) (*models.Movie, error) {
 	var ret models.Movie
 	if err := qb.insertObject(newObject, &ret); err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (qb *MovieQueryBuilder) Create(newObject models.Movie) (*models.Movie, erro
 	return &ret, nil
 }
 
-func (qb *MovieQueryBuilder) Update(updatedObject models.MoviePartial) (*models.Movie, error) {
+func (qb *movieQueryBuilder) Update(updatedObject models.MoviePartial) (*models.Movie, error) {
 	const partial = true
 	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (qb *MovieQueryBuilder) Update(updatedObject models.MoviePartial) (*models.
 	return qb.Find(updatedObject.ID)
 }
 
-func (qb *MovieQueryBuilder) UpdateFull(updatedObject models.Movie) (*models.Movie, error) {
+func (qb *movieQueryBuilder) UpdateFull(updatedObject models.Movie) (*models.Movie, error) {
 	const partial = false
 	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
@@ -51,11 +51,11 @@ func (qb *MovieQueryBuilder) UpdateFull(updatedObject models.Movie) (*models.Mov
 	return qb.Find(updatedObject.ID)
 }
 
-func (qb *MovieQueryBuilder) Destroy(id int) error {
+func (qb *movieQueryBuilder) Destroy(id int) error {
 	return qb.destroyExisting([]int{id})
 }
 
-func (qb *MovieQueryBuilder) Find(id int) (*models.Movie, error) {
+func (qb *movieQueryBuilder) Find(id int) (*models.Movie, error) {
 	var ret models.Movie
 	if err := qb.get(id, &ret); err != nil {
 		if err == sql.ErrNoRows {
@@ -66,7 +66,7 @@ func (qb *MovieQueryBuilder) Find(id int) (*models.Movie, error) {
 	return &ret, nil
 }
 
-func (qb *MovieQueryBuilder) FindMany(ids []int) ([]*models.Movie, error) {
+func (qb *movieQueryBuilder) FindMany(ids []int) ([]*models.Movie, error) {
 	var movies []*models.Movie
 	for _, id := range ids {
 		movie, err := qb.Find(id)
@@ -84,7 +84,7 @@ func (qb *MovieQueryBuilder) FindMany(ids []int) ([]*models.Movie, error) {
 	return movies, nil
 }
 
-func (qb *MovieQueryBuilder) FindByName(name string, nocase bool) (*models.Movie, error) {
+func (qb *movieQueryBuilder) FindByName(name string, nocase bool) (*models.Movie, error) {
 	query := "SELECT * FROM movies WHERE name = ?"
 	if nocase {
 		query += " COLLATE NOCASE"
@@ -94,7 +94,7 @@ func (qb *MovieQueryBuilder) FindByName(name string, nocase bool) (*models.Movie
 	return qb.queryMovie(query, args)
 }
 
-func (qb *MovieQueryBuilder) FindByNames(names []string, nocase bool) ([]*models.Movie, error) {
+func (qb *movieQueryBuilder) FindByNames(names []string, nocase bool) ([]*models.Movie, error) {
 	query := "SELECT * FROM movies WHERE name"
 	if nocase {
 		query += " COLLATE NOCASE"
@@ -107,19 +107,19 @@ func (qb *MovieQueryBuilder) FindByNames(names []string, nocase bool) ([]*models
 	return qb.queryMovies(query, args)
 }
 
-func (qb *MovieQueryBuilder) Count() (int, error) {
+func (qb *movieQueryBuilder) Count() (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery("SELECT movies.id FROM movies"), nil)
 }
 
-func (qb *MovieQueryBuilder) All() ([]*models.Movie, error) {
+func (qb *movieQueryBuilder) All() ([]*models.Movie, error) {
 	return qb.queryMovies(selectAll("movies")+qb.getMovieSort(nil), nil)
 }
 
-func (qb *MovieQueryBuilder) AllSlim() ([]*models.Movie, error) {
+func (qb *movieQueryBuilder) AllSlim() ([]*models.Movie, error) {
 	return qb.queryMovies("SELECT movies.id, movies.name FROM movies "+qb.getMovieSort(nil), nil)
 }
 
-func (qb *MovieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
+func (qb *movieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilter *models.FindFilterType) ([]*models.Movie, int, error) {
 	if findFilter == nil {
 		findFilter = &models.FindFilterType{}
 	}
@@ -192,7 +192,7 @@ func (qb *MovieQueryBuilder) Query(movieFilter *models.MovieFilterType, findFilt
 	return movies, countResult, nil
 }
 
-func (qb *MovieQueryBuilder) getMovieSort(findFilter *models.FindFilterType) string {
+func (qb *movieQueryBuilder) getMovieSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -211,7 +211,7 @@ func (qb *MovieQueryBuilder) getMovieSort(findFilter *models.FindFilterType) str
 	return getSort(sort, direction, "movies")
 }
 
-func (qb *MovieQueryBuilder) queryMovie(query string, args []interface{}) (*models.Movie, error) {
+func (qb *movieQueryBuilder) queryMovie(query string, args []interface{}) (*models.Movie, error) {
 	results, err := qb.queryMovies(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
@@ -219,7 +219,7 @@ func (qb *MovieQueryBuilder) queryMovie(query string, args []interface{}) (*mode
 	return results[0], nil
 }
 
-func (qb *MovieQueryBuilder) queryMovies(query string, args []interface{}) ([]*models.Movie, error) {
+func (qb *movieQueryBuilder) queryMovies(query string, args []interface{}) ([]*models.Movie, error) {
 	var ret models.Movies
 	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
@@ -228,7 +228,7 @@ func (qb *MovieQueryBuilder) queryMovies(query string, args []interface{}) ([]*m
 	return []*models.Movie(ret), nil
 }
 
-func (qb *MovieQueryBuilder) UpdateImages(movieID int, frontImage []byte, backImage []byte) error {
+func (qb *movieQueryBuilder) UpdateImages(movieID int, frontImage []byte, backImage []byte) error {
 	// Delete the existing cover and then create new
 	if err := qb.DestroyImages(movieID); err != nil {
 		return err
@@ -244,7 +244,7 @@ func (qb *MovieQueryBuilder) UpdateImages(movieID int, frontImage []byte, backIm
 	return err
 }
 
-func (qb *MovieQueryBuilder) DestroyImages(movieID int) error {
+func (qb *movieQueryBuilder) DestroyImages(movieID int) error {
 	// Delete the existing joins
 	_, err := qb.tx.Exec("DELETE FROM movies_images WHERE movie_id = ?", movieID)
 	if err != nil {
@@ -253,12 +253,12 @@ func (qb *MovieQueryBuilder) DestroyImages(movieID int) error {
 	return err
 }
 
-func (qb *MovieQueryBuilder) GetFrontImage(movieID int) ([]byte, error) {
+func (qb *movieQueryBuilder) GetFrontImage(movieID int) ([]byte, error) {
 	query := `SELECT front_image from movies_images WHERE movie_id = ?`
 	return getImage(qb.tx, query, movieID)
 }
 
-func (qb *MovieQueryBuilder) GetBackImage(movieID int) ([]byte, error) {
+func (qb *movieQueryBuilder) GetBackImage(movieID int) ([]byte, error) {
 	query := `SELECT back_image from movies_images WHERE movie_id = ?`
 	return getImage(qb.tx, query, movieID)
 }

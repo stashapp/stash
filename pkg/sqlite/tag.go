@@ -12,12 +12,12 @@ import (
 const tagTable = "tags"
 const tagIDColumn = "tag_id"
 
-type TagQueryBuilder struct {
+type tagQueryBuilder struct {
 	repository
 }
 
-func NewTagReaderWriter(tx *sqlx.Tx) *TagQueryBuilder {
-	return &TagQueryBuilder{
+func NewTagReaderWriter(tx *sqlx.Tx) *tagQueryBuilder {
+	return &tagQueryBuilder{
 		repository{
 			tx:        tx,
 			tableName: tagTable,
@@ -26,7 +26,7 @@ func NewTagReaderWriter(tx *sqlx.Tx) *TagQueryBuilder {
 	}
 }
 
-func (qb *TagQueryBuilder) Create(newObject models.Tag) (*models.Tag, error) {
+func (qb *tagQueryBuilder) Create(newObject models.Tag) (*models.Tag, error) {
 	var ret models.Tag
 	if err := qb.insertObject(newObject, &ret); err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (qb *TagQueryBuilder) Create(newObject models.Tag) (*models.Tag, error) {
 	return &ret, nil
 }
 
-func (qb *TagQueryBuilder) Update(updatedObject models.Tag) (*models.Tag, error) {
+func (qb *tagQueryBuilder) Update(updatedObject models.Tag) (*models.Tag, error) {
 	const partial = false
 	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (qb *TagQueryBuilder) Update(updatedObject models.Tag) (*models.Tag, error)
 	return qb.Find(updatedObject.ID)
 }
 
-func (qb *TagQueryBuilder) Destroy(id int) error {
+func (qb *tagQueryBuilder) Destroy(id int) error {
 	// TODO - add delete cascade to foreign key
 	// delete tag from scenes and markers first
 	_, err := qb.tx.Exec("DELETE FROM scenes_tags WHERE tag_id = ?", id)
@@ -73,7 +73,7 @@ func (qb *TagQueryBuilder) Destroy(id int) error {
 	return qb.destroyExisting([]int{id})
 }
 
-func (qb *TagQueryBuilder) Find(id int) (*models.Tag, error) {
+func (qb *tagQueryBuilder) Find(id int) (*models.Tag, error) {
 	var ret models.Tag
 	if err := qb.get(id, &ret); err != nil {
 		if err == sql.ErrNoRows {
@@ -84,7 +84,7 @@ func (qb *TagQueryBuilder) Find(id int) (*models.Tag, error) {
 	return &ret, nil
 }
 
-func (qb *TagQueryBuilder) FindMany(ids []int) ([]*models.Tag, error) {
+func (qb *tagQueryBuilder) FindMany(ids []int) ([]*models.Tag, error) {
 	var tags []*models.Tag
 	for _, id := range ids {
 		tag, err := qb.Find(id)
@@ -102,7 +102,7 @@ func (qb *TagQueryBuilder) FindMany(ids []int) ([]*models.Tag, error) {
 	return tags, nil
 }
 
-func (qb *TagQueryBuilder) FindBySceneID(sceneID int) ([]*models.Tag, error) {
+func (qb *tagQueryBuilder) FindBySceneID(sceneID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scenes_tags as scenes_join on scenes_join.tag_id = tags.id
@@ -114,7 +114,7 @@ func (qb *TagQueryBuilder) FindBySceneID(sceneID int) ([]*models.Tag, error) {
 	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindByImageID(imageID int) ([]*models.Tag, error) {
+func (qb *tagQueryBuilder) FindByImageID(imageID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN images_tags as images_join on images_join.tag_id = tags.id
@@ -126,7 +126,7 @@ func (qb *TagQueryBuilder) FindByImageID(imageID int) ([]*models.Tag, error) {
 	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Tag, error) {
+func (qb *tagQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN galleries_tags as galleries_join on galleries_join.tag_id = tags.id
@@ -138,7 +138,7 @@ func (qb *TagQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Tag, error)
 	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int) ([]*models.Tag, error) {
+func (qb *tagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
 		LEFT JOIN scene_markers_tags as scene_markers_join on scene_markers_join.tag_id = tags.id
@@ -150,7 +150,7 @@ func (qb *TagQueryBuilder) FindBySceneMarkerID(sceneMarkerID int) ([]*models.Tag
 	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) FindByName(name string, nocase bool) (*models.Tag, error) {
+func (qb *tagQueryBuilder) FindByName(name string, nocase bool) (*models.Tag, error) {
 	query := "SELECT * FROM tags WHERE name = ?"
 	if nocase {
 		query += " COLLATE NOCASE"
@@ -160,7 +160,7 @@ func (qb *TagQueryBuilder) FindByName(name string, nocase bool) (*models.Tag, er
 	return qb.queryTag(query, args)
 }
 
-func (qb *TagQueryBuilder) FindByNames(names []string, nocase bool) ([]*models.Tag, error) {
+func (qb *tagQueryBuilder) FindByNames(names []string, nocase bool) ([]*models.Tag, error) {
 	query := "SELECT * FROM tags WHERE name"
 	if nocase {
 		query += " COLLATE NOCASE"
@@ -173,19 +173,19 @@ func (qb *TagQueryBuilder) FindByNames(names []string, nocase bool) ([]*models.T
 	return qb.queryTags(query, args)
 }
 
-func (qb *TagQueryBuilder) Count() (int, error) {
+func (qb *tagQueryBuilder) Count() (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery("SELECT tags.id FROM tags"), nil)
 }
 
-func (qb *TagQueryBuilder) All() ([]*models.Tag, error) {
+func (qb *tagQueryBuilder) All() ([]*models.Tag, error) {
 	return qb.queryTags(selectAll("tags")+qb.getTagSort(nil), nil)
 }
 
-func (qb *TagQueryBuilder) AllSlim() ([]*models.Tag, error) {
+func (qb *tagQueryBuilder) AllSlim() ([]*models.Tag, error) {
 	return qb.queryTags("SELECT tags.id, tags.name FROM tags "+qb.getTagSort(nil), nil)
 }
 
-func (qb *TagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *models.FindFilterType) ([]*models.Tag, int, error) {
+func (qb *tagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *models.FindFilterType) ([]*models.Tag, int, error) {
 	if tagFilter == nil {
 		tagFilter = &models.TagFilterType{}
 	}
@@ -265,7 +265,7 @@ func (qb *TagQueryBuilder) Query(tagFilter *models.TagFilterType, findFilter *mo
 	return tags, countResult, nil
 }
 
-func (qb *TagQueryBuilder) getTagSort(findFilter *models.FindFilterType) string {
+func (qb *tagQueryBuilder) getTagSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -278,7 +278,7 @@ func (qb *TagQueryBuilder) getTagSort(findFilter *models.FindFilterType) string 
 	return getSort(sort, direction, "tags")
 }
 
-func (qb *TagQueryBuilder) queryTag(query string, args []interface{}) (*models.Tag, error) {
+func (qb *tagQueryBuilder) queryTag(query string, args []interface{}) (*models.Tag, error) {
 	results, err := qb.queryTags(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
@@ -286,7 +286,7 @@ func (qb *TagQueryBuilder) queryTag(query string, args []interface{}) (*models.T
 	return results[0], nil
 }
 
-func (qb *TagQueryBuilder) queryTags(query string, args []interface{}) ([]*models.Tag, error) {
+func (qb *tagQueryBuilder) queryTags(query string, args []interface{}) ([]*models.Tag, error) {
 	var ret models.Tags
 	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
@@ -295,7 +295,7 @@ func (qb *TagQueryBuilder) queryTags(query string, args []interface{}) ([]*model
 	return []*models.Tag(ret), nil
 }
 
-func (qb *TagQueryBuilder) imageRepository() *imageRepository {
+func (qb *tagQueryBuilder) imageRepository() *imageRepository {
 	return &imageRepository{
 		repository: repository{
 			tx:        qb.tx,
@@ -306,18 +306,18 @@ func (qb *TagQueryBuilder) imageRepository() *imageRepository {
 	}
 }
 
-func (qb *TagQueryBuilder) GetImage(tagID int) ([]byte, error) {
+func (qb *tagQueryBuilder) GetImage(tagID int) ([]byte, error) {
 	return qb.imageRepository().get(tagID)
 }
 
-func (qb *TagQueryBuilder) HasImage(tagID int) (bool, error) {
+func (qb *tagQueryBuilder) HasImage(tagID int) (bool, error) {
 	return qb.imageRepository().exists(tagID)
 }
 
-func (qb *TagQueryBuilder) UpdateImage(tagID int, image []byte) error {
+func (qb *tagQueryBuilder) UpdateImage(tagID int, image []byte) error {
 	return qb.imageRepository().replace(tagID, image)
 }
 
-func (qb *TagQueryBuilder) DestroyImage(tagID int) error {
+func (qb *tagQueryBuilder) DestroyImage(tagID int) error {
 	return qb.imageRepository().destroy([]int{tagID})
 }

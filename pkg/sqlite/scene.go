@@ -54,12 +54,12 @@ SELECT id FROM scenes
 WHERE scenes.oshash is null
 `
 
-type SceneQueryBuilder struct {
+type sceneQueryBuilder struct {
 	repository
 }
 
-func NewSceneReaderWriter(tx *sqlx.Tx) *SceneQueryBuilder {
-	return &SceneQueryBuilder{
+func NewSceneReaderWriter(tx *sqlx.Tx) *sceneQueryBuilder {
+	return &sceneQueryBuilder{
 		repository{
 			tx:        tx,
 			tableName: sceneTable,
@@ -68,7 +68,7 @@ func NewSceneReaderWriter(tx *sqlx.Tx) *SceneQueryBuilder {
 	}
 }
 
-func (qb *SceneQueryBuilder) Create(newObject models.Scene) (*models.Scene, error) {
+func (qb *sceneQueryBuilder) Create(newObject models.Scene) (*models.Scene, error) {
 	var ret models.Scene
 	if err := qb.insertObject(newObject, &ret); err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (qb *SceneQueryBuilder) Create(newObject models.Scene) (*models.Scene, erro
 	return &ret, nil
 }
 
-func (qb *SceneQueryBuilder) Update(updatedObject models.ScenePartial) (*models.Scene, error) {
+func (qb *sceneQueryBuilder) Update(updatedObject models.ScenePartial) (*models.Scene, error) {
 	const partial = true
 	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (qb *SceneQueryBuilder) Update(updatedObject models.ScenePartial) (*models.
 	return qb.find(updatedObject.ID)
 }
 
-func (qb *SceneQueryBuilder) UpdateFull(updatedObject models.Scene) (*models.Scene, error) {
+func (qb *sceneQueryBuilder) UpdateFull(updatedObject models.Scene) (*models.Scene, error) {
 	const partial = false
 	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
@@ -95,13 +95,13 @@ func (qb *SceneQueryBuilder) UpdateFull(updatedObject models.Scene) (*models.Sce
 	return qb.find(updatedObject.ID)
 }
 
-func (qb *SceneQueryBuilder) UpdateFileModTime(id int, modTime models.NullSQLiteTimestamp) error {
+func (qb *sceneQueryBuilder) UpdateFileModTime(id int, modTime models.NullSQLiteTimestamp) error {
 	return qb.updateMap(id, map[string]interface{}{
 		"file_mod_time": modTime,
 	})
 }
 
-func (qb *SceneQueryBuilder) IncrementOCounter(id int) (int, error) {
+func (qb *sceneQueryBuilder) IncrementOCounter(id int) (int, error) {
 	_, err := qb.tx.Exec(
 		`UPDATE scenes SET o_counter = o_counter + 1 WHERE scenes.id = ?`,
 		id,
@@ -118,7 +118,7 @@ func (qb *SceneQueryBuilder) IncrementOCounter(id int) (int, error) {
 	return scene.OCounter, nil
 }
 
-func (qb *SceneQueryBuilder) DecrementOCounter(id int) (int, error) {
+func (qb *sceneQueryBuilder) DecrementOCounter(id int) (int, error) {
 	_, err := qb.tx.Exec(
 		`UPDATE scenes SET o_counter = o_counter - 1 WHERE scenes.id = ? and scenes.o_counter > 0`,
 		id,
@@ -135,7 +135,7 @@ func (qb *SceneQueryBuilder) DecrementOCounter(id int) (int, error) {
 	return scene.OCounter, nil
 }
 
-func (qb *SceneQueryBuilder) ResetOCounter(id int) (int, error) {
+func (qb *sceneQueryBuilder) ResetOCounter(id int) (int, error) {
 	_, err := qb.tx.Exec(
 		`UPDATE scenes SET o_counter = 0 WHERE scenes.id = ?`,
 		id,
@@ -152,7 +152,7 @@ func (qb *SceneQueryBuilder) ResetOCounter(id int) (int, error) {
 	return scene.OCounter, nil
 }
 
-func (qb *SceneQueryBuilder) Destroy(id int) error {
+func (qb *sceneQueryBuilder) Destroy(id int) error {
 	// delete all related table rows
 	// TODO - this should be handled by a delete cascade
 	if err := qb.performersRepository().destroy([]int{id}); err != nil {
@@ -165,11 +165,11 @@ func (qb *SceneQueryBuilder) Destroy(id int) error {
 	return qb.destroyExisting([]int{id})
 }
 
-func (qb *SceneQueryBuilder) Find(id int) (*models.Scene, error) {
+func (qb *sceneQueryBuilder) Find(id int) (*models.Scene, error) {
 	return qb.find(id)
 }
 
-func (qb *SceneQueryBuilder) FindMany(ids []int) ([]*models.Scene, error) {
+func (qb *sceneQueryBuilder) FindMany(ids []int) ([]*models.Scene, error) {
 	var scenes []*models.Scene
 	for _, id := range ids {
 		scene, err := qb.Find(id)
@@ -187,7 +187,7 @@ func (qb *SceneQueryBuilder) FindMany(ids []int) ([]*models.Scene, error) {
 	return scenes, nil
 }
 
-func (qb *SceneQueryBuilder) find(id int) (*models.Scene, error) {
+func (qb *sceneQueryBuilder) find(id int) (*models.Scene, error) {
 	var ret models.Scene
 	if err := qb.get(id, &ret); err != nil {
 		if err == sql.ErrNoRows {
@@ -198,73 +198,73 @@ func (qb *SceneQueryBuilder) find(id int) (*models.Scene, error) {
 	return &ret, nil
 }
 
-func (qb *SceneQueryBuilder) FindByChecksum(checksum string) (*models.Scene, error) {
+func (qb *sceneQueryBuilder) FindByChecksum(checksum string) (*models.Scene, error) {
 	query := "SELECT * FROM scenes WHERE checksum = ? LIMIT 1"
 	args := []interface{}{checksum}
 	return qb.queryScene(query, args)
 }
 
-func (qb *SceneQueryBuilder) FindByOSHash(oshash string) (*models.Scene, error) {
+func (qb *sceneQueryBuilder) FindByOSHash(oshash string) (*models.Scene, error) {
 	query := "SELECT * FROM scenes WHERE oshash = ? LIMIT 1"
 	args := []interface{}{oshash}
 	return qb.queryScene(query, args)
 }
 
-func (qb *SceneQueryBuilder) FindByPath(path string) (*models.Scene, error) {
+func (qb *sceneQueryBuilder) FindByPath(path string) (*models.Scene, error) {
 	query := selectAll(sceneTable) + "WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
 	return qb.queryScene(query, args)
 }
 
-func (qb *SceneQueryBuilder) FindByPerformerID(performerID int) ([]*models.Scene, error) {
+func (qb *sceneQueryBuilder) FindByPerformerID(performerID int) ([]*models.Scene, error) {
 	args := []interface{}{performerID}
 	return qb.queryScenes(scenesForPerformerQuery, args)
 }
 
-func (qb *SceneQueryBuilder) CountByPerformerID(performerID int) (int, error) {
+func (qb *sceneQueryBuilder) CountByPerformerID(performerID int) (int, error) {
 	args := []interface{}{performerID}
 	return qb.runCountQuery(qb.buildCountQuery(countScenesForPerformerQuery), args)
 }
 
-func (qb *SceneQueryBuilder) FindByMovieID(movieID int) ([]*models.Scene, error) {
+func (qb *sceneQueryBuilder) FindByMovieID(movieID int) ([]*models.Scene, error) {
 	args := []interface{}{movieID}
 	return qb.queryScenes(scenesForMovieQuery, args)
 }
 
-func (qb *SceneQueryBuilder) CountByMovieID(movieID int) (int, error) {
+func (qb *sceneQueryBuilder) CountByMovieID(movieID int) (int, error) {
 	args := []interface{}{movieID}
 	return qb.runCountQuery(qb.buildCountQuery(scenesForMovieQuery), args)
 }
 
-func (qb *SceneQueryBuilder) Count() (int, error) {
+func (qb *sceneQueryBuilder) Count() (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *SceneQueryBuilder) Size() (float64, error) {
+func (qb *sceneQueryBuilder) Size() (float64, error) {
 	return qb.runSumQuery("SELECT SUM(cast(size as double)) as sum FROM scenes", nil)
 }
 
-func (qb *SceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
+func (qb *sceneQueryBuilder) CountByStudioID(studioID int) (int, error) {
 	args := []interface{}{studioID}
 	return qb.runCountQuery(qb.buildCountQuery(scenesForStudioQuery), args)
 }
 
-func (qb *SceneQueryBuilder) CountByTagID(tagID int) (int, error) {
+func (qb *sceneQueryBuilder) CountByTagID(tagID int) (int, error) {
 	args := []interface{}{tagID}
 	return qb.runCountQuery(qb.buildCountQuery(countScenesForTagQuery), args)
 }
 
 // CountMissingChecksum returns the number of scenes missing a checksum value.
-func (qb *SceneQueryBuilder) CountMissingChecksum() (int, error) {
+func (qb *sceneQueryBuilder) CountMissingChecksum() (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery(countScenesForMissingChecksumQuery), []interface{}{})
 }
 
 // CountMissingOSHash returns the number of scenes missing an oshash value.
-func (qb *SceneQueryBuilder) CountMissingOSHash() (int, error) {
+func (qb *sceneQueryBuilder) CountMissingOSHash() (int, error) {
 	return qb.runCountQuery(qb.buildCountQuery(countScenesForMissingOSHashQuery), []interface{}{})
 }
 
-func (qb *SceneQueryBuilder) Wall(q *string) ([]*models.Scene, error) {
+func (qb *sceneQueryBuilder) Wall(q *string) ([]*models.Scene, error) {
 	s := ""
 	if q != nil {
 		s = *q
@@ -273,11 +273,11 @@ func (qb *SceneQueryBuilder) Wall(q *string) ([]*models.Scene, error) {
 	return qb.queryScenes(query, nil)
 }
 
-func (qb *SceneQueryBuilder) All() ([]*models.Scene, error) {
+func (qb *sceneQueryBuilder) All() ([]*models.Scene, error) {
 	return qb.queryScenes(selectAll(sceneTable)+qb.getSceneSort(nil), nil)
 }
 
-func (qb *SceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
+func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
 	if sceneFilter == nil {
 		sceneFilter = &models.SceneFilterType{}
 	}
@@ -473,7 +473,7 @@ func getDurationWhereClause(durationFilter models.IntCriterionInput) (string, []
 	return clause, args
 }
 
-func (qb *SceneQueryBuilder) QueryAllByPathRegex(regex string, ignoreOrganized bool) ([]*models.Scene, error) {
+func (qb *sceneQueryBuilder) QueryAllByPathRegex(regex string, ignoreOrganized bool) ([]*models.Scene, error) {
 	var args []interface{}
 	body := selectDistinctIDs("scenes") + " WHERE scenes.path regexp ?"
 
@@ -503,7 +503,7 @@ func (qb *SceneQueryBuilder) QueryAllByPathRegex(regex string, ignoreOrganized b
 	return scenes, nil
 }
 
-func (qb *SceneQueryBuilder) QueryByPathRegex(findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
+func (qb *sceneQueryBuilder) QueryByPathRegex(findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
 	if findFilter == nil {
 		findFilter = &models.FindFilterType{}
 	}
@@ -537,7 +537,7 @@ func (qb *SceneQueryBuilder) QueryByPathRegex(findFilter *models.FindFilterType)
 	return scenes, countResult, nil
 }
 
-func (qb *SceneQueryBuilder) getSceneSort(findFilter *models.FindFilterType) string {
+func (qb *sceneQueryBuilder) getSceneSort(findFilter *models.FindFilterType) string {
 	if findFilter == nil {
 		return " ORDER BY scenes.path, scenes.date ASC "
 	}
@@ -546,7 +546,7 @@ func (qb *SceneQueryBuilder) getSceneSort(findFilter *models.FindFilterType) str
 	return getSort(sort, direction, "scenes")
 }
 
-func (qb *SceneQueryBuilder) queryScene(query string, args []interface{}) (*models.Scene, error) {
+func (qb *sceneQueryBuilder) queryScene(query string, args []interface{}) (*models.Scene, error) {
 	results, err := qb.queryScenes(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
@@ -554,7 +554,7 @@ func (qb *SceneQueryBuilder) queryScene(query string, args []interface{}) (*mode
 	return results[0], nil
 }
 
-func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}) ([]*models.Scene, error) {
+func (qb *sceneQueryBuilder) queryScenes(query string, args []interface{}) ([]*models.Scene, error) {
 	var ret models.Scenes
 	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
@@ -563,7 +563,7 @@ func (qb *SceneQueryBuilder) queryScenes(query string, args []interface{}) ([]*m
 	return []*models.Scene(ret), nil
 }
 
-func (qb *SceneQueryBuilder) imageRepository() *imageRepository {
+func (qb *sceneQueryBuilder) imageRepository() *imageRepository {
 	return &imageRepository{
 		repository: repository{
 			tx:        qb.tx,
@@ -574,19 +574,19 @@ func (qb *SceneQueryBuilder) imageRepository() *imageRepository {
 	}
 }
 
-func (qb *SceneQueryBuilder) GetCover(sceneID int) ([]byte, error) {
+func (qb *sceneQueryBuilder) GetCover(sceneID int) ([]byte, error) {
 	return qb.imageRepository().get(sceneID)
 }
 
-func (qb *SceneQueryBuilder) UpdateCover(sceneID int, image []byte) error {
+func (qb *sceneQueryBuilder) UpdateCover(sceneID int, image []byte) error {
 	return qb.imageRepository().replace(sceneID, image)
 }
 
-func (qb *SceneQueryBuilder) DestroyCover(sceneID int) error {
+func (qb *sceneQueryBuilder) DestroyCover(sceneID int) error {
 	return qb.imageRepository().destroy([]int{sceneID})
 }
 
-func (qb *SceneQueryBuilder) moviesRepository() *repository {
+func (qb *sceneQueryBuilder) moviesRepository() *repository {
 	return &repository{
 		tx:        qb.tx,
 		tableName: moviesScenesTable,
@@ -594,7 +594,7 @@ func (qb *SceneQueryBuilder) moviesRepository() *repository {
 	}
 }
 
-func (qb *SceneQueryBuilder) GetMovies(id int) (ret []models.MoviesScenes, err error) {
+func (qb *sceneQueryBuilder) GetMovies(id int) (ret []models.MoviesScenes, err error) {
 	if err := qb.moviesRepository().getAll(id, func(rows *sqlx.Rows) error {
 		var ms models.MoviesScenes
 		if err := rows.StructScan(&ms); err != nil {
@@ -610,7 +610,7 @@ func (qb *SceneQueryBuilder) GetMovies(id int) (ret []models.MoviesScenes, err e
 	return ret, nil
 }
 
-func (qb *SceneQueryBuilder) UpdateMovies(sceneID int, movies []models.MoviesScenes) error {
+func (qb *sceneQueryBuilder) UpdateMovies(sceneID int, movies []models.MoviesScenes) error {
 	// destroy existing joins
 	r := qb.moviesRepository()
 	if err := r.destroy([]int{sceneID}); err != nil {
@@ -627,7 +627,7 @@ func (qb *SceneQueryBuilder) UpdateMovies(sceneID int, movies []models.MoviesSce
 	return nil
 }
 
-func (qb *SceneQueryBuilder) performersRepository() *joinRepository {
+func (qb *sceneQueryBuilder) performersRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
 			tx:        qb.tx,
@@ -638,16 +638,16 @@ func (qb *SceneQueryBuilder) performersRepository() *joinRepository {
 	}
 }
 
-func (qb *SceneQueryBuilder) GetPerformerIDs(id int) ([]int, error) {
+func (qb *sceneQueryBuilder) GetPerformerIDs(id int) ([]int, error) {
 	return qb.performersRepository().getIDs(id)
 }
 
-func (qb *SceneQueryBuilder) UpdatePerformers(id int, performerIDs []int) error {
+func (qb *sceneQueryBuilder) UpdatePerformers(id int, performerIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.performersRepository().replace(id, performerIDs)
 }
 
-func (qb *SceneQueryBuilder) tagsRepository() *joinRepository {
+func (qb *sceneQueryBuilder) tagsRepository() *joinRepository {
 	return &joinRepository{
 		repository: repository{
 			tx:        qb.tx,
@@ -658,16 +658,16 @@ func (qb *SceneQueryBuilder) tagsRepository() *joinRepository {
 	}
 }
 
-func (qb *SceneQueryBuilder) GetTagIDs(id int) ([]int, error) {
+func (qb *sceneQueryBuilder) GetTagIDs(id int) ([]int, error) {
 	return qb.tagsRepository().getIDs(id)
 }
 
-func (qb *SceneQueryBuilder) UpdateTags(id int, tagIDs []int) error {
+func (qb *sceneQueryBuilder) UpdateTags(id int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.tagsRepository().replace(id, tagIDs)
 }
 
-func (qb *SceneQueryBuilder) stashIDRepository() *stashIDRepository {
+func (qb *sceneQueryBuilder) stashIDRepository() *stashIDRepository {
 	return &stashIDRepository{
 		repository{
 			tx:        qb.tx,
@@ -677,10 +677,10 @@ func (qb *SceneQueryBuilder) stashIDRepository() *stashIDRepository {
 	}
 }
 
-func (qb *SceneQueryBuilder) GetStashIDs(sceneID int) ([]*models.StashID, error) {
+func (qb *sceneQueryBuilder) GetStashIDs(sceneID int) ([]*models.StashID, error) {
 	return qb.stashIDRepository().get(sceneID)
 }
 
-func (qb *SceneQueryBuilder) UpdateStashIDs(sceneID int, stashIDs []models.StashID) error {
+func (qb *sceneQueryBuilder) UpdateStashIDs(sceneID int, stashIDs []models.StashID) error {
 	return qb.stashIDRepository().replace(sceneID, stashIDs)
 }
