@@ -281,6 +281,8 @@ export class MandatoryStringCriterion extends StringCriterion {
   public modifierOptions = [
     StringCriterion.getModifierOption(CriterionModifier.Equals),
     StringCriterion.getModifierOption(CriterionModifier.NotEquals),
+    StringCriterion.getModifierOption(CriterionModifier.Includes),
+    StringCriterion.getModifierOption(CriterionModifier.Excludes),
   ];
 }
 
