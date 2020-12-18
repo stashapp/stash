@@ -8,3 +8,4 @@ export {
   useStudiosList,
   usePerformersList,
 } from "./ListHook";
+export * from './Lightbox';

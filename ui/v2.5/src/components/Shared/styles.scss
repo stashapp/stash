@@ -182,3 +182,16 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
     max-width: 300px;
   }
 }
+
+.RatingStars {
+  &-unfilled {
+    path {
+      fill: white;
+    }
+  }
+  &-filled {
+    path {
+      fill: gold;
+    }
+  }
+}
