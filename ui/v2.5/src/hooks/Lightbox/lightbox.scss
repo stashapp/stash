@@ -9,24 +9,22 @@
   background-color: rgba(20, 20, 20, 0.8);
   z-index: 1040;
 
+  .fa-icon {
+    path {
+      fill: white;
+    }
+  }
+
   &-header {
     display: flex;
     justify-content: flex-end;
     height: 4rem;
     flex-shrink: 0;
-
-    button {
-      width: 1.5rem;
-      height: 1.5rem;
-    }
+    margin-right: 1rem;
 
     .fa-icon {
       width: 1.5rem;
       height: 1.5rem
-
-      path {
-        fill: white;
-      }
     }
   }
 

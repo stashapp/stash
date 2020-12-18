@@ -110,10 +110,10 @@ export const useLightbox = (images: Image[], showNavigation = true): LightboxHoo
       { images.length > 0 ? (
         <>
           <div className={CLASSNAME_HEADER}>
-            <Button variant="link" onClick={toggleFullscreen}>
+            <Button variant="link" onClick={toggleFullscreen} title="Toggle Fullscreen">
               <Icon icon="expand" />
             </Button>
-            <Button variant="link" onClick={() => close()}>
+            <Button variant="link" onClick={() => close()} title="Close Lightbox">
               <Icon icon="times" />
             </Button>
           </div>
