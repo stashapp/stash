@@ -60,9 +60,7 @@ export const GalleryEditPanel: React.FC<
   // Network state
   const [isLoading, setIsLoading] = useState(true);
 
-  const [createGallery] = useGalleryCreate(
-    getGalleryInput() as GQL.GalleryCreateInput
-  );
+  const [createGallery] = useGalleryCreate();
   const [updateGallery] = useGalleryUpdate();
 
   useEffect(() => {
@@ -129,7 +127,7 @@ export const GalleryEditPanel: React.FC<
   function getGalleryInput() {
     return {
       id: props.isNew ? undefined : props.gallery.id,
-      title,
+      title: title ?? "",
       details,
       url,
       date,
@@ -144,7 +142,11 @@ export const GalleryEditPanel: React.FC<
     setIsLoading(true);
     try {
       if (props.isNew) {
-        const result = await createGallery();
+        const result = await createGallery({
+          variables: {
+            input: getGalleryInput(),
+          },
+        });
         if (result.data?.galleryCreate) {
           history.push(`/galleries/${result.data.galleryCreate.id}`);
           Toast.success({ content: "Created gallery" });
