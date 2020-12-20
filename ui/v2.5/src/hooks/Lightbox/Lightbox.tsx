@@ -95,7 +95,7 @@ export const LightboxComponent: React.FC<IProps> = ({
     if (isVisible) {
       if (index.current === null)
         setIndex(initialIndex);
-      document.body.style.overflow = 'visible';
+      document.body.style.overflow = 'hidden';
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (Mousetrap as any).pause();
     }
@@ -113,7 +113,8 @@ export const LightboxComponent: React.FC<IProps> = ({
   }, [isFullscreen, hide]);
 
   const handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
-    if ((e.target as Node).nodeName === 'DIV')
+    const { nodeName } = (e.target as Node);
+    if (nodeName === "DIV" || nodeName === "PICTURE")
       close();
   }
 

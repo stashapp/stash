@@ -1,12 +1,12 @@
 .Lightbox {
+  background-color: rgba(20, 20, 20, 0.8);
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  position: fixed;
-  top: 0;
-  right: 0;
   left: 0;
-  bottom: 0;
-  background-color: rgba(20, 20, 20, 0.8);
+  position: fixed;
+  right: 0;
+  top: 0;
   z-index: 1040;
 
   .fa-icon {
@@ -16,10 +16,10 @@
   }
 
   &-header {
-    display: flex;
     align-items: center;
-    height: 4rem;
+    display: flex;
     flex-shrink: 0;
+    height: 4rem;
 
     &-indicator {
       display: flex;
@@ -30,17 +30,17 @@
     }
 
     .fa-icon {
+      height: 1.5rem;
       width: 1.5rem;
-      height: 1.5rem
     }
   }
 
   &-display {
     display: flex;
-    position: relative;
     height: 100%;
-    margin-bottom: 2rem;
     justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
   }
 
   &-carousel {
@@ -54,16 +54,22 @@
     }
 
     &-image {
-      display: flex;
-      width: 100vw;
-      height: 100%;
       content-visibility: auto;
+      display: flex;
+      height: 100%;
+      width: 100vw;
 
-      picture, img {
+      picture {
+        display: flex;
         height: 100%;
+        margin: auto;
+      }
+
+      img {
+        max-height: 100%;
+        margin: auto;
         max-width: 100%;
         object-fit: contain;
-        margin: auto;
       }
     }
   }
@@ -72,8 +78,8 @@
     z-index: 1045;
 
     .fa-icon {
-      width: 4rem;
       height: 4rem;
+      width: 4rem;
     }
 
     &:focus {
@@ -86,10 +92,10 @@
   }
 
   &-nav {
-    height: 10rem;
     display: flex;
     flex-direction: row;
     flex-shrink: 0;
+    height: 10rem;
     margin: 0 auto 2rem 0;
     padding: 0 10rem;
     position: relative;
@@ -104,9 +110,9 @@
     }
 
     &-image {
+      cursor: pointer;
       height: 100%;
       margin-right: 1rem;
-      cursor: pointer;
     }
   }
 }
