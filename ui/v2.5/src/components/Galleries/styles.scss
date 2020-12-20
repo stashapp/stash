@@ -121,7 +121,6 @@ $galleryTabWidth: 450px;
   &-landscape {
     flex-grow: 2;
     width: 96vw;
-
   }
 
   &-portrait {
@@ -131,8 +130,12 @@ $galleryTabWidth: 450px;
 
   @mixin galleryWidth($width) {
     height: ($width / 3) * 2;
-    &-landscape { width: $width; }
-    &-portrait { width: $width / 2; }
+    &-landscape {
+      width: $width;
+    }
+    &-portrait {
+      width: $width / 2;
+    }
   }
 
   @media (min-width: 576px) {
@@ -157,7 +160,7 @@ $galleryTabWidth: 450px;
   }
 
   &-footer {
-    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, .3));
+    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
     bottom: 0;
     padding: 1rem;
     position: absolute;

@@ -1,8 +1,8 @@
-import { useCallback, useContext, useEffect } from 'react';
-import * as GQL from 'src/core/generated-graphql';
-import { LightboxContext, IState } from './context';
+import { useCallback, useContext, useEffect } from "react";
+import * as GQL from "src/core/generated-graphql";
+import { LightboxContext, IState } from "./context";
 
-export const useLightbox = (state: Partial<Omit<IState, 'isVisible'>>) => {
+export const useLightbox = (state: Partial<Omit<IState, "isVisible">>) => {
   const { setLightboxState } = useContext(LightboxContext);
 
   useEffect(() => {
@@ -13,20 +13,32 @@ export const useLightbox = (state: Partial<Omit<IState, 'isVisible'>>) => {
       initialIndex: state.initialIndex,
       pageHeader: state.pageHeader,
     });
-  }, [setLightboxState, state.images, state.showNavigation, state.pageCallback, state.initialIndex, state.pageHeader]);
+  }, [
+    setLightboxState,
+    state.images,
+    state.showNavigation,
+    state.pageCallback,
+    state.initialIndex,
+    state.pageHeader,
+  ]);
 
-  const show = useCallback((index?: number) => {
-    setLightboxState({
-      initialIndex: index,
-      isVisible: true,
-    });
-  }, [setLightboxState]);
+  const show = useCallback(
+    (index?: number) => {
+      setLightboxState({
+        initialIndex: index,
+        isVisible: true,
+      });
+    },
+    [setLightboxState]
+  );
   return show;
-}
+};
 
 export const useGalleryLightbox = (id: string) => {
   const { setLightboxState } = useContext(LightboxContext);
-  const [fetchGallery, { data }] = GQL.useFindGalleryLazyQuery({ variables: { id } });
+  const [fetchGallery, { data }] = GQL.useFindGalleryLazyQuery({
+    variables: { id },
+  });
 
   useEffect(() => {
     if (data)
@@ -55,7 +67,7 @@ export const useGalleryLightbox = (id: string) => {
       });
       fetchGallery();
     }
-  }
+  };
 
   return show;
-}
+};

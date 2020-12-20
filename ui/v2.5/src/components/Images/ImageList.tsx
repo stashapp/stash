@@ -26,20 +26,25 @@ interface IImageWallProps {
   pageCount: number;
 }
 
-const ImageWall: React.FC<IImageWallProps> = ({ images, onChangePage, currentPage, pageCount }) => {
-  const handleLightBoxPage = useCallback((direction: number) => {
-    if (direction === -1) {
-      if (currentPage === 1)
-        return false;
-      onChangePage(currentPage - 1);
-    }
-    else {
-      if (currentPage === pageCount)
-        return false;
-      onChangePage(currentPage + 1);
-    }
-    return direction === -1 || direction === 1;
-  }, [onChangePage, currentPage, pageCount]);
+const ImageWall: React.FC<IImageWallProps> = ({
+  images,
+  onChangePage,
+  currentPage,
+  pageCount,
+}) => {
+  const handleLightBoxPage = useCallback(
+    (direction: number) => {
+      if (direction === -1) {
+        if (currentPage === 1) return false;
+        onChangePage(currentPage - 1);
+      } else {
+        if (currentPage === pageCount) return false;
+        onChangePage(currentPage + 1);
+      }
+      return direction === -1 || direction === 1;
+    },
+    [onChangePage, currentPage, pageCount]
+  );
 
   const showLightbox = useLightbox({
     images,
@@ -226,7 +231,7 @@ export const ImageList: React.FC<IImageList> = ({
     selectedIds: Set<string>,
     zoomIndex: number,
     onChangePage: (page: number) => void,
-    pageCount: number,
+    pageCount: number
   ) {
     if (!result.data || !result.data.findImages) {
       return;
@@ -247,7 +252,8 @@ export const ImageList: React.FC<IImageList> = ({
           onChangePage={onChangePage}
           currentPage={filter.currentPage}
           pageCount={pageCount}
-        />);
+        />
+      );
     }
   }
 
@@ -257,12 +263,19 @@ export const ImageList: React.FC<IImageList> = ({
     selectedIds: Set<string>,
     zoomIndex: number,
     onChangePage: (page: number) => void,
-    pageCount: number,
+    pageCount: number
   ) {
     return (
       <>
         {maybeRenderImageExportDialog(selectedIds)}
-        {renderImages(result, filter, selectedIds, zoomIndex, onChangePage, pageCount)}
+        {renderImages(
+          result,
+          filter,
+          selectedIds,
+          zoomIndex,
+          onChangePage,
+          pageCount
+        )}
       </>
     );
   }

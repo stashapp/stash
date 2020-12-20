@@ -8,7 +8,7 @@ interface IProps {
 }
 
 export const GalleryViewer: React.FC<IProps> = ({ gallery }) => {
-  const images = (gallery?.images ?? []);
+  const images = gallery?.images ?? [];
   const showLightbox = useLightbox({ images, showNavigation: false });
 
   const thumbs = images.map((file, index) => (

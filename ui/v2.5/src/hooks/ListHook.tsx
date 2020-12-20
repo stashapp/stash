@@ -95,7 +95,7 @@ interface IListHookOptions<T, E> {
     selectedIds: Set<string>,
     zoomIndex: number,
     onChangePage: (page: number) => void,
-    pageCount: number,
+    pageCount: number
   ) => React.ReactNode;
   renderEditDialog?: (
     selected: E[],
@@ -358,7 +358,14 @@ const RenderList = <
     return (
       <>
         {renderPagination()}
-        {renderContent(result, filter, selectedIds, zoomIndex, onChangePage, pages)}
+        {renderContent(
+          result,
+          filter,
+          selectedIds,
+          zoomIndex,
+          onChangePage,
+          pages
+        )}
         <PaginationIndex
           itemsPerPage={filter.itemsPerPage}
           currentPage={filter.currentPage}

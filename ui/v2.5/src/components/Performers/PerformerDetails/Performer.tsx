@@ -49,7 +49,9 @@ export const Performer: React.FC = () => {
       ? performer.image_path ?? ""
       : imagePreview ?? `${performer.image_path}?default=true`;
 
-  const showLightbox = useLightbox({ images: [{ paths: { thumbnail: activeImage, image: activeImage } }] });
+  const showLightbox = useLightbox({
+    images: [{ paths: { thumbnail: activeImage, image: activeImage } }],
+  });
 
   // Network state
   const [loading, setIsLoading] = useState(false);
@@ -318,10 +320,7 @@ export const Performer: React.FC = () => {
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
-          <Button
-            variant="link"
-            onClick={() => showLightbox()}
-          >
+          <Button variant="link" onClick={() => showLightbox()}>
             <img className="performer" src={activeImage} alt="Performer" />
           </Button>
         )}

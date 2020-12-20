@@ -1,8 +1,8 @@
-import React, { useCallback, useState } from 'react';
-import * as GQL from 'src/core/generated-graphql';
-import { LightboxComponent } from './Lightbox';
+import React, { useCallback, useState } from "react";
+import * as GQL from "src/core/generated-graphql";
+import { LightboxComponent } from "./Lightbox";
 
-type Image = Pick<GQL.Image, 'paths'>;
+type Image = Pick<GQL.Image, "paths">;
 
 export interface IState {
   images: Image[];
@@ -15,9 +15,11 @@ export interface IState {
 }
 interface IContext {
   setLightboxState: (state: Partial<IState>) => void;
-};
+}
 
-export const LightboxContext = React.createContext<IContext>({ setLightboxState: () => {} });
+export const LightboxContext = React.createContext<IContext>({
+  setLightboxState: () => {},
+});
 const Lightbox: React.FC = ({ children }) => {
   const [lightboxState, setLightboxState] = useState<IState>({
     images: [],
@@ -26,24 +28,27 @@ const Lightbox: React.FC = ({ children }) => {
     showNavigation: true,
   });
 
-  const setPartialState = useCallback((state: Partial<IState>) => {
-    setLightboxState((currentState: IState) => ({
-      ...currentState,
-      ...state,
-    }));
-  }, [setLightboxState]);
+  const setPartialState = useCallback(
+    (state: Partial<IState>) => {
+      setLightboxState((currentState: IState) => ({
+        ...currentState,
+        ...state,
+      }));
+    },
+    [setLightboxState]
+  );
 
   return (
     <LightboxContext.Provider value={{ setLightboxState: setPartialState }}>
-      { children }
-      { lightboxState.isVisible && (
+      {children}
+      {lightboxState.isVisible && (
         <LightboxComponent
-          { ...lightboxState }
-          hide={() => setLightboxState({ ...lightboxState, isVisible: false }) }
+          {...lightboxState}
+          hide={() => setLightboxState({ ...lightboxState, isVisible: false })}
         />
       )}
     </LightboxContext.Provider>
   );
-}
+};
 
 export default Lightbox;

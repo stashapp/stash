@@ -217,10 +217,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
         <div className="row">
           <div className="GalleryWall">
             {result.data.findGalleries.galleries.map((gallery) => (
-              <GalleryWallCard
-                key={gallery.id}
-                gallery={gallery}
-              />
+              <GalleryWallCard key={gallery.id} gallery={gallery} />
             ))}
           </div>
         </div>
