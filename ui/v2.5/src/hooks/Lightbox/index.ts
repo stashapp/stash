@@ -1,1 +1,2 @@
-export * from './Lightbox';
+export * from './context';
+export * from './hooks';

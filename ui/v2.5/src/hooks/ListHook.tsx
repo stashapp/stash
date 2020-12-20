@@ -64,6 +64,7 @@ interface IListHookData {
   filter: ListFilterModel;
   template: React.ReactElement;
   onSelectChange: (id: string, selected: boolean, shiftKey: boolean) => void;
+  onChangePage: (page: number) => void;
 }
 
 export interface IListHookOperation<T> {
@@ -92,7 +93,9 @@ interface IListHookOptions<T, E> {
     result: T,
     filter: ListFilterModel,
     selectedIds: Set<string>,
-    zoomIndex: number
+    zoomIndex: number,
+    onChangePage: (page: number) => void,
+    pageCount: number,
   ) => React.ReactNode;
   renderEditDialog?: (
     selected: E[],
@@ -350,10 +353,12 @@ const RenderList = <
       return;
     }
 
+    const pages = Math.ceil(totalCount / filter.itemsPerPage);
+
     return (
       <>
         {renderPagination()}
-        {renderContent(result, filter, selectedIds, zoomIndex)}
+        {renderContent(result, filter, selectedIds, zoomIndex, onChangePage, pages)}
         <PaginationIndex
           itemsPerPage={filter.itemsPerPage}
           currentPage={filter.currentPage}
@@ -525,6 +530,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     filter,
     template,
     onSelectChange,
+    onChangePage,
   };
 };
 

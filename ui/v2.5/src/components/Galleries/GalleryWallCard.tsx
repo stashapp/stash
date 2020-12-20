@@ -17,7 +17,7 @@ interface IProps {
 
 const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
   const intl = useIntl();
-  const [showLightbox, lightbox] = useGalleryLightbox(gallery.id);
+  const showLightbox = useGalleryLightbox(gallery.id);
 
   const orientation = (gallery?.cover?.file.width ?? 0) > (gallery.cover?.file.height ?? 0) ? 'landscape' : 'portrait';
   const cover = gallery?.cover?.paths.thumbnail ?? '';
@@ -37,7 +37,7 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
         <RatingStars rating={gallery.rating} />
         <img src={cover} alt="" className={CLASSNAME_IMG} />
         <footer className={CLASSNAME_FOOTER}>
-          <Link to={`/galleries/${gallery.id}`}>
+          <Link to={`/galleries/${gallery.id}`} onClick={e => e.stopPropagation()}>
             { title && (
               <TruncatedText text={title} lineCount={1} className={CLASSNAME_TITLE} />
             )}
@@ -46,7 +46,6 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
           </Link>
         </footer>
       </section>
-      { lightbox }
     </>
   );
 };

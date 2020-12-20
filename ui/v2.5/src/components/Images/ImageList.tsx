@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
-import FsLightbox from "fslightbox-react";
 import Mousetrap from "mousetrap";
 import {
   FindImagesQueryResult,
@@ -9,7 +8,7 @@ import {
 } from "src/core/generated-graphql";
 import * as GQL from "src/core/generated-graphql";
 import { queryFindImages } from "src/core/StashService";
-import { useImagesList } from "src/hooks";
+import { useImagesList, useLightbox } from "src/hooks";
 import { TextUtils } from "src/utils";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -22,25 +21,40 @@ import { ExportDialog } from "../Shared/ExportDialog";
 
 interface IImageWallProps {
   images: GQL.SlimImageDataFragment[];
+  onChangePage: (page: number) => void;
+  currentPage: number;
+  pageCount: number;
 }
 
-const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
-  const [lightboxToggle, setLightboxToggle] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+const ImageWall: React.FC<IImageWallProps> = ({ images, onChangePage, currentPage, pageCount }) => {
+  const handleLightBoxPage = useCallback((direction: number) => {
+    if (direction === -1) {
+      if (currentPage === 1)
+        return false;
+      onChangePage(currentPage - 1);
+    }
+    else {
+      if (currentPage === pageCount)
+        return false;
+      onChangePage(currentPage + 1);
+    }
+    return direction === -1 || direction === 1;
+  }, [onChangePage, currentPage, pageCount]);
 
-  const openImage = (index: number) => {
-    setCurrentIndex(index);
-    setLightboxToggle(!lightboxToggle);
-  };
+  const showLightbox = useLightbox({
+    images,
+    showNavigation: false,
+    pageCallback: handleLightBoxPage,
+    pageHeader: `Page ${currentPage} / ${pageCount}`,
+  });
 
-  const photos = images.map((image) => image.paths.image ?? "");
   const thumbs = images.map((image, index) => (
     <div
       role="link"
       tabIndex={index}
       key={image.id}
-      onClick={() => openImage(index)}
-      onKeyPress={() => openImage(index)}
+      onClick={() => showLightbox(index)}
+      onKeyPress={() => showLightbox(index)}
     >
       <img
         src={image.paths.thumbnail ?? ""}
@@ -51,32 +65,9 @@ const ImageWall: React.FC<IImageWallProps> = ({ images }) => {
     </div>
   ));
 
-  // FsLightbox doesn't update unless the key updates
-  const key = images.map((i) => i.id).join(",");
-
-  function onLightboxOpen() {
-    // disable mousetrap
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (Mousetrap as any).pause();
-  }
-
-  function onLightboxClose() {
-    // re-enable mousetrap
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (Mousetrap as any).unpause();
-  }
-
   return (
     <div className="gallery">
       <div className="flexbin">{thumbs}</div>
-      <FsLightbox
-        sourceIndex={currentIndex}
-        toggler={lightboxToggle}
-        sources={photos}
-        key={key}
-        onOpen={onLightboxOpen}
-        onClose={onLightboxClose}
-      />
     </div>
   );
 };
@@ -125,7 +116,7 @@ export const ImageList: React.FC<IImageList> = ({
     };
   };
 
-  const listData = useImagesList({
+  const { template, onSelectChange } = useImagesList({
     zoomable: true,
     selectable: true,
     otherOperations,
@@ -150,12 +141,7 @@ export const ImageList: React.FC<IImageList> = ({
       filterCopy.itemsPerPage = 1;
       filterCopy.currentPage = index + 1;
       const singleResult = await queryFindImages(filterCopy);
-      if (
-        singleResult &&
-        singleResult.data &&
-        singleResult.data.findImages &&
-        singleResult.data.findImages.images.length === 1
-      ) {
+      if (singleResult.data.findImages.images.length === 1) {
         const { id } = singleResult!.data!.findImages!.images[0];
         // navigate to the image player page
         history.push(`/images/${id}`);
@@ -228,7 +214,7 @@ export const ImageList: React.FC<IImageList> = ({
         selecting={selectedIds.size > 0}
         selected={selectedIds.has(image.id)}
         onSelectedChanged={(selected: boolean, shiftKey: boolean) =>
-          listData.onSelectChange(image.id, selected, shiftKey)
+          onSelectChange(image.id, selected, shiftKey)
         }
       />
     );
@@ -238,7 +224,9 @@ export const ImageList: React.FC<IImageList> = ({
     result: FindImagesQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
-    zoomIndex: number
+    zoomIndex: number,
+    onChangePage: (page: number) => void,
+    pageCount: number,
   ) {
     if (!result.data || !result.data.findImages) {
       return;
@@ -252,11 +240,14 @@ export const ImageList: React.FC<IImageList> = ({
         </div>
       );
     }
-    // if (filter.displayMode === DisplayMode.List) {
-    //   return <ImageListTable images={result.data.findImages.images} />;
-    // }
     if (filter.displayMode === DisplayMode.Wall) {
-      return <ImageWall images={result.data.findImages.images} />;
+      return (
+        <ImageWall
+          images={result.data.findImages.images}
+          onChangePage={onChangePage}
+          currentPage={filter.currentPage}
+          pageCount={pageCount}
+        />);
     }
   }
 
@@ -264,15 +255,17 @@ export const ImageList: React.FC<IImageList> = ({
     result: FindImagesQueryResult,
     filter: ListFilterModel,
     selectedIds: Set<string>,
-    zoomIndex: number
+    zoomIndex: number,
+    onChangePage: (page: number) => void,
+    pageCount: number,
   ) {
     return (
       <>
         {maybeRenderImageExportDialog(selectedIds)}
-        {renderImages(result, filter, selectedIds, zoomIndex)}
+        {renderImages(result, filter, selectedIds, zoomIndex, onChangePage, pageCount)}
       </>
     );
   }
 
-  return listData.template;
+  return template;
 };

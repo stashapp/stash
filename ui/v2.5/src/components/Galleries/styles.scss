@@ -114,17 +114,35 @@ $galleryTabWidth: 450px;
 
 .GalleryWallCard {
   position: relative;
-  height: 21.333333vw;
   padding: 2px;
+
+  $width: 96vw;
+  height: auto;
 
   &-landscape {
     flex-grow: 2;
-    width: 32vw;
+    width: 96vw
 
   }
   &-portrait {
     flex-grow: 1;
-    width: 16vw;
+    width: 96vw
+  }
+
+  @mixin galleryWidth($width) {
+    height: ($width / 3) * 2;
+    &-landscape { width: $width; }
+    &-portrait { width: $width / 2; }
+  }
+
+  @media (min-width: 576px) {
+    @include galleryWidth(96vw);
+  }
+  @media (min-width: 768px) {
+    @include galleryWidth(48vw);
+  }
+  @media (min-width: 1200px) {
+    @include galleryWidth(32vw);
   }
 
   &-img {
@@ -141,12 +159,15 @@ $galleryTabWidth: 450px;
   &-footer {
     background-image: linear-gradient(rgba(0,0,0,0), rgba(0,0,0, 0.3));
     bottom: 0;
-    opacity: 0;
     padding: 1rem;
     position: absolute;
     width: 100%;
     text-shadow: 1px 1px 3px black;
     transition: 0s opacity;
+
+    @media (min-width: 768px) {
+      opacity: 0;
+    }
 
     &:hover {
       .GalleryWallCard-title {

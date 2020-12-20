@@ -186,7 +186,6 @@ export const Gallery: React.FC = () => {
 
         <Tab.Content>
           <Tab.Pane eventKey="images">
-            {/* <GalleryViewer gallery={gallery} /> */}
             <GalleryImagesPanel gallery={gallery} />
           </Tab.Pane>
           <Tab.Pane eventKey="add">
