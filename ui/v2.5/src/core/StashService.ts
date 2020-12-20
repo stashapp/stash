@@ -499,9 +499,8 @@ const galleryMutationImpactedQueries = [
   GQL.FindGalleriesDocument,
 ];
 
-export const useGalleryCreate = (input: GQL.GalleryCreateInput) =>
+export const useGalleryCreate = () =>
   GQL.useGalleryCreateMutation({
-    variables: input,
     update: deleteCache(galleryMutationImpactedQueries),
   });
 
