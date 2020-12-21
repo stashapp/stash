@@ -1,8 +1,8 @@
 type StatsResultType {
   scene_count: Int!
-  scenes_size: Int!
+  scenes_size: Float!
   image_count: Int!
-  images_size: Int!
+  images_size: Float!
   gallery_count: Int!
   performer_count: Int!
   studio_count: Int!
