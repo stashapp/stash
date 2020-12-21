@@ -397,6 +397,44 @@ When `useCDP` is set to true, stash will execute or connect to an instance of Ch
 
 `Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`). As remote instance a docker container can also be used with the `chromedp/headless-shell` image being highly recommended.
 
+### CDP Click support
+
+When using CDP you can use  the `clicks` part of the `driver` section to do Mouse Clicks on elements you need to collapse or toggle. Each click element has an `xpath` value that holds the XPath for the button/element you need to click and an optional `sleep` value that is the time in seconds to wait for after clicking.
+If the `sleep` value is not set it defaults to `2` seconds.
+
+A demo scraper using `clicks` follows.
+
+```yaml
+name: clickDemo # demo only for a single URL
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - https://getbootstrap.com/docs/4.3/components/collapse/
+    scraper: sceneScraper
+
+xPathScrapers:
+  sceneScraper:
+    scene:
+      Title: //head/title
+      Details: # shows the id/s of the the visible div/s for the Multiple targets example of the page
+        selector: //div[@class="bd-example"]//div[@class="multi-collapse collapse show"]/@id
+        concat: "\n\n"
+
+driver:
+  useCDP: true
+  sleep: 1
+  clicks: # demo usage toggle on off multiple times
+    - xpath: //a[@href="#multiCollapseExample1"] # toggle on first element
+    - xpath: //button[@data-target="#multiCollapseExample2"] # toggle on second element
+      sleep: 4
+    - xpath: //a[@href="#multiCollapseExample1"] # toggle off fist element
+      sleep: 1
+    - xpath: //button[@data-target="#multiCollapseExample2"] # toggle off second element
+    - xpath: //button[@data-target="#multiCollapseExample2"] # toggle on second element
+```
+
+Note that each `click` adds an extra delay of `clicks sleep` seconds, so the above adds `2+4+1+2+2=11` seconds to the loading time of the page.
+
 ### Cookie support
 
 In some websites the use of cookies is needed to bypass a welcoming message or some other kind of protection. Stash supports the setting of cookies for the direct xpath scraper and the CDP based one. Due to implementation issues the usage varies a bit.
