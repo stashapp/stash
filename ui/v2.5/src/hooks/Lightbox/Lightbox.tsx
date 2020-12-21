@@ -283,7 +283,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                 onClick={handleLeft}
                 className={`${CLASSNAME_NAVBUTTON} d-none d-lg-block`}
               >
-                <Icon icon="chevron-circle-left" />
+                <Icon icon="chevron-left" />
               </Button>
             )}
 
@@ -313,7 +313,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                 onClick={handleRight}
                 className={`${CLASSNAME_NAVBUTTON} d-none d-lg-block`}
               >
-                <Icon icon="chevron-circle-right" />
+                <Icon icon="chevron-right" />
               </Button>
             )}
           </div>
@@ -324,7 +324,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                 onClick={() => setIndex(images.length - 1)}
                 className={CLASSNAME_NAVBUTTON}
               >
-                <Icon icon="chevron-left" />
+                <Icon icon="arrow-left" className="mr-4" />
               </Button>
               {navItems}
               <Button
@@ -332,7 +332,7 @@ export const LightboxComponent: React.FC<IProps> = ({
                 onClick={() => setIndex(0)}
                 className={CLASSNAME_NAVBUTTON}
               >
-                <Icon icon="chevron-right" />
+                <Icon icon="arrow-right" className="ml-4" />
               </Button>
             </div>
           )}
