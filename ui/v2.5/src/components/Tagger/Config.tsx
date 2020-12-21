@@ -1,4 +1,4 @@
-import React, { Dispatch, useEffect, useState } from "react";
+import React, { Dispatch, useRef } from "react";
 import {
   Badge,
   Button,
@@ -8,51 +8,9 @@ import {
   InputGroup,
 } from "react-bootstrap";
 import { Icon } from "src/components/Shared";
-import localForage from "localforage";
-
 import { useConfiguration } from "src/core/StashService";
 
-const DEFAULT_BLACKLIST = [
-  "\\sXXX\\s",
-  "1080p",
-  "720p",
-  "2160p",
-  "KTR",
-  "RARBG",
-  "\\scom\\s",
-  "\\[",
-  "\\]",
-];
-
-export const initialConfig: ITaggerConfig = {
-  blacklist: DEFAULT_BLACKLIST,
-  showMales: false,
-  mode: "auto",
-  setCoverImage: true,
-  setTags: false,
-  tagOperation: "merge",
-  fingerprintQueue: {},
-};
-
-export type ParseMode = "auto" | "filename" | "dir" | "path" | "metadata";
-const ModeDesc = {
-  auto: "Uses metadata if present, or filename",
-  metadata: "Only uses metadata",
-  filename: "Only uses filename",
-  dir: "Only uses parent directory of video file",
-  path: "Uses entire file path",
-};
-
-export interface ITaggerConfig {
-  blacklist: string[];
-  showMales: boolean;
-  mode: ParseMode;
-  setCoverImage: boolean;
-  setTags: boolean;
-  tagOperation: string;
-  selectedEndpoint?: string;
-  fingerprintQueue: Record<string, string[]>;
-}
+import { ITaggerConfig, ParseMode, ModeDesc } from './constants';
 
 interface IConfigProps {
   show: boolean;
@@ -62,26 +20,7 @@ interface IConfigProps {
 
 const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
   const stashConfig = useConfiguration();
-  const [blacklistInput, setBlacklistInput] = useState<string>("");
-
-  useEffect(() => {
-    localForage.getItem<ITaggerConfig>("tagger").then((data) => {
-      setConfig({
-        blacklist: data?.blacklist ?? DEFAULT_BLACKLIST,
-        showMales: data?.showMales ?? false,
-        mode: data?.mode ?? "auto",
-        setCoverImage: data?.setCoverImage ?? true,
-        setTags: data?.setTags ?? false,
-        tagOperation: data?.tagOperation ?? "merge",
-        selectedEndpoint: data?.selectedEndpoint,
-        fingerprintQueue: data?.fingerprintQueue ?? {},
-      });
-    });
-  }, [setConfig]);
-
-  useEffect(() => {
-    localForage.setItem("tagger", config);
-  }, [config]);
+  const blacklistRef = useRef<HTMLInputElement | null>(null);
 
   const handleInstanceSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedEndpoint = e.currentTarget.value;
@@ -102,11 +41,15 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
   };
 
   const handleBlacklistAddition = () => {
+    if (!blacklistRef.current)
+      return;
+
+    const input = blacklistRef.current.value;
     setConfig({
       ...config,
-      blacklist: [...config.blacklist, blacklistInput],
+      blacklist: [...config.blacklist, input],
     });
-    setBlacklistInput("");
+    blacklistRef.current.value = '';
   };
 
   const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
@@ -206,10 +149,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
             <InputGroup>
               <Form.Control
                 className="text-input"
-                value={blacklistInput}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setBlacklistInput(e.currentTarget.value)
-                }
+                ref={blacklistRef}
               />
               <InputGroup.Append>
                 <Button onClick={handleBlacklistAddition}>Add</Button>

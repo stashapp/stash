@@ -3,6 +3,7 @@ import { Button, Card, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
+import { useLocalForage } from "src/hooks";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, TruncatedText } from "src/components/Shared";
@@ -14,7 +15,8 @@ import {
 import { Manual } from "src/components/Help/Manual";
 
 import StashSearchResult from "./StashSearchResult";
-import Config, { ITaggerConfig, initialConfig, ParseMode } from "./Config";
+import Config from "./Config";
+import { LOCAL_FORAGE_KEY, ITaggerConfig, ParseMode } from './constants';
 import {
   parsePath,
   selectScenes,
@@ -23,6 +25,14 @@ import {
 } from "./utils";
 
 const dateRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
+const parseDate = (input: string): string => {
+  const date = s.match(dateRegex);
+  if (date) {
+    s = s.replace(date[0], ` 20${date[1]}-${date[2]}-${date[3]} `);
+  }
+  return input;
+}
+
 function prepareQueryString(
   scene: Partial<GQL.SlimSceneDataFragment>,
   paths: string[],
@@ -55,12 +65,8 @@ function prepareQueryString(
   blacklist.forEach((b) => {
     s = s.replace(new RegExp(b, "i"), "");
   });
-  const date = s.match(dateRegex);
-  s = s.replace(/-/g, " ");
-  if (date) {
-    s = s.replace(date[0], ` 20${date[1]}-${date[2]}-${date[3]} `);
-  }
-  return s.replace(/\./g, " ");
+  s = parseDate(s);
+  return s.replace(/[-\.]/g, " ");
 }
 
 interface ITaggerListProps {
@@ -248,6 +254,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       } else if (!isTagged && !hasStashIDs) {
         mainContent = (
           <InputGroup>
+            <InputGroup.Prepend>
+              <InputGroup.Text>Query</InputGroup.Text>
+            </InputGroup.Prepend>
             <Form.Control
               className="text-input"
               value={modifiedQuery || defaultQueryString}
@@ -417,12 +426,6 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   return (
     <Card className="tagger-table">
       <div className="tagger-table-header d-flex flex-nowrap align-items-center">
-        <div className="col-md-6 pl-0">
-          <b>Scene</b>
-        </div>
-        <div className="col-md-2">
-          <b>Query</b>
-        </div>
         <b className="ml-auto mr-2 text-danger">{fingerprintError}</b>
         <div className="mr-2">
           {fingerprintQueue.length > 0 && (
@@ -460,9 +463,12 @@ interface ITaggerProps {
 
 export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
   const stashConfig = useConfiguration();
-  const [config, setConfig] = useState<ITaggerConfig>(initialConfig);
+  const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(LOCAL_FORAGE_KEY);
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);
+
+  if (!config)
+    return <LoadingIndicator />;
 
   const savedEndpointIndex =
     stashConfig.data?.configuration.general.stashBoxes.findIndex(
@@ -503,7 +509,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
         onClose={() => setShowManual(false)}
         defaultActiveTab="Tagger.md"
       />
-      <div className="tagger-container row mx-md-auto">
+      <div className="tagger-container mx-md-auto">
         {selectedEndpointIndex !== -1 && selectedEndpoint ? (
           <>
             <div className="row mb-2 no-gutters">
