@@ -16,7 +16,12 @@ import { Manual } from "src/components/Help/Manual";
 
 import StashSearchResult from "./StashSearchResult";
 import Config from "./Config";
-import { LOCAL_FORAGE_KEY, ITaggerConfig, ParseMode } from './constants';
+import {
+  LOCAL_FORAGE_KEY,
+  ITaggerConfig,
+  ParseMode,
+  initialConfig,
+} from "./constants";
 import {
   parsePath,
   selectScenes,
@@ -24,20 +29,78 @@ import {
   sortScenesByDuration,
 } from "./utils";
 
-const simpleDateRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
-const isoDateRegex = /\d{4}[-.]\d{2}[-.]\d{2}/;
+const months = [
+  "jan",
+  "feb",
+  "mar",
+  "apr",
+  "may",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "oct",
+  "nov",
+  "dec",
+];
+
+const ddmmyyRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
+const yyyymmddRegex = /(\d{4})[-.](\d{2})[-.](\d{2})/;
+const mmddyyRegex = /(\d{2})[-.](\d{2})[-.](\d{4})/;
+const ddMMyyRegex = new RegExp(
+  `(\\d{1,2}).(${months.join("|")})\\.?.(\\d{4})`,
+  "i"
+);
+const MMddyyRegex = new RegExp(
+  `(${months.join("|")})\\.?.(\\d{1,2}),?.(\\d{4})`,
+  "i"
+);
 const parseDate = (input: string): string => {
   let output = input;
-  const simpleDate = output.match(simpleDateRegex);
-  if (simpleDate) {
-    output = output.replace(simpleDate[0], ` 20${simpleDate[1]}-${simpleDate[2]}-${simpleDate[3]} `);
+  const ddmmyy = output.match(ddmmyyRegex);
+  if (ddmmyy) {
+    output = output.replace(
+      ddmmyy[0],
+      ` 20${ddmmyy[1]}-${ddmmyy[2]}-${ddmmyy[3]} `
+    );
   }
-  const isoDate = output.match(isoDateRegex);
-  if (isoDate) {
-    output = output.replace(isoDate[0], ` 20${isoDate[1]}-${isoDate[2]}-${isoDate[3]} `);
+  const mmddyy = output.match(mmddyyRegex);
+  if (mmddyy) {
+    output = output.replace(
+      mmddyy[0],
+      ` 20${mmddyy[1]}-${mmddyy[2]}-${mmddyy[3]} `
+    );
   }
-  return output;
-}
+  const ddMMyy = output.match(ddMMyyRegex);
+  if (ddMMyy) {
+    const month = (months.indexOf(ddMMyy[2].toLowerCase()) + 1)
+      .toString()
+      .padStart(2, "0");
+    output = output.replace(
+      ddMMyy[0],
+      ` ${ddMMyy[3]}-${month}-${ddMMyy[1].padStart(2, "0")} `
+    );
+  }
+  const MMddyy = output.match(MMddyyRegex);
+  if (MMddyy) {
+    const month = (months.indexOf(MMddyy[1].toLowerCase()) + 1)
+      .toString()
+      .padStart(2, "0");
+    output = output.replace(
+      MMddyy[0],
+      ` ${MMddyy[3]}-${month}-${MMddyy[2].padStart(2, "0")} `
+    );
+  }
+
+  const yyyymmdd = output.search(yyyymmddRegex);
+  if (yyyymmdd !== -1)
+    return (
+      output.slice(0, yyyymmdd).replace(/-/g, " ") +
+      output.slice(yyyymmdd, yyyymmdd + 10) +
+      output.slice(yyyymmdd + 10).replace(/-/g, " ")
+    );
+  return output.replace(/-/g, " ");
+};
 
 function prepareQueryString(
   scene: Partial<GQL.SlimSceneDataFragment>,
@@ -61,6 +124,7 @@ function prepareQueryString(
     return str;
   }
   let s = "";
+
   if (mode === "auto" || mode === "filename") {
     s = filename;
   } else if (mode === "path") {
@@ -72,7 +136,7 @@ function prepareQueryString(
     s = s.replace(new RegExp(b, "i"), "");
   });
   s = parseDate(s);
-  return s.replace(/[-.]/g, " ");
+  return s.replace(/\./g, " ");
 }
 
 interface ITaggerListProps {
@@ -469,12 +533,14 @@ interface ITaggerProps {
 
 export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
   const stashConfig = useConfiguration();
-  const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(LOCAL_FORAGE_KEY);
+  const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
+    LOCAL_FORAGE_KEY,
+    initialConfig
+  );
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);
 
-  if (!config)
-    return <LoadingIndicator />;
+  if (!config) return <LoadingIndicator />;
 
   const savedEndpointIndex =
     stashConfig.data?.configuration.general.stashBoxes.findIndex(

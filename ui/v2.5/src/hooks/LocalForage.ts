@@ -68,7 +68,7 @@ export function useLocalForage<T>(
     if (!_.isEqual(Cache[key], data)) {
       Cache[key] = _.merge({
         ...Cache[key],
-        ...data
+        ...data,
       });
       localForage.setItem(key, JSON.stringify(Cache[key]));
     }

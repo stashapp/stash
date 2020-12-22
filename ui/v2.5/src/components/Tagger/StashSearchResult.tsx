@@ -105,13 +105,15 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   const updateStudioStashID = useUpdateStudioStashID();
   const [updateScene] = GQL.useSceneUpdateMutation({
     onError: (e) => {
-      const message = e.message === "invalid JPEG format: short Huffman data" ?
-        "Failed to save scene due to corrupted cover image" : "Failed to save scene";
+      const message =
+        e.message === "invalid JPEG format: short Huffman data"
+          ? "Failed to save scene due to corrupted cover image"
+          : "Failed to save scene";
       setError({
         message,
         details: e.message,
       });
-    }
+    },
   });
 
   const { data: allTags } = GQL.useAllTagsForFilterQuery();

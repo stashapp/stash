@@ -10,7 +10,7 @@ import {
 import { Icon } from "src/components/Shared";
 import { useConfiguration } from "src/core/StashService";
 
-import { ITaggerConfig, ParseMode, ModeDesc } from './constants';
+import { ITaggerConfig, ParseMode, ModeDesc } from "./constants";
 
 interface IConfigProps {
   show: boolean;
@@ -41,15 +41,14 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
   };
 
   const handleBlacklistAddition = () => {
-    if (!blacklistRef.current)
-      return;
+    if (!blacklistRef.current) return;
 
     const input = blacklistRef.current.value;
     setConfig({
       ...config,
       blacklist: [...config.blacklist, input],
     });
-    blacklistRef.current.value = '';
+    blacklistRef.current.value = "";
   };
 
   const stashBoxes = stashConfig.data?.configuration.general.stashBoxes ?? [];
@@ -147,10 +146,7 @@ const Config: React.FC<IConfigProps> = ({ show, config, setConfig }) => {
           <div className="col-md-6">
             <h5>Blacklist</h5>
             <InputGroup>
-              <Form.Control
-                className="text-input"
-                ref={blacklistRef}
-              />
+              <Form.Control className="text-input" ref={blacklistRef} />
               <InputGroup.Append>
                 <Button onClick={handleBlacklistAddition}>Add</Button>
               </InputGroup.Append>
