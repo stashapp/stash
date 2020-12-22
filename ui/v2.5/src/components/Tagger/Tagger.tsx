@@ -24,13 +24,19 @@ import {
   sortScenesByDuration,
 } from "./utils";
 
-const dateRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
+const simpleDateRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
+const isoDateRegex = /\d{4}[-.]\d{2}[-.]\d{2}/;
 const parseDate = (input: string): string => {
-  const date = s.match(dateRegex);
-  if (date) {
-    s = s.replace(date[0], ` 20${date[1]}-${date[2]}-${date[3]} `);
+  let output = input;
+  const simpleDate = output.match(simpleDateRegex);
+  if (simpleDate) {
+    output = output.replace(simpleDate[0], ` 20${simpleDate[1]}-${simpleDate[2]}-${simpleDate[3]} `);
   }
-  return input;
+  const isoDate = output.match(isoDateRegex);
+  if (isoDate) {
+    output = output.replace(isoDate[0], ` 20${isoDate[1]}-${isoDate[2]}-${isoDate[3]} `);
+  }
+  return output;
 }
 
 function prepareQueryString(
@@ -66,7 +72,7 @@ function prepareQueryString(
     s = s.replace(new RegExp(b, "i"), "");
   });
   s = parseDate(s);
-  return s.replace(/[-\.]/g, " ");
+  return s.replace(/[-.]/g, " ");
 }
 
 interface ITaggerListProps {
