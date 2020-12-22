@@ -13,6 +13,11 @@
     path {
       fill: white;
     }
+    opacity: 0.4;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 
   &-header {
@@ -32,6 +37,7 @@
     .fa-icon {
       height: 1.5rem;
       width: 1.5rem;
+      opacity: 1;
     }
   }
 

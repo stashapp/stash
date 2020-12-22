@@ -238,6 +238,7 @@ export const LightboxComponent: React.FC<IProps> = ({
       onClick={(e: React.MouseEvent) => selectIndex(e, i)}
       role="presentation"
       loading="lazy"
+      key={image.paths.thumbnail}
     />
   ));
 
@@ -295,7 +296,7 @@ export const LightboxComponent: React.FC<IProps> = ({
               ref={carouselRef}
             >
               {images.map((image) => (
-                <div className={CLASSNAME_IMAGE}>
+                <div className={CLASSNAME_IMAGE} key={image.paths.image}>
                   <picture>
                     <source
                       srcSet={image.paths.image ?? ""}
