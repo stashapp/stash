@@ -254,8 +254,8 @@ func (qb *SceneQueryBuilder) Count() (int, error) {
 	return runCountQuery(buildCountQuery("SELECT scenes.id FROM scenes"), nil)
 }
 
-func (qb *SceneQueryBuilder) Size() (uint64, error) {
-	return runSumQuery("SELECT SUM(size) as sum FROM scenes", nil)
+func (qb *SceneQueryBuilder) Size() (float64, error) {
+	return runSumQuery("SELECT SUM(cast(size as double)) as sum FROM scenes", nil)
 }
 
 func (qb *SceneQueryBuilder) CountByStudioID(studioID int) (int, error) {

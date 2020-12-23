@@ -169,9 +169,15 @@ type cookieOptions struct {
 	Cookies   []*scraperCookies `yaml:"Cookies"`
 }
 
+type clickOptions struct {
+	XPath string `yaml:"xpath"`
+	Sleep int    `yaml:"sleep"`
+}
+
 type scraperDriverOptions struct {
 	UseCDP  bool             `yaml:"useCDP"`
 	Sleep   int              `yaml:"sleep"`
+	Clicks  []*clickOptions  `yaml:"clicks"`
 	Cookies []*cookieOptions `yaml:"cookies"`
 }
 
