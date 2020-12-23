@@ -81,19 +81,12 @@ export class SceneParserResult {
   public toSceneUpdateInput() {
     return {
       id: this.id,
-      details: this.scene.details,
-      url: this.scene.url,
-      rating: this.rating.isSet ? this.rating.value : this.scene.rating,
-      gallery_id: this.scene.gallery?.id,
-      title: this.title.isSet ? this.title.value : this.scene.title,
-      date: this.date.isSet ? this.date.value : this.scene.date,
-      studio_id: this.studio.isSet ? this.studio.value : this.scene.studio?.id,
-      performer_ids: this.performers.isSet
-        ? this.performers.value
-        : this.scene.performers.map((performer) => performer.id),
-      tag_ids: this.tags.isSet
-        ? this.tags.value
-        : this.scene.tags.map((tag) => tag.id),
+      rating: this.rating.isSet ? this.rating.value : undefined,
+      title: this.title.isSet ? this.title.value : undefined,
+      date: this.date.isSet ? this.date.value : undefined,
+      studio_id: this.studio.isSet ? this.studio.value : undefined,
+      performer_ids: this.performers.isSet ? this.performers.value : undefined,
+      tag_ids: this.tags.isSet ? this.tags.value : undefined,
     };
   }
 }
