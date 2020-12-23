@@ -1,26 +1,20 @@
-.card.movie-card {
-  padding: 0 0 1rem 0;
-}
-
 .movie-details {
   max-width: 1200px;
 }
 
 .movie-card {
-  &-header {
-    height: 240px;
-    line-height: 240px;
-    text-align: center;
+  width: 240px;
+
+  @media (max-width: 576px) {
+    width: 100%;
+  }
+
+  &.card {
+    padding: 0 0 1rem;
   }
 
   &-image {
-    max-height: 240px;
     object-fit: contain;
-    vertical-align: middle;
-    width: 320px;
-
-    @media (max-width: 576px) {
-      width: 100%;
-    }
+    width: 100%;
   }
 }

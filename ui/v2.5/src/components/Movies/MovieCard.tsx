@@ -62,7 +62,7 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
       details={
         <>
           <h5>
-            <TruncatedText text={props.movie.name} />
+            <TruncatedText text={props.movie.name} lineCount={2} />
           </h5>
           {maybeRenderSceneNumber()}
         </>
