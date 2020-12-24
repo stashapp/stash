@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
@@ -48,9 +48,13 @@ export const Performer: React.FC = () => {
     imagePreview === undefined
       ? performer.image_path ?? ""
       : imagePreview ?? `${performer.image_path}?default=true`;
+  const lightboxImages = useMemo(
+    () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
+    [activeImage]
+  );
 
   const showLightbox = useLightbox({
-    images: [{ paths: { thumbnail: activeImage, image: activeImage } }],
+    images: lightboxImages,
   });
 
   // Network state
