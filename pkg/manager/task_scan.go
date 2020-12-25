@@ -464,7 +464,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	// Override title to be filename if UseFileMetadata is false
 	if !t.UseFileMetadata {
-		videoFile.SetTitleFromPath()
+		videoFile.SetTitleFromPath(true)
 	}
 
 	var checksum string
