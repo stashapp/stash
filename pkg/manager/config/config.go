@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
 
 	"github.com/spf13/viper"
 
@@ -427,11 +428,18 @@ func ValidateCredentials(username string, password string) bool {
 func ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 	isMulti := len(boxes) > 1
 
+	re, err := regexp.Compile("^http.*graphql$")
+	if err != nil {
+		return errors.New("Failure to generate regular expression")
+	}
+
 	for _, box := range boxes {
 		if box.APIKey == "" {
 			return errors.New("Stash-box API Key cannot be blank")
 		} else if box.Endpoint == "" {
 			return errors.New("Stash-box Endpoint cannot be blank")
+		} else if !re.Match([]byte(box.Endpoint)) {
+			return errors.New("Stash-box Endpoint is invalid")
 		} else if isMulti && box.Name == "" {
 			return errors.New("Stash-box Name cannot be blank")
 		}

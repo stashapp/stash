@@ -41,7 +41,7 @@ const Instance: React.FC<IInstanceProps> = ({
           value={instance?.endpoint}
           isValid={(instance?.endpoint?.length ?? 0) > 0}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleInput("endpoint", e.currentTarget.value)
+            handleInput("endpoint", e.currentTarget.value.trim())
           }
         />
         <Form.Control
@@ -50,7 +50,7 @@ const Instance: React.FC<IInstanceProps> = ({
           value={instance?.api_key}
           isValid={(instance?.api_key?.length ?? 0) > 0}
           onInput={(e: React.ChangeEvent<HTMLInputElement>) =>
-            handleInput("api_key", e.currentTarget.value)
+            handleInput("api_key", e.currentTarget.value.trim())
           }
         />
         <InputGroup.Append>

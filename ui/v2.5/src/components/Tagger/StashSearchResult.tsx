@@ -104,8 +104,18 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
   const updatePerformerStashID = useUpdatePerformerStashID();
   const updateStudioStashID = useUpdateStudioStashID();
   const [updateScene] = GQL.useSceneUpdateMutation({
-    onError: (errors) => errors,
+    onError: (e) => {
+      const message =
+        e.message === "invalid JPEG format: short Huffman data"
+          ? "Failed to save scene due to corrupted cover image"
+          : "Failed to save scene";
+      setError({
+        message,
+        details: e.message,
+      });
+    },
   });
+
   const { data: allTags } = GQL.useAllTagsForFilterQuery();
 
   const setPerformer = (
@@ -302,12 +312,7 @@ const StashSearchResult: React.FC<IStashSearchResultProps> = ({
         },
       });
 
-      if (!sceneUpdateResult?.data?.sceneUpdate) {
-        setError({
-          message: "Failed to save scene",
-          details: sceneUpdateResult?.errors?.[0].message,
-        });
-      } else if (sceneUpdateResult.data?.sceneUpdate)
+      if (sceneUpdateResult?.data?.sceneUpdate)
         setScene(sceneUpdateResult.data.sceneUpdate);
 
       queueFingerprintSubmission(stashScene.id, endpoint);
