@@ -78,8 +78,14 @@ export const ImageDetailPanel: React.FC<IImageDetailProps> = (props) => {
             ""
           )}
           {renderGalleries()}
-          {(props.image.file.width && props.image.file.height) ? (
-            <h6>Resolution: {TextUtils.resolution(props.image.file.width, props.image.file.height)}</h6>
+          {props.image.file.width && props.image.file.height ? (
+            <h6>
+              Resolution:{" "}
+              {TextUtils.resolution(
+                props.image.file.width,
+                props.image.file.height
+              )}
+            </h6>
           ) : (
             ""
           )}
