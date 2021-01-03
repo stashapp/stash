@@ -1,6 +1,6 @@
 # Auto Tagging
 
-This task iterates through your created Performers, Studios and Tags - based on what options you ticked. For each, it finds scenes where the filename contains the Performer/Studio/Tag name. For each scene it finds that matches, it sets the applicable field. Please note that this feature **does not do any kind of intelligent scene identification**.  It will **only** tag based on information that already exists in your database.  In order to identify and gather information about the scenes in your collection, you will need to use the Scraping tools.
+This task iterates through your created Performers, Studios and Tags - based on what options you ticked. For each, it finds scenes where the filename contains the Performer/Studio/Tag name. For each scene it finds that matches, it sets the applicable field. Please note that this feature **does not do any kind of intelligent scene identification**.  It will **only** tag based on information that already exists in your database.  In order to identify and gather information about the scenes in your collection, you will need to use the Tagger view and/or Scraping tools.
 
 Where the Performer/Studio/Tag name has multiple words, the search will include filenames where the Performer/Studio/Tag name is separated with `.`, `-` or `_` characters, as well as whitespace.
 
