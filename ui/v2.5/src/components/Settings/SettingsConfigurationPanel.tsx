@@ -93,7 +93,10 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [previewPreset, setPreviewPreset] = useState<string>(
     GQL.PreviewPreset.Slow
   );
-  const [transcodeHardwareAcceleration, setTranscodeHardwareAcceleration] = useState(false);
+  const [
+    transcodeHardwareAcceleration,
+    setTranscodeHardwareAcceleration,
+  ] = useState(false);
   const [maxTranscodeSize, setMaxTranscodeSize] = useState<
     GQL.StreamingResolutionEnum | undefined
   >(undefined);
@@ -192,7 +195,9 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setPreviewExcludeStart(conf.general.previewExcludeStart);
       setPreviewExcludeEnd(conf.general.previewExcludeEnd);
       setPreviewPreset(conf.general.previewPreset);
-      setTranscodeHardwareAcceleration(conf.general.transcodeHardwareAcceleration);
+      setTranscodeHardwareAcceleration(
+        conf.general.transcodeHardwareAcceleration
+      );
       setMaxTranscodeSize(conf.general.maxTranscodeSize ?? undefined);
       setMaxStreamingTranscodeSize(
         conf.general.maxStreamingTranscodeSize ?? undefined
@@ -533,9 +538,14 @@ export const SettingsConfigurationPanel: React.FC = () => {
             label="Enable hardware acceleration"
             id="transcode-hardware-acceleration"
             checked={transcodeHardwareAcceleration}
-            onChange={e => setTranscodeHardwareAcceleration(e.currentTarget.checked)}
+            onChange={(e) =>
+              setTranscodeHardwareAcceleration(e.currentTarget.checked)
+            }
           />
-          <Form.Text className="text-muted">If enabled Stash will attempt to use hardware acceleration when live transcoding video streams.</Form.Text>
+          <Form.Text className="text-muted">
+            If enabled Stash will attempt to use hardware acceleration when live
+            transcoding video streams.
+          </Form.Text>
         </Form.Group>
         <Form.Group id="transcode-size">
           <h6>Maximum transcode size</h6>

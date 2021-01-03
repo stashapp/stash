@@ -271,6 +271,80 @@ func (o TranscodeStreamOptions) getHWStreamOptions() [][]string {
 				Codec:       vaapi,
 			}.getHWStreamArgs(),
 		}
+	} else if runtime.GOOS == "windows" && (runtime.GOARCH == "amd64" || runtime.GOARCH == "386") {
+		scale := ""
+		scale_qsv := ""
+
+		scaleX, scaleY := calculateHWTranscodeScale(o.ProbeResult, o.MaxTranscodeSize)
+		if scaleX != nil && scaleY != nil {
+			scale = "scale=" + strconv.Itoa(*scaleX) + ":" + strconv.Itoa(*scaleY)
+			scale_qsv = "scale_qsv=" + strconv.Itoa(*scaleX) + ":" + strconv.Itoa(*scaleY)
+		}
+
+		vaapi := Codec{
+			Codec:    "h264_nvenc",
+			format:   "mp4",
+			MimeType: MimeMp4,
+			preArgs: []string{
+				"-hwaccel", "nvdec",
+			},
+			extraArgs: []string{
+				"-preset", "hp",
+				"-rc", "vbr_hq",
+				"-cq", "30",
+				"-qmin:v", "0",
+				"-b:v", "0",
+				"-pix_fmt", "nv12",
+				"-vf", scale,
+			},
+		}
+
+		qsv := Codec{
+			Codec:    "h264_qsv",
+			format:   "mp4",
+			MimeType: MimeMp4,
+			preArgs: []string{
+				"-hwaccel", "qsv",
+				"-c:v", "h264_qsv",
+			},
+			extraArgs: []string{
+				"-vf", scale_qsv,
+				"-look_ahead", "1",
+				"-global_quality", "30",
+			},
+		}
+
+		dxva := Codec{
+			Codec:    "h264_qsv",
+			format:   "mp4",
+			MimeType: MimeMp4,
+			preArgs: []string{
+				"-hwaccel", "dxva2",
+			},
+			extraArgs: []string{
+				"-vf", scale_qsv,
+				"-look_ahead", "1",
+				"-global_quality", "30",
+			},
+		}
+
+		return [][]string{
+			TranscodeStreamOptions{
+				ProbeResult: o.ProbeResult,
+				StartTime:   o.StartTime,
+				Codec:       vaapi,
+			}.getHWStreamArgs(),
+			TranscodeStreamOptions{
+				ProbeResult: o.ProbeResult,
+				StartTime:   o.StartTime,
+				Codec:       qsv,
+			}.getHWStreamArgs(),
+			TranscodeStreamOptions{
+				ProbeResult: o.ProbeResult,
+				StartTime:   o.StartTime,
+				Codec:       dxva,
+			}.getHWStreamArgs(),
+		}
 	}
 
 	return nil
