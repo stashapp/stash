@@ -34,7 +34,7 @@ func (t *GenerateMarkersTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 			return
 		}
 
-		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path)
+		videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
 		if err != nil {
 			logger.Errorf("error reading video file: %s", err.Error())
 			return
@@ -51,7 +51,7 @@ func (t *GenerateMarkersTask) generateSceneMarkers() {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path)
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("error reading video file: %s", err.Error())
 		return

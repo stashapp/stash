@@ -31,6 +31,7 @@ export const SettingsTasksPanel: React.FC = () => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState<boolean>(false);
   const [isScanDialogOpen, setIsScanDialogOpen] = useState<boolean>(false);
   const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
+  const [stripFileExtension, setStripFileExtension] = useState<boolean>(false);
   const [scanGeneratePreviews, setScanGeneratePreviews] = useState<boolean>(
     false
   );
@@ -178,6 +179,7 @@ export const SettingsTasksPanel: React.FC = () => {
       await mutateMetadataScan({
         paths,
         useFileMetadata,
+        stripFileExtension,
         scanGeneratePreviews,
         scanGenerateImagePreviews,
         scanGenerateSprites,
@@ -316,6 +318,12 @@ export const SettingsTasksPanel: React.FC = () => {
           checked={useFileMetadata}
           label="Set name, date, details from metadata (if present)"
           onChange={() => setUseFileMetadata(!useFileMetadata)}
+        />
+        <Form.Check
+          id="strip-file-extension"
+          checked={stripFileExtension}
+          label="Don't include file extension as part of the title"
+          onChange={() => setStripFileExtension(!stripFileExtension)}
         />
         <Form.Check
           id="scan-generate-previews"
