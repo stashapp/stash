@@ -3,6 +3,7 @@ import { Button, Card, Form, InputGroup } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { ScenePreview } from "src/components/Scenes/SceneCard";
+import { useLocalForage } from "src/hooks";
 
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, TruncatedText } from "src/components/Shared";
@@ -14,7 +15,13 @@ import {
 import { Manual } from "src/components/Help/Manual";
 
 import StashSearchResult from "./StashSearchResult";
-import Config, { ITaggerConfig, initialConfig, ParseMode } from "./Config";
+import Config from "./Config";
+import {
+  LOCAL_FORAGE_KEY,
+  ITaggerConfig,
+  ParseMode,
+  initialConfig,
+} from "./constants";
 import {
   parsePath,
   selectScenes,
@@ -22,7 +29,79 @@ import {
   sortScenesByDuration,
 } from "./utils";
 
-const dateRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
+const months = [
+  "jan",
+  "feb",
+  "mar",
+  "apr",
+  "may",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "oct",
+  "nov",
+  "dec",
+];
+
+const ddmmyyRegex = /\.(\d\d)\.(\d\d)\.(\d\d)\./;
+const yyyymmddRegex = /(\d{4})[-.](\d{2})[-.](\d{2})/;
+const mmddyyRegex = /(\d{2})[-.](\d{2})[-.](\d{4})/;
+const ddMMyyRegex = new RegExp(
+  `(\\d{1,2}).(${months.join("|")})\\.?.(\\d{4})`,
+  "i"
+);
+const MMddyyRegex = new RegExp(
+  `(${months.join("|")})\\.?.(\\d{1,2}),?.(\\d{4})`,
+  "i"
+);
+const parseDate = (input: string): string => {
+  let output = input;
+  const ddmmyy = output.match(ddmmyyRegex);
+  if (ddmmyy) {
+    output = output.replace(
+      ddmmyy[0],
+      ` 20${ddmmyy[1]}-${ddmmyy[2]}-${ddmmyy[3]} `
+    );
+  }
+  const mmddyy = output.match(mmddyyRegex);
+  if (mmddyy) {
+    output = output.replace(
+      mmddyy[0],
+      ` 20${mmddyy[1]}-${mmddyy[2]}-${mmddyy[3]} `
+    );
+  }
+  const ddMMyy = output.match(ddMMyyRegex);
+  if (ddMMyy) {
+    const month = (months.indexOf(ddMMyy[2].toLowerCase()) + 1)
+      .toString()
+      .padStart(2, "0");
+    output = output.replace(
+      ddMMyy[0],
+      ` ${ddMMyy[3]}-${month}-${ddMMyy[1].padStart(2, "0")} `
+    );
+  }
+  const MMddyy = output.match(MMddyyRegex);
+  if (MMddyy) {
+    const month = (months.indexOf(MMddyy[1].toLowerCase()) + 1)
+      .toString()
+      .padStart(2, "0");
+    output = output.replace(
+      MMddyy[0],
+      ` ${MMddyy[3]}-${month}-${MMddyy[2].padStart(2, "0")} `
+    );
+  }
+
+  const yyyymmdd = output.search(yyyymmddRegex);
+  if (yyyymmdd !== -1)
+    return (
+      output.slice(0, yyyymmdd).replace(/-/g, " ") +
+      output.slice(yyyymmdd, yyyymmdd + 10) +
+      output.slice(yyyymmdd + 10).replace(/-/g, " ")
+    );
+  return output.replace(/-/g, " ");
+};
+
 function prepareQueryString(
   scene: Partial<GQL.SlimSceneDataFragment>,
   paths: string[],
@@ -45,6 +124,7 @@ function prepareQueryString(
     return str;
   }
   let s = "";
+
   if (mode === "auto" || mode === "filename") {
     s = filename;
   } else if (mode === "path") {
@@ -55,11 +135,7 @@ function prepareQueryString(
   blacklist.forEach((b) => {
     s = s.replace(new RegExp(b, "i"), "");
   });
-  const date = s.match(dateRegex);
-  s = s.replace(/-/g, " ");
-  if (date) {
-    s = s.replace(date[0], ` 20${date[1]}-${date[2]}-${date[3]} `);
-  }
+  s = parseDate(s);
   return s.replace(/\./g, " ");
 }
 
@@ -248,6 +324,9 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       } else if (!isTagged && !hasStashIDs) {
         mainContent = (
           <InputGroup>
+            <InputGroup.Prepend>
+              <InputGroup.Text>Query</InputGroup.Text>
+            </InputGroup.Prepend>
             <Form.Control
               className="text-input"
               value={modifiedQuery || defaultQueryString}
@@ -417,12 +496,6 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   return (
     <Card className="tagger-table">
       <div className="tagger-table-header d-flex flex-nowrap align-items-center">
-        <div className="col-md-6 pl-0">
-          <b>Scene</b>
-        </div>
-        <div className="col-md-2">
-          <b>Query</b>
-        </div>
         <b className="ml-auto mr-2 text-danger">{fingerprintError}</b>
         <div className="mr-2">
           {fingerprintQueue.length > 0 && (
@@ -460,9 +533,14 @@ interface ITaggerProps {
 
 export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
   const stashConfig = useConfiguration();
-  const [config, setConfig] = useState<ITaggerConfig>(initialConfig);
+  const [{ data: config }, setConfig] = useLocalForage<ITaggerConfig>(
+    LOCAL_FORAGE_KEY,
+    initialConfig
+  );
   const [showConfig, setShowConfig] = useState(false);
   const [showManual, setShowManual] = useState(false);
+
+  if (!config) return <LoadingIndicator />;
 
   const savedEndpointIndex =
     stashConfig.data?.configuration.general.stashBoxes.findIndex(
@@ -503,7 +581,7 @@ export const Tagger: React.FC<ITaggerProps> = ({ scenes }) => {
         onClose={() => setShowManual(false)}
         defaultActiveTab="Tagger.md"
       />
-      <div className="tagger-container row mx-md-auto">
+      <div className="tagger-container mx-md-auto">
         {selectedEndpointIndex !== -1 && selectedEndpoint ? (
           <>
             <div className="row mb-2 no-gutters">

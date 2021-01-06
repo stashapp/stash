@@ -39,7 +39,14 @@ func getUpdateInputMaps(ctx context.Context) []map[string]interface{} {
 	input, _ := args[updateInputField]
 	var ret []map[string]interface{}
 	if input != nil {
-		ret, _ = input.([]map[string]interface{})
+		// convert []interface{} into []map[string]interface{}
+		iSlice, _ := input.([]interface{})
+		for _, i := range iSlice {
+			m, _ := i.(map[string]interface{})
+			if m != nil {
+				ret = append(ret, m)
+			}
+		}
 	}
 
 	return ret

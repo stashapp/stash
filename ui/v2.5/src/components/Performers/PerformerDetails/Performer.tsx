@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
@@ -16,9 +16,8 @@ import {
   Icon,
   LoadingIndicator,
 } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { useLightbox, useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
-import FsLightbox from "fslightbox-react";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
@@ -39,7 +38,6 @@ export const Performer: React.FC = () => {
   // Performer state
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
-  const [lightboxToggle, setLightboxToggle] = useState(false);
   const { data, loading: performerLoading, error } = useFindPerformer(id);
   const performer = data?.findPerformer || ({} as Partial<GQL.Performer>);
 
@@ -50,6 +48,14 @@ export const Performer: React.FC = () => {
     imagePreview === undefined
       ? performer.image_path ?? ""
       : imagePreview ?? `${performer.image_path}?default=true`;
+  const lightboxImages = useMemo(
+    () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
+    [activeImage]
+  );
+
+  const showLightbox = useLightbox({
+    images: lightboxImages,
+  });
 
   // Network state
   const [loading, setIsLoading] = useState(false);
@@ -318,10 +324,7 @@ export const Performer: React.FC = () => {
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
-          <Button
-            variant="link"
-            onClick={() => setLightboxToggle(!lightboxToggle)}
-          >
+          <Button variant="link" onClick={() => showLightbox()}>
             <img className="performer" src={activeImage} alt="Performer" />
           </Button>
         )}
@@ -342,7 +345,6 @@ export const Performer: React.FC = () => {
           <div className="performer-tabs">{renderTabs()}</div>
         </div>
       </div>
-      <FsLightbox toggler={lightboxToggle} sources={[activeImage]} />
     </div>
   );
 };

@@ -16,7 +16,7 @@
   }
 
   &.inline {
-    display: inline-block;
+    display: inline;
     height: auto;
     margin-left: 0.5rem;
   }
@@ -180,5 +180,19 @@ button.collapse-button.btn-primary:not(:disabled):not(.disabled):active {
 
   &-tooltip .tooltip-inner {
     max-width: 300px;
+  }
+}
+
+.RatingStars {
+  &-unfilled {
+    path {
+      fill: white;
+    }
+  }
+
+  &-filled {
+    path {
+      fill: gold;
+    }
   }
 }
