@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -17,7 +16,7 @@ type performerQueryBuilder struct {
 	repository
 }
 
-func NewPerformerReaderWriter(tx *sqlx.Tx) *performerQueryBuilder {
+func NewPerformerReaderWriter(tx dbi) *performerQueryBuilder {
 	return &performerQueryBuilder{
 		repository{
 			tx:        tx,

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -15,7 +14,7 @@ type studioQueryBuilder struct {
 	repository
 }
 
-func NewStudioReaderWriter(tx *sqlx.Tx) *studioQueryBuilder {
+func NewStudioReaderWriter(tx dbi) *studioQueryBuilder {
 	return &studioQueryBuilder{
 		repository{
 			tx:        tx,

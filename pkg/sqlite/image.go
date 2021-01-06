@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -58,7 +57,7 @@ type imageQueryBuilder struct {
 	repository
 }
 
-func NewImageReaderWriter(tx *sqlx.Tx) *imageQueryBuilder {
+func NewImageReaderWriter(tx dbi) *imageQueryBuilder {
 	return &imageQueryBuilder{
 		repository{
 			tx:        tx,

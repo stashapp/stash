@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -16,7 +15,7 @@ type tagQueryBuilder struct {
 	repository
 }
 
-func NewTagReaderWriter(tx *sqlx.Tx) *tagQueryBuilder {
+func NewTagReaderWriter(tx dbi) *tagQueryBuilder {
 	return &tagQueryBuilder{
 		repository{
 			tx:        tx,

@@ -58,7 +58,7 @@ type sceneQueryBuilder struct {
 	repository
 }
 
-func NewSceneReaderWriter(tx *sqlx.Tx) *sceneQueryBuilder {
+func NewSceneReaderWriter(tx dbi) *sceneQueryBuilder {
 	return &sceneQueryBuilder{
 		repository{
 			tx:        tx,

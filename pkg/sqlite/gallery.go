@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -21,7 +20,7 @@ type galleryQueryBuilder struct {
 	repository
 }
 
-func NewGalleryReaderWriter(tx *sqlx.Tx) *galleryQueryBuilder {
+func NewGalleryReaderWriter(tx dbi) *galleryQueryBuilder {
 	return &galleryQueryBuilder{
 		repository{
 			tx:        tx,

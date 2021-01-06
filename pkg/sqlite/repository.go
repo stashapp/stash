@@ -8,7 +8,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -21,43 +20,19 @@ type objectList interface {
 }
 
 type repository struct {
-	tx        *sqlx.Tx
+	tx        dbi
 	tableName string
 	idColumn  string
 }
 
-// TODO - this is a workaround for functions that accept nil transactions.
-// This ensures that a transaction is created. In future, this should be
-// removed and tx should always be non-nil.
-func (r *repository) wrapReadOnly(f func() error) error {
-	if r.tx == nil {
-		return database.WithTxn(func(tx *sqlx.Tx) error {
-			r.tx = tx
-			err := f()
-			r.tx = nil
-			return err
-		})
-	}
-
-	return f()
-}
-
 func (r *repository) get(id int, dest interface{}) error {
 	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT 1", r.tableName, r.idColumn)
-
-	return r.wrapReadOnly(func() error {
-		err := r.tx.Get(dest, stmt, id)
-
-		return err
-	})
+	return r.tx.Get(dest, stmt, id)
 }
 
 func (r *repository) getAll(id int, f func(rows *sqlx.Rows) error) error {
 	stmt := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", r.tableName, r.idColumn)
-
-	return r.wrapReadOnly(func() error {
-		return r.queryFunc(stmt, []interface{}{id}, f)
-	})
+	return r.queryFunc(stmt, []interface{}{id}, f)
 }
 
 func (r *repository) insert(obj interface{}) (sql.Result, error) {
@@ -136,20 +111,10 @@ func (r *repository) destroy(ids []int) error {
 }
 
 func (r *repository) exists(id int) (bool, error) {
-	var c int
 	stmt := fmt.Sprintf("SELECT %s FROM %s WHERE %s = ? LIMIT 1", r.idColumn, r.tableName, r.idColumn)
 	stmt = r.buildCountQuery(stmt)
 
-	err := r.wrapReadOnly(func() error {
-		var err error
-		c, err = r.runCountQuery(stmt, []interface{}{id})
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
+	c, err := r.runCountQuery(stmt, []interface{}{id})
 	if err != nil {
 		return false, err
 	}
@@ -166,12 +131,8 @@ func (r *repository) runCountQuery(query string, args []interface{}) (int, error
 		Int int `db:"count"`
 	}{0}
 
-	err := r.wrapReadOnly(func() error {
-		// Perform query and fetch result
-		return r.tx.Get(&result, query, args...)
-	})
-
-	if err != nil && err != sql.ErrNoRows {
+	// Perform query and fetch result
+	if err := r.tx.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
 		return 0, err
 	}
 
@@ -183,11 +144,7 @@ func (r *repository) runIdsQuery(query string, args []interface{}) ([]int, error
 		Int int `db:"id"`
 	}
 
-	err := r.wrapReadOnly(func() error {
-		return r.tx.Select(&result, query, args...)
-	})
-
-	if err != nil && err != sql.ErrNoRows {
+	if err := r.tx.Select(&result, query, args...); err != nil && err != sql.ErrNoRows {
 		return []int{}, err
 	}
 
@@ -203,12 +160,9 @@ func (r *repository) runSumQuery(query string, args []interface{}) (float64, err
 	result := struct {
 		Float64 float64 `db:"sum"`
 	}{0}
-	err := r.wrapReadOnly(func() error {
-		// Perform query and fetch result
-		return r.tx.Get(&result, query, args...)
-	})
 
-	if err != nil && err != sql.ErrNoRows {
+	// Perform query and fetch result
+	if err := r.tx.Get(&result, query, args...); err != nil && err != sql.ErrNoRows {
 		return 0, err
 	}
 
@@ -216,74 +170,68 @@ func (r *repository) runSumQuery(query string, args []interface{}) (float64, err
 }
 
 func (r *repository) queryFunc(query string, args []interface{}, f func(rows *sqlx.Rows) error) error {
-	return r.wrapReadOnly(func() error {
-		rows, err := r.tx.Queryx(query, args...)
+	rows, err := r.tx.Queryx(query, args...)
 
-		if err != nil && err != sql.ErrNoRows {
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := f(rows); err != nil {
 			return err
 		}
-		defer rows.Close()
+	}
 
-		for rows.Next() {
-			if err := f(rows); err != nil {
-				return err
-			}
-		}
+	if err := rows.Err(); err != nil {
+		return err
+	}
 
-		if err := rows.Err(); err != nil {
-			return err
-		}
-
-		return nil
-	})
+	return nil
 }
 
 func (r *repository) query(query string, args []interface{}, out objectList) error {
-	return r.wrapReadOnly(func() error {
-		rows, err := r.tx.Queryx(query, args...)
+	rows, err := r.tx.Queryx(query, args...)
 
-		if err != nil && err != sql.ErrNoRows {
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		object := out.New()
+		if err := rows.StructScan(object); err != nil {
 			return err
 		}
-		defer rows.Close()
+		out.Append(object)
+	}
 
-		for rows.Next() {
-			object := out.New()
-			if err := rows.StructScan(object); err != nil {
-				return err
-			}
-			out.Append(object)
-		}
+	if err := rows.Err(); err != nil {
+		return err
+	}
 
-		if err := rows.Err(); err != nil {
-			return err
-		}
-
-		return nil
-	})
+	return nil
 }
 
 func (r *repository) querySimple(query string, args []interface{}, out interface{}) error {
-	return r.wrapReadOnly(func() error {
-		rows, err := r.tx.Queryx(query, args...)
+	rows, err := r.tx.Queryx(query, args...)
 
-		if err != nil && err != sql.ErrNoRows {
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		if err := rows.Scan(out); err != nil {
 			return err
 		}
-		defer rows.Close()
+	}
 
-		if rows.Next() {
-			if err := rows.Scan(out); err != nil {
-				return err
-			}
-		}
+	if err := rows.Err(); err != nil {
+		return err
+	}
 
-		if err := rows.Err(); err != nil {
-			return err
-		}
-
-		return nil
-	})
+	return nil
 }
 
 func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPagination string, whereClauses []string, havingClauses []string) ([]int, int, error) {
@@ -306,22 +254,14 @@ func (r *repository) executeFindQuery(body string, args []interface{}, sortAndPa
 	var idsResult []int
 	var idsErr error
 
-	err := r.wrapReadOnly(func() error {
-		countResult, countErr = r.runCountQuery(countQuery, args)
-		idsResult, idsErr = r.runIdsQuery(idsQuery, args)
+	countResult, countErr = r.runCountQuery(countQuery, args)
+	idsResult, idsErr = r.runIdsQuery(idsQuery, args)
 
-		if countErr != nil {
-			return fmt.Errorf("Error executing count query with SQL: %s, args: %v, error: %s", countQuery, args, countErr.Error())
-		}
-		if idsErr != nil {
-			return fmt.Errorf("Error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return nil, 0, err
+	if countErr != nil {
+		return nil, 0, fmt.Errorf("Error executing count query with SQL: %s, args: %v, error: %s", countQuery, args, countErr.Error())
+	}
+	if idsErr != nil {
+		return nil, 0, fmt.Errorf("Error executing find query with SQL: %s, args: %v, error: %s", idsQuery, args, idsErr.Error())
 	}
 
 	return idsResult, countResult, nil

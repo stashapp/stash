@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -14,7 +13,7 @@ type movieQueryBuilder struct {
 	repository
 }
 
-func NewMovieReaderWriter(tx *sqlx.Tx) *movieQueryBuilder {
+func NewMovieReaderWriter(tx dbi) *movieQueryBuilder {
 	return &movieQueryBuilder{
 		repository{
 			tx:        tx,

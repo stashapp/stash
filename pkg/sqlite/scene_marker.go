@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -23,7 +22,7 @@ type sceneMarkerQueryBuilder struct {
 	repository
 }
 
-func NewSceneMarkerReaderWriter(tx *sqlx.Tx) *sceneMarkerQueryBuilder {
+func NewSceneMarkerReaderWriter(tx dbi) *sceneMarkerQueryBuilder {
 	return &sceneMarkerQueryBuilder{
 		repository{
 			tx:        tx,

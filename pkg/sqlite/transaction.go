@@ -2,12 +2,22 @@ package sqlite
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+type dbi interface {
+	Get(dest interface{}, query string, args ...interface{}) error
+	Select(dest interface{}, query string, args ...interface{}) error
+	Queryx(query string, args ...interface{}) (*sqlx.Rows, error)
+	NamedExec(query string, arg interface{}) (sql.Result, error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
+}
 
 type transaction struct {
 	Ctx context.Context
@@ -22,7 +32,7 @@ func (t *transaction) Begin() error {
 	var err error
 	t.tx, err = database.DB.BeginTxx(t.Ctx, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("error starting transaction: %s", err.Error())
 	}
 
 	return nil
@@ -35,7 +45,7 @@ func (t *transaction) Rollback() error {
 
 	err := t.tx.Rollback()
 	if err != nil {
-		return err
+		return fmt.Errorf("error rolling back transaction: %s", err.Error())
 	}
 	t.tx = nil
 
@@ -49,7 +59,7 @@ func (t *transaction) Commit() error {
 
 	err := t.tx.Commit()
 	if err != nil {
-		return err
+		return fmt.Errorf("error committing transaction: %s", err.Error())
 	}
 	t.tx = nil
 
@@ -111,8 +121,18 @@ func (t *transaction) Tag() models.TagReaderWriter {
 	return NewTagReaderWriter(t.tx)
 }
 
-type ReadTransaction struct {
-	transaction
+type ReadTransaction struct{}
+
+func (t *ReadTransaction) Begin() error {
+	return nil
+}
+
+func (t *ReadTransaction) Rollback() error {
+	return nil
+}
+
+func (t *ReadTransaction) Commit() error {
+	return nil
 }
 
 func (t *ReadTransaction) Repository() models.ReaderRepository {
@@ -120,48 +140,39 @@ func (t *ReadTransaction) Repository() models.ReaderRepository {
 }
 
 func (t *ReadTransaction) Gallery() models.GalleryReader {
-	t.ensureTx()
-	return NewGalleryReaderWriter(t.tx)
+	return NewGalleryReaderWriter(database.DB)
 }
 
 func (t *ReadTransaction) Image() models.ImageReader {
-	t.ensureTx()
-	return NewImageReaderWriter(t.tx)
+	return NewImageReaderWriter(database.DB)
 }
 
 func (t *ReadTransaction) Movie() models.MovieReader {
-	t.ensureTx()
-	return NewMovieReaderWriter(t.tx)
+	return NewMovieReaderWriter(database.DB)
 }
 
 func (t *ReadTransaction) Performer() models.PerformerReader {
-	t.ensureTx()
-	return NewPerformerReaderWriter(t.tx)
+	return NewPerformerReaderWriter(database.DB)
 }
 
 func (t *ReadTransaction) SceneMarker() models.SceneMarkerReader {
-	t.ensureTx()
-	return NewSceneMarkerReaderWriter(t.tx)
+	return NewSceneMarkerReaderWriter(database.DB)
 }
 
 func (t *ReadTransaction) Scene() models.SceneReader {
-	t.ensureTx()
-	return NewSceneReaderWriter(t.tx)
+	return NewSceneReaderWriter(database.DB)
 }
 
 func (t *ReadTransaction) ScrapedItem() models.ScrapedItemReader {
-	t.ensureTx()
-	return NewScrapedItemReaderWriter(t.tx)
+	return NewScrapedItemReaderWriter(database.DB)
 }
 
 func (t *ReadTransaction) Studio() models.StudioReader {
-	t.ensureTx()
-	return NewStudioReaderWriter(t.tx)
+	return NewStudioReaderWriter(database.DB)
 }
 
 func (t *ReadTransaction) Tag() models.TagReader {
-	t.ensureTx()
-	return NewTagReaderWriter(t.tx)
+	return NewTagReaderWriter(database.DB)
 }
 
 type TransactionManager struct{}
@@ -171,9 +182,5 @@ func (t *TransactionManager) WithTxn(ctx context.Context, fn func(r models.Repos
 }
 
 func (t *TransactionManager) WithReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {
-	return models.WithROTxn(&ReadTransaction{
-		transaction{
-			Ctx: ctx,
-		},
-	}, fn)
+	return models.WithROTxn(&ReadTransaction{}, fn)
 }

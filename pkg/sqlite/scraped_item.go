@@ -3,7 +3,6 @@ package sqlite
 import (
 	"database/sql"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 )
 
@@ -13,7 +12,7 @@ type scrapedItemQueryBuilder struct {
 	repository
 }
 
-func NewScrapedItemReaderWriter(tx *sqlx.Tx) *scrapedItemQueryBuilder {
+func NewScrapedItemReaderWriter(tx dbi) *scrapedItemQueryBuilder {
 	return &scrapedItemQueryBuilder{
 		repository{
 			tx:        tx,

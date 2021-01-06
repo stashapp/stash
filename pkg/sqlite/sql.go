@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 )
@@ -232,14 +231,8 @@ func ensureTx(tx *sqlx.Tx) {
 	}
 }
 
-func getImage(tx *sqlx.Tx, query string, args ...interface{}) ([]byte, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
+func getImage(tx dbi, query string, args ...interface{}) ([]byte, error) {
+	rows, err := tx.Queryx(query, args...)
 
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
