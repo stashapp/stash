@@ -3,7 +3,13 @@ import { Button, ButtonGroup, Card, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import cx from "classnames";
 import * as GQL from "src/core/generated-graphql";
-import { Icon, TagLink, HoverPopover, SweatDrops } from "src/components/Shared";
+import {
+  Icon,
+  TagLink,
+  HoverPopover,
+  SweatDrops,
+  TruncatedText,
+} from "src/components/Shared";
 import { TextUtils } from "src/utils";
 
 interface IImageCardProps {
@@ -200,9 +206,14 @@ export const ImageCard: React.FC<IImageCardProps> = (
       </div>
       <div className="card-section">
         <h5 className="card-section-title">
-          {props.image.title
-            ? props.image.title
-            : TextUtils.fileNameFromPath(props.image.path)}
+          <TruncatedText
+            text={
+              props.image.title
+                ? props.image.title
+                : TextUtils.fileNameFromPath(props.image.path)
+            }
+            lineCount={2}
+          />
         </h5>
       </div>
 
