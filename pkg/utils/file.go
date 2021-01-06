@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"regexp"
 
 	"github.com/h2non/filetype"
 	"github.com/h2non/filetype/types"
@@ -198,8 +199,8 @@ func WriteFile(path string, file []byte) error {
 }
 
 // GetIntraDir returns a string that can be added to filepath.Join to implement directory depth, "" on error
-//eg given a pattern of 0af63ce3c99162e9df23a997f62621c5 and a depth of 2 length of 3
-//returns 0af/63c or 0af\63c ( dependin on os)  that can be later used like this  filepath.Join(directory, intradir, basename)
+// eg given a pattern of 0af63ce3c99162e9df23a997f62621c5 and a depth of 2 length of 3
+// returns 0af/63c or 0af\63c ( dependin on os)  that can be later used like this  filepath.Join(directory, intradir, basename)
 func GetIntraDir(pattern string, depth, length int) string {
 	if depth < 1 || length < 1 || (depth*length > len(pattern)) {
 		return ""
@@ -235,4 +236,36 @@ func ServeFileNoCache(w http.ResponseWriter, r *http.Request, filepath string) {
 	w.Header().Add("Cache-Control", "no-cache")
 
 	http.ServeFile(w, r, filepath)
+}
+
+// MatchEntries returns a string slice of the entries in directory dir which
+// match the regexp pattern. On error an empty slice is returned
+// MatchEntries isn't recursive, only the specific 'dir' is searched
+// without being expanded.
+func MatchEntries(dir, pattern string) ([]string, error) {
+	var res []string
+	var err error
+
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	f, err := os.Open(dir)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	files, err := f.Readdirnames(-1)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, file := range files {
+		if re.Match([]byte(file)) {
+			res = append(res, filepath.Join(dir, file))
+		}
+	}
+	return res, err
 }

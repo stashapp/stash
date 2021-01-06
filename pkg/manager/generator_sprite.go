@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/bmatcuk/doublestar/v2"
 	"github.com/disintegration/imaging"
 	"github.com/fvbommel/sortorder"
 
@@ -90,15 +89,11 @@ func (g *SpriteGenerator) generateSpriteImage(encoder *ffmpeg.Encoder) error {
 	}
 
 	// Combine all of the thumbnails into a sprite image
-
-	// globPath needs doublestar's special terms escaped
-	globPath := filepath.Join(instance.Paths.Generated.Tmp, fmt.Sprintf("thumbnail_%s_", g.VideoChecksum))
-	// escape the path
-	globPath = utils.EscapeGlobPath(globPath)
-	// add the pattern to the now escaped path
-	globPath = globPath + "*.jpg"
-
-	imagePaths, _ := doublestar.Glob(globPath)
+	pattern := fmt.Sprintf("thumbnail_%s_.+\\.jpg$", g.VideoChecksum)
+	imagePaths, err := utils.MatchEntries(instance.Paths.Generated.Tmp, pattern)
+	if err != nil {
+		return err
+	}
 	sort.Sort(sortorder.Natural(imagePaths))
 	var images []image.Image
 	for _, imagePath := range imagePaths {
