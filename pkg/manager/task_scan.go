@@ -92,33 +92,44 @@ func (t *ScanTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 }
 
 func (t *ScanTask) scanGallery() {
-	ctx := context.TODO()
 	var g *models.Gallery
+	images := 0
 	scanImages := false
 
-	if err := t.TxnManager.WithTxn(ctx, func(r models.Repository) error {
-		qb := r.Gallery()
-
+	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		var err error
-		g, err = qb.FindByPath(t.FilePath)
-		if err != nil {
-			return err
+		g, err = r.Gallery().FindByPath(t.FilePath)
+
+		if g != nil && err != nil {
+			images, err = r.Image().CountByGalleryID(g.ID)
+			if err != nil {
+				return fmt.Errorf("error getting images for zip gallery %s: %s", t.FilePath, err.Error())
+			}
 		}
 
-		fileModTime, err := t.getFileModTime()
-		if err != nil {
-			return err
-		}
+		return err
+	}); err != nil {
+		logger.Error(err.Error())
+		return
+	}
 
-		if g != nil {
-			// We already have this item in the database, keep going
+	fileModTime, err := t.getFileModTime()
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
 
-			// if file mod time is not set, set it now
-			if !g.FileModTime.Valid {
-				// we will also need to rescan the zip contents
-				scanImages = true
-				logger.Infof("setting file modification time on %s", t.FilePath)
+	if g != nil {
+		// We already have this item in the database, keep going
 
+		// if file mod time is not set, set it now
+		if !g.FileModTime.Valid {
+			// we will also need to rescan the zip contents
+			scanImages = true
+			logger.Infof("setting file modification time on %s", t.FilePath)
+
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				qb := r.Gallery()
 				if _, err := gallery.UpdateFileModTime(qb, g.ID, models.NullSQLiteTimestamp{
 					Timestamp: fileModTime,
 					Valid:     true,
@@ -127,60 +138,65 @@ func (t *ScanTask) scanGallery() {
 				}
 
 				// update our copy of the gallery
+				var err error
 				g, err = qb.Find(g.ID)
-				if err != nil {
-					return err
-				}
+				return err
+			}); err != nil {
+				logger.Error(err.Error())
+				return
 			}
+		}
 
-			// if the mod time of the zip file is different than that of the associated
-			// gallery, then recalculate the checksum
-			modified := t.isFileModified(fileModTime, g.FileModTime)
-			if modified {
-				scanImages = true
-				logger.Infof("%s has been updated: rescanning", t.FilePath)
+		// if the mod time of the zip file is different than that of the associated
+		// gallery, then recalculate the checksum
+		modified := t.isFileModified(fileModTime, g.FileModTime)
+		if modified {
+			scanImages = true
+			logger.Infof("%s has been updated: rescanning", t.FilePath)
 
-				// update the checksum and the modification time
-				checksum, err := t.calculateChecksum()
-				if err != nil {
-					return err
-				}
-
-				currentTime := time.Now()
-				galleryPartial := models.GalleryPartial{
-					ID:       g.ID,
-					Checksum: &checksum,
-					FileModTime: &models.NullSQLiteTimestamp{
-						Timestamp: fileModTime,
-						Valid:     true,
-					},
-					UpdatedAt: &models.SQLiteTimestamp{Timestamp: currentTime},
-				}
-
-				if _, err = r.Gallery().UpdatePartial(galleryPartial); err != nil {
-					return err
-				}
-			}
-
-			// scan the zip files if the gallery has no images
-			iqb := r.Image()
-			images, err := iqb.CountByGalleryID(g.ID)
-			if err != nil {
-				return fmt.Errorf("error getting images for zip gallery %s: %s", t.FilePath, err.Error())
-			}
-
-			scanImages = scanImages || images == 0
-		} else {
-			// Ignore directories.
-			if isDir, _ := utils.DirExists(t.FilePath); isDir {
-				return nil
-			}
-
+			// update the checksum and the modification time
 			checksum, err := t.calculateChecksum()
 			if err != nil {
-				return err
+				logger.Error(err.Error())
+				return
 			}
 
+			currentTime := time.Now()
+			galleryPartial := models.GalleryPartial{
+				ID:       g.ID,
+				Checksum: &checksum,
+				FileModTime: &models.NullSQLiteTimestamp{
+					Timestamp: fileModTime,
+					Valid:     true,
+				},
+				UpdatedAt: &models.SQLiteTimestamp{Timestamp: currentTime},
+			}
+
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				_, err := r.Gallery().UpdatePartial(galleryPartial)
+				return err
+			}); err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
+		// scan the zip files if the gallery has no images
+		scanImages = scanImages || images == 0
+	} else {
+		// Ignore directories.
+		if isDir, _ := utils.DirExists(t.FilePath); isDir {
+			return
+		}
+
+		checksum, err := t.calculateChecksum()
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+
+		if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+			qb := r.Gallery()
 			g, _ = qb.FindByChecksum(checksum)
 			if g != nil {
 				exists, _ := utils.FileExists(g.Path.String)
@@ -231,12 +247,12 @@ func (t *ScanTask) scanGallery() {
 					scanImages = true
 				}
 			}
-		}
 
-		return nil
-	}); err != nil {
-		logger.Error(err.Error())
-		return
+			return nil
+		}); err != nil {
+			logger.Error(err.Error())
+			return
+		}
 	}
 
 	if g != nil {
@@ -712,26 +728,28 @@ func (t *ScanTask) regenerateZipImages(zipGallery *models.Gallery) {
 func (t *ScanTask) scanImage() {
 	var i *models.Image
 
-	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
-		qb := r.Image()
-		gqb := r.Gallery()
-
+	if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
 		var err error
-		i, err = qb.FindByPath(t.FilePath)
-		if err != nil {
-			return err
-		}
+		i, err = r.Image().FindByPath(t.FilePath)
+		return err
+	}); err != nil {
+		logger.Error(err.Error())
+		return
+	}
 
-		fileModTime, err := image.GetFileModTime(t.FilePath)
-		if err != nil {
-			return err
-		}
+	fileModTime, err := image.GetFileModTime(t.FilePath)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
 
-		if i != nil {
-			// if file mod time is not set, set it now
-			if !i.FileModTime.Valid {
-				logger.Infof("setting file modification time on %s", t.FilePath)
+	if i != nil {
+		// if file mod time is not set, set it now
+		if !i.FileModTime.Valid {
+			logger.Infof("setting file modification time on %s", t.FilePath)
 
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				qb := r.Image()
 				if _, err := image.UpdateFileModTime(qb, i.ID, models.NullSQLiteTimestamp{
 					Timestamp: fileModTime,
 					Valid:     true,
@@ -742,101 +760,118 @@ func (t *ScanTask) scanImage() {
 				// update our copy of the gallery
 				var err error
 				i, err = qb.Find(i.ID)
-				if err != nil {
-					return err
-				}
-			}
-
-			// if the mod time of the file is different than that of the associated
-			// image, then recalculate the checksum and regenerate the thumbnail
-			modified := t.isFileModified(fileModTime, i.FileModTime)
-			if modified {
-				i, err = t.rescanImage(qb, i, fileModTime)
-				if err != nil {
-					return err
-				}
-			}
-
-			// We already have this item in the database
-			// check for thumbnails
-			t.generateThumbnail(i)
-		} else {
-			// Ignore directories.
-			if isDir, _ := utils.DirExists(t.FilePath); isDir {
-				return nil
-			}
-
-			var checksum string
-
-			logger.Infof("%s not found.  Calculating checksum...", t.FilePath)
-			checksum, err = t.calculateImageChecksum()
-			if err != nil {
-				return fmt.Errorf("error calculating checksum for %s: %s", t.FilePath, err.Error())
-			}
-
-			// check for scene by checksum and oshash - MD5 should be
-			// redundant, but check both
-			i, err = qb.FindByChecksum(checksum)
-			if err != nil {
 				return err
-			}
-
-			if i != nil {
-				exists := image.FileExists(i.Path)
-				if exists {
-					logger.Infof("%s already exists.  Duplicate of %s ", image.PathDisplayName(t.FilePath), image.PathDisplayName(i.Path))
-				} else {
-					logger.Infof("%s already exists.  Updating path...", image.PathDisplayName(t.FilePath))
-					imagePartial := models.ImagePartial{
-						ID:   i.ID,
-						Path: &t.FilePath,
-					}
-					_, err = qb.Update(imagePartial)
-					if err != nil {
-						return err
-					}
-				}
-			} else {
-				logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(t.FilePath))
-				currentTime := time.Now()
-				newImage := models.Image{
-					Checksum: checksum,
-					Path:     t.FilePath,
-					FileModTime: models.NullSQLiteTimestamp{
-						Timestamp: fileModTime,
-						Valid:     true,
-					},
-					CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-					UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
-				}
-				if err := image.SetFileDetails(&newImage); err != nil {
-					return err
-				}
-
-				i, err = qb.Create(newImage)
-				if err != nil {
-					return err
-				}
-			}
-
-			if t.zipGallery != nil {
-				// associate with gallery
-				err = gallery.AddImage(gqb, t.zipGallery.ID, i.ID)
-			} else if config.GetCreateGalleriesFromFolders() {
-				// create gallery from folder or associate with existing gallery
-				logger.Infof("Associating image %s with folder gallery", i.Path)
-				err = t.associateImageWithFolderGallery(i.ID, gqb)
-			}
-
-			if err != nil {
-				return err
+			}); err != nil {
+				logger.Error(err.Error())
+				return
 			}
 		}
 
-		return nil
-	}); err != nil {
-		logger.Error(err.Error())
-		return
+		// if the mod time of the file is different than that of the associated
+		// image, then recalculate the checksum and regenerate the thumbnail
+		modified := t.isFileModified(fileModTime, i.FileModTime)
+		if modified {
+			i, err = t.rescanImage(i, fileModTime)
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
+		// We already have this item in the database
+		// check for thumbnails
+		t.generateThumbnail(i)
+	} else {
+		// Ignore directories.
+		if isDir, _ := utils.DirExists(t.FilePath); isDir {
+			return
+		}
+
+		var checksum string
+
+		logger.Infof("%s not found.  Calculating checksum...", t.FilePath)
+		checksum, err = t.calculateImageChecksum()
+		if err != nil {
+			logger.Errorf("error calculating checksum for %s: %s", t.FilePath, err.Error())
+			return
+		}
+
+		// check for scene by checksum and oshash - MD5 should be
+		// redundant, but check both
+		if err := t.TxnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+			var err error
+			i, err = r.Image().FindByChecksum(checksum)
+			return err
+		}); err != nil {
+			logger.Error(err.Error())
+			return
+		}
+
+		if i != nil {
+			exists := image.FileExists(i.Path)
+			if exists {
+				logger.Infof("%s already exists.  Duplicate of %s ", image.PathDisplayName(t.FilePath), image.PathDisplayName(i.Path))
+			} else {
+				logger.Infof("%s already exists.  Updating path...", image.PathDisplayName(t.FilePath))
+				imagePartial := models.ImagePartial{
+					ID:   i.ID,
+					Path: &t.FilePath,
+				}
+
+				if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+					_, err := r.Image().Update(imagePartial)
+					return err
+				}); err != nil {
+					logger.Error(err.Error())
+					return
+				}
+			}
+		} else {
+			logger.Infof("%s doesn't exist.  Creating new item...", image.PathDisplayName(t.FilePath))
+			currentTime := time.Now()
+			newImage := models.Image{
+				Checksum: checksum,
+				Path:     t.FilePath,
+				FileModTime: models.NullSQLiteTimestamp{
+					Timestamp: fileModTime,
+					Valid:     true,
+				},
+				CreatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+				UpdatedAt: models.SQLiteTimestamp{Timestamp: currentTime},
+			}
+			if err := image.SetFileDetails(&newImage); err != nil {
+				logger.Error(err.Error())
+				return
+			}
+
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				var err error
+				i, err = r.Image().Create(newImage)
+				return err
+			}); err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
+
+		if t.zipGallery != nil {
+			// associate with gallery
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				return gallery.AddImage(r.Gallery(), t.zipGallery.ID, i.ID)
+			}); err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		} else if config.GetCreateGalleriesFromFolders() {
+			// create gallery from folder or associate with existing gallery
+			logger.Infof("Associating image %s with folder gallery", i.Path)
+			if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+				return t.associateImageWithFolderGallery(i.ID, r.Gallery())
+			}); err != nil {
+				logger.Error(err.Error())
+				return
+			}
+		}
 	}
 
 	if i != nil {
@@ -844,7 +879,7 @@ func (t *ScanTask) scanImage() {
 	}
 }
 
-func (t *ScanTask) rescanImage(qb models.ImageReaderWriter, i *models.Image, fileModTime time.Time) (*models.Image, error) {
+func (t *ScanTask) rescanImage(i *models.Image, fileModTime time.Time) (*models.Image, error) {
 	logger.Infof("%s has been updated: rescanning", t.FilePath)
 
 	oldChecksum := i.Checksum
@@ -875,8 +910,12 @@ func (t *ScanTask) rescanImage(qb models.ImageReaderWriter, i *models.Image, fil
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: currentTime},
 	}
 
-	ret, err := qb.Update(imagePartial)
-	if err != nil {
+	var ret *models.Image
+	if err := t.TxnManager.WithTxn(context.TODO(), func(r models.Repository) error {
+		var err error
+		ret, err = r.Image().Update(imagePartial)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
