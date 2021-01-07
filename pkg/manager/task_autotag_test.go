@@ -225,7 +225,7 @@ func createScene(sqb models.SceneWriter, scene *models.Scene) error {
 }
 
 func withTxn(f func(r models.Repository) error) error {
-	t := &sqlite.TransactionManager{}
+	t := sqlite.NewTransactionManager()
 	return t.WithTxn(context.TODO(), f)
 }
 
@@ -280,7 +280,7 @@ func TestParsePerformers(t *testing.T) {
 
 	task := AutoTagPerformerTask{
 		performer:  performers[0],
-		txnManager: &sqlite.TransactionManager{},
+		txnManager: sqlite.NewTransactionManager(),
 	}
 
 	var wg sync.WaitGroup
@@ -328,7 +328,7 @@ func TestParseStudios(t *testing.T) {
 
 	task := AutoTagStudioTask{
 		studio:     studios[0],
-		txnManager: &sqlite.TransactionManager{},
+		txnManager: sqlite.NewTransactionManager(),
 	}
 
 	var wg sync.WaitGroup
@@ -375,7 +375,7 @@ func TestParseTags(t *testing.T) {
 
 	task := AutoTagTagTask{
 		tag:        tags[0],
-		txnManager: &sqlite.TransactionManager{},
+		txnManager: sqlite.NewTransactionManager(),
 	}
 
 	var wg sync.WaitGroup

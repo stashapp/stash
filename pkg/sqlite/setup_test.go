@@ -118,7 +118,7 @@ func TestMain(m *testing.M) {
 }
 
 func withTxn(f func(r models.Repository) error) error {
-	t := &sqlite.TransactionManager{}
+	t := sqlite.NewTransactionManager()
 	return t.WithTxn(context.TODO(), f)
 }
 
