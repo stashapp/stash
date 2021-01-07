@@ -5,11 +5,15 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
+
+// the duration to wait for
+const txnWaitTime = 10 * time.Second
 
 type dbi interface {
 	Get(dest interface{}, query string, args ...interface{}) error
@@ -175,10 +179,28 @@ func (t *ReadTransaction) Tag() models.TagReader {
 	return NewTagReaderWriter(database.DB)
 }
 
-type TransactionManager struct{}
+type TransactionManager struct {
+	// only allow one write transaction at a time
+	c chan struct{}
+}
+
+func NewTransactionManager() *TransactionManager {
+	return &TransactionManager{
+		c: make(chan struct{}, 1),
+	}
+}
 
 func (t *TransactionManager) WithTxn(ctx context.Context, fn func(r models.Repository) error) error {
-	return models.WithTxn(&transaction{Ctx: ctx}, fn)
+	// wait a certain amount of time before failing
+	select {
+	case t.c <- struct{}{}:
+		defer func() {
+			<-t.c
+		}()
+		return models.WithTxn(&transaction{Ctx: ctx}, fn)
+	case <-time.After(time.Second):
+		return fmt.Errorf("timeout waiting for write transaction")
+	}
 }
 
 func (t *TransactionManager) WithReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {

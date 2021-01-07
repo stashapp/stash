@@ -60,7 +60,7 @@ func Initialize() *singleton {
 			PluginCache: initPluginCache(),
 
 			DownloadStore: NewDownloadStore(),
-			TxnManager:    &sqlite.TransactionManager{},
+			TxnManager:    sqlite.NewTransactionManager(),
 		}
 		instance.ScraperCache = instance.initScraperCache()
 
