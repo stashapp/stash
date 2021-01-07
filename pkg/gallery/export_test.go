@@ -58,10 +58,10 @@ func createFullGallery(id int) models.Gallery {
 			String: date,
 			Valid:  true,
 		},
-		Details: models.NullString(details),
-		Rating:  models.NullInt64(rating),
+		Details:   models.NullString(details),
+		Rating:    models.NullInt64(rating),
 		Organized: organized,
-		URL:     models.NullString(url),
+		URL:       models.NullString(url),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},

@@ -63,15 +63,15 @@ var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 
 func createFullImage(id int) models.Image {
 	return models.Image{
-		ID:       id,
-		Title:    models.NullString(title),
-		Checksum: checksum,
-		Height:   models.NullInt64(height),
-		OCounter: ocounter,
-		Rating:   models.NullInt64(rating),
-		Size:     models.NullInt64(int64(size)),
+		ID:        id,
+		Title:     models.NullString(title),
+		Checksum:  checksum,
+		Height:    models.NullInt64(height),
+		OCounter:  ocounter,
+		Rating:    models.NullInt64(rating),
+		Size:      models.NullInt64(int64(size)),
 		Organized: organized,
-		Width:    models.NullInt64(width),
+		Width:     models.NullInt64(width),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},
