@@ -27,6 +27,7 @@ type ScanTask struct {
 	TxnManager           models.TransactionManager
 	FilePath             string
 	UseFileMetadata      bool
+	StripFileExtension   bool
 	calculateMD5         bool
 	fileNamingAlgorithm  models.HashAlgorithm
 	GenerateSprite       bool
@@ -406,7 +407,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 		// check for container
 		if !s.Format.Valid {
-			videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
+			videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath, t.StripFileExtension)
 			if err != nil {
 				return logError(err)
 			}
@@ -474,7 +475,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 		return nil
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath, t.StripFileExtension)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil
@@ -483,7 +484,7 @@ func (t *ScanTask) scanScene() *models.Scene {
 
 	// Override title to be filename if UseFileMetadata is false
 	if !t.UseFileMetadata {
-		videoFile.SetTitleFromPath()
+		videoFile.SetTitleFromPath(t.StripFileExtension)
 	}
 
 	var checksum string
@@ -607,7 +608,7 @@ func (t *ScanTask) rescanScene(s *models.Scene, fileModTime time.Time) (*models.
 	}
 
 	// regenerate the file details as well
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath, t.StripFileExtension)
 	if err != nil {
 		return nil, err
 	}
@@ -665,7 +666,7 @@ func (t *ScanTask) makeScreenshots(probeResult *ffmpeg.VideoFile, checksum strin
 
 	if probeResult == nil {
 		var err error
-		probeResult, err = ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath)
+		probeResult, err = ffmpeg.NewVideoFile(instance.FFProbePath, t.FilePath, t.StripFileExtension)
 
 		if err != nil {
 			logger.Error(err.Error())

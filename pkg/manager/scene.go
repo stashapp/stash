@@ -188,7 +188,7 @@ func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
 		container = ffmpeg.Container(scene.Format.String)
 	} else { // container isn't in the DB
 		// shouldn't happen, fallback to ffprobe
-		tmpVideoFile, err := ffmpeg.NewVideoFile(GetInstance().FFProbePath, scene.Path)
+		tmpVideoFile, err := ffmpeg.NewVideoFile(GetInstance().FFProbePath, scene.Path, false)
 		if err != nil {
 			return ffmpeg.Container(""), fmt.Errorf("error reading video file: %s", err.Error())
 		}

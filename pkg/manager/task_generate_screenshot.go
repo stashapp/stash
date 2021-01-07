@@ -24,7 +24,7 @@ func (t *GenerateScreenshotTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	scenePath := t.Scene.Path
-	probeResult, err := ffmpeg.NewVideoFile(instance.FFProbePath, scenePath)
+	probeResult, err := ffmpeg.NewVideoFile(instance.FFProbePath, scenePath, false)
 
 	if err != nil {
 		logger.Error(err.Error())

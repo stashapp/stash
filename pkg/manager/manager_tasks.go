@@ -216,6 +216,7 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 					TxnManager:           s.TxnManager,
 					FilePath:             path,
 					UseFileMetadata:      input.UseFileMetadata,
+					StripFileExtension:   input.StripFileExtension,
 					fileNamingAlgorithm:  fileNamingAlgo,
 					calculateMD5:         calculateMD5,
 					GeneratePreview:      input.ScanGeneratePreviews,

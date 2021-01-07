@@ -222,7 +222,7 @@ type VideoFile struct {
 }
 
 // Execute exec command and bind result to struct.
-func NewVideoFile(ffprobePath string, videoPath string) (*VideoFile, error) {
+func NewVideoFile(ffprobePath string, videoPath string, stripExt bool) (*VideoFile, error) {
 	args := []string{"-v", "quiet", "-print_format", "json", "-show_format", "-show_streams", "-show_error", videoPath}
 	//// Extremely slow on windows for some reason
 	//if runtime.GOOS != "windows" {
@@ -239,10 +239,10 @@ func NewVideoFile(ffprobePath string, videoPath string) (*VideoFile, error) {
 		return nil, fmt.Errorf("Error unmarshalling video data for <%s>: %s", videoPath, err.Error())
 	}
 
-	return parse(videoPath, probeJSON)
+	return parse(videoPath, probeJSON, stripExt)
 }
 
-func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
+func parse(filePath string, probeJSON *FFProbeJSON, stripExt bool) (*VideoFile, error) {
 	if probeJSON == nil {
 		return nil, fmt.Errorf("failed to get ffprobe json for <%s>", filePath)
 	}
@@ -262,7 +262,7 @@ func parse(filePath string, probeJSON *FFProbeJSON) (*VideoFile, error) {
 
 	if result.Title == "" {
 		// default title to filename
-		result.SetTitleFromPath()
+		result.SetTitleFromPath(stripExt)
 	}
 
 	result.Comment = probeJSON.Format.Tags.Comment
@@ -339,6 +339,11 @@ func (v *VideoFile) getStreamIndex(fileType string, probeJSON FFProbeJSON) int {
 	return -1
 }
 
-func (v *VideoFile) SetTitleFromPath() {
+func (v *VideoFile) SetTitleFromPath(stripExtension bool) {
 	v.Title = filepath.Base(v.Path)
+	if stripExtension {
+		ext := filepath.Ext(v.Title)
+		v.Title = strings.TrimSuffix(v.Title, ext)
+	}
+
 }
