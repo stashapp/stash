@@ -397,9 +397,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
 
     const popover = (
-      <Popover id="scraper-popover">
+      <Popover id="performer-scraper-popover">
         <Popover.Content>
-          <div>
+          <>
             {queryableScrapers
               ? queryableScrapers.map((s) => (
                   <div key={s.name}>
@@ -421,7 +421,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
                 <span>Reload scrapers</span>
               </Button>
             </div>
-          </div>
+          </>
         </Popover.Content>
       </Popover>
     );
