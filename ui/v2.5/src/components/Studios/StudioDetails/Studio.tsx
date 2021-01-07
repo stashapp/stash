@@ -255,6 +255,7 @@ export const Studio: React.FC = () => {
           }
           ids={parentStudioId ? [parentStudioId] : []}
           isDisabled={!isEditing}
+          excludeIds={studio.id ? [studio.id] : []}
         />
       );
     }
