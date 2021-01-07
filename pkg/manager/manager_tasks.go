@@ -211,7 +211,7 @@ func (s *singleton) Scan(input models.ScanMetadataInput) {
 				instance.Paths.Generated.EnsureTmpDir()
 
 				wg.Add()
-				task := ScanTask{FilePath: path, UseFileMetadata: input.UseFileMetadata, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5, GeneratePreview: input.ScanGeneratePreviews, GenerateImagePreview: input.ScanGenerateImagePreviews, GenerateSprite: input.ScanGenerateSprites}
+				task := ScanTask{FilePath: path, UseFileMetadata: input.UseFileMetadata, StripFileExtension: input.StripFileExtension, fileNamingAlgorithm: fileNamingAlgo, calculateMD5: calculateMD5, GeneratePreview: input.ScanGeneratePreviews, GenerateImagePreview: input.ScanGenerateImagePreviews, GenerateSprite: input.ScanGenerateSprites}
 				go task.Start(&wg)
 
 				return nil
