@@ -102,10 +102,13 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   function maybeRenderSceneSpecsOverlay() {
     return (
       <div className="scene-specs-overlay">
-        {props.scene.file.height ? (
+        {props.scene.file.width && props.scene.file.height ? (
           <span className="overlay-resolution">
             {" "}
-            {TextUtils.resolution(props.scene.file.height)}
+            {TextUtils.resolution(
+              props.scene.file.width,
+              props.scene.file.height
+            )}
           </span>
         ) : (
           ""
