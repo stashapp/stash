@@ -309,6 +309,18 @@ export const usePerformerDestroy = () =>
     update: deleteCache(performerMutationImpactedQueries),
   });
 
+export const usePerformersDestroy = (
+  variables: GQL.PerformersDestroyMutationVariables
+) =>
+  GQL.usePerformersDestroyMutation({
+    variables,
+    refetchQueries: getQueryNames([
+      GQL.FindPerformersDocument,
+      GQL.AllPerformersForFilterDocument,
+    ]),
+    update: deleteCache(performerMutationImpactedQueries),
+  });
+
 const sceneMutationImpactedQueries = [
   GQL.FindPerformerDocument,
   GQL.FindPerformersDocument,
@@ -562,6 +574,12 @@ export const useStudioDestroy = (input: GQL.StudioDestroyInput) =>
     update: deleteCache(studioMutationImpactedQueries),
   });
 
+export const useStudiosDestroy = (input: GQL.StudiosDestroyMutationVariables) =>
+  GQL.useStudiosDestroyMutation({
+    variables: input,
+    update: deleteCache(studioMutationImpactedQueries),
+  });
+
 export const movieMutationImpactedQueries = [
   GQL.FindSceneDocument,
   GQL.FindScenesDocument,
@@ -585,6 +603,12 @@ export const useMovieUpdate = () =>
 
 export const useMovieDestroy = (input: GQL.MovieDestroyInput) =>
   GQL.useMovieDestroyMutation({
+    variables: input,
+    update: deleteCache(movieMutationImpactedQueries),
+  });
+
+export const useMoviesDestroy = (input: GQL.MoviesDestroyMutationVariables) =>
+  GQL.useMoviesDestroyMutation({
     variables: input,
     update: deleteCache(movieMutationImpactedQueries),
   });
@@ -618,6 +642,12 @@ export const useTagUpdate = () =>
   });
 export const useTagDestroy = (input: GQL.TagDestroyInput) =>
   GQL.useTagDestroyMutation({
+    variables: input,
+    update: deleteCache(tagMutationImpactedQueries),
+  });
+
+export const useTagsDestroy = (input: GQL.TagsDestroyMutationVariables) =>
+  GQL.useTagsDestroyMutation({
     variables: input,
     update: deleteCache(tagMutationImpactedQueries),
   });

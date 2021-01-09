@@ -24,3 +24,5 @@ export { default as ErrorMessage } from "./ErrorMessage";
 export { default as TruncatedText } from "./TruncatedText";
 export { BasicCard } from "./BasicCard";
 export { RatingStars } from "./RatingStars";
+export { ExportDialog } from "./ExportDialog";
+export { default as DeleteEntityDialog } from "./DeleteEntityDialog";

@@ -222,3 +222,18 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input models.MovieD
 	}
 	return true, nil
 }
+
+func (r *mutationResolver) MoviesDestroy(ctx context.Context, ids []string) (bool, error) {
+	qb := models.NewMovieQueryBuilder()
+	tx := database.DB.MustBeginTx(ctx, nil)
+	for _, id := range ids {
+		if err := qb.Destroy(id, tx); err != nil {
+			_ = tx.Rollback()
+			return false, err
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return false, err
+	}
+	return true, nil
+}
