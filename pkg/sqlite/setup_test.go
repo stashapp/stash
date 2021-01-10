@@ -624,19 +624,7 @@ func linkScenePerformer(qb models.SceneReaderWriter, sceneIndex, performerIndex 
 }
 
 func linkSceneGallery(gqb models.GalleryReaderWriter, sceneIndex, galleryIndex int) error {
-	gallery, err := gqb.Find(galleryIDs[galleryIndex])
-
-	if err != nil {
-		return fmt.Errorf("error finding gallery: %s", err.Error())
-	}
-
-	if gallery == nil {
-		return errors.New("gallery is nil")
-	}
-
-	gallery.SceneID = sql.NullInt64{Int64: int64(sceneIDs[sceneIndex]), Valid: true}
-	_, err = gqb.Update(*gallery)
-
+	_, err := scene.AddGallery(qb, sceneIDs[sceneIndex], galleryIDs[galleryIndex])
 	return err
 }
 
