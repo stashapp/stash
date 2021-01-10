@@ -6,16 +6,12 @@ interface ISceneGalleriesPanelProps {
   galleries: GQL.GallerySlimDataFragment[];
 }
 
-export const SceneGalleriesPanel: React.FC<ISceneGalleriesPanelProps> = ({ galleries }) => {
+export const SceneGalleriesPanel: React.FC<ISceneGalleriesPanelProps> = ({
+  galleries,
+}) => {
   const cards = galleries.map((gallery) => (
-    <GalleryCard
-      key={gallery.id}
-      gallery={gallery}
-      selecting={false}
-    />
+    <GalleryCard key={gallery.id} gallery={gallery} selecting={false} />
   ));
 
-  return (
-    <div className="row justify-content-center">{cards}</div>
-  );
+  return <div className="row justify-content-center">{cards}</div>;
 };

@@ -29,11 +29,9 @@ export const GalleryCard: React.FC<IProps> = (props) => {
   function maybeRenderScenePopoverButton() {
     if (!props.gallery.scenes) return;
 
-    const popoverContent = (
-      props.gallery.scenes.map(scene => (
-        <TagLink key={scene.id} scene={scene} />
-      ))
-    );
+    const popoverContent = props.gallery.scenes.map((scene) => (
+      <TagLink key={scene.id} scene={scene} />
+    ));
 
     return (
       <HoverPopover placement="bottom" content={popoverContent}>

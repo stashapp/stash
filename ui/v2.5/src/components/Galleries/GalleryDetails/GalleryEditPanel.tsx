@@ -12,6 +12,7 @@ import {
 import {
   PerformerSelect,
   TagSelect,
+  SceneSelect,
   StudioSelect,
   Icon,
   LoadingIndicator,
@@ -49,6 +50,7 @@ export const GalleryEditPanel: React.FC<
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [tagIds, setTagIds] = useState<string[]>();
+  const [scenes, setScenes] = useState<Pick<GQL.Scene, "id" | "title">[]>([]);
 
   const Scrapers = useListGalleryScrapers();
 
@@ -117,6 +119,12 @@ export const GalleryEditPanel: React.FC<
     setStudioId(state?.studio?.id ?? undefined);
     setPerformerIds(perfIds);
     setTagIds(tIds);
+    setScenes(
+      (state?.scenes ?? []).map((s) => ({
+        id: s.id,
+        title: s.title ?? s.path,
+      }))
+    );
   }
 
   useEffect(() => {
@@ -135,6 +143,7 @@ export const GalleryEditPanel: React.FC<
       studio_id: studioId ?? null,
       performer_ids: performerIds,
       tag_ids: tagIds,
+      scene_ids: scenes.map((s) => s.id),
     };
   }
 
@@ -387,6 +396,23 @@ export const GalleryEditPanel: React.FC<
                 isMulti
                 onSelect={(items) => setTagIds(items.map((item) => item.id))}
                 ids={tagIds}
+              />
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId="scenes" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Scenes",
+              labelProps: {
+                column: true,
+                sm: 3,
+                xl: 12,
+              },
+            })}
+            <Col sm={9} xl={12}>
+              <SceneSelect
+                scenes={scenes}
+                onSelect={(items) => setScenes(items)}
               />
             </Col>
           </Form.Group>

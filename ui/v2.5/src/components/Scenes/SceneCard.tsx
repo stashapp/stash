@@ -66,9 +66,9 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
 interface ISceneCardProps {
   scene: GQL.SlimSceneDataFragment;
   selecting?: boolean;
-  selected: boolean | undefined;
-  zoomIndex: number;
-  onSelectedChanged: (selected: boolean, shiftKey: boolean) => void;
+  selected?: boolean | undefined;
+  zoomIndex?: number;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
 export const SceneCard: React.FC<ISceneCardProps> = (
@@ -292,7 +292,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       props.scene.movies.length > 0 ||
       props.scene.scene_markers.length > 0 ||
       props.scene?.o_counter ||
-      props.scene.galleries.length > 0||
+      props.scene.galleries.length > 0 ||
       props.scene.organized
     ) {
       return (
@@ -317,7 +317,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   ) {
     const { shiftKey } = event;
 
-    if (props.selecting) {
+    if (props.selecting && props.onSelectedChanged) {
       props.onSelectedChanged(!props.selected, shiftKey);
       event.preventDefault();
     }
@@ -334,7 +334,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
     const ev = event;
     const shiftKey = false;
 
-    if (props.selecting && !props.selected) {
+    if (props.selecting && props.onSelectedChanged && !props.selected) {
       props.onSelectedChanged(true, shiftKey);
     }
 
@@ -357,7 +357,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
         type="checkbox"
         className="scene-card-check"
         checked={props.selected}
-        onChange={() => props.onSelectedChanged(!props.selected, shiftKey)}
+        onChange={() => props.onSelectedChanged?.(!props.selected, shiftKey)}
         onClick={(event: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
           // eslint-disable-next-line prefer-destructuring
           shiftKey = event.shiftKey;

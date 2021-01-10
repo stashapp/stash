@@ -248,12 +248,12 @@ export const Scene: React.FC = () => {
               <Nav.Item>
                 <Nav.Link eventKey="scene-gallery-panel">Gallery</Nav.Link>
               </Nav.Item>
-            ) : undefined }
+            ) : undefined}
             {scene.galleries.length > 1 ? (
               <Nav.Item>
                 <Nav.Link eventKey="scene-galleries-panel">Galleries</Nav.Link>
               </Nav.Item>
-            ) : undefined }
+            ) : undefined}
             <Nav.Item>
               <Nav.Link eventKey="scene-video-filter-panel">Filters</Nav.Link>
             </Nav.Item>

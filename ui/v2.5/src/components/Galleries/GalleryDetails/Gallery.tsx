@@ -13,6 +13,7 @@ import { DeleteGalleriesDialog } from "../DeleteGalleriesDialog";
 import { GalleryImagesPanel } from "./GalleryImagesPanel";
 import { GalleryAddPanel } from "./GalleryAddPanel";
 import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
+import { GalleryScenesPanel } from "./GalleryScenesPanel";
 
 interface IGalleryParams {
   id?: string;
@@ -118,6 +119,11 @@ export const Gallery: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="gallery-details-panel">Details</Nav.Link>
             </Nav.Item>
+            {gallery.scenes.length > 0 && (
+              <Nav.Item>
+                <Nav.Link eventKey="gallery-scenes-panel">Scenes</Nav.Link>
+              </Nav.Item>
+            )}
             {gallery.path ? (
               <Nav.Item>
                 <Nav.Link eventKey="gallery-file-info-panel">
@@ -157,6 +163,11 @@ export const Gallery: React.FC = () => {
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
+          {gallery.scenes.length > 0 && (
+            <Tab.Pane eventKey="gallery-scenes-panel">
+              <GalleryScenesPanel scenes={gallery.scenes} />
+            </Tab.Pane>
+          )}
         </Tab.Content>
       </Tab.Container>
     );

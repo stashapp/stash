@@ -22,7 +22,7 @@ import {
   PerformerSelect,
   TagSelect,
   StudioSelect,
-  SceneGallerySelect,
+  GallerySelect,
   Icon,
   LoadingIndicator,
   ImageInput,
@@ -47,7 +47,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [url, setUrl] = useState<string>();
   const [date, setDate] = useState<string>();
   const [rating, setRating] = useState<number>();
-  const [galleries, setGalleries] = useState<Pick<GQL.Gallery, 'id'|'title'>[]>([]);
+  const [galleries, setGalleries] = useState<
+    Pick<GQL.Gallery, "id" | "title">[]
+  >([]);
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [movieIds, setMovieIds] = useState<string[] | undefined>(undefined);
@@ -171,10 +173,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setUrl(state.url ?? undefined);
     setDate(state.date ?? undefined);
     setRating(state.rating === null ? NaN : state.rating);
-    setGalleries((state?.galleries ?? []).map( g => ({
-      id: g.id,
-      title: g.title ?? g.path ?? "Unknown",
-    })));
+    setGalleries(
+      (state?.galleries ?? []).map((g) => ({
+        id: g.id,
+        title: g.title ?? g.path ?? "Unknown",
+      }))
+    );
     setStudioId(state?.studio?.id ?? undefined);
     setMovieIds(moviIds);
     setMovieSceneIndexes(movieSceneIdx);
@@ -199,7 +203,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       url,
       date,
       rating: rating ?? null,
-      gallery_ids: galleries.map(g => g.id),
+      gallery_ids: galleries.map((g) => g.id),
       studio_id: studioId ?? null,
       performer_ids: performerIds,
       movies: makeMovieInputs(),
@@ -604,8 +608,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               title: "Galleries",
             })}
             <Col xs={9}>
-              <SceneGallerySelect
-                sceneId={props.scene.id}
+              <GallerySelect
                 galleries={galleries}
                 onSelect={(items) => setGalleries(items)}
               />
