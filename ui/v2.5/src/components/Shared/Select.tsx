@@ -299,9 +299,8 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
   }, 500);
 
   const onChange = (selectedItems: ValueType<Option>) => {
-    const selected = Array.isArray(selectedItems)
-      ? selectedItems
-      : [selectedItems];
+    const result = selectedItems ?? [];
+    const selected = Array.isArray(result) ? result : [result];
     props.onSelect(
       (selected ?? []).map((s) => ({
         id: s.value,
