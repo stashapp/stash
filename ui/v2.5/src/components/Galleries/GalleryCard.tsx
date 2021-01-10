@@ -27,7 +27,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     config?.data?.configuration.interface.showStudioAsText ?? false;
 
   function maybeRenderScenePopoverButton() {
-    if (!props.gallery.scenes) return;
+    if (props.gallery.scenes.length === 0) return;
 
     const popoverContent = props.gallery.scenes.map((scene) => (
       <TagLink key={scene.id} scene={scene} />
@@ -37,6 +37,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
       <HoverPopover placement="bottom" content={popoverContent}>
         <Button className="minimal">
           <Icon icon="play-circle" />
+          <span>{props.gallery.scenes.length}</span>
         </Button>
       </HoverPopover>
     );
