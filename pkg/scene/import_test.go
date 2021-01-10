@@ -47,6 +47,7 @@ const (
 	missingTagName  = "missingTagName"
 
 	errPerformersID = 200
+	errGalleriesID  = 201
 
 	missingChecksum = "missingChecksum"
 	missingOSHash   = "missingOSHash"
@@ -162,23 +163,30 @@ func TestImporterPreImportWithGallery(t *testing.T) {
 	galleryReaderWriter := &mocks.GalleryReaderWriter{}
 
 	i := Importer{
-		GalleryWriter: galleryReaderWriter,
-		Path:          path,
+		GalleryWriter:       galleryReaderWriter,
+		Path:                path,
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 		Input: jsonschema.Scene{
-			Gallery: existingGalleryChecksum,
+			Galleries: []string{
+				existingGalleryChecksum,
+			},
 		},
 	}
 
-	galleryReaderWriter.On("FindByChecksum", existingGalleryChecksum).Return(&models.Gallery{
-		ID: existingGalleryID,
+	galleryReaderWriter.On("FindByChecksums", []string{existingGalleryChecksum}).Return([]*models.Gallery{
+		{
+			ID:       existingGalleryID,
+			Checksum: existingGalleryChecksum,
+		},
 	}, nil).Once()
-	galleryReaderWriter.On("FindByChecksum", existingGalleryErr).Return(nil, errors.New("FindByChecksum error")).Once()
+
+	galleryReaderWriter.On("FindByChecksums", []string{existingGalleryErr}).Return(nil, errors.New("FindByChecksums error")).Once()
 
 	err := i.PreImport()
 	assert.Nil(t, err)
-	assert.Equal(t, existingGalleryID, i.gallery.ID)
+	assert.Equal(t, existingGalleryID, i.galleries[0].ID)
 
-	i.Input.Gallery = existingGalleryErr
+	i.Input.Galleries = []string{existingGalleryErr}
 	err = i.PreImport()
 	assert.NotNil(t, err)
 
@@ -192,12 +200,14 @@ func TestImporterPreImportWithMissingGallery(t *testing.T) {
 		Path:          path,
 		GalleryWriter: galleryReaderWriter,
 		Input: jsonschema.Scene{
-			Gallery: missingGalleryChecksum,
+			Galleries: []string{
+				missingGalleryChecksum,
+			},
 		},
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 	}
 
-	galleryReaderWriter.On("FindByChecksum", missingGalleryChecksum).Return(nil, nil).Times(3)
+	galleryReaderWriter.On("FindByChecksums", []string{missingGalleryChecksum}).Return(nil, nil).Times(3)
 
 	err := i.PreImport()
 	assert.NotNil(t, err)
@@ -205,12 +215,10 @@ func TestImporterPreImportWithMissingGallery(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
 	err = i.PreImport()
 	assert.Nil(t, err)
-	assert.Nil(t, i.gallery)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport()
 	assert.Nil(t, err)
-	assert.Nil(t, i.gallery)
 
 	galleryReaderWriter.AssertExpectations(t)
 }
@@ -506,33 +514,30 @@ func TestImporterPostImport(t *testing.T) {
 	readerWriter.AssertExpectations(t)
 }
 
-func TestImporterPostImportUpdateGallery(t *testing.T) {
-	galleryReaderWriter := &mocks.GalleryReaderWriter{}
+func TestImporterPostImportUpdateGalleries(t *testing.T) {
+	sceneReaderWriter := &mocks.SceneReaderWriter{}
 
 	i := Importer{
-		GalleryWriter: galleryReaderWriter,
-		gallery: &models.Gallery{
-			ID: existingGalleryID,
+		ReaderWriter: sceneReaderWriter,
+		galleries: []*models.Gallery{
+			{
+				ID: existingGalleryID,
+			},
 		},
 	}
 
-	updateErr := errors.New("Update error")
+	updateErr := errors.New("UpdateGalleries error")
 
-	updateArg := *i.gallery
-	updateArg.SceneID = models.NullInt64(sceneID)
-
-	galleryReaderWriter.On("Update", updateArg).Return(nil, nil).Once()
-
-	updateArg.SceneID = models.NullInt64(errGalleryID)
-	galleryReaderWriter.On("Update", updateArg).Return(nil, updateErr).Once()
+	sceneReaderWriter.On("UpdateGalleries", sceneID, []int{existingGalleryID}).Return(nil).Once()
+	sceneReaderWriter.On("UpdateGalleries", errGalleriesID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
 
 	err := i.PostImport(sceneID)
 	assert.Nil(t, err)
 
-	err = i.PostImport(errGalleryID)
+	err = i.PostImport(errGalleriesID)
 	assert.NotNil(t, err)
 
-	galleryReaderWriter.AssertExpectations(t)
+	sceneReaderWriter.AssertExpectations(t)
 }
 
 func TestImporterPostImportUpdatePerformers(t *testing.T) {

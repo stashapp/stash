@@ -153,6 +153,29 @@ func (_m *GalleryReaderWriter) FindByChecksum(checksum string) (*models.Gallery,
 	return r0, r1
 }
 
+// FindByChecksums provides a mock function with given fields: checksums
+func (_m *GalleryReaderWriter) FindByChecksums(checksums []string) ([]*models.Gallery, error) {
+	ret := _m.Called(checksums)
+
+	var r0 []*models.Gallery
+	if rf, ok := ret.Get(0).(func([]string) []*models.Gallery); ok {
+		r0 = rf(checksums)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Gallery)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]string) error); ok {
+		r1 = rf(checksums)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByImageID provides a mock function with given fields: imageID
 func (_m *GalleryReaderWriter) FindByImageID(imageID int) ([]*models.Gallery, error) {
 	ret := _m.Called(imageID)
@@ -200,15 +223,15 @@ func (_m *GalleryReaderWriter) FindByPath(path string) (*models.Gallery, error) 
 }
 
 // FindBySceneID provides a mock function with given fields: sceneID
-func (_m *GalleryReaderWriter) FindBySceneID(sceneID int) (*models.Gallery, error) {
+func (_m *GalleryReaderWriter) FindBySceneID(sceneID int) ([]*models.Gallery, error) {
 	ret := _m.Called(sceneID)
 
-	var r0 *models.Gallery
-	if rf, ok := ret.Get(0).(func(int) *models.Gallery); ok {
+	var r0 []*models.Gallery
+	if rf, ok := ret.Get(0).(func(int) []*models.Gallery); ok {
 		r0 = rf(sceneID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Gallery)
+			r0 = ret.Get(0).([]*models.Gallery)
 		}
 	}
 
