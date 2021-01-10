@@ -264,10 +264,6 @@ export const useAllPerformersForFilter = () =>
   GQL.useAllPerformersForFilterQuery();
 export const useAllStudiosForFilter = () => GQL.useAllStudiosForFilterQuery();
 export const useAllMoviesForFilter = () => GQL.useAllMoviesForFilterQuery();
-export const useValidGalleriesForScene = (sceneId: string) =>
-  GQL.useValidGalleriesForSceneQuery({
-    variables: { scene_id: sceneId },
-  });
 export const useStats = () => GQL.useStatsQuery();
 export const useVersion = () => GQL.useVersionQuery();
 export const useLatestVersion = () =>

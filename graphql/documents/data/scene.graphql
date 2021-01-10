@@ -36,7 +36,7 @@ fragment SceneData on Scene {
   }
 
   galleries {
-    ...GalleryData
+    ...GallerySlimData
   }
 
   studio {

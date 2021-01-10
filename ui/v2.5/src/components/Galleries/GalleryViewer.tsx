@@ -1,15 +1,20 @@
 import React from "react";
-import * as GQL from "src/core/generated-graphql";
+import { useFindGallery } from "src/core/StashService"
 import { useLightbox } from "src/hooks";
+import { LoadingIndicator } from "src/components/Shared";
 import "flexbin/flexbin.css";
 
 interface IProps {
-  gallery: GQL.GalleryDataFragment;
+  galleryId: string;
 }
 
-export const GalleryViewer: React.FC<IProps> = ({ gallery }) => {
-  const images = gallery?.images ?? [];
+export const GalleryViewer: React.FC<IProps> = ({ galleryId }) => {
+  const { data, loading } = useFindGallery(galleryId)
+  const images = data?.findGallery?.images ?? [];
   const showLightbox = useLightbox({ images, showNavigation: false });
+
+  if (loading)
+    return <LoadingIndicator />;
 
   const thumbs = images.map((file, index) => (
     <div

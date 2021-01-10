@@ -13,12 +13,9 @@ import {
   useScrapePerformerList,
   useTagCreate,
   useStudioCreate,
-  usePerformerCreate,
-  useFindGalleries,
+  usePerformerCreate
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilterMode } from "src/models/list-filter/types";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -72,14 +69,11 @@ interface IFilterComponentProps extends IFilterProps {
 interface IFilterSelectProps<T extends boolean>
   extends Omit<ISelectProps<T>, "onChange" | "items" | "onCreateOption"> {}
 
+type Gallery = Pick<GQL.Gallery, "id" | "title">;
 interface ISceneGallerySelect {
-  gallery?: Pick<GQL.Gallery, "title" | "path" | "id">;
+  galleries: Gallery[];
   sceneId: string;
-  onSelect: (
-    item:
-      | GQL.ValidGalleriesForSceneQuery["validGalleriesForScene"][0]
-      | undefined
-  ) => void;
+  onSelect: (items: Gallery[]) => void;
 }
 
 const getSelectedValues = (selectedItems: ValueType<Option, boolean>) =>
@@ -233,8 +227,14 @@ const FilterSelectComponent = <T extends boolean>(
 
 export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
   const [query, setQuery] = useState<string>("");
-  const { data, loading } = useFindGalleries(getFilter());
-  const [selectedOption, setSelectedOption] = useState<Option>();
+  const { data, loading } = GQL.useFindGalleriesQuery({
+    skip: query === "",
+    variables: {
+      filter: {
+        q: query
+      }
+    }
+  });
 
   const galleries = data?.findGalleries.galleries ?? [];
   const items = galleries.map((g) => ({
@@ -242,42 +242,32 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
     value: g.id,
   }));
 
-  function getFilter() {
-    const ret = new ListFilterModel(FilterMode.Galleries);
-    ret.searchTerm = query;
-    return ret;
-  }
-
   const onInputChange = debounce((input: string) => {
     setQuery(input);
   }, 500);
 
-  const onChange = (selectedItem: ValueType<Option, false>) => {
-    setSelectedOption(selectedItem ?? undefined);
-    props.onSelect(
-      selectedItem
-        ? galleries.find((g) => g.id === selectedItem.value)
-        : undefined
-    );
+  const onChange = (selectedItems: ValueType<Option, true>) => {
+    const selected = getSelectedValues(selectedItems);
+    props.onSelect(selected.map(s => ({
+      id: s.value,
+      title: s.label,
+    })));
   };
 
-  const option =
-    selectedOption ??
-    (props.gallery
-      ? {
-          value: props.gallery.id,
-          label: props.gallery.title ?? props.gallery.path ?? "Unknown",
-        }
-      : undefined);
+  const options = props.galleries.map(g => ({
+      value: g.id,
+      label: g.title ?? "Unknown",
+    }));
 
   return (
     <SelectComponent
-      isMulti={false}
       onChange={onChange}
       onInputChange={onInputChange}
       isLoading={loading}
       items={items}
-      selectedOptions={option}
+      selectedOptions={options}
+      isMulti
+      placeholder="Search for gallery..."
     />
   );
 };

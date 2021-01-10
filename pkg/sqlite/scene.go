@@ -305,7 +305,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 		left join performers_scenes as performers_join on performers_join.scene_id = scenes.id
 		left join movies_scenes as movies_join on movies_join.scene_id = scenes.id
 		left join studios as studio on studio.id = scenes.studio_id
-		left join galleries as gallery on gallery.scene_id = scenes.id
+		left join scenes_galleries as galleries_join on galleries_join.scene_id = scenes.id
 		left join scenes_tags as tags_join on tags_join.scene_id = scenes.id
 		left join scene_stash_ids on scene_stash_ids.scene_id = scenes.id
 	`
@@ -381,7 +381,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	if isMissingFilter := sceneFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "gallery":
-			query.addWhere("gallery.scene_id IS NULL")
+			query.addWhere("galleries_join.scene_id IS NULL")
 		case "studio":
 			query.addWhere("scenes.studio_id IS NULL")
 		case "movie":

@@ -257,17 +257,20 @@ export const SceneCard: React.FC<ISceneCardProps> = (
   }
 
   function maybeRenderGallery() {
-    if (props.scene.gallery) {
-      return (
-        <div>
-          <Link to={`/galleries/${props.scene.gallery.id}`}>
-            <Button className="minimal">
-              <Icon icon="image" />
-            </Button>
-          </Link>
-        </div>
-      );
-    }
+    if (props.scene.galleries.length <= 0) return;
+
+    const popoverContent = props.scene.galleries.map((gallery) => (
+      <TagLink key={gallery.id} gallery={gallery} />
+    ));
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal">
+          <Icon icon="image" />
+          <span>{props.scene.galleries.length}</span>
+        </Button>
+      </HoverPopover>
+    );
   }
 
   function maybeRenderOrganized() {
@@ -289,7 +292,7 @@ export const SceneCard: React.FC<ISceneCardProps> = (
       props.scene.movies.length > 0 ||
       props.scene.scene_markers.length > 0 ||
       props.scene?.o_counter ||
-      props.scene.gallery ||
+      props.scene.galleries.length > 0||
       props.scene.organized
     ) {
       return (

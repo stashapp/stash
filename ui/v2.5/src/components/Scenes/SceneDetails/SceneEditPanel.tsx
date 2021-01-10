@@ -47,7 +47,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [url, setUrl] = useState<string>();
   const [date, setDate] = useState<string>();
   const [rating, setRating] = useState<number>();
-  const [galleryId, setGalleryId] = useState<string>();
+  const [galleries, setGalleries] = useState<Pick<GQL.Gallery, 'id'|'title'>[]>([]);
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [movieIds, setMovieIds] = useState<string[] | undefined>(undefined);
@@ -171,7 +171,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setUrl(state.url ?? undefined);
     setDate(state.date ?? undefined);
     setRating(state.rating === null ? NaN : state.rating);
-    setGalleryId(state?.gallery?.id ?? undefined);
+    setGalleries((state?.galleries ?? []).map( g => ({
+      id: g.id,
+      title: g.title ?? g.path ?? "Unknown",
+    })));
     setStudioId(state?.studio?.id ?? undefined);
     setMovieIds(moviIds);
     setMovieSceneIndexes(movieSceneIdx);
@@ -196,7 +199,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       url,
       date,
       rating: rating ?? null,
-      gallery_id: galleryId ?? null,
+      gallery_ids: galleries.map(g => g.id),
       studio_id: studioId ?? null,
       performer_ids: performerIds,
       movies: makeMovieInputs(),
@@ -596,15 +599,15 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               />
             </Col>
           </Form.Group>
-          <Form.Group controlId="gallery" as={Row}>
+          <Form.Group controlId="galleries" as={Row}>
             {FormUtils.renderLabel({
-              title: "Gallery",
+              title: "Galleries",
             })}
             <Col xs={9}>
               <SceneGallerySelect
                 sceneId={props.scene.id}
-                gallery={props.scene.gallery ?? undefined}
-                onSelect={(item) => setGalleryId(item ? item.id : undefined)}
+                galleries={galleries}
+                onSelect={(items) => setGalleries(items)}
               />
             </Col>
           </Form.Group>

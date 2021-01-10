@@ -27,7 +27,6 @@ DROP INDEX IF EXISTS `galleries_path_unique`;
 DROP INDEX IF EXISTS `galleries_checksum_unique`;
 DROP INDEX IF EXISTS `index_galleries_on_studio_id`;
 
-CREATE INDEX `index_galleries_on_scene_id` on `galleries` (`scene_id`);
 CREATE UNIQUE INDEX `galleries_path_unique` on `galleries` (`path`);
 CREATE UNIQUE INDEX `galleries_checksum_unique` on `galleries` (`checksum`);
 CREATE INDEX `index_galleries_on_studio_id` on `galleries` (`studio_id`);
@@ -35,8 +34,8 @@ CREATE INDEX `index_galleries_on_studio_id` on `galleries` (`studio_id`);
 CREATE TABLE `scenes_galleries` (
   `scene_id` integer,
   `gallery_id` integer,
-  foreign key(`scene_id`) references `scenes`(`id`) on delete CASCADE
-  foreign key(`gallery_id`) references `galleries`(`id`) on delete CASCADE,
+  foreign key(`scene_id`) references `scenes`(`id`) on delete CASCADE,
+  foreign key(`gallery_id`) references `galleries`(`id`) on delete CASCADE
 );
 
 CREATE INDEX `index_scenes_galleries_on_scene_id` on `scenes_galleries` (`scene_id`);
@@ -125,8 +124,6 @@ INSERT INTO `scenes_galleries`
     `scene_id`,
     `id`
   FROM `_galleries_old`;
-
-INSERT INTO `galleries` SELECT * from `_galleries_old`;
 
 -- these tables are a direct copy
 INSERT INTO `galleries_images` SELECT * from `_galleries_images_old`;

@@ -180,7 +180,7 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"galleries.path", "galleries.checksum"}
+		searchColumns := []string{"galleries.title", "galleries.path", "galleries.checksum"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
 		query.addArg(thisArgs...)
