@@ -34,6 +34,8 @@ input ScanMetadataInput {
   paths: [String!]
   """Set name, date, details from metadata (if present)"""
   useFileMetadata: Boolean!
+  """Strip file extension from title"""
+  stripFileExtension: Boolean!
   """Generate previews during scan"""
   scanGeneratePreviews: Boolean!
   """Generate image previews during scan"""

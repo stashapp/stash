@@ -322,16 +322,32 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 	if resolutionFilter := imageFilter.Resolution; resolutionFilter != nil {
 		if resolution := resolutionFilter.String(); resolutionFilter.IsValid() {
 			switch resolution {
+			case "VERY_LOW":
+				query.addWhere("MIN(images.height, images.width) < 240")
 			case "LOW":
-				query.addWhere("images.height < 480")
+				query.addWhere("(MIN(images.height, images.width) >= 240 AND MIN(images.height, images.width) < 360)")
+			case "R360P":
+				query.addWhere("(MIN(images.height, images.width) >= 360 AND MIN(images.height, images.width) < 480)")
 			case "STANDARD":
-				query.addWhere("(images.height >= 480 AND images.height < 720)")
+				query.addWhere("(MIN(images.height, images.width) >= 480 AND MIN(images.height, images.width) < 540)")
+			case "WEB_HD":
+				query.addWhere("(MIN(images.height, images.width) >= 540 AND MIN(images.height, images.width) < 720)")
 			case "STANDARD_HD":
-				query.addWhere("(images.height >= 720 AND images.height < 1080)")
+				query.addWhere("(MIN(images.height, images.width) >= 720 AND MIN(images.height, images.width) < 1080)")
 			case "FULL_HD":
-				query.addWhere("(images.height >= 1080 AND images.height < 2160)")
+				query.addWhere("(MIN(images.height, images.width) >= 1080 AND MIN(images.height, images.width) < 1440)")
+			case "QUAD_HD":
+				query.addWhere("(MIN(images.height, images.width) >= 1440 AND MIN(images.height, images.width) < 1920)")
+			case "VR_HD":
+				query.addWhere("(MIN(images.height, images.width) >= 1920 AND MIN(images.height, images.width) < 2160)")
 			case "FOUR_K":
-				query.addWhere("images.height >= 2160")
+				query.addWhere("(MIN(images.height, images.width) >= 2160 AND MIN(images.height, images.width) < 2880)")
+			case "FIVE_K":
+				query.addWhere("(MIN(images.height, images.width) >= 2880 AND MIN(images.height, images.width) < 3384)")
+			case "SIX_K":
+				query.addWhere("(MIN(images.height, images.width) >= 3384 AND MIN(images.height, images.width) < 4320)")
+			case "EIGHT_K":
+				query.addWhere("(MIN(images.height, images.width) >= 4320")
 			}
 		}
 	}
