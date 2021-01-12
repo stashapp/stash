@@ -379,11 +379,16 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   );
 };
 
-export const StudioSelect: React.FC<IFilterProps> = (props) => {
+export const StudioSelect: React.FC<
+  IFilterProps & { excludeIds?: string[] }
+> = (props) => {
   const { data, loading } = useAllStudiosForFilter();
   const [createStudio] = useStudioCreate({ name: "" });
 
-  const studios = data?.allStudiosSlim ?? [];
+  const exclude = props.excludeIds ?? [];
+  const studios = (data?.allStudiosSlim ?? []).filter(
+    (studio) => !exclude.includes(studio.id)
+  );
 
   const onCreate = async (name: string) => {
     const result = await createStudio({ variables: { name } });
