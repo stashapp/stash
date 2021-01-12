@@ -54,7 +54,7 @@ export const MovieList: React.FC = () => {
     <DeleteEntityDialog
       selected={selectedMovies}
       onClose={onClose}
-      singularEntity="movies"
+      singularEntity="movie"
       pluralEntity="movies"
       destroyMutation={useMoviesDestroy}
     />
