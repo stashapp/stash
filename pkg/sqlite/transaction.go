@@ -5,15 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 )
-
-// the duration to wait for
-const txnWaitTime = 10 * time.Second
 
 type dbi interface {
 	Get(dest interface{}, query string, args ...interface{}) error
@@ -191,16 +187,7 @@ func NewTransactionManager() *TransactionManager {
 }
 
 func (t *TransactionManager) WithTxn(ctx context.Context, fn func(r models.Repository) error) error {
-	// wait a certain amount of time before failing
-	select {
-	case t.c <- struct{}{}:
-		defer func() {
-			<-t.c
-		}()
-		return models.WithTxn(&transaction{Ctx: ctx}, fn)
-	case <-time.After(time.Second):
-		return fmt.Errorf("timeout waiting for write transaction")
-	}
+	return models.WithTxn(&transaction{Ctx: ctx}, fn)
 }
 
 func (t *TransactionManager) WithReadTxn(ctx context.Context, fn func(r models.ReaderRepository) error) error {
