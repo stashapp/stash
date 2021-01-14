@@ -220,16 +220,22 @@ func (r *mutationResolver) MovieDestroy(ctx context.Context, input models.MovieD
 	return true, nil
 }
 
-func (r *mutationResolver) MoviesDestroy(ctx context.Context, ids []string) (bool, error) {
-	qb := models.NewMovieQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	for _, id := range ids {
-		if err := qb.Destroy(id, tx); err != nil {
-			_ = tx.Rollback()
-			return false, err
-		}
+func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string) (bool, error) {
+	ids, err := utils.StringSliceToIntSlice(movieIDs)
+	if err != nil {
+		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Movie()
+		for _, id := range ids {
+			if err := qb.Destroy(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return false, err
 	}
 	return true, nil

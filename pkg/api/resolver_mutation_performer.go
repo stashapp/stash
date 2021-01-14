@@ -225,16 +225,22 @@ func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.Pe
 	return true, nil
 }
 
-func (r *mutationResolver) PerformersDestroy(ctx context.Context, ids []string) (bool, error) {
-	qb := models.NewPerformerQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	for _, id := range ids {
-		if err := qb.Destroy(id, tx); err != nil {
-			_ = tx.Rollback()
-			return false, err
-		}
+func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs []string) (bool, error) {
+	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	if err != nil {
+		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
+		for _, id := range ids {
+			if err := qb.Destroy(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return false, err
 	}
 	return true, nil

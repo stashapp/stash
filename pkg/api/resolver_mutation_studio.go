@@ -168,16 +168,22 @@ func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.Studi
 	return true, nil
 }
 
-func (r *mutationResolver) StudiosDestroy(ctx context.Context, ids []string) (bool, error) {
-	qb := models.NewStudioQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	for _, id := range ids {
-		if err := qb.Destroy(id, tx); err != nil {
-			_ = tx.Rollback()
-			return false, err
-		}
+func (r *mutationResolver) StudiosDestroy(ctx context.Context, studioIDs []string) (bool, error) {
+	ids, err := utils.StringSliceToIntSlice(studioIDs)
+	if err != nil {
+		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Studio()
+		for _, id := range ids {
+			if err := qb.Destroy(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return false, err
 	}
 	return true, nil
