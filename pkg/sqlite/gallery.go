@@ -297,30 +297,54 @@ func (qb *galleryQueryBuilder) handleAverageResolutionFilter(query *queryBuilder
 		var high int
 
 		switch resolution {
+		case "VERY_LOW":
+			high = 240
 		case "LOW":
+			low = 240
+			high = 360
+		case "R360P":
+			low = 360
 			high = 480
 		case "STANDARD":
 			low = 480
+			high = 540
+		case "WEB_HD":
+			low = 540
 			high = 720
 		case "STANDARD_HD":
 			low = 720
 			high = 1080
 		case "FULL_HD":
 			low = 1080
+			high = 1440
+		case "QUAD_HD":
+			low = 1440
+			high = 1920
+		case "VR_HD":
+			low = 1920
 			high = 2160
 		case "FOUR_K":
 			low = 2160
+			high = 2880
+		case "FIVE_K":
+			low = 2880
+			high = 3384
+		case "SIX_K":
+			low = 3384
+			high = 4320
+		case "EIGHT_K":
+			low = 4320
 		}
 
 		havingClause := ""
 		if low != 0 {
-			havingClause = "avg(images.height) >= " + strconv.Itoa(low)
+			havingClause = "avg(MIN(images.width, images.height)) >= " + strconv.Itoa(low)
 		}
 		if high != 0 {
 			if havingClause != "" {
 				havingClause += " AND "
 			}
-			havingClause += "avg(images.height) < " + strconv.Itoa(high)
+			havingClause += "avg(MIN(images.width, images.height)) < " + strconv.Itoa(high)
 		}
 
 		if havingClause != "" {

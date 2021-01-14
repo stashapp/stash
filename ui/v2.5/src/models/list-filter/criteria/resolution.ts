@@ -6,7 +6,20 @@ export class ResolutionCriterion extends Criterion {
   public parameterName: string = "resolution";
   public modifier = CriterionModifier.Equals;
   public modifierOptions = [];
-  public options: string[] = ["240p", "480p", "720p", "1080p", "4k"];
+  public options: string[] = [
+    "144p",
+    "240p",
+    "360p",
+    "480p",
+    "540p",
+    "720p",
+    "1080p",
+    "1440p",
+    "4k",
+    "5k",
+    "6k",
+    "8k",
+  ];
   public value: string = "";
 }
 

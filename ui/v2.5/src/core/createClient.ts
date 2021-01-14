@@ -10,6 +10,7 @@ import { WebSocketLink } from "@apollo/client/link/ws";
 import { onError } from "@apollo/client/link/error";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createUploadLink } from "apollo-upload-client";
+import * as GQL from "src/core/generated-graphql";
 
 // Policies that tell apollo what the type of the returned object will be.
 // In many cases this allows it to return from cache immediately rather than fetching.
@@ -139,6 +140,27 @@ export const createClient = () => {
     link,
     cache,
   });
+
+  // Watch for scan/clean tasks and reset cache when they complete
+  let prevStatus = "Idle";
+  client
+    .subscribe<GQL.MetadataUpdateSubscription>({
+      query: GQL.MetadataUpdateDocument,
+    })
+    .subscribe({
+      next: (res) => {
+        const currentStatus = res.data?.metadataUpdate.status;
+        if (currentStatus) {
+          if (
+            currentStatus === "Idle" &&
+            (prevStatus === "Scan" || prevStatus === "Clean")
+          ) {
+            client.resetStore();
+          }
+          prevStatus = currentStatus;
+        }
+      },
+    });
 
   return {
     cache,

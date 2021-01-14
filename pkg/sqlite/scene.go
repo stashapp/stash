@@ -328,16 +328,32 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	if resolutionFilter := sceneFilter.Resolution; resolutionFilter != nil {
 		if resolution := resolutionFilter.String(); resolutionFilter.IsValid() {
 			switch resolution {
+			case "VERY_LOW":
+				query.addWhere("MIN(scenes.height, scenes.width) < 240")
 			case "LOW":
-				query.addWhere("scenes.height < 480")
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 240 AND MIN(scenes.height, scenes.width) < 360)")
+			case "R360P":
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 360 AND MIN(scenes.height, scenes.width) < 480)")
 			case "STANDARD":
-				query.addWhere("(scenes.height >= 480 AND scenes.height < 720)")
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 480 AND MIN(scenes.height, scenes.width) < 540)")
+			case "WEB_HD":
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 540 AND MIN(scenes.height, scenes.width) < 720)")
 			case "STANDARD_HD":
-				query.addWhere("(scenes.height >= 720 AND scenes.height < 1080)")
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 720 AND MIN(scenes.height, scenes.width) < 1080)")
 			case "FULL_HD":
-				query.addWhere("(scenes.height >= 1080 AND scenes.height < 2160)")
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 1080 AND MIN(scenes.height, scenes.width) < 1440)")
+			case "QUAD_HD":
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 1440 AND MIN(scenes.height, scenes.width) < 1920)")
+			case "VR_HD":
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 1920 AND MIN(scenes.height, scenes.width) < 2160)")
 			case "FOUR_K":
-				query.addWhere("scenes.height >= 2160")
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 2160 AND MIN(scenes.height, scenes.width) < 2880)")
+			case "FIVE_K":
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 2880 AND MIN(scenes.height, scenes.width) < 3384)")
+			case "SIX_K":
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 3384 AND MIN(scenes.height, scenes.width) < 4320)")
+			case "EIGHT_K":
+				query.addWhere("(MIN(scenes.height, scenes.width) >= 4320")
 			}
 		}
 	}

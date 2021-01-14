@@ -12,11 +12,12 @@ import {
   queryFindTags,
   mutateMetadataAutoTag,
   useTagDestroy,
+  useTagsDestroy,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import { FormattedNumber } from "react-intl";
 import { NavUtils } from "src/utils";
-import { Icon, Modal } from "src/components/Shared";
+import { Icon, Modal, DeleteEntityDialog } from "src/components/Shared";
 import { TagCard } from "./TagCard";
 import { ExportDialog } from "../Shared/ExportDialog";
 
@@ -121,6 +122,19 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     }
   }
 
+  const renderDeleteDialog = (
+    selectedTags: GQL.TagDataFragment[],
+    onClose: (confirmed: boolean) => void
+  ) => (
+    <DeleteEntityDialog
+      selected={selectedTags}
+      onClose={onClose}
+      singularEntity="tag"
+      pluralEntity="tags"
+      destroyMutation={useTagsDestroy}
+    />
+  );
+
   const listData = useTagsList({
     renderContent,
     filterHook,
@@ -130,6 +144,7 @@ export const TagList: React.FC<ITagList> = ({ filterHook }) => {
     zoomable: true,
     defaultZoomIndex: 0,
     persistState: true,
+    renderDeleteDialog,
   });
 
   function getDeleteTagInput() {

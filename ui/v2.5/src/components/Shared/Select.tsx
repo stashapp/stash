@@ -63,6 +63,7 @@ interface ISelectProps {
   showDropdown?: boolean;
   groupHeader?: string;
   closeMenuOnSelect?: boolean;
+  noOptionsMessage?: string | null;
 }
 interface IFilterComponentProps extends IFilterProps {
   items: Array<ValidTypes>;
@@ -106,6 +107,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   showDropdown = true,
   groupHeader,
   closeMenuOnSelect = true,
+  noOptionsMessage = type !== "tags" ? "None" : null,
 }) => {
   const defaultValue =
     items.filter((item) => initialIds?.indexOf(item.value) !== -1) ?? null;
@@ -143,7 +145,7 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     isMulti,
     isClearable,
     defaultValue,
-    noOptionsMessage: () => (type !== "tags" ? "None" : null),
+    noOptionsMessage: () => noOptionsMessage,
     placeholder: isDisabled ? "" : placeholder,
     onInputChange,
     isDisabled,
@@ -312,6 +314,7 @@ export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = (
       placeholder={props.placeholder}
       className="select-suggest"
       showDropdown={false}
+      noOptionsMessage={query === "" ? null : "No performers found."}
     />
   );
 };
@@ -376,11 +379,16 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   );
 };
 
-export const StudioSelect: React.FC<IFilterProps> = (props) => {
+export const StudioSelect: React.FC<
+  IFilterProps & { excludeIds?: string[] }
+> = (props) => {
   const { data, loading } = useAllStudiosForFilter();
   const [createStudio] = useStudioCreate({ name: "" });
 
-  const studios = data?.allStudiosSlim ?? [];
+  const exclude = props.excludeIds ?? [];
+  const studios = (data?.allStudiosSlim ?? []).filter(
+    (studio) => !exclude.includes(studio.id)
+  );
 
   const onCreate = async (name: string) => {
     const result = await createStudio({ variables: { name } });

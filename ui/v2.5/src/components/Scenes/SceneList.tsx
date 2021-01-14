@@ -68,13 +68,18 @@ export const SceneList: React.FC<ISceneList> = ({
     };
   };
 
+  const renderDeleteDialog = (
+    selectedScenes: SlimSceneDataFragment[],
+    onClose: (confirmed: boolean) => void
+  ) => <DeleteScenesDialog selected={selectedScenes} onClose={onClose} />;
+
   const listData = useScenesList({
     zoomable: true,
     selectable: true,
     otherOperations,
     renderContent,
     renderEditDialog: renderEditScenesDialog,
-    renderDeleteDialog: renderDeleteScenesDialog,
+    renderDeleteDialog,
     filterHook,
     addKeybinds,
     persistState,
@@ -162,17 +167,6 @@ export const SceneList: React.FC<ISceneList> = ({
     return (
       <>
         <EditScenesDialog selected={selectedScenes} onClose={onClose} />
-      </>
-    );
-  }
-
-  function renderDeleteScenesDialog(
-    selectedScenes: SlimSceneDataFragment[],
-    onClose: (confirmed: boolean) => void
-  ) {
-    return (
-      <>
-        <DeleteScenesDialog selected={selectedScenes} onClose={onClose} />
       </>
     );
   }
