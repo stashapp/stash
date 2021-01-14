@@ -25,3 +25,7 @@ mutation MovieUpdate($input: MovieUpdateInput!) {
 mutation MovieDestroy($id: ID!) {
   movieDestroy(input: { id: $id })
 }
+
+mutation MoviesDestroy($ids: [ID!]!) {
+  moviesDestroy(ids: $ids)
+}
