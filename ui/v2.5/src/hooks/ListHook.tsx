@@ -22,10 +22,7 @@ import {
   FindImagesQueryResult,
   SlimImageDataFragment,
 } from "src/core/generated-graphql";
-import {
-  useInterfaceLocalForage,
-  IInterfaceConfig,
-} from "src/hooks/LocalForage";
+import { useInterfaceLocalForage } from "src/hooks/LocalForage";
 import { LoadingIndicator } from "src/components/Shared";
 import { ListFilter } from "src/components/List/ListFilter";
 import { Pagination, PaginationIndex } from "src/components/List/Pagination";
@@ -431,16 +428,12 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
   const updateInterfaceConfig = useCallback(
     (updatedFilter: ListFilterModel) => {
-      setInterfaceState((config) => {
-        const data = { ...config } as IInterfaceConfig;
-        data.queries = {
-          [options.filterMode]: {
-            filter: updatedFilter.makeQueryParameters(),
-            itemsPerPage: updatedFilter.itemsPerPage,
-            currentPage: updatedFilter.currentPage,
-          },
-        };
-        return data;
+      setInterfaceState({
+        [options.filterMode]: {
+          filter: updatedFilter.makeQueryParameters(),
+          itemsPerPage: updatedFilter.itemsPerPage,
+          currentPage: updatedFilter.currentPage,
+        },
       });
     },
     [options.filterMode, setInterfaceState]
@@ -458,7 +451,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     if (!options.persistState) return;
 
-    const storedQuery = interfaceState.data?.queries?.[options.filterMode];
+    const storedQuery = interfaceState.data?.[options.filterMode];
     if (!storedQuery) return;
 
     const queryFilter = queryString.parse(history.location.search);
