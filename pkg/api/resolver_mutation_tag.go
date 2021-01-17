@@ -41,7 +41,7 @@ func (r *mutationResolver) TagCreate(ctx context.Context, input models.TagCreate
 			return err
 		}
 
-		tag, err := qb.Create(newTag)
+		tag, err = qb.Create(newTag)
 		if err != nil {
 			return err
 		}
