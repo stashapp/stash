@@ -18,6 +18,16 @@ func NewTag(name string) *Tag {
 	}
 }
 
+type Tags []*Tag
+
+func (t *Tags) Append(o interface{}) {
+	*t = append(*t, o.(*Tag))
+}
+
+func (t *Tags) New() interface{} {
+	return &Tag{}
+}
+
 // Original Tag image from: https://fontawesome.com/icons/tag?style=solid
 // Modified to change color and rotate
 // Licensed under CC Attribution 4.0: https://fontawesome.com/license

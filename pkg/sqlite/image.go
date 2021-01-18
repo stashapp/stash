@@ -1,15 +1,16 @@
-package models
+package sqlite
 
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 
-	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 const imageTable = "images"
+const imageIDColumn = "image_id"
+const performersImagesTable = "performers_images"
+const imagesTagsTable = "images_tags"
 
 var imagesForPerformerQuery = selectAll(imageTable) + `
 LEFT JOIN performers_images as performers_join on performers_join.image_id = images.id
@@ -52,85 +53,57 @@ WHERE gallery_id = ?
 GROUP BY image_id
 `
 
-type ImageQueryBuilder struct{}
-
-func NewImageQueryBuilder() ImageQueryBuilder {
-	return ImageQueryBuilder{}
+type imageQueryBuilder struct {
+	repository
 }
 
-func (qb *ImageQueryBuilder) Create(newImage Image, tx *sqlx.Tx) (*Image, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO images (checksum, path, title, rating, organized, o_counter, size,
-                    			    width, height, studio_id, file_mod_time, created_at, updated_at)
-				VALUES (:checksum, :path, :title, :rating, :organized, :o_counter, :size,
-					:width, :height, :studio_id, :file_mod_time, :created_at, :updated_at)
-		`,
-		newImage,
-	)
-	if err != nil {
-		return nil, err
+func NewImageReaderWriter(tx dbi) *imageQueryBuilder {
+	return &imageQueryBuilder{
+		repository{
+			tx:        tx,
+			tableName: imageTable,
+			idColumn:  idColumn,
+		},
 	}
-	imageID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-	if err := tx.Get(&newImage, `SELECT * FROM images WHERE id = ? LIMIT 1`, imageID); err != nil {
-		return nil, err
-	}
-	return &newImage, nil
 }
 
-func (qb *ImageQueryBuilder) Update(updatedImage ImagePartial, tx *sqlx.Tx) (*Image, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE images SET `+SQLGenKeysPartial(updatedImage)+` WHERE images.id = :id`,
-		updatedImage,
-	)
-	if err != nil {
+func (qb *imageQueryBuilder) Create(newObject models.Image) (*models.Image, error) {
+	var ret models.Image
+	if err := qb.insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
-	return qb.find(updatedImage.ID, tx)
+	return &ret, nil
 }
 
-func (qb *ImageQueryBuilder) UpdateFull(updatedImage Image, tx *sqlx.Tx) (*Image, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE images SET `+SQLGenKeys(updatedImage)+` WHERE images.id = :id`,
-		updatedImage,
-	)
-	if err != nil {
+func (qb *imageQueryBuilder) Update(updatedObject models.ImagePartial) (*models.Image, error) {
+	const partial = true
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
 
-	return qb.find(updatedImage.ID, tx)
+	return qb.find(updatedObject.ID)
 }
 
-func (qb *ImageQueryBuilder) UpdateFileModTime(id int, modTime NullSQLiteTimestamp, tx *sqlx.Tx) error {
-	ensureTx(tx)
-	_, err := tx.Exec(
-		`UPDATE images SET file_mod_time = ? WHERE images.id = ? `,
-		modTime, id,
-	)
-	if err != nil {
-		return err
+func (qb *imageQueryBuilder) UpdateFull(updatedObject models.Image) (*models.Image, error) {
+	const partial = false
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
 	}
 
-	return nil
+	return qb.find(updatedObject.ID)
 }
 
-func (qb *ImageQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error) {
-	ensureTx(tx)
-	_, err := tx.Exec(
-		`UPDATE images SET o_counter = o_counter + 1 WHERE images.id = ?`,
+func (qb *imageQueryBuilder) IncrementOCounter(id int) (int, error) {
+	_, err := qb.tx.Exec(
+		`UPDATE `+imageTable+` SET o_counter = o_counter + 1 WHERE `+imageTable+`.id = ?`,
 		id,
 	)
 	if err != nil {
 		return 0, err
 	}
 
-	image, err := qb.find(id, tx)
+	image, err := qb.find(id)
 	if err != nil {
 		return 0, err
 	}
@@ -138,17 +111,16 @@ func (qb *ImageQueryBuilder) IncrementOCounter(id int, tx *sqlx.Tx) (int, error)
 	return image.OCounter, nil
 }
 
-func (qb *ImageQueryBuilder) DecrementOCounter(id int, tx *sqlx.Tx) (int, error) {
-	ensureTx(tx)
-	_, err := tx.Exec(
-		`UPDATE images SET o_counter = o_counter - 1 WHERE images.id = ? and images.o_counter > 0`,
+func (qb *imageQueryBuilder) DecrementOCounter(id int) (int, error) {
+	_, err := qb.tx.Exec(
+		`UPDATE `+imageTable+` SET o_counter = o_counter - 1 WHERE `+imageTable+`.id = ? and `+imageTable+`.o_counter > 0`,
 		id,
 	)
 	if err != nil {
 		return 0, err
 	}
 
-	image, err := qb.find(id, tx)
+	image, err := qb.find(id)
 	if err != nil {
 		return 0, err
 	}
@@ -156,17 +128,16 @@ func (qb *ImageQueryBuilder) DecrementOCounter(id int, tx *sqlx.Tx) (int, error)
 	return image.OCounter, nil
 }
 
-func (qb *ImageQueryBuilder) ResetOCounter(id int, tx *sqlx.Tx) (int, error) {
-	ensureTx(tx)
-	_, err := tx.Exec(
-		`UPDATE images SET o_counter = 0 WHERE images.id = ?`,
+func (qb *imageQueryBuilder) ResetOCounter(id int) (int, error) {
+	_, err := qb.tx.Exec(
+		`UPDATE `+imageTable+` SET o_counter = 0 WHERE `+imageTable+`.id = ?`,
 		id,
 	)
 	if err != nil {
 		return 0, err
 	}
 
-	image, err := qb.find(id, tx)
+	image, err := qb.find(id)
 	if err != nil {
 		return 0, err
 	}
@@ -174,15 +145,16 @@ func (qb *ImageQueryBuilder) ResetOCounter(id int, tx *sqlx.Tx) (int, error) {
 	return image.OCounter, nil
 }
 
-func (qb *ImageQueryBuilder) Destroy(id int, tx *sqlx.Tx) error {
-	return executeDeleteQuery("images", strconv.Itoa(id), tx)
-}
-func (qb *ImageQueryBuilder) Find(id int) (*Image, error) {
-	return qb.find(id, nil)
+func (qb *imageQueryBuilder) Destroy(id int) error {
+	return qb.destroyExisting([]int{id})
 }
 
-func (qb *ImageQueryBuilder) FindMany(ids []int) ([]*Image, error) {
-	var images []*Image
+func (qb *imageQueryBuilder) Find(id int) (*models.Image, error) {
+	return qb.find(id)
+}
+
+func (qb *imageQueryBuilder) FindMany(ids []int) ([]*models.Image, error) {
+	var images []*models.Image
 	for _, id := range ids {
 		image, err := qb.Find(id)
 		if err != nil {
@@ -199,82 +171,60 @@ func (qb *ImageQueryBuilder) FindMany(ids []int) ([]*Image, error) {
 	return images, nil
 }
 
-func (qb *ImageQueryBuilder) find(id int, tx *sqlx.Tx) (*Image, error) {
-	query := selectAll(imageTable) + "WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	return qb.queryImage(query, args, tx)
+func (qb *imageQueryBuilder) find(id int) (*models.Image, error) {
+	var ret models.Image
+	if err := qb.get(id, &ret); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &ret, nil
 }
 
-func (qb *ImageQueryBuilder) FindByChecksum(checksum string) (*Image, error) {
+func (qb *imageQueryBuilder) FindByChecksum(checksum string) (*models.Image, error) {
 	query := "SELECT * FROM images WHERE checksum = ? LIMIT 1"
 	args := []interface{}{checksum}
-	return qb.queryImage(query, args, nil)
+	return qb.queryImage(query, args)
 }
 
-func (qb *ImageQueryBuilder) FindByPath(path string) (*Image, error) {
+func (qb *imageQueryBuilder) FindByPath(path string) (*models.Image, error) {
 	query := selectAll(imageTable) + "WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
-	return qb.queryImage(query, args, nil)
+	return qb.queryImage(query, args)
 }
 
-func (qb *ImageQueryBuilder) FindByPerformerID(performerID int) ([]*Image, error) {
-	args := []interface{}{performerID}
-	return qb.queryImages(imagesForPerformerQuery, args, nil)
-}
-
-func (qb *ImageQueryBuilder) CountByPerformerID(performerID int) (int, error) {
-	args := []interface{}{performerID}
-	return runCountQuery(buildCountQuery(countImagesForPerformerQuery), args)
-}
-
-func (qb *ImageQueryBuilder) FindByStudioID(studioID int) ([]*Image, error) {
-	args := []interface{}{studioID}
-	return qb.queryImages(imagesForStudioQuery, args, nil)
-}
-
-func (qb *ImageQueryBuilder) FindByGalleryID(galleryID int) ([]*Image, error) {
+func (qb *imageQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Image, error) {
 	args := []interface{}{galleryID}
-	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(nil), args, nil)
+	return qb.queryImages(imagesForGalleryQuery+qb.getImageSort(nil), args)
 }
 
-func (qb *ImageQueryBuilder) CountByGalleryID(galleryID int) (int, error) {
+func (qb *imageQueryBuilder) CountByGalleryID(galleryID int) (int, error) {
 	args := []interface{}{galleryID}
-	return runCountQuery(buildCountQuery(countImagesForGalleryQuery), args)
+	return qb.runCountQuery(qb.buildCountQuery(countImagesForGalleryQuery), args)
 }
 
-func (qb *ImageQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT images.id FROM images"), nil)
+func (qb *imageQueryBuilder) Count() (int, error) {
+	return qb.runCountQuery(qb.buildCountQuery("SELECT images.id FROM images"), nil)
 }
 
-func (qb *ImageQueryBuilder) Size() (float64, error) {
-	return runSumQuery("SELECT SUM(cast(size as double)) as sum FROM images", nil)
+func (qb *imageQueryBuilder) Size() (float64, error) {
+	return qb.runSumQuery("SELECT SUM(cast(size as double)) as sum FROM images", nil)
 }
 
-func (qb *ImageQueryBuilder) CountByStudioID(studioID int) (int, error) {
-	args := []interface{}{studioID}
-	return runCountQuery(buildCountQuery(imagesForStudioQuery), args)
+func (qb *imageQueryBuilder) All() ([]*models.Image, error) {
+	return qb.queryImages(selectAll(imageTable)+qb.getImageSort(nil), nil)
 }
 
-func (qb *ImageQueryBuilder) CountByTagID(tagID int) (int, error) {
-	args := []interface{}{tagID}
-	return runCountQuery(buildCountQuery(countImagesForTagQuery), args)
-}
-
-func (qb *ImageQueryBuilder) All() ([]*Image, error) {
-	return qb.queryImages(selectAll(imageTable)+qb.getImageSort(nil), nil, nil)
-}
-
-func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *FindFilterType) ([]*Image, int) {
+func (qb *imageQueryBuilder) Query(imageFilter *models.ImageFilterType, findFilter *models.FindFilterType) ([]*models.Image, int, error) {
 	if imageFilter == nil {
-		imageFilter = &ImageFilterType{}
+		imageFilter = &models.ImageFilterType{}
 	}
 	if findFilter == nil {
-		findFilter = &FindFilterType{}
+		findFilter = &models.FindFilterType{}
 	}
 
-	query := queryBuilder{
-		tableName: imageTable,
-	}
+	query := qb.newQuery()
 
 	query.body = selectDistinctIDs(imageTable)
 	query.body += `
@@ -411,18 +361,25 @@ func (qb *ImageQueryBuilder) Query(imageFilter *ImageFilterType, findFilter *Fin
 	}
 
 	query.sortAndPagination = qb.getImageSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := query.executeFind()
+	idsResult, countResult, err := query.executeFind()
+	if err != nil {
+		return nil, 0, err
+	}
 
-	var images []*Image
+	var images []*models.Image
 	for _, id := range idsResult {
-		image, _ := qb.Find(id)
+		image, err := qb.Find(id)
+		if err != nil {
+			return nil, 0, err
+		}
+
 		images = append(images, image)
 	}
 
-	return images, countResult
+	return images, countResult, nil
 }
 
-func (qb *ImageQueryBuilder) getImageSort(findFilter *FindFilterType) string {
+func (qb *imageQueryBuilder) getImageSort(findFilter *models.FindFilterType) string {
 	if findFilter == nil {
 		return " ORDER BY images.path ASC "
 	}
@@ -431,40 +388,79 @@ func (qb *ImageQueryBuilder) getImageSort(findFilter *FindFilterType) string {
 	return getSort(sort, direction, "images")
 }
 
-func (qb *ImageQueryBuilder) queryImage(query string, args []interface{}, tx *sqlx.Tx) (*Image, error) {
-	results, err := qb.queryImages(query, args, tx)
+func (qb *imageQueryBuilder) queryImage(query string, args []interface{}) (*models.Image, error) {
+	results, err := qb.queryImages(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
 	return results[0], nil
 }
 
-func (qb *ImageQueryBuilder) queryImages(query string, args []interface{}, tx *sqlx.Tx) ([]*Image, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	images := make([]*Image, 0)
-	for rows.Next() {
-		image := Image{}
-		if err := rows.StructScan(&image); err != nil {
-			return nil, err
-		}
-		images = append(images, &image)
-	}
-
-	if err := rows.Err(); err != nil {
+func (qb *imageQueryBuilder) queryImages(query string, args []interface{}) ([]*models.Image, error) {
+	var ret models.Images
+	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return images, nil
+	return []*models.Image(ret), nil
+}
+
+func (qb *imageQueryBuilder) galleriesRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: galleriesImagesTable,
+			idColumn:  imageIDColumn,
+		},
+		fkColumn: galleryIDColumn,
+	}
+}
+
+func (qb *imageQueryBuilder) GetGalleryIDs(imageID int) ([]int, error) {
+	return qb.galleriesRepository().getIDs(imageID)
+}
+
+func (qb *imageQueryBuilder) UpdateGalleries(imageID int, galleryIDs []int) error {
+	// Delete the existing joins and then create new ones
+	return qb.galleriesRepository().replace(imageID, galleryIDs)
+}
+
+func (qb *imageQueryBuilder) performersRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: performersImagesTable,
+			idColumn:  imageIDColumn,
+		},
+		fkColumn: performerIDColumn,
+	}
+}
+
+func (qb *imageQueryBuilder) GetPerformerIDs(imageID int) ([]int, error) {
+	return qb.performersRepository().getIDs(imageID)
+}
+
+func (qb *imageQueryBuilder) UpdatePerformers(imageID int, performerIDs []int) error {
+	// Delete the existing joins and then create new ones
+	return qb.performersRepository().replace(imageID, performerIDs)
+}
+
+func (qb *imageQueryBuilder) tagsRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: imagesTagsTable,
+			idColumn:  imageIDColumn,
+		},
+		fkColumn: tagIDColumn,
+	}
+}
+
+func (qb *imageQueryBuilder) GetTagIDs(imageID int) ([]int, error) {
+	return qb.tagsRepository().getIDs(imageID)
+}
+
+func (qb *imageQueryBuilder) UpdateTags(imageID int, tagIDs []int) error {
+	// Delete the existing joins and then create new ones
+	return qb.tagsRepository().replace(imageID, tagIDs)
 }

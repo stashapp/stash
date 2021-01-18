@@ -1,13 +1,15 @@
-package models
+package sqlite
 
 import (
 	"database/sql"
 	"fmt"
 	"strconv"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/models"
 )
+
+const sceneMarkerTable = "scene_markers"
 
 const countSceneMarkersForTagQuery = `
 SELECT scene_markers.id FROM scene_markers
@@ -16,66 +18,59 @@ WHERE tags_join.tag_id = ? OR scene_markers.primary_tag_id = ?
 GROUP BY scene_markers.id
 `
 
-type SceneMarkerQueryBuilder struct{}
-
-func NewSceneMarkerQueryBuilder() SceneMarkerQueryBuilder {
-	return SceneMarkerQueryBuilder{}
+type sceneMarkerQueryBuilder struct {
+	repository
 }
 
-func (qb *SceneMarkerQueryBuilder) Create(newSceneMarker SceneMarker, tx *sqlx.Tx) (*SceneMarker, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO scene_markers (title, seconds, primary_tag_id, scene_id, created_at, updated_at)
-				VALUES (:title, :seconds, :primary_tag_id, :scene_id, :created_at, :updated_at)
-		`,
-		newSceneMarker,
-	)
-	if err != nil {
-		return nil, err
+func NewSceneMarkerReaderWriter(tx dbi) *sceneMarkerQueryBuilder {
+	return &sceneMarkerQueryBuilder{
+		repository{
+			tx:        tx,
+			tableName: sceneMarkerTable,
+			idColumn:  idColumn,
+		},
 	}
-	sceneMarkerID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := tx.Get(&newSceneMarker, `SELECT * FROM scene_markers WHERE id = ? LIMIT 1`, sceneMarkerID); err != nil {
-		return nil, err
-	}
-	return &newSceneMarker, nil
 }
 
-func (qb *SceneMarkerQueryBuilder) Update(updatedSceneMarker SceneMarker, tx *sqlx.Tx) (*SceneMarker, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE scene_markers SET `+SQLGenKeys(updatedSceneMarker)+` WHERE scene_markers.id = :id`,
-		updatedSceneMarker,
-	)
-	if err != nil {
+func (qb *sceneMarkerQueryBuilder) Create(newObject models.SceneMarker) (*models.SceneMarker, error) {
+	var ret models.SceneMarker
+	if err := qb.insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
-	if err := tx.Get(&updatedSceneMarker, `SELECT * FROM scene_markers WHERE id = ? LIMIT 1`, updatedSceneMarker.ID); err != nil {
+	return &ret, nil
+}
+
+func (qb *sceneMarkerQueryBuilder) Update(updatedObject models.SceneMarker) (*models.SceneMarker, error) {
+	const partial = false
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
 		return nil, err
 	}
-	return &updatedSceneMarker, nil
+
+	var ret models.SceneMarker
+	if err := qb.get(updatedObject.ID, &ret); err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
 }
 
-func (qb *SceneMarkerQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
-	return executeDeleteQuery("scene_markers", id, tx)
+func (qb *sceneMarkerQueryBuilder) Destroy(id int) error {
+	return qb.destroyExisting([]int{id})
 }
 
-func (qb *SceneMarkerQueryBuilder) Find(id int) (*SceneMarker, error) {
+func (qb *sceneMarkerQueryBuilder) Find(id int) (*models.SceneMarker, error) {
 	query := "SELECT * FROM scene_markers WHERE id = ? LIMIT 1"
 	args := []interface{}{id}
-	results, err := qb.querySceneMarkers(query, args, nil)
+	results, err := qb.querySceneMarkers(query, args)
 	if err != nil || len(results) < 1 {
 		return nil, err
 	}
 	return results[0], nil
 }
 
-func (qb *SceneMarkerQueryBuilder) FindMany(ids []int) ([]*SceneMarker, error) {
-	var markers []*SceneMarker
+func (qb *sceneMarkerQueryBuilder) FindMany(ids []int) ([]*models.SceneMarker, error) {
+	var markers []*models.SceneMarker
 	for _, id := range ids {
 		marker, err := qb.Find(id)
 		if err != nil {
@@ -92,7 +87,7 @@ func (qb *SceneMarkerQueryBuilder) FindMany(ids []int) ([]*SceneMarker, error) {
 	return markers, nil
 }
 
-func (qb *SceneMarkerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*SceneMarker, error) {
+func (qb *sceneMarkerQueryBuilder) FindBySceneID(sceneID int) ([]*models.SceneMarker, error) {
 	query := `
 		SELECT scene_markers.* FROM scene_markers
 		WHERE scene_markers.scene_id = ?
@@ -100,15 +95,15 @@ func (qb *SceneMarkerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*S
 		ORDER BY scene_markers.seconds ASC
 	`
 	args := []interface{}{sceneID}
-	return qb.querySceneMarkers(query, args, tx)
+	return qb.querySceneMarkers(query, args)
 }
 
-func (qb *SceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
+func (qb *sceneMarkerQueryBuilder) CountByTagID(tagID int) (int, error) {
 	args := []interface{}{tagID, tagID}
-	return runCountQuery(buildCountQuery(countSceneMarkersForTagQuery), args)
+	return qb.runCountQuery(qb.buildCountQuery(countSceneMarkersForTagQuery), args)
 }
 
-func (qb *SceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]*MarkerStringsResultType, error) {
+func (qb *sceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]*models.MarkerStringsResultType, error) {
 	query := "SELECT count(*) as `count`, scene_markers.id as id, scene_markers.title as title FROM scene_markers"
 	if q != nil {
 		query = query + " WHERE title LIKE '%" + *q + "%'"
@@ -123,21 +118,21 @@ func (qb *SceneMarkerQueryBuilder) GetMarkerStrings(q *string, sort *string) ([]
 	return qb.queryMarkerStringsResultType(query, args)
 }
 
-func (qb *SceneMarkerQueryBuilder) Wall(q *string) ([]*SceneMarker, error) {
+func (qb *sceneMarkerQueryBuilder) Wall(q *string) ([]*models.SceneMarker, error) {
 	s := ""
 	if q != nil {
 		s = *q
 	}
 	query := "SELECT scene_markers.* FROM scene_markers WHERE scene_markers.title LIKE '%" + s + "%' ORDER BY RANDOM() LIMIT 80"
-	return qb.querySceneMarkers(query, nil, nil)
+	return qb.querySceneMarkers(query, nil)
 }
 
-func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterType, findFilter *FindFilterType) ([]*SceneMarker, int) {
+func (qb *sceneMarkerQueryBuilder) Query(sceneMarkerFilter *models.SceneMarkerFilterType, findFilter *models.FindFilterType) ([]*models.SceneMarker, int, error) {
 	if sceneMarkerFilter == nil {
-		sceneMarkerFilter = &SceneMarkerFilterType{}
+		sceneMarkerFilter = &models.SceneMarkerFilterType{}
 	}
 	if findFilter == nil {
-		findFilter = &FindFilterType{}
+		findFilter = &models.FindFilterType{}
 	}
 
 	var whereClauses []string
@@ -164,7 +159,7 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 
 		length := len(tagsFilter.Value)
 
-		if tagsFilter.Modifier == CriterionModifierIncludes || tagsFilter.Modifier == CriterionModifierIncludesAll {
+		if tagsFilter.Modifier == models.CriterionModifierIncludes || tagsFilter.Modifier == models.CriterionModifierIncludesAll {
 			body += " LEFT JOIN tags AS ptj ON ptj.id = scene_markers.primary_tag_id AND ptj.id IN " + getInBinding(length)
 			body += " LEFT JOIN scene_markers_tags AS tj ON tj.scene_marker_id = scene_markers.id AND tj.tag_id IN " + getInBinding(length)
 
@@ -172,12 +167,12 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 			requiredCount := 1
 
 			// all required for include all
-			if tagsFilter.Modifier == CriterionModifierIncludesAll {
+			if tagsFilter.Modifier == models.CriterionModifierIncludesAll {
 				requiredCount = length
 			}
 
 			havingClauses = append(havingClauses, "((COUNT(DISTINCT ptj.id) + COUNT(DISTINCT tj.tag_id)) >= "+strconv.Itoa(requiredCount)+")")
-		} else if tagsFilter.Modifier == CriterionModifierExcludes {
+		} else if tagsFilter.Modifier == models.CriterionModifierExcludes {
 			// excludes all of the provided ids
 			whereClauses = append(whereClauses, "scene_markers.primary_tag_id not in "+getInBinding(length))
 			whereClauses = append(whereClauses, "not exists (select smt.scene_marker_id from scene_markers_tags as smt where smt.scene_marker_id = scene_markers.id and smt.tag_id in "+getInBinding(length)+")")
@@ -194,19 +189,19 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 	if sceneTagsFilter := sceneMarkerFilter.SceneTags; sceneTagsFilter != nil && len(sceneTagsFilter.Value) > 0 {
 		length := len(sceneTagsFilter.Value)
 
-		if sceneTagsFilter.Modifier == CriterionModifierIncludes || sceneTagsFilter.Modifier == CriterionModifierIncludesAll {
+		if sceneTagsFilter.Modifier == models.CriterionModifierIncludes || sceneTagsFilter.Modifier == models.CriterionModifierIncludesAll {
 			body += " LEFT JOIN scenes_tags AS scene_tags_join ON scene_tags_join.scene_id = scene.id AND scene_tags_join.tag_id IN " + getInBinding(length)
 
 			// only one required for include any
 			requiredCount := 1
 
 			// all required for include all
-			if sceneTagsFilter.Modifier == CriterionModifierIncludesAll {
+			if sceneTagsFilter.Modifier == models.CriterionModifierIncludesAll {
 				requiredCount = length
 			}
 
 			havingClauses = append(havingClauses, "COUNT(DISTINCT scene_tags_join.tag_id) >= "+strconv.Itoa(requiredCount))
-		} else if sceneTagsFilter.Modifier == CriterionModifierExcludes {
+		} else if sceneTagsFilter.Modifier == models.CriterionModifierExcludes {
 			// excludes all of the provided ids
 			whereClauses = append(whereClauses, "not exists (select st.scene_id from scenes_tags as st where st.scene_id = scene.id AND st.tag_id IN "+getInBinding(length)+")")
 		}
@@ -219,7 +214,7 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 	if performersFilter := sceneMarkerFilter.Performers; performersFilter != nil && len(performersFilter.Value) > 0 {
 		length := len(performersFilter.Value)
 
-		if performersFilter.Modifier == CriterionModifierIncludes || performersFilter.Modifier == CriterionModifierIncludesAll {
+		if performersFilter.Modifier == models.CriterionModifierIncludes || performersFilter.Modifier == models.CriterionModifierIncludesAll {
 			body += " LEFT JOIN performers_scenes as scene_performers ON scene.id = scene_performers.scene_id"
 			whereClauses = append(whereClauses, "scene_performers.performer_id IN "+getInBinding(length))
 
@@ -227,12 +222,12 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 			requiredCount := 1
 
 			// all required for include all
-			if performersFilter.Modifier == CriterionModifierIncludesAll {
+			if performersFilter.Modifier == models.CriterionModifierIncludesAll {
 				requiredCount = length
 			}
 
 			havingClauses = append(havingClauses, "COUNT(DISTINCT scene_performers.performer_id) >= "+strconv.Itoa(requiredCount))
-		} else if performersFilter.Modifier == CriterionModifierExcludes {
+		} else if performersFilter.Modifier == models.CriterionModifierExcludes {
 			// excludes all of the provided ids
 			whereClauses = append(whereClauses, "not exists (select sp.scene_id from performers_scenes as sp where sp.scene_id = scene.id AND sp.performer_id IN "+getInBinding(length)+")")
 		}
@@ -254,18 +249,25 @@ func (qb *SceneMarkerQueryBuilder) Query(sceneMarkerFilter *SceneMarkerFilterTyp
 	}
 
 	sortAndPagination := qb.getSceneMarkerSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := executeFindQuery("scene_markers", body, args, sortAndPagination, whereClauses, havingClauses)
+	idsResult, countResult, err := qb.executeFindQuery(body, args, sortAndPagination, whereClauses, havingClauses)
+	if err != nil {
+		return nil, 0, err
+	}
 
-	var sceneMarkers []*SceneMarker
+	var sceneMarkers []*models.SceneMarker
 	for _, id := range idsResult {
-		sceneMarker, _ := qb.Find(id)
+		sceneMarker, err := qb.Find(id)
+		if err != nil {
+			return nil, 0, err
+		}
+
 		sceneMarkers = append(sceneMarkers, sceneMarker)
 	}
 
-	return sceneMarkers, countResult
+	return sceneMarkers, countResult, nil
 }
 
-func (qb *SceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *FindFilterType) string {
+func (qb *sceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *models.FindFilterType) string {
 	sort := findFilter.GetSort("title")
 	direction := findFilter.GetDirection()
 	tableName := "scene_markers"
@@ -276,46 +278,25 @@ func (qb *SceneMarkerQueryBuilder) getSceneMarkerSort(findFilter *FindFilterType
 	return getSort(sort, direction, tableName)
 }
 
-func (qb *SceneMarkerQueryBuilder) querySceneMarkers(query string, args []interface{}, tx *sqlx.Tx) ([]*SceneMarker, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	sceneMarkers := make([]*SceneMarker, 0)
-	for rows.Next() {
-		sceneMarker := SceneMarker{}
-		if err := rows.StructScan(&sceneMarker); err != nil {
-			return nil, err
-		}
-		sceneMarkers = append(sceneMarkers, &sceneMarker)
-	}
-
-	if err := rows.Err(); err != nil {
+func (qb *sceneMarkerQueryBuilder) querySceneMarkers(query string, args []interface{}) ([]*models.SceneMarker, error) {
+	var ret models.SceneMarkers
+	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return sceneMarkers, nil
+	return []*models.SceneMarker(ret), nil
 }
 
-func (qb *SceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, args []interface{}) ([]*MarkerStringsResultType, error) {
+func (qb *sceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, args []interface{}) ([]*models.MarkerStringsResultType, error) {
 	rows, err := database.DB.Queryx(query, args...)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	defer rows.Close()
 
-	markerStrings := make([]*MarkerStringsResultType, 0)
+	markerStrings := make([]*models.MarkerStringsResultType, 0)
 	for rows.Next() {
-		markerString := MarkerStringsResultType{}
+		markerString := models.MarkerStringsResultType{}
 		if err := rows.StructScan(&markerString); err != nil {
 			return nil, err
 		}
@@ -327,4 +308,24 @@ func (qb *SceneMarkerQueryBuilder) queryMarkerStringsResultType(query string, ar
 	}
 
 	return markerStrings, nil
+}
+
+func (qb *sceneMarkerQueryBuilder) tagsRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: "scene_markers_tags",
+			idColumn:  "scene_marker_id",
+		},
+		fkColumn: tagIDColumn,
+	}
+}
+
+func (qb *sceneMarkerQueryBuilder) GetTagIDs(id int) ([]int, error) {
+	return qb.tagsRepository().getIDs(id)
+}
+
+func (qb *sceneMarkerQueryBuilder) UpdateTags(id int, tagIDs []int) error {
+	// Delete the existing joins and then create new ones
+	return qb.tagsRepository().replace(id, tagIDs)
 }

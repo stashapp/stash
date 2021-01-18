@@ -10,8 +10,10 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/manager/paths"
+	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/plugin"
 	"github.com/stashapp/stash/pkg/scraper"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -26,6 +28,8 @@ type singleton struct {
 	ScraperCache *scraper.Cache
 
 	DownloadStore *DownloadStore
+
+	TxnManager models.TransactionManager
 }
 
 var instance *singleton
@@ -53,11 +57,12 @@ func Initialize() *singleton {
 			Status: TaskStatus{Status: Idle, Progress: -1},
 			Paths:  paths.NewPaths(),
 
-			PluginCache:  initPluginCache(),
-			ScraperCache: initScraperCache(),
+			PluginCache: initPluginCache(),
 
 			DownloadStore: NewDownloadStore(),
+			TxnManager:    sqlite.NewTransactionManager(),
 		}
+		instance.ScraperCache = instance.initScraperCache()
 
 		instance.RefreshConfig()
 
@@ -180,13 +185,13 @@ func initPluginCache() *plugin.Cache {
 }
 
 // initScraperCache initializes a new scraper cache and returns it.
-func initScraperCache() *scraper.Cache {
+func (s *singleton) initScraperCache() *scraper.Cache {
 	scraperConfig := scraper.GlobalConfig{
 		Path:      config.GetScrapersPath(),
 		UserAgent: config.GetScraperUserAgent(),
 		CDPPath:   config.GetScraperCDPPath(),
 	}
-	ret, err := scraper.NewCache(scraperConfig)
+	ret, err := scraper.NewCache(scraperConfig, s.TxnManager)
 
 	if err != nil {
 		logger.Errorf("Error reading scraper configs: %s", err.Error())
@@ -210,5 +215,5 @@ func (s *singleton) RefreshConfig() {
 // RefreshScraperCache refreshes the scraper cache. Call this when scraper
 // configuration changes.
 func (s *singleton) RefreshScraperCache() {
-	s.ScraperCache = initScraperCache()
+	s.ScraperCache = s.initScraperCache()
 }

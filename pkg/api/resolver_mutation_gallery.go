@@ -4,11 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -69,108 +68,102 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input models.Galle
 		newGallery.SceneID = sql.NullInt64{Valid: false}
 	}
 
-	// Start the transaction and save the performer
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewGalleryQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
-	gallery, err := qb.Create(newGallery, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Save the performers
-	var performerJoins []models.PerformersGalleries
-	for _, pid := range input.PerformerIds {
-		performerID, _ := strconv.Atoi(pid)
-		performerJoin := models.PerformersGalleries{
-			PerformerID: performerID,
-			GalleryID:   gallery.ID,
+	// Start the transaction and save the gallery
+	var gallery *models.Gallery
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Gallery()
+		var err error
+		gallery, err = qb.Create(newGallery)
+		if err != nil {
+			return err
 		}
-		performerJoins = append(performerJoins, performerJoin)
-	}
-	if err := jqb.UpdatePerformersGalleries(gallery.ID, performerJoins, tx); err != nil {
-		return nil, err
-	}
 
-	// Save the tags
-	var tagJoins []models.GalleriesTags
-	for _, tid := range input.TagIds {
-		tagID, _ := strconv.Atoi(tid)
-		tagJoin := models.GalleriesTags{
-			GalleryID: gallery.ID,
-			TagID:     tagID,
+		// Save the performers
+		if err := r.updateGalleryPerformers(qb, gallery.ID, input.PerformerIds); err != nil {
+			return err
 		}
-		tagJoins = append(tagJoins, tagJoin)
-	}
-	if err := jqb.UpdateGalleriesTags(gallery.ID, tagJoins, tx); err != nil {
-		return nil, err
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		// Save the tags
+		if err := r.updateGalleryTags(qb, gallery.ID, input.TagIds); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
 	return gallery, nil
 }
 
-func (r *mutationResolver) GalleryUpdate(ctx context.Context, input models.GalleryUpdateInput) (*models.Gallery, error) {
-	// Start the transaction and save the gallery
-	tx := database.DB.MustBeginTx(ctx, nil)
+func (r *mutationResolver) updateGalleryPerformers(qb models.GalleryReaderWriter, galleryID int, performerIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	if err != nil {
+		return err
+	}
+	return qb.UpdatePerformers(galleryID, ids)
+}
 
+func (r *mutationResolver) updateGalleryTags(qb models.GalleryReaderWriter, galleryID int, tagIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(tagIDs)
+	if err != nil {
+		return err
+	}
+	return qb.UpdateTags(galleryID, ids)
+}
+
+func (r *mutationResolver) GalleryUpdate(ctx context.Context, input models.GalleryUpdateInput) (ret *models.Gallery, err error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
-	ret, err := r.galleryUpdate(input, translator, tx)
 
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
+	// Start the transaction and save the gallery
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		ret, err = r.galleryUpdate(input, translator, repo)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
 	return ret, nil
 }
 
-func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.GalleryUpdateInput) ([]*models.Gallery, error) {
-	// Start the transaction and save the gallery
-	tx := database.DB.MustBeginTx(ctx, nil)
+func (r *mutationResolver) GalleriesUpdate(ctx context.Context, input []*models.GalleryUpdateInput) (ret []*models.Gallery, err error) {
 	inputMaps := getUpdateInputMaps(ctx)
 
-	var ret []*models.Gallery
+	// Start the transaction and save the gallery
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		for i, gallery := range input {
+			translator := changesetTranslator{
+				inputMap: inputMaps[i],
+			}
 
-	for i, gallery := range input {
-		translator := changesetTranslator{
-			inputMap: inputMaps[i],
+			thisGallery, err := r.galleryUpdate(*gallery, translator, repo)
+			if err != nil {
+				return err
+			}
+
+			ret = append(ret, thisGallery)
 		}
 
-		thisGallery, err := r.galleryUpdate(*gallery, translator, tx)
-		ret = append(ret, thisGallery)
-
-		if err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
 	return ret, nil
 }
 
-func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, translator changesetTranslator, tx *sqlx.Tx) (*models.Gallery, error) {
-	qb := models.NewGalleryQueryBuilder()
+func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Gallery, error) {
+	qb := repo.Gallery()
+
 	// Populate gallery from the input
-	galleryID, _ := strconv.Atoi(input.ID)
-	originalGallery, err := qb.Find(galleryID, nil)
+	galleryID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	originalGallery, err := qb.Find(galleryID)
 	if err != nil {
 		return nil, err
 	}
@@ -209,40 +202,21 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, transl
 
 	// gallery scene is set from the scene only
 
-	jqb := models.NewJoinsQueryBuilder()
-	gallery, err := qb.UpdatePartial(updatedGallery, tx)
+	gallery, err := qb.UpdatePartial(updatedGallery)
 	if err != nil {
 		return nil, err
 	}
 
 	// Save the performers
 	if translator.hasField("performer_ids") {
-		var performerJoins []models.PerformersGalleries
-		for _, pid := range input.PerformerIds {
-			performerID, _ := strconv.Atoi(pid)
-			performerJoin := models.PerformersGalleries{
-				PerformerID: performerID,
-				GalleryID:   galleryID,
-			}
-			performerJoins = append(performerJoins, performerJoin)
-		}
-		if err := jqb.UpdatePerformersGalleries(galleryID, performerJoins, tx); err != nil {
+		if err := r.updateGalleryPerformers(qb, galleryID, input.PerformerIds); err != nil {
 			return nil, err
 		}
 	}
 
 	// Save the tags
 	if translator.hasField("tag_ids") {
-		var tagJoins []models.GalleriesTags
-		for _, tid := range input.TagIds {
-			tagID, _ := strconv.Atoi(tid)
-			tagJoin := models.GalleriesTags{
-				GalleryID: galleryID,
-				TagID:     tagID,
-			}
-			tagJoins = append(tagJoins, tagJoin)
-		}
-		if err := jqb.UpdateGalleriesTags(galleryID, tagJoins, tx); err != nil {
+		if err := r.updateGalleryTags(qb, galleryID, input.TagIds); err != nil {
 			return nil, err
 		}
 	}
@@ -253,11 +227,6 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, transl
 func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.BulkGalleryUpdateInput) ([]*models.Gallery, error) {
 	// Populate gallery from the input
 	updatedTime := time.Now()
-
-	// Start the transaction and save the gallery marker
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewGalleryQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
 
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
@@ -277,181 +246,143 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 
 	ret := []*models.Gallery{}
 
-	for _, galleryIDStr := range input.Ids {
-		galleryID, _ := strconv.Atoi(galleryIDStr)
-		updatedGallery.ID = galleryID
+	// Start the transaction and save the galleries
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Gallery()
 
-		gallery, err := qb.UpdatePartial(updatedGallery, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
+		for _, galleryIDStr := range input.Ids {
+			galleryID, _ := strconv.Atoi(galleryIDStr)
+			updatedGallery.ID = galleryID
 
-		ret = append(ret, gallery)
-
-		// Save the performers
-		if translator.hasField("performer_ids") {
-			performerIDs, err := adjustGalleryPerformerIDs(tx, galleryID, *input.PerformerIds)
+			gallery, err := qb.UpdatePartial(updatedGallery)
 			if err != nil {
-				_ = tx.Rollback()
-				return nil, err
+				return err
 			}
 
-			var performerJoins []models.PerformersGalleries
-			for _, performerID := range performerIDs {
-				performerJoin := models.PerformersGalleries{
-					PerformerID: performerID,
-					GalleryID:   galleryID,
+			ret = append(ret, gallery)
+
+			// Save the performers
+			if translator.hasField("performer_ids") {
+				performerIDs, err := adjustGalleryPerformerIDs(qb, galleryID, *input.PerformerIds)
+				if err != nil {
+					return err
 				}
-				performerJoins = append(performerJoins, performerJoin)
+
+				if err := qb.UpdatePerformers(galleryID, performerIDs); err != nil {
+					return err
+				}
 			}
-			if err := jqb.UpdatePerformersGalleries(galleryID, performerJoins, tx); err != nil {
-				_ = tx.Rollback()
-				return nil, err
+
+			// Save the tags
+			if translator.hasField("tag_ids") {
+				tagIDs, err := adjustGalleryTagIDs(qb, galleryID, *input.TagIds)
+				if err != nil {
+					return err
+				}
+
+				if err := qb.UpdateTags(galleryID, tagIDs); err != nil {
+					return err
+				}
 			}
 		}
 
-		// Save the tags
-		if translator.hasField("tag_ids") {
-			tagIDs, err := adjustGalleryTagIDs(tx, galleryID, *input.TagIds)
-			if err != nil {
-				_ = tx.Rollback()
-				return nil, err
-			}
-
-			var tagJoins []models.GalleriesTags
-			for _, tagID := range tagIDs {
-				tagJoin := models.GalleriesTags{
-					GalleryID: galleryID,
-					TagID:     tagID,
-				}
-				tagJoins = append(tagJoins, tagJoin)
-			}
-			if err := jqb.UpdateGalleriesTags(galleryID, tagJoins, tx); err != nil {
-				_ = tx.Rollback()
-				return nil, err
-			}
-		}
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
 	return ret, nil
 }
 
-func adjustGalleryPerformerIDs(tx *sqlx.Tx, galleryID int, ids models.BulkUpdateIds) ([]int, error) {
-	var ret []int
-
-	jqb := models.NewJoinsQueryBuilder()
-	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
-		// adding to the joins
-		performerJoins, err := jqb.GetGalleryPerformers(galleryID, tx)
-
-		if err != nil {
-			return nil, err
-		}
-
-		for _, join := range performerJoins {
-			ret = append(ret, join.PerformerID)
-		}
+func adjustGalleryPerformerIDs(qb models.GalleryReader, galleryID int, ids models.BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetPerformerIDs(galleryID)
+	if err != nil {
+		return nil, err
 	}
 
 	return adjustIDs(ret, ids), nil
 }
 
-func adjustGalleryTagIDs(tx *sqlx.Tx, galleryID int, ids models.BulkUpdateIds) ([]int, error) {
-	var ret []int
-
-	jqb := models.NewJoinsQueryBuilder()
-	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
-		// adding to the joins
-		tagJoins, err := jqb.GetGalleryTags(galleryID, tx)
-
-		if err != nil {
-			return nil, err
-		}
-
-		for _, join := range tagJoins {
-			ret = append(ret, join.TagID)
-		}
+func adjustGalleryTagIDs(qb models.GalleryReader, galleryID int, ids models.BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetTagIDs(galleryID)
+	if err != nil {
+		return nil, err
 	}
 
 	return adjustIDs(ret, ids), nil
 }
 
 func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.GalleryDestroyInput) (bool, error) {
-	qb := models.NewGalleryQueryBuilder()
-	iqb := models.NewImageQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
+	galleryIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	if err != nil {
+		return false, err
+	}
 
 	var galleries []*models.Gallery
 	var imgsToPostProcess []*models.Image
 	var imgsToDelete []*models.Image
 
-	for _, id := range input.Ids {
-		galleryID, _ := strconv.Atoi(id)
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Gallery()
+		iqb := repo.Image()
 
-		gallery, err := qb.Find(galleryID, tx)
-		if gallery != nil {
+		for _, id := range galleryIDs {
+			gallery, err := qb.Find(id)
+			if err != nil {
+				return err
+			}
+
+			if gallery == nil {
+				return fmt.Errorf("gallery with id %d not found", id)
+			}
+
 			galleries = append(galleries, gallery)
-		}
-		err = qb.Destroy(galleryID, tx)
 
-		if err != nil {
-			tx.Rollback()
-			return false, err
-		}
-
-		// if this is a zip-based gallery, delete the images as well
-		if gallery.Zip {
-			imgs, err := iqb.FindByGalleryID(galleryID)
-			if err != nil {
-				tx.Rollback()
-				return false, err
-			}
-
-			for _, img := range imgs {
-				err = iqb.Destroy(img.ID, tx)
+			// if this is a zip-based gallery, delete the images as well first
+			if gallery.Zip {
+				imgs, err := iqb.FindByGalleryID(id)
 				if err != nil {
-					tx.Rollback()
-					return false, err
+					return err
 				}
 
-				imgsToPostProcess = append(imgsToPostProcess, img)
-			}
-		} else if input.DeleteFile != nil && *input.DeleteFile {
-			// Delete image if it is only attached to this gallery
-			imgs, err := iqb.FindByGalleryID(galleryID)
-			if err != nil {
-				tx.Rollback()
-				return false, err
-			}
-
-			for _, img := range imgs {
-				imgGalleries, err := qb.FindByImageID(img.ID, tx)
-				if err != nil {
-					tx.Rollback()
-					return false, err
-				}
-
-				if len(imgGalleries) == 0 {
-					err = iqb.Destroy(img.ID, tx)
-					if err != nil {
-						tx.Rollback()
-						return false, err
+				for _, img := range imgs {
+					if err := iqb.Destroy(img.ID); err != nil {
+						return err
 					}
 
-					imgsToDelete = append(imgsToDelete, img)
 					imgsToPostProcess = append(imgsToPostProcess, img)
 				}
+			} else if input.DeleteFile != nil && *input.DeleteFile {
+				// Delete image if it is only attached to this gallery
+				imgs, err := iqb.FindByGalleryID(id)
+				if err != nil {
+					return err
+				}
+
+				for _, img := range imgs {
+					imgGalleries, err := qb.FindByImageID(img.ID)
+					if err != nil {
+						return err
+					}
+
+					if len(imgGalleries) == 0 {
+						if err := iqb.Destroy(img.ID); err != nil {
+							return err
+						}
+
+						imgsToDelete = append(imgsToDelete, img)
+						imgsToPostProcess = append(imgsToPostProcess, img)
+					}
+				}
+			}
+
+			if err := qb.Destroy(id); err != nil {
+				return err
 			}
 		}
-	}
 
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return false, err
 	}
 
@@ -479,34 +410,39 @@ func (r *mutationResolver) GalleryDestroy(ctx context.Context, input models.Gall
 }
 
 func (r *mutationResolver) AddGalleryImages(ctx context.Context, input models.GalleryAddInput) (bool, error) {
-	galleryID, _ := strconv.Atoi(input.GalleryID)
-	qb := models.NewGalleryQueryBuilder()
-	gallery, err := qb.Find(galleryID, nil)
+	galleryID, err := strconv.Atoi(input.GalleryID)
 	if err != nil {
 		return false, err
 	}
 
-	if gallery == nil {
-		return false, errors.New("gallery not found")
+	imageIDs, err := utils.StringSliceToIntSlice(input.ImageIds)
+	if err != nil {
+		return false, err
 	}
 
-	if gallery.Zip {
-		return false, errors.New("cannot modify zip gallery images")
-	}
-
-	jqb := models.NewJoinsQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	for _, id := range input.ImageIds {
-		imageID, _ := strconv.Atoi(id)
-		_, err := jqb.AddImageGallery(imageID, galleryID, tx)
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Gallery()
+		gallery, err := qb.Find(galleryID)
 		if err != nil {
-			tx.Rollback()
-			return false, err
+			return err
 		}
-	}
 
-	if err := tx.Commit(); err != nil {
+		if gallery == nil {
+			return errors.New("gallery not found")
+		}
+
+		if gallery.Zip {
+			return errors.New("cannot modify zip gallery images")
+		}
+
+		newIDs, err := qb.GetImageIDs(galleryID)
+		if err != nil {
+			return err
+		}
+
+		newIDs = utils.IntAppendUniques(newIDs, imageIDs)
+		return qb.UpdateImages(galleryID, newIDs)
+	}); err != nil {
 		return false, err
 	}
 
@@ -514,34 +450,39 @@ func (r *mutationResolver) AddGalleryImages(ctx context.Context, input models.Ga
 }
 
 func (r *mutationResolver) RemoveGalleryImages(ctx context.Context, input models.GalleryRemoveInput) (bool, error) {
-	galleryID, _ := strconv.Atoi(input.GalleryID)
-	qb := models.NewGalleryQueryBuilder()
-	gallery, err := qb.Find(galleryID, nil)
+	galleryID, err := strconv.Atoi(input.GalleryID)
 	if err != nil {
 		return false, err
 	}
 
-	if gallery == nil {
-		return false, errors.New("gallery not found")
+	imageIDs, err := utils.StringSliceToIntSlice(input.ImageIds)
+	if err != nil {
+		return false, err
 	}
 
-	if gallery.Zip {
-		return false, errors.New("cannot modify zip gallery images")
-	}
-
-	jqb := models.NewJoinsQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	for _, id := range input.ImageIds {
-		imageID, _ := strconv.Atoi(id)
-		_, err := jqb.RemoveImageGallery(imageID, galleryID, tx)
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Gallery()
+		gallery, err := qb.Find(galleryID)
 		if err != nil {
-			tx.Rollback()
-			return false, err
+			return err
 		}
-	}
 
-	if err := tx.Commit(); err != nil {
+		if gallery == nil {
+			return errors.New("gallery not found")
+		}
+
+		if gallery.Zip {
+			return errors.New("cannot modify zip gallery images")
+		}
+
+		newIDs, err := qb.GetImageIDs(galleryID)
+		if err != nil {
+			return err
+		}
+
+		newIDs = utils.IntExclude(newIDs, imageIDs)
+		return qb.UpdateImages(galleryID, newIDs)
+	}); err != nil {
 		return false, err
 	}
 

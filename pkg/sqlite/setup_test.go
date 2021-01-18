@@ -1,6 +1,6 @@
 // +build integration
 
-package models_test
+package sqlite_test
 
 import (
 	"context"
@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-
 	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/gallery"
 	"github.com/stashapp/stash/pkg/models"
-	"github.com/stashapp/stash/pkg/models/modelstest"
+	"github.com/stashapp/stash/pkg/scene"
+	"github.com/stashapp/stash/pkg/sqlite"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
@@ -117,6 +117,11 @@ func TestMain(m *testing.M) {
 	os.Exit(ret)
 }
 
+func withTxn(f func(r models.Repository) error) error {
+	t := sqlite.NewTransactionManager()
+	return t.WithTxn(context.TODO(), f)
+}
+
 func testTeardown(databaseFile string) {
 	err := database.DB.Close()
 
@@ -154,119 +159,90 @@ func runTests(m *testing.M) int {
 }
 
 func populateDB() error {
-	ctx := context.TODO()
-	tx := database.DB.MustBeginTx(ctx, nil)
+	if err := withTxn(func(r models.Repository) error {
+		if err := createScenes(r.Scene(), totalScenes); err != nil {
+			return fmt.Errorf("error creating scenes: %s", err.Error())
+		}
 
-	if err := createScenes(tx, totalScenes); err != nil {
-		tx.Rollback()
+		if err := createImages(r.Image(), totalImages); err != nil {
+			return fmt.Errorf("error creating images: %s", err.Error())
+		}
+
+		if err := createGalleries(r.Gallery(), totalGalleries); err != nil {
+			return fmt.Errorf("error creating galleries: %s", err.Error())
+		}
+
+		if err := createMovies(r.Movie(), moviesNameCase, moviesNameNoCase); err != nil {
+			return fmt.Errorf("error creating movies: %s", err.Error())
+		}
+
+		if err := createPerformers(r.Performer(), performersNameCase, performersNameNoCase); err != nil {
+			return fmt.Errorf("error creating performers: %s", err.Error())
+		}
+
+		if err := createTags(r.Tag(), tagsNameCase, tagsNameNoCase); err != nil {
+			return fmt.Errorf("error creating tags: %s", err.Error())
+		}
+
+		if err := addTagImage(r.Tag(), tagIdxWithCoverImage); err != nil {
+			return fmt.Errorf("error adding tag image: %s", err.Error())
+		}
+
+		if err := createStudios(r.Studio(), studiosNameCase, studiosNameNoCase); err != nil {
+			return fmt.Errorf("error creating studios: %s", err.Error())
+		}
+
+		if err := linkSceneGallery(r.Gallery(), sceneIdxWithGallery, galleryIdxWithScene); err != nil {
+			return fmt.Errorf("error linking scene to gallery: %s", err.Error())
+		}
+
+		if err := linkSceneMovie(r.Scene(), sceneIdxWithMovie, movieIdxWithScene); err != nil {
+			return fmt.Errorf("error scene to movie: %s", err.Error())
+		}
+
+		if err := linkScenePerformers(r.Scene()); err != nil {
+			return fmt.Errorf("error linking scene performers: %s", err.Error())
+		}
+
+		if err := linkSceneTags(r.Scene()); err != nil {
+			return fmt.Errorf("error linking scene tags: %s", err.Error())
+		}
+
+		if err := linkSceneStudio(r.Scene(), sceneIdxWithStudio, studioIdxWithScene); err != nil {
+			return fmt.Errorf("error linking scene studio: %s", err.Error())
+		}
+
+		if err := linkImageGallery(r.Gallery(), imageIdxWithGallery, galleryIdxWithImage); err != nil {
+			return fmt.Errorf("error linking gallery images: %s", err.Error())
+		}
+
+		if err := linkImagePerformers(r.Image()); err != nil {
+			return fmt.Errorf("error linking image performers: %s", err.Error())
+		}
+
+		if err := linkImageTags(r.Image()); err != nil {
+			return fmt.Errorf("error linking image tags: %s", err.Error())
+		}
+
+		if err := linkImageStudio(r.Image(), imageIdxWithStudio, studioIdxWithImage); err != nil {
+			return fmt.Errorf("error linking image studio: %s", err.Error())
+		}
+
+		if err := linkMovieStudio(r.Movie(), movieIdxWithStudio, studioIdxWithMovie); err != nil {
+			return fmt.Errorf("error linking movie studio: %s", err.Error())
+		}
+
+		if err := linkStudioParent(r.Studio(), studioIdxWithChildStudio, studioIdxWithParentStudio); err != nil {
+			return fmt.Errorf("error linking studio parent: %s", err.Error())
+		}
+
+		if err := createMarker(r.SceneMarker(), sceneIdxWithMarker, tagIdxWithPrimaryMarker, []int{tagIdxWithMarker}); err != nil {
+			return fmt.Errorf("error creating scene marker: %s", err.Error())
+		}
+
+		return nil
+	}); err != nil {
 		return err
-	}
-
-	if err := createImages(tx, totalImages); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := createGalleries(tx, totalGalleries); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := createMovies(tx, moviesNameCase, moviesNameNoCase); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := createPerformers(tx, performersNameCase, performersNameNoCase); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := createTags(tx, tagsNameCase, tagsNameNoCase); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := addTagImage(tx, tagIdxWithCoverImage); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := createStudios(tx, studiosNameCase, studiosNameNoCase); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	// TODO - the link methods use Find which don't accept a transaction, so
-	// to commit the transaction and start a new one
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("Error committing: %s", err.Error())
-	}
-
-	tx = database.DB.MustBeginTx(ctx, nil)
-
-	if err := linkSceneGallery(tx, sceneIdxWithGallery, galleryIdxWithScene); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := linkSceneMovie(tx, sceneIdxWithMovie, movieIdxWithScene); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := linkScenePerformers(tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := linkSceneTags(tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := linkSceneStudio(tx, sceneIdxWithStudio, studioIdxWithScene); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := linkImageGallery(tx, imageIdxWithGallery, galleryIdxWithImage); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := linkImagePerformers(tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := linkImageTags(tx); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := linkImageStudio(tx, imageIdxWithStudio, studioIdxWithImage); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := linkMovieStudio(tx, movieIdxWithStudio, studioIdxWithMovie); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := linkStudioParent(tx, studioIdxWithChildStudio, studioIdxWithParentStudio); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := createMarker(tx, sceneIdxWithMarker, tagIdxWithPrimaryMarker, []int{tagIdxWithMarker}); err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("Error committing: %s", err.Error())
 	}
 
 	return nil
@@ -313,9 +289,7 @@ func getSceneDate(index int) models.SQLiteDate {
 	}
 }
 
-func createScenes(tx *sqlx.Tx, n int) error {
-	sqb := models.NewSceneQueryBuilder()
-
+func createScenes(sqb models.SceneReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		scene := models.Scene{
 			Path:     getSceneStringValue(i, pathField),
@@ -329,7 +303,7 @@ func createScenes(tx *sqlx.Tx, n int) error {
 			Date:     getSceneDate(i),
 		}
 
-		created, err := sqb.Create(scene, tx)
+		created, err := sqb.Create(scene)
 
 		if err != nil {
 			return fmt.Errorf("Error creating scene %v+: %s", scene, err.Error())
@@ -345,9 +319,7 @@ func getImageStringValue(index int, field string) string {
 	return fmt.Sprintf("image_%04d_%s", index, field)
 }
 
-func createImages(tx *sqlx.Tx, n int) error {
-	qb := models.NewImageQueryBuilder()
-
+func createImages(qb models.ImageReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		image := models.Image{
 			Path:     getImageStringValue(i, pathField),
@@ -358,7 +330,7 @@ func createImages(tx *sqlx.Tx, n int) error {
 			Height:   getHeight(i),
 		}
 
-		created, err := qb.Create(image, tx)
+		created, err := qb.Create(image)
 
 		if err != nil {
 			return fmt.Errorf("Error creating image %v+: %s", image, err.Error())
@@ -374,16 +346,14 @@ func getGalleryStringValue(index int, field string) string {
 	return "gallery_" + strconv.FormatInt(int64(index), 10) + "_" + field
 }
 
-func createGalleries(tx *sqlx.Tx, n int) error {
-	gqb := models.NewGalleryQueryBuilder()
-
+func createGalleries(gqb models.GalleryReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		gallery := models.Gallery{
-			Path:     modelstest.NullString(getGalleryStringValue(i, pathField)),
+			Path:     models.NullString(getGalleryStringValue(i, pathField)),
 			Checksum: getGalleryStringValue(i, checksumField),
 		}
 
-		created, err := gqb.Create(gallery, tx)
+		created, err := gqb.Create(gallery)
 
 		if err != nil {
 			return fmt.Errorf("Error creating gallery %v+: %s", gallery, err.Error())
@@ -400,8 +370,7 @@ func getMovieStringValue(index int, field string) string {
 }
 
 //createMoviees creates n movies with plain Name and o movies with camel cased NaMe included
-func createMovies(tx *sqlx.Tx, n int, o int) error {
-	mqb := models.NewMovieQueryBuilder()
+func createMovies(mqb models.MovieReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -421,7 +390,7 @@ func createMovies(tx *sqlx.Tx, n int, o int) error {
 			Checksum: utils.MD5FromString(name),
 		}
 
-		created, err := mqb.Create(movie, tx)
+		created, err := mqb.Create(movie)
 
 		if err != nil {
 			return fmt.Errorf("Error creating movie [%d] %v+: %s", i, movie, err.Error())
@@ -451,8 +420,7 @@ func getPerformerBirthdate(index int) string {
 }
 
 //createPerformers creates n performers with plain Name and o performers with camel cased NaMe included
-func createPerformers(tx *sqlx.Tx, n int, o int) error {
-	pqb := models.NewPerformerQueryBuilder()
+func createPerformers(pqb models.PerformerReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -477,7 +445,7 @@ func createPerformers(tx *sqlx.Tx, n int, o int) error {
 			},
 		}
 
-		created, err := pqb.Create(performer, tx)
+		created, err := pqb.Create(performer)
 
 		if err != nil {
 			return fmt.Errorf("Error creating performer %v+: %s", performer, err.Error())
@@ -511,8 +479,7 @@ func getTagMarkerCount(id int) int {
 }
 
 //createTags creates n tags with plain Name and o tags with camel cased NaMe included
-func createTags(tx *sqlx.Tx, n int, o int) error {
-	tqb := models.NewTagQueryBuilder()
+func createTags(tqb models.TagReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -531,7 +498,7 @@ func createTags(tx *sqlx.Tx, n int, o int) error {
 			Name: getTagStringValue(index, name),
 		}
 
-		created, err := tqb.Create(tag, tx)
+		created, err := tqb.Create(tag)
 
 		if err != nil {
 			return fmt.Errorf("Error creating tag %v+: %s", tag, err.Error())
@@ -548,8 +515,7 @@ func getStudioStringValue(index int, field string) string {
 	return "studio_" + strconv.FormatInt(int64(index), 10) + "_" + field
 }
 
-func createStudio(tx *sqlx.Tx, name string, parentID *int64) (*models.Studio, error) {
-	sqb := models.NewStudioQueryBuilder()
+func createStudio(sqb models.StudioReaderWriter, name string, parentID *int64) (*models.Studio, error) {
 	studio := models.Studio{
 		Name:     sql.NullString{String: name, Valid: true},
 		Checksum: utils.MD5FromString(name),
@@ -559,7 +525,7 @@ func createStudio(tx *sqlx.Tx, name string, parentID *int64) (*models.Studio, er
 		studio.ParentID = sql.NullInt64{Int64: *parentID, Valid: true}
 	}
 
-	created, err := sqb.Create(studio, tx)
+	created, err := sqb.Create(studio)
 
 	if err != nil {
 		return nil, fmt.Errorf("Error creating studio %v+: %s", studio, err.Error())
@@ -569,7 +535,7 @@ func createStudio(tx *sqlx.Tx, name string, parentID *int64) (*models.Studio, er
 }
 
 //createStudios creates n studios with plain Name and o studios with camel cased NaMe included
-func createStudios(tx *sqlx.Tx, n int, o int) error {
+func createStudios(sqb models.StudioReaderWriter, n int, o int) error {
 	const namePlain = "Name"
 	const nameNoCase = "NaMe"
 
@@ -584,7 +550,7 @@ func createStudios(tx *sqlx.Tx, n int, o int) error {
 		// studios [ i ] and [ n + o - i - 1  ] should have similar names with only the Name!=NaMe part different
 
 		name = getStudioStringValue(index, name)
-		created, err := createStudio(tx, name, nil)
+		created, err := createStudio(sqb, name, nil)
 
 		if err != nil {
 			return err
@@ -597,15 +563,13 @@ func createStudios(tx *sqlx.Tx, n int, o int) error {
 	return nil
 }
 
-func createMarker(tx *sqlx.Tx, sceneIdx, primaryTagIdx int, tagIdxs []int) error {
-	mqb := models.NewSceneMarkerQueryBuilder()
-
+func createMarker(mqb models.SceneMarkerReaderWriter, sceneIdx, primaryTagIdx int, tagIdxs []int) error {
 	marker := models.SceneMarker{
 		SceneID:      sql.NullInt64{Int64: int64(sceneIDs[sceneIdx]), Valid: true},
 		PrimaryTagID: tagIDs[primaryTagIdx],
 	}
 
-	created, err := mqb.Create(marker, tx)
+	created, err := mqb.Create(marker)
 
 	if err != nil {
 		return fmt.Errorf("Error creating marker %v+: %s", marker, err.Error())
@@ -613,57 +577,54 @@ func createMarker(tx *sqlx.Tx, sceneIdx, primaryTagIdx int, tagIdxs []int) error
 
 	markerIDs = append(markerIDs, created.ID)
 
-	jqb := models.NewJoinsQueryBuilder()
-
-	joins := []models.SceneMarkersTags{}
+	newTagIDs := []int{}
 
 	for _, tagIdx := range tagIdxs {
-		join := models.SceneMarkersTags{
-			SceneMarkerID: created.ID,
-			TagID:         tagIDs[tagIdx],
-		}
-		joins = append(joins, join)
+		newTagIDs = append(newTagIDs, tagIDs[tagIdx])
 	}
 
-	if err := jqb.CreateSceneMarkersTags(joins, tx); err != nil {
+	if err := mqb.UpdateTags(created.ID, newTagIDs); err != nil {
 		return fmt.Errorf("Error creating marker/tag join: %s", err.Error())
 	}
 
 	return nil
 }
 
-func linkSceneMovie(tx *sqlx.Tx, sceneIndex, movieIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
+func linkSceneMovie(qb models.SceneReaderWriter, sceneIndex, movieIndex int) error {
+	sceneID := sceneIDs[sceneIndex]
+	movies, err := qb.GetMovies(sceneID)
+	if err != nil {
+		return err
+	}
 
-	_, err := jqb.AddMoviesScene(sceneIDs[sceneIndex], movieIDs[movieIndex], nil, tx)
-	return err
+	movies = append(movies, models.MoviesScenes{
+		MovieID: movieIDs[movieIndex],
+		SceneID: sceneID,
+	})
+	return qb.UpdateMovies(sceneID, movies)
 }
 
-func linkScenePerformers(tx *sqlx.Tx) error {
-	if err := linkScenePerformer(tx, sceneIdxWithPerformer, performerIdxWithScene); err != nil {
+func linkScenePerformers(qb models.SceneReaderWriter) error {
+	if err := linkScenePerformer(qb, sceneIdxWithPerformer, performerIdxWithScene); err != nil {
 		return err
 	}
-	if err := linkScenePerformer(tx, sceneIdxWithTwoPerformers, performerIdx1WithScene); err != nil {
+	if err := linkScenePerformer(qb, sceneIdxWithTwoPerformers, performerIdx1WithScene); err != nil {
 		return err
 	}
-	if err := linkScenePerformer(tx, sceneIdxWithTwoPerformers, performerIdx2WithScene); err != nil {
+	if err := linkScenePerformer(qb, sceneIdxWithTwoPerformers, performerIdx2WithScene); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func linkScenePerformer(tx *sqlx.Tx, sceneIndex, performerIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
-
-	_, err := jqb.AddPerformerScene(sceneIDs[sceneIndex], performerIDs[performerIndex], tx)
+func linkScenePerformer(qb models.SceneReaderWriter, sceneIndex, performerIndex int) error {
+	_, err := scene.AddPerformer(qb, sceneIDs[sceneIndex], performerIDs[performerIndex])
 	return err
 }
 
-func linkSceneGallery(tx *sqlx.Tx, sceneIndex, galleryIndex int) error {
-	gqb := models.NewGalleryQueryBuilder()
-
-	gallery, err := gqb.Find(galleryIDs[galleryIndex], nil)
+func linkSceneGallery(gqb models.GalleryReaderWriter, sceneIndex, galleryIndex int) error {
+	gallery, err := gqb.Find(galleryIDs[galleryIndex])
 
 	if err != nil {
 		return fmt.Errorf("error finding gallery: %s", err.Error())
@@ -674,132 +635,126 @@ func linkSceneGallery(tx *sqlx.Tx, sceneIndex, galleryIndex int) error {
 	}
 
 	gallery.SceneID = sql.NullInt64{Int64: int64(sceneIDs[sceneIndex]), Valid: true}
-	_, err = gqb.Update(*gallery, tx)
+	_, err = gqb.Update(*gallery)
 
 	return err
 }
 
-func linkSceneTags(tx *sqlx.Tx) error {
-	if err := linkSceneTag(tx, sceneIdxWithTag, tagIdxWithScene); err != nil {
+func linkSceneTags(qb models.SceneReaderWriter) error {
+	if err := linkSceneTag(qb, sceneIdxWithTag, tagIdxWithScene); err != nil {
 		return err
 	}
-	if err := linkSceneTag(tx, sceneIdxWithTwoTags, tagIdx1WithScene); err != nil {
+	if err := linkSceneTag(qb, sceneIdxWithTwoTags, tagIdx1WithScene); err != nil {
 		return err
 	}
-	if err := linkSceneTag(tx, sceneIdxWithTwoTags, tagIdx2WithScene); err != nil {
+	if err := linkSceneTag(qb, sceneIdxWithTwoTags, tagIdx2WithScene); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func linkSceneTag(tx *sqlx.Tx, sceneIndex, tagIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
-
-	_, err := jqb.AddSceneTag(sceneIDs[sceneIndex], tagIDs[tagIndex], tx)
+func linkSceneTag(qb models.SceneReaderWriter, sceneIndex, tagIndex int) error {
+	_, err := scene.AddTag(qb, sceneIDs[sceneIndex], tagIDs[tagIndex])
 	return err
 }
 
-func linkSceneStudio(tx *sqlx.Tx, sceneIndex, studioIndex int) error {
-	sqb := models.NewSceneQueryBuilder()
-
+func linkSceneStudio(sqb models.SceneWriter, sceneIndex, studioIndex int) error {
 	scene := models.ScenePartial{
 		ID:       sceneIDs[sceneIndex],
 		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
 	}
-	_, err := sqb.Update(scene, tx)
+	_, err := sqb.Update(scene)
 
 	return err
 }
 
-func linkImageGallery(tx *sqlx.Tx, imageIndex, galleryIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
-
-	_, err := jqb.AddImageGallery(imageIDs[imageIndex], galleryIDs[galleryIndex], tx)
-
-	return err
+func linkImageGallery(gqb models.GalleryReaderWriter, imageIndex, galleryIndex int) error {
+	return gallery.AddImage(gqb, galleryIDs[galleryIndex], imageIDs[imageIndex])
 }
 
-func linkImageTags(tx *sqlx.Tx) error {
-	if err := linkImageTag(tx, imageIdxWithTag, tagIdxWithImage); err != nil {
+func linkImageTags(iqb models.ImageReaderWriter) error {
+	if err := linkImageTag(iqb, imageIdxWithTag, tagIdxWithImage); err != nil {
 		return err
 	}
-	if err := linkImageTag(tx, imageIdxWithTwoTags, tagIdx1WithImage); err != nil {
+	if err := linkImageTag(iqb, imageIdxWithTwoTags, tagIdx1WithImage); err != nil {
 		return err
 	}
-	if err := linkImageTag(tx, imageIdxWithTwoTags, tagIdx2WithImage); err != nil {
+	if err := linkImageTag(iqb, imageIdxWithTwoTags, tagIdx2WithImage); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func linkImageTag(tx *sqlx.Tx, imageIndex, tagIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
+func linkImageTag(iqb models.ImageReaderWriter, imageIndex, tagIndex int) error {
+	imageID := imageIDs[imageIndex]
+	tags, err := iqb.GetTagIDs(imageID)
+	if err != nil {
+		return err
+	}
 
-	_, err := jqb.AddImageTag(imageIDs[imageIndex], tagIDs[tagIndex], tx)
-	return err
+	tags = append(tags, tagIDs[tagIndex])
+
+	return iqb.UpdateTags(imageID, tags)
 }
 
-func linkImageStudio(tx *sqlx.Tx, imageIndex, studioIndex int) error {
-	sqb := models.NewImageQueryBuilder()
-
+func linkImageStudio(qb models.ImageWriter, imageIndex, studioIndex int) error {
 	image := models.ImagePartial{
 		ID:       imageIDs[imageIndex],
 		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
 	}
-	_, err := sqb.Update(image, tx)
+	_, err := qb.Update(image)
 
 	return err
 }
 
-func linkImagePerformers(tx *sqlx.Tx) error {
-	if err := linkImagePerformer(tx, imageIdxWithPerformer, performerIdxWithImage); err != nil {
+func linkImagePerformers(qb models.ImageReaderWriter) error {
+	if err := linkImagePerformer(qb, imageIdxWithPerformer, performerIdxWithImage); err != nil {
 		return err
 	}
-	if err := linkImagePerformer(tx, imageIdxWithTwoPerformers, performerIdx1WithImage); err != nil {
+	if err := linkImagePerformer(qb, imageIdxWithTwoPerformers, performerIdx1WithImage); err != nil {
 		return err
 	}
-	if err := linkImagePerformer(tx, imageIdxWithTwoPerformers, performerIdx2WithImage); err != nil {
+	if err := linkImagePerformer(qb, imageIdxWithTwoPerformers, performerIdx2WithImage); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func linkImagePerformer(tx *sqlx.Tx, imageIndex, performerIndex int) error {
-	jqb := models.NewJoinsQueryBuilder()
+func linkImagePerformer(iqb models.ImageReaderWriter, imageIndex, performerIndex int) error {
+	imageID := imageIDs[imageIndex]
+	performers, err := iqb.GetPerformerIDs(imageID)
+	if err != nil {
+		return err
+	}
 
-	_, err := jqb.AddPerformerImage(imageIDs[imageIndex], performerIDs[performerIndex], tx)
-	return err
+	performers = append(performers, performerIDs[performerIndex])
+
+	return iqb.UpdatePerformers(imageID, performers)
 }
 
-func linkMovieStudio(tx *sqlx.Tx, movieIndex, studioIndex int) error {
-	mqb := models.NewMovieQueryBuilder()
-
+func linkMovieStudio(mqb models.MovieWriter, movieIndex, studioIndex int) error {
 	movie := models.MoviePartial{
 		ID:       movieIDs[movieIndex],
 		StudioID: &sql.NullInt64{Int64: int64(studioIDs[studioIndex]), Valid: true},
 	}
-	_, err := mqb.Update(movie, tx)
+	_, err := mqb.Update(movie)
 
 	return err
 }
 
-func linkStudioParent(tx *sqlx.Tx, parentIndex, childIndex int) error {
-	sqb := models.NewStudioQueryBuilder()
-
+func linkStudioParent(qb models.StudioWriter, parentIndex, childIndex int) error {
 	studio := models.StudioPartial{
 		ID:       studioIDs[childIndex],
 		ParentID: &sql.NullInt64{Int64: int64(studioIDs[parentIndex]), Valid: true},
 	}
-	_, err := sqb.Update(studio, tx)
+	_, err := qb.Update(studio)
 
 	return err
 }
 
-func addTagImage(tx *sqlx.Tx, tagIndex int) error {
-	qb := models.NewTagQueryBuilder()
-
-	return qb.UpdateTagImage(tagIDs[tagIndex], models.DefaultTagImage, tx)
+func addTagImage(qb models.TagWriter, tagIndex int) error {
+	return qb.UpdateImage(tagIDs[tagIndex], models.DefaultTagImage)
 }

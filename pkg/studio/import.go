@@ -94,7 +94,7 @@ func (i *Importer) createParentStudio(name string) (int, error) {
 
 func (i *Importer) PostImport(id int) error {
 	if len(i.imageData) > 0 {
-		if err := i.ReaderWriter.UpdateStudioImage(id, i.imageData); err != nil {
+		if err := i.ReaderWriter.UpdateImage(id, i.imageData); err != nil {
 			return fmt.Errorf("error setting studio image: %s", err.Error())
 		}
 	}

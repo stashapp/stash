@@ -59,10 +59,10 @@ func TestImporterPostImport(t *testing.T) {
 		imageData:    imageBytes,
 	}
 
-	updateTagImageErr := errors.New("UpdateTagImage error")
+	updateTagImageErr := errors.New("UpdateImage error")
 
-	readerWriter.On("UpdateTagImage", tagID, imageBytes).Return(nil).Once()
-	readerWriter.On("UpdateTagImage", errImageID, imageBytes).Return(updateTagImageErr).Once()
+	readerWriter.On("UpdateImage", tagID, imageBytes).Return(nil).Once()
+	readerWriter.On("UpdateImage", errImageID, imageBytes).Return(updateTagImageErr).Once()
 
 	err := i.PostImport(tagID)
 	assert.Nil(t, err)

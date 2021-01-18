@@ -4,18 +4,16 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
 )
 
-func ValidateModifyStudio(studio models.StudioPartial, tx *sqlx.Tx) error {
+func ValidateModifyStudio(studio models.StudioPartial, qb models.StudioReader) error {
 	if studio.ParentID == nil || !studio.ParentID.Valid {
 		return nil
 	}
 
 	// ensure there is no cyclic dependency
 	thisID := studio.ID
-	qb := models.NewStudioQueryBuilder()
 
 	currentParentID := *studio.ParentID
 
@@ -24,7 +22,7 @@ func ValidateModifyStudio(studio models.StudioPartial, tx *sqlx.Tx) error {
 			return errors.New("studio cannot be an ancestor of itself")
 		}
 
-		currentStudio, err := qb.Find(int(currentParentID.Int64), tx)
+		currentStudio, err := qb.Find(int(currentParentID.Int64))
 		if err != nil {
 			return fmt.Errorf("error finding parent studio: %s", err.Error())
 		}

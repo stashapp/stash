@@ -7,7 +7,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
@@ -15,6 +14,7 @@ import (
 )
 
 type CleanTask struct {
+	TxnManager          models.TransactionManager
 	Scene               *models.Scene
 	Gallery             *models.Gallery
 	Image               *models.Image
@@ -133,60 +133,45 @@ func (t *CleanTask) shouldCleanImage(s *models.Image) bool {
 }
 
 func (t *CleanTask) deleteScene(sceneID int) {
-	ctx := context.TODO()
-	qb := models.NewSceneQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
+	var postCommitFunc func()
+	var scene *models.Scene
+	if err := t.TxnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
+		qb := repo.Scene()
 
-	scene, err := qb.Find(sceneID)
-	err = DestroyScene(sceneID, tx)
-
-	if err != nil {
+		var err error
+		scene, err = qb.Find(sceneID)
+		if err != nil {
+			return err
+		}
+		postCommitFunc, err = DestroyScene(scene, repo)
+		return err
+	}); err != nil {
 		logger.Errorf("Error deleting scene from database: %s", err.Error())
-		tx.Rollback()
 		return
 	}
 
-	if err := tx.Commit(); err != nil {
-		logger.Errorf("Error deleting scene from database: %s", err.Error())
-		return
-	}
+	postCommitFunc()
 
 	DeleteGeneratedSceneFiles(scene, t.fileNamingAlgorithm)
 }
 
 func (t *CleanTask) deleteGallery(galleryID int) {
-	ctx := context.TODO()
-	qb := models.NewGalleryQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	err := qb.Destroy(galleryID, tx)
-
-	if err != nil {
-		logger.Errorf("Error deleting gallery from database: %s", err.Error())
-		tx.Rollback()
-		return
-	}
-
-	if err := tx.Commit(); err != nil {
+	if err := t.TxnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
+		qb := repo.Gallery()
+		return qb.Destroy(galleryID)
+	}); err != nil {
 		logger.Errorf("Error deleting gallery from database: %s", err.Error())
 		return
 	}
 }
 
 func (t *CleanTask) deleteImage(imageID int) {
-	ctx := context.TODO()
-	qb := models.NewImageQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
 
-	err := qb.Destroy(imageID, tx)
+	if err := t.TxnManager.WithTxn(context.TODO(), func(repo models.Repository) error {
+		qb := repo.Image()
 
-	if err != nil {
-		logger.Errorf("Error deleting image from database: %s", err.Error())
-		tx.Rollback()
-		return
-	}
-
-	if err := tx.Commit(); err != nil {
+		return qb.Destroy(imageID)
+	}); err != nil {
 		logger.Errorf("Error deleting image from database: %s", err.Error())
 		return
 	}

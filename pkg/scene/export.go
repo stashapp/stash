@@ -52,7 +52,7 @@ func ToBasicJSON(reader models.SceneReader, scene *models.Scene) (*jsonschema.Sc
 
 	newSceneJSON.File = getSceneFileJSON(scene)
 
-	cover, err := reader.GetSceneCover(scene.ID)
+	cover, err := reader.GetCover(scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene cover: %s", err.Error())
 	}
@@ -165,7 +165,7 @@ func getTagNames(tags []*models.Tag) []string {
 }
 
 // GetDependentTagIDs returns a slice of unique tag IDs that this scene references.
-func GetDependentTagIDs(tags models.TagReader, joins models.JoinReader, markerReader models.SceneMarkerReader, scene *models.Scene) ([]int, error) {
+func GetDependentTagIDs(tags models.TagReader, markerReader models.SceneMarkerReader, scene *models.Scene) ([]int, error) {
 	var ret []int
 
 	t, err := tags.FindBySceneID(scene.ID)
@@ -199,8 +199,8 @@ func GetDependentTagIDs(tags models.TagReader, joins models.JoinReader, markerRe
 
 // GetSceneMoviesJSON returns a slice of SceneMovie JSON representation objects
 // corresponding to the provided scene's scene movie relationships.
-func GetSceneMoviesJSON(movieReader models.MovieReader, joinReader models.JoinReader, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
-	sceneMovies, err := joinReader.GetSceneMovies(scene.ID)
+func GetSceneMoviesJSON(movieReader models.MovieReader, sceneReader models.SceneReader, scene *models.Scene) ([]jsonschema.SceneMovie, error) {
+	sceneMovies, err := sceneReader.GetMovies(scene.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting scene movies: %s", err.Error())
 	}
@@ -225,10 +225,10 @@ func GetSceneMoviesJSON(movieReader models.MovieReader, joinReader models.JoinRe
 }
 
 // GetDependentMovieIDs returns a slice of movie IDs that this scene references.
-func GetDependentMovieIDs(joins models.JoinReader, scene *models.Scene) ([]int, error) {
+func GetDependentMovieIDs(sceneReader models.SceneReader, scene *models.Scene) ([]int, error) {
 	var ret []int
 
-	m, err := joins.GetSceneMovies(scene.ID)
+	m, err := sceneReader.GetMovies(scene.ID)
 	if err != nil {
 		return nil, err
 	}

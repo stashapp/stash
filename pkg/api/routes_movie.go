@@ -6,11 +6,14 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type movieRoutes struct{}
+type movieRoutes struct {
+	txnManager models.TransactionManager
+}
 
 func (rs movieRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
@@ -26,11 +29,16 @@ func (rs movieRoutes) Routes() chi.Router {
 
 func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 	movie := r.Context().Value(movieKey).(*models.Movie)
-	qb := models.NewMovieQueryBuilder()
-	image, _ := qb.GetFrontImage(movie.ID, nil)
-
 	defaultParam := r.URL.Query().Get("default")
-	if len(image) == 0 || defaultParam == "true" {
+	var image []byte
+	if defaultParam != "true" {
+		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			image, _ = repo.Movie().GetFrontImage(movie.ID)
+			return nil
+		})
+	}
+
+	if len(image) == 0 {
 		_, image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
 	}
 
@@ -39,11 +47,16 @@ func (rs movieRoutes) FrontImage(w http.ResponseWriter, r *http.Request) {
 
 func (rs movieRoutes) BackImage(w http.ResponseWriter, r *http.Request) {
 	movie := r.Context().Value(movieKey).(*models.Movie)
-	qb := models.NewMovieQueryBuilder()
-	image, _ := qb.GetBackImage(movie.ID, nil)
-
 	defaultParam := r.URL.Query().Get("default")
-	if len(image) == 0 || defaultParam == "true" {
+	var image []byte
+	if defaultParam != "true" {
+		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			image, _ = repo.Movie().GetBackImage(movie.ID)
+			return nil
+		})
+	}
+
+	if len(image) == 0 {
 		_, image, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
 	}
 
@@ -58,9 +71,12 @@ func MovieCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		qb := models.NewMovieQueryBuilder()
-		movie, err := qb.Find(movieID, nil)
-		if err != nil {
+		var movie *models.Movie
+		if err := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			var err error
+			movie, err = repo.Movie().Find(movieID)
+			return err
+		}); err != nil {
 			http.Error(w, http.StatusText(404), 404)
 			return
 		}

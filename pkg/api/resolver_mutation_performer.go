@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -86,41 +85,32 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	}
 
 	// Start the transaction and save the performer
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewPerformerQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	var performer *models.Performer
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
 
-	performer, err := qb.Create(newPerformer, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// update image table
-	if len(imageData) > 0 {
-		if err := qb.UpdatePerformerImage(performer.ID, imageData, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
+		performer, err = qb.Create(newPerformer)
+		if err != nil {
+			return err
 		}
-	}
 
-	// Save the stash_ids
-	if input.StashIds != nil {
-		var stashIDJoins []models.StashID
-		for _, stashID := range input.StashIds {
-			newJoin := models.StashID{
-				StashID:  stashID.StashID,
-				Endpoint: stashID.Endpoint,
+		// update image table
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(performer.ID, imageData); err != nil {
+				return err
 			}
-			stashIDJoins = append(stashIDJoins, newJoin)
 		}
-		if err := jqb.UpdatePerformerStashIDs(performer.ID, stashIDJoins, tx); err != nil {
-			return nil, err
-		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		// Save the stash_ids
+		if input.StashIds != nil {
+			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			if err := qb.UpdateStashIDs(performer.ID, stashIDJoins); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -183,47 +173,38 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
 
 	// Start the transaction and save the performer
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewPerformerQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	var performer *models.Performer
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
 
-	performer, err := qb.Update(updatedPerformer, tx)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	// update image table
-	if len(imageData) > 0 {
-		if err := qb.UpdatePerformerImage(performer.ID, imageData, tx); err != nil {
-			tx.Rollback()
-			return nil, err
+		var err error
+		performer, err = qb.Update(updatedPerformer)
+		if err != nil {
+			return err
 		}
-	} else if imageIncluded {
-		// must be unsetting
-		if err := qb.DestroyPerformerImage(performer.ID, tx); err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-	}
 
-	// Save the stash_ids
-	if translator.hasField("stash_ids") {
-		var stashIDJoins []models.StashID
-		for _, stashID := range input.StashIds {
-			newJoin := models.StashID{
-				StashID:  stashID.StashID,
-				Endpoint: stashID.Endpoint,
+		// update image table
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(performer.ID, imageData); err != nil {
+				return err
 			}
-			stashIDJoins = append(stashIDJoins, newJoin)
+		} else if imageIncluded {
+			// must be unsetting
+			if err := qb.DestroyImage(performer.ID); err != nil {
+				return err
+			}
 		}
-		if err := jqb.UpdatePerformerStashIDs(performerID, stashIDJoins, tx); err != nil {
-			return nil, err
-		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		// Save the stash_ids
+		if translator.hasField("stash_ids") {
+			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			if err := qb.UpdateStashIDs(performerID, stashIDJoins); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -231,28 +212,35 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 }
 
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
-	qb := models.NewPerformerQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	if err := qb.Destroy(input.ID, tx); err != nil {
-		_ = tx.Rollback()
+	id, err := strconv.Atoi(input.ID)
+	if err != nil {
 		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		return repo.Performer().Destroy(id)
+	}); err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func (r *mutationResolver) PerformersDestroy(ctx context.Context, ids []string) (bool, error) {
-	qb := models.NewPerformerQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	for _, id := range ids {
-		if err := qb.Destroy(id, tx); err != nil {
-			_ = tx.Rollback()
-			return false, err
-		}
+func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs []string) (bool, error) {
+	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	if err != nil {
+		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
+		for _, id := range ids {
+			if err := qb.Destroy(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return false, err
 	}
 	return true, nil
