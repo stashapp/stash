@@ -7,7 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -158,10 +157,10 @@ func TestImporterPostImport(t *testing.T) {
 		backImageData:  backImageBytes,
 	}
 
-	updateMovieImageErr := errors.New("UpdateMovieImage error")
+	updateMovieImageErr := errors.New("UpdateImages error")
 
-	readerWriter.On("UpdateMovieImages", movieID, frontImageBytes, backImageBytes).Return(nil).Once()
-	readerWriter.On("UpdateMovieImages", errImageID, frontImageBytes, backImageBytes).Return(updateMovieImageErr).Once()
+	readerWriter.On("UpdateImages", movieID, frontImageBytes, backImageBytes).Return(nil).Once()
+	readerWriter.On("UpdateImages", errImageID, frontImageBytes, backImageBytes).Return(updateMovieImageErr).Once()
 
 	err := i.PostImport(movieID)
 	assert.Nil(t, err)
@@ -210,11 +209,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.MovieReaderWriter{}
 
 	movie := models.Movie{
-		Name: modelstest.NullString(movieName),
+		Name: models.NullString(movieName),
 	}
 
 	movieErr := models.Movie{
-		Name: modelstest.NullString(movieNameErr),
+		Name: models.NullString(movieNameErr),
 	}
 
 	i := Importer{
@@ -244,11 +243,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.MovieReaderWriter{}
 
 	movie := models.Movie{
-		Name: modelstest.NullString(movieName),
+		Name: models.NullString(movieName),
 	}
 
 	movieErr := models.Movie{
-		Name: modelstest.NullString(movieNameErr),
+		Name: models.NullString(movieNameErr),
 	}
 
 	i := Importer{

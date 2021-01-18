@@ -174,3 +174,13 @@ type ScrapedMovieStudio struct {
 	Name string  `graphql:"name" json:"name"`
 	URL  *string `graphql:"url" json:"url"`
 }
+
+type ScrapedItems []*ScrapedItem
+
+func (s *ScrapedItems) Append(o interface{}) {
+	*s = append(*s, o.(*ScrapedItem))
+}
+
+func (s *ScrapedItems) New() interface{} {
+	return &ScrapedItem{}
+}

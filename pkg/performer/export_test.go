@@ -7,7 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/assert"
 
@@ -53,27 +52,27 @@ var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.Local)
 func createFullPerformer(id int, name string) *models.Performer {
 	return &models.Performer{
 		ID:           id,
-		Name:         modelstest.NullString(name),
+		Name:         models.NullString(name),
 		Checksum:     utils.MD5FromString(name),
-		URL:          modelstest.NullString(url),
-		Aliases:      modelstest.NullString(aliases),
+		URL:          models.NullString(url),
+		Aliases:      models.NullString(aliases),
 		Birthdate:    birthDate,
-		CareerLength: modelstest.NullString(careerLength),
-		Country:      modelstest.NullString(country),
-		Ethnicity:    modelstest.NullString(ethnicity),
-		EyeColor:     modelstest.NullString(eyeColor),
-		FakeTits:     modelstest.NullString(fakeTits),
+		CareerLength: models.NullString(careerLength),
+		Country:      models.NullString(country),
+		Ethnicity:    models.NullString(ethnicity),
+		EyeColor:     models.NullString(eyeColor),
+		FakeTits:     models.NullString(fakeTits),
 		Favorite: sql.NullBool{
 			Bool:  true,
 			Valid: true,
 		},
-		Gender:       modelstest.NullString(gender),
-		Height:       modelstest.NullString(height),
-		Instagram:    modelstest.NullString(instagram),
-		Measurements: modelstest.NullString(measurements),
-		Piercings:    modelstest.NullString(piercings),
-		Tattoos:      modelstest.NullString(tattoos),
-		Twitter:      modelstest.NullString(twitter),
+		Gender:       models.NullString(gender),
+		Height:       models.NullString(height),
+		Instagram:    models.NullString(instagram),
+		Measurements: models.NullString(measurements),
+		Piercings:    models.NullString(piercings),
+		Tattoos:      models.NullString(tattoos),
+		Twitter:      models.NullString(twitter),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},
@@ -170,9 +169,9 @@ func TestToJSON(t *testing.T) {
 
 	imageErr := errors.New("error getting image")
 
-	mockPerformerReader.On("GetPerformerImage", performerID).Return(imageBytes, nil).Once()
-	mockPerformerReader.On("GetPerformerImage", noImageID).Return(nil, nil).Once()
-	mockPerformerReader.On("GetPerformerImage", errImageID).Return(nil, imageErr).Once()
+	mockPerformerReader.On("GetImage", performerID).Return(imageBytes, nil).Once()
+	mockPerformerReader.On("GetImage", noImageID).Return(nil, nil).Once()
+	mockPerformerReader.On("GetImage", errImageID).Return(nil, imageErr).Once()
 
 	for i, s := range scenarios {
 		tag := s.input

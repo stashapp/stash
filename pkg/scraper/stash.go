@@ -15,13 +15,15 @@ type stashScraper struct {
 	scraper      scraperTypeConfig
 	config       config
 	globalConfig GlobalConfig
+	txnManager   models.TransactionManager
 }
 
-func newStashScraper(scraper scraperTypeConfig, config config, globalConfig GlobalConfig) *stashScraper {
+func newStashScraper(scraper scraperTypeConfig, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *stashScraper {
 	return &stashScraper{
 		scraper:      scraper,
 		config:       config,
 		globalConfig: globalConfig,
+		txnManager:   txnManager,
 	}
 }
 
@@ -117,15 +119,17 @@ func (s *stashScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
 	// query by MD5
 	// assumes that the scene exists in the database
-	qb := models.NewSceneQueryBuilder()
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	storedScene, err := qb.Find(id)
-
-	if err != nil {
+	var storedScene *models.Scene
+	if err := s.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		var err error
+		storedScene, err = r.Scene().Find(id)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
@@ -185,17 +189,21 @@ func (s *stashScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 }
 
 func (s *stashScraper) scrapeGalleryByFragment(scene models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
-	// query by MD5
-	// assumes that the gallery exists in the database
-	qb := models.NewGalleryQueryBuilder()
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	storedGallery, err := qb.Find(id, nil)
+	// query by MD5
+	// assumes that the gallery exists in the database
+	var storedGallery *models.Gallery
+	if err := s.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		qb := r.Gallery()
 
-	if err != nil {
+		var err error
+		storedGallery, err = qb.Find(id)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
@@ -262,23 +270,36 @@ func (s *stashScraper) scrapeMovieByURL(url string) (*models.ScrapedMovie, error
 	return nil, errors.New("scrapeMovieByURL not supported for stash scraper")
 }
 
-func sceneFromUpdateFragment(scene models.SceneUpdateInput) (*models.Scene, error) {
-	qb := models.NewSceneQueryBuilder()
+func sceneFromUpdateFragment(scene models.SceneUpdateInput, txnManager models.TransactionManager) (*models.Scene, error) {
 	id, err := strconv.Atoi(scene.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	// TODO - should we modify it with the input?
-	return qb.Find(id)
+	var ret *models.Scene
+	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		var err error
+		ret, err = r.Scene().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
-func galleryFromUpdateFragment(gallery models.GalleryUpdateInput) (*models.Gallery, error) {
-	qb := models.NewGalleryQueryBuilder()
+func galleryFromUpdateFragment(gallery models.GalleryUpdateInput, txnManager models.TransactionManager) (ret *models.Gallery, err error) {
 	id, err := strconv.Atoi(gallery.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	return qb.Find(id, nil)
+	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		ret, err = r.Gallery().Find(id)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

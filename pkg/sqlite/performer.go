@@ -1,4 +1,4 @@
-package models
+package sqlite
 
 import (
 	"database/sql"
@@ -6,96 +6,86 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-	"github.com/stashapp/stash/pkg/database"
+	"github.com/stashapp/stash/pkg/models"
 )
 
-type PerformerQueryBuilder struct{}
+const performerTable = "performers"
+const performerIDColumn = "performer_id"
 
-func NewPerformerQueryBuilder() PerformerQueryBuilder {
-	return PerformerQueryBuilder{}
+type performerQueryBuilder struct {
+	repository
 }
 
-func (qb *PerformerQueryBuilder) Create(newPerformer Performer, tx *sqlx.Tx) (*Performer, error) {
-	ensureTx(tx)
-	result, err := tx.NamedExec(
-		`INSERT INTO performers (checksum, name, url, gender, twitter, instagram, birthdate, ethnicity, country,
-                        				eye_color, height, measurements, fake_tits, career_length, tattoos, piercings,
-                        				aliases, favorite, created_at, updated_at)
-				VALUES (:checksum, :name, :url, :gender, :twitter, :instagram, :birthdate, :ethnicity, :country,
-                        :eye_color, :height, :measurements, :fake_tits, :career_length, :tattoos, :piercings,
-                        :aliases, :favorite, :created_at, :updated_at)
-		`,
-		newPerformer,
-	)
-	if err != nil {
-		return nil, err
+func NewPerformerReaderWriter(tx dbi) *performerQueryBuilder {
+	return &performerQueryBuilder{
+		repository{
+			tx:        tx,
+			tableName: performerTable,
+			idColumn:  idColumn,
+		},
 	}
-	performerID, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-
-	if err := tx.Get(&newPerformer, `SELECT * FROM performers WHERE id = ? LIMIT 1`, performerID); err != nil {
-		return nil, err
-	}
-	return &newPerformer, nil
 }
 
-func (qb *PerformerQueryBuilder) Update(updatedPerformer PerformerPartial, tx *sqlx.Tx) (*Performer, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE performers SET `+SQLGenKeysPartial(updatedPerformer)+` WHERE performers.id = :id`,
-		updatedPerformer,
-	)
-	if err != nil {
+func (qb *performerQueryBuilder) Create(newObject models.Performer) (*models.Performer, error) {
+	var ret models.Performer
+	if err := qb.insertObject(newObject, &ret); err != nil {
 		return nil, err
 	}
 
-	var ret Performer
-	if err := tx.Get(&ret, `SELECT * FROM performers WHERE id = ? LIMIT 1`, updatedPerformer.ID); err != nil {
+	return &ret, nil
+}
+
+func (qb *performerQueryBuilder) Update(updatedObject models.PerformerPartial) (*models.Performer, error) {
+	const partial = true
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	var ret models.Performer
+	if err := qb.get(updatedObject.ID, &ret); err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (qb *performerQueryBuilder) UpdateFull(updatedObject models.Performer) (*models.Performer, error) {
+	const partial = false
+	if err := qb.update(updatedObject.ID, updatedObject, partial); err != nil {
+		return nil, err
+	}
+
+	var ret models.Performer
+	if err := qb.get(updatedObject.ID, &ret); err != nil {
+		return nil, err
+	}
+
+	return &ret, nil
+}
+
+func (qb *performerQueryBuilder) Destroy(id int) error {
+	// TODO - add on delete cascade to performers_scenes
+	_, err := qb.tx.Exec("DELETE FROM performers_scenes WHERE performer_id = ?", id)
+	if err != nil {
+		return err
+	}
+
+	return qb.destroyExisting([]int{id})
+}
+
+func (qb *performerQueryBuilder) Find(id int) (*models.Performer, error) {
+	var ret models.Performer
+	if err := qb.get(id, &ret); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &ret, nil
 }
 
-func (qb *PerformerQueryBuilder) UpdateFull(updatedPerformer Performer, tx *sqlx.Tx) (*Performer, error) {
-	ensureTx(tx)
-	_, err := tx.NamedExec(
-		`UPDATE performers SET `+SQLGenKeys(updatedPerformer)+` WHERE performers.id = :id`,
-		updatedPerformer,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := tx.Get(&updatedPerformer, `SELECT * FROM performers WHERE id = ? LIMIT 1`, updatedPerformer.ID); err != nil {
-		return nil, err
-	}
-	return &updatedPerformer, nil
-}
-
-func (qb *PerformerQueryBuilder) Destroy(id string, tx *sqlx.Tx) error {
-	_, err := tx.Exec("DELETE FROM performers_scenes WHERE performer_id = ?", id)
-	if err != nil {
-		return err
-	}
-
-	return executeDeleteQuery("performers", id, tx)
-}
-
-func (qb *PerformerQueryBuilder) Find(id int) (*Performer, error) {
-	query := "SELECT * FROM performers WHERE id = ? LIMIT 1"
-	args := []interface{}{id}
-	results, err := qb.queryPerformers(query, args, nil)
-	if err != nil || len(results) < 1 {
-		return nil, err
-	}
-	return results[0], nil
-}
-
-func (qb *PerformerQueryBuilder) FindMany(ids []int) ([]*Performer, error) {
-	var performers []*Performer
+func (qb *performerQueryBuilder) FindMany(ids []int) ([]*models.Performer, error) {
+	var performers []*models.Performer
 	for _, id := range ids {
 		performer, err := qb.Find(id)
 		if err != nil {
@@ -112,44 +102,44 @@ func (qb *PerformerQueryBuilder) FindMany(ids []int) ([]*Performer, error) {
 	return performers, nil
 }
 
-func (qb *PerformerQueryBuilder) FindBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {
+func (qb *performerQueryBuilder) FindBySceneID(sceneID int) ([]*models.Performer, error) {
 	query := selectAll("performers") + `
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		WHERE scenes_join.scene_id = ?
 	`
 	args := []interface{}{sceneID}
-	return qb.queryPerformers(query, args, tx)
+	return qb.queryPerformers(query, args)
 }
 
-func (qb *PerformerQueryBuilder) FindByImageID(imageID int, tx *sqlx.Tx) ([]*Performer, error) {
+func (qb *performerQueryBuilder) FindByImageID(imageID int) ([]*models.Performer, error) {
 	query := selectAll("performers") + `
 		LEFT JOIN performers_images as images_join on images_join.performer_id = performers.id
 		WHERE images_join.image_id = ?
 	`
 	args := []interface{}{imageID}
-	return qb.queryPerformers(query, args, tx)
+	return qb.queryPerformers(query, args)
 }
 
-func (qb *PerformerQueryBuilder) FindByGalleryID(galleryID int, tx *sqlx.Tx) ([]*Performer, error) {
+func (qb *performerQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Performer, error) {
 	query := selectAll("performers") + `
 		LEFT JOIN performers_galleries as galleries_join on galleries_join.performer_id = performers.id
 		WHERE galleries_join.gallery_id = ?
 	`
 	args := []interface{}{galleryID}
-	return qb.queryPerformers(query, args, tx)
+	return qb.queryPerformers(query, args)
 }
 
-func (qb *PerformerQueryBuilder) FindNameBySceneID(sceneID int, tx *sqlx.Tx) ([]*Performer, error) {
+func (qb *performerQueryBuilder) FindNamesBySceneID(sceneID int) ([]*models.Performer, error) {
 	query := `
 		SELECT performers.name FROM performers
 		LEFT JOIN performers_scenes as scenes_join on scenes_join.performer_id = performers.id
 		WHERE scenes_join.scene_id = ?
 	`
 	args := []interface{}{sceneID}
-	return qb.queryPerformers(query, args, tx)
+	return qb.queryPerformers(query, args)
 }
 
-func (qb *PerformerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx, nocase bool) ([]*Performer, error) {
+func (qb *performerQueryBuilder) FindByNames(names []string, nocase bool) ([]*models.Performer, error) {
 	query := "SELECT * FROM performers WHERE name"
 	if nocase {
 		query += " COLLATE NOCASE"
@@ -160,33 +150,31 @@ func (qb *PerformerQueryBuilder) FindByNames(names []string, tx *sqlx.Tx, nocase
 	for _, name := range names {
 		args = append(args, name)
 	}
-	return qb.queryPerformers(query, args, tx)
+	return qb.queryPerformers(query, args)
 }
 
-func (qb *PerformerQueryBuilder) Count() (int, error) {
-	return runCountQuery(buildCountQuery("SELECT performers.id FROM performers"), nil)
+func (qb *performerQueryBuilder) Count() (int, error) {
+	return qb.runCountQuery(qb.buildCountQuery("SELECT performers.id FROM performers"), nil)
 }
 
-func (qb *PerformerQueryBuilder) All() ([]*Performer, error) {
-	return qb.queryPerformers(selectAll("performers")+qb.getPerformerSort(nil), nil, nil)
+func (qb *performerQueryBuilder) All() ([]*models.Performer, error) {
+	return qb.queryPerformers(selectAll("performers")+qb.getPerformerSort(nil), nil)
 }
 
-func (qb *PerformerQueryBuilder) AllSlim() ([]*Performer, error) {
-	return qb.queryPerformers("SELECT performers.id, performers.name, performers.gender FROM performers "+qb.getPerformerSort(nil), nil, nil)
+func (qb *performerQueryBuilder) AllSlim() ([]*models.Performer, error) {
+	return qb.queryPerformers("SELECT performers.id, performers.name, performers.gender FROM performers "+qb.getPerformerSort(nil), nil)
 }
 
-func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, findFilter *FindFilterType) ([]*Performer, int) {
+func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterType, findFilter *models.FindFilterType) ([]*models.Performer, int, error) {
 	if performerFilter == nil {
-		performerFilter = &PerformerFilterType{}
+		performerFilter = &models.PerformerFilterType{}
 	}
 	if findFilter == nil {
-		findFilter = &FindFilterType{}
+		findFilter = &models.FindFilterType{}
 	}
 
 	tableName := "performers"
-	query := queryBuilder{
-		tableName: tableName,
-	}
+	query := qb.newQuery()
 
 	query.body = selectDistinctIDs(tableName)
 	query.body += `
@@ -263,18 +251,24 @@ func (qb *PerformerQueryBuilder) Query(performerFilter *PerformerFilterType, fin
 	query.handleStringCriterionInput(performerFilter.Aliases, tableName+".aliases")
 
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult := query.executeFind()
+	idsResult, countResult, err := query.executeFind()
+	if err != nil {
+		return nil, 0, err
+	}
 
-	var performers []*Performer
+	var performers []*models.Performer
 	for _, id := range idsResult {
-		performer, _ := qb.Find(id)
+		performer, err := qb.Find(id)
+		if err != nil {
+			return nil, 0, err
+		}
 		performers = append(performers, performer)
 	}
 
-	return performers, countResult
+	return performers, countResult, nil
 }
 
-func getBirthYearFilterClause(criterionModifier CriterionModifier, value int) ([]string, []interface{}) {
+func getBirthYearFilterClause(criterionModifier models.CriterionModifier, value int) ([]string, []interface{}) {
 	var clauses []string
 	var args []interface{}
 
@@ -309,7 +303,7 @@ func getBirthYearFilterClause(criterionModifier CriterionModifier, value int) ([
 	return clauses, args
 }
 
-func getAgeFilterClause(criterionModifier CriterionModifier, value int) ([]string, []interface{}) {
+func getAgeFilterClause(criterionModifier models.CriterionModifier, value int) ([]string, []interface{}) {
 	var clauses []string
 	var args []interface{}
 
@@ -345,7 +339,7 @@ func getAgeFilterClause(criterionModifier CriterionModifier, value int) ([]strin
 	return clauses, args
 }
 
-func (qb *PerformerQueryBuilder) getPerformerSort(findFilter *FindFilterType) string {
+func (qb *performerQueryBuilder) getPerformerSort(findFilter *models.FindFilterType) string {
 	var sort string
 	var direction string
 	if findFilter == nil {
@@ -358,65 +352,52 @@ func (qb *PerformerQueryBuilder) getPerformerSort(findFilter *FindFilterType) st
 	return getSort(sort, direction, "performers")
 }
 
-func (qb *PerformerQueryBuilder) queryPerformers(query string, args []interface{}, tx *sqlx.Tx) ([]*Performer, error) {
-	var rows *sqlx.Rows
-	var err error
-	if tx != nil {
-		rows, err = tx.Queryx(query, args...)
-	} else {
-		rows, err = database.DB.Queryx(query, args...)
-	}
-
-	if err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	defer rows.Close()
-
-	performers := make([]*Performer, 0)
-	for rows.Next() {
-		performer := Performer{}
-		if err := rows.StructScan(&performer); err != nil {
-			return nil, err
-		}
-		performers = append(performers, &performer)
-	}
-
-	if err := rows.Err(); err != nil {
+func (qb *performerQueryBuilder) queryPerformers(query string, args []interface{}) ([]*models.Performer, error) {
+	var ret models.Performers
+	if err := qb.query(query, args, &ret); err != nil {
 		return nil, err
 	}
 
-	return performers, nil
+	return []*models.Performer(ret), nil
 }
 
-func (qb *PerformerQueryBuilder) UpdatePerformerImage(performerID int, image []byte, tx *sqlx.Tx) error {
-	ensureTx(tx)
-
-	// Delete the existing cover and then create new
-	if err := qb.DestroyPerformerImage(performerID, tx); err != nil {
-		return err
+func (qb *performerQueryBuilder) imageRepository() *imageRepository {
+	return &imageRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: "performers_image",
+			idColumn:  performerIDColumn,
+		},
+		imageColumn: "image",
 	}
-
-	_, err := tx.Exec(
-		`INSERT INTO performers_image (performer_id, image) VALUES (?, ?)`,
-		performerID,
-		image,
-	)
-
-	return err
 }
 
-func (qb *PerformerQueryBuilder) DestroyPerformerImage(performerID int, tx *sqlx.Tx) error {
-	ensureTx(tx)
+func (qb *performerQueryBuilder) GetImage(performerID int) ([]byte, error) {
+	return qb.imageRepository().get(performerID)
+}
 
-	// Delete the existing joins
-	_, err := tx.Exec("DELETE FROM performers_image WHERE performer_id = ?", performerID)
-	if err != nil {
-		return err
+func (qb *performerQueryBuilder) UpdateImage(performerID int, image []byte) error {
+	return qb.imageRepository().replace(performerID, image)
+}
+
+func (qb *performerQueryBuilder) DestroyImage(performerID int) error {
+	return qb.imageRepository().destroy([]int{performerID})
+}
+
+func (qb *performerQueryBuilder) stashIDRepository() *stashIDRepository {
+	return &stashIDRepository{
+		repository{
+			tx:        qb.tx,
+			tableName: "performer_stash_ids",
+			idColumn:  performerIDColumn,
+		},
 	}
-	return err
 }
 
-func (qb *PerformerQueryBuilder) GetPerformerImage(performerID int, tx *sqlx.Tx) ([]byte, error) {
-	query := `SELECT image from performers_image WHERE performer_id = ?`
-	return getImage(tx, query, performerID)
+func (qb *performerQueryBuilder) GetStashIDs(performerID int) ([]*models.StashID, error) {
+	return qb.stashIDRepository().get(performerID)
+}
+
+func (qb *performerQueryBuilder) UpdateStashIDs(performerID int, stashIDs []models.StashID) error {
+	return qb.stashIDRepository().replace(performerID, stashIDs)
 }

@@ -16,7 +16,7 @@ func (r *mutationResolver) SubmitStashBoxFingerprints(ctx context.Context, input
 		return false, fmt.Errorf("invalid stash_box_index %d", input.StashBoxIndex)
 	}
 
-	client := stashbox.NewClient(*boxes[input.StashBoxIndex])
+	client := stashbox.NewClient(*boxes[input.StashBoxIndex], r.txnManager)
 
 	return client.SubmitStashBoxFingerprints(input.SceneIds, boxes[input.StashBoxIndex].Endpoint)
 }

@@ -178,8 +178,10 @@ export const queryFindPerformers = (filter: ListFilterModel) =>
     },
   });
 
-export const useFindGallery = (id: string) =>
-  GQL.useFindGalleryQuery({ variables: { id } });
+export const useFindGallery = (id: string) => {
+  const skip = id === "new";
+  return GQL.useFindGalleryQuery({ variables: { id }, skip });
+};
 export const useFindScene = (id: string) =>
   GQL.useFindSceneQuery({ variables: { id } });
 export const useSceneStreams = (id: string) =>

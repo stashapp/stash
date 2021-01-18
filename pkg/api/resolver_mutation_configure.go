@@ -52,7 +52,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	if input.VideoFileNamingAlgorithm != config.GetVideoFileNamingAlgorithm() {
 		// validate changing VideoFileNamingAlgorithm
-		if err := manager.ValidateVideoFileNamingAlgorithm(input.VideoFileNamingAlgorithm); err != nil {
+		if err := manager.ValidateVideoFileNamingAlgorithm(r.txnManager, input.VideoFileNamingAlgorithm); err != nil {
 			return makeConfigGeneralResult(), err
 		}
 

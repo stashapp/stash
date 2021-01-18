@@ -35,14 +35,17 @@ func StrMap(vs []string, f func(string) string) []string {
 	return vsm
 }
 
-// StringSliceToIntSlice converts a slice of strings to a slice of ints. If any
-// values cannot be parsed, then they are inserted into the returned slice as
-// 0.
-func StringSliceToIntSlice(ss []string) []int {
+// StringSliceToIntSlice converts a slice of strings to a slice of ints.
+// Returns an error if any values cannot be parsed.
+func StringSliceToIntSlice(ss []string) ([]int, error) {
 	ret := make([]int, len(ss))
 	for i, v := range ss {
-		ret[i], _ = strconv.Atoi(v)
+		var err error
+		ret[i], err = strconv.Atoi(v)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return ret
+	return ret, nil
 }

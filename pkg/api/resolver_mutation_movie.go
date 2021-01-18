@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -85,24 +84,23 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 	}
 
 	// Start the transaction and save the movie
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewMovieQueryBuilder()
-	movie, err := qb.Create(newMovie, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// update image table
-	if len(frontimageData) > 0 {
-		if err := qb.UpdateMovieImages(movie.ID, frontimageData, backimageData, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
+	var movie *models.Movie
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Movie()
+		movie, err = qb.Create(newMovie)
+		if err != nil {
+			return err
 		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		// update image table
+		if len(frontimageData) > 0 {
+			if err := qb.UpdateImages(movie.ID, frontimageData, backimageData); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -111,7 +109,10 @@ func (r *mutationResolver) MovieCreate(ctx context.Context, input models.MovieCr
 
 func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUpdateInput) (*models.Movie, error) {
 	// Populate movie from the input
-	movieID, _ := strconv.Atoi(input.ID)
+	movieID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
 
 	updatedMovie := models.MoviePartial{
 		ID:        movieID,
@@ -123,7 +124,6 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 	}
 
 	var frontimageData []byte
-	var err error
 	frontImageIncluded := translator.hasField("front_image")
 	if input.FrontImage != nil {
 		_, frontimageData, err = utils.ProcessBase64Image(*input.FrontImage)
@@ -157,53 +157,49 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 	updatedMovie.URL = translator.nullString(input.URL, "url")
 
 	// Start the transaction and save the movie
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewMovieQueryBuilder()
-	movie, err := qb.Update(updatedMovie, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// update image table
-	if frontImageIncluded || backImageIncluded {
-		if !frontImageIncluded {
-			frontimageData, err = qb.GetFrontImage(updatedMovie.ID, tx)
-			if err != nil {
-				tx.Rollback()
-				return nil, err
-			}
-		}
-		if !backImageIncluded {
-			backimageData, err = qb.GetBackImage(updatedMovie.ID, tx)
-			if err != nil {
-				tx.Rollback()
-				return nil, err
-			}
+	var movie *models.Movie
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Movie()
+		movie, err = qb.Update(updatedMovie)
+		if err != nil {
+			return err
 		}
 
-		if len(frontimageData) == 0 && len(backimageData) == 0 {
-			// both images are being nulled. Destroy them.
-			if err := qb.DestroyMovieImages(movie.ID, tx); err != nil {
-				tx.Rollback()
-				return nil, err
+		// update image table
+		if frontImageIncluded || backImageIncluded {
+			if !frontImageIncluded {
+				frontimageData, err = qb.GetFrontImage(updatedMovie.ID)
+				if err != nil {
+					return err
+				}
 			}
-		} else {
-			// HACK - if front image is null and back image is not null, then set the front image
-			// to the default image since we can't have a null front image and a non-null back image
-			if frontimageData == nil && backimageData != nil {
-				_, frontimageData, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+			if !backImageIncluded {
+				backimageData, err = qb.GetBackImage(updatedMovie.ID)
+				if err != nil {
+					return err
+				}
 			}
 
-			if err := qb.UpdateMovieImages(movie.ID, frontimageData, backimageData, tx); err != nil {
-				_ = tx.Rollback()
-				return nil, err
+			if len(frontimageData) == 0 && len(backimageData) == 0 {
+				// both images are being nulled. Destroy them.
+				if err := qb.DestroyImages(movie.ID); err != nil {
+					return err
+				}
+			} else {
+				// HACK - if front image is null and back image is not null, then set the front image
+				// to the default image since we can't have a null front image and a non-null back image
+				if frontimageData == nil && backimageData != nil {
+					_, frontimageData, _ = utils.ProcessBase64Image(models.DefaultMovieImage)
+				}
+
+				if err := qb.UpdateImages(movie.ID, frontimageData, backimageData); err != nil {
+					return err
+				}
 			}
 		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -211,28 +207,35 @@ func (r *mutationResolver) MovieUpdate(ctx context.Context, input models.MovieUp
 }
 
 func (r *mutationResolver) MovieDestroy(ctx context.Context, input models.MovieDestroyInput) (bool, error) {
-	qb := models.NewMovieQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	if err := qb.Destroy(input.ID, tx); err != nil {
-		_ = tx.Rollback()
+	id, err := strconv.Atoi(input.ID)
+	if err != nil {
 		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		return repo.Movie().Destroy(id)
+	}); err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func (r *mutationResolver) MoviesDestroy(ctx context.Context, ids []string) (bool, error) {
-	qb := models.NewMovieQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	for _, id := range ids {
-		if err := qb.Destroy(id, tx); err != nil {
-			_ = tx.Rollback()
-			return false, err
-		}
+func (r *mutationResolver) MoviesDestroy(ctx context.Context, movieIDs []string) (bool, error) {
+	ids, err := utils.StringSliceToIntSlice(movieIDs)
+	if err != nil {
+		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Movie()
+		for _, id := range ids {
+			if err := qb.Destroy(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return false, err
 	}
 	return true, nil

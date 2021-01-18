@@ -6,11 +6,14 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi"
+	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type studioRoutes struct{}
+type studioRoutes struct {
+	txnManager models.TransactionManager
+}
 
 func (rs studioRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
@@ -25,12 +28,14 @@ func (rs studioRoutes) Routes() chi.Router {
 
 func (rs studioRoutes) Image(w http.ResponseWriter, r *http.Request) {
 	studio := r.Context().Value(studioKey).(*models.Studio)
-	qb := models.NewStudioQueryBuilder()
-	var image []byte
 	defaultParam := r.URL.Query().Get("default")
 
+	var image []byte
 	if defaultParam != "true" {
-		image, _ = qb.GetStudioImage(studio.ID, nil)
+		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			image, _ = repo.Studio().GetImage(studio.ID)
+			return nil
+		})
 	}
 
 	if len(image) == 0 {
@@ -48,9 +53,12 @@ func StudioCtx(next http.Handler) http.Handler {
 			return
 		}
 
-		qb := models.NewStudioQueryBuilder()
-		studio, err := qb.Find(studioID, nil)
-		if err != nil {
+		var studio *models.Studio
+		if err := manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			var err error
+			studio, err = repo.Studio().Find(studioID)
+			return err
+		}); err != nil {
 			http.Error(w, http.StatusText(404), 404)
 			return
 		}

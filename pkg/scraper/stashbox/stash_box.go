@@ -13,6 +13,7 @@ import (
 
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/scraper"
 	"github.com/stashapp/stash/pkg/scraper/stashbox/graphql"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -23,11 +24,12 @@ const imageGetTimeout = time.Second * 30
 
 // Client represents the client interface to a stash-box server instance.
 type Client struct {
-	client *graphql.Client
+	client     *graphql.Client
+	txnManager models.TransactionManager
 }
 
 // NewClient returns a new instance of a stash-box client.
-func NewClient(box models.StashBox) *Client {
+func NewClient(box models.StashBox, txnManager models.TransactionManager) *Client {
 	authHeader := func(req *http.Request) {
 		req.Header.Set("ApiKey", box.APIKey)
 	}
@@ -37,7 +39,8 @@ func NewClient(box models.StashBox) *Client {
 	}
 
 	return &Client{
-		client: client,
+		client:     client,
+		txnManager: txnManager,
 	}
 }
 
@@ -52,7 +55,7 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 
 	var ret []*models.ScrapedScene
 	for _, s := range sceneFragments {
-		ss, err := sceneFragmentToScrapedScene(s)
+		ss, err := sceneFragmentToScrapedScene(c.txnManager, s)
 		if err != nil {
 			return nil, err
 		}
@@ -65,28 +68,38 @@ func (c Client) QueryStashBoxScene(queryStr string) ([]*models.ScrapedScene, err
 // FindStashBoxScenesByFingerprints queries stash-box for scenes using every
 // scene's MD5 checksum and/or oshash.
 func (c Client) FindStashBoxScenesByFingerprints(sceneIDs []string) ([]*models.ScrapedScene, error) {
-	qb := models.NewSceneQueryBuilder()
+	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	if err != nil {
+		return nil, err
+	}
 
 	var fingerprints []string
 
-	for _, sceneID := range sceneIDs {
-		idInt, _ := strconv.Atoi(sceneID)
-		scene, err := qb.Find(idInt)
-		if err != nil {
-			return nil, err
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		qb := r.Scene()
+
+		for _, sceneID := range ids {
+			scene, err := qb.Find(sceneID)
+			if err != nil {
+				return err
+			}
+
+			if scene == nil {
+				return fmt.Errorf("scene with id %d not found", sceneID)
+			}
+
+			if scene.Checksum.Valid {
+				fingerprints = append(fingerprints, scene.Checksum.String)
+			}
+
+			if scene.OSHash.Valid {
+				fingerprints = append(fingerprints, scene.OSHash.String)
+			}
 		}
 
-		if scene == nil {
-			return nil, fmt.Errorf("scene with id %d not found", idInt)
-		}
-
-		if scene.Checksum.Valid {
-			fingerprints = append(fingerprints, scene.Checksum.String)
-		}
-
-		if scene.OSHash.Valid {
-			fingerprints = append(fingerprints, scene.OSHash.String)
-		}
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	return c.findStashBoxScenesByFingerprints(fingerprints)
@@ -108,7 +121,7 @@ func (c Client) findStashBoxScenesByFingerprints(fingerprints []string) ([]*mode
 		sceneFragments := scenes.FindScenesByFingerprints
 
 		for _, s := range sceneFragments {
-			ss, err := sceneFragmentToScrapedScene(s)
+			ss, err := sceneFragmentToScrapedScene(c.txnManager, s)
 			if err != nil {
 				return nil, err
 			}
@@ -120,59 +133,68 @@ func (c Client) findStashBoxScenesByFingerprints(fingerprints []string) ([]*mode
 }
 
 func (c Client) SubmitStashBoxFingerprints(sceneIDs []string, endpoint string) (bool, error) {
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	if err != nil {
+		return false, err
+	}
 
 	var fingerprints []graphql.FingerprintSubmission
 
-	for _, sceneID := range sceneIDs {
-		idInt, _ := strconv.Atoi(sceneID)
-		scene, err := qb.Find(idInt)
-		if err != nil {
-			return false, err
-		}
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		qb := r.Scene()
 
-		if scene == nil {
-			continue
-		}
-
-		stashIDs, err := jqb.GetSceneStashIDs(idInt)
-		if err != nil {
-			return false, err
-		}
-
-		sceneStashID := ""
-		for _, stashID := range stashIDs {
-			if stashID.Endpoint == endpoint {
-				sceneStashID = stashID.StashID
+		for _, sceneID := range ids {
+			scene, err := qb.Find(sceneID)
+			if err != nil {
+				return err
 			}
-		}
 
-		if sceneStashID != "" {
-			if scene.Checksum.Valid && scene.Duration.Valid {
-				fingerprint := graphql.FingerprintInput{
-					Hash:      scene.Checksum.String,
-					Algorithm: graphql.FingerprintAlgorithmMd5,
-					Duration:  int(scene.Duration.Float64),
+			if scene == nil {
+				continue
+			}
+
+			stashIDs, err := qb.GetStashIDs(sceneID)
+			if err != nil {
+				return err
+			}
+
+			sceneStashID := ""
+			for _, stashID := range stashIDs {
+				if stashID.Endpoint == endpoint {
+					sceneStashID = stashID.StashID
 				}
-				fingerprints = append(fingerprints, graphql.FingerprintSubmission{
-					SceneID:     sceneStashID,
-					Fingerprint: &fingerprint,
-				})
 			}
 
-			if scene.OSHash.Valid && scene.Duration.Valid {
-				fingerprint := graphql.FingerprintInput{
-					Hash:      scene.OSHash.String,
-					Algorithm: graphql.FingerprintAlgorithmOshash,
-					Duration:  int(scene.Duration.Float64),
+			if sceneStashID != "" {
+				if scene.Checksum.Valid && scene.Duration.Valid {
+					fingerprint := graphql.FingerprintInput{
+						Hash:      scene.Checksum.String,
+						Algorithm: graphql.FingerprintAlgorithmMd5,
+						Duration:  int(scene.Duration.Float64),
+					}
+					fingerprints = append(fingerprints, graphql.FingerprintSubmission{
+						SceneID:     sceneStashID,
+						Fingerprint: &fingerprint,
+					})
 				}
-				fingerprints = append(fingerprints, graphql.FingerprintSubmission{
-					SceneID:     sceneStashID,
-					Fingerprint: &fingerprint,
-				})
+
+				if scene.OSHash.Valid && scene.Duration.Valid {
+					fingerprint := graphql.FingerprintInput{
+						Hash:      scene.OSHash.String,
+						Algorithm: graphql.FingerprintAlgorithmOshash,
+						Duration:  int(scene.Duration.Float64),
+					}
+					fingerprints = append(fingerprints, graphql.FingerprintSubmission{
+						SceneID:     sceneStashID,
+						Fingerprint: &fingerprint,
+					})
+				}
 			}
 		}
+
+		return nil
+	}); err != nil {
+		return false, err
 	}
 
 	return c.submitStashBoxFingerprints(fingerprints)
@@ -355,7 +377,7 @@ func getFingerprints(scene *graphql.SceneFragment) []*models.StashBoxFingerprint
 	return fingerprints
 }
 
-func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene, error) {
+func sceneFragmentToScrapedScene(txnManager models.TransactionManager, s *graphql.SceneFragment) (*models.ScrapedScene, error) {
 	stashID := s.ID
 	ss := &models.ScrapedScene{
 		Title:        s.Title,
@@ -375,42 +397,51 @@ func sceneFragmentToScrapedScene(s *graphql.SceneFragment) (*models.ScrapedScene
 		ss.Image = getFirstImage(s.Images)
 	}
 
-	if s.Studio != nil {
-		studioID := s.Studio.ID
-		ss.Studio = &models.ScrapedSceneStudio{
-			Name:         s.Studio.Name,
-			URL:          findURL(s.Studio.Urls, "HOME"),
-			RemoteSiteID: &studioID,
+	if err := txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		pqb := r.Performer()
+		tqb := r.Tag()
+
+		if s.Studio != nil {
+			studioID := s.Studio.ID
+			ss.Studio = &models.ScrapedSceneStudio{
+				Name:         s.Studio.Name,
+				URL:          findURL(s.Studio.Urls, "HOME"),
+				RemoteSiteID: &studioID,
+			}
+
+			err := scraper.MatchScrapedSceneStudio(r.Studio(), ss.Studio)
+			if err != nil {
+				return err
+			}
 		}
 
-		err := models.MatchScrapedSceneStudio(ss.Studio)
-		if err != nil {
-			return nil, err
-		}
-	}
+		for _, p := range s.Performers {
+			sp := performerFragmentToScrapedScenePerformer(p.Performer)
 
-	for _, p := range s.Performers {
-		sp := performerFragmentToScrapedScenePerformer(p.Performer)
+			err := scraper.MatchScrapedScenePerformer(pqb, sp)
+			if err != nil {
+				return err
+			}
 
-		err := models.MatchScrapedScenePerformer(sp)
-		if err != nil {
-			return nil, err
+			ss.Performers = append(ss.Performers, sp)
 		}
 
-		ss.Performers = append(ss.Performers, sp)
-	}
+		for _, t := range s.Tags {
+			st := &models.ScrapedSceneTag{
+				Name: t.Name,
+			}
 
-	for _, t := range s.Tags {
-		st := &models.ScrapedSceneTag{
-			Name: t.Name,
+			err := scraper.MatchScrapedSceneTag(tqb, st)
+			if err != nil {
+				return err
+			}
+
+			ss.Tags = append(ss.Tags, st)
 		}
 
-		err := models.MatchScrapedSceneTag(st)
-		if err != nil {
-			return nil, err
-		}
-
-		ss.Tags = append(ss.Tags, st)
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	return ss, nil

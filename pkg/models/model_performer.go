@@ -65,3 +65,13 @@ func NewPerformer(name string) *Performer {
 		UpdatedAt: SQLiteTimestamp{Timestamp: currentTime},
 	}
 }
+
+type Performers []*Performer
+
+func (p *Performers) Append(o interface{}) {
+	*p = append(*p, o.(*Performer))
+}
+
+func (p *Performers) New() interface{} {
+	return &Performer{}
+}

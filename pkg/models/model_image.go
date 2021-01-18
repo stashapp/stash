@@ -46,3 +46,13 @@ type ImageFileType struct {
 	Width  *int `graphql:"width" json:"width"`
 	Height *int `graphql:"height" json:"height"`
 }
+
+type Images []*Image
+
+func (i *Images) Append(o interface{}) {
+	*i = append(*i, o.(*Image))
+}
+
+func (i *Images) New() interface{} {
+	return &Image{}
+}
