@@ -226,8 +226,11 @@ type Mutation {
 
   stopJob: Boolean!
 
-  """ Submit fingerprints to stash-box instance """
+  """Submit fingerprints to stash-box instance"""
   submitStashBoxFingerprints(input: StashBoxFingerprintSubmissionInput!): Boolean!
+
+  """Backup the database. Optionally returns a link to download the database file"""
+  backupDatabase(input: BackupDatabaseInput!): String
 }
 
 type Subscription {
