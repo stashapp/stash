@@ -99,7 +99,7 @@ func Reset(databasePath string) error {
 	return nil
 }
 
-// Backup the database. If db is nil, then uses the existing database 
+// Backup the database. If db is nil, then uses the existing database
 // connection.
 func Backup(db *sqlx.DB, backupPath string) error {
 	if db == nil {

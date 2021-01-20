@@ -125,7 +125,9 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input models.Back
 
 		ret := baseURL + "/downloads/" + downloadHash + "/" + database.DatabaseBackupPath()
 		return &ret, nil
+	} else {
+		logger.Infof("Successfully backed up database to: %s", backupPath)
 	}
-	
+
 	return nil, nil
 }

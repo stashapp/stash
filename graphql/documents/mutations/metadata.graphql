@@ -37,3 +37,7 @@ mutation MigrateHashNaming {
 mutation StopJob {
   stopJob
 }
+
+mutation BackupDatabase($input: BackupDatabaseInput!) {
+  backupDatabase(input: $input)
+}
