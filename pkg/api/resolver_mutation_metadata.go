@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"io/ioutil"
-	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/stashapp/stash/pkg/database"
@@ -124,7 +124,7 @@ func (r *mutationResolver) BackupDatabase(ctx context.Context, input models.Back
 
 		baseURL, _ := ctx.Value(BaseURLCtxKey).(string)
 
-		fn := path.Base(database.DatabaseBackupPath())
+		fn := filepath.Base(database.DatabaseBackupPath())
 		ret := baseURL + "/downloads/" + downloadHash + "/" + fn
 		return &ret, nil
 	} else {
