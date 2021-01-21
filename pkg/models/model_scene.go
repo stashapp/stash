@@ -102,6 +102,6 @@ func (s *Scenes) Append(o interface{}) {
 	*s = append(*s, o.(*Scene))
 }
 
-func (m *Scenes) New() interface{} {
+func (s *Scenes) New() interface{} {
 	return &Scene{}
 }

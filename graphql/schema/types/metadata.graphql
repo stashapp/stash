@@ -92,3 +92,7 @@ input ImportObjectsInput {
   duplicateBehaviour: ImportDuplicateEnum!
   missingRefBehaviour: ImportMissingRefEnum!
 }
+
+input BackupDatabaseInput {
+  download: Boolean
+}

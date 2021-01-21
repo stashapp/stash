@@ -858,6 +858,12 @@ export const mutateImportObjects = (input: GQL.ImportObjectsInput) =>
     variables: { input },
   });
 
+export const mutateBackupDatabase = (input: GQL.BackupDatabaseInput) =>
+  client.mutate<GQL.BackupDatabaseMutation>({
+    mutation: GQL.BackupDatabaseDocument,
+    variables: { input },
+  });
+
 export const querySceneByPathRegex = (filter: GQL.FindFilterType) =>
   client.query<GQL.FindScenesByPathRegexQuery>({
     query: GQL.FindScenesByPathRegexDocument,

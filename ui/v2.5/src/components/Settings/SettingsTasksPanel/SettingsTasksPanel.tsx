@@ -13,10 +13,12 @@ import {
   mutateStopJob,
   usePlugins,
   mutateRunPluginTask,
+  mutateBackupDatabase,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
-import { Modal } from "src/components/Shared";
+import { LoadingIndicator, Modal } from "src/components/Shared";
+import { downloadFile } from "src/utils";
 import { GenerateButton } from "./GenerateButton";
 import { ImportDialog } from "./ImportDialog";
 import { ScanDialog } from "./ScanDialog";
@@ -30,6 +32,7 @@ export const SettingsTasksPanel: React.FC = () => {
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState<boolean>(false);
   const [isScanDialogOpen, setIsScanDialogOpen] = useState<boolean>(false);
+  const [isBackupRunning, setIsBackupRunning] = useState<boolean>(false);
   const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
   const [stripFileExtension, setStripFileExtension] = useState<boolean>(false);
   const [scanGeneratePreviews, setScanGeneratePreviews] = useState<boolean>(
@@ -276,6 +279,25 @@ export const SettingsTasksPanel: React.FC = () => {
     });
   }
 
+  async function onBackup(download?: boolean) {
+    try {
+      setIsBackupRunning(true);
+      const ret = await mutateBackupDatabase({
+        download,
+      });
+
+      // download the result
+      if (download && ret.data && ret.data.backupDatabase) {
+        const link = ret.data.backupDatabase;
+        downloadFile(link);
+      }
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsBackupRunning(false);
+    }
+  }
+
   function renderPlugins() {
     if (!plugins.data || !plugins.data.plugins) {
       return;
@@ -296,6 +318,10 @@ export const SettingsTasksPanel: React.FC = () => {
         })}
       </>
     );
+  }
+
+  if (isBackupRunning) {
+    return <LoadingIndicator message="Backup up database" />;
   }
 
   return (
@@ -475,6 +501,39 @@ export const SettingsTasksPanel: React.FC = () => {
         </Button>
         <Form.Text className="text-muted">
           Incremental import from a supplied export zip file.
+        </Form.Text>
+      </Form.Group>
+
+      <hr />
+
+      <h5>Backup</h5>
+      <Form.Group>
+        <Button
+          id="backup"
+          variant="secondary"
+          type="submit"
+          onClick={() => onBackup()}
+        >
+          Backup
+        </Button>
+        <Form.Text className="text-muted">
+          Performs a backup of the database to the same directory as the
+          database, with the filename format{" "}
+          <code>[origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]</code>
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group>
+        <Button
+          id="backupDownload"
+          variant="secondary"
+          type="submit"
+          onClick={() => onBackup(true)}
+        >
+          Download Backup
+        </Button>
+        <Form.Text className="text-muted">
+          Performs a backup of the database and downloads the resulting file.
         </Form.Text>
       </Form.Group>
 
