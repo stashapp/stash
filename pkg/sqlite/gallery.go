@@ -213,9 +213,9 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 	if isMissingFilter := galleryFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
 		case "scenes":
-			query.addWhere("galleries.scene_id IS NULL")
-		case "studio":
 			query.addWhere("scenes_join.gallery_id IS NULL")
+		case "studio":
+			query.addWhere("galleries.studio_id IS NULL")
 		case "performers":
 			query.addWhere("performers_join.gallery_id IS NULL")
 		case "date":
