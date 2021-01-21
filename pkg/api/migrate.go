@@ -60,7 +60,7 @@ func doMigrateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// perform database backup
-	if err = database.Backup(backupPath); err != nil {
+	if err = database.Backup(database.DB, backupPath); err != nil {
 		http.Error(w, fmt.Sprintf("error backing up database: %s", err), 500)
 		return
 	}
