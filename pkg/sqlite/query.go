@@ -66,6 +66,12 @@ func (qb *queryBuilder) handleStringCriterionInput(c *models.StringCriterionInpu
 			case models.CriterionModifierNotEquals:
 				qb.addWhere(column + " NOT LIKE ?")
 				qb.addArg(c.Value)
+			case models.CriterionModifierMatchesRegex:
+				qb.addWhere(column + " regexp ?")
+				qb.addArg(c.Value)
+			case models.CriterionModifierNotMatchesRegex:
+				qb.addWhere(column + " NOT regexp ?")
+				qb.addArg(c.Value)
 			default:
 				clause, count := getSimpleCriterionClause(modifier, "?")
 				qb.addWhere(column + " " + clause)

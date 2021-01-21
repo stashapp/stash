@@ -192,6 +192,10 @@ enum CriterionModifier {
   INCLUDES_ALL,
   INCLUDES,
   EXCLUDES,
+  """MATCHES REGEX"""
+  MATCHES_REGEX,
+  """NOT MATCHES REGEX"""
+  NOT_MATCHES_REGEX,
 }
 
 input StringCriterionInput {

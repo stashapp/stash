@@ -5,6 +5,7 @@ package sqlite_test
 import (
 	"database/sql"
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -176,6 +177,13 @@ func TestSceneQueryPath(t *testing.T) {
 
 	pathCriterion.Modifier = models.CriterionModifierNotEquals
 	verifyScenesPath(t, pathCriterion)
+
+	pathCriterion.Modifier = models.CriterionModifierMatchesRegex
+	pathCriterion.Value = "scene_.*1_Path"
+	verifyScenesPath(t, pathCriterion)
+
+	pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyScenesPath(t, pathCriterion)
 }
 
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
@@ -220,6 +228,12 @@ func verifyString(t *testing.T, value string, criterion models.StringCriterionIn
 	}
 	if criterion.Modifier == models.CriterionModifierNotEquals {
 		assert.NotEqual(criterion.Value, value)
+	}
+	if criterion.Modifier == models.CriterionModifierMatchesRegex {
+		assert.Regexp(regexp.MustCompile(criterion.Value), value)
+	}
+	if criterion.Modifier == models.CriterionModifierNotMatchesRegex {
+		assert.NotRegexp(regexp.MustCompile(criterion.Value), value)
 	}
 }
 
