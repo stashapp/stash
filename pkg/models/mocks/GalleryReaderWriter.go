@@ -35,20 +35,6 @@ func (_m *GalleryReaderWriter) All() ([]*models.Gallery, error) {
 	return r0, r1
 }
 
-// ClearGalleryId provides a mock function with given fields: sceneID
-func (_m *GalleryReaderWriter) ClearGalleryId(sceneID int) error {
-	ret := _m.Called(sceneID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(int) error); ok {
-		r0 = rf(sceneID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // Count provides a mock function with given fields:
 func (_m *GalleryReaderWriter) Count() (int, error) {
 	ret := _m.Called()

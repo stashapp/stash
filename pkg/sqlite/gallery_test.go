@@ -270,4 +270,3 @@ func TestGalleryQueryIsMissingScene(t *testing.T) {
 // TODO Query
 // TODO Update
 // TODO Destroy
-// TODO ClearGalleryId
