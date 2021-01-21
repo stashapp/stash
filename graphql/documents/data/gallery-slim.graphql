@@ -21,7 +21,7 @@ fragment GallerySlimData on Gallery {
   performers {
     ...PerformerData
   }
-  scene {
+  scenes {
     id
     title
     path

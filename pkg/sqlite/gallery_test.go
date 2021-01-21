@@ -265,7 +265,6 @@ func TestGalleryQueryIsMissingScene(t *testing.T) {
 	})
 }
 
-// TODO ValidGalleriesForScenePath
 // TODO Count
 // TODO All
 // TODO Query

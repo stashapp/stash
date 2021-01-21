@@ -7,6 +7,7 @@ type SceneReader interface {
 	FindByOSHash(oshash string) (*Scene, error)
 	FindByPath(path string) (*Scene, error)
 	FindByPerformerID(performerID int) ([]*Scene, error)
+	FindByGalleryID(performerID int) ([]*Scene, error)
 	CountByPerformerID(performerID int) (int, error)
 	// FindByStudioID(studioID int) ([]*Scene, error)
 	FindByMovieID(movieID int) ([]*Scene, error)
@@ -25,9 +26,10 @@ type SceneReader interface {
 	QueryByPathRegex(findFilter *FindFilterType) ([]*Scene, int, error)
 	GetCover(sceneID int) ([]byte, error)
 	GetMovies(sceneID int) ([]MoviesScenes, error)
-	GetTagIDs(imageID int) ([]int, error)
-	GetPerformerIDs(imageID int) ([]int, error)
-	GetStashIDs(performerID int) ([]*StashID, error)
+	GetTagIDs(sceneID int) ([]int, error)
+	GetGalleryIDs(sceneID int) ([]int, error)
+	GetPerformerIDs(sceneID int) ([]int, error)
+	GetStashIDs(sceneID int) ([]*StashID, error)
 }
 
 type SceneWriter interface {
@@ -43,6 +45,7 @@ type SceneWriter interface {
 	DestroyCover(sceneID int) error
 	UpdatePerformers(sceneID int, performerIDs []int) error
 	UpdateTags(sceneID int, tagIDs []int) error
+	UpdateGalleries(sceneID int, galleryIDs []int) error
 	UpdateMovies(sceneID int, movies []MoviesScenes) error
 	UpdateStashIDs(sceneID int, stashIDs []StashID) error
 }

@@ -101,29 +101,6 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 		}
 	}
 
-	// Clear the existing gallery value
-	if translator.hasField("gallery_id") {
-		gqb := repo.Gallery()
-		err = gqb.ClearGalleryId(sceneID)
-		if err != nil {
-			return nil, err
-		}
-
-		if input.GalleryID != nil {
-			// Save the gallery
-			galleryID, _ := strconv.Atoi(*input.GalleryID)
-			updatedGallery := models.GalleryPartial{
-				ID:        galleryID,
-				SceneID:   &sql.NullInt64{Int64: int64(sceneID), Valid: true},
-				UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
-			}
-			_, err := gqb.UpdatePartial(updatedGallery)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
 	// Save the performers
 	if translator.hasField("performer_ids") {
 		if err := r.updateScenePerformers(qb, sceneID, input.PerformerIds); err != nil {
@@ -141,6 +118,13 @@ func (r *mutationResolver) sceneUpdate(input models.SceneUpdateInput, translator
 	// Save the tags
 	if translator.hasField("tag_ids") {
 		if err := r.updateSceneTags(qb, sceneID, input.TagIds); err != nil {
+			return nil, err
+		}
+	}
+
+	// Save the galleries
+	if translator.hasField("gallery_ids") {
+		if err := r.updateSceneGalleries(qb, sceneID, input.GalleryIds); err != nil {
 			return nil, err
 		}
 	}
@@ -206,6 +190,14 @@ func (r *mutationResolver) updateSceneTags(qb models.SceneReaderWriter, sceneID 
 	return qb.UpdateTags(sceneID, ids)
 }
 
+func (r *mutationResolver) updateSceneGalleries(qb models.SceneReaderWriter, sceneID int, galleryIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(galleryIDs)
+	if err != nil {
+		return err
+	}
+	return qb.UpdateGalleries(sceneID, ids)
+}
+
 func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.BulkSceneUpdateInput) ([]*models.Scene, error) {
 	sceneIDs, err := utils.StringSliceToIntSlice(input.Ids)
 	if err != nil {
@@ -236,7 +228,6 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 	// Start the transaction and save the scene marker
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
 		qb := repo.Scene()
-		gqb := repo.Gallery()
 
 		for _, sceneID := range sceneIDs {
 			updatedScene.ID = sceneID
@@ -247,20 +238,6 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 			}
 
 			ret = append(ret, scene)
-
-			if translator.hasField("gallery_id") {
-				// Save the gallery
-				galleryID, _ := strconv.Atoi(*input.GalleryID)
-				updatedGallery := models.GalleryPartial{
-					ID:        galleryID,
-					SceneID:   &sql.NullInt64{Int64: int64(sceneID), Valid: true},
-					UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
-				}
-
-				if _, err := gqb.UpdatePartial(updatedGallery); err != nil {
-					return err
-				}
-			}
 
 			// Save the performers
 			if translator.hasField("performer_ids") {
@@ -282,6 +259,18 @@ func (r *mutationResolver) BulkSceneUpdate(ctx context.Context, input models.Bul
 				}
 
 				if err := qb.UpdateTags(sceneID, tagIDs); err != nil {
+					return err
+				}
+			}
+
+			// Save the galleries
+			if translator.hasField("gallery_ids") {
+				galleryIDs, err := adjustSceneGalleryIDs(qb, sceneID, *input.GalleryIds)
+				if err != nil {
+					return err
+				}
+
+				if err := qb.UpdateGalleries(sceneID, galleryIDs); err != nil {
 					return err
 				}
 			}
@@ -343,6 +332,15 @@ func adjustScenePerformerIDs(qb models.SceneReader, sceneID int, ids models.Bulk
 
 func adjustSceneTagIDs(qb models.SceneReader, sceneID int, ids models.BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetTagIDs(sceneID)
+	if err != nil {
+		return nil, err
+	}
+
+	return adjustIDs(ret, ids), nil
+}
+
+func adjustSceneGalleryIDs(qb models.SceneReader, sceneID int, ids models.BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetGalleryIDs(sceneID)
 	if err != nil {
 		return nil, err
 	}

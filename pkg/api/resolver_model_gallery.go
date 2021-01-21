@@ -90,15 +90,10 @@ func (r *galleryResolver) Rating(ctx context.Context, obj *models.Gallery) (*int
 	return nil, nil
 }
 
-func (r *galleryResolver) Scene(ctx context.Context, obj *models.Gallery) (ret *models.Scene, err error) {
-	if !obj.SceneID.Valid {
-		return nil, nil
-	}
-
+func (r *galleryResolver) Scenes(ctx context.Context, obj *models.Gallery) (ret []*models.Scene, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
 		var err error
-		ret, err = repo.Scene().Find(int(obj.SceneID.Int64))
-
+		ret, err = repo.Scene().FindByGalleryID(obj.ID)
 		return err
 	}); err != nil {
 		return nil, err
