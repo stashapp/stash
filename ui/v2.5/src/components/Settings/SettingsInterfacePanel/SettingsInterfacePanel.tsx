@@ -60,10 +60,18 @@ export const SettingsInterfacePanel: React.FC = () => {
   }, [config]);
 
   async function onSave() {
+    const prevCSS = config?.configuration.interface.css;
     try {
       const result = await updateInterfaceConfig();
       // eslint-disable-next-line no-console
       console.log(result);
+
+      // Force refetch of custom css if it was changed
+      if (prevCSS !== result.data?.configureInterface.css) {
+        await fetch("/css", { cache: "reload" });
+        window.location.reload();
+      }
+
       Toast.success({ content: "Updated config" });
     } catch (e) {
       Toast.error(e);
