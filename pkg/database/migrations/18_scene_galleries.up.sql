@@ -123,7 +123,8 @@ INSERT INTO `scenes_galleries`
   SELECT
     `scene_id`,
     `id`
-  FROM `_galleries_old`;
+  FROM `_galleries_old`
+  WHERE scene_id IS NOT NULL;
 
 -- these tables are a direct copy
 INSERT INTO `galleries_images` SELECT * from `_galleries_images_old`;

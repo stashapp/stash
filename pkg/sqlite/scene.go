@@ -380,7 +380,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 
 	if isMissingFilter := sceneFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
-		case "gallery":
+		case "galleries":
 			query.addWhere("galleries_join.scene_id IS NULL")
 		case "studio":
 			query.addWhere("scenes.studio_id IS NULL")

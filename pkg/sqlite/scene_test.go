@@ -494,7 +494,7 @@ func TestSceneQueryHasMarkers(t *testing.T) {
 func TestSceneQueryIsMissingGallery(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
-		isMissing := "gallery"
+		isMissing := "galleries"
 		sceneFilter := models.SceneFilterType{
 			IsMissing: &isMissing,
 		}
