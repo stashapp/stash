@@ -139,7 +139,7 @@ func TestSceneQueryQ(t *testing.T) {
 }
 
 func queryScene(t *testing.T, sqb models.SceneReader, sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) []*models.Scene {
-	scenes, _, err := sqb.Query(sceneFilter, findFilter)
+	scenes, _, err := sqb.Query(sceneFilter, models.NewQueryFilter(findFilter))
 	if err != nil {
 		t.Errorf("Error querying scene: %s", err.Error())
 	}

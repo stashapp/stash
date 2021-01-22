@@ -61,7 +61,7 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input models.SceneH
 
 func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIds []int, filter *models.FindFilterType) (ret *models.FindScenesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		scenes, total, err := repo.Scene().Query(sceneFilter, filter)
+		scenes, total, err := repo.Scene().Query(sceneFilter, models.NewQueryFilter(filter))
 		if err != nil {
 			return err
 		}

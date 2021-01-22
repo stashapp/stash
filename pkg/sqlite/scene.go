@@ -277,12 +277,9 @@ func (qb *sceneQueryBuilder) All() ([]*models.Scene, error) {
 	return qb.queryScenes(selectAll(sceneTable)+qb.getSceneSort(nil), nil)
 }
 
-func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
+func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, queryFilter models.QueryFilter) ([]*models.Scene, int, error) {
 	if sceneFilter == nil {
 		sceneFilter = &models.SceneFilterType{}
-	}
-	if findFilter == nil {
-		findFilter = &models.FindFilterType{}
 	}
 
 	query := qb.newQuery()
@@ -298,7 +295,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 		left join scene_stash_ids on scene_stash_ids.scene_id = scenes.id
 	`
 
-	if q := findFilter.Q; q != nil && *q != "" {
+	if q := queryFilter.Q; q != nil && *q != "" {
 		searchColumns := []string{"scenes.title", "scenes.details", "scenes.path", "scenes.oshash", "scenes.checksum", "scene_markers.title"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
@@ -435,7 +432,11 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 		query.addArg(stashIDFilter)
 	}
 
-	query.sortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
+	query.sortAndPagination = qb.getSceneSort(&queryFilter.FindFilterType)
+	if !queryFilter.All {
+		query.sortAndPagination += getPagination(&queryFilter.FindFilterType)
+	}
+
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err

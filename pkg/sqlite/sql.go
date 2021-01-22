@@ -53,6 +53,10 @@ func getPagination(findFilter *models.FindFilterType) string {
 	}
 
 	page = (page - 1) * perPage
+	return getPaginationSQL(page, perPage)
+}
+
+func getPaginationSQL(page int, perPage int) string {
 	return " LIMIT " + strconv.Itoa(perPage) + " OFFSET " + strconv.Itoa(page) + " "
 }
 
