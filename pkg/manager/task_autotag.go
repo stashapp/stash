@@ -33,13 +33,33 @@ func getQueryRegex(name string) string {
 	return ret
 }
 
+func getAutoTagSceneFilter(regex string) *models.SceneFilterType {
+	organized := false
+	return &models.SceneFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    "(?i)" + regex,
+			Modifier: models.CriterionModifierMatchesRegex,
+		},
+		Organized: &organized,
+	}
+}
+
+func getAutoTagQueryFilter() models.QueryFilter {
+	return models.QueryFilter{
+		All: true,
+	}
+}
+
 func (t *AutoTagPerformerTask) autoTagPerformer() {
 	regex := getQueryRegex(t.performer.Name.String)
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
-		const ignoreOrganized = true
-		scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
+
+		sceneFilter := getAutoTagSceneFilter(regex)
+		findFilter := getAutoTagQueryFilter()
+
+		scenes, _, err := qb.Query(sceneFilter, findFilter)
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
@@ -79,8 +99,10 @@ func (t *AutoTagStudioTask) autoTagStudio() {
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
-		const ignoreOrganized = true
-		scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
+		sceneFilter := getAutoTagSceneFilter(regex)
+		findFilter := getAutoTagQueryFilter()
+
+		scenes, _, err := qb.Query(sceneFilter, findFilter)
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
@@ -129,8 +151,10 @@ func (t *AutoTagTagTask) autoTagTag() {
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
-		const ignoreOrganized = true
-		scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
+		sceneFilter := getAutoTagSceneFilter(regex)
+		findFilter := getAutoTagQueryFilter()
+
+		scenes, _, err := qb.Query(sceneFilter, findFilter)
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
