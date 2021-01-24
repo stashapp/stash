@@ -61,13 +61,17 @@ export const SettingsInterfacePanel: React.FC = () => {
 
   async function onSave() {
     const prevCSS = config?.configuration.interface.css;
+    const prevCSSenabled = config?.configuration.interface.cssEnabled;
     try {
       const result = await updateInterfaceConfig();
       // eslint-disable-next-line no-console
       console.log(result);
 
       // Force refetch of custom css if it was changed
-      if (prevCSS !== result.data?.configureInterface.css) {
+      if (
+        prevCSS !== result.data?.configureInterface.css ||
+        prevCSSenabled !== result.data?.configureInterface.cssEnabled
+      ) {
         await fetch("/css", { cache: "reload" });
         window.location.reload();
       }
