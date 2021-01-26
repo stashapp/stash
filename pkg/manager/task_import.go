@@ -135,8 +135,6 @@ func (t *ImportTask) unzipFile() error {
 		return err
 	}
 
-	fmt.Println(t.BaseDir)
-	fmt.Println(tmpZip)
 	if _, err := io.Copy(out, t.ZipFile); err != nil {
 		out.Close()
 		return err
