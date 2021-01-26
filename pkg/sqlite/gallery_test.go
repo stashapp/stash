@@ -166,6 +166,13 @@ func TestGalleryQueryPath(t *testing.T) {
 		pathCriterion.Modifier = models.CriterionModifierNotEquals
 		verifyGalleriesPath(t, r.Gallery(), pathCriterion)
 
+		pathCriterion.Modifier = models.CriterionModifierMatchesRegex
+		pathCriterion.Value = "gallery.*1_Path"
+		verifyGalleriesPath(t, r.Gallery(), pathCriterion)
+
+		pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+		verifyGalleriesPath(t, r.Gallery(), pathCriterion)
+
 		return nil
 	})
 }
