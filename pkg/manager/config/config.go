@@ -584,7 +584,7 @@ func GetLogAccess() bool {
 
 // Max allowed graphql upload size in megabytes
 func GetMaxUploadSize() int64 {
-	ret := int64(200)
+	ret := int64(1024)
 	if viper.IsSet(MaxUploadSize) {
 		ret = viper.GetInt64(MaxUploadSize)
 	}
