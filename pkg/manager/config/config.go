@@ -589,7 +589,7 @@ func GetMaxUploadSize() int64 {
 	if viper.IsSet(MaxUploadSize) {
 		ret = viper.GetInt64(MaxUploadSize)
 	}
-	return ret * 1000000
+	return ret << 20
 }
 
 // Max allowed memory in megabytes used to process graphql uploads
@@ -599,7 +599,7 @@ func GetMaxUploadMemory() int64 {
 		ret = viper.GetInt64(MaxUploadMemory)
 
 	}
-	return ret * 1000000
+	return ret << 20
 }
 
 func IsValid() bool {
