@@ -51,9 +51,10 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [movieIds, setMovieIds] = useState<string[] | undefined>(undefined);
-  const [movieSceneIndexes, setMovieSceneIndexes] = useState<
-    MovieSceneIndexMap
-  >(new Map());
+  const [
+    movieSceneIndexes,
+    setMovieSceneIndexes,
+  ] = useState<MovieSceneIndexMap>(new Map());
   const [tagIds, setTagIds] = useState<string[]>();
   const [coverImage, setCoverImage] = useState<string>();
   const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>([]);
