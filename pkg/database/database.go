@@ -14,6 +14,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/source"
 	"github.com/jmoiron/sqlx"
 	sqlite3 "github.com/mattn/go-sqlite3"
+
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -93,6 +94,17 @@ func Reset(databasePath string) error {
 	err = os.Remove(databasePath)
 	if err != nil {
 		return errors.New("Error removing database: " + err.Error())
+	}
+
+	// remove the -shm, -wal files ( if they exist )
+	walFiles := []string{databasePath + "-shm", databasePath + "-wal"}
+	for _, wf := range walFiles {
+		if exists, _ := utils.FileExists(wf); exists {
+			err = os.Remove(wf)
+			if err != nil {
+				return errors.New("Error removing database: " + err.Error())
+			}
+		}
 	}
 
 	Initialize(databasePath)

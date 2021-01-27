@@ -16,9 +16,10 @@ export const SceneMarkersPanel: React.FC<ISceneMarkersPanelProps> = (
   props: ISceneMarkersPanelProps
 ) => {
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
-  const [editingMarker, setEditingMarker] = useState<
-    GQL.SceneMarkerDataFragment
-  >();
+  const [
+    editingMarker,
+    setEditingMarker,
+  ] = useState<GQL.SceneMarkerDataFragment>();
 
   // set up hotkeys
   useEffect(() => {
