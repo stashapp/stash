@@ -47,7 +47,6 @@ export const SettingsTasksPanel: React.FC = () => {
     setScanGenerateImagePreviews,
   ] = useState<boolean>(false);
 
-
   const [status, setStatus] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
 
