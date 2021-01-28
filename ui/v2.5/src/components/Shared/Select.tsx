@@ -81,12 +81,15 @@ interface ISceneSelect {
   onSelect: (items: Scene[]) => void;
 }
 
-const getSelectedValues = (selectedItems: ValueType<Option, boolean>) =>
+const getSelectedItems = (selectedItems: ValueType<Option, boolean>) =>
   selectedItems
-    ? (Array.isArray(selectedItems) ? selectedItems : [selectedItems]).map(
-        (item) => item.value
-      )
+    ? Array.isArray(selectedItems)
+      ? selectedItems
+      : [selectedItems]
     : [];
+
+const getSelectedValues = (selectedItems: ValueType<Option, boolean>) =>
+  getSelectedItems(selectedItems).map((item) => item.value);
 
 const SelectComponent = <T extends boolean>({
   type,
@@ -251,12 +254,14 @@ export const GallerySelect: React.FC<IGallerySelect> = (props) => {
     setQuery(input);
   }, 500);
 
-  const onChange = (selectedItems: ValueType<Option, true>) => {
-    const selected = getSelectedValues(selectedItems);
-    props.onSelect(selected.map(s => ({
-      id: s.value,
-      title: s.label,
-    })));
+  const onChange = (selectedItems: ValueType<Option, boolean>) => {
+    const selected = getSelectedItems(selectedItems);
+    props.onSelect(
+      selected.map((s) => ({
+        id: s.value,
+        title: s.label,
+      }))
+    );
   };
 
   const options = props.galleries.map((g) => ({
@@ -274,6 +279,7 @@ export const GallerySelect: React.FC<IGallerySelect> = (props) => {
       isMulti
       placeholder="Search for gallery..."
       noOptionsMessage={query === "" ? null : "No galleries found."}
+      showDropdown={false}
     />
   );
 };
@@ -299,9 +305,8 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
     setQuery(input);
   }, 500);
 
-  const onChange = (selectedItems: ValueType<Option>) => {
-    const result = selectedItems ?? [];
-    const selected = Array.isArray(result) ? result : [result];
+  const onChange = (selectedItems: ValueType<Option, true>) => {
+    const selected = getSelectedItems(selectedItems);
     props.onSelect(
       (selected ?? []).map((s) => ({
         id: s.value,
@@ -325,6 +330,7 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
       isMulti
       placeholder="Search for scene..."
       noOptionsMessage={query === "" ? null : "No scenes found."}
+      showDropdown={false}
     />
   );
 };
