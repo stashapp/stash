@@ -41,10 +41,12 @@ export const SettingsTasksPanel: React.FC = () => {
   const [scanGenerateSprites, setScanGenerateSprites] = useState<boolean>(
     false
   );
-  const [scanGenerateImagePreviews, setScanGenerateImagePreviews] = useState<
-    boolean
-  >(false);
   const [cleanDryRun, setCleanDryRun] = useState<boolean>(false);
+  const [
+    scanGenerateImagePreviews,
+    setScanGenerateImagePreviews,
+  ] = useState<boolean>(false);
+
 
   const [status, setStatus] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
