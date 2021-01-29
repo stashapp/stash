@@ -110,7 +110,10 @@ const SelectComponent = <T extends boolean>({
   noOptionsMessage = type !== "tags" ? "None" : null,
 }: ISelectProps<T> & ITypeProps) => {
   const values = items.filter((item) => initialIds?.indexOf(item.value) !== -1);
-  const defaultValue = (isMulti ? values : values[0]) as ValueType<Option, T>;
+  const defaultValue = (isMulti ? values : values[0] ?? null) as ValueType<
+    Option,
+    T
+  >;
 
   const options = groupHeader
     ? [
@@ -186,10 +189,9 @@ const FilterSelectComponent = <T extends boolean>(
   const selected = options.filter((option) =>
     selectedIds.includes(option.value)
   );
-  const selectedOptions = (isMulti ? selected : selected[0]) as ValueType<
-    Option,
-    T
-  >;
+  const selectedOptions = (isMulti
+    ? selected
+    : selected[0] ?? null) as ValueType<Option, T>;
 
   const onChange = (selectedItems: ValueType<Option, boolean>) => {
     const selectedValues = getSelectedValues(selectedItems);
@@ -301,8 +303,8 @@ export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = (
     setQuery(input);
   }, 500);
 
-  const onChange = (name: ValueType<Option, false>) => {
-    const performer = performers.find((p) => p.name === name);
+  const onChange = (option: ValueType<Option, false>) => {
+    const performer = performers.find((p) => p.name === option?.value);
     if (performer) props.onSelectPerformer(performer);
   };
 
@@ -461,11 +463,11 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
 
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
   props.type === "performers" ? (
-    <PerformerSelect {...(props as IFilterProps)} />
+    <PerformerSelect {...props} />
   ) : props.type === "studios" || props.type === "parent_studios" ? (
-    <StudioSelect {...(props as IFilterProps)} />
+    <StudioSelect {...props} />
   ) : props.type === "movies" ? (
-    <MovieSelect {...(props as IFilterProps)} />
+    <MovieSelect {...props} />
   ) : (
-    <TagSelect {...(props as IFilterProps)} />
+    <TagSelect {...props} />
   );
