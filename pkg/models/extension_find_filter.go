@@ -23,3 +23,35 @@ func (ff FindFilterType) GetDirection() string {
 	}
 	return direction
 }
+
+func (ff FindFilterType) GetPage() int {
+	const defaultPage = 1
+	if ff.Page == nil || *ff.Page < 1 {
+		return defaultPage
+	}
+
+	return *ff.Page
+}
+
+func (ff FindFilterType) GetPageSize() int {
+	const defaultPerPage = 25
+	const minPerPage = 1
+	const maxPerPage = 1000
+
+	if ff.PerPage == nil {
+		return defaultPerPage
+	}
+
+	if *ff.PerPage > 1000 {
+		return maxPerPage
+	} else if *ff.PerPage < 0 {
+		// PerPage == 0 -> no limit
+		return minPerPage
+	}
+
+	return *ff.PerPage
+}
+
+func (ff FindFilterType) IsGetAll() bool {
+	return ff.PerPage != nil && *ff.PerPage == 0
+}

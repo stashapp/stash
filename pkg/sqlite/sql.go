@@ -32,31 +32,15 @@ func getPagination(findFilter *models.FindFilterType) string {
 		panic("nil find filter for pagination")
 	}
 
-	var page int
-	if findFilter.Page == nil || *findFilter.Page < 1 {
-		page = 1
-	} else {
-		page = *findFilter.Page
+	if findFilter.IsGetAll() {
+		return " "
 	}
 
-	var perPage int
-	if findFilter.PerPage == nil {
-		perPage = 25
-	} else {
-		perPage = *findFilter.PerPage
-	}
-
-	if perPage > 1000 {
-		perPage = 1000
-	} else if perPage < 1 {
-		perPage = 1
-	}
-
-	page = (page - 1) * perPage
-	return getPaginationSQL(page, perPage)
+	return getPaginationSQL(findFilter.GetPage(), findFilter.GetPageSize())
 }
 
 func getPaginationSQL(page int, perPage int) string {
+	page = (page - 1) * perPage
 	return " LIMIT " + strconv.Itoa(perPage) + " OFFSET " + strconv.Itoa(page) + " "
 }
 

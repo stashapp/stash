@@ -50,9 +50,11 @@ func (t *AutoTagTask) getSceneFilter(regex string) *models.SceneFilterType {
 	}
 }
 
-func (t *AutoTagTask) getQueryFilter() models.QueryFilter {
-	return models.QueryFilter{
-		All: true,
+func (t *AutoTagTask) getQueryFilter() *models.FindFilterType {
+	// use PerPage of 0 to get all
+	perPage := 0
+	return &models.FindFilterType{
+		PerPage: &perPage,
 	}
 }
 

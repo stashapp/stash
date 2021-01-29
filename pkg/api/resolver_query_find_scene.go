@@ -61,7 +61,7 @@ func (r *queryResolver) FindSceneByHash(ctx context.Context, input models.SceneH
 
 func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.SceneFilterType, sceneIds []int, filter *models.FindFilterType) (ret *models.FindScenesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		scenes, total, err := repo.Scene().Query(sceneFilter, models.NewQueryFilter(filter))
+		scenes, total, err := repo.Scene().Query(sceneFilter, filter)
 		if err != nil {
 			return err
 		}
@@ -90,8 +90,13 @@ func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *model
 			}
 		}
 
-		queryFilter := models.NewQueryFilter(filter)
-		queryFilter.Q = nil
+		// make a copy of the filter if provided, nilling out Q
+		var queryFilter *models.FindFilterType
+		if filter != nil {
+			f := *filter
+			queryFilter = &f
+			queryFilter.Q = nil
+		}
 
 		scenes, total, err := repo.Scene().Query(sceneFilter, queryFilter)
 		if err != nil {
