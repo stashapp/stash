@@ -4,13 +4,13 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/stashapp/stash/pkg/image"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 type CleanTask struct {
@@ -198,28 +198,18 @@ func (t *CleanTask) fileExists(filename string) (bool, error) {
 
 func getStashFromPath(pathToCheck string) *models.StashConfig {
 	for _, s := range config.GetStashPaths() {
-		rel, error := filepath.Rel(s.Path, filepath.Dir(pathToCheck))
-
-		if error == nil {
-			if !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-				return s
-			}
+		if utils.IsPathInDir(s.Path, filepath.Dir(pathToCheck)) {
+			return s
 		}
-
 	}
 	return nil
 }
 
 func getStashFromDirPath(pathToCheck string) *models.StashConfig {
 	for _, s := range config.GetStashPaths() {
-		rel, error := filepath.Rel(s.Path, pathToCheck)
-
-		if error == nil {
-			if !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-				return s
-			}
+		if utils.IsPathInDir(s.Path, pathToCheck) {
+			return s
 		}
-
 	}
 	return nil
 }

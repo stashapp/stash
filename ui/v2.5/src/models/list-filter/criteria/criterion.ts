@@ -149,9 +149,15 @@ export abstract class Criterion {
       case CriterionModifier.Excludes:
         return { value: CriterionModifier.Excludes, label: "Excludes" };
       case CriterionModifier.MatchesRegex:
-        return { value: CriterionModifier.MatchesRegex, label: "Matches Regex" };
+        return {
+          value: CriterionModifier.MatchesRegex,
+          label: "Matches Regex",
+        };
       case CriterionModifier.NotMatchesRegex:
-        return { value: CriterionModifier.NotMatchesRegex, label: "Not Matches Regex" };
+        return {
+          value: CriterionModifier.NotMatchesRegex,
+          label: "Not Matches Regex",
+        };
     }
   }
 

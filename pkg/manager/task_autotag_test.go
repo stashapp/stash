@@ -279,8 +279,10 @@ func TestParsePerformers(t *testing.T) {
 	}
 
 	task := AutoTagPerformerTask{
-		performer:  performers[0],
-		txnManager: sqlite.NewTransactionManager(),
+		AutoTagTask: AutoTagTask{
+			txnManager: sqlite.NewTransactionManager(),
+		},
+		performer: performers[0],
 	}
 
 	var wg sync.WaitGroup
@@ -327,8 +329,10 @@ func TestParseStudios(t *testing.T) {
 	}
 
 	task := AutoTagStudioTask{
-		studio:     studios[0],
-		txnManager: sqlite.NewTransactionManager(),
+		AutoTagTask: AutoTagTask{
+			txnManager: sqlite.NewTransactionManager(),
+		},
+		studio: studios[0],
 	}
 
 	var wg sync.WaitGroup
@@ -374,8 +378,10 @@ func TestParseTags(t *testing.T) {
 	}
 
 	task := AutoTagTagTask{
-		tag:        tags[0],
-		txnManager: sqlite.NewTransactionManager(),
+		AutoTagTask: AutoTagTask{
+			txnManager: sqlite.NewTransactionManager(),
+		},
+		tag: tags[0],
 	}
 
 	var wg sync.WaitGroup

@@ -66,7 +66,7 @@ func (r *mutationResolver) MetadataGenerate(ctx context.Context, input models.Ge
 }
 
 func (r *mutationResolver) MetadataAutoTag(ctx context.Context, input models.AutoTagMetadataInput) (string, error) {
-	manager.GetInstance().AutoTag(input.Performers, input.Studios, input.Tags)
+	manager.GetInstance().AutoTag(input)
 	return "todo", nil
 }
 

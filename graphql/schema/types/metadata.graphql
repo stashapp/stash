@@ -45,6 +45,8 @@ input ScanMetadataInput {
 }
 
 input AutoTagMetadataInput {
+  """Paths to tag, null for all files"""
+  paths: [String!]
   """IDs of performers to tag files with, or "*" for all"""
   performers: [String!]
   """IDs of studios to tag files with, or "*" for all"""

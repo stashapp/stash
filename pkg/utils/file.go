@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/h2non/filetype"
 	"github.com/h2non/filetype/types"
@@ -268,4 +269,17 @@ func MatchEntries(dir, pattern string) ([]string, error) {
 		}
 	}
 	return res, err
+}
+
+// IsPathInDir returns true if pathToCheck is within dir.
+func IsPathInDir(dir, pathToCheck string) bool {
+	rel, err := filepath.Rel(dir, pathToCheck)
+
+	if err == nil {
+		if !strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+			return true
+		}
+	}
+
+	return false
 }
