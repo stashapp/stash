@@ -1,11 +1,8 @@
+import replaceAll from "string.prototype.replaceall";
 import { shouldPolyfill as shouldPolyfillCanonicalLocales } from "@formatjs/intl-getcanonicallocales/should-polyfill";
 import { shouldPolyfill as shouldPolyfillLocale } from "@formatjs/intl-locale/should-polyfill";
 import { shouldPolyfill as shouldPolyfillNumberformat } from "@formatjs/intl-numberformat/should-polyfill";
 import { shouldPolyfill as shouldPolyfillPluralRules } from "@formatjs/intl-pluralrules/should-polyfill";
-
-import "@formatjs/intl-pluralrules/polyfill";
-import "@formatjs/intl-pluralrules/locale-data/en";
-import replaceAll from "string.prototype.replaceall";
 
 // Required for browsers older than August 2020ish. Can be removed at some point.
 replaceAll.shim();
