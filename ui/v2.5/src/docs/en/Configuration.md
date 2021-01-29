@@ -103,3 +103,10 @@ Stash saves login credentials in the config.yml file. You must reset both login 
 * Delete the `login` and `password` lines from the file and save
 Stash authentication should now be reset with no authentication credentials.
 
+## Advanced configuration options
+
+These options are typically not exposed in the UI and must be changed manually in the `config.yml` file.
+
+| Field | Remarks |
+|-------|---------|
+| `max_upload_size` | Maximum file upload size for import files. Defaults to 1GB. |

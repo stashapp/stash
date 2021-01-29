@@ -134,12 +134,13 @@ func Start() {
 			return true
 		},
 	})
+	maxUploadSize := handler.UploadMaxSize(config.GetMaxUploadSize())
 
 	txnManager := manager.GetInstance().TxnManager
 	resolver := &Resolver{
 		txnManager: txnManager,
 	}
-	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: resolver}), recoverFunc, websocketUpgrader)
+	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: resolver}), recoverFunc, websocketUpgrader, maxUploadSize)
 
 	r.Handle("/graphql", gqlHandler)
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
