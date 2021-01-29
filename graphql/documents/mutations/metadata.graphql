@@ -26,8 +26,8 @@ mutation MetadataAutoTag($input: AutoTagMetadataInput!) {
   metadataAutoTag(input: $input)
 }
 
-mutation MetadataClean {
-  metadataClean
+mutation MetadataClean($input: CleanMetadataInput!) {
+  metadataClean(input: $input)
 }
 
 mutation MigrateHashNaming {

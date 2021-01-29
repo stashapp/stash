@@ -16,6 +16,7 @@
       "airbnb-typescript",
       "airbnb/hooks",
       "prettier",
+      "prettier/prettier",
       "prettier/react",
       "prettier/@typescript-eslint"
   ],

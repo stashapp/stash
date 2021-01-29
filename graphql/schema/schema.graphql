@@ -213,7 +213,7 @@ type Mutation {
   """Start auto-tagging. Returns the job ID"""
   metadataAutoTag(input: AutoTagMetadataInput!): String!
   """Clean metadata. Returns the job ID"""
-  metadataClean: String!
+  metadataClean(input: CleanMetadataInput!): String!
   """Migrate generated files for the current hash naming"""
   migrateHashNaming: String!
 

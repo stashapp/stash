@@ -826,9 +826,10 @@ export const mutateMetadataGenerate = (input: GQL.GenerateMetadataInput) =>
     variables: { input },
   });
 
-export const mutateMetadataClean = () =>
+export const mutateMetadataClean = (input: GQL.CleanMetadataInput) =>
   client.mutate<GQL.MetadataCleanMutation>({
     mutation: GQL.MetadataCleanDocument,
+    variables: { input },
   });
 
 export const mutateMigrateHashNaming = () =>
