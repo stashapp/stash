@@ -204,7 +204,11 @@ export class ListFilterModel {
           "random",
           "rating",
         ];
-        this.displayModeOptions = [DisplayMode.Grid, DisplayMode.List];
+        this.displayModeOptions = [
+          DisplayMode.Grid,
+          DisplayMode.List,
+          DisplayMode.Tagger,
+        ];
 
         const numberCriteria: CriterionType[] = [
           "birth_year",

@@ -139,6 +139,12 @@ query SearchScene($term: String!) {
   }
 }
 
+query SearchPerformer($term: String!) {
+  searchPerformer(term: $term) {
+    ...PerformerFragment
+  }
+}
+
 mutation SubmitFingerprint($input: FingerprintSubmission!) {
   submitFingerprint(input: $input)
 }

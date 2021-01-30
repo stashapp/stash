@@ -115,13 +115,27 @@ type ScrapedGallery {
   performers: [ScrapedScenePerformer!]
 }
 
-input StashBoxQueryInput {
+input StashBoxSceneQueryInput {
   """Index of the configured stash-box instance to use"""
   stash_box_index: Int!
   """Instructs query by scene fingerprints"""
   scene_ids: [ID!]
   """Query by query string"""
   q: String
+}
+
+input StashBoxPerformerQueryInput {
+  """Index of the configured stash-box instance to use"""
+  stash_box_index: Int!
+  """Instructs query by scene fingerprints"""
+  performer_ids: [ID!]
+  """Query by query string"""
+  q: String
+}
+
+type StashBoxPerformerQueryResult {
+  query: String!
+  results: [ScrapedScenePerformer!]!
 }
 
 type StashBoxFingerprint {

@@ -8,8 +8,8 @@ import { useLocalForage } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
 import { LoadingIndicator, TruncatedText } from "src/components/Shared";
 import {
-  stashBoxQuery,
-  stashBoxBatchQuery,
+  stashBoxSceneQuery,
+  stashBoxSceneBatchQuery,
   useConfiguration,
 } from "src/core/StashService";
 import { Manual } from "src/components/Help/Manual";
@@ -187,7 +187,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
   }, [config.mode, config.blacklist]);
 
   const doBoxSearch = (sceneID: string, searchVal: string) => {
-    stashBoxQuery(searchVal, selectedEndpoint.index)
+    stashBoxSceneQuery(searchVal, selectedEndpoint.index)
       .then((queryData) => {
         const s = selectScenes(queryData.data?.queryStashBoxScene);
         setSearchResults({
@@ -254,7 +254,7 @@ const TaggerList: React.FC<ITaggerListProps> = ({
       .filter((s) => s.stash_ids.length === 0)
       .map((s) => s.id);
 
-    const results = await stashBoxBatchQuery(
+    const results = await stashBoxSceneBatchQuery(
       sceneIDs,
       selectedEndpoint.index
     ).catch(() => {

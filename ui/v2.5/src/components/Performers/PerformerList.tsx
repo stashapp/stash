@@ -14,6 +14,7 @@ import { usePerformersList } from "src/hooks";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
+import { PerformerTagger } from "src/components/Tagger";
 import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
 import { PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
@@ -183,6 +184,9 @@ export const PerformerList: React.FC<IPerformerList> = ({
           performers={result.data.findPerformers.performers}
         />
       );
+    }
+    if (filter.displayMode === DisplayMode.Tagger) {
+      return <PerformerTagger performers={result.data.findPerformers.performers} />;
     }
   }
 

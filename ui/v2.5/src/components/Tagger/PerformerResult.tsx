@@ -117,7 +117,7 @@ const PerformerResult: React.FC<IPerformerResultProps> = ({
   return (
     <div className="row no-gutters align-items-center mt-2">
       <PerformerModal
-        showModal={showModal}
+        closeModal={() => showModal(false)}
         modalVisible={modalVisible}
         performer={performer}
         handlePerformerCreate={handlePerformerCreate}

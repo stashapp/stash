@@ -15,7 +15,7 @@ import { IStashBoxPerformer } from "./utils";
 interface IPerformerModalProps {
   performer: IStashBoxPerformer;
   modalVisible: boolean;
-  showModal: (show: boolean) => void;
+  closeModal: () => void;
   handlePerformerCreate: (imageIndex: number) => void;
 }
 
@@ -23,7 +23,7 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
   modalVisible,
   performer,
   handlePerformerCreate,
-  showModal,
+  closeModal,
 }) => {
   const [imageIndex, setImageIndex] = useState(0);
   const [imageState, setImageState] = useState<
@@ -58,8 +58,8 @@ const PerformerModal: React.FC<IPerformerModalProps> = ({
         text: "Save",
         onClick: () => handlePerformerCreate(imageIndex),
       }}
-      cancel={{ onClick: () => showModal(false), variant: "secondary" }}
-      onHide={() => showModal(false)}
+      cancel={{ onClick: () => closeModal(), variant: "secondary" }}
+      onHide={() => closeModal()}
       dialogClassName="performer-create-modal"
     >
       <div className="row">

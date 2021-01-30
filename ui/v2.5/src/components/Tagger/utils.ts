@@ -107,7 +107,7 @@ const selectTags = (tags: GQL.ScrapedSceneTag[]): IStashBoxTag[] =>
     name: t.name ?? "",
   }));
 
-const selectPerformers = (
+export const selectPerformers = (
   performers: GQL.ScrapedScenePerformer[]
 ): IStashBoxPerformer[] =>
   performers.map((p) => ({

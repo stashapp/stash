@@ -112,3 +112,46 @@
     height: 100%;
   }
 }
+
+
+.PerformerTagger {
+  max-width: 1600px;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+
+  &-performer {
+    background-color: #495b68;
+    border-radius: 3px;
+    padding: 1rem;
+    display: flex;
+
+    .performer-card {
+      flex-shrink: 0;
+      width: 12rem;
+
+      img {
+        height: 100%;
+        object-fit: cover;
+        object-position: top;
+      }
+    }
+  }
+
+  &-performer-search {
+    display: flex;
+    flex-wrap: wrap;
+
+    &-item {
+      display: flex;
+      overflow: hidden;
+      align-items: center;
+      align-text: left;
+    }
+  }
+
+  &-thumb {
+    height: 40px;
+    margin-right: 10px;
+  }
+}

@@ -91,7 +91,8 @@ type Query {
   scrapeFreeonesPerformerList(query: String!): [String!]!
 
   """Query StashBox for scenes"""
-  queryStashBoxScene(input: StashBoxQueryInput!): [ScrapedScene!]!
+  queryStashBoxScene(input: StashBoxSceneQueryInput!): [ScrapedScene!]!
+  queryStashBoxPerformer(input: StashBoxPerformerQueryInput!): [StashBoxPerformerQueryResult!]!
 
   # Plugins
   """List loaded plugins"""

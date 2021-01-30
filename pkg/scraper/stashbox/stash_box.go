@@ -227,6 +227,92 @@ func (c Client) submitStashBoxFingerprints(fingerprints []graphql.FingerprintSub
 	return true, nil
 }
 
+// QueryStashBoxPerformer queries stash-box for performers using a query string.
+func (c Client) QueryStashBoxPerformer(queryStr string) ([]*models.StashBoxPerformerQueryResult, error) {
+	performers, err := c.queryStashBoxPerformer(queryStr)
+
+	res := []*models.StashBoxPerformerQueryResult{
+		{
+			Query:   queryStr,
+			Results: performers,
+		},
+	}
+	return res, err
+}
+
+func (c Client) queryStashBoxPerformer(queryStr string) ([]*models.ScrapedScenePerformer, error) {
+	performers, err := c.client.SearchPerformer(context.TODO(), queryStr)
+	if err != nil {
+		return nil, err
+	}
+
+	performerFragments := performers.SearchPerformer
+
+	var ret []*models.ScrapedScenePerformer
+	for _, fragment := range performerFragments {
+		performer := performerFragmentToScrapedScenePerformer(*fragment)
+		ret = append(ret, performer)
+	}
+
+	return ret, nil
+}
+
+// FindStashBoxPerformersByNames queries stash-box for performers by name
+func (c Client) FindStashBoxPerformersByNames(performerIDs []string) ([]*models.StashBoxPerformerQueryResult, error) {
+	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	var performers []*models.Performer
+
+	if err := c.txnManager.WithReadTxn(context.TODO(), func(r models.ReaderRepository) error {
+		qb := r.Performer()
+
+		for _, performerID := range ids {
+			performer, err := qb.Find(performerID)
+			if err != nil {
+				return err
+			}
+
+			if performer == nil {
+				return fmt.Errorf("performer with id %d not found", performerID)
+			}
+
+			if performer.Name.Valid {
+				performers = append(performers, performer)
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return c.findStashBoxPerformersByNames(performers)
+}
+
+func (c Client) findStashBoxPerformersByNames(performers []*models.Performer) ([]*models.StashBoxPerformerQueryResult, error) {
+	var ret []*models.StashBoxPerformerQueryResult
+	for _, performer := range performers {
+		if performer.Name.Valid {
+			performerResults, err := c.queryStashBoxPerformer(performer.Name.String)
+			if err != nil {
+				return nil, err
+			}
+
+			result := models.StashBoxPerformerQueryResult{
+				Query:   strconv.Itoa(performer.ID),
+				Results: performerResults,
+			}
+
+			ret = append(ret, &result)
+		}
+	}
+
+	return ret, nil
+}
+
 func findURL(urls []*graphql.URLFragment, urlType string) *string {
 	for _, u := range urls {
 		if u.Type == urlType {
