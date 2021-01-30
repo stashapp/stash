@@ -120,6 +120,9 @@ const LogOut = "logOut"
 const LogLevel = "logLevel"
 const LogAccess = "logAccess"
 
+// File upload options
+const MaxUploadSize = "max_upload_size"
+
 func Set(key string, value interface{}) {
 	viper.Set(key, value)
 }
@@ -577,6 +580,15 @@ func GetLogAccess() bool {
 	}
 
 	return ret
+}
+
+// Max allowed graphql upload size in megabytes
+func GetMaxUploadSize() int64 {
+	ret := int64(1024)
+	if viper.IsSet(MaxUploadSize) {
+		ret = viper.GetInt64(MaxUploadSize)
+	}
+	return ret << 20
 }
 
 func IsValid() bool {

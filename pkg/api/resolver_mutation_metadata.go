@@ -70,8 +70,8 @@ func (r *mutationResolver) MetadataAutoTag(ctx context.Context, input models.Aut
 	return "todo", nil
 }
 
-func (r *mutationResolver) MetadataClean(ctx context.Context) (string, error) {
-	manager.GetInstance().Clean()
+func (r *mutationResolver) MetadataClean(ctx context.Context, input models.CleanMetadataInput) (string, error) {
+	manager.GetInstance().Clean(input)
 	return "todo", nil
 }
 

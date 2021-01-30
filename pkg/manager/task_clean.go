@@ -21,18 +21,18 @@ type CleanTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *CleanTask) Start(wg *sync.WaitGroup) {
+func (t *CleanTask) Start(wg *sync.WaitGroup, dryRun bool) {
 	defer wg.Done()
 
-	if t.Scene != nil && t.shouldCleanScene(t.Scene) {
+	if t.Scene != nil && t.shouldCleanScene(t.Scene) && !dryRun {
 		t.deleteScene(t.Scene.ID)
 	}
 
-	if t.Gallery != nil && t.shouldCleanGallery(t.Gallery) {
+	if t.Gallery != nil && t.shouldCleanGallery(t.Gallery) && !dryRun {
 		t.deleteGallery(t.Gallery.ID)
 	}
 
-	if t.Image != nil && t.shouldCleanImage(t.Image) {
+	if t.Image != nil && t.shouldCleanImage(t.Image) && !dryRun {
 		t.deleteImage(t.Image.ID)
 	}
 }

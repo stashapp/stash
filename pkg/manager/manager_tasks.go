@@ -796,7 +796,7 @@ func (s *singleton) autoTagTags(paths []string, tagIds []string) {
 	}
 }
 
-func (s *singleton) Clean() {
+func (s *singleton) Clean(input models.CleanMetadataInput) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -816,8 +816,13 @@ func (s *singleton) Clean() {
 			gqb := r.Gallery()
 
 			logger.Infof("Starting cleaning of tracked files")
+			if input.DryRun {
+				logger.Infof("Running in Dry Mode")
+			}
 			var err error
+
 			scenes, err = qb.All()
+
 			if err != nil {
 				return errors.New("failed to fetch list of scenes for cleaning")
 			}
@@ -866,7 +871,7 @@ func (s *singleton) Clean() {
 				Scene:               scene,
 				fileNamingAlgorithm: fileNamingAlgo,
 			}
-			go task.Start(&wg)
+			go task.Start(&wg, input.DryRun)
 			wg.Wait()
 		}
 
@@ -888,7 +893,7 @@ func (s *singleton) Clean() {
 				TxnManager: s.TxnManager,
 				Image:      img,
 			}
-			go task.Start(&wg)
+			go task.Start(&wg, input.DryRun)
 			wg.Wait()
 		}
 
@@ -910,7 +915,7 @@ func (s *singleton) Clean() {
 				TxnManager: s.TxnManager,
 				Gallery:    gallery,
 			}
-			go task.Start(&wg)
+			go task.Start(&wg, input.DryRun)
 			wg.Wait()
 		}
 
