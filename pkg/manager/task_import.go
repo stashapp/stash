@@ -51,7 +51,7 @@ func CreateImportTask(a models.HashAlgorithm, input models.ImportObjectsInput) (
 
 	tmpZip := ""
 	if input.File.File != nil {
-		tmpZip := filepath.Join(baseDir, "import.zip")
+		tmpZip = filepath.Join(baseDir, "import.zip")
 		out, err := os.Create(tmpZip)
 		if err != nil {
 			return nil, err
