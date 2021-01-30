@@ -81,14 +81,14 @@ func (t *ImportTask) GetStatus() JobStatus {
 func (t *ImportTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	defer func() {
-		err := utils.RemoveDir(t.BaseDir)
-		if err != nil {
-			logger.Errorf("error removing directory %s: %s", t.BaseDir, err.Error())
-		}
-	}()
-
 	if t.TmpZip != "" {
+		defer func() {
+			err := utils.RemoveDir(t.BaseDir)
+			if err != nil {
+				logger.Errorf("error removing directory %s: %s", t.BaseDir, err.Error())
+			}
+		}()
+
 		if err := t.unzipFile(); err != nil {
 			logger.Errorf("error unzipping provided file for import: %s", err.Error())
 			return
