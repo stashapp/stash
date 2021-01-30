@@ -48,8 +48,10 @@ func CreateImportTask(a models.HashAlgorithm, input models.ImportObjectsInput) (
 		logger.Errorf("error creating temporary directory for import: %s", err.Error())
 		return nil, err
 	}
-	tmpZip := filepath.Join(baseDir, "import.zip")
+
+	tmpZip := ""
 	if input.File.File != nil {
+		tmpZip := filepath.Join(baseDir, "import.zip")
 		out, err := os.Create(tmpZip)
 		if err != nil {
 			return nil, err
@@ -86,9 +88,11 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 		}
 	}()
 
-	if err := t.unzipFile(); err != nil {
-		logger.Errorf("error unzipping provided file for import: %s", err.Error())
-		return
+	if t.TmpZip != "" {
+		if err := t.unzipFile(); err != nil {
+			logger.Errorf("error unzipping provided file for import: %s", err.Error())
+			return
+		}
 	}
 
 	t.json = jsonUtils{
