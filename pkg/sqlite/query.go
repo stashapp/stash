@@ -1,6 +1,11 @@
 package sqlite
 
-import "github.com/stashapp/stash/pkg/models"
+import (
+	"errors"
+	"regexp"
+
+	"github.com/stashapp/stash/pkg/models"
+)
 
 type queryBuilder struct {
 	repository *repository
@@ -12,9 +17,15 @@ type queryBuilder struct {
 	args          []interface{}
 
 	sortAndPagination string
+
+	err error
 }
 
 func (qb queryBuilder) executeFind() ([]int, int, error) {
+	if qb.err != nil {
+		return nil, 0, qb.err
+	}
+
 	return qb.repository.executeFindQuery(qb.body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
 }
 
@@ -67,9 +78,17 @@ func (qb *queryBuilder) handleStringCriterionInput(c *models.StringCriterionInpu
 				qb.addWhere(column + " NOT LIKE ?")
 				qb.addArg(c.Value)
 			case models.CriterionModifierMatchesRegex:
+				if _, err := regexp.Compile(c.Value); err != nil {
+					qb.err = errors.New("invalid regex expression: " + err.Error())
+					return
+				}
 				qb.addWhere(column + " regexp ?")
 				qb.addArg(c.Value)
 			case models.CriterionModifierNotMatchesRegex:
+				if _, err := regexp.Compile(c.Value); err != nil {
+					qb.err = errors.New("invalid regex expression: " + err.Error())
+					return
+				}
 				qb.addWhere(column + " NOT regexp ?")
 				qb.addArg(c.Value)
 			default:
