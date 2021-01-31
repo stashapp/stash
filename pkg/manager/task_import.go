@@ -32,7 +32,7 @@ type ImportTask struct {
 	json       jsonUtils
 
 	BaseDir             string
-	ZipFile             io.Reader
+	TmpZip              string
 	Reset               bool
 	DuplicateBehaviour  models.ImportDuplicateEnum
 	MissingRefBehaviour models.ImportMissingRefEnum
@@ -42,15 +42,37 @@ type ImportTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func CreateImportTask(a models.HashAlgorithm, input models.ImportObjectsInput) *ImportTask {
+func CreateImportTask(a models.HashAlgorithm, input models.ImportObjectsInput) (*ImportTask, error) {
+	baseDir, err := instance.Paths.Generated.TempDir("import")
+	if err != nil {
+		logger.Errorf("error creating temporary directory for import: %s", err.Error())
+		return nil, err
+	}
+
+	tmpZip := ""
+	if input.File.File != nil {
+		tmpZip = filepath.Join(baseDir, "import.zip")
+		out, err := os.Create(tmpZip)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = io.Copy(out, input.File.File)
+		out.Close()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &ImportTask{
 		txnManager:          GetInstance().TxnManager,
-		ZipFile:             input.File.File,
+		BaseDir:             baseDir,
+		TmpZip:              tmpZip,
 		Reset:               false,
 		DuplicateBehaviour:  input.DuplicateBehaviour,
 		MissingRefBehaviour: input.MissingRefBehaviour,
 		fileNamingAlgorithm: a,
-	}
+	}, nil
 }
 
 func (t *ImportTask) GetStatus() JobStatus {
@@ -60,15 +82,7 @@ func (t *ImportTask) GetStatus() JobStatus {
 func (t *ImportTask) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	if t.ZipFile != nil {
-		// unzip the file and defer remove the temp directory
-		var err error
-		t.BaseDir, err = instance.Paths.Generated.TempDir("import")
-		if err != nil {
-			logger.Errorf("error creating temporary directory for import: %s", err.Error())
-			return
-		}
-
+	if t.TmpZip != "" {
 		defer func() {
 			err := utils.RemoveDir(t.BaseDir)
 			if err != nil {
@@ -128,29 +142,15 @@ func (t *ImportTask) Start(wg *sync.WaitGroup) {
 }
 
 func (t *ImportTask) unzipFile() error {
-	// copy the zip file to the temporary directory
-	tmpZip := filepath.Join(t.BaseDir, "import.zip")
-	out, err := os.Create(tmpZip)
-	if err != nil {
-		return err
-	}
-
-	if _, err := io.Copy(out, t.ZipFile); err != nil {
-		out.Close()
-		return err
-	}
-
-	out.Close()
-
 	defer func() {
-		err := os.Remove(tmpZip)
+		err := os.Remove(t.TmpZip)
 		if err != nil {
-			logger.Errorf("error removing temporary zip file %s: %s", tmpZip, err.Error())
+			logger.Errorf("error removing temporary zip file %s: %s", t.TmpZip, err.Error())
 		}
 	}()
 
 	// now we can read the zip file
-	r, err := zip.OpenReader(tmpZip)
+	r, err := zip.OpenReader(t.TmpZip)
 	if err != nil {
 		return err
 	}
