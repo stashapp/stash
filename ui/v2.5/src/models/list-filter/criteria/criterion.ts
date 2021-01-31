@@ -231,7 +231,18 @@ export abstract class Criterion {
     return `${this.parameterName}-${this.modifier.toString()}`; // TODO add values?
   }
 
+  private static replaceSpecialCharacter(str: string, c: string) {
+    return str.replaceAll(c, encodeURIComponent(c));
+  }
+
   public encodeValue(): CriterionValue {
+    // replace certain characters
+    if (typeof this.value === "string") {
+      let ret = this.value;
+      ret = Criterion.replaceSpecialCharacter(ret, "&");
+      ret = Criterion.replaceSpecialCharacter(ret, "+");
+      return ret;
+    }
     return this.value;
   }
 }
