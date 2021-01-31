@@ -57,8 +57,9 @@ func CreateImportTask(a models.HashAlgorithm, input models.ImportObjectsInput) (
 			return nil, err
 		}
 
-		if _, err := io.Copy(out, input.File.File); err != nil {
-			out.Close()
+		_, err = io.Copy(out, input.File.File)
+		out.Close()
+		if err != nil {
 			return nil, err
 		}
 	}
