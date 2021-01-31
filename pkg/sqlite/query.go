@@ -1,7 +1,6 @@
 package sqlite
 
 import (
-	"errors"
 	"regexp"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -79,14 +78,14 @@ func (qb *queryBuilder) handleStringCriterionInput(c *models.StringCriterionInpu
 				qb.addArg(c.Value)
 			case models.CriterionModifierMatchesRegex:
 				if _, err := regexp.Compile(c.Value); err != nil {
-					qb.err = errors.New("invalid regex expression: " + err.Error())
+					qb.err = err
 					return
 				}
 				qb.addWhere(column + " regexp ?")
 				qb.addArg(c.Value)
 			case models.CriterionModifierNotMatchesRegex:
 				if _, err := regexp.Compile(c.Value); err != nil {
-					qb.err = errors.New("invalid regex expression: " + err.Error())
+					qb.err = err
 					return
 				}
 				qb.addWhere(column + " NOT regexp ?")
