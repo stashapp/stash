@@ -10,7 +10,6 @@ import (
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/scene"
-	"github.com/stashapp/stash/pkg/utils"
 )
 
 type AutoTagTask struct {
@@ -39,63 +38,27 @@ func (t *AutoTagTask) getQueryRegex(name string) string {
 	return ret
 }
 
-func (t *AutoTagTask) getSceneFilter(regex string) *models.SceneFilterType {
-	organized := false
-	return &models.SceneFilterType{
-		Path: &models.StringCriterionInput{
-			Value:    "(?i)" + regex,
-			Modifier: models.CriterionModifierMatchesRegex,
-		},
-		Organized: &organized,
-	}
-}
-
-func (t *AutoTagTask) getQueryFilter() *models.FindFilterType {
-	// use PerPage of 0 to get all
-	perPage := 0
-	return &models.FindFilterType{
-		PerPage: &perPage,
-	}
-}
-
-// TODO - this should be replaced in the query filter once multiple conditions
-// on the same field is possible
-func (t *AutoTagTask) isSceneInPaths(s *models.Scene) bool {
-	for _, p := range t.paths {
-		if utils.IsPathInDir(p, s.Path) {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (t *AutoTagPerformerTask) autoTagPerformer() {
 	regex := t.getQueryRegex(t.performer.Name.String)
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
 
-		sceneFilter := t.getSceneFilter(regex)
-		findFilter := t.getQueryFilter()
-
-		scenes, _, err := qb.Query(sceneFilter, findFilter)
+		scenes, err := qb.QueryForAutoTag(regex, t.paths)
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
 		}
 
 		for _, s := range scenes {
-			if t.paths == nil || t.isSceneInPaths(s) {
-				added, err := scene.AddPerformer(qb, s.ID, t.performer.ID)
+			added, err := scene.AddPerformer(qb, s.ID, t.performer.ID)
 
-				if err != nil {
-					return fmt.Errorf("Error adding performer '%s' to scene '%s': %s", t.performer.Name.String, s.GetTitle(), err.Error())
-				}
+			if err != nil {
+				return fmt.Errorf("Error adding performer '%s' to scene '%s': %s", t.performer.Name.String, s.GetTitle(), err.Error())
+			}
 
-				if added {
-					logger.Infof("Added performer '%s' to scene '%s'", t.performer.Name.String, s.GetTitle())
-				}
+			if added {
+				logger.Infof("Added performer '%s' to scene '%s'", t.performer.Name.String, s.GetTitle())
 			}
 		}
 
@@ -121,35 +84,30 @@ func (t *AutoTagStudioTask) autoTagStudio() {
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
-		sceneFilter := t.getSceneFilter(regex)
-		findFilter := t.getQueryFilter()
-
-		scenes, _, err := qb.Query(sceneFilter, findFilter)
+		scenes, err := qb.QueryForAutoTag(regex, t.paths)
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
 		}
 
 		for _, s := range scenes {
-			if t.paths == nil || t.isSceneInPaths(s) {
-				// #306 - don't overwrite studio if already present
-				if s.StudioID.Valid {
-					// don't modify
-					continue
-				}
+			// #306 - don't overwrite studio if already present
+			if s.StudioID.Valid {
+				// don't modify
+				continue
+			}
 
-				logger.Infof("Adding studio '%s' to scene '%s'", t.studio.Name.String, s.GetTitle())
+			logger.Infof("Adding studio '%s' to scene '%s'", t.studio.Name.String, s.GetTitle())
 
-				// set the studio id
-				studioID := sql.NullInt64{Int64: int64(t.studio.ID), Valid: true}
-				scenePartial := models.ScenePartial{
-					ID:       s.ID,
-					StudioID: &studioID,
-				}
+			// set the studio id
+			studioID := sql.NullInt64{Int64: int64(t.studio.ID), Valid: true}
+			scenePartial := models.ScenePartial{
+				ID:       s.ID,
+				StudioID: &studioID,
+			}
 
-				if _, err := qb.Update(scenePartial); err != nil {
-					return fmt.Errorf("Error adding studio to scene: %s", err.Error())
-				}
+			if _, err := qb.Update(scenePartial); err != nil {
+				return fmt.Errorf("Error adding studio to scene: %s", err.Error())
 			}
 		}
 
@@ -175,26 +133,21 @@ func (t *AutoTagTagTask) autoTagTag() {
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
-		sceneFilter := t.getSceneFilter(regex)
-		findFilter := t.getQueryFilter()
-
-		scenes, _, err := qb.Query(sceneFilter, findFilter)
+		scenes, err := qb.QueryForAutoTag(regex, t.paths)
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
 		}
 
 		for _, s := range scenes {
-			if t.paths == nil || t.isSceneInPaths(s) {
-				added, err := scene.AddTag(qb, s.ID, t.tag.ID)
+			added, err := scene.AddTag(qb, s.ID, t.tag.ID)
 
-				if err != nil {
-					return fmt.Errorf("Error adding tag '%s' to scene '%s': %s", t.tag.Name, s.GetTitle(), err.Error())
-				}
+			if err != nil {
+				return fmt.Errorf("Error adding tag '%s' to scene '%s': %s", t.tag.Name, s.GetTitle(), err.Error())
+			}
 
-				if added {
-					logger.Infof("Added tag '%s' to scene '%s'", t.tag.Name, s.GetTitle())
-				}
+			if added {
+				logger.Infof("Added tag '%s' to scene '%s'", t.tag.Name, s.GetTitle())
 			}
 		}
 

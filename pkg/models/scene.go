@@ -20,6 +20,7 @@ type SceneReader interface {
 	CountMissingOSHash() (int, error)
 	Wall(q *string) ([]*Scene, error)
 	All() ([]*Scene, error)
+	QueryForAutoTag(regex string, pathPrefixes []string) ([]*Scene, error)
 	Query(sceneFilter *SceneFilterType, findFilter *FindFilterType) ([]*Scene, int, error)
 	GetCover(sceneID int) ([]byte, error)
 	GetMovies(sceneID int) ([]MoviesScenes, error)
