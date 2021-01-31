@@ -44,6 +44,11 @@ input ScanMetadataInput {
   scanGenerateSprites: Boolean!
 }
 
+input CleanMetadataInput {
+  """Do a dry run. Don't delete any files"""
+  dryRun: Boolean!
+}
+
 input AutoTagMetadataInput {
   """IDs of performers to tag files with, or "*" for all"""
   performers: [String!]

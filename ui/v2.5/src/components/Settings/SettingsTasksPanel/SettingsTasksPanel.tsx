@@ -41,6 +41,7 @@ export const SettingsTasksPanel: React.FC = () => {
   const [scanGenerateSprites, setScanGenerateSprites] = useState<boolean>(
     false
   );
+  const [cleanDryRun, setCleanDryRun] = useState<boolean>(false);
   const [
     scanGenerateImagePreviews,
     setScanGenerateImagePreviews,
@@ -132,12 +133,31 @@ export const SettingsTasksPanel: React.FC = () => {
 
   function onClean() {
     setIsCleanAlertOpen(false);
-    mutateMetadataClean().then(() => {
+    mutateMetadataClean({
+      dryRun: cleanDryRun,
+    }).then(() => {
       jobStatus.refetch();
     });
   }
 
   function renderCleanAlert() {
+    let msg;
+    if (cleanDryRun) {
+      msg = (
+        <p>
+          Dry Mode selected. No actual deleting will take place, only logging.
+        </p>
+      );
+    } else {
+      msg = (
+        <p>
+          Are you sure you want to Clean? This will delete database information
+          and generated content for all scenes and galleries that are no longer
+          found in the filesystem.
+        </p>
+      );
+    }
+
     return (
       <Modal
         show={isCleanAlertOpen}
@@ -145,11 +165,7 @@ export const SettingsTasksPanel: React.FC = () => {
         accept={{ text: "Clean", variant: "danger", onClick: onClean }}
         cancel={{ onClick: () => setIsCleanAlertOpen(false) }}
       >
-        <p>
-          Are you sure you want to Clean? This will delete database information
-          and generated content for all scenes and galleries that are no longer
-          found in the filesystem.
-        </p>
+        {msg}
       </Modal>
     );
   }
@@ -442,6 +458,17 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <h5>Generated Content</h5>
       <GenerateButton />
+
+      <hr />
+      <h5>Maintenance</h5>
+      <Form.Group>
+        <Form.Check
+          id="clean-dryrun"
+          checked={cleanDryRun}
+          label="Only perform a dry run. Don't remove anything"
+          onChange={() => setCleanDryRun(!cleanDryRun)}
+        />
+      </Form.Group>
       <Form.Group>
         <Button
           id="clean"
