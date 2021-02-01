@@ -47,7 +47,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [url, setUrl] = useState<string>();
   const [date, setDate] = useState<string>();
   const [rating, setRating] = useState<number>();
-  const [galleries, setGalleries] = useState<{ id: string, title: string }[]>([]);
+  const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
+    []
+  );
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [movieIds, setMovieIds] = useState<string[] | undefined>(undefined);

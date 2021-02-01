@@ -50,7 +50,7 @@ export const GalleryEditPanel: React.FC<
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [tagIds, setTagIds] = useState<string[]>();
-  const [scenes, setScenes] = useState<{ id: string, title: string }[]>([]);
+  const [scenes, setScenes] = useState<{ id: string; title: string }[]>([]);
 
   const Scrapers = useListGalleryScrapers();
 

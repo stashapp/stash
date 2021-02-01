@@ -70,13 +70,13 @@ interface IFilterComponentProps extends IFilterProps {
 interface IFilterSelectProps<T extends boolean>
   extends Omit<ISelectProps<T>, "onChange" | "items" | "onCreateOption"> {}
 
-type Gallery = { id: string, title: string };
+type Gallery = { id: string; title: string };
 interface IGallerySelect {
   galleries: Gallery[];
   onSelect: (items: Gallery[]) => void;
 }
 
-type Scene = { id: string, title: string };
+type Scene = { id: string; title: string };
 interface ISceneSelect {
   scenes: Scene[];
   onSelect: (items: Scene[]) => void;
