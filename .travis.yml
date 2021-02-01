@@ -25,6 +25,7 @@ script:
 after_success:
 - docker pull stashapp/compiler:4
 - sh ./scripts/cross-compile.sh
+- sha1sum dist/stash-* | sed 's/dist\///g' > dist/checksums.sha1
 - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then sh ./scripts/upload-pull-request.sh; fi'
 before_deploy:
 # push the latest tag when on the develop branch
@@ -47,6 +48,7 @@ deploy:
       - dist/stash-linux-arm64v8
       - dist/stash-linux-arm32v7
       - dist/stash-pi
+      - dist/checksums.sha1
     skip_cleanup: true
     overwrite: true
     name: "${STASH_VERSION}: Latest development build"
@@ -73,6 +75,7 @@ deploy:
       - dist/stash-linux-arm64v8
       - dist/stash-linux-arm32v7
       - dist/stash-pi
+      - dist/checksums.sha1
     # make the release a draft so the maintainers can confirm before releasing
     draft: true
     skip_cleanup: true
