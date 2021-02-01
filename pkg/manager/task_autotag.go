@@ -12,9 +12,14 @@ import (
 	"github.com/stashapp/stash/pkg/scene"
 )
 
-type AutoTagPerformerTask struct {
-	performer  *models.Performer
+type AutoTagTask struct {
+	paths      []string
 	txnManager models.TransactionManager
+}
+
+type AutoTagPerformerTask struct {
+	AutoTagTask
+	performer *models.Performer
 }
 
 func (t *AutoTagPerformerTask) Start(wg *sync.WaitGroup) {
@@ -23,7 +28,7 @@ func (t *AutoTagPerformerTask) Start(wg *sync.WaitGroup) {
 	t.autoTagPerformer()
 }
 
-func getQueryRegex(name string) string {
+func (t *AutoTagTask) getQueryRegex(name string) string {
 	const separatorChars = `.\-_ `
 	// handle path separators
 	const separator = `[` + separatorChars + `]`
@@ -34,12 +39,12 @@ func getQueryRegex(name string) string {
 }
 
 func (t *AutoTagPerformerTask) autoTagPerformer() {
-	regex := getQueryRegex(t.performer.Name.String)
+	regex := t.getQueryRegex(t.performer.Name.String)
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
-		const ignoreOrganized = true
-		scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
+
+		scenes, err := qb.QueryForAutoTag(regex, t.paths)
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
@@ -64,8 +69,8 @@ func (t *AutoTagPerformerTask) autoTagPerformer() {
 }
 
 type AutoTagStudioTask struct {
-	studio     *models.Studio
-	txnManager models.TransactionManager
+	AutoTagTask
+	studio *models.Studio
 }
 
 func (t *AutoTagStudioTask) Start(wg *sync.WaitGroup) {
@@ -75,30 +80,29 @@ func (t *AutoTagStudioTask) Start(wg *sync.WaitGroup) {
 }
 
 func (t *AutoTagStudioTask) autoTagStudio() {
-	regex := getQueryRegex(t.studio.Name.String)
+	regex := t.getQueryRegex(t.studio.Name.String)
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
-		const ignoreOrganized = true
-		scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
+		scenes, err := qb.QueryForAutoTag(regex, t.paths)
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
 		}
 
-		for _, scene := range scenes {
+		for _, s := range scenes {
 			// #306 - don't overwrite studio if already present
-			if scene.StudioID.Valid {
+			if s.StudioID.Valid {
 				// don't modify
 				continue
 			}
 
-			logger.Infof("Adding studio '%s' to scene '%s'", t.studio.Name.String, scene.GetTitle())
+			logger.Infof("Adding studio '%s' to scene '%s'", t.studio.Name.String, s.GetTitle())
 
 			// set the studio id
 			studioID := sql.NullInt64{Int64: int64(t.studio.ID), Valid: true}
 			scenePartial := models.ScenePartial{
-				ID:       scene.ID,
+				ID:       s.ID,
 				StudioID: &studioID,
 			}
 
@@ -114,8 +118,8 @@ func (t *AutoTagStudioTask) autoTagStudio() {
 }
 
 type AutoTagTagTask struct {
-	tag        *models.Tag
-	txnManager models.TransactionManager
+	AutoTagTask
+	tag *models.Tag
 }
 
 func (t *AutoTagTagTask) Start(wg *sync.WaitGroup) {
@@ -125,12 +129,11 @@ func (t *AutoTagTagTask) Start(wg *sync.WaitGroup) {
 }
 
 func (t *AutoTagTagTask) autoTagTag() {
-	regex := getQueryRegex(t.tag.Name)
+	regex := t.getQueryRegex(t.tag.Name)
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
-		const ignoreOrganized = true
-		scenes, err := qb.QueryAllByPathRegex(regex, ignoreOrganized)
+		scenes, err := qb.QueryForAutoTag(regex, t.paths)
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())

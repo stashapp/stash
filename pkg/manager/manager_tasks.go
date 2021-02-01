@@ -589,7 +589,7 @@ func (s *singleton) generateScreenshot(sceneId string, at *float64) {
 	}()
 }
 
-func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []string) {
+func (s *singleton) AutoTag(input models.AutoTagMetadataInput) {
 	if s.Status.Status != Idle {
 		return
 	}
@@ -598,6 +598,10 @@ func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []
 
 	go func() {
 		defer s.returnToIdleState()
+
+		performerIds := input.Performers
+		studioIds := input.Studios
+		tagIds := input.Tags
 
 		// calculate work load
 		performerCount := len(performerIds)
@@ -639,13 +643,13 @@ func (s *singleton) AutoTag(performerIds []string, studioIds []string, tagIds []
 		total := performerCount + studioCount + tagCount
 		s.Status.setProgress(0, total)
 
-		s.autoTagPerformers(performerIds)
-		s.autoTagStudios(studioIds)
-		s.autoTagTags(tagIds)
+		s.autoTagPerformers(input.Paths, performerIds)
+		s.autoTagStudios(input.Paths, studioIds)
+		s.autoTagTags(input.Paths, tagIds)
 	}()
 }
 
-func (s *singleton) autoTagPerformers(performerIds []string) {
+func (s *singleton) autoTagPerformers(paths []string, performerIds []string) {
 	var wg sync.WaitGroup
 	for _, performerId := range performerIds {
 		var performers []*models.Performer
@@ -681,8 +685,11 @@ func (s *singleton) autoTagPerformers(performerIds []string) {
 		for _, performer := range performers {
 			wg.Add(1)
 			task := AutoTagPerformerTask{
-				txnManager: s.TxnManager,
-				performer:  performer,
+				AutoTagTask: AutoTagTask{
+					txnManager: s.TxnManager,
+					paths:      paths,
+				},
+				performer: performer,
 			}
 			go task.Start(&wg)
 			wg.Wait()
@@ -692,7 +699,7 @@ func (s *singleton) autoTagPerformers(performerIds []string) {
 	}
 }
 
-func (s *singleton) autoTagStudios(studioIds []string) {
+func (s *singleton) autoTagStudios(paths []string, studioIds []string) {
 	var wg sync.WaitGroup
 	for _, studioId := range studioIds {
 		var studios []*models.Studio
@@ -727,8 +734,11 @@ func (s *singleton) autoTagStudios(studioIds []string) {
 		for _, studio := range studios {
 			wg.Add(1)
 			task := AutoTagStudioTask{
-				studio:     studio,
-				txnManager: s.TxnManager,
+				AutoTagTask: AutoTagTask{
+					txnManager: s.TxnManager,
+					paths:      paths,
+				},
+				studio: studio,
 			}
 			go task.Start(&wg)
 			wg.Wait()
@@ -738,7 +748,7 @@ func (s *singleton) autoTagStudios(studioIds []string) {
 	}
 }
 
-func (s *singleton) autoTagTags(tagIds []string) {
+func (s *singleton) autoTagTags(paths []string, tagIds []string) {
 	var wg sync.WaitGroup
 	for _, tagId := range tagIds {
 		var tags []*models.Tag
@@ -772,8 +782,11 @@ func (s *singleton) autoTagTags(tagIds []string) {
 		for _, tag := range tags {
 			wg.Add(1)
 			task := AutoTagTagTask{
-				txnManager: s.TxnManager,
-				tag:        tag,
+				AutoTagTask: AutoTagTask{
+					txnManager: s.TxnManager,
+					paths:      paths,
+				},
+				tag: tag,
 			}
 			go task.Start(&wg)
 			wg.Wait()

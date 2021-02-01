@@ -21,7 +21,7 @@ import (
 )
 
 const totalScenes = 12
-const totalImages = 6
+const totalImages = 6 // TODO - add one for zip file
 const performersNameCase = 6
 const performersNameNoCase = 2
 const moviesNameCase = 2
@@ -61,6 +61,7 @@ const imageIdxWithTwoPerformers = 2
 const imageIdxWithTag = 3
 const imageIdxWithTwoTags = 4
 const imageIdxWithStudio = 5
+const imageIdxInZip = 6
 
 const performerIdxWithScene = 0
 const performerIdx1WithScene = 1
@@ -110,6 +111,7 @@ const markerIdxWithScene = 0
 const pathField = "Path"
 const checksumField = "Checksum"
 const titleField = "Title"
+const zipPath = "zipPath.zip"
 
 func TestMain(m *testing.M) {
 	ret := runTests(m)
@@ -318,10 +320,19 @@ func getImageStringValue(index int, field string) string {
 	return fmt.Sprintf("image_%04d_%s", index, field)
 }
 
+func getImagePath(index int) string {
+	// TODO - currently not working
+	// if index == imageIdxInZip {
+	// 	return image.ZipFilename(zipPath, "image_0001_Path")
+	// }
+
+	return getImageStringValue(index, pathField)
+}
+
 func createImages(qb models.ImageReaderWriter, n int) error {
 	for i := 0; i < n; i++ {
 		image := models.Image{
-			Path:     getImageStringValue(i, pathField),
+			Path:     getImagePath(i),
 			Title:    sql.NullString{String: getImageStringValue(i, titleField), Valid: true},
 			Checksum: getImageStringValue(i, checksumField),
 			Rating:   getRating(i),

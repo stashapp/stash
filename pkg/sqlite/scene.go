@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -289,6 +290,53 @@ func (qb *sceneQueryBuilder) All() ([]*models.Scene, error) {
 	return qb.queryScenes(selectAll(sceneTable)+qb.getSceneSort(nil), nil)
 }
 
+// QueryForAutoTag queries for scenes whose paths match the provided regex and
+// are optionally within the provided path. Excludes organized scenes.
+// TODO - this should be replaced with Query once it can perform multiple
+// filters on the same field.
+func (qb *sceneQueryBuilder) QueryForAutoTag(regex string, pathPrefixes []string) ([]*models.Scene, error) {
+	var args []interface{}
+	body := selectDistinctIDs("scenes") + ` WHERE 
+	scenes.path regexp ? AND 
+	scenes.organized = 0`
+
+	args = append(args, "(?i)"+regex)
+
+	var pathClauses []string
+	for _, p := range pathPrefixes {
+		pathClauses = append(pathClauses, "scenes.path like ?")
+
+		sep := string(filepath.Separator)
+		if !strings.HasSuffix(p, sep) {
+			p = p + sep
+		}
+		args = append(args, p+"%")
+	}
+
+	if len(pathClauses) > 0 {
+		body += " AND (" + strings.Join(pathClauses, " OR ") + ")"
+	}
+
+	idsResult, err := qb.runIdsQuery(body, args)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var scenes []*models.Scene
+	for _, id := range idsResult {
+		scene, err := qb.Find(id)
+
+		if err != nil {
+			return nil, err
+		}
+
+		scenes = append(scenes, scene)
+	}
+
+	return scenes, nil
+}
+
 func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
 	if sceneFilter == nil {
 		sceneFilter = &models.SceneFilterType{}
@@ -448,6 +496,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	}
 
 	query.sortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
+
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
 		return nil, 0, err
@@ -499,70 +548,6 @@ func getDurationWhereClause(durationFilter models.IntCriterionInput) (string, []
 	}
 
 	return clause, args
-}
-
-func (qb *sceneQueryBuilder) QueryAllByPathRegex(regex string, ignoreOrganized bool) ([]*models.Scene, error) {
-	var args []interface{}
-	body := selectDistinctIDs("scenes") + " WHERE scenes.path regexp ?"
-
-	if ignoreOrganized {
-		body += " AND scenes.organized = 0"
-	}
-
-	args = append(args, "(?i)"+regex)
-
-	idsResult, err := qb.runIdsQuery(body, args)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var scenes []*models.Scene
-	for _, id := range idsResult {
-		scene, err := qb.Find(id)
-
-		if err != nil {
-			return nil, err
-		}
-
-		scenes = append(scenes, scene)
-	}
-
-	return scenes, nil
-}
-
-func (qb *sceneQueryBuilder) QueryByPathRegex(findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
-	if findFilter == nil {
-		findFilter = &models.FindFilterType{}
-	}
-
-	var whereClauses []string
-	var havingClauses []string
-	var args []interface{}
-	body := selectDistinctIDs("scenes")
-
-	if q := findFilter.Q; q != nil && *q != "" {
-		whereClauses = append(whereClauses, "scenes.path regexp ?")
-		args = append(args, "(?i)"+*q)
-	}
-
-	sortAndPagination := qb.getSceneSort(findFilter) + getPagination(findFilter)
-	idsResult, countResult, err := qb.executeFindQuery(body, args, sortAndPagination, whereClauses, havingClauses)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	var scenes []*models.Scene
-	for _, id := range idsResult {
-		scene, err := qb.Find(id)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		scenes = append(scenes, scene)
-	}
-
-	return scenes, countResult, nil
 }
 
 func (qb *sceneQueryBuilder) getSceneSort(findFilter *models.FindFilterType) string {

@@ -627,13 +627,13 @@ func (_m *SceneReaderWriter) Query(sceneFilter *models.SceneFilterType, findFilt
 	return r0, r1, r2
 }
 
-// QueryAllByPathRegex provides a mock function with given fields: regex, ignoreOrganized
-func (_m *SceneReaderWriter) QueryAllByPathRegex(regex string, ignoreOrganized bool) ([]*models.Scene, error) {
-	ret := _m.Called(regex, ignoreOrganized)
+// QueryForAutoTag provides a mock function with given fields: regex, pathPrefixes
+func (_m *SceneReaderWriter) QueryForAutoTag(regex string, pathPrefixes []string) ([]*models.Scene, error) {
+	ret := _m.Called(regex, pathPrefixes)
 
 	var r0 []*models.Scene
-	if rf, ok := ret.Get(0).(func(string, bool) []*models.Scene); ok {
-		r0 = rf(regex, ignoreOrganized)
+	if rf, ok := ret.Get(0).(func(string, []string) []*models.Scene); ok {
+		r0 = rf(regex, pathPrefixes)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*models.Scene)
@@ -641,43 +641,13 @@ func (_m *SceneReaderWriter) QueryAllByPathRegex(regex string, ignoreOrganized b
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(string, bool) error); ok {
-		r1 = rf(regex, ignoreOrganized)
+	if rf, ok := ret.Get(1).(func(string, []string) error); ok {
+		r1 = rf(regex, pathPrefixes)
 	} else {
 		r1 = ret.Error(1)
 	}
 
 	return r0, r1
-}
-
-// QueryByPathRegex provides a mock function with given fields: findFilter
-func (_m *SceneReaderWriter) QueryByPathRegex(findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
-	ret := _m.Called(findFilter)
-
-	var r0 []*models.Scene
-	if rf, ok := ret.Get(0).(func(*models.FindFilterType) []*models.Scene); ok {
-		r0 = rf(findFilter)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Scene)
-		}
-	}
-
-	var r1 int
-	if rf, ok := ret.Get(1).(func(*models.FindFilterType) int); ok {
-		r1 = rf(findFilter)
-	} else {
-		r1 = ret.Get(1).(int)
-	}
-
-	var r2 error
-	if rf, ok := ret.Get(2).(func(*models.FindFilterType) error); ok {
-		r2 = rf(findFilter)
-	} else {
-		r2 = ret.Error(2)
-	}
-
-	return r0, r1, r2
 }
 
 // ResetOCounter provides a mock function with given fields: id

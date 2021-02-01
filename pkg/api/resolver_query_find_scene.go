@@ -80,7 +80,25 @@ func (r *queryResolver) FindScenes(ctx context.Context, sceneFilter *models.Scen
 
 func (r *queryResolver) FindScenesByPathRegex(ctx context.Context, filter *models.FindFilterType) (ret *models.FindScenesResultType, err error) {
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		scenes, total, err := repo.Scene().QueryByPathRegex(filter)
+
+		sceneFilter := &models.SceneFilterType{}
+
+		if filter != nil && filter.Q != nil {
+			sceneFilter.Path = &models.StringCriterionInput{
+				Modifier: models.CriterionModifierMatchesRegex,
+				Value:    "(?i)" + *filter.Q,
+			}
+		}
+
+		// make a copy of the filter if provided, nilling out Q
+		var queryFilter *models.FindFilterType
+		if filter != nil {
+			f := *filter
+			queryFilter = &f
+			queryFilter.Q = nil
+		}
+
+		scenes, total, err := repo.Scene().Query(sceneFilter, queryFilter)
 		if err != nil {
 			return err
 		}

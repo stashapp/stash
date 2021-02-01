@@ -6,6 +6,7 @@ enum SortDirectionEnum {
 input FindFilterType {
   q: String
   page: Int
+  """use per_page = 0 to indicate all results. Defaults to 25."""
   per_page: Int
   sort: String
   direction: SortDirectionEnum
@@ -192,6 +193,10 @@ enum CriterionModifier {
   INCLUDES_ALL,
   INCLUDES,
   EXCLUDES,
+  """MATCHES REGEX"""
+  MATCHES_REGEX,
+  """NOT MATCHES REGEX"""
+  NOT_MATCHES_REGEX,
 }
 
 input StringCriterionInput {

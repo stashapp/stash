@@ -21,7 +21,7 @@ import { LoadingIndicator, Modal } from "src/components/Shared";
 import { downloadFile } from "src/utils";
 import { GenerateButton } from "./GenerateButton";
 import { ImportDialog } from "./ImportDialog";
-import { ScanDialog } from "./ScanDialog";
+import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
@@ -32,6 +32,9 @@ export const SettingsTasksPanel: React.FC = () => {
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState<boolean>(false);
   const [isScanDialogOpen, setIsScanDialogOpen] = useState<boolean>(false);
+  const [isAutoTagDialogOpen, setIsAutoTagDialogOpen] = useState<boolean>(
+    false
+  );
   const [isBackupRunning, setIsBackupRunning] = useState<boolean>(false);
   const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
   const [stripFileExtension, setStripFileExtension] = useState<boolean>(false);
@@ -183,7 +186,7 @@ export const SettingsTasksPanel: React.FC = () => {
       return;
     }
 
-    return <ScanDialog onClose={onScanDialogClosed} />;
+    return <DirectorySelectionDialog onClose={onScanDialogClosed} />;
   }
 
   function onScanDialogClosed(paths?: string[]) {
@@ -211,18 +214,35 @@ export const SettingsTasksPanel: React.FC = () => {
     }
   }
 
-  function getAutoTagInput() {
+  function renderAutoTagDialog() {
+    if (!isAutoTagDialogOpen) {
+      return;
+    }
+
+    return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
+  }
+
+  function onAutoTagDialogClosed(paths?: string[]) {
+    if (paths) {
+      onAutoTag(paths);
+    }
+
+    setIsAutoTagDialogOpen(false);
+  }
+
+  function getAutoTagInput(paths?: string[]) {
     const wildcard = ["*"];
     return {
+      paths,
       performers: autoTagPerformers ? wildcard : [],
       studios: autoTagStudios ? wildcard : [],
       tags: autoTagTags ? wildcard : [],
     };
   }
 
-  async function onAutoTag() {
+  async function onAutoTag(paths?: string[]) {
     try {
-      await mutateMetadataAutoTag(getAutoTagInput());
+      await mutateMetadataAutoTag(getAutoTagInput(paths));
       Toast.success({ content: "Started auto tagging" });
       jobStatus.refetch();
     } catch (e) {
@@ -347,6 +367,7 @@ export const SettingsTasksPanel: React.FC = () => {
       {renderCleanAlert()}
       {renderImportDialog()}
       {renderScanDialog()}
+      {renderAutoTagDialog()}
 
       <h4>Running Jobs</h4>
 
@@ -440,8 +461,20 @@ export const SettingsTasksPanel: React.FC = () => {
         />
       </Form.Group>
       <Form.Group>
-        <Button variant="secondary" type="submit" onClick={() => onAutoTag()}>
+        <Button
+          variant="secondary"
+          type="submit"
+          className="mr-2"
+          onClick={() => onAutoTag()}
+        >
           Auto Tag
+        </Button>
+        <Button
+          variant="secondary"
+          type="submit"
+          onClick={() => setIsAutoTagDialogOpen(true)}
+        >
+          Selective Auto Tag
         </Button>
         <Form.Text className="text-muted">
           Auto-tag content based on filenames.

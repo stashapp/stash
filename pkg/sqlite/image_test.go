@@ -114,13 +114,20 @@ func TestImageQueryPath(t *testing.T) {
 		Modifier: models.CriterionModifierEquals,
 	}
 
-	verifyImagePath(t, pathCriterion)
+	verifyImagePath(t, pathCriterion, 1)
 
 	pathCriterion.Modifier = models.CriterionModifierNotEquals
-	verifyImagePath(t, pathCriterion)
+	verifyImagePath(t, pathCriterion, totalImages-1)
+
+	pathCriterion.Modifier = models.CriterionModifierMatchesRegex
+	pathCriterion.Value = "image_.*1_Path"
+	verifyImagePath(t, pathCriterion, 1) // TODO - 2 if zip path is included
+
+	pathCriterion.Modifier = models.CriterionModifierNotMatchesRegex
+	verifyImagePath(t, pathCriterion, totalImages-1) // TODO - -2 if zip path is included
 }
 
-func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput) {
+func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput, expected int) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Image()
 		imageFilter := models.ImageFilterType{
@@ -131,6 +138,8 @@ func verifyImagePath(t *testing.T, pathCriterion models.StringCriterionInput) {
 		if err != nil {
 			t.Errorf("Error querying image: %s", err.Error())
 		}
+
+		assert.Equal(t, expected, len(images), "number of returned images")
 
 		for _, image := range images {
 			verifyString(t, image.Path, pathCriterion)

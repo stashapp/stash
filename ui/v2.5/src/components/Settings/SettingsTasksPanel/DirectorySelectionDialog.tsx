@@ -4,12 +4,12 @@ import { useConfiguration } from "src/core/StashService";
 import { Icon, Modal } from "src/components/Shared";
 import { FolderSelect } from "src/components/Shared/FolderSelect/FolderSelect";
 
-interface IScanDialogProps {
+interface IDirectorySelectionDialogProps {
   onClose: (paths?: string[]) => void;
 }
 
-export const ScanDialog: React.FC<IScanDialogProps> = (
-  props: IScanDialogProps
+export const DirectorySelectionDialog: React.FC<IDirectorySelectionDialogProps> = (
+  props: IDirectorySelectionDialogProps
 ) => {
   const { data } = useConfiguration();
 
@@ -33,12 +33,12 @@ export const ScanDialog: React.FC<IScanDialogProps> = (
       show
       disabled={paths.length === 0}
       icon="pencil-alt"
-      header="Select folders to scan"
+      header="Select folders"
       accept={{
         onClick: () => {
           props.onClose(paths);
         },
-        text: "Scan",
+        text: "Confirm",
       }}
       cancel={{
         onClick: () => props.onClose(),

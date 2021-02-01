@@ -148,6 +148,16 @@ export abstract class Criterion {
         return { value: CriterionModifier.Includes, label: "Includes" };
       case CriterionModifier.Excludes:
         return { value: CriterionModifier.Excludes, label: "Excludes" };
+      case CriterionModifier.MatchesRegex:
+        return {
+          value: CriterionModifier.MatchesRegex,
+          label: "Matches Regex",
+        };
+      case CriterionModifier.NotMatchesRegex:
+        return {
+          value: CriterionModifier.NotMatchesRegex,
+          label: "Not Matches Regex",
+        };
     }
   }
 
@@ -195,6 +205,12 @@ export abstract class Criterion {
       case CriterionModifier.Excludes:
         modifierString = "excludes";
         break;
+      case CriterionModifier.MatchesRegex:
+        modifierString = "matches regex";
+        break;
+      case CriterionModifier.NotMatchesRegex:
+        modifierString = "not matches regex";
+        break;
       default:
         modifierString = "";
     }
@@ -215,18 +231,18 @@ export abstract class Criterion {
     return `${this.parameterName}-${this.modifier.toString()}`; // TODO add values?
   }
 
-  /*
-  public set(modifier: CriterionModifier, value: Value) {
-    this.modifier = modifier;
-    if (Array.isArray(this.value)) {
-      this.value.push(value);
-    } else {
-      this.value = value;
-    }
+  private static replaceSpecialCharacter(str: string, c: string) {
+    return str.replaceAll(c, encodeURIComponent(c));
   }
-  */
 
   public encodeValue(): CriterionValue {
+    // replace certain characters
+    if (typeof this.value === "string") {
+      let ret = this.value;
+      ret = Criterion.replaceSpecialCharacter(ret, "&");
+      ret = Criterion.replaceSpecialCharacter(ret, "+");
+      return ret;
+    }
     return this.value;
   }
 }
@@ -257,6 +273,8 @@ export class StringCriterion extends Criterion {
     StringCriterion.getModifierOption(CriterionModifier.Excludes),
     StringCriterion.getModifierOption(CriterionModifier.IsNull),
     StringCriterion.getModifierOption(CriterionModifier.NotNull),
+    StringCriterion.getModifierOption(CriterionModifier.MatchesRegex),
+    StringCriterion.getModifierOption(CriterionModifier.NotMatchesRegex),
   ];
   public options: string[] | undefined;
   public value: string = "";
@@ -286,6 +304,8 @@ export class MandatoryStringCriterion extends StringCriterion {
     StringCriterion.getModifierOption(CriterionModifier.NotEquals),
     StringCriterion.getModifierOption(CriterionModifier.Includes),
     StringCriterion.getModifierOption(CriterionModifier.Excludes),
+    StringCriterion.getModifierOption(CriterionModifier.MatchesRegex),
+    StringCriterion.getModifierOption(CriterionModifier.NotMatchesRegex),
   ];
 }
 
