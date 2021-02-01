@@ -16,6 +16,7 @@ import {
   usePerformerCreate,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
+import { TextUtils } from "src/utils";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -69,13 +70,13 @@ interface IFilterComponentProps extends IFilterProps {
 interface IFilterSelectProps<T extends boolean>
   extends Omit<ISelectProps<T>, "onChange" | "items" | "onCreateOption"> {}
 
-type Gallery = Pick<GQL.Gallery, "id" | "title">;
+type Gallery = { id: string, title: string };
 interface IGallerySelect {
   galleries: Gallery[];
   onSelect: (items: Gallery[]) => void;
 }
 
-type Scene = Pick<GQL.Scene, "id" | "title">;
+type Scene = { id: string, title: string };
 interface ISceneSelect {
   scenes: Scene[];
   onSelect: (items: Scene[]) => void;
@@ -246,7 +247,7 @@ export const GallerySelect: React.FC<IGallerySelect> = (props) => {
 
   const galleries = data?.findGalleries.galleries ?? [];
   const items = galleries.map((g) => ({
-    label: g.title ?? g.path ?? "",
+    label: g.title ?? TextUtils.fileNameFromPath(g.path ?? ""),
     value: g.id,
   }));
 
@@ -296,9 +297,9 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
   });
 
   const scenes = data?.findScenes.scenes ?? [];
-  const items = scenes.map((g) => ({
-    label: g.title ?? g.path ?? "",
-    value: g.id,
+  const items = scenes.map((s) => ({
+    label: s.title ?? TextUtils.fileNameFromPath(s.path ?? ""),
+    value: s.id,
   }));
 
   const onInputChange = debounce((input: string) => {
@@ -315,9 +316,9 @@ export const SceneSelect: React.FC<ISceneSelect> = (props) => {
     );
   };
 
-  const options = props.scenes.map((g) => ({
-    value: g.id,
-    label: g.title ?? "Unknown",
+  const options = props.scenes.map((s) => ({
+    value: s.id,
+    label: s.title,
   }));
 
   return (

@@ -18,7 +18,7 @@ import {
   LoadingIndicator,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { FormUtils, EditableTextUtils } from "src/utils";
+import { FormUtils, EditableTextUtils, TextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { GalleryScrapeDialog } from "./GalleryScrapeDialog";
 
@@ -50,7 +50,7 @@ export const GalleryEditPanel: React.FC<
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [tagIds, setTagIds] = useState<string[]>();
-  const [scenes, setScenes] = useState<Pick<GQL.Scene, "id" | "title">[]>([]);
+  const [scenes, setScenes] = useState<{ id: string, title: string }[]>([]);
 
   const Scrapers = useListGalleryScrapers();
 
@@ -122,7 +122,7 @@ export const GalleryEditPanel: React.FC<
     setScenes(
       (state?.scenes ?? []).map((s) => ({
         id: s.id,
-        title: s.title ?? s.path,
+        title: s.title ?? TextUtils.fileNameFromPath(s.path ?? ""),
       }))
     );
   }

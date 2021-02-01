@@ -28,7 +28,7 @@ import {
   ImageInput,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { ImageUtils, FormUtils, EditableTextUtils } from "src/utils";
+import { ImageUtils, FormUtils, EditableTextUtils, TextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
@@ -47,9 +47,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [url, setUrl] = useState<string>();
   const [date, setDate] = useState<string>();
   const [rating, setRating] = useState<number>();
-  const [galleries, setGalleries] = useState<
-    Pick<GQL.Gallery, "id" | "title">[]
-  >([]);
+  const [galleries, setGalleries] = useState<{ id: string, title: string }[]>([]);
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [movieIds, setMovieIds] = useState<string[] | undefined>(undefined);
@@ -176,7 +174,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setGalleries(
       (state?.galleries ?? []).map((g) => ({
         id: g.id,
-        title: g.title ?? g.path ?? "Unknown",
+        title: g.title ?? TextUtils.fileNameFromPath(g.path ?? ""),
       }))
     );
     setStudioId(state?.studio?.id ?? undefined);
