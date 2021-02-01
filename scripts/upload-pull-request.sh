@@ -35,4 +35,4 @@ uploadFile "dist/stash-win.exe"
 uploadFile "dist/stash-linux"
 
 echo "SHA1 checksums"
-cat "dist/checksums.sha1" | grep -v '\-pi\|\-arm'
+cat dist/checksums*.sha1 | grep -v '\-pi\|\-arm'
