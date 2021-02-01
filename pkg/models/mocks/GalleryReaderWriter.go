@@ -35,20 +35,6 @@ func (_m *GalleryReaderWriter) All() ([]*models.Gallery, error) {
 	return r0, r1
 }
 
-// ClearGalleryId provides a mock function with given fields: sceneID
-func (_m *GalleryReaderWriter) ClearGalleryId(sceneID int) error {
-	ret := _m.Called(sceneID)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(int) error); ok {
-		r0 = rf(sceneID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // Count provides a mock function with given fields:
 func (_m *GalleryReaderWriter) Count() (int, error) {
 	ret := _m.Called()
@@ -153,6 +139,29 @@ func (_m *GalleryReaderWriter) FindByChecksum(checksum string) (*models.Gallery,
 	return r0, r1
 }
 
+// FindByChecksums provides a mock function with given fields: checksums
+func (_m *GalleryReaderWriter) FindByChecksums(checksums []string) ([]*models.Gallery, error) {
+	ret := _m.Called(checksums)
+
+	var r0 []*models.Gallery
+	if rf, ok := ret.Get(0).(func([]string) []*models.Gallery); ok {
+		r0 = rf(checksums)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.Gallery)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func([]string) error); ok {
+		r1 = rf(checksums)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByImageID provides a mock function with given fields: imageID
 func (_m *GalleryReaderWriter) FindByImageID(imageID int) ([]*models.Gallery, error) {
 	ret := _m.Called(imageID)
@@ -200,15 +209,15 @@ func (_m *GalleryReaderWriter) FindByPath(path string) (*models.Gallery, error) 
 }
 
 // FindBySceneID provides a mock function with given fields: sceneID
-func (_m *GalleryReaderWriter) FindBySceneID(sceneID int) (*models.Gallery, error) {
+func (_m *GalleryReaderWriter) FindBySceneID(sceneID int) ([]*models.Gallery, error) {
 	ret := _m.Called(sceneID)
 
-	var r0 *models.Gallery
-	if rf, ok := ret.Get(0).(func(int) *models.Gallery); ok {
+	var r0 []*models.Gallery
+	if rf, ok := ret.Get(0).(func(int) []*models.Gallery); ok {
 		r0 = rf(sceneID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Gallery)
+			r0 = ret.Get(0).([]*models.Gallery)
 		}
 	}
 
@@ -293,6 +302,29 @@ func (_m *GalleryReaderWriter) GetPerformerIDs(galleryID int) ([]int, error) {
 
 // GetTagIDs provides a mock function with given fields: galleryID
 func (_m *GalleryReaderWriter) GetTagIDs(galleryID int) ([]int, error) {
+	ret := _m.Called(galleryID)
+
+	var r0 []int
+	if rf, ok := ret.Get(0).(func(int) []int); ok {
+		r0 = rf(galleryID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(galleryID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetSceneIDs provides a mock function with given fields: galleryID
+func (_m *GalleryReaderWriter) GetSceneIDs(galleryID int) ([]int, error) {
 	ret := _m.Called(galleryID)
 
 	var r0 []int
@@ -446,25 +478,16 @@ func (_m *GalleryReaderWriter) UpdateTags(galleryID int, tagIDs []int) error {
 	return r0
 }
 
-// ValidGalleriesForScenePath provides a mock function with given fields: scenePath
-func (_m *GalleryReaderWriter) ValidGalleriesForScenePath(scenePath string) ([]*models.Gallery, error) {
-	ret := _m.Called(scenePath)
+// UpdateScenes provides a mock function with given fields: galleryID, sceneIDs
+func (_m *GalleryReaderWriter) UpdateScenes(galleryID int, sceneIDs []int) error {
+	ret := _m.Called(galleryID, sceneIDs)
 
-	var r0 []*models.Gallery
-	if rf, ok := ret.Get(0).(func(string) []*models.Gallery); ok {
-		r0 = rf(scenePath)
+	var r0 error
+	if rf, ok := ret.Get(0).(func(int, []int) error); ok {
+		r0 = rf(galleryID, sceneIDs)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*models.Gallery)
-		}
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(scenePath)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }

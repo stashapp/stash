@@ -16,7 +16,6 @@ type Gallery struct {
 	Rating      sql.NullInt64       `db:"rating" json:"rating"`
 	Organized   bool                `db:"organized" json:"organized"`
 	StudioID    sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	SceneID     sql.NullInt64       `db:"scene_id,omitempty" json:"scene_id"`
 	FileModTime NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
 	CreatedAt   SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt   SQLiteTimestamp     `db:"updated_at" json:"updated_at"`
@@ -35,7 +34,6 @@ type GalleryPartial struct {
 	Rating      *sql.NullInt64       `db:"rating" json:"rating"`
 	Organized   *bool                `db:"organized" json:"organized"`
 	StudioID    *sql.NullInt64       `db:"studio_id,omitempty" json:"studio_id"`
-	SceneID     *sql.NullInt64       `db:"scene_id,omitempty" json:"scene_id"`
 	FileModTime *NullSQLiteTimestamp `db:"file_mod_time" json:"file_mod_time"`
 	CreatedAt   *SQLiteTimestamp     `db:"created_at" json:"created_at"`
 	UpdatedAt   *SQLiteTimestamp     `db:"updated_at" json:"updated_at"`

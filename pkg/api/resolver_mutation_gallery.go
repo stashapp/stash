@@ -60,14 +60,6 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input models.Galle
 		newGallery.StudioID = sql.NullInt64{Valid: false}
 	}
 
-	if input.SceneID != nil {
-		sceneID, _ := strconv.ParseInt(*input.SceneID, 10, 64)
-		newGallery.SceneID = sql.NullInt64{Int64: sceneID, Valid: true}
-	} else {
-		// studio must be nullable
-		newGallery.SceneID = sql.NullInt64{Valid: false}
-	}
-
 	// Start the transaction and save the gallery
 	var gallery *models.Gallery
 	if err := r.withTxn(ctx, func(repo models.Repository) error {
@@ -85,6 +77,11 @@ func (r *mutationResolver) GalleryCreate(ctx context.Context, input models.Galle
 
 		// Save the tags
 		if err := r.updateGalleryTags(qb, gallery.ID, input.TagIds); err != nil {
+			return err
+		}
+
+		// Save the scenes
+		if err := r.updateGalleryScenes(qb, gallery.ID, input.SceneIds); err != nil {
 			return err
 		}
 
@@ -110,6 +107,14 @@ func (r *mutationResolver) updateGalleryTags(qb models.GalleryReaderWriter, gall
 		return err
 	}
 	return qb.UpdateTags(galleryID, ids)
+}
+
+func (r *mutationResolver) updateGalleryScenes(qb models.GalleryReaderWriter, galleryID int, sceneIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(sceneIDs)
+	if err != nil {
+		return err
+	}
+	return qb.UpdateScenes(galleryID, ids)
 }
 
 func (r *mutationResolver) GalleryUpdate(ctx context.Context, input models.GalleryUpdateInput) (ret *models.Gallery, err error) {
@@ -221,6 +226,13 @@ func (r *mutationResolver) galleryUpdate(input models.GalleryUpdateInput, transl
 		}
 	}
 
+	// Save the scenes
+	if translator.hasField("scene_ids") {
+		if err := r.updateGalleryScenes(qb, galleryID, input.SceneIds); err != nil {
+			return nil, err
+		}
+	}
+
 	return gallery, nil
 }
 
@@ -241,7 +253,6 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 	updatedGallery.Date = translator.sqliteDate(input.Date, "date")
 	updatedGallery.Rating = translator.nullInt64(input.Rating, "rating")
 	updatedGallery.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
-	updatedGallery.SceneID = translator.nullInt64FromString(input.SceneID, "scene_id")
 	updatedGallery.Organized = input.Organized
 
 	ret := []*models.Gallery{}
@@ -284,6 +295,18 @@ func (r *mutationResolver) BulkGalleryUpdate(ctx context.Context, input models.B
 					return err
 				}
 			}
+
+			// Save the scenes
+			if translator.hasField("scene_ids") {
+				sceneIDs, err := adjustGallerySceneIDs(qb, galleryID, *input.SceneIds)
+				if err != nil {
+					return err
+				}
+
+				if err := qb.UpdateScenes(galleryID, sceneIDs); err != nil {
+					return err
+				}
+			}
 		}
 
 		return nil
@@ -305,6 +328,15 @@ func adjustGalleryPerformerIDs(qb models.GalleryReader, galleryID int, ids model
 
 func adjustGalleryTagIDs(qb models.GalleryReader, galleryID int, ids models.BulkUpdateIds) (ret []int, err error) {
 	ret, err = qb.GetTagIDs(galleryID)
+	if err != nil {
+		return nil, err
+	}
+
+	return adjustIDs(ret, ids), nil
+}
+
+func adjustGallerySceneIDs(qb models.GalleryReader, galleryID int, ids models.BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetSceneIDs(galleryID)
 	if err != nil {
 		return nil, err
 	}

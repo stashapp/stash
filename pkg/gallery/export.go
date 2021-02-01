@@ -74,3 +74,14 @@ func GetIDs(galleries []*models.Gallery) []int {
 
 	return results
 }
+
+func GetChecksums(galleries []*models.Gallery) []string {
+	var results []string
+	for _, gallery := range galleries {
+		if gallery.Checksum != "" {
+			results = append(results, gallery.Checksum)
+		}
+	}
+
+	return results
+}

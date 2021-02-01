@@ -35,8 +35,8 @@ fragment SceneData on Scene {
     ...SceneMarkerData
   }
 
-  gallery {
-    ...GalleryData
+  galleries {
+    ...GallerySlimData
   }
 
   studio {

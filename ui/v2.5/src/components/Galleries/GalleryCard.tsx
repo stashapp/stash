@@ -16,9 +16,9 @@ import { TextUtils } from "src/utils";
 interface IProps {
   gallery: GQL.GallerySlimDataFragment;
   selecting?: boolean;
-  selected: boolean | undefined;
-  zoomIndex: number;
-  onSelectedChanged: (selected: boolean, shiftKey: boolean) => void;
+  selected?: boolean | undefined;
+  zoomIndex?: number;
+  onSelectedChanged?: (selected: boolean, shiftKey: boolean) => void;
 }
 
 export const GalleryCard: React.FC<IProps> = (props) => {
@@ -27,19 +27,18 @@ export const GalleryCard: React.FC<IProps> = (props) => {
     config?.data?.configuration.interface.showStudioAsText ?? false;
 
   function maybeRenderScenePopoverButton() {
-    if (!props.gallery.scene) return;
+    if (props.gallery.scenes.length === 0) return;
 
-    const popoverContent = (
-      <TagLink key={props.gallery.scene.id} scene={props.gallery.scene} />
-    );
+    const popoverContent = props.gallery.scenes.map((scene) => (
+      <TagLink key={scene.id} scene={scene} />
+    ));
 
     return (
       <HoverPopover placement="bottom" content={popoverContent}>
-        <Link to={`/scenes/${props.gallery.scene.id}`}>
-          <Button className="minimal">
-            <Icon icon="play-circle" />
-          </Button>
-        </Link>
+        <Button className="minimal">
+          <Icon icon="play-circle" />
+          <span>{props.gallery.scenes.length}</span>
+        </Button>
       </HoverPopover>
     );
   }
@@ -124,7 +123,7 @@ export const GalleryCard: React.FC<IProps> = (props) => {
 
   function maybeRenderPopoverButtonGroup() {
     if (
-      props.gallery.scene ||
+      props.gallery.scenes.length > 0 ||
       props.gallery.performers.length > 0 ||
       props.gallery.tags.length > 0 ||
       props.gallery.organized

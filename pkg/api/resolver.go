@@ -120,41 +120,6 @@ func (r *queryResolver) MarkerStrings(ctx context.Context, q *string, sort *stri
 	return ret, nil
 }
 
-func (r *queryResolver) ValidGalleriesForScene(ctx context.Context, scene_id *string) ([]*models.Gallery, error) {
-	if scene_id == nil {
-		panic("nil scene id") // TODO make scene_id mandatory
-	}
-	sceneID, err := strconv.Atoi(*scene_id)
-	if err != nil {
-		return nil, err
-	}
-
-	var validGalleries []*models.Gallery
-	var sceneGallery *models.Gallery
-	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
-		sqb := repo.Scene()
-		scene, err := sqb.Find(sceneID)
-		if err != nil {
-			return err
-		}
-
-		qb := repo.Gallery()
-		validGalleries, err = qb.ValidGalleriesForScenePath(scene.Path)
-		if err != nil {
-			return err
-		}
-		sceneGallery, err = qb.FindBySceneID(sceneID)
-		return err
-	}); err != nil {
-		return nil, err
-	}
-
-	if sceneGallery != nil {
-		validGalleries = append(validGalleries, sceneGallery)
-	}
-	return validGalleries, nil
-}
-
 func (r *queryResolver) Stats(ctx context.Context) (*models.StatsResultType, error) {
 	var ret models.StatsResultType
 	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {

@@ -17,11 +17,6 @@ import (
 func DestroyScene(scene *models.Scene, repo models.Repository) (func(), error) {
 	qb := repo.Scene()
 	mqb := repo.SceneMarker()
-	gqb := repo.Gallery()
-
-	if err := gqb.ClearGalleryId(scene.ID); err != nil {
-		return nil, err
-	}
 
 	markers, err := mqb.FindBySceneID(scene.ID)
 	if err != nil {

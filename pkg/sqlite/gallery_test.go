@@ -94,21 +94,21 @@ func TestGalleryFindBySceneID(t *testing.T) {
 		gqb := r.Gallery()
 
 		sceneID := sceneIDs[sceneIdxWithGallery]
-		gallery, err := gqb.FindBySceneID(sceneID)
+		galleries, err := gqb.FindBySceneID(sceneID)
 
 		if err != nil {
 			t.Errorf("Error finding gallery: %s", err.Error())
 		}
 
-		assert.Equal(t, getGalleryStringValue(galleryIdxWithScene, "Path"), gallery.Path.String)
+		assert.Equal(t, getGalleryStringValue(galleryIdxWithScene, "Path"), galleries[0].Path.String)
 
-		gallery, err = gqb.FindBySceneID(0)
+		galleries, err = gqb.FindBySceneID(0)
 
 		if err != nil {
 			t.Errorf("Error finding gallery: %s", err.Error())
 		}
 
-		assert.Nil(t, gallery)
+		assert.Nil(t, galleries)
 
 		return nil
 	})
@@ -233,7 +233,7 @@ func verifyGalleriesRating(t *testing.T, ratingCriterion models.IntCriterionInpu
 func TestGalleryQueryIsMissingScene(t *testing.T) {
 	withTxn(func(r models.Repository) error {
 		qb := r.Gallery()
-		isMissing := "scene"
+		isMissing := "scenes"
 		galleryFilter := models.GalleryFilterType{
 			IsMissing: &isMissing,
 		}
@@ -265,10 +265,8 @@ func TestGalleryQueryIsMissingScene(t *testing.T) {
 	})
 }
 
-// TODO ValidGalleriesForScenePath
 // TODO Count
 // TODO All
 // TODO Query
 // TODO Update
 // TODO Destroy
-// TODO ClearGalleryId

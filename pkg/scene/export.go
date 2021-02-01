@@ -127,21 +127,6 @@ func GetStudioName(reader models.StudioReader, scene *models.Scene) (string, err
 	return "", nil
 }
 
-// GetGalleryChecksum returns the checksum of the provided gallery. It returns an
-// empty string if there is no gallery assigned to the scene.
-func GetGalleryChecksum(reader models.GalleryReader, scene *models.Scene) (string, error) {
-	gallery, err := reader.FindBySceneID(scene.ID)
-	if err != nil {
-		return "", fmt.Errorf("error getting scene gallery: %s", err.Error())
-	}
-
-	if gallery != nil {
-		return gallery.Checksum, nil
-	}
-
-	return "", nil
-}
-
 // GetTagNames returns a slice of tag names corresponding to the provided
 // scene's tags.
 func GetTagNames(reader models.TagReader, scene *models.Scene) ([]string, error) {

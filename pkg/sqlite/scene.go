@@ -13,6 +13,7 @@ const sceneTable = "scenes"
 const sceneIDColumn = "scene_id"
 const performersScenesTable = "performers_scenes"
 const scenesTagsTable = "scenes_tags"
+const scenesGalleriesTable = "scenes_galleries"
 const moviesScenesTable = "movies_scenes"
 
 var scenesForPerformerQuery = selectAll(sceneTable) + `
@@ -42,6 +43,12 @@ var countScenesForTagQuery = `
 SELECT tag_id AS id FROM scenes_tags
 WHERE scenes_tags.tag_id = ?
 GROUP BY scenes_tags.scene_id
+`
+
+var scenesForGalleryQuery = selectAll(sceneTable) + `
+LEFT JOIN scenes_galleries as galleries_join on galleries_join.scene_id = scenes.id
+WHERE galleries_join.gallery_id = ?
+GROUP BY scenes.id
 `
 
 var countScenesForMissingChecksumQuery = `
@@ -221,6 +228,11 @@ func (qb *sceneQueryBuilder) FindByPerformerID(performerID int) ([]*models.Scene
 	return qb.queryScenes(scenesForPerformerQuery, args)
 }
 
+func (qb *sceneQueryBuilder) FindByGalleryID(galleryID int) ([]*models.Scene, error) {
+	args := []interface{}{galleryID}
+	return qb.queryScenes(scenesForGalleryQuery, args)
+}
+
 func (qb *sceneQueryBuilder) CountByPerformerID(performerID int) (int, error) {
 	args := []interface{}{performerID}
 	return qb.runCountQuery(qb.buildCountQuery(countScenesForPerformerQuery), args)
@@ -293,7 +305,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 		left join performers_scenes as performers_join on performers_join.scene_id = scenes.id
 		left join movies_scenes as movies_join on movies_join.scene_id = scenes.id
 		left join studios as studio on studio.id = scenes.studio_id
-		left join galleries as gallery on gallery.scene_id = scenes.id
+		left join scenes_galleries as galleries_join on galleries_join.scene_id = scenes.id
 		left join scenes_tags as tags_join on tags_join.scene_id = scenes.id
 		left join scene_stash_ids on scene_stash_ids.scene_id = scenes.id
 	`
@@ -368,8 +380,8 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 
 	if isMissingFilter := sceneFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
-		case "gallery":
-			query.addWhere("gallery.scene_id IS NULL")
+		case "galleries":
+			query.addWhere("galleries_join.scene_id IS NULL")
 		case "studio":
 			query.addWhere("scenes.studio_id IS NULL")
 		case "movie":
@@ -681,6 +693,26 @@ func (qb *sceneQueryBuilder) GetTagIDs(id int) ([]int, error) {
 func (qb *sceneQueryBuilder) UpdateTags(id int, tagIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.tagsRepository().replace(id, tagIDs)
+}
+
+func (qb *sceneQueryBuilder) galleriesRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: scenesGalleriesTable,
+			idColumn:  sceneIDColumn,
+		},
+		fkColumn: galleryIDColumn,
+	}
+}
+
+func (qb *sceneQueryBuilder) GetGalleryIDs(id int) ([]int, error) {
+	return qb.galleriesRepository().getIDs(id)
+}
+
+func (qb *sceneQueryBuilder) UpdateGalleries(id int, galleryIDs []int) error {
+	// Delete the existing joins and then create new ones
+	return qb.galleriesRepository().replace(id, galleryIDs)
 }
 
 func (qb *sceneQueryBuilder) stashIDRepository() *stashIDRepository {

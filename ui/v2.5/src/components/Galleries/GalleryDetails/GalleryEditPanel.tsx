@@ -12,12 +12,13 @@ import {
 import {
   PerformerSelect,
   TagSelect,
+  SceneSelect,
   StudioSelect,
   Icon,
   LoadingIndicator,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { FormUtils, EditableTextUtils } from "src/utils";
+import { FormUtils, EditableTextUtils, TextUtils } from "src/utils";
 import { RatingStars } from "src/components/Scenes/SceneDetails/RatingStars";
 import { GalleryScrapeDialog } from "./GalleryScrapeDialog";
 
@@ -49,6 +50,7 @@ export const GalleryEditPanel: React.FC<
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [tagIds, setTagIds] = useState<string[]>();
+  const [scenes, setScenes] = useState<{ id: string; title: string }[]>([]);
 
   const Scrapers = useListGalleryScrapers();
 
@@ -117,6 +119,12 @@ export const GalleryEditPanel: React.FC<
     setStudioId(state?.studio?.id ?? undefined);
     setPerformerIds(perfIds);
     setTagIds(tIds);
+    setScenes(
+      (state?.scenes ?? []).map((s) => ({
+        id: s.id,
+        title: s.title ?? TextUtils.fileNameFromPath(s.path ?? ""),
+      }))
+    );
   }
 
   useEffect(() => {
@@ -135,6 +143,7 @@ export const GalleryEditPanel: React.FC<
       studio_id: studioId ?? null,
       performer_ids: performerIds,
       tag_ids: tagIds,
+      scene_ids: scenes.map((s) => s.id),
     };
   }
 
@@ -387,6 +396,23 @@ export const GalleryEditPanel: React.FC<
                 isMulti
                 onSelect={(items) => setTagIds(items.map((item) => item.id))}
                 ids={tagIds}
+              />
+            </Col>
+          </Form.Group>
+
+          <Form.Group controlId="scenes" as={Row}>
+            {FormUtils.renderLabel({
+              title: "Scenes",
+              labelProps: {
+                column: true,
+                sm: 3,
+                xl: 12,
+              },
+            })}
+            <Col sm={9} xl={12}>
+              <SceneSelect
+                scenes={scenes}
+                onSelect={(items) => setScenes(items)}
               />
             </Col>
           </Form.Group>

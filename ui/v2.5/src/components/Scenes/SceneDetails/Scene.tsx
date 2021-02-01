@@ -24,6 +24,7 @@ import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
+import { SceneGalleriesPanel } from "./SceneGalleriesPanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { SceneGenerateDialog } from "../SceneGenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
@@ -243,13 +244,16 @@ export const Scene: React.FC = () => {
             ) : (
               ""
             )}
-            {scene.gallery ? (
+            {scene.galleries.length === 1 ? (
               <Nav.Item>
                 <Nav.Link eventKey="scene-gallery-panel">Gallery</Nav.Link>
               </Nav.Item>
-            ) : (
-              ""
-            )}
+            ) : undefined}
+            {scene.galleries.length > 1 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-galleries-panel">Galleries</Nav.Link>
+              </Nav.Item>
+            ) : undefined}
             <Nav.Item>
               <Nav.Link eventKey="scene-video-filter-panel">Filters</Nav.Link>
             </Nav.Item>
@@ -295,12 +299,15 @@ export const Scene: React.FC = () => {
           <Tab.Pane eventKey="scene-movie-panel">
             <SceneMoviePanel scene={scene} />
           </Tab.Pane>
-          {scene.gallery ? (
+          {scene.galleries.length === 1 && (
             <Tab.Pane eventKey="scene-gallery-panel">
-              <GalleryViewer gallery={scene.gallery} />
+              <GalleryViewer galleryId={scene.galleries[0].id} />
             </Tab.Pane>
-          ) : (
-            ""
+          )}
+          {scene.galleries.length > 1 && (
+            <Tab.Pane eventKey="scene-galleries-panel">
+              <SceneGalleriesPanel galleries={scene.galleries} />
+            </Tab.Pane>
           )}
           <Tab.Pane eventKey="scene-video-filter-panel">
             <SceneVideoFilterPanel scene={scene} />

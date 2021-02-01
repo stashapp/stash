@@ -382,15 +382,13 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, repo models.R
 			continue
 		}
 
-		sceneGallery, err := galleryReader.FindBySceneID(s.ID)
+		galleries, err := galleryReader.FindBySceneID(s.ID)
 		if err != nil {
-			logger.Errorf("[scenes] <%s> error getting scene gallery: %s", sceneHash, err.Error())
+			logger.Errorf("[scenes] <%s> error getting scene gallery checksums: %s", sceneHash, err.Error())
 			continue
 		}
 
-		if sceneGallery != nil {
-			newSceneJSON.Gallery = sceneGallery.Checksum
-		}
+		newSceneJSON.Galleries = gallery.GetChecksums(galleries)
 
 		performers, err := performerReader.FindBySceneID(s.ID)
 		if err != nil {
@@ -423,9 +421,7 @@ func exportScene(wg *sync.WaitGroup, jobChan <-chan *models.Scene, repo models.R
 				t.studios.IDs = utils.IntAppendUnique(t.studios.IDs, int(s.StudioID.Int64))
 			}
 
-			if sceneGallery != nil {
-				t.galleries.IDs = utils.IntAppendUnique(t.galleries.IDs, sceneGallery.ID)
-			}
+			t.galleries.IDs = utils.IntAppendUniques(t.galleries.IDs, gallery.GetIDs(galleries))
 
 			tagIDs, err := scene.GetDependentTagIDs(tagReader, sceneMarkerReader, s)
 			if err != nil {

@@ -300,40 +300,25 @@ func (t *ScanTask) associateGallery(wg *sizedwaitgroup.SizedWaitGroup) {
 			return nil
 		}
 
-		// gallery has no SceneID
-		if !g.SceneID.Valid {
-			basename := strings.TrimSuffix(t.FilePath, filepath.Ext(t.FilePath))
-			var relatedFiles []string
-			vExt := config.GetVideoExtensions()
-			// make a list of media files that can be related to the gallery
-			for _, ext := range vExt {
-				related := basename + "." + ext
-				// exclude gallery extensions from the related files
-				if !isGallery(related) {
-					relatedFiles = append(relatedFiles, related)
-				}
+		basename := strings.TrimSuffix(t.FilePath, filepath.Ext(t.FilePath))
+		var relatedFiles []string
+		vExt := config.GetVideoExtensions()
+		// make a list of media files that can be related to the gallery
+		for _, ext := range vExt {
+			related := basename + "." + ext
+			// exclude gallery extensions from the related files
+			if !isGallery(related) {
+				relatedFiles = append(relatedFiles, related)
 			}
-			for _, scenePath := range relatedFiles {
-				s, err := sqb.FindByPath(scenePath)
-				if err != nil {
+		}
+		for _, scenePath := range relatedFiles {
+			scene, _ := sqb.FindByPath(scenePath)
+			// found related Scene
+			if scene != nil {
+				logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, scene.ID)
+
+				if err := sqb.UpdateGalleries(scene.ID, []int{g.ID}); err != nil {
 					return err
-				}
-
-				// found related Scene
-				if s != nil {
-					logger.Infof("associate: Gallery %s is related to scene: %d", t.FilePath, s.ID)
-
-					g.SceneID.Int64 = int64(s.ID)
-					g.SceneID.Valid = true
-
-					_, err = qb.Update(*g)
-					if err != nil {
-						return fmt.Errorf("associate: Error updating gallery sceneId %s", err)
-					}
-
-					// since a gallery can have only one related scene
-					// only first found is associated
-					break
 				}
 			}
 		}

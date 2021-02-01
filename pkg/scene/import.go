@@ -25,7 +25,7 @@ type Importer struct {
 
 	ID             int
 	scene          models.Scene
-	gallery        *models.Gallery
+	galleries      []*models.Gallery
 	performers     []*models.Performer
 	movies         []models.MoviesScenes
 	tags           []*models.Tag
@@ -39,7 +39,7 @@ func (i *Importer) PreImport() error {
 		return err
 	}
 
-	if err := i.populateGallery(); err != nil {
+	if err := i.populateGalleries(); err != nil {
 		return err
 	}
 
@@ -174,25 +174,32 @@ func (i *Importer) createStudio(name string) (int, error) {
 	return created.ID, nil
 }
 
-func (i *Importer) populateGallery() error {
-	if i.Input.Gallery != "" {
-		gallery, err := i.GalleryWriter.FindByChecksum(i.Input.Gallery)
+func (i *Importer) populateGalleries() error {
+	if len(i.Input.Galleries) > 0 {
+		checksums := i.Input.Galleries
+		galleries, err := i.GalleryWriter.FindByChecksums(checksums)
 		if err != nil {
-			return fmt.Errorf("error finding gallery: %s", err.Error())
+			return err
 		}
 
-		if gallery == nil {
+		var pluckedChecksums []string
+		for _, gallery := range galleries {
+			pluckedChecksums = append(pluckedChecksums, gallery.Checksum)
+		}
+
+		missingGalleries := utils.StrFilter(checksums, func(checksum string) bool {
+			return !utils.StrInclude(pluckedChecksums, checksum)
+		})
+
+		if len(missingGalleries) > 0 {
 			if i.MissingRefBehaviour == models.ImportMissingRefEnumFail {
-				return fmt.Errorf("scene gallery '%s' not found", i.Input.Studio)
+				return fmt.Errorf("scene galleries [%s] not found", strings.Join(missingGalleries, ", "))
 			}
 
 			// we don't create galleries - just ignore
-			if i.MissingRefBehaviour == models.ImportMissingRefEnumIgnore || i.MissingRefBehaviour == models.ImportMissingRefEnumCreate {
-				return nil
-			}
-		} else {
-			i.gallery = gallery
 		}
+
+		i.galleries = galleries
 	}
 
 	return nil
@@ -333,11 +340,14 @@ func (i *Importer) PostImport(id int) error {
 		}
 	}
 
-	if i.gallery != nil {
-		i.gallery.SceneID = sql.NullInt64{Int64: int64(id), Valid: true}
-		_, err := i.GalleryWriter.Update(*i.gallery)
-		if err != nil {
-			return fmt.Errorf("failed to update gallery: %s", err.Error())
+	if len(i.galleries) > 0 {
+		var galleryIDs []int
+		for _, gallery := range i.galleries {
+			galleryIDs = append(galleryIDs, gallery.ID)
+		}
+
+		if err := i.ReaderWriter.UpdateGalleries(id, galleryIDs); err != nil {
+			return fmt.Errorf("failed to associate galleries: %s", err.Error())
 		}
 	}
 

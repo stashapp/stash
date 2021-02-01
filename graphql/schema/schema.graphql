@@ -50,8 +50,6 @@ type Query {
 
   """Get marker strings"""
   markerStrings(q: String, sort: String): [MarkerStringsResultType]!
-  """Get the list of valid galleries for a given scene ID"""
-  validGalleriesForScene(scene_id: ID): [Gallery!]!
   """Get stats"""
   stats: StatsResultType!
   """Organize scene markers by tag for a given scene ID"""

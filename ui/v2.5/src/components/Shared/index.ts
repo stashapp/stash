@@ -1,11 +1,12 @@
 export {
-  SceneGallerySelect,
+  GallerySelect,
   ScrapePerformerSuggest,
   MarkerTitleSuggest,
   FilterSelect,
   PerformerSelect,
   StudioSelect,
   TagSelect,
+  SceneSelect,
 } from "./Select";
 
 export { default as Icon } from "./Icon";

@@ -22,13 +22,13 @@ import {
   PerformerSelect,
   TagSelect,
   StudioSelect,
-  SceneGallerySelect,
+  GallerySelect,
   Icon,
   LoadingIndicator,
   ImageInput,
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
-import { ImageUtils, FormUtils, EditableTextUtils } from "src/utils";
+import { ImageUtils, FormUtils, EditableTextUtils, TextUtils } from "src/utils";
 import { MovieSelect } from "src/components/Shared/Select";
 import { SceneMovieTable, MovieSceneIndexMap } from "./SceneMovieTable";
 import { RatingStars } from "./RatingStars";
@@ -47,7 +47,9 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
   const [url, setUrl] = useState<string>();
   const [date, setDate] = useState<string>();
   const [rating, setRating] = useState<number>();
-  const [galleryId, setGalleryId] = useState<string>();
+  const [galleries, setGalleries] = useState<{ id: string; title: string }[]>(
+    []
+  );
   const [studioId, setStudioId] = useState<string>();
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [movieIds, setMovieIds] = useState<string[] | undefined>(undefined);
@@ -171,7 +173,12 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
     setUrl(state.url ?? undefined);
     setDate(state.date ?? undefined);
     setRating(state.rating === null ? NaN : state.rating);
-    setGalleryId(state?.gallery?.id ?? undefined);
+    setGalleries(
+      (state?.galleries ?? []).map((g) => ({
+        id: g.id,
+        title: g.title ?? TextUtils.fileNameFromPath(g.path ?? ""),
+      }))
+    );
     setStudioId(state?.studio?.id ?? undefined);
     setMovieIds(moviIds);
     setMovieSceneIndexes(movieSceneIdx);
@@ -196,7 +203,7 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
       url,
       date,
       rating: rating ?? null,
-      gallery_id: galleryId ?? null,
+      gallery_ids: galleries.map((g) => g.id),
       studio_id: studioId ?? null,
       performer_ids: performerIds,
       movies: makeMovieInputs(),
@@ -596,15 +603,14 @@ export const SceneEditPanel: React.FC<IProps> = (props: IProps) => {
               />
             </Col>
           </Form.Group>
-          <Form.Group controlId="gallery" as={Row}>
+          <Form.Group controlId="galleries" as={Row}>
             {FormUtils.renderLabel({
-              title: "Gallery",
+              title: "Galleries",
             })}
             <Col xs={9}>
-              <SceneGallerySelect
-                sceneId={props.scene.id}
-                gallery={props.scene.gallery ?? undefined}
-                onSelect={(item) => setGalleryId(item ? item.id : undefined)}
+              <GallerySelect
+                galleries={galleries}
+                onSelect={(items) => setGalleries(items)}
               />
             </Col>
           </Form.Group>

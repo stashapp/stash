@@ -14,11 +14,9 @@ import {
   useTagCreate,
   useStudioCreate,
   usePerformerCreate,
-  useFindGalleries,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
-import { ListFilterModel } from "src/models/list-filter/filter";
-import { FilterMode } from "src/models/list-filter/types";
+import { TextUtils } from "src/utils";
 
 export type ValidTypes =
   | GQL.SlimPerformerDataFragment
@@ -72,22 +70,27 @@ interface IFilterComponentProps extends IFilterProps {
 interface IFilterSelectProps<T extends boolean>
   extends Omit<ISelectProps<T>, "onChange" | "items" | "onCreateOption"> {}
 
-interface ISceneGallerySelect {
-  gallery?: Pick<GQL.Gallery, "title" | "path" | "id">;
-  sceneId: string;
-  onSelect: (
-    item:
-      | GQL.ValidGalleriesForSceneQuery["validGalleriesForScene"][0]
-      | undefined
-  ) => void;
+type Gallery = { id: string; title: string };
+interface IGallerySelect {
+  galleries: Gallery[];
+  onSelect: (items: Gallery[]) => void;
 }
 
-const getSelectedValues = (selectedItems: ValueType<Option, boolean>) =>
+type Scene = { id: string; title: string };
+interface ISceneSelect {
+  scenes: Scene[];
+  onSelect: (items: Scene[]) => void;
+}
+
+const getSelectedItems = (selectedItems: ValueType<Option, boolean>) =>
   selectedItems
-    ? (Array.isArray(selectedItems) ? selectedItems : [selectedItems]).map(
-        (item) => item.value
-      )
+    ? Array.isArray(selectedItems)
+      ? selectedItems
+      : [selectedItems]
     : [];
+
+const getSelectedValues = (selectedItems: ValueType<Option, boolean>) =>
+  getSelectedItems(selectedItems).map((item) => item.value);
 
 const SelectComponent = <T extends boolean>({
   type,
@@ -231,53 +234,104 @@ const FilterSelectComponent = <T extends boolean>(
   );
 };
 
-export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
+export const GallerySelect: React.FC<IGallerySelect> = (props) => {
   const [query, setQuery] = useState<string>("");
-  const { data, loading } = useFindGalleries(getFilter());
-  const [selectedOption, setSelectedOption] = useState<Option>();
+  const { data, loading } = GQL.useFindGalleriesQuery({
+    skip: query === "",
+    variables: {
+      filter: {
+        q: query,
+      },
+    },
+  });
 
   const galleries = data?.findGalleries.galleries ?? [];
   const items = galleries.map((g) => ({
-    label: g.title ?? g.path ?? "",
+    label: g.title ?? TextUtils.fileNameFromPath(g.path ?? ""),
     value: g.id,
   }));
-
-  function getFilter() {
-    const ret = new ListFilterModel(FilterMode.Galleries);
-    ret.searchTerm = query;
-    return ret;
-  }
 
   const onInputChange = debounce((input: string) => {
     setQuery(input);
   }, 500);
 
-  const onChange = (selectedItem: ValueType<Option, false>) => {
-    setSelectedOption(selectedItem ?? undefined);
+  const onChange = (selectedItems: ValueType<Option, boolean>) => {
+    const selected = getSelectedItems(selectedItems);
     props.onSelect(
-      selectedItem
-        ? galleries.find((g) => g.id === selectedItem.value)
-        : undefined
+      selected.map((s) => ({
+        id: s.value,
+        title: s.label,
+      }))
     );
   };
 
-  const option =
-    selectedOption ??
-    (props.gallery
-      ? {
-          value: props.gallery.id,
-          label: props.gallery.title ?? props.gallery.path ?? "Unknown",
-        }
-      : undefined);
+  const options = props.galleries.map((g) => ({
+    value: g.id,
+    label: g.title ?? "Unknown",
+  }));
 
   return (
     <SelectComponent
-      isMulti={false}
       onChange={onChange}
       onInputChange={onInputChange}
       isLoading={loading}
       items={items}
-      selectedOptions={option}
+      selectedOptions={options}
+      isMulti
+      placeholder="Search for gallery..."
+      noOptionsMessage={query === "" ? null : "No galleries found."}
+      showDropdown={false}
+    />
+  );
+};
+
+export const SceneSelect: React.FC<ISceneSelect> = (props) => {
+  const [query, setQuery] = useState<string>("");
+  const { data, loading } = GQL.useFindScenesQuery({
+    skip: query === "",
+    variables: {
+      filter: {
+        q: query,
+      },
+    },
+  });
+
+  const scenes = data?.findScenes.scenes ?? [];
+  const items = scenes.map((s) => ({
+    label: s.title ?? TextUtils.fileNameFromPath(s.path ?? ""),
+    value: s.id,
+  }));
+
+  const onInputChange = debounce((input: string) => {
+    setQuery(input);
+  }, 500);
+
+  const onChange = (selectedItems: ValueType<Option, true>) => {
+    const selected = getSelectedItems(selectedItems);
+    props.onSelect(
+      (selected ?? []).map((s) => ({
+        id: s.value,
+        title: s.label,
+      }))
+    );
+  };
+
+  const options = props.scenes.map((s) => ({
+    value: s.id,
+    label: s.title,
+  }));
+
+  return (
+    <SelectComponent
+      onChange={onChange}
+      onInputChange={onInputChange}
+      isLoading={loading}
+      items={items}
+      selectedOptions={options}
+      isMulti
+      placeholder="Search for scene..."
+      noOptionsMessage={query === "" ? null : "No scenes found."}
+      showDropdown={false}
     />
   );
 };

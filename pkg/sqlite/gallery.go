@@ -3,7 +3,6 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
-	"path/filepath"
 	"strconv"
 
 	"github.com/stashapp/stash/pkg/models"
@@ -14,6 +13,7 @@ const galleryTable = "galleries"
 const performersGalleriesTable = "performers_galleries"
 const galleriesTagsTable = "galleries_tags"
 const galleriesImagesTable = "galleries_images"
+const galleriesScenesTable = "scenes_galleries"
 const galleryIDColumn = "gallery_id"
 
 type galleryQueryBuilder struct {
@@ -73,23 +73,6 @@ func (qb *galleryQueryBuilder) Destroy(id int) error {
 	return qb.destroyExisting([]int{id})
 }
 
-type GalleryNullSceneID struct {
-	SceneID sql.NullInt64
-}
-
-func (qb *galleryQueryBuilder) ClearGalleryId(sceneID int) error {
-	_, err := qb.tx.NamedExec(
-		`UPDATE galleries SET scene_id = null WHERE scene_id = :sceneid`,
-		GalleryNullSceneID{
-			SceneID: sql.NullInt64{
-				Int64: int64(sceneID),
-				Valid: true,
-			},
-		},
-	)
-	return err
-}
-
 func (qb *galleryQueryBuilder) Find(id int) (*models.Gallery, error) {
 	var ret models.Gallery
 	if err := qb.get(id, &ret); err != nil {
@@ -125,22 +108,29 @@ func (qb *galleryQueryBuilder) FindByChecksum(checksum string) (*models.Gallery,
 	return qb.queryGallery(query, args)
 }
 
+func (qb *galleryQueryBuilder) FindByChecksums(checksums []string) ([]*models.Gallery, error) {
+	query := "SELECT * FROM galleries WHERE checksum IN " + getInBinding(len(checksums))
+	var args []interface{}
+	for _, checksum := range checksums {
+		args = append(args, checksum)
+	}
+	return qb.queryGalleries(query, args)
+}
+
 func (qb *galleryQueryBuilder) FindByPath(path string) (*models.Gallery, error) {
 	query := "SELECT * FROM galleries WHERE path = ? LIMIT 1"
 	args := []interface{}{path}
 	return qb.queryGallery(query, args)
 }
 
-func (qb *galleryQueryBuilder) FindBySceneID(sceneID int) (*models.Gallery, error) {
-	query := "SELECT galleries.* FROM galleries WHERE galleries.scene_id = ? LIMIT 1"
+func (qb *galleryQueryBuilder) FindBySceneID(sceneID int) ([]*models.Gallery, error) {
+	query := selectAll(galleryTable) + `
+		LEFT JOIN scenes_galleries as scenes_join on scenes_join.gallery_id = galleries.id
+		WHERE scenes_join.scene_id = ?
+		GROUP BY galleries.id
+	`
 	args := []interface{}{sceneID}
-	return qb.queryGallery(query, args)
-}
-
-func (qb *galleryQueryBuilder) ValidGalleriesForScenePath(scenePath string) ([]*models.Gallery, error) {
-	sceneDirPath := filepath.Dir(scenePath)
-	query := "SELECT galleries.* FROM galleries WHERE galleries.scene_id IS NULL AND galleries.path LIKE '" + sceneDirPath + "%' ORDER BY path ASC"
-	return qb.queryGalleries(query, nil)
+	return qb.queryGalleries(query, args)
 }
 
 func (qb *galleryQueryBuilder) FindByImageID(imageID int) ([]*models.Gallery, error) {
@@ -182,6 +172,7 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 	query.body = selectDistinctIDs("galleries")
 	query.body += `
 		left join performers_galleries as performers_join on performers_join.gallery_id = galleries.id
+		left join scenes_galleries as scenes_join on scenes_join.gallery_id = galleries.id
 		left join studios as studio on studio.id = galleries.studio_id
 		left join galleries_tags as tags_join on tags_join.gallery_id = galleries.id
 		left join galleries_images as images_join on images_join.gallery_id = galleries.id
@@ -189,7 +180,7 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
-		searchColumns := []string{"galleries.path", "galleries.checksum"}
+		searchColumns := []string{"galleries.title", "galleries.path", "galleries.checksum"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
 		query.addArg(thisArgs...)
@@ -221,8 +212,8 @@ func (qb *galleryQueryBuilder) Query(galleryFilter *models.GalleryFilterType, fi
 
 	if isMissingFilter := galleryFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
 		switch *isMissingFilter {
-		case "scene":
-			query.addWhere("galleries.scene_id IS NULL")
+		case "scenes":
+			query.addWhere("scenes_join.gallery_id IS NULL")
 		case "studio":
 			query.addWhere("galleries.studio_id IS NULL")
 		case "performers":
@@ -441,4 +432,24 @@ func (qb *galleryQueryBuilder) GetImageIDs(galleryID int) ([]int, error) {
 func (qb *galleryQueryBuilder) UpdateImages(galleryID int, imageIDs []int) error {
 	// Delete the existing joins and then create new ones
 	return qb.imagesRepository().replace(galleryID, imageIDs)
+}
+
+func (qb *galleryQueryBuilder) scenesRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: galleriesScenesTable,
+			idColumn:  galleryIDColumn,
+		},
+		fkColumn: sceneIDColumn,
+	}
+}
+
+func (qb *galleryQueryBuilder) GetSceneIDs(galleryID int) ([]int, error) {
+	return qb.scenesRepository().getIDs(galleryID)
+}
+
+func (qb *galleryQueryBuilder) UpdateScenes(galleryID int, sceneIDs []int) error {
+	// Delete the existing joins and then create new ones
+	return qb.scenesRepository().replace(galleryID, sceneIDs)
 }

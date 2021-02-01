@@ -5,7 +5,6 @@ package sqlite_test
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -192,7 +191,7 @@ func populateDB() error {
 			return fmt.Errorf("error creating studios: %s", err.Error())
 		}
 
-		if err := linkSceneGallery(r.Gallery(), sceneIdxWithGallery, galleryIdxWithScene); err != nil {
+		if err := linkSceneGallery(r.Scene(), sceneIdxWithGallery, galleryIdxWithScene); err != nil {
 			return fmt.Errorf("error linking scene to gallery: %s", err.Error())
 		}
 
@@ -623,20 +622,8 @@ func linkScenePerformer(qb models.SceneReaderWriter, sceneIndex, performerIndex 
 	return err
 }
 
-func linkSceneGallery(gqb models.GalleryReaderWriter, sceneIndex, galleryIndex int) error {
-	gallery, err := gqb.Find(galleryIDs[galleryIndex])
-
-	if err != nil {
-		return fmt.Errorf("error finding gallery: %s", err.Error())
-	}
-
-	if gallery == nil {
-		return errors.New("gallery is nil")
-	}
-
-	gallery.SceneID = sql.NullInt64{Int64: int64(sceneIDs[sceneIndex]), Valid: true}
-	_, err = gqb.Update(*gallery)
-
+func linkSceneGallery(qb models.SceneReaderWriter, sceneIndex, galleryIndex int) error {
+	_, err := scene.AddGallery(qb, sceneIDs[sceneIndex], galleryIDs[galleryIndex])
 	return err
 }
 

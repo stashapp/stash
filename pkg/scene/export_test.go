@@ -307,33 +307,6 @@ var getGalleryChecksumScenarios = []stringTestScenario{
 	},
 }
 
-func TestGetGalleryChecksum(t *testing.T) {
-	mockGalleryReader := &mocks.GalleryReaderWriter{}
-
-	galleryErr := errors.New("error getting gallery")
-
-	mockGalleryReader.On("FindBySceneID", sceneID).Return(&models.Gallery{
-		Checksum: galleryChecksum,
-	}, nil).Once()
-	mockGalleryReader.On("FindBySceneID", noGalleryID).Return(nil, nil).Once()
-	mockGalleryReader.On("FindBySceneID", errGalleryID).Return(nil, galleryErr).Once()
-
-	for i, s := range getGalleryChecksumScenarios {
-		scene := s.input
-		json, err := GetGalleryChecksum(mockGalleryReader, &scene)
-
-		if !s.err && err != nil {
-			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
-			t.Errorf("[%d] expected error not returned", i)
-		} else {
-			assert.Equal(t, s.expected, json, "[%d]", i)
-		}
-	}
-
-	mockGalleryReader.AssertExpectations(t)
-}
-
 type stringSliceTestScenario struct {
 	input    models.Scene
 	expected []string

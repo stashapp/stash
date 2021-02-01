@@ -83,3 +83,23 @@ func AddTag(qb models.SceneReaderWriter, id int, tagID int) (bool, error) {
 
 	return false, nil
 }
+
+func AddGallery(qb models.SceneReaderWriter, id int, galleryID int) (bool, error) {
+	galleryIDs, err := qb.GetGalleryIDs(id)
+	if err != nil {
+		return false, err
+	}
+
+	oldLen := len(galleryIDs)
+	galleryIDs = utils.IntAppendUnique(galleryIDs, galleryID)
+
+	if len(galleryIDs) != oldLen {
+		if err := qb.UpdateGalleries(id, galleryIDs); err != nil {
+			return false, err
+		}
+
+		return true, nil
+	}
+
+	return false, nil
+}
