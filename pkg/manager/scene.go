@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
-
-	"github.com/jmoiron/sqlx"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
@@ -16,37 +13,54 @@ import (
 )
 
 // DestroyScene deletes a scene and its associated relationships from the
-// database.
-func DestroyScene(sceneID int, tx *sqlx.Tx) error {
-	qb := models.NewSceneQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+// database. Returns a function to perform any post-commit actions.
+func DestroyScene(scene *models.Scene, repo models.Repository) (func(), error) {
+	qb := repo.Scene()
+	mqb := repo.SceneMarker()
+	gqb := repo.Gallery()
 
-	_, err := qb.Find(sceneID)
+	if err := gqb.ClearGalleryId(scene.ID); err != nil {
+		return nil, err
+	}
+
+	markers, err := mqb.FindBySceneID(scene.ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if err := jqb.DestroyScenesTags(sceneID, tx); err != nil {
-		return err
+	var funcs []func()
+	for _, m := range markers {
+		f, err := DestroySceneMarker(scene, m, mqb)
+		if err != nil {
+			return nil, err
+		}
+		funcs = append(funcs, f)
 	}
 
-	if err := jqb.DestroyPerformersScenes(sceneID, tx); err != nil {
-		return err
+	if err := qb.Destroy(scene.ID); err != nil {
+		return nil, err
 	}
 
-	if err := jqb.DestroyScenesMarkers(sceneID, tx); err != nil {
-		return err
+	return func() {
+		for _, f := range funcs {
+			f()
+		}
+	}, nil
+}
+
+// DestroySceneMarker deletes the scene marker from the database and returns a
+// function that removes the generated files, to be executed after the
+// transaction is successfully committed.
+func DestroySceneMarker(scene *models.Scene, sceneMarker *models.SceneMarker, qb models.SceneMarkerWriter) (func(), error) {
+	if err := qb.Destroy(sceneMarker.ID); err != nil {
+		return nil, err
 	}
 
-	if err := jqb.DestroyScenesGalleries(sceneID, tx); err != nil {
-		return err
-	}
-
-	if err := qb.Destroy(strconv.Itoa(sceneID), tx); err != nil {
-		return err
-	}
-
-	return nil
+	// delete the preview for the marker
+	return func() {
+		seconds := int(sceneMarker.Seconds)
+		DeleteSceneMarkerFiles(scene, seconds, config.GetVideoFileNamingAlgorithm())
+	}, nil
 }
 
 // DeleteGeneratedSceneFiles deletes generated files for the provided scene.
@@ -174,7 +188,7 @@ func GetSceneFileContainer(scene *models.Scene) (ffmpeg.Container, error) {
 		container = ffmpeg.Container(scene.Format.String)
 	} else { // container isn't in the DB
 		// shouldn't happen, fallback to ffprobe
-		tmpVideoFile, err := ffmpeg.NewVideoFile(GetInstance().FFProbePath, scene.Path)
+		tmpVideoFile, err := ffmpeg.NewVideoFile(GetInstance().FFProbePath, scene.Path, false)
 		if err != nil {
 			return ffmpeg.Container(""), fmt.Errorf("error reading video file: %s", err.Error())
 		}

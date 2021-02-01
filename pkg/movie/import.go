@@ -117,7 +117,7 @@ func (i *Importer) createStudio(name string) (int, error) {
 
 func (i *Importer) PostImport(id int) error {
 	if len(i.frontImageData) > 0 {
-		if err := i.ReaderWriter.UpdateMovieImages(id, i.frontImageData, i.backImageData); err != nil {
+		if err := i.ReaderWriter.UpdateImages(id, i.frontImageData, i.backImageData); err != nil {
 			return fmt.Errorf("error setting movie images: %s", err.Error())
 		}
 	}

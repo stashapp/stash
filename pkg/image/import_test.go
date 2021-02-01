@@ -7,7 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -227,7 +226,7 @@ func TestImporterPreImportWithPerformer(t *testing.T) {
 	performerReaderWriter.On("FindByNames", []string{existingPerformerName}, false).Return([]*models.Performer{
 		{
 			ID:   existingPerformerID,
-			Name: modelstest.NullString(existingPerformerName),
+			Name: models.NullString(existingPerformerName),
 		},
 	}, nil).Once()
 	performerReaderWriter.On("FindByNames", []string{existingPerformerErr}, false).Return(nil, errors.New("FindByNames error")).Once()
@@ -387,10 +386,10 @@ func TestImporterPreImportWithMissingTagCreateErr(t *testing.T) {
 }
 
 func TestImporterPostImportUpdateGallery(t *testing.T) {
-	joinReaderWriter := &mocks.JoinReaderWriter{}
+	readerWriter := &mocks.ImageReaderWriter{}
 
 	i := Importer{
-		JoinWriter: joinReaderWriter,
+		ReaderWriter: readerWriter,
 		galleries: []*models.Gallery{
 			{
 				ID: existingGalleryID,
@@ -398,15 +397,10 @@ func TestImporterPostImportUpdateGallery(t *testing.T) {
 		},
 	}
 
-	updateErr := errors.New("UpdateGalleriesImages error")
+	updateErr := errors.New("UpdateGalleries error")
 
-	joinReaderWriter.On("UpdateGalleriesImages", imageID, []models.GalleriesImages{
-		{
-			GalleryID: existingGalleryID,
-			ImageID:   imageID,
-		},
-	}).Return(nil).Once()
-	joinReaderWriter.On("UpdateGalleriesImages", errGalleriesID, mock.AnythingOfType("[]models.GalleriesImages")).Return(updateErr).Once()
+	readerWriter.On("UpdateGalleries", imageID, []int{existingGalleryID}).Return(nil).Once()
+	readerWriter.On("UpdateGalleries", errGalleriesID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
 
 	err := i.PostImport(imageID)
 	assert.Nil(t, err)
@@ -414,14 +408,14 @@ func TestImporterPostImportUpdateGallery(t *testing.T) {
 	err = i.PostImport(errGalleriesID)
 	assert.NotNil(t, err)
 
-	joinReaderWriter.AssertExpectations(t)
+	readerWriter.AssertExpectations(t)
 }
 
 func TestImporterPostImportUpdatePerformers(t *testing.T) {
-	joinReaderWriter := &mocks.JoinReaderWriter{}
+	readerWriter := &mocks.ImageReaderWriter{}
 
 	i := Importer{
-		JoinWriter: joinReaderWriter,
+		ReaderWriter: readerWriter,
 		performers: []*models.Performer{
 			{
 				ID: existingPerformerID,
@@ -429,15 +423,10 @@ func TestImporterPostImportUpdatePerformers(t *testing.T) {
 		},
 	}
 
-	updateErr := errors.New("UpdatePerformersImages error")
+	updateErr := errors.New("UpdatePerformers error")
 
-	joinReaderWriter.On("UpdatePerformersImages", imageID, []models.PerformersImages{
-		{
-			PerformerID: existingPerformerID,
-			ImageID:     imageID,
-		},
-	}).Return(nil).Once()
-	joinReaderWriter.On("UpdatePerformersImages", errPerformersID, mock.AnythingOfType("[]models.PerformersImages")).Return(updateErr).Once()
+	readerWriter.On("UpdatePerformers", imageID, []int{existingPerformerID}).Return(nil).Once()
+	readerWriter.On("UpdatePerformers", errPerformersID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
 
 	err := i.PostImport(imageID)
 	assert.Nil(t, err)
@@ -445,14 +434,14 @@ func TestImporterPostImportUpdatePerformers(t *testing.T) {
 	err = i.PostImport(errPerformersID)
 	assert.NotNil(t, err)
 
-	joinReaderWriter.AssertExpectations(t)
+	readerWriter.AssertExpectations(t)
 }
 
 func TestImporterPostImportUpdateTags(t *testing.T) {
-	joinReaderWriter := &mocks.JoinReaderWriter{}
+	readerWriter := &mocks.ImageReaderWriter{}
 
 	i := Importer{
-		JoinWriter: joinReaderWriter,
+		ReaderWriter: readerWriter,
 		tags: []*models.Tag{
 			{
 				ID: existingTagID,
@@ -460,15 +449,10 @@ func TestImporterPostImportUpdateTags(t *testing.T) {
 		},
 	}
 
-	updateErr := errors.New("UpdateImagesTags error")
+	updateErr := errors.New("UpdateTags error")
 
-	joinReaderWriter.On("UpdateImagesTags", imageID, []models.ImagesTags{
-		{
-			TagID:   existingTagID,
-			ImageID: imageID,
-		},
-	}).Return(nil).Once()
-	joinReaderWriter.On("UpdateImagesTags", errTagsID, mock.AnythingOfType("[]models.ImagesTags")).Return(updateErr).Once()
+	readerWriter.On("UpdateTags", imageID, []int{existingTagID}).Return(nil).Once()
+	readerWriter.On("UpdateTags", errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
 
 	err := i.PostImport(imageID)
 	assert.Nil(t, err)
@@ -476,7 +460,7 @@ func TestImporterPostImportUpdateTags(t *testing.T) {
 	err = i.PostImport(errTagsID)
 	assert.NotNil(t, err)
 
-	joinReaderWriter.AssertExpectations(t)
+	readerWriter.AssertExpectations(t)
 }
 
 func TestImporterFindExistingID(t *testing.T) {
@@ -518,11 +502,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.ImageReaderWriter{}
 
 	image := models.Image{
-		Title: modelstest.NullString(title),
+		Title: models.NullString(title),
 	}
 
 	imageErr := models.Image{
-		Title: modelstest.NullString(imageNameErr),
+		Title: models.NullString(imageNameErr),
 	}
 
 	i := Importer{
@@ -553,11 +537,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.ImageReaderWriter{}
 
 	image := models.Image{
-		Title: modelstest.NullString(title),
+		Title: models.NullString(title),
 	}
 
 	imageErr := models.Image{
-		Title: modelstest.NullString(imageNameErr),
+		Title: models.NullString(imageNameErr),
 	}
 
 	i := Importer{

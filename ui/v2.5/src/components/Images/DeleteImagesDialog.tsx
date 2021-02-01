@@ -76,11 +76,13 @@ export const DeleteImagesDialog: React.FC<IDeleteImageDialogProps> = (
       </p>
       <Form>
         <Form.Check
+          id="delete-image"
           checked={deleteFile}
           label="Delete file"
           onChange={() => setDeleteFile(!deleteFile)}
         />
         <Form.Check
+          id="delete-image-generated"
           checked={deleteGenerated}
           label="Delete generated supporting files"
           onChange={() => setDeleteGenerated(!deleteGenerated)}

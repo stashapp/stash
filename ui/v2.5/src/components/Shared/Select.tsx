@@ -1,5 +1,5 @@
-import React, { useState, CSSProperties } from "react";
-import Select, { ValueType, Props } from "react-select";
+import React, { useState } from "react";
+import Select, { ValueType, Styles } from "react-select";
 import CreatableSelect from "react-select/creatable";
 import { debounce } from "lodash";
 
@@ -46,30 +46,31 @@ interface IFilterProps {
   isClearable?: boolean;
   isDisabled?: boolean;
 }
-interface ISelectProps {
+interface ISelectProps<T extends boolean> {
   className?: string;
   items: Option[];
-  selectedOptions?: Option[];
+  selectedOptions?: ValueType<Option, T>;
   creatable?: boolean;
   onCreateOption?: (value: string) => void;
   isLoading: boolean;
   isDisabled?: boolean;
-  onChange: (item: ValueType<Option>) => void;
+  onChange: (item: ValueType<Option, T>) => void;
   initialIds?: string[];
-  isMulti?: boolean;
+  isMulti: T;
   isClearable?: boolean;
   onInputChange?: (input: string) => void;
   placeholder?: string;
   showDropdown?: boolean;
   groupHeader?: string;
   closeMenuOnSelect?: boolean;
+  noOptionsMessage?: string | null;
 }
 interface IFilterComponentProps extends IFilterProps {
   items: Array<ValidTypes>;
   onCreate?: (name: string) => Promise<{ item: ValidTypes; message: string }>;
 }
-interface IFilterSelectProps
-  extends Omit<ISelectProps, "onChange" | "items" | "onCreateOption"> {}
+interface IFilterSelectProps<T extends boolean>
+  extends Omit<ISelectProps<T>, "onChange" | "items" | "onCreateOption"> {}
 
 interface ISceneGallerySelect {
   gallery?: Pick<GQL.Gallery, "title" | "path" | "id">;
@@ -81,14 +82,14 @@ interface ISceneGallerySelect {
   ) => void;
 }
 
-const getSelectedValues = (selectedItems: ValueType<Option>) =>
+const getSelectedValues = (selectedItems: ValueType<Option, boolean>) =>
   selectedItems
     ? (Array.isArray(selectedItems) ? selectedItems : [selectedItems]).map(
         (item) => item.value
       )
     : [];
 
-const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
+const SelectComponent = <T extends boolean>({
   type,
   initialIds,
   onChange,
@@ -100,15 +101,19 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   onCreateOption,
   isClearable = true,
   creatable = false,
-  isMulti = false,
+  isMulti,
   onInputChange,
   placeholder,
   showDropdown = true,
   groupHeader,
   closeMenuOnSelect = true,
-}) => {
-  const defaultValue =
-    items.filter((item) => initialIds?.indexOf(item.value) !== -1) ?? null;
+  noOptionsMessage = type !== "tags" ? "None" : null,
+}: ISelectProps<T> & ITypeProps) => {
+  const values = items.filter((item) => initialIds?.indexOf(item.value) !== -1);
+  const defaultValue = (isMulti ? values : values[0] ?? null) as ValueType<
+    Option,
+    T
+  >;
 
   const options = groupHeader
     ? [
@@ -119,18 +124,18 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
       ]
     : items;
 
-  const styles = {
-    option: (base: CSSProperties) => ({
+  const styles: Partial<Styles<Option, T>> = {
+    option: (base) => ({
       ...base,
       color: "#000",
     }),
-    container: (base: CSSProperties, props: Props) => ({
+    container: (base, props) => ({
       ...base,
-      zIndex: props.isFocused ? 10 : base.zIndex,
+      zIndex: props.selectProps.isFocused ? 10 : base.zIndex,
     }),
-    multiValueRemove: (base: CSSProperties, props: Props) => ({
+    multiValueRemove: (base, props) => ({
       ...base,
-      color: props.isFocused ? base.color : "#333333",
+      color: props.selectProps.isFocused ? base.color : "#333333",
     }),
   };
 
@@ -142,14 +147,13 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
     onChange,
     isMulti,
     isClearable,
-    defaultValue,
-    noOptionsMessage: () => (type !== "tags" ? "None" : null),
+    defaultValue: defaultValue ?? undefined,
+    noOptionsMessage: () => noOptionsMessage,
     placeholder: isDisabled ? "" : placeholder,
     onInputChange,
     isDisabled,
     isLoading,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    styles: styles as any, // TODO: Typing error, remove at some point
+    styles,
     closeMenuOnSelect,
     components: {
       IndicatorSeparator: () => null,
@@ -169,25 +173,29 @@ const SelectComponent: React.FC<ISelectProps & ITypeProps> = ({
   );
 };
 
-const FilterSelectComponent: React.FC<
-  IFilterComponentProps & ITypeProps & IFilterSelectProps
-> = (props) => {
+const FilterSelectComponent = <T extends boolean>(
+  props: IFilterComponentProps & ITypeProps & IFilterSelectProps<T>
+) => {
+  const { items, ids, isMulti, onSelect } = props;
   const [loading, setLoading] = useState(false);
-  const selectedIds = props.ids ?? [];
+  const selectedIds = ids ?? [];
   const Toast = useToast();
 
-  const { items } = props;
   const options = items.map((i) => ({
     value: i.id,
     label: i.name ?? "",
   }));
-  const selectedOptions = options.filter((option) =>
+
+  const selected = options.filter((option) =>
     selectedIds.includes(option.value)
   );
+  const selectedOptions = (isMulti
+    ? selected
+    : selected[0] ?? null) as ValueType<Option, T>;
 
-  const onChange = (selectedItems: ValueType<Option>) => {
+  const onChange = (selectedItems: ValueType<Option, boolean>) => {
     const selectedValues = getSelectedValues(selectedItems);
-    props.onSelect?.(items.filter((item) => selectedValues.includes(item.id)));
+    onSelect?.(items.filter((item) => selectedValues.includes(item.id)));
   };
 
   const onCreate = async (name: string) => {
@@ -212,9 +220,8 @@ const FilterSelectComponent: React.FC<
   };
 
   return (
-    <SelectComponent
-      {...(props as ITypeProps)}
-      {...(props as IFilterSelectProps)}
+    <SelectComponent<T>
+      {...props}
       isLoading={props.isLoading || loading}
       onChange={onChange}
       items={options}
@@ -245,32 +252,32 @@ export const SceneGallerySelect: React.FC<ISceneGallerySelect> = (props) => {
     setQuery(input);
   }, 500);
 
-  const onChange = (selectedItems: ValueType<Option>) => {
-    const selectedItem = getSelectedValues(selectedItems)[0];
-    setSelectedOption(
-      Array.isArray(selectedItems) ? selectedItems[0] : selectedItems
-    );
+  const onChange = (selectedItem: ValueType<Option, false>) => {
+    setSelectedOption(selectedItem ?? undefined);
     props.onSelect(
-      selectedItem ? galleries.find((g) => g.id === selectedItem) : undefined
+      selectedItem
+        ? galleries.find((g) => g.id === selectedItem.value)
+        : undefined
     );
   };
 
-  const selectedOptions: Option[] = [];
-  if (selectedOption !== undefined) selectedOptions.push(selectedOption);
-  else if (props.gallery) {
-    selectedOptions.push({
-      value: props.gallery.id,
-      label: props.gallery.title ?? props.gallery.path ?? "Unknown",
-    });
-  }
+  const option =
+    selectedOption ??
+    (props.gallery
+      ? {
+          value: props.gallery.id,
+          label: props.gallery.title ?? props.gallery.path ?? "Unknown",
+        }
+      : undefined);
 
   return (
     <SelectComponent
+      isMulti={false}
       onChange={onChange}
       onInputChange={onInputChange}
       isLoading={loading}
       items={items}
-      selectedOptions={selectedOptions}
+      selectedOptions={option}
     />
   );
 };
@@ -296,14 +303,14 @@ export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = (
     setQuery(input);
   }, 500);
 
-  const onChange = (selectedItems: ValueType<Option>) => {
-    const name = getSelectedValues(selectedItems)[0];
-    const performer = performers.find((p) => p.name === name);
+  const onChange = (option: ValueType<Option, false>) => {
+    const performer = performers.find((p) => p.name === option?.value);
     if (performer) props.onSelectPerformer(performer);
   };
 
   return (
     <SelectComponent
+      isMulti={false}
       onChange={onChange}
       onInputChange={onInputChange}
       isLoading={loading}
@@ -312,6 +319,7 @@ export const ScrapePerformerSuggest: React.FC<IScrapePerformerSuggestProps> = (
       placeholder={props.placeholder}
       className="select-suggest"
       showDropdown={false}
+      noOptionsMessage={query === "" ? null : "No performers found."}
     />
   );
 };
@@ -324,8 +332,8 @@ export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = (props) => {
   const { data, loading } = useMarkerStrings();
   const suggestions = data?.markerStrings ?? [];
 
-  const onChange = (selectedItems: ValueType<Option>) =>
-    props.onChange(getSelectedValues(selectedItems)[0]);
+  const onChange = (selectedItem: ValueType<Option, false>) =>
+    props.onChange(selectedItem?.value ?? "");
 
   const items = suggestions.map((item) => ({
     label: item?.title ?? "",
@@ -334,6 +342,7 @@ export const MarkerTitleSuggest: React.FC<IMarkerSuggestProps> = (props) => {
   const initialIds = props.initialMarkerTitle ? [props.initialMarkerTitle] : [];
   return (
     <SelectComponent
+      isMulti={false}
       creatable
       onChange={onChange}
       isLoading={loading}
@@ -366,6 +375,7 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   return (
     <FilterSelectComponent
       {...props}
+      isMulti={props.isMulti ?? false}
       creatable
       onCreate={onCreate}
       type="performers"
@@ -376,11 +386,16 @@ export const PerformerSelect: React.FC<IFilterProps> = (props) => {
   );
 };
 
-export const StudioSelect: React.FC<IFilterProps> = (props) => {
+export const StudioSelect: React.FC<
+  IFilterProps & { excludeIds?: string[] }
+> = (props) => {
   const { data, loading } = useAllStudiosForFilter();
   const [createStudio] = useStudioCreate({ name: "" });
 
-  const studios = data?.allStudiosSlim ?? [];
+  const exclude = props.excludeIds ?? [];
+  const studios = (data?.allStudiosSlim ?? []).filter(
+    (studio) => !exclude.includes(studio.id)
+  );
 
   const onCreate = async (name: string) => {
     const result = await createStudio({ variables: { name } });
@@ -390,6 +405,7 @@ export const StudioSelect: React.FC<IFilterProps> = (props) => {
   return (
     <FilterSelectComponent
       {...props}
+      isMulti={props.isMulti ?? false}
       type="studios"
       isLoading={loading}
       items={studios}
@@ -407,6 +423,7 @@ export const MovieSelect: React.FC<IFilterProps> = (props) => {
   return (
     <FilterSelectComponent
       {...props}
+      isMulti={props.isMulti ?? false}
       type="movies"
       isLoading={loading}
       items={items}
@@ -432,6 +449,7 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
   return (
     <FilterSelectComponent
       {...props}
+      isMulti={props.isMulti ?? false}
       items={tags}
       creatable
       type="tags"
@@ -445,11 +463,11 @@ export const TagSelect: React.FC<IFilterProps> = (props) => {
 
 export const FilterSelect: React.FC<IFilterProps & ITypeProps> = (props) =>
   props.type === "performers" ? (
-    <PerformerSelect {...(props as IFilterProps)} />
+    <PerformerSelect {...props} />
   ) : props.type === "studios" || props.type === "parent_studios" ? (
-    <StudioSelect {...(props as IFilterProps)} />
+    <StudioSelect {...props} />
   ) : props.type === "movies" ? (
-    <MovieSelect {...(props as IFilterProps)} />
+    <MovieSelect {...props} />
   ) : (
-    <TagSelect {...(props as IFilterProps)} />
+    <TagSelect {...props} />
   );

@@ -134,7 +134,13 @@ func Start() {
 			return true
 		},
 	})
-	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: &Resolver{}}), recoverFunc, websocketUpgrader)
+	maxUploadSize := handler.UploadMaxSize(config.GetMaxUploadSize())
+
+	txnManager := manager.GetInstance().TxnManager
+	resolver := &Resolver{
+		txnManager: txnManager,
+	}
+	gqlHandler := handler.GraphQL(models.NewExecutableSchema(models.Config{Resolvers: resolver}), recoverFunc, websocketUpgrader, maxUploadSize)
 
 	r.Handle("/graphql", gqlHandler)
 	r.Handle("/playground", handler.Playground("GraphQL playground", "/graphql"))
@@ -145,12 +151,24 @@ func Start() {
 
 	r.Get(loginEndPoint, getLoginHandler)
 
-	r.Mount("/performer", performerRoutes{}.Routes())
-	r.Mount("/scene", sceneRoutes{}.Routes())
-	r.Mount("/image", imageRoutes{}.Routes())
-	r.Mount("/studio", studioRoutes{}.Routes())
-	r.Mount("/movie", movieRoutes{}.Routes())
-	r.Mount("/tag", tagRoutes{}.Routes())
+	r.Mount("/performer", performerRoutes{
+		txnManager: txnManager,
+	}.Routes())
+	r.Mount("/scene", sceneRoutes{
+		txnManager: txnManager,
+	}.Routes())
+	r.Mount("/image", imageRoutes{
+		txnManager: txnManager,
+	}.Routes())
+	r.Mount("/studio", studioRoutes{
+		txnManager: txnManager,
+	}.Routes())
+	r.Mount("/movie", movieRoutes{
+		txnManager: txnManager,
+	}.Routes())
+	r.Mount("/tag", tagRoutes{
+		txnManager: txnManager,
+	}.Routes())
 	r.Mount("/downloads", downloadsRoutes{}.Routes())
 
 	r.HandleFunc("/css", func(w http.ResponseWriter, r *http.Request) {

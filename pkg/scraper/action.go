@@ -46,16 +46,16 @@ type scraper interface {
 	scrapeMovieByURL(url string) (*models.ScrapedMovie, error)
 }
 
-func getScraper(scraper scraperTypeConfig, config config, globalConfig GlobalConfig) scraper {
+func getScraper(scraper scraperTypeConfig, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) scraper {
 	switch scraper.Action {
 	case scraperActionScript:
 		return newScriptScraper(scraper, config, globalConfig)
 	case scraperActionStash:
-		return newStashScraper(scraper, config, globalConfig)
+		return newStashScraper(scraper, txnManager, config, globalConfig)
 	case scraperActionXPath:
-		return newXpathScraper(scraper, config, globalConfig)
+		return newXpathScraper(scraper, txnManager, config, globalConfig)
 	case scraperActionJson:
-		return newJsonScraper(scraper, config, globalConfig)
+		return newJsonScraper(scraper, txnManager, config, globalConfig)
 	}
 
 	panic("unknown scraper action: " + scraper.Action)

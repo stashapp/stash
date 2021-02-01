@@ -6,7 +6,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stashapp/stash/pkg/utils"
 	"github.com/stretchr/testify/assert"
 
@@ -62,10 +61,10 @@ func TestImporterPostImport(t *testing.T) {
 		imageData:    imageBytes,
 	}
 
-	updatePerformerImageErr := errors.New("UpdatePerformerImage error")
+	updatePerformerImageErr := errors.New("UpdateImage error")
 
-	readerWriter.On("UpdatePerformerImage", performerID, imageBytes).Return(nil).Once()
-	readerWriter.On("UpdatePerformerImage", errImageID, imageBytes).Return(updatePerformerImageErr).Once()
+	readerWriter.On("UpdateImage", performerID, imageBytes).Return(nil).Once()
+	readerWriter.On("UpdateImage", errImageID, imageBytes).Return(updatePerformerImageErr).Once()
 
 	err := i.PostImport(performerID)
 	assert.Nil(t, err)
@@ -116,11 +115,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.PerformerReaderWriter{}
 
 	performer := models.Performer{
-		Name: modelstest.NullString(performerName),
+		Name: models.NullString(performerName),
 	}
 
 	performerErr := models.Performer{
-		Name: modelstest.NullString(performerNameErr),
+		Name: models.NullString(performerNameErr),
 	}
 
 	i := Importer{
@@ -150,11 +149,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.PerformerReaderWriter{}
 
 	performer := models.Performer{
-		Name: modelstest.NullString(performerName),
+		Name: models.NullString(performerName),
 	}
 
 	performerErr := models.Performer{
-		Name: modelstest.NullString(performerNameErr),
+		Name: models.NullString(performerNameErr),
 	}
 
 	i := Importer{

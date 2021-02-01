@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
@@ -44,41 +43,33 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 	}
 
 	// Start the transaction and save the studio
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewStudioQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	var studio *models.Studio
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Studio()
 
-	studio, err := qb.Create(newStudio, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// update image table
-	if len(imageData) > 0 {
-		if err := qb.UpdateStudioImage(studio.ID, imageData, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
+		var err error
+		studio, err = qb.Create(newStudio)
+		if err != nil {
+			return err
 		}
-	}
 
-	// Save the stash_ids
-	if input.StashIds != nil {
-		var stashIDJoins []models.StashID
-		for _, stashID := range input.StashIds {
-			newJoin := models.StashID{
-				StashID:  stashID.StashID,
-				Endpoint: stashID.Endpoint,
+		// update image table
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(studio.ID, imageData); err != nil {
+				return err
 			}
-			stashIDJoins = append(stashIDJoins, newJoin)
 		}
-		if err := jqb.UpdateStudioStashIDs(studio.ID, stashIDJoins, tx); err != nil {
-			return nil, err
-		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		// Save the stash_ids
+		if input.StashIds != nil {
+			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			if err := qb.UpdateStashIDs(studio.ID, stashIDJoins); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -87,7 +78,10 @@ func (r *mutationResolver) StudioCreate(ctx context.Context, input models.Studio
 
 func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.StudioUpdateInput) (*models.Studio, error) {
 	// Populate studio from the input
-	studioID, _ := strconv.Atoi(input.ID)
+	studioID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
 
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
@@ -118,52 +112,42 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 	updatedStudio.ParentID = translator.nullInt64FromString(input.ParentID, "parent_id")
 
 	// Start the transaction and save the studio
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewStudioQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	var studio *models.Studio
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Studio()
 
-	if err := manager.ValidateModifyStudio(updatedStudio, tx); err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	studio, err := qb.Update(updatedStudio, tx)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	// update image table
-	if len(imageData) > 0 {
-		if err := qb.UpdateStudioImage(studio.ID, imageData, tx); err != nil {
-			tx.Rollback()
-			return nil, err
+		if err := manager.ValidateModifyStudio(updatedStudio, qb); err != nil {
+			return err
 		}
-	} else if imageIncluded {
-		// must be unsetting
-		if err := qb.DestroyStudioImage(studio.ID, tx); err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-	}
 
-	// Save the stash_ids
-	if translator.hasField("stash_ids") {
-		var stashIDJoins []models.StashID
-		for _, stashID := range input.StashIds {
-			newJoin := models.StashID{
-				StashID:  stashID.StashID,
-				Endpoint: stashID.Endpoint,
+		var err error
+		studio, err = qb.Update(updatedStudio)
+		if err != nil {
+			return err
+		}
+
+		// update image table
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(studio.ID, imageData); err != nil {
+				return err
 			}
-			stashIDJoins = append(stashIDJoins, newJoin)
+		} else if imageIncluded {
+			// must be unsetting
+			if err := qb.DestroyImage(studio.ID); err != nil {
+				return err
+			}
 		}
-		if err := jqb.UpdateStudioStashIDs(studioID, stashIDJoins, tx); err != nil {
-			return nil, err
-		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		// Save the stash_ids
+		if translator.hasField("stash_ids") {
+			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			if err := qb.UpdateStashIDs(studioID, stashIDJoins); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -171,13 +155,35 @@ func (r *mutationResolver) StudioUpdate(ctx context.Context, input models.Studio
 }
 
 func (r *mutationResolver) StudioDestroy(ctx context.Context, input models.StudioDestroyInput) (bool, error) {
-	qb := models.NewStudioQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	if err := qb.Destroy(input.ID, tx); err != nil {
-		_ = tx.Rollback()
+	id, err := strconv.Atoi(input.ID)
+	if err != nil {
 		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		return repo.Studio().Destroy(id)
+	}); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (r *mutationResolver) StudiosDestroy(ctx context.Context, studioIDs []string) (bool, error) {
+	ids, err := utils.StringSliceToIntSlice(studioIDs)
+	if err != nil {
+		return false, err
+	}
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Studio()
+		for _, id := range ids {
+			if err := qb.Destroy(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return false, err
 	}
 	return true, nil

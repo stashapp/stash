@@ -53,10 +53,16 @@ func (r *movieResolver) Rating(ctx context.Context, obj *models.Movie) (*int, er
 	return nil, nil
 }
 
-func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (*models.Studio, error) {
-	qb := models.NewStudioQueryBuilder()
+func (r *movieResolver) Studio(ctx context.Context, obj *models.Movie) (ret *models.Studio, err error) {
 	if obj.StudioID.Valid {
-		return qb.Find(int(obj.StudioID.Int64), nil)
+		if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+			ret, err = repo.Studio().Find(int(obj.StudioID.Int64))
+			return err
+		}); err != nil {
+			return nil, err
+		}
+
+		return ret, nil
 	}
 
 	return nil, nil
@@ -88,8 +94,14 @@ func (r *movieResolver) BackImagePath(ctx context.Context, obj *models.Movie) (*
 	return &backimagePath, nil
 }
 
-func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (*int, error) {
-	qb := models.NewSceneQueryBuilder()
-	res, err := qb.CountByMovieID(obj.ID)
+func (r *movieResolver) SceneCount(ctx context.Context, obj *models.Movie) (ret *int, err error) {
+	var res int
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		res, err = repo.Scene().CountByMovieID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
 	return &res, err
 }

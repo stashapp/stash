@@ -67,7 +67,7 @@ func ToJSON(reader models.PerformerReader, performer *models.Performer) (*jsonsc
 		newPerformerJSON.Favorite = performer.Favorite.Bool
 	}
 
-	image, err := reader.GetPerformerImage(performer.ID)
+	image, err := reader.GetImage(performer.ID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting performers image: %s", err.Error())
 	}

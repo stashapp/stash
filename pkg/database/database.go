@@ -14,6 +14,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/source"
 	"github.com/jmoiron/sqlx"
 	sqlite3 "github.com/mattn/go-sqlite3"
+
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -68,9 +69,9 @@ func Initialize(databasePath string) bool {
 
 func open(databasePath string, disableForeignKeys bool) *sqlx.DB {
 	// https://github.com/mattn/go-sqlite3
-	url := "file:" + databasePath
+	url := "file:" + databasePath + "?_journal=WAL"
 	if !disableForeignKeys {
-		url += "?_fk=true"
+		url += "&_fk=true"
 	}
 
 	conn, err := sqlx.Open(sqlite3Driver, url)
@@ -95,20 +96,35 @@ func Reset(databasePath string) error {
 		return errors.New("Error removing database: " + err.Error())
 	}
 
+	// remove the -shm, -wal files ( if they exist )
+	walFiles := []string{databasePath + "-shm", databasePath + "-wal"}
+	for _, wf := range walFiles {
+		if exists, _ := utils.FileExists(wf); exists {
+			err = os.Remove(wf)
+			if err != nil {
+				return errors.New("Error removing database: " + err.Error())
+			}
+		}
+	}
+
 	Initialize(databasePath)
 	return nil
 }
 
-// Backup the database
-func Backup(backupPath string) error {
-	db, err := sqlx.Connect(sqlite3Driver, "file:"+dbPath+"?_fk=true")
-	if err != nil {
-		return fmt.Errorf("Open database %s failed:%s", dbPath, err)
+// Backup the database. If db is nil, then uses the existing database
+// connection.
+func Backup(db *sqlx.DB, backupPath string) error {
+	if db == nil {
+		var err error
+		db, err = sqlx.Connect(sqlite3Driver, "file:"+dbPath+"?_fk=true")
+		if err != nil {
+			return fmt.Errorf("Open database %s failed:%s", dbPath, err)
+		}
+		defer db.Close()
 	}
-	defer db.Close()
 
 	logger.Infof("Backing up database into: %s", backupPath)
-	_, err = db.Exec(`VACUUM INTO "` + backupPath + `"`)
+	_, err := db.Exec(`VACUUM INTO "` + backupPath + `"`)
 	if err != nil {
 		return fmt.Errorf("Vacuum failed: %s", err)
 	}

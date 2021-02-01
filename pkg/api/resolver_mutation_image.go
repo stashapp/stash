@@ -2,71 +2,63 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/manager"
 	"github.com/stashapp/stash/pkg/models"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
-func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUpdateInput) (*models.Image, error) {
-	// Start the transaction and save the image
-	tx := database.DB.MustBeginTx(ctx, nil)
-
+func (r *mutationResolver) ImageUpdate(ctx context.Context, input models.ImageUpdateInput) (ret *models.Image, err error) {
 	translator := changesetTranslator{
 		inputMap: getUpdateInputMap(ctx),
 	}
 
-	ret, err := r.imageUpdate(input, translator, tx)
-
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
+	// Start the transaction and save the image
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		ret, err = r.imageUpdate(input, translator, repo)
+		return err
+	}); err != nil {
 		return nil, err
 	}
 
 	return ret, nil
 }
 
-func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.ImageUpdateInput) ([]*models.Image, error) {
-	// Start the transaction and save the image
-	tx := database.DB.MustBeginTx(ctx, nil)
+func (r *mutationResolver) ImagesUpdate(ctx context.Context, input []*models.ImageUpdateInput) (ret []*models.Image, err error) {
 	inputMaps := getUpdateInputMaps(ctx)
 
-	var ret []*models.Image
+	// Start the transaction and save the image
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		for i, image := range input {
+			translator := changesetTranslator{
+				inputMap: inputMaps[i],
+			}
 
-	for i, image := range input {
-		translator := changesetTranslator{
-			inputMap: inputMaps[i],
+			thisImage, err := r.imageUpdate(*image, translator, repo)
+			if err != nil {
+				return err
+			}
+
+			ret = append(ret, thisImage)
 		}
 
-		thisImage, err := r.imageUpdate(*image, translator, tx)
-		ret = append(ret, thisImage)
-
-		if err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
 	return ret, nil
 }
 
-func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, translator changesetTranslator, tx *sqlx.Tx) (*models.Image, error) {
+func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, translator changesetTranslator, repo models.Repository) (*models.Image, error) {
 	// Populate image from the input
-	imageID, _ := strconv.Atoi(input.ID)
+	imageID, err := strconv.Atoi(input.ID)
+	if err != nil {
+		return nil, err
+	}
 
 	updatedTime := time.Now()
 	updatedImage := models.ImagePartial{
@@ -79,43 +71,28 @@ func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, translator
 	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedImage.Organized = input.Organized
 
-	qb := models.NewImageQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
-	image, err := qb.Update(updatedImage, tx)
+	qb := repo.Image()
+	image, err := qb.Update(updatedImage)
 	if err != nil {
 		return nil, err
 	}
 
-	// don't set the galleries directly. Use add/remove gallery images interface instead
+	if translator.hasField("gallery_ids") {
+		if err := r.updateImageGalleries(qb, imageID, input.GalleryIds); err != nil {
+			return nil, err
+		}
+	}
 
 	// Save the performers
 	if translator.hasField("performer_ids") {
-		var performerJoins []models.PerformersImages
-		for _, pid := range input.PerformerIds {
-			performerID, _ := strconv.Atoi(pid)
-			performerJoin := models.PerformersImages{
-				PerformerID: performerID,
-				ImageID:     imageID,
-			}
-			performerJoins = append(performerJoins, performerJoin)
-		}
-		if err := jqb.UpdatePerformersImages(imageID, performerJoins, tx); err != nil {
+		if err := r.updateImagePerformers(qb, imageID, input.PerformerIds); err != nil {
 			return nil, err
 		}
 	}
 
 	// Save the tags
 	if translator.hasField("tag_ids") {
-		var tagJoins []models.ImagesTags
-		for _, tid := range input.TagIds {
-			tagID, _ := strconv.Atoi(tid)
-			tagJoin := models.ImagesTags{
-				ImageID: imageID,
-				TagID:   tagID,
-			}
-			tagJoins = append(tagJoins, tagJoin)
-		}
-		if err := jqb.UpdateImagesTags(imageID, tagJoins, tx); err != nil {
+		if err := r.updateImageTags(qb, imageID, input.TagIds); err != nil {
 			return nil, err
 		}
 	}
@@ -123,14 +100,38 @@ func (r *mutationResolver) imageUpdate(input models.ImageUpdateInput, translator
 	return image, nil
 }
 
-func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.BulkImageUpdateInput) ([]*models.Image, error) {
+func (r *mutationResolver) updateImageGalleries(qb models.ImageReaderWriter, imageID int, galleryIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(galleryIDs)
+	if err != nil {
+		return err
+	}
+	return qb.UpdateGalleries(imageID, ids)
+}
+
+func (r *mutationResolver) updateImagePerformers(qb models.ImageReaderWriter, imageID int, performerIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	if err != nil {
+		return err
+	}
+	return qb.UpdatePerformers(imageID, ids)
+}
+
+func (r *mutationResolver) updateImageTags(qb models.ImageReaderWriter, imageID int, tagsIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(tagsIDs)
+	if err != nil {
+		return err
+	}
+	return qb.UpdateTags(imageID, ids)
+}
+
+func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.BulkImageUpdateInput) (ret []*models.Image, err error) {
+	imageIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	if err != nil {
+		return nil, err
+	}
+
 	// Populate image from the input
 	updatedTime := time.Now()
-
-	// Start the transaction and save the image marker
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewImageQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
 
 	updatedImage := models.ImagePartial{
 		UpdatedAt: &models.SQLiteTimestamp{Timestamp: updatedTime},
@@ -145,168 +146,113 @@ func (r *mutationResolver) BulkImageUpdate(ctx context.Context, input models.Bul
 	updatedImage.StudioID = translator.nullInt64FromString(input.StudioID, "studio_id")
 	updatedImage.Organized = input.Organized
 
-	ret := []*models.Image{}
+	// Start the transaction and save the image marker
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Image()
 
-	for _, imageIDStr := range input.Ids {
-		imageID, _ := strconv.Atoi(imageIDStr)
-		updatedImage.ID = imageID
+		for _, imageID := range imageIDs {
+			updatedImage.ID = imageID
 
-		image, err := qb.Update(updatedImage, tx)
-		if err != nil {
-			_ = tx.Rollback()
-			return nil, err
-		}
-
-		ret = append(ret, image)
-
-		// Save the galleries
-		if translator.hasField("gallery_ids") {
-			galleryIDs, err := adjustImageGalleryIDs(tx, imageID, *input.GalleryIds)
+			image, err := qb.Update(updatedImage)
 			if err != nil {
-				_ = tx.Rollback()
-				return nil, err
+				return err
 			}
 
-			var galleryJoins []models.GalleriesImages
-			for _, gid := range galleryIDs {
-				galleryJoin := models.GalleriesImages{
-					GalleryID: gid,
-					ImageID:   imageID,
+			ret = append(ret, image)
+
+			// Save the galleries
+			if translator.hasField("gallery_ids") {
+				galleryIDs, err := adjustImageGalleryIDs(qb, imageID, *input.GalleryIds)
+				if err != nil {
+					return err
 				}
-				galleryJoins = append(galleryJoins, galleryJoin)
+
+				if err := qb.UpdateGalleries(imageID, galleryIDs); err != nil {
+					return err
+				}
 			}
-			if err := jqb.UpdateGalleriesImages(imageID, galleryJoins, tx); err != nil {
-				return nil, err
+
+			// Save the performers
+			if translator.hasField("performer_ids") {
+				performerIDs, err := adjustImagePerformerIDs(qb, imageID, *input.PerformerIds)
+				if err != nil {
+					return err
+				}
+
+				if err := qb.UpdatePerformers(imageID, performerIDs); err != nil {
+					return err
+				}
+			}
+
+			// Save the tags
+			if translator.hasField("tag_ids") {
+				tagIDs, err := adjustImageTagIDs(qb, imageID, *input.TagIds)
+				if err != nil {
+					return err
+				}
+
+				if err := qb.UpdateTags(imageID, tagIDs); err != nil {
+					return err
+				}
 			}
 		}
 
-		// Save the performers
-		if translator.hasField("performer_ids") {
-			performerIDs, err := adjustImagePerformerIDs(tx, imageID, *input.PerformerIds)
-			if err != nil {
-				_ = tx.Rollback()
-				return nil, err
-			}
-
-			var performerJoins []models.PerformersImages
-			for _, performerID := range performerIDs {
-				performerJoin := models.PerformersImages{
-					PerformerID: performerID,
-					ImageID:     imageID,
-				}
-				performerJoins = append(performerJoins, performerJoin)
-			}
-			if err := jqb.UpdatePerformersImages(imageID, performerJoins, tx); err != nil {
-				_ = tx.Rollback()
-				return nil, err
-			}
-		}
-
-		// Save the tags
-		if translator.hasField("tag_ids") {
-			tagIDs, err := adjustImageTagIDs(tx, imageID, *input.TagIds)
-			if err != nil {
-				_ = tx.Rollback()
-				return nil, err
-			}
-
-			var tagJoins []models.ImagesTags
-			for _, tagID := range tagIDs {
-				tagJoin := models.ImagesTags{
-					ImageID: imageID,
-					TagID:   tagID,
-				}
-				tagJoins = append(tagJoins, tagJoin)
-			}
-			if err := jqb.UpdateImagesTags(imageID, tagJoins, tx); err != nil {
-				_ = tx.Rollback()
-				return nil, err
-			}
-		}
-	}
-
-	// Commit
-	if err := tx.Commit(); err != nil {
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
 	return ret, nil
 }
 
-func adjustImageGalleryIDs(tx *sqlx.Tx, imageID int, ids models.BulkUpdateIds) ([]int, error) {
-	var ret []int
-
-	jqb := models.NewJoinsQueryBuilder()
-	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
-		// adding to the joins
-		galleryJoins, err := jqb.GetImageGalleries(imageID, tx)
-
-		if err != nil {
-			return nil, err
-		}
-
-		for _, join := range galleryJoins {
-			ret = append(ret, join.GalleryID)
-		}
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
-func adjustImagePerformerIDs(tx *sqlx.Tx, imageID int, ids models.BulkUpdateIds) ([]int, error) {
-	var ret []int
-
-	jqb := models.NewJoinsQueryBuilder()
-	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
-		// adding to the joins
-		performerJoins, err := jqb.GetImagePerformers(imageID, tx)
-
-		if err != nil {
-			return nil, err
-		}
-
-		for _, join := range performerJoins {
-			ret = append(ret, join.PerformerID)
-		}
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
-func adjustImageTagIDs(tx *sqlx.Tx, imageID int, ids models.BulkUpdateIds) ([]int, error) {
-	var ret []int
-
-	jqb := models.NewJoinsQueryBuilder()
-	if ids.Mode == models.BulkUpdateIDModeAdd || ids.Mode == models.BulkUpdateIDModeRemove {
-		// adding to the joins
-		tagJoins, err := jqb.GetImageTags(imageID, tx)
-
-		if err != nil {
-			return nil, err
-		}
-
-		for _, join := range tagJoins {
-			ret = append(ret, join.TagID)
-		}
-	}
-
-	return adjustIDs(ret, ids), nil
-}
-
-func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageDestroyInput) (bool, error) {
-	qb := models.NewImageQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	imageID, _ := strconv.Atoi(input.ID)
-	image, err := qb.Find(imageID)
-	err = qb.Destroy(imageID, tx)
-
+func adjustImageGalleryIDs(qb models.ImageReader, imageID int, ids models.BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetGalleryIDs(imageID)
 	if err != nil {
-		tx.Rollback()
+		return nil, err
+	}
+
+	return adjustIDs(ret, ids), nil
+}
+
+func adjustImagePerformerIDs(qb models.ImageReader, imageID int, ids models.BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetPerformerIDs(imageID)
+	if err != nil {
+		return nil, err
+	}
+
+	return adjustIDs(ret, ids), nil
+}
+
+func adjustImageTagIDs(qb models.ImageReader, imageID int, ids models.BulkUpdateIds) (ret []int, err error) {
+	ret, err = qb.GetTagIDs(imageID)
+	if err != nil {
+		return nil, err
+	}
+
+	return adjustIDs(ret, ids), nil
+}
+
+func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageDestroyInput) (ret bool, err error) {
+	imageID, err := strconv.Atoi(input.ID)
+	if err != nil {
 		return false, err
 	}
 
-	if err := tx.Commit(); err != nil {
+	var image *models.Image
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Image()
+
+		image, err = qb.Find(imageID)
+		if err != nil {
+			return err
+		}
+
+		if image == nil {
+			return fmt.Errorf("image with id %d not found", imageID)
+		}
+
+		return qb.Destroy(imageID)
+	}); err != nil {
 		return false, err
 	}
 
@@ -325,27 +271,35 @@ func (r *mutationResolver) ImageDestroy(ctx context.Context, input models.ImageD
 	return true, nil
 }
 
-func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.ImagesDestroyInput) (bool, error) {
-	qb := models.NewImageQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-
-	var images []*models.Image
-	for _, id := range input.Ids {
-		imageID, _ := strconv.Atoi(id)
-
-		image, err := qb.Find(imageID)
-		if image != nil {
-			images = append(images, image)
-		}
-		err = qb.Destroy(imageID, tx)
-
-		if err != nil {
-			tx.Rollback()
-			return false, err
-		}
+func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.ImagesDestroyInput) (ret bool, err error) {
+	imageIDs, err := utils.StringSliceToIntSlice(input.Ids)
+	if err != nil {
+		return false, err
 	}
 
-	if err := tx.Commit(); err != nil {
+	var images []*models.Image
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Image()
+
+		for _, imageID := range imageIDs {
+
+			image, err := qb.Find(imageID)
+			if err != nil {
+				return err
+			}
+
+			if image == nil {
+				return fmt.Errorf("image with id %d not found", imageID)
+			}
+
+			images = append(images, image)
+			if err := qb.Destroy(imageID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return false, err
 	}
 
@@ -366,62 +320,56 @@ func (r *mutationResolver) ImagesDestroy(ctx context.Context, input models.Image
 	return true, nil
 }
 
-func (r *mutationResolver) ImageIncrementO(ctx context.Context, id string) (int, error) {
-	imageID, _ := strconv.Atoi(id)
-
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewImageQueryBuilder()
-
-	newVal, err := qb.IncrementOCounter(imageID, tx)
+func (r *mutationResolver) ImageIncrementO(ctx context.Context, id string) (ret int, err error) {
+	imageID, err := strconv.Atoi(id)
 	if err != nil {
-		_ = tx.Rollback()
 		return 0, err
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Image()
+
+		ret, err = qb.IncrementOCounter(imageID)
+		return err
+	}); err != nil {
 		return 0, err
 	}
 
-	return newVal, nil
+	return ret, nil
 }
 
-func (r *mutationResolver) ImageDecrementO(ctx context.Context, id string) (int, error) {
-	imageID, _ := strconv.Atoi(id)
-
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewImageQueryBuilder()
-
-	newVal, err := qb.DecrementOCounter(imageID, tx)
+func (r *mutationResolver) ImageDecrementO(ctx context.Context, id string) (ret int, err error) {
+	imageID, err := strconv.Atoi(id)
 	if err != nil {
-		_ = tx.Rollback()
 		return 0, err
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Image()
+
+		ret, err = qb.DecrementOCounter(imageID)
+		return err
+	}); err != nil {
 		return 0, err
 	}
 
-	return newVal, nil
+	return ret, nil
 }
 
-func (r *mutationResolver) ImageResetO(ctx context.Context, id string) (int, error) {
-	imageID, _ := strconv.Atoi(id)
-
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewImageQueryBuilder()
-
-	newVal, err := qb.ResetOCounter(imageID, tx)
+func (r *mutationResolver) ImageResetO(ctx context.Context, id string) (ret int, err error) {
+	imageID, err := strconv.Atoi(id)
 	if err != nil {
-		_ = tx.Rollback()
 		return 0, err
 	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Image()
+
+		ret, err = qb.ResetOCounter(imageID)
+		return err
+	}); err != nil {
 		return 0, err
 	}
 
-	return newVal, nil
+	return ret, nil
 }

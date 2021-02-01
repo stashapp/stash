@@ -4,8 +4,14 @@ import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
 import { FormattedPlural } from "react-intl";
 import { useConfiguration } from "src/core/StashService";
-import { HoverPopover, Icon, TagLink } from "../Shared";
-import { BasicCard } from "../Shared/BasicCard";
+import {
+  BasicCard,
+  HoverPopover,
+  Icon,
+  TagLink,
+  TruncatedText,
+} from "src/components/Shared";
+import { TextUtils } from "src/utils";
 
 interface IProps {
   gallery: GQL.GallerySlimDataFragment;
@@ -174,7 +180,14 @@ export const GalleryCard: React.FC<IProps> = (props) => {
         <>
           <Link to={`/galleries/${props.gallery.id}`}>
             <h5 className="card-section-title">
-              {props.gallery.title ?? props.gallery.path}
+              <TruncatedText
+                text={
+                  props.gallery.title
+                    ? props.gallery.title
+                    : TextUtils.fileNameFromPath(props.gallery.path ?? "")
+                }
+                lineCount={2}
+              />
             </h5>
           </Link>
           <span>

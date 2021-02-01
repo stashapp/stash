@@ -56,12 +56,14 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const Toast = useToast();
 
   // Editing state
-  const [isDisplayingScraperDialog, setIsDisplayingScraperDialog] = useState<
-    GQL.Scraper
-  >();
-  const [scrapePerformerDetails, setScrapePerformerDetails] = useState<
-    GQL.ScrapedPerformerDataFragment
-  >();
+  const [
+    isDisplayingScraperDialog,
+    setIsDisplayingScraperDialog,
+  ] = useState<GQL.Scraper>();
+  const [
+    scrapePerformerDetails,
+    setScrapePerformerDetails,
+  ] = useState<GQL.ScrapedPerformerDataFragment>();
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   // Editing performer state
@@ -397,9 +399,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
 
     const popover = (
-      <Popover id="scraper-popover">
+      <Popover id="performer-scraper-popover">
         <Popover.Content>
-          <div>
+          <>
             {queryableScrapers
               ? queryableScrapers.map((s) => (
                   <div key={s.name}>
@@ -421,7 +423,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
                 <span>Reload scrapers</span>
               </Button>
             </div>
-          </div>
+          </>
         </Popover.Content>
       </Popover>
     );

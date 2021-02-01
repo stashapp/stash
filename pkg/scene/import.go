@@ -18,7 +18,6 @@ type Importer struct {
 	PerformerWriter     models.PerformerReaderWriter
 	MovieWriter         models.MovieReaderWriter
 	TagWriter           models.TagReaderWriter
-	JoinWriter          models.JoinReaderWriter
 	Input               jsonschema.Scene
 	Path                string
 	MissingRefBehaviour models.ImportMissingRefEnum
@@ -329,7 +328,7 @@ func (i *Importer) populateTags() error {
 
 func (i *Importer) PostImport(id int) error {
 	if len(i.coverImageData) > 0 {
-		if err := i.ReaderWriter.UpdateSceneCover(id, i.coverImageData); err != nil {
+		if err := i.ReaderWriter.UpdateCover(id, i.coverImageData); err != nil {
 			return fmt.Errorf("error setting scene images: %s", err.Error())
 		}
 	}
@@ -343,15 +342,12 @@ func (i *Importer) PostImport(id int) error {
 	}
 
 	if len(i.performers) > 0 {
-		var performerJoins []models.PerformersScenes
+		var performerIDs []int
 		for _, performer := range i.performers {
-			join := models.PerformersScenes{
-				PerformerID: performer.ID,
-				SceneID:     id,
-			}
-			performerJoins = append(performerJoins, join)
+			performerIDs = append(performerIDs, performer.ID)
 		}
-		if err := i.JoinWriter.UpdatePerformersScenes(id, performerJoins); err != nil {
+
+		if err := i.ReaderWriter.UpdatePerformers(id, performerIDs); err != nil {
 			return fmt.Errorf("failed to associate performers: %s", err.Error())
 		}
 	}
@@ -360,21 +356,17 @@ func (i *Importer) PostImport(id int) error {
 		for index := range i.movies {
 			i.movies[index].SceneID = id
 		}
-		if err := i.JoinWriter.UpdateMoviesScenes(id, i.movies); err != nil {
+		if err := i.ReaderWriter.UpdateMovies(id, i.movies); err != nil {
 			return fmt.Errorf("failed to associate movies: %s", err.Error())
 		}
 	}
 
 	if len(i.tags) > 0 {
-		var tagJoins []models.ScenesTags
-		for _, tag := range i.tags {
-			join := models.ScenesTags{
-				SceneID: id,
-				TagID:   tag.ID,
-			}
-			tagJoins = append(tagJoins, join)
+		var tagIDs []int
+		for _, t := range i.tags {
+			tagIDs = append(tagIDs, t.ID)
 		}
-		if err := i.JoinWriter.UpdateScenesTags(id, tagJoins); err != nil {
+		if err := i.ReaderWriter.UpdateTags(id, tagIDs); err != nil {
 			return fmt.Errorf("failed to associate tags: %s", err.Error())
 		}
 	}

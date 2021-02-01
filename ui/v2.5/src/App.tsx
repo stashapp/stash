@@ -5,10 +5,7 @@ import { ToastProvider } from "src/hooks/Toast";
 import LightboxProvider from "src/hooks/Lightbox/context";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { fas } from "@fortawesome/free-solid-svg-icons";
-import "@formatjs/intl-numberformat/polyfill";
-import "@formatjs/intl-numberformat/locale-data/en";
-import "@formatjs/intl-numberformat/locale-data/en-GB";
-import replaceAll from "string.prototype.replaceall";
+import { initPolyfills } from "src/polyfills";
 
 import locales from "src/locale";
 import { useConfiguration } from "src/core/StashService";
@@ -29,10 +26,9 @@ import Movies from "./components/Movies/Movies";
 import Tags from "./components/Tags/Tags";
 import Images from "./components/Images/Images";
 
-MousetrapPause(Mousetrap);
+initPolyfills();
 
-// Required for browsers older than August 2020ish. Can be removed at some point.
-replaceAll.shim();
+MousetrapPause(Mousetrap);
 
 // Set fontawesome/free-solid-svg as default fontawesome icons
 library.add(fas);
