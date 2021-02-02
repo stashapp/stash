@@ -483,6 +483,8 @@ func (p *SceneFilenameParser) Parse(repo models.ReaderRepository) ([]*models.Sce
 		},
 	}
 
+	p.Filter.Q = nil
+
 	scenes, total, err := repo.Scene().Query(sceneFilter, p.Filter)
 	if err != nil {
 		return nil, 0, err
