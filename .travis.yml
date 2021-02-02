@@ -25,8 +25,7 @@ script:
 after_success:
 - docker pull stashapp/compiler:4
 - sh ./scripts/cross-compile.sh
-- export STASH_VERSION=$(git describe --tags --exclude latest_develop)
-- echo -e "Version: $STASH_VERSION" | tee CHECKSUMS_SHA1
+- git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
 - sha1sum dist/stash-* | sed 's/dist\///g' | tee -a CHECKSUMS_SHA1
 - 'if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then sh ./scripts/upload-pull-request.sh; fi'
 before_deploy:
