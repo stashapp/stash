@@ -50,7 +50,6 @@ const Changelog: React.FC = () => {
         date="2020-11-24"
         openState={openState}
         setOpenState={setVersionOpenState}
-        defaultOpen
       >
         <MarkdownPage page={V040} />
       </Version>
