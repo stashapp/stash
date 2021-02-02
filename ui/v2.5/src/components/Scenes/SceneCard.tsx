@@ -37,8 +37,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
             videoEl.current?.play().catch(() => {});
           else videoEl.current?.pause();
         });
-      },
-      { root: document.documentElement }
+      }
     );
 
     if (videoEl.current) observer.observe(videoEl.current);
@@ -53,6 +52,7 @@ export const ScenePreview: React.FC<IScenePreviewProps> = ({
     <div className={cx("scene-card-preview", { portrait: isPortrait })}>
       <img className="scene-card-preview-image" src={image} alt="" />
       <video
+        disableRemotePlayback
         className="scene-card-preview-video"
         loop
         preload="none"
