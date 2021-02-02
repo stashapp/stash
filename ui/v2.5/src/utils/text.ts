@@ -48,7 +48,7 @@ const fileSizeFractionalDigits = (unit: Unit) => {
   }
 
   return 0;
-}
+};
 
 const secondsToTimestamp = (seconds: number) => {
   let ret = new Date(seconds * 1000).toISOString().substr(11, 8);
