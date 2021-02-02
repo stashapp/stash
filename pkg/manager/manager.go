@@ -67,8 +67,11 @@ func Initialize() *singleton {
 		instance.RefreshConfig()
 
 		// clear the downloads and tmp directories
-		utils.EmptyDir(instance.Paths.Generated.Downloads)
-		utils.EmptyDir(instance.Paths.Generated.Tmp)
+		// #1021 - only clear these directories if the generated folder is non-empty
+		if config.GetGeneratedPath() != "" {
+			utils.EmptyDir(instance.Paths.Generated.Downloads)
+			utils.EmptyDir(instance.Paths.Generated.Tmp)
+		}
 
 		initFFMPEG()
 	})
