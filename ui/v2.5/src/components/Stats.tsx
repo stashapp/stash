@@ -19,7 +19,12 @@ export const Stats: React.FC = () => {
       <div className="col col-sm-8 m-sm-auto row stats">
         <div className="stats-element">
           <p className="title">
-            <FormattedNumber value={Math.floor(scenesSize.size)} />
+            <FormattedNumber
+              value={scenesSize.size}
+              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                scenesSize.unit
+              )}
+            />
             {` ${TextUtils.formatFileSizeUnit(scenesSize.unit)}`}
           </p>
           <p className="heading">
@@ -36,7 +41,12 @@ export const Stats: React.FC = () => {
         </div>
         <div className="stats-element">
           <p className="title">
-            <FormattedNumber value={Math.floor(imagesSize.size)} />
+            <FormattedNumber
+              value={imagesSize.size}
+              maximumFractionDigits={TextUtils.fileSizeFractionalDigits(
+                imagesSize.unit
+              )}
+            />
             {` ${TextUtils.formatFileSizeUnit(imagesSize.unit)}`}
           </p>
           <p className="heading">

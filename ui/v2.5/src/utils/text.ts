@@ -40,6 +40,16 @@ const formatFileSizeUnit = (u: Unit) => {
   return shortUnits[i];
 };
 
+// returns the number of fractional digits to use when displaying file sizes
+// returns 0 for MB and under, 1 for GB and over.
+const fileSizeFractionalDigits = (unit: Unit) => {
+  if (Units.indexOf(unit) >= 3) {
+    return 1;
+  }
+
+  return 0;
+};
+
 const secondsToTimestamp = (seconds: number) => {
   let ret = new Date(seconds * 1000).toISOString().substr(11, 8);
 
@@ -163,6 +173,7 @@ const formatDate = (intl: IntlShape, date?: string) => {
 const TextUtils = {
   fileSize,
   formatFileSizeUnit,
+  fileSizeFractionalDigits,
   secondsToTimestamp,
   fileNameFromPath,
   age: getAge,
