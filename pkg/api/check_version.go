@@ -251,7 +251,6 @@ func getShaFromTags(shortHash bool, name string) string {
 					last = len(gitShort)
 					logger.Debugf("Short Hash:%s Length:%d differs from default %d\n", gitShort, last, defaultSHLength)
 				}
-				// default length of git short hash
 				return tag.Commit.Sha[0:last]
 			}
 
