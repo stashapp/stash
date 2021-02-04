@@ -440,7 +440,9 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
             [options.filterMode]: {
               ...prevState[options.filterMode],
               filter: queryString.stringify({
-                ...queryString.parse(prevState[options.filterMode].filter),
+                ...queryString.parse(
+                  prevState[options.filterMode]?.filter ?? ""
+                ),
                 disp: updatedFilter.displayMode,
               }),
             },
