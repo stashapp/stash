@@ -585,7 +585,6 @@ func (t *ScanTask) rescanScene(s *models.Scene, fileModTime time.Time) (*models.
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(oshash)
 
 	var checksum *sql.NullString
 	if t.calculateMD5 {
