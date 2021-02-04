@@ -203,7 +203,9 @@ export const GalleryList: React.FC<IGalleryList> = ({
                 </td>
                 <td className="d-none d-sm-block">
                   <Link to={`/galleries/${gallery.id}`}>
-                    {gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? "")} ({gallery.image_count}{" "}
+                    {gallery.title ??
+                      TextUtils.fileNameFromPath(gallery.path ?? "")}{" "}
+                    ({gallery.image_count}{" "}
                     {gallery.image_count === 1 ? "image" : "images"})
                   </Link>
                 </td>
