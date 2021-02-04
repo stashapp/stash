@@ -8,6 +8,7 @@ import {
   GallerySlimDataFragment,
 } from "src/core/generated-graphql";
 import { useGalleriesList } from "src/hooks";
+import { TextUtils } from "src/utils";
 import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
@@ -202,7 +203,7 @@ export const GalleryList: React.FC<IGalleryList> = ({
                 </td>
                 <td className="d-none d-sm-block">
                   <Link to={`/galleries/${gallery.id}`}>
-                    {gallery.title ?? gallery.path} ({gallery.image_count}{" "}
+                    {gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? "")} ({gallery.image_count}{" "}
                     {gallery.image_count === 1 ? "image" : "images"})
                   </Link>
                 </td>

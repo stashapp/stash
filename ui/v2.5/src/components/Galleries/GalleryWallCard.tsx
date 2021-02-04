@@ -24,7 +24,7 @@ const GalleryWallCard: React.FC<IProps> = ({ gallery }) => {
       ? "landscape"
       : "portrait";
   const cover = gallery?.cover?.paths.thumbnail ?? "";
-  const title = gallery.title ?? gallery.path;
+  const title = gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? "");
   const performerNames = gallery.performers.map((p) => p.name);
   const performers =
     performerNames.length >= 2
