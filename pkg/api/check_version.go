@@ -200,11 +200,10 @@ func getReleaseHash(release githubReleasesResponse, shortHash bool, usePreReleas
 	}
 
 	if shortHash {
-		last := defaultSHLength                                 // default length of git short hash
-		_, gitShort, _ := GetVersion()                          // retrieve it to check actual length
-		if len(gitShort) != last && len(gitShort) < shaLength { // sometimes short hash is longer
+		last := defaultSHLength                                // default length of git short hash
+		_, gitShort, _ := GetVersion()                         // retrieve it to check actual length
+		if len(gitShort) > last && len(gitShort) < shaLength { // sometimes short hash is longer
 			last = len(gitShort)
-			logger.Debugf("Short Hash:%s Length:%d differs from default %d\n", gitShort, last, defaultSHLength)
 		}
 		return release.Target_commitish[0:last]
 	}
@@ -246,10 +245,9 @@ func getShaFromTags(shortHash bool, name string) string {
 				return ""
 			}
 			if shortHash {
-				last := defaultSHLength                                 // default length of git short hash
-				if len(gitShort) != last && len(gitShort) < shaLength { // sometimes short hash is longer
+				last := defaultSHLength                                // default length of git short hash
+				if len(gitShort) > last && len(gitShort) < shaLength { // sometimes short hash is longer
 					last = len(gitShort)
-					logger.Debugf("Short Hash:%s Length:%d differs from default %d\n", gitShort, last, defaultSHLength)
 				}
 				return tag.Commit.Sha[0:last]
 			}
