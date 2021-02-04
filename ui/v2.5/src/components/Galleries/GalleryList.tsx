@@ -8,7 +8,7 @@ import {
   GallerySlimDataFragment,
 } from "src/core/generated-graphql";
 import { useGalleriesList } from "src/hooks";
-import { showWhenSelected } from "src/hooks/ListHook";
+import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
 import { queryFindGalleries } from "src/core/StashService";
@@ -20,7 +20,7 @@ import { ExportDialog } from "../Shared/ExportDialog";
 
 interface IGalleryList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  persistState?: boolean;
+  persistState?: PersistanceLevel;
 }
 
 export const GalleryList: React.FC<IGalleryList> = ({

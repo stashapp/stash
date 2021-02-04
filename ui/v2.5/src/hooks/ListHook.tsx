@@ -79,8 +79,14 @@ export interface IListHookOperation<T> {
   postRefetch?: boolean;
 }
 
+export enum PersistanceLevel {
+  NONE,
+  ALL,
+  VIEW,
+}
+
 interface IListHookOptions<T, E> {
-  persistState?: boolean;
+  persistState?: PersistanceLevel;
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
   zoomable?: boolean;
   selectable?: boolean;
@@ -427,13 +433,26 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
   );
 
   const updateInterfaceConfig = useCallback(
-    (updatedFilter: ListFilterModel) => {
-      setInterfaceState({
-        [options.filterMode]: {
-          filter: updatedFilter.makeQueryParameters(),
-          itemsPerPage: updatedFilter.itemsPerPage,
-          currentPage: updatedFilter.currentPage,
-        },
+    (updatedFilter: ListFilterModel, level: PersistanceLevel) => {
+      setInterfaceState((prevState) => {
+        if (level === PersistanceLevel.VIEW) {
+          return {
+            [options.filterMode]: {
+              ...prevState[options.filterMode],
+              filter: queryString.stringify({
+                ...queryString.parse(prevState[options.filterMode].filter),
+                disp: updatedFilter.displayMode,
+              }),
+            },
+          };
+        }
+        return {
+          [options.filterMode]: {
+            filter: updatedFilter.makeQueryParameters(),
+            itemsPerPage: updatedFilter.itemsPerPage,
+            currentPage: updatedFilter.currentPage,
+          },
+        };
       });
     },
     [options.filterMode, setInterfaceState]
@@ -456,15 +475,20 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
 
     const queryFilter = queryString.parse(history.location.search);
     const storedFilter = queryString.parse(storedQuery.filter);
+
+    const activeFilter =
+      options.persistState === PersistanceLevel.ALL
+        ? storedFilter
+        : { disp: storedFilter.disp };
     const query = history.location.search
       ? {
-          sortby: storedFilter.sortby,
-          sortdir: storedFilter.sortdir,
-          disp: storedFilter.disp,
-          perPage: storedFilter.perPage,
+          sortby: activeFilter.sortby,
+          sortdir: activeFilter.sortdir,
+          disp: activeFilter.disp,
+          perPage: activeFilter.perPage,
           ...queryFilter,
         }
-      : storedFilter;
+      : activeFilter;
 
     const newFilter = new ListFilterModel(options.filterMode, query);
 
@@ -474,7 +498,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     newLocation.search = newFilter.makeQueryParameters();
     if (newLocation.search !== filter.makeQueryParameters()) {
       setFilter(newFilter);
-      updateInterfaceConfig(newFilter);
+      updateInterfaceConfig(newFilter, options.persistState);
     }
     // If constructed search is different from current, update it as well
     if (newLocation.search !== location.search) {
@@ -499,7 +523,7 @@ const useList = <QueryResult extends IQueryResult, QueryData extends IDataItem>(
     newLocation.search = listFilter.makeQueryParameters();
     history.replace(newLocation);
     if (options.persistState) {
-      updateInterfaceConfig(listFilter);
+      updateInterfaceConfig(listFilter, options.persistState);
     }
   }
 

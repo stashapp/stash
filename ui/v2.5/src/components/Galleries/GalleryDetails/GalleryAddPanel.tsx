@@ -77,10 +77,6 @@ export const GalleryAddPanel: React.FC<IGalleryAddProps> = ({ gallery }) => {
   ];
 
   return (
-    <ImageList
-      filterHook={filterHook}
-      extraOperations={otherOperations}
-      persistState={false}
-    />
+    <ImageList filterHook={filterHook} extraOperations={otherOperations} />
   );
 };

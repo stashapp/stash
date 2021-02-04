@@ -4,8 +4,9 @@ import { GalleriesCriterion } from "src/models/list-filter/criteria/galleries";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { ImageList } from "src/components/Images/ImageList";
 import { mutateRemoveGalleryImages } from "src/core/StashService";
-import { showWhenSelected } from "src/hooks/ListHook";
+import { showWhenSelected, PersistanceLevel } from "src/hooks/ListHook";
 import { useToast } from "src/hooks";
+import { TextUtils } from "src/utils";
 
 interface IGalleryDetailsProps {
   gallery: GQL.GalleryDataFragment;
@@ -19,7 +20,7 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
   function filterHook(filter: ListFilterModel) {
     const galleryValue = {
       id: gallery.id!,
-      label: gallery.title ?? gallery.path ?? "",
+      label: gallery.title ?? TextUtils.fileNameFromPath(gallery.path ?? ""),
     };
     // if galleries is already present, then we modify it, otherwise add
     let galleryCriterion = filter.criteria.find((c) => {
@@ -82,7 +83,7 @@ export const GalleryImagesPanel: React.FC<IGalleryDetailsProps> = ({
     <ImageList
       filterHook={filterHook}
       extraOperations={otherOperations}
-      persistState={false}
+      persistState={PersistanceLevel.VIEW}
     />
   );
 };

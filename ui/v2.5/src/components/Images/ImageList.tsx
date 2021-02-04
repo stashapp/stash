@@ -12,7 +12,11 @@ import { useImagesList, useLightbox } from "src/hooks";
 import { TextUtils } from "src/utils";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { IListHookOperation, showWhenSelected } from "src/hooks/ListHook";
+import {
+  IListHookOperation,
+  showWhenSelected,
+  PersistanceLevel,
+} from "src/hooks/ListHook";
 import { ImageCard } from "./ImageCard";
 import { EditImagesDialog } from "./EditImagesDialog";
 import { DeleteImagesDialog } from "./DeleteImagesDialog";
@@ -79,7 +83,7 @@ const ImageWall: React.FC<IImageWallProps> = ({
 
 interface IImageList {
   filterHook?: (filter: ListFilterModel) => ListFilterModel;
-  persistState?: boolean;
+  persistState?: PersistanceLevel;
   extraOperations?: IListHookOperation<FindImagesQueryResult>[];
 }
 
