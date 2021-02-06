@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Form, ProgressBar } from "react-bootstrap";
+import ms from "ms";
 import { Link } from "react-router-dom";
 import {
   useJobStatus,
@@ -56,6 +57,7 @@ export const SettingsTasksPanel: React.FC = () => {
   const [autoTagPerformers, setAutoTagPerformers] = useState<boolean>(true);
   const [autoTagStudios, setAutoTagStudios] = useState<boolean>(true);
   const [autoTagTags, setAutoTagTags] = useState<boolean>(true);
+  const [started, setStarted] = useState<number>(+new Date());
 
   const jobStatus = useJobStatus();
   const metadataUpdate = useMetadataUpdate();
@@ -91,8 +93,11 @@ export const SettingsTasksPanel: React.FC = () => {
     if (jobStatus?.data?.jobStatus) {
       setStatus(statusToText(jobStatus.data.jobStatus.status));
       const newProgress = jobStatus.data.jobStatus.progress;
+      console.log('jobStatus:', jobStatus);
       if (newProgress < 0) {
         setProgress(-1);
+        setStarted(+new Date())
+        // setStarted(jobStatus.data.jobStatus.started)
       } else {
         setProgress(newProgress * 100);
       }
@@ -101,6 +106,7 @@ export const SettingsTasksPanel: React.FC = () => {
 
   useEffect(() => {
     if (metadataUpdate?.data?.metadataUpdate) {
+      console.log('metadataUpdate:', metadataUpdate);
       setStatus(statusToText(metadataUpdate.data.metadataUpdate.status));
       const newProgress = metadataUpdate.data.metadataUpdate.progress;
       if (newProgress < 0) {
@@ -269,17 +275,23 @@ export const SettingsTasksPanel: React.FC = () => {
   }
 
   function renderJobStatus() {
+    const now = +new Date()
+    const elapsed = now - started
+    const remaining = Math.max(0, Math.min(elapsed * (100 / (progress > -1 ? progress : 100)), Number.MAX_SAFE_INTEGER))
     return (
       <>
         <Form.Group>
           <h5>Status: {status}</h5>
-          {!!status && status !== "Idle" ? (
+          {!!status && status !== "Idle" ? <>
             <ProgressBar
               animated
               now={progress > -1 ? progress : 100}
               label={progress > -1 ? `${progress.toFixed(0)}%` : ""}
             />
-          ) : (
+            {progress > -1 ? (
+              `ETA ~${ms(remaining, { long: true })}`
+            ) : "Done"}
+          </> : (
             ""
           )}
         </Form.Group>

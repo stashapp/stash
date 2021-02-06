@@ -88,6 +88,7 @@ func (r *mutationResolver) JobStatus(ctx context.Context) (*models.MetadataUpdat
 	status := manager.GetInstance().Status
 	ret := models.MetadataUpdateStatus{
 		Progress: status.Progress,
+		Started:  status.Started,
 		Status:   status.Status.String(),
 		Message:  "",
 	}

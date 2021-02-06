@@ -3,6 +3,7 @@ package manager
 import (
 	"net"
 	"sync"
+	"time"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -54,7 +55,7 @@ func Initialize() *singleton {
 		initLog()
 		initEnvs()
 		instance = &singleton{
-			Status: TaskStatus{Status: Idle, Progress: -1},
+			Status: TaskStatus{Status: Idle, Progress: -1, Started: int(time.Now().UTC().UnixNano() / 1e6)},
 			Paths:  paths.NewPaths(),
 
 			PluginCache: initPluginCache(),

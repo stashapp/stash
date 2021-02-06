@@ -11,6 +11,7 @@ func (r *queryResolver) JobStatus(ctx context.Context) (*models.MetadataUpdateSt
 	status := manager.GetInstance().Status
 	ret := models.MetadataUpdateStatus{
 		Progress: status.Progress,
+		Started:  status.Started,
 		Status:   status.Status.String(),
 		Message:  "",
 	}

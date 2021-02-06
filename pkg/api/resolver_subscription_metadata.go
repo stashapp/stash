@@ -22,6 +22,7 @@ func (r *subscriptionResolver) MetadataUpdate(ctx context.Context) (<-chan *mode
 				if thisStatus != lastStatus {
 					ret := models.MetadataUpdateStatus{
 						Progress: thisStatus.Progress,
+						Started: thisStatus.Started,
 						Status:   thisStatus.Status.String(),
 						Message:  "",
 					}

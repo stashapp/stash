@@ -35,6 +35,7 @@ func isImage(pathname string) bool {
 type TaskStatus struct {
 	Status     JobStatus
 	Progress   float64
+	Started    int
 	LastUpdate time.Time
 	stopping   bool
 	upTo       int

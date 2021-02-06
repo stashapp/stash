@@ -62,6 +62,7 @@ input AutoTagMetadataInput {
 
 type MetadataUpdateStatus {
   progress: Float!
+  started: Int!
   status: String!
   message: String!
 }
