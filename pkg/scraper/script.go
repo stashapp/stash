@@ -62,7 +62,7 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 	scanner := bufio.NewScanner(stderr)
 	go func() { // log errors from stderr pipe
 		for scanner.Scan() {
-			logger.Errorf("Scraper error: %s", scanner.Text())
+			logger.Errorf("Scraper: %s", scanner.Text())
 		}
 	}()
 
