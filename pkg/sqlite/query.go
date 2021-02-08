@@ -11,6 +11,7 @@ type queryBuilder struct {
 
 	body string
 
+	joins         joins
 	whereClauses  []string
 	havingClauses []string
 	args          []interface{}
@@ -25,7 +26,10 @@ func (qb queryBuilder) executeFind() ([]int, int, error) {
 		return nil, 0, qb.err
 	}
 
-	return qb.repository.executeFindQuery(qb.body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
+	body := qb.body
+	body += qb.joins.toSQL()
+
+	return qb.repository.executeFindQuery(body, qb.args, qb.sortAndPagination, qb.whereClauses, qb.havingClauses)
 }
 
 func (qb *queryBuilder) addWhere(clauses ...string) {
@@ -46,6 +50,20 @@ func (qb *queryBuilder) addHaving(clauses ...string) {
 
 func (qb *queryBuilder) addArg(args ...interface{}) {
 	qb.args = append(qb.args, args...)
+}
+
+func (qb *queryBuilder) join(table, as, onClause string) {
+	newJoin := join{
+		table:    table,
+		as:       as,
+		onClause: onClause,
+	}
+
+	qb.joins.add(newJoin)
+}
+
+func (qb *queryBuilder) addJoins(joins ...join) {
+	qb.joins.add(joins...)
 }
 
 func (qb *queryBuilder) handleIntCriterionInput(c *models.IntCriterionInput, column string) {

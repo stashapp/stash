@@ -32,7 +32,13 @@ type join struct {
 	onClause string
 }
 
-func (j join) getTable() string {
+// equals returns true if the other join alias/table is equal to this one
+func (j join) equals(o join) bool {
+	return j.alias() == o.alias()
+}
+
+// alias returns the as string, or the table if as is empty
+func (j join) alias() string {
 	if j.as == "" {
 		return j.table
 	}
@@ -42,15 +48,39 @@ func (j join) getTable() string {
 
 func (j join) toSQL() string {
 	asStr := ""
-	if j.as != "" {
+	if j.as != "" && j.as != j.table {
 		asStr = " AS " + j.as + " "
 	}
 
-	return fmt.Sprintf(" LEFT JOIN %s%s on %s ", j.table, asStr, j.onClause)
+	return fmt.Sprintf("LEFT JOIN %s%s on %s", j.table, asStr, j.onClause)
+}
+
+type joins []join
+
+func (j *joins) add(newJoins ...join) {
+	// only add if not already joined
+	for _, newJoin := range newJoins {
+		for _, jj := range *j {
+			if jj.equals(newJoin) {
+				return
+			}
+		}
+
+		*j = append(*j, newJoin)
+	}
+}
+
+func (j *joins) toSQL() string {
+	var ret []string
+	for _, jj := range *j {
+		ret = append(ret, jj.toSQL())
+	}
+
+	return strings.Join(ret, " ")
 }
 
 type filterBuilder struct {
-	joins         []join
+	joins         joins
 	whereClauses  []sqlClause
 	havingClauses []sqlClause
 
@@ -58,23 +88,13 @@ type filterBuilder struct {
 }
 
 func (f *filterBuilder) addJoin(table, as, onClause string) {
-	// only add if not already joined
-	name := as
-	if name == "" {
-		name = table
-	}
-
-	for _, j := range f.joins {
-		if j.getTable() == name {
-			return
-		}
-	}
-
-	f.joins = append(f.joins, join{
+	newJoin := join{
 		table:    table,
 		as:       as,
 		onClause: onClause,
-	})
+	}
+
+	f.joins.add(newJoin)
 }
 
 func (f *filterBuilder) addWhere(sql string, args ...interface{}) {
@@ -97,7 +117,7 @@ func (f *filterBuilder) setError(e error) {
 	}
 }
 
-func (f *filterBuilder) joinClauses(input []sqlClause) (string, []interface{}) {
+func (f *filterBuilder) andClauses(input []sqlClause) (string, []interface{}) {
 	var clauses []string
 	var args []interface{}
 	for _, w := range input {
@@ -114,7 +134,7 @@ func (f *filterBuilder) joinClauses(input []sqlClause) (string, []interface{}) {
 }
 
 func (f *filterBuilder) addToQueryBuilder(qb *queryBuilder) {
-	clauses, args := f.joinClauses(f.whereClauses)
+	clauses, args := f.andClauses(f.whereClauses)
 	if len(clauses) > 0 {
 		qb.addWhere(clauses)
 	}
@@ -123,7 +143,7 @@ func (f *filterBuilder) addToQueryBuilder(qb *queryBuilder) {
 		qb.addArg(args...)
 	}
 
-	clauses, args = f.joinClauses(f.havingClauses)
+	clauses, args = f.andClauses(f.havingClauses)
 	if len(clauses) > 0 {
 		qb.addHaving(clauses)
 	}
@@ -132,9 +152,7 @@ func (f *filterBuilder) addToQueryBuilder(qb *queryBuilder) {
 		qb.addArg(args...)
 	}
 
-	for _, j := range f.joins {
-		qb.body += j.toSQL()
-	}
+	qb.addJoins(f.joins...)
 }
 
 func (f *filterBuilder) handleCriterion(handler criterionHandler) {

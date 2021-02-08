@@ -348,13 +348,13 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query.handleCriterionFunc(durationCriterionHandler(sceneFilter.Duration, "scenes.duration"))
 	query.handleCriterionFunc(resolutionCriterionHandler(sceneFilter.Resolution, "scenes.height", "scenes.width"))
 	query.handleCriterionFunc(hasMarkersCriterionHandler(sceneFilter.HasMarkers))
-	query.handleCriterionFunc(sceneIsMissingCriterionHandler(sceneFilter.IsMissing))
+	query.handleCriterionFunc(sceneIsMissingCriterionHandler(qb, sceneFilter.IsMissing))
 
-	query.handleCriterionFunc(sceneTagsCriterionHandler(sceneFilter.Tags))
-	query.handleCriterionFunc(scenePerformersCriterionHandler(sceneFilter.Performers))
+	query.handleCriterionFunc(sceneTagsCriterionHandler(qb, sceneFilter.Tags))
+	query.handleCriterionFunc(scenePerformersCriterionHandler(qb, sceneFilter.Performers))
 	query.handleCriterionFunc(sceneStudioCriterionHandler(sceneFilter.Studios))
-	query.handleCriterionFunc(sceneMoviesCriterionHandler(sceneFilter.Movies))
-	query.handleCriterionFunc(stringLiteralCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id"))
+	query.handleCriterionFunc(sceneMoviesCriterionHandler(qb, sceneFilter.Movies))
+	query.handleCriterionFunc(sceneStashIDsHandler(qb, sceneFilter.StashID))
 
 	return query
 }
@@ -370,17 +370,9 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 	query := qb.newQuery()
 
 	query.body = selectDistinctIDs(sceneTable)
-	query.body += `
-		left join scene_markers on scene_markers.scene_id = scenes.id
-		left join performers_scenes as performers_join on performers_join.scene_id = scenes.id
-		left join movies_scenes as movies_join on movies_join.scene_id = scenes.id
-		left join studios as studio on studio.id = scenes.studio_id
-		left join scenes_galleries as galleries_join on galleries_join.scene_id = scenes.id
-		left join scenes_tags as tags_join on tags_join.scene_id = scenes.id
-		left join scene_stash_ids on scene_stash_ids.scene_id = scenes.id
-	`
 
 	if q := findFilter.Q; q != nil && *q != "" {
+		query.join("scene_markers", "", "scene_markers.scene_id = scenes.id")
 		searchColumns := []string{"scenes.title", "scenes.details", "scenes.path", "scenes.oshash", "scenes.checksum", "scene_markers.title"}
 		clause, thisArgs := getSearchBinding(searchColumns, *q, false)
 		query.addWhere(clause)
@@ -477,7 +469,7 @@ func resolutionCriterionHandler(resolution *models.ResolutionEnum, heightColumn 
 func hasMarkersCriterionHandler(hasMarkers *string) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if hasMarkers != nil {
-			// TODO - add join
+			f.addJoin("scene_markers", "", "scene_markers.scene_id = scenes.id")
 			if *hasMarkers == "true" {
 				f.addHaving("count(scene_markers.scene_id) > 0")
 			} else {
@@ -487,24 +479,29 @@ func hasMarkersCriterionHandler(hasMarkers *string) criterionHandlerFunc {
 	}
 }
 
-func sceneIsMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
+func sceneIsMissingCriterionHandler(qb *sceneQueryBuilder, isMissing *string) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
 			// TODO - add joins
 			switch *isMissing {
 			case "galleries":
+				qb.galleriesRepository().join(f, "galleries_join", "scenes.id")
 				f.addWhere("galleries_join.scene_id IS NULL")
 			case "studio":
 				f.addWhere("scenes.studio_id IS NULL")
 			case "movie":
+				qb.moviesRepository().join(f, "movies_join", "scenes.id")
 				f.addWhere("movies_join.scene_id IS NULL")
 			case "performers":
+				qb.performersRepository().join(f, "performers_join", "scenes.id")
 				f.addWhere("performers_join.scene_id IS NULL")
 			case "date":
 				f.addWhere("scenes.date IS \"\" OR scenes.date IS \"0001-01-01\"")
 			case "tags":
+				qb.tagsRepository().join(f, "tags_join", "scenes.id")
 				f.addWhere("tags_join.scene_id IS NULL")
 			case "stash_id":
+				qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
 				f.addWhere("scene_stash_ids.scene_id IS NULL")
 			default:
 				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(scenes." + *isMissing + ") = '')")
@@ -513,7 +510,7 @@ func sceneIsMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
 	}
 }
 
-func sceneTagsCriterionHandler(tags *models.MultiCriterionInput) criterionHandlerFunc {
+func sceneTagsCriterionHandler(qb *sceneQueryBuilder, tags *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if tags != nil && len(tags.Value) > 0 {
 			var args []interface{}
@@ -521,6 +518,7 @@ func sceneTagsCriterionHandler(tags *models.MultiCriterionInput) criterionHandle
 				args = append(args, tagID)
 			}
 
+			qb.tagsRepository().join(f, "tags_join", "scenes.id")
 			f.addJoin("tags", "", "tags_join.tag_id = tags.id")
 			whereClause, havingClause := getMultiCriterionClause("scenes", "tags", "scenes_tags", "scene_id", "tag_id", tags)
 			f.addWhere(whereClause, args...)
@@ -529,7 +527,7 @@ func sceneTagsCriterionHandler(tags *models.MultiCriterionInput) criterionHandle
 	}
 }
 
-func scenePerformersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
+func scenePerformersCriterionHandler(qb *sceneQueryBuilder, performers *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if performers != nil && len(performers.Value) > 0 {
 			var args []interface{}
@@ -537,6 +535,7 @@ func scenePerformersCriterionHandler(performers *models.MultiCriterionInput) cri
 				args = append(args, performerID)
 			}
 
+			qb.performersRepository().join(f, "performers_join", "scenes.id")
 			f.addJoin("performers", "", "performers_join.performer_id = performers.id")
 			whereClause, havingClause := getMultiCriterionClause("scenes", "performers", "performers_scenes", "scene_id", "performer_id", performers)
 			f.addWhere(whereClause, args...)
@@ -553,6 +552,7 @@ func sceneStudioCriterionHandler(studios *models.MultiCriterionInput) criterionH
 				args = append(args, studioID)
 			}
 
+			f.addJoin("studios", "studio", "studio.id = scenes.studio_id")
 			whereClause, havingClause := getMultiCriterionClause("scenes", "studio", "", "", "studio_id", studios)
 			f.addWhere(whereClause, args...)
 			f.addHaving(havingClause)
@@ -560,7 +560,7 @@ func sceneStudioCriterionHandler(studios *models.MultiCriterionInput) criterionH
 	}
 }
 
-func sceneMoviesCriterionHandler(movies *models.MultiCriterionInput) criterionHandlerFunc {
+func sceneMoviesCriterionHandler(qb *sceneQueryBuilder, movies *models.MultiCriterionInput) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if movies != nil && len(movies.Value) > 0 {
 			var args []interface{}
@@ -568,10 +568,20 @@ func sceneMoviesCriterionHandler(movies *models.MultiCriterionInput) criterionHa
 				args = append(args, movieID)
 			}
 
+			qb.moviesRepository().join(f, "movies_join", "scenes.id")
 			f.addJoin("movies", "", "movies_join.movie_id = movies.id")
 			whereClause, havingClause := getMultiCriterionClause("scenes", "movies", "movies_scenes", "scene_id", "movie_id", movies)
 			f.addWhere(whereClause, args...)
 			f.addHaving(havingClause)
+		}
+	}
+}
+
+func sceneStashIDsHandler(qb *sceneQueryBuilder, stashID *string) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if stashID != nil && *stashID != "" {
+			qb.stashIDRepository().join(f, "scene_stash_ids", "scenes.id")
+			stringLiteralCriterionHandler(stashID, "scene_stash_ids.stash_id")(f)
 		}
 	}
 }
