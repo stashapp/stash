@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -337,6 +338,27 @@ func (qb *sceneQueryBuilder) QueryForAutoTag(regex string, pathPrefixes []string
 	return scenes, nil
 }
 
+func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *filterBuilder {
+	query := &filterBuilder{}
+
+	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.Path, "scenes.path"))
+	query.handleCriterionFunc(intCriterionHandler(sceneFilter.Rating, "scenes.rating"))
+	query.handleCriterionFunc(intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter"))
+	query.handleCriterionFunc(boolCriterionHandler(sceneFilter.Organized, "scenes.organized"))
+	query.handleCriterionFunc(durationCriterionHandler(sceneFilter.Duration, "scenes.duration"))
+	query.handleCriterionFunc(resolutionCriterionHandler(sceneFilter.Resolution, "scenes.height", "scenes.width"))
+	query.handleCriterionFunc(hasMarkersCriterionHandler(sceneFilter.HasMarkers))
+	query.handleCriterionFunc(sceneIsMissingCriterionHandler(sceneFilter.IsMissing))
+
+	query.handleCriterionFunc(sceneTagsCriterionHandler(sceneFilter.Tags))
+	query.handleCriterionFunc(scenePerformersCriterionHandler(sceneFilter.Performers))
+	query.handleCriterionFunc(sceneStudioCriterionHandler(sceneFilter.Studios))
+	query.handleCriterionFunc(sceneMoviesCriterionHandler(sceneFilter.Movies))
+	query.handleCriterionFunc(stringLiteralCriterionHandler(sceneFilter.StashID, "scene_stash_ids.stash_id"))
+
+	return query
+}
+
 func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilter *models.FindFilterType) ([]*models.Scene, int, error) {
 	if sceneFilter == nil {
 		sceneFilter = &models.SceneFilterType{}
@@ -365,135 +387,9 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 		query.addArg(thisArgs...)
 	}
 
-	query.handleStringCriterionInput(sceneFilter.Path, "scenes.path")
-	query.handleIntCriterionInput(sceneFilter.Rating, "scenes.rating")
-	query.handleIntCriterionInput(sceneFilter.OCounter, "scenes.o_counter")
+	filter := qb.makeFilter(sceneFilter)
 
-	if Organized := sceneFilter.Organized; Organized != nil {
-		var organized string
-		if *Organized == true {
-			organized = "1"
-		} else {
-			organized = "0"
-		}
-		query.addWhere("scenes.organized = " + organized)
-	}
-
-	if durationFilter := sceneFilter.Duration; durationFilter != nil {
-		clause, thisArgs := getDurationWhereClause(*durationFilter)
-		query.addWhere(clause)
-		query.addArg(thisArgs...)
-	}
-
-	if resolutionFilter := sceneFilter.Resolution; resolutionFilter != nil {
-		if resolution := resolutionFilter.String(); resolutionFilter.IsValid() {
-			switch resolution {
-			case "VERY_LOW":
-				query.addWhere("MIN(scenes.height, scenes.width) < 240")
-			case "LOW":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 240 AND MIN(scenes.height, scenes.width) < 360)")
-			case "R360P":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 360 AND MIN(scenes.height, scenes.width) < 480)")
-			case "STANDARD":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 480 AND MIN(scenes.height, scenes.width) < 540)")
-			case "WEB_HD":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 540 AND MIN(scenes.height, scenes.width) < 720)")
-			case "STANDARD_HD":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 720 AND MIN(scenes.height, scenes.width) < 1080)")
-			case "FULL_HD":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 1080 AND MIN(scenes.height, scenes.width) < 1440)")
-			case "QUAD_HD":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 1440 AND MIN(scenes.height, scenes.width) < 1920)")
-			case "VR_HD":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 1920 AND MIN(scenes.height, scenes.width) < 2160)")
-			case "FOUR_K":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 2160 AND MIN(scenes.height, scenes.width) < 2880)")
-			case "FIVE_K":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 2880 AND MIN(scenes.height, scenes.width) < 3384)")
-			case "SIX_K":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 3384 AND MIN(scenes.height, scenes.width) < 4320)")
-			case "EIGHT_K":
-				query.addWhere("(MIN(scenes.height, scenes.width) >= 4320")
-			}
-		}
-	}
-
-	if hasMarkersFilter := sceneFilter.HasMarkers; hasMarkersFilter != nil {
-		if strings.Compare(*hasMarkersFilter, "true") == 0 {
-			query.addHaving("count(scene_markers.scene_id) > 0")
-		} else {
-			query.addWhere("scene_markers.id IS NULL")
-		}
-	}
-
-	if isMissingFilter := sceneFilter.IsMissing; isMissingFilter != nil && *isMissingFilter != "" {
-		switch *isMissingFilter {
-		case "galleries":
-			query.addWhere("galleries_join.scene_id IS NULL")
-		case "studio":
-			query.addWhere("scenes.studio_id IS NULL")
-		case "movie":
-			query.addWhere("movies_join.scene_id IS NULL")
-		case "performers":
-			query.addWhere("performers_join.scene_id IS NULL")
-		case "date":
-			query.addWhere("scenes.date IS \"\" OR scenes.date IS \"0001-01-01\"")
-		case "tags":
-			query.addWhere("tags_join.scene_id IS NULL")
-		case "stash_id":
-			query.addWhere("scene_stash_ids.scene_id IS NULL")
-		default:
-			query.addWhere("(scenes." + *isMissingFilter + " IS NULL OR TRIM(scenes." + *isMissingFilter + ") = '')")
-		}
-	}
-
-	if tagsFilter := sceneFilter.Tags; tagsFilter != nil && len(tagsFilter.Value) > 0 {
-		for _, tagID := range tagsFilter.Value {
-			query.addArg(tagID)
-		}
-
-		query.body += " LEFT JOIN tags on tags_join.tag_id = tags.id"
-		whereClause, havingClause := getMultiCriterionClause("scenes", "tags", "scenes_tags", "scene_id", "tag_id", tagsFilter)
-		query.addWhere(whereClause)
-		query.addHaving(havingClause)
-	}
-
-	if performersFilter := sceneFilter.Performers; performersFilter != nil && len(performersFilter.Value) > 0 {
-		for _, performerID := range performersFilter.Value {
-			query.addArg(performerID)
-		}
-
-		query.body += " LEFT JOIN performers ON performers_join.performer_id = performers.id"
-		whereClause, havingClause := getMultiCriterionClause("scenes", "performers", "performers_scenes", "scene_id", "performer_id", performersFilter)
-		query.addWhere(whereClause)
-		query.addHaving(havingClause)
-	}
-
-	if studiosFilter := sceneFilter.Studios; studiosFilter != nil && len(studiosFilter.Value) > 0 {
-		for _, studioID := range studiosFilter.Value {
-			query.addArg(studioID)
-		}
-
-		whereClause, havingClause := getMultiCriterionClause("scenes", "studio", "", "", "studio_id", studiosFilter)
-		query.addWhere(whereClause)
-		query.addHaving(havingClause)
-	}
-
-	if moviesFilter := sceneFilter.Movies; moviesFilter != nil && len(moviesFilter.Value) > 0 {
-		for _, movieID := range moviesFilter.Value {
-			query.addArg(movieID)
-		}
-
-		query.body += " LEFT JOIN movies ON movies_join.movie_id = movies.id"
-		whereClause, havingClause := getMultiCriterionClause("scenes", "movies", "movies_scenes", "scene_id", "movie_id", moviesFilter)
-		query.addWhere(whereClause)
-		query.addHaving(havingClause)
-	}
-
-	if stashIDFilter := sceneFilter.StashID; stashIDFilter != nil {
-		query.addWhere("scene_stash_ids.stash_id = ?")
-		query.addArg(stashIDFilter)
-	}
+	filter.addToQueryBuilder(&query)
 
 	query.sortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
 
@@ -522,7 +418,16 @@ func appendClause(clauses []string, clause string) []string {
 	return clauses
 }
 
-func getDurationWhereClause(durationFilter models.IntCriterionInput) (string, []interface{}) {
+func durationCriterionHandler(durationFilter *models.IntCriterionInput, column string) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if durationFilter != nil {
+			clause, thisArgs := getDurationWhereClause(*durationFilter, column)
+			f.addWhere(clause, thisArgs...)
+		}
+	}
+}
+
+func getDurationWhereClause(durationFilter models.IntCriterionInput, column string) (string, []interface{}) {
 	// special case for duration. We accept duration as seconds as int but the
 	// field is floating point. Change the equals filter to return a range
 	// between x and x + 1
@@ -532,22 +437,143 @@ func getDurationWhereClause(durationFilter models.IntCriterionInput) (string, []
 
 	value := durationFilter.Value
 	if durationFilter.Modifier == models.CriterionModifierEquals {
-		clause = "scenes.duration >= ? AND scenes.duration < ?"
+		clause = fmt.Sprintf("%[1]s >= ? AND %[1]s < ?", column)
 		args = append(args, value)
 		args = append(args, value+1)
 	} else if durationFilter.Modifier == models.CriterionModifierNotEquals {
-		clause = "(scenes.duration < ? OR scenes.duration >= ?)"
+		clause = fmt.Sprintf("(%[1]s < ? OR %[1]s >= ?)", column)
 		args = append(args, value)
 		args = append(args, value+1)
 	} else {
 		var count int
-		clause, count = getIntCriterionWhereClause("scenes.duration", durationFilter)
+		clause, count = getIntCriterionWhereClause(column, durationFilter)
 		if count == 1 {
 			args = append(args, value)
 		}
 	}
 
 	return clause, args
+}
+
+func resolutionCriterionHandler(resolution *models.ResolutionEnum, heightColumn string, widthColumn string) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if resolution != nil && resolution.IsValid() {
+			min := resolution.GetMinResolution()
+			max := resolution.GetMaxResolution()
+
+			widthHeight := fmt.Sprintf("MIN(%s, %s)", widthColumn, heightColumn)
+
+			if min > 0 {
+				f.addWhere(widthHeight + " >= " + strconv.Itoa(min))
+			}
+
+			if max > 0 {
+				f.addWhere(widthHeight + " < " + strconv.Itoa(max))
+			}
+		}
+	}
+}
+
+func hasMarkersCriterionHandler(hasMarkers *string) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if hasMarkers != nil {
+			// TODO - add join
+			if *hasMarkers == "true" {
+				f.addHaving("count(scene_markers.scene_id) > 0")
+			} else {
+				f.addWhere("scene_markers.id IS NULL")
+			}
+		}
+	}
+}
+
+func sceneIsMissingCriterionHandler(isMissing *string) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if isMissing != nil && *isMissing != "" {
+			// TODO - add joins
+			switch *isMissing {
+			case "galleries":
+				f.addWhere("galleries_join.scene_id IS NULL")
+			case "studio":
+				f.addWhere("scenes.studio_id IS NULL")
+			case "movie":
+				f.addWhere("movies_join.scene_id IS NULL")
+			case "performers":
+				f.addWhere("performers_join.scene_id IS NULL")
+			case "date":
+				f.addWhere("scenes.date IS \"\" OR scenes.date IS \"0001-01-01\"")
+			case "tags":
+				f.addWhere("tags_join.scene_id IS NULL")
+			case "stash_id":
+				f.addWhere("scene_stash_ids.scene_id IS NULL")
+			default:
+				f.addWhere("(scenes." + *isMissing + " IS NULL OR TRIM(scenes." + *isMissing + ") = '')")
+			}
+		}
+	}
+}
+
+func sceneTagsCriterionHandler(tags *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if tags != nil && len(tags.Value) > 0 {
+			var args []interface{}
+			for _, tagID := range tags.Value {
+				args = append(args, tagID)
+			}
+
+			f.addJoin("tags", "", "tags_join.tag_id = tags.id")
+			whereClause, havingClause := getMultiCriterionClause("scenes", "tags", "scenes_tags", "scene_id", "tag_id", tags)
+			f.addWhere(whereClause, args...)
+			f.addHaving(havingClause)
+		}
+	}
+}
+
+func scenePerformersCriterionHandler(performers *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if performers != nil && len(performers.Value) > 0 {
+			var args []interface{}
+			for _, performerID := range performers.Value {
+				args = append(args, performerID)
+			}
+
+			f.addJoin("performers", "", "performers_join.performer_id = performers.id")
+			whereClause, havingClause := getMultiCriterionClause("scenes", "performers", "performers_scenes", "scene_id", "performer_id", performers)
+			f.addWhere(whereClause, args...)
+			f.addHaving(havingClause)
+		}
+	}
+}
+
+func sceneStudioCriterionHandler(studios *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if studios != nil && len(studios.Value) > 0 {
+			var args []interface{}
+			for _, studioID := range studios.Value {
+				args = append(args, studioID)
+			}
+
+			whereClause, havingClause := getMultiCriterionClause("scenes", "studio", "", "", "studio_id", studios)
+			f.addWhere(whereClause, args...)
+			f.addHaving(havingClause)
+		}
+	}
+}
+
+func sceneMoviesCriterionHandler(movies *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if movies != nil && len(movies.Value) > 0 {
+			var args []interface{}
+			for _, movieID := range movies.Value {
+				args = append(args, movieID)
+			}
+
+			f.addJoin("movies", "", "movies_join.movie_id = movies.id")
+			whereClause, havingClause := getMultiCriterionClause("scenes", "movies", "movies_scenes", "scene_id", "movie_id", movies)
+			f.addWhere(whereClause, args...)
+			f.addHaving(havingClause)
+		}
+	}
 }
 
 func (qb *sceneQueryBuilder) getSceneSort(findFilter *models.FindFilterType) string {
