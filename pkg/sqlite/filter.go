@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -80,11 +81,52 @@ func (j *joins) toSQL() string {
 }
 
 type filterBuilder struct {
+	andFilter *filterBuilder
+	orFilter  *filterBuilder
+	notFilter *filterBuilder
+
 	joins         joins
 	whereClauses  []sqlClause
 	havingClauses []sqlClause
 
 	err error
+}
+
+var errAndOrFilter error = errors.New(`cannot use "and" and "or" within the same filter`)
+var errAndNotFilter error = errors.New(`cannot use "and" and "not" within the same filter`)
+var errOrNotFilter error = errors.New(`cannot use "or" and "not" within the same filter`)
+
+func (f *filterBuilder) and(a *filterBuilder) {
+	if f.orFilter != nil {
+		f.setError(errAndOrFilter)
+	}
+	if f.notFilter != nil {
+		f.setError(errAndNotFilter)
+	}
+
+	f.andFilter = a
+}
+
+func (f *filterBuilder) or(o *filterBuilder) {
+	if f.andFilter != nil {
+		f.setError(errAndOrFilter)
+	}
+	if f.notFilter != nil {
+		f.setError(errOrNotFilter)
+	}
+
+	f.orFilter = o
+}
+
+func (f *filterBuilder) not(n *filterBuilder) {
+	if f.andFilter != nil {
+		f.setError(errAndNotFilter)
+	}
+	if f.orFilter != nil {
+		f.setError(errOrNotFilter)
+	}
+
+	f.notFilter = n
 }
 
 func (f *filterBuilder) addJoin(table, as, onClause string) {
@@ -133,26 +175,109 @@ func (f *filterBuilder) andClauses(input []sqlClause) (string, []interface{}) {
 	return "", nil
 }
 
-func (f *filterBuilder) addToQueryBuilder(qb *queryBuilder) {
-	clauses, args := f.andClauses(f.whereClauses)
-	if len(clauses) > 0 {
-		qb.addWhere(clauses)
+func (f *filterBuilder) subFilter() (s *filterBuilder, op string) {
+	if f.andFilter != nil {
+		s = f.andFilter
+		op = "AND"
+	} else if f.orFilter != nil {
+		s = f.orFilter
+		op = "OR"
+	} else if f.notFilter != nil {
+		s = f.notFilter
+		op = "AND NOT"
+	}
+
+	return
+}
+
+func (f *filterBuilder) generateWhereClauses() (string, []interface{}) {
+	clause, args := f.andClauses(f.whereClauses)
+
+	subFilter, op := f.subFilter()
+	if subFilter != nil {
+		c, a := subFilter.generateWhereClauses()
+		if c != "" {
+			clause += " " + op + " " + c
+			if len(a) > 0 {
+				args = append(args, a...)
+			}
+		}
+	}
+
+	return clause, args
+}
+
+func (f *filterBuilder) generateHavingClauses() (string, []interface{}) {
+	clause, args := f.andClauses(f.havingClauses)
+
+	subFilter, op := f.subFilter()
+	if subFilter != nil {
+		c, a := subFilter.generateHavingClauses()
+		if c != "" {
+			clause += " " + op + " " + c
+			if len(a) > 0 {
+				args = append(args, a...)
+			}
+		}
+	}
+
+	return clause, args
+}
+
+func (f *filterBuilder) getAllJoins() joins {
+	var ret joins
+	ret.add(f.joins...)
+	subFilter, _ := f.subFilter()
+	if subFilter != nil {
+		subJoins := subFilter.getAllJoins()
+		if len(subJoins) > 0 {
+			ret.add(subJoins...)
+		}
+	}
+
+	return ret
+}
+
+func (f *filterBuilder) getError() error {
+	if f.err != nil {
+		return f.err
+	}
+
+	subFilter, _ := f.subFilter()
+	if subFilter != nil {
+		return subFilter.getError()
+	}
+
+	return nil
+}
+
+func (f *filterBuilder) addToQueryBuilder(qb *queryBuilder) error {
+	err := f.getError()
+	if err != nil {
+		return err
+	}
+
+	clause, args := f.generateWhereClauses()
+	if len(clause) > 0 {
+		qb.addWhere(clause)
 	}
 
 	if len(args) > 0 {
 		qb.addArg(args...)
 	}
 
-	clauses, args = f.andClauses(f.havingClauses)
-	if len(clauses) > 0 {
-		qb.addHaving(clauses)
+	clause, args = f.generateHavingClauses()
+	if len(clause) > 0 {
+		qb.addHaving(clause)
 	}
 
 	if len(args) > 0 {
 		qb.addArg(args...)
 	}
 
-	qb.addJoins(f.joins...)
+	qb.addJoins(f.getAllJoins()...)
+
+	return nil
 }
 
 func (f *filterBuilder) handleCriterion(handler criterionHandler) {

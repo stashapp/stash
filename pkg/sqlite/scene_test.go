@@ -187,6 +187,107 @@ func TestSceneQueryPath(t *testing.T) {
 	verifyScenesPath(t, pathCriterion)
 }
 
+func TestSceneQueryPathOr(t *testing.T) {
+	const scene1Idx = 1
+	const scene2Idx = 2
+
+	scene1Path := getSceneStringValue(scene1Idx, "Path")
+	scene2Path := getSceneStringValue(scene2Idx, "Path")
+
+	sceneFilter := models.SceneFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    scene1Path,
+			Modifier: models.CriterionModifierEquals,
+		},
+		Or: &models.SceneFilterType{
+			Path: &models.StringCriterionInput{
+				Value:    scene2Path,
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+
+		assert.Len(t, scenes, 2)
+		assert.Equal(t, scene1Path, scenes[0].Path)
+		assert.Equal(t, scene2Path, scenes[1].Path)
+
+		return nil
+	})
+}
+
+func TestSceneQueryPathAndRating(t *testing.T) {
+	const sceneIdx = 1
+	scenePath := getSceneStringValue(sceneIdx, "Path")
+	sceneRating := getRating(sceneIdx)
+
+	sceneFilter := models.SceneFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    scenePath,
+			Modifier: models.CriterionModifierEquals,
+		},
+		And: &models.SceneFilterType{
+			Rating: &models.IntCriterionInput{
+				Value:    int(sceneRating.Int64),
+				Modifier: models.CriterionModifierEquals,
+			},
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+
+		assert.Len(t, scenes, 1)
+		assert.Equal(t, scenePath, scenes[0].Path)
+		assert.Equal(t, sceneRating.Int64, scenes[0].Rating.Int64)
+
+		return nil
+	})
+}
+
+func TestSceneQueryPathNotRating(t *testing.T) {
+	const sceneIdx = 1
+
+	sceneRating := getRating(sceneIdx)
+
+	pathCriterion := models.StringCriterionInput{
+		Value:    "scene_.*1_Path",
+		Modifier: models.CriterionModifierMatchesRegex,
+	}
+
+	ratingCriterion := models.IntCriterionInput{
+		Value:    int(sceneRating.Int64),
+		Modifier: models.CriterionModifierEquals,
+	}
+
+	sceneFilter := models.SceneFilterType{
+		Path: &pathCriterion,
+		Not: &models.SceneFilterType{
+			Rating: &ratingCriterion,
+		},
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+
+		scenes := queryScene(t, sqb, &sceneFilter, nil)
+
+		for _, scene := range scenes {
+			verifyString(t, scene.Path, pathCriterion)
+			ratingCriterion.Modifier = models.CriterionModifierNotEquals
+			verifyInt64(t, scene.Rating, ratingCriterion)
+		}
+
+		return nil
+	})
+}
+
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()

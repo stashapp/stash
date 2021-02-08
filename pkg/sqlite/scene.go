@@ -341,6 +341,16 @@ func (qb *sceneQueryBuilder) QueryForAutoTag(regex string, pathPrefixes []string
 func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *filterBuilder {
 	query := &filterBuilder{}
 
+	if sceneFilter.And != nil {
+		query.andFilter = qb.makeFilter(sceneFilter.And)
+	}
+	if sceneFilter.Or != nil {
+		query.orFilter = qb.makeFilter(sceneFilter.Or)
+	}
+	if sceneFilter.Not != nil {
+		query.notFilter = qb.makeFilter(sceneFilter.Not)
+	}
+
 	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.Path, "scenes.path"))
 	query.handleCriterionFunc(intCriterionHandler(sceneFilter.Rating, "scenes.rating"))
 	query.handleCriterionFunc(intCriterionHandler(sceneFilter.OCounter, "scenes.o_counter"))
@@ -381,7 +391,10 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 
 	filter := qb.makeFilter(sceneFilter)
 
-	filter.addToQueryBuilder(&query)
+	err := filter.addToQueryBuilder(&query)
+	if err != nil {
+		return nil, 0, err
+	}
 
 	query.sortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
 

@@ -75,6 +75,10 @@ input SceneMarkerFilterType {
 }
 
 input SceneFilterType {
+  AND: SceneFilterType
+  OR: SceneFilterType
+  NOT: SceneFilterType
+  
   """Filter by path"""
   path: StringCriterionInput
   """Filter by rating"""
