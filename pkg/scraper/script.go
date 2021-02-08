@@ -61,6 +61,10 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 
 	// TODO - add a timeout here
 	decodeErr := json.NewDecoder(stdout).Decode(out)
+	if decodeErr != nil {
+		logger.Error("could not unmarshal json: " + decodeErr.Error())
+		return errors.New("could not unmarshal json: " + decodeErr.Error())
+	}
 
 	stderrData, _ := ioutil.ReadAll(stderr)
 	stderrString := string(stderrData)
@@ -71,11 +75,6 @@ func (s *scriptScraper) runScraperScript(inString string, out interface{}) error
 		// error message should be in the stderr stream
 		logger.Errorf("scraper error when running command <%s>: %s", strings.Join(cmd.Args, " "), stderrString)
 		return errors.New("Error running scraper script")
-	}
-
-	if decodeErr != nil {
-		logger.Errorf("error decoding performer from scraper data: %s", err.Error())
-		return errors.New("Error decoding performer from scraper script")
 	}
 
 	return nil
