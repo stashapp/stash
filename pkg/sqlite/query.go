@@ -66,6 +66,34 @@ func (qb *queryBuilder) addJoins(joins ...join) {
 	qb.joins.add(joins...)
 }
 
+func (qb *queryBuilder) addFilter(f *filterBuilder) {
+	err := f.getError()
+	if err != nil {
+		qb.err = err
+		return
+	}
+
+	clause, args := f.generateWhereClauses()
+	if len(clause) > 0 {
+		qb.addWhere(clause)
+	}
+
+	if len(args) > 0 {
+		qb.addArg(args...)
+	}
+
+	clause, args = f.generateHavingClauses()
+	if len(clause) > 0 {
+		qb.addHaving(clause)
+	}
+
+	if len(args) > 0 {
+		qb.addArg(args...)
+	}
+
+	qb.addJoins(f.getAllJoins()...)
+}
+
 func (qb *queryBuilder) handleIntCriterionInput(c *models.IntCriterionInput, column string) {
 	if c != nil {
 		clause, count := getIntCriterionWhereClause(column, *c)

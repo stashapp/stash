@@ -342,13 +342,13 @@ func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *fi
 	query := &filterBuilder{}
 
 	if sceneFilter.And != nil {
-		query.andFilter = qb.makeFilter(sceneFilter.And)
+		query.and(qb.makeFilter(sceneFilter.And))
 	}
 	if sceneFilter.Or != nil {
-		query.orFilter = qb.makeFilter(sceneFilter.Or)
+		query.or(qb.makeFilter(sceneFilter.Or))
 	}
 	if sceneFilter.Not != nil {
-		query.notFilter = qb.makeFilter(sceneFilter.Not)
+		query.not(qb.makeFilter(sceneFilter.Not))
 	}
 
 	query.handleCriterionFunc(stringCriterionHandler(sceneFilter.Path, "scenes.path"))
@@ -391,10 +391,7 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 
 	filter := qb.makeFilter(sceneFilter)
 
-	err := filter.addToQueryBuilder(&query)
-	if err != nil {
-		return nil, 0, err
-	}
+	query.addFilter(filter)
 
 	query.sortAndPagination = qb.getSceneSort(findFilter) + getPagination(findFilter)
 
@@ -495,7 +492,6 @@ func hasMarkersCriterionHandler(hasMarkers *string) criterionHandlerFunc {
 func sceneIsMissingCriterionHandler(qb *sceneQueryBuilder, isMissing *string) criterionHandlerFunc {
 	return func(f *filterBuilder) {
 		if isMissing != nil && *isMissing != "" {
-			// TODO - add joins
 			switch *isMissing {
 			case "galleries":
 				qb.galleriesRepository().join(f, "galleries_join", "scenes.id")

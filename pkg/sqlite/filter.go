@@ -50,10 +50,10 @@ func (j join) alias() string {
 func (j join) toSQL() string {
 	asStr := ""
 	if j.as != "" && j.as != j.table {
-		asStr = " AS " + j.as + " "
+		asStr = " AS " + j.as
 	}
 
-	return fmt.Sprintf("LEFT JOIN %s%s on %s", j.table, asStr, j.onClause)
+	return fmt.Sprintf("LEFT JOIN %s%s ON %s", j.table, asStr, j.onClause)
 }
 
 type joins []join
@@ -81,9 +81,8 @@ func (j *joins) toSQL() string {
 }
 
 type filterBuilder struct {
-	andFilter *filterBuilder
-	orFilter  *filterBuilder
-	notFilter *filterBuilder
+	subFilter   *filterBuilder
+	subFilterOp string
 
 	joins         joins
 	whereClauses  []sqlClause
@@ -92,43 +91,56 @@ type filterBuilder struct {
 	err error
 }
 
-var errAndOrFilter error = errors.New(`cannot use "and" and "or" within the same filter`)
-var errAndNotFilter error = errors.New(`cannot use "and" and "not" within the same filter`)
-var errOrNotFilter error = errors.New(`cannot use "or" and "not" within the same filter`)
+var errSubFilterAlreadySet error = errors.New(`sub-filter already set`)
 
+// sub-filter operator values
+var (
+	andOp string = "AND"
+	orOp  string = "OR"
+	notOp string = "AND NOT"
+)
+
+// and sets the sub-filter that will be ANDed with this one.
+// Sets the error state if sub-filter is already set.
 func (f *filterBuilder) and(a *filterBuilder) {
-	if f.orFilter != nil {
-		f.setError(errAndOrFilter)
-	}
-	if f.notFilter != nil {
-		f.setError(errAndNotFilter)
+	if f.subFilter != nil {
+		f.setError(errSubFilterAlreadySet)
+		return
 	}
 
-	f.andFilter = a
+	f.subFilter = a
+	f.subFilterOp = andOp
 }
 
+// or sets the sub-filter that will be ORed with this one.
+// Sets the error state if a sub-filter is already set.
 func (f *filterBuilder) or(o *filterBuilder) {
-	if f.andFilter != nil {
-		f.setError(errAndOrFilter)
-	}
-	if f.notFilter != nil {
-		f.setError(errOrNotFilter)
+	if f.subFilter != nil {
+		f.setError(errSubFilterAlreadySet)
+		return
 	}
 
-	f.orFilter = o
+	f.subFilter = o
+	f.subFilterOp = orOp
 }
 
+// not sets the sub-filter that will be AND NOTed with this one.
+// Sets the error state if a sub-filter is already set.
 func (f *filterBuilder) not(n *filterBuilder) {
-	if f.andFilter != nil {
-		f.setError(errAndNotFilter)
-	}
-	if f.orFilter != nil {
-		f.setError(errOrNotFilter)
+	if f.subFilter != nil {
+		f.setError(errSubFilterAlreadySet)
+		return
 	}
 
-	f.notFilter = n
+	f.subFilter = n
+	f.subFilterOp = notOp
 }
 
+// addJoin adds a join to the filter. The join is expressed in SQL as:
+// LEFT JOIN <table> [AS <as>] ON <onClause>
+// The AS is omitted if as is empty.
+// This method does not add a join if it its alias/table name is already
+// present in another existing join.
 func (f *filterBuilder) addJoin(table, as, onClause string) {
 	newJoin := join{
 		table:    table,
@@ -139,6 +151,8 @@ func (f *filterBuilder) addJoin(table, as, onClause string) {
 	f.joins.add(newJoin)
 }
 
+// addWhere adds a where clause and arguments to the filter. Where clauses
+// are ANDed together. Does not add anything if the provided string is empty.
 func (f *filterBuilder) addWhere(sql string, args ...interface{}) {
 	if sql == "" {
 		return
@@ -146,11 +160,94 @@ func (f *filterBuilder) addWhere(sql string, args ...interface{}) {
 	f.whereClauses = append(f.whereClauses, makeClause(sql, args...))
 }
 
+// addHaving adds a where clause and arguments to the filter. Having clauses
+// are ANDed together. Does not add anything if the provided string is empty.
 func (f *filterBuilder) addHaving(sql string, args ...interface{}) {
 	if sql == "" {
 		return
 	}
 	f.havingClauses = append(f.havingClauses, makeClause(sql, args...))
+}
+
+// generateWhereClauses generates the SQL where clause for this filter.
+// All where clauses within the filter are ANDed together. This is combined
+// with the sub-filter, which will use the applicable operator (AND/OR/AND NOT).
+func (f *filterBuilder) generateWhereClauses() (clause string, args []interface{}) {
+	clause, args = f.andClauses(f.whereClauses)
+
+	if f.subFilter != nil {
+		c, a := f.subFilter.generateWhereClauses()
+		if c != "" {
+			clause += " " + f.subFilterOp + " " + c
+			if len(a) > 0 {
+				args = append(args, a...)
+			}
+		}
+	}
+
+	return
+}
+
+// generateHavingClauses generates the SQL having clause for this filter.
+// All having clauses within the filter are ANDed together. This is combined
+// with the sub-filter, which will use the applicable operator (AND/OR/AND NOT).
+func (f *filterBuilder) generateHavingClauses() (string, []interface{}) {
+	clause, args := f.andClauses(f.havingClauses)
+
+	if f.subFilter != nil {
+		c, a := f.subFilter.generateHavingClauses()
+		if c != "" {
+			clause += " " + f.subFilterOp + " " + c
+			if len(a) > 0 {
+				args = append(args, a...)
+			}
+		}
+	}
+
+	return clause, args
+}
+
+// getAllJoins returns all of the joins in this filter and any sub-filter(s).
+// Redundant joins will not be duplicated in the return value.
+func (f *filterBuilder) getAllJoins() joins {
+	var ret joins
+	ret.add(f.joins...)
+	if f.subFilter != nil {
+		subJoins := f.subFilter.getAllJoins()
+		if len(subJoins) > 0 {
+			ret.add(subJoins...)
+		}
+	}
+
+	return ret
+}
+
+// getError returns the error state on this filter, or on any sub-filter(s) if
+// the error state is nil.
+func (f *filterBuilder) getError() error {
+	if f.err != nil {
+		return f.err
+	}
+
+	if f.subFilter != nil {
+		return f.subFilter.getError()
+	}
+
+	return nil
+}
+
+// handleCriterion calls the handle function on the provided criterionHandler,
+// providing itself.
+func (f *filterBuilder) handleCriterion(handler criterionHandler) {
+	f.handleCriterionFunc(func(h *filterBuilder) {
+		handler.handle(h)
+	})
+}
+
+// handleCriterionFunc calls the provided criterion handler function providing
+// itself.
+func (f *filterBuilder) handleCriterionFunc(handler criterionHandlerFunc) {
+	handler(f)
 }
 
 func (f *filterBuilder) setError(e error) {
@@ -173,121 +270,6 @@ func (f *filterBuilder) andClauses(input []sqlClause) (string, []interface{}) {
 	}
 
 	return "", nil
-}
-
-func (f *filterBuilder) subFilter() (s *filterBuilder, op string) {
-	if f.andFilter != nil {
-		s = f.andFilter
-		op = "AND"
-	} else if f.orFilter != nil {
-		s = f.orFilter
-		op = "OR"
-	} else if f.notFilter != nil {
-		s = f.notFilter
-		op = "AND NOT"
-	}
-
-	return
-}
-
-func (f *filterBuilder) generateWhereClauses() (string, []interface{}) {
-	clause, args := f.andClauses(f.whereClauses)
-
-	subFilter, op := f.subFilter()
-	if subFilter != nil {
-		c, a := subFilter.generateWhereClauses()
-		if c != "" {
-			clause += " " + op + " " + c
-			if len(a) > 0 {
-				args = append(args, a...)
-			}
-		}
-	}
-
-	return clause, args
-}
-
-func (f *filterBuilder) generateHavingClauses() (string, []interface{}) {
-	clause, args := f.andClauses(f.havingClauses)
-
-	subFilter, op := f.subFilter()
-	if subFilter != nil {
-		c, a := subFilter.generateHavingClauses()
-		if c != "" {
-			clause += " " + op + " " + c
-			if len(a) > 0 {
-				args = append(args, a...)
-			}
-		}
-	}
-
-	return clause, args
-}
-
-func (f *filterBuilder) getAllJoins() joins {
-	var ret joins
-	ret.add(f.joins...)
-	subFilter, _ := f.subFilter()
-	if subFilter != nil {
-		subJoins := subFilter.getAllJoins()
-		if len(subJoins) > 0 {
-			ret.add(subJoins...)
-		}
-	}
-
-	return ret
-}
-
-func (f *filterBuilder) getError() error {
-	if f.err != nil {
-		return f.err
-	}
-
-	subFilter, _ := f.subFilter()
-	if subFilter != nil {
-		return subFilter.getError()
-	}
-
-	return nil
-}
-
-func (f *filterBuilder) addToQueryBuilder(qb *queryBuilder) error {
-	err := f.getError()
-	if err != nil {
-		return err
-	}
-
-	clause, args := f.generateWhereClauses()
-	if len(clause) > 0 {
-		qb.addWhere(clause)
-	}
-
-	if len(args) > 0 {
-		qb.addArg(args...)
-	}
-
-	clause, args = f.generateHavingClauses()
-	if len(clause) > 0 {
-		qb.addHaving(clause)
-	}
-
-	if len(args) > 0 {
-		qb.addArg(args...)
-	}
-
-	qb.addJoins(f.getAllJoins()...)
-
-	return nil
-}
-
-func (f *filterBuilder) handleCriterion(handler criterionHandler) {
-	f.handleCriterionFunc(func(h *filterBuilder) {
-		handler.handle(h)
-	})
-}
-
-func (f *filterBuilder) handleCriterionFunc(handler criterionHandlerFunc) {
-	handler(f)
 }
 
 func stringCriterionHandler(c *models.StringCriterionInput, column string) criterionHandlerFunc {
