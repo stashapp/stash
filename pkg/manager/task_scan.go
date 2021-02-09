@@ -380,9 +380,16 @@ func (t *ScanTask) scanScene() *models.Scene {
 		// scene, then recalculate the checksum and regenerate the thumbnail
 		modified := t.isFileModified(fileModTime, s.FileModTime)
 		if modified || !s.Size.Valid {
+			oldHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
 			s, err = t.rescanScene(s, fileModTime)
 			if err != nil {
 				return logError(err)
+			}
+
+			// Migrate any generated files if the hash has changed
+			newHash := s.GetHash(config.GetVideoFileNamingAlgorithm())
+			if newHash != oldHash {
+				MigrateHash(oldHash, newHash)
 			}
 		}
 
