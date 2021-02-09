@@ -3,9 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
-	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stashapp/stash/pkg/models"
@@ -289,53 +287,6 @@ func (qb *sceneQueryBuilder) Wall(q *string) ([]*models.Scene, error) {
 
 func (qb *sceneQueryBuilder) All() ([]*models.Scene, error) {
 	return qb.queryScenes(selectAll(sceneTable)+qb.getSceneSort(nil), nil)
-}
-
-// QueryForAutoTag queries for scenes whose paths match the provided regex and
-// are optionally within the provided path. Excludes organized scenes.
-// TODO - this should be replaced with Query once it can perform multiple
-// filters on the same field.
-func (qb *sceneQueryBuilder) QueryForAutoTag(regex string, pathPrefixes []string) ([]*models.Scene, error) {
-	var args []interface{}
-	body := selectDistinctIDs("scenes") + ` WHERE 
-	scenes.path regexp ? AND 
-	scenes.organized = 0`
-
-	args = append(args, "(?i)"+regex)
-
-	var pathClauses []string
-	for _, p := range pathPrefixes {
-		pathClauses = append(pathClauses, "scenes.path like ?")
-
-		sep := string(filepath.Separator)
-		if !strings.HasSuffix(p, sep) {
-			p = p + sep
-		}
-		args = append(args, p+"%")
-	}
-
-	if len(pathClauses) > 0 {
-		body += " AND (" + strings.Join(pathClauses, " OR ") + ")"
-	}
-
-	idsResult, err := qb.runIdsQuery(body, args)
-
-	if err != nil {
-		return nil, err
-	}
-
-	var scenes []*models.Scene
-	for _, id := range idsResult {
-		scene, err := qb.Find(id)
-
-		if err != nil {
-			return nil, err
-		}
-
-		scenes = append(scenes, scene)
-	}
-
-	return scenes, nil
 }
 
 func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *filterBuilder {
