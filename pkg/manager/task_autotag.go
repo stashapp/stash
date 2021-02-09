@@ -38,13 +38,50 @@ func (t *AutoTagTask) getQueryRegex(name string) string {
 	return ret
 }
 
+func (t *AutoTagTask) getQueryFilter(regex string) *models.SceneFilterType {
+	organized := false
+	ret := &models.SceneFilterType{
+		Path: &models.StringCriterionInput{
+			Modifier: models.CriterionModifierMatchesRegex,
+			Value:    "(?i)" + regex,
+		},
+		Organized: &organized,
+	}
+
+	var or *models.SceneFilterType
+	for _, p := range t.paths {
+		newOr := &models.SceneFilterType{}
+		if or == nil {
+			ret.And = newOr
+		} else {
+			or.Or = newOr
+		}
+
+		or = newOr
+
+		or.Path = &models.StringCriterionInput{
+			Modifier: models.CriterionModifierEquals,
+			Value:    p + "%",
+		}
+	}
+
+	return ret
+}
+
+func (t *AutoTagTask) getFindFilter() *models.FindFilterType {
+	perPage := 0
+	return &models.FindFilterType{
+		PerPage: &perPage,
+	}
+}
+
 func (t *AutoTagPerformerTask) autoTagPerformer() {
 	regex := t.getQueryRegex(t.performer.Name.String)
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
 
-		scenes, err := qb.QueryForAutoTag(regex, t.paths)
+		scenes, _, err := qb.Query(t.getQueryFilter(regex), t.getFindFilter())
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
@@ -84,7 +121,7 @@ func (t *AutoTagStudioTask) autoTagStudio() {
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
-		scenes, err := qb.QueryForAutoTag(regex, t.paths)
+		scenes, _, err := qb.Query(t.getQueryFilter(regex), t.getFindFilter())
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
@@ -133,7 +170,7 @@ func (t *AutoTagTagTask) autoTagTag() {
 
 	if err := t.txnManager.WithTxn(context.TODO(), func(r models.Repository) error {
 		qb := r.Scene()
-		scenes, err := qb.QueryForAutoTag(regex, t.paths)
+		scenes, _, err := qb.Query(t.getQueryFilter(regex), t.getFindFilter())
 
 		if err != nil {
 			return fmt.Errorf("Error querying scenes with regex '%s': %s", regex, err.Error())
