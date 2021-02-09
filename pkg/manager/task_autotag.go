@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -48,6 +49,8 @@ func (t *AutoTagTask) getQueryFilter(regex string) *models.SceneFilterType {
 		Organized: &organized,
 	}
 
+	sep := string(filepath.Separator)
+
 	var or *models.SceneFilterType
 	for _, p := range t.paths {
 		newOr := &models.SceneFilterType{}
@@ -58,6 +61,10 @@ func (t *AutoTagTask) getQueryFilter(regex string) *models.SceneFilterType {
 		}
 
 		or = newOr
+
+		if !strings.HasSuffix(p, sep) {
+			p = p + sep
+		}
 
 		or.Path = &models.StringCriterionInput{
 			Modifier: models.CriterionModifierEquals,
