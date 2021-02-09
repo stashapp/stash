@@ -95,9 +95,9 @@ var errSubFilterAlreadySet error = errors.New(`sub-filter already set`)
 
 // sub-filter operator values
 var (
-	andOp string = "AND"
-	orOp  string = "OR"
-	notOp string = "AND NOT"
+	andOp = "AND"
+	orOp  = "OR"
+	notOp = "AND NOT"
 )
 
 // and sets the sub-filter that will be ANDed with this one.
