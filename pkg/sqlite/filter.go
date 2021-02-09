@@ -349,3 +349,33 @@ func stringLiteralCriterionHandler(v *string, column string) criterionHandlerFun
 		}
 	}
 }
+
+type multiCriterionHandlerBuilder struct {
+	primaryTable string
+	foreignTable string
+	joinTable    string
+	primaryFK    string
+	foreignFK    string
+
+	// function that will be called to perform any necessary joins
+	addJoinsFunc func(f *filterBuilder)
+}
+
+func (m *multiCriterionHandlerBuilder) handler(criterion *models.MultiCriterionInput) criterionHandlerFunc {
+	return func(f *filterBuilder) {
+		if criterion != nil && len(criterion.Value) > 0 {
+			var args []interface{}
+			for _, tagID := range criterion.Value {
+				args = append(args, tagID)
+			}
+
+			if m.addJoinsFunc != nil {
+				m.addJoinsFunc(f)
+			}
+
+			whereClause, havingClause := getMultiCriterionClause(m.primaryTable, m.foreignTable, m.joinTable, m.primaryFK, m.foreignFK, criterion)
+			f.addWhere(whereClause, args...)
+			f.addHaving(havingClause)
+		}
+	}
+}
