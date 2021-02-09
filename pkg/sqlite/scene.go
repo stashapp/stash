@@ -289,6 +289,41 @@ func (qb *sceneQueryBuilder) All() ([]*models.Scene, error) {
 	return qb.queryScenes(selectAll(sceneTable)+qb.getSceneSort(nil), nil)
 }
 
+func illegalFilterCombination(type1, type2 string) error {
+	return fmt.Errorf("cannot have %s and %s in the same filter", type1, type2)
+}
+
+func (qb *sceneQueryBuilder) validateFilter(sceneFilter *models.SceneFilterType) error {
+	const and = "AND"
+	const or = "OR"
+	const not = "NOT"
+
+	if sceneFilter.And != nil {
+		if sceneFilter.Or != nil {
+			return illegalFilterCombination(and, or)
+		}
+		if sceneFilter.Not != nil {
+			return illegalFilterCombination(and, not)
+		}
+
+		return qb.validateFilter(sceneFilter.And)
+	}
+
+	if sceneFilter.Or != nil {
+		if sceneFilter.Not != nil {
+			return illegalFilterCombination(or, not)
+		}
+
+		return qb.validateFilter(sceneFilter.Or)
+	}
+
+	if sceneFilter.Not != nil {
+		return qb.validateFilter(sceneFilter.Not)
+	}
+
+	return nil
+}
+
 func (qb *sceneQueryBuilder) makeFilter(sceneFilter *models.SceneFilterType) *filterBuilder {
 	query := &filterBuilder{}
 
@@ -340,6 +375,9 @@ func (qb *sceneQueryBuilder) Query(sceneFilter *models.SceneFilterType, findFilt
 		query.addArg(thisArgs...)
 	}
 
+	if err := qb.validateFilter(sceneFilter); err != nil {
+		return nil, 0, err
+	}
 	filter := qb.makeFilter(sceneFilter)
 
 	query.addFilter(filter)

@@ -288,6 +288,42 @@ func TestSceneQueryPathNotRating(t *testing.T) {
 	})
 }
 
+func TestSceneIllegalQuery(t *testing.T) {
+	assert := assert.New(t)
+
+	const sceneIdx = 1
+	subFilter := models.SceneFilterType{
+		Path: &models.StringCriterionInput{
+			Value:    getSceneStringValue(sceneIdx, "Path"),
+			Modifier: models.CriterionModifierEquals,
+		},
+	}
+
+	sceneFilter := &models.SceneFilterType{
+		And: &subFilter,
+		Or:  &subFilter,
+	}
+
+	withTxn(func(r models.Repository) error {
+		sqb := r.Scene()
+
+		_, _, err := sqb.Query(sceneFilter, nil)
+		assert.NotNil(err)
+
+		sceneFilter.Or = nil
+		sceneFilter.Not = &subFilter
+		_, _, err = sqb.Query(sceneFilter, nil)
+		assert.NotNil(err)
+
+		sceneFilter.And = nil
+		sceneFilter.Or = &subFilter
+		_, _, err = sqb.Query(sceneFilter, nil)
+		assert.NotNil(err)
+
+		return nil
+	})
+}
+
 func verifyScenesPath(t *testing.T, pathCriterion models.StringCriterionInput) {
 	withTxn(func(r models.Repository) error {
 		sqb := r.Scene()
