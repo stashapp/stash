@@ -41,7 +41,9 @@ func (t *CleanTask) shouldClean(path string) bool {
 	// use image.FileExists for zip file checking
 	fileExists := image.FileExists(path)
 
-	if !fileExists || getStashFromPath(path) == nil {
+	// #1102 - clean anything in generated path
+	generatedPath := config.GetGeneratedPath()
+	if !fileExists || getStashFromPath(path) == nil || utils.IsPathInDir(generatedPath, path) {
 		logger.Infof("File not found. Cleaning: \"%s\"", path)
 		return true
 	}
