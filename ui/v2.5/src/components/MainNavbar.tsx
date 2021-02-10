@@ -288,6 +288,7 @@ export const MainNavbar: React.FC = () => {
           <div className="d-none d-sm-block">{newButton}</div>
           <Nav.Link
             href="https://opencollective.com/stashapp"
+            target="_blank"
             onClick={() => setExpanded(false)}
           >
             <Button className="minimal donate" title="Donate">
