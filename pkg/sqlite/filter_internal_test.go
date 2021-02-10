@@ -270,6 +270,30 @@ func TestGenerateWhereClauses(t *testing.T) {
 	r, rArgs = f.generateWhereClauses()
 	assert.Equal("("+clause1+" AND "+clause2+") AND NOT ("+clause3+")", r)
 	assert.Len(rArgs, 3)
+
+	// ensure empty filter with ANDed sub-filter does not include AND
+	f = &filterBuilder{}
+	f.and(sf)
+
+	r, rArgs = f.generateWhereClauses()
+	assert.Equal("("+clause3+")", r)
+	assert.Len(rArgs, 1)
+
+	// ensure empty filter with ORed sub-filter does not include OR
+	f = &filterBuilder{}
+	f.or(sf)
+
+	r, rArgs = f.generateWhereClauses()
+	assert.Equal("("+clause3+")", r)
+	assert.Len(rArgs, 1)
+
+	// ensure empty filter with NOTed sub-filter does not include AND
+	f = &filterBuilder{}
+	f.not(sf)
+
+	r, rArgs = f.generateWhereClauses()
+	assert.Equal("NOT ("+clause3+")", r)
+	assert.Len(rArgs, 1)
 }
 
 func TestGenerateHavingClauses(t *testing.T) {

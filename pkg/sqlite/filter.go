@@ -169,6 +169,25 @@ func (f *filterBuilder) addHaving(sql string, args ...interface{}) {
 	f.havingClauses = append(f.havingClauses, makeClause(sql, args...))
 }
 
+func (f *filterBuilder) getSubFilterClause(clause, subFilterClause string) string {
+	ret := clause
+
+	if subFilterClause != "" {
+		var op string
+		if len(ret) > 0 {
+			op = " " + f.subFilterOp + " "
+		} else {
+			if f.subFilterOp == notOp {
+				op = "NOT "
+			}
+		}
+
+		ret += op + subFilterClause
+	}
+
+	return ret
+}
+
 // generateWhereClauses generates the SQL where clause for this filter.
 // All where clauses within the filter are ANDed together. This is combined
 // with the sub-filter, which will use the applicable operator (AND/OR/AND NOT).
@@ -178,7 +197,7 @@ func (f *filterBuilder) generateWhereClauses() (clause string, args []interface{
 	if f.subFilter != nil {
 		c, a := f.subFilter.generateWhereClauses()
 		if c != "" {
-			clause += " " + f.subFilterOp + " " + c
+			clause = f.getSubFilterClause(clause, c)
 			if len(a) > 0 {
 				args = append(args, a...)
 			}
