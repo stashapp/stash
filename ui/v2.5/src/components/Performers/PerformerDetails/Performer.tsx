@@ -223,10 +223,16 @@ export const Performer: React.FC = () => {
   }
 
   function setFavorite(v: boolean) {
-    onSave({
-      id: performer.id,
-      favorite: v,
-    });
+    if (performer.id) {
+      updatePerformer({
+        variables: {
+          input: {
+            id: performer.id,
+            favorite: v,
+          },
+        },
+      });
+    }
   }
 
   const renderIcons = () => (
