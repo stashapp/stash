@@ -1,7 +1,7 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
-import { useFindGallery, useGalleryUpdate } from "src/core/StashService";
+import { mutateMetadataScan, useFindGallery, useGalleryUpdate } from "src/core/StashService";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
@@ -60,6 +60,18 @@ export const Gallery: React.FC = () => {
     }
   };
 
+  async function onRescan() {
+    if (!gallery || !gallery.path) {
+      return;
+    }
+
+    await mutateMetadataScan({
+      paths: [gallery.path],
+    });
+
+    Toast.success({ content: "Rescanning image" });
+  }
+
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
 
   function onDeleteDialogClosed(deleted: boolean) {
@@ -92,6 +104,15 @@ export const Gallery: React.FC = () => {
           <Icon icon="ellipsis-v" />
         </Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white">
+          {gallery?.path ? (
+            <Dropdown.Item
+              key="rescan"
+              className="bg-secondary text-white"
+              onClick={() => onRescan()}
+            >
+              Rescan
+            </Dropdown.Item>
+          ): undefined}
           <Dropdown.Item
             key="delete-gallery"
             className="bg-secondary text-white"
