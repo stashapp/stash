@@ -19,26 +19,32 @@ interface IProps {
   onDelete: () => void;
 }
 
-export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
+export const ImageEditPanel: React.FC<IProps> = ({
+  image,
+  isVisible,
+  onDelete,
+}) => {
   const Toast = useToast();
-  const [title, setTitle] = useState<string>();
-  const [rating, setRating] = useState<number>();
-  const [studioId, setStudioId] = useState<string>();
-  const [performerIds, setPerformerIds] = useState<string[]>();
-  const [tagIds, setTagIds] = useState<string[]>();
+  const [title, setTitle] = useState<string>(image?.title ?? "");
+  const [rating, setRating] = useState<number>(image.rating ?? NaN);
+  const [studioId, setStudioId] = useState<string>(image.studio?.id ?? "");
+  const [performerIds, setPerformerIds] = useState<string[]>(
+    image.performers.map((p) => p.id)
+  );
+  const [tagIds, setTagIds] = useState<string[]>(image.tags.map((t) => t.id));
 
   // Network state
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [updateImage] = useImageUpdate();
 
   useEffect(() => {
-    if (props.isVisible) {
+    if (isVisible) {
       Mousetrap.bind("s s", () => {
         onSave();
       });
       Mousetrap.bind("d d", () => {
-        props.onDelete();
+        onDelete();
       });
 
       // numeric keypresses get caught by jwplayer, so blur the element
@@ -74,26 +80,9 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
     }
   });
 
-  function updateImageEditState(state: Partial<GQL.ImageDataFragment>) {
-    const perfIds = state.performers?.map((performer) => performer.id);
-    const tIds = state.tags ? state.tags.map((tag) => tag.id) : undefined;
-
-    setTitle(state.title ?? undefined);
-    setRating(state.rating === null ? NaN : state.rating);
-    // setGalleryId(state?.gallery?.id ?? undefined);
-    setStudioId(state?.studio?.id ?? undefined);
-    setPerformerIds(perfIds);
-    setTagIds(tIds);
-  }
-
-  useEffect(() => {
-    updateImageEditState(props.image);
-    setIsLoading(false);
-  }, [props.image]);
-
   function getImageInput(): GQL.ImageUpdateInput {
     return {
-      id: props.image.id,
+      id: image.id,
       title,
       rating: rating ?? null,
       studio_id: studioId ?? null,
@@ -131,7 +120,7 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
           <Button
             className="edit-button"
             variant="danger"
-            onClick={() => props.onDelete()}
+            onClick={() => onDelete()}
           >
             Delete
           </Button>
@@ -152,7 +141,7 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
             <Col xs={9}>
               <RatingStars
                 value={rating}
-                onSetRating={(value) => setRating(value)}
+                onSetRating={(value) => setRating(value ?? NaN)}
               />
             </Col>
           </Form.Group>
@@ -164,7 +153,7 @@ export const ImageEditPanel: React.FC<IProps> = (props: IProps) => {
             <Col xs={9}>
               <StudioSelect
                 onSelect={(items) =>
-                  setStudioId(items.length > 0 ? items[0]?.id : undefined)
+                  setStudioId(items.length > 0 ? items[0]?.id : "")
                 }
                 ids={studioId ? [studioId] : []}
               />
