@@ -476,7 +476,21 @@ div.dropdown-menu {
       padding-left: 1rem;
       padding-right: 1rem;
     }
+
+    .donate {
+      span {
+        display: none;
+      }
+
+      svg {
+        margin: 0;
+      }
+    }
   }
+}
+
+.donate svg {
+  color: #ff7373;
 }
 
 .error-message {
