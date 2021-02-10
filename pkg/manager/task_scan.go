@@ -1044,6 +1044,12 @@ func walkFilesToScan(s *models.StashConfig, f filepath.WalkFunc) error {
 	excludeVidRegex := generateRegexps(config.GetExcludes())
 	excludeImgRegex := generateRegexps(config.GetImageExcludes())
 
+	// don't scan zip images directly
+	if image.IsZipPath(s.Path) {
+		logger.Warnf("Cannot rescan zip image %s. Rescan zip gallery instead.", s.Path)
+		return nil
+	}
+
 	return utils.SymWalk(s.Path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			logger.Warnf("error scanning %s: %s", path, err.Error())

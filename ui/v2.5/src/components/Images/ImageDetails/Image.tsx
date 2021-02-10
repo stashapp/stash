@@ -7,6 +7,7 @@ import {
   useImageDecrementO,
   useImageResetO,
   useImageUpdate,
+  mutateMetadataScan,
 } from "src/core/StashService";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
@@ -42,6 +43,18 @@ export const Image: React.FC = () => {
   const [activeTabKey, setActiveTabKey] = useState("image-details-panel");
 
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState<boolean>(false);
+
+  async function onRescan() {
+    if (!image) {
+      return;
+    }
+
+    await mutateMetadataScan({
+      paths: [image.path],
+    });
+
+    Toast.success({ content: "Rescanning image" });
+  }
 
   const onOrganizedClick = async () => {
     try {
@@ -121,6 +134,13 @@ export const Image: React.FC = () => {
           <Icon icon="ellipsis-v" />
         </Dropdown.Toggle>
         <Dropdown.Menu className="bg-secondary text-white">
+          <Dropdown.Item
+            key="rescan"
+            className="bg-secondary text-white"
+            onClick={() => onRescan()}
+          >
+            Rescan
+          </Dropdown.Item>
           <Dropdown.Item
             key="delete-image"
             className="bg-secondary text-white"
