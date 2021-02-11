@@ -68,24 +68,32 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
 
   // Editing performer state
   const [image, setImage] = useState<string | null>();
-  const [name, setName] = useState<string>();
-  const [aliases, setAliases] = useState<string>();
-  const [favorite, setFavorite] = useState<boolean>();
-  const [birthdate, setBirthdate] = useState<string>();
-  const [ethnicity, setEthnicity] = useState<string>();
-  const [country, setCountry] = useState<string>();
-  const [eyeColor, setEyeColor] = useState<string>();
-  const [height, setHeight] = useState<string>();
-  const [measurements, setMeasurements] = useState<string>();
-  const [fakeTits, setFakeTits] = useState<string>();
-  const [careerLength, setCareerLength] = useState<string>();
-  const [tattoos, setTattoos] = useState<string>();
-  const [piercings, setPiercings] = useState<string>();
-  const [url, setUrl] = useState<string>();
-  const [twitter, setTwitter] = useState<string>();
-  const [instagram, setInstagram] = useState<string>();
-  const [gender, setGender] = useState<string | undefined>(undefined);
-  const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>([]);
+  const [name, setName] = useState<string>(performer?.name ?? "");
+  const [aliases, setAliases] = useState<string>(performer.aliases ?? "");
+  const [birthdate, setBirthdate] = useState<string>(performer.birthdate ?? "");
+  const [ethnicity, setEthnicity] = useState<string>(performer.ethnicity ?? "");
+  const [country, setCountry] = useState<string>(performer.country ?? "");
+  const [eyeColor, setEyeColor] = useState<string>(performer.eye_color ?? "");
+  const [height, setHeight] = useState<string>(performer.height ?? "");
+  const [measurements, setMeasurements] = useState<string>(
+    performer.measurements ?? ""
+  );
+  const [fakeTits, setFakeTits] = useState<string>(performer.fake_tits ?? "");
+  const [careerLength, setCareerLength] = useState<string>(
+    performer.career_length ?? ""
+  );
+  const [tattoos, setTattoos] = useState<string>(performer.tattoos ?? "");
+  const [piercings, setPiercings] = useState<string>(performer.piercings ?? "");
+  const [url, setUrl] = useState<string>(performer.url ?? "");
+  const [twitter, setTwitter] = useState<string>(performer.twitter ?? "");
+  const [instagram, setInstagram] = useState<string>(performer.instagram ?? "");
+  const [gender, setGender] = useState<string | undefined>(
+    performer.gender ?? undefined
+  );
+  const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>(
+    performer.stash_ids ?? []
+  );
+  const favorite = performer.favorite ?? false;
 
   // Network state
   const [isLoading, setIsLoading] = useState(false);
@@ -100,35 +108,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   >();
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
-
-  function updatePerformerEditState(
-    state: Partial<GQL.PerformerDataFragment | GQL.ScrapedPerformerDataFragment>
-  ) {
-    if ((state as GQL.PerformerDataFragment).favorite !== undefined) {
-      setFavorite((state as GQL.PerformerDataFragment).favorite);
-    }
-    setName(state.name ?? undefined);
-    setAliases(state.aliases ?? undefined);
-    setBirthdate(state.birthdate ?? undefined);
-    setEthnicity(state.ethnicity ?? undefined);
-    setCountry(state.country ?? undefined);
-    setEyeColor(state.eye_color ?? undefined);
-    setHeight(state.height ?? undefined);
-    setMeasurements(state.measurements ?? undefined);
-    setFakeTits(state.fake_tits ?? undefined);
-    setCareerLength(state.career_length ?? undefined);
-    setTattoos(state.tattoos ?? undefined);
-    setPiercings(state.piercings ?? undefined);
-    setUrl(state.url ?? undefined);
-    setTwitter(state.twitter ?? undefined);
-    setInstagram(state.instagram ?? undefined);
-    setGender(
-      genderToString((state as GQL.PerformerDataFragment).gender ?? undefined)
-    );
-    if ((state as GQL.PerformerDataFragment).stash_ids !== undefined) {
-      setStashIDs((state as GQL.PerformerDataFragment).stash_ids);
-    }
-  }
 
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
@@ -244,10 +223,6 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
       };
     }
   });
-
-  useEffect(() => {
-    if (!isNew) updatePerformerEditState(performer);
-  }, [isNew, performer]);
 
   useEffect(() => {
     if (onImageChange) {
