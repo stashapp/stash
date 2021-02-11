@@ -18,6 +18,7 @@ const apiReleases string = "https://api.github.com/repos/stashapp/stash/releases
 const apiTags string = "https://api.github.com/repos/stashapp/stash/tags"
 const apiAcceptHeader string = "application/vnd.github.v3+json"
 const developmentTag string = "latest_develop"
+const defaultSHLength int = 7 // default length of SHA short hash returned by <git rev-parse --short HEAD>
 
 // ErrNoVersion indicates that no version information has been embedded in the
 // stash binary
@@ -191,14 +192,20 @@ func GetLatestVersion(shortHash bool) (latestVersion string, latestRelease strin
 }
 
 func getReleaseHash(release githubReleasesResponse, shortHash bool, usePreRelease bool) string {
+	shaLength := len(release.Target_commitish)
 	// the /latest API call doesn't return the hash in target_commitish
 	// also add sanity check in case Target_commitish is not 40 characters
-	if !usePreRelease || len(release.Target_commitish) != 40 {
+	if !usePreRelease || shaLength != 40 {
 		return getShaFromTags(shortHash, release.Tag_name)
 	}
 
 	if shortHash {
-		return release.Target_commitish[0:7] //shorthash is first 7 digits of git commit hash
+		last := defaultSHLength                                // default length of git short hash
+		_, gitShort, _ := GetVersion()                         // retrieve it to check actual length
+		if len(gitShort) > last && len(gitShort) < shaLength { // sometimes short hash is longer
+			last = len(gitShort)
+		}
+		return release.Target_commitish[0:last]
 	}
 
 	return release.Target_commitish
@@ -229,14 +236,20 @@ func getShaFromTags(shortHash bool, name string) string {
 		logger.Errorf("Github Tags Api %v", err)
 		return ""
 	}
+	_, gitShort, _ := GetVersion() // retrieve short hash to check actual length
 
 	for _, tag := range tags {
 		if tag.Name == name {
-			if len(tag.Commit.Sha) != 40 {
+			shaLength := len(tag.Commit.Sha)
+			if shaLength != 40 {
 				return ""
 			}
 			if shortHash {
-				return tag.Commit.Sha[0:7] //shorthash is first 7 digits of git commit hash
+				last := defaultSHLength                                // default length of git short hash
+				if len(gitShort) > last && len(gitShort) < shaLength { // sometimes short hash is longer
+					last = len(gitShort)
+				}
+				return tag.Commit.Sha[0:last]
 			}
 
 			return tag.Commit.Sha
