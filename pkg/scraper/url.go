@@ -3,6 +3,7 @@ package scraper
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -49,6 +50,9 @@ func loadURL(url string, scraperConfig config, globalConfig GlobalConfig) (io.Re
 	printCookies(jar, scraperConfig, "Jar cookies set from scraper")
 
 	client := &http.Client{
+		Transport: &http.Transport{ // ignore insecure certificates
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
 		Timeout: scrapeGetTimeout,
 		// defaultCheckRedirect code with max changed from 10 to 20
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
