@@ -13,6 +13,7 @@ import (
 	"github.com/chromedp/chromedp"
 
 	"github.com/stashapp/stash/pkg/logger"
+	"github.com/stashapp/stash/pkg/utils"
 )
 
 // set cookies for the native http client
@@ -35,6 +36,10 @@ func setCookies(jar *cookiejar.Jar, scraperConfig config) {
 						Value:  cookie.Value,
 						Path:   cookie.Path,
 						Domain: cookie.Domain,
+					}
+
+					if httpCookie.Value == "random" {
+						httpCookie.Value = utils.RandomSequence(20)
 					}
 
 					httpCookies = append(httpCookies, httpCookie)
