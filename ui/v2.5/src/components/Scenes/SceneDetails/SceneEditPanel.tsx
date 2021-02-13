@@ -83,7 +83,7 @@ export const SceneEditPanel: React.FC<IProps> = ({
 
   const [scrapedScene, setScrapedScene] = useState<GQL.ScrapedScene | null>();
 
-  const [coverImagePreview, setCoverImagePreview] = useState<string>();
+  const [coverImagePreview, setCoverImagePreview] = useState<string | undefined>(scene.paths.screenshot ?? undefined);
 
   const stashConfig = useConfiguration();
 
