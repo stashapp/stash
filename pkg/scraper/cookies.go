@@ -55,7 +55,7 @@ func setCookies(jar *cookiejar.Jar, scraperConfig config) {
 }
 
 func getCookieValue(cookie *scraperCookies) string {
-	if cookie.ValueRandom != 0 {
+	if cookie.ValueRandom > 0 {
 		return utils.RandomSequence(cookie.ValueRandom)
 	}
 	return cookie.Value
