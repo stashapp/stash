@@ -88,7 +88,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const [twitter, setTwitter] = useState<string>(performer.twitter ?? "");
   const [instagram, setInstagram] = useState<string>(performer.instagram ?? "");
   const [gender, setGender] = useState<string | undefined>(
-    performer.gender ?? undefined
+    genderToString(performer.gender ?? undefined)
   );
   const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>(
     performer.stash_ids ?? []
