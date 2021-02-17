@@ -11,6 +11,7 @@ import (
 
 const performerTable = "performers"
 const performerIDColumn = "performer_id"
+const performersTagsTable = "performers_tags"
 
 type performerQueryBuilder struct {
 	repository
@@ -359,6 +360,26 @@ func (qb *performerQueryBuilder) queryPerformers(query string, args []interface{
 	}
 
 	return []*models.Performer(ret), nil
+}
+
+func (qb *performerQueryBuilder) tagsRepository() *joinRepository {
+	return &joinRepository{
+		repository: repository{
+			tx:        qb.tx,
+			tableName: performersTagsTable,
+			idColumn:  performerIDColumn,
+		},
+		fkColumn: tagIDColumn,
+	}
+}
+
+func (qb *performerQueryBuilder) GetTagIDs(id int) ([]int, error) {
+	return qb.tagsRepository().getIDs(id)
+}
+
+func (qb *performerQueryBuilder) UpdateTags(id int, tagIDs []int) error {
+	// Delete the existing joins and then create new ones
+	return qb.tagsRepository().replace(id, tagIDs)
 }
 
 func (qb *performerQueryBuilder) imageRepository() *imageRepository {

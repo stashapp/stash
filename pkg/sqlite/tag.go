@@ -113,6 +113,18 @@ func (qb *tagQueryBuilder) FindBySceneID(sceneID int) ([]*models.Tag, error) {
 	return qb.queryTags(query, args)
 }
 
+func (qb *tagQueryBuilder) FindByPerformerID(performerID int) ([]*models.Tag, error) {
+	query := `
+		SELECT tags.* FROM tags
+		LEFT JOIN performers_tags as performers_join on performers_join.tag_id = tags.id
+		WHERE performers_join.performer_id = ?
+		GROUP BY tags.id
+	`
+	query += qb.getTagSort(nil)
+	args := []interface{}{performerID}
+	return qb.queryTags(query, args)
+}
+
 func (qb *tagQueryBuilder) FindByImageID(imageID int) ([]*models.Tag, error) {
 	query := `
 		SELECT tags.* FROM tags
