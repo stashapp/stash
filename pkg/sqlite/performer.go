@@ -251,6 +251,18 @@ func (qb *performerQueryBuilder) Query(performerFilter *models.PerformerFilterTy
 	// TODO - need better handling of aliases
 	query.handleStringCriterionInput(performerFilter.Aliases, tableName+".aliases")
 
+	if tagsFilter := performerFilter.Tags; tagsFilter != nil && len(tagsFilter.Value) > 0 {
+		for _, tagID := range tagsFilter.Value {
+			query.addArg(tagID)
+		}
+
+		query.body += ` left join performers_tags as tags_join on tags_join.performer_id = performers.id
+			LEFT JOIN tags on tags_join.tag_id = tags.id`
+		whereClause, havingClause := getMultiCriterionClause("performers", "tags", "performers_tags", "performer_id", "tag_id", tagsFilter)
+		query.addWhere(whereClause)
+		query.addHaving(havingClause)
+	}
+
 	query.sortAndPagination = qb.getPerformerSort(findFilter) + getPagination(findFilter)
 	idsResult, countResult, err := query.executeFind()
 	if err != nil {
