@@ -59,6 +59,8 @@ input PerformerFilterType {
   gender: GenderCriterionInput
   """Filter to only include performers missing this property"""
   is_missing: String
+  """Filter to only include performers with these tags"""
+  tags: MultiCriterionInput
   """Filter by StashID"""
   stash_id: String
 }
