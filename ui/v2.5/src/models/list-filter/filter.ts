@@ -206,6 +206,7 @@ export class ListFilterModel {
           new FavoriteCriterionOption(),
           new GenderCriterionOption(),
           new PerformerIsMissingCriterionOption(),
+          new TagsCriterionOption(),
           ...numberCriteria
             .concat(stringCriteria)
             .map((c) => ListFilterModel.createCriterionOption(c)),
@@ -650,6 +651,15 @@ export class ListFilterModel {
         }
         case "performerIsMissing":
           result.is_missing = (criterion as IsMissingCriterion).value;
+          break;
+        case "tags": {
+          const tagsCrit = criterion as TagsCriterion;
+          result.tags = {
+            value: tagsCrit.value.map((tag) => tag.id),
+            modifier: tagsCrit.modifier,
+          };
+          break;
+        }
         // no default
       }
     });

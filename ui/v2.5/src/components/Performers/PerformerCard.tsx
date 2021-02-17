@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { FormattedNumber, FormattedPlural, FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
-import { BasicCard, CountryFlag, TruncatedText } from "src/components/Shared";
+import { BasicCard, CountryFlag, HoverPopover, Icon, TagLink, TruncatedText } from "src/components/Shared";
+import { Button, ButtonGroup } from "react-bootstrap";
 
 interface IPerformerCardProps {
   performer: GQL.PerformerDataFragment;
@@ -32,6 +33,38 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
         <FormattedMessage id="favourite" defaultMessage="Favourite" />
       </div>
     );
+  }
+
+  function maybeRenderTagPopoverButton() {
+    if (performer.tags.length <= 0) return;
+
+    const popoverContent = performer.tags.map((tag) => (
+      <TagLink key={tag.id} tagType="performer" tag={tag} />
+    ));
+
+    return (
+      <HoverPopover placement="bottom" content={popoverContent}>
+        <Button className="minimal">
+          <Icon icon="tag" />
+          <span>{performer.tags.length}</span>
+        </Button>
+      </HoverPopover>
+    );
+  }
+
+  function maybeRenderPopoverButtonGroup() {
+    if (
+      performer.tags.length > 0
+    ) {
+      return (
+        <>
+          <hr />
+          <ButtonGroup className="card-popovers">
+            {maybeRenderTagPopoverButton()}
+          </ButtonGroup>
+        </>
+      );
+    }
   }
 
   return (
@@ -70,6 +103,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
             </Link>
             .
           </div>
+          {maybeRenderPopoverButtonGroup()}
         </>
       }
       selected={selected}

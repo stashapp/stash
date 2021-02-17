@@ -14,6 +14,7 @@ import { NavUtils, TextUtils } from "src/utils";
 
 interface IProps {
   tag?: Partial<TagDataFragment>;
+  tagType?: "performer" | "scene";
   performer?: Partial<PerformerDataFragment>;
   marker?: Partial<SceneMarkerDataFragment>;
   movie?: Partial<MovieDataFragment>;
@@ -26,7 +27,11 @@ export const TagLink: React.FC<IProps> = (props: IProps) => {
   let link: string = "#";
   let title: string = "";
   if (props.tag) {
-    link = NavUtils.makeTagScenesUrl(props.tag);
+    if (!props.tagType || props.tagType === "scene") {
+      link = NavUtils.makeTagScenesUrl(props.tag);
+    } else {
+      link = NavUtils.makeTagPerformersUrl(props.tag);
+    }
     title = props.tag.name || "";
   } else if (props.performer) {
     link = NavUtils.makePerformerScenesUrl(props.performer);
