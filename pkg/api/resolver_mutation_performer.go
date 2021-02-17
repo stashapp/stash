@@ -183,6 +183,13 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 			return err
 		}
 
+		// Save the tags
+		if translator.hasField("tag_ids") {
+			if err := r.updatePerformerTags(qb, performer.ID, input.TagIds); err != nil {
+				return err
+			}
+		}
+
 		// update image table
 		if len(imageData) > 0 {
 			if err := qb.UpdateImage(performer.ID, imageData); err != nil {
@@ -209,6 +216,14 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 	}
 
 	return performer, nil
+}
+
+func (r *mutationResolver) updatePerformerTags(qb models.PerformerReaderWriter, performerID int, tagsIDs []string) error {
+	ids, err := utils.StringSliceToIntSlice(tagsIDs)
+	if err != nil {
+		return err
+	}
+	return qb.UpdateTags(performerID, ids)
 }
 
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
