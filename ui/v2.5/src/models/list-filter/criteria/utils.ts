@@ -72,6 +72,8 @@ export function makeCriteria(type: CriterionType = "none") {
       return new TagsCriterion("tags");
     case "sceneTags":
       return new TagsCriterion("sceneTags");
+    case "performerTags":
+      return new TagsCriterion("performerTags");
     case "performers":
       return new PerformersCriterion();
     case "studios":

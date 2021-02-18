@@ -24,6 +24,7 @@ export type CriterionType =
   | "movieIsMissing"
   | "tags"
   | "sceneTags"
+  | "performerTags"
   | "performers"
   | "studios"
   | "movies"
@@ -83,6 +84,8 @@ export abstract class Criterion {
         return "Tags";
       case "sceneTags":
         return "Scene Tags";
+      case "performerTags":
+        return "Performer Tags";
       case "performers":
         return "Performers";
       case "studios":

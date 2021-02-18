@@ -99,6 +99,8 @@ input SceneFilterType {
   movies: MultiCriterionInput
   """Filter to only include scenes with these tags"""
   tags: MultiCriterionInput
+  """Filter to only include scenes with performers with these tags"""
+  performer_tags: MultiCriterionInput
   """Filter to only include scenes with these performers"""
   performers: MultiCriterionInput
   """Filter by StashID"""

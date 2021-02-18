@@ -32,6 +32,7 @@ interface ITypeProps {
     | "parent_studios"
     | "tags"
     | "sceneTags"
+    | "performerTags"
     | "movies";
 }
 interface IFilterProps {

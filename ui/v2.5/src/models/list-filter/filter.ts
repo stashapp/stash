@@ -64,6 +64,7 @@ import {
   ParentStudiosCriterionOption,
 } from "./criteria/studios";
 import {
+  PerformerTagsCriterionOption,
   SceneTagsCriterionOption,
   TagsCriterion,
   TagsCriterionOption,
@@ -146,6 +147,7 @@ export class ListFilterModel {
           new HasMarkersCriterionOption(),
           new SceneIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
           new MoviesCriterionOption(),
@@ -525,6 +527,14 @@ export class ListFilterModel {
           result.tags = {
             value: tagsCrit.value.map((tag) => tag.id),
             modifier: tagsCrit.modifier,
+          };
+          break;
+        }
+        case "performerTags": {
+          const performerTagsCrit = criterion as TagsCriterion;
+          result.performer_tags = {
+            value: performerTagsCrit.value.map((tag) => tag.id),
+            modifier: performerTagsCrit.modifier,
           };
           break;
         }
