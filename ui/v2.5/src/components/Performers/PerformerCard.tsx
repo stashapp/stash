@@ -3,7 +3,14 @@ import { Link } from "react-router-dom";
 import { FormattedNumber, FormattedPlural, FormattedMessage } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
 import { NavUtils, TextUtils } from "src/utils";
-import { BasicCard, CountryFlag, HoverPopover, Icon, TagLink, TruncatedText } from "src/components/Shared";
+import {
+  BasicCard,
+  CountryFlag,
+  HoverPopover,
+  Icon,
+  TagLink,
+  TruncatedText,
+} from "src/components/Shared";
 import { Button, ButtonGroup } from "react-bootstrap";
 
 interface IPerformerCardProps {
@@ -53,9 +60,7 @@ export const PerformerCard: React.FC<IPerformerCardProps> = ({
   }
 
   function maybeRenderPopoverButtonGroup() {
-    if (
-      performer.tags.length > 0
-    ) {
+    if (performer.tags.length > 0) {
       return (
         <>
           <hr />

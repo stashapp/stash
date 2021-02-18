@@ -92,7 +92,9 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const [gender, setGender] = useState<string | undefined>(
     genderToString(performer.gender ?? undefined)
   );
-  const [tagIds, setTagIds] = useState<string[]>((performer.tags ?? []).map((t) => t.id));
+  const [tagIds, setTagIds] = useState<string[]>(
+    (performer.tags ?? []).map((t) => t.id)
+  );
   const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>(
     performer.stash_ids ?? []
   );
@@ -526,9 +528,7 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   function renderTagsField() {
     return (
       <tr>
-        <td id="tags-field">
-          Tags
-        </td>
+        <td id="tags-field">Tags</td>
         <td>
           {isEditing ? (
             <TagSelect
@@ -536,11 +536,11 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
               onSelect={(items) => setTagIds(items.map((item) => item.id))}
               ids={tagIds}
             />
-          ) : 
+          ) : (
             (performer.tags ?? []).map((tag) => (
               <TagLink key={tag.id} tagType="performer" tag={tag} />
             ))
-          }
+          )}
         </td>
       </tr>
     );
