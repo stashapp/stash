@@ -45,6 +45,7 @@ type ScrapedScenePerformer {
   tattoos: String
   piercings: String
   aliases: String
+  tags: [ScrapedSceneTag!]
 
   remote_site_id: String
   images: [String!]

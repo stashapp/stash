@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
-import { Button, Popover, OverlayTrigger, Table } from "react-bootstrap";
+import { Button, Popover, OverlayTrigger, Table, Badge } from "react-bootstrap";
 import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -11,6 +11,7 @@ import {
   queryScrapePerformer,
   queryScrapePerformerURL,
   mutateReloadScrapers,
+  useTagCreate,
 } from "src/core/StashService";
 import {
   Icon,
@@ -20,6 +21,7 @@ import {
   LoadingIndicator,
   TagSelect,
   TagLink,
+  CollapseButton,
 } from "src/components/Shared";
 import {
   ImageUtils,
@@ -92,9 +94,12 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   const [gender, setGender] = useState<string | undefined>(
     genderToString(performer.gender ?? undefined)
   );
+
   const [tagIds, setTagIds] = useState<string[]>(
     (performer.tags ?? []).map((t) => t.id)
   );
+  const [newTags, setNewTags] = useState<GQL.ScrapedSceneTag[]>();
+
   const [stashIDs, setStashIDs] = useState<GQL.StashIdInput[]>(
     performer.stash_ids ?? []
   );
@@ -113,6 +118,8 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
   >();
 
   const imageEncoding = ImageUtils.usePasteImage(onImageLoad, isEditing);
+
+  const [createTag] = useTagCreate({ name: "" });
 
   function translateScrapedGender(scrapedGender?: string) {
     if (!scrapedGender) {
@@ -133,6 +140,73 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     }
 
     return genderToString(retEnum);
+  }
+
+  function renderNewTags() {
+    if (!newTags || newTags.length === 0) {
+      return;
+    }
+
+    const ret = (
+      <>
+        {newTags.map((t) => (
+          <Badge
+            className="tag-item"
+            variant="secondary"
+            key={t.name}
+            onClick={() => createNewTag(t)}
+          >
+            {t.name}
+            <Button className="minimal ml-2">
+              <Icon className="fa-fw" icon="plus" />
+            </Button>
+          </Badge>
+        ))}
+      </>
+    );
+
+    const minCollapseLength = 10;
+
+    if (newTags.length >= minCollapseLength) {
+      return (
+        <CollapseButton text={`Missing (${newTags.length})`}>
+          {ret}
+        </CollapseButton>
+      );
+    }
+
+    return ret;
+  }
+
+  async function createNewTag(toCreate: GQL.ScrapedSceneTag) {
+    let tagInput: GQL.TagCreateInput = { name: "" };
+    try {
+      tagInput = Object.assign(tagInput, toCreate);
+      const result = await createTag({
+        variables: tagInput,
+      });
+
+      // add the new tag to the new tags value
+      const newTagIds = tagIds.concat([result.data!.tagCreate!.id]);
+      setTagIds(newTagIds);
+
+      // remove the tag from the list
+      const newTagsClone = newTags!.concat();
+      const pIndex = newTagsClone.indexOf(toCreate);
+      newTagsClone.splice(pIndex, 1);
+
+      setNewTags(newTagsClone);
+
+      Toast.success({
+        content: (
+          <span>
+            Created tag: <b>{toCreate.name}</b>
+          </span>
+        ),
+      });
+    } catch (e) {
+      Toast.error(e);
+    }
   }
 
   function updatePerformerEditStateFromScraper(
@@ -187,6 +261,12 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
     if (state.gender) {
       // gender is a string in the scraper data
       setGender(translateScrapedGender(state.gender ?? undefined));
+    }
+    if (state.tags) {
+      const newTagIds = state.tags.map((t) => t.stored_id).filter((t) => t);
+      setTagIds(newTagIds as string[]);
+
+      setNewTags(state.tags.filter((t) => !t.stored_id));
     }
 
     // image is a base64 string
@@ -531,11 +611,14 @@ export const PerformerDetailsPanel: React.FC<IPerformerDetails> = ({
         <td id="tags-field">Tags</td>
         <td>
           {isEditing ? (
-            <TagSelect
-              isMulti
-              onSelect={(items) => setTagIds(items.map((item) => item.id))}
-              ids={tagIds}
-            />
+            <>
+              <TagSelect
+                isMulti
+                onSelect={(items) => setTagIds(items.map((item) => item.id))}
+                ids={tagIds}
+              />
+              {renderNewTags()}
+            </>
           ) : (
             (performer.tags ?? []).map((tag) => (
               <TagLink key={tag.id} tagType="performer" tag={tag} />
