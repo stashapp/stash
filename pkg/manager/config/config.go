@@ -119,6 +119,7 @@ const LogFile = "logFile"
 const LogOut = "logOut"
 const LogLevel = "logLevel"
 const LogAccess = "logAccess"
+const LogTimeStamp = "logTimeStamp"
 
 // File upload options
 const MaxUploadSize = "max_upload_size"
@@ -577,6 +578,17 @@ func GetLogAccess() bool {
 	ret := true
 	if viper.IsSet(LogAccess) {
 		ret = viper.GetBool(LogAccess)
+	}
+
+	return ret
+}
+
+// GetLogTimestamp returns true if a full timestamp should be logged to the terminal.
+// Seconds from program start are logged if logTimeStamp is set to false. Defaults to true.
+func GetLogTimeStamp() bool {
+	ret := true
+	if viper.IsSet(LogTimeStamp) {
+		ret = viper.GetBool(LogTimeStamp)
 	}
 
 	return ret

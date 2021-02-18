@@ -27,8 +27,13 @@ var lastBroadcast = time.Now()
 var logBuffer []LogItem
 
 // Init initialises the logger based on a logging configuration
-func Init(logFile string, logOut bool, logLevel string) {
+func Init(logFile string, logOut bool, logLevel string, logTimestamp bool) {
 	var file *os.File
+	customFormatter := new(logrus.TextFormatter)
+	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
+	customFormatter.ForceColors = true
+	customFormatter.FullTimestamp = logTimestamp
+	logger.SetFormatter(customFormatter)
 
 	if logFile != "" {
 		var err error

@@ -64,6 +64,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		LogOut:                     config.GetLogOut(),
 		LogLevel:                   config.GetLogLevel(),
 		LogAccess:                  config.GetLogAccess(),
+		LogTimeStamp:               config.GetLogTimeStamp(),
 		VideoExtensions:            config.GetVideoExtensions(),
 		ImageExtensions:            config.GetImageExtensions(),
 		GalleryExtensions:          config.GetGalleryExtensions(),
