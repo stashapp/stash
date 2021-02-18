@@ -662,6 +662,7 @@ CareerLength
 Tattoos
 Piercings
 Aliases
+Tags (see Tag fields)
 Image
 ```
 
