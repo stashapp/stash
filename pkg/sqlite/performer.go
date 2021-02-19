@@ -13,6 +13,12 @@ const performerTable = "performers"
 const performerIDColumn = "performer_id"
 const performersTagsTable = "performers_tags"
 
+var countPerformersForTagQuery = `
+SELECT tag_id AS id FROM performers_tags
+WHERE performers_tags.tag_id = ?
+GROUP BY performers_tags.performer_id
+`
+
 type performerQueryBuilder struct {
 	repository
 }
@@ -152,6 +158,11 @@ func (qb *performerQueryBuilder) FindByNames(names []string, nocase bool) ([]*mo
 		args = append(args, name)
 	}
 	return qb.queryPerformers(query, args)
+}
+
+func (qb *performerQueryBuilder) CountByTagID(tagID int) (int, error) {
+	args := []interface{}{tagID}
+	return qb.runCountQuery(qb.buildCountQuery(countPerformersForTagQuery), args)
 }
 
 func (qb *performerQueryBuilder) Count() (int, error) {
