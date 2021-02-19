@@ -79,6 +79,27 @@ func (_m *PerformerReaderWriter) Count() (int, error) {
 	return r0, r1
 }
 
+// CountByTagID provides a mock function with given fields: tagID
+func (_m *PerformerReaderWriter) CountByTagID(tagID int) (int, error) {
+	ret := _m.Called(tagID)
+
+	var r0 int
+	if rf, ok := ret.Get(0).(func(int) int); ok {
+		r0 = rf(tagID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int) error); ok {
+		r1 = rf(tagID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Create provides a mock function with given fields: newPerformer
 func (_m *PerformerReaderWriter) Create(newPerformer models.Performer) (*models.Performer, error) {
 	ret := _m.Called(newPerformer)
