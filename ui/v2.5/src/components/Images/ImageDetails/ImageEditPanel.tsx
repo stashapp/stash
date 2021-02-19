@@ -27,7 +27,9 @@ export const ImageEditPanel: React.FC<IProps> = ({
   const Toast = useToast();
   const [title, setTitle] = useState<string>(image?.title ?? "");
   const [rating, setRating] = useState<number>(image.rating ?? NaN);
-  const [studioId, setStudioId] = useState<string>(image.studio?.id ?? "");
+  const [studioId, setStudioId] = useState<string | undefined>(
+    image.studio?.id ?? undefined
+  );
   const [performerIds, setPerformerIds] = useState<string[]>(
     image.performers.map((p) => p.id)
   );

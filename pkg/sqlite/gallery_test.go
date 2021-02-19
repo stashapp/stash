@@ -3,6 +3,7 @@
 package sqlite_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -267,6 +268,70 @@ func TestGalleryQueryIsMissingScene(t *testing.T) {
 		for _, gallery := range galleries {
 			assert.NotEqual(t, galleryIDs[galleryIdxWithScene], gallery.ID)
 		}
+
+		return nil
+	})
+}
+
+func queryGalleries(t *testing.T, sqb models.GalleryReader, galleryFilter *models.GalleryFilterType, findFilter *models.FindFilterType) []*models.Gallery {
+	galleries, _, err := sqb.Query(galleryFilter, findFilter)
+	if err != nil {
+		t.Errorf("Error querying galleries: %s", err.Error())
+	}
+
+	return galleries
+}
+
+func TestGalleryQueryPerformerTags(t *testing.T) {
+	withTxn(func(r models.Repository) error {
+		sqb := r.Gallery()
+		tagCriterion := models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdxWithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludes,
+		}
+
+		galleryFilter := models.GalleryFilterType{
+			PerformerTags: &tagCriterion,
+		}
+
+		galleries := queryGalleries(t, sqb, &galleryFilter, nil)
+		assert.Len(t, galleries, 2)
+
+		// ensure ids are correct
+		for _, gallery := range galleries {
+			assert.True(t, gallery.ID == galleryIDs[galleryIdxWithPerformerTag] || gallery.ID == galleryIDs[galleryIdxWithPerformerTwoTags])
+		}
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+				strconv.Itoa(tagIDs[tagIdx2WithPerformer]),
+			},
+			Modifier: models.CriterionModifierIncludesAll,
+		}
+
+		galleries = queryGalleries(t, sqb, &galleryFilter, nil)
+
+		assert.Len(t, galleries, 1)
+		assert.Equal(t, galleryIDs[galleryIdxWithPerformerTwoTags], galleries[0].ID)
+
+		tagCriterion = models.MultiCriterionInput{
+			Value: []string{
+				strconv.Itoa(tagIDs[tagIdx1WithPerformer]),
+			},
+			Modifier: models.CriterionModifierExcludes,
+		}
+
+		q := getGalleryStringValue(galleryIdxWithPerformerTwoTags, titleField)
+		findFilter := models.FindFilterType{
+			Q: &q,
+		}
+
+		galleries = queryGalleries(t, sqb, &galleryFilter, &findFilter)
+		assert.Len(t, galleries, 0)
 
 		return nil
 	})

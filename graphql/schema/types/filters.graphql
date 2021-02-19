@@ -136,11 +136,13 @@ input GalleryFilterType {
   organized: Boolean
   """Filter by average image resolution"""
   average_resolution: ResolutionEnum
-  """Filter to only include scenes with this studio"""
+  """Filter to only include galleries with this studio"""
   studios: MultiCriterionInput
-  """Filter to only include scenes with these tags"""
+  """Filter to only include galleries with these tags"""
   tags: MultiCriterionInput
-  """Filter to only include scenes with these performers"""
+  """Filter to only include galleries with performers with these tags"""
+  performer_tags: MultiCriterionInput
+  """Filter to only include galleries with these performers"""
   performers: MultiCriterionInput
   """Filter by number of images in this gallery"""
   image_count: IntCriterionInput
@@ -174,6 +176,8 @@ input ImageFilterType {
   studios: MultiCriterionInput
   """Filter to only include images with these tags"""
   tags: MultiCriterionInput
+  """Filter to only include images with performers with these tags"""
+  performer_tags: MultiCriterionInput
   """Filter to only include images with these performers"""
   performers: MultiCriterionInput
   """Filter to only include images with these galleries"""

@@ -174,6 +174,7 @@ export class ListFilterModel {
           new ResolutionCriterionOption(),
           new ImageIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
         ];
@@ -248,6 +249,7 @@ export class ListFilterModel {
           new AverageResolutionCriterionOption(),
           new GalleryIsMissingCriterionOption(),
           new TagsCriterionOption(),
+          new PerformerTagsCriterionOption(),
           new PerformersCriterionOption(),
           new StudiosCriterionOption(),
         ];
@@ -798,6 +800,14 @@ export class ListFilterModel {
           };
           break;
         }
+        case "performerTags": {
+          const performerTagsCrit = criterion as TagsCriterion;
+          result.performer_tags = {
+            value: performerTagsCrit.value.map((tag) => tag.id),
+            modifier: performerTagsCrit.modifier,
+          };
+          break;
+        }
         case "performers": {
           const perfCrit = criterion as PerformersCriterion;
           result.performers = {
@@ -946,6 +956,14 @@ export class ListFilterModel {
           result.tags = {
             value: tagsCrit.value.map((tag) => tag.id),
             modifier: tagsCrit.modifier,
+          };
+          break;
+        }
+        case "performerTags": {
+          const performerTagsCrit = criterion as TagsCriterion;
+          result.performer_tags = {
+            value: performerTagsCrit.value.map((tag) => tag.id),
+            modifier: performerTagsCrit.modifier,
           };
           break;
         }

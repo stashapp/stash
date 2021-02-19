@@ -45,6 +45,8 @@ const (
 	imageIdxWithTwoTags
 	imageIdxWithStudio
 	imageIdxInZip // TODO - not implemented
+	imageIdxWithPerformerTag
+	imageIdxWithPerformerTwoTags
 	// new indexes above
 	totalImages
 )
@@ -80,6 +82,8 @@ const (
 const (
 	galleryIdxWithScene = iota
 	galleryIdxWithImage
+	galleryIdxWithPerformerTag
+	galleryIdxWithPerformerTwoTags
 	// new indexes above
 	lastGalleryIdx
 
@@ -198,6 +202,15 @@ var (
 		{imageIdxWithPerformer, performerIdxWithImage},
 		{imageIdxWithTwoPerformers, performerIdx1WithImage},
 		{imageIdxWithTwoPerformers, performerIdx2WithImage},
+		{imageIdxWithPerformerTag, performerIdxWithTag},
+		{imageIdxWithPerformerTwoTags, performerIdxWithTwoTags},
+	}
+)
+
+var (
+	galleryPerformerLinks = [][2]int{
+		{galleryIdxWithPerformerTag, performerIdxWithTag},
+		{galleryIdxWithPerformerTwoTags, performerIdxWithTwoTags},
 	}
 )
 
@@ -339,6 +352,10 @@ func populateDB() error {
 
 		if err := linkImageStudios(r.Image()); err != nil {
 			return fmt.Errorf("error linking image studio: %s", err.Error())
+		}
+
+		if err := linkGalleryPerformers(r.Gallery()); err != nil {
+			return fmt.Errorf("error linking gallery performers: %s", err.Error())
 		}
 
 		if err := linkMovieStudios(r.Movie()); err != nil {
@@ -829,6 +846,20 @@ func linkImagePerformers(qb models.ImageReaderWriter) error {
 		performers = append(performers, performerIDs[performerIndex])
 
 		return qb.UpdatePerformers(imageID, performers)
+	})
+}
+
+func linkGalleryPerformers(qb models.GalleryReaderWriter) error {
+	return doLinks(galleryPerformerLinks, func(galleryIndex, performerIndex int) error {
+		galleryID := imageIDs[galleryIndex]
+		performers, err := qb.GetPerformerIDs(galleryID)
+		if err != nil {
+			return err
+		}
+
+		performers = append(performers, performerIDs[performerIndex])
+
+		return qb.UpdatePerformers(galleryID, performers)
 	})
 }
 
