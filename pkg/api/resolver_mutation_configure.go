@@ -112,7 +112,6 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	config.Set(config.LogOut, input.LogOut)
 	config.Set(config.LogAccess, input.LogAccess)
-	config.Set(config.LogTimeStamp, input.LogTimeStamp)
 
 	if input.LogLevel != config.GetLogLevel() {
 		config.Set(config.LogLevel, input.LogLevel)

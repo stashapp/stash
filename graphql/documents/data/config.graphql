@@ -24,7 +24,6 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   logOut
   logLevel
   logAccess
-  logTimeStamp
   createGalleriesFromFolders
   videoExtensions
   imageExtensions

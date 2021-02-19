@@ -106,7 +106,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
   const [logOut, setLogOut] = useState<boolean>(true);
   const [logLevel, setLogLevel] = useState<string>("Info");
   const [logAccess, setLogAccess] = useState<boolean>(true);
-  const [logTimeStamp, setLogTimeStamp] = useState<boolean>(true);
 
   const [videoExtensions, setVideoExtensions] = useState<string | undefined>();
   const [imageExtensions, setImageExtensions] = useState<string | undefined>();
@@ -157,7 +156,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
     logOut,
     logLevel,
     logAccess,
-    logTimeStamp,
     createGalleriesFromFolders,
     videoExtensions: commaDelimitedToList(videoExtensions),
     imageExtensions: commaDelimitedToList(imageExtensions),
@@ -204,7 +202,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
       setLogOut(conf.general.logOut);
       setLogLevel(conf.general.logLevel);
       setLogAccess(conf.general.logAccess);
-      setLogTimeStamp(conf.general.logTimeStamp);
       setCreateGalleriesFromFolders(conf.general.createGalleriesFromFolders);
       setVideoExtensions(listToCommaDelimited(conf.general.videoExtensions));
       setImageExtensions(listToCommaDelimited(conf.general.imageExtensions));
@@ -837,19 +834,6 @@ export const SettingsConfigurationPanel: React.FC = () => {
         />
         <Form.Text className="text-muted">
           Logs http access to the terminal. Requires restart.
-        </Form.Text>
-      </Form.Group>
-
-      <Form.Group>
-        <Form.Check
-          id="log-time-stamp"
-          checked={logTimeStamp}
-          label="Log using a full timestamp"
-          onChange={() => setLogTimeStamp(!logTimeStamp)}
-        />
-        <Form.Text className="text-muted">
-          Log prints use a full timestamp in the form of [2006-01-02 15:04:05]
-          instead of [seconds] from program start. Requires restart.
         </Form.Text>
       </Form.Group>
 

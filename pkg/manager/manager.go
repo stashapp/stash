@@ -174,7 +174,7 @@ The error was: %s
 }
 
 func initLog() {
-	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel(), config.GetLogTimeStamp())
+	logger.Init(config.GetLogFile(), config.GetLogOut(), config.GetLogLevel())
 }
 
 func initPluginCache() *plugin.Cache {

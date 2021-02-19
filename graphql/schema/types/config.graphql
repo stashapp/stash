@@ -65,8 +65,6 @@ input ConfigGeneralInput {
   logLevel: String!
   """Whether to log http access"""
   logAccess: Boolean!
-  """Whether to use full timestamp when logging"""
-  logTimeStamp: Boolean!
   """True if galleries should be created from folders with images"""
   createGalleriesFromFolders: Boolean!
   """Array of video file extensions"""
@@ -130,8 +128,6 @@ type ConfigGeneralResult {
   logLevel: String!
   """Whether to log http access"""
   logAccess: Boolean!
-  """Whether to use full timestamp when logging"""
-  logTimeStamp: Boolean!
   """Array of video file extensions"""
   videoExtensions: [String!]!
   """Array of image file extensions"""
