@@ -52,7 +52,7 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	if input.VideoFileNamingAlgorithm != config.GetVideoFileNamingAlgorithm() {
 		// validate changing VideoFileNamingAlgorithm
-		if err := manager.ValidateVideoFileNamingAlgorithm(input.VideoFileNamingAlgorithm); err != nil {
+		if err := manager.ValidateVideoFileNamingAlgorithm(r.txnManager, input.VideoFileNamingAlgorithm); err != nil {
 			return makeConfigGeneralResult(), err
 		}
 
@@ -61,6 +61,9 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 
 	config.Set(config.CalculateMD5, input.CalculateMd5)
 
+	if input.ParallelTasks != nil {
+		config.Set(config.ParallelTasks, *input.ParallelTasks)
+	}
 	if input.PreviewSegments != nil {
 		config.Set(config.PreviewSegments, *input.PreviewSegments)
 	}
@@ -168,6 +171,10 @@ func (r *mutationResolver) ConfigureGeneral(ctx context.Context, input models.Co
 }
 
 func (r *mutationResolver) ConfigureInterface(ctx context.Context, input models.ConfigInterfaceInput) (*models.ConfigInterfaceResult, error) {
+	if input.MenuItems != nil {
+		config.Set(config.MenuItems, input.MenuItems)
+	}
+
 	if input.SoundOnPreview != nil {
 		config.Set(config.SoundOnPreview, *input.SoundOnPreview)
 	}

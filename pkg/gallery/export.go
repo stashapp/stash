@@ -40,6 +40,8 @@ func ToBasicJSON(gallery *models.Gallery) (*jsonschema.Gallery, error) {
 		newGalleryJSON.Rating = int(gallery.Rating.Int64)
 	}
 
+	newGalleryJSON.Organized = gallery.Organized
+
 	if gallery.Details.Valid {
 		newGalleryJSON.Details = gallery.Details.String
 	}
@@ -68,6 +70,17 @@ func GetIDs(galleries []*models.Gallery) []int {
 	var results []int
 	for _, gallery := range galleries {
 		results = append(results, gallery.ID)
+	}
+
+	return results
+}
+
+func GetChecksums(galleries []*models.Gallery) []string {
+	var results []string
+	for _, gallery := range galleries {
+		if gallery.Checksum != "" {
+			results = append(results, gallery.Checksum)
+		}
 	}
 
 	return results

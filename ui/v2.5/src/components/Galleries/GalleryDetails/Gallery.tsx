@@ -1,16 +1,19 @@
 import { Tab, Nav, Dropdown } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
-import { useFindGallery } from "src/core/StashService";
+import { useFindGallery, useGalleryUpdate } from "src/core/StashService";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { TextUtils } from "src/utils";
 import * as Mousetrap from "mousetrap";
+import { useToast } from "src/hooks";
+import { OrganizedButton } from "src/components/Scenes/SceneDetails/OrganizedButton";
 import { GalleryEditPanel } from "./GalleryEditPanel";
 import { GalleryDetailPanel } from "./GalleryDetailPanel";
 import { DeleteGalleriesDialog } from "../DeleteGalleriesDialog";
 import { GalleryImagesPanel } from "./GalleryImagesPanel";
 import { GalleryAddPanel } from "./GalleryAddPanel";
 import { GalleryFileInfoPanel } from "./GalleryFileInfoPanel";
+import { GalleryScenesPanel } from "./GalleryScenesPanel";
 
 interface IGalleryParams {
   id?: string;
@@ -20,6 +23,7 @@ interface IGalleryParams {
 export const Gallery: React.FC = () => {
   const { tab = "images", id = "new" } = useParams<IGalleryParams>();
   const history = useHistory();
+  const Toast = useToast();
   const isNew = id === "new";
 
   const { data, error, loading } = useFindGallery(id);
@@ -31,6 +35,28 @@ export const Gallery: React.FC = () => {
     if (tab !== newTab) {
       const tabParam = newTab === "images" ? "" : `/${newTab}`;
       history.replace(`/galleries/${id}${tabParam}`);
+    }
+  };
+
+  const [updateGallery] = useGalleryUpdate();
+
+  const [organizedLoading, setOrganizedLoading] = useState(false);
+
+  const onOrganizedClick = async () => {
+    try {
+      setOrganizedLoading(true);
+      await updateGallery({
+        variables: {
+          input: {
+            id: gallery?.id ?? "",
+            organized: !gallery?.organized,
+          },
+        },
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOrganizedLoading(false);
     }
   };
 
@@ -93,6 +119,11 @@ export const Gallery: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="gallery-details-panel">Details</Nav.Link>
             </Nav.Item>
+            {gallery.scenes.length > 0 && (
+              <Nav.Item>
+                <Nav.Link eventKey="gallery-scenes-panel">Scenes</Nav.Link>
+              </Nav.Item>
+            )}
             {gallery.path ? (
               <Nav.Item>
                 <Nav.Link eventKey="gallery-file-info-panel">
@@ -103,22 +134,28 @@ export const Gallery: React.FC = () => {
             <Nav.Item>
               <Nav.Link eventKey="gallery-edit-panel">Edit</Nav.Link>
             </Nav.Item>
-            <Nav.Item className="ml-auto">{renderOperations()}</Nav.Item>
+            <Nav.Item className="ml-auto">
+              <OrganizedButton
+                loading={organizedLoading}
+                organized={gallery.organized}
+                onClick={onOrganizedClick}
+              />
+            </Nav.Item>
+            <Nav.Item>{renderOperations()}</Nav.Item>
           </Nav>
         </div>
 
         <Tab.Content>
-          <Tab.Pane eventKey="gallery-details-panel" title="Details">
+          <Tab.Pane eventKey="gallery-details-panel">
             <GalleryDetailPanel gallery={gallery} />
           </Tab.Pane>
           <Tab.Pane
             className="file-info-panel"
             eventKey="gallery-file-info-panel"
-            title="File Info"
           >
             <GalleryFileInfoPanel gallery={gallery} />
           </Tab.Pane>
-          <Tab.Pane eventKey="gallery-edit-panel" title="Edit">
+          <Tab.Pane eventKey="gallery-edit-panel">
             <GalleryEditPanel
               isVisible={activeTabKey === "gallery-edit-panel"}
               isNew={false}
@@ -126,6 +163,11 @@ export const Gallery: React.FC = () => {
               onDelete={() => setIsDeleteAlertOpen(true)}
             />
           </Tab.Pane>
+          {gallery.scenes.length > 0 && (
+            <Tab.Pane eventKey="gallery-scenes-panel">
+              <GalleryScenesPanel scenes={gallery.scenes} />
+            </Tab.Pane>
+          )}
         </Tab.Content>
       </Tab.Container>
     );
@@ -154,11 +196,10 @@ export const Gallery: React.FC = () => {
         </div>
 
         <Tab.Content>
-          <Tab.Pane eventKey="images" title="Images">
-            {/* <GalleryViewer gallery={gallery} /> */}
+          <Tab.Pane eventKey="images">
             <GalleryImagesPanel gallery={gallery} />
           </Tab.Pane>
-          <Tab.Pane eventKey="add" title="Add">
+          <Tab.Pane eventKey="add">
             <GalleryAddPanel gallery={gallery} />
           </Tab.Pane>
         </Tab.Content>

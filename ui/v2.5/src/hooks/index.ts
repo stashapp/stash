@@ -1,5 +1,9 @@
 export { default as useToast } from "./Toast";
-export { useInterfaceLocalForage, useChangelogStorage } from "./LocalForage";
+export {
+  useInterfaceLocalForage,
+  useChangelogStorage,
+  useLocalForage,
+} from "./LocalForage";
 export {
   useScenesList,
   useSceneMarkersList,
@@ -8,3 +12,4 @@ export {
   useStudiosList,
   usePerformersList,
 } from "./ListHook";
+export { useLightbox, useGalleryLightbox } from "./Lightbox";

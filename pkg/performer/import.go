@@ -33,7 +33,7 @@ func (i *Importer) PreImport() error {
 
 func (i *Importer) PostImport(id int) error {
 	if len(i.imageData) > 0 {
-		if err := i.ReaderWriter.UpdatePerformerImage(id, i.imageData); err != nil {
+		if err := i.ReaderWriter.UpdateImage(id, i.imageData); err != nil {
 			return fmt.Errorf("error setting performer image: %s", err.Error())
 		}
 	}
@@ -73,7 +73,7 @@ func (i *Importer) Create() (*int, error) {
 func (i *Importer) Update(id int) error {
 	performer := i.performer
 	performer.ID = id
-	_, err := i.ReaderWriter.Update(performer)
+	_, err := i.ReaderWriter.UpdateFull(performer)
 	if err != nil {
 		return fmt.Errorf("error updating existing performer: %s", err.Error())
 	}

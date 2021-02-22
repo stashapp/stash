@@ -7,7 +7,7 @@ import { useToast } from "src/hooks";
 import { FormattedMessage } from "react-intl";
 
 interface IDeleteGalleryDialogProps {
-  selected: Partial<GQL.GalleryDataFragment>[];
+  selected: Pick<GQL.Gallery, "id">[];
   onClose: (confirmed: boolean) => void;
 }
 

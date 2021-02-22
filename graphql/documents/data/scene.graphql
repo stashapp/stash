@@ -8,6 +8,7 @@ fragment SceneData on Scene {
   date
   rating
   o_counter
+  organized
   path
 
   file {
@@ -34,8 +35,8 @@ fragment SceneData on Scene {
     ...SceneMarkerData
   }
 
-  gallery {
-    ...GalleryData
+  galleries {
+    ...GallerySlimData
   }
 
   studio {

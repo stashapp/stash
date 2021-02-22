@@ -53,21 +53,21 @@ xPathScrapers:
       Twitter: //a[contains(@href,'twitter.com/')]/@href
       Instagram: //a[contains(@href,'instagram.com/')]/@href
       Birthdate:
-        selector: //div[p[text()='Personal Information']]//span[contains(text(),'Born On')]
+        selector: //span[contains(text(),'Born On')]
         postProcess:
           - replace:
             - regex: Born On
               with:
           - parseDate: January 2, 2006
       Ethnicity:
-        selector: //div[p[text()='Ethnicity']]//a[@data-test="link_ethnicity"]
+        selector: //a[@data-test="link_ethnicity"]/span/text()
         postProcess:
           - map:
-              Asian: asian
-              Caucasian: white
-              Black: black
-              Latin: hispanic
-      Country: //div[p[text()='Personal Information']]//a[@data-test="link-country"]
+              Asian: Asian
+              Caucasian: White
+              Black: Black
+              Latin: Hispanic
+      Country: //a[@data-test="link-country"]/span/text()
       EyeColor: //span[text()='Eye Color']/following-sibling::span/a
       Height:
         selector: //span[text()='Height']/following-sibling::span/a
@@ -91,16 +91,24 @@ xPathScrapers:
               Fake: Yes
               Natural: No
       CareerLength:
-        selector: //div[p[text()='career']]//div[contains(@class,'timeline-horizontal')]//p[@class='m-0']
+        selector: //div[contains(@class,'timeline-horizontal')]//p[@class='m-0']
         concat: "-"
-      Aliases: //p[text()='Aliases']/following-sibling::div/p
-      Tattoos: //span[text()='Tattoos']/following-sibling::span/span
-      Piercings: //span[text()='Piercings']/following-sibling::span/span
+      Aliases: //p[@data-test='p_aliases']/text()
+      Tattoos: 
+        selector: //span[text()='Tattoos']/following-sibling::span/span
+        postProcess:
+          - map:
+              Unknown: ""
+      Piercings: 
+        selector: //span[text()='Piercings']/following-sibling::span/span
+        postProcess:
+          - map:
+              Unknown: ""
       Image:
         selector: //div[contains(@class,'image-container')]//a/img/@src
       Gender:
         fixed: "Female"
-# Last updated November 06, 2020
+# Last updated January 31, 2021
 `
 
 func getFreeonesScraper() config {

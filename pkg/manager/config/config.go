@@ -2,10 +2,12 @@ package config
 
 import (
 	"golang.org/x/crypto/bcrypt"
+	"runtime"
 
 	"errors"
 	"io/ioutil"
 	"path/filepath"
+	"regexp"
 
 	"github.com/spf13/viper"
 
@@ -56,6 +58,9 @@ const PreviewPreset = "preview_preset"
 const MaxTranscodeSize = "max_transcode_size"
 const MaxStreamingTranscodeSize = "max_streaming_transcode_size"
 
+const ParallelTasks = "parallel_tasks"
+const parallelTasksDefault = 1
+
 const PreviewSegmentDuration = "preview_segment_duration"
 const previewSegmentDurationDefault = 0.75
 
@@ -97,6 +102,10 @@ const Language = "language"
 const CustomServedFolders = "custom_served_folders"
 
 // Interface options
+const MenuItems = "menu_items"
+
+var defaultMenuItems = []string{"scenes", "images", "movies", "markers", "galleries", "performers", "studios", "tags"}
+
 const SoundOnPreview = "sound_on_preview"
 const WallShowTitle = "wall_show_title"
 const MaximumLoopDuration = "maximum_loop_duration"
@@ -110,6 +119,9 @@ const LogFile = "logFile"
 const LogOut = "logOut"
 const LogLevel = "logLevel"
 const LogAccess = "logAccess"
+
+// File upload options
+const MaxUploadSize = "max_upload_size"
 
 func Set(key string, value interface{}) {
 	viper.Set(key, value)
@@ -297,6 +309,20 @@ func GetPreviewSegmentDuration() float64 {
 	return viper.GetFloat64(PreviewSegmentDuration)
 }
 
+// GetParallelTasks returns the number of parallel tasks that should be started
+// by scan or generate task.
+func GetParallelTasks() int {
+	return viper.GetInt(ParallelTasks)
+}
+
+func GetParallelTasksWithAutoDetection() int {
+	parallelTasks := viper.GetInt(ParallelTasks)
+	if parallelTasks <= 0 {
+		parallelTasks = (runtime.NumCPU() / 4) + 1
+	}
+	return parallelTasks
+}
+
 // GetPreviewSegments returns the amount of segments in a scene preview file.
 func GetPreviewSegments() int {
 	return viper.GetInt(PreviewSegments)
@@ -405,11 +431,18 @@ func ValidateCredentials(username string, password string) bool {
 func ValidateStashBoxes(boxes []*models.StashBoxInput) error {
 	isMulti := len(boxes) > 1
 
+	re, err := regexp.Compile("^http.*graphql$")
+	if err != nil {
+		return errors.New("Failure to generate regular expression")
+	}
+
 	for _, box := range boxes {
 		if box.APIKey == "" {
 			return errors.New("Stash-box API Key cannot be blank")
 		} else if box.Endpoint == "" {
 			return errors.New("Stash-box Endpoint cannot be blank")
+		} else if !re.Match([]byte(box.Endpoint)) {
+			return errors.New("Stash-box Endpoint is invalid")
 		} else if isMulti && box.Name == "" {
 			return errors.New("Stash-box Name cannot be blank")
 		}
@@ -431,6 +464,13 @@ func GetCustomServedFolders() URLMap {
 }
 
 // Interface options
+func GetMenuItems() []string {
+	if viper.IsSet(MenuItems) {
+		return viper.GetStringSlice(MenuItems)
+	}
+	return defaultMenuItems
+}
+
 func GetSoundOnPreview() bool {
 	viper.SetDefault(SoundOnPreview, true)
 	return viper.GetBool(SoundOnPreview)
@@ -542,6 +582,15 @@ func GetLogAccess() bool {
 	return ret
 }
 
+// Max allowed graphql upload size in megabytes
+func GetMaxUploadSize() int64 {
+	ret := int64(1024)
+	if viper.IsSet(MaxUploadSize) {
+		ret = viper.GetInt64(MaxUploadSize)
+	}
+	return ret << 20
+}
+
 func IsValid() bool {
 	setPaths := viper.IsSet(Stash) && viper.IsSet(Cache) && viper.IsSet(Generated) && viper.IsSet(Metadata)
 
@@ -550,6 +599,7 @@ func IsValid() bool {
 }
 
 func setDefaultValues() {
+	viper.SetDefault(ParallelTasks, parallelTasksDefault)
 	viper.SetDefault(PreviewSegmentDuration, previewSegmentDurationDefault)
 	viper.SetDefault(PreviewSegments, previewSegmentsDefault)
 	viper.SetDefault(PreviewExcludeStart, previewExcludeStartDefault)

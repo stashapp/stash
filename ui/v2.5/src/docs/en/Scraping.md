@@ -395,7 +395,107 @@ Optionally, you can add a `sleep` value under the `driver` section. This specifi
 
 When `useCDP` is set to true, stash will execute or connect to an instance of Chrome. The behaviour is dictated by the `Chrome CDP path` setting in the user configuration. If left empty, stash will attempt to find the Chrome executable in the path environment, and will fail if it cannot find one. 
 
-`Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`).
+`Chrome CDP path` can be set to a path to the chrome executable, or an http(s) address to remote chrome instance (for example: `http://localhost:9222/json/version`). As remote instance a docker container can also be used with the `chromedp/headless-shell` image being highly recommended.
+
+### CDP Click support
+
+When using CDP you can use  the `clicks` part of the `driver` section to do Mouse Clicks on elements you need to collapse or toggle. Each click element has an `xpath` value that holds the XPath for the button/element you need to click and an optional `sleep` value that is the time in seconds to wait for after clicking.
+If the `sleep` value is not set it defaults to `2` seconds.
+
+A demo scraper using `clicks` follows.
+
+```yaml
+name: clickDemo # demo only for a single URL
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - https://getbootstrap.com/docs/4.3/components/collapse/
+    scraper: sceneScraper
+
+xPathScrapers:
+  sceneScraper:
+    scene:
+      Title: //head/title
+      Details: # shows the id/s of the the visible div/s for the Multiple targets example of the page
+        selector: //div[@class="bd-example"]//div[@class="multi-collapse collapse show"]/@id
+        concat: "\n\n"
+
+driver:
+  useCDP: true
+  sleep: 1
+  clicks: # demo usage toggle on off multiple times
+    - xpath: //a[@href="#multiCollapseExample1"] # toggle on first element
+    - xpath: //button[@data-target="#multiCollapseExample2"] # toggle on second element
+      sleep: 4
+    - xpath: //a[@href="#multiCollapseExample1"] # toggle off fist element
+      sleep: 1
+    - xpath: //button[@data-target="#multiCollapseExample2"] # toggle off second element
+    - xpath: //button[@data-target="#multiCollapseExample2"] # toggle on second element
+```
+
+Note that each `click` adds an extra delay of `clicks sleep` seconds, so the above adds `2+4+1+2+2=11` seconds to the loading time of the page.
+
+### Cookie support
+
+In some websites the use of cookies is needed to bypass a welcoming message or some other kind of protection. Stash supports the setting of cookies for the direct xpath scraper and the CDP based one. Due to implementation issues the usage varies a bit.
+
+To use the cookie functionality a `cookies` sub section needs to be added to the `driver` section.
+Each cookie element can consist of a `CookieURL` and a number of `Cookies`.
+
+* `CookieURL` is only needed if you are using the direct / native scraper method. It is the request url that we expect from the site we scrape. It must be in the same domain as the cookies we try to set otherwise all cookies in the same group will fail to set. If the `CookieURL` is not a valid URL then again the cookies of that group will fail.
+
+* `Cookies` are the actual cookies we set. When using CDP that's the only part required. They have  `Name`, `Value`, `Domain`, `Path` values.
+
+In the following example we use cookies for a site using the direct / native xpath scraper. We expect requests to come from `https://www.example.com` and `https://api.somewhere.com` that look for a `_warning` and a `_warn` cookie. A `_test2` cookie is also set just as a demo.
+
+```yaml
+driver:
+  cookies:
+    - CookieURL: "https://www.example.com"
+      Cookies:
+        - Name: "_warning"
+          Domain: ".example.com"
+          Value: "true"
+          Path: "/"
+        - Name: "_test2"
+          Value: "123412"
+          Domain: ".example.com"
+          Path: "/"
+    - CookieURL: "https://api.somewhere.com"
+      Cookies:
+        - Name: "_warn"
+          Value: "123"
+          Domain: ".somewhere.com"
+```
+
+The same functionality when using CDP would look like this:
+
+```yaml
+driver:
+  useCDP: true
+  cookies:
+    - Cookies:
+        - Name: "_warning"
+          Domain: ".example.com"
+          Value: "true"
+          Path: "/"
+        - Name: "_test2"
+          Value: "123412"
+          Domain: ".example.com"
+          Path: "/"
+    - Cookies:
+        - Name: "_warn"
+          Value: "123"
+          Domain: ".somewhere.com"
+```
+
+When developing a scraper you can have a look at the cookies set by a site by adding
+
+* a `CookieURL` if you use the direct xpath scraper
+
+* a `Domain` if you use the CDP scraper
+
+and having a look at the log / console in debug mode.
 
 ### XPath scraper example
 

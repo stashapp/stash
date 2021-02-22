@@ -7,7 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -143,10 +142,10 @@ func TestImporterPostImport(t *testing.T) {
 		imageData:    imageBytes,
 	}
 
-	updateStudioImageErr := errors.New("UpdateStudioImage error")
+	updateStudioImageErr := errors.New("UpdateImage error")
 
-	readerWriter.On("UpdateStudioImage", studioID, imageBytes).Return(nil).Once()
-	readerWriter.On("UpdateStudioImage", errImageID, imageBytes).Return(updateStudioImageErr).Once()
+	readerWriter.On("UpdateImage", studioID, imageBytes).Return(nil).Once()
+	readerWriter.On("UpdateImage", errImageID, imageBytes).Return(updateStudioImageErr).Once()
 
 	err := i.PostImport(studioID)
 	assert.Nil(t, err)
@@ -195,11 +194,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.StudioReaderWriter{}
 
 	studio := models.Studio{
-		Name: modelstest.NullString(studioName),
+		Name: models.NullString(studioName),
 	}
 
 	studioErr := models.Studio{
-		Name: modelstest.NullString(studioNameErr),
+		Name: models.NullString(studioNameErr),
 	}
 
 	i := Importer{
@@ -229,11 +228,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.StudioReaderWriter{}
 
 	studio := models.Studio{
-		Name: modelstest.NullString(studioName),
+		Name: models.NullString(studioName),
 	}
 
 	studioErr := models.Studio{
-		Name: modelstest.NullString(studioNameErr),
+		Name: models.NullString(studioNameErr),
 	}
 
 	i := Importer{

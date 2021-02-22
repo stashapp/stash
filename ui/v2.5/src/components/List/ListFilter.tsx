@@ -1,5 +1,6 @@
 import _, { debounce } from "lodash";
 import React, { useState, useEffect } from "react";
+import Mousetrap from "mousetrap";
 import { SortDirectionEnum } from "src/core/generated-graphql";
 import {
   Badge,
@@ -425,29 +426,25 @@ export const ListFilter: React.FC<IListFilterProps> = (
   }
 
   function maybeRenderSelectedButtons() {
-    if (props.itemsSelected) {
+    if (props.itemsSelected && (props.onEdit || props.onDelete)) {
       return (
-        <>
-          {props.onEdit ? (
-            <ButtonGroup className="mr-1">
-              <OverlayTrigger overlay={<Tooltip id="edit">Edit</Tooltip>}>
-                <Button variant="secondary" onClick={onEdit}>
-                  <Icon icon="pencil-alt" />
-                </Button>
-              </OverlayTrigger>
-            </ButtonGroup>
-          ) : undefined}
+        <ButtonGroup className="ml-2">
+          {props.onEdit && (
+            <OverlayTrigger overlay={<Tooltip id="edit">Edit</Tooltip>}>
+              <Button variant="secondary" onClick={onEdit}>
+                <Icon icon="pencil-alt" />
+              </Button>
+            </OverlayTrigger>
+          )}
 
-          {props.onDelete ? (
-            <ButtonGroup className="mr-1">
-              <OverlayTrigger overlay={<Tooltip id="delete">Delete</Tooltip>}>
-                <Button variant="danger" onClick={onDelete}>
-                  <Icon icon="trash" />
-                </Button>
-              </OverlayTrigger>
-            </ButtonGroup>
-          ) : undefined}
-        </>
+          {props.onDelete && (
+            <OverlayTrigger overlay={<Tooltip id="delete">Delete</Tooltip>}>
+              <Button variant="danger" onClick={onDelete}>
+                <Icon icon="trash" />
+              </Button>
+            </OverlayTrigger>
+          )}
+        </ButtonGroup>
       );
     }
   }
@@ -455,8 +452,8 @@ export const ListFilter: React.FC<IListFilterProps> = (
   function render() {
     return (
       <>
-        <ButtonToolbar className="align-items-center justify-content-center">
-          <div className="my-1 d-flex">
+        <ButtonToolbar className="align-items-center justify-content-center mb-2">
+          <div className="d-flex">
             <InputGroup className="mr-2 flex-grow-1">
               <FormControl
                 ref={queryRef}
@@ -529,18 +526,15 @@ export const ListFilter: React.FC<IListFilterProps> = (
             ))}
           </Form.Control>
 
-          <ButtonGroup className="mx-3 my-1">
-            {maybeRenderSelectedButtons()}
-            {renderMore()}
-          </ButtonGroup>
+          {maybeRenderSelectedButtons()}
 
-          <ButtonGroup className="my-1">
-            {renderDisplayModeOptions()}
-          </ButtonGroup>
+          <div className="mx-2">{renderMore()}</div>
+
+          <ButtonGroup>{renderDisplayModeOptions()}</ButtonGroup>
           {maybeRenderZoom()}
         </ButtonToolbar>
 
-        <div className="d-flex justify-content-center mt-1">
+        <div className="d-flex justify-content-center">
           {renderFilterTags()}
         </div>
       </>

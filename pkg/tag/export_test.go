@@ -84,9 +84,9 @@ func TestToJSON(t *testing.T) {
 
 	imageErr := errors.New("error getting image")
 
-	mockTagReader.On("GetTagImage", tagID).Return(models.DefaultTagImage, nil).Once()
-	mockTagReader.On("GetTagImage", noImageID).Return(nil, nil).Once()
-	mockTagReader.On("GetTagImage", errImageID).Return(nil, imageErr).Once()
+	mockTagReader.On("GetImage", tagID).Return(models.DefaultTagImage, nil).Once()
+	mockTagReader.On("GetImage", noImageID).Return(nil, nil).Once()
+	mockTagReader.On("GetImage", errImageID).Return(nil, imageErr).Once()
 
 	for i, s := range scenarios {
 		tag := s.tag

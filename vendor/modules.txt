@@ -40,8 +40,6 @@ github.com/agnivade/levenshtein
 github.com/antchfx/htmlquery
 # github.com/antchfx/xpath v1.1.6
 github.com/antchfx/xpath
-# github.com/bmatcuk/doublestar/v2 v2.0.1
-github.com/bmatcuk/doublestar/v2
 # github.com/chromedp/cdproto v0.0.0-20200608134039-8a80cdaf865c
 github.com/chromedp/cdproto
 github.com/chromedp/cdproto/accessibility
@@ -100,6 +98,8 @@ github.com/davecgh/go-spew/spew
 github.com/disintegration/imaging
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
+# github.com/fvbommel/sortorder v1.0.2
+github.com/fvbommel/sortorder
 # github.com/go-chi/chi v4.0.2+incompatible
 github.com/go-chi/chi
 github.com/go-chi/chi/middleware
@@ -232,6 +232,8 @@ github.com/pelletier/go-toml
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/remeh/sizedwaitgroup v1.0.0
+github.com/remeh/sizedwaitgroup
 # github.com/rogpeppe/go-internal v1.3.0
 github.com/rogpeppe/go-internal/modfile
 github.com/rogpeppe/go-internal/module

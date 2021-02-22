@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from "react";
 import { FormattedPlural } from "react-intl";
 import * as GQL from "src/core/generated-graphql";
-import { BasicCard } from "../Shared/BasicCard";
+import { BasicCard, TruncatedText } from "src/components/Shared";
 
 interface IProps {
   movie: GQL.MovieDataFragment;
@@ -61,7 +61,9 @@ export const MovieCard: FunctionComponent<IProps> = (props: IProps) => {
       }
       details={
         <>
-          <h5 className="text-truncate">{props.movie.name}</h5>
+          <h5>
+            <TruncatedText text={props.movie.name} lineCount={2} />
+          </h5>
           {maybeRenderSceneNumber()}
         </>
       }

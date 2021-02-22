@@ -7,7 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -48,6 +47,7 @@ const (
 	missingTagName  = "missingTagName"
 
 	errPerformersID = 200
+	errGalleriesID  = 201
 
 	missingChecksum = "missingChecksum"
 	missingOSHash   = "missingOSHash"
@@ -163,23 +163,30 @@ func TestImporterPreImportWithGallery(t *testing.T) {
 	galleryReaderWriter := &mocks.GalleryReaderWriter{}
 
 	i := Importer{
-		GalleryWriter: galleryReaderWriter,
-		Path:          path,
+		GalleryWriter:       galleryReaderWriter,
+		Path:                path,
+		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 		Input: jsonschema.Scene{
-			Gallery: existingGalleryChecksum,
+			Galleries: []string{
+				existingGalleryChecksum,
+			},
 		},
 	}
 
-	galleryReaderWriter.On("FindByChecksum", existingGalleryChecksum).Return(&models.Gallery{
-		ID: existingGalleryID,
+	galleryReaderWriter.On("FindByChecksums", []string{existingGalleryChecksum}).Return([]*models.Gallery{
+		{
+			ID:       existingGalleryID,
+			Checksum: existingGalleryChecksum,
+		},
 	}, nil).Once()
-	galleryReaderWriter.On("FindByChecksum", existingGalleryErr).Return(nil, errors.New("FindByChecksum error")).Once()
+
+	galleryReaderWriter.On("FindByChecksums", []string{existingGalleryErr}).Return(nil, errors.New("FindByChecksums error")).Once()
 
 	err := i.PreImport()
 	assert.Nil(t, err)
-	assert.Equal(t, existingGalleryID, i.gallery.ID)
+	assert.Equal(t, existingGalleryID, i.galleries[0].ID)
 
-	i.Input.Gallery = existingGalleryErr
+	i.Input.Galleries = []string{existingGalleryErr}
 	err = i.PreImport()
 	assert.NotNil(t, err)
 
@@ -193,12 +200,14 @@ func TestImporterPreImportWithMissingGallery(t *testing.T) {
 		Path:          path,
 		GalleryWriter: galleryReaderWriter,
 		Input: jsonschema.Scene{
-			Gallery: missingGalleryChecksum,
+			Galleries: []string{
+				missingGalleryChecksum,
+			},
 		},
 		MissingRefBehaviour: models.ImportMissingRefEnumFail,
 	}
 
-	galleryReaderWriter.On("FindByChecksum", missingGalleryChecksum).Return(nil, nil).Times(3)
+	galleryReaderWriter.On("FindByChecksums", []string{missingGalleryChecksum}).Return(nil, nil).Times(3)
 
 	err := i.PreImport()
 	assert.NotNil(t, err)
@@ -206,12 +215,10 @@ func TestImporterPreImportWithMissingGallery(t *testing.T) {
 	i.MissingRefBehaviour = models.ImportMissingRefEnumIgnore
 	err = i.PreImport()
 	assert.Nil(t, err)
-	assert.Nil(t, i.gallery)
 
 	i.MissingRefBehaviour = models.ImportMissingRefEnumCreate
 	err = i.PreImport()
 	assert.Nil(t, err)
-	assert.Nil(t, i.gallery)
 
 	galleryReaderWriter.AssertExpectations(t)
 }
@@ -233,7 +240,7 @@ func TestImporterPreImportWithPerformer(t *testing.T) {
 	performerReaderWriter.On("FindByNames", []string{existingPerformerName}, false).Return([]*models.Performer{
 		{
 			ID:   existingPerformerID,
-			Name: modelstest.NullString(existingPerformerName),
+			Name: models.NullString(existingPerformerName),
 		},
 	}, nil).Once()
 	performerReaderWriter.On("FindByNames", []string{existingPerformerErr}, false).Return(nil, errors.New("FindByNames error")).Once()
@@ -323,7 +330,7 @@ func TestImporterPreImportWithMovie(t *testing.T) {
 
 	movieReaderWriter.On("FindByName", existingMovieName, false).Return(&models.Movie{
 		ID:   existingMovieID,
-		Name: modelstest.NullString(existingMovieName),
+		Name: models.NullString(existingMovieName),
 	}, nil).Once()
 	movieReaderWriter.On("FindByName", existingMovieErr, false).Return(nil, errors.New("FindByName error")).Once()
 
@@ -493,10 +500,10 @@ func TestImporterPostImport(t *testing.T) {
 		coverImageData: imageBytes,
 	}
 
-	updateSceneImageErr := errors.New("UpdateSceneCover error")
+	updateSceneImageErr := errors.New("UpdateCover error")
 
-	readerWriter.On("UpdateSceneCover", sceneID, imageBytes).Return(nil).Once()
-	readerWriter.On("UpdateSceneCover", errImageID, imageBytes).Return(updateSceneImageErr).Once()
+	readerWriter.On("UpdateCover", sceneID, imageBytes).Return(nil).Once()
+	readerWriter.On("UpdateCover", errImageID, imageBytes).Return(updateSceneImageErr).Once()
 
 	err := i.PostImport(sceneID)
 	assert.Nil(t, err)
@@ -507,40 +514,37 @@ func TestImporterPostImport(t *testing.T) {
 	readerWriter.AssertExpectations(t)
 }
 
-func TestImporterPostImportUpdateGallery(t *testing.T) {
-	galleryReaderWriter := &mocks.GalleryReaderWriter{}
+func TestImporterPostImportUpdateGalleries(t *testing.T) {
+	sceneReaderWriter := &mocks.SceneReaderWriter{}
 
 	i := Importer{
-		GalleryWriter: galleryReaderWriter,
-		gallery: &models.Gallery{
-			ID: existingGalleryID,
+		ReaderWriter: sceneReaderWriter,
+		galleries: []*models.Gallery{
+			{
+				ID: existingGalleryID,
+			},
 		},
 	}
 
-	updateErr := errors.New("Update error")
+	updateErr := errors.New("UpdateGalleries error")
 
-	updateArg := *i.gallery
-	updateArg.SceneID = modelstest.NullInt64(sceneID)
-
-	galleryReaderWriter.On("Update", updateArg).Return(nil, nil).Once()
-
-	updateArg.SceneID = modelstest.NullInt64(errGalleryID)
-	galleryReaderWriter.On("Update", updateArg).Return(nil, updateErr).Once()
+	sceneReaderWriter.On("UpdateGalleries", sceneID, []int{existingGalleryID}).Return(nil).Once()
+	sceneReaderWriter.On("UpdateGalleries", errGalleriesID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
 
 	err := i.PostImport(sceneID)
 	assert.Nil(t, err)
 
-	err = i.PostImport(errGalleryID)
+	err = i.PostImport(errGalleriesID)
 	assert.NotNil(t, err)
 
-	galleryReaderWriter.AssertExpectations(t)
+	sceneReaderWriter.AssertExpectations(t)
 }
 
 func TestImporterPostImportUpdatePerformers(t *testing.T) {
-	joinReaderWriter := &mocks.JoinReaderWriter{}
+	sceneReaderWriter := &mocks.SceneReaderWriter{}
 
 	i := Importer{
-		JoinWriter: joinReaderWriter,
+		ReaderWriter: sceneReaderWriter,
 		performers: []*models.Performer{
 			{
 				ID: existingPerformerID,
@@ -548,15 +552,10 @@ func TestImporterPostImportUpdatePerformers(t *testing.T) {
 		},
 	}
 
-	updateErr := errors.New("UpdatePerformersScenes error")
+	updateErr := errors.New("UpdatePerformers error")
 
-	joinReaderWriter.On("UpdatePerformersScenes", sceneID, []models.PerformersScenes{
-		{
-			PerformerID: existingPerformerID,
-			SceneID:     sceneID,
-		},
-	}).Return(nil).Once()
-	joinReaderWriter.On("UpdatePerformersScenes", errPerformersID, mock.AnythingOfType("[]models.PerformersScenes")).Return(updateErr).Once()
+	sceneReaderWriter.On("UpdatePerformers", sceneID, []int{existingPerformerID}).Return(nil).Once()
+	sceneReaderWriter.On("UpdatePerformers", errPerformersID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
 
 	err := i.PostImport(sceneID)
 	assert.Nil(t, err)
@@ -564,14 +563,14 @@ func TestImporterPostImportUpdatePerformers(t *testing.T) {
 	err = i.PostImport(errPerformersID)
 	assert.NotNil(t, err)
 
-	joinReaderWriter.AssertExpectations(t)
+	sceneReaderWriter.AssertExpectations(t)
 }
 
 func TestImporterPostImportUpdateMovies(t *testing.T) {
-	joinReaderWriter := &mocks.JoinReaderWriter{}
+	sceneReaderWriter := &mocks.SceneReaderWriter{}
 
 	i := Importer{
-		JoinWriter: joinReaderWriter,
+		ReaderWriter: sceneReaderWriter,
 		movies: []models.MoviesScenes{
 			{
 				MovieID: existingMovieID,
@@ -579,15 +578,15 @@ func TestImporterPostImportUpdateMovies(t *testing.T) {
 		},
 	}
 
-	updateErr := errors.New("UpdateMoviesScenes error")
+	updateErr := errors.New("UpdateMovies error")
 
-	joinReaderWriter.On("UpdateMoviesScenes", sceneID, []models.MoviesScenes{
+	sceneReaderWriter.On("UpdateMovies", sceneID, []models.MoviesScenes{
 		{
 			MovieID: existingMovieID,
 			SceneID: sceneID,
 		},
 	}).Return(nil).Once()
-	joinReaderWriter.On("UpdateMoviesScenes", errMoviesID, mock.AnythingOfType("[]models.MoviesScenes")).Return(updateErr).Once()
+	sceneReaderWriter.On("UpdateMovies", errMoviesID, mock.AnythingOfType("[]models.MoviesScenes")).Return(updateErr).Once()
 
 	err := i.PostImport(sceneID)
 	assert.Nil(t, err)
@@ -595,14 +594,14 @@ func TestImporterPostImportUpdateMovies(t *testing.T) {
 	err = i.PostImport(errMoviesID)
 	assert.NotNil(t, err)
 
-	joinReaderWriter.AssertExpectations(t)
+	sceneReaderWriter.AssertExpectations(t)
 }
 
 func TestImporterPostImportUpdateTags(t *testing.T) {
-	joinReaderWriter := &mocks.JoinReaderWriter{}
+	sceneReaderWriter := &mocks.SceneReaderWriter{}
 
 	i := Importer{
-		JoinWriter: joinReaderWriter,
+		ReaderWriter: sceneReaderWriter,
 		tags: []*models.Tag{
 			{
 				ID: existingTagID,
@@ -610,15 +609,10 @@ func TestImporterPostImportUpdateTags(t *testing.T) {
 		},
 	}
 
-	updateErr := errors.New("UpdateScenesTags error")
+	updateErr := errors.New("UpdateTags error")
 
-	joinReaderWriter.On("UpdateScenesTags", sceneID, []models.ScenesTags{
-		{
-			TagID:   existingTagID,
-			SceneID: sceneID,
-		},
-	}).Return(nil).Once()
-	joinReaderWriter.On("UpdateScenesTags", errTagsID, mock.AnythingOfType("[]models.ScenesTags")).Return(updateErr).Once()
+	sceneReaderWriter.On("UpdateTags", sceneID, []int{existingTagID}).Return(nil).Once()
+	sceneReaderWriter.On("UpdateTags", errTagsID, mock.AnythingOfType("[]int")).Return(updateErr).Once()
 
 	err := i.PostImport(sceneID)
 	assert.Nil(t, err)
@@ -626,7 +620,7 @@ func TestImporterPostImportUpdateTags(t *testing.T) {
 	err = i.PostImport(errTagsID)
 	assert.NotNil(t, err)
 
-	joinReaderWriter.AssertExpectations(t)
+	sceneReaderWriter.AssertExpectations(t)
 }
 
 func TestImporterFindExistingID(t *testing.T) {
@@ -691,11 +685,11 @@ func TestCreate(t *testing.T) {
 	readerWriter := &mocks.SceneReaderWriter{}
 
 	scene := models.Scene{
-		Title: modelstest.NullString(title),
+		Title: models.NullString(title),
 	}
 
 	sceneErr := models.Scene{
-		Title: modelstest.NullString(sceneNameErr),
+		Title: models.NullString(sceneNameErr),
 	}
 
 	i := Importer{
@@ -726,11 +720,11 @@ func TestUpdate(t *testing.T) {
 	readerWriter := &mocks.SceneReaderWriter{}
 
 	scene := models.Scene{
-		Title: modelstest.NullString(title),
+		Title: models.NullString(title),
 	}
 
 	sceneErr := models.Scene{
-		Title: modelstest.NullString(sceneNameErr),
+		Title: models.NullString(sceneNameErr),
 	}
 
 	i := Importer{

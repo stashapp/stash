@@ -43,26 +43,51 @@ func (r *imageResolver) Paths(ctx context.Context, obj *models.Image) (*models.I
 	}, nil
 }
 
-func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) ([]*models.Gallery, error) {
-	qb := models.NewGalleryQueryBuilder()
-	return qb.FindByImageID(obj.ID, nil)
+func (r *imageResolver) Galleries(ctx context.Context, obj *models.Image) (ret []*models.Gallery, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		var err error
+		ret, err = repo.Gallery().FindByImageID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (*models.Studio, error) {
+func (r *imageResolver) Studio(ctx context.Context, obj *models.Image) (ret *models.Studio, err error) {
 	if !obj.StudioID.Valid {
 		return nil, nil
 	}
 
-	qb := models.NewStudioQueryBuilder()
-	return qb.Find(int(obj.StudioID.Int64), nil)
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Studio().Find(int(obj.StudioID.Int64))
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) ([]*models.Tag, error) {
-	qb := models.NewTagQueryBuilder()
-	return qb.FindByImageID(obj.ID, nil)
+func (r *imageResolver) Tags(ctx context.Context, obj *models.Image) (ret []*models.Tag, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Tag().FindByImageID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }
 
-func (r *imageResolver) Performers(ctx context.Context, obj *models.Image) ([]*models.Performer, error) {
-	qb := models.NewPerformerQueryBuilder()
-	return qb.FindByImageID(obj.ID, nil)
+func (r *imageResolver) Performers(ctx context.Context, obj *models.Image) (ret []*models.Performer, err error) {
+	if err := r.withReadTxn(ctx, func(repo models.ReaderRepository) error {
+		ret, err = repo.Performer().FindByImageID(obj.ID)
+		return err
+	}); err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

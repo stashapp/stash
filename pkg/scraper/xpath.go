@@ -19,13 +19,15 @@ type xpathScraper struct {
 	scraper      scraperTypeConfig
 	config       config
 	globalConfig GlobalConfig
+	txnManager   models.TransactionManager
 }
 
-func newXpathScraper(scraper scraperTypeConfig, config config, globalConfig GlobalConfig) *xpathScraper {
+func newXpathScraper(scraper scraperTypeConfig, txnManager models.TransactionManager, config config, globalConfig GlobalConfig) *xpathScraper {
 	return &xpathScraper{
 		scraper:      scraper,
 		config:       config,
 		globalConfig: globalConfig,
+		txnManager:   txnManager,
 	}
 }
 
@@ -119,7 +121,7 @@ func (s *xpathScraper) scrapePerformerByFragment(scrapedPerformer models.Scraped
 }
 
 func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*models.ScrapedScene, error) {
-	storedScene, err := sceneFromUpdateFragment(scene)
+	storedScene, err := sceneFromUpdateFragment(scene, s.txnManager)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +154,7 @@ func (s *xpathScraper) scrapeSceneByFragment(scene models.SceneUpdateInput) (*mo
 }
 
 func (s *xpathScraper) scrapeGalleryByFragment(gallery models.GalleryUpdateInput) (*models.ScrapedGallery, error) {
-	storedGallery, err := galleryFromUpdateFragment(gallery)
+	storedGallery, err := galleryFromUpdateFragment(gallery, s.txnManager)
 	if err != nil {
 		return nil, err
 	}

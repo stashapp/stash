@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stashapp/stash/pkg/database"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
 )
@@ -86,41 +85,32 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 	}
 
 	// Start the transaction and save the performer
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewPerformerQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	var performer *models.Performer
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
 
-	performer, err := qb.Create(newPerformer, tx)
-	if err != nil {
-		_ = tx.Rollback()
-		return nil, err
-	}
-
-	// update image table
-	if len(imageData) > 0 {
-		if err := qb.UpdatePerformerImage(performer.ID, imageData, tx); err != nil {
-			_ = tx.Rollback()
-			return nil, err
+		performer, err = qb.Create(newPerformer)
+		if err != nil {
+			return err
 		}
-	}
 
-	// Save the stash_ids
-	if input.StashIds != nil {
-		var stashIDJoins []models.StashID
-		for _, stashID := range input.StashIds {
-			newJoin := models.StashID{
-				StashID:  stashID.StashID,
-				Endpoint: stashID.Endpoint,
+		// update image table
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(performer.ID, imageData); err != nil {
+				return err
 			}
-			stashIDJoins = append(stashIDJoins, newJoin)
 		}
-		if err := jqb.UpdatePerformerStashIDs(performer.ID, stashIDJoins, tx); err != nil {
-			return nil, err
-		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		// Save the stash_ids
+		if input.StashIds != nil {
+			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			if err := qb.UpdateStashIDs(performer.ID, stashIDJoins); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -130,119 +120,91 @@ func (r *mutationResolver) PerformerCreate(ctx context.Context, input models.Per
 func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.PerformerUpdateInput) (*models.Performer, error) {
 	// Populate performer from the input
 	performerID, _ := strconv.Atoi(input.ID)
-	updatedPerformer := models.Performer{
+	updatedPerformer := models.PerformerPartial{
 		ID:        performerID,
-		UpdatedAt: models.SQLiteTimestamp{Timestamp: time.Now()},
+		UpdatedAt: &models.SQLiteTimestamp{Timestamp: time.Now()},
 	}
+
+	translator := changesetTranslator{
+		inputMap: getUpdateInputMap(ctx),
+	}
+
 	var imageData []byte
 	var err error
-	imageIncluded := wasFieldIncluded(ctx, "image")
+	imageIncluded := translator.hasField("image")
 	if input.Image != nil {
 		_, imageData, err = utils.ProcessBase64Image(*input.Image)
 		if err != nil {
 			return nil, err
 		}
 	}
+
 	if input.Name != nil {
 		// generate checksum from performer name rather than image
 		checksum := utils.MD5FromString(*input.Name)
 
-		updatedPerformer.Name = sql.NullString{String: *input.Name, Valid: true}
-		updatedPerformer.Checksum = checksum
+		updatedPerformer.Name = &sql.NullString{String: *input.Name, Valid: true}
+		updatedPerformer.Checksum = &checksum
 	}
-	if input.URL != nil {
-		updatedPerformer.URL = sql.NullString{String: *input.URL, Valid: true}
+
+	updatedPerformer.URL = translator.nullString(input.URL, "url")
+
+	if translator.hasField("gender") {
+		if input.Gender != nil {
+			updatedPerformer.Gender = &sql.NullString{String: input.Gender.String(), Valid: true}
+		} else {
+			updatedPerformer.Gender = &sql.NullString{String: "", Valid: false}
+		}
 	}
-	if input.Gender != nil {
-		updatedPerformer.Gender = sql.NullString{String: input.Gender.String(), Valid: true}
-	}
-	if input.Birthdate != nil {
-		updatedPerformer.Birthdate = models.SQLiteDate{String: *input.Birthdate, Valid: true}
-	}
-	if input.Ethnicity != nil {
-		updatedPerformer.Ethnicity = sql.NullString{String: *input.Ethnicity, Valid: true}
-	}
-	if input.Country != nil {
-		updatedPerformer.Country = sql.NullString{String: *input.Country, Valid: true}
-	}
-	if input.EyeColor != nil {
-		updatedPerformer.EyeColor = sql.NullString{String: *input.EyeColor, Valid: true}
-	}
-	if input.Height != nil {
-		updatedPerformer.Height = sql.NullString{String: *input.Height, Valid: true}
-	}
-	if input.Measurements != nil {
-		updatedPerformer.Measurements = sql.NullString{String: *input.Measurements, Valid: true}
-	}
-	if input.FakeTits != nil {
-		updatedPerformer.FakeTits = sql.NullString{String: *input.FakeTits, Valid: true}
-	}
-	if input.CareerLength != nil {
-		updatedPerformer.CareerLength = sql.NullString{String: *input.CareerLength, Valid: true}
-	}
-	if input.Tattoos != nil {
-		updatedPerformer.Tattoos = sql.NullString{String: *input.Tattoos, Valid: true}
-	}
-	if input.Piercings != nil {
-		updatedPerformer.Piercings = sql.NullString{String: *input.Piercings, Valid: true}
-	}
-	if input.Aliases != nil {
-		updatedPerformer.Aliases = sql.NullString{String: *input.Aliases, Valid: true}
-	}
-	if input.Twitter != nil {
-		updatedPerformer.Twitter = sql.NullString{String: *input.Twitter, Valid: true}
-	}
-	if input.Instagram != nil {
-		updatedPerformer.Instagram = sql.NullString{String: *input.Instagram, Valid: true}
-	}
-	if input.Favorite != nil {
-		updatedPerformer.Favorite = sql.NullBool{Bool: *input.Favorite, Valid: true}
-	} else {
-		updatedPerformer.Favorite = sql.NullBool{Bool: false, Valid: true}
-	}
+
+	updatedPerformer.Birthdate = translator.sqliteDate(input.Birthdate, "birthdate")
+	updatedPerformer.Country = translator.nullString(input.Country, "country")
+	updatedPerformer.EyeColor = translator.nullString(input.EyeColor, "eye_color")
+	updatedPerformer.Measurements = translator.nullString(input.Measurements, "measurements")
+	updatedPerformer.Height = translator.nullString(input.Height, "height")
+	updatedPerformer.Ethnicity = translator.nullString(input.Ethnicity, "ethnicity")
+	updatedPerformer.FakeTits = translator.nullString(input.FakeTits, "fake_tits")
+	updatedPerformer.CareerLength = translator.nullString(input.CareerLength, "career_length")
+	updatedPerformer.Tattoos = translator.nullString(input.Tattoos, "tattoos")
+	updatedPerformer.Piercings = translator.nullString(input.Piercings, "piercings")
+	updatedPerformer.Aliases = translator.nullString(input.Aliases, "aliases")
+	updatedPerformer.Twitter = translator.nullString(input.Twitter, "twitter")
+	updatedPerformer.Instagram = translator.nullString(input.Instagram, "instagram")
+	updatedPerformer.Favorite = translator.nullBool(input.Favorite, "favorite")
 
 	// Start the transaction and save the performer
-	tx := database.DB.MustBeginTx(ctx, nil)
-	qb := models.NewPerformerQueryBuilder()
-	jqb := models.NewJoinsQueryBuilder()
+	var performer *models.Performer
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
 
-	performer, err := qb.Update(updatedPerformer, tx)
-	if err != nil {
-		tx.Rollback()
-		return nil, err
-	}
-
-	// update image table
-	if len(imageData) > 0 {
-		if err := qb.UpdatePerformerImage(performer.ID, imageData, tx); err != nil {
-			tx.Rollback()
-			return nil, err
+		var err error
+		performer, err = qb.Update(updatedPerformer)
+		if err != nil {
+			return err
 		}
-	} else if imageIncluded {
-		// must be unsetting
-		if err := qb.DestroyPerformerImage(performer.ID, tx); err != nil {
-			tx.Rollback()
-			return nil, err
-		}
-	}
 
-	// Save the stash_ids
-	if input.StashIds != nil {
-		var stashIDJoins []models.StashID
-		for _, stashID := range input.StashIds {
-			newJoin := models.StashID{
-				StashID:  stashID.StashID,
-				Endpoint: stashID.Endpoint,
+		// update image table
+		if len(imageData) > 0 {
+			if err := qb.UpdateImage(performer.ID, imageData); err != nil {
+				return err
 			}
-			stashIDJoins = append(stashIDJoins, newJoin)
+		} else if imageIncluded {
+			// must be unsetting
+			if err := qb.DestroyImage(performer.ID); err != nil {
+				return err
+			}
 		}
-		if err := jqb.UpdatePerformerStashIDs(performerID, stashIDJoins, tx); err != nil {
-			return nil, err
-		}
-	}
 
-	// Commit
-	if err := tx.Commit(); err != nil {
+		// Save the stash_ids
+		if translator.hasField("stash_ids") {
+			stashIDJoins := models.StashIDsFromInput(input.StashIds)
+			if err := qb.UpdateStashIDs(performerID, stashIDJoins); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
@@ -250,13 +212,35 @@ func (r *mutationResolver) PerformerUpdate(ctx context.Context, input models.Per
 }
 
 func (r *mutationResolver) PerformerDestroy(ctx context.Context, input models.PerformerDestroyInput) (bool, error) {
-	qb := models.NewPerformerQueryBuilder()
-	tx := database.DB.MustBeginTx(ctx, nil)
-	if err := qb.Destroy(input.ID, tx); err != nil {
-		_ = tx.Rollback()
+	id, err := strconv.Atoi(input.ID)
+	if err != nil {
 		return false, err
 	}
-	if err := tx.Commit(); err != nil {
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		return repo.Performer().Destroy(id)
+	}); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (r *mutationResolver) PerformersDestroy(ctx context.Context, performerIDs []string) (bool, error) {
+	ids, err := utils.StringSliceToIntSlice(performerIDs)
+	if err != nil {
+		return false, err
+	}
+
+	if err := r.withTxn(ctx, func(repo models.Repository) error {
+		qb := repo.Performer()
+		for _, id := range ids {
+			if err := qb.Destroy(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
 		return false, err
 	}
 	return true, nil

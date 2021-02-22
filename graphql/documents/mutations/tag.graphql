@@ -8,8 +8,12 @@ mutation TagDestroy($id: ID!) {
   tagDestroy(input: { id: $id })
 }
 
-mutation TagUpdate($id: ID!, $name: String!, $image: String) {
-  tagUpdate(input: { id: $id, name: $name, image: $image }) {
+mutation TagsDestroy($ids: [ID!]!) {
+  tagsDestroy(ids: $ids)
+}
+
+mutation TagUpdate($input: TagUpdateInput!) {
+  tagUpdate(input: $input) {
     ...TagData
   }
 }

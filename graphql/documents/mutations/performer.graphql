@@ -45,53 +45,17 @@ mutation PerformerCreate(
 }
 
 mutation PerformerUpdate(
-  $id: ID!,
-  $name: String,
-  $url: String,
-  $gender: GenderEnum,
-  $birthdate: String,
-  $ethnicity: String,
-  $country: String,
-  $eye_color: String,
-  $height: String,
-  $measurements: String,
-  $fake_tits: String,
-  $career_length: String,
-  $tattoos: String,
-  $piercings: String,
-  $aliases: String,
-  $twitter: String,
-  $instagram: String,
-  $favorite: Boolean,
-  $stash_ids: [StashIDInput!],
-  $image: String) {
+  $input: PerformerUpdateInput!) {
 
-  performerUpdate(input: {
-                            id: $id,
-                            name: $name,
-                            url: $url,
-                            gender: $gender,
-                            birthdate: $birthdate,
-                            ethnicity: $ethnicity,
-                            country: $country,
-                            eye_color: $eye_color,
-                            height: $height,
-                            measurements: $measurements,
-                            fake_tits: $fake_tits,
-                            career_length: $career_length,
-                            tattoos: $tattoos,
-                            piercings: $piercings,
-                            aliases: $aliases,
-                            twitter: $twitter,
-                            instagram: $instagram,
-                            favorite: $favorite,
-                            stash_ids: $stash_ids,
-                            image: $image
-                          }) {
+  performerUpdate(input: $input) {
     ...PerformerData
   }
 }
 
 mutation PerformerDestroy($id: ID!) {
   performerDestroy(input: { id: $id })
+}
+
+mutation PerformersDestroy($ids: [ID!]!) {
+  performersDestroy(ids: $ids)
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stretchr/testify/assert"
 
 	"testing"
@@ -47,6 +46,7 @@ const (
 	date         = "2001-01-01"
 	rating       = 5
 	ocounter     = 2
+	organized    = true
 	details      = "details"
 	size         = "size"
 	duration     = 1.23
@@ -91,32 +91,33 @@ var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 func createFullScene(id int) models.Scene {
 	return models.Scene{
 		ID:         id,
-		Title:      modelstest.NullString(title),
-		AudioCodec: modelstest.NullString(audioCodec),
-		Bitrate:    modelstest.NullInt64(bitrate),
-		Checksum:   modelstest.NullString(checksum),
+		Title:      models.NullString(title),
+		AudioCodec: models.NullString(audioCodec),
+		Bitrate:    models.NullInt64(bitrate),
+		Checksum:   models.NullString(checksum),
 		Date: models.SQLiteDate{
 			String: date,
 			Valid:  true,
 		},
-		Details: modelstest.NullString(details),
+		Details: models.NullString(details),
 		Duration: sql.NullFloat64{
 			Float64: duration,
 			Valid:   true,
 		},
-		Format: modelstest.NullString(format),
+		Format: models.NullString(format),
 		Framerate: sql.NullFloat64{
 			Float64: framerate,
 			Valid:   true,
 		},
-		Height:     modelstest.NullInt64(height),
+		Height:     models.NullInt64(height),
 		OCounter:   ocounter,
-		OSHash:     modelstest.NullString(oshash),
-		Rating:     modelstest.NullInt64(rating),
-		Size:       modelstest.NullString(size),
-		VideoCodec: modelstest.NullString(videoCodec),
-		Width:      modelstest.NullInt64(width),
-		URL:        modelstest.NullString(url),
+		OSHash:     models.NullString(oshash),
+		Rating:     models.NullInt64(rating),
+		Organized:  organized,
+		Size:       models.NullString(size),
+		VideoCodec: models.NullString(videoCodec),
+		Width:      models.NullInt64(width),
+		URL:        models.NullString(url),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},
@@ -140,14 +141,15 @@ func createEmptyScene(id int) models.Scene {
 
 func createFullJSONScene(image string) *jsonschema.Scene {
 	return &jsonschema.Scene{
-		Title:    title,
-		Checksum: checksum,
-		Date:     date,
-		Details:  details,
-		OCounter: ocounter,
-		OSHash:   oshash,
-		Rating:   rating,
-		URL:      url,
+		Title:     title,
+		Checksum:  checksum,
+		Date:      date,
+		Details:   details,
+		OCounter:  ocounter,
+		OSHash:    oshash,
+		Rating:    rating,
+		Organized: organized,
+		URL:       url,
 		File: &jsonschema.SceneFile{
 			AudioCodec: audioCodec,
 			Bitrate:    bitrate,
@@ -210,9 +212,9 @@ func TestToJSON(t *testing.T) {
 
 	imageErr := errors.New("error getting image")
 
-	mockSceneReader.On("GetSceneCover", sceneID).Return(imageBytes, nil).Once()
-	mockSceneReader.On("GetSceneCover", noImageID).Return(nil, nil).Once()
-	mockSceneReader.On("GetSceneCover", errImageID).Return(nil, imageErr).Once()
+	mockSceneReader.On("GetCover", sceneID).Return(imageBytes, nil).Once()
+	mockSceneReader.On("GetCover", noImageID).Return(nil, nil).Once()
+	mockSceneReader.On("GetCover", errImageID).Return(nil, imageErr).Once()
 
 	for i, s := range scenarios {
 		scene := s.input
@@ -232,7 +234,7 @@ func TestToJSON(t *testing.T) {
 
 func createStudioScene(studioID int) models.Scene {
 	return models.Scene{
-		StudioID: modelstest.NullInt64(int64(studioID)),
+		StudioID: models.NullInt64(int64(studioID)),
 	}
 }
 
@@ -266,7 +268,7 @@ func TestGetStudioName(t *testing.T) {
 	studioErr := errors.New("error getting image")
 
 	mockStudioReader.On("Find", studioID).Return(&models.Studio{
-		Name: modelstest.NullString(studioName),
+		Name: models.NullString(studioName),
 	}, nil).Once()
 	mockStudioReader.On("Find", missingStudioID).Return(nil, nil).Once()
 	mockStudioReader.On("Find", errStudioID).Return(nil, studioErr).Once()
@@ -303,33 +305,6 @@ var getGalleryChecksumScenarios = []stringTestScenario{
 		"",
 		true,
 	},
-}
-
-func TestGetGalleryChecksum(t *testing.T) {
-	mockGalleryReader := &mocks.GalleryReaderWriter{}
-
-	galleryErr := errors.New("error getting gallery")
-
-	mockGalleryReader.On("FindBySceneID", sceneID).Return(&models.Gallery{
-		Checksum: galleryChecksum,
-	}, nil).Once()
-	mockGalleryReader.On("FindBySceneID", noGalleryID).Return(nil, nil).Once()
-	mockGalleryReader.On("FindBySceneID", errGalleryID).Return(nil, galleryErr).Once()
-
-	for i, s := range getGalleryChecksumScenarios {
-		scene := s.input
-		json, err := GetGalleryChecksum(mockGalleryReader, &scene)
-
-		if !s.err && err != nil {
-			t.Errorf("[%d] unexpected error: %s", i, err.Error())
-		} else if s.err && err == nil {
-			t.Errorf("[%d] expected error not returned", i)
-		} else {
-			assert.Equal(t, s.expected, json, "[%d]", i)
-		}
-	}
-
-	mockGalleryReader.AssertExpectations(t)
 }
 
 type stringSliceTestScenario struct {
@@ -433,44 +408,44 @@ var getSceneMoviesJSONScenarios = []sceneMoviesTestScenario{
 var validMovies = []models.MoviesScenes{
 	{
 		MovieID:    validMovie1,
-		SceneIndex: modelstest.NullInt64(movie1Scene),
+		SceneIndex: models.NullInt64(movie1Scene),
 	},
 	{
 		MovieID:    validMovie2,
-		SceneIndex: modelstest.NullInt64(movie2Scene),
+		SceneIndex: models.NullInt64(movie2Scene),
 	},
 }
 
 var invalidMovies = []models.MoviesScenes{
 	{
 		MovieID:    invalidMovie,
-		SceneIndex: modelstest.NullInt64(movie1Scene),
+		SceneIndex: models.NullInt64(movie1Scene),
 	},
 }
 
 func TestGetSceneMoviesJSON(t *testing.T) {
 	mockMovieReader := &mocks.MovieReaderWriter{}
-	mockJoinReader := &mocks.JoinReaderWriter{}
+	mockSceneReader := &mocks.SceneReaderWriter{}
 
 	joinErr := errors.New("error getting scene movies")
 	movieErr := errors.New("error getting movie")
 
-	mockJoinReader.On("GetSceneMovies", sceneID).Return(validMovies, nil).Once()
-	mockJoinReader.On("GetSceneMovies", noMoviesID).Return(nil, nil).Once()
-	mockJoinReader.On("GetSceneMovies", errMoviesID).Return(nil, joinErr).Once()
-	mockJoinReader.On("GetSceneMovies", errFindMovieID).Return(invalidMovies, nil).Once()
+	mockSceneReader.On("GetMovies", sceneID).Return(validMovies, nil).Once()
+	mockSceneReader.On("GetMovies", noMoviesID).Return(nil, nil).Once()
+	mockSceneReader.On("GetMovies", errMoviesID).Return(nil, joinErr).Once()
+	mockSceneReader.On("GetMovies", errFindMovieID).Return(invalidMovies, nil).Once()
 
 	mockMovieReader.On("Find", validMovie1).Return(&models.Movie{
-		Name: modelstest.NullString(movie1Name),
+		Name: models.NullString(movie1Name),
 	}, nil).Once()
 	mockMovieReader.On("Find", validMovie2).Return(&models.Movie{
-		Name: modelstest.NullString(movie2Name),
+		Name: models.NullString(movie2Name),
 	}, nil).Once()
 	mockMovieReader.On("Find", invalidMovie).Return(nil, movieErr).Once()
 
 	for i, s := range getSceneMoviesJSONScenarios {
 		scene := s.input
-		json, err := GetSceneMoviesJSON(mockMovieReader, mockJoinReader, &scene)
+		json, err := GetSceneMoviesJSON(mockMovieReader, mockSceneReader, &scene)
 
 		if !s.err && err != nil {
 			t.Errorf("[%d] unexpected error: %s", i, err.Error())

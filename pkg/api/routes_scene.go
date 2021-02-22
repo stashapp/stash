@@ -15,7 +15,9 @@ import (
 	"github.com/stashapp/stash/pkg/utils"
 )
 
-type sceneRoutes struct{}
+type sceneRoutes struct {
+	txnManager models.TransactionManager
+}
 
 func (rs sceneRoutes) Routes() chi.Router {
 	r := chi.NewRouter()
@@ -53,7 +55,7 @@ func getSceneFileContainer(scene *models.Scene) ffmpeg.Container {
 		container = ffmpeg.Container(scene.Format.String)
 	} else { // container isn't in the DB
 		// shouldn't happen, fallback to ffprobe
-		tmpVideoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path)
+		tmpVideoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
 		if err != nil {
 			logger.Errorf("[transcode] error reading video file: %s", err.Error())
 			return ffmpeg.Container("")
@@ -100,7 +102,7 @@ func (rs sceneRoutes) StreamMp4(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) StreamHLS(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 
-	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path)
+	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
 	if err != nil {
 		logger.Errorf("[stream] error reading video file: %s", err.Error())
 		return
@@ -136,7 +138,7 @@ func (rs sceneRoutes) streamTranscode(w http.ResponseWriter, r *http.Request, vi
 
 	// needs to be transcoded
 
-	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path)
+	videoFile, err := ffmpeg.NewVideoFile(manager.GetInstance().FFProbePath, scene.Path, false)
 	if err != nil {
 		logger.Errorf("[stream] error reading video file: %s", err.Error())
 		return
@@ -183,8 +185,11 @@ func (rs sceneRoutes) Screenshot(w http.ResponseWriter, r *http.Request) {
 	if screenshotExists {
 		http.ServeFile(w, r, filepath)
 	} else {
-		qb := models.NewSceneQueryBuilder()
-		cover, _ := qb.GetSceneCover(scene.ID, nil)
+		var cover []byte
+		rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			cover, _ = repo.Scene().GetCover(scene.ID)
+			return nil
+		})
 		utils.ServeImage(cover, w, r)
 	}
 }
@@ -201,28 +206,33 @@ func (rs sceneRoutes) Webp(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, filepath)
 }
 
-func getChapterVttTitle(marker *models.SceneMarker) string {
+func (rs sceneRoutes) getChapterVttTitle(ctx context.Context, marker *models.SceneMarker) string {
 	if marker.Title != "" {
 		return marker.Title
 	}
 
-	qb := models.NewTagQueryBuilder()
-	primaryTag, err := qb.Find(marker.PrimaryTagID, nil)
-	if err != nil {
-		// should not happen
+	var ret string
+	if err := rs.txnManager.WithReadTxn(ctx, func(repo models.ReaderRepository) error {
+		qb := repo.Tag()
+		primaryTag, err := qb.Find(marker.PrimaryTagID)
+		if err != nil {
+			return err
+		}
+
+		ret = primaryTag.Name
+
+		tags, err := qb.FindBySceneMarkerID(marker.ID)
+		if err != nil {
+			return err
+		}
+
+		for _, t := range tags {
+			ret += ", " + t.Name
+		}
+
+		return nil
+	}); err != nil {
 		panic(err)
-	}
-
-	ret := primaryTag.Name
-
-	tags, err := qb.FindBySceneMarkerID(marker.ID, nil)
-	if err != nil {
-		// should not happen
-		panic(err)
-	}
-
-	for _, t := range tags {
-		ret += ", " + t.Name
 	}
 
 	return ret
@@ -230,10 +240,14 @@ func getChapterVttTitle(marker *models.SceneMarker) string {
 
 func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
-	qb := models.NewSceneMarkerQueryBuilder()
-	sceneMarkers, err := qb.FindBySceneID(scene.ID, nil)
-	if err != nil {
-		panic("invalid scene markers for chapter vtt")
+	var sceneMarkers []*models.SceneMarker
+	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		var err error
+		sceneMarkers, err = repo.SceneMarker().FindBySceneID(scene.ID)
+		return err
+	}); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	vttLines := []string{"WEBVTT", ""}
@@ -241,7 +255,7 @@ func (rs sceneRoutes) ChapterVtt(w http.ResponseWriter, r *http.Request) {
 		vttLines = append(vttLines, strconv.Itoa(i+1))
 		time := utils.GetVTTTime(marker.Seconds)
 		vttLines = append(vttLines, time+" --> "+time)
-		vttLines = append(vttLines, getChapterVttTitle(marker))
+		vttLines = append(vttLines, rs.getChapterVttTitle(r.Context(), marker))
 		vttLines = append(vttLines, "")
 	}
 	vtt := strings.Join(vttLines, "\n")
@@ -267,11 +281,14 @@ func (rs sceneRoutes) VttSprite(w http.ResponseWriter, r *http.Request) {
 func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
-	qb := models.NewSceneMarkerQueryBuilder()
-	sceneMarker, err := qb.Find(sceneMarkerID)
-	if err != nil {
-		logger.Warn("Error when getting scene marker for stream")
-		http.Error(w, http.StatusText(404), 404)
+	var sceneMarker *models.SceneMarker
+	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		var err error
+		sceneMarker, err = repo.SceneMarker().Find(sceneMarkerID)
+		return err
+	}); err != nil {
+		logger.Warnf("Error when getting scene marker for stream: %s", err.Error())
+		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPath(scene.GetHash(config.GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
@@ -281,11 +298,14 @@ func (rs sceneRoutes) SceneMarkerStream(w http.ResponseWriter, r *http.Request) 
 func (rs sceneRoutes) SceneMarkerPreview(w http.ResponseWriter, r *http.Request) {
 	scene := r.Context().Value(sceneKey).(*models.Scene)
 	sceneMarkerID, _ := strconv.Atoi(chi.URLParam(r, "sceneMarkerId"))
-	qb := models.NewSceneMarkerQueryBuilder()
-	sceneMarker, err := qb.Find(sceneMarkerID)
-	if err != nil {
-		logger.Warn("Error when getting scene marker for stream")
-		http.Error(w, http.StatusText(404), 404)
+	var sceneMarker *models.SceneMarker
+	if err := rs.txnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+		var err error
+		sceneMarker, err = repo.SceneMarker().Find(sceneMarkerID)
+		return err
+	}); err != nil {
+		logger.Warnf("Error when getting scene marker for stream: %s", err.Error())
+		http.Error(w, http.StatusText(500), 500)
 		return
 	}
 	filepath := manager.GetInstance().Paths.SceneMarkers.GetStreamPreviewImagePath(scene.GetHash(config.GetVideoFileNamingAlgorithm()), int(sceneMarker.Seconds))
@@ -310,17 +330,21 @@ func SceneCtx(next http.Handler) http.Handler {
 		sceneID, _ := strconv.Atoi(sceneIdentifierQueryParam)
 
 		var scene *models.Scene
-		qb := models.NewSceneQueryBuilder()
-		if sceneID == 0 {
-			// determine checksum/os by the length of the query param
-			if len(sceneIdentifierQueryParam) == 32 {
-				scene, _ = qb.FindByChecksum(sceneIdentifierQueryParam)
+		manager.GetInstance().TxnManager.WithReadTxn(r.Context(), func(repo models.ReaderRepository) error {
+			qb := repo.Scene()
+			if sceneID == 0 {
+				// determine checksum/os by the length of the query param
+				if len(sceneIdentifierQueryParam) == 32 {
+					scene, _ = qb.FindByChecksum(sceneIdentifierQueryParam)
+				} else {
+					scene, _ = qb.FindByOSHash(sceneIdentifierQueryParam)
+				}
 			} else {
-				scene, _ = qb.FindByOSHash(sceneIdentifierQueryParam)
+				scene, _ = qb.Find(sceneID)
 			}
-		} else {
-			scene, _ = qb.Find(sceneID)
-		}
+
+			return nil
+		})
 
 		if scene == nil {
 			http.Error(w, http.StatusText(404), 404)

@@ -20,19 +20,23 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
   const Toast = useToast();
   const [rating, setRating] = useState<number>();
   const [studioId, setStudioId] = useState<string>();
-  const [performerMode, setPerformerMode] = React.useState<
-    GQL.BulkUpdateIdMode
-  >(GQL.BulkUpdateIdMode.Add);
+  const [
+    performerMode,
+    setPerformerMode,
+  ] = React.useState<GQL.BulkUpdateIdMode>(GQL.BulkUpdateIdMode.Add);
   const [performerIds, setPerformerIds] = useState<string[]>();
   const [tagMode, setTagMode] = React.useState<GQL.BulkUpdateIdMode>(
     GQL.BulkUpdateIdMode.Add
   );
   const [tagIds, setTagIds] = useState<string[]>();
+  const [organized, setOrganized] = useState<boolean | undefined>();
 
-  const [updateImages] = useBulkImageUpdate(getImageInput());
+  const [updateImages] = useBulkImageUpdate();
 
   // Network state
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const checkboxRef = React.createRef<HTMLInputElement>();
 
   function makeBulkUpdateIds(
     ids: string[],
@@ -61,8 +65,8 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     if (rating === undefined) {
       // and all images have the same rating, then we are unsetting the rating.
       if (aggregateRating) {
-        // an undefined rating is ignored in the server, so set it to 0 instead
-        imageInput.rating = 0;
+        // null rating to unset it
+        imageInput.rating = null;
       }
       // otherwise not setting the rating
     } else {
@@ -75,8 +79,8 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
       // and all images have the same studioId,
       // then unset the studioId, otherwise ignoring studioId
       if (aggregateStudioId) {
-        // an undefined studio_id is ignored in the server, so set it to empty string instead
-        imageInput.studio_id = "";
+        // null studio_id to unset it
+        imageInput.studio_id = null;
       }
     } else {
       // if studioId is set, then we are setting it
@@ -119,13 +123,21 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
       imageInput.tag_ids = makeBulkUpdateIds(tagIds || [], tagMode);
     }
 
+    if (organized !== undefined) {
+      imageInput.organized = organized;
+    }
+
     return imageInput;
   }
 
   async function onSave() {
     setIsUpdating(true);
     try {
-      await updateImages();
+      await updateImages({
+        variables: {
+          input: getImageInput(),
+        },
+      });
       Toast.success({ content: "Updated images" });
       props.onClose(true);
     } catch (e) {
@@ -217,6 +229,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     let updateStudioID: string | undefined;
     let updatePerformerIds: string[] = [];
     let updateTagIds: string[] = [];
+    let updateOrganized: boolean | undefined;
     let first = true;
 
     state.forEach((image: GQL.SlimImageDataFragment) => {
@@ -232,6 +245,7 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
         updateStudioID = imageStudioID;
         updatePerformerIds = imagePerformerIDs;
         updateTagIds = imageTagIDs;
+        updateOrganized = image.organized;
         first = false;
       } else {
         if (imageRating !== updateRating) {
@@ -246,6 +260,9 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
         if (!_.isEqual(imageTagIDs, updateTagIds)) {
           updateTagIds = [];
         }
+        if (image.organized !== updateOrganized) {
+          updateOrganized = undefined;
+        }
       }
     });
 
@@ -258,7 +275,14 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
     if (tagMode === GQL.BulkUpdateIdMode.Set) {
       setTagIds(updateTagIds);
     }
+    setOrganized(updateOrganized);
   }, [props.selected, performerMode, tagMode]);
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = organized === undefined;
+    }
+  }, [organized, checkboxRef]);
 
   function renderMultiSelect(
     type: "performers" | "tags",
@@ -303,6 +327,16 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
         mode={mode}
       />
     );
+  }
+
+  function cycleOrganized() {
+    if (organized) {
+      setOrganized(undefined);
+    } else if (organized === undefined) {
+      setOrganized(false);
+    } else {
+      setOrganized(true);
+    }
   }
 
   function render() {
@@ -353,9 +387,19 @@ export const EditImagesDialog: React.FC<IListOperationProps> = (
             {renderMultiSelect("performers", performerIds)}
           </Form.Group>
 
-          <Form.Group controlId="performers">
+          <Form.Group controlId="tags">
             <Form.Label>Tags</Form.Label>
             {renderMultiSelect("tags", tagIds)}
+          </Form.Group>
+
+          <Form.Group controlId="organized">
+            <Form.Check
+              type="checkbox"
+              label="Organized"
+              checked={organized}
+              ref={checkboxRef}
+              onChange={() => cycleOrganized()}
+            />
           </Form.Group>
         </Form>
       </Modal>

@@ -8,6 +8,7 @@ fragment SlimSceneData on Scene {
   date
   rating
   o_counter
+  organized
   path
 
   file {
@@ -36,7 +37,7 @@ fragment SlimSceneData on Scene {
     seconds
   }
 
-  gallery {
+  galleries {
     id
     path
     title

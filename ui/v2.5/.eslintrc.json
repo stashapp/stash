@@ -16,6 +16,7 @@
       "airbnb-typescript",
       "airbnb/hooks",
       "prettier",
+      "prettier/prettier",
       "prettier/react",
       "prettier/@typescript-eslint"
   ],
@@ -34,6 +35,7 @@
         }
       ],
       "lines-between-class-members": "off",
+      "@typescript-eslint/lines-between-class-members": "off",
       "import/extensions": [
         "error",
         "ignorePackages",

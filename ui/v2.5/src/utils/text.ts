@@ -18,15 +18,6 @@ const Units: Unit[] = [
 ];
 const shortUnits = ["B", "KB", "MB", "GB", "TB", "PB"];
 
-const truncate = (
-  value?: string,
-  limit: number = 100,
-  tail: string = "..."
-) => {
-  if (!value) return "";
-  return value.length > limit ? value.substring(0, limit) + tail : value;
-};
-
 const fileSize = (bytes: number = 0) => {
   if (Number.isNaN(parseFloat(String(bytes))) || !Number.isFinite(bytes))
     return { size: 0, unit: Units[0] };
@@ -47,6 +38,16 @@ const fileSize = (bytes: number = 0) => {
 const formatFileSizeUnit = (u: Unit) => {
   const i = Units.indexOf(u);
   return shortUnits[i];
+};
+
+// returns the number of fractional digits to use when displaying file sizes
+// returns 0 for MB and under, 1 for GB and over.
+const fileSizeFractionalDigits = (unit: Unit) => {
+  if (Units.indexOf(unit) >= 3) {
+    return 1;
+  }
+
+  return 0;
 };
 
 const secondsToTimestamp = (seconds: number) => {
@@ -91,21 +92,46 @@ const bitRate = (bitrate: number) => {
   return `${megabits.toFixed(2)} megabits per second`;
 };
 
-const resolution = (height: number) => {
-  if (height >= 240 && height < 480) {
-    return "240p";
+const resolution = (width: number, height: number) => {
+  const number = width > height ? height : width;
+  if (number >= 4320) {
+    return "8K";
   }
-  if (height >= 480 && height < 720) {
-    return "480p";
+  if (number >= 3384) {
+    return "6K";
   }
-  if (height >= 720 && height < 1080) {
-    return "720p";
+  if (number >= 2880) {
+    return "5K";
   }
-  if (height >= 1080 && height < 2160) {
+  if (number >= 2160) {
+    return "4K";
+  }
+  if (number >= 1920) {
+    return "1920p";
+  }
+  if (number >= 1440) {
+    return "1440p";
+  }
+  if (number >= 1080) {
     return "1080p";
   }
-  if (height >= 2160) {
-    return "4K";
+  if (number >= 720) {
+    return "720p";
+  }
+  if (number >= 540) {
+    return "540p";
+  }
+  if (number >= 480) {
+    return "480p";
+  }
+  if (number >= 360) {
+    return "360p";
+  }
+  if (number >= 240) {
+    return "240p";
+  }
+  if (number >= 144) {
+    return "144p";
   }
 };
 
@@ -145,9 +171,9 @@ const formatDate = (intl: IntlShape, date?: string) => {
 };
 
 const TextUtils = {
-  truncate,
   fileSize,
   formatFileSizeUnit,
+  fileSizeFractionalDigits,
   secondsToTimestamp,
   fileNameFromPath,
   age: getAge,

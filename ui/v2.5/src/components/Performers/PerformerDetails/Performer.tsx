@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Tabs, Tab } from "react-bootstrap";
 import { useParams, useHistory } from "react-router-dom";
 import cx from "classnames";
+import Mousetrap from "mousetrap";
 import * as GQL from "src/core/generated-graphql";
 import {
   useFindPerformer,
   usePerformerUpdate,
-  usePerformerCreate,
   usePerformerDestroy,
 } from "src/core/StashService";
 import {
@@ -15,12 +15,12 @@ import {
   Icon,
   LoadingIndicator,
 } from "src/components/Shared";
-import { useToast } from "src/hooks";
+import { useLightbox, useToast } from "src/hooks";
 import { TextUtils } from "src/utils";
-import FsLightbox from "fslightbox-react";
 import { PerformerDetailsPanel } from "./PerformerDetailsPanel";
 import { PerformerOperationsPanel } from "./PerformerOperationsPanel";
 import { PerformerScenesPanel } from "./PerformerScenesPanel";
+import { PerformerGalleriesPanel } from "./PerformerGalleriesPanel";
 import { PerformerImagesPanel } from "./PerformerImagesPanel";
 
 interface IPerformerParams {
@@ -37,7 +37,6 @@ export const Performer: React.FC = () => {
   // Performer state
   const [imagePreview, setImagePreview] = useState<string | null>();
   const [imageEncoding, setImageEncoding] = useState<boolean>(false);
-  const [lightboxToggle, setLightboxToggle] = useState(false);
   const { data, loading: performerLoading, error } = useFindPerformer(id);
   const performer = data?.findPerformer || ({} as Partial<GQL.Performer>);
 
@@ -48,17 +47,25 @@ export const Performer: React.FC = () => {
     imagePreview === undefined
       ? performer.image_path ?? ""
       : imagePreview ?? `${performer.image_path}?default=true`;
+  const lightboxImages = useMemo(
+    () => [{ paths: { thumbnail: activeImage, image: activeImage } }],
+    [activeImage]
+  );
+
+  const showLightbox = useLightbox({
+    images: lightboxImages,
+  });
 
   // Network state
   const [loading, setIsLoading] = useState(false);
   const isLoading = performerLoading || loading;
 
   const [updatePerformer] = usePerformerUpdate();
-  const [createPerformer] = usePerformerCreate();
   const [deletePerformer] = usePerformerDestroy();
 
   const activeTabKey =
     tab === "scenes" ||
+    tab === "galleries" ||
     tab === "images" ||
     tab === "edit" ||
     tab === "operations"
@@ -80,6 +87,7 @@ export const Performer: React.FC = () => {
     Mousetrap.bind("a", () => setActiveTabKey("details"));
     Mousetrap.bind("e", () => setActiveTabKey("edit"));
     Mousetrap.bind("c", () => setActiveTabKey("scenes"));
+    Mousetrap.bind("g", () => setActiveTabKey("galleries"));
     Mousetrap.bind("o", () => setActiveTabKey("operations"));
     Mousetrap.bind("f", () => setFavorite(!performer.favorite));
 
@@ -96,41 +104,6 @@ export const Performer: React.FC = () => {
   if (error) return <ErrorMessage error={error.message} />;
   if (!performer.id && !isNew)
     return <ErrorMessage error={`No performer found with id ${id}.`} />;
-
-  async function onSave(
-    performerInput:
-      | Partial<GQL.PerformerCreateInput>
-      | Partial<GQL.PerformerUpdateInput>
-  ) {
-    setIsLoading(true);
-    try {
-      if (!isNew) {
-        await updatePerformer({
-          variables: {
-            ...performerInput,
-            stash_ids: (performerInput?.stash_ids ?? []).map((s) => ({
-              endpoint: s.endpoint,
-              stash_id: s.stash_id,
-            })),
-          } as GQL.PerformerUpdateInput,
-        });
-        if (performerInput.image) {
-          // Refetch image to bust browser cache
-          await fetch(`/performer/${id}/image`, { cache: "reload" });
-        }
-      } else {
-        const result = await createPerformer({
-          variables: performerInput as GQL.PerformerCreateInput,
-        });
-        if (result.data?.performerCreate) {
-          history.push(`/performers/${result.data.performerCreate.id}`);
-        }
-      }
-    } catch (e) {
-      Toast.error(e);
-    }
-    setIsLoading(false);
-  }
 
   async function onDelete() {
     setIsLoading(true);
@@ -162,6 +135,9 @@ export const Performer: React.FC = () => {
       <Tab eventKey="scenes" title="Scenes">
         <PerformerScenesPanel performer={performer} />
       </Tab>
+      <Tab eventKey="galleries" title="Galleries">
+        <PerformerGalleriesPanel performer={performer} />
+      </Tab>
       <Tab eventKey="images" title="Images">
         <PerformerImagesPanel performer={performer} />
       </Tab>
@@ -172,7 +148,6 @@ export const Performer: React.FC = () => {
           isVisible={activeTabKey === "edit"}
           isNew={isNew}
           onDelete={onDelete}
-          onSave={onSave}
           onImageChange={onImageChange}
           onImageEncoding={onImageEncoding}
         />
@@ -208,7 +183,16 @@ export const Performer: React.FC = () => {
   }
 
   function setFavorite(v: boolean) {
-    onSave({ ...performer, favorite: v });
+    if (performer.id) {
+      updatePerformer({
+        variables: {
+          input: {
+            id: performer.id,
+            favorite: v,
+          },
+        },
+      });
+    }
   }
 
   const renderIcons = () => (
@@ -288,7 +272,6 @@ export const Performer: React.FC = () => {
             isVisible
             isNew={isNew}
             onDelete={onDelete}
-            onSave={onSave}
             onImageChange={onImageChange}
             onImageEncoding={onImageEncoding}
           />
@@ -306,10 +289,7 @@ export const Performer: React.FC = () => {
         {imageEncoding ? (
           <LoadingIndicator message="Encoding image..." />
         ) : (
-          <Button
-            variant="link"
-            onClick={() => setLightboxToggle(!lightboxToggle)}
-          >
+          <Button variant="link" onClick={() => showLightbox()}>
             <img className="performer" src={activeImage} alt="Performer" />
           </Button>
         )}
@@ -330,7 +310,6 @@ export const Performer: React.FC = () => {
           <div className="performer-tabs">{renderTabs()}</div>
         </div>
       </div>
-      <FsLightbox toggler={lightboxToggle} sources={[activeImage]} />
     </div>
   );
 };

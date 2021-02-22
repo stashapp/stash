@@ -16,6 +16,7 @@ type Scene struct {
 	URL         sql.NullString      `db:"url" json:"url"`
 	Date        SQLiteDate          `db:"date" json:"date"`
 	Rating      sql.NullInt64       `db:"rating" json:"rating"`
+	Organized   bool                `db:"organized" json:"organized"`
 	OCounter    int                 `db:"o_counter" json:"o_counter"`
 	Size        sql.NullString      `db:"size" json:"size"`
 	Duration    sql.NullFloat64     `db:"duration" json:"duration"`
@@ -44,6 +45,7 @@ type ScenePartial struct {
 	URL         *sql.NullString      `db:"url" json:"url"`
 	Date        *SQLiteDate          `db:"date" json:"date"`
 	Rating      *sql.NullInt64       `db:"rating" json:"rating"`
+	Organized   *bool                `db:"organized" json:"organized"`
 	Size        *sql.NullString      `db:"size" json:"size"`
 	Duration    *sql.NullFloat64     `db:"duration" json:"duration"`
 	VideoCodec  *sql.NullString      `db:"video_codec" json:"video_codec"`
@@ -92,4 +94,14 @@ type SceneFileType struct {
 	Height     *int     `graphql:"height" json:"height"`
 	Framerate  *float64 `graphql:"framerate" json:"framerate"`
 	Bitrate    *int     `graphql:"bitrate" json:"bitrate"`
+}
+
+type Scenes []*Scene
+
+func (s *Scenes) Append(o interface{}) {
+	*s = append(*s, o.(*Scene))
+}
+
+func (s *Scenes) New() interface{} {
+	return &Scene{}
 }

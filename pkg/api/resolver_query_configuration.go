@@ -49,6 +49,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 		CachePath:                  config.GetCachePath(),
 		CalculateMd5:               config.IsCalculateMD5(),
 		VideoFileNamingAlgorithm:   config.GetVideoFileNamingAlgorithm(),
+		ParallelTasks:              config.GetParallelTasks(),
 		PreviewSegments:            config.GetPreviewSegments(),
 		PreviewSegmentDuration:     config.GetPreviewSegmentDuration(),
 		PreviewExcludeStart:        config.GetPreviewExcludeStart(),
@@ -76,6 +77,7 @@ func makeConfigGeneralResult() *models.ConfigGeneralResult {
 }
 
 func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
+	menuItems := config.GetMenuItems()
 	soundOnPreview := config.GetSoundOnPreview()
 	wallShowTitle := config.GetWallShowTitle()
 	wallPlayback := config.GetWallPlayback()
@@ -87,6 +89,7 @@ func makeConfigInterfaceResult() *models.ConfigInterfaceResult {
 	language := config.GetLanguage()
 
 	return &models.ConfigInterfaceResult{
+		MenuItems:           menuItems,
 		SoundOnPreview:      &soundOnPreview,
 		WallShowTitle:       &wallShowTitle,
 		WallPlayback:        &wallPlayback,

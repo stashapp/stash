@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
-import { FindStudiosQueryResult } from "src/core/generated-graphql";
+import Mousetrap from "mousetrap";
+import {
+  FindStudiosQueryResult,
+  SlimStudioDataFragment,
+} from "src/core/generated-graphql";
 import { useStudiosList } from "src/hooks";
 import { showWhenSelected } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { queryFindStudios } from "src/core/StashService";
-import { ExportDialog } from "../Shared/ExportDialog";
+import { queryFindStudios, useStudiosDestroy } from "src/core/StashService";
+import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
 import { StudioCard } from "./StudioCard";
 
 interface IStudioList {
@@ -108,6 +112,19 @@ export const StudioList: React.FC<IStudioList> = ({
     }
   }
 
+  const renderDeleteDialog = (
+    selectedStudios: SlimStudioDataFragment[],
+    onClose: (confirmed: boolean) => void
+  ) => (
+    <DeleteEntityDialog
+      selected={selectedStudios}
+      onClose={onClose}
+      singularEntity="studio"
+      pluralEntity="studios"
+      destroyMutation={useStudiosDestroy}
+    />
+  );
+
   const listData = useStudiosList({
     renderContent,
     filterHook,
@@ -115,6 +132,7 @@ export const StudioList: React.FC<IStudioList> = ({
     otherOperations,
     selectable: true,
     persistState: !fromParent,
+    renderDeleteDialog,
   });
 
   function renderStudios(

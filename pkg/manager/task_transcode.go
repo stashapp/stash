@@ -1,12 +1,13 @@
 package manager
 
 import (
+	"github.com/remeh/sizedwaitgroup"
+
 	"github.com/stashapp/stash/pkg/ffmpeg"
 	"github.com/stashapp/stash/pkg/logger"
 	"github.com/stashapp/stash/pkg/manager/config"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/utils"
-	"sync"
 )
 
 type GenerateTranscodeTask struct {
@@ -15,7 +16,7 @@ type GenerateTranscodeTask struct {
 	fileNamingAlgorithm models.HashAlgorithm
 }
 
-func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
+func (t *GenerateTranscodeTask) Start(wg *sizedwaitgroup.SizedWaitGroup) {
 	defer wg.Done()
 
 	hasTranscode := HasTranscode(&t.Scene, t.fileNamingAlgorithm)
@@ -29,7 +30,7 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 		container = ffmpeg.Container(t.Scene.Format.String)
 	} else { // container isn't in the DB
 		// shouldn't happen unless user hasn't scanned after updating to PR#384+ version
-		tmpVideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path)
+		tmpVideoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
 		if err != nil {
 			logger.Errorf("[transcode] error reading video file: %s", err.Error())
 			return
@@ -48,7 +49,7 @@ func (t *GenerateTranscodeTask) Start(wg *sync.WaitGroup) {
 		return
 	}
 
-	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path)
+	videoFile, err := ffmpeg.NewVideoFile(instance.FFProbePath, t.Scene.Path, false)
 	if err != nil {
 		logger.Errorf("[transcode] error reading video file: %s", err.Error())
 		return

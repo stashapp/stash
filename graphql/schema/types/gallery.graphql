@@ -8,7 +8,8 @@ type Gallery {
   date: String
   details: String
   rating: Int
-  scene: Scene
+  organized: Boolean!
+  scenes: [Scene!]!
   studio: Studio
   image_count: Int!
   tags: [Tag!]!
@@ -31,7 +32,8 @@ input GalleryCreateInput {
   date: String
   details: String
   rating: Int
-  scene_id: ID
+  organized: Boolean
+  scene_ids: [ID!]
   studio_id: ID
   tag_ids: [ID!]
   performer_ids: [ID!]
@@ -45,7 +47,8 @@ input GalleryUpdateInput {
   date: String
   details: String
   rating: Int
-  scene_id: ID
+  organized: Boolean
+  scene_ids: [ID!]
   studio_id: ID
   tag_ids: [ID!]
   performer_ids: [ID!]
@@ -58,7 +61,8 @@ input BulkGalleryUpdateInput {
   date: String
   details: String
   rating: Int
-  scene_id: ID
+  organized: Boolean
+  scene_ids: BulkUpdateIds
   studio_id: ID
   tag_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds

@@ -1,13 +1,20 @@
 import _ from "lodash";
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
-import { FindPerformersQueryResult } from "src/core/generated-graphql";
-import { queryFindPerformers } from "src/core/StashService";
+import Mousetrap from "mousetrap";
+import {
+  FindPerformersQueryResult,
+  SlimPerformerDataFragment,
+} from "src/core/generated-graphql";
+import {
+  queryFindPerformers,
+  usePerformersDestroy,
+} from "src/core/StashService";
 import { usePerformersList } from "src/hooks";
 import { showWhenSelected } from "src/hooks/ListHook";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { ExportDialog } from "src/components/Shared/ExportDialog";
+import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
 import { PerformerCard } from "./PerformerCard";
 import { PerformerListTable } from "./PerformerListTable";
 
@@ -75,12 +82,26 @@ export const PerformerList: React.FC = () => {
     }
   }
 
+  const renderDeleteDialog = (
+    selectedPerformers: SlimPerformerDataFragment[],
+    onClose: (confirmed: boolean) => void
+  ) => (
+    <DeleteEntityDialog
+      selected={selectedPerformers}
+      onClose={onClose}
+      singularEntity="performer"
+      pluralEntity="performers"
+      destroyMutation={usePerformersDestroy}
+    />
+  );
+
   const listData = usePerformersList({
     otherOperations,
     renderContent,
     addKeybinds,
     selectable: true,
     persistState: true,
+    renderDeleteDialog,
   });
 
   async function getRandom(

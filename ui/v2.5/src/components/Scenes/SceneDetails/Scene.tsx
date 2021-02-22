@@ -10,22 +10,25 @@ import {
   useSceneResetO,
   useSceneStreams,
   useSceneGenerateScreenshot,
+  useSceneUpdate,
 } from "src/core/StashService";
 import { GalleryViewer } from "src/components/Galleries/GalleryViewer";
 import { ErrorMessage, LoadingIndicator, Icon } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { ScenePlayer } from "src/components/ScenePlayer";
 import { TextUtils, JWUtils } from "src/utils";
-import * as Mousetrap from "mousetrap";
+import Mousetrap from "mousetrap";
 import { SceneMarkersPanel } from "./SceneMarkersPanel";
 import { SceneFileInfoPanel } from "./SceneFileInfoPanel";
 import { SceneEditPanel } from "./SceneEditPanel";
 import { SceneDetailPanel } from "./SceneDetailPanel";
 import { OCounterButton } from "./OCounterButton";
 import { SceneMoviePanel } from "./SceneMoviePanel";
+import { SceneGalleriesPanel } from "./SceneGalleriesPanel";
 import { DeleteScenesDialog } from "../DeleteScenesDialog";
 import { SceneGenerateDialog } from "../SceneGenerateDialog";
 import { SceneVideoFilterPanel } from "./SceneVideoFilterPanel";
+import { OrganizedButton } from "./OrganizedButton";
 
 interface ISceneParams {
   id?: string;
@@ -36,6 +39,7 @@ export const Scene: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const Toast = useToast();
+  const [updateScene] = useSceneUpdate();
   const [generateScreenshot] = useSceneGenerateScreenshot();
   const [timestamp, setTimestamp] = useState<number>(getInitialTimestamp());
   const [collapsed, setCollapsed] = useState(false);
@@ -51,6 +55,8 @@ export const Scene: React.FC = () => {
   const [incrementO] = useSceneIncrementO(scene?.id ?? "0");
   const [decrementO] = useSceneDecrementO(scene?.id ?? "0");
   const [resetO] = useSceneResetO(scene?.id ?? "0");
+
+  const [organizedLoading, setOrganizedLoading] = useState(false);
 
   const [activeTabKey, setActiveTabKey] = useState("scene-details-panel");
 
@@ -68,6 +74,24 @@ export const Scene: React.FC = () => {
       10
     );
   }
+
+  const onOrganizedClick = async () => {
+    try {
+      setOrganizedLoading(true);
+      await updateScene({
+        variables: {
+          input: {
+            id: scene?.id ?? "",
+            organized: !scene?.organized,
+          },
+        },
+      });
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setOrganizedLoading(false);
+    }
+  };
 
   const onIncrementClick = async () => {
     try {
@@ -220,13 +244,16 @@ export const Scene: React.FC = () => {
             ) : (
               ""
             )}
-            {scene.gallery ? (
+            {scene.galleries.length === 1 ? (
               <Nav.Item>
                 <Nav.Link eventKey="scene-gallery-panel">Gallery</Nav.Link>
               </Nav.Item>
-            ) : (
-              ""
-            )}
+            ) : undefined}
+            {scene.galleries.length > 1 ? (
+              <Nav.Item>
+                <Nav.Link eventKey="scene-galleries-panel">Galleries</Nav.Link>
+              </Nav.Item>
+            ) : undefined}
             <Nav.Item>
               <Nav.Link eventKey="scene-video-filter-panel">Filters</Nav.Link>
             </Nav.Item>
@@ -246,43 +273,52 @@ export const Scene: React.FC = () => {
                   onReset={onResetClick}
                 />
               </Nav.Item>
+              <Nav.Item>
+                <OrganizedButton
+                  loading={organizedLoading}
+                  organized={scene.organized}
+                  onClick={onOrganizedClick}
+                />
+              </Nav.Item>
               <Nav.Item>{renderOperations()}</Nav.Item>
             </ButtonGroup>
           </Nav>
         </div>
 
         <Tab.Content>
-          <Tab.Pane eventKey="scene-details-panel" title="Details">
+          <Tab.Pane eventKey="scene-details-panel">
             <SceneDetailPanel scene={scene} />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-markers-panel" title="Markers">
+          <Tab.Pane eventKey="scene-markers-panel">
             <SceneMarkersPanel
               scene={scene}
               onClickMarker={onClickMarker}
               isVisible={activeTabKey === "scene-markers-panel"}
             />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-movie-panel" title="Movies">
+          <Tab.Pane eventKey="scene-movie-panel">
             <SceneMoviePanel scene={scene} />
           </Tab.Pane>
-          {scene.gallery ? (
-            <Tab.Pane eventKey="scene-gallery-panel" title="Gallery">
-              <GalleryViewer gallery={scene.gallery} />
+          {scene.galleries.length === 1 && (
+            <Tab.Pane eventKey="scene-gallery-panel">
+              <GalleryViewer galleryId={scene.galleries[0].id} />
             </Tab.Pane>
-          ) : (
-            ""
           )}
-          <Tab.Pane eventKey="scene-video-filter-panel" title="Filter">
+          {scene.galleries.length > 1 && (
+            <Tab.Pane eventKey="scene-galleries-panel">
+              <SceneGalleriesPanel galleries={scene.galleries} />
+            </Tab.Pane>
+          )}
+          <Tab.Pane eventKey="scene-video-filter-panel">
             <SceneVideoFilterPanel scene={scene} />
           </Tab.Pane>
           <Tab.Pane
             className="file-info-panel"
             eventKey="scene-file-info-panel"
-            title="File Info"
           >
             <SceneFileInfoPanel scene={scene} />
           </Tab.Pane>
-          <Tab.Pane eventKey="scene-edit-panel" title="Edit">
+          <Tab.Pane eventKey="scene-edit-panel">
             <SceneEditPanel
               isVisible={activeTabKey === "scene-edit-panel"}
               scene={scene}

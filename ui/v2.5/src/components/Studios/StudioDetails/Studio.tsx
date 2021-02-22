@@ -2,6 +2,7 @@ import { Table, Tabs, Tab } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useParams, useHistory, Link } from "react-router-dom";
 import cx from "classnames";
+import Mousetrap from "mousetrap";
 
 import * as GQL from "src/core/generated-graphql";
 import {
@@ -20,6 +21,7 @@ import {
 } from "src/components/Shared";
 import { useToast } from "src/hooks";
 import { StudioScenesPanel } from "./StudioScenesPanel";
+import { StudioGalleriesPanel } from "./StudioGalleriesPanel";
 import { StudioImagesPanel } from "./StudioImagesPanel";
 import { StudioChildrenPanel } from "./StudioChildrenPanel";
 
@@ -49,9 +51,7 @@ export const Studio: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>();
 
   const { data, error, loading } = useFindStudio(id);
-  const [updateStudio] = useStudioUpdate(
-    getStudioInput() as GQL.StudioUpdateInput
-  );
+  const [updateStudio] = useStudioUpdate();
   const [createStudio] = useStudioCreate(
     getStudioInput() as GQL.StudioCreateInput
   );
@@ -116,8 +116,8 @@ export const Studio: React.FC = () => {
     const input: Partial<GQL.StudioCreateInput | GQL.StudioUpdateInput> = {
       name,
       url,
-      parent_id: parentStudioId,
       image,
+      parent_id: parentStudioId ?? null,
     };
 
     if (!isNew) {
@@ -129,7 +129,15 @@ export const Studio: React.FC = () => {
   async function onSave() {
     try {
       if (!isNew) {
-        const result = await updateStudio();
+        const result = await updateStudio({
+          variables: {
+            input: getStudioInput() as GQL.StudioUpdateInput,
+          },
+        });
+        if (result.data?.studioUpdate?.image_path)
+          await fetch(result.data?.studioUpdate?.image_path, {
+            cache: "reload",
+          });
         if (result.data?.studioUpdate) {
           updateStudioData(result.data.studioUpdate);
           setIsEditing(false);
@@ -232,7 +240,9 @@ export const Studio: React.FC = () => {
   }
 
   const activeTabKey =
-    tab === "childstudios" || tab === "images" ? tab : "scenes";
+    tab === "childstudios" || tab === "images" || tab === "galleries"
+      ? tab
+      : "scenes";
   const setActiveTabKey = (newTab: string | null) => {
     if (tab !== newTab) {
       const tabParam = newTab === "scenes" ? "" : `/${newTab}`;
@@ -249,6 +259,7 @@ export const Studio: React.FC = () => {
           }
           ids={parentStudioId ? [parentStudioId] : []}
           isDisabled={!isEditing}
+          excludeIds={studio.id ? [studio.id] : []}
         />
       );
     }
@@ -327,6 +338,9 @@ export const Studio: React.FC = () => {
           >
             <Tab eventKey="scenes" title="Scenes">
               <StudioScenesPanel studio={studio} />
+            </Tab>
+            <Tab eventKey="galleries" title="Galleries">
+              <StudioGalleriesPanel studio={studio} />
             </Tab>
             <Tab eventKey="images" title="Images">
               <StudioImagesPanel studio={studio} />

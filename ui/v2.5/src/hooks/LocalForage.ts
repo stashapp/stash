@@ -2,17 +2,13 @@ import localForage from "localforage";
 import _ from "lodash";
 import React, { Dispatch, SetStateAction, useEffect } from "react";
 
-interface IInterfaceWallConfig {}
 interface IInterfaceQueryConfig {
   filter: string;
   itemsPerPage: number;
   currentPage: number;
 }
 
-export interface IInterfaceConfig {
-  wall?: IInterfaceWallConfig;
-  queries?: Record<string, IInterfaceQueryConfig>;
-}
+type IInterfaceConfig = Record<string, IInterfaceQueryConfig>;
 
 export interface IChangelogConfig {
   versions: Record<string, boolean>;
@@ -27,8 +23,9 @@ interface ILocalForage<T> {
 const Loading: Record<string, boolean> = {};
 const Cache: Record<string, {}> = {};
 
-function useLocalForage<T>(
-  key: string
+export function useLocalForage<T>(
+  key: string,
+  defaultValue: T = {} as T
 ): [ILocalForage<T>, Dispatch<SetStateAction<T>>] {
   const [error, setError] = React.useState(null);
   const [data, setData] = React.useState<T>(Cache[key] as T);
@@ -43,27 +40,32 @@ function useLocalForage<T>(
           setData(parsed);
           Cache[key] = parsed;
         } else {
-          setData({} as T);
-          Cache[key] = {};
+          setData(defaultValue);
+          Cache[key] = defaultValue;
         }
         setError(null);
       } catch (err) {
         setError(err);
+        Cache[key] = defaultValue;
       } finally {
         Loading[key] = false;
         setLoading(false);
       }
     }
+
     if (!loading && !Cache[key]) {
       Loading[key] = true;
       setLoading(true);
       runAsync();
     }
-  }, [loading, data, key]);
+  }, [loading, key, defaultValue]);
 
   useEffect(() => {
     if (!_.isEqual(Cache[key], data)) {
-      Cache[key] = _.merge(Cache[key], data);
+      Cache[key] = {
+        ...Cache[key],
+        ...data,
+      };
       localForage.setItem(key, JSON.stringify(Cache[key]));
     }
   });

@@ -9,6 +9,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
   cachePath
   calculateMD5
   videoFileNamingAlgorithm
+  parallelTasks
   previewSegments
   previewSegmentDuration
   previewExcludeStart
@@ -39,6 +40,7 @@ fragment ConfigGeneralData on ConfigGeneralResult {
 }
 
 fragment ConfigInterfaceData on ConfigInterfaceResult {
+  menuItems
   soundOnPreview
   wallShowTitle
   wallPlayback

@@ -4,7 +4,7 @@ import React from "react";
 import { Button, Table } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import * as GQL from "src/core/generated-graphql";
-import { Icon } from "src/components/Shared";
+import { Icon, TruncatedText } from "src/components/Shared";
 import { NavUtils } from "src/utils";
 
 interface IPerformerListTableProps {
@@ -27,7 +27,9 @@ export const PerformerListTable: React.FC<IPerformerListTableProps> = (
       </td>
       <td className="text-left">
         <Link to={`/performers/${performer.id}`}>
-          <h5 className="text-truncate">{performer.name}</h5>
+          <h5>
+            <TruncatedText text={performer.name} />
+          </h5>
         </Link>
       </td>
       <td>{performer.aliases ? performer.aliases : ""}</td>

@@ -32,6 +32,7 @@ type Scene {
   url: String
   date: String
   rating: Int
+  organized: Boolean!
   o_counter: Int
   path: String!
 
@@ -39,7 +40,7 @@ type Scene {
   paths: ScenePathsType! # Resolver
 
   scene_markers: [SceneMarker!]!
-  gallery: Gallery
+  galleries: [Gallery!]!
   studio: Studio
   movies: [SceneMovie!]!
   tags: [Tag!]!
@@ -60,8 +61,9 @@ input SceneUpdateInput {
   url: String
   date: String
   rating: Int
+  organized: Boolean
   studio_id: ID
-  gallery_id: ID
+  gallery_ids: [ID!]
   performer_ids: [ID!]
   movies: [SceneMovieInput!]
   tag_ids: [ID!]
@@ -89,8 +91,9 @@ input BulkSceneUpdateInput {
   url: String
   date: String
   rating: Int
+  organized: Boolean
   studio_id: ID
-  gallery_id: ID
+  gallery_ids: BulkUpdateIds
   performer_ids: BulkUpdateIds
   tag_ids: BulkUpdateIds
 }
@@ -131,7 +134,7 @@ type SceneParserResult {
   date: String
   rating: Int
   studio_id: ID
-  gallery_id: ID
+  gallery_ids: [ID!]
   performer_ids: [ID!]
   movies: [SceneMovieID!]
   tag_ids: [ID!]

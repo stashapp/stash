@@ -6,7 +6,6 @@ import (
 	"github.com/stashapp/stash/pkg/manager/jsonschema"
 	"github.com/stashapp/stash/pkg/models"
 	"github.com/stashapp/stash/pkg/models/mocks"
-	"github.com/stashapp/stash/pkg/models/modelstest"
 	"github.com/stretchr/testify/assert"
 
 	"testing"
@@ -39,13 +38,14 @@ const (
 )
 
 const (
-	checksum = "checksum"
-	title    = "title"
-	rating   = 5
-	ocounter = 2
-	size     = 123
-	width    = 100
-	height   = 100
+	checksum  = "checksum"
+	title     = "title"
+	rating    = 5
+	organized = true
+	ocounter  = 2
+	size      = 123
+	width     = 100
+	height    = 100
 )
 
 const (
@@ -63,14 +63,15 @@ var updateTime time.Time = time.Date(2002, 01, 01, 0, 0, 0, 0, time.UTC)
 
 func createFullImage(id int) models.Image {
 	return models.Image{
-		ID:       id,
-		Title:    modelstest.NullString(title),
-		Checksum: checksum,
-		Height:   modelstest.NullInt64(height),
-		OCounter: ocounter,
-		Rating:   modelstest.NullInt64(rating),
-		Size:     modelstest.NullInt64(int64(size)),
-		Width:    modelstest.NullInt64(width),
+		ID:        id,
+		Title:     models.NullString(title),
+		Checksum:  checksum,
+		Height:    models.NullInt64(height),
+		OCounter:  ocounter,
+		Rating:    models.NullInt64(rating),
+		Size:      models.NullInt64(int64(size)),
+		Organized: organized,
+		Width:     models.NullInt64(width),
 		CreatedAt: models.SQLiteTimestamp{
 			Timestamp: createTime,
 		},
@@ -94,10 +95,11 @@ func createEmptyImage(id int) models.Image {
 
 func createFullJSONImage() *jsonschema.Image {
 	return &jsonschema.Image{
-		Title:    title,
-		Checksum: checksum,
-		OCounter: ocounter,
-		Rating:   rating,
+		Title:     title,
+		Checksum:  checksum,
+		OCounter:  ocounter,
+		Rating:    rating,
+		Organized: organized,
 		File: &jsonschema.ImageFile{
 			Height: height,
 			Size:   size,
@@ -147,7 +149,7 @@ func TestToJSON(t *testing.T) {
 
 func createStudioImage(studioID int) models.Image {
 	return models.Image{
-		StudioID: modelstest.NullInt64(int64(studioID)),
+		StudioID: models.NullInt64(int64(studioID)),
 	}
 }
 
@@ -181,7 +183,7 @@ func TestGetStudioName(t *testing.T) {
 	studioErr := errors.New("error getting image")
 
 	mockStudioReader.On("Find", studioID).Return(&models.Studio{
-		Name: modelstest.NullString(studioName),
+		Name: models.NullString(studioName),
 	}, nil).Once()
 	mockStudioReader.On("Find", missingStudioID).Return(nil, nil).Once()
 	mockStudioReader.On("Find", errStudioID).Return(nil, studioErr).Once()

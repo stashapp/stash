@@ -1,5 +1,6 @@
 import React from "react";
 import * as GQL from "src/core/generated-graphql";
+import { TruncatedText } from "src/components/Shared";
 
 interface IGalleryFileInfoPanelProps {
   gallery: GQL.GalleryDataFragment;
@@ -12,21 +13,20 @@ export const GalleryFileInfoPanel: React.FC<IGalleryFileInfoPanelProps> = (
     return (
       <div className="row">
         <span className="col-4">Checksum</span>
-        <span className="col-8 text-truncate">{props.gallery.checksum}</span>
+        <TruncatedText className="col-8" text={props.gallery.checksum} />
       </div>
     );
   }
 
   function renderPath() {
-    const {
-      gallery: { path },
-    } = props;
+    const filePath = `file://${props.gallery.path}`;
+
     return (
       <div className="row">
         <span className="col-4">Path</span>
-        <span className="col-8 text-truncate">
-          <a href={`file://${path}`}>{`file://${props.gallery.path}`}</a>{" "}
-        </span>
+        <a href={filePath} className="col-8">
+          <TruncatedText text={filePath} />
+        </a>
       </div>
     );
   }

@@ -6,17 +6,26 @@ enum SortDirectionEnum {
 input FindFilterType {
   q: String
   page: Int
+  """use per_page = 0 to indicate all results. Defaults to 25."""
   per_page: Int
   sort: String
   direction: SortDirectionEnum
 }
 
 enum ResolutionEnum {
+  "144p", VERY_LOW
   "240p", LOW
+  "360p", R360P
   "480p", STANDARD
+  "540p", WEB_HD
   "720p", STANDARD_HD
   "1080p", FULL_HD
+  "1440p", QUAD_HD
+  "1920p", VR_HD
   "4k", FOUR_K
+  "5k", FIVE_K
+  "6k", SIX_K
+  "8k", EIGHT_K
 }
 
 input PerformerFilterType {
@@ -70,6 +79,8 @@ input SceneFilterType {
   path: StringCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by organized"""
+  organized: Boolean
   """Filter by o-counter"""
   o_counter: IntCriterionInput
   """Filter by resolution"""
@@ -117,6 +128,8 @@ input GalleryFilterType {
   is_zip: Boolean
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by organized"""
+  organized: Boolean
   """Filter by average image resolution"""
   average_resolution: ResolutionEnum
   """Filter to only include scenes with this studio"""
@@ -145,6 +158,8 @@ input ImageFilterType {
   path: StringCriterionInput
   """Filter by rating"""
   rating: IntCriterionInput
+  """Filter by organized"""
+  organized: Boolean
   """Filter by o-counter"""
   o_counter: IntCriterionInput
   """Filter by resolution"""
@@ -178,6 +193,10 @@ enum CriterionModifier {
   INCLUDES_ALL,
   INCLUDES,
   EXCLUDES,
+  """MATCHES REGEX"""
+  MATCHES_REGEX,
+  """NOT MATCHES REGEX"""
+  NOT_MATCHES_REGEX,
 }
 
 input StringCriterionInput {

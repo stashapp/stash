@@ -7,6 +7,7 @@ fragment GalleryData on Gallery {
   url
   details
   rating
+  organized
   images {
     ...SlimImageData
   }
@@ -23,9 +24,7 @@ fragment GalleryData on Gallery {
   performers {
     ...PerformerData
   }
-  scene {
-    id
-    title
-    path
+  scenes {
+    ...SceneData
   }
 }

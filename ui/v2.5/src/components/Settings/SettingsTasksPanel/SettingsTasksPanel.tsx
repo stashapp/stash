@@ -13,13 +13,15 @@ import {
   mutateStopJob,
   usePlugins,
   mutateRunPluginTask,
+  mutateBackupDatabase,
 } from "src/core/StashService";
 import { useToast } from "src/hooks";
 import * as GQL from "src/core/generated-graphql";
-import { Modal } from "src/components/Shared";
+import { LoadingIndicator, Modal } from "src/components/Shared";
+import { downloadFile } from "src/utils";
 import { GenerateButton } from "./GenerateButton";
 import { ImportDialog } from "./ImportDialog";
-import { ScanDialog } from "./ScanDialog";
+import { DirectorySelectionDialog } from "./DirectorySelectionDialog";
 
 type Plugin = Pick<GQL.Plugin, "id">;
 type PluginTask = Pick<GQL.PluginTask, "name" | "description">;
@@ -30,7 +32,24 @@ export const SettingsTasksPanel: React.FC = () => {
   const [isCleanAlertOpen, setIsCleanAlertOpen] = useState<boolean>(false);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState<boolean>(false);
   const [isScanDialogOpen, setIsScanDialogOpen] = useState<boolean>(false);
+  const [isAutoTagDialogOpen, setIsAutoTagDialogOpen] = useState<boolean>(
+    false
+  );
+  const [isBackupRunning, setIsBackupRunning] = useState<boolean>(false);
   const [useFileMetadata, setUseFileMetadata] = useState<boolean>(false);
+  const [stripFileExtension, setStripFileExtension] = useState<boolean>(false);
+  const [scanGeneratePreviews, setScanGeneratePreviews] = useState<boolean>(
+    false
+  );
+  const [scanGenerateSprites, setScanGenerateSprites] = useState<boolean>(
+    false
+  );
+  const [cleanDryRun, setCleanDryRun] = useState<boolean>(false);
+  const [
+    scanGenerateImagePreviews,
+    setScanGenerateImagePreviews,
+  ] = useState<boolean>(false);
+
   const [status, setStatus] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
 
@@ -117,12 +136,31 @@ export const SettingsTasksPanel: React.FC = () => {
 
   function onClean() {
     setIsCleanAlertOpen(false);
-    mutateMetadataClean().then(() => {
+    mutateMetadataClean({
+      dryRun: cleanDryRun,
+    }).then(() => {
       jobStatus.refetch();
     });
   }
 
   function renderCleanAlert() {
+    let msg;
+    if (cleanDryRun) {
+      msg = (
+        <p>
+          Dry Mode selected. No actual deleting will take place, only logging.
+        </p>
+      );
+    } else {
+      msg = (
+        <p>
+          Are you sure you want to Clean? This will delete database information
+          and generated content for all scenes and galleries that are no longer
+          found in the filesystem.
+        </p>
+      );
+    }
+
     return (
       <Modal
         show={isCleanAlertOpen}
@@ -130,11 +168,7 @@ export const SettingsTasksPanel: React.FC = () => {
         accept={{ text: "Clean", variant: "danger", onClick: onClean }}
         cancel={{ onClick: () => setIsCleanAlertOpen(false) }}
       >
-        <p>
-          Are you sure you want to Clean? This will delete database information
-          and generated content for all scenes and galleries that are no longer
-          found in the filesystem.
-        </p>
+        {msg}
       </Modal>
     );
   }
@@ -152,7 +186,7 @@ export const SettingsTasksPanel: React.FC = () => {
       return;
     }
 
-    return <ScanDialog onClose={onScanDialogClosed} />;
+    return <DirectorySelectionDialog onClose={onScanDialogClosed} />;
   }
 
   function onScanDialogClosed(paths?: string[]) {
@@ -166,8 +200,12 @@ export const SettingsTasksPanel: React.FC = () => {
   async function onScan(paths?: string[]) {
     try {
       await mutateMetadataScan({
-        useFileMetadata,
         paths,
+        useFileMetadata,
+        stripFileExtension,
+        scanGeneratePreviews,
+        scanGenerateImagePreviews,
+        scanGenerateSprites,
       });
       Toast.success({ content: "Started scan" });
       jobStatus.refetch();
@@ -176,18 +214,35 @@ export const SettingsTasksPanel: React.FC = () => {
     }
   }
 
-  function getAutoTagInput() {
+  function renderAutoTagDialog() {
+    if (!isAutoTagDialogOpen) {
+      return;
+    }
+
+    return <DirectorySelectionDialog onClose={onAutoTagDialogClosed} />;
+  }
+
+  function onAutoTagDialogClosed(paths?: string[]) {
+    if (paths) {
+      onAutoTag(paths);
+    }
+
+    setIsAutoTagDialogOpen(false);
+  }
+
+  function getAutoTagInput(paths?: string[]) {
     const wildcard = ["*"];
     return {
+      paths,
       performers: autoTagPerformers ? wildcard : [],
       studios: autoTagStudios ? wildcard : [],
       tags: autoTagTags ? wildcard : [],
     };
   }
 
-  async function onAutoTag() {
+  async function onAutoTag(paths?: string[]) {
     try {
-      await mutateMetadataAutoTag(getAutoTagInput());
+      await mutateMetadataAutoTag(getAutoTagInput(paths));
       Toast.success({ content: "Started auto tagging" });
       jobStatus.refetch();
     } catch (e) {
@@ -261,6 +316,25 @@ export const SettingsTasksPanel: React.FC = () => {
     });
   }
 
+  async function onBackup(download?: boolean) {
+    try {
+      setIsBackupRunning(true);
+      const ret = await mutateBackupDatabase({
+        download,
+      });
+
+      // download the result
+      if (download && ret.data && ret.data.backupDatabase) {
+        const link = ret.data.backupDatabase;
+        downloadFile(link);
+      }
+    } catch (e) {
+      Toast.error(e);
+    } finally {
+      setIsBackupRunning(false);
+    }
+  }
+
   function renderPlugins() {
     if (!plugins.data || !plugins.data.plugins) {
       return;
@@ -283,12 +357,17 @@ export const SettingsTasksPanel: React.FC = () => {
     );
   }
 
+  if (isBackupRunning) {
+    return <LoadingIndicator message="Backup up database" />;
+  }
+
   return (
     <>
       {renderImportAlert()}
       {renderCleanAlert()}
       {renderImportDialog()}
       {renderScanDialog()}
+      {renderAutoTagDialog()}
 
       <h4>Running Jobs</h4>
 
@@ -303,6 +382,37 @@ export const SettingsTasksPanel: React.FC = () => {
           checked={useFileMetadata}
           label="Set name, date, details from metadata (if present)"
           onChange={() => setUseFileMetadata(!useFileMetadata)}
+        />
+        <Form.Check
+          id="strip-file-extension"
+          checked={stripFileExtension}
+          label="Don't include file extension as part of the title"
+          onChange={() => setStripFileExtension(!stripFileExtension)}
+        />
+        <Form.Check
+          id="scan-generate-previews"
+          checked={scanGeneratePreviews}
+          label="Generate previews during scan (video previews which play when hovering over a scene)"
+          onChange={() => setScanGeneratePreviews(!scanGeneratePreviews)}
+        />
+        <div className="d-flex flex-row">
+          <div>↳</div>
+          <Form.Check
+            id="scan-generate-image-previews"
+            checked={scanGenerateImagePreviews}
+            disabled={!scanGeneratePreviews}
+            label="Generate image previews during scan (animated WebP previews, only required if Preview Type is set to Animated Image)"
+            onChange={() =>
+              setScanGenerateImagePreviews(!scanGenerateImagePreviews)
+            }
+            className="ml-2 flex-grow"
+          />
+        </div>
+        <Form.Check
+          id="scan-generate-sprites"
+          checked={scanGenerateSprites}
+          label="Generate sprites during scan (for the scene scrubber)"
+          onChange={() => setScanGenerateSprites(!scanGenerateSprites)}
         />
       </Form.Group>
       <Form.Group>
@@ -351,8 +461,20 @@ export const SettingsTasksPanel: React.FC = () => {
         />
       </Form.Group>
       <Form.Group>
-        <Button variant="secondary" type="submit" onClick={() => onAutoTag()}>
+        <Button
+          variant="secondary"
+          type="submit"
+          className="mr-2"
+          onClick={() => onAutoTag()}
+        >
           Auto Tag
+        </Button>
+        <Button
+          variant="secondary"
+          type="submit"
+          onClick={() => setIsAutoTagDialogOpen(true)}
+        >
+          Selective Auto Tag
         </Button>
         <Form.Text className="text-muted">
           Auto-tag content based on filenames.
@@ -369,6 +491,17 @@ export const SettingsTasksPanel: React.FC = () => {
 
       <h5>Generated Content</h5>
       <GenerateButton />
+
+      <hr />
+      <h5>Maintenance</h5>
+      <Form.Group>
+        <Form.Check
+          id="clean-dryrun"
+          checked={cleanDryRun}
+          label="Only perform a dry run. Don't remove anything"
+          onChange={() => setCleanDryRun(!cleanDryRun)}
+        />
+      </Form.Group>
       <Form.Group>
         <Button
           id="clean"
@@ -429,6 +562,39 @@ export const SettingsTasksPanel: React.FC = () => {
         </Button>
         <Form.Text className="text-muted">
           Incremental import from a supplied export zip file.
+        </Form.Text>
+      </Form.Group>
+
+      <hr />
+
+      <h5>Backup</h5>
+      <Form.Group>
+        <Button
+          id="backup"
+          variant="secondary"
+          type="submit"
+          onClick={() => onBackup()}
+        >
+          Backup
+        </Button>
+        <Form.Text className="text-muted">
+          Performs a backup of the database to the same directory as the
+          database, with the filename format{" "}
+          <code>[origFilename].sqlite.[schemaVersion].[YYYYMMDD_HHMMSS]</code>
+        </Form.Text>
+      </Form.Group>
+
+      <Form.Group>
+        <Button
+          id="backupDownload"
+          variant="secondary"
+          type="submit"
+          onClick={() => onBackup(true)}
+        >
+          Download Backup
+        </Button>
+        <Form.Text className="text-muted">
+          Performs a backup of the database and downloads the resulting file.
         </Form.Text>
       </Form.Group>
 

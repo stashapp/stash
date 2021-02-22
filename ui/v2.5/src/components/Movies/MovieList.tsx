@@ -1,13 +1,17 @@
 import React, { useState } from "react";
 import _ from "lodash";
-import { FindMoviesQueryResult } from "src/core/generated-graphql";
+import Mousetrap from "mousetrap";
+import { useHistory } from "react-router-dom";
+import {
+  FindMoviesQueryResult,
+  SlimMovieDataFragment,
+} from "src/core/generated-graphql";
 import { ListFilterModel } from "src/models/list-filter/filter";
 import { DisplayMode } from "src/models/list-filter/types";
-import { queryFindMovies } from "src/core/StashService";
+import { queryFindMovies, useMoviesDestroy } from "src/core/StashService";
 import { showWhenSelected, useMoviesList } from "src/hooks/ListHook";
-import { useHistory } from "react-router-dom";
+import { ExportDialog, DeleteEntityDialog } from "src/components/Shared";
 import { MovieCard } from "./MovieCard";
-import { ExportDialog } from "../Shared/ExportDialog";
 
 export const MovieList: React.FC = () => {
   const history = useHistory();
@@ -43,12 +47,26 @@ export const MovieList: React.FC = () => {
     };
   };
 
+  const renderDeleteDialog = (
+    selectedMovies: SlimMovieDataFragment[],
+    onClose: (confirmed: boolean) => void
+  ) => (
+    <DeleteEntityDialog
+      selected={selectedMovies}
+      onClose={onClose}
+      singularEntity="movie"
+      pluralEntity="movies"
+      destroyMutation={useMoviesDestroy}
+    />
+  );
+
   const listData = useMoviesList({
     renderContent,
     addKeybinds,
     otherOperations,
     selectable: true,
     persistState: true,
+    renderDeleteDialog,
   });
 
   async function viewRandom(

@@ -36,14 +36,6 @@ query AllTagsForFilter {
   }
 }
 
-query ValidGalleriesForScene($scene_id: ID!) {
-  validGalleriesForScene(scene_id: $scene_id) {
-    id
-    path
-    title
-  }
-}
-
 query Stats {
   stats {
     scene_count,
