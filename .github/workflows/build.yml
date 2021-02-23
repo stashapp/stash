@@ -37,8 +37,8 @@ jobs:
           ${{ runner.os }}-build-
           ${{ runner.os }}-
 
-    - name: Pre-install
-      run: make pre-ui
+    # - name: Pre-install
+    #   run: make pre-ui
 
     # - name: Generate
     #   run: make generate
@@ -100,7 +100,7 @@ jobs:
         message: "${{ env.STASH_VERSION }}: Latest development build"
         body: "**${RELEASE_DATE}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
         files: |
-          dist/stash-*
+          dist/stash-linux
           CHECKSUMS_SHA1
 
     #- name: Master release
