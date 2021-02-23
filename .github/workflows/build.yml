@@ -2,9 +2,11 @@ name: Build
 
 on:
   push:
-    branches: [ develop, master, github-actions ]
+    branches: [ develop, master ]
   pull_request:
     branches: [ develop ]
+  release:
+    types: [ published ]
 
 jobs:
   build:
@@ -106,7 +108,7 @@ jobs:
         gzip: false
 
     - name: Master release
-      if: ${{ github.event_name == 'release' && github.event.action == 'published' && github.ref != 'refs/tags/latest_develop' }}
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
       uses: meeDamian/github-release@2.0
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
@@ -135,7 +137,7 @@ jobs:
         bash ./docker/ci/x86_64/docker_push.sh development
 
     - name: Release Docker
-      if: ${{ github.event_name == 'release' && github.event.action == 'published' && github.ref != 'refs/tags/latest_develop' }}
+      if: ${{ github.event_name == 'release' && github.ref != 'refs/tags/latest_develop' }}
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}

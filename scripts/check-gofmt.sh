@@ -28,7 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-gofiles=./pkg/...
+gofiles=./pkg/
 [ "$OS" = "Windows_NT" ] && gofiles=.\\pkg\\
 
 unformatted=$(gofmt -l $gofiles)
