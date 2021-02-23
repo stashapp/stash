@@ -37,28 +37,23 @@ jobs:
           ${{ runner.os }}-build-
           ${{ runner.os }}-
 
-    # - name: Pre-install
-    #   run: make pre-ui
+    - name: Pre-install
+      run: make pre-ui
 
-    # - name: Generate
-    #   run: make generate
+    - name: Generate
+      run: make generate
     
-    # - name: Validate
-    #   run: make ui-validate fmt-check vet it
+    - name: Validate
+      run: make ui-validate fmt-check vet it
 
-    # - name: Build UI
-    #   run: make ui-only
+    - name: Build UI
+      run: make ui-only
 
-    # - name: Cross Compile
-    #   run: |
-    #     docker pull stashapp/compiler:4
-    #     ./scripts/cross-compile.sh
-
-    - name: Generate output file
+    - name: Cross Compile
       run: |
-        mkdir dist
-        echo "test data2" > dist/stash-linux
-    
+        docker pull stashapp/compiler:4
+        ./scripts/cross-compile.sh
+
     - name: Generate checksums
       run: |
         git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
@@ -66,21 +61,21 @@ jobs:
         echo "STASH_VERSION=$(git describe --tags --exclude latest_develop)" >> $GITHUB_ENV
         echo "RELEASE_DATE=$(date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_ENV
     
-    # - name: Upload Windows binary
-    #   # only upload binaries for pull requests
-    #   #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: stash-win.exe
-    #     path: dist/stash-win.exe
+    - name: Upload Windows binary
+      # only upload binaries for pull requests
+      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-win.exe
+        path: dist/stash-win.exe
 
-    # - name: Upload OSX binary
-    #   # only upload binaries for pull requests
-    #   #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: stash-osx
-    #     path: dist/stash-osx
+    - name: Upload OSX binary
+      # only upload binaries for pull requests
+      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'refs/heads/develop' && github.base_ref != 'refs/heads/master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-osx
+        path: dist/stash-osx
 
     - name: Upload Linux binary
       # only upload binaries for pull requests
@@ -101,8 +96,14 @@ jobs:
         name: "${{ env.STASH_VERSION }}: Latest development build"
         body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
         files: |
+          dist/stash-osx
+          dist/stash-win.exe
           dist/stash-linux
+          dist/stash-linux-arm64v8
+          dist/stash-linux-arm32v7
+          dist/stash-pi
           CHECKSUMS_SHA1
+        gzip: false
 
     - name: Master release
       if: ${{ github.event_name == 'release' && github.event.action == 'published' && github.ref != 'refs/tags/latest_develop' }}
@@ -110,7 +111,13 @@ jobs:
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
         files: |
+          dist/stash-osx
+          dist/stash-win.exe
           dist/stash-linux
+          dist/stash-linux-arm64v8
+          dist/stash-linux-arm32v7
+          dist/stash-pi
           CHECKSUMS_SHA1
+        gzip: false
     
     # TODO - push docker images
