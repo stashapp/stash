@@ -59,17 +59,43 @@ jobs:
       run: |
         git describe --tags --exclude latest_develop | tee CHECKSUMS_SHA1
         sha1sum dist/stash-* | sed 's/dist\///g' | tee -a CHECKSUMS_SHA1
+        echo "STASH_VERSION=$(git describe --tags --exclude latest_develop)"" >> $GITHUB_ENV
     
-    - name: Upload binaries
+    - name: Upload Windows binary
+      # only upload binaries for pull requests
+      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'develop' && github.base_ref != 'master'}}
       uses: actions/upload-artifact@v2
       with:
-        name: binaries
-        path: |
-          dist/stash-osx
-          dist/stash-win
-          dist/stash-linux
+        name: stash-win.exe
+        path: dist/stash-win.exe
 
-    # TODO - set RELEASE_DATE and STASH_VERSION
-    # TODO - make dev release
+    - name: Upload OSX binary
+      # only upload binaries for pull requests
+      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'develop' && github.base_ref != 'master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-osx
+        path: dist/stash-osx
+
+    - name: Upload Linux binary
+      # only upload binaries for pull requests
+      #if: ${{ github.event_name == 'pull_request' && github.base_ref != 'develop' && github.base_ref != 'master'}}
+      uses: actions/upload-artifact@v2
+      with:
+        name: stash-linux
+        path: dist/stash-linux
+
+    - name: Development Release
+      #if: ${{ github.event_name == 'push' && github.ref == 'develop' }}      
+      uses: "marvinpinto/action-automatic-releases@v1.1.0"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: true
+        automatic_release_tag: latest_develop
+        title: "${{ env.STASH_VERSION }}: Latest development build"
+        files: |
+          dist/stash-*
+          CHECKSUMS_SHA1
+
     # TODO - make master release
     # TODO - push docker images
