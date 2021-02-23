@@ -96,6 +96,7 @@ jobs:
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: true
+        allow_override: true
         tag: latest_develop
         name: "${{ env.STASH_VERSION }}: Latest development build"
         body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
