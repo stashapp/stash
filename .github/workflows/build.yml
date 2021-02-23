@@ -92,12 +92,12 @@ jobs:
 
     - name: Development Release
       #if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}      
-      uses: johnwbyrd/update-release@v1.0.0
+      uses: meeDamian/github-release@2.0
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: true
-        release: latest_develop
-        message: "${{ env.STASH_VERSION }}: Latest development build"
+        tag: latest_develop
+        name: "${{ env.STASH_VERSION }}: Latest development build"
         body: "**${{ env.RELEASE_DATE }}**\n This is always the latest committed version on the develop branch. Use as your own risk!"
         files: |
           dist/stash-linux
@@ -105,12 +105,11 @@ jobs:
 
     - name: Master release
       if: ${{ github.event_name == 'release' && github.event.action == 'published' && github.ref != 'refs/tags/latest_develop' }}
-      uses: johnwbyrd/update-release@v1.0.0
+      uses: meeDamian/github-release@2.0
       with:
         token: "${{ secrets.GITHUB_TOKEN }}"
         files: |
           dist/stash-linux
           CHECKSUMS_SHA1
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
     
     # TODO - push docker images
